@@ -9298,7 +9298,7 @@ then :
 
                     CXXFLAGS="$CXXFLAGS -flto"
                     CFLAGS="$CFLAGS -flto"
-                    LDFLAGS="$LDFLAGS -fuse-linker-plugin"
+                    LDFLAGS="$LDFLAGS -flto -fuse-linker-plugin"
 
 else case e in #(
   e) : ;;
@@ -9324,7 +9324,7 @@ WARN_FLAGS="-Wall -Wno-sign-compare -Wno-unused-local-typedefs -Wno-switch"
 COMMON_FLAGS="-ffunction-sections -fdata-sections -fwrapv -fno-strict-aliasing -fno-semantic-interposition -fmessage-length=0"
 CXXFLAGS="$CXXFLAGS $WARN_FLAGS $COMMON_FLAGS -Wno-reorder"
 CFLAGS="$CFLAGS $WARN_FLAGS $COMMON_FLAGS"
-LDFLAGS="$LDFLAGS -static-libstdc++ -static-libgcc -Wl,-rpath='\$\$ORIGIN/lib',-rpath='\$\$ORIGIN'"
+LDFLAGS="$LDFLAGS -static-libstdc++ -static-libgcc"
 
 
 
