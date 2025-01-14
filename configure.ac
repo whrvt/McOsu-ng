@@ -117,7 +117,7 @@ AS_IF([test "x$enable_debug" = "xyes"], [
                 AX_CHECK_LINK_FLAG([-flto -fuse-linker-plugin], [
                     CXXFLAGS="$CXXFLAGS -flto"
                     CFLAGS="$CFLAGS -flto"
-                    LDFLAGS="$LDFLAGS -fuse-linker-plugin"
+                    LDFLAGS="$LDFLAGS -flto -fuse-linker-plugin"
                 ])
             ])
         ])
@@ -129,7 +129,7 @@ WARN_FLAGS="-Wall -Wno-sign-compare -Wno-unused-local-typedefs -Wno-switch"
 COMMON_FLAGS="-ffunction-sections -fdata-sections -fwrapv -fno-strict-aliasing -fno-semantic-interposition -fmessage-length=0"
 CXXFLAGS="$CXXFLAGS $WARN_FLAGS $COMMON_FLAGS -Wno-reorder"
 CFLAGS="$CFLAGS $WARN_FLAGS $COMMON_FLAGS"
-LDFLAGS="$LDFLAGS -static-libstdc++ -static-libgcc -Wl,-rpath='\$\$ORIGIN/lib',-rpath='\$\$ORIGIN'"
+LDFLAGS="$LDFLAGS -static-libstdc++ -static-libgcc"
 
 AC_DEFUN([PKG_CHECK_AUTO], [
     AS_IF([test "x$enable_static" = "xyes"],
