@@ -183,7 +183,7 @@ bool Image::loadRawImage()
 			}
 
 			jpeg_mem_src(&cinfo, (unsigned char*)data, file.getFileSize());
-#ifdef __APPLE__
+#ifdef SDL_PLATFORM_APPLE
 			const int headerRes = jpeg_read_header(&cinfo, boolean::TRUE); // HACKHACK: wtf is this boolean enum here suddenly required?
 #else
 			const int headerRes = jpeg_read_header(&cinfo, TRUE);

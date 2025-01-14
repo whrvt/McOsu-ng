@@ -799,8 +799,9 @@ void Engine::removeGamepad(Gamepad *gamepad)
 
 void Engine::requestResolutionChange(Vector2 newResolution)
 {
-	if (newResolution == m_vNewScreenSize) return;
-
+	// FIXME: sdl2->sdl3 broke this check on non-fullscreen startup
+	// if (newResolution == m_vNewScreenSize) return;
+	// debugLog("newRes (%i,%i) m_vNewScreenSize (%i,%i)\n", (int)newResolution.x, (int)newResolution.y, (int)m_vNewScreenSize.x, (int)m_vNewScreenSize.y);
 	m_vNewScreenSize = newResolution;
 	m_bResolutionChange = true;
 }

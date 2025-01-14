@@ -12,7 +12,7 @@
 
 #ifdef MCENGINE_FEATURE_SDL
 
-#include "SDL.h"
+#include <SDL3/SDL.h>
 
 #include "Environment.h"
 
@@ -110,12 +110,15 @@ public:
 	void setWasLastMouseInputTouch(bool wasLastMouseInputTouch) {m_bWasLastMouseInputTouch = wasLastMouseInputTouch;}
 	inline bool wasLastMouseInputTouch() const {return m_bWasLastMouseInputTouch;}
 
+	inline bool sdlDebug() {return m_sdlDebug;}
+	inline bool sdlDebug(bool enable) {m_sdlDebug = enable; return m_sdlDebug;}
 protected:
 	SDL_Window *m_window;
 
 private:
 	ConVar *m_mouse_sensitivity_ref;
-
+	
+	bool m_sdlDebug;
 	// monitors
 	std::vector<McRect> m_vMonitors;
 

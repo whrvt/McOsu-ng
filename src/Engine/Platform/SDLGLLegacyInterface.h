@@ -12,7 +12,7 @@
 
 #if defined(MCENGINE_FEATURE_SDL) && defined(MCENGINE_FEATURE_OPENGL)
 
-#include "SDL.h"
+#include <SDL3/SDL.h>
 
 class SDLGLLegacyInterface : public OpenGLLegacyInterface
 {

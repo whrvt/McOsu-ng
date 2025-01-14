@@ -5,7 +5,7 @@
 // $NoKeywords: $macsdlenv
 //===============================================================================//
 
-#ifdef __APPLE__
+#ifdef SDL_PLATFORM_APPLE
 
 #include "MacOSSDLEnvironment.h"
 

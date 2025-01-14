@@ -5,7 +5,7 @@
 // $NoKeywords: $macgli
 //===============================================================================//
 
-#ifdef __APPLE__
+#ifdef SDL_PLATFORM_APPLE
 
 #ifndef MACOSGLLEGACYINTERFACE_H
 #define MACOSGLLEGACYINTERFACE_H

@@ -5,7 +5,7 @@
 // $NoKeywords: $sdlwinenv
 //===============================================================================//
 
-#if defined(_WIN32) || defined(_WIN64) || defined(__WIN32__) || defined(__CYGWIN__) || defined(__CYGWIN32__) || defined(__TOS_WIN__) || defined(__WINDOWS__)
+#if defined(_WIN32) || defined(_WIN64) || defined(SDL_PLATFORM_WIN32) || defined(__CYGWIN__) || defined(__CYGWIN32__) || defined(__TOS_WIN__) || defined(SDL_PLATFORM_WINDOWS)
 
 #include "WinSDLEnvironment.h"
 
@@ -13,9 +13,9 @@
 
 #include "Engine.h"
 
-#define SDL_VIDEO_DRIVER_WINDOWS	// HACKHACK
-#undef SDL_VIDEO_DRIVER_COCOA		// HACKHACK
-#include "SDL_syswm.h" // for SDL_GetWindowWMInfo()
+#define SDL_VIDEO_DRIVER_WINDOWS /* SDL_VIDEO_DRIVER_WINDOWS has been removed in SDL3 */	// HACKHACK
+#undef SDL_VIDEO_DRIVER_COCOA /* SDL_VIDEO_DRIVER_COCOA has been removed in SDL3 */		// HACKHACK
+#include <SDL3/SDL_syswm.h> // for SDL_GetWindowWMInfo()
 
 #include <Lmcons.h>
 #include <Shlobj.h>
@@ -42,7 +42,7 @@ void WinSDLEnvironment::openURLInDefaultBrowser(UString url)
 {
 	SDL_SysWMinfo info;
 	SDL_VERSION(&info.version);
-	if (SDL_GetWindowWMInfo(m_window, &info) == SDL_TRUE)
+	if (SDL_GetWindowWMInfo(m_window, &info) == true)
 	{
 		ShellExecuteW(info.info.win.window, L"open", url.wc_str(), NULL, NULL, SW_SHOW);
 	}

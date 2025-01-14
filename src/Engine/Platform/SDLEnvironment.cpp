@@ -61,7 +61,7 @@ Graphics *SDLEnvironment::createRenderer()
 
 #ifdef MCENGINE_FEATURE_OPENGLES
 
-#if defined(_WIN32) || defined(_WIN64) || defined(__WIN32__) || defined(__CYGWIN__) || defined(__CYGWIN32__) || defined(__TOS_WIN__) || defined(__WINDOWS__)
+#if defined(_WIN32) || defined(_WIN64) || defined(SDL_PLATFORM_WIN32) || defined(__CYGWIN__) || defined(__CYGWIN32__) || defined(__TOS_WIN__) || defined(SDL_PLATFORM_WINDOWS)
 
 	return new WinSDLGLES2Interface(m_window);
 
@@ -87,7 +87,7 @@ Environment::OS SDLEnvironment::getOS()
 void SDLEnvironment::shutdown()
 {
 	SDL_Event event;
-	event.type = SDL_QUIT;
+	event.type = SDL_EVENT_QUIT;
 	SDL_PushEvent(&event);
 }
 
@@ -140,10 +140,10 @@ UString SDLEnvironment::getUserDataPath()
 
 bool SDLEnvironment::fileExists(UString filename)
 {
-	SDL_RWops *file = SDL_RWFromFile(filename.toUtf8(), "r");
+	SDL_IOStream *file = SDL_IOFromFile(filename.toUtf8(), "r");
 	if (file != NULL)
 	{
-		SDL_RWclose(file);
+		SDL_CloseIO(file);
 		return true;
 	}
 	else
@@ -288,18 +288,16 @@ void SDLEnvironment::maximize()
 
 void SDLEnvironment::enableFullscreen()
 {
-	if (m_bFullscreen) return;
-
-	if (SDL_SetWindowFullscreen(m_window, SDL_WINDOW_FULLSCREEN_DESKTOP) == 0) // NOTE: "fake" fullscreen since we don't want a videomode change
-		m_bFullscreen = true;
+	if ((m_bFullscreen = !!SDL_GetWindowFullscreenMode(m_window))) return;
+	if ((m_bFullscreen = SDL_SetWindowFullscreen(m_window, true))) return; // NOTE: "fake" fullscreen since we don't want a videomode change
+	if (m_sdlDebug) debugLog("%s %s\n", __PRETTY_FUNCTION__, SDL_GetError());
 }
 
 void SDLEnvironment::disableFullscreen()
 {
-	if (!m_bFullscreen) return;
-
-	if (SDL_SetWindowFullscreen(m_window, 0) == 0)
-		m_bFullscreen = false;
+	if ((m_bFullscreen = !SDL_GetWindowFullscreenMode(m_window))) return;
+	if ((m_bFullscreen = SDL_SetWindowFullscreen(m_window, false))) return;
+	if (m_sdlDebug) debugLog("%s %s\n", __PRETTY_FUNCTION__, SDL_GetError());
 }
 
 void SDLEnvironment::setWindowTitle(UString title)
@@ -319,7 +317,7 @@ void SDLEnvironment::setWindowSize(int width, int height)
 
 void SDLEnvironment::setWindowResizable(bool resizable)
 {
-	SDL_SetWindowResizable(m_window, resizable ? SDL_TRUE : SDL_FALSE);
+	SDL_SetWindowResizable(m_window, resizable ? true : false);
 	m_bResizable = resizable;
 }
 
@@ -364,11 +362,8 @@ int SDLEnvironment::getMonitor()
 
 Vector2 SDLEnvironment::getNativeScreenSize()
 {
-	SDL_DisplayMode dm;
-	{
-		SDL_GetCurrentDisplayMode(getMonitor(), &dm);
-	}
-	return Vector2(dm.w, dm.h);
+	SDL_DisplayID di = SDL_GetDisplayForWindow(m_window);
+	return Vector2(SDL_GetDesktopDisplayMode(di)->w, SDL_GetDesktopDisplayMode(di)->h);
 }
 
 McRect SDLEnvironment::getVirtualScreenRect()
@@ -379,18 +374,13 @@ McRect SDLEnvironment::getVirtualScreenRect()
 
 McRect SDLEnvironment::getDesktopRect()
 {
-	// TODO:
 	Vector2 screen = getNativeScreenSize();
 	return McRect(0, 0, screen.x, screen.y);
 }
 
 int SDLEnvironment::getDPI()
 {
-	// TODO: get dpi for current display the window is on?
-	const int displayIndex = 0;
-
-	float dpi = 96.0f;
-	SDL_GetDisplayDPI(displayIndex, NULL, &dpi, NULL);
+	float dpi = SDL_GetWindowDisplayScale(m_window) * 96;
 
 	return clamp<int>((int)dpi, 96, 96*2); // sanity clamp
 }
@@ -402,25 +392,26 @@ Vector2 SDLEnvironment::getMousePos()
 	if (m_bWasLastMouseInputTouch)
 		return engine->getMouse()->getActualPos(); // so instead, we return our own which is always guaranteed to be the first finger position (and no other fingers)
 
-	int mouseX = 0;
-	int mouseY = 0;
+	float mouseX = 0;
+	float mouseY = 0;
 
 	// HACKHACK: workaround, don't change this
 	if (m_mouse_sensitivity_ref->getFloat() == 1.0f)
 	{
 		SDL_GetMouseState(&mouseX, &mouseY);
-
-		return Vector2(mouseX, mouseY);
+		//debugLog("x %f y %f\n", mouseX, mouseY);
+		return Vector2((int)mouseX, (int)mouseY);
 	}
 	else
 	{
+
 		int windowX = 0;
 		int windowY = 0;
 
 		SDL_GetGlobalMouseState(&mouseX, &mouseY);
 		SDL_GetWindowPosition(m_window, &windowX, &windowY);
 
-		return Vector2(mouseX - windowX, mouseY - windowY);
+		return Vector2((int)mouseX - windowX, (int)mouseY - windowY);
 	}
 }
 
@@ -431,13 +422,15 @@ void SDLEnvironment::setCursor(CURSORTYPE cur)
 
 void SDLEnvironment::setCursorVisible(bool visible)
 {
-	SDL_ShowCursor(visible ? SDL_ENABLE : SDL_DISABLE);
+	visible ? SDL_ShowCursor() : SDL_HideCursor();
+
 	m_bCursorVisible = visible;
 }
 
 void SDLEnvironment::setMousePos(int x, int y)
 {
-	SDL_WarpMouseInWindow(m_window, x, y);
+	// debugLog("setting mouse pos to %i,%i\n", x, y);
+	SDL_WarpMouseInWindow(m_window, (float)x, (float)y);
 }
 
 void SDLEnvironment::setCursorClip(bool clip, McRect rect)
@@ -450,11 +443,23 @@ void SDLEnvironment::setCursorClip(bool clip, McRect rect)
 		{
 			m_cursorClip = McRect(0, 0, engine->getScreenWidth(), engine->getScreenHeight());
 		}
+		SDL_CaptureMouse(true);
+		const SDL_Rect clipRect{(int)0, (int)0, (int)engine->getScreenWidth(), (int)engine->getScreenHeight()};
+		SDL_SetWindowMouseRect(m_window, &clipRect);
+		SDL_SetHint(SDL_HINT_MOUSE_RELATIVE_WARP_MOTION, "1");
+		//SDL_SetWindowMouseGrab(m_window, true); // FIXME: sdl2->sdl3 wtf why does moving the mouse stop generating SDL_EVENT_MOUSE_MOTION when grabbed?
 
 		// TODO: custom rect (only fullscreen works atm)
 	}
+	else
+	{
+		// SDL_SetWindowMouseGrab(m_window, false);
+		SDL_CaptureMouse(false);
+		SDL_SetWindowMouseRect(m_window, NULL);
+		SDL_SetHint(SDL_HINT_MOUSE_RELATIVE_WARP_MOTION, "0");
+	}
 
-	SDL_SetWindowGrab(m_window, clip ? SDL_TRUE : SDL_FALSE);
+	SDL_SetWindowKeyboardGrab(m_window, clip ? true : false);
 }
 
 UString SDLEnvironment::keyCodeToString(KEYCODE keyCode)

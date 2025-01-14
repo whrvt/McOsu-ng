@@ -5,7 +5,7 @@
 // $NoKeywords: $mactime $os
 //===============================================================================//
 
-#ifdef __APPLE__
+#ifdef SDL_PLATFORM_APPLE
 
 #include "MacOSTimer.h"
 

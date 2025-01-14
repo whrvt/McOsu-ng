@@ -16,7 +16,7 @@
 #include "Mouse.h"
 #include "SoundEngine.h"
 
-#include "SDL.h"
+#include <SDL3/SDL.h>
 
 #include <switch.h>
 
