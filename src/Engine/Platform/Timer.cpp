@@ -7,7 +7,7 @@
 
 #include "Timer.h"
 
-#if defined(_WIN32) || defined(_WIN64) || defined(__WIN32__) || defined(__CYGWIN__) || defined(__CYGWIN32__) || defined(__TOS_WIN__) || defined(__WINDOWS__)
+#if defined(_WIN32) || defined(_WIN64) || defined(SDL_PLATFORM_WIN32) || defined(__CYGWIN__) || defined(__CYGWIN32__) || defined(__TOS_WIN__) || defined(SDL_PLATFORM_WINDOWS)
 
 #include "WinTimer.h"
 
@@ -15,7 +15,7 @@
 
 #include "LinuxTimer.h"
 
-#elif defined __APPLE__
+#elif defined SDL_PLATFORM_APPLE
 
 #include "MacOSTimer.h"
 
@@ -29,7 +29,7 @@ Timer::Timer()
 {
 	m_timer = NULL;
 
-#if defined(_WIN32) || defined(_WIN64) || defined(__WIN32__) || defined(__CYGWIN__) || defined(__CYGWIN32__) || defined(__TOS_WIN__) || defined(__WINDOWS__)
+#if defined(_WIN32) || defined(_WIN64) || defined(SDL_PLATFORM_WIN32) || defined(__CYGWIN__) || defined(__CYGWIN32__) || defined(__TOS_WIN__) || defined(SDL_PLATFORM_WINDOWS)
 
 	m_timer = new WinTimer();
 
@@ -37,7 +37,7 @@ Timer::Timer()
 
 	m_timer = new LinuxTimer();
 
-#elif defined __APPLE__
+#elif defined SDL_PLATFORM_APPLE
 
 	m_timer = new MacOSTimer();
 

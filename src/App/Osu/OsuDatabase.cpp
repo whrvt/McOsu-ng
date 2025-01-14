@@ -23,7 +23,7 @@
 
 #include <fstream>
 
-#if defined(_WIN32) || defined(_WIN64) || defined(__WIN32__) || defined(__CYGWIN__) || defined(__CYGWIN32__) || defined(__TOS_WIN__) || defined(__WINDOWS__)
+#if defined(_WIN32) || defined(_WIN64) || defined(SDL_PLATFORM_WIN32) || defined(__CYGWIN__) || defined(__CYGWIN32__) || defined(__TOS_WIN__) || defined(SDL_PLATFORM_WINDOWS)
 
 ConVar osu_folder("osu_folder", "C:/Program Files (x86)/osu!/", FCVAR_NONE);
 
@@ -31,7 +31,7 @@ ConVar osu_folder("osu_folder", "C:/Program Files (x86)/osu!/", FCVAR_NONE);
 
 ConVar osu_folder("osu_folder", "/home/pg/Desktop/osu!/", FCVAR_NONE);
 
-#elif defined __APPLE__
+#elif defined SDL_PLATFORM_APPLE
 
 ConVar osu_folder("osu_folder", "/osu!/", FCVAR_NONE);
 

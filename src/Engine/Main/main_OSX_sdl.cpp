@@ -5,7 +5,7 @@
 // $NoKeywords: $macsdl
 //===============================================================================//
 
-#ifdef __APPLE__
+#ifdef SDL_PLATFORM_APPLE
 
 #include "EngineFeatures.h"
 #include "main_OSX_cpp.h"

@@ -71,16 +71,25 @@ AS_IF([test "x$enable_clang" = "xyes"], [
 
 # use c/c++17 because we can
 AC_LANG([C++])
-AX_CXX_COMPILE_STDCXX([17], [ext], [optional])
+AX_CHECK_COMPILE_FLAG([-std=gnu++17], [
+    CXXFLAGS="$CXXFLAGS -std=gnu++17"
+], [
+    AC_MSG_NOTICE([Compiler does not support gnu++17])
+])
+
 AC_LANG([C])
 AX_CHECK_COMPILE_FLAG([-std=gnu17], [
     CFLAGS="$CFLAGS -std=gnu17"
 ], [
-    AC_MSG_NOTICE([Compiler does not support C17])
+    AC_MSG_NOTICE([Compiler does not support gnu17])
 ])
 
 AC_CHECK_PROG([CCACHE], [ccache], [ccache])
 AS_IF([test "x$CCACHE" = "xccache"], [
+    CC_NOCCACHE="$CC"
+    CXX_NOCCACHE="$CXX"
+    AC_SUBST([CC_NOCCACHE])
+    AC_SUBST([CXX_NOCCACHE])
     CC="ccache $CC"
     CXX="ccache $CXX"
 ])
@@ -147,8 +156,8 @@ PKG_CHECK_AUTO([ZLIB], [zlib], [have_zlib=yes], [have_zlib=no])
 
 AC_SUBST([DEPS_PREFIX], ['${abs_top_builddir}/build/deps'])
 
-SDL2_MIN_VERSION=2.0.0
-SDL2_BUILD_VERSION=2.30.11
+SDL3_MIN_VERSION=3.1.8
+SDL3_BUILD_VERSION=3.1.8
 GLEW_MIN_VERSION=2.2.0
 GLEW_BUILD_VERSION=2.2.0
 FREETYPE2_MIN_VERSION=2.10.0
@@ -156,19 +165,19 @@ FREETYPE2_BUILD_VERSION=2.13.3
 
 # TODO: add all deps and transitive deps (fun!)
 AS_IF([test "x$enable_system_deps" != "xno"], [
-    PKG_CHECK_AUTO([SDL2], [sdl2 >= $SDL2_MIN_VERSION], [have_sdl2=yes], [have_sdl2=no])
+    PKG_CHECK_AUTO([SDL3], [sdl3 >= $SDL3_MIN_VERSION], [have_sdl3=yes], [have_sdl3=no])
     PKG_CHECK_AUTO([GLEW], [glew >= $GLEW_MIN_VERSION], [have_glew=yes], [have_glew=no])
     PKG_CHECK_AUTO([FREETYPE2], [freetype2 >= $FREETYPE2_MIN_VERSION], [have_freetype2=yes], [have_freetype2=no])
 ])
 
-AS_IF([test "x$have_sdl2" != "xyes"], [
-    have_sdl2="build from source"
-    SDL2_VERSION=$SDL2_BUILD_VERSION
-    SDL2_PREFIX="${DEPS_PREFIX}"
-    SDL2_STATIC=$enable_static
-    AC_SUBST([SDL2_VERSION])
-    AC_SUBST([SDL2_PREFIX])
-    AC_SUBST([SDL2_STATIC])
+AS_IF([test "x$have_sdl3" != "xyes"], [
+    have_sdl3="build from source"
+    SDL3_VERSION=$SDL3_BUILD_VERSION
+    SDL3_PREFIX="${DEPS_PREFIX}"
+    SDL3_STATIC=$enable_static
+    AC_SUBST([SDL3_VERSION])
+    AC_SUBST([SDL3_PREFIX])
+    AC_SUBST([SDL3_STATIC])
 ])
 
 AS_IF([test "x$have_glew" != "xyes"], [
@@ -189,7 +198,7 @@ AS_IF([test "x$have_freetype2" != "xyes"], [
     AC_SUBST([FREETYPE2_PREFIX])
 ])
 
-AM_CONDITIONAL([BUILD_SDL2], [test "x$have_sdl2" != "xyes"])
+AM_CONDITIONAL([BUILD_SDL3], [test "x$have_sdl3" != "xyes"])
 AM_CONDITIONAL([BUILD_GLEW], [test "x$have_glew" != "xyes"])
 AM_CONDITIONAL([BUILD_FREETYPE2], [test "x$have_freetype2" != "xyes"])
 
@@ -248,7 +257,7 @@ Dependencies:
     libEGL              ${have_egl-no}
     libjpeg             ${have_libjpeg-no}
     libz                ${have_zlib-no}
-    sdl2:               ${have_sdl2-build from source}
+    sdl3:               ${have_sdl3-build from source}
     GLEW:               ${have_glew-build from source}
     freetype2:          ${have_freetype2-build from source}
 ])

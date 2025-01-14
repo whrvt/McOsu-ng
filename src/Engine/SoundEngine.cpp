@@ -100,8 +100,8 @@ DWORD CALLBACK OutputWasapiProc(void *buffer, DWORD length, void *user)
 
 #if defined(MCENGINE_FEATURE_SDL) && defined(MCENGINE_FEATURE_SDL_MIXER)
 
-#include "SDL.h"
-#include "SDL_mixer.h"
+#include <SDL3/SDL.h>
+#include <SDL3_mixer/SDL_mixer.h>
 
 #endif
 
@@ -464,7 +464,7 @@ bool SoundEngine::initializeOutputDevice(int id)
 	const unsigned int flags = /* BASS_DEVICE_3D | */ runtimeFlags;
 	bool ret = false;
 
-#if defined(_WIN32) || defined(_WIN64) || defined(__WIN32__) || defined(__CYGWIN__) || defined(__CYGWIN32__) || defined(__TOS_WIN__) || defined(__WINDOWS__)
+#if defined(_WIN32) || defined(_WIN64) || defined(SDL_PLATFORM_WIN32) || defined(__CYGWIN__) || defined(__CYGWIN32__) || defined(__TOS_WIN__) || defined(SDL_PLATFORM_WINDOWS)
 
 	int idForBassInit = id;
 
@@ -581,7 +581,7 @@ bool SoundEngine::initializeOutputDevice(int id)
 	const int freq = snd_freq.getInt();
 	const int channels = 16;
 
-	if (Mix_OpenAudio(freq, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, m_iMixChunkSize) < 0)
+	if (!Mix_OpenAudio(freq, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, m_iMixChunkSize))
 	{
 		const char *error = SDL_GetError();
 		debugLog("SoundEngine: Couldn't Mix_OpenAudio(): %s\n", error);

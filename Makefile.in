@@ -89,7 +89,7 @@ NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
 bin_PROGRAMS = McOsu$(EXEEXT)
-@BUILD_SDL2_TRUE@am__append_1 = build/deps/SDL2.built
+@BUILD_SDL3_TRUE@am__append_1 = build/deps/SDL3.built
 @BUILD_GLEW_TRUE@am__append_2 = build/deps/GLEW.built
 @BUILD_FREETYPE2_TRUE@am__append_3 = build/deps/FREETYPE2.built
 subdir = .
@@ -598,6 +598,7 @@ BUNDLED_LIBS_DIR = @BUNDLED_LIBS_DIR@
 CC = @CC@
 CCACHE = @CCACHE@
 CCDEPMODE = @CCDEPMODE@
+CC_NOCCACHE = @CC_NOCCACHE@
 CFLAGS = @CFLAGS@
 CPPFLAGS = @CPPFLAGS@
 CSCOPE = @CSCOPE@
@@ -605,6 +606,7 @@ CTAGS = @CTAGS@
 CXX = @CXX@
 CXXDEPMODE = @CXXDEPMODE@
 CXXFLAGS = @CXXFLAGS@
+CXX_NOCCACHE = @CXX_NOCCACHE@
 CYGPATH_W = @CYGPATH_W@
 DEFS = @DEFS@
 DEPDIR = @DEPDIR@
@@ -630,7 +632,6 @@ GLU_LIBS = @GLU_LIBS@
 GL_CFLAGS = @GL_CFLAGS@
 GL_LIBS = @GL_LIBS@
 GREP = @GREP@
-HAVE_CXX17 = @HAVE_CXX17@
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
@@ -661,11 +662,11 @@ PKG_CONFIG_LIBDIR = @PKG_CONFIG_LIBDIR@
 PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
 
 # re-evaluated after deps are built
-SDL2_CFLAGS = $(call get_pkgconfig_flags,cflags,sdl2)
-SDL2_LIBS = $(call get_pkgconfig_flags,libs,sdl2)
-SDL2_PREFIX = @SDL2_PREFIX@
-SDL2_STATIC = @SDL2_STATIC@
-SDL2_VERSION = @SDL2_VERSION@
+SDL3_CFLAGS = $(call get_pkgconfig_flags,cflags,sdl3)
+SDL3_LIBS = $(call get_pkgconfig_flags,libs,sdl3)
+SDL3_PREFIX = @SDL3_PREFIX@
+SDL3_STATIC = @SDL3_STATIC@
+SDL3_VERSION = @SDL3_VERSION@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
@@ -945,7 +946,7 @@ McOsu_CXXFLAGS = \
 	$(MCOSU_INCLUDE_FLAGS) \
 	-I$(srcdir)/$(BUNDLED_BASS_DIR)/include \
 	-I$(srcdir)/$(BUNDLED_BASS_FX_DIR)/include \
-	$(SDL2_CFLAGS) \
+	$(SDL3_CFLAGS) \
 	$(X11_CFLAGS) \
 	$(XI_CFLAGS) \
 	$(GL_CFLAGS) \
@@ -962,7 +963,7 @@ McOsu_LDFLAGS = \
 	-L$(srcdir)/$(BUNDLED_BASS_DIR)/lib/linux \
 	-L$(srcdir)/$(BUNDLED_BASS_FX_DIR)/lib/linux \
 	-lbass -lbass_fx \
-	$(SDL2_LIBS) \
+	$(SDL3_LIBS) \
 	$(X11_LIBS) \
 	$(XI_LIBS) \
 	$(GL_LIBS) \
@@ -5393,16 +5394,24 @@ uninstall-am: uninstall-binPROGRAMS
 
 
 # build rules for dependencies when system packages aren't used
-build/deps/SDL2.built:
-	$(MKDIR_P) build/deps/SDL2/build build/deps/lib/pkgconfig
-	$(WGET) -qO- "https://github.com/libsdl-org/SDL/releases/download/release-$(SDL2_VERSION)/SDL2-$(SDL2_VERSION).tar.gz" | $(TAR) xz -C build/deps/SDL2 --strip-components=1
-	cd build/deps/SDL2 && ./configure --prefix="$(DEPS_PREFIX)" \
-		$(if $(SDL2_STATIC),--enable-static --disable-shared,--enable-shared --disable-static) --disable-rpath \
-		CC="$(CC)" CXX="$(CXX)" LD="$(LD)" CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS)"
-	$(MAKE) -C build/deps/SDL2
-	$(MAKE) -C build/deps/SDL2 install
+build/deps/SDL3.built:
+	$(MKDIR_P) build/deps/SDL3/build build/deps/lib/pkgconfig
+	$(WGET) -qO- "https://github.com/libsdl-org/SDL/releases/download/preview-$(SDL3_VERSION)/SDL3-$(SDL3_VERSION).tar.gz" | $(TAR) xz -C build/deps/SDL3 --strip-components=1
+	cd build/deps/SDL3 && \
+	cmake -S . -B build -G Ninja \
+	-D CMAKE_BUILD_TYPE=None \
+	-D SDL_HIDAPI_LIBUSB=OFF \
+	-D CMAKE_INSTALL_PREFIX="$(DEPS_PREFIX)" \
+	-D SDL_SHARED="$(if $(SDL3_STATIC),OFF,ON)" \
+	-D SDL_STATIC="$(if $(SDL3_STATIC),ON,OFF)" \
+	-D SDL_RPATH=OFF \
+	-D SDL_CCACHE="$(if $(filter ccache,$(CC)),ON,OFF)" \
+	-D CMAKE_C_COMPILER="$(CC_NOCCACHE)" \
+	-D CMAKE_C_FLAGS="$(CFLAGS)" && \
+	cmake --build build && \
+	cmake --install build
 	PKG_CONFIG_PATH="$(DEPS_PREFIX)/lib/pkgconfig:$(DEPS_PREFIX)/lib64/pkgconfig:$(PKG_CONFIG_PATH)" \
-		$(PKG_CONFIG) --exists --print-errors sdl2
+		$(PKG_CONFIG) --exists --print-errors sdl3
 	touch $@
 
 # sus
@@ -5414,11 +5423,11 @@ build/deps/GLEW.built:
 		CC="$(CC)" CXX="$(CXX)" LD="$(CC)" \
 		CFLAGS.EXTRA="$(CFLAGS) -fPIC -Wno-strict-prototypes" \
 		LDFLAGS.EXTRA="$(LDFLAGS) -lX11" \
-		$(if $(SDL2_STATIC),GLEW_STATIC=1,)
+		$(if $(SDL3_STATIC),GLEW_STATIC=1,)
 	cd build/deps/GLEW && \
 		$(MAKE) SYSTEM=$(GLEW_SYSTEM) GLEW_DEST="$(DEPS_PREFIX)" \
 		CC="$(CC)" CXX="$(CXX)" LD="$(CC)" \
-		$(if $(SDL2_STATIC),GLEW_STATIC=1,) \
+		$(if $(SDL3_STATIC),GLEW_STATIC=1,) \
 		install
 	$(MKDIR_P) "$(DEPS_PREFIX)/lib/pkgconfig"
 	( echo 'prefix=$(DEPS_PREFIX)'; \
@@ -5430,7 +5439,7 @@ build/deps/GLEW.built:
 	  echo 'Description: The OpenGL Extension Wrangler library'; \
 	  echo 'Version: $(GLEW_VERSION)'; \
 	  echo 'Cflags: -I$${includedir}'; \
-	  echo 'Libs: -L$${libdir} $(if $(SDL2_STATIC),-l:libGLEW.a,-lGLEW) -lEGL -lGL -lGLU -lOpenGL' ) > "$(DEPS_PREFIX)/lib/pkgconfig/glew.pc"
+	  echo 'Libs: -L$${libdir} $(if $(SDL3_STATIC),-l:libGLEW.a,-lGLEW) -lEGL -lGL -lGLU -lOpenGL' ) > "$(DEPS_PREFIX)/lib/pkgconfig/glew.pc"
 	PKG_CONFIG_PATH="$(DEPS_PREFIX)/lib/pkgconfig:$(DEPS_PREFIX)/lib64/pkgconfig:$(PKG_CONFIG_PATH)" \
 		$(PKG_CONFIG) --exists --print-errors glew
 	touch $@
@@ -5439,7 +5448,7 @@ build/deps/FREETYPE2.built:
 	$(MKDIR_P) build/deps/FREETYPE2/build build/deps/lib/pkgconfig
 	$(WGET) -qO- "https://download.savannah.gnu.org/releases/freetype/freetype-$(FREETYPE2_VERSION).tar.gz" | $(TAR) xz -C build/deps/FREETYPE2 --strip-components=1
 	cd build/deps/FREETYPE2 && ./configure --prefix="$(DEPS_PREFIX)" \
-		$(if $(SDL2_STATIC),--enable-static --enable-shared,--enable-shared --disable-static) \
+		$(if $(SDL3_STATIC),--enable-static --enable-shared,--enable-shared --disable-static) \
 		CC="$(CC)" CXX="$(CXX)" LD="$(LD)" CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS)"
 	$(MAKE) -C build/deps/FREETYPE2
 	$(MAKE) -C build/deps/FREETYPE2 install
@@ -5460,12 +5469,12 @@ install-libs:
 	$(MKDIR_P) "$(DESTDIR)$(bindir)/lib"
 	$(INSTALL) -m 755 $(srcdir)/$(BUNDLED_BASS_DIR)/lib/linux/libbass.so "$(DESTDIR)$(bindir)/lib/"
 	$(INSTALL) -m 755 $(srcdir)/$(BUNDLED_BASS_FX_DIR)/lib/linux/libbass_fx.so "$(DESTDIR)$(bindir)/lib/"
-@BUILD_SDL2_TRUE@	$(if $(SDL2_STATIC),,@cp -P "$(SDL2_PREFIX)/lib"/libSDL2*.so* "$(DESTDIR)$(bindir)/lib/")
-@BUILD_GLEW_TRUE@	$(if $(SDL2_STATIC),,@libdir=$(GLEW_PREFIX)/`test -d "$(GLEW_PREFIX)/lib64" && echo "lib64" || echo "lib"`; \
+@BUILD_SDL3_TRUE@	$(if $(SDL3_STATIC),,@cp -P "$(SDL3_PREFIX)/lib"/libSDL3*.so* "$(DESTDIR)$(bindir)/lib/")
+@BUILD_GLEW_TRUE@	$(if $(SDL3_STATIC),,@libdir=$(GLEW_PREFIX)/`test -d "$(GLEW_PREFIX)/lib64" && echo "lib64" || echo "lib"`; \
 @BUILD_GLEW_TRUE@	cp -P "$$libdir"/libGLEW*.so* "$(DESTDIR)$(bindir)/lib/")
 @BUILD_FREETYPE2_TRUE@	@cp -P "$(FREETYPE2_PREFIX)/lib"/libfreetype*.so* "$(DESTDIR)$(bindir)/lib/"
 # FIXME: need transitive deps (libbrotlidec, libbrotlicommon, libharfbuzz, etc)
-#	$(if $(SDL2_STATIC),,@cp -P "$(FREETYPE2_PREFIX)/lib"/libfreetype*.so* "$(DESTDIR)$(bindir)/lib/")
+#	$(if $(SDL3_STATIC),,@cp -P "$(FREETYPE2_PREFIX)/lib"/libfreetype*.so* "$(DESTDIR)$(bindir)/lib/")
 
 # install hooks
 install-exec-hook: install-libs

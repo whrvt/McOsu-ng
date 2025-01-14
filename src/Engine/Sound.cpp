@@ -22,8 +22,8 @@
 
 #elif defined(MCENGINE_FEATURE_SDL) && defined(MCENGINE_FEATURE_SDL_MIXER)
 
-#include "SDL.h"
-#include "SDL_mixer_ext.h"
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_mixer_ext.h>
 
 #endif
 
@@ -137,7 +137,7 @@ void Sound::initAsync()
 		DWORD extraStreamCreateFileFlags = 0;
 		DWORD extraFXTempoCreateFlags = 0;
 
-#if defined(_WIN32) || defined(_WIN64) || defined(__WIN32__) || defined(__CYGWIN__) || defined(__CYGWIN32__) || defined(__TOS_WIN__) || defined(__WINDOWS__)
+#if defined(_WIN32) || defined(_WIN64) || defined(SDL_PLATFORM_WIN32) || defined(__CYGWIN__) || defined(__CYGWIN32__) || defined(__TOS_WIN__) || defined(SDL_PLATFORM_WINDOWS)
 
 #ifdef MCENGINE_FEATURE_BASS_WASAPI
 
@@ -169,7 +169,7 @@ void Sound::initAsync()
 	else // not a stream
 	{
 
-#if defined(_WIN32) || defined(_WIN64) || defined(__WIN32__) || defined(__CYGWIN__) || defined(__CYGWIN32__) || defined(__TOS_WIN__) || defined(__WINDOWS__)
+#if defined(_WIN32) || defined(_WIN64) || defined(SDL_PLATFORM_WIN32) || defined(__CYGWIN__) || defined(__CYGWIN32__) || defined(__TOS_WIN__) || defined(SDL_PLATFORM_WINDOWS)
 
 #ifdef MCENGINE_FEATURE_BASS_WASAPI
 
