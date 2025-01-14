@@ -19,24 +19,6 @@ class McFont : public Resource
 public:
 	static const wchar_t UNKNOWN_CHAR = 63; // ascii '?'
 
-	struct GLYPH_METRICS
-	{
-		wchar_t character;
-
-		unsigned int uvPixelsX;
-		unsigned int uvPixelsY;
-		unsigned int sizePixelsX;
-		unsigned int sizePixelsY;
-
-		int left;
-		int top;
-		int width;
-		int rows;
-
-		float advance_x;
-	};
-
-public:
 	McFont(UString filepath, int fontSize = 16, bool antialiasing = true, int fontDPI = 96);
 	McFont(UString filepath, std::vector<wchar_t> characters, int fontSize = 16, bool antialiasing = true, int fontDPI = 96);
 	virtual ~McFont() {destroy();}
@@ -55,13 +37,39 @@ public:
 	float getStringWidth(UString text) const;
 	float getStringHeight(UString text) const;
 
-	const GLYPH_METRICS &getGlyphMetrics(wchar_t ch) const;
-	const bool hasGlyph(wchar_t ch) const;
-
 	// ILLEGAL:
 	inline TextureAtlas *getTextureAtlas() const {return m_textureAtlas;}
 
 protected:
+	struct GLYPH_METRICS
+	{
+		wchar_t character;
+
+		unsigned int uvPixelsX;
+		unsigned int uvPixelsY;
+		unsigned int sizePixelsX;
+		unsigned int sizePixelsY;
+
+		int left;
+		int top;
+		int width;
+		int rows;
+
+		float advance_x;
+	};
+    struct GlyphBatchData {
+        float x, y;
+        float sx, sy;
+        float texX, texY;
+        float texSizeX;
+        float texSizeY;
+    };
+
+	const GLYPH_METRICS &getGlyphMetrics(wchar_t ch) const;
+	const bool hasGlyph(wchar_t ch) const;
+
+    // for pre-calculating glyph rendering data
+    void calculateGlyphBatch(const UString& text, std::vector<GlyphBatchData>& batchData);
 	void constructor(std::vector<wchar_t> characters, int fontSize, bool antialiasing, int fontDPI);
 
 	virtual void init();
