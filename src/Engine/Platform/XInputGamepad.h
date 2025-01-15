@@ -5,6 +5,7 @@
 // $NoKeywords: $xi
 //===============================================================================//
 
+#pragma once
 #ifndef XINPUTGAMEPAD_H
 #define XINPUTGAMEPAD_H
 

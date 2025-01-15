@@ -5,6 +5,7 @@
 // $NoKeywords: $sdlenv
 //===============================================================================//
 
+#pragma once
 #ifndef SDLENVIRONMENT_H
 #define SDLENVIRONMENT_H
 

@@ -5,6 +5,7 @@
 // $NoKeywords: $tomstarspp
 //==============================================================================================//
 
+#pragma once
 #ifndef OSUDIFFICULTYCALCULATOR_H
 #define OSUDIFFICULTYCALCULATOR_H
 

@@ -5,6 +5,7 @@
 // $NoKeywords: $vk
 //===============================================================================//
 
+#pragma once
 #ifndef VULKANINTERFACE_H
 #define VULKANINTERFACE_H
 

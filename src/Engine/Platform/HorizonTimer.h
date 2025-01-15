@@ -7,6 +7,7 @@
 
 #ifdef __SWITCH__
 
+#pragma once
 #ifndef HORIZONTIMER_H
 #define HORIZONTIMER_H
 

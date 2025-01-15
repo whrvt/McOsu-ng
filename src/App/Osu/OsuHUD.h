@@ -5,6 +5,7 @@
 // $NoKeywords: $osuhud
 //===============================================================================//
 
+#pragma once
 #ifndef OSUHUD_H
 #define OSUHUD_H
 

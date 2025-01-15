@@ -5,6 +5,7 @@
  *      Author: Psy
  */
 
+#pragma once
 #ifndef GUI_WINDOWS_CBASEUICANVAS_H_
 #define GUI_WINDOWS_CBASEUICANVAS_H_
 

@@ -5,6 +5,7 @@
 // $NoKeywords: $rect
 //===============================================================================//
 
+#pragma once
 #ifndef RECT_H
 #define RECT_H
 

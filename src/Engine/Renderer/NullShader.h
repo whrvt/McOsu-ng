@@ -5,6 +5,7 @@
 // $NoKeywords: $nshader
 //===============================================================================//
 
+#pragma once
 #ifndef NULLSHADER_H
 #define NULLSHADER_H
 

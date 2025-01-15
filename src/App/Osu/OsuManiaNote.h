@@ -5,6 +5,7 @@
 // $NoKeywords: $osumanian
 //===============================================================================//
 
+#pragma once
 #ifndef OSU_OSUMANIANOTE_H
 #define OSU_OSUMANIANOTE_H
 

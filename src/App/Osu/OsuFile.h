@@ -5,6 +5,7 @@
 // $NoKeywords: $osudb
 //===============================================================================//
 
+#pragma once
 #ifndef OSUFILE_H
 #define OSUFILE_H
 

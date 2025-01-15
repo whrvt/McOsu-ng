@@ -5,6 +5,7 @@
 // $NoKeywords: $gles2i
 //===============================================================================//
 
+#pragma once
 #ifndef OPENGLES2INTERFACE_H
 #define OPENGLES2INTERFACE_H
 

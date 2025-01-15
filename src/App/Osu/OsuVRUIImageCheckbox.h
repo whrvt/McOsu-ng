@@ -5,6 +5,7 @@
 // $NoKeywords: $osuvricb
 //===============================================================================//
 
+#pragma once
 #ifndef OSUVRUIIMAGECHECKBOX_H
 #define OSUVRUIIMAGECHECKBOX_H
 

@@ -5,6 +5,7 @@
 // $NoKeywords: $osuvrui
 //===============================================================================//
 
+#pragma once
 #ifndef OSUVRUIELEMENT_H
 #define OSUVRUIELEMENT_H
 

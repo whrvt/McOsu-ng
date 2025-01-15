@@ -5,6 +5,7 @@
 // $NoKeywords: $
 //===============================================================================//
 
+#pragma once
 #ifndef OSUSCREEN_H
 #define OSUSCREEN_H
 

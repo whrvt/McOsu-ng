@@ -7,6 +7,7 @@
 
 #ifdef __linux__
 
+#pragma once
 #ifndef LINUXSDLENVIRONMENT_H
 #define LINUXSDLENVIRONMENT_H
 

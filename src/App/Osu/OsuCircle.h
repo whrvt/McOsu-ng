@@ -5,6 +5,7 @@
 // $NoKeywords: $circle
 //===============================================================================//
 
+#pragma once
 #ifndef OSUCIRCLE_H
 #define OSUCIRCLE_H
 

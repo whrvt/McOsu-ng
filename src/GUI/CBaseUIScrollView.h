@@ -7,6 +7,7 @@
 
 // TODO: refactor the spaghetti parts, this can be done way more elegantly
 
+#pragma once
 #ifndef CBASEUISCROLLVIEW_H
 #define CBASEUISCROLLVIEW_H
 

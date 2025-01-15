@@ -5,6 +5,7 @@
 // $NoKeywords: $osusb
 //===============================================================================//
 
+#pragma once
 #ifndef OSUSONGBROWSER2_H
 #define OSUSONGBROWSER2_H
 

@@ -5,6 +5,7 @@
 // $NoKeywords: $osuss
 //===============================================================================//
 
+#pragma once
 #ifndef OSU_OSURANKINGSCREEN_H
 #define OSU_OSURANKINGSCREEN_H
 

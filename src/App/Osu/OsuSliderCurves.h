@@ -6,6 +6,7 @@
 // $NoKeywords: $slidercurves
 //=====================================================================================================//
 
+#pragma once
 #ifndef OSUSLIDERCURVES_H
 #define OSUSLIDERCURVES_H
 

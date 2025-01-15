@@ -5,6 +5,7 @@
 // $NoKeywords: $glshader
 //===============================================================================//
 
+#pragma once
 #ifndef OPENGLSHADER_H
 #define OPENGLSHADER_H
 

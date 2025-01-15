@@ -5,6 +5,7 @@
 // $NoKeywords: $ne
 //===============================================================================//
 
+#pragma once
 #ifndef NULLENVIRONMENT_H
 #define NULLENVIRONMENT_H
 

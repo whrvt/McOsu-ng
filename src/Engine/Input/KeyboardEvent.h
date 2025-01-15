@@ -5,6 +5,7 @@
 // $NoKeywords: $key
 //===============================================================================//
 
+#pragma once
 #ifndef KEYBOARDEVENT_H
 #define KEYBOARDEVENT_H
 

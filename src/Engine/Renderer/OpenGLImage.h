@@ -5,6 +5,7 @@
 // $NoKeywords: $glimg
 //===============================================================================//
 
+#pragma once
 #ifndef OPENGLIMAGE_H
 #define OPENGLIMAGE_H
 

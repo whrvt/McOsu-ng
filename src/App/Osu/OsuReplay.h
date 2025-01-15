@@ -5,6 +5,7 @@
 // $NoKeywords: $osr
 //===============================================================================//
 
+#pragma once
 #ifndef OSUREPLAY_H
 #define OSUREPLAY_H
 

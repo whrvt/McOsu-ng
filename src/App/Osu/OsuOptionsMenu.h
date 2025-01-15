@@ -5,6 +5,7 @@
 // $NoKeywords: $
 //===============================================================================//
 
+#pragma once
 #ifndef OSUOPTIONSMENU_H
 #define OSUOPTIONSMENU_H
 

@@ -5,6 +5,7 @@
 // $NoKeywords: $dximg
 //===============================================================================//
 
+#pragma once
 #ifndef DIRECTX11IMAGE_H
 #define DIRECTX11IMAGE_H
 

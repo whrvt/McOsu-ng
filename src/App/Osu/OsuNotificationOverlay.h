@@ -5,6 +5,7 @@
 // $NoKeywords: $osunot
 //===============================================================================//
 
+#pragma once
 #ifndef OSUNOTIFICATIONOVERLAY_H
 #define OSUNOTIFICATIONOVERLAY_H
 

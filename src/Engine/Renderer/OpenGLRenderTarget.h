@@ -5,6 +5,7 @@
 // $NoKeywords: $glrt
 //===============================================================================//
 
+#pragma once
 #ifndef OPENGLRENDERTARGET_H
 #define OPENGLRENDERTARGET_H
 

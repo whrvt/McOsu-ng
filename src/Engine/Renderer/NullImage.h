@@ -5,6 +5,7 @@
 // $NoKeywords: $nimg
 //===============================================================================//
 
+#pragma once
 #ifndef NULLIMAGE_H
 #define NULLIMAGE_H
 

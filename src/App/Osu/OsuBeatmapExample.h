@@ -5,6 +5,7 @@
 // $NoKeywords: $osubmex
 //===============================================================================//
 
+#pragma once
 #ifndef OSUBEATMAPEXAMPLE_H
 #define OSUBEATMAPEXAMPLE_H
 

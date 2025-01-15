@@ -5,6 +5,7 @@
 // $NoKeywords: $rpt
 //===============================================================================//
 
+#pragma once
 #ifndef OSURICHPRESENCE_H
 #define OSURICHPRESENCE_H
 

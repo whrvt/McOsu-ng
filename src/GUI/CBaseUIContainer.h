@@ -5,6 +5,7 @@
 // $NoKeywords: $
 //===============================================================================//
 
+#pragma once
 #ifndef CBASEUICONTAINER_H
 #define CBASEUICONTAINER_H
 

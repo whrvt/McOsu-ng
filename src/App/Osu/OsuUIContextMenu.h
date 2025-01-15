@@ -5,6 +5,7 @@
 // $NoKeywords: $
 //===============================================================================//
 
+#pragma once
 #ifndef OSUUICONTEXTMENU_H
 #define OSUUICONTEXTMENU_H
 

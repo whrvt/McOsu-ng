@@ -7,6 +7,7 @@
 
 #ifdef __APPLE__
 
+#pragma once
 #ifndef MACOSTIMER_H
 #define MACOSTIMER_H
 

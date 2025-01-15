@@ -5,6 +5,7 @@
 // $NoKeywords: $dxvao
 //===============================================================================//
 
+#pragma once
 #ifndef DIRECTX11VERTEXARRAYOBJECT_H
 #define DIRECTX11VERTEXARRAYOBJECT_H
 

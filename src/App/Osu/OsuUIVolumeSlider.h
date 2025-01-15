@@ -5,6 +5,7 @@
 // $NoKeywords: $osuvolsl
 //===============================================================================//
 
+#pragma once
 #ifndef OSUUIVOLUMESLIDER_H
 #define OSUUIVOLUMESLIDER_H
 

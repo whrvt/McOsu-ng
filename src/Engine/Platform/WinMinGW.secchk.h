@@ -1,3 +1,4 @@
+#pragma once
 #ifndef WINMINGW_SECCHK_H
 #define WINMINGW_SECCHK_H
 
