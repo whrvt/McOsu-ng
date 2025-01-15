@@ -5,7 +5,7 @@
 // $NoKeywords: $mactime $os
 //===============================================================================//
 
-#ifdef SDL_PLATFORM_APPLE
+#ifdef __APPLE__
 
 #ifndef MACOSTIMER_H
 #define MACOSTIMER_H

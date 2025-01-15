@@ -1,7 +1,7 @@
 #ifndef WINMINGW_SECCHK_H
 #define WINMINGW_SECCHK_H
 
-#if defined(_WIN32) || defined(_WIN64) || defined(SDL_PLATFORM_WIN32) || defined(__CYGWIN__) || defined(__CYGWIN32__) || defined(__TOS_WIN__) || defined(SDL_PLATFORM_WINDOWS)
+#if defined(_WIN32) || defined(_WIN64) || defined(__WIN32__) || defined(__CYGWIN__) || defined(__CYGWIN32__) || defined(__TOS_WIN__) || defined(__WINDOWS__)
 
 /***
 *secchk.c - checks buffer overrun security cookie for x86

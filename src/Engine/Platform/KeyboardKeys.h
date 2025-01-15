@@ -109,7 +109,7 @@
 #define KEY_PAGEUP			SDL_SCANCODE_PAGEUP
 #define KEY_PAGEDOWN		SDL_SCANCODE_PAGEDOWN
 
-#elif defined(_WIN32) || defined(_WIN64) || defined(SDL_PLATFORM_WIN32) || defined(__CYGWIN__) || defined(__CYGWIN32__) || defined(__TOS_WIN__) || defined(SDL_PLATFORM_WINDOWS)
+#elif defined(_WIN32) || defined(_WIN64) || defined(__WIN32__) || defined(__CYGWIN__) || defined(__CYGWIN32__) || defined(__TOS_WIN__) || defined(__WINDOWS__)
 
 #include <windows.h>
 
@@ -315,7 +315,7 @@
 #define KEY_PAGEUP			XK_Prior
 #define KEY_PAGEDOWN		XK_Next
 
-#elif defined SDL_PLATFORM_APPLE
+#elif defined __APPLE__
 
 #ifndef MCENGINE_FEATURE_SDL
 
