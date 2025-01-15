@@ -5,6 +5,7 @@
 // $NoKeywords: $vk $os
 //===============================================================================//
 
+#pragma once
 #ifndef KEYBOARDKEYS_H
 #define KEYBOARDKEYS_H
 

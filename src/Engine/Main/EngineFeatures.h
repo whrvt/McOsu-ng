@@ -5,6 +5,7 @@
 // $NoKeywords: $feat
 //===============================================================================//
 
+#pragma once
 #ifndef ENGINEFEATURES_H
 #define ENGINEFEATURES_H
 

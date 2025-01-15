@@ -5,6 +5,7 @@
 // $NoKeywords: $gles2shader
 //===============================================================================//
 
+#pragma once
 #ifndef OPENGLES2SHADER_H
 #define OPENGLES2SHADER_H
 

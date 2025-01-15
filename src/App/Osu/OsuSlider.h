@@ -5,6 +5,7 @@
 // $NoKeywords: $slider
 //===============================================================================//
 
+#pragma once
 #ifndef OSUSLIDER_H
 #define OSUSLIDER_H
 

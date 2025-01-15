@@ -5,6 +5,7 @@
 // $NoKeywords: $
 //===============================================================================//
 
+#pragma once
 #ifndef CBASEUIIMAGE_H
 #define CBASEUIIMAGE_H
 

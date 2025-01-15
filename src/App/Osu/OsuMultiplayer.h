@@ -5,6 +5,7 @@
 // $NoKeywords: $osump
 //===============================================================================//
 
+#pragma once
 #ifndef OSUMULTIPLAYER_H
 #define OSUMULTIPLAYER_H
 

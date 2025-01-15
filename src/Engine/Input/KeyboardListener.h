@@ -5,6 +5,7 @@
 // $NoKeywords: $key
 //===============================================================================//
 
+#pragma once
 #ifndef KEYBOARDLISTENER_H
 #define KEYBOARDLISTENER_H
 

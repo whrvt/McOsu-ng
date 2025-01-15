@@ -5,6 +5,7 @@
 // $NoKeywords: $vao
 //===============================================================================//
 
+#pragma once
 #ifndef VERTEXARRAYOBJECT_H
 #define VERTEXARRAYOBJECT_H
 

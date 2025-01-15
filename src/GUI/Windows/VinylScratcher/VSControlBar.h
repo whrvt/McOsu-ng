@@ -5,6 +5,7 @@
 // $NoKeywords: $
 //===============================================================================//
 
+#pragma once
 #ifndef VSCONTROLBAR_H
 #define VSCONTROLBAR_H
 

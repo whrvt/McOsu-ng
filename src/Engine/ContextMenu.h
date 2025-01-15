@@ -7,6 +7,7 @@
 
 // TODO: DEPRECATED
 
+#pragma once
 #ifndef CONTEXTMENU_H
 #define CONTEXTMENU_H
 

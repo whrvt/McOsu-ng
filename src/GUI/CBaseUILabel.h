@@ -5,6 +5,7 @@
 // $NoKeywords: $
 //===============================================================================//
 
+#pragma once
 #ifndef CBASEUILABEL_H
 #define CBASEUILABEL_H
 

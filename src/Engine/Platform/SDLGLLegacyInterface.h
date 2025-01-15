@@ -5,6 +5,7 @@
 // $NoKeywords: $sdlgli
 //===============================================================================//
 
+#pragma once
 #ifndef SDLGLLEGACYINTERFACE_H
 #define SDLGLLEGACYINTERFACE_H
 

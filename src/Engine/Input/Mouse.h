@@ -5,6 +5,7 @@
 // $NoKeywords: $mouse
 //===============================================================================//
 
+#pragma once
 #ifndef MOUSE_H
 #define MOUSE_H
 

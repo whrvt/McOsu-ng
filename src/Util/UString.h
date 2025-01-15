@@ -5,6 +5,7 @@
 // $NoKeywords: $ustring $string
 //====================================================================================//
 
+#pragma once
 #ifndef USTRING_H
 #define USTRING_H
 

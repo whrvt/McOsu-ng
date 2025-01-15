@@ -5,6 +5,7 @@
 // $NoKeywords: $osuvrsl
 //===============================================================================//
 
+#pragma once
 #ifndef OSUVRUISLIDER_H
 #define OSUVRUISLIDER_H
 

@@ -5,6 +5,7 @@
 // $NoKeywords: $vprof
 //===============================================================================//
 
+#pragma once
 #ifndef VISUALPROFILER_H
 #define VISUALPROFILER_H
 

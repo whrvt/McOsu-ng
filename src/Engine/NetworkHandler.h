@@ -5,6 +5,7 @@
 // $NoKeywords: $nw
 //===============================================================================//
 
+#pragma once
 #ifndef NETWORKHANDLER_H
 #define NETWORKHANDLER_H
 

@@ -7,6 +7,7 @@
 
 #ifdef __APPLE__
 
+#pragma once
 #ifndef MACOSGLLEGACYINTERFACE_H
 #define MACOSGLLEGACYINTERFACE_H
 

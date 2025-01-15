@@ -5,6 +5,7 @@
 // $NoKeywords: $osusl
 //===============================================================================//
 
+#pragma once
 #ifndef OSUUISLIDER_H
 #define OSUUISLIDER_H
 

@@ -8,6 +8,7 @@
 // TODO: fix vertical sliders
 // TODO: this entire class is a mess
 
+#pragma once
 #ifndef CBASEUISLIDER_H
 #define CBASEUISLIDER_H
 

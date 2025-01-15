@@ -7,6 +7,7 @@
 
 #ifdef __linux__
 
+#pragma once
 #ifndef LINUXTIMER_H
 #define LINUXTIMER_H
 

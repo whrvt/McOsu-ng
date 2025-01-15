@@ -5,6 +5,7 @@
 // $NoKeywords: $osuvr
 //===============================================================================//
 
+#pragma once
 #ifndef OSUVR_H
 #define OSUVR_H
 

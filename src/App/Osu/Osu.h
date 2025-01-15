@@ -7,6 +7,7 @@
 
 //#define MCOSU_FPOSU_4D_MODE_FINISHED
 
+#pragma once
 #ifndef OSU_H
 #define OSU_H
 

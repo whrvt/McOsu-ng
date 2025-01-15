@@ -5,6 +5,7 @@
 // $NoKeywords: $snd
 //===============================================================================//
 
+#pragma once
 #ifndef SOUNDENGINE_H
 #define SOUNDENGINE_H
 

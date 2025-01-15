@@ -5,6 +5,7 @@
 // $NoKeywords: $osusteamws
 //===============================================================================//
 
+#pragma once
 #ifndef OSUSTEAMWORKSHOP_H
 #define OSUSTEAMWORKSHOP_H
 

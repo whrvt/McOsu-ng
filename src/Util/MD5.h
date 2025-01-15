@@ -31,6 +31,7 @@ documentation and/or software.
 
 */
 
+#pragma once
 #ifndef BZF_MD5_H
 #define BZF_MD5_H
 

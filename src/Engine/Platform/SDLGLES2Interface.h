@@ -5,6 +5,7 @@
 // $NoKeywords: $nxgli
 //===============================================================================//
 
+#pragma once
 #ifndef SDLGLES2INTERFACE_H
 #define SDLGLES2INTERFACE_H
 

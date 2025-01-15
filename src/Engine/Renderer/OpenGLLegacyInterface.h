@@ -5,6 +5,7 @@
 // $NoKeywords: $lgli
 //===============================================================================//
 
+#pragma once
 #ifndef LEGACYOPENGLINTERFACE_H
 #define LEGACYOPENGLINTERFACE_H
 

@@ -5,6 +5,7 @@
 // $NoKeywords: $osusbil
 //===============================================================================//
 
+#pragma once
 #ifndef OSUUISONGBROWSERINFOLABEL_H
 #define OSUUISONGBROWSERINFOLABEL_H
 

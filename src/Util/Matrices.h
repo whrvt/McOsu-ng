@@ -16,6 +16,7 @@
 // Copyright (C) 2005 Song Ho Ahn
 ///////////////////////////////////////////////////////////////////////////////
 
+#pragma once
 #ifndef MATH_MATRICES_H
 #define MATH_MATRICES_H
 

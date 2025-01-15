@@ -5,6 +5,7 @@
 // $NoKeywords: $osukey
 //===============================================================================//
 
+#pragma once
 #ifndef OSUKEYBINDINGS_H
 #define OSUKEYBINDINGS_H
 

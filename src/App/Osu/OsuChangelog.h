@@ -5,6 +5,7 @@
 // $NoKeywords: $osulog
 //===============================================================================//
 
+#pragma once
 #ifndef OSUCHANGELOG_H
 #define OSUCHANGELOG_H
 

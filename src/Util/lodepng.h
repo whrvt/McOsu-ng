@@ -32,6 +32,7 @@ freely, subject to the following restrictions:
     distribution.
 */
 
+#pragma once
 #ifndef LODEPNG_H
 #define LODEPNG_H
 

@@ -5,6 +5,7 @@
  *      Author: Psy
  */
 
+#pragma once
 #ifndef GUI_CBASEUICONTAINERHORIZONTALBOX_H_
 #define GUI_CBASEUICONTAINERHORIZONTALBOX_H_
 

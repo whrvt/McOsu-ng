@@ -5,6 +5,7 @@
 // $NoKeywords: $
 //===============================================================================//
 
+#pragma once
 #ifndef CBASEUICHECKBOX_H
 #define CBASEUICHECKBOX_H
 

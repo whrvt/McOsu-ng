@@ -5,6 +5,7 @@
 // $NoKeywords: $osursil
 //===============================================================================//
 
+#pragma once
 #ifndef OSUUIRANKINGSCREENINFOLABEL_H
 #define OSUUIRANKINGSCREENINFOLABEL_H
 

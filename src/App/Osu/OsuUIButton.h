@@ -5,6 +5,7 @@
 // $NoKeywords: $osubt
 //===============================================================================//
 
+#pragma once
 #ifndef OSUBUTTON_H
 #define OSUBUTTON_H
 

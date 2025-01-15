@@ -5,6 +5,7 @@
 // $NoKeywords: $osucb
 //===============================================================================//
 
+#pragma once
 #ifndef OSUUICHECKBOX_H
 #define OSUUICHECKBOX_H
 

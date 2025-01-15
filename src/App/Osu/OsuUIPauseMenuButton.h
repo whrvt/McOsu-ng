@@ -5,6 +5,7 @@
 // $NoKeywords: $
 //===============================================================================//
 
+#pragma once
 #ifndef OSUUIPAUSEMENUBUTTON_H
 #define OSUUIPAUSEMENUBUTTON_H
 

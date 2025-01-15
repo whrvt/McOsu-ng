@@ -5,6 +5,7 @@
 // $NoKeywords: $swi
 //===============================================================================//
 
+#pragma once
 #ifndef SWGRAPHICSINTERFACE_H
 #define SWGRAPHICSINTERFACE_H
 

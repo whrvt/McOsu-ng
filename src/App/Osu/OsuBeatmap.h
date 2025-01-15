@@ -5,6 +5,7 @@
 // $NoKeywords: $osubm
 //===============================================================================//
 
+#pragma once
 #ifndef OSUBEATMAP_H
 #define OSUBEATMAP_H
 

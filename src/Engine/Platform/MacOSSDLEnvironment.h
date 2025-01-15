@@ -7,6 +7,7 @@
 
 #ifdef __APPLE__
 
+#pragma once
 #ifndef MACOSSDLENVIRONMENT_H
 #define MACOSSDLENVIRONMENT_H
 

@@ -5,6 +5,7 @@
 // $NoKeywords: $osutt
 //===============================================================================//
 
+#pragma once
 #ifndef OSUTOOLTIPOVERLAY_H
 #define OSUTOOLTIPOVERLAY_H
 

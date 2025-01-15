@@ -5,6 +5,7 @@
 // $NoKeywords: $vs
 //===============================================================================//
 
+#pragma once
 #ifndef VINYLSCRATCHER_H
 #define VINYLSCRATCHER_H
 

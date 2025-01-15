@@ -5,6 +5,7 @@
 // $NoKeywords: $rt
 //===============================================================================//
 
+#pragma once
 #ifndef RENDERTARGET_H
 #define RENDERTARGET_H
 

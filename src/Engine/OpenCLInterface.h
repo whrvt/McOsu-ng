@@ -5,6 +5,7 @@
 // $NoKeywords: $ocl
 //===============================================================================//
 
+#pragma once
 #ifndef OPENCLINTERFACE_H
 #define OPENCLINTERFACE_H
 

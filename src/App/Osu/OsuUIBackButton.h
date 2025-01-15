@@ -5,6 +5,7 @@
 // $NoKeywords: $osubbt
 //===============================================================================//
 
+#pragma once
 #ifndef OSUUIBACKBUTTON_H
 #define OSUUIBACKBUTTON_H
 
