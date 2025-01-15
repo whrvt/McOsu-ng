@@ -9,7 +9,7 @@
 #define OPENGLHEADERS_H
 
 // required on windows due to missing APIENTRY typedefs
-#if defined(_WIN32) || defined(_WIN64) || defined(SDL_PLATFORM_WIN32) || defined(__CYGWIN__) || defined(__CYGWIN32__) || defined(__TOS_WIN__) || defined(SDL_PLATFORM_WINDOWS)
+#if defined(_WIN32) || defined(_WIN64) || defined(__WIN32__) || defined(__CYGWIN__) || defined(__CYGWIN32__) || defined(__TOS_WIN__) || defined(__WINDOWS__)
 
 #include <windows.h>
 
@@ -37,7 +37,7 @@
 
 #endif
 
-#ifdef SDL_PLATFORM_APPLE
+#ifdef __APPLE__
 
 #define GLEW_STATIC
 #include <glew.h>

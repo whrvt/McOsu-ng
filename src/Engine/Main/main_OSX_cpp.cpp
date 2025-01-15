@@ -5,7 +5,7 @@
 // $NoKeywords: $macwrp
 //===============================================================================//
 
-#ifdef SDL_PLATFORM_APPLE
+#ifdef __APPLE__
 
 #include "main_OSX_cpp.h"
 

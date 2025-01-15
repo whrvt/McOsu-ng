@@ -10,7 +10,7 @@
 
 #include "Gamepad.h"
 
-#if defined(_WIN32) || defined(_WIN64) || defined(SDL_PLATFORM_WIN32) || defined(__CYGWIN__) || defined(__CYGWIN32__) || defined(__TOS_WIN__) || defined(SDL_PLATFORM_WINDOWS)
+#if defined(_WIN32) || defined(_WIN64) || defined(__WIN32__) || defined(__CYGWIN__) || defined(__CYGWIN32__) || defined(__TOS_WIN__) || defined(__WINDOWS__)
 #ifdef MCENGINE_FEATURE_GAMEPAD
 
 #include <xinput.h>
@@ -44,7 +44,7 @@ private:
 	void updateButtonStates();
 	void checkHandleButtonChangeEvents(bool &previous, bool current, GAMEPADBUTTON b);
 
-#if defined(_WIN32) || defined(_WIN64) || defined(SDL_PLATFORM_WIN32) || defined(__CYGWIN__) || defined(__CYGWIN32__) || defined(__TOS_WIN__) || defined(SDL_PLATFORM_WINDOWS)
+#if defined(_WIN32) || defined(_WIN64) || defined(__WIN32__) || defined(__CYGWIN__) || defined(__CYGWIN32__) || defined(__TOS_WIN__) || defined(__WINDOWS__)
 #ifdef MCENGINE_FEATURE_GAMEPAD
 
 	XINPUT_STATE m_state;

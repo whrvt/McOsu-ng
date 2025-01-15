@@ -34,7 +34,7 @@ XInputGamepad::XInputGamepad() : Gamepad()
 
 void XInputGamepad::update()
 {
-#if defined(_WIN32) || defined(_WIN64) || defined(SDL_PLATFORM_WIN32) || defined(__CYGWIN__) || defined(__CYGWIN32__) || defined(__TOS_WIN__) || defined(SDL_PLATFORM_WINDOWS)
+#if defined(_WIN32) || defined(_WIN64) || defined(__WIN32__) || defined(__CYGWIN__) || defined(__CYGWIN32__) || defined(__TOS_WIN__) || defined(__WINDOWS__)
 #ifdef MCENGINE_FEATURE_GAMEPAD
 
 	if (!isConnected())
@@ -96,7 +96,7 @@ void XInputGamepad::update()
 
 void XInputGamepad::setVibration(float leftMotorSpeedPercent, float rightMotorSpeedPercent)
 {
-#if defined(_WIN32) || defined(_WIN64) || defined(SDL_PLATFORM_WIN32) || defined(__CYGWIN__) || defined(__CYGWIN32__) || defined(__TOS_WIN__) || defined(SDL_PLATFORM_WINDOWS)
+#if defined(_WIN32) || defined(_WIN64) || defined(__WIN32__) || defined(__CYGWIN__) || defined(__CYGWIN32__) || defined(__TOS_WIN__) || defined(__WINDOWS__)
 #ifdef MCENGINE_FEATURE_GAMEPAD
 
 	if (m_iPort != -1)
@@ -116,7 +116,7 @@ void XInputGamepad::setVibration(float leftMotorSpeedPercent, float rightMotorSp
 
 void XInputGamepad::updateConnection()
 {
-#if defined(_WIN32) || defined(_WIN64) || defined(SDL_PLATFORM_WIN32) || defined(__CYGWIN__) || defined(__CYGWIN32__) || defined(__TOS_WIN__) || defined(SDL_PLATFORM_WINDOWS)
+#if defined(_WIN32) || defined(_WIN64) || defined(__WIN32__) || defined(__CYGWIN__) || defined(__CYGWIN32__) || defined(__TOS_WIN__) || defined(__WINDOWS__)
 #ifdef MCENGINE_FEATURE_GAMEPAD
 
 	int controllerId = -1;
@@ -145,7 +145,7 @@ void XInputGamepad::updateConnection()
 
 void XInputGamepad::updateButtonStates()
 {
-#if defined(_WIN32) || defined(_WIN64) || defined(SDL_PLATFORM_WIN32) || defined(__CYGWIN__) || defined(__CYGWIN32__) || defined(__TOS_WIN__) || defined(SDL_PLATFORM_WINDOWS)
+#if defined(_WIN32) || defined(_WIN64) || defined(__WIN32__) || defined(__CYGWIN__) || defined(__CYGWIN32__) || defined(__TOS_WIN__) || defined(__WINDOWS__)
 #ifdef MCENGINE_FEATURE_GAMEPAD
 
 	const bool dpadUpPressed = (m_state.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_UP) != 0;
@@ -196,7 +196,7 @@ void XInputGamepad::checkHandleButtonChangeEvents(bool &previous, bool current, 
 
 bool XInputGamepad::isButtonPressed(GAMEPADBUTTON button)
 {
-#if defined(_WIN32) || defined(_WIN64) || defined(SDL_PLATFORM_WIN32) || defined(__CYGWIN__) || defined(__CYGWIN32__) || defined(__TOS_WIN__) || defined(SDL_PLATFORM_WINDOWS)
+#if defined(_WIN32) || defined(_WIN64) || defined(__WIN32__) || defined(__CYGWIN__) || defined(__CYGWIN32__) || defined(__TOS_WIN__) || defined(__WINDOWS__)
 #ifdef MCENGINE_FEATURE_GAMEPAD
 
 	switch (button)

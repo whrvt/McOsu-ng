@@ -5,7 +5,7 @@
 // $NoKeywords: $macsdlenv
 //===============================================================================//
 
-#ifdef SDL_PLATFORM_APPLE
+#ifdef __APPLE__
 
 #ifndef MACOSSDLENVIRONMENT_H
 #define MACOSSDLENVIRONMENT_H
