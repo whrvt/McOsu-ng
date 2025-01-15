@@ -29,7 +29,7 @@ Environment::OS LinuxSDLEnvironment::getOS()
 
 void LinuxSDLEnvironment::sleep(unsigned int us)
 {
-	usleep(us);
+	!!us ? SDL_DelayPrecise(us*1000) : SDL_Delay(0);
 }
 
 void LinuxSDLEnvironment::openURLInDefaultBrowser(UString url)

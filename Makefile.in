@@ -222,6 +222,7 @@ am_McOsu_OBJECTS = src/App/Osu/McOsu-Osu.$(OBJEXT) \
 	src/Engine/Platform/McOsu-SDLEnvironment.$(OBJEXT) \
 	src/Engine/Platform/McOsu-SDLGLES2Interface.$(OBJEXT) \
 	src/Engine/Platform/McOsu-SDLGLLegacyInterface.$(OBJEXT) \
+	src/Engine/Platform/McOsu-SDLTimer.$(OBJEXT) \
 	src/Engine/Platform/McOsu-Thread.$(OBJEXT) \
 	src/Engine/Platform/McOsu-Timer.$(OBJEXT) \
 	src/Engine/Platform/McOsu-WinContextMenu.$(OBJEXT) \
@@ -445,6 +446,7 @@ am__depfiles_remade = src/App/Osu/$(DEPDIR)/McOsu-Osu.Po \
 	src/Engine/Platform/$(DEPDIR)/McOsu-SDLEnvironment.Po \
 	src/Engine/Platform/$(DEPDIR)/McOsu-SDLGLES2Interface.Po \
 	src/Engine/Platform/$(DEPDIR)/McOsu-SDLGLLegacyInterface.Po \
+	src/Engine/Platform/$(DEPDIR)/McOsu-SDLTimer.Po \
 	src/Engine/Platform/$(DEPDIR)/McOsu-Thread.Po \
 	src/Engine/Platform/$(DEPDIR)/McOsu-Timer.Po \
 	src/Engine/Platform/$(DEPDIR)/McOsu-WinContextMenu.Po \
@@ -844,6 +846,7 @@ McOsu_SOURCES = \
 	src/Engine/Platform/SDLEnvironment.cpp\
 	src/Engine/Platform/SDLGLES2Interface.cpp\
 	src/Engine/Platform/SDLGLLegacyInterface.cpp\
+	src/Engine/Platform/SDLTimer.cpp\
 	src/Engine/Platform/Thread.cpp\
 	src/Engine/Platform/Timer.cpp\
 	src/Engine/Platform/WinContextMenu.cpp\
@@ -1405,6 +1408,9 @@ src/Engine/Platform/McOsu-SDLGLES2Interface.$(OBJEXT):  \
 src/Engine/Platform/McOsu-SDLGLLegacyInterface.$(OBJEXT):  \
 	src/Engine/Platform/$(am__dirstamp) \
 	src/Engine/Platform/$(DEPDIR)/$(am__dirstamp)
+src/Engine/Platform/McOsu-SDLTimer.$(OBJEXT):  \
+	src/Engine/Platform/$(am__dirstamp) \
+	src/Engine/Platform/$(DEPDIR)/$(am__dirstamp)
 src/Engine/Platform/McOsu-Thread.$(OBJEXT):  \
 	src/Engine/Platform/$(am__dirstamp) \
 	src/Engine/Platform/$(DEPDIR)/$(am__dirstamp)
@@ -1789,6 +1795,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu-SDLEnvironment.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu-SDLGLES2Interface.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu-SDLGLLegacyInterface.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu-SDLTimer.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu-Thread.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu-Timer.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu-WinContextMenu.Po@am__quote@ # am--include-marker
@@ -3491,6 +3498,20 @@ src/Engine/Platform/McOsu-SDLGLLegacyInterface.obj: src/Engine/Platform/SDLGLLeg
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(McOsu_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Platform/McOsu-SDLGLLegacyInterface.obj `if test -f 'src/Engine/Platform/SDLGLLegacyInterface.cpp'; then $(CYGPATH_W) 'src/Engine/Platform/SDLGLLegacyInterface.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Platform/SDLGLLegacyInterface.cpp'; fi`
 
+src/Engine/Platform/McOsu-SDLTimer.o: src/Engine/Platform/SDLTimer.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(McOsu_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Platform/McOsu-SDLTimer.o -MD -MP -MF src/Engine/Platform/$(DEPDIR)/McOsu-SDLTimer.Tpo -c -o src/Engine/Platform/McOsu-SDLTimer.o `test -f 'src/Engine/Platform/SDLTimer.cpp' || echo '$(srcdir)/'`src/Engine/Platform/SDLTimer.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Platform/$(DEPDIR)/McOsu-SDLTimer.Tpo src/Engine/Platform/$(DEPDIR)/McOsu-SDLTimer.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Platform/SDLTimer.cpp' object='src/Engine/Platform/McOsu-SDLTimer.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(McOsu_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Platform/McOsu-SDLTimer.o `test -f 'src/Engine/Platform/SDLTimer.cpp' || echo '$(srcdir)/'`src/Engine/Platform/SDLTimer.cpp
+
+src/Engine/Platform/McOsu-SDLTimer.obj: src/Engine/Platform/SDLTimer.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(McOsu_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Platform/McOsu-SDLTimer.obj -MD -MP -MF src/Engine/Platform/$(DEPDIR)/McOsu-SDLTimer.Tpo -c -o src/Engine/Platform/McOsu-SDLTimer.obj `if test -f 'src/Engine/Platform/SDLTimer.cpp'; then $(CYGPATH_W) 'src/Engine/Platform/SDLTimer.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Platform/SDLTimer.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Platform/$(DEPDIR)/McOsu-SDLTimer.Tpo src/Engine/Platform/$(DEPDIR)/McOsu-SDLTimer.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Platform/SDLTimer.cpp' object='src/Engine/Platform/McOsu-SDLTimer.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(McOsu_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Platform/McOsu-SDLTimer.obj `if test -f 'src/Engine/Platform/SDLTimer.cpp'; then $(CYGPATH_W) 'src/Engine/Platform/SDLTimer.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Platform/SDLTimer.cpp'; fi`
+
 src/Engine/Platform/McOsu-Thread.o: src/Engine/Platform/Thread.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(McOsu_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Platform/McOsu-Thread.o -MD -MP -MF src/Engine/Platform/$(DEPDIR)/McOsu-Thread.Tpo -c -o src/Engine/Platform/McOsu-Thread.o `test -f 'src/Engine/Platform/Thread.cpp' || echo '$(srcdir)/'`src/Engine/Platform/Thread.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Platform/$(DEPDIR)/McOsu-Thread.Tpo src/Engine/Platform/$(DEPDIR)/McOsu-Thread.Po
@@ -5038,6 +5059,7 @@ distclean: distclean-am
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu-SDLEnvironment.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu-SDLGLES2Interface.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu-SDLGLLegacyInterface.Po
+	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu-SDLTimer.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu-Thread.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu-Timer.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu-WinContextMenu.Po
@@ -5281,6 +5303,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu-SDLEnvironment.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu-SDLGLES2Interface.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu-SDLGLLegacyInterface.Po
+	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu-SDLTimer.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu-Thread.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu-Timer.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu-WinContextMenu.Po

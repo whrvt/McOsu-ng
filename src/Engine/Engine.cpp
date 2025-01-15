@@ -46,11 +46,6 @@
 //********************//
 
 #include "Osu.h"
-//#include "GUICoherenceMode.h"
-//#include "Asteroids.h"
-//#include "FrameworkTest.h"
-
-
 
 class EngineLoadingScreenApp : public App
 {
@@ -328,14 +323,6 @@ void Engine::loadApp()
 		//*****************//
 
 		m_app = new Osu();
-
-		//m_app = new GUICoherenceMode();
-
-		//m_app = new Asteroids();
-
-		//m_app = new FrameworkTest();
-
-
 
 		// start listening to the default keyboard input
 		if (m_app != NULL)

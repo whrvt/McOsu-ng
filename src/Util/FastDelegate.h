@@ -46,7 +46,6 @@
 //                * More optimal assignment,== and != operators for static function pointers.
 
 #pragma once
-#pragma once
 #ifndef FASTDELEGATE_H
 #define FASTDELEGATE_H
 

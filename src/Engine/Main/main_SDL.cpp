@@ -862,36 +862,28 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 
 			frameTimer->update();
 			const bool inBackground = g_bMinimized || !g_bHasFocus;
-			if ((!fps_unlimited.getBool() && fps_max.getInt() > 0) || inBackground)
+            const bool shouldSleep = (!fps_unlimited.getBool() && fps_max.getFloat() > 0) || inBackground;
+            const bool shouldYield = fps_unlimited_yield.getBool() || fps_max_yield.getBool();
+
+			// limit
+			if (shouldSleep)
 			{
-				double delayStart = frameTimer->getElapsedTime();
-				double delayTime;
-				if (inBackground)
-					delayTime = (1.0 / (double)fps_max_background.getFloat()) - frameTimer->getDelta();
-				else
-					delayTime = (1.0 / (double)fps_max.getFloat()) - frameTimer->getDelta();
+				const float targetFps = inBackground ? fps_max_background.getFloat() : fps_max.getFloat();
 
-				const bool didSleep = delayTime > 0.0;
-				while (delayTime > 0.0)
+				// calculate target frame time, remove a bit of scheduling delay
+				const uint64_t targetFrameTimeNs = (static_cast<uint64_t>((1.0 / targetFps) * SDL_NS_PER_SECOND)) * 0.95;
+				const uint64_t elapsedFrameTimeNs = static_cast<uint64_t>(frameTimer->getDelta() * SDL_NS_PER_SECOND);
+
+				// only sleep if we're ahead of schedule
+				if (elapsedFrameTimeNs < targetFrameTimeNs)
 				{
-					if (inBackground) // real waiting (very inaccurate, but very good for little background cpu utilization)
-						env->sleep((int)((1.0f / fps_max_background.getFloat())*1000.0f*1000.0f));
-					else // more or less "busy" waiting, but giving away the rest of the timeslice at least
-						env->sleep(0); // yes, there is a zero in there
-
-					// decrease the delayTime by the time we spent in this loop
-					// if the loop is executed more than once, note how delayStart now gets the value of the previous iteration from getElapsedTime()
-					// this works because the elapsed time is only updated in update(). now we can easily calculate the time the Sleep() took and subtract it from the delayTime
-					delayStart = frameTimer->getElapsedTime();
-					frameTimer->update();
-					delayTime -= (frameTimer->getElapsedTime() - delayStart);
+					const uint64_t sleepTimeNs = targetFrameTimeNs - elapsedFrameTimeNs;
+					env->sleep(static_cast<unsigned int>(sleepTimeNs / SDL_NS_PER_US));
 				}
-
-				if (!didSleep && fps_max_yield.getBool())
-					env->sleep(0); // yes, there is a zero in there
 			}
-			else if (fps_unlimited_yield.getBool())
-				env->sleep(0); // yes, there is a zero in there
+			if (shouldYield) env->sleep(0);
+ 			// always update timer if we slept/yielded to capture time in wait
+			if (shouldYield || shouldSleep) frameTimer->update();
 		}
 	}
 
@@ -899,7 +891,7 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 	SAFE_DELETE(frameTimer);
 	SAFE_DELETE(deltaTimer);
 
-    // release engine
+	// release engine
     SAFE_DELETE(g_engine);
 
     // and the opengl context

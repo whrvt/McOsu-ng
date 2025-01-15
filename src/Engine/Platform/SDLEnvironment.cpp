@@ -99,7 +99,7 @@ void SDLEnvironment::restart()
 
 void SDLEnvironment::sleep(unsigned int us)
 {
-	SDL_Delay(us/1000);
+	!!us ? SDL_DelayPrecise(us*1000) : SDL_Delay(0);
 }
 
 UString SDLEnvironment::getExecutablePath()
@@ -446,9 +446,9 @@ void SDLEnvironment::setCursorClip(bool clip, McRect rect)
 		SDL_CaptureMouse(true);
 		const SDL_Rect clipRect{(int)0, (int)0, (int)engine->getScreenWidth(), (int)engine->getScreenHeight()};
 		SDL_SetWindowMouseRect(m_window, &clipRect);
-		SDL_SetHint(SDL_HINT_MOUSE_RELATIVE_WARP_MOTION, "1");
 		//SDL_SetWindowMouseGrab(m_window, true); // FIXME: sdl2->sdl3 wtf why does moving the mouse stop generating SDL_EVENT_MOUSE_MOTION when grabbed?
-
+		// HACK: sdl2->sdl3 don't listen for text input when in play mode (putting it here for now to reuse "in-gameplay" logic)
+		SDL_StopTextInput(m_window);
 		// TODO: custom rect (only fullscreen works atm)
 	}
 	else
@@ -456,10 +456,8 @@ void SDLEnvironment::setCursorClip(bool clip, McRect rect)
 		// SDL_SetWindowMouseGrab(m_window, false);
 		SDL_CaptureMouse(false);
 		SDL_SetWindowMouseRect(m_window, NULL);
-		SDL_SetHint(SDL_HINT_MOUSE_RELATIVE_WARP_MOTION, "0");
+		SDL_StartTextInput(m_window);
 	}
-
-	SDL_SetWindowKeyboardGrab(m_window, clip ? true : false);
 }
 
 UString SDLEnvironment::keyCodeToString(KEYCODE keyCode)
