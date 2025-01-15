@@ -98,11 +98,15 @@ AS_IF([test "x$CCACHE" = "xccache"], [
 AS_IF([test "x$enable_bfd" != "xyes"], [
     AC_CHECK_PROG([MOLD], [mold], [mold])
     AS_IF([test "x$MOLD" = "xmold"], [
-        LDFLAGS="$LDFLAGS -fuse-ld=mold"
+        AX_CHECK_LINK_FLAG([-fuse-ld=mold], [
+            LDFLAGS="$LDFLAGS -fuse-ld=mold"
+        ])
     ], [
         AC_CHECK_PROG([LLD], [lld], [lld])
         AS_IF([test "x$lld" = "xlld"], [
-            LDFLAGS="$LDFLAGS -fuse-ld=lld"
+            AX_CHECK_LINK_FLAG([-fuse-ld=lld], [
+                LDFLAGS="$LDFLAGS -fuse-ld=lld"
+            ])
         ])
     ])
 ])
@@ -135,7 +139,7 @@ AS_IF([test "x$enable_debug" = "xyes"], [
 ])
 
 WARN_FLAGS="-Wall -Wno-sign-compare -Wno-unused-local-typedefs -Wno-switch"
-COMMON_FLAGS="-ffunction-sections -fdata-sections -fwrapv -fno-strict-aliasing -fno-semantic-interposition -fmessage-length=0"
+COMMON_FLAGS="-fno-plt -ffunction-sections -fdata-sections -fwrapv -fno-strict-aliasing -fno-semantic-interposition -fmessage-length=0"
 CXXFLAGS="$CXXFLAGS $WARN_FLAGS $COMMON_FLAGS -Wno-reorder"
 CFLAGS="$CFLAGS $WARN_FLAGS $COMMON_FLAGS"
 LDFLAGS="$LDFLAGS -static-libstdc++ -static-libgcc"

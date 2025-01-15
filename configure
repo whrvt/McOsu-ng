@@ -8307,7 +8307,50 @@ fi
     if test "x$MOLD" = "xmold"
 then :
 
-        LDFLAGS="$LDFLAGS -fuse-ld=mold"
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether the linker accepts -fuse-ld=mold" >&5
+printf %s "checking whether the linker accepts -fuse-ld=mold... " >&6; }
+if test ${ax_cv_check_ldflags___fuse_ld_mold+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e)
+  ax_check_save_flags=$LDFLAGS
+  LDFLAGS="$LDFLAGS  -fuse-ld=mold"
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main (void)
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+  ax_cv_check_ldflags___fuse_ld_mold=yes
+else case e in #(
+  e) ax_cv_check_ldflags___fuse_ld_mold=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+  LDFLAGS=$ax_check_save_flags ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ax_cv_check_ldflags___fuse_ld_mold" >&5
+printf "%s\n" "$ax_cv_check_ldflags___fuse_ld_mold" >&6; }
+if test "x$ax_cv_check_ldflags___fuse_ld_mold" = xyes
+then :
+
+            LDFLAGS="$LDFLAGS -fuse-ld=mold"
+
+else case e in #(
+  e) : ;;
+esac
+fi
+
 
 else case e in #(
   e)
@@ -8357,7 +8400,50 @@ fi
         if test "x$lld" = "xlld"
 then :
 
-            LDFLAGS="$LDFLAGS -fuse-ld=lld"
+            { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether the linker accepts -fuse-ld=lld" >&5
+printf %s "checking whether the linker accepts -fuse-ld=lld... " >&6; }
+if test ${ax_cv_check_ldflags___fuse_ld_lld+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e)
+  ax_check_save_flags=$LDFLAGS
+  LDFLAGS="$LDFLAGS  -fuse-ld=lld"
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main (void)
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+  ax_cv_check_ldflags___fuse_ld_lld=yes
+else case e in #(
+  e) ax_cv_check_ldflags___fuse_ld_lld=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+  LDFLAGS=$ax_check_save_flags ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ax_cv_check_ldflags___fuse_ld_lld" >&5
+printf "%s\n" "$ax_cv_check_ldflags___fuse_ld_lld" >&6; }
+if test "x$ax_cv_check_ldflags___fuse_ld_lld" = xyes
+then :
+
+                LDFLAGS="$LDFLAGS -fuse-ld=lld"
+
+else case e in #(
+  e) : ;;
+esac
+fi
+
 
 fi
      ;;
@@ -8493,7 +8579,7 @@ esac
 fi
 
 WARN_FLAGS="-Wall -Wno-sign-compare -Wno-unused-local-typedefs -Wno-switch"
-COMMON_FLAGS="-ffunction-sections -fdata-sections -fwrapv -fno-strict-aliasing -fno-semantic-interposition -fmessage-length=0"
+COMMON_FLAGS="-fno-plt -ffunction-sections -fdata-sections -fwrapv -fno-strict-aliasing -fno-semantic-interposition -fmessage-length=0"
 CXXFLAGS="$CXXFLAGS $WARN_FLAGS $COMMON_FLAGS -Wno-reorder"
 CFLAGS="$CFLAGS $WARN_FLAGS $COMMON_FLAGS"
 LDFLAGS="$LDFLAGS -static-libstdc++ -static-libgcc"

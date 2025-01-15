@@ -4,7 +4,7 @@ A small cross-platform engine/framework/sandbox for drawing stuff to a window wi
 ## Building
 
 ### Linux
-After installing dependencies, just run `./configure && make -j$(nproc) && make install`, which will put the build output in `dist` by default. Read `./configure --help` for some configurable options.
+After installing dependencies, just run `./configure && make -j$(nproc) && make install`, which will put the build output in `dist` by default. The build system also supports standard out-of-tree builds, useful for development to avoid polluting the main source directory. Check out [autogen.sh](autogen.sh) for advice. You could also look at `./configure --help` for some configurable build-time options.
 
 You'll need to get the assets from the Steam version of McOsu -- an easy way to do that is to just overwrite your Steam installation: `cp -r dist/bin/* <path-to-steam-mcosu>/`
 
@@ -12,9 +12,9 @@ Required system dependencies:
 
 `libX11 libXi libGL libGLU libEGL libjpeg libz`
 
-Current list of deps which can system or built from source (`./configure --disable-system-deps` or if missing):
+Current list of deps which can either come from the system, or be built from source (e.g. `./configure --disable-system-deps`, or if missing on host):
 
-`sdl2 GLEW freetype2`
+`sdl3 GLEW freetype2`
 
 Ubuntu example:
 
