@@ -175,8 +175,6 @@ private:
 	void drawScrubbingTimeline(Graphics *g, unsigned long beatmapTime, unsigned long beatmapLength, unsigned long beatmapLengthPlayable, unsigned long beatmapStartTimePlayable, float beatmapPercentFinishedPlayable, const std::vector<BREAK> &breaks);
 	void drawInputOverlay(Graphics *g, int numK1, int numK2, int numM1, int numM2);
 
-	void drawStatisticText(Graphics *g, const UString text);
-
 	float getCursorScaleFactor();
 	float getCursorTrailScaleFactor();
 

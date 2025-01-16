@@ -2654,140 +2654,130 @@ void OsuHUD::drawProgressBarVR(Graphics *g, Matrix4 &mvp, OsuVR *vr, float perce
 	}
 }
 
-void OsuHUD::drawStatistics(Graphics *g, int misses, int sliderbreaks, int maxPossibleCombo, float liveStars,  float totalStars, int bpm, float ar, float cs, float od, float hp, int nps, int nd, int ur, float pp, float ppfc, float hitWindow300, int hitdeltaMin, int hitdeltaMax)
+void OsuHUD::drawStatistics(Graphics *g, int misses, int sliderbreaks, int maxPossibleCombo, float liveStars, float totalStars, int bpm, float ar, float cs, float od, float hp, int nps, int nd, int ur, float pp, float ppfc, float hitWindow300, int hitdeltaMin, int hitdeltaMax)
 {
-	g->pushTransform();
-	{
-		const float offsetScale = Osu::getImageScale(m_osu, Vector2(1.0f, 1.0f), 1.0f);
+    McFont *font = m_osu->getTitleFont();
+    const float offsetScale = Osu::getImageScale(m_osu, Vector2(1.0f, 1.0f), 1.0f);
+    const float scale = osu_hud_statistics_scale.getFloat() * osu_hud_scale.getFloat();
+    const float yDelta = (font->getHeight() + 10) * osu_hud_statistics_spacing_scale.getFloat();
 
-		g->scale(osu_hud_statistics_scale.getFloat()*osu_hud_scale.getFloat(), osu_hud_statistics_scale.getFloat()*osu_hud_scale.getFloat());
-		g->translate(osu_hud_statistics_offset_x.getInt()/* * offsetScale*/, (int)((m_osu->getTitleFont()->getHeight())*osu_hud_scale.getFloat()*osu_hud_statistics_scale.getFloat()) + (osu_hud_statistics_offset_y.getInt() * offsetScale));
+	const Color shadowColor = COLOR(0, 0, 0, 255);
+	const Color textColor = COLOR(255, 255, 255, 255);
 
-		const int yDelta = (int)((m_osu->getTitleFont()->getHeight() + 10)*osu_hud_scale.getFloat()*osu_hud_statistics_scale.getFloat()*osu_hud_statistics_spacing_scale.getFloat());
-		if (osu_draw_statistics_pp.getBool())
-		{
-			g->translate(osu_hud_statistics_pp_offset_x.getInt(), osu_hud_statistics_pp_offset_y.getInt());
-			drawStatisticText(g, (osu_hud_statistics_pp_decimal_places.getInt() < 1 ? UString::format("%ipp", (int)std::round(pp)) : (osu_hud_statistics_pp_decimal_places.getInt() > 1 ? UString::format("%.2fpp", pp) : UString::format("%.1fpp", pp))));
-			g->translate(-osu_hud_statistics_pp_offset_x.getInt(), yDelta - osu_hud_statistics_pp_offset_y.getInt());
-		}
-		if (osu_draw_statistics_perfectpp.getBool())
-		{
-			g->translate(osu_hud_statistics_perfectpp_offset_x.getInt(), osu_hud_statistics_perfectpp_offset_y.getInt());
-			drawStatisticText(g, (osu_hud_statistics_pp_decimal_places.getInt() < 1 ? UString::format("SS: %ipp", (int)std::round(ppfc)) : (osu_hud_statistics_pp_decimal_places.getInt() > 1 ? UString::format("SS: %.2fpp", ppfc) : UString::format("SS: %.1fpp", ppfc))));
-			g->translate(-osu_hud_statistics_perfectpp_offset_x.getInt(), yDelta - osu_hud_statistics_perfectpp_offset_y.getInt());
-		}
-		if (osu_draw_statistics_misses.getBool())
-		{
-			g->translate(osu_hud_statistics_misses_offset_x.getInt(), osu_hud_statistics_misses_offset_y.getInt());
-			drawStatisticText(g, UString::format("Miss: %i", misses));
-			g->translate(-osu_hud_statistics_misses_offset_x.getInt(), yDelta - osu_hud_statistics_misses_offset_y.getInt());
-		}
-		if (osu_draw_statistics_sliderbreaks.getBool())
-		{
-			g->translate(osu_hud_statistics_sliderbreaks_offset_x.getInt(), osu_hud_statistics_sliderbreaks_offset_y.getInt());
-			drawStatisticText(g, UString::format("SBrk: %i", sliderbreaks));
-			g->translate(-osu_hud_statistics_sliderbreaks_offset_x.getInt(), yDelta - osu_hud_statistics_sliderbreaks_offset_y.getInt());
-		}
-		if (osu_draw_statistics_maxpossiblecombo.getBool())
-		{
-			g->translate(osu_hud_statistics_maxpossiblecombo_offset_x.getInt(), osu_hud_statistics_maxpossiblecombo_offset_y.getInt());
-			drawStatisticText(g, UString::format("FC: %ix", maxPossibleCombo));
-			g->translate(-osu_hud_statistics_maxpossiblecombo_offset_x.getInt(), yDelta - osu_hud_statistics_maxpossiblecombo_offset_y.getInt());
-		}
-		if (osu_draw_statistics_livestars.getBool())
-		{
-			g->translate(osu_hud_statistics_livestars_offset_x.getInt(), osu_hud_statistics_livestars_offset_y.getInt());
-			drawStatisticText(g, UString::format("%.3g***", liveStars));
-			g->translate(-osu_hud_statistics_livestars_offset_x.getInt(), yDelta - osu_hud_statistics_livestars_offset_y.getInt());
-		}
-		if (osu_draw_statistics_totalstars.getBool())
-		{
-			g->translate(osu_hud_statistics_totalstars_offset_x.getInt(), osu_hud_statistics_totalstars_offset_y.getInt());
-			drawStatisticText(g, UString::format("%.3g*", totalStars));
-			g->translate(-osu_hud_statistics_totalstars_offset_x.getInt(), yDelta - osu_hud_statistics_totalstars_offset_y.getInt());
-		}
-		if (osu_draw_statistics_bpm.getBool())
-		{
-			g->translate(osu_hud_statistics_bpm_offset_x.getInt(), osu_hud_statistics_bpm_offset_y.getInt());
-			drawStatisticText(g, UString::format("BPM: %i", bpm));
-			g->translate(-osu_hud_statistics_bpm_offset_x.getInt(), yDelta - osu_hud_statistics_bpm_offset_y.getInt());
-		}
-		if (osu_draw_statistics_ar.getBool())
-		{
-			ar = std::round(ar * 100.0f) / 100.0f;
-			g->translate(osu_hud_statistics_ar_offset_x.getInt(), osu_hud_statistics_ar_offset_y.getInt());
-			drawStatisticText(g, UString::format("AR: %g", ar));
-			g->translate(-osu_hud_statistics_ar_offset_x.getInt(), yDelta - osu_hud_statistics_ar_offset_y.getInt());
-		}
-		if (osu_draw_statistics_cs.getBool())
-		{
-			cs = std::round(cs * 100.0f) / 100.0f;
-			g->translate(osu_hud_statistics_cs_offset_x.getInt(), osu_hud_statistics_cs_offset_y.getInt());
-			drawStatisticText(g, UString::format("CS: %g", cs));
-			g->translate(-osu_hud_statistics_cs_offset_x.getInt(), yDelta - osu_hud_statistics_cs_offset_y.getInt());
-		}
-		if (osu_draw_statistics_od.getBool())
-		{
-			od = std::round(od * 100.0f) / 100.0f;
-			g->translate(osu_hud_statistics_od_offset_x.getInt(), osu_hud_statistics_od_offset_y.getInt());
-			drawStatisticText(g, UString::format("OD: %g", od));
-			g->translate(-osu_hud_statistics_od_offset_x.getInt(), yDelta - osu_hud_statistics_od_offset_y.getInt());
-		}
-		if (osu_draw_statistics_hp.getBool())
-		{
-			hp = std::round(hp * 100.0f) / 100.0f;
-			g->translate(osu_hud_statistics_hp_offset_x.getInt(), osu_hud_statistics_hp_offset_y.getInt());
-			drawStatisticText(g, UString::format("HP: %g", hp));
-			g->translate(-osu_hud_statistics_hp_offset_x.getInt(), yDelta - osu_hud_statistics_hp_offset_y.getInt());
-		}
-		if (osu_draw_statistics_hitwindow300.getBool())
-		{
-			g->translate(osu_hud_statistics_hitwindow300_offset_x.getInt(), osu_hud_statistics_hitwindow300_offset_y.getInt());
-			drawStatisticText(g, UString::format("300: +-%ims", (int)hitWindow300));
-			g->translate(-osu_hud_statistics_hitwindow300_offset_x.getInt(), yDelta - osu_hud_statistics_hitwindow300_offset_y.getInt());
-		}
-		if (osu_draw_statistics_nps.getBool())
-		{
-			g->translate(osu_hud_statistics_nps_offset_x.getInt(), osu_hud_statistics_nps_offset_y.getInt());
-			drawStatisticText(g, UString::format("NPS: %i", nps));
-			g->translate(-osu_hud_statistics_nps_offset_x.getInt(), yDelta - osu_hud_statistics_nps_offset_y.getInt());
-		}
-		if (osu_draw_statistics_nd.getBool())
-		{
-			g->translate(osu_hud_statistics_nd_offset_x.getInt(), osu_hud_statistics_nd_offset_y.getInt());
-			drawStatisticText(g, UString::format("ND: %i", nd));
-			g->translate(-osu_hud_statistics_nd_offset_x.getInt(), yDelta - osu_hud_statistics_nd_offset_y.getInt());
-		}
-		if (osu_draw_statistics_ur.getBool())
-		{
-			g->translate(osu_hud_statistics_ur_offset_x.getInt(), osu_hud_statistics_ur_offset_y.getInt());
-			drawStatisticText(g, UString::format("UR: %i", ur));
-			g->translate(-osu_hud_statistics_ur_offset_x.getInt(), yDelta - osu_hud_statistics_ur_offset_y.getInt());
-		}
-		if (osu_draw_statistics_hitdelta.getBool())
-		{
-			g->translate(osu_hud_statistics_hitdelta_offset_x.getInt(), osu_hud_statistics_hitdelta_offset_y.getInt());
-			drawStatisticText(g, UString::format("-%ims +%ims", std::abs(hitdeltaMin), hitdeltaMax));
-			g->translate(-osu_hud_statistics_hitdelta_offset_x.getInt(), yDelta - osu_hud_statistics_hitdelta_offset_y.getInt());
-		}
+    font->beginBatch();
+
+    g->pushTransform();
+    {
+        g->scale(scale, scale);
+        g->translate(osu_hud_statistics_offset_x.getInt(),
+                    (int)(font->getHeight() * scale) + (osu_hud_statistics_offset_y.getInt() * offsetScale));
+
+        float currentY = 0;
+
+        auto addStatistic = [&](bool shouldDraw, const UString &text, float xOffset, float yOffset)
+        {
+            if (!shouldDraw || text.length() < 1)
+                return;
+
+            Vector3 shadowPos(xOffset, currentY + yOffset, 0.25f);
+            font->addToBatch(text, shadowPos, shadowColor);
+
+            Vector3 textPos(xOffset - 1, currentY + yOffset - 1, 0.325f);
+            font->addToBatch(text, textPos, textColor);
+
+            currentY += yDelta;
+        };
+
+		addStatistic(osu_draw_statistics_pp.getBool(),
+					 (osu_hud_statistics_pp_decimal_places.getInt() < 1 ? UString::format("%ipp", (int)std::round(pp)) : (osu_hud_statistics_pp_decimal_places.getInt() > 1 ? UString::format("%.2fpp", pp) : UString::format("%.1fpp", pp))),
+					 osu_hud_statistics_pp_offset_x.getInt(),
+					 osu_hud_statistics_pp_offset_y.getInt());
+
+		addStatistic(osu_draw_statistics_perfectpp.getBool(),
+					 (osu_hud_statistics_pp_decimal_places.getInt() < 1 ? UString::format("SS: %ipp", (int)std::round(ppfc)) : (osu_hud_statistics_pp_decimal_places.getInt() > 1 ? UString::format("SS: %.2fpp", ppfc) : UString::format("SS: %.1fpp", ppfc))),
+					 osu_hud_statistics_perfectpp_offset_x.getInt(),
+					 osu_hud_statistics_perfectpp_offset_y.getInt());
+
+		addStatistic(osu_draw_statistics_misses.getBool(),
+					 UString::format("Miss: %i", misses),
+					 osu_hud_statistics_misses_offset_x.getInt(),
+					 osu_hud_statistics_misses_offset_y.getInt());
+
+		addStatistic(osu_draw_statistics_sliderbreaks.getBool(),
+					 UString::format("SBrk: %i", sliderbreaks),
+					 osu_hud_statistics_sliderbreaks_offset_x.getInt(),
+					 osu_hud_statistics_sliderbreaks_offset_y.getInt());
+
+		addStatistic(osu_draw_statistics_maxpossiblecombo.getBool(),
+					 UString::format("FC: %ix", maxPossibleCombo),
+					 osu_hud_statistics_maxpossiblecombo_offset_x.getInt(),
+					 osu_hud_statistics_maxpossiblecombo_offset_y.getInt());
+
+		addStatistic(osu_draw_statistics_livestars.getBool(),
+					 UString::format("%.3g***", liveStars),
+					 osu_hud_statistics_livestars_offset_x.getInt(),
+					 osu_hud_statistics_livestars_offset_y.getInt());
+
+		addStatistic(osu_draw_statistics_totalstars.getBool(),
+					 UString::format("%.3g*", totalStars),
+					 osu_hud_statistics_totalstars_offset_x.getInt(),
+					 osu_hud_statistics_totalstars_offset_y.getInt());
+
+		addStatistic(osu_draw_statistics_bpm.getBool(),
+					 UString::format("BPM: %i", bpm),
+					 osu_hud_statistics_bpm_offset_x.getInt(),
+					 osu_hud_statistics_bpm_offset_y.getInt());
+
+		ar = std::round(ar * 100.0f) / 100.0f;
+		addStatistic(osu_draw_statistics_ar.getBool(),
+					 UString::format("AR: %g", ar),
+					 osu_hud_statistics_ar_offset_x.getInt(),
+					 osu_hud_statistics_ar_offset_y.getInt());
+
+		cs = std::round(cs * 100.0f) / 100.0f;
+		addStatistic(osu_draw_statistics_cs.getBool(),
+					 UString::format("CS: %g", cs),
+					 osu_hud_statistics_cs_offset_x.getInt(),
+					 osu_hud_statistics_cs_offset_y.getInt());
+
+		od = std::round(od * 100.0f) / 100.0f;
+		addStatistic(osu_draw_statistics_od.getBool(),
+					 UString::format("OD: %g", od),
+					 osu_hud_statistics_od_offset_x.getInt(),
+					 osu_hud_statistics_od_offset_y.getInt());
+
+		hp = std::round(hp * 100.0f) / 100.0f;
+		addStatistic(osu_draw_statistics_hp.getBool(),
+					 UString::format("HP: %g", hp),
+					 osu_hud_statistics_hp_offset_x.getInt(),
+					 osu_hud_statistics_hp_offset_y.getInt());
+
+		addStatistic(osu_draw_statistics_hitwindow300.getBool(),
+					 UString::format("300: +-%ims", (int)hitWindow300),
+					 osu_hud_statistics_hitwindow300_offset_x.getInt(),
+					 osu_hud_statistics_hitwindow300_offset_y.getInt());
+
+		addStatistic(osu_draw_statistics_nps.getBool(),
+					 UString::format("NPS: %i", nps),
+					 osu_hud_statistics_nps_offset_x.getInt(),
+					 osu_hud_statistics_nps_offset_y.getInt());
+
+		addStatistic(osu_draw_statistics_nd.getBool(),
+					 UString::format("ND: %i", nd),
+					 osu_hud_statistics_nd_offset_x.getInt(),
+					 osu_hud_statistics_nd_offset_y.getInt());
+
+		addStatistic(osu_draw_statistics_ur.getBool(),
+					 UString::format("UR: %i", ur),
+					 osu_hud_statistics_ur_offset_x.getInt(),
+					 osu_hud_statistics_ur_offset_y.getInt());
+
+		addStatistic(osu_draw_statistics_hitdelta.getBool(),
+					 UString::format("-%ims +%ims", std::abs(hitdeltaMin), hitdeltaMax),
+					 osu_hud_statistics_hitdelta_offset_x.getInt(),
+					 osu_hud_statistics_hitdelta_offset_y.getInt());
 	}
-	g->popTransform();
-}
-
-void OsuHUD::drawStatisticText(Graphics *g, const UString text)
-{
-	if (text.length() < 1) return;
-
-	g->pushTransform();
-	{
-		g->setColor(0xff000000);
-		g->translate(0, 0, 0.25f);
-		g->drawString(m_osu->getTitleFont(), text);
-
-		g->setColor(0xffffffff);
-		g->translate(-1, -1, 0.325f);
-		g->drawString(m_osu->getTitleFont(), text);
-	}
+	font->flushBatch(g);
 	g->popTransform();
 }
 

@@ -8,7 +8,6 @@
 #include "Font.h"
 
 #include "ResourceManager.h"
-#include "VertexArrayObject.h"
 #include "Engine.h"
 #include "ConVar.h"
 
@@ -30,20 +29,13 @@ ConVar r_drawstring_max_string_length("r_drawstring_max_string_length", 65536, F
 ConVar r_debug_drawstring_unbind("r_debug_drawstring_unbind", false, FCVAR_NONE);
 ConVar r_debug_font_atlas_padding("r_debug_font_atlas_padding", 1, FCVAR_NONE, "padding between glyphs in the atlas to prevent bleeding");
 
-// helper struct for glyph atlas packing
-struct GlyphRect
-{
-    int x, y, width, height;
-    wchar_t ch;
-};
-
 // forward declarations of internal helpers
 static bool packGlyphRects(std::vector<GlyphRect> &rects, int atlasWidth, int atlasHeight);
 static size_t calculateOptimalAtlasSize(const std::vector<GlyphRect> &glyphs, float targetOccupancy);
 static unsigned char *unpackMonoBitmap(const FT_Bitmap &bitmap);
 
 McFont::McFont(UString filepath, int fontSize, bool antialiasing, int fontDPI)
-    : Resource(filepath)
+    : Resource(filepath), m_vao(Graphics::PRIMITIVE::PRIMITIVE_QUADS, Graphics::USAGE_TYPE::USAGE_DYNAMIC)
 {
     std::vector<wchar_t> characters;
     characters.reserve(224); // reserve space for basic ASCII + extended chars
@@ -55,7 +47,7 @@ McFont::McFont(UString filepath, int fontSize, bool antialiasing, int fontDPI)
 }
 
 McFont::McFont(UString filepath, std::vector<wchar_t> characters, int fontSize, bool antialiasing, int fontDPI)
-    : Resource(filepath)
+    : Resource(filepath), m_vao(Graphics::PRIMITIVE::PRIMITIVE_QUADS, Graphics::USAGE_TYPE::USAGE_DYNAMIC)
 {
     constructor(characters, fontSize, antialiasing, fontDPI);
 }
@@ -263,7 +255,7 @@ void McFont::init()
         m_bAntialiasing ? Graphics::FILTER_MODE::FILTER_MODE_LINEAR
                         : Graphics::FILTER_MODE::FILTER_MODE_NONE);
 
-	// precalculate average/max ASCII glyph height
+    // precalculate average/max ASCII glyph height
     m_fHeight = 0.0f;
     for (int i = 0; i < 128; i++)
     {
@@ -274,7 +266,58 @@ void McFont::init()
     m_bReady = true;
 }
 
-void McFont::drawString(Graphics *g, UString text)
+void McFont::buildGlyphGeometry(const GLYPH_METRICS &gm, const Vector3 &basePos,
+                                float advanceX, size_t &vertexCount)
+{
+    const float atlasWidth = static_cast<float>(m_textureAtlas->getAtlasImage()->getWidth());
+    const float atlasHeight = static_cast<float>(m_textureAtlas->getAtlasImage()->getHeight());
+
+    const float x = basePos.x + gm.left + advanceX;
+    const float y = basePos.y - (gm.top - gm.rows);
+    const float z = basePos.z;
+    const float sx = gm.width;
+    const float sy = -gm.rows;
+
+    const float texX = static_cast<float>(gm.uvPixelsX) / atlasWidth;
+    const float texY = static_cast<float>(gm.uvPixelsY) / atlasHeight;
+    const float texSizeX = static_cast<float>(gm.sizePixelsX) / atlasWidth;
+    const float texSizeY = static_cast<float>(gm.sizePixelsY) / atlasHeight;
+
+    const size_t idx = vertexCount;
+    m_vertices[idx] = Vector3(x, y + sy, z);          // bottom-left
+    m_vertices[idx + 1] = Vector3(x, y, z);           // top-left
+    m_vertices[idx + 2] = Vector3(x + sx, y, z);      // top-right
+    m_vertices[idx + 3] = Vector3(x + sx, y + sy, z); // bottom-right
+
+    m_texcoords[idx] = Vector2(texX, texY);
+    m_texcoords[idx + 1] = Vector2(texX, texY + texSizeY);
+    m_texcoords[idx + 2] = Vector2(texX + texSizeX, texY + texSizeY);
+    m_texcoords[idx + 3] = Vector2(texX + texSizeX, texY);
+
+    vertexCount += 4;
+}
+
+void McFont::buildStringGeometry(const UString &text, size_t &vertexCount)
+{
+    if (!m_bReady || text.length() == 0 ||
+        text.length() > r_drawstring_max_string_length.getInt())
+    {
+        return;
+    }
+
+    float advanceX = 0.0f;
+    const size_t maxGlyphs = std::min(text.length(),
+                                      (int)(m_vertices.size() - vertexCount) / 4);
+
+    for (size_t i = 0; i < maxGlyphs; i++)
+    {
+        const GLYPH_METRICS &gm = getGlyphMetrics(text[i]);
+        buildGlyphGeometry(gm, Vector3(), advanceX, vertexCount);
+        advanceX += gm.advance_x;
+    }
+}
+
+void McFont::drawString(Graphics *g, const UString &text)
 {
     if (!m_bReady)
         return;
@@ -283,33 +326,20 @@ void McFont::drawString(Graphics *g, UString text)
     if (text.length() == 0 || text.length() > maxNumGlyphs)
         return;
 
-    // pre-calculate all glyph data to minimize per-vertex calculations
-    static thread_local std::vector<GlyphBatchData> batchData;
-    batchData.clear();
-    batchData.reserve(text.length());
-    calculateGlyphBatch(text, batchData);
-
-    // use thread_local for the VAO to avoid thread contention
     static thread_local VertexArrayObject vao(Graphics::PRIMITIVE::PRIMITIVE_QUADS);
-
-    // clear the VAO for reuse
     vao.empty();
 
-    // batch add all vertices and texture coordinates
-    for (const auto &glyph : batchData)
+    const size_t totalVerts = text.length() * 4;
+    m_vertices.resize(totalVerts);
+    m_texcoords.resize(totalVerts);
+
+    size_t vertexCount = 0;
+    buildStringGeometry(text, vertexCount);
+
+    for (size_t i = 0; i < vertexCount; i++)
     {
-        // counter-clockwise quad vertices
-        vao.addVertex(glyph.x, glyph.y + glyph.sy);
-        vao.addTexcoord(glyph.texX, glyph.texY);
-
-        vao.addVertex(glyph.x, glyph.y);
-        vao.addTexcoord(glyph.texX, glyph.texY + glyph.texSizeY);
-
-        vao.addVertex(glyph.x + glyph.sx, glyph.y);
-        vao.addTexcoord(glyph.texX + glyph.texSizeX, glyph.texY + glyph.texSizeY);
-
-        vao.addVertex(glyph.x + glyph.sx, glyph.y + glyph.sy);
-        vao.addTexcoord(glyph.texX + glyph.texSizeX, glyph.texY);
+        vao.addVertex(m_vertices[i]);
+        vao.addTexcoord(m_texcoords[i]);
     }
 
     m_textureAtlas->getAtlasImage()->bind();
@@ -321,29 +351,65 @@ void McFont::drawString(Graphics *g, UString text)
     }
 }
 
-void McFont::calculateGlyphBatch(const UString &text, std::vector<GlyphBatchData> &batchData)
+void McFont::beginBatch()
 {
-    float advanceX = 0.0f;
-    const float atlasWidth = static_cast<float>(m_textureAtlas->getAtlasImage()->getWidth());
-    const float atlasHeight = static_cast<float>(m_textureAtlas->getAtlasImage()->getHeight());
+    m_batchActive = true;
+    m_batchQueue.clear();
+}
 
-    for (int i = 0; i < text.length(); i++)
+void McFont::addToBatch(const UString &text, const Vector3 &pos, Color color)
+{
+    if (!m_batchActive || text.length() == 0)
+        return;
+    m_batchQueue.push_back({text, pos, color});
+}
+
+void McFont::flushBatch(Graphics *g)
+{
+    if (!m_batchActive || m_batchQueue.empty())
     {
-        const GLYPH_METRICS &gm = getGlyphMetrics(text[i]);
-
-        GlyphBatchData data;
-        data.x = gm.left + advanceX;
-        data.y = -(gm.top - gm.rows);
-        data.sx = gm.width;
-        data.sy = -gm.rows;
-        data.texX = static_cast<float>(gm.uvPixelsX) / atlasWidth;
-        data.texY = static_cast<float>(gm.uvPixelsY) / atlasHeight;
-        data.texSizeX = static_cast<float>(gm.sizePixelsX) / atlasWidth;
-        data.texSizeY = static_cast<float>(gm.sizePixelsY) / atlasHeight;
-
-        batchData.push_back(data);
-        advanceX += gm.advance_x;
+        m_batchActive = false;
+        return;
     }
+
+    size_t totalVerts = 0;
+    for (const auto &entry : m_batchQueue)
+    {
+        totalVerts += entry.text.length() * 4; // 4 vertices per glyph
+    }
+
+    m_vertices.resize(totalVerts);
+    m_texcoords.resize(totalVerts);
+    m_vao.empty();
+
+    size_t currentVertex = 0;
+    for (const auto &entry : m_batchQueue)
+    {
+        const size_t stringStart = currentVertex;
+        buildStringGeometry(entry.text, currentVertex);
+
+        for (size_t i = stringStart; i < currentVertex; i++)
+        {
+            m_vertices[i] += entry.pos;
+            m_vao.addVertex(m_vertices[i]);
+            m_vao.addTexcoord(m_texcoords[i]);
+            m_vao.addColor(entry.color);
+        }
+    }
+
+    m_textureAtlas->getAtlasImage()->setFilterMode(
+        m_bAntialiasing ? Graphics::FILTER_MODE::FILTER_MODE_LINEAR
+                        : Graphics::FILTER_MODE::FILTER_MODE_NONE);
+
+    m_textureAtlas->getAtlasImage()->bind();
+    g->drawVAO(&m_vao);
+
+    if (r_debug_drawstring_unbind.getBool())
+    {
+        m_textureAtlas->getAtlasImage()->unbind();
+    }
+
+    m_batchActive = false;
 }
 
 float McFont::getStringWidth(UString text) const
@@ -407,6 +473,7 @@ void McFont::destroy()
     m_fHeight = 1.0f;
 }
 
+// debug
 void McFont::drawTextureAtlas(Graphics *g)
 {
     if (!m_bReady || !m_textureAtlas)

@@ -93,8 +93,6 @@ static bool isGamescopeInt()
 }
 #define deckTouchHack (isSteamDeck && environment->wasLastMouseInputTouch())
 #else
-static inline bool isSteamDeckInt(){return false;}
-static inline bool isGamescopeInt(){return false;}
 #define deckTouchHack false
 #endif
 
@@ -126,7 +124,7 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 	// pre window-creation settings
 #ifdef MCENGINE_FEATURE_OPENGL
 
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY);
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
 #endif
