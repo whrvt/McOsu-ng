@@ -70,12 +70,12 @@
 //#define MCENGINE_FEATURE_OPENVR
 
 /*
- * SDL2 main + Environment
+ * SDL3 main + Environment
  */
 #define MCENGINE_FEATURE_SDL
 
 /*
- * SDL2 mixer (audio)
+ * SDL3 mixer (audio)
  */
 //#define MCENGINE_FEATURE_SDL_MIXER
 

@@ -64,10 +64,11 @@ ConVar sdl_joystick0_deadzone("sdl_joystick0_deadzone", 0.3f, FCVAR_NONE);
 ConVar sdl_joystick_zl_threshold("sdl_joystick_zl_threshold", -0.5f, FCVAR_NONE);
 ConVar sdl_joystick_zr_threshold("sdl_joystick_zr_threshold", -0.5f, FCVAR_NONE);
 
-ConVar sdl_steamdeck_starttextinput_workaround("sdl_steamdeck_starttextinput_workaround", true, FCVAR_NONE, "currently used to fix an SDL2 bug on the Steam Deck (fixes USB/touch keyboard textual input not working under gamescope), see https://github.com/libsdl-org/SDL/issues/8561");
-ConVar sdl_steamdeck_doubletouch_workaround("sdl_steamdeck_doubletouch_workaround", true, FCVAR_NONE, "currently used to fix a Valve/SDL2 bug on the Steam Deck (fixes \"Touchscreen Native Support\" firing 4 events for one single touch under gamescope, i.e. DOWN/UP/DOWN/UP instead of just DOWN/UP)");
-
 ConVar debug_sdl("debug_sdl", false, FCVAR_NONE);
+
+#ifdef MCENGINE_SDL_TOUCHSUPPORT
+//ConVar sdl_steamdeck_starttextinput_workaround("sdl_steamdeck_starttextinput_workaround", true, FCVAR_NONE, "currently used to fix an SDL2 bug on the Steam Deck (fixes USB/touch keyboard textual input not working under gamescope), see https://github.com/libsdl-org/SDL/issues/8561");
+ConVar sdl_steamdeck_doubletouch_workaround("sdl_steamdeck_doubletouch_workaround", true, FCVAR_NONE, "currently used to fix a Valve/SDL2 bug on the Steam Deck (fixes \"Touchscreen Native Support\" firing 4 events for one single touch under gamescope, i.e. DOWN/UP/DOWN/UP instead of just DOWN/UP)");
 
 static bool isSteamDeckInt()
 {
@@ -90,6 +91,12 @@ static bool isGamescopeInt()
 	}
 	return false;
 }
+#define deckTouchHack (isSteamDeck && environment->wasLastMouseInputTouch())
+#else
+static inline bool isSteamDeckInt(){return false;}
+static inline bool isGamescopeInt(){return false;}
+#define deckTouchHack false
+#endif
 
 int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 {
@@ -141,8 +148,8 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 
 #endif
 
-	const bool shouldBeFullscreen = !(convar->getConVarByName("windowed") != NULL);
-	const bool shouldBeBorderless = !shouldBeFullscreen && convar->getConVarByName("fullscreen_windowed_borderless")->getBool();
+	const bool shouldBeBorderless = convar->getConVarByName("fullscreen_windowed_borderless")->getBool();
+	const bool shouldBeFullscreen = !(convar->getConVarByName("windowed") != NULL) || shouldBeBorderless;
 
     SDL_PropertiesID props = SDL_CreateProperties();
     SDL_SetStringProperty(props, SDL_PROP_WINDOW_CREATE_TITLE_STRING, WINDOW_TITLE);
@@ -238,8 +245,13 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 	deltaTimer->update();
 
 	// custom
+#ifdef MCENGINE_SDL_TOUCHSUPPORT
+	const bool isSteamDeckDoubletouchWorkaroundEnabled = (isSteamDeck && isGamescope && sdl_steamdeck_doubletouch_workaround.getBool());
 	const bool isSteamDeck = isSteamDeckInt();
 	const bool isGamescope = isGamescopeInt();
+	std::vector<SDL_FingerID> touchingFingerIds;
+	SDL_TouchID currentTouchId = 0;
+#endif
 
 	// FIXME: sdl2-sdl3 stops listening to text input globally when window is created,
 	// recommended to start/stop listening to text input when required
@@ -247,8 +259,6 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 
 	Vector2 mousePos;
 	ConVar *mouse_raw_input_ref = convar->getConVarByName("mouse_raw_input");
-	std::vector<SDL_FingerID> touchingFingerIds;
-	SDL_TouchID currentTouchId = 0;
 
 	// main loop
 	SDL_Event e;
@@ -287,7 +297,6 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 			}
 
 			const bool isRawInputEnabled = (SDL_GetWindowRelativeMouseMode(g_window) == true);
-			const bool isSteamDeckDoubletouchWorkaroundEnabled = (isSteamDeck && isGamescope && sdl_steamdeck_doubletouch_workaround.getBool());
 			const bool isDebugSdl = environment->sdlDebug(debug_sdl.getBool());
 
 			while (SDL_PollEvent(&e) != 0)
@@ -367,7 +376,7 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 
 				// mouse
 				case SDL_EVENT_MOUSE_BUTTON_DOWN :
-					if (!(isSteamDeck && environment->wasLastMouseInputTouch())) // HACKHACK: Steam Deck workaround (sends mouse events even though native touchscreen support is enabled)
+					if (!deckTouchHack) // HACKHACK: Steam Deck workaround (sends mouse events even though native touchscreen support is enabled)
 					{
 						switch (e.button.button)
 						{
@@ -392,7 +401,7 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 					break;
 
 				case SDL_EVENT_MOUSE_BUTTON_UP :
-					if (!(isSteamDeck && environment->wasLastMouseInputTouch())) // HACKHACK: Steam Deck workaround (sends mouse events even though native touchscreen support is enabled)
+					if (!deckTouchHack) // HACKHACK: Steam Deck workaround (sends mouse events even though native touchscreen support is enabled)
 					{
 						switch (e.button.button)
 						{
@@ -424,7 +433,7 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 					break;
 
 				case SDL_EVENT_MOUSE_MOTION :
-					if (!(isSteamDeck && environment->wasLastMouseInputTouch())) // HACKHACK: Steam Deck workaround (sends mouse events even though native touchscreen support is enabled)
+					if (!deckTouchHack) // HACKHACK: Steam Deck workaround (sends mouse events even though native touchscreen support is enabled)
 					{
 						if (isDebugSdl)
 							debugLog("SDL_MOUSEMOTION: xrel = %i, yrel = %i, which = %i\n", (int)e.motion.xrel, (int)e.motion.yrel, (int)e.motion.which);
@@ -441,6 +450,7 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 
 				// touch mouse
 				// NOTE: sometimes when quickly tapping with two fingers, events will get lost (due to the touchscreen believing that it was one finger which moved very quickly, instead of 2 tapping fingers)
+#ifdef MCENGINE_SDL_TOUCHSUPPORT
 				case SDL_EVENT_FINGER_DOWN :
 					{
 						if (isDebugSdl)
@@ -586,7 +596,7 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 						}
 					}
 					break;
-
+#endif
 				// joystick keyboard
 				// NOTE: defaults to xbox 360 controller layout on all non-horizon environments
 #ifdef MCENGINE_SDL_JOYSTICK

@@ -17,6 +17,8 @@
 
 #include "Environment.h"
 
+// #define MCENGINE_SDL_TOUCHSUPPORT
+
 class SDLEnvironment : public Environment
 {
 public:
@@ -108,8 +110,13 @@ public:
 	// ILLEGAL:
 	void setWindow(SDL_Window *window) {m_window = window;}
 	inline SDL_Window *getWindow() {return m_window;}
+#ifdef MCENGINE_SDL_TOUCHSUPPORT
 	void setWasLastMouseInputTouch(bool wasLastMouseInputTouch) {m_bWasLastMouseInputTouch = wasLastMouseInputTouch;}
 	inline bool wasLastMouseInputTouch() const {return m_bWasLastMouseInputTouch;}
+#else
+	void setWasLastMouseInputTouch(bool unused) {;}
+	inline bool wasLastMouseInputTouch() const {return false;}
+#endif
 
 	inline bool sdlDebug() {return m_sdlDebug;}
 	inline bool sdlDebug(bool enable) {m_sdlDebug = enable; return m_sdlDebug;}
