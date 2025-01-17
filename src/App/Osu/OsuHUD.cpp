@@ -941,7 +941,7 @@ void OsuHUD::drawCursorTrailInt(Graphics *g, Shader *trailShader, std::vector<CU
 					trailShader->setUniformMatrix4fv("matrix", mvp);
 				}
 
-				trailShader->setUniform1f("time", engine->getTime());
+				trailShader->setUniform1f("time", (float)engine->getTime());
 
 #ifdef MCENGINE_FEATURE_OPENGLES
 				{

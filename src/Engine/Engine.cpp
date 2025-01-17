@@ -584,6 +584,11 @@ void Engine::onShutdown()
 	m_environment->shutdown();
 }
 
+void Engine::onMouseRawMove(float xDelta, float yDelta, bool absolute, bool virtualDesktop)
+{
+	m_mouse->onRawMove(xDelta, yDelta, absolute, virtualDesktop);
+}
+
 void Engine::onMouseRawMove(int xDelta, int yDelta, bool absolute, bool virtualDesktop)
 {
 	m_mouse->onRawMove(xDelta, yDelta, absolute, virtualDesktop);

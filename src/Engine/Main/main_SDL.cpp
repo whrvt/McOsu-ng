@@ -96,6 +96,42 @@ static bool isGamescopeInt()
 #define deckTouchHack false
 #endif
 
+static const char *getCategoryString(int category)
+{
+	switch (category)
+	{
+	case SDL_LOG_CATEGORY_APPLICATION:
+		return "APP";
+	case SDL_LOG_CATEGORY_ERROR:
+		return "ERR";
+	case SDL_LOG_CATEGORY_SYSTEM:
+		return "SYS";
+	case SDL_LOG_CATEGORY_AUDIO:
+		return "AUD";
+	case SDL_LOG_CATEGORY_VIDEO:
+		return "VID";
+	case SDL_LOG_CATEGORY_RENDER:
+		return "REN";
+	case SDL_LOG_CATEGORY_INPUT:
+		return "INP";
+	case SDL_LOG_CATEGORY_CUSTOM:
+		return "USR";
+	default:
+		return "???";
+	}
+}
+
+static void SDLLogCallback(void *userdata, int category, SDL_LogPriority priority, const char *message)
+{
+	if (!debug_sdl.getBool())
+	{
+		return;
+	}
+
+	const char *catStr = getCategoryString(category);
+	debugLog("SDL[%s]: %s\n", catStr, message);
+}
+
 int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 {
 	SDLEnvironment *environment = customSDLEnvironment;
@@ -121,10 +157,12 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 		return 1;
 	}
 
+	SDL_SetLogOutputFunction(SDLLogCallback, nullptr);
+
 	// pre window-creation settings
 #ifdef MCENGINE_FEATURE_OPENGL
 
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
 #endif
@@ -434,7 +472,7 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 					if (!deckTouchHack) // HACKHACK: Steam Deck workaround (sends mouse events even though native touchscreen support is enabled)
 					{
 						if (isDebugSdl)
-							debugLog("SDL_MOUSEMOTION: xrel = %i, yrel = %i, which = %i\n", (int)e.motion.xrel, (int)e.motion.yrel, (int)e.motion.which);
+							debugLog("SDL_MOUSEMOTION: xrel = %f, yrel = %f, which = %i\n", e.motion.xrel, e.motion.yrel, (int)e.motion.which);
 
 						if (e.motion.which != SDL_TOUCH_MOUSEID)
 						{

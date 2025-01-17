@@ -32,6 +32,7 @@
 #define RENDERBUFFER_FREE_MEMORY_ATI            0x87FD
 
 ConVar r_image_unbind_after_drawimage("r_image_unbind_after_drawimage", true, FCVAR_NONE);
+ConVar debug_opengl("debug_opengl", false, FCVAR_NONE);
 
 OpenGLLegacyInterface::OpenGLLegacyInterface() : Graphics()
 {
