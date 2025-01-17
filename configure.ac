@@ -21,7 +21,12 @@ AC_DEFUN([AC_PROG_WGET], [
         AC_MSG_ERROR([wget not found - required for downloading dependencies])
     fi
 ])
-
+AC_DEFUN([AC_PROG_GIT], [
+    AC_CHECK_PROG([GIT], [git], [git])
+    if test -z "$GIT"; then
+        AC_MSG_ERROR([git not found - required for downloading dependencies])
+    fi
+])
 AC_DEFUN([AC_PROG_TAR], [
     AC_CHECK_PROG([TAR], [tar], [tar])
     if test -z "$TAR"; then
@@ -31,6 +36,7 @@ AC_DEFUN([AC_PROG_TAR], [
 
 # needed for dep resolver
 AC_PROG_WGET
+AC_PROG_GIT
 AC_PROG_TAR
 
 AC_ARG_ENABLE([optimize],
@@ -119,6 +125,8 @@ AS_IF([test "x$enable_native" != "xno"], [
 AS_IF([test "x$enable_debug" = "xyes"], [
     CXXFLAGS="$CXXFLAGS -g3 -gdwarf-5 -Og -fasynchronous-unwind-tables"
     CFLAGS="$CFLAGS -g3 -gdwarf-5 -Og -fasynchronous-unwind-tables"
+    ENABLE_DEBUG=$enable_debug
+    AC_SUBST([ENABLE_DEBUG])
 ], [
     AS_IF([test "x$enable_optimization" != "xno"], [
         CPPFLAGS="$CPPFLAGS -DNDEBUG -D_NDEBUG"
@@ -161,7 +169,7 @@ PKG_CHECK_AUTO([ZLIB], [zlib], [have_zlib=yes], [have_zlib=no])
 AC_SUBST([DEPS_PREFIX], ['${abs_top_builddir}/build/deps'])
 
 SDL3_MIN_VERSION=3.1.8
-SDL3_BUILD_VERSION=3.1.8
+SDL3_BUILD_VERSION=3.99.99 # git
 GLEW_MIN_VERSION=2.2.0
 GLEW_BUILD_VERSION=2.2.0
 FREETYPE2_MIN_VERSION=2.10.0

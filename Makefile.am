@@ -11,12 +11,14 @@ CLEANFILES = \
 	*.bak
 
 # build rules for dependencies when system packages aren't used
+#$(WGET) -qO- "https://github.com/libsdl-org/SDL/releases/download/preview-$(SDL3_VERSION)/SDL3-$(SDL3_VERSION).tar.gz" | $(TAR) xz -C build/deps/SDL3 --strip-components=1
 build/deps/SDL3.built:
-	$(MKDIR_P) build/deps/SDL3/build build/deps/lib/pkgconfig
-	$(WGET) -qO- "https://github.com/libsdl-org/SDL/releases/download/preview-$(SDL3_VERSION)/SDL3-$(SDL3_VERSION).tar.gz" | $(TAR) xz -C build/deps/SDL3 --strip-components=1
+	$(MKDIR_P) build/deps build/deps/lib/pkgconfig
+	$(GIT) clone https://github.com/libsdl-org/SDL build/deps/SDL3
+	$(MKDIR_P) build/deps/SDL3/build
 	cd build/deps/SDL3 && \
 	cmake -S . -B build -G Ninja \
-	-D CMAKE_BUILD_TYPE=None \
+	-D CMAKE_BUILD_TYPE="$(if $(ENABLE_DEBUG),Debug,None)" \
 	-D SDL_HIDAPI_LIBUSB=OFF \
 	-D CMAKE_INSTALL_PREFIX="$(DEPS_PREFIX)" \
 	-D SDL_SHARED="$(if $(SDL3_STATIC),OFF,ON)" \
@@ -24,7 +26,7 @@ build/deps/SDL3.built:
 	-D SDL_RPATH=OFF \
 	-D SDL_CCACHE="$(if $(filter ccache,$(CC)),ON,OFF)" \
 	-D CMAKE_C_COMPILER="$(CC_NOCCACHE)" \
-	-D CMAKE_C_FLAGS="$(CFLAGS)" && \
+	-D CMAKE_C_FLAGS="$(CFLAGS) -Wno-error=incompatible-pointer-types" && \
 	cmake --build build && \
 	cmake --install build
 	PKG_CONFIG_PATH="$(DEPS_PREFIX)/lib/pkgconfig:$(DEPS_PREFIX)/lib64/pkgconfig:$(PKG_CONFIG_PATH)" \

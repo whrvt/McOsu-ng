@@ -199,7 +199,7 @@ void Mouse::update()
 		else
 		{
 			// non-raw input is always in pixels, sub-pixel movement is handled/buffered by the operating system
-			if ((int)osMousePos.x != (int)m_vPrevOsMousePos.x || (int)osMousePos.y != (int)m_vPrevOsMousePos.y) // without this check some people would get mouse drift
+			if (osMousePos.x != m_vPrevOsMousePos.x || osMousePos.y != m_vPrevOsMousePos.y) // without this check some people would get mouse drift
 				m_vDelta = (osMousePos - m_vPrevOsMousePos) * mouse_sensitivity.getFloat();
 		}
 
@@ -242,8 +242,8 @@ void Mouse::update()
 		// assume that the operating system has set the cursor to nextPos quickly enough for the next frame
 		// also, force clamp to pixels, as this happens there too (to avoid drifting in the non-raw delta calculation)
 		m_vPrevOsMousePos = newOsMousePos;
-		m_vPrevOsMousePos.x = (int)m_vPrevOsMousePos.x;
-		m_vPrevOsMousePos.y = (int)m_vPrevOsMousePos.y;
+		m_vPrevOsMousePos.x = m_vPrevOsMousePos.x;
+		m_vPrevOsMousePos.y = m_vPrevOsMousePos.y;
 
 		// 3 cases can happen in the next frame:
 		// 1) the operating system did not update the cursor quickly enough. osMousePos != nextPos
@@ -335,6 +335,20 @@ void Mouse::setPosXY(float x, float y)
 	{
 		m_vPos.x = x;
 		m_vPos.y = y;
+	}
+}
+
+void Mouse::onRawMove(float xDelta, float yDelta, bool absolute, bool virtualDesktop)
+{
+	m_bAbsolute = absolute;
+	m_bVirtualDesktop = virtualDesktop;
+
+	if (xDelta != 0 || yDelta != 0) // sanity check, else some people get mouse drift like above, I don't even
+	{
+		if (!m_bAbsolute) // mouse
+			m_vRawDeltaActual += Vector2(xDelta, yDelta) * mouse_sensitivity.getFloat();
+		else // tablet
+			m_vRawDeltaAbsoluteActual = Vector2(xDelta, yDelta);
 	}
 }
 
@@ -442,11 +456,11 @@ void Mouse::setPos(Vector2 newPos)
 	m_bSetPosWasCalledLastFrame = true;
 
 	setPosXY(newPos.x, newPos.y);
-	env->setMousePos((int)m_vPos.x, (int)m_vPos.y);
+	env->setMousePos(m_vPos.x, m_vPos.y);
 
 	m_vPrevOsMousePos = m_vPos;
-	m_vPrevOsMousePos.x = (int)m_vPrevOsMousePos.x;
-	m_vPrevOsMousePos.y = (int)m_vPrevOsMousePos.y;
+	m_vPrevOsMousePos.x = m_vPrevOsMousePos.x;
+	m_vPrevOsMousePos.y = m_vPrevOsMousePos.y;
 }
 
 void Mouse::setCursorType(CURSORTYPE cursorType)

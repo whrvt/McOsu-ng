@@ -400,7 +400,7 @@ Vector2 SDLEnvironment::getMousePos()
 	{
 		SDL_GetMouseState(&mouseX, &mouseY);
 		//debugLog("x %f y %f\n", mouseX, mouseY);
-		return Vector2((int)mouseX, (int)mouseY);
+		return Vector2(mouseX, mouseY);
 	}
 	else
 	{
@@ -411,7 +411,7 @@ Vector2 SDLEnvironment::getMousePos()
 		SDL_GetGlobalMouseState(&mouseX, &mouseY);
 		SDL_GetWindowPosition(m_window, &windowX, &windowY);
 
-		return Vector2((int)mouseX - windowX, (int)mouseY - windowY);
+		return Vector2(mouseX - windowX, mouseY - windowY);
 	}
 }
 
@@ -443,17 +443,23 @@ void SDLEnvironment::setCursorClip(bool clip, McRect rect)
 		{
 			m_cursorClip = McRect(0, 0, engine->getScreenWidth(), engine->getScreenHeight());
 		}
+		else
+		{
+			m_cursorClip = McRect(rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight());
+		}
+		const SDL_Rect clipRect{rect.getWidth()  == 0 ? 0 : (int)rect.getX(),
+								rect.getHeight() == 0 ? 0 : (int)rect.getY(),
+								rect.getWidth()  == 0 ? engine->getScreenWidth() : (int)rect.getWidth(),
+								rect.getHeight() == 0 ? engine->getScreenHeight() : (int)rect.getHeight()};
 		SDL_CaptureMouse(true);
-		const SDL_Rect clipRect{(int)0, (int)0, (int)engine->getScreenWidth(), (int)engine->getScreenHeight()};
 		SDL_SetWindowMouseRect(m_window, &clipRect);
 		//SDL_SetWindowMouseGrab(m_window, true); // FIXME: sdl2->sdl3 wtf why does moving the mouse stop generating SDL_EVENT_MOUSE_MOTION when grabbed?
 		// HACK: sdl2->sdl3 don't listen for text input when in play mode (putting it here for now to reuse "in-gameplay" logic)
 		SDL_StopTextInput(m_window);
-		// TODO: custom rect (only fullscreen works atm)
 	}
 	else
 	{
-		// SDL_SetWindowMouseGrab(m_window, false);
+		//SDL_SetWindowMouseGrab(m_window, false);
 		SDL_CaptureMouse(false);
 		SDL_SetWindowMouseRect(m_window, NULL);
 		SDL_StartTextInput(m_window);
