@@ -5,6 +5,7 @@
 // $NoKeywords: $
 //===============================================================================//
 
+#pragma once
 #ifndef CWINDOWMANAGER_H
 #define CWINDOWMANAGER_H
 

@@ -5,6 +5,7 @@
 // $NoKeywords: $osufind
 //===============================================================================//
 
+#pragma once
 #ifndef OSUUISEARCHOVERLAY_H
 #define OSUUISEARCHOVERLAY_H
 

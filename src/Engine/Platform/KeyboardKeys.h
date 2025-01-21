@@ -5,12 +5,13 @@
 // $NoKeywords: $vk $os
 //===============================================================================//
 
+#pragma once
 #ifndef KEYBOARDKEYS_H
 #define KEYBOARDKEYS_H
 
 #if defined MCENGINE_FEATURE_SDL
 
-#include "SDL.h"
+#include <SDL3/SDL.h>
 
 // alphabet
 #define KEY_A				SDL_SCANCODE_A

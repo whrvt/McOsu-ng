@@ -12,6 +12,7 @@
 
 #include <system_error>
 
+#pragma once
 #ifndef WIN32STDMUTEX_H
 #define WIN32STDMUTEX_H
 

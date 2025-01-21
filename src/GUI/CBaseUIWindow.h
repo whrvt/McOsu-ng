@@ -5,6 +5,7 @@
 // $NoKeywords: $
 //===============================================================================//
 
+#pragma once
 #ifndef CBASEUIWINDOW_H
 #define CBASEUIWINDOW_H
 

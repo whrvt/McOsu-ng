@@ -7,6 +7,7 @@
 
 #ifdef __APPLE__
 
+#pragma once
 #ifndef MACOSENVIRONMENT_H
 #define MACOSENVIRONMENT_H
 

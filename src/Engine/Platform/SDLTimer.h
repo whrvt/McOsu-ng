@@ -1,25 +1,22 @@
-//================ Copyright (c) 2015, PG, All rights reserved. =================//
+//================ Copyright (c) 2025, WH, All rights reserved. =================//
 //
 // Purpose:		fps timer
 //
-// $NoKeywords: $linuxtime $os
+// $NoKeywords: $sdltime $os
 //===============================================================================//
 
-#ifdef __linux__
-
 #pragma once
-#ifndef LINUXTIMER_H
-#define LINUXTIMER_H
+#ifndef SDLTIMER_H
+#define SDLTIMER_H
 
 #include "Timer.h"
+#include <SDL3/SDL.h>
 
-#include <time.h>
-
-class LinuxTimer : public BaseTimer
+class SDLTimer : public BaseTimer
 {
 public:
-	LinuxTimer();
-	virtual ~LinuxTimer() {;}
+	SDLTimer();
+	virtual ~SDLTimer() {;}
 
 	virtual void start() override;
 	virtual void update() override;
@@ -29,14 +26,12 @@ public:
 	virtual inline uint64_t getElapsedTimeMS() const override {return m_elapsedTimeMS;}
 
 private:
-	timespec m_startTime;
-	timespec m_currentTime;
+	uint64_t m_startTimeNS;
+	uint64_t m_currentTimeNS;
 
 	double m_delta;
 	double m_elapsedTime;
 	uint64_t m_elapsedTimeMS;
 };
-
-#endif
 
 #endif

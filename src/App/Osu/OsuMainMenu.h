@@ -5,6 +5,7 @@
 // $NoKeywords: $osumain
 //===============================================================================//
 
+#pragma once
 #ifndef OSUMENUMAIN_H
 #define OSUMENUMAIN_H
 

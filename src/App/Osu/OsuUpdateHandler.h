@@ -5,6 +5,7 @@
 // $NoKeywords: $osuupdchk
 //===============================================================================//
 
+#pragma once
 #ifndef OSUUPDATECHECKER_H
 #define OSUUPDATECHECKER_H
 

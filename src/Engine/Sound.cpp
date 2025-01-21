@@ -22,8 +22,8 @@
 
 #elif defined(MCENGINE_FEATURE_SDL) && defined(MCENGINE_FEATURE_SDL_MIXER)
 
-#include "SDL.h"
-#include "SDL_mixer_ext.h"
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_mixer_ext.h>
 
 #endif
 

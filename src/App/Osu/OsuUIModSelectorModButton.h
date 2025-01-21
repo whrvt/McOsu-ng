@@ -5,6 +5,7 @@
 // $NoKeywords: $osumsmb
 //===============================================================================//
 
+#pragma once
 #ifndef OSUUIMODSELECTORMODBUTTON_H
 #define OSUUIMODSELECTORMODBUTTON_H
 

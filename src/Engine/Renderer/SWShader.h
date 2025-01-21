@@ -5,6 +5,7 @@
 // $NoKeywords: $swshader
 //===============================================================================//
 
+#pragma once
 #ifndef SWSHADER_H
 #define SWSHADER_H
 

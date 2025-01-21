@@ -7,6 +7,7 @@
 
 #ifdef __SWITCH__
 
+#pragma once
 #ifndef HORIZONSDLENVIRONMENT_H
 #define HORIZONSDLENVIRONMENT_H
 

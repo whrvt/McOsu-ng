@@ -2514,7 +2514,16 @@ void Osu::updateConfineCursor()
 	if ((osu_confine_cursor_fullscreen.getBool() && env->isFullscreen())
 			|| (osu_confine_cursor_windowed.getBool() && !env->isFullscreen())
 			|| (isInPlayMode() && !m_pauseMenu->isVisible() && !getModAuto() && !getModAutopilot()))
-		env->setCursorClip(true, McRect());
+	{
+		unsigned int offsetX = 0;
+		unsigned int offsetY = 0;
+		if (osu_letterboxing.getBool())
+		{
+			offsetX = (engine->getScreenWidth()/2 - g_vInternalResolution.x/2)*(1.0f + osu_letterboxing_offset_x.getFloat());
+			offsetY = (engine->getScreenHeight()/2 - g_vInternalResolution.y/2)*(1.0f + osu_letterboxing_offset_y.getFloat());
+		}
+		env->setCursorClip(true, McRect(offsetX, offsetY, g_vInternalResolution.x, g_vInternalResolution.y));
+	}
 	else
 		env->setCursorClip(false, McRect());
 }

@@ -5,6 +5,7 @@
 // $NoKeywords: $
 //===============================================================================//
 
+#pragma once
 #ifndef VSTITLEBAR_H
 #define VSTITLEBAR_H
 

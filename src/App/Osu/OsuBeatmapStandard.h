@@ -5,6 +5,7 @@
 // $NoKeywords: $osustd
 //===============================================================================//
 
+#pragma once
 #ifndef OSUBEATMAPSTANDARD_H
 #define OSUBEATMAPSTANDARD_H
 

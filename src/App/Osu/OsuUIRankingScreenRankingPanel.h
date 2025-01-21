@@ -5,6 +5,7 @@
 // $NoKeywords: $osursp
 //===============================================================================//
 
+#pragma once
 #ifndef OSUUIRANKINGSCREENRANKINGPANEL_H
 #define OSUUIRANKINGSCREENRANKINGPANEL_H
 

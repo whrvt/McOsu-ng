@@ -100,8 +100,8 @@ DWORD CALLBACK OutputWasapiProc(void *buffer, DWORD length, void *user)
 
 #if defined(MCENGINE_FEATURE_SDL) && defined(MCENGINE_FEATURE_SDL_MIXER)
 
-#include "SDL.h"
-#include "SDL_mixer.h"
+#include <SDL3/SDL.h>
+#include <SDL3_mixer/SDL_mixer.h>
 
 #endif
 
@@ -581,7 +581,7 @@ bool SoundEngine::initializeOutputDevice(int id)
 	const int freq = snd_freq.getInt();
 	const int channels = 16;
 
-	if (Mix_OpenAudio(freq, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, m_iMixChunkSize) < 0)
+	if (!Mix_OpenAudio(freq, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, m_iMixChunkSize))
 	{
 		const char *error = SDL_GetError();
 		debugLog("SoundEngine: Couldn't Mix_OpenAudio(): %s\n", error);

@@ -7,6 +7,7 @@
 
 // TODO: fix this
 
+#pragma once
 #ifndef CBASEUIBOXSHADOW_H
 #define CBASEUIBOXSHADOW_H
 

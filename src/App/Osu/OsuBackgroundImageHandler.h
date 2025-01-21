@@ -5,6 +5,7 @@
 // $NoKeywords: $osubgldr
 //===============================================================================//
 
+#pragma once
 #ifndef OSUBACKGROUNDIMAGEHANDLER_H
 #define OSUBACKGROUNDIMAGEHANDLER_H
 

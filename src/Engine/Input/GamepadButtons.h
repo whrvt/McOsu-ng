@@ -5,6 +5,7 @@
 // $NoKeywords: $xi
 //===============================================================================//
 
+#pragma once
 #ifndef GAMEPADBUTTONS_H
 #define GAMEPADBUTTONS_H
 

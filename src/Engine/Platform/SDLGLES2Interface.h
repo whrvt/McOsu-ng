@@ -5,6 +5,7 @@
 // $NoKeywords: $nxgli
 //===============================================================================//
 
+#pragma once
 #ifndef SDLGLES2INTERFACE_H
 #define SDLGLES2INTERFACE_H
 
@@ -12,7 +13,7 @@
 
 #if defined(MCENGINE_FEATURE_SDL) && defined(MCENGINE_FEATURE_OPENGLES)
 
-#include "SDL.h"
+#include <SDL3/SDL.h>
 
 class SDLGLES2Interface : public OpenGLES2Interface
 {

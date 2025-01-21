@@ -5,6 +5,7 @@
 // $NoKeywords: $osuvrtut
 //===============================================================================//
 
+#pragma once
 #ifndef OSUVRTUTORIAL_H
 #define OSUVRTUTORIAL_H
 

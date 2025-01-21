@@ -10,7 +10,9 @@
 .deps/
 .libs/
 build/
+build*/
 dist/
+dist-*/
 
 Makefile
 McOsu

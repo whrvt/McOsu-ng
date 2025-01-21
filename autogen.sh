@@ -28,6 +28,8 @@ find src -type f '(' -name "*.cpp" -o -name "*.c" ')' | LC_ALL=C sort | \
 
 echo "\$(NULL)" >> "$SOURCES_FILE"
 
+mkdir -p "$(dirname build/aux)"
+
 ########################################
 
 check_tool() {
@@ -46,7 +48,16 @@ echo "Running autotools..."
 autoreconf -fiv
 
 echo "
-Bootstrap complete. You can now run:
+Bootstrap complete. You can now build McOsu either:
+
+For development (recommended, out-of-tree build):
+  mkdir build
+  cd build
+  ../configure [options]
+  make
+  make install
+
+For end-users (in-tree build):
   ./configure [options]
   make
   make install

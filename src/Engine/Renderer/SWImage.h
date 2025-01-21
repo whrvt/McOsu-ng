@@ -5,6 +5,7 @@
 // $NoKeywords: $swimg
 //===============================================================================//
 
+#pragma once
 #ifndef SWIMAGE_H
 #define SWIMAGE_H
 

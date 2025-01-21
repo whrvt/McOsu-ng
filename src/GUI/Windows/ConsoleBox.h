@@ -5,6 +5,7 @@
 // $NoKeywords: $
 //===============================================================================//
 
+#pragma once
 #ifndef CONSOLEBOX_H
 #define CONSOLEBOX_H
 

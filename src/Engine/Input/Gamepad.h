@@ -5,6 +5,7 @@
 // $NoKeywords: $gamepad
 //===============================================================================//
 
+#pragma once
 #ifndef GAMEPAD_H
 #define GAMEPAD_H
 

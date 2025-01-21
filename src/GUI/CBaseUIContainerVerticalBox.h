@@ -5,6 +5,7 @@
  *      Author: Psy
  */
 
+#pragma once
 #ifndef GUI_CBASEUICONTAINERVERTICALBOX_H_
 #define GUI_CBASEUICONTAINERVERTICALBOX_H_
 

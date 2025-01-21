@@ -5,6 +5,7 @@
 // $NoKeywords: $gles2vao
 //===============================================================================//
 
+#pragma once
 #ifndef OPENGLES2VERTEXARRAYOBJECT_H
 #define OPENGLES2VERTEXARRAYOBJECT_H
 

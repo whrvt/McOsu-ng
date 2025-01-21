@@ -5,6 +5,7 @@
 // $NoKeywords: $osuskimg
 //===============================================================================//
 
+#pragma once
 #ifndef OSUSKINIMAGE_H
 #define OSUSKINIMAGE_H
 

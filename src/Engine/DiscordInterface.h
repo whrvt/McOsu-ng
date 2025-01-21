@@ -5,6 +5,7 @@
 // $NoKeywords: $discord-rpc
 //===============================================================================//
 
+#pragma once
 #ifndef DISCORDINTERFACE_H
 #define DISCORDINTERFACE_H
 

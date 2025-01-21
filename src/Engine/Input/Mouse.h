@@ -5,6 +5,7 @@
 // $NoKeywords: $mouse
 //===============================================================================//
 
+#pragma once
 #ifndef MOUSE_H
 #define MOUSE_H
 
@@ -29,6 +30,7 @@ public:
 
 	void onPosChange(Vector2 pos);
 	void onRawMove(int xDelta, int yDelta, bool absolute = false, bool virtualDesktop = false);
+	void onRawMove(float xDelta, float yDelta, bool absolute = false, bool virtualDesktop = false);
 
 	void onWheelVertical(int delta);
 	void onWheelHorizontal(int delta);

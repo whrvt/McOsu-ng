@@ -5,6 +5,7 @@
 // $NoKeywords: $imgtxat
 //===============================================================================//
 
+#pragma once
 #ifndef TEXTUREATLAS_H
 #define TEXTUREATLAS_H
 

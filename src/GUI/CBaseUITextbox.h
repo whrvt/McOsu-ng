@@ -5,6 +5,7 @@
 // $NoKeywords: $
 //===============================================================================//
 
+#pragma once
 #ifndef CBASEUITEXTBOX_H
 #define CBASEUITEXTBOX_H
 

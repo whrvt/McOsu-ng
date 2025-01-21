@@ -5,6 +5,7 @@
 // $NoKeywords: $fposu
 //=============================================================================================//
 
+#pragma once
 #ifndef OSUMODFPOSU_H
 #define OSUMODFPOSU_H
 

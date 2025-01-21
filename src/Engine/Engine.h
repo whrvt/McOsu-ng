@@ -5,6 +5,7 @@
 // $NoKeywords: $engine
 //===============================================================================//
 
+#pragma once
 #ifndef ENGINE_H
 #define ENGINE_H
 
@@ -63,6 +64,7 @@ public:
 	void onShutdown();
 
 	// primary mouse messages
+	void onMouseRawMove(float xDelta, float yDelta, bool absolute = false, bool virtualDesktop = false);
 	void onMouseRawMove(int xDelta, int yDelta, bool absolute = false, bool virtualDesktop = false);
 	void onMouseWheelVertical(int delta);
 	void onMouseWheelHorizontal(int delta);

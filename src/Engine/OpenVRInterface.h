@@ -5,6 +5,7 @@
 // $NoKeywords: $vr
 //===============================================================================//
 
+#pragma once
 #ifndef OPENVRINTERFACE_H
 #define OPENVRINTERFACE_H
 

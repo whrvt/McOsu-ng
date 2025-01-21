@@ -5,6 +5,7 @@
 // $NoKeywords: $osudiff
 //===============================================================================//
 
+#pragma once
 #ifndef OSUDATABASEBEATMAP_H
 #define OSUDATABASEBEATMAP_H
 

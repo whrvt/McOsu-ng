@@ -5,6 +5,7 @@
 // $NoKeywords: $osu
 //===============================================================================//
 
+#pragma once
 #ifndef OSUSCORE_H
 #define OSUSCORE_H
 

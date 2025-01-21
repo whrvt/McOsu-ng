@@ -7,6 +7,7 @@
 
 #ifdef __SWITCH__
 
+#pragma once
 #ifndef HORIZONTHREAD_H
 #define HORIZONTHREAD_H
 

@@ -115,6 +115,7 @@ McOsu_SOURCES = \
 	src/Engine/Platform/SDLEnvironment.cpp\
 	src/Engine/Platform/SDLGLES2Interface.cpp\
 	src/Engine/Platform/SDLGLLegacyInterface.cpp\
+	src/Engine/Platform/SDLTimer.cpp\
 	src/Engine/Platform/Thread.cpp\
 	src/Engine/Platform/Timer.cpp\
 	src/Engine/Platform/WinContextMenu.cpp\

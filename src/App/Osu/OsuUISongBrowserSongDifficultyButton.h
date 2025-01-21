@@ -5,6 +5,7 @@
 // $NoKeywords: $osusbsdb
 //===============================================================================//
 
+#pragma once
 #ifndef OSUUISONGBROWSERSONGDIFFICULTYBUTTON_H
 #define OSUUISONGBROWSERSONGDIFFICULTYBUTTON_H
 

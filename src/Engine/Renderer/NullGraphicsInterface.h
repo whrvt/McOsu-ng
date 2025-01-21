@@ -5,6 +5,7 @@
 // $NoKeywords: $ni
 //===============================================================================//
 
+#pragma once
 #ifndef NULLGRAPHICSINTERFACE_H
 #define NULLGRAPHICSINTERFACE_H
 

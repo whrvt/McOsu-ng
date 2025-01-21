@@ -5,6 +5,7 @@
 // $NoKeywords: $ncmenu
 //===============================================================================//
 
+#pragma once
 #ifndef NULLCONTEXTMENU_H
 #define NULLCONTEXTMENU_H
 

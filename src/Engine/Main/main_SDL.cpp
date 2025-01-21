@@ -16,7 +16,7 @@
 #error OpenGL support is currently required for SDL
 #endif
 
-#include "SDL.h"
+#include <SDL3/SDL.h>
 
 #include "Engine.h"
 #include "Profiler.h"
@@ -64,10 +64,11 @@ ConVar sdl_joystick0_deadzone("sdl_joystick0_deadzone", 0.3f, FCVAR_NONE);
 ConVar sdl_joystick_zl_threshold("sdl_joystick_zl_threshold", -0.5f, FCVAR_NONE);
 ConVar sdl_joystick_zr_threshold("sdl_joystick_zr_threshold", -0.5f, FCVAR_NONE);
 
-ConVar sdl_steamdeck_starttextinput_workaround("sdl_steamdeck_starttextinput_workaround", true, FCVAR_NONE, "currently used to fix an SDL2 bug on the Steam Deck (fixes USB/touch keyboard textual input not working under gamescope), see https://github.com/libsdl-org/SDL/issues/8561");
-ConVar sdl_steamdeck_doubletouch_workaround("sdl_steamdeck_doubletouch_workaround", true, FCVAR_NONE, "currently used to fix a Valve/SDL2 bug on the Steam Deck (fixes \"Touchscreen Native Support\" firing 4 events for one single touch under gamescope, i.e. DOWN/UP/DOWN/UP instead of just DOWN/UP)");
-
 ConVar debug_sdl("debug_sdl", false, FCVAR_NONE);
+
+#ifdef MCENGINE_SDL_TOUCHSUPPORT
+//ConVar sdl_steamdeck_starttextinput_workaround("sdl_steamdeck_starttextinput_workaround", true, FCVAR_NONE, "currently used to fix an SDL2 bug on the Steam Deck (fixes USB/touch keyboard textual input not working under gamescope), see https://github.com/libsdl-org/SDL/issues/8561");
+ConVar sdl_steamdeck_doubletouch_workaround("sdl_steamdeck_doubletouch_workaround", true, FCVAR_NONE, "currently used to fix a Valve/SDL2 bug on the Steam Deck (fixes \"Touchscreen Native Support\" firing 4 events for one single touch under gamescope, i.e. DOWN/UP/DOWN/UP instead of just DOWN/UP)");
 
 static bool isSteamDeckInt()
 {
@@ -90,6 +91,46 @@ static bool isGamescopeInt()
 	}
 	return false;
 }
+#define deckTouchHack (isSteamDeck && environment->wasLastMouseInputTouch())
+#else
+#define deckTouchHack false
+#endif
+
+static const char *getCategoryString(int category)
+{
+	switch (category)
+	{
+	case SDL_LOG_CATEGORY_APPLICATION:
+		return "APP";
+	case SDL_LOG_CATEGORY_ERROR:
+		return "ERR";
+	case SDL_LOG_CATEGORY_SYSTEM:
+		return "SYS";
+	case SDL_LOG_CATEGORY_AUDIO:
+		return "AUD";
+	case SDL_LOG_CATEGORY_VIDEO:
+		return "VID";
+	case SDL_LOG_CATEGORY_RENDER:
+		return "REN";
+	case SDL_LOG_CATEGORY_INPUT:
+		return "INP";
+	case SDL_LOG_CATEGORY_CUSTOM:
+		return "USR";
+	default:
+		return "???";
+	}
+}
+
+static void SDLLogCallback(void *userdata, int category, SDL_LogPriority priority, const char *message)
+{
+	if (!debug_sdl.getBool())
+	{
+		return;
+	}
+
+	const char *catStr = getCategoryString(category);
+	debugLog("SDL[%s]: %s\n", catStr, message);
+}
 
 int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 {
@@ -110,16 +151,18 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 #endif
 
 	// initialize sdl
-	if (SDL_Init(flags) < 0)
+	if (!SDL_Init(flags))
 	{
 		fprintf(stderr, "Couldn't SDL_Init(): %s\n", SDL_GetError());
 		return 1;
 	}
 
+	SDL_SetLogOutputFunction(SDLLogCallback, nullptr);
+
 	// pre window-creation settings
 #ifdef MCENGINE_FEATURE_OPENGL
 
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
 #endif
@@ -133,7 +176,7 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 
 #endif
 
-	uint32_t windowFlags = SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIDDEN | SDL_WINDOW_INPUT_FOCUS | SDL_WINDOW_MOUSE_FOCUS | SDL_WINDOW_FOREIGN;
+	uint32_t windowFlags = SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIDDEN | SDL_WINDOW_INPUT_FOCUS | SDL_WINDOW_MOUSE_FOCUS | SDL_WINDOW_EXTERNAL;
 
 #if defined(MCENGINE_FEATURE_OPENGL) || defined(MCENGINE_FEATURE_OPENGLES)
 
@@ -141,12 +184,23 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 
 #endif
 
+	const bool shouldBeBorderless = convar->getConVarByName("fullscreen_windowed_borderless")->getBool();
+	const bool shouldBeFullscreen = !(convar->getConVarByName("windowed") != NULL) || shouldBeBorderless;
+
+    SDL_PropertiesID props = SDL_CreateProperties();
+    SDL_SetStringProperty(props, SDL_PROP_WINDOW_CREATE_TITLE_STRING, WINDOW_TITLE);
+    SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_X_NUMBER, SDL_WINDOWPOS_CENTERED);
+    SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_Y_NUMBER, SDL_WINDOWPOS_CENTERED);
+    SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_WIDTH_NUMBER, WINDOW_WIDTH);
+    SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_HEIGHT_NUMBER, WINDOW_HEIGHT);
+	SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_RESIZABLE_BOOLEAN, true);
+	SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_FULLSCREEN_BOOLEAN, shouldBeFullscreen);
+	SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_BORDERLESS_BOOLEAN, shouldBeBorderless);
+    SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_FLAGS_NUMBER, windowFlags);
+
 	// create window
-	g_window = SDL_CreateWindow(
-			WINDOW_TITLE,
-			SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-			WINDOW_WIDTH, WINDOW_HEIGHT,
-			windowFlags);
+    g_window = SDL_CreateWindowWithProperties(props);
+    SDL_DestroyProperties(props);
 
 	if (g_window == NULL)
 	{
@@ -156,16 +210,18 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 
 	// get the screen refresh rate, and set fps_max to that as default
 	{
-		SDL_DisplayMode currentDisplayMode;
-		currentDisplayMode.refresh_rate = fps_max.getInt();
+		const SDL_DisplayMode * currentDisplayMode;
+		currentDisplayMode = SDL_GetCurrentDisplayMode(SDL_GetDisplayForWindow(g_window));
 
-		SDL_GetCurrentDisplayMode(SDL_GetWindowDisplayIndex(g_window), &currentDisplayMode);
-
-		if (currentDisplayMode.refresh_rate > 0)
+		if (currentDisplayMode->refresh_rate > 0)
 		{
-			///printf("Display Refresh Rate is %i Hz, setting fps_max to %i.\n\n", currentDisplayMode.refresh_rate, currentDisplayMode.refresh_rate);
-			fps_max.setValue(currentDisplayMode.refresh_rate);
-			fps_max.setDefaultFloat(currentDisplayMode.refresh_rate);
+			// debugLog("Display Refresh Rate is %f Hz, setting fps_max to %f.\n\n", currentDisplayMode->refresh_rate, currentDisplayMode->refresh_rate);
+			fps_max.setValue(currentDisplayMode->refresh_rate);
+			fps_max.setDefaultFloat(currentDisplayMode->refresh_rate);
+		}
+		else
+		{
+			fps_max.setValue(fps_max.getInt());
 		}
 	}
 
@@ -181,8 +237,8 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 
 #ifdef MCENGINE_SDL_JOYSTICK
 
-	SDL_JoystickOpen(0);
-	SDL_JoystickOpen(1);
+	SDL_OpenJoystick(0);
+	SDL_OpenJoystick(1);
 
 	float m_fJoystick0XPercent = 0.0f;
 	float m_fJoystick0YPercent = 0.0f;
@@ -225,16 +281,20 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 	deltaTimer->update();
 
 	// custom
+#ifdef MCENGINE_SDL_TOUCHSUPPORT
+	const bool isSteamDeckDoubletouchWorkaroundEnabled = (isSteamDeck && isGamescope && sdl_steamdeck_doubletouch_workaround.getBool());
 	const bool isSteamDeck = isSteamDeckInt();
 	const bool isGamescope = isGamescopeInt();
+	std::vector<SDL_FingerID> touchingFingerIds;
+	SDL_TouchID currentTouchId = 0;
+#endif
 
-	if (isSteamDeck && isGamescope && sdl_steamdeck_starttextinput_workaround.getBool())
-		SDL_StartTextInput();
+	// FIXME: sdl2-sdl3 stops listening to text input globally when window is created,
+	// recommended to start/stop listening to text input when required
+	SDL_StartTextInput(g_window);
 
 	Vector2 mousePos;
 	ConVar *mouse_raw_input_ref = convar->getConVarByName("mouse_raw_input");
-	std::vector<SDL_FingerID> touchingFingerIds;
-	SDL_TouchID currentTouchId = 0;
 
 	// main loop
 	SDL_Event e;
@@ -255,31 +315,31 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 		{
 			VPROF_BUDGET("SDL", VPROF_BUDGETGROUP_WNDPROC);
 
-			// // sanity, ensure any lost SDL_FINGERUP events (even though this should be impossible) don't kill cursor movement for the rest of the session
+			// sanity, ensure any lost SDL_FINGERUP events (even though this should be impossible) don't kill cursor movement for the rest of the session
 			// {
-			// 	if (SDL_GetNumTouchFingers(currentTouchId) < 1)
+			// 	int fingerCount;
+			// 	if (SDL_GetTouchFingers(currentTouchId, &fingerCount) && fingerCount < 1) // FIXME: this is wrong, probably (SDL2->SDL3)
 			// 		touchingFingerIds.clear();
 			// }
 
 			// handle automatic raw input toggling
 			{
-				const bool isRawInputActuallyEnabled = (SDL_GetRelativeMouseMode() == SDL_TRUE);
+				const bool isRawInputActuallyEnabled = (SDL_GetWindowRelativeMouseMode(g_window) == true);
 
 				const bool shouldRawInputBeEnabled = (mouse_raw_input_ref->getBool() && !environment->isCursorVisible());
 
 				if (shouldRawInputBeEnabled != isRawInputActuallyEnabled)
-					SDL_SetRelativeMouseMode(shouldRawInputBeEnabled ? SDL_TRUE : SDL_FALSE);
+					SDL_SetWindowRelativeMouseMode(g_window, shouldRawInputBeEnabled ? true : false);
 			}
 
-			const bool isRawInputEnabled = (SDL_GetRelativeMouseMode() == SDL_TRUE);
-			const bool isSteamDeckDoubletouchWorkaroundEnabled = (isSteamDeck && isGamescope && sdl_steamdeck_doubletouch_workaround.getBool());
-			const bool isDebugSdl = debug_sdl.getBool();
+			const bool isRawInputEnabled = (SDL_GetWindowRelativeMouseMode(g_window) == true);
+			const bool isDebugSdl = environment->sdlDebug(debug_sdl.getBool());
 
 			while (SDL_PollEvent(&e) != 0)
 			{
 				switch (e.type)
 				{
-				case SDL_QUIT:
+				case SDL_EVENT_QUIT :
 					if (g_bRunning)
 					{
 						g_bRunning = false;
@@ -288,52 +348,59 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 					break;
 
 				// window
-				case SDL_WINDOWEVENT:
-					switch (e.window.event)
+				case SDL_EVENT_WINDOW_FIRST ... SDL_EVENT_WINDOW_LAST:
+				{
+					switch (e.window.type)
 					{
-					case SDL_WINDOWEVENT_CLOSE:
+					case SDL_EVENT_WINDOW_CLOSE_REQUESTED :
 						if (g_bRunning)
 						{
 							g_bRunning = false;
 							g_engine->onShutdown();
 						}
 						break;
-					case SDL_WINDOWEVENT_FOCUS_GAINED:
+					case SDL_EVENT_WINDOW_FOCUS_GAINED :
 						g_bHasFocus = true;
 						g_engine->onFocusGained();
 						break;
-					case SDL_WINDOWEVENT_FOCUS_LOST:
+					case SDL_EVENT_WINDOW_FOCUS_LOST :
 						g_bHasFocus = false;
 						g_engine->onFocusLost();
 						break;
-					case SDL_WINDOWEVENT_MAXIMIZED:
+					case SDL_EVENT_WINDOW_MAXIMIZED :
 						g_bMinimized = false;
 						g_engine->onMaximized();
 						break;
-					case SDL_WINDOWEVENT_MINIMIZED:
+					case SDL_EVENT_WINDOW_MINIMIZED :
 						g_bMinimized = true;
 						g_engine->onMinimized();
 						break;
-					case SDL_WINDOWEVENT_RESTORED:
+					case SDL_EVENT_WINDOW_RESTORED :
 						g_bMinimized = false;
 						g_engine->onRestored();
 						break;
-					case SDL_WINDOWEVENT_SIZE_CHANGED:
+					case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED : case SDL_EVENT_WINDOW_RESIZED :
 						g_engine->requestResolutionChange(Vector2(e.window.data1, e.window.data2));
+						break;
+					default :
+						//debugLog("DEBUG: unhandled window event: %#08x\n", e.window.type);
 						break;
 					}
 					break;
-
+				}
 				// keyboard
-				case SDL_KEYDOWN:
-					g_engine->onKeyboardKeyDown(e.key.keysym.scancode);
+				case SDL_EVENT_KEY_DOWN :
+					//debugLog("DEBUG: keydown event: %#08x\n", e.key.scancode);
+					g_engine->onKeyboardKeyDown(e.key.scancode);
 					break;
 
-				case SDL_KEYUP:
-					g_engine->onKeyboardKeyUp(e.key.keysym.scancode);
+				case SDL_EVENT_KEY_UP :
+					//debugLog("DEBUG: keyup event: %#08x\n", e.key.scancode);
+					g_engine->onKeyboardKeyUp(e.key.scancode);
 					break;
 
-				case SDL_TEXTINPUT:
+				case SDL_EVENT_TEXT_INPUT :
+					//debugLog("DEBUG: text input event: %s\n", e.text.text);
 					{
 						UString nullTerminatedTextInputString(e.text.text);
 						for (int i=0; i<nullTerminatedTextInputString.length(); i++)
@@ -344,8 +411,8 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 					break;
 
 				// mouse
-				case SDL_MOUSEBUTTONDOWN:
-					if (!(isSteamDeck && environment->wasLastMouseInputTouch())) // HACKHACK: Steam Deck workaround (sends mouse events even though native touchscreen support is enabled)
+				case SDL_EVENT_MOUSE_BUTTON_DOWN :
+					if (!deckTouchHack) // HACKHACK: Steam Deck workaround (sends mouse events even though native touchscreen support is enabled)
 					{
 						switch (e.button.button)
 						{
@@ -369,8 +436,8 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 					}
 					break;
 
-				case SDL_MOUSEBUTTONUP:
-					if (!(isSteamDeck && environment->wasLastMouseInputTouch())) // HACKHACK: Steam Deck workaround (sends mouse events even though native touchscreen support is enabled)
+				case SDL_EVENT_MOUSE_BUTTON_UP :
+					if (!deckTouchHack) // HACKHACK: Steam Deck workaround (sends mouse events even though native touchscreen support is enabled)
 					{
 						switch (e.button.button)
 						{
@@ -394,18 +461,18 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 					}
 					break;
 
-				case SDL_MOUSEWHEEL:
+				case SDL_EVENT_MOUSE_WHEEL :
 					if (e.wheel.x != 0)
 						g_engine->onMouseWheelHorizontal(e.wheel.x > 0 ? 120*std::abs(e.wheel.x) : -120*std::abs(e.wheel.x)); // NOTE: convert to Windows units
 					if (e.wheel.y != 0)
 						g_engine->onMouseWheelVertical(e.wheel.y > 0 ? 120*std::abs(e.wheel.y) : -120*std::abs(e.wheel.y)); // NOTE: convert to Windows units
 					break;
 
-				case SDL_MOUSEMOTION:
-					if (!(isSteamDeck && environment->wasLastMouseInputTouch())) // HACKHACK: Steam Deck workaround (sends mouse events even though native touchscreen support is enabled)
+				case SDL_EVENT_MOUSE_MOTION :
+					if (!deckTouchHack) // HACKHACK: Steam Deck workaround (sends mouse events even though native touchscreen support is enabled)
 					{
 						if (isDebugSdl)
-							debugLog("SDL_MOUSEMOTION: xrel = %i, yrel = %i, which = %i\n", (int)e.motion.xrel, (int)e.motion.yrel, (int)e.motion.which);
+							debugLog("SDL_MOUSEMOTION: xrel = %f, yrel = %f, which = %i\n", e.motion.xrel, e.motion.yrel, (int)e.motion.which);
 
 						if (e.motion.which != SDL_TOUCH_MOUSEID)
 						{
@@ -419,19 +486,24 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 
 				// touch mouse
 				// NOTE: sometimes when quickly tapping with two fingers, events will get lost (due to the touchscreen believing that it was one finger which moved very quickly, instead of 2 tapping fingers)
-				case SDL_FINGERDOWN:
+#ifdef MCENGINE_SDL_TOUCHSUPPORT
+				case SDL_EVENT_FINGER_DOWN :
 					{
 						if (isDebugSdl)
-							debugLog("SDL_FINGERDOWN: touchId = %i, fingerId = %i, x = %f, y = %f\n", (int)e.tfinger.touchId, (int)e.tfinger.fingerId, e.tfinger.x, e.tfinger.y);
+							debugLog("SDL_FINGERDOWN: touchId = %i, fingerId = %i, x = %f, y = %f\n",
+								 (int) e.tfinger.touchID,
+								 (int) e.tfinger.fingerID,
+								 e.tfinger.x,
+								 e.tfinger.y);
 
 						environment->setWasLastMouseInputTouch(true);
 
-						currentTouchId = e.tfinger.touchId;
+						currentTouchId = e.tfinger.touchID;
 
 						bool isFingerIdAlreadyTouching = false;
 						for (const SDL_FingerID &touchingFingerId : touchingFingerIds)
 						{
-							if (touchingFingerId == e.tfinger.fingerId)
+							if (touchingFingerId == e.tfinger.fingerID)
 							{
 								isFingerIdAlreadyTouching = true;
 								break;
@@ -440,7 +512,7 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 
 						if (!isFingerIdAlreadyTouching || isSteamDeckDoubletouchWorkaroundEnabled)
 						{
-							touchingFingerIds.push_back(e.tfinger.fingerId);
+							touchingFingerIds.push_back(e.tfinger.fingerID);
 
 							if (!isSteamDeckDoubletouchWorkaroundEnabled || isFingerIdAlreadyTouching)
 							{
@@ -467,14 +539,18 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 					}
 					break;
 
-				case SDL_FINGERUP:
+				case SDL_EVENT_FINGER_UP :
 					{
 						if (isDebugSdl)
-							debugLog("SDL_FINGERUP: touchId = %i, fingerId = %i, x = %f, y = %f\n", (int)e.tfinger.touchId, (int)e.tfinger.fingerId, e.tfinger.x, e.tfinger.y);
+							debugLog("SDL_FINGERUP: touchId = %i, fingerId = %i, x = %f, y = %f\n",
+								 (int) e.tfinger.touchID,
+								 (int) e.tfinger.fingerID,
+								 e.tfinger.x,
+								 e.tfinger.y);
 
 						environment->setWasLastMouseInputTouch(true);
 
-						currentTouchId = e.tfinger.touchId;
+						currentTouchId = e.tfinger.touchID;
 
 						// NOTE: also removes the finger from the touchingFingerIds list
 						bool wasFingerIdAlreadyTouching = false;
@@ -482,7 +558,7 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 							size_t numFingerIdTouches = 0;
 							for (size_t i=0; i<touchingFingerIds.size(); i++)
 							{
-								if (touchingFingerIds[i] == e.tfinger.fingerId)
+								if (touchingFingerIds[i] == e.tfinger.fingerID)
 								{
 									wasFingerIdAlreadyTouching = true;
 									numFingerIdTouches++;
@@ -502,7 +578,7 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 								{
 									for (size_t i=0; i<touchingFingerIds.size(); i++)
 									{
-										if (touchingFingerIds[i] == e.tfinger.fingerId)
+										if (touchingFingerIds[i] == e.tfinger.fingerID)
 										{
 											touchingFingerIds.erase(touchingFingerIds.begin() + i);
 											i--;
@@ -514,25 +590,31 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 
 						if (wasFingerIdAlreadyTouching)
 						{
-							if (e.tfinger.fingerId == touchingFingerIds[0])
+							if (e.tfinger.fingerID == touchingFingerIds[0])
 								g_engine->onMouseLeftChange(false);
 						}
 					}
 					break;
 
-				case SDL_FINGERMOTION:
+				case SDL_EVENT_FINGER_MOTION :
 					{
 						if (isDebugSdl)
-							debugLog("SDL_FINGERMOTION: touchId = %i, fingerId = %i, x = %f, y = %f, dx = %f, dy = %f\n", (int)e.tfinger.touchId, (int)e.tfinger.fingerId, e.tfinger.x, e.tfinger.y, e.tfinger.dx, e.tfinger.dy);
+							debugLog("SDL_FINGERMOTION: touchId = %i, fingerId = %i, x = %f, y = %f, dx = %f, dy = %f\n",
+								 (int) e.tfinger.touchID,
+								 (int) e.tfinger.fingerID,
+								 e.tfinger.x,
+								 e.tfinger.y,
+								 e.tfinger.dx,
+								 e.tfinger.dy);
 
 						environment->setWasLastMouseInputTouch(true);
 
-						currentTouchId = e.tfinger.touchId;
+						currentTouchId = e.tfinger.touchID;
 
 						bool isFingerIdTouching = false;
 						for (size_t i=0; i<touchingFingerIds.size(); i++)
 						{
-							if (touchingFingerIds[i] == e.tfinger.fingerId)
+							if (touchingFingerIds[i] == e.tfinger.fingerID)
 							{
 								isFingerIdTouching = true;
 								break;
@@ -541,7 +623,7 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 
 						if (isFingerIdTouching)
 						{
-							if (e.tfinger.fingerId == touchingFingerIds[0])
+							if (e.tfinger.fingerID == touchingFingerIds[0])
 							{
 								mousePos = Vector2(e.tfinger.x, e.tfinger.y) * g_engine->getScreenSize();
 								environment->setMousePos(mousePos.x, mousePos.y);
@@ -550,12 +632,12 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 						}
 					}
 					break;
-
+#endif
 				// joystick keyboard
 				// NOTE: defaults to xbox 360 controller layout on all non-horizon environments
 #ifdef MCENGINE_SDL_JOYSTICK
 
-				case SDL_JOYBUTTONDOWN:
+				case SDL_EVENT_JOYSTICK_BUTTON_DOWN :
 					if (isDebugSdl)
 						debugLog("SDL_JOYBUTTONDOWN: joystickId = %i, button = %i\n", (int)e.jbutton.which, (int)e.jbutton.button);
 
@@ -625,7 +707,7 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 					}
 					break;
 
-				case SDL_JOYBUTTONUP:
+				case SDL_EVENT_JOYSTICK_BUTTON_UP :
 					if (e.jbutton.button == 0) // KEY_A
 						g_engine->onMouseLeftChange(false);
 					else if ((env->getOS() == Environment::OS::OS_HORIZON ? e.jbutton.button == 10 : e.jbutton.button == 7) || e.jbutton.button == 1) // KEY_PLUS/KEY_START || KEY_B
@@ -657,7 +739,7 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 						g_engine->onKeyboardKeyUp(SDL_SCANCODE_F1);
 					break;
 
-				case SDL_JOYAXISMOTION:
+				case SDL_EVENT_JOYSTICK_AXIS_MOTION :
 					//debugLog("joyaxismotion: stick %i : axis = %i, value = %i\n", (int)e.jaxis.which, (int)e.jaxis.axis, (int)e.jaxis.value);
 					// left stick
 					if (e.jaxis.axis == 1 || e.jaxis.axis == 0)
@@ -704,7 +786,7 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 					}
 					break;
 
-				case SDL_JOYHATMOTION:
+				case SDL_EVENT_JOYSTICK_HAT_MOTION :
 					//debugLog("joyhatmotion: hat %i : value = %i\n", (int)e.jhat.hat, (int)e.jhat.value);
 					if (env->getOS() != Environment::OS::OS_HORIZON)
 					{
@@ -826,36 +908,28 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 
 			frameTimer->update();
 			const bool inBackground = g_bMinimized || !g_bHasFocus;
-			if ((!fps_unlimited.getBool() && fps_max.getInt() > 0) || inBackground)
+            const bool shouldSleep = (!fps_unlimited.getBool() && fps_max.getFloat() > 0) || inBackground;
+            const bool shouldYield = fps_unlimited_yield.getBool() || fps_max_yield.getBool();
+
+			// limit
+			if (shouldSleep)
 			{
-				double delayStart = frameTimer->getElapsedTime();
-				double delayTime;
-				if (inBackground)
-					delayTime = (1.0 / (double)fps_max_background.getFloat()) - frameTimer->getDelta();
-				else
-					delayTime = (1.0 / (double)fps_max.getFloat()) - frameTimer->getDelta();
+				const float targetFps = inBackground ? fps_max_background.getFloat() : fps_max.getFloat();
 
-				const bool didSleep = delayTime > 0.0;
-				while (delayTime > 0.0)
+				// calculate target frame time, remove a bit of scheduling delay
+				const uint64_t targetFrameTimeNs = (static_cast<uint64_t>((1.0 / targetFps) * SDL_NS_PER_SECOND)) * 0.95;
+				const uint64_t elapsedFrameTimeNs = static_cast<uint64_t>(frameTimer->getDelta() * SDL_NS_PER_SECOND);
+
+				// only sleep if we're ahead of schedule
+				if (elapsedFrameTimeNs < targetFrameTimeNs)
 				{
-					if (inBackground) // real waiting (very inaccurate, but very good for little background cpu utilization)
-						env->sleep((int)((1.0f / fps_max_background.getFloat())*1000.0f*1000.0f));
-					else // more or less "busy" waiting, but giving away the rest of the timeslice at least
-						env->sleep(0); // yes, there is a zero in there
-
-					// decrease the delayTime by the time we spent in this loop
-					// if the loop is executed more than once, note how delayStart now gets the value of the previous iteration from getElapsedTime()
-					// this works because the elapsed time is only updated in update(). now we can easily calculate the time the Sleep() took and subtract it from the delayTime
-					delayStart = frameTimer->getElapsedTime();
-					frameTimer->update();
-					delayTime -= (frameTimer->getElapsedTime() - delayStart);
+					const uint64_t sleepTimeNs = targetFrameTimeNs - elapsedFrameTimeNs;
+					env->sleep(static_cast<unsigned int>(sleepTimeNs / SDL_NS_PER_US));
 				}
-
-				if (!didSleep && fps_max_yield.getBool())
-					env->sleep(0); // yes, there is a zero in there
 			}
-			else if (fps_unlimited_yield.getBool())
-				env->sleep(0); // yes, there is a zero in there
+			if (shouldYield) env->sleep(0);
+ 			// always update timer if we slept/yielded to capture time in wait
+			if (shouldYield || shouldSleep) frameTimer->update();
 		}
 	}
 
@@ -863,15 +937,17 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 	SAFE_DELETE(frameTimer);
 	SAFE_DELETE(deltaTimer);
 
-    // release engine
+	// release engine
     SAFE_DELETE(g_engine);
 
     // and the opengl context
 #if defined(MCENGINE_FEATURE_OPENGL) || defined(MCENGINE_FEATURE_OPENGLES)
 
-	SDL_GL_DeleteContext(context);
+	SDL_GL_DestroyContext(context);
 
 #endif
+
+	SDL_StopTextInput(g_window);
 
 	// finally, destroy the window
 	SDL_DestroyWindow(g_window);

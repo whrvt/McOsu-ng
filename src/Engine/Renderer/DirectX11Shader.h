@@ -5,6 +5,7 @@
 // $NoKeywords: $dxshader
 //===============================================================================//
 
+#pragma once
 #ifndef DIRECTX11SHADER_H
 #define DIRECTX11SHADER_H
 

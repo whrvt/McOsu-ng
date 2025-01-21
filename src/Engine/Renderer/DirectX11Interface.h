@@ -5,6 +5,7 @@
 // $NoKeywords: $dx11i
 //===============================================================================//
 
+#pragma once
 #ifndef DIRECTX11INTERFACE_H
 #define DIRECTX11INTERFACE_H
 

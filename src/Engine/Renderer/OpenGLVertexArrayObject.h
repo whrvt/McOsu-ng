@@ -5,6 +5,7 @@
 // $NoKeywords: $glvao
 //===============================================================================//
 
+#pragma once
 #ifndef OPENGLVERTEXARRAYOBJECT_H
 #define OPENGLVERTEXARRAYOBJECT_H
 

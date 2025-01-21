@@ -5,6 +5,7 @@
 // $NoKeywords: $
 //===============================================================================//
 
+#pragma once
 #ifndef OSUUISONGBROWSERSCOREBUTTON_H
 #define OSUUISONGBROWSERSCOREBUTTON_H
 

@@ -5,6 +5,7 @@
 // $NoKeywords: $hitobj
 //===============================================================================//
 
+#pragma once
 #ifndef OSUHITOBJECT_H
 #define OSUHITOBJECT_H
 

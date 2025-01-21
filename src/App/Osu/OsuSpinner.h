@@ -5,6 +5,7 @@
 // $NoKeywords: $spin
 //=====================================================================================================//
 
+#pragma once
 #ifndef OSUSPINNER_H
 #define OSUSPINNER_H
 

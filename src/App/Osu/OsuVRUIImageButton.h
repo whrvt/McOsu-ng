@@ -5,6 +5,7 @@
 // $NoKeywords: $osuvribt
 //===============================================================================//
 
+#pragma once
 #ifndef OSUVRUIIMAGEBUTTON_H
 #define OSUVRUIIMAGEBUTTON_H
 

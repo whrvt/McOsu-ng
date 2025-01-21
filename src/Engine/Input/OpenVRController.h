@@ -5,6 +5,7 @@
 // $NoKeywords: $vrc
 //===============================================================================//
 
+#pragma once
 #ifndef OPENVRCONTROLLER_H
 #define OPENVRCONTROLLER_H
 

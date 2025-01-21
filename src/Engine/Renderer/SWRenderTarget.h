@@ -5,6 +5,7 @@
 // $NoKeywords: $swrt
 //===================================================================================//
 
+#pragma once
 #ifndef SWRENDERTARGET_H
 #define SWRENDERTARGET_H
 

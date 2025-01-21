@@ -5,6 +5,7 @@
 // $NoKeywords: $osums
 //===============================================================================//
 
+#pragma once
 #ifndef OSUMODSELECTOR_H
 #define OSUMODSELECTOR_H
 

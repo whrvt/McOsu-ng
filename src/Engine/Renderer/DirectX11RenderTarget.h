@@ -5,6 +5,7 @@
 // $NoKeywords: $drt
 //===============================================================================//
 
+#pragma once
 #ifndef DIRECTX11RENDERTARGET_H
 #define DIRECTX11RENDERTARGET_H
 

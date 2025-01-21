@@ -7,6 +7,7 @@
 
 #ifdef __APPLE__
 
+#pragma once
 #ifndef MAIN_OSX_CPP_H
 #define MAIN_OSX_CPP_H
 

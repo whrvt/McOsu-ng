@@ -5,6 +5,7 @@
 // $NoKeywords: $
 //===============================================================================//
 
+#pragma once
 #ifndef VSMUSICBROWSER_H
 #define VSMUSICBROWSER_H
 

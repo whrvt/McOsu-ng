@@ -5,6 +5,7 @@
 // $NoKeywords: $
 //===============================================================================//
 
+#pragma once
 #ifndef OSUSCREENBACKABLE_H
 #define OSUSCREENBACKABLE_H
 

@@ -5,6 +5,7 @@
 // $NoKeywords: $osumania
 //===============================================================================//
 
+#pragma once
 #ifndef OSU_OSUBEATMAPMANIA_H
 #define OSU_OSUBEATMAPMANIA_H
 

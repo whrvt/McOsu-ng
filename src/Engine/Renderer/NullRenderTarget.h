@@ -5,6 +5,7 @@
 // $NoKeywords: $nrt
 //===============================================================================//
 
+#pragma once
 #ifndef NULLRENDERTARGET_H
 #define NULLRENDERTARGET_H
 

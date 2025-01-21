@@ -5,6 +5,7 @@
 // $NoKeywords: $
 //===============================================================================//
 
+#pragma once
 #ifndef OSUUIUSERSTATSSCREENLABEL_H
 #define OSUUIUSERSTATSSCREENLABEL_H
 

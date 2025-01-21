@@ -5,6 +5,7 @@
 // $NoKeywords: $osubgscache
 //===============================================================================//
 
+#pragma once
 #ifndef OSUBACKGROUNDSTARCACHELOADER_H
 #define OSUBACKGROUNDSTARCACHELOADER_H
 

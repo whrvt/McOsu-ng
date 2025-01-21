@@ -5,6 +5,7 @@
 // $NoKeywords: $osubdb
 //===============================================================================//
 
+#pragma once
 #ifndef OSUDATABASE_H
 #define OSUDATABASE_H
 

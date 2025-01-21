@@ -5,6 +5,7 @@
 // $NoKeywords: $steam
 //===============================================================================//
 
+#pragma once
 #ifndef STEAMWORKSINTERFACE_H
 #define STEAMWORKSINTERFACE_H
 

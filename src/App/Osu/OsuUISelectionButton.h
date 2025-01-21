@@ -5,6 +5,7 @@
 // $NoKeywords: $
 //===============================================================================//
 
+#pragma once
 #ifndef OSUUISELECTIONBUTTON_H
 #define OSUUISELECTIONBUTTON_H
 

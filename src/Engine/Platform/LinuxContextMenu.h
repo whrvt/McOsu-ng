@@ -9,6 +9,7 @@
 
 #ifdef __linux__
 
+#pragma once
 #ifndef LINUXCONTEXTMENU_H
 #define LINUXCONTEXTMENU_H
 

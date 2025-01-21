@@ -7,6 +7,7 @@
 
 #ifdef __linux__
 
+#pragma once
 #ifndef LINUXGLINTERFACE_H
 #define LINUXGLINTERFACE_H
 

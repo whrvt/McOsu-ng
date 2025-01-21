@@ -5,6 +5,7 @@
 // $NoKeywords: $osugrm
 //===============================================================================//
 
+#pragma once
 #ifndef OSUGAMERULESMANIA_H
 #define OSUGAMERULESMANIA_H
 

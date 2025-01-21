@@ -5,6 +5,7 @@
 // $NoKeywords: $osugr
 //===============================================================================//
 
+#pragma once
 #ifndef OSUGAMERULES_H
 #define OSUGAMERULES_H
 

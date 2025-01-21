@@ -46,11 +46,6 @@
 //********************//
 
 #include "Osu.h"
-//#include "GUICoherenceMode.h"
-//#include "Asteroids.h"
-//#include "FrameworkTest.h"
-
-
 
 class EngineLoadingScreenApp : public App
 {
@@ -329,14 +324,6 @@ void Engine::loadApp()
 
 		m_app = new Osu();
 
-		//m_app = new GUICoherenceMode();
-
-		//m_app = new Asteroids();
-
-		//m_app = new FrameworkTest();
-
-
-
 		// start listening to the default keyboard input
 		if (m_app != NULL)
 			m_keyboard->addListener(m_app);
@@ -597,6 +584,11 @@ void Engine::onShutdown()
 	m_environment->shutdown();
 }
 
+void Engine::onMouseRawMove(float xDelta, float yDelta, bool absolute, bool virtualDesktop)
+{
+	m_mouse->onRawMove(xDelta, yDelta, absolute, virtualDesktop);
+}
+
 void Engine::onMouseRawMove(int xDelta, int yDelta, bool absolute, bool virtualDesktop)
 {
 	m_mouse->onRawMove(xDelta, yDelta, absolute, virtualDesktop);
@@ -799,8 +791,9 @@ void Engine::removeGamepad(Gamepad *gamepad)
 
 void Engine::requestResolutionChange(Vector2 newResolution)
 {
-	if (newResolution == m_vNewScreenSize) return;
-
+	// FIXME: sdl2->sdl3 broke this check on non-fullscreen startup
+	// if (newResolution == m_vNewScreenSize) return;
+	// debugLog("newRes (%i,%i) m_vNewScreenSize (%i,%i)\n", (int)newResolution.x, (int)newResolution.y, (int)m_vNewScreenSize.x, (int)m_vNewScreenSize.y);
 	m_vNewScreenSize = newResolution;
 	m_bResolutionChange = true;
 }

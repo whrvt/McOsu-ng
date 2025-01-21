@@ -5,6 +5,7 @@
 // $NoKeywords: $button
 //===============================================================================//
 
+#pragma once
 #ifndef CBASEUIBUTTON_H
 #define CBASEUIBUTTON_H
 

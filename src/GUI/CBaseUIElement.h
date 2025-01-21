@@ -5,6 +5,7 @@
 // $NoKeywords: $buie
 //===============================================================================//
 
+#pragma once
 #ifndef CBASEUIELEMENT_H
 #define CBASEUIELEMENT_H
 

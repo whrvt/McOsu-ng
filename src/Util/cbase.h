@@ -5,6 +5,7 @@
 // $NoKeywords: $base
 //===============================================================================//
 
+#pragma once
 #ifndef CBASE_H
 #define CBASE_H
 

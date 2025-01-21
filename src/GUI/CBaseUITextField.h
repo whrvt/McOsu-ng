@@ -5,6 +5,7 @@
 // $NoKeywords: $
 //===============================================================================//
 
+#pragma once
 #ifndef CBASEUITEXTFIELD_H
 #define CBASEUITEXTFIELD_H
 

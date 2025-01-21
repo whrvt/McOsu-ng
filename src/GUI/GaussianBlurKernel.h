@@ -5,6 +5,7 @@
 // $NoKeywords: $gblur
 //===============================================================================//
 
+#pragma once
 #ifndef GAUSSIANBLURKERNEL_H
 #define GAUSSIANBLURKERNEL_H
 

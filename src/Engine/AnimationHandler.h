@@ -5,6 +5,7 @@
 // $NoKeywords: $anim
 //===============================================================================//
 
+#pragma once
 #ifndef ANIMATIONHANDLER_H
 #define ANIMATIONHANDLER_H
 

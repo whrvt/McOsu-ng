@@ -5,6 +5,7 @@
 // $NoKeywords: $
 //===============================================================================//
 
+#pragma once
 #ifndef CBASEUIIMAGEBUTTON_H
 #define CBASEUIIMAGEBUTTON_H
 

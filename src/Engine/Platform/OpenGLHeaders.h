@@ -5,6 +5,7 @@
 // $NoKeywords: $glh
 //===============================================================================//
 
+#pragma once
 #ifndef OPENGLHEADERS_H
 #define OPENGLHEADERS_H
 

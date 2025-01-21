@@ -5,6 +5,7 @@
  *      Author: Psy
  */
 
+#pragma once
 #ifndef OSUEDITOR_H
 #define OSUEDITOR_H
 

@@ -5,6 +5,7 @@
 // $NoKeywords: $convar
 //===============================================================================//
 
+#pragma once
 #ifndef CONVAR_H
 #define CONVAR_H
 

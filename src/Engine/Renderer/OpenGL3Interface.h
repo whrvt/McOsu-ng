@@ -5,6 +5,7 @@
 // $NoKeywords: $gl3i
 //===============================================================================//
 
+#pragma once
 #ifndef OPENGL3INTERFACE_H
 #define OPENGL3INTERFACE_H
 
