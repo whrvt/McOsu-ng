@@ -439,18 +439,13 @@ void SDLEnvironment::setCursorClip(bool clip, McRect rect)
 
 	if (clip)
 	{
-		if (rect.getWidth() == 0 && rect.getHeight() == 0)
-		{
-			m_cursorClip = McRect(0, 0, engine->getScreenWidth(), engine->getScreenHeight());
-		}
-		else
-		{
-			m_cursorClip = McRect(rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight());
-		}
-		const SDL_Rect clipRect{rect.getWidth()  == 0 ? 0 : (int)rect.getX(),
-								rect.getHeight() == 0 ? 0 : (int)rect.getY(),
-								rect.getWidth()  == 0 ? engine->getScreenWidth() : (int)rect.getWidth(),
-								rect.getHeight() == 0 ? engine->getScreenHeight() : (int)rect.getHeight()};
+		const SDL_Rect clipRect {
+			static_cast<int>(rect.getX()),
+			static_cast<int>(rect.getY()),
+			static_cast<int>(rect.getWidth()),
+			static_cast<int>(rect.getHeight())
+		};
+
 		SDL_CaptureMouse(true);
 		SDL_SetWindowMouseRect(m_window, &clipRect);
 		//SDL_SetWindowMouseGrab(m_window, true); // FIXME: sdl2->sdl3 wtf why does moving the mouse stop generating SDL_EVENT_MOUSE_MOTION when grabbed?

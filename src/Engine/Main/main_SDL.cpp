@@ -162,7 +162,7 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 	// pre window-creation settings
 #ifdef MCENGINE_FEATURE_OPENGL
 
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY);
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
 #endif
@@ -263,6 +263,15 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
     Timer *deltaTimer = new Timer();
     deltaTimer->start();
     deltaTimer->update();
+
+	Timer *fpsCalcTimer = new Timer();
+	fpsCalcTimer->start();
+	fpsCalcTimer->update();
+
+	// variables to keep track of fps overhead adjustment
+	uint64_t frameCountSinceLastFpsCalc = 0;
+	double actualGameFps = 0.0;
+	double fpsAdjustment = 0.0;
 
     // make the window visible
     SDL_ShowWindow(g_window);
@@ -902,40 +911,55 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 			g_bDrawing = false;
 		}
 
-		// delay the next frame
+		// delay the next frame (if desired)
 		{
 			VPROF_BUDGET("FPSLimiter", VPROF_BUDGETGROUP_SLEEP);
 
-			frameTimer->update();
 			const bool inBackground = g_bMinimized || !g_bHasFocus;
-            const bool shouldSleep = (!fps_unlimited.getBool() && fps_max.getFloat() > 0) || inBackground;
-            const bool shouldYield = fps_unlimited_yield.getBool() || fps_max_yield.getBool();
+			const bool shouldSleep = (!fps_unlimited.getBool() && fps_max.getFloat() > 0) || inBackground;
+			const bool shouldYield = fps_unlimited_yield.getBool() || fps_max_yield.getBool();
 
-			// limit
 			if (shouldSleep)
 			{
 				const float targetFps = inBackground ? fps_max_background.getFloat() : fps_max.getFloat();
+				const double rawTargetFrameTime = 1.0 / targetFps;
 
-				// calculate target frame time, remove a bit of scheduling delay
-				const uint64_t targetFrameTimeNs = (static_cast<uint64_t>((1.0 / targetFps) * SDL_NS_PER_SECOND)) * 0.95;
-				const uint64_t elapsedFrameTimeNs = static_cast<uint64_t>(frameTimer->getDelta() * SDL_NS_PER_SECOND);
+				frameCountSinceLastFpsCalc++;
 
-				// only sleep if we're ahead of schedule
-				if (elapsedFrameTimeNs < targetFrameTimeNs)
-				{
-					const uint64_t sleepTimeNs = targetFrameTimeNs - elapsedFrameTimeNs;
-					env->sleep(static_cast<unsigned int>(sleepTimeNs / SDL_NS_PER_US));
+				fpsCalcTimer->update();
+				if (fpsCalcTimer->getElapsedTime() >= 0.5) {
+					actualGameFps = static_cast<double>(frameCountSinceLastFpsCalc) / fpsCalcTimer->getElapsedTime();
+
+					if (actualGameFps < targetFps * 0.98)
+						fpsAdjustment -= 0.5;
+					else if (actualGameFps > targetFps * 1.02)
+						fpsAdjustment += 0.5;
+					clamp<double>(fpsAdjustment, -20.0f, 20.0f);
+					// reset fps adjustment timer for the next measurement period
+					frameCountSinceLastFpsCalc = 0;
+					fpsCalcTimer->start();
 				}
+				frameTimer->update();
+				const double adjustedTargetFrameTime = rawTargetFrameTime * (1.0 + (fpsAdjustment / 100.0));
+				const double frameTimeDelta = frameTimer->getDelta();
+
+				// finally sleep for the adjusted amount of time
+				if (frameTimeDelta < adjustedTargetFrameTime)
+					env->sleep(static_cast<unsigned int>((adjustedTargetFrameTime - frameTimeDelta) * SDL_US_PER_SECOND));
+				else if (shouldYield)
+					env->sleep(0);
+
+				// set the start time of the next loop iteration
+				frameTimer->update();
 			}
-			if (shouldYield) env->sleep(0);
- 			// always update timer if we slept/yielded to capture time in wait
-			if (shouldYield || shouldSleep) frameTimer->update();
+			else if (shouldYield) env->sleep(0);
 		}
 	}
 
 	// release the timers
 	SAFE_DELETE(frameTimer);
 	SAFE_DELETE(deltaTimer);
+	SAFE_DELETE(fpsCalcTimer);
 
 	// release engine
     SAFE_DELETE(g_engine);
