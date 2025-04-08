@@ -270,7 +270,6 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 
 	// variables to keep track of fps overhead adjustment
 	uint64_t frameCountSinceLastFpsCalc = 0;
-	double actualGameFps = 0.0;
 	double fpsAdjustment = 0.0;
 
     // make the window visible
@@ -922,26 +921,28 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 			if (shouldSleep)
 			{
 				const float targetFps = inBackground ? fps_max_background.getFloat() : fps_max.getFloat();
-				const double rawTargetFrameTime = 1.0 / targetFps;
 
 				frameCountSinceLastFpsCalc++;
-
 				fpsCalcTimer->update();
-				if (fpsCalcTimer->getElapsedTime() >= 0.5) {
-					actualGameFps = static_cast<double>(frameCountSinceLastFpsCalc) / fpsCalcTimer->getElapsedTime();
 
-					if (actualGameFps < targetFps * 0.98)
-						fpsAdjustment -= 0.5;
-					else if (actualGameFps > targetFps * 1.02)
-						fpsAdjustment += 0.5;
-					clamp<double>(fpsAdjustment, -20.0f, 20.0f);
+				if (fpsCalcTimer->getElapsedTime() >= 0.5f) {
+					if (!inBackground)
+					{
+						const double actualGameFps = static_cast<double>(frameCountSinceLastFpsCalc) / fpsCalcTimer->getElapsedTime();
+						if (actualGameFps < targetFps * 0.99f && actualGameFps > targetFps * 0.9f)
+							fpsAdjustment -= 0.5f;
+						else if (actualGameFps > targetFps * 1.02f)
+							fpsAdjustment += 0.5f;
+						clamp<double>(fpsAdjustment, -20.0f, 0.5f);
+					}
+
 					// reset fps adjustment timer for the next measurement period
 					frameCountSinceLastFpsCalc = 0;
 					fpsCalcTimer->start();
 				}
 				frameTimer->update();
-				const double adjustedTargetFrameTime = rawTargetFrameTime * (1.0 + (fpsAdjustment / 100.0));
 				const double frameTimeDelta = frameTimer->getDelta();
+				const double adjustedTargetFrameTime = (1.0f / targetFps) * (1.0f + (inBackground ? 0.0f : fpsAdjustment) / 100.0f);
 
 				// finally sleep for the adjusted amount of time
 				if (frameTimeDelta < adjustedTargetFrameTime)
