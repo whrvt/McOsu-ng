@@ -10,7 +10,7 @@
 #define SOUND_H
 
 #include "Resource.h"
-
+#include "SoundEngine.h"
 class SoundEngine;
 
 class Sound : public Resource
@@ -60,7 +60,6 @@ public:
 	void setPrevPosition(unsigned long prevPosition) {m_iPrevPosition = prevPosition;}
 	inline void *getMixChunkOrMixMusic() const {return m_mixChunkOrMixMusic;}
 	inline unsigned long getPrevPosition() const {return m_iPrevPosition;}
-
 private:
 	virtual void init();
 	virtual void initAsync();
@@ -93,6 +92,9 @@ private:
 	// sdl mixer
 	void *m_mixChunkOrMixMusic;
 	unsigned long m_iPrevPosition;
+#if defined(MCENGINE_FEATURE_SOUND)
+    inline unsigned int _BASS_FX_TempoCreate(unsigned int chan, unsigned int flags) const {return SoundEngine::m_BASS_FX_TempoCreate(chan, flags);}
+#endif
 };
 
 #endif

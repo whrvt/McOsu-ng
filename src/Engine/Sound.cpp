@@ -42,8 +42,6 @@ ConVar snd_play_interp_ratio("snd_play_interp_ratio", 0.50f, FCVAR_NONE, "percen
 
 ConVar snd_wav_file_min_size("snd_wav_file_min_size", 51, FCVAR_NONE, "minimum file size in bytes for WAV files to be considered valid (everything below will fail to load), this is a workaround for BASS crashes");
 
-
-
 Sound::Sound(UString filepath, bool stream, bool threeD, bool loop, bool prescan) : Resource(filepath)
 {
 	m_HSTREAM = 0;
@@ -158,7 +156,7 @@ void Sound::initAsync()
 
 #endif
 
-		m_HSTREAM = BASS_FX_TempoCreate(m_HSTREAM, BASS_FX_FREESOURCE | extraFXTempoCreateFlags);
+		m_HSTREAM = _BASS_FX_TempoCreate(m_HSTREAM, BASS_FX_FREESOURCE | extraFXTempoCreateFlags);
 
 		BASS_ChannelSetAttribute(m_HSTREAM, BASS_ATTRIB_TEMPO_OPTION_USE_QUICKALGO, true);
 		BASS_ChannelSetAttribute(m_HSTREAM, BASS_ATTRIB_TEMPO_OPTION_OVERLAP_MS, 4.0f);

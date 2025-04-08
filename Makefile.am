@@ -112,7 +112,7 @@ MCOSU_INCLUDE_FLAGS = $(shell find $(srcdir)/src -not -path '*/.*' -type d -prin
 McOsu_CXXFLAGS = \
 	$(MCOSU_INCLUDE_FLAGS) \
 	-I$(srcdir)/$(BUNDLED_BASS_DIR)/include \
-	-I$(srcdir)/$(BUNDLED_BASS_FX_DIR)/include \
+    -I$(srcdir)/$(BUNDLED_BASS_FX_DIR)/include \
 	$(SDL3_CFLAGS) \
 	$(X11_CFLAGS) \
 	$(XI_CFLAGS) \
@@ -129,8 +129,8 @@ McOsu_CFLAGS = $(McOsu_CXXFLAGS)
 McOsu_LDFLAGS = \
 	-Wl,-rpath='$$ORIGIN/lib',-rpath='$$ORIGIN' \
 	-L$(srcdir)/$(BUNDLED_BASS_DIR)/lib/linux \
-	-L$(srcdir)/$(BUNDLED_BASS_FX_DIR)/lib/linux \
-	-lbass -lbass_fx \
+    -Wl,--lto-whole-program-visibility \
+	-lbass \
 	$(SDL3_LIBS) \
 	$(X11_LIBS) \
 	$(XI_LIBS) \

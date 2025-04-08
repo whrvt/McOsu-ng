@@ -47,8 +47,6 @@ AC_ARG_ENABLE([debug],
     AS_HELP_STRING([--enable-debug], [Enable debug build (default: no)]))
 AC_ARG_ENABLE([clang],
     AS_HELP_STRING([--enable-clang], [Use clang/clang++ instead of gcc/g++ (default: no)]))
-AC_ARG_ENABLE([bfd],
-    AS_HELP_STRING([--enable-bfd], [Enable the BFD linker (default: auto, try mold->lld->bfd)]))
 AC_ARG_ENABLE([lto],
     AS_HELP_STRING([--enable-lto], [Enable Link Time Optimization (default: auto, use if functional)]))
 AC_ARG_ENABLE([system-deps],
@@ -100,23 +98,6 @@ AS_IF([test "x$CCACHE" = "xccache"], [
     CXX="ccache $CXX"
 ])
 
-# try using mold or lld, they're faster
-AS_IF([test "x$enable_bfd" != "xyes"], [
-    AC_CHECK_PROG([MOLD], [mold], [mold])
-    AS_IF([test "x$MOLD" = "xmold"], [
-        AX_CHECK_LINK_FLAG([-fuse-ld=mold], [
-            LDFLAGS="$LDFLAGS -fuse-ld=mold"
-        ])
-    ], [
-        AC_CHECK_PROG([LLD], [lld], [lld])
-        AS_IF([test "x$lld" = "xlld"], [
-            AX_CHECK_LINK_FLAG([-fuse-ld=lld], [
-                LDFLAGS="$LDFLAGS -fuse-ld=lld"
-            ])
-        ])
-    ])
-])
-
 AS_IF([test "x$enable_native" != "xno"], [
     CXXFLAGS="$CXXFLAGS -march=native -mtune=native"
     CFLAGS="$CFLAGS -march=native -mtune=native"
@@ -134,20 +115,27 @@ AS_IF([test "x$enable_debug" = "xyes"], [
         CFLAGS="${CFLAGS//-g -O2/} -O3 -g0"
 
         AS_IF([test "x$enable_lto" != "xno"], [
-            AX_CHECK_COMPILE_FLAG([-flto], [
-                AX_CHECK_LINK_FLAG([-flto -fuse-linker-plugin], [
-                    CXXFLAGS="$CXXFLAGS -flto"
-                    CFLAGS="$CFLAGS -flto"
-                    LDFLAGS="$LDFLAGS -flto -fuse-linker-plugin"
+            AX_CHECK_COMPILE_FLAG([-flto=thin], [
+                AX_CHECK_LINK_FLAG([-fuse-ld=lld -flto=thin -ffat-lto-objects], [
+                    CXXFLAGS="$CXXFLAGS -flto=thin -ffat-lto-objects"
+                    CFLAGS="$CFLAGS -flto=thin -ffat-lto-objects"
+                    LDFLAGS="$LDFLAGS -fuse-ld=lld -flto=thin -ffat-lto-objects"
+                ])], [
+                # gcc
+                AX_CHECK_LINK_FLAG([-flto=auto -ffat-lto-objects -fuse-linker-plugin], [
+                    CXXFLAGS="$CXXFLAGS -flto=auto -ffat-lto-objects -fuse-linker-plugin"
+                    CFLAGS="$CFLAGS -flto=auto -ffat-lto-objects -fuse-linker-plugin"
+                    LDFLAGS="$LDFLAGS -flto=auto -ffat-lto-objects -fuse-linker-plugin"
                 ])
             ])
         ])
     ])
     LDFLAGS="$LDFLAGS -Wl,-s,--gc-sections" # strip and GC unless debug
+
 ])
 
 WARN_FLAGS="-Wall -Wno-sign-compare -Wno-unused-local-typedefs -Wno-switch"
-COMMON_FLAGS="-fno-plt -ffunction-sections -fdata-sections -fwrapv -fno-strict-aliasing -fno-semantic-interposition -fmessage-length=0"
+COMMON_FLAGS="-ffunction-sections -fdata-sections -fwrapv -fno-strict-aliasing -fno-semantic-interposition -fmessage-length=0"
 CXXFLAGS="$CXXFLAGS $WARN_FLAGS $COMMON_FLAGS -Wno-reorder"
 CFLAGS="$CFLAGS $WARN_FLAGS $COMMON_FLAGS"
 LDFLAGS="$LDFLAGS -static-libstdc++ -static-libgcc"
@@ -254,7 +242,6 @@ McOsu build configuration:
     Linker flags:       ${LDFLAGS}
     LTO:                ${enable_lto-auto}
     Forcing BFD:        ${enable_bfd-no}
-    mold linker:        ${MOLD-no}
     lld linker:         ${LLD-no}
     Debug build:        ${enable_debug-no}
     Native build:       ${enable_native-yes}

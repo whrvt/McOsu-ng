@@ -686,8 +686,6 @@ XI_CFLAGS
 X11_LIBS
 X11_CFLAGS
 ENABLE_DEBUG
-LLD
-MOLD
 CXX_NOCCACHE
 CC_NOCCACHE
 CCACHE
@@ -803,7 +801,6 @@ enable_optimize
 enable_native
 enable_debug
 enable_clang
-enable_bfd
 enable_lto
 enable_system_deps
 enable_static
@@ -1475,8 +1472,6 @@ Optional Features:
   --enable-native         Compile for -march=native (default: yes)
   --enable-debug          Enable debug build (default: no)
   --enable-clang          Use clang/clang++ instead of gcc/g++ (default: no)
-  --enable-bfd            Enable the BFD linker (default: auto, try
-                          mold->lld->bfd)
   --enable-lto            Enable Link Time Optimization (default: auto, use if
                           functional)
   --disable-system-deps   Always build dependencies from source (default: no)
@@ -5343,12 +5338,6 @@ then :
   enableval=$enable_clang;
 fi
 
-# Check whether --enable-bfd was given.
-if test ${enable_bfd+y}
-then :
-  enableval=$enable_bfd;
-fi
-
 # Check whether --enable-lto was given.
 if test ${enable_lto+y}
 then :
@@ -8307,201 +8296,6 @@ then :
 
 fi
 
-# try using mold or lld, they're faster
-if test "x$enable_bfd" != "xyes"
-then :
-
-    # Extract the first word of "mold", so it can be a program name with args.
-set dummy mold; ac_word=$2
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
-printf %s "checking for $ac_word... " >&6; }
-if test ${ac_cv_prog_MOLD+y}
-then :
-  printf %s "(cached) " >&6
-else case e in #(
-  e) if test -n "$MOLD"; then
-  ac_cv_prog_MOLD="$MOLD" # Let the user override the test.
-else
-as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  case $as_dir in #(((
-    '') as_dir=./ ;;
-    */) ;;
-    *) as_dir=$as_dir/ ;;
-  esac
-    for ac_exec_ext in '' $ac_executable_extensions; do
-  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
-    ac_cv_prog_MOLD="mold"
-    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-  done
-IFS=$as_save_IFS
-
-fi ;;
-esac
-fi
-MOLD=$ac_cv_prog_MOLD
-if test -n "$MOLD"; then
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $MOLD" >&5
-printf "%s\n" "$MOLD" >&6; }
-else
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
-printf "%s\n" "no" >&6; }
-fi
-
-
-    if test "x$MOLD" = "xmold"
-then :
-
-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether the linker accepts -fuse-ld=mold" >&5
-printf %s "checking whether the linker accepts -fuse-ld=mold... " >&6; }
-if test ${ax_cv_check_ldflags___fuse_ld_mold+y}
-then :
-  printf %s "(cached) " >&6
-else case e in #(
-  e)
-  ax_check_save_flags=$LDFLAGS
-  LDFLAGS="$LDFLAGS  -fuse-ld=mold"
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-int
-main (void)
-{
-
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"
-then :
-  ax_cv_check_ldflags___fuse_ld_mold=yes
-else case e in #(
-  e) ax_cv_check_ldflags___fuse_ld_mold=no ;;
-esac
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam \
-    conftest$ac_exeext conftest.$ac_ext
-  LDFLAGS=$ax_check_save_flags ;;
-esac
-fi
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ax_cv_check_ldflags___fuse_ld_mold" >&5
-printf "%s\n" "$ax_cv_check_ldflags___fuse_ld_mold" >&6; }
-if test "x$ax_cv_check_ldflags___fuse_ld_mold" = xyes
-then :
-
-            LDFLAGS="$LDFLAGS -fuse-ld=mold"
-
-else case e in #(
-  e) : ;;
-esac
-fi
-
-
-else case e in #(
-  e)
-        # Extract the first word of "lld", so it can be a program name with args.
-set dummy lld; ac_word=$2
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
-printf %s "checking for $ac_word... " >&6; }
-if test ${ac_cv_prog_LLD+y}
-then :
-  printf %s "(cached) " >&6
-else case e in #(
-  e) if test -n "$LLD"; then
-  ac_cv_prog_LLD="$LLD" # Let the user override the test.
-else
-as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  case $as_dir in #(((
-    '') as_dir=./ ;;
-    */) ;;
-    *) as_dir=$as_dir/ ;;
-  esac
-    for ac_exec_ext in '' $ac_executable_extensions; do
-  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
-    ac_cv_prog_LLD="lld"
-    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-  done
-IFS=$as_save_IFS
-
-fi ;;
-esac
-fi
-LLD=$ac_cv_prog_LLD
-if test -n "$LLD"; then
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $LLD" >&5
-printf "%s\n" "$LLD" >&6; }
-else
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
-printf "%s\n" "no" >&6; }
-fi
-
-
-        if test "x$lld" = "xlld"
-then :
-
-            { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether the linker accepts -fuse-ld=lld" >&5
-printf %s "checking whether the linker accepts -fuse-ld=lld... " >&6; }
-if test ${ax_cv_check_ldflags___fuse_ld_lld+y}
-then :
-  printf %s "(cached) " >&6
-else case e in #(
-  e)
-  ax_check_save_flags=$LDFLAGS
-  LDFLAGS="$LDFLAGS  -fuse-ld=lld"
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-int
-main (void)
-{
-
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"
-then :
-  ax_cv_check_ldflags___fuse_ld_lld=yes
-else case e in #(
-  e) ax_cv_check_ldflags___fuse_ld_lld=no ;;
-esac
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam \
-    conftest$ac_exeext conftest.$ac_ext
-  LDFLAGS=$ax_check_save_flags ;;
-esac
-fi
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ax_cv_check_ldflags___fuse_ld_lld" >&5
-printf "%s\n" "$ax_cv_check_ldflags___fuse_ld_lld" >&6; }
-if test "x$ax_cv_check_ldflags___fuse_ld_lld" = xyes
-then :
-
-                LDFLAGS="$LDFLAGS -fuse-ld=lld"
-
-else case e in #(
-  e) : ;;
-esac
-fi
-
-
-fi
-     ;;
-esac
-fi
-
-fi
-
 if test "x$enable_native" != "xno"
 then :
 
@@ -8530,9 +8324,9 @@ then :
         if test "x$enable_lto" != "xno"
 then :
 
-            { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether the C compiler accepts -flto" >&5
-printf %s "checking whether the C compiler accepts -flto... " >&6; }
-if test ${ax_cv_check_cflags___flto+y}
+            { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether the C compiler accepts -flto=thin" >&5
+printf %s "checking whether the C compiler accepts -flto=thin... " >&6; }
+if test ${ax_cv_check_cflags___flto_thin+y}
 then :
   printf %s "(cached) " >&6
 else case e in #(
@@ -8541,7 +8335,7 @@ else case e in #(
   if test x"$GCC" = xyes ; then
     add_gnu_werror="-Werror"
   fi
-  CFLAGS="$CFLAGS  -flto $add_gnu_werror"
+  CFLAGS="$CFLAGS  -flto=thin $add_gnu_werror"
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -8555,29 +8349,29 @@ main (void)
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"
 then :
-  ax_cv_check_cflags___flto=yes
+  ax_cv_check_cflags___flto_thin=yes
 else case e in #(
-  e) ax_cv_check_cflags___flto=no ;;
+  e) ax_cv_check_cflags___flto_thin=no ;;
 esac
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
   CFLAGS=$ax_check_save_flags ;;
 esac
 fi
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ax_cv_check_cflags___flto" >&5
-printf "%s\n" "$ax_cv_check_cflags___flto" >&6; }
-if test "x$ax_cv_check_cflags___flto" = xyes
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ax_cv_check_cflags___flto_thin" >&5
+printf "%s\n" "$ax_cv_check_cflags___flto_thin" >&6; }
+if test "x$ax_cv_check_cflags___flto_thin" = xyes
 then :
 
-                { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether the linker accepts -flto -fuse-linker-plugin" >&5
-printf %s "checking whether the linker accepts -flto -fuse-linker-plugin... " >&6; }
-if test ${ax_cv_check_ldflags___flto__fuse_linker_plugin+y}
+                { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether the linker accepts -fuse-ld=lld -flto=thin -ffat-lto-objects" >&5
+printf %s "checking whether the linker accepts -fuse-ld=lld -flto=thin -ffat-lto-objects... " >&6; }
+if test ${ax_cv_check_ldflags___fuse_ld_lld__flto_thin__ffat_lto_objects+y}
 then :
   printf %s "(cached) " >&6
 else case e in #(
   e)
   ax_check_save_flags=$LDFLAGS
-  LDFLAGS="$LDFLAGS  -flto -fuse-linker-plugin"
+  LDFLAGS="$LDFLAGS  -fuse-ld=lld -flto=thin -ffat-lto-objects"
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -8591,9 +8385,9 @@ main (void)
 _ACEOF
 if ac_fn_c_try_link "$LINENO"
 then :
-  ax_cv_check_ldflags___flto__fuse_linker_plugin=yes
+  ax_cv_check_ldflags___fuse_ld_lld__flto_thin__ffat_lto_objects=yes
 else case e in #(
-  e) ax_cv_check_ldflags___flto__fuse_linker_plugin=no ;;
+  e) ax_cv_check_ldflags___fuse_ld_lld__flto_thin__ffat_lto_objects=no ;;
 esac
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam \
@@ -8601,23 +8395,70 @@ rm -f core conftest.err conftest.$ac_objext conftest.beam \
   LDFLAGS=$ax_check_save_flags ;;
 esac
 fi
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ax_cv_check_ldflags___flto__fuse_linker_plugin" >&5
-printf "%s\n" "$ax_cv_check_ldflags___flto__fuse_linker_plugin" >&6; }
-if test "x$ax_cv_check_ldflags___flto__fuse_linker_plugin" = xyes
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ax_cv_check_ldflags___fuse_ld_lld__flto_thin__ffat_lto_objects" >&5
+printf "%s\n" "$ax_cv_check_ldflags___fuse_ld_lld__flto_thin__ffat_lto_objects" >&6; }
+if test "x$ax_cv_check_ldflags___fuse_ld_lld__flto_thin__ffat_lto_objects" = xyes
 then :
 
-                    CXXFLAGS="$CXXFLAGS -flto"
-                    CFLAGS="$CFLAGS -flto"
-                    LDFLAGS="$LDFLAGS -flto -fuse-linker-plugin"
+                    CXXFLAGS="$CXXFLAGS -flto=thin -ffat-lto-objects"
+                    CFLAGS="$CFLAGS -flto=thin -ffat-lto-objects"
+                    LDFLAGS="$LDFLAGS -fuse-ld=lld -flto=thin -ffat-lto-objects"
 
 else case e in #(
   e) : ;;
 esac
 fi
 
+else case e in #(
+  e)
+                # gcc
+                { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether the linker accepts -flto=auto -ffat-lto-objects -fuse-linker-plugin" >&5
+printf %s "checking whether the linker accepts -flto=auto -ffat-lto-objects -fuse-linker-plugin... " >&6; }
+if test ${ax_cv_check_ldflags___flto_auto__ffat_lto_objects__fuse_linker_plugin+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e)
+  ax_check_save_flags=$LDFLAGS
+  LDFLAGS="$LDFLAGS  -flto=auto -ffat-lto-objects -fuse-linker-plugin"
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main (void)
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+  ax_cv_check_ldflags___flto_auto__ffat_lto_objects__fuse_linker_plugin=yes
+else case e in #(
+  e) ax_cv_check_ldflags___flto_auto__ffat_lto_objects__fuse_linker_plugin=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+  LDFLAGS=$ax_check_save_flags ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ax_cv_check_ldflags___flto_auto__ffat_lto_objects__fuse_linker_plugin" >&5
+printf "%s\n" "$ax_cv_check_ldflags___flto_auto__ffat_lto_objects__fuse_linker_plugin" >&6; }
+if test "x$ax_cv_check_ldflags___flto_auto__ffat_lto_objects__fuse_linker_plugin" = xyes
+then :
+
+                    CXXFLAGS="$CXXFLAGS -flto=auto -ffat-lto-objects -fuse-linker-plugin"
+                    CFLAGS="$CFLAGS -flto=auto -ffat-lto-objects -fuse-linker-plugin"
+                    LDFLAGS="$LDFLAGS -flto=auto -ffat-lto-objects -fuse-linker-plugin"
 
 else case e in #(
   e) : ;;
+esac
+fi
+
+             ;;
 esac
 fi
 
@@ -8626,12 +8467,13 @@ fi
 
 fi
     LDFLAGS="$LDFLAGS -Wl,-s,--gc-sections" # strip and GC unless debug
+
  ;;
 esac
 fi
 
 WARN_FLAGS="-Wall -Wno-sign-compare -Wno-unused-local-typedefs -Wno-switch"
-COMMON_FLAGS="-fno-plt -ffunction-sections -fdata-sections -fwrapv -fno-strict-aliasing -fno-semantic-interposition -fmessage-length=0"
+COMMON_FLAGS="-ffunction-sections -fdata-sections -fwrapv -fno-strict-aliasing -fno-semantic-interposition -fmessage-length=0"
 CXXFLAGS="$CXXFLAGS $WARN_FLAGS $COMMON_FLAGS -Wno-reorder"
 CFLAGS="$CFLAGS $WARN_FLAGS $COMMON_FLAGS"
 LDFLAGS="$LDFLAGS -static-libstdc++ -static-libgcc"
@@ -11677,7 +11519,6 @@ McOsu build configuration:
     Linker flags:       ${LDFLAGS}
     LTO:                ${enable_lto-auto}
     Forcing BFD:        ${enable_bfd-no}
-    mold linker:        ${MOLD-no}
     lld linker:         ${LLD-no}
     Debug build:        ${enable_debug-no}
     Native build:       ${enable_native-yes}
@@ -11708,7 +11549,6 @@ McOsu build configuration:
     Linker flags:       ${LDFLAGS}
     LTO:                ${enable_lto-auto}
     Forcing BFD:        ${enable_bfd-no}
-    mold linker:        ${MOLD-no}
     lld linker:         ${LLD-no}
     Debug build:        ${enable_debug-no}
     Native build:       ${enable_native-yes}

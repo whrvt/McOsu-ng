@@ -63,6 +63,12 @@ public:
 #ifdef MCENGINE_FEATURE_SOUND
 
 #include <bass.h>
+#include <bass_fx.h>
+#if defined(__linux__)
+#include <dlfcn.h>
+// bassfx dlsym function
+static void *bassfx_handle;
+#endif
 
 #ifdef MCENGINE_FEATURE_MULTITHREADING
 
@@ -249,6 +255,23 @@ SoundEngine::SoundEngine()
 	snd_freq.setCallback( fastdelegate::MakeDelegate(this, &SoundEngine::onFreqChanged) );
 	snd_restart.setCallback( fastdelegate::MakeDelegate(this, &SoundEngine::restart) );
 	snd_output_device.setCallback( fastdelegate::MakeDelegate(this, &SoundEngine::setOutputDevice) );
+
+#ifdef __linux__
+    if (!(bassfx_handle = dlopen("libbass_fx.so", RTLD_NOW)))
+    {
+        engine->showMessageErrorFatal("failed to get handle to libbass_fx.so: %s\n", dlerror());
+        engine->shutdown();
+        return;
+    }
+    if (!(m_BASS_FX_TempoCreate = (unsigned int (*)(unsigned int, unsigned int))dlsym(bassfx_handle, "BASS_FX_TempoCreate")))
+    {
+        engine->showMessageErrorFatal("failed to find BASS_FX_TempoCreate in libbass_fx.so: %s\n", dlerror());
+        engine->shutdown();
+        return;
+    }
+#else
+    m_BASS_FX_TempoCreate = BASS_FX_TempoCreate;
+#endif
 
 #elif defined(MCENGINE_FEATURE_SDL) && defined(MCENGINE_FEATURE_SDL_MIXER)
 
@@ -636,7 +659,9 @@ SoundEngine::~SoundEngine()
 #endif
 
 	}
-
+#if defined(__linux__) && defined(MCENGINE_FEATURE_SOUND)
+    dlclose(bassfx_handle);
+#endif
 #elif defined(MCENGINE_FEATURE_SDL) && defined(MCENGINE_FEATURE_SDL_MIXER)
 
 	if (m_bReady)
