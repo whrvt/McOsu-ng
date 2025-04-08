@@ -84,12 +84,11 @@ public:
 	bool lessThanIgnoreCase(const UString &ustr) const;
 
 private:
-	static int decode(const char *utf8, wchar_t *unicode, int utf8Length);
-	static int encode(const wchar_t *unicode, int length, char *utf8, bool *isAsciiOnly);
+    [[gnu::__always_inline__]] static inline int encode(const wchar_t *unicode, int length, char *utf8);
 
-	static wchar_t getCodePoint(const char *utf8, int offset, int numBytes, unsigned char firstByteMask);
+	[[gnu::__always_inline__]] static inline wchar_t getCodePoint(const char *utf8, int offset, int numBytes, unsigned char firstByteMask);
 
-	static void getUtf8(wchar_t ch, char *utf8, int numBytes, int firstByteValue);
+	[[gnu::__always_inline__]] static inline void getUtf8(wchar_t ch, char *utf8, int numBytes, int firstByteValue);
 
 	int fromUtf8(const char *utf8, int length = -1);
 

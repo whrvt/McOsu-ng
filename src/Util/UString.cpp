@@ -795,128 +795,153 @@ int UString::fromUtf8(const char *utf8, int length)
 	int startIndex = 0;
 	if (supposedFullStringSize > 2)
 	{
-		if (utf8[0] == (char)0xef && utf8[1] == (char)0xbb && utf8[2] == (char)0xbf) // utf-8
-			startIndex = 3;
-		else
+		// check for UTF-8 BOM
+		if ((unsigned char)utf8[0] == 0xEF &&
+			(unsigned char)utf8[1] == 0xBB &&
+			(unsigned char)utf8[2] == 0xBF)
 		{
-			// check for utf-16
-			char c0 = utf8[0];
-			char c1 = utf8[1];
-			char c2 = utf8[2];
-			bool utf16le = (c0 == (char)0xff && c1 == (char)0xfe && c2 != (char)0x00);
-			bool utf16be = (c0 == (char)0xfe && c1 == (char)0xff && c2 != (char)0x00);
-			if (utf16le || utf16be)
-			{
-				// TODO: UTF-16 not yet supported
-				return 0;
-			}
-
-			// check for utf-32
-			// HACKHACK: TODO: this check will never work, due to the null characters reporting strlen() as too short (i.e. c1 == 0x00)
-			if (supposedFullStringSize > 3)
-			{
-				char c3 = utf8[3];
-				bool utf32le = (c0 == (char)0xff && c1 == (char)0xfe && c2 == (char)0x00 && c3 == (char)0x00);
-				bool utf32be = (c0 == (char)0x00 && c1 == (char)0x00 && c2 == (char)0xfe && c3 == (char)0xff);
-
-				if (utf32le || utf32be)
-				{
-					// TODO: UTF-32 not yet supported
-					return 0;
-				}
-			}
+			startIndex = 3;
+		}
+		// check for UTF-16/32 (unsupported)
+		else if (((unsigned char)utf8[0] == 0xFE && (unsigned char)utf8[1] == 0xFF) ||
+				 ((unsigned char)utf8[0] == 0xFF && (unsigned char)utf8[1] == 0xFE))
+		{
+			return 0;
 		}
 	}
 
-	mLength = decode(&(utf8[startIndex]), NULL, supposedFullStringSize);
-	mUnicode = new wchar_t[mLength + 1]; // +1 for null termination later
-	length = decode(&(utf8[startIndex]), mUnicode, supposedFullStringSize);
+	const char *src = &(utf8[startIndex]);
+	int remainingSize = supposedFullStringSize - startIndex;
 
-	// reencode to utf8
-	updateUtf8();
-
-	return length;
-}
-
-int UString::decode(const char *utf8, wchar_t *unicode, int utf8Length)
-{
-	if (utf8 == NULL) return 0; // unicode is checked below
-
-	int length = 0;
-	for (int i=0; (i < utf8Length && utf8[i] != 0); i++)
+	// ASCII-only strings (common case)
+	bool isAscii = true;
+	for (int i = 0; i < remainingSize && src[i] != 0; i++)
 	{
-		const char b = utf8[i];
-		if ((b & USTRING_MASK_1BYTE) == USTRING_VALUE_1BYTE) // if this is a single byte code point
+		if ((unsigned char)src[i] >= 0x80)
 		{
-			if (unicode != NULL)
-				unicode[length] = b;
+			isAscii = false;
+			break;
 		}
-		else if ((b & USTRING_MASK_2BYTE) == USTRING_VALUE_2BYTE) // if this is a 2 byte code point
-		{
-			if (unicode != NULL)
-				unicode[length] = getCodePoint(utf8, i, 2, (unsigned char)(~USTRING_MASK_2BYTE));
+	}
 
+	if (isAscii)
+	{
+		// for ASCII, do a direct 1:1 mapping
+		int charCount = 0;
+		while (charCount < remainingSize && src[charCount] != 0)
+			charCount++;
+
+		// create Unicode buffer
+		deleteUnicode();
+		mLength = charCount;
+		mUnicode = new wchar_t[mLength + 1];
+
+		for (int i = 0; i < mLength; i++)
+			mUnicode[i] = (wchar_t)(unsigned char)src[i];
+
+		mUnicode[mLength] = '\0';
+
+		// update UTF-8 representation
+		mIsAsciiOnly = true;
+		mLengthUtf8 = mLength;
+		deleteUtf8();
+		mUtf8 = new char[mLengthUtf8 + 1];
+		memcpy(mUtf8, src, mLengthUtf8);
+		mUtf8[mLengthUtf8] = '\0';
+
+		return mLength;
+	}
+
+	// for non-ASCII, we still need two passes
+	// pass 1: count characters
+	int charCount = 0;
+	for (int i = 0; i < remainingSize && src[i] != 0; )
+	{
+		const unsigned char b = (unsigned char)src[i];
+
+		if (b < 0x80)
+			i += 1;
+		else if ((b & USTRING_MASK_2BYTE) == USTRING_VALUE_2BYTE)
+			i += 2;
+		else if ((b & USTRING_MASK_3BYTE) == USTRING_VALUE_3BYTE)
+			i += 3;
+		else if ((b & USTRING_MASK_4BYTE) == USTRING_VALUE_4BYTE)
+			i += 4;
+		else if ((b & USTRING_MASK_5BYTE) == USTRING_VALUE_5BYTE)
+			i += 5;
+		else if ((b & USTRING_MASK_6BYTE) == USTRING_VALUE_6BYTE)
+			i += 6;
+		else
+			i += 1;
+
+		charCount++;
+	}
+
+	// pass 2: decode into the buffer
+	deleteUnicode();
+	mLength = charCount;
+	mUnicode = new wchar_t[mLength + 1];
+
+	int destIndex = 0;
+	for (int i = 0; i < remainingSize && src[i] != 0 && destIndex < mLength; )
+	{
+		const unsigned char b = (unsigned char)src[i];
+
+		if (b < 0x80)
+		{
+			mUnicode[destIndex++] = b;
 			i += 1;
 		}
-		else if ((b & USTRING_MASK_3BYTE) == USTRING_VALUE_3BYTE) // if this is a 3 byte code point
+		else if ((b & USTRING_MASK_2BYTE) == USTRING_VALUE_2BYTE && i + 1 < remainingSize)
 		{
-			if (unicode != NULL)
-				unicode[length] = getCodePoint(utf8, i, 3, (unsigned char)(~USTRING_MASK_3BYTE));
-
+			mUnicode[destIndex++] = getCodePoint(src, i, 2, (unsigned char)(~USTRING_MASK_2BYTE));
 			i += 2;
 		}
-		else if ((b & USTRING_MASK_4BYTE) == USTRING_VALUE_4BYTE) // if this is a 4 byte code point
+		else if ((b & USTRING_MASK_3BYTE) == USTRING_VALUE_3BYTE && i + 2 < remainingSize)
 		{
-			if (unicode != NULL)
-				unicode[length] = getCodePoint(utf8, i, 4, (unsigned char)(~USTRING_MASK_4BYTE));
-
+			mUnicode[destIndex++] = getCodePoint(src, i, 3, (unsigned char)(~USTRING_MASK_3BYTE));
 			i += 3;
 		}
-		else if ((b & USTRING_MASK_5BYTE) == USTRING_VALUE_5BYTE) // if this is a 5 byte code point
+		else if ((b & USTRING_MASK_4BYTE) == USTRING_VALUE_4BYTE && i + 3 < remainingSize)
 		{
-			if (unicode != NULL)
-				unicode[length] = getCodePoint(utf8, i, 5, (unsigned char)(~USTRING_MASK_5BYTE));
-
+			mUnicode[destIndex++] = getCodePoint(src, i, 4, (unsigned char)(~USTRING_MASK_4BYTE));
 			i += 4;
 		}
-		else if ((b & USTRING_MASK_6BYTE) == USTRING_VALUE_6BYTE) // if this is a 6 byte code point
+		else if ((b & USTRING_MASK_5BYTE) == USTRING_VALUE_5BYTE && i + 4 < remainingSize)
 		{
-			if (unicode != NULL)
-				unicode[length] = getCodePoint(utf8, i, 6, (unsigned char)(~USTRING_MASK_6BYTE));
-
+			mUnicode[destIndex++] = getCodePoint(src, i, 5, (unsigned char)(~USTRING_MASK_5BYTE));
 			i += 5;
 		}
-
-		length++;
+		else if ((b & USTRING_MASK_6BYTE) == USTRING_VALUE_6BYTE && i + 5 < remainingSize)
+		{
+			mUnicode[destIndex++] = getCodePoint(src, i, 6, (unsigned char)(~USTRING_MASK_6BYTE));
+			i += 6;
+		}
+		else
+		{
+			mUnicode[destIndex++] = '?';
+			i += 1;
+		}
 	}
 
-	if (unicode != NULL)
-		unicode[length] = '\0'; // null terminate
+	mUnicode[mLength] = '\0';
+	updateUtf8();
 
-	return length;
+	return mLength;
 }
 
-int UString::encode(const wchar_t *unicode, int length, char *utf8, bool *isAsciiOnly)
+inline int UString::encode(const wchar_t *unicode, int length, char *utf8)
 {
-	if (unicode == NULL) return 0; // utf8 is checked below
+	if (unicode == NULL) return 0;
 
 	int utf8len = 0;
-	bool foundMultiByte = false;
+
 	for (int i=0; i<length; i++)
 	{
 		const wchar_t ch = unicode[i];
 
-		if (ch < 0x00000080) // 1 byte
+		if (ch < 0x00000800) // 2 bytes
 		{
-			if (utf8 != NULL)
-				utf8[utf8len] = (char)ch;
-
-			utf8len += 1;
-		}
-		else if (ch < 0x00000800) // 2 bytes
-		{
-			foundMultiByte = true;
-
 			if (utf8 != NULL)
 				getUtf8(ch, &(utf8[utf8len]), 2, USTRING_VALUE_2BYTE);
 
@@ -924,8 +949,6 @@ int UString::encode(const wchar_t *unicode, int length, char *utf8, bool *isAsci
 		}
 		else if (ch < 0x00010000) // 3 bytes
 		{
-			foundMultiByte = true;
-
 			if (utf8 != NULL)
 				getUtf8(ch, &(utf8[utf8len]), 3, USTRING_VALUE_3BYTE);
 
@@ -933,8 +956,6 @@ int UString::encode(const wchar_t *unicode, int length, char *utf8, bool *isAsci
 		}
 		else if (ch < 0x00200000) // 4 bytes
 		{
-			foundMultiByte = true;
-
 			if (utf8 != NULL)
 				getUtf8(ch, &(utf8[utf8len]), 4, USTRING_VALUE_4BYTE);
 
@@ -942,8 +963,6 @@ int UString::encode(const wchar_t *unicode, int length, char *utf8, bool *isAsci
 		}
 		else if (ch < 0x04000000) // 5 bytes
 		{
-			foundMultiByte = true;
-
 			if (utf8 != NULL)
 				getUtf8(ch, &(utf8[utf8len]), 5, USTRING_VALUE_5BYTE);
 
@@ -951,8 +970,6 @@ int UString::encode(const wchar_t *unicode, int length, char *utf8, bool *isAsci
 		}
 		else // 6 bytes
 		{
-			foundMultiByte = true;
-
 			if (utf8 != NULL)
 				getUtf8(ch, &(utf8[utf8len]), 6, USTRING_VALUE_6BYTE);
 
@@ -960,13 +977,10 @@ int UString::encode(const wchar_t *unicode, int length, char *utf8, bool *isAsci
 		}
 	}
 
-	if (isAsciiOnly != NULL)
-		*isAsciiOnly = !foundMultiByte;
-
 	return utf8len;
 }
 
-wchar_t UString::getCodePoint(const char *utf8, int offset, int numBytes, unsigned char firstByteMask)
+inline wchar_t UString::getCodePoint(const char *utf8, int offset, int numBytes, unsigned char firstByteMask)
 {
 	if (utf8 == NULL) return (wchar_t)0;
 
@@ -987,7 +1001,7 @@ wchar_t UString::getCodePoint(const char *utf8, int offset, int numBytes, unsign
 	return wc;
 }
 
-void UString::getUtf8(wchar_t ch, char *utf8, int numBytes, int firstByteValue)
+inline void UString::getUtf8(wchar_t ch, char *utf8, int numBytes, int firstByteValue)
 {
 	if (utf8 == NULL) return;
 
@@ -1004,15 +1018,55 @@ void UString::getUtf8(wchar_t ch, char *utf8, int numBytes, int firstByteValue)
 
 void UString::updateUtf8()
 {
-	// delete previous
-	deleteUtf8();
-
-	// rebuild
-	mLengthUtf8 = encode(mUnicode, mLength, NULL, &mIsAsciiOnly);
-	if (mLengthUtf8 > 0)
+	// check if the string is empty
+	if (mLength == 0)
 	{
-		mUtf8 = new char[mLengthUtf8 + 1]; // +1 for null termination later
-		encode(mUnicode, mLength, mUtf8, NULL);
-		mUtf8[mLengthUtf8] = '\0'; // null terminate
+		deleteUtf8();
+		mLengthUtf8 = 0;
+		mIsAsciiOnly = true;
+		mUtf8 = (char*)nullString;
+		return;
 	}
+
+	// fast ASCII check (common case)
+	bool isAscii = true;
+	for (int i = 0; i < mLength; i++) {
+		if (mUnicode[i] >= 0x80) {
+			isAscii = false;
+			break;
+		}
+	}
+
+	// fast path for ASCII-only strings
+	if (isAscii) {
+		// only reallocate if necessary
+		if (mLengthUtf8 < mLength || isUtf8Null()) {
+			deleteUtf8();
+			mUtf8 = new char[mLength + 1]; // +1 for null termination
+		}
+
+		// direct copy for ASCII
+		for (int i = 0; i < mLength; i++) {
+			mUtf8[i] = (char)mUnicode[i];
+		}
+
+		mUtf8[mLength] = '\0';
+		mLengthUtf8 = mLength;
+		mIsAsciiOnly = true;
+		return;
+	}
+
+	mIsAsciiOnly = false;
+	// for non-ASCII strings, calculate needed length
+	int newLength = encode(mUnicode, mLength, NULL);
+
+	// only reallocate if necessary
+	if (newLength > mLengthUtf8 || isUtf8Null()) {
+		deleteUtf8();
+		mUtf8 = new char[newLength + 1]; // +1 for null termination later
+	}
+
+	mLengthUtf8 = newLength;
+	encode(mUnicode, mLength, mUtf8);
+	mUtf8[mLengthUtf8] = '\0'; // null terminate
 }

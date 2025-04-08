@@ -113,25 +113,24 @@ AS_IF([test "x$enable_debug" = "xyes"], [
         CPPFLAGS="$CPPFLAGS -DNDEBUG -D_NDEBUG"
         CXXFLAGS="${CXXFLAGS//-g -O2/} -O3 -g0" # where do those -g -O2 flags even come from...
         CFLAGS="${CFLAGS//-g -O2/} -O3 -g0"
-
-        AS_IF([test "x$enable_lto" != "xno"], [
-            AX_CHECK_COMPILE_FLAG([-flto=thin], [
-                AX_CHECK_LINK_FLAG([-fuse-ld=lld -flto=thin -ffat-lto-objects], [
-                    CXXFLAGS="$CXXFLAGS -flto=thin -ffat-lto-objects"
-                    CFLAGS="$CFLAGS -flto=thin -ffat-lto-objects"
-                    LDFLAGS="$LDFLAGS -fuse-ld=lld -flto=thin -ffat-lto-objects"
-                ])], [
-                # gcc
-                AX_CHECK_LINK_FLAG([-flto=auto -ffat-lto-objects -fuse-linker-plugin], [
-                    CXXFLAGS="$CXXFLAGS -flto=auto -ffat-lto-objects -fuse-linker-plugin"
-                    CFLAGS="$CFLAGS -flto=auto -ffat-lto-objects -fuse-linker-plugin"
-                    LDFLAGS="$LDFLAGS -flto=auto -ffat-lto-objects -fuse-linker-plugin"
-                ])
-            ])
-        ])
     ])
     LDFLAGS="$LDFLAGS -Wl,-s,--gc-sections" # strip and GC unless debug
+])
 
+AS_IF([test "x$enable_lto" != "xno"], [
+    AX_CHECK_COMPILE_FLAG([-flto=thin], [
+        AX_CHECK_LINK_FLAG([-fuse-ld=lld -flto=thin -ffat-lto-objects], [
+            CXXFLAGS="$CXXFLAGS -flto=thin -ffat-lto-objects"
+            CFLAGS="$CFLAGS -flto=thin -ffat-lto-objects"
+            LDFLAGS="$LDFLAGS -fuse-ld=lld -flto=thin -ffat-lto-objects"
+        ])], [
+        # gcc
+        AX_CHECK_LINK_FLAG([-flto=auto -ffat-lto-objects -fuse-linker-plugin], [
+            CXXFLAGS="$CXXFLAGS -flto=auto -ffat-lto-objects -fuse-linker-plugin"
+            CFLAGS="$CFLAGS -flto=auto -ffat-lto-objects -fuse-linker-plugin"
+            LDFLAGS="$LDFLAGS -flto=auto -ffat-lto-objects -fuse-linker-plugin"
+        ])
+    ])
 ])
 
 WARN_FLAGS="-Wall -Wno-sign-compare -Wno-unused-local-typedefs -Wno-switch"
@@ -162,6 +161,10 @@ GLEW_MIN_VERSION=2.2.0
 GLEW_BUILD_VERSION=2.2.0
 FREETYPE2_MIN_VERSION=2.10.0
 FREETYPE2_BUILD_VERSION=2.13.3
+
+AC_SUBST([MIMALLOC_VERSION],[3.0.3])
+AC_SUBST([MIMALLOC_PREFIX],[$DEPS_PREFIX])
+AC_SUBST([BUILD_MIMALLOC], [1])
 
 # TODO: add all deps and transitive deps (fun!)
 AS_IF([test "x$enable_system_deps" != "xno"], [

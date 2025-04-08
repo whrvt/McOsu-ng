@@ -459,6 +459,7 @@ void SDLEnvironment::setCursorClip(bool clip, McRect rect)
         m_bCursorClipped = true;
 		SDL_SetWindowMouseRect(m_window, &clipRect);
 		SDL_SetWindowMouseGrab(m_window, true);
+        SDL_SetWindowKeyboardGrab(m_window, true);
 		// HACK: sdl2->sdl3 don't listen for text input when in play mode (putting it here for now to reuse "in-gameplay" logic)
 		SDL_StopTextInput(m_window);
 	}
@@ -466,6 +467,7 @@ void SDLEnvironment::setCursorClip(bool clip, McRect rect)
 	{
         m_bCursorClipped = false;
         SDL_StartTextInput(m_window);
+        SDL_SetWindowKeyboardGrab(m_window, false);
         SDL_SetWindowMouseGrab(m_window, false);
 		SDL_SetWindowMouseRect(m_window, NULL);
 	}

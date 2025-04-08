@@ -10,6 +10,27 @@ CLEANFILES = \
 	*~ \
 	*.bak
 
+build/deps/mimalloc.built:
+	$(MKDIR_P) build/deps/mimalloc/out/release
+	$(WGET) -qO- "https://github.com/microsoft/mimalloc/archive/refs/tags/v$(MIMALLOC_VERSION).tar.gz" | $(TAR) xz -C build/deps/mimalloc --strip-components=1
+	cd build/deps/mimalloc/out/release && \
+	env LDFLAGS="$(LDFLAGS) -xnone" cmake \
+	-D CMAKE_C_COMPILER="$(CC_NOCCACHE)" \
+	-D CMAKE_C_FLAGS="$(CFLAGS)" \
+	-D CMAKE_CXX_COMPILER="$(CXX_NOCCACHE)" \
+	-D CMAKE_CXX_FLAGS="$(CXXFLAGS) -xc++" \
+	-D CMAKE_INSTALL_PREFIX="$(DEPS_PREFIX)" \
+	-D MI_OPT_ARCH=ON \
+	-D MI_USE_CXX=ON \
+	-D MI_NO_OPT_ARCH=OFF \
+	-D MI_BUILD_SHARED=OFF \
+	-D MI_BUILD_TESTS=OFF \
+	-D MI_INSTALL_TOPLEVEL=ON \
+	-D MI_BUILD_STATIC=OFF \
+	-D MI_BUILD_OBJECT=ON ../.. && \
+	make install
+	touch $@
+
 # build rules for dependencies when system packages aren't used
 #$(WGET) -qO- "https://github.com/libsdl-org/SDL/releases/download/preview-$(SDL3_VERSION)/SDL3-$(SDL3_VERSION).tar.gz" | $(TAR) xz -C build/deps/SDL3 --strip-components=1
 build/deps/SDL3.built:
@@ -75,7 +96,7 @@ build/deps/FREETYPE2.built:
 		$(PKG_CONFIG) --exists --print-errors freetype2
 	touch $@
 
-DEPS_BUILT =
+DEPS_BUILT = build/deps/mimalloc.built
 if BUILD_SDL3
 DEPS_BUILT += build/deps/SDL3.built
 endif
@@ -126,7 +147,7 @@ McOsu_CXXFLAGS = \
 
 McOsu_CFLAGS = $(McOsu_CXXFLAGS)
 
-McOsu_LDFLAGS = \
+McOsu_LDFLAGS = $(DEPS_PREFIX)/lib/mimalloc.o \
 	-Wl,-rpath='$$ORIGIN/lib',-rpath='$$ORIGIN' \
 	-L$(srcdir)/$(BUNDLED_BASS_DIR)/lib/linux \
     -Wl,--lto-whole-program-visibility \

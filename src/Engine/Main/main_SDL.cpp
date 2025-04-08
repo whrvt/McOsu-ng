@@ -164,6 +164,9 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY);
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);
 
 #endif
 
@@ -176,7 +179,7 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 
 #endif
 
-	uint32_t windowFlags = SDL_WINDOW_HIDDEN | SDL_WINDOW_INPUT_FOCUS | SDL_WINDOW_MOUSE_FOCUS | SDL_WINDOW_EXTERNAL;
+	uint32_t windowFlags = SDL_WINDOW_HIDDEN | SDL_WINDOW_INPUT_FOCUS | SDL_WINDOW_MOUSE_FOCUS;
 
 #if defined(MCENGINE_FEATURE_OPENGL) || defined(MCENGINE_FEATURE_OPENGLES)
 
@@ -929,12 +932,13 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 					if (!inBackground)
 					{
 						const double actualGameFps = static_cast<double>(frameCountSinceLastFpsCalc) / fpsCalcTimer->getElapsedTime();
-						if (actualGameFps < targetFps * 0.99f && actualGameFps > targetFps * 0.9f)
+						if (actualGameFps < targetFps * 0.99f && actualGameFps > targetFps * 0.95f)
 							fpsAdjustment -= 0.5f;
-						else if (actualGameFps > targetFps)
-							fpsAdjustment += 0.5f;
-						clamp<double>(fpsAdjustment, -20.0f, 0.5f);
+						else if (actualGameFps > targetFps * 1.005f)
+							fpsAdjustment = 0.0f;
+						clamp<double>(fpsAdjustment, -5.0f, 0.0f);
 					}
+					else fpsAdjustment = 0.0f;
 
 					// reset fps adjustment timer for the next measurement period
 					frameCountSinceLastFpsCalc = 0;

@@ -670,6 +670,9 @@ GLEW_LIBS
 GLEW_CFLAGS
 SDL3_LIBS
 SDL3_CFLAGS
+BUILD_MIMALLOC
+MIMALLOC_PREFIX
+MIMALLOC_VERSION
 DEPS_PREFIX
 ZLIB_LIBS
 ZLIB_CFLAGS
@@ -8321,10 +8324,16 @@ then :
         CXXFLAGS="${CXXFLAGS//-g -O2/} -O3 -g0" # where do those -g -O2 flags even come from...
         CFLAGS="${CFLAGS//-g -O2/} -O3 -g0"
 
-        if test "x$enable_lto" != "xno"
+fi
+    LDFLAGS="$LDFLAGS -Wl,-s,--gc-sections" # strip and GC unless debug
+ ;;
+esac
+fi
+
+if test "x$enable_lto" != "xno"
 then :
 
-            { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether the C compiler accepts -flto=thin" >&5
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether the C compiler accepts -flto=thin" >&5
 printf %s "checking whether the C compiler accepts -flto=thin... " >&6; }
 if test ${ax_cv_check_cflags___flto_thin+y}
 then :
@@ -8363,7 +8372,7 @@ printf "%s\n" "$ax_cv_check_cflags___flto_thin" >&6; }
 if test "x$ax_cv_check_cflags___flto_thin" = xyes
 then :
 
-                { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether the linker accepts -fuse-ld=lld -flto=thin -ffat-lto-objects" >&5
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether the linker accepts -fuse-ld=lld -flto=thin -ffat-lto-objects" >&5
 printf %s "checking whether the linker accepts -fuse-ld=lld -flto=thin -ffat-lto-objects... " >&6; }
 if test ${ax_cv_check_ldflags___fuse_ld_lld__flto_thin__ffat_lto_objects+y}
 then :
@@ -8400,9 +8409,9 @@ printf "%s\n" "$ax_cv_check_ldflags___fuse_ld_lld__flto_thin__ffat_lto_objects" 
 if test "x$ax_cv_check_ldflags___fuse_ld_lld__flto_thin__ffat_lto_objects" = xyes
 then :
 
-                    CXXFLAGS="$CXXFLAGS -flto=thin -ffat-lto-objects"
-                    CFLAGS="$CFLAGS -flto=thin -ffat-lto-objects"
-                    LDFLAGS="$LDFLAGS -fuse-ld=lld -flto=thin -ffat-lto-objects"
+            CXXFLAGS="$CXXFLAGS -flto=thin -ffat-lto-objects"
+            CFLAGS="$CFLAGS -flto=thin -ffat-lto-objects"
+            LDFLAGS="$LDFLAGS -fuse-ld=lld -flto=thin -ffat-lto-objects"
 
 else case e in #(
   e) : ;;
@@ -8411,8 +8420,8 @@ fi
 
 else case e in #(
   e)
-                # gcc
-                { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether the linker accepts -flto=auto -ffat-lto-objects -fuse-linker-plugin" >&5
+        # gcc
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether the linker accepts -flto=auto -ffat-lto-objects -fuse-linker-plugin" >&5
 printf %s "checking whether the linker accepts -flto=auto -ffat-lto-objects -fuse-linker-plugin... " >&6; }
 if test ${ax_cv_check_ldflags___flto_auto__ffat_lto_objects__fuse_linker_plugin+y}
 then :
@@ -8449,27 +8458,20 @@ printf "%s\n" "$ax_cv_check_ldflags___flto_auto__ffat_lto_objects__fuse_linker_p
 if test "x$ax_cv_check_ldflags___flto_auto__ffat_lto_objects__fuse_linker_plugin" = xyes
 then :
 
-                    CXXFLAGS="$CXXFLAGS -flto=auto -ffat-lto-objects -fuse-linker-plugin"
-                    CFLAGS="$CFLAGS -flto=auto -ffat-lto-objects -fuse-linker-plugin"
-                    LDFLAGS="$LDFLAGS -flto=auto -ffat-lto-objects -fuse-linker-plugin"
+            CXXFLAGS="$CXXFLAGS -flto=auto -ffat-lto-objects -fuse-linker-plugin"
+            CFLAGS="$CFLAGS -flto=auto -ffat-lto-objects -fuse-linker-plugin"
+            LDFLAGS="$LDFLAGS -flto=auto -ffat-lto-objects -fuse-linker-plugin"
 
 else case e in #(
   e) : ;;
 esac
 fi
 
-             ;;
+     ;;
 esac
 fi
 
 
-fi
-
-fi
-    LDFLAGS="$LDFLAGS -Wl,-s,--gc-sections" # strip and GC unless debug
-
- ;;
-esac
 fi
 
 WARN_FLAGS="-Wall -Wno-sign-compare -Wno-unused-local-typedefs -Wno-switch"
@@ -9554,6 +9556,13 @@ GLEW_MIN_VERSION=2.2.0
 GLEW_BUILD_VERSION=2.2.0
 FREETYPE2_MIN_VERSION=2.10.0
 FREETYPE2_BUILD_VERSION=2.13.3
+
+MIMALLOC_VERSION=3.0.3
+
+MIMALLOC_PREFIX=$DEPS_PREFIX
+
+BUILD_MIMALLOC=1
+
 
 # TODO: add all deps and transitive deps (fun!)
 if test "x$enable_system_deps" != "xno"
