@@ -30,3 +30,7 @@ McOsu
 *~
 *.swp
 *.swo
+.clangd
+.cache
+
+compile_commands.json

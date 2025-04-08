@@ -102,6 +102,7 @@ public:
 	virtual void setCursor(CURSORTYPE cur);
 	virtual void setCursorVisible(bool visible);
 	virtual void setMousePos(int x, int y);
+    virtual void setMousePos(float x, float y);
 	virtual void setCursorClip(bool clip, McRect rect);
 
 	// keyboard

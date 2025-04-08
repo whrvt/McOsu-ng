@@ -5,14 +5,14 @@
 // $NoKeywords: $linuxenv
 //===============================================================================//
 
-#ifdef __linux__
-
 #pragma once
 #ifndef LINUXENVIRONMENT_H
 #define LINUXENVIRONMENT_H
 
-#include "Environment.h"
+#include "EngineFeatures.h"
+#if defined(__linux__) && !defined(MCENGINE_FEATURE_SDL)
 
+#include "Environment.h"
 #include <X11/X.h>
 #include <X11/Xlib.h>
 

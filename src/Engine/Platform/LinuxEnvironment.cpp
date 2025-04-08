@@ -5,7 +5,9 @@
 // $NoKeywords: $linuxenv
 //===============================================================================//
 
-#ifdef __linux__
+#include "EngineFeatures.h"
+
+#if defined(__linux__) && !defined(MCENGINE_FEATURE_SDL)
 
 #include "LinuxEnvironment.h"
 #include "Engine.h"

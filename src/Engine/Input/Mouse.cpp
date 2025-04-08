@@ -138,7 +138,7 @@ void Mouse::update()
 
 	Vector2 nextPos = osMousePos;
 
-	if (osCursorVisible || (!sensitivityAdjustmentNeeded && !mouse_raw_input.getBool()) || m_bAbsolute || env->getOS() == Environment::OS::OS_HORIZON || env->getOS() == Environment::OS::OS_LINUX) // HACKHACK: linux hack
+	if (osCursorVisible || (!sensitivityAdjustmentNeeded && !mouse_raw_input.getBool()) || m_bAbsolute || env->getOS() == Environment::OS::OS_HORIZON) //  || env->getOS() == Environment::OS::OS_LINUX HACKHACK: linux hack
 	{
 		// this block handles visible/active OS cursor movement without sensitivity adjustments, and absolute input device movement
 		if (m_bAbsolute)
@@ -199,7 +199,7 @@ void Mouse::update()
 		else
 		{
 			// non-raw input is always in pixels, sub-pixel movement is handled/buffered by the operating system
-			if (osMousePos.x != m_vPrevOsMousePos.x || osMousePos.y != m_vPrevOsMousePos.y) // without this check some people would get mouse drift
+			if ((int)osMousePos.x != (int)m_vPrevOsMousePos.x || (int)osMousePos.y != (int)m_vPrevOsMousePos.y) // without this check some people would get mouse drift
 				m_vDelta = (osMousePos - m_vPrevOsMousePos) * mouse_sensitivity.getFloat();
 		}
 
@@ -211,18 +211,26 @@ void Mouse::update()
 	}
 
 	// clip/confine cursor
-	if (env->isCursorClipped() && env->getOS() != Environment::OS::OS_LINUX) // HACKHACK: linux hack
+	if (env->isCursorClipped())
 	{
 		const McRect cursorClip = env->getCursorClip();
+        float minX = cursorClip.getMinX();
+        float minY = cursorClip.getMinY();
 
-		const float minX = cursorClip.getMinX() - m_vOffset.x;
-		const float minY = cursorClip.getMinY() - m_vOffset.y;
-
-		const float maxX = minX + cursorClip.getWidth()*m_vScale.x;
-		const float maxY = minY + cursorClip.getHeight()*m_vScale.y;
+        float maxX = minX + cursorClip.getWidth();
+        float maxY = minY + cursorClip.getHeight();
+        if (!(env->getOS() == Environment::OS::OS_LINUX))
+        {
+            minX -= m_vOffset.x;
+            minY -= m_vOffset.y;
+    
+            maxX *= m_vScale.x;
+            maxY *= m_vScale.y;
+        }
 
 		nextPos.x = clamp<float>(nextPos.x, minX + 1, maxX - 1);
 		nextPos.y = clamp<float>(nextPos.y, minY + 1, maxY - 1);
+        //debugLog("clip %f %f %f %f %f %f %f %f %f %f\n", minX, minY, maxX, maxY, nextPos.x, nextPos.y, m_vOffset.x, m_vOffset.y, m_vScale.x, m_vScale.y);
 	}
 
 	// set new virtual cursor position (this applies the offset as well)
@@ -233,7 +241,7 @@ void Mouse::update()
 	// first person games which call engine->getMouse()->setPos() every frame to manually re-center the cursor NEVER need env->setPos()
 	// absolute input NEVER needs env->setPos()
 	// also update prevOsMousePos
-	if (windowRect.contains(osMousePos) && (sensitivityAdjustmentNeeded || mouse_raw_input.getBool()) && !m_bSetPosWasCalledLastFrame && !m_bAbsolute && env->getOS() != Environment::OS::OS_LINUX) // HACKHACK: linux hack
+	if (windowRect.contains(osMousePos) && (sensitivityAdjustmentNeeded || mouse_raw_input.getBool()) && !m_bSetPosWasCalledLastFrame && !m_bAbsolute) //  && env->getOS() != Environment::OS::OS_LINUX HACKHACK: linux hack
 	{
 		const Vector2 newOsMousePos = m_vPosWithoutOffset;
 
@@ -343,13 +351,10 @@ void Mouse::onRawMove(float xDelta, float yDelta, bool absolute, bool virtualDes
 	m_bAbsolute = absolute;
 	m_bVirtualDesktop = virtualDesktop;
 
-	if (xDelta != 0 || yDelta != 0) // sanity check, else some people get mouse drift like above, I don't even
-	{
-		if (!m_bAbsolute) // mouse
-			m_vRawDeltaActual += Vector2(xDelta, yDelta) * mouse_sensitivity.getFloat();
-		else // tablet
-			m_vRawDeltaAbsoluteActual = Vector2(xDelta, yDelta);
-	}
+    if (!m_bAbsolute) // mouse
+        m_vRawDeltaActual += Vector2(xDelta, yDelta) * mouse_sensitivity.getFloat();
+    else // tablet
+        m_vRawDeltaAbsoluteActual = Vector2(xDelta, yDelta);
 }
 
 void Mouse::onRawMove(int xDelta, int yDelta, bool absolute, bool virtualDesktop)

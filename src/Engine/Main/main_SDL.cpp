@@ -176,7 +176,7 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 
 #endif
 
-	uint32_t windowFlags = SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIDDEN | SDL_WINDOW_INPUT_FOCUS | SDL_WINDOW_MOUSE_FOCUS | SDL_WINDOW_EXTERNAL;
+	uint32_t windowFlags = SDL_WINDOW_HIDDEN | SDL_WINDOW_INPUT_FOCUS | SDL_WINDOW_MOUSE_FOCUS | SDL_WINDOW_EXTERNAL;
 
 #if defined(MCENGINE_FEATURE_OPENGL) || defined(MCENGINE_FEATURE_OPENGLES)
 
@@ -193,7 +193,7 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
     SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_Y_NUMBER, SDL_WINDOWPOS_CENTERED);
     SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_WIDTH_NUMBER, WINDOW_WIDTH);
     SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_HEIGHT_NUMBER, WINDOW_HEIGHT);
-	SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_RESIZABLE_BOOLEAN, true);
+	SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_RESIZABLE_BOOLEAN, false);
 	SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_FULLSCREEN_BOOLEAN, shouldBeFullscreen);
 	SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_BORDERLESS_BOOLEAN, shouldBeBorderless);
     SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_FLAGS_NUMBER, windowFlags);
@@ -337,7 +337,7 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 				const bool shouldRawInputBeEnabled = (mouse_raw_input_ref->getBool() && !environment->isCursorVisible());
 
 				if (shouldRawInputBeEnabled != isRawInputActuallyEnabled)
-					SDL_SetWindowRelativeMouseMode(g_window, shouldRawInputBeEnabled ? true : false);
+                    SDL_SetWindowRelativeMouseMode(g_window, shouldRawInputBeEnabled ? true : false);
 			}
 
 			const bool isRawInputEnabled = (SDL_GetWindowRelativeMouseMode(g_window) == true);
@@ -931,7 +931,7 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 						const double actualGameFps = static_cast<double>(frameCountSinceLastFpsCalc) / fpsCalcTimer->getElapsedTime();
 						if (actualGameFps < targetFps * 0.99f && actualGameFps > targetFps * 0.9f)
 							fpsAdjustment -= 0.5f;
-						else if (actualGameFps > targetFps * 1.02f)
+						else if (actualGameFps > targetFps)
 							fpsAdjustment += 0.5f;
 						clamp<double>(fpsAdjustment, -20.0f, 0.5f);
 					}

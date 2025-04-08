@@ -265,24 +265,26 @@ UString SDLEnvironment::openFolderWindow(UString title, UString initialpath)
 
 void SDLEnvironment::focus()
 {
+    SDL_SyncWindow(m_window);
 	SDL_RaiseWindow(m_window);
 }
 
 void SDLEnvironment::center()
 {
-	// TODO: use nearest monitor
-	Vector2 screenSize = getNativeScreenSize();
-	Vector2 windowSize = getWindowSize();
-	setWindowPos(screenSize.x/2 - windowSize.x/2, screenSize.y/2 - windowSize.y/2);
+    SDL_SyncWindow(m_window);
+    const SDL_DisplayID di = SDL_GetDisplayForWindow(m_window);
+	SDL_SetWindowPosition(m_window, SDL_WINDOWPOS_CENTERED_DISPLAY(di), SDL_WINDOWPOS_CENTERED_DISPLAY(di));
 }
 
 void SDLEnvironment::minimize()
 {
+    SDL_SyncWindow(m_window);
 	SDL_MinimizeWindow(m_window);
 }
 
 void SDLEnvironment::maximize()
 {
+    SDL_SyncWindow(m_window);
 	SDL_MaximizeWindow(m_window);
 }
 
@@ -307,11 +309,13 @@ void SDLEnvironment::setWindowTitle(UString title)
 
 void SDLEnvironment::setWindowPos(int x, int y)
 {
+    SDL_SyncWindow(m_window);
 	SDL_SetWindowPosition(m_window, x, y);
 }
 
 void SDLEnvironment::setWindowSize(int width, int height)
 {
+    SDL_SyncWindow(m_window);
 	SDL_SetWindowSize(m_window, width, height);
 }
 
@@ -337,6 +341,7 @@ Vector2 SDLEnvironment::getWindowPos()
 	int x = 0;
 	int y = 0;
 	{
+        SDL_SyncWindow(m_window);
 		SDL_GetWindowPosition(m_window, &x, &y);
 	}
 	return Vector2(x, y);
@@ -347,6 +352,7 @@ Vector2 SDLEnvironment::getWindowSize()
 	int width = 100;
 	int height = 100;
 	{
+        SDL_SyncWindow(m_window);
 		SDL_GetWindowSize(m_window, &width, &height);
 	}
 	return Vector2(width, height);
@@ -362,6 +368,7 @@ int SDLEnvironment::getMonitor()
 
 Vector2 SDLEnvironment::getNativeScreenSize()
 {
+    SDL_SyncWindow(m_window);
 	SDL_DisplayID di = SDL_GetDisplayForWindow(m_window);
 	return Vector2(SDL_GetDesktopDisplayMode(di)->w, SDL_GetDesktopDisplayMode(di)->h);
 }
@@ -411,7 +418,7 @@ Vector2 SDLEnvironment::getMousePos()
 		SDL_GetGlobalMouseState(&mouseX, &mouseY);
 		SDL_GetWindowPosition(m_window, &windowX, &windowY);
 
-		return Vector2(mouseX - windowX, mouseY - windowY);
+		return Vector2(mouseX - static_cast<float>(windowX), mouseY - static_cast<float>(windowY));
 	}
 }
 
@@ -429,8 +436,12 @@ void SDLEnvironment::setCursorVisible(bool visible)
 
 void SDLEnvironment::setMousePos(int x, int y)
 {
-	// debugLog("setting mouse pos to %i,%i\n", x, y);
 	SDL_WarpMouseInWindow(m_window, (float)x, (float)y);
+}
+
+void SDLEnvironment::setMousePos(float x, float y)
+{
+	SDL_WarpMouseInWindow(m_window, x, y);
 }
 
 void SDLEnvironment::setCursorClip(bool clip, McRect rect)
@@ -445,19 +456,18 @@ void SDLEnvironment::setCursorClip(bool clip, McRect rect)
 			static_cast<int>(rect.getWidth()),
 			static_cast<int>(rect.getHeight())
 		};
-
-		SDL_CaptureMouse(true);
+        m_bCursorClipped = true;
 		SDL_SetWindowMouseRect(m_window, &clipRect);
-		//SDL_SetWindowMouseGrab(m_window, true); // FIXME: sdl2->sdl3 wtf why does moving the mouse stop generating SDL_EVENT_MOUSE_MOTION when grabbed?
+		SDL_SetWindowMouseGrab(m_window, true);
 		// HACK: sdl2->sdl3 don't listen for text input when in play mode (putting it here for now to reuse "in-gameplay" logic)
 		SDL_StopTextInput(m_window);
 	}
 	else
 	{
-		//SDL_SetWindowMouseGrab(m_window, false);
-		SDL_CaptureMouse(false);
+        m_bCursorClipped = false;
+        SDL_StartTextInput(m_window);
+        SDL_SetWindowMouseGrab(m_window, false);
 		SDL_SetWindowMouseRect(m_window, NULL);
-		SDL_StartTextInput(m_window);
 	}
 }
 

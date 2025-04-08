@@ -57,7 +57,7 @@
 #include "OsuBeatmap.h"
 #include "OsuDatabaseBeatmap.h"
 #include "OsuBeatmapStandard.h"
-#include "OsuBeatmapMania.h"
+//#include "OsuBeatmapMania.h"
 
 #include "OsuHitObject.h"
 
@@ -401,6 +401,9 @@ Osu::Osu(Osu2 *osu2, int instanceID)
 	*/
 
 	// renderer
+
+    /* HACK: update global resolution once with actually created window */
+    engine->onResolutionChange(env->getWindowSize());
 	g_vInternalResolution = engine->getScreenSize();
 
 	m_backBuffer = engine->getResourceManager()->createRenderTarget(0, 0, getScreenWidth(), getScreenHeight());
@@ -689,8 +692,8 @@ void Osu::draw(Graphics *g)
 		// draw projected VR cursors for spectators
 		if (isInVRMode() && isInPlayMode() && !getSelectedBeatmap()->isPaused() && m_osu_vr_draw_desktop_playfield_ref->getBool() && beatmapStd != NULL)
 		{
-			m_hud->drawCursorSpectator1(g, beatmapStd->osuCoords2RawPixels(m_vr->getCursorPos1() + Vector2(OsuGameRules::OSU_COORD_WIDTH/2, OsuGameRules::OSU_COORD_HEIGHT/2)), 1.0f);
-			m_hud->drawCursorSpectator2(g, beatmapStd->osuCoords2RawPixels(m_vr->getCursorPos2() + Vector2(OsuGameRules::OSU_COORD_WIDTH/2, OsuGameRules::OSU_COORD_HEIGHT/2)), 1.0f);
+			m_hud->drawCursorSpectator1(g, beatmapStd->osuCoords2RawPixels(m_vr->getCursorPos1() + Vector2(OsuGameRules::OSU_COORD_WIDTH/2.0f, OsuGameRules::OSU_COORD_HEIGHT/2.0f)), 1.0f);
+			m_hud->drawCursorSpectator2(g, beatmapStd->osuCoords2RawPixels(m_vr->getCursorPos2() + Vector2(OsuGameRules::OSU_COORD_WIDTH/2.0f, OsuGameRules::OSU_COORD_HEIGHT/2.0f)), 1.0f);
 		}
 	}
 	else // if we are not playing
@@ -798,7 +801,7 @@ void Osu::draw(Graphics *g)
 				{
 					// NOTE: apparently, after testing with libnx 3.0.0, it now requires half 720p offset when undocked?
 					if (backupResolution.y < 722)
-						offset.y = 720 / 2;
+						offset.y = 720 / 2.0f;
 
 					m_backBuffer->draw(g, offset.x*(1.0f + osu_letterboxing_offset_x.getFloat()), offset.y*(1.0f + osu_letterboxing_offset_y.getFloat()), g_vInternalResolution.x, g_vInternalResolution.y);
 				}
@@ -2220,11 +2223,11 @@ void Osu::updateMouseSettings()
 		{
 			// special case for osu: since letterboxed raw input absolute to window should mean the 'game' window, and not the 'engine' window, no offset scaling is necessary
 			if (m_mouse_raw_input_absolute_to_window_ref->getBool())
-				offset = -Vector2((engine->getScreenWidth()/2 - g_vInternalResolution.x/2), (engine->getScreenHeight()/2 - g_vInternalResolution.y/2));
+				offset = -Vector2((engine->getScreenWidth()/2.0f - g_vInternalResolution.x/2), (engine->getScreenHeight()/2.0f - g_vInternalResolution.y/2));
 			else
-				offset = -Vector2((engine->getScreenWidth()/2 - g_vInternalResolution.x/2)*(1.0f + osu_letterboxing_offset_x.getFloat()), (engine->getScreenHeight()/2 - g_vInternalResolution.y/2)*(1.0f + osu_letterboxing_offset_y.getFloat()));
+				offset = -Vector2((engine->getScreenWidth()/2.0f - g_vInternalResolution.x/2)*(1.0f + osu_letterboxing_offset_x.getFloat()), (engine->getScreenHeight()/2.0f - g_vInternalResolution.y/2)*(1.0f + osu_letterboxing_offset_y.getFloat()));
 
-			scale = Vector2(g_vInternalResolution.x / engine->getScreenWidth(), g_vInternalResolution.y / engine->getScreenHeight());
+			scale = Vector2(g_vInternalResolution.x / static_cast<float>(engine->getScreenWidth()), g_vInternalResolution.y / static_cast<float>(engine->getScreenHeight()));
 		}
 	}
 
@@ -2515,12 +2518,12 @@ void Osu::updateConfineCursor()
 			|| (osu_confine_cursor_windowed.getBool() && !env->isFullscreen())
 			|| (isInPlayMode() && !m_pauseMenu->isVisible() && !getModAuto() && !getModAutopilot()))
 	{
-		unsigned int offsetX = 0;
-		unsigned int offsetY = 0;
+		float offsetX = 0;
+		float offsetY = 0;
 		if (osu_letterboxing.getBool())
 		{
-			offsetX = (engine->getScreenWidth()/2 - g_vInternalResolution.x/2)*(1.0f + osu_letterboxing_offset_x.getFloat());
-			offsetY = (engine->getScreenHeight()/2 - g_vInternalResolution.y/2)*(1.0f + osu_letterboxing_offset_y.getFloat());
+			offsetX = ((engine->getScreenWidth() - g_vInternalResolution.x)/2)*(1.0f + osu_letterboxing_offset_x.getFloat());
+			offsetY = ((engine->getScreenHeight() - g_vInternalResolution.y)/2)*(1.0f + osu_letterboxing_offset_y.getFloat());
 		}
 		env->setCursorClip(true, McRect(offsetX, offsetY, g_vInternalResolution.x, g_vInternalResolution.y));
 	}
