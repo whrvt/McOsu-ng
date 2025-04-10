@@ -28,7 +28,9 @@ public:
 	void setVSync(bool vsync);
 
 private:
+	inline void onSwapBehaviorChange(UString oldValue, UString newValue) {m_glfinish = !!newValue.toInt();}
 	SDL_Window *m_window;
+	bool m_glfinish;
 };
 
 #endif

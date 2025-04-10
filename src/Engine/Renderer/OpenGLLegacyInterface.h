@@ -23,7 +23,7 @@ public:
 
 	// scene
 	virtual void beginScene();
-	virtual void endScene();
+	virtual inline void endScene() {OpenGLLegacyInterface::endSceneInternal(false);}
 
 	// depth buffer
 	virtual void clearDepthBuffer();
@@ -103,6 +103,7 @@ public:
 protected:
 	virtual void init();
 	virtual void onTransformUpdate(Matrix4 &projectionMatrix, Matrix4 &worldMatrix);
+	void endSceneInternal(bool finish = false);
 
 private:
 	static int primitiveToOpenGL(Graphics::PRIMITIVE primitive);

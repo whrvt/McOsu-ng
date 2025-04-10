@@ -122,7 +122,7 @@ void OpenGLLegacyInterface::beginScene()
 	handleGLErrors();
 }
 
-void OpenGLLegacyInterface::endScene()
+void OpenGLLegacyInterface::endSceneInternal(bool finish)
 {
 	popTransform();
 
@@ -133,7 +133,7 @@ void OpenGLLegacyInterface::endScene()
 		engine->showMessageErrorFatal("ClipRect Stack Leak", "Make sure all push*() have a pop*()!");
 		engine->shutdown();
 	}
-
+	if (finish) glFinish();
 	m_bInScene = false;
 }
 

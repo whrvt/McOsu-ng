@@ -237,6 +237,7 @@ private:
 
 	void onConfineCursorWindowedChange(UString oldValue, UString newValue);
 	void onConfineCursorFullscreenChange(UString oldValue, UString newValue);
+	void onConfineCursorNeverChange(UString oldValue, UString newValue);
 
 	void onKey1Change(bool pressed, bool mouse);
 	void onKey2Change(bool pressed, bool mouse);

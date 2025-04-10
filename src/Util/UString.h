@@ -84,18 +84,12 @@ public:
 	bool lessThanIgnoreCase(const UString &ustr) const;
 
 private:
-    [[gnu::__always_inline__]] static inline int encode(const wchar_t *unicode, int length, char *utf8);
-
-	[[gnu::__always_inline__]] static inline wchar_t getCodePoint(const char *utf8, int offset, int numBytes, unsigned char firstByteMask);
-
-	[[gnu::__always_inline__]] static inline void getUtf8(wchar_t ch, char *utf8, int numBytes, int firstByteValue);
-
 	int fromUtf8(const char *utf8, int length = -1);
 
 	void updateUtf8();
 
 	// inline deletes, guarantee valid empty string
-	inline void deleteUnicode()
+	forceinline void deleteUnicode()
 	{
 		if (mUnicode != NULL && mUnicode != nullWString)
 			delete[] mUnicode;
@@ -103,7 +97,7 @@ private:
 		mUnicode = (wchar_t*)nullWString;
 	}
 
-	inline void deleteUtf8()
+	forceinline void deleteUtf8()
 	{
 		if (mUtf8 != NULL && mUtf8 != nullString)
 			delete[] mUtf8;
@@ -111,10 +105,9 @@ private:
 		mUtf8 = (char*)nullString;
 	}
 
-	inline bool isUnicodeNull() const {return (mUnicode == NULL || mUnicode == nullWString);}
-	inline bool isUtf8Null() const {return (mUtf8 == NULL || mUtf8 == nullString);}
+	forceinline bool isUnicodeNull() const {return (mUnicode == NULL || mUnicode == nullWString);}
+	forceinline bool isUtf8Null() const {return (mUtf8 == NULL || mUtf8 == nullString);}
 
-private:
 	static constexpr char nullString[] = "";
 	static constexpr wchar_t nullWString[] = L"";
 

@@ -450,15 +450,18 @@ void SDLEnvironment::setCursorClip(bool clip, McRect rect)
 
 	if (clip)
 	{
-		const SDL_Rect clipRect {
-			static_cast<int>(rect.getX()),
-			static_cast<int>(rect.getY()),
-			static_cast<int>(rect.getWidth()),
-			static_cast<int>(rect.getHeight())
-		};
-        m_bCursorClipped = true;
-		SDL_SetWindowMouseRect(m_window, &clipRect);
-		SDL_SetWindowMouseGrab(m_window, true);
+		if (rect.getSize().x > 1.0f) // xwayland tablet shit continues
+		{
+			const SDL_Rect clipRect {
+				static_cast<int>(rect.getX()),
+				static_cast<int>(rect.getY()),
+				static_cast<int>(rect.getWidth()),
+				static_cast<int>(rect.getHeight())
+			};
+			SDL_SetWindowMouseRect(m_window, &clipRect);
+			SDL_SetWindowMouseGrab(m_window, true);
+			m_bCursorClipped = true;
+		}
         SDL_SetWindowKeyboardGrab(m_window, true);
 		// HACK: sdl2->sdl3 don't listen for text input when in play mode (putting it here for now to reuse "in-gameplay" logic)
 		SDL_StopTextInput(m_window);

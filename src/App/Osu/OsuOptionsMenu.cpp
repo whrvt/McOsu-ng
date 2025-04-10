@@ -610,6 +610,11 @@ OsuOptionsMenu::OsuOptionsMenu(Osu *osu) : OsuScreenBackable(osu)
 		addCheckbox("High Priority (!)", "WARNING: Only enable this if nothing else works!\nSets the process priority to High.\nMay fix microstuttering and other weird problems.\nTry to fix your broken computer/OS/drivers first!", convar->getConVarByName("win_processpriority"));
 
 	addCheckbox("Show FPS Counter", convar->getConVarByName("osu_draw_fps"));
+
+#if defined(MCENGINE_FEATURE_SDL) && defined(MCENGINE_FEATURE_OPENGL)
+	addCheckbox("Explicit Sync", "Analogous to \"Reduce dropped frames\" on osu!stable.\nForces the GPU to execute all queued commands before swapping.\nOnly use this if you experience issues at higher framerates.", convar->getConVarByName("gl_finish_before_swap"));
+#endif
+
 	if (env->getOS() != Environment::OS::OS_HORIZON)
 	{
 		addSpacer();
@@ -928,6 +933,7 @@ OsuOptionsMenu::OsuOptionsMenu(Osu *osu) : OsuScreenBackable(osu)
 	{
 		addCheckbox("Confine Cursor (Windowed)", convar->getConVarByName("osu_confine_cursor_windowed"));
 		addCheckbox("Confine Cursor (Fullscreen)", convar->getConVarByName("osu_confine_cursor_fullscreen"));
+		addCheckbox("Confine Cursor (NEVER)", "Don't try to confine the cursor, even in gameplay.\n(Workaround for relative tablet motion quirks with Xwayland)", convar->getConVarByName("osu_confine_cursor_never"));
 		addCheckbox("Disable Mouse Wheel in Play Mode", convar->getConVarByName("osu_disable_mousewheel"));
 	}
 	addCheckbox("Disable Mouse Buttons in Play Mode", convar->getConVarByName("osu_disable_mousebuttons"));
@@ -2766,21 +2772,21 @@ void OsuOptionsMenu::onResolutionSelect()
 		}
 	}
 
-    // native resolution at the end
-    Vector2 nativeResolution = env->getNativeScreenSize();
-    bool containsNativeResolution = false;
-    for (int i=0; i<resolutions.size(); i++)
-    {
-    	if (resolutions[i] == nativeResolution)
-    	{
-    		containsNativeResolution = true;
-    		break;
-    	}
-    }
-    if (!containsNativeResolution)
-    	resolutions.push_back(nativeResolution);
+	// native resolution at the end
+	Vector2 nativeResolution = env->getNativeScreenSize();
+	bool containsNativeResolution = false;
+	for (int i=0; i<resolutions.size(); i++)
+	{
+		if (resolutions[i] == nativeResolution)
+		{
+			containsNativeResolution = true;
+			break;
+		}
+	}
+	if (!containsNativeResolution)
+		resolutions.push_back(nativeResolution);
 
-    // build context menu
+	// build context menu
 	m_contextMenu->setPos(m_resolutionSelectButton->getPos());
 	m_contextMenu->setRelPos(m_resolutionSelectButton->getRelPos());
 	m_contextMenu->begin();

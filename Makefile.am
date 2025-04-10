@@ -11,9 +11,9 @@ CLEANFILES = \
 	*.bak
 
 build/deps/mimalloc.built:
-	$(MKDIR_P) build/deps/mimalloc/out/release
+	$(MKDIR_P) build/deps/mimalloc/out/"$(if $(ENABLE_DEBUG),release,debug)"
 	$(WGET) -qO- "https://github.com/microsoft/mimalloc/archive/refs/tags/v$(MIMALLOC_VERSION).tar.gz" | $(TAR) xz -C build/deps/mimalloc --strip-components=1
-	cd build/deps/mimalloc/out/release && \
+	cd build/deps/mimalloc/out/"$(if $(ENABLE_DEBUG),release,debug)" && \
 	env LDFLAGS="$(LDFLAGS) -xnone" cmake \
 	-D CMAKE_C_COMPILER="$(CC_NOCCACHE)" \
 	-D CMAKE_C_FLAGS="$(CFLAGS)" \
@@ -40,6 +40,7 @@ build/deps/SDL3.built:
 	cd build/deps/SDL3 && \
 	cmake -S . -B build -G Ninja \
 	-D CMAKE_BUILD_TYPE="$(if $(ENABLE_DEBUG),Debug,None)" \
+	$(if $(ENABLE_DEBUG),-DSDL_ASAN=ON,) \
 	-D SDL_HIDAPI_LIBUSB=OFF \
 	-D CMAKE_INSTALL_PREFIX="$(DEPS_PREFIX)" \
 	-D SDL_SHARED="$(if $(SDL3_STATIC),OFF,ON)" \
@@ -96,7 +97,10 @@ build/deps/FREETYPE2.built:
 		$(PKG_CONFIG) --exists --print-errors freetype2
 	touch $@
 
-DEPS_BUILT = build/deps/mimalloc.built
+DEPS_BUILT =
+if BUILD_MIMALLOC
+DEPS_BUILT += build/deps/mimalloc.built
+endif
 if BUILD_SDL3
 DEPS_BUILT += build/deps/SDL3.built
 endif
@@ -110,27 +114,33 @@ endif
 # making sure deps are built before main compile
 BUILT_SOURCES = $(DEPS_BUILT)
 
-# FIXME: redundant?
-define get_pkgconfig_flags
-$(shell PKG_CONFIG_PATH="$(DEPS_PREFIX)/lib/pkgconfig:$(DEPS_PREFIX)/lib64/pkgconfig:$(PKG_CONFIG_PATH)" \
-	$(PKG_CONFIG) --$(1) $(2))
-endef
-
-# re-evaluated after deps are built
-SDL3_CFLAGS = $(call get_pkgconfig_flags,cflags,sdl3)
-SDL3_LIBS = $(call get_pkgconfig_flags,libs,sdl3)
-GLEW_CFLAGS = $(call get_pkgconfig_flags,cflags,glew)
-GLEW_LIBS = $(call get_pkgconfig_flags,libs,glew)
-FREETYPE2_CFLAGS = $(call get_pkgconfig_flags,cflags,freetype2)
-FREETYPE2_LIBS = $(call get_pkgconfig_flags,libs,freetype2)
-
 # making sure deps are built before main compile (continued)
 $(McOsu_OBJECTS): $(DEPS_BUILT)
 
-# FIXME: just fixme
-MCOSU_INCLUDE_FLAGS = $(shell find $(srcdir)/src -not -path '*/.*' -type d -printf "-I%p ")
+# re-evaluated after deps are built
+PKGTYPE := $(if $(SDL3_STATIC),--static,)
 
-McOsu_CXXFLAGS = \
+SDL3_CFLAGS = $(shell PKG_CONFIG_PATH="$(DEPS_PREFIX)/lib/pkgconfig" pkg-config $(PKGTYPE) --cflags sdl3)
+SDL3_LIBS = $(shell PKG_CONFIG_PATH="$(DEPS_PREFIX)/lib/pkgconfig" pkg-config $(PKGTYPE) --libs sdl3)
+GLEW_CFLAGS = $(shell PKG_CONFIG_PATH="$(DEPS_PREFIX)/lib/pkgconfig" pkg-config $(PKGTYPE) --cflags glew)
+GLEW_LIBS = $(shell PKG_CONFIG_PATH="$(DEPS_PREFIX)/lib/pkgconfig" pkg-config $(PKGTYPE) --libs glew)
+FREETYPE2_CFLAGS = $(shell PKG_CONFIG_PATH="$(DEPS_PREFIX)/lib/pkgconfig" pkg-config $(PKGTYPE) --cflags freetype2)
+FREETYPE2_LIBS = $(shell PKG_CONFIG_PATH="$(DEPS_PREFIX)/lib/pkgconfig" pkg-config $(PKGTYPE) --libs freetype2)
+
+if BUILD_MIMALLOC
+MIMALLOC_LIBS = $(DEPS_PREFIX)/lib/mimalloc.o
+else
+MIMALLOC_LIBS :=
+endif
+
+if USE_BEAR
+MAKE := bear --force-preload -- $(MAKE)
+endif
+
+# FIXME: just fixme
+MCOSU_INCLUDE_FLAGS := $(shell find $(srcdir)/src -not -path '*/.*' -type d -printf "-I%p ")
+
+McOsu_CXXFLAGS := \
 	$(MCOSU_INCLUDE_FLAGS) \
 	-I$(srcdir)/$(BUNDLED_BASS_DIR)/include \
     -I$(srcdir)/$(BUNDLED_BASS_FX_DIR)/include \
@@ -145,12 +155,10 @@ McOsu_CXXFLAGS = \
 	$(ZLIB_CFLAGS) \
 	-pthread
 
-McOsu_CFLAGS = $(McOsu_CXXFLAGS)
-
-McOsu_LDFLAGS = $(DEPS_PREFIX)/lib/mimalloc.o \
+McOsu_LDFLAGS := \
+	$(MIMALLOC_LIBS) \
 	-Wl,-rpath='$$ORIGIN/lib',-rpath='$$ORIGIN' \
 	-L$(srcdir)/$(BUNDLED_BASS_DIR)/lib/linux \
-    -Wl,--lto-whole-program-visibility \
 	-lbass \
 	$(SDL3_LIBS) \
 	$(X11_LIBS) \

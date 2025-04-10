@@ -9,13 +9,12 @@
 #ifndef SDLENVIRONMENT_H
 #define SDLENVIRONMENT_H
 
-#include "cbase.h"
+#include "Environment.h"
 
 #ifdef MCENGINE_FEATURE_SDL
 
+#include "cbase.h"
 #include <SDL3/SDL.h>
-
-#include "Environment.h"
 
 // #define MCENGINE_SDL_TOUCHSUPPORT
 
@@ -102,7 +101,7 @@ public:
 	virtual void setCursor(CURSORTYPE cur);
 	virtual void setCursorVisible(bool visible);
 	virtual void setMousePos(int x, int y);
-    virtual void setMousePos(float x, float y);
+	virtual void setMousePos(float x, float y);
 	virtual void setCursorClip(bool clip, McRect rect);
 
 	// keyboard

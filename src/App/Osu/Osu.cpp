@@ -80,6 +80,7 @@ ConVar osu_disable_mousebuttons("osu_disable_mousebuttons", false, FCVAR_NONE);
 ConVar osu_disable_mousewheel("osu_disable_mousewheel", false, FCVAR_NONE);
 ConVar osu_confine_cursor_windowed("osu_confine_cursor_windowed", false, FCVAR_NONE);
 ConVar osu_confine_cursor_fullscreen("osu_confine_cursor_fullscreen", true, FCVAR_NONE);
+ConVar osu_confine_cursor_never("osu_confine_cursor_never", false, FCVAR_NONE, "workaround for relative tablet motion quirks with Xwayland");
 
 ConVar osu_skin("osu_skin", "", FCVAR_NONE); // set dynamically below in the constructor
 ConVar osu_skin_is_from_workshop("osu_skin_is_from_workshop", false, FCVAR_NONE, "determines whether osu_skin contains a relative folder name, or a full absolute path (for workshop skins)");
@@ -314,6 +315,7 @@ Osu::Osu(Osu2 *osu2, int instanceID)
 
 	osu_confine_cursor_windowed.setCallback( fastdelegate::MakeDelegate(this, &Osu::onConfineCursorWindowedChange) );
 	osu_confine_cursor_fullscreen.setCallback( fastdelegate::MakeDelegate(this, &Osu::onConfineCursorFullscreenChange) );
+	osu_confine_cursor_never.setCallback( fastdelegate::MakeDelegate(this, &Osu::onConfineCursorNeverChange) );
 
 	convar->getConVarByName("osu_playfield_mirror_horizontal")->setCallback( fastdelegate::MakeDelegate(this, &Osu::updateModsForConVarTemplate) ); // force a mod update on OsuBeatmap if changed
 	convar->getConVarByName("osu_playfield_mirror_vertical")->setCallback( fastdelegate::MakeDelegate(this, &Osu::updateModsForConVarTemplate) ); // force a mod update on OsuBeatmap if changed
@@ -1813,14 +1815,48 @@ void Osu::onAudioOutputDeviceChange()
 
 void Osu::saveScreenshot()
 {
-	engine->getSound()->play(m_skin->getShutter());
-	int screenshotNumber = 0;
-	while (env->fileExists(UString::format("screenshots/screenshot%i.png", screenshotNumber)))
+    engine->getSound()->play(m_skin->getShutter());
+    int screenshotNumber = 0;
+    while (env->fileExists(UString::format("screenshots/screenshot%i.png", screenshotNumber)))
+        screenshotNumber++;
+
+    std::vector<unsigned char> pixels = engine->getGraphics()->getScreenshot();
+
+    const float outerWidth = engine->getGraphics()->getResolution().x;
+    const float outerHeight = engine->getGraphics()->getResolution().y;
+    const float innerWidth = m_vInternalResolution.x;
+    const float innerHeight = m_vInternalResolution.y;
+
+	// don't need cropping
+	if (static_cast<int>(innerWidth)  == static_cast<int>(outerWidth) &&
+		static_cast<int>(innerHeight) == static_cast<int>(outerHeight))
 	{
-		screenshotNumber++;
+		Image::saveToImage(&pixels[0], innerWidth, innerHeight, UString::format("screenshots/screenshot%i.png", screenshotNumber));
+		return;
 	}
-	std::vector<unsigned char> pixels = engine->getGraphics()->getScreenshot();
-	Image::saveToImage(&pixels[0], engine->getGraphics()->getResolution().x, engine->getGraphics()->getResolution().y, UString::format("screenshots/screenshot%i.png", screenshotNumber));
+
+	// need cropping
+    float offsetXpct = 0, offsetYpct = 0;
+    if (osu_resolution_enabled.getBool() && osu_letterboxing.getBool()) {
+        offsetXpct = osu_letterboxing_offset_x.getFloat();
+        offsetYpct = osu_letterboxing_offset_y.getFloat();
+    }
+
+    const int startX = clamp<int>(static_cast<int>((outerWidth - innerWidth) * (1 + offsetXpct) / 2), 0,
+                                  static_cast<int>(outerWidth - innerWidth));
+    const int startY = clamp<int>(static_cast<int>((outerHeight - innerHeight) * (1 + offsetYpct) / 2), 0,
+                                  static_cast<int>(outerHeight - innerHeight));
+
+    std::vector<unsigned char> croppedPixels(static_cast<size_t>(innerWidth * innerHeight * 3));
+
+    for (int y = 0; y < innerHeight; ++y) {
+        auto srcRowStart = pixels.begin() + ((startY + y) * static_cast<int>(outerWidth) + startX) * 3;
+        auto destRowStart = croppedPixels.begin() + (y * static_cast<int>(innerWidth)) * 3;
+		// copy the entire row
+        std::ranges::copy_n(srcRowStart, static_cast<int>(innerWidth) * 3, destRowStart);
+    }
+
+    Image::saveToImage(&croppedPixels[0], innerWidth, innerHeight, UString::format("screenshots/screenshot%i.png", screenshotNumber));
 }
 
 
@@ -2518,14 +2554,19 @@ void Osu::updateConfineCursor()
 			|| (osu_confine_cursor_windowed.getBool() && !env->isFullscreen())
 			|| (isInPlayMode() && !m_pauseMenu->isVisible() && !getModAuto() && !getModAutopilot()))
 	{
-		float offsetX = 0;
-		float offsetY = 0;
-		if (osu_letterboxing.getBool())
+		if (osu_confine_cursor_never.getBool())
+			env->setCursorClip(true, McRect(-1, -1, -1, -1)); // hideous
+		else
 		{
-			offsetX = ((engine->getScreenWidth() - g_vInternalResolution.x)/2)*(1.0f + osu_letterboxing_offset_x.getFloat());
-			offsetY = ((engine->getScreenHeight() - g_vInternalResolution.y)/2)*(1.0f + osu_letterboxing_offset_y.getFloat());
+			float offsetX = 0;
+			float offsetY = 0;
+			if (osu_letterboxing.getBool())
+			{
+				offsetX = ((engine->getScreenWidth() - g_vInternalResolution.x)/2)*(1.0f + osu_letterboxing_offset_x.getFloat());
+				offsetY = ((engine->getScreenHeight() - g_vInternalResolution.y)/2)*(1.0f + osu_letterboxing_offset_y.getFloat());
+			}
+			env->setCursorClip(true, McRect(offsetX, offsetY, g_vInternalResolution.x, g_vInternalResolution.y));
 		}
-		env->setCursorClip(true, McRect(offsetX, offsetY, g_vInternalResolution.x, g_vInternalResolution.y));
 	}
 	else
 		env->setCursorClip(false, McRect());
@@ -2538,6 +2579,13 @@ void Osu::onConfineCursorWindowedChange(UString oldValue, UString newValue)
 
 void Osu::onConfineCursorFullscreenChange(UString oldValue, UString newValue)
 {
+	updateConfineCursor();
+}
+
+void Osu::onConfineCursorNeverChange(UString oldValue, UString newValue)
+{
+	osu_confine_cursor_fullscreen.setValue(false);
+	osu_confine_cursor_windowed.setValue(false);
 	updateConfineCursor();
 }
 

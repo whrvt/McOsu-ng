@@ -53,6 +53,8 @@ AC_ARG_ENABLE([system-deps],
     AS_HELP_STRING([--disable-system-deps], [Always build dependencies from source (default: no)]))
 AC_ARG_ENABLE([static],
     AS_HELP_STRING([--enable-static], [Enable static linking where possible (default: no)]))
+AC_ARG_ENABLE([bear],
+    AS_HELP_STRING([--enable-bear], [Output a compile_commands.json using bear when building (default: no)]))
 
 PKG_PROG_PKG_CONFIG
 
@@ -75,17 +77,27 @@ AS_IF([test "x$enable_clang" = "xyes"], [
 
 # use c/c++17 because we can
 AC_LANG([C++])
-AX_CHECK_COMPILE_FLAG([-std=gnu++17], [
-    CXXFLAGS="$CXXFLAGS -std=gnu++17"
+AC_LANG_PUSH(C++)
+AX_CHECK_COMPILE_FLAG([-std=gnu++23], [
+    CXXFLAGS="$CXXFLAGS -std=gnu++23"
 ], [
-    AC_MSG_NOTICE([Compiler does not support gnu++17])
+    AC_MSG_NOTICE([Compiler does not support gnu++23])
 ])
 
 AC_LANG([C])
-AX_CHECK_COMPILE_FLAG([-std=gnu17], [
-    CFLAGS="$CFLAGS -std=gnu17"
+AX_CHECK_COMPILE_FLAG([-std=gnu++23], [
+    CFLAGS="$CFLAGS -std=gnu23"
 ], [
-    AC_MSG_NOTICE([Compiler does not support gnu17])
+    AC_MSG_NOTICE([Compiler does not support gnu23])
+])
+
+AC_LANG_POP
+
+AS_IF([test "x$enable_bear" = "xyes"], [
+    AC_CHECK_PROG([BEAR], [bear], [bear])
+    if test -z "$BEAR"; then
+        AC_MSG_ERROR([bear not found - required for outputting compile_commands.json])
+    fi
 ])
 
 AC_CHECK_PROG([CCACHE], [ccache], [ccache])
@@ -104,8 +116,8 @@ AS_IF([test "x$enable_native" != "xno"], [
 ])
 
 AS_IF([test "x$enable_debug" = "xyes"], [
-    CXXFLAGS="$CXXFLAGS -g3 -gdwarf-5 -Og -fasynchronous-unwind-tables"
-    CFLAGS="$CFLAGS -g3 -gdwarf-5 -Og -fasynchronous-unwind-tables"
+    CXXFLAGS="$CXXFLAGS -ggdb3 -gdwarf-5 -Og -fasynchronous-unwind-tables -fsanitize=address,undefined"
+    CFLAGS="$CFLAGS -ggdb3 -gdwarf-5 -Og -fasynchronous-unwind-tables -fsanitize=address,undefined"
     ENABLE_DEBUG=$enable_debug
     AC_SUBST([ENABLE_DEBUG])
 ], [
@@ -119,22 +131,22 @@ AS_IF([test "x$enable_debug" = "xyes"], [
 
 AS_IF([test "x$enable_lto" != "xno"], [
     AX_CHECK_COMPILE_FLAG([-flto=thin], [
-        AX_CHECK_LINK_FLAG([-fuse-ld=lld -flto=thin -ffat-lto-objects], [
-            CXXFLAGS="$CXXFLAGS -flto=thin -ffat-lto-objects"
-            CFLAGS="$CFLAGS -flto=thin -ffat-lto-objects"
-            LDFLAGS="$LDFLAGS -fuse-ld=lld -flto=thin -ffat-lto-objects"
+        AX_CHECK_LINK_FLAG([-fuse-ld=lld -flto=thin -fno-fat-lto-objects -fwhole-program-vtables], [
+            CXXFLAGS="$CXXFLAGS -flto=thin -fno-fat-lto-objects -fwhole-program-vtables"
+            CFLAGS="$CFLAGS -flto=thin -fno-fat-lto-objects -fwhole-program-vtables"
+            LDFLAGS="$LDFLAGS -fuse-ld=lld -flto=thin -fno-fat-lto-objects -fwhole-program-vtables -Wl,--lto-whole-program-visibility"
         ])], [
         # gcc
-        AX_CHECK_LINK_FLAG([-flto=auto -ffat-lto-objects -fuse-linker-plugin], [
-            CXXFLAGS="$CXXFLAGS -flto=auto -ffat-lto-objects -fuse-linker-plugin"
-            CFLAGS="$CFLAGS -flto=auto -ffat-lto-objects -fuse-linker-plugin"
-            LDFLAGS="$LDFLAGS -flto=auto -ffat-lto-objects -fuse-linker-plugin"
+        AX_CHECK_LINK_FLAG([-flto=auto -fno-fat-lto-objects -fuse-linker-plugin], [
+            CXXFLAGS="$CXXFLAGS -flto=auto -fno-fat-lto-objects -fuse-linker-plugin"
+            CFLAGS="$CFLAGS -flto=auto -fno-fat-lto-objects -fuse-linker-plugin"
+            LDFLAGS="$LDFLAGS -flto=auto -fno-fat-lto-objects -fuse-linker-plugin"
         ])
     ])
 ])
 
 WARN_FLAGS="-Wall -Wno-sign-compare -Wno-unused-local-typedefs -Wno-switch"
-COMMON_FLAGS="-ffunction-sections -fdata-sections -fwrapv -fno-strict-aliasing -fno-semantic-interposition -fmessage-length=0"
+COMMON_FLAGS="-mcmodel=small -ffunction-sections -fdata-sections -fwrapv -fno-strict-aliasing -fno-semantic-interposition -fmessage-length=0"
 CXXFLAGS="$CXXFLAGS $WARN_FLAGS $COMMON_FLAGS -Wno-reorder"
 CFLAGS="$CFLAGS $WARN_FLAGS $COMMON_FLAGS"
 LDFLAGS="$LDFLAGS -static-libstdc++ -static-libgcc"
@@ -162,9 +174,8 @@ GLEW_BUILD_VERSION=2.2.0
 FREETYPE2_MIN_VERSION=2.10.0
 FREETYPE2_BUILD_VERSION=2.13.3
 
-AC_SUBST([MIMALLOC_VERSION],[3.0.3])
+AC_SUBST([MIMALLOC_VERSION], [3.0.3])
 AC_SUBST([MIMALLOC_PREFIX],[$DEPS_PREFIX])
-AC_SUBST([BUILD_MIMALLOC], [1])
 
 # TODO: add all deps and transitive deps (fun!)
 AS_IF([test "x$enable_system_deps" != "xno"], [
@@ -204,6 +215,8 @@ AS_IF([test "x$have_freetype2" != "xyes"], [
 AM_CONDITIONAL([BUILD_SDL3], [test "x$have_sdl3" != "xyes"])
 AM_CONDITIONAL([BUILD_GLEW], [test "x$have_glew" != "xyes"])
 AM_CONDITIONAL([BUILD_FREETYPE2], [test "x$have_freetype2" != "xyes"])
+AM_CONDITIONAL([BUILD_MIMALLOC], [1]) # [test "x$enable_debug" != "xyes"])
+AM_CONDITIONAL([USE_BEAR], [test -n "$BEAR"])
 
 BUNDLED_LIBS_DIR=libraries
 BUNDLED_BASS_DIR=$BUNDLED_LIBS_DIR/bass
@@ -238,14 +251,13 @@ McOsu build configuration:
     Install prefix:     ${prefix}
     Preprocessor flags: ${CPPFLAGS}
     ccache:             ${CCACHE-no}
+    using bear:         ${BEAR-no}
     C++ compiler:       ${CXX}
     C++ flags:          ${CXXFLAGS}
     C compiler:         ${CC}
     C flags:            ${CFLAGS}
     Linker flags:       ${LDFLAGS}
     LTO:                ${enable_lto-auto}
-    Forcing BFD:        ${enable_bfd-no}
-    lld linker:         ${LLD-no}
     Debug build:        ${enable_debug-no}
     Native build:       ${enable_native-yes}
     System deps:        ${enable_system_deps-yes}

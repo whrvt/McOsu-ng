@@ -331,6 +331,92 @@ int UString::findIgnoreCase(const UString &str, int start, int end) const
 	return -1;
 }
 
+static forceinline void getUtf8(wchar_t ch, char *utf8, int numBytes, int firstByteValue)
+{
+	if (utf8 == NULL) return;
+
+	for (int i=numBytes-1; i>0; i--)
+	{
+		// store the lowest bits in a utf8 byte
+		utf8[i] = (ch & USTRING_MASK_MULTIBYTE) | 0x80;
+		ch >>= 6;
+	}
+
+	// store the remaining bits
+	*utf8 = (firstByteValue | ch);
+}
+
+static forceinline int encode(const wchar_t *unicode, int length, char *utf8)
+{
+	if (unicode == NULL) return 0;
+
+	int utf8len = 0;
+
+	for (int i=0; i<length; i++)
+	{
+		const wchar_t ch = unicode[i];
+
+		if (ch < 0x00000800) // 2 bytes
+		{
+			if (utf8 != NULL)
+				getUtf8(ch, &(utf8[utf8len]), 2, USTRING_VALUE_2BYTE);
+
+			utf8len += 2;
+		}
+		else if (ch < 0x00010000) // 3 bytes
+		{
+			if (utf8 != NULL)
+				getUtf8(ch, &(utf8[utf8len]), 3, USTRING_VALUE_3BYTE);
+
+			utf8len += 3;
+		}
+		else if (ch < 0x00200000) // 4 bytes
+		{
+			if (utf8 != NULL)
+				getUtf8(ch, &(utf8[utf8len]), 4, USTRING_VALUE_4BYTE);
+
+			utf8len += 4;
+		}
+		else if (ch < 0x04000000) // 5 bytes
+		{
+			if (utf8 != NULL)
+				getUtf8(ch, &(utf8[utf8len]), 5, USTRING_VALUE_5BYTE);
+
+			utf8len += 5;
+		}
+		else // 6 bytes
+		{
+			if (utf8 != NULL)
+				getUtf8(ch, &(utf8[utf8len]), 6, USTRING_VALUE_6BYTE);
+
+			utf8len += 6;
+		}
+	}
+
+	return utf8len;
+}
+
+static forceinline wchar_t getCodePoint(const char *utf8, int offset, int numBytes, unsigned char firstByteMask)
+{
+	if (utf8 == NULL) return (wchar_t)0;
+
+	// get the bits out of the first byte
+	wchar_t wc = utf8[offset] & firstByteMask;
+
+	// iterate over the rest of the bytes
+	for (int i=1; i<numBytes; i++)
+	{
+		// shift the code point bits to make room for the new bits
+		wc = wc << 6;
+
+		// add the new bits
+		wc |= utf8[offset+i] & USTRING_MASK_MULTIBYTE;
+	}
+
+	// return the code point
+	return wc;
+}
+
 void UString::collapseEscapes()
 {
 	if (mLength == 0) return;
@@ -928,92 +1014,6 @@ int UString::fromUtf8(const char *utf8, int length)
 	updateUtf8();
 
 	return mLength;
-}
-
-inline int UString::encode(const wchar_t *unicode, int length, char *utf8)
-{
-	if (unicode == NULL) return 0;
-
-	int utf8len = 0;
-
-	for (int i=0; i<length; i++)
-	{
-		const wchar_t ch = unicode[i];
-
-		if (ch < 0x00000800) // 2 bytes
-		{
-			if (utf8 != NULL)
-				getUtf8(ch, &(utf8[utf8len]), 2, USTRING_VALUE_2BYTE);
-
-			utf8len += 2;
-		}
-		else if (ch < 0x00010000) // 3 bytes
-		{
-			if (utf8 != NULL)
-				getUtf8(ch, &(utf8[utf8len]), 3, USTRING_VALUE_3BYTE);
-
-			utf8len += 3;
-		}
-		else if (ch < 0x00200000) // 4 bytes
-		{
-			if (utf8 != NULL)
-				getUtf8(ch, &(utf8[utf8len]), 4, USTRING_VALUE_4BYTE);
-
-			utf8len += 4;
-		}
-		else if (ch < 0x04000000) // 5 bytes
-		{
-			if (utf8 != NULL)
-				getUtf8(ch, &(utf8[utf8len]), 5, USTRING_VALUE_5BYTE);
-
-			utf8len += 5;
-		}
-		else // 6 bytes
-		{
-			if (utf8 != NULL)
-				getUtf8(ch, &(utf8[utf8len]), 6, USTRING_VALUE_6BYTE);
-
-			utf8len += 6;
-		}
-	}
-
-	return utf8len;
-}
-
-inline wchar_t UString::getCodePoint(const char *utf8, int offset, int numBytes, unsigned char firstByteMask)
-{
-	if (utf8 == NULL) return (wchar_t)0;
-
-	// get the bits out of the first byte
-	wchar_t wc = utf8[offset] & firstByteMask;
-
-	// iterate over the rest of the bytes
-	for (int i=1; i<numBytes; i++)
-	{
-		// shift the code point bits to make room for the new bits
-		wc = wc << 6;
-
-		// add the new bits
-		wc |= utf8[offset+i] & USTRING_MASK_MULTIBYTE;
-	}
-
-	// return the code point
-	return wc;
-}
-
-inline void UString::getUtf8(wchar_t ch, char *utf8, int numBytes, int firstByteValue)
-{
-	if (utf8 == NULL) return;
-
-	for (int i=numBytes-1; i>0; i--)
-	{
-		// store the lowest bits in a utf8 byte
-		utf8[i] = (ch & USTRING_MASK_MULTIBYTE) | 0x80;
-		ch >>= 6;
-	}
-
-	// store the remaining bits
-	*utf8 = (firstByteValue | ch);
 }
 
 void UString::updateUtf8()
