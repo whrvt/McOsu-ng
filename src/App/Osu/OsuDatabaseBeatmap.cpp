@@ -1300,13 +1300,27 @@ bool OsuDatabaseBeatmap::loadMetadata(OsuDatabaseBeatmap *databaseBeatmap)
 
 		// convert from msPerBeat to BPM
 		const float msPerMinute = 1.0f * 60.0f * 1000.0f;
-		if (tempMinBPM != 0.0f)
-			tempMinBPM = msPerMinute / tempMinBPM;
-		if (tempMaxBPM != 0.0f)
-			tempMaxBPM = msPerMinute / tempMaxBPM;
 
-		databaseBeatmap->m_iMinBPM = (int)std::round(tempMinBPM);
-		databaseBeatmap->m_iMaxBPM = (int)std::round(tempMaxBPM);
+		float minBPM = 0;
+		float maxBPM = 0;
+
+		 // defaults
+		databaseBeatmap->m_iMinBPM = std::numeric_limits<int>::max();
+		databaseBeatmap->m_iMaxBPM = 0;
+
+		if (tempMinBPM > 0 && tempMinBPM < std::numeric_limits<float>::max()) {
+			minBPM = msPerMinute / tempMinBPM;
+			if (std::isfinite(minBPM) && minBPM <= static_cast<float>(std::numeric_limits<int>::max())) {
+				databaseBeatmap->m_iMinBPM = static_cast<int>(std::round(minBPM));
+			}
+		}
+
+		if (tempMaxBPM > 0 && tempMaxBPM < std::numeric_limits<float>::max()) {
+			maxBPM = msPerMinute / tempMaxBPM;
+			if (std::isfinite(maxBPM) && maxBPM <= static_cast<float>(std::numeric_limits<int>::max())) {
+				databaseBeatmap->m_iMaxBPM = static_cast<int>(std::round(maxBPM));
+			}
+		}
 
 		struct MostCommonBPMHelper
 		{

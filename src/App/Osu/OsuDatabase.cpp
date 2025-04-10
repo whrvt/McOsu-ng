@@ -1613,13 +1613,27 @@ void OsuDatabase::loadDB(OsuFile *db, bool &fallbackToRawLoad)
 
 				// convert from msPerBeat to BPM
 				const float msPerMinute = 1 * 60 * 1000;
-				if (minBeatLength != 0)
-					minBeatLength = msPerMinute / minBeatLength;
-				if (maxBeatLength != 0)
-					maxBeatLength = msPerMinute / maxBeatLength;
+				float minBPM = 0;
+				float maxBPM = 0;
 
-				diff2->m_iMinBPM = (int)std::round(minBeatLength);
-				diff2->m_iMaxBPM = (int)std::round(maxBeatLength);
+ 				// defaults
+				diff2->m_iMinBPM = std::numeric_limits<int>::max();
+				diff2->m_iMaxBPM = 0;
+
+				if (minBeatLength > 0 && minBeatLength < std::numeric_limits<float>::max()) {
+					minBPM = msPerMinute / minBeatLength;
+					if (std::isfinite(minBPM) && minBPM <= static_cast<float>(std::numeric_limits<int>::max())) {
+						diff2->m_iMinBPM = static_cast<int>(std::round(minBPM));
+					}
+				}
+
+				// Same for maxBeatLength
+				if (maxBeatLength > 0 && maxBeatLength < std::numeric_limits<float>::max()) {
+					maxBPM = msPerMinute / maxBeatLength;
+					if (std::isfinite(maxBPM) && maxBPM <= static_cast<float>(std::numeric_limits<int>::max())) {
+						diff2->m_iMaxBPM = static_cast<int>(std::round(maxBPM));
+					}
+				}
 
 				struct MostCommonBPMHelper
 				{
@@ -1726,7 +1740,13 @@ void OsuDatabase::loadDB(OsuFile *db, bool &fallbackToRawLoad)
 				{
 					OsuDatabaseBeatmap::TIMINGPOINT tp;
 					{
-						tp.offset = timingPoints[t].offset;
+						tp.offset = 0;
+						if (std::isfinite(timingPoints[t].offset) &&
+							timingPoints[t].offset >= static_cast<double>(std::numeric_limits<long>::min()) &&
+							timingPoints[t].offset <= static_cast<double>(std::numeric_limits<long>::max())) {
+							tp.offset = static_cast<long>(timingPoints[t].offset);
+						}
+
 						tp.msPerBeat = timingPoints[t].msPerBeat;
 						tp.timingChange = timingPoints[t].timingChange;
 						tp.kiai = false;

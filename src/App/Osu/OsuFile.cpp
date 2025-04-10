@@ -174,7 +174,8 @@ int16_t OsuFile::readShort()
 {
 	if (!m_bReady || (m_readPointer + 2) >= (m_buffer + m_iFileSize)) return 0;
 
-	const int16_t value = (int16_t)*(int16_t*)m_readPointer;
+	int16_t value;
+	memcpy(&value, m_readPointer, sizeof(value));
 	m_readPointer += 2;
 
 	return value;
@@ -184,7 +185,8 @@ int32_t OsuFile::readInt()
 {
 	if (!m_bReady || (m_readPointer + 4) >= (m_buffer + m_iFileSize)) return 0;
 
-	const int32_t value = (int32_t)*(int32_t*)m_readPointer;
+	int32_t value;
+	memcpy(&value, m_readPointer, sizeof(value));
 	m_readPointer += 4;
 
 	return value;
@@ -194,7 +196,8 @@ int64_t OsuFile::readLongLong()
 {
 	if (!m_bReady || (m_readPointer + 8) >= (m_buffer + m_iFileSize)) return 0;
 
-	const int64_t value = (int64_t)*(int64_t*)m_readPointer;
+	int64_t value;
+	memcpy(&value, m_readPointer, sizeof(value));
 	m_readPointer += 8;
 
 	return value;
@@ -215,7 +218,8 @@ float OsuFile::readFloat()
 {
 	if (!m_bReady || (m_readPointer + 4) >= (m_buffer + m_iFileSize)) return 0;
 
-	const float value = (float)*(float*)m_readPointer;
+	float value;
+	memcpy(&value, m_readPointer, sizeof(value));
 	m_readPointer += 4;
 
 	return value;
@@ -225,7 +229,8 @@ double OsuFile::readDouble()
 {
 	if (!m_bReady || (m_readPointer + 8) >= (m_buffer + m_iFileSize)) return 0;
 
-	const double value = (double)*(double*)m_readPointer;
+	double value;
+	memcpy(&value, m_readPointer, sizeof(value));
 	m_readPointer += 8;
 
 	return value;
