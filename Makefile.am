@@ -11,9 +11,9 @@ CLEANFILES = \
 	*.bak
 
 build/deps/mimalloc.built:
-	$(MKDIR_P) build/deps/mimalloc/out/"$(if $(ENABLE_DEBUG),release,debug)"
+	$(MKDIR_P) build/deps/mimalloc/out/"$(if $(ENABLE_DEBUG),debug,release)"
 	$(WGET) -qO- "https://github.com/microsoft/mimalloc/archive/refs/tags/v$(MIMALLOC_VERSION).tar.gz" | $(TAR) xz -C build/deps/mimalloc --strip-components=1
-	cd build/deps/mimalloc/out/"$(if $(ENABLE_DEBUG),release,debug)" && \
+	cd build/deps/mimalloc/out/"$(if $(ENABLE_DEBUG),debug,release)" && \
 	env LDFLAGS="$(LDFLAGS) -xnone" cmake \
 	-D CMAKE_C_COMPILER="$(CC_NOCCACHE)" \
 	-D CMAKE_C_FLAGS="$(CFLAGS)" \
@@ -172,9 +172,17 @@ McOsu_LDFLAGS := \
 	-lpthread
 
 install-libs:
-	$(MKDIR_P) "$(DESTDIR)$(bindir)/lib"
+	$(INSTALL) -dm 755 "$(DESTDIR)$(bindir)/screenshots"
+	$(INSTALL) -dm 755 "$(DESTDIR)$(bindir)/shaders"
+	$(INSTALL) -dm 755 "$(DESTDIR)$(bindir)/lib"
+	$(INSTALL) -dm 755 "$(DESTDIR)$(bindir)/fonts"
+	$(INSTALL) -dm 755 "$(DESTDIR)$(bindir)/materials"
+	$(INSTALL) -dm 755 "$(DESTDIR)$(bindir)/models"
+	$(INSTALL) -dm 755 "$(DESTDIR)$(bindir)/cfg"
 	$(INSTALL) -m 755 $(srcdir)/$(BUNDLED_BASS_DIR)/lib/linux/libbass.so "$(DESTDIR)$(bindir)/lib/"
 	$(INSTALL) -m 755 $(srcdir)/$(BUNDLED_BASS_FX_DIR)/lib/linux/libbass_fx.so "$(DESTDIR)$(bindir)/lib/"
+	find $(srcdir)/$(ASSETS_DIR)/models -type f -exec $(INSTALL) -Dm 644 '{''}' "$(DESTDIR)$(bindir)/models" ';'
+	find $(srcdir)/$(ASSETS_DIR)/shaders -type f -exec $(INSTALL) -Dm 644 '{''}' "$(DESTDIR)$(bindir)/shaders" ';'
 if BUILD_SDL3
 	$(if $(SDL3_STATIC),,@cp -P "$(SDL3_PREFIX)/lib"/libSDL3*.so* "$(DESTDIR)$(bindir)/lib/")
 endif
@@ -193,8 +201,7 @@ install-exec-hook: install-libs
 	cd "$(DESTDIR)$(bindir)" && $(LN_S) -rf McOsu McEngine
 
 uninstall-hook:
-	rm -f "$(DESTDIR)$(bindir)/McEngine"
-	rm -rf "$(DESTDIR)$(bindir)/lib"
+	rm -rf "$(DESTDIR)$(bindir)/"
 
 # cleanup targets
 clean-local:
@@ -215,6 +222,8 @@ dist-hook:
 	cp -r $(srcdir)/$(BUNDLED_BASS_DIR)/include $(distdir)/$(BUNDLED_BASS_DIR)/
 	cp -r $(srcdir)/$(BUNDLED_BASS_FX_DIR)/lib $(distdir)/$(BUNDLED_BASS_FX_DIR)/
 	cp -r $(srcdir)/$(BUNDLED_BASS_FX_DIR)/include $(distdir)/$(BUNDLED_BASS_FX_DIR)/
+	cp -r $(srcdir)/$(ASSETS_DIR)/models $(distdir)/
+	cp -r $(srcdir)/$(ASSETS_DIR)/shaders $(distdir)/
 	find $(distdir) -type f -name ".git*" -delete
 	find $(distdir) -type f -name "*.a" -delete
 	find $(distdir) -type f -name "*.dll" -delete
@@ -226,6 +235,8 @@ EXTRA_DIST = \
 	$(BUNDLED_BASS_FX_DIR)/include \
 	$(BUNDLED_BASS_DIR)/lib/linux/libbass.so \
 	$(BUNDLED_BASS_FX_DIR)/lib/linux/libbass_fx.so \
+	$(ASSETS_DIR)/models \
+	$(ASSETS_DIR)/shaders \
 	autogen.sh
 
 MAINTAINERCLEANFILES = $(top_srcdir)/src/Makefile.sources

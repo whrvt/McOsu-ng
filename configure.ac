@@ -226,6 +226,9 @@ AC_SUBST([BUNDLED_LIBS_DIR])
 AC_SUBST([BUNDLED_BASS_DIR])
 AC_SUBST([BUNDLED_BASS_FX_DIR])
 
+ASSETS_DIR=assets
+AC_SUBST([ASSETS_DIR])
+
 # sanity check
 AC_CHECK_FILE([$srcdir/$BUNDLED_BASS_DIR/lib/linux/libbass.so],
     [],
@@ -233,6 +236,13 @@ AC_CHECK_FILE([$srcdir/$BUNDLED_BASS_DIR/lib/linux/libbass.so],
 AC_CHECK_FILE([$srcdir/$BUNDLED_BASS_FX_DIR/lib/linux/libbass_fx.so],
     [],
     [AC_MSG_ERROR([Required bundled library libbass_fx.so not found])])
+
+AC_CHECK_FILE([$srcdir/$ASSETS_DIR/models],
+    [],
+    [AC_MSG_ERROR([McOsu model assets are missing!])])
+AC_CHECK_FILE([$srcdir/$ASSETS_DIR/shaders],
+    [],
+    [AC_MSG_ERROR([McOsu shader assets are missing!])])
 
 AC_MSG_CHECKING([for src/Makefile.sources])
 AS_IF([test -f "$srcdir/src/Makefile.sources"], [
