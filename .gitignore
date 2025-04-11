@@ -18,11 +18,11 @@ debug/
 
 Makefile
 McOsu
-/config.h
-/config.h.in~
+/src/config.h
+/src/config.h.in~
 /config.log
 /config.status
-/stamp-h1
+/src/stamp-h1
 .dirstamp
 
 /autom4te.cache

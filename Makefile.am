@@ -33,7 +33,7 @@ build/deps/mimalloc.built:
 
 # build rules for dependencies when system packages aren't used
 #$(WGET) -qO- "https://github.com/libsdl-org/SDL/releases/download/preview-$(SDL3_VERSION)/SDL3-$(SDL3_VERSION).tar.gz" | $(TAR) xz -C build/deps/SDL3 --strip-components=1
-build/deps/SDL3.built:
+build/deps/SDL3.built: build/deps/FREETYPE2.built
 	$(MKDIR_P) build/deps build/deps/lib/pkgconfig
 	$(GIT) clone https://github.com/libsdl-org/SDL build/deps/SDL3
 	$(MKDIR_P) build/deps/SDL3/build

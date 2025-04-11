@@ -103,6 +103,7 @@ DIST_COMMON = $(srcdir)/Makefile.am $(top_srcdir)/configure \
 am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
  configure.lineno config.status.lineno
 mkinstalldirs = $(install_sh) -d
+CONFIG_HEADER = $(top_builddir)/src/config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
@@ -318,7 +319,7 @@ AM_V_at = $(am__v_at_@AM_V@)
 am__v_at_ = $(am__v_at_@AM_DEFAULT_V@)
 am__v_at_0 = @
 am__v_at_1 = 
-DEFAULT_INCLUDES = -I.@am__isrc@
+DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)/src
 depcomp = $(SHELL) $(top_srcdir)/build/aux/depcomp
 am__maybe_remake_depfiles = depfiles
 am__depfiles_remade = src/App/Osu/$(DEPDIR)/McOsu-Osu.Po \
@@ -565,7 +566,8 @@ am__DIST_COMMON = $(srcdir)/Makefile.in \
 	$(top_srcdir)/build/aux/depcomp \
 	$(top_srcdir)/build/aux/install-sh \
 	$(top_srcdir)/build/aux/missing \
-	$(top_srcdir)/src/Makefile.sources README.md build/aux/compile \
+	$(top_srcdir)/src/Makefile.sources \
+	$(top_srcdir)/src/config.h.in README.md build/aux/compile \
 	build/aux/depcomp build/aux/install-sh build/aux/missing
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 distdir = $(PACKAGE)-$(VERSION)
@@ -1034,6 +1036,21 @@ $(top_srcdir)/configure:  $(am__configure_deps)
 $(ACLOCAL_M4):  $(am__aclocal_m4_deps)
 	$(am__cd) $(srcdir) && $(ACLOCAL) $(ACLOCAL_AMFLAGS)
 $(am__aclocal_m4_deps):
+
+src/config.h: src/stamp-h1
+	@test -f $@ || rm -f src/stamp-h1
+	@test -f $@ || $(MAKE) $(AM_MAKEFLAGS) src/stamp-h1
+
+src/stamp-h1: $(top_srcdir)/src/config.h.in $(top_builddir)/config.status
+	$(AM_V_at)rm -f src/stamp-h1
+	$(AM_V_GEN)cd $(top_builddir) && $(SHELL) ./config.status src/config.h
+$(top_srcdir)/src/config.h.in:  $(am__configure_deps) 
+	$(AM_V_GEN)($(am__cd) $(top_srcdir) && $(AUTOHEADER))
+	$(AM_V_at)rm -f src/stamp-h1
+	$(AM_V_at)touch $@
+
+distclean-hdr:
+	-rm -f src/config.h src/stamp-h1
 install-binPROGRAMS: $(bin_PROGRAMS)
 	@$(NORMAL_INSTALL)
 	@list='$(bin_PROGRAMS)'; test -n "$(bindir)" || list=; \
@@ -5139,7 +5156,7 @@ distclean: distclean-am
 	-rm -f src/Util/$(DEPDIR)/McOsu-lodepng.Po
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
-	distclean-local distclean-tags
+	distclean-hdr distclean-local distclean-tags
 
 dvi: dvi-am
 
@@ -5408,18 +5425,19 @@ uninstall-am: uninstall-binPROGRAMS
 	clean-local cscope cscopelist-am ctags ctags-am dist dist-all \
 	dist-bzip2 dist-gzip dist-hook dist-lzip dist-shar dist-tarZ \
 	dist-xz dist-zip dist-zstd distcheck distclean \
-	distclean-compile distclean-generic distclean-local \
-	distclean-tags distcleancheck distdir distuninstallcheck dvi \
-	dvi-am html html-am info info-am install install-am \
-	install-binPROGRAMS install-data install-data-am install-dvi \
-	install-dvi-am install-exec install-exec-am install-exec-hook \
-	install-html install-html-am install-info install-info-am \
-	install-man install-pdf install-pdf-am install-ps \
-	install-ps-am install-strip installcheck installcheck-am \
-	installdirs maintainer-clean maintainer-clean-generic \
-	maintainer-clean-local mostlyclean mostlyclean-compile \
-	mostlyclean-generic pdf pdf-am ps ps-am tags tags-am uninstall \
-	uninstall-am uninstall-binPROGRAMS uninstall-hook
+	distclean-compile distclean-generic distclean-hdr \
+	distclean-local distclean-tags distcleancheck distdir \
+	distuninstallcheck dvi dvi-am html html-am info info-am \
+	install install-am install-binPROGRAMS install-data \
+	install-data-am install-dvi install-dvi-am install-exec \
+	install-exec-am install-exec-hook install-html install-html-am \
+	install-info install-info-am install-man install-pdf \
+	install-pdf-am install-ps install-ps-am install-strip \
+	installcheck installcheck-am installdirs maintainer-clean \
+	maintainer-clean-generic maintainer-clean-local mostlyclean \
+	mostlyclean-compile mostlyclean-generic pdf pdf-am ps ps-am \
+	tags tags-am uninstall uninstall-am uninstall-binPROGRAMS \
+	uninstall-hook
 
 .PRECIOUS: Makefile
 
@@ -5447,7 +5465,7 @@ build/deps/mimalloc.built:
 
 # build rules for dependencies when system packages aren't used
 #$(WGET) -qO- "https://github.com/libsdl-org/SDL/releases/download/preview-$(SDL3_VERSION)/SDL3-$(SDL3_VERSION).tar.gz" | $(TAR) xz -C build/deps/SDL3 --strip-components=1
-build/deps/SDL3.built:
+build/deps/SDL3.built: build/deps/FREETYPE2.built
 	$(MKDIR_P) build/deps build/deps/lib/pkgconfig
 	$(GIT) clone https://github.com/libsdl-org/SDL build/deps/SDL3
 	$(MKDIR_P) build/deps/SDL3/build

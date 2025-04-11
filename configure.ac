@@ -2,6 +2,7 @@ AC_PREREQ([2.71])
 AC_INIT([McOsu], [33.10], [william@horvath.blog]) # don't report bugs to McKay :)
 AC_CONFIG_SRCDIR([src/Engine/Engine.cpp])
 AC_CONFIG_AUX_DIR([build/aux])
+AC_CONFIG_HEADERS([src/config.h])
 AC_PREFIX_DEFAULT([dist]) # default `make install`s to ./dist/bin/ (modify with --prefix=)
 
 # no-define needed to avoid setting e.g. VERSION which conflicts with McEngine stuff
@@ -85,7 +86,7 @@ AX_CHECK_COMPILE_FLAG([-std=gnu++23], [
 ])
 
 AC_LANG([C])
-AX_CHECK_COMPILE_FLAG([-std=gnu++23], [
+AX_CHECK_COMPILE_FLAG([-std=gnu23], [
     CFLAGS="$CFLAGS -std=gnu23"
 ], [
     AC_MSG_NOTICE([Compiler does not support gnu23])
@@ -215,7 +216,7 @@ AS_IF([test "x$have_freetype2" != "xyes"], [
 AM_CONDITIONAL([BUILD_SDL3], [test "x$have_sdl3" != "xyes"])
 AM_CONDITIONAL([BUILD_GLEW], [test "x$have_glew" != "xyes"])
 AM_CONDITIONAL([BUILD_FREETYPE2], [test "x$have_freetype2" != "xyes"])
-AM_CONDITIONAL([BUILD_MIMALLOC], [1]) # [test "x$enable_debug" != "xyes"])
+AM_CONDITIONAL([BUILD_MIMALLOC], [true]) # [test "x$enable_debug" != "xyes"])
 AM_CONDITIONAL([USE_BEAR], [test -n "$BEAR"])
 
 BUNDLED_LIBS_DIR=libraries
