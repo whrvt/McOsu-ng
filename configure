@@ -8502,15 +8502,15 @@ fi
 else case e in #(
   e)
         # gcc
-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether the linker accepts -flto=auto -fno-fat-lto-objects -fuse-linker-plugin" >&5
-printf %s "checking whether the linker accepts -flto=auto -fno-fat-lto-objects -fuse-linker-plugin... " >&6; }
-if test ${ax_cv_check_ldflags___flto_auto__fno_fat_lto_objects__fuse_linker_plugin+y}
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether the linker accepts -flto=auto -ffat-lto-objects -fuse-linker-plugin" >&5
+printf %s "checking whether the linker accepts -flto=auto -ffat-lto-objects -fuse-linker-plugin... " >&6; }
+if test ${ax_cv_check_ldflags___flto_auto__ffat_lto_objects__fuse_linker_plugin+y}
 then :
   printf %s "(cached) " >&6
 else case e in #(
   e)
   ax_check_save_flags=$LDFLAGS
-  LDFLAGS="$LDFLAGS  -flto=auto -fno-fat-lto-objects -fuse-linker-plugin"
+  LDFLAGS="$LDFLAGS  -flto=auto -ffat-lto-objects -fuse-linker-plugin"
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -8524,9 +8524,9 @@ main (void)
 _ACEOF
 if ac_fn_cxx_try_link "$LINENO"
 then :
-  ax_cv_check_ldflags___flto_auto__fno_fat_lto_objects__fuse_linker_plugin=yes
+  ax_cv_check_ldflags___flto_auto__ffat_lto_objects__fuse_linker_plugin=yes
 else case e in #(
-  e) ax_cv_check_ldflags___flto_auto__fno_fat_lto_objects__fuse_linker_plugin=no ;;
+  e) ax_cv_check_ldflags___flto_auto__ffat_lto_objects__fuse_linker_plugin=no ;;
 esac
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam \
@@ -8534,14 +8534,14 @@ rm -f core conftest.err conftest.$ac_objext conftest.beam \
   LDFLAGS=$ax_check_save_flags ;;
 esac
 fi
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ax_cv_check_ldflags___flto_auto__fno_fat_lto_objects__fuse_linker_plugin" >&5
-printf "%s\n" "$ax_cv_check_ldflags___flto_auto__fno_fat_lto_objects__fuse_linker_plugin" >&6; }
-if test "x$ax_cv_check_ldflags___flto_auto__fno_fat_lto_objects__fuse_linker_plugin" = xyes
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ax_cv_check_ldflags___flto_auto__ffat_lto_objects__fuse_linker_plugin" >&5
+printf "%s\n" "$ax_cv_check_ldflags___flto_auto__ffat_lto_objects__fuse_linker_plugin" >&6; }
+if test "x$ax_cv_check_ldflags___flto_auto__ffat_lto_objects__fuse_linker_plugin" = xyes
 then :
 
-            CXXFLAGS="$CXXFLAGS -flto=auto -fno-fat-lto-objects -fuse-linker-plugin"
-            CFLAGS="$CFLAGS -flto=auto -fno-fat-lto-objects -fuse-linker-plugin"
-            LDFLAGS="$LDFLAGS -flto=auto -fno-fat-lto-objects -fuse-linker-plugin"
+            CXXFLAGS="$CXXFLAGS -flto=auto -ffat-lto-objects -fuse-linker-plugin"
+            CFLAGS="$CFLAGS -flto=auto -ffat-lto-objects -fuse-linker-plugin"
+            LDFLAGS="$LDFLAGS -flto=auto -ffat-lto-objects -fuse-linker-plugin"
 
 else case e in #(
   e) : ;;
@@ -10116,6 +10116,20 @@ then :
 
 
 
+	cat >build/bool.patch <<'EOF'
+diff --git a/src/render/vulkan/SDL_render_vulkan.c b/src/render/vulkan/SDL_render_vulkan.c
+--- a/src/render/vulkan/SDL_render_vulkan.c
++++ b/src/render/vulkan/SDL_render_vulkan.c
+@@ -3738,7 +3738,7 @@ static VkSampler VULKAN_GetSampler(VULKAN_RenderData *data, SDL_ScaleMode scale_
+         VkResult result = vkCreateSampler(data->device, &samplerCreateInfo, NULL, &data->samplerskey);
+         if (result != VK_SUCCESS) {
+             SET_ERROR_CODE("vkCreateSampler()", result);
+-            return false;
++            return VK_NULL_HANDLE;
+         }
+     }
+     return data->samplerskey;
+EOF
 
 fi
 

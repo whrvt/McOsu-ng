@@ -138,10 +138,10 @@ AS_IF([test "x$enable_lto" != "xno"], [
             LDFLAGS="$LDFLAGS -fuse-ld=lld -flto=thin -fno-fat-lto-objects -fwhole-program-vtables -Wl,--lto-whole-program-visibility"
         ])], [
         # gcc
-        AX_CHECK_LINK_FLAG([-flto=auto -fno-fat-lto-objects -fuse-linker-plugin], [
-            CXXFLAGS="$CXXFLAGS -flto=auto -fno-fat-lto-objects -fuse-linker-plugin"
-            CFLAGS="$CFLAGS -flto=auto -fno-fat-lto-objects -fuse-linker-plugin"
-            LDFLAGS="$LDFLAGS -flto=auto -fno-fat-lto-objects -fuse-linker-plugin"
+        AX_CHECK_LINK_FLAG([-flto=auto -ffat-lto-objects -fuse-linker-plugin], [
+            CXXFLAGS="$CXXFLAGS -flto=auto -ffat-lto-objects -fuse-linker-plugin"
+            CFLAGS="$CFLAGS -flto=auto -ffat-lto-objects -fuse-linker-plugin"
+            LDFLAGS="$LDFLAGS -flto=auto -ffat-lto-objects -fuse-linker-plugin"
         ])
     ])
 ])
@@ -193,6 +193,20 @@ AS_IF([test "x$have_sdl3" != "xyes"], [
     AC_SUBST([SDL3_VERSION])
     AC_SUBST([SDL3_PREFIX])
     AC_SUBST([SDL3_STATIC])
+	cat >build/bool.patch <<'EOF'
+diff --git a/src/render/vulkan/SDL_render_vulkan.c b/src/render/vulkan/SDL_render_vulkan.c
+--- a/src/render/vulkan/SDL_render_vulkan.c
++++ b/src/render/vulkan/SDL_render_vulkan.c
+@@ -3738,7 +3738,7 @@ static VkSampler VULKAN_GetSampler(VULKAN_RenderData *data, SDL_ScaleMode scale_
+         VkResult result = vkCreateSampler(data->device, &samplerCreateInfo, NULL, &data->samplers[key]);
+         if (result != VK_SUCCESS) {
+             SET_ERROR_CODE("vkCreateSampler()", result);
+-            return false;
++            return VK_NULL_HANDLE;
+         }
+     }
+     return data->samplers[key];
+EOF
 ])
 
 AS_IF([test "x$have_glew" != "xyes"], [

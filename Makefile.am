@@ -35,9 +35,10 @@ build/deps/mimalloc.built:
 #$(WGET) -qO- "https://github.com/libsdl-org/SDL/releases/download/preview-$(SDL3_VERSION)/SDL3-$(SDL3_VERSION).tar.gz" | $(TAR) xz -C build/deps/SDL3 --strip-components=1
 build/deps/SDL3.built: build/deps/FREETYPE2.built
 	$(MKDIR_P) build/deps build/deps/lib/pkgconfig
-	$(GIT) clone https://github.com/libsdl-org/SDL build/deps/SDL3
+	$(GIT) clone --depth=1 https://github.com/libsdl-org/SDL build/deps/SDL3
 	$(MKDIR_P) build/deps/SDL3/build
 	cd build/deps/SDL3 && \
+	patch -Np1<../../bool.patch && \
 	cmake -S . -B build -G Ninja \
 	-D CMAKE_BUILD_TYPE="$(if $(ENABLE_DEBUG),Debug,None)" \
 	$(if $(ENABLE_DEBUG),-DSDL_ASAN=ON,) \
