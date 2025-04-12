@@ -675,6 +675,7 @@ SDL3_LIBS
 SDL3_CFLAGS
 MIMALLOC_PREFIX
 MIMALLOC_VERSION
+DEPS_CACHE
 DEPS_PREFIX
 ZLIB_LIBS
 ZLIB_CFLAGS
@@ -9611,6 +9612,8 @@ fi
 
 
 DEPS_PREFIX='${abs_top_builddir}/build/deps'
+
+DEPS_CACHE='${abs_top_builddir}/build/cache'
 
 
 SDL3_MIN_VERSION=3.1.8

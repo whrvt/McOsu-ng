@@ -161,6 +161,7 @@ PKG_CHECK_AUTO([LIBJPEG], [libjpeg], [have_libjpeg=yes], [have_libjpeg=no])
 PKG_CHECK_AUTO([ZLIB], [zlib], [have_zlib=yes], [have_zlib=no])
 
 AC_SUBST([DEPS_PREFIX], ['${abs_top_builddir}/build/deps'])
+AC_SUBST([DEPS_CACHE], ['${abs_top_builddir}/build/cache'])
 
 SDL3_MIN_VERSION=3.1.8
 SDL3_BUILD_VERSION=3.99.99 # git

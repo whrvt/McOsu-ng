@@ -15,10 +15,17 @@ CLEANFILES = \
 	*~ \
 	*.bak
 
-build/deps/mimalloc.built:
-	$(MKDIR_P) build/deps/mimalloc/out/"$(if $(ENABLE_DEBUG),debug,release)"
-	$(WGET) -qO- "https://github.com/microsoft/mimalloc/archive/refs/tags/v$(MIMALLOC_VERSION).tar.gz" | $(TAR) xz -C build/deps/mimalloc --strip-components=1
-	cd build/deps/mimalloc/out/"$(if $(ENABLE_DEBUG),debug,release)" && \
+$(DEPS_CACHE)/mimalloc-$(MIMALLOC_VERSION).source:
+	$(MKDIR_P) $(DEPS_CACHE)
+	$(WGET) -qO $(DEPS_CACHE)/mimalloc-$(MIMALLOC_VERSION).tar.gz "https://github.com/microsoft/mimalloc/archive/refs/tags/v$(MIMALLOC_VERSION).tar.gz" && \
+	touch $@
+
+$(DEPS_PREFIX)/mimalloc.built: $(DEPS_CACHE)/mimalloc-$(MIMALLOC_VERSION).source
+	rm -rf $(DEPS_PREFIX)/mimalloc
+	$(MKDIR_P) $(DEPS_PREFIX)/mimalloc && \
+	$(TAR) xf $(DEPS_CACHE)/mimalloc-$(MIMALLOC_VERSION).tar.gz -C $(DEPS_PREFIX)/mimalloc --strip-components=1 && \
+	$(MKDIR_P) $(DEPS_PREFIX)/mimalloc/out/"$(if $(ENABLE_DEBUG),debug,release)" && \
+	cd $(DEPS_PREFIX)/mimalloc/out/"$(if $(ENABLE_DEBUG),debug,release)" && \
 	env LDFLAGS="$(LDFLAGS) -xnone" cmake \
 	-D CMAKE_C_COMPILER="$(CC_NOCCACHE)" \
 	-D CMAKE_C_FLAGS="$(CFLAGS)" \
@@ -36,13 +43,19 @@ build/deps/mimalloc.built:
 	make install
 	touch $@
 
-# build rules for dependencies when system packages aren't used
-#$(WGET) -qO- "https://github.com/libsdl-org/SDL/releases/download/preview-$(SDL3_VERSION)/SDL3-$(SDL3_VERSION).tar.gz" | $(TAR) xz -C build/deps/SDL3 --strip-components=1
-build/deps/SDL3.built: build/deps/FREETYPE2.built
-	$(MKDIR_P) build/deps build/deps/lib/pkgconfig
-	$(GIT) clone --depth=1 https://github.com/libsdl-org/SDL build/deps/SDL3
-	$(MKDIR_P) build/deps/SDL3/build
-	cd build/deps/SDL3 && \
+$(DEPS_CACHE)/SDL3.source:
+	$(MKDIR_P) $(DEPS_CACHE)
+	$(GIT) clone https://github.com/libsdl-org/SDL.git $(DEPS_CACHE)/SDL3 && \
+	touch $@
+
+$(DEPS_PREFIX)/SDL3.built: $(DEPS_PREFIX)/FREETYPE2.built $(DEPS_CACHE)/SDL3.source
+	rm -rf $(DEPS_PREFIX)/SDL3
+	$(MKDIR_P) $(DEPS_PREFIX) $(DEPS_PREFIX)/lib/pkgconfig
+	$(GIT) clone $(DEPS_CACHE)/SDL3 $(DEPS_PREFIX)/SDL3 && \
+	$(GIT) -C $(DEPS_PREFIX)/SDL3 remote set-url origin https://github.com/libsdl-org/SDL.git && \ 
+	$(GIT) -C $(DEPS_PREFIX)/SDL3 pull && \
+	$(MKDIR_P) $(DEPS_PREFIX)/SDL3/build
+	cd $(DEPS_PREFIX)/SDL3 && \
 	patch -Np1<../../bool.patch && \
 	cmake -S . -B build -G Ninja \
 	-D CMAKE_BUILD_TYPE="$(if $(ENABLE_DEBUG),Debug,None)" \
@@ -61,17 +74,22 @@ build/deps/SDL3.built: build/deps/FREETYPE2.built
 		$(PKG_CONFIG) --exists --print-errors sdl3
 	touch $@
 
-# sus
-build/deps/GLEW.built:
-	$(MKDIR_P) build/deps/GLEW build/deps/lib/pkgconfig
-	$(WGET) -qO- "https://github.com/nigels-com/glew/releases/download/glew-$(GLEW_VERSION)/glew-$(GLEW_VERSION).tgz" | $(TAR) xz -C build/deps/GLEW --strip-components=1
-	cd build/deps/GLEW && \
+$(DEPS_CACHE)/GLEW-$(GLEW_VERSION).source:
+	$(MKDIR_P) $(DEPS_CACHE)
+	$(WGET) -qO $(DEPS_CACHE)/glew-$(GLEW_VERSION).tgz "https://github.com/nigels-com/glew/releases/download/glew-$(GLEW_VERSION)/glew-$(GLEW_VERSION).tgz" && \
+	touch $@
+
+$(DEPS_PREFIX)/GLEW.built: $(DEPS_CACHE)/GLEW-$(GLEW_VERSION).source
+	rm -rf $(DEPS_PREFIX)/GLEW
+	$(MKDIR_P) $(DEPS_PREFIX)/GLEW $(DEPS_PREFIX)/lib/pkgconfig $(DEPS_PREFIX)/lib64/pkgconfig
+	$(TAR) xf $(DEPS_CACHE)/glew-$(GLEW_VERSION).tgz -C $(DEPS_PREFIX)/GLEW --strip-components=1 && \
+	cd $(DEPS_PREFIX)/GLEW && \
 		$(MAKE) SYSTEM=$(GLEW_SYSTEM) GLEW_DEST="$(DEPS_PREFIX)" \
 		CC="$(CC)" CXX="$(CXX)" LD="$(CC)" \
 		CFLAGS.EXTRA="$(CFLAGS) -fPIC -Wno-strict-prototypes" \
 		LDFLAGS.EXTRA="$(LDFLAGS) -lX11" \
 		$(if $(SDL3_STATIC),GLEW_STATIC=1,)
-	cd build/deps/GLEW && \
+	cd $(DEPS_PREFIX)/GLEW && \
 		$(MAKE) SYSTEM=$(GLEW_SYSTEM) GLEW_DEST="$(DEPS_PREFIX)" \
 		CC="$(CC)" CXX="$(CXX)" LD="$(CC)" \
 		$(if $(SDL3_STATIC),GLEW_STATIC=1,) \
@@ -91,30 +109,36 @@ build/deps/GLEW.built:
 		$(PKG_CONFIG) --exists --print-errors glew
 	touch $@
 
-build/deps/FREETYPE2.built:
-	$(MKDIR_P) build/deps/FREETYPE2/build build/deps/lib/pkgconfig
-	$(WGET) -qO- "https://download.savannah.gnu.org/releases/freetype/freetype-$(FREETYPE2_VERSION).tar.gz" | $(TAR) xz -C build/deps/FREETYPE2 --strip-components=1
-	cd build/deps/FREETYPE2 && ./configure --prefix="$(DEPS_PREFIX)" \
+$(DEPS_CACHE)/FREETYPE2-$(FREETYPE2_VERSION).source:
+	$(MKDIR_P) $(DEPS_CACHE)
+	$(WGET) -qO $(DEPS_CACHE)/freetype-$(FREETYPE2_VERSION).tar.gz "https://download.savannah.gnu.org/releases/freetype/freetype-$(FREETYPE2_VERSION).tar.gz" && \
+	touch $@
+
+$(DEPS_PREFIX)/FREETYPE2.built: $(DEPS_CACHE)/FREETYPE2-$(FREETYPE2_VERSION).source
+	rm -rf $(DEPS_PREFIX)/FREETYPE2
+	$(MKDIR_P) $(DEPS_PREFIX)/FREETYPE2/build $(DEPS_PREFIX)/lib/pkgconfig
+	$(TAR) xf $(DEPS_CACHE)/freetype-$(FREETYPE2_VERSION).tar.gz -C $(DEPS_PREFIX)/FREETYPE2 --strip-components=1 && \
+	cd $(DEPS_PREFIX)/FREETYPE2 && ./configure --prefix="$(DEPS_PREFIX)" \
 		$(if $(SDL3_STATIC),--enable-static --enable-shared,--enable-shared --disable-static) \
 		CC="$(CC)" CXX="$(CXX)" LD="$(LD)" CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS)"
-	$(MAKE) -C build/deps/FREETYPE2
-	$(MAKE) -C build/deps/FREETYPE2 install
+	$(MAKE) -C $(DEPS_PREFIX)/FREETYPE2
+	$(MAKE) -C $(DEPS_PREFIX)/FREETYPE2 install
 	PKG_CONFIG_PATH="$(DEPS_PREFIX)/lib/pkgconfig:$(DEPS_PREFIX)/lib64/pkgconfig:$(PKG_CONFIG_PATH)" \
 		$(PKG_CONFIG) --exists --print-errors freetype2
 	touch $@
 
 DEPS_BUILT =
 if BUILD_MIMALLOC
-DEPS_BUILT += build/deps/mimalloc.built
+DEPS_BUILT += $(DEPS_PREFIX)/mimalloc.built
 endif
 if BUILD_SDL3
-DEPS_BUILT += build/deps/SDL3.built
+DEPS_BUILT += $(DEPS_PREFIX)/SDL3.built
 endif
 if BUILD_GLEW
-DEPS_BUILT += build/deps/GLEW.built
+DEPS_BUILT += $(DEPS_PREFIX)/GLEW.built
 endif
 if BUILD_FREETYPE2
-DEPS_BUILT += build/deps/FREETYPE2.built
+DEPS_BUILT += $(DEPS_PREFIX)/FREETYPE2.built
 endif
 
 # making sure deps are built before main compile
@@ -219,12 +243,15 @@ clean-local:
 	rm -f $(PROGRAMS)
 
 clean-deps:
-	rm -rf build/deps
-.PHONY: clean-deps install-libs
+	rm -rf $(DEPS_PREFIX)
 
-maintainer-clean-local: clean-deps
+clean-dep-cache:
+	rm -rf $(DEPS_CACHE)
+.PHONY: clean-deps clean-dep-cache install-libs
 
-distclean-local: clean-deps
+maintainer-clean-local: clean-deps clean-dep-cache
+
+distclean-local: clean-deps clean-dep-cache
 
 # TODO: distribution packaging
 dist-hook:
