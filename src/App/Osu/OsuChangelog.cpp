@@ -36,7 +36,7 @@ OsuChangelog::OsuChangelog(Osu *osu) : OsuScreenBackable(osu)
 	std::vector<CHANGELOG> changelogs;
 
 	CHANGELOG alpha317;
-	alpha317.title = UString::format("33.10 (Build Date: %s, %s)", __DATE__, __TIME__); // (09.01.2022 - ?)
+	alpha317.title = UString::format(PACKAGE_VERSION " (Build Date: %s, %s)", __DATE__, __TIME__); // (09.01.2022 - ?)
 	alpha317.changes.push_back("- Updated osu!stable database loader to support new 20250108 format (see https://osu.ppy.sh/home/changelog/stable40/20250108.3)");
 	alpha317.changes.push_back("");
 	alpha317.changes.push_back("");

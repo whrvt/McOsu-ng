@@ -17,7 +17,7 @@ dist-*/
 debug/
 
 Makefile
-McOsu
+McOsu-ng
 /src/config.h
 /src/config.h.in~
 /config.log

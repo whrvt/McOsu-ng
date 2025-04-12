@@ -1,5 +1,5 @@
 AC_PREREQ([2.71])
-AC_INIT([McOsu], [33.10], [william@horvath.blog]) # don't report bugs to McKay :)
+AC_INIT([McOsu-ng], [33.11], [william@horvath.blog]) # don't report bugs to McKay :)
 AC_CONFIG_SRCDIR([src/Engine/Engine.cpp])
 AC_CONFIG_AUX_DIR([build/aux])
 AC_CONFIG_HEADERS([src/config.h])
@@ -54,8 +54,6 @@ AC_ARG_ENABLE([system-deps],
     AS_HELP_STRING([--disable-system-deps], [Always build dependencies from source (default: no)]))
 AC_ARG_ENABLE([static],
     AS_HELP_STRING([--enable-static], [Enable static linking where possible (default: no)]))
-AC_ARG_ENABLE([bear],
-    AS_HELP_STRING([--enable-bear], [Output a compile_commands.json using bear when building (default: no)]))
 
 PKG_PROG_PKG_CONFIG
 
@@ -94,12 +92,8 @@ AX_CHECK_COMPILE_FLAG([-std=gnu23], [
 
 AC_LANG_POP
 
-AS_IF([test "x$enable_bear" = "xyes"], [
-    AC_CHECK_PROG([BEAR], [bear], [bear])
-    if test -z "$BEAR"; then
-        AC_MSG_ERROR([bear not found - required for outputting compile_commands.json])
-    fi
-])
+AC_CHECK_PROG([BEAR], [bear], [bear])
+AC_SUBST([BEAR])
 
 AC_CHECK_PROG([CCACHE], [ccache], [ccache])
 AS_IF([test "x$CCACHE" = "xccache"], [
@@ -231,7 +225,6 @@ AM_CONDITIONAL([BUILD_SDL3], [test "x$have_sdl3" != "xyes"])
 AM_CONDITIONAL([BUILD_GLEW], [test "x$have_glew" != "xyes"])
 AM_CONDITIONAL([BUILD_FREETYPE2], [test "x$have_freetype2" != "xyes"])
 AM_CONDITIONAL([BUILD_MIMALLOC], [true]) # [test "x$enable_debug" != "xyes"])
-AM_CONDITIONAL([USE_BEAR], [test -n "$BEAR"])
 
 BUNDLED_LIBS_DIR=libraries
 BUNDLED_BASS_DIR=$BUNDLED_LIBS_DIR/bass
@@ -253,10 +246,10 @@ AC_CHECK_FILE([$srcdir/$BUNDLED_BASS_FX_DIR/lib/linux/libbass_fx.so],
 
 AC_CHECK_FILE([$srcdir/$ASSETS_DIR/models],
     [],
-    [AC_MSG_ERROR([McOsu model assets are missing!])])
+    [AC_MSG_ERROR([McOsu-ng model assets are missing!])])
 AC_CHECK_FILE([$srcdir/$ASSETS_DIR/shaders],
     [],
-    [AC_MSG_ERROR([McOsu shader assets are missing!])])
+    [AC_MSG_ERROR([McOsu-ng shader assets are missing!])])
 
 AC_MSG_CHECKING([for src/Makefile.sources])
 AS_IF([test -f "$srcdir/src/Makefile.sources"], [
@@ -272,11 +265,10 @@ AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
 
 AC_MSG_NOTICE([
-McOsu build configuration:
+McOsu-ng build configuration:
     Install prefix:     ${prefix}
     Preprocessor flags: ${CPPFLAGS}
     ccache:             ${CCACHE-no}
-    using bear:         ${BEAR-no}
     C++ compiler:       ${CXX}
     C++ flags:          ${CXXFLAGS}
     C compiler:         ${CC}

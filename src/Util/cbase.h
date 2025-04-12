@@ -9,6 +9,8 @@
 #ifndef CBASE_H
 #define CBASE_H
 
+#include "config.h"
+
 // STD INCLUDES
 
 #include <math.h>
