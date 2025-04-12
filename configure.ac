@@ -155,8 +155,7 @@ AC_DEFUN([PKG_CHECK_AUTO], [
 AC_SUBST([DEPS_PREFIX], ['${abs_top_builddir}/build/deps'])
 AC_SUBST([DEPS_CACHE], ['${abs_top_builddir}/build/cache'])
 
-export PKG_CONFIG_PATH="$PWD/build/deps/lib/pkgconfig:$PWD/build/deps/lib64/pkgconfig:$PKG_CONFIG_PATH"
-AC_SUBST([PKG_CONFIG_PATH])
+$MKDIR_P build/deps
 
 PKG_CHECK_AUTO([X11], [x11], [have_x11=yes], [have_x11=no])
 PKG_CHECK_AUTO([XI], [xi], [have_xi=yes], [have_xi=no])  # required for noSDL (TODO: ./configure --disable-sdl)

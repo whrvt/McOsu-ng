@@ -8582,8 +8582,7 @@ DEPS_PREFIX='${abs_top_builddir}/build/deps'
 DEPS_CACHE='${abs_top_builddir}/build/cache'
 
 
-export PKG_CONFIG_PATH="$PWD/build/deps/lib/pkgconfig:$PWD/build/deps/lib64/pkgconfig:$PKG_CONFIG_PATH"
-
+$MKDIR_P build/deps
 
 
     if test "x$enable_static" = "xyes"
@@ -12318,7 +12317,7 @@ Dependencies:
     libEGL              ${have_egl-no}
     sdl3:               ${have_sdl3-build from source}
     GLEW:               ${have_glew-build from source}
-    libjpeg:             ${have_libjpeg-build from source}
+    libjpeg:            ${have_libjpeg-build from source}
     libpng:             ${have_libpng-build from source}
     bzip2:              ${have_bzip2-build from source}
     zlib:               ${have_zlib-build from source}
@@ -12348,7 +12347,7 @@ Dependencies:
     libEGL              ${have_egl-no}
     sdl3:               ${have_sdl3-build from source}
     GLEW:               ${have_glew-build from source}
-    libjpeg:             ${have_libjpeg-build from source}
+    libjpeg:            ${have_libjpeg-build from source}
     libpng:             ${have_libpng-build from source}
     bzip2:              ${have_bzip2-build from source}
     zlib:               ${have_zlib-build from source}
