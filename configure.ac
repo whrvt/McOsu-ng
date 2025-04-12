@@ -152,16 +152,17 @@ AC_DEFUN([PKG_CHECK_AUTO], [
         [PKG_CHECK_MODULES([$1], [$2], [$3], [$4])])
 ])
 
+AC_SUBST([DEPS_PREFIX], ['${abs_top_builddir}/build/deps'])
+AC_SUBST([DEPS_CACHE], ['${abs_top_builddir}/build/cache'])
+
+export PKG_CONFIG_PATH="$PWD/build/deps/lib/pkgconfig:$PWD/build/deps/lib64/pkgconfig:$PKG_CONFIG_PATH"
+AC_SUBST([PKG_CONFIG_PATH])
+
 PKG_CHECK_AUTO([X11], [x11], [have_x11=yes], [have_x11=no])
 PKG_CHECK_AUTO([XI], [xi], [have_xi=yes], [have_xi=no])  # required for noSDL (TODO: ./configure --disable-sdl)
 PKG_CHECK_AUTO([GL], [gl], [have_gl=yes], [have_gl=no])
 PKG_CHECK_AUTO([GLU], [glu], [have_glu=yes], [have_glu=no])
 PKG_CHECK_AUTO([EGL], [egl], [have_egl=yes], [have_egl=no])  # FIXME: transitive GLEW dep
-PKG_CHECK_AUTO([LIBJPEG], [libjpeg], [have_libjpeg=yes], [have_libjpeg=no])
-PKG_CHECK_AUTO([ZLIB], [zlib], [have_zlib=yes], [have_zlib=no])
-
-AC_SUBST([DEPS_PREFIX], ['${abs_top_builddir}/build/deps'])
-AC_SUBST([DEPS_CACHE], ['${abs_top_builddir}/build/cache'])
 
 SDL3_MIN_VERSION=3.1.8
 SDL3_BUILD_VERSION=3.99.99 # git
@@ -169,6 +170,14 @@ GLEW_MIN_VERSION=2.2.0
 GLEW_BUILD_VERSION=2.2.0
 FREETYPE2_MIN_VERSION=2.10.0
 FREETYPE2_BUILD_VERSION=2.13.3
+LIBJPEG_MIN_VERSION=3.0.0
+LIBJPEG_BUILD_VERSION=3.1.0
+LIBPNG_MIN_VERSION=1.6.38
+LIBPNG_BUILD_VERSION=1.6.47
+ZLIB_MIN_VERSION=1.3
+ZLIB_BUILD_VERSION=2.2.4 # zlib-ng
+BZIP2_MIN_VERSION=1.0.8
+BZIP2_BUILD_VERSION=1.0.8
 
 AC_SUBST([MIMALLOC_VERSION], [3.0.3])
 AC_SUBST([MIMALLOC_PREFIX],[$DEPS_PREFIX])
@@ -177,17 +186,15 @@ AC_SUBST([MIMALLOC_PREFIX],[$DEPS_PREFIX])
 AS_IF([test "x$enable_system_deps" != "xno"], [
     PKG_CHECK_AUTO([SDL3], [sdl3 >= $SDL3_MIN_VERSION], [have_sdl3=yes], [have_sdl3=no])
     PKG_CHECK_AUTO([GLEW], [glew >= $GLEW_MIN_VERSION], [have_glew=yes], [have_glew=no])
+    PKG_CHECK_AUTO([LIBJPEG], [libjpeg >= $LIBJPEG_MIN_VERSION], [have_libjpeg=yes], [have_libjpeg=no])
+    PKG_CHECK_AUTO([LIBPNG], [libpng >= $LIBPNG_MIN_VERSION], [have_libpng=yes], [have_libpng=no])
+    PKG_CHECK_AUTO([ZLIB], [zlib >= $ZLIB_MIN_VERSION], [have_zlib=yes], [have_zlib=no])
+    PKG_CHECK_AUTO([BZIP2], [bzip2 >= $BZIP2_MIN_VERSION], [have_bzip2=yes], [have_bzip2=no])
     PKG_CHECK_AUTO([FREETYPE2], [freetype2 >= $FREETYPE2_MIN_VERSION], [have_freetype2=yes], [have_freetype2=no])
 ])
 
 AS_IF([test "x$have_sdl3" != "xyes"], [
     have_sdl3="build from source"
-    SDL3_VERSION=$SDL3_BUILD_VERSION
-    SDL3_PREFIX="${DEPS_PREFIX}"
-    SDL3_STATIC=$enable_static
-    AC_SUBST([SDL3_VERSION])
-    AC_SUBST([SDL3_PREFIX])
-    AC_SUBST([SDL3_STATIC])
 	cat >build/bool.patch <<'EOF'
 diff --git a/src/render/vulkan/SDL_render_vulkan.c b/src/render/vulkan/SDL_render_vulkan.c
 --- a/src/render/vulkan/SDL_render_vulkan.c
@@ -203,29 +210,68 @@ diff --git a/src/render/vulkan/SDL_render_vulkan.c b/src/render/vulkan/SDL_rende
      return data->samplers[key];
 EOF
 ])
+SDL3_VERSION=$SDL3_BUILD_VERSION
+SDL3_PREFIX="${DEPS_PREFIX}"
+SDL3_STATIC=$enable_static
+AC_SUBST([SDL3_VERSION])
+AC_SUBST([SDL3_PREFIX])
+AC_SUBST([SDL3_STATIC])
 
-AS_IF([test "x$have_glew" != "xyes"], [
-    have_glew="build from source"
-    GLEW_VERSION=$GLEW_BUILD_VERSION
-    GLEW_SYSTEM=linux
-    GLEW_PREFIX="${DEPS_PREFIX}"
-    AC_SUBST([GLEW_VERSION])
-    AC_SUBST([GLEW_SYSTEM])
-    AC_SUBST([GLEW_PREFIX])
-])
+AS_IF([test "x$have_glew" != "xyes"], [have_glew="build from source"])
+GLEW_VERSION=$GLEW_BUILD_VERSION
+GLEW_SYSTEM=linux
+GLEW_PREFIX="${DEPS_PREFIX}"
+AC_SUBST([GLEW_VERSION])
+AC_SUBST([GLEW_SYSTEM])
+AC_SUBST([GLEW_PREFIX])
 
-AS_IF([test "x$have_freetype2" != "xyes"], [
-    have_freetype2="build from source"
-    FREETYPE2_VERSION=$FREETYPE2_BUILD_VERSION
-    FREETYPE2_PREFIX="${DEPS_PREFIX}"
-    AC_SUBST([FREETYPE2_VERSION])
-    AC_SUBST([FREETYPE2_PREFIX])
+AS_IF([test "x$have_libjpeg" != "xyes"], [
+    have_libjpeg="build from source"
+    AC_DEFUN([AC_PROG_NASM], [
+        AC_CHECK_PROG([NASM], [nasm], [nasm])
+        if test -z "$NASM"; then
+            AC_MSG_ERROR([nasm not found - required for building libjpeg])
+        fi
+    ])
+    AC_PROG_NASM
 ])
+LIBJPEG_VERSION=$LIBJPEG_BUILD_VERSION
+LIBJPEG_PREFIX="${DEPS_PREFIX}"
+AC_SUBST([LIBJPEG_VERSION])
+AC_SUBST([LIBJPEG_PREFIX])
+
+AS_IF([test "x$have_libpng" != "xyes"], [have_libpng="build from source"])
+LIBPNG_VERSION=$LIBPNG_BUILD_VERSION
+LIBPNG_PREFIX="${DEPS_PREFIX}"
+AC_SUBST([LIBPNG_VERSION])
+AC_SUBST([LIBPNG_PREFIX])
+
+AS_IF([test "x$have_bzip2" != "xyes"], [have_bzip2="build from source"])
+BZIP2_VERSION=$BZIP2_BUILD_VERSION
+BZIP2_PREFIX="${DEPS_PREFIX}"
+AC_SUBST([BZIP2_VERSION])
+AC_SUBST([BZIP2_PREFIX])
+
+AS_IF([test "x$have_zlib" != "xyes"], [have_zlib="build from source"])
+ZLIB_VERSION=$ZLIB_BUILD_VERSION
+ZLIB_PREFIX="${DEPS_PREFIX}"
+AC_SUBST([ZLIB_VERSION])
+AC_SUBST([ZLIB_PREFIX])
+
+AS_IF([test "x$have_freetype2" != "xyes"], [have_freetype2="build from source"])
+FREETYPE2_VERSION=$FREETYPE2_BUILD_VERSION
+FREETYPE2_PREFIX="${DEPS_PREFIX}"
+AC_SUBST([FREETYPE2_VERSION])
+AC_SUBST([FREETYPE2_PREFIX])
 
 AM_CONDITIONAL([BUILD_SDL3], [test "x$have_sdl3" != "xyes"])
 AM_CONDITIONAL([BUILD_GLEW], [test "x$have_glew" != "xyes"])
+AM_CONDITIONAL([BUILD_LIBJPEG], [test "x$have_libjpeg" != "xyes"])
+AM_CONDITIONAL([BUILD_LIBPNG], [test "x$have_libpng" != "xyes"])
+AM_CONDITIONAL([BUILD_BZIP2], [test "x$have_bzip2" != "xyes"])
+AM_CONDITIONAL([BUILD_ZLIB], [test "x$have_zlib" != "xyes"])
 AM_CONDITIONAL([BUILD_FREETYPE2], [test "x$have_freetype2" != "xyes"])
-AM_CONDITIONAL([BUILD_MIMALLOC], [true]) # [test "x$enable_debug" != "xyes"])
+AM_CONDITIONAL([BUILD_MIMALLOC], [true])
 
 BUNDLED_LIBS_DIR=libraries
 BUNDLED_BASS_DIR=$BUNDLED_LIBS_DIR/bass
@@ -287,9 +333,11 @@ Dependencies:
     libGL               ${have_gl-no}
     libGLU              ${have_glu-no}
     libEGL              ${have_egl-no}
-    libjpeg             ${have_libjpeg-no}
-    libz                ${have_zlib-no}
     sdl3:               ${have_sdl3-build from source}
     GLEW:               ${have_glew-build from source}
+    libjpeg:            ${have_libjpeg-build from source}
+    libpng:             ${have_libpng-build from source}
+    bzip2:              ${have_bzip2-build from source}
+    zlib:               ${have_zlib-build from source}
     freetype2:          ${have_freetype2-build from source}
 ])

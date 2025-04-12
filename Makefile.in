@@ -91,8 +91,40 @@ POST_UNINSTALL = :
 bin_PROGRAMS = McOsu-ng$(EXEEXT)
 @BUILD_MIMALLOC_TRUE@am__append_1 = $(DEPS_PREFIX)/mimalloc.built
 @BUILD_SDL3_TRUE@am__append_2 = $(DEPS_PREFIX)/SDL3.built
-@BUILD_GLEW_TRUE@am__append_3 = $(DEPS_PREFIX)/GLEW.built
-@BUILD_FREETYPE2_TRUE@am__append_4 = $(DEPS_PREFIX)/FREETYPE2.built
+@BUILD_SDL3_TRUE@am__append_3 = $(shell PKG_CONFIG_PATH="$(DEPS_PREFIX)/lib/pkgconfig:$(DEPS_PREFIX)/lib64/pkgconfig" pkg-config $(PKGTYPE) --cflags sdl3)
+@BUILD_SDL3_TRUE@am__append_4 = $(shell PKG_CONFIG_PATH="$(DEPS_PREFIX)/lib/pkgconfig:$(DEPS_PREFIX)/lib64/pkgconfig" pkg-config $(PKGTYPE) --libs sdl3)
+@BUILD_SDL3_FALSE@am__append_5 = $(shell pkg-config $(PKGTYPE) --cflags sdl3)
+@BUILD_SDL3_FALSE@am__append_6 = $(shell pkg-config $(PKGTYPE) --libs sdl3)
+@BUILD_GLEW_TRUE@am__append_7 = $(DEPS_PREFIX)/GLEW.built
+@BUILD_GLEW_TRUE@am__append_8 = $(shell PKG_CONFIG_PATH="$(DEPS_PREFIX)/lib/pkgconfig:$(DEPS_PREFIX)/lib64/pkgconfig" pkg-config $(PKGTYPE) --cflags glew)
+@BUILD_GLEW_TRUE@am__append_9 = $(shell PKG_CONFIG_PATH="$(DEPS_PREFIX)/lib/pkgconfig:$(DEPS_PREFIX)/lib64/pkgconfig" pkg-config $(PKGTYPE) --libs glew)
+@BUILD_GLEW_FALSE@am__append_10 = $(shell pkg-config $(PKGTYPE) --cflags glew)
+@BUILD_GLEW_FALSE@am__append_11 = $(shell pkg-config $(PKGTYPE) --libs glew)
+@BUILD_LIBJPEG_TRUE@am__append_12 = $(DEPS_PREFIX)/libjpeg.built
+@BUILD_LIBJPEG_TRUE@am__append_13 = $(shell PKG_CONFIG_PATH="$(DEPS_PREFIX)/lib/pkgconfig:$(DEPS_PREFIX)/lib64/pkgconfig" pkg-config $(PKGTYPE) --cflags libjpeg)
+@BUILD_LIBJPEG_TRUE@am__append_14 = $(shell PKG_CONFIG_PATH="$(DEPS_PREFIX)/lib/pkgconfig:$(DEPS_PREFIX)/lib64/pkgconfig" pkg-config $(PKGTYPE) --libs libjpeg)
+@BUILD_LIBJPEG_FALSE@am__append_15 = $(shell pkg-config $(PKGTYPE) --cflags libjpeg)
+@BUILD_LIBJPEG_FALSE@am__append_16 = $(shell pkg-config $(PKGTYPE) --libs libjpeg)
+@BUILD_LIBPNG_TRUE@am__append_17 = $(DEPS_PREFIX)/libpng.built
+@BUILD_LIBPNG_TRUE@am__append_18 = $(shell PKG_CONFIG_PATH="$(DEPS_PREFIX)/lib/pkgconfig:$(DEPS_PREFIX)/lib64/pkgconfig" pkg-config $(PKGTYPE) --cflags libpng)
+@BUILD_LIBPNG_TRUE@am__append_19 = $(shell PKG_CONFIG_PATH="$(DEPS_PREFIX)/lib/pkgconfig:$(DEPS_PREFIX)/lib64/pkgconfig" pkg-config $(PKGTYPE) --libs libpng)
+@BUILD_LIBPNG_FALSE@am__append_20 = $(shell pkg-config $(PKGTYPE) --cflags libpng)
+@BUILD_LIBPNG_FALSE@am__append_21 = $(shell pkg-config $(PKGTYPE) --libs libpng)
+@BUILD_BZIP2_TRUE@am__append_22 = $(DEPS_PREFIX)/bzip2.built
+@BUILD_BZIP2_TRUE@am__append_23 = $(shell PKG_CONFIG_PATH="$(DEPS_PREFIX)/lib/pkgconfig:$(DEPS_PREFIX)/lib64/pkgconfig" pkg-config $(PKGTYPE) --cflags bzip2)
+@BUILD_BZIP2_TRUE@am__append_24 = $(shell PKG_CONFIG_PATH="$(DEPS_PREFIX)/lib/pkgconfig:$(DEPS_PREFIX)/lib64/pkgconfig" pkg-config $(PKGTYPE) --libs bzip2)
+@BUILD_BZIP2_FALSE@am__append_25 = $(shell pkg-config $(PKGTYPE) --cflags bzip2)
+@BUILD_BZIP2_FALSE@am__append_26 = $(shell pkg-config $(PKGTYPE) --libs bzip2)
+@BUILD_ZLIB_TRUE@am__append_27 = $(DEPS_PREFIX)/zlib.built
+@BUILD_ZLIB_TRUE@am__append_28 = $(shell PKG_CONFIG_PATH="$(DEPS_PREFIX)/lib/pkgconfig:$(DEPS_PREFIX)/lib64/pkgconfig" pkg-config $(PKGTYPE) --cflags zlib)
+@BUILD_ZLIB_TRUE@am__append_29 = $(shell PKG_CONFIG_PATH="$(DEPS_PREFIX)/lib/pkgconfig:$(DEPS_PREFIX)/lib64/pkgconfig" pkg-config $(PKGTYPE) --libs zlib)
+@BUILD_ZLIB_FALSE@am__append_30 = $(shell pkg-config $(PKGTYPE) --cflags zlib)
+@BUILD_ZLIB_FALSE@am__append_31 = $(shell pkg-config $(PKGTYPE) --libs zlib)
+@BUILD_FREETYPE2_TRUE@am__append_32 = $(DEPS_PREFIX)/FREETYPE2.built
+@BUILD_FREETYPE2_TRUE@am__append_33 = $(shell PKG_CONFIG_PATH="$(DEPS_PREFIX)/lib/pkgconfig:$(DEPS_PREFIX)/lib64/pkgconfig" pkg-config $(PKGTYPE) --cflags freetype2)
+@BUILD_FREETYPE2_TRUE@am__append_34 = $(shell PKG_CONFIG_PATH="$(DEPS_PREFIX)/lib/pkgconfig:$(DEPS_PREFIX)/lib64/pkgconfig" pkg-config $(PKGTYPE) --libs freetype2)
+@BUILD_FREETYPE2_FALSE@am__append_35 = $(shell pkg-config $(PKGTYPE) --cflags freetype2)
+@BUILD_FREETYPE2_FALSE@am__append_36 = $(shell pkg-config $(PKGTYPE) --libs freetype2)
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
@@ -604,6 +636,10 @@ BEAR = @BEAR@
 BUNDLED_BASS_DIR = @BUNDLED_BASS_DIR@
 BUNDLED_BASS_FX_DIR = @BUNDLED_BASS_FX_DIR@
 BUNDLED_LIBS_DIR = @BUNDLED_LIBS_DIR@
+BZIP2_CFLAGS = $(am__append_23) $(am__append_25)
+BZIP2_LIBS = $(am__append_24) $(am__append_26)
+BZIP2_PREFIX = @BZIP2_PREFIX@
+BZIP2_VERSION = @BZIP2_VERSION@
 CC = @CC@
 CCACHE = @CCACHE@
 CCDEPMODE = @CCDEPMODE@
@@ -629,13 +665,13 @@ EGL_LIBS = @EGL_LIBS@
 ENABLE_DEBUG = @ENABLE_DEBUG@
 ETAGS = @ETAGS@
 EXEEXT = @EXEEXT@
-FREETYPE2_CFLAGS = $(shell PKG_CONFIG_PATH="$(DEPS_PREFIX)/lib/pkgconfig" pkg-config $(PKGTYPE) --cflags freetype2)
-FREETYPE2_LIBS = $(shell PKG_CONFIG_PATH="$(DEPS_PREFIX)/lib/pkgconfig" pkg-config $(PKGTYPE) --libs freetype2)
+FREETYPE2_CFLAGS = $(am__append_33) $(am__append_35)
+FREETYPE2_LIBS = $(am__append_34) $(am__append_36)
 FREETYPE2_PREFIX = @FREETYPE2_PREFIX@
 FREETYPE2_VERSION = @FREETYPE2_VERSION@
 GIT = @GIT@
-GLEW_CFLAGS = $(shell PKG_CONFIG_PATH="$(DEPS_PREFIX)/lib/pkgconfig" pkg-config $(PKGTYPE) --cflags glew)
-GLEW_LIBS = $(shell PKG_CONFIG_PATH="$(DEPS_PREFIX)/lib/pkgconfig" pkg-config $(PKGTYPE) --libs glew)
+GLEW_CFLAGS = $(am__append_8) $(am__append_10)
+GLEW_LIBS = $(am__append_9) $(am__append_11)
 GLEW_PREFIX = @GLEW_PREFIX@
 GLEW_SYSTEM = @GLEW_SYSTEM@
 GLEW_VERSION = @GLEW_VERSION@
@@ -650,9 +686,15 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
 LDFLAGS = @LDFLAGS@
-LIBJPEG_CFLAGS = @LIBJPEG_CFLAGS@
-LIBJPEG_LIBS = @LIBJPEG_LIBS@
+LIBJPEG_CFLAGS = $(am__append_13) $(am__append_15)
+LIBJPEG_LIBS = $(am__append_14) $(am__append_16)
+LIBJPEG_PREFIX = @LIBJPEG_PREFIX@
+LIBJPEG_VERSION = @LIBJPEG_VERSION@
 LIBOBJS = @LIBOBJS@
+LIBPNG_CFLAGS = $(am__append_18) $(am__append_20)
+LIBPNG_LIBS = $(am__append_19) $(am__append_21)
+LIBPNG_PREFIX = @LIBPNG_PREFIX@
+LIBPNG_VERSION = @LIBPNG_VERSION@
 LIBS = @LIBS@
 LN_S = @LN_S@
 LTLIBOBJS = @LTLIBOBJS@
@@ -660,6 +702,7 @@ MAKEINFO = @MAKEINFO@
 MIMALLOC_PREFIX = @MIMALLOC_PREFIX@
 MIMALLOC_VERSION = @MIMALLOC_VERSION@
 MKDIR_P = @MKDIR_P@
+NASM = @NASM@
 OBJEXT = @OBJEXT@
 PACKAGE = @PACKAGE@
 PACKAGE_BUGREPORT = @PACKAGE_BUGREPORT@
@@ -672,8 +715,8 @@ PATH_SEPARATOR = @PATH_SEPARATOR@
 PKG_CONFIG = @PKG_CONFIG@
 PKG_CONFIG_LIBDIR = @PKG_CONFIG_LIBDIR@
 PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
-SDL3_CFLAGS = $(shell PKG_CONFIG_PATH="$(DEPS_PREFIX)/lib/pkgconfig" pkg-config $(PKGTYPE) --cflags sdl3)
-SDL3_LIBS = $(shell PKG_CONFIG_PATH="$(DEPS_PREFIX)/lib/pkgconfig" pkg-config $(PKGTYPE) --libs sdl3)
+SDL3_CFLAGS = $(am__append_3) $(am__append_5)
+SDL3_LIBS = $(am__append_4) $(am__append_6)
 SDL3_PREFIX = @SDL3_PREFIX@
 SDL3_STATIC = @SDL3_STATIC@
 SDL3_VERSION = @SDL3_VERSION@
@@ -688,8 +731,10 @@ X11_CFLAGS = @X11_CFLAGS@
 X11_LIBS = @X11_LIBS@
 XI_CFLAGS = @XI_CFLAGS@
 XI_LIBS = @XI_LIBS@
-ZLIB_CFLAGS = @ZLIB_CFLAGS@
-ZLIB_LIBS = @ZLIB_LIBS@
+ZLIB_CFLAGS = $(am__append_28) $(am__append_30)
+ZLIB_LIBS = $(am__append_29) $(am__append_31)
+ZLIB_PREFIX = @ZLIB_PREFIX@
+ZLIB_VERSION = @ZLIB_VERSION@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
 abs_top_builddir = @abs_top_builddir@
@@ -951,16 +996,15 @@ CLEANFILES = \
 	*~ \
 	*.bak
 
-DEPS_BUILT = $(am__append_1) $(am__append_2) $(am__append_3) \
-	$(am__append_4)
+PKGTYPE = $(if $(SDL3_STATIC),--static,)
+DEPS_BUILT = $(am__append_1) $(am__append_2) $(am__append_7) \
+	$(am__append_12) $(am__append_17) $(am__append_22) \
+	$(am__append_27) $(am__append_32)
+@BUILD_MIMALLOC_FALSE@MIMALLOC_LIBS := 
+@BUILD_MIMALLOC_TRUE@MIMALLOC_LIBS = $(DEPS_PREFIX)/lib/mimalloc.o
 
 # making sure deps are built before main compile
 BUILT_SOURCES := $(DEPS_BUILT)
-
-# re-evaluated after deps are built
-PKGTYPE = $(if $(SDL3_STATIC),--static,)
-@BUILD_MIMALLOC_FALSE@MIMALLOC_LIBS := 
-@BUILD_MIMALLOC_TRUE@MIMALLOC_LIBS = $(DEPS_PREFIX)/lib/mimalloc.o
 
 # FIXME: just fixme
 MCOSU_NG_INCLUDE_FLAGS := $(shell find $(srcdir)/src -not -path '*/.*' -type d -printf "-I%p ")
@@ -975,6 +1019,8 @@ McOsu_ng_CXXFLAGS := \
 	$(GLU_CFLAGS) \
 	$(GLEW_CFLAGS) \
 	$(FREETYPE2_CFLAGS) \
+	$(LIBPNG_CFLAGS) \
+	$(BZIP2_CFLAGS) \
 	$(LIBJPEG_CFLAGS) \
 	$(ZLIB_CFLAGS) \
 	-pthread
@@ -991,6 +1037,8 @@ McOsu_ng_LDFLAGS := \
 	$(GLU_LIBS) \
 	$(GLEW_LIBS) \
 	$(FREETYPE2_LIBS) \
+	$(LIBPNG_LIBS) \
+	$(BZIP2_LIBS) \
 	$(LIBJPEG_LIBS) \
 	$(ZLIB_LIBS) \
 	-lpthread
@@ -5468,7 +5516,7 @@ uninstall-am: uninstall-binPROGRAMS
 .PRECIOUS: Makefile
 
 
-$(DEPS_CACHE)/mimalloc-$(MIMALLOC_VERSION).source: 
+$(DEPS_CACHE)/mimalloc-$(MIMALLOC_VERSION).source:
 	$(MKDIR_P) $(DEPS_CACHE)
 	$(WGET) -qO $(DEPS_CACHE)/mimalloc-$(MIMALLOC_VERSION).tar.gz "https://github.com/microsoft/mimalloc/archive/refs/tags/v$(MIMALLOC_VERSION).tar.gz" && \
 	touch $@
@@ -5479,26 +5527,25 @@ $(DEPS_PREFIX)/mimalloc.built: $(DEPS_CACHE)/mimalloc-$(MIMALLOC_VERSION).source
 	$(TAR) xf $(DEPS_CACHE)/mimalloc-$(MIMALLOC_VERSION).tar.gz -C $(DEPS_PREFIX)/mimalloc --strip-components=1 && \
 	$(MKDIR_P) $(DEPS_PREFIX)/mimalloc/out/"$(if $(ENABLE_DEBUG),debug,release)" && \
 	cd $(DEPS_PREFIX)/mimalloc/out/"$(if $(ENABLE_DEBUG),debug,release)" && \
-	env LDFLAGS="$(LDFLAGS) -xnone" cmake \
-	-D CMAKE_C_COMPILER="$(CC_NOCCACHE)" \
-	-D CMAKE_C_FLAGS="$(CFLAGS)" \
-	-D CMAKE_CXX_COMPILER="$(CXX_NOCCACHE)" \
-	-D CMAKE_CXX_FLAGS="$(CXXFLAGS) -xc++" \
-	-D CMAKE_INSTALL_PREFIX="$(DEPS_PREFIX)" \
-	-D MI_OPT_ARCH=ON \
-	-D MI_USE_CXX=ON \
-	-D MI_NO_OPT_ARCH=OFF \
-	-D MI_BUILD_SHARED=OFF \
-	-D MI_BUILD_TESTS=OFF \
-	-D MI_INSTALL_TOPLEVEL=ON \
-	-D MI_BUILD_STATIC=OFF \
-	-D MI_BUILD_OBJECT=ON ../.. && \
+	env PKG_CONFIG_PATH="$(DEPS_PREFIX)/lib/pkgconfig:$(DEPS_PREFIX)/lib64/pkgconfig:$(PKG_CONFIG_PATH)" \
+		LDFLAGS="$(LDFLAGS) -xnone" cmake \
+		-D CMAKE_C_COMPILER="$(CC_NOCCACHE)" \
+		-D CMAKE_C_FLAGS="$(CFLAGS)" \
+		-D CMAKE_CXX_COMPILER="$(CXX_NOCCACHE)" \
+		-D CMAKE_CXX_FLAGS="$(CXXFLAGS) -xc++" \
+		-D CMAKE_INSTALL_PREFIX="$(DEPS_PREFIX)" \
+		-D MI_OPT_ARCH=ON \
+		-D MI_USE_CXX=ON \
+		-D MI_NO_OPT_ARCH=OFF \
+		-D MI_BUILD_SHARED=OFF \
+		-D MI_BUILD_TESTS=OFF \
+		-D MI_INSTALL_TOPLEVEL=ON \
+		-D MI_BUILD_STATIC=OFF \
+		-D MI_BUILD_OBJECT=ON ../.. && \
 	make install
 	touch $@
 
-# build rules for dependencies when system packages aren't used
-#$(WGET) -qO- "https://github.com/libsdl-org/SDL/releases/download/preview-$(SDL3_VERSION)/SDL3-$(SDL3_VERSION).tar.gz" | $(TAR) xz -C $(DEPS_PREFIX)/SDL3 --strip-components=1
-$(DEPS_CACHE)/SDL3.source: 
+$(DEPS_CACHE)/SDL3.source:
 	$(MKDIR_P) $(DEPS_CACHE)
 	$(GIT) clone https://github.com/libsdl-org/SDL.git $(DEPS_CACHE)/SDL3 && \
 	touch $@
@@ -5512,24 +5559,25 @@ $(DEPS_PREFIX)/SDL3.built: $(DEPS_PREFIX)/FREETYPE2.built $(DEPS_CACHE)/SDL3.sou
 	$(MKDIR_P) $(DEPS_PREFIX)/SDL3/build
 	cd $(DEPS_PREFIX)/SDL3 && \
 	patch -Np1<../../bool.patch && \
-	cmake -S . -B build -G Ninja \
-	-D CMAKE_BUILD_TYPE="$(if $(ENABLE_DEBUG),Debug,None)" \
-	$(if $(ENABLE_DEBUG),-DSDL_ASAN=ON,) \
-	-D SDL_HIDAPI_LIBUSB=OFF \
-	-D CMAKE_INSTALL_PREFIX="$(DEPS_PREFIX)" \
-	-D SDL_SHARED="$(if $(SDL3_STATIC),OFF,ON)" \
-	-D SDL_STATIC="$(if $(SDL3_STATIC),ON,OFF)" \
-	-D SDL_RPATH=OFF \
-	-D SDL_CCACHE="$(if $(filter ccache,$(CC)),ON,OFF)" \
-	-D CMAKE_C_COMPILER="$(CC_NOCCACHE)" \
-	-D CMAKE_C_FLAGS="$(CFLAGS) -Wno-error=incompatible-pointer-types" && \
+	PKG_CONFIG_PATH="$(DEPS_PREFIX)/lib/pkgconfig:$(DEPS_PREFIX)/lib64/pkgconfig:$(PKG_CONFIG_PATH)" \
+	LDFLAGS="$(LDFLAGS)" cmake -S . -B build -G Ninja \
+		-D CMAKE_BUILD_TYPE="$(if $(ENABLE_DEBUG),Debug,Release)" \
+		$(if $(ENABLE_DEBUG),-DSDL_ASAN=ON,) \
+		-D SDL_HIDAPI_LIBUSB=OFF \
+		-D CMAKE_INSTALL_PREFIX="$(DEPS_PREFIX)" \
+		-D SDL_SHARED="$(if $(SDL3_STATIC),OFF,ON)" \
+		-D SDL_STATIC="$(if $(SDL3_STATIC),ON,OFF)" \
+		-D SDL_RPATH=OFF \
+		-D SDL_CCACHE="$(if $(filter ccache,$(CC)),ON,OFF)" \
+		-D CMAKE_C_COMPILER="$(CC_NOCCACHE)" \
+		-D CMAKE_C_FLAGS="$(CFLAGS) -Wno-error=incompatible-pointer-types" && \
 	cmake --build build && \
 	cmake --install build
 	PKG_CONFIG_PATH="$(DEPS_PREFIX)/lib/pkgconfig:$(DEPS_PREFIX)/lib64/pkgconfig:$(PKG_CONFIG_PATH)" \
 		$(PKG_CONFIG) --exists --print-errors sdl3
 	touch $@
 
-$(DEPS_CACHE)/GLEW-$(GLEW_VERSION).source: 
+$(DEPS_CACHE)/GLEW-$(GLEW_VERSION).source:
 	$(MKDIR_P) $(DEPS_CACHE)
 	$(WGET) -qO $(DEPS_CACHE)/glew-$(GLEW_VERSION).tgz "https://github.com/nigels-com/glew/releases/download/glew-$(GLEW_VERSION)/glew-$(GLEW_VERSION).tgz" && \
 	touch $@
@@ -5564,20 +5612,113 @@ $(DEPS_PREFIX)/GLEW.built: $(DEPS_CACHE)/GLEW-$(GLEW_VERSION).source
 		$(PKG_CONFIG) --exists --print-errors glew
 	touch $@
 
-$(DEPS_CACHE)/FREETYPE2-$(FREETYPE2_VERSION).source: 
+$(DEPS_CACHE)/libjpeg-$(LIBJPEG_VERSION).source:
+	$(MKDIR_P) $(DEPS_CACHE)
+	$(WGET) -qO $(DEPS_CACHE)/libjpeg-$(LIBJPEG_VERSION).tar.gz "https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/$(LIBJPEG_VERSION)/libjpeg-turbo-$(LIBJPEG_VERSION).tar.gz" && \
+	touch $@
+
+$(DEPS_PREFIX)/libjpeg.built: $(DEPS_CACHE)/libjpeg-$(LIBJPEG_VERSION).source
+	rm -rf $(DEPS_PREFIX)/libjpeg
+	$(MKDIR_P) $(DEPS_PREFIX)/libjpeg/build $(DEPS_PREFIX)/lib/pkgconfig
+	$(TAR) xf $(DEPS_CACHE)/libjpeg-$(LIBJPEG_VERSION).tar.gz -C $(DEPS_PREFIX)/libjpeg --strip-components=1 && \
+	cd $(DEPS_PREFIX)/libjpeg && \
+	PKG_CONFIG_PATH="$(DEPS_PREFIX)/lib/pkgconfig:$(DEPS_PREFIX)/lib64/pkgconfig:$(PKG_CONFIG_PATH)" \
+	LDFLAGS="$(LDFLAGS)" cmake -S . -B build -G Ninja \
+		-D CMAKE_BUILD_TYPE="$(if $(ENABLE_DEBUG),Debug,Release)" \
+		-D CMAKE_INSTALL_PREFIX="$(DEPS_PREFIX)" \
+		-D CMAKE_C_COMPILER="$(CC_NOCCACHE)" \
+		-D CMAKE_C_FLAGS="$(CFLAGS)" \
+		-D REQUIRE_SIMD=ON \
+		$(if $(SDL3_STATIC),-DENABLE_STATIC=ON -DENABLE_SHARED=OFF,-DENABLE_STATIC=OFF -DENABLE_SHARED=ON) && \
+	cmake --build build && \
+	cmake --install build
+	PKG_CONFIG_PATH="$(DEPS_PREFIX)/lib/pkgconfig:$(DEPS_PREFIX)/lib64/pkgconfig:$(PKG_CONFIG_PATH)" \
+		$(PKG_CONFIG) --exists --print-errors libjpeg
+	touch $@
+
+$(DEPS_CACHE)/libpng-$(LIBPNG_VERSION).source:
+	$(MKDIR_P) $(DEPS_CACHE)
+	$(WGET) -qO $(DEPS_CACHE)/libpng-$(LIBPNG_VERSION).tar.gz "https://github.com/pnggroup/libpng/archive/refs/tags/v$(LIBPNG_VERSION).tar.gz" && \
+	touch $@
+
+$(DEPS_PREFIX)/libpng.built: $(DEPS_CACHE)/libpng-$(LIBPNG_VERSION).source
+	rm -rf $(DEPS_PREFIX)/libpng
+	$(MKDIR_P) $(DEPS_PREFIX)/libpng/build $(DEPS_PREFIX)/lib/pkgconfig
+	$(TAR) xf $(DEPS_CACHE)/libpng-$(LIBPNG_VERSION).tar.gz -C $(DEPS_PREFIX)/libpng --strip-components=1 && \
+	cd $(DEPS_PREFIX)/libpng && PKG_CONFIG_PATH="$(DEPS_PREFIX)/lib/pkgconfig:$(DEPS_PREFIX)/lib64/pkgconfig:$(PKG_CONFIG_PATH)" \
+		./configure --prefix="$(DEPS_PREFIX)" \
+		$(if $(SDL3_STATIC),--enable-static --enable-shared,--enable-shared --disable-static) \
+		CC="$(CC)" CXX="$(CXX)" LD="$(LD)" CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS)" && \
+	$(MAKE) && \
+	$(MAKE) install
+	$(if $(SDL3_STATIC),$(SED) -i -e 's|-lz|-l:libz.a|g' -e 's|-lpng16|-l:libpng16.a|g' $(DEPS_PREFIX)/lib/pkgconfig/libpng.pc,)
+	PKG_CONFIG_PATH="$(DEPS_PREFIX)/lib/pkgconfig:$(DEPS_PREFIX)/lib64/pkgconfig:$(PKG_CONFIG_PATH)" \
+		$(PKG_CONFIG) --exists --print-errors libpng
+	touch $@
+
+$(DEPS_CACHE)/bzip2-$(BZIP2_VERSION).source:
+	$(MKDIR_P) $(DEPS_CACHE)
+	$(WGET) -qO $(DEPS_CACHE)/bzip2-$(BZIP2_VERSION).tar.gz "https://sourceware.org/pub/bzip2/bzip2-$(BZIP2_VERSION).tar.gz" && \
+	touch $@
+
+$(DEPS_PREFIX)/bzip2.built: $(DEPS_CACHE)/bzip2-$(BZIP2_VERSION).source
+	rm -rf $(DEPS_PREFIX)/bzip2
+	$(MKDIR_P) $(DEPS_PREFIX)/bzip2/build $(DEPS_PREFIX)/lib/pkgconfig $(DEPS_PREFIX)/include
+	$(TAR) xf $(DEPS_CACHE)/bzip2-$(BZIP2_VERSION).tar.gz -C $(DEPS_PREFIX)/bzip2 --strip-components=1 && \
+	cd $(DEPS_PREFIX)/bzip2 && \
+	$(MAKE) $(if $(SDL3_STATIC),"libbz2.a",-f Makefile-libbz2_so) \
+		PREFIX="$(DEPS_PREFIX)" CC="$(CC)" CXX="$(CXX)" LD="$(LD)" CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS)" && \
+	cp -f bzlib.h $(DEPS_PREFIX)/include/ && \
+	cp -f $(if $(SDL3_STATIC),"libbz2.a",libbz2*.so*) $(DEPS_PREFIX)/lib/ && \
+	$(MKDIR_P) "$(DEPS_PREFIX)/lib/pkgconfig" && \
+	( echo 'prefix=$(DEPS_PREFIX)'; \
+	  echo 'exec_prefix=$${prefix}'; \
+	  echo 'libdir=$${exec_prefix}/lib'; \
+	  echo 'includedir=$${prefix}/include'; \
+	  echo ''; \
+	  echo 'Name: bzip2'; \
+	  echo 'Description: A file compression library'; \
+	  echo 'Version: $(BZIP2_VERSION)'; \
+	  echo 'Cflags: -I$${includedir}'; \
+	  echo 'Libs: -L$${libdir} $(if $(SDL3_STATIC),-l:libbz2.a,-lbz2)' ) > "$(DEPS_PREFIX)/lib/pkgconfig/bzip2.pc"
+	PKG_CONFIG_PATH="$(DEPS_PREFIX)/lib/pkgconfig:$(DEPS_PREFIX)/lib64/pkgconfig:$(PKG_CONFIG_PATH)" \
+		$(PKG_CONFIG) --exists --print-errors bzip2
+	touch $@
+
+$(DEPS_CACHE)/zlib-$(ZLIB_VERSION).source:
+	$(MKDIR_P) $(DEPS_CACHE)
+	$(WGET) -qO $(DEPS_CACHE)/zlib-$(ZLIB_VERSION).tar.gz "https://github.com/zlib-ng/zlib-ng/archive/refs/tags/$(ZLIB_VERSION).tar.gz" && \
+	touch $@
+
+$(DEPS_PREFIX)/zlib.built: $(DEPS_CACHE)/zlib-$(ZLIB_VERSION).source
+	rm -rf $(DEPS_PREFIX)/zlib
+	$(MKDIR_P) $(DEPS_PREFIX)/zlib/build $(DEPS_PREFIX)/lib/pkgconfig
+	$(TAR) xf $(DEPS_CACHE)/zlib-$(ZLIB_VERSION).tar.gz -C $(DEPS_PREFIX)/zlib --strip-components=1 && \
+	cd $(DEPS_PREFIX)/zlib/build && PKG_CONFIG_PATH="$(DEPS_PREFIX)/lib/pkgconfig:$(DEPS_PREFIX)/lib64/pkgconfig:$(PKG_CONFIG_PATH)" \
+		CC="$(CC)" CXX="$(CXX)" LD="$(LD)" CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS)" \
+		../configure --zlib-compat --prefix="$(DEPS_PREFIX)" $(if $(SDL3_STATIC),--static,) && \
+	$(MAKE) && \
+	$(MAKE) install
+	$(if $(SDL3_STATIC),$(SED) -i 's|-lz|-l:libz.a|g' $(DEPS_PREFIX)/lib/pkgconfig/zlib.pc,)
+	PKG_CONFIG_PATH="$(DEPS_PREFIX)/lib/pkgconfig:$(DEPS_PREFIX)/lib64/pkgconfig:$(PKG_CONFIG_PATH)" \
+		$(PKG_CONFIG) --exists --print-errors zlib
+	touch $@
+
+$(DEPS_CACHE)/FREETYPE2-$(FREETYPE2_VERSION).source:
 	$(MKDIR_P) $(DEPS_CACHE)
 	$(WGET) -qO $(DEPS_CACHE)/freetype-$(FREETYPE2_VERSION).tar.gz "https://download.savannah.gnu.org/releases/freetype/freetype-$(FREETYPE2_VERSION).tar.gz" && \
 	touch $@
 
-$(DEPS_PREFIX)/FREETYPE2.built: $(DEPS_CACHE)/FREETYPE2-$(FREETYPE2_VERSION).source
+$(DEPS_PREFIX)/FREETYPE2.built: $(DEPS_PREFIX)/libpng.built $(DEPS_PREFIX)/bzip2.built $(DEPS_PREFIX)/zlib.built $(DEPS_CACHE)/FREETYPE2-$(FREETYPE2_VERSION).source
 	rm -rf $(DEPS_PREFIX)/FREETYPE2
 	$(MKDIR_P) $(DEPS_PREFIX)/FREETYPE2/build $(DEPS_PREFIX)/lib/pkgconfig
 	$(TAR) xf $(DEPS_CACHE)/freetype-$(FREETYPE2_VERSION).tar.gz -C $(DEPS_PREFIX)/FREETYPE2 --strip-components=1 && \
-	cd $(DEPS_PREFIX)/FREETYPE2 && ./configure --prefix="$(DEPS_PREFIX)" \
+	cd $(DEPS_PREFIX)/FREETYPE2 && PKG_CONFIG_PATH="$(DEPS_PREFIX)/lib/pkgconfig:$(DEPS_PREFIX)/lib64/pkgconfig:$(PKG_CONFIG_PATH)" \
+		./configure --prefix="$(DEPS_PREFIX)" \
 		$(if $(SDL3_STATIC),--enable-static --enable-shared,--enable-shared --disable-static) \
-		CC="$(CC)" CXX="$(CXX)" LD="$(LD)" CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS)"
-	$(MAKE) -C $(DEPS_PREFIX)/FREETYPE2
-	$(MAKE) -C $(DEPS_PREFIX)/FREETYPE2 install
+		CC="$(CC)" CXX="$(CXX)" LD="$(LD)" CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS)" && \
+	$(MAKE) && \
+	$(MAKE) install
 	PKG_CONFIG_PATH="$(DEPS_PREFIX)/lib/pkgconfig:$(DEPS_PREFIX)/lib64/pkgconfig:$(PKG_CONFIG_PATH)" \
 		$(PKG_CONFIG) --exists --print-errors freetype2
 	touch $@
@@ -5606,6 +5747,10 @@ install-libs:
 @BUILD_SDL3_TRUE@	$(if $(SDL3_STATIC),,@cp -P "$(SDL3_PREFIX)/lib"/libSDL3*.so* "$(DESTDIR)$(bindir)/lib/")
 @BUILD_GLEW_TRUE@	$(if $(SDL3_STATIC),,@libdir=$(GLEW_PREFIX)/`test -d "$(GLEW_PREFIX)/lib64" && echo "lib64" || echo "lib"`; \
 @BUILD_GLEW_TRUE@	cp -P "$$libdir"/libGLEW*.so* "$(DESTDIR)$(bindir)/lib/")
+@BUILD_LIBJPEG_TRUE@	$(if $(SDL3_STATIC),,@cp -P "$(LIBJPEG_PREFIX)/lib"/libjpeg*.so* "$(DESTDIR)$(bindir)/lib/")
+@BUILD_LIBPNG_TRUE@	$(if $(SDL3_STATIC),,@cp -P "$(LIBPNG_PREFIX)/lib"/libpng*.so* "$(DESTDIR)$(bindir)/lib/")
+@BUILD_BZIP2_TRUE@	$(if $(SDL3_STATIC),,@cp -P "$(BZIP2_PREFIX)/lib"/libbz2*.so* "$(DESTDIR)$(bindir)/lib/")
+@BUILD_ZLIB_TRUE@	$(if $(SDL3_STATIC),,@cp -P "$(ZLIB_PREFIX)/lib"/libz*.so* "$(DESTDIR)$(bindir)/lib/")
 @BUILD_FREETYPE2_TRUE@	@cp -P "$(FREETYPE2_PREFIX)/lib"/libfreetype*.so* "$(DESTDIR)$(bindir)/lib/"
 # FIXME: need transitive deps (libbrotlidec, libbrotlicommon, libharfbuzz, etc)
 #	$(if $(SDL3_STATIC),,@cp -P "$(FREETYPE2_PREFIX)/lib"/libfreetype*.so* "$(DESTDIR)$(bindir)/lib/")
