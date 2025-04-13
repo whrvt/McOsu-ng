@@ -6,4 +6,8 @@ src/config.h.in generated
 aclocal.m4 generated
 Makefile.in generated
 configure generated
-build/aux generated
+
+build/aux/compile generated
+build/aux/depcomp generated
+build/aux/install-sh generated
+build/aux/missing generated

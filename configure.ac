@@ -167,7 +167,7 @@ PKG_CHECK_AUTO([GL], [gl], [have_gl=yes], [have_gl=no])
 PKG_CHECK_AUTO([GLU], [glu], [have_glu=yes], [have_glu=no])
 PKG_CHECK_AUTO([EGL], [egl], [have_egl=yes], [have_egl=no])  # FIXME: transitive GLEW dep
 
-SDL3_MIN_VERSION=3.1.8
+SDL3_MIN_VERSION=3.2.0
 SDL3_BUILD_VERSION=3.99.99 # git
 GLEW_MIN_VERSION=2.2.0
 GLEW_BUILD_VERSION=2.2.0
