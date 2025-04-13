@@ -109,7 +109,7 @@ private:
 		}
 		m_iNumScoresToRecalculate = numScoresToRecalculate;
 
-		printf("PPRecalc will recalculate %i scores ...\n", (int)numScoresToRecalculate);
+		debugLog("PPRecalc will recalculate %i scores ...\n", (int)numScoresToRecalculate);
 
 		// actually recalculate them
 		for (auto &kv : *scores)
@@ -149,7 +149,7 @@ private:
 					if (diff2 == NULL)
 					{
 						if (Osu::debug->getBool())
-							printf("PPRecalc couldn't find %s\n", score.md5hash.c_str());
+							debugLog("PPRecalc couldn't find %s\n", score.md5hash.c_str());
 
 						continue;
 					}
@@ -174,7 +174,7 @@ private:
 					if (diffres.diffobjects.size() < 1)
 					{
 						if (Osu::debug->getBool())
-							printf("PPRecalc couldn't load %s\n", osuFilePath.toUtf8());
+							debugLog("PPRecalc couldn't load %s\n", osuFilePath.toUtf8());
 
 						continue;
 					}
@@ -251,8 +251,8 @@ private:
 
 					if (Osu::debug->getBool())
 					{
-						printf("[%s] original = %f, new = %f, delta = %f\n", score.md5hash.c_str(), oldPP, score.pp, (score.pp - oldPP));
-						printf("at %i/%i\n", m_iNumScoresRecalculated.load(), m_iNumScoresToRecalculate.load());
+						debugLog("[%s] original = %f, new = %f, delta = %f\n", score.md5hash.c_str(), oldPP, score.pp, (score.pp - oldPP));
+						debugLog("at %i/%i\n", m_iNumScoresRecalculated.load(), m_iNumScoresToRecalculate.load());
 					}
 				}
 			}

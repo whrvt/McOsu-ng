@@ -940,7 +940,7 @@ void OsuBeatmapStandard::update()
 void OsuBeatmapStandard::onModUpdate(bool rebuildSliderVertexBuffers, bool recomputeDrainRate)
 {
 	if (Osu::debug->getBool())
-		debugLog("OsuBeatmapStandard::onModUpdate() @ %f\n", engine->getTime());
+		debugLog("@ %f\n", engine->getTime());
 
 	m_osu->getMultiplayer()->onServerModUpdate();
 
@@ -1579,7 +1579,7 @@ float OsuBeatmapStandard::getHitcircleDiameter() const
 
 void OsuBeatmapStandard::onBeforeLoad()
 {
-	debugLog("OsuBeatmapStandard::onBeforeLoad()\n");
+	debugLog("\n");
 
 	m_osu->getMultiplayer()->onServerPlayStateChange(OsuMultiplayer::STATE::START, 0, false, m_selectedDifficulty2);
 
@@ -1592,7 +1592,7 @@ void OsuBeatmapStandard::onBeforeLoad()
 
 void OsuBeatmapStandard::onLoad()
 {
-	debugLog("OsuBeatmapStandard::onLoad()\n");
+	debugLog("\n");
 
 	// after the hitobjects have been loaded we can calculate the stacks
 	calculateStacks();
@@ -1609,14 +1609,14 @@ void OsuBeatmapStandard::onLoad()
 
 void OsuBeatmapStandard::onPlayStart()
 {
-	debugLog("OsuBeatmapStandard::onPlayStart()\n");
+	debugLog("\n");
 
 	onModUpdate(false, false); // if there are calculations in there that need the hitobjects to be loaded, also applies speed/pitch
 }
 
 void OsuBeatmapStandard::onBeforeStop(bool quit)
 {
-	debugLog("OsuBeatmapStandard::onBeforeStop()\n");
+	debugLog("\n");
 
 	// kill any running star cache loader
 	stopStarCacheLoader();
@@ -1624,7 +1624,7 @@ void OsuBeatmapStandard::onBeforeStop(bool quit)
 	if (!quit) // if the ranking screen is going to be shown
 	{
 		// calculate final pp
-		debugLog("OsuBeatmapStandard::onBeforeStop() calculating pp ...\n");
+		debugLog(" calculating pp ...\n");
 		double aim = 0.0;
 		double aimSliderFactor = 0.0;
 		double aimDifficultStrains = 0.0;
@@ -1663,7 +1663,7 @@ void OsuBeatmapStandard::onBeforeStop(bool quit)
 		m_osu->getScore()->setStarsTomAim(m_fAimStars);
 		m_osu->getScore()->setStarsTomSpeed(m_fSpeedStars);
 		m_osu->getScore()->setPPv2(pp);
-		debugLog("OsuBeatmapStandard::onBeforeStop() done.\n");
+		debugLog(" done.\n");
 
 		// save local score, but only under certain conditions
 		const bool isComplete = (num300s + num100s + num50s + numMisses >= numHitObjects);
@@ -1677,7 +1677,7 @@ void OsuBeatmapStandard::onBeforeStop(bool quit)
 		{
 			const int scoreVersion = OsuScore::VERSION;
 
-			debugLog("OsuBeatmapStandard::onBeforeStop() saving score ...\n");
+			debugLog(" saving score ...\n");
 			{
 				OsuDatabase::Score score;
 
@@ -1749,7 +1749,7 @@ void OsuBeatmapStandard::onBeforeStop(bool quit)
 				if (scoreIndex == -1)
 					m_osu->getNotificationOverlay()->addNotification(UString::format("Failed saving score! md5hash.length() = %i", m_selectedDifficulty2->getMD5Hash().length()), 0xffff0000, false, 3.0f);
 			}
-			debugLog("OsuBeatmapStandard::onBeforeStop() done.\n");
+			debugLog(" done.\n");
 		}
 		m_osu->getScore()->setIndex(scoreIndex);
 		m_osu->getScore()->setComboFull(maxPossibleCombo); // used in OsuRankingScreen/OsuUIRankingScreenRankingPanel
@@ -1762,7 +1762,7 @@ void OsuBeatmapStandard::onBeforeStop(bool quit)
 
 void OsuBeatmapStandard::onStop(bool quit)
 {
-	debugLog("OsuBeatmapStandard::onStop()\n");
+	debugLog("\n");
 
 	if (quit)
 		m_osu->getMultiplayer()->onServerPlayStateChange(OsuMultiplayer::STATE::STOP);
@@ -1770,7 +1770,7 @@ void OsuBeatmapStandard::onStop(bool quit)
 
 void OsuBeatmapStandard::onPaused(bool first)
 {
-	debugLog("OsuBeatmapStandard::onPaused()\n");
+	debugLog("\n");
 
 	m_osu->getMultiplayer()->onServerPlayStateChange(OsuMultiplayer::STATE::PAUSE);
 
@@ -1785,14 +1785,14 @@ void OsuBeatmapStandard::onPaused(bool first)
 
 void OsuBeatmapStandard::onUnpaused()
 {
-	debugLog("OsuBeatmapStandard::onUnpaused()\n");
+	debugLog("\n");
 
 	m_osu->getMultiplayer()->onServerPlayStateChange(OsuMultiplayer::STATE::UNPAUSE);
 }
 
 void OsuBeatmapStandard::onRestart(bool quick)
 {
-	debugLog("OsuBeatmapStandard::onRestart()\n");
+	debugLog("\n");
 
 	m_osu->getMultiplayer()->onServerPlayStateChange(OsuMultiplayer::STATE::RESTART, 0, quick);
 }
@@ -2041,7 +2041,7 @@ void OsuBeatmapStandard::updateSliderVertexBuffers()
 	m_fPrevPlayfieldStretchX = osu_playfield_stretch_x.getFloat(); // same here
 	m_fPrevPlayfieldStretchY = osu_playfield_stretch_y.getFloat(); // same here
 
-	debugLog("OsuBeatmapStandard::updateSliderVertexBuffers() for %i hitobjects ...\n", m_hitobjects.size());
+	debugLog(" for %i hitobjects ...\n", m_hitobjects.size());
 
 	for (int i=0; i<m_hitobjects.size(); i++)
 	{

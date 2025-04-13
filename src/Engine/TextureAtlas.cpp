@@ -54,12 +54,12 @@ Vector2 TextureAtlas::put(int width, int height, bool flipHorizontal, bool flipV
 	}
 	if (m_atlasImage == NULL)
 	{
-		debugLog("TextureAtlas::put() ERROR: m_atlasImage == NULL!\n");
+		debugLog("ERROR: m_atlasImage == NULL!\n");
 		return Vector2();
 	}
 	if (pixels == NULL)
 	{
-		debugLog("TextureAtlas::put() ERROR: pixels == NULL!\n");
+		debugLog("ERROR: pixels == NULL!\n");
 		return Vector2();
 	}
 

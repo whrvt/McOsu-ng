@@ -556,7 +556,7 @@ std::vector<UString> HorizonSDLEnvironment::getLogicalDrives()
 UString HorizonSDLEnvironment::getFolderFromFilePath(UString filepath)
 {
 	// NOTE: #include <libgen.h> and dirname() is undefined, seems like it does not exist anywhere in devkitpro except the header file
-	debugLog("WARNING: HorizonSDLEnvironment::getFolderFromFilePath() not available!\n");
+	debugLog("WARNING: not available!\n");
 	return filepath;
 }
 

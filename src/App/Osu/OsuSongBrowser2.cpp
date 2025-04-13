@@ -1290,7 +1290,7 @@ void OsuSongBrowser2::update()
 						m_backgroundStarCalculator->revive();
 
 						if (osu_debug_background_star_calc.getBool())
-							printf("diffToCalc = %s\n", diffToCalc->getFilePath().toUtf8());
+							debugLog("diffToCalc = %s\n", diffToCalc->getFilePath().toUtf8());
 
 						// start new calc (nomod stars)
 						{
@@ -3144,7 +3144,7 @@ void OsuSongBrowser2::onDatabaseLoadingFinished()
 {
 	m_beatmaps = std::vector<OsuDatabaseBeatmap*>(m_db->getDatabaseBeatmaps()); // having a copy of the vector in here is actually completely unnecessary
 
-	debugLog("OsuSongBrowser2::onDatabaseLoadingFinished() : %i beatmaps.\n", m_beatmaps.size());
+	debugLog("%i beatmaps.\n", m_beatmaps.size());
 
 	// initialize all collection (grouped) buttons
 	{

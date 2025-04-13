@@ -128,7 +128,7 @@ void WndProc(int type, int xcookieType, int xcookieExtension)
 		{
 			XKeyEvent *ke = &xev.xkey;
 			int key = XLookupKeysym(ke, /*(ke->state&ShiftMask) ? 1 : 0*/1); // WARNING: these two must be the same (see below)
-			//printf("X: keyPress = %i\n", key);
+			//debugLog("X: keyPress = %i\n", key);
 
 			if (g_engine != NULL)
 			{
@@ -144,7 +144,7 @@ void WndProc(int type, int xcookieType, int xcookieExtension)
 			if (length > 0)
 			{
 				buf[buffSize-1] = 0;
-				//printf("buff = %s\n", buf);
+				//debugLog("buff = %s\n", buf);
 				if (g_engine != NULL)
 					g_engine->onKeyboardChar(buf[0]);
 			}
@@ -155,7 +155,7 @@ void WndProc(int type, int xcookieType, int xcookieExtension)
 		{
 			XKeyEvent *ke = &xev.xkey;
 			int key = XLookupKeysym(ke, /*(ke->state & ShiftMask) ? 1 : 0*/1); // WARNING: these two must be the same (see above)
-			//printf("X: keyRelease = %i\n", key);
+			//debugLog("X: keyRelease = %i\n", key);
 
 			if (g_engine != NULL)
 			{
@@ -268,7 +268,7 @@ void WndProc(int type, int xcookieType, int xcookieExtension)
 					// TODO: apparently this is in 0-65536 units, convert properly
 					// how to know whether the value is for an absolute input device, or a relative input device?
 					// if even relative input devices generate 0-65536 values, then we have to "wait" 1 event to calculate a delta?
-					//printf("x = %i, y = %i\n", rawX, rawY);
+					//debugLog("x = %i, y = %i\n", rawX, rawY);
 					//if (g_engine != NULL)
 					//	g_engine->onMouseRawMove(rawX, rawY);
 				}
@@ -291,7 +291,7 @@ int main(int argc, char *argv[])
 	dpy = XOpenDisplay(NULL);
 	if (dpy == NULL)
 	{
-		printf("FATAL ERROR: XOpenDisplay() can't connect to X server!\n\n");
+		debugLog("FATAL ERROR: XOpenDisplay() can't connect to X server!\n\n");
         exit(1);
 	}
 
@@ -299,7 +299,7 @@ int main(int argc, char *argv[])
 	int xi2firstEvent, xi2error;
 	if (!XQueryExtension(dpy, "XInputExtension", &xi2opcode, &xi2firstEvent, &xi2error))
 	{
-		printf("FATAL ERROR: XQueryExtension() XInput extension not available!\n\n");
+		debugLog("FATAL ERROR: XQueryExtension() XInput extension not available!\n\n");
 		exit(1);
 	}
 
@@ -307,7 +307,7 @@ int main(int argc, char *argv[])
 	int ximajor = 2, ximinor = 0;
 	if (XIQueryVersion(dpy, &ximajor, &ximinor) == BadRequest)
 	{
-		printf("FATAL ERROR: XIQueryVersion() XInput2 not available, server supports only %d.%d!\n\n", ximajor, ximinor);
+		debugLog("FATAL ERROR: XIQueryVersion() XInput2 not available, server supports only %d.%d!\n\n", ximajor, ximinor);
 		exit(1);
 	}
 
@@ -327,7 +327,7 @@ int main(int argc, char *argv[])
 	XSizeHints* winSizeHints = XAllocSizeHints();
 	if (!winSizeHints)
 	{
-	    printf("FATAL ERROR: XAllocSizeHints() out of memory!\n\n");
+	    debugLog("FATAL ERROR: XAllocSizeHints() out of memory!\n\n");
 	    exit(1);
 	}
 	winSizeHints->flags = PMinSize;
@@ -356,7 +356,7 @@ int main(int argc, char *argv[])
 	im = XOpenIM(dpy, NULL, NULL, NULL);
 	if (im == NULL)
 	{
-		printf("FATAL ERROR: XOpenIM() couldn't open input method!\n\n");
+		debugLog("FATAL ERROR: XOpenIM() couldn't open input method!\n\n");
 		exit(1);
 	}
 
@@ -364,7 +364,7 @@ int main(int argc, char *argv[])
 	ic = XCreateIC(im, XNInputStyle, XIMPreeditNothing | XIMStatusNothing, XNClientWindow, win, NULL);
 	if (ic == NULL)
 	{
-		printf("FATAL ERROR: XCreateIC() couldn't create input context!\n\n");
+		debugLog("FATAL ERROR: XCreateIC() couldn't create input context!\n\n");
 		exit(1);
 	}
 

@@ -861,7 +861,7 @@ Cursor LinuxEnvironment::makeBlankCursor()
 	blank = XCreateBitmapFromData(m_display, m_window, data, 1, 1);
 	if (blank == None)
 	{
-		debugLog("LinuxEnvironment::makeBlankCursor() fatal error, XCreateBitmapFromData() out of memory!\n");
+		debugLog("fatal error, XCreateBitmapFromData() out of memory!\n");
 		return 0;
 	}
 	cursor = XCreatePixmapCursor(m_display, blank, blank, &dummy, &dummy, 0, 0);
@@ -952,7 +952,7 @@ bool LinuxEnvironment::requestSelectionContent(UString &selection_content, Atom 
 	}
 	while (timeoutMs > 0);
 
-	debugLog("LinuxEnvironment::requestSelectionContent() : Timeout!\n");
+	debugLog("Timeout!\n");
 	return false;
 }
 
@@ -998,7 +998,7 @@ void LinuxEnvironment::handleSelectionRequest(XSelectionRequestEvent &evt)
 		}
 	}
 	else
-		debugLog("LinuxEnvironment::handleSelectionRequest() : Requested unsupported clipboard!\n");
+		debugLog("Requested unsupported clipboard!\n");
 
 	if (data)
 	{

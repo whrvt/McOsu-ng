@@ -85,7 +85,7 @@ void MacOSWrapper::main_objc_after_winproc()
 		if (m_deltaTimer->getElapsedTime() > m_fPrevTime)
 		{
 			m_fPrevTime = m_deltaTimer->getElapsedTime() + 1.0f;
-			printf("fps = %f, delta = %f\n", (1.0f / m_deltaTimer->getDelta()), m_deltaTimer->getDelta());
+			debugLog("fps = %f, delta = %f\n", (1.0f / m_deltaTimer->getDelta()), m_deltaTimer->getDelta());
 		}
 
 		engine->setFrameTime(m_deltaTimer->getDelta());

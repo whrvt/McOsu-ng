@@ -152,7 +152,7 @@ void OsuUpdateHandler::checkForUpdates()
 	}
 
 	if (m_iNumRetries > 0)
-		debugLog("OsuUpdateHandler::checkForUpdates() retry %i ...\n", m_iNumRetries);
+		debugLog("retry %i ...\n", m_iNumRetries);
 
 #endif
 }
@@ -169,7 +169,7 @@ bool OsuUpdateHandler::isUpdateAvailable()
 
 void OsuUpdateHandler::_requestUpdate()
 {
-	debugLog("OsuUpdateHandler::requestUpdate()\n");
+	debugLog("\n");
 	m_status = STATUS::STATUS_CHECKING_FOR_UPDATE;
 
 	if (m_releases.size() > 0 && isUpdateAvailable()) return; // don't need to get twice
@@ -288,7 +288,7 @@ void OsuUpdateHandler::_requestUpdate()
 
 bool OsuUpdateHandler::_downloadUpdate(UString url)
 {
-	debugLog("OsuUpdateHandler::downloadUpdate( %s )\n", url.toUtf8());
+	debugLog("%s\n", url.toUtf8());
 	m_status = STATUS::STATUS_DOWNLOADING_UPDATE;
 
 	// setting the status in every error check return is retarded
@@ -297,7 +297,7 @@ bool OsuUpdateHandler::_downloadUpdate(UString url)
 	std::string data = engine->getNetworkHandler()->httpDownload(url);
 	if (data.length() < 2)
 	{
-		debugLog("OsuUpdateHandler::downloadUpdate() error, downloaded file is too small (%i)!\n", data.length());
+		debugLog("ERROR: downloaded file is too small (%i)!\n", data.length());
 		m_status = STATUS::STATUS_ERROR;
 		return false;
 	}
@@ -312,18 +312,18 @@ bool OsuUpdateHandler::_downloadUpdate(UString url)
 	}
 	else
 	{
-		debugLog("OsuUpdateHandler::downloadUpdate() error, can't write file!\n");
+		debugLog("ERROR: can't write file!\n");
 		m_status = STATUS::STATUS_ERROR;
 		return false;
 	}
 
-	debugLog("OsuUpdateHandler::downloadUpdate() finished successfully.\n");
+	debugLog("finished successfully.\n");
 	return true;
 }
 
 void OsuUpdateHandler::_installUpdate(UString zipFilePath)
 {
-	debugLog("OsuUpdateHandler::installUpdate( %s )\n", zipFilePath.toUtf8());
+	debugLog("%s\n", zipFilePath.toUtf8());
 	m_status = STATUS::STATUS_INSTALLING_UPDATE;
 
 	// setting the status in every error check return is retarded

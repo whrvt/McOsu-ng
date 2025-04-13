@@ -120,7 +120,7 @@ void Sound::initAsync()
 				File wavFile(m_sFilePath);
 				if (wavFile.getFileSize() < (size_t)minWavFileSize)
 				{
-					printf("Sound: Ignoring malformed/corrupt WAV file (%i) %s\n", (int)wavFile.getFileSize(), m_sFilePath.toUtf8());
+					debugLog("Sound: Ignoring malformed/corrupt WAV file (%i) %s\n", (int)wavFile.getFileSize(), m_sFilePath.toUtf8());
 					return;
 				}
 			}
@@ -182,7 +182,7 @@ void Sound::initAsync()
 			}
 		}
 		else
-			printf("Sound Error: Couldn't file.canRead() on file %s\n", m_sFilePath.toUtf8());
+			debugLog("Sound Error: Couldn't file.canRead() on file %s\n", m_sFilePath.toUtf8());
 
 #else
 
@@ -204,7 +204,7 @@ void Sound::initAsync()
 		m_HSTREAMBACKUP = m_HSTREAM; // needed for proper cleanup for FX HSAMPLES
 
 		if (m_HSTREAM == 0)
-			printf("Sound Error: BASS_SampleLoad() error %i on file %s\n", BASS_ErrorGetCode(), m_sFilePath.toUtf8());
+			debugLog("Sound Error: BASS_SampleLoad() error %i on file %s\n", BASS_ErrorGetCode(), m_sFilePath.toUtf8());
 	}
 
 	m_bAsyncReady = true;
@@ -217,7 +217,7 @@ void Sound::initAsync()
 		m_mixChunkOrMixMusic = Mix_LoadWAV(m_sFilePath.toUtf8());
 
 	if (m_mixChunkOrMixMusic == NULL)
-		printf(m_bStream ? "Sound Error: Mix_LoadMUS() error %s on file %s\n" : "Sound Error: Mix_LoadWAV() error %s on file %s\n", SDL_GetError(), m_sFilePath.toUtf8());
+		debugLog(m_bStream ? "Sound Error: Mix_LoadMUS() error %s on file %s\n" : "Sound Error: Mix_LoadWAV() error %s on file %s\n", SDL_GetError(), m_sFilePath.toUtf8());
 
 	m_bAsyncReady = (m_mixChunkOrMixMusic != NULL);
 
@@ -384,7 +384,7 @@ void Sound::setPosition(double percent)
 
 	const BOOL res = BASS_ChannelSetPosition(handle, (QWORD)((double)(length)*percent), BASS_POS_BYTE);
 	if (!res && debug_snd.getBool())
-		debugLog("Sound::setPosition( %f ) BASS_ChannelSetPosition() error %i on file %s\n", percent, BASS_ErrorGetCode(), m_sFilePath.toUtf8());
+		debugLog("position %f BASS_ChannelSetPosition() error %i on file %s\n", percent, BASS_ErrorGetCode(), m_sFilePath.toUtf8());
 
 #elif defined(MCENGINE_FEATURE_SDL) && defined(MCENGINE_FEATURE_SDL_MIXER) && defined(SDL_MIXER_X)
 
@@ -443,7 +443,7 @@ void Sound::setPositionMS(unsigned long ms, bool internal)
 
 	const BOOL res = BASS_ChannelSetPosition(handle, position, BASS_POS_BYTE);
 	if (!res && !internal && debug_snd.getBool())
-		debugLog("Sound::setPositionMS( %lu ) BASS_ChannelSetPosition() error %i on file %s\n", ms, BASS_ErrorGetCode(), m_sFilePath.toUtf8());
+		debugLog("ms %lu BASS_ChannelSetPosition() error %i on file %s\n", ms, BASS_ErrorGetCode(), m_sFilePath.toUtf8());
 
 #elif defined(MCENGINE_FEATURE_SDL) && defined(MCENGINE_FEATURE_SDL_MIXER)
 

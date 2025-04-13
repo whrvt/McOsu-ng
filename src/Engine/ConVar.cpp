@@ -43,7 +43,7 @@ static void _addConVar(ConVar *c)
 	}
 	else
 	{
-		printf("FATAL: Duplicate ConVar name (\"%s\")\n", c->getName().toUtf8());
+		debugLog("FATAL: Duplicate ConVar name (\"%s\")\n", c->getName().toUtf8());
 		std::exit(100);
 	}
 }

@@ -71,7 +71,7 @@ void OpenGLES2VertexArrayObject::draw()
 {
 	if (!m_bReady)
 	{
-		debugLog("WARNING: OpenGLES2VertexArrayObject::draw() called, but was not ready!\n");
+		debugLog("WARNING: called, but was not ready!\n");
 		return;
 	}
 

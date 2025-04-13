@@ -194,7 +194,7 @@ UString StdFile::readLine()
 const char *StdFile::readFile()
 {
 	if (File::debug->getBool())
-		debugLog("StdFile::readFile() on %s\n", m_sFilePath.toUtf8());
+		debugLog("on %s\n", m_sFilePath.toUtf8());
 
 	if (m_fullBuffer.size() > 0)
 		return &m_fullBuffer[0];

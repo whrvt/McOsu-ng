@@ -252,9 +252,9 @@ int OpenGLShader::getAndCacheUniformLocation(const UString &name)
 bool OpenGLShader::compile(UString vertexShader, UString fragmentShader, bool source)
 {
 	// load & compile shaders
-	debugLog("OpenGLShader: Compiling %s ...\n", (source ? "vertex source" : vertexShader.toUtf8()));
+	debugLog("Compiling %s ...\n", (source ? "vertex source" : vertexShader.toUtf8()));
 	m_iVertexShader = source ? createShaderFromString(vertexShader, GL_VERTEX_SHADER_ARB) : createShaderFromFile(vertexShader, GL_VERTEX_SHADER_ARB);
-	debugLog("OpenGLShader: Compiling %s ...\n", (source ? "fragment source" : fragmentShader.toUtf8()));
+	debugLog("Compiling %s ...\n", (source ? "fragment source" : fragmentShader.toUtf8()));
 	m_iFragmentShader = source ? createShaderFromString(fragmentShader, GL_FRAGMENT_SHADER_ARB) : createShaderFromFile(fragmentShader, GL_FRAGMENT_SHADER_ARB);
 
 	if (m_iVertexShader == 0 || m_iFragmentShader == 0)

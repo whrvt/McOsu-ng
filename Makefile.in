@@ -987,7 +987,7 @@ McOsu_ng_CXXFLAGS := \
 	$(MCOSU_CXXFLAGS) \
 	$(MCOSU_NG_INCLUDE_FLAGS) \
 	-I$(srcdir)/$(BUNDLED_BASS_DIR)/include \
-    -I$(srcdir)/$(BUNDLED_BASS_FX_DIR)/include \
+	-I$(srcdir)/$(BUNDLED_BASS_FX_DIR)/include \
 	$(SDL3_CFLAGS) \
 	$(X11_CFLAGS) \
 	$(XI_CFLAGS) \

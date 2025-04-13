@@ -383,7 +383,7 @@ OpenVRInterface::~OpenVRInterface()
 
 bool OpenVRInterface::initRenderer()
 {
-	debugLog("OpenVRInterface::initRenderer()\n");
+	debugLog("\n");
 	if (!initShaders()) return false;
 
 	initRenderTargets();
@@ -394,7 +394,7 @@ bool OpenVRInterface::initRenderer()
 
 bool OpenVRInterface::initCompositor()
 {
-	debugLog("OpenVRInterface::initCompositor()\n");
+	debugLog("\n");
 
 #if defined(MCENGINE_FEATURE_OPENVR)
 
@@ -1916,7 +1916,7 @@ void OpenVRInterface::toggleFakeCameraMouseCapture()
 
 void OpenVRInterface::saveFakeCamera()
 {
-	debugLog("OpenVRInterface::saveFakeCamera()\n");
+	debugLog("\n");
 
 	vr_spectator_camera_position.setValue(UString::format("%f %f %f", m_fakeCamera->getPos().x, m_fakeCamera->getPos().y, m_fakeCamera->getPos().z));
 	vr_spectator_camera_rotation.setValue(UString::format("%f %f %f", m_fakeCamera->getYaw(), m_fakeCamera->getPitch(), m_fakeCamera->getRoll()));
@@ -1924,7 +1924,7 @@ void OpenVRInterface::saveFakeCamera()
 	std::ofstream out("cfg/vrspectatorcamera.cfg");
 	if (!out.good())
 	{
-		debugLog("OpenVRInterface::saveFakeCamera() failed!\n");
+		debugLog("failed!\n");
 		return;
 	}
 

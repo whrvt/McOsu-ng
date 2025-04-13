@@ -830,7 +830,7 @@ void OsuMultiplayer::onClientDisconnectedFromServer()
 
 void OsuMultiplayer::onServerClientChange(uint32_t id, UString name, bool connected)
 {
-	debugLog("OsuMultiplayer::onServerClientChange(%i, %s, %i)\n", id, name.toUtf8(), (int)connected);
+	debugLog("onServerClientChange(%i, %s, %i)\n", id, name.toUtf8(), (int)connected);
 
 	PLAYER_CHANGE_PACKET pp;
 	pp.id = id;
@@ -917,13 +917,13 @@ void OsuMultiplayer::onServerClientChange(uint32_t id, UString name, bool connec
 
 void OsuMultiplayer::onLocalServerStarted()
 {
-	debugLog("OsuMultiplayer::onLocalServerStarted()\n");
+	debugLog("\n");
 	m_osu->getNotificationOverlay()->addNotification("Server started.", 0xff00ff00);
 }
 
 void OsuMultiplayer::onLocalServerStopped()
 {
-	debugLog("OsuMultiplayer::onLocalServerStopped()\n");
+	debugLog("\n");
 	m_osu->getNotificationOverlay()->addNotification("Server stopped.", 0xffcccccc);
 
 	m_serverPlayers.clear();

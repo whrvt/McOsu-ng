@@ -37,10 +37,37 @@ class Console;
 class Engine
 {
 public:
-	static void debugLog(const char *fmt, va_list args);
-	static void debugLog(Color color, const char *fmt, va_list args);
-	static void debugLog(const char *fmt, ...);
-	static void debugLog(Color color, const char *fmt, ...);
+	static void debugLog_(const char *fmt, va_list args);
+	static void debugLog_(Color color, const char *fmt, va_list args);
+	static void debugLog_(const char *fmt, ...);
+	static void debugLog_(Color color, const char *fmt, ...);
+
+	// this is messy, but it's a way to add context without changing the public debugLog interface
+	class ContextLogger
+	{
+	public:
+		template<typename... Args>
+		static void log(const char* function, const char* fmt, Args... args)
+		{
+			std::string newFormat = formatWithContext(function, fmt);
+			Engine::debugLog_(newFormat.c_str(), args...);
+		}
+
+		template<typename... Args>
+		static void log(const char* function, Color color, const char* fmt, Args... args)
+		{
+			std::string newFormat = formatWithContext(function, fmt);
+			Engine::debugLog_(color, newFormat.c_str(), args...);
+		}
+		
+	private:
+		static std::string formatWithContext(const char* function, const char* fmt)
+		{
+			std::ostringstream contextPrefix;
+			contextPrefix << "[" << function << "] ";
+			return contextPrefix.str() + fmt;
+		}
+	};
 
 public:
 	Engine(Environment *environment, const char *args = NULL);
@@ -196,6 +223,11 @@ private:
 
 extern Engine *engine;
 
-#define debugLog(format, ...) Engine::debugLog( format , ##__VA_ARGS__ )
+#ifdef _DEBUG
+#include <source_location>
+#define debugLog(...) Engine::ContextLogger::log(std::source_location::current().function_name(), __VA_ARGS__)
+#else
+#define debugLog(...) Engine::ContextLogger::log(__FUNCTION__, __VA_ARGS__)
+#endif
 
 #endif

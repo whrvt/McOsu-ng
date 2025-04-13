@@ -161,7 +161,7 @@ UString NetworkHandler::httpGet(UString url, long timeout, long connectTimeout)
 	}
 	else
 	{
-		debugLog("NetworkHandler::httpGet() error, curl == NULL!\n");
+		debugLog("ERROR: curl == NULL!\n");
 		return "";
 	}
 
@@ -201,7 +201,7 @@ std::string NetworkHandler::httpDownload(UString url, long timeout, long connect
 		if (res != CURLE_OK)
 		{
 			curlWriteBuffer = std::stringstream();
-			debugLog("NetworkHandler::httpDownload() error, code %i!\n", (int)res);
+			debugLog("ERROR: code %i!\n", (int)res);
 		}
 
 		curl_easy_cleanup(curl);
@@ -210,7 +210,7 @@ std::string NetworkHandler::httpDownload(UString url, long timeout, long connect
 	}
 	else
 	{
-		debugLog("NetworkHandler::httpDownload() error, curl == NULL!\n");
+		debugLog("ERROR: curl == NULL!\n");
 		return std::string("");
 	}
 
