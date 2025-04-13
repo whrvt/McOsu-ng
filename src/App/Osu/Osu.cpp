@@ -206,7 +206,7 @@ Osu::Osu(Osu2 *osu2, int instanceID)
 	if (openvr->isReady()) // automatically enable VR mode if it was compiled with OpenVR support and is available
 		osu_vr.setValue(1.0f);
 
-	env->setWindowTitle("McOsu");
+	env->setWindowTitle(PACKAGE_NAME);
 	env->setCursorVisible(false);
 
 	engine->getConsoleBox()->setRequireShiftToActivate(true);

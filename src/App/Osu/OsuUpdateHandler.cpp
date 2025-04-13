@@ -18,8 +18,8 @@
 
 #include "Osu.h"
 
-const char *OsuUpdateHandler::GITHUB_API_RELEASE_URL = "https://api.github.com/repos/McKay42/McOsu/releases";
-const char *OsuUpdateHandler::GITHUB_RELEASE_DOWNLOAD_URL = "https://github.com/McKay42/McOsu/releases";
+const char *OsuUpdateHandler::GITHUB_API_RELEASE_URL = "https://api.github.com/repos/whrvt/" PACKAGE_NAME "/releases";
+const char *OsuUpdateHandler::GITHUB_RELEASE_DOWNLOAD_URL = "https://github.com/whrvt/" PACKAGE_NAME "/releases";
 const char *OsuUpdateHandler::TEMP_UPDATE_DOWNLOAD_FILEPATH = "update.zip";
 
 ConVar *OsuUpdateHandler::m_osu_release_stream_ref = NULL;

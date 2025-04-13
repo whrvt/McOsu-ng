@@ -49,9 +49,9 @@
 
 #define MCOSU_VERSION_TEXT "Version"
 #define MCOSU_BANNER_TEXT ""
-UString OsuMainMenu::MCOSU_MAIN_BUTTON_TEXT = UString("McOsu");
+UString OsuMainMenu::MCOSU_MAIN_BUTTON_TEXT = UString(PACKAGE_NAME);
 UString OsuMainMenu::MCOSU_MAIN_BUTTON_SUBTEXT = UString("Practice Client");
-#define MCOSU_MAIN_BUTTON_BACK_TEXT "by McKay"
+#define MCOSU_MAIN_BUTTON_BACK_TEXT "by McKay (and spectator)"
 
 #define MCOSU_NEWVERSION_NOTIFICATION_TRIGGER_FILE "version.txt"
 
@@ -1742,12 +1742,12 @@ void OsuMainMenu::onGithubPressed()
 
 	if (env->getOS() == Environment::OS::OS_HORIZON)
 	{
-		m_osu->getNotificationOverlay()->addNotification("Go to https://github.com/McKay42/McOsu/", 0xffffffff, false, 0.75f);
+		m_osu->getNotificationOverlay()->addNotification("Go to " PACKAGE_URL, 0xffffffff, false, 0.75f);
 		return;
 	}
 
 	m_osu->getNotificationOverlay()->addNotification("Opening browser, please wait ...", 0xffffffff, false, 0.75f);
-	env->openURLInDefaultBrowser("https://github.com/McKay42/McOsu/");
+	env->openURLInDefaultBrowser(PACKAGE_URL);
 }
 
 void OsuMainMenu::onVersionPressed()

@@ -284,7 +284,7 @@ BUILT_SOURCES := $(DEPS_PREFIX)/mimalloc.built $(DEPS_PREFIX)/SDL3.built $(DEPS_
 	$(DEPS_PREFIX)/libpng.built $(DEPS_PREFIX)/bzip2.built $(DEPS_PREFIX)/zlib.built $(DEPS_PREFIX)/FREETYPE2.built
 
 # making sure deps are built before main compile (continued)
-$(McOsu_ng_OBJECTS): $(BUILT_SOURCES)
+$(McOsu_ng_OBJECTS): src/config.h $(BUILT_SOURCES)
 
 # FIXME: just fixme
 MCOSU_NG_INCLUDE_FLAGS := $(shell find $(srcdir)/src -not -path '*/.*' -type d -printf "-I%p ")
@@ -324,11 +324,28 @@ McOsu_ng_LDFLAGS := \
 	$(ZLIB_LIBS) \
 	-lpthread
 
-$(top_srcdir)/compile_commands.json: clean
+compile_commands.json: clean
 	$(BEAR) --version || { echo bear is unavailable to generate a compile_commands.json, install bear && exit 1; }
 	$(BEAR) --append -- $(MAKE) $(AM_MAKEFLAGS) all-am
 
-compile-commands: $(McOsu_ng_OBJECTS) $(top_srcdir)/compile_commands.json
+$(abs_top_srcdir)/.clangd: compile_commands.json
+	@if [ -f $@ ]; then \
+		if grep -q "CompilationDatabase:" $@; then \
+			sed -i 's|CompilationDatabase:.*|CompilationDatabase: $(shell realpath --relative-to=$(abs_top_srcdir) $(CURDIR))|g' $@; \
+		else \
+			echo "CompileFlags:" >> $@; \
+			echo "    CompilationDatabase: $(shell realpath --relative-to=$(abs_top_srcdir) $(CURDIR))" >> $@; \
+		fi; \
+	else \
+		echo "CompileFlags:" > $@; \
+		echo "    BuiltinHeaders: QueryDriver" >> $@; \
+		echo "    CompilationDatabase: $(shell realpath --relative-to=$(abs_top_srcdir) $(CURDIR))" >> $@; \
+		echo "" >> $@; \
+		echo "InlayHints:" >> $@; \
+		echo "    Enabled: No" >> $@; \
+	fi
+
+compile-commands: $(McOsu_ng_OBJECTS) $(abs_top_srcdir)/.clangd
 
 install-libs:
 	$(INSTALL) -dm 755 "$(DESTDIR)$(bindir)/screenshots"
