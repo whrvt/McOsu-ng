@@ -10,14 +10,15 @@
 /*.deps
 .deps/
 .libs/
-build/
-build*/
+/build/cache/
+/build/deps/
+/build/*patch
 dist/
 dist-*/
 debug/
 
 Makefile
-McOsu
+McOsu-ng
 /src/config.h
 /src/config.h.in~
 /config.log

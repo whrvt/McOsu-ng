@@ -1017,11 +1017,7 @@ void _errortest(void)
 	engine->showMessageError("Error Test", "This is an error message, fullscreen mode should be disabled and you should be able to read this");
 }
 
-void _crash(void)
-{
-	ConVar *nullPointer = NULL;
-	nullPointer->setValue(false);
-}
+void _crash(void) {__builtin_trap();}
 
 void _dpiinfo(void)
 {
