@@ -80,14 +80,14 @@ AC_LANG_PUSH(C++)
 AX_CHECK_COMPILE_FLAG([-std=gnu++23], [
     CXXFLAGS="$CXXFLAGS -std=gnu++23"
 ], [
-    AC_MSG_NOTICE([Compiler does not support gnu++23])
+    AC_MSG_ERROR([Compiler does not support gnu++23])
 ])
 
 AC_LANG([C])
 AX_CHECK_COMPILE_FLAG([-std=gnu23], [
     CFLAGS="$CFLAGS -std=gnu23"
 ], [
-    AC_MSG_NOTICE([Compiler does not support gnu23])
+    AC_MSG_ERROR([Compiler does not support gnu23])
 ])
 
 AC_LANG_POP

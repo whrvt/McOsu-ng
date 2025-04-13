@@ -23,7 +23,7 @@ McOsu_ng_SOURCES = \\
 EOF
 
 find src -type f '(' -name "*.cpp" -o -name "*.c" ')' | LC_ALL=C sort | \
-    sed 's/$/\\/' | \
+    sed 's/$/ \\/' | \
     sed 's/^/\t/' >> "$SOURCES_FILE"
 
 echo "\$(NULL)" >> "$SOURCES_FILE"
