@@ -149,11 +149,12 @@ void OsuMultiplayer::update()
 				break;
 			}
 
-			BEATMAP_DOWNLOAD_CHUNK_PACKET pp;
-			pp.serial = m_uploads[i].serial;
-			pp.fileType = fileType;
-			pp.numDataBytes = (uint32_t)std::min(uploadChunkSize, fileSize - alreadyUploadedDataBytes);
-			size_t size = sizeof(BEATMAP_DOWNLOAD_CHUNK_PACKET);
+			const BEATMAP_DOWNLOAD_CHUNK_PACKET pp = {
+				.serial = m_uploads[i].serial,
+				.fileType = fileType,
+				.numDataBytes = (uint32_t)std::min(uploadChunkSize, fileSize - alreadyUploadedDataBytes)
+			};
+			constexpr const size_t size = sizeof(BEATMAP_DOWNLOAD_CHUNK_PACKET);
 
 			if (!finished)
 			{
@@ -166,16 +167,16 @@ void OsuMultiplayer::update()
 				}
 
 				PACKET_TYPE wrap = BEATMAP_DOWNLOAD_CHUNK_TYPE;
-				const int wrapperSize = sizeof(PACKET_TYPE);
-				char wrappedPacket[(wrapperSize + size + pp.numDataBytes)];
-				memcpy(&wrappedPacket, &wrap, wrapperSize);
-				memcpy((void*)(((char*)&wrappedPacket) + wrapperSize), &pp, size);
-				memcpy((void*)(((char*)&wrappedPacket) + wrapperSize + size), buffer + alreadyUploadedDataBytes, pp.numDataBytes);
+				constexpr const int wrapperSize = sizeof(PACKET_TYPE);
+				std::vector<char> wrappedPacket(wrapperSize + size + pp.numDataBytes);
+				memcpy(wrappedPacket.data(), &wrap, wrapperSize);
+				memcpy(wrappedPacket.data() + wrapperSize, &pp, size);
+				memcpy(wrappedPacket.data() + wrapperSize + size, buffer + alreadyUploadedDataBytes, pp.numDataBytes);
 
 				if (m_uploads[i].id == 0)
-					engine->getNetworkHandler()->servercast(wrappedPacket, pp.numDataBytes + size + wrapperSize, true);
+					engine->getNetworkHandler()->servercast(wrappedPacket.data(), pp.numDataBytes + size + wrapperSize, true);
 				else
-					engine->getNetworkHandler()->clientcast(wrappedPacket, pp.numDataBytes + size + wrapperSize, m_uploads[i].id, true);
+					engine->getNetworkHandler()->clientcast(wrappedPacket.data(), pp.numDataBytes + size + wrapperSize, m_uploads[i].id, true);
 
 				// update counter (2)
 				switch (fileType)
@@ -598,10 +599,10 @@ bool OsuMultiplayer::onClientReceiveInt(uint32_t id, void *data, uint32_t size, 
 							pp.backgroundFileName[i] = i < diff->getBackgroundImageFileName().length() ? diff->getBackgroundImageFileName()[i] : '\0';
 						}
 						pp.backgroundFileName[1023] = '\0';
-						size_t size = sizeof(BEATMAP_DOWNLOAD_ACK_PACKET);
+						constexpr const size_t size = sizeof(BEATMAP_DOWNLOAD_ACK_PACKET);
 
-						PACKET_TYPE wrap = BEATMAP_DOWNLOAD_ACK_TYPE;
-						const int wrapperSize = sizeof(PACKET_TYPE);
+						constexpr const PACKET_TYPE wrap = BEATMAP_DOWNLOAD_ACK_TYPE;
+						constexpr const int wrapperSize = sizeof(PACKET_TYPE);
 						char wrappedPacket[(wrapperSize + size)];
 						memcpy(&wrappedPacket, &wrap, wrapperSize);
 						memcpy((void*)(((char*)&wrappedPacket) + wrapperSize), &pp, size);
@@ -840,7 +841,7 @@ void OsuMultiplayer::onServerClientChange(uint32_t id, UString name, bool connec
 		pp.name[i] = name[i];
 	}
 	pp.name[254] = '\0';
-	size_t size = sizeof(PLAYER_CHANGE_PACKET);
+	constexpr const size_t size = sizeof(PLAYER_CHANGE_PACKET);
 
 	PACKET_TYPE wrap = PLAYER_CHANGE_TYPE;
 	const int wrapperSize = sizeof(PACKET_TYPE);
@@ -935,12 +936,13 @@ void OsuMultiplayer::onClientCmd()
 	size_t size = sizeof(PLAYER_INPUT_PACKET) * m_playerInputBuffer.size();
 
 	PACKET_TYPE wrap = PLAYER_CMD_TYPE;
-	const int wrapperSize = sizeof(PACKET_TYPE);
-	char wrappedPacket[(sizeof(PACKET_TYPE) + size)];
-	memcpy(&wrappedPacket, &wrap, wrapperSize);
-	memcpy((void*)(((char*)&wrappedPacket) + wrapperSize), &m_playerInputBuffer[0], size);
+	constexpr const int wrapperSize = sizeof(PACKET_TYPE);
+	std::vector<char> wrappedPacket(sizeof(PACKET_TYPE) + size);
 
-	engine->getNetworkHandler()->servercast(wrappedPacket, size + wrapperSize, false);
+	memcpy(wrappedPacket.data(), &wrap, wrapperSize);
+	memcpy(wrappedPacket.data() + wrapperSize, &m_playerInputBuffer[0], size);
+
+	engine->getNetworkHandler()->servercast(wrappedPacket.data(), size + wrapperSize, false);
 }
 
 void OsuMultiplayer::onClientStatusUpdate(bool missingBeatmap, bool waiting, bool downloadingBeatmap)
@@ -952,10 +954,10 @@ void OsuMultiplayer::onClientStatusUpdate(bool missingBeatmap, bool waiting, boo
 	pp.missingBeatmap = missingBeatmap;
 	pp.downloadingBeatmap = downloadingBeatmap;
 	pp.waiting = (waiting && !missingBeatmap); // only wait if we actually have the beatmap
-	size_t size = sizeof(PLAYER_STATE_PACKET);
+	constexpr const size_t size = sizeof(PLAYER_STATE_PACKET);
 
-	PACKET_TYPE wrap = PLAYER_STATE_TYPE;
-	const int wrapperSize = sizeof(PACKET_TYPE);
+	constexpr const PACKET_TYPE wrap = PLAYER_STATE_TYPE;
+	constexpr const int wrapperSize = sizeof(PACKET_TYPE);
 	char wrappedPacket[(sizeof(PACKET_TYPE) + size)];
 	memcpy(&wrappedPacket, &wrap, wrapperSize);
 	memcpy((void*)(((char*)&wrappedPacket) + wrapperSize), &pp, size);
@@ -976,10 +978,10 @@ void OsuMultiplayer::onClientScoreChange(int combo, float accuracy, unsigned lon
 	pp.accuracy = accuracy;
 	pp.score = score;
 	pp.dead = dead;
-	size_t size = sizeof(SCORE_PACKET);
+	constexpr const size_t size = sizeof(SCORE_PACKET);
 
-	PACKET_TYPE wrap = SCORE_TYPE;
-	const int wrapperSize = sizeof(PACKET_TYPE);
+	constexpr const PACKET_TYPE wrap = SCORE_TYPE;
+	constexpr const int wrapperSize = sizeof(PACKET_TYPE);
 	char wrappedPacket[(sizeof(PACKET_TYPE) + size)];
 	memcpy(&wrappedPacket, &wrap, wrapperSize);
 	memcpy((void*)(((char*)&wrappedPacket) + wrapperSize), &pp, size);
@@ -1010,9 +1012,9 @@ bool OsuMultiplayer::onClientPlayStateChangeRequestBeatmap(OsuDatabaseBeatmap *b
 			pp.beatmapMD5Hash[i] = 0;
 	}
 	pp.beatmapId = beatmap->getID();
-	size_t size = sizeof(GAME_STATE_PACKET);
+	constexpr const size_t size = sizeof(GAME_STATE_PACKET);
 
-	PACKET_TYPE wrap = STATE_TYPE;
+	constexpr const PACKET_TYPE wrap = STATE_TYPE;
 	const int wrapperSize = sizeof(PACKET_TYPE);
 	char wrappedPacket[(sizeof(PACKET_TYPE) + size)];
 	memcpy(&wrappedPacket, &wrap, wrapperSize);
@@ -1033,10 +1035,10 @@ void OsuMultiplayer::onClientBeatmapDownloadRequest()
 
 	BEATMAP_DOWNLOAD_REQUEST_PACKET pp;
 	pp.dummy = 0;
-	size_t size = sizeof(BEATMAP_DOWNLOAD_REQUEST_PACKET);
+	constexpr const size_t size = sizeof(BEATMAP_DOWNLOAD_REQUEST_PACKET);
 
-	PACKET_TYPE wrap = BEATMAP_DOWNLOAD_REQUEST_TYPE;
-	const int wrapperSize = sizeof(PACKET_TYPE);
+	constexpr const PACKET_TYPE wrap = BEATMAP_DOWNLOAD_REQUEST_TYPE;
+	constexpr const int wrapperSize = sizeof(PACKET_TYPE);
 	char wrappedPacket[(wrapperSize + size)];
 	memcpy(&wrappedPacket, &wrap, wrapperSize);
 	memcpy((void*)(((char*)&wrappedPacket) + wrapperSize), &pp, size);
@@ -1154,10 +1156,10 @@ void OsuMultiplayer::onServerPlayStateChange(OsuMultiplayer::STATE state, unsign
 			pp.beatmapMD5Hash[i] = 0;
 	}
 	pp.beatmapId = (isBeatmapAndDiffValid ? beatmap->getID() : 0);
-	size_t size = sizeof(GAME_STATE_PACKET);
+	constexpr const size_t size = sizeof(GAME_STATE_PACKET);
 
-	PACKET_TYPE wrap = STATE_TYPE;
-	const int wrapperSize = sizeof(PACKET_TYPE);
+	constexpr const PACKET_TYPE wrap = STATE_TYPE;
+	constexpr const int wrapperSize = sizeof(PACKET_TYPE);
 	char wrappedPacket[(sizeof(PACKET_TYPE) + size)];
 	memcpy(&wrappedPacket, &wrap, wrapperSize);
 	memcpy((void*)(((char*)&wrappedPacket) + wrapperSize), &pp, size);
@@ -1187,10 +1189,10 @@ void OsuMultiplayer::setBeatmap(std::string md5hash)
 		pp.beatmapMD5Hash[i] = md5hash[i];
 	}
 	pp.beatmapId = /*beatmap->getSelectedDifficulty()->beatmapId*/0;
-	size_t size = sizeof(GAME_STATE_PACKET);
+	constexpr const size_t size = sizeof(GAME_STATE_PACKET);
 
-	PACKET_TYPE wrap = STATE_TYPE;
-	const int wrapperSize = sizeof(PACKET_TYPE);
+	constexpr const PACKET_TYPE wrap = STATE_TYPE;
+	constexpr const int wrapperSize = sizeof(PACKET_TYPE);
 	char wrappedPacket[(sizeof(PACKET_TYPE) + size)];
 	memcpy(&wrappedPacket, &wrap, wrapperSize);
 	memcpy((void*)(((char*)&wrappedPacket) + wrapperSize), &pp, size);
@@ -1275,10 +1277,10 @@ void OsuMultiplayer::onClientCommandInt(UString string, bool executeLocallyToo)
 		pp.str[i] = string[i];
 	}
 	pp.str[2047] = '\0';
-	size_t size = sizeof(CONVAR_PACKET);
+	constexpr const size_t size = sizeof(CONVAR_PACKET);
 
-	PACKET_TYPE wrap = CONVAR_TYPE;
-	const int wrapperSize = sizeof(PACKET_TYPE);
+	constexpr const PACKET_TYPE wrap = CONVAR_TYPE;
+	constexpr const int wrapperSize = sizeof(PACKET_TYPE);
 	char wrappedPacket[(sizeof(PACKET_TYPE) + size)];
 	memcpy(&wrappedPacket, &wrap, wrapperSize);
 	memcpy((void*)(((char*)&wrappedPacket) + wrapperSize), &pp, size);

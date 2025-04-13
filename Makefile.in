@@ -676,6 +676,7 @@ LIBS = @LIBS@
 LN_S = @LN_S@
 LTLIBOBJS = @LTLIBOBJS@
 MAKEINFO = @MAKEINFO@
+MCOSU_CXXFLAGS = @MCOSU_CXXFLAGS@
 MIMALLOC_PREFIX = @MIMALLOC_PREFIX@
 MIMALLOC_VERSION = @MIMALLOC_VERSION@
 MKDIR_P = @MKDIR_P@
@@ -983,6 +984,7 @@ BUILT_SOURCES := $(DEPS_PREFIX)/mimalloc.built $(DEPS_PREFIX)/SDL3.built $(DEPS_
 # FIXME: just fixme
 MCOSU_NG_INCLUDE_FLAGS := $(shell find $(srcdir)/src -not -path '*/.*' -type d -printf "-I%p ")
 McOsu_ng_CXXFLAGS := \
+	$(MCOSU_CXXFLAGS) \
 	$(MCOSU_NG_INCLUDE_FLAGS) \
 	-I$(srcdir)/$(BUNDLED_BASS_DIR)/include \
     -I$(srcdir)/$(BUNDLED_BASS_FX_DIR)/include \
@@ -5710,7 +5712,7 @@ $(DEPS_CACHE)/FREETYPE2-$(FREETYPE2_VERSION).source:
 $(McOsu_ng_OBJECTS): src/config.h $(BUILT_SOURCES)
 
 compile_commands.json: clean
-	$(BEAR) --version || { echo bear is unavailable to generate a compile_commands.json, install bear && exit 1; }
+	@$(BEAR) --version || { echo bear is unavailable to generate a compile_commands.json, install bear && exit 1; }
 	$(BEAR) --append -- $(MAKE) $(AM_MAKEFLAGS) all-am
 
 $(abs_top_srcdir)/.clangd: compile_commands.json

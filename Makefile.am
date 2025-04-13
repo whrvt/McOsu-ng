@@ -290,6 +290,7 @@ $(McOsu_ng_OBJECTS): src/config.h $(BUILT_SOURCES)
 MCOSU_NG_INCLUDE_FLAGS := $(shell find $(srcdir)/src -not -path '*/.*' -type d -printf "-I%p ")
 
 McOsu_ng_CXXFLAGS := \
+	$(MCOSU_CXXFLAGS) \
 	$(MCOSU_NG_INCLUDE_FLAGS) \
 	-I$(srcdir)/$(BUNDLED_BASS_DIR)/include \
     -I$(srcdir)/$(BUNDLED_BASS_FX_DIR)/include \
@@ -325,7 +326,7 @@ McOsu_ng_LDFLAGS := \
 	-lpthread
 
 compile_commands.json: clean
-	$(BEAR) --version || { echo bear is unavailable to generate a compile_commands.json, install bear && exit 1; }
+	@$(BEAR) --version || { echo bear is unavailable to generate a compile_commands.json, install bear && exit 1; }
 	$(BEAR) --append -- $(MAKE) $(AM_MAKEFLAGS) all-am
 
 $(abs_top_srcdir)/.clangd: compile_commands.json

@@ -51,6 +51,17 @@
 
 #include <memory.h> // to allow <,> comparisons
 
+static_assert(true); // clangd?
+
+#ifdef __clang__
+#pragma GCC diagnostic ignored "-Wreorder-ctor"
+#pragma GCC diagnostic ignored "-Wunused-local-typedef"
+#else
+#pragma GCC diagnostic ignored "-Wreorder"
+#pragma GCC diagnostic ignored "-Wunused-local-typedefs"
+#endif
+#pragma GCC diagnostic push
+
 ////////////////////////////////////////////////////////////////////////////////
 //						Configuration options
 //
@@ -2101,6 +2112,8 @@ FastDelegate8<Param1, Param2, Param3, Param4, Param5, Param6, Param7, Param8, FA
 #undef FASTDLGT_RETTYPE
 
 } // namespace fastdelegate
+
+#pragma GCC diagnostic pop
 
 #endif // !defined(FASTDELEGATE_H)
 

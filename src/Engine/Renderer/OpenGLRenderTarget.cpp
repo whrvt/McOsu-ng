@@ -45,6 +45,8 @@ void OpenGLRenderTarget::init()
 	int numMultiSamples = 2;
 	switch (m_multiSampleType)
 	{
+	case Graphics::MULTISAMPLE_TYPE::MULTISAMPLE_0X: // spec: i guess 0x isn't desirable? seems like it's handled in "if (isMultiSampled())"
+		break;
 	case Graphics::MULTISAMPLE_TYPE::MULTISAMPLE_2X:
 		numMultiSamples = 2;
 		break;

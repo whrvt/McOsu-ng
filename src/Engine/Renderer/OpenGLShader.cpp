@@ -349,12 +349,12 @@ int OpenGLShader::createShaderFromFile(UString fileName, int shaderType)
 	}
 	std::string line;
 	std::string shaderSource;
-	int linecount = 0;
+	//int linecount = 0;
 	while (inFile.good())
 	{
 		std::getline(inFile, line);
 		shaderSource += line + "\n\0";
-		linecount++;
+		//linecount++;
 	}
 	shaderSource += "\n\0";
 	inFile.close();

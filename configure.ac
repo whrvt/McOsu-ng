@@ -76,6 +76,7 @@ AS_IF([test "x$enable_clang" = "xyes"], [
 ],[
     AC_PROG_CC
     AC_PROG_CXX
+    CXXFLAGS="$CXXFLAGS -Wno-sign-compare"
 ])
 
 # use c/c++17 because we can
@@ -144,11 +145,13 @@ AS_IF([test "x$enable_lto" != "xno"], [
     ])
 ])
 
-WARN_FLAGS="-Wall -Wno-sign-compare -Wno-unused-local-typedefs -Wno-switch"
-COMMON_FLAGS="-mcmodel=small -ffunction-sections -fdata-sections -fwrapv -fno-strict-aliasing -fno-semantic-interposition -fmessage-length=0"
-CXXFLAGS="$CXXFLAGS $WARN_FLAGS $COMMON_FLAGS -Wno-reorder"
-CFLAGS="$CFLAGS $WARN_FLAGS $COMMON_FLAGS"
+COMMON_FLAGS="-mcmodel=small -ffunction-sections -fdata-sections -fwrapv -fno-strict-aliasing -fno-semantic-interposition"
+CXXFLAGS="$CXXFLAGS $COMMON_FLAGS"
+CFLAGS="$CFLAGS $COMMON_FLAGS"
 LDFLAGS="$LDFLAGS -static-libstdc++ -static-libgcc"
+
+MCOSU_CXXFLAGS="-Wall"
+AC_SUBST([MCOSU_CXXFLAGS])
 
 AC_DEFUN([PKG_CHECK_AUTO], [
     AS_IF([test "x$enable_static" = "xyes"],

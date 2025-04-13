@@ -711,6 +711,7 @@ X11_LIBS
 X11_CFLAGS
 DEPS_CACHE
 DEPS_PREFIX
+MCOSU_CXXFLAGS
 ENABLE_DEBUG
 CXX_NOCCACHE
 CC_NOCCACHE
@@ -8168,6 +8169,7 @@ else
 fi
 
 
+    CXXFLAGS="$CXXFLAGS -Wno-sign-compare"
  ;;
 esac
 fi
@@ -8572,11 +8574,13 @@ fi
 
 fi
 
-WARN_FLAGS="-Wall -Wno-sign-compare -Wno-unused-local-typedefs -Wno-switch"
-COMMON_FLAGS="-mcmodel=small -ffunction-sections -fdata-sections -fwrapv -fno-strict-aliasing -fno-semantic-interposition -fmessage-length=0"
-CXXFLAGS="$CXXFLAGS $WARN_FLAGS $COMMON_FLAGS -Wno-reorder"
-CFLAGS="$CFLAGS $WARN_FLAGS $COMMON_FLAGS"
+COMMON_FLAGS="-mcmodel=small -ffunction-sections -fdata-sections -fwrapv -fno-strict-aliasing -fno-semantic-interposition"
+CXXFLAGS="$CXXFLAGS $COMMON_FLAGS"
+CFLAGS="$CFLAGS $COMMON_FLAGS"
 LDFLAGS="$LDFLAGS -static-libstdc++ -static-libgcc"
+
+MCOSU_CXXFLAGS="-Wall"
+
 
 
 

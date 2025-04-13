@@ -327,7 +327,7 @@ void OsuUpdateHandler::_installUpdate(UString zipFilePath)
 	m_status = STATUS::STATUS_INSTALLING_UPDATE;
 
 	// setting the status in every error check return is retarded
-
+/*
 	if (!env->fileExists(zipFilePath))
 	{
 		debugLog("OsuUpdateHandler::installUpdate() error, \"%s\" does not exist!\n", zipFilePath.toUtf8());
@@ -345,7 +345,6 @@ void OsuUpdateHandler::_installUpdate(UString zipFilePath)
 	}
 	const char *content = f.readFile();
 
-	/*
 	// initialize zip
 	mz_zip_archive zip_archive;
 	memset(&zip_archive, 0, sizeof(zip_archive));

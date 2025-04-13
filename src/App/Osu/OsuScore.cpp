@@ -171,6 +171,8 @@ void OsuScore::addHitResult(OsuBeatmap *beatmap, OsuHitObject *hitObject, HIT hi
 			m_iNum300s++;
 			hitValue = 300;
 			break;
+		default:
+			break;
 		}
 	}
 
@@ -365,6 +367,8 @@ void OsuScore::addHitResultComboEnd(OsuScore::HIT hit)
 	case OsuScore::HIT::HIT_300G:
 		m_iNum300gs++;
 		break;
+	default:
+		break;
 	}
 }
 
@@ -447,6 +451,8 @@ double OsuScore::getHealthIncrease(OsuScore::HIT hit, double HP, double hpMultip
 
 		case OsuScore::HIT::HIT_MISS_SLIDERBREAK:
 			return osu_drain_vr_sliderbreak.getFloat() * osu_drain_vr_multiplier.getFloat();
+		default:
+			break;
 		}
 	}
 	else if (drainType == 2) // osu!stable
@@ -495,6 +501,8 @@ double OsuScore::getHealthIncrease(OsuScore::HIT hit, double HP, double hpMultip
 
 		case OsuScore::HIT::HIT_SPINNERBONUS:
 			return (hpMultiplierNormal * 2.0 / hpBarMaximumForNormalization);
+		default:
+			break;
 		}
 	}
 	else if (drainType == 3) // osu!lazer 2020
@@ -515,6 +523,8 @@ double OsuScore::getHealthIncrease(OsuScore::HIT hit, double HP, double hpMultip
 		case HIT::HIT_SLIDER10:
 		case HIT::HIT_SLIDER30:
 			return osu_drain_lazer_300.getFloat() * osu_drain_lazer_multiplier.getFloat();
+		default:
+			break;
 		}
 	}
 	else if (drainType == 4) // osu!lazer 2018
@@ -535,6 +545,8 @@ double OsuScore::getHealthIncrease(OsuScore::HIT hit, double HP, double hpMultip
 		case HIT::HIT_SLIDER10:
 		case HIT::HIT_SLIDER30:
 			return (10.2 - std::min(HP, 10.0)) * osu_drain_lazer_2018_300.getFloat() * osu_drain_lazer_2018_multiplier.getFloat();
+		default:
+			break;
 		}
 	}
 

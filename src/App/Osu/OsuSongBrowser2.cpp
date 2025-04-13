@@ -782,7 +782,7 @@ void OsuSongBrowser2::draw(Graphics *g)
 			double highestSpeedStrain = 0.0;
 			double highestStrain = 0.0;
 			int highestStrainIndex = -1;
-			double averageStrain = 0.0;
+			// double averageStrain = 0.0; DEBUG
 			for (int i=0; i<aimStrains.size(); i++)
 			{
 				const double aimStrain = aimStrains[i];
@@ -799,9 +799,9 @@ void OsuSongBrowser2::draw(Graphics *g)
 				if (speedStrain > highestSpeedStrain)
 					highestSpeedStrain = speedStrain;
 
-				averageStrain += strain;
+				// averageStrain += strain;
 			}
-			averageStrain /= (double)aimStrains.size();
+			// averageStrain /= (double)aimStrains.size();
 
 			// draw strain bar graph
 			if (highestAimStrain > 0.0 && highestSpeedStrain > 0.0 && highestStrain > 0.0)
@@ -3431,6 +3431,8 @@ void OsuSongBrowser2::rebuildSongButtonsAndVisibleSongButtonsWithSearchMatchSupp
 					break;
 				case GROUP::GROUP_COLLECTIONS:
 					groupButtons = &m_collectionButtons;
+					break;
+				default:
 					break;
 				}
 			}
