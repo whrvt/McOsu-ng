@@ -58,8 +58,12 @@ AC_ARG_ENABLE([static],
 PKG_PROG_PKG_CONFIG
 
 AS_IF([test "x$enable_static" = "xyes"], [
-    PKG_CONFIG="$PKG_CONFIG --static"
+    PKGTYPE="--static"
 ])
+PKG_CONFIG="$PKG_CONFIG ${PKGTYPE:-}"
+
+AC_SUBST([PKGTYPE])
+AC_SUBST([PKG_CONFIG])
 
 AC_CHECK_HEADERS([X11/Xlib.h GL/gl.h GL/glu.h], [],
     [AC_MSG_ERROR([Missing required X11/OpenGL development headers])])
@@ -192,23 +196,7 @@ AS_IF([test "x$enable_system_deps" != "xno"], [
     PKG_CHECK_AUTO([FREETYPE2], [freetype2 >= $FREETYPE2_MIN_VERSION], [have_freetype2=yes], [have_freetype2=no])
 ])
 
-AS_IF([test "x$have_sdl3" != "xyes"], [
-    have_sdl3="build from source"
-	cat >build/bool.patch <<'EOF'
-diff --git a/src/render/vulkan/SDL_render_vulkan.c b/src/render/vulkan/SDL_render_vulkan.c
---- a/src/render/vulkan/SDL_render_vulkan.c
-+++ b/src/render/vulkan/SDL_render_vulkan.c
-@@ -3738,7 +3738,7 @@ static VkSampler VULKAN_GetSampler(VULKAN_RenderData *data, SDL_ScaleMode scale_
-         VkResult result = vkCreateSampler(data->device, &samplerCreateInfo, NULL, &data->samplers[key]);
-         if (result != VK_SUCCESS) {
-             SET_ERROR_CODE("vkCreateSampler()", result);
--            return false;
-+            return VK_NULL_HANDLE;
-         }
-     }
-     return data->samplers[key];
-EOF
-])
+AS_IF([test "x$have_sdl3" != "xyes"], [have_sdl3="build from source"])
 SDL3_VERSION=$SDL3_BUILD_VERSION
 SDL3_PREFIX="${DEPS_PREFIX}"
 SDL3_STATIC=$enable_static
@@ -218,10 +206,8 @@ AC_SUBST([SDL3_STATIC])
 
 AS_IF([test "x$have_glew" != "xyes"], [have_glew="build from source"])
 GLEW_VERSION=$GLEW_BUILD_VERSION
-GLEW_SYSTEM=linux
 GLEW_PREFIX="${DEPS_PREFIX}"
 AC_SUBST([GLEW_VERSION])
-AC_SUBST([GLEW_SYSTEM])
 AC_SUBST([GLEW_PREFIX])
 
 AS_IF([test "x$have_libjpeg" != "xyes"], [

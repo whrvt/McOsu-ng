@@ -679,7 +679,6 @@ LIBJPEG_PREFIX
 LIBJPEG_VERSION
 NASM
 GLEW_PREFIX
-GLEW_SYSTEM
 GLEW_VERSION
 SDL3_STATIC
 SDL3_PREFIX
@@ -723,6 +722,7 @@ CXXDEPMODE
 ac_ct_CXX
 CXXFLAGS
 CXX
+PKGTYPE
 PKG_CONFIG_LIBDIR
 PKG_CONFIG_PATH
 PKG_CONFIG
@@ -5536,9 +5536,13 @@ fi
 if test "x$enable_static" = "xyes"
 then :
 
-    PKG_CONFIG="$PKG_CONFIG --static"
+    PKGTYPE="--static"
 
 fi
+PKG_CONFIG="$PKG_CONFIG ${PKGTYPE:-}"
+
+
+
 
        for ac_header in X11/Xlib.h GL/gl.h GL/glu.h
 do :
@@ -10436,23 +10440,7 @@ fi
 
 if test "x$have_sdl3" != "xyes"
 then :
-
-    have_sdl3="build from source"
-	cat >build/bool.patch <<'EOF'
-diff --git a/src/render/vulkan/SDL_render_vulkan.c b/src/render/vulkan/SDL_render_vulkan.c
---- a/src/render/vulkan/SDL_render_vulkan.c
-+++ b/src/render/vulkan/SDL_render_vulkan.c
-@@ -3738,7 +3738,7 @@ static VkSampler VULKAN_GetSampler(VULKAN_RenderData *data, SDL_ScaleMode scale_
-         VkResult result = vkCreateSampler(data->device, &samplerCreateInfo, NULL, &data->samplerskey);
-         if (result != VK_SUCCESS) {
-             SET_ERROR_CODE("vkCreateSampler()", result);
--            return false;
-+            return VK_NULL_HANDLE;
-         }
-     }
-     return data->samplerskey;
-EOF
-
+  have_sdl3="build from source"
 fi
 SDL3_VERSION=$SDL3_BUILD_VERSION
 SDL3_PREFIX="${DEPS_PREFIX}"
@@ -10466,9 +10454,7 @@ then :
   have_glew="build from source"
 fi
 GLEW_VERSION=$GLEW_BUILD_VERSION
-GLEW_SYSTEM=linux
 GLEW_PREFIX="${DEPS_PREFIX}"
-
 
 
 
