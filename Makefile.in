@@ -5763,7 +5763,7 @@ uninstall-local:
 	rm -rf "$(DESTDIR)$(bindir)/"
 
 # cleanup targets
-clean-local: uninstall-local
+clean-local:
 	rm -rf $(builddir)/build/obj
 	rm -f $(PROGRAMS)
 
