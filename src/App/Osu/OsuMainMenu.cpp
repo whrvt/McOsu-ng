@@ -1169,8 +1169,9 @@ void OsuMainMenu::draw(Graphics *g)
 		g->setAlpha((1.0f - m_fMainMenuAnimFriendPercent)*(1.0f - m_fMainMenuAnimFriendPercent)*(1.0f - m_fMainMenuAnimFriendPercent));
 		g->pushTransform();
 		{
-			g->scale(fontScale, fontScale);
-			g->translate(m_vCenter.x - m_fCenterOffsetAnim - (titleFont->getStringWidth(MCOSU_MAIN_BUTTON_BACK_TEXT)/2.0f)*fontScale, m_vCenter.y + ((titleFont->getHeight()*fontScale)/2.25f)*4.0f, -1.0f);
+			const float scaleTemp = fontScale * 0.75f;
+			g->scale(scaleTemp, scaleTemp);
+			g->translate(m_vCenter.x - m_fCenterOffsetAnim - (titleFont->getStringWidth(MCOSU_MAIN_BUTTON_BACK_TEXT)/2.0f)*scaleTemp, m_vCenter.y + ((titleFont->getHeight()*scaleTemp)/2.25f)*4.0f, -1.0f);
 			g->drawString(titleFont, MCOSU_MAIN_BUTTON_BACK_TEXT);
 		}
 		g->popTransform();

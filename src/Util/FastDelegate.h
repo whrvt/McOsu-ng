@@ -53,14 +53,17 @@
 
 static_assert(true); // clangd?
 
-#ifdef __clang__
+#if defined(__clang__) && !defined(_MSC_VER)
 #pragma GCC diagnostic ignored "-Wreorder-ctor"
 #pragma GCC diagnostic ignored "-Wunused-local-typedef"
-#else
+#elif defined(__GNUC__)
 #pragma GCC diagnostic ignored "-Wreorder"
 #pragma GCC diagnostic ignored "-Wunused-local-typedefs"
 #endif
+
+#ifdef __GNUC__
 #pragma GCC diagnostic push
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 //						Configuration options
@@ -2113,7 +2116,9 @@ FastDelegate8<Param1, Param2, Param3, Param4, Param5, Param6, Param7, Param8, FA
 
 } // namespace fastdelegate
 
+#ifdef __GNUC__
 #pragma GCC diagnostic pop
+#endif
 
 #endif // !defined(FASTDELEGATE_H)
 
