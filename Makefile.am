@@ -15,15 +15,13 @@ CLEANFILES = \
 	*~ \
 	*.bak
 
-PKGTYPE = $(if $(SDL3_STATIC),--static,)
-
 $(DEPS_CACHE)/mimalloc-$(MIMALLOC_VERSION).source:
 	$(MKDIR_P) $(DEPS_CACHE)
 	$(WGET) -qO $(DEPS_CACHE)/mimalloc-$(MIMALLOC_VERSION).tar.gz "https://github.com/microsoft/mimalloc/archive/refs/tags/v$(MIMALLOC_VERSION).tar.gz" && \
 	touch $@
 
 if BUILD_MIMALLOC
-MIMALLOC_LIBS = $(DEPS_PREFIX)/lib/mimalloc.o
+MIMALLOC_LIBS = $(DEPS_PREFIX)/lib/mimalloc$(if $(ENABLE_DEBUG),-debug,).o
 $(DEPS_PREFIX)/mimalloc.built: $(DEPS_CACHE)/mimalloc-$(MIMALLOC_VERSION).source
 	rm -rf $(DEPS_PREFIX)/mimalloc
 	$(MKDIR_P) $(DEPS_PREFIX)/mimalloc && \
@@ -66,10 +64,10 @@ $(DEPS_PREFIX)/SDL3.built: $(DEPS_PREFIX)/FREETYPE2.built $(DEPS_CACHE)/SDL3.sou
 	$(MKDIR_P) $(DEPS_PREFIX) $(DEPS_PREFIX)/lib/pkgconfig
 	$(GIT) clone $(DEPS_CACHE)/SDL3 $(DEPS_PREFIX)/SDL3 && \
 	$(GIT) -C $(DEPS_PREFIX)/SDL3 remote set-url origin https://github.com/libsdl-org/SDL.git && \
-	$(GIT) -C $(DEPS_PREFIX)/SDL3 pull && \
+	$(GIT) -C $(DEPS_PREFIX)/SDL3 pull && $(GIT) -C $(DEPS_PREFIX)/SDL3 checkout release-3.2.10 && \
 	$(MKDIR_P) $(DEPS_PREFIX)/SDL3/build
 	cd $(DEPS_PREFIX)/SDL3 && \
-	patch -Np1<../../bool.patch && \
+	patch -Np1<$(abs_top_srcdir)/build/aux/sdl-c23bool.patch && \
 	PKG_CONFIG_PATH="$(DEPS_PREFIX)/lib/pkgconfig:$(DEPS_PREFIX)/lib64/pkgconfig:$(PKG_CONFIG_PATH)" \
 	LDFLAGS="$(LDFLAGS)" cmake -S . -B build -G Ninja \
 		-D CMAKE_BUILD_TYPE="$(if $(ENABLE_DEBUG),Debug,Release)" \
@@ -105,15 +103,16 @@ $(DEPS_PREFIX)/GLEW.built: $(DEPS_CACHE)/GLEW-$(GLEW_VERSION).source
 	$(MKDIR_P) $(DEPS_PREFIX)/GLEW $(DEPS_PREFIX)/lib/pkgconfig $(DEPS_PREFIX)/lib64/pkgconfig
 	$(TAR) xf $(DEPS_CACHE)/glew-$(GLEW_VERSION).tgz -C $(DEPS_PREFIX)/GLEW --strip-components=1 && \
 	cd $(DEPS_PREFIX)/GLEW && \
-		$(MAKE) SYSTEM=$(GLEW_SYSTEM) GLEW_DEST="$(DEPS_PREFIX)" \
-		CC="$(CC)" CXX="$(CXX)" LD="$(CC)" \
-		CFLAGS.EXTRA="$(CFLAGS) -fPIC -Wno-strict-prototypes" \
-		LDFLAGS.EXTRA="$(LDFLAGS) -lX11" \
-		$(if $(SDL3_STATIC),GLEW_STATIC=1,)
+		patch -Np1<$(abs_top_srcdir)/build/aux/glew-install.patch && \
+		patch -Np1<$(abs_top_srcdir)/build/aux/egl+glx.patch && \
+		$(SED) -i 's|lib64|lib|' config/Makefile.linux && \
+  		$(SED) -i '/^.PHONY: .*\.pc$$/d' Makefile && \
+		$(MAKE) SYSTEM=linux-egl GLEW_DEST="$(DEPS_PREFIX)" \
+		STRIP= CC="$(CC)" CXX="$(CXX)" LD="$(CC)" \
+		$(if $(SDL3_STATIC),glew.lib.static,glew.lib.shared)
 	cd $(DEPS_PREFIX)/GLEW && \
-		$(MAKE) SYSTEM=$(GLEW_SYSTEM) GLEW_DEST="$(DEPS_PREFIX)" \
-		CC="$(CC)" CXX="$(CXX)" LD="$(CC)" \
-		$(if $(SDL3_STATIC),GLEW_STATIC=1,) \
+		$(MAKE) SYSTEM=linux-egl GLEW_DEST="$(DEPS_PREFIX)" \
+		STRIP= CC="$(CC)" CXX="$(CXX)" LD="$(CC)" \
 		install
 	$(MKDIR_P) "$(DEPS_PREFIX)/lib/pkgconfig"
 	( echo 'prefix=$(DEPS_PREFIX)'; \
@@ -125,7 +124,8 @@ $(DEPS_PREFIX)/GLEW.built: $(DEPS_CACHE)/GLEW-$(GLEW_VERSION).source
 	  echo 'Description: The OpenGL Extension Wrangler library'; \
 	  echo 'Version: $(GLEW_VERSION)'; \
 	  echo 'Cflags: -I$${includedir}'; \
-	  echo 'Libs: -L$${libdir} $(if $(SDL3_STATIC),-l:libGLEW.a,-lGLEW) -lEGL -lGL -lGLU -lOpenGL' ) > "$(DEPS_PREFIX)/lib/pkgconfig/glew.pc"
+	  echo 'Libs: -L$${libdir} $(if $(SDL3_STATIC),-l:libGLEW.a,-lGLEW) -lEGL -lGL'; \
+	  echo 'Requires: glu' ) > "$(DEPS_PREFIX)/lib/pkgconfig/glew.pc"
 	PKG_CONFIG_PATH="$(DEPS_PREFIX)/lib/pkgconfig:$(DEPS_PREFIX)/lib64/pkgconfig:$(PKG_CONFIG_PATH)" \
 		$(PKG_CONFIG) --exists --print-errors glew
 	touch $@
@@ -173,13 +173,13 @@ $(DEPS_CACHE)/libpng-$(LIBPNG_VERSION).source:
 if BUILD_LIBPNG
 LIBPNG_CFLAGS += $(shell PKG_CONFIG_PATH="$(DEPS_PREFIX)/lib/pkgconfig:$(DEPS_PREFIX)/lib64/pkgconfig" pkg-config $(PKGTYPE) --cflags libpng)
 LIBPNG_LIBS += $(shell PKG_CONFIG_PATH="$(DEPS_PREFIX)/lib/pkgconfig:$(DEPS_PREFIX)/lib64/pkgconfig" pkg-config $(PKGTYPE) --libs libpng)
-$(DEPS_PREFIX)/libpng.built: $(DEPS_CACHE)/libpng-$(LIBPNG_VERSION).source
+$(DEPS_PREFIX)/libpng.built: $(DEPS_PREFIX)/zlib.built $(DEPS_CACHE)/libpng-$(LIBPNG_VERSION).source
 	rm -rf $(DEPS_PREFIX)/libpng
 	$(MKDIR_P) $(DEPS_PREFIX)/libpng/build $(DEPS_PREFIX)/lib/pkgconfig
 	$(TAR) xf $(DEPS_CACHE)/libpng-$(LIBPNG_VERSION).tar.gz -C $(DEPS_PREFIX)/libpng --strip-components=1 && \
 	cd $(DEPS_PREFIX)/libpng && PKG_CONFIG_PATH="$(DEPS_PREFIX)/lib/pkgconfig:$(DEPS_PREFIX)/lib64/pkgconfig:$(PKG_CONFIG_PATH)" \
 		./configure --prefix="$(DEPS_PREFIX)" \
-		$(if $(SDL3_STATIC),--enable-static --enable-shared,--enable-shared --disable-static) \
+		$(if $(SDL3_STATIC),--enable-static --disable-shared,--enable-shared --disable-static) \
 		CC="$(CC)" CXX="$(CXX)" LD="$(LD)" CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS)" && \
 	$(MAKE) && \
 	$(MAKE) install
@@ -267,8 +267,8 @@ $(DEPS_PREFIX)/FREETYPE2.built: $(DEPS_PREFIX)/libpng.built $(DEPS_PREFIX)/bzip2
 	$(MKDIR_P) $(DEPS_PREFIX)/FREETYPE2/build $(DEPS_PREFIX)/lib/pkgconfig
 	$(TAR) xf $(DEPS_CACHE)/freetype-$(FREETYPE2_VERSION).tar.gz -C $(DEPS_PREFIX)/FREETYPE2 --strip-components=1 && \
 	cd $(DEPS_PREFIX)/FREETYPE2 && PKG_CONFIG_PATH="$(DEPS_PREFIX)/lib/pkgconfig:$(DEPS_PREFIX)/lib64/pkgconfig:$(PKG_CONFIG_PATH)" \
-		./configure --prefix="$(DEPS_PREFIX)" \
-		$(if $(SDL3_STATIC),--enable-static --enable-shared,--enable-shared --disable-static) \
+		./configure --prefix="$(DEPS_PREFIX)" --with-harfbuzz=no --with-brotli=no \
+		$(if $(SDL3_STATIC),--enable-static --disable-shared,--enable-shared --disable-static) \
 		CC="$(CC)" CXX="$(CXX)" LD="$(LD)" CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS)" && \
 	$(MAKE) && \
 	$(MAKE) install
@@ -280,9 +280,11 @@ $(DEPS_PREFIX)/FREETYPE2.built:
 	$(MKDIR_P) $(DEPS_PREFIX) && touch $@
 endif
 
-# making sure deps are built before main compile (continued)
-$(McOsu_ng_OBJECTS): $(DEPS_PREFIX)/mimalloc.built $(DEPS_PREFIX)/SDL3.built $(DEPS_PREFIX)/GLEW.built $(DEPS_PREFIX)/libjpeg.built \
+BUILT_SOURCES := $(DEPS_PREFIX)/mimalloc.built $(DEPS_PREFIX)/SDL3.built $(DEPS_PREFIX)/GLEW.built $(DEPS_PREFIX)/libjpeg.built \
 	$(DEPS_PREFIX)/libpng.built $(DEPS_PREFIX)/bzip2.built $(DEPS_PREFIX)/zlib.built $(DEPS_PREFIX)/FREETYPE2.built
+
+# making sure deps are built before main compile (continued)
+$(McOsu_ng_OBJECTS): $(BUILT_SOURCES)
 
 # FIXME: just fixme
 MCOSU_NG_INCLUDE_FLAGS := $(shell find $(srcdir)/src -not -path '*/.*' -type d -printf "-I%p ")
@@ -344,8 +346,7 @@ if BUILD_SDL3
 	$(if $(SDL3_STATIC),,@cp -P "$(SDL3_PREFIX)/lib"/libSDL3*.so* "$(DESTDIR)$(bindir)/lib/")
 endif
 if BUILD_GLEW
-	$(if $(SDL3_STATIC),,@libdir=$(GLEW_PREFIX)/`test -d "$(GLEW_PREFIX)/lib64" && echo "lib64" || echo "lib"`; \
-	cp -P "$$libdir"/libGLEW*.so* "$(DESTDIR)$(bindir)/lib/")
+	$(if $(SDL3_STATIC),,@cp -P "$(GLEW_PREFIX)/lib"/libGLEW*.so* "$(DESTDIR)$(bindir)/lib/")
 endif
 if BUILD_LIBJPEG
 	$(if $(SDL3_STATIC),,@@libdir=$(LIBJPEG_PREFIX)/`test -d "$(LIBJPEG_PREFIX)/lib64" && echo "lib64" || echo "lib"`; \
@@ -361,10 +362,8 @@ if BUILD_ZLIB
 	$(if $(SDL3_STATIC),,@cp -P "$(ZLIB_PREFIX)/lib"/libz*.so* "$(DESTDIR)$(bindir)/lib/")
 endif
 if BUILD_FREETYPE2
-	@cp -P "$(FREETYPE2_PREFIX)/lib"/libfreetype*.so* "$(DESTDIR)$(bindir)/lib/"
+	$(if $(SDL3_STATIC),,@cp -P "$(FREETYPE2_PREFIX)/lib"/libfreetype*.so* "$(DESTDIR)$(bindir)/lib/")
 endif
-# FIXME: need transitive deps (libbrotlidec, libbrotlicommon, libharfbuzz, etc)
-#	$(if $(SDL3_STATIC),,@cp -P "$(FREETYPE2_PREFIX)/lib"/libfreetype*.so* "$(DESTDIR)$(bindir)/lib/")
 
 # install hooks
 install-exec-hook: install-libs
@@ -372,11 +371,11 @@ install-exec-hook: install-libs
 	$(LN_S) -rf $(PROGRAMS) McEngine && \
 	$(LN_S) -rf $(PROGRAMS) McOsu
 
-uninstall-hook:
+uninstall-local:
 	rm -rf "$(DESTDIR)$(bindir)/"
 
 # cleanup targets
-clean-local:
+clean-local: uninstall-local
 	rm -rf $(builddir)/build/obj
 	rm -f $(PROGRAMS)
 

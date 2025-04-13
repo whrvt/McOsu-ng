@@ -12,10 +12,10 @@
 .libs/
 /build/cache/
 /build/deps/
-/build/*patch
 dist/
 dist-*/
 debug/
+release/
 
 Makefile
 McOsu-ng

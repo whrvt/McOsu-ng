@@ -58,8 +58,12 @@ AC_ARG_ENABLE([static],
 PKG_PROG_PKG_CONFIG
 
 AS_IF([test "x$enable_static" = "xyes"], [
-    PKG_CONFIG="$PKG_CONFIG --static"
+    PKGTYPE="--static"
 ])
+PKG_CONFIG="$PKG_CONFIG ${PKGTYPE:-}"
+
+AC_SUBST([PKGTYPE])
+AC_SUBST([PKG_CONFIG])
 
 AC_CHECK_HEADERS([X11/Xlib.h GL/gl.h GL/glu.h], [],
     [AC_MSG_ERROR([Missing required X11/OpenGL development headers])])
@@ -80,14 +84,14 @@ AC_LANG_PUSH(C++)
 AX_CHECK_COMPILE_FLAG([-std=gnu++23], [
     CXXFLAGS="$CXXFLAGS -std=gnu++23"
 ], [
-    AC_MSG_NOTICE([Compiler does not support gnu++23])
+    AC_MSG_ERROR([Compiler does not support gnu++23])
 ])
 
 AC_LANG([C])
 AX_CHECK_COMPILE_FLAG([-std=gnu23], [
     CFLAGS="$CFLAGS -std=gnu23"
 ], [
-    AC_MSG_NOTICE([Compiler does not support gnu23])
+    AC_MSG_ERROR([Compiler does not support gnu23])
 ])
 
 AC_LANG_POP
@@ -163,7 +167,7 @@ PKG_CHECK_AUTO([GL], [gl], [have_gl=yes], [have_gl=no])
 PKG_CHECK_AUTO([GLU], [glu], [have_glu=yes], [have_glu=no])
 PKG_CHECK_AUTO([EGL], [egl], [have_egl=yes], [have_egl=no])  # FIXME: transitive GLEW dep
 
-SDL3_MIN_VERSION=3.1.8
+SDL3_MIN_VERSION=3.2.0
 SDL3_BUILD_VERSION=3.99.99 # git
 GLEW_MIN_VERSION=2.2.0
 GLEW_BUILD_VERSION=2.2.0
@@ -192,23 +196,7 @@ AS_IF([test "x$enable_system_deps" != "xno"], [
     PKG_CHECK_AUTO([FREETYPE2], [freetype2 >= $FREETYPE2_MIN_VERSION], [have_freetype2=yes], [have_freetype2=no])
 ])
 
-AS_IF([test "x$have_sdl3" != "xyes"], [
-    have_sdl3="build from source"
-	cat >build/bool.patch <<'EOF'
-diff --git a/src/render/vulkan/SDL_render_vulkan.c b/src/render/vulkan/SDL_render_vulkan.c
---- a/src/render/vulkan/SDL_render_vulkan.c
-+++ b/src/render/vulkan/SDL_render_vulkan.c
-@@ -3738,7 +3738,7 @@ static VkSampler VULKAN_GetSampler(VULKAN_RenderData *data, SDL_ScaleMode scale_
-         VkResult result = vkCreateSampler(data->device, &samplerCreateInfo, NULL, &data->samplers[key]);
-         if (result != VK_SUCCESS) {
-             SET_ERROR_CODE("vkCreateSampler()", result);
--            return false;
-+            return VK_NULL_HANDLE;
-         }
-     }
-     return data->samplers[key];
-EOF
-])
+AS_IF([test "x$have_sdl3" != "xyes"], [have_sdl3="build from source"])
 SDL3_VERSION=$SDL3_BUILD_VERSION
 SDL3_PREFIX="${DEPS_PREFIX}"
 SDL3_STATIC=$enable_static
@@ -218,10 +206,8 @@ AC_SUBST([SDL3_STATIC])
 
 AS_IF([test "x$have_glew" != "xyes"], [have_glew="build from source"])
 GLEW_VERSION=$GLEW_BUILD_VERSION
-GLEW_SYSTEM=linux
 GLEW_PREFIX="${DEPS_PREFIX}"
 AC_SUBST([GLEW_VERSION])
-AC_SUBST([GLEW_SYSTEM])
 AC_SUBST([GLEW_PREFIX])
 
 AS_IF([test "x$have_libjpeg" != "xyes"], [
