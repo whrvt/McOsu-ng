@@ -22,7 +22,7 @@ public:
 	virtual void draw3D(Graphics *g);
 	virtual void update(long curPos);
 
-	virtual bool isSpinner() {return true;}
+	virtual bool constexpr forceinline isSpinner() const {return true;}
 
 	void updateStackPosition(float stackOffset) {;}
 	void miss(long curPos) {;}

@@ -15,11 +15,6 @@
 #define MCENGINE_FEATURE_MULTITHREADING
 
 /*
- * pthread support
- */
-#define MCENGINE_FEATURE_PTHREADS
-
-/*
  * OpenGL graphics (Desktop, legacy + modern)
  */
 #define MCENGINE_FEATURE_OPENGL

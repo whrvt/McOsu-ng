@@ -11,6 +11,13 @@
 
 #include "Resource.h"
 #include "SoundEngine.h"
+
+#if defined(_GNU_SOURCE) && defined(__linux__) && defined(MCENGINE_FEATURE_SOUND)
+#include <dlfcn.h>
+#else
+#define DL_CALL_FCT(fctp, args) ((*(fctp)) args)
+#endif
+
 class SoundEngine;
 
 class Sound : public Resource
@@ -93,7 +100,7 @@ private:
 	void *m_mixChunkOrMixMusic;
 	unsigned long m_iPrevPosition;
 #if defined(MCENGINE_FEATURE_SOUND)
-    inline unsigned int _BASS_FX_TempoCreate(unsigned int chan, unsigned int flags) const {return SoundEngine::m_BASS_FX_TempoCreate(chan, flags);}
+    inline unsigned int _BASS_FX_TempoCreate(unsigned int chan, unsigned int flags) const {return DL_CALL_FCT((SoundEngine::m_BASS_FX_TempoCreate), (chan, flags));}
 #endif
 };
 

@@ -11,36 +11,37 @@
 
 #include "HorizonThread.h"
 
-#ifdef MCENGINE_FEATURE_MULTITHREADING
+#if defined(MCENGINE_FEATURE_MULTITHREADING) && !defined(__SWITCH__)
+#include <thread>
 
-#ifdef MCENGINE_FEATURE_PTHREADS
-
-#include <pthread.h>
-
-// pthread implementation of Thread
-class PosixThread : public BaseThread
+// std::thread implementation of Thread
+class StdThread : public BaseThread
 {
 public:
-	PosixThread(McThread::START_ROUTINE start_routine, void *arg) : BaseThread()
+	StdThread(McThread::START_ROUTINE start_routine, void *arg) : BaseThread()
 	{
-		m_thread = 0;
+		m_bReady = false;
 
-		const int ret = pthread_create(&m_thread, NULL, start_routine, arg);
-		m_bReady = (ret == 0);
-
-		if (ret != 0)
-			debugLog("PosixThread Error: pthread_create() returned %i!\n", ret);
+		try
+		{
+			m_thread = std::thread(start_routine, arg);
+			m_bReady = true;
+		}
+		catch (const std::system_error& e)
+		{
+			if (McThread::debug->getBool())
+				debugLog("StdThread Error: std::thread constructor exception: %s\n", e.what());
+		}
 	}
 
-	virtual ~PosixThread()
+	virtual ~StdThread()
 	{
 		if (!m_bReady) return;
 
 		m_bReady = false;
 
-		pthread_join(m_thread, NULL);
-
-		m_thread = 0;
+		if (m_thread.joinable())
+			m_thread.join();
 	}
 
 	bool isReady()
@@ -49,14 +50,11 @@ public:
 	}
 
 private:
-	pthread_t m_thread;
-
+	std::thread m_thread;
 	bool m_bReady;
 };
 
-#endif
-
-#endif
+#endif // defined(MCENGINE_FEATURE_MULTITHREADING) && !defined(__SWITCH__)
 
 ConVar debug_thread("debug_thread", false, FCVAR_NONE);
 
@@ -64,23 +62,17 @@ ConVar *McThread::debug = &debug_thread;
 
 McThread::McThread(START_ROUTINE start_routine, void *arg)
 {
-	m_baseThread = NULL;
-
 #ifdef MCENGINE_FEATURE_MULTITHREADING
 
-#ifdef MCENGINE_FEATURE_PTHREADS
-
-	m_baseThread = new PosixThread(start_routine, arg);
-
-#elif defined(__SWITCH__)
-
+#ifdef __SWITCH__
 	m_baseThread = new HorizonThread(start_routine, arg);
+#else
+	m_baseThread = new StdThread(start_routine, arg);
+#endif
 
 #else
-#error Missing Thread implementation for OS!
-#endif
-
-#endif
+	m_baseThread = NULL;
+#endif // MCENGINE_FEATURE_MULTITHREADING
 }
 
 McThread::~McThread()

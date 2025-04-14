@@ -5,6 +5,8 @@ AC_CONFIG_AUX_DIR([build/aux])
 AC_CONFIG_HEADERS([src/config.h])
 AC_PREFIX_DEFAULT([dist]) # default `make install`s to ./dist/bin/ (modify with --prefix=)
 
+AC_CANONICAL_TARGET
+
 # no-define needed to avoid setting e.g. VERSION which conflicts with McEngine stuff
 # dist-xz for `make dist` tarball target
 AM_INIT_AUTOMAKE([1.16 foreign subdir-objects no-define dist-xz parallel-tests])
@@ -119,6 +121,7 @@ AS_IF([test "x$enable_debug" = "xyes"], [
     CXXFLAGS="$CXXFLAGS -ggdb3 -gdwarf-5 -Og -fasynchronous-unwind-tables -fsanitize=address,undefined"
     CFLAGS="$CFLAGS -ggdb3 -gdwarf-5 -Og -fasynchronous-unwind-tables -fsanitize=address,undefined"
     ENABLE_DEBUG=$enable_debug
+    MCOSU_CPPFLAGS="$MCOSU_CPPFLAGS -D_DEBUG"
     AC_SUBST([ENABLE_DEBUG])
 ], [
     AS_IF([test "x$enable_optimization" != "xno"], [
@@ -150,8 +153,10 @@ CXXFLAGS="$CXXFLAGS $COMMON_FLAGS"
 CFLAGS="$CFLAGS $COMMON_FLAGS"
 LDFLAGS="$LDFLAGS -static-libstdc++ -static-libgcc"
 
-MCOSU_CXXFLAGS="-Wall"
+MCOSU_CXXFLAGS="$MCOSU_CXXFLAGS -Wall"
+MCOSU_CPPFLAGS="$MCOSU_CPPFLAGS"
 AC_SUBST([MCOSU_CXXFLAGS])
+AC_SUBST([MCOSU_CPPFLAGS])
 
 AC_DEFUN([PKG_CHECK_AUTO], [
     AS_IF([test "x$enable_static" = "xyes"],
@@ -259,7 +264,7 @@ AM_CONDITIONAL([BUILD_LIBPNG], [test "x$have_libpng" != "xyes"])
 AM_CONDITIONAL([BUILD_BZIP2], [test "x$have_bzip2" != "xyes"])
 AM_CONDITIONAL([BUILD_ZLIB], [test "x$have_zlib" != "xyes"])
 AM_CONDITIONAL([BUILD_FREETYPE2], [test "x$have_freetype2" != "xyes"])
-AM_CONDITIONAL([BUILD_MIMALLOC], [true])
+AM_CONDITIONAL([BUILD_MIMALLOC], [test "x$enable_debug" != "xyes"]) # can't find a way to make it work...
 
 BUNDLED_LIBS_DIR=libraries
 BUNDLED_BASS_DIR=$BUNDLED_LIBS_DIR/bass

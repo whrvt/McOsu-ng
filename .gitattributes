@@ -11,3 +11,5 @@ build/aux/compile generated
 build/aux/depcomp generated
 build/aux/install-sh generated
 build/aux/missing generated
+build/aux/config.guess generated
+build/aux/config.sub generated

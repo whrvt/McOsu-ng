@@ -57,10 +57,10 @@ public:
 
 	inline OsuBeatmap *getBeatmap() const {return m_beatmap;}
 
-	virtual int getCombo() {return 1;} // how much combo this hitobject is "worth"
-	virtual bool isCircle() {return false;}
-	virtual bool isSlider() {return false;}
-	virtual bool isSpinner() {return false;}
+	virtual constexpr forceinline int getCombo() const {return 1;} // how much combo this hitobject is "worth"
+	virtual constexpr forceinline bool isCircle() const {return false;}
+	virtual constexpr forceinline bool isSlider() const {return false;}
+	virtual constexpr forceinline bool isSpinner() const {return false;}
 	void addHitResult(OsuScore::HIT result, long delta, bool isEndOfCombo, Vector2 posRaw, float targetDelta = 0.0f, float targetAngle = 0.0f, bool ignoreOnHitErrorBar = false, bool ignoreCombo = false, bool ignoreHealth = false, bool addObjectDurationToSkinAnimationTimeStartOffset = true);
 	void misAimed() {m_bMisAim = true;}
 

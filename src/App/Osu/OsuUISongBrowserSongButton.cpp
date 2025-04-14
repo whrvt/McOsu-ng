@@ -86,8 +86,8 @@ OsuUISongBrowserSongButton::~OsuUISongBrowserSongButton()
 
 void OsuUISongBrowserSongButton::draw(Graphics *g)
 {
-	OsuUISongBrowserButton::draw(g);
 	if (!m_bVisible) return;
+	OsuUISongBrowserButton::draw(g);
 
 	// draw background image
 	if (m_representativeDatabaseBeatmap != NULL)
@@ -99,8 +99,8 @@ void OsuUISongBrowserSongButton::draw(Graphics *g)
 
 void OsuUISongBrowserSongButton::update()
 {
-	OsuUISongBrowserButton::update();
 	if (!m_bVisible) return;
+	OsuUISongBrowserButton::update();
 
 	// HACKHACK: calling these two every frame is a bit insane, but too lazy to write delta detection logic atm. (UI desync is not a problem since parent buttons are invisible while selected, so no resorting happens in that state)
 	sortChildren();

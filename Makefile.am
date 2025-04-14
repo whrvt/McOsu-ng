@@ -21,7 +21,7 @@ $(DEPS_CACHE)/mimalloc-$(MIMALLOC_VERSION).source:
 	touch $@
 
 if BUILD_MIMALLOC
-MIMALLOC_LIBS = $(DEPS_PREFIX)/lib/mimalloc$(if $(ENABLE_DEBUG),-debug,).o
+MIMALLOC_LIBS = $(DEPS_PREFIX)/lib/mimalloc$(if $(ENABLE_DEBUG),-asan-debug,).o
 $(DEPS_PREFIX)/mimalloc.built: $(DEPS_CACHE)/mimalloc-$(MIMALLOC_VERSION).source
 	rm -rf $(DEPS_PREFIX)/mimalloc
 	$(MKDIR_P) $(DEPS_PREFIX)/mimalloc && \
@@ -40,6 +40,7 @@ $(DEPS_PREFIX)/mimalloc.built: $(DEPS_CACHE)/mimalloc-$(MIMALLOC_VERSION).source
 		-D MI_NO_OPT_ARCH=OFF \
 		-D MI_BUILD_SHARED=OFF \
 		-D MI_BUILD_TESTS=OFF \
+		$(if $(ENABLE_DEBUG),-DMI_LOCAL_DYNAMIC_TLS=ON -DMI_TRACK_ASAN=ON -DMI_DEBUG_UBSAN=ON,) \
 		-D MI_INSTALL_TOPLEVEL=ON \
 		-D MI_BUILD_STATIC=OFF \
 		-D MI_BUILD_OBJECT=ON ../.. && \
@@ -288,6 +289,8 @@ $(McOsu_ng_OBJECTS): src/config.h $(BUILT_SOURCES)
 
 # FIXME: just fixme
 MCOSU_NG_INCLUDE_FLAGS := $(shell find $(srcdir)/src -not -path '*/.*' -type d -printf "-I%p ")
+
+McOsu_ng_CPPFLAGS := $(MCOSU_CPPFLAGS)
 
 McOsu_ng_CXXFLAGS := \
 	$(MCOSU_CXXFLAGS) \
