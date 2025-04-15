@@ -239,7 +239,7 @@ void OpenGLVertexArrayObject::draw()
 {
 	if (!m_bReady)
 	{
-		debugLog("WARNING: OpenGLVertexArrayObject::draw() called, but was not ready!\n");
+		debugLog("WARNING: called, but was not ready!\n");
 		return;
 	}
 

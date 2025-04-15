@@ -105,6 +105,8 @@ void AnimationHandler::update()
 			percent = percent - 1.0f;
 			percent = 1.0f - percent*percent*percent*percent;
 			break;
+		default: // MOVE_LINEAR unhandled
+			break;
 		}
 
 		// set new value

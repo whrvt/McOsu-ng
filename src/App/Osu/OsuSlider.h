@@ -41,11 +41,12 @@ public:
 	virtual void draw3D2(Graphics *g);
 	virtual void update(long curPos);
 
-	virtual bool isSlider() { return true; }
+	virtual constexpr forceinline bool isSlider() const { return true; }
 
 	virtual void updateStackPosition(float stackOffset);
 	virtual void miss(long curPos);
-	virtual int getCombo() {return 2 + std::max((m_iRepeat - 1), 0) + (std::max((m_iRepeat - 1), 0)+1)*m_ticks.size();}
+
+	virtual constexpr forceinline int getCombo() const {return 2 + std::max((m_iRepeat - 1), 0) + (std::max((m_iRepeat - 1), 0)+1)*m_ticks.size();}
 
 	Vector2 getRawPosAt(long pos);
 	Vector2 getOriginalRawPosAt(long pos);

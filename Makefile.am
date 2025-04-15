@@ -21,7 +21,7 @@ $(DEPS_CACHE)/mimalloc-$(MIMALLOC_VERSION).source:
 	touch $@
 
 if BUILD_MIMALLOC
-MIMALLOC_LIBS = $(DEPS_PREFIX)/lib/mimalloc$(if $(ENABLE_DEBUG),-debug,).o
+MIMALLOC_LIBS = $(DEPS_PREFIX)/lib/mimalloc$(if $(ENABLE_DEBUG),-asan-debug,).o
 $(DEPS_PREFIX)/mimalloc.built: $(DEPS_CACHE)/mimalloc-$(MIMALLOC_VERSION).source
 	rm -rf $(DEPS_PREFIX)/mimalloc
 	$(MKDIR_P) $(DEPS_PREFIX)/mimalloc && \
@@ -40,6 +40,7 @@ $(DEPS_PREFIX)/mimalloc.built: $(DEPS_CACHE)/mimalloc-$(MIMALLOC_VERSION).source
 		-D MI_NO_OPT_ARCH=OFF \
 		-D MI_BUILD_SHARED=OFF \
 		-D MI_BUILD_TESTS=OFF \
+		$(if $(ENABLE_DEBUG),-DMI_LOCAL_DYNAMIC_TLS=ON -DMI_TRACK_ASAN=ON -DMI_DEBUG_UBSAN=ON,) \
 		-D MI_INSTALL_TOPLEVEL=ON \
 		-D MI_BUILD_STATIC=OFF \
 		-D MI_BUILD_OBJECT=ON ../.. && \
@@ -284,15 +285,18 @@ BUILT_SOURCES := $(DEPS_PREFIX)/mimalloc.built $(DEPS_PREFIX)/SDL3.built $(DEPS_
 	$(DEPS_PREFIX)/libpng.built $(DEPS_PREFIX)/bzip2.built $(DEPS_PREFIX)/zlib.built $(DEPS_PREFIX)/FREETYPE2.built
 
 # making sure deps are built before main compile (continued)
-$(McOsu_ng_OBJECTS): $(BUILT_SOURCES)
+$(McOsu_ng_OBJECTS): src/config.h $(BUILT_SOURCES)
 
 # FIXME: just fixme
 MCOSU_NG_INCLUDE_FLAGS := $(shell find $(srcdir)/src -not -path '*/.*' -type d -printf "-I%p ")
 
+McOsu_ng_CPPFLAGS := $(MCOSU_CPPFLAGS)
+
 McOsu_ng_CXXFLAGS := \
+	$(MCOSU_CXXFLAGS) \
 	$(MCOSU_NG_INCLUDE_FLAGS) \
 	-I$(srcdir)/$(BUNDLED_BASS_DIR)/include \
-    -I$(srcdir)/$(BUNDLED_BASS_FX_DIR)/include \
+	-I$(srcdir)/$(BUNDLED_BASS_FX_DIR)/include \
 	$(SDL3_CFLAGS) \
 	$(X11_CFLAGS) \
 	$(XI_CFLAGS) \
@@ -324,11 +328,28 @@ McOsu_ng_LDFLAGS := \
 	$(ZLIB_LIBS) \
 	-lpthread
 
-$(top_srcdir)/compile_commands.json: clean
-	$(BEAR) --version || { echo bear is unavailable to generate a compile_commands.json, install bear && exit 1; }
+compile_commands.json: clean
+	@$(BEAR) --version || { echo bear is unavailable to generate a compile_commands.json, install bear && exit 1; }
 	$(BEAR) --append -- $(MAKE) $(AM_MAKEFLAGS) all-am
 
-compile-commands: $(McOsu_ng_OBJECTS) $(top_srcdir)/compile_commands.json
+$(abs_top_srcdir)/.clangd: compile_commands.json
+	@if [ -f $@ ]; then \
+		if grep -q "CompilationDatabase:" $@; then \
+			sed -i 's|CompilationDatabase:.*|CompilationDatabase: $(shell realpath --relative-to=$(abs_top_srcdir) $(CURDIR))|g' $@; \
+		else \
+			echo "CompileFlags:" >> $@; \
+			echo "    CompilationDatabase: $(shell realpath --relative-to=$(abs_top_srcdir) $(CURDIR))" >> $@; \
+		fi; \
+	else \
+		echo "CompileFlags:" > $@; \
+		echo "    BuiltinHeaders: QueryDriver" >> $@; \
+		echo "    CompilationDatabase: $(shell realpath --relative-to=$(abs_top_srcdir) $(CURDIR))" >> $@; \
+		echo "" >> $@; \
+		echo "InlayHints:" >> $@; \
+		echo "    Enabled: No" >> $@; \
+	fi
+
+compile-commands: $(McOsu_ng_OBJECTS) $(abs_top_srcdir)/.clangd
 
 install-libs:
 	$(INSTALL) -dm 755 "$(DESTDIR)$(bindir)/screenshots"
@@ -375,7 +396,7 @@ uninstall-local:
 	rm -rf "$(DESTDIR)$(bindir)/"
 
 # cleanup targets
-clean-local: uninstall-local
+clean-local:
 	rm -rf $(builddir)/build/obj
 	rm -f $(PROGRAMS)
 

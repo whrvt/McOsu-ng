@@ -1011,7 +1011,7 @@ bool OsuDatabaseBeatmap::loadMetadata(OsuDatabaseBeatmap *databaseBeatmap)
 	databaseBeatmap->m_timingpoints = std::vector<TIMINGPOINT>();
 
 	if (Osu::debug->getBool())
-		debugLog("OsuDatabaseBeatmap::loadMetadata() : %s\n", databaseBeatmap->m_sFilePath.toUtf8());
+		debugLog("%s\n", databaseBeatmap->m_sFilePath.toUtf8());
 
 	// generate MD5 hash (loads entire file, very slow)
 	databaseBeatmap->m_sMD5Hash.clear();
@@ -1261,7 +1261,7 @@ bool OsuDatabaseBeatmap::loadMetadata(OsuDatabaseBeatmap *databaseBeatmap)
 	if ((databaseBeatmap->m_timingpoints.size() < 1))
 	{
 		if (Osu::debug->getBool())
-			debugLog("OsuDatabaseBeatmap::loadMetadata() : no timingpoints in beatmap!\n");
+			debugLog("no timingpoints in beatmap!\n");
 
 		return false; // nothing more to do here
 	}
@@ -1274,7 +1274,7 @@ bool OsuDatabaseBeatmap::loadMetadata(OsuDatabaseBeatmap *databaseBeatmap)
 	if (databaseBeatmap->m_timingpoints.size() > 0)
 	{
 		if (Osu::debug->getBool())
-			debugLog("OsuDatabaseBeatmap::loadMetadata() : calculating BPM range ...\n");
+			debugLog("calculating BPM range ...\n");
 
 		// sort timingpoints by time
 		std::sort(databaseBeatmap->m_timingpoints.begin(), databaseBeatmap->m_timingpoints.end(), TimingPointSortComparator());
@@ -1763,7 +1763,7 @@ OsuDatabaseBeatmap::LOAD_GAMEPLAY_RESULT OsuDatabaseBeatmap::loadGameplay(OsuDat
 		}
 	}
 
-	debugLog("OsuDatabaseBeatmap::load() loaded %i hitobjects\n", result.hitobjects.size());
+	debugLog("loaded %i hitobjects\n", result.hitobjects.size());
 
 	return result;
 }

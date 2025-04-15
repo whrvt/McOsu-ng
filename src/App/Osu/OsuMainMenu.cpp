@@ -49,43 +49,44 @@
 
 #define MCOSU_VERSION_TEXT "Version"
 #define MCOSU_BANNER_TEXT ""
-UString OsuMainMenu::MCOSU_MAIN_BUTTON_TEXT = UString("McOsu");
+UString OsuMainMenu::MCOSU_MAIN_BUTTON_TEXT = UString(PACKAGE_NAME);
 UString OsuMainMenu::MCOSU_MAIN_BUTTON_SUBTEXT = UString("Practice Client");
-#define MCOSU_MAIN_BUTTON_BACK_TEXT "by McKay"
+#define MCOSU_MAIN_BUTTON_BACK_TEXT "by McKay + spectator"
 
 #define MCOSU_NEWVERSION_NOTIFICATION_TRIGGER_FILE "version.txt"
 
-static const char *s_sliderTextBeatmap = "osu file format v14\r\n"
-	"\r\n"
-	"[General]\r\n"
-	"AudioFilename: nothing.mp3\r\n"
-	"\r\n"
-	"[Metadata]\r\n"
-	"Title:McOsu Slider Text\r\n"
-	"TitleUnicode:McOsu Slider Text\r\n"
-	"Artist:McKay\r\n"
-	"ArtistUnicode:McKay\r\n"
-	"Creator:McKay\r\n"
-	"Version:McOsu\r\n"
-	"\r\n"
-	"[Difficulty]\r\n"
-	"HPDrainRate:6\r\n"
-	"CircleSize:6\r\n"
-	"OverallDifficulty:5\r\n"
-	"ApproachRate:0\r\n"
-	"SliderMultiplier:10\r\n"
-	"SliderTickRate:1\r\n"
-	"\r\n"
-	"[TimingPoints]\r\n"
-	"1717.04358603418,1200,4,1,0,27,1,0\r\n"
-	"\r\n"
-	"[HitObjects]\r\n"
-	"-143,275,0,6,0,B|-143:115|-143:115|-79:179|-79:179|-20:115|-20:115|-20:275,1,498.750001415609\r\n"
-	"112,197,0,2,0,P|45:236|115:262,1,183.75000052154\r\n"
-	"263,111,0,2,0,P|282:272|251:111,1,520\r\n"
-	"480,179,0,2,0,B|288:179|480:243|544:275|384:275,1,262.500000745058\r\n"
-	"543,182,0,2,0,B|511:309|671:309|616:165,1,236.250000670552";
+static constexpr const char *s_sliderTextBeatmap =
+R"(osu file format v14
 
+[General]
+AudioFilename: nothing.mp3
+
+[Metadata]
+Title:McOsu Slider Text
+TitleUnicode:McOsu Slider Text
+Artist:McKay
+ArtistUnicode:McKay
+Creator:McKay
+Version:McOsu
+
+[Difficulty]
+HPDrainRate:6
+CircleSize:6
+OverallDifficulty:5
+ApproachRate:0
+SliderMultiplier:10
+SliderTickRate:1
+
+[TimingPoints]
+1717.04358603418,1200,4,1,0,27,1,0
+
+[HitObjects]
+-143,275,0,6,0,B|-143:115|-143:115|-79:179|-79:179|-20:115|-20:115|-20:275,1,498.750001415609
+112,197,0,2,0,P|45:236|115:262,1,183.75000052154
+263,111,0,2,0,P|282:272|251:111,1,520
+480,179,0,2,0,B|288:179|480:243|544:275|384:275,1,262.500000745058
+543,182,0,2,0,B|511:309|671:309|616:165,1,236.250000670552
+)";
 
 
 class OsuMainMenuMainButton : public CBaseUIButton
@@ -416,7 +417,7 @@ OsuMainMenu::OsuMainMenu(Osu *osu) : OsuScreen(osu)
 	m_fMainMenuSliderTextRawHitCircleDiameter = 1.0f;
 	if (osu_main_menu_use_slider_text.getBool())
 	{
-		m_mainMenuSliderTextDatabaseBeatmap = new OsuDatabaseBeatmap(m_osu, UString(s_sliderTextBeatmap), "", true);
+		m_mainMenuSliderTextDatabaseBeatmap = new OsuDatabaseBeatmap(m_osu, s_sliderTextBeatmap, "", true);
 		m_mainMenuSliderTextBeatmapStandard = new OsuBeatmapStandard(m_osu);
 
 		// HACKHACK: temporary workaround to avoid this breaking the main menu logo text sliders (1/2)
@@ -1168,8 +1169,9 @@ void OsuMainMenu::draw(Graphics *g)
 		g->setAlpha((1.0f - m_fMainMenuAnimFriendPercent)*(1.0f - m_fMainMenuAnimFriendPercent)*(1.0f - m_fMainMenuAnimFriendPercent));
 		g->pushTransform();
 		{
-			g->scale(fontScale, fontScale);
-			g->translate(m_vCenter.x - m_fCenterOffsetAnim - (titleFont->getStringWidth(MCOSU_MAIN_BUTTON_BACK_TEXT)/2.0f)*fontScale, m_vCenter.y + ((titleFont->getHeight()*fontScale)/2.25f)*4.0f, -1.0f);
+			const float scaleTemp = fontScale * 0.75f;
+			g->scale(scaleTemp, scaleTemp);
+			g->translate(m_vCenter.x - m_fCenterOffsetAnim - (titleFont->getStringWidth(MCOSU_MAIN_BUTTON_BACK_TEXT)/2.0f)*scaleTemp, m_vCenter.y + ((titleFont->getHeight()*scaleTemp)/2.25f)*4.0f, -1.0f);
 			g->drawString(titleFont, MCOSU_MAIN_BUTTON_BACK_TEXT);
 		}
 		g->popTransform();
@@ -1742,12 +1744,12 @@ void OsuMainMenu::onGithubPressed()
 
 	if (env->getOS() == Environment::OS::OS_HORIZON)
 	{
-		m_osu->getNotificationOverlay()->addNotification("Go to https://github.com/McKay42/McOsu/", 0xffffffff, false, 0.75f);
+		m_osu->getNotificationOverlay()->addNotification("Go to " PACKAGE_URL, 0xffffffff, false, 0.75f);
 		return;
 	}
 
 	m_osu->getNotificationOverlay()->addNotification("Opening browser, please wait ...", 0xffffffff, false, 0.75f);
-	env->openURLInDefaultBrowser("https://github.com/McKay42/McOsu/");
+	env->openURLInDefaultBrowser(PACKAGE_URL);
 }
 
 void OsuMainMenu::onVersionPressed()

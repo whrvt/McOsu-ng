@@ -257,7 +257,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 						GetMonitorInfo(monitor, &info);
 
 						//McRect mr(info.rcMonitor.left, info.rcMonitor.top, std::abs(info.rcMonitor.left - info.rcMonitor.right), std::abs(info.rcMonitor.top - info.rcMonitor.bottom));
-						//printf("monitor.x = %i, y = %i, width = %i, height = %i\n", (int)mr.getX(), (int)mr.getY(), (int)mr.getWidth(), (int)mr.getHeight());
+						//debugLog("monitor.x = %i, y = %i, width = %i, height = %i\n", (int)mr.getX(), (int)mr.getY(), (int)mr.getWidth(), (int)mr.getHeight());
 
 						// old (broken for multi-monitor setups)
 						//pncc->rgrc[0].right += pncc->rgrc[0].left;
@@ -272,7 +272,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 						pncc->rgrc[0].left = info.rcMonitor.left;
 					}
 
-					//printf("after:  right = %i, bottom = %i, top = %i, left = %i\n", (int)pncc->rgrc[0].right, (int)pncc->rgrc[0].bottom, (int)pncc->rgrc[0].top, (int)pncc->rgrc[0].left);
+					//debugLog("after:  right = %i, bottom = %i, top = %i, left = %i\n", (int)pncc->rgrc[0].right, (int)pncc->rgrc[0].bottom, (int)pncc->rgrc[0].top, (int)pncc->rgrc[0].left);
 				}
 			}
 			// "When wParam is TRUE, simply returning 0 without processing the NCCALCSIZE_PARAMS rectangles will cause the client area to resize to the size of the window,
@@ -389,7 +389,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 				if (!HIWORD(wParam)) // if we are not minimized
 				{
 					//if (g_engine != NULL)
-					//	printf("WndProc() : WM_ACTIVATE, not minimized\n");
+					//	debugLog("WndProc() : WM_ACTIVATE, not minimized\n");
 
 					g_bUpdate = true;
 					g_bDraw = true;
@@ -397,7 +397,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 				else
 				{
 					//if (g_engine != NULL)
-					//	printf("WndProc() : WM_ACTIVATE, minimized\n");
+					//	debugLog("WndProc() : WM_ACTIVATE, minimized\n");
 
 					/// g_bUpdate = false;
 					g_bDraw = false;
@@ -782,8 +782,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 				// min
 				LPMINMAXINFO pMMI = (LPMINMAXINFO)lParam;
 
-				//printf("before: %i %i %i %i\n", (int)pMMI->ptMinTrackSize.x, (int)pMMI->ptMinTrackSize.y, (int)pMMI->ptMaxTrackSize.x, (int)pMMI->ptMaxTrackSize.y);
-				//printf("window pos: left = %i, top = %i, bottom = %i, right = %i\n", (int)wPos.rcNormalPosition.left, (int)wPos.rcNormalPosition.top, (int)wPos.rcNormalPosition.bottom, (int)wPos.rcNormalPosition.right);
+				//debugLog("before: %i %i %i %i\n", (int)pMMI->ptMinTrackSize.x, (int)pMMI->ptMinTrackSize.y, (int)pMMI->ptMaxTrackSize.x, (int)pMMI->ptMaxTrackSize.y);
+				//debugLog("window pos: left = %i, top = %i, bottom = %i, right = %i\n", (int)wPos.rcNormalPosition.left, (int)wPos.rcNormalPosition.top, (int)wPos.rcNormalPosition.bottom, (int)wPos.rcNormalPosition.right);
 
 				pMMI->ptMinTrackSize.x = WINDOW_WIDTH_MIN;
 				pMMI->ptMinTrackSize.y = WINDOW_HEIGHT_MIN;
@@ -815,17 +815,17 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 						const LONG decorationsSumWidth = (windowRect.right - windowRect.left) - clientRect.right;
 						const LONG decorationsSumHeight = (windowRect.bottom - windowRect.top) - clientRect.bottom;
 
-						//printf("window rect: left = %i, top = %i, bottom = %i, right = %i\n", (int)windowRect.left, (int)windowRect.top, (int)windowRect.bottom, (int)windowRect.right);
-						//printf("client rect: left = %i, top = %i, bottom = %i, right = %i\n", (int)clientRect.left, (int)clientRect.top, (int)clientRect.bottom, (int)clientRect.right);
-						//printf("monitor width = %i, height = %i\n", (int)std::abs(info.rcMonitor.left - info.rcMonitor.right), (int)std::abs(info.rcMonitor.top - info.rcMonitor.bottom));
-						//printf("decorations: width = %i, height = %i\n", (int)decorationsSumWidth, (int)decorationsSumHeight);
+						//debugLog("window rect: left = %i, top = %i, bottom = %i, right = %i\n", (int)windowRect.left, (int)windowRect.top, (int)windowRect.bottom, (int)windowRect.right);
+						//debugLog("client rect: left = %i, top = %i, bottom = %i, right = %i\n", (int)clientRect.left, (int)clientRect.top, (int)clientRect.bottom, (int)clientRect.right);
+						//debugLog("monitor width = %i, height = %i\n", (int)std::abs(info.rcMonitor.left - info.rcMonitor.right), (int)std::abs(info.rcMonitor.top - info.rcMonitor.bottom));
+						//debugLog("decorations: width = %i, height = %i\n", (int)decorationsSumWidth, (int)decorationsSumHeight);
 
 						pMMI->ptMaxTrackSize.x = std::abs(info.rcMonitor.left - info.rcMonitor.right) + decorationsSumWidth;
 						pMMI->ptMaxTrackSize.y = std::abs(info.rcMonitor.top - info.rcMonitor.bottom) + decorationsSumHeight;
 					}
 				}
 
-				//printf("after: %i %i %i %i\n", (int)pMMI->ptMinTrackSize.x, (int)pMMI->ptMinTrackSize.y, (int)pMMI->ptMaxTrackSize.x, (int)pMMI->ptMaxTrackSize.y);
+				//debugLog("after: %i %i %i %i\n", (int)pMMI->ptMinTrackSize.x, (int)pMMI->ptMinTrackSize.y, (int)pMMI->ptMaxTrackSize.x, (int)pMMI->ptMaxTrackSize.y);
 			}
 			return 0;
 	}
@@ -978,7 +978,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 						{
 							const size_t bytesToCopy = std::min(strlen(lpCmdLine), sharedMemorySize - sizeof(IPCState) - 2) + 1;
 
-							//printf("Copying %u bytes\n", bytesToCopy);
+							//debugLog("Copying %u bytes\n", bytesToCopy);
 
 							CopyMemory(((char*)ipcSharedMemory) + sizeof(IPCState), lpCmdLine, bytesToCopy);
 
@@ -1006,10 +1006,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				}
 			}
 			else
-				printf("IPC ERROR: Couldn't MapViewOfFile()!\n");
+				debugLog("IPC ERROR: Couldn't MapViewOfFile()!\n");
 		}
 		else
-			printf("IPC ERROR: Couldn't OpenFileMapping() or CreateFileMapping()!\n");
+			debugLog("IPC ERROR: Couldn't OpenFileMapping() or CreateFileMapping()!\n");
 	}
 */
 
@@ -1047,7 +1047,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			RegSetValueW(command, NULL, REG_SZ, shellOpenCommandString.wc_str(), 0);
 		}
 		else
-			printf("REG ERROR: Couldn't RegCreateKeyW()!\n");
+			debugLog("REG ERROR: Couldn't RegCreateKeyW()!\n");
 	}
 */
 
@@ -1143,7 +1143,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	HWND hwnd = createWinWindow(hInstance);
 	if (hwnd == NULL)
 	{
-		printf("FATAL ERROR: hwnd == NULL!!!\n");
+		debugLog("FATAL ERROR: hwnd == NULL!!!\n");
 		MessageBox(NULL, "Couldn't createWinWindow()!", "Fatal Error", MB_ICONEXCLAMATION | MB_OK);
 		return -1;
 	}
@@ -1159,7 +1159,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 		if (initWinGLMultisample(context.hdc, hInstance, hwnd, 4))
 		{
-			printf("OpenGL: MSAA is supported!\n");
+			debugLog("OpenGL: MSAA is supported!\n");
 
 			// we have AA support, delete EVERYTHING up until now
 			wglMakeCurrent(context.hdc, NULL);
@@ -1172,21 +1172,21 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			hwnd = createWinWindow(hInstance);
 			if (hwnd == NULL)
 			{
-				printf("FATAL ERROR: hwnd == NULL!!!\n");
+				debugLog("FATAL ERROR: hwnd == NULL!!!\n");
 				MessageBox(NULL, "Couldn't createWinWindow()!", "Fatal Error", MB_ICONEXCLAMATION | MB_OK);
 				return -1;
 			}
 		}
 		else
 		{
-			printf("OpenGL: MSAA is NOT supported.\n");
+			debugLog("OpenGL: MSAA is NOT supported.\n");
 
 			// no AA support, destroy all temporaries and continue with the first window
 			wglMakeCurrent(context.hdc, NULL);
 			wglDeleteContext(context.hglrc);
 			ReleaseDC(hwnd, context.hdc);
 		}
-		printf("\n");
+		debugLog("\n");
 	}
 	*/
 
@@ -1203,7 +1203,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		}
 		//HRESULT result = DwmExtendFrameIntoClientArea(hwnd, &m);
 		DwmExtendFrameIntoClientArea(hwnd, &m);
-		//printf("DwmExtendFrameIntoClientArea() = %x\n", (int)result);
+		//debugLog("DwmExtendFrameIntoClientArea() = %x\n", (int)result);
 		SetWindowPos(hwnd, NULL, 0,0,0,0, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOOWNERZORDER);
 
 		//DWM_BLURBEHIND bb;
@@ -1226,7 +1226,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		bb.hRgnBlur = hRgn;
 		bb.fEnable = TRUE;
 
-		printf("DwmEnableBlurBehindWindow() = %x\n", (int)DwmEnableBlurBehindWindow(hwnd, &bb));
+		debugLog("DwmEnableBlurBehindWindow() = %x\n", (int)DwmEnableBlurBehindWindow(hwnd, &bb));
 
 		SetLayeredWindowAttributes(hwnd, RGB(0, 0, 0), 0, LWA_COLORKEY);
 	}
@@ -1242,7 +1242,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		if (EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &lpDevMode))
 		{
 			float displayFrequency = static_cast<float>(lpDevMode.dmDisplayFrequency);
-			///printf("Display Refresh Rate is %.2f Hz, setting fps_max to %i.\n\n", displayFrequency, (int)displayFrequency);
+			///debugLog("Display Refresh Rate is %.2f Hz, setting fps_max to %i.\n\n", displayFrequency, (int)displayFrequency);
 			fps_max.setValue((int)displayFrequency);
 			fps_max.setDefaultFloat((int)displayFrequency);
 		}
@@ -1257,7 +1257,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		Rid[0].hwndTarget = hwnd;
 		if (RegisterRawInputDevices(Rid, 1, sizeof(Rid[0])) == FALSE)
 		{
-			printf("WARNING: Couldn't RegisterRawInputDevices(), GetLastError() = %i\n", (int)GetLastError());
+			debugLog("WARNING: Couldn't RegisterRawInputDevices(), GetLastError() = %i\n", (int)GetLastError());
 			MessageBox(NULL, "Couldn't RegisterRawInputDevices()!", "Warning", MB_ICONEXCLAMATION | MB_OK);
 		}
 	}
@@ -1269,10 +1269,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		if (hr == S_OK || hr == S_FALSE) // if we initialized successfully, or if we are already initialized
 		{
 			if (!InitRealTimeStylus(hInstance, hwnd))
-				printf("WARNING: Couldn't InitRealTimeStylus()! RealTimeStylus is not going to work.\n");
+				debugLog("WARNING: Couldn't InitRealTimeStylus()! RealTimeStylus is not going to work.\n");
 		}
 		else
-			printf("WARNING: Couldn't CoInitialize()! RealTimeStylus is not going to work.\n");
+			debugLog("WARNING: Couldn't CoInitialize()! RealTimeStylus is not going to work.\n");
 	}
 #endif
 

@@ -18,13 +18,13 @@
 
 #include "Osu.h"
 
-const char *OsuUpdateHandler::GITHUB_API_RELEASE_URL = "https://api.github.com/repos/McKay42/McOsu/releases";
-const char *OsuUpdateHandler::GITHUB_RELEASE_DOWNLOAD_URL = "https://github.com/McKay42/McOsu/releases";
+const char *OsuUpdateHandler::GITHUB_API_RELEASE_URL = "https://api.github.com/repos/whrvt/" PACKAGE_NAME "/releases";
+const char *OsuUpdateHandler::GITHUB_RELEASE_DOWNLOAD_URL = "https://github.com/whrvt/" PACKAGE_NAME "/releases";
 const char *OsuUpdateHandler::TEMP_UPDATE_DOWNLOAD_FILEPATH = "update.zip";
 
 ConVar *OsuUpdateHandler::m_osu_release_stream_ref = NULL;
 
-#ifdef MCENGINE_FEATURE_PTHREADS
+#if defined(MCENGINE_FEATURE_MULTITHREADING) && !defined(__SWITCH__)
 
 void *OsuUpdateHandler::run(void *data)
 {
@@ -64,7 +64,8 @@ void *OsuUpdateHandler::run(void *data)
 			handler->_installUpdate(TEMP_UPDATE_DOWNLOAD_FILEPATH);
 		}
 
-		handler->m_updateThread = 0; // reset
+		// thread done
+		handler->m_bThreadDone = true;
 
 		if (handler->_m_bKYS) return NULL; // cancellation point
 
@@ -77,7 +78,7 @@ void *OsuUpdateHandler::run(void *data)
 		}
 	}
 	else
-		handler->m_updateThread = 0; // reset
+		handler->m_bThreadDone = true; // done
 
 	return NULL;
 }
@@ -86,10 +87,9 @@ void *OsuUpdateHandler::run(void *data)
 
 OsuUpdateHandler::OsuUpdateHandler()
 {
-#ifdef MCENGINE_FEATURE_PTHREADS
-
-	m_updateThread = 0;
-
+#if defined(MCENGINE_FEATURE_MULTITHREADING) && !defined(__SWITCH__)
+	m_updateThread = NULL;
+	m_bThreadDone = false;
 #endif
 
 	m_status = Osu::autoUpdater ? STATUS::STATUS_CHECKING_FOR_UPDATE : STATUS::STATUS_UP_TO_DATE;
@@ -103,56 +103,66 @@ OsuUpdateHandler::OsuUpdateHandler()
 
 OsuUpdateHandler::~OsuUpdateHandler()
 {
-#ifdef MCENGINE_FEATURE_PTHREADS
-
-	if (m_updateThread != 0)
+#if defined(MCENGINE_FEATURE_MULTITHREADING) && !defined(__SWITCH__)
+	if (m_updateThread != NULL && !m_bThreadDone)
 		engine->showMessageErrorFatal("Fatal Error", "OsuUpdateHandler was destroyed while the update thread is still running!!!");
 
+	if (m_updateThread != NULL)
+	{
+		delete m_updateThread;
+		m_updateThread = NULL;
+	}
 #endif
 }
 
 void OsuUpdateHandler::stop()
 {
-#ifdef MCENGINE_FEATURE_PTHREADS
-
-	if (m_updateThread != 0)
+#if defined(MCENGINE_FEATURE_MULTITHREADING) && !defined(__SWITCH__)
+	if (m_updateThread != NULL)
 	{
 		_m_bKYS = true;
-		m_updateThread = 0;
+		// don't delete the thread here, let it exit naturally
 	}
-
 #endif
 }
 
 void OsuUpdateHandler::wait()
 {
-#ifdef MCENGINE_FEATURE_PTHREADS
-
-	if (m_updateThread != 0)
+#if defined(MCENGINE_FEATURE_MULTITHREADING) && !defined(__SWITCH__)
+	if (m_updateThread != NULL)
 	{
-		pthread_join(m_updateThread, NULL);
-		m_updateThread = 0;
+		delete m_updateThread; // McThread dtor joins the thread
+		m_updateThread = NULL;
+		m_bThreadDone = false;
 	}
-
 #endif
 }
 
 void OsuUpdateHandler::checkForUpdates()
 {
-#ifdef MCENGINE_FEATURE_PTHREADS
+#if defined(MCENGINE_FEATURE_MULTITHREADING) && !defined(__SWITCH__)
 
-	if (!Osu::autoUpdater || Osu::debug->getBool() || m_updateThread != 0) return;
-
-	int ret = pthread_create(&m_updateThread, NULL, OsuUpdateHandler::run, (void*)this);
-	if (ret)
+	// clean up previous thread if it's marked as done
+	if (m_updateThread != NULL && m_bThreadDone)
 	{
-		m_updateThread = 0;
-		debugLog("OsuUpdateHandler: Error, pthread_create() returned %i!\n", ret);
+		delete m_updateThread;
+		m_updateThread = NULL;
+	}
+
+	if (!Osu::autoUpdater || Osu::debug->getBool() || m_updateThread != NULL) return;
+
+	m_bThreadDone = false;
+	m_updateThread = new McThread(OsuUpdateHandler::run, (void*)this);
+	if (!m_updateThread->isReady())
+	{
+		delete m_updateThread;
+		m_updateThread = NULL;
+		debugLog("OsuUpdateHandler: Error creating thread!\n");
 		return;
 	}
 
 	if (m_iNumRetries > 0)
-		debugLog("OsuUpdateHandler::checkForUpdates() retry %i ...\n", m_iNumRetries);
+		debugLog("retry %i ...\n", m_iNumRetries);
 
 #endif
 }
@@ -169,7 +179,7 @@ bool OsuUpdateHandler::isUpdateAvailable()
 
 void OsuUpdateHandler::_requestUpdate()
 {
-	debugLog("OsuUpdateHandler::requestUpdate()\n");
+	debugLog("\n");
 	m_status = STATUS::STATUS_CHECKING_FOR_UPDATE;
 
 	if (m_releases.size() > 0 && isUpdateAvailable()) return; // don't need to get twice
@@ -288,7 +298,7 @@ void OsuUpdateHandler::_requestUpdate()
 
 bool OsuUpdateHandler::_downloadUpdate(UString url)
 {
-	debugLog("OsuUpdateHandler::downloadUpdate( %s )\n", url.toUtf8());
+	debugLog("%s\n", url.toUtf8());
 	m_status = STATUS::STATUS_DOWNLOADING_UPDATE;
 
 	// setting the status in every error check return is retarded
@@ -297,7 +307,7 @@ bool OsuUpdateHandler::_downloadUpdate(UString url)
 	std::string data = engine->getNetworkHandler()->httpDownload(url);
 	if (data.length() < 2)
 	{
-		debugLog("OsuUpdateHandler::downloadUpdate() error, downloaded file is too small (%i)!\n", data.length());
+		debugLog("ERROR: downloaded file is too small (%i)!\n", data.length());
 		m_status = STATUS::STATUS_ERROR;
 		return false;
 	}
@@ -312,22 +322,22 @@ bool OsuUpdateHandler::_downloadUpdate(UString url)
 	}
 	else
 	{
-		debugLog("OsuUpdateHandler::downloadUpdate() error, can't write file!\n");
+		debugLog("ERROR: can't write file!\n");
 		m_status = STATUS::STATUS_ERROR;
 		return false;
 	}
 
-	debugLog("OsuUpdateHandler::downloadUpdate() finished successfully.\n");
+	debugLog("finished successfully.\n");
 	return true;
 }
 
 void OsuUpdateHandler::_installUpdate(UString zipFilePath)
 {
-	debugLog("OsuUpdateHandler::installUpdate( %s )\n", zipFilePath.toUtf8());
+	debugLog("%s\n", zipFilePath.toUtf8());
 	m_status = STATUS::STATUS_INSTALLING_UPDATE;
 
 	// setting the status in every error check return is retarded
-
+/*
 	if (!env->fileExists(zipFilePath))
 	{
 		debugLog("OsuUpdateHandler::installUpdate() error, \"%s\" does not exist!\n", zipFilePath.toUtf8());
@@ -345,7 +355,6 @@ void OsuUpdateHandler::_installUpdate(UString zipFilePath)
 	}
 	const char *content = f.readFile();
 
-	/*
 	// initialize zip
 	mz_zip_archive zip_archive;
 	memset(&zip_archive, 0, sizeof(zip_archive));

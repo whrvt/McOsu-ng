@@ -127,6 +127,8 @@ void OsuUISongBrowserButton::drawMenuButtonBackground(Graphics *g)
 
 void OsuUISongBrowserButton::update()
 {
+	if (!m_bVisible) return;
+
 	// HACKHACK: absolutely disgusting
 	// temporarily fool CBaseUIElement with modified position and size
 	{
@@ -141,8 +143,6 @@ void OsuUISongBrowserButton::update()
 		m_vPos = posBackup;
 		m_vSize = sizeBackup;
 	}
-
-	if (!m_bVisible) return;
 
 	// HACKHACK: this should really be part of the UI base
 	// right click detection

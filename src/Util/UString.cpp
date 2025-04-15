@@ -8,7 +8,6 @@
 #include "UString.h"
 
 #include <wchar.h>
-#include <wctype.h>
 #include <string.h>
 
 #define USTRING_MASK_1BYTE  0x80 /* 1000 0000 */
@@ -356,7 +355,14 @@ static forceinline int encode(const wchar_t *unicode, int length, char *utf8)
 	{
 		const wchar_t ch = unicode[i];
 
-		if (ch < 0x00000800) // 2 bytes
+		if (ch < 0x00000080) // 1 byte
+		{
+			if (utf8 != NULL)
+				utf8[utf8len] = (char)ch;
+
+			utf8len += 1;
+		}
+		else if (ch < 0x00000800) // 2 bytes
 		{
 			if (utf8 != NULL)
 				getUtf8(ch, &(utf8[utf8len]), 2, USTRING_VALUE_2BYTE);

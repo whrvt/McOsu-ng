@@ -206,7 +206,7 @@ void OsuSliderCurveEqualDistanceMulti::init(const std::vector<OsuSliderCurveType
 {
 	if (curvesList.size() < 1)
 	{
-		debugLog("OsuSliderCurveEqualDistanceMulti::init() Error: curvesList.size() == 0!!!\n");
+		debugLog("Error: curvesList.size() == 0!!!\n");
 		return;
 	}
 
@@ -220,7 +220,7 @@ void OsuSliderCurveEqualDistanceMulti::init(const std::vector<OsuSliderCurveType
 	{
 		if (curCurve->getCurvePoints().size() < 1)
 		{
-			debugLog("OsuSliderCurveEqualDistanceMulti::init() Error: curCurve->getCurvePoints().size() == 0!!!\n");
+			debugLog("Error: curCurve->getCurvePoints().size() == 0!!!\n");
 
 			// cleanup
 			for (size_t i=0; i<curvesList.size(); i++)
@@ -313,7 +313,7 @@ void OsuSliderCurveEqualDistanceMulti::init(const std::vector<OsuSliderCurveType
 	// sanity check
 	if (m_curvePoints.size() == 0)
 	{
-		debugLog("OsuSliderCurveEqualDistanceMulti::init() Error: m_curvePoints.size() == 0!!!\n");
+		debugLog("Error: m_curvePoints.size() == 0!!!\n");
 
 		// cleanup
 		for (size_t i=0; i<curvesList.size(); i++)
@@ -414,7 +414,7 @@ Vector2 OsuSliderCurveEqualDistanceMulti::pointAt(float t)
 			return m_curvePoints[m_iNCurve];
 		else
 		{
-			debugLog("OsuSliderCurveEqualDistanceMulti::pointAt() Error: Illegal index %i!!!\n", m_iNCurve);
+			debugLog("Error: Illegal index %i!!!\n", m_iNCurve);
 			return Vector2(0, 0);
 		}
 	}
@@ -422,7 +422,7 @@ Vector2 OsuSliderCurveEqualDistanceMulti::pointAt(float t)
 	{
 		if (index < 0 || index + 1 >= m_curvePoints.size())
 		{
-			debugLog("OsuSliderCurveEqualDistanceMulti::pointAt() Error: Illegal index %i!!!\n", index);
+			debugLog("Error: Illegal index %i!!!\n", index);
 			return Vector2(0, 0);
 		}
 
@@ -447,7 +447,7 @@ Vector2 OsuSliderCurveEqualDistanceMulti::originalPointAt(float t)
 			return m_originalCurvePoints[m_iNCurve];
 		else
 		{
-			debugLog("OsuSliderCurveEqualDistanceMulti::originalPointAt() Error: Illegal index %i!!!\n", m_iNCurve);
+			debugLog("Error: Illegal index %i!!!\n", m_iNCurve);
 			return Vector2(0, 0);
 		}
 	}
@@ -455,7 +455,7 @@ Vector2 OsuSliderCurveEqualDistanceMulti::originalPointAt(float t)
 	{
 		if (index < 0 || index + 1 >= m_originalCurvePoints.size())
 		{
-			debugLog("OsuSliderCurveEqualDistanceMulti::originalPointAt() Error: Illegal index %i!!!\n", index);
+			debugLog("Error: Illegal index %i!!!\n", index);
 			return Vector2(0, 0);
 		}
 
@@ -691,7 +691,7 @@ Vector2 OsuSliderCurveCircumscribedCircle::intersect(Vector2 a, Vector2 ta, Vect
 	const float des = (tb.x * ta.y - tb.y * ta.x);
 	if (std::abs(des) < 0.0001f)
 	{
-		debugLog("OsuSliderCurveCircumscribedCircle::intersect() Error: Vectors are parallel!!!\n");
+		debugLog("Error: Vectors are parallel!!!\n");
 		return Vector2(0, 0);
 	}
 

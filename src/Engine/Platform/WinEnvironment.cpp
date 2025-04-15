@@ -774,7 +774,7 @@ int WinEnvironment::getMonitor()
 			return i;
 	}
 
-	debugLog("WARNING: Environment::getMonitor() found no matching monitor, returning default monitor ...\n");
+	debugLog("WARNING: found no matching monitor, returning default monitor ...\n");
 	return 0;
 }
 

@@ -43,7 +43,7 @@ void OsuRichPresence::onSongBrowser(Osu *osu)
 
 	// also update window title
 	if (osu_rich_presence_dynamic_windowtitle.getBool())
-		env->setWindowTitle("McOsu");
+		env->setWindowTitle(PACKAGE_NAME);
 }
 
 void OsuRichPresence::onPlayStart(Osu *osu)
@@ -62,7 +62,7 @@ void OsuRichPresence::onPlayStart(Osu *osu)
 	if (osu_rich_presence_dynamic_windowtitle.getBool())
 	{
 		UString windowTitle = UString(playingInfo);
-		windowTitle.insert(0, "McOsu - ");
+		windowTitle.insert(0, PACKAGE_NAME " - ");
 		env->setWindowTitle(windowTitle);
 	}
 }

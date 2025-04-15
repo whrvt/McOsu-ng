@@ -220,7 +220,7 @@ void Console::execConfigFile(UString filename)
 	std::ifstream inFile(filename.toUtf8());
 	if (!inFile.good())
 	{
-		debugLog("Console::execConfigFile() error, file \"%s\" not found!\n", filename.toUtf8());
+		debugLog("error, file \"%s\" not found!\n", filename.toUtf8());
 		return;
 	}
 

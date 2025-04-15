@@ -91,7 +91,7 @@ CBaseUIContainer *CBaseUIContainer::insertBaseUIElement(CBaseUIElement *element,
 		}
 	}
 
-	debugLog("Warning: CBaseUIContainer::insertBaseUIElement() couldn't find index\n");
+	debugLog("Warning: couldn't find index\n");
 
 	return this;
 }
@@ -111,7 +111,7 @@ CBaseUIContainer *CBaseUIContainer::insertBaseUIElementBack(CBaseUIElement *elem
 		}
 	}
 
-	debugLog("Warning: CBaseUIContainer::insertBaseUIElementBack() couldn't find index\n");
+	debugLog("Warning: couldn't find index\n");
 
 	return this;
 }
@@ -127,7 +127,7 @@ CBaseUIContainer *CBaseUIContainer::removeBaseUIElement(CBaseUIElement *element)
 		}
 	}
 
-	debugLog("Warning: CBaseUIContainer::removeBaseUIElement() couldn't find element\n");
+	debugLog("Warning: couldn't find element\n");
 
 	return this;
 }
@@ -144,7 +144,7 @@ CBaseUIContainer *CBaseUIContainer::deleteBaseUIElement(CBaseUIElement *element)
 		}
 	}
 
-	debugLog("Warning: CBaseUIContainer::deleteBaseUIElement() couldn't find element\n");
+	debugLog("Warning: couldn't find element\n");
 
 	return this;
 }

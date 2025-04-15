@@ -1,9 +1,11 @@
 AC_PREREQ([2.71])
-AC_INIT([McOsu-ng], [33.11], [william@horvath.blog]) # don't report bugs to McKay :)
+AC_INIT([McOsu-ng], [33.11], [william@horvath.blog], [], [https://github.com/whrvt/McOsu-ng]) # don't report bugs to McKay :)
 AC_CONFIG_SRCDIR([src/Engine/Engine.cpp])
 AC_CONFIG_AUX_DIR([build/aux])
 AC_CONFIG_HEADERS([src/config.h])
 AC_PREFIX_DEFAULT([dist]) # default `make install`s to ./dist/bin/ (modify with --prefix=)
+
+AC_CANONICAL_TARGET
 
 # no-define needed to avoid setting e.g. VERSION which conflicts with McEngine stuff
 # dist-xz for `make dist` tarball target
@@ -76,6 +78,7 @@ AS_IF([test "x$enable_clang" = "xyes"], [
 ],[
     AC_PROG_CC
     AC_PROG_CXX
+    CXXFLAGS="$CXXFLAGS -Wno-sign-compare"
 ])
 
 # use c/c++17 because we can
@@ -118,6 +121,7 @@ AS_IF([test "x$enable_debug" = "xyes"], [
     CXXFLAGS="$CXXFLAGS -ggdb3 -gdwarf-5 -Og -fasynchronous-unwind-tables -fsanitize=address,undefined"
     CFLAGS="$CFLAGS -ggdb3 -gdwarf-5 -Og -fasynchronous-unwind-tables -fsanitize=address,undefined"
     ENABLE_DEBUG=$enable_debug
+    MCOSU_CPPFLAGS="$MCOSU_CPPFLAGS -D_DEBUG"
     AC_SUBST([ENABLE_DEBUG])
 ], [
     AS_IF([test "x$enable_optimization" != "xno"], [
@@ -144,11 +148,15 @@ AS_IF([test "x$enable_lto" != "xno"], [
     ])
 ])
 
-WARN_FLAGS="-Wall -Wno-sign-compare -Wno-unused-local-typedefs -Wno-switch"
-COMMON_FLAGS="-mcmodel=small -ffunction-sections -fdata-sections -fwrapv -fno-strict-aliasing -fno-semantic-interposition -fmessage-length=0"
-CXXFLAGS="$CXXFLAGS $WARN_FLAGS $COMMON_FLAGS -Wno-reorder"
-CFLAGS="$CFLAGS $WARN_FLAGS $COMMON_FLAGS"
+COMMON_FLAGS="-mcmodel=small -ffunction-sections -fdata-sections -fwrapv -fno-strict-aliasing -fno-semantic-interposition"
+CXXFLAGS="$CXXFLAGS $COMMON_FLAGS"
+CFLAGS="$CFLAGS $COMMON_FLAGS"
 LDFLAGS="$LDFLAGS -static-libstdc++ -static-libgcc"
+
+MCOSU_CXXFLAGS="$MCOSU_CXXFLAGS -Wall"
+MCOSU_CPPFLAGS="$MCOSU_CPPFLAGS"
+AC_SUBST([MCOSU_CXXFLAGS])
+AC_SUBST([MCOSU_CPPFLAGS])
 
 AC_DEFUN([PKG_CHECK_AUTO], [
     AS_IF([test "x$enable_static" = "xyes"],
@@ -256,7 +264,7 @@ AM_CONDITIONAL([BUILD_LIBPNG], [test "x$have_libpng" != "xyes"])
 AM_CONDITIONAL([BUILD_BZIP2], [test "x$have_bzip2" != "xyes"])
 AM_CONDITIONAL([BUILD_ZLIB], [test "x$have_zlib" != "xyes"])
 AM_CONDITIONAL([BUILD_FREETYPE2], [test "x$have_freetype2" != "xyes"])
-AM_CONDITIONAL([BUILD_MIMALLOC], [true])
+AM_CONDITIONAL([BUILD_MIMALLOC], [test "x$enable_debug" != "xyes"]) # can't find a way to make it work...
 
 BUNDLED_LIBS_DIR=libraries
 BUNDLED_BASS_DIR=$BUNDLED_LIBS_DIR/bass

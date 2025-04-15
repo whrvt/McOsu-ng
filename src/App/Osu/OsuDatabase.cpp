@@ -212,8 +212,9 @@ struct SortScoreByPP : public OsuDatabase::SCORE_SORTING_COMPARATOR
 	bool operator() (OsuDatabase::Score const &a, OsuDatabase::Score const &b) const
 	{
 		// first: pp
-		unsigned long long score1 = (unsigned long long)std::max(a.pp * 100.0f, 0.0f);
-		unsigned long long score2 = (unsigned long long)std::max(b.pp * 100.0f, 0.0f);
+		unsigned long long score1 = (unsigned long long)std::max((a.isLegacyScore ? -b.score : a.pp) * 100.0f, 0.0f);
+		unsigned long long score2 = (unsigned long long)std::max((b.isLegacyScore ? -a.score : b.pp) * 100.0f, 0.0f);
+
 
 		// second: score
 		if (score1 == score2)
@@ -230,10 +231,31 @@ struct SortScoreByPP : public OsuDatabase::SCORE_SORTING_COMPARATOR
 		}
 
 		// strict weak ordering!
-		if (score1 == score2 || a.isLegacyScore != b.isLegacyScore) // force for type discrepancies (legacy scores don't contain pp data)
+		if (score1 == score2)
+		{
 			return a.sortHack > b.sortHack;
+		}
 
 		return score1 > score2;
+	}
+};
+
+struct SortScoreByUnstableRate : public OsuDatabase::SCORE_SORTING_COMPARATOR
+{
+	virtual ~SortScoreByUnstableRate() {;}
+	bool operator() (OsuDatabase::Score const &a, OsuDatabase::Score const &b) const
+	{
+		// first: UR (reversed, lower is better)
+		unsigned long long ur1 = (unsigned long long)(std::abs(a.isLegacyScore ? -a.sortHack : a.unstableRate) * 100000.0f);
+		unsigned long long ur2 = (unsigned long long)(std::abs(b.isLegacyScore ? -b.sortHack : b.unstableRate) * 100000.0f);
+
+		// strict weak ordering!
+		if (ur1 == ur2)
+		{
+			return a.sortHack > b.sortHack;
+		}
+
+		return -ur1 > -ur2;
 	}
 };
 
@@ -293,7 +315,7 @@ protected:
 
 	virtual void initAsync()
 	{
-		debugLog("OsuDatabaseLoader::initAsync()\n");
+		debugLog("\n");
 
 		// load scores
 		m_db->loadScores();
@@ -384,6 +406,7 @@ OsuDatabase::OsuDatabase(Osu *osu)
 	m_scoreSortingMethods.push_back({"Sort By Misses", new SortScoreByMisses()});
 	m_scoreSortingMethods.push_back({"Sort By pp (Mc)", new SortScoreByPP()});
 	m_scoreSortingMethods.push_back({"Sort By Score", new SortScoreByScore()});
+	m_scoreSortingMethods.push_back({"Sort By Unstable Rate (Mc)", new SortScoreByUnstableRate()});
 }
 
 OsuDatabase::~OsuDatabase()
@@ -497,7 +520,7 @@ int OsuDatabase::addScore(std::string beatmapMD5Hash, OsuDatabase::Score score)
 {
 	if (beatmapMD5Hash.length() != 32)
 	{
-		debugLog("ERROR: OsuDatabase::addScore() has invalid md5hash.length() = %i!\n", beatmapMD5Hash.length());
+		debugLog("ERROR: invalid md5hash.length() = %i!\n", beatmapMD5Hash.length());
 		return -1;
 	}
 
@@ -561,7 +584,7 @@ void OsuDatabase::deleteScore(std::string beatmapMD5Hash, uint64_t scoreUnixTime
 {
 	if (beatmapMD5Hash.length() != 32)
 	{
-		debugLog("WARNING: OsuDatabase::deleteScore() called with invalid md5hash.length() = %i\n", beatmapMD5Hash.length());
+		debugLog("WARNING: invalid md5hash.length() = %i\n", beatmapMD5Hash.length());
 		return;
 	}
 
@@ -1150,7 +1173,7 @@ OsuDatabaseBeatmap *OsuDatabase::getBeatmapDifficulty(const std::string &md5hash
 UString OsuDatabase::parseLegacyCfgBeatmapDirectoryParameter()
 {
 	// get BeatmapDirectory parameter from osu!.<OS_USERNAME>.cfg
-	debugLog("OsuDatabase::parseLegacyCfgBeatmapDirectoryParameter() : username = %s\n", env->getUsername().toUtf8());
+	debugLog("username = %s\n", env->getUsername().toUtf8());
 	if (env->getUsername().length() > 0)
 	{
 		UString osuUserConfigFilePath = osu_folder.getString();
@@ -1287,7 +1310,7 @@ void OsuDatabase::loadDB(OsuFile *db, bool &fallbackToRawLoad)
 	m_collections.clear();
 
 	if (m_databaseBeatmaps.size() > 0)
-		debugLog("WARNING: OsuDatabase::loadDB() called without cleared m_beatmaps!!!\n");
+		debugLog("WARNING: called without cleared m_beatmaps!!!\n");
 
 	m_databaseBeatmaps.clear();
 
@@ -1924,7 +1947,7 @@ void OsuDatabase::loadStars()
 {
 	if (!osu_database_stars_cache_enabled.getBool()) return;
 
-	debugLog("OsuDatabase::loadStars()\n");
+	debugLog("\n");
 
 	const UString starsFilePath = "stars.cache";
 	const int starsCacheVersion = 20221108;
@@ -2050,7 +2073,7 @@ void OsuDatabase::loadScores()
 {
 	if (m_bScoresLoaded) return;
 
-	debugLog("OsuDatabase::loadScores()\n");
+	debugLog("\n");
 
 	// reset
 	m_scores.clear();
@@ -2748,7 +2771,7 @@ void OsuDatabase::loadCollections(UString collectionFilePath, bool isLegacy, con
 		}
 	}
 	else
-		debugLog("OsuBeatmapDatabase::loadDB() : Couldn't load %s", collectionFilePath.toUtf8());
+		debugLog("Couldn't load %s", collectionFilePath.toUtf8());
 
 	// backup
 	if (!isLegacy)
@@ -2870,7 +2893,7 @@ void OsuDatabase::saveCollections()
 OsuDatabaseBeatmap *OsuDatabase::loadRawBeatmap(UString beatmapPath)
 {
 	if (Osu::debug->getBool())
-		debugLog("OsuBeatmapDatabase::loadRawBeatmap() : %s\n", beatmapPath.toUtf8());
+		debugLog("%s\n", beatmapPath.toUtf8());
 
 	// try loading all diffs
 	std::vector<OsuDatabaseBeatmap*> diffs2;
@@ -2893,7 +2916,7 @@ OsuDatabaseBeatmap *OsuDatabase::loadRawBeatmap(UString beatmapPath)
 				{
 					if (Osu::debug->getBool())
 					{
-						debugLog("OsuBeatmapDatabase::loadRawBeatmap() : Couldn't loadMetadata(), deleting object.\n");
+						debugLog("Couldn't loadMetadata(), deleting object.\n");
 						if (diff2->getGameMode() == 0)
 							engine->showMessageWarning("OsuBeatmapDatabase::loadRawBeatmap()", "Couldn't loadMetadata()\n");
 					}

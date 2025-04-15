@@ -431,7 +431,7 @@ void SoundEngine::updateOutputDevices(bool handleOutputDeviceChanges, bool print
 		// sanity
 		if (d > sanityLimit)
 		{
-			debugLog("WARNING: SoundEngine::updateOutputDevices() found too many devices ...\n");
+			debugLog("WARNING: found too many devices ...\n");
 			break;
 		}
 	}
@@ -735,7 +735,7 @@ bool SoundEngine::play(Sound *snd, float pan, float pitch)
 			const bool ret = BASS_ChannelPlay(handle, TRUE);
 
 			if (!ret)
-				debugLog("SoundEngine::play() couldn't BASS_ChannelPlay(), errorcode %i\n", BASS_ErrorGetCode());
+				debugLog("couldn't BASS_ChannelPlay(), errorcode %i\n", BASS_ErrorGetCode());
 
 			return ret;
 		}
@@ -795,14 +795,14 @@ bool SoundEngine::play(Sound *snd, float pan, float pitch)
 		{
 			ret = BASS_ChannelPlay(handle, FALSE);
 			if (!ret)
-				debugLog("SoundEngine::play() couldn't BASS_ChannelPlay(), errorcode %i\n", BASS_ErrorGetCode());
+				debugLog("couldn't BASS_ChannelPlay(), errorcode %i\n", BASS_ErrorGetCode());
 		}
 
 #else
 
 		ret = BASS_ChannelPlay(handle, FALSE);
 		if (!ret)
-			debugLog("SoundEngine::play() couldn't BASS_ChannelPlay(), errorcode %i\n", BASS_ErrorGetCode());
+			debugLog("couldn't BASS_ChannelPlay(), errorcode %i\n", BASS_ErrorGetCode());
 
 #endif
 
@@ -843,7 +843,7 @@ bool SoundEngine::play(Sound *snd, float pan, float pitch)
 		const bool ret = (channel > -1);
 
 		if (!ret)
-			debugLog(snd->isStream() ? "SoundEngine::play() couldn't Mix_PlayMusic(), error on %s!\n" : "SoundEngine::play() couldn't Mix_PlayChannel(), error on %s!\n", snd->getFilePath().toUtf8());
+			debugLog(snd->isStream() ? "couldn't Mix_PlayMusic(), error on %s!\n" : "couldn't Mix_PlayChannel(), error on %s!\n", snd->getFilePath().toUtf8());
 		else
 		{
 			snd->setHandle(channel);
@@ -872,13 +872,13 @@ bool SoundEngine::play3d(Sound *snd, Vector3 pos)
 		{
 			BASS_3DVECTOR bassPos = BASS_3DVECTOR(pos.x, pos.y, pos.z);
 			if (!BASS_ChannelSet3DPosition(handle, &bassPos, NULL, NULL))
-				debugLog("SoundEngine::play3d() couldn't BASS_ChannelSet3DPosition(), errorcode %i\n", BASS_ErrorGetCode());
+				debugLog("couldn't BASS_ChannelSet3DPosition(), errorcode %i\n", BASS_ErrorGetCode());
 			else
 				BASS_Apply3D(); // apply the changes
 
 			bool ret = BASS_ChannelPlay(handle, FALSE);
 			if (!ret)
-				debugLog("SoundEngine::play3d() couldn't BASS_ChannelPlay(), errorcode %i\n", BASS_ErrorGetCode());
+				debugLog("couldn't BASS_ChannelPlay(), errorcode %i\n", BASS_ErrorGetCode());
 			else
 				snd->setLastPlayTime(engine->getTime());
 
@@ -922,7 +922,7 @@ void SoundEngine::pause(Sound *snd)
 	{
 		if (!BASS_ChannelPause(handle))
 		{
-			debugLog("SoundEngine::pause() couldn't BASS_ChannelPause(), errorcode %i\n", BASS_ErrorGetCode());
+			debugLog("couldn't BASS_ChannelPause(), errorcode %i\n", BASS_ErrorGetCode());
 		}
 	}
 
@@ -1001,13 +1001,13 @@ void SoundEngine::setOutputDevice(UString outputDeviceName)
 					initializeOutputDevice(previousOutputDevice); // if something went wrong, automatically switch back to the previous device
 			}
 			else
-				debugLog("SoundEngine::setOutputDevice() \"%s\" already is the current device.\n", outputDeviceName.toUtf8());
+				debugLog("\"%s\" already is the current device.\n", outputDeviceName.toUtf8());
 
 			return;
 		}
 	}
 
-	debugLog("SoundEngine::setOutputDevice() couldn't find output device \"%s\"!\n", outputDeviceName.toUtf8());
+	debugLog(" couldn't find output device \"%s\"!\n", outputDeviceName.toUtf8());
 
 #elif defined(MCENGINE_FEATURE_SDL) && defined(MCENGINE_FEATURE_SDL_MIXER)
 
@@ -1038,7 +1038,7 @@ void SoundEngine::setOutputDeviceForce(UString outputDeviceName)
 		}
 	}
 
-	debugLog("SoundEngine::setOutputDevice() couldn't find output device \"%s\"!\n", outputDeviceName.toUtf8());
+	debugLog("couldn't find output device \"%s\"!\n", outputDeviceName.toUtf8());
 
 #elif defined(MCENGINE_FEATURE_SDL) && defined(MCENGINE_FEATURE_SDL_MIXER)
 
@@ -1085,7 +1085,7 @@ void SoundEngine::set3dPosition(Vector3 headPos, Vector3 viewDir, Vector3 viewUp
 	BASS_3DVECTOR bassViewUp = BASS_3DVECTOR(viewUp.x, viewUp.y, viewUp.z);
 
 	if (!BASS_Set3DPosition(&bassHeadPos, NULL, &bassViewDir, &bassViewUp))
-		debugLog("SoundEngine::set3dPosition() couldn't BASS_Set3DPosition(), errorcode %i\n", BASS_ErrorGetCode());
+		debugLog("couldn't BASS_Set3DPosition(), errorcode %i\n", BASS_ErrorGetCode());
 	else
 		BASS_Apply3D(); // apply the changes
 
@@ -1141,7 +1141,7 @@ void *_soundEngineThread(void *data)
 			for (size_t i=0; i<channelPlayWork.size(); i++)
 			{
 				if (!BASS_ChannelPlay(channelPlayWork[i].handle, FALSE))
-					debugLog("SoundEngine::play() couldn't BASS_ChannelPlay(), errorcode %i\n", BASS_ErrorGetCode());
+					debugLog("couldn't BASS_ChannelPlay(), errorcode %i\n", BASS_ErrorGetCode());
 
 				///channelPlayWork[i].sound->setIsWaiting(false);
 			}

@@ -183,6 +183,8 @@ void OsuHitObject::drawHitResult(Graphics *g, OsuSkin *skin, float hitcircleDiam
 			hasParticle = skin->getParticle300() != skin->getMissingTexture();
 			hitImageScale = (rawHitcircleDiameter / skin->getHit300g()->getSizeBaseRaw().x) * osuCoordScaleMultiplier;
 			break;
+		default:
+			break;
 		}
 
 		// non-misses have a special scale animation (the type of which depends on hasParticle)
@@ -256,6 +258,8 @@ void OsuHitObject::drawHitResult(Graphics *g, OsuSkin *skin, float hitcircleDiam
 			{
 				skin->getHit300g()->drawRaw(g, rawPos, (doScaleOrRotateAnim ? scale : 1.0f) * hitImageScale * osu_hitresult_scale.getFloat());
 			}
+			break;
+		default:
 			break;
 		}
 	}

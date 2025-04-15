@@ -138,8 +138,8 @@ private:
 	Vector2 m_vLastSize;
 
 	// test features
-	RenderTarget *m_rt;
-	CBaseUIBoxShadow *m_shadow;
+	// RenderTarget *m_rt;
+	// CBaseUIBoxShadow *m_shadow;
 };
 
 #endif

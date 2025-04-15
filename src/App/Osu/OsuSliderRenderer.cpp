@@ -120,7 +120,7 @@ VertexArrayObject *OsuSliderRenderer::generateVAO(Osu *osu, const std::vector<Ve
 	if (vao->getNumVertices() > 0)
 		engine->getResourceManager()->loadResource(vao);
 	else
-		debugLog("OsuSliderRenderer::generateSliderVAO() ERROR: Zero triangles!\n");
+		debugLog("ERROR: Zero triangles!\n");
 
 	return vao;
 }

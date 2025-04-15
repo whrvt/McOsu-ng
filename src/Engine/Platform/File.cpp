@@ -106,7 +106,9 @@ StdFile::StdFile(UString filePath, File::TYPE type)
 		m_iFileSize = m_ifstream.tellg();
 		m_ifstream.seekg(0, std::ios::beg);
 
-		if (m_iFileSize < 1)
+		if (!m_iFileSize) // empty
+			return;
+		else if (m_iFileSize < 0)
 		{
 			debugLog("File Error: FileSize is < 0\n");
 			return;
@@ -192,7 +194,7 @@ UString StdFile::readLine()
 const char *StdFile::readFile()
 {
 	if (File::debug->getBool())
-		debugLog("StdFile::readFile() on %s\n", m_sFilePath.toUtf8());
+		debugLog("on %s\n", m_sFilePath.toUtf8());
 
 	if (m_fullBuffer.size() > 0)
 		return &m_fullBuffer[0];

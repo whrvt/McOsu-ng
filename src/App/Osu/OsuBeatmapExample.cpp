@@ -77,7 +77,7 @@ void OsuBeatmapExample::update()
 
 void OsuBeatmapExample::onModUpdate()
 {
-	debugLog("OsuBeatmapExample::onModUpdate()\n");
+	debugLog("\n");
 }
 
 bool OsuBeatmapExample::isLoading()
@@ -88,7 +88,7 @@ bool OsuBeatmapExample::isLoading()
 void OsuBeatmapExample::onBeforeLoad()
 {
 	// called before any hitobjects are loaded from disk
-	debugLog("OsuBeatmapExample::onBeforeLoad()\n");
+	debugLog("\n");
 
 	m_bFakeExtraLoading = false;
 }
@@ -107,23 +107,23 @@ void OsuBeatmapExample::onPlayStart()
 {
 	// called at the exact moment when the player starts playing (after the potential wait-time due to early hitobjects!)
 	// (is NOT called immediately when you click on a beatmap diff)
-	debugLog("OsuBeatmapExample::onPlayStart()\n");
+	debugLog("\n");
 }
 
 void OsuBeatmapExample::onBeforeStop(bool quit)
 {
 	// called before unloading all hitobjects, when the player stops playing
-	debugLog("OsuBeatmapExample::onBeforeStop()\n");
+	debugLog("\n");
 }
 
 void OsuBeatmapExample::onStop(bool quit)
 {
 	// called after unloading all hitobjects, when the player stops playing this beatmap and returns to the songbrowser
-	debugLog("OsuBeatmapExample::onStop()\n");
+	debugLog("\n");
 }
 
 void OsuBeatmapExample::onPaused(bool first)
 {
 	// called when the player pauses the game
-	debugLog("OsuBeatmapExample::onPaused()\n");
+	debugLog("\n");
 }

@@ -117,7 +117,7 @@ UString SDLEnvironment::getExecutablePath()
 
 void SDLEnvironment::openURLInDefaultBrowser(UString url)
 {
-	debugLog("WARNING: SDLEnvironment::openURLInDefaultBrowser() not available in SDL!\n");
+	debugLog("WARNING: not available in SDL!\n");
 }
 
 UString SDLEnvironment::getUsername()
@@ -152,13 +152,13 @@ bool SDLEnvironment::fileExists(UString filename)
 
 bool SDLEnvironment::directoryExists(UString directoryName)
 {
-	debugLog("WARNING: SDLEnvironment::directoryExists() not available in SDL!\n");
+	debugLog("WARNING: not available in SDL!\n");
 	return false;
 }
 
 bool SDLEnvironment::createDirectory(UString directoryName)
 {
-	debugLog("WARNING: SDLEnvironment::createDirectory() not available in SDL!\n");
+	debugLog("WARNING: not available in SDL!\n");
 	return false;
 }
 
@@ -174,25 +174,25 @@ bool SDLEnvironment::deleteFile(UString filePath)
 
 std::vector<UString> SDLEnvironment::getFilesInFolder(UString folder)
 {
-	debugLog("WARNING: SDLEnvironment::getFilesInFolder() not available in SDL!\n");
+	debugLog("WARNING: not available in SDL!\n");
 	return std::vector<UString>();
 }
 
 std::vector<UString> SDLEnvironment::getFoldersInFolder(UString folder)
 {
-	debugLog("WARNING: SDLEnvironment::getFoldersInFolder() not available in SDL!\n");
+	debugLog("WARNING: not available in SDL!\n");
 	return std::vector<UString>();
 }
 
 std::vector<UString> SDLEnvironment::getLogicalDrives()
 {
-	debugLog("WARNING: SDLEnvironment::getLogicalDrives() not available in SDL!\n");
+	debugLog("WARNING: not available in SDL!\n");
 	return std::vector<UString>();
 }
 
 UString SDLEnvironment::getFolderFromFilePath(UString filepath)
 {
-	debugLog("WARNING: SDLEnvironment::getFolderFromFilePath() not available in SDL!\n");
+	debugLog("WARNING: not available in SDL!\n");
 	return filepath;
 }
 
@@ -253,13 +253,13 @@ void SDLEnvironment::showMessageErrorFatal(UString title, UString message)
 
 UString SDLEnvironment::openFileWindow(const char *filetypefilters, UString title, UString initialpath)
 {
-	debugLog("WARNING: SDLEnvironment::openFileWindow() not available in SDL!\n");
+	debugLog("WARNING: not available in SDL!\n");
 	return UString("");
 }
 
 UString SDLEnvironment::openFolderWindow(UString title, UString initialpath)
 {
-	debugLog("WARNING: SDLEnvironment::openFolderWindow() not available in SDL!\n");
+	debugLog("WARNING: not available in SDL!\n");
 	return UString("");
 }
 

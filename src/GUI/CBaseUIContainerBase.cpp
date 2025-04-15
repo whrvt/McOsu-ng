@@ -168,7 +168,7 @@ void CBaseUIContainerBase::removeElement(CBaseUIElement *element)
 		}
 	}
 
-	debugLog("Warning: CBaseUIContainerBase::removeElement() couldn't find element\n");
+	debugLog("Warning: couldn't find element\n");
 }
 
 void CBaseUIContainerBase::removeElement(std::shared_ptr<CBaseUIElement> element)
@@ -184,7 +184,7 @@ void CBaseUIContainerBase::removeElement(std::shared_ptr<CBaseUIElement> element
 		}
 	}
 
-	debugLog("Warning: CBaseUIContainerBase::removeElement() couldn't find element\n");
+	debugLog("Warning: couldn't find element\n");
 }
 
 CBaseUIElement *CBaseUIContainerBase::getElementByName(UString name, bool searchNestedContainers)
@@ -203,7 +203,7 @@ CBaseUIElement *CBaseUIContainerBase::getElementByName(UString name, bool search
 		}
 	}
 
-	debugLog("Error: CBaseUIContainerBase::getSlotByElementName() \"%s\" does not exist!!!\n", name.toUtf8());
+	debugLog("Error: \"%s\" does not exist!!!\n", name.toUtf8());
 	return nullptr;
 }
 
@@ -223,7 +223,7 @@ std::shared_ptr<CBaseUIElement> CBaseUIContainerBase::getElementSharedByName(USt
 		}
 	}
 
-	debugLog("Error: CBaseUIContainerBase::getSlotByElementName() \"%s\" does not exist!!!\n", name.toUtf8());
+	debugLog("Error: \"%s\" does not exist!!!\n", name.toUtf8());
 	return nullptr;
 }
 

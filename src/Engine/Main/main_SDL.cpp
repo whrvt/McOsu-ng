@@ -153,7 +153,7 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 	// initialize sdl
 	if (!SDL_Init(flags))
 	{
-		fprintf(stderr, "Couldn't SDL_Init(): %s\n", SDL_GetError());
+		debugLog("Couldn't SDL_Init(): %s\n", SDL_GetError());
 		return 1;
 	}
 
@@ -204,7 +204,7 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 
 	if (g_window == NULL)
 	{
-		fprintf(stderr, "Couldn't SDL_CreateWindow(): %s\n", SDL_GetError());
+		debugLog("Couldn't SDL_CreateWindow(): %s\n", SDL_GetError());
 		return 1;
 	}
 

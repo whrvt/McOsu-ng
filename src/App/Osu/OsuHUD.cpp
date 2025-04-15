@@ -2661,8 +2661,8 @@ void OsuHUD::drawStatistics(Graphics *g, int misses, int sliderbreaks, int maxPo
     const float scale = osu_hud_statistics_scale.getFloat() * osu_hud_scale.getFloat();
     const float yDelta = (font->getHeight() + 10) * osu_hud_statistics_spacing_scale.getFloat();
 
-	const Color shadowColor = COLOR(0, 0, 0, 255);
-	const Color textColor = COLOR(255, 255, 255, 255);
+	constexpr const Color shadowColor = COLOR(255, 0, 0, 0);
+	constexpr const Color textColor = COLOR(255, 255, 255, 255);
 
     font->beginBatch();
 
@@ -2679,10 +2679,10 @@ void OsuHUD::drawStatistics(Graphics *g, int misses, int sliderbreaks, int maxPo
             if (!shouldDraw || text.length() < 1)
                 return;
 
-            Vector3 shadowPos(xOffset, currentY + yOffset, 0.25f);
+            const Vector3 shadowPos(xOffset, currentY + yOffset, 0.25f);
             font->addToBatch(text, shadowPos, shadowColor);
 
-            Vector3 textPos(xOffset - 1, currentY + yOffset - 1, 0.325f);
+            const Vector3 textPos(xOffset - 2, currentY + yOffset - 2, 0.325f);
             font->addToBatch(text, textPos, textColor);
 
             currentY += yDelta;

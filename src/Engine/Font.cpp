@@ -35,7 +35,7 @@ static size_t calculateOptimalAtlasSize(const std::vector<GlyphRect> &glyphs, fl
 static unsigned char *unpackMonoBitmap(const FT_Bitmap &bitmap);
 
 McFont::McFont(UString filepath, int fontSize, bool antialiasing, int fontDPI)
-    : Resource(filepath), m_vao(Graphics::PRIMITIVE::PRIMITIVE_QUADS, Graphics::USAGE_TYPE::USAGE_DYNAMIC)
+    : Resource(filepath), m_vao(Graphics::PRIMITIVE::PRIMITIVE_QUADS)
 {
     std::vector<wchar_t> characters;
     characters.reserve(224); // reserve space for basic ASCII + extended chars
@@ -47,7 +47,7 @@ McFont::McFont(UString filepath, int fontSize, bool antialiasing, int fontDPI)
 }
 
 McFont::McFont(UString filepath, std::vector<wchar_t> characters, int fontSize, bool antialiasing, int fontDPI)
-    : Resource(filepath), m_vao(Graphics::PRIMITIVE::PRIMITIVE_QUADS, Graphics::USAGE_TYPE::USAGE_DYNAMIC)
+    : Resource(filepath), m_vao(Graphics::PRIMITIVE::PRIMITIVE_QUADS)
 {
     constructor(characters, fontSize, antialiasing, fontDPI);
 }
@@ -326,8 +326,7 @@ void McFont::drawString(Graphics *g, const UString &text)
     if (text.length() == 0 || text.length() > maxNumGlyphs)
         return;
 
-    static thread_local VertexArrayObject vao(Graphics::PRIMITIVE::PRIMITIVE_QUADS);
-    vao.empty();
+    m_vao.empty();
 
     const size_t totalVerts = text.length() * 4;
     m_vertices.resize(totalVerts);
@@ -338,12 +337,12 @@ void McFont::drawString(Graphics *g, const UString &text)
 
     for (size_t i = 0; i < vertexCount; i++)
     {
-        vao.addVertex(m_vertices[i]);
-        vao.addTexcoord(m_texcoords[i]);
+        m_vao.addVertex(m_vertices[i]);
+        m_vao.addTexcoord(m_texcoords[i]);
     }
 
     m_textureAtlas->getAtlasImage()->bind();
-    g->drawVAO(&vao);
+    g->drawVAO(&m_vao);
 
     if (r_debug_drawstring_unbind.getBool())
     {
@@ -402,7 +401,10 @@ void McFont::flushBatch(Graphics *g)
                         : Graphics::FILTER_MODE::FILTER_MODE_NONE);
 
     m_textureAtlas->getAtlasImage()->bind();
+
+    g->setAntialiasing(true);
     g->drawVAO(&m_vao);
+    g->setAntialiasing(false);
 
     if (r_debug_drawstring_unbind.getBool())
     {

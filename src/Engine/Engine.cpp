@@ -814,7 +814,7 @@ double const Engine::getTimeReal()
 	return m_timer->getElapsedTime();
 }
 
-void Engine::debugLog(const char *fmt, va_list args)
+void Engine::debugLog_(const char *fmt, va_list args)
 {
 	if (fmt == NULL) return;
 
@@ -847,7 +847,7 @@ cleanup:
 	va_end(ap2);
 }
 
-void Engine::debugLog(Color color, const char *fmt, va_list args)
+void Engine::debugLog_(Color color, const char *fmt, va_list args)
 {
 	if (fmt == NULL) return;
 
@@ -880,26 +880,26 @@ cleanup:
 	va_end(ap2);
 }
 
-void Engine::debugLog(const char *fmt, ...)
+void Engine::debugLog_(const char *fmt, ...)
 {
 	if (fmt == NULL) return;
 
 	va_list ap;
 	va_start(ap, fmt);
 
-	debugLog(fmt, ap);
+	Engine::debugLog_(fmt, ap);
 
 	va_end(ap);
 }
 
-void Engine::debugLog(Color color, const char *fmt, ...)
+void Engine::debugLog_(Color color, const char *fmt, ...)
 {
 	if (fmt == NULL) return;
 
 	va_list ap;
 	va_start(ap, fmt);
 
-	debugLog(color, fmt, ap);
+	Engine::debugLog_(color, fmt, ap);
 
 	va_end(ap);
 }

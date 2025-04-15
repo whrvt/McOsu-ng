@@ -607,7 +607,7 @@ PACKAGE_TARNAME='mcosu-ng'
 PACKAGE_VERSION='33.11'
 PACKAGE_STRING='McOsu-ng 33.11'
 PACKAGE_BUGREPORT='william@horvath.blog'
-PACKAGE_URL=''
+PACKAGE_URL='https://github.com/whrvt/McOsu-ng'
 
 ac_unique_file="src/Engine/Engine.cpp"
 ac_default_prefix=dist
@@ -711,6 +711,8 @@ X11_LIBS
 X11_CFLAGS
 DEPS_CACHE
 DEPS_PREFIX
+MCOSU_CPPFLAGS
+MCOSU_CXXFLAGS
 ENABLE_DEBUG
 CXX_NOCCACHE
 CC_NOCCACHE
@@ -780,6 +782,18 @@ am__isrc
 INSTALL_DATA
 INSTALL_SCRIPT
 INSTALL_PROGRAM
+target_os
+target_vendor
+target_cpu
+target
+host_os
+host_vendor
+host_cpu
+host
+build_os
+build_vendor
+build_cpu
+build
 target_alias
 host_alias
 build_alias
@@ -1481,6 +1495,11 @@ Program names:
   --program-prefix=PREFIX            prepend PREFIX to installed program names
   --program-suffix=SUFFIX            append SUFFIX to installed program names
   --program-transform-name=PROGRAM   run sed PROGRAM on installed program names
+
+System types:
+  --build=BUILD     configure for building on BUILD [guessed]
+  --host=HOST       cross-compile to build programs to run on HOST [BUILD]
+  --target=TARGET   configure for building compilers for TARGET [HOST]
 _ACEOF
 fi
 
@@ -1559,6 +1578,7 @@ Use these variables to override the choices made by 'configure' or to help
 it to find libraries and programs with nonstandard names/locations.
 
 Report bugs to <william@horvath.blog>.
+McOsu-ng home page: <https://github.com/whrvt/McOsu-ng>.
 _ACEOF
 ac_status=$?
 fi
@@ -2647,7 +2667,7 @@ main (int argc, char **argv)
 
 
 # Auxiliary files required by this configure script.
-ac_aux_files="compile missing install-sh"
+ac_aux_files="compile missing install-sh config.guess config.sub"
 
 # Locations in which to look for auxiliary files.
 ac_aux_dir_candidates="${srcdir}/build/aux"
@@ -2819,10 +2839,129 @@ ac_config_headers="$ac_config_headers src/config.h"
 
  # default `make install`s to ./dist/bin/ (modify with --prefix=)
 
+
+
+
+  # Make sure we can run config.sub.
+$SHELL "${ac_aux_dir}config.sub" sun4 >/dev/null 2>&1 ||
+  as_fn_error $? "cannot run $SHELL ${ac_aux_dir}config.sub" "$LINENO" 5
+
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking build system type" >&5
+printf %s "checking build system type... " >&6; }
+if test ${ac_cv_build+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) ac_build_alias=$build_alias
+test "x$ac_build_alias" = x &&
+  ac_build_alias=`$SHELL "${ac_aux_dir}config.guess"`
+test "x$ac_build_alias" = x &&
+  as_fn_error $? "cannot guess build type; you must specify one" "$LINENO" 5
+ac_cv_build=`$SHELL "${ac_aux_dir}config.sub" $ac_build_alias` ||
+  as_fn_error $? "$SHELL ${ac_aux_dir}config.sub $ac_build_alias failed" "$LINENO" 5
+ ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_build" >&5
+printf "%s\n" "$ac_cv_build" >&6; }
+case $ac_cv_build in
+*-*-*) ;;
+*) as_fn_error $? "invalid value of canonical build" "$LINENO" 5;;
+esac
+build=$ac_cv_build
+ac_save_IFS=$IFS; IFS='-'
+set x $ac_cv_build
+shift
+build_cpu=$1
+build_vendor=$2
+shift; shift
+# Remember, the first character of IFS is used to create $*,
+# except with old shells:
+build_os=$*
+IFS=$ac_save_IFS
+case $build_os in *\ *) build_os=`echo "$build_os" | sed 's/ /-/g'`;; esac
+
+
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking host system type" >&5
+printf %s "checking host system type... " >&6; }
+if test ${ac_cv_host+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) if test "x$host_alias" = x; then
+  ac_cv_host=$ac_cv_build
+else
+  ac_cv_host=`$SHELL "${ac_aux_dir}config.sub" $host_alias` ||
+    as_fn_error $? "$SHELL ${ac_aux_dir}config.sub $host_alias failed" "$LINENO" 5
+fi
+ ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_host" >&5
+printf "%s\n" "$ac_cv_host" >&6; }
+case $ac_cv_host in
+*-*-*) ;;
+*) as_fn_error $? "invalid value of canonical host" "$LINENO" 5;;
+esac
+host=$ac_cv_host
+ac_save_IFS=$IFS; IFS='-'
+set x $ac_cv_host
+shift
+host_cpu=$1
+host_vendor=$2
+shift; shift
+# Remember, the first character of IFS is used to create $*,
+# except with old shells:
+host_os=$*
+IFS=$ac_save_IFS
+case $host_os in *\ *) host_os=`echo "$host_os" | sed 's/ /-/g'`;; esac
+
+
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking target system type" >&5
+printf %s "checking target system type... " >&6; }
+if test ${ac_cv_target+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) if test "x$target_alias" = x; then
+  ac_cv_target=$ac_cv_host
+else
+  ac_cv_target=`$SHELL "${ac_aux_dir}config.sub" $target_alias` ||
+    as_fn_error $? "$SHELL ${ac_aux_dir}config.sub $target_alias failed" "$LINENO" 5
+fi
+ ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_target" >&5
+printf "%s\n" "$ac_cv_target" >&6; }
+case $ac_cv_target in
+*-*-*) ;;
+*) as_fn_error $? "invalid value of canonical target" "$LINENO" 5;;
+esac
+target=$ac_cv_target
+ac_save_IFS=$IFS; IFS='-'
+set x $ac_cv_target
+shift
+target_cpu=$1
+target_vendor=$2
+shift; shift
+# Remember, the first character of IFS is used to create $*,
+# except with old shells:
+target_os=$*
+IFS=$ac_save_IFS
+case $target_os in *\ *) target_os=`echo "$target_os" | sed 's/ /-/g'`;; esac
+
+
+# The aliases save the names the user supplied, while $host etc.
+# will get canonicalized.
+test -n "$target_alias" &&
+  test "$program_prefix$program_suffix$program_transform_name" = \
+    NONENONEs,x,x, &&
+  program_prefix=${target_alias}-
+
 # no-define needed to avoid setting e.g. VERSION which conflicts with McEngine stuff
 # dist-xz for `make dist` tarball target
 am__api_version='1.17'
-
 
 
   # Find a good install program.  We prefer a C program (faster),
@@ -8167,6 +8306,7 @@ else
 fi
 
 
+    CXXFLAGS="$CXXFLAGS -Wno-sign-compare"
  ;;
 esac
 fi
@@ -8410,6 +8550,7 @@ then :
     CXXFLAGS="$CXXFLAGS -ggdb3 -gdwarf-5 -Og -fasynchronous-unwind-tables -fsanitize=address,undefined"
     CFLAGS="$CFLAGS -ggdb3 -gdwarf-5 -Og -fasynchronous-unwind-tables -fsanitize=address,undefined"
     ENABLE_DEBUG=$enable_debug
+    MCOSU_CPPFLAGS="$MCOSU_CPPFLAGS -D_DEBUG"
 
 
 else case e in #(
@@ -8571,11 +8712,15 @@ fi
 
 fi
 
-WARN_FLAGS="-Wall -Wno-sign-compare -Wno-unused-local-typedefs -Wno-switch"
-COMMON_FLAGS="-mcmodel=small -ffunction-sections -fdata-sections -fwrapv -fno-strict-aliasing -fno-semantic-interposition -fmessage-length=0"
-CXXFLAGS="$CXXFLAGS $WARN_FLAGS $COMMON_FLAGS -Wno-reorder"
-CFLAGS="$CFLAGS $WARN_FLAGS $COMMON_FLAGS"
+COMMON_FLAGS="-mcmodel=small -ffunction-sections -fdata-sections -fwrapv -fno-strict-aliasing -fno-semantic-interposition"
+CXXFLAGS="$CXXFLAGS $COMMON_FLAGS"
+CFLAGS="$CFLAGS $COMMON_FLAGS"
 LDFLAGS="$LDFLAGS -static-libstdc++ -static-libgcc"
+
+MCOSU_CXXFLAGS="$MCOSU_CXXFLAGS -Wall"
+MCOSU_CPPFLAGS="$MCOSU_CPPFLAGS"
+
+
 
 
 
@@ -9347,7 +9492,7 @@ esac
 fi
   # FIXME: transitive GLEW dep
 
-SDL3_MIN_VERSION=3.1.8
+SDL3_MIN_VERSION=3.2.0
 SDL3_BUILD_VERSION=3.99.99 # git
 GLEW_MIN_VERSION=2.2.0
 GLEW_BUILD_VERSION=2.2.0
@@ -10610,14 +10755,14 @@ else
   BUILD_FREETYPE2_FALSE=
 fi
 
- if true; then
+ if test "x$enable_debug" != "xyes"; then
   BUILD_MIMALLOC_TRUE=
   BUILD_MIMALLOC_FALSE='#'
 else
   BUILD_MIMALLOC_TRUE='#'
   BUILD_MIMALLOC_FALSE=
 fi
-
+ # can't find a way to make it work...
 
 BUNDLED_LIBS_DIR=libraries
 BUNDLED_BASS_DIR=$BUNDLED_LIBS_DIR/bass
@@ -11407,7 +11552,8 @@ $config_headers
 Configuration commands:
 $config_commands
 
-Report bugs to <william@horvath.blog>."
+Report bugs to <william@horvath.blog>.
+McOsu-ng home page: <https://github.com/whrvt/McOsu-ng>."
 
 _ACEOF
 ac_cs_config=`printf "%s\n" "$ac_configure_args" | sed "$ac_safe_unquote"`

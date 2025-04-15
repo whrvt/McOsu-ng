@@ -542,7 +542,7 @@ void DirectX11Shader::onJustBeforeDraw()
 			D3D11_MAPPED_SUBRESOURCE mappedResource;
 			if (FAILED(dx11->getDeviceContext()->Map(constantBuffer, 0, D3D11_MAP::D3D11_MAP_WRITE_DISCARD, 0, &mappedResource)))
 			{
-				debugLog("ERROR: DirectX11Shader::setUniform1f() failed to Map()!\n");
+				debugLog("ERROR: failed to Map()!\n");
 				continue;
 			}
 

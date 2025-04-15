@@ -56,7 +56,7 @@ public:
 	virtual void draw3D2(Graphics *g);
 	virtual void update(long curPos);
 
-	virtual bool isCircle() {return true;}
+	virtual constexpr forceinline bool isCircle() const {return true;}
 
 	void updateStackPosition(float stackOffset);
 	void miss(long curPos);

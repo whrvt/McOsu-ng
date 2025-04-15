@@ -2055,6 +2055,8 @@ OsuScore::HIT OsuBeatmap::addHitResult(OsuHitObject *hitObject, OsuScore::HIT hi
 					addHealth(m_osu->getScore()->getHealthIncrease(this, returnedHit), true);
 					m_osu->getScore()->addHitResultComboEnd(returnedHit);
 					break;
+				default:
+					break;
 				}
 			}
 			else if (hit != OsuScore::HIT::HIT_MISS)

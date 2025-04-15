@@ -11,9 +11,9 @@
 
 #include "cbase.h"
 
-#ifdef MCENGINE_FEATURE_PTHREADS
+#if defined(MCENGINE_FEATURE_MULTITHREADING) && !defined(__SWITCH__)
 
-#include <pthread.h>
+#include "Thread.h"
 
 #endif
 
@@ -57,9 +57,10 @@ private:
 	bool _downloadUpdate(UString url);
 	void _installUpdate(UString zipFilePath);
 
-#ifdef MCENGINE_FEATURE_PTHREADS
+#if defined(MCENGINE_FEATURE_MULTITHREADING) && !defined(__SWITCH__)
 
-	pthread_t m_updateThread;
+	McThread *m_updateThread;
+	bool m_bThreadDone;
 
 #endif
 

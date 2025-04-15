@@ -206,7 +206,7 @@ Osu::Osu(Osu2 *osu2, int instanceID)
 	if (openvr->isReady()) // automatically enable VR mode if it was compiled with OpenVR support and is available
 		osu_vr.setValue(1.0f);
 
-	env->setWindowTitle("McOsu");
+	env->setWindowTitle(PACKAGE_NAME);
 	env->setCursorVisible(false);
 
 	engine->getConsoleBox()->setRequireShiftToActivate(true);
@@ -1222,7 +1222,7 @@ void Osu::update()
 
 void Osu::updateMods()
 {
-	debugLog("Osu::updateMods()\n");
+	debugLog("\n");
 
 	m_bModAuto = osu_mods.getString().find("auto") != -1;
 	m_bModAutopilot = osu_mods.getString().find("autopilot") != -1;
@@ -1863,7 +1863,7 @@ void Osu::saveScreenshot()
 
 void Osu::onBeforePlayStart()
 {
-	debugLog("Osu::onBeforePlayStart()\n");
+	debugLog("\n");
 
 	engine->getSound()->play(m_skin->getMenuHit());
 
@@ -1899,7 +1899,7 @@ void Osu::onBeforePlayStart()
 
 void Osu::onPlayStart()
 {
-	debugLog("Osu::onPlayStart()\n");
+	debugLog("\n");
 
 	m_snd_change_check_interval_ref->setValue(0.0f);
 
@@ -1922,7 +1922,7 @@ void Osu::onPlayStart()
 
 void Osu::onPlayEnd(bool quit)
 {
-	debugLog("Osu::onPlayEnd()\n");
+	debugLog("\n");
 
 	OsuRichPresence::onPlayEnd(this, quit);
 
@@ -2116,7 +2116,7 @@ bool Osu::shouldFallBackToLegacySliderRenderer()
 
 void Osu::onResolutionChanged(Vector2 newResolution)
 {
-	debugLog("Osu::onResolutionChanged(%i, %i), minimized = %i\n", (int)newResolution.x, (int)newResolution.y, (int)engine->isMinimized());
+	debugLog("minimized = %i\n", (int)newResolution.x, (int)newResolution.y, (int)engine->isMinimized());
 
 	if (engine->isMinimized()) return; // ignore if minimized
 
@@ -2192,7 +2192,7 @@ void Osu::onDPIChanged()
 
 void Osu::rebuildRenderTargets()
 {
-	debugLog("Osu(%i)::rebuildRenderTargets: %fx%f\n", m_iInstanceID, g_vInternalResolution.x, g_vInternalResolution.y);
+	debugLog("Osu(%i) %fx%f\n", m_iInstanceID, g_vInternalResolution.x, g_vInternalResolution.y);
 
 	m_backBuffer->rebuild(0, 0, g_vInternalResolution.x, g_vInternalResolution.y);
 
@@ -2248,7 +2248,7 @@ void Osu::reloadFonts()
 
 void Osu::updateMouseSettings()
 {
-	debugLog("Osu::updateMouseSettings()\n");
+	debugLog("\n");
 
 	// mouse scaling & offset
 	Vector2 offset = Vector2(0, 0);
@@ -2274,7 +2274,7 @@ void Osu::updateMouseSettings()
 void Osu::updateWindowsKeyDisable()
 {
 	if (debug->getBool())
-		debugLog("Osu::updateWindowsKeyDisable()\n");
+		debugLog("\n");
 
 	if (isInVRMode()) return;
 
@@ -2401,7 +2401,7 @@ void Osu::onMinimized()
 
 bool Osu::onShutdown()
 {
-	debugLog("Osu::onShutdown()\n");
+	debugLog("\n");
 
 	if (!osu_alt_f4_quits_even_while_playing.getBool() && isInPlayMode())
 	{
@@ -2546,7 +2546,7 @@ void Osu::onLetterboxingChange(UString oldValue, UString newValue)
 void Osu::updateConfineCursor()
 {
 	if (debug->getBool())
-		debugLog("Osu::updateConfineCursor()\n");
+		debugLog("\n");
 
 	if (isInVRMode() || m_iInstanceID > 0) return;
 
