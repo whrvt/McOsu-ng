@@ -934,11 +934,11 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 					if (!inBackground)
 					{
 						const double actualGameFps = static_cast<double>(frameCountSinceLastFpsCalc) / fpsCalcTimer->getElapsedTime();
-						if (actualGameFps < targetFps * 0.99f && actualGameFps > targetFps * 0.95f)
+						if (actualGameFps < targetFps * 0.99f && actualGameFps > targetFps * 0.85f)
 							fpsAdjustment -= 0.5f;
 						else if (actualGameFps > targetFps * 1.005f)
-							fpsAdjustment = 0.0f;
-						clamp<double>(fpsAdjustment, -5.0f, 0.0f);
+							fpsAdjustment += 0.5f;
+						clamp<double>(fpsAdjustment, -15.0f, 0.0f);
 					}
 					else fpsAdjustment = 0.0f;
 

@@ -65,7 +65,7 @@ $(DEPS_PREFIX)/SDL3.built: $(DEPS_PREFIX)/FREETYPE2.built $(DEPS_CACHE)/SDL3.sou
 	$(MKDIR_P) $(DEPS_PREFIX) $(DEPS_PREFIX)/lib/pkgconfig
 	$(GIT) clone $(DEPS_CACHE)/SDL3 $(DEPS_PREFIX)/SDL3 && \
 	$(GIT) -C $(DEPS_PREFIX)/SDL3 remote set-url origin https://github.com/libsdl-org/SDL.git && \
-	$(GIT) -C $(DEPS_PREFIX)/SDL3 pull && $(GIT) -C $(DEPS_PREFIX)/SDL3 checkout release-3.2.10 && \
+	$(GIT) -C $(DEPS_PREFIX)/SDL3 pull && \
 	$(MKDIR_P) $(DEPS_PREFIX)/SDL3/build
 	cd $(DEPS_PREFIX)/SDL3 && \
 	patch -Np1<$(abs_top_srcdir)/build/aux/sdl-c23bool.patch && \
@@ -153,8 +153,9 @@ $(DEPS_PREFIX)/libjpeg.built: $(DEPS_CACHE)/libjpeg-$(LIBJPEG_VERSION).source
 		-D CMAKE_BUILD_TYPE="$(if $(ENABLE_DEBUG),Debug,Release)" \
 		-D CMAKE_INSTALL_PREFIX="$(DEPS_PREFIX)" \
 		-D CMAKE_C_COMPILER="$(CC_NOCCACHE)" \
-		-D CMAKE_C_FLAGS="$(CFLAGS)" \
-		-D REQUIRE_SIMD=ON \
+		-DCMAKE_C_FLAGS="$(CFLAGS)" \
+		-DCMAKE_ASM_NASM_FLAGS="-DPIC" \
+		$(if $(filter x86_64,$(host_cpu)),-DWITH_SIMD=ON,-DCMAKE_ASM_NASM_OBJECT_FORMAT="elf32" $(if $(filter gcc,$(CC)),-DWITH_SIMD=ON,-DWITH_SIMD=OFF)) \
 		$(if $(SDL3_STATIC),-DENABLE_STATIC=ON -DENABLE_SHARED=OFF,-DENABLE_STATIC=OFF -DENABLE_SHARED=ON) && \
 	cmake --build build && \
 	cmake --install build
@@ -293,6 +294,7 @@ MCOSU_NG_INCLUDE_FLAGS := $(shell find $(srcdir)/src -not -path '*/.*' -type d -
 McOsu_ng_CPPFLAGS := $(MCOSU_CPPFLAGS)
 
 McOsu_ng_CXXFLAGS := \
+	$(CXXFLAGS_EXTRA) \
 	$(MCOSU_CXXFLAGS) \
 	$(MCOSU_NG_INCLUDE_FLAGS) \
 	-I$(srcdir)/$(BUNDLED_BASS_DIR)/include \
@@ -307,13 +309,12 @@ McOsu_ng_CXXFLAGS := \
 	$(LIBPNG_CFLAGS) \
 	$(BZIP2_CFLAGS) \
 	$(LIBJPEG_CFLAGS) \
-	$(ZLIB_CFLAGS) \
-	-pthread
+	$(ZLIB_CFLAGS)
 
 McOsu_ng_LDFLAGS := \
 	$(MIMALLOC_LIBS) \
 	-Wl,-rpath='$$ORIGIN/lib',-rpath='$$ORIGIN' \
-	-L$(srcdir)/$(BUNDLED_BASS_DIR)/lib/linux \
+	-L$(srcdir)/$(BUNDLED_BASS_DIR)/lib/$(host_cpu) \
 	-lbass \
 	$(SDL3_LIBS) \
 	$(X11_LIBS) \
@@ -326,7 +327,8 @@ McOsu_ng_LDFLAGS := \
 	$(BZIP2_LIBS) \
 	$(LIBJPEG_LIBS) \
 	$(ZLIB_LIBS) \
-	-lpthread
+	$(MCOSU_LDFLAGS) \
+	$(LDFLAGS_EXTRA)
 
 compile_commands.json: clean
 	@$(BEAR) --version || { echo bear is unavailable to generate a compile_commands.json, install bear && exit 1; }
@@ -359,8 +361,8 @@ install-libs:
 	$(INSTALL) -dm 755 "$(DESTDIR)$(bindir)/materials"
 	$(INSTALL) -dm 755 "$(DESTDIR)$(bindir)/models"
 	$(INSTALL) -dm 755 "$(DESTDIR)$(bindir)/cfg"
-	$(INSTALL) -m 755 $(srcdir)/$(BUNDLED_BASS_DIR)/lib/linux/libbass.so "$(DESTDIR)$(bindir)/lib/"
-	$(INSTALL) -m 755 $(srcdir)/$(BUNDLED_BASS_FX_DIR)/lib/linux/libbass_fx.so "$(DESTDIR)$(bindir)/lib/"
+	$(INSTALL) -m 755 $(srcdir)/$(BUNDLED_BASS_DIR)/lib/$(host_cpu)/libbass.so "$(DESTDIR)$(bindir)/lib/"
+	$(INSTALL) -m 755 $(srcdir)/$(BUNDLED_BASS_FX_DIR)/lib/$(host_cpu)/libbass_fx.so "$(DESTDIR)$(bindir)/lib/"
 	find $(srcdir)/$(ASSETS_DIR)/models -type f -exec $(INSTALL) -Dm 644 '{''}' "$(DESTDIR)$(bindir)/models" ';'
 	find $(srcdir)/$(ASSETS_DIR)/shaders -type f -exec $(INSTALL) -Dm 644 '{''}' "$(DESTDIR)$(bindir)/shaders" ';'
 if BUILD_SDL3
@@ -428,8 +430,8 @@ dist-hook:
 EXTRA_DIST = \
 	$(BUNDLED_BASS_DIR)/include \
 	$(BUNDLED_BASS_FX_DIR)/include \
-	$(BUNDLED_BASS_DIR)/lib/linux/libbass.so \
-	$(BUNDLED_BASS_FX_DIR)/lib/linux/libbass_fx.so \
+	$(BUNDLED_BASS_DIR)/lib/$(host_cpu)/libbass.so \
+	$(BUNDLED_BASS_FX_DIR)/lib/$(host_cpu)/libbass_fx.so \
 	$(ASSETS_DIR)/models \
 	$(ASSETS_DIR)/shaders \
 	autogen.sh

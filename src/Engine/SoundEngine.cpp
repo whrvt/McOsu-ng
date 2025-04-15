@@ -207,8 +207,7 @@ SoundEngine::SoundEngine()
 
 	// apply default global settings
 	BASS_SetConfig(BASS_CONFIG_BUFFER, 100);
-	BASS_SetConfig(BASS_CONFIG_NET_BUFFER, 500);
-	//BASS_SetConfig(BASS_CONFIG_DEV_BUFFER, 10); // NOTE: only used by new osu atm, but not tested enough for offset problems
+	BASS_SetConfig(BASS_CONFIG_DEV_BUFFER, 10); // NOTE: only used by new osu atm
 	BASS_SetConfig(BASS_CONFIG_MP3_OLDGAPS, 1); // NOTE: only used by osu atm (all beatmaps timed to non-iTunesSMPB + 529 sample deletion offsets on old dlls pre 2015)
 	BASS_SetConfig(BASS_CONFIG_DEV_NONSTOP, 1); // NOTE: only used by osu atm (avoids lag/jitter in BASS_ChannelGetPosition() shortly after a BASS_ChannelPlay() after loading/silence)
 
@@ -219,7 +218,7 @@ SoundEngine::SoundEngine()
 
 #else
 
-	BASS_SetConfig(BASS_CONFIG_UPDATEPERIOD, 10); // NOTE: only used by osu atm (new osu uses 5 instead of 10, but not tested enough for offset problems)
+	BASS_SetConfig(BASS_CONFIG_UPDATEPERIOD, 5); // NOTE: only used by osu atm
 	BASS_SetConfig(BASS_CONFIG_UPDATETHREADS, 1);
 
 #endif

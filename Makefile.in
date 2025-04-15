@@ -684,6 +684,7 @@ LTLIBOBJS = @LTLIBOBJS@
 MAKEINFO = @MAKEINFO@
 MCOSU_CPPFLAGS = @MCOSU_CPPFLAGS@
 MCOSU_CXXFLAGS = @MCOSU_CXXFLAGS@
+MCOSU_LDFLAGS = @MCOSU_LDFLAGS@
 MIMALLOC_PREFIX = @MIMALLOC_PREFIX@
 MIMALLOC_VERSION = @MIMALLOC_VERSION@
 MKDIR_P = @MKDIR_P@
@@ -1004,6 +1005,7 @@ BUILT_SOURCES := $(DEPS_PREFIX)/mimalloc.built $(DEPS_PREFIX)/SDL3.built $(DEPS_
 MCOSU_NG_INCLUDE_FLAGS := $(shell find $(srcdir)/src -not -path '*/.*' -type d -printf "-I%p ")
 McOsu_ng_CPPFLAGS := $(MCOSU_CPPFLAGS)
 McOsu_ng_CXXFLAGS := \
+	$(CXXFLAGS_EXTRA) \
 	$(MCOSU_CXXFLAGS) \
 	$(MCOSU_NG_INCLUDE_FLAGS) \
 	-I$(srcdir)/$(BUNDLED_BASS_DIR)/include \
@@ -1018,13 +1020,12 @@ McOsu_ng_CXXFLAGS := \
 	$(LIBPNG_CFLAGS) \
 	$(BZIP2_CFLAGS) \
 	$(LIBJPEG_CFLAGS) \
-	$(ZLIB_CFLAGS) \
-	-pthread
+	$(ZLIB_CFLAGS)
 
 McOsu_ng_LDFLAGS := \
 	$(MIMALLOC_LIBS) \
 	-Wl,-rpath='$$ORIGIN/lib',-rpath='$$ORIGIN' \
-	-L$(srcdir)/$(BUNDLED_BASS_DIR)/lib/linux \
+	-L$(srcdir)/$(BUNDLED_BASS_DIR)/lib/$(host_cpu) \
 	-lbass \
 	$(SDL3_LIBS) \
 	$(X11_LIBS) \
@@ -1037,15 +1038,16 @@ McOsu_ng_LDFLAGS := \
 	$(BZIP2_LIBS) \
 	$(LIBJPEG_LIBS) \
 	$(ZLIB_LIBS) \
-	-lpthread
+	$(MCOSU_LDFLAGS) \
+	$(LDFLAGS_EXTRA)
 
 
 # TODO: distribution package files
 EXTRA_DIST = \
 	$(BUNDLED_BASS_DIR)/include \
 	$(BUNDLED_BASS_FX_DIR)/include \
-	$(BUNDLED_BASS_DIR)/lib/linux/libbass.so \
-	$(BUNDLED_BASS_FX_DIR)/lib/linux/libbass_fx.so \
+	$(BUNDLED_BASS_DIR)/lib/$(host_cpu)/libbass.so \
+	$(BUNDLED_BASS_FX_DIR)/lib/$(host_cpu)/libbass_fx.so \
 	$(ASSETS_DIR)/models \
 	$(ASSETS_DIR)/shaders \
 	autogen.sh
@@ -5551,7 +5553,7 @@ $(DEPS_CACHE)/SDL3.source:
 @BUILD_SDL3_TRUE@	$(MKDIR_P) $(DEPS_PREFIX) $(DEPS_PREFIX)/lib/pkgconfig
 @BUILD_SDL3_TRUE@	$(GIT) clone $(DEPS_CACHE)/SDL3 $(DEPS_PREFIX)/SDL3 && \
 @BUILD_SDL3_TRUE@	$(GIT) -C $(DEPS_PREFIX)/SDL3 remote set-url origin https://github.com/libsdl-org/SDL.git && \
-@BUILD_SDL3_TRUE@	$(GIT) -C $(DEPS_PREFIX)/SDL3 pull && $(GIT) -C $(DEPS_PREFIX)/SDL3 checkout release-3.2.10 && \
+@BUILD_SDL3_TRUE@	$(GIT) -C $(DEPS_PREFIX)/SDL3 pull && \
 @BUILD_SDL3_TRUE@	$(MKDIR_P) $(DEPS_PREFIX)/SDL3/build
 @BUILD_SDL3_TRUE@	cd $(DEPS_PREFIX)/SDL3 && \
 @BUILD_SDL3_TRUE@	patch -Np1<$(abs_top_srcdir)/build/aux/sdl-c23bool.patch && \
@@ -5627,8 +5629,9 @@ $(DEPS_CACHE)/libjpeg-$(LIBJPEG_VERSION).source:
 @BUILD_LIBJPEG_TRUE@		-D CMAKE_BUILD_TYPE="$(if $(ENABLE_DEBUG),Debug,Release)" \
 @BUILD_LIBJPEG_TRUE@		-D CMAKE_INSTALL_PREFIX="$(DEPS_PREFIX)" \
 @BUILD_LIBJPEG_TRUE@		-D CMAKE_C_COMPILER="$(CC_NOCCACHE)" \
-@BUILD_LIBJPEG_TRUE@		-D CMAKE_C_FLAGS="$(CFLAGS)" \
-@BUILD_LIBJPEG_TRUE@		-D REQUIRE_SIMD=ON \
+@BUILD_LIBJPEG_TRUE@		-DCMAKE_C_FLAGS="$(CFLAGS)" \
+@BUILD_LIBJPEG_TRUE@		-DCMAKE_ASM_NASM_FLAGS="-DPIC" \
+@BUILD_LIBJPEG_TRUE@		$(if $(filter x86_64,$(host_cpu)),-DWITH_SIMD=ON,-DCMAKE_ASM_NASM_OBJECT_FORMAT="elf32" $(if $(filter gcc,$(CC)),-DWITH_SIMD=ON,-DWITH_SIMD=OFF)) \
 @BUILD_LIBJPEG_TRUE@		$(if $(SDL3_STATIC),-DENABLE_STATIC=ON -DENABLE_SHARED=OFF,-DENABLE_STATIC=OFF -DENABLE_SHARED=ON) && \
 @BUILD_LIBJPEG_TRUE@	cmake --build build && \
 @BUILD_LIBJPEG_TRUE@	cmake --install build
@@ -5763,8 +5766,8 @@ install-libs:
 	$(INSTALL) -dm 755 "$(DESTDIR)$(bindir)/materials"
 	$(INSTALL) -dm 755 "$(DESTDIR)$(bindir)/models"
 	$(INSTALL) -dm 755 "$(DESTDIR)$(bindir)/cfg"
-	$(INSTALL) -m 755 $(srcdir)/$(BUNDLED_BASS_DIR)/lib/linux/libbass.so "$(DESTDIR)$(bindir)/lib/"
-	$(INSTALL) -m 755 $(srcdir)/$(BUNDLED_BASS_FX_DIR)/lib/linux/libbass_fx.so "$(DESTDIR)$(bindir)/lib/"
+	$(INSTALL) -m 755 $(srcdir)/$(BUNDLED_BASS_DIR)/lib/$(host_cpu)/libbass.so "$(DESTDIR)$(bindir)/lib/"
+	$(INSTALL) -m 755 $(srcdir)/$(BUNDLED_BASS_FX_DIR)/lib/$(host_cpu)/libbass_fx.so "$(DESTDIR)$(bindir)/lib/"
 	find $(srcdir)/$(ASSETS_DIR)/models -type f -exec $(INSTALL) -Dm 644 '{''}' "$(DESTDIR)$(bindir)/models" ';'
 	find $(srcdir)/$(ASSETS_DIR)/shaders -type f -exec $(INSTALL) -Dm 644 '{''}' "$(DESTDIR)$(bindir)/shaders" ';'
 @BUILD_SDL3_TRUE@	$(if $(SDL3_STATIC),,@cp -P "$(SDL3_PREFIX)/lib"/libSDL3*.so* "$(DESTDIR)$(bindir)/lib/")

@@ -5,6 +5,7 @@ AC_CONFIG_AUX_DIR([build/aux])
 AC_CONFIG_HEADERS([src/config.h])
 AC_PREFIX_DEFAULT([dist]) # default `make install`s to ./dist/bin/ (modify with --prefix=)
 
+AC_CANONICAL_HOST
 AC_CANONICAL_TARGET
 
 # no-define needed to avoid setting e.g. VERSION which conflicts with McEngine stuff
@@ -57,19 +58,6 @@ AC_ARG_ENABLE([system-deps],
 AC_ARG_ENABLE([static],
     AS_HELP_STRING([--enable-static], [Enable static linking where possible (default: no)]))
 
-PKG_PROG_PKG_CONFIG
-
-AS_IF([test "x$enable_static" = "xyes"], [
-    PKGTYPE="--static"
-])
-PKG_CONFIG="$PKG_CONFIG ${PKGTYPE:-}"
-
-AC_SUBST([PKGTYPE])
-AC_SUBST([PKG_CONFIG])
-
-AC_CHECK_HEADERS([X11/Xlib.h GL/gl.h GL/glu.h], [],
-    [AC_MSG_ERROR([Missing required X11/OpenGL development headers])])
-
 AS_IF([test "x$enable_clang" = "xyes"], [
     CC=clang
     CXX=clang++
@@ -80,6 +68,43 @@ AS_IF([test "x$enable_clang" = "xyes"], [
     AC_PROG_CXX
     CXXFLAGS="$CXXFLAGS -Wno-sign-compare"
 ])
+
+$MKDIR_P build/deps
+
+install -Dm755 /dev/stdin $PWD/build/x86_64-pc-linux-gnu-$CXX <<EOF
+#!/usr/bin/env sh
+$CXX "\$@"
+EOF
+
+install -Dm755 /dev/stdin $PWD/build/x86_64-pc-linux-gnu-$CC <<EOF
+#!/usr/bin/env sh
+$CC "\$@"
+EOF
+
+install -Dm755 /dev/stdin $PWD/build/i686-pc-linux-gnu-$CXX <<EOF
+#!/usr/bin/env sh
+$CXX -m32 "\$@"
+EOF
+
+install -Dm755 /dev/stdin $PWD/build/i686-pc-linux-gnu-$CC <<EOF
+#!/usr/bin/env sh
+$CC -m32 "\$@"
+EOF
+
+AS_IF([test "$host_cpu" = "i686"], [
+    CC="$PWD/build/i686-pc-linux-gnu-$CC"
+    CXX="$PWD/build/i686-pc-linux-gnu-$CXX"
+    MCOSU_LDFLAGS="-latomic"
+],[
+    CC="$PWD/build/x86_64-pc-linux-gnu-$CC"
+    CXX="$PWD/build/x86_64-pc-linux-gnu-$CXX"
+    COMMON_FLAGS="-mcmodel=small"
+])
+
+COMMON_FLAGS="$COMMON_FLAGS -ffunction-sections -fdata-sections -fwrapv -fno-strict-aliasing -fno-semantic-interposition"
+CXXFLAGS="$CXXFLAGS $COMMON_FLAGS"
+CFLAGS="$CFLAGS $COMMON_FLAGS"
+LDFLAGS="$LDFLAGS -static-libstdc++ -static-libgcc"
 
 # use c/c++17 because we can
 AC_LANG([C++])
@@ -99,15 +124,29 @@ AX_CHECK_COMPILE_FLAG([-std=gnu23], [
 
 AC_LANG_POP
 
+PKG_PROG_PKG_CONFIG
+
+AS_IF([test "x$enable_static" = "xyes"], [
+    PKGTYPE="--static"
+])
+PKG_CONFIG="$PKG_CONFIG ${PKGTYPE:-}"
+
+AC_SUBST([PKGTYPE])
+AC_SUBST([PKG_CONFIG])
+
+AC_CHECK_HEADERS([X11/Xlib.h GL/gl.h GL/glu.h], [],
+    [AC_MSG_ERROR([Missing required X11/OpenGL development headers])])
+
 AC_CHECK_PROG([BEAR], [bear], [bear])
 AC_SUBST([BEAR])
 
+CC_NOCCACHE="$CC"
+CXX_NOCCACHE="$CXX"
+AC_SUBST([CC_NOCCACHE])
+AC_SUBST([CXX_NOCCACHE])
+
 AC_CHECK_PROG([CCACHE], [ccache], [ccache])
 AS_IF([test "x$CCACHE" = "xccache"], [
-    CC_NOCCACHE="$CC"
-    CXX_NOCCACHE="$CXX"
-    AC_SUBST([CC_NOCCACHE])
-    AC_SUBST([CXX_NOCCACHE])
     CC="ccache $CC"
     CXX="ccache $CXX"
 ])
@@ -115,6 +154,9 @@ AS_IF([test "x$CCACHE" = "xccache"], [
 AS_IF([test "x$enable_native" != "xno"], [
     CXXFLAGS="$CXXFLAGS -march=native -mtune=native"
     CFLAGS="$CFLAGS -march=native -mtune=native"
+],[
+    CXXFLAGS="$CXXFLAGS -march=${host_cpu//_/-} -mtune=generic"
+    CFLAGS="$CFLAGS -march=${host_cpu//_/-} -mtune=generic"
 ])
 
 AS_IF([test "x$enable_debug" = "xyes"], [
@@ -133,11 +175,11 @@ AS_IF([test "x$enable_debug" = "xyes"], [
 ])
 
 AS_IF([test "x$enable_lto" != "xno"], [
-    AX_CHECK_COMPILE_FLAG([-flto=thin], [
-        AX_CHECK_LINK_FLAG([-fuse-ld=lld -flto=thin -fno-fat-lto-objects -fwhole-program-vtables], [
-            CXXFLAGS="$CXXFLAGS -flto=thin -fno-fat-lto-objects -fwhole-program-vtables"
-            CFLAGS="$CFLAGS -flto=thin -fno-fat-lto-objects -fwhole-program-vtables"
-            LDFLAGS="$LDFLAGS -fuse-ld=lld -flto=thin -fno-fat-lto-objects -fwhole-program-vtables -Wl,--lto-whole-program-visibility"
+    AX_CHECK_COMPILE_FLAG([-flto=full], [
+        AX_CHECK_LINK_FLAG([-fuse-ld=lld -flto=full -fno-fat-lto-objects -fwhole-program-vtables], [
+            CXXFLAGS="$CXXFLAGS -Qunused-arguments -fuse-ld=lld -flto=full -fno-fat-lto-objects -fwhole-program-vtables"
+            CFLAGS="$CFLAGS -Qunused-arguments -fuse-ld=lld -flto=full -fno-fat-lto-objects -fwhole-program-vtables"
+            LDFLAGS="$LDFLAGS -fuse-ld=lld -flto=full -fno-fat-lto-objects -fwhole-program-vtables"
         ])], [
         # gcc
         AX_CHECK_LINK_FLAG([-flto=auto -ffat-lto-objects -fuse-linker-plugin], [
@@ -148,15 +190,12 @@ AS_IF([test "x$enable_lto" != "xno"], [
     ])
 ])
 
-COMMON_FLAGS="-mcmodel=small -ffunction-sections -fdata-sections -fwrapv -fno-strict-aliasing -fno-semantic-interposition"
-CXXFLAGS="$CXXFLAGS $COMMON_FLAGS"
-CFLAGS="$CFLAGS $COMMON_FLAGS"
-LDFLAGS="$LDFLAGS -static-libstdc++ -static-libgcc"
-
-MCOSU_CXXFLAGS="$MCOSU_CXXFLAGS -Wall"
 MCOSU_CPPFLAGS="$MCOSU_CPPFLAGS"
-AC_SUBST([MCOSU_CXXFLAGS])
+MCOSU_CXXFLAGS="$MCOSU_CXXFLAGS -Wall -pthread"
+MCOSU_LDFLAGS="$MCOSU_LDFLAGS -pthread"
 AC_SUBST([MCOSU_CPPFLAGS])
+AC_SUBST([MCOSU_CXXFLAGS])
+AC_SUBST([MCOSU_LDFLAGS])
 
 AC_DEFUN([PKG_CHECK_AUTO], [
     AS_IF([test "x$enable_static" = "xyes"],
@@ -166,8 +205,7 @@ AC_DEFUN([PKG_CHECK_AUTO], [
 
 AC_SUBST([DEPS_PREFIX], ['${abs_top_builddir}/build/deps'])
 AC_SUBST([DEPS_CACHE], ['${abs_top_builddir}/build/cache'])
-
-$MKDIR_P build/deps
+AC_SUBST([bindir], [$bindir-$host_cpu])
 
 PKG_CHECK_AUTO([X11], [x11], [have_x11=yes], [have_x11=no])
 PKG_CHECK_AUTO([XI], [xi], [have_xi=yes], [have_xi=no])  # required for noSDL (TODO: ./configure --disable-sdl)
@@ -277,10 +315,10 @@ ASSETS_DIR=assets
 AC_SUBST([ASSETS_DIR])
 
 # sanity check
-AC_CHECK_FILE([$srcdir/$BUNDLED_BASS_DIR/lib/linux/libbass.so],
+AC_CHECK_FILE([$srcdir/$BUNDLED_BASS_DIR/lib/$host_cpu/libbass.so],
     [],
     [AC_MSG_ERROR([Required bundled library libbass.so not found])])
-AC_CHECK_FILE([$srcdir/$BUNDLED_BASS_FX_DIR/lib/linux/libbass_fx.so],
+AC_CHECK_FILE([$srcdir/$BUNDLED_BASS_FX_DIR/lib/$host_cpu/libbass_fx.so],
     [],
     [AC_MSG_ERROR([Required bundled library libbass_fx.so not found])])
 

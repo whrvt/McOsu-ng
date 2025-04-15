@@ -711,23 +711,24 @@ X11_LIBS
 X11_CFLAGS
 DEPS_CACHE
 DEPS_PREFIX
-MCOSU_CPPFLAGS
+MCOSU_LDFLAGS
 MCOSU_CXXFLAGS
+MCOSU_CPPFLAGS
 ENABLE_DEBUG
+CCACHE
 CXX_NOCCACHE
 CC_NOCCACHE
-CCACHE
 BEAR
+PKGTYPE
+PKG_CONFIG_LIBDIR
+PKG_CONFIG_PATH
+PKG_CONFIG
 am__fastdepCXX_FALSE
 am__fastdepCXX_TRUE
 CXXDEPMODE
 ac_ct_CXX
 CXXFLAGS
 CXX
-PKGTYPE
-PKG_CONFIG_LIBDIR
-PKG_CONFIG_PATH
-PKG_CONFIG
 TAR
 GIT
 WGET
@@ -855,12 +856,12 @@ CFLAGS
 LDFLAGS
 LIBS
 CPPFLAGS
-PKG_CONFIG
-PKG_CONFIG_PATH
-PKG_CONFIG_LIBDIR
 CXX
 CXXFLAGS
 CCC
+PKG_CONFIG
+PKG_CONFIG_PATH
+PKG_CONFIG_LIBDIR
 X11_CFLAGS
 X11_LIBS
 XI_CFLAGS
@@ -1536,13 +1537,13 @@ Some influential environment variables:
   LIBS        libraries to pass to the linker, e.g. -l<library>
   CPPFLAGS    (Objective) C/C++ preprocessor flags, e.g. -I<include dir> if
               you have headers in a nonstandard directory <include dir>
+  CXX         C++ compiler command
+  CXXFLAGS    C++ compiler flags
   PKG_CONFIG  path to pkg-config utility
   PKG_CONFIG_PATH
               directories to add to pkg-config's search path
   PKG_CONFIG_LIBDIR
               path overriding pkg-config's built-in search path
-  CXX         C++ compiler command
-  CXXFLAGS    C++ compiler flags
   X11_CFLAGS  C compiler flags for X11, overriding pkg-config
   X11_LIBS    linker flags for X11, overriding pkg-config
   XI_CFLAGS   C compiler flags for XI, overriding pkg-config
@@ -1770,6 +1771,41 @@ fi
   as_fn_set_status $ac_retval
 
 } # ac_fn_cxx_try_compile
+
+# ac_fn_cxx_check_header_compile LINENO HEADER VAR INCLUDES
+# ---------------------------------------------------------
+# Tests whether HEADER exists and can be compiled using the include files in
+# INCLUDES, setting the cache variable VAR accordingly.
+ac_fn_cxx_check_header_compile ()
+{
+  as_lineno=${as_lineno-"$1"} as_lineno_stack=as_lineno_stack=$as_lineno_stack
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $2" >&5
+printf %s "checking for $2... " >&6; }
+if eval test \${$3+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+$4
+#include <$2>
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"
+then :
+  eval "$3=yes"
+else case e in #(
+  e) eval "$3=no" ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext ;;
+esac
+fi
+eval ac_res=\$$3
+	       { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
+printf "%s\n" "$ac_res" >&6; }
+  eval $as_lineno_stack; ${as_lineno_stack:+:} unset as_lineno
+
+} # ac_fn_cxx_check_header_compile
 
 # ac_fn_cxx_try_link LINENO
 # -------------------------
@@ -5542,170 +5578,6 @@ fi
 
 
 
-
-if test "x$ac_cv_env_PKG_CONFIG_set" != "xset"; then
-	if test -n "$ac_tool_prefix"; then
-  # Extract the first word of "${ac_tool_prefix}pkg-config", so it can be a program name with args.
-set dummy ${ac_tool_prefix}pkg-config; ac_word=$2
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
-printf %s "checking for $ac_word... " >&6; }
-if test ${ac_cv_path_PKG_CONFIG+y}
-then :
-  printf %s "(cached) " >&6
-else case e in #(
-  e) case $PKG_CONFIG in
-  [\\/]* | ?:[\\/]*)
-  ac_cv_path_PKG_CONFIG="$PKG_CONFIG" # Let the user override the test with a path.
-  ;;
-  *)
-  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  case $as_dir in #(((
-    '') as_dir=./ ;;
-    */) ;;
-    *) as_dir=$as_dir/ ;;
-  esac
-    for ac_exec_ext in '' $ac_executable_extensions; do
-  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
-    ac_cv_path_PKG_CONFIG="$as_dir$ac_word$ac_exec_ext"
-    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-  done
-IFS=$as_save_IFS
-
-  ;;
-esac ;;
-esac
-fi
-PKG_CONFIG=$ac_cv_path_PKG_CONFIG
-if test -n "$PKG_CONFIG"; then
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $PKG_CONFIG" >&5
-printf "%s\n" "$PKG_CONFIG" >&6; }
-else
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
-printf "%s\n" "no" >&6; }
-fi
-
-
-fi
-if test -z "$ac_cv_path_PKG_CONFIG"; then
-  ac_pt_PKG_CONFIG=$PKG_CONFIG
-  # Extract the first word of "pkg-config", so it can be a program name with args.
-set dummy pkg-config; ac_word=$2
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
-printf %s "checking for $ac_word... " >&6; }
-if test ${ac_cv_path_ac_pt_PKG_CONFIG+y}
-then :
-  printf %s "(cached) " >&6
-else case e in #(
-  e) case $ac_pt_PKG_CONFIG in
-  [\\/]* | ?:[\\/]*)
-  ac_cv_path_ac_pt_PKG_CONFIG="$ac_pt_PKG_CONFIG" # Let the user override the test with a path.
-  ;;
-  *)
-  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  case $as_dir in #(((
-    '') as_dir=./ ;;
-    */) ;;
-    *) as_dir=$as_dir/ ;;
-  esac
-    for ac_exec_ext in '' $ac_executable_extensions; do
-  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
-    ac_cv_path_ac_pt_PKG_CONFIG="$as_dir$ac_word$ac_exec_ext"
-    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-  done
-IFS=$as_save_IFS
-
-  ;;
-esac ;;
-esac
-fi
-ac_pt_PKG_CONFIG=$ac_cv_path_ac_pt_PKG_CONFIG
-if test -n "$ac_pt_PKG_CONFIG"; then
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_pt_PKG_CONFIG" >&5
-printf "%s\n" "$ac_pt_PKG_CONFIG" >&6; }
-else
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
-printf "%s\n" "no" >&6; }
-fi
-
-  if test "x$ac_pt_PKG_CONFIG" = x; then
-    PKG_CONFIG=""
-  else
-    case $cross_compiling:$ac_tool_warned in
-yes:)
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: using cross tools not prefixed with host triplet" >&5
-printf "%s\n" "$as_me: WARNING: using cross tools not prefixed with host triplet" >&2;}
-ac_tool_warned=yes ;;
-esac
-    PKG_CONFIG=$ac_pt_PKG_CONFIG
-  fi
-else
-  PKG_CONFIG="$ac_cv_path_PKG_CONFIG"
-fi
-
-fi
-if test -n "$PKG_CONFIG"; then
-	_pkg_min_version=0.9.0
-	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking pkg-config is at least version $_pkg_min_version" >&5
-printf %s "checking pkg-config is at least version $_pkg_min_version... " >&6; }
-	if $PKG_CONFIG --atleast-pkgconfig-version $_pkg_min_version; then
-		{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-printf "%s\n" "yes" >&6; }
-	else
-		{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
-printf "%s\n" "no" >&6; }
-		PKG_CONFIG=""
-	fi
-fi
-if test -z "$PKG_CONFIG"; then
-	as_fn_error $? "pkg-config not found" "$LINENO" 5
-fi
-
-if test "x$enable_static" = "xyes"
-then :
-
-    PKGTYPE="--static"
-
-fi
-PKG_CONFIG="$PKG_CONFIG ${PKGTYPE:-}"
-
-
-
-
-       for ac_header in X11/Xlib.h GL/gl.h GL/glu.h
-do :
-  as_ac_Header=`printf "%s\n" "ac_cv_header_$ac_header" | sed "$as_sed_sh"`
-ac_fn_c_check_header_compile "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
-if eval test \"x\$"$as_ac_Header"\" = x"yes"
-then :
-  cat >>confdefs.h <<_ACEOF
-#define `printf "%s\n" "HAVE_$ac_header" | sed "$as_sed_cpp"` 1
-_ACEOF
-
-else case e in #(
-  e) as_fn_error $? "Missing required X11/OpenGL development headers" "$LINENO" 5 ;;
-esac
-fi
-
-done
-
-
-
-
-
-
-
 if test "x$enable_clang" = "xyes"
 then :
 
@@ -8311,6 +8183,49 @@ fi
 esac
 fi
 
+$MKDIR_P build/deps
+
+install -Dm755 /dev/stdin $PWD/build/x86_64-pc-linux-gnu-$CXX <<EOF
+#!/usr/bin/env sh
+$CXX "\$@"
+EOF
+
+install -Dm755 /dev/stdin $PWD/build/x86_64-pc-linux-gnu-$CC <<EOF
+#!/usr/bin/env sh
+$CC "\$@"
+EOF
+
+install -Dm755 /dev/stdin $PWD/build/i686-pc-linux-gnu-$CXX <<EOF
+#!/usr/bin/env sh
+$CXX -m32 "\$@"
+EOF
+
+install -Dm755 /dev/stdin $PWD/build/i686-pc-linux-gnu-$CC <<EOF
+#!/usr/bin/env sh
+$CC -m32 "\$@"
+EOF
+
+if test "$host_cpu" = "i686"
+then :
+
+    CC="$PWD/build/i686-pc-linux-gnu-$CC"
+    CXX="$PWD/build/i686-pc-linux-gnu-$CXX"
+    MCOSU_LDFLAGS="-latomic"
+
+else case e in #(
+  e)
+    CC="$PWD/build/x86_64-pc-linux-gnu-$CC"
+    CXX="$PWD/build/x86_64-pc-linux-gnu-$CXX"
+    COMMON_FLAGS="-mcmodel=small"
+ ;;
+esac
+fi
+
+COMMON_FLAGS="$COMMON_FLAGS -ffunction-sections -fdata-sections -fwrapv -fno-strict-aliasing -fno-semantic-interposition"
+CXXFLAGS="$CXXFLAGS $COMMON_FLAGS"
+CFLAGS="$CFLAGS $COMMON_FLAGS"
+LDFLAGS="$LDFLAGS -static-libstdc++ -static-libgcc"
+
 # use c/c++17 because we can
 ac_ext=cpp
 ac_cpp='$CXXCPP $CPPFLAGS'
@@ -8436,6 +8351,170 @@ ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ex
 ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 
 
+
+
+
+
+
+
+
+if test "x$ac_cv_env_PKG_CONFIG_set" != "xset"; then
+	if test -n "$ac_tool_prefix"; then
+  # Extract the first word of "${ac_tool_prefix}pkg-config", so it can be a program name with args.
+set dummy ${ac_tool_prefix}pkg-config; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+if test ${ac_cv_path_PKG_CONFIG+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) case $PKG_CONFIG in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_PKG_CONFIG="$PKG_CONFIG" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    ac_cv_path_PKG_CONFIG="$as_dir$ac_word$ac_exec_ext"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac ;;
+esac
+fi
+PKG_CONFIG=$ac_cv_path_PKG_CONFIG
+if test -n "$PKG_CONFIG"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $PKG_CONFIG" >&5
+printf "%s\n" "$PKG_CONFIG" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+
+fi
+if test -z "$ac_cv_path_PKG_CONFIG"; then
+  ac_pt_PKG_CONFIG=$PKG_CONFIG
+  # Extract the first word of "pkg-config", so it can be a program name with args.
+set dummy pkg-config; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+if test ${ac_cv_path_ac_pt_PKG_CONFIG+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) case $ac_pt_PKG_CONFIG in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_ac_pt_PKG_CONFIG="$ac_pt_PKG_CONFIG" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    ac_cv_path_ac_pt_PKG_CONFIG="$as_dir$ac_word$ac_exec_ext"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac ;;
+esac
+fi
+ac_pt_PKG_CONFIG=$ac_cv_path_ac_pt_PKG_CONFIG
+if test -n "$ac_pt_PKG_CONFIG"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_pt_PKG_CONFIG" >&5
+printf "%s\n" "$ac_pt_PKG_CONFIG" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+  if test "x$ac_pt_PKG_CONFIG" = x; then
+    PKG_CONFIG=""
+  else
+    case $cross_compiling:$ac_tool_warned in
+yes:)
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: using cross tools not prefixed with host triplet" >&5
+printf "%s\n" "$as_me: WARNING: using cross tools not prefixed with host triplet" >&2;}
+ac_tool_warned=yes ;;
+esac
+    PKG_CONFIG=$ac_pt_PKG_CONFIG
+  fi
+else
+  PKG_CONFIG="$ac_cv_path_PKG_CONFIG"
+fi
+
+fi
+if test -n "$PKG_CONFIG"; then
+	_pkg_min_version=0.9.0
+	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking pkg-config is at least version $_pkg_min_version" >&5
+printf %s "checking pkg-config is at least version $_pkg_min_version... " >&6; }
+	if $PKG_CONFIG --atleast-pkgconfig-version $_pkg_min_version; then
+		{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+	else
+		{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+		PKG_CONFIG=""
+	fi
+fi
+if test -z "$PKG_CONFIG"; then
+	as_fn_error $? "pkg-config not found" "$LINENO" 5
+fi
+
+if test "x$enable_static" = "xyes"
+then :
+
+    PKGTYPE="--static"
+
+fi
+PKG_CONFIG="$PKG_CONFIG ${PKGTYPE:-}"
+
+
+
+
+       for ac_header in X11/Xlib.h GL/gl.h GL/glu.h
+do :
+  as_ac_Header=`printf "%s\n" "ac_cv_header_$ac_header" | sed "$as_sed_sh"`
+ac_fn_cxx_check_header_compile "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
+if eval test \"x\$"$as_ac_Header"\" = x"yes"
+then :
+  cat >>confdefs.h <<_ACEOF
+#define `printf "%s\n" "HAVE_$ac_header" | sed "$as_sed_cpp"` 1
+_ACEOF
+
+else case e in #(
+  e) as_fn_error $? "Missing required X11/OpenGL development headers" "$LINENO" 5 ;;
+esac
+fi
+
+done
+
 # Extract the first word of "bear", so it can be a program name with args.
 set dummy bear; ac_word=$2
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
@@ -8478,6 +8557,11 @@ else
 printf "%s\n" "no" >&6; }
 fi
 
+
+
+
+CC_NOCCACHE="$CC"
+CXX_NOCCACHE="$CXX"
 
 
 
@@ -8527,10 +8611,6 @@ fi
 if test "x$CCACHE" = "xccache"
 then :
 
-    CC_NOCCACHE="$CC"
-    CXX_NOCCACHE="$CXX"
-
-
     CC="ccache $CC"
     CXX="ccache $CXX"
 
@@ -8542,6 +8622,12 @@ then :
     CXXFLAGS="$CXXFLAGS -march=native -mtune=native"
     CFLAGS="$CFLAGS -march=native -mtune=native"
 
+else case e in #(
+  e)
+    CXXFLAGS="$CXXFLAGS -march=${host_cpu//_/-} -mtune=generic"
+    CFLAGS="$CFLAGS -march=${host_cpu//_/-} -mtune=generic"
+ ;;
+esac
 fi
 
 if test "x$enable_debug" = "xyes"
@@ -8571,9 +8657,9 @@ fi
 if test "x$enable_lto" != "xno"
 then :
 
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether the C++ compiler accepts -flto=thin" >&5
-printf %s "checking whether the C++ compiler accepts -flto=thin... " >&6; }
-if test ${ax_cv_check_cxxflags___flto_thin+y}
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether the C++ compiler accepts -flto=full" >&5
+printf %s "checking whether the C++ compiler accepts -flto=full... " >&6; }
+if test ${ax_cv_check_cxxflags___flto_full+y}
 then :
   printf %s "(cached) " >&6
 else case e in #(
@@ -8582,7 +8668,7 @@ else case e in #(
   if test x"$GXX" = xyes ; then
     add_gnu_werror="-Werror"
   fi
-  CXXFLAGS="$CXXFLAGS  -flto=thin $add_gnu_werror"
+  CXXFLAGS="$CXXFLAGS  -flto=full $add_gnu_werror"
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -8596,29 +8682,29 @@ main (void)
 _ACEOF
 if ac_fn_cxx_try_compile "$LINENO"
 then :
-  ax_cv_check_cxxflags___flto_thin=yes
+  ax_cv_check_cxxflags___flto_full=yes
 else case e in #(
-  e) ax_cv_check_cxxflags___flto_thin=no ;;
+  e) ax_cv_check_cxxflags___flto_full=no ;;
 esac
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
   CXXFLAGS=$ax_check_save_flags ;;
 esac
 fi
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ax_cv_check_cxxflags___flto_thin" >&5
-printf "%s\n" "$ax_cv_check_cxxflags___flto_thin" >&6; }
-if test "x$ax_cv_check_cxxflags___flto_thin" = xyes
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ax_cv_check_cxxflags___flto_full" >&5
+printf "%s\n" "$ax_cv_check_cxxflags___flto_full" >&6; }
+if test "x$ax_cv_check_cxxflags___flto_full" = xyes
 then :
 
-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether the linker accepts -fuse-ld=lld -flto=thin -fno-fat-lto-objects -fwhole-program-vtables" >&5
-printf %s "checking whether the linker accepts -fuse-ld=lld -flto=thin -fno-fat-lto-objects -fwhole-program-vtables... " >&6; }
-if test ${ax_cv_check_ldflags___fuse_ld_lld__flto_thin__fno_fat_lto_objects__fwhole_program_vtables+y}
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether the linker accepts -fuse-ld=lld -flto=full -fno-fat-lto-objects -fwhole-program-vtables" >&5
+printf %s "checking whether the linker accepts -fuse-ld=lld -flto=full -fno-fat-lto-objects -fwhole-program-vtables... " >&6; }
+if test ${ax_cv_check_ldflags___fuse_ld_lld__flto_full__fno_fat_lto_objects__fwhole_program_vtables+y}
 then :
   printf %s "(cached) " >&6
 else case e in #(
   e)
   ax_check_save_flags=$LDFLAGS
-  LDFLAGS="$LDFLAGS  -fuse-ld=lld -flto=thin -fno-fat-lto-objects -fwhole-program-vtables"
+  LDFLAGS="$LDFLAGS  -fuse-ld=lld -flto=full -fno-fat-lto-objects -fwhole-program-vtables"
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -8632,9 +8718,9 @@ main (void)
 _ACEOF
 if ac_fn_cxx_try_link "$LINENO"
 then :
-  ax_cv_check_ldflags___fuse_ld_lld__flto_thin__fno_fat_lto_objects__fwhole_program_vtables=yes
+  ax_cv_check_ldflags___fuse_ld_lld__flto_full__fno_fat_lto_objects__fwhole_program_vtables=yes
 else case e in #(
-  e) ax_cv_check_ldflags___fuse_ld_lld__flto_thin__fno_fat_lto_objects__fwhole_program_vtables=no ;;
+  e) ax_cv_check_ldflags___fuse_ld_lld__flto_full__fno_fat_lto_objects__fwhole_program_vtables=no ;;
 esac
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam \
@@ -8642,14 +8728,14 @@ rm -f core conftest.err conftest.$ac_objext conftest.beam \
   LDFLAGS=$ax_check_save_flags ;;
 esac
 fi
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ax_cv_check_ldflags___fuse_ld_lld__flto_thin__fno_fat_lto_objects__fwhole_program_vtables" >&5
-printf "%s\n" "$ax_cv_check_ldflags___fuse_ld_lld__flto_thin__fno_fat_lto_objects__fwhole_program_vtables" >&6; }
-if test "x$ax_cv_check_ldflags___fuse_ld_lld__flto_thin__fno_fat_lto_objects__fwhole_program_vtables" = xyes
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ax_cv_check_ldflags___fuse_ld_lld__flto_full__fno_fat_lto_objects__fwhole_program_vtables" >&5
+printf "%s\n" "$ax_cv_check_ldflags___fuse_ld_lld__flto_full__fno_fat_lto_objects__fwhole_program_vtables" >&6; }
+if test "x$ax_cv_check_ldflags___fuse_ld_lld__flto_full__fno_fat_lto_objects__fwhole_program_vtables" = xyes
 then :
 
-            CXXFLAGS="$CXXFLAGS -flto=thin -fno-fat-lto-objects -fwhole-program-vtables"
-            CFLAGS="$CFLAGS -flto=thin -fno-fat-lto-objects -fwhole-program-vtables"
-            LDFLAGS="$LDFLAGS -fuse-ld=lld -flto=thin -fno-fat-lto-objects -fwhole-program-vtables -Wl,--lto-whole-program-visibility"
+            CXXFLAGS="$CXXFLAGS -Qunused-arguments -fuse-ld=lld -flto=full -fno-fat-lto-objects -fwhole-program-vtables"
+            CFLAGS="$CFLAGS -Qunused-arguments -fuse-ld=lld -flto=full -fno-fat-lto-objects -fwhole-program-vtables"
+            LDFLAGS="$LDFLAGS -fuse-ld=lld -flto=full -fno-fat-lto-objects -fwhole-program-vtables"
 
 else case e in #(
   e) : ;;
@@ -8712,13 +8798,10 @@ fi
 
 fi
 
-COMMON_FLAGS="-mcmodel=small -ffunction-sections -fdata-sections -fwrapv -fno-strict-aliasing -fno-semantic-interposition"
-CXXFLAGS="$CXXFLAGS $COMMON_FLAGS"
-CFLAGS="$CFLAGS $COMMON_FLAGS"
-LDFLAGS="$LDFLAGS -static-libstdc++ -static-libgcc"
-
-MCOSU_CXXFLAGS="$MCOSU_CXXFLAGS -Wall"
 MCOSU_CPPFLAGS="$MCOSU_CPPFLAGS"
+MCOSU_CXXFLAGS="$MCOSU_CXXFLAGS -Wall -pthread"
+MCOSU_LDFLAGS="$MCOSU_LDFLAGS -pthread"
+
 
 
 
@@ -8728,8 +8811,8 @@ DEPS_PREFIX='${abs_top_builddir}/build/deps'
 
 DEPS_CACHE='${abs_top_builddir}/build/cache'
 
+bindir=$bindir-$host_cpu
 
-$MKDIR_P build/deps
 
 
     if test "x$enable_static" = "xyes"
@@ -10775,16 +10858,16 @@ ASSETS_DIR=assets
 
 
 # sanity check
-as_ac_File=`printf "%s\n" "ac_cv_file_$srcdir/$BUNDLED_BASS_DIR/lib/linux/libbass.so" | sed "$as_sed_sh"`
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $srcdir/$BUNDLED_BASS_DIR/lib/linux/libbass.so" >&5
-printf %s "checking for $srcdir/$BUNDLED_BASS_DIR/lib/linux/libbass.so... " >&6; }
+as_ac_File=`printf "%s\n" "ac_cv_file_$srcdir/$BUNDLED_BASS_DIR/lib/$host_cpu/libbass.so" | sed "$as_sed_sh"`
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $srcdir/$BUNDLED_BASS_DIR/lib/$host_cpu/libbass.so" >&5
+printf %s "checking for $srcdir/$BUNDLED_BASS_DIR/lib/$host_cpu/libbass.so... " >&6; }
 if eval test \${$as_ac_File+y}
 then :
   printf %s "(cached) " >&6
 else case e in #(
   e) test "$cross_compiling" = yes &&
   as_fn_error $? "cannot check for file existence when cross compiling" "$LINENO" 5
-if test -r "$srcdir/$BUNDLED_BASS_DIR/lib/linux/libbass.so"; then
+if test -r "$srcdir/$BUNDLED_BASS_DIR/lib/$host_cpu/libbass.so"; then
   eval "$as_ac_File=yes"
 else
   eval "$as_ac_File=no"
@@ -10802,16 +10885,16 @@ else case e in #(
 esac
 fi
 
-as_ac_File=`printf "%s\n" "ac_cv_file_$srcdir/$BUNDLED_BASS_FX_DIR/lib/linux/libbass_fx.so" | sed "$as_sed_sh"`
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $srcdir/$BUNDLED_BASS_FX_DIR/lib/linux/libbass_fx.so" >&5
-printf %s "checking for $srcdir/$BUNDLED_BASS_FX_DIR/lib/linux/libbass_fx.so... " >&6; }
+as_ac_File=`printf "%s\n" "ac_cv_file_$srcdir/$BUNDLED_BASS_FX_DIR/lib/$host_cpu/libbass_fx.so" | sed "$as_sed_sh"`
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $srcdir/$BUNDLED_BASS_FX_DIR/lib/$host_cpu/libbass_fx.so" >&5
+printf %s "checking for $srcdir/$BUNDLED_BASS_FX_DIR/lib/$host_cpu/libbass_fx.so... " >&6; }
 if eval test \${$as_ac_File+y}
 then :
   printf %s "(cached) " >&6
 else case e in #(
   e) test "$cross_compiling" = yes &&
   as_fn_error $? "cannot check for file existence when cross compiling" "$LINENO" 5
-if test -r "$srcdir/$BUNDLED_BASS_FX_DIR/lib/linux/libbass_fx.so"; then
+if test -r "$srcdir/$BUNDLED_BASS_FX_DIR/lib/$host_cpu/libbass_fx.so"; then
   eval "$as_ac_File=yes"
 else
   eval "$as_ac_File=no"
