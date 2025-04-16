@@ -249,10 +249,11 @@ $(DEPS_PREFIX)/zlib.built: $(DEPS_CACHE)/zlib-$(ZLIB_VERSION).source
 	$(MKDIR_P) $(DEPS_PREFIX)/zlib/build $(DEPS_PREFIX)/lib/pkgconfig
 	$(TAR) xf $(DEPS_CACHE)/zlib-$(ZLIB_VERSION).tar.gz -C $(DEPS_PREFIX)/zlib --strip-components=1 && \
 	cd $(DEPS_PREFIX)/zlib/build && PKG_CONFIG="$(PKG_CONFIG)" \
-		CC="$(CC)" CXX="$(CXX)" LD="$(LD)" CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS)" \
+		$(if $(findstring linux,$(host_os)),,uname=mingw) CC="$(CC)" CXX="$(CXX)" LD="$(LD)" CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS)" \
 		../configure --zlib-compat --prefix="$(DEPS_PREFIX)" $(if $(SDL3_STATIC),--static,) && \
 	$(MAKE) && \
 	$(MAKE) install
+	$(SED) -i 's|sharedlibdir=.*|sharedlibdir=$${libdir}|' $(DEPS_PREFIX)/lib/pkgconfig/zlib.pc && \
 	PKG_CONFIG="$(PKG_CONFIG)" \
 		$(PKG_CONFIG) --exists --print-errors zlib
 	touch $@
@@ -361,6 +362,12 @@ $(abs_top_srcdir)/.clangd: compile_commands.json
 
 compile-commands: $(McOsu_ng_OBJECTS) $(abs_top_srcdir)/.clangd
 
+# windows' loader has no concept of rpaths
+TEMP_DEST :=
+if !WIN_PLATFORM
+TEMP_DEST += lib/
+endif
+
 install-libs:
 	$(INSTALL) -dm 755 "$(DESTDIR)$(bindir)/screenshots"
 	$(INSTALL) -dm 755 "$(DESTDIR)$(bindir)/shaders"
@@ -369,36 +376,31 @@ install-libs:
 	$(INSTALL) -dm 755 "$(DESTDIR)$(bindir)/materials"
 	$(INSTALL) -dm 755 "$(DESTDIR)$(bindir)/models"
 	$(INSTALL) -dm 755 "$(DESTDIR)$(bindir)/cfg"
-if WIN_PLATFORM
-	$(INSTALL) -m 755 $(srcdir)/$(BUNDLED_BASS_DIR)/lib/$(SYSNAME)/$(host_cpu)/$(LIBPREFIX)bass$(DLLEXT) "$(DESTDIR)$(bindir)/"
-	$(INSTALL) -m 755 $(srcdir)/$(BUNDLED_BASS_FX_DIR)/lib/$(SYSNAME)/$(host_cpu)/$(LIBPREFIX)bass_fx$(DLLEXT) "$(DESTDIR)$(bindir)/"
-else
-	$(INSTALL) -m 755 $(srcdir)/$(BUNDLED_BASS_DIR)/lib/$(SYSNAME)/$(host_cpu)/$(LIBPREFIX)bass$(DLLEXT) "$(DESTDIR)$(bindir)/lib/"
-	$(INSTALL) -m 755 $(srcdir)/$(BUNDLED_BASS_FX_DIR)/lib/$(SYSNAME)/$(host_cpu)/$(LIBPREFIX)bass_fx$(DLLEXT) "$(DESTDIR)$(bindir)/lib/"
-endif
+	$(INSTALL) -m 755 $(srcdir)/$(BUNDLED_BASS_DIR)/lib/$(SYSNAME)/$(host_cpu)/$(LIBPREFIX)bass$(DLLEXT) "$(DESTDIR)$(bindir)/$(TEMP_DEST)"
+	$(INSTALL) -m 755 $(srcdir)/$(BUNDLED_BASS_FX_DIR)/lib/$(SYSNAME)/$(host_cpu)/$(LIBPREFIX)bass_fx$(DLLEXT) "$(DESTDIR)$(bindir)/$(TEMP_DEST)"
 	find $(srcdir)/$(ASSETS_DIR)/models -type f -exec $(INSTALL) -Dm 644 '{''}' "$(DESTDIR)$(bindir)/models" ';'
 	find $(srcdir)/$(ASSETS_DIR)/shaders -type f -exec $(INSTALL) -Dm 644 '{''}' "$(DESTDIR)$(bindir)/shaders" ';'
 if BUILD_SDL3
-	$(if $(SDL3_STATIC),,@cp -P "$(SDL3_PREFIX)/lib"/libSDL3*$(DLLEXT)* "$(DESTDIR)$(bindir)/lib/")
+	$(if $(SDL3_STATIC),,@cp -P "$(SDL3_PREFIX)/lib"/libSDL3*$(DLLEXT)* "$(DESTDIR)$(bindir)/$(TEMP_DEST)")
 endif
 if BUILD_GLEW
-	$(if $(SDL3_STATIC),,@cp -P "$(GLEW_PREFIX)/lib"/libGLEW*$(DLLEXT)* "$(DESTDIR)$(bindir)/lib/")
+	$(if $(SDL3_STATIC),,@cp -P "$(GLEW_PREFIX)/lib"/libGLEW*$(DLLEXT)* "$(DESTDIR)$(bindir)/$(TEMP_DEST)")
 endif
 if BUILD_LIBJPEG
 	$(if $(SDL3_STATIC),,@@libdir=$(LIBJPEG_PREFIX)/`test -d "$(LIBJPEG_PREFIX)/lib64" && echo "lib64" || echo "lib"`; \
-	cp -P "$$libdir"/libjpeg*$(DLLEXT)* "$(DESTDIR)$(bindir)/lib/")
+	cp -P "$$libdir"/libjpeg*$(DLLEXT)* "$(DESTDIR)$(bindir)/$(TEMP_DEST)")
 endif
 if BUILD_LIBPNG
-	$(if $(SDL3_STATIC),,@cp -P "$(LIBPNG_PREFIX)/lib"/libpng*$(DLLEXT)* "$(DESTDIR)$(bindir)/lib/")
+	$(if $(SDL3_STATIC),,@cp -P "$(LIBPNG_PREFIX)/lib"/libpng*$(DLLEXT)* "$(DESTDIR)$(bindir)/$(TEMP_DEST)")
 endif
 if BUILD_BZIP2
-	$(if $(SDL3_STATIC),,@cp -P "$(BZIP2_PREFIX)/lib"/libbz2*$(DLLEXT)* "$(DESTDIR)$(bindir)/lib/")
+	$(if $(SDL3_STATIC),,@cp -P "$(BZIP2_PREFIX)/lib"/libbz2*$(DLLEXT)* "$(DESTDIR)$(bindir)/$(TEMP_DEST)")
 endif
 if BUILD_ZLIB
-	$(if $(SDL3_STATIC),,@cp -P "$(ZLIB_PREFIX)/lib"/libz*$(DLLEXT)* "$(DESTDIR)$(bindir)/lib/")
+	$(if $(SDL3_STATIC),,@cp -P "$(ZLIB_PREFIX)/lib"/libz*$(DLLEXT)* "$(DESTDIR)$(bindir)/$(TEMP_DEST)")
 endif
 if BUILD_FREETYPE2
-	$(if $(SDL3_STATIC),,@cp -P "$(FREETYPE2_PREFIX)/lib"/libfreetype*$(DLLEXT)* "$(DESTDIR)$(bindir)/lib/")
+	$(if $(SDL3_STATIC),,@cp -P "$(FREETYPE2_PREFIX)/lib"/libfreetype*$(DLLEXT)* "$(DESTDIR)$(bindir)/$(TEMP_DEST)")
 endif
 
 # install hooks

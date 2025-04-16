@@ -106,6 +106,7 @@ bin_PROGRAMS = McOsu-ng$(EXEEXT)
 @BUILD_ZLIB_TRUE@am__append_12 = $(shell $(PKG_CONFIG) --libs zlib)
 @BUILD_FREETYPE2_TRUE@am__append_13 = $(shell $(PKG_CONFIG) --cflags freetype2)
 @BUILD_FREETYPE2_TRUE@am__append_14 = $(shell $(PKG_CONFIG) --libs freetype2)
+@WIN_PLATFORM_FALSE@am__append_15 = lib/
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
@@ -1053,6 +1054,9 @@ McOsu_ng_LDFLAGS := \
 	$(MCOSU_LDFLAGS) \
 	$(LDFLAGS_EXTRA)
 
+
+# windows' loader has no concept of rpaths
+TEMP_DEST := $(am__append_15)
 
 # TODO: distribution package files
 EXTRA_DIST = \
@@ -5719,10 +5723,11 @@ $(DEPS_CACHE)/zlib-$(ZLIB_VERSION).source:
 @BUILD_ZLIB_TRUE@	$(MKDIR_P) $(DEPS_PREFIX)/zlib/build $(DEPS_PREFIX)/lib/pkgconfig
 @BUILD_ZLIB_TRUE@	$(TAR) xf $(DEPS_CACHE)/zlib-$(ZLIB_VERSION).tar.gz -C $(DEPS_PREFIX)/zlib --strip-components=1 && \
 @BUILD_ZLIB_TRUE@	cd $(DEPS_PREFIX)/zlib/build && PKG_CONFIG="$(PKG_CONFIG)" \
-@BUILD_ZLIB_TRUE@		CC="$(CC)" CXX="$(CXX)" LD="$(LD)" CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS)" \
+@BUILD_ZLIB_TRUE@		$(if $(findstring linux,$(host_os)),,uname=mingw) CC="$(CC)" CXX="$(CXX)" LD="$(LD)" CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS)" \
 @BUILD_ZLIB_TRUE@		../configure --zlib-compat --prefix="$(DEPS_PREFIX)" $(if $(SDL3_STATIC),--static,) && \
 @BUILD_ZLIB_TRUE@	$(MAKE) && \
 @BUILD_ZLIB_TRUE@	$(MAKE) install
+@BUILD_ZLIB_TRUE@	$(SED) -i 's|sharedlibdir=.*|sharedlibdir=$${libdir}|' $(DEPS_PREFIX)/lib/pkgconfig/zlib.pc && \
 @BUILD_ZLIB_TRUE@	PKG_CONFIG="$(PKG_CONFIG)" \
 @BUILD_ZLIB_TRUE@		$(PKG_CONFIG) --exists --print-errors zlib
 @BUILD_ZLIB_TRUE@	touch $@
@@ -5783,20 +5788,18 @@ install-libs:
 	$(INSTALL) -dm 755 "$(DESTDIR)$(bindir)/materials"
 	$(INSTALL) -dm 755 "$(DESTDIR)$(bindir)/models"
 	$(INSTALL) -dm 755 "$(DESTDIR)$(bindir)/cfg"
-@WIN_PLATFORM_TRUE@	$(INSTALL) -m 755 $(srcdir)/$(BUNDLED_BASS_DIR)/lib/$(SYSNAME)/$(host_cpu)/$(LIBPREFIX)bass$(DLLEXT) "$(DESTDIR)$(bindir)/"
-@WIN_PLATFORM_TRUE@	$(INSTALL) -m 755 $(srcdir)/$(BUNDLED_BASS_FX_DIR)/lib/$(SYSNAME)/$(host_cpu)/$(LIBPREFIX)bass_fx$(DLLEXT) "$(DESTDIR)$(bindir)/"
-@WIN_PLATFORM_FALSE@	$(INSTALL) -m 755 $(srcdir)/$(BUNDLED_BASS_DIR)/lib/$(SYSNAME)/$(host_cpu)/$(LIBPREFIX)bass$(DLLEXT) "$(DESTDIR)$(bindir)/lib/"
-@WIN_PLATFORM_FALSE@	$(INSTALL) -m 755 $(srcdir)/$(BUNDLED_BASS_FX_DIR)/lib/$(SYSNAME)/$(host_cpu)/$(LIBPREFIX)bass_fx$(DLLEXT) "$(DESTDIR)$(bindir)/lib/"
+	$(INSTALL) -m 755 $(srcdir)/$(BUNDLED_BASS_DIR)/lib/$(SYSNAME)/$(host_cpu)/$(LIBPREFIX)bass$(DLLEXT) "$(DESTDIR)$(bindir)/$(TEMP_DEST)"
+	$(INSTALL) -m 755 $(srcdir)/$(BUNDLED_BASS_FX_DIR)/lib/$(SYSNAME)/$(host_cpu)/$(LIBPREFIX)bass_fx$(DLLEXT) "$(DESTDIR)$(bindir)/$(TEMP_DEST)"
 	find $(srcdir)/$(ASSETS_DIR)/models -type f -exec $(INSTALL) -Dm 644 '{''}' "$(DESTDIR)$(bindir)/models" ';'
 	find $(srcdir)/$(ASSETS_DIR)/shaders -type f -exec $(INSTALL) -Dm 644 '{''}' "$(DESTDIR)$(bindir)/shaders" ';'
-@BUILD_SDL3_TRUE@	$(if $(SDL3_STATIC),,@cp -P "$(SDL3_PREFIX)/lib"/libSDL3*$(DLLEXT)* "$(DESTDIR)$(bindir)/lib/")
-@BUILD_GLEW_TRUE@	$(if $(SDL3_STATIC),,@cp -P "$(GLEW_PREFIX)/lib"/libGLEW*$(DLLEXT)* "$(DESTDIR)$(bindir)/lib/")
+@BUILD_SDL3_TRUE@	$(if $(SDL3_STATIC),,@cp -P "$(SDL3_PREFIX)/lib"/libSDL3*$(DLLEXT)* "$(DESTDIR)$(bindir)/$(TEMP_DEST)")
+@BUILD_GLEW_TRUE@	$(if $(SDL3_STATIC),,@cp -P "$(GLEW_PREFIX)/lib"/libGLEW*$(DLLEXT)* "$(DESTDIR)$(bindir)/$(TEMP_DEST)")
 @BUILD_LIBJPEG_TRUE@	$(if $(SDL3_STATIC),,@@libdir=$(LIBJPEG_PREFIX)/`test -d "$(LIBJPEG_PREFIX)/lib64" && echo "lib64" || echo "lib"`; \
-@BUILD_LIBJPEG_TRUE@	cp -P "$$libdir"/libjpeg*$(DLLEXT)* "$(DESTDIR)$(bindir)/lib/")
-@BUILD_LIBPNG_TRUE@	$(if $(SDL3_STATIC),,@cp -P "$(LIBPNG_PREFIX)/lib"/libpng*$(DLLEXT)* "$(DESTDIR)$(bindir)/lib/")
-@BUILD_BZIP2_TRUE@	$(if $(SDL3_STATIC),,@cp -P "$(BZIP2_PREFIX)/lib"/libbz2*$(DLLEXT)* "$(DESTDIR)$(bindir)/lib/")
-@BUILD_ZLIB_TRUE@	$(if $(SDL3_STATIC),,@cp -P "$(ZLIB_PREFIX)/lib"/libz*$(DLLEXT)* "$(DESTDIR)$(bindir)/lib/")
-@BUILD_FREETYPE2_TRUE@	$(if $(SDL3_STATIC),,@cp -P "$(FREETYPE2_PREFIX)/lib"/libfreetype*$(DLLEXT)* "$(DESTDIR)$(bindir)/lib/")
+@BUILD_LIBJPEG_TRUE@	cp -P "$$libdir"/libjpeg*$(DLLEXT)* "$(DESTDIR)$(bindir)/$(TEMP_DEST)")
+@BUILD_LIBPNG_TRUE@	$(if $(SDL3_STATIC),,@cp -P "$(LIBPNG_PREFIX)/lib"/libpng*$(DLLEXT)* "$(DESTDIR)$(bindir)/$(TEMP_DEST)")
+@BUILD_BZIP2_TRUE@	$(if $(SDL3_STATIC),,@cp -P "$(BZIP2_PREFIX)/lib"/libbz2*$(DLLEXT)* "$(DESTDIR)$(bindir)/$(TEMP_DEST)")
+@BUILD_ZLIB_TRUE@	$(if $(SDL3_STATIC),,@cp -P "$(ZLIB_PREFIX)/lib"/libz*$(DLLEXT)* "$(DESTDIR)$(bindir)/$(TEMP_DEST)")
+@BUILD_FREETYPE2_TRUE@	$(if $(SDL3_STATIC),,@cp -P "$(FREETYPE2_PREFIX)/lib"/libfreetype*$(DLLEXT)* "$(DESTDIR)$(bindir)/$(TEMP_DEST)")
 
 # install hooks
 install-exec-hook: install-libs
