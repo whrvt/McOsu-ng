@@ -5040,6 +5040,7 @@ maintainer-clean-generic:
 	@echo "it deletes files that may require special tools to rebuild."
 	-$(am__rm_f) $(BUILT_SOURCES)
 	-$(am__rm_f) $(MAINTAINERCLEANFILES)
+@WIN_PLATFORM_TRUE@install-exec-hook:
 clean: clean-am
 
 clean-am: clean-binPROGRAMS clean-generic clean-local mostlyclean-am
@@ -5802,10 +5803,10 @@ install-libs:
 @BUILD_FREETYPE2_TRUE@	$(if $(SDL3_STATIC),,@cp -P "$(FREETYPE2_PREFIX)/lib"/libfreetype*$(DLLEXT)* "$(DESTDIR)$(bindir)/$(TEMP_DEST)")
 
 # install hooks
-install-exec-hook: install-libs
-	cd "$(DESTDIR)$(bindir)" && \
-	$(LN_S) -rf $(PROGRAMS) McEngine && \
-	$(LN_S) -rf $(PROGRAMS) McOsu
+@WIN_PLATFORM_FALSE@install-exec-hook: install-libs
+@WIN_PLATFORM_FALSE@	cd "$(DESTDIR)$(bindir)" && \
+@WIN_PLATFORM_FALSE@	$(LN_S) -rf $(PROGRAMS) McEngine && \
+@WIN_PLATFORM_FALSE@	$(LN_S) -rf $(PROGRAMS) McOsu
 
 uninstall-local:
 	rm -rf "$(DESTDIR)$(bindir)/"
