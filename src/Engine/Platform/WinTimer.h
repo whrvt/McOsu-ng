@@ -15,8 +15,8 @@
 
 //#define WIN32_LEAN_AND_MEAN
 //#define NOCRYPT
-#include "BaseTsd.h"
-#include <Windows.h>
+#include <windows.h>
+#include <basetsd.h>
 
 class WinTimer : public BaseTimer
 {

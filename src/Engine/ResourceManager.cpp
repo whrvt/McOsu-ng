@@ -16,7 +16,6 @@
 #ifdef MCENGINE_FEATURE_MULTITHREADING
 
 #include <mutex>
-#include "WinMinGW.Mutex.h"
 
 static std::mutex g_resourceManagerMutex;				// internal lock for nested async loads
 static std::mutex g_resourceManagerLoadingWorkMutex;	// work vector lock across all threads

@@ -1,3 +1,4 @@
+AC_LANG([C++])
 AC_PREREQ([2.71])
 AC_INIT([McOsu-ng], [33.11], [william@horvath.blog], [], [https://github.com/whrvt/McOsu-ng]) # don't report bugs to McKay :)
 AC_CONFIG_SRCDIR([src/Engine/Engine.cpp])
@@ -5,6 +6,7 @@ AC_CONFIG_AUX_DIR([build/aux])
 AC_CONFIG_HEADERS([src/config.h])
 AC_PREFIX_DEFAULT([dist]) # default `make install`s to ./dist/bin/ (modify with --prefix=)
 
+AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
 AC_CANONICAL_TARGET
 
@@ -58,48 +60,103 @@ AC_ARG_ENABLE([system-deps],
 AC_ARG_ENABLE([static],
     AS_HELP_STRING([--enable-static], [Enable static linking where possible (default: no)]))
 
+AS_IF([test "x$enable_static" = "xyes"], [
+    PKGTYPE="--static"
+])
+
+AC_SUBST([PKGTYPE])
+ac_cv_env_PKG_CONFIG_value="$PKG_CONFIG"
+ac_cv_env_PKG_CONFIG_set="set"
+
+PKG_CONFIG_PATH="$PWD/build/deps/lib/pkgconfig:$PWD/build/deps/lib64/pkgconfig"
+PKG_CONFIG_PATH_CUSTOM="$PKG_CONFIG_PATH"
+AC_SUBST([PKG_CONFIG_PATH])
+AC_SUBST([PKG_CONFIG_PATH_CUSTOM])
+
+mkdir -p build/deps
+
 AS_IF([test "x$enable_clang" = "xyes"], [
     CC=clang
     CXX=clang++
-    AC_PROG_CC([clang gcc cc])
-    AC_PROG_CXX([clang++ g++ c++])
 ],[
-    AC_PROG_CC
-    AC_PROG_CXX
-    CXXFLAGS="$CXXFLAGS -Wno-sign-compare"
+    CC=gcc
+    CXX=g++
 ])
 
-$MKDIR_P build/deps
+AS_IF([[case "$host_cpu" in
+  i[[3456789]]86*) host_cpu=i686 ;;
+esac]])
 
-install -Dm755 /dev/stdin $PWD/build/x86_64-pc-linux-gnu-$CXX <<EOF
-#!/usr/bin/env sh
-$CXX "\$@"
-EOF
-
-install -Dm755 /dev/stdin $PWD/build/x86_64-pc-linux-gnu-$CC <<EOF
-#!/usr/bin/env sh
-$CC "\$@"
-EOF
-
-install -Dm755 /dev/stdin $PWD/build/i686-pc-linux-gnu-$CXX <<EOF
-#!/usr/bin/env sh
-$CXX -m32 "\$@"
-EOF
-
-install -Dm755 /dev/stdin $PWD/build/i686-pc-linux-gnu-$CC <<EOF
+AS_IF([test "$host_os" = "linux-gnu"], [
+    AS_IF([test "$host_cpu" = "i686"], [
+        install -Dm755 /dev/stdin $PWD/build/$target-$CC <<EOF
 #!/usr/bin/env sh
 $CC -m32 "\$@"
 EOF
+        install -Dm755 /dev/stdin $PWD/build/$target-$CXX <<EOF
+#!/usr/bin/env sh
+$CXX -m32 "\$@"
+EOF
+        [[ "x$enable_clang" = "xyes" ]] && MCOSU_LDFLAGS="$MCOSU_LDFLAGS -latomic"
+    ],[
+        install -Dm755 /dev/stdin $PWD/build/$target-$CC <<EOF
+#!/usr/bin/env sh
+$CC "\$@"
+EOF
+        install -Dm755 /dev/stdin $PWD/build/$target-$CXX <<EOF
+#!/usr/bin/env sh
+$CXX "\$@"
+EOF
+        COMMON_FLAGS="-mcmodel=small"
+    ])
 
-AS_IF([test "$host_cpu" = "i686"], [
-    CC="$PWD/build/i686-pc-linux-gnu-$CC"
-    CXX="$PWD/build/i686-pc-linux-gnu-$CXX"
-    MCOSU_LDFLAGS="-latomic"
+    install -Dm755 /dev/stdin $PWD/build/pkg-config <<__EOF__
+#!/usr/bin/env sh
+PKG_CONFIG_PATH="$PWD/build/deps/lib/pkgconfig:$PWD/build/deps/lib64/pkgconfig" pkgconf --personality="$host_cpu-pc-linux-gnu" "$PKGTYPE" "\$@"
+__EOF__
+
+    CC="$PWD/build/$target-$CC"
+    CXX="$PWD/build/$target-$CXX"
+    ac_tool_prefix=
+    CMAKE_SYSTEM_NAME="Linux"
+    SYSNAME="linux"
+    DLLEXT=".so"
+    LIBPREFIX="lib"
+    BASS_LIBS="-lbass" # bass_fx is dlopen'd
+
+    AC_DEFINE([MCENGINE_PLATFORM_LINUX], [1], [Define if compiling for Linux.])
 ],[
-    CC="$PWD/build/x86_64-pc-linux-gnu-$CC"
-    CXX="$PWD/build/x86_64-pc-linux-gnu-$CXX"
-    COMMON_FLAGS="-mcmodel=small"
+AC_SUBST([PKG_CONFIG_SYSTEM_LIBRARY_PATH],["/usr/$host_cpu-w64-mingw32/lib"])
+AC_SUBST([PKG_CONFIG_SYSTEM_INCLUDE_PATH],["/usr/$host_cpu-w64-mingw32/include"])
+    install -Dm755 /dev/stdin $PWD/build/pkg-config <<__EOF__
+#!/usr/bin/env sh
+PKG_CONFIG_LIBDIR="/usr/$host_cpu-w64-mingw32/lib/pkgconfig" PKG_CONFIG_SYSTEM_INCLUDE_PATH="/usr/$host_cpu-w64-mingw32/include" \
+PKG_CONFIG_SYSTEM_LIBRARY_PATH="/usr/$host_cpu-w64-mingw32/lib" PKG_CONFIG_PATH="$PWD/build/deps/lib/pkgconfig:$PWD/build/deps/lib64/pkgconfig" \
+pkgconf --personality="$host_cpu-w64-mingw32" "$PKGTYPE" "\$@"
+__EOF__
+
+    CMAKE_SYSTEM_NAME="Windows"
+    SYSNAME="windows"
+    DLLEXT=".dll"
+    LIBPREFIX=""
+    BASS_LIBS="-lbass -lbass_fx"
+    LDFLAGS="$LDFLAGS -Wl,-Bstatic,--whole-archive -lwinpthread -Wl,--no-whole-archive,-Bdynamic"
+    AC_DEFINE([MCENGINE_PLATFORM_WINDOWS], [1], [Define if compiling for Windows.])
 ])
+
+PKG_CONFIG="$PWD/build/pkg-config"
+AC_SUBST([PKG_CONFIG])
+AC_SUBST([CMAKE_SYSTEM_NAME])
+AC_SUBST([SYSNAME])
+AC_SUBST([DLLEXT])
+AC_SUBST([LIBPREFIX])
+
+AC_PROG_CC([$CC])
+AS_IF([[case "$CC" in
+  *clang) CXX=$CC++ ;;
+  *gcc) CXX=${CC//gcc/g++} ;;
+esac]])
+AC_PROG_CXX([$CXX])
 
 COMMON_FLAGS="$COMMON_FLAGS -ffunction-sections -fdata-sections -fwrapv -fno-strict-aliasing -fno-semantic-interposition"
 CXXFLAGS="$CXXFLAGS $COMMON_FLAGS"
@@ -107,15 +164,14 @@ CFLAGS="$CFLAGS $COMMON_FLAGS"
 LDFLAGS="$LDFLAGS -static-libstdc++ -static-libgcc"
 
 # use c/c++17 because we can
-AC_LANG([C++])
-AC_LANG_PUSH(C++)
+AC_LANG_PUSH([C++])
 AX_CHECK_COMPILE_FLAG([-std=gnu++23], [
     CXXFLAGS="$CXXFLAGS -std=gnu++23"
 ], [
     AC_MSG_ERROR([Compiler does not support gnu++23])
 ])
 
-AC_LANG([C])
+AC_LANG_PUSH([C])
 AX_CHECK_COMPILE_FLAG([-std=gnu23], [
     CFLAGS="$CFLAGS -std=gnu23"
 ], [
@@ -124,18 +180,10 @@ AX_CHECK_COMPILE_FLAG([-std=gnu23], [
 
 AC_LANG_POP
 
-PKG_PROG_PKG_CONFIG
-
-AS_IF([test "x$enable_static" = "xyes"], [
-    PKGTYPE="--static"
+AS_IF([test "$host_os" = "linux-gnu"],[
+    AC_CHECK_HEADERS([X11/Xlib.h GL/gl.h GL/glu.h], [],
+        [AC_MSG_ERROR([Missing required X11/OpenGL development headers])])
 ])
-PKG_CONFIG="$PKG_CONFIG ${PKGTYPE:-}"
-
-AC_SUBST([PKGTYPE])
-AC_SUBST([PKG_CONFIG])
-
-AC_CHECK_HEADERS([X11/Xlib.h GL/gl.h GL/glu.h], [],
-    [AC_MSG_ERROR([Missing required X11/OpenGL development headers])])
 
 AC_CHECK_PROG([BEAR], [bear], [bear])
 AC_SUBST([BEAR])
@@ -171,7 +219,7 @@ AS_IF([test "x$enable_debug" = "xyes"], [
         CXXFLAGS="${CXXFLAGS//-g -O2/} -O3 -g0" # where do those -g -O2 flags even come from...
         CFLAGS="${CFLAGS//-g -O2/} -O3 -g0"
     ])
-    LDFLAGS="$LDFLAGS -Wl,-s,--gc-sections" # strip and GC unless debug
+    MCOSU_LDFLAGS="$MCOSU_LDFLAGS -Wl,-s,--gc-sections" # strip and GC unless debug
 ])
 
 AS_IF([test "x$enable_lto" != "xno"], [
@@ -191,7 +239,7 @@ AS_IF([test "x$enable_lto" != "xno"], [
 ])
 
 MCOSU_CPPFLAGS="$MCOSU_CPPFLAGS"
-MCOSU_CXXFLAGS="$MCOSU_CXXFLAGS -Wall -pthread"
+MCOSU_CXXFLAGS="$MCOSU_CXXFLAGS -Wall -pthread -Wno-sign-compare"
 MCOSU_LDFLAGS="$MCOSU_LDFLAGS -pthread"
 AC_SUBST([MCOSU_CPPFLAGS])
 AC_SUBST([MCOSU_CXXFLAGS])
@@ -207,11 +255,14 @@ AC_SUBST([DEPS_PREFIX], ['${abs_top_builddir}/build/deps'])
 AC_SUBST([DEPS_CACHE], ['${abs_top_builddir}/build/cache'])
 AC_SUBST([bindir], [$bindir-$host_cpu])
 
-PKG_CHECK_AUTO([X11], [x11], [have_x11=yes], [have_x11=no])
-PKG_CHECK_AUTO([XI], [xi], [have_xi=yes], [have_xi=no])  # required for noSDL (TODO: ./configure --disable-sdl)
+AS_IF([test "$SYSNAME" = "linux"], [
+    PKG_CHECK_AUTO([X11], [x11], [have_x11=yes], [have_x11=no])
+    PKG_CHECK_AUTO([XI], [xi], [have_xi=yes], [have_xi=no])  # required for noSDL (TODO: ./configure --disable-sdl)
+    PKG_CHECK_AUTO([EGL], [egl], [have_egl=yes], [have_egl=no])  # FIXME: transitive GLEW dep
+])
+
 PKG_CHECK_AUTO([GL], [gl], [have_gl=yes], [have_gl=no])
 PKG_CHECK_AUTO([GLU], [glu], [have_glu=yes], [have_glu=no])
-PKG_CHECK_AUTO([EGL], [egl], [have_egl=yes], [have_egl=no])  # FIXME: transitive GLEW dep
 
 SDL3_MIN_VERSION=3.2.0
 SDL3_BUILD_VERSION=3.99.99 # git
@@ -302,11 +353,14 @@ AM_CONDITIONAL([BUILD_LIBPNG], [test "x$have_libpng" != "xyes"])
 AM_CONDITIONAL([BUILD_BZIP2], [test "x$have_bzip2" != "xyes"])
 AM_CONDITIONAL([BUILD_ZLIB], [test "x$have_zlib" != "xyes"])
 AM_CONDITIONAL([BUILD_FREETYPE2], [test "x$have_freetype2" != "xyes"])
-AM_CONDITIONAL([BUILD_MIMALLOC], [test "x$enable_debug" != "xyes"]) # can't find a way to make it work...
+AM_CONDITIONAL([BUILD_MIMALLOC], [test "x$enable_debug" != "xyes" && test "$host_os" != "mingw32"]) # can't find a way to make it work...
+
+AM_CONDITIONAL([WIN_PLATFORM], [test "$SYSNAME" = "windows"])
 
 BUNDLED_LIBS_DIR=libraries
 BUNDLED_BASS_DIR=$BUNDLED_LIBS_DIR/bass
 BUNDLED_BASS_FX_DIR=$BUNDLED_LIBS_DIR/bassfx
+AC_SUBST([BASS_LIBS])
 AC_SUBST([BUNDLED_LIBS_DIR])
 AC_SUBST([BUNDLED_BASS_DIR])
 AC_SUBST([BUNDLED_BASS_FX_DIR])
@@ -315,12 +369,12 @@ ASSETS_DIR=assets
 AC_SUBST([ASSETS_DIR])
 
 # sanity check
-AC_CHECK_FILE([$srcdir/$BUNDLED_BASS_DIR/lib/$host_cpu/libbass.so],
+AC_CHECK_FILE([$srcdir/$BUNDLED_BASS_DIR/lib/$SYSNAME/$host_cpu/${LIBPREFIX}bass$DLLEXT],
     [],
-    [AC_MSG_ERROR([Required bundled library libbass.so not found])])
-AC_CHECK_FILE([$srcdir/$BUNDLED_BASS_FX_DIR/lib/$host_cpu/libbass_fx.so],
+    [AC_MSG_ERROR([Required bundled library ${LIBPREFIX}bass$DLLEXT not found])])
+AC_CHECK_FILE([$srcdir/$BUNDLED_BASS_FX_DIR/lib/$SYSNAME/$host_cpu/${LIBPREFIX}bass_fx$DLLEXT],
     [],
-    [AC_MSG_ERROR([Required bundled library libbass_fx.so not found])])
+    [AC_MSG_ERROR([Required bundled library ${LIBPREFIX}bass_fx$DLLEXT not found])])
 
 AC_CHECK_FILE([$srcdir/$ASSETS_DIR/models],
     [],

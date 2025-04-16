@@ -14,7 +14,6 @@
 #ifdef MCENGINE_FEATURE_MULTITHREADING
 
 #include <mutex>
-#include "WinMinGW.Mutex.h"
 
 #endif
 

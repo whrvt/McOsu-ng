@@ -13,7 +13,7 @@
 
 #include "File.h"
 
-#include <Windows.h>
+#include <windows.h>
 
 class WinFile : public BaseFile
 {

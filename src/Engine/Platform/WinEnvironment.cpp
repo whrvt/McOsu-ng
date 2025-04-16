@@ -20,8 +20,8 @@
 #include "VulkanGraphicsInterface.h"
 #include "WinContextMenu.h"
 
-#include <Lmcons.h>
-#include <Shlobj.h>
+#include <lmcons.h>
+#include <shlobj.h>
 
 #include <tchar.h>
 #include <string>

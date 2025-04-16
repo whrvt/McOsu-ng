@@ -13,12 +13,11 @@
 
 #include "Engine.h"
 
-#define SDL_VIDEO_DRIVER_WINDOWS /* SDL_VIDEO_DRIVER_WINDOWS has been removed in SDL3 */	// HACKHACK
-#undef SDL_VIDEO_DRIVER_COCOA /* SDL_VIDEO_DRIVER_COCOA has been removed in SDL3 */		// HACKHACK
-#include <SDL3/SDL_syswm.h> // for SDL_GetWindowWMInfo()
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_properties.h>
 
-#include <Lmcons.h>
-#include <Shlobj.h>
+#include <lmcons.h>
+#include <shlobj.h>
 
 #include <tchar.h>
 #include <string>
@@ -40,12 +39,13 @@ void WinSDLEnvironment::sleep(unsigned int us)
 
 void WinSDLEnvironment::openURLInDefaultBrowser(UString url)
 {
-	SDL_SysWMinfo info;
-	SDL_VERSION(&info.version);
-	if (SDL_GetWindowWMInfo(m_window, &info) == true)
+    HWND hwnd = (HWND)SDL_GetPointerProperty(SDL_GetWindowProperties(m_window), SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
+    if (hwnd)
 	{
-		ShellExecuteW(info.info.win.window, L"open", url.wc_str(), NULL, NULL, SW_SHOW);
+		ShellExecuteW(hwnd, L"open", url.wc_str(), NULL, NULL, SW_SHOW);
+		return;
 	}
+	debugLog("No hwnd! SDL: %s\n", SDL_GetError());
 }
 
 UString WinSDLEnvironment::getUsername()

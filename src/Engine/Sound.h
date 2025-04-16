@@ -100,7 +100,7 @@ private:
 	void *m_mixChunkOrMixMusic;
 	unsigned long m_iPrevPosition;
 #if defined(MCENGINE_FEATURE_SOUND)
-    inline unsigned int _BASS_FX_TempoCreate(unsigned int chan, unsigned int flags) const {return DL_CALL_FCT((SoundEngine::m_BASS_FX_TempoCreate), (chan, flags));}
+    inline long unsigned int _BASS_FX_TempoCreate(long unsigned int chan, long unsigned int flags) const {return DL_CALL_FCT((SoundEngine::m_BASS_FX_TempoCreate), (chan, flags));}
 #endif
 };
 

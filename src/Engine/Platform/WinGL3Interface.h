@@ -15,7 +15,7 @@
 
 #ifdef MCENGINE_FEATURE_OPENGL
 
-#include <Windows.h>
+#include <windows.h>
 
 class WinGL3Interface : public OpenGL3Interface
 {

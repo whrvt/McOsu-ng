@@ -16,6 +16,7 @@ dist/
 dist-*/
 debug/
 release/
+/test-*/
 
 Makefile
 McOsu-ng

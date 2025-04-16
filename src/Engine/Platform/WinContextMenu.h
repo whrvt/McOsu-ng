@@ -14,7 +14,7 @@
 #define WINCONTEXTMENU_H
 
 #include "ContextMenu.h"
-#include <Windows.h>
+#include <windows.h>
 
 class WinContextMenu : public ContextMenu
 {
