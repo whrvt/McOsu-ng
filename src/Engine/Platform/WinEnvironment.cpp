@@ -925,6 +925,7 @@ void WinEnvironment::setMousePos(int x, int y)
 
 void WinEnvironment::setCursorClip(bool clip, McRect rect)
 {
+	debugLog("\n");
 	m_bCursorClipped = clip;
 	m_cursorClip = rect;
 

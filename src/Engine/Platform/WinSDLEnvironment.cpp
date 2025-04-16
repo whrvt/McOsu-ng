@@ -34,7 +34,7 @@ Environment::OS WinSDLEnvironment::getOS()
 
 void WinSDLEnvironment::sleep(unsigned int us)
 {
-	Sleep(us/1000);
+	!!us ? SDL_DelayPrecise(us*1000) : SDL_Delay(0);
 }
 
 void WinSDLEnvironment::openURLInDefaultBrowser(UString url)
@@ -51,7 +51,7 @@ void WinSDLEnvironment::openURLInDefaultBrowser(UString url)
 UString WinSDLEnvironment::getUsername()
 {
 	DWORD username_len = UNLEN+1;
-	wchar_t username[username_len];
+	wchar_t username[UNLEN+1];
 
 	if (GetUserNameW(username, &username_len))
 		return UString(username);
