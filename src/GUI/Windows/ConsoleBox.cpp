@@ -7,6 +7,8 @@
 
 #include "ConsoleBox.h"
 
+#include <utility>
+
 #include "Engine.h"
 #include "Environment.h"
 #include "ResourceManager.h"
@@ -413,7 +415,7 @@ void ConsoleBox::onKeyDown(KeyboardEvent &e)
 
 				for (size_t i=0; i<m_vSuggestionButtons.size(); i++)
 				{
-					if (i == m_iSelectedSuggestion)
+					if (std::cmp_equal(i , m_iSelectedSuggestion))
 					{
 						m_vSuggestionButtons[i]->setTextColor(0xff00ff00);
 						m_vSuggestionButtons[i]->setTextDarkColor(0xff000000);
@@ -447,7 +449,7 @@ void ConsoleBox::onKeyDown(KeyboardEvent &e)
 
 				for (size_t i=0; i<m_vSuggestionButtons.size(); i++)
 				{
-					if (i == m_iSelectedSuggestion)
+					if (std::cmp_equal(i , m_iSelectedSuggestion))
 					{
 						m_vSuggestionButtons[i]->setTextColor(0xff00ff00);
 						m_vSuggestionButtons[i]->setTextDarkColor(0xff000000);

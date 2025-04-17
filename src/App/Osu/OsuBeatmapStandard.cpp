@@ -41,6 +41,7 @@
 #include <cctype>
 #include <algorithm>
 #include <chrono>
+#include <utility>
 
 ConVar osu_draw_followpoints("osu_draw_followpoints", true, FCVAR_NONE);
 ConVar osu_draw_reverse_order("osu_draw_reverse_order", false, FCVAR_NONE);
@@ -469,7 +470,7 @@ void OsuBeatmapStandard::draw3D(Graphics *g)
 		}
 		else
 		{
-			for (int i=0; i<(int)m_hitobjectsSortedByEndTime.size(); i++)
+			for (int i=0; std::cmp_less(i,m_hitobjectsSortedByEndTime.size()); i++)
 			{
 				// PVS optimization
 				if (usePVS)
@@ -509,7 +510,7 @@ void OsuBeatmapStandard::draw3D2(Graphics *g)
 		const long pvs = getPVS();
 		const bool usePVS = m_osu_pvs->getBool();
 
-		for (int i=0; i<(int)m_hitobjectsSortedByEndTime.size(); i++)
+		for (int i=0; std::cmp_less(i,m_hitobjectsSortedByEndTime.size()); i++)
 		{
 			// PVS optimization
 			if (usePVS)
@@ -2446,18 +2447,18 @@ void OsuBeatmapStandard::computeDrainRate()
 			if (sliderPointer != NULL)
 			{
 				// startcircle
-				healthIncreases.push_back(std::pair<double, double>((double)m_hitobjects[i]->getTime(), healthIncreaseForHit300));
+				healthIncreases.emplace_back((double)m_hitobjects[i]->getTime(), healthIncreaseForHit300);
 
 				// ticks + repeats + repeat ticks
 				const std::vector<OsuSlider::SLIDERCLICK> &clicks = sliderPointer->getClicks();
 				for (int c=0; c<clicks.size(); c++)
 				{
-					healthIncreases.push_back(std::pair<double, double>((double)clicks[c].time, healthIncreaseForHit300));
+					healthIncreases.emplace_back((double)clicks[c].time, healthIncreaseForHit300);
 				}
 			}
 
 			// regular hitobject
-			healthIncreases.push_back(std::pair<double, double>(m_hitobjects[i]->getTime() + m_hitobjects[i]->getDuration(), healthIncreaseForHit300));
+			healthIncreases.emplace_back(m_hitobjects[i]->getTime() + m_hitobjects[i]->getDuration(), healthIncreaseForHit300);
 		}
 
 		const int numHealthIncreases = healthIncreases.size();

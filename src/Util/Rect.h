@@ -16,6 +16,7 @@ class McRect
 public:
 	McRect(float x = 0, float y = 0, float width = 0, float height = 0, bool isCentered = false);
 	McRect(Vector2 pos, Vector2 size, bool isCentered = false);
+	McRect(const McRect& other) = default;
 
 	void set(float x, float y, float width, float height, bool isCentered = false);
 

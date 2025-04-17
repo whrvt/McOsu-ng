@@ -22,6 +22,7 @@
 #include "OsuDatabaseBeatmap.h"
 
 #include <fstream>
+#include <utility>
 
 #if defined(_WIN32) || defined(_WIN64) || defined(__WIN32__) || defined(__CYGWIN__) || defined(__CYGWIN32__) || defined(__TOS_WIN__) || defined(__WINDOWS__)
 
@@ -452,7 +453,7 @@ void OsuDatabase::update()
 			m_fLoadingProgress = (float)m_iCurRawBeatmapLoadIndex / (float)m_iNumBeatmapsToLoad;
 
 			// check if we are finished
-			if (m_iCurRawBeatmapLoadIndex >= m_iNumBeatmapsToLoad || m_iCurRawBeatmapLoadIndex > (int)(m_rawLoadBeatmapFolders.size()-1))
+			if (m_iCurRawBeatmapLoadIndex >= m_iNumBeatmapsToLoad || std::cmp_greater(m_iCurRawBeatmapLoadIndex ,(m_rawLoadBeatmapFolders.size()-1)))
 			{
 				m_rawLoadBeatmapFolders.clear();
 				m_bRawBeatmapLoadScheduled = false;
@@ -790,7 +791,7 @@ void OsuDatabase::addBeatmapToCollection(UString collectionName, std::string bea
 							{
 								diffs2.push_back(diff2);
 							}
-							m_collections[i].beatmaps.push_back(std::pair<OsuDatabaseBeatmap*, std::vector<OsuDatabaseBeatmap*>>(beatmap, diffs2));
+							m_collections[i].beatmaps.emplace_back(beatmap, diffs2);
 						}
 					}
 				}
@@ -887,7 +888,7 @@ std::vector<UString> OsuDatabase::getPlayerNamesWithPPScores()
 	for (auto k : tempNames)
 	{
 		if (k.length() > 0)
-			names.push_back(UString(k.c_str()));
+			names.emplace_back(k.c_str());
 	}
 
 	return names;
@@ -918,7 +919,7 @@ std::vector<UString> OsuDatabase::getPlayerNamesWithScoresForUserSwitcher()
 	for (auto k : tempNames)
 	{
 		if (k.length() > 0)
-			names.push_back(UString(k.c_str()));
+			names.emplace_back(k.c_str());
 	}
 
 	return names;
@@ -1436,7 +1437,7 @@ void OsuDatabase::loadDB(OsuFile *db, bool &fallbackToRawLoad)
 		unsigned int numOsuStandardStarRatings = db->readInt();
 		//debugLog("%i star ratings for osu!standard\n", numOsuStandardStarRatings);
 		float numOsuStandardStars = 0.0f;
-		for (int s=0; s<numOsuStandardStarRatings; s++)
+		for (int s=0; std::cmp_less(s,numOsuStandardStarRatings); s++)
 		{
 			db->readByte(); // ObjType
 			unsigned int mods = db->readInt();
@@ -1459,7 +1460,7 @@ void OsuDatabase::loadDB(OsuFile *db, bool &fallbackToRawLoad)
 
 		unsigned int numTaikoStarRatings = db->readInt();
 		//debugLog("%i star ratings for taiko\n", numTaikoStarRatings);
-		for (int s=0; s<numTaikoStarRatings; s++)
+		for (int s=0; std::cmp_less(s,numTaikoStarRatings); s++)
 		{
 			db->readByte(); // ObjType
 			db->readInt();
@@ -1472,7 +1473,7 @@ void OsuDatabase::loadDB(OsuFile *db, bool &fallbackToRawLoad)
 
 		unsigned int numCtbStarRatings = db->readInt();
 		//debugLog("%i star ratings for ctb\n", numCtbStarRatings);
-		for (int s=0; s<numCtbStarRatings; s++)
+		for (int s=0; std::cmp_less(s,numCtbStarRatings); s++)
 		{
 			db->readByte(); // ObjType
 			db->readInt();
@@ -1485,7 +1486,7 @@ void OsuDatabase::loadDB(OsuFile *db, bool &fallbackToRawLoad)
 
 		unsigned int numManiaStarRatings = db->readInt();
 		//debugLog("%i star ratings for mania\n", numManiaStarRatings);
-		for (int s=0; s<numManiaStarRatings; s++)
+		for (int s=0; std::cmp_less(s,numManiaStarRatings); s++)
 		{
 			db->readByte(); // ObjType
 			db->readInt();
@@ -1506,7 +1507,7 @@ void OsuDatabase::loadDB(OsuFile *db, bool &fallbackToRawLoad)
 		unsigned int numTimingPoints = db->readInt();
 		//debugLog("%i timingpoints\n", numTimingPoints);
 		std::vector<OsuFile::TIMINGPOINT> timingPoints;
-		for (int t=0; t<numTimingPoints; t++)
+		for (int t=0; std::cmp_less(t,numTimingPoints); t++)
 		{
 			timingPoints.push_back(db->readTimingPoint());
 		}
@@ -2584,7 +2585,7 @@ void OsuDatabase::loadCollections(UString collectionFilePath, bool isLegacy, con
 				{
 					diffs2.push_back(diff2);
 				}
-				c.beatmaps.push_back(std::pair<OsuDatabaseBeatmap*, std::vector<OsuDatabaseBeatmap*>>(beatmap, diffs2));
+				c.beatmaps.emplace_back(beatmap, diffs2);
 			}
 		}
 	};

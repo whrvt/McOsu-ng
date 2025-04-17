@@ -55,7 +55,7 @@
 #include "OsuUISongBrowserScoreButton.h"
 #include "OsuUIUserStatsScreenLabel.h"
 
-
+#include <utility>
 
 ConVar osu_gamemode("osu_gamemode", "std", FCVAR_NONE);
 
@@ -2503,7 +2503,7 @@ bool OsuSongBrowser2::searchMatcher(const OsuDatabaseBeatmap *databaseBeatmap, c
 	// parse over all difficulties
 	bool expressionMatches = false; // if any diff matched all expressions
 	std::vector<UString> literalSearchStrings;
-	for (size_t d=0; d<numDiffs; d++)
+	for (size_t d=0; std::cmp_less(d,numDiffs); d++)
 	{
 		const OsuDatabaseBeatmap *diff = (isContainer ? diffs[d] : databaseBeatmap);
 
@@ -2677,7 +2677,7 @@ bool OsuSongBrowser2::searchMatcher(const OsuDatabaseBeatmap *databaseBeatmap, c
 	// early return here for literal match/contains
 	if (hasAnyValidLiteralSearchString)
 	{
-		for (size_t i=0; i<numDiffs; i++)
+		for (size_t i=0; std::cmp_less(i,numDiffs); i++)
 		{
 			const OsuDatabaseBeatmap *diff = (isContainer ? diffs[i] : databaseBeatmap);
 
@@ -2959,7 +2959,7 @@ void OsuSongBrowser2::rebuildScoreButtons()
 	if (numScores > m_scoreButtonCache.size())
 	{
 		const int numNewButtons = numScores - m_scoreButtonCache.size();
-		for (size_t i=0; i<numNewButtons; i++)
+		for (size_t i=0; std::cmp_less(i,numNewButtons); i++)
 		{
 			OsuUISongBrowserScoreButton *scoreButton = new OsuUISongBrowserScoreButton(m_osu, m_contextMenu, 0, 0, 0, 0, "");
 			scoreButton->setClickCallback( fastdelegate::MakeDelegate(this, &OsuSongBrowser2::onScoreClicked) );
@@ -2977,7 +2977,7 @@ void OsuSongBrowser2::rebuildScoreButtons()
 
 		// build
 		std::vector<OsuUISongBrowserScoreButton*> scoreButtons;
-		for (size_t i=0; i<numScores; i++)
+		for (size_t i=0; std::cmp_less(i,numScores); i++)
 		{
 			OsuUISongBrowserScoreButton *button = m_scoreButtonCache[i];
 			button->setName(UString(m_selectedBeatmap->getSelectedDifficulty2()->getMD5Hash().c_str()));
@@ -2986,7 +2986,7 @@ void OsuSongBrowser2::rebuildScoreButtons()
 		}
 
 		// add
-		for (size_t i=0; i<numScores; i++)
+		for (size_t i=0; std::cmp_less(i,numScores); i++)
 		{
 			scoreButtons[i]->setIndex(i+1);
 			m_scoreBrowser->getContainer()->addBaseUIElement(scoreButtons[i]);

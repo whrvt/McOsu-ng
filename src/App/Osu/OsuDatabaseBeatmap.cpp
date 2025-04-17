@@ -29,6 +29,7 @@
 
 #include <sstream>
 #include <iostream>
+#include <utility>
 
 ConVar osu_mod_random("osu_mod_random", false, FCVAR_NONE);
 ConVar osu_mod_random_seed("osu_mod_random_seed", 0, FCVAR_NONE, "0 = random seed every reload, any other value will force that value to be used as the seed");
@@ -215,7 +216,7 @@ OsuDatabaseBeatmap::PRIMITIVE_CONTAINER OsuDatabaseBeatmap::loadPrimitiveObjects
 			}
 
 			const int commentIndex = curLine.find("//");
-			if (commentIndex == std::string::npos || commentIndex != 0) // ignore comments, but only if at the beginning of a line (e.g. allow Artist:DJ'TEKINA//SOMETHING)
+			if (std::cmp_equal(commentIndex, std::string::npos) || commentIndex != 0) // ignore comments, but only if at the beginning of a line (e.g. allow Artist:DJ'TEKINA//SOMETHING)
 			{
 				if (curLine.find("[General]") != std::string::npos)
 					curBlock = 1;
@@ -428,7 +429,7 @@ OsuDatabaseBeatmap::PRIMITIVE_CONTAINER OsuDatabaseBeatmap::loadPrimitiveObjects
 									//return false;
 								}
 
-								points.push_back(Vector2((int)clamp<float>(sliderXY[0].toFloat(), -sliderSanityRange, sliderSanityRange), (int)clamp<float>(sliderXY[1].toFloat(), -sliderSanityRange, sliderSanityRange)));
+								points.emplace_back((int)clamp<float>(sliderXY[0].toFloat(), -sliderSanityRange, sliderSanityRange), (int)clamp<float>(sliderXY[1].toFloat(), -sliderSanityRange, sliderSanityRange));
 							}
 
 							// special case: osu! logic for handling the hitobject point vs the controlpoints (since sliders have both, and older beatmaps store the start point inside the control points)
@@ -537,7 +538,7 @@ OsuDatabaseBeatmap::PRIMITIVE_CONTAINER OsuDatabaseBeatmap::loadPrimitiveObjects
 
 	// late bail if too many hitobjects would run out of memory and crash
 	const size_t numHitobjects = c.hitcircles.size() + c.sliders.size() + c.spinners.size();
-	if (numHitobjects > (size_t)osu_beatmap_max_num_hitobjects.getInt())
+	if (std::cmp_greater(numHitobjects ,osu_beatmap_max_num_hitobjects.getInt()))
 	{
 		c.errorCode = 5;
 		return c;
@@ -753,10 +754,10 @@ OsuDatabaseBeatmap::LOAD_DIFFOBJ_RESULT OsuDatabaseBeatmap::loadDifficultyHitObj
 
 	for (int i=0; i<c.hitcircles.size(); i++)
 	{
-		result.diffobjects.push_back(OsuDifficultyHitObject(
+		result.diffobjects.emplace_back(
 				OsuDifficultyHitObject::TYPE::CIRCLE,
 				Vector2(c.hitcircles[i].x, c.hitcircles[i].y),
-				(long)c.hitcircles[i].time));
+				(long)c.hitcircles[i].time);
 	}
 
 	const bool calculateSliderCurveInConstructor = (c.sliders.size() < 5000); // NOTE: for explanation see OsuDifficultyHitObject constructor
@@ -770,7 +771,7 @@ OsuDatabaseBeatmap::LOAD_DIFFOBJ_RESULT OsuDatabaseBeatmap::loadDifficultyHitObj
 
 		if (!calculateStarsInaccurately)
 		{
-			result.diffobjects.push_back(OsuDifficultyHitObject(
+			result.diffobjects.emplace_back(
 					OsuDifficultyHitObject::TYPE::SLIDER,
 					Vector2(c.sliders[i].x, c.sliders[i].y),
 					c.sliders[i].time,
@@ -781,11 +782,11 @@ OsuDatabaseBeatmap::LOAD_DIFFOBJ_RESULT OsuDatabaseBeatmap::loadDifficultyHitObj
 					c.sliders[i].pixelLength,
 					c.sliders[i].scoringTimesForStarCalc,
 					c.sliders[i].repeat,
-					calculateSliderCurveInConstructor));
+					calculateSliderCurveInConstructor);
 		}
 		else
 		{
-			result.diffobjects.push_back(OsuDifficultyHitObject(
+			result.diffobjects.emplace_back(
 					OsuDifficultyHitObject::TYPE::SLIDER,
 					Vector2(c.sliders[i].x, c.sliders[i].y),
 					c.sliders[i].time,
@@ -796,17 +797,17 @@ OsuDatabaseBeatmap::LOAD_DIFFOBJ_RESULT OsuDatabaseBeatmap::loadDifficultyHitObj
 					c.sliders[i].pixelLength,
 					std::vector<OsuDifficultyHitObject::SLIDER_SCORING_TIME>(),	// NOTE: ignore curve when calculating inaccurately
 					c.sliders[i].repeat,
-					false));				// NOTE: ignore curve when calculating inaccurately
+					false);				// NOTE: ignore curve when calculating inaccurately
 		}
 	}
 
 	for (int i=0; i<c.spinners.size(); i++)
 	{
-		result.diffobjects.push_back(OsuDifficultyHitObject(
+		result.diffobjects.emplace_back(
 				OsuDifficultyHitObject::TYPE::SPINNER,
 				Vector2(c.spinners[i].x, c.spinners[i].y),
 				(long)c.spinners[i].time,
-				(long)c.spinners[i].endTime));
+				(long)c.spinners[i].endTime);
 	}
 
 	// sort hitobjects by time
@@ -1073,7 +1074,7 @@ bool OsuDatabaseBeatmap::loadMetadata(OsuDatabaseBeatmap *databaseBeatmap)
 			}
 
 			const int commentIndex = curLine.find("//");
-			if (commentIndex == std::string::npos || commentIndex != 0) // ignore comments, but only if at the beginning of a line (e.g. allow Artist:DJ'TEKINA//SOMETHING)
+			if (std::cmp_equal(commentIndex , std::string::npos) || commentIndex != 0) // ignore comments, but only if at the beginning of a line (e.g. allow Artist:DJ'TEKINA//SOMETHING)
 			{
 				if (curLine.find("[General]") != std::string::npos)
 					curBlock = 0;
@@ -1857,7 +1858,7 @@ OsuDatabaseBeatmap::TIMING_INFO OsuDatabaseBeatmap::getTimingInfoForTimeAndTimin
 
 		for (int i=0; i<timingpoints.size(); i++)
 		{
-			if (timingpoints[i].offset <= positionMS)
+			if (std::cmp_less_equal(timingpoints[i].offset , positionMS))
 			{
 				audioPoint = i;
 
@@ -1964,7 +1965,7 @@ void OsuDatabaseBeatmapBackgroundImagePathLoader::initAsync()
 		std::string curLine(curLineChar);
 
 		const int commentIndex = curLine.find("//");
-		if (commentIndex == std::string::npos || commentIndex != 0) // ignore comments, but only if at the beginning of a line (e.g. allow Artist:DJ'TEKINA//SOMETHING)
+		if (std::cmp_equal(commentIndex , std::string::npos) || commentIndex != 0) // ignore comments, but only if at the beginning of a line (e.g. allow Artist:DJ'TEKINA//SOMETHING)
 		{
 			if (curLine.find("[Events]") != std::string::npos)
 				curBlock = 1;

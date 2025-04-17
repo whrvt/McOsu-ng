@@ -37,6 +37,8 @@ Rename this file to lodepng.cpp to use it for C++, or to lodepng.c to use it for
 
 #ifdef LODEPNG_COMPILE_ALLOCATORS
 #include <stdlib.h> /* allocations */
+
+#include <utility>
 #endif /* LODEPNG_COMPILE_ALLOCATORS */
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1310) /*Visual Studio: A few warning types are not desired here.*/
@@ -1674,7 +1676,7 @@ static unsigned encodeLZ77(uivector* out, Hash* hash,
       } else {
         hashpos = hash->chain[hashpos];
         /*outdated hash value, happens if particular value was not encountered in whole last window*/
-        if(hash->val[hashpos] != (int)hashval) break;
+        if(std::cmp_not_equal(hash->val[hashpos] ,hashval)) break;
       }
     }
 
@@ -4759,7 +4761,7 @@ static void decodeGeneric(unsigned char** out, unsigned* w, unsigned* h,
     const unsigned char* data; /*the data in the chunk*/
 
     /*error: size of the in buffer too small to contain next chunk*/
-    if((size_t)((chunk - in) + 12) > insize || chunk < in) {
+    if(std::cmp_greater(((chunk - in) + 12), insize) || chunk < in) {
       if(state->decoder.ignore_end) break; /*other errors may still happen though*/
       CERROR_BREAK(state->error, 30);
     }
@@ -4772,7 +4774,7 @@ static void decodeGeneric(unsigned char** out, unsigned* w, unsigned* h,
       CERROR_BREAK(state->error, 63);
     }
 
-    if((size_t)((chunk - in) + chunkLength + 12) > insize || (chunk + chunkLength + 12) < in) {
+    if(std::cmp_greater(((chunk - in) + chunkLength + 12), insize) || (chunk + chunkLength + 12) < in) {
       CERROR_BREAK(state->error, 64); /*error: size of the in buffer too small to contain next chunk*/
     }
 
@@ -5738,7 +5740,7 @@ static unsigned preProcessScanlines(unsigned char** out, size_t* outsize, const 
 #ifdef LODEPNG_COMPILE_ANCILLARY_CHUNKS
 static unsigned addUnknownChunks(ucvector* out, unsigned char* data, size_t datasize) {
   unsigned char* inchunk = data;
-  while((size_t)(inchunk - data) < datasize) {
+  while(std::cmp_less((inchunk - data), datasize)) {
     CERROR_TRY_RETURN(lodepng_chunk_append(&out->data, &out->size, inchunk));
     out->allocsize = out->size; /*fix the allocsize again*/
     inchunk = lodepng_chunk_next(inchunk, data + datasize);

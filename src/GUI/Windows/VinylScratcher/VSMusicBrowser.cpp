@@ -6,6 +6,8 @@
 //===============================================================================//
 
 #include "VSMusicBrowser.h"
+
+#include <utility>
 #include "VinylScratcher.h"
 
 #include "Engine.h"
@@ -659,7 +661,7 @@ void VSMusicBrowser::updateDrives()
 
 void VSMusicBrowser::fireNextSong(bool previous)
 {
-	for (int i=0; i<(int)m_playlist.size(); i++)
+	for (int i=0; std::cmp_less(i,m_playlist.size()); i++)
 	{
 		// find current position
 		if (m_playlist[i] == m_activeSong)

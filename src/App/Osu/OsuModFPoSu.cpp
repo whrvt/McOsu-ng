@@ -1248,7 +1248,7 @@ OsuModFPoSu3DModel::OsuModFPoSu3DModel(const UString &objFilePathOrContents, Ima
 				{
 					Vector2 uv;
 					if (sscanf(line.c_str(), "vt %f %f ", &uv.x, &uv.y) == 2)
-						rawTexcoords.push_back(Vector2(uv.x, 1.0f - uv.y));
+						rawTexcoords.emplace_back(uv.x, 1.0f - uv.y);
 				}
 				else if (line.starts_with("vn "))
 				{

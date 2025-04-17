@@ -192,7 +192,7 @@ public:
 			temp *= temp;
 			heightAddPercent = 1.0f - temp;
 
-			points.push_back(Vector2((useLegacyRenderer ? m_vPos.x : 0) + hitcircleDiameter/2 + i*pointDist, (useLegacyRenderer ? m_vPos.y : 0) + m_vSize.y/2 - hitcircleDiameter/3 + heightAddPercent*(m_vSize.y/2 - hitcircleDiameter/2)));
+			points.emplace_back((useLegacyRenderer ? m_vPos.x : 0) + hitcircleDiameter/2 + i*pointDist, (useLegacyRenderer ? m_vPos.y : 0) + m_vSize.y/2 - hitcircleDiameter/3 + heightAddPercent*(m_vSize.y/2 - hitcircleDiameter/2));
 		}
 
 		if (points.size() > 0)
@@ -516,16 +516,16 @@ OsuOptionsMenu::OsuOptionsMenu(Osu *osu) : OsuScreenBackable(osu)
 
 	m_fSearchOnCharKeybindHackTime = 0.0f;
 
-	m_notelockTypes.push_back("None");
-	m_notelockTypes.push_back("McOsu");
-	m_notelockTypes.push_back("osu!stable (default)");
-	m_notelockTypes.push_back("osu!lazer 2020");
+	m_notelockTypes.emplace_back("None");
+	m_notelockTypes.emplace_back("McOsu");
+	m_notelockTypes.emplace_back("osu!stable (default)");
+	m_notelockTypes.emplace_back("osu!lazer 2020");
 
-	m_drainTypes.push_back("None");
-	m_drainTypes.push_back("VR");
-	m_drainTypes.push_back("osu!stable (default)");
-	m_drainTypes.push_back("osu!lazer 2020");
-	m_drainTypes.push_back("osu!lazer 2018");
+	m_drainTypes.emplace_back("None");
+	m_drainTypes.emplace_back("VR");
+	m_drainTypes.emplace_back("osu!stable (default)");
+	m_drainTypes.emplace_back("osu!lazer 2020");
+	m_drainTypes.emplace_back("osu!lazer 2018");
 
 	m_container = new CBaseUIContainer(-1, 0, 0, 0, "");
 
@@ -2719,36 +2719,36 @@ void OsuOptionsMenu::onResolutionSelect()
 	std::vector<Vector2> resolutions;
 
 	// 4:3
-	resolutions.push_back(Vector2(800, 600));
-    resolutions.push_back(Vector2(1024, 768));
-    resolutions.push_back(Vector2(1152, 864));
-    resolutions.push_back(Vector2(1280, 960));
-    resolutions.push_back(Vector2(1280, 1024));
-    resolutions.push_back(Vector2(1600, 1200));
-    resolutions.push_back(Vector2(1920, 1440));
-    resolutions.push_back(Vector2(2560, 1920));
+	resolutions.emplace_back(800, 600);
+    resolutions.emplace_back(1024, 768);
+    resolutions.emplace_back(1152, 864);
+    resolutions.emplace_back(1280, 960);
+    resolutions.emplace_back(1280, 1024);
+    resolutions.emplace_back(1600, 1200);
+    resolutions.emplace_back(1920, 1440);
+    resolutions.emplace_back(2560, 1920);
 
     // 16:9 and 16:10
-    resolutions.push_back(Vector2(1024, 600));
-    resolutions.push_back(Vector2(1280, 720));
-    resolutions.push_back(Vector2(1280, 768));
-    resolutions.push_back(Vector2(1280, 800));
-    resolutions.push_back(Vector2(1360, 768));
-    resolutions.push_back(Vector2(1366, 768));
-    resolutions.push_back(Vector2(1440, 900));
-    resolutions.push_back(Vector2(1600, 900));
-    resolutions.push_back(Vector2(1600, 1024));
-    resolutions.push_back(Vector2(1680, 1050));
-    resolutions.push_back(Vector2(1920, 1080));
-    resolutions.push_back(Vector2(1920, 1200));
-    resolutions.push_back(Vector2(2560, 1440));
-    resolutions.push_back(Vector2(2560, 1600));
-    resolutions.push_back(Vector2(3840, 2160));
-    resolutions.push_back(Vector2(5120, 2880));
-    resolutions.push_back(Vector2(7680, 4320));
+    resolutions.emplace_back(1024, 600);
+    resolutions.emplace_back(1280, 720);
+    resolutions.emplace_back(1280, 768);
+    resolutions.emplace_back(1280, 800);
+    resolutions.emplace_back(1360, 768);
+    resolutions.emplace_back(1366, 768);
+    resolutions.emplace_back(1440, 900);
+    resolutions.emplace_back(1600, 900);
+    resolutions.emplace_back(1600, 1024);
+    resolutions.emplace_back(1680, 1050);
+    resolutions.emplace_back(1920, 1080);
+    resolutions.emplace_back(1920, 1200);
+    resolutions.emplace_back(2560, 1440);
+    resolutions.emplace_back(2560, 1600);
+    resolutions.emplace_back(3840, 2160);
+    resolutions.emplace_back(5120, 2880);
+    resolutions.emplace_back(7680, 4320);
 
     // wtf
-    resolutions.push_back(Vector2(4096, 2160));
+    resolutions.emplace_back(4096, 2160);
 
     // get custom resolutions
     std::vector<Vector2> customResolutions;
@@ -2764,7 +2764,7 @@ void OsuOptionsMenu::onResolutionSelect()
 			if (sscanf(curLineChar, "%ix%i\n", &width, &height) == 2)
 			{
 				if (width > 319 && height > 239) // 320x240 sanity check
-					customResolutions.push_back(Vector2(width, height));
+					customResolutions.emplace_back(width, height);
 			}
 		}
 	}
@@ -4167,7 +4167,7 @@ void OsuOptionsMenu::save()
 				}
 
 				if (keepLine && line.size() > 0)
-					keepLines.push_back(line.c_str());
+					keepLines.emplace_back(line.c_str());
 			}
 		}
 	}

@@ -7,6 +7,8 @@
 
 #include "OpenVRInterface.h"
 
+#include <utility>
+
 #include "Engine.h"
 #include "ConVar.h"
 #include "File.h"
@@ -450,7 +452,7 @@ bool OpenVRInterface::initRenderTargets()
 
 	// ensure that SteamVR doesn't shit itself due to too large submission textures >:(
 	// clamp to vr_compositor_texture_size_max, while keeping the aspect ratio
-	if (finalCompositorRenderTargetWidth > vr_compositor_texture_size_max.getInt() || finalCompositorRenderTargetHeight > vr_compositor_texture_size_max.getInt())
+	if (std::cmp_greater(finalCompositorRenderTargetWidth , vr_compositor_texture_size_max.getInt()) || std::cmp_greater(finalCompositorRenderTargetHeight , vr_compositor_texture_size_max.getInt()))
 	{
 		bool swapped = false;
 		if (finalCompositorRenderTargetHeight < finalCompositorRenderTargetWidth)

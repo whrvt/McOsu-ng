@@ -19,10 +19,10 @@
 #include "CBaseUILabel.h"
 
 #ifdef MCENGINE_FEATURE_MULTITHREADING
-
 #include <mutex>
-
 #endif
+
+#include <utility>
 
 #define CFG_FOLDER "cfg/"
 
@@ -142,7 +142,7 @@ void Console::processCommand(UString command)
 		else
 		{
 			commandValue.append(tokens[i]);
-			if (i < (int)(tokens.size()-1))
+			if (std::cmp_less(i ,(tokens.size()-1)))
 				commandValue.append(" ");
 		}
 	}

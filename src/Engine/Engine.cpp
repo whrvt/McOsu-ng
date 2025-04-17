@@ -10,9 +10,7 @@
 #include <cstdio>
 
 #ifdef MCENGINE_FEATURE_MULTITHREADING
-
 #include <mutex>
-
 #endif
 
 #include "SteamworksInterface.h"
@@ -38,7 +36,7 @@
 #include "ConsoleBox.h"
 #include "VisualProfiler.h"
 
-
+#include <utility>
 
 //********************//
 //	Include App here  //
@@ -382,7 +380,7 @@ void Engine::onUpdate()
 {
 	VPROF_BUDGET("Engine::onUpdate", VPROF_BUDGETGROUP_UPDATE);
 
-	if (m_iLoadingScreenDelay > 0 && m_iFrameCount >= m_iLoadingScreenDelay)
+	if (m_iLoadingScreenDelay > 0 && std::cmp_greater_equal(m_iFrameCount, m_iLoadingScreenDelay))
 	{
 		m_iLoadingScreenDelay = -1;
 		loadApp();

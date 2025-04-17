@@ -43,7 +43,7 @@ SDLEnvironment::SDLEnvironment(SDL_Window *window) : Environment()
 		///debugLog("WARNING: No monitors found! Adding default monitor ...\n");
 
 		const Vector2 windowSize = getWindowSize();
-		m_vMonitors.push_back(McRect(0, 0, windowSize.x, windowSize.y));
+		m_vMonitors.emplace_back(0, 0, windowSize.x, windowSize.y);
 	}
 }
 

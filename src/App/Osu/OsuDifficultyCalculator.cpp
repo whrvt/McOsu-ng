@@ -410,7 +410,7 @@ double OsuDifficultyCalculator::calculateStarDiffForHitObjectsInt(std::vector<Di
 			if (dead.load())
 				return 0.0;
 
-			cachedDiffObjects.push_back(DiffObject(&sortedHitObjects[i], radius_scaling_factor, cachedDiffObjects, (int)i - 1)); // this already initializes the angle to NaN
+			cachedDiffObjects.emplace_back(&sortedHitObjects[i], radius_scaling_factor, cachedDiffObjects, (int)i - 1); // this already initializes the angle to NaN
 		}
 	}
 	diffObjects = cachedDiffObjects.data();

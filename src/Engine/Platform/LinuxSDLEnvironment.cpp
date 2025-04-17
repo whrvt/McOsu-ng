@@ -164,7 +164,7 @@ std::vector<UString> LinuxSDLEnvironment::getFoldersInFolder(UString folder)
 std::vector<UString> LinuxSDLEnvironment::getLogicalDrives()
 {
 	std::vector<UString> drives;
-	drives.push_back(UString("/"));
+	drives.emplace_back("/");
 	return drives;
 }
 

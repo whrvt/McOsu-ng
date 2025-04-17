@@ -7,6 +7,8 @@
 
 #include "OpenGLLegacyInterface.h"
 
+#include <utility>
+
 #ifdef MCENGINE_FEATURE_OPENGL
 
 #include "Engine.h"
@@ -651,7 +653,7 @@ std::vector<unsigned char> OpenGLLegacyInterface::getScreenshot()
 	// take screenshot
 	unsigned char *pixels = new unsigned char[numElements];
 	glFinish();
-	for (int y=0; y<height; y++) // flip it while reading
+	for (int y=0; std::cmp_less(y,height); y++) // flip it while reading
 	{
 		glReadPixels(0, (height - (y + 1)), width, 1, GL_RGB, GL_UNSIGNED_BYTE, &(pixels[y*width*3]));
 	}

@@ -18,6 +18,8 @@
 #include <freetype/ftoutln.h>
 #include <freetype/fttrigon.h>
 
+#include <utility>
+
 // constants for atlas generation and rendering
 static constexpr float ATLAS_OCCUPANCY_TARGET = 0.75f; // target atlas occupancy before resize
 static constexpr size_t MIN_ATLAS_SIZE = 256;
@@ -613,7 +615,7 @@ static unsigned char *unpackMonoBitmap(const FT_Bitmap &bitmap)
 {
     auto result = new unsigned char[bitmap.rows * bitmap.width];
 
-    for (int y = 0; y < bitmap.rows; y++)
+    for (int y = 0; std::cmp_less(y , bitmap.rows); y++)
     {
         for (int byteIdx = 0; byteIdx < bitmap.pitch; byteIdx++)
         {

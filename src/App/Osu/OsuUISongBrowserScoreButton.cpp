@@ -888,7 +888,7 @@ void OsuUISongBrowserScoreButton::setScore(const OsuDatabase::Score &score, cons
 			m_tooltipLines.push_back(UString::format("Unstable Rate: %.2f", score.unstableRate));
 		}
 		else
-			m_tooltipLines.push_back("This score was imported from osu!");
+			m_tooltipLines.emplace_back("This score was imported from osu!");
 
 		m_tooltipLines.push_back(UString::format("Version: %i", score.version));
 	}
