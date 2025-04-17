@@ -22,11 +22,6 @@ LinuxSDLEnvironment::LinuxSDLEnvironment() : SDLEnvironment(NULL)
 
 }
 
-Environment::OS LinuxSDLEnvironment::getOS()
-{
-	return Environment::OS::OS_LINUX;
-}
-
 void LinuxSDLEnvironment::sleep(unsigned int us)
 {
 	!!us ? SDL_DelayPrecise(us*1000) : SDL_Delay(0);

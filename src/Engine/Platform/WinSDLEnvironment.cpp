@@ -27,11 +27,6 @@ WinSDLEnvironment::WinSDLEnvironment() : SDLEnvironment(NULL)
 
 }
 
-Environment::OS WinSDLEnvironment::getOS()
-{
-	return Environment::OS::OS_WINDOWS;
-}
-
 void WinSDLEnvironment::sleep(unsigned int us)
 {
 	!!us ? SDL_DelayPrecise(us*1000) : SDL_Delay(0);

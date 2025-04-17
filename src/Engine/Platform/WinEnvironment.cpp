@@ -99,11 +99,6 @@ ContextMenu *WinEnvironment::createContextMenu()
 	return new WinContextMenu();
 }
 
-Environment::OS WinEnvironment::getOS()
-{
-	return Environment::OS::OS_WINDOWS;
-}
-
 void WinEnvironment::shutdown()
 {
 	SendMessage(m_hwnd, WM_CLOSE, 0, 0);

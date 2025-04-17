@@ -39,7 +39,21 @@ public:
 	virtual ContextMenu *createContextMenu() = 0;
 
 	// system
-	virtual OS getOS() = 0;
+	static constexpr OS getOS =
+#if defined(_WIN32) || defined(_WIN64) || defined(__WIN32__) || defined(__CYGWIN__) || defined(__CYGWIN32__) || defined(__TOS_WIN__) || defined(__WINDOWS__)
+	Environment::OS::OS_WINDOWS;
+#elif defined __linux__
+	Environment::OS::OS_LINUX;
+#elif defined __APPLE__
+	Environment::OS::OS_MACOS;
+#elif defined __SWITCH__
+	Environment::OS::OS_HORIZON;
+#else
+	Environment::OS::OS_NULL;
+#endif
+
+#define getOS() getOS
+
 	virtual void shutdown() = 0;
 	virtual void restart() = 0;
 	virtual void sleep(unsigned int us) = 0;

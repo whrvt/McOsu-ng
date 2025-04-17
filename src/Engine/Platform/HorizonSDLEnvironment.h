@@ -29,7 +29,6 @@ public:
 	void update_before_winproc(); // HACKHACK: mouse/keyboard
 
 	// system
-	virtual OS getOS();
 	virtual void sleep(unsigned int us);
 
 	// user

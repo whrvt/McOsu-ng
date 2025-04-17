@@ -397,11 +397,6 @@ void HorizonSDLEnvironment::update_before_winproc()
 	}
 }
 
-Environment::OS HorizonSDLEnvironment::getOS()
-{
-	return Environment::OS::OS_HORIZON;
-}
-
 void HorizonSDLEnvironment::sleep(unsigned int us)
 {
 	svcSleepThread(us*1000);

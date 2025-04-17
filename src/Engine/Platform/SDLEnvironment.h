@@ -31,7 +31,6 @@ public:
 	virtual ContextMenu *createContextMenu();
 
 	// system
-	virtual OS getOS();
 	virtual void shutdown();
 	virtual void restart();
 	virtual void sleep(unsigned int us); // NOTE: inaccurate
