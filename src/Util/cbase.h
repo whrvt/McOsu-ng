@@ -13,7 +13,7 @@
 
 // STD INCLUDES
 
-#include <math.h>
+#include <cmath>
 #include <vector>
 #include <stack>
 #include <string>
@@ -27,6 +27,10 @@
 
 #include <fstream>
 #include <iostream>
+
+#if __has_include(<sstream>)
+#include <sstream>
+#endif
 
 #include <cstdarg>
 #include <cstdint>
@@ -56,7 +60,7 @@
 #define NULL nullptr
 #endif
 
-typedef unsigned char COLORPART;
+using COLORPART = unsigned char;
 
 /*
 #ifndef DWORD
@@ -117,59 +121,29 @@ typedef unsigned char 	UINT8;
 #define COLOR_SUBTRACT(color1, color2) \
 	(COLORf(1.0f, clamp<float>(COLOR_GET_Rf(color1)-COLOR_GET_Rf(color2),0.0f,1.0f), clamp<float>(COLOR_GET_Gf(color1)-COLOR_GET_Gf(color2),0.0f,1.0f), clamp<float>(COLOR_GET_Bf(color1)-COLOR_GET_Bf(color2),0.0f,1.0f)))
 
-#define PI 3.1415926535897932384626433832795
-
-#define PIOVER180 0.01745329251994329576923690768489
-
-
+constexpr const auto PI = std::numbers::pi;
+constexpr const auto PIOVER180 = (PI/180.0f);
 
 // UTIL
 
-template <class T>
-inline T clamp(T x, T a, T b)
+using std::clamp;
+using std::lerp;
+using std::isfinite;
+using std::signbit;
+
+constexpr forceinline float deg2rad(const float deg)
 {
-    return x < a ? a : (x > b ? b : x);
+	return deg * PIOVER180;
 }
 
-template <class T>
-inline T lerp(T x1, T x2, T percent)
-{
-	return x1*(1-percent) + x2*percent;
-}
-
-template <class T>
-inline int sign(T val)
-{
-	return val > 0 ? 1 : (val == 0 ? 0 : -1);
-}
-
-inline float deg2rad(float deg)
-{
-	return deg * PI / 180.0f;
-}
-
-inline float rad2deg(float rad)
+constexpr forceinline float rad2deg(const float rad)
 {
 	return rad * 180.0f / PI;
 }
 
-inline bool isInt(float f)
+constexpr forceinline bool isInt(const float f)
 {
     return (f == static_cast<float>(static_cast<int>(f)));
-}
-
-
-
-// ANSI/IEEE 754-1985
-
-inline unsigned long &floatBits(float &f)
-{
-	return *reinterpret_cast<unsigned long*>(&f);
-}
-
-inline bool isFinite(float f)
-{
-	return ((floatBits(f) & 0x7F800000) != 0x7F800000);
 }
 
 #endif

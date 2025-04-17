@@ -80,11 +80,15 @@ PKG_CONFIG_PATH_CUSTOM="$PKG_CONFIG_PATH"
 AC_SUBST([PKG_CONFIG_PATH])
 AC_SUBST([PKG_CONFIG_PATH_CUSTOM])
 
+AC_CHECK_TOOL([LD], [ld], [ld])
+
 mkdir -p build/deps
 
 AS_IF([test "x$enable_clang" = "xyes"], [
     CC=clang
     CXX=clang++
+    CXXFLAGS="$CXXFLAGS -Qunused-arguments"
+    CFLAGS="$CFLAGS -Qunused-arguments"
 ],[
     CC=gcc
     CXX=g++
@@ -240,11 +244,12 @@ AS_IF([test "x$enable_debug" = "xyes"], [
 ])
 
 AS_IF([test "x$enable_lto" != "xno"], [
-    AX_CHECK_COMPILE_FLAG([-flto=full], [
-        AX_CHECK_LINK_FLAG([-fuse-ld=lld -flto=full -fno-fat-lto-objects -fwhole-program-vtables], [
-            CXXFLAGS="$CXXFLAGS -Qunused-arguments -fuse-ld=lld -flto=full -fno-fat-lto-objects -fwhole-program-vtables"
-            CFLAGS="$CFLAGS -Qunused-arguments -fuse-ld=lld -flto=full -fno-fat-lto-objects -fwhole-program-vtables"
-            LDFLAGS="$LDFLAGS -fuse-ld=lld -flto=full -fno-fat-lto-objects -fwhole-program-vtables"
+    AX_CHECK_COMPILE_FLAG([-flto=thin], [
+        AX_CHECK_LINK_FLAG([-fuse-ld=lld -flto=thin -fno-fat-lto-objects -fwhole-program-vtables], [
+            CXXFLAGS="$CXXFLAGS -fuse-ld=lld -flto=thin -fno-fat-lto-objects -fwhole-program-vtables"
+            CFLAGS="$CFLAGS -fuse-ld=lld -flto=thin -fno-fat-lto-objects -fwhole-program-vtables"
+            LDFLAGS="$LDFLAGS -fuse-ld=lld -flto=thin -fno-fat-lto-objects -fwhole-program-vtables"
+            LD="${LD}.lld"
         ])], [
         # gcc
         AX_CHECK_LINK_FLAG([-flto=auto -ffat-lto-objects -fuse-linker-plugin], [

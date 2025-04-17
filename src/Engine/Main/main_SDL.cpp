@@ -121,7 +121,7 @@ static const char *getCategoryString(int category)
 	}
 }
 
-static void SDLLogCallback(void *userdata, int category, SDL_LogPriority priority, const char *message)
+static void SDLLogCallback(void *, int category, SDL_LogPriority, const char *message)
 {
 	if (!debug_sdl.getBool())
 	{
@@ -871,13 +871,13 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 					if (joystick0DeadzoneX > 0.0f && joystick0DeadzoneX < 1.0f)
 					{
 						const float deltaAbs = (std::abs(m_fJoystick0XPercent) - joystick0DeadzoneX);
-						joystick0XPercent = (deltaAbs > 0.0f ? (deltaAbs / (1.0f - joystick0DeadzoneX)) * (float)sign<float>(m_fJoystick0XPercent) : 0.0f);
+						joystick0XPercent = (deltaAbs > 0.0f ? (deltaAbs / (1.0f - joystick0DeadzoneX)) * (float)signbit(m_fJoystick0XPercent) : 0.0f);
 					}
 
 					if (joystick0DeadzoneY > 0.0f && joystick0DeadzoneY < 1.0f)
 					{
 						const float deltaAbs = (std::abs(m_fJoystick0YPercent) - joystick0DeadzoneY);
-						joystick0YPercent = (deltaAbs > 0.0f ? (deltaAbs / (1.0f - joystick0DeadzoneY)) * (float)sign<float>(m_fJoystick0YPercent) : 0.0f);
+						joystick0YPercent = (deltaAbs > 0.0f ? (deltaAbs / (1.0f - joystick0DeadzoneY)) * (float)signbit(m_fJoystick0YPercent) : 0.0f);
 					}
 				}
 
@@ -938,7 +938,7 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 							fpsAdjustment -= 0.5f;
 						else if (actualGameFps > targetFps * 1.005f)
 							fpsAdjustment += 0.5f;
-						clamp<double>(fpsAdjustment, -15.0f, 0.0f);
+						fpsAdjustment = clamp<double>(fpsAdjustment, -15.0f, 0.0f);
 					}
 					else fpsAdjustment = 0.0f;
 

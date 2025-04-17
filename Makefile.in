@@ -672,6 +672,7 @@ INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
+LD = @LD@
 LDFLAGS = @LDFLAGS@
 LIBJPEG_CFLAGS = @LIBJPEG_CFLAGS@ $(am__append_5)
 LIBJPEG_LIBS = @LIBJPEG_LIBS@ $(am__append_6)
@@ -5611,14 +5612,14 @@ $(DEPS_CACHE)/GLEW-$(GLEW_VERSION).source:
 @BUILD_GLEW_TRUE@	$(TAR) xf $(DEPS_CACHE)/glew-$(GLEW_VERSION).tgz -C $(DEPS_PREFIX)/GLEW --strip-components=1 && \
 @BUILD_GLEW_TRUE@	cd $(DEPS_PREFIX)/GLEW && \
 @BUILD_GLEW_TRUE@	$(if $(findstring linux,$(host_os)),cd $(DEPS_PREFIX)/GLEW && patch -Np1<$(abs_top_srcdir)/build/aux/glew-install.patch && patch -Np1<$(abs_top_srcdir)/build/aux/egl+glx.patch && ,) \
-@BUILD_GLEW_TRUE@		$(SED) -i 's|lib64|lib|' config/Makefile.linux && \
+@BUILD_GLEW_TRUE@		$(SED) -i -e 's|lib64|lib|' -e 's|-Wl,-soname|-soname|' config/Makefile.linux && \
 @BUILD_GLEW_TRUE@  		$(SED) -i '/^.PHONY: .*\.pc$$/d' Makefile && \
 @BUILD_GLEW_TRUE@		$(MAKE) SYSTEM=$(if $(findstring linux,$(host_os)),linux-egl,linux-mingw$(if $(filter x86_64,$(host_cpu)),64,32)) GLEW_DEST="$(DEPS_PREFIX)" \
-@BUILD_GLEW_TRUE@		STRIP= CC="$(CC) -Wno-cast-function-type" CXX="$(CXX)" LD="$(if $(findstring linux,$(host_os)),$(CC),$(host_triplet)-ld)" \
+@BUILD_GLEW_TRUE@		STRIP= CC="$(CC) -Wno-cast-function-type -Wno-strict-prototypes" CXX="$(CXX)" LD="$(LD)" \
 @BUILD_GLEW_TRUE@		$(if $(SDL3_STATIC),glew.lib.static,glew.lib.shared)
 @BUILD_GLEW_TRUE@	cd $(DEPS_PREFIX)/GLEW && \
 @BUILD_GLEW_TRUE@		$(MAKE) SYSTEM=$(if $(findstring linux,$(host_os)),linux-egl,linux-mingw$(if $(filter x86_64,$(host_cpu)),64,32)) GLEW_DEST="$(DEPS_PREFIX)" \
-@BUILD_GLEW_TRUE@		STRIP= CC="$(CC)" CXX="$(CXX)" LD="$(if $(findstring linux,$(host_os)),$(CC),$(host_triplet)-ld)" \
+@BUILD_GLEW_TRUE@		STRIP= CC="$(CC) -Wno-cast-function-type -Wno-strict-prototypes" CXX="$(CXX)" LD="$(LD)" \
 @BUILD_GLEW_TRUE@		install
 @BUILD_GLEW_TRUE@	$(MKDIR_P) "$(DEPS_PREFIX)/lib/pkgconfig"
 @BUILD_GLEW_TRUE@	( echo 'prefix=$(DEPS_PREFIX)'; \

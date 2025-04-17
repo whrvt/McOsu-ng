@@ -736,6 +736,7 @@ CMAKE_SYSTEM_NAME
 PKG_CONFIG
 PKG_CONFIG_SYSTEM_INCLUDE_PATH
 PKG_CONFIG_SYSTEM_LIBRARY_PATH
+LD
 PKG_CONFIG_PATH_CUSTOM
 PKG_CONFIG_PATH
 PKGTYPE
@@ -5648,6 +5649,111 @@ PKG_CONFIG_PATH_CUSTOM="$PKG_CONFIG_PATH"
 
 
 
+if test -n "$ac_tool_prefix"; then
+  # Extract the first word of "${ac_tool_prefix}ld", so it can be a program name with args.
+set dummy ${ac_tool_prefix}ld; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+if test ${ac_cv_prog_LD+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) if test -n "$LD"; then
+  ac_cv_prog_LD="$LD" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    ac_cv_prog_LD="${ac_tool_prefix}ld"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi ;;
+esac
+fi
+LD=$ac_cv_prog_LD
+if test -n "$LD"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $LD" >&5
+printf "%s\n" "$LD" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+
+fi
+if test -z "$ac_cv_prog_LD"; then
+  ac_ct_LD=$LD
+  # Extract the first word of "ld", so it can be a program name with args.
+set dummy ld; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+if test ${ac_cv_prog_ac_ct_LD+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) if test -n "$ac_ct_LD"; then
+  ac_cv_prog_ac_ct_LD="$ac_ct_LD" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    ac_cv_prog_ac_ct_LD="ld"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi ;;
+esac
+fi
+ac_ct_LD=$ac_cv_prog_ac_ct_LD
+if test -n "$ac_ct_LD"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_ct_LD" >&5
+printf "%s\n" "$ac_ct_LD" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+  if test "x$ac_ct_LD" = x; then
+    LD="ld"
+  else
+    case $cross_compiling:$ac_tool_warned in
+yes:)
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: using cross tools not prefixed with host triplet" >&5
+printf "%s\n" "$as_me: WARNING: using cross tools not prefixed with host triplet" >&2;}
+ac_tool_warned=yes ;;
+esac
+    LD=$ac_ct_LD
+  fi
+else
+  LD="$ac_cv_prog_LD"
+fi
+
+
 mkdir -p build/deps
 
 if test "x$enable_clang" = "xyes"
@@ -5655,6 +5761,8 @@ then :
 
     CC=clang
     CXX=clang++
+    CXXFLAGS="$CXXFLAGS -Qunused-arguments"
+    CFLAGS="$CFLAGS -Qunused-arguments"
 
 else case e in #(
   e)
@@ -7206,9 +7314,9 @@ fi
 if test "x$enable_lto" != "xno"
 then :
 
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether the C++ compiler accepts -flto=full" >&5
-printf %s "checking whether the C++ compiler accepts -flto=full... " >&6; }
-if test ${ax_cv_check_cxxflags___flto_full+y}
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether the C++ compiler accepts -flto=thin" >&5
+printf %s "checking whether the C++ compiler accepts -flto=thin... " >&6; }
+if test ${ax_cv_check_cxxflags___flto_thin+y}
 then :
   printf %s "(cached) " >&6
 else case e in #(
@@ -7217,7 +7325,7 @@ else case e in #(
   if test x"$GXX" = xyes ; then
     add_gnu_werror="-Werror"
   fi
-  CXXFLAGS="$CXXFLAGS  -flto=full $add_gnu_werror"
+  CXXFLAGS="$CXXFLAGS  -flto=thin $add_gnu_werror"
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -7231,29 +7339,29 @@ main (void)
 _ACEOF
 if ac_fn_cxx_try_compile "$LINENO"
 then :
-  ax_cv_check_cxxflags___flto_full=yes
+  ax_cv_check_cxxflags___flto_thin=yes
 else case e in #(
-  e) ax_cv_check_cxxflags___flto_full=no ;;
+  e) ax_cv_check_cxxflags___flto_thin=no ;;
 esac
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
   CXXFLAGS=$ax_check_save_flags ;;
 esac
 fi
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ax_cv_check_cxxflags___flto_full" >&5
-printf "%s\n" "$ax_cv_check_cxxflags___flto_full" >&6; }
-if test "x$ax_cv_check_cxxflags___flto_full" = xyes
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ax_cv_check_cxxflags___flto_thin" >&5
+printf "%s\n" "$ax_cv_check_cxxflags___flto_thin" >&6; }
+if test "x$ax_cv_check_cxxflags___flto_thin" = xyes
 then :
 
-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether the linker accepts -fuse-ld=lld -flto=full -fno-fat-lto-objects -fwhole-program-vtables" >&5
-printf %s "checking whether the linker accepts -fuse-ld=lld -flto=full -fno-fat-lto-objects -fwhole-program-vtables... " >&6; }
-if test ${ax_cv_check_ldflags___fuse_ld_lld__flto_full__fno_fat_lto_objects__fwhole_program_vtables+y}
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether the linker accepts -fuse-ld=lld -flto=thin -fno-fat-lto-objects -fwhole-program-vtables" >&5
+printf %s "checking whether the linker accepts -fuse-ld=lld -flto=thin -fno-fat-lto-objects -fwhole-program-vtables... " >&6; }
+if test ${ax_cv_check_ldflags___fuse_ld_lld__flto_thin__fno_fat_lto_objects__fwhole_program_vtables+y}
 then :
   printf %s "(cached) " >&6
 else case e in #(
   e)
   ax_check_save_flags=$LDFLAGS
-  LDFLAGS="$LDFLAGS  -fuse-ld=lld -flto=full -fno-fat-lto-objects -fwhole-program-vtables"
+  LDFLAGS="$LDFLAGS  -fuse-ld=lld -flto=thin -fno-fat-lto-objects -fwhole-program-vtables"
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -7267,9 +7375,9 @@ main (void)
 _ACEOF
 if ac_fn_cxx_try_link "$LINENO"
 then :
-  ax_cv_check_ldflags___fuse_ld_lld__flto_full__fno_fat_lto_objects__fwhole_program_vtables=yes
+  ax_cv_check_ldflags___fuse_ld_lld__flto_thin__fno_fat_lto_objects__fwhole_program_vtables=yes
 else case e in #(
-  e) ax_cv_check_ldflags___fuse_ld_lld__flto_full__fno_fat_lto_objects__fwhole_program_vtables=no ;;
+  e) ax_cv_check_ldflags___fuse_ld_lld__flto_thin__fno_fat_lto_objects__fwhole_program_vtables=no ;;
 esac
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam \
@@ -7277,14 +7385,15 @@ rm -f core conftest.err conftest.$ac_objext conftest.beam \
   LDFLAGS=$ax_check_save_flags ;;
 esac
 fi
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ax_cv_check_ldflags___fuse_ld_lld__flto_full__fno_fat_lto_objects__fwhole_program_vtables" >&5
-printf "%s\n" "$ax_cv_check_ldflags___fuse_ld_lld__flto_full__fno_fat_lto_objects__fwhole_program_vtables" >&6; }
-if test "x$ax_cv_check_ldflags___fuse_ld_lld__flto_full__fno_fat_lto_objects__fwhole_program_vtables" = xyes
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ax_cv_check_ldflags___fuse_ld_lld__flto_thin__fno_fat_lto_objects__fwhole_program_vtables" >&5
+printf "%s\n" "$ax_cv_check_ldflags___fuse_ld_lld__flto_thin__fno_fat_lto_objects__fwhole_program_vtables" >&6; }
+if test "x$ax_cv_check_ldflags___fuse_ld_lld__flto_thin__fno_fat_lto_objects__fwhole_program_vtables" = xyes
 then :
 
-            CXXFLAGS="$CXXFLAGS -Qunused-arguments -fuse-ld=lld -flto=full -fno-fat-lto-objects -fwhole-program-vtables"
-            CFLAGS="$CFLAGS -Qunused-arguments -fuse-ld=lld -flto=full -fno-fat-lto-objects -fwhole-program-vtables"
-            LDFLAGS="$LDFLAGS -fuse-ld=lld -flto=full -fno-fat-lto-objects -fwhole-program-vtables"
+            CXXFLAGS="$CXXFLAGS -fuse-ld=lld -flto=thin -fno-fat-lto-objects -fwhole-program-vtables"
+            CFLAGS="$CFLAGS -fuse-ld=lld -flto=thin -fno-fat-lto-objects -fwhole-program-vtables"
+            LDFLAGS="$LDFLAGS -fuse-ld=lld -flto=thin -fno-fat-lto-objects -fwhole-program-vtables"
+            LD="${LD}.lld"
 
 else case e in #(
   e) : ;;

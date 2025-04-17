@@ -111,14 +111,14 @@ $(DEPS_PREFIX)/GLEW.built: $(DEPS_CACHE)/GLEW-$(GLEW_VERSION).source
 	$(TAR) xf $(DEPS_CACHE)/glew-$(GLEW_VERSION).tgz -C $(DEPS_PREFIX)/GLEW --strip-components=1 && \
 	cd $(DEPS_PREFIX)/GLEW && \
 	$(if $(findstring linux,$(host_os)),cd $(DEPS_PREFIX)/GLEW && patch -Np1<$(abs_top_srcdir)/build/aux/glew-install.patch && patch -Np1<$(abs_top_srcdir)/build/aux/egl+glx.patch && ,) \
-		$(SED) -i 's|lib64|lib|' config/Makefile.linux && \
+		$(SED) -i -e 's|lib64|lib|' -e 's|-Wl,-soname|-soname|' config/Makefile.linux && \
   		$(SED) -i '/^.PHONY: .*\.pc$$/d' Makefile && \
 		$(MAKE) SYSTEM=$(if $(findstring linux,$(host_os)),linux-egl,linux-mingw$(if $(filter x86_64,$(host_cpu)),64,32)) GLEW_DEST="$(DEPS_PREFIX)" \
-		STRIP= CC="$(CC) -Wno-cast-function-type" CXX="$(CXX)" LD="$(if $(findstring linux,$(host_os)),$(CC),$(host_triplet)-ld)" \
+		STRIP= CC="$(CC) -Wno-cast-function-type -Wno-strict-prototypes" CXX="$(CXX)" LD="$(LD)" \
 		$(if $(SDL3_STATIC),glew.lib.static,glew.lib.shared)
 	cd $(DEPS_PREFIX)/GLEW && \
 		$(MAKE) SYSTEM=$(if $(findstring linux,$(host_os)),linux-egl,linux-mingw$(if $(filter x86_64,$(host_cpu)),64,32)) GLEW_DEST="$(DEPS_PREFIX)" \
-		STRIP= CC="$(CC)" CXX="$(CXX)" LD="$(if $(findstring linux,$(host_os)),$(CC),$(host_triplet)-ld)" \
+		STRIP= CC="$(CC) -Wno-cast-function-type -Wno-strict-prototypes" CXX="$(CXX)" LD="$(LD)" \
 		install
 	$(MKDIR_P) "$(DEPS_PREFIX)/lib/pkgconfig"
 	( echo 'prefix=$(DEPS_PREFIX)'; \

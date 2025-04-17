@@ -1310,14 +1310,14 @@ bool OsuDatabaseBeatmap::loadMetadata(OsuDatabaseBeatmap *databaseBeatmap)
 
 		if (tempMinBPM > 0 && tempMinBPM < std::numeric_limits<float>::max()) {
 			minBPM = msPerMinute / tempMinBPM;
-			if (std::isfinite(minBPM) && minBPM <= static_cast<float>(std::numeric_limits<int>::max())) {
+			if (isfinite(minBPM) && minBPM <= static_cast<float>(std::numeric_limits<int>::max())) {
 				databaseBeatmap->m_iMinBPM = static_cast<int>(std::round(minBPM));
 			}
 		}
 
 		if (tempMaxBPM > 0 && tempMaxBPM < std::numeric_limits<float>::max()) {
 			maxBPM = msPerMinute / tempMaxBPM;
-			if (std::isfinite(maxBPM) && maxBPM <= static_cast<float>(std::numeric_limits<int>::max())) {
+			if (isfinite(maxBPM) && maxBPM <= static_cast<float>(std::numeric_limits<int>::max())) {
 				databaseBeatmap->m_iMaxBPM = static_cast<int>(std::round(maxBPM));
 			}
 		}

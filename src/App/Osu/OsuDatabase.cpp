@@ -1077,7 +1077,7 @@ unsigned long long OsuDatabase::getRequiredScoreForLevel(int level)
 	if (level <= 100)
 	{
 		if (level > 1)
-			return (uint64_t)std::floor( 5000/3*(4 * std::pow(level, 3) - 3 * std::pow(level, 2) - level) + std::floor(1.25 * std::pow(1.8, (double)(level - 60))) );
+			return (uint64_t)std::floor( 5000/3.0f*(4 * std::pow(level, 3) - 3 * std::pow(level, 2) - level) + std::floor(1.25 * std::pow(1.8, (double)(level - 60))) );
 
 		return 1;
 	}
@@ -1645,7 +1645,7 @@ void OsuDatabase::loadDB(OsuFile *db, bool &fallbackToRawLoad)
 
 				if (minBeatLength > 0 && minBeatLength < std::numeric_limits<float>::max()) {
 					minBPM = msPerMinute / minBeatLength;
-					if (std::isfinite(minBPM) && minBPM <= static_cast<float>(std::numeric_limits<int>::max())) {
+					if (isfinite(minBPM) && minBPM <= static_cast<float>(std::numeric_limits<int>::max())) {
 						diff2->m_iMinBPM = static_cast<int>(std::round(minBPM));
 					}
 				}
@@ -1653,7 +1653,7 @@ void OsuDatabase::loadDB(OsuFile *db, bool &fallbackToRawLoad)
 				// Same for maxBeatLength
 				if (maxBeatLength > 0 && maxBeatLength < std::numeric_limits<float>::max()) {
 					maxBPM = msPerMinute / maxBeatLength;
-					if (std::isfinite(maxBPM) && maxBPM <= static_cast<float>(std::numeric_limits<int>::max())) {
+					if (isfinite(maxBPM) && maxBPM <= static_cast<float>(std::numeric_limits<int>::max())) {
 						diff2->m_iMaxBPM = static_cast<int>(std::round(maxBPM));
 					}
 				}
@@ -1764,7 +1764,7 @@ void OsuDatabase::loadDB(OsuFile *db, bool &fallbackToRawLoad)
 					OsuDatabaseBeatmap::TIMINGPOINT tp;
 					{
 						tp.offset = 0;
-						if (std::isfinite(timingPoints[t].offset) &&
+						if (isfinite(timingPoints[t].offset) &&
 							timingPoints[t].offset >= static_cast<double>(std::numeric_limits<long>::min()) &&
 							timingPoints[t].offset <= static_cast<double>(std::numeric_limits<long>::max())) {
 							tp.offset = static_cast<long>(timingPoints[t].offset);

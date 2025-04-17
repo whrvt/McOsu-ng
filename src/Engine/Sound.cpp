@@ -406,7 +406,7 @@ void Sound::setPosition(double percent)
 			int loopCounter = 0;
 			while (std::abs(deltaMS) > 1.1*1000.0)
 			{
-				positionMS -= sign<double>(deltaMS) * 1000.0;
+				positionMS -= signbit(deltaMS) * 1000.0;
 
 				Mix_SetMusicPosition(positionMS / 1000.0);
 
@@ -460,7 +460,7 @@ void Sound::setPositionMS(unsigned long ms, bool internal)
 		int loopCounter = 0;
 		while (std::abs(deltaMS) > 1.1*1000.0)
 		{
-			positionMS -= sign<double>(deltaMS) * 1000.0;
+			positionMS -= signbit(deltaMS) * 1000.0;
 
 			Mix_SetMusicPosition(positionMS / 1000.0);
 
