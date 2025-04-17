@@ -1050,8 +1050,7 @@ OsuOptionsMenu::OsuOptionsMenu(Osu *osu) : OsuScreenBackable(osu)
 	addLabel("- osu!stable: Constant drain, moderately hard (default).")->setTextColor(0xff666666);
 	addLabel("- osu!lazer 2020: Constant drain, very easy (too easy?).")->setTextColor(0xff666666);
 	addLabel("- osu!lazer 2018: No constant drain, scales with HP.")->setTextColor(0xff666666);
-	addSpacer();
-	addSpacer();
+	addSpacer(2);
 	OPTIONS_ELEMENT notelockSelect = addButton("Select [Notelock]", "None", true);
 	((CBaseUIButton*)notelockSelect.elements[0])->setClickCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onNotelockSelect) );
 	m_notelockSelectButton = notelockSelect.elements[0];
@@ -1255,14 +1254,7 @@ OsuOptionsMenu::OsuOptionsMenu(Osu *osu) : OsuScreenBackable(osu)
 	OsuUIButton *resetAllSettingsButton = addButton("Reset all settings");
 	resetAllSettingsButton->setClickCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onResetEverythingClicked) );
 	resetAllSettingsButton->setColor(0xffff0000);
-	addSpacer();
-	addSpacer();
-	addSpacer();
-	addSpacer();
-	addSpacer();
-	addSpacer();
-	addSpacer();
-	addSpacer();
+	addSpacer(8);
 
 	//**************************************************************************************************************************//
 
@@ -3702,12 +3694,12 @@ void OsuOptionsMenu::onResetEverythingClicked(CBaseUIButton *button)
 	}
 }
 
-void OsuOptionsMenu::addSpacer()
+void OsuOptionsMenu::addSpacer(unsigned num)
 {
-	OPTIONS_ELEMENT e;
-	e.type = 0;
-	e.cvar = NULL;
-	m_elements.push_back(e);
+    OPTIONS_ELEMENT e;
+    e.type = 0;
+    e.cvar = NULL;
+    m_elements.insert(m_elements.end(), num, e);
 }
 
 CBaseUILabel *OsuOptionsMenu::addSection(UString text)
