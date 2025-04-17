@@ -80,6 +80,7 @@ McOsu_ng_SOURCES = \
 	src/Engine/DiscordInterface.cpp \
 	src/Engine/Engine.cpp \
 	src/Engine/Environment.cpp \
+	src/Engine/File.cpp \
 	src/Engine/Font.cpp \
 	src/Engine/Graphics.cpp \
 	src/Engine/Image.cpp \
@@ -97,7 +98,6 @@ McOsu_ng_SOURCES = \
 	src/Engine/NetworkHandler.cpp \
 	src/Engine/OpenCLInterface.cpp \
 	src/Engine/OpenVRInterface.cpp \
-	src/Engine/Platform/File.cpp \
 	src/Engine/Platform/HorizonSDLEnvironment.cpp \
 	src/Engine/Platform/HorizonThread.cpp \
 	src/Engine/Platform/HorizonTimer.cpp \
@@ -120,7 +120,6 @@ McOsu_ng_SOURCES = \
 	src/Engine/Platform/Timer.cpp \
 	src/Engine/Platform/WinContextMenu.cpp \
 	src/Engine/Platform/WinEnvironment.cpp \
-	src/Engine/Platform/WinFile.cpp \
 	src/Engine/Platform/WinGL3Interface.cpp \
 	src/Engine/Platform/WinGLLegacyInterface.cpp \
 	src/Engine/Platform/WinSDLEnvironment.cpp \

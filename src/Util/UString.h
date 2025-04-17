@@ -34,6 +34,7 @@ public:
 	[[nodiscard]] inline const wchar_t *wc_str() const { return m_unicode.c_str(); }
 	[[nodiscard]] inline bool isAsciiOnly() const { return m_isAsciiOnly; }
 	[[nodiscard]] bool isWhitespaceOnly() const;
+	[[nodiscard]] inline bool isEmpty() const { return length() > 0 && !isWhitespaceOnly(); }
 
 	[[nodiscard]] int findChar(wchar_t ch, int start = 0, bool respectEscapeChars = false) const;
 	[[nodiscard]] int findChar(const UString &str, int start = 0, bool respectEscapeChars = false) const;

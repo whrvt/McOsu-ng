@@ -203,6 +203,7 @@ am_McOsu_ng_OBJECTS = src/App/Osu/McOsu_ng-Osu.$(OBJEXT) \
 	src/Engine/McOsu_ng-DiscordInterface.$(OBJEXT) \
 	src/Engine/McOsu_ng-Engine.$(OBJEXT) \
 	src/Engine/McOsu_ng-Environment.$(OBJEXT) \
+	src/Engine/McOsu_ng-File.$(OBJEXT) \
 	src/Engine/McOsu_ng-Font.$(OBJEXT) \
 	src/Engine/McOsu_ng-Graphics.$(OBJEXT) \
 	src/Engine/McOsu_ng-Image.$(OBJEXT) \
@@ -220,7 +221,6 @@ am_McOsu_ng_OBJECTS = src/App/Osu/McOsu_ng-Osu.$(OBJEXT) \
 	src/Engine/McOsu_ng-NetworkHandler.$(OBJEXT) \
 	src/Engine/McOsu_ng-OpenCLInterface.$(OBJEXT) \
 	src/Engine/McOsu_ng-OpenVRInterface.$(OBJEXT) \
-	src/Engine/Platform/McOsu_ng-File.$(OBJEXT) \
 	src/Engine/Platform/McOsu_ng-HorizonSDLEnvironment.$(OBJEXT) \
 	src/Engine/Platform/McOsu_ng-HorizonThread.$(OBJEXT) \
 	src/Engine/Platform/McOsu_ng-HorizonTimer.$(OBJEXT) \
@@ -243,7 +243,6 @@ am_McOsu_ng_OBJECTS = src/App/Osu/McOsu_ng-Osu.$(OBJEXT) \
 	src/Engine/Platform/McOsu_ng-Timer.$(OBJEXT) \
 	src/Engine/Platform/McOsu_ng-WinContextMenu.$(OBJEXT) \
 	src/Engine/Platform/McOsu_ng-WinEnvironment.$(OBJEXT) \
-	src/Engine/Platform/McOsu_ng-WinFile.$(OBJEXT) \
 	src/Engine/Platform/McOsu_ng-WinGL3Interface.$(OBJEXT) \
 	src/Engine/Platform/McOsu_ng-WinGLLegacyInterface.$(OBJEXT) \
 	src/Engine/Platform/McOsu_ng-WinSDLEnvironment.$(OBJEXT) \
@@ -418,6 +417,7 @@ am__depfiles_remade = src/App/Osu/$(DEPDIR)/McOsu_ng-Osu.Po \
 	src/Engine/$(DEPDIR)/McOsu_ng-DiscordInterface.Po \
 	src/Engine/$(DEPDIR)/McOsu_ng-Engine.Po \
 	src/Engine/$(DEPDIR)/McOsu_ng-Environment.Po \
+	src/Engine/$(DEPDIR)/McOsu_ng-File.Po \
 	src/Engine/$(DEPDIR)/McOsu_ng-Font.Po \
 	src/Engine/$(DEPDIR)/McOsu_ng-Graphics.Po \
 	src/Engine/$(DEPDIR)/McOsu_ng-Image.Po \
@@ -446,7 +446,6 @@ am__depfiles_remade = src/App/Osu/$(DEPDIR)/McOsu_ng-Osu.Po \
 	src/Engine/Main/$(DEPDIR)/McOsu_ng-main_OSX_sdl.Po \
 	src/Engine/Main/$(DEPDIR)/McOsu_ng-main_SDL.Po \
 	src/Engine/Main/$(DEPDIR)/McOsu_ng-main_Windows.Po \
-	src/Engine/Platform/$(DEPDIR)/McOsu_ng-File.Po \
 	src/Engine/Platform/$(DEPDIR)/McOsu_ng-HorizonSDLEnvironment.Po \
 	src/Engine/Platform/$(DEPDIR)/McOsu_ng-HorizonThread.Po \
 	src/Engine/Platform/$(DEPDIR)/McOsu_ng-HorizonTimer.Po \
@@ -469,7 +468,6 @@ am__depfiles_remade = src/App/Osu/$(DEPDIR)/McOsu_ng-Osu.Po \
 	src/Engine/Platform/$(DEPDIR)/McOsu_ng-Timer.Po \
 	src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinContextMenu.Po \
 	src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinEnvironment.Po \
-	src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinFile.Po \
 	src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinGL3Interface.Po \
 	src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinGLLegacyInterface.Po \
 	src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinSDLEnvironment.Po \
@@ -874,6 +872,7 @@ McOsu_ng_SOURCES = \
 	src/Engine/DiscordInterface.cpp \
 	src/Engine/Engine.cpp \
 	src/Engine/Environment.cpp \
+	src/Engine/File.cpp \
 	src/Engine/Font.cpp \
 	src/Engine/Graphics.cpp \
 	src/Engine/Image.cpp \
@@ -891,7 +890,6 @@ McOsu_ng_SOURCES = \
 	src/Engine/NetworkHandler.cpp \
 	src/Engine/OpenCLInterface.cpp \
 	src/Engine/OpenVRInterface.cpp \
-	src/Engine/Platform/File.cpp \
 	src/Engine/Platform/HorizonSDLEnvironment.cpp \
 	src/Engine/Platform/HorizonThread.cpp \
 	src/Engine/Platform/HorizonTimer.cpp \
@@ -914,7 +912,6 @@ McOsu_ng_SOURCES = \
 	src/Engine/Platform/Timer.cpp \
 	src/Engine/Platform/WinContextMenu.cpp \
 	src/Engine/Platform/WinEnvironment.cpp \
-	src/Engine/Platform/WinFile.cpp \
 	src/Engine/Platform/WinGL3Interface.cpp \
 	src/Engine/Platform/WinGLLegacyInterface.cpp \
 	src/Engine/Platform/WinSDLEnvironment.cpp \
@@ -1401,6 +1398,8 @@ src/Engine/McOsu_ng-Engine.$(OBJEXT): src/Engine/$(am__dirstamp) \
 	src/Engine/$(DEPDIR)/$(am__dirstamp)
 src/Engine/McOsu_ng-Environment.$(OBJEXT): src/Engine/$(am__dirstamp) \
 	src/Engine/$(DEPDIR)/$(am__dirstamp)
+src/Engine/McOsu_ng-File.$(OBJEXT): src/Engine/$(am__dirstamp) \
+	src/Engine/$(DEPDIR)/$(am__dirstamp)
 src/Engine/McOsu_ng-Font.$(OBJEXT): src/Engine/$(am__dirstamp) \
 	src/Engine/$(DEPDIR)/$(am__dirstamp)
 src/Engine/McOsu_ng-Graphics.$(OBJEXT): src/Engine/$(am__dirstamp) \
@@ -1467,9 +1466,6 @@ src/Engine/Platform/$(am__dirstamp):
 src/Engine/Platform/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) src/Engine/Platform/$(DEPDIR)
 	@: >>src/Engine/Platform/$(DEPDIR)/$(am__dirstamp)
-src/Engine/Platform/McOsu_ng-File.$(OBJEXT):  \
-	src/Engine/Platform/$(am__dirstamp) \
-	src/Engine/Platform/$(DEPDIR)/$(am__dirstamp)
 src/Engine/Platform/McOsu_ng-HorizonSDLEnvironment.$(OBJEXT):  \
 	src/Engine/Platform/$(am__dirstamp) \
 	src/Engine/Platform/$(DEPDIR)/$(am__dirstamp)
@@ -1534,9 +1530,6 @@ src/Engine/Platform/McOsu_ng-WinContextMenu.$(OBJEXT):  \
 	src/Engine/Platform/$(am__dirstamp) \
 	src/Engine/Platform/$(DEPDIR)/$(am__dirstamp)
 src/Engine/Platform/McOsu_ng-WinEnvironment.$(OBJEXT):  \
-	src/Engine/Platform/$(am__dirstamp) \
-	src/Engine/Platform/$(DEPDIR)/$(am__dirstamp)
-src/Engine/Platform/McOsu_ng-WinFile.$(OBJEXT):  \
 	src/Engine/Platform/$(am__dirstamp) \
 	src/Engine/Platform/$(DEPDIR)/$(am__dirstamp)
 src/Engine/Platform/McOsu_ng-WinGL3Interface.$(OBJEXT):  \
@@ -1864,6 +1857,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/$(DEPDIR)/McOsu_ng-DiscordInterface.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/$(DEPDIR)/McOsu_ng-Engine.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/$(DEPDIR)/McOsu_ng-Environment.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@src/Engine/$(DEPDIR)/McOsu_ng-File.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/$(DEPDIR)/McOsu_ng-Font.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/$(DEPDIR)/McOsu_ng-Graphics.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/$(DEPDIR)/McOsu_ng-Image.Po@am__quote@ # am--include-marker
@@ -1892,7 +1886,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Main/$(DEPDIR)/McOsu_ng-main_OSX_sdl.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Main/$(DEPDIR)/McOsu_ng-main_SDL.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Main/$(DEPDIR)/McOsu_ng-main_Windows.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-File.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-HorizonSDLEnvironment.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-HorizonThread.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-HorizonTimer.Po@am__quote@ # am--include-marker
@@ -1915,7 +1908,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-Timer.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinContextMenu.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinEnvironment.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinFile.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinGL3Interface.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinGLLegacyInterface.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinSDLEnvironment.Po@am__quote@ # am--include-marker
@@ -3123,6 +3115,20 @@ src/Engine/McOsu_ng-Environment.obj: src/Engine/Environment.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/McOsu_ng-Environment.obj `if test -f 'src/Engine/Environment.cpp'; then $(CYGPATH_W) 'src/Engine/Environment.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Environment.cpp'; fi`
 
+src/Engine/McOsu_ng-File.o: src/Engine/File.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/McOsu_ng-File.o -MD -MP -MF src/Engine/$(DEPDIR)/McOsu_ng-File.Tpo -c -o src/Engine/McOsu_ng-File.o `test -f 'src/Engine/File.cpp' || echo '$(srcdir)/'`src/Engine/File.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/$(DEPDIR)/McOsu_ng-File.Tpo src/Engine/$(DEPDIR)/McOsu_ng-File.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/File.cpp' object='src/Engine/McOsu_ng-File.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/McOsu_ng-File.o `test -f 'src/Engine/File.cpp' || echo '$(srcdir)/'`src/Engine/File.cpp
+
+src/Engine/McOsu_ng-File.obj: src/Engine/File.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/McOsu_ng-File.obj -MD -MP -MF src/Engine/$(DEPDIR)/McOsu_ng-File.Tpo -c -o src/Engine/McOsu_ng-File.obj `if test -f 'src/Engine/File.cpp'; then $(CYGPATH_W) 'src/Engine/File.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/File.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/$(DEPDIR)/McOsu_ng-File.Tpo src/Engine/$(DEPDIR)/McOsu_ng-File.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/File.cpp' object='src/Engine/McOsu_ng-File.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/McOsu_ng-File.obj `if test -f 'src/Engine/File.cpp'; then $(CYGPATH_W) 'src/Engine/File.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/File.cpp'; fi`
+
 src/Engine/McOsu_ng-Font.o: src/Engine/Font.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/McOsu_ng-Font.o -MD -MP -MF src/Engine/$(DEPDIR)/McOsu_ng-Font.Tpo -c -o src/Engine/McOsu_ng-Font.o `test -f 'src/Engine/Font.cpp' || echo '$(srcdir)/'`src/Engine/Font.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/$(DEPDIR)/McOsu_ng-Font.Tpo src/Engine/$(DEPDIR)/McOsu_ng-Font.Po
@@ -3360,20 +3366,6 @@ src/Engine/McOsu_ng-OpenVRInterface.obj: src/Engine/OpenVRInterface.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/OpenVRInterface.cpp' object='src/Engine/McOsu_ng-OpenVRInterface.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/McOsu_ng-OpenVRInterface.obj `if test -f 'src/Engine/OpenVRInterface.cpp'; then $(CYGPATH_W) 'src/Engine/OpenVRInterface.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/OpenVRInterface.cpp'; fi`
-
-src/Engine/Platform/McOsu_ng-File.o: src/Engine/Platform/File.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Platform/McOsu_ng-File.o -MD -MP -MF src/Engine/Platform/$(DEPDIR)/McOsu_ng-File.Tpo -c -o src/Engine/Platform/McOsu_ng-File.o `test -f 'src/Engine/Platform/File.cpp' || echo '$(srcdir)/'`src/Engine/Platform/File.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Platform/$(DEPDIR)/McOsu_ng-File.Tpo src/Engine/Platform/$(DEPDIR)/McOsu_ng-File.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Platform/File.cpp' object='src/Engine/Platform/McOsu_ng-File.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Platform/McOsu_ng-File.o `test -f 'src/Engine/Platform/File.cpp' || echo '$(srcdir)/'`src/Engine/Platform/File.cpp
-
-src/Engine/Platform/McOsu_ng-File.obj: src/Engine/Platform/File.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Platform/McOsu_ng-File.obj -MD -MP -MF src/Engine/Platform/$(DEPDIR)/McOsu_ng-File.Tpo -c -o src/Engine/Platform/McOsu_ng-File.obj `if test -f 'src/Engine/Platform/File.cpp'; then $(CYGPATH_W) 'src/Engine/Platform/File.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Platform/File.cpp'; fi`
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Platform/$(DEPDIR)/McOsu_ng-File.Tpo src/Engine/Platform/$(DEPDIR)/McOsu_ng-File.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Platform/File.cpp' object='src/Engine/Platform/McOsu_ng-File.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Platform/McOsu_ng-File.obj `if test -f 'src/Engine/Platform/File.cpp'; then $(CYGPATH_W) 'src/Engine/Platform/File.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Platform/File.cpp'; fi`
 
 src/Engine/Platform/McOsu_ng-HorizonSDLEnvironment.o: src/Engine/Platform/HorizonSDLEnvironment.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Platform/McOsu_ng-HorizonSDLEnvironment.o -MD -MP -MF src/Engine/Platform/$(DEPDIR)/McOsu_ng-HorizonSDLEnvironment.Tpo -c -o src/Engine/Platform/McOsu_ng-HorizonSDLEnvironment.o `test -f 'src/Engine/Platform/HorizonSDLEnvironment.cpp' || echo '$(srcdir)/'`src/Engine/Platform/HorizonSDLEnvironment.cpp
@@ -3682,20 +3674,6 @@ src/Engine/Platform/McOsu_ng-WinEnvironment.obj: src/Engine/Platform/WinEnvironm
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Platform/WinEnvironment.cpp' object='src/Engine/Platform/McOsu_ng-WinEnvironment.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Platform/McOsu_ng-WinEnvironment.obj `if test -f 'src/Engine/Platform/WinEnvironment.cpp'; then $(CYGPATH_W) 'src/Engine/Platform/WinEnvironment.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Platform/WinEnvironment.cpp'; fi`
-
-src/Engine/Platform/McOsu_ng-WinFile.o: src/Engine/Platform/WinFile.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Platform/McOsu_ng-WinFile.o -MD -MP -MF src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinFile.Tpo -c -o src/Engine/Platform/McOsu_ng-WinFile.o `test -f 'src/Engine/Platform/WinFile.cpp' || echo '$(srcdir)/'`src/Engine/Platform/WinFile.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinFile.Tpo src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinFile.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Platform/WinFile.cpp' object='src/Engine/Platform/McOsu_ng-WinFile.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Platform/McOsu_ng-WinFile.o `test -f 'src/Engine/Platform/WinFile.cpp' || echo '$(srcdir)/'`src/Engine/Platform/WinFile.cpp
-
-src/Engine/Platform/McOsu_ng-WinFile.obj: src/Engine/Platform/WinFile.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Platform/McOsu_ng-WinFile.obj -MD -MP -MF src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinFile.Tpo -c -o src/Engine/Platform/McOsu_ng-WinFile.obj `if test -f 'src/Engine/Platform/WinFile.cpp'; then $(CYGPATH_W) 'src/Engine/Platform/WinFile.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Platform/WinFile.cpp'; fi`
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinFile.Tpo src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinFile.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Platform/WinFile.cpp' object='src/Engine/Platform/McOsu_ng-WinFile.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Platform/McOsu_ng-WinFile.obj `if test -f 'src/Engine/Platform/WinFile.cpp'; then $(CYGPATH_W) 'src/Engine/Platform/WinFile.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Platform/WinFile.cpp'; fi`
 
 src/Engine/Platform/McOsu_ng-WinGL3Interface.o: src/Engine/Platform/WinGL3Interface.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Platform/McOsu_ng-WinGL3Interface.o -MD -MP -MF src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinGL3Interface.Tpo -c -o src/Engine/Platform/McOsu_ng-WinGL3Interface.o `test -f 'src/Engine/Platform/WinGL3Interface.cpp' || echo '$(srcdir)/'`src/Engine/Platform/WinGL3Interface.cpp
@@ -5129,6 +5107,7 @@ distclean: distclean-am
 	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-DiscordInterface.Po
 	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-Engine.Po
 	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-Environment.Po
+	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-File.Po
 	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-Font.Po
 	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-Graphics.Po
 	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-Image.Po
@@ -5157,7 +5136,6 @@ distclean: distclean-am
 	-rm -f src/Engine/Main/$(DEPDIR)/McOsu_ng-main_OSX_sdl.Po
 	-rm -f src/Engine/Main/$(DEPDIR)/McOsu_ng-main_SDL.Po
 	-rm -f src/Engine/Main/$(DEPDIR)/McOsu_ng-main_Windows.Po
-	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-File.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-HorizonSDLEnvironment.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-HorizonThread.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-HorizonTimer.Po
@@ -5180,7 +5158,6 @@ distclean: distclean-am
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-Timer.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinContextMenu.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinEnvironment.Po
-	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinFile.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinGL3Interface.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinGLLegacyInterface.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinSDLEnvironment.Po
@@ -5373,6 +5350,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-DiscordInterface.Po
 	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-Engine.Po
 	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-Environment.Po
+	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-File.Po
 	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-Font.Po
 	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-Graphics.Po
 	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-Image.Po
@@ -5401,7 +5379,6 @@ maintainer-clean: maintainer-clean-am
 	-rm -f src/Engine/Main/$(DEPDIR)/McOsu_ng-main_OSX_sdl.Po
 	-rm -f src/Engine/Main/$(DEPDIR)/McOsu_ng-main_SDL.Po
 	-rm -f src/Engine/Main/$(DEPDIR)/McOsu_ng-main_Windows.Po
-	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-File.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-HorizonSDLEnvironment.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-HorizonThread.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-HorizonTimer.Po
@@ -5424,7 +5401,6 @@ maintainer-clean: maintainer-clean-am
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-Timer.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinContextMenu.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinEnvironment.Po
-	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinFile.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinGL3Interface.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinGLLegacyInterface.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinSDLEnvironment.Po

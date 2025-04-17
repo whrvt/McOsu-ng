@@ -2,7 +2,7 @@
 //
 // Purpose:		file wrapper, for cross-platform unicode path support
 //
-// $NoKeywords: $file $os
+// $NoKeywords: $file
 //===============================================================================//
 
 #pragma once
@@ -10,8 +10,12 @@
 #define FILE_H
 
 #include "cbase.h"
+#include <filesystem>
+#include <fstream>
+#include <memory>
+#include <string>
+#include <vector>
 
-class BaseFile;
 class ConVar;
 
 class File
@@ -28,7 +32,7 @@ public:
 
 public:
 	File(UString filePath, TYPE type = TYPE::READ);
-	virtual ~File();
+	~File() = default;
 
 	bool canRead() const;
 	bool canWrite() const;
@@ -42,56 +46,16 @@ public:
 	size_t getFileSize() const;
 
 private:
-	BaseFile *m_file;
-};
+	UString m_filePath;
+	TYPE m_type;
+	bool m_ready;
+	size_t m_fileSize;
 
-class BaseFile
-{
-public:
-	virtual ~BaseFile() {;}
+	// file streams
+	std::unique_ptr<std::ifstream> m_ifstream;
+	std::unique_ptr<std::ofstream> m_ofstream;
 
-	virtual bool canRead() const = 0;
-	virtual bool canWrite() const = 0;
-
-	virtual void write(const char *buffer, size_t size) = 0;
-
-	virtual UString readLine() = 0;
-	virtual const char *readFile() = 0;
-
-	virtual size_t getFileSize() const = 0;
-};
-
-
-
-// std implementation of File
-class StdFile : public BaseFile
-{
-public:
-	StdFile(UString filePath, File::TYPE type);
-	virtual ~StdFile();
-
-	bool canRead() const;
-	bool canWrite() const;
-
-	void write(const char *buffer, size_t size);
-
-	UString readLine();
-	const char *readFile();
-
-	size_t getFileSize() const;
-
-private:
-	UString m_sFilePath;
-
-	bool m_bReady;
-	bool m_bRead;
-
-	std::ifstream m_ifstream;
-	std::ofstream m_ofstream;
-	std::string m_sBuffer;
-	size_t m_iFileSize;
-
-	// full reader
+	// buffer for full file reading
 	std::vector<char> m_fullBuffer;
 };
 

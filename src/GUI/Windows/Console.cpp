@@ -230,6 +230,10 @@ void Console::execConfigFile(UString filename)
 	{
 		if (line.size() > 0)
 		{
+			// remove CR
+			if (!line.empty() && line.back() == '\r')
+				line.pop_back();
+
 			// handle comments
 			UString cmd = UString(line.c_str());
 			const int commentIndex = cmd.find("//", 0, cmd.length());
