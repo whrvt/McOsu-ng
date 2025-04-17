@@ -39,11 +39,18 @@ AC_DEFUN([AC_PROG_TAR], [
         AC_MSG_ERROR([tar not found - required for extracting dependencies])
     fi
 ])
+AC_DEFUN([PKGCONF], [
+    AC_CHECK_PROG([PKGCONF], [pkgconf], [pkgconf])
+    if test -z "$PKGCONF"; then
+        AC_MSG_ERROR([pkgconf not found - required for finding include/library paths])
+    fi
+])
 
 # needed for dep resolver
 AC_PROG_WGET
 AC_PROG_GIT
 AC_PROG_TAR
+AC_PROG_PKGCONF
 
 AC_ARG_ENABLE([optimize],
     AS_HELP_STRING([--enable-optimize], [Optimize for speed (default: yes)]))
@@ -112,7 +119,7 @@ EOF
 
     install -Dm755 /dev/stdin $PWD/build/pkg-config <<__EOF__
 #!/usr/bin/env sh
-PKG_CONFIG_PATH="$PWD/build/deps/lib/pkgconfig:$PWD/build/deps/lib64/pkgconfig" pkgconf --personality="$host_cpu-pc-linux-gnu" "$PKGTYPE" "\$@"
+PKG_CONFIG_PATH="$PWD/build/deps/lib/pkgconfig:$PWD/build/deps/lib64/pkgconfig" "$PKGCONF" --personality=$host_cpu-pc-linux-gnu "$PKGTYPE" "\$@"
 __EOF__
 
     CC="$PWD/build/$target-$CC"
@@ -132,7 +139,7 @@ AC_SUBST([PKG_CONFIG_SYSTEM_INCLUDE_PATH],["/usr/$host_cpu-w64-mingw32/include"]
 #!/usr/bin/env sh
 PKG_CONFIG_LIBDIR="/usr/$host_cpu-w64-mingw32/lib/pkgconfig" PKG_CONFIG_SYSTEM_INCLUDE_PATH="/usr/$host_cpu-w64-mingw32/include" \
 PKG_CONFIG_SYSTEM_LIBRARY_PATH="/usr/$host_cpu-w64-mingw32/lib" PKG_CONFIG_PATH="$PWD/build/deps/lib/pkgconfig:$PWD/build/deps/lib64/pkgconfig" \
-pkgconf --personality="$host_cpu-w64-mingw32" "$PKGTYPE" "\$@"
+"$PKGCONF" --personality=$host_cpu-w64-mingw32 $PKGTYPE "\$@"
 __EOF__
 
     CMAKE_SYSTEM_NAME="Windows"
@@ -398,6 +405,7 @@ AC_OUTPUT
 
 AC_MSG_NOTICE([
 McOsu-ng build configuration:
+    Build target:       ${target}
     Install prefix:     ${prefix}
     Preprocessor flags: ${CPPFLAGS}
     ccache:             ${CCACHE-no}

@@ -231,7 +231,7 @@ struct SortScoreByPP : public OsuDatabase::SCORE_SORTING_COMPARATOR
 		}
 
 		// strict weak ordering!
-		if (score1 == score2 || a.isLegacyScore != b.isLegacyScore)
+		if (score1 == score2)
 		{
 			return a.sortHack > b.sortHack;
 		}
