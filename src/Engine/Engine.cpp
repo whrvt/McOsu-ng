@@ -7,7 +7,7 @@
 
 #include "Engine.h"
 
-#include <stdio.h>
+#include <cstdio>
 
 #ifdef MCENGINE_FEATURE_MULTITHREADING
 

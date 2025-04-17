@@ -56,9 +56,10 @@
 
 // DEFS
 
-#ifndef NULL
-#define NULL nullptr
+#ifdef NULL 
+#undef NULL
 #endif
+#define NULL nullptr
 
 using COLORPART = unsigned char;
 
@@ -86,28 +87,28 @@ typedef unsigned char 	UINT8;
     ((Color)(((((int)( clamp<float>(a,0.0f,1.0f)*255.0f ))&0xff)<<24)|((((int)( clamp<float>(r,0.0f,1.0f)*255.0f ))&0xff)<<16)|((((int)( clamp<float>(g,0.0f,1.0f)*255.0f ))&0xff)<<8)|(((int)( clamp<float>(b,0.0f,1.0f)*255.0f ))&0xff)))
 
 #define COLOR_GET_Ri(color) \
-	(((COLORPART)(color >> 16)))
+	(((COLORPART)((color) >> 16)))
 
 #define COLOR_GET_Gi(color) \
-	(((COLORPART)(color >> 8)))
+	(((COLORPART)((color) >> 8)))
 
 #define COLOR_GET_Bi(color) \
-	(((COLORPART)(color >> 0)))
+	(((COLORPART)((color) >> 0)))
 
 #define COLOR_GET_Ai(color) \
-	(((COLORPART)(color >> 24)))
+	(((COLORPART)((color) >> 24)))
 
 #define COLOR_GET_Rf(color) \
-	(((COLORPART)(color >> 16))  / 255.0f)
+	(((COLORPART)((color) >> 16))  / 255.0f)
 
 #define COLOR_GET_Gf(color) \
-	(((COLORPART)(color >> 8)) / 255.0f)
+	(((COLORPART)((color) >> 8)) / 255.0f)
 
 #define COLOR_GET_Bf(color) \
-	(((COLORPART)(color >> 0)) / 255.0f)
+	(((COLORPART)((color) >> 0)) / 255.0f)
 
 #define COLOR_GET_Af(color) \
-	(((COLORPART)(color >> 24)) / 255.0f)
+	(((COLORPART)((color) >> 24)) / 255.0f)
 
 #define COLOR_INVERT(color) \
 	(COLOR(255, 255-COLOR_GET_Ri(color), 255-COLOR_GET_Gi(color), 255-COLOR_GET_Bi(color)))
@@ -123,6 +124,7 @@ typedef unsigned char 	UINT8;
 
 constexpr const auto PI = std::numbers::pi;
 constexpr const auto PIOVER180 = (PI/180.0f);
+constexpr const auto ONE80OVERPI = (180.0f/PI);
 
 // UTIL
 
@@ -131,17 +133,19 @@ using std::lerp;
 using std::isfinite;
 using std::signbit;
 
-constexpr forceinline float deg2rad(const float deg)
+template <class T>
+constexpr forceinline float deg2rad(T deg)
 {
 	return deg * PIOVER180;
 }
 
-constexpr forceinline float rad2deg(const float rad)
+template <class T>
+constexpr forceinline float rad2deg(T rad)
 {
-	return rad * 180.0f / PI;
+	return rad * ONE80OVERPI;
 }
 
-constexpr forceinline bool isInt(const float f)
+constexpr forceinline bool isInt(float f)
 {
     return (f == static_cast<float>(static_cast<int>(f)));
 }

@@ -87,7 +87,7 @@ public:
 	bool hasInputFocus();
 
 private:
-	enum class EYE
+	enum class EYE : uint8_t
 	{
 		EYE_LEFT,
 		EYE_RIGHT

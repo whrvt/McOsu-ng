@@ -91,7 +91,7 @@ OsuDifficultyHitObject::~OsuDifficultyHitObject()
 	SAFE_DELETE(curve);
 }
 
-OsuDifficultyHitObject::OsuDifficultyHitObject(OsuDifficultyHitObject &&dobj)
+OsuDifficultyHitObject::OsuDifficultyHitObject(OsuDifficultyHitObject &&dobj) noexcept
 {
 	// move
 	this->type = dobj.type;
@@ -118,7 +118,7 @@ OsuDifficultyHitObject::OsuDifficultyHitObject(OsuDifficultyHitObject &&dobj)
 	dobj.scheduledCurveAlloc = false;
 }
 
-OsuDifficultyHitObject& OsuDifficultyHitObject::operator = (OsuDifficultyHitObject &&dobj)
+OsuDifficultyHitObject& OsuDifficultyHitObject::operator = (OsuDifficultyHitObject &&dobj) noexcept
 {
 	// move
 	this->type = dobj.type;

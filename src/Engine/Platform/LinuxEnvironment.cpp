@@ -27,7 +27,7 @@
 #include <unistd.h>
 #include <pwd.h>
 
-#include <string.h>
+#include <cstring>
 #include <stdio.h>
 
 typedef struct

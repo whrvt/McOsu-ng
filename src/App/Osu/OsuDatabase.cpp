@@ -1383,7 +1383,7 @@ void OsuDatabase::loadDB(OsuFile *db, bool &fallbackToRawLoad)
 	// read beatmapInfos, and also build two hashmaps (diff hash -> OsuBeatmapDifficulty, diff hash -> OsuBeatmap)
 	struct BeatmapSet
 	{
-		int setID;
+		int setID{};
 		UString path;
 		std::vector<OsuDatabaseBeatmap*> diffs2;
 	};

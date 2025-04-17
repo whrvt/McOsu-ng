@@ -26,7 +26,7 @@ public:
 	static UString getModsStringForDisplay(int mods);
 	static UString getModsStringForConVar(int mods);
 
-	enum class STYLE
+	enum class STYLE : uint8_t
 	{
 		SCORE_BROWSER,
 		TOP_RANKS

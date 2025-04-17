@@ -10,7 +10,7 @@
 #include "Engine.h"
 #include "ConVar.h"
 
-#include <string.h>
+#include <cstring>
 
 ConVar _debug_vulkan("debug_vulkan", false, FCVAR_NONE);
 

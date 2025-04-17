@@ -28,7 +28,7 @@ public:
 class ConVar
 {
 public:
-	enum class CONVAR_TYPE
+	enum class CONVAR_TYPE : uint8_t
 	{
 		CONVAR_TYPE_BOOL,
 		CONVAR_TYPE_INT,

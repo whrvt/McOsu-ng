@@ -175,7 +175,7 @@ AC_SUBST([LIBPREFIX])
 AC_PROG_CC([$CC])
 AS_IF([[case "$CC" in
   *clang) CXX=$CC++ ;;
-  *gcc) CXX=${CC//gcc/g++} ;;
+  *gcc) CXX=${CC%gcc}g++ ;;
 esac]])
 AC_PROG_CXX([$CXX])
 

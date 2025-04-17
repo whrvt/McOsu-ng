@@ -22,7 +22,7 @@
 #include "OsuNotificationOverlay.h"
 #include "OsuSteamWorkshop.h"
 
-#include <string.h>
+#include <cstring>
 
 #define OSU_BITMASK_HITWHISTLE 0x2
 #define OSU_BITMASK_HITFINISH 0x4

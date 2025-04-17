@@ -20,7 +20,7 @@
 class OpenVRController : public InputDevice
 {
 public:
-	enum class BUTTON
+	enum class BUTTON : uint8_t
 	{
 		BUTTON_SYSTEM,
 		BUTTON_APPLICATIONMENU,
@@ -42,7 +42,7 @@ public:
 		BUTTON_DASHBOARD_BACK = BUTTON_GRIP
 	};
 
-	enum class ROLE
+	enum class ROLE : uint8_t
 	{
 		ROLE_INVALID,
 		ROLE_LEFTHAND,

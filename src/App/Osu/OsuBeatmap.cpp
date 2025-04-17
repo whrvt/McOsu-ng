@@ -38,7 +38,7 @@
 #include "OsuCircle.h"
 #include "OsuSlider.h"
 
-#include <string.h>
+#include <cstring>
 #include <sstream>
 #include <cctype>
 #include <algorithm>

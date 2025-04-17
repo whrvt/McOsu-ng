@@ -19,7 +19,7 @@ class ContextMenu;
 class Environment
 {
 public:
-	enum class OS
+	enum class OS : uint8_t
 	{
 		OS_NULL,
 		OS_WINDOWS,

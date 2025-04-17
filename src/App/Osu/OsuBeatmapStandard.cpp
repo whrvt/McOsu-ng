@@ -36,7 +36,7 @@
 #include "OsuSlider.h"
 #include "OsuSpinner.h"
 
-#include <string.h>
+#include <cstring>
 #include <sstream>
 #include <cctype>
 #include <algorithm>

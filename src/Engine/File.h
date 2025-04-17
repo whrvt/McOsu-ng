@@ -20,7 +20,7 @@ public:
 	static ConVar *debug;
 	static ConVar *size_max;
 
-	enum class TYPE
+	enum class TYPE : uint8_t
 	{
 		READ,
 		WRITE

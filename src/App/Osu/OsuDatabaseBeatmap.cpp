@@ -1343,7 +1343,7 @@ bool OsuDatabaseBeatmap::loadMetadata(OsuDatabaseBeatmap *databaseBeatmap)
 				{
 					const OsuDatabaseBeatmap::TIMINGPOINT &t = uninheritedTimingpoints[i];
 
-					Tuple tuple;
+					Tuple tuple{};
 					{
 						if (t.offset > lastTime)
 						{

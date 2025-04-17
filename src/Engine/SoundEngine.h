@@ -84,7 +84,7 @@ private:
 
 #ifdef MCENGINE_FEATURE_SOUND
     friend class Sound;
-    static inline long unsigned int (*m_BASS_FX_TempoCreate)(long unsigned int, long unsigned int);
+    static inline uint32_t (*m_BASS_FX_TempoCreate)(uint32_t, uint32_t);
 	uint32_t m_iBASSVersion;
 
 #ifdef MCENGINE_FEATURE_MULTITHREADING

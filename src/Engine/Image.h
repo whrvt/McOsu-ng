@@ -16,7 +16,7 @@ class Image : public Resource
 public:
 	static void saveToImage(unsigned char *data, unsigned int width, unsigned int height, UString filepath);
 
-	enum class TYPE
+	enum class TYPE : uint8_t
 	{
 		TYPE_RGBA,
 		TYPE_PNG,

@@ -31,7 +31,7 @@ typedef uint32_t Color;
 class Graphics
 {
 public:
-	enum class PRIMITIVE
+	enum class PRIMITIVE : uint8_t
 	{
 		PRIMITIVE_LINES,
 		PRIMITIVE_LINE_STRIP,
@@ -41,20 +41,20 @@ public:
 		PRIMITIVE_QUADS
 	};
 
-	enum class USAGE_TYPE
+	enum class USAGE_TYPE : uint8_t
 	{
 		USAGE_STATIC,
 		USAGE_DYNAMIC,
 		USAGE_STREAM
 	};
 
-	enum class DRAWPIXELS_TYPE
+	enum class DRAWPIXELS_TYPE : uint8_t
 	{
 		DRAWPIXELS_UBYTE,
 		DRAWPIXELS_FLOAT
 	};
 
-	enum class MULTISAMPLE_TYPE
+	enum class MULTISAMPLE_TYPE : uint8_t
 	{
 		MULTISAMPLE_0X,
 		MULTISAMPLE_2X,
@@ -63,20 +63,20 @@ public:
 		MULTISAMPLE_16X
 	};
 
-	enum class WRAP_MODE
+	enum class WRAP_MODE : uint8_t
 	{
 		WRAP_MODE_CLAMP,
 		WRAP_MODE_REPEAT
 	};
 
-	enum class FILTER_MODE
+	enum class FILTER_MODE : uint8_t
 	{
 		FILTER_MODE_NONE,
 		FILTER_MODE_LINEAR,
 		FILTER_MODE_MIPMAP
 	};
 
-	enum class BLEND_MODE
+	enum class BLEND_MODE : uint8_t
 	{
 		BLEND_MODE_ALPHA,			// glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA) (default)
 		BLEND_MODE_ADDITIVE,		// glBlendFunc(GL_SRC_ALPHA, GL_ONE)
@@ -84,7 +84,7 @@ public:
 		BLEND_MODE_PREMUL_COLOR		// glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA)
 	};
 
-	enum class COMPARE_FUNC
+	enum class COMPARE_FUNC : uint8_t
 	{
 		COMPARE_FUNC_NEVER,
 		COMPARE_FUNC_LESS,

@@ -115,11 +115,8 @@ UString UString::format(const char *utf8format, ...)
 			result.updateUtf8();
 			return result;
 		}
-		else
-		{
-			// we need a larger buffer
-			bufSize *= 2;
-		}
+		// we need a larger buffer
+		bufSize *= 2;
 	}
 
 	return formatted; // should never reach here
@@ -604,7 +601,7 @@ bool UString::lessThanIgnoreCase(const UString &ustr) const
 }
 
 // helper function for getUtf8
-static inline void getUtf8(wchar_t ch, char *utf8, int numBytes, int firstByteValue)
+static forceinline void getUtf8(wchar_t ch, char *utf8, int numBytes, int firstByteValue)
 {
 	for (int i = numBytes - 1; i > 0; i--)
 	{
