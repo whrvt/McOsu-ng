@@ -461,7 +461,7 @@ const McFont::GLYPH_METRICS &McFont::getGlyphMetrics(wchar_t ch) const
     return m_errorGlyph;
 }
 
-const bool McFont::hasGlyph(wchar_t ch) const
+bool McFont::hasGlyph(wchar_t ch) const
 {
     return m_vGlyphMetrics.find(ch) != m_vGlyphMetrics.end();
 }
@@ -571,7 +571,7 @@ static bool packGlyphRects(std::vector<GlyphRect> &rects, int atlasWidth, int at
         rect.y = bestHeight - rectHeight;
 
         // update skyline
-        Skyline newSkyline{rect.x, rect.y + rectHeight, rectWidth};
+        Skyline newSkyline{.x=rect.x, .y=rect.y + rectHeight, .width=rectWidth};
         skylines.insert(skylines.begin() + bestIndex, newSkyline);
 
         // merge skylines if possible
