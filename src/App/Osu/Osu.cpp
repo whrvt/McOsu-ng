@@ -2791,12 +2791,12 @@ float Osu::getUIScale(Osu *osu)
 
 bool Osu::findIgnoreCase(const std::string &haystack, const std::string &needle)
 {
-	auto it = std::search(
-	    haystack.begin(), haystack.end(),
-		needle.begin(),   needle.end(),
-	    [](char ch1, char ch2)
+	auto result = std::ranges::search(
+		haystack,
+		needle,  
+		[](char ch1, char ch2)
 		{return std::tolower(ch1) == std::tolower(ch2);}
 	);
 
-	return (it != haystack.end());
+	return !result.empty();
 }

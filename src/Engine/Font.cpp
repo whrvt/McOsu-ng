@@ -18,6 +18,7 @@
 #include <freetype/ftoutln.h>
 #include <freetype/fttrigon.h>
 
+#include <algorithm>
 #include <utility>
 
 // constants for atlas generation and rendering
@@ -507,7 +508,7 @@ static bool packGlyphRects(std::vector<GlyphRect> &rects, int atlasWidth, int at
     const int padding = r_debug_font_atlas_padding.getInt();
 
     // sort rectangles by height
-    std::sort(rects.begin(), rects.end(),
+    std::ranges::sort(rects,
               [](const GlyphRect &a, const GlyphRect &b)
               {
                   return a.height > b.height;

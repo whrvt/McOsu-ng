@@ -7,6 +7,8 @@
 
 #include "ConVar.h"
 
+#include <algorithm>
+
 #include "Engine.h"
 
 //#define ALLOW_DEVELOPMENT_CONVARS // NOTE: comment this out on release
@@ -612,7 +614,7 @@ static void _find(UString args)
 				return (var1->getName() < var2->getName());
 			}
 		};
-		std::sort(matchingConVars.begin(), matchingConVars.end(), CONVAR_SORT_COMPARATOR());
+		std::ranges::sort(matchingConVars, CONVAR_SORT_COMPARATOR());
 	}
 
 	if (matchingConVars.size() < 1)
@@ -713,7 +715,7 @@ static void _listcommands(void)
 				return (var1->getName() < var2->getName());
 			}
 		};
-		std::sort(convars.begin(), convars.end(), CONVAR_SORT_COMPARATOR());
+		std::ranges::sort(convars, CONVAR_SORT_COMPARATOR());
 
 		for (size_t i=0; i<convars.size(); i++)
 		{

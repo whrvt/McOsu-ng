@@ -7,6 +7,7 @@
 
 #include "VSMusicBrowser.h"
 
+#include <algorithm>
 #include <utility>
 #include "VinylScratcher.h"
 
@@ -512,8 +513,8 @@ void VSMusicBrowser::updateFolder(UString baseFolder, size_t fromDepth)
 		std::vector<UString> files = env->getFilesInFolder(baseFolder);
 
 		// sort both lists naturally
-		std::sort(folders.begin(), folders.end(), VSMusicBrowserNaturalSortStringComparator());
-		std::sort(files.begin(), files.end(), VSMusicBrowserNaturalSortStringComparator());
+		std::ranges::sort(folders, VSMusicBrowserNaturalSortStringComparator());
+		std::ranges::sort(files, VSMusicBrowserNaturalSortStringComparator());
 
 		// first, add all folders
 		int elementCounter = 0;

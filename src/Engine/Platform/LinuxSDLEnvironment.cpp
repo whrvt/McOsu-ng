@@ -17,6 +17,8 @@
 #include <unistd.h>
 #include <pwd.h>
 
+#include <algorithm>
+
 LinuxSDLEnvironment::LinuxSDLEnvironment() : SDLEnvironment(NULL)
 {
 
@@ -115,9 +117,9 @@ static int caseInsensitiveSort(const struct dirent **e1, const struct dirent **e
 	std::string a((*e1)->d_name);
 	std::string b((*e2)->d_name);
 
-	return std::lexicographical_compare(
-		std::begin(a), std::end(a),
-		std::begin(b), std::end(b),
+	return std::ranges::lexicographical_compare(
+		a,
+		b,
 		[](const char& char1, const char& char2) {
 			return std::tolower(char1) < std::tolower(char2);
 		}

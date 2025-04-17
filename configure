@@ -7031,7 +7031,7 @@ CXXFLAGS="$CXXFLAGS $COMMON_FLAGS"
 CFLAGS="$CFLAGS $COMMON_FLAGS"
 LDFLAGS="$LDFLAGS -static-libstdc++ -static-libgcc"
 
-# use c/c++17 because we can
+# use c/c++23 because we can
 ac_ext=cpp
 ac_cpp='$CXXCPP $CPPFLAGS'
 ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'

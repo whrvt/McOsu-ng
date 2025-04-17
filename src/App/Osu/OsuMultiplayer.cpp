@@ -7,6 +7,7 @@
 
 #include "OsuMultiplayer.h"
 
+#include <algorithm>
 #include <utility>
 
 #include "Engine.h"
@@ -544,7 +545,7 @@ bool OsuMultiplayer::onClientReceiveInt(uint32_t id, void *data, uint32_t size, 
 			    	}
 			    }
 			};
-			std::sort(m_clientPlayers.begin(), m_clientPlayers.end(), PlayerSortComparator());
+			std::ranges::sort(m_clientPlayers, PlayerSortComparator());
 		}
 		return true;
 

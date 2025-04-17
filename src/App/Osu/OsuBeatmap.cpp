@@ -38,6 +38,7 @@
 #include "OsuCircle.h"
 #include "OsuSlider.h"
 
+#include <algorithm>
 #include <cstring>
 #include <sstream>
 #include <cctype>
@@ -1427,7 +1428,7 @@ bool OsuBeatmap::play()
 				return (a->getTime() + a->getDuration()) < (b->getTime() + b->getDuration());
 		}
 	};
-	std::sort(m_hitobjectsSortedByEndTime.begin(), m_hitobjectsSortedByEndTime.end(), HitObjectSortComparator());
+	std::ranges::sort(m_hitobjectsSortedByEndTime, HitObjectSortComparator());
 
 	onLoad();
 

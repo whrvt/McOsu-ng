@@ -21,6 +21,7 @@
 
 #include "OsuDatabaseBeatmap.h"
 
+#include <algorithm>
 #include <fstream>
 #include <utility>
 
@@ -466,7 +467,7 @@ void OsuDatabase::update()
 				{
 					loadCollections("collections.db", false, m_rawHashToDiff2, m_rawHashToBeatmap);
 
-					std::sort(m_collections.begin(), m_collections.end(), SortCollectionByName());
+					std::ranges::sort(m_collections, SortCollectionByName());
 				}
 
 				m_fLoadingProgress = 1.0f;
@@ -651,7 +652,7 @@ bool OsuDatabase::addCollection(UString collectionName)
 	}
 	m_collections.push_back(c);
 
-	std::sort(m_collections.begin(), m_collections.end(), SortCollectionByName());
+	std::ranges::sort(m_collections, SortCollectionByName());
 
 	m_bDidCollectionsChangeForSave = true;
 
@@ -682,7 +683,7 @@ bool OsuDatabase::renameCollection(UString oldCollectionName, UString newCollect
 			{
 				m_collections[i].name = newCollectionName;
 
-				std::sort(m_collections.begin(), m_collections.end(), SortCollectionByName());
+				std::ranges::sort(m_collections, SortCollectionByName());
 
 				m_bDidCollectionsChangeForSave = true;
 
@@ -990,7 +991,7 @@ OsuDatabase::PlayerPPScores OsuDatabase::getPlayerPPScores(UString playerName)
 	}
 
 	// sort by pp
-	std::sort(scores.begin(), scores.end(), ScoreSortComparator());
+	std::ranges::sort(scores, ScoreSortComparator());
 
 	PlayerPPScores ppScores;
 	ppScores.ppScores = std::move(scores);
@@ -1745,7 +1746,7 @@ void OsuDatabase::loadDB(OsuFile *db, bool &fallbackToRawLoad)
 						    		return (a.duration > b.duration);
 						    }
 						};
-						std::sort(aggregations.begin(), aggregations.end(), SortByDuration());
+						std::ranges::sort(aggregations, SortByDuration());
 
 						float mostCommonBPM = aggregations[0].beatLength;
 						{
@@ -1938,7 +1939,7 @@ void OsuDatabase::loadDB(OsuFile *db, bool &fallbackToRawLoad)
 	if (osu_collections_custom_enabled.getBool())
 		loadCollections("collections.db", false, hashToDiff2, hashToBeatmap);
 
-	std::sort(m_collections.begin(), m_collections.end(), SortCollectionByName());
+	std::ranges::sort(m_collections, SortCollectionByName());
 
 	// signal that we are done
 	m_fLoadingProgress = 1.0f;

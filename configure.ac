@@ -184,7 +184,7 @@ CXXFLAGS="$CXXFLAGS $COMMON_FLAGS"
 CFLAGS="$CFLAGS $COMMON_FLAGS"
 LDFLAGS="$LDFLAGS -static-libstdc++ -static-libgcc"
 
-# use c/c++17 because we can
+# use c/c++23 because we can
 AC_LANG_PUSH([C++])
 AX_CHECK_COMPILE_FLAG([-std=gnu++23], [
     CXXFLAGS="$CXXFLAGS -std=gnu++23"

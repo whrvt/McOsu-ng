@@ -7,6 +7,8 @@
 
 #include "OsuUISongBrowserSongButton.h"
 
+#include <algorithm>
+
 #include "Engine.h"
 #include "ResourceManager.h"
 #include "ConVar.h"
@@ -237,7 +239,7 @@ void OsuUISongBrowserSongButton::drawSubTitle(Graphics *g, float deselectedAlpha
 
 void OsuUISongBrowserSongButton::sortChildren()
 {
-	std::sort(m_children.begin(), m_children.end(), OsuSongBrowser2::SortByDifficulty());
+	std::ranges::sort(m_children, OsuSongBrowser2::SortByDifficulty());
 }
 
 void OsuUISongBrowserSongButton::updateLayoutEx()

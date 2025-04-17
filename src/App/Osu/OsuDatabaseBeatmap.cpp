@@ -27,6 +27,7 @@
 #include "OsuSpinner.h"
 #include "OsuManiaNote.h"
 
+#include <algorithm>
 #include <sstream>
 #include <iostream>
 #include <utility>
@@ -546,7 +547,7 @@ OsuDatabaseBeatmap::PRIMITIVE_CONTAINER OsuDatabaseBeatmap::loadPrimitiveObjects
 
 	// sort timingpoints by time
 	if (c.timingpoints.size() > 0)
-		std::sort(c.timingpoints.begin(), c.timingpoints.end(), TimingPointSortComparator());
+		std::ranges::sort(c.timingpoints, TimingPointSortComparator());
 
 	return c;
 }
@@ -699,7 +700,7 @@ OsuDatabaseBeatmap::CALCULATE_SLIDER_TIMES_CLICKS_TICKS_RESULT OsuDatabaseBeatma
 			});
 
 			// 5) sort scoringTimes from earliest to latest
-			std::sort(s.scoringTimesForStarCalc.begin(), s.scoringTimesForStarCalc.end(), OsuDifficultyHitObject::SliderScoringTimeComparator());
+			std::ranges::sort(s.scoringTimesForStarCalc, OsuDifficultyHitObject::SliderScoringTimeComparator());
 		}
 	}
 
@@ -822,7 +823,7 @@ OsuDatabaseBeatmap::LOAD_DIFFOBJ_RESULT OsuDatabaseBeatmap::loadDifficultyHitObj
 	    		return a.time < b.time;
 	    }
 	};
-	std::sort(result.diffobjects.begin(), result.diffobjects.end(), DiffHitObjectSortComparator());
+	std::ranges::sort(result.diffobjects, DiffHitObjectSortComparator());
 
 	// calculate stacks
 	// see OsuBeatmapStandard.cpp
@@ -1278,7 +1279,7 @@ bool OsuDatabaseBeatmap::loadMetadata(OsuDatabaseBeatmap *databaseBeatmap)
 			debugLog("calculating BPM range ...\n");
 
 		// sort timingpoints by time
-		std::sort(databaseBeatmap->m_timingpoints.begin(), databaseBeatmap->m_timingpoints.end(), TimingPointSortComparator());
+		std::ranges::sort(databaseBeatmap->m_timingpoints, TimingPointSortComparator());
 
 		// calculate bpm range
 		float tempMinBPM = 0.0f;
@@ -1409,7 +1410,7 @@ bool OsuDatabaseBeatmap::loadMetadata(OsuDatabaseBeatmap *databaseBeatmap)
 				    		return (a.duration > b.duration);
 				    }
 				};
-				std::sort(aggregations.begin(), aggregations.end(), SortByDuration());
+				std::ranges::sort(aggregations, SortByDuration());
 
 				float mostCommonBPM = aggregations[0].beatLength;
 				{
@@ -1580,7 +1581,7 @@ OsuDatabaseBeatmap::LOAD_GAMEPLAY_RESULT OsuDatabaseBeatmap::loadGameplay(OsuDat
 				}
 
 				if (osu_mod_reverse_sliders.getBool())
-					std::reverse(s.points.begin(), s.points.end());
+					std::ranges::reverse(s.points);
 
 				result.hitobjects.push_back(new OsuSlider(s.type, s.repeat, s.pixelLength, s.points, s.hitSounds, s.ticks, s.sliderTime, s.sliderTimeWithoutRepeats, s.time, s.sampleType, s.number, false, s.colorCounter, s.colorOffset, beatmapStandard));
 
@@ -1675,7 +1676,7 @@ OsuDatabaseBeatmap::LOAD_GAMEPLAY_RESULT OsuDatabaseBeatmap::loadGameplay(OsuDat
 	    		return a->getTime() < b->getTime();
 	    }
 	};
-	std::sort(result.hitobjects.begin(), result.hitobjects.end(), HitObjectSortComparator());
+	std::ranges::sort(result.hitobjects, HitObjectSortComparator());
 
 	// update beatmap length stat
 	if (databaseBeatmap->m_iLengthMS == 0 && result.hitobjects.size() > 0)
