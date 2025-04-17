@@ -256,15 +256,15 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 #endif
 
     // create timers
-    Timer *frameTimer = new Timer();
+    auto *frameTimer = new Timer();
     frameTimer->start();
     frameTimer->update();
 
-    Timer *deltaTimer = new Timer();
+    auto *deltaTimer = new Timer();
     deltaTimer->start();
     deltaTimer->update();
 
-	Timer *fpsCalcTimer = new Timer();
+	auto *fpsCalcTimer = new Timer();
 	fpsCalcTimer->start();
 	fpsCalcTimer->update();
 

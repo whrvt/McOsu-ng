@@ -10,7 +10,6 @@
 #include <algorithm>
 #include <cstring>
 #include <cwchar>
-#include <print>
 
 #define USTRING_MASK_1BYTE 0x80  /* 1000 0000 */
 #define USTRING_VALUE_1BYTE 0x00 /* 0000 0000 */
@@ -94,7 +93,7 @@ UString UString::format(const char *utf8format, ...)
 	{
 		if (bufSize >= 1024 * 1024)
 		{
-			std::println("WARNING: Potential vswprintf({}, ...) infinite loop, stopping ...", utf8format);
+			printf("WARNING: Potential vswprintf(%s, ...) infinite loop, stopping ...\n", utf8format);
 			return formatted;
 		}
 

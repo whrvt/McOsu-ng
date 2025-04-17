@@ -118,7 +118,6 @@ EOF
 #!/usr/bin/env sh
 $CXX "\$@"
 EOF
-        COMMON_FLAGS="-mcmodel=small"
     ])
 
     install -Dm755 /dev/stdin $PWD/build/pkg-config <<__EOF__
@@ -178,6 +177,8 @@ AS_IF([[case "$CC" in
   *gcc) CXX=${CC%gcc}g++ ;;
 esac]])
 AC_PROG_CXX([$CXX])
+
+AS_IF([test "$host_cpu" = "x86_64"], [COMMON_FLAGS="$COMMON_FLAGS -mcmodel=small"])
 
 COMMON_FLAGS="$COMMON_FLAGS -ffunction-sections -fdata-sections -fwrapv -fno-strict-aliasing -fno-semantic-interposition"
 CXXFLAGS="$CXXFLAGS $COMMON_FLAGS"

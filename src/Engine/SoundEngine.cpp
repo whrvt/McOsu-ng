@@ -261,7 +261,7 @@ SoundEngine::SoundEngine()
         engine->shutdown();
         return;
     }
-	m_BASS_FX_TempoCreate = (uint32_t (*)(uint32_t, uint32_t))dlsym(bassfx_handle, "BASS_FX_TempoCreate");
+	m_BASS_FX_TempoCreate = (HSTREAM (*)(DWORD, DWORD))dlsym(bassfx_handle, "BASS_FX_TempoCreate");
     if (!m_BASS_FX_TempoCreate)
     {
         engine->showMessageErrorFatal("failed to find BASS_FX_TempoCreate in libbass_fx.so: %s\n", dlerror());

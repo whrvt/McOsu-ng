@@ -11,6 +11,12 @@
 
 #include "cbase.h"
 
+#ifdef MCENGINE_FEATURE_SOUND
+
+#include <bass.h>
+#include <bass_fx.h>
+#endif
+
 class Sound;
 
 class SoundEngineThread;
@@ -84,7 +90,7 @@ private:
 
 #ifdef MCENGINE_FEATURE_SOUND
     friend class Sound;
-    static inline uint32_t (*m_BASS_FX_TempoCreate)(uint32_t, uint32_t);
+    static inline HSTREAM (*m_BASS_FX_TempoCreate)(DWORD, DWORD);
 	uint32_t m_iBASSVersion;
 
 #ifdef MCENGINE_FEATURE_MULTITHREADING
