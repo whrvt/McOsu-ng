@@ -39,7 +39,7 @@ AC_DEFUN([AC_PROG_TAR], [
         AC_MSG_ERROR([tar not found - required for extracting dependencies])
     fi
 ])
-AC_DEFUN([PKGCONF], [
+AC_DEFUN([AC_PROG_PKGCONF], [
     AC_CHECK_PROG([PKGCONF], [pkgconf], [pkgconf])
     if test -z "$PKGCONF"; then
         AC_MSG_ERROR([pkgconf not found - required for finding include/library paths])
@@ -119,7 +119,7 @@ EOF
 
     install -Dm755 /dev/stdin $PWD/build/pkg-config <<__EOF__
 #!/usr/bin/env sh
-PKG_CONFIG_PATH="$PWD/build/deps/lib/pkgconfig:$PWD/build/deps/lib64/pkgconfig" "$PKGCONF" --personality=$host_cpu-pc-linux-gnu "$PKGTYPE" "\$@"
+PKG_CONFIG_PATH="$PWD/build/deps/lib/pkgconfig:$PWD/build/deps/lib64/pkgconfig" $PKGCONF --personality=$host_cpu-pc-linux-gnu "$PKGTYPE" "\$@"
 __EOF__
 
     CC="$PWD/build/$target-$CC"
@@ -133,14 +133,24 @@ __EOF__
 
     AC_DEFINE([MCENGINE_PLATFORM_LINUX], [1], [Define if compiling for Linux.])
 ],[
-AC_SUBST([PKG_CONFIG_SYSTEM_LIBRARY_PATH],["/usr/$host_cpu-w64-mingw32/lib"])
-AC_SUBST([PKG_CONFIG_SYSTEM_INCLUDE_PATH],["/usr/$host_cpu-w64-mingw32/include"])
-    install -Dm755 /dev/stdin $PWD/build/pkg-config <<__EOF__
+    # TODO: don't hardcode mingw paths here
+    AS_IF([test "$build_os" = "linux-gnu"], [
+        AC_SUBST([PKG_CONFIG_SYSTEM_LIBRARY_PATH],["/usr/$host_cpu-w64-mingw32/lib"])
+        AC_SUBST([PKG_CONFIG_SYSTEM_INCLUDE_PATH],["/usr/$host_cpu-w64-mingw32/include"])
+        install -Dm755 /dev/stdin $PWD/build/pkg-config <<__EOF__
 #!/usr/bin/env sh
 PKG_CONFIG_LIBDIR="/usr/$host_cpu-w64-mingw32/lib/pkgconfig" PKG_CONFIG_SYSTEM_INCLUDE_PATH="/usr/$host_cpu-w64-mingw32/include" \
 PKG_CONFIG_SYSTEM_LIBRARY_PATH="/usr/$host_cpu-w64-mingw32/lib" PKG_CONFIG_PATH="$PWD/build/deps/lib/pkgconfig:$PWD/build/deps/lib64/pkgconfig" \
-"$PKGCONF" --personality=$host_cpu-w64-mingw32 $PKGTYPE "\$@"
+$PKGCONF --personality=$host_cpu-w64-mingw32 $PKGTYPE "\$@"
 __EOF__
+    ], [
+        # WIP: building in msys2
+        install -Dm755 /dev/stdin $PWD/build/pkg-config <<__EOF__
+#!/usr/bin/env sh
+PKG_CONFIG_PATH="$PWD/build/deps/lib/pkgconfig:$PWD/build/deps/lib64/pkgconfig" \
+$host_cpu-w64-mingw32-pkg-config $PKGTYPE "\$@"
+__EOF__
+    ])
 
     CMAKE_SYSTEM_NAME="Windows"
     SYSNAME="windows"

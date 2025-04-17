@@ -739,6 +739,7 @@ PKG_CONFIG_SYSTEM_LIBRARY_PATH
 PKG_CONFIG_PATH_CUSTOM
 PKG_CONFIG_PATH
 PKGTYPE
+PKGCONF
 TAR
 GIT
 WGET
@@ -5393,6 +5394,7 @@ printf "%s\n" "$ac_cv_path_SED" >&6; }
 
 
 
+
 # needed for dep resolver
 
     # Extract the first word of "wget", so it can be a program name with args.
@@ -5539,6 +5541,54 @@ fi
     fi
 
 
+    # Extract the first word of "pkgconf", so it can be a program name with args.
+set dummy pkgconf; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+if test ${ac_cv_prog_PKGCONF+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) if test -n "$PKGCONF"; then
+  ac_cv_prog_PKGCONF="$PKGCONF" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    ac_cv_prog_PKGCONF="pkgconf"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi ;;
+esac
+fi
+PKGCONF=$ac_cv_prog_PKGCONF
+if test -n "$PKGCONF"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $PKGCONF" >&5
+printf "%s\n" "$PKGCONF" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+
+    if test -z "$PKGCONF"; then
+        as_fn_error $? "pkgconf not found - required for finding include/library paths" "$LINENO" 5
+    fi
+
+
 # Check whether --enable-optimize was given.
 if test ${enable_optimize+y}
 then :
@@ -5654,7 +5704,7 @@ fi
 
     install -Dm755 /dev/stdin $PWD/build/pkg-config <<__EOF__
 #!/usr/bin/env sh
-PKG_CONFIG_PATH="$PWD/build/deps/lib/pkgconfig:$PWD/build/deps/lib64/pkgconfig" pkgconf --personality="$host_cpu-pc-linux-gnu" "$PKGTYPE" "\$@"
+PKG_CONFIG_PATH="$PWD/build/deps/lib/pkgconfig:$PWD/build/deps/lib64/pkgconfig" $PKGCONF --personality=$host_cpu-pc-linux-gnu "$PKGTYPE" "\$@"
 __EOF__
 
     CC="$PWD/build/$target-$CC"
@@ -5672,16 +5722,32 @@ printf "%s\n" "#define MCENGINE_PLATFORM_LINUX 1" >>confdefs.h
 
 else case e in #(
   e)
-PKG_CONFIG_SYSTEM_LIBRARY_PATH="/usr/$host_cpu-w64-mingw32/lib"
+    # TODO: don't hardcode mingw paths here
+    if test "$build_os" = "linux-gnu"
+then :
 
-PKG_CONFIG_SYSTEM_INCLUDE_PATH="/usr/$host_cpu-w64-mingw32/include"
+        PKG_CONFIG_SYSTEM_LIBRARY_PATH="/usr/$host_cpu-w64-mingw32/lib"
 
-    install -Dm755 /dev/stdin $PWD/build/pkg-config <<__EOF__
+        PKG_CONFIG_SYSTEM_INCLUDE_PATH="/usr/$host_cpu-w64-mingw32/include"
+
+        install -Dm755 /dev/stdin $PWD/build/pkg-config <<__EOF__
 #!/usr/bin/env sh
 PKG_CONFIG_LIBDIR="/usr/$host_cpu-w64-mingw32/lib/pkgconfig" PKG_CONFIG_SYSTEM_INCLUDE_PATH="/usr/$host_cpu-w64-mingw32/include" \
 PKG_CONFIG_SYSTEM_LIBRARY_PATH="/usr/$host_cpu-w64-mingw32/lib" PKG_CONFIG_PATH="$PWD/build/deps/lib/pkgconfig:$PWD/build/deps/lib64/pkgconfig" \
-pkgconf --personality="$host_cpu-w64-mingw32" "$PKGTYPE" "\$@"
+$PKGCONF --personality=$host_cpu-w64-mingw32 $PKGTYPE "\$@"
 __EOF__
+
+else case e in #(
+  e)
+        # WIP: building in msys2
+        install -Dm755 /dev/stdin $PWD/build/pkg-config <<__EOF__
+#!/usr/bin/env sh
+PKG_CONFIG_PATH="$PWD/build/deps/lib/pkgconfig:$PWD/build/deps/lib64/pkgconfig" \
+$host_cpu-w64-mingw32-pkg-config $PKGTYPE "\$@"
+__EOF__
+     ;;
+esac
+fi
 
     CMAKE_SYSTEM_NAME="Windows"
     SYSNAME="windows"
@@ -11138,6 +11204,7 @@ fi
 
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}:
 McOsu-ng build configuration:
+    Build target:       ${target}
     Install prefix:     ${prefix}
     Preprocessor flags: ${CPPFLAGS}
     ccache:             ${CCACHE-no}
@@ -11168,6 +11235,7 @@ Dependencies:
 " >&5
 printf "%s\n" "$as_me:
 McOsu-ng build configuration:
+    Build target:       ${target}
     Install prefix:     ${prefix}
     Preprocessor flags: ${CPPFLAGS}
     ccache:             ${CCACHE-no}
