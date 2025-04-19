@@ -203,7 +203,7 @@ OsuBeatmap::OsuBeatmap(Osu *osu)
 
 	m_music = NULL;
 
-	m_fMusicFrequencyBackup = 44100.0f;
+	m_fMusicFrequencyBackup = convar->getConVarByName("snd_freq")->getFloat();
 	m_iCurMusicPos = 0;
 	m_iCurMusicPosWithOffsets = 0;
 	m_bWasSeekFrame = false;
@@ -2354,79 +2354,66 @@ unsigned long OsuBeatmap::getMusicPositionMSInterpolated()
 {
 	if (!osu_interpolate_music_pos.getBool() || (m_bFailed && m_osu->isInVRMode()) || isLoading())
 		return m_music->getPositionMS();
-	else
+	// TODO: fix snapping at beginning for maps with instant start
+
+	unsigned long returnPos = 0;
+	const double curPos = (double)m_music->getPositionMS();
+	const float speed = m_music->getSpeed();
+
+	// not reinventing the wheel, the interpolation magic numbers here are (c) peppy
+
+	const double realTime = engine->getTimeReal();
+	const double interpolationDelta = (realTime - m_fLastRealTimeForInterpolationDelta) * 1000.0 * speed;
+	const double interpolationDeltaLimit = ((realTime - m_fLastAudioTimeAccurateSet)*1000.0 < 1500 || speed < 1.0f ? 11 : 33);
+
+	if (m_music->isPlaying() && !m_bWasSeekFrame)
 	{
-#ifdef MCENGINE_FEATURE_SDL_MIXER
+		double newInterpolatedPos = m_fInterpolatedMusicPos + interpolationDelta;
+		double delta = newInterpolatedPos - curPos;
 
-		const double interpolationMultiplier = 2.0;
+		//debugLog("speed = %.2f positionMS = %.2f delta = %.2f, interpolationDeltaLimit = %.2f\n", speed, curPos, delta, interpolationDeltaLimit);
 
-#else
+		// approach and recalculate delta
+		newInterpolatedPos -= delta / 8.0;
+		delta = newInterpolatedPos - curPos;
 
-		const double interpolationMultiplier = 1.0;
-
-#endif
-
-		// TODO: fix snapping at beginning for maps with instant start
-
-		unsigned long returnPos = 0;
-		const double curPos = (double)m_music->getPositionMS();
-		const float speed = m_music->getSpeed();
-
-		// not reinventing the wheel, the interpolation magic numbers here are (c) peppy
-
-		const double realTime = engine->getTimeReal();
-		const double interpolationDelta = (realTime - m_fLastRealTimeForInterpolationDelta) * 1000.0 * speed;
-		const double interpolationDeltaLimit = ((realTime - m_fLastAudioTimeAccurateSet)*1000.0 < 1500 || speed < 1.0f ? 11 : 33) * interpolationMultiplier;
-
-		if (m_music->isPlaying() && !m_bWasSeekFrame)
+		if (std::abs(delta) > interpolationDeltaLimit*2) // we're fucked, snap back to curPos
 		{
-			double newInterpolatedPos = m_fInterpolatedMusicPos + interpolationDelta;
-			double delta = newInterpolatedPos - curPos;
-
-			//debugLog("delta = %ld\n", (long)delta);
-
-			// approach and recalculate delta
-			newInterpolatedPos -= delta / 8.0 / interpolationMultiplier;
-			delta = newInterpolatedPos - curPos;
-
-			if (std::abs(delta) > interpolationDeltaLimit*2) // we're fucked, snap back to curPos
-			{
-				m_fInterpolatedMusicPos = (double)curPos;
-			}
-			else if (delta < -interpolationDeltaLimit) // undershot
-			{
-				m_fInterpolatedMusicPos += interpolationDelta * 2;
-				m_fLastAudioTimeAccurateSet = realTime;
-			}
-			else if (delta < interpolationDeltaLimit) // normal
-			{
-				m_fInterpolatedMusicPos = newInterpolatedPos;
-			}
-			else // overshot
-			{
-				m_fInterpolatedMusicPos += interpolationDelta / 2;
-				m_fLastAudioTimeAccurateSet = realTime;
-			}
-
-			// calculate final return value
-			returnPos = (unsigned long)std::round(m_fInterpolatedMusicPos);
-			if (speed < 1.0f && osu_compensate_music_speed.getBool() && m_snd_speed_compensate_pitch_ref->getBool())
-				returnPos += (unsigned long)(((1.0f - speed) / 0.75f) * 5); // osu (new)
-				///returnPos += (unsigned long)((1.0f / speed) * 9); // Mc (old)
+			m_fInterpolatedMusicPos = (double)curPos;
 		}
-		else // no interpolation
+		else if (delta < -interpolationDeltaLimit) // undershot
 		{
-			returnPos = curPos;
-			m_fInterpolatedMusicPos = (unsigned long)returnPos;
+			m_fInterpolatedMusicPos += interpolationDelta * 2;
+			m_fLastAudioTimeAccurateSet = realTime;
+		}
+		else if (delta < interpolationDeltaLimit) // normal
+		{
+			m_fInterpolatedMusicPos = newInterpolatedPos;
+		}
+		else // overshot
+		{
+			m_fInterpolatedMusicPos += interpolationDelta / 2;
 			m_fLastAudioTimeAccurateSet = realTime;
 		}
 
-		m_fLastRealTimeForInterpolationDelta = realTime; // this is more accurate than engine->getFrameTime() for the delta calculation, since it correctly handles all possible delays inbetween
-
-		//debugLog("returning %lu \n", returnPos);
-		//debugLog("delta = %lu\n", (long)returnPos - m_iCurMusicPos);
-		//debugLog("raw delta = %ld\n", (long)returnPos - (long)curPos);
-
-		return returnPos;
+		// calculate final return value
+		returnPos = (unsigned long)std::round(m_fInterpolatedMusicPos);
+		if (speed < 1.0f && osu_compensate_music_speed.getBool() && m_snd_speed_compensate_pitch_ref->getBool())
+			returnPos += (unsigned long)(((1.0f - speed) / 0.75f) * 5); // osu (new)
+			///returnPos += (unsigned long)((1.0f / speed) * 9); // Mc (old)
 	}
+	else // no interpolation
+	{
+		returnPos = curPos;
+		m_fInterpolatedMusicPos = (unsigned long)returnPos;
+		m_fLastAudioTimeAccurateSet = realTime;
+	}
+
+	m_fLastRealTimeForInterpolationDelta = realTime; // this is more accurate than engine->getFrameTime() for the delta calculation, since it correctly handles all possible delays inbetween
+
+	//debugLog("returning %lu \n", returnPos);
+	//debugLog("delta = %lu\n", (long)returnPos - m_iCurMusicPos);
+	//debugLog("raw delta = %ld\n", (long)returnPos - (long)curPos);
+
+	return returnPos;
 }

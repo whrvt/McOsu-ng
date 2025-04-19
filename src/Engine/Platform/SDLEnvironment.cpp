@@ -19,13 +19,15 @@
 #include "WinSDLGLES2Interface.h"
 #include "NullContextMenu.h"
 
+ConVar debug_sdl("debug_sdl", false, FCVAR_NONE);
+
 SDLEnvironment::SDLEnvironment(SDL_Window *window) : Environment()
 {
 	m_window = window;
 
 	m_mouse_sensitivity_ref = convar->getConVarByName("mouse_sensitivity");
 
-	m_bResizable = true;
+	m_bResizable = false;
 	m_bFullscreen = false;
 
 	m_bIsCursorInsideWindow = false;
@@ -45,6 +47,10 @@ SDLEnvironment::SDLEnvironment(SDL_Window *window) : Environment()
 		const Vector2 windowSize = getWindowSize();
 		m_vMonitors.emplace_back(0, 0, windowSize.x, windowSize.y);
 	}
+	m_sdlDebug = !!debug_sdl.getInt();
+	if (m_sdlDebug)
+		onLogLevelChange("", "1");
+	debug_sdl.setCallback( fastdelegate::MakeDelegate(this, &SDLEnvironment::onLogLevelChange) );
 }
 
 void SDLEnvironment::update()
@@ -260,7 +266,6 @@ UString SDLEnvironment::openFolderWindow(UString title, UString initialpath)
 
 void SDLEnvironment::focus()
 {
-    SDL_SyncWindow(m_window);
 	SDL_RaiseWindow(m_window);
 }
 
@@ -273,28 +278,27 @@ void SDLEnvironment::center()
 
 void SDLEnvironment::minimize()
 {
-    SDL_SyncWindow(m_window);
 	SDL_MinimizeWindow(m_window);
 }
 
 void SDLEnvironment::maximize()
 {
-    SDL_SyncWindow(m_window);
 	SDL_MaximizeWindow(m_window);
 }
 
 void SDLEnvironment::enableFullscreen()
 {
-	if ((m_bFullscreen = !!SDL_GetWindowFullscreenMode(m_window))) return;
-	if ((m_bFullscreen = SDL_SetWindowFullscreen(m_window, true))) return; // NOTE: "fake" fullscreen since we don't want a videomode change
-	if (m_sdlDebug) debugLog("%s %s\n", __PRETTY_FUNCTION__, SDL_GetError());
+	if (m_bFullscreen) return;
+	if ((m_bFullscreen = SDL_SetWindowFullscreen(m_window, true))) // NOTE: "fake" fullscreen since we don't want a videomode change
+		return;
+	//if (m_sdlDebug) debugLog("%s %s\n", __PRETTY_FUNCTION__, SDL_GetError());
 }
 
 void SDLEnvironment::disableFullscreen()
 {
-	if ((m_bFullscreen = !SDL_GetWindowFullscreenMode(m_window))) return;
-	if ((m_bFullscreen = SDL_SetWindowFullscreen(m_window, false))) return;
-	if (m_sdlDebug) debugLog("%s %s\n", __PRETTY_FUNCTION__, SDL_GetError());
+	if (!(m_bFullscreen = !SDL_SetWindowFullscreen(m_window, false)))
+		return;
+	//if (m_sdlDebug) debugLog("%s %s\n", __PRETTY_FUNCTION__, SDL_GetError());
 }
 
 void SDLEnvironment::setWindowTitle(UString title)
@@ -304,19 +308,17 @@ void SDLEnvironment::setWindowTitle(UString title)
 
 void SDLEnvironment::setWindowPos(int x, int y)
 {
-    SDL_SyncWindow(m_window);
 	SDL_SetWindowPosition(m_window, x, y);
 }
 
 void SDLEnvironment::setWindowSize(int width, int height)
 {
-    SDL_SyncWindow(m_window);
 	SDL_SetWindowSize(m_window, width, height);
 }
 
 void SDLEnvironment::setWindowResizable(bool resizable)
 {
-	SDL_SetWindowResizable(m_window, resizable ? true : false);
+	SDL_SetWindowResizable(m_window, resizable);
 	m_bResizable = resizable;
 }
 
@@ -355,10 +357,9 @@ Vector2 SDLEnvironment::getWindowSize()
 
 int SDLEnvironment::getMonitor()
 {
-	// TODO: needs to be implemented in combination with center() etc.
-	return 0;
-	//const int monitor = SDL_GetWindowDisplayIndex(m_window);
-	//return (monitor != -1 ? monitor : 0);
+    SDL_SyncWindow(m_window);
+	const int display = static_cast<int>(SDL_GetDisplayForWindow(m_window)); // HACK: 0 means invalid display in SDL, decrement by 1 for engine/app
+    return display-1 < 0 ? 0 : display-1;
 }
 
 Vector2 SDLEnvironment::getNativeScreenSize()
@@ -483,6 +484,21 @@ UString SDLEnvironment::keyCodeToString(KEYCODE keyCode)
 			return UString::format("%lu", keyCode);
 		else
 			return uName;
+	}
+}
+
+void SDLEnvironment::onLogLevelChange(UString oldValue, UString newValue)
+{
+	const bool enable = !!newValue.toInt();
+	if (enable)
+	{
+		sdlDebug(true);
+		SDL_SetLogPriorities(SDL_LOG_PRIORITY_TRACE);
+	}
+	else
+	{
+		sdlDebug(false);
+		SDL_ResetLogPriorities();
 	}
 }
 

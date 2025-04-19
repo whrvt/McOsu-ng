@@ -58,6 +58,8 @@ AC_ARG_ENABLE([native],
     AS_HELP_STRING([--enable-native], [Compile for -march=native (default: yes)]))
 AC_ARG_ENABLE([debug],
     AS_HELP_STRING([--enable-debug], [Enable debug build (default: no)]))
+AC_ARG_ENABLE([asan],
+    AS_HELP_STRING([--enable-asan], [Enable ASan/UBSan (turns debug on as well) (default: no)]))
 AC_ARG_ENABLE([clang],
     AS_HELP_STRING([--enable-clang], [Use clang/clang++ instead of gcc/g++ (default: no)]))
 AC_ARG_ENABLE([lto],
@@ -66,6 +68,8 @@ AC_ARG_ENABLE([system-deps],
     AS_HELP_STRING([--disable-system-deps], [Always build dependencies from source (default: no)]))
 AC_ARG_ENABLE([static],
     AS_HELP_STRING([--enable-static], [Enable static linking where possible (default: no)]))
+AC_ARG_ENABLE([sdlmixer],
+    AS_HELP_STRING([--enable-sdlmixer], [Use the SDL_mixer backend for audio instead of BASS (default: no)]))
 
 AS_IF([test "x$enable_static" = "xyes"], [
     PKGTYPE="--static"
@@ -178,6 +182,23 @@ AS_IF([[case "$CC" in
 esac]])
 AC_PROG_CXX([$CXX])
 
+AC_CHECK_PROG([CCACHE], [ccache], [ccache])
+
+install -Dm755 /dev/stdin $PWD/build/cc <<EOF
+#!/usr/bin/env sh
+$CCACHE $CC "\$@"
+EOF
+install -Dm755 /dev/stdin $PWD/build/cxx <<EOF
+#!/usr/bin/env sh
+$CCACHE $CXX "\$@"
+EOF
+
+export CC="$PWD/build/cc"
+export CXX="$PWD/build/cxx"
+
+AC_SUBST([CC])
+AC_SUBST([CXX])
+
 AS_IF([test "$host_cpu" = "x86_64"], [COMMON_FLAGS="$COMMON_FLAGS -mcmodel=small"])
 
 COMMON_FLAGS="$COMMON_FLAGS -ffunction-sections -fdata-sections -fwrapv -fno-strict-aliasing -fno-semantic-interposition"
@@ -210,17 +231,6 @@ AS_IF([test "$host_os" = "linux-gnu"],[
 AC_CHECK_PROG([BEAR], [bear], [bear])
 AC_SUBST([BEAR])
 
-CC_NOCCACHE="$CC"
-CXX_NOCCACHE="$CXX"
-AC_SUBST([CC_NOCCACHE])
-AC_SUBST([CXX_NOCCACHE])
-
-AC_CHECK_PROG([CCACHE], [ccache], [ccache])
-AS_IF([test "x$CCACHE" = "xccache"], [
-    CC="ccache $CC"
-    CXX="ccache $CXX"
-])
-
 AS_IF([test "x$enable_native" != "xno"], [
     CXXFLAGS="$CXXFLAGS -march=native -mtune=native"
     CFLAGS="$CFLAGS -march=native -mtune=native"
@@ -229,9 +239,17 @@ AS_IF([test "x$enable_native" != "xno"], [
     CFLAGS="$CFLAGS -march=${host_cpu//_/-} -mtune=generic"
 ])
 
+AS_IF([test "x$enable_asan" = "xyes"], [
+    CXXFLAGS="$CXXFLAGS -fsanitize=address,undefined"
+    CFLAGS="$CFLAGS -fsanitize=address,undefined"
+    enable_debug="yes"
+    ENABLE_ASAN=$enable_asan
+    AC_SUBST([ENABLE_ASAN])
+])
+
 AS_IF([test "x$enable_debug" = "xyes"], [
-    CXXFLAGS="$CXXFLAGS -ggdb3 -gdwarf-5 -Og -fasynchronous-unwind-tables -fsanitize=address,undefined"
-    CFLAGS="$CFLAGS -ggdb3 -gdwarf-5 -Og -fasynchronous-unwind-tables -fsanitize=address,undefined"
+    CXXFLAGS="$CXXFLAGS -ggdb3 -gdwarf-5 -Og -fasynchronous-unwind-tables"
+    CFLAGS="$CFLAGS -ggdb3 -gdwarf-5 -Og -fasynchronous-unwind-tables"
     ENABLE_DEBUG=$enable_debug
     MCOSU_CPPFLAGS="$MCOSU_CPPFLAGS -D_DEBUG"
     AC_SUBST([ENABLE_DEBUG])
@@ -302,6 +320,9 @@ ZLIB_BUILD_VERSION=2.2.4 # zlib-ng
 BZIP2_MIN_VERSION=1.0.8
 BZIP2_BUILD_VERSION=1.0.8
 
+# always build these from source if we want to use them
+AC_SUBST([SDL3_MIXER_VERSION], [b8017938de8b31c1962c2c8044a127519c2c1cdf])
+AC_SUBST([SDL3_MIXER_PREFIX],[$DEPS_PREFIX])
 AC_SUBST([MIMALLOC_VERSION], [3.0.3])
 AC_SUBST([MIMALLOC_PREFIX],[$DEPS_PREFIX])
 
@@ -378,26 +399,40 @@ AM_CONDITIONAL([BUILD_ZLIB], [test "x$have_zlib" != "xyes"])
 AM_CONDITIONAL([BUILD_FREETYPE2], [test "x$have_freetype2" != "xyes"])
 AM_CONDITIONAL([BUILD_MIMALLOC], [test "x$enable_debug" != "xyes" && test "$host_os" != "mingw32"]) # can't find a way to make it work...
 
+AM_CONDITIONAL([USE_BASS], [test "x$enable_sdlmixer" != "xyes"])
 AM_CONDITIONAL([WIN_PLATFORM], [test "$SYSNAME" = "windows"])
-
-BUNDLED_LIBS_DIR=libraries
-BUNDLED_BASS_DIR=$BUNDLED_LIBS_DIR/bass
-BUNDLED_BASS_FX_DIR=$BUNDLED_LIBS_DIR/bassfx
-AC_SUBST([BASS_LIBS])
-AC_SUBST([BUNDLED_LIBS_DIR])
-AC_SUBST([BUNDLED_BASS_DIR])
-AC_SUBST([BUNDLED_BASS_FX_DIR])
 
 ASSETS_DIR=assets
 AC_SUBST([ASSETS_DIR])
 
+BUNDLED_LIBS_DIR=libraries
+BUNDLED_BASS_DIR=$BUNDLED_LIBS_DIR/bass
+BUNDLED_BASS_FX_DIR=$BUNDLED_LIBS_DIR/bassfx
+
+AC_DEFINE([MCENGINE_FEATURE_SDL], [1], [Define if the SDL environment McEngine backend is desired.])
+
 # sanity check
-AC_CHECK_FILE([$srcdir/$BUNDLED_BASS_DIR/lib/$SYSNAME/$host_cpu/${LIBPREFIX}bass$DLLEXT],
-    [],
-    [AC_MSG_ERROR([Required bundled library ${LIBPREFIX}bass$DLLEXT not found])])
-AC_CHECK_FILE([$srcdir/$BUNDLED_BASS_FX_DIR/lib/$SYSNAME/$host_cpu/${LIBPREFIX}bass_fx$DLLEXT],
-    [],
-    [AC_MSG_ERROR([Required bundled library ${LIBPREFIX}bass_fx$DLLEXT not found])])
+AS_IF([test "x$enable_sdlmixer" != "xyes"], [
+    AC_CHECK_FILE([$srcdir/$BUNDLED_BASS_DIR/lib/$SYSNAME/$host_cpu/${LIBPREFIX}bass$DLLEXT],
+        [],
+        [AC_MSG_ERROR([Required bundled library ${LIBPREFIX}bass$DLLEXT not found])])
+    AC_CHECK_FILE([$srcdir/$BUNDLED_BASS_FX_DIR/lib/$SYSNAME/$host_cpu/${LIBPREFIX}bass_fx$DLLEXT],
+        [],
+        [AC_MSG_ERROR([Required bundled library ${LIBPREFIX}bass_fx$DLLEXT not found])])
+    BASS_CFLAGS="-I\$(srcdir)/\$(BUNDLED_BASS_DIR)/include -I\$(srcdir)/\$(BUNDLED_BASS_FX_DIR)/include"
+    BASS_LIBS="-L\$(srcdir)/\$(BUNDLED_BASS_DIR)/lib/\$(SYSNAME)/\$(host_cpu) -L\$(srcdir)/\$(BUNDLED_BASS_FX_DIR)/lib/\$(SYSNAME)/\$(host_cpu) $BASS_LIBS"
+    AC_DEFINE([MCENGINE_FEATURE_BASS], [1], [Define if the BASS audio backend is desired.])
+], [
+    BASS_LIBS=""
+    BASS_CFLAGS=""
+    AC_DEFINE([MCENGINE_FEATURE_SDL_MIXER], [1], [Define if the SDL_mixer audio backend is desired.])
+])
+
+AC_SUBST([BASS_CFLAGS])
+AC_SUBST([BASS_LIBS])
+AC_SUBST([BUNDLED_LIBS_DIR])
+AC_SUBST([BUNDLED_BASS_DIR])
+AC_SUBST([BUNDLED_BASS_FX_DIR])
 
 AC_CHECK_FILE([$srcdir/$ASSETS_DIR/models],
     [],
@@ -430,8 +465,10 @@ McOsu-ng build configuration:
     C compiler:         ${CC}
     C flags:            ${CFLAGS}
     Linker flags:       ${LDFLAGS}
+    SDL_mixer:          ${enable_sdlmixer-no}
     LTO:                ${enable_lto-auto}
     Debug build:        ${enable_debug-no}
+    ASan build:         ${enable_asan-no}
     Native build:       ${enable_native-yes}
     System deps:        ${enable_system_deps-yes}
     Static linking:     ${enable_static-no}

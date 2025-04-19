@@ -31,7 +31,7 @@ OpenGLImage::OpenGLImage(int width, int height, bool mipmapped, bool keepInSyste
 
 void OpenGLImage::init()
 {
-	if ((m_GLTexture != 0 && !m_bKeepInSystemMemory) || !m_bAsyncReady) return; // only load if we are not already loaded
+	if ((m_GLTexture != 0 && !m_bKeepInSystemMemory) || !(m_bAsyncReady.load())) return; // only load if we are not already loaded
 
 	// create texture object
 	if (m_GLTexture == 0)

@@ -12,7 +12,7 @@
 #include "Resource.h"
 #include "SoundEngine.h"
 
-#if defined(_GNU_SOURCE) && defined(__linux__) && defined(MCENGINE_FEATURE_SOUND)
+#if defined(_GNU_SOURCE) && defined(__linux__) && defined(MCENGINE_FEATURE_BASS)
 #include <dlfcn.h>
 #else
 #define DL_CALL_FCT(fctp, args) ((*(fctp)) args)
@@ -65,8 +65,12 @@ public:
 	// ILLEGAL:
 	void setHandle(SOUNDHANDLE handle) {m_HCHANNEL = handle;}
 	void setPrevPosition(unsigned long prevPosition) {m_iPrevPosition = prevPosition;}
-	inline void *getMixChunkOrMixMusic() const {return m_mixChunkOrMixMusic;}
 	inline unsigned long getPrevPosition() const {return m_iPrevPosition;}
+
+#if defined(MCENGINE_FEATURE_SDL) && defined(MCENGINE_FEATURE_SDL_MIXER)
+	inline void *getMixChunkOrMixMusic() const {return m_mixChunkOrMixMusic;}
+#endif
+
 private:
 	virtual void init();
 	virtual void initAsync();
@@ -95,11 +99,17 @@ private:
 	char *m_wasapiSampleBuffer;
 	unsigned long long m_iWasapiSampleBufferSize;
 	std::vector<SOUNDHANDLE> m_danglingWasapiStreams;
+	unsigned long m_iPrevPosition;
 
 	// sdl mixer
+#if defined(MCENGINE_FEATURE_SDL) && defined(MCENGINE_FEATURE_SDL_MIXER)
 	void *m_mixChunkOrMixMusic;
-	unsigned long m_iPrevPosition;
-#if defined(MCENGINE_FEATURE_SOUND)
+    double m_fLastRawSDLPosition;      // last raw position reported by Mix_GetMusicPosition
+    double m_fLastSDLPositionTime;     // engine time when the last position was obtained
+    double m_fSDLPositionRate;         // estimated playback rate (position units per second)
+#endif
+
+#if defined(MCENGINE_FEATURE_BASS)
     inline HSTREAM _BASS_FX_TempoCreate(DWORD chan, DWORD flags) const {return DL_CALL_FCT((SoundEngine::m_BASS_FX_TempoCreate), (chan, flags));}
 #endif
 };

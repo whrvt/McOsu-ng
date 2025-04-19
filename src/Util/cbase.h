@@ -9,8 +9,6 @@
 #ifndef CBASE_H
 #define CBASE_H
 
-#include "config.h"
-
 // STD INCLUDES
 
 #include <cmath>
@@ -34,6 +32,7 @@
 
 #include <cstdarg>
 #include <cstdint>
+#include <cstring>
 
 #define forceinline __attribute__((always_inline)) inline
 

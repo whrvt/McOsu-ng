@@ -50,9 +50,11 @@ File::File(UString filePath, TYPE type) : m_filePath(filePath), m_type(type), m_
 		m_fileSize = std::filesystem::file_size(path);
 
 		// validate file size
-		if (m_fileSize == 0)
+		if (!m_fileSize) // empty
+			return;
+		else if (m_fileSize < 0)
 		{
-			debugLog("File Error: FileSize is 0\n");
+			debugLog("File Error: FileSize is < 0\n");
 			return;
 		}
 		else if (std::cmp_greater(m_fileSize, 1024 * 1024 * File::size_max->getInt())) // size sanity check

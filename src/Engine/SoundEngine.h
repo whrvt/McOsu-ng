@@ -11,7 +11,7 @@
 
 #include "cbase.h"
 
-#ifdef MCENGINE_FEATURE_SOUND
+#ifdef MCENGINE_FEATURE_BASS
 
 #include <bass.h>
 #include <bass_fx.h>
@@ -50,10 +50,8 @@ public:
 
 	// ILLEGAL:
 #if defined(MCENGINE_FEATURE_SDL) && defined(MCENGINE_FEATURE_SDL_MIXER)
-
 	void setMixChunkSize(int mixChunkSize) {m_iMixChunkSize = mixChunkSize;}
 	void setVolumeMixMusic(float volumeMixMusic) {m_fVolumeMixMusic = volumeMixMusic;}
-
 #endif
 
 private:
@@ -82,13 +80,11 @@ private:
 	float m_fVolume;
 
 #if defined(MCENGINE_FEATURE_SDL) && defined(MCENGINE_FEATURE_SDL_MIXER)
-
 	int m_iMixChunkSize;
 	float m_fVolumeMixMusic;
-
 #endif
 
-#ifdef MCENGINE_FEATURE_SOUND
+#ifdef MCENGINE_FEATURE_BASS
     friend class Sound;
     static inline HSTREAM (*m_BASS_FX_TempoCreate)(DWORD, DWORD);
 	uint32_t m_iBASSVersion;

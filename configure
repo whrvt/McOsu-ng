@@ -647,13 +647,16 @@ ac_subst_vars='am__EXEEXT_FALSE
 am__EXEEXT_TRUE
 LTLIBOBJS
 LIBOBJS
-ASSETS_DIR
 BUNDLED_BASS_FX_DIR
 BUNDLED_BASS_DIR
 BUNDLED_LIBS_DIR
 BASS_LIBS
+BASS_CFLAGS
+ASSETS_DIR
 WIN_PLATFORM_FALSE
 WIN_PLATFORM_TRUE
+USE_BASS_FALSE
+USE_BASS_TRUE
 BUILD_MIMALLOC_FALSE
 BUILD_MIMALLOC_TRUE
 BUILD_FREETYPE2_FALSE
@@ -702,6 +705,8 @@ SDL3_LIBS
 SDL3_CFLAGS
 MIMALLOC_PREFIX
 MIMALLOC_VERSION
+SDL3_MIXER_PREFIX
+SDL3_MIXER_VERSION
 GLU_LIBS
 GLU_CFLAGS
 GL_LIBS
@@ -719,10 +724,9 @@ MCOSU_LDFLAGS
 MCOSU_CXXFLAGS
 MCOSU_CPPFLAGS
 ENABLE_DEBUG
-CCACHE
-CXX_NOCCACHE
-CC_NOCCACHE
+ENABLE_ASAN
 BEAR
+CCACHE
 am__fastdepCXX_FALSE
 am__fastdepCXX_TRUE
 CXXDEPMODE
@@ -855,10 +859,12 @@ enable_dependency_tracking
 enable_optimize
 enable_native
 enable_debug
+enable_asan
 enable_clang
 enable_lto
 enable_system_deps
 enable_static
+enable_sdlmixer
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1535,11 +1541,15 @@ Optional Features:
   --enable-optimize       Optimize for speed (default: yes)
   --enable-native         Compile for -march=native (default: yes)
   --enable-debug          Enable debug build (default: no)
+  --enable-asan           Enable ASan/UBSan (turns debug on as well) (default:
+                          no)
   --enable-clang          Use clang/clang++ instead of gcc/g++ (default: no)
   --enable-lto            Enable Link Time Optimization (default: auto, use if
                           functional)
   --disable-system-deps   Always build dependencies from source (default: no)
   --enable-static         Enable static linking where possible (default: no)
+  --enable-sdlmixer       Use the SDL_mixer backend for audio instead of BASS
+                          (default: no)
 
 Some influential environment variables:
   CC          C compiler command
@@ -5608,6 +5618,12 @@ then :
   enableval=$enable_debug;
 fi
 
+# Check whether --enable-asan was given.
+if test ${enable_asan+y}
+then :
+  enableval=$enable_asan;
+fi
+
 # Check whether --enable-clang was given.
 if test ${enable_clang+y}
 then :
@@ -5630,6 +5646,12 @@ fi
 if test ${enable_static+y}
 then :
   enableval=$enable_static;
+fi
+
+# Check whether --enable-sdlmixer was given.
+if test ${enable_sdlmixer+y}
+then :
+  enableval=$enable_sdlmixer;
 fi
 
 
@@ -7025,6 +7047,65 @@ fi
 
 
 
+# Extract the first word of "ccache", so it can be a program name with args.
+set dummy ccache; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+if test ${ac_cv_prog_CCACHE+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) if test -n "$CCACHE"; then
+  ac_cv_prog_CCACHE="$CCACHE" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    ac_cv_prog_CCACHE="ccache"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi ;;
+esac
+fi
+CCACHE=$ac_cv_prog_CCACHE
+if test -n "$CCACHE"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $CCACHE" >&5
+printf "%s\n" "$CCACHE" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+
+
+install -Dm755 /dev/stdin $PWD/build/cc <<EOF
+#!/usr/bin/env sh
+$CCACHE $CC "\$@"
+EOF
+install -Dm755 /dev/stdin $PWD/build/cxx <<EOF
+#!/usr/bin/env sh
+$CCACHE $CXX "\$@"
+EOF
+
+export CC="$PWD/build/cc"
+export CXX="$PWD/build/cxx"
+
+
+
+
 if test "$host_cpu" = "x86_64"
 then :
   COMMON_FLAGS="$COMMON_FLAGS -mcmodel=small"
@@ -7221,62 +7302,6 @@ fi
 
 
 
-CC_NOCCACHE="$CC"
-CXX_NOCCACHE="$CXX"
-
-
-
-# Extract the first word of "ccache", so it can be a program name with args.
-set dummy ccache; ac_word=$2
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
-printf %s "checking for $ac_word... " >&6; }
-if test ${ac_cv_prog_CCACHE+y}
-then :
-  printf %s "(cached) " >&6
-else case e in #(
-  e) if test -n "$CCACHE"; then
-  ac_cv_prog_CCACHE="$CCACHE" # Let the user override the test.
-else
-as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  case $as_dir in #(((
-    '') as_dir=./ ;;
-    */) ;;
-    *) as_dir=$as_dir/ ;;
-  esac
-    for ac_exec_ext in '' $ac_executable_extensions; do
-  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
-    ac_cv_prog_CCACHE="ccache"
-    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-  done
-IFS=$as_save_IFS
-
-fi ;;
-esac
-fi
-CCACHE=$ac_cv_prog_CCACHE
-if test -n "$CCACHE"; then
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $CCACHE" >&5
-printf "%s\n" "$CCACHE" >&6; }
-else
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
-printf "%s\n" "no" >&6; }
-fi
-
-
-if test "x$CCACHE" = "xccache"
-then :
-
-    CC="ccache $CC"
-    CXX="ccache $CXX"
-
-fi
-
 if test "x$enable_native" != "xno"
 then :
 
@@ -7291,11 +7316,22 @@ else case e in #(
 esac
 fi
 
+if test "x$enable_asan" = "xyes"
+then :
+
+    CXXFLAGS="$CXXFLAGS -fsanitize=address,undefined"
+    CFLAGS="$CFLAGS -fsanitize=address,undefined"
+    enable_debug="yes"
+    ENABLE_ASAN=$enable_asan
+
+
+fi
+
 if test "x$enable_debug" = "xyes"
 then :
 
-    CXXFLAGS="$CXXFLAGS -ggdb3 -gdwarf-5 -Og -fasynchronous-unwind-tables -fsanitize=address,undefined"
-    CFLAGS="$CFLAGS -ggdb3 -gdwarf-5 -Og -fasynchronous-unwind-tables -fsanitize=address,undefined"
+    CXXFLAGS="$CXXFLAGS -ggdb3 -gdwarf-5 -Og -fasynchronous-unwind-tables"
+    CFLAGS="$CFLAGS -ggdb3 -gdwarf-5 -Og -fasynchronous-unwind-tables"
     ENABLE_DEBUG=$enable_debug
     MCOSU_CPPFLAGS="$MCOSU_CPPFLAGS -D_DEBUG"
 
@@ -8392,6 +8428,11 @@ ZLIB_MIN_VERSION=1.3
 ZLIB_BUILD_VERSION=2.2.4 # zlib-ng
 BZIP2_MIN_VERSION=1.0.8
 BZIP2_BUILD_VERSION=1.0.8
+
+# always build these from source if we want to use them
+SDL3_MIXER_VERSION=b8017938de8b31c1962c2c8044a127519c2c1cdf
+
+SDL3_MIXER_PREFIX=$DEPS_PREFIX
 
 MIMALLOC_VERSION=3.0.3
 
@@ -9650,6 +9691,14 @@ else
 fi
  # can't find a way to make it work...
 
+ if test "x$enable_sdlmixer" != "xyes"; then
+  USE_BASS_TRUE=
+  USE_BASS_FALSE='#'
+else
+  USE_BASS_TRUE='#'
+  USE_BASS_FALSE=
+fi
+
  if test "$SYSNAME" = "windows"; then
   WIN_PLATFORM_TRUE=
   WIN_PLATFORM_FALSE='#'
@@ -9659,19 +9708,22 @@ else
 fi
 
 
+ASSETS_DIR=assets
+
+
 BUNDLED_LIBS_DIR=libraries
 BUNDLED_BASS_DIR=$BUNDLED_LIBS_DIR/bass
 BUNDLED_BASS_FX_DIR=$BUNDLED_LIBS_DIR/bassfx
 
 
-
-
-
-ASSETS_DIR=assets
+printf "%s\n" "#define MCENGINE_FEATURE_SDL 1" >>confdefs.h
 
 
 # sanity check
-as_ac_File=`printf "%s\n" "ac_cv_file_$srcdir/$BUNDLED_BASS_DIR/lib/$SYSNAME/$host_cpu/${LIBPREFIX}bass$DLLEXT" | sed "$as_sed_sh"`
+if test "x$enable_sdlmixer" != "xyes"
+then :
+
+    as_ac_File=`printf "%s\n" "ac_cv_file_$srcdir/$BUNDLED_BASS_DIR/lib/$SYSNAME/$host_cpu/${LIBPREFIX}bass$DLLEXT" | sed "$as_sed_sh"`
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $srcdir/$BUNDLED_BASS_DIR/lib/$SYSNAME/$host_cpu/${LIBPREFIX}bass$DLLEXT" >&5
 printf %s "checking for $srcdir/$BUNDLED_BASS_DIR/lib/$SYSNAME/$host_cpu/${LIBPREFIX}bass$DLLEXT... " >&6; }
 if eval test \${$as_ac_File+y}
@@ -9698,7 +9750,7 @@ else case e in #(
 esac
 fi
 
-as_ac_File=`printf "%s\n" "ac_cv_file_$srcdir/$BUNDLED_BASS_FX_DIR/lib/$SYSNAME/$host_cpu/${LIBPREFIX}bass_fx$DLLEXT" | sed "$as_sed_sh"`
+    as_ac_File=`printf "%s\n" "ac_cv_file_$srcdir/$BUNDLED_BASS_FX_DIR/lib/$SYSNAME/$host_cpu/${LIBPREFIX}bass_fx$DLLEXT" | sed "$as_sed_sh"`
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $srcdir/$BUNDLED_BASS_FX_DIR/lib/$SYSNAME/$host_cpu/${LIBPREFIX}bass_fx$DLLEXT" >&5
 printf %s "checking for $srcdir/$BUNDLED_BASS_FX_DIR/lib/$SYSNAME/$host_cpu/${LIBPREFIX}bass_fx$DLLEXT... " >&6; }
 if eval test \${$as_ac_File+y}
@@ -9724,6 +9776,28 @@ else case e in #(
   e) as_fn_error $? "Required bundled library ${LIBPREFIX}bass_fx$DLLEXT not found" "$LINENO" 5 ;;
 esac
 fi
+
+    BASS_CFLAGS="-I\$(srcdir)/\$(BUNDLED_BASS_DIR)/include -I\$(srcdir)/\$(BUNDLED_BASS_FX_DIR)/include"
+    BASS_LIBS="-L\$(srcdir)/\$(BUNDLED_BASS_DIR)/lib/\$(SYSNAME)/\$(host_cpu) -L\$(srcdir)/\$(BUNDLED_BASS_FX_DIR)/lib/\$(SYSNAME)/\$(host_cpu) $BASS_LIBS"
+
+printf "%s\n" "#define MCENGINE_FEATURE_BASS 1" >>confdefs.h
+
+
+else case e in #(
+  e)
+    BASS_LIBS=""
+    BASS_CFLAGS=""
+
+printf "%s\n" "#define MCENGINE_FEATURE_SDL_MIXER 1" >>confdefs.h
+
+ ;;
+esac
+fi
+
+
+
+
+
 
 
 as_ac_File=`printf "%s\n" "ac_cv_file_$srcdir/$ASSETS_DIR/models" | sed "$as_sed_sh"`
@@ -9985,6 +10059,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${BUILD_MIMALLOC_TRUE}" && test -z "${BUILD_MIMALLOC_FALSE}"; then
   as_fn_error $? "conditional \"BUILD_MIMALLOC\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${USE_BASS_TRUE}" && test -z "${USE_BASS_FALSE}"; then
+  as_fn_error $? "conditional \"USE_BASS\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${WIN_PLATFORM_TRUE}" && test -z "${WIN_PLATFORM_FALSE}"; then
@@ -11326,8 +11404,10 @@ McOsu-ng build configuration:
     C compiler:         ${CC}
     C flags:            ${CFLAGS}
     Linker flags:       ${LDFLAGS}
+    SDL_mixer:          ${enable_sdlmixer-no}
     LTO:                ${enable_lto-auto}
     Debug build:        ${enable_debug-no}
+    ASan build:         ${enable_asan-no}
     Native build:       ${enable_native-yes}
     System deps:        ${enable_system_deps-yes}
     Static linking:     ${enable_static-no}
@@ -11357,8 +11437,10 @@ McOsu-ng build configuration:
     C compiler:         ${CC}
     C flags:            ${CFLAGS}
     Linker flags:       ${LDFLAGS}
+    SDL_mixer:          ${enable_sdlmixer-no}
     LTO:                ${enable_lto-auto}
     Debug build:        ${enable_debug-no}
+    ASan build:         ${enable_asan-no}
     Native build:       ${enable_native-yes}
     System deps:        ${enable_system_deps-yes}
     Static linking:     ${enable_static-no}

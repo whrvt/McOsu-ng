@@ -123,6 +123,7 @@ protected:
 	SDL_Window *m_window;
 
 private:
+	void onLogLevelChange(UString oldValue, UString newValue);
 	ConVar *m_mouse_sensitivity_ref;
 	
 	bool m_sdlDebug;

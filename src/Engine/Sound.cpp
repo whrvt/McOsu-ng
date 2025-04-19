@@ -9,7 +9,7 @@
 #include "ConVar.h"
 #include "File.h"
 
-#ifdef MCENGINE_FEATURE_SOUND
+#ifdef MCENGINE_FEATURE_BASS
 
 #include <bass.h>
 #include <bass_fx.h>
@@ -23,7 +23,7 @@
 #elif defined(MCENGINE_FEATURE_SDL) && defined(MCENGINE_FEATURE_SDL_MIXER)
 
 #include <SDL3/SDL.h>
-#include <SDL3/SDL_mixer_ext.h>
+#include <SDL3_mixer/SDL_mixer.h>
 
 #endif
 
@@ -61,7 +61,6 @@ Sound::Sound(UString filepath, bool stream, bool threeD, bool loop, bool prescan
 	m_fActualSpeedForDisabledPitchCompensation = 1.0f;
 
 	m_iPrevPosition = 0;
-	m_mixChunkOrMixMusic = NULL;
 
 	m_wasapiSampleBuffer = NULL;
 	m_iWasapiSampleBufferSize = 0;
@@ -71,13 +70,21 @@ Sound::Sound(UString filepath, bool stream, bool threeD, bool loop, bool prescan
 	m_danglingWasapiStreams.reserve(32);
 
 #endif
+
+#if defined(MCENGINE_FEATURE_SDL) && defined(MCENGINE_FEATURE_SDL_MIXER)
+	m_mixChunkOrMixMusic = NULL;
+
+    m_fLastRawSDLPosition = 0.0;
+    m_fLastSDLPositionTime = 0.0;
+    m_fSDLPositionRate = 1.0; // default to 1x rate (position units per second)
+#endif
 }
 
 void Sound::init()
 {
-	if (m_sFilePath.length() < 2 || !m_bAsyncReady) return;
+	if (m_sFilePath.length() < 2 || !(m_bAsyncReady.load())) return;
 
-#ifdef MCENGINE_FEATURE_SOUND
+#ifdef MCENGINE_FEATURE_BASS
 
 	// HACKHACK: re-set some values to their defaults (only necessary because of the existence of rebuild())
 	m_fActualSpeedForDisabledPitchCompensation = 1.0f;
@@ -127,7 +134,7 @@ void Sound::initAsync()
 		}
 	}
 
-#ifdef MCENGINE_FEATURE_SOUND
+#ifdef MCENGINE_FEATURE_BASS
 
 	// create the sound
 	if (m_bStream)
@@ -226,7 +233,7 @@ void Sound::initAsync()
 
 Sound::SOUNDHANDLE Sound::getHandle()
 {
-#ifdef MCENGINE_FEATURE_SOUND
+#ifdef MCENGINE_FEATURE_BASS
 
 	// if the file is streamed from the disk, directly return HSTREAM
 	// if not, create a channel of the stream if there is none, else return the previously created channel IFF this sound is not overlayable (because being overlayable implies multiple channels playing at once)
@@ -307,7 +314,7 @@ void Sound::destroy()
 
 	m_bReady = false;
 
-#ifdef MCENGINE_FEATURE_SOUND
+#ifdef MCENGINE_FEATURE_BASS
 
 	if (m_bStream)
 	{
@@ -368,7 +375,7 @@ void Sound::setPosition(double percent)
 
 	percent = clamp<double>(percent, 0.0, 1.0);
 
-#ifdef MCENGINE_FEATURE_SOUND
+#ifdef MCENGINE_FEATURE_BASS
 
 	const SOUNDHANDLE handle = (m_HCHANNELBACKUP != 0 ? m_HCHANNELBACKUP : getHandle());
 
@@ -386,20 +393,27 @@ void Sound::setPosition(double percent)
 	if (!res && debug_snd.getBool())
 		debugLog("position %f BASS_ChannelSetPosition() error %i on file %s\n", percent, BASS_ErrorGetCode(), m_sFilePath.toUtf8());
 
-#elif defined(MCENGINE_FEATURE_SDL) && defined(MCENGINE_FEATURE_SDL_MIXER) && defined(SDL_MIXER_X)
+#elif defined(MCENGINE_FEATURE_SDL) && defined(MCENGINE_FEATURE_SDL_MIXER)
 
 	if (m_bStream)
 	{
-		const double length = Mix_GetMusicTotalTime((Mix_Music*)m_mixChunkOrMixMusic);
+		const double length = Mix_MusicDuration((Mix_Music*)m_mixChunkOrMixMusic);
 		if (length > 0.0)
 		{
 			Mix_RewindMusic();
 
 			const double targetPositionS = length*percent;
-			Mix_SetMusicPosition(targetPositionS);
+			if (!Mix_SetMusicPosition(targetPositionS) && targetPositionS > 0.1)
+				debugLog("Mix_SetMusicPosition(%.2f) failed! SDL Error: %s\n", targetPositionS, SDL_GetError());
+
+			const double targetPositionMS = targetPositionS * 1000.0;
+
+			// reset interpolation state
+			m_fLastRawSDLPosition = targetPositionMS;
+			m_fLastSDLPositionTime = engine->getTime();
+			m_fSDLPositionRate = 1000.0 * getSpeed();
 
 			// NOTE: Mix_SetMusicPosition()/scrubbing is inaccurate depending on the underlying decoders, approach in 1 second increments
-			const double targetPositionMS = targetPositionS * 1000.0;
 			double positionMS = targetPositionMS;
 			double actualPositionMS = getPositionMS();
 			double deltaMS = actualPositionMS - targetPositionMS;
@@ -408,7 +422,12 @@ void Sound::setPosition(double percent)
 			{
 				positionMS -= signbit(deltaMS) * 1000.0;
 
-				Mix_SetMusicPosition(positionMS / 1000.0);
+				if (!Mix_SetMusicPosition(positionMS / 1000.0) && (positionMS / 1000.0) > 0.1)
+					debugLog("Mix_SetMusicPosition(%.2f) failed! SDL Error: %s\n", positionMS / 1000.0, SDL_GetError());
+
+				// update our internal state after each position adjustment
+				m_fLastRawSDLPosition = positionMS;
+				m_fLastSDLPositionTime = engine->getTime();
 
 				actualPositionMS = getPositionMS();
 				deltaMS = actualPositionMS - targetPositionMS;
@@ -420,6 +439,8 @@ void Sound::setPosition(double percent)
 		}
 		else if (percent == 0.0)
 			Mix_RewindMusic();
+		else if (length < 0.5)
+		 	debugLog("Mix_MusicDuration failed! length: %.2f\n", length);
 	}
 
 #endif
@@ -429,7 +450,7 @@ void Sound::setPositionMS(unsigned long ms, bool internal)
 {
 	if (!m_bReady || ms > getLengthMS()) return;
 
-#ifdef MCENGINE_FEATURE_SOUND
+#ifdef MCENGINE_FEATURE_BASS
 
 	const SOUNDHANDLE handle = getHandle();
 
@@ -450,7 +471,14 @@ void Sound::setPositionMS(unsigned long ms, bool internal)
 	if (m_bStream)
 	{
 		Mix_RewindMusic();
-		Mix_SetMusicPosition((double)ms/1000.0);
+
+		if (!Mix_SetMusicPosition((double)ms / 1000.0) && (double)ms / 1000.0 > 0.1)
+			debugLog("Mix_SetMusicPosition(%.2f) failed! SDL Error: %s\n", (double)ms / 1000.0, SDL_GetError());
+
+		// reset interpolation state
+		m_fLastRawSDLPosition = ms;
+		m_fLastSDLPositionTime = engine->getTime();
+		m_fSDLPositionRate = 1000.0 * getSpeed();
 
 		// NOTE: Mix_SetMusicPosition()/scrubbing is inaccurate depending on the underlying decoders, approach in 1 second increments
 		const double targetPositionMS = (double)ms;
@@ -458,11 +486,16 @@ void Sound::setPositionMS(unsigned long ms, bool internal)
 		double actualPositionMS = getPositionMS();
 		double deltaMS = actualPositionMS - targetPositionMS;
 		int loopCounter = 0;
-		while (std::abs(deltaMS) > 1.1*1000.0)
+		while (std::abs(deltaMS) > 1.1 * 1000.0)
 		{
 			positionMS -= signbit(deltaMS) * 1000.0;
 
-			Mix_SetMusicPosition(positionMS / 1000.0);
+			if (!Mix_SetMusicPosition(positionMS / 1000.0) && (positionMS / 1000.0) > 0.1)
+				debugLog("Mix_SetMusicPosition(%.2f) failed! SDL Error: %s\n", positionMS / 1000.0, SDL_GetError());
+
+			// update our internal state after each position adjustment
+			m_fLastRawSDLPosition = positionMS;
+			m_fLastSDLPositionTime = engine->getTime();
 
 			actualPositionMS = getPositionMS();
 			deltaMS = actualPositionMS - targetPositionMS;
@@ -482,7 +515,7 @@ void Sound::setVolume(float volume)
 
 	m_fVolume = clamp<float>(volume, 0.0f, 1.0f);
 
-#ifdef MCENGINE_FEATURE_SOUND
+#ifdef MCENGINE_FEATURE_BASS
 
 	if (!m_bIsOverlayable)
 	{
@@ -508,13 +541,13 @@ void Sound::setSpeed(float speed)
 {
 	if (!m_bReady) return;
 
-#ifdef MCENGINE_FEATURE_SOUND
+#ifdef MCENGINE_FEATURE_BASS
 
 	speed = clamp<float>(speed, 0.05f, 50.0f);
 
 	const SOUNDHANDLE handle = getHandle();
 
-	float originalFreq = 44100.0f;
+	float originalFreq = convar->getConVarByName("snd_freq")->getFloat();
 	BASS_ChannelGetAttribute(handle, BASS_ATTRIB_FREQ, &originalFreq);
 
 	BASS_ChannelSetAttribute(handle, (snd_speed_compensate_pitch.getBool() ? BASS_ATTRIB_TEMPO : BASS_ATTRIB_TEMPO_FREQ), (snd_speed_compensate_pitch.getBool() ? (speed-1.0f)*100.0f : speed*originalFreq));
@@ -528,7 +561,7 @@ void Sound::setPitch(float pitch)
 {
 	if (!m_bReady) return;
 
-#ifdef MCENGINE_FEATURE_SOUND
+#ifdef MCENGINE_FEATURE_BASS
 
 	/*
 	if (!m_bStream)
@@ -551,7 +584,7 @@ void Sound::setFrequency(float frequency)
 {
 	if (!m_bReady) return;
 
-#ifdef MCENGINE_FEATURE_SOUND
+#ifdef MCENGINE_FEATURE_BASS
 
 	frequency = (frequency > 99.0f ? clamp<float>(frequency, 100.0f, 100000.0f) : 0.0f);
 
@@ -568,7 +601,7 @@ void Sound::setPan(float pan)
 
 	pan = clamp<float>(pan, -1.0f, 1.0f);
 
-#ifdef MCENGINE_FEATURE_SOUND
+#ifdef MCENGINE_FEATURE_BASS
 
 	const SOUNDHANDLE handle = getHandle();
 
@@ -592,7 +625,7 @@ void Sound::setLoop(bool loop)
 
 	m_bIsLooped = loop;
 
-#ifdef MCENGINE_FEATURE_SOUND
+#ifdef MCENGINE_FEATURE_BASS
 
 	const SOUNDHANDLE handle = getHandle();
 
@@ -605,7 +638,7 @@ float Sound::getPosition()
 {
 	if (!m_bReady) return 0.0f;
 
-#ifdef MCENGINE_FEATURE_SOUND
+#ifdef MCENGINE_FEATURE_BASS
 
 	const SOUNDHANDLE handle = (m_HCHANNELBACKUP != 0 ? m_HCHANNELBACKUP : getHandle());
 
@@ -616,16 +649,28 @@ float Sound::getPosition()
 
 	return position;
 
-#elif defined(MCENGINE_FEATURE_SDL) && defined(MCENGINE_FEATURE_SDL_MIXER) && defined(SDL_MIXER_X)
+#elif defined(MCENGINE_FEATURE_SDL) && defined(MCENGINE_FEATURE_SDL_MIXER)
 
 	if (m_bStream)
 	{
-		const double length = Mix_GetMusicTotalTime((Mix_Music*)m_mixChunkOrMixMusic);
+		const double length = Mix_MusicDuration((Mix_Music*)m_mixChunkOrMixMusic);
 		if (length > 0.0)
 		{
 			const double position = Mix_GetMusicPosition((Mix_Music*)m_mixChunkOrMixMusic);
 			if (position > -0.0)
 				return (float)(position / length);
+			else if (position < -0.5)
+			{
+				static int once = 0;
+				if (!once++)
+					debugLog("unsupported codec for Mix_GetMusicPosition! (returned %.2f)\n", position);
+			}
+		}
+		else if (length < -0.5)
+		{
+			static int once = 0;
+			if (!once++)
+				debugLog("Mix_MusicDuration failed! (returned %.2f)\n", length);
 		}
 	}
 
@@ -642,7 +687,7 @@ unsigned long Sound::getPositionMS()
 {
 	if (!m_bReady) return 0;
 
-#ifdef MCENGINE_FEATURE_SOUND
+#ifdef MCENGINE_FEATURE_BASS
 
 	const SOUNDHANDLE handle = getHandle();
 
@@ -669,29 +714,71 @@ unsigned long Sound::getPositionMS()
 
 	return positionMS;
 
-#elif defined(MCENGINE_FEATURE_SDL) && defined(MCENGINE_FEATURE_SDL_MIXER) && defined(SDL_MIXER_X)
+#elif defined(MCENGINE_FEATURE_SDL) && defined(MCENGINE_FEATURE_SDL_MIXER)
 
 	if (m_bStream)
 	{
-		const double position = Mix_GetMusicPosition((Mix_Music*)m_mixChunkOrMixMusic);
-		if (position > -0.0)
-			return (unsigned long)(position*1000.0);
+		const double currentTime = engine->getTime();
+		const double rawPosition = Mix_GetMusicPosition((Mix_Music *)m_mixChunkOrMixMusic);
+
+		if (rawPosition >= 0.0)
+		{
+			const double rawPositionMS = rawPosition * 1000.0;
+
+			// if this is our first reading or if we're not playing, just use the raw value
+			if (m_fLastSDLPositionTime <= 0.0 || !isPlaying())
+			{
+				m_fLastRawSDLPosition = rawPositionMS;
+				m_fLastSDLPositionTime = currentTime;
+				m_fSDLPositionRate = 1000.0 * getSpeed(); // initialize rate
+				return (unsigned long)rawPositionMS;
+			}
+
+			// if the position changed, update our rate estimate
+			if (m_fLastRawSDLPosition != rawPositionMS)
+			{
+				const double timeDelta = currentTime - m_fLastSDLPositionTime;
+
+				// only update rate if enough time has passed to avoid division by very small numbers
+				if (timeDelta > 0.01)
+				{
+					// calculate new rate (change in position / change in time)
+					// account for possibility of wrapping (looped sound) by ensuring positive rate
+					double newRate = (rawPositionMS > m_fLastRawSDLPosition) ? (rawPositionMS - m_fLastRawSDLPosition) / timeDelta : m_fSDLPositionRate;
+
+					// smooth the rate transition
+					m_fSDLPositionRate = m_fSDLPositionRate * 0.7 + newRate * 0.3;
+				}
+
+				// store the new raw position and time
+				m_fLastRawSDLPosition = rawPositionMS;
+				m_fLastSDLPositionTime = currentTime;
+			}
+
+			// calculate the interpolated position based on time elapsed since last raw reading
+			const double timeSinceLastReading = currentTime - m_fLastSDLPositionTime;
+			const double interpolatedPosition = m_fLastRawSDLPosition + (timeSinceLastReading * m_fSDLPositionRate);
+
+			return static_cast<unsigned long>(interpolatedPosition);
+		}
+		else if (rawPosition < -0.5)
+		{
+			static int once = 0;
+			if (!once++)
+				debugLog("unsupported codec for Mix_GetMusicPosition! (returned %.2f)\n", rawPosition);
+		}
 	}
 
-	return 0;
-
-#else
-
-	return 0;
-
 #endif
+
+	return 0;
 }
 
 unsigned long Sound::getLengthMS()
 {
 	if (!m_bReady) return 0;
 
-#ifdef MCENGINE_FEATURE_SOUND
+#ifdef MCENGINE_FEATURE_BASS
 
 	const SOUNDHANDLE handle = getHandle();
 
@@ -702,13 +789,19 @@ unsigned long Sound::getLengthMS()
 
 	return static_cast<unsigned long>(lengthInMilliSeconds);
 
-#elif defined(MCENGINE_FEATURE_SDL) && defined(MCENGINE_FEATURE_SDL_MIXER) && defined(SDL_MIXER_X)
+#elif defined(MCENGINE_FEATURE_SDL) && defined(MCENGINE_FEATURE_SDL_MIXER)
 
 	if (m_bStream)
 	{
-		const double length = Mix_GetMusicTotalTime((Mix_Music*)m_mixChunkOrMixMusic);
+		const double length = Mix_MusicDuration((Mix_Music*)m_mixChunkOrMixMusic);
 		if (length > -0.0)
 			return (unsigned long)(length*1000.0);
+		else if (length < -0.5)
+		{
+			static int once = 0;
+			if (!once++)
+				debugLog("Mix_MusicDuration failed! (returned %.2f)\n", length);
+		}
 	}
 
 	return 0;
@@ -724,7 +817,7 @@ float Sound::getSpeed()
 {
 	if (!m_bReady) return 1.0f;
 
-#ifdef MCENGINE_FEATURE_SOUND
+#ifdef MCENGINE_FEATURE_BASS
 
 	/*
 	if (!m_bStream)
@@ -755,7 +848,7 @@ float Sound::getPitch()
 {
 	if (!m_bReady) return 1.0f;
 
-#ifdef MCENGINE_FEATURE_SOUND
+#ifdef MCENGINE_FEATURE_BASS
 
 	/*
 	if (!m_bStream)
@@ -781,20 +874,21 @@ float Sound::getPitch()
 
 float Sound::getFrequency()
 {
-	if (!m_bReady) return 44100.0f;
+	const float default_freq = convar->getConVarByName("snd_freq")->getFloat();
+	if (!m_bReady) return default_freq;
 
-#ifdef MCENGINE_FEATURE_SOUND
+#ifdef MCENGINE_FEATURE_BASS
 
 	const SOUNDHANDLE handle = getHandle();
 
-	float frequency = 44100.0f;
+	float frequency = default_freq;
 	BASS_ChannelGetAttribute(handle, BASS_ATTRIB_FREQ, &frequency);
 
 	return frequency;
 
 #else
 
-	return 44100.0f;
+	return default_freq;
 
 #endif
 }
@@ -803,7 +897,7 @@ bool Sound::isPlaying()
 {
 	if (!m_bReady) return false;
 
-#ifdef MCENGINE_FEATURE_SOUND
+#ifdef MCENGINE_FEATURE_BASS
 
 	const SOUNDHANDLE handle = getHandle();
 
@@ -832,7 +926,7 @@ bool Sound::isFinished()
 {
 	if (!m_bReady) return false;
 
-#ifdef MCENGINE_FEATURE_SOUND
+#ifdef MCENGINE_FEATURE_BASS
 
 	const SOUNDHANDLE handle = getHandle();
 

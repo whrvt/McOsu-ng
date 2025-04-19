@@ -32,7 +32,7 @@ OpenGLVertexArrayObject::OpenGLVertexArrayObject(Graphics::PRIMITIVE primitive, 
 
 void OpenGLVertexArrayObject::init()
 {
-	if (!m_bAsyncReady || m_vertices.size() < 2) return;
+	if (!(m_bAsyncReady.load()) || m_vertices.size() < 2) return;
 
 	// handle partial reloads
 

@@ -1186,7 +1186,7 @@ bool OsuDatabaseBeatmap::loadMetadata(OsuDatabaseBeatmap *databaseBeatmap)
 					{
 						memset(stringBuffer, '\0', 1024);
 						int type, startTime;
-						if (sscanf(curLineChar, " %i , %i , \"%1023[^\"]\"", &type, &startTime, stringBuffer) == 3)
+						if (sscanf(curLineChar, R"( %i , %i , "%1023[^"]")", &type, &startTime, stringBuffer) == 3)
 						{
 							if (type == 0)
 							{

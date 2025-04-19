@@ -48,7 +48,7 @@ public:
 
 	std::atomic<bool> running;
 
-#ifdef MCENGINE_FEATURE_SOUND
+#ifdef MCENGINE_FEATURE_BASS
 
 	std::vector<CHANNEL_PLAY_WORK> channelPlayWork;
 
@@ -59,7 +59,7 @@ public:
 
 
 
-#ifdef MCENGINE_FEATURE_SOUND
+#ifdef MCENGINE_FEATURE_BASS
 
 #include <bass.h>
 #include <bass_fx.h>
@@ -108,6 +108,8 @@ DWORD CALLBACK OutputWasapiProc(void *buffer, DWORD length, void *user)
 #include <SDL3/SDL.h>
 #include <SDL3_mixer/SDL_mixer.h>
 
+ConVar snd_chunk_size("snd_chunk_size", 256, FCVAR_NONE, "used to set the SDL audio chunk size");
+
 #endif
 
 
@@ -120,7 +122,6 @@ ConVar snd_freq("snd_freq", 44100, FCVAR_NONE, "output sampling rate in Hz");
 ConVar snd_updateperiod("snd_updateperiod", 10, FCVAR_NONE, "BASS_CONFIG_UPDATEPERIOD length in milliseconds");
 ConVar snd_dev_period("snd_dev_period", 10, FCVAR_NONE, "BASS_CONFIG_DEV_PERIOD length in milliseconds, or if negative then in samples");
 ConVar snd_dev_buffer("snd_dev_buffer", 30, FCVAR_NONE, "BASS_CONFIG_DEV_BUFFER length in milliseconds");
-ConVar snd_chunk_size("snd_chunk_size", 256, FCVAR_NONE, "only used in horizon builds with sdl mixer audio");
 
 ConVar snd_restrict_play_frame("snd_restrict_play_frame", true, FCVAR_NONE, "only allow one new channel per frame for overlayable sounds (prevents lag and earrape)");
 ConVar snd_change_check_interval("snd_change_check_interval", 0.0f, FCVAR_NONE, "check for output device changes every this many seconds. 0 = disabled (default)");
@@ -181,7 +182,7 @@ SoundEngine::SoundEngine()
 
 	m_fVolume = 1.0f;
 
-#ifdef MCENGINE_FEATURE_SOUND
+#ifdef MCENGINE_FEATURE_BASS
 
 	// create audio thread
 #ifdef MCENGINE_FEATURE_MULTITHREADING
@@ -297,6 +298,13 @@ SoundEngine::SoundEngine()
 	snd_output_device.setValue(defaultOutputDevice.name);
 	m_outputDevices.push_back(defaultOutputDevice);
 
+	if (!SDL_WasInit(SDL_INIT_AUDIO) && !SDL_Init(SDL_INIT_AUDIO))
+	{
+		engine->showMessageErrorFatal("Fatal Sound Error", UString::format("Couldn't initialize SDL audio subsystem!\nSDL error: %s\n", SDL_GetError()));
+		engine->shutdown();
+		return;
+	}
+
 	initializeOutputDevice(defaultOutputDevice.id);
 
 	// convar callbacks
@@ -308,7 +316,7 @@ SoundEngine::SoundEngine()
 
 void SoundEngine::updateOutputDevices(bool handleOutputDeviceChanges, bool printInfo)
 {
-#ifdef MCENGINE_FEATURE_SOUND
+#ifdef MCENGINE_FEATURE_BASS
 
 	///int currentOutputDeviceBASSIndex = BASS_GetDevice();
 
@@ -444,7 +452,7 @@ bool SoundEngine::initializeOutputDevice(int id)
 
 	m_iCurrentOutputDevice = id;
 
-#ifdef MCENGINE_FEATURE_SOUND
+#ifdef MCENGINE_FEATURE_BASS
 
 	// allow users to override some defaults (but which may cause beatmap desyncs)
 	// we only want to set these if their values have been explicitly modified (to avoid sideeffects in the default case, and for my sanity)
@@ -600,10 +608,23 @@ bool SoundEngine::initializeOutputDevice(int id)
 	if (m_bReady)
 		Mix_CloseAudio();
 
+	m_iMixChunkSize = snd_chunk_size.getInt();
+	const char *chunkSizeHint = UString::format("%d", m_iMixChunkSize).toUtf8();
+
 	const int freq = snd_freq.getInt();
 	const int channels = 16;
 
-	if (!Mix_OpenAudio(freq, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, m_iMixChunkSize))
+	debugLog("setting SDL audio chunk size to %s\n", chunkSizeHint);
+	SDL_SetHint(SDL_HINT_AUDIO_DEVICE_SAMPLE_FRAMES, chunkSizeHint);
+
+	const SDL_AudioSpec spec =
+	{
+		.format = MIX_DEFAULT_FORMAT,
+		.channels = MIX_DEFAULT_CHANNELS,
+		.freq = freq
+	};
+
+	if (!Mix_OpenAudio(0, &spec))
 	{
 		const char *error = SDL_GetError();
 		debugLog("SoundEngine: Couldn't Mix_OpenAudio(): %s\n", error);
@@ -630,7 +651,7 @@ bool SoundEngine::initializeOutputDevice(int id)
 
 SoundEngine::~SoundEngine()
 {
-#ifdef MCENGINE_FEATURE_SOUND
+#ifdef MCENGINE_FEATURE_BASS
 
 	// let the thread exit and wait for it to stop
 #ifdef MCENGINE_FEATURE_MULTITHREADING
@@ -658,7 +679,7 @@ SoundEngine::~SoundEngine()
 #endif
 
 	}
-#if defined(__linux__) && defined(MCENGINE_FEATURE_SOUND)
+#if defined(__linux__) && defined(MCENGINE_FEATURE_BASS)
     dlclose(bassfx_handle);
 #endif
 #elif defined(MCENGINE_FEATURE_SDL) && defined(MCENGINE_FEATURE_SDL_MIXER)
@@ -706,7 +727,7 @@ bool SoundEngine::play(Sound *snd, float pan, float pitch)
 	if (!allowPlayFrame)
 		return false;
 
-#ifdef MCENGINE_FEATURE_SOUND
+#ifdef MCENGINE_FEATURE_BASS
 
 #ifdef MCENGINE_FEATURE_BASS_WASAPI
 
@@ -862,7 +883,7 @@ bool SoundEngine::play3d(Sound *snd, Vector3 pos)
 {
 	if (!m_bReady || snd == NULL || !snd->isReady() || !snd->is3d()) return false;
 
-#ifdef MCENGINE_FEATURE_SOUND
+#ifdef MCENGINE_FEATURE_BASS
 
 	if (!snd_restrict_play_frame.getBool() || engine->getTime() > snd->getLastPlayTime())
 	{
@@ -898,7 +919,7 @@ void SoundEngine::pause(Sound *snd)
 {
 	if (!m_bReady || snd == NULL || !snd->isReady()) return;
 
-#ifdef MCENGINE_FEATURE_SOUND
+#ifdef MCENGINE_FEATURE_BASS
 
 #ifdef MCENGINE_FEATURE_BASS_WASAPI
 
@@ -948,7 +969,7 @@ void SoundEngine::stop(Sound *snd)
 {
 	if (!m_bReady || snd == NULL || !snd->isReady()) return;
 
-#ifdef MCENGINE_FEATURE_SOUND
+#ifdef MCENGINE_FEATURE_BASS
 
 	Sound::SOUNDHANDLE handle = snd->getHandle();
 
@@ -986,7 +1007,7 @@ void SoundEngine::setOnOutputDeviceChange(std::function<void()> callback)
 
 void SoundEngine::setOutputDevice(UString outputDeviceName)
 {
-#ifdef MCENGINE_FEATURE_SOUND
+#ifdef MCENGINE_FEATURE_BASS
 
 	for (size_t i=0; i<m_outputDevices.size(); i++)
 	{
@@ -1017,7 +1038,7 @@ void SoundEngine::setOutputDevice(UString outputDeviceName)
 
 void SoundEngine::setOutputDeviceForce(UString outputDeviceName)
 {
-#ifdef MCENGINE_FEATURE_SOUND
+#ifdef MCENGINE_FEATURE_BASS
 
 	for (size_t i=0; i<m_outputDevices.size(); i++)
 	{
@@ -1052,7 +1073,7 @@ void SoundEngine::setVolume(float volume)
 
 	m_fVolume = clamp<float>(volume, 0.0f, 1.0f);
 
-#ifdef MCENGINE_FEATURE_SOUND
+#ifdef MCENGINE_FEATURE_BASS
 
 	// 0 (silent) - 10000 (full).
 	BASS_SetConfig(BASS_CONFIG_GVOL_SAMPLE, (DWORD)(m_fVolume*10000));
@@ -1075,7 +1096,7 @@ void SoundEngine::setVolume(float volume)
 
 void SoundEngine::set3dPosition(Vector3 headPos, Vector3 viewDir, Vector3 viewUp)
 {
-#ifdef MCENGINE_FEATURE_SOUND
+#ifdef MCENGINE_FEATURE_BASS
 
 	if (!m_bReady) return;
 
@@ -1111,7 +1132,7 @@ std::vector<UString> SoundEngine::getOutputDevices()
 
 
 
-#ifdef MCENGINE_FEATURE_SOUND
+#ifdef MCENGINE_FEATURE_BASS
 
 #ifdef MCENGINE_FEATURE_MULTITHREADING
 

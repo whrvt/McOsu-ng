@@ -107,6 +107,12 @@ bin_PROGRAMS = McOsu-ng$(EXEEXT)
 @BUILD_FREETYPE2_TRUE@am__append_13 = $(shell $(PKG_CONFIG) --cflags freetype2)
 @BUILD_FREETYPE2_TRUE@am__append_14 = $(shell $(PKG_CONFIG) --libs freetype2)
 @WIN_PLATFORM_FALSE@am__append_15 = lib/
+@USE_BASS_TRUE@am__append_16 = \
+@USE_BASS_TRUE@	$(BUNDLED_BASS_DIR)/include \
+@USE_BASS_TRUE@	$(BUNDLED_BASS_FX_DIR)/include \
+@USE_BASS_TRUE@	$(BUNDLED_BASS_DIR)/lib/$(SYSNAME)/$(host_cpu)/$(LIBPREFIX)bass$(DLLEXT) \
+@USE_BASS_TRUE@	$(BUNDLED_BASS_FX_DIR)/lib/$(SYSNAME)/$(host_cpu)/$(LIBPREFIX)bass_fx$(DLLEXT)
+
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
@@ -615,6 +621,7 @@ AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
 AWK = @AWK@
+BASS_CFLAGS = @BASS_CFLAGS@
 BASS_LIBS = @BASS_LIBS@
 BEAR = @BEAR@
 BUNDLED_BASS_DIR = @BUNDLED_BASS_DIR@
@@ -627,7 +634,6 @@ BZIP2_VERSION = @BZIP2_VERSION@
 CC = @CC@
 CCACHE = @CCACHE@
 CCDEPMODE = @CCDEPMODE@
-CC_NOCCACHE = @CC_NOCCACHE@
 CFLAGS = @CFLAGS@
 CMAKE_SYSTEM_NAME = @CMAKE_SYSTEM_NAME@
 CPPFLAGS = @CPPFLAGS@
@@ -636,7 +642,6 @@ CTAGS = @CTAGS@
 CXX = @CXX@
 CXXDEPMODE = @CXXDEPMODE@
 CXXFLAGS = @CXXFLAGS@
-CXX_NOCCACHE = @CXX_NOCCACHE@
 CYGPATH_W = @CYGPATH_W@
 DEFS = @DEFS@
 DEPDIR = @DEPDIR@
@@ -648,6 +653,7 @@ ECHO_N = @ECHO_N@
 ECHO_T = @ECHO_T@
 EGL_CFLAGS = @EGL_CFLAGS@
 EGL_LIBS = @EGL_LIBS@
+ENABLE_ASAN = @ENABLE_ASAN@
 ENABLE_DEBUG = @ENABLE_DEBUG@
 ETAGS = @ETAGS@
 EXEEXT = @EXEEXT@
@@ -712,6 +718,8 @@ PKG_CONFIG_SYSTEM_INCLUDE_PATH = @PKG_CONFIG_SYSTEM_INCLUDE_PATH@
 PKG_CONFIG_SYSTEM_LIBRARY_PATH = @PKG_CONFIG_SYSTEM_LIBRARY_PATH@
 SDL3_CFLAGS = @SDL3_CFLAGS@ $(am__append_1)
 SDL3_LIBS = @SDL3_LIBS@ $(am__append_2)
+SDL3_MIXER_PREFIX = @SDL3_MIXER_PREFIX@
+SDL3_MIXER_VERSION = @SDL3_MIXER_VERSION@
 SDL3_PREFIX = @SDL3_PREFIX@
 SDL3_STATIC = @SDL3_STATIC@
 SDL3_VERSION = @SDL3_VERSION@
@@ -1004,8 +1012,12 @@ CLEANFILES = \
 	*.bak
 
 @BUILD_MIMALLOC_FALSE@MIMALLOC_LIBS := 
-@BUILD_MIMALLOC_TRUE@MIMALLOC_LIBS = $(DEPS_PREFIX)/lib/mimalloc$(if $(ENABLE_DEBUG),-asan-debug,).o
-BUILT_SOURCES := $(DEPS_PREFIX)/mimalloc.built $(DEPS_PREFIX)/SDL3.built $(DEPS_PREFIX)/GLEW.built $(DEPS_PREFIX)/libjpeg.built \
+@BUILD_MIMALLOC_TRUE@MIMALLOC_LIBS = $(DEPS_PREFIX)/lib/mimalloc$(if $(ENABLE_ASAN),-asan-debug,$(if $(ENABLE_DEBUG),-debug,)).o
+@USE_BASS_FALSE@AUDIO_CFLAGS = $(shell $(PKG_CONFIG) --cflags sdl3-mixer)
+@USE_BASS_TRUE@AUDIO_CFLAGS := $(BASS_CFLAGS)
+@USE_BASS_FALSE@AUDIO_LIBS = $(shell $(PKG_CONFIG) --libs sdl3-mixer)
+@USE_BASS_TRUE@AUDIO_LIBS := $(BASS_LIBS)
+BUILT_SOURCES := $(DEPS_PREFIX)/mimalloc.built $(DEPS_PREFIX)/SDL3.built $(DEPS_PREFIX)/SDL3_mixer.built $(DEPS_PREFIX)/GLEW.built $(DEPS_PREFIX)/libjpeg.built \
 	$(DEPS_PREFIX)/libpng.built $(DEPS_PREFIX)/bzip2.built $(DEPS_PREFIX)/zlib.built $(DEPS_PREFIX)/FREETYPE2.built
 
 
@@ -1016,9 +1028,8 @@ McOsu_ng_CXXFLAGS := \
 	$(CXXFLAGS_EXTRA) \
 	$(MCOSU_CXXFLAGS) \
 	$(MCOSU_NG_INCLUDE_FLAGS) \
-	-I$(srcdir)/$(BUNDLED_BASS_DIR)/include \
-	-I$(srcdir)/$(BUNDLED_BASS_FX_DIR)/include \
 	$(SDL3_CFLAGS) \
+	$(AUDIO_CFLAGS) \
 	$(X11_CFLAGS) \
 	$(XI_CFLAGS) \
 	$(GL_CFLAGS) \
@@ -1035,11 +1046,9 @@ McOsu_ng_CXXFLAGS := \
 McOsu_ng_LDFLAGS := \
 	$(MIMALLOC_LIBS) \
 	-Wl,-rpath='$$ORIGIN/lib',-rpath='$$ORIGIN' \
-	-L$(srcdir)/$(BUNDLED_BASS_DIR)/lib/$(SYSNAME)/$(host_cpu) \
-	-L$(srcdir)/$(BUNDLED_BASS_FX_DIR)/lib/$(SYSNAME)/$(host_cpu) \
 	-Wl,--start-group \
-	$(BASS_LIBS) \
 	$(SDL3_LIBS) \
+	$(AUDIO_LIBS) \
 	$(X11_LIBS) \
 	$(XI_LIBS) \
 	$(GL_LIBS) \
@@ -1055,18 +1064,11 @@ McOsu_ng_LDFLAGS := \
 
 
 # windows' loader has no concept of rpaths
-TEMP_DEST := $(am__append_15)
+LIBDEST := $(am__append_15)
 
 # TODO: distribution package files
-EXTRA_DIST = \
-	$(BUNDLED_BASS_DIR)/include \
-	$(BUNDLED_BASS_FX_DIR)/include \
-	$(BUNDLED_BASS_DIR)/lib/$(SYSNAME)/$(host_cpu)/$(LIBPREFIX)bass$(DLLEXT) \
-	$(BUNDLED_BASS_FX_DIR)/lib/$(SYSNAME)/$(host_cpu)/$(LIBPREFIX)bass_fx$(DLLEXT) \
-	$(ASSETS_DIR)/models \
-	$(ASSETS_DIR)/shaders \
-	autogen.sh
-
+EXTRA_DIST := $(ASSETS_DIR)/models $(ASSETS_DIR)/shaders autogen.sh \
+	$(am__append_16)
 MAINTAINERCLEANFILES = $(top_srcdir)/src/Makefile.sources
 all: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) all-am
@@ -5520,11 +5522,11 @@ $(DEPS_CACHE)/mimalloc-$(MIMALLOC_VERSION).source:
 @BUILD_MIMALLOC_TRUE@	cd $(DEPS_PREFIX)/mimalloc/out/"$(if $(ENABLE_DEBUG),debug,release)" && \
 @BUILD_MIMALLOC_TRUE@	env PKG_CONFIG="$(PKG_CONFIG)" \
 @BUILD_MIMALLOC_TRUE@		LDFLAGS="$(LDFLAGS) -xnone" cmake \
-@BUILD_MIMALLOC_TRUE@		-D CMAKE_C_COMPILER="$(CC_NOCCACHE)" \
+@BUILD_MIMALLOC_TRUE@		-D CMAKE_C_COMPILER="$(CC)" \
 @BUILD_MIMALLOC_TRUE@		-D CMAKE_C_FLAGS="$(CFLAGS)" \
 @BUILD_MIMALLOC_TRUE@		-D CMAKE_SYSTEM_NAME="$(CMAKE_SYSTEM_NAME)" \
 @BUILD_MIMALLOC_TRUE@		-D CMAKE_SYSTEM_PROCESSOR="$(host_cpu)" \
-@BUILD_MIMALLOC_TRUE@		-D CMAKE_CXX_COMPILER="$(CXX_NOCCACHE)" \
+@BUILD_MIMALLOC_TRUE@		-D CMAKE_CXX_COMPILER="$(CXX)" \
 @BUILD_MIMALLOC_TRUE@		-D CMAKE_CXX_FLAGS="$(CXXFLAGS) -xc++" \
 @BUILD_MIMALLOC_TRUE@		-D CMAKE_INSTALL_PREFIX="$(DEPS_PREFIX)" \
 @BUILD_MIMALLOC_TRUE@		-D MI_OPT_ARCH=ON \
@@ -5532,7 +5534,7 @@ $(DEPS_CACHE)/mimalloc-$(MIMALLOC_VERSION).source:
 @BUILD_MIMALLOC_TRUE@		-D MI_NO_OPT_ARCH=OFF \
 @BUILD_MIMALLOC_TRUE@		-D MI_BUILD_SHARED=OFF \
 @BUILD_MIMALLOC_TRUE@		-D MI_BUILD_TESTS=OFF \
-@BUILD_MIMALLOC_TRUE@		$(if $(ENABLE_DEBUG),-DMI_LOCAL_DYNAMIC_TLS=ON -DMI_TRACK_ASAN=ON -DMI_DEBUG_UBSAN=ON,) \
+@BUILD_MIMALLOC_TRUE@		$(if $(ENABLE_ASAN),-DMI_LOCAL_DYNAMIC_TLS=ON -DMI_TRACK_ASAN=ON -DMI_DEBUG_UBSAN=ON,) \
 @BUILD_MIMALLOC_TRUE@		-D MI_INSTALL_TOPLEVEL=ON \
 @BUILD_MIMALLOC_TRUE@		-D MI_BUILD_STATIC=OFF \
 @BUILD_MIMALLOC_TRUE@		-D MI_BUILD_OBJECT=ON ../.. && \
@@ -5557,7 +5559,7 @@ $(DEPS_CACHE)/SDL3.source:
 @BUILD_SDL3_TRUE@	PKG_CONFIG="$(PKG_CONFIG)" \
 @BUILD_SDL3_TRUE@	LDFLAGS="$(LDFLAGS)" cmake -S . -B build -G Ninja \
 @BUILD_SDL3_TRUE@		-D CMAKE_BUILD_TYPE="$(if $(ENABLE_DEBUG),Debug,Release)" \
-@BUILD_SDL3_TRUE@		$(if $(ENABLE_DEBUG),-DSDL_ASAN=ON,) \
+@BUILD_SDL3_TRUE@		$(if $(ENABLE_ASAN),-DSDL_ASAN=ON,) \
 @BUILD_SDL3_TRUE@		-D SDL_HIDAPI_LIBUSB=OFF \
 @BUILD_SDL3_TRUE@		-D CMAKE_INSTALL_PREFIX="$(DEPS_PREFIX)" \
 @BUILD_SDL3_TRUE@		-D SDL_SHARED="$(if $(SDL3_STATIC),OFF,ON)" \
@@ -5566,9 +5568,9 @@ $(DEPS_CACHE)/SDL3.source:
 @BUILD_SDL3_TRUE@		-D CMAKE_SYSTEM_PROCESSOR="$(host_cpu)" \
 @BUILD_SDL3_TRUE@		-D SDL_RPATH=OFF \
 @BUILD_SDL3_TRUE@		-D SDL_CCACHE="$(if $(filter ccache,$(CC)),ON,OFF)" \
-@BUILD_SDL3_TRUE@		-D CMAKE_C_COMPILER="$(CC_NOCCACHE)" \
+@BUILD_SDL3_TRUE@		-D CMAKE_C_COMPILER="$(CC)" \
 @BUILD_SDL3_TRUE@		-D CMAKE_C_FLAGS="$(CFLAGS) -Wno-error=incompatible-pointer-types" \
-@BUILD_SDL3_TRUE@		-D CMAKE_CXX_COMPILER="$(CXX_NOCCACHE)" \
+@BUILD_SDL3_TRUE@		-D CMAKE_CXX_COMPILER="$(CXX)" \
 @BUILD_SDL3_TRUE@		-D CMAKE_CXX_FLAGS="$(CXXFLAGS)" && \
 @BUILD_SDL3_TRUE@	cmake --build build && \
 @BUILD_SDL3_TRUE@	cmake --install build
@@ -5577,6 +5579,44 @@ $(DEPS_CACHE)/SDL3.source:
 @BUILD_SDL3_TRUE@	touch $@
 @BUILD_SDL3_FALSE@$(DEPS_PREFIX)/SDL3.built:
 @BUILD_SDL3_FALSE@	$(MKDIR_P) $(DEPS_PREFIX) && touch $@
+
+$(DEPS_CACHE)/SDL3_mixer.source:
+	rm -rf $(DEPS_CACHE)/SDL3_mixer && \
+	$(MKDIR_P) $(DEPS_CACHE)/SDL3_mixer
+	$(WGET) -qO $(DEPS_CACHE)/SDL3_mixer-$(SDL3_MIXER_VERSION).tar.gz "https://github.com/libsdl-org/SDL_mixer/archive/$(SDL3_MIXER_VERSION).tar.gz" && \
+	$(TAR) xf $(DEPS_CACHE)/SDL3_mixer-$(SDL3_MIXER_VERSION).tar.gz -C $(DEPS_CACHE)/SDL3_mixer --strip-components=1 && \
+	cd $(DEPS_CACHE)/SDL3_mixer/external && ./download.sh # cache vendored dependencies
+	touch $@
+@USE_BASS_FALSE@$(DEPS_PREFIX)/SDL3_mixer.built: $(DEPS_PREFIX)/SDL3.built $(DEPS_CACHE)/SDL3_mixer.source
+@USE_BASS_FALSE@	rm -rf $(DEPS_PREFIX)/SDL3_mixer
+@USE_BASS_FALSE@	$(MKDIR_P) $(DEPS_PREFIX) $(DEPS_PREFIX)/lib/pkgconfig
+@USE_BASS_FALSE@	cp -r $(DEPS_CACHE)/SDL3_mixer $(DEPS_PREFIX)/SDL3_mixer && \
+@USE_BASS_FALSE@	$(MKDIR_P) $(DEPS_PREFIX)/SDL3_mixer/build
+@USE_BASS_FALSE@	cd $(DEPS_PREFIX)/SDL3_mixer && \
+@USE_BASS_FALSE@	PKG_CONFIG="$(PKG_CONFIG)" LDFLAGS="$(LDFLAGS)" \
+@USE_BASS_FALSE@	cmake -S . -B build -G Ninja \
+@USE_BASS_FALSE@		-D CMAKE_BUILD_TYPE="$(if $(ENABLE_DEBUG),Debug,Release)" \
+@USE_BASS_FALSE@		-D CMAKE_INSTALL_PREFIX="$(DEPS_PREFIX)" \
+@USE_BASS_FALSE@		-D CMAKE_SYSTEM_NAME="$(CMAKE_SYSTEM_NAME)" \
+@USE_BASS_FALSE@		-D CMAKE_SYSTEM_PROCESSOR="$(host_cpu)" \
+@USE_BASS_FALSE@		-D CMAKE_C_COMPILER="$(CC)" \
+@USE_BASS_FALSE@		-D CMAKE_C_FLAGS="$(CFLAGS) -Wno-error=incompatible-pointer-types" \
+@USE_BASS_FALSE@		-D SDLMIXER_GME=OFF \
+@USE_BASS_FALSE@		-D SDLMIXER_MIDI=OFF \
+@USE_BASS_FALSE@		-D SDLMIXER_STRICT=ON \
+@USE_BASS_FALSE@		-D SDLMIXER_VENDORED=ON \
+@USE_BASS_FALSE@		-D SDLMIXER_MP3=ON \
+@USE_BASS_FALSE@		-D SDLMIXER_MP3_MPG123=ON \
+@USE_BASS_FALSE@		-D BUILD_SHARED_LIBS="$(if $(SDL3_STATIC),OFF,ON)" \
+@USE_BASS_FALSE@		-D SDLMIXER_DEPS_SHARED="$(if $(SDL3_STATIC),OFF,ON)" && \
+@USE_BASS_FALSE@	cmake --build build && \
+@USE_BASS_FALSE@	cmake --install build
+@USE_BASS_FALSE@	$(SED) -i 's|Libs\.private.*|Libs.private: -lmpg123 -logg -lopus -lwavpack -lopusfile -lxmp|' $(DEPS_PREFIX)/lib/pkgconfig/sdl3-mixer.pc # wtf is this weird cmake issue?
+@USE_BASS_FALSE@	rm -rf $(DEPS_PREFIX)/lib/*SDL3_mixer$(if $(SDL3_STATIC),$(DLLEXT),.a)*
+@USE_BASS_FALSE@	$(PKG_CONFIG) --exists --print-errors sdl3-mixer
+@USE_BASS_FALSE@	touch $@
+@USE_BASS_TRUE@$(DEPS_PREFIX)/SDL3_mixer.built:
+@USE_BASS_TRUE@	$(MKDIR_P) $(DEPS_PREFIX) && touch $@
 
 $(DEPS_CACHE)/GLEW-$(GLEW_VERSION).source:
 	$(MKDIR_P) $(DEPS_CACHE)
@@ -5609,8 +5649,8 @@ $(DEPS_CACHE)/GLEW-$(GLEW_VERSION).source:
 @BUILD_GLEW_TRUE@	  echo 'Cflags: -I$${includedir}'; \
 @BUILD_GLEW_TRUE@	  echo 'Libs: -L$${libdir} $(if $(findstring linux,$(host_os)),-lGLEW -lEGL -lGL,-lopengl32 -lglew32 -lglu32)'; \
 @BUILD_GLEW_TRUE@	  $(if $(findstring linux,$(host_os)),echo 'Requires: glu',) ) > "$(DEPS_PREFIX)/lib/pkgconfig/glew.pc"
-@BUILD_GLEW_TRUE@	PKG_CONFIG="$(PKG_CONFIG)" \
-@BUILD_GLEW_TRUE@		$(PKG_CONFIG) --exists --print-errors glew
+@BUILD_GLEW_TRUE@	rm -rf $(DEPS_PREFIX)/lib/*GLEW$(if $(SDL3_STATIC),$(DLLEXT),.a)*
+@BUILD_GLEW_TRUE@	$(PKG_CONFIG) --exists --print-errors glew
 @BUILD_GLEW_TRUE@	touch $@
 @BUILD_GLEW_FALSE@$(DEPS_PREFIX)/GLEW.built:
 @BUILD_GLEW_FALSE@	$(MKDIR_P) $(DEPS_PREFIX) && touch $@
@@ -5628,7 +5668,7 @@ $(DEPS_CACHE)/libjpeg-$(LIBJPEG_VERSION).source:
 @BUILD_LIBJPEG_TRUE@	LDFLAGS="$(LDFLAGS)" cmake -S . -B build -G Ninja \
 @BUILD_LIBJPEG_TRUE@		-D CMAKE_BUILD_TYPE="$(if $(ENABLE_DEBUG),Debug,Release)" \
 @BUILD_LIBJPEG_TRUE@		-D CMAKE_INSTALL_PREFIX="$(DEPS_PREFIX)" \
-@BUILD_LIBJPEG_TRUE@		-D CMAKE_C_COMPILER="$(CC_NOCCACHE)" \
+@BUILD_LIBJPEG_TRUE@		-D CMAKE_C_COMPILER="$(CC)" \
 @BUILD_LIBJPEG_TRUE@		-D CMAKE_SYSTEM_PROCESSOR="$(host_cpu)" \
 @BUILD_LIBJPEG_TRUE@		-DCMAKE_C_FLAGS="$(CFLAGS)" \
 @BUILD_LIBJPEG_TRUE@		-DCMAKE_SYSTEM_NAME="$(CMAKE_SYSTEM_NAME)" \
@@ -5762,23 +5802,24 @@ compile-commands: $(McOsu_ng_OBJECTS) $(abs_top_srcdir)/.clangd
 install-libs:
 	$(INSTALL) -dm 755 "$(DESTDIR)$(bindir)/screenshots"
 	$(INSTALL) -dm 755 "$(DESTDIR)$(bindir)/shaders"
-	$(INSTALL) -dm 755 "$(DESTDIR)$(bindir)/lib"
+	$(INSTALL) -dm 755 "$(DESTDIR)$(bindir)/$(LIBDEST)"
 	$(INSTALL) -dm 755 "$(DESTDIR)$(bindir)/fonts"
 	$(INSTALL) -dm 755 "$(DESTDIR)$(bindir)/materials"
 	$(INSTALL) -dm 755 "$(DESTDIR)$(bindir)/models"
 	$(INSTALL) -dm 755 "$(DESTDIR)$(bindir)/cfg"
-	$(INSTALL) -m 755 $(srcdir)/$(BUNDLED_BASS_DIR)/lib/$(SYSNAME)/$(host_cpu)/$(LIBPREFIX)bass$(DLLEXT) "$(DESTDIR)$(bindir)/$(TEMP_DEST)"
-	$(INSTALL) -m 755 $(srcdir)/$(BUNDLED_BASS_FX_DIR)/lib/$(SYSNAME)/$(host_cpu)/$(LIBPREFIX)bass_fx$(DLLEXT) "$(DESTDIR)$(bindir)/$(TEMP_DEST)"
 	find $(srcdir)/$(ASSETS_DIR)/models -type f -exec $(INSTALL) -Dm 644 '{''}' "$(DESTDIR)$(bindir)/models" ';'
 	find $(srcdir)/$(ASSETS_DIR)/shaders -type f -exec $(INSTALL) -Dm 644 '{''}' "$(DESTDIR)$(bindir)/shaders" ';'
-@BUILD_SDL3_TRUE@	$(if $(SDL3_STATIC),,@cp -P "$(SDL3_PREFIX)/lib"/libSDL3*$(DLLEXT)* "$(DESTDIR)$(bindir)/$(TEMP_DEST)")
-@BUILD_GLEW_TRUE@	$(if $(SDL3_STATIC),,@cp -P "$(GLEW_PREFIX)/lib"/libGLEW*$(DLLEXT)* "$(DESTDIR)$(bindir)/$(TEMP_DEST)")
+@USE_BASS_TRUE@	$(INSTALL) -m 755 $(srcdir)/$(BUNDLED_BASS_DIR)/lib/$(SYSNAME)/$(host_cpu)/$(LIBPREFIX)bass$(DLLEXT) "$(DESTDIR)$(bindir)/$(LIBDEST)"
+@USE_BASS_TRUE@	$(INSTALL) -m 755 $(srcdir)/$(BUNDLED_BASS_FX_DIR)/lib/$(SYSNAME)/$(host_cpu)/$(LIBPREFIX)bass_fx$(DLLEXT) "$(DESTDIR)$(bindir)/$(LIBDEST)"
+@USE_BASS_FALSE@	$(if $(SDL3_STATIC),,@cp -P "$(SDL3_MIXER_PREFIX)/lib"/{*$(LIBPREFIX)SDL3_mixer*$(DLLEXT)*,*$(LIBPREFIX)mpg123*$(DLLEXT)*,*$(LIBPREFIX)xmp*$(DLLEXT)*,*$(LIBPREFIX)wavpack*$(DLLEXT)*,*$(LIBPREFIX)opus*$(DLLEXT)*,*$(LIBPREFIX)ogg*$(DLLEXT)*} "$(DESTDIR)$(bindir)/$(LIBDEST)")
+@BUILD_SDL3_TRUE@	$(if $(SDL3_STATIC),,@cp -P "$(SDL3_PREFIX)/lib"/*$(LIBPREFIX)SDL3*$(DLLEXT)* "$(DESTDIR)$(bindir)/$(LIBDEST)")
+@BUILD_GLEW_TRUE@	$(if $(SDL3_STATIC),,@cp -P "$(GLEW_PREFIX)/lib"/*$(LIBPREFIX){glew32,GLEW}*$(DLLEXT)* "$(DESTDIR)$(bindir)/$(LIBDEST)")
 @BUILD_LIBJPEG_TRUE@	$(if $(SDL3_STATIC),,@@libdir=$(LIBJPEG_PREFIX)/`test -d "$(LIBJPEG_PREFIX)/lib64" && echo "lib64" || echo "lib"`; \
-@BUILD_LIBJPEG_TRUE@	cp -P "$$libdir"/libjpeg*$(DLLEXT)* "$(DESTDIR)$(bindir)/$(TEMP_DEST)")
-@BUILD_LIBPNG_TRUE@	$(if $(SDL3_STATIC),,@cp -P "$(LIBPNG_PREFIX)/lib"/libpng*$(DLLEXT)* "$(DESTDIR)$(bindir)/$(TEMP_DEST)")
-@BUILD_BZIP2_TRUE@	$(if $(SDL3_STATIC),,@cp -P "$(BZIP2_PREFIX)/lib"/libbz2*$(DLLEXT)* "$(DESTDIR)$(bindir)/$(TEMP_DEST)")
-@BUILD_ZLIB_TRUE@	$(if $(SDL3_STATIC),,@cp -P "$(ZLIB_PREFIX)/lib"/libz*$(DLLEXT)* "$(DESTDIR)$(bindir)/$(TEMP_DEST)")
-@BUILD_FREETYPE2_TRUE@	$(if $(SDL3_STATIC),,@cp -P "$(FREETYPE2_PREFIX)/lib"/libfreetype*$(DLLEXT)* "$(DESTDIR)$(bindir)/$(TEMP_DEST)")
+@BUILD_LIBJPEG_TRUE@	cp -P "$$libdir"/*$(LIBPREFIX)jpeg*$(DLLEXT)* "$(DESTDIR)$(bindir)/$(LIBDEST)")
+@BUILD_LIBPNG_TRUE@	$(if $(SDL3_STATIC),,@cp -P "$(LIBPNG_PREFIX)/lib"/*$(LIBPREFIX)png*$(DLLEXT)* "$(DESTDIR)$(bindir)/$(LIBDEST)")
+@BUILD_BZIP2_TRUE@	$(if $(SDL3_STATIC),,@cp -P "$(BZIP2_PREFIX)/lib"/*$(LIBPREFIX)bz2*$(DLLEXT)* "$(DESTDIR)$(bindir)/$(LIBDEST)")
+@BUILD_ZLIB_TRUE@	$(if $(SDL3_STATIC),,@cp -P "$(ZLIB_PREFIX)/lib"/*$(LIBPREFIX)z*$(DLLEXT)* "$(DESTDIR)$(bindir)/$(LIBDEST)")
+@BUILD_FREETYPE2_TRUE@	$(if $(SDL3_STATIC),,@cp -P "$(FREETYPE2_PREFIX)/lib"/*$(LIBPREFIX)freetype*$(DLLEXT)* "$(DESTDIR)$(bindir)/$(LIBDEST)")
 
 # install hooks
 @WIN_PLATFORM_FALSE@install-exec-hook: install-libs
@@ -5807,10 +5848,10 @@ distclean-local: clean-deps clean-dep-cache
 
 # TODO: distribution packaging
 dist-hook:
-	cp -r $(srcdir)/$(BUNDLED_BASS_DIR)/lib $(distdir)/$(BUNDLED_BASS_DIR)/
-	cp -r $(srcdir)/$(BUNDLED_BASS_DIR)/include $(distdir)/$(BUNDLED_BASS_DIR)/
-	cp -r $(srcdir)/$(BUNDLED_BASS_FX_DIR)/lib $(distdir)/$(BUNDLED_BASS_FX_DIR)/
-	cp -r $(srcdir)/$(BUNDLED_BASS_FX_DIR)/include $(distdir)/$(BUNDLED_BASS_FX_DIR)/
+@USE_BASS_TRUE@	cp -r $(srcdir)/$(BUNDLED_BASS_DIR)/lib $(distdir)/$(BUNDLED_BASS_DIR)/
+@USE_BASS_TRUE@	cp -r $(srcdir)/$(BUNDLED_BASS_DIR)/include $(distdir)/$(BUNDLED_BASS_DIR)/
+@USE_BASS_TRUE@	cp -r $(srcdir)/$(BUNDLED_BASS_FX_DIR)/lib $(distdir)/$(BUNDLED_BASS_FX_DIR)/
+@USE_BASS_TRUE@	cp -r $(srcdir)/$(BUNDLED_BASS_FX_DIR)/include $(distdir)/$(BUNDLED_BASS_FX_DIR)/
 	cp -r $(srcdir)/$(ASSETS_DIR)/models $(distdir)/
 	cp -r $(srcdir)/$(ASSETS_DIR)/shaders $(distdir)/
 	find $(distdir) -type f -name ".git*" -delete

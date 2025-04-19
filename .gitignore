@@ -14,7 +14,7 @@
 /build/deps/
 dist/
 dist-*/
-debug/
+debug*/
 release/
 /test-*/
 

@@ -229,19 +229,20 @@ Osu::Osu(Osu2 *osu2, int instanceID)
 	steam->setRichPresence("steam_display", "#Status");
 	steam->setRichPresence("status", "...");
 
-#ifdef MCENGINE_FEATURE_SOUND
+#ifdef MCENGINE_FEATURE_BASS
 
 	// starting with bass 2020 2.4.15.2 which has all offset problems fixed, this is the non-dsound backend compensation
 	// NOTE: this depends on BASS_CONFIG_UPDATEPERIOD/BASS_CONFIG_DEV_BUFFER
 	convar->getConVarByName("osu_universal_offset_hardcoded")->setValue(15.0f);
 
-#endif
-
-#ifdef MCENGINE_FEATURE_BASS_WASAPI
+#elif defined(MCENGINE_FEATURE_BASS_WASAPI)
 
 	// since we use the newer bass/fx dlls for wasapi builds anyway (which have different time handling)
-	// NOTE: this overwrites the above modification
 	convar->getConVarByName("osu_universal_offset_hardcoded")->setValue(-25.0f);
+
+#elif defined(MCENGINE_FEATURE_SDL_MIXER)
+
+	convar->getConVarByName("osu_universal_offset_hardcoded")->setValue(-110.0f);
 
 #endif
 
@@ -257,7 +258,6 @@ Osu::Osu(Osu2 *osu2, int instanceID)
 		convar->getConVarByName("osu_mod_touchdevice")->setDefaultFloat(1.0f);
 		convar->getConVarByName("osu_mod_touchdevice")->setValue(1.0f);
 		convar->getConVarByName("osu_volume_music")->setValue(0.3f);
-		convar->getConVarByName("osu_universal_offset_hardcoded")->setValue(-45.0f);
 		convar->getConVarByName("osu_key_quick_retry")->setValue(15.0f);			// L, SDL_SCANCODE_L
 		convar->getConVarByName("osu_key_seek_time")->setValue(21.0f);				// R, SDL_SCANCODE_R
 		convar->getConVarByName("osu_key_decrease_local_offset")->setValue(29.0f);	// ZL, SDL_SCANCODE_Z
