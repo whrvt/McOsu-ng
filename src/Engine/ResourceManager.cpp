@@ -520,7 +520,7 @@ Sound *ResourceManager::loadSound(UString filepath, UString resourceName, bool s
 
 	// create instance and load it
 	filepath.insert(0, PATH_DEFAULT_SOUNDS);
-	Sound *snd = new Sound(filepath, stream, threeD, loop, prescan);
+	Sound *snd = Sound::createSound(filepath, stream, threeD, loop, prescan);
 	snd->setName(resourceName);
 
 	loadResource(snd, true);
@@ -539,7 +539,7 @@ Sound *ResourceManager::loadSoundAbs(UString filepath, UString resourceName, boo
 	}
 
 	// create instance and load it
-	Sound *snd = new Sound(filepath, stream, threeD, loop, prescan);
+	Sound *snd = Sound::createSound(filepath, stream, threeD, loop, prescan);
 	snd->setName(resourceName);
 
 	loadResource(snd, true);

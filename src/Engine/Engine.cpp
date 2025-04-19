@@ -177,7 +177,7 @@ Engine::Engine(Environment *environment, const char *args)
 
 		// and the rest
 		m_resourceManager = new ResourceManager();
-		m_sound = new SoundEngine();
+		m_sound = SoundEngine::createSoundEngine();
 		m_animationHandler = new AnimationHandler();
 		m_openCL = new OpenCLInterface();
 		m_openVR = new OpenVRInterface();

@@ -12,6 +12,7 @@
 // STD INCLUDES
 
 #include <cmath>
+#include <limits>
 #include <vector>
 #include <stack>
 #include <string>
@@ -147,6 +148,23 @@ constexpr forceinline float rad2deg(T rad)
 constexpr forceinline bool isInt(float f)
 {
     return (f == static_cast<float>(static_cast<int>(f)));
+}
+
+template <typename T>
+    requires std::floating_point<T>
+[[nodiscard]] constexpr inline bool almostEqual(T x, T y, T relativeTolerance = T{100} * std::numeric_limits<T>::epsilon(),
+                                                T absoluteTolerance = T{100} * std::numeric_limits<T>::epsilon())
+{
+	if (x == y) return true;
+	// absolute difference for values near zero
+	T diff = std::abs(x - y);
+	if (x == T{0} || y == T{0} || diff < std::numeric_limits<T>::min())
+		return diff < absoluteTolerance;
+	// relative difference for other values
+	T absX = std::abs(x);
+	T absY = std::abs(y);
+	// use the smaller value to calculate relative error
+	return diff < relativeTolerance * std::min(absX, absY);
 }
 
 #endif

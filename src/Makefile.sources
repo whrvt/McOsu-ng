@@ -98,6 +98,8 @@ McOsu_ng_SOURCES = \
 	src/Engine/NetworkHandler.cpp \
 	src/Engine/OpenCLInterface.cpp \
 	src/Engine/OpenVRInterface.cpp \
+	src/Engine/Platform/BassSound.cpp \
+	src/Engine/Platform/BassSoundEngine.cpp \
 	src/Engine/Platform/HorizonSDLEnvironment.cpp \
 	src/Engine/Platform/HorizonThread.cpp \
 	src/Engine/Platform/HorizonTimer.cpp \
@@ -115,6 +117,8 @@ McOsu_ng_SOURCES = \
 	src/Engine/Platform/SDLEnvironment.cpp \
 	src/Engine/Platform/SDLGLES2Interface.cpp \
 	src/Engine/Platform/SDLGLLegacyInterface.cpp \
+	src/Engine/Platform/SDLSound.cpp \
+	src/Engine/Platform/SDLSoundEngine.cpp \
 	src/Engine/Platform/SDLTimer.cpp \
 	src/Engine/Platform/Thread.cpp \
 	src/Engine/Platform/Timer.cpp \

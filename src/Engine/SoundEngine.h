@@ -1,6 +1,6 @@
-//================ Copyright (c) 2014, PG, All rights reserved. =================//
+//========== Copyright (c) 2014, PG & 2025, WH, All rights reserved. ============//
 //
-// Purpose:		handles sounds, bass library wrapper atm
+// Purpose:		sound engine base class
 //
 // $NoKeywords: $snd
 //===============================================================================//
@@ -11,50 +11,39 @@
 
 #include "cbase.h"
 
-#ifdef MCENGINE_FEATURE_BASS
-
-#include <bass.h>
-#include <bass_fx.h>
-#endif
-
 class Sound;
-
-class SoundEngineThread;
 
 class SoundEngine
 {
 public:
 	SoundEngine();
-	~SoundEngine();
+	virtual ~SoundEngine();
 
-	void restart();
+	// Factory method to create the appropriate sound engine
+	static SoundEngine *createSoundEngine();
 
-	void update();
+	// Public interface
+	virtual void restart() = 0;
+	virtual void update() = 0;
 
-	bool play(Sound *snd, float pan = 0.0f, float pitch = 1.0f);
-	bool play3d(Sound *snd, Vector3 pos);
-	void pause(Sound *snd);
-	void stop(Sound *snd);
+	virtual bool play(Sound *snd, float pan = 0.0f, float pitch = 1.0f) = 0;
+	virtual bool play3d(Sound *snd, Vector3 pos) = 0;
+	virtual void pause(Sound *snd) = 0;
+	virtual void stop(Sound *snd) = 0;
 
-	void setOnOutputDeviceChange(std::function<void()> callback);
+	virtual void setOnOutputDeviceChange(std::function<void()> callback);
 
-	void setOutputDevice(UString outputDeviceName);
-	void setOutputDeviceForce(UString outputDeviceName);
-	void setVolume(float volume);
-	void set3dPosition(Vector3 headPos, Vector3 viewDir, Vector3 viewUp);
+	virtual void setOutputDevice(UString outputDeviceName) = 0;
+	virtual void setOutputDeviceForce(UString outputDeviceName) = 0;
+	virtual void setVolume(float volume) = 0;
+	virtual void set3dPosition(Vector3 headPos, Vector3 viewDir, Vector3 viewUp) = 0;
 
-	std::vector<UString> getOutputDevices();
+	virtual std::vector<UString> getOutputDevices() = 0;
 
-	inline const UString &getOutputDevice() const {return m_sCurrentOutputDevice;}
-	inline float getVolume() const {return m_fVolume;}
+	inline const UString &getOutputDevice() const { return m_sCurrentOutputDevice; }
+	inline float getVolume() const { return m_fVolume; }
 
-	// ILLEGAL:
-#if defined(MCENGINE_FEATURE_SDL) && defined(MCENGINE_FEATURE_SDL_MIXER)
-	void setMixChunkSize(int mixChunkSize) {m_iMixChunkSize = mixChunkSize;}
-	void setVolumeMixMusic(float volumeMixMusic) {m_fVolumeMixMusic = volumeMixMusic;}
-#endif
-
-private:
+protected:
 	struct OUTPUT_DEVICE
 	{
 		int id;
@@ -63,13 +52,10 @@ private:
 		UString name;
 	};
 
-	void updateOutputDevices(bool handleOutputDeviceChanges, bool printInfo);
-	bool initializeOutputDevice(int id = -1);
-
-	void onFreqChanged(UString oldValue, UString newValue);
+	virtual void updateOutputDevices(bool handleOutputDeviceChanges, bool printInfo) = 0;
+	virtual bool initializeOutputDevice(int id = -1) = 0;
 
 	bool m_bReady;
-
 	float m_fPrevOutputDeviceChangeCheckTime;
 	std::function<void()> m_outputDeviceChangeCallback;
 	std::vector<OUTPUT_DEVICE> m_outputDevices;
@@ -78,24 +64,6 @@ private:
 	UString m_sCurrentOutputDevice;
 
 	float m_fVolume;
-
-#if defined(MCENGINE_FEATURE_SDL) && defined(MCENGINE_FEATURE_SDL_MIXER)
-	int m_iMixChunkSize;
-	float m_fVolumeMixMusic;
-#endif
-
-#ifdef MCENGINE_FEATURE_BASS
-    friend class Sound;
-    static inline HSTREAM (*m_BASS_FX_TempoCreate)(DWORD, DWORD);
-	uint32_t m_iBASSVersion;
-
-#ifdef MCENGINE_FEATURE_MULTITHREADING
-
-	SoundEngineThread *m_thread;
-
-#endif
-
-#endif
 };
 
 #endif
