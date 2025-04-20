@@ -9,7 +9,7 @@
 #ifndef KEYBOARDEVENT_H
 #define KEYBOARDEVENT_H
 
-typedef unsigned long KEYCODE;
+using KEYCODE = unsigned long;
 
 class KeyboardEvent
 {
@@ -22,24 +22,14 @@ public:
 	inline KEYCODE getKeyCode() const {return m_keyCode;}
 	inline KEYCODE getCharCode() const {return m_keyCode;}
 
-    bool operator == (const KEYCODE &rhs) const;
-    bool operator != (const KEYCODE &rhs) const;
+	inline bool operator == (const KEYCODE &rhs) const {return m_keyCode == rhs;}
+	inline bool operator != (const KEYCODE &rhs) const {return m_keyCode != rhs;}
+
+	explicit operator KEYCODE() const {return m_keyCode;}
 
 private:
 	KEYCODE m_keyCode;
 	bool m_bConsumed;
 };
-
-
-
-inline bool KeyboardEvent::operator == (const KEYCODE &rhs) const
-{
-    return m_keyCode == rhs;
-}
-
-inline bool KeyboardEvent::operator != (const KEYCODE &rhs) const
-{
-    return m_keyCode != rhs;
-}
 
 #endif

@@ -7,13 +7,10 @@
 
 #include "Engine.h"
 
-#include <stdio.h>
+#include <cstdio>
 
 #ifdef MCENGINE_FEATURE_MULTITHREADING
-
 #include <mutex>
-#include "WinMinGW.Mutex.h"
-
 #endif
 
 #include "SteamworksInterface.h"
@@ -39,7 +36,7 @@
 #include "ConsoleBox.h"
 #include "VisualProfiler.h"
 
-
+#include <utility>
 
 //********************//
 //	Include App here  //
@@ -180,7 +177,7 @@ Engine::Engine(Environment *environment, const char *args)
 
 		// and the rest
 		m_resourceManager = new ResourceManager();
-		m_sound = new SoundEngine();
+		m_sound = SoundEngine::createSoundEngine();
 		m_animationHandler = new AnimationHandler();
 		m_openCL = new OpenCLInterface();
 		m_openVR = new OpenVRInterface();
@@ -383,7 +380,7 @@ void Engine::onUpdate()
 {
 	VPROF_BUDGET("Engine::onUpdate", VPROF_BUDGETGROUP_UPDATE);
 
-	if (m_iLoadingScreenDelay > 0 && m_iFrameCount >= m_iLoadingScreenDelay)
+	if (m_iLoadingScreenDelay > 0 && std::cmp_greater_equal(m_iFrameCount, m_iLoadingScreenDelay))
 	{
 		m_iLoadingScreenDelay = -1;
 		loadApp();

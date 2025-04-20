@@ -17,6 +17,7 @@
 
 #include "OsuSliderCurves.h"
 
+#include <algorithm>
 #include <climits> // for INT_MAX
 
 ConVar osu_stars_xexxar_angles_sliders("osu_stars_xexxar_angles_sliders", true, FCVAR_NONE, "completely enables/disables the new star/pp calc algorithm");
@@ -91,7 +92,7 @@ OsuDifficultyHitObject::~OsuDifficultyHitObject()
 	SAFE_DELETE(curve);
 }
 
-OsuDifficultyHitObject::OsuDifficultyHitObject(OsuDifficultyHitObject &&dobj)
+OsuDifficultyHitObject::OsuDifficultyHitObject(OsuDifficultyHitObject &&dobj) noexcept
 {
 	// move
 	this->type = dobj.type;
@@ -118,7 +119,7 @@ OsuDifficultyHitObject::OsuDifficultyHitObject(OsuDifficultyHitObject &&dobj)
 	dobj.scheduledCurveAlloc = false;
 }
 
-OsuDifficultyHitObject& OsuDifficultyHitObject::operator = (OsuDifficultyHitObject &&dobj)
+OsuDifficultyHitObject& OsuDifficultyHitObject::operator = (OsuDifficultyHitObject &&dobj) noexcept
 {
 	// move
 	this->type = dobj.type;
@@ -410,7 +411,7 @@ double OsuDifficultyCalculator::calculateStarDiffForHitObjectsInt(std::vector<Di
 			if (dead.load())
 				return 0.0;
 
-			cachedDiffObjects.push_back(DiffObject(&sortedHitObjects[i], radius_scaling_factor, cachedDiffObjects, (int)i - 1)); // this already initializes the angle to NaN
+			cachedDiffObjects.emplace_back(&sortedHitObjects[i], radius_scaling_factor, cachedDiffObjects, (int)i - 1); // this already initializes the angle to NaN
 		}
 	}
 	diffObjects = cachedDiffObjects.data();
@@ -920,7 +921,7 @@ double OsuDifficultyCalculator::DiffObject::calculate_difficulty(const Skills::S
 		incremental->max_strain = max_strain;
 		highestStrains.reserve(incremental->highest_strains.size() + 1); // required so insert call doesn't reallocate
 		highestStrains = incremental->highest_strains;
-		highestStrains.insert(std::upper_bound(highestStrains.begin(), highestStrains.end(), max_strain), max_strain);
+		highestStrains.insert(std::ranges::upper_bound(highestStrains, max_strain), max_strain);
 	}
 	else
 		highestStrains.push_back(max_strain);
@@ -1000,7 +1001,7 @@ double OsuDifficultyCalculator::DiffObject::calculate_difficulty(const Skills::S
 		// new implementation
 		// NOTE: lazer does this from highest to lowest, but sorting it in reverse lets the reduced top section loop below have a better average insertion time
 		if (!incremental)
-			std::sort(highestStrains.begin(), highestStrains.end());
+			std::ranges::sort(highestStrains);
 	}
 
 	// new implementation (https://github.com/ppy/osu/pull/13483/)
@@ -1032,7 +1033,7 @@ double OsuDifficultyCalculator::DiffObject::calculate_difficulty(const Skills::S
 		highestStrains.erase(highestStrains.end() - actualReducedSectionCount, highestStrains.end());
 		for (size_t i=0; i<actualReducedSectionCount; i++)
 		{
-			highestStrains.insert(std::upper_bound(highestStrains.begin(), highestStrains.end(), reducedSections[i]), reducedSections[i]);
+			highestStrains.insert(std::ranges::upper_bound(highestStrains, reducedSections[i]), reducedSections[i]);
 		}
 
 		// weigh the top strains

@@ -219,7 +219,10 @@ void Mouse::update()
 
         float maxX = minX + cursorClip.getWidth();
         float maxY = minY + cursorClip.getHeight();
-        if (!(env->getOS() == Environment::OS::OS_LINUX))
+
+#ifdef MCENGINE_FEATURE_SDL
+        if (!(env->getOS() == Environment::OS::OS_LINUX || env->getOS() == Environment::OS::OS_WINDOWS))
+#endif
         {
             minX -= m_vOffset.x;
             minY -= m_vOffset.y;

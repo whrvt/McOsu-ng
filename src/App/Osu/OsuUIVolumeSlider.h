@@ -18,7 +18,7 @@ class McFont;
 class OsuUIVolumeSlider : public CBaseUISlider
 {
 public:
-	enum class TYPE
+	enum class TYPE : uint8_t
 	{
 		MASTER,
 		MUSIC,

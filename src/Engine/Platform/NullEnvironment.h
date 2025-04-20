@@ -22,7 +22,6 @@ public:
 	ContextMenu *createContextMenu();
 
 	// system
-	OS getOS() {return Environment::OS::OS_NULL;}
 	void shutdown();
 	void restart();
 	void sleep(unsigned int us) {;}

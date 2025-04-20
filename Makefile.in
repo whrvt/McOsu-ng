@@ -92,20 +92,27 @@ build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
 bin_PROGRAMS = McOsu-ng$(EXEEXT)
-@BUILD_SDL3_TRUE@am__append_1 = $(shell PKG_CONFIG_PATH="$(DEPS_PREFIX)/lib/pkgconfig:$(DEPS_PREFIX)/lib64/pkgconfig" pkg-config $(PKGTYPE) --cflags sdl3)
-@BUILD_SDL3_TRUE@am__append_2 = $(shell PKG_CONFIG_PATH="$(DEPS_PREFIX)/lib/pkgconfig:$(DEPS_PREFIX)/lib64/pkgconfig" pkg-config $(PKGTYPE) --libs sdl3)
-@BUILD_GLEW_TRUE@am__append_3 = $(shell PKG_CONFIG_PATH="$(DEPS_PREFIX)/lib/pkgconfig:$(DEPS_PREFIX)/lib64/pkgconfig" pkg-config $(PKGTYPE) --cflags glew)
-@BUILD_GLEW_TRUE@am__append_4 = $(shell PKG_CONFIG_PATH="$(DEPS_PREFIX)/lib/pkgconfig:$(DEPS_PREFIX)/lib64/pkgconfig" pkg-config $(PKGTYPE) --libs glew)
-@BUILD_LIBJPEG_TRUE@am__append_5 = $(shell PKG_CONFIG_PATH="$(DEPS_PREFIX)/lib/pkgconfig:$(DEPS_PREFIX)/lib64/pkgconfig" pkg-config $(PKGTYPE) --cflags libjpeg)
-@BUILD_LIBJPEG_TRUE@am__append_6 = $(shell PKG_CONFIG_PATH="$(DEPS_PREFIX)/lib/pkgconfig:$(DEPS_PREFIX)/lib64/pkgconfig" pkg-config $(PKGTYPE) --libs libjpeg)
-@BUILD_LIBPNG_TRUE@am__append_7 = $(shell PKG_CONFIG_PATH="$(DEPS_PREFIX)/lib/pkgconfig:$(DEPS_PREFIX)/lib64/pkgconfig" pkg-config $(PKGTYPE) --cflags libpng)
-@BUILD_LIBPNG_TRUE@am__append_8 = $(shell PKG_CONFIG_PATH="$(DEPS_PREFIX)/lib/pkgconfig:$(DEPS_PREFIX)/lib64/pkgconfig" pkg-config $(PKGTYPE) --libs libpng)
-@BUILD_BZIP2_TRUE@am__append_9 = $(shell PKG_CONFIG_PATH="$(DEPS_PREFIX)/lib/pkgconfig:$(DEPS_PREFIX)/lib64/pkgconfig" pkg-config $(PKGTYPE) --cflags bzip2)
-@BUILD_BZIP2_TRUE@am__append_10 = $(shell PKG_CONFIG_PATH="$(DEPS_PREFIX)/lib/pkgconfig:$(DEPS_PREFIX)/lib64/pkgconfig" pkg-config $(PKGTYPE) --libs bzip2)
-@BUILD_ZLIB_TRUE@am__append_11 = $(shell PKG_CONFIG_PATH="$(DEPS_PREFIX)/lib/pkgconfig:$(DEPS_PREFIX)/lib64/pkgconfig" pkg-config $(PKGTYPE) --cflags zlib)
-@BUILD_ZLIB_TRUE@am__append_12 = $(shell PKG_CONFIG_PATH="$(DEPS_PREFIX)/lib/pkgconfig:$(DEPS_PREFIX)/lib64/pkgconfig" pkg-config $(PKGTYPE) --libs zlib)
-@BUILD_FREETYPE2_TRUE@am__append_13 = $(shell PKG_CONFIG_PATH="$(DEPS_PREFIX)/lib/pkgconfig:$(DEPS_PREFIX)/lib64/pkgconfig" pkg-config $(PKGTYPE) --cflags freetype2)
-@BUILD_FREETYPE2_TRUE@am__append_14 = $(shell PKG_CONFIG_PATH="$(DEPS_PREFIX)/lib/pkgconfig:$(DEPS_PREFIX)/lib64/pkgconfig" pkg-config $(PKGTYPE) --libs freetype2)
+@BUILD_SDL3_TRUE@am__append_1 = $(shell $(PKG_CONFIG) --cflags sdl3)
+@BUILD_SDL3_TRUE@am__append_2 = $(shell $(PKG_CONFIG) --libs sdl3)
+@BUILD_GLEW_TRUE@am__append_3 = $(shell $(PKG_CONFIG) --cflags glew)
+@BUILD_GLEW_TRUE@am__append_4 = $(shell $(PKG_CONFIG) --libs glew)
+@BUILD_LIBJPEG_TRUE@am__append_5 = $(shell $(PKG_CONFIG) --cflags libjpeg)
+@BUILD_LIBJPEG_TRUE@am__append_6 = $(shell $(PKG_CONFIG) --libs libjpeg)
+@BUILD_LIBPNG_TRUE@am__append_7 = $(shell $(PKG_CONFIG) --cflags libpng)
+@BUILD_LIBPNG_TRUE@am__append_8 = $(shell $(PKG_CONFIG) --libs libpng)
+@BUILD_BZIP2_TRUE@am__append_9 = $(shell $(PKG_CONFIG) --cflags bzip2)
+@BUILD_BZIP2_TRUE@am__append_10 = $(shell $(PKG_CONFIG) --libs bzip2)
+@BUILD_ZLIB_TRUE@am__append_11 = $(shell $(PKG_CONFIG) --cflags zlib)
+@BUILD_ZLIB_TRUE@am__append_12 = $(shell $(PKG_CONFIG) --libs zlib)
+@BUILD_FREETYPE2_TRUE@am__append_13 = $(shell $(PKG_CONFIG) --cflags freetype2)
+@BUILD_FREETYPE2_TRUE@am__append_14 = $(shell $(PKG_CONFIG) --libs freetype2)
+@WIN_PLATFORM_FALSE@am__append_15 = lib/
+@USE_BASS_TRUE@am__append_16 = \
+@USE_BASS_TRUE@	$(BUNDLED_BASS_DIR)/include \
+@USE_BASS_TRUE@	$(BUNDLED_BASS_FX_DIR)/include \
+@USE_BASS_TRUE@	$(BUNDLED_BASS_DIR)/lib/$(SYSNAME)/$(host_cpu)/$(LIBPREFIX)bass$(DLLEXT) \
+@USE_BASS_TRUE@	$(BUNDLED_BASS_FX_DIR)/lib/$(SYSNAME)/$(host_cpu)/$(LIBPREFIX)bass_fx$(DLLEXT)
+
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
@@ -202,6 +209,7 @@ am_McOsu_ng_OBJECTS = src/App/Osu/McOsu_ng-Osu.$(OBJEXT) \
 	src/Engine/McOsu_ng-DiscordInterface.$(OBJEXT) \
 	src/Engine/McOsu_ng-Engine.$(OBJEXT) \
 	src/Engine/McOsu_ng-Environment.$(OBJEXT) \
+	src/Engine/McOsu_ng-File.$(OBJEXT) \
 	src/Engine/McOsu_ng-Font.$(OBJEXT) \
 	src/Engine/McOsu_ng-Graphics.$(OBJEXT) \
 	src/Engine/McOsu_ng-Image.$(OBJEXT) \
@@ -219,7 +227,8 @@ am_McOsu_ng_OBJECTS = src/App/Osu/McOsu_ng-Osu.$(OBJEXT) \
 	src/Engine/McOsu_ng-NetworkHandler.$(OBJEXT) \
 	src/Engine/McOsu_ng-OpenCLInterface.$(OBJEXT) \
 	src/Engine/McOsu_ng-OpenVRInterface.$(OBJEXT) \
-	src/Engine/Platform/McOsu_ng-File.$(OBJEXT) \
+	src/Engine/Platform/McOsu_ng-BassSound.$(OBJEXT) \
+	src/Engine/Platform/McOsu_ng-BassSoundEngine.$(OBJEXT) \
 	src/Engine/Platform/McOsu_ng-HorizonSDLEnvironment.$(OBJEXT) \
 	src/Engine/Platform/McOsu_ng-HorizonThread.$(OBJEXT) \
 	src/Engine/Platform/McOsu_ng-HorizonTimer.$(OBJEXT) \
@@ -237,12 +246,13 @@ am_McOsu_ng_OBJECTS = src/App/Osu/McOsu_ng-Osu.$(OBJEXT) \
 	src/Engine/Platform/McOsu_ng-SDLEnvironment.$(OBJEXT) \
 	src/Engine/Platform/McOsu_ng-SDLGLES2Interface.$(OBJEXT) \
 	src/Engine/Platform/McOsu_ng-SDLGLLegacyInterface.$(OBJEXT) \
+	src/Engine/Platform/McOsu_ng-SDLSound.$(OBJEXT) \
+	src/Engine/Platform/McOsu_ng-SDLSoundEngine.$(OBJEXT) \
 	src/Engine/Platform/McOsu_ng-SDLTimer.$(OBJEXT) \
 	src/Engine/Platform/McOsu_ng-Thread.$(OBJEXT) \
 	src/Engine/Platform/McOsu_ng-Timer.$(OBJEXT) \
 	src/Engine/Platform/McOsu_ng-WinContextMenu.$(OBJEXT) \
 	src/Engine/Platform/McOsu_ng-WinEnvironment.$(OBJEXT) \
-	src/Engine/Platform/McOsu_ng-WinFile.$(OBJEXT) \
 	src/Engine/Platform/McOsu_ng-WinGL3Interface.$(OBJEXT) \
 	src/Engine/Platform/McOsu_ng-WinGLLegacyInterface.$(OBJEXT) \
 	src/Engine/Platform/McOsu_ng-WinSDLEnvironment.$(OBJEXT) \
@@ -417,6 +427,7 @@ am__depfiles_remade = src/App/Osu/$(DEPDIR)/McOsu_ng-Osu.Po \
 	src/Engine/$(DEPDIR)/McOsu_ng-DiscordInterface.Po \
 	src/Engine/$(DEPDIR)/McOsu_ng-Engine.Po \
 	src/Engine/$(DEPDIR)/McOsu_ng-Environment.Po \
+	src/Engine/$(DEPDIR)/McOsu_ng-File.Po \
 	src/Engine/$(DEPDIR)/McOsu_ng-Font.Po \
 	src/Engine/$(DEPDIR)/McOsu_ng-Graphics.Po \
 	src/Engine/$(DEPDIR)/McOsu_ng-Image.Po \
@@ -445,7 +456,8 @@ am__depfiles_remade = src/App/Osu/$(DEPDIR)/McOsu_ng-Osu.Po \
 	src/Engine/Main/$(DEPDIR)/McOsu_ng-main_OSX_sdl.Po \
 	src/Engine/Main/$(DEPDIR)/McOsu_ng-main_SDL.Po \
 	src/Engine/Main/$(DEPDIR)/McOsu_ng-main_Windows.Po \
-	src/Engine/Platform/$(DEPDIR)/McOsu_ng-File.Po \
+	src/Engine/Platform/$(DEPDIR)/McOsu_ng-BassSound.Po \
+	src/Engine/Platform/$(DEPDIR)/McOsu_ng-BassSoundEngine.Po \
 	src/Engine/Platform/$(DEPDIR)/McOsu_ng-HorizonSDLEnvironment.Po \
 	src/Engine/Platform/$(DEPDIR)/McOsu_ng-HorizonThread.Po \
 	src/Engine/Platform/$(DEPDIR)/McOsu_ng-HorizonTimer.Po \
@@ -463,12 +475,13 @@ am__depfiles_remade = src/App/Osu/$(DEPDIR)/McOsu_ng-Osu.Po \
 	src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLEnvironment.Po \
 	src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLGLES2Interface.Po \
 	src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLGLLegacyInterface.Po \
+	src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLSound.Po \
+	src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLSoundEngine.Po \
 	src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLTimer.Po \
 	src/Engine/Platform/$(DEPDIR)/McOsu_ng-Thread.Po \
 	src/Engine/Platform/$(DEPDIR)/McOsu_ng-Timer.Po \
 	src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinContextMenu.Po \
 	src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinEnvironment.Po \
-	src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinFile.Po \
 	src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinGL3Interface.Po \
 	src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinGLLegacyInterface.Po \
 	src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinSDLEnvironment.Po \
@@ -616,6 +629,8 @@ AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
 AWK = @AWK@
+BASS_CFLAGS = @BASS_CFLAGS@
+BASS_LIBS = @BASS_LIBS@
 BEAR = @BEAR@
 BUNDLED_BASS_DIR = @BUNDLED_BASS_DIR@
 BUNDLED_BASS_FX_DIR = @BUNDLED_BASS_FX_DIR@
@@ -627,25 +642,26 @@ BZIP2_VERSION = @BZIP2_VERSION@
 CC = @CC@
 CCACHE = @CCACHE@
 CCDEPMODE = @CCDEPMODE@
-CC_NOCCACHE = @CC_NOCCACHE@
 CFLAGS = @CFLAGS@
+CMAKE_SYSTEM_NAME = @CMAKE_SYSTEM_NAME@
 CPPFLAGS = @CPPFLAGS@
 CSCOPE = @CSCOPE@
 CTAGS = @CTAGS@
 CXX = @CXX@
 CXXDEPMODE = @CXXDEPMODE@
 CXXFLAGS = @CXXFLAGS@
-CXX_NOCCACHE = @CXX_NOCCACHE@
 CYGPATH_W = @CYGPATH_W@
 DEFS = @DEFS@
 DEPDIR = @DEPDIR@
 DEPS_CACHE = @DEPS_CACHE@
 DEPS_PREFIX = @DEPS_PREFIX@
+DLLEXT = @DLLEXT@
 ECHO_C = @ECHO_C@
 ECHO_N = @ECHO_N@
 ECHO_T = @ECHO_T@
 EGL_CFLAGS = @EGL_CFLAGS@
 EGL_LIBS = @EGL_LIBS@
+ENABLE_ASAN = @ENABLE_ASAN@
 ENABLE_DEBUG = @ENABLE_DEBUG@
 ETAGS = @ETAGS@
 EXEEXT = @EXEEXT@
@@ -668,6 +684,7 @@ INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
+LD = @LD@
 LDFLAGS = @LDFLAGS@
 LIBJPEG_CFLAGS = @LIBJPEG_CFLAGS@ $(am__append_5)
 LIBJPEG_LIBS = @LIBJPEG_LIBS@ $(am__append_6)
@@ -678,12 +695,14 @@ LIBPNG_CFLAGS = @LIBPNG_CFLAGS@ $(am__append_7)
 LIBPNG_LIBS = @LIBPNG_LIBS@ $(am__append_8)
 LIBPNG_PREFIX = @LIBPNG_PREFIX@
 LIBPNG_VERSION = @LIBPNG_VERSION@
+LIBPREFIX = @LIBPREFIX@
 LIBS = @LIBS@
 LN_S = @LN_S@
 LTLIBOBJS = @LTLIBOBJS@
 MAKEINFO = @MAKEINFO@
 MCOSU_CPPFLAGS = @MCOSU_CPPFLAGS@
 MCOSU_CXXFLAGS = @MCOSU_CXXFLAGS@
+MCOSU_LDFLAGS = @MCOSU_LDFLAGS@
 MIMALLOC_PREFIX = @MIMALLOC_PREFIX@
 MIMALLOC_VERSION = @MIMALLOC_VERSION@
 MKDIR_P = @MKDIR_P@
@@ -697,12 +716,18 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
+PKGCONF = @PKGCONF@
 PKGTYPE = @PKGTYPE@
 PKG_CONFIG = @PKG_CONFIG@
 PKG_CONFIG_LIBDIR = @PKG_CONFIG_LIBDIR@
 PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
+PKG_CONFIG_PATH_CUSTOM = @PKG_CONFIG_PATH_CUSTOM@
+PKG_CONFIG_SYSTEM_INCLUDE_PATH = @PKG_CONFIG_SYSTEM_INCLUDE_PATH@
+PKG_CONFIG_SYSTEM_LIBRARY_PATH = @PKG_CONFIG_SYSTEM_LIBRARY_PATH@
 SDL3_CFLAGS = @SDL3_CFLAGS@ $(am__append_1)
 SDL3_LIBS = @SDL3_LIBS@ $(am__append_2)
+SDL3_MIXER_PREFIX = @SDL3_MIXER_PREFIX@
+SDL3_MIXER_VERSION = @SDL3_MIXER_VERSION@
 SDL3_PREFIX = @SDL3_PREFIX@
 SDL3_STATIC = @SDL3_STATIC@
 SDL3_VERSION = @SDL3_VERSION@
@@ -710,6 +735,7 @@ SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
+SYSNAME = @SYSNAME@
 TAR = @TAR@
 VERSION = @VERSION@
 WGET = @WGET@
@@ -862,6 +888,7 @@ McOsu_ng_SOURCES = \
 	src/Engine/DiscordInterface.cpp \
 	src/Engine/Engine.cpp \
 	src/Engine/Environment.cpp \
+	src/Engine/File.cpp \
 	src/Engine/Font.cpp \
 	src/Engine/Graphics.cpp \
 	src/Engine/Image.cpp \
@@ -879,7 +906,8 @@ McOsu_ng_SOURCES = \
 	src/Engine/NetworkHandler.cpp \
 	src/Engine/OpenCLInterface.cpp \
 	src/Engine/OpenVRInterface.cpp \
-	src/Engine/Platform/File.cpp \
+	src/Engine/Platform/BassSound.cpp \
+	src/Engine/Platform/BassSoundEngine.cpp \
 	src/Engine/Platform/HorizonSDLEnvironment.cpp \
 	src/Engine/Platform/HorizonThread.cpp \
 	src/Engine/Platform/HorizonTimer.cpp \
@@ -897,12 +925,13 @@ McOsu_ng_SOURCES = \
 	src/Engine/Platform/SDLEnvironment.cpp \
 	src/Engine/Platform/SDLGLES2Interface.cpp \
 	src/Engine/Platform/SDLGLLegacyInterface.cpp \
+	src/Engine/Platform/SDLSound.cpp \
+	src/Engine/Platform/SDLSoundEngine.cpp \
 	src/Engine/Platform/SDLTimer.cpp \
 	src/Engine/Platform/Thread.cpp \
 	src/Engine/Platform/Timer.cpp \
 	src/Engine/Platform/WinContextMenu.cpp \
 	src/Engine/Platform/WinEnvironment.cpp \
-	src/Engine/Platform/WinFile.cpp \
 	src/Engine/Platform/WinGL3Interface.cpp \
 	src/Engine/Platform/WinGLLegacyInterface.cpp \
 	src/Engine/Platform/WinSDLEnvironment.cpp \
@@ -995,8 +1024,12 @@ CLEANFILES = \
 	*.bak
 
 @BUILD_MIMALLOC_FALSE@MIMALLOC_LIBS := 
-@BUILD_MIMALLOC_TRUE@MIMALLOC_LIBS = $(DEPS_PREFIX)/lib/mimalloc$(if $(ENABLE_DEBUG),-asan-debug,).o
-BUILT_SOURCES := $(DEPS_PREFIX)/mimalloc.built $(DEPS_PREFIX)/SDL3.built $(DEPS_PREFIX)/GLEW.built $(DEPS_PREFIX)/libjpeg.built \
+@BUILD_MIMALLOC_TRUE@MIMALLOC_LIBS = $(DEPS_PREFIX)/lib/mimalloc$(if $(ENABLE_ASAN),-asan-debug,$(if $(ENABLE_DEBUG),-debug,)).o
+@USE_BASS_FALSE@AUDIO_CFLAGS = $(shell $(PKG_CONFIG) --cflags sdl3-mixer)
+@USE_BASS_TRUE@AUDIO_CFLAGS := $(BASS_CFLAGS)
+@USE_BASS_FALSE@AUDIO_LIBS = $(shell $(PKG_CONFIG) --libs sdl3-mixer)
+@USE_BASS_TRUE@AUDIO_LIBS := $(BASS_LIBS)
+BUILT_SOURCES := $(DEPS_PREFIX)/mimalloc.built $(DEPS_PREFIX)/SDL3.built $(DEPS_PREFIX)/SDL3_mixer.built $(DEPS_PREFIX)/GLEW.built $(DEPS_PREFIX)/libjpeg.built \
 	$(DEPS_PREFIX)/libpng.built $(DEPS_PREFIX)/bzip2.built $(DEPS_PREFIX)/zlib.built $(DEPS_PREFIX)/FREETYPE2.built
 
 
@@ -1004,11 +1037,11 @@ BUILT_SOURCES := $(DEPS_PREFIX)/mimalloc.built $(DEPS_PREFIX)/SDL3.built $(DEPS_
 MCOSU_NG_INCLUDE_FLAGS := $(shell find $(srcdir)/src -not -path '*/.*' -type d -printf "-I%p ")
 McOsu_ng_CPPFLAGS := $(MCOSU_CPPFLAGS)
 McOsu_ng_CXXFLAGS := \
+	$(CXXFLAGS_EXTRA) \
 	$(MCOSU_CXXFLAGS) \
 	$(MCOSU_NG_INCLUDE_FLAGS) \
-	-I$(srcdir)/$(BUNDLED_BASS_DIR)/include \
-	-I$(srcdir)/$(BUNDLED_BASS_FX_DIR)/include \
 	$(SDL3_CFLAGS) \
+	$(AUDIO_CFLAGS) \
 	$(X11_CFLAGS) \
 	$(XI_CFLAGS) \
 	$(GL_CFLAGS) \
@@ -1018,15 +1051,16 @@ McOsu_ng_CXXFLAGS := \
 	$(LIBPNG_CFLAGS) \
 	$(BZIP2_CFLAGS) \
 	$(LIBJPEG_CFLAGS) \
-	$(ZLIB_CFLAGS) \
-	-pthread
+	$(ZLIB_CFLAGS)
 
+
+# Wl,--start-group with no --end-group is a stupid hack.
 McOsu_ng_LDFLAGS := \
 	$(MIMALLOC_LIBS) \
 	-Wl,-rpath='$$ORIGIN/lib',-rpath='$$ORIGIN' \
-	-L$(srcdir)/$(BUNDLED_BASS_DIR)/lib/linux \
-	-lbass \
+	-Wl,--start-group \
 	$(SDL3_LIBS) \
+	$(AUDIO_LIBS) \
 	$(X11_LIBS) \
 	$(XI_LIBS) \
 	$(GL_LIBS) \
@@ -1037,19 +1071,16 @@ McOsu_ng_LDFLAGS := \
 	$(BZIP2_LIBS) \
 	$(LIBJPEG_LIBS) \
 	$(ZLIB_LIBS) \
-	-lpthread
+	$(MCOSU_LDFLAGS) \
+	$(LDFLAGS_EXTRA)
 
+
+# windows' loader has no concept of rpaths
+LIBDEST := $(am__append_15)
 
 # TODO: distribution package files
-EXTRA_DIST = \
-	$(BUNDLED_BASS_DIR)/include \
-	$(BUNDLED_BASS_FX_DIR)/include \
-	$(BUNDLED_BASS_DIR)/lib/linux/libbass.so \
-	$(BUNDLED_BASS_FX_DIR)/lib/linux/libbass_fx.so \
-	$(ASSETS_DIR)/models \
-	$(ASSETS_DIR)/shaders \
-	autogen.sh
-
+EXTRA_DIST := $(ASSETS_DIR)/models $(ASSETS_DIR)/shaders autogen.sh \
+	$(am__append_16)
 MAINTAINERCLEANFILES = $(top_srcdir)/src/Makefile.sources
 all: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) all-am
@@ -1381,6 +1412,8 @@ src/Engine/McOsu_ng-Engine.$(OBJEXT): src/Engine/$(am__dirstamp) \
 	src/Engine/$(DEPDIR)/$(am__dirstamp)
 src/Engine/McOsu_ng-Environment.$(OBJEXT): src/Engine/$(am__dirstamp) \
 	src/Engine/$(DEPDIR)/$(am__dirstamp)
+src/Engine/McOsu_ng-File.$(OBJEXT): src/Engine/$(am__dirstamp) \
+	src/Engine/$(DEPDIR)/$(am__dirstamp)
 src/Engine/McOsu_ng-Font.$(OBJEXT): src/Engine/$(am__dirstamp) \
 	src/Engine/$(DEPDIR)/$(am__dirstamp)
 src/Engine/McOsu_ng-Graphics.$(OBJEXT): src/Engine/$(am__dirstamp) \
@@ -1447,7 +1480,10 @@ src/Engine/Platform/$(am__dirstamp):
 src/Engine/Platform/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) src/Engine/Platform/$(DEPDIR)
 	@: >>src/Engine/Platform/$(DEPDIR)/$(am__dirstamp)
-src/Engine/Platform/McOsu_ng-File.$(OBJEXT):  \
+src/Engine/Platform/McOsu_ng-BassSound.$(OBJEXT):  \
+	src/Engine/Platform/$(am__dirstamp) \
+	src/Engine/Platform/$(DEPDIR)/$(am__dirstamp)
+src/Engine/Platform/McOsu_ng-BassSoundEngine.$(OBJEXT):  \
 	src/Engine/Platform/$(am__dirstamp) \
 	src/Engine/Platform/$(DEPDIR)/$(am__dirstamp)
 src/Engine/Platform/McOsu_ng-HorizonSDLEnvironment.$(OBJEXT):  \
@@ -1501,6 +1537,12 @@ src/Engine/Platform/McOsu_ng-SDLGLES2Interface.$(OBJEXT):  \
 src/Engine/Platform/McOsu_ng-SDLGLLegacyInterface.$(OBJEXT):  \
 	src/Engine/Platform/$(am__dirstamp) \
 	src/Engine/Platform/$(DEPDIR)/$(am__dirstamp)
+src/Engine/Platform/McOsu_ng-SDLSound.$(OBJEXT):  \
+	src/Engine/Platform/$(am__dirstamp) \
+	src/Engine/Platform/$(DEPDIR)/$(am__dirstamp)
+src/Engine/Platform/McOsu_ng-SDLSoundEngine.$(OBJEXT):  \
+	src/Engine/Platform/$(am__dirstamp) \
+	src/Engine/Platform/$(DEPDIR)/$(am__dirstamp)
 src/Engine/Platform/McOsu_ng-SDLTimer.$(OBJEXT):  \
 	src/Engine/Platform/$(am__dirstamp) \
 	src/Engine/Platform/$(DEPDIR)/$(am__dirstamp)
@@ -1514,9 +1556,6 @@ src/Engine/Platform/McOsu_ng-WinContextMenu.$(OBJEXT):  \
 	src/Engine/Platform/$(am__dirstamp) \
 	src/Engine/Platform/$(DEPDIR)/$(am__dirstamp)
 src/Engine/Platform/McOsu_ng-WinEnvironment.$(OBJEXT):  \
-	src/Engine/Platform/$(am__dirstamp) \
-	src/Engine/Platform/$(DEPDIR)/$(am__dirstamp)
-src/Engine/Platform/McOsu_ng-WinFile.$(OBJEXT):  \
 	src/Engine/Platform/$(am__dirstamp) \
 	src/Engine/Platform/$(DEPDIR)/$(am__dirstamp)
 src/Engine/Platform/McOsu_ng-WinGL3Interface.$(OBJEXT):  \
@@ -1844,6 +1883,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/$(DEPDIR)/McOsu_ng-DiscordInterface.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/$(DEPDIR)/McOsu_ng-Engine.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/$(DEPDIR)/McOsu_ng-Environment.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@src/Engine/$(DEPDIR)/McOsu_ng-File.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/$(DEPDIR)/McOsu_ng-Font.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/$(DEPDIR)/McOsu_ng-Graphics.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/$(DEPDIR)/McOsu_ng-Image.Po@am__quote@ # am--include-marker
@@ -1872,7 +1912,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Main/$(DEPDIR)/McOsu_ng-main_OSX_sdl.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Main/$(DEPDIR)/McOsu_ng-main_SDL.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Main/$(DEPDIR)/McOsu_ng-main_Windows.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-File.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-BassSound.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-BassSoundEngine.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-HorizonSDLEnvironment.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-HorizonThread.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-HorizonTimer.Po@am__quote@ # am--include-marker
@@ -1890,12 +1931,13 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLEnvironment.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLGLES2Interface.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLGLLegacyInterface.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLSound.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLSoundEngine.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLTimer.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-Thread.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-Timer.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinContextMenu.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinEnvironment.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinFile.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinGL3Interface.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinGLLegacyInterface.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinSDLEnvironment.Po@am__quote@ # am--include-marker
@@ -3103,6 +3145,20 @@ src/Engine/McOsu_ng-Environment.obj: src/Engine/Environment.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/McOsu_ng-Environment.obj `if test -f 'src/Engine/Environment.cpp'; then $(CYGPATH_W) 'src/Engine/Environment.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Environment.cpp'; fi`
 
+src/Engine/McOsu_ng-File.o: src/Engine/File.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/McOsu_ng-File.o -MD -MP -MF src/Engine/$(DEPDIR)/McOsu_ng-File.Tpo -c -o src/Engine/McOsu_ng-File.o `test -f 'src/Engine/File.cpp' || echo '$(srcdir)/'`src/Engine/File.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/$(DEPDIR)/McOsu_ng-File.Tpo src/Engine/$(DEPDIR)/McOsu_ng-File.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/File.cpp' object='src/Engine/McOsu_ng-File.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/McOsu_ng-File.o `test -f 'src/Engine/File.cpp' || echo '$(srcdir)/'`src/Engine/File.cpp
+
+src/Engine/McOsu_ng-File.obj: src/Engine/File.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/McOsu_ng-File.obj -MD -MP -MF src/Engine/$(DEPDIR)/McOsu_ng-File.Tpo -c -o src/Engine/McOsu_ng-File.obj `if test -f 'src/Engine/File.cpp'; then $(CYGPATH_W) 'src/Engine/File.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/File.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/$(DEPDIR)/McOsu_ng-File.Tpo src/Engine/$(DEPDIR)/McOsu_ng-File.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/File.cpp' object='src/Engine/McOsu_ng-File.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/McOsu_ng-File.obj `if test -f 'src/Engine/File.cpp'; then $(CYGPATH_W) 'src/Engine/File.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/File.cpp'; fi`
+
 src/Engine/McOsu_ng-Font.o: src/Engine/Font.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/McOsu_ng-Font.o -MD -MP -MF src/Engine/$(DEPDIR)/McOsu_ng-Font.Tpo -c -o src/Engine/McOsu_ng-Font.o `test -f 'src/Engine/Font.cpp' || echo '$(srcdir)/'`src/Engine/Font.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/$(DEPDIR)/McOsu_ng-Font.Tpo src/Engine/$(DEPDIR)/McOsu_ng-Font.Po
@@ -3341,19 +3397,33 @@ src/Engine/McOsu_ng-OpenVRInterface.obj: src/Engine/OpenVRInterface.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/McOsu_ng-OpenVRInterface.obj `if test -f 'src/Engine/OpenVRInterface.cpp'; then $(CYGPATH_W) 'src/Engine/OpenVRInterface.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/OpenVRInterface.cpp'; fi`
 
-src/Engine/Platform/McOsu_ng-File.o: src/Engine/Platform/File.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Platform/McOsu_ng-File.o -MD -MP -MF src/Engine/Platform/$(DEPDIR)/McOsu_ng-File.Tpo -c -o src/Engine/Platform/McOsu_ng-File.o `test -f 'src/Engine/Platform/File.cpp' || echo '$(srcdir)/'`src/Engine/Platform/File.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Platform/$(DEPDIR)/McOsu_ng-File.Tpo src/Engine/Platform/$(DEPDIR)/McOsu_ng-File.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Platform/File.cpp' object='src/Engine/Platform/McOsu_ng-File.o' libtool=no @AMDEPBACKSLASH@
+src/Engine/Platform/McOsu_ng-BassSound.o: src/Engine/Platform/BassSound.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Platform/McOsu_ng-BassSound.o -MD -MP -MF src/Engine/Platform/$(DEPDIR)/McOsu_ng-BassSound.Tpo -c -o src/Engine/Platform/McOsu_ng-BassSound.o `test -f 'src/Engine/Platform/BassSound.cpp' || echo '$(srcdir)/'`src/Engine/Platform/BassSound.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Platform/$(DEPDIR)/McOsu_ng-BassSound.Tpo src/Engine/Platform/$(DEPDIR)/McOsu_ng-BassSound.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Platform/BassSound.cpp' object='src/Engine/Platform/McOsu_ng-BassSound.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Platform/McOsu_ng-File.o `test -f 'src/Engine/Platform/File.cpp' || echo '$(srcdir)/'`src/Engine/Platform/File.cpp
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Platform/McOsu_ng-BassSound.o `test -f 'src/Engine/Platform/BassSound.cpp' || echo '$(srcdir)/'`src/Engine/Platform/BassSound.cpp
 
-src/Engine/Platform/McOsu_ng-File.obj: src/Engine/Platform/File.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Platform/McOsu_ng-File.obj -MD -MP -MF src/Engine/Platform/$(DEPDIR)/McOsu_ng-File.Tpo -c -o src/Engine/Platform/McOsu_ng-File.obj `if test -f 'src/Engine/Platform/File.cpp'; then $(CYGPATH_W) 'src/Engine/Platform/File.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Platform/File.cpp'; fi`
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Platform/$(DEPDIR)/McOsu_ng-File.Tpo src/Engine/Platform/$(DEPDIR)/McOsu_ng-File.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Platform/File.cpp' object='src/Engine/Platform/McOsu_ng-File.obj' libtool=no @AMDEPBACKSLASH@
+src/Engine/Platform/McOsu_ng-BassSound.obj: src/Engine/Platform/BassSound.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Platform/McOsu_ng-BassSound.obj -MD -MP -MF src/Engine/Platform/$(DEPDIR)/McOsu_ng-BassSound.Tpo -c -o src/Engine/Platform/McOsu_ng-BassSound.obj `if test -f 'src/Engine/Platform/BassSound.cpp'; then $(CYGPATH_W) 'src/Engine/Platform/BassSound.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Platform/BassSound.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Platform/$(DEPDIR)/McOsu_ng-BassSound.Tpo src/Engine/Platform/$(DEPDIR)/McOsu_ng-BassSound.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Platform/BassSound.cpp' object='src/Engine/Platform/McOsu_ng-BassSound.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Platform/McOsu_ng-File.obj `if test -f 'src/Engine/Platform/File.cpp'; then $(CYGPATH_W) 'src/Engine/Platform/File.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Platform/File.cpp'; fi`
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Platform/McOsu_ng-BassSound.obj `if test -f 'src/Engine/Platform/BassSound.cpp'; then $(CYGPATH_W) 'src/Engine/Platform/BassSound.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Platform/BassSound.cpp'; fi`
+
+src/Engine/Platform/McOsu_ng-BassSoundEngine.o: src/Engine/Platform/BassSoundEngine.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Platform/McOsu_ng-BassSoundEngine.o -MD -MP -MF src/Engine/Platform/$(DEPDIR)/McOsu_ng-BassSoundEngine.Tpo -c -o src/Engine/Platform/McOsu_ng-BassSoundEngine.o `test -f 'src/Engine/Platform/BassSoundEngine.cpp' || echo '$(srcdir)/'`src/Engine/Platform/BassSoundEngine.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Platform/$(DEPDIR)/McOsu_ng-BassSoundEngine.Tpo src/Engine/Platform/$(DEPDIR)/McOsu_ng-BassSoundEngine.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Platform/BassSoundEngine.cpp' object='src/Engine/Platform/McOsu_ng-BassSoundEngine.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Platform/McOsu_ng-BassSoundEngine.o `test -f 'src/Engine/Platform/BassSoundEngine.cpp' || echo '$(srcdir)/'`src/Engine/Platform/BassSoundEngine.cpp
+
+src/Engine/Platform/McOsu_ng-BassSoundEngine.obj: src/Engine/Platform/BassSoundEngine.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Platform/McOsu_ng-BassSoundEngine.obj -MD -MP -MF src/Engine/Platform/$(DEPDIR)/McOsu_ng-BassSoundEngine.Tpo -c -o src/Engine/Platform/McOsu_ng-BassSoundEngine.obj `if test -f 'src/Engine/Platform/BassSoundEngine.cpp'; then $(CYGPATH_W) 'src/Engine/Platform/BassSoundEngine.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Platform/BassSoundEngine.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Platform/$(DEPDIR)/McOsu_ng-BassSoundEngine.Tpo src/Engine/Platform/$(DEPDIR)/McOsu_ng-BassSoundEngine.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Platform/BassSoundEngine.cpp' object='src/Engine/Platform/McOsu_ng-BassSoundEngine.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Platform/McOsu_ng-BassSoundEngine.obj `if test -f 'src/Engine/Platform/BassSoundEngine.cpp'; then $(CYGPATH_W) 'src/Engine/Platform/BassSoundEngine.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Platform/BassSoundEngine.cpp'; fi`
 
 src/Engine/Platform/McOsu_ng-HorizonSDLEnvironment.o: src/Engine/Platform/HorizonSDLEnvironment.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Platform/McOsu_ng-HorizonSDLEnvironment.o -MD -MP -MF src/Engine/Platform/$(DEPDIR)/McOsu_ng-HorizonSDLEnvironment.Tpo -c -o src/Engine/Platform/McOsu_ng-HorizonSDLEnvironment.o `test -f 'src/Engine/Platform/HorizonSDLEnvironment.cpp' || echo '$(srcdir)/'`src/Engine/Platform/HorizonSDLEnvironment.cpp
@@ -3593,6 +3663,34 @@ src/Engine/Platform/McOsu_ng-SDLGLLegacyInterface.obj: src/Engine/Platform/SDLGL
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Platform/McOsu_ng-SDLGLLegacyInterface.obj `if test -f 'src/Engine/Platform/SDLGLLegacyInterface.cpp'; then $(CYGPATH_W) 'src/Engine/Platform/SDLGLLegacyInterface.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Platform/SDLGLLegacyInterface.cpp'; fi`
 
+src/Engine/Platform/McOsu_ng-SDLSound.o: src/Engine/Platform/SDLSound.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Platform/McOsu_ng-SDLSound.o -MD -MP -MF src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLSound.Tpo -c -o src/Engine/Platform/McOsu_ng-SDLSound.o `test -f 'src/Engine/Platform/SDLSound.cpp' || echo '$(srcdir)/'`src/Engine/Platform/SDLSound.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLSound.Tpo src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLSound.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Platform/SDLSound.cpp' object='src/Engine/Platform/McOsu_ng-SDLSound.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Platform/McOsu_ng-SDLSound.o `test -f 'src/Engine/Platform/SDLSound.cpp' || echo '$(srcdir)/'`src/Engine/Platform/SDLSound.cpp
+
+src/Engine/Platform/McOsu_ng-SDLSound.obj: src/Engine/Platform/SDLSound.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Platform/McOsu_ng-SDLSound.obj -MD -MP -MF src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLSound.Tpo -c -o src/Engine/Platform/McOsu_ng-SDLSound.obj `if test -f 'src/Engine/Platform/SDLSound.cpp'; then $(CYGPATH_W) 'src/Engine/Platform/SDLSound.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Platform/SDLSound.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLSound.Tpo src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLSound.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Platform/SDLSound.cpp' object='src/Engine/Platform/McOsu_ng-SDLSound.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Platform/McOsu_ng-SDLSound.obj `if test -f 'src/Engine/Platform/SDLSound.cpp'; then $(CYGPATH_W) 'src/Engine/Platform/SDLSound.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Platform/SDLSound.cpp'; fi`
+
+src/Engine/Platform/McOsu_ng-SDLSoundEngine.o: src/Engine/Platform/SDLSoundEngine.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Platform/McOsu_ng-SDLSoundEngine.o -MD -MP -MF src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLSoundEngine.Tpo -c -o src/Engine/Platform/McOsu_ng-SDLSoundEngine.o `test -f 'src/Engine/Platform/SDLSoundEngine.cpp' || echo '$(srcdir)/'`src/Engine/Platform/SDLSoundEngine.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLSoundEngine.Tpo src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLSoundEngine.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Platform/SDLSoundEngine.cpp' object='src/Engine/Platform/McOsu_ng-SDLSoundEngine.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Platform/McOsu_ng-SDLSoundEngine.o `test -f 'src/Engine/Platform/SDLSoundEngine.cpp' || echo '$(srcdir)/'`src/Engine/Platform/SDLSoundEngine.cpp
+
+src/Engine/Platform/McOsu_ng-SDLSoundEngine.obj: src/Engine/Platform/SDLSoundEngine.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Platform/McOsu_ng-SDLSoundEngine.obj -MD -MP -MF src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLSoundEngine.Tpo -c -o src/Engine/Platform/McOsu_ng-SDLSoundEngine.obj `if test -f 'src/Engine/Platform/SDLSoundEngine.cpp'; then $(CYGPATH_W) 'src/Engine/Platform/SDLSoundEngine.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Platform/SDLSoundEngine.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLSoundEngine.Tpo src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLSoundEngine.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Platform/SDLSoundEngine.cpp' object='src/Engine/Platform/McOsu_ng-SDLSoundEngine.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Platform/McOsu_ng-SDLSoundEngine.obj `if test -f 'src/Engine/Platform/SDLSoundEngine.cpp'; then $(CYGPATH_W) 'src/Engine/Platform/SDLSoundEngine.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Platform/SDLSoundEngine.cpp'; fi`
+
 src/Engine/Platform/McOsu_ng-SDLTimer.o: src/Engine/Platform/SDLTimer.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Platform/McOsu_ng-SDLTimer.o -MD -MP -MF src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLTimer.Tpo -c -o src/Engine/Platform/McOsu_ng-SDLTimer.o `test -f 'src/Engine/Platform/SDLTimer.cpp' || echo '$(srcdir)/'`src/Engine/Platform/SDLTimer.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLTimer.Tpo src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLTimer.Po
@@ -3662,20 +3760,6 @@ src/Engine/Platform/McOsu_ng-WinEnvironment.obj: src/Engine/Platform/WinEnvironm
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Platform/WinEnvironment.cpp' object='src/Engine/Platform/McOsu_ng-WinEnvironment.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Platform/McOsu_ng-WinEnvironment.obj `if test -f 'src/Engine/Platform/WinEnvironment.cpp'; then $(CYGPATH_W) 'src/Engine/Platform/WinEnvironment.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Platform/WinEnvironment.cpp'; fi`
-
-src/Engine/Platform/McOsu_ng-WinFile.o: src/Engine/Platform/WinFile.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Platform/McOsu_ng-WinFile.o -MD -MP -MF src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinFile.Tpo -c -o src/Engine/Platform/McOsu_ng-WinFile.o `test -f 'src/Engine/Platform/WinFile.cpp' || echo '$(srcdir)/'`src/Engine/Platform/WinFile.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinFile.Tpo src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinFile.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Platform/WinFile.cpp' object='src/Engine/Platform/McOsu_ng-WinFile.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Platform/McOsu_ng-WinFile.o `test -f 'src/Engine/Platform/WinFile.cpp' || echo '$(srcdir)/'`src/Engine/Platform/WinFile.cpp
-
-src/Engine/Platform/McOsu_ng-WinFile.obj: src/Engine/Platform/WinFile.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Platform/McOsu_ng-WinFile.obj -MD -MP -MF src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinFile.Tpo -c -o src/Engine/Platform/McOsu_ng-WinFile.obj `if test -f 'src/Engine/Platform/WinFile.cpp'; then $(CYGPATH_W) 'src/Engine/Platform/WinFile.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Platform/WinFile.cpp'; fi`
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinFile.Tpo src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinFile.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Platform/WinFile.cpp' object='src/Engine/Platform/McOsu_ng-WinFile.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Platform/McOsu_ng-WinFile.obj `if test -f 'src/Engine/Platform/WinFile.cpp'; then $(CYGPATH_W) 'src/Engine/Platform/WinFile.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Platform/WinFile.cpp'; fi`
 
 src/Engine/Platform/McOsu_ng-WinGL3Interface.o: src/Engine/Platform/WinGL3Interface.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Platform/McOsu_ng-WinGL3Interface.o -MD -MP -MF src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinGL3Interface.Tpo -c -o src/Engine/Platform/McOsu_ng-WinGL3Interface.o `test -f 'src/Engine/Platform/WinGL3Interface.cpp' || echo '$(srcdir)/'`src/Engine/Platform/WinGL3Interface.cpp
@@ -5022,6 +5106,7 @@ maintainer-clean-generic:
 	@echo "it deletes files that may require special tools to rebuild."
 	-$(am__rm_f) $(BUILT_SOURCES)
 	-$(am__rm_f) $(MAINTAINERCLEANFILES)
+@WIN_PLATFORM_TRUE@install-exec-hook:
 clean: clean-am
 
 clean-am: clean-binPROGRAMS clean-generic clean-local mostlyclean-am
@@ -5108,6 +5193,7 @@ distclean: distclean-am
 	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-DiscordInterface.Po
 	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-Engine.Po
 	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-Environment.Po
+	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-File.Po
 	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-Font.Po
 	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-Graphics.Po
 	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-Image.Po
@@ -5136,7 +5222,8 @@ distclean: distclean-am
 	-rm -f src/Engine/Main/$(DEPDIR)/McOsu_ng-main_OSX_sdl.Po
 	-rm -f src/Engine/Main/$(DEPDIR)/McOsu_ng-main_SDL.Po
 	-rm -f src/Engine/Main/$(DEPDIR)/McOsu_ng-main_Windows.Po
-	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-File.Po
+	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-BassSound.Po
+	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-BassSoundEngine.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-HorizonSDLEnvironment.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-HorizonThread.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-HorizonTimer.Po
@@ -5154,12 +5241,13 @@ distclean: distclean-am
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLEnvironment.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLGLES2Interface.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLGLLegacyInterface.Po
+	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLSound.Po
+	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLSoundEngine.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLTimer.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-Thread.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-Timer.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinContextMenu.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinEnvironment.Po
-	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinFile.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinGL3Interface.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinGLLegacyInterface.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinSDLEnvironment.Po
@@ -5352,6 +5440,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-DiscordInterface.Po
 	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-Engine.Po
 	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-Environment.Po
+	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-File.Po
 	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-Font.Po
 	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-Graphics.Po
 	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-Image.Po
@@ -5380,7 +5469,8 @@ maintainer-clean: maintainer-clean-am
 	-rm -f src/Engine/Main/$(DEPDIR)/McOsu_ng-main_OSX_sdl.Po
 	-rm -f src/Engine/Main/$(DEPDIR)/McOsu_ng-main_SDL.Po
 	-rm -f src/Engine/Main/$(DEPDIR)/McOsu_ng-main_Windows.Po
-	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-File.Po
+	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-BassSound.Po
+	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-BassSoundEngine.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-HorizonSDLEnvironment.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-HorizonThread.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-HorizonTimer.Po
@@ -5398,12 +5488,13 @@ maintainer-clean: maintainer-clean-am
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLEnvironment.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLGLES2Interface.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLGLLegacyInterface.Po
+	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLSound.Po
+	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLSoundEngine.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLTimer.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-Thread.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-Timer.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinContextMenu.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinEnvironment.Po
-	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinFile.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinGL3Interface.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinGLLegacyInterface.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinSDLEnvironment.Po
@@ -5521,11 +5612,13 @@ $(DEPS_CACHE)/mimalloc-$(MIMALLOC_VERSION).source:
 @BUILD_MIMALLOC_TRUE@	$(TAR) xf $(DEPS_CACHE)/mimalloc-$(MIMALLOC_VERSION).tar.gz -C $(DEPS_PREFIX)/mimalloc --strip-components=1 && \
 @BUILD_MIMALLOC_TRUE@	$(MKDIR_P) $(DEPS_PREFIX)/mimalloc/out/"$(if $(ENABLE_DEBUG),debug,release)" && \
 @BUILD_MIMALLOC_TRUE@	cd $(DEPS_PREFIX)/mimalloc/out/"$(if $(ENABLE_DEBUG),debug,release)" && \
-@BUILD_MIMALLOC_TRUE@	env PKG_CONFIG_PATH="$(DEPS_PREFIX)/lib/pkgconfig:$(DEPS_PREFIX)/lib64/pkgconfig:$(PKG_CONFIG_PATH)" \
+@BUILD_MIMALLOC_TRUE@	env PKG_CONFIG="$(PKG_CONFIG)" \
 @BUILD_MIMALLOC_TRUE@		LDFLAGS="$(LDFLAGS) -xnone" cmake \
-@BUILD_MIMALLOC_TRUE@		-D CMAKE_C_COMPILER="$(CC_NOCCACHE)" \
+@BUILD_MIMALLOC_TRUE@		-D CMAKE_C_COMPILER="$(CC)" \
 @BUILD_MIMALLOC_TRUE@		-D CMAKE_C_FLAGS="$(CFLAGS)" \
-@BUILD_MIMALLOC_TRUE@		-D CMAKE_CXX_COMPILER="$(CXX_NOCCACHE)" \
+@BUILD_MIMALLOC_TRUE@		-D CMAKE_SYSTEM_NAME="$(CMAKE_SYSTEM_NAME)" \
+@BUILD_MIMALLOC_TRUE@		-D CMAKE_SYSTEM_PROCESSOR="$(host_cpu)" \
+@BUILD_MIMALLOC_TRUE@		-D CMAKE_CXX_COMPILER="$(CXX)" \
 @BUILD_MIMALLOC_TRUE@		-D CMAKE_CXX_FLAGS="$(CXXFLAGS) -xc++" \
 @BUILD_MIMALLOC_TRUE@		-D CMAKE_INSTALL_PREFIX="$(DEPS_PREFIX)" \
 @BUILD_MIMALLOC_TRUE@		-D MI_OPT_ARCH=ON \
@@ -5533,7 +5626,7 @@ $(DEPS_CACHE)/mimalloc-$(MIMALLOC_VERSION).source:
 @BUILD_MIMALLOC_TRUE@		-D MI_NO_OPT_ARCH=OFF \
 @BUILD_MIMALLOC_TRUE@		-D MI_BUILD_SHARED=OFF \
 @BUILD_MIMALLOC_TRUE@		-D MI_BUILD_TESTS=OFF \
-@BUILD_MIMALLOC_TRUE@		$(if $(ENABLE_DEBUG),-DMI_LOCAL_DYNAMIC_TLS=ON -DMI_TRACK_ASAN=ON -DMI_DEBUG_UBSAN=ON,) \
+@BUILD_MIMALLOC_TRUE@		$(if $(ENABLE_ASAN),-DMI_LOCAL_DYNAMIC_TLS=ON -DMI_TRACK_ASAN=ON -DMI_DEBUG_UBSAN=ON,) \
 @BUILD_MIMALLOC_TRUE@		-D MI_INSTALL_TOPLEVEL=ON \
 @BUILD_MIMALLOC_TRUE@		-D MI_BUILD_STATIC=OFF \
 @BUILD_MIMALLOC_TRUE@		-D MI_BUILD_OBJECT=ON ../.. && \
@@ -5551,29 +5644,71 @@ $(DEPS_CACHE)/SDL3.source:
 @BUILD_SDL3_TRUE@	$(MKDIR_P) $(DEPS_PREFIX) $(DEPS_PREFIX)/lib/pkgconfig
 @BUILD_SDL3_TRUE@	$(GIT) clone $(DEPS_CACHE)/SDL3 $(DEPS_PREFIX)/SDL3 && \
 @BUILD_SDL3_TRUE@	$(GIT) -C $(DEPS_PREFIX)/SDL3 remote set-url origin https://github.com/libsdl-org/SDL.git && \
-@BUILD_SDL3_TRUE@	$(GIT) -C $(DEPS_PREFIX)/SDL3 pull && $(GIT) -C $(DEPS_PREFIX)/SDL3 checkout release-3.2.10 && \
+@BUILD_SDL3_TRUE@	$(GIT) -C $(DEPS_PREFIX)/SDL3 pull && \
 @BUILD_SDL3_TRUE@	$(MKDIR_P) $(DEPS_PREFIX)/SDL3/build
 @BUILD_SDL3_TRUE@	cd $(DEPS_PREFIX)/SDL3 && \
 @BUILD_SDL3_TRUE@	patch -Np1<$(abs_top_srcdir)/build/aux/sdl-c23bool.patch && \
-@BUILD_SDL3_TRUE@	PKG_CONFIG_PATH="$(DEPS_PREFIX)/lib/pkgconfig:$(DEPS_PREFIX)/lib64/pkgconfig:$(PKG_CONFIG_PATH)" \
+@BUILD_SDL3_TRUE@	PKG_CONFIG="$(PKG_CONFIG)" \
 @BUILD_SDL3_TRUE@	LDFLAGS="$(LDFLAGS)" cmake -S . -B build -G Ninja \
 @BUILD_SDL3_TRUE@		-D CMAKE_BUILD_TYPE="$(if $(ENABLE_DEBUG),Debug,Release)" \
-@BUILD_SDL3_TRUE@		$(if $(ENABLE_DEBUG),-DSDL_ASAN=ON,) \
+@BUILD_SDL3_TRUE@		$(if $(ENABLE_ASAN),-DSDL_ASAN=ON,) \
 @BUILD_SDL3_TRUE@		-D SDL_HIDAPI_LIBUSB=OFF \
 @BUILD_SDL3_TRUE@		-D CMAKE_INSTALL_PREFIX="$(DEPS_PREFIX)" \
 @BUILD_SDL3_TRUE@		-D SDL_SHARED="$(if $(SDL3_STATIC),OFF,ON)" \
 @BUILD_SDL3_TRUE@		-D SDL_STATIC="$(if $(SDL3_STATIC),ON,OFF)" \
+@BUILD_SDL3_TRUE@		-D CMAKE_SYSTEM_NAME="$(CMAKE_SYSTEM_NAME)" \
+@BUILD_SDL3_TRUE@		-D CMAKE_SYSTEM_PROCESSOR="$(host_cpu)" \
 @BUILD_SDL3_TRUE@		-D SDL_RPATH=OFF \
 @BUILD_SDL3_TRUE@		-D SDL_CCACHE="$(if $(filter ccache,$(CC)),ON,OFF)" \
-@BUILD_SDL3_TRUE@		-D CMAKE_C_COMPILER="$(CC_NOCCACHE)" \
-@BUILD_SDL3_TRUE@		-D CMAKE_C_FLAGS="$(CFLAGS) -Wno-error=incompatible-pointer-types" && \
+@BUILD_SDL3_TRUE@		-D CMAKE_C_COMPILER="$(CC)" \
+@BUILD_SDL3_TRUE@		-D CMAKE_C_FLAGS="$(CFLAGS) -Wno-error=incompatible-pointer-types" \
+@BUILD_SDL3_TRUE@		-D CMAKE_CXX_COMPILER="$(CXX)" \
+@BUILD_SDL3_TRUE@		-D CMAKE_CXX_FLAGS="$(CXXFLAGS)" && \
 @BUILD_SDL3_TRUE@	cmake --build build && \
 @BUILD_SDL3_TRUE@	cmake --install build
-@BUILD_SDL3_TRUE@	PKG_CONFIG_PATH="$(DEPS_PREFIX)/lib/pkgconfig:$(DEPS_PREFIX)/lib64/pkgconfig:$(PKG_CONFIG_PATH)" \
+@BUILD_SDL3_TRUE@	PKG_CONFIG="$(PKG_CONFIG)" \
 @BUILD_SDL3_TRUE@		$(PKG_CONFIG) --exists --print-errors sdl3
 @BUILD_SDL3_TRUE@	touch $@
 @BUILD_SDL3_FALSE@$(DEPS_PREFIX)/SDL3.built:
 @BUILD_SDL3_FALSE@	$(MKDIR_P) $(DEPS_PREFIX) && touch $@
+
+$(DEPS_CACHE)/SDL3_mixer.source:
+	rm -rf $(DEPS_CACHE)/SDL3_mixer && \
+	$(MKDIR_P) $(DEPS_CACHE)/SDL3_mixer
+	$(WGET) -qO $(DEPS_CACHE)/SDL3_mixer-$(SDL3_MIXER_VERSION).tar.gz "https://github.com/libsdl-org/SDL_mixer/archive/$(SDL3_MIXER_VERSION).tar.gz" && \
+	$(TAR) xf $(DEPS_CACHE)/SDL3_mixer-$(SDL3_MIXER_VERSION).tar.gz -C $(DEPS_CACHE)/SDL3_mixer --strip-components=1 && \
+	cd $(DEPS_CACHE)/SDL3_mixer/external && ./download.sh # cache vendored dependencies
+	touch $@
+@USE_BASS_FALSE@$(DEPS_PREFIX)/SDL3_mixer.built: $(DEPS_PREFIX)/SDL3.built $(DEPS_CACHE)/SDL3_mixer.source
+@USE_BASS_FALSE@	rm -rf $(DEPS_PREFIX)/SDL3_mixer
+@USE_BASS_FALSE@	$(MKDIR_P) $(DEPS_PREFIX) $(DEPS_PREFIX)/lib/pkgconfig
+@USE_BASS_FALSE@	cp -r $(DEPS_CACHE)/SDL3_mixer $(DEPS_PREFIX)/SDL3_mixer && \
+@USE_BASS_FALSE@	$(MKDIR_P) $(DEPS_PREFIX)/SDL3_mixer/build
+@USE_BASS_FALSE@	cd $(DEPS_PREFIX)/SDL3_mixer && \
+@USE_BASS_FALSE@	PKG_CONFIG="$(PKG_CONFIG)" LDFLAGS="$(LDFLAGS)" \
+@USE_BASS_FALSE@	cmake -S . -B build -G Ninja \
+@USE_BASS_FALSE@		-D CMAKE_BUILD_TYPE="$(if $(ENABLE_DEBUG),Debug,Release)" \
+@USE_BASS_FALSE@		-D CMAKE_INSTALL_PREFIX="$(DEPS_PREFIX)" \
+@USE_BASS_FALSE@		-D CMAKE_SYSTEM_NAME="$(CMAKE_SYSTEM_NAME)" \
+@USE_BASS_FALSE@		-D CMAKE_SYSTEM_PROCESSOR="$(host_cpu)" \
+@USE_BASS_FALSE@		-D CMAKE_C_COMPILER="$(CC)" \
+@USE_BASS_FALSE@		-D CMAKE_C_FLAGS="$(CFLAGS) -Wno-error=incompatible-pointer-types" \
+@USE_BASS_FALSE@		-D SDLMIXER_GME=OFF \
+@USE_BASS_FALSE@		-D SDLMIXER_MIDI=OFF \
+@USE_BASS_FALSE@		-D SDLMIXER_STRICT=ON \
+@USE_BASS_FALSE@		-D SDLMIXER_VENDORED=ON \
+@USE_BASS_FALSE@		-D SDLMIXER_MP3=ON \
+@USE_BASS_FALSE@		-D SDLMIXER_MP3_MPG123=ON \
+@USE_BASS_FALSE@		-D BUILD_SHARED_LIBS="$(if $(SDL3_STATIC),OFF,ON)" \
+@USE_BASS_FALSE@		-D SDLMIXER_DEPS_SHARED="$(if $(SDL3_STATIC),OFF,ON)" && \
+@USE_BASS_FALSE@	cmake --build build && \
+@USE_BASS_FALSE@	cmake --install build
+@USE_BASS_FALSE@	$(SED) -i 's|Libs\.private.*|Libs.private: -lmpg123 -logg -lopus -lwavpack -lopusfile -lxmp|' $(DEPS_PREFIX)/lib/pkgconfig/sdl3-mixer.pc # wtf is this weird cmake issue?
+@USE_BASS_FALSE@	rm -rf $(DEPS_PREFIX)/lib/*SDL3_mixer$(if $(SDL3_STATIC),$(DLLEXT),.a)*
+@USE_BASS_FALSE@	$(PKG_CONFIG) --exists --print-errors sdl3-mixer
+@USE_BASS_FALSE@	touch $@
+@USE_BASS_TRUE@$(DEPS_PREFIX)/SDL3_mixer.built:
+@USE_BASS_TRUE@	$(MKDIR_P) $(DEPS_PREFIX) && touch $@
 
 $(DEPS_CACHE)/GLEW-$(GLEW_VERSION).source:
 	$(MKDIR_P) $(DEPS_CACHE)
@@ -5584,16 +5719,15 @@ $(DEPS_CACHE)/GLEW-$(GLEW_VERSION).source:
 @BUILD_GLEW_TRUE@	$(MKDIR_P) $(DEPS_PREFIX)/GLEW $(DEPS_PREFIX)/lib/pkgconfig $(DEPS_PREFIX)/lib64/pkgconfig
 @BUILD_GLEW_TRUE@	$(TAR) xf $(DEPS_CACHE)/glew-$(GLEW_VERSION).tgz -C $(DEPS_PREFIX)/GLEW --strip-components=1 && \
 @BUILD_GLEW_TRUE@	cd $(DEPS_PREFIX)/GLEW && \
-@BUILD_GLEW_TRUE@		patch -Np1<$(abs_top_srcdir)/build/aux/glew-install.patch && \
-@BUILD_GLEW_TRUE@		patch -Np1<$(abs_top_srcdir)/build/aux/egl+glx.patch && \
-@BUILD_GLEW_TRUE@		$(SED) -i 's|lib64|lib|' config/Makefile.linux && \
+@BUILD_GLEW_TRUE@	$(if $(findstring linux,$(host_os)),cd $(DEPS_PREFIX)/GLEW && patch -Np1<$(abs_top_srcdir)/build/aux/glew-install.patch && patch -Np1<$(abs_top_srcdir)/build/aux/egl+glx.patch && ,) \
+@BUILD_GLEW_TRUE@		$(SED) -i -e 's|lib64|lib|' -e 's|-Wl,-soname|-soname|' config/Makefile.linux && \
 @BUILD_GLEW_TRUE@  		$(SED) -i '/^.PHONY: .*\.pc$$/d' Makefile && \
-@BUILD_GLEW_TRUE@		$(MAKE) SYSTEM=linux-egl GLEW_DEST="$(DEPS_PREFIX)" \
-@BUILD_GLEW_TRUE@		STRIP= CC="$(CC)" CXX="$(CXX)" LD="$(CC)" \
+@BUILD_GLEW_TRUE@		$(MAKE) SYSTEM=$(if $(findstring linux,$(host_os)),linux-egl,linux-mingw$(if $(filter x86_64,$(host_cpu)),64,32)) GLEW_DEST="$(DEPS_PREFIX)" \
+@BUILD_GLEW_TRUE@		STRIP= CC="$(CC) -Wno-cast-function-type -Wno-strict-prototypes" CXX="$(CXX)" LD="$(LD)" \
 @BUILD_GLEW_TRUE@		$(if $(SDL3_STATIC),glew.lib.static,glew.lib.shared)
 @BUILD_GLEW_TRUE@	cd $(DEPS_PREFIX)/GLEW && \
-@BUILD_GLEW_TRUE@		$(MAKE) SYSTEM=linux-egl GLEW_DEST="$(DEPS_PREFIX)" \
-@BUILD_GLEW_TRUE@		STRIP= CC="$(CC)" CXX="$(CXX)" LD="$(CC)" \
+@BUILD_GLEW_TRUE@		$(MAKE) SYSTEM=$(if $(findstring linux,$(host_os)),linux-egl,linux-mingw$(if $(filter x86_64,$(host_cpu)),64,32)) GLEW_DEST="$(DEPS_PREFIX)" \
+@BUILD_GLEW_TRUE@		STRIP= CC="$(CC) -Wno-cast-function-type -Wno-strict-prototypes" CXX="$(CXX)" LD="$(LD)" \
 @BUILD_GLEW_TRUE@		install
 @BUILD_GLEW_TRUE@	$(MKDIR_P) "$(DEPS_PREFIX)/lib/pkgconfig"
 @BUILD_GLEW_TRUE@	( echo 'prefix=$(DEPS_PREFIX)'; \
@@ -5605,10 +5739,10 @@ $(DEPS_CACHE)/GLEW-$(GLEW_VERSION).source:
 @BUILD_GLEW_TRUE@	  echo 'Description: The OpenGL Extension Wrangler library'; \
 @BUILD_GLEW_TRUE@	  echo 'Version: $(GLEW_VERSION)'; \
 @BUILD_GLEW_TRUE@	  echo 'Cflags: -I$${includedir}'; \
-@BUILD_GLEW_TRUE@	  echo 'Libs: -L$${libdir} $(if $(SDL3_STATIC),-l:libGLEW.a,-lGLEW) -lEGL -lGL'; \
-@BUILD_GLEW_TRUE@	  echo 'Requires: glu' ) > "$(DEPS_PREFIX)/lib/pkgconfig/glew.pc"
-@BUILD_GLEW_TRUE@	PKG_CONFIG_PATH="$(DEPS_PREFIX)/lib/pkgconfig:$(DEPS_PREFIX)/lib64/pkgconfig:$(PKG_CONFIG_PATH)" \
-@BUILD_GLEW_TRUE@		$(PKG_CONFIG) --exists --print-errors glew
+@BUILD_GLEW_TRUE@	  echo 'Libs: -L$${libdir} $(if $(findstring linux,$(host_os)),-lGLEW -lEGL -lGL,-lopengl32 -lglew32 -lglu32)'; \
+@BUILD_GLEW_TRUE@	  $(if $(findstring linux,$(host_os)),echo 'Requires: glu',) ) > "$(DEPS_PREFIX)/lib/pkgconfig/glew.pc"
+@BUILD_GLEW_TRUE@	rm -rf $(DEPS_PREFIX)/lib/*GLEW$(if $(SDL3_STATIC),$(DLLEXT),.a)*
+@BUILD_GLEW_TRUE@	$(PKG_CONFIG) --exists --print-errors glew
 @BUILD_GLEW_TRUE@	touch $@
 @BUILD_GLEW_FALSE@$(DEPS_PREFIX)/GLEW.built:
 @BUILD_GLEW_FALSE@	$(MKDIR_P) $(DEPS_PREFIX) && touch $@
@@ -5622,17 +5756,20 @@ $(DEPS_CACHE)/libjpeg-$(LIBJPEG_VERSION).source:
 @BUILD_LIBJPEG_TRUE@	$(MKDIR_P) $(DEPS_PREFIX)/libjpeg/build $(DEPS_PREFIX)/lib/pkgconfig
 @BUILD_LIBJPEG_TRUE@	$(TAR) xf $(DEPS_CACHE)/libjpeg-$(LIBJPEG_VERSION).tar.gz -C $(DEPS_PREFIX)/libjpeg --strip-components=1 && \
 @BUILD_LIBJPEG_TRUE@	cd $(DEPS_PREFIX)/libjpeg && \
-@BUILD_LIBJPEG_TRUE@	PKG_CONFIG_PATH="$(DEPS_PREFIX)/lib/pkgconfig:$(DEPS_PREFIX)/lib64/pkgconfig:$(PKG_CONFIG_PATH)" \
+@BUILD_LIBJPEG_TRUE@	PKG_CONFIG="$(PKG_CONFIG)" \
 @BUILD_LIBJPEG_TRUE@	LDFLAGS="$(LDFLAGS)" cmake -S . -B build -G Ninja \
 @BUILD_LIBJPEG_TRUE@		-D CMAKE_BUILD_TYPE="$(if $(ENABLE_DEBUG),Debug,Release)" \
 @BUILD_LIBJPEG_TRUE@		-D CMAKE_INSTALL_PREFIX="$(DEPS_PREFIX)" \
-@BUILD_LIBJPEG_TRUE@		-D CMAKE_C_COMPILER="$(CC_NOCCACHE)" \
-@BUILD_LIBJPEG_TRUE@		-D CMAKE_C_FLAGS="$(CFLAGS)" \
-@BUILD_LIBJPEG_TRUE@		-D REQUIRE_SIMD=ON \
+@BUILD_LIBJPEG_TRUE@		-D CMAKE_C_COMPILER="$(CC)" \
+@BUILD_LIBJPEG_TRUE@		-D CMAKE_SYSTEM_PROCESSOR="$(host_cpu)" \
+@BUILD_LIBJPEG_TRUE@		-DCMAKE_C_FLAGS="$(CFLAGS)" \
+@BUILD_LIBJPEG_TRUE@		-DCMAKE_SYSTEM_NAME="$(CMAKE_SYSTEM_NAME)" \
+@BUILD_LIBJPEG_TRUE@		-DCMAKE_ASM_NASM_FLAGS="-DPIC" \
+@BUILD_LIBJPEG_TRUE@		$(if $(filter x86_64,$(host_cpu)),-DWITH_SIMD=ON,-DCMAKE_ASM_NASM_OBJECT_FORMAT="elf32" $(if $(findstring gcc,$(CC)),-DWITH_SIMD=ON,-DWITH_SIMD=OFF)) \
 @BUILD_LIBJPEG_TRUE@		$(if $(SDL3_STATIC),-DENABLE_STATIC=ON -DENABLE_SHARED=OFF,-DENABLE_STATIC=OFF -DENABLE_SHARED=ON) && \
 @BUILD_LIBJPEG_TRUE@	cmake --build build && \
 @BUILD_LIBJPEG_TRUE@	cmake --install build
-@BUILD_LIBJPEG_TRUE@	PKG_CONFIG_PATH="$(DEPS_PREFIX)/lib/pkgconfig:$(DEPS_PREFIX)/lib64/pkgconfig:$(PKG_CONFIG_PATH)" \
+@BUILD_LIBJPEG_TRUE@	PKG_CONFIG="$(PKG_CONFIG)" \
 @BUILD_LIBJPEG_TRUE@		$(PKG_CONFIG) --exists --print-errors libjpeg
 @BUILD_LIBJPEG_TRUE@	touch $@
 @BUILD_LIBJPEG_FALSE@$(DEPS_PREFIX)/libjpeg.built:
@@ -5646,14 +5783,13 @@ $(DEPS_CACHE)/libpng-$(LIBPNG_VERSION).source:
 @BUILD_LIBPNG_TRUE@	rm -rf $(DEPS_PREFIX)/libpng
 @BUILD_LIBPNG_TRUE@	$(MKDIR_P) $(DEPS_PREFIX)/libpng/build $(DEPS_PREFIX)/lib/pkgconfig
 @BUILD_LIBPNG_TRUE@	$(TAR) xf $(DEPS_CACHE)/libpng-$(LIBPNG_VERSION).tar.gz -C $(DEPS_PREFIX)/libpng --strip-components=1 && \
-@BUILD_LIBPNG_TRUE@	cd $(DEPS_PREFIX)/libpng && PKG_CONFIG_PATH="$(DEPS_PREFIX)/lib/pkgconfig:$(DEPS_PREFIX)/lib64/pkgconfig:$(PKG_CONFIG_PATH)" \
-@BUILD_LIBPNG_TRUE@		./configure --prefix="$(DEPS_PREFIX)" \
+@BUILD_LIBPNG_TRUE@	cd $(DEPS_PREFIX)/libpng && PKG_CONFIG="$(PKG_CONFIG)" \
+@BUILD_LIBPNG_TRUE@		./configure --host=$(host_alias) --prefix="$(DEPS_PREFIX)" \
 @BUILD_LIBPNG_TRUE@		$(if $(SDL3_STATIC),--enable-static --disable-shared,--enable-shared --disable-static) \
 @BUILD_LIBPNG_TRUE@		CC="$(CC)" CXX="$(CXX)" LD="$(LD)" CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS)" && \
 @BUILD_LIBPNG_TRUE@	$(MAKE) && \
 @BUILD_LIBPNG_TRUE@	$(MAKE) install
-@BUILD_LIBPNG_TRUE@	$(if $(SDL3_STATIC),$(SED) -i -e 's|-lz|-l:libz.a|g' -e 's|-lpng16|-l:libpng16.a|g' $(DEPS_PREFIX)/lib/pkgconfig/libpng.pc,)
-@BUILD_LIBPNG_TRUE@	PKG_CONFIG_PATH="$(DEPS_PREFIX)/lib/pkgconfig:$(DEPS_PREFIX)/lib64/pkgconfig:$(PKG_CONFIG_PATH)" \
+@BUILD_LIBPNG_TRUE@	PKG_CONFIG="$(PKG_CONFIG)" \
 @BUILD_LIBPNG_TRUE@		$(PKG_CONFIG) --exists --print-errors libpng
 @BUILD_LIBPNG_TRUE@	touch $@
 @BUILD_LIBPNG_FALSE@$(DEPS_PREFIX)/libpng.built:
@@ -5682,8 +5818,8 @@ $(DEPS_CACHE)/bzip2-$(BZIP2_VERSION).source:
 @BUILD_BZIP2_TRUE@	  echo 'Description: A file compression library'; \
 @BUILD_BZIP2_TRUE@	  echo 'Version: $(BZIP2_VERSION)'; \
 @BUILD_BZIP2_TRUE@	  echo 'Cflags: -I$${includedir}'; \
-@BUILD_BZIP2_TRUE@	  echo 'Libs: -L$${libdir} $(if $(SDL3_STATIC),-l:libbz2.a,-lbz2)' ) > "$(DEPS_PREFIX)/lib/pkgconfig/bzip2.pc"
-@BUILD_BZIP2_TRUE@	PKG_CONFIG_PATH="$(DEPS_PREFIX)/lib/pkgconfig:$(DEPS_PREFIX)/lib64/pkgconfig:$(PKG_CONFIG_PATH)" \
+@BUILD_BZIP2_TRUE@	  echo 'Libs: -L$${libdir} -lbz2' ) > "$(DEPS_PREFIX)/lib/pkgconfig/bzip2.pc"
+@BUILD_BZIP2_TRUE@	PKG_CONFIG="$(PKG_CONFIG)" \
 @BUILD_BZIP2_TRUE@		$(PKG_CONFIG) --exists --print-errors bzip2
 @BUILD_BZIP2_TRUE@	touch $@
 @BUILD_BZIP2_FALSE@$(DEPS_PREFIX)/bzip2.built:
@@ -5697,13 +5833,13 @@ $(DEPS_CACHE)/zlib-$(ZLIB_VERSION).source:
 @BUILD_ZLIB_TRUE@	rm -rf $(DEPS_PREFIX)/zlib
 @BUILD_ZLIB_TRUE@	$(MKDIR_P) $(DEPS_PREFIX)/zlib/build $(DEPS_PREFIX)/lib/pkgconfig
 @BUILD_ZLIB_TRUE@	$(TAR) xf $(DEPS_CACHE)/zlib-$(ZLIB_VERSION).tar.gz -C $(DEPS_PREFIX)/zlib --strip-components=1 && \
-@BUILD_ZLIB_TRUE@	cd $(DEPS_PREFIX)/zlib/build && PKG_CONFIG_PATH="$(DEPS_PREFIX)/lib/pkgconfig:$(DEPS_PREFIX)/lib64/pkgconfig:$(PKG_CONFIG_PATH)" \
-@BUILD_ZLIB_TRUE@		CC="$(CC)" CXX="$(CXX)" LD="$(LD)" CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS)" \
+@BUILD_ZLIB_TRUE@	cd $(DEPS_PREFIX)/zlib/build && PKG_CONFIG="$(PKG_CONFIG)" \
+@BUILD_ZLIB_TRUE@		$(if $(findstring linux,$(host_os)),,uname=mingw) CC="$(CC)" CXX="$(CXX)" LD="$(LD)" CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS)" \
 @BUILD_ZLIB_TRUE@		../configure --zlib-compat --prefix="$(DEPS_PREFIX)" $(if $(SDL3_STATIC),--static,) && \
 @BUILD_ZLIB_TRUE@	$(MAKE) && \
 @BUILD_ZLIB_TRUE@	$(MAKE) install
-@BUILD_ZLIB_TRUE@	$(if $(SDL3_STATIC),$(SED) -i 's|-lz|-l:libz.a|g' $(DEPS_PREFIX)/lib/pkgconfig/zlib.pc,)
-@BUILD_ZLIB_TRUE@	PKG_CONFIG_PATH="$(DEPS_PREFIX)/lib/pkgconfig:$(DEPS_PREFIX)/lib64/pkgconfig:$(PKG_CONFIG_PATH)" \
+@BUILD_ZLIB_TRUE@	$(SED) -i 's|sharedlibdir=.*|sharedlibdir=$${libdir}|' $(DEPS_PREFIX)/lib/pkgconfig/zlib.pc && \
+@BUILD_ZLIB_TRUE@	PKG_CONFIG="$(PKG_CONFIG)" \
 @BUILD_ZLIB_TRUE@		$(PKG_CONFIG) --exists --print-errors zlib
 @BUILD_ZLIB_TRUE@	touch $@
 @BUILD_ZLIB_FALSE@$(DEPS_PREFIX)/zlib.built:
@@ -5717,13 +5853,13 @@ $(DEPS_CACHE)/FREETYPE2-$(FREETYPE2_VERSION).source:
 @BUILD_FREETYPE2_TRUE@	rm -rf $(DEPS_PREFIX)/FREETYPE2
 @BUILD_FREETYPE2_TRUE@	$(MKDIR_P) $(DEPS_PREFIX)/FREETYPE2/build $(DEPS_PREFIX)/lib/pkgconfig
 @BUILD_FREETYPE2_TRUE@	$(TAR) xf $(DEPS_CACHE)/freetype-$(FREETYPE2_VERSION).tar.gz -C $(DEPS_PREFIX)/FREETYPE2 --strip-components=1 && \
-@BUILD_FREETYPE2_TRUE@	cd $(DEPS_PREFIX)/FREETYPE2 && PKG_CONFIG_PATH="$(DEPS_PREFIX)/lib/pkgconfig:$(DEPS_PREFIX)/lib64/pkgconfig:$(PKG_CONFIG_PATH)" \
-@BUILD_FREETYPE2_TRUE@		./configure --prefix="$(DEPS_PREFIX)" --with-harfbuzz=no --with-brotli=no \
+@BUILD_FREETYPE2_TRUE@	cd $(DEPS_PREFIX)/FREETYPE2 && PKG_CONFIG="$(PKG_CONFIG)" \
+@BUILD_FREETYPE2_TRUE@		./configure --host=$(host_alias) --prefix="$(DEPS_PREFIX)" --with-harfbuzz=no --with-brotli=no \
 @BUILD_FREETYPE2_TRUE@		$(if $(SDL3_STATIC),--enable-static --disable-shared,--enable-shared --disable-static) \
 @BUILD_FREETYPE2_TRUE@		CC="$(CC)" CXX="$(CXX)" LD="$(LD)" CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS)" && \
 @BUILD_FREETYPE2_TRUE@	$(MAKE) && \
 @BUILD_FREETYPE2_TRUE@	$(MAKE) install
-@BUILD_FREETYPE2_TRUE@	PKG_CONFIG_PATH="$(DEPS_PREFIX)/lib/pkgconfig:$(DEPS_PREFIX)/lib64/pkgconfig:$(PKG_CONFIG_PATH)" \
+@BUILD_FREETYPE2_TRUE@	PKG_CONFIG="$(PKG_CONFIG)" \
 @BUILD_FREETYPE2_TRUE@		$(PKG_CONFIG) --exists --print-errors freetype2
 @BUILD_FREETYPE2_TRUE@	touch $@
 @BUILD_FREETYPE2_FALSE@$(DEPS_PREFIX)/FREETYPE2.built:
@@ -5758,29 +5894,30 @@ compile-commands: $(McOsu_ng_OBJECTS) $(abs_top_srcdir)/.clangd
 install-libs:
 	$(INSTALL) -dm 755 "$(DESTDIR)$(bindir)/screenshots"
 	$(INSTALL) -dm 755 "$(DESTDIR)$(bindir)/shaders"
-	$(INSTALL) -dm 755 "$(DESTDIR)$(bindir)/lib"
+	$(INSTALL) -dm 755 "$(DESTDIR)$(bindir)/$(LIBDEST)"
 	$(INSTALL) -dm 755 "$(DESTDIR)$(bindir)/fonts"
 	$(INSTALL) -dm 755 "$(DESTDIR)$(bindir)/materials"
 	$(INSTALL) -dm 755 "$(DESTDIR)$(bindir)/models"
 	$(INSTALL) -dm 755 "$(DESTDIR)$(bindir)/cfg"
-	$(INSTALL) -m 755 $(srcdir)/$(BUNDLED_BASS_DIR)/lib/linux/libbass.so "$(DESTDIR)$(bindir)/lib/"
-	$(INSTALL) -m 755 $(srcdir)/$(BUNDLED_BASS_FX_DIR)/lib/linux/libbass_fx.so "$(DESTDIR)$(bindir)/lib/"
 	find $(srcdir)/$(ASSETS_DIR)/models -type f -exec $(INSTALL) -Dm 644 '{''}' "$(DESTDIR)$(bindir)/models" ';'
 	find $(srcdir)/$(ASSETS_DIR)/shaders -type f -exec $(INSTALL) -Dm 644 '{''}' "$(DESTDIR)$(bindir)/shaders" ';'
-@BUILD_SDL3_TRUE@	$(if $(SDL3_STATIC),,@cp -P "$(SDL3_PREFIX)/lib"/libSDL3*.so* "$(DESTDIR)$(bindir)/lib/")
-@BUILD_GLEW_TRUE@	$(if $(SDL3_STATIC),,@cp -P "$(GLEW_PREFIX)/lib"/libGLEW*.so* "$(DESTDIR)$(bindir)/lib/")
+@USE_BASS_TRUE@	$(INSTALL) -m 755 $(srcdir)/$(BUNDLED_BASS_DIR)/lib/$(SYSNAME)/$(host_cpu)/$(LIBPREFIX)bass$(DLLEXT) "$(DESTDIR)$(bindir)/$(LIBDEST)"
+@USE_BASS_TRUE@	$(INSTALL) -m 755 $(srcdir)/$(BUNDLED_BASS_FX_DIR)/lib/$(SYSNAME)/$(host_cpu)/$(LIBPREFIX)bass_fx$(DLLEXT) "$(DESTDIR)$(bindir)/$(LIBDEST)"
+@USE_BASS_FALSE@	$(if $(SDL3_STATIC),,@cp -P "$(SDL3_MIXER_PREFIX)/lib"/{*$(LIBPREFIX)SDL3_mixer*$(DLLEXT)*,*$(LIBPREFIX)mpg123*$(DLLEXT)*,*$(LIBPREFIX)xmp*$(DLLEXT)*,*$(LIBPREFIX)wavpack*$(DLLEXT)*,*$(LIBPREFIX)opus*$(DLLEXT)*,*$(LIBPREFIX)ogg*$(DLLEXT)*} "$(DESTDIR)$(bindir)/$(LIBDEST)")
+@BUILD_SDL3_TRUE@	$(if $(SDL3_STATIC),,@cp -P "$(SDL3_PREFIX)/lib"/*$(LIBPREFIX)SDL3*$(DLLEXT)* "$(DESTDIR)$(bindir)/$(LIBDEST)")
+@BUILD_GLEW_TRUE@	$(if $(SDL3_STATIC),,@cp -P "$(GLEW_PREFIX)/lib"/*$(LIBPREFIX){glew32,GLEW}*$(DLLEXT)* "$(DESTDIR)$(bindir)/$(LIBDEST)")
 @BUILD_LIBJPEG_TRUE@	$(if $(SDL3_STATIC),,@@libdir=$(LIBJPEG_PREFIX)/`test -d "$(LIBJPEG_PREFIX)/lib64" && echo "lib64" || echo "lib"`; \
-@BUILD_LIBJPEG_TRUE@	cp -P "$$libdir"/libjpeg*.so* "$(DESTDIR)$(bindir)/lib/")
-@BUILD_LIBPNG_TRUE@	$(if $(SDL3_STATIC),,@cp -P "$(LIBPNG_PREFIX)/lib"/libpng*.so* "$(DESTDIR)$(bindir)/lib/")
-@BUILD_BZIP2_TRUE@	$(if $(SDL3_STATIC),,@cp -P "$(BZIP2_PREFIX)/lib"/libbz2*.so* "$(DESTDIR)$(bindir)/lib/")
-@BUILD_ZLIB_TRUE@	$(if $(SDL3_STATIC),,@cp -P "$(ZLIB_PREFIX)/lib"/libz*.so* "$(DESTDIR)$(bindir)/lib/")
-@BUILD_FREETYPE2_TRUE@	$(if $(SDL3_STATIC),,@cp -P "$(FREETYPE2_PREFIX)/lib"/libfreetype*.so* "$(DESTDIR)$(bindir)/lib/")
+@BUILD_LIBJPEG_TRUE@	cp -P "$$libdir"/*$(LIBPREFIX)jpeg*$(DLLEXT)* "$(DESTDIR)$(bindir)/$(LIBDEST)")
+@BUILD_LIBPNG_TRUE@	$(if $(SDL3_STATIC),,@cp -P "$(LIBPNG_PREFIX)/lib"/*$(LIBPREFIX)png*$(DLLEXT)* "$(DESTDIR)$(bindir)/$(LIBDEST)")
+@BUILD_BZIP2_TRUE@	$(if $(SDL3_STATIC),,@cp -P "$(BZIP2_PREFIX)/lib"/*$(LIBPREFIX)bz2*$(DLLEXT)* "$(DESTDIR)$(bindir)/$(LIBDEST)")
+@BUILD_ZLIB_TRUE@	$(if $(SDL3_STATIC),,@cp -P "$(ZLIB_PREFIX)/lib"/*$(LIBPREFIX)z*$(DLLEXT)* "$(DESTDIR)$(bindir)/$(LIBDEST)")
+@BUILD_FREETYPE2_TRUE@	$(if $(SDL3_STATIC),,@cp -P "$(FREETYPE2_PREFIX)/lib"/*$(LIBPREFIX)freetype*$(DLLEXT)* "$(DESTDIR)$(bindir)/$(LIBDEST)")
 
 # install hooks
-install-exec-hook: install-libs
-	cd "$(DESTDIR)$(bindir)" && \
-	$(LN_S) -rf $(PROGRAMS) McEngine && \
-	$(LN_S) -rf $(PROGRAMS) McOsu
+@WIN_PLATFORM_FALSE@install-exec-hook: install-libs
+@WIN_PLATFORM_FALSE@	cd "$(DESTDIR)$(bindir)" && \
+@WIN_PLATFORM_FALSE@	$(LN_S) -rf $(PROGRAMS) McEngine && \
+@WIN_PLATFORM_FALSE@	$(LN_S) -rf $(PROGRAMS) McOsu
 
 uninstall-local:
 	rm -rf "$(DESTDIR)$(bindir)/"
@@ -5803,10 +5940,10 @@ distclean-local: clean-deps clean-dep-cache
 
 # TODO: distribution packaging
 dist-hook:
-	cp -r $(srcdir)/$(BUNDLED_BASS_DIR)/lib $(distdir)/$(BUNDLED_BASS_DIR)/
-	cp -r $(srcdir)/$(BUNDLED_BASS_DIR)/include $(distdir)/$(BUNDLED_BASS_DIR)/
-	cp -r $(srcdir)/$(BUNDLED_BASS_FX_DIR)/lib $(distdir)/$(BUNDLED_BASS_FX_DIR)/
-	cp -r $(srcdir)/$(BUNDLED_BASS_FX_DIR)/include $(distdir)/$(BUNDLED_BASS_FX_DIR)/
+@USE_BASS_TRUE@	cp -r $(srcdir)/$(BUNDLED_BASS_DIR)/lib $(distdir)/$(BUNDLED_BASS_DIR)/
+@USE_BASS_TRUE@	cp -r $(srcdir)/$(BUNDLED_BASS_DIR)/include $(distdir)/$(BUNDLED_BASS_DIR)/
+@USE_BASS_TRUE@	cp -r $(srcdir)/$(BUNDLED_BASS_FX_DIR)/lib $(distdir)/$(BUNDLED_BASS_FX_DIR)/
+@USE_BASS_TRUE@	cp -r $(srcdir)/$(BUNDLED_BASS_FX_DIR)/include $(distdir)/$(BUNDLED_BASS_FX_DIR)/
 	cp -r $(srcdir)/$(ASSETS_DIR)/models $(distdir)/
 	cp -r $(srcdir)/$(ASSETS_DIR)/shaders $(distdir)/
 	find $(distdir) -type f -name ".git*" -delete

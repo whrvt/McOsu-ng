@@ -13,12 +13,11 @@
 
 #include "Engine.h"
 
-#define SDL_VIDEO_DRIVER_WINDOWS /* SDL_VIDEO_DRIVER_WINDOWS has been removed in SDL3 */	// HACKHACK
-#undef SDL_VIDEO_DRIVER_COCOA /* SDL_VIDEO_DRIVER_COCOA has been removed in SDL3 */		// HACKHACK
-#include <SDL3/SDL_syswm.h> // for SDL_GetWindowWMInfo()
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_properties.h>
 
-#include <Lmcons.h>
-#include <Shlobj.h>
+#include <lmcons.h>
+#include <shlobj.h>
 
 #include <tchar.h>
 #include <string>
@@ -28,30 +27,26 @@ WinSDLEnvironment::WinSDLEnvironment() : SDLEnvironment(NULL)
 
 }
 
-Environment::OS WinSDLEnvironment::getOS()
-{
-	return Environment::OS::OS_WINDOWS;
-}
-
 void WinSDLEnvironment::sleep(unsigned int us)
 {
-	Sleep(us/1000);
+	!!us ? SDL_DelayPrecise(us*1000) : SDL_Delay(0);
 }
 
 void WinSDLEnvironment::openURLInDefaultBrowser(UString url)
 {
-	SDL_SysWMinfo info;
-	SDL_VERSION(&info.version);
-	if (SDL_GetWindowWMInfo(m_window, &info) == true)
+    HWND hwnd = (HWND)SDL_GetPointerProperty(SDL_GetWindowProperties(m_window), SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
+    if (hwnd)
 	{
-		ShellExecuteW(info.info.win.window, L"open", url.wc_str(), NULL, NULL, SW_SHOW);
+		ShellExecuteW(hwnd, L"open", url.wc_str(), NULL, NULL, SW_SHOW);
+		return;
 	}
+	debugLog("No hwnd! SDL: %s\n", SDL_GetError());
 }
 
 UString WinSDLEnvironment::getUsername()
 {
 	DWORD username_len = UNLEN+1;
-	wchar_t username[username_len];
+	wchar_t username[UNLEN+1];
 
 	if (GetUserNameW(username, &username_len))
 		return UString(username);

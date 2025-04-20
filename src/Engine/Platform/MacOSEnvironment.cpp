@@ -87,11 +87,6 @@ ContextMenu *MacOSEnvironment::createContextMenu()
 	return new NullContextMenu();
 }
 
-Environment::OS MacOSEnvironment::getOS()
-{
-	return Environment::OS::OS_MACOS;
-}
-
 void MacOSEnvironment::shutdown()
 {
 	g_bRunning = false;

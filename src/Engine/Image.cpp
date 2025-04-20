@@ -14,7 +14,7 @@
 #include "lodepng.h"
 #include "jpeglib.h"
 
-#include <setjmp.h>
+#include <csetjmp>
 
 struct jpegErrorManager
 {

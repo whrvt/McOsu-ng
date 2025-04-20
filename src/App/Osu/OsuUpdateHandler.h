@@ -23,7 +23,7 @@ public:
 	static const char *GITHUB_API_RELEASE_URL;
 	static const char *GITHUB_RELEASE_DOWNLOAD_URL;
 
-	enum class STATUS
+	enum class STATUS : uint8_t
 	{
 		STATUS_UP_TO_DATE,
 		STATUS_CHECKING_FOR_UPDATE,
@@ -67,7 +67,7 @@ private:
 	bool _m_bKYS;
 
 	// releases
-	enum class STREAM
+	enum class STREAM : uint8_t
 	{
 		STREAM_NULL,
 		STREAM_DESKTOP,

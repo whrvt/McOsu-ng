@@ -229,19 +229,20 @@ Osu::Osu(Osu2 *osu2, int instanceID)
 	steam->setRichPresence("steam_display", "#Status");
 	steam->setRichPresence("status", "...");
 
-#ifdef MCENGINE_FEATURE_SOUND
+#ifdef MCENGINE_FEATURE_BASS
 
 	// starting with bass 2020 2.4.15.2 which has all offset problems fixed, this is the non-dsound backend compensation
 	// NOTE: this depends on BASS_CONFIG_UPDATEPERIOD/BASS_CONFIG_DEV_BUFFER
 	convar->getConVarByName("osu_universal_offset_hardcoded")->setValue(15.0f);
 
-#endif
-
-#ifdef MCENGINE_FEATURE_BASS_WASAPI
+#elif defined(MCENGINE_FEATURE_BASS_WASAPI)
 
 	// since we use the newer bass/fx dlls for wasapi builds anyway (which have different time handling)
-	// NOTE: this overwrites the above modification
 	convar->getConVarByName("osu_universal_offset_hardcoded")->setValue(-25.0f);
+
+#elif defined(MCENGINE_FEATURE_SDL_MIXER)
+
+	convar->getConVarByName("osu_universal_offset_hardcoded")->setValue(-110.0f);
 
 #endif
 
@@ -257,7 +258,6 @@ Osu::Osu(Osu2 *osu2, int instanceID)
 		convar->getConVarByName("osu_mod_touchdevice")->setDefaultFloat(1.0f);
 		convar->getConVarByName("osu_mod_touchdevice")->setValue(1.0f);
 		convar->getConVarByName("osu_volume_music")->setValue(0.3f);
-		convar->getConVarByName("osu_universal_offset_hardcoded")->setValue(-45.0f);
 		convar->getConVarByName("osu_key_quick_retry")->setValue(15.0f);			// L, SDL_SCANCODE_L
 		convar->getConVarByName("osu_key_seek_time")->setValue(21.0f);				// R, SDL_SCANCODE_R
 		convar->getConVarByName("osu_key_decrease_local_offset")->setValue(29.0f);	// ZL, SDL_SCANCODE_Z
@@ -1282,42 +1282,47 @@ void Osu::onKeyDown(KeyboardEvent &key)
 
 	// special hotkeys
 	// reload & recompile shaders
-	if (engine->getKeyboard()->isAltDown() && engine->getKeyboard()->isControlDown() && key == KEY_R)
+	if (engine->getKeyboard()->isAltDown())
 	{
-		Shader *sliderShader = engine->getResourceManager()->getShader("slider");
-		Shader *sliderShaderVR = engine->getResourceManager()->getShader("sliderVR");
-		Shader *cursorTrailShader = engine->getResourceManager()->getShader("cursortrail");
-		Shader *hitcircle3DShader = engine->getResourceManager()->getShader("hitcircle3D");
+		if (engine->getKeyboard()->isControlDown())
+		{
+			switch ((KEYCODE)key)
+			{
+			case KEY_R: {
+				Shader *sliderShader = engine->getResourceManager()->getShader("slider");
+				Shader *sliderShaderVR = engine->getResourceManager()->getShader("sliderVR");
+				Shader *cursorTrailShader = engine->getResourceManager()->getShader("cursortrail");
+				Shader *hitcircle3DShader = engine->getResourceManager()->getShader("hitcircle3D");
 
-		if (sliderShader != NULL)
-			sliderShader->reload();
-		if (sliderShaderVR != NULL)
-			sliderShaderVR->reload();
-		if (cursorTrailShader != NULL)
-			cursorTrailShader->reload();
-		if (hitcircle3DShader != NULL)
-			hitcircle3DShader->reload();
+				if (sliderShader != NULL)
+					sliderShader->reload();
+				if (sliderShaderVR != NULL)
+					sliderShaderVR->reload();
+				if (cursorTrailShader != NULL)
+					cursorTrailShader->reload();
+				if (hitcircle3DShader != NULL)
+					hitcircle3DShader->reload();
 
-		key.consume();
-	}
-
-	// reload skin (alt)
-	if (engine->getKeyboard()->isAltDown() && engine->getKeyboard()->isControlDown() && key == KEY_S)
-	{
-		onSkinReload();
-		key.consume();
-	}
-
-	// arrow keys volume (alt)
-	if (engine->getKeyboard()->isAltDown() && key == (KEYCODE)OsuKeyBindings::INCREASE_VOLUME.getInt())
-	{
-		volumeUp();
-		key.consume();
-	}
-	if (engine->getKeyboard()->isAltDown() && key == (KEYCODE)OsuKeyBindings::DECREASE_VOLUME.getInt())
-	{
-		volumeDown();
-		key.consume();
+				break;
+			}
+			case KEY_S: {
+				onSkinReload();
+				break;
+			}
+			}
+			key.consume();
+		}
+		// arrow keys volume (alt)
+		else if (key == (KEYCODE)OsuKeyBindings::INCREASE_VOLUME.getInt())
+		{
+			volumeUp();
+			key.consume();
+		}
+		else if (key == (KEYCODE)OsuKeyBindings::DECREASE_VOLUME.getInt())
+		{
+			volumeDown();
+			key.consume();
+		}
 	}
 
 	// disable mouse buttons hotkey
@@ -1334,13 +1339,11 @@ void Osu::onKeyDown(KeyboardEvent &key)
 			m_notificationOverlay->addNotification("Mouse buttons are disabled.");
 		}
 	}
-
 	// screenshots
-	if (key == (KEYCODE)OsuKeyBindings::SAVE_SCREENSHOT.getInt())
+	else if (key == (KEYCODE)OsuKeyBindings::SAVE_SCREENSHOT.getInt())
 		saveScreenshot();
-
 	// boss key (minimize + mute)
-	if (key == (KEYCODE)OsuKeyBindings::BOSS_KEY.getInt())
+	else if (key == (KEYCODE)OsuKeyBindings::BOSS_KEY.getInt())
 	{
 		engine->getEnvironment()->minimize();
 		if (getSelectedBeatmap() != NULL)
@@ -2791,12 +2794,12 @@ float Osu::getUIScale(Osu *osu)
 
 bool Osu::findIgnoreCase(const std::string &haystack, const std::string &needle)
 {
-	auto it = std::search(
-	    haystack.begin(), haystack.end(),
-		needle.begin(),   needle.end(),
-	    [](char ch1, char ch2)
+	auto result = std::ranges::search(
+		haystack,
+		needle,  
+		[](char ch1, char ch2)
 		{return std::tolower(ch1) == std::tolower(ch2);}
 	);
 
-	return (it != haystack.end());
+	return !result.empty();
 }

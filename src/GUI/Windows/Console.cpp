@@ -19,11 +19,10 @@
 #include "CBaseUILabel.h"
 
 #ifdef MCENGINE_FEATURE_MULTITHREADING
-
 #include <mutex>
-#include "WinMinGW.Mutex.h"
-
 #endif
+
+#include <utility>
 
 #define CFG_FOLDER "cfg/"
 
@@ -143,7 +142,7 @@ void Console::processCommand(UString command)
 		else
 		{
 			commandValue.append(tokens[i]);
-			if (i < (int)(tokens.size()-1))
+			if (std::cmp_less(i ,(tokens.size()-1)))
 				commandValue.append(" ");
 		}
 	}
@@ -231,6 +230,10 @@ void Console::execConfigFile(UString filename)
 	{
 		if (line.size() > 0)
 		{
+			// remove CR
+			if (!line.empty() && line.back() == '\r')
+				line.pop_back();
+
 			// handle comments
 			UString cmd = UString(line.c_str());
 			const int commentIndex = cmd.find("//", 0, cmd.length());

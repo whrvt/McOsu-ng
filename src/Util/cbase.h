@@ -9,11 +9,10 @@
 #ifndef CBASE_H
 #define CBASE_H
 
-#include "config.h"
-
 // STD INCLUDES
 
-#include <math.h>
+#include <cmath>
+#include <limits>
 #include <vector>
 #include <stack>
 #include <string>
@@ -28,8 +27,13 @@
 #include <fstream>
 #include <iostream>
 
+#if __has_include(<sstream>)
+#include <sstream>
+#endif
+
 #include <cstdarg>
 #include <cstdint>
+#include <cstring>
 
 #define forceinline __attribute__((always_inline)) inline
 
@@ -52,11 +56,12 @@
 
 // DEFS
 
-#ifndef NULL
-#define NULL nullptr
+#ifdef NULL 
+#undef NULL
 #endif
+#define NULL nullptr
 
-typedef unsigned char COLORPART;
+using COLORPART = unsigned char;
 
 /*
 #ifndef DWORD
@@ -82,28 +87,28 @@ typedef unsigned char 	UINT8;
     ((Color)(((((int)( clamp<float>(a,0.0f,1.0f)*255.0f ))&0xff)<<24)|((((int)( clamp<float>(r,0.0f,1.0f)*255.0f ))&0xff)<<16)|((((int)( clamp<float>(g,0.0f,1.0f)*255.0f ))&0xff)<<8)|(((int)( clamp<float>(b,0.0f,1.0f)*255.0f ))&0xff)))
 
 #define COLOR_GET_Ri(color) \
-	(((COLORPART)(color >> 16)))
+	(((COLORPART)((color) >> 16)))
 
 #define COLOR_GET_Gi(color) \
-	(((COLORPART)(color >> 8)))
+	(((COLORPART)((color) >> 8)))
 
 #define COLOR_GET_Bi(color) \
-	(((COLORPART)(color >> 0)))
+	(((COLORPART)((color) >> 0)))
 
 #define COLOR_GET_Ai(color) \
-	(((COLORPART)(color >> 24)))
+	(((COLORPART)((color) >> 24)))
 
 #define COLOR_GET_Rf(color) \
-	(((COLORPART)(color >> 16))  / 255.0f)
+	(((COLORPART)((color) >> 16))  / 255.0f)
 
 #define COLOR_GET_Gf(color) \
-	(((COLORPART)(color >> 8)) / 255.0f)
+	(((COLORPART)((color) >> 8)) / 255.0f)
 
 #define COLOR_GET_Bf(color) \
-	(((COLORPART)(color >> 0)) / 255.0f)
+	(((COLORPART)((color) >> 0)) / 255.0f)
 
 #define COLOR_GET_Af(color) \
-	(((COLORPART)(color >> 24)) / 255.0f)
+	(((COLORPART)((color) >> 24)) / 255.0f)
 
 #define COLOR_INVERT(color) \
 	(COLOR(255, 255-COLOR_GET_Ri(color), 255-COLOR_GET_Gi(color), 255-COLOR_GET_Bi(color)))
@@ -117,59 +122,49 @@ typedef unsigned char 	UINT8;
 #define COLOR_SUBTRACT(color1, color2) \
 	(COLORf(1.0f, clamp<float>(COLOR_GET_Rf(color1)-COLOR_GET_Rf(color2),0.0f,1.0f), clamp<float>(COLOR_GET_Gf(color1)-COLOR_GET_Gf(color2),0.0f,1.0f), clamp<float>(COLOR_GET_Bf(color1)-COLOR_GET_Bf(color2),0.0f,1.0f)))
 
-#define PI 3.1415926535897932384626433832795
-
-#define PIOVER180 0.01745329251994329576923690768489
-
-
+constexpr const auto PI = std::numbers::pi;
+constexpr const auto PIOVER180 = (PI/180.0f);
+constexpr const auto ONE80OVERPI = (180.0f/PI);
 
 // UTIL
 
-template <class T>
-inline T clamp(T x, T a, T b)
-{
-    return x < a ? a : (x > b ? b : x);
-}
+using std::clamp;
+using std::lerp;
+using std::isfinite;
+using std::signbit;
 
 template <class T>
-inline T lerp(T x1, T x2, T percent)
+constexpr forceinline float deg2rad(T deg)
 {
-	return x1*(1-percent) + x2*percent;
+	return deg * PIOVER180;
 }
 
 template <class T>
-inline int sign(T val)
+constexpr forceinline float rad2deg(T rad)
 {
-	return val > 0 ? 1 : (val == 0 ? 0 : -1);
+	return rad * ONE80OVERPI;
 }
 
-inline float deg2rad(float deg)
-{
-	return deg * PI / 180.0f;
-}
-
-inline float rad2deg(float rad)
-{
-	return rad * 180.0f / PI;
-}
-
-inline bool isInt(float f)
+constexpr forceinline bool isInt(float f)
 {
     return (f == static_cast<float>(static_cast<int>(f)));
 }
 
-
-
-// ANSI/IEEE 754-1985
-
-inline unsigned long &floatBits(float &f)
+template <typename T>
+    requires std::floating_point<T>
+[[nodiscard]] constexpr inline bool almostEqual(T x, T y, T relativeTolerance = T{100} * std::numeric_limits<T>::epsilon(),
+                                                T absoluteTolerance = T{100} * std::numeric_limits<T>::epsilon())
 {
-	return *reinterpret_cast<unsigned long*>(&f);
-}
-
-inline bool isFinite(float f)
-{
-	return ((floatBits(f) & 0x7F800000) != 0x7F800000);
+	if (x == y) return true;
+	// absolute difference for values near zero
+	T diff = std::abs(x - y);
+	if (x == T{0} || y == T{0} || diff < std::numeric_limits<T>::min())
+		return diff < absoluteTolerance;
+	// relative difference for other values
+	T absX = std::abs(x);
+	T absY = std::abs(y);
+	// use the smaller value to calculate relative error
+	return diff < relativeTolerance * std::min(absX, absY);
 }
 
 #endif

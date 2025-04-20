@@ -21,7 +21,9 @@
 
 #include "OsuDatabaseBeatmap.h"
 
+#include <algorithm>
 #include <fstream>
+#include <utility>
 
 #if defined(_WIN32) || defined(_WIN64) || defined(__WIN32__) || defined(__CYGWIN__) || defined(__CYGWIN32__) || defined(__TOS_WIN__) || defined(__WINDOWS__)
 
@@ -452,7 +454,7 @@ void OsuDatabase::update()
 			m_fLoadingProgress = (float)m_iCurRawBeatmapLoadIndex / (float)m_iNumBeatmapsToLoad;
 
 			// check if we are finished
-			if (m_iCurRawBeatmapLoadIndex >= m_iNumBeatmapsToLoad || m_iCurRawBeatmapLoadIndex > (int)(m_rawLoadBeatmapFolders.size()-1))
+			if (m_iCurRawBeatmapLoadIndex >= m_iNumBeatmapsToLoad || std::cmp_greater(m_iCurRawBeatmapLoadIndex ,(m_rawLoadBeatmapFolders.size()-1)))
 			{
 				m_rawLoadBeatmapFolders.clear();
 				m_bRawBeatmapLoadScheduled = false;
@@ -465,7 +467,7 @@ void OsuDatabase::update()
 				{
 					loadCollections("collections.db", false, m_rawHashToDiff2, m_rawHashToBeatmap);
 
-					std::sort(m_collections.begin(), m_collections.end(), SortCollectionByName());
+					std::ranges::sort(m_collections, SortCollectionByName());
 				}
 
 				m_fLoadingProgress = 1.0f;
@@ -650,7 +652,7 @@ bool OsuDatabase::addCollection(UString collectionName)
 	}
 	m_collections.push_back(c);
 
-	std::sort(m_collections.begin(), m_collections.end(), SortCollectionByName());
+	std::ranges::sort(m_collections, SortCollectionByName());
 
 	m_bDidCollectionsChangeForSave = true;
 
@@ -681,7 +683,7 @@ bool OsuDatabase::renameCollection(UString oldCollectionName, UString newCollect
 			{
 				m_collections[i].name = newCollectionName;
 
-				std::sort(m_collections.begin(), m_collections.end(), SortCollectionByName());
+				std::ranges::sort(m_collections, SortCollectionByName());
 
 				m_bDidCollectionsChangeForSave = true;
 
@@ -790,7 +792,7 @@ void OsuDatabase::addBeatmapToCollection(UString collectionName, std::string bea
 							{
 								diffs2.push_back(diff2);
 							}
-							m_collections[i].beatmaps.push_back(std::pair<OsuDatabaseBeatmap*, std::vector<OsuDatabaseBeatmap*>>(beatmap, diffs2));
+							m_collections[i].beatmaps.emplace_back(beatmap, diffs2);
 						}
 					}
 				}
@@ -887,7 +889,7 @@ std::vector<UString> OsuDatabase::getPlayerNamesWithPPScores()
 	for (auto k : tempNames)
 	{
 		if (k.length() > 0)
-			names.push_back(UString(k.c_str()));
+			names.emplace_back(k.c_str());
 	}
 
 	return names;
@@ -918,7 +920,7 @@ std::vector<UString> OsuDatabase::getPlayerNamesWithScoresForUserSwitcher()
 	for (auto k : tempNames)
 	{
 		if (k.length() > 0)
-			names.push_back(UString(k.c_str()));
+			names.emplace_back(k.c_str());
 	}
 
 	return names;
@@ -989,7 +991,7 @@ OsuDatabase::PlayerPPScores OsuDatabase::getPlayerPPScores(UString playerName)
 	}
 
 	// sort by pp
-	std::sort(scores.begin(), scores.end(), ScoreSortComparator());
+	std::ranges::sort(scores, ScoreSortComparator());
 
 	PlayerPPScores ppScores;
 	ppScores.ppScores = std::move(scores);
@@ -1077,7 +1079,7 @@ unsigned long long OsuDatabase::getRequiredScoreForLevel(int level)
 	if (level <= 100)
 	{
 		if (level > 1)
-			return (uint64_t)std::floor( 5000/3*(4 * std::pow(level, 3) - 3 * std::pow(level, 2) - level) + std::floor(1.25 * std::pow(1.8, (double)(level - 60))) );
+			return (uint64_t)std::floor( 5000/3.0f*(4 * std::pow(level, 3) - 3 * std::pow(level, 2) - level) + std::floor(1.25 * std::pow(1.8, (double)(level - 60))) );
 
 		return 1;
 	}
@@ -1383,7 +1385,7 @@ void OsuDatabase::loadDB(OsuFile *db, bool &fallbackToRawLoad)
 	// read beatmapInfos, and also build two hashmaps (diff hash -> OsuBeatmapDifficulty, diff hash -> OsuBeatmap)
 	struct BeatmapSet
 	{
-		int setID;
+		int setID{};
 		UString path;
 		std::vector<OsuDatabaseBeatmap*> diffs2;
 	};
@@ -1436,7 +1438,7 @@ void OsuDatabase::loadDB(OsuFile *db, bool &fallbackToRawLoad)
 		unsigned int numOsuStandardStarRatings = db->readInt();
 		//debugLog("%i star ratings for osu!standard\n", numOsuStandardStarRatings);
 		float numOsuStandardStars = 0.0f;
-		for (int s=0; s<numOsuStandardStarRatings; s++)
+		for (int s=0; std::cmp_less(s,numOsuStandardStarRatings); s++)
 		{
 			db->readByte(); // ObjType
 			unsigned int mods = db->readInt();
@@ -1459,7 +1461,7 @@ void OsuDatabase::loadDB(OsuFile *db, bool &fallbackToRawLoad)
 
 		unsigned int numTaikoStarRatings = db->readInt();
 		//debugLog("%i star ratings for taiko\n", numTaikoStarRatings);
-		for (int s=0; s<numTaikoStarRatings; s++)
+		for (int s=0; std::cmp_less(s,numTaikoStarRatings); s++)
 		{
 			db->readByte(); // ObjType
 			db->readInt();
@@ -1472,7 +1474,7 @@ void OsuDatabase::loadDB(OsuFile *db, bool &fallbackToRawLoad)
 
 		unsigned int numCtbStarRatings = db->readInt();
 		//debugLog("%i star ratings for ctb\n", numCtbStarRatings);
-		for (int s=0; s<numCtbStarRatings; s++)
+		for (int s=0; std::cmp_less(s,numCtbStarRatings); s++)
 		{
 			db->readByte(); // ObjType
 			db->readInt();
@@ -1485,7 +1487,7 @@ void OsuDatabase::loadDB(OsuFile *db, bool &fallbackToRawLoad)
 
 		unsigned int numManiaStarRatings = db->readInt();
 		//debugLog("%i star ratings for mania\n", numManiaStarRatings);
-		for (int s=0; s<numManiaStarRatings; s++)
+		for (int s=0; std::cmp_less(s,numManiaStarRatings); s++)
 		{
 			db->readByte(); // ObjType
 			db->readInt();
@@ -1506,7 +1508,7 @@ void OsuDatabase::loadDB(OsuFile *db, bool &fallbackToRawLoad)
 		unsigned int numTimingPoints = db->readInt();
 		//debugLog("%i timingpoints\n", numTimingPoints);
 		std::vector<OsuFile::TIMINGPOINT> timingPoints;
-		for (int t=0; t<numTimingPoints; t++)
+		for (int t=0; std::cmp_less(t,numTimingPoints); t++)
 		{
 			timingPoints.push_back(db->readTimingPoint());
 		}
@@ -1645,7 +1647,7 @@ void OsuDatabase::loadDB(OsuFile *db, bool &fallbackToRawLoad)
 
 				if (minBeatLength > 0 && minBeatLength < std::numeric_limits<float>::max()) {
 					minBPM = msPerMinute / minBeatLength;
-					if (std::isfinite(minBPM) && minBPM <= static_cast<float>(std::numeric_limits<int>::max())) {
+					if (isfinite(minBPM) && minBPM <= static_cast<float>(std::numeric_limits<int>::max())) {
 						diff2->m_iMinBPM = static_cast<int>(std::round(minBPM));
 					}
 				}
@@ -1653,7 +1655,7 @@ void OsuDatabase::loadDB(OsuFile *db, bool &fallbackToRawLoad)
 				// Same for maxBeatLength
 				if (maxBeatLength > 0 && maxBeatLength < std::numeric_limits<float>::max()) {
 					maxBPM = msPerMinute / maxBeatLength;
-					if (std::isfinite(maxBPM) && maxBPM <= static_cast<float>(std::numeric_limits<int>::max())) {
+					if (isfinite(maxBPM) && maxBPM <= static_cast<float>(std::numeric_limits<int>::max())) {
 						diff2->m_iMaxBPM = static_cast<int>(std::round(maxBPM));
 					}
 				}
@@ -1744,7 +1746,7 @@ void OsuDatabase::loadDB(OsuFile *db, bool &fallbackToRawLoad)
 						    		return (a.duration > b.duration);
 						    }
 						};
-						std::sort(aggregations.begin(), aggregations.end(), SortByDuration());
+						std::ranges::sort(aggregations, SortByDuration());
 
 						float mostCommonBPM = aggregations[0].beatLength;
 						{
@@ -1764,7 +1766,7 @@ void OsuDatabase::loadDB(OsuFile *db, bool &fallbackToRawLoad)
 					OsuDatabaseBeatmap::TIMINGPOINT tp;
 					{
 						tp.offset = 0;
-						if (std::isfinite(timingPoints[t].offset) &&
+						if (isfinite(timingPoints[t].offset) &&
 							timingPoints[t].offset >= static_cast<double>(std::numeric_limits<long>::min()) &&
 							timingPoints[t].offset <= static_cast<double>(std::numeric_limits<long>::max())) {
 							tp.offset = static_cast<long>(timingPoints[t].offset);
@@ -1937,7 +1939,7 @@ void OsuDatabase::loadDB(OsuFile *db, bool &fallbackToRawLoad)
 	if (osu_collections_custom_enabled.getBool())
 		loadCollections("collections.db", false, hashToDiff2, hashToBeatmap);
 
-	std::sort(m_collections.begin(), m_collections.end(), SortCollectionByName());
+	std::ranges::sort(m_collections, SortCollectionByName());
 
 	// signal that we are done
 	m_fLoadingProgress = 1.0f;
@@ -2584,7 +2586,7 @@ void OsuDatabase::loadCollections(UString collectionFilePath, bool isLegacy, con
 				{
 					diffs2.push_back(diff2);
 				}
-				c.beatmaps.push_back(std::pair<OsuDatabaseBeatmap*, std::vector<OsuDatabaseBeatmap*>>(beatmap, diffs2));
+				c.beatmaps.emplace_back(beatmap, diffs2);
 			}
 		}
 	};

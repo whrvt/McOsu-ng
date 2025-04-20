@@ -19,12 +19,12 @@ class OsuSteamWorkshopUploader;
 class OsuSteamWorkshop
 {
 public:
-	enum class SUBSCRIBED_ITEM_TYPE
+	enum class SUBSCRIBED_ITEM_TYPE : uint8_t
 	{
 		SKIN
 	};
 
-	enum class SUBSCRIBED_ITEM_STATUS
+	enum class SUBSCRIBED_ITEM_STATUS : uint8_t
 	{
 		DOWNLOADING,
 		INSTALLED

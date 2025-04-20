@@ -195,7 +195,7 @@ protected:
 					steam->setWorkshopItemVisibility(false);
 
 					std::vector<UString> tags;
-					tags.push_back("Skin");
+					tags.emplace_back("Skin");
 					/*
 					tags.push_back("Standard");
 					tags.push_back("Mania");

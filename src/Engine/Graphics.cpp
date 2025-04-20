@@ -32,8 +32,8 @@ Graphics::Graphics()
 {
 	// init matrix stacks
 	m_bTransformUpToDate = false;
-	m_worldTransformStack.push(Matrix4());
-	m_projectionTransformStack.push(Matrix4());
+	m_worldTransformStack.emplace();
+	m_projectionTransformStack.emplace();
 
 	// init 3d gui scene stack
 	m_bIs3dScene = false;
@@ -42,8 +42,8 @@ Graphics::Graphics()
 
 void Graphics::pushTransform()
 {
-	m_worldTransformStack.push(Matrix4(m_worldTransformStack.top()));
-	m_projectionTransformStack.push(Matrix4(m_projectionTransformStack.top()));
+	m_worldTransformStack.emplace(m_worldTransformStack.top());
+	m_projectionTransformStack.emplace(m_projectionTransformStack.top());
 }
 
 void Graphics::popTransform()

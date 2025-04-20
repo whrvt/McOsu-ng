@@ -20,8 +20,8 @@
 #include "VulkanGraphicsInterface.h"
 #include "WinContextMenu.h"
 
-#include <Lmcons.h>
-#include <Shlobj.h>
+#include <lmcons.h>
+#include <shlobj.h>
 
 #include <tchar.h>
 #include <string>
@@ -97,11 +97,6 @@ Graphics *WinEnvironment::createRenderer()
 ContextMenu *WinEnvironment::createContextMenu()
 {
 	return new WinContextMenu();
-}
-
-Environment::OS WinEnvironment::getOS()
-{
-	return Environment::OS::OS_WINDOWS;
 }
 
 void WinEnvironment::shutdown()
@@ -925,6 +920,7 @@ void WinEnvironment::setMousePos(int x, int y)
 
 void WinEnvironment::setCursorClip(bool clip, McRect rect)
 {
+	debugLog("\n");
 	m_bCursorClipped = clip;
 	m_cursorClip = rect;
 

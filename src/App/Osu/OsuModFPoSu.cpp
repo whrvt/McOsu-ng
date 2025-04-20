@@ -1231,7 +1231,7 @@ OsuModFPoSu3DModel::OsuModFPoSu3DModel(const UString &objFilePathOrContents, Ima
 			std::string line;
 			while (std::getline(iss, line))
 			{
-				if (line.find("v ") == 0)
+				if (line.starts_with("v "))
 				{
 					Vector3 vertex;
 					Vector3 rgb;
@@ -1244,19 +1244,19 @@ OsuModFPoSu3DModel::OsuModFPoSu3DModel(const UString &objFilePathOrContents, Ima
 					else if (sscanf(line.c_str(), "v %f %f %f ", &vertex.x, &vertex.y, &vertex.z) == 3)
 						rawVertices.push_back(vertex);
 				}
-				else if (line.find("vt ") == 0)
+				else if (line.starts_with("vt "))
 				{
 					Vector2 uv;
 					if (sscanf(line.c_str(), "vt %f %f ", &uv.x, &uv.y) == 2)
-						rawTexcoords.push_back(Vector2(uv.x, 1.0f - uv.y));
+						rawTexcoords.emplace_back(uv.x, 1.0f - uv.y);
 				}
-				else if (line.find("vn ") == 0)
+				else if (line.starts_with("vn "))
 				{
 					Vector3 normal;
 					if (sscanf(line.c_str(), "vn %f %f %f ", &normal.x, &normal.y, &normal.z) == 3)
 						rawNormals.push_back(normal);
 				}
-				else if (line.find("f ") == 0)
+				else if (line.starts_with("f "))
 				{
 					RAW_FACE face;
 					if (sscanf(line.c_str(), "f %i/%i/%i %i/%i/%i %i/%i/%i ", &face.vertexIndex1, &face.uvIndex1, &face.normalIndex1, &face.vertexIndex2, &face.uvIndex2, &face.normalIndex2, &face.vertexIndex3, &face.uvIndex3, &face.normalIndex3) == 9

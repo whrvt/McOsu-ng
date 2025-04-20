@@ -55,7 +55,8 @@
 #include "OsuUISongBrowserScoreButton.h"
 #include "OsuUIUserStatsScreenLabel.h"
 
-
+#include <algorithm>
+#include <utility>
 
 ConVar osu_gamemode("osu_gamemode", "std", FCVAR_NONE);
 
@@ -2503,7 +2504,7 @@ bool OsuSongBrowser2::searchMatcher(const OsuDatabaseBeatmap *databaseBeatmap, c
 	// parse over all difficulties
 	bool expressionMatches = false; // if any diff matched all expressions
 	std::vector<UString> literalSearchStrings;
-	for (size_t d=0; d<numDiffs; d++)
+	for (size_t d=0; std::cmp_less(d,numDiffs); d++)
 	{
 		const OsuDatabaseBeatmap *diff = (isContainer ? diffs[d] : databaseBeatmap);
 
@@ -2677,7 +2678,7 @@ bool OsuSongBrowser2::searchMatcher(const OsuDatabaseBeatmap *databaseBeatmap, c
 	// early return here for literal match/contains
 	if (hasAnyValidLiteralSearchString)
 	{
-		for (size_t i=0; i<numDiffs; i++)
+		for (size_t i=0; std::cmp_less(i,numDiffs); i++)
 		{
 			const OsuDatabaseBeatmap *diff = (isContainer ? diffs[i] : databaseBeatmap);
 
@@ -2959,7 +2960,7 @@ void OsuSongBrowser2::rebuildScoreButtons()
 	if (numScores > m_scoreButtonCache.size())
 	{
 		const int numNewButtons = numScores - m_scoreButtonCache.size();
-		for (size_t i=0; i<numNewButtons; i++)
+		for (size_t i=0; std::cmp_less(i,numNewButtons); i++)
 		{
 			OsuUISongBrowserScoreButton *scoreButton = new OsuUISongBrowserScoreButton(m_osu, m_contextMenu, 0, 0, 0, 0, "");
 			scoreButton->setClickCallback( fastdelegate::MakeDelegate(this, &OsuSongBrowser2::onScoreClicked) );
@@ -2977,7 +2978,7 @@ void OsuSongBrowser2::rebuildScoreButtons()
 
 		// build
 		std::vector<OsuUISongBrowserScoreButton*> scoreButtons;
-		for (size_t i=0; i<numScores; i++)
+		for (size_t i=0; std::cmp_less(i,numScores); i++)
 		{
 			OsuUISongBrowserScoreButton *button = m_scoreButtonCache[i];
 			button->setName(UString(m_selectedBeatmap->getSelectedDifficulty2()->getMD5Hash().c_str()));
@@ -2986,7 +2987,7 @@ void OsuSongBrowser2::rebuildScoreButtons()
 		}
 
 		// add
-		for (size_t i=0; i<numScores; i++)
+		for (size_t i=0; std::cmp_less(i,numScores); i++)
 		{
 			scoreButtons[i]->setIndex(i+1);
 			m_scoreBrowser->getContainer()->addBaseUIElement(scoreButtons[i]);
@@ -3694,7 +3695,7 @@ void OsuSongBrowser2::onSortChangeInt(UString text, bool autoScroll)
 	comparatorWrapper.comp = sortingMethod->comparator;
 
 	// resort primitive master button array (all songbuttons, No Grouping)
-	std::sort(m_songButtons.begin(), m_songButtons.end(), comparatorWrapper);
+	std::ranges::sort(m_songButtons, comparatorWrapper);
 
 	// resort Collection buttons (one button for each collection)
 	// these are always sorted alphabetically by name
@@ -3711,14 +3712,14 @@ void OsuSongBrowser2::onSortChangeInt(UString text, bool autoScroll)
 			}
 		};
 
-		std::sort(m_collectionButtons.begin(), m_collectionButtons.end(), COLLECTION_NAME_SORTING_COMPARATOR());
+		std::ranges::sort(m_collectionButtons, COLLECTION_NAME_SORTING_COMPARATOR());
 	}
 
 	// resort Collection button array (each group of songbuttons inside each Collection)
 	for (size_t i=0; i<m_collectionButtons.size(); i++)
 	{
 		std::vector<OsuUISongBrowserButton*> &children = m_collectionButtons[i]->getChildren();
-		std::sort(children.begin(), children.end(), comparatorWrapper);
+		std::ranges::sort(children, comparatorWrapper);
 		m_collectionButtons[i]->setChildren(children);
 	}
 
@@ -3726,43 +3727,43 @@ void OsuSongBrowser2::onSortChangeInt(UString text, bool autoScroll)
 	for (size_t i=0; i<m_artistCollectionButtons.size(); i++)
 	{
 		std::vector<OsuUISongBrowserButton*> &children = m_artistCollectionButtons[i]->getChildren();
-		std::sort(children.begin(), children.end(), comparatorWrapper);
+		std::ranges::sort(children, comparatorWrapper);
 		m_artistCollectionButtons[i]->setChildren(children);
 	}
 	for (size_t i=0; i<m_difficultyCollectionButtons.size(); i++)
 	{
 		std::vector<OsuUISongBrowserButton*> &children = m_difficultyCollectionButtons[i]->getChildren();
-		std::sort(children.begin(), children.end(), comparatorWrapper);
+		std::ranges::sort(children, comparatorWrapper);
 		m_difficultyCollectionButtons[i]->setChildren(children);
 	}
 	for (size_t i=0; i<m_bpmCollectionButtons.size(); i++)
 	{
 		std::vector<OsuUISongBrowserButton*> &children = m_bpmCollectionButtons[i]->getChildren();
-		std::sort(children.begin(), children.end(), comparatorWrapper);
+		std::ranges::sort(children, comparatorWrapper);
 		m_bpmCollectionButtons[i]->setChildren(children);
 	}
 	for (size_t i=0; i<m_creatorCollectionButtons.size(); i++)
 	{
 		std::vector<OsuUISongBrowserButton*> &children = m_creatorCollectionButtons[i]->getChildren();
-		std::sort(children.begin(), children.end(), comparatorWrapper);
+		std::ranges::sort(children, comparatorWrapper);
 		m_creatorCollectionButtons[i]->setChildren(children);
 	}
 	for (size_t i=0; i<m_dateaddedCollectionButtons.size(); i++)
 	{
 		std::vector<OsuUISongBrowserButton*> &children = m_dateaddedCollectionButtons[i]->getChildren();
-		std::sort(children.begin(), children.end(), comparatorWrapper);
+		std::ranges::sort(children, comparatorWrapper);
 		m_dateaddedCollectionButtons[i]->setChildren(children);
 	}
 	for (size_t i=0; i<m_lengthCollectionButtons.size(); i++)
 	{
 		std::vector<OsuUISongBrowserButton*> &children = m_lengthCollectionButtons[i]->getChildren();
-		std::sort(children.begin(), children.end(), comparatorWrapper);
+		std::ranges::sort(children, comparatorWrapper);
 		m_lengthCollectionButtons[i]->setChildren(children);
 	}
 	for (size_t i=0; i<m_titleCollectionButtons.size(); i++)
 	{
 		std::vector<OsuUISongBrowserButton*> &children = m_titleCollectionButtons[i]->getChildren();
-		std::sort(children.begin(), children.end(), comparatorWrapper);
+		std::ranges::sort(children, comparatorWrapper);
 		m_titleCollectionButtons[i]->setChildren(children);
 	}
 

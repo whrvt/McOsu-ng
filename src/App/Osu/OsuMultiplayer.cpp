@@ -7,6 +7,9 @@
 
 #include "OsuMultiplayer.h"
 
+#include <algorithm>
+#include <utility>
+
 #include "Engine.h"
 #include "ConVar.h"
 #include "Console.h"
@@ -542,7 +545,7 @@ bool OsuMultiplayer::onClientReceiveInt(uint32_t id, void *data, uint32_t size, 
 			    	}
 			    }
 			};
-			std::sort(m_clientPlayers.begin(), m_clientPlayers.end(), PlayerSortComparator());
+			std::ranges::sort(m_clientPlayers, PlayerSortComparator());
 		}
 		return true;
 
@@ -767,7 +770,7 @@ bool OsuMultiplayer::onServerReceive(uint32_t id, void *data, uint32_t size)
 				{
 					if (m_serverPlayers[i].id == id)
 					{
-						for (int c=0; c<numPlayerInputs; c++)
+						for (int c=0; std::cmp_less(c,numPlayerInputs); c++)
 						{
 							PLAYER_INPUT input;
 							input.time = inputs[c].time;
@@ -836,7 +839,7 @@ void OsuMultiplayer::onServerClientChange(uint32_t id, UString name, bool connec
 	pp.id = id;
 	pp.connected = connected;
 	pp.size = clamp<int>(name.length(), 0, 254);
-	for (int i=0; i<pp.size; i++)
+	for (int i=0; std::cmp_less(i,pp.size); i++)
 	{
 		pp.name[i] = name[i];
 	}
@@ -877,7 +880,7 @@ void OsuMultiplayer::onServerClientChange(uint32_t id, UString name, bool connec
 				pp.id = m_serverPlayers[i].id;
 				pp.connected = true;
 				pp.size = clamp<int>(m_serverPlayers[i].name.length(), 0, 254);
-				for (int n=0; n<pp.size; n++)
+				for (int n=0; std::cmp_less(n,pp.size); n++)
 				{
 					pp.name[n] = m_serverPlayers[i].name[n];
 				}
@@ -1079,18 +1082,18 @@ void OsuMultiplayer::onServerModUpdate()
 	std::vector<UString> simpleModConVars;
 
 	// mp
-	simpleModConVars.push_back("osu_mp_win_condition_accuracy");
+	simpleModConVars.emplace_back("osu_mp_win_condition_accuracy");
 
 	// mods
 	if (!osu_mp_freemod.getBool() || !osu_mp_freemod_all.getBool())
 	{
 		// overrides
-		simpleModConVars.push_back("osu_cs_override");
-		simpleModConVars.push_back("osu_ar_override_lock");
-		simpleModConVars.push_back("osu_ar_override");
-		simpleModConVars.push_back("osu_od_override_lock");
-		simpleModConVars.push_back("osu_od_override");
-		simpleModConVars.push_back("osu_speed_override");
+		simpleModConVars.emplace_back("osu_cs_override");
+		simpleModConVars.emplace_back("osu_ar_override_lock");
+		simpleModConVars.emplace_back("osu_ar_override");
+		simpleModConVars.emplace_back("osu_od_override_lock");
+		simpleModConVars.emplace_back("osu_od_override");
+		simpleModConVars.emplace_back("osu_speed_override");
 
 		// experimental mods
 		std::vector<ConVar*> experimentalMods = m_osu->getExperimentalMods();
@@ -1100,27 +1103,27 @@ void OsuMultiplayer::onServerModUpdate()
 		}
 
 		// drain
-		simpleModConVars.push_back("osu_drain_type");
-		simpleModConVars.push_back("osu_drain_kill");
+		simpleModConVars.emplace_back("osu_drain_type");
+		simpleModConVars.emplace_back("osu_drain_kill");
 
-		simpleModConVars.push_back("osu_drain_vr_duration");
-		simpleModConVars.push_back("osu_drain_vr_multiplier");
-		simpleModConVars.push_back("osu_drain_vr_300");
-		simpleModConVars.push_back("osu_drain_vr_100");
-		simpleModConVars.push_back("osu_drain_vr_50");
-		simpleModConVars.push_back("osu_drain_vr_miss");
-		simpleModConVars.push_back("osu_drain_vr_sliderbreak");
+		simpleModConVars.emplace_back("osu_drain_vr_duration");
+		simpleModConVars.emplace_back("osu_drain_vr_multiplier");
+		simpleModConVars.emplace_back("osu_drain_vr_300");
+		simpleModConVars.emplace_back("osu_drain_vr_100");
+		simpleModConVars.emplace_back("osu_drain_vr_50");
+		simpleModConVars.emplace_back("osu_drain_vr_miss");
+		simpleModConVars.emplace_back("osu_drain_vr_sliderbreak");
 
-		simpleModConVars.push_back("osu_drain_stable_hpbar_maximum");
+		simpleModConVars.emplace_back("osu_drain_stable_hpbar_maximum");
 
-		simpleModConVars.push_back("osu_drain_lazer_multiplier");
-		simpleModConVars.push_back("osu_drain_lazer_300");
-		simpleModConVars.push_back("osu_drain_lazer_100");
-		simpleModConVars.push_back("osu_drain_lazer_50");
-		simpleModConVars.push_back("osu_drain_lazer_miss");
-		simpleModConVars.push_back("osu_drain_lazer_health_min");
-		simpleModConVars.push_back("osu_drain_lazer_health_mid");
-		simpleModConVars.push_back("osu_drain_lazer_health_max");
+		simpleModConVars.emplace_back("osu_drain_lazer_multiplier");
+		simpleModConVars.emplace_back("osu_drain_lazer_300");
+		simpleModConVars.emplace_back("osu_drain_lazer_100");
+		simpleModConVars.emplace_back("osu_drain_lazer_50");
+		simpleModConVars.emplace_back("osu_drain_lazer_miss");
+		simpleModConVars.emplace_back("osu_drain_lazer_health_min");
+		simpleModConVars.emplace_back("osu_drain_lazer_health_mid");
+		simpleModConVars.emplace_back("osu_drain_lazer_health_max");
 	}
 
 	// build final string
@@ -1272,7 +1275,7 @@ void OsuMultiplayer::onClientCommandInt(UString string, bool executeLocallyToo)
 
 	CONVAR_PACKET pp;
 	pp.len = clamp<int>(string.length(), 0, 2047);
-	for (int i=0; i<pp.len; i++)
+	for (int i=0; std::cmp_less(i,pp.len); i++)
 	{
 		pp.str[i] = string[i];
 	}

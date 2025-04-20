@@ -8,6 +8,8 @@
 
 #include "OsuSliderCurves.h"
 
+#include <utility>
+
 #include "Engine.h"
 #include "ConVar.h"
 
@@ -290,8 +292,8 @@ void OsuSliderCurveEqualDistanceMulti::init(const std::vector<OsuSliderCurveType
 		const Vector2 thisCurve = (curCurve->getCurvePoints().size() > 0 && curPoint > -1 && curPoint < curCurve->getCurvePoints().size() ? curCurve->getCurvePoints()[curPoint] : Vector2(0, 0));
 
 		// interpolate the point between the two closest distances
-		m_curvePoints.push_back(Vector2(0, 0));
-		curCurvePoints.push_back(Vector2(0, 0));
+		m_curvePoints.emplace_back(0, 0);
+		curCurvePoints.emplace_back(0, 0);
 		if (distanceAt - lastDistanceAt > 1)
 		{
 			const float t = (prefDistance - lastDistanceAt) / (distanceAt - lastDistanceAt);
@@ -654,7 +656,7 @@ OsuSliderCurveCircumscribedCircle::OsuSliderCurveCircumscribedCircle(std::vector
 	}
 
 	// add the segment (no special logic here for SliderCurveCircumscribedCircle, just add the entire vector)
-	m_curvePointSegments.push_back(std::vector<Vector2>(m_curvePoints)); // copy
+	m_curvePointSegments.emplace_back(m_curvePoints); // copy
 
 	// backup (for dynamic updateStackPosition() recalculation)
 	m_originalCurvePoints = std::vector<Vector2>(m_curvePoints); // copy
@@ -729,7 +731,7 @@ std::vector<Vector2> OsuSliderBezierApproximator::createBezier(const std::vector
 	std::stack<std::vector<Vector2>> toFlatten;
 	std::stack<std::vector<Vector2>> freeBuffers;
 
-	toFlatten.push(std::vector<Vector2>(controlPoints)); // copy
+	toFlatten.emplace(controlPoints); // copy
 
 	std::vector<Vector2> &leftChild = m_subdivisionBuffer2;
 
@@ -773,7 +775,7 @@ bool OsuSliderBezierApproximator::isFlatEnough(const std::vector<Vector2> &contr
 {
 	if (controlPoints.size() < 1) return true;
 
-    for (int i=1; i<(int)(controlPoints.size() - 1); i++)
+    for (int i=1; std::cmp_less(i,(controlPoints.size() - 1)); i++)
     {
         if (std::pow((double)(controlPoints[i - 1] - 2 * controlPoints[i] + controlPoints[i + 1]).length(), 2.0) > TOLERANCE_SQ * 4)
             return false;

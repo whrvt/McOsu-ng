@@ -17,7 +17,7 @@
 #include "AnimationHandler.h"
 #include "SoundEngine.h"
 
-#include <string.h>
+#include <cstring>
 
 ConVar vprof_graph("vprof_graph", true, FCVAR_NONE, "whether to draw the graph when the overlay is enabled");
 ConVar vprof_graph_height("vprof_graph_height", 250.0f, FCVAR_NONE);

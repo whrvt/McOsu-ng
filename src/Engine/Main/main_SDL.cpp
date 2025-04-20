@@ -64,8 +64,6 @@ ConVar sdl_joystick0_deadzone("sdl_joystick0_deadzone", 0.3f, FCVAR_NONE);
 ConVar sdl_joystick_zl_threshold("sdl_joystick_zl_threshold", -0.5f, FCVAR_NONE);
 ConVar sdl_joystick_zr_threshold("sdl_joystick_zr_threshold", -0.5f, FCVAR_NONE);
 
-ConVar debug_sdl("debug_sdl", false, FCVAR_NONE);
-
 #ifdef MCENGINE_SDL_TOUCHSUPPORT
 //ConVar sdl_steamdeck_starttextinput_workaround("sdl_steamdeck_starttextinput_workaround", true, FCVAR_NONE, "currently used to fix an SDL2 bug on the Steam Deck (fixes USB/touch keyboard textual input not working under gamescope), see https://github.com/libsdl-org/SDL/issues/8561");
 ConVar sdl_steamdeck_doubletouch_workaround("sdl_steamdeck_doubletouch_workaround", true, FCVAR_NONE, "currently used to fix a Valve/SDL2 bug on the Steam Deck (fixes \"Touchscreen Native Support\" firing 4 events for one single touch under gamescope, i.e. DOWN/UP/DOWN/UP instead of just DOWN/UP)");
@@ -121,15 +119,10 @@ static const char *getCategoryString(int category)
 	}
 }
 
-static void SDLLogCallback(void *userdata, int category, SDL_LogPriority priority, const char *message)
+static void SDLLogCallback(void *, int category, SDL_LogPriority, const char *message)
 {
-	if (!debug_sdl.getBool())
-	{
-		return;
-	}
-
 	const char *catStr = getCategoryString(category);
-	debugLog("SDL[%s]: %s\n", catStr, message);
+	fprintf(stderr, "SDL[%s]: %s\n", catStr, message);
 }
 
 int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
@@ -141,12 +134,6 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 #ifdef MCENGINE_SDL_JOYSTICK
 
 	flags |= SDL_INIT_JOYSTICK;
-
-#endif
-
-#ifdef MCENGINE_FEATURE_SDL_MIXER
-
-	flags |= SDL_INIT_AUDIO;
 
 #endif
 
@@ -184,9 +171,6 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 
 #endif
 
-	const bool shouldBeBorderless = convar->getConVarByName("fullscreen_windowed_borderless")->getBool();
-	const bool shouldBeFullscreen = !(convar->getConVarByName("windowed") != NULL) || shouldBeBorderless;
-
     SDL_PropertiesID props = SDL_CreateProperties();
     SDL_SetStringProperty(props, SDL_PROP_WINDOW_CREATE_TITLE_STRING, WINDOW_TITLE);
     SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_X_NUMBER, SDL_WINDOWPOS_CENTERED);
@@ -194,8 +178,9 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
     SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_WIDTH_NUMBER, WINDOW_WIDTH);
     SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_HEIGHT_NUMBER, WINDOW_HEIGHT);
 	SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_RESIZABLE_BOOLEAN, false);
-	SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_FULLSCREEN_BOOLEAN, shouldBeFullscreen);
-	SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_BORDERLESS_BOOLEAN, shouldBeBorderless);
+	SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_BORDERLESS_BOOLEAN, false); // set these props later, after engine starts and loads cfgs
+	SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_FULLSCREEN_BOOLEAN, false);
+	SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_MAXIMIZED_BOOLEAN, false);
     SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_FLAGS_NUMBER, windowFlags);
 
 	// create window
@@ -211,22 +196,21 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 	// get the screen refresh rate, and set fps_max to that as default
 	{
 		const SDL_DisplayMode * currentDisplayMode;
-		currentDisplayMode = SDL_GetCurrentDisplayMode(SDL_GetDisplayForWindow(g_window));
+		const SDL_DisplayID display = SDL_GetDisplayForWindow(g_window);
+		currentDisplayMode = SDL_GetCurrentDisplayMode(display);
 
-		if (currentDisplayMode->refresh_rate > 0)
+		if (currentDisplayMode && currentDisplayMode->refresh_rate > 0)
 		{
-			// debugLog("Display Refresh Rate is %f Hz, setting fps_max to %f.\n\n", currentDisplayMode->refresh_rate, currentDisplayMode->refresh_rate);
+			debugLog("Display %d refresh rate is %f Hz, setting default fps_max to %f.\n", display, currentDisplayMode->refresh_rate, currentDisplayMode->refresh_rate);
 			fps_max.setValue(currentDisplayMode->refresh_rate);
 			fps_max.setDefaultFloat(currentDisplayMode->refresh_rate);
 		}
 		else
 		{
+			debugLog("Couldn't SDL_GetCurrentDisplayMode(SDL display: %d): %s\n", display, SDL_GetError());
 			fps_max.setValue(fps_max.getInt());
 		}
 	}
-
-	// post window-creation settings
-	SDL_SetWindowMinimumSize(g_window, WINDOW_WIDTH_MIN, WINDOW_HEIGHT_MIN);
 
 	// create OpenGL context
 #if defined(MCENGINE_FEATURE_OPENGL) || defined(MCENGINE_FEATURE_OPENGLES)
@@ -256,25 +240,21 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 #endif
 
     // create timers
-    Timer *frameTimer = new Timer();
+    auto *frameTimer = new Timer();
     frameTimer->start();
     frameTimer->update();
 
-    Timer *deltaTimer = new Timer();
+    auto *deltaTimer = new Timer();
     deltaTimer->start();
     deltaTimer->update();
 
-	Timer *fpsCalcTimer = new Timer();
+	auto *fpsCalcTimer = new Timer();
 	fpsCalcTimer->start();
 	fpsCalcTimer->update();
 
 	// variables to keep track of fps overhead adjustment
 	uint64_t frameCountSinceLastFpsCalc = 0;
 	double fpsAdjustment = 0.0;
-
-    // make the window visible
-    SDL_ShowWindow(g_window);
-	SDL_RaiseWindow(g_window);
 
 	// initialize engine
 	if (environment == NULL)
@@ -283,6 +263,27 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 		environment->setWindow(g_window);
 
 	g_engine = new Engine(environment, argc > 1 ? argv[1] : ""); // TODO: proper arg support
+
+	// post window-creation settings
+	SDL_SetWindowMinimumSize(g_window, WINDOW_WIDTH_MIN, WINDOW_HEIGHT_MIN);
+
+	const bool shouldBeBorderless = convar->getConVarByName("fullscreen_windowed_borderless")->getBool();
+	const bool shouldBeFullscreen = !(convar->getConVarByName("windowed") != NULL) || shouldBeBorderless;
+
+	if (!(shouldBeBorderless || shouldBeFullscreen))
+	{
+		environment->disableFullscreen();
+		environment->center();
+	}
+	else
+	{
+		environment->enableFullscreen();
+	}
+
+	// make the window visible
+	SDL_ShowWindow(g_window);
+	SDL_RaiseWindow(g_window);
+
 	g_engine->loadApp();
 
 	frameTimer->update();
@@ -346,7 +347,7 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 			}
 
 			const bool isRawInputEnabled = (SDL_GetWindowRelativeMouseMode(g_window) == true);
-			const bool isDebugSdl = environment->sdlDebug(debug_sdl.getBool());
+			const bool isDebugSdl = false; //environment->sdlDebug();
 
 			while (SDL_PollEvent(&e) != 0)
 			{
@@ -871,13 +872,13 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 					if (joystick0DeadzoneX > 0.0f && joystick0DeadzoneX < 1.0f)
 					{
 						const float deltaAbs = (std::abs(m_fJoystick0XPercent) - joystick0DeadzoneX);
-						joystick0XPercent = (deltaAbs > 0.0f ? (deltaAbs / (1.0f - joystick0DeadzoneX)) * (float)sign<float>(m_fJoystick0XPercent) : 0.0f);
+						joystick0XPercent = (deltaAbs > 0.0f ? (deltaAbs / (1.0f - joystick0DeadzoneX)) * (float)signbit(m_fJoystick0XPercent) : 0.0f);
 					}
 
 					if (joystick0DeadzoneY > 0.0f && joystick0DeadzoneY < 1.0f)
 					{
 						const float deltaAbs = (std::abs(m_fJoystick0YPercent) - joystick0DeadzoneY);
-						joystick0YPercent = (deltaAbs > 0.0f ? (deltaAbs / (1.0f - joystick0DeadzoneY)) * (float)sign<float>(m_fJoystick0YPercent) : 0.0f);
+						joystick0YPercent = (deltaAbs > 0.0f ? (deltaAbs / (1.0f - joystick0DeadzoneY)) * (float)signbit(m_fJoystick0YPercent) : 0.0f);
 					}
 				}
 
@@ -934,11 +935,11 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 					if (!inBackground)
 					{
 						const double actualGameFps = static_cast<double>(frameCountSinceLastFpsCalc) / fpsCalcTimer->getElapsedTime();
-						if (actualGameFps < targetFps * 0.99f && actualGameFps > targetFps * 0.95f)
+						if (actualGameFps < targetFps * 0.99f && actualGameFps > targetFps * 0.85f)
 							fpsAdjustment -= 0.5f;
 						else if (actualGameFps > targetFps * 1.005f)
-							fpsAdjustment = 0.0f;
-						clamp<double>(fpsAdjustment, -5.0f, 0.0f);
+							fpsAdjustment += 0.5f;
+						fpsAdjustment = clamp<double>(fpsAdjustment, -15.0f, 0.0f);
 					}
 					else fpsAdjustment = 0.0f;
 

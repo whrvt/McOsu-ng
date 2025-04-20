@@ -27,7 +27,7 @@
 #include <unistd.h>
 #include <pwd.h>
 
-#include <string.h>
+#include <cstring>
 #include <stdio.h>
 
 typedef struct
@@ -130,11 +130,6 @@ Graphics *LinuxEnvironment::createRenderer()
 ContextMenu *LinuxEnvironment::createContextMenu()
 {
 	return new LinuxContextMenu();
-}
-
-Environment::OS LinuxEnvironment::getOS()
-{
-	return Environment::OS::OS_LINUX;
 }
 
 void LinuxEnvironment::shutdown()
@@ -272,12 +267,26 @@ std::vector<UString> LinuxEnvironment::getFilesInFolder(UString folder)
 	return files;
 }
 
+static int caseInsensitiveSort(const struct dirent **e1, const struct dirent **e2)
+{
+	std::string a((*e1)->d_name);
+	std::string b((*e2)->d_name);
+
+	return std::lexicographical_compare(
+		std::begin(a), std::end(a),
+		std::begin(b), std::end(b),
+		[](const char& char1, const char& char2) {
+			return std::tolower(char1) < std::tolower(char2);
+		}
+	);
+}
+
 std::vector<UString> LinuxEnvironment::getFoldersInFolder(UString folder)
 {
 	std::vector<UString> folders;
 
 	struct dirent **namelist;
-	int n = scandir(folder.toUtf8(), &namelist, getFoldersInFolderFilter, alphasort);
+	int n = scandir(folder.toUtf8(), &namelist, getFoldersInFolderFilter, caseInsensitiveSort);
 	if (n < 0)
 	{
 		///debugLog("LinuxEnvironment::getFilesInFolder() error, scandir() returned %i!\n", n);

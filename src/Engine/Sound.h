@@ -1,6 +1,6 @@
-//================ Copyright (c) 2014, PG, All rights reserved. =================//
+//========== Copyright (c) 2014, PG & 2025, WH, All rights reserved. ============//
 //
-// Purpose:		sound wrapper, either streamed or preloaded
+// Purpose:		sound wrapper base class
 //
 // $NoKeywords: $snd
 //===============================================================================//
@@ -10,74 +10,58 @@
 #define SOUND_H
 
 #include "Resource.h"
-#include "SoundEngine.h"
-
-#if defined(_GNU_SOURCE) && defined(__linux__) && defined(MCENGINE_FEATURE_SOUND)
-#include <dlfcn.h>
-#else
-#define DL_CALL_FCT(fctp, args) ((*(fctp)) args)
-#endif
 
 class SoundEngine;
 
 class Sound : public Resource
 {
-	friend class SoundEngine;
-
 public:
 	typedef unsigned long SOUNDHANDLE;
 
 public:
 	Sound(UString filepath, bool stream, bool threeD, bool loop, bool prescan);
-	virtual ~Sound() {destroy();}
+	~Sound() override;
 
-	void setPosition(double percent);
-	void setPositionMS(unsigned long ms) {setPositionMS(ms, false);}
-	void setVolume(float volume);
-	void setSpeed(float speed);
-	void setPitch(float pitch);
-	void setFrequency(float frequency);
-	void setPan(float pan);
-	void setLoop(bool loop);
-	void setOverlayable(bool overlayable) {m_bIsOverlayable = overlayable;}
-	void setLastPlayTime(double lastPlayTime) {m_fLastPlayTime = lastPlayTime;}
+	// Factory method to create the appropriate sound object
+	static Sound *createSound(UString filepath, bool stream, bool threeD, bool loop, bool prescan);
 
-	SOUNDHANDLE getHandle();
-	float getPosition();
-	unsigned long getPositionMS();
-	unsigned long getLengthMS();
-	float getSpeed();
-	float getPitch();
-	float getFrequency();
+	// Public interface
+	virtual void setPosition(double percent) = 0;
+	virtual void setPositionMS(unsigned long ms) { setPositionMS(ms, false); }
+	virtual void setVolume(float volume) = 0;
+	virtual void setSpeed(float speed) = 0;
+	virtual void setPitch(float pitch) = 0;
+	virtual void setFrequency(float frequency) = 0;
+	virtual void setPan(float pan) = 0;
+	virtual void setLoop(bool loop) = 0;
+	virtual void setOverlayable(bool overlayable) { m_bIsOverlayable = overlayable; }
+	virtual void setLastPlayTime(double lastPlayTime) { m_fLastPlayTime = lastPlayTime; }
 
-	inline double getLastPlayTime() const {return m_fLastPlayTime;}
+	virtual SOUNDHANDLE getHandle() = 0;
+	virtual float getPosition() = 0;
+	virtual unsigned long getPositionMS() = 0;
+	virtual unsigned long getLengthMS() = 0;
+	virtual float getSpeed() = 0;
+	virtual float getPitch() = 0;
+	virtual float getFrequency() = 0;
 
-	bool isPlaying();
-	bool isFinished();
+	virtual bool isPlaying() = 0;
+	virtual bool isFinished() = 0;
 
-	inline bool isStream() const {return m_bStream;}
-	inline bool is3d() const {return m_bIs3d;}
-	inline bool isLooped() const {return m_bIsLooped;}
-	inline bool isOverlayable() const {return m_bIsOverlayable;}
+	[[nodiscard]] inline double getLastPlayTime() const { return m_fLastPlayTime; }
+	[[nodiscard]] inline bool isStream() const { return m_bStream; }
+	[[nodiscard]] inline bool is3d() const { return m_bIs3d; }
+	[[nodiscard]] inline bool isLooped() const { return m_bIsLooped; }
+	[[nodiscard]] inline bool isOverlayable() const { return m_bIsOverlayable; }
 
-	void rebuild(UString newFilePath);
+	virtual void rebuild(UString newFilePath) = 0;
 
-	// ILLEGAL:
-	void setHandle(SOUNDHANDLE handle) {m_HCHANNEL = handle;}
-	void setPrevPosition(unsigned long prevPosition) {m_iPrevPosition = prevPosition;}
-	inline void *getMixChunkOrMixMusic() const {return m_mixChunkOrMixMusic;}
-	inline unsigned long getPrevPosition() const {return m_iPrevPosition;}
-private:
-	virtual void init();
-	virtual void initAsync();
-	virtual void destroy();
+protected:
+	void init() override = 0;
+	void initAsync() override = 0;
+	void destroy() override = 0;
 
-	void setPositionMS(unsigned long ms, bool internal);
-
-	SOUNDHANDLE m_HSTREAM;
-	SOUNDHANDLE m_HSTREAMBACKUP;
-	SOUNDHANDLE m_HCHANNEL;
-	SOUNDHANDLE m_HCHANNELBACKUP;
+	virtual void setPositionMS(unsigned long ms, bool internal) = 0;
 
 	bool m_bStream;
 	bool m_bIs3d;
@@ -87,21 +71,6 @@ private:
 
 	float m_fVolume;
 	double m_fLastPlayTime;
-
-	// bass custom
-	float m_fActualSpeedForDisabledPitchCompensation;
-
-	// bass wasapi
-	char *m_wasapiSampleBuffer;
-	unsigned long long m_iWasapiSampleBufferSize;
-	std::vector<SOUNDHANDLE> m_danglingWasapiStreams;
-
-	// sdl mixer
-	void *m_mixChunkOrMixMusic;
-	unsigned long m_iPrevPosition;
-#if defined(MCENGINE_FEATURE_SOUND)
-    inline unsigned int _BASS_FX_TempoCreate(unsigned int chan, unsigned int flags) const {return DL_CALL_FCT((SoundEngine::m_BASS_FX_TempoCreate), (chan, flags));}
-#endif
 };
 
 #endif

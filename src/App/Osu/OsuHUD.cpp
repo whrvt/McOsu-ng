@@ -7,6 +7,8 @@
 
 #include "OsuHUD.h"
 
+#include <utility>
+
 #include "Engine.h"
 #include "Environment.h"
 #include "ConVar.h"
@@ -480,7 +482,7 @@ void OsuHUD::draw(Graphics *g)
 				const OsuDatabaseBeatmap::BREAK &bk = beatmapBreaks[i];
 
 				// ignore breaks after last hitobject
-				if (/*bk.endTime <= (int)startTimePlayableMS ||*/ bk.startTime >= (int)(startTimePlayableMS + lengthPlayableMS))
+				if (/*bk.endTime <= (int)startTimePlayableMS ||*/ std::cmp_greater_equal(bk.startTime, (startTimePlayableMS + lengthPlayableMS)))
 					continue;
 
 				BREAK bk2;

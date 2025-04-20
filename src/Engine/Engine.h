@@ -10,6 +10,14 @@
 #define ENGINE_H
 
 #include "cbase.h"
+#include <type_traits>
+#include <source_location>
+
+#ifdef _DEBUG
+#define debugLog(...) Engine::ContextLogger::log(std::source_location::current(), __VA_ARGS__)
+#else
+#define debugLog(...) Engine::ContextLogger::log(__FUNCTION__, __VA_ARGS__)
+#endif
 
 class App;
 class Timer;
@@ -46,25 +54,34 @@ public:
 	class ContextLogger
 	{
 	public:
-		template<typename... Args>
-		static void log(const char* function, const char* fmt, Args... args)
+		template<class T, typename... Args>
+		static void log(T function, const char* fmt, Args... args)
 		{
 			std::string newFormat = formatWithContext(function, fmt);
 			Engine::debugLog_(newFormat.c_str(), args...);
 		}
 
-		template<typename... Args>
-		static void log(const char* function, Color color, const char* fmt, Args... args)
+		template<class T, typename... Args>
+		static void log(T function, Color color, const char* fmt, Args... args)
 		{
 			std::string newFormat = formatWithContext(function, fmt);
 			Engine::debugLog_(color, newFormat.c_str(), args...);
 		}
-		
+
 	private:
-		static std::string formatWithContext(const char* function, const char* fmt)
+		template<typename... Args>
+		static std::string formatWithContext(const std::source_location func, const char* fmt)
 		{
 			std::ostringstream contextPrefix;
-			contextPrefix << "[" << function << "] ";
+			contextPrefix << "[" << func.file_name() << ":" << func.line() << ":" << func.column() << "] " << "[" << func.function_name() << "]: ";
+			return contextPrefix.str() + fmt;
+		}
+		template<typename... Args>
+		static std::string formatWithContext(const char *func, const char* fmt)
+		{
+			std::ostringstream contextPrefix;
+			contextPrefix << "[" << func << "] ";
+
 			return contextPrefix.str() + fmt;
 		}
 	};
@@ -222,12 +239,5 @@ private:
 };
 
 extern Engine *engine;
-
-#ifdef _DEBUG
-#include <source_location>
-#define debugLog(...) Engine::ContextLogger::log(std::source_location::current().function_name(), __VA_ARGS__)
-#else
-#define debugLog(...) Engine::ContextLogger::log(__FUNCTION__, __VA_ARGS__)
-#endif
 
 #endif

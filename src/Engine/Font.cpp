@@ -18,6 +18,9 @@
 #include <freetype/ftoutln.h>
 #include <freetype/fttrigon.h>
 
+#include <algorithm>
+#include <utility>
+
 // constants for atlas generation and rendering
 static constexpr float ATLAS_OCCUPANCY_TARGET = 0.75f; // target atlas occupancy before resize
 static constexpr size_t MIN_ATLAS_SIZE = 256;
@@ -458,7 +461,7 @@ const McFont::GLYPH_METRICS &McFont::getGlyphMetrics(wchar_t ch) const
     return m_errorGlyph;
 }
 
-const bool McFont::hasGlyph(wchar_t ch) const
+bool McFont::hasGlyph(wchar_t ch) const
 {
     return m_vGlyphMetrics.find(ch) != m_vGlyphMetrics.end();
 }
@@ -505,7 +508,7 @@ static bool packGlyphRects(std::vector<GlyphRect> &rects, int atlasWidth, int at
     const int padding = r_debug_font_atlas_padding.getInt();
 
     // sort rectangles by height
-    std::sort(rects.begin(), rects.end(),
+    std::ranges::sort(rects,
               [](const GlyphRect &a, const GlyphRect &b)
               {
                   return a.height > b.height;
@@ -568,7 +571,7 @@ static bool packGlyphRects(std::vector<GlyphRect> &rects, int atlasWidth, int at
         rect.y = bestHeight - rectHeight;
 
         // update skyline
-        Skyline newSkyline{rect.x, rect.y + rectHeight, rectWidth};
+        Skyline newSkyline{.x=rect.x, .y=rect.y + rectHeight, .width=rectWidth};
         skylines.insert(skylines.begin() + bestIndex, newSkyline);
 
         // merge skylines if possible
@@ -613,7 +616,7 @@ static unsigned char *unpackMonoBitmap(const FT_Bitmap &bitmap)
 {
     auto result = new unsigned char[bitmap.rows * bitmap.width];
 
-    for (int y = 0; y < bitmap.rows; y++)
+    for (int y = 0; std::cmp_less(y , bitmap.rows); y++)
     {
         for (int byteIdx = 0; byteIdx < bitmap.pitch; byteIdx++)
         {

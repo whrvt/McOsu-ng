@@ -24,7 +24,6 @@ public:
 	virtual ~MacOSSDLEnvironment();
 
 	// system
-	OS getOS();
 	void sleep(unsigned int us);
 	void openURLInDefaultBrowser(UString url);
 

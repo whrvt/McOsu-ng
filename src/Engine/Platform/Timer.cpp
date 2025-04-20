@@ -7,13 +7,13 @@
 
 #include "Timer.h"
 
-#if defined(_WIN32) || defined(_WIN64) || defined(__WIN32__) || defined(__CYGWIN__) || defined(__CYGWIN32__) || defined(__TOS_WIN__) || defined(__WINDOWS__)
-
-#include "WinTimer.h"
-
-#elif defined(MCENGINE_FEATURE_SDL)
+#ifdef MCENGINE_FEATURE_SDL
 
 #include "SDLTimer.h"
+
+#elif defined(_WIN32) || defined(_WIN64) || defined(__WIN32__) || defined(__CYGWIN__) || defined(__CYGWIN32__) || defined(__TOS_WIN__) || defined(__WINDOWS__)
+
+#include "WinTimer.h"
 
 #elif defined __linux__
 
@@ -33,13 +33,13 @@ Timer::Timer()
 {
 	m_timer = NULL;
 
-#if defined(_WIN32) || defined(_WIN64) || defined(__WIN32__) || defined(__CYGWIN__) || defined(__CYGWIN32__) || defined(__TOS_WIN__) || defined(__WINDOWS__)
-
-	m_timer = new WinTimer();
-
-#elif defined(MCENGINE_FEATURE_SDL)
+#ifdef MCENGINE_FEATURE_SDL
 
 	m_timer = new SDLTimer();
+
+#elif defined(_WIN32) || defined(_WIN64) || defined(__WIN32__) || defined(__CYGWIN__) || defined(__CYGWIN32__) || defined(__TOS_WIN__) || defined(__WINDOWS__)
+
+	m_timer = new WinTimer();
 
 #elif defined __linux__
 

@@ -9,6 +9,8 @@
 #ifndef ENGINEFEATURES_H
 #define ENGINEFEATURES_H
 
+#include "config.h"
+
 /*
  * std::thread/std::mutex support
  */
@@ -35,9 +37,9 @@
 //#define MCENGINE_FEATURE_NETWORKING
 
 /*
- * BASS sound
+ * BASS sound (defined in config.h)
  */
-#define MCENGINE_FEATURE_SOUND
+//#define MCENGINE_FEATURE_BASS
 
 /*
  * BASS WASAPI sound (Windows only)
@@ -65,12 +67,12 @@
 //#define MCENGINE_FEATURE_OPENVR
 
 /*
- * SDL3 main + Environment
+ * SDL3 main + Environment (defined in config.h)
  */
-#define MCENGINE_FEATURE_SDL
+//#define MCENGINE_FEATURE_SDL
 
 /*
- * SDL3 mixer (audio)
+ * SDL3 mixer (audio) (defined in config.h)
  */
 //#define MCENGINE_FEATURE_SDL_MIXER
 

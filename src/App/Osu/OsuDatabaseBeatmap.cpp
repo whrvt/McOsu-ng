@@ -27,8 +27,10 @@
 #include "OsuSpinner.h"
 #include "OsuManiaNote.h"
 
+#include <algorithm>
 #include <sstream>
 #include <iostream>
+#include <utility>
 
 ConVar osu_mod_random("osu_mod_random", false, FCVAR_NONE);
 ConVar osu_mod_random_seed("osu_mod_random_seed", 0, FCVAR_NONE, "0 = random seed every reload, any other value will force that value to be used as the seed");
@@ -215,7 +217,7 @@ OsuDatabaseBeatmap::PRIMITIVE_CONTAINER OsuDatabaseBeatmap::loadPrimitiveObjects
 			}
 
 			const int commentIndex = curLine.find("//");
-			if (commentIndex == std::string::npos || commentIndex != 0) // ignore comments, but only if at the beginning of a line (e.g. allow Artist:DJ'TEKINA//SOMETHING)
+			if (std::cmp_equal(commentIndex, std::string::npos) || commentIndex != 0) // ignore comments, but only if at the beginning of a line (e.g. allow Artist:DJ'TEKINA//SOMETHING)
 			{
 				if (curLine.find("[General]") != std::string::npos)
 					curBlock = 1;
@@ -428,7 +430,7 @@ OsuDatabaseBeatmap::PRIMITIVE_CONTAINER OsuDatabaseBeatmap::loadPrimitiveObjects
 									//return false;
 								}
 
-								points.push_back(Vector2((int)clamp<float>(sliderXY[0].toFloat(), -sliderSanityRange, sliderSanityRange), (int)clamp<float>(sliderXY[1].toFloat(), -sliderSanityRange, sliderSanityRange)));
+								points.emplace_back((int)clamp<float>(sliderXY[0].toFloat(), -sliderSanityRange, sliderSanityRange), (int)clamp<float>(sliderXY[1].toFloat(), -sliderSanityRange, sliderSanityRange));
 							}
 
 							// special case: osu! logic for handling the hitobject point vs the controlpoints (since sliders have both, and older beatmaps store the start point inside the control points)
@@ -537,7 +539,7 @@ OsuDatabaseBeatmap::PRIMITIVE_CONTAINER OsuDatabaseBeatmap::loadPrimitiveObjects
 
 	// late bail if too many hitobjects would run out of memory and crash
 	const size_t numHitobjects = c.hitcircles.size() + c.sliders.size() + c.spinners.size();
-	if (numHitobjects > (size_t)osu_beatmap_max_num_hitobjects.getInt())
+	if (std::cmp_greater(numHitobjects ,osu_beatmap_max_num_hitobjects.getInt()))
 	{
 		c.errorCode = 5;
 		return c;
@@ -545,7 +547,7 @@ OsuDatabaseBeatmap::PRIMITIVE_CONTAINER OsuDatabaseBeatmap::loadPrimitiveObjects
 
 	// sort timingpoints by time
 	if (c.timingpoints.size() > 0)
-		std::sort(c.timingpoints.begin(), c.timingpoints.end(), TimingPointSortComparator());
+		std::ranges::sort(c.timingpoints, TimingPointSortComparator());
 
 	return c;
 }
@@ -698,7 +700,7 @@ OsuDatabaseBeatmap::CALCULATE_SLIDER_TIMES_CLICKS_TICKS_RESULT OsuDatabaseBeatma
 			});
 
 			// 5) sort scoringTimes from earliest to latest
-			std::sort(s.scoringTimesForStarCalc.begin(), s.scoringTimesForStarCalc.end(), OsuDifficultyHitObject::SliderScoringTimeComparator());
+			std::ranges::sort(s.scoringTimesForStarCalc, OsuDifficultyHitObject::SliderScoringTimeComparator());
 		}
 	}
 
@@ -753,10 +755,10 @@ OsuDatabaseBeatmap::LOAD_DIFFOBJ_RESULT OsuDatabaseBeatmap::loadDifficultyHitObj
 
 	for (int i=0; i<c.hitcircles.size(); i++)
 	{
-		result.diffobjects.push_back(OsuDifficultyHitObject(
+		result.diffobjects.emplace_back(
 				OsuDifficultyHitObject::TYPE::CIRCLE,
 				Vector2(c.hitcircles[i].x, c.hitcircles[i].y),
-				(long)c.hitcircles[i].time));
+				(long)c.hitcircles[i].time);
 	}
 
 	const bool calculateSliderCurveInConstructor = (c.sliders.size() < 5000); // NOTE: for explanation see OsuDifficultyHitObject constructor
@@ -770,7 +772,7 @@ OsuDatabaseBeatmap::LOAD_DIFFOBJ_RESULT OsuDatabaseBeatmap::loadDifficultyHitObj
 
 		if (!calculateStarsInaccurately)
 		{
-			result.diffobjects.push_back(OsuDifficultyHitObject(
+			result.diffobjects.emplace_back(
 					OsuDifficultyHitObject::TYPE::SLIDER,
 					Vector2(c.sliders[i].x, c.sliders[i].y),
 					c.sliders[i].time,
@@ -781,11 +783,11 @@ OsuDatabaseBeatmap::LOAD_DIFFOBJ_RESULT OsuDatabaseBeatmap::loadDifficultyHitObj
 					c.sliders[i].pixelLength,
 					c.sliders[i].scoringTimesForStarCalc,
 					c.sliders[i].repeat,
-					calculateSliderCurveInConstructor));
+					calculateSliderCurveInConstructor);
 		}
 		else
 		{
-			result.diffobjects.push_back(OsuDifficultyHitObject(
+			result.diffobjects.emplace_back(
 					OsuDifficultyHitObject::TYPE::SLIDER,
 					Vector2(c.sliders[i].x, c.sliders[i].y),
 					c.sliders[i].time,
@@ -796,17 +798,17 @@ OsuDatabaseBeatmap::LOAD_DIFFOBJ_RESULT OsuDatabaseBeatmap::loadDifficultyHitObj
 					c.sliders[i].pixelLength,
 					std::vector<OsuDifficultyHitObject::SLIDER_SCORING_TIME>(),	// NOTE: ignore curve when calculating inaccurately
 					c.sliders[i].repeat,
-					false));				// NOTE: ignore curve when calculating inaccurately
+					false);				// NOTE: ignore curve when calculating inaccurately
 		}
 	}
 
 	for (int i=0; i<c.spinners.size(); i++)
 	{
-		result.diffobjects.push_back(OsuDifficultyHitObject(
+		result.diffobjects.emplace_back(
 				OsuDifficultyHitObject::TYPE::SPINNER,
 				Vector2(c.spinners[i].x, c.spinners[i].y),
 				(long)c.spinners[i].time,
-				(long)c.spinners[i].endTime));
+				(long)c.spinners[i].endTime);
 	}
 
 	// sort hitobjects by time
@@ -821,7 +823,7 @@ OsuDatabaseBeatmap::LOAD_DIFFOBJ_RESULT OsuDatabaseBeatmap::loadDifficultyHitObj
 	    		return a.time < b.time;
 	    }
 	};
-	std::sort(result.diffobjects.begin(), result.diffobjects.end(), DiffHitObjectSortComparator());
+	std::ranges::sort(result.diffobjects, DiffHitObjectSortComparator());
 
 	// calculate stacks
 	// see OsuBeatmapStandard.cpp
@@ -1073,7 +1075,7 @@ bool OsuDatabaseBeatmap::loadMetadata(OsuDatabaseBeatmap *databaseBeatmap)
 			}
 
 			const int commentIndex = curLine.find("//");
-			if (commentIndex == std::string::npos || commentIndex != 0) // ignore comments, but only if at the beginning of a line (e.g. allow Artist:DJ'TEKINA//SOMETHING)
+			if (std::cmp_equal(commentIndex , std::string::npos) || commentIndex != 0) // ignore comments, but only if at the beginning of a line (e.g. allow Artist:DJ'TEKINA//SOMETHING)
 			{
 				if (curLine.find("[General]") != std::string::npos)
 					curBlock = 0;
@@ -1184,7 +1186,7 @@ bool OsuDatabaseBeatmap::loadMetadata(OsuDatabaseBeatmap *databaseBeatmap)
 					{
 						memset(stringBuffer, '\0', 1024);
 						int type, startTime;
-						if (sscanf(curLineChar, " %i , %i , \"%1023[^\"]\"", &type, &startTime, stringBuffer) == 3)
+						if (sscanf(curLineChar, R"( %i , %i , "%1023[^"]")", &type, &startTime, stringBuffer) == 3)
 						{
 							if (type == 0)
 							{
@@ -1277,7 +1279,7 @@ bool OsuDatabaseBeatmap::loadMetadata(OsuDatabaseBeatmap *databaseBeatmap)
 			debugLog("calculating BPM range ...\n");
 
 		// sort timingpoints by time
-		std::sort(databaseBeatmap->m_timingpoints.begin(), databaseBeatmap->m_timingpoints.end(), TimingPointSortComparator());
+		std::ranges::sort(databaseBeatmap->m_timingpoints, TimingPointSortComparator());
 
 		// calculate bpm range
 		float tempMinBPM = 0.0f;
@@ -1310,14 +1312,14 @@ bool OsuDatabaseBeatmap::loadMetadata(OsuDatabaseBeatmap *databaseBeatmap)
 
 		if (tempMinBPM > 0 && tempMinBPM < std::numeric_limits<float>::max()) {
 			minBPM = msPerMinute / tempMinBPM;
-			if (std::isfinite(minBPM) && minBPM <= static_cast<float>(std::numeric_limits<int>::max())) {
+			if (isfinite(minBPM) && minBPM <= static_cast<float>(std::numeric_limits<int>::max())) {
 				databaseBeatmap->m_iMinBPM = static_cast<int>(std::round(minBPM));
 			}
 		}
 
 		if (tempMaxBPM > 0 && tempMaxBPM < std::numeric_limits<float>::max()) {
 			maxBPM = msPerMinute / tempMaxBPM;
-			if (std::isfinite(maxBPM) && maxBPM <= static_cast<float>(std::numeric_limits<int>::max())) {
+			if (isfinite(maxBPM) && maxBPM <= static_cast<float>(std::numeric_limits<int>::max())) {
 				databaseBeatmap->m_iMaxBPM = static_cast<int>(std::round(maxBPM));
 			}
 		}
@@ -1343,7 +1345,7 @@ bool OsuDatabaseBeatmap::loadMetadata(OsuDatabaseBeatmap *databaseBeatmap)
 				{
 					const OsuDatabaseBeatmap::TIMINGPOINT &t = uninheritedTimingpoints[i];
 
-					Tuple tuple;
+					Tuple tuple{};
 					{
 						if (t.offset > lastTime)
 						{
@@ -1408,7 +1410,7 @@ bool OsuDatabaseBeatmap::loadMetadata(OsuDatabaseBeatmap *databaseBeatmap)
 				    		return (a.duration > b.duration);
 				    }
 				};
-				std::sort(aggregations.begin(), aggregations.end(), SortByDuration());
+				std::ranges::sort(aggregations, SortByDuration());
 
 				float mostCommonBPM = aggregations[0].beatLength;
 				{
@@ -1579,7 +1581,7 @@ OsuDatabaseBeatmap::LOAD_GAMEPLAY_RESULT OsuDatabaseBeatmap::loadGameplay(OsuDat
 				}
 
 				if (osu_mod_reverse_sliders.getBool())
-					std::reverse(s.points.begin(), s.points.end());
+					std::ranges::reverse(s.points);
 
 				result.hitobjects.push_back(new OsuSlider(s.type, s.repeat, s.pixelLength, s.points, s.hitSounds, s.ticks, s.sliderTime, s.sliderTimeWithoutRepeats, s.time, s.sampleType, s.number, false, s.colorCounter, s.colorOffset, beatmapStandard));
 
@@ -1674,7 +1676,7 @@ OsuDatabaseBeatmap::LOAD_GAMEPLAY_RESULT OsuDatabaseBeatmap::loadGameplay(OsuDat
 	    		return a->getTime() < b->getTime();
 	    }
 	};
-	std::sort(result.hitobjects.begin(), result.hitobjects.end(), HitObjectSortComparator());
+	std::ranges::sort(result.hitobjects, HitObjectSortComparator());
 
 	// update beatmap length stat
 	if (databaseBeatmap->m_iLengthMS == 0 && result.hitobjects.size() > 0)
@@ -1857,7 +1859,7 @@ OsuDatabaseBeatmap::TIMING_INFO OsuDatabaseBeatmap::getTimingInfoForTimeAndTimin
 
 		for (int i=0; i<timingpoints.size(); i++)
 		{
-			if (timingpoints[i].offset <= positionMS)
+			if (std::cmp_less_equal(timingpoints[i].offset , positionMS))
 			{
 				audioPoint = i;
 
@@ -1964,7 +1966,7 @@ void OsuDatabaseBeatmapBackgroundImagePathLoader::initAsync()
 		std::string curLine(curLineChar);
 
 		const int commentIndex = curLine.find("//");
-		if (commentIndex == std::string::npos || commentIndex != 0) // ignore comments, but only if at the beginning of a line (e.g. allow Artist:DJ'TEKINA//SOMETHING)
+		if (std::cmp_equal(commentIndex , std::string::npos) || commentIndex != 0) // ignore comments, but only if at the beginning of a line (e.g. allow Artist:DJ'TEKINA//SOMETHING)
 		{
 			if (curLine.find("[Events]") != std::string::npos)
 				curBlock = 1;

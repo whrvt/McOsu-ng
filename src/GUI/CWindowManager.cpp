@@ -7,6 +7,8 @@
 
 #include "CWindowManager.h"
 
+#include <utility>
+
 #include "Engine.h"
 #include "ResourceManager.h"
 #include "CBaseUIWindow.h"
@@ -86,7 +88,7 @@ void CWindowManager::update()
 				//debugLog("enabled %s @%f\n", m_windows[m_iLastEnabledWindow]->getName().toUtf8(), engine->getTime());
 				for (size_t i=0; i<m_windows.size(); i++)
 				{
-					if (i != m_iLastEnabledWindow)
+					if (std::cmp_not_equal(i , m_iLastEnabledWindow))
 						m_windows[i]->setEnabled(false);
 				}
 			}
@@ -130,7 +132,7 @@ int CWindowManager::getTopMouseWindowIndex()
 	int tempEnabledWindow = m_windows.size()-1;
 	for (size_t i=0; i<m_windows.size(); i++)
 	{
-		if (m_windows[i]->isMouseInside() && i < tempEnabledWindow)
+		if (m_windows[i]->isMouseInside() && std::cmp_less(i , tempEnabledWindow))
 			tempEnabledWindow = i;
 	}
 	return tempEnabledWindow;
@@ -144,7 +146,7 @@ void CWindowManager::addWindow(CBaseUIWindow *window)
 	m_windows.insert(m_windows.begin(), window);
 
 	// disable all other windows
-	for (size_t i=1; i<(int)(m_windows.size()-1); i++)
+	for (size_t i=1; std::cmp_less(i,(m_windows.size()-1)); i++)
 	{
 		m_windows[i]->setEnabled(false);
 	}

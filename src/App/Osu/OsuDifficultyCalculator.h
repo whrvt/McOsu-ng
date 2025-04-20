@@ -33,7 +33,7 @@ public:
 
 	struct SLIDER_SCORING_TIME
 	{
-		enum class TYPE
+		enum class TYPE : uint8_t
 		{
 			TICK,
 			REPEAT,
@@ -65,9 +65,9 @@ public:
 	~OsuDifficultyHitObject();
 
 	OsuDifficultyHitObject(const OsuDifficultyHitObject&) = delete;
-	OsuDifficultyHitObject(OsuDifficultyHitObject &&dobj);
+	OsuDifficultyHitObject(OsuDifficultyHitObject &&dobj) noexcept;
 
-	OsuDifficultyHitObject& operator = (OsuDifficultyHitObject &&dobj);
+	OsuDifficultyHitObject& operator = (OsuDifficultyHitObject &&dobj) noexcept;
 
 	void updateStackPosition(float stackOffset);
 	void updateCurveStackPosition(float stackOffset);
@@ -122,7 +122,7 @@ public:
 		static constexpr const int NUM_SKILLS = 3;
 
 	public:
-		enum class Skill
+		enum class Skill : uint8_t
 		{
 			SPEED,
 			AIM_SLIDERS,

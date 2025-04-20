@@ -50,7 +50,7 @@ public:
 	inline size_t getNumActiveAnimations() const {return m_vAnimations.size();}
 
 private:
-	enum class ANIMATION_TYPE
+	enum class ANIMATION_TYPE : uint8_t
 	{
 		MOVE_LINEAR,
 		MOVE_SMOOTH_END,

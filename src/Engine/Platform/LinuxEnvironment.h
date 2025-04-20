@@ -29,7 +29,6 @@ public:
 	ContextMenu *createContextMenu();
 
 	// system
-	OS getOS();
 	void shutdown();
 	void restart();
 	void sleep(unsigned int us);

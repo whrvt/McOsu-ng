@@ -81,7 +81,7 @@ private:
 	static float lastHoverSoundTime;
 	static int sortHackCounter;
 
-	enum class MOVE_AWAY_STATE
+	enum class MOVE_AWAY_STATE : uint8_t
 	{
 		MOVE_CENTER,
 		MOVE_UP,

@@ -22,7 +22,7 @@ class OsuScore
 public:
 	static constexpr const int VERSION = 20241007;
 
-	enum class HIT
+	enum class HIT : uint8_t
 	{
 		// score
 		HIT_NULL,
@@ -43,7 +43,7 @@ public:
 		HIT_SPINNERBONUS
 	};
 
-	enum class GRADE
+	enum class GRADE : uint8_t
 	{
 		GRADE_XH,
 		GRADE_SH,

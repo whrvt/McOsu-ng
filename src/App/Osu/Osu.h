@@ -67,7 +67,7 @@ public:
 
 	static bool findIgnoreCase(const std::string &haystack, const std::string &needle);
 
-	enum class GAMEMODE
+	enum class GAMEMODE : uint8_t
 	{
 		STD,
 		MANIA

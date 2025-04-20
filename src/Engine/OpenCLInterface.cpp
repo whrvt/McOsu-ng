@@ -10,7 +10,7 @@
 #include "ConVar.h"
 #include "WinGLLegacyInterface.h"
 
-#include <string.h>
+#include <cstring>
 
 #ifdef MCENGINE_FEATURE_OPENCL
 

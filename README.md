@@ -7,9 +7,9 @@ A small cross-platform engine/framework/sandbox for drawing stuff to a window wi
 ## Building
 
 ### Linux
-After installing dependencies, just run `./configure && make -j$(nproc) install`, which will put the build output in `./dist/bin` by default.
+After installing dependencies, just run `./configure && make -j$(nproc) install`, which will put the build output in `./dist/bin-x86_64` by default.
 
-**For installation**: you'll currently need to use the assets from the Steam version of McOsu -- an easy way to do that is to just overwrite your Steam installation: `cp -r dist/bin/* <path-to-steam-mcosu>/`
+**For installation**: you'll currently need to use the assets from the Steam version of McOsu -- an easy way to do that is to just overwrite your Steam installation: `cp -r dist/bin-x86_64/* <path-to-steam-mcosu>/`
 
 Required system dependencies:
 

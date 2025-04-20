@@ -24,7 +24,6 @@ public:
 	virtual ~WinSDLEnvironment() {;}
 
 	// system
-	virtual OS getOS();
 	virtual void sleep(unsigned int us);
 	virtual void openURLInDefaultBrowser(UString url);
 

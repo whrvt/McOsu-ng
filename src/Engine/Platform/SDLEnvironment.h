@@ -31,7 +31,6 @@ public:
 	virtual ContextMenu *createContextMenu();
 
 	// system
-	virtual OS getOS();
 	virtual void shutdown();
 	virtual void restart();
 	virtual void sleep(unsigned int us); // NOTE: inaccurate
@@ -124,6 +123,7 @@ protected:
 	SDL_Window *m_window;
 
 private:
+	void onLogLevelChange(UString oldValue, UString newValue);
 	ConVar *m_mouse_sensitivity_ref;
 	
 	bool m_sdlDebug;

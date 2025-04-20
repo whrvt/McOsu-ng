@@ -12,7 +12,7 @@
 #define WINSWGRAPHICSINTERFACE_H
 
 #include "SWGraphicsInterface.h"
-#include <Windows.h>
+#include <windows.h>
 
 class WinSWGraphicsInterface : public SWGraphicsInterface
 {

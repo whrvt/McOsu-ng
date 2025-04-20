@@ -10,7 +10,7 @@
 #include "Engine.h"
 #include "ConVar.h"
 
-#include <string.h>
+#include <cstring>
 
 ProfilerProfile g_profCurrentProfile(true);
 

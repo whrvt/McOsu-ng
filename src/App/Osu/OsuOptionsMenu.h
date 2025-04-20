@@ -186,7 +186,7 @@ private:
 	void onResetEverythingClicked(CBaseUIButton *button);
 
 	// options
-	void addSpacer();
+	void addSpacer(unsigned num = 1);
 	CBaseUILabel *addSection(UString text);
 	CBaseUILabel *addSubSection(UString text, UString searchTags = "");
 	CBaseUILabel *addLabel(UString text);

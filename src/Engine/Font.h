@@ -76,7 +76,7 @@ private:
     void buildStringGeometry(const UString &text, size_t &vertexCount);
     bool addGlyph(wchar_t ch);
     const GLYPH_METRICS &getGlyphMetrics(wchar_t ch) const;
-	const bool hasGlyph(wchar_t ch) const;
+	bool hasGlyph(wchar_t ch) const;
 
 	int m_iFontSize;
 	bool m_bAntialiasing;
