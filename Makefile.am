@@ -451,8 +451,8 @@ if BUILD_FREETYPE2
 endif
 
 # install hooks
-if !WIN_PLATFORM
 install-exec-hook: install-libs
+if !WIN_PLATFORM
 	cd "$(DESTDIR)$(bindir)" && \
 	$(LN_S) -rf $(PROGRAMS) McEngine && \
 	$(LN_S) -rf $(PROGRAMS) McOsu

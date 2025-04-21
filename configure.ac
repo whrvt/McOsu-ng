@@ -10,12 +10,26 @@ AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
 AC_CANONICAL_TARGET
 
+AC_USE_SYSTEM_EXTENSIONS
+
+AC_DEFUN([AX_COUNT_CPUS], [
+    AC_CHECK_PROG([GETCONF], [getconf], [getconf])
+    AS_IF([test -n "$GETCONF"],
+        [n_cpus=$($GETCONF _NPROCESSORS_ONLN 2>/dev/null)],
+        [n_cpus=1])
+    AS_IF([test -z "$n_cpus" -o "$n_cpus" -le "0"], [n_cpus=1])
+    AC_SUBST([CPU_COUNT], [$n_cpus])
+])
+AX_COUNT_CPUS
+
+export MAKEFLAGS="-j$CPU_COUNT"
+AC_SUBST([MAKEFLAGS])
+
 # no-define needed to avoid setting e.g. VERSION which conflicts with McEngine stuff
 # dist-xz for `make dist` tarball target
 AM_INIT_AUTOMAKE([1.16 foreign subdir-objects no-define dist-xz parallel-tests])
 AM_SILENT_RULES([yes])
 
-AC_USE_SYSTEM_EXTENSIONS
 AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_GREP

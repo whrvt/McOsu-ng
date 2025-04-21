@@ -645,6 +645,7 @@ CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
 CMAKE_SYSTEM_NAME = @CMAKE_SYSTEM_NAME@
 CPPFLAGS = @CPPFLAGS@
+CPU_COUNT = @CPU_COUNT@
 CSCOPE = @CSCOPE@
 CTAGS = @CTAGS@
 CXX = @CXX@
@@ -669,6 +670,7 @@ FREETYPE2_CFLAGS = @FREETYPE2_CFLAGS@ $(am__append_13)
 FREETYPE2_LIBS = @FREETYPE2_LIBS@ $(am__append_14)
 FREETYPE2_PREFIX = @FREETYPE2_PREFIX@
 FREETYPE2_VERSION = @FREETYPE2_VERSION@
+GETCONF = @GETCONF@
 GIT = @GIT@
 GLEW_CFLAGS = @GLEW_CFLAGS@ $(am__append_3)
 GLEW_LIBS = @GLEW_LIBS@ $(am__append_4)
@@ -699,6 +701,7 @@ LIBPREFIX = @LIBPREFIX@
 LIBS = @LIBS@
 LN_S = @LN_S@
 LTLIBOBJS = @LTLIBOBJS@
+MAKEFLAGS = @MAKEFLAGS@
 MAKEINFO = @MAKEINFO@
 MCOSU_CPPFLAGS = @MCOSU_CPPFLAGS@
 MCOSU_CXXFLAGS = @MCOSU_CXXFLAGS@
@@ -5106,7 +5109,6 @@ maintainer-clean-generic:
 	@echo "it deletes files that may require special tools to rebuild."
 	-$(am__rm_f) $(BUILT_SOURCES)
 	-$(am__rm_f) $(MAINTAINERCLEANFILES)
-@WIN_PLATFORM_TRUE@install-exec-hook:
 clean: clean-am
 
 clean-am: clean-binPROGRAMS clean-generic clean-local mostlyclean-am
@@ -5914,7 +5916,7 @@ install-libs:
 @BUILD_FREETYPE2_TRUE@	$(if $(SDL3_STATIC),,@cp -P "$(FREETYPE2_PREFIX)/lib"/*$(LIBPREFIX)freetype*$(DLLEXT)* "$(DESTDIR)$(bindir)/$(LIBDEST)")
 
 # install hooks
-@WIN_PLATFORM_FALSE@install-exec-hook: install-libs
+install-exec-hook: install-libs
 @WIN_PLATFORM_FALSE@	cd "$(DESTDIR)$(bindir)" && \
 @WIN_PLATFORM_FALSE@	$(LN_S) -rf $(PROGRAMS) McEngine && \
 @WIN_PLATFORM_FALSE@	$(LN_S) -rf $(PROGRAMS) McOsu
