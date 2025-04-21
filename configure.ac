@@ -454,6 +454,9 @@ AC_CHECK_FILE([$srcdir/$ASSETS_DIR/models],
 AC_CHECK_FILE([$srcdir/$ASSETS_DIR/shaders],
     [],
     [AC_MSG_ERROR([McOsu-ng shader assets are missing!])])
+AC_CHECK_FILE([$srcdir/$ASSETS_DIR/fonts],
+    [],
+    [AC_MSG_ERROR([McOsu-ng fonts are missing!])])
 
 AC_MSG_CHECKING([for src/Makefile.sources])
 AS_IF([test -f "$srcdir/src/Makefile.sources"], [

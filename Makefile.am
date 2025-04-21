@@ -421,6 +421,7 @@ install-libs:
 	$(INSTALL) -dm 755 "$(DESTDIR)$(bindir)/cfg"
 	find $(srcdir)/$(ASSETS_DIR)/models -type f -exec $(INSTALL) -Dm 644 '{''}' "$(DESTDIR)$(bindir)/models" ';'
 	find $(srcdir)/$(ASSETS_DIR)/shaders -type f -exec $(INSTALL) -Dm 644 '{''}' "$(DESTDIR)$(bindir)/shaders" ';'
+	find $(srcdir)/$(ASSETS_DIR)/fonts -type f -exec $(INSTALL) -Dm 644 '{''}' "$(DESTDIR)$(bindir)/fonts" ';'
 if USE_BASS
 	$(INSTALL) -m 755 $(srcdir)/$(BUNDLED_BASS_DIR)/lib/$(SYSNAME)/$(host_cpu)/$(LIBPREFIX)bass$(DLLEXT) "$(DESTDIR)$(bindir)/$(LIBDEST)"
 	$(INSTALL) -m 755 $(srcdir)/$(BUNDLED_BASS_FX_DIR)/lib/$(SYSNAME)/$(host_cpu)/$(LIBPREFIX)bass_fx$(DLLEXT) "$(DESTDIR)$(bindir)/$(LIBDEST)"
@@ -487,6 +488,7 @@ if USE_BASS
 endif
 	cp -r $(srcdir)/$(ASSETS_DIR)/models $(distdir)/
 	cp -r $(srcdir)/$(ASSETS_DIR)/shaders $(distdir)/
+	cp -r $(srcdir)/$(ASSETS_DIR)/fonts $(distdir)/
 	find $(distdir) -type f -name ".git*" -delete
 	find $(distdir) -type f -name "*.a" -delete
 	find $(distdir) -type f -name "*.dll" -delete
@@ -496,6 +498,7 @@ endif
 EXTRA_DIST := \
 	$(ASSETS_DIR)/models \
 	$(ASSETS_DIR)/shaders \
+	$(ASSETS_DIR)/fonts \
 	autogen.sh
 
 if USE_BASS

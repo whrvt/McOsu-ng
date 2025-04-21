@@ -1082,8 +1082,8 @@ McOsu_ng_LDFLAGS := \
 LIBDEST := $(am__append_15)
 
 # TODO: distribution package files
-EXTRA_DIST := $(ASSETS_DIR)/models $(ASSETS_DIR)/shaders autogen.sh \
-	$(am__append_16)
+EXTRA_DIST := $(ASSETS_DIR)/models $(ASSETS_DIR)/shaders \
+	$(ASSETS_DIR)/fonts autogen.sh $(am__append_16)
 MAINTAINERCLEANFILES = $(top_srcdir)/src/Makefile.sources
 all: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) all-am
@@ -5903,6 +5903,7 @@ install-libs:
 	$(INSTALL) -dm 755 "$(DESTDIR)$(bindir)/cfg"
 	find $(srcdir)/$(ASSETS_DIR)/models -type f -exec $(INSTALL) -Dm 644 '{''}' "$(DESTDIR)$(bindir)/models" ';'
 	find $(srcdir)/$(ASSETS_DIR)/shaders -type f -exec $(INSTALL) -Dm 644 '{''}' "$(DESTDIR)$(bindir)/shaders" ';'
+	find $(srcdir)/$(ASSETS_DIR)/fonts -type f -exec $(INSTALL) -Dm 644 '{''}' "$(DESTDIR)$(bindir)/fonts" ';'
 @USE_BASS_TRUE@	$(INSTALL) -m 755 $(srcdir)/$(BUNDLED_BASS_DIR)/lib/$(SYSNAME)/$(host_cpu)/$(LIBPREFIX)bass$(DLLEXT) "$(DESTDIR)$(bindir)/$(LIBDEST)"
 @USE_BASS_TRUE@	$(INSTALL) -m 755 $(srcdir)/$(BUNDLED_BASS_FX_DIR)/lib/$(SYSNAME)/$(host_cpu)/$(LIBPREFIX)bass_fx$(DLLEXT) "$(DESTDIR)$(bindir)/$(LIBDEST)"
 @USE_BASS_FALSE@	$(if $(SDL3_STATIC),,@cp -P "$(SDL3_MIXER_PREFIX)/lib"/{*$(LIBPREFIX)SDL3_mixer*$(DLLEXT)*,*$(LIBPREFIX)mpg123*$(DLLEXT)*,*$(LIBPREFIX)xmp*$(DLLEXT)*,*$(LIBPREFIX)wavpack*$(DLLEXT)*,*$(LIBPREFIX)opus*$(DLLEXT)*,*$(LIBPREFIX)ogg*$(DLLEXT)*} "$(DESTDIR)$(bindir)/$(LIBDEST)")
@@ -5948,6 +5949,7 @@ dist-hook:
 @USE_BASS_TRUE@	cp -r $(srcdir)/$(BUNDLED_BASS_FX_DIR)/include $(distdir)/$(BUNDLED_BASS_FX_DIR)/
 	cp -r $(srcdir)/$(ASSETS_DIR)/models $(distdir)/
 	cp -r $(srcdir)/$(ASSETS_DIR)/shaders $(distdir)/
+	cp -r $(srcdir)/$(ASSETS_DIR)/fonts $(distdir)/
 	find $(distdir) -type f -name ".git*" -delete
 	find $(distdir) -type f -name "*.a" -delete
 	find $(distdir) -type f -name "*.dll" -delete
