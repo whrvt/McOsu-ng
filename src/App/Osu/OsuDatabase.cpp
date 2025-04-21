@@ -2255,7 +2255,7 @@ void OsuDatabase::loadScores()
 			if (originalScoresFile.canRead())
 			{
 				UString backupScoresFilePath = scoresFilePath;
-				const int forcedBackupCounter = 4;
+				const int forcedBackupCounter = 5;
 				backupScoresFilePath.append(UString::format(".%i_%i.backup", (makeBackupType < 2 ? backupLessThanVersion : maxSupportedCustomDbVersion), forcedBackupCounter));
 
 				if (!env->fileExists(backupScoresFilePath)) // NOTE: avoid overwriting when people switch betas
@@ -2336,7 +2336,7 @@ void OsuDatabase::loadScores()
 						db.readByteArray(); // replayCompressed
 
 						/*long long onlineScoreID = 0;*/
-						if (scoreVersion >= 20140721)
+						if (scoreVersion >= 20131110)
 							/*onlineScoreID = */db.readLongLong();
 						else if (scoreVersion >= 20121008)
 							/*onlineScoreID = */db.readInt();
