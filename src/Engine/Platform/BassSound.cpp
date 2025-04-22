@@ -88,7 +88,7 @@ void BassSound::initAsync()
 			fileExtensionLowerCase.lowerCase();
 			if (fileExtensionLowerCase == "wav")
 			{
-				File wavFile(m_sFilePath);
+				McFile wavFile(m_sFilePath);
 				if (wavFile.getFileSize() < (size_t)minWavFileSize)
 				{
 					debugLog("Sound: Ignoring malformed/corrupt WAV file (%i) %s\n", (int)wavFile.getFileSize(), m_sFilePath.toUtf8());
@@ -135,7 +135,7 @@ void BassSound::initAsync()
 #if defined(_WIN32) || defined(_WIN64) || defined(__WIN32__) || defined(__CYGWIN__) || defined(__CYGWIN32__) || defined(__TOS_WIN__) || defined(__WINDOWS__)
 
 #ifdef MCENGINE_FEATURE_BASS_WASAPI
-		File file(m_sFilePath);
+		McFile file(m_sFilePath);
 		if (file.canRead())
 		{
 			m_iWasapiSampleBufferSize = file.getFileSize();
