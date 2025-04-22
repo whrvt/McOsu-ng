@@ -59,6 +59,20 @@ AC_DEFUN([AC_PROG_PKGCONF], [
         AC_MSG_ERROR([pkgconf not found - required for finding include/library paths])
     fi
 ])
+# needed for building SoLoud (if enabled)
+AC_DEFUN([AC_PROG_GENIE], [
+    AC_CHECK_PROG([GENIE], [genie], [genie])
+    if test -z "$GENIE"; then
+        AC_MSG_ERROR([GENie (https://github.com/bkaradzic/GENie) not found - required for building SoLoud])
+    fi
+])
+# needed for building libjpeg (if building it is required)
+AC_DEFUN([AC_PROG_NASM], [
+    AC_CHECK_PROG([NASM], [nasm], [nasm])
+    if test -z "$NASM"; then
+        AC_MSG_ERROR([nasm not found - required for building libjpeg])
+    fi
+])
 
 # needed for dep resolver
 AC_PROG_WGET
@@ -82,8 +96,19 @@ AC_ARG_ENABLE([system-deps],
     AS_HELP_STRING([--disable-system-deps], [Always build dependencies from source (default: no)]))
 AC_ARG_ENABLE([static],
     AS_HELP_STRING([--enable-static], [Enable static linking where possible (default: no)]))
-AC_ARG_ENABLE([sdlmixer],
-    AS_HELP_STRING([--enable-sdlmixer], [Use the SDL_mixer backend for audio instead of BASS (default: no)]))
+
+AC_ARG_WITH([sdlmixer],
+    AS_HELP_STRING([--with-sdlmixer], [Use the SDL_mixer backend for audio instead of BASS (default: no)]))
+AC_ARG_WITH([soloud],
+    AS_HELP_STRING([--with-soloud], [Use the SoLoud backend for audio instead of BASS (default: no)]))
+
+AS_IF([test "x$with_sdlmixer" = "xyes" && test "x$with_soloud" = "xyes"], [
+    AC_MSG_ERROR([Only one of --with-sdlmixer or --with-soloud can be used at once!])
+])
+
+AS_IF([test "x$with_soloud" = "xyes"], [
+    AC_PROG_GENIE
+])
 
 AS_IF([test "x$enable_static" = "xyes"], [
     PKGTYPE="--static"
@@ -335,6 +360,8 @@ BZIP2_MIN_VERSION=1.0.8
 BZIP2_BUILD_VERSION=1.0.8
 
 # always build these from source if we want to use them
+AC_SUBST([SOLOUD_VERSION], [e82fd32c1f62183922f08c14c814a02b58db1873])
+AC_SUBST([SOLOUD_PREFIX],[$DEPS_PREFIX])
 AC_SUBST([SDL3_MIXER_VERSION], [b8017938de8b31c1962c2c8044a127519c2c1cdf])
 AC_SUBST([SDL3_MIXER_PREFIX],[$DEPS_PREFIX])
 AC_SUBST([MIMALLOC_VERSION], [3.0.3])
@@ -367,14 +394,9 @@ AC_SUBST([GLEW_PREFIX])
 
 AS_IF([test "x$have_libjpeg" != "xyes"], [
     have_libjpeg="build from source"
-    AC_DEFUN([AC_PROG_NASM], [
-        AC_CHECK_PROG([NASM], [nasm], [nasm])
-        if test -z "$NASM"; then
-            AC_MSG_ERROR([nasm not found - required for building libjpeg])
-        fi
-    ])
     AC_PROG_NASM
 ])
+
 LIBJPEG_VERSION=$LIBJPEG_BUILD_VERSION
 LIBJPEG_PREFIX="${DEPS_PREFIX}"
 AC_SUBST([LIBJPEG_VERSION])
@@ -413,7 +435,9 @@ AM_CONDITIONAL([BUILD_ZLIB], [test "x$have_zlib" != "xyes"])
 AM_CONDITIONAL([BUILD_FREETYPE2], [test "x$have_freetype2" != "xyes"])
 AM_CONDITIONAL([BUILD_MIMALLOC], [test "x$enable_debug" != "xyes" && test "$host_os" != "mingw32"]) # can't find a way to make it work...
 
-AM_CONDITIONAL([USE_BASS], [test "x$enable_sdlmixer" != "xyes"])
+AM_CONDITIONAL([USE_BASS], [test "x$with_sdlmixer" != "xyes" && test "x$with_soloud" != "xyes"])
+AM_CONDITIONAL([USE_SDLMIXER], [test "x$with_sdlmixer" = "xyes"])
+AM_CONDITIONAL([USE_SOLOUD], [test "x$with_soloud" = "xyes"])
 AM_CONDITIONAL([WIN_PLATFORM], [test "$SYSNAME" = "windows"])
 
 ASSETS_DIR=assets
@@ -426,7 +450,7 @@ BUNDLED_BASS_FX_DIR=$BUNDLED_LIBS_DIR/bassfx
 AC_DEFINE([MCENGINE_FEATURE_SDL], [1], [Define if the SDL environment McEngine backend is desired.])
 
 # sanity check
-AS_IF([test "x$enable_sdlmixer" != "xyes"], [
+AS_IF([test "x$with_sdlmixer" != "xyes" && test "x$with_soloud" != "xyes"], [
     AC_CHECK_FILE([$srcdir/$BUNDLED_BASS_DIR/lib/$SYSNAME/$host_cpu/${LIBPREFIX}bass$DLLEXT],
         [],
         [AC_MSG_ERROR([Required bundled library ${LIBPREFIX}bass$DLLEXT not found])])
@@ -439,7 +463,12 @@ AS_IF([test "x$enable_sdlmixer" != "xyes"], [
 ], [
     BASS_LIBS=""
     BASS_CFLAGS=""
-    AC_DEFINE([MCENGINE_FEATURE_SDL_MIXER], [1], [Define if the SDL_mixer audio backend is desired.])
+    AS_IF([test "x$with_sdlmixer" = "xyes"], [
+        AC_DEFINE([MCENGINE_FEATURE_SDL_MIXER], [1], [Define if the SDL_mixer audio backend is desired.])
+    ])
+    AS_IF([test "x$with_soloud" = "xyes"], [
+        AC_DEFINE([MCENGINE_FEATURE_SOLOUD], [1], [Define if the SoLoud audio backend is desired.])
+    ])
 ])
 
 AC_SUBST([BASS_CFLAGS])
@@ -482,7 +511,8 @@ McOsu-ng build configuration:
     C compiler:         ${CC}
     C flags:            ${CFLAGS}
     Linker flags:       ${LDFLAGS}
-    SDL_mixer:          ${enable_sdlmixer-no}
+    SDL_mixer:          ${with_sdlmixer-no}
+    SoLoud:             ${with_soloud-no}
     LTO:                ${enable_lto-auto}
     Debug build:        ${enable_debug-no}
     ASan build:         ${enable_asan-no}

@@ -395,8 +395,8 @@ public:
 	static ConVar osu_playfield_border_top_percent;
 	static ConVar osu_playfield_border_bottom_percent;
 
-	static const int OSU_COORD_WIDTH = 512;
-	static const int OSU_COORD_HEIGHT = 384;
+	static constexpr int OSU_COORD_WIDTH = 512;
+	static constexpr int OSU_COORD_HEIGHT = 384;
 
 	static float getPlayfieldScaleFactor(Osu *osu)
 	{

@@ -1183,7 +1183,7 @@ UString OsuDatabase::parseLegacyCfgBeatmapDirectoryParameter()
 		osuUserConfigFilePath.append(env->getUsername());
 		osuUserConfigFilePath.append(".cfg");
 
-		File file(osuUserConfigFilePath);
+		McFile file(osuUserConfigFilePath);
 		char stringBuffer[1024];
 		while (file.canRead())
 		{
@@ -2251,7 +2251,7 @@ void OsuDatabase::loadScores()
 		// one-time-backup for special occasions (sanity)
 		if (makeBackupType > 0)
 		{
-			File originalScoresFile(scoresFilePath);
+			McFile originalScoresFile(scoresFilePath);
 			if (originalScoresFile.canRead())
 			{
 				UString backupScoresFilePath = scoresFilePath;
@@ -2260,7 +2260,7 @@ void OsuDatabase::loadScores()
 
 				if (!env->fileExists(backupScoresFilePath)) // NOTE: avoid overwriting when people switch betas
 				{
-					File backupScoresFile(backupScoresFilePath, File::TYPE::WRITE);
+					McFile backupScoresFile(backupScoresFilePath, McFile::TYPE::WRITE);
 					if (backupScoresFile.canWrite())
 					{
 						const char *originalScoresFileBytes = originalScoresFile.readFile();
@@ -2778,7 +2778,7 @@ void OsuDatabase::loadCollections(UString collectionFilePath, bool isLegacy, con
 	// backup
 	if (!isLegacy)
 	{
-		File originalCollectionsFile(collectionFilePath);
+		McFile originalCollectionsFile(collectionFilePath);
 		if (originalCollectionsFile.canRead())
 		{
 			UString backupCollectionsFilePath = collectionFilePath;
@@ -2787,7 +2787,7 @@ void OsuDatabase::loadCollections(UString collectionFilePath, bool isLegacy, con
 
 			if (!env->fileExists(backupCollectionsFilePath)) // NOTE: avoid overwriting when people switch betas
 			{
-				File backupCollectionsFile(backupCollectionsFilePath, File::TYPE::WRITE);
+				McFile backupCollectionsFile(backupCollectionsFilePath, McFile::TYPE::WRITE);
 				if (backupCollectionsFile.canWrite())
 				{
 					const char *originalCollectionsFileBytes = originalCollectionsFile.readFile();

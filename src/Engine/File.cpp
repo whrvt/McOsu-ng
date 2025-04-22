@@ -15,10 +15,10 @@
 ConVar debug_file("debug_file", false, FCVAR_NONE);
 ConVar file_size_max("file_size_max", 1024, FCVAR_NONE, "maximum filesize sanity limit in MB, all files bigger than this are not allowed to load");
 
-ConVar *File::debug = &debug_file;
-ConVar *File::size_max = &file_size_max;
+ConVar *McFile::debug = &debug_file;
+ConVar *McFile::size_max = &file_size_max;
 
-File::File(UString filePath, TYPE type) : m_filePath(filePath), m_type(type), m_ready(false), m_fileSize(0)
+McFile::McFile(UString filePath, TYPE type) : m_filePath(filePath), m_type(type), m_ready(false), m_fileSize(0)
 {
 #if defined(_WIN32) || defined(_WIN64) || defined(__WIN32__) || defined(__CYGWIN__) || defined(__CYGWIN32__) || defined(__TOS_WIN__) || defined(__WINDOWS__)
 	auto path = std::filesystem::path(filePath.wc_str());
@@ -57,9 +57,9 @@ File::File(UString filePath, TYPE type) : m_filePath(filePath), m_type(type), m_
 			debugLog("File Error: FileSize is < 0\n");
 			return;
 		}
-		else if (std::cmp_greater(m_fileSize, 1024 * 1024 * File::size_max->getInt())) // size sanity check
+		else if (std::cmp_greater(m_fileSize, 1024 * 1024 * McFile::size_max->getInt())) // size sanity check
 		{
-			debugLog("File Error: FileSize of %s is > %i MB!!!\n", filePath.toUtf8(), File::size_max->getInt());
+			debugLog("File Error: FileSize of %s is > %i MB!!!\n", filePath.toUtf8(), McFile::size_max->getInt());
 			return;
 		}
 
@@ -100,23 +100,23 @@ File::File(UString filePath, TYPE type) : m_filePath(filePath), m_type(type), m_
 		}
 	}
 
-	if (File::debug->getBool())
+	if (McFile::debug->getBool())
 		debugLog("File: Opening %s\n", filePath.toUtf8());
 
 	m_ready = true;
 }
 
-bool File::canRead() const
+bool McFile::canRead() const
 {
 	return m_ready && m_ifstream && m_ifstream->good() && m_type == TYPE::READ;
 }
 
-bool File::canWrite() const
+bool McFile::canWrite() const
 {
 	return m_ready && m_ofstream && m_ofstream->good() && m_type == TYPE::WRITE;
 }
 
-void File::write(const char *buffer, size_t size)
+void McFile::write(const char *buffer, size_t size)
 {
 	if (!canWrite())
 		return;
@@ -124,7 +124,7 @@ void File::write(const char *buffer, size_t size)
 	m_ofstream->write(buffer, size);
 }
 
-UString File::readLine()
+UString McFile::readLine()
 {
 	if (!canRead())
 		return "";
@@ -144,7 +144,7 @@ UString File::readLine()
 	return "";
 }
 
-UString File::readString()
+UString McFile::readString()
 {
 	const int size = getFileSize();
 	if (size < 1)
@@ -153,9 +153,9 @@ UString File::readString()
 	return {readFile(), size};
 }
 
-const char *File::readFile()
+const char *McFile::readFile()
 {
-	if (File::debug->getBool())
+	if (McFile::debug->getBool())
 		debugLog("File::readFile() on %s\n", m_filePath.toUtf8());
 
 	// return cached buffer if already read
@@ -176,7 +176,7 @@ const char *File::readFile()
 	return nullptr;
 }
 
-size_t File::getFileSize() const
+size_t McFile::getFileSize() const
 {
 	return m_fileSize;
 }

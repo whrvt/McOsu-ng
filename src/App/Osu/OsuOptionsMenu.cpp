@@ -4107,7 +4107,7 @@ void OsuOptionsMenu::save()
 	std::vector<UString> keepLines;
 	{
 		// in extra block because the File class would block the following std::ofstream from writing to it until it's destroyed
-		File in(userConfigFile.toUtf8());
+		McFile in(userConfigFile.toUtf8());
 		if (!in.canRead())
 			debugLog("Osu Error: Couldn't read user config file!\n");
 		else

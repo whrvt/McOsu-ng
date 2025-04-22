@@ -5,12 +5,13 @@
 // $NoKeywords: $snd
 //===============================================================================//
 
+#include "ConVar.h"
+#include "Engine.h"
+
 #include "SoundEngine.h"
 #include "BassSoundEngine.h"
 #include "SDLSoundEngine.h"
-
-#include "ConVar.h"
-#include "Engine.h"
+#include "SoLoudSoundEngine.h"
 
 // this shouldn't be here, but McKay hardcoded it in places where it breaks if it doesnt exist...
 ConVar win_snd_fallback_dsound("win_snd_fallback_dsound", false, FCVAR_NONE, "use DirectSound instead of WASAPI");
@@ -46,6 +47,8 @@ SoundEngine *SoundEngine::createSoundEngine()
 	return new BassSoundEngine();
 #elif defined(MCENGINE_FEATURE_SDL) && defined(MCENGINE_FEATURE_SDL_MIXER)
 	return new SDLSoundEngine();
+#elif defined(MCENGINE_FEATURE_SOLOUD)
+	return new SoLoudSoundEngine();
 #else
 #error No sound engine backend available!
 #endif

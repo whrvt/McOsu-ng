@@ -573,9 +573,9 @@ bool OsuMultiplayer::onClientReceiveInt(uint32_t id, void *data, uint32_t size, 
 					uploadState.numUploadedMusicFileBytes = 0;
 					uploadState.numUploadedBackgroundFileBytes = 0;
 
-					uploadState.osuFile = new File(diff->getFilePath());
-					uploadState.musicFile = new File(diff->getFullSoundFilePath());
-					uploadState.backgroundFile = new File(diff->getFullBackgroundImageFilePath());
+					uploadState.osuFile = new McFile(diff->getFilePath());
+					uploadState.musicFile = new McFile(diff->getFullSoundFilePath());
+					uploadState.backgroundFile = new McFile(diff->getFullBackgroundImageFilePath());
 				}
 
 				if (uploadState.osuFile->canRead() && uploadState.musicFile->canRead()
@@ -1337,7 +1337,7 @@ void OsuMultiplayer::onBeatmapDownloadFinished(const BeatmapDownloadState &dl)
 
 		if (!env->fileExists(osuFilePath))
 		{
-			File osuFile(osuFilePath, File::TYPE::WRITE);
+			McFile osuFile(osuFilePath, McFile::TYPE::WRITE);
 			osuFile.write((const char*)&dl.osuFileBytes[0], dl.osuFileBytes.size());
 		}
 	}
@@ -1347,7 +1347,7 @@ void OsuMultiplayer::onBeatmapDownloadFinished(const BeatmapDownloadState &dl)
 
 		if (!env->fileExists(musicFilePath))
 		{
-			File musicFile(musicFilePath, File::TYPE::WRITE);
+			McFile musicFile(musicFilePath, McFile::TYPE::WRITE);
 			musicFile.write((const char*)&dl.musicFileBytes[0], dl.musicFileBytes.size());
 		}
 	}
@@ -1358,7 +1358,7 @@ void OsuMultiplayer::onBeatmapDownloadFinished(const BeatmapDownloadState &dl)
 
 		if (!env->fileExists(backgroundFilePath))
 		{
-			File backgroundFile(backgroundFilePath, File::TYPE::WRITE);
+			McFile backgroundFile(backgroundFilePath, McFile::TYPE::WRITE);
 			backgroundFile.write((const char*)&dl.backgroundFileBytes[0], dl.backgroundFileBytes.size());
 		}
 	}

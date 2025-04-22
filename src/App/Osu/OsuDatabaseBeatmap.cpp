@@ -178,7 +178,7 @@ OsuDatabaseBeatmap::PRIMITIVE_CONTAINER OsuDatabaseBeatmap::loadPrimitiveObjects
 
 	// open osu file for parsing
 	{
-		File file(!filePathIsInMemoryBeatmap ? osuFilePath : "");
+		McFile file(!filePathIsInMemoryBeatmap ? osuFilePath : "");
 		if (!file.canRead() && !filePathIsInMemoryBeatmap)
 		{
 			c.errorCode = 2;
@@ -1018,7 +1018,7 @@ bool OsuDatabaseBeatmap::loadMetadata(OsuDatabaseBeatmap *databaseBeatmap)
 	// generate MD5 hash (loads entire file, very slow)
 	databaseBeatmap->m_sMD5Hash.clear();
 	{
-		File file(!databaseBeatmap->m_bFilePathIsInMemoryBeatmap ? databaseBeatmap->m_sFilePath : "");
+		McFile file(!databaseBeatmap->m_bFilePathIsInMemoryBeatmap ? databaseBeatmap->m_sFilePath : "");
 
 		const char *beatmapFile = NULL;
 		size_t beatmapFileSize = 0;
@@ -1045,7 +1045,7 @@ bool OsuDatabaseBeatmap::loadMetadata(OsuDatabaseBeatmap *databaseBeatmap)
 	// open osu file again, but this time for parsing
 	bool foundAR = false;
 	{
-		File file(!databaseBeatmap->m_bFilePathIsInMemoryBeatmap ? databaseBeatmap->m_sFilePath : "");
+		McFile file(!databaseBeatmap->m_bFilePathIsInMemoryBeatmap ? databaseBeatmap->m_sFilePath : "");
 		if (!file.canRead() && !databaseBeatmap->m_bFilePathIsInMemoryBeatmap)
 		{
 			debugLog("Osu Error: Couldn't read file %s\n", databaseBeatmap->m_sFilePath.toUtf8());
@@ -1955,7 +1955,7 @@ void OsuDatabaseBeatmapBackgroundImagePathLoader::init()
 
 void OsuDatabaseBeatmapBackgroundImagePathLoader::initAsync()
 {
-	File file(m_sFilePath);
+	McFile file(m_sFilePath);
 	if (!file.canRead())
 		return;
 

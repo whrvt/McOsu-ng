@@ -655,6 +655,10 @@ BASS_CFLAGS
 ASSETS_DIR
 WIN_PLATFORM_FALSE
 WIN_PLATFORM_TRUE
+USE_SOLOUD_FALSE
+USE_SOLOUD_TRUE
+USE_SDLMIXER_FALSE
+USE_SDLMIXER_TRUE
 USE_BASS_FALSE
 USE_BASS_TRUE
 BUILD_MIMALLOC_FALSE
@@ -707,6 +711,8 @@ MIMALLOC_PREFIX
 MIMALLOC_VERSION
 SDL3_MIXER_PREFIX
 SDL3_MIXER_VERSION
+SOLOUD_PREFIX
+SOLOUD_VERSION
 GLU_LIBS
 GLU_CFLAGS
 GL_LIBS
@@ -744,6 +750,7 @@ LD
 PKG_CONFIG_PATH_CUSTOM
 PKG_CONFIG_PATH
 PKGTYPE
+GENIE
 PKGCONF
 TAR
 GIT
@@ -867,7 +874,8 @@ enable_clang
 enable_lto
 enable_system_deps
 enable_static
-enable_sdlmixer
+with_sdlmixer
+with_soloud
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1551,7 +1559,13 @@ Optional Features:
                           functional)
   --disable-system-deps   Always build dependencies from source (default: no)
   --enable-static         Enable static linking where possible (default: no)
-  --enable-sdlmixer       Use the SDL_mixer backend for audio instead of BASS
+
+Optional Packages:
+  --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
+  --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
+  --with-sdlmixer         Use the SDL_mixer backend for audio instead of BASS
+                          (default: no)
+  --with-soloud           Use the SoLoud backend for audio instead of BASS
                           (default: no)
 
 Some influential environment variables:
@@ -5472,6 +5486,10 @@ printf "%s\n" "$ac_cv_path_SED" >&6; }
 
 
 
+# needed for building SoLoud (if enabled)
+
+# needed for building libjpeg (if building it is required)
+
 
 # needed for dep resolver
 
@@ -5715,12 +5733,82 @@ then :
   enableval=$enable_static;
 fi
 
-# Check whether --enable-sdlmixer was given.
-if test ${enable_sdlmixer+y}
+
+
+# Check whether --with-sdlmixer was given.
+if test ${with_sdlmixer+y}
 then :
-  enableval=$enable_sdlmixer;
+  withval=$with_sdlmixer;
 fi
 
+
+# Check whether --with-soloud was given.
+if test ${with_soloud+y}
+then :
+  withval=$with_soloud;
+fi
+
+
+if test "x$with_sdlmixer" = "xyes" && test "x$with_soloud" = "xyes"
+then :
+
+    as_fn_error $? "Only one of --with-sdlmixer or --with-soloud can be used at once!" "$LINENO" 5
+
+fi
+
+if test "x$with_soloud" = "xyes"
+then :
+
+
+    # Extract the first word of "genie", so it can be a program name with args.
+set dummy genie; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+if test ${ac_cv_prog_GENIE+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) if test -n "$GENIE"; then
+  ac_cv_prog_GENIE="$GENIE" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    ac_cv_prog_GENIE="genie"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi ;;
+esac
+fi
+GENIE=$ac_cv_prog_GENIE
+if test -n "$GENIE"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $GENIE" >&5
+printf "%s\n" "$GENIE" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+
+    if test -z "$GENIE"; then
+        as_fn_error $? "GENie (https://github.com/bkaradzic/GENie) not found - required for building SoLoud" "$LINENO" 5
+    fi
+
+
+fi
 
 if test "x$enable_static" = "xyes"
 then :
@@ -8367,6 +8455,10 @@ BZIP2_MIN_VERSION=1.0.8
 BZIP2_BUILD_VERSION=1.0.8
 
 # always build these from source if we want to use them
+SOLOUD_VERSION=e82fd32c1f62183922f08c14c814a02b58db1873
+
+SOLOUD_PREFIX=$DEPS_PREFIX
+
 SDL3_MIXER_VERSION=b8017938de8b31c1962c2c8044a127519c2c1cdf
 
 SDL3_MIXER_PREFIX=$DEPS_PREFIX
@@ -9472,8 +9564,7 @@ then :
 
     have_libjpeg="build from source"
 
-
-        # Extract the first word of "nasm", so it can be a program name with args.
+    # Extract the first word of "nasm", so it can be a program name with args.
 set dummy nasm; ac_word=$2
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
 printf %s "checking for $ac_word... " >&6; }
@@ -9516,12 +9607,13 @@ printf "%s\n" "no" >&6; }
 fi
 
 
-        if test -z "$NASM"; then
-            as_fn_error $? "nasm not found - required for building libjpeg" "$LINENO" 5
-        fi
+    if test -z "$NASM"; then
+        as_fn_error $? "nasm not found - required for building libjpeg" "$LINENO" 5
+    fi
 
 
 fi
+
 LIBJPEG_VERSION=$LIBJPEG_BUILD_VERSION
 LIBJPEG_PREFIX="${DEPS_PREFIX}"
 
@@ -9628,12 +9720,28 @@ else
 fi
  # can't find a way to make it work...
 
- if test "x$enable_sdlmixer" != "xyes"; then
+ if test "x$with_sdlmixer" != "xyes" && test "x$with_soloud" != "xyes"; then
   USE_BASS_TRUE=
   USE_BASS_FALSE='#'
 else
   USE_BASS_TRUE='#'
   USE_BASS_FALSE=
+fi
+
+ if test "x$with_sdlmixer" = "xyes"; then
+  USE_SDLMIXER_TRUE=
+  USE_SDLMIXER_FALSE='#'
+else
+  USE_SDLMIXER_TRUE='#'
+  USE_SDLMIXER_FALSE=
+fi
+
+ if test "x$with_soloud" = "xyes"; then
+  USE_SOLOUD_TRUE=
+  USE_SOLOUD_FALSE='#'
+else
+  USE_SOLOUD_TRUE='#'
+  USE_SOLOUD_FALSE=
 fi
 
  if test "$SYSNAME" = "windows"; then
@@ -9657,7 +9765,7 @@ printf "%s\n" "#define MCENGINE_FEATURE_SDL 1" >>confdefs.h
 
 
 # sanity check
-if test "x$enable_sdlmixer" != "xyes"
+if test "x$with_sdlmixer" != "xyes" && test "x$with_soloud" != "xyes"
 then :
 
     as_ac_File=`printf "%s\n" "ac_cv_file_$srcdir/$BUNDLED_BASS_DIR/lib/$SYSNAME/$host_cpu/${LIBPREFIX}bass$DLLEXT" | sed "$as_sed_sh"`
@@ -9724,9 +9832,22 @@ else case e in #(
   e)
     BASS_LIBS=""
     BASS_CFLAGS=""
+    if test "x$with_sdlmixer" = "xyes"
+then :
+
 
 printf "%s\n" "#define MCENGINE_FEATURE_SDL_MIXER 1" >>confdefs.h
 
+
+fi
+    if test "x$with_soloud" = "xyes"
+then :
+
+
+printf "%s\n" "#define MCENGINE_FEATURE_SOLOUD 1" >>confdefs.h
+
+
+fi
  ;;
 esac
 fi
@@ -10023,6 +10144,14 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${USE_BASS_TRUE}" && test -z "${USE_BASS_FALSE}"; then
   as_fn_error $? "conditional \"USE_BASS\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${USE_SDLMIXER_TRUE}" && test -z "${USE_SDLMIXER_FALSE}"; then
+  as_fn_error $? "conditional \"USE_SDLMIXER\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${USE_SOLOUD_TRUE}" && test -z "${USE_SOLOUD_FALSE}"; then
+  as_fn_error $? "conditional \"USE_SOLOUD\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${WIN_PLATFORM_TRUE}" && test -z "${WIN_PLATFORM_FALSE}"; then
@@ -11364,7 +11493,8 @@ McOsu-ng build configuration:
     C compiler:         ${CC}
     C flags:            ${CFLAGS}
     Linker flags:       ${LDFLAGS}
-    SDL_mixer:          ${enable_sdlmixer-no}
+    SDL_mixer:          ${with_sdlmixer-no}
+    SoLoud:             ${with_soloud-no}
     LTO:                ${enable_lto-auto}
     Debug build:        ${enable_debug-no}
     ASan build:         ${enable_asan-no}
@@ -11397,7 +11527,8 @@ McOsu-ng build configuration:
     C compiler:         ${CC}
     C flags:            ${CFLAGS}
     Linker flags:       ${LDFLAGS}
-    SDL_mixer:          ${enable_sdlmixer-no}
+    SDL_mixer:          ${with_sdlmixer-no}
+    SoLoud:             ${with_soloud-no}
     LTO:                ${enable_lto-auto}
     Debug build:        ${enable_debug-no}
     ASan build:         ${enable_asan-no}

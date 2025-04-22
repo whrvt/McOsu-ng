@@ -344,7 +344,7 @@ OsuMainMenu::OsuMainMenu(Osu *osu) : OsuScreen(osu)
 		m_bDrawVersionNotificationArrow = false;
 		if (env->fileExists(MCOSU_NEWVERSION_NOTIFICATION_TRIGGER_FILE))
 		{
-			File versionFile(MCOSU_NEWVERSION_NOTIFICATION_TRIGGER_FILE);
+			McFile versionFile(MCOSU_NEWVERSION_NOTIFICATION_TRIGGER_FILE);
 			if (versionFile.canRead())
 			{
 				float version = versionFile.readLine().toFloat();
