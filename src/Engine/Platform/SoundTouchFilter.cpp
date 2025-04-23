@@ -368,7 +368,7 @@ unsigned int SoundTouchFilterInstance::getAudio(float *aBuffer, unsigned int aSa
 		// but the interpolation in getLatencyMS should make up for most of that.
 		if (samplesReceived > 0)
 		{
-			float samplesInSeconds = ((float)samplesReceived / mBaseSamplerate) / mChannels; // division by channels possibly dubious?
+			float samplesInSeconds = ((float)samplesReceived / mBaseSamplerate) / mChannels;
 
 			// stream time and position
 			mStreamTime += samplesInSeconds;
@@ -400,13 +400,10 @@ bool SoundTouchFilterInstance::hasEnded()
 	const bool ended = mSourceInstance && mSourceInstance->hasEnded();
 	const bool looping = ended && (mSourceInstance->mFlags & AudioSourceInstance::LOOPING);
 
-	if (mSoundTouch && (mSoundTouch->numSamples() == 0))
-		ST_DEBUG_LOG("flushing mSoundTouch\n");
-
 	if (looping)
 	{
 		ST_DEBUG_LOG("looping source, rewinding\n");
-		if (mSourceInstance->rewind())
+		if (rewind() == SO_NO_ERROR)
 			return false;
 	}
 
