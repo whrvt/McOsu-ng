@@ -128,8 +128,8 @@ SoundTouchFilterInstance::SoundTouchFilterInstance(SoundTouchFilter *aParent)
 
 				// quality settings pulled out of my ass, there is NO documentation for this library...
 				mSoundTouch->setSetting(SETTING_USE_AA_FILTER, 1);
-				mSoundTouch->setSetting(SETTING_AA_FILTER_LENGTH, 64);
-				mSoundTouch->setSetting(SETTING_USE_QUICKSEEK, 0); // quick seek off (better quality)
+				mSoundTouch->setSetting(SETTING_AA_FILTER_LENGTH, 32);
+				mSoundTouch->setSetting(SETTING_USE_QUICKSEEK, 1);
 				mSoundTouch->setSetting(SETTING_SEQUENCE_MS, 30);  // wtf should these numbers be?
 				mSoundTouch->setSetting(SETTING_SEEKWINDOW_MS, 15);
 				mSoundTouch->setSetting(SETTING_OVERLAP_MS, 8);
