@@ -1835,7 +1835,11 @@ int OsuBeatmap::getMostCommonBPM() const
 float OsuBeatmap::getSpeedMultiplier() const
 {
 	if (m_music != NULL)
-		return std::max(m_music->getSpeed(), 0.05f);
+	{
+		const float speedRet = std::max(m_music->getSpeed(), 0.05f);
+		//debugLog("music speed: %.2f\n", speedRet);
+		return speedRet;
+	}
 	else
 		return 1.0f;
 }
@@ -2371,7 +2375,7 @@ unsigned long OsuBeatmap::getMusicPositionMSInterpolated()
 		double newInterpolatedPos = m_fInterpolatedMusicPos + interpolationDelta;
 		double delta = newInterpolatedPos - curPos;
 
-		//debugLog("speed = %.2f positionMS = %.2f delta = %.2f, interpolationDeltaLimit = %.2f\n", speed, curPos, delta, interpolationDeltaLimit);
+		// debugLog("speed = %.2f positionMS = %.2f delta = %.2f, interpolationDeltaLimit = %.2f\n", speed, curPos, delta, interpolationDeltaLimit);
 
 		// approach and recalculate delta
 		newInterpolatedPos -= delta / 8.0;
@@ -2411,9 +2415,9 @@ unsigned long OsuBeatmap::getMusicPositionMSInterpolated()
 
 	m_fLastRealTimeForInterpolationDelta = realTime; // this is more accurate than engine->getFrameTime() for the delta calculation, since it correctly handles all possible delays inbetween
 
-	//debugLog("returning %lu \n", returnPos);
-	//debugLog("delta = %lu\n", (long)returnPos - m_iCurMusicPos);
-	//debugLog("raw delta = %ld\n", (long)returnPos - (long)curPos);
+	// debugLog("returning %lu \n", returnPos);
+	// debugLog("delta = %lu\n", (long)returnPos - m_iCurMusicPos);
+	// debugLog("raw delta = %ld\n", (long)returnPos - (long)curPos);
 
 	return returnPos;
 }

@@ -1,9 +1,9 @@
-//========== Copyright (c) 2025, WH, All rights reserved. ============//
+//================ Copyright (c) 2025, WH, All rights reserved. ==================//
 //
 // Purpose:		SoLoud-specific sound implementation
 //
 // $NoKeywords: $snd $soloud
-//===============================================================================//
+//================================================================================//
 
 #include "SoLoudSound.h"
 #include "SoLoudSoundEngine.h"
@@ -17,19 +17,14 @@
 
 extern ConVar debug_snd;
 extern ConVar snd_speed_compensate_pitch;
-extern ConVar snd_play_interp_duration;
 extern ConVar snd_play_interp_ratio;
 extern ConVar snd_wav_file_min_size;
 
-SoLoudSound::SoLoudSound(UString filepath, bool stream, bool threeD, bool loop, bool prescan) : Sound(filepath, stream, threeD, loop, prescan)
+SoLoudSound::SoLoudSound(UString filepath, bool stream, bool threeD, bool loop, bool prescan)
+    : Sound(filepath, stream, threeD, loop, prescan), m_handle(0), m_speed(1.0f), m_pitch(1.0f), m_frequency(44100.0f), m_audioSource(nullptr),
+      m_filter(nullptr), m_engine(nullptr), m_usingFilter(false), m_fActualSpeedForDisabledPitchCompensation(1.0f), m_fLastRawSoLoudPosition(0.0),
+      m_fLastSoLoudPositionTime(0.0), m_fSoLoudPositionRate(1000.0)
 {
-	m_handle = 0;
-	m_speed = 1.0f;
-	m_pitch = 1.0f;
-	m_frequency = 44100.0f;
-	m_prevPosition = 0;
-	m_audioSource = nullptr;
-	m_engine = nullptr;
 }
 
 SoLoudSoundEngine *SoLoudSound::getSoLoudEngine()
@@ -39,7 +34,7 @@ SoLoudSoundEngine *SoLoudSound::getSoLoudEngine()
 		m_engine = dynamic_cast<SoLoudSoundEngine *>(engine->getSound());
 		if (m_engine == nullptr && debug_snd.getBool())
 		{
-			debugLog("SoLoudSound: Failed to get SoLoudSoundEngine instance");
+			debugLog("SoLoudSound: Failed to get SoLoudSoundEngine instance\n");
 		}
 	}
 	return m_engine;
@@ -49,6 +44,9 @@ void SoLoudSound::init()
 {
 	if (m_sFilePath.length() < 2 || !(m_bAsyncReady.load()))
 		return;
+
+	// re-set some values to their defaults (only necessary because of the existence of rebuild())
+	m_fActualSpeedForDisabledPitchCompensation = 1.0f;
 
 	getSoLoudEngine();
 
@@ -76,7 +74,7 @@ void SoLoudSound::initAsync()
 	if (ResourceManager::debug_rm->getBool())
 		debugLog("Resource Manager: Loading %s\n", m_sFilePath.toUtf8());
 
-	// quick n dirty check for corrupt WAV files (same as BASS impl.)
+	// check for corrupt WAV files (same as BASS impl.)
 	const int minWavFileSize = snd_wav_file_min_size.getInt();
 	if (minWavFileSize > 0)
 	{
@@ -100,22 +98,23 @@ void SoLoudSound::initAsync()
 			delete static_cast<SoLoud::WavStream *>(m_audioSource);
 		else
 			delete static_cast<SoLoud::Wav *>(m_audioSource);
+
 		m_audioSource = nullptr;
 	}
 
 	// create the appropriate audio source based on streaming flag
+	// similar to the SDL_mixer thingy
 	SoLoud::result result = SoLoud::SO_NO_ERROR;
 	if (m_bStream)
 	{
 		// use WavStream for streaming audio (music, etc.)
-		SoLoud::WavStream *wavStream = new SoLoud::WavStream();
+		auto *wavStream = new SoLoud::WavStream();
 		result = wavStream->load(m_sFilePath.toUtf8());
 
 		if (result == SoLoud::SO_NO_ERROR)
 		{
 			m_audioSource = wavStream;
-			// we'll get the actual frequency after we have a handle
-			m_frequency = 44100.0f;
+			m_frequency = 44100.0f; // default, will be updated when played
 		}
 		else
 		{
@@ -127,7 +126,7 @@ void SoLoudSound::initAsync()
 	else
 	{
 		// use Wav for non-streaming audio (hit sounds, effects, etc.)
-		SoLoud::Wav *wav = new SoLoud::Wav();
+		auto *wav = new SoLoud::Wav();
 		result = wav->load(m_sFilePath.toUtf8());
 
 		if (result == SoLoud::SO_NO_ERROR)
@@ -143,10 +142,10 @@ void SoLoudSound::initAsync()
 		}
 	}
 
-	// configure common properties
+	// FIXME: does this even work? i haven't tested yet tbh
 	m_audioSource->setLooping(m_bIsLooped);
 
-	// configure 3D audio if needed
+	// configure 3D audio (pretty sure this works)
 	if (m_bIs3d)
 	{
 		m_audioSource->set3dAttenuation(SoLoud::AudioSource::INVERSE_DISTANCE, 2.1f);
@@ -169,8 +168,20 @@ void SoLoudSound::destroy()
 	m_bReady = false;
 
 	// stop the sound if it's playing
-	sndEngine(&SoLoudSoundEngine::stopSound);
-	m_handle = 0;
+	SoLoudSoundEngine *engine = getSoLoudEngine();
+	if (engine && m_handle != 0)
+	{
+		engine->stopSound(m_handle);
+		m_handle = 0;
+	}
+
+	// clean up SoundTouch filter
+	if (m_filter)
+	{
+		delete m_filter;
+		m_filter = nullptr;
+		m_usingFilter = false;
+	}
 
 	// clean up audio source
 	if (m_audioSource)
@@ -184,6 +195,46 @@ void SoLoudSound::destroy()
 	}
 }
 
+SoLoud::SoundTouchFilter *SoLoudSound::getOrCreateFilter()
+{
+	if (m_filter)
+		return m_filter;
+
+	// create a new SoundTouch filter instance
+	m_filter = new SoLoud::SoundTouchFilter();
+
+	if (m_filter)
+	{
+		// configure initial source
+		if (m_audioSource)
+		{
+			m_filter->setSource(m_audioSource);
+		}
+
+		// set initial parameters
+		m_filter->setSpeedFactor(m_speed);
+		m_filter->setPitchFactor(m_pitch);
+
+		if (debug_snd.getBool())
+		{
+			debugLog("SoLoudSound: Created SoundTouch filter for %s with speed=%f, pitch=%f\n", m_sFilePath.toUtf8(), m_speed, m_pitch);
+		}
+	}
+
+	return m_filter;
+}
+
+bool SoLoudSound::updateFilterParameters()
+{
+	if (!m_filter)
+		return false;
+
+	m_filter->setSpeedFactor(m_speed);
+	m_filter->setPitchFactor(m_pitch);
+
+	return true;
+}
+
 void SoLoudSound::setPosition(double percent)
 {
 	if (!m_bReady || !m_audioSource)
@@ -191,33 +242,46 @@ void SoLoudSound::setPosition(double percent)
 
 	percent = clamp<double>(percent, 0.0, 1.0);
 
-	const double lengthInSeconds = m_bStream ? asWavStream()->getLength() : asWav()->getLength();
+	const double sourceLengthInSeconds = m_bStream ? asWavStream()->getLength() : asWav()->getLength();
 
-	const double positionInSeconds = lengthInSeconds * percent;
+	double positionInSeconds = sourceLengthInSeconds * percent;
 
-	// for play interpolation (similar to BASS implementation)
-	if (positionInSeconds < snd_play_interp_duration.getFloat())
-		m_fLastPlayTime = engine->getTime() - positionInSeconds;
-	else
-		m_fLastPlayTime = 0.0;
+	// reset position interp vars
+	m_fLastRawSoLoudPosition = positionInSeconds * 1000.0;
+	m_fLastSoLoudPositionTime = ::engine->getTime();
+	m_fSoLoudPositionRate = 1000.0 * getSpeed();
 
-	sndEngine(&SoLoudSoundEngine::seekSound, positionInSeconds);
+	// seek it
+	SoLoudSoundEngine *soloudEngine = getSoLoudEngine();
+	if (soloudEngine && m_handle != 0)
+	{
+		soloudEngine->seekSound(m_handle, positionInSeconds);
+	}
 }
 
 void SoLoudSound::setPositionMS(unsigned long ms, bool internal)
 {
-	if (!m_bReady || !m_audioSource || ms > getLengthMS())
+	if (!m_bReady || !m_audioSource)
 		return;
 
-	const double positionInSeconds = ms / 1000.0;
+	// don't exceed the actual length
+	unsigned long originalLengthMS = getLengthMS();
+	if (ms > originalLengthMS)
+		return;
 
-	// for play interpolation
-	if (positionInSeconds < snd_play_interp_duration.getFloat())
-		m_fLastPlayTime = engine->getTime() - positionInSeconds;
-	else
-		m_fLastPlayTime = 0.0;
+	double positionInSeconds = ms / 1000.0;
 
-	sndEngine(&SoLoudSoundEngine::seekSound, positionInSeconds);
+	// reset position interp vars
+	m_fLastRawSoLoudPosition = ms;
+	m_fLastSoLoudPositionTime = ::engine->getTime();
+	m_fSoLoudPositionRate = 1000.0 * getSpeed();
+
+	// seek it
+	SoLoudSoundEngine *soloudEngine = getSoLoudEngine();
+	if (soloudEngine && m_handle != 0)
+	{
+		soloudEngine->seekSound(m_handle, positionInSeconds);
+	}
 }
 
 void SoLoudSound::setVolume(float volume)
@@ -227,9 +291,14 @@ void SoLoudSound::setVolume(float volume)
 
 	m_fVolume = clamp<float>(volume, 0.0f, 1.0f);
 
-	if (!m_bIsOverlayable)
+	// apply to active voice if not overlayable
+	if (!m_bIsOverlayable && m_handle != 0)
 	{
-		sndEngine(&SoLoudSoundEngine::setVolumeSound, m_fVolume);
+		SoLoudSoundEngine *engine = getSoLoudEngine();
+		if (engine)
+		{
+			engine->setVolumeSound(m_handle, m_fVolume);
+		}
 	}
 }
 
@@ -239,19 +308,43 @@ void SoLoudSound::setSpeed(float speed)
 		return;
 
 	speed = clamp<float>(speed, 0.05f, 50.0f);
-	m_speed = speed;
 
-	// this is bogus, need a custom audio filter to implement this properly
-	// if (snd_speed_compensate_pitch.getBool())
-	// {
-		sndEngine(&SoLoudSoundEngine::setRelativePlaySpeedSound, speed);
+	if (m_speed != speed)
+	{
+		// store the new speed value
+		m_speed = speed;
 
-	// 	sndEngine(&SoLoudSoundEngine::setSampleRateSound, m_frequency / speed * m_pitch);
-	// }
-	// else
-	// {
-	// 	sndEngine(&SoLoudSoundEngine::setRelativePlaySpeedSound, speed);
-	// }
+		// update position interp rate
+		m_fSoLoudPositionRate = 1000.0 * speed;
+
+		updateFilterParameters();
+
+		if (isPlaying())
+		{
+			// currently can't update filter parameters on the fly, need to restart playback
+			// thankfully it's not that heavy
+			double pos = getPosition();
+
+			SoLoudSoundEngine *engine = getSoLoudEngine();
+			if (engine)
+			{
+				engine->stop(this);
+
+				// this will apply the new parameters
+				engine->play(this, 0.0f, m_pitch);
+
+				// restore position
+				setPosition(pos);
+
+				if (debug_snd.getBool())
+				{
+					debugLog("SoLoudSound: Restarted playback after speed change for %s: speed=%f\n", m_sFilePath.toUtf8(), m_speed);
+				}
+			}
+		}
+	}
+	// NOTE: currently only used for correctly returning getSpeed() if snd_speed_compensate_pitch is disabled
+	m_fActualSpeedForDisabledPitchCompensation = speed;
 }
 
 void SoLoudSound::setPitch(float pitch)
@@ -260,17 +353,33 @@ void SoLoudSound::setPitch(float pitch)
 		return;
 
 	pitch = clamp<float>(pitch, 0.0f, 2.0f);
-	m_pitch = pitch;
 
-	// bogus for same reason as above, setting sample rate does the same thing as setRelativePlaySpeed but with a twist
-	// if (snd_speed_compensate_pitch.getBool())
-	// {
-	// 	sndEngine(&SoLoudSoundEngine::setSampleRateSound, m_frequency / m_speed * pitch);
-	// }
-	// else
-	// {
-		sndEngine(&SoLoudSoundEngine::setSampleRateSound, m_frequency * pitch);
-	// }
+	if (m_pitch != pitch)
+	{
+		m_pitch = pitch;
+		updateFilterParameters();
+
+		if (isPlaying())
+		{
+			// as above, need to restart playback
+			double pos = getPosition();
+
+			SoLoudSoundEngine *engine = getSoLoudEngine();
+			if (engine)
+			{
+				engine->stop(this);
+
+				engine->play(this, 0.0f, pitch);
+
+				setPosition(pos);
+
+				if (debug_snd.getBool())
+				{
+					debugLog("SoLoudSound: Restarted playback after pitch change for %s: pitch=%f\n", m_sFilePath.toUtf8(), m_pitch);
+				}
+			}
+		}
+	}
 }
 
 void SoLoudSound::setFrequency(float frequency)
@@ -279,17 +388,16 @@ void SoLoudSound::setFrequency(float frequency)
 		return;
 
 	frequency = (frequency > 99.0f ? clamp<float>(frequency, 100.0f, 100000.0f) : 0.0f);
-	m_frequency = frequency;
 
-	// bogus again
-	// if (snd_speed_compensate_pitch.getBool())
-	// {
-	// 	sndEngine(&SoLoudSoundEngine::setSampleRateSound, frequency / m_speed * m_pitch);
-	// }
-	// else
-	// {
-		sndEngine(&SoLoudSoundEngine::setSampleRateSound, frequency * m_pitch);
-	//}
+	if (m_frequency != frequency && frequency > 0)
+	{
+		float pitchRatio = frequency / m_frequency;
+		m_frequency = frequency;
+
+		// apply the frequency change through pitch
+		// this isn't the only or even a good way, but it does the trick
+		setPitch(m_pitch * pitchRatio);
+	}
 }
 
 void SoLoudSound::setPan(float pan)
@@ -299,7 +407,12 @@ void SoLoudSound::setPan(float pan)
 
 	pan = clamp<float>(pan, -1.0f, 1.0f);
 
-	sndEngine(&SoLoudSoundEngine::setPanSound, pan);
+	// apply to the active voice
+	SoLoudSoundEngine *engine = getSoLoudEngine();
+	if (engine && m_handle != 0)
+	{
+		engine->setPanSound(m_handle, pan);
+	}
 }
 
 void SoLoudSound::setLoop(bool loop)
@@ -308,9 +421,16 @@ void SoLoudSound::setLoop(bool loop)
 		return;
 
 	m_bIsLooped = loop;
+
+	// apply to the source
 	m_audioSource->setLooping(loop);
 
-	sndEngine(&SoLoudSoundEngine::setLoopingSound, loop);
+	// apply to the active voice
+	SoLoudSoundEngine *engine = getSoLoudEngine();
+	if (engine && m_handle != 0)
+	{
+		engine->setLoopingSound(m_handle, loop);
+	}
 }
 
 float SoLoudSound::getPosition()
@@ -318,51 +438,143 @@ float SoLoudSound::getPosition()
 	if (!m_bReady || !m_audioSource)
 		return 0.0f;
 
-	const float positionInSeconds = sndEngine<float>(0.0f, &SoLoudSoundEngine::getStreamPositionSound);
-	float lengthInSeconds = 0.0f;
+	// get position from engine
+	float positionInSeconds = 0.0f;
+	SoLoudSoundEngine *engine = getSoLoudEngine();
+	if (engine && m_handle != 0)
+	{
+		positionInSeconds = engine->getStreamPositionSound(m_handle);
+	}
 
-	// get the length from the appropriate source type
+	// get source length
+	float sourceLengthInSeconds = 0.0f;
 	if (m_bStream && asWavStream())
 	{
-		lengthInSeconds = asWavStream()->getLength();
+		sourceLengthInSeconds = asWavStream()->getLength();
 	}
 	else if (!m_bStream && asWav())
 	{
-		lengthInSeconds = asWav()->getLength();
+		sourceLengthInSeconds = asWav()->getLength();
 	}
 
-	if (lengthInSeconds <= 0.0f)
+	if (sourceLengthInSeconds <= 0.0f)
 		return 0.0f;
 
-	return positionInSeconds / lengthInSeconds;
+	// return relative position
+	return clamp<float>(positionInSeconds / sourceLengthInSeconds, 0.0f, 1.0f);
 }
 
+// slightly tweaked interp algo from the SDL_mixer version, to smooth out position updates
 unsigned long SoLoudSound::getPositionMS()
 {
 	if (!m_bReady || !m_audioSource)
 		return 0;
 
-	const double positionInSeconds = sndEngine<float>(0.0, &SoLoudSoundEngine::getStreamPositionSound);
-	const double positionInMilliSeconds = positionInSeconds * 1000.0;
-
-	const unsigned long positionMS = static_cast<unsigned long>(positionInMilliSeconds);
-
-	// special case for freshly started channel position jitter (copied from BASS implementation)
-	const double interpDuration = snd_play_interp_duration.getFloat();
-	const unsigned long interpDurationMS = interpDuration * 1000;
-	if (interpDuration > 0.0 && positionMS < interpDurationMS)
+	// get position from engine
+	double rawPositionInSeconds = 0.0;
+	SoLoudSoundEngine *soloudEngine = getSoLoudEngine();
+	if (soloudEngine && m_handle != 0)
 	{
-		const float speedMultiplier = getSpeed();
-		const double delta = (engine->getTime() - m_fLastPlayTime) * speedMultiplier;
-		if (m_fLastPlayTime > 0.0 && delta < interpDuration && isPlaying())
+		rawPositionInSeconds = soloudEngine->getStreamPositionSound(m_handle);
+	}
+
+	const double currentTime = ::engine->getTime();
+	const double rawPositionMS = rawPositionInSeconds * 1000.0;
+
+	// if this is our first reading or if we're not playing, just use the raw value
+	if (m_fLastSoLoudPositionTime <= 0.0 || !isPlaying())
+	{
+		m_fLastRawSoLoudPosition = rawPositionMS;
+		m_fLastSoLoudPositionTime = currentTime;
+		m_fSoLoudPositionRate = 1000.0 * getSpeed(); // initialize rate
+		return (unsigned long)rawPositionMS;
+	}
+
+	// if the position changed, update our rate estimate
+	if (m_fLastRawSoLoudPosition != rawPositionMS)
+	{
+		const double timeDelta = currentTime - m_fLastSoLoudPositionTime;
+
+		// only update rate if enough time has passed to avoid division by very small numbers
+		if (timeDelta > 0.005) // Reduced from 0.01 for more frequent updates
 		{
-			const double lerpPercent =
-			    clamp<double>(((delta / interpDuration) - snd_play_interp_ratio.getFloat()) / (1.0 - snd_play_interp_ratio.getFloat()), 0.0, 1.0);
-			return static_cast<unsigned long>(lerp<double>(delta * 1000.0, (double)positionMS, lerpPercent));
+			// calculate new rate (change in position / change in time)
+			// account for possibility of wrapping (looped sound) by ensuring positive rate
+			double newRate;
+
+			if (rawPositionMS >= m_fLastRawSoLoudPosition)
+			{
+				newRate = (rawPositionMS - m_fLastRawSoLoudPosition) / timeDelta;
+			}
+			else if (m_bIsLooped)
+			{
+				// handle loop wraparound - calculate rate based on length
+				unsigned long length = getLengthMS();
+				if (length > 0)
+				{
+					// position wrapped
+					double wrappedChange = (length - m_fLastRawSoLoudPosition) + rawPositionMS;
+					newRate = wrappedChange / timeDelta;
+				}
+				else
+				{
+					// if we can't determine length, use current rate
+					newRate = m_fSoLoudPositionRate;
+				}
+			}
+			else
+			{
+				// not looped but position decreased?? use current rate
+				newRate = m_fSoLoudPositionRate;
+			}
+
+			// sanity
+			const double expectedRate = 1000.0 * getSpeed();
+			const double maxDeviation = 0.2; // 20%
+
+			if (newRate < expectedRate * (1.0 - maxDeviation) || newRate > expectedRate * (1.0 + maxDeviation))
+			{
+				// too far from expected, use a value closer to expected
+				newRate = 0.7 * expectedRate + 0.3 * newRate;
+			}
+
+			// use weighted average favoring new rate more for better responsiveness
+			// while still maintaining smoothness
+			m_fSoLoudPositionRate = m_fSoLoudPositionRate * 0.6 + newRate * 0.4;
+		}
+
+		// store the new raw position and time
+		m_fLastRawSoLoudPosition = rawPositionMS;
+		m_fLastSoLoudPositionTime = currentTime;
+	}
+	else
+	{
+		// if position hasn't changed for too long, periodically reset rate to expected
+		const double timeSinceLastPositionChange = currentTime - m_fLastSoLoudPositionTime;
+		if (timeSinceLastPositionChange > 0.1) // 100ms without position change
+		{
+			// gradually drift toward expected rate to avoid "stuck" positions
+			const double expectedRate = 1000.0 * getSpeed();
+			m_fSoLoudPositionRate = m_fSoLoudPositionRate * 0.95 + expectedRate * 0.05;
 		}
 	}
 
-	return positionMS;
+	// calculate the interpolated position based on time elapsed since last raw reading
+	const double timeSinceLastReading = currentTime - m_fLastSoLoudPositionTime;
+	const double interpolatedPosition = m_fLastRawSoLoudPosition + (timeSinceLastReading * m_fSoLoudPositionRate);
+
+	// check if interpolated position exceeds the sound length (for looped sounds)
+	if (m_bIsLooped)
+	{
+		unsigned long length = getLengthMS();
+		if (length > 0 && interpolatedPosition >= length)
+		{
+			// get modulo for looped position
+			return static_cast<unsigned long>(fmod(interpolatedPosition, length));
+		}
+	}
+
+	return static_cast<unsigned long>(interpolatedPosition);
 }
 
 unsigned long SoLoudSound::getLengthMS()
@@ -370,20 +582,18 @@ unsigned long SoLoudSound::getLengthMS()
 	if (!m_bReady || !m_audioSource)
 		return 0;
 
-	double lengthInSeconds = 0.0;
-
-	// get the length from the appropriate source type
+	// get the base length from the source
+	double sourceLengthInSeconds = 0.0;
 	if (m_bStream && asWavStream())
 	{
-		lengthInSeconds = asWavStream()->getLength();
+		sourceLengthInSeconds = asWavStream()->getLength();
 	}
 	else if (!m_bStream && asWav())
 	{
-		lengthInSeconds = asWav()->getLength();
+		sourceLengthInSeconds = asWav()->getLength();
 	}
 
-	const double lengthInMilliSeconds = lengthInSeconds * 1000.0;
-
+	const double lengthInMilliSeconds = sourceLengthInSeconds * 1000.0;
 	return static_cast<unsigned long>(lengthInMilliSeconds);
 }
 
@@ -391,6 +601,9 @@ float SoLoudSound::getSpeed()
 {
 	if (!m_bReady)
 		return 1.0f;
+
+	if (!snd_speed_compensate_pitch.getBool())
+		return m_fActualSpeedForDisabledPitchCompensation;
 
 	return m_speed;
 }
@@ -408,10 +621,15 @@ float SoLoudSound::getFrequency()
 	if (!m_bReady)
 		return 44100.0f;
 
-	float currentFreq = sndEngine<float>(44100.0f, &SoLoudSoundEngine::getSampleRateSound);
-	if (currentFreq > 0)
+	// get sample rate from active voice
+	SoLoudSoundEngine *engine = getSoLoudEngine();
+	if (engine && m_handle != 0)
 	{
-		m_frequency = currentFreq;
+		float currentFreq = engine->getSampleRateSound(m_handle);
+		if (currentFreq > 0)
+		{
+			m_frequency = currentFreq;
+		}
 	}
 
 	return m_frequency;
@@ -422,7 +640,12 @@ bool SoLoudSound::isPlaying()
 	if (!m_bReady)
 		return false;
 
-	return sndEngine<bool>(false, &SoLoudSoundEngine::isValidVoiceHandleSound) && !sndEngine<bool>(true, &SoLoudSoundEngine::getPauseSound);
+	SoLoudSoundEngine *engine = getSoLoudEngine();
+	if (!engine || m_handle == 0)
+		return false;
+
+	// a sound is playing if the handle is valid and the sound isn't paused
+	return engine->isValidVoiceHandleSound(m_handle) && !engine->getPauseSound(m_handle);
 }
 
 bool SoLoudSound::isFinished()
@@ -430,7 +653,12 @@ bool SoLoudSound::isFinished()
 	if (!m_bReady)
 		return false;
 
-	return !sndEngine<bool>(false, &SoLoudSoundEngine::isValidVoiceHandleSound);
+	SoLoudSoundEngine *engine = getSoLoudEngine();
+	if (!engine || m_handle == 0)
+		return true;
+
+	// a sound is finished if the handle is no longer valid
+	return !engine->isValidVoiceHandleSound(m_handle);
 }
 
 void SoLoudSound::rebuild(UString newFilePath)
