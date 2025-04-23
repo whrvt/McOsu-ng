@@ -196,6 +196,7 @@ SoundTouchFilterInstance::SoundTouchFilterInstance(SoundTouchFilter *aParent)
 
 SoundTouchFilterInstance::~SoundTouchFilterInstance()
 {
+	osu_universal_offset_hardcoded.setValue(static_cast<int>(osu_universal_offset_hardcoded.getDefaultFloat()));
 	delete[] mInterleavedBuffer;
 	delete[] mBuffer;
 	delete mSoundTouch;
