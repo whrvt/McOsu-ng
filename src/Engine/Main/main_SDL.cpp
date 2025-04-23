@@ -39,7 +39,7 @@
 #define WINDOW_WIDTH_MIN 100
 #define WINDOW_HEIGHT_MIN 100
 
-
+static constexpr auto SIZE_EVENTS = 64;
 
 Engine *g_engine = NULL;
 
@@ -311,7 +311,7 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 	ConVar *mouse_raw_input_ref = convar->getConVarByName("mouse_raw_input");
 
 	// main loop
-	SDL_Event e;
+	SDL_Event events[SIZE_EVENTS];
 	while (g_bRunning)
 	{
 		VPROF_MAIN();
@@ -349,9 +349,14 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 			const bool isRawInputEnabled = (SDL_GetWindowRelativeMouseMode(g_window) == true);
 			const bool isDebugSdl = false; //environment->sdlDebug();
 
-			while (SDL_PollEvent(&e) != 0)
+			SDL_PumpEvents();
+			int eventCount;
+			do
 			{
-				switch (e.type)
+				eventCount = SDL_PeepEvents(&events[0], SIZE_EVENTS, SDL_GETEVENT, SDL_EVENT_FIRST, SDL_EVENT_LAST);
+				for (int i = 0; i < eventCount; ++i)
+				{
+				switch (events[i].type)
 				{
 				case SDL_EVENT_QUIT :
 					if (g_bRunning)
@@ -364,7 +369,7 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 				// window
 				case SDL_EVENT_WINDOW_FIRST ... SDL_EVENT_WINDOW_LAST:
 				{
-					switch (e.window.type)
+					switch (events[i].window.type)
 					{
 					case SDL_EVENT_WINDOW_CLOSE_REQUESTED :
 						if (g_bRunning)
@@ -394,29 +399,29 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 						g_engine->onRestored();
 						break;
 					case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED : case SDL_EVENT_WINDOW_RESIZED :
-						g_engine->requestResolutionChange(Vector2(e.window.data1, e.window.data2));
+						g_engine->requestResolutionChange(Vector2(events[i].window.data1, events[i].window.data2));
 						break;
 					default :
-						//debugLog("DEBUG: unhandled window event: %#08x\n", e.window.type);
+						//debugLog("DEBUG: unhandled window event: %#08x\n", events[i].window.type);
 						break;
 					}
 					break;
 				}
 				// keyboard
 				case SDL_EVENT_KEY_DOWN :
-					//debugLog("DEBUG: keydown event: %#08x\n", e.key.scancode);
-					g_engine->onKeyboardKeyDown(e.key.scancode);
+					//debugLog("DEBUG: keydown event: %#08x\n", events[i].key.scancode);
+					g_engine->onKeyboardKeyDown(events[i].key.scancode);
 					break;
 
 				case SDL_EVENT_KEY_UP :
-					//debugLog("DEBUG: keyup event: %#08x\n", e.key.scancode);
-					g_engine->onKeyboardKeyUp(e.key.scancode);
+					//debugLog("DEBUG: keyup event: %#08x\n", events[i].key.scancode);
+					g_engine->onKeyboardKeyUp(events[i].key.scancode);
 					break;
 
 				case SDL_EVENT_TEXT_INPUT :
-					//debugLog("DEBUG: text input event: %s\n", e.text.text);
+					//debugLog("DEBUG: text input event: %s\n", events[i].text.text);
 					{
-						UString nullTerminatedTextInputString(e.text.text);
+						UString nullTerminatedTextInputString(events[i].text.text);
 						for (int i=0; i<nullTerminatedTextInputString.length(); i++)
 						{
 							g_engine->onKeyboardChar((KEYCODE)nullTerminatedTextInputString[i]); // NOTE: this splits into UTF-16 wchar_t atm
@@ -428,7 +433,7 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 				case SDL_EVENT_MOUSE_BUTTON_DOWN :
 					if (!deckTouchHack) // HACKHACK: Steam Deck workaround (sends mouse events even though native touchscreen support is enabled)
 					{
-						switch (e.button.button)
+						switch (events[i].button.button)
 						{
 						case SDL_BUTTON_LEFT:
 							g_engine->onMouseLeftChange(true);
@@ -453,7 +458,7 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 				case SDL_EVENT_MOUSE_BUTTON_UP :
 					if (!deckTouchHack) // HACKHACK: Steam Deck workaround (sends mouse events even though native touchscreen support is enabled)
 					{
-						switch (e.button.button)
+						switch (events[i].button.button)
 						{
 						case SDL_BUTTON_LEFT:
 							g_engine->onMouseLeftChange(false);
@@ -476,24 +481,24 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 					break;
 
 				case SDL_EVENT_MOUSE_WHEEL :
-					if (e.wheel.x != 0)
-						g_engine->onMouseWheelHorizontal(e.wheel.x > 0 ? 120*std::abs(e.wheel.x) : -120*std::abs(e.wheel.x)); // NOTE: convert to Windows units
-					if (e.wheel.y != 0)
-						g_engine->onMouseWheelVertical(e.wheel.y > 0 ? 120*std::abs(e.wheel.y) : -120*std::abs(e.wheel.y)); // NOTE: convert to Windows units
+					if (events[i].wheel.x != 0)
+						g_engine->onMouseWheelHorizontal(events[i].wheel.x > 0 ? 120*std::abs(events[i].wheel.x) : -120*std::abs(events[i].wheel.x)); // NOTE: convert to Windows units
+					if (events[i].wheel.y != 0)
+						g_engine->onMouseWheelVertical(events[i].wheel.y > 0 ? 120*std::abs(events[i].wheel.y) : -120*std::abs(events[i].wheel.y)); // NOTE: convert to Windows units
 					break;
 
 				case SDL_EVENT_MOUSE_MOTION :
 					if (!deckTouchHack) // HACKHACK: Steam Deck workaround (sends mouse events even though native touchscreen support is enabled)
 					{
 						if (isDebugSdl)
-							debugLog("SDL_MOUSEMOTION: xrel = %f, yrel = %f, which = %i\n", e.motion.xrel, e.motion.yrel, (int)e.motion.which);
+							debugLog("SDL_MOUSEMOTION: xrel = %f, yrel = %f, which = %i\n", events[i].motion.xrel, events[i].motion.yrel, (int)events[i].motion.which);
 
-						if (e.motion.which != SDL_TOUCH_MOUSEID)
+						if (events[i].motion.which != SDL_TOUCH_MOUSEID)
 						{
 							environment->setWasLastMouseInputTouch(false);
 
 							if (isRawInputEnabled)
-								g_engine->onMouseRawMove(e.motion.xrel, e.motion.yrel);
+								g_engine->onMouseRawMove(events[i].motion.xrel, events[i].motion.yrel);
 						}
 					}
 					break;
@@ -505,19 +510,19 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 					{
 						if (isDebugSdl)
 							debugLog("SDL_FINGERDOWN: touchId = %i, fingerId = %i, x = %f, y = %f\n",
-								 (int) e.tfinger.touchID,
-								 (int) e.tfinger.fingerID,
-								 e.tfinger.x,
-								 e.tfinger.y);
+								 (int) events[i].tfinger.touchID,
+								 (int) events[i].tfinger.fingerID,
+								 events[i].tfinger.x,
+								 events[i].tfinger.y);
 
 						environment->setWasLastMouseInputTouch(true);
 
-						currentTouchId = e.tfinger.touchID;
+						currentTouchId = events[i].tfinger.touchID;
 
 						bool isFingerIdAlreadyTouching = false;
 						for (const SDL_FingerID &touchingFingerId : touchingFingerIds)
 						{
-							if (touchingFingerId == e.tfinger.fingerID)
+							if (touchingFingerId == events[i].tfinger.fingerID)
 							{
 								isFingerIdAlreadyTouching = true;
 								break;
@@ -526,13 +531,13 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 
 						if (!isFingerIdAlreadyTouching || isSteamDeckDoubletouchWorkaroundEnabled)
 						{
-							touchingFingerIds.push_back(e.tfinger.fingerID);
+							touchingFingerIds.push_back(events[i].tfinger.fingerID);
 
 							if (!isSteamDeckDoubletouchWorkaroundEnabled || isFingerIdAlreadyTouching)
 							{
 								if (touchingFingerIds.size() < (isSteamDeckDoubletouchWorkaroundEnabled ? 3 : 2))
 								{
-									mousePos = Vector2(e.tfinger.x, e.tfinger.y) * g_engine->getScreenSize();
+									mousePos = Vector2(events[i].tfinger.x, events[i].tfinger.y) * g_engine->getScreenSize();
 									environment->setMousePos(mousePos.x, mousePos.y);
 									g_engine->getMouse()->onPosChange(mousePos);
 
@@ -557,14 +562,14 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 					{
 						if (isDebugSdl)
 							debugLog("SDL_FINGERUP: touchId = %i, fingerId = %i, x = %f, y = %f\n",
-								 (int) e.tfinger.touchID,
-								 (int) e.tfinger.fingerID,
-								 e.tfinger.x,
-								 e.tfinger.y);
+								 (int) events[i].tfinger.touchID,
+								 (int) events[i].tfinger.fingerID,
+								 events[i].tfinger.x,
+								 events[i].tfinger.y);
 
 						environment->setWasLastMouseInputTouch(true);
 
-						currentTouchId = e.tfinger.touchID;
+						currentTouchId = events[i].tfinger.touchID;
 
 						// NOTE: also removes the finger from the touchingFingerIds list
 						bool wasFingerIdAlreadyTouching = false;
@@ -572,7 +577,7 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 							size_t numFingerIdTouches = 0;
 							for (size_t i=0; i<touchingFingerIds.size(); i++)
 							{
-								if (touchingFingerIds[i] == e.tfinger.fingerID)
+								if (touchingFingerIds[i] == events[i].tfinger.fingerID)
 								{
 									wasFingerIdAlreadyTouching = true;
 									numFingerIdTouches++;
@@ -592,7 +597,7 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 								{
 									for (size_t i=0; i<touchingFingerIds.size(); i++)
 									{
-										if (touchingFingerIds[i] == e.tfinger.fingerID)
+										if (touchingFingerIds[i] == events[i].tfinger.fingerID)
 										{
 											touchingFingerIds.erase(touchingFingerIds.begin() + i);
 											i--;
@@ -604,7 +609,7 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 
 						if (wasFingerIdAlreadyTouching)
 						{
-							if (e.tfinger.fingerID == touchingFingerIds[0])
+							if (events[i].tfinger.fingerID == touchingFingerIds[0])
 								g_engine->onMouseLeftChange(false);
 						}
 					}
@@ -614,21 +619,21 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 					{
 						if (isDebugSdl)
 							debugLog("SDL_FINGERMOTION: touchId = %i, fingerId = %i, x = %f, y = %f, dx = %f, dy = %f\n",
-								 (int) e.tfinger.touchID,
-								 (int) e.tfinger.fingerID,
-								 e.tfinger.x,
-								 e.tfinger.y,
-								 e.tfinger.dx,
-								 e.tfinger.dy);
+								 (int) events[i].tfinger.touchID,
+								 (int) events[i].tfinger.fingerID,
+								 events[i].tfinger.x,
+								 events[i].tfinger.y,
+								 events[i].tfinger.dx,
+								 events[i].tfinger.dy);
 
 						environment->setWasLastMouseInputTouch(true);
 
-						currentTouchId = e.tfinger.touchID;
+						currentTouchId = events[i].tfinger.touchID;
 
 						bool isFingerIdTouching = false;
 						for (size_t i=0; i<touchingFingerIds.size(); i++)
 						{
-							if (touchingFingerIds[i] == e.tfinger.fingerID)
+							if (touchingFingerIds[i] == events[i].tfinger.fingerID)
 							{
 								isFingerIdTouching = true;
 								break;
@@ -637,9 +642,9 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 
 						if (isFingerIdTouching)
 						{
-							if (e.tfinger.fingerID == touchingFingerIds[0])
+							if (events[i].tfinger.fingerID == touchingFingerIds[0])
 							{
-								mousePos = Vector2(e.tfinger.x, e.tfinger.y) * g_engine->getScreenSize();
+								mousePos = Vector2(events[i].tfinger.x, events[i].tfinger.y) * g_engine->getScreenSize();
 								environment->setMousePos(mousePos.x, mousePos.y);
 								g_engine->getMouse()->onPosChange(mousePos);
 							}
@@ -653,9 +658,9 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 
 				case SDL_EVENT_JOYSTICK_BUTTON_DOWN :
 					if (isDebugSdl)
-						debugLog("SDL_JOYBUTTONDOWN: joystickId = %i, button = %i\n", (int)e.jbutton.which, (int)e.jbutton.button);
+						debugLog("SDL_JOYBUTTONDOWN: joystickId = %i, button = %i\n", (int)events[i].jbutton.which, (int)events[i].jbutton.button);
 
-					if (e.jbutton.button == 0) // KEY_A
+					if (events[i].jbutton.button == 0) // KEY_A
 					{
 						g_engine->onMouseLeftChange(true);
 
@@ -665,34 +670,34 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 							g_engine->onKeyboardKeyUp(SDL_SCANCODE_RETURN);
 						}
 					}
-					else if ((env->getOS() == Environment::OS::OS_HORIZON ? e.jbutton.button == 10 : e.jbutton.button == 7) || e.jbutton.button == 1) // KEY_PLUS/KEY_START || KEY_B
+					else if ((env->getOS() == Environment::OS::OS_HORIZON ? events[i].jbutton.button == 10 : events[i].jbutton.button == 7) || events[i].jbutton.button == 1) // KEY_PLUS/KEY_START || KEY_B
 						g_engine->onKeyboardKeyDown(SDL_SCANCODE_ESCAPE);
-					else if (e.jbutton.button == 2) // KEY_X
+					else if (events[i].jbutton.button == 2) // KEY_X
 					{
 						g_engine->onKeyboardKeyDown(SDL_SCANCODE_X);
 						xDown = true;
 					}
-					else if (e.jbutton.button == 3) // KEY_Y
+					else if (events[i].jbutton.button == 3) // KEY_Y
 						g_engine->onKeyboardKeyDown(SDL_SCANCODE_Y);
-					else if ((env->getOS() == Environment::OS::OS_HORIZON ? e.jbutton.button == 21 : false) || (env->getOS() == Environment::OS::OS_HORIZON ? e.jbutton.button == 13 : false)) // right stick up || dpad up
+					else if ((env->getOS() == Environment::OS::OS_HORIZON ? events[i].jbutton.button == 21 : false) || (env->getOS() == Environment::OS::OS_HORIZON ? events[i].jbutton.button == 13 : false)) // right stick up || dpad up
 						g_engine->onKeyboardKeyDown(SDL_SCANCODE_UP);
-					else if ((env->getOS() == Environment::OS::OS_HORIZON ? e.jbutton.button == 23 : false) || (env->getOS() == Environment::OS::OS_HORIZON ? e.jbutton.button == 15 : false)) // right stick down || dpad down
+					else if ((env->getOS() == Environment::OS::OS_HORIZON ? events[i].jbutton.button == 23 : false) || (env->getOS() == Environment::OS::OS_HORIZON ? events[i].jbutton.button == 15 : false)) // right stick down || dpad down
 						g_engine->onKeyboardKeyDown(SDL_SCANCODE_DOWN);
-					else if ((env->getOS() == Environment::OS::OS_HORIZON ? e.jbutton.button == 20 : false) || (env->getOS() == Environment::OS::OS_HORIZON ? e.jbutton.button == 12 : false)) // right stick left || dpad left
+					else if ((env->getOS() == Environment::OS::OS_HORIZON ? events[i].jbutton.button == 20 : false) || (env->getOS() == Environment::OS::OS_HORIZON ? events[i].jbutton.button == 12 : false)) // right stick left || dpad left
 						g_engine->onKeyboardKeyDown(SDL_SCANCODE_LEFT);
-					else if ((env->getOS() == Environment::OS::OS_HORIZON ? e.jbutton.button == 22 : false) || (env->getOS() == Environment::OS::OS_HORIZON ? e.jbutton.button == 14 : false)) // right stick right || dpad right
+					else if ((env->getOS() == Environment::OS::OS_HORIZON ? events[i].jbutton.button == 22 : false) || (env->getOS() == Environment::OS::OS_HORIZON ? events[i].jbutton.button == 14 : false)) // right stick right || dpad right
 						g_engine->onKeyboardKeyDown(SDL_SCANCODE_RIGHT);
-					else if ((env->getOS() == Environment::OS::OS_HORIZON ? e.jbutton.button == 6 : e.jbutton.button == 4)) // KEY_L
+					else if ((env->getOS() == Environment::OS::OS_HORIZON ? events[i].jbutton.button == 6 : events[i].jbutton.button == 4)) // KEY_L
 						g_engine->onKeyboardKeyDown((env->getOS() == Environment::OS::OS_HORIZON ? SDL_SCANCODE_L : SDL_SCANCODE_BACKSPACE));
-					else if ((env->getOS() == Environment::OS::OS_HORIZON ? e.jbutton.button == 7 : e.jbutton.button == 5)) // KEY_R
+					else if ((env->getOS() == Environment::OS::OS_HORIZON ? events[i].jbutton.button == 7 : events[i].jbutton.button == 5)) // KEY_R
 						g_engine->onKeyboardKeyDown((env->getOS() == Environment::OS::OS_HORIZON ? SDL_SCANCODE_R : SDL_SCANCODE_LSHIFT));
-					else if ((env->getOS() == Environment::OS::OS_HORIZON ? e.jbutton.button == 8 : false)) // KEY_ZL
+					else if ((env->getOS() == Environment::OS::OS_HORIZON ? events[i].jbutton.button == 8 : false)) // KEY_ZL
 						g_engine->onKeyboardKeyDown(SDL_SCANCODE_Z);
-					else if ((env->getOS() == Environment::OS::OS_HORIZON ? e.jbutton.button == 9 : false)) // KEY_ZR
+					else if ((env->getOS() == Environment::OS::OS_HORIZON ? events[i].jbutton.button == 9 : false)) // KEY_ZR
 						g_engine->onKeyboardKeyDown(SDL_SCANCODE_V);
-					else if ((env->getOS() == Environment::OS::OS_HORIZON ? e.jbutton.button == 11 : e.jbutton.button == 6)) // KEY_MINUS/KEY_SELECT
+					else if ((env->getOS() == Environment::OS::OS_HORIZON ? events[i].jbutton.button == 11 : events[i].jbutton.button == 6)) // KEY_MINUS/KEY_SELECT
 						g_engine->onKeyboardKeyDown(SDL_SCANCODE_F1);
-					else if ((env->getOS() == Environment::OS::OS_HORIZON ? e.jbutton.button == 4 : e.jbutton.button == 9)) // left stick press
+					else if ((env->getOS() == Environment::OS::OS_HORIZON ? events[i].jbutton.button == 4 : events[i].jbutton.button == 9)) // left stick press
 					{
 						// toggle options (CTRL + O)
 						g_engine->onKeyboardKeyDown(SDL_SCANCODE_LCTRL);
@@ -700,7 +705,7 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 						g_engine->onKeyboardKeyUp(SDL_SCANCODE_LCTRL);
 						g_engine->onKeyboardKeyUp(SDL_SCANCODE_O);
 					}
-					else if ((env->getOS() == Environment::OS::OS_HORIZON ? e.jbutton.button == 5 : e.jbutton.button == 10)) // right stick press
+					else if ((env->getOS() == Environment::OS::OS_HORIZON ? events[i].jbutton.button == 5 : events[i].jbutton.button == 10)) // right stick press
 					{
 						if (xDown)
 						{
@@ -722,56 +727,56 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 					break;
 
 				case SDL_EVENT_JOYSTICK_BUTTON_UP :
-					if (e.jbutton.button == 0) // KEY_A
+					if (events[i].jbutton.button == 0) // KEY_A
 						g_engine->onMouseLeftChange(false);
-					else if ((env->getOS() == Environment::OS::OS_HORIZON ? e.jbutton.button == 10 : e.jbutton.button == 7) || e.jbutton.button == 1) // KEY_PLUS/KEY_START || KEY_B
+					else if ((env->getOS() == Environment::OS::OS_HORIZON ? events[i].jbutton.button == 10 : events[i].jbutton.button == 7) || events[i].jbutton.button == 1) // KEY_PLUS/KEY_START || KEY_B
 						g_engine->onKeyboardKeyUp(SDL_SCANCODE_ESCAPE);
-					else if (e.jbutton.button == 2) // KEY_X
+					else if (events[i].jbutton.button == 2) // KEY_X
 					{
 						g_engine->onKeyboardKeyUp(SDL_SCANCODE_X);
 						xDown = false;
 					}
-					else if (e.jbutton.button == 3) // KEY_Y
+					else if (events[i].jbutton.button == 3) // KEY_Y
 						g_engine->onKeyboardKeyUp(SDL_SCANCODE_Y);
-					else if ((env->getOS() == Environment::OS::OS_HORIZON ? e.jbutton.button == 21 : false) || (env->getOS() == Environment::OS::OS_HORIZON ? e.jbutton.button == 13 : false)) // right stick up || dpad up
+					else if ((env->getOS() == Environment::OS::OS_HORIZON ? events[i].jbutton.button == 21 : false) || (env->getOS() == Environment::OS::OS_HORIZON ? events[i].jbutton.button == 13 : false)) // right stick up || dpad up
 						g_engine->onKeyboardKeyUp(SDL_SCANCODE_UP);
-					else if ((env->getOS() == Environment::OS::OS_HORIZON ? e.jbutton.button == 23 : false) || (env->getOS() == Environment::OS::OS_HORIZON ? e.jbutton.button == 15 : false)) // right stick down || dpad down
+					else if ((env->getOS() == Environment::OS::OS_HORIZON ? events[i].jbutton.button == 23 : false) || (env->getOS() == Environment::OS::OS_HORIZON ? events[i].jbutton.button == 15 : false)) // right stick down || dpad down
 						g_engine->onKeyboardKeyUp(SDL_SCANCODE_DOWN);
-					else if ((env->getOS() == Environment::OS::OS_HORIZON ? e.jbutton.button == 20 : false) || (env->getOS() == Environment::OS::OS_HORIZON ? e.jbutton.button == 12 : false)) // right stick left || dpad left
+					else if ((env->getOS() == Environment::OS::OS_HORIZON ? events[i].jbutton.button == 20 : false) || (env->getOS() == Environment::OS::OS_HORIZON ? events[i].jbutton.button == 12 : false)) // right stick left || dpad left
 						g_engine->onKeyboardKeyUp(SDL_SCANCODE_LEFT);
-					else if ((env->getOS() == Environment::OS::OS_HORIZON ? e.jbutton.button == 22 : false) || (env->getOS() == Environment::OS::OS_HORIZON ? e.jbutton.button == 14 : false)) // right stick right || dpad right
+					else if ((env->getOS() == Environment::OS::OS_HORIZON ? events[i].jbutton.button == 22 : false) || (env->getOS() == Environment::OS::OS_HORIZON ? events[i].jbutton.button == 14 : false)) // right stick right || dpad right
 						g_engine->onKeyboardKeyUp(SDL_SCANCODE_RIGHT);
-					else if ((env->getOS() == Environment::OS::OS_HORIZON ? e.jbutton.button == 6 : e.jbutton.button == 4)) // KEY_L
+					else if ((env->getOS() == Environment::OS::OS_HORIZON ? events[i].jbutton.button == 6 : events[i].jbutton.button == 4)) // KEY_L
 						g_engine->onKeyboardKeyUp((env->getOS() == Environment::OS::OS_HORIZON ? SDL_SCANCODE_L : SDL_SCANCODE_BACKSPACE));
-					else if ((env->getOS() == Environment::OS::OS_HORIZON ? e.jbutton.button == 7 : e.jbutton.button == 5)) // KEY_R
+					else if ((env->getOS() == Environment::OS::OS_HORIZON ? events[i].jbutton.button == 7 : events[i].jbutton.button == 5)) // KEY_R
 						g_engine->onKeyboardKeyUp((env->getOS() == Environment::OS::OS_HORIZON ? SDL_SCANCODE_R : SDL_SCANCODE_LSHIFT));
-					else if ((env->getOS() == Environment::OS::OS_HORIZON ? e.jbutton.button == 8 : false)) // KEY_ZL
+					else if ((env->getOS() == Environment::OS::OS_HORIZON ? events[i].jbutton.button == 8 : false)) // KEY_ZL
 						g_engine->onKeyboardKeyUp(SDL_SCANCODE_Z);
-					else if ((env->getOS() == Environment::OS::OS_HORIZON ? e.jbutton.button == 9 : false)) // KEY_ZR
+					else if ((env->getOS() == Environment::OS::OS_HORIZON ? events[i].jbutton.button == 9 : false)) // KEY_ZR
 						g_engine->onKeyboardKeyUp(SDL_SCANCODE_V);
-					else if ((env->getOS() == Environment::OS::OS_HORIZON ? e.jbutton.button == 11 : e.jbutton.button == 6)) // KEY_MINUS/KEY_SELECT
+					else if ((env->getOS() == Environment::OS::OS_HORIZON ? events[i].jbutton.button == 11 : events[i].jbutton.button == 6)) // KEY_MINUS/KEY_SELECT
 						g_engine->onKeyboardKeyUp(SDL_SCANCODE_F1);
 					break;
 
 				case SDL_EVENT_JOYSTICK_AXIS_MOTION :
-					//debugLog("joyaxismotion: stick %i : axis = %i, value = %i\n", (int)e.jaxis.which, (int)e.jaxis.axis, (int)e.jaxis.value);
+					//debugLog("joyaxismotion: stick %i : axis = %i, value = %i\n", (int)events[i].jaxis.which, (int)events[i].jaxis.axis, (int)events[i].jaxis.value);
 					// left stick
-					if (e.jaxis.axis == 1 || e.jaxis.axis == 0)
+					if (events[i].jaxis.axis == 1 || events[i].jaxis.axis == 0)
 					{
-						if (e.jaxis.axis == 0)
-							m_fJoystick0XPercent = clamp<float>((float)e.jaxis.value / 32767.0f, -1.0f, 1.0f);
+						if (events[i].jaxis.axis == 0)
+							m_fJoystick0XPercent = clamp<float>((float)events[i].jaxis.value / 32767.0f, -1.0f, 1.0f);
 						else
-							m_fJoystick0YPercent = clamp<float>((float)e.jaxis.value / 32767.0f, -1.0f, 1.0f);
+							m_fJoystick0YPercent = clamp<float>((float)events[i].jaxis.value / 32767.0f, -1.0f, 1.0f);
 					}
 					if (env->getOS() != Environment::OS::OS_HORIZON)
 					{
 						// ZL/ZR
-						if (e.jaxis.axis == 2 || e.jaxis.axis == 5)
+						if (events[i].jaxis.axis == 2 || events[i].jaxis.axis == 5)
 						{
-							if (e.jaxis.axis == 2)
+							if (events[i].jaxis.axis == 2)
 							{
 								const float threshold = sdl_joystick_zl_threshold.getFloat();
-								const float percent = clamp<float>((float)e.jaxis.value / 32767.0f, -1.0f, 1.0f);
+								const float percent = clamp<float>((float)events[i].jaxis.value / 32767.0f, -1.0f, 1.0f);
 								const bool wasZlDown = zlDown;
 								zlDown = !(threshold <= 0.0f ? percent <= threshold : percent >= threshold);
 								if (zlDown != wasZlDown)
@@ -785,7 +790,7 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 							else
 							{
 								const float threshold = sdl_joystick_zr_threshold.getFloat();
-								const float percent = clamp<float>((float)e.jaxis.value / 32767.0f, -1.0f, 1.0f);
+								const float percent = clamp<float>((float)events[i].jaxis.value / 32767.0f, -1.0f, 1.0f);
 								const bool wasZrDown = zrDown;
 								zrDown = !(threshold <= 0.0f ? percent <= threshold : percent >= threshold);
 								if (zrDown != wasZrDown)
@@ -801,7 +806,7 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 					break;
 
 				case SDL_EVENT_JOYSTICK_HAT_MOTION :
-					//debugLog("joyhatmotion: hat %i : value = %i\n", (int)e.jhat.hat, (int)e.jhat.value);
+					//debugLog("joyhatmotion: hat %i : value = %i\n", (int)events[i].jhat.hat, (int)events[i].jhat.value);
 					if (env->getOS() != Environment::OS::OS_HORIZON)
 					{
 						const bool wasHatUpDown = hatUpDown;
@@ -809,10 +814,10 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 						const bool wasHatLeftDown = hatLeftDown;
 						const bool wasHatRightDown = hatRightDown;
 
-						hatUpDown = (e.jhat.value == SDL_HAT_UP);
-						hatDownDown = (e.jhat.value == SDL_HAT_DOWN);
-						hatLeftDown = (e.jhat.value == SDL_HAT_LEFT);
-						hatRightDown = (e.jhat.value == SDL_HAT_RIGHT);
+						hatUpDown = (events[i].jhat.value == SDL_HAT_UP);
+						hatDownDown = (events[i].jhat.value == SDL_HAT_DOWN);
+						hatLeftDown = (events[i].jhat.value == SDL_HAT_LEFT);
+						hatRightDown = (events[i].jhat.value == SDL_HAT_RIGHT);
 
 						if (hatUpDown != wasHatUpDown)
 						{
@@ -851,6 +856,7 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 #endif
 				}
 			}
+			} while (eventCount == SIZE_EVENTS);
 		}
 
 		// update
