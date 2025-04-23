@@ -396,18 +396,29 @@ unsigned int SoundTouchFilterInstance::getAudio(float *aBuffer, unsigned int aSa
 
 bool SoundTouchFilterInstance::hasEnded()
 {
-	// only end when source has ended & SoundTouch buffer is empty
-	bool ended = mSourceInstance && mSourceInstance->hasEnded() && mSoundTouch && (mSoundTouch->numSamples() == 0);
+	// end when source has ended and we're not looping
+	const bool ended = mSourceInstance && mSourceInstance->hasEnded();
+	const bool looping = ended && (mSourceInstance->mFlags & AudioSourceInstance::LOOPING);
+
+	if (mSoundTouch && (mSoundTouch->numSamples() == 0))
+		ST_DEBUG_LOG("flushing mSoundTouch\n");
+
+	if (looping)
+	{
+		ST_DEBUG_LOG("looping source, rewinding\n");
+		if (mSourceInstance->rewind())
+			return false;
+	}
 
 	if (ended && ST_DEBUG_ENABLED)
-		ST_DEBUG_LOG("SoundTouchFilterInstance::hasEnded: Returning true\n");
+		ST_DEBUG_LOG("ended, returning true\n");
 
 	return ended;
 }
 
 result SoundTouchFilterInstance::seek(time aSeconds, float *mScratch, unsigned int mScratchSize)
 {
-	ST_DEBUG_LOG("SoundTouchFilterInstance::seek: Seeking to %f seconds\n", aSeconds);
+	ST_DEBUG_LOG("Seeking to %f seconds\n", aSeconds);
 
 	if (!mSourceInstance)
 		return INVALID_PARAMETER;
@@ -427,7 +438,7 @@ result SoundTouchFilterInstance::seek(time aSeconds, float *mScratch, unsigned i
 		mStreamTime = 0.0f;
 		mTotalSamplesProcessed = (unsigned int)(aSeconds * mBaseSamplerate);
 
-		ST_DEBUG_LOG("SoundTouchFilterInstance::seek: Updated position tracking, new position: %f seconds\n", mStreamPosition);
+		ST_DEBUG_LOG("Updated position tracking, new position: %f seconds\n", mStreamPosition);
 	}
 
 	return res;
@@ -435,7 +446,7 @@ result SoundTouchFilterInstance::seek(time aSeconds, float *mScratch, unsigned i
 
 unsigned int SoundTouchFilterInstance::rewind()
 {
-	ST_DEBUG_LOG("SoundTouchFilterInstance::rewind called\n");
+	ST_DEBUG_LOG("rewind called\n");
 
 	unsigned int result = 0;
 	if (mSourceInstance)
