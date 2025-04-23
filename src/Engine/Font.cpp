@@ -14,7 +14,6 @@
 #include <ft2build.h>
 #include <freetype/freetype.h>
 #include <freetype/ftglyph.h>
-#include <freetype/ftbitmap.h>
 #include <freetype/ftoutln.h>
 #include <freetype/fttrigon.h>
 
@@ -26,16 +25,9 @@ static constexpr float ATLAS_OCCUPANCY_TARGET = 0.75f; // target atlas occupancy
 static constexpr size_t MIN_ATLAS_SIZE = 256;
 static constexpr size_t MAX_ATLAS_SIZE = 4096;
 
-const wchar_t McFont::UNKNOWN_CHAR;
-
 ConVar r_drawstring_max_string_length("r_drawstring_max_string_length", 65536, FCVAR_CHEAT, "maximum number of characters per call, sanity/memory buffer limit");
 ConVar r_debug_drawstring_unbind("r_debug_drawstring_unbind", false, FCVAR_NONE);
 ConVar r_debug_font_atlas_padding("r_debug_font_atlas_padding", 1, FCVAR_NONE, "padding between glyphs in the atlas to prevent bleeding");
-
-// forward declarations of internal helpers
-static bool packGlyphRects(std::vector<GlyphRect> &rects, int atlasWidth, int atlasHeight);
-static size_t calculateOptimalAtlasSize(const std::vector<GlyphRect> &glyphs, float targetOccupancy);
-static unsigned char *unpackMonoBitmap(const FT_Bitmap &bitmap);
 
 McFont::McFont(UString filepath, int fontSize, bool antialiasing, int fontDPI)
     : Resource(filepath), m_vao(Graphics::PRIMITIVE::PRIMITIVE_QUADS)
@@ -65,16 +57,16 @@ void McFont::constructor(std::vector<wchar_t> characters, int fontSize, bool ant
 
     // setup error glyph
     m_errorGlyph = {
-        UNKNOWN_CHAR, // character
-        10,           // advance_x
-        1,            // sizepixelsx
-        1,            // sizepixelsy
-        0,            // uvpixelsx
-        0,            // uvpixelsy
-        10,           // top
-        10,           // width
-        1,            // rows
-        0             // left
+        .character=UNKNOWN_CHAR, // character
+        .uvPixelsX=10,           // advance_x
+        .uvPixelsY=1,            // sizepixelsx
+        .sizePixelsX=1,          // sizepixelsy
+        .sizePixelsY=0,          // uvpixelsx
+        .left=0,                 // uvpixelsy
+        .top=10,                 // top
+        .width=10,               // width
+        .rows=1,                 // rows
+        .advance_x=0             // left
     };
 
     // pre-allocate space for glyphs
@@ -461,11 +453,6 @@ const McFont::GLYPH_METRICS &McFont::getGlyphMetrics(wchar_t ch) const
     return m_errorGlyph;
 }
 
-bool McFont::hasGlyph(wchar_t ch) const
-{
-    return m_vGlyphMetrics.find(ch) != m_vGlyphMetrics.end();
-}
-
 void McFont::initAsync()
 {
     m_bAsyncReady = true;
@@ -503,7 +490,7 @@ bool McFont::addGlyph(wchar_t ch)
 }
 
 // helper implementation for glyph packing (skyline algorithm)
-static bool packGlyphRects(std::vector<GlyphRect> &rects, int atlasWidth, int atlasHeight)
+bool McFont::packGlyphRects(std::vector<GlyphRect> &rects, int atlasWidth, int atlasHeight)
 {
     const int padding = r_debug_font_atlas_padding.getInt();
 
@@ -589,7 +576,7 @@ static bool packGlyphRects(std::vector<GlyphRect> &rects, int atlasWidth, int at
     return true;
 }
 
-static size_t calculateOptimalAtlasSize(const std::vector<GlyphRect> &glyphs, float targetOccupancy)
+size_t McFont::calculateOptimalAtlasSize(const std::vector<GlyphRect> &glyphs, float targetOccupancy) const
 {
     // calculate total glyph area
     size_t totalArea = 0;
@@ -612,7 +599,7 @@ static size_t calculateOptimalAtlasSize(const std::vector<GlyphRect> &glyphs, fl
     return size;
 }
 
-static unsigned char *unpackMonoBitmap(const FT_Bitmap &bitmap)
+unsigned char *McFont::unpackMonoBitmap(const FT_Bitmap &bitmap)
 {
     auto result = new unsigned char[bitmap.rows * bitmap.width];
 

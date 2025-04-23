@@ -354,6 +354,7 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 			do
 			{
 				eventCount = SDL_PeepEvents(&events[0], SIZE_EVENTS, SDL_GETEVENT, SDL_EVENT_FIRST, SDL_EVENT_LAST);
+				//debugLog("eventCount: %d\n", eventCount);
 				for (int i = 0; i < eventCount; ++i)
 				{
 				switch (events[i].type)

@@ -12,88 +12,95 @@
 #include "Resource.h"
 #include "VertexArrayObject.h"
 
-class Image;
+#include <freetype/ftbitmap.h>
+
 class TextureAtlas;
 class VertexArrayObject;
 
-struct GlyphRect
+class McFont : public Resource
 {
-	int x, y, width, height;
-	wchar_t ch;
-};
-
-class McFont : public Resource {
 public:
     static constexpr wchar_t UNKNOWN_CHAR = 63; // ASCII '?'
 
-    struct GLYPH_METRICS {
-        wchar_t character;
-        unsigned int uvPixelsX, uvPixelsY;
-        unsigned int sizePixelsX, sizePixelsY;
-        int left, top, width, rows;
-        float advance_x;
-    };
+	McFont(UString filepath, int fontSize = 16, bool antialiasing = true, int fontDPI = 96);
+	McFont(UString filepath, std::vector<wchar_t> characters, int fontSize = 16, bool antialiasing = true, int fontDPI = 96);
+	~McFont() override { destroy(); }
 
-    struct BatchEntry {
-        UString text;
-        Vector3 pos;
-        Color color;
-    };
+	void drawString(Graphics *g, const UString &text);
+	void beginBatch();
+	void addToBatch(const UString &text, const Vector3 &pos, Color color = 0xffffffff);
+	void flushBatch(Graphics *g);
 
-    McFont(UString filepath, int fontSize = 16, bool antialiasing = true, int fontDPI = 96);
-    McFont(UString filepath, std::vector<wchar_t> characters, int fontSize = 16, 
-           bool antialiasing = true, int fontDPI = 96);
-    virtual ~McFont() { destroy(); }
+	void setSize(int fontSize) { m_iFontSize = fontSize; }
+	void setDPI(int dpi) { m_iFontDPI = dpi; }
+	void setHeight(float height) { m_fHeight = height; }
 
-    void drawString(Graphics *g, const UString &text);
-    void beginBatch();
-    void addToBatch(const UString &text, const Vector3 &pos, Color color = 0xffffffff);
-    void flushBatch(Graphics *g);
-
-	void setSize(int fontSize) {m_iFontSize = fontSize;}
-	void setDPI(int dpi) {m_iFontDPI = dpi;}
-	void setHeight(float height) {m_fHeight = height;}
-
-	inline int getSize() const {return m_iFontSize;}
-	inline int getDPI() const {return m_iFontDPI;}
-	inline float getHeight() const {return m_fHeight;} // precomputed average height (fast)
+	inline int getSize() const { return m_iFontSize; }
+	inline int getDPI() const { return m_iFontDPI; }
+	inline float getHeight() const { return m_fHeight; } // precomputed average height (fast)
 
 	float getStringWidth(UString text) const;
 	float getStringHeight(UString text) const;
 
-    // debug
-    void drawTextureAtlas(Graphics *g);
+	// debug
+	void drawTextureAtlas(Graphics *g);
 
 protected:
-    void constructor(std::vector<wchar_t> characters, int fontSize, bool antialiasing, int fontDPI);
-	virtual void init() override;
-    virtual void initAsync() override;
-    virtual void destroy() override;
+	void constructor(std::vector<wchar_t> characters, int fontSize, bool antialiasing, int fontDPI);
+	void init() override;
+	void initAsync() override;
+	void destroy() override;
 
 private:
-    void buildGlyphGeometry(const GLYPH_METRICS &gm, const Vector3 &basePos,
-                                float advanceX, size_t &vertexCount);
-    void buildStringGeometry(const UString &text, size_t &vertexCount);
-    bool addGlyph(wchar_t ch);
-    const GLYPH_METRICS &getGlyphMetrics(wchar_t ch) const;
-	bool hasGlyph(wchar_t ch) const;
+	struct GlyphRect
+	{
+		int x, y, width, height;
+		wchar_t ch;
+	};
+
+	struct GLYPH_METRICS
+	{
+		wchar_t character;
+		unsigned int uvPixelsX, uvPixelsY;
+		unsigned int sizePixelsX, sizePixelsY;
+		int left, top, width, rows;
+		float advance_x;
+	};
+
+	struct BatchEntry
+	{
+		UString text;
+		Vector3 pos;
+		Color color;
+	};
+
+	forceinline bool hasGlyph(wchar_t ch) const { return m_vGlyphMetrics.find(ch) != m_vGlyphMetrics.end(); };
+	bool addGlyph(wchar_t ch);
+
+	void buildGlyphGeometry(const GLYPH_METRICS &gm, const Vector3 &basePos, float advanceX, size_t &vertexCount);
+	void buildStringGeometry(const UString &text, size_t &vertexCount);
+
+	const GLYPH_METRICS &getGlyphMetrics(wchar_t ch) const;
+	bool packGlyphRects(std::vector<GlyphRect> &rects, int atlasWidth, int atlasHeight);
+	size_t calculateOptimalAtlasSize(const std::vector<GlyphRect> &glyphs, float targetOccupancy) const;
+	unsigned char *unpackMonoBitmap(const FT_Bitmap &bitmap);
 
 	int m_iFontSize;
 	bool m_bAntialiasing;
 	int m_iFontDPI;
 	float m_fHeight;
-    TextureAtlas *m_textureAtlas;
-    GLYPH_METRICS m_errorGlyph;
+	TextureAtlas *m_textureAtlas;
+	GLYPH_METRICS m_errorGlyph;
 
-    std::vector<wchar_t> m_vGlyphs;
-    std::unordered_map<wchar_t, bool> m_vGlyphExistence;
-    std::unordered_map<wchar_t, GLYPH_METRICS> m_vGlyphMetrics;
+	std::vector<wchar_t> m_vGlyphs;
+	std::unordered_map<wchar_t, bool> m_vGlyphExistence;
+	std::unordered_map<wchar_t, GLYPH_METRICS> m_vGlyphMetrics;
 
-    VertexArrayObject m_vao;
-    std::vector<BatchEntry> m_batchQueue;
-    std::vector<Vector3> m_vertices;
-    std::vector<Vector2> m_texcoords;
-    bool m_batchActive;
+	VertexArrayObject m_vao;
+	std::vector<BatchEntry> m_batchQueue;
+	std::vector<Vector3> m_vertices;
+	std::vector<Vector2> m_texcoords;
+	bool m_batchActive;
 };
 
 #endif
