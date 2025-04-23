@@ -122,6 +122,7 @@ McOsu_ng_SOURCES = \
 	src/Engine/Platform/SDLTimer.cpp \
 	src/Engine/Platform/SoLoudSound.cpp \
 	src/Engine/Platform/SoLoudSoundEngine.cpp \
+	src/Engine/Platform/SoundTouchFilter.cpp \
 	src/Engine/Platform/Thread.cpp \
 	src/Engine/Platform/Timer.cpp \
 	src/Engine/Platform/WinContextMenu.cpp \
