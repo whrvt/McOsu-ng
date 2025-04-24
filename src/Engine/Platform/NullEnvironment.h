@@ -95,6 +95,7 @@ public:
 
 	// keyboard
 	UString keyCodeToString(KEYCODE keyCode) {return UString::format("%lu", keyCode);}
+	void listenToTextInput(bool) {;}
 };
 
 #endif

@@ -903,7 +903,11 @@ OsuOptionsMenu::OsuOptionsMenu(Osu *osu) : OsuScreenBackable(osu)
 	CBaseUIElement *sectionInput = addSection("Input");
 
 	addSubSection("Mouse", "scroll");
-	if (env->getOS() == Environment::OS::OS_WINDOWS || env->getOS() == Environment::OS::OS_MACOS || env->getOS() == Environment::OS::OS_HORIZON)
+	if (env->getOS() == Environment::OS::OS_WINDOWS || env->getOS() == Environment::OS::OS_MACOS || env->getOS() == Environment::OS::OS_HORIZON
+#ifdef MCENGINE_FEATURE_SDL
+		|| env->getOS() == Environment::OS::OS_LINUX
+#endif
+	)
 	{
 		addSlider("Sensitivity:", (env->getOS() == Environment::OS::OS_HORIZON ? 1.0f : 0.1f), 6.0f, convar->getConVarByName("mouse_sensitivity"))->setKeyDelta(0.01f);
 
@@ -917,9 +921,14 @@ OsuOptionsMenu::OsuOptionsMenu(Osu *osu) : OsuScreenBackable(osu)
 			addLabel("");
 		}
 	}
-	if (env->getOS() == Environment::OS::OS_WINDOWS)
+	if (env->getOS() == Environment::OS::OS_WINDOWS
+#ifdef MCENGINE_FEATURE_SDL
+		|| env->getOS() == Environment::OS::OS_LINUX
+#endif
+	)
 	{
 		addCheckbox("Raw Input", convar->getConVarByName("mouse_raw_input"));
+		if (env->getOS() == Environment::OS::OS_WINDOWS)
 		{
 			ConVar *win_mouse_raw_input_buffer_ref = convar->getConVarByName("win_mouse_raw_input_buffer", false);
 			if (win_mouse_raw_input_buffer_ref != NULL)
@@ -927,7 +936,11 @@ OsuOptionsMenu::OsuOptionsMenu(Osu *osu) : OsuScreenBackable(osu)
 		}
 		addCheckbox("Map Absolute Raw Input to Window", convar->getConVarByName("mouse_raw_input_absolute_to_window"))->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onRawInputToAbsoluteWindowChange) );
 	}
-	if (env->getOS() == Environment::OS::OS_LINUX)
+	if (env->getOS() == Environment::OS::OS_LINUX
+#ifdef MCENGINE_FEATURE_SDL
+		&& false
+#endif
+	)
 	{
 		addLabel("Use system settings to change the mouse sensitivity.")->setTextColor(0xff555555);
 		addLabel("");
@@ -4107,7 +4120,7 @@ void OsuOptionsMenu::save()
 	std::vector<UString> keepLines;
 	{
 		// in extra block because the File class would block the following std::ofstream from writing to it until it's destroyed
-		File in(userConfigFile.toUtf8());
+		McFile in(userConfigFile.toUtf8());
 		if (!in.canRead())
 			debugLog("Osu Error: Couldn't read user config file!\n");
 		else

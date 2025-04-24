@@ -51,6 +51,9 @@
 /* Define if the SDL_mixer audio backend is desired. */
 #undef MCENGINE_FEATURE_SDL_MIXER
 
+/* Define if the SoLoud audio backend is desired. */
+#undef MCENGINE_FEATURE_SOLOUD
+
 /* Define if compiling for Linux. */
 #undef MCENGINE_PLATFORM_LINUX
 

@@ -18,7 +18,7 @@
 
 class ConVar;
 
-class File
+class McFile
 {
 public:
 	static ConVar *debug;
@@ -31,8 +31,8 @@ public:
 	};
 
 public:
-	File(UString filePath, TYPE type = TYPE::READ);
-	~File() = default;
+	McFile(UString filePath, TYPE type = TYPE::READ);
+	~McFile() = default;
 
 	bool canRead() const;
 	bool canWrite() const;

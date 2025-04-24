@@ -11,7 +11,7 @@
 
 #include "cbase.h"
 
-class File;
+class McFile;
 
 class OsuFile
 {
@@ -73,7 +73,7 @@ public:
 private:
 	uint64_t decodeULEB128(const uint8_t *p, unsigned int *n = NULL);
 
-	File *m_file;
+	McFile *m_file;
 	size_t m_iFileSize;
 	const char *m_buffer;
 	const char *m_readPointer;

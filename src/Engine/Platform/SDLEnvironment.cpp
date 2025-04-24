@@ -35,7 +35,9 @@ SDLEnvironment::SDLEnvironment(SDL_Window *window) : Environment()
 	m_bCursorClipped = false;
 	m_cursorType = CURSORTYPE::CURSOR_NORMAL;
 
+#ifdef MCENGINE_SDL_TOUCHSUPPORT
 	m_bWasLastMouseInputTouch = false;
+#endif
 
 	m_sPrevClipboardTextSDL = NULL;
 
@@ -337,10 +339,7 @@ Vector2 SDLEnvironment::getWindowPos()
 {
 	int x = 0;
 	int y = 0;
-	{
-        SDL_SyncWindow(m_window);
-		SDL_GetWindowPosition(m_window, &x, &y);
-	}
+	SDL_GetWindowPosition(m_window, &x, &y);
 	return Vector2(x, y);
 }
 
@@ -348,23 +347,18 @@ Vector2 SDLEnvironment::getWindowSize()
 {
 	int width = 100;
 	int height = 100;
-	{
-        SDL_SyncWindow(m_window);
-		SDL_GetWindowSize(m_window, &width, &height);
-	}
+	SDL_GetWindowSize(m_window, &width, &height);
 	return Vector2(width, height);
 }
 
 int SDLEnvironment::getMonitor()
 {
-    SDL_SyncWindow(m_window);
 	const int display = static_cast<int>(SDL_GetDisplayForWindow(m_window)); // HACK: 0 means invalid display in SDL, decrement by 1 for engine/app
     return display-1 < 0 ? 0 : display-1;
 }
 
 Vector2 SDLEnvironment::getNativeScreenSize()
 {
-    SDL_SyncWindow(m_window);
 	SDL_DisplayID di = SDL_GetDisplayForWindow(m_window);
 	return Vector2(SDL_GetDesktopDisplayMode(di)->w, SDL_GetDesktopDisplayMode(di)->h);
 }
@@ -395,27 +389,28 @@ Vector2 SDLEnvironment::getMousePos()
 	if (m_bWasLastMouseInputTouch)
 		return engine->getMouse()->getActualPos(); // so instead, we return our own which is always guaranteed to be the first finger position (and no other fingers)
 
-	float mouseX = 0;
-	float mouseY = 0;
+	return m_vLastAbsMousePos;
+	// float mouseX = 0;
+	// float mouseY = 0;
 
-	// HACKHACK: workaround, don't change this
-	if (m_mouse_sensitivity_ref->getFloat() == 1.0f)
-	{
-		SDL_GetMouseState(&mouseX, &mouseY);
-		//debugLog("x %f y %f\n", mouseX, mouseY);
-		return Vector2(mouseX, mouseY);
-	}
-	else
-	{
+	// // HACKHACK: workaround, don't change this
+	// if (m_mouse_sensitivity_ref->getFloat() == 1.0f)
+	// {
+	// 	SDL_GetMouseState(&mouseX, &mouseY);
+	// 	//debugLog("x %f y %f\n", mouseX, mouseY);
+	// 	return Vector2(mouseX, mouseY);
+	// }
+	// else
+	// {
 
-		int windowX = 0;
-		int windowY = 0;
+	// 	int windowX = 0;
+	// 	int windowY = 0;
 
-		SDL_GetGlobalMouseState(&mouseX, &mouseY);
-		SDL_GetWindowPosition(m_window, &windowX, &windowY);
+	// 	SDL_GetGlobalMouseState(&mouseX, &mouseY);
+	// 	SDL_GetWindowPosition(m_window, &windowX, &windowY);
 
-		return Vector2(mouseX - static_cast<float>(windowX), mouseY - static_cast<float>(windowY));
-	}
+	// 	return Vector2(mouseX - static_cast<float>(windowX), mouseY - static_cast<float>(windowY));
+	// }
 }
 
 void SDLEnvironment::setCursor(CURSORTYPE cur)
@@ -432,12 +427,16 @@ void SDLEnvironment::setCursorVisible(bool visible)
 
 void SDLEnvironment::setMousePos(int x, int y)
 {
-	SDL_WarpMouseInWindow(m_window, (float)x, (float)y);
+	setLastAbsMousePos(Vector2(x, y));
+	if (!m_bCursorVisible) // i highly doubt we ever want to mess with the OS cursor position
+		SDL_WarpMouseInWindow(m_window, (float)x, (float)y);
 }
 
 void SDLEnvironment::setMousePos(float x, float y)
 {
-	SDL_WarpMouseInWindow(m_window, x, y);
+	setLastAbsMousePos(Vector2(x, y));
+	if (!m_bCursorVisible)
+		SDL_WarpMouseInWindow(m_window, x, y);
 }
 
 void SDLEnvironment::setCursorClip(bool clip, McRect rect)
@@ -446,27 +445,19 @@ void SDLEnvironment::setCursorClip(bool clip, McRect rect)
 
 	if (clip)
 	{
-		if (rect.getSize().x > 1.0f) // xwayland tablet shit continues
-		{
-			const SDL_Rect clipRect {
-				static_cast<int>(rect.getX()),
-				static_cast<int>(rect.getY()),
-				static_cast<int>(rect.getWidth()),
-				static_cast<int>(rect.getHeight())
-			};
-			SDL_SetWindowMouseRect(m_window, &clipRect);
-			SDL_SetWindowMouseGrab(m_window, true);
-			m_bCursorClipped = true;
-		}
-        SDL_SetWindowKeyboardGrab(m_window, true);
-		// HACK: sdl2->sdl3 don't listen for text input when in play mode (putting it here for now to reuse "in-gameplay" logic)
-		SDL_StopTextInput(m_window);
+		const SDL_Rect clipRect {
+			static_cast<int>(rect.getX()),
+			static_cast<int>(rect.getY()),
+			static_cast<int>(rect.getWidth()),
+			static_cast<int>(rect.getHeight())
+		};
+		SDL_SetWindowMouseRect(m_window, &clipRect);
+		SDL_SetWindowMouseGrab(m_window, true);
+		m_bCursorClipped = true;
 	}
 	else
 	{
         m_bCursorClipped = false;
-        SDL_StartTextInput(m_window);
-        SDL_SetWindowKeyboardGrab(m_window, false);
         SDL_SetWindowMouseGrab(m_window, false);
 		SDL_SetWindowMouseRect(m_window, NULL);
 	}
@@ -485,6 +476,12 @@ UString SDLEnvironment::keyCodeToString(KEYCODE keyCode)
 		else
 			return uName;
 	}
+}
+
+void SDLEnvironment::listenToTextInput(bool listen)
+{
+	listen ? SDL_StartTextInput(m_window) : SDL_StopTextInput(m_window);
+	SDL_SetWindowKeyboardGrab(m_window, !listen);
 }
 
 void SDLEnvironment::onLogLevelChange(UString oldValue, UString newValue)

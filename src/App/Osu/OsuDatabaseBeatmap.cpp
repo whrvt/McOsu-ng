@@ -178,7 +178,7 @@ OsuDatabaseBeatmap::PRIMITIVE_CONTAINER OsuDatabaseBeatmap::loadPrimitiveObjects
 
 	// open osu file for parsing
 	{
-		File file(!filePathIsInMemoryBeatmap ? osuFilePath : "");
+		McFile file(!filePathIsInMemoryBeatmap ? osuFilePath : "");
 		if (!file.canRead() && !filePathIsInMemoryBeatmap)
 		{
 			c.errorCode = 2;
@@ -1018,7 +1018,7 @@ bool OsuDatabaseBeatmap::loadMetadata(OsuDatabaseBeatmap *databaseBeatmap)
 	// generate MD5 hash (loads entire file, very slow)
 	databaseBeatmap->m_sMD5Hash.clear();
 	{
-		File file(!databaseBeatmap->m_bFilePathIsInMemoryBeatmap ? databaseBeatmap->m_sFilePath : "");
+		McFile file(!databaseBeatmap->m_bFilePathIsInMemoryBeatmap ? databaseBeatmap->m_sFilePath : "");
 
 		const char *beatmapFile = NULL;
 		size_t beatmapFileSize = 0;
@@ -1045,7 +1045,7 @@ bool OsuDatabaseBeatmap::loadMetadata(OsuDatabaseBeatmap *databaseBeatmap)
 	// open osu file again, but this time for parsing
 	bool foundAR = false;
 	{
-		File file(!databaseBeatmap->m_bFilePathIsInMemoryBeatmap ? databaseBeatmap->m_sFilePath : "");
+		McFile file(!databaseBeatmap->m_bFilePathIsInMemoryBeatmap ? databaseBeatmap->m_sFilePath : "");
 		if (!file.canRead() && !databaseBeatmap->m_bFilePathIsInMemoryBeatmap)
 		{
 			debugLog("Osu Error: Couldn't read file %s\n", databaseBeatmap->m_sFilePath.toUtf8());
@@ -1615,18 +1615,20 @@ OsuDatabaseBeatmap::LOAD_GAMEPLAY_RESULT OsuDatabaseBeatmap::loadGameplay(OsuDat
 				const float OD = beatmap->getOD();
 				const float speedMultiplier = databaseBeatmap->m_osu->getSpeedMultiplier(); // NOTE: not this->getSpeedMultiplier()!
 				const bool relax = databaseBeatmap->m_osu->getModRelax();
+				const bool autopilot = databaseBeatmap->m_osu->getModAutopilot();
 				const bool touchDevice = databaseBeatmap->m_osu->getModTD();
 
 				LOAD_DIFFOBJ_RESULT diffres = OsuDatabaseBeatmap::loadDifficultyHitObjects(osuFilePath, gameMode, AR, CS, speedMultiplier);
 
 				double aim = 0.0;
 				double aimSliderFactor = 0.0;
+				double aimDifficultSliders = 0.0;
 				double aimDifficultStrains = 0.0;
 				double speed = 0.0;
 				double speedNotes = 0.0;
 				double speedDifficultStrains = 0.0;
-				double stars = OsuDifficultyCalculator::calculateStarDiffForHitObjects(diffres.diffobjects, CS, OD, speedMultiplier, relax, touchDevice, &aim, &aimSliderFactor, &aimDifficultStrains, &speed, &speedNotes, &speedDifficultStrains);
-				double pp = OsuDifficultyCalculator::calculatePPv2(beatmap->getOsu(), beatmap, aim, aimSliderFactor, aimDifficultStrains, speed, speedNotes, speedDifficultStrains, databaseBeatmap->m_iNumObjects, databaseBeatmap->m_iNumCircles, databaseBeatmap->m_iNumSliders, databaseBeatmap->m_iNumSpinners, maxPossibleCombo);
+				double stars = OsuDifficultyCalculator::calculateStarDiffForHitObjects(diffres.diffobjects, CS, OD, speedMultiplier, relax, autopilot, touchDevice, &aim, &aimSliderFactor, &aimDifficultSliders, &aimDifficultStrains, &speed, &speedNotes, &speedDifficultStrains);
+				double pp = OsuDifficultyCalculator::calculatePPv2(beatmap->getOsu(), beatmap, aim, aimSliderFactor, aimDifficultSliders, aimDifficultStrains, speed, speedNotes, speedDifficultStrains, databaseBeatmap->m_iNumObjects, databaseBeatmap->m_iNumCircles, databaseBeatmap->m_iNumSliders, databaseBeatmap->m_iNumSpinners, maxPossibleCombo);
 
 				engine->showMessageInfo("PP", UString::format("pp = %f, stars = %f, aimstars = %f, speedstars = %f, %i circles, %i sliders, %i spinners, %i hitobjects, maxcombo = %i", pp, stars, aim, speed, databaseBeatmap->m_iNumCircles, databaseBeatmap->m_iNumSliders, databaseBeatmap->m_iNumSpinners, databaseBeatmap->m_iNumObjects, maxPossibleCombo));
 			}
@@ -1953,7 +1955,7 @@ void OsuDatabaseBeatmapBackgroundImagePathLoader::init()
 
 void OsuDatabaseBeatmapBackgroundImagePathLoader::initAsync()
 {
-	File file(m_sFilePath);
+	McFile file(m_sFilePath);
 	if (!file.canRead())
 		return;
 
@@ -2011,11 +2013,13 @@ OsuDatabaseBeatmapStarCalculator::OsuDatabaseBeatmapStarCalculator() : Resource(
 	m_fOD = 5.0f;
 	m_fSpeedMultiplier = 1.0f;
 	m_bRelax = false;
+	m_bAutopilot = false;
 	m_bTouchDevice = false;
 
 	m_totalStars = 0.0;
 	m_aimStars = 0.0;
 	m_aimSliderFactor = 0.0;
+	m_aimDifficultSliders = 0.0;
 	m_aimDifficultStrains = 0.0;
 	m_speedStars = 0.0;
 	m_speedNotes = 0.0;
@@ -2037,7 +2041,7 @@ void OsuDatabaseBeatmapStarCalculator::init()
 	// NOTE: this accesses runtime mods, so must be run sync (not async)
 	// technically the getSelectedBeatmap() call here is a bit unsafe, since the beatmap could have changed already between async and sync, but in that case we recalculate immediately after anyways
 	if (!m_bDead.load() && m_iErrorCode == 0 && m_diff2->m_osu->getSelectedBeatmap() != NULL)
-		m_pp = OsuDifficultyCalculator::calculatePPv2(m_diff2->m_osu, m_diff2->m_osu->getSelectedBeatmap(), m_aimStars.load(), m_aimSliderFactor.load(), m_aimDifficultStrains.load(), m_speedStars.load(), m_speedNotes.load(), m_speedDifficultStrains.load(), m_iNumObjects.load(), m_iNumCircles.load(), m_iNumSliders.load(), m_iNumSpinners.load(), m_iMaxPossibleCombo);
+		m_pp = OsuDifficultyCalculator::calculatePPv2(m_diff2->m_osu, m_diff2->m_osu->getSelectedBeatmap(), m_aimStars.load(), m_aimSliderFactor.load(), m_aimDifficultSliders.load(), m_aimDifficultStrains.load(), m_speedStars.load(), m_speedNotes.load(), m_speedDifficultStrains.load(), m_iNumObjects.load(), m_iNumCircles.load(), m_iNumSliders.load(), m_iNumSpinners.load(), m_iMaxPossibleCombo);
 
 	m_bReady = true;
 }
@@ -2048,6 +2052,7 @@ void OsuDatabaseBeatmapStarCalculator::initAsync()
 	m_totalStars = 0.0;
 	m_aimStars = 0.0;
 	m_aimSliderFactor = 0.0;
+	m_aimDifficultSliders = 0.0;
 	m_aimDifficultStrains = 0.0;
 	m_speedStars = 0.0;
 	m_speedNotes = 0.0;
@@ -2081,13 +2086,15 @@ void OsuDatabaseBeatmapStarCalculator::initAsync()
 
 		double aimStars = 0.0;
 		double aimSliderFactor = 0.0;
+		double aimDifficultSliders = 0.0;
 		double aimDifficultStrains = 0.0;
 		double speedStars = 0.0;
 		double speedNotes = 0.0;
 		double speedDifficultStrains = 0.0;
-		m_totalStars = OsuDifficultyCalculator::calculateStarDiffForHitObjects(diffres.diffobjects, m_fCS, m_fOD, m_fSpeedMultiplier, m_bRelax, m_bTouchDevice, &aimStars, &aimSliderFactor, &aimDifficultStrains, &speedStars, &speedNotes, &speedDifficultStrains, -1, &m_aimStrains, &m_speedStrains, m_bDead);
+		m_totalStars = OsuDifficultyCalculator::calculateStarDiffForHitObjects(diffres.diffobjects, m_fCS, m_fOD, m_fSpeedMultiplier, m_bRelax, m_bAutopilot, m_bTouchDevice, &aimStars, &aimSliderFactor, &aimDifficultSliders, &aimDifficultStrains, &speedStars, &speedNotes, &speedDifficultStrains, -1, &m_aimStrains, &m_speedStrains, m_bDead);
 		m_aimStars = aimStars;
 		m_aimSliderFactor = aimSliderFactor;
+		m_aimDifficultSliders = aimDifficultSliders;
 		m_aimDifficultStrains = aimDifficultStrains;
 		m_speedStars = speedStars;
 		m_speedNotes = speedNotes;
@@ -2101,7 +2108,7 @@ void OsuDatabaseBeatmapStarCalculator::initAsync()
 	m_bAsyncReady = true;
 }
 
-void OsuDatabaseBeatmapStarCalculator::setBeatmapDifficulty(OsuDatabaseBeatmap *diff2, float AR, float CS, float OD, float speedMultiplier, bool relax, bool touchDevice)
+void OsuDatabaseBeatmapStarCalculator::setBeatmapDifficulty(OsuDatabaseBeatmap *diff2, float AR, float CS, float OD, float speedMultiplier, bool relax, bool autopilot, bool touchDevice)
 {
 	m_diff2 = diff2;
 
@@ -2112,5 +2119,6 @@ void OsuDatabaseBeatmapStarCalculator::setBeatmapDifficulty(OsuDatabaseBeatmap *
 	m_fOD = OD;
 	m_fSpeedMultiplier = speedMultiplier;
 	m_bRelax = relax;
+	m_bAutopilot = autopilot;
 	m_bTouchDevice = touchDevice;
 }

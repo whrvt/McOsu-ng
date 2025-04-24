@@ -120,6 +120,9 @@ McOsu_ng_SOURCES = \
 	src/Engine/Platform/SDLSound.cpp \
 	src/Engine/Platform/SDLSoundEngine.cpp \
 	src/Engine/Platform/SDLTimer.cpp \
+	src/Engine/Platform/SoLoudSound.cpp \
+	src/Engine/Platform/SoLoudSoundEngine.cpp \
+	src/Engine/Platform/SoundTouchFilter.cpp \
 	src/Engine/Platform/Thread.cpp \
 	src/Engine/Platform/Timer.cpp \
 	src/Engine/Platform/WinContextMenu.cpp \
@@ -195,6 +198,7 @@ McOsu_ng_SOURCES = \
 	src/GUI/Windows/VisualProfiler.cpp \
 	src/Util/MD5.cpp \
 	src/Util/Matrices.cpp \
+	src/Util/McMath.cpp \
 	src/Util/Quaternion.cpp \
 	src/Util/Rect.cpp \
 	src/Util/UString.cpp \

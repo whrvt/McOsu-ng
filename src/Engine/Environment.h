@@ -128,6 +128,7 @@ public:
 
 	// keyboard
 	virtual UString keyCodeToString(KEYCODE keyCode) = 0;
+	virtual void listenToTextInput(bool listen) = 0;
 
 public:
 	// built-in convenience

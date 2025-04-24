@@ -72,7 +72,7 @@ $(DEPS_PREFIX)/SDL3.built: $(DEPS_PREFIX)/FREETYPE2.built $(DEPS_CACHE)/SDL3.sou
 	cd $(DEPS_PREFIX)/SDL3 && \
 	patch -Np1<$(abs_top_srcdir)/build/aux/sdl-c23bool.patch && \
 	PKG_CONFIG="$(PKG_CONFIG)" \
-	LDFLAGS="$(LDFLAGS)" cmake -S . -B build -G Ninja \
+	CXX="$(CXX)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS)" cmake -S . -B build -G Ninja \
 		-D CMAKE_BUILD_TYPE="$(if $(ENABLE_DEBUG),Debug,Release)" \
 		$(if $(ENABLE_ASAN),-DSDL_ASAN=ON,) \
 		-D SDL_HIDAPI_LIBUSB=OFF \
@@ -84,9 +84,7 @@ $(DEPS_PREFIX)/SDL3.built: $(DEPS_PREFIX)/FREETYPE2.built $(DEPS_CACHE)/SDL3.sou
 		-D SDL_RPATH=OFF \
 		-D SDL_CCACHE="$(if $(filter ccache,$(CC)),ON,OFF)" \
 		-D CMAKE_C_COMPILER="$(CC)" \
-		-D CMAKE_C_FLAGS="$(CFLAGS) -Wno-error=incompatible-pointer-types" \
-		-D CMAKE_CXX_COMPILER="$(CXX)" \
-		-D CMAKE_CXX_FLAGS="$(CXXFLAGS)" && \
+		-D CMAKE_C_FLAGS="$(CFLAGS) -Wno-error=incompatible-pointer-types" && \
 	cmake --build build && \
 	cmake --install build
 	PKG_CONFIG="$(PKG_CONFIG)" \
@@ -105,7 +103,20 @@ $(DEPS_CACHE)/SDL3_mixer.source:
 	cd $(DEPS_CACHE)/SDL3_mixer/external && ./download.sh # cache vendored dependencies
 	touch $@
 
+$(DEPS_CACHE)/SoLoud.source:
+	rm -rf $(DEPS_CACHE)/SoLoud && \
+	$(MKDIR_P) $(DEPS_CACHE)/SoLoud
+	$(WGET) -qO $(DEPS_CACHE)/SoLoud-$(SOLOUD_VERSION).tar.gz "https://github.com/jarikomppa/soloud/archive/$(SOLOUD_VERSION).tar.gz"
+	touch $@
+
+$(DEPS_CACHE)/SoundTouch.source:
+	rm -rf $(DEPS_CACHE)/SoundTouch && \
+	$(MKDIR_P) $(DEPS_CACHE)/SoundTouch
+	$(WGET) -qO $(DEPS_CACHE)/SoundTouch-$(SOUNDTOUCH_VERSION).tar.gz "https://codeberg.org/soundtouch/soundtouch/archive/$(SOUNDTOUCH_VERSION).tar.gz"
+	touch $@
+
 if !USE_BASS
+if USE_SDLMIXER
 AUDIO_CFLAGS = $(shell $(PKG_CONFIG) --cflags sdl3-mixer)
 AUDIO_LIBS = $(shell $(PKG_CONFIG) --libs sdl3-mixer)
 $(DEPS_PREFIX)/SDL3_mixer.built: $(DEPS_PREFIX)/SDL3.built $(DEPS_CACHE)/SDL3_mixer.source
@@ -136,10 +147,81 @@ $(DEPS_PREFIX)/SDL3_mixer.built: $(DEPS_PREFIX)/SDL3.built $(DEPS_CACHE)/SDL3_mi
 	rm -rf $(DEPS_PREFIX)/lib/*SDL3_mixer$(if $(SDL3_STATIC),$(DLLEXT),.a)*
 	$(PKG_CONFIG) --exists --print-errors sdl3-mixer
 	touch $@
+$(DEPS_PREFIX)/SoLoud.built:
+	$(MKDIR_P) $(DEPS_PREFIX) && touch $@
+$(DEPS_PREFIX)/SoundTouch.built:
+	$(MKDIR_P) $(DEPS_PREFIX) && touch $@
+else
+AUDIO_CFLAGS = -I$(DEPS_PREFIX)/include $(shell $(PKG_CONFIG) --cflags soundtouch)
+# the dynamic soloud lib is busted somehow
+AUDIO_LIBS = -L$(DEPS_PREFIX)/lib -lsoloud_static_x$(if $(filter x86_64,$(host_cpu)),64,32)$(if $(ENABLE_DEBUG),_d,) $(shell $(PKG_CONFIG) --libs soundtouch)
+comma:= ,# bruh
+$(DEPS_PREFIX)/SoLoud.built: $(DEPS_CACHE)/SoLoud.source
+	rm -rf $(DEPS_PREFIX)/SoLoud
+	$(MKDIR_P) $(DEPS_PREFIX) $(DEPS_PREFIX)/include $(DEPS_PREFIX)/lib/pkgconfig $(DEPS_PREFIX)/SoLoud/build
+	$(TAR) xf $(DEPS_CACHE)/SoLoud-$(SOLOUD_VERSION).tar.gz -C $(DEPS_PREFIX)/SoLoud --strip-components=1 && \
+	cd $(DEPS_PREFIX)/SoLoud && patch -Np1<$(abs_top_srcdir)/build/aux/revert-soloud.patch && \
+	cd $(DEPS_PREFIX)/SoLoud/build && \
+	$(SED) -i 's|"NoRTTI"$(comma)||g' genie.lua && \
+	PKG_CONFIG="$(PKG_CONFIG) --static" CC="$(CC)" CXX="$(CXX)" LD="$(LD)" CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS)" \
+	$(GENIE) --with-miniaudio-only \
+			 --platform=x$(if $(filter x86_64,$(host_cpu)),64,32) \
+			 --os=$(if $(findstring linux,$(host_os)),linux,windows) \
+			 cmake && \
+	cd cmake && printf '%s\n%s' "cmake_minimum_required(VERSION 3.15)" "add_subdirectory(SoloudStatic)" > CMakeLists.txt && \
+	PKG_CONFIG="$(PKG_CONFIG) --static" CC="$(CC)" CXX="$(CXX)" LD="$(LD)" CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS)" \
+	cmake -S . -B build -G Ninja \
+		-D CMAKE_BUILD_TYPE="$(if $(ENABLE_DEBUG),Debug,Release)" \
+		-D CMAKE_INSTALL_PREFIX="$(DEPS_PREFIX)" \
+		-D CMAKE_SYSTEM_NAME="$(CMAKE_SYSTEM_NAME)" \
+		-D CMAKE_SYSTEM_PROCESSOR="$(host_cpu)" \
+		-D CMAKE_C_COMPILER="$(CC)" \
+		-D CMAKE_C_FLAGS="$(CFLAGS)" \
+		-D CMAKE_CXX_COMPILER="$(CXX)" \
+		-D CMAKE_CXX_FLAGS="$(CXXFLAGS)" && \
+	cmake --build build && \
+	cmake --install build && \
+	cp -r $(DEPS_PREFIX)/SoLoud/include $(DEPS_PREFIX)/include/soloud && \
+	test -f $(DEPS_PREFIX)/lib/libsoloud_static_x$(if $(filter x86_64,$(host_cpu)),64,32)$(if $(ENABLE_DEBUG),_d,).a
+	touch $@
+
+# TODO: build openmp static, soundtouch benefits from it a retarded amount
+$(DEPS_PREFIX)/SoundTouch.built: $(DEPS_CACHE)/SoundTouch.source
+	rm -rf $(DEPS_PREFIX)/SoundTouch
+	$(MKDIR_P) $(DEPS_PREFIX) $(DEPS_PREFIX)/include $(DEPS_PREFIX)/lib/pkgconfig $(DEPS_PREFIX)/SoundTouch/build
+	$(TAR) xf $(DEPS_CACHE)/SoundTouch-$(SOUNDTOUCH_VERSION).tar.gz -C $(DEPS_PREFIX)/SoundTouch --strip-components=1 && \
+	cd $(DEPS_PREFIX)/SoundTouch && \
+	PKG_CONFIG="$(PKG_CONFIG)" LDFLAGS="$(LDFLAGS)" \
+	cmake -S . -B build -G Ninja \
+		-D CMAKE_BUILD_TYPE="$(if $(ENABLE_DEBUG),Debug,Release)" \
+		-D CMAKE_INSTALL_PREFIX="$(DEPS_PREFIX)" \
+		-D CMAKE_SYSTEM_NAME="$(CMAKE_SYSTEM_NAME)" \
+		-D CMAKE_SYSTEM_PROCESSOR="$(host_cpu)" \
+		-D CMAKE_C_COMPILER="$(CC)" \
+		-D CMAKE_C_FLAGS="$(CFLAGS)" \
+		-D CMAKE_CXX_COMPILER="$(CXX)" \
+		-D CMAKE_CXX_FLAGS="$(CXXFLAGS)" \
+		-D SOUNDSTRETCH=OFF \
+		-D SOUNDTOUCH_DLL=OFF \
+		-D OPENMP="$(if $(SDL3_STATIC),OFF,ON)" \
+		-D BUILD_SHARED_LIBS="$(if $(SDL3_STATIC),OFF,ON)" && \
+	cmake --build build && \
+	cmake --install build
+	rm -rf $(DEPS_PREFIX)/lib/*SoundTouch$(if $(SDL3_STATIC),$(DLLEXT),.a)*
+	$(PKG_CONFIG) --env-only --exists --print-errors soundtouch
+	touch $@
+
+$(DEPS_PREFIX)/SDL3_mixer.built:
+	$(MKDIR_P) $(DEPS_PREFIX) && touch $@
+endif
 else
 AUDIO_CFLAGS := $(BASS_CFLAGS)
 AUDIO_LIBS := $(BASS_LIBS)
 $(DEPS_PREFIX)/SDL3_mixer.built:
+	$(MKDIR_P) $(DEPS_PREFIX) && touch $@
+$(DEPS_PREFIX)/SoLoud.built:
+	$(MKDIR_P) $(DEPS_PREFIX) && touch $@
+$(DEPS_PREFIX)/SoundTouch.built:
 	$(MKDIR_P) $(DEPS_PREFIX) && touch $@
 endif
 
@@ -335,7 +417,7 @@ $(DEPS_PREFIX)/FREETYPE2.built:
 endif
 
 BUILT_SOURCES := $(DEPS_PREFIX)/mimalloc.built $(DEPS_PREFIX)/SDL3.built $(DEPS_PREFIX)/SDL3_mixer.built $(DEPS_PREFIX)/GLEW.built $(DEPS_PREFIX)/libjpeg.built \
-	$(DEPS_PREFIX)/libpng.built $(DEPS_PREFIX)/bzip2.built $(DEPS_PREFIX)/zlib.built $(DEPS_PREFIX)/FREETYPE2.built
+	$(DEPS_PREFIX)/libpng.built $(DEPS_PREFIX)/bzip2.built $(DEPS_PREFIX)/zlib.built $(DEPS_PREFIX)/FREETYPE2.built $(DEPS_PREFIX)/SoLoud.built $(DEPS_PREFIX)/SoundTouch.built
 
 # making sure deps are built before main compile (continued)
 $(McOsu_ng_OBJECTS): src/config.h $(BUILT_SOURCES)
@@ -421,11 +503,16 @@ install-libs:
 	$(INSTALL) -dm 755 "$(DESTDIR)$(bindir)/cfg"
 	find $(srcdir)/$(ASSETS_DIR)/models -type f -exec $(INSTALL) -Dm 644 '{''}' "$(DESTDIR)$(bindir)/models" ';'
 	find $(srcdir)/$(ASSETS_DIR)/shaders -type f -exec $(INSTALL) -Dm 644 '{''}' "$(DESTDIR)$(bindir)/shaders" ';'
-if USE_BASS
+	find $(srcdir)/$(ASSETS_DIR)/fonts -type f -exec $(INSTALL) -Dm 644 '{''}' "$(DESTDIR)$(bindir)/fonts" ';'
+if !USE_BASS
+if USE_SDLMIXER
+	$(if $(SDL3_STATIC),,@cp -P "$(SDL3_MIXER_PREFIX)/lib"/{*$(LIBPREFIX)SDL3_mixer*$(DLLEXT)*,*$(LIBPREFIX)mpg123*$(DLLEXT)*,*$(LIBPREFIX)xmp*$(DLLEXT)*,*$(LIBPREFIX)wavpack*$(DLLEXT)*,*$(LIBPREFIX)opus*$(DLLEXT)*,*$(LIBPREFIX)ogg*$(DLLEXT)*} "$(DESTDIR)$(bindir)/$(LIBDEST)")
+else
+	$(if $(SDL3_STATIC),,@cp -P "$(SOLOUD_PREFIX)/lib"/*$(LIBPREFIX)SoundTouch*$(DLLEXT)* "$(DESTDIR)$(bindir)/$(LIBDEST)")
+endif
+else
 	$(INSTALL) -m 755 $(srcdir)/$(BUNDLED_BASS_DIR)/lib/$(SYSNAME)/$(host_cpu)/$(LIBPREFIX)bass$(DLLEXT) "$(DESTDIR)$(bindir)/$(LIBDEST)"
 	$(INSTALL) -m 755 $(srcdir)/$(BUNDLED_BASS_FX_DIR)/lib/$(SYSNAME)/$(host_cpu)/$(LIBPREFIX)bass_fx$(DLLEXT) "$(DESTDIR)$(bindir)/$(LIBDEST)"
-else
-	$(if $(SDL3_STATIC),,@cp -P "$(SDL3_MIXER_PREFIX)/lib"/{*$(LIBPREFIX)SDL3_mixer*$(DLLEXT)*,*$(LIBPREFIX)mpg123*$(DLLEXT)*,*$(LIBPREFIX)xmp*$(DLLEXT)*,*$(LIBPREFIX)wavpack*$(DLLEXT)*,*$(LIBPREFIX)opus*$(DLLEXT)*,*$(LIBPREFIX)ogg*$(DLLEXT)*} "$(DESTDIR)$(bindir)/$(LIBDEST)")
 endif
 if BUILD_SDL3
 	$(if $(SDL3_STATIC),,@cp -P "$(SDL3_PREFIX)/lib"/*$(LIBPREFIX)SDL3*$(DLLEXT)* "$(DESTDIR)$(bindir)/$(LIBDEST)")
@@ -451,8 +538,8 @@ if BUILD_FREETYPE2
 endif
 
 # install hooks
-if !WIN_PLATFORM
 install-exec-hook: install-libs
+if !WIN_PLATFORM
 	cd "$(DESTDIR)$(bindir)" && \
 	$(LN_S) -rf $(PROGRAMS) McEngine && \
 	$(LN_S) -rf $(PROGRAMS) McOsu
@@ -487,6 +574,7 @@ if USE_BASS
 endif
 	cp -r $(srcdir)/$(ASSETS_DIR)/models $(distdir)/
 	cp -r $(srcdir)/$(ASSETS_DIR)/shaders $(distdir)/
+	cp -r $(srcdir)/$(ASSETS_DIR)/fonts $(distdir)/
 	find $(distdir) -type f -name ".git*" -delete
 	find $(distdir) -type f -name "*.a" -delete
 	find $(distdir) -type f -name "*.dll" -delete
@@ -496,6 +584,7 @@ endif
 EXTRA_DIST := \
 	$(ASSETS_DIR)/models \
 	$(ASSETS_DIR)/shaders \
+	$(ASSETS_DIR)/fonts \
 	autogen.sh
 
 if USE_BASS

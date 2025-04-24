@@ -6,9 +6,11 @@
 //===============================================================================//
 
 #include "Sound.h"
-#include "BassSound.h"
 #include "ConVar.h"
+
+#include "BassSound.h"
 #include "SDLSound.h"
+#include "SoLoudSound.h"
 
 ConVar debug_snd("debug_snd", false, FCVAR_NONE);
 ConVar snd_speed_compensate_pitch("snd_speed_compensate_pitch", true, FCVAR_NONE, "automatically keep pitch constant if speed changes");
@@ -40,6 +42,8 @@ Sound *Sound::createSound(UString filepath, bool stream, bool threeD, bool loop,
 	return new BassSound(filepath, stream, threeD, loop, prescan);
 #elif defined(MCENGINE_FEATURE_SDL) && defined(MCENGINE_FEATURE_SDL_MIXER)
 	return new SDLSound(filepath, stream, threeD, loop, prescan);
+#elif defined(MCENGINE_FEATURE_SOLOUD)
+	return new SoLoudSound(filepath, stream, threeD, loop, prescan);
 #else
 #error No sound backend available!
 #endif

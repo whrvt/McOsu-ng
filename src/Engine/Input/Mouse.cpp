@@ -199,7 +199,12 @@ void Mouse::update()
 		else
 		{
 			// non-raw input is always in pixels, sub-pixel movement is handled/buffered by the operating system
-			if ((int)osMousePos.x != (int)m_vPrevOsMousePos.x || (int)osMousePos.y != (int)m_vPrevOsMousePos.y) // without this check some people would get mouse drift
+			// (idk about that one ^)
+			if (((int)osMousePos.x != (int)m_vPrevOsMousePos.x || (int)osMousePos.y != (int)m_vPrevOsMousePos.y) // without this check some people would get mouse drift
+#ifdef MCENGINE_FEATURE_SDL
+			    || env->getOS() == Environment::OS::OS_LINUX || env->getOS() == Environment::OS::OS_WINDOWS
+#endif
+				)
 				m_vDelta = (osMousePos - m_vPrevOsMousePos) * mouse_sensitivity.getFloat();
 		}
 
@@ -251,10 +256,7 @@ void Mouse::update()
 		env->setMousePos(newOsMousePos.x, newOsMousePos.y);
 
 		// assume that the operating system has set the cursor to nextPos quickly enough for the next frame
-		// also, force clamp to pixels, as this happens there too (to avoid drifting in the non-raw delta calculation)
 		m_vPrevOsMousePos = newOsMousePos;
-		m_vPrevOsMousePos.x = m_vPrevOsMousePos.x;
-		m_vPrevOsMousePos.y = m_vPrevOsMousePos.y;
 
 		// 3 cases can happen in the next frame:
 		// 1) the operating system did not update the cursor quickly enough. osMousePos != nextPos

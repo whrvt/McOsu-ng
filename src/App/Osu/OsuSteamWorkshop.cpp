@@ -177,7 +177,7 @@ protected:
 			{
 				const UString publishedFileIdString = UString::format("%llu", m_iPublishedFileId);
 
-				File steamworkshopitemidtxt(m_sWorkshopItemIdFilePath, File::TYPE::WRITE);
+				McFile steamworkshopitemidtxt(m_sWorkshopItemIdFilePath, McFile::TYPE::WRITE);
 
 				if (!steamworkshopitemidtxt.canWrite())
 					debugLog("OsuSteamWorkshop Error: Can't write \"%s\"!!!\n", m_sWorkshopItemIdFilePath.toUtf8());
@@ -393,7 +393,7 @@ void OsuSteamWorkshop::onUpload()
 	// thumbnail must be readable (filesystem)
 	// thumbnail must be < 1 MB
 	{
-		File tempFileForSizeCheck(thumbnailFilePath);
+		McFile tempFileForSizeCheck(thumbnailFilePath);
 
 		debugLog("filesize = %lu\n", tempFileForSizeCheck.getFileSize());
 
@@ -430,7 +430,7 @@ void OsuSteamWorkshop::onUpload()
 	{
 		if (env->fileExists(workshopitemidFilePath))
 		{
-			File itemIdFile(workshopitemidFilePath);
+			McFile itemIdFile(workshopitemidFilePath);
 
 			if (!itemIdFile.canRead() || itemIdFile.getFileSize() < 1)
 			{

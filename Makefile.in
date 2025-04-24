@@ -249,6 +249,9 @@ am_McOsu_ng_OBJECTS = src/App/Osu/McOsu_ng-Osu.$(OBJEXT) \
 	src/Engine/Platform/McOsu_ng-SDLSound.$(OBJEXT) \
 	src/Engine/Platform/McOsu_ng-SDLSoundEngine.$(OBJEXT) \
 	src/Engine/Platform/McOsu_ng-SDLTimer.$(OBJEXT) \
+	src/Engine/Platform/McOsu_ng-SoLoudSound.$(OBJEXT) \
+	src/Engine/Platform/McOsu_ng-SoLoudSoundEngine.$(OBJEXT) \
+	src/Engine/Platform/McOsu_ng-SoundTouchFilter.$(OBJEXT) \
 	src/Engine/Platform/McOsu_ng-Thread.$(OBJEXT) \
 	src/Engine/Platform/McOsu_ng-Timer.$(OBJEXT) \
 	src/Engine/Platform/McOsu_ng-WinContextMenu.$(OBJEXT) \
@@ -324,6 +327,7 @@ am_McOsu_ng_OBJECTS = src/App/Osu/McOsu_ng-Osu.$(OBJEXT) \
 	src/GUI/Windows/McOsu_ng-VisualProfiler.$(OBJEXT) \
 	src/Util/McOsu_ng-MD5.$(OBJEXT) \
 	src/Util/McOsu_ng-Matrices.$(OBJEXT) \
+	src/Util/McOsu_ng-McMath.$(OBJEXT) \
 	src/Util/McOsu_ng-Quaternion.$(OBJEXT) \
 	src/Util/McOsu_ng-Rect.$(OBJEXT) \
 	src/Util/McOsu_ng-UString.$(OBJEXT) \
@@ -478,6 +482,9 @@ am__depfiles_remade = src/App/Osu/$(DEPDIR)/McOsu_ng-Osu.Po \
 	src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLSound.Po \
 	src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLSoundEngine.Po \
 	src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLTimer.Po \
+	src/Engine/Platform/$(DEPDIR)/McOsu_ng-SoLoudSound.Po \
+	src/Engine/Platform/$(DEPDIR)/McOsu_ng-SoLoudSoundEngine.Po \
+	src/Engine/Platform/$(DEPDIR)/McOsu_ng-SoundTouchFilter.Po \
 	src/Engine/Platform/$(DEPDIR)/McOsu_ng-Thread.Po \
 	src/Engine/Platform/$(DEPDIR)/McOsu_ng-Timer.Po \
 	src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinContextMenu.Po \
@@ -542,6 +549,7 @@ am__depfiles_remade = src/App/Osu/$(DEPDIR)/McOsu_ng-Osu.Po \
 	src/GUI/Windows/VinylScratcher/$(DEPDIR)/McOsu_ng-VinylScratcher.Po \
 	src/Util/$(DEPDIR)/McOsu_ng-MD5.Po \
 	src/Util/$(DEPDIR)/McOsu_ng-Matrices.Po \
+	src/Util/$(DEPDIR)/McOsu_ng-McMath.Po \
 	src/Util/$(DEPDIR)/McOsu_ng-Quaternion.Po \
 	src/Util/$(DEPDIR)/McOsu_ng-Rect.Po \
 	src/Util/$(DEPDIR)/McOsu_ng-UString.Po \
@@ -645,6 +653,7 @@ CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
 CMAKE_SYSTEM_NAME = @CMAKE_SYSTEM_NAME@
 CPPFLAGS = @CPPFLAGS@
+CPU_COUNT = @CPU_COUNT@
 CSCOPE = @CSCOPE@
 CTAGS = @CTAGS@
 CXX = @CXX@
@@ -669,6 +678,8 @@ FREETYPE2_CFLAGS = @FREETYPE2_CFLAGS@ $(am__append_13)
 FREETYPE2_LIBS = @FREETYPE2_LIBS@ $(am__append_14)
 FREETYPE2_PREFIX = @FREETYPE2_PREFIX@
 FREETYPE2_VERSION = @FREETYPE2_VERSION@
+GENIE = @GENIE@
+GETCONF = @GETCONF@
 GIT = @GIT@
 GLEW_CFLAGS = @GLEW_CFLAGS@ $(am__append_3)
 GLEW_LIBS = @GLEW_LIBS@ $(am__append_4)
@@ -699,6 +710,7 @@ LIBPREFIX = @LIBPREFIX@
 LIBS = @LIBS@
 LN_S = @LN_S@
 LTLIBOBJS = @LTLIBOBJS@
+MAKEFLAGS = @MAKEFLAGS@
 MAKEINFO = @MAKEINFO@
 MCOSU_CPPFLAGS = @MCOSU_CPPFLAGS@
 MCOSU_CXXFLAGS = @MCOSU_CXXFLAGS@
@@ -734,6 +746,10 @@ SDL3_VERSION = @SDL3_VERSION@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
+SOLOUD_PREFIX = @SOLOUD_PREFIX@
+SOLOUD_VERSION = @SOLOUD_VERSION@
+SOUNDTOUCH_PREFIX = @SOUNDTOUCH_PREFIX@
+SOUNDTOUCH_VERSION = @SOUNDTOUCH_VERSION@
 STRIP = @STRIP@
 SYSNAME = @SYSNAME@
 TAR = @TAR@
@@ -928,6 +944,9 @@ McOsu_ng_SOURCES = \
 	src/Engine/Platform/SDLSound.cpp \
 	src/Engine/Platform/SDLSoundEngine.cpp \
 	src/Engine/Platform/SDLTimer.cpp \
+	src/Engine/Platform/SoLoudSound.cpp \
+	src/Engine/Platform/SoLoudSoundEngine.cpp \
+	src/Engine/Platform/SoundTouchFilter.cpp \
 	src/Engine/Platform/Thread.cpp \
 	src/Engine/Platform/Timer.cpp \
 	src/Engine/Platform/WinContextMenu.cpp \
@@ -1003,6 +1022,7 @@ McOsu_ng_SOURCES = \
 	src/GUI/Windows/VisualProfiler.cpp \
 	src/Util/MD5.cpp \
 	src/Util/Matrices.cpp \
+	src/Util/McMath.cpp \
 	src/Util/Quaternion.cpp \
 	src/Util/Rect.cpp \
 	src/Util/UString.cpp \
@@ -1025,12 +1045,16 @@ CLEANFILES = \
 
 @BUILD_MIMALLOC_FALSE@MIMALLOC_LIBS := 
 @BUILD_MIMALLOC_TRUE@MIMALLOC_LIBS = $(DEPS_PREFIX)/lib/mimalloc$(if $(ENABLE_ASAN),-asan-debug,$(if $(ENABLE_DEBUG),-debug,)).o
-@USE_BASS_FALSE@AUDIO_CFLAGS = $(shell $(PKG_CONFIG) --cflags sdl3-mixer)
+@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@AUDIO_CFLAGS = -I$(DEPS_PREFIX)/include $(shell $(PKG_CONFIG) --cflags soundtouch)
+@USE_BASS_FALSE@@USE_SDLMIXER_TRUE@AUDIO_CFLAGS = $(shell $(PKG_CONFIG) --cflags sdl3-mixer)
 @USE_BASS_TRUE@AUDIO_CFLAGS := $(BASS_CFLAGS)
-@USE_BASS_FALSE@AUDIO_LIBS = $(shell $(PKG_CONFIG) --libs sdl3-mixer)
+# the dynamic soloud lib is busted somehow
+@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@AUDIO_LIBS = -L$(DEPS_PREFIX)/lib -lsoloud_static_x$(if $(filter x86_64,$(host_cpu)),64,32)$(if $(ENABLE_DEBUG),_d,) $(shell $(PKG_CONFIG) --libs soundtouch)
+@USE_BASS_FALSE@@USE_SDLMIXER_TRUE@AUDIO_LIBS = $(shell $(PKG_CONFIG) --libs sdl3-mixer)
 @USE_BASS_TRUE@AUDIO_LIBS := $(BASS_LIBS)
+@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@comma := ,# bruh
 BUILT_SOURCES := $(DEPS_PREFIX)/mimalloc.built $(DEPS_PREFIX)/SDL3.built $(DEPS_PREFIX)/SDL3_mixer.built $(DEPS_PREFIX)/GLEW.built $(DEPS_PREFIX)/libjpeg.built \
-	$(DEPS_PREFIX)/libpng.built $(DEPS_PREFIX)/bzip2.built $(DEPS_PREFIX)/zlib.built $(DEPS_PREFIX)/FREETYPE2.built
+	$(DEPS_PREFIX)/libpng.built $(DEPS_PREFIX)/bzip2.built $(DEPS_PREFIX)/zlib.built $(DEPS_PREFIX)/FREETYPE2.built $(DEPS_PREFIX)/SoLoud.built $(DEPS_PREFIX)/SoundTouch.built
 
 
 # FIXME: just fixme
@@ -1079,8 +1103,8 @@ McOsu_ng_LDFLAGS := \
 LIBDEST := $(am__append_15)
 
 # TODO: distribution package files
-EXTRA_DIST := $(ASSETS_DIR)/models $(ASSETS_DIR)/shaders autogen.sh \
-	$(am__append_16)
+EXTRA_DIST := $(ASSETS_DIR)/models $(ASSETS_DIR)/shaders \
+	$(ASSETS_DIR)/fonts autogen.sh $(am__append_16)
 MAINTAINERCLEANFILES = $(top_srcdir)/src/Makefile.sources
 all: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) all-am
@@ -1546,6 +1570,15 @@ src/Engine/Platform/McOsu_ng-SDLSoundEngine.$(OBJEXT):  \
 src/Engine/Platform/McOsu_ng-SDLTimer.$(OBJEXT):  \
 	src/Engine/Platform/$(am__dirstamp) \
 	src/Engine/Platform/$(DEPDIR)/$(am__dirstamp)
+src/Engine/Platform/McOsu_ng-SoLoudSound.$(OBJEXT):  \
+	src/Engine/Platform/$(am__dirstamp) \
+	src/Engine/Platform/$(DEPDIR)/$(am__dirstamp)
+src/Engine/Platform/McOsu_ng-SoLoudSoundEngine.$(OBJEXT):  \
+	src/Engine/Platform/$(am__dirstamp) \
+	src/Engine/Platform/$(DEPDIR)/$(am__dirstamp)
+src/Engine/Platform/McOsu_ng-SoundTouchFilter.$(OBJEXT):  \
+	src/Engine/Platform/$(am__dirstamp) \
+	src/Engine/Platform/$(DEPDIR)/$(am__dirstamp)
 src/Engine/Platform/McOsu_ng-Thread.$(OBJEXT):  \
 	src/Engine/Platform/$(am__dirstamp) \
 	src/Engine/Platform/$(DEPDIR)/$(am__dirstamp)
@@ -1774,6 +1807,8 @@ src/Util/McOsu_ng-MD5.$(OBJEXT): src/Util/$(am__dirstamp) \
 	src/Util/$(DEPDIR)/$(am__dirstamp)
 src/Util/McOsu_ng-Matrices.$(OBJEXT): src/Util/$(am__dirstamp) \
 	src/Util/$(DEPDIR)/$(am__dirstamp)
+src/Util/McOsu_ng-McMath.$(OBJEXT): src/Util/$(am__dirstamp) \
+	src/Util/$(DEPDIR)/$(am__dirstamp)
 src/Util/McOsu_ng-Quaternion.$(OBJEXT): src/Util/$(am__dirstamp) \
 	src/Util/$(DEPDIR)/$(am__dirstamp)
 src/Util/McOsu_ng-Rect.$(OBJEXT): src/Util/$(am__dirstamp) \
@@ -1934,6 +1969,9 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLSound.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLSoundEngine.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLTimer.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-SoLoudSound.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-SoLoudSoundEngine.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-SoundTouchFilter.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-Thread.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-Timer.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinContextMenu.Po@am__quote@ # am--include-marker
@@ -1998,6 +2036,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/GUI/Windows/VinylScratcher/$(DEPDIR)/McOsu_ng-VinylScratcher.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Util/$(DEPDIR)/McOsu_ng-MD5.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Util/$(DEPDIR)/McOsu_ng-Matrices.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@src/Util/$(DEPDIR)/McOsu_ng-McMath.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Util/$(DEPDIR)/McOsu_ng-Quaternion.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Util/$(DEPDIR)/McOsu_ng-Rect.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Util/$(DEPDIR)/McOsu_ng-UString.Po@am__quote@ # am--include-marker
@@ -3705,6 +3744,48 @@ src/Engine/Platform/McOsu_ng-SDLTimer.obj: src/Engine/Platform/SDLTimer.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Platform/McOsu_ng-SDLTimer.obj `if test -f 'src/Engine/Platform/SDLTimer.cpp'; then $(CYGPATH_W) 'src/Engine/Platform/SDLTimer.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Platform/SDLTimer.cpp'; fi`
 
+src/Engine/Platform/McOsu_ng-SoLoudSound.o: src/Engine/Platform/SoLoudSound.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Platform/McOsu_ng-SoLoudSound.o -MD -MP -MF src/Engine/Platform/$(DEPDIR)/McOsu_ng-SoLoudSound.Tpo -c -o src/Engine/Platform/McOsu_ng-SoLoudSound.o `test -f 'src/Engine/Platform/SoLoudSound.cpp' || echo '$(srcdir)/'`src/Engine/Platform/SoLoudSound.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Platform/$(DEPDIR)/McOsu_ng-SoLoudSound.Tpo src/Engine/Platform/$(DEPDIR)/McOsu_ng-SoLoudSound.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Platform/SoLoudSound.cpp' object='src/Engine/Platform/McOsu_ng-SoLoudSound.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Platform/McOsu_ng-SoLoudSound.o `test -f 'src/Engine/Platform/SoLoudSound.cpp' || echo '$(srcdir)/'`src/Engine/Platform/SoLoudSound.cpp
+
+src/Engine/Platform/McOsu_ng-SoLoudSound.obj: src/Engine/Platform/SoLoudSound.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Platform/McOsu_ng-SoLoudSound.obj -MD -MP -MF src/Engine/Platform/$(DEPDIR)/McOsu_ng-SoLoudSound.Tpo -c -o src/Engine/Platform/McOsu_ng-SoLoudSound.obj `if test -f 'src/Engine/Platform/SoLoudSound.cpp'; then $(CYGPATH_W) 'src/Engine/Platform/SoLoudSound.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Platform/SoLoudSound.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Platform/$(DEPDIR)/McOsu_ng-SoLoudSound.Tpo src/Engine/Platform/$(DEPDIR)/McOsu_ng-SoLoudSound.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Platform/SoLoudSound.cpp' object='src/Engine/Platform/McOsu_ng-SoLoudSound.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Platform/McOsu_ng-SoLoudSound.obj `if test -f 'src/Engine/Platform/SoLoudSound.cpp'; then $(CYGPATH_W) 'src/Engine/Platform/SoLoudSound.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Platform/SoLoudSound.cpp'; fi`
+
+src/Engine/Platform/McOsu_ng-SoLoudSoundEngine.o: src/Engine/Platform/SoLoudSoundEngine.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Platform/McOsu_ng-SoLoudSoundEngine.o -MD -MP -MF src/Engine/Platform/$(DEPDIR)/McOsu_ng-SoLoudSoundEngine.Tpo -c -o src/Engine/Platform/McOsu_ng-SoLoudSoundEngine.o `test -f 'src/Engine/Platform/SoLoudSoundEngine.cpp' || echo '$(srcdir)/'`src/Engine/Platform/SoLoudSoundEngine.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Platform/$(DEPDIR)/McOsu_ng-SoLoudSoundEngine.Tpo src/Engine/Platform/$(DEPDIR)/McOsu_ng-SoLoudSoundEngine.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Platform/SoLoudSoundEngine.cpp' object='src/Engine/Platform/McOsu_ng-SoLoudSoundEngine.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Platform/McOsu_ng-SoLoudSoundEngine.o `test -f 'src/Engine/Platform/SoLoudSoundEngine.cpp' || echo '$(srcdir)/'`src/Engine/Platform/SoLoudSoundEngine.cpp
+
+src/Engine/Platform/McOsu_ng-SoLoudSoundEngine.obj: src/Engine/Platform/SoLoudSoundEngine.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Platform/McOsu_ng-SoLoudSoundEngine.obj -MD -MP -MF src/Engine/Platform/$(DEPDIR)/McOsu_ng-SoLoudSoundEngine.Tpo -c -o src/Engine/Platform/McOsu_ng-SoLoudSoundEngine.obj `if test -f 'src/Engine/Platform/SoLoudSoundEngine.cpp'; then $(CYGPATH_W) 'src/Engine/Platform/SoLoudSoundEngine.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Platform/SoLoudSoundEngine.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Platform/$(DEPDIR)/McOsu_ng-SoLoudSoundEngine.Tpo src/Engine/Platform/$(DEPDIR)/McOsu_ng-SoLoudSoundEngine.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Platform/SoLoudSoundEngine.cpp' object='src/Engine/Platform/McOsu_ng-SoLoudSoundEngine.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Platform/McOsu_ng-SoLoudSoundEngine.obj `if test -f 'src/Engine/Platform/SoLoudSoundEngine.cpp'; then $(CYGPATH_W) 'src/Engine/Platform/SoLoudSoundEngine.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Platform/SoLoudSoundEngine.cpp'; fi`
+
+src/Engine/Platform/McOsu_ng-SoundTouchFilter.o: src/Engine/Platform/SoundTouchFilter.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Platform/McOsu_ng-SoundTouchFilter.o -MD -MP -MF src/Engine/Platform/$(DEPDIR)/McOsu_ng-SoundTouchFilter.Tpo -c -o src/Engine/Platform/McOsu_ng-SoundTouchFilter.o `test -f 'src/Engine/Platform/SoundTouchFilter.cpp' || echo '$(srcdir)/'`src/Engine/Platform/SoundTouchFilter.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Platform/$(DEPDIR)/McOsu_ng-SoundTouchFilter.Tpo src/Engine/Platform/$(DEPDIR)/McOsu_ng-SoundTouchFilter.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Platform/SoundTouchFilter.cpp' object='src/Engine/Platform/McOsu_ng-SoundTouchFilter.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Platform/McOsu_ng-SoundTouchFilter.o `test -f 'src/Engine/Platform/SoundTouchFilter.cpp' || echo '$(srcdir)/'`src/Engine/Platform/SoundTouchFilter.cpp
+
+src/Engine/Platform/McOsu_ng-SoundTouchFilter.obj: src/Engine/Platform/SoundTouchFilter.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Platform/McOsu_ng-SoundTouchFilter.obj -MD -MP -MF src/Engine/Platform/$(DEPDIR)/McOsu_ng-SoundTouchFilter.Tpo -c -o src/Engine/Platform/McOsu_ng-SoundTouchFilter.obj `if test -f 'src/Engine/Platform/SoundTouchFilter.cpp'; then $(CYGPATH_W) 'src/Engine/Platform/SoundTouchFilter.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Platform/SoundTouchFilter.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Platform/$(DEPDIR)/McOsu_ng-SoundTouchFilter.Tpo src/Engine/Platform/$(DEPDIR)/McOsu_ng-SoundTouchFilter.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Platform/SoundTouchFilter.cpp' object='src/Engine/Platform/McOsu_ng-SoundTouchFilter.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Platform/McOsu_ng-SoundTouchFilter.obj `if test -f 'src/Engine/Platform/SoundTouchFilter.cpp'; then $(CYGPATH_W) 'src/Engine/Platform/SoundTouchFilter.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Platform/SoundTouchFilter.cpp'; fi`
+
 src/Engine/Platform/McOsu_ng-Thread.o: src/Engine/Platform/Thread.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Platform/McOsu_ng-Thread.o -MD -MP -MF src/Engine/Platform/$(DEPDIR)/McOsu_ng-Thread.Tpo -c -o src/Engine/Platform/McOsu_ng-Thread.o `test -f 'src/Engine/Platform/Thread.cpp' || echo '$(srcdir)/'`src/Engine/Platform/Thread.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Platform/$(DEPDIR)/McOsu_ng-Thread.Tpo src/Engine/Platform/$(DEPDIR)/McOsu_ng-Thread.Po
@@ -4755,6 +4836,20 @@ src/Util/McOsu_ng-Matrices.obj: src/Util/Matrices.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Util/McOsu_ng-Matrices.obj `if test -f 'src/Util/Matrices.cpp'; then $(CYGPATH_W) 'src/Util/Matrices.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Util/Matrices.cpp'; fi`
 
+src/Util/McOsu_ng-McMath.o: src/Util/McMath.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Util/McOsu_ng-McMath.o -MD -MP -MF src/Util/$(DEPDIR)/McOsu_ng-McMath.Tpo -c -o src/Util/McOsu_ng-McMath.o `test -f 'src/Util/McMath.cpp' || echo '$(srcdir)/'`src/Util/McMath.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Util/$(DEPDIR)/McOsu_ng-McMath.Tpo src/Util/$(DEPDIR)/McOsu_ng-McMath.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Util/McMath.cpp' object='src/Util/McOsu_ng-McMath.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Util/McOsu_ng-McMath.o `test -f 'src/Util/McMath.cpp' || echo '$(srcdir)/'`src/Util/McMath.cpp
+
+src/Util/McOsu_ng-McMath.obj: src/Util/McMath.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Util/McOsu_ng-McMath.obj -MD -MP -MF src/Util/$(DEPDIR)/McOsu_ng-McMath.Tpo -c -o src/Util/McOsu_ng-McMath.obj `if test -f 'src/Util/McMath.cpp'; then $(CYGPATH_W) 'src/Util/McMath.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Util/McMath.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Util/$(DEPDIR)/McOsu_ng-McMath.Tpo src/Util/$(DEPDIR)/McOsu_ng-McMath.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Util/McMath.cpp' object='src/Util/McOsu_ng-McMath.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Util/McOsu_ng-McMath.obj `if test -f 'src/Util/McMath.cpp'; then $(CYGPATH_W) 'src/Util/McMath.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Util/McMath.cpp'; fi`
+
 src/Util/McOsu_ng-Quaternion.o: src/Util/Quaternion.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Util/McOsu_ng-Quaternion.o -MD -MP -MF src/Util/$(DEPDIR)/McOsu_ng-Quaternion.Tpo -c -o src/Util/McOsu_ng-Quaternion.o `test -f 'src/Util/Quaternion.cpp' || echo '$(srcdir)/'`src/Util/Quaternion.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Util/$(DEPDIR)/McOsu_ng-Quaternion.Tpo src/Util/$(DEPDIR)/McOsu_ng-Quaternion.Po
@@ -5106,7 +5201,6 @@ maintainer-clean-generic:
 	@echo "it deletes files that may require special tools to rebuild."
 	-$(am__rm_f) $(BUILT_SOURCES)
 	-$(am__rm_f) $(MAINTAINERCLEANFILES)
-@WIN_PLATFORM_TRUE@install-exec-hook:
 clean: clean-am
 
 clean-am: clean-binPROGRAMS clean-generic clean-local mostlyclean-am
@@ -5244,6 +5338,9 @@ distclean: distclean-am
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLSound.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLSoundEngine.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLTimer.Po
+	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-SoLoudSound.Po
+	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-SoLoudSoundEngine.Po
+	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-SoundTouchFilter.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-Thread.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-Timer.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinContextMenu.Po
@@ -5308,6 +5405,7 @@ distclean: distclean-am
 	-rm -f src/GUI/Windows/VinylScratcher/$(DEPDIR)/McOsu_ng-VinylScratcher.Po
 	-rm -f src/Util/$(DEPDIR)/McOsu_ng-MD5.Po
 	-rm -f src/Util/$(DEPDIR)/McOsu_ng-Matrices.Po
+	-rm -f src/Util/$(DEPDIR)/McOsu_ng-McMath.Po
 	-rm -f src/Util/$(DEPDIR)/McOsu_ng-Quaternion.Po
 	-rm -f src/Util/$(DEPDIR)/McOsu_ng-Rect.Po
 	-rm -f src/Util/$(DEPDIR)/McOsu_ng-UString.Po
@@ -5491,6 +5589,9 @@ maintainer-clean: maintainer-clean-am
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLSound.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLSoundEngine.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLTimer.Po
+	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-SoLoudSound.Po
+	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-SoLoudSoundEngine.Po
+	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-SoundTouchFilter.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-Thread.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-Timer.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinContextMenu.Po
@@ -5555,6 +5656,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f src/GUI/Windows/VinylScratcher/$(DEPDIR)/McOsu_ng-VinylScratcher.Po
 	-rm -f src/Util/$(DEPDIR)/McOsu_ng-MD5.Po
 	-rm -f src/Util/$(DEPDIR)/McOsu_ng-Matrices.Po
+	-rm -f src/Util/$(DEPDIR)/McOsu_ng-McMath.Po
 	-rm -f src/Util/$(DEPDIR)/McOsu_ng-Quaternion.Po
 	-rm -f src/Util/$(DEPDIR)/McOsu_ng-Rect.Po
 	-rm -f src/Util/$(DEPDIR)/McOsu_ng-UString.Po
@@ -5649,7 +5751,7 @@ $(DEPS_CACHE)/SDL3.source:
 @BUILD_SDL3_TRUE@	cd $(DEPS_PREFIX)/SDL3 && \
 @BUILD_SDL3_TRUE@	patch -Np1<$(abs_top_srcdir)/build/aux/sdl-c23bool.patch && \
 @BUILD_SDL3_TRUE@	PKG_CONFIG="$(PKG_CONFIG)" \
-@BUILD_SDL3_TRUE@	LDFLAGS="$(LDFLAGS)" cmake -S . -B build -G Ninja \
+@BUILD_SDL3_TRUE@	CXX="$(CXX)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS)" cmake -S . -B build -G Ninja \
 @BUILD_SDL3_TRUE@		-D CMAKE_BUILD_TYPE="$(if $(ENABLE_DEBUG),Debug,Release)" \
 @BUILD_SDL3_TRUE@		$(if $(ENABLE_ASAN),-DSDL_ASAN=ON,) \
 @BUILD_SDL3_TRUE@		-D SDL_HIDAPI_LIBUSB=OFF \
@@ -5661,9 +5763,7 @@ $(DEPS_CACHE)/SDL3.source:
 @BUILD_SDL3_TRUE@		-D SDL_RPATH=OFF \
 @BUILD_SDL3_TRUE@		-D SDL_CCACHE="$(if $(filter ccache,$(CC)),ON,OFF)" \
 @BUILD_SDL3_TRUE@		-D CMAKE_C_COMPILER="$(CC)" \
-@BUILD_SDL3_TRUE@		-D CMAKE_C_FLAGS="$(CFLAGS) -Wno-error=incompatible-pointer-types" \
-@BUILD_SDL3_TRUE@		-D CMAKE_CXX_COMPILER="$(CXX)" \
-@BUILD_SDL3_TRUE@		-D CMAKE_CXX_FLAGS="$(CXXFLAGS)" && \
+@BUILD_SDL3_TRUE@		-D CMAKE_C_FLAGS="$(CFLAGS) -Wno-error=incompatible-pointer-types" && \
 @BUILD_SDL3_TRUE@	cmake --build build && \
 @BUILD_SDL3_TRUE@	cmake --install build
 @BUILD_SDL3_TRUE@	PKG_CONFIG="$(PKG_CONFIG)" \
@@ -5679,35 +5779,112 @@ $(DEPS_CACHE)/SDL3_mixer.source:
 	$(TAR) xf $(DEPS_CACHE)/SDL3_mixer-$(SDL3_MIXER_VERSION).tar.gz -C $(DEPS_CACHE)/SDL3_mixer --strip-components=1 && \
 	cd $(DEPS_CACHE)/SDL3_mixer/external && ./download.sh # cache vendored dependencies
 	touch $@
-@USE_BASS_FALSE@$(DEPS_PREFIX)/SDL3_mixer.built: $(DEPS_PREFIX)/SDL3.built $(DEPS_CACHE)/SDL3_mixer.source
-@USE_BASS_FALSE@	rm -rf $(DEPS_PREFIX)/SDL3_mixer
-@USE_BASS_FALSE@	$(MKDIR_P) $(DEPS_PREFIX) $(DEPS_PREFIX)/lib/pkgconfig
-@USE_BASS_FALSE@	cp -r $(DEPS_CACHE)/SDL3_mixer $(DEPS_PREFIX)/SDL3_mixer && \
-@USE_BASS_FALSE@	$(MKDIR_P) $(DEPS_PREFIX)/SDL3_mixer/build
-@USE_BASS_FALSE@	cd $(DEPS_PREFIX)/SDL3_mixer && \
-@USE_BASS_FALSE@	PKG_CONFIG="$(PKG_CONFIG)" LDFLAGS="$(LDFLAGS)" \
-@USE_BASS_FALSE@	cmake -S . -B build -G Ninja \
-@USE_BASS_FALSE@		-D CMAKE_BUILD_TYPE="$(if $(ENABLE_DEBUG),Debug,Release)" \
-@USE_BASS_FALSE@		-D CMAKE_INSTALL_PREFIX="$(DEPS_PREFIX)" \
-@USE_BASS_FALSE@		-D CMAKE_SYSTEM_NAME="$(CMAKE_SYSTEM_NAME)" \
-@USE_BASS_FALSE@		-D CMAKE_SYSTEM_PROCESSOR="$(host_cpu)" \
-@USE_BASS_FALSE@		-D CMAKE_C_COMPILER="$(CC)" \
-@USE_BASS_FALSE@		-D CMAKE_C_FLAGS="$(CFLAGS) -Wno-error=incompatible-pointer-types" \
-@USE_BASS_FALSE@		-D SDLMIXER_GME=OFF \
-@USE_BASS_FALSE@		-D SDLMIXER_MIDI=OFF \
-@USE_BASS_FALSE@		-D SDLMIXER_STRICT=ON \
-@USE_BASS_FALSE@		-D SDLMIXER_VENDORED=ON \
-@USE_BASS_FALSE@		-D SDLMIXER_MP3=ON \
-@USE_BASS_FALSE@		-D SDLMIXER_MP3_MPG123=ON \
-@USE_BASS_FALSE@		-D BUILD_SHARED_LIBS="$(if $(SDL3_STATIC),OFF,ON)" \
-@USE_BASS_FALSE@		-D SDLMIXER_DEPS_SHARED="$(if $(SDL3_STATIC),OFF,ON)" && \
-@USE_BASS_FALSE@	cmake --build build && \
-@USE_BASS_FALSE@	cmake --install build
-@USE_BASS_FALSE@	$(SED) -i 's|Libs\.private.*|Libs.private: -lmpg123 -logg -lopus -lwavpack -lopusfile -lxmp|' $(DEPS_PREFIX)/lib/pkgconfig/sdl3-mixer.pc # wtf is this weird cmake issue?
-@USE_BASS_FALSE@	rm -rf $(DEPS_PREFIX)/lib/*SDL3_mixer$(if $(SDL3_STATIC),$(DLLEXT),.a)*
-@USE_BASS_FALSE@	$(PKG_CONFIG) --exists --print-errors sdl3-mixer
-@USE_BASS_FALSE@	touch $@
+
+$(DEPS_CACHE)/SoLoud.source:
+	rm -rf $(DEPS_CACHE)/SoLoud && \
+	$(MKDIR_P) $(DEPS_CACHE)/SoLoud
+	$(WGET) -qO $(DEPS_CACHE)/SoLoud-$(SOLOUD_VERSION).tar.gz "https://github.com/jarikomppa/soloud/archive/$(SOLOUD_VERSION).tar.gz"
+	touch $@
+
+$(DEPS_CACHE)/SoundTouch.source:
+	rm -rf $(DEPS_CACHE)/SoundTouch && \
+	$(MKDIR_P) $(DEPS_CACHE)/SoundTouch
+	$(WGET) -qO $(DEPS_CACHE)/SoundTouch-$(SOUNDTOUCH_VERSION).tar.gz "https://codeberg.org/soundtouch/soundtouch/archive/$(SOUNDTOUCH_VERSION).tar.gz"
+	touch $@
+@USE_BASS_FALSE@@USE_SDLMIXER_TRUE@$(DEPS_PREFIX)/SDL3_mixer.built: $(DEPS_PREFIX)/SDL3.built $(DEPS_CACHE)/SDL3_mixer.source
+@USE_BASS_FALSE@@USE_SDLMIXER_TRUE@	rm -rf $(DEPS_PREFIX)/SDL3_mixer
+@USE_BASS_FALSE@@USE_SDLMIXER_TRUE@	$(MKDIR_P) $(DEPS_PREFIX) $(DEPS_PREFIX)/lib/pkgconfig
+@USE_BASS_FALSE@@USE_SDLMIXER_TRUE@	cp -r $(DEPS_CACHE)/SDL3_mixer $(DEPS_PREFIX)/SDL3_mixer && \
+@USE_BASS_FALSE@@USE_SDLMIXER_TRUE@	$(MKDIR_P) $(DEPS_PREFIX)/SDL3_mixer/build
+@USE_BASS_FALSE@@USE_SDLMIXER_TRUE@	cd $(DEPS_PREFIX)/SDL3_mixer && \
+@USE_BASS_FALSE@@USE_SDLMIXER_TRUE@	PKG_CONFIG="$(PKG_CONFIG)" LDFLAGS="$(LDFLAGS)" \
+@USE_BASS_FALSE@@USE_SDLMIXER_TRUE@	cmake -S . -B build -G Ninja \
+@USE_BASS_FALSE@@USE_SDLMIXER_TRUE@		-D CMAKE_BUILD_TYPE="$(if $(ENABLE_DEBUG),Debug,Release)" \
+@USE_BASS_FALSE@@USE_SDLMIXER_TRUE@		-D CMAKE_INSTALL_PREFIX="$(DEPS_PREFIX)" \
+@USE_BASS_FALSE@@USE_SDLMIXER_TRUE@		-D CMAKE_SYSTEM_NAME="$(CMAKE_SYSTEM_NAME)" \
+@USE_BASS_FALSE@@USE_SDLMIXER_TRUE@		-D CMAKE_SYSTEM_PROCESSOR="$(host_cpu)" \
+@USE_BASS_FALSE@@USE_SDLMIXER_TRUE@		-D CMAKE_C_COMPILER="$(CC)" \
+@USE_BASS_FALSE@@USE_SDLMIXER_TRUE@		-D CMAKE_C_FLAGS="$(CFLAGS) -Wno-error=incompatible-pointer-types" \
+@USE_BASS_FALSE@@USE_SDLMIXER_TRUE@		-D SDLMIXER_GME=OFF \
+@USE_BASS_FALSE@@USE_SDLMIXER_TRUE@		-D SDLMIXER_MIDI=OFF \
+@USE_BASS_FALSE@@USE_SDLMIXER_TRUE@		-D SDLMIXER_STRICT=ON \
+@USE_BASS_FALSE@@USE_SDLMIXER_TRUE@		-D SDLMIXER_VENDORED=ON \
+@USE_BASS_FALSE@@USE_SDLMIXER_TRUE@		-D SDLMIXER_MP3=ON \
+@USE_BASS_FALSE@@USE_SDLMIXER_TRUE@		-D SDLMIXER_MP3_MPG123=ON \
+@USE_BASS_FALSE@@USE_SDLMIXER_TRUE@		-D BUILD_SHARED_LIBS="$(if $(SDL3_STATIC),OFF,ON)" \
+@USE_BASS_FALSE@@USE_SDLMIXER_TRUE@		-D SDLMIXER_DEPS_SHARED="$(if $(SDL3_STATIC),OFF,ON)" && \
+@USE_BASS_FALSE@@USE_SDLMIXER_TRUE@	cmake --build build && \
+@USE_BASS_FALSE@@USE_SDLMIXER_TRUE@	cmake --install build
+@USE_BASS_FALSE@@USE_SDLMIXER_TRUE@	$(SED) -i 's|Libs\.private.*|Libs.private: -lmpg123 -logg -lopus -lwavpack -lopusfile -lxmp|' $(DEPS_PREFIX)/lib/pkgconfig/sdl3-mixer.pc # wtf is this weird cmake issue?
+@USE_BASS_FALSE@@USE_SDLMIXER_TRUE@	rm -rf $(DEPS_PREFIX)/lib/*SDL3_mixer$(if $(SDL3_STATIC),$(DLLEXT),.a)*
+@USE_BASS_FALSE@@USE_SDLMIXER_TRUE@	$(PKG_CONFIG) --exists --print-errors sdl3-mixer
+@USE_BASS_FALSE@@USE_SDLMIXER_TRUE@	touch $@
+@USE_BASS_FALSE@@USE_SDLMIXER_TRUE@$(DEPS_PREFIX)/SoLoud.built:
+@USE_BASS_FALSE@@USE_SDLMIXER_TRUE@	$(MKDIR_P) $(DEPS_PREFIX) && touch $@
+@USE_BASS_FALSE@@USE_SDLMIXER_TRUE@$(DEPS_PREFIX)/SoundTouch.built:
+@USE_BASS_FALSE@@USE_SDLMIXER_TRUE@	$(MKDIR_P) $(DEPS_PREFIX) && touch $@
+@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@$(DEPS_PREFIX)/SoLoud.built: $(DEPS_CACHE)/SoLoud.source
+@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	rm -rf $(DEPS_PREFIX)/SoLoud
+@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	$(MKDIR_P) $(DEPS_PREFIX) $(DEPS_PREFIX)/include $(DEPS_PREFIX)/lib/pkgconfig $(DEPS_PREFIX)/SoLoud/build
+@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	$(TAR) xf $(DEPS_CACHE)/SoLoud-$(SOLOUD_VERSION).tar.gz -C $(DEPS_PREFIX)/SoLoud --strip-components=1 && \
+@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	cd $(DEPS_PREFIX)/SoLoud && patch -Np1<$(abs_top_srcdir)/build/aux/revert-soloud.patch && \
+@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	cd $(DEPS_PREFIX)/SoLoud/build && \
+@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	$(SED) -i 's|"NoRTTI"$(comma)||g' genie.lua && \
+@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	PKG_CONFIG="$(PKG_CONFIG) --static" CC="$(CC)" CXX="$(CXX)" LD="$(LD)" CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS)" \
+@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	$(GENIE) --with-miniaudio-only \
+@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@			 --platform=x$(if $(filter x86_64,$(host_cpu)),64,32) \
+@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@			 --os=$(if $(findstring linux,$(host_os)),linux,windows) \
+@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@			 cmake && \
+@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	cd cmake && printf '%s\n%s' "cmake_minimum_required(VERSION 3.15)" "add_subdirectory(SoloudStatic)" > CMakeLists.txt && \
+@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	PKG_CONFIG="$(PKG_CONFIG) --static" CC="$(CC)" CXX="$(CXX)" LD="$(LD)" CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS)" \
+@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	cmake -S . -B build -G Ninja \
+@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@		-D CMAKE_BUILD_TYPE="$(if $(ENABLE_DEBUG),Debug,Release)" \
+@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@		-D CMAKE_INSTALL_PREFIX="$(DEPS_PREFIX)" \
+@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@		-D CMAKE_SYSTEM_NAME="$(CMAKE_SYSTEM_NAME)" \
+@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@		-D CMAKE_SYSTEM_PROCESSOR="$(host_cpu)" \
+@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@		-D CMAKE_C_COMPILER="$(CC)" \
+@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@		-D CMAKE_C_FLAGS="$(CFLAGS)" \
+@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@		-D CMAKE_CXX_COMPILER="$(CXX)" \
+@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@		-D CMAKE_CXX_FLAGS="$(CXXFLAGS)" && \
+@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	cmake --build build && \
+@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	cmake --install build && \
+@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	cp -r $(DEPS_PREFIX)/SoLoud/include $(DEPS_PREFIX)/include/soloud && \
+@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	test -f $(DEPS_PREFIX)/lib/libsoloud_static_x$(if $(filter x86_64,$(host_cpu)),64,32)$(if $(ENABLE_DEBUG),_d,).a
+@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	touch $@
+
+# TODO: build openmp static, soundtouch benefits from it a retarded amount
+@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@$(DEPS_PREFIX)/SoundTouch.built: $(DEPS_CACHE)/SoundTouch.source
+@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	rm -rf $(DEPS_PREFIX)/SoundTouch
+@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	$(MKDIR_P) $(DEPS_PREFIX) $(DEPS_PREFIX)/include $(DEPS_PREFIX)/lib/pkgconfig $(DEPS_PREFIX)/SoundTouch/build
+@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	$(TAR) xf $(DEPS_CACHE)/SoundTouch-$(SOUNDTOUCH_VERSION).tar.gz -C $(DEPS_PREFIX)/SoundTouch --strip-components=1 && \
+@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	cd $(DEPS_PREFIX)/SoundTouch && \
+@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	PKG_CONFIG="$(PKG_CONFIG)" LDFLAGS="$(LDFLAGS)" \
+@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	cmake -S . -B build -G Ninja \
+@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@		-D CMAKE_BUILD_TYPE="$(if $(ENABLE_DEBUG),Debug,Release)" \
+@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@		-D CMAKE_INSTALL_PREFIX="$(DEPS_PREFIX)" \
+@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@		-D CMAKE_SYSTEM_NAME="$(CMAKE_SYSTEM_NAME)" \
+@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@		-D CMAKE_SYSTEM_PROCESSOR="$(host_cpu)" \
+@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@		-D CMAKE_C_COMPILER="$(CC)" \
+@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@		-D CMAKE_C_FLAGS="$(CFLAGS)" \
+@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@		-D CMAKE_CXX_COMPILER="$(CXX)" \
+@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@		-D CMAKE_CXX_FLAGS="$(CXXFLAGS)" \
+@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@		-D SOUNDSTRETCH=OFF \
+@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@		-D SOUNDTOUCH_DLL=OFF \
+@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@		-D OPENMP="$(if $(SDL3_STATIC),OFF,ON)" \
+@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@		-D BUILD_SHARED_LIBS="$(if $(SDL3_STATIC),OFF,ON)" && \
+@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	cmake --build build && \
+@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	cmake --install build
+@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	rm -rf $(DEPS_PREFIX)/lib/*SoundTouch$(if $(SDL3_STATIC),$(DLLEXT),.a)*
+@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	$(PKG_CONFIG) --env-only --exists --print-errors soundtouch
+@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	touch $@
+
+@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@$(DEPS_PREFIX)/SDL3_mixer.built:
+@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	$(MKDIR_P) $(DEPS_PREFIX) && touch $@
 @USE_BASS_TRUE@$(DEPS_PREFIX)/SDL3_mixer.built:
+@USE_BASS_TRUE@	$(MKDIR_P) $(DEPS_PREFIX) && touch $@
+@USE_BASS_TRUE@$(DEPS_PREFIX)/SoLoud.built:
+@USE_BASS_TRUE@	$(MKDIR_P) $(DEPS_PREFIX) && touch $@
+@USE_BASS_TRUE@$(DEPS_PREFIX)/SoundTouch.built:
 @USE_BASS_TRUE@	$(MKDIR_P) $(DEPS_PREFIX) && touch $@
 
 $(DEPS_CACHE)/GLEW-$(GLEW_VERSION).source:
@@ -5901,9 +6078,11 @@ install-libs:
 	$(INSTALL) -dm 755 "$(DESTDIR)$(bindir)/cfg"
 	find $(srcdir)/$(ASSETS_DIR)/models -type f -exec $(INSTALL) -Dm 644 '{''}' "$(DESTDIR)$(bindir)/models" ';'
 	find $(srcdir)/$(ASSETS_DIR)/shaders -type f -exec $(INSTALL) -Dm 644 '{''}' "$(DESTDIR)$(bindir)/shaders" ';'
+	find $(srcdir)/$(ASSETS_DIR)/fonts -type f -exec $(INSTALL) -Dm 644 '{''}' "$(DESTDIR)$(bindir)/fonts" ';'
+@USE_BASS_FALSE@@USE_SDLMIXER_TRUE@	$(if $(SDL3_STATIC),,@cp -P "$(SDL3_MIXER_PREFIX)/lib"/{*$(LIBPREFIX)SDL3_mixer*$(DLLEXT)*,*$(LIBPREFIX)mpg123*$(DLLEXT)*,*$(LIBPREFIX)xmp*$(DLLEXT)*,*$(LIBPREFIX)wavpack*$(DLLEXT)*,*$(LIBPREFIX)opus*$(DLLEXT)*,*$(LIBPREFIX)ogg*$(DLLEXT)*} "$(DESTDIR)$(bindir)/$(LIBDEST)")
+@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	$(if $(SDL3_STATIC),,@cp -P "$(SOLOUD_PREFIX)/lib"/*$(LIBPREFIX)SoundTouch*$(DLLEXT)* "$(DESTDIR)$(bindir)/$(LIBDEST)")
 @USE_BASS_TRUE@	$(INSTALL) -m 755 $(srcdir)/$(BUNDLED_BASS_DIR)/lib/$(SYSNAME)/$(host_cpu)/$(LIBPREFIX)bass$(DLLEXT) "$(DESTDIR)$(bindir)/$(LIBDEST)"
 @USE_BASS_TRUE@	$(INSTALL) -m 755 $(srcdir)/$(BUNDLED_BASS_FX_DIR)/lib/$(SYSNAME)/$(host_cpu)/$(LIBPREFIX)bass_fx$(DLLEXT) "$(DESTDIR)$(bindir)/$(LIBDEST)"
-@USE_BASS_FALSE@	$(if $(SDL3_STATIC),,@cp -P "$(SDL3_MIXER_PREFIX)/lib"/{*$(LIBPREFIX)SDL3_mixer*$(DLLEXT)*,*$(LIBPREFIX)mpg123*$(DLLEXT)*,*$(LIBPREFIX)xmp*$(DLLEXT)*,*$(LIBPREFIX)wavpack*$(DLLEXT)*,*$(LIBPREFIX)opus*$(DLLEXT)*,*$(LIBPREFIX)ogg*$(DLLEXT)*} "$(DESTDIR)$(bindir)/$(LIBDEST)")
 @BUILD_SDL3_TRUE@	$(if $(SDL3_STATIC),,@cp -P "$(SDL3_PREFIX)/lib"/*$(LIBPREFIX)SDL3*$(DLLEXT)* "$(DESTDIR)$(bindir)/$(LIBDEST)")
 @BUILD_GLEW_TRUE@	$(if $(SDL3_STATIC),,@cp -P "$(GLEW_PREFIX)/lib"/*$(LIBPREFIX){glew32,GLEW}*$(DLLEXT)* "$(DESTDIR)$(bindir)/$(LIBDEST)")
 @BUILD_LIBJPEG_TRUE@	$(if $(SDL3_STATIC),,@@libdir=$(LIBJPEG_PREFIX)/`test -d "$(LIBJPEG_PREFIX)/lib64" && echo "lib64" || echo "lib"`; \
@@ -5914,7 +6093,7 @@ install-libs:
 @BUILD_FREETYPE2_TRUE@	$(if $(SDL3_STATIC),,@cp -P "$(FREETYPE2_PREFIX)/lib"/*$(LIBPREFIX)freetype*$(DLLEXT)* "$(DESTDIR)$(bindir)/$(LIBDEST)")
 
 # install hooks
-@WIN_PLATFORM_FALSE@install-exec-hook: install-libs
+install-exec-hook: install-libs
 @WIN_PLATFORM_FALSE@	cd "$(DESTDIR)$(bindir)" && \
 @WIN_PLATFORM_FALSE@	$(LN_S) -rf $(PROGRAMS) McEngine && \
 @WIN_PLATFORM_FALSE@	$(LN_S) -rf $(PROGRAMS) McOsu
@@ -5946,6 +6125,7 @@ dist-hook:
 @USE_BASS_TRUE@	cp -r $(srcdir)/$(BUNDLED_BASS_FX_DIR)/include $(distdir)/$(BUNDLED_BASS_FX_DIR)/
 	cp -r $(srcdir)/$(ASSETS_DIR)/models $(distdir)/
 	cp -r $(srcdir)/$(ASSETS_DIR)/shaders $(distdir)/
+	cp -r $(srcdir)/$(ASSETS_DIR)/fonts $(distdir)/
 	find $(distdir) -type f -name ".git*" -delete
 	find $(distdir) -type f -name "*.a" -delete
 	find $(distdir) -type f -name "*.dll" -delete

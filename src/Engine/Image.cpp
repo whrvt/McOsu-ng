@@ -117,7 +117,7 @@ bool Image::loadRawImage()
 			return false;
 
 		// load entire file
-		File file(m_sFilePath);
+		McFile file(m_sFilePath);
 		if (!file.canRead())
 		{
 			debugLog("Image Error: Couldn't canRead() file %s\n", m_sFilePath.toUtf8());

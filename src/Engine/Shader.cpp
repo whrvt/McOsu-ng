@@ -27,7 +27,7 @@ Shader::SHADER_PARSE_RESULT Shader::parseShaderFromFileOrString(UString graphics
 		if (!source)
 			debugLog("Shader: Loading %s %s ...\n", graphicsInterfaceAndShaderTypePrefix.toUtf8(), shaderSourceOrFilePath.toUtf8());
 
-		File file(!source ? shaderSourceOrFilePath : "");
+		McFile file(!source ? shaderSourceOrFilePath : "");
 		if (!source && !file.canRead())
 		{
 			engine->showMessageError("Shader Error", UString::format("Failed to load/read file %s", shaderSourceOrFilePath.toUtf8()));

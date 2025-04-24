@@ -191,8 +191,13 @@ public:
 
 	bool isInPlayMode();
 	bool isNotInPlayModeOrPaused();
+#ifdef MCENGINE_FEATURE_OPENVR
 	static bool isInVRMode();
 	inline bool isInVRDraw() const {return m_bIsInVRDraw;}
+#else
+	static inline constexpr bool isInVRDraw() {return false;}
+	static inline constexpr bool isInVRMode() {return false;}
+#endif
 	bool isInMultiplayer();
 	inline bool isSkinLoading() const {return m_bSkinLoadScheduled;}
 

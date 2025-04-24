@@ -1023,7 +1023,7 @@ void OsuSkin::reloadSounds()
 
 bool OsuSkin::parseSkinINI(UString filepath)
 {
-	File file(filepath);
+	McFile file(filepath);
 	if (!file.canRead())
 	{
 		debugLog("OsuSkin Error: Couldn't load %s\n", filepath.toUtf8());
@@ -1268,8 +1268,8 @@ void OsuSkin::onExport(UString folderName)
 
 		debugLog("Copying \"%s\" to \"%s\"\n", fileToCopy.filePath.toUtf8(), outputFilePath.toUtf8());
 
-		File inputFile(fileToCopy.filePath, File::TYPE::READ);
-		File outputFile(outputFilePath, File::TYPE::WRITE);
+		McFile inputFile(fileToCopy.filePath, McFile::TYPE::READ);
+		McFile outputFile(outputFilePath, McFile::TYPE::WRITE);
 
 		if (inputFile.canRead() && outputFile.canWrite())
 			outputFile.write(inputFile.readFile(), inputFile.getFileSize());

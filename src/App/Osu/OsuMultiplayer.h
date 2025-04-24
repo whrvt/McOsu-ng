@@ -11,7 +11,7 @@
 
 #include "cbase.h"
 
-class File;
+class McFile;
 
 class Osu;
 class OsuDatabaseBeatmap;
@@ -123,9 +123,9 @@ private:
 		size_t numUploadedMusicFileBytes;
 		size_t numUploadedBackgroundFileBytes;
 
-		File *osuFile;
-		File *musicFile;
-		File *backgroundFile;
+		McFile *osuFile;
+		McFile *musicFile;
+		McFile *backgroundFile;
 	};
 
 	struct BeatmapDownloadState

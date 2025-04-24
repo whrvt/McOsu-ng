@@ -37,6 +37,17 @@ OsuChangelog::OsuChangelog(Osu *osu) : OsuScreenBackable(osu)
 
 	CHANGELOG alpha317;
 	alpha317.title = UString::format(PACKAGE_VERSION " (Build Date: %s, %s)", __DATE__, __TIME__); // (09.01.2022 - ?)
+	alpha317.changes.emplace_back("- For more info on the star/pp changes in this update see https://osu.ppy.sh/home/news/2025-03-06-performance-points-star-rating-updates");
+	alpha317.changes.emplace_back("- Updated star + pp algorithms to match current lazer implementation aka 20250306 (19) (thanks to @Khangaroo!)");
+	alpha317.changes.emplace_back("- Added \"Sort by Unstable Rate (Mc)\" to score sorting options");
+	alpha317.changes.emplace_back("- Added ConVars: osu_unpause_continue_delay, osu_confine_cursor_gameplay");
+	alpha317.changes.emplace_back("- Updated \"Sort by pp (Mc)\" to always show pp scores above scores without pp values");
+	alpha317.changes.emplace_back("- Updated Top Ranks screen to show speed multiplier on non-1.0x scores");
+	alpha317.changes.emplace_back("- Updated scorebrowser tooltips to also display UR next to Accuracy");
+	alpha317.changes.emplace_back("- Updated right click > \"Use Mods\" to persist override slider locks state");
+	alpha317.changes.emplace_back("- Fixed invalid 1x1 songselect-top.png/songselect-bottom.png skin images breaking songbrowser layout");
+	alpha317.changes.emplace_back("");
+	alpha317.changes.emplace_back("");
 	alpha317.changes.emplace_back("- Updated osu!stable database loader to support new 20250108 format (see https://osu.ppy.sh/home/changelog/stable40/20250108.3)");
 	alpha317.changes.emplace_back("");
 	alpha317.changes.emplace_back("");
@@ -393,6 +404,7 @@ OsuChangelog::OsuChangelog(Osu *osu) : OsuScreenBackable(osu)
 	alpha313.changes.emplace_back("- Windows: Fixed Windows key not unlocking on focus loss if \"Pause on Focus Loss\" is disabled");
 	changelogs.push_back(alpha313);
 
+	/*
 	CHANGELOG alpha312;
 	alpha312.title = "30.12 (19.12.2019)";
 	alpha312.changes.emplace_back("- Added button \"Random Skin\" (Options > Skin)");
@@ -454,7 +466,6 @@ OsuChangelog::OsuChangelog(Osu *osu) : OsuScreenBackable(osu)
 	alpha30.changes.emplace_back("- Fixed custom ConVars being ignored in cfg: osu_mods, osu_speed/ar/od/cs_override");
 	changelogs.push_back(alpha30);
 
-	/*
 	CHANGELOG alpha295;
 	alpha295.title =  "29.5 (26.05.2019)";
 	alpha295.changes.push_back("- Added lock buttons to AR/OD override sliders (force constant AR/OD even with speed multiplier)");

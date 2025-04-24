@@ -105,6 +105,7 @@ public:
 
 	// keyboard
 	virtual UString keyCodeToString(KEYCODE keyCode);
+	virtual void listenToTextInput(bool listen);
 
 	// ILLEGAL:
 	void setWindow(SDL_Window *window) {m_window = window;}
@@ -116,6 +117,9 @@ public:
 	void setWasLastMouseInputTouch(bool unused) {;}
 	inline bool wasLastMouseInputTouch() const {return false;}
 #endif
+
+	inline void setLastAbsMousePos(Vector2 abs) {m_vLastAbsMousePos=abs;}
+	inline void setLastRelMousePos(Vector2 rel) {m_vLastRelMousePos=rel;}
 
 	inline bool sdlDebug() {return m_sdlDebug;}
 	inline bool sdlDebug(bool enable) {m_sdlDebug = enable; return m_sdlDebug;}
@@ -141,8 +145,16 @@ private:
 	McRect m_cursorClip;
 	CURSORTYPE m_cursorType;
 
-	// touch
+	// the absolute/relative mouse position from the last SDL_PumpEvents call
+	// relative only useful if raw input is enabled, value is undefined/garbage otherwise
+	Vector2 m_vLastAbsMousePos;
+	Vector2 m_vLastRelMousePos;
+
+#ifdef MCENGINE_SDL_TOUCHSUPPORT
 	bool m_bWasLastMouseInputTouch;
+#else
+	static constexpr bool m_bWasLastMouseInputTouch = false;
+#endif
 
 	// clipboard
 	const char *m_sPrevClipboardTextSDL;

@@ -208,7 +208,7 @@ void OsuUISongBrowserSongDifficultyButton::updateGrade()
 	}
 
 	bool hasGrade = false;
-	OsuScore::GRADE grade;
+	OsuScore::GRADE grade = OsuScore::GRADE::GRADE_N;
 
 	m_osu->getSongBrowser()->getDatabase()->sortScores(m_databaseBeatmap->getMD5Hash());
 	if ((*m_osu->getSongBrowser()->getDatabase()->getScores())[m_databaseBeatmap->getMD5Hash()].size() > 0)

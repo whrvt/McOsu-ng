@@ -151,6 +151,9 @@ Engine::Engine(Environment *environment, const char *args)
 	m_bDrawing = false;
 	m_iLoadingScreenDelay = 0; // 0 == enabled, -2 == disabled (-1 is reserved)
 
+	// math
+	m_math = new McMath();
+
 	// initialize all engine subsystems (the order does matter!)
 	debugLog("\nEngine: Initializing subsystems ...\n");
 	{

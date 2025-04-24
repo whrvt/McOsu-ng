@@ -101,6 +101,7 @@ public:
 
 	// keyboard
 	UString keyCodeToString(KEYCODE keyCode);
+	void listenToTextInput(bool) {;}
 
 	// ILLEGAL:
 	inline MacOSWrapper *getWrapper() {return m_wrapper;}
