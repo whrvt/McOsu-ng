@@ -100,6 +100,7 @@ McOsu_ng_SOURCES = \
 	src/Engine/OpenVRInterface.cpp \
 	src/Engine/Platform/BassSound.cpp \
 	src/Engine/Platform/BassSoundEngine.cpp \
+	src/Engine/Platform/GenericSDLGLES2Interface.cpp \
 	src/Engine/Platform/HorizonSDLEnvironment.cpp \
 	src/Engine/Platform/HorizonThread.cpp \
 	src/Engine/Platform/HorizonTimer.cpp \
@@ -130,7 +131,6 @@ McOsu_ng_SOURCES = \
 	src/Engine/Platform/WinGL3Interface.cpp \
 	src/Engine/Platform/WinGLLegacyInterface.cpp \
 	src/Engine/Platform/WinSDLEnvironment.cpp \
-	src/Engine/Platform/WinSDLGLES2Interface.cpp \
 	src/Engine/Platform/WinSWGraphicsInterface.cpp \
 	src/Engine/Platform/WinTimer.cpp \
 	src/Engine/Platform/XInputGamepad.cpp \

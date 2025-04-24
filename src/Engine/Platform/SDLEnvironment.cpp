@@ -16,7 +16,7 @@
 #include "NullGraphicsInterface.h"
 #include "SDLGLLegacyInterface.h"
 #include "SDLGLES2Interface.h"
-#include "WinSDLGLES2Interface.h"
+#include "GenericSDLGLES2Interface.h"
 #include "NullContextMenu.h"
 
 ConVar debug_sdl("debug_sdl", false, FCVAR_NONE);
@@ -64,21 +64,18 @@ void SDLEnvironment::update()
 
 Graphics *SDLEnvironment::createRenderer()
 {
-	//return new NullGraphicsInterface();
-	return new SDLGLLegacyInterface(m_window);
-
 #ifdef MCENGINE_FEATURE_OPENGLES
 
-#if defined(_WIN32) || defined(_WIN64) || defined(__WIN32__) || defined(__CYGWIN__) || defined(__CYGWIN32__) || defined(__TOS_WIN__) || defined(__WINDOWS__)
-
-	return new WinSDLGLES2Interface(m_window);
-
+#ifndef __SWITCH__
+	return new GenericSDLGLES2Interface(m_window);
 #else
-
-	return new SDLGLES2Interface(m_window);
-
+	return new SDLGLES2Interface(m_window); // this just skips glewInit
 #endif
 
+#elif defined(MCENGINE_FEATURE_OPENGL)
+	return new SDLGLLegacyInterface(m_window);
+#else
+	return new NullGraphicsInterface();
 #endif
 }
 

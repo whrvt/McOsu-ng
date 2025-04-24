@@ -88,8 +88,11 @@ Graphics *WinEnvironment::createRenderer()
 
 	//return new NullGraphicsInterface();
 	//return new VulkanGraphicsInterface();
-	//return new WinSWGraphicsInterface(m_hwnd);
+#ifdef MCENGINE_FEATURE_SOFTRENDERER
+	return new WinSWGraphicsInterface(m_hwnd);
+#else
 	return new WinGLLegacyInterface(m_hwnd);
+#endif
 	//return new WinGL3Interface(m_hwnd);
 	//return new DirectX11Interface(m_hwnd);
 }

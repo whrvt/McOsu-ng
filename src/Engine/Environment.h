@@ -27,7 +27,20 @@ public:
 		OS_MACOS,
 		OS_HORIZON
 	};
-
+	enum class ENV : uint8_t
+	{
+		ENV_NULL,
+		ENV_NATIVE,
+		ENV_SDL
+	};
+	enum class REND : uint8_t
+	{
+		REND_NULL,
+		REND_GL,
+		REND_GLES2,
+		REND_DX11,
+		REND_SW
+	};
 public:
 	Environment();
 	virtual ~Environment() {;}
@@ -39,20 +52,42 @@ public:
 	virtual ContextMenu *createContextMenu() = 0;
 
 	// system
-	static constexpr OS getOS =
-#if defined(_WIN32) || defined(_WIN64) || defined(__WIN32__) || defined(__CYGWIN__) || defined(__CYGWIN32__) || defined(__TOS_WIN__) || defined(__WINDOWS__)
-	Environment::OS::OS_WINDOWS;
-#elif defined __linux__
-	Environment::OS::OS_LINUX;
-#elif defined __APPLE__
-	Environment::OS::OS_MACOS;
-#elif defined __SWITCH__
-	Environment::OS::OS_HORIZON;
-#else
-	Environment::OS::OS_NULL;
-#endif
+	static constexpr Environment::OS getOS =
+	#if defined(_WIN32) || defined(_WIN64) || defined(__WIN32__) || defined(__CYGWIN__) || defined(__CYGWIN32__) || defined(__TOS_WIN__) || defined(__WINDOWS__)
+		Environment::OS::OS_WINDOWS;
+	#elif defined __linux__
+		Environment::OS::OS_LINUX;
+	#elif defined __APPLE__
+		Environment::OS::OS_MACOS;
+	#elif defined __SWITCH__
+		Environment::OS::OS_HORIZON;
+	#else
+		Environment::OS::OS_NULL;
+	#endif
 
-#define getOS() getOS
+	// environment abstraction backend
+	static constexpr Environment::ENV envBackend =
+	#ifdef MCENGINE_FEATURE_SDL
+		Environment::ENV::ENV_SDL;
+	#elif 1
+		Environment::ENV::ENV_NATIVE;
+	#else
+		Environment::ENV::ENV_NULL;
+	#endif
+
+	// graphics renderer type
+	static constexpr Environment::REND renderer =
+	#ifdef MCENGINE_FEATURE_OPENGL
+		Environment::REND::REND_GL;
+	#elif defined(MCENGINE_FEATURE_OPENGLES)
+		Environment::REND::REND_GLES2;
+	#elif defined(MCENGINE_FEATURE_DIRECTX11)
+		Environment::REND::REND_DX11;
+	#elif defined(MCENGINE_FEATURE_SOFTRENDERER)
+		Environment::REND::REND_SW;
+	#else
+		Environment::REND::REND_NULL;
+	#endif
 
 	virtual void shutdown() = 0;
 	virtual void restart() = 0;

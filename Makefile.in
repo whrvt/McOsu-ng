@@ -229,6 +229,7 @@ am_McOsu_ng_OBJECTS = src/App/Osu/McOsu_ng-Osu.$(OBJEXT) \
 	src/Engine/McOsu_ng-OpenVRInterface.$(OBJEXT) \
 	src/Engine/Platform/McOsu_ng-BassSound.$(OBJEXT) \
 	src/Engine/Platform/McOsu_ng-BassSoundEngine.$(OBJEXT) \
+	src/Engine/Platform/McOsu_ng-GenericSDLGLES2Interface.$(OBJEXT) \
 	src/Engine/Platform/McOsu_ng-HorizonSDLEnvironment.$(OBJEXT) \
 	src/Engine/Platform/McOsu_ng-HorizonThread.$(OBJEXT) \
 	src/Engine/Platform/McOsu_ng-HorizonTimer.$(OBJEXT) \
@@ -259,7 +260,6 @@ am_McOsu_ng_OBJECTS = src/App/Osu/McOsu_ng-Osu.$(OBJEXT) \
 	src/Engine/Platform/McOsu_ng-WinGL3Interface.$(OBJEXT) \
 	src/Engine/Platform/McOsu_ng-WinGLLegacyInterface.$(OBJEXT) \
 	src/Engine/Platform/McOsu_ng-WinSDLEnvironment.$(OBJEXT) \
-	src/Engine/Platform/McOsu_ng-WinSDLGLES2Interface.$(OBJEXT) \
 	src/Engine/Platform/McOsu_ng-WinSWGraphicsInterface.$(OBJEXT) \
 	src/Engine/Platform/McOsu_ng-WinTimer.$(OBJEXT) \
 	src/Engine/Platform/McOsu_ng-XInputGamepad.$(OBJEXT) \
@@ -462,6 +462,7 @@ am__depfiles_remade = src/App/Osu/$(DEPDIR)/McOsu_ng-Osu.Po \
 	src/Engine/Main/$(DEPDIR)/McOsu_ng-main_Windows.Po \
 	src/Engine/Platform/$(DEPDIR)/McOsu_ng-BassSound.Po \
 	src/Engine/Platform/$(DEPDIR)/McOsu_ng-BassSoundEngine.Po \
+	src/Engine/Platform/$(DEPDIR)/McOsu_ng-GenericSDLGLES2Interface.Po \
 	src/Engine/Platform/$(DEPDIR)/McOsu_ng-HorizonSDLEnvironment.Po \
 	src/Engine/Platform/$(DEPDIR)/McOsu_ng-HorizonThread.Po \
 	src/Engine/Platform/$(DEPDIR)/McOsu_ng-HorizonTimer.Po \
@@ -492,7 +493,6 @@ am__depfiles_remade = src/App/Osu/$(DEPDIR)/McOsu_ng-Osu.Po \
 	src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinGL3Interface.Po \
 	src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinGLLegacyInterface.Po \
 	src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinSDLEnvironment.Po \
-	src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinSDLGLES2Interface.Po \
 	src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinSWGraphicsInterface.Po \
 	src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinTimer.Po \
 	src/Engine/Platform/$(DEPDIR)/McOsu_ng-XInputGamepad.Po \
@@ -924,6 +924,7 @@ McOsu_ng_SOURCES = \
 	src/Engine/OpenVRInterface.cpp \
 	src/Engine/Platform/BassSound.cpp \
 	src/Engine/Platform/BassSoundEngine.cpp \
+	src/Engine/Platform/GenericSDLGLES2Interface.cpp \
 	src/Engine/Platform/HorizonSDLEnvironment.cpp \
 	src/Engine/Platform/HorizonThread.cpp \
 	src/Engine/Platform/HorizonTimer.cpp \
@@ -954,7 +955,6 @@ McOsu_ng_SOURCES = \
 	src/Engine/Platform/WinGL3Interface.cpp \
 	src/Engine/Platform/WinGLLegacyInterface.cpp \
 	src/Engine/Platform/WinSDLEnvironment.cpp \
-	src/Engine/Platform/WinSDLGLES2Interface.cpp \
 	src/Engine/Platform/WinSWGraphicsInterface.cpp \
 	src/Engine/Platform/WinTimer.cpp \
 	src/Engine/Platform/XInputGamepad.cpp \
@@ -1510,6 +1510,9 @@ src/Engine/Platform/McOsu_ng-BassSound.$(OBJEXT):  \
 src/Engine/Platform/McOsu_ng-BassSoundEngine.$(OBJEXT):  \
 	src/Engine/Platform/$(am__dirstamp) \
 	src/Engine/Platform/$(DEPDIR)/$(am__dirstamp)
+src/Engine/Platform/McOsu_ng-GenericSDLGLES2Interface.$(OBJEXT):  \
+	src/Engine/Platform/$(am__dirstamp) \
+	src/Engine/Platform/$(DEPDIR)/$(am__dirstamp)
 src/Engine/Platform/McOsu_ng-HorizonSDLEnvironment.$(OBJEXT):  \
 	src/Engine/Platform/$(am__dirstamp) \
 	src/Engine/Platform/$(DEPDIR)/$(am__dirstamp)
@@ -1598,9 +1601,6 @@ src/Engine/Platform/McOsu_ng-WinGLLegacyInterface.$(OBJEXT):  \
 	src/Engine/Platform/$(am__dirstamp) \
 	src/Engine/Platform/$(DEPDIR)/$(am__dirstamp)
 src/Engine/Platform/McOsu_ng-WinSDLEnvironment.$(OBJEXT):  \
-	src/Engine/Platform/$(am__dirstamp) \
-	src/Engine/Platform/$(DEPDIR)/$(am__dirstamp)
-src/Engine/Platform/McOsu_ng-WinSDLGLES2Interface.$(OBJEXT):  \
 	src/Engine/Platform/$(am__dirstamp) \
 	src/Engine/Platform/$(DEPDIR)/$(am__dirstamp)
 src/Engine/Platform/McOsu_ng-WinSWGraphicsInterface.$(OBJEXT):  \
@@ -1949,6 +1949,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Main/$(DEPDIR)/McOsu_ng-main_Windows.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-BassSound.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-BassSoundEngine.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-GenericSDLGLES2Interface.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-HorizonSDLEnvironment.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-HorizonThread.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-HorizonTimer.Po@am__quote@ # am--include-marker
@@ -1979,7 +1980,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinGL3Interface.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinGLLegacyInterface.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinSDLEnvironment.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinSDLGLES2Interface.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinSWGraphicsInterface.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinTimer.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-XInputGamepad.Po@am__quote@ # am--include-marker
@@ -3464,6 +3464,20 @@ src/Engine/Platform/McOsu_ng-BassSoundEngine.obj: src/Engine/Platform/BassSoundE
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Platform/McOsu_ng-BassSoundEngine.obj `if test -f 'src/Engine/Platform/BassSoundEngine.cpp'; then $(CYGPATH_W) 'src/Engine/Platform/BassSoundEngine.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Platform/BassSoundEngine.cpp'; fi`
 
+src/Engine/Platform/McOsu_ng-GenericSDLGLES2Interface.o: src/Engine/Platform/GenericSDLGLES2Interface.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Platform/McOsu_ng-GenericSDLGLES2Interface.o -MD -MP -MF src/Engine/Platform/$(DEPDIR)/McOsu_ng-GenericSDLGLES2Interface.Tpo -c -o src/Engine/Platform/McOsu_ng-GenericSDLGLES2Interface.o `test -f 'src/Engine/Platform/GenericSDLGLES2Interface.cpp' || echo '$(srcdir)/'`src/Engine/Platform/GenericSDLGLES2Interface.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Platform/$(DEPDIR)/McOsu_ng-GenericSDLGLES2Interface.Tpo src/Engine/Platform/$(DEPDIR)/McOsu_ng-GenericSDLGLES2Interface.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Platform/GenericSDLGLES2Interface.cpp' object='src/Engine/Platform/McOsu_ng-GenericSDLGLES2Interface.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Platform/McOsu_ng-GenericSDLGLES2Interface.o `test -f 'src/Engine/Platform/GenericSDLGLES2Interface.cpp' || echo '$(srcdir)/'`src/Engine/Platform/GenericSDLGLES2Interface.cpp
+
+src/Engine/Platform/McOsu_ng-GenericSDLGLES2Interface.obj: src/Engine/Platform/GenericSDLGLES2Interface.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Platform/McOsu_ng-GenericSDLGLES2Interface.obj -MD -MP -MF src/Engine/Platform/$(DEPDIR)/McOsu_ng-GenericSDLGLES2Interface.Tpo -c -o src/Engine/Platform/McOsu_ng-GenericSDLGLES2Interface.obj `if test -f 'src/Engine/Platform/GenericSDLGLES2Interface.cpp'; then $(CYGPATH_W) 'src/Engine/Platform/GenericSDLGLES2Interface.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Platform/GenericSDLGLES2Interface.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Platform/$(DEPDIR)/McOsu_ng-GenericSDLGLES2Interface.Tpo src/Engine/Platform/$(DEPDIR)/McOsu_ng-GenericSDLGLES2Interface.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Platform/GenericSDLGLES2Interface.cpp' object='src/Engine/Platform/McOsu_ng-GenericSDLGLES2Interface.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Platform/McOsu_ng-GenericSDLGLES2Interface.obj `if test -f 'src/Engine/Platform/GenericSDLGLES2Interface.cpp'; then $(CYGPATH_W) 'src/Engine/Platform/GenericSDLGLES2Interface.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Platform/GenericSDLGLES2Interface.cpp'; fi`
+
 src/Engine/Platform/McOsu_ng-HorizonSDLEnvironment.o: src/Engine/Platform/HorizonSDLEnvironment.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Platform/McOsu_ng-HorizonSDLEnvironment.o -MD -MP -MF src/Engine/Platform/$(DEPDIR)/McOsu_ng-HorizonSDLEnvironment.Tpo -c -o src/Engine/Platform/McOsu_ng-HorizonSDLEnvironment.o `test -f 'src/Engine/Platform/HorizonSDLEnvironment.cpp' || echo '$(srcdir)/'`src/Engine/Platform/HorizonSDLEnvironment.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Platform/$(DEPDIR)/McOsu_ng-HorizonSDLEnvironment.Tpo src/Engine/Platform/$(DEPDIR)/McOsu_ng-HorizonSDLEnvironment.Po
@@ -3883,20 +3897,6 @@ src/Engine/Platform/McOsu_ng-WinSDLEnvironment.obj: src/Engine/Platform/WinSDLEn
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Platform/WinSDLEnvironment.cpp' object='src/Engine/Platform/McOsu_ng-WinSDLEnvironment.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Platform/McOsu_ng-WinSDLEnvironment.obj `if test -f 'src/Engine/Platform/WinSDLEnvironment.cpp'; then $(CYGPATH_W) 'src/Engine/Platform/WinSDLEnvironment.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Platform/WinSDLEnvironment.cpp'; fi`
-
-src/Engine/Platform/McOsu_ng-WinSDLGLES2Interface.o: src/Engine/Platform/WinSDLGLES2Interface.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Platform/McOsu_ng-WinSDLGLES2Interface.o -MD -MP -MF src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinSDLGLES2Interface.Tpo -c -o src/Engine/Platform/McOsu_ng-WinSDLGLES2Interface.o `test -f 'src/Engine/Platform/WinSDLGLES2Interface.cpp' || echo '$(srcdir)/'`src/Engine/Platform/WinSDLGLES2Interface.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinSDLGLES2Interface.Tpo src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinSDLGLES2Interface.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Platform/WinSDLGLES2Interface.cpp' object='src/Engine/Platform/McOsu_ng-WinSDLGLES2Interface.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Platform/McOsu_ng-WinSDLGLES2Interface.o `test -f 'src/Engine/Platform/WinSDLGLES2Interface.cpp' || echo '$(srcdir)/'`src/Engine/Platform/WinSDLGLES2Interface.cpp
-
-src/Engine/Platform/McOsu_ng-WinSDLGLES2Interface.obj: src/Engine/Platform/WinSDLGLES2Interface.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Platform/McOsu_ng-WinSDLGLES2Interface.obj -MD -MP -MF src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinSDLGLES2Interface.Tpo -c -o src/Engine/Platform/McOsu_ng-WinSDLGLES2Interface.obj `if test -f 'src/Engine/Platform/WinSDLGLES2Interface.cpp'; then $(CYGPATH_W) 'src/Engine/Platform/WinSDLGLES2Interface.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Platform/WinSDLGLES2Interface.cpp'; fi`
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinSDLGLES2Interface.Tpo src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinSDLGLES2Interface.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Platform/WinSDLGLES2Interface.cpp' object='src/Engine/Platform/McOsu_ng-WinSDLGLES2Interface.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Platform/McOsu_ng-WinSDLGLES2Interface.obj `if test -f 'src/Engine/Platform/WinSDLGLES2Interface.cpp'; then $(CYGPATH_W) 'src/Engine/Platform/WinSDLGLES2Interface.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Platform/WinSDLGLES2Interface.cpp'; fi`
 
 src/Engine/Platform/McOsu_ng-WinSWGraphicsInterface.o: src/Engine/Platform/WinSWGraphicsInterface.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Platform/McOsu_ng-WinSWGraphicsInterface.o -MD -MP -MF src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinSWGraphicsInterface.Tpo -c -o src/Engine/Platform/McOsu_ng-WinSWGraphicsInterface.o `test -f 'src/Engine/Platform/WinSWGraphicsInterface.cpp' || echo '$(srcdir)/'`src/Engine/Platform/WinSWGraphicsInterface.cpp
@@ -5318,6 +5318,7 @@ distclean: distclean-am
 	-rm -f src/Engine/Main/$(DEPDIR)/McOsu_ng-main_Windows.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-BassSound.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-BassSoundEngine.Po
+	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-GenericSDLGLES2Interface.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-HorizonSDLEnvironment.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-HorizonThread.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-HorizonTimer.Po
@@ -5348,7 +5349,6 @@ distclean: distclean-am
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinGL3Interface.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinGLLegacyInterface.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinSDLEnvironment.Po
-	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinSDLGLES2Interface.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinSWGraphicsInterface.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinTimer.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-XInputGamepad.Po
@@ -5569,6 +5569,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f src/Engine/Main/$(DEPDIR)/McOsu_ng-main_Windows.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-BassSound.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-BassSoundEngine.Po
+	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-GenericSDLGLES2Interface.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-HorizonSDLEnvironment.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-HorizonThread.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-HorizonTimer.Po
@@ -5599,7 +5600,6 @@ maintainer-clean: maintainer-clean-am
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinGL3Interface.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinGLLegacyInterface.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinSDLEnvironment.Po
-	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinSDLGLES2Interface.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinSWGraphicsInterface.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinTimer.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-XInputGamepad.Po

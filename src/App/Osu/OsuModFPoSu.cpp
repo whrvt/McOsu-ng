@@ -302,15 +302,7 @@ void OsuModFPoSu::draw(Graphics *g)
 
 						handleLazyLoad3DModels();
 
-#if defined(MCENGINE_FEATURE_OPENGL)
-
-						const bool isOpenGLRendererHack = (dynamic_cast<OpenGLLegacyInterface*>(g) != NULL || dynamic_cast<OpenGL3Interface*>(g) != NULL);
-
-#elif defined(MCENGINE_FEATURE_OPENGLES)
-
-						const bool isOpenGLRendererHack = (dynamic_cast<OpenGLES2Interface*>(g) != NULL);
-
-#endif
+						constexpr bool isOpenGLRendererHack = (Environment::renderer == Environment::REND::REND_GL || Environment::renderer == Environment::REND::REND_GLES2);
 
 						if (fposu_3d_wireframe.getBool())
 							g->setWireframe(true);
@@ -552,7 +544,7 @@ void OsuModFPoSu::update()
 	const bool isAutoCursor = (m_osu->getModAuto() || m_osu->getModAutopilot());
 
 	m_bCrosshairIntersectsScreen = true;
-	if (!fposu_3d.getBool() && !fposu_absolute_mode.getBool() && !isAutoCursor && env->getOS() == Environment::OS::OS_WINDOWS) // HACKHACK: windows only for now (raw input support)
+	if (!fposu_3d.getBool() && !fposu_absolute_mode.getBool() && !isAutoCursor && Environment::getOS == Environment::OS::OS_WINDOWS) // HACKHACK: windows only for now (raw input support)
 	{
 		// regular mouse position mode
 
@@ -617,7 +609,7 @@ void OsuModFPoSu::update()
 		// calculate mouse delta
 		Vector2 delta;
 		{
-			if (env->getOS() == Environment::OS::OS_WINDOWS)
+			if (Environment::getOS == Environment::OS::OS_WINDOWS)
 			{
 				delta = (engine->getMouse()->getRawDelta() / m_mouse_sensitivity_ref->getFloat()); // HACKHACK: undo engine mouse sensitivity multiplier
 

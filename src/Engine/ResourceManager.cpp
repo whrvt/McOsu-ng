@@ -51,7 +51,7 @@ ConVar debug_rm_("debug_rm", false, FCVAR_NONE);
 
 ConVar *ResourceManager::debug_rm = &debug_rm_;
 
-// HACKHACK: do this with env->getOS() or something
+// HACKHACK: do this with Environment::getOS or something
 #ifdef __SWITCH__
 
 const char *ResourceManager::PATH_DEFAULT_IMAGES = "romfs:/materials/";
@@ -76,7 +76,7 @@ ResourceManager::ResourceManager()
 	m_loadingWork.reserve(32);
 
 	// OS specific engine settings/overrides
-	if (env->getOS() == Environment::OS::OS_HORIZON)
+	if (Environment::getOS == Environment::OS::OS_HORIZON)
 	{
 		rm_numthreads.setValue(1.0f);
 		rm_numthreads.setDefaultFloat(1.0f);

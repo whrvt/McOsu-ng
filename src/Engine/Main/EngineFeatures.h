@@ -22,9 +22,14 @@
 #define MCENGINE_FEATURE_OPENGL
 
 /*
- * OpenGL graphics (Mobile, ES/EGL)
+ * OpenGL graphics (Mobile, ES/EGL, Web)
  */
 //#define MCENGINE_FEATURE_OPENGLES
+
+/*
+ * Software-only graphics renderer (Windows only) (untested)
+ */
+//#define MCENGINE_FEATURE_SOFTRENDERER
 
 /*
  * DirectX 11 graphics

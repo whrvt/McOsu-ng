@@ -138,7 +138,7 @@ void Mouse::update()
 
 	Vector2 nextPos = osMousePos;
 
-	if (osCursorVisible || (!sensitivityAdjustmentNeeded && !mouse_raw_input.getBool()) || m_bAbsolute || env->getOS() == Environment::OS::OS_HORIZON) //  || env->getOS() == Environment::OS::OS_LINUX HACKHACK: linux hack
+	if (osCursorVisible || (!sensitivityAdjustmentNeeded && !mouse_raw_input.getBool()) || m_bAbsolute || Environment::getOS == Environment::OS::OS_HORIZON) //  || Environment::getOS == Environment::OS::OS_LINUX HACKHACK: linux hack
 	{
 		// this block handles visible/active OS cursor movement without sensitivity adjustments, and absolute input device movement
 		if (m_bAbsolute)
@@ -202,7 +202,7 @@ void Mouse::update()
 			// (idk about that one ^)
 			if (((int)osMousePos.x != (int)m_vPrevOsMousePos.x || (int)osMousePos.y != (int)m_vPrevOsMousePos.y) // without this check some people would get mouse drift
 #ifdef MCENGINE_FEATURE_SDL
-			    || env->getOS() == Environment::OS::OS_LINUX || env->getOS() == Environment::OS::OS_WINDOWS
+			    || Environment::getOS == Environment::OS::OS_LINUX || Environment::getOS == Environment::OS::OS_WINDOWS
 #endif
 				)
 				m_vDelta = (osMousePos - m_vPrevOsMousePos) * mouse_sensitivity.getFloat();
@@ -226,7 +226,7 @@ void Mouse::update()
         float maxY = minY + cursorClip.getHeight();
 
 #ifdef MCENGINE_FEATURE_SDL
-        if (!(env->getOS() == Environment::OS::OS_LINUX || env->getOS() == Environment::OS::OS_WINDOWS))
+        if (!(Environment::getOS == Environment::OS::OS_LINUX || Environment::getOS == Environment::OS::OS_WINDOWS))
 #endif
         {
             minX -= m_vOffset.x;
@@ -249,7 +249,7 @@ void Mouse::update()
 	// first person games which call engine->getMouse()->setPos() every frame to manually re-center the cursor NEVER need env->setPos()
 	// absolute input NEVER needs env->setPos()
 	// also update prevOsMousePos
-	if (windowRect.contains(osMousePos) && (sensitivityAdjustmentNeeded || mouse_raw_input.getBool()) && !m_bSetPosWasCalledLastFrame && !m_bAbsolute) //  && env->getOS() != Environment::OS::OS_LINUX HACKHACK: linux hack
+	if (windowRect.contains(osMousePos) && (sensitivityAdjustmentNeeded || mouse_raw_input.getBool()) && !m_bSetPosWasCalledLastFrame && !m_bAbsolute) //  && Environment::getOS != Environment::OS::OS_LINUX HACKHACK: linux hack
 	{
 		const Vector2 newOsMousePos = m_vPosWithoutOffset;
 

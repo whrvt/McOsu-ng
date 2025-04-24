@@ -49,7 +49,7 @@ void *OsuUpdateHandler::run(void *data)
 		float latestVersion = Osu::version->getFloat();
 		for (int i=0; i<handler->m_releases.size(); i++)
 		{
-			if (handler->m_releases[i].os == env->getOS() && handler->m_releases[i].stream == handler->getReleaseStream() && handler->m_releases[i].version > latestVersion)
+			if (handler->m_releases[i].os == Environment::getOS && handler->m_releases[i].stream == handler->getReleaseStream() && handler->m_releases[i].version > latestVersion)
 			{
 				latestVersion = handler->m_releases[i].version;
 				downloadUrl = handler->m_releases[i].downloadURL;
@@ -171,7 +171,7 @@ bool OsuUpdateHandler::isUpdateAvailable()
 {
 	for (int i=0; i<m_releases.size(); i++)
 	{
-		if (m_releases[i].os == env->getOS() && m_releases[i].stream == getReleaseStream() && m_releases[i].version > Osu::version->getFloat())
+		if (m_releases[i].os == Environment::getOS && m_releases[i].stream == getReleaseStream() && m_releases[i].version > Osu::version->getFloat())
 			return true;
 	}
 	return false;

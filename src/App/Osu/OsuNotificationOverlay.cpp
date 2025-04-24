@@ -97,7 +97,7 @@ void OsuNotificationOverlay::onKeyDown(KeyboardEvent &e)
 		*/
 
 		// HACKHACK: prevent left mouse click bindings if relevant
-		if (env->getOS() == Environment::OS::OS_WINDOWS && m_bWaitForKeyDisallowsLeftClick && e.getKeyCode() == 0x01) // 0x01 == VK_LBUTTON
+		if (Environment::getOS == Environment::OS::OS_WINDOWS && m_bWaitForKeyDisallowsLeftClick && e.getKeyCode() == 0x01) // 0x01 == VK_LBUTTON
 			stopWaitingForKey();
 		else
 		{

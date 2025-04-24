@@ -32,7 +32,7 @@ VulkanInterface::VulkanInterface()
 
 	// TODO: can't use WinVulkanInterface without adding Environment::createVulkan()
 	// can't use WinVulkanGraphicsInterface, since VulkanInterface might be used without the VulkanGraphicsInterface
-	// can't use env->getOS(), since the extension defines are per-OS in the header file (undefined otherwise)
+	// can't use Environment::getOS, since the extension defines are per-OS in the header file (undefined otherwise)
 	//Graphics *env->createRenderer();
 	//enabledInstanceExtentions.insert(enabledInstanceExtentions.end(), b.begin(), b.end());
 
