@@ -51,6 +51,8 @@ bool g_bDrawing = false;
 bool g_bMinimized = false; // for fps_max_background
 bool g_bHasFocus = true; // for fps_max_background
 
+bool g_bHackRestoreRawinput = false; // HACK: set/unset the convar as a global state so we don't mess with the OS cursor when we don't want to
+
 SDL_Window *g_window = NULL;
 
 ConVar fps_max("fps_max", 60.0f, FCVAR_NONE, "framerate limiter, foreground");
@@ -303,9 +305,9 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 	SDL_TouchID currentTouchId = 0;
 #endif
 
-	// FIXME: sdl2-sdl3 stops listening to text input globally when window is created,
-	// recommended to start/stop listening to text input when required
+	// sdl3 stops listening to text input globally when window is created
 	SDL_StartTextInput(g_window);
+	SDL_SetWindowKeyboardGrab(g_window, false); // this allows windows key and such to work, listenToTextInput will set/unset the keyboard grab when necessary
 
 	Vector2 mousePos;
 	ConVar *mouse_raw_input_ref = convar->getConVarByName("mouse_raw_input");
@@ -337,17 +339,38 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 			// }
 
 			// handle automatic raw input toggling
-			{
-				const bool isRawInputActuallyEnabled = (SDL_GetWindowRelativeMouseMode(g_window) == true);
-
-				const bool shouldRawInputBeEnabled = (mouse_raw_input_ref->getBool() && !environment->isCursorVisible());
-
-				if (shouldRawInputBeEnabled != isRawInputActuallyEnabled)
-                    SDL_SetWindowRelativeMouseMode(g_window, shouldRawInputBeEnabled ? true : false);
-			}
-
-			const bool isRawInputEnabled = (SDL_GetWindowRelativeMouseMode(g_window) == true);
 			const bool isDebugSdl = false; //environment->sdlDebug();
+			bool isRawInputEnabled = (SDL_GetWindowRelativeMouseMode(g_window) == true);
+			// this is retarded?
+			{
+				bool shouldRawInputBeEnabled = mouse_raw_input_ref->getBool();
+
+				if (environment->isCursorVisible() || !g_bHasFocus)
+				{
+					g_bHackRestoreRawinput = g_bHackRestoreRawinput || shouldRawInputBeEnabled;
+					mouse_raw_input_ref->setValue(false);
+					shouldRawInputBeEnabled = false;
+				}
+				else if (g_bHackRestoreRawinput)
+				{
+					g_bHackRestoreRawinput = false;
+					mouse_raw_input_ref->setValue(true);
+					shouldRawInputBeEnabled = true;
+				}
+
+				if (shouldRawInputBeEnabled != isRawInputEnabled)
+				{
+                    SDL_SetWindowRelativeMouseMode(g_window, shouldRawInputBeEnabled ? true : false);
+					if (isDebugSdl)
+						debugLog("%sing relative mouse\n", shouldRawInputBeEnabled ? "enabl" : "disabl");
+					if (isRawInputEnabled && !g_bHasFocus)
+					{
+						engine->onFocusLost(); // the hacks keep coming and they don't stop coming
+					}
+
+					isRawInputEnabled = shouldRawInputBeEnabled;
+				}
+			}
 
 			SDL_PumpEvents();
 			int eventCount;
@@ -492,15 +515,19 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 					if (!deckTouchHack) // HACKHACK: Steam Deck workaround (sends mouse events even though native touchscreen support is enabled)
 					{
 						if (isDebugSdl)
-							debugLog("SDL_MOUSEMOTION: xrel = %f, yrel = %f, which = %i\n", events[i].motion.xrel, events[i].motion.yrel, (int)events[i].motion.which);
-
-						if (events[i].motion.which != SDL_TOUCH_MOUSEID)
+							debugLog("SDL_MOUSEMOTION: x = %.2f, xrel = %.2f, y = %.2f, yrel = %.2f, which = %i\n", events[i].motion.x, events[i].motion.xrel, events[i].motion.y, events[i].motion.yrel, (int)events[i].motion.which);
+#ifdef MCENGINE_SDL_TOUCHSUPPORT
+						if (events[i].motion.which != SDL_TOUCH_MOUSEID) environment->setWasLastMouseInputTouch(false);
+#endif
+						// which!=0 means relative, ignore non-relative motion events if we want raw input
+						if (isRawInputEnabled == !!events[i].motion.which)
 						{
-							environment->setWasLastMouseInputTouch(false);
-
-							if (isRawInputEnabled)
-								g_engine->onMouseRawMove(events[i].motion.xrel, events[i].motion.yrel);
+							// store the position for future queries
+							environment->setLastAbsMousePos(Vector2(events[i].motion.x, events[i].motion.y));
+							environment->setLastRelMousePos(Vector2(events[i].motion.xrel, events[i].motion.yrel)); // TODO: use?
 						}
+						if (isRawInputEnabled)
+							g_engine->onMouseRawMove(events[i].motion.xrel, events[i].motion.yrel);
 					}
 					break;
 

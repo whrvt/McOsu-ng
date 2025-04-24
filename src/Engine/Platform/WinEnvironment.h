@@ -107,6 +107,7 @@ public:
 
 	// keyboard
 	UString keyCodeToString(KEYCODE keyCode);
+	void listenToTextInput(bool) {;}
 
 	// ILLEGAL:
 	// (also custom)

@@ -2095,10 +2095,12 @@ bool Osu::isNotInPlayModeOrPaused()
 	return !isInPlayMode() || (getSelectedBeatmap() != NULL && getSelectedBeatmap()->isPaused());
 }
 
+#ifdef MCENGINE_FEATURE_OPENVR
 bool Osu::isInVRMode()
 {
 	return (osu_vr.getBool() && openvr->isReady());
 }
+#endif
 
 bool Osu::isInMultiplayer()
 {
@@ -2279,13 +2281,13 @@ void Osu::updateWindowsKeyDisable()
 	if (debug->getBool())
 		debugLog("\n");
 
-	if (isInVRMode()) return;
-
-	if (osu_win_disable_windows_key_while_playing.getBool())
+	const bool isPlayerPlaying = engine->hasFocus() && isInPlayMode() && getSelectedBeatmap() != NULL && (!getSelectedBeatmap()->isPaused() || getSelectedBeatmap()->isRestartScheduled()) && !m_bModAuto;
+	if (osu_win_disable_windows_key_while_playing.getBool() && !isInVRMode())
 	{
-		const bool isPlayerPlaying = engine->hasFocus() && isInPlayMode() && getSelectedBeatmap() != NULL && (!getSelectedBeatmap()->isPaused() || getSelectedBeatmap()->isRestartScheduled()) && !m_bModAuto;
 		m_win_disable_windows_key_ref->setValue(isPlayerPlaying ? 1.0f : 0.0f);
 	}
+	// currently only used to signal SDL
+	env->listenToTextInput(!isPlayerPlaying);
 }
 
 void Osu::fireResolutionChanged()
@@ -2553,23 +2555,19 @@ void Osu::updateConfineCursor()
 
 	if (isInVRMode() || m_iInstanceID > 0) return;
 
-	if ((osu_confine_cursor_fullscreen.getBool() && env->isFullscreen())
-			|| (osu_confine_cursor_windowed.getBool() && !env->isFullscreen())
-			|| (isInPlayMode() && !m_pauseMenu->isVisible() && !getModAuto() && !getModAutopilot()))
+	if (!osu_confine_cursor_never.getBool()
+			&& ((osu_confine_cursor_fullscreen.getBool() && env->isFullscreen())
+			||  (osu_confine_cursor_windowed.getBool() && !env->isFullscreen())
+			||  (isInPlayMode() && !m_pauseMenu->isVisible() && !getModAuto() && !getModAutopilot())))
 	{
-		if (osu_confine_cursor_never.getBool())
-			env->setCursorClip(true, McRect(-1, -1, -1, -1)); // hideous
-		else
+		float offsetX = 0;
+		float offsetY = 0;
+		if (osu_letterboxing.getBool())
 		{
-			float offsetX = 0;
-			float offsetY = 0;
-			if (osu_letterboxing.getBool())
-			{
-				offsetX = ((engine->getScreenWidth() - g_vInternalResolution.x)/2)*(1.0f + osu_letterboxing_offset_x.getFloat());
-				offsetY = ((engine->getScreenHeight() - g_vInternalResolution.y)/2)*(1.0f + osu_letterboxing_offset_y.getFloat());
-			}
-			env->setCursorClip(true, McRect(offsetX, offsetY, g_vInternalResolution.x, g_vInternalResolution.y));
+			offsetX = ((engine->getScreenWidth() - g_vInternalResolution.x)/2)*(1.0f + osu_letterboxing_offset_x.getFloat());
+			offsetY = ((engine->getScreenHeight() - g_vInternalResolution.y)/2)*(1.0f + osu_letterboxing_offset_y.getFloat());
 		}
+		env->setCursorClip(true, McRect(offsetX, offsetY, g_vInternalResolution.x, g_vInternalResolution.y));
 	}
 	else
 		env->setCursorClip(false, McRect());
@@ -2587,8 +2585,6 @@ void Osu::onConfineCursorFullscreenChange(UString oldValue, UString newValue)
 
 void Osu::onConfineCursorNeverChange(UString oldValue, UString newValue)
 {
-	osu_confine_cursor_fullscreen.setValue(false);
-	osu_confine_cursor_windowed.setValue(false);
 	updateConfineCursor();
 }
 

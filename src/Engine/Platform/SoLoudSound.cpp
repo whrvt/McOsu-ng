@@ -130,10 +130,9 @@ void SoLoudSound::initAsync()
 		}
 	}
 
-	// FIXME: does this even work? i haven't tested yet tbh
 	m_audioSource->setLooping(m_bIsLooped);
 
-	// configure 3D audio (pretty sure this works)
+	// configure 3D audio (need to test if this works)
 	if (m_bIs3d)
 	{
 		m_audioSource->set3dAttenuation(SoLoud::AudioSource::INVERSE_DISTANCE, 2.1f);
