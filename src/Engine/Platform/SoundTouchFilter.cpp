@@ -319,6 +319,7 @@ unsigned int SoundTouchFilterInstance::getAudio(float *aBuffer, unsigned int aSa
 		}
 
 		// if the source ended and we need more samples, flush
+		// not 100% sure about this, documentation is unhelpful at best and misleading at worst
 		if (mSourceInstance->hasEnded() && samplesInSoundTouch < aSamplesToRead)
 		{
 			if (logThisCall)

@@ -6,9 +6,10 @@
 //================================================================================//
 
 #include "SoLoudSound.h"
-#include "SoLoudSoundEngine.h"
 
 #ifdef MCENGINE_FEATURE_SOLOUD
+
+#include "SoLoudSoundEngine.h"
 
 #include "ConVar.h"
 #include "Engine.h"
@@ -25,19 +26,6 @@ SoLoudSound::SoLoudSound(UString filepath, bool stream, bool threeD, bool loop, 
       m_filter(nullptr), m_engine(nullptr), m_usingFilter(false), m_fActualSpeedForDisabledPitchCompensation(1.0f), m_fLastRawSoLoudPosition(0.0),
       m_fLastSoLoudPositionTime(0.0), m_fSoLoudPositionRate(1000.0)
 {
-}
-
-SoLoudSoundEngine *SoLoudSound::getSoLoudEngine()
-{
-	if (m_engine == nullptr)
-	{
-		m_engine = dynamic_cast<SoLoudSoundEngine *>(engine->getSound());
-		if (m_engine == nullptr && debug_snd.getBool())
-		{
-			debugLog("SoLoudSound: Failed to get SoLoudSoundEngine instance\n");
-		}
-	}
-	return m_engine;
 }
 
 void SoLoudSound::init()

@@ -17,9 +17,9 @@
 #include <soloud/soloud_wav.h>
 #include <soloud/soloud_wavstream.h>
 
+#include "Engine.h"
+#include "SoLoudSoundEngine.h"
 #include "SoundTouchFilter.h"
-
-class SoLoudSoundEngine;
 
 class SoLoudSound : public Sound
 {
@@ -57,29 +57,41 @@ private:
 	void initAsync() override;
 	void destroy() override;
 
-	// Helper method to get the engine instance (cached after first call)
-	SoLoudSoundEngine *getSoLoudEngine();
+	SoLoudSoundEngine *m_engine;
 
-	// Helper methods to access specific implementations
+	// get the (cached) handle to the SoLoud engine instance
+	inline SoLoudSoundEngine *getSoLoudEngine()
+	{
+		if (!m_engine)
+		{
+			m_engine = dynamic_cast<SoLoudSoundEngine *>(engine->getSound());
+			if (!m_engine)
+				debugLog("SoLoudSound: Failed to get SoLoudSoundEngine instance\n");
+		}
+		return m_engine;
+	}
+
+	// similar idea to the ugly "m_MixChunkOrMixMusic" casting thing in the SDL_mixer implementation
+	// WavStreams are for beatmap audio, streamed from disk, Wavs are for other (shorter) audio samples, loaded entirely into memory
 	[[nodiscard]] inline SoLoud::Wav *asWav() const { return m_bStream ? nullptr : static_cast<SoLoud::Wav *>(m_audioSource); }
 	[[nodiscard]] inline SoLoud::WavStream *asWavStream() const { return m_bStream ? static_cast<SoLoud::WavStream *>(m_audioSource) : nullptr; }
 
-	// Filter management methods
+	// pitch/tempo filter management methods
 	SoLoud::SoundTouchFilter *getOrCreateFilter();
 	bool updateFilterParameters();
 
-	// Current parameter values
-	float m_speed;     // Playback speed factor (1.0 = normal)
-	float m_pitch;     // Pitch factor (1.0 = normal)
-	float m_frequency; // Sample rate in Hz
+	// current playback parameters
+	float m_speed;     // speed factor (1.0 = normal)
+	float m_pitch;     // pitch factor (1.0 = normal)
+	float m_frequency; // sample rate in Hz
 
-	// SoLoud specific members
-	SoLoud::AudioSource *m_audioSource; // Base class pointer to either Wav or WavStream
+	// flag representing whether the sound has a pitch/tempo filter active
+	bool m_usingFilter;
+
+	// SoLoud-specific members
+	SoLoud::AudioSource *m_audioSource; // base class pointer, could be either Wav or WavStream
 	SoLoud::SoundTouchFilter *m_filter; // SoundTouch filter instance
-	unsigned int m_handle;              // Current voice handle
-
-	// Flags
-	bool m_usingFilter;       // Whether we're currently using a filter
+	unsigned int m_handle;              // current voice (i.e. "Sound") handle
 
 	// nightcore things
 	float m_fActualSpeedForDisabledPitchCompensation;
@@ -88,9 +100,6 @@ private:
 	double m_fLastRawSoLoudPosition;  // last raw position reported in milliseconds
 	double m_fLastSoLoudPositionTime; // engine time when the last position was obtained
 	double m_fSoLoudPositionRate;     // estimated playback rate (position units per second)
-
-	// Cache the engine pointer to avoid repeated dynamic_cast
-	SoLoudSoundEngine *m_engine;
 };
 
 #endif
