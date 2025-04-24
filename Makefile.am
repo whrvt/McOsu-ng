@@ -182,7 +182,7 @@ $(DEPS_PREFIX)/SoLoud.built: $(DEPS_CACHE)/SoLoud.source
 	cmake --build build && \
 	cmake --install build && \
 	cp -r $(DEPS_PREFIX)/SoLoud/include $(DEPS_PREFIX)/include/soloud && \
-	test -f $(DEPS_PREFIX)/lib/$(LIBPREFIX)soloud_static_x$(if $(filter x86_64,$(host_cpu)),64,32)$(if $(ENABLE_DEBUG),_d,).a
+	test -f $(DEPS_PREFIX)/lib/libsoloud_static_x$(if $(filter x86_64,$(host_cpu)),64,32)$(if $(ENABLE_DEBUG),_d,).a
 	touch $@
 
 # TODO: build openmp static, soundtouch benefits from it a retarded amount

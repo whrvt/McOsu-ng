@@ -5849,7 +5849,7 @@ $(DEPS_CACHE)/SoundTouch.source:
 @USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	cmake --build build && \
 @USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	cmake --install build && \
 @USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	cp -r $(DEPS_PREFIX)/SoLoud/include $(DEPS_PREFIX)/include/soloud && \
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	test -f $(DEPS_PREFIX)/lib/$(LIBPREFIX)soloud_static_x$(if $(filter x86_64,$(host_cpu)),64,32)$(if $(ENABLE_DEBUG),_d,).a
+@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	test -f $(DEPS_PREFIX)/lib/libsoloud_static_x$(if $(filter x86_64,$(host_cpu)),64,32)$(if $(ENABLE_DEBUG),_d,).a
 @USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	touch $@
 
 # TODO: build openmp static, soundtouch benefits from it a retarded amount
