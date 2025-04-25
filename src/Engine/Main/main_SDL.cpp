@@ -217,7 +217,7 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 
 	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 
-	uint32_t windowFlags = SDL_WINDOW_HIDDEN | SDL_WINDOW_INPUT_FOCUS | SDL_WINDOW_MOUSE_FOCUS | SDL_WINDOW_EXTERNAL;
+	uint32_t windowFlags = SDL_WINDOW_HIDDEN | SDL_WINDOW_INPUT_FOCUS | SDL_WINDOW_MOUSE_FOCUS;
 
 #if defined(MCENGINE_FEATURE_OPENGL) || defined(MCENGINE_FEATURE_OPENGLES)
 
@@ -321,6 +321,20 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 	// post window-creation settings
 	SDL_SetWindowMinimumSize(g_window, WINDOW_WIDTH_MIN, WINDOW_HEIGHT_MIN);
 
+	g_engine->loadApp();
+
+	frameTimer->update();
+	deltaTimer->update();
+	fpsCalcTimer->update();
+
+#if defined(MCENGINE_FEATURE_OPENGL) || defined(MCENGINE_FEATURE_OPENGLES)
+	SDL_GL_MakeCurrent(g_window, context);
+
+	if (environment->sdlDebug())
+		dumpSDLAttribs();
+
+#endif
+
 	const bool shouldBeBorderless = convar->getConVarByName("fullscreen_windowed_borderless")->getBool();
 	const bool shouldBeFullscreen = !(convar->getConVarByName("windowed") != NULL) || shouldBeBorderless;
 
@@ -337,20 +351,6 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 	// make the window visible
 	SDL_ShowWindow(g_window);
 	SDL_RaiseWindow(g_window);
-
-	g_engine->loadApp();
-
-	frameTimer->update();
-	deltaTimer->update();
-	fpsCalcTimer->update();
-
-#if defined(MCENGINE_FEATURE_OPENGL) || defined(MCENGINE_FEATURE_OPENGLES)
-	SDL_GL_MakeCurrent(g_window, context);
-
-	if (environment->sdlDebug())
-		dumpSDLAttribs();
-
-#endif
 
 	// custom
 #ifdef MCENGINE_SDL_TOUCHSUPPORT

@@ -57,7 +57,7 @@ void SDLSound::initAsync()
 			fileExtensionLowerCase.lowerCase();
 			if (fileExtensionLowerCase == "wav")
 			{
-				File wavFile(m_sFilePath);
+				McFile wavFile(m_sFilePath);
 				if (wavFile.getFileSize() < (size_t)minWavFileSize)
 				{
 					debugLog("Sound: Ignoring malformed/corrupt WAV file (%i) %s\n", (int)wavFile.getFileSize(), m_sFilePath.toUtf8());
