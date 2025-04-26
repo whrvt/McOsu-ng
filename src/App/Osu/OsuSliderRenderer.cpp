@@ -447,8 +447,6 @@ void OsuSliderRenderer::drawVR(Graphics *g, Osu *osu, OsuVR *vr, Matrix4 &mvp, f
 {
 	if (osu_slider_alpha_multiplier.getFloat() <= 0.0f || alpha <= 0.0f) return;
 
-	constexpr bool isOpenGLRendererHack = Environment::renderer == Environment::REND::REND_GL;
-
 	checkUpdateVars(osu, hitcircleDiameter);
 
 	const int drawFromIndex = clamp<int>((int)std::round(points.size() * from), 0, points.size());
@@ -497,10 +495,10 @@ void OsuSliderRenderer::drawVR(Graphics *g, Osu *osu, OsuVR *vr, Matrix4 &mvp, f
 		osu->getSkin()->getSliderGradient()->bind();
 		{
 #if defined(MCENGINE_FEATURE_OPENGL)
-
-			if (isOpenGLRendererHack)
+			// note: i have no idea why there were originally both preprocessor AND runtime checks for these, but im keeping it because it's funny
+			// when are multiple renderers going to be built at the same time?
+			if constexpr (Env::cfg(REND::GL))
 				glBlendEquation(GL_MAX); // HACKHACK: OpenGL hardcoded
-
 #endif
 
 			// draw curve mesh
@@ -519,10 +517,8 @@ void OsuSliderRenderer::drawVR(Graphics *g, Osu *osu, OsuVR *vr, Matrix4 &mvp, f
 			}
 
 #if defined(MCENGINE_FEATURE_OPENGL)
-
-			if (isOpenGLRendererHack)
+			if constexpr (Env::cfg(REND::GL))
 				glBlendEquation(GL_FUNC_ADD); // HACKHACK: OpenGL hardcoded
-
 #endif
 
 			//if (!osu_slider_use_gradient_image.getBool())
@@ -538,8 +534,6 @@ void OsuSliderRenderer::drawVR(Graphics *g, Osu *osu, OsuVR *vr, Matrix4 &mvp, f
 void OsuSliderRenderer::drawVR(Graphics *g, Osu *osu, OsuVR *vr, Matrix4 &mvp, float approachScale, VertexArrayObject *vao1, VertexArrayObject *vao2, const std::vector<Vector2> &alwaysPoints, float hitcircleDiameter, float from, float to, Color undimmedColor, float colorRGBMultiplier, float alpha, long sliderTimeForRainbow)
 {
 	if (osu_slider_alpha_multiplier.getFloat() <= 0.0f || alpha <= 0.0f || vao1 == NULL || vao2 == NULL) return;
-
-	constexpr bool isOpenGLRendererHack = Environment::renderer == Environment::REND::REND_GL;
 
 	checkUpdateVars(osu, hitcircleDiameter);
 
@@ -587,10 +581,8 @@ void OsuSliderRenderer::drawVR(Graphics *g, Osu *osu, OsuVR *vr, Matrix4 &mvp, f
 		{
 
 #if defined(MCENGINE_FEATURE_OPENGL)
-
-			if (isOpenGLRendererHack)
+			if constexpr (Env::cfg(REND::GL))
 				glBlendEquation(GL_MAX); // HACKHACK: OpenGL hardcoded
-
 #endif
 
 			// draw curve mesh
@@ -611,10 +603,8 @@ void OsuSliderRenderer::drawVR(Graphics *g, Osu *osu, OsuVR *vr, Matrix4 &mvp, f
 			}
 
 #if defined(MCENGINE_FEATURE_OPENGL)
-
-			if (isOpenGLRendererHack)
+			if constexpr (Env::cfg(REND::GL))
 				glBlendEquation(GL_FUNC_ADD); // HACKHACK: OpenGL hardcoded
-
 #endif
 
 			//if (!osu_slider_use_gradient_image.getBool())

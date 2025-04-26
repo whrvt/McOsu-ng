@@ -15,32 +15,162 @@
 #include "KeyboardEvent.h"
 
 class ContextMenu;
+namespace Env
+{
+    consteval uint64_t bit(uint64_t pos) {return 1ULL << (pos-1);}
+    enum class OS : uint64_t
+    {
+		NONE	=	   		0,
+        WINDOWS	= bit( 0 +  1),
+        LINUX	= bit( 0 +  2),
+        MACOS	= bit( 0 +  3),
+        HORIZON	= bit( 0 +  4),
+		WASM	= bit( 0 +  5),
+    //	MAX		= bit( 0 + 10)
+	};
+	enum class BACKEND : uint64_t
+	{
+		NONE	=	   		0,
+		NATIVE	= bit(10 +  1),
+		SDL		= bit(10 +  2),
+	//	MAX		= bit(10 + 10)
+	};
+	enum class FEAT : uint64_t
+	{
+		NONE	=	   		0,
+		JOY	    = bit(20 +  1),
+		JOY_MOU	= bit(20 +  2),
+		TOUCH	= bit(20 +  3),
+	//	MAX		= bit(20 + 10)
+	};
+	enum class REND : uint64_t
+	{
+		NONE	=	   		0,
+		GL		= bit(30 +  1),
+		GLES2	= bit(30 +  2),
+		DX11	= bit(30 +  3),
+		SW		= bit(30 +  4),
+	//	MAX		= bit(30 + 10)
+	};
+
+    constexpr OS operator|(OS lhs, OS rhs) {return static_cast<OS>(static_cast<uint64_t>(lhs) | static_cast<uint64_t>(rhs));}
+    constexpr BACKEND operator|(BACKEND lhs, BACKEND rhs) {return static_cast<BACKEND>(static_cast<uint64_t>(lhs) | static_cast<uint64_t>(rhs));}
+	constexpr FEAT operator|(FEAT lhs, FEAT rhs) {return static_cast<FEAT>(static_cast<uint64_t>(lhs) | static_cast<uint64_t>(rhs));}
+    constexpr REND operator|(REND lhs, REND rhs) {return static_cast<REND>(static_cast<uint64_t>(lhs) | static_cast<uint64_t>(rhs));}
+
+	// system McOsu was compiled for
+	consteval OS getOS() {
+	#if defined(_WIN32) || defined(_WIN64) || defined(__WIN32__) || defined(__CYGWIN__) || defined(__CYGWIN32__) || defined(__TOS_WIN__) || defined(__WINDOWS__)
+		return OS::WINDOWS;
+	#elif defined __linux__
+		return OS::LINUX;
+	#elif defined __APPLE__
+		return OS::MACOS;
+	#elif defined __SWITCH__
+		return OS::HORIZON;
+	#elif defined __EMSCRIPTEN__
+		return OS::WASM;
+	#else
+	#error "Compiling for an unknown target!"
+		return OS::NONE;
+	#endif
+	}
+
+	// environment abstraction backend
+	consteval BACKEND getBackend() {
+	#ifdef MCENGINE_FEATURE_SDL
+		return BACKEND::SDL;
+	#elif 1
+		return BACKEND::NATIVE;
+	#else
+		return BACKEND::NONE;
+	#endif
+	}
+
+	// miscellaneous compile-time features
+	consteval FEAT getFeatures() {
+		return
+	#ifdef MCENGINE_SDL_JOYSTICK
+		FEAT::JOY |
+	#endif
+	#ifdef MCENGINE_SDL_JOYSTICK_MOUSE
+		FEAT::JOY_MOU |
+	#endif
+	#ifdef MCENGINE_SDL_TOUCHSUPPORT
+		FEAT::TOUCH |
+	#endif
+		FEAT::NONE;
+	}
+
+	// graphics renderer type (multiple can be enabled at the same time, like DX11 + GL for windows)
+	consteval REND getRenderers() {
+		return
+	#ifdef MCENGINE_FEATURE_OPENGL
+		REND::GL |
+	#endif
+	#ifdef MCENGINE_FEATURE_OPENGLES
+		REND::GLES2 |
+	#endif
+	#ifdef MCENGINE_FEATURE_DIRECTX11
+		REND::DX11 |
+	#endif
+	#ifdef MCENGINE_FEATURE_SOFTRENDERER
+		REND::SW |
+	#endif
+	#if !(defined(MCENGINE_FEATURE_OPENGL) || defined(MCENGINE_FEATURE_OPENGLES) || defined(MCENGINE_FEATURE_DIRECTX11) || defined(MCENGINE_FEATURE_SOFTRENDERER))
+	#warning "No renderer is defined! Check \"EngineFeatures.h\"."
+	#endif
+		REND::NONE;
+	}
+
+    template<typename T>
+    struct Not {
+        T value;
+        consteval Not(T v) : value(v) {}
+    };
+
+    template<typename T>
+    consteval Not<T> operator!(T value) {return Not<T>(value);}
+
+    template<typename T>
+    constexpr bool always_false_v = false;
+
+    // check if a specific config mask matches current config
+    template<typename T>
+    consteval bool matchesCurrentConfig(T mask) {
+        if constexpr (std::is_same_v<T, OS>) {
+            return (static_cast<uint64_t>(mask) & static_cast<uint64_t>(getOS())) != 0;
+        } else if constexpr (std::is_same_v<T, BACKEND>) {
+            return (static_cast<uint64_t>(mask) & static_cast<uint64_t>(getBackend())) != 0;
+		} else if constexpr (std::is_same_v<T, FEAT>) {
+            return (static_cast<uint64_t>(mask) & static_cast<uint64_t>(getFeatures())) != 0;
+        } else if constexpr (std::is_same_v<T, REND>) {
+            return (static_cast<uint64_t>(mask) & static_cast<uint64_t>(getRenderers())) != 0;
+        } else {
+            static_assert(always_false_v<T>, "Unsupported type for cfg");
+            return false;
+        }
+    }
+
+	// specialization for !<mask>
+    template<typename T>
+    consteval bool matchesCurrentConfig(Not<T> not_mask) {return !matchesCurrentConfig(not_mask.value);}
+
+    // base case
+    consteval bool cfg() {return true;}
+    // recursive case for variadic template
+    template<typename T, typename... Rest>
+    consteval bool cfg(T first, Rest... rest) {return matchesCurrentConfig(first) && cfg(rest...);}
+}
+
+using Env::OS;
+using Env::BACKEND;
+using Env::REND;
+using Env::FEAT;
 
 class Environment
 {
-public:
-	enum class OS : uint8_t
-	{
-		OS_NULL,
-		OS_WINDOWS,
-		OS_LINUX,
-		OS_MACOS,
-		OS_HORIZON
-	};
-	enum class ENV : uint8_t
-	{
-		ENV_NULL,
-		ENV_NATIVE,
-		ENV_SDL
-	};
-	enum class REND : uint8_t
-	{
-		REND_NULL,
-		REND_GL,
-		REND_GLES2,
-		REND_DX11,
-		REND_SW
-	};
+
 public:
 	Environment();
 	virtual ~Environment() {;}
@@ -50,44 +180,6 @@ public:
 	// engine/factory
 	virtual Graphics *createRenderer() = 0;
 	virtual ContextMenu *createContextMenu() = 0;
-
-	// system
-	static constexpr Environment::OS getOS =
-	#if defined(_WIN32) || defined(_WIN64) || defined(__WIN32__) || defined(__CYGWIN__) || defined(__CYGWIN32__) || defined(__TOS_WIN__) || defined(__WINDOWS__)
-		Environment::OS::OS_WINDOWS;
-	#elif defined __linux__
-		Environment::OS::OS_LINUX;
-	#elif defined __APPLE__
-		Environment::OS::OS_MACOS;
-	#elif defined __SWITCH__
-		Environment::OS::OS_HORIZON;
-	#else
-		Environment::OS::OS_NULL;
-	#endif
-
-	// environment abstraction backend
-	static constexpr Environment::ENV envBackend =
-	#ifdef MCENGINE_FEATURE_SDL
-		Environment::ENV::ENV_SDL;
-	#elif 1
-		Environment::ENV::ENV_NATIVE;
-	#else
-		Environment::ENV::ENV_NULL;
-	#endif
-
-	// graphics renderer type
-	static constexpr Environment::REND renderer =
-	#ifdef MCENGINE_FEATURE_OPENGL
-		Environment::REND::REND_GL;
-	#elif defined(MCENGINE_FEATURE_OPENGLES)
-		Environment::REND::REND_GLES2;
-	#elif defined(MCENGINE_FEATURE_DIRECTX11)
-		Environment::REND::REND_DX11;
-	#elif defined(MCENGINE_FEATURE_SOFTRENDERER)
-		Environment::REND::REND_SW;
-	#else
-		Environment::REND::REND_NULL;
-	#endif
 
 	virtual void shutdown() = 0;
 	virtual void restart() = 0;

@@ -20,9 +20,6 @@
 class OsuUpdateHandler
 {
 public:
-	static const char *GITHUB_API_RELEASE_URL;
-	static const char *GITHUB_RELEASE_DOWNLOAD_URL;
-
 	enum class STATUS : uint8_t
 	{
 		STATUS_UP_TO_DATE,
@@ -49,7 +46,10 @@ public:
 	bool isUpdateAvailable();
 
 private:
-	static const char *TEMP_UPDATE_DOWNLOAD_FILEPATH;
+	static constexpr const char *const GITHUB_API_RELEASE_URL = "https://api.github.com/repos/whrvt/" PACKAGE_NAME "/releases";
+	static constexpr const char *const GITHUB_RELEASE_DOWNLOAD_URL = "https://github.com/whrvt/" PACKAGE_NAME "/releases";
+	static constexpr const char *const TEMP_UPDATE_DOWNLOAD_FILEPATH = "update.zip";
+
 	static ConVar *m_osu_release_stream_ref;
 
 	// async
@@ -75,12 +75,12 @@ private:
 	};
 
 	STREAM stringToStream(UString streamString);
-	Environment::OS stringToOS(UString osString);
+	OS stringToOS(UString osString);
 	STREAM getReleaseStream();
 
 	struct GITHUB_RELEASE_BUILD
 	{
-		Environment::OS os;
+		OS os;
 		STREAM stream;
 		float version;
 		UString downloadURL;

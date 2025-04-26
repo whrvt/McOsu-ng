@@ -247,7 +247,7 @@ Osu::Osu(Osu2 *osu2, int instanceID)
 #endif
 
 	// OS specific engine settings/overrides
-	if (Environment::getOS == Environment::OS::OS_HORIZON)
+	if constexpr (Env::cfg(OS::HORIZON))
 	{
 		convar->getConVarByName("fps_max")->setValue(60.0f);
 		convar->getConVarByName("ui_scrollview_resistance")->setValue(25.0f);
@@ -287,7 +287,7 @@ Osu::Osu(Osu2 *osu2, int instanceID)
 	if (userDataPath.length() > 1)
 	{
 		UString defaultOsuFolder = userDataPath;
-		defaultOsuFolder.append(Environment::getOS == Environment::OS::OS_WINDOWS ? "\\osu!\\" : "/osu!/");
+		defaultOsuFolder.append(Env::cfg(OS::WINDOWS) ? "\\osu!\\" : "/osu!/");
 		m_osu_folder_ref->setValue(defaultOsuFolder);
 	}
 
@@ -591,7 +591,7 @@ void Osu::draw(Graphics *g)
 	}
 
 	// if we are not using the native window resolution, or in vr mode, or playing on a nintendo switch, or multiple instances are active, draw into the buffer
-	const bool isBufferedDraw = osu_resolution_enabled.getBool() || isInVRMode() || Environment::getOS == Environment::OS::OS_HORIZON || m_iInstanceID > 0;
+	const bool isBufferedDraw = osu_resolution_enabled.getBool() || isInVRMode() || Env::cfg(OS::HORIZON) || m_iInstanceID > 0;
 
 	if (isBufferedDraw)
 		m_backBuffer->enable();
@@ -636,7 +636,7 @@ void Osu::draw(Graphics *g)
 
 		// special cursor handling (fading cursor + invisible cursor mods + draw order etc.)
 		const bool isAuto = (m_bModAuto || m_bModAutopilot);
-		const bool allowDoubleCursor = (Environment::getOS == Environment::OS::OS_HORIZON || isFPoSu);
+		const bool allowDoubleCursor = (Env::cfg(OS::HORIZON) || isFPoSu);
 		const bool allowDrawCursor = (!osu_hide_cursor_during_gameplay.getBool() || getSelectedBeatmap()->isPaused());
 		float fadingCursorAlpha = 1.0f - clamp<float>((float)m_score->getCombo()/osu_mod_fadingcursor_combo.getFloat(), 0.0f, 1.0f);
 		if (m_pauseMenu->isVisible() || getSelectedBeatmap()->isContinueScheduled())
@@ -795,7 +795,7 @@ void Osu::draw(Graphics *g)
 
 		g->setBlending(false);
 		{
-			if (Environment::getOS == Environment::OS::OS_HORIZON)
+			if constexpr (Env::cfg(OS::HORIZON))
 			{
 				// NOTE: the nintendo switch always draws in 1080p, even undocked
 				const Vector2 backupResolution = engine->getGraphics()->getResolution();
@@ -2146,7 +2146,7 @@ void Osu::onResolutionChanged(Vector2 newResolution)
 				g_vInternalResolution.y = newResolution.y;
 
 			// disable internal resolution on specific conditions
-			bool windowsBorderlessHackCondition = (Environment::getOS == Environment::OS::OS_WINDOWS && env->isFullscreen() && env->isFullscreenWindowedBorderless() && (int)g_vInternalResolution.y == (int)env->getNativeScreenSize().y); // HACKHACK
+			bool windowsBorderlessHackCondition = (Env::cfg(OS::WINDOWS) && env->isFullscreen() && env->isFullscreenWindowedBorderless() && (int)g_vInternalResolution.y == (int)env->getNativeScreenSize().y); // HACKHACK
 			if (((int)g_vInternalResolution.x == engine->getScreenWidth() && (int)g_vInternalResolution.y == engine->getScreenHeight()) || !env->isFullscreen() || windowsBorderlessHackCondition)
 			{
 				debugLog("Internal resolution == Engine resolution || !Fullscreen, disabling resampler (%i, %i)\n", (int)(g_vInternalResolution == engine->getScreenSize()), (int)(!env->isFullscreen()));

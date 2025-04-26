@@ -9,6 +9,8 @@
 #ifndef PROFILER_H
 #define PROFILER_H
 
+#if defined(_DEBUG) || (defined(MCENGINE_FEATURE_PROFILING) && !defined(MCENGINE_FEATURE_OPENGLES2)) // TODO: implement GLES2 features for profiling to work
+
 #define VPROF_MAIN()						g_profCurrentProfile.main(); VPROF("Main")
 
 #define VPROF(name)							VPROF_(name, VPROF_BUDGETGROUP_ROOT)
@@ -22,6 +24,23 @@
 #define VPROF_ENTER_SCOPE(name)				g_profCurrentProfile.enterScope(name, VPROF_BUDGETGROUP_ROOT)
 #define VPROF_EXIT_SCOPE()					g_profCurrentProfile.exitScope()
 
+#else
+
+#define VPROF_MAIN()
+
+#define VPROF(name)
+#define VPROF_(name, group)
+
+#define VPROF_BUDGET(name, group)			VPROF_(name, group)
+
+#define VPROF_SCOPE_BEGIN(name)				do { VPROF(name)
+#define VPROF_SCOPE_END()					} while (0)
+
+#define VPROF_ENTER_SCOPE(name)
+#define VPROF_EXIT_SCOPE()
+
+#endif
+
 #define VPROF_BUDGETGROUP_ROOT				"Root"
 #define VPROF_BUDGETGROUP_SLEEP				"Sleep"
 #define VPROF_BUDGETGROUP_WNDPROC			"WndProc"
@@ -31,8 +50,6 @@
 
 #define VPROF_MAX_NUM_BUDGETGROUPS			32
 #define VPROF_MAX_NUM_NODES					32
-
-
 
 class ProfilerNode
 {

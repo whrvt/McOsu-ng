@@ -57,8 +57,8 @@ Engine *g_engine = NULL;
 LinuxEnvironment *g_environment = NULL;
 
 bool g_bRunning = true;
-bool g_bUpdate = true;
-bool g_bDraw = true;
+constexpr bool g_bUpdate = true;
+constexpr bool g_bDraw = true;
 bool g_bDrawing = false;
 
 bool g_bHasFocus = false; // for fps_max_background
@@ -430,12 +430,12 @@ int main(int argc, char *argv[])
 			deltaTimer->update();
 			engine->setFrameTime(deltaTimer->getDelta());
 
-			if (g_bUpdate)
+			if constexpr (g_bUpdate)
 				g_engine->onUpdate();
 		}
 
 		// draw
-		if (g_bDraw)
+		if constexpr (g_bDraw)
 		{
 			g_bDrawing = true;
 			{

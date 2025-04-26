@@ -18,10 +18,6 @@
 
 #include "Osu.h"
 
-const char *OsuUpdateHandler::GITHUB_API_RELEASE_URL = "https://api.github.com/repos/whrvt/" PACKAGE_NAME "/releases";
-const char *OsuUpdateHandler::GITHUB_RELEASE_DOWNLOAD_URL = "https://github.com/whrvt/" PACKAGE_NAME "/releases";
-const char *OsuUpdateHandler::TEMP_UPDATE_DOWNLOAD_FILEPATH = "update.zip";
-
 ConVar *OsuUpdateHandler::m_osu_release_stream_ref = NULL;
 
 #if defined(MCENGINE_FEATURE_MULTITHREADING) && !defined(__SWITCH__)
@@ -49,7 +45,7 @@ void *OsuUpdateHandler::run(void *data)
 		float latestVersion = Osu::version->getFloat();
 		for (int i=0; i<handler->m_releases.size(); i++)
 		{
-			if (handler->m_releases[i].os == Environment::getOS && handler->m_releases[i].stream == handler->getReleaseStream() && handler->m_releases[i].version > latestVersion)
+			if (handler->m_releases[i].os == Env::getOS() && handler->m_releases[i].stream == handler->getReleaseStream() && handler->m_releases[i].version > latestVersion)
 			{
 				latestVersion = handler->m_releases[i].version;
 				downloadUrl = handler->m_releases[i].downloadURL;
@@ -171,7 +167,7 @@ bool OsuUpdateHandler::isUpdateAvailable()
 {
 	for (int i=0; i<m_releases.size(); i++)
 	{
-		if (m_releases[i].os == Environment::getOS && m_releases[i].stream == getReleaseStream() && m_releases[i].version > Osu::version->getFloat())
+		if (m_releases[i].os == Env::getOS() && m_releases[i].stream == getReleaseStream() && m_releases[i].version > Osu::version->getFloat())
 			return true;
 	}
 	return false;
@@ -226,8 +222,8 @@ void OsuUpdateHandler::_requestUpdate()
 						// get release version, branch, stream and OS
 						UString versionString = UString(release[L"tag_name"]->AsString().c_str());
 
-						Environment::OS os = stringToOS(versionString);
-						if (os == Environment::OS::OS_NULL)
+						OS os = stringToOS(versionString);
+						if (os == OS::NONE)
 						{
 							printf("OsuUpdateChecker: Invalid OS in version \"%s\".\n", versionString.toUtf8());
 							continue;
@@ -472,15 +468,15 @@ OsuUpdateHandler::STREAM OsuUpdateHandler::stringToStream(UString streamString)
 	return stream;
 }
 
-Environment::OS OsuUpdateHandler::stringToOS(UString osString)
+OS OsuUpdateHandler::stringToOS(UString osString)
 {
-	Environment::OS os = Environment::OS::OS_NULL;
+	OS os = OS::NONE;
 	if (osString.find("windows") != -1)
-		os = Environment::OS::OS_WINDOWS;
+		os = OS::WINDOWS;
 	else if (osString.find("linux") != -1)
-		os = Environment::OS::OS_LINUX;
+		os = OS::LINUX;
 	else if (osString.find("macos") != -1)
-		os = Environment::OS::OS_MACOS;
+		os = OS::MACOS;
 
 	return os;
 }

@@ -302,8 +302,6 @@ void OsuModFPoSu::draw(Graphics *g)
 
 						handleLazyLoad3DModels();
 
-						constexpr bool isOpenGLRendererHack = (Environment::renderer == Environment::REND::REND_GL || Environment::renderer == Environment::REND::REND_GLES2);
-
 						if (fposu_3d_wireframe.getBool())
 							g->setWireframe(true);
 
@@ -373,16 +371,13 @@ void OsuModFPoSu::draw(Graphics *g)
 							g->setBlending(true);
 							{
 #if defined(MCENGINE_FEATURE_OPENGL) || defined (MCENGINE_FEATURE_OPENGLES)
-
-								if (isOpenGLRendererHack)
+								if constexpr (Env::cfg(REND::GL | REND::GLES2))
 								{
 									// HACKHACK: OpenGL hardcoded
 									glBlendFunc(GL_ONE_MINUS_DST_ALPHA, GL_DST_ALPHA);
 									glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_FALSE);
 								}
-
 #endif
-
 								// beatmap background image
 								if (fposu_3d_draw_beatmap_background_image.getBool())
 								{
@@ -444,14 +439,12 @@ void OsuModFPoSu::draw(Graphics *g)
 								}
 
 #if defined(MCENGINE_FEATURE_OPENGL) || defined (MCENGINE_FEATURE_OPENGLES)
-
-								if (isOpenGLRendererHack)
+								if constexpr (Env::cfg(REND::GL | REND::GLES2))
 								{
 									// HACKHACK: OpenGL hardcoded
 									glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 									glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 								}
-
 #endif
 							}
 							g->setBlending(false);
@@ -544,7 +537,7 @@ void OsuModFPoSu::update()
 	const bool isAutoCursor = (m_osu->getModAuto() || m_osu->getModAutopilot());
 
 	m_bCrosshairIntersectsScreen = true;
-	if (!fposu_3d.getBool() && !fposu_absolute_mode.getBool() && !isAutoCursor && Environment::getOS == Environment::OS::OS_WINDOWS) // HACKHACK: windows only for now (raw input support)
+	if (Env::cfg(OS::WINDOWS) && !fposu_3d.getBool() && !fposu_absolute_mode.getBool() && !isAutoCursor) // HACKHACK: windows only for now (raw input support)
 	{
 		// regular mouse position mode
 
@@ -609,7 +602,7 @@ void OsuModFPoSu::update()
 		// calculate mouse delta
 		Vector2 delta;
 		{
-			if (Environment::getOS == Environment::OS::OS_WINDOWS)
+			if constexpr (Env::cfg(OS::WINDOWS))
 			{
 				delta = (engine->getMouse()->getRawDelta() / m_mouse_sensitivity_ref->getFloat()); // HACKHACK: undo engine mouse sensitivity multiplier
 

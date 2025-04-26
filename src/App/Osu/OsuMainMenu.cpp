@@ -55,7 +55,7 @@ UString OsuMainMenu::MCOSU_MAIN_BUTTON_SUBTEXT = UString("Practice Client");
 
 #define MCOSU_NEWVERSION_NOTIFICATION_TRIGGER_FILE "version.txt"
 
-static constexpr const char *s_sliderTextBeatmap =
+static constexpr const char *const s_sliderTextBeatmap =
 R"(osu file format v14
 
 [General]
@@ -265,7 +265,7 @@ void OsuMainMenu::openSteamWorkshopInDefaultBrowser(bool launchInSteam)
 
 OsuMainMenu::OsuMainMenu(Osu *osu) : OsuScreen(osu)
 {
-	if (Environment::getOS == Environment::OS::OS_HORIZON)
+	if constexpr (Env::cfg(OS::HORIZON))
 		MCOSU_MAIN_BUTTON_TEXT.append(" NX");
 	if (m_osu->isInVRMode())
 		MCOSU_MAIN_BUTTON_TEXT.append(" VR");
@@ -1517,7 +1517,7 @@ void OsuMainMenu::animMainButton()
 	m_bInMainMenuRandomAnim = true;
 
 	m_iMainMenuRandomAnimType = (rand() % 4) == 1 ? 1 : 0;
-	if (!m_bMainMenuAnimFadeToFriendForNextAnim && osu_main_menu_friend.getBool() && Environment::getOS == Environment::OS::OS_WINDOWS) // NOTE: z buffer bullshit on other platforms >:(
+	if (Env::cfg(OS::WINDOWS) && !m_bMainMenuAnimFadeToFriendForNextAnim && osu_main_menu_friend.getBool()) // NOTE: z buffer bullshit on other platforms >:(
 		m_bMainMenuAnimFadeToFriendForNextAnim = (rand() % 24) == 1;
 
 	m_fMainMenuAnim = 0.0f;
@@ -1748,7 +1748,7 @@ void OsuMainMenu::onGithubPressed()
 {
 	if (m_osu->getInstanceID() > 1) return;
 
-	if (Environment::getOS == Environment::OS::OS_HORIZON)
+	if constexpr (Env::cfg(OS::HORIZON))
 	{
 		m_osu->getNotificationOverlay()->addNotification("Go to " PACKAGE_URL, 0xffffffff, false, 0.75f);
 		return;

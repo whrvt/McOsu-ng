@@ -138,7 +138,7 @@ void Mouse::update()
 
 	Vector2 nextPos = osMousePos;
 
-	if (osCursorVisible || (!sensitivityAdjustmentNeeded && !mouse_raw_input.getBool()) || m_bAbsolute || Environment::getOS == Environment::OS::OS_HORIZON) //  || Environment::getOS == Environment::OS::OS_LINUX HACKHACK: linux hack
+	if (osCursorVisible || (!sensitivityAdjustmentNeeded && !mouse_raw_input.getBool()) || m_bAbsolute || Env::cfg(OS::HORIZON)) //  || Env::cfg(OS::LINUX) HACKHACK: linux hack
 	{
 		// this block handles visible/active OS cursor movement without sensitivity adjustments, and absolute input device movement
 		if (m_bAbsolute)
@@ -200,11 +200,8 @@ void Mouse::update()
 		{
 			// non-raw input is always in pixels, sub-pixel movement is handled/buffered by the operating system
 			// (idk about that one ^)
-			if (((int)osMousePos.x != (int)m_vPrevOsMousePos.x || (int)osMousePos.y != (int)m_vPrevOsMousePos.y) // without this check some people would get mouse drift
-#ifdef MCENGINE_FEATURE_SDL
-			    || Environment::getOS == Environment::OS::OS_LINUX || Environment::getOS == Environment::OS::OS_WINDOWS
-#endif
-				)
+			if (Env::cfg(BACKEND::SDL, (OS::LINUX | OS::WINDOWS)) ||
+				((int)osMousePos.x != (int)m_vPrevOsMousePos.x || (int)osMousePos.y != (int)m_vPrevOsMousePos.y)) // without this check some people would get mouse drift
 				m_vDelta = (osMousePos - m_vPrevOsMousePos) * mouse_sensitivity.getFloat();
 		}
 
@@ -225,9 +222,7 @@ void Mouse::update()
         float maxX = minX + cursorClip.getWidth();
         float maxY = minY + cursorClip.getHeight();
 
-#ifdef MCENGINE_FEATURE_SDL
-        if (!(Environment::getOS == Environment::OS::OS_LINUX || Environment::getOS == Environment::OS::OS_WINDOWS))
-#endif
+        if (!Env::cfg(BACKEND::SDL) || Env::cfg(BACKEND::SDL, !(OS::LINUX | OS::WINDOWS)))
         {
             minX -= m_vOffset.x;
             minY -= m_vOffset.y;
@@ -249,7 +244,7 @@ void Mouse::update()
 	// first person games which call engine->getMouse()->setPos() every frame to manually re-center the cursor NEVER need env->setPos()
 	// absolute input NEVER needs env->setPos()
 	// also update prevOsMousePos
-	if (windowRect.contains(osMousePos) && (sensitivityAdjustmentNeeded || mouse_raw_input.getBool()) && !m_bSetPosWasCalledLastFrame && !m_bAbsolute) //  && Environment::getOS != Environment::OS::OS_LINUX HACKHACK: linux hack
+	if (windowRect.contains(osMousePos) && (sensitivityAdjustmentNeeded || mouse_raw_input.getBool()) && !m_bSetPosWasCalledLastFrame && !m_bAbsolute) //  && Env::getOS() != OS::LINUX HACKHACK: linux hack
 	{
 		const Vector2 newOsMousePos = m_vPosWithoutOffset;
 

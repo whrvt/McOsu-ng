@@ -564,7 +564,7 @@ OsuSongBrowser2::OsuSongBrowser2(Osu *osu) : OsuScreenBackable(osu)
 	m_scoreBrowser->setClipping(false);
 	m_scoreBrowser->setHorizontalScrolling(false);
 	m_scoreBrowser->setScrollbarSizeMultiplier(0.25f);
-	m_scoreBrowser->setScrollResistance((m_osu->isInVRMode() || Environment::getOS == Environment::OS::OS_HORIZON) ? convar->getConVarByName("ui_scrollview_resistance")->getInt() : 15); // a bit shitty this check + convar, but works well enough
+	m_scoreBrowser->setScrollResistance((m_osu->isInVRMode() || Env::cfg(OS::HORIZON)) ? convar->getConVarByName("ui_scrollview_resistance")->getInt() : 15); // a bit shitty this check + convar, but works well enough
 	m_scoreBrowserNoRecordsYetElement = new OsuUISongBrowserNoRecordsSetElement(m_osu, "No records set!");
 	m_scoreBrowser->getContainer()->addBaseUIElement(m_scoreBrowserNoRecordsYetElement);
 
@@ -573,7 +573,7 @@ OsuSongBrowser2::OsuSongBrowser2(Osu *osu) : OsuScreenBackable(osu)
 	m_songBrowser->setDrawBackground(false);
 	m_songBrowser->setDrawFrame(false);
 	m_songBrowser->setHorizontalScrolling(false);
-	m_songBrowser->setScrollResistance((m_osu->isInVRMode() || Environment::getOS == Environment::OS::OS_HORIZON) ? convar->getConVarByName("ui_scrollview_resistance")->getInt() : 15); // a bit shitty this check + convar, but works well enough
+	m_songBrowser->setScrollResistance((m_osu->isInVRMode() || Env::cfg(OS::HORIZON)) ? convar->getConVarByName("ui_scrollview_resistance")->getInt() : 15); // a bit shitty this check + convar, but works well enough
 
 	// beatmap database
 	m_db = new OsuDatabase(m_osu);

@@ -262,7 +262,7 @@ OsuHUD::OsuHUD(Osu *osu) : OsuScreen(osu)
 	m_tempFont = engine->getResourceManager()->getFont("FONT_DEFAULT");
 	m_cursorTrailShader = engine->getResourceManager()->loadShader2("cursortrail.mcshader", "cursortrail");
 	m_cursorTrail.reserve(osu_cursor_trail_max_size.getInt()*2);
-	if (Environment::getOS == Environment::OS::OS_HORIZON)
+	if constexpr (Env::cfg(OS::HORIZON))
 		m_cursorTrail2.reserve(osu_cursor_trail_max_size.getInt()*2);
 
 	m_cursorTrailShaderVR = NULL;
@@ -1124,9 +1124,9 @@ void OsuHUD::drawFps(Graphics *g, McFont *font, float fps)
 	g->popTransform();
 
 	// top
-	if (fps >= 200 || (m_osu->isInVRMode() && fps >= 80) || (Environment::getOS == Environment::OS::OS_HORIZON && fps >= 50))
+	if (fps >= 200 || (m_osu->isInVRMode() && fps >= 80) || (Env::cfg(OS::HORIZON) && fps >= 50))
 		g->setColor(0xffffffff);
-	else if (fps >= 120 || (m_osu->isInVRMode() && fps >= 60) || (Environment::getOS == Environment::OS::OS_HORIZON && fps >= 40))
+	else if (fps >= 120 || (m_osu->isInVRMode() && fps >= 60) || (Env::cfg(OS::HORIZON) && fps >= 40))
 		g->setColor(0xffdddd00);
 	else
 	{

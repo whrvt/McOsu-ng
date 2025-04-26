@@ -51,23 +51,6 @@ ConVar debug_rm_("debug_rm", false, FCVAR_NONE);
 
 ConVar *ResourceManager::debug_rm = &debug_rm_;
 
-// HACKHACK: do this with Environment::getOS or something
-#ifdef __SWITCH__
-
-const char *ResourceManager::PATH_DEFAULT_IMAGES = "romfs:/materials/";
-const char *ResourceManager::PATH_DEFAULT_FONTS = "romfs:/fonts/";
-const char *ResourceManager::PATH_DEFAULT_SOUNDS = "romfs:/sounds/";
-const char *ResourceManager::PATH_DEFAULT_SHADERS = "romfs:/shaders/";
-
-#else
-
-const char *ResourceManager::PATH_DEFAULT_IMAGES = "materials/";
-const char *ResourceManager::PATH_DEFAULT_FONTS = "fonts/";
-const char *ResourceManager::PATH_DEFAULT_SOUNDS = "sounds/";
-const char *ResourceManager::PATH_DEFAULT_SHADERS = "shaders/";
-
-#endif
-
 ResourceManager::ResourceManager()
 {
 	m_bNextLoadAsync = false;
@@ -76,7 +59,7 @@ ResourceManager::ResourceManager()
 	m_loadingWork.reserve(32);
 
 	// OS specific engine settings/overrides
-	if (Environment::getOS == Environment::OS::OS_HORIZON)
+	if constexpr (Env::cfg(OS::HORIZON))
 	{
 		rm_numthreads.setValue(1.0f);
 		rm_numthreads.setDefaultFloat(1.0f);

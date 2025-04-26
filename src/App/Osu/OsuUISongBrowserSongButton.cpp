@@ -633,7 +633,7 @@ void OsuUISongBrowserSongButton::onAddToCollectionConfirmed(UString text, int id
 			spacer->setTextColor(0xff888888);
 			spacer->setTextDarkColor(0xff000000);
 
-			label = m_contextMenu->addButton(Environment::getOS == Environment::OS::OS_HORIZON ? "(Click HERE to confirm)" : "(Press ENTER to confirm.)", id);
+			label = m_contextMenu->addButton(Env::cfg(OS::HORIZON) ? "(Click HERE to confirm)" : "(Press ENTER to confirm.)", id);
 			label->setTextLeft(false);
 			label->setTextColor(0xff555555);
 			label->setTextDarkColor(0xff000000);

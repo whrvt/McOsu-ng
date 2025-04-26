@@ -91,4 +91,14 @@
  */
 //#define MCENGINE_FEATURE_STEAMWORKS
 
+/*
+ * Performance profiling (ctrl+F11)
+ */
+//#define MCENGINE_FEATURE_PROFILING
+
+/* misc, untested */
+//#define MCENGINE_SDL_JOYSTICK
+//#define MCENGINE_SDL_JOYSTICK_MOUSE
+//#define MCENGINE_SDL_TOUCHSUPPORT
+
 #endif

@@ -16,8 +16,6 @@
 #include "cbase.h"
 #include <SDL3/SDL.h>
 
-// #define MCENGINE_SDL_TOUCHSUPPORT
-
 class SDLEnvironment : public Environment
 {
 public:

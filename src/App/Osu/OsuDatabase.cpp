@@ -1551,7 +1551,7 @@ void OsuDatabase::loadDB(OsuFile *db, bool &fallbackToRawLoad)
 		//debugLog("ignoreBeatmapSounds = %i, ignoreBeatmapSkin = %i, disableStoryboard = %i, disableVideo = %i, visualOverride = %i, maniaScrollSpeed = %i\n", (int)ignoreBeatmapSounds, (int)ignoreBeatmapSkin, (int)disableStoryboard, (int)disableVideo, (int)visualOverride, maniaScrollSpeed);
 
 		// HACKHACK: workaround for linux and macos: it can happen that nested beatmaps are stored in the database, and that osu! stores that filepath with a backslash (because windows)
-		if (Environment::getOS == Environment::OS::OS_LINUX || Environment::getOS == Environment::OS::OS_MACOS)
+		if constexpr (Env::cfg(OS::LINUX | OS::MACOS))
 		{
 			for (int c=0; c<path.length(); c++)
 			{

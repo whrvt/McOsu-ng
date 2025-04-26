@@ -489,7 +489,7 @@ void OsuSkin::load()
 	// skin ini
 	randomizeFilePath();
 	m_sSkinIniFilePath = m_sFilePath;
-	UString defaultSkinIniFilePath = UString(Environment::getOS == Environment::OS::OS_HORIZON ? "romfs:/materials/" : "./materials/");
+	UString defaultSkinIniFilePath = ResourceManager::PATH_DEFAULT_IMAGES;
 	defaultSkinIniFilePath.append(OSUSKIN_DEFAULT_SKIN_PATH);
 	defaultSkinIniFilePath.append("skin.ini");
 	m_sSkinIniFilePath.append("skin.ini");
@@ -1495,13 +1495,13 @@ void OsuSkin::checkLoadImage(Image **addressOfPointer, UString skinElementName, 
 
 	// NOTE: only the default skin is loaded with a resource name (it must never be unloaded by other instances), and it is NOT added to the resources vector
 
-	UString defaultFilePath1 = UString(Environment::getOS == Environment::OS::OS_HORIZON ? "romfs:/materials/" : "./materials/");
+	UString defaultFilePath1 = ResourceManager::PATH_DEFAULT_IMAGES;
 	defaultFilePath1.append(OSUSKIN_DEFAULT_SKIN_PATH);
 	defaultFilePath1.append(skinElementName);
 	defaultFilePath1.append("@2x.");
 	defaultFilePath1.append(fileExtension);
 
-	UString defaultFilePath2 = UString(Environment::getOS == Environment::OS::OS_HORIZON ? "romfs:/materials/" : "./materials/");
+	UString defaultFilePath2 = ResourceManager::PATH_DEFAULT_IMAGES;
 	defaultFilePath2.append(OSUSKIN_DEFAULT_SKIN_PATH);
 	defaultFilePath2.append(skinElementName);
 	defaultFilePath2.append(".");
@@ -1651,21 +1651,21 @@ void OsuSkin::checkLoadSound(Sound **addressOfPointer, UString skinElementName, 
 
 	// load default skin
 
-	UString defaultpath1 = UString(Environment::getOS == Environment::OS::OS_HORIZON ? "romfs:/materials/" : "./materials/");
+	UString defaultpath1 = ResourceManager::PATH_DEFAULT_IMAGES;
 	{
 		defaultpath1.append(OSUSKIN_DEFAULT_SKIN_PATH);
 		defaultpath1.append(skinElementName);
 		defaultpath1.append(".wav");
 	}
 
-	UString defaultpath2 = UString(Environment::getOS == Environment::OS::OS_HORIZON ? "romfs:/materials/" : "./materials/");
+	UString defaultpath2 = ResourceManager::PATH_DEFAULT_IMAGES;
 	{
 		defaultpath2.append(OSUSKIN_DEFAULT_SKIN_PATH);
 		defaultpath2.append(skinElementName);
 		defaultpath2.append(".mp3");
 	}
 
-	UString defaultpath3 = UString(Environment::getOS == Environment::OS::OS_HORIZON ? "romfs:/materials/" : "./materials/");
+	UString defaultpath3 = ResourceManager::PATH_DEFAULT_IMAGES;
 	{
 		defaultpath3.append(OSUSKIN_DEFAULT_SKIN_PATH);
 		defaultpath3.append(skinElementName);

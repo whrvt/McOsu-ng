@@ -477,7 +477,7 @@ void SoundTouchFilterInstance::logBufferData(const char *label, float *buffer, u
 		// interleaved format (LRLRLR...)
 		for (unsigned int i = 0; i < samplesToLog; i++)
 		{
-			char logLine[256] = {0};
+			char logLine[256] = {};
 			int offset = sprintf(logLine, "Sample %03u: ", i);
 			for (unsigned int ch = 0; ch < channels; ch++)
 			{
@@ -491,7 +491,7 @@ void SoundTouchFilterInstance::logBufferData(const char *label, float *buffer, u
 		// non-interleaved format (LLLL...RRRR...)
 		for (unsigned int i = 0; i < samplesToLog; i++)
 		{
-			char logLine[256] = {0};
+			char logLine[256] = {};
 			int offset = sprintf(logLine, "Sample %03u: ", i);
 			for (unsigned int ch = 0; ch < channels; ch++)
 			{
