@@ -120,12 +120,10 @@ McOsu_ng_SOURCES = \
 	src/Engine/Platform/SDLGLLegacyInterface.cpp \
 	src/Engine/Platform/SDLSound.cpp \
 	src/Engine/Platform/SDLSoundEngine.cpp \
-	src/Engine/Platform/SDLTimer.cpp \
 	src/Engine/Platform/SoLoudSound.cpp \
 	src/Engine/Platform/SoLoudSoundEngine.cpp \
 	src/Engine/Platform/SoundTouchFilter.cpp \
 	src/Engine/Platform/Thread.cpp \
-	src/Engine/Platform/Timer.cpp \
 	src/Engine/Platform/WinContextMenu.cpp \
 	src/Engine/Platform/WinEnvironment.cpp \
 	src/Engine/Platform/WinGL3Interface.cpp \
@@ -167,6 +165,7 @@ McOsu_ng_SOURCES = \
 	src/Engine/SoundEngine.cpp \
 	src/Engine/SteamworksInterface.cpp \
 	src/Engine/TextureAtlas.cpp \
+	src/Engine/Timer.cpp \
 	src/Engine/VertexArrayObject.cpp \
 	src/Engine/VulkanInterface.cpp \
 	src/GUI/CBaseUIBoxShadow.cpp \

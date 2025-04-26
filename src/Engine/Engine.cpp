@@ -129,7 +129,7 @@ Engine::Engine(Environment *environment, const char *args)
 	debugLog("Engine: args = %s\n", m_sArgs.toUtf8());
 
 	// timing
-	m_timer = new Timer();
+	m_timer = new Timer(false);
 	m_dTime = 0;
 	m_dRunTime = 0;
 	m_iFrameCount = 0;

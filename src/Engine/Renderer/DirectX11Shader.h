@@ -123,6 +123,8 @@ private:
 	unsigned long m_iStatsNumConstantBufferUploadsPerFrameCounterEngineFrameCount;
 };
 
+#else
+class DirectX11Shader : public Shader{};
 #endif
 
 #endif

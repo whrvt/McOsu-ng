@@ -120,6 +120,8 @@ private:
 	VulkanSwapChain *m_swapchain;
 };
 
+#else
+class VulkanGraphicsInterface : public NullGraphicsInterface{};
 #endif
 
 #endif

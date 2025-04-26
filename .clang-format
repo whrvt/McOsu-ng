@@ -6,6 +6,10 @@ ColumnLimit: 160
 AllowShortFunctionsOnASingleLine: Inline
 IndentAccessModifiers: false
 AccessModifierOffset: -4
+AllowShortBlocksOnASingleLine: Empty
+BraceWrapping:
+  SplitEmptyRecord: false
+  SplitEmptyNamespace: false
 ---
 Language: Cpp
 BasedOnStyle: Microsoft
@@ -15,3 +19,9 @@ ColumnLimit: 160
 AllowShortFunctionsOnASingleLine: Inline
 IndentAccessModifiers: false
 AccessModifierOffset: -4
+AllowShortBlocksOnASingleLine: Empty
+BreakBeforeBraces: Custom
+BraceWrapping:
+  SplitEmptyRecord: false
+  SplitEmptyNamespace: false
+

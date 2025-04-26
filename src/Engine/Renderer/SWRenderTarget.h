@@ -11,6 +11,8 @@
 
 #include "RenderTarget.h"
 
+#ifdef MCENGINE_FEATURE_SOFTRENDERER
+
 class SWRenderTarget : public RenderTarget
 {
 public:
@@ -28,5 +30,9 @@ private:
 	virtual void initAsync();
 	virtual void destroy();
 };
+
+#else
+class SWRenderTarget : public RenderTarget{};
+#endif
 
 #endif

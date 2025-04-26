@@ -47,6 +47,8 @@
 
 // ENGINE INCLUDES
 
+#include "BaseEnvironment.h"
+
 #include "EngineFeatures.h"
 
 #include "FastDelegate.h"

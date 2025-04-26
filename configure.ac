@@ -135,6 +135,7 @@ AS_IF([test "x$enable_clang" = "xyes"], [
 ],[
     CC=gcc
     CXX=g++
+    MCOSU_CXXFLAGS="$MCOSU_CXXFLAGS -fimplicit-constexpr"
 ])
 
 AS_IF([[case "$host_cpu" in

@@ -20,11 +20,7 @@ ConVar *McFile::size_max = &file_size_max;
 
 McFile::McFile(UString filePath, TYPE type) : m_filePath(filePath), m_type(type), m_ready(false), m_fileSize(0)
 {
-	std::filesystem::path path;
-	if constexpr (Env::cfg(OS::WINDOWS))
-		path = std::filesystem::path(filePath.wc_str());
-	else
-		path = std::filesystem::path(filePath.toUtf8());
+	std::filesystem::path path = std::filesystem::path(filePath.plat_str());
 
 	if (type == TYPE::READ)
 	{

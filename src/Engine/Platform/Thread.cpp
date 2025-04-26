@@ -54,6 +54,8 @@ private:
 	bool m_bReady;
 };
 
+#else
+class StdThread : public BaseThread{};
 #endif // defined(MCENGINE_FEATURE_MULTITHREADING) && !defined(__SWITCH__)
 
 ConVar debug_thread("debug_thread", false, FCVAR_NONE);

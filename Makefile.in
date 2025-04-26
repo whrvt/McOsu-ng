@@ -249,12 +249,10 @@ am_McOsu_ng_OBJECTS = src/App/Osu/McOsu_ng-Osu.$(OBJEXT) \
 	src/Engine/Platform/McOsu_ng-SDLGLLegacyInterface.$(OBJEXT) \
 	src/Engine/Platform/McOsu_ng-SDLSound.$(OBJEXT) \
 	src/Engine/Platform/McOsu_ng-SDLSoundEngine.$(OBJEXT) \
-	src/Engine/Platform/McOsu_ng-SDLTimer.$(OBJEXT) \
 	src/Engine/Platform/McOsu_ng-SoLoudSound.$(OBJEXT) \
 	src/Engine/Platform/McOsu_ng-SoLoudSoundEngine.$(OBJEXT) \
 	src/Engine/Platform/McOsu_ng-SoundTouchFilter.$(OBJEXT) \
 	src/Engine/Platform/McOsu_ng-Thread.$(OBJEXT) \
-	src/Engine/Platform/McOsu_ng-Timer.$(OBJEXT) \
 	src/Engine/Platform/McOsu_ng-WinContextMenu.$(OBJEXT) \
 	src/Engine/Platform/McOsu_ng-WinEnvironment.$(OBJEXT) \
 	src/Engine/Platform/McOsu_ng-WinGL3Interface.$(OBJEXT) \
@@ -296,6 +294,7 @@ am_McOsu_ng_OBJECTS = src/App/Osu/McOsu_ng-Osu.$(OBJEXT) \
 	src/Engine/McOsu_ng-SoundEngine.$(OBJEXT) \
 	src/Engine/McOsu_ng-SteamworksInterface.$(OBJEXT) \
 	src/Engine/McOsu_ng-TextureAtlas.$(OBJEXT) \
+	src/Engine/McOsu_ng-Timer.$(OBJEXT) \
 	src/Engine/McOsu_ng-VertexArrayObject.$(OBJEXT) \
 	src/Engine/McOsu_ng-VulkanInterface.$(OBJEXT) \
 	src/GUI/McOsu_ng-CBaseUIBoxShadow.$(OBJEXT) \
@@ -447,6 +446,7 @@ am__depfiles_remade = src/App/Osu/$(DEPDIR)/McOsu_ng-Osu.Po \
 	src/Engine/$(DEPDIR)/McOsu_ng-SoundEngine.Po \
 	src/Engine/$(DEPDIR)/McOsu_ng-SteamworksInterface.Po \
 	src/Engine/$(DEPDIR)/McOsu_ng-TextureAtlas.Po \
+	src/Engine/$(DEPDIR)/McOsu_ng-Timer.Po \
 	src/Engine/$(DEPDIR)/McOsu_ng-VertexArrayObject.Po \
 	src/Engine/$(DEPDIR)/McOsu_ng-VulkanInterface.Po \
 	src/Engine/Input/$(DEPDIR)/McOsu_ng-Gamepad.Po \
@@ -482,12 +482,10 @@ am__depfiles_remade = src/App/Osu/$(DEPDIR)/McOsu_ng-Osu.Po \
 	src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLGLLegacyInterface.Po \
 	src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLSound.Po \
 	src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLSoundEngine.Po \
-	src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLTimer.Po \
 	src/Engine/Platform/$(DEPDIR)/McOsu_ng-SoLoudSound.Po \
 	src/Engine/Platform/$(DEPDIR)/McOsu_ng-SoLoudSoundEngine.Po \
 	src/Engine/Platform/$(DEPDIR)/McOsu_ng-SoundTouchFilter.Po \
 	src/Engine/Platform/$(DEPDIR)/McOsu_ng-Thread.Po \
-	src/Engine/Platform/$(DEPDIR)/McOsu_ng-Timer.Po \
 	src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinContextMenu.Po \
 	src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinEnvironment.Po \
 	src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinGL3Interface.Po \
@@ -944,12 +942,10 @@ McOsu_ng_SOURCES = \
 	src/Engine/Platform/SDLGLLegacyInterface.cpp \
 	src/Engine/Platform/SDLSound.cpp \
 	src/Engine/Platform/SDLSoundEngine.cpp \
-	src/Engine/Platform/SDLTimer.cpp \
 	src/Engine/Platform/SoLoudSound.cpp \
 	src/Engine/Platform/SoLoudSoundEngine.cpp \
 	src/Engine/Platform/SoundTouchFilter.cpp \
 	src/Engine/Platform/Thread.cpp \
-	src/Engine/Platform/Timer.cpp \
 	src/Engine/Platform/WinContextMenu.cpp \
 	src/Engine/Platform/WinEnvironment.cpp \
 	src/Engine/Platform/WinGL3Interface.cpp \
@@ -991,6 +987,7 @@ McOsu_ng_SOURCES = \
 	src/Engine/SoundEngine.cpp \
 	src/Engine/SteamworksInterface.cpp \
 	src/Engine/TextureAtlas.cpp \
+	src/Engine/Timer.cpp \
 	src/Engine/VertexArrayObject.cpp \
 	src/Engine/VulkanInterface.cpp \
 	src/GUI/CBaseUIBoxShadow.cpp \
@@ -1570,9 +1567,6 @@ src/Engine/Platform/McOsu_ng-SDLSound.$(OBJEXT):  \
 src/Engine/Platform/McOsu_ng-SDLSoundEngine.$(OBJEXT):  \
 	src/Engine/Platform/$(am__dirstamp) \
 	src/Engine/Platform/$(DEPDIR)/$(am__dirstamp)
-src/Engine/Platform/McOsu_ng-SDLTimer.$(OBJEXT):  \
-	src/Engine/Platform/$(am__dirstamp) \
-	src/Engine/Platform/$(DEPDIR)/$(am__dirstamp)
 src/Engine/Platform/McOsu_ng-SoLoudSound.$(OBJEXT):  \
 	src/Engine/Platform/$(am__dirstamp) \
 	src/Engine/Platform/$(DEPDIR)/$(am__dirstamp)
@@ -1583,9 +1577,6 @@ src/Engine/Platform/McOsu_ng-SoundTouchFilter.$(OBJEXT):  \
 	src/Engine/Platform/$(am__dirstamp) \
 	src/Engine/Platform/$(DEPDIR)/$(am__dirstamp)
 src/Engine/Platform/McOsu_ng-Thread.$(OBJEXT):  \
-	src/Engine/Platform/$(am__dirstamp) \
-	src/Engine/Platform/$(DEPDIR)/$(am__dirstamp)
-src/Engine/Platform/McOsu_ng-Timer.$(OBJEXT):  \
 	src/Engine/Platform/$(am__dirstamp) \
 	src/Engine/Platform/$(DEPDIR)/$(am__dirstamp)
 src/Engine/Platform/McOsu_ng-WinContextMenu.$(OBJEXT):  \
@@ -1711,6 +1702,8 @@ src/Engine/McOsu_ng-SteamworksInterface.$(OBJEXT):  \
 	src/Engine/$(DEPDIR)/$(am__dirstamp)
 src/Engine/McOsu_ng-TextureAtlas.$(OBJEXT):  \
 	src/Engine/$(am__dirstamp) \
+	src/Engine/$(DEPDIR)/$(am__dirstamp)
+src/Engine/McOsu_ng-Timer.$(OBJEXT): src/Engine/$(am__dirstamp) \
 	src/Engine/$(DEPDIR)/$(am__dirstamp)
 src/Engine/McOsu_ng-VertexArrayObject.$(OBJEXT):  \
 	src/Engine/$(am__dirstamp) \
@@ -1934,6 +1927,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/$(DEPDIR)/McOsu_ng-SoundEngine.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/$(DEPDIR)/McOsu_ng-SteamworksInterface.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/$(DEPDIR)/McOsu_ng-TextureAtlas.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@src/Engine/$(DEPDIR)/McOsu_ng-Timer.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/$(DEPDIR)/McOsu_ng-VertexArrayObject.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/$(DEPDIR)/McOsu_ng-VulkanInterface.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Input/$(DEPDIR)/McOsu_ng-Gamepad.Po@am__quote@ # am--include-marker
@@ -1969,12 +1963,10 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLGLLegacyInterface.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLSound.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLSoundEngine.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLTimer.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-SoLoudSound.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-SoLoudSoundEngine.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-SoundTouchFilter.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-Thread.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-Timer.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinContextMenu.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinEnvironment.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinGL3Interface.Po@am__quote@ # am--include-marker
@@ -3744,20 +3736,6 @@ src/Engine/Platform/McOsu_ng-SDLSoundEngine.obj: src/Engine/Platform/SDLSoundEng
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Platform/McOsu_ng-SDLSoundEngine.obj `if test -f 'src/Engine/Platform/SDLSoundEngine.cpp'; then $(CYGPATH_W) 'src/Engine/Platform/SDLSoundEngine.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Platform/SDLSoundEngine.cpp'; fi`
 
-src/Engine/Platform/McOsu_ng-SDLTimer.o: src/Engine/Platform/SDLTimer.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Platform/McOsu_ng-SDLTimer.o -MD -MP -MF src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLTimer.Tpo -c -o src/Engine/Platform/McOsu_ng-SDLTimer.o `test -f 'src/Engine/Platform/SDLTimer.cpp' || echo '$(srcdir)/'`src/Engine/Platform/SDLTimer.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLTimer.Tpo src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLTimer.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Platform/SDLTimer.cpp' object='src/Engine/Platform/McOsu_ng-SDLTimer.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Platform/McOsu_ng-SDLTimer.o `test -f 'src/Engine/Platform/SDLTimer.cpp' || echo '$(srcdir)/'`src/Engine/Platform/SDLTimer.cpp
-
-src/Engine/Platform/McOsu_ng-SDLTimer.obj: src/Engine/Platform/SDLTimer.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Platform/McOsu_ng-SDLTimer.obj -MD -MP -MF src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLTimer.Tpo -c -o src/Engine/Platform/McOsu_ng-SDLTimer.obj `if test -f 'src/Engine/Platform/SDLTimer.cpp'; then $(CYGPATH_W) 'src/Engine/Platform/SDLTimer.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Platform/SDLTimer.cpp'; fi`
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLTimer.Tpo src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLTimer.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Platform/SDLTimer.cpp' object='src/Engine/Platform/McOsu_ng-SDLTimer.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Platform/McOsu_ng-SDLTimer.obj `if test -f 'src/Engine/Platform/SDLTimer.cpp'; then $(CYGPATH_W) 'src/Engine/Platform/SDLTimer.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Platform/SDLTimer.cpp'; fi`
-
 src/Engine/Platform/McOsu_ng-SoLoudSound.o: src/Engine/Platform/SoLoudSound.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Platform/McOsu_ng-SoLoudSound.o -MD -MP -MF src/Engine/Platform/$(DEPDIR)/McOsu_ng-SoLoudSound.Tpo -c -o src/Engine/Platform/McOsu_ng-SoLoudSound.o `test -f 'src/Engine/Platform/SoLoudSound.cpp' || echo '$(srcdir)/'`src/Engine/Platform/SoLoudSound.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Platform/$(DEPDIR)/McOsu_ng-SoLoudSound.Tpo src/Engine/Platform/$(DEPDIR)/McOsu_ng-SoLoudSound.Po
@@ -3813,20 +3791,6 @@ src/Engine/Platform/McOsu_ng-Thread.obj: src/Engine/Platform/Thread.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Platform/Thread.cpp' object='src/Engine/Platform/McOsu_ng-Thread.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Platform/McOsu_ng-Thread.obj `if test -f 'src/Engine/Platform/Thread.cpp'; then $(CYGPATH_W) 'src/Engine/Platform/Thread.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Platform/Thread.cpp'; fi`
-
-src/Engine/Platform/McOsu_ng-Timer.o: src/Engine/Platform/Timer.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Platform/McOsu_ng-Timer.o -MD -MP -MF src/Engine/Platform/$(DEPDIR)/McOsu_ng-Timer.Tpo -c -o src/Engine/Platform/McOsu_ng-Timer.o `test -f 'src/Engine/Platform/Timer.cpp' || echo '$(srcdir)/'`src/Engine/Platform/Timer.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Platform/$(DEPDIR)/McOsu_ng-Timer.Tpo src/Engine/Platform/$(DEPDIR)/McOsu_ng-Timer.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Platform/Timer.cpp' object='src/Engine/Platform/McOsu_ng-Timer.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Platform/McOsu_ng-Timer.o `test -f 'src/Engine/Platform/Timer.cpp' || echo '$(srcdir)/'`src/Engine/Platform/Timer.cpp
-
-src/Engine/Platform/McOsu_ng-Timer.obj: src/Engine/Platform/Timer.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Platform/McOsu_ng-Timer.obj -MD -MP -MF src/Engine/Platform/$(DEPDIR)/McOsu_ng-Timer.Tpo -c -o src/Engine/Platform/McOsu_ng-Timer.obj `if test -f 'src/Engine/Platform/Timer.cpp'; then $(CYGPATH_W) 'src/Engine/Platform/Timer.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Platform/Timer.cpp'; fi`
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Platform/$(DEPDIR)/McOsu_ng-Timer.Tpo src/Engine/Platform/$(DEPDIR)/McOsu_ng-Timer.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Platform/Timer.cpp' object='src/Engine/Platform/McOsu_ng-Timer.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Platform/McOsu_ng-Timer.obj `if test -f 'src/Engine/Platform/Timer.cpp'; then $(CYGPATH_W) 'src/Engine/Platform/Timer.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Platform/Timer.cpp'; fi`
 
 src/Engine/Platform/McOsu_ng-WinContextMenu.o: src/Engine/Platform/WinContextMenu.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Platform/McOsu_ng-WinContextMenu.o -MD -MP -MF src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinContextMenu.Tpo -c -o src/Engine/Platform/McOsu_ng-WinContextMenu.o `test -f 'src/Engine/Platform/WinContextMenu.cpp' || echo '$(srcdir)/'`src/Engine/Platform/WinContextMenu.cpp
@@ -4401,6 +4365,20 @@ src/Engine/McOsu_ng-TextureAtlas.obj: src/Engine/TextureAtlas.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/TextureAtlas.cpp' object='src/Engine/McOsu_ng-TextureAtlas.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/McOsu_ng-TextureAtlas.obj `if test -f 'src/Engine/TextureAtlas.cpp'; then $(CYGPATH_W) 'src/Engine/TextureAtlas.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/TextureAtlas.cpp'; fi`
+
+src/Engine/McOsu_ng-Timer.o: src/Engine/Timer.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/McOsu_ng-Timer.o -MD -MP -MF src/Engine/$(DEPDIR)/McOsu_ng-Timer.Tpo -c -o src/Engine/McOsu_ng-Timer.o `test -f 'src/Engine/Timer.cpp' || echo '$(srcdir)/'`src/Engine/Timer.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/$(DEPDIR)/McOsu_ng-Timer.Tpo src/Engine/$(DEPDIR)/McOsu_ng-Timer.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Timer.cpp' object='src/Engine/McOsu_ng-Timer.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/McOsu_ng-Timer.o `test -f 'src/Engine/Timer.cpp' || echo '$(srcdir)/'`src/Engine/Timer.cpp
+
+src/Engine/McOsu_ng-Timer.obj: src/Engine/Timer.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/McOsu_ng-Timer.obj -MD -MP -MF src/Engine/$(DEPDIR)/McOsu_ng-Timer.Tpo -c -o src/Engine/McOsu_ng-Timer.obj `if test -f 'src/Engine/Timer.cpp'; then $(CYGPATH_W) 'src/Engine/Timer.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Timer.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/$(DEPDIR)/McOsu_ng-Timer.Tpo src/Engine/$(DEPDIR)/McOsu_ng-Timer.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Timer.cpp' object='src/Engine/McOsu_ng-Timer.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/McOsu_ng-Timer.obj `if test -f 'src/Engine/Timer.cpp'; then $(CYGPATH_W) 'src/Engine/Timer.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Timer.cpp'; fi`
 
 src/Engine/McOsu_ng-VertexArrayObject.o: src/Engine/VertexArrayObject.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/McOsu_ng-VertexArrayObject.o -MD -MP -MF src/Engine/$(DEPDIR)/McOsu_ng-VertexArrayObject.Tpo -c -o src/Engine/McOsu_ng-VertexArrayObject.o `test -f 'src/Engine/VertexArrayObject.cpp' || echo '$(srcdir)/'`src/Engine/VertexArrayObject.cpp
@@ -5303,6 +5281,7 @@ distclean: distclean-am
 	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-SoundEngine.Po
 	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-SteamworksInterface.Po
 	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-TextureAtlas.Po
+	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-Timer.Po
 	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-VertexArrayObject.Po
 	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-VulkanInterface.Po
 	-rm -f src/Engine/Input/$(DEPDIR)/McOsu_ng-Gamepad.Po
@@ -5338,12 +5317,10 @@ distclean: distclean-am
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLGLLegacyInterface.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLSound.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLSoundEngine.Po
-	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLTimer.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-SoLoudSound.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-SoLoudSoundEngine.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-SoundTouchFilter.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-Thread.Po
-	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-Timer.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinContextMenu.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinEnvironment.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinGL3Interface.Po
@@ -5554,6 +5531,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-SoundEngine.Po
 	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-SteamworksInterface.Po
 	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-TextureAtlas.Po
+	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-Timer.Po
 	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-VertexArrayObject.Po
 	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-VulkanInterface.Po
 	-rm -f src/Engine/Input/$(DEPDIR)/McOsu_ng-Gamepad.Po
@@ -5589,12 +5567,10 @@ maintainer-clean: maintainer-clean-am
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLGLLegacyInterface.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLSound.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLSoundEngine.Po
-	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLTimer.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-SoLoudSound.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-SoLoudSoundEngine.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-SoundTouchFilter.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-Thread.Po
-	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-Timer.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinContextMenu.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinEnvironment.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-WinGL3Interface.Po

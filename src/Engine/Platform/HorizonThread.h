@@ -5,13 +5,13 @@
 // $NoKeywords: $nxthread $os
 //===============================================================================//
 
-#ifdef __SWITCH__
-
 #pragma once
 #ifndef HORIZONTHREAD_H
 #define HORIZONTHREAD_H
 
 #include "Thread.h"
+
+#ifdef __SWITCH__
 
 #include <switch.h>
 
@@ -29,6 +29,8 @@ private:
 	Thread m_thread;
 };
 
+#else
+class HorizonThread : public BaseThread{};
 #endif
 
 #endif

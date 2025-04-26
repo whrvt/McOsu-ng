@@ -46,9 +46,9 @@ public:
 	bool isUpdateAvailable();
 
 private:
-	static constexpr const char *const GITHUB_API_RELEASE_URL = "https://api.github.com/repos/whrvt/" PACKAGE_NAME "/releases";
-	static constexpr const char *const GITHUB_RELEASE_DOWNLOAD_URL = "https://github.com/whrvt/" PACKAGE_NAME "/releases";
-	static constexpr const char *const TEMP_UPDATE_DOWNLOAD_FILEPATH = "update.zip";
+	static constexpr auto GITHUB_API_RELEASE_URL = "https://api.github.com/repos/whrvt/" PACKAGE_NAME "/releases";
+	static constexpr auto GITHUB_RELEASE_DOWNLOAD_URL = "https://github.com/whrvt/" PACKAGE_NAME "/releases";
+	static constexpr auto TEMP_UPDATE_DOWNLOAD_FILEPATH = "update.zip";
 
 	static ConVar *m_osu_release_stream_ref;
 

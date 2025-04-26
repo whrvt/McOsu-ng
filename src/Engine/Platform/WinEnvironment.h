@@ -5,13 +5,13 @@
 // $NoKeywords: $winenv
 //===============================================================================//
 
-#if defined(_WIN32) || defined(_WIN64) || defined(__WIN32__) || defined(__CYGWIN__) || defined(__CYGWIN32__) || defined(__TOS_WIN__) || defined(__WINDOWS__)
-
 #pragma once
 #ifndef WINENVIRONMENT_H
 #define WINENVIRONMENT_H
 
 #include "Environment.h"
+
+#if !defined(MCENGINE_FEATURE_SDL) && (defined(_WIN32) || defined(_WIN64) || defined(__WIN32__) || defined(__CYGWIN__) || defined(__CYGWIN32__) || defined(__TOS_WIN__) || defined(__WINDOWS__))
 
 #include <windows.h>
 
@@ -158,6 +158,12 @@ private:
 	static HHOOK g_hKeyboardHook;
 };
 
+#else
+class WinEnvironment : public Environment
+{
+public:
+	auto getHwnd() const {return nullptr;}
+};
 #endif
 
 #endif

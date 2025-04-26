@@ -229,22 +229,21 @@ Osu::Osu(Osu2 *osu2, int instanceID)
 	steam->setRichPresence("steam_display", "#Status");
 	steam->setRichPresence("status", "...");
 
-#ifdef MCENGINE_FEATURE_BASS
+	constexpr float unioffset = Env::cfg(AUD::WASAPI) ?  15.0f  :
+								Env::cfg(AUD::BASS)	  ? -25.0f  :
+								Env::cfg(AUD::SDL)	  ? -110.0f :
+								Env::cfg(AUD::SOLOUD) ? -20.0f  : 0.0f;
 
-	// starting with bass 2020 2.4.15.2 which has all offset problems fixed, this is the non-dsound backend compensation
+	// BASS: starting with bass 2020 2.4.15.2 which has all offset problems fixed, this is the non-dsound backend compensation
 	// NOTE: this depends on BASS_CONFIG_UPDATEPERIOD/BASS_CONFIG_DEV_BUFFER
-	convar->getConVarByName("osu_universal_offset_hardcoded")->setValue(15.0f);
+	
+	// WASAPI: since we use the newer bass/fx dlls for wasapi builds anyway (which have different time handling)
 
-#elif defined(MCENGINE_FEATURE_BASS_WASAPI)
+	// SDL_mixer: it really needs that much
 
-	// since we use the newer bass/fx dlls for wasapi builds anyway (which have different time handling)
-	convar->getConVarByName("osu_universal_offset_hardcoded")->setValue(-25.0f);
+	// SoLoud: im not sure yet
+	convar->getConVarByName("osu_universal_offset_hardcoded")->setValue(unioffset);
 
-#elif defined(MCENGINE_FEATURE_SDL_MIXER)
-
-	convar->getConVarByName("osu_universal_offset_hardcoded")->setValue(-110.0f);
-
-#endif
 
 	// OS specific engine settings/overrides
 	if constexpr (Env::cfg(OS::HORIZON))
@@ -2353,12 +2352,11 @@ void Osu::onFocusGained()
 
 	updateWindowsKeyDisable();
 
-#ifndef MCENGINE_FEATURE_BASS_WASAPI // NOTE: wasapi exclusive mode controls the system volume, so don't bother
+	if constexpr (Env::cfg(AUD::WASAPI)) // NOTE: wasapi exclusive mode controls the system volume, so don't bother
+		return;
 
 	m_fVolumeInactiveToActiveAnim = 0.0f;
 	anim->moveLinear(&m_fVolumeInactiveToActiveAnim, 1.0f, 0.3f, 0.1f, true);
-
-#endif
 }
 
 void Osu::onFocusLost()
@@ -2378,7 +2376,8 @@ void Osu::onFocusLost()
 	// release cursor clip
 	env->setCursorClip(false, McRect());
 
-#ifndef MCENGINE_FEATURE_BASS_WASAPI // NOTE: wasapi exclusive mode controls the system volume, so don't bother
+	if constexpr (Env::cfg(AUD::WASAPI)) // NOTE: wasapi exclusive mode controls the system volume, so don't bother
+		return;
 
 	m_bVolumeInactiveToActiveScheduled = true;
 
@@ -2386,22 +2385,19 @@ void Osu::onFocusLost()
 	m_fVolumeInactiveToActiveAnim = 0.0f;
 
 	engine->getSound()->setVolume(osu_volume_master_inactive.getFloat() * osu_volume_master.getFloat());
-
-#endif
 }
 
 void Osu::onMinimized()
 {
-#ifndef MCENGINE_FEATURE_BASS_WASAPI // NOTE: wasapi exclusive mode controls the system volume, so don't bother
-
+	if constexpr (Env::cfg(AUD::WASAPI)) // NOTE: wasapi exclusive mode controls the system volume, so don't bother
+		return;
+	
 	m_bVolumeInactiveToActiveScheduled = true;
 
 	anim->deleteExistingAnimation(&m_fVolumeInactiveToActiveAnim);
 	m_fVolumeInactiveToActiveAnim = 0.0f;
 
 	engine->getSound()->setVolume(osu_volume_master_inactive.getFloat() * osu_volume_master.getFloat());
-
-#endif
 }
 
 bool Osu::onShutdown()

@@ -75,13 +75,11 @@ void OsuBackgroundStarCacheLoader::initAsync()
 
 		// new fast method  (build full cached DiffObjects once) (1/2)
 		Timer cacheObjectsTimer;
-		cacheObjectsTimer.start();
 		std::vector<OsuDifficultyCalculator::DiffObject> cachedDiffObjects;
 		OsuDifficultyCalculator::calculateStarDiffForHitObjectsInt(cachedDiffObjects, diffres.diffobjects, CS, OD, speedMultiplier, relax, autopilot, touchDevice, &aimStars, &aimSliderFactor, &aimDifficultSliders, &aimDifficultStrains, &speedStars, &speedNotes, &speedDifficultStrains, -1, NULL, NULL, NULL, m_bDead);
 		cacheObjectsTimer.update();
 
 		Timer calcStrainsTimer;
-		calcStrainsTimer.start();
 		OsuDifficultyCalculator::IncrementalState incremental[OsuDifficultyCalculator::Skills::NUM_SKILLS] = {};
 		incremental[OsuDifficultyCalculator::Skills::skillToIndex(OsuDifficultyCalculator::Skills::Skill::AIM_SLIDERS)].slider_strains.reserve(diff2->getNumSliders());
 		if (cachedDiffObjects.size() > 0)

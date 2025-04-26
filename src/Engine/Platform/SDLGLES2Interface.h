@@ -31,6 +31,9 @@ private:
 	SDL_Window *m_window;
 };
 
+#else
+class SDLGLES2Interface : public OpenGLES2Interface{};
 #endif
+
 
 #endif

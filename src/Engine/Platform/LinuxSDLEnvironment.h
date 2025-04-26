@@ -5,13 +5,13 @@
 // $NoKeywords: $sdllinuxenv
 //===============================================================================//
 
-#ifdef __linux__
-
 #pragma once
 #ifndef LINUXSDLENVIRONMENT_H
 #define LINUXSDLENVIRONMENT_H
 
 #include "SDLEnvironment.h"
+
+#ifdef __linux__
 
 #ifdef MCENGINE_FEATURE_SDL
 
@@ -44,6 +44,8 @@ private:
 
 #endif
 
+#else
+class LinuxSDLEnvironment : public SDLEnvironment{};
 #endif
 
 #endif

@@ -387,8 +387,7 @@ void OsuSliderRenderer::draw(Graphics *g, Osu *osu, VertexArrayObject *vao, cons
 						g->translate(translation.x, translation.y);
 						///g->scale(scaleToApplyAfterTranslationX, scaleToApplyAfterTranslationY); // aspire slider distortions
 
-#ifdef MCENGINE_FEATURE_OPENGLES
-
+						if constexpr (Env::cfg(REND::GLES2)) {
 						if (!osu_slider_use_gradient_image.getBool())
 						{
 							OpenGLES2Interface *gles2 = dynamic_cast<OpenGLES2Interface*>(g);
@@ -399,11 +398,9 @@ void OsuSliderRenderer::draw(Graphics *g, Osu *osu, VertexArrayObject *vao, cons
 								BLEND_SHADER->setUniformMatrix4fv("mvp", mvp);
 							}
 						}
+						}
 
-#endif
-
-#ifdef MCENGINE_FEATURE_DIRECTX11
-
+						if constexpr (Env::cfg(REND::DX11)) {
 						if (!osu_slider_use_gradient_image.getBool())
 						{
 							DirectX11Interface *dx11 = dynamic_cast<DirectX11Interface*>(g);
@@ -414,8 +411,7 @@ void OsuSliderRenderer::draw(Graphics *g, Osu *osu, VertexArrayObject *vao, cons
 								BLEND_SHADER->setUniformMatrix4fv("mvp", mvp);
 							}
 						}
-
-#endif
+						}
 
 						g->drawVAO(vao);
 					}
@@ -619,22 +615,19 @@ void OsuSliderRenderer::drawVR(Graphics *g, Osu *osu, OsuVR *vr, Matrix4 &mvp, f
 
 void OsuSliderRenderer::drawFillSliderBodyPeppy(Graphics *g, Osu *osu, const std::vector<Vector2> &points, VertexArrayObject *circleMesh, float radius, int drawFromIndex, int drawUpToIndex, Shader *shader)
 {
+	OpenGLES2Interface *gles2;
+	DirectX11Interface *dx11;
+
 	if (drawFromIndex < 0)
 		drawFromIndex = 0;
 	if (drawUpToIndex < 0)
 		drawUpToIndex = points.size();
 
-#ifdef MCENGINE_FEATURE_OPENGLES
+	if constexpr (Env::cfg(REND::GLES2))
+		gles2 = dynamic_cast<OpenGLES2Interface*>(g);
 
-	OpenGLES2Interface *gles2 = dynamic_cast<OpenGLES2Interface*>(g);
-
-#endif
-
-#ifdef MCENGINE_FEATURE_DIRECTX11
-
-	DirectX11Interface *dx11 = dynamic_cast<DirectX11Interface*>(g);
-
-#endif
+	if constexpr (Env::cfg(REND::DX11))
+		dx11 = dynamic_cast<DirectX11Interface*>(g);
 
 	g->pushTransform();
 	{
@@ -652,27 +645,23 @@ void OsuSliderRenderer::drawFillSliderBodyPeppy(Graphics *g, Osu *osu, const std
 
 			g->translate(x-startX, y-startY, 0);
 
-#ifdef MCENGINE_FEATURE_OPENGLES
-
+			if constexpr (Env::cfg(REND::GLES2)) {
 			if (shader != NULL && gles2 != NULL)
 			{
 				g->forceUpdateTransform();
 				Matrix4 mvp = g->getMVP();
 				shader->setUniformMatrix4fv("mvp", mvp);
 			}
+			}
 
-#endif
-
-#ifdef MCENGINE_FEATURE_DIRECTX11
-
+			if constexpr (Env::cfg(REND::DX11)) {
 			if (shader != NULL && dx11 != NULL)
 			{
 				g->forceUpdateTransform();
 				Matrix4 mvp = g->getMVP();
 				shader->setUniformMatrix4fv("mvp", mvp);
 			}
-
-#endif
+			}
 
 			g->drawVAO(circleMesh);
 
@@ -752,8 +741,7 @@ void OsuSliderRenderer::checkUpdateVars(Osu *osu, float hitcircleDiameter)
 {
 	// static globals
 
-#ifdef MCENGINE_FEATURE_DIRECTX11
-
+	if constexpr (Env::cfg(REND::DX11))
 	{
 		DirectX11Interface *dx11 = dynamic_cast<DirectX11Interface*>(engine->getGraphics());
 		if (dx11 != NULL)
@@ -763,8 +751,6 @@ void OsuSliderRenderer::checkUpdateVars(Osu *osu, float hitcircleDiameter)
 				MESH_CENTER_HEIGHT = -MESH_CENTER_HEIGHT;
 		}
 	}
-
-#endif
 
 	// build shaders and circle mesh
 	if (BLEND_SHADER == NULL) // only do this once

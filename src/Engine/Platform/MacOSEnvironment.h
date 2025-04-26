@@ -5,13 +5,14 @@
 // $NoKeywords: $macenv
 //===============================================================================//
 
-#ifdef __APPLE__
 
 #pragma once
 #ifndef MACOSENVIRONMENT_H
 #define MACOSENVIRONMENT_H
 
 #include "Environment.h"
+
+#ifdef __APPLE__
 
 class MacOSWrapper;
 
@@ -134,6 +135,8 @@ private:
 	CURSORTYPE m_cursorType;
 };
 
+#else
+class MacOSEnvironment : public Environment{};
 #endif
 
 #endif

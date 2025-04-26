@@ -137,6 +137,8 @@ private:
 	std::stack<McRect> m_clipRectStack;
 };
 
+#else
+class OpenGLES2Interface : public NullGraphicsInterface{};
 #endif
 
 #endif

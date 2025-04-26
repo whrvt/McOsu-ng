@@ -55,7 +55,7 @@ UString OsuMainMenu::MCOSU_MAIN_BUTTON_SUBTEXT = UString("Practice Client");
 
 #define MCOSU_NEWVERSION_NOTIFICATION_TRIGGER_FILE "version.txt"
 
-static constexpr const char *const s_sliderTextBeatmap =
+static constexpr auto s_sliderTextBeatmap =
 R"(osu file format v14
 
 [General]
@@ -578,21 +578,15 @@ void OsuMainMenu::draw(Graphics *g)
 	{
 		UString bannerText = MCOSU_BANNER_TEXT;
 
-#ifdef MCENGINE_FEATURE_DIRECTX11
+		if constexpr (Env::cfg(REND::DX11))
+			if (dynamic_cast<DirectX11Interface*>(engine->getGraphics()) != NULL)
+				bannerText = "-- DirectX11 Test - Unoptimized renderer (no batching etc.) - VR is not supported - Please report feedback on Discord/Steam Forums --";
 
-		if (dynamic_cast<DirectX11Interface*>(engine->getGraphics()) != NULL)
-			bannerText = "-- DirectX11 Test - Unoptimized renderer (no batching etc.) - VR is not supported - Please report feedback on Discord/Steam Forums --";
-
-#endif
-
-#ifdef MCENGINE_FEATURE_BASS_WASAPI
-
-		bannerText = UString::format(convar->getConVarByName("win_snd_wasapi_exclusive")->getBool() ?
-				"-- WASAPI Exclusive Mode! win_snd_wasapi_buffer_size = %i ms --" :
-				"-- WASAPI Shared Mode! win_snd_wasapi_buffer_size = %i ms --",
-				(int)(std::round(convar->getConVarByName("win_snd_wasapi_buffer_size")->getFloat()*1000.0f)));
-
-#endif
+		if constexpr (Env::cfg(AUD::WASAPI))
+			bannerText = UString::format(convar->getConVarByName("win_snd_wasapi_exclusive")->getBool() ?
+					"-- WASAPI Exclusive Mode! win_snd_wasapi_buffer_size = %i ms --" :
+					"-- WASAPI Shared Mode! win_snd_wasapi_buffer_size = %i ms --",
+					(int)(std::round(convar->getConVarByName("win_snd_wasapi_buffer_size")->getFloat()*1000.0f)));
 
 		if (osu_main_menu_banner_always_text.getString().length() > 0)
 			bannerText = osu_main_menu_banner_always_text.getString();

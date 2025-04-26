@@ -325,16 +325,8 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 
     // create timers
     auto *frameTimer = new Timer();
-    frameTimer->start();
-    frameTimer->update();
-
     auto *deltaTimer = new Timer();
-    deltaTimer->start();
-    deltaTimer->update();
-
 	auto *fpsCalcTimer = new Timer();
-	fpsCalcTimer->start();
-	fpsCalcTimer->update();
 
 	// variables to keep track of fps overhead adjustment
 	uint64_t frameCountSinceLastFpsCalc = 0;
@@ -396,11 +388,12 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 		VPROF_MAIN();
 
 		// HACKHACK: switch hack (usb mouse/keyboard support)
-#ifdef __SWITCH__
-		HorizonSDLEnvironment *horizonSDLenv = dynamic_cast<HorizonSDLEnvironment*>(environment);
-		if (horizonSDLenv != NULL)
-			horizonSDLenv->update_before_winproc();
-#endif
+		if constexpr (Env::cfg(OS::HORIZON))
+		{
+			HorizonSDLEnvironment *horizonSDLenv = dynamic_cast<HorizonSDLEnvironment*>(environment);
+			if (horizonSDLenv != NULL)
+				horizonSDLenv->update_before_winproc();
+		}
 
 		// handle window message queue
 		{

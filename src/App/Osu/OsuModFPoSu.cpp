@@ -266,7 +266,7 @@ void OsuModFPoSu::draw(Graphics *g)
 
 						Matrix4 worldMatrix = m_modelMatrix;
 
-#ifdef MCENGINE_FEATURE_DIRECTX11
+						if constexpr (Env::cfg(REND::DX11))
 						{
 							DirectX11Interface *dx11 = dynamic_cast<DirectX11Interface*>(engine->getGraphics());
 							if (dx11 != NULL)
@@ -276,7 +276,6 @@ void OsuModFPoSu::draw(Graphics *g)
 								worldMatrix = worldMatrix * zflip;
 							}
 						}
-#endif
 
 						g->setWorldMatrixMul(worldMatrix);
 						{
@@ -920,25 +919,18 @@ void OsuModFPoSu::makePlayfield()
 	m_vao->clear();
 	m_meshList.clear();
 
-#ifdef MCENGINE_FEATURE_DIRECTX11
-
 	float topTC = 1.0f;
 	float bottomTC = 0.0f;
+
+	if constexpr (Env::cfg(REND::DX11))
 	{
-		DirectX11Interface *dx11 = dynamic_cast<DirectX11Interface*>(engine->getGraphics());
+		DirectX11Interface *dx11 = dynamic_cast<DirectX11Interface *>(engine->getGraphics());
 		if (dx11 != NULL)
 		{
 			topTC = 0.0f;
 			bottomTC = 1.0f;
 		}
 	}
-
-#else
-
-	const float topTC = 1.0f;
-	const float bottomTC = 0.0f;
-
-#endif
 
 	const float dist = -fposu_distance.getFloat();
 

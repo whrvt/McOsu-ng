@@ -33,6 +33,8 @@ private:
 	bool m_glfinish;
 };
 
+#else
+class SDLGLLegacyInterface : public OpenGLLegacyInterface{};
 #endif
 
 #endif

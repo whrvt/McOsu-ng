@@ -61,5 +61,7 @@ private:
 #endif
 };
 
+#else
+class BassSoundEngine : public SoundEngine{};
 #endif
 #endif

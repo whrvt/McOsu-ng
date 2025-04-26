@@ -7,6 +7,8 @@
 
 #include "SWRenderTarget.h"
 
+#ifdef MCENGINE_FEATURE_SOFTRENDERER
+
 SWRenderTarget::SWRenderTarget(int x, int y, int width, int height, Graphics::MULTISAMPLE_TYPE multiSampleType) : RenderTarget(x, y, width, height, multiSampleType)
 {
 	// TODO:
@@ -46,3 +48,5 @@ void SWRenderTarget::unbind()
 {
 	// TODO:
 }
+
+#endif

@@ -54,7 +54,6 @@ bool SteamworksInterfaceWaitAPICallBlocking(SteamAPICall_t apiCall, void *pCallb
 		debugLog("SteamworksInterfaceWaitAPICallBlocking() ...\n");
 
 	Timer t;
-	t.start();
 
 	bool timeout = false;
 	bool completed = false;

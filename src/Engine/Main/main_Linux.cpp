@@ -393,21 +393,13 @@ int main(int argc, char *argv[])
 
     // create timers
     Timer *frameTimer = new Timer();
-    frameTimer->start();
-    frameTimer->update();
-
     Timer *deltaTimer = new Timer();
-    deltaTimer->start();
-    deltaTimer->update();
 
     // initialize engine
 	LinuxEnvironment *environment = new LinuxEnvironment(dpy, win);
 	g_environment = environment;
     g_engine = new Engine(environment, argc > 1 ? argv[1] : ""); // TODO: proper arg support
     g_engine->loadApp();
-
-    frameTimer->update();
-    deltaTimer->update();
 
     // main loop
 	while (g_bRunning)

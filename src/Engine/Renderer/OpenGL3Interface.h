@@ -139,6 +139,8 @@ private:
 	std::stack<McRect> m_clipRectStack;
 };
 
+#else
+class OpenGL3Interface : public Graphics{};
 #endif
 
 #endif

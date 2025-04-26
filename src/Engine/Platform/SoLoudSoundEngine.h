@@ -67,5 +67,7 @@ private:
 	SoLoud::Soloud m_engine;
 };
 
+#else
+class SoLoudSoundEngine : public SoundEngine{};
 #endif
 #endif

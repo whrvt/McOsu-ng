@@ -65,5 +65,7 @@ private:
 	SOUNDHANDLE m_HCHANNEL;
 };
 
+#else
+class SDLSound : public Sound{};
 #endif
 #endif

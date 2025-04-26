@@ -158,6 +158,8 @@ private:
 	const char *m_sPrevClipboardTextSDL;
 };
 
+#else
+class SDLEnvironment : public Environment{};
 #endif
 
 #endif

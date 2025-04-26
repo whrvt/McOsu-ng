@@ -5,7 +5,6 @@
 // $NoKeywords: $mactime $os
 //===============================================================================//
 
-#ifdef __APPLE__
 
 #pragma once
 #ifndef MACOSTIMER_H
@@ -13,32 +12,36 @@
 
 #include "Timer.h"
 
+#if defined(__APPLE__) && !defined(MCENGINE_FEATURE_SDL)
+
 #include <mach/mach.h>
 #include <mach/mach_time.h>
 
 class MacOSTimer : public BaseTimer
 {
 public:
-	MacOSTimer();
-	virtual ~MacOSTimer() {;}
+	MacOSTimer(bool startOnCtor = true);
+	~MacOSTimer() override = default;
 
-	virtual void start() override;
-	virtual void update() override;
+	void start() override;
+	void update() override;
 
-	virtual inline double getDelta() const override {return m_delta;}
-	virtual inline double getElapsedTime() const override {return m_elapsedTime;}
-	virtual inline uint64_t getElapsedTimeMS() const override {return m_elapsedTimeMS;}
+	[[nodiscard]] inline double getDelta() const override { return m_delta; }
+	[[nodiscard]] inline double getElapsedTime() const override { return m_elapsedTime; }
+	[[nodiscard]] inline uint64_t getElapsedTimeMS() const override { return m_elapsedTimeMS; }
 
 private:
 	mach_timebase_info_data_t m_timebaseInfo;
-	uint64_t m_currentTime;
-	uint64_t m_startTime;
+	uint64_t m_currentTime{};
+	uint64_t m_startTime{};
 
-	double m_delta;
-	double m_elapsedTime;
-	uint64_t m_elapsedTimeMS;
+	double m_delta{};
+	double m_elapsedTime{};
+	uint64_t m_elapsedTimeMS{};
 };
 
+#else
+using MacOSTimer = DummyTimer;
 #endif
 
 #endif

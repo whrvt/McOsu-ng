@@ -945,7 +945,7 @@ void OsuHUD::drawCursorTrailInt(Graphics *g, Shader *trailShader, std::vector<CU
 
 				trailShader->setUniform1f("time", (float)engine->getTime());
 
-#ifdef MCENGINE_FEATURE_OPENGLES
+				if constexpr (Env::cfg(REND::GLES2))
 				{
 					OpenGLES2Interface *gles2 = dynamic_cast<OpenGLES2Interface*>(g);
 					if (gles2 != NULL)
@@ -955,9 +955,8 @@ void OsuHUD::drawCursorTrailInt(Graphics *g, Shader *trailShader, std::vector<CU
 						trailShader->setUniformMatrix4fv("mvp", mvp);
 					}
 				}
-#endif
 
-#ifdef MCENGINE_FEATURE_DIRECTX11
+				if constexpr (Env::cfg(REND::DX11))
 				{
 					DirectX11Interface *dx11 = dynamic_cast<DirectX11Interface*>(g);
 					if (dx11 != NULL)
@@ -967,7 +966,6 @@ void OsuHUD::drawCursorTrailInt(Graphics *g, Shader *trailShader, std::vector<CU
 						trailShader->setUniformMatrix4fv("mvp", mvp);
 					}
 				}
-#endif
 
 				trailImage->bind();
 				{

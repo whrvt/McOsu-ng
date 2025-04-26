@@ -5,11 +5,11 @@
 // $NoKeywords: $wintime $os
 //===============================================================================//
 
-#if defined(_WIN32) || defined(_WIN64) || defined(__WIN32__) || defined(__CYGWIN__) || defined(__CYGWIN32__) || defined(__TOS_WIN__) || defined(__WINDOWS__)
-
 #include "WinTimer.h"
 
-WinTimer::WinTimer() : BaseTimer()
+#if !defined(MCENGINE_FEATURE_SDL) && defined(_WIN32) || defined(_WIN64) || defined(__WIN32__) || defined(__CYGWIN__) || defined(__CYGWIN32__) || defined(__TOS_WIN__) || defined(__WINDOWS__)
+
+WinTimer::WinTimer(bool startOnCtor)
 {
 	LARGE_INTEGER ticks;
 	QueryPerformanceFrequency(&ticks);
@@ -17,12 +17,8 @@ WinTimer::WinTimer() : BaseTimer()
 	m_secondsPerTick = 1.0 / (double)ticks.QuadPart;
 	m_ticksPerSecond = ticks.QuadPart;
 
-	m_startTime.QuadPart = 0;
-	m_currentTime.QuadPart = 0;
-
-	m_delta = 0.0;
-	m_elapsedTime = 0.0;
-	m_elapsedTimeMS = 0;
+	if (startOnCtor)
+		start();
 }
 
 void WinTimer::start()

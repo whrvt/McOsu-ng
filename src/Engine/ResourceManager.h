@@ -26,10 +26,10 @@ class ResourceManager
 public:
 	static ConVar *debug_rm;
 
-	static constexpr const char *const PATH_DEFAULT_IMAGES  = Env::cfg(OS::HORIZON) ? "romfs:/materials/" : "materials/";
-	static constexpr const char *const PATH_DEFAULT_FONTS   = Env::cfg(OS::HORIZON) ? "romfs:/fonts/"	  : "fonts/";
-	static constexpr const char *const PATH_DEFAULT_SOUNDS  = Env::cfg(OS::HORIZON) ? "romfs:/sounds/"	  : "sounds/";
-	static constexpr const char *const PATH_DEFAULT_SHADERS = Env::cfg(OS::HORIZON) ? "romfs:/shaders/"	  : "shaders/";
+	static constexpr auto PATH_DEFAULT_IMAGES  = Env::cfg(OS::HORIZON) ? "romfs:/materials/"  : "materials/";
+	static constexpr auto PATH_DEFAULT_FONTS   = Env::cfg(OS::HORIZON) ? "romfs:/fonts/"	  : "fonts/";
+	static constexpr auto PATH_DEFAULT_SOUNDS  = Env::cfg(OS::HORIZON) ? "romfs:/sounds/"	  : "sounds/";
+	static constexpr auto PATH_DEFAULT_SHADERS = Env::cfg(OS::HORIZON) ? "romfs:/shaders/"	  : "shaders/";
 
 public:
 	template<typename T>

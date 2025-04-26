@@ -125,6 +125,8 @@ private:
 	std::stack<McRect> m_clipRectStack;
 };
 
+#else
+class OpenGLLegacyInterface : public Graphics{};
 #endif
 
 #endif

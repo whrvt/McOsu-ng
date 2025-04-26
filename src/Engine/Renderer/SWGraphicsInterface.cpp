@@ -7,6 +7,8 @@
 
 #include "SWGraphicsInterface.h"
 
+#ifdef MCENGINE_FEATURE_SOFTRENDERER
+
 #include "Engine.h"
 #include "ConVar.h"
 #include "Camera.h"
@@ -600,3 +602,5 @@ SWGraphicsInterface::PIXEL SWGraphicsInterface::getColorPixel(const Color &color
 	p.a = (unsigned char)COLOR_GET_Ai(color);
 	return p;
 }
+
+#endif

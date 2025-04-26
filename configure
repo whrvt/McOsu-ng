@@ -5947,6 +5947,7 @@ else case e in #(
   e)
     CC=gcc
     CXX=g++
+    MCOSU_CXXFLAGS="$MCOSU_CXXFLAGS -fimplicit-constexpr"
  ;;
 esac
 fi

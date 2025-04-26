@@ -74,5 +74,7 @@ private:
 	[[nodiscard]] inline HSTREAM _BASS_FX_TempoCreate(DWORD chan, DWORD flags) const;
 };
 
+#else
+class BassSound : public Sound{};
 #endif
 #endif

@@ -5,36 +5,38 @@
 // $NoKeywords: $nxtime $os
 //===============================================================================//
 
-#ifdef __SWITCH__
-
 #pragma once
 #ifndef HORIZONTIMER_H
 #define HORIZONTIMER_H
 
 #include "Timer.h"
 
+#ifdef __SWITCH__
+
 class HorizonTimer : public BaseTimer
 {
 public:
-	HorizonTimer();
-	virtual ~HorizonTimer() {;}
+	HorizonTimer(bool startOnCtor = true) {if (startOnCtor) start();}
+	~HorizonTimer() override = default;
 
-	virtual void start() override;
-	virtual void update() override;
+	void start() override;
+	void update() override;
 
-	virtual inline double getDelta() const override {return m_delta;}
-	virtual inline double getElapsedTime() const override {return m_elapsedTime;}
-	virtual inline uint64_t getElapsedTimeMS() const override {return m_elapsedTimeMS;}
+	[[nodiscard]] inline double getDelta() const override { return m_delta; }
+	[[nodiscard]] inline double getElapsedTime() const override { return m_elapsedTime; }
+	[[nodiscard]] inline uint64_t getElapsedTimeMS() const override { return m_elapsedTimeMS; }
 
 private:
-    uint64_t m_startTime;
-    uint64_t m_currentTime;
+    uint64_t m_startTime{};
+    uint64_t m_currentTime{};
 
-    double m_delta;
-    double m_elapsedTime;
-    uint64_t m_elapsedTimeMS;
+    double m_delta{};
+    double m_elapsedTime{};
+    uint64_t m_elapsedTimeMS{};
 };
 
+#else
+using HorizonTimer = DummyTimer;
 #endif
 
 #endif

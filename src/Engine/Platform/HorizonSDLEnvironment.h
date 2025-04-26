@@ -5,13 +5,13 @@
 // $NoKeywords: $nxsdlenv
 //===============================================================================//
 
-#ifdef __SWITCH__
-
 #pragma once
 #ifndef HORIZONSDLENVIRONMENT_H
 #define HORIZONSDLENVIRONMENT_H
 
 #include "SDLEnvironment.h"
+
+#ifdef __SWITCH__
 
 #ifdef MCENGINE_FEATURE_SDL
 
@@ -71,6 +71,11 @@ private:
 
 #endif
 
+#else
+class HorizonSDLEnvironment : public SDLEnvironment{
+public:
+	void update_before_winproc(){};
+};
 #endif
 
 #endif

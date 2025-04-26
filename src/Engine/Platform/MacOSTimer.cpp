@@ -9,16 +9,11 @@
 
 #include "MacOSTimer.h"
 
-MacOSTimer::MacOSTimer() : BaseTimer()
+MacOSTimer::MacOSTimer(bool startOnCtor)
 {
 	mach_timebase_info(&m_timebaseInfo);
-
-	m_currentTime = 0;
-	m_startTime = 0;
-
-	m_delta = 0.0;
-	m_elapsedTime = 0.0;
-	m_elapsedTimeMS = 0;
+	if (startOnCtor)
+		start();
 }
 
 void MacOSTimer::start()

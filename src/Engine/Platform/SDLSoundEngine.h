@@ -52,5 +52,7 @@ private:
 	float m_fVolumeMixMusic;
 };
 
+#else
+class SDLSoundEngine : public SoundEngine{};
 #endif
 #endif

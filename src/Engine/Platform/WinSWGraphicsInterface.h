@@ -5,13 +5,14 @@
 // $NoKeywords: $winswi
 //===============================================================================//
 
-#if defined(_WIN32) || defined(_WIN64) || defined(__WIN32__) || defined(__CYGWIN__) || defined(__CYGWIN32__) || defined(__TOS_WIN__) || defined(__WINDOWS__)
-
 #pragma once
 #ifndef WINSWGRAPHICSINTERFACE_H
 #define WINSWGRAPHICSINTERFACE_H
 
 #include "SWGraphicsInterface.h"
+#ifdef MCENGINE_FEATURE_SOFTRENDERER
+#if defined(_WIN32) || defined(_WIN64) || defined(__WIN32__) || defined(__CYGWIN__) || defined(__CYGWIN32__) || defined(__TOS_WIN__) || defined(__WINDOWS__)
+
 #include <windows.h>
 
 class WinSWGraphicsInterface : public SWGraphicsInterface
@@ -33,5 +34,7 @@ private:
 };
 
 #endif
-
+#else
+class WinSWGraphicsInterface : public SWGraphicsInterface{};
+#endif
 #endif

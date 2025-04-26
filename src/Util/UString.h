@@ -32,6 +32,11 @@ public:
 	[[nodiscard]] inline int lengthUtf8() const { return m_lengthUtf8; }
 	[[nodiscard]] inline const char *toUtf8() const { return m_utf8.c_str(); }
 	[[nodiscard]] inline const wchar_t *wc_str() const { return m_unicode.c_str(); }
+	// basically just for autodetecting windows' wchar_t
+	[[nodiscard]] inline auto plat_str() const {
+		if constexpr (Env::cfg(OS::WINDOWS)) return m_unicode.c_str();
+		else return m_utf8.c_str();
+	}
 	[[nodiscard]] inline bool isAsciiOnly() const { return m_isAsciiOnly; }
 	[[nodiscard]] bool isWhitespaceOnly() const;
 	[[nodiscard]] inline bool isEmpty() const { return length() > 0 && !isWhitespaceOnly(); }

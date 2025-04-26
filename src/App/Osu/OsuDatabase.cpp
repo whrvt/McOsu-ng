@@ -373,7 +373,7 @@ OsuDatabase::OsuDatabase(Osu *osu)
 	osu_scores_export.setCallback( fastdelegate::MakeDelegate(this, &OsuDatabase::onScoresExport) );
 
 	// vars
-	m_importTimer = new Timer();
+	m_importTimer = new Timer(false);
 	m_bIsFirstLoad = true;
 	m_bFoundChanges = true;
 
@@ -432,7 +432,6 @@ void OsuDatabase::update()
 	if (m_bRawBeatmapLoadScheduled)
 	{
 		Timer t;
-		t.start();
 
 		while (t.getElapsedTime() < 0.033f)
 		{

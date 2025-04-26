@@ -102,5 +102,7 @@ private:
 	double m_fSoLoudPositionRate;     // estimated playback rate (position units per second)
 };
 
+#else
+class SoLoudSound : public Sound{};
 #endif
 #endif

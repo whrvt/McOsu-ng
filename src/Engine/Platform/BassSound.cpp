@@ -13,7 +13,7 @@
 #ifdef __linux__
 #include <dlfcn.h>
 #else
-#define DL_CALL_FCT(fctp, args) ((*(fctp)) args)
+#define DL_CALL_FCT(fctp, args) ((*(fctp))args)
 #endif
 
 #include "ConVar.h"
@@ -41,9 +41,8 @@ BassSound::BassSound(UString filepath, bool stream, bool threeD, bool loop, bool
 	m_wasapiSampleBuffer = NULL;
 	m_iWasapiSampleBufferSize = 0;
 
-#ifdef MCENGINE_FEATURE_BASS_WASAPI
-	m_danglingWasapiStreams.reserve(32);
-#endif
+	if constexpr (Env::cfg(AUD::WASAPI))
+		m_danglingWasapiStreams.reserve(32);
 }
 
 void BassSound::init()
@@ -71,7 +70,7 @@ void BassSound::init()
 
 BassSound::~BassSound()
 {
-    destroy();
+	destroy();
 }
 
 void BassSound::initAsync()
@@ -99,28 +98,19 @@ void BassSound::initAsync()
 	}
 
 	// create the sound
+	constexpr DWORD unicodeFlag = Env::cfg(OS::WINDOWS) ? BASS_UNICODE : 0;
 	if (m_bStream)
 	{
 		DWORD extraStreamCreateFileFlags = 0;
 		DWORD extraFXTempoCreateFlags = 0;
 
-#if defined(_WIN32) || defined(_WIN64) || defined(__WIN32__) || defined(__CYGWIN__) || defined(__CYGWIN32__) || defined(__TOS_WIN__) || defined(__WINDOWS__)
-
-#ifdef MCENGINE_FEATURE_BASS_WASAPI
-		extraStreamCreateFileFlags |= BASS_SAMPLE_FLOAT;
-		extraFXTempoCreateFlags |= BASS_STREAM_DECODE;
-#endif
-
-		m_HSTREAM = BASS_StreamCreateFile(FALSE, m_sFilePath.wc_str(), 0, 0,
-		                                  (m_bPrescan ? BASS_STREAM_PRESCAN : 0) | BASS_STREAM_DECODE | BASS_UNICODE | extraStreamCreateFileFlags);
-
-#elif defined __linux__
-		m_HSTREAM =
-		    BASS_StreamCreateFile(FALSE, m_sFilePath.toUtf8(), 0, 0, (m_bPrescan ? BASS_STREAM_PRESCAN : 0) | BASS_STREAM_DECODE | extraStreamCreateFileFlags);
-#else
-		m_HSTREAM =
-		    BASS_StreamCreateFile(FALSE, m_sFilePath.toUtf8(), 0, 0, (m_bPrescan ? BASS_STREAM_PRESCAN : 0) | BASS_STREAM_DECODE | extraStreamCreateFileFlags);
-#endif
+		if constexpr (Env::cfg(OS::WINDOWS, AUD::WASAPI))
+		{
+			extraStreamCreateFileFlags |= BASS_SAMPLE_FLOAT;
+			extraFXTempoCreateFlags |= BASS_STREAM_DECODE;
+		}
+		m_HSTREAM = BASS_StreamCreateFile(FALSE, m_sFilePath.plat_str(), 0, 0,
+		                                  (m_bPrescan ? BASS_STREAM_PRESCAN : 0) | BASS_STREAM_DECODE | extraStreamCreateFileFlags | unicodeFlag);
 
 		m_HSTREAM = _BASS_FX_TempoCreate(m_HSTREAM, BASS_FX_TEMPO_ALGO_SHANNON | BASS_FX_FREESOURCE | extraFXTempoCreateFlags);
 
@@ -132,34 +122,27 @@ void BassSound::initAsync()
 	}
 	else // not a stream
 	{
-#if defined(_WIN32) || defined(_WIN64) || defined(__WIN32__) || defined(__CYGWIN__) || defined(__CYGWIN32__) || defined(__TOS_WIN__) || defined(__WINDOWS__)
-
-#ifdef MCENGINE_FEATURE_BASS_WASAPI
-		McFile file(m_sFilePath);
-		if (file.canRead())
+		if constexpr (Env::cfg(OS::WINDOWS, AUD::WASAPI))
 		{
-			m_iWasapiSampleBufferSize = file.getFileSize();
-			if (m_iWasapiSampleBufferSize > 0)
+			McFile file(m_sFilePath);
+			if (file.canRead())
 			{
-				m_wasapiSampleBuffer = new char[file.getFileSize()];
-				memcpy(m_wasapiSampleBuffer, file.readFile(), file.getFileSize());
+				m_iWasapiSampleBufferSize = file.getFileSize();
+				if (m_iWasapiSampleBufferSize > 0)
+				{
+					m_wasapiSampleBuffer = new char[file.getFileSize()];
+					memcpy(m_wasapiSampleBuffer, file.readFile(), file.getFileSize());
+				}
 			}
+			else
+				debugLog("Sound Error: Couldn't file.canRead() on file %s\n", m_sFilePath.toUtf8());
 		}
 		else
-			debugLog("Sound Error: Couldn't file.canRead() on file %s\n", m_sFilePath.toUtf8());
-#else
-		m_HSTREAM =
-		    BASS_SampleLoad(FALSE, m_sFilePath.wc_str(), 0, 0, 5,
-		                    (m_bIsLooped ? BASS_SAMPLE_LOOP : 0) | (m_bIs3d ? BASS_SAMPLE_3D | BASS_SAMPLE_MONO : 0) | BASS_SAMPLE_OVER_POS | BASS_UNICODE);
-#endif
-
-#elif defined __linux__
-		m_HSTREAM = BASS_SampleLoad(FALSE, m_sFilePath.toUtf8(), 0, 0, 5,
-		                            (m_bIsLooped ? BASS_SAMPLE_LOOP : 0) | (m_bIs3d ? BASS_SAMPLE_3D | BASS_SAMPLE_MONO : 0) | BASS_SAMPLE_OVER_POS);
-#else
-		m_HSTREAM = BASS_SampleLoad(FALSE, m_sFilePath.toUtf8(), 0, 0, 5,
-		                            (m_bIsLooped ? BASS_SAMPLE_LOOP : 0) | (m_bIs3d ? BASS_SAMPLE_3D | BASS_SAMPLE_MONO : 0) | BASS_SAMPLE_OVER_POS);
-#endif
+		{
+			m_HSTREAM =
+			    BASS_SampleLoad(FALSE, m_sFilePath.plat_str(), 0, 0, 5,
+			                    (m_bIsLooped ? BASS_SAMPLE_LOOP : 0) | (m_bIs3d ? BASS_SAMPLE_3D | BASS_SAMPLE_MONO : 0) | BASS_SAMPLE_OVER_POS | unicodeFlag);
+		}
 
 		m_HSTREAMBACKUP = m_HSTREAM; // needed for proper cleanup for FX HSAMPLES
 
@@ -177,9 +160,8 @@ BassSound::SOUNDHANDLE BassSound::getHandle()
 	// overlayable implies multiple channels playing at once)
 	if (m_bStream)
 		return m_HSTREAM;
-	else
+	else if constexpr (Env::cfg(AUD::WASAPI))
 	{
-#ifdef MCENGINE_FEATURE_BASS_WASAPI
 		// HACKHACK: wasapi stream objects can't be reused
 		if (m_HCHANNEL == 0 || m_bIsOverlayable)
 		{
@@ -206,10 +188,9 @@ BassSound::SOUNDHANDLE BassSound::getHandle()
 				m_danglingWasapiStreams.push_back(m_HCHANNEL);
 			}
 		}
-
-		return m_HCHANNEL;
-#endif
-
+	}
+	else
+	{
 		if (m_HCHANNEL != 0 && !m_bIsOverlayable)
 			return m_HCHANNEL;
 
@@ -228,9 +209,8 @@ BassSound::SOUNDHANDLE BassSound::getHandle()
 		}
 		else
 			BASS_ChannelSetAttribute(m_HCHANNEL, BASS_ATTRIB_VOL, m_fVolume);
-
-		return m_HCHANNEL;
 	}
+	return m_HCHANNEL;
 }
 
 void BassSound::destroy()
@@ -255,20 +235,21 @@ void BassSound::destroy()
 		if (m_HSTREAMBACKUP)
 			BASS_SampleFree(m_HSTREAMBACKUP);
 
-#ifdef MCENGINE_FEATURE_BASS_WASAPI
-		// NOTE: must guarantee that all channels are stopped before memory is deleted!
-		for (const SOUNDHANDLE danglingWasapiStream : m_danglingWasapiStreams)
+		if constexpr (Env::cfg(AUD::WASAPI))
 		{
-			BASS_StreamFree(danglingWasapiStream);
-		}
-		m_danglingWasapiStreams.clear();
+			// NOTE: must guarantee that all channels are stopped before memory is deleted!
+			for (const SOUNDHANDLE danglingWasapiStream : m_danglingWasapiStreams)
+			{
+				BASS_StreamFree(danglingWasapiStream);
+			}
+			m_danglingWasapiStreams.clear();
 
-		if (m_wasapiSampleBuffer != NULL)
-		{
-			delete[] m_wasapiSampleBuffer;
-			m_wasapiSampleBuffer = NULL;
+			if (m_wasapiSampleBuffer != NULL)
+			{
+				delete[] m_wasapiSampleBuffer;
+				m_wasapiSampleBuffer = NULL;
+			}
 		}
-#endif
 	}
 
 	m_HSTREAM = 0;

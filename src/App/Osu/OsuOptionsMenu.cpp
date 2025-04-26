@@ -756,18 +756,14 @@ OsuOptionsMenu::OsuOptionsMenu(Osu *osu) : OsuScreenBackable(osu)
 		((CBaseUIButton*)outputDeviceSelect.elements[0])->setClickCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onOutputDeviceSelect) );
 		outputDeviceSelect.resetButton->setClickCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onOutputDeviceResetClicked) );
 
-		if constexpr (Env::cfg(OS::WINDOWS))
+		if constexpr (Env::cfg(OS::WINDOWS, !AUD::WASAPI))
 		{
-#ifndef MCENGINE_FEATURE_BASS_WASAPI
-
 			CBaseUICheckbox *audioCompatibilityModeCheckbox = addCheckbox("Audio compatibility mode (!)", "Use legacy audio engine (higher latency but more compatible)\nWARNING: May cause hitsound delays and stuttering!", m_win_snd_fallback_dsound_ref);
 			audioCompatibilityModeCheckbox->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onAudioCompatibilityModeChange) );
 
 			// HACKHACK: force manual change if user has enabled it (don't use convar callback)
 			if (m_win_snd_fallback_dsound_ref->getBool())
 				onAudioCompatibilityModeChange(audioCompatibilityModeCheckbox);
-
-#endif
 		}
 
 		m_outputDeviceResetButton = outputDeviceSelect.resetButton;
@@ -777,33 +773,32 @@ OsuOptionsMenu::OsuOptionsMenu(Osu *osu) : OsuScreenBackable(osu)
 	else
 		addButton("Restart SoundEngine (fix crackling)")->setClickCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onOutputDeviceRestart) );
 
-#ifdef MCENGINE_FEATURE_BASS_WASAPI
-
-	addSubSection("WASAPI");
-	m_wasapiBufferSizeSlider = addSlider("Buffer Size:", 0.000f, 0.050f, convar->getConVarByName("win_snd_wasapi_buffer_size")); // NOTE: allow 0 for shared mode windows 10 + period
-	m_wasapiBufferSizeSlider->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onWASAPIBufferChange) );
-	m_wasapiBufferSizeSlider->setKeyDelta(0.001f);
-	m_wasapiBufferSizeSlider->setAnimated(false);
-	addLabel("Windows 7: Start at 11 ms,")->setTextColor(0xff666666);
-	addLabel("Windows 10: Start at 1 ms,")->setTextColor(0xff666666);
-	addLabel("and if crackling: increment until fixed.")->setTextColor(0xff666666);
-	addLabel("(lower is better, non-wasapi has ~40 ms minimum)")->setTextColor(0xff666666);
-	addCheckbox("Exclusive Mode", "Dramatically reduces audio latency, leave this enabled.\nExclusive Mode = No other application can use audio.", convar->getConVarByName("win_snd_wasapi_exclusive"));
-	//addLabel("(On Windows 10 non-exclusive mode, try buffer = 0)")->setTextColor(0xff666666);
-	//addLabel("(then, try getting the smallest possible period)")->setTextColor(0xff666666);
-	addLabel("");
-	addLabel("");
-	addLabel("WARNING: Only if you know what you are doing")->setTextColor(0xffff0000);
-	m_wasapiPeriodSizeSlider = addSlider("Period Size:", 0.0f, 0.050f, convar->getConVarByName("win_snd_wasapi_period_size"));
-	m_wasapiPeriodSizeSlider->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onWASAPIPeriodChange) );
-	m_wasapiPeriodSizeSlider->setKeyDelta(0.001f);
-	m_wasapiPeriodSizeSlider->setAnimated(false);
-	OsuUIButton *restartSoundEngine = addButton("Restart SoundEngine");
-	restartSoundEngine->setClickCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onOutputDeviceRestart) );
-	restartSoundEngine->setColor(0xff00566b);
-	addLabel("");
-
-#endif
+	if constexpr (Env::cfg(AUD::WASAPI))
+	{
+		addSubSection("WASAPI");
+		m_wasapiBufferSizeSlider = addSlider("Buffer Size:", 0.000f, 0.050f, convar->getConVarByName("win_snd_wasapi_buffer_size")); // NOTE: allow 0 for shared mode windows 10 + period
+		m_wasapiBufferSizeSlider->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onWASAPIBufferChange) );
+		m_wasapiBufferSizeSlider->setKeyDelta(0.001f);
+		m_wasapiBufferSizeSlider->setAnimated(false);
+		addLabel("Windows 7: Start at 11 ms,")->setTextColor(0xff666666);
+		addLabel("Windows 10: Start at 1 ms,")->setTextColor(0xff666666);
+		addLabel("and if crackling: increment until fixed.")->setTextColor(0xff666666);
+		addLabel("(lower is better, non-wasapi has ~40 ms minimum)")->setTextColor(0xff666666);
+		addCheckbox("Exclusive Mode", "Dramatically reduces audio latency, leave this enabled.\nExclusive Mode = No other application can use audio.", convar->getConVarByName("win_snd_wasapi_exclusive"));
+		//addLabel("(On Windows 10 non-exclusive mode, try buffer = 0)")->setTextColor(0xff666666);
+		//addLabel("(then, try getting the smallest possible period)")->setTextColor(0xff666666);
+		addLabel("");
+		addLabel("");
+		addLabel("WARNING: Only if you know what you are doing")->setTextColor(0xffff0000);
+		m_wasapiPeriodSizeSlider = addSlider("Period Size:", 0.0f, 0.050f, convar->getConVarByName("win_snd_wasapi_period_size"));
+		m_wasapiPeriodSizeSlider->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onWASAPIPeriodChange) );
+		m_wasapiPeriodSizeSlider->setKeyDelta(0.001f);
+		m_wasapiPeriodSizeSlider->setAnimated(false);
+		OsuUIButton *restartSoundEngine = addButton("Restart SoundEngine");
+		restartSoundEngine->setClickCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onOutputDeviceRestart) );
+		restartSoundEngine->setColor(0xff00566b);
+		addLabel("");
+	}
 
 	addSubSection("Volume");
 	CBaseUISlider *masterVolumeSlider = addSlider("Master:", 0.0f, 1.0f, convar->getConVarByName("osu_volume_master"), 70.0f);
@@ -2861,15 +2856,10 @@ void OsuOptionsMenu::onOutputDeviceResetUpdate()
 
 void OsuOptionsMenu::onOutputDeviceRestart()
 {
-#ifdef MCENGINE_FEATURE_BASS_WASAPI
-
-	engine->getSound()->setOutputDeviceForce(engine->getSound()->getOutputDevice());
-
-#else
-
-	engine->getSound()->setOutputDevice("Default"); // NOTE: only relevant for horizon builds atm
-
-#endif
+	if constexpr (Env::cfg(AUD::WASAPI))
+		engine->getSound()->setOutputDeviceForce(engine->getSound()->getOutputDevice());
+	else
+		engine->getSound()->setOutputDevice("Default"); // NOTE: only relevant for horizon builds atm
 }
 
 void OsuOptionsMenu::onAudioCompatibilityModeChange(CBaseUICheckbox *checkbox)

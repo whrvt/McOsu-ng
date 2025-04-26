@@ -11,6 +11,8 @@
 
 #include "Image.h"
 
+#ifdef MCENGINE_FEATURE_SOFTRENDERER
+
 class SWImage : public Image
 {
 public:
@@ -31,5 +33,9 @@ private:
 
 	unsigned int m_iTextureUnitBackup;
 };
+
+#else
+class SWImage : public Image{};
+#endif
 
 #endif

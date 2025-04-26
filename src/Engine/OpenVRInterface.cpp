@@ -239,12 +239,9 @@ OpenVRInterface::OpenVRInterface()
 	if (engine->getArgs().length() > 0 && engine->getArgs().find("novr") != -1)
 		return;
 
-#ifdef MCENGINE_FEATURE_DIRECTX11
-
-	if (dynamic_cast<DirectX11Interface*>(engine->getGraphics()) != NULL)
-		return;
-
-#endif
+	if constexpr (Env::cfg(REND::DX11))
+		if (dynamic_cast<DirectX11Interface*>(engine->getGraphics()) != NULL)
+			return;
 
 	// check if openvr runtime is installed
 	if (!vr::VR_IsRuntimeInstalled())
@@ -681,75 +678,74 @@ void OpenVRInterface::draw(Graphics *g)
 	if (!vr_spectator_mode.getBool() && vr_draw_hmd_to_window.getBool())
 		renderStereoToWindow(g);
 
-#ifdef MCENGINE_FEATURE_OPENGL
-
-	// push to hmd
-	// only OpenGL is supported atm
-	OpenGLRenderTarget *glLeftEye = dynamic_cast<OpenGLRenderTarget*>(m_leftEye);
-	OpenGLRenderTarget *glRightEye = dynamic_cast<OpenGLRenderTarget*>(m_rightEye);
-	OpenGLRenderTarget *glCompositorEye1 = dynamic_cast<OpenGLRenderTarget*>(m_compositorEye1);
-	OpenGLRenderTarget *glCompositorEye2 = m_compositorEye2 != NULL ? dynamic_cast<OpenGLRenderTarget*>(m_compositorEye2) : NULL;
-	if (glLeftEye != NULL && glRightEye != NULL && glCompositorEye1 != NULL)
+	if constexpr (Env::cfg(REND::GL))
 	{
-		// there are no words for how angry I am having to do supersampling like this >:(
-		// at least it only costs memory and not extra time
-
-		const bool submitDouble = vr_compositor_submit_double.getBool() && glCompositorEye2 != NULL;
-
-		// blit left
-		if (glLeftEye->isMultiSampled())
-			glLeftEye->blitResolveFrameBufferIntoFrameBuffer(glCompositorEye1);
-		else
-			glLeftEye->blitFrameBufferIntoFrameBuffer(glCompositorEye1);
-
-		// blit right double
-		if (submitDouble)
+		// push to hmd
+		// only OpenGL is supported atm
+		OpenGLRenderTarget *glLeftEye = dynamic_cast<OpenGLRenderTarget*>(m_leftEye);
+		OpenGLRenderTarget *glRightEye = dynamic_cast<OpenGLRenderTarget*>(m_rightEye);
+		OpenGLRenderTarget *glCompositorEye1 = dynamic_cast<OpenGLRenderTarget*>(m_compositorEye1);
+		OpenGLRenderTarget *glCompositorEye2 = m_compositorEye2 != NULL ? dynamic_cast<OpenGLRenderTarget*>(m_compositorEye2) : NULL;
+		if (glLeftEye != NULL && glRightEye != NULL && glCompositorEye1 != NULL)
 		{
-			if (glRightEye->isMultiSampled())
-				glRightEye->blitResolveFrameBufferIntoFrameBuffer(glCompositorEye2);
-			else
-				glRightEye->blitFrameBufferIntoFrameBuffer(glCompositorEye2);
-		}
+			// there are no words for how angry I am having to do supersampling like this >:(
+			// at least it only costs memory and not extra time
 
-		// submit left
+			const bool submitDouble = vr_compositor_submit_double.getBool() && glCompositorEye2 != NULL;
+
+			// blit left
+			if (glLeftEye->isMultiSampled())
+				glLeftEye->blitResolveFrameBufferIntoFrameBuffer(glCompositorEye1);
+			else
+				glLeftEye->blitFrameBufferIntoFrameBuffer(glCompositorEye1);
+
+			// blit right double
+			if (submitDouble)
+			{
+				if (glRightEye->isMultiSampled())
+					glRightEye->blitResolveFrameBufferIntoFrameBuffer(glCompositorEye2);
+				else
+					glRightEye->blitFrameBufferIntoFrameBuffer(glCompositorEye2);
+			}
+
+			// submit left
 #if defined(MCENGINE_FEATURE_OPENVR)
 
-		vr::Texture_t leftEyeTexture = {(void*)glCompositorEye1->getRenderTexture(), vr::ETextureType::TextureType_OpenGL, vr::EColorSpace::ColorSpace_Gamma};
-		vr::EVRCompositorError res = vr::VRCompositor()->Submit(vr::Eye_Left, &leftEyeTexture);
+			vr::Texture_t leftEyeTexture = {(void*)glCompositorEye1->getRenderTexture(), vr::ETextureType::TextureType_OpenGL, vr::EColorSpace::ColorSpace_Gamma};
+			vr::EVRCompositorError res = vr::VRCompositor()->Submit(vr::Eye_Left, &leftEyeTexture);
 
-		if (res != vr::EVRCompositorError::VRCompositorError_None)
-			debugLog("OpenVR Error: Compositor::Submit(Eye_Left) error %i!!!\n", (int)res);
+			if (res != vr::EVRCompositorError::VRCompositorError_None)
+				debugLog("OpenVR Error: Compositor::Submit(Eye_Left) error %i!!!\n", (int)res);
 
 #endif
 
-		// blit right
-		if (!submitDouble)
-		{
-			if (glRightEye->isMultiSampled())
-				glRightEye->blitResolveFrameBufferIntoFrameBuffer(glCompositorEye1);
-			else
-				glRightEye->blitFrameBufferIntoFrameBuffer(glCompositorEye1);
-		}
+			// blit right
+			if (!submitDouble)
+			{
+				if (glRightEye->isMultiSampled())
+					glRightEye->blitResolveFrameBufferIntoFrameBuffer(glCompositorEye1);
+				else
+					glRightEye->blitFrameBufferIntoFrameBuffer(glCompositorEye1);
+			}
 
-		// submit right (double)
+			// submit right (double)
 #if defined(MCENGINE_FEATURE_OPENVR)
 
-		vr::Texture_t rightEyeTexture = {(void*)(submitDouble ? glCompositorEye2->getRenderTexture() : glCompositorEye1->getRenderTexture()), vr::ETextureType::TextureType_OpenGL, vr::EColorSpace::ColorSpace_Gamma};
-		res = vr::VRCompositor()->Submit(vr::Eye_Right, &rightEyeTexture);
+			vr::Texture_t rightEyeTexture = {(void*)(submitDouble ? glCompositorEye2->getRenderTexture() : glCompositorEye1->getRenderTexture()), vr::ETextureType::TextureType_OpenGL, vr::EColorSpace::ColorSpace_Gamma};
+			res = vr::VRCompositor()->Submit(vr::Eye_Right, &rightEyeTexture);
 
-		if (res != vr::EVRCompositorError::VRCompositorError_None)
-			debugLog("OpenVR Error: Compositor::Submit(Eye_Right) error %i!!!\n", (int)res);
+			if (res != vr::EVRCompositorError::VRCompositorError_None)
+				debugLog("OpenVR Error: Compositor::Submit(Eye_Right) error %i!!!\n", (int)res);
 
-		// from the OpenVR documentation:
-		// "If [Submit] called from an OpenGL app, consider adding a glFlush after submitting both frames to signal the driver to start processing, otherwise it may wait until the command buffer fills up, causing the app to miss frames"
-		g->flush();
+			// from the OpenVR documentation:
+			// "If [Submit] called from an OpenGL app, consider adding a glFlush after submitting both frames to signal the driver to start processing, otherwise it may wait until the command buffer fills up, causing the app to miss frames"
+			g->flush();
 
 #endif
 
-		m_bSteamVRBugWorkaroundCompositorSSChangeAllowed = false; // we can no longer change the texture size, after the first submit
+			m_bSteamVRBugWorkaroundCompositorSSChangeAllowed = false; // we can no longer change the texture size, after the first submit
+		}
 	}
-
-#endif
 
 	// spectator mode
 	if (vr_spectator_mode.getBool())
