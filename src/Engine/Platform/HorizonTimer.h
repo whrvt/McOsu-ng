@@ -16,7 +16,7 @@
 class HorizonTimer : public BaseTimer
 {
 public:
-	HorizonTimer(bool startOnCtor = true) {if (startOnCtor) start();}
+	inline HorizonTimer(bool startOnCtor = true) {if (startOnCtor) start();}
 	~HorizonTimer() override = default;
 
 	void start() override;

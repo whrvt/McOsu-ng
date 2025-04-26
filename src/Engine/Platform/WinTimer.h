@@ -21,7 +21,7 @@
 class WinTimer : public BaseTimer
 {
 public:
-	WinTimer(bool startOnCtor = true);
+	inline WinTimer(bool startOnCtor = true);
 	~WinTimer() override = default;
 
 	void start() override;

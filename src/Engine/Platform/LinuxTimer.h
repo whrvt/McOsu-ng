@@ -18,7 +18,7 @@
 class LinuxTimer : public BaseTimer
 {
 public:
-	LinuxTimer(bool startOnCtor = true) {if (startOnCtor) start();}
+	inline LinuxTimer(bool startOnCtor = true) {if (startOnCtor) start();}
 	~LinuxTimer() override = default;
 
 	void start() override;

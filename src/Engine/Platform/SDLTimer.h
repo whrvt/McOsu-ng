@@ -18,7 +18,7 @@
 class SDLTimer : public BaseTimer
 {
 public:
-	SDLTimer(bool startOnCtor = true) {if (startOnCtor) start();}
+	inline SDLTimer(bool startOnCtor = true) {if (startOnCtor) start();}
 	~SDLTimer() override = default;
 
 	inline void start() override

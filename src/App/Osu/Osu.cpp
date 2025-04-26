@@ -229,8 +229,8 @@ Osu::Osu(Osu2 *osu2, int instanceID)
 	steam->setRichPresence("steam_display", "#Status");
 	steam->setRichPresence("status", "...");
 
-	constexpr float unioffset = Env::cfg(AUD::WASAPI) ?  15.0f  :
-								Env::cfg(AUD::BASS)	  ? -25.0f  :
+	constexpr float unioffset = Env::cfg(AUD::WASAPI) ? -25.0f  :
+								Env::cfg(AUD::BASS)	  ?  15.0f  :
 								Env::cfg(AUD::SDL)	  ? -110.0f :
 								Env::cfg(AUD::SOLOUD) ? -20.0f  : 0.0f;
 

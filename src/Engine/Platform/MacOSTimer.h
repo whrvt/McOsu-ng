@@ -20,7 +20,7 @@
 class MacOSTimer : public BaseTimer
 {
 public:
-	MacOSTimer(bool startOnCtor = true);
+	inline MacOSTimer(bool startOnCtor = true);
 	~MacOSTimer() override = default;
 
 	void start() override;
