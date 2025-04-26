@@ -40,8 +40,11 @@ private:
 	uint64_t m_elapsedTimeMS{};
 };
 
+using Timer = MacOSTimer;
+
 #else
-using MacOSTimer = DummyTimer;
+class MacOSTimer : public BaseTimer
+{};
 #endif
 
 #endif

@@ -294,7 +294,6 @@ am_McOsu_ng_OBJECTS = src/App/Osu/McOsu_ng-Osu.$(OBJEXT) \
 	src/Engine/McOsu_ng-SoundEngine.$(OBJEXT) \
 	src/Engine/McOsu_ng-SteamworksInterface.$(OBJEXT) \
 	src/Engine/McOsu_ng-TextureAtlas.$(OBJEXT) \
-	src/Engine/McOsu_ng-Timer.$(OBJEXT) \
 	src/Engine/McOsu_ng-VertexArrayObject.$(OBJEXT) \
 	src/Engine/McOsu_ng-VulkanInterface.$(OBJEXT) \
 	src/GUI/McOsu_ng-CBaseUIBoxShadow.$(OBJEXT) \
@@ -446,7 +445,6 @@ am__depfiles_remade = src/App/Osu/$(DEPDIR)/McOsu_ng-Osu.Po \
 	src/Engine/$(DEPDIR)/McOsu_ng-SoundEngine.Po \
 	src/Engine/$(DEPDIR)/McOsu_ng-SteamworksInterface.Po \
 	src/Engine/$(DEPDIR)/McOsu_ng-TextureAtlas.Po \
-	src/Engine/$(DEPDIR)/McOsu_ng-Timer.Po \
 	src/Engine/$(DEPDIR)/McOsu_ng-VertexArrayObject.Po \
 	src/Engine/$(DEPDIR)/McOsu_ng-VulkanInterface.Po \
 	src/Engine/Input/$(DEPDIR)/McOsu_ng-Gamepad.Po \
@@ -987,7 +985,6 @@ McOsu_ng_SOURCES = \
 	src/Engine/SoundEngine.cpp \
 	src/Engine/SteamworksInterface.cpp \
 	src/Engine/TextureAtlas.cpp \
-	src/Engine/Timer.cpp \
 	src/Engine/VertexArrayObject.cpp \
 	src/Engine/VulkanInterface.cpp \
 	src/GUI/CBaseUIBoxShadow.cpp \
@@ -1703,8 +1700,6 @@ src/Engine/McOsu_ng-SteamworksInterface.$(OBJEXT):  \
 src/Engine/McOsu_ng-TextureAtlas.$(OBJEXT):  \
 	src/Engine/$(am__dirstamp) \
 	src/Engine/$(DEPDIR)/$(am__dirstamp)
-src/Engine/McOsu_ng-Timer.$(OBJEXT): src/Engine/$(am__dirstamp) \
-	src/Engine/$(DEPDIR)/$(am__dirstamp)
 src/Engine/McOsu_ng-VertexArrayObject.$(OBJEXT):  \
 	src/Engine/$(am__dirstamp) \
 	src/Engine/$(DEPDIR)/$(am__dirstamp)
@@ -1927,7 +1922,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/$(DEPDIR)/McOsu_ng-SoundEngine.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/$(DEPDIR)/McOsu_ng-SteamworksInterface.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/$(DEPDIR)/McOsu_ng-TextureAtlas.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@src/Engine/$(DEPDIR)/McOsu_ng-Timer.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/$(DEPDIR)/McOsu_ng-VertexArrayObject.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/$(DEPDIR)/McOsu_ng-VulkanInterface.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Input/$(DEPDIR)/McOsu_ng-Gamepad.Po@am__quote@ # am--include-marker
@@ -4366,20 +4360,6 @@ src/Engine/McOsu_ng-TextureAtlas.obj: src/Engine/TextureAtlas.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/McOsu_ng-TextureAtlas.obj `if test -f 'src/Engine/TextureAtlas.cpp'; then $(CYGPATH_W) 'src/Engine/TextureAtlas.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/TextureAtlas.cpp'; fi`
 
-src/Engine/McOsu_ng-Timer.o: src/Engine/Timer.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/McOsu_ng-Timer.o -MD -MP -MF src/Engine/$(DEPDIR)/McOsu_ng-Timer.Tpo -c -o src/Engine/McOsu_ng-Timer.o `test -f 'src/Engine/Timer.cpp' || echo '$(srcdir)/'`src/Engine/Timer.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/$(DEPDIR)/McOsu_ng-Timer.Tpo src/Engine/$(DEPDIR)/McOsu_ng-Timer.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Timer.cpp' object='src/Engine/McOsu_ng-Timer.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/McOsu_ng-Timer.o `test -f 'src/Engine/Timer.cpp' || echo '$(srcdir)/'`src/Engine/Timer.cpp
-
-src/Engine/McOsu_ng-Timer.obj: src/Engine/Timer.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/McOsu_ng-Timer.obj -MD -MP -MF src/Engine/$(DEPDIR)/McOsu_ng-Timer.Tpo -c -o src/Engine/McOsu_ng-Timer.obj `if test -f 'src/Engine/Timer.cpp'; then $(CYGPATH_W) 'src/Engine/Timer.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Timer.cpp'; fi`
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/$(DEPDIR)/McOsu_ng-Timer.Tpo src/Engine/$(DEPDIR)/McOsu_ng-Timer.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Timer.cpp' object='src/Engine/McOsu_ng-Timer.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/McOsu_ng-Timer.obj `if test -f 'src/Engine/Timer.cpp'; then $(CYGPATH_W) 'src/Engine/Timer.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Timer.cpp'; fi`
-
 src/Engine/McOsu_ng-VertexArrayObject.o: src/Engine/VertexArrayObject.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/McOsu_ng-VertexArrayObject.o -MD -MP -MF src/Engine/$(DEPDIR)/McOsu_ng-VertexArrayObject.Tpo -c -o src/Engine/McOsu_ng-VertexArrayObject.o `test -f 'src/Engine/VertexArrayObject.cpp' || echo '$(srcdir)/'`src/Engine/VertexArrayObject.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/$(DEPDIR)/McOsu_ng-VertexArrayObject.Tpo src/Engine/$(DEPDIR)/McOsu_ng-VertexArrayObject.Po
@@ -5281,7 +5261,6 @@ distclean: distclean-am
 	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-SoundEngine.Po
 	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-SteamworksInterface.Po
 	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-TextureAtlas.Po
-	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-Timer.Po
 	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-VertexArrayObject.Po
 	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-VulkanInterface.Po
 	-rm -f src/Engine/Input/$(DEPDIR)/McOsu_ng-Gamepad.Po
@@ -5531,7 +5510,6 @@ maintainer-clean: maintainer-clean-am
 	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-SoundEngine.Po
 	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-SteamworksInterface.Po
 	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-TextureAtlas.Po
-	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-Timer.Po
 	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-VertexArrayObject.Po
 	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-VulkanInterface.Po
 	-rm -f src/Engine/Input/$(DEPDIR)/McOsu_ng-Gamepad.Po

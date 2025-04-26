@@ -53,6 +53,8 @@ private:
 	uint64_t m_elapsedTimeMS{};
 };
 
+using Timer = SDLTimer;
+
 #else
 class SDLTimer : public BaseTimer
 {};

@@ -34,9 +34,10 @@ private:
     double m_elapsedTime{};
     uint64_t m_elapsedTimeMS{};
 };
-
+using Timer = HorizonTimer;
 #else
-using HorizonTimer = DummyTimer;
+class HorizonTimer : public BaseTimer
+{};
 #endif
 
 #endif

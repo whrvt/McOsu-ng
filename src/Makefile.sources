@@ -165,7 +165,6 @@ McOsu_ng_SOURCES = \
 	src/Engine/SoundEngine.cpp \
 	src/Engine/SteamworksInterface.cpp \
 	src/Engine/TextureAtlas.cpp \
-	src/Engine/Timer.cpp \
 	src/Engine/VertexArrayObject.cpp \
 	src/Engine/VulkanInterface.cpp \
 	src/GUI/CBaseUIBoxShadow.cpp \

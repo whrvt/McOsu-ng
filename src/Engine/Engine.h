@@ -10,6 +10,7 @@
 #define ENGINE_H
 
 #include "cbase.h"
+#include "Timer.h"
 #include <type_traits>
 #include <source_location>
 
@@ -20,7 +21,6 @@
 #endif
 
 class App;
-class Timer;
 class Mouse;
 class ConVar;
 class Gamepad;

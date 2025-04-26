@@ -43,8 +43,11 @@ private:
 	uint64_t m_elapsedTimeMS{};
 };
 
+using Timer = WinTimer;
+
 #else
-using WinTimer = DummyTimer;
+class WinTimer : public BaseTimer
+{};
 #endif
 
 #endif

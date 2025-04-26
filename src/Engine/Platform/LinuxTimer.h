@@ -37,8 +37,11 @@ private:
 	uint64_t m_elapsedTimeMS{};
 };
 
+using Timer = LinuxTimer;
+
 #else
-using LinuxTimer = DummyTimer;
+class LinuxTimer : public BaseTimer
+{};
 #endif
 
 #endif

@@ -10,8 +10,8 @@
 #define OSUDATABASE_H
 
 #include "cbase.h"
+#include "Timer.h"
 
-class Timer;
 class ConVar;
 
 class Osu;
