@@ -153,12 +153,12 @@ void CBaseUISlider::update()
 		if (m_bAnimated)
 		{
 			if (m_bLiveUpdate)
-				setValue(lerp<float>(m_fMinValue, m_fMaxValue, m_fCurPercent), false);
+				setValue(lerp(m_fMinValue, m_fMaxValue, m_fCurPercent), false);
 			else
-				m_fCurValue = lerp<float>(m_fMinValue, m_fMaxValue, m_fCurPercent);
+				m_fCurValue = lerp(m_fMinValue, m_fMaxValue, m_fCurPercent);
 		}
 		else
-			setValue(lerp<float>(m_fMinValue, m_fMaxValue, m_fCurPercent), false);
+			setValue(lerp(m_fMinValue, m_fMaxValue, m_fCurPercent), false);
 
 		m_bHasChanged = true;
 	}
@@ -188,9 +188,9 @@ void CBaseUISlider::update()
 			m_fCurPercent = clamp<float>(std::round(m_vBlockPos.x) / (m_vSize.x-m_vBlockSize.x), 0.0f, 1.0f);
 
 			if (m_bLiveUpdate)
-				setValue(lerp<float>(m_fMinValue, m_fMaxValue, m_fCurPercent), false);
+				setValue(lerp(m_fMinValue, m_fMaxValue, m_fCurPercent), false);
 			else
-				m_fCurValue = lerp<float>(m_fMinValue, m_fMaxValue, m_fCurPercent);
+				m_fCurValue = lerp(m_fMinValue, m_fMaxValue, m_fCurPercent);
 		}
 
 		if (anim->isAnimating( &m_vBlockPos.y ))
@@ -198,9 +198,9 @@ void CBaseUISlider::update()
 			m_fCurPercent = clamp<float>(1.0f - (std::round(m_vBlockPos.y) / (m_vSize.y-m_vBlockSize.y)), 0.0f, 1.0f);
 
 			if (m_bLiveUpdate)
-				setValue(lerp<float>(m_fMinValue, m_fMaxValue, m_fCurPercent), false);
+				setValue(lerp(m_fMinValue, m_fMaxValue, m_fCurPercent), false);
 			else
-				m_fCurValue = lerp<float>(m_fMinValue, m_fMaxValue, m_fCurPercent);
+				m_fCurValue = lerp(m_fMinValue, m_fMaxValue, m_fCurPercent);
 		}
 	}
 }

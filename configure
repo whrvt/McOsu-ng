@@ -752,6 +752,7 @@ LD
 PKG_CONFIG_PATH_CUSTOM
 PKG_CONFIG_PATH
 PKGTYPE
+LLVMMINGW
 GENIE
 PKGCONF
 TAR
@@ -5812,6 +5813,19 @@ fi
 
 fi
 
+# FIXME: GLEW esp. doesnt wanna build shared
+if test "$host_os" = "mingw32" && test "x$enable_clang" = "xyes"
+then :
+
+    LLVMMINGW=1
+
+    enable_static=yes
+    disable_shared=yes
+    CXXFLAGS="$CXXFLAGS --target=$host_cpu-w64-windows-gnu"
+    CFLAGS="$CFLAGS --target=$host_cpu-w64-windows-gnu"
+
+fi
+
 if test "x$enable_static" = "xyes"
 then :
 
@@ -7349,6 +7363,12 @@ then :
 
     CXXFLAGS="$CXXFLAGS -fsanitize=address,undefined"
     CFLAGS="$CFLAGS -fsanitize=address,undefined"
+    if test -z "$LLVMMINGW"
+then :
+
+        LDFLAGS="$LDFLAGS -static-libasan" CFLAGS="$CFLAGS -static-libasan" CXXFLAGS="$CXXFLAGS -static-libasan"
+
+fi
     enable_debug="yes"
     ENABLE_ASAN=$enable_asan
 

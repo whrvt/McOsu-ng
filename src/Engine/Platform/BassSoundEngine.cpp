@@ -319,7 +319,7 @@ bool BassSoundEngine::play(Sound *snd, float pan, float pitch)
 			float freq = snd_freq.getFloat();
 			BASS_ChannelGetAttribute(handle, BASS_ATTRIB_FREQ, &freq);
 
-			const float semitonesShift = lerp<float>(-60.0f, 60.0f, pitch / 2.0f);
+			const float semitonesShift = lerp(-60.0f, 60.0f, pitch / 2.0f);
 			BASS_ChannelSetAttribute(handle, BASS_ATTRIB_FREQ, std::pow(2.0f, (semitonesShift / 12.0f)) * freq);
 		}
 

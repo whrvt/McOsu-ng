@@ -1442,7 +1442,7 @@ Vector3 OsuBeatmapStandard::osuCoordsTo3D(Vector2 coords, const OsuHitObject *hi
 				//depthMultiplierClamped = 1.0f - (1.0f - (depthMultiplierClamped - 1.0f)) * (1.0f - (depthMultiplierClamped - 1.0f));
 			}
 
-			coords3d.z += lerp<float>(spawnDistance, overshootDistance, depthMultiplierClamped);
+			coords3d.z += lerp(spawnDistance, overshootDistance, depthMultiplierClamped);
 		}
 	}
 	*/

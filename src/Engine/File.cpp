@@ -12,6 +12,10 @@
 #include <filesystem>
 #include <utility>
 
+using std::filesystem::exists;
+using std::filesystem::path;
+using std::filesystem::is_regular_file;
+
 ConVar debug_file("debug_file", false, FCVAR_NONE);
 ConVar file_size_max("file_size_max", 1024, FCVAR_NONE, "maximum filesize sanity limit in MB, all files bigger than this are not allowed to load");
 
@@ -20,8 +24,7 @@ ConVar *McFile::size_max = &file_size_max;
 
 McFile::McFile(UString filePath, TYPE type) : m_filePath(filePath), m_type(type), m_ready(false), m_fileSize(0)
 {
-	std::filesystem::path path = std::filesystem::path(filePath.plat_str());
-
+	auto path = ::path(m_filePath.plat_str());
 	if (type == TYPE::READ)
 	{
 		// check if path exists and is a regular file

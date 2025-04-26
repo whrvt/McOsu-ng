@@ -738,7 +738,7 @@ void OsuMainMenu::draw(Graphics *g)
 
 			customPulse = 1.0f - customPulse;
 
-			const float anim = lerp<float>((1.0f - customPulse)*(1.0f - customPulse), (1.0f - customPulse), 0.25f);
+			const float anim = lerp((1.0f - customPulse)*(1.0f - customPulse), (1.0f - customPulse), 0.25f);
 			const float anim2 = anim * (m_iMainMenuAnimBeatCounter % 2 == 1 ? 1.0f : -1.0f);
 			const float anim3 = anim;
 
@@ -762,8 +762,8 @@ void OsuMainMenu::draw(Graphics *g)
 		*/
 	}
 
-	const Color cubeColor = COLORf(1.0f, lerp<float>(0.0f, 0.5f, m_fMainMenuAnimFriendPercent), lerp<float>(0.0f, 0.768f, m_fMainMenuAnimFriendPercent), lerp<float>(0.0f, 0.965f, m_fMainMenuAnimFriendPercent));
-	const Color cubeBorderColor = COLORf(1.0f, lerp<float>(1.0f, 0.5f, m_fMainMenuAnimFriendPercent), lerp<float>(1.0f, 0.768f, m_fMainMenuAnimFriendPercent), lerp<float>(1.0f, 0.965f, m_fMainMenuAnimFriendPercent));
+	const Color cubeColor = COLORf(1.0f, lerp(0.0f, 0.5f, m_fMainMenuAnimFriendPercent), lerp(0.0f, 0.768f, m_fMainMenuAnimFriendPercent), lerp(0.0f, 0.965f, m_fMainMenuAnimFriendPercent));
+	const Color cubeBorderColor = COLORf(1.0f, lerp(1.0f, 0.5f, m_fMainMenuAnimFriendPercent), lerp(1.0f, 0.768f, m_fMainMenuAnimFriendPercent), lerp(1.0f, 0.965f, m_fMainMenuAnimFriendPercent));
 
 	if (osu_draw_main_menu_button.getBool())
 	{
@@ -984,7 +984,7 @@ void OsuMainMenu::draw(Graphics *g)
 			const float animLeftMultiplier = (m_iMainMenuAnimBeatCounter % 2 == 0 ? 1.0f : 0.1f);
 			const float animRightMultiplier = (m_iMainMenuAnimBeatCounter % 2 == 1 ? 1.0f : 0.1f);
 
-			const float animMoveUp = lerp<float>((1.0f - customPulse)*(1.0f - customPulse), (1.0f - customPulse), 0.35f) * m_fMainMenuAnimFriendPercent;
+			const float animMoveUp = lerp((1.0f - customPulse)*(1.0f - customPulse), (1.0f - customPulse), 0.35f) * m_fMainMenuAnimFriendPercent;
 
 			const float animLeftMoveUp = animMoveUp * animLeftMultiplier;
 			const float animRightMoveUp = animMoveUp * animRightMultiplier;

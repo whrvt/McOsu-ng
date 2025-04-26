@@ -7,7 +7,7 @@
 
 #include "WinTimer.h"
 
-#if !defined(MCENGINE_FEATURE_SDL) && defined(_WIN32) || defined(_WIN64) || defined(__WIN32__) || defined(__CYGWIN__) || defined(__CYGWIN32__) || defined(__TOS_WIN__) || defined(__WINDOWS__)
+#if !defined(MCENGINE_FEATURE_SDL) && (defined(_WIN32) || defined(_WIN64) || defined(__WIN32__) || defined(__CYGWIN__) || defined(__CYGWIN32__) || defined(__TOS_WIN__) || defined(__WINDOWS__))
 
 WinTimer::WinTimer(bool startOnCtor)
 {

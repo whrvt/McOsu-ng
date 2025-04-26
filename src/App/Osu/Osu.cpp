@@ -236,7 +236,7 @@ Osu::Osu(Osu2 *osu2, int instanceID)
 
 	// BASS: starting with bass 2020 2.4.15.2 which has all offset problems fixed, this is the non-dsound backend compensation
 	// NOTE: this depends on BASS_CONFIG_UPDATEPERIOD/BASS_CONFIG_DEV_BUFFER
-	
+
 	// WASAPI: since we use the newer bass/fx dlls for wasapi builds anyway (which have different time handling)
 
 	// SDL_mixer: it really needs that much
@@ -1188,7 +1188,7 @@ void Osu::update()
 	// volume inactive to active animation
 	if (m_bVolumeInactiveToActiveScheduled && m_fVolumeInactiveToActiveAnim > 0.0f)
 	{
-		engine->getSound()->setVolume(lerp<float>(osu_volume_master_inactive.getFloat() * osu_volume_master.getFloat(), osu_volume_master.getFloat(), m_fVolumeInactiveToActiveAnim));
+		engine->getSound()->setVolume(lerp(osu_volume_master_inactive.getFloat() * osu_volume_master.getFloat(), osu_volume_master.getFloat(), m_fVolumeInactiveToActiveAnim));
 
 		// check if we're done
 		if (m_fVolumeInactiveToActiveAnim == 1.0f)

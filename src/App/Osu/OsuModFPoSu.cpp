@@ -165,7 +165,7 @@ void OsuModFPoSu::draw(Graphics *g)
 {
 	if (!osu_mod_fposu.getBool()) return;
 
-	const float fov = lerp<float>(fposu_fov.getFloat(), fposu_zoom_fov.getFloat(), m_fZoomFOVAnimPercent);
+	const float fov = lerp(fposu_fov.getFloat(), fposu_zoom_fov.getFloat(), m_fZoomFOVAnimPercent);
 	Matrix4 projectionMatrix = fposu_vertical_fov.getBool() ? Camera::buildMatrixPerspectiveFovVertical(deg2rad(fov), ((float)m_osu->getScreenWidth()/(float)m_osu->getScreenHeight()), 0.05f, 1000.0f)
 															: Camera::buildMatrixPerspectiveFovHorizontal(deg2rad(fov), ((float)m_osu->getScreenHeight() / (float)m_osu->getScreenWidth()), 0.05f, 1000.0f);
 	Matrix4 viewMatrix = Camera::buildMatrixLookAt(m_camera->getPos(), m_camera->getPos() + m_camera->getViewDirection(), m_camera->getViewUp());
@@ -1099,9 +1099,9 @@ float OsuModFPoSu::subdivide(std::list<VertexPair> &meshList, const std::list<Ve
 {
 	const Vector3 a = Vector3((*begin).a.x, 0.0f, (*begin).a.z);
 	const Vector3 b = Vector3((*end).a.x, 0.0f, (*end).a.z);
-	Vector3 middlePoint = Vector3(lerp<float>(a.x, b.x, 0.5f),
-								  lerp<float>(a.y, b.y, 0.5f),
-								  lerp<float>(a.z, b.z, 0.5f));
+	Vector3 middlePoint = Vector3(lerp(a.x, b.x, 0.5f),
+								  lerp(a.y, b.y, 0.5f),
+								  lerp(a.z, b.z, 0.5f));
 
 	if (fposu_curved.getBool())
 		middlePoint.setLength(edgeDistance);
@@ -1112,7 +1112,7 @@ float OsuModFPoSu::subdivide(std::list<VertexPair> &meshList, const std::list<Ve
 	top.y = (*begin).a.y;
 	bottom.y = (*begin).b.y;
 
-	const float tc = lerp<float>((*begin).textureCoordinate, (*end).textureCoordinate, 0.5f);
+	const float tc = lerp((*begin).textureCoordinate, (*end).textureCoordinate, 0.5f);
 
 	VertexPair newVP = VertexPair(top, bottom, tc);
 	const std::list<VertexPair>::iterator newPos = meshList.insert(end, newVP);

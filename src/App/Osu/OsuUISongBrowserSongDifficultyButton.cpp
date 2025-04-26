@@ -174,7 +174,7 @@ void OsuUISongBrowserSongDifficultyButton::update()
 		m_bPrevOffsetPercentSelectionState = newOffsetPercentSelectionState;
 		anim->moveQuadOut(&m_fOffsetPercentAnim, newOffsetPercentSelectionState ? 1.0f : 0.0f, 0.25f * (1.0f - m_fOffsetPercentAnim), true);
 	}
-	setOffsetPercent(lerp<float>(0.0f, 0.075f, m_fOffsetPercentAnim));
+	setOffsetPercent(lerp(0.0f, 0.075f, m_fOffsetPercentAnim));
 
 	if (m_bUpdateGradeScheduled)
 	{

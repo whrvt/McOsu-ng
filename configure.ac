@@ -110,6 +110,16 @@ AS_IF([test "x$with_soloud" = "xyes"], [
     AC_PROG_GENIE
 ])
 
+# FIXME: GLEW esp. doesnt wanna build shared
+AS_IF([test "$host_os" = "mingw32" && test "x$enable_clang" = "xyes"], [
+    LLVMMINGW=1
+    AC_SUBST([LLVMMINGW])
+    enable_static=yes
+    disable_shared=yes
+    CXXFLAGS="$CXXFLAGS --target=$host_cpu-w64-windows-gnu"
+    CFLAGS="$CFLAGS --target=$host_cpu-w64-windows-gnu"
+])
+
 AS_IF([test "x$enable_static" = "xyes"], [
     PKGTYPE="--static"
 ])
@@ -282,6 +292,9 @@ AS_IF([test "x$enable_native" != "xno"], [
 AS_IF([test "x$enable_asan" = "xyes"], [
     CXXFLAGS="$CXXFLAGS -fsanitize=address,undefined"
     CFLAGS="$CFLAGS -fsanitize=address,undefined"
+    AS_IF([test -z "$LLVMMINGW"],[
+        LDFLAGS="$LDFLAGS -static-libasan" CFLAGS="$CFLAGS -static-libasan" CXXFLAGS="$CXXFLAGS -static-libasan"
+    ])
     enable_debug="yes"
     ENABLE_ASAN=$enable_asan
     AC_SUBST([ENABLE_ASAN])

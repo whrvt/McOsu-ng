@@ -297,7 +297,7 @@ void OsuSliderCurveEqualDistanceMulti::init(const std::vector<OsuSliderCurveType
 		if (distanceAt - lastDistanceAt > 1)
 		{
 			const float t = (prefDistance - lastDistanceAt) / (distanceAt - lastDistanceAt);
-			m_curvePoints[i] = Vector2(lerp<float>(lastCurve.x, thisCurve.x, t), lerp<float>(lastCurve.y, thisCurve.y, t));
+			m_curvePoints[i] = Vector2(lerp(lastCurve.x, thisCurve.x, t), lerp(lastCurve.y, thisCurve.y, t));
 		}
 		else
 			m_curvePoints[i] = thisCurve;

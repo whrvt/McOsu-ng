@@ -422,7 +422,7 @@ unsigned long BassSound::getPositionMS()
 		{
 			const double lerpPercent =
 			    clamp<double>(((delta / interpDuration) - snd_play_interp_ratio.getFloat()) / (1.0 - snd_play_interp_ratio.getFloat()), 0.0, 1.0);
-			return static_cast<unsigned long>(lerp<double>(delta * 1000.0, (double)positionMS, lerpPercent));
+			return static_cast<unsigned long>(lerp(delta * 1000.0, (double)positionMS, lerpPercent));
 		}
 	}
 

@@ -860,7 +860,7 @@ double OsuDifficultyCalculator::calculateSpeedHighDeviationNerf(const Attributes
 	const double scale = 50.0;
 	double adjustedSpeedValue = scale * (std::log((speedValue - excessSpeedDifficultyCutoff) / scale + 1.0) + excessSpeedDifficultyCutoff / scale);
 	double lerpVal = 1.0 - clamp<double>((speedDeviation - 22.0) / (27.0 - 22.0), 0.0, 1.0);
-	adjustedSpeedValue = lerp<double>(adjustedSpeedValue, speedValue, lerpVal);
+	adjustedSpeedValue = lerp(adjustedSpeedValue, speedValue, lerpVal);
 
 	return adjustedSpeedValue / speedValue;
 }
@@ -1415,8 +1415,8 @@ double OsuDifficultyCalculator::DiffObject::calculate_difficulty(const Skills::S
 		size_t actualReducedSectionCount = std::min(highestStrains.size(), skillSpecificReducedSectionCount);
 		for (size_t i=0; i<actualReducedSectionCount; i++)
 		{
-			const double scale = std::log10(lerp<double>(1.0, 10.0, clamp<double>((double)i / (double)skillSpecificReducedSectionCount, 0.0, 1.0)));
-			highestStrains[highestStrains.size() - i - 1] *= lerp<double>(reducedStrainBaseline, 1.0, scale);
+			const double scale = std::log10(lerp(1.0, 10.0, clamp<double>((double)i / (double)skillSpecificReducedSectionCount, 0.0, 1.0)));
+			highestStrains[highestStrains.size() - i - 1] *= lerp(reducedStrainBaseline, 1.0, scale);
 		}
 
 		// re-sort

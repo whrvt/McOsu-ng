@@ -1083,7 +1083,7 @@ void OsuHUD::drawCursorRipples(Graphics *g)
 			const float animPercent = 1.0f - clamp<float>((time - engine->getTime()) / duration, 0.0f, 1.0f);
 			const float fadePercent = 1.0f - clamp<float>((time - engine->getTime()) / fadeDuration, 0.0f, 1.0f);
 
-			const float scale = lerp<float>(osu_cursor_ripple_anim_start_scale.getFloat(), osu_cursor_ripple_anim_end_scale.getFloat(), 1.0f - (1.0f - animPercent)*(1.0f - animPercent)); // quad out
+			const float scale = lerp(osu_cursor_ripple_anim_start_scale.getFloat(), osu_cursor_ripple_anim_end_scale.getFloat(), 1.0f - (1.0f - animPercent)*(1.0f - animPercent)); // quad out
 
 			g->setAlpha(osu_cursor_ripple_alpha.getFloat() * (1.0f - fadePercent));
 			g->drawQuad(pos.x - normalizedWidth*scale/2, pos.y - normalizedHeight*scale/2, normalizedWidth*scale, normalizedHeight*scale);
@@ -1668,13 +1668,13 @@ void OsuHUD::drawHPBar(Graphics *g, double health, float alpha, float breakAnim)
 		if (health < 0.2)
 		{
 			const float factor = std::max(0.0, (0.2 - health) / 0.2);
-			const float value = lerp<float>(0.0f, 1.0f, factor);
+			const float value = lerp(0.0f, 1.0f, factor);
 			g->setColor(COLORf(1.0f, value, 0.0f, 0.0f));
 		}
 		else if (health < 0.5)
 		{
 			const float factor = std::max(0.0, (0.5 - health) / 0.5);
-			const float value = lerp<float>(1.0f, 0.0f, factor);
+			const float value = lerp(1.0f, 0.0f, factor);
 			g->setColor(COLORf(1.0f, value, value, value));
 		}
 		else

@@ -259,7 +259,7 @@ void SDLSound::setPan(float pan)
 	if (!m_bStream)
 	{
 		const float rangeHalfLimit = 96.0f; // NOTE: trying to match BASS behavior
-		const int left = (int)lerp<float>(rangeHalfLimit / 2.0f, 254.0f - rangeHalfLimit / 2.0f, 1.0f - ((pan + 1.0f) / 2.0f));
+		const int left = (int)lerp(rangeHalfLimit / 2.0f, 254.0f - rangeHalfLimit / 2.0f, 1.0f - ((pan + 1.0f) / 2.0f));
 		Mix_SetPanning(getHandle(), left, 254 - left);
 	}
 }

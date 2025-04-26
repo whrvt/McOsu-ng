@@ -57,7 +57,7 @@ ConVar osu_options_slider_preview_use_legacy_renderer("osu_options_slider_previe
 
 void _osuOptionsSliderQualityWrapper(UString oldValue, UString newValue)
 {
-	float value = lerp<float>(1.0f, 2.5f, 1.0f - newValue.toFloat());
+	float value = lerp(1.0f, 2.5f, 1.0f - newValue.toFloat());
 	convar->getConVarByName("osu_slider_curve_points_separation")->setValue(value);
 };
 ConVar osu_options_slider_quality("osu_options_slider_quality", 0.0f, FCVAR_NONE, _osuOptionsSliderQualityWrapper);
