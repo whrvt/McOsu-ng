@@ -17,46 +17,41 @@
 class ContextMenu;
 namespace Env
 {
-    consteval uint64_t bit(uint64_t pos) {return 1ULL << (pos-1);}
-    enum class OS : uint64_t
+    enum class OS : uint32_t
     {
-		NONE	=	   		0,
-        WINDOWS	= bit( 0 +  1),
-        LINUX	= bit( 0 +  2),
-        MACOS	= bit( 0 +  3),
-        HORIZON	= bit( 0 +  4),
-		WASM	= bit( 0 +  5),
-    //	MAX		= bit( 0 + 10)
+        WINDOWS	= 1 << 0,
+        LINUX	= 1 << 1,
+        MACOS	= 1 << 2,
+        HORIZON	= 1 << 3,
+		WASM	= 1 << 4,
+		NONE	= 0,
 	};
-	enum class BACKEND : uint64_t
+	enum class BACKEND : uint32_t
 	{
-		NONE	=	   		0,
-		NATIVE	= bit(10 +  1),
-		SDL		= bit(10 +  2),
-	//	MAX		= bit(10 + 10)
+		NATIVE	= 1 << 0,
+		SDL		= 1 << 1,
+		NONE	= 0,
 	};
-	enum class FEAT : uint64_t
+	enum class FEAT : uint32_t
 	{
-		NONE	=	   		0,
-		JOY	    = bit(20 +  1),
-		JOY_MOU	= bit(20 +  2),
-		TOUCH	= bit(20 +  3),
-	//	MAX		= bit(20 + 10)
+		JOY	    = 1 << 0,
+		JOY_MOU	= 1 << 1,
+		TOUCH	= 1 << 2,
+		NONE	= 0,
 	};
-	enum class REND : uint64_t
+	enum class REND : uint32_t
 	{
-		NONE	=	   		0,
-		GL		= bit(30 +  1),
-		GLES2	= bit(30 +  2),
-		DX11	= bit(30 +  3),
-		SW		= bit(30 +  4),
-	//	MAX		= bit(30 + 10)
+		GL		= 1 << 0,
+		GLES2	= 1 << 1,
+		DX11	= 1 << 2,
+		SW		= 1 << 3,
+		NONE	= 0,
 	};
 
-    constexpr OS operator|(OS lhs, OS rhs) {return static_cast<OS>(static_cast<uint64_t>(lhs) | static_cast<uint64_t>(rhs));}
-    constexpr BACKEND operator|(BACKEND lhs, BACKEND rhs) {return static_cast<BACKEND>(static_cast<uint64_t>(lhs) | static_cast<uint64_t>(rhs));}
-	constexpr FEAT operator|(FEAT lhs, FEAT rhs) {return static_cast<FEAT>(static_cast<uint64_t>(lhs) | static_cast<uint64_t>(rhs));}
-    constexpr REND operator|(REND lhs, REND rhs) {return static_cast<REND>(static_cast<uint64_t>(lhs) | static_cast<uint64_t>(rhs));}
+    constexpr OS operator|(OS lhs, OS rhs) {return static_cast<OS>(static_cast<uint32_t>(lhs) | static_cast<uint32_t>(rhs));}
+    constexpr BACKEND operator|(BACKEND lhs, BACKEND rhs) {return static_cast<BACKEND>(static_cast<uint32_t>(lhs) | static_cast<uint32_t>(rhs));}
+	constexpr FEAT operator|(FEAT lhs, FEAT rhs) {return static_cast<FEAT>(static_cast<uint32_t>(lhs) | static_cast<uint32_t>(rhs));}
+    constexpr REND operator|(REND lhs, REND rhs) {return static_cast<REND>(static_cast<uint32_t>(lhs) | static_cast<uint32_t>(rhs));}
 
 	// system McOsu was compiled for
 	consteval OS getOS() {
@@ -139,13 +134,13 @@ namespace Env
     template<typename T>
     consteval bool matchesCurrentConfig(T mask) {
         if constexpr (std::is_same_v<T, OS>) {
-            return (static_cast<uint64_t>(mask) & static_cast<uint64_t>(getOS())) != 0;
+            return (static_cast<uint32_t>(mask) & static_cast<uint32_t>(getOS())) != 0;
         } else if constexpr (std::is_same_v<T, BACKEND>) {
-            return (static_cast<uint64_t>(mask) & static_cast<uint64_t>(getBackend())) != 0;
+            return (static_cast<uint32_t>(mask) & static_cast<uint32_t>(getBackend())) != 0;
 		} else if constexpr (std::is_same_v<T, FEAT>) {
-            return (static_cast<uint64_t>(mask) & static_cast<uint64_t>(getFeatures())) != 0;
+            return (static_cast<uint32_t>(mask) & static_cast<uint32_t>(getFeatures())) != 0;
         } else if constexpr (std::is_same_v<T, REND>) {
-            return (static_cast<uint64_t>(mask) & static_cast<uint64_t>(getRenderers())) != 0;
+            return (static_cast<uint32_t>(mask) & static_cast<uint32_t>(getRenderers())) != 0;
         } else {
             static_assert(always_false_v<T>, "Unsupported type for cfg");
             return false;
