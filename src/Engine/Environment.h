@@ -33,6 +33,7 @@ public:
 	virtual void sleep(unsigned int us) = 0;
 	virtual UString getExecutablePath() = 0;
 	virtual void openURLInDefaultBrowser(UString url) = 0;
+	virtual int getLogicalCPUCount() = 0;
 
 	// user
 	virtual UString getUsername() = 0;

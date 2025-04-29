@@ -11,6 +11,8 @@
 
 #include "cbase.h"
 
+#include <concepts>
+
 class ConVars
 {
 public:
@@ -86,7 +88,14 @@ public:
 	void setDefaultFloat(float defaultValue);
 	void setDefaultString(UString defaultValue);
 
-	void setValue(float value);
+	template <typename T>
+		requires (std::is_same_v<T, float> || std::convertible_to<T, float>)
+	void setValue(T value)
+	{
+		if (isFlagSet(FCVAR_HARDCODED) || (isFlagSet(FCVAR_CHEAT) && !ConVars::sv_cheats.getBool())) return;
+		setValueInt(value); // setValueInt(ernal)...
+	}
+
 	void setValue(UString sValue);
 
 	void setCallback(NativeConVarCallback callback);

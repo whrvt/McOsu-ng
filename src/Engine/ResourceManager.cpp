@@ -17,6 +17,8 @@
 
 #include <mutex>
 
+static constexpr int default_numthreads = 3;
+
 static std::mutex g_resourceManagerMutex;				// internal lock for nested async loads
 static std::mutex g_resourceManagerLoadingWorkMutex;	// work vector lock across all threads
 
@@ -43,7 +45,7 @@ public:
 #endif
 };
 
-ConVar rm_numthreads("rm_numthreads", 3, FCVAR_NONE, "how many parallel resource loader threads are spawned once on startup (!), and subsequently used during runtime");
+ConVar rm_numthreads("rm_numthreads", default_numthreads, FCVAR_NONE, "how many parallel resource loader threads are spawned once on startup (!), and subsequently used during runtime");
 ConVar rm_warnings("rm_warnings", false, FCVAR_NONE);
 ConVar rm_debug_async_delay("rm_debug_async_delay", 0.0f, FCVAR_CHEAT);
 ConVar rm_interrupt_on_destroy("rm_interrupt_on_destroy", true, FCVAR_CHEAT);
@@ -63,6 +65,13 @@ ResourceManager::ResourceManager()
 	{
 		rm_numthreads.setValue(1.0f);
 		rm_numthreads.setDefaultFloat(1.0f);
+	}
+	// TODO: itd be nice to have a way to consistently determine whether the environment has a certain feature implemented or not
+	else
+	{
+		int threads = clamp(env->getLogicalCPUCount(), 1, 32); // sanity
+		if (threads > default_numthreads)
+			rm_numthreads.setValue(threads);
 	}
 
 	// create loader threads

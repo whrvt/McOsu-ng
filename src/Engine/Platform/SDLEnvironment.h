@@ -31,9 +31,11 @@ public:
 	// system
 	virtual void shutdown();
 	virtual void restart();
-	virtual void sleep(unsigned int us); // NOTE: inaccurate
+	virtual void sleep(unsigned int us);
 	virtual UString getExecutablePath();
 	virtual void openURLInDefaultBrowser(UString url); // NOTE: non-SDL
+	// returns at least 1
+	[[nodiscard]] virtual inline int getLogicalCPUCount() {return SDL_GetNumLogicalCPUCores();}
 
 	// user
 	virtual UString getUsername(); // NOTE: non-SDL

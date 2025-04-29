@@ -365,13 +365,6 @@ void ConVar::setDefaultStringInt(UString defaultValue)
 	m_sDefaultValue = defaultValue;
 }
 
-void ConVar::setValue(float value)
-{
-	if (isFlagSet(FCVAR_HARDCODED) || (isFlagSet(FCVAR_CHEAT) && !ConVars::sv_cheats.getBool())) return;
-
-	setValueInt(value);
-}
-
 void ConVar::setValueInt(float value)
 {
 	// TODO: make this less unsafe in multithreaded environments (for float convars at least)
