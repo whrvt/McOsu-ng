@@ -1292,7 +1292,7 @@ void Osu::onKeyDown(KeyboardEvent &key)
 	{
 		if (engine->getKeyboard()->isControlDown())
 		{
-			switch ((KEYCODE)key)
+			switch (static_cast<KEYCODE>(key))
 			{
 			case KEY_R: {
 				Shader *sliderShader = engine->getResourceManager()->getShader("slider");
@@ -1319,12 +1319,12 @@ void Osu::onKeyDown(KeyboardEvent &key)
 			key.consume();
 		}
 		// arrow keys volume (alt)
-		else if (key == (KEYCODE)OsuKeyBindings::INCREASE_VOLUME.getInt())
+		else if (key == OsuKeyBindings::INCREASE_VOLUME.getVal<KEYCODE>())
 		{
 			volumeUp();
 			key.consume();
 		}
-		else if (key == (KEYCODE)OsuKeyBindings::DECREASE_VOLUME.getInt())
+		else if (key == OsuKeyBindings::DECREASE_VOLUME.getVal<KEYCODE>())
 		{
 			volumeDown();
 			key.consume();
@@ -1332,7 +1332,7 @@ void Osu::onKeyDown(KeyboardEvent &key)
 	}
 
 	// disable mouse buttons hotkey
-	if (key == (KEYCODE)OsuKeyBindings::DISABLE_MOUSE_BUTTONS.getInt())
+	if (key == OsuKeyBindings::DISABLE_MOUSE_BUTTONS.getVal<KEYCODE>())
 	{
 		if (osu_disable_mousebuttons.getBool())
 		{
@@ -1346,10 +1346,10 @@ void Osu::onKeyDown(KeyboardEvent &key)
 		}
 	}
 	// screenshots
-	else if (key == (KEYCODE)OsuKeyBindings::SAVE_SCREENSHOT.getInt())
+	else if (key == OsuKeyBindings::SAVE_SCREENSHOT.getVal<KEYCODE>())
 		saveScreenshot();
 	// boss key (minimize + mute)
-	else if (key == (KEYCODE)OsuKeyBindings::BOSS_KEY.getInt())
+	else if (key == OsuKeyBindings::BOSS_KEY.getVal<KEYCODE>())
 	{
 		engine->getEnvironment()->minimize();
 		if (getSelectedBeatmap() != NULL)
@@ -1371,8 +1371,8 @@ void Osu::onKeyDown(KeyboardEvent &key)
 
 			// K1
 			{
-				const bool isKeyLeftClick = (key == (KEYCODE)OsuKeyBindings::LEFT_CLICK.getInt());
-				const bool isKeyLeftClick2 = (key == (KEYCODE)OsuKeyBindings::LEFT_CLICK_2.getInt());
+				const bool isKeyLeftClick = (key == OsuKeyBindings::LEFT_CLICK.getVal<KEYCODE>());
+				const bool isKeyLeftClick2 = (key == OsuKeyBindings::LEFT_CLICK_2.getVal<KEYCODE>());
 				if ((!m_bKeyboardKey1Down && isKeyLeftClick) || (!m_bKeyboardKey12Down && isKeyLeftClick2))
 				{
 					if (isKeyLeftClick2)
@@ -1394,8 +1394,8 @@ void Osu::onKeyDown(KeyboardEvent &key)
 
 			// K2
 			{
-				const bool isKeyRightClick = (key == (KEYCODE)OsuKeyBindings::RIGHT_CLICK.getInt());
-				const bool isKeyRightClick2 = (key == (KEYCODE)OsuKeyBindings::RIGHT_CLICK_2.getInt());
+				const bool isKeyRightClick = (key == OsuKeyBindings::RIGHT_CLICK.getVal<KEYCODE>());
+				const bool isKeyRightClick2 = (key == OsuKeyBindings::RIGHT_CLICK_2.getVal<KEYCODE>());
 				if ((!m_bKeyboardKey2Down && isKeyRightClick) || (!m_bKeyboardKey22Down && isKeyRightClick2))
 				{
 					if (isKeyRightClick2)
@@ -1416,11 +1416,11 @@ void Osu::onKeyDown(KeyboardEvent &key)
 			}
 
 			// handle skipping
-			if (key == KEY_ENTER || key == (KEYCODE)OsuKeyBindings::SKIP_CUTSCENE.getInt())
+			if (key == KEY_ENTER || key == OsuKeyBindings::SKIP_CUTSCENE.getVal<KEYCODE>())
 				m_bSkipScheduled = true;
 
 			// toggle ui
-			if (!key.isConsumed() && key == (KEYCODE)OsuKeyBindings::TOGGLE_SCOREBOARD.getInt() && !m_bScoreboardToggleCheck)
+			if (!key.isConsumed() && key == OsuKeyBindings::TOGGLE_SCOREBOARD.getVal<KEYCODE>() && !m_bScoreboardToggleCheck)
 			{
 				m_bScoreboardToggleCheck = true;
 
@@ -1446,9 +1446,9 @@ void Osu::onKeyDown(KeyboardEvent &key)
 
 			// allow live mod changing while playing
 			if (!key.isConsumed()
-				&& (key == KEY_F1 || key == (KEYCODE)OsuKeyBindings::TOGGLE_MODSELECT.getInt())
-				&& ((KEY_F1 != (KEYCODE)OsuKeyBindings::LEFT_CLICK.getInt() && KEY_F1 != (KEYCODE)OsuKeyBindings::LEFT_CLICK_2.getInt()) || (!m_bKeyboardKey1Down && !m_bKeyboardKey12Down))
-				&& ((KEY_F1 != (KEYCODE)OsuKeyBindings::RIGHT_CLICK.getInt() && KEY_F1 != (KEYCODE)OsuKeyBindings::RIGHT_CLICK_2.getInt() ) || (!m_bKeyboardKey2Down && !m_bKeyboardKey22Down))
+				&& (key == KEY_F1 || key == OsuKeyBindings::TOGGLE_MODSELECT.getVal<KEYCODE>())
+				&& ((KEY_F1 != OsuKeyBindings::LEFT_CLICK.getVal<KEYCODE>() && KEY_F1 != OsuKeyBindings::LEFT_CLICK_2.getVal<KEYCODE>()) || (!m_bKeyboardKey1Down && !m_bKeyboardKey12Down))
+				&& ((KEY_F1 != OsuKeyBindings::RIGHT_CLICK.getVal<KEYCODE>() && KEY_F1 != OsuKeyBindings::RIGHT_CLICK_2.getVal<KEYCODE>() ) || (!m_bKeyboardKey2Down && !m_bKeyboardKey22Down))
 				&& !m_bF1
 				&& !getSelectedBeatmap()->hasFailed()) // only if not failed though
 			{
@@ -1459,10 +1459,10 @@ void Osu::onKeyDown(KeyboardEvent &key)
 			// quick save/load
 			if (!isInMultiplayer() || m_multiplayer->isServer())
 			{
-				if (key == (KEYCODE)OsuKeyBindings::QUICK_SAVE.getInt())
+				if (key == OsuKeyBindings::QUICK_SAVE.getVal<KEYCODE>())
 					m_fQuickSaveTime = getSelectedBeatmap()->getPercentFinished();
 
-				if (key == (KEYCODE)OsuKeyBindings::QUICK_LOAD.getInt())
+				if (key == OsuKeyBindings::QUICK_LOAD.getVal<KEYCODE>())
 				{
 					// special case: allow cancelling the failing animation here
 					if (getSelectedBeatmap()->hasFailed())
@@ -1475,8 +1475,8 @@ void Osu::onKeyDown(KeyboardEvent &key)
 			// quick seek
 			if (!isInMultiplayer() || m_multiplayer->isServer())
 			{
-				const bool backward = (key == (KEYCODE)OsuKeyBindings::SEEK_TIME_BACKWARD.getInt());
-				const bool forward = (key == (KEYCODE)OsuKeyBindings::SEEK_TIME_FORWARD.getInt());
+				const bool backward = (key == OsuKeyBindings::SEEK_TIME_BACKWARD.getVal<KEYCODE>());
+				const bool forward = (key == OsuKeyBindings::SEEK_TIME_FORWARD.getVal<KEYCODE>());
 
 				if (backward || forward)
 				{
@@ -1491,9 +1491,9 @@ void Osu::onKeyDown(KeyboardEvent &key)
 						{
 							double seekedPercent = 0.0;
 							if (backward)
-								seekedPercent -= (double)osu_seek_delta.getInt() * (1.0 / (double)lengthMS) * 1000.0;
+								seekedPercent -= osu_seek_delta.getVal<double>() * (1.0 / (double)lengthMS) * 1000.0;
 							else if (forward)
-								seekedPercent += (double)osu_seek_delta.getInt() * (1.0 / (double)lengthMS) * 1000.0;
+								seekedPercent += osu_seek_delta.getVal<double>() * (1.0 / (double)lengthMS) * 1000.0;
 
 							if (seekedPercent != 0.0f)
 							{
@@ -1512,14 +1512,14 @@ void Osu::onKeyDown(KeyboardEvent &key)
 		// while paused or maybe not paused
 
 		// handle quick restart
-		if (((key == (KEYCODE)OsuKeyBindings::QUICK_RETRY.getInt() || (engine->getKeyboard()->isControlDown() && !engine->getKeyboard()->isAltDown() && key == KEY_R)) && !m_bQuickRetryDown))
+		if (((key == OsuKeyBindings::QUICK_RETRY.getVal<KEYCODE>() || (engine->getKeyboard()->isControlDown() && !engine->getKeyboard()->isAltDown() && key == KEY_R)) && !m_bQuickRetryDown))
 		{
 			m_bQuickRetryDown = true;
 			m_fQuickRetryTime = engine->getTime() + osu_quick_retry_delay.getFloat();
 		}
 
 		// handle seeking
-		if (key == (KEYCODE)OsuKeyBindings::SEEK_TIME.getInt())
+		if (key == OsuKeyBindings::SEEK_TIME.getVal<KEYCODE>())
 			m_bSeekKey = true;
 
 		// handle fposu key handling
@@ -1542,7 +1542,7 @@ void Osu::onKeyDown(KeyboardEvent &key)
 		if (isInPlayMode())
 		{
 			// toggle pause menu
-			if ((key == (KEYCODE)OsuKeyBindings::GAME_PAUSE.getInt() || key == KEY_ESCAPE) && !m_bEscape)
+			if ((key == OsuKeyBindings::GAME_PAUSE.getVal<KEYCODE>() || key == KEY_ESCAPE) && !m_bEscape)
 			{
 				if (!isInMultiplayer() || m_multiplayer->isServer() || m_iMultiplayerClientNumEscPresses > 1)
 				{
@@ -1576,13 +1576,13 @@ void Osu::onKeyDown(KeyboardEvent &key)
 			}
 
 			// local offset
-			if (key == (KEYCODE)OsuKeyBindings::INCREASE_LOCAL_OFFSET.getInt())
+			if (key == OsuKeyBindings::INCREASE_LOCAL_OFFSET.getVal<KEYCODE>())
 			{
 				long offsetAdd = engine->getKeyboard()->isAltDown() ? 1 : 5;
 				getSelectedBeatmap()->getSelectedDifficulty2()->setLocalOffset(getSelectedBeatmap()->getSelectedDifficulty2()->getLocalOffset() + offsetAdd);
 				m_notificationOverlay->addNotification(UString::format("Local beatmap offset set to %ld ms", getSelectedBeatmap()->getSelectedDifficulty2()->getLocalOffset()));
 			}
-			if (key == (KEYCODE)OsuKeyBindings::DECREASE_LOCAL_OFFSET.getInt())
+			if (key == OsuKeyBindings::DECREASE_LOCAL_OFFSET.getVal<KEYCODE>())
 			{
 				long offsetAdd = -(engine->getKeyboard()->isAltDown() ? 1 : 5);
 				getSelectedBeatmap()->getSelectedDifficulty2()->setLocalOffset(getSelectedBeatmap()->getSelectedDifficulty2()->getLocalOffset() + offsetAdd);
@@ -1591,13 +1591,13 @@ void Osu::onKeyDown(KeyboardEvent &key)
 
 			// mania scroll speed
 			/*
-			if (key == (KEYCODE)OsuKeyBindings::INCREASE_SPEED.getInt())
+			if (key == OsuKeyBindings::INCREASE_SPEED.getVal<KEYCODE>())
 			{
 				ConVar *maniaSpeed = convar->getConVarByName("osu_mania_speed");
 				maniaSpeed->setValue(clamp<float>(std::round((maniaSpeed->getFloat() + 0.05f) * 100.0f) / 100.0f, 0.05f, 10.0f));
 				m_notificationOverlay->addNotification(UString::format("osu!mania speed set to %gx (fixed)", maniaSpeed->getFloat()));
 			}
-			if (key == (KEYCODE)OsuKeyBindings::DECREASE_SPEED.getInt())
+			if (key == OsuKeyBindings::DECREASE_SPEED.getVal<KEYCODE>())
 			{
 				ConVar *maniaSpeed = convar->getConVarByName("osu_mania_speed");
 				maniaSpeed->setValue(clamp<float>(std::round((maniaSpeed->getFloat() - 0.05f) * 100.0f) / 100.0f, 0.05f, 10.0f));
@@ -1609,15 +1609,15 @@ void Osu::onKeyDown(KeyboardEvent &key)
 		// if playing or not playing
 
 		// volume
-		if (key == (KEYCODE)OsuKeyBindings::INCREASE_VOLUME.getInt())
+		if (key == OsuKeyBindings::INCREASE_VOLUME.getVal<KEYCODE>())
 			volumeUp();
-		if (key == (KEYCODE)OsuKeyBindings::DECREASE_VOLUME.getInt())
+		if (key == OsuKeyBindings::DECREASE_VOLUME.getVal<KEYCODE>())
 			volumeDown();
 
 		// volume slider selection
 		if (m_hud->isVolumeOverlayVisible())
 		{
-			if (key != (KEYCODE)OsuKeyBindings::INCREASE_VOLUME.getInt() && key != (KEYCODE)OsuKeyBindings::DECREASE_VOLUME.getInt())
+			if (key != OsuKeyBindings::INCREASE_VOLUME.getVal<KEYCODE>() && key != OsuKeyBindings::DECREASE_VOLUME.getVal<KEYCODE>())
 			{
 				if (key == KEY_LEFT)
 					m_hud->selectVolumeNext();
@@ -1640,8 +1640,8 @@ void Osu::onKeyUp(KeyboardEvent &key)
 	{
 		// K1
 		{
-			const bool isKeyLeftClick = (key == (KEYCODE)OsuKeyBindings::LEFT_CLICK.getInt());
-			const bool isKeyLeftClick2 = (key == (KEYCODE)OsuKeyBindings::LEFT_CLICK_2.getInt());
+			const bool isKeyLeftClick = (key == OsuKeyBindings::LEFT_CLICK.getVal<KEYCODE>());
+			const bool isKeyLeftClick2 = (key == OsuKeyBindings::LEFT_CLICK_2.getVal<KEYCODE>());
 			if ((isKeyLeftClick && m_bKeyboardKey1Down) || (isKeyLeftClick2 && m_bKeyboardKey12Down))
 			{
 				if (isKeyLeftClick2)
@@ -1656,8 +1656,8 @@ void Osu::onKeyUp(KeyboardEvent &key)
 
 		// K2
 		{
-			const bool isKeyRightClick = (key == (KEYCODE)OsuKeyBindings::RIGHT_CLICK.getInt());
-			const bool isKeyRightClick2 = (key == (KEYCODE)OsuKeyBindings::RIGHT_CLICK_2.getInt());
+			const bool isKeyRightClick = (key == OsuKeyBindings::RIGHT_CLICK.getVal<KEYCODE>());
+			const bool isKeyRightClick2 = (key == OsuKeyBindings::RIGHT_CLICK_2.getVal<KEYCODE>());
 			if ((isKeyRightClick && m_bKeyboardKey2Down) || (isKeyRightClick2 && m_bKeyboardKey22Down))
 			{
 				if (isKeyRightClick2)
@@ -1681,20 +1681,20 @@ void Osu::onKeyUp(KeyboardEvent &key)
 	}
 
 	// misc hotkeys release
-	if (key == KEY_F1 || key == (KEYCODE)OsuKeyBindings::TOGGLE_MODSELECT.getInt())
+	if (key == KEY_F1 || key == OsuKeyBindings::TOGGLE_MODSELECT.getVal<KEYCODE>())
 		m_bF1 = false;
-	if (key == (KEYCODE)OsuKeyBindings::GAME_PAUSE.getInt() || key == KEY_ESCAPE)
+	if (key == OsuKeyBindings::GAME_PAUSE.getVal<KEYCODE>() || key == KEY_ESCAPE)
 		m_bEscape = false;
 	if (key == KEY_SHIFT)
 		m_bUIToggleCheck = false;
-	if (key == (KEYCODE)OsuKeyBindings::TOGGLE_SCOREBOARD.getInt())
+	if (key == OsuKeyBindings::TOGGLE_SCOREBOARD.getVal<KEYCODE>())
 	{
 		m_bScoreboardToggleCheck = false;
 		m_bUIToggleCheck = false;
 	}
-	if (key == (KEYCODE)OsuKeyBindings::QUICK_RETRY.getInt() || key == KEY_R)
+	if (key == OsuKeyBindings::QUICK_RETRY.getVal<KEYCODE>() || key == KEY_R)
 		m_bQuickRetryDown = false;
-	if (key == (KEYCODE)OsuKeyBindings::SEEK_TIME.getInt())
+	if (key == OsuKeyBindings::SEEK_TIME.getVal<KEYCODE>())
 		m_bSeekKey = false;
 
 	// handle fposu key handling

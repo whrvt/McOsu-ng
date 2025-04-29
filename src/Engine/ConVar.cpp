@@ -342,7 +342,7 @@ ConVar::ConVar(UString name, const char *sDefaultValue, int flags, const char *h
 
 void ConVar::exec()
 {
-	if (isFlagSet(FCVAR_CHEAT) && !ConVars::sv_cheats.getBool()) return;
+	if (isFlagSet(FCVAR_CHEAT) && !ConVars::sv_cheats.getRaw()) return;
 
 	if (m_callbackfunc != NULL)
 		m_callbackfunc();
@@ -350,7 +350,7 @@ void ConVar::exec()
 
 void ConVar::execArgs(UString args)
 {
-	if (isFlagSet(FCVAR_CHEAT) && !ConVars::sv_cheats.getBool()) return;
+	if (isFlagSet(FCVAR_CHEAT) && !ConVars::sv_cheats.getRaw()) return;
 
 	if (m_callbackfuncargs != NULL)
 		m_callbackfuncargs(args);
@@ -411,7 +411,7 @@ void ConVar::setValueInt(float value)
 
 void ConVar::setValue(UString sValue)
 {
-	if (isFlagSet(FCVAR_HARDCODED) || (isFlagSet(FCVAR_CHEAT) && !ConVars::sv_cheats.getBool())) return;
+	if (isFlagSet(FCVAR_HARDCODED) || (isFlagSet(FCVAR_CHEAT) && !ConVars::sv_cheats.getRaw())) return;
 
 	setValueInt(sValue);
 }

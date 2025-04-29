@@ -457,31 +457,25 @@ OsuDatabaseBeatmap::PRIMITIVE_CONTAINER OsuDatabaseBeatmap::loadPrimitiveObjects
 							if (sliderTokens.size() < 2 && points.size() > 0)
 								points.push_back(points[0]);
 
-							SLIDER s;
-							{
-								s.x = x;
-								s.y = y;
-								s.type = sliderTokens[0][0];
-								s.repeat = clamp<int>((int)tokens[6].toFloat(), -sliderMaxRepeatRange, sliderMaxRepeatRange);
-								s.repeat = s.repeat >= 0 ? s.repeat : 0; // sanity check
-								s.pixelLength = clamp<float>(tokens[7].toFloat(), -sliderSanityRange, sliderSanityRange);
-								s.time = time;
-								s.sampleType = hitSound;
-								s.number = comboNumber++;
-								s.colorCounter = colorCounter;
-								s.colorOffset = colorOffset;
-								s.points = points;
-
+							SLIDER s{
+								.x = x,
+								.y = y,
+								.type = (sliderTokens[0].toUtf8())[0],
+								.repeat = clamp<int>((int)tokens[6].toFloat(), 0, sliderMaxRepeatRange),
+								.pixelLength = clamp<float>(tokens[7].toFloat(), -sliderSanityRange, sliderSanityRange),
+								.time = time,
+								.sampleType = hitSound,
+								.number = comboNumber++,
+								.colorCounter = colorCounter,
+								.colorOffset = colorOffset,
+								.points = points,
 								// new beatmaps: slider hitsounds
-								if (tokens.size() > 8)
-								{
-									std::vector<UString> hitSoundTokens = tokens[8].split("|");
-									for (int i=0; i<hitSoundTokens.size(); i++)
-									{
-										s.hitSounds.push_back(hitSoundTokens[i].toInt());
-									}
-								}
-							}
+								.hitSounds = tokens.size() > 8 ? tokens[8].split<int>("|") : std::vector<int>{},
+								.sliderTime{},
+								.sliderTimeWithoutRepeats{},
+								.ticks{},
+								.scoringTimesForStarCalc{}
+							};
 							c.sliders.push_back(s);
 						}
 						else if (type & 0x8) // spinner

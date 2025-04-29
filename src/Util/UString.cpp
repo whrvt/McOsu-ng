@@ -361,42 +361,6 @@ void UString::erase(int offset, int count)
 	updateUtf8();
 }
 
-UString UString::substr(int offset, int charCount) const
-{
-	offset = clamp(offset, 0, m_length);
-
-	if (charCount < 0)
-		charCount = m_length - offset;
-
-	charCount = clamp(charCount, 0, m_length - offset);
-
-	UString result;
-	result.m_unicode = m_unicode.substr(offset, charCount);
-	result.m_length = static_cast<int>(result.m_unicode.length());
-	result.updateUtf8();
-
-	return result;
-}
-
-std::vector<UString> UString::split(UString delim) const
-{
-	std::vector<UString> results;
-	if (delim.m_length < 1 || m_length < 1)
-		return results;
-
-	int start = 0;
-	int end = 0;
-
-	while ((end = find(delim, start)) != -1)
-	{
-		results.push_back(substr(start, end - start));
-		start = end + delim.m_length;
-	}
-	results.push_back(substr(start));
-
-	return results;
-}
-
 UString UString::trim() const
 {
 	if (m_length == 0)
@@ -418,69 +382,6 @@ UString UString::trim() const
 		return {};
 
 	return substr(startPos, endPos - startPos + 1);
-}
-
-float UString::toFloat() const
-{
-	if (m_utf8.empty())
-		return 0.0f;
-	return std::strtof(m_utf8.c_str(), nullptr);
-}
-
-double UString::toDouble() const
-{
-	if (m_utf8.empty())
-		return 0.0;
-	return std::strtod(m_utf8.c_str(), nullptr);
-}
-
-long double UString::toLongDouble() const
-{
-	if (m_utf8.empty())
-		return 0.0L;
-	return std::strtold(m_utf8.c_str(), nullptr);
-}
-
-int UString::toInt() const
-{
-	if (m_utf8.empty())
-		return 0;
-	return static_cast<int>(std::strtol(m_utf8.c_str(), nullptr, 0));
-}
-
-long UString::toLong() const
-{
-	if (m_utf8.empty())
-		return 0L;
-	return std::strtol(m_utf8.c_str(), nullptr, 0);
-}
-
-long long UString::toLongLong() const
-{
-	if (m_utf8.empty())
-		return 0LL;
-	return std::strtoll(m_utf8.c_str(), nullptr, 0);
-}
-
-unsigned int UString::toUnsignedInt() const
-{
-	if (m_utf8.empty())
-		return 0U;
-	return static_cast<unsigned int>(std::strtoul(m_utf8.c_str(), nullptr, 0));
-}
-
-unsigned long UString::toUnsignedLong() const
-{
-	if (m_utf8.empty())
-		return 0UL;
-	return std::strtoul(m_utf8.c_str(), nullptr, 0);
-}
-
-unsigned long long UString::toUnsignedLongLong() const
-{
-	if (m_utf8.empty())
-		return 0ULL;
-	return std::strtoull(m_utf8.c_str(), nullptr, 0);
 }
 
 void UString::lowerCase()

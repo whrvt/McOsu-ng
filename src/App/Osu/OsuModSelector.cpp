@@ -634,35 +634,35 @@ void OsuModSelector::onKeyDown(KeyboardEvent &key)
 	if (key == KEY_1)
 		resetMods();
 
-	if (((key == KEY_F1 || key == (KEYCODE)OsuKeyBindings::TOGGLE_MODSELECT.getInt()) && !m_bWaitForF1KeyUp) || key == KEY_2 || key == (KEYCODE)OsuKeyBindings::GAME_PAUSE.getInt() || key == KEY_ESCAPE || key == KEY_ENTER)
+	if (((key == KEY_F1 || key == OsuKeyBindings::TOGGLE_MODSELECT.getVal<KEYCODE>()) && !m_bWaitForF1KeyUp) || key == KEY_2 || key == OsuKeyBindings::GAME_PAUSE.getVal<KEYCODE>() || key == KEY_ESCAPE || key == KEY_ENTER)
 		close();
 
 	// mod hotkeys
-	if (key == (KEYCODE)OsuKeyBindings::MOD_EASY.getInt())
+	if (key == OsuKeyBindings::MOD_EASY.getVal<KEYCODE>())
 		m_modButtonEasy->click();
-	if (key == (KEYCODE)OsuKeyBindings::MOD_NOFAIL.getInt())
+	if (key == OsuKeyBindings::MOD_NOFAIL.getVal<KEYCODE>())
 		m_modButtonNofail->click();
-	if (key == (KEYCODE)OsuKeyBindings::MOD_HALFTIME.getInt())
+	if (key == OsuKeyBindings::MOD_HALFTIME.getVal<KEYCODE>())
 		m_modButtonHalftime->click();
-	if (key == (KEYCODE)OsuKeyBindings::MOD_HARDROCK.getInt())
+	if (key == OsuKeyBindings::MOD_HARDROCK.getVal<KEYCODE>())
 		m_modButtonHardrock->click();
-	if (key == (KEYCODE)OsuKeyBindings::MOD_SUDDENDEATH.getInt())
+	if (key == OsuKeyBindings::MOD_SUDDENDEATH.getVal<KEYCODE>())
 		m_modButtonSuddendeath->click();
-	if (key == (KEYCODE)OsuKeyBindings::MOD_DOUBLETIME.getInt())
+	if (key == OsuKeyBindings::MOD_DOUBLETIME.getVal<KEYCODE>())
 		m_modButtonDoubletime->click();
-	if (key == (KEYCODE)OsuKeyBindings::MOD_HIDDEN.getInt())
+	if (key == OsuKeyBindings::MOD_HIDDEN.getVal<KEYCODE>())
 		m_modButtonHidden->click();
-	if (key == (KEYCODE)OsuKeyBindings::MOD_FLASHLIGHT.getInt())
+	if (key == OsuKeyBindings::MOD_FLASHLIGHT.getVal<KEYCODE>())
 		m_modButtonFlashlight->click();
-	if (key == (KEYCODE)OsuKeyBindings::MOD_RELAX.getInt())
+	if (key == OsuKeyBindings::MOD_RELAX.getVal<KEYCODE>())
 		m_modButtonRelax->click();
-	if (key == (KEYCODE)OsuKeyBindings::MOD_AUTOPILOT.getInt())
+	if (key == OsuKeyBindings::MOD_AUTOPILOT.getVal<KEYCODE>())
 		m_modButtonAutopilot->click();
-	if (key == (KEYCODE)OsuKeyBindings::MOD_SPUNOUT.getInt())
+	if (key == OsuKeyBindings::MOD_SPUNOUT.getVal<KEYCODE>())
 		m_modButtonSpunout->click();
-	if (key == (KEYCODE)OsuKeyBindings::MOD_AUTO.getInt())
+	if (key == OsuKeyBindings::MOD_AUTO.getVal<KEYCODE>())
 		m_modButtonAuto->click();
-	if (key == (KEYCODE)OsuKeyBindings::MOD_SCOREV2.getInt())
+	if (key == OsuKeyBindings::MOD_SCOREV2.getVal<KEYCODE>())
 		m_modButtonScoreV2->click();
 
 	key.consume();
@@ -672,7 +672,7 @@ void OsuModSelector::onKeyUp(KeyboardEvent &key)
 {
 	if (!m_bVisible) return;
 
-	if (key == KEY_F1 || key == (KEYCODE)OsuKeyBindings::TOGGLE_MODSELECT.getInt())
+	if (key == KEY_F1 || key == OsuKeyBindings::TOGGLE_MODSELECT.getVal<KEYCODE>())
 		m_bWaitForF1KeyUp = false;
 }
 

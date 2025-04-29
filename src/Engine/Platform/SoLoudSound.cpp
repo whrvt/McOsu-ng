@@ -36,8 +36,6 @@ void SoLoudSound::init()
 	// re-set some values to their defaults (only necessary because of the existence of rebuild())
 	m_fActualSpeedForDisabledPitchCompensation = 1.0f;
 
-	getSoLoudEngine();
-
 	if (!m_audioSource)
 	{
 		UString msg = "Couldn't load sound \"";

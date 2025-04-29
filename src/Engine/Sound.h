@@ -38,6 +38,8 @@ public:
 	virtual void setLastPlayTime(double lastPlayTime) { m_fLastPlayTime = lastPlayTime; }
 
 	virtual SOUNDHANDLE getHandle() = 0;
+	virtual SoundType* getSound() = 0;
+	[[nodiscard]] virtual const SoundType* getSound() const = 0;
 	virtual float getPosition() = 0;
 	virtual unsigned long getPositionMS() = 0;
 	virtual unsigned long getLengthMS() = 0;

@@ -40,6 +40,8 @@ public:
 	void setLoop(bool loop) override;
 
 	SOUNDHANDLE getHandle() override;
+	constexpr SoundType* getSound() override {return this;}
+	[[nodiscard]] constexpr const SoundType* getSound() const override {return this;}
 	float getPosition() override;
 	unsigned long getPositionMS() override;
 	unsigned long getLengthMS() override;
@@ -57,19 +59,8 @@ private:
 	void initAsync() override;
 	void destroy() override;
 
-	SoLoudSoundEngine *m_engine;
-
-	// get the (cached) handle to the SoLoud engine instance
-	inline SoLoudSoundEngine *getSoLoudEngine()
-	{
-		if (!m_engine)
-		{
-			m_engine = dynamic_cast<SoLoudSoundEngine *>(engine->getSound());
-			if (!m_engine)
-				debugLog("SoLoudSound: Failed to get SoLoudSoundEngine instance\n");
-		}
-		return m_engine;
-	}
+	// get the handle to the SoLoud engine instance
+	constexpr inline SoLoudSoundEngine* getSoLoudEngine() {return engine->getSound()->getSndEngine();}
 
 	// similar idea to the ugly "m_MixChunkOrMixMusic" casting thing in the SDL_mixer implementation
 	// WavStreams are for beatmap audio, streamed from disk, Wavs are for other (shorter) audio samples, loaded entirely into memory

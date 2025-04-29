@@ -278,12 +278,12 @@ public:
 		CBaseUILabel::update();
 		if (!m_bVisible) return;
 
-		const KEYCODE keyCode = (KEYCODE)m_key->getInt();
+		const KEYCODE keyCode = m_key->getVal<KEYCODE>();
 
 		// succ
 		UString labelText = env->keyCodeToString(keyCode);
 		if (labelText.find("?") != -1)
-			labelText.append(UString::format("  (%i)", m_key->getInt()));
+			labelText.append(UString::format("  (%i)", m_key->getVal<KEYCODE>()));
 
 		// handle bound/unbound
 		if (keyCode == 0)
@@ -1602,7 +1602,7 @@ void OsuOptionsMenu::onKeyDown(KeyboardEvent &e)
 	m_container->onKeyDown(e);
 	if (e.isConsumed()) return;
 
-	if (e == KEY_ESCAPE || e == (KEYCODE)OsuKeyBindings::GAME_PAUSE.getInt())
+	if (e == KEY_ESCAPE || e == OsuKeyBindings::GAME_PAUSE.getVal<KEYCODE>())
 	{
 		if (m_contextMenu->isVisible())
 		{
@@ -1652,7 +1652,7 @@ void OsuOptionsMenu::onKeyDown(KeyboardEvent &e)
 	}
 	else
 	{
-		if (e == KEY_ESCAPE || e == (KEYCODE)OsuKeyBindings::GAME_PAUSE.getInt())
+		if (e == KEY_ESCAPE || e == OsuKeyBindings::GAME_PAUSE.getVal<KEYCODE>())
 			onBack();
 	}
 

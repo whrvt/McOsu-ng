@@ -89,8 +89,7 @@ bool SoLoudSoundEngine::play(Sound *snd, float pan, float pitch)
 	if (!m_bReady || snd == NULL || !snd->isReady())
 		return false;
 
-	// try casting to SoLoudSound
-	SoLoudSound *soloudSound = dynamic_cast<SoLoudSound *>(snd);
+	SoLoudSound *soloudSound = snd->getSound();
 	if (!soloudSound)
 		return false;
 
@@ -276,8 +275,7 @@ bool SoLoudSoundEngine::play3d(Sound *snd, Vector3 pos)
 	if (!m_bReady || snd == NULL || !snd->isReady() || !snd->is3d())
 		return false;
 
-	// try casting to SoLoudSound
-	SoLoudSound *soloudSound = dynamic_cast<SoLoudSound *>(snd);
+	SoLoudSound *soloudSound = snd->getSound();
 	if (!soloudSound)
 		return false;
 
@@ -289,8 +287,7 @@ void SoLoudSoundEngine::pause(Sound *snd)
 	if (!m_bReady || snd == NULL || !snd->isReady())
 		return;
 
-	// try casting to SoLoudSound
-	SoLoudSound *soloudSound = dynamic_cast<SoLoudSound *>(snd);
+	SoLoudSound *soloudSound = snd->getSound();
 	if (!soloudSound || soloudSound->m_handle == 0)
 		return;
 
@@ -303,8 +300,7 @@ void SoLoudSoundEngine::stop(Sound *snd)
 	if (!m_bReady || snd == NULL || !snd->isReady())
 		return;
 
-	// try casting to SoLoudSound
-	SoLoudSound *soloudSound = dynamic_cast<SoLoudSound *>(snd);
+	SoLoudSound *soloudSound = snd->getSound();
 	if (!soloudSound || soloudSound->m_handle == 0)
 		return;
 

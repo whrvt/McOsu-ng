@@ -1328,7 +1328,7 @@ void OsuSongBrowser2::onKeyDown(KeyboardEvent &key)
 	OsuScreen::onKeyDown(key); // only used for options menu
 	if (!m_bVisible || key.isConsumed()) return;
 
-	if (m_bVisible && m_bBeatmapRefreshScheduled && (key == KEY_ESCAPE || key == (KEYCODE)OsuKeyBindings::GAME_PAUSE.getInt()))
+	if (m_bVisible && m_bBeatmapRefreshScheduled && (key == KEY_ESCAPE || key == OsuKeyBindings::GAME_PAUSE.getVal<KEYCODE>()))
 	{
 		m_db->cancel();
 		key.consume();
@@ -1406,13 +1406,13 @@ void OsuSongBrowser2::onKeyDown(KeyboardEvent &key)
 		m_bShiftPressed = true;
 
 	// function hotkeys
-	if ((key == KEY_F1 || key == (KEYCODE)OsuKeyBindings::TOGGLE_MODSELECT.getInt()) && !m_bF1Pressed)
+	if ((key == KEY_F1 || key == OsuKeyBindings::TOGGLE_MODSELECT.getVal<KEYCODE>()) && !m_bF1Pressed)
 	{
 		m_bF1Pressed = true;
 		m_bottombarNavButtons[m_bottombarNavButtons.size() > 2 ? 1 : 0]->keyboardPulse();
 		onSelectionMods();
 	}
-	if ((key == KEY_F2 || key == (KEYCODE)OsuKeyBindings::RANDOM_BEATMAP.getInt()) && !m_bF2Pressed)
+	if ((key == KEY_F2 || key == OsuKeyBindings::RANDOM_BEATMAP.getVal<KEYCODE>()) && !m_bF2Pressed)
 	{
 		m_bF2Pressed = true;
 		m_bottombarNavButtons[m_bottombarNavButtons.size() > 2 ? 2 : 1]->keyboardPulse();
@@ -1638,9 +1638,9 @@ void OsuSongBrowser2::onKeyUp(KeyboardEvent &key)
 	if (key == KEY_RIGHT)
 		m_bRight = false;
 
-	if (key == KEY_F1 || key == (KEYCODE)OsuKeyBindings::TOGGLE_MODSELECT.getInt())
+	if (key == KEY_F1 || key == OsuKeyBindings::TOGGLE_MODSELECT.getVal<KEYCODE>())
 		m_bF1Pressed = false;
-	if (key == KEY_F2 || key == (KEYCODE)OsuKeyBindings::RANDOM_BEATMAP.getInt())
+	if (key == KEY_F2 || key == OsuKeyBindings::RANDOM_BEATMAP.getVal<KEYCODE>())
 		m_bF2Pressed = false;
 	if (key == KEY_F3)
 		m_bF3Pressed = false;

@@ -724,7 +724,7 @@ void OsuModFPoSu::noclipMove()
 
 void OsuModFPoSu::onKeyDown(KeyboardEvent &key)
 {
-	if (key == (KEYCODE)OsuKeyBindings::FPOSU_ZOOM.getInt() && !m_bZoomKeyDown)
+	if (key == OsuKeyBindings::FPOSU_ZOOM.getVal<KEYCODE>() && !m_bZoomKeyDown)
 	{
 		m_bZoomKeyDown = true;
 
@@ -758,7 +758,7 @@ void OsuModFPoSu::onKeyDown(KeyboardEvent &key)
 
 void OsuModFPoSu::onKeyUp(KeyboardEvent &key)
 {
-	if (key == (KEYCODE)OsuKeyBindings::FPOSU_ZOOM.getInt())
+	if (key == OsuKeyBindings::FPOSU_ZOOM.getVal<KEYCODE>())
 	{
 		m_bZoomKeyDown = false;
 

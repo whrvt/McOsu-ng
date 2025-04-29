@@ -290,7 +290,7 @@ private:
 	static double erfInvImp(double p, double q, double s);
 
 	template<size_t N>
-	static double evaluatePolynomial(double z, const double (&coefficients)[N])
+	static forceinline double evaluatePolynomial(double z, const double (&coefficients)[N])
 	{
 		double sum = coefficients[N - 1];
 		for (int i = N - 2; i >= 0; --i)

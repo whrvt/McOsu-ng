@@ -60,20 +60,84 @@ public:
 	void erase(int offset, int count);
 
 	// actions (non-modifying)
-	[[nodiscard]] UString substr(int offset, int charCount = -1) const;
-	[[nodiscard]] std::vector<UString> split(UString delim) const;
+	template <typename T = UString>
+	[[nodiscard]] constexpr T substr(int offset, int charCount = -1) const
+	{
+		offset = clamp<int>(offset, 0, m_length);
+	
+		if (charCount < 0)
+			charCount = m_length - offset;
+	
+		charCount = clamp<int>(charCount, 0, m_length - offset);
+	
+		UString result;
+		result.m_unicode = m_unicode.substr(offset, charCount);
+		result.m_length = static_cast<int>(result.m_unicode.length());
+		result.updateUtf8();
+	
+		return result.to<T>();
+	}
+
+	template <typename T = UString>
+	[[nodiscard]] constexpr std::vector<T> split(UString delim) const
+	{
+		std::vector<T> results;
+		if (delim.m_length < 1 || m_length < 1)
+			return results;
+
+		int start = 0;
+		int end = 0;
+
+		while ((end = find(delim, start)) != -1)
+		{
+			results.push_back(substr<T>(start, end - start));
+			start = end + delim.m_length;
+		}
+		results.push_back(substr<T>(start));
+
+		return results;
+	}
+
 	[[nodiscard]] UString trim() const;
 
 	// conversions
-	[[nodiscard]] float toFloat() const;
-	[[nodiscard]] double toDouble() const;
-	[[nodiscard]] long double toLongDouble() const;
-	[[nodiscard]] int toInt() const;
-	[[nodiscard]] long toLong() const;
-	[[nodiscard]] long long toLongLong() const;
-	[[nodiscard]] unsigned int toUnsignedInt() const;
-	[[nodiscard]] unsigned long toUnsignedLong() const;
-	[[nodiscard]] unsigned long long toUnsignedLongLong() const;
+	template <typename T = UString>
+	[[nodiscard]] constexpr T to() const
+	{
+		if (m_utf8.empty())
+			return T{};
+		if constexpr (std::is_same_v<T, float>) {
+			return std::strtof(m_utf8.c_str(), nullptr);
+		} else if constexpr (std::is_same_v<T, double>) {
+			return std::strtod(m_utf8.c_str(), nullptr);
+		} else if constexpr (std::is_same_v<T, long double>) {
+			return std::strtold(m_utf8.c_str(), nullptr);
+		} else if constexpr (std::is_same_v<T, int>) {
+			return static_cast<int>(std::strtol(m_utf8.c_str(), nullptr, 0));
+		} else if constexpr (std::is_same_v<T, long>) {
+			return std::strtol(m_utf8.c_str(), nullptr, 0);
+		} else if constexpr (std::is_same_v<T, long long>) {
+			return std::strtoll(m_utf8.c_str(), nullptr, 0);
+		} else if constexpr (std::is_same_v<T, unsigned int>) {
+			return static_cast<unsigned int>(std::strtoul(m_utf8.c_str(), nullptr, 0));
+		} else if constexpr (std::is_same_v<T, unsigned long>) {
+			return std::strtoul(m_utf8.c_str(), nullptr, 0);
+		} else if constexpr (std::is_same_v<T, unsigned long long>) {
+			return std::strtoull(m_utf8.c_str(), nullptr, 0);
+		} else {
+			return *this;
+		}
+	}
+
+	[[nodiscard]] constexpr float toFloat() const {return to<float>();};
+	[[nodiscard]] constexpr double toDouble() const {return to<double>();};
+	[[nodiscard]] constexpr long double toLongDouble() const {return to<long double>();};
+	[[nodiscard]] constexpr int toInt() const {return to<int>();};
+	[[nodiscard]] constexpr long toLong() const {return to<long>();};
+	[[nodiscard]] constexpr long long toLongLong() const {return to<long long>();};
+	[[nodiscard]] constexpr unsigned int toUnsignedInt() const {return to<unsigned int>();};
+	[[nodiscard]] constexpr unsigned long toUnsignedLong() const {return to<unsigned long>();};
+	[[nodiscard]] constexpr unsigned long long toUnsignedLongLong() const {return to<unsigned long long>();};
 
 	void lowerCase();
 	void upperCase();

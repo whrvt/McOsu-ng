@@ -78,48 +78,6 @@ static constexpr auto OPTIMAL_UNROLL = 4;
 
 #endif // defined(__GNUC__) || defined(__clang__)
 
-// ENGINE INCLUDES
-
-#include "BaseEnvironment.h"
-
-#include "EngineFeatures.h"
-
-#include "FastDelegate.h"
-
-#include "Graphics.h"
-#include "Environment.h"
-#include "KeyboardEvent.h"
-
-#include "Vectors.h"
-#include "Matrices.h"
-#include "Rect.h"
-#include "UString.h"
-
-
-// DEFS
-
-#ifdef NULL
-#undef NULL
-#endif
-#define NULL nullptr
-
-using COLORPART = unsigned char;
-
-/*
-#ifndef DWORD
-typedef unsigned long 	DWORD;
-#endif
-#ifndef WORD
-typedef unsigned short	WORD;
-#endif
-#ifndef BYTE
-typedef unsigned char	BYTE;
-#endif
-#ifndef UINT8
-typedef unsigned char 	UINT8;
-#endif
-*/
-
 #define SAFE_DELETE(p) { if(p) { delete (p); (p) = NULL; } }
 
 #define COLOR(a,r,g,b) \
@@ -208,5 +166,47 @@ template <typename T>
 	// use the smaller value to calculate relative error
 	return diff < relativeTolerance * std::min(absX, absY);
 }
+
+// ENGINE INCLUDES
+
+#include "BaseEnvironment.h"
+
+#include "EngineFeatures.h"
+
+#include "FastDelegate.h"
+
+#include "Graphics.h"
+#include "Environment.h"
+#include "KeyboardEvent.h"
+
+#include "Vectors.h"
+#include "Matrices.h"
+#include "Rect.h"
+#include "UString.h"
+
+
+// DEFS
+
+#ifdef NULL
+#undef NULL
+#endif
+#define NULL nullptr
+
+using COLORPART = unsigned char;
+
+/*
+#ifndef DWORD
+typedef unsigned long 	DWORD;
+#endif
+#ifndef WORD
+typedef unsigned short	WORD;
+#endif
+#ifndef BYTE
+typedef unsigned char	BYTE;
+#endif
+#ifndef UINT8
+typedef unsigned char 	UINT8;
+#endif
+*/
 
 #endif

@@ -43,6 +43,9 @@ public:
 	inline const UString &getOutputDevice() const { return m_sCurrentOutputDevice; }
 	inline float getVolume() const { return m_fVolume; }
 
+	virtual SoundEngineType* getSndEngine() = 0;
+	[[nodiscard]] virtual const SoundEngineType* getSndEngine() const = 0;
+
 protected:
 	struct OUTPUT_DEVICE
 	{

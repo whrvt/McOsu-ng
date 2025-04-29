@@ -222,7 +222,7 @@ int OsuBeatmapMania::getColumnForKey(int numColumns, KeyboardEvent &key)
 	{
 		for (int i=0; i<numColumns; i++)
 		{
-			if (key == (KEYCODE)(m_osu->getBindings()->getMania()->begin())[numColumns - 1][i]->getInt())
+			if (key == (m_osu->getBindings()->getMania()->begin())[numColumns - 1][i]->getVal<KEYCODE>())
 				return i;
 		}
 	}

@@ -261,8 +261,7 @@ bool BassSoundEngine::play(Sound *snd, float pan, float pitch)
 	if (!m_bReady || snd == NULL || !snd->isReady())
 		return false;
 
-	// Try casting to BassSound
-	BassSound *bassSound = dynamic_cast<BassSound *>(snd);
+	BassSound *bassSound = snd->getSound();
 	if (!bassSound)
 		return false;
 
@@ -376,8 +375,7 @@ bool BassSoundEngine::play3d(Sound *snd, Vector3 pos)
 	if (!m_bReady || snd == NULL || !snd->isReady() || !snd->is3d())
 		return false;
 
-	// Try casting to BassSound
-	BassSound *bassSound = dynamic_cast<BassSound *>(snd);
+	BassSound *bassSound = snd->getSound();
 	if (!bassSound)
 		return false;
 
@@ -410,8 +408,7 @@ void BassSoundEngine::pause(Sound *snd)
 	if (!m_bReady || snd == NULL || !snd->isReady())
 		return;
 
-	// Try casting to BassSound
-	BassSound *bassSound = dynamic_cast<BassSound *>(snd);
+	BassSound *bassSound = snd->getSound();
 	if (!bassSound)
 		return;
 
@@ -451,8 +448,7 @@ void BassSoundEngine::stop(Sound *snd)
 	if (!m_bReady || snd == NULL || !snd->isReady())
 		return;
 
-	// Try casting to BassSound
-	BassSound *bassSound = dynamic_cast<BassSound *>(snd);
+	BassSound *bassSound = snd->getSound();
 	if (!bassSound)
 		return;
 

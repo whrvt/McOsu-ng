@@ -195,4 +195,28 @@ using Env::REND;
 using Env::AUD;
 using Env::FEAT;
 
+// typedefs for virtual overrides
+// TODO: change the pattern to be more like Timer
+#ifdef MCENGINE_FEATURE_BASS
+	class BassSound;
+	using SoundType = BassSound;
+	class BassSoundEngine;
+	using SoundEngineType = BassSoundEngine;
+#elif defined(MCENGINE_FEATURE_SOLOUD)
+	class SoLoudSound;
+	using SoundType = SoLoudSound;
+	class SoLoudSoundEngine;
+	using SoundEngineType = SoLoudSoundEngine;
+#elif defined(MCENGINE_FEATURE_SDL_MIXER)
+	class SDLSound;
+	using SoundType = SDLSound;
+	class SDLSoundEngine;
+	using SoundEngineType = SDLSoundEngine;
+#else
+	class Sound;
+	using SoundType = Sound;
+	class SoundEngine;
+	using SoundEngineType = SoundEngine;
+#endif
+
 #endif

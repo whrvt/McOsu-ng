@@ -208,7 +208,7 @@ void SDLSound::setVolume(float volume)
 
 	if (m_bStream)
 	{
-		SDLSoundEngine *soundEngine = dynamic_cast<SDLSoundEngine *>(engine->getSound());
+		SDLSoundEngine *soundEngine = engine->getSound()->getSndEngine();
 		if (soundEngine != nullptr)
 		{
 			soundEngine->setVolumeMixMusic(m_fVolume);
