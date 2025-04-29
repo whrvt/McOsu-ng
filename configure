@@ -7392,8 +7392,22 @@ then :
         CPPFLAGS="$CPPFLAGS -DNDEBUG -D_NDEBUG"
         CXXFLAGS="${CXXFLAGS//-g -O2/} -O3 -g0" # where do those -g -O2 flags even come from...
         CFLAGS="${CFLAGS//-g -O2/} -O3 -g0"
+        if test "x$enable_clang" = "xyes"
+then :
+
+            CXXFLAGS="$CXXFLAGS"
+            CFLAGS="$CFLAGS"
+
+else case e in #(
+  e)
+            CXXFLAGS="$CXXFLAGS -fipa-pta"
+            CFLAGS="$CFLAGS -fipa-pta"
+         ;;
+esac
+fi
 
 fi
+    # MCOSU_CXXFLAGS="$MCOSU_CXXFLAGS -fno-rtti" # TODO: remove needless dynamic_casts everywhere
     MCOSU_LDFLAGS="$MCOSU_LDFLAGS -Wl,-s,--gc-sections" # strip and GC unless debug
  ;;
 esac
@@ -7491,15 +7505,15 @@ fi
 else case e in #(
   e)
         # gcc
-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether the linker accepts -flto=auto -ffat-lto-objects -fuse-linker-plugin" >&5
-printf %s "checking whether the linker accepts -flto=auto -ffat-lto-objects -fuse-linker-plugin... " >&6; }
-if test ${ax_cv_check_ldflags___flto_auto__ffat_lto_objects__fuse_linker_plugin+y}
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether the linker accepts -flto=auto -ffat-lto-objects -fuse-linker-plugin -fdevirtualize-at-ltrans" >&5
+printf %s "checking whether the linker accepts -flto=auto -ffat-lto-objects -fuse-linker-plugin -fdevirtualize-at-ltrans... " >&6; }
+if test ${ax_cv_check_ldflags___flto_auto__ffat_lto_objects__fuse_linker_plugin__fdevirtualize_at_ltrans+y}
 then :
   printf %s "(cached) " >&6
 else case e in #(
   e)
   ax_check_save_flags=$LDFLAGS
-  LDFLAGS="$LDFLAGS  -flto=auto -ffat-lto-objects -fuse-linker-plugin"
+  LDFLAGS="$LDFLAGS  -flto=auto -ffat-lto-objects -fuse-linker-plugin -fdevirtualize-at-ltrans"
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -7513,9 +7527,9 @@ main (void)
 _ACEOF
 if ac_fn_cxx_try_link "$LINENO"
 then :
-  ax_cv_check_ldflags___flto_auto__ffat_lto_objects__fuse_linker_plugin=yes
+  ax_cv_check_ldflags___flto_auto__ffat_lto_objects__fuse_linker_plugin__fdevirtualize_at_ltrans=yes
 else case e in #(
-  e) ax_cv_check_ldflags___flto_auto__ffat_lto_objects__fuse_linker_plugin=no ;;
+  e) ax_cv_check_ldflags___flto_auto__ffat_lto_objects__fuse_linker_plugin__fdevirtualize_at_ltrans=no ;;
 esac
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam \
@@ -7523,14 +7537,14 @@ rm -f core conftest.err conftest.$ac_objext conftest.beam \
   LDFLAGS=$ax_check_save_flags ;;
 esac
 fi
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ax_cv_check_ldflags___flto_auto__ffat_lto_objects__fuse_linker_plugin" >&5
-printf "%s\n" "$ax_cv_check_ldflags___flto_auto__ffat_lto_objects__fuse_linker_plugin" >&6; }
-if test "x$ax_cv_check_ldflags___flto_auto__ffat_lto_objects__fuse_linker_plugin" = xyes
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ax_cv_check_ldflags___flto_auto__ffat_lto_objects__fuse_linker_plugin__fdevirtualize_at_ltrans" >&5
+printf "%s\n" "$ax_cv_check_ldflags___flto_auto__ffat_lto_objects__fuse_linker_plugin__fdevirtualize_at_ltrans" >&6; }
+if test "x$ax_cv_check_ldflags___flto_auto__ffat_lto_objects__fuse_linker_plugin__fdevirtualize_at_ltrans" = xyes
 then :
 
-            CXXFLAGS="$CXXFLAGS -flto=auto -ffat-lto-objects -fuse-linker-plugin"
-            CFLAGS="$CFLAGS -flto=auto -ffat-lto-objects -fuse-linker-plugin"
-            LDFLAGS="$LDFLAGS -flto=auto -ffat-lto-objects -fuse-linker-plugin"
+            CXXFLAGS="$CXXFLAGS -flto=auto -ffat-lto-objects -fuse-linker-plugin -fdevirtualize-at-ltrans"
+            CFLAGS="$CFLAGS -flto=auto -ffat-lto-objects -fuse-linker-plugin -fdevirtualize-at-ltrans"
+            LDFLAGS="$LDFLAGS -flto=auto -ffat-lto-objects -fuse-linker-plugin -fdevirtualize-at-ltrans"
 
 else case e in #(
   e) : ;;

@@ -529,7 +529,7 @@ void OsuSpinner::rotate(float rad)
 	m_fRotations = newRotations;
 }
 
-Vector2 OsuSpinner::getAutoCursorPos(long curPos)
+Vector2 OsuSpinner::getAutoCursorPos(long curPos) const
 {
 	// calculate point
 	long delta = 0;

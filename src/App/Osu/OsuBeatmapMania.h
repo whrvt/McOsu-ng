@@ -30,7 +30,7 @@ public:
 	int getNumColumns() const;
 
 private:
-	static int getColumnForKey(int numColumns, KeyboardEvent &key);
+	int getColumnForKey(int numColumns, KeyboardEvent &key);
 
 	virtual void onPlayStart();
 
@@ -42,6 +42,8 @@ private:
 	Vector2 m_vRotation;
 	Vector2 m_vMouseBackup;
 	float m_fZoom;
+
+	Osu *m_osu;
 };
 
 #endif

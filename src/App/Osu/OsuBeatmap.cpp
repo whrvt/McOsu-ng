@@ -629,9 +629,10 @@ void OsuBeatmap::update()
 			// (because the hitobjects need to know about note blocking before handling the click events)
 
 			// ************ live pp block start ************ //
-			const bool isCircle = m_hitobjects[i]->isCircle();
-			const bool isSlider = m_hitobjects[i]->isSlider();
-			const bool isSpinner = m_hitobjects[i]->isSpinner();
+			const auto type = m_hitobjects[i]->getType();
+			const bool isCircle = (type == OsuHitObject::CIRCLE);
+			const bool isSlider = (type == OsuHitObject::SLIDER);
+			const bool isSpinner = (type == OsuHitObject::SPINNER);
 			// ************ live pp block end ************** //
 
 			// determine previous & next object time, used for auto + followpoints + warning arrows + empty section skipping
@@ -681,7 +682,7 @@ void OsuBeatmap::update()
 			m_hitobjects[i]->update(m_iCurMusicPosWithOffsets);
 
 			// note blocking / notelock (1)
-			const OsuSlider *currentSliderPointer = dynamic_cast<OsuSlider*>(m_hitobjects[i]);
+			auto *currentSliderPointer = m_hitobjects[i]->asSlider();
 			if (notelockType > 0)
 			{
 				m_hitobjects[i]->setBlocked(blockNextNotes);
@@ -700,7 +701,7 @@ void OsuBeatmap::update()
 						// sliders are "finished" after their startcircle
 						/*
 						{
-							OsuSlider *sliderPointer = dynamic_cast<OsuSlider*>(m_hitobjects[i]);
+							auto *sliderPointer = m_hitobjects[i]->asSlider();
 
 							// sliders with finished startcircles do not block
 							if (sliderPointer != NULL && sliderPointer->isStartCircleFinished())
@@ -714,7 +715,7 @@ void OsuBeatmap::update()
 						// NOTE: this will (same as the old implementation) still unlock some simultaneous/2b patterns too early (slider slider circle [circle]), but nobody from that niche has complained so far
 						{
 							const bool isSlider = (currentSliderPointer != NULL);
-							const bool isSpinner = (!isSlider && !isCircle);
+							const bool isSpinner = (!isSlider && !(type == OsuHitObject::CIRCLE));
 
 							if (isSlider || isSpinner)
 							{
@@ -798,7 +799,7 @@ void OsuBeatmap::update()
 					{
 						if (!m_hitobjects[m]->isFinished())
 						{
-							const OsuSlider *sliderPointer = dynamic_cast<OsuSlider*>(m_hitobjects[m]);
+							const auto *sliderPointer = m_hitobjects[m]->asSlider();
 
 							const bool isSlider = (sliderPointer != NULL);
 							const bool isSpinner = (!isSlider && !isCircle);
@@ -826,7 +827,7 @@ void OsuBeatmap::update()
 					{
 						if (!m_hitobjects[m]->isFinished())
 						{
-							const OsuSlider *sliderPointer = dynamic_cast<OsuSlider*>(m_hitobjects[m]);
+							const auto *sliderPointer = m_hitobjects[m]->asSlider();
 
 							const bool isSlider = (sliderPointer != NULL);
 							const bool isSpinner = (!isSlider && !isCircle);

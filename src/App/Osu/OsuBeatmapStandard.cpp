@@ -552,8 +552,7 @@ void OsuBeatmapStandard::drawFollowPoints(Graphics *g)
 		lastObjectIndex = index-1;
 
 		// ignore future spinners
-		OsuSpinner *spinnerPointer = dynamic_cast<OsuSpinner*>(m_hitobjects[index]);
-		if (spinnerPointer != NULL && !followPointsConnectSpinners) // if this is a spinner
+		if ((m_hitobjects[index]->getType() == OsuHitObject::SPINNER) && !followPointsConnectSpinners) // if this is a spinner
 		{
 			lastObjectIndex = -1;
 			continue;
@@ -562,12 +561,11 @@ void OsuBeatmapStandard::drawFollowPoints(Graphics *g)
 		// NOTE: "m_hitobjects[index]->getComboNumber() != 1" breaks (not literally) on new combos
 		// NOTE: the "getComboNumber()" call has been replaced with isEndOfCombo() because of osu_ignore_beatmap_combo_numbers and osu_number_max
 		const bool isCurrentHitObjectNewCombo = (lastObjectIndex >= 0 ? m_hitobjects[lastObjectIndex]->isEndOfCombo() : false);
-		const bool isCurrentHitObjectSpinner = (lastObjectIndex >= 0 && followPointsConnectSpinners ? dynamic_cast<OsuSpinner*>(m_hitobjects[lastObjectIndex]) != NULL : false);
+		const bool isCurrentHitObjectSpinner = (lastObjectIndex >= 0 && followPointsConnectSpinners ? (m_hitobjects[lastObjectIndex]->getType() == OsuHitObject::SPINNER) : false);
 		if (lastObjectIndex >= 0 && (!isCurrentHitObjectNewCombo || followPointsConnectCombos || (isCurrentHitObjectSpinner && followPointsConnectSpinners)))
 		{
 			// ignore previous spinners
-			spinnerPointer = dynamic_cast<OsuSpinner*>(m_hitobjects[lastObjectIndex]);
-			if (spinnerPointer != NULL && !followPointsConnectSpinners) // if this is a spinner
+			if ((m_hitobjects[lastObjectIndex]->getType() == OsuHitObject::SPINNER) && !followPointsConnectSpinners) // if this is a spinner
 			{
 				lastObjectIndex = -1;
 				continue;
@@ -884,7 +882,7 @@ void OsuBeatmapStandard::update()
 			}
 			else
 			{
-				OsuSlider *sliderPointer = dynamic_cast<OsuSlider*>(m_hitobjects[m_iPreLoadingIndex]);
+				auto *sliderPointer = m_hitobjects[m_iPreLoadingIndex]->asSlider();
 				if (sliderPointer != NULL)
 					sliderPointer->rebuildVertexBuffer();
 			}
@@ -913,8 +911,7 @@ void OsuBeatmapStandard::update()
 	// spinner detection (used by osu!stable drain, and by OsuHUD for not drawing the hiterrorbar)
 	if (m_currentHitObject != NULL)
 	{
-		OsuSpinner *spinnerPointer = dynamic_cast<OsuSpinner*>(m_currentHitObject);
-		if (spinnerPointer != NULL && m_iCurMusicPosWithOffsets > m_currentHitObject->getTime() && m_iCurMusicPosWithOffsets < m_currentHitObject->getTime() + m_currentHitObject->getDuration())
+		if ((m_currentHitObject->getType() == OsuHitObject::SPINNER) && m_iCurMusicPosWithOffsets > m_currentHitObject->getTime() && m_iCurMusicPosWithOffsets < m_currentHitObject->getTime() + m_currentHitObject->getDuration())
 			m_bIsSpinnerActive = true;
 		else
 			m_bIsSpinnerActive = false;
@@ -1849,7 +1846,7 @@ void OsuBeatmapStandard::updateAutoCursorPos()
 				{
 					if (osu_auto_cursordance.getBool())
 					{
-						OsuSlider *sliderPointer = dynamic_cast<OsuSlider*>(o);
+						const auto *sliderPointer = o->asSlider();
 						if (sliderPointer != NULL)
 						{
 							const std::vector<OsuSlider::SLIDERCLICK> &clicks = sliderPointer->getClicks();
@@ -2049,7 +2046,7 @@ void OsuBeatmapStandard::updateSliderVertexBuffers()
 
 	for (int i=0; i<m_hitobjects.size(); i++)
 	{
-		OsuSlider *sliderPointer = dynamic_cast<OsuSlider*>(m_hitobjects[i]);
+		auto *sliderPointer = m_hitobjects[i]->asSlider();
 		if (sliderPointer != NULL)
 			sliderPointer->rebuildVertexBuffer();
 	}
@@ -2086,14 +2083,13 @@ void OsuBeatmapStandard::calculateStacks()
 			int n = i;
 
 			OsuHitObject *objectI = m_hitobjects[i];
-
-			bool isSpinner = dynamic_cast<OsuSpinner*>(objectI) != NULL;
+			bool isSpinner = objectI->getType() == OsuHitObject::SPINNER;
 
 			if (objectI->getStack() != 0 || isSpinner)
 				continue;
 
-			bool isHitCircle = dynamic_cast<OsuCircle*>(objectI) != NULL;
-			bool isSlider = dynamic_cast<OsuSlider*>(objectI) != NULL;
+			bool isHitCircle = objectI->getType() == OsuHitObject::CIRCLE;
+			bool isSlider = objectI->getType() == OsuHitObject::SLIDER;
 
 			if (isHitCircle)
 			{
@@ -2101,9 +2097,7 @@ void OsuBeatmapStandard::calculateStacks()
 				{
 					OsuHitObject *objectN = m_hitobjects[n];
 
-					bool isSpinnerN = dynamic_cast<OsuSpinner*>(objectN);
-
-					if (isSpinnerN)
+					if (objectN->getType() == OsuHitObject::SPINNER)
 						continue;
 
 					if (objectI->getTime() - (approachTime * stackLeniency) > (objectN->getTime() + objectN->getDuration()))
@@ -2135,9 +2129,7 @@ void OsuBeatmapStandard::calculateStacks()
 				{
 					OsuHitObject *objectN = m_hitobjects[n];
 
-					bool isSpinner = dynamic_cast<OsuSpinner*>(objectN) != NULL;
-
-					if (isSpinner)
+					if (objectN->getType() == OsuHitObject::SPINNER)
 						continue;
 
 					if (objectI->getTime() - (approachTime * stackLeniency) > objectN->getTime())
@@ -2160,7 +2152,7 @@ void OsuBeatmapStandard::calculateStacks()
 		for (int i=0; i<m_hitobjects.size(); i++)
 		{
 			OsuHitObject *currHitObject = m_hitobjects[i];
-			OsuSlider *sliderPointer = dynamic_cast<OsuSlider*>(currHitObject);
+			const auto *sliderPointer = currHitObject->asSlider();
 
 			const bool isSlider = (sliderPointer != NULL);
 
@@ -2315,8 +2307,8 @@ void OsuBeatmapStandard::computeDrainRate()
 			for (int i=0; i<m_hitobjects.size(); i++)
 			{
 				const OsuHitObject *h = m_hitobjects[i];
-				const OsuSlider *sliderPointer = dynamic_cast<const OsuSlider*>(h);
-				const OsuSpinner *spinnerPointer = dynamic_cast<const OsuSpinner*>(h);
+				const auto *sliderPointer = h->asSlider();
+				const auto *spinnerPointer = h->asSpinner();
 
 				const int localLastTime = lastTime;
 
@@ -2446,7 +2438,7 @@ void OsuBeatmapStandard::computeDrainRate()
 		for (int i=0; i<m_hitobjects.size(); i++)
 		{
 			// nested hitobjects
-			const OsuSlider *sliderPointer = dynamic_cast<OsuSlider*>(m_hitobjects[i]);
+			const auto *sliderPointer = m_hitobjects[i]->asSlider();
 			if (sliderPointer != NULL)
 			{
 				// startcircle

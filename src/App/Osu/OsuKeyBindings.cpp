@@ -55,55 +55,71 @@ ConVar OsuKeyBindings::MOD_SPUNOUT("osu_key_mod_spunout", (int)KEY_C, FCVAR_NONE
 ConVar OsuKeyBindings::MOD_AUTO("osu_key_mod_auto", (int)KEY_V, FCVAR_NONE);
 ConVar OsuKeyBindings::MOD_SCOREV2("osu_key_mod_scorev2", (int)KEY_B, FCVAR_NONE);
 
-std::vector<ConVar*> OsuKeyBindings::ALL = {
-	&OsuKeyBindings::LEFT_CLICK,
-	&OsuKeyBindings::RIGHT_CLICK,
-	&OsuKeyBindings::LEFT_CLICK_2,
-	&OsuKeyBindings::RIGHT_CLICK_2,
+OsuKeyBindings::OsuKeyBindings()
+{
+	ALL = {&OsuKeyBindings::LEFT_CLICK,
+	       &OsuKeyBindings::RIGHT_CLICK,
+	       &OsuKeyBindings::LEFT_CLICK_2,
+	       &OsuKeyBindings::RIGHT_CLICK_2,
 
-	&OsuKeyBindings::FPOSU_ZOOM,
+	       &OsuKeyBindings::FPOSU_ZOOM,
 
-	&OsuKeyBindings::INCREASE_SPEED,
-	&OsuKeyBindings::DECREASE_SPEED,
+	       &OsuKeyBindings::INCREASE_SPEED,
+	       &OsuKeyBindings::DECREASE_SPEED,
 
-	&OsuKeyBindings::INCREASE_VOLUME,
-	&OsuKeyBindings::DECREASE_VOLUME,
+	       &OsuKeyBindings::INCREASE_VOLUME,
+	       &OsuKeyBindings::DECREASE_VOLUME,
 
-	&OsuKeyBindings::INCREASE_LOCAL_OFFSET,
-	&OsuKeyBindings::DECREASE_LOCAL_OFFSET,
+	       &OsuKeyBindings::INCREASE_LOCAL_OFFSET,
+	       &OsuKeyBindings::DECREASE_LOCAL_OFFSET,
 
-	&OsuKeyBindings::GAME_PAUSE,
-	&OsuKeyBindings::SKIP_CUTSCENE,
-	&OsuKeyBindings::TOGGLE_SCOREBOARD,
-	&OsuKeyBindings::SEEK_TIME,
-	&OsuKeyBindings::SEEK_TIME_BACKWARD,
-	&OsuKeyBindings::SEEK_TIME_FORWARD,
-	&OsuKeyBindings::QUICK_RETRY,
-	&OsuKeyBindings::QUICK_SAVE,
-	&OsuKeyBindings::QUICK_LOAD,
-	&OsuKeyBindings::SAVE_SCREENSHOT,
-	&OsuKeyBindings::DISABLE_MOUSE_BUTTONS,
-	&OsuKeyBindings::BOSS_KEY,
+	       &OsuKeyBindings::GAME_PAUSE,
+	       &OsuKeyBindings::SKIP_CUTSCENE,
+	       &OsuKeyBindings::TOGGLE_SCOREBOARD,
+	       &OsuKeyBindings::SEEK_TIME,
+	       &OsuKeyBindings::SEEK_TIME_BACKWARD,
+	       &OsuKeyBindings::SEEK_TIME_FORWARD,
+	       &OsuKeyBindings::QUICK_RETRY,
+	       &OsuKeyBindings::QUICK_SAVE,
+	       &OsuKeyBindings::QUICK_LOAD,
+	       &OsuKeyBindings::SAVE_SCREENSHOT,
+	       &OsuKeyBindings::DISABLE_MOUSE_BUTTONS,
+	       &OsuKeyBindings::BOSS_KEY,
 
-	&OsuKeyBindings::TOGGLE_MODSELECT,
-	&OsuKeyBindings::RANDOM_BEATMAP,
+	       &OsuKeyBindings::TOGGLE_MODSELECT,
+	       &OsuKeyBindings::RANDOM_BEATMAP,
 
-	&OsuKeyBindings::MOD_EASY,
-	&OsuKeyBindings::MOD_NOFAIL,
-	&OsuKeyBindings::MOD_HALFTIME,
-	&OsuKeyBindings::MOD_HARDROCK,
-	&OsuKeyBindings::MOD_SUDDENDEATH,
-	&OsuKeyBindings::MOD_DOUBLETIME,
-	&OsuKeyBindings::MOD_HIDDEN,
-	&OsuKeyBindings::MOD_FLASHLIGHT,
-	&OsuKeyBindings::MOD_RELAX,
-	&OsuKeyBindings::MOD_AUTOPILOT,
-	&OsuKeyBindings::MOD_SPUNOUT,
-	&OsuKeyBindings::MOD_AUTO,
-	&OsuKeyBindings::MOD_SCOREV2
-};
+	       &OsuKeyBindings::MOD_EASY,
+	       &OsuKeyBindings::MOD_NOFAIL,
+	       &OsuKeyBindings::MOD_HALFTIME,
+	       &OsuKeyBindings::MOD_HARDROCK,
+	       &OsuKeyBindings::MOD_SUDDENDEATH,
+	       &OsuKeyBindings::MOD_DOUBLETIME,
+	       &OsuKeyBindings::MOD_HIDDEN,
+	       &OsuKeyBindings::MOD_FLASHLIGHT,
+	       &OsuKeyBindings::MOD_RELAX,
+	       &OsuKeyBindings::MOD_AUTOPILOT,
+	       &OsuKeyBindings::MOD_SPUNOUT,
+	       &OsuKeyBindings::MOD_AUTO,
+	       &OsuKeyBindings::MOD_SCOREV2};
 
-std::vector<std::vector<ConVar*>> OsuKeyBindings::MANIA = OsuKeyBindings::createManiaConVarSets();
+	MANIA = OsuKeyBindings::createManiaConVarSets();
+}
+
+OsuKeyBindings::~OsuKeyBindings()
+{
+	for (auto &maniaSet : MANIA)
+	{
+		for (auto *conVar : maniaSet)
+			delete conVar;
+		maniaSet.clear();
+	}
+	MANIA.clear();
+	MANIA.shrink_to_fit();
+
+	ALL.clear();
+	ALL.shrink_to_fit();
+}
 
 std::vector<ConVar*> OsuKeyBindings::createManiaConVarSet(int k)
 {

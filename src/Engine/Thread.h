@@ -16,7 +16,7 @@ class BaseThread
 public:
 	virtual ~BaseThread() {;}
 
-	virtual bool isReady() = 0;
+	[[nodiscard]] virtual bool isReady() const = 0;
 };
 
 class McThread
@@ -28,9 +28,9 @@ public:
 
 public:
 	McThread(START_ROUTINE start_routine, void *arg);
-	~McThread();
+	~McThread() {if (m_baseThread) { delete (m_baseThread); (m_baseThread) = nullptr; }}
 
-	bool isReady();
+	[[nodiscard]] inline bool isReady() const {return m_baseThread != nullptr && m_baseThread->isReady();};
 
 private:
 	BaseThread *m_baseThread;

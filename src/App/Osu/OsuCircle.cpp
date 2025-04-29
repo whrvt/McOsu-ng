@@ -1073,7 +1073,7 @@ void OsuCircle::onReset(long curPos)
 	}
 }
 
-Vector2 OsuCircle::getAutoCursorPos(long curPos)
+Vector2 OsuCircle::getAutoCursorPos(long curPos) const
 {
 	return m_beatmap->osuCoords2Pixels(m_vRawPos);
 }

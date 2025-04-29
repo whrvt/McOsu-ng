@@ -214,31 +214,22 @@ struct SortScoreByPP : public OsuDatabase::SCORE_SORTING_COMPARATOR
 	bool operator() (OsuDatabase::Score const &a, OsuDatabase::Score const &b) const
 	{
 		// first: pp
-		unsigned long long score1 = (unsigned long long)std::max((a.isLegacyScore ? -b.score : a.pp) * 100.0f, 0.0f);
-		unsigned long long score2 = (unsigned long long)std::max((b.isLegacyScore ? -a.score : b.pp) * 100.0f, 0.0f);
+		float ppA = std::max((a.isLegacyScore ? -b.score : a.pp), 0.0f);
+		float ppB = std::max((b.isLegacyScore ? -a.score : b.pp), 0.0f);
 
+		if (ppA != ppB)
+			return ppA > ppB;
 
 		// second: score
-		if (score1 == score2)
-		{
-			score1 = a.score;
-			score2 = b.score;
-		}
+		if (a.score != b.score)
+			return a.score > b.score;
 
 		// third: time
-		if (score1 == score2)
-		{
-			score1 = a.unixTimestamp;
-			score2 = b.unixTimestamp;
-		}
+		if (a.unixTimestamp != b.unixTimestamp)
+			return a.unixTimestamp > b.unixTimestamp;
 
 		// strict weak ordering!
-		if (score1 == score2)
-		{
-			return a.sortHack > b.sortHack;
-		}
-
-		return score1 > score2;
+		return a.sortHack > b.sortHack;
 	}
 };
 

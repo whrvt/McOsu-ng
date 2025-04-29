@@ -52,6 +52,7 @@ public:
 	static UString typeToString(CONVAR_TYPE type);
 
 public:
+	~ConVar();
 	explicit ConVar(UString name);
 
 	explicit ConVar(UString name, int flags, ConVarCallback callback);
@@ -90,7 +91,7 @@ public:
 
 	template <typename T>
 		requires (std::is_same_v<T, float> || std::convertible_to<T, float>)
-	void setValue(T value)
+	inline void setValue(T value)
 	{
 		if (isFlagSet(FCVAR_HARDCODED) || (isFlagSet(FCVAR_CHEAT) && !ConVars::sv_cheats.getBool())) return;
 		setValueInt(value); // setValueInt(ernal)...

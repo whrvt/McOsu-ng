@@ -331,6 +331,7 @@ Osu::Osu(Osu2 *osu2, int instanceID)
 	m_modSelector = NULL;
 	m_updateHandler = NULL;
 	m_multiplayer = NULL;
+	m_bindings = new OsuKeyBindings();
 
 	m_bF1 = false;
 	m_bUIToggleCheck = false;
@@ -583,6 +584,7 @@ Osu::~Osu()
 	SAFE_DELETE(m_multiplayer);
 	SAFE_DELETE(m_skin);
 	SAFE_DELETE(m_backgroundImageHandler);
+	SAFE_DELETE(m_bindings);
 }
 
 void Osu::draw(Graphics *g)

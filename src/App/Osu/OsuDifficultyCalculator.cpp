@@ -165,7 +165,7 @@ void OsuDifficultyHitObject::updateCurveStackPosition(float stackOffset)
 		curve->updateStackPosition(stack * stackOffset, false);
 }
 
-Vector2 OsuDifficultyHitObject::getOriginalRawPosAt(long pos)
+Vector2 OsuDifficultyHitObject::getOriginalRawPosAt(long pos) const
 {
 	// NOTE: the delayed curve creation has been deliberately disabled here for stacking purposes for beatmaps with insane slider counts for performance reasons
 	// NOTE: this means that these aspire maps will have incorrect stars due to incorrect slider stacking, but the delta is below 0.02 even for the most insane maps which currently exist
@@ -220,7 +220,7 @@ Vector2 OsuDifficultyHitObject::getOriginalRawPosAt(long pos)
 	}
 }
 
-float OsuDifficultyHitObject::getT(long pos, bool raw)
+float OsuDifficultyHitObject::getT(long pos, bool raw) const
 {
 	float t = (float)((long)pos - (long)time) / spanDuration;
 	if (raw)
@@ -1459,6 +1459,7 @@ double OsuDifficultyCalculator::DiffObject::calculate_difficulty(const Skills::S
 				}
 				else
 				{
+					MC_UNROLL
 					for (size_t i=0; i<dobjectCount; i++)
 					{
 						tempSum += 1.1 / (1.0 + McMath::fastExp(-10.0 * (dobjects[i].get_strain(type) / consistentTopStrain - 0.88)));

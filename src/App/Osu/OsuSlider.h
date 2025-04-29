@@ -30,42 +30,45 @@ public:
 
 public:
 	OsuSlider(char type, int repeat, float pixelLength, std::vector<Vector2> points, std::vector<int> hitSounds, std::vector<float> ticks, float sliderTime, float sliderTimeWithoutRepeats, long time, int sampleType, int comboNumber, bool isEndOfCombo, int colorCounter, int colorOffset, OsuBeatmapStandard *beatmap);
-	virtual ~OsuSlider();
+	~OsuSlider() override;
 
-	virtual void draw(Graphics *g);
-	virtual void draw2(Graphics *g);
+	void draw(Graphics *g) override;
+	void draw2(Graphics *g) override;
 	void draw2(Graphics *g, bool drawApproachCircle, bool drawOnlyApproachCircle);
-	virtual void drawVR(Graphics *g, Matrix4 &mvp, OsuVR *vr);
-	virtual void drawVR2(Graphics *g, Matrix4 &mvp, OsuVR *vr);
-	virtual void draw3D(Graphics *g);
-	virtual void draw3D2(Graphics *g);
-	virtual void update(long curPos);
+	void drawVR(Graphics *g, Matrix4 &mvp, OsuVR *vr) override;
+	void drawVR2(Graphics *g, Matrix4 &mvp, OsuVR *vr) override;
+	void draw3D(Graphics *g) override;
+	void draw3D2(Graphics *g) override;
+	void update(long curPos) override;
 
-	virtual constexpr forceinline bool isSlider() const { return true; }
+	[[nodiscard]] constexpr Type getType() const override { return SLIDER; }
 
-	virtual void updateStackPosition(float stackOffset);
-	virtual void miss(long curPos);
+	[[nodiscard]] OsuSlider* asSlider() override { return this; }
+	[[nodiscard]] const OsuSlider* asSlider() const override { return this; }
 
-	virtual constexpr forceinline int getCombo() const {return 2 + std::max((m_iRepeat - 1), 0) + (std::max((m_iRepeat - 1), 0)+1)*m_ticks.size();}
+	void updateStackPosition(float stackOffset) override;
+	void miss(long curPos) override;
 
-	Vector2 getRawPosAt(long pos);
-	Vector2 getOriginalRawPosAt(long pos);
-	inline Vector2 getAutoCursorPos(long curPos) {return m_vCurPoint;}
+	[[nodiscard]] constexpr forceinline int getCombo() const override {return 2 + std::max((m_iRepeat - 1), 0) + (std::max((m_iRepeat - 1), 0)+1)*m_ticks.size();}
 
-	virtual void onClickEvent(std::vector<OsuBeatmap::CLICK> &clicks);
-	virtual void onReset(long curPos);
+	[[nodiscard]] Vector2 getRawPosAt(long pos) const override;
+	[[nodiscard]] Vector2 getOriginalRawPosAt(long pos) const override;
+	[[nodiscard]] inline Vector2 getAutoCursorPos(long curPos) const override {return m_vCurPoint;}
+
+	void onClickEvent(std::vector<OsuBeatmap::CLICK> &clicks) override;
+	void onReset(long curPos) override;
 
 	void rebuildVertexBuffer(bool useRawCoords = false);
 
-	inline bool isStartCircleFinished() const {return m_bStartFinished;}
-	inline int getRepeat() const {return m_iRepeat;}
-	inline std::vector<Vector2> getRawPoints() const {return m_points;}
-	inline float getPixelLength() const {return m_fPixelLength;}
-	inline const std::vector<SLIDERCLICK> &getClicks() const {return m_clicks;}
+	[[nodiscard]] inline bool isStartCircleFinished() const {return m_bStartFinished;}
+	[[nodiscard]] inline int getRepeat() const {return m_iRepeat;}
+	[[nodiscard]] inline std::vector<Vector2> getRawPoints() const {return m_points;}
+	[[nodiscard]] inline float getPixelLength() const {return m_fPixelLength;}
+	[[nodiscard]] inline const std::vector<SLIDERCLICK> &getClicks() const {return m_clicks;}
 
 	// ILLEGAL:
-	inline VertexArrayObject *getVAO() const {return m_vao;}
-	inline OsuSliderCurve *getCurve() const {return m_curve;}
+	[[nodiscard]] inline VertexArrayObject *getVAO() const {return m_vao;}
+	[[nodiscard]] inline OsuSliderCurve *getCurve() const {return m_curve;}
 
 private:
 	static ConVar *m_osu_playfield_mirror_horizontal_ref;
@@ -92,7 +95,7 @@ private:
 	void onTickHit(bool successful, int tickIndex);
 	void onSliderBreak();
 
-	float getT(long pos, bool raw);
+	[[nodiscard]] float getT(long pos, bool raw) const;
 
 	bool isClickHeldSlider(); // special logic to disallow hold tapping
 

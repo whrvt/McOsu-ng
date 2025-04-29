@@ -21,7 +21,7 @@ public:
 	HorizonThread(McThread::START_ROUTINE start_routine, void *arg);
 	virtual ~HorizonThread();
 
-	bool isReady() {return m_bReady;}
+	[[nodiscard]] inline bool isReady() const {return m_bReady;}
 
 private:
 	bool m_bReady;

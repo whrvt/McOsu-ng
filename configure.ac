@@ -311,7 +311,15 @@ AS_IF([test "x$enable_debug" = "xyes"], [
         CPPFLAGS="$CPPFLAGS -DNDEBUG -D_NDEBUG"
         CXXFLAGS="${CXXFLAGS//-g -O2/} -O3 -g0" # where do those -g -O2 flags even come from...
         CFLAGS="${CFLAGS//-g -O2/} -O3 -g0"
+        AS_IF([test "x$enable_clang" = "xyes"], [
+            CXXFLAGS="$CXXFLAGS"
+            CFLAGS="$CFLAGS"
+        ],[
+            CXXFLAGS="$CXXFLAGS -fipa-pta"
+            CFLAGS="$CFLAGS -fipa-pta"
+        ])
     ])
+    # MCOSU_CXXFLAGS="$MCOSU_CXXFLAGS -fno-rtti" # TODO: remove needless dynamic_casts everywhere
     MCOSU_LDFLAGS="$MCOSU_LDFLAGS -Wl,-s,--gc-sections" # strip and GC unless debug
 ])
 
@@ -324,10 +332,10 @@ AS_IF([test "x$enable_lto" != "xno"], [
             LD="${LD}.lld"
         ])], [
         # gcc
-        AX_CHECK_LINK_FLAG([-flto=auto -ffat-lto-objects -fuse-linker-plugin], [
-            CXXFLAGS="$CXXFLAGS -flto=auto -ffat-lto-objects -fuse-linker-plugin"
-            CFLAGS="$CFLAGS -flto=auto -ffat-lto-objects -fuse-linker-plugin"
-            LDFLAGS="$LDFLAGS -flto=auto -ffat-lto-objects -fuse-linker-plugin"
+        AX_CHECK_LINK_FLAG([-flto=auto -ffat-lto-objects -fuse-linker-plugin -fdevirtualize-at-ltrans], [
+            CXXFLAGS="$CXXFLAGS -flto=auto -ffat-lto-objects -fuse-linker-plugin -fdevirtualize-at-ltrans"
+            CFLAGS="$CFLAGS -flto=auto -ffat-lto-objects -fuse-linker-plugin -fdevirtualize-at-ltrans"
+            LDFLAGS="$LDFLAGS -flto=auto -ffat-lto-objects -fuse-linker-plugin -fdevirtualize-at-ltrans"
         ])
     ])
 ])

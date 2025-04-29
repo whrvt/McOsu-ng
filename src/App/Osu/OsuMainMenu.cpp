@@ -443,7 +443,7 @@ OsuMainMenu::OsuMainMenu(Osu *osu) : OsuScreen(osu)
 			for (size_t i=0; i<m_mainMenuSliderTextBeatmapHitObjects.size(); i++)
 			{
 				OsuHitObject *hitObject = m_mainMenuSliderTextBeatmapHitObjects[i];
-				OsuSlider *sliderPointer = dynamic_cast<OsuSlider*>(hitObject);
+				auto *sliderPointer = hitObject->asSlider();
 				if (sliderPointer != NULL)
 					sliderPointer->rebuildVertexBuffer(true); // we are working in osu coordinate space for this (no mods, just raw curve coords)
 			}
@@ -701,7 +701,7 @@ void OsuMainMenu::draw(Graphics *g)
 			const size_t numHitObjects = m_mainMenuSliderTextBeatmapHitObjects.size();
 			for (size_t i=0; i<numHitObjects; i++)
 			{
-				OsuSlider *sliderPointer = dynamic_cast<OsuSlider*>(m_mainMenuSliderTextBeatmapHitObjects[i]);
+				const auto *sliderPointer = m_mainMenuSliderTextBeatmapHitObjects[i]->asSlider();
 				if (sliderPointer != NULL)
 				{
 					alwaysPoints.clear();

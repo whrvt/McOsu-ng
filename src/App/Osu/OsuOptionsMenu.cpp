@@ -1727,7 +1727,7 @@ void OsuOptionsMenu::onKey(KeyboardEvent &e)
 		if (e.getKeyCode() != (KEYCODE)0) // if not the first call
 		{
 			if (m_iManiaK > -1 && m_iManiaK < 10 && m_iManiaKey > -1 && m_iManiaKey <= m_iManiaK)
-				OsuKeyBindings::MANIA[m_iManiaK][m_iManiaKey]->setValue(e.getKeyCode());
+				(m_osu->getBindings()->getMania()->begin())[m_iManiaK][m_iManiaKey]->setValue(e.getKeyCode());
 
 			// go to next key
 			m_iManiaKey++;
@@ -3289,7 +3289,7 @@ void OsuOptionsMenu::onKeyBindingsResetAllPressed(CBaseUIButton *button)
 	{
 		m_iNumResetAllKeyBindingsPressed = 0;
 
-		for (ConVar *bind : OsuKeyBindings::ALL)
+		for (ConVar *bind : *(m_osu->getBindings()->get()))
 		{
 			bind->setValue(bind->getDefaultFloat());
 		}
@@ -3685,7 +3685,7 @@ void OsuOptionsMenu::onResetEverythingClicked(CBaseUIButton *button)
 		}
 
 		// and then all key bindings (since these don't use the yellow reset button system)
-		for (ConVar *bind : OsuKeyBindings::ALL)
+		for (ConVar *bind : *(m_osu->getBindings()->get()))
 		{
 			bind->setValue(bind->getDefaultFloat());
 		}

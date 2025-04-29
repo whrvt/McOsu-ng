@@ -1,6 +1,6 @@
 //================ Copyright (c) 2025, WH, All rights reserved. =================//
 //
-// Purpose:		Consteval functions for determining compilation configuration without macros
+// Purpose:		Build-time configuration detection utilities and definitions
 //
 // $NoKeywords: $env
 //===============================================================================//

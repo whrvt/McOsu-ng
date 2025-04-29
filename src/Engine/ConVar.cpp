@@ -59,7 +59,23 @@ static ConVar *_getConVar(const UString &name)
 		return NULL;
 }
 
+ConVar::~ConVar()
+{
+    if (!isFlagSet(FCVAR_UNREGISTERED))
+    {
+        std::vector<ConVar*> &conVarArray = _getGlobalConVarArray();
+        std::unordered_map<std::string, ConVar*> &conVarMap = _getGlobalConVarMap();
 
+        auto it = std::ranges::find(conVarArray, this);
+        if (it != conVarArray.end())
+            conVarArray.erase(it);
+
+        std::string nameStr(m_sName.toUtf8(), m_sName.lengthUtf8());
+        auto mapIt = conVarMap.find(nameStr);
+        if (mapIt != conVarMap.end() && mapIt->second == this)
+            conVarMap.erase(mapIt);
+    }
+}
 
 UString ConVar::typeToString(CONVAR_TYPE type)
 {

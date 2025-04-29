@@ -15,24 +15,27 @@ class OsuSpinner : public OsuHitObject
 {
 public:
 	OsuSpinner(int x, int y, long time, int sampleType, bool isEndOfCombo, long endTime, OsuBeatmapStandard *beatmap);
-	virtual ~OsuSpinner();
+	~OsuSpinner() override;
 
-	virtual void draw(Graphics *g);
-	virtual void drawVR(Graphics *g, Matrix4 &mvp, OsuVR *vr);
-	virtual void draw3D(Graphics *g);
-	virtual void update(long curPos);
+	void draw(Graphics *g) override;
+	void drawVR(Graphics *g, Matrix4 &mvp, OsuVR *vr) override;
+	void draw3D(Graphics *g) override;
+	void update(long curPos) override;
 
-	virtual bool constexpr forceinline isSpinner() const {return true;}
+	[[nodiscard]] constexpr Type getType() const override { return SPINNER; }
 
-	void updateStackPosition(float stackOffset) {;}
-	void miss(long curPos) {;}
+	[[nodiscard]] OsuSpinner* asSpinner() override { return this; }
+	[[nodiscard]] const OsuSpinner* asSpinner() const override { return this; }
 
-	Vector2 getRawPosAt(long pos) {return m_vRawPos;}
-	Vector2 getOriginalRawPosAt(long pos) {return m_vOriginalRawPos;}
-	Vector2 getAutoCursorPos(long curPos);
+	void updateStackPosition(float stackOffset) override {;}
+	void miss(long curPos) override {;}
 
-	virtual void onClickEvent(std::vector<OsuBeatmap::CLICK> &clicks);
-	virtual void onReset(long curPos);
+	[[nodiscard]] Vector2 getRawPosAt(long pos) const override {return m_vRawPos;}
+	[[nodiscard]] Vector2 getOriginalRawPosAt(long pos) const override {return m_vOriginalRawPos;}
+	[[nodiscard]] Vector2 getAutoCursorPos(long curPos) const override;
+
+	void onClickEvent(std::vector<OsuBeatmap::CLICK> &clicks) override;
+	void onReset(long curPos) override;
 
 private:
 	void onHit();

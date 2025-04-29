@@ -356,8 +356,16 @@ OsuDatabaseBeatmap::PRIMITIVE_CONTAINER OsuDatabaseBeatmap::loadPrimitiveObjects
 					{
 						float fX,fY;
 						floatScan = (sscanf(curLineChar, " %f , %f , %li , %i , %i", &fX, &fY, &time, &type, &hitSound) == 5);
-						x = (int)fX;
-						y = (int)fY;
+						x = (isfinite(fX)
+							 && fX >= static_cast<float>(std::numeric_limits<int>::min())
+							 && fX <= static_cast<float>(std::numeric_limits<int>::max()))
+							 ? static_cast<int>(fX)
+							 : 0;
+						y = (isfinite(fY)
+							 && fY >= static_cast<float>(std::numeric_limits<int>::min())
+							 && fY <= static_cast<float>(std::numeric_limits<int>::max()))
+							 ? static_cast<int>(fY)
+							 : 0;
 					}
 
 					if (intScan || floatScan)
@@ -1698,9 +1706,9 @@ OsuDatabaseBeatmap::LOAD_GAMEPLAY_RESULT OsuDatabaseBeatmap::loadGameplay(OsuDat
 			OsuHitObject *currentHitObject = result.hitobjects[i];
 			const OsuHitObject *nextHitObject = (i + 1 < result.hitobjects.size() ? result.hitobjects[i + 1] : NULL);
 
-			const OsuCircle *circlePointer = dynamic_cast<OsuCircle*>(currentHitObject);
-			const OsuSlider *sliderPointer = dynamic_cast<OsuSlider*>(currentHitObject);
-			const OsuSpinner *spinnerPointer = dynamic_cast<OsuSpinner*>(currentHitObject);
+			const auto *circlePointer = currentHitObject->asCircle();
+			const auto *sliderPointer = currentHitObject->asSlider();
+			const auto *spinnerPointer = currentHitObject->asSpinner();
 
 			int scoreComboMultiplier = std::max(combo-1, 0);
 
@@ -1742,9 +1750,7 @@ OsuDatabaseBeatmap::LOAD_GAMEPLAY_RESULT OsuDatabaseBeatmap::loadGameplay(OsuDat
 			{
 				OsuHitObject *currentHitObject = result.hitobjects[i];
 
-				const OsuSpinner *spinnerPointer = dynamic_cast<OsuSpinner*>(currentHitObject);
-
-				if (spinnerPointer == NULL)
+				if (currentHitObject->getType() != OsuHitObject::SPINNER)
 				{
 					currentHitObject->setComboNumber(comboNumber);
 					comboNumber++;

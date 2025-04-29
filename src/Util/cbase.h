@@ -36,15 +36,47 @@
 #include <cstdint>
 #include <cstring>
 
-#ifdef __GNUC__
+#ifdef __AVX512F__
+static constexpr auto OPTIMAL_UNROLL = 10;
+#elif defined(__AVX2__)
+static constexpr auto OPTIMAL_UNROLL = 8;
+#elif defined(__SSE2__)
+static constexpr auto OPTIMAL_UNROLL = 6;
+#else
+static constexpr auto OPTIMAL_UNROLL = 4;
+#endif
+
+#if defined(__GNUC__) || defined(__clang__)
 #define likely(x) __builtin_expect(bool(x),1)
 #define unlikely(x) __builtin_expect(bool(x),0)
 #define forceinline __attribute__((always_inline)) inline
+#define MC_DO_PRAGMA(x) _Pragma (#x)
+
+#ifdef __clang__
+#define MC_VECTORIZE_LOOP _Pragma("clang loop vectorize(enable)")
+#define MC_UNR_cnt(num) MC_DO_PRAGMA(clang loop unroll_count(num))
 #else
+#define MC_VECTORIZE_LOOP _Pragma("GCC ivdep")
+#define MC_UNR_cnt(num) MC_DO_PRAGMA(GCC unroll num)
+#endif
+
+#define MC_VEC_UNR_cnt(num) MC_VECTORIZE_LOOP MC_UNR_cnt(num)
+#define MC_UNROLL_VECTOR MC_VEC_UNR_cnt(OPTIMAL_UNROLL)
+#define MC_UNROLL MC_UNR_cnt(OPTIMAL_UNROLL)
+
+#else
+
 #define likely(x) (x)
 #define unlikely(x) (x)
 #define forceinline
-#endif
+#define MC_DO_PRAGMA(x)
+#define MC_VECTORIZE_LOOP
+#define MC_UNR_cnt(num)
+#define MC_VEC_UNR_cnt(num)
+#define MC_UNROLL_VECTOR
+#define MC_UNROLL
+
+#endif // defined(__GNUC__) || defined(__clang__)
 
 // ENGINE INCLUDES
 
@@ -66,7 +98,7 @@
 
 // DEFS
 
-#ifdef NULL 
+#ifdef NULL
 #undef NULL
 #endif
 #define NULL nullptr

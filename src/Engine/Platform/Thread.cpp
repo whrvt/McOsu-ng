@@ -34,7 +34,7 @@ public:
 		}
 	}
 
-	virtual ~StdThread()
+	~StdThread() override
 	{
 		if (!m_bReady) return;
 
@@ -44,10 +44,7 @@ public:
 			m_thread.join();
 	}
 
-	bool isReady()
-	{
-		return m_bReady;
-	}
+	[[nodiscard]] inline bool isReady() const override {return m_bReady;}
 
 private:
 	std::thread m_thread;
@@ -77,12 +74,3 @@ McThread::McThread(START_ROUTINE start_routine, void *arg)
 #endif // MCENGINE_FEATURE_MULTITHREADING
 }
 
-McThread::~McThread()
-{
-	SAFE_DELETE(m_baseThread);
-}
-
-bool McThread::isReady()
-{
-	return (m_baseThread != NULL && m_baseThread->isReady());
-}
