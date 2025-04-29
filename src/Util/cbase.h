@@ -62,8 +62,6 @@
 #include "Matrices.h"
 #include "Rect.h"
 #include "UString.h"
-#include "McMath.h"
-
 
 
 // DEFS

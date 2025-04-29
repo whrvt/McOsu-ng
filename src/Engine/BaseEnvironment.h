@@ -36,6 +36,7 @@ namespace Env
 		JOY	    = 1 << 0,
 		JOY_MOU	= 1 << 1,
 		TOUCH	= 1 << 2,
+		STEAM	= 1 << 3,
 		NONE	= 0,
 	};
 	enum class AUD : uint32_t
@@ -101,6 +102,9 @@ namespace Env
 	#endif
 	#ifdef MCENGINE_SDL_TOUCHSUPPORT
 		FEAT::TOUCH |
+	#endif
+	#ifdef MCENGINE_FEATURE_STEAMWORKS
+		FEAT::STEAM |
 	#endif
 		FEAT::NONE;
 	}

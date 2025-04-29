@@ -11,6 +11,8 @@
 
 #include "cbase.h"
 #include "Timer.h"
+#include "McMath.h"
+
 #include <type_traits>
 #include <source_location>
 

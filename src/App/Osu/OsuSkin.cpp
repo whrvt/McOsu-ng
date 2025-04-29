@@ -414,25 +414,28 @@ void OsuSkin::load()
 			std::vector<UString> skinNames;
 
 			// steam workshop items
-			if (steam->isReady())
+			if constexpr (Env::cfg(FEAT::STEAM))
 			{
-				if (!m_osu->getSteamWorkshop()->isReady())
-					m_osu->getSteamWorkshop()->refresh(false, false);
-
-				if (m_osu->getSteamWorkshop()->isReady())
+				if (steam->isReady())
 				{
-					const std::vector<OsuSteamWorkshop::SUBSCRIBED_ITEM> &subscribedItems = m_osu->getSteamWorkshop()->getSubscribedItems();
+					if (!m_osu->getSteamWorkshop()->isReady())
+						m_osu->getSteamWorkshop()->refresh(false, false);
 
-					for (int i=0; i<subscribedItems.size(); i++)
+					if (m_osu->getSteamWorkshop()->isReady())
 					{
-						UString randomSkinFolder = subscribedItems[i].installInfo;
+						const std::vector<OsuSteamWorkshop::SUBSCRIBED_ITEM> &subscribedItems = m_osu->getSteamWorkshop()->getSubscribedItems();
 
-						// ensure that the skinFolder ends with a slash
-						if (randomSkinFolder[randomSkinFolder.length()-1] != L'/' && randomSkinFolder[randomSkinFolder.length()-1] != L'\\')
-							randomSkinFolder.append("/");
+						for (int i=0; i<subscribedItems.size(); i++)
+						{
+							UString randomSkinFolder = subscribedItems[i].installInfo;
 
-						filepathsForRandomSkin.push_back(randomSkinFolder);
-						skinNames.push_back(subscribedItems[i].title);
+							// ensure that the skinFolder ends with a slash
+							if (randomSkinFolder[randomSkinFolder.length()-1] != L'/' && randomSkinFolder[randomSkinFolder.length()-1] != L'\\')
+								randomSkinFolder.append("/");
+
+							filepathsForRandomSkin.push_back(randomSkinFolder);
+							skinNames.push_back(subscribedItems[i].title);
+						}
 					}
 				}
 			}

@@ -9,6 +9,8 @@
 
 #include "Engine.h"
 
+#include "McMath.h"
+
 GaussianBlurKernel::GaussianBlurKernel(int kernelSize, float radius, int targetWidth, int targetHeight)
 {
 	m_iKernelSize = kernelSize;
@@ -49,7 +51,7 @@ void GaussianBlurKernel::build()
 	// now set the real values
 	for (int i=0; i<center; i++)
     {
-        result = exp( -(i*i)/(double)(2 * _sigma*_sigma) ) / sigmaRoot;
+        result = McMath::fastExp( -(i*i)/(double)(2 * _sigma*_sigma) ) / sigmaRoot;
         m_kernel[center+i] = m_kernel[center-i] = (float)result;
         sum += result;
         if (i != 0)

@@ -103,7 +103,7 @@ public:
 protected:
 	virtual void init();
 	virtual void onTransformUpdate(Matrix4 &projectionMatrix, Matrix4 &worldMatrix);
-	void endSceneInternal(bool finish = false);
+	void endSceneInternal(bool finish = false); // workaround for driver issues: calls glFinish if finish==true
 
 private:
 	static int primitiveToOpenGL(Graphics::PRIMITIVE primitive);

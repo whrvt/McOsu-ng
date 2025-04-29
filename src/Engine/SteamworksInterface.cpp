@@ -16,8 +16,6 @@
 
 #include "steam_api.h"
 
-#endif
-
 #define STEAMWORKS_APPID 0
 
 SteamworksInterface *steam = NULL;
@@ -25,7 +23,6 @@ SteamworksInterface *steam = NULL;
 ConVar debug_steam("debug_steam", false, FCVAR_NONE);
 ConVar steam_timeout("steam_timeout", 15.0f, FCVAR_NONE, "timeout in seconds for some steamworks API calls");
 
-#ifdef MCENGINE_FEATURE_STEAMWORKS
 
 UString SteamworksInterfaceAPICallFailureToString(ESteamAPICallFailure reason)
 {
@@ -101,7 +98,6 @@ bool SteamworksInterfaceWaitAPICallBlocking(SteamAPICall_t apiCall, void *pCallb
 	return false;
 }
 
-#endif
 
 SteamworksInterface::SteamworksInterface()
 {
@@ -112,8 +108,6 @@ SteamworksInterface::SteamworksInterface()
 	m_pendingItemUpdateHandle = 0;
 
 	if (engine->getArgs().length() > 0 && engine->getArgs().find("nosteam") != -1) return;
-
-#ifdef MCENGINE_FEATURE_STEAMWORKS
 
 	m_pendingItemUpdateHandle = k_UGCUpdateHandleInvalid;
 
@@ -137,39 +131,27 @@ SteamworksInterface::SteamworksInterface()
 	m_bReady = true;
 
 	debugLog("STEAM: Logged in as \"%s\"\n", SteamFriends()->GetPersonaName());
-
-#endif
 }
 
 SteamworksInterface::~SteamworksInterface()
 {
 	steam = NULL;
 
-#ifdef MCENGINE_FEATURE_STEAMWORKS
-
 	if (m_bReady)
 		SteamAPI_Shutdown();
-
-#endif
 
 	m_bReady = false;
 }
 
 void SteamworksInterface::update()
 {
-#ifdef MCENGINE_FEATURE_STEAMWORKS
-
 	if (!m_bReady) return;
 
 	SteamAPI_RunCallbacks();
-
-#endif
 }
 
 uint64_t SteamworksInterface::createWorkshopItem()
 {
-#ifdef MCENGINE_FEATURE_STEAMWORKS
-
 	if (!m_bReady) return k_PublishedFileIdInvalid;
 
 	const SteamAPICall_t apiCall = SteamUGC()->CreateItem(SteamUtils()->GetAppID(), EWorkshopFileType::k_EWorkshopFileTypeCommunity);
@@ -189,111 +171,56 @@ uint64_t SteamworksInterface::createWorkshopItem()
 		handleWorkshopLegalAgreementNotAccepted(res.m_nPublishedFileId);
 
 	return res.m_nPublishedFileId;
-
-#else
-
-	return 0;
-
-#endif
 }
 
 bool SteamworksInterface::pushWorkshopItemUpdate(uint64_t publishedFileId)
 {
-#ifdef MCENGINE_FEATURE_STEAMWORKS
-
 	if (!m_bReady) return false;
 
 	m_pendingItemUpdateHandle = SteamUGC()->StartItemUpdate(SteamUtils()->GetAppID(), publishedFileId);
 
 	return (m_pendingItemUpdateHandle != k_UGCUpdateHandleInvalid);
-
-#else
-
-	return false;
-
-#endif
 }
 
 bool SteamworksInterface::setWorkshopItemTitle(UString title)
 {
-#ifdef MCENGINE_FEATURE_STEAMWORKS
-
 	if (!m_bReady) return false;
 
 	return SteamUGC()->SetItemTitle(m_pendingItemUpdateHandle, title.toUtf8());
-
-#else
-
-	return false;
-
-#endif
 }
 
 bool SteamworksInterface::setWorkshopItemDescription(UString description)
 {
-#ifdef MCENGINE_FEATURE_STEAMWORKS
-
 	if (!m_bReady) return false;
 
 	return SteamUGC()->SetItemDescription(m_pendingItemUpdateHandle, description.toUtf8());
-
-#else
-
-	return false;
-
-#endif
 }
 
 bool SteamworksInterface::setWorkshopItemLanguage(UString language)
 {
-#ifdef MCENGINE_FEATURE_STEAMWORKS
-
 	if (!m_bReady) return false;
 
 	return SteamUGC()->SetItemUpdateLanguage(m_pendingItemUpdateHandle, language.toUtf8());
-
-#else
-
-	return false;
-
-#endif
 }
 
 bool SteamworksInterface::setWorkshopItemMetadata(UString metadata)
 {
-#ifdef MCENGINE_FEATURE_STEAMWORKS
 
 	if (!m_bReady || metadata.length() > k_cchDeveloperMetadataMax) return false;
 
 	return SteamUGC()->SetItemMetadata(m_pendingItemUpdateHandle, metadata.toUtf8());
-
-#else
-
-	return false;
-
-#endif
 }
 
 bool SteamworksInterface::setWorkshopItemVisibility(bool visible, bool friendsOnly)
 {
-#ifdef MCENGINE_FEATURE_STEAMWORKS
-
 	if (!m_bReady) return false;
 
 	return SteamUGC()->SetItemVisibility(m_pendingItemUpdateHandle, friendsOnly ? ERemoteStoragePublishedFileVisibility::k_ERemoteStoragePublishedFileVisibilityFriendsOnly :
 			(visible ? ERemoteStoragePublishedFileVisibility::k_ERemoteStoragePublishedFileVisibilityPublic : ERemoteStoragePublishedFileVisibility::k_ERemoteStoragePublishedFileVisibilityPrivate));
-
-#else
-
-	return false;
-
-#endif
 }
 
 bool SteamworksInterface::setWorkshopItemTags(std::vector<UString> tags)
 {
-#ifdef MCENGINE_FEATURE_STEAMWORKS
-
 	if (!m_bReady) return false;
 	if (tags.size() < 1) return true;
 
@@ -309,50 +236,26 @@ bool SteamworksInterface::setWorkshopItemTags(std::vector<UString> tags)
 	tagArray.m_ppStrings = ppStrings;
 
 	return SteamUGC()->SetItemTags(m_pendingItemUpdateHandle, &tagArray);
-
-#else
-
-	return false;
-
-#endif
 }
 
 bool SteamworksInterface::setWorkshopItemContent(UString contentFolderAbsolutePath)
 {
-#ifdef MCENGINE_FEATURE_STEAMWORKS
-
 	if (!m_bReady) return false;
 	if (contentFolderAbsolutePath.length() < 2) return false;
 
 	return SteamUGC()->SetItemContent(m_pendingItemUpdateHandle, contentFolderAbsolutePath.toUtf8());
-
-#else
-
-	return false;
-
-#endif
 }
 
 bool SteamworksInterface::setWorkshopItemPreview(UString previewFileAbsolutePath)
 {
-#ifdef MCENGINE_FEATURE_STEAMWORKS
-
 	if (!m_bReady) return false;
 	if (previewFileAbsolutePath.length() < 2) return false;
 
 	return SteamUGC()->SetItemPreview(m_pendingItemUpdateHandle, previewFileAbsolutePath.toUtf8());
-
-#else
-
-	return false;
-
-#endif
 }
 
 bool SteamworksInterface::popWorkshopItemUpdate(UString changeNote)
 {
-#ifdef MCENGINE_FEATURE_STEAMWORKS
-
 	if (!m_bReady) return false;
 
 	const SteamAPICall_t apiCall = SteamUGC()->SubmitItemUpdate(m_pendingItemUpdateHandle, (changeNote.length() > 0 ? changeNote.toUtf8() : NULL));
@@ -381,19 +284,11 @@ bool SteamworksInterface::popWorkshopItemUpdate(UString changeNote)
 	m_pendingItemUpdateHandle = k_UGCUpdateHandleInvalid;
 
 	return true;
-
-#else
-
-	return false;
-
-#endif
 }
 
 std::vector<uint64_t> SteamworksInterface::getWorkshopSubscribedItems()
 {
 	std::vector<uint64_t> subscribedItems;
-
-#ifdef MCENGINE_FEATURE_STEAMWORKS
 
 	if (!m_bReady) return subscribedItems;
 
@@ -412,15 +307,11 @@ std::vector<uint64_t> SteamworksInterface::getWorkshopSubscribedItems()
 		}
 	}
 
-#endif
-
 	return subscribedItems;
 }
 
 bool SteamworksInterface::isWorkshopSubscribedItemInstalled(uint64_t publishedFileId)
 {
-#ifdef MCENGINE_FEATURE_STEAMWORKS
-
 	if (!m_bReady) return false;
 
 	const uint32_t itemState = SteamUGC()->GetItemState(publishedFileId);
@@ -429,16 +320,10 @@ bool SteamworksInterface::isWorkshopSubscribedItemInstalled(uint64_t publishedFi
 		debugLog("STEAM: SteamUGC()->GetItemState( %llu ) = %i\n", publishedFileId, itemState);
 
 	return ((itemState & EItemState::k_EItemStateSubscribed) && (itemState & EItemState::k_EItemStateInstalled));
-
-#endif
-
-	return false;
 }
 
 bool SteamworksInterface::isWorkshopSubscribedItemDownloading(uint64_t publishedFileId)
 {
-#ifdef MCENGINE_FEATURE_STEAMWORKS
-
 	if (!m_bReady) return false;
 
 	const uint32_t itemState = SteamUGC()->GetItemState(publishedFileId);
@@ -447,16 +332,10 @@ bool SteamworksInterface::isWorkshopSubscribedItemDownloading(uint64_t published
 		debugLog("STEAM: SteamUGC()->GetItemState( %llu ) = %i\n", publishedFileId, itemState);
 
 	return ((itemState & EItemState::k_EItemStateDownloading) || (itemState & EItemState::k_EItemStateDownloadPending));
-
-#endif
-
-	return false;
 }
 
 UString SteamworksInterface::getWorkshopItemInstallInfo(uint64_t publishedFileId)
 {
-#ifdef MCENGINE_FEATURE_STEAMWORKS
-
 	if (!m_bReady) return "";
 
 	const uint32_t stringBufferSize = k_cchFilenameMax + 1;
@@ -472,16 +351,12 @@ UString SteamworksInterface::getWorkshopItemInstallInfo(uint64_t publishedFileId
 	if (SteamUGC()->GetItemInstallInfo(publishedFileId_t, &sizeOnDisk, stringBuffer, (stringBufferSize - 1), &lastUpdated))
 		return UString(stringBuffer);
 
-#endif
-
 	return "";
 }
 
 std::vector<SteamworksInterface::WorkshopItemDetails> SteamworksInterface::getWorkshopItemDetails(const std::vector<uint64_t> &publishedFileIds)
 {
 	std::vector<WorkshopItemDetails> results;
-
-#ifdef MCENGINE_FEATURE_STEAMWORKS
 
 	if (!m_bReady || publishedFileIds.size() < 1) return results;
 
@@ -572,127 +447,82 @@ std::vector<SteamworksInterface::WorkshopItemDetails> SteamworksInterface::getWo
 		SteamUGC()->ReleaseQueryUGCRequest(handle);
 	}
 
-#endif
-
 	return results;
 }
 
 void SteamworksInterface::forceWorkshopItemUpdateDownload(uint64_t publishedFileId)
 {
-#ifdef MCENGINE_FEATURE_STEAMWORKS
-
 	if (!m_bReady) return;
 
 	// NOTE: ignoring waiting for DownloadItemResult_t, since this case is handled by isWorkshopSubscribedItemDownloading()
 	SteamUGC()->DownloadItem(publishedFileId, true);
-
-#endif
 }
 
 void SteamworksInterface::startWorkshopItemPlaytimeTracking(uint64_t publishedFileId)
 {
-#ifdef MCENGINE_FEATURE_STEAMWORKS
-
 	if (!m_bReady) return;
 
 	PublishedFileId_t publishedFileId_t = publishedFileId;
 
 	SteamUGC()->StartPlaytimeTracking(&publishedFileId_t, 1);
-
-#endif
 }
 
 void SteamworksInterface::stopWorkshopItemPlaytimeTracking(uint64_t publishedFileId)
 {
-#ifdef MCENGINE_FEATURE_STEAMWORKS
-
 	if (!m_bReady) return;
 
 	PublishedFileId_t publishedFileId_t = publishedFileId;
 
 	SteamUGC()->StopPlaytimeTracking(&publishedFileId_t, 1);
-
-#endif
 }
 
 void SteamworksInterface::stopWorkshopPlaytimeTrackingForAllItems()
 {
-#ifdef MCENGINE_FEATURE_STEAMWORKS
-
 	if (!m_bReady) return;
 
 	SteamUGC()->StopPlaytimeTrackingForAllItems();
-
-#endif
 }
 
 void SteamworksInterface::openURLInGameOverlay(UString url)
 {
-#ifdef MCENGINE_FEATURE_STEAMWORKS
-
 	if (!m_bReady) return;
 
 	SteamFriends()->ActivateGameOverlayToWebPage(url.toUtf8());
-
-#endif
 }
 
 void SteamworksInterface::setRichPresence(UString key, UString value)
 {
-#ifdef MCENGINE_FEATURE_STEAMWORKS
-
 	if (!m_bReady) return;
 	if (key.length() < 1) return;
 
 	SteamFriends()->SetRichPresence(key.toUtf8(), value.toUtf8());
-
-#endif
 }
 
 bool SteamworksInterface::isGameOverlayEnabled()
 {
-#ifdef MCENGINE_FEATURE_STEAMWORKS
-
 	if (!m_bReady) return false;
 
 	return SteamUtils()->IsOverlayEnabled();
-
-#endif
-
-	return false;
 }
 
 UString SteamworksInterface::getUsername()
 {
-#ifdef MCENGINE_FEATURE_STEAMWORKS
 
 	if (!m_bReady) return "";
 
 	return UString(SteamFriends()->GetPersonaName());
-
-#else
-
-	return "";
-
-#endif
 }
 
 void SteamworksInterface::handleWorkshopLegalAgreementNotAccepted(uint64_t publishedFileId)
 {
-#ifdef MCENGINE_FEATURE_STEAMWORKS
-
 	if (!m_bReady) return;
 
 	debugLog("STEAM: User needs to accept the workshop legal agreement first.\n");
 	openWorkshopItemURLInGameOverlay(publishedFileId);
-
-#endif
 }
 
 void SteamworksInterface::openWorkshopItemURLInGameOverlay(uint64_t publishedFileId)
 {
-#ifdef MCENGINE_FEATURE_STEAMWORKS
-
 	const UString url = UString::format("steam://url/CommunityFilePage/%llu", publishedFileId);
 
 	if (!m_bReady)
@@ -705,14 +535,10 @@ void SteamworksInterface::openWorkshopItemURLInGameOverlay(uint64_t publishedFil
 		openURLInGameOverlay(url);
 	else
 		env->openURLInDefaultBrowser(url);
-
-#endif
 }
 
 void SteamworksInterface::handleLastError(int res)
 {
-#ifdef MCENGINE_FEATURE_STEAMWORKS
-
 	m_sLastError = "UnknownError";
 
 	switch (res)
@@ -1051,6 +877,5 @@ void SteamworksInterface::handleLastError(int res)
 		m_sLastError = "LimitedUserAccount";
 		break;
 	}
-
-#endif
 }
+#endif

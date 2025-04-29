@@ -5,8 +5,6 @@
 // $NoKeywords: $engine
 //===============================================================================//
 
-#include "Engine.h"
-
 #include <cstdio>
 
 #ifdef MCENGINE_FEATURE_MULTITHREADING
@@ -35,6 +33,8 @@
 #include "Console.h"
 #include "ConsoleBox.h"
 #include "VisualProfiler.h"
+
+#include "Engine.h"
 
 #include <utility>
 
@@ -185,7 +185,8 @@ Engine::Engine(Environment *environment, const char *args)
 		m_openCL = new OpenCLInterface();
 		m_openVR = new OpenVRInterface();
 		m_networkHandler = new NetworkHandler();
-		m_steam = new SteamworksInterface();
+		if constexpr (Env::cfg(FEAT::STEAM))
+			m_steam = new SteamworksInterface();
 		m_discord = new DiscordInterface();
 
 		// default launch overrides
@@ -235,8 +236,11 @@ Engine::~Engine()
 	debugLog("Engine: Freeing network handler...\n");
 	SAFE_DELETE(m_networkHandler);
 
-	debugLog("Engine: Freeing Steam...\n");
-	SAFE_DELETE(m_steam);
+	if constexpr (Env::cfg(FEAT::STEAM))
+	{
+		debugLog("Engine: Freeing Steam...\n");
+		SAFE_DELETE(m_steam);
+	}
 
 	debugLog("Engine: Freeing Discord...\n");
 	SAFE_DELETE(m_discord);
@@ -259,6 +263,9 @@ Engine::~Engine()
 
 	debugLog("Engine: Freeing environment...\n");
 	SAFE_DELETE(m_environment);
+
+	debugLog("Engine: Freeing math...\n");
+	SAFE_DELETE(m_math);
 
 	debugLog("Engine: Goodbye.");
 

@@ -107,7 +107,8 @@ void OsuRichPresence::setStatus(Osu *osu, UString status, bool force)
 	if (!osu_rich_presence.getBool() && !force) return;
 
 	// steam
-	steam->setRichPresence(KEY_STEAM_STATUS, status);
+	if constexpr (Env::cfg(FEAT::STEAM))
+		steam->setRichPresence(KEY_STEAM_STATUS, status);
 
 	// discord
 	discord->setRichPresence("largeImageKey", "logo_512", true);

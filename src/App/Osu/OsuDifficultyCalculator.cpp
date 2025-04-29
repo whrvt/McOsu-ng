@@ -17,6 +17,8 @@
 
 #include "OsuSliderCurves.h"
 
+#include "McMath.h"
+
 #include <algorithm>
 #include <climits> // for INT_MAX
 

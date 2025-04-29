@@ -7,6 +7,8 @@
 
 #include "OsuSteamWorkshop.h"
 
+#ifdef MCENGINE_FEATURE_STEAMWORKS
+
 #include "Engine.h"
 #include "ConVar.h"
 #include "File.h"
@@ -471,3 +473,4 @@ void OsuSteamWorkshop::handleUploadError(UString errorMessage)
 	debugLog("OsuSteamWorkshop Error: %s\n", errorMessage.toUtf8());
 	m_osu->getNotificationOverlay()->addNotification(UString::format("Error: %s", errorMessage.toUtf8()), 0xffff0000, false, 3.0f);
 }
+#endif
