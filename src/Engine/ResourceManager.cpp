@@ -32,15 +32,19 @@ public:
 #ifdef MCENGINE_FEATURE_MULTITHREADING
 
 	// self
-	McThread *thread;
+	McThread *thread{};
 
-	// wait lock
-	std::mutex loadingMutex;
+	// synchronization
+	std::mutex workMutex;
+	std::condition_variable workCondition;
+	bool hasWork{};
 
 	// args
 	std::atomic<size_t> threadIndex;
 	std::atomic<bool> running;
-	std::vector<ResourceManager::LOADING_WORK> *loadingWork;
+	std::vector<ResourceManager::LOADING_WORK> *loadingWork{};
+
+	ResourceManagerLoaderThread() : threadIndex(0), running(false) {}
 
 #endif
 };
@@ -81,7 +85,7 @@ ResourceManager::ResourceManager()
 	{
 		ResourceManagerLoaderThread *loaderThread = new ResourceManagerLoaderThread();
 
-		loaderThread->loadingMutex.lock(); // stop loader thread immediately, wait for work
+		loaderThread->hasWork = false;
 		loaderThread->threadIndex = i;
 		loaderThread->running = true;
 		loaderThread->loadingWork = &m_loadingWork;
@@ -108,33 +112,19 @@ ResourceManager::~ResourceManager()
 	// let all loader threads exit
 #ifdef MCENGINE_FEATURE_MULTITHREADING
 
-	for (size_t i=0; i<m_threads.size(); i++)
+	for (size_t i = 0; i < m_threads.size(); i++)
 	{
 		m_threads[i]->running = false;
 	}
 
-	for (size_t i=0; i<m_threads.size(); i++)
-	{
-		const size_t threadIndex = m_threads[i]->threadIndex.load();
-
-		bool hasLoadingWork = false;
-		for (size_t w=0; w<m_loadingWork.size(); w++)
-		{
-			if (m_loadingWork[w].threadIndex.atomic.load() == threadIndex)
-			{
-				hasLoadingWork = true;
-				break;
-			}
-		}
-
-		if (!hasLoadingWork)
-			m_threads[i]->loadingMutex.unlock();
-	}
+	// notify all threads to check their running state
+	notifyWorkerThreads();
 
 	// wait for threads to stop
-	for (size_t i=0; i<m_threads.size(); i++)
+	for (size_t i = 0; i < m_threads.size(); i++)
 	{
 		delete m_threads[i]->thread;
+		delete m_threads[i];
 	}
 
 	m_threads.clear();
@@ -142,7 +132,7 @@ ResourceManager::~ResourceManager()
 #endif
 
 	// cleanup leftovers (can only do that after loader threads have exited) (2)
-	for (size_t i=0; i<m_loadingWorkAsyncDestroy.size(); i++)
+	for (size_t i = 0; i < m_loadingWorkAsyncDestroy.size(); i++)
 	{
 		delete m_loadingWorkAsyncDestroy[i];
 	}
@@ -151,144 +141,99 @@ ResourceManager::~ResourceManager()
 
 void ResourceManager::update()
 {
-	bool reLock = false;
+#ifdef MCENGINE_FEATURE_MULTITHREADING
+	std::lock_guard<std::mutex> lock(g_resourceManagerMutex);
+#endif
+
+	// handle load finish (and synchronous init())
+	size_t numResourceInitCounter = 0;
+	for (size_t i = 0; i < m_loadingWork.size(); i++)
+	{
+		if (m_loadingWork[i].done.atomic.load())
+		{
+			if (debug_rm->getBool())
+				debugLog("Resource Manager: Worker thread #%i finished.\n", i);
+
+			// copy pointer, so we can stop everything before finishing
+			Resource *rs = m_loadingWork[i].resource.atomic.load();
+			const size_t threadIndex = m_loadingWork[i].threadIndex.atomic.load();
 
 #ifdef MCENGINE_FEATURE_MULTITHREADING
-
-	g_resourceManagerMutex.lock();
-
+			{
+				std::lock_guard<std::mutex> workLock(g_resourceManagerLoadingWorkMutex);
+				m_loadingWork.erase(m_loadingWork.begin() + i);
+			}
+#else
+			m_loadingWork.erase(m_loadingWork.begin() + i);
 #endif
+
+			i--;
+
+#ifdef MCENGINE_FEATURE_MULTITHREADING
+			// check if the thread has any remaining work
+			int numLoadingWorkForThreadIndex = 0;
+			for (size_t w = 0; w < m_loadingWork.size(); w++)
+			{
+				if (m_loadingWork[w].threadIndex.atomic.load() == threadIndex)
+					numLoadingWorkForThreadIndex++;
+			}
+
+			// update the thread's work status if it has no more work
+			if (numLoadingWorkForThreadIndex < 1 && m_threads.size() > 0)
+			{
+				std::lock_guard<std::mutex> threadLock(m_threads[threadIndex]->workMutex);
+				m_threads[threadIndex]->hasWork = false;
+			}
+#endif
+
+			// finish (synchronous init())
+			rs->load();
+			numResourceInitCounter++;
+
+			if (m_iNumResourceInitPerFrameLimit > 0 && numResourceInitCounter >= m_iNumResourceInitPerFrameLimit)
+				break; // only allow set number of work items to finish per frame (avoid stutters)
+		}
+	}
+
+	// handle async destroy
+	for (size_t i = 0; i < m_loadingWorkAsyncDestroy.size(); i++)
 	{
-		// handle load finish (and synchronous init())
-		size_t numResourceInitCounter = 0;
-		for (size_t i=0; i<m_loadingWork.size(); i++)
+		bool canBeDestroyed = true;
+		for (size_t w = 0; w < m_loadingWork.size(); w++)
 		{
-			if (m_loadingWork[i].done.atomic.load())
+			if (m_loadingWork[w].resource.atomic.load() == m_loadingWorkAsyncDestroy[i])
 			{
 				if (debug_rm->getBool())
-					debugLog("Resource Manager: Worker thread #%i finished.\n", i);
+					debugLog("Resource Manager: Waiting for async destroy of #%i ...\n", i);
 
-				// copy pointer, so we can stop everything before finishing
-				Resource *rs = m_loadingWork[i].resource.atomic.load();
-				const size_t threadIndex = m_loadingWork[i].threadIndex.atomic.load();
-
-#ifdef MCENGINE_FEATURE_MULTITHREADING
-
-				g_resourceManagerLoadingWorkMutex.lock();
-
-#endif
-
-				{
-					m_loadingWork.erase(m_loadingWork.begin() + i);
-				}
-
-#ifdef MCENGINE_FEATURE_MULTITHREADING
-
-				g_resourceManagerLoadingWorkMutex.unlock();
-
-#endif
-
-				i--;
-
-#ifdef MCENGINE_FEATURE_MULTITHREADING
-
-				// stop this worker thread if everything has been loaded
-				int numLoadingWorkForThreadIndex = 0;
-				for (size_t w=0; w<m_loadingWork.size(); w++)
-				{
-					if (m_loadingWork[w].threadIndex.atomic.load() == threadIndex)
-						numLoadingWorkForThreadIndex++;
-				}
-
-				if (numLoadingWorkForThreadIndex < 1)
-				{
-					if (m_threads.size() > 0)
-						m_threads[threadIndex]->loadingMutex.lock();
-				}
-
-				// unlock. this allows resources to trigger "recursive" loads within init()
-				g_resourceManagerMutex.unlock();
-
-#endif
-
-				reLock = true;
-
-				// check if this was an async destroy, can skip load() if that is the case
-				// TODO: this will probably break stuff, needs in depth testing before change, think more about this
-				/*
-				bool isAsyncDestroy = false;
-				for (size_t a=0; a<m_loadingWorkAsyncDestroy.size(); a++)
-				{
-					if (m_loadingWorkAsyncDestroy[a] == rs)
-					{
-						isAsyncDestroy = true;
-						break;
-					}
-				}
-				*/
-
-				// finish (synchronous init())
-				//if (!isAsyncDestroy)
-
-				rs->load();
-				numResourceInitCounter++;
-
-				//else if (debug_rm->getBool())
-				//	debugLog("Resource Manager: Skipping load() due to async destroy of #%i\n", (i + 1));
-
-				if (m_iNumResourceInitPerFrameLimit > 0 && numResourceInitCounter >= m_iNumResourceInitPerFrameLimit)
-					break; // NOTE: only allow 1 work item to finish per frame (avoid stutters for e.g. texture uploads)
-				else
-				{
-					if (reLock)
-					{
-						reLock = false;
-						g_resourceManagerMutex.lock();
-					}
-				}
+				canBeDestroyed = false;
+				break;
 			}
 		}
 
-#ifdef MCENGINE_FEATURE_MULTITHREADING
-
-	if (reLock)
-	{
-		g_resourceManagerMutex.lock();
-	}
-
-#endif
-
-		// handle async destroy
-		for (size_t i=0; i<m_loadingWorkAsyncDestroy.size(); i++)
+		if (canBeDestroyed)
 		{
-			bool canBeDestroyed = true;
-			for (size_t w=0; w<m_loadingWork.size(); w++)
-			{
-				if (m_loadingWork[w].resource.atomic.load() == m_loadingWorkAsyncDestroy[i])
-				{
-					if (debug_rm->getBool())
-						debugLog("Resource Manager: Waiting for async destroy of #%i ...\n", i);
+			if (debug_rm->getBool())
+				debugLog("Resource Manager: Async destroy of #%i\n", i);
 
-					canBeDestroyed = false;
-					break;
-				}
-			}
-
-			if (canBeDestroyed)
-			{
-				if (debug_rm->getBool())
-					debugLog("Resource Manager: Async destroy of #%i\n", i);
-
-				delete m_loadingWorkAsyncDestroy[i]; // implicitly calls release() through the Resource destructor
-				m_loadingWorkAsyncDestroy.erase(m_loadingWorkAsyncDestroy.begin() + i);
-				i--;
-			}
+			delete m_loadingWorkAsyncDestroy[i]; // implicitly calls release() through the Resource destructor
+			m_loadingWorkAsyncDestroy.erase(m_loadingWorkAsyncDestroy.begin() + i);
+			i--;
 		}
 	}
+}
+
+void ResourceManager::notifyWorkerThreads()
+{
 #ifdef MCENGINE_FEATURE_MULTITHREADING
-
-	g_resourceManagerMutex.unlock();
-
+	for (size_t i = 0; i < m_threads.size(); i++)
+	{
+		{
+			std::lock_guard<std::mutex> lock(m_threads[i]->workMutex);
+			// no need to set hasWork here, that's handled when adding work
+		}
+		m_threads[i]->workCondition.notify_one();
+	}
 #endif
 }
 
@@ -314,59 +259,45 @@ void ResourceManager::destroyResource(Resource *rs)
 		debugLog("ResourceManager: Destroying %s\n", rs->getName().toUtf8());
 
 #ifdef MCENGINE_FEATURE_MULTITHREADING
-
-	g_resourceManagerMutex.lock();
-
+	std::lock_guard<std::mutex> lock(g_resourceManagerMutex);
 #endif
+
+	bool isManagedResource = false;
+	int managedResourceIndex = -1;
+	for (size_t i = 0; i < m_vResources.size(); i++)
 	{
-		bool isManagedResource = false;
-		int managedResourceIndex = -1;
-		for (size_t i=0; i<m_vResources.size(); i++)
+		if (m_vResources[i] == rs)
 		{
-			if (m_vResources[i] == rs)
-			{
-				isManagedResource = true;
-				managedResourceIndex = i;
-				break;
-			}
+			isManagedResource = true;
+			managedResourceIndex = i;
+			break;
 		}
-
-		// handle async destroy
-		for (size_t w=0; w<m_loadingWork.size(); w++)
-		{
-			if (m_loadingWork[w].resource.atomic.load() == rs)
-			{
-				if (debug_rm->getBool())
-					debugLog("Resource Manager: Scheduled async destroy of %s\n", rs->getName().toUtf8());
-
-				if (rm_interrupt_on_destroy.getBool())
-					rs->interruptLoad();
-
-				m_loadingWorkAsyncDestroy.push_back(rs);
-				if (isManagedResource)
-					m_vResources.erase(m_vResources.begin() + managedResourceIndex);
-
-				// NOTE: ugly
-#ifdef MCENGINE_FEATURE_MULTITHREADING
-
-				g_resourceManagerMutex.unlock();
-
-#endif
-				return; // we're done here
-			}
-		}
-
-		// standard destroy
-		SAFE_DELETE(rs);
-
-		if (isManagedResource)
-			m_vResources.erase(m_vResources.begin() + managedResourceIndex);
 	}
-#ifdef MCENGINE_FEATURE_MULTITHREADING
 
-	g_resourceManagerMutex.unlock();
+	// handle async destroy
+	for (size_t w = 0; w < m_loadingWork.size(); w++)
+	{
+		if (m_loadingWork[w].resource.atomic.load() == rs)
+		{
+			if (debug_rm->getBool())
+				debugLog("Resource Manager: Scheduled async destroy of %s\n", rs->getName().toUtf8());
 
-#endif
+			if (rm_interrupt_on_destroy.getBool())
+				rs->interruptLoad();
+
+			m_loadingWorkAsyncDestroy.push_back(rs);
+			if (isManagedResource)
+				m_vResources.erase(m_vResources.begin() + managedResourceIndex);
+
+			return; // we're done here
+		}
+	}
+
+	// standard destroy
+	SAFE_DELETE(rs);
+
+	if (isManagedResource)
+		m_vResources.erase(m_vResources.begin() + managedResourceIndex);
 }
 
 void ResourceManager::reloadResources()
@@ -780,44 +711,42 @@ void ResourceManager::loadResource(Resource *res, bool load)
 
 		if (rm_numthreads.getInt() > 0)
 		{
-			g_resourceManagerMutex.lock();
+			std::lock_guard<std::mutex> lock(g_resourceManagerMutex);
+
+			// split work evenly/linearly across all threads
+			static size_t threadIndexCounter = 0;
+			const size_t threadIndex = threadIndexCounter;
+
+			// add work to loading thread
+			LOADING_WORK work;
+
+			work.resource = MobileAtomicResource(res);
+			work.threadIndex = MobileAtomicSizeT(threadIndex);
+			work.done = MobileAtomicBool(false);
+
+			threadIndexCounter = (threadIndexCounter + 1) % (std::min(m_threads.size(), (size_t)std::max(rm_numthreads.getInt(), 1)));
+
 			{
-				// TODO: prefer thread which currently doesn't have anything to do (i.e. allow n-1 "permanent" background tasks without blocking)
-
-				// split work evenly/linearly across all threads
-				static size_t threadIndexCounter = 0;
-				const size_t threadIndex = threadIndexCounter;
-
-				// add work to loading thread
-				LOADING_WORK work;
-
-				work.resource = MobileAtomicResource(res);
-				work.threadIndex = MobileAtomicSizeT(threadIndex);
-				work.done = MobileAtomicBool(false);
-
-				threadIndexCounter = (threadIndexCounter + 1) % (std::min(m_threads.size(), (size_t)std::max(rm_numthreads.getInt(), 1)));
-
-				g_resourceManagerLoadingWorkMutex.lock();
-				{
-					m_loadingWork.push_back(work);
-
-					int numLoadingWorkForThreadIndex = 0;
-					for (size_t i=0; i<m_loadingWork.size(); i++)
-					{
-						if (m_loadingWork[i].threadIndex.atomic.load() == threadIndex)
-							numLoadingWorkForThreadIndex++;
-					}
-
-					// let the loading thread run
-					if (numLoadingWorkForThreadIndex == 1) // only necessary if thread is waiting (otherwise it will already be picked up by the next iteration)
-					{
-						if (m_threads.size() > 0)
-							m_threads[threadIndex]->loadingMutex.unlock();
-					}
-				}
-				g_resourceManagerLoadingWorkMutex.unlock();
+				std::lock_guard<std::mutex> workLock(g_resourceManagerLoadingWorkMutex);
+				m_loadingWork.push_back(work);
 			}
-			g_resourceManagerMutex.unlock();
+
+			int numLoadingWorkForThreadIndex = 0;
+			for (size_t i = 0; i < m_loadingWork.size(); i++)
+			{
+				if (m_loadingWork[i].threadIndex.atomic.load() == threadIndex)
+					numLoadingWorkForThreadIndex++;
+			}
+
+			// update the thread's work status and notify it
+			if (numLoadingWorkForThreadIndex > 0 && m_threads.size() > 0)
+			{
+				{
+					std::lock_guard<std::mutex> threadLock(m_threads[threadIndex]->workMutex);
+					m_threads[threadIndex]->hasWork = true;
+				}
+				m_threads[threadIndex]->workCondition.notify_one();
+			}
 		}
 		else
 		{
@@ -874,29 +803,32 @@ void ResourceManager::resetFlags()
 	m_bNextLoadAsync = false;
 }
 
-
-
 #ifdef MCENGINE_FEATURE_MULTITHREADING
 
 static void *_resourceLoaderThread(void *data)
 {
-	ResourceManagerLoaderThread *self = (ResourceManagerLoaderThread*)data;
-
+	ResourceManagerLoaderThread *self = (ResourceManagerLoaderThread *)data;
 	const size_t threadIndex = self->threadIndex.load();
 
 	while (self->running.load())
 	{
 		// wait for work
-		self->loadingMutex.lock(); // thread will wait here if locked by engine
-		self->loadingMutex.unlock();
+		{
+			std::unique_lock<std::mutex> lock(self->workMutex);
+			self->workCondition.wait(lock, [self]() { return self->hasWork || !self->running.load(); });
 
-		Resource *resourceToLoad = NULL;
+			// if we were woken up but the thread isn't running anymore, exit
+			if (!self->running.load())
+				break;
+		}
+
+		Resource *resourceToLoad = nullptr;
 
 		// quickly check if there is work to do (this can potentially cause engine lag!)
-		// NOTE: we can't keep references to shared loadingWork objects (vector realloc/erase/etc.)
-		g_resourceManagerLoadingWorkMutex.lock();
 		{
-			for (size_t i=0; i<self->loadingWork->size(); i++)
+			std::lock_guard<std::mutex> lock(g_resourceManagerLoadingWorkMutex);
+
+			for (size_t i = 0; i < self->loadingWork->size(); i++)
 			{
 				if ((*self->loadingWork)[i].threadIndex.atomic.load() == threadIndex && !(*self->loadingWork)[i].done.atomic.load())
 				{
@@ -905,10 +837,9 @@ static void *_resourceLoaderThread(void *data)
 				}
 			}
 		}
-		g_resourceManagerLoadingWorkMutex.unlock();
 
 		// if we have work
-		if (resourceToLoad != NULL)
+		if (resourceToLoad != nullptr)
 		{
 			// debug
 			if (rm_debug_async_delay.getFloat() > 0.0f)
@@ -917,10 +848,11 @@ static void *_resourceLoaderThread(void *data)
 			// asynchronous initAsync()
 			resourceToLoad->loadAsync();
 
-			// very quickly signal that we are done
-			g_resourceManagerLoadingWorkMutex.lock();
+			// signal that we're done with this resource
 			{
-				for (size_t i=0; i<self->loadingWork->size(); i++)
+				std::lock_guard<std::mutex> lock(g_resourceManagerLoadingWorkMutex);
+
+				for (size_t i = 0; i < self->loadingWork->size(); i++)
 				{
 					if ((*self->loadingWork)[i].threadIndex.atomic.load() == threadIndex && (*self->loadingWork)[i].resource.atomic.load() == resourceToLoad)
 					{
@@ -929,13 +861,10 @@ static void *_resourceLoaderThread(void *data)
 					}
 				}
 			}
-			g_resourceManagerLoadingWorkMutex.unlock();
 		}
-		else
-			env->sleep(1000); // 1000 Hz sanity limit until locked again
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 #endif

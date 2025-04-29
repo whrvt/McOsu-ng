@@ -9,13 +9,15 @@
 #ifndef RESOURCEMANAGER_H
 #define RESOURCEMANAGER_H
 
-#include "Image.h"
 #include "Font.h"
-#include "Sound.h"
-#include "Shader.h"
+#include "Image.h"
 #include "RenderTarget.h"
+#include "Shader.h"
+#include "Sound.h"
 #include "TextureAtlas.h"
 #include "VertexArrayObject.h"
+
+#include <condition_variable>
 
 class ConVar;
 
@@ -26,14 +28,13 @@ class ResourceManager
 public:
 	static ConVar *debug_rm;
 
-	static constexpr auto PATH_DEFAULT_IMAGES  = Env::cfg(OS::HORIZON) ? "romfs:/materials/"  : "materials/";
-	static constexpr auto PATH_DEFAULT_FONTS   = Env::cfg(OS::HORIZON) ? "romfs:/fonts/"	  : "fonts/";
-	static constexpr auto PATH_DEFAULT_SOUNDS  = Env::cfg(OS::HORIZON) ? "romfs:/sounds/"	  : "sounds/";
-	static constexpr auto PATH_DEFAULT_SHADERS = Env::cfg(OS::HORIZON) ? "romfs:/shaders/"	  : "shaders/";
+	static constexpr auto PATH_DEFAULT_IMAGES = Env::cfg(OS::HORIZON) ? "romfs:/materials/" : "materials/";
+	static constexpr auto PATH_DEFAULT_FONTS = Env::cfg(OS::HORIZON) ? "romfs:/fonts/" : "fonts/";
+	static constexpr auto PATH_DEFAULT_SOUNDS = Env::cfg(OS::HORIZON) ? "romfs:/sounds/" : "sounds/";
+	static constexpr auto PATH_DEFAULT_SHADERS = Env::cfg(OS::HORIZON) ? "romfs:/shaders/" : "shaders/";
 
 public:
-	template<typename T>
-	struct MobileAtomic
+	template <typename T> struct MobileAtomic
 	{
 		std::atomic<T> atomic;
 
@@ -44,7 +45,7 @@ public:
 
 		MobileAtomic(MobileAtomic const &other) : atomic(other.atomic.load()) {}
 
-		MobileAtomic &operator = (MobileAtomic const &other)
+		MobileAtomic &operator=(MobileAtomic const &other)
 		{
 			atomic.store(other.atomic.load());
 			return *this;
@@ -52,7 +53,7 @@ public:
 	};
 	typedef MobileAtomic<bool> MobileAtomicBool;
 	typedef MobileAtomic<size_t> MobileAtomicSizeT;
-	typedef MobileAtomic<Resource*> MobileAtomicResource;
+	typedef MobileAtomic<Resource *> MobileAtomicResource;
 
 	struct LOADING_WORK
 	{
@@ -67,9 +68,13 @@ public:
 
 	void update();
 
-	void setNumResourceInitPerFrameLimit(size_t numResourceInitPerFrameLimit) {m_iNumResourceInitPerFrameLimit = numResourceInitPerFrameLimit;}
+	void setNumResourceInitPerFrameLimit(size_t numResourceInitPerFrameLimit) { m_iNumResourceInitPerFrameLimit = numResourceInitPerFrameLimit; }
 
-	void loadResource(Resource *rs) {requestNextLoadUnmanaged(); loadResource(rs, true);}
+	void loadResource(Resource *rs)
+	{
+		requestNextLoadUnmanaged();
+		loadResource(rs, true);
+	}
 	void destroyResource(Resource *rs);
 	void destroyResources();
 	void reloadResources();
@@ -93,10 +98,10 @@ public:
 	Sound *loadSoundAbs(UString filepath, UString resourceName, bool stream = false, bool threeD = false, bool loop = false, bool prescan = false);
 
 	// shaders (DEPRECATED)
-	Shader *loadShader(UString vertexShaderFilePath, UString fragmentShaderFilePath, UString resourceName);	// DEPRECATED
-	Shader *loadShader(UString vertexShaderFilePath, UString fragmentShaderFilePath);						// DEPRECATED
-	Shader *createShader(UString vertexShader, UString fragmentShader, UString resourceName);				// DEPRECATED
-	Shader *createShader(UString vertexShader, UString fragmentShader);										// DEPRECATED
+	Shader *loadShader(UString vertexShaderFilePath, UString fragmentShaderFilePath, UString resourceName); // DEPRECATED
+	Shader *loadShader(UString vertexShaderFilePath, UString fragmentShaderFilePath);                       // DEPRECATED
+	Shader *createShader(UString vertexShader, UString fragmentShader, UString resourceName);               // DEPRECATED
+	Shader *createShader(UString vertexShader, UString fragmentShader);                                     // DEPRECATED
 
 	// shaders
 	Shader *loadShader2(UString shaderFilePath, UString resourceName);
@@ -105,14 +110,16 @@ public:
 	Shader *createShader2(UString shaderSource);
 
 	// rendertargets
-	RenderTarget *createRenderTarget(int x, int y, int width, int height, Graphics::MULTISAMPLE_TYPE multiSampleType = Graphics::MULTISAMPLE_TYPE::MULTISAMPLE_0X);
+	RenderTarget *createRenderTarget(int x, int y, int width, int height,
+	                                 Graphics::MULTISAMPLE_TYPE multiSampleType = Graphics::MULTISAMPLE_TYPE::MULTISAMPLE_0X);
 	RenderTarget *createRenderTarget(int width, int height, Graphics::MULTISAMPLE_TYPE multiSampleType = Graphics::MULTISAMPLE_TYPE::MULTISAMPLE_0X);
 
 	// texture atlas
 	TextureAtlas *createTextureAtlas(int width, int height);
 
 	// models/meshes
-	VertexArrayObject *createVertexArrayObject(Graphics::PRIMITIVE primitive = Graphics::PRIMITIVE::PRIMITIVE_TRIANGLES, Graphics::USAGE_TYPE usage = Graphics::USAGE_TYPE::USAGE_STATIC, bool keepInSystemMemory = false);
+	VertexArrayObject *createVertexArrayObject(Graphics::PRIMITIVE primitive = Graphics::PRIMITIVE::PRIMITIVE_TRIANGLES,
+	                                           Graphics::USAGE_TYPE usage = Graphics::USAGE_TYPE::USAGE_STATIC, bool keepInSystemMemory = false);
 
 	// resource access by name
 	Image *getImage(UString resourceName) const;
@@ -120,13 +127,16 @@ public:
 	Sound *getSound(UString resourceName) const;
 	Shader *getShader(UString resourceName) const;
 
-	inline const std::vector<Resource*> &getResources() const {return m_vResources;}
-	inline size_t getNumThreads() const {return m_threads.size();}
-	inline size_t getNumLoadingWork() const {return m_loadingWork.size();}
-	inline size_t getNumLoadingWorkAsyncDestroy() const {return m_loadingWorkAsyncDestroy.size();}
+	[[nodiscard]] inline const std::vector<Resource *> &getResources() const { return m_vResources; }
+	[[nodiscard]] inline size_t getNumThreads() const { return m_threads.size(); }
+	[[nodiscard]] inline size_t getNumLoadingWork() const { return m_loadingWork.size(); }
+	[[nodiscard]] inline size_t getNumLoadingWorkAsyncDestroy() const { return m_loadingWorkAsyncDestroy.size(); }
 
 	bool isLoading() const;
 	bool isLoadingResource(Resource *rs) const;
+
+	// notify worker threads of new work
+	void notifyWorkerThreads();
 
 private:
 	void loadResource(Resource *res, bool load);
@@ -136,7 +146,7 @@ private:
 	void resetFlags();
 
 	// content
-	std::vector<Resource*> m_vResources;
+	std::vector<Resource *> m_vResources;
 
 	// flags
 	bool m_bNextLoadAsync;
@@ -144,9 +154,13 @@ private:
 	size_t m_iNumResourceInitPerFrameLimit;
 
 	// async
-	std::vector<ResourceManagerLoaderThread*> m_threads;
+	std::vector<ResourceManagerLoaderThread *> m_threads;
 	std::vector<LOADING_WORK> m_loadingWork;
-	std::vector<Resource*> m_loadingWorkAsyncDestroy;
+	std::vector<Resource *> m_loadingWorkAsyncDestroy;
+
+	// condition variable for worker thread signaling
+	std::condition_variable m_workCondition;
+	std::mutex m_workMutex;
 };
 
 #endif
