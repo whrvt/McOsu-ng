@@ -9,23 +9,14 @@
 #ifndef OPENGLES32INTERFACE_H
 #define OPENGLES32INTERFACE_H
 
-#include "NullGraphicsInterface.h"
 #include "cbase.h"
+#include "NullGraphicsInterface.h"
 
 #ifdef MCENGINE_FEATURE_GLES32
 
 #include "OpenGLSync.h"
 
 class OpenGLES32Shader;
-
-// Interleaved vertex format for improved performance
-struct InterleavedVertex
-{
-	Vector3 position; // 12 bytes
-	Vector2 texCoord; // 8 bytes
-	Color color;      // 4 bytes
-	Vector3 normal;   // 12 bytes (optional, included for future use)
-};
 
 class OpenGLES32Interface : public NullGraphicsInterface
 {
@@ -91,7 +82,7 @@ public:
 	virtual std::vector<unsigned char> getScreenshot();
 
 	// renderer info
-	virtual Vector2 getResolution() const { return m_vResolution; }
+	virtual Vector2 getResolution() const {return m_vResolution;}
 	virtual UString getVendor();
 	virtual UString getModel();
 	virtual UString getVersion();
@@ -105,8 +96,8 @@ public:
 	virtual Image *createImage(UString filePath, bool mipmapped, bool keepInSystemMemory);
 	virtual Image *createImage(int width, int height, bool mipmapped, bool keepInSystemMemory);
 	virtual RenderTarget *createRenderTarget(int x, int y, int width, int height, Graphics::MULTISAMPLE_TYPE multiSampleType);
-	virtual Shader *createShaderFromFile(UString vertexShaderFilePath, UString fragmentShaderFilePath); // DEPRECATED
-	virtual Shader *createShaderFromSource(UString vertexShader, UString fragmentShader);               // DEPRECATED
+	virtual Shader *createShaderFromFile(UString vertexShaderFilePath, UString fragmentShaderFilePath);	// DEPRECATED
+	virtual Shader *createShaderFromSource(UString vertexShader, UString fragmentShader);				// DEPRECATED
 	virtual Shader *createShaderFromFile(UString shaderFilePath);
 	virtual Shader *createShaderFromSource(UString shaderSource);
 	virtual VertexArrayObject *createVertexArrayObject(Graphics::PRIMITIVE primitive, Graphics::USAGE_TYPE usage, bool keepInSystemMemory);
@@ -114,16 +105,15 @@ public:
 	// matrices & transforms
 	void forceUpdateTransform();
 
-	// friend class accessors
-	inline const int getShaderGenericAttribPosition() const { return m_iShaderTexturedGenericAttribPosition; }
-	inline const int getShaderGenericAttribUV() const { return m_iShaderTexturedGenericAttribUV; }
-	inline const int getShaderGenericAttribCol() const { return m_iShaderTexturedGenericAttribCol; }
-	inline const int getShaderGenericAttribNormal() const { return m_iShaderTexturedGenericAttribNormal; }
+	inline const int getShaderGenericAttribPosition() const {return m_iShaderTexturedGenericAttribPosition;}
+	inline const int getShaderGenericAttribUV() const {return m_iShaderTexturedGenericAttribUV;}
+	inline const int getShaderGenericAttribCol() const {return m_iShaderTexturedGenericAttribCol;}
 
-	inline const unsigned int getInterleavedVBO() const { return m_iInterleavedVBO; }
-	inline const size_t getMaxVertices() const { return m_iMaxVertices; }
+	inline const int getVBOVertices() const {return m_iVBOVertices;}
+	inline const int getVBOTexcoords() const {return m_iVBOTexcoords;}
+	inline const int getVBOTexcolors() const {return m_iVBOTexcolors;}
 
-	inline Matrix4 getMVP() const { return m_MP; }
+	inline Matrix4 getMVP() const {return m_MP;}
 
 protected:
 	virtual void init();
@@ -135,9 +125,9 @@ private:
 	static int primitiveToOpenGL(Graphics::PRIMITIVE primitive);
 	static int compareFuncToOpenGL(Graphics::COMPARE_FUNC compareFunc);
 
-	void registerShader(OpenGLES32Shader *shader);
-	void unregisterShader(OpenGLES32Shader *shader);
-	void updateAllShaderTransforms();
+    void registerShader(OpenGLES32Shader* shader);
+    void unregisterShader(OpenGLES32Shader* shader);
+    void updateAllShaderTransforms();
 
 	// renderer
 	bool m_bInScene;
@@ -147,16 +137,14 @@ private:
 	Matrix4 m_MP;
 
 	OpenGLES32Shader *m_shaderTexturedGeneric;
-	std::vector<OpenGLES32Shader *> m_registeredShaders;
+	std::vector<OpenGLES32Shader*> m_registeredShaders;
 	int m_iShaderTexturedGenericPrevType;
 	int m_iShaderTexturedGenericAttribPosition;
 	int m_iShaderTexturedGenericAttribUV;
 	int m_iShaderTexturedGenericAttribCol;
-	int m_iShaderTexturedGenericAttribNormal;
-
-	// interleaved vertex buffer
-	unsigned int m_iInterleavedVBO;
-	size_t m_iMaxVertices;
+	unsigned int m_iVBOVertices;
+	unsigned int m_iVBOTexcoords;
+	unsigned int m_iVBOTexcolors;
 
 	// synchronization
 	OpenGLSync *m_syncobj;
@@ -169,8 +157,7 @@ private:
 };
 
 #else
-class OpenGLES32Interface : public NullGraphicsInterface
-{};
+class OpenGLES32Interface : public NullGraphicsInterface{};
 #endif
 
 #endif

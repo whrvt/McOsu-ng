@@ -29,8 +29,6 @@
 #define TEXTURE_FREE_MEMORY_ATI 0x87FC
 #define RENDERBUFFER_FREE_MEMORY_ATI 0x87FD
 
-static constexpr auto MAX_INTERLEAVED_VERTICES = 16384;
-
 OpenGLES32Interface::OpenGLES32Interface() : NullGraphicsInterface()
 {
 	// renderer
@@ -42,9 +40,9 @@ OpenGLES32Interface::OpenGLES32Interface() : NullGraphicsInterface()
 	m_iShaderTexturedGenericAttribPosition = 0;
 	m_iShaderTexturedGenericAttribUV = 1;
 	m_iShaderTexturedGenericAttribCol = 2;
-	m_iShaderTexturedGenericAttribNormal = 3;
-	m_iInterleavedVBO = 0;
-	m_iMaxVertices = MAX_INTERLEAVED_VERTICES;
+	m_iVBOVertices = 0;
+	m_iVBOTexcoords = 0;
+	m_iVBOTexcolors = 0;
 
 	// persistent vars
 	m_color = 0xffffffff;
@@ -56,11 +54,16 @@ OpenGLES32Interface::~OpenGLES32Interface()
 {
 	SAFE_DELETE(m_shaderTexturedGeneric);
 
-	if (m_iInterleavedVBO != 0)
-		glDeleteBuffers(1, &m_iInterleavedVBO);
+	if (m_iVBOVertices != 0)
+		glDeleteBuffers(1, &m_iVBOVertices);
+	if (m_iVBOTexcoords != 0)
+		glDeleteBuffers(1, &m_iVBOTexcoords);
+	if (m_iVBOTexcolors != 0)
+		glDeleteBuffers(1, &m_iVBOTexcolors);
 
 	SAFE_DELETE(m_syncobj);
 }
+
 
 void OpenGLES32Interface::init()
 {
@@ -160,31 +163,29 @@ void main() {
 	m_shaderTexturedGeneric = (OpenGLES32Shader *)createShaderFromSource(texturedGenericV, texturedGenericP);
 	m_shaderTexturedGeneric->load();
 
-	// create interleaved VBO
-	glGenBuffers(1, &m_iInterleavedVBO);
+	glGenBuffers(1, &m_iVBOVertices);
+	glGenBuffers(1, &m_iVBOTexcoords);
+	glGenBuffers(1, &m_iVBOTexcolors);
 
-	// get attribs
 	m_iShaderTexturedGenericAttribPosition = m_shaderTexturedGeneric->getAttribLocation("position");
 	m_iShaderTexturedGenericAttribUV = m_shaderTexturedGeneric->getAttribLocation("uv");
 	m_iShaderTexturedGenericAttribCol = m_shaderTexturedGeneric->getAttribLocation("vcolor");
-	m_iShaderTexturedGenericAttribNormal = m_shaderTexturedGeneric->getAttribLocation("normal");
 
-	// bind and initialize interleaved buffer
-	glBindBuffer(GL_ARRAY_BUFFER, m_iInterleavedVBO);
-	glBufferData(GL_ARRAY_BUFFER, m_iMaxVertices * sizeof(InterleavedVertex), NULL, GL_STREAM_DRAW);
-
-	// set up attribs
-	glVertexAttribPointer(m_iShaderTexturedGenericAttribPosition, 3, GL_FLOAT, GL_FALSE, sizeof(InterleavedVertex), (GLvoid *)offsetof(InterleavedVertex, position));
+	// TODO: handle cases where more than 16384 elements are in an unbaked vao
+	glBindBuffer(GL_ARRAY_BUFFER, m_iVBOVertices);
+	glVertexAttribPointer(m_iShaderTexturedGenericAttribPosition, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid *)0);
+	glBufferData(GL_ARRAY_BUFFER, 16384 * sizeof(Vector3), NULL, GL_STREAM_DRAW);
 	glEnableVertexAttribArray(m_iShaderTexturedGenericAttribPosition);
 
-	glVertexAttribPointer(m_iShaderTexturedGenericAttribUV, 2, GL_FLOAT, GL_FALSE, sizeof(InterleavedVertex), (GLvoid *)offsetof(InterleavedVertex, texCoord));
+	glBindBuffer(GL_ARRAY_BUFFER, m_iVBOTexcoords);
+	glVertexAttribPointer(m_iShaderTexturedGenericAttribUV, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (GLvoid *)0);
+	glBufferData(GL_ARRAY_BUFFER, 16384 * sizeof(Vector2), NULL, GL_STREAM_DRAW);
 	glEnableVertexAttribArray(m_iShaderTexturedGenericAttribUV);
 
-	glVertexAttribPointer(m_iShaderTexturedGenericAttribCol, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(InterleavedVertex), (GLvoid *)offsetof(InterleavedVertex, color));
+	glBindBuffer(GL_ARRAY_BUFFER, m_iVBOTexcolors);
+	glVertexAttribPointer(m_iShaderTexturedGenericAttribCol, 4, GL_UNSIGNED_BYTE, GL_TRUE, 4 * sizeof(Color), (GLvoid *)0);
+	glBufferData(GL_ARRAY_BUFFER, 16384 * sizeof(Vector4), NULL, GL_STREAM_DRAW);
 	glEnableVertexAttribArray(m_iShaderTexturedGenericAttribCol);
-
-	glVertexAttribPointer(m_iShaderTexturedGenericAttribNormal, 3, GL_FLOAT, GL_FALSE, sizeof(InterleavedVertex), (GLvoid *)offsetof(InterleavedVertex, normal));
-	glEnableVertexAttribArray(m_iShaderTexturedGenericAttribNormal);
 }
 
 void OpenGLES32Interface::beginScene()
@@ -470,114 +471,103 @@ void OpenGLES32Interface::drawVAO(VertexArrayObject *vao)
 	if (vertices.size() < 2)
 		return;
 
-	// convert the separate arrays to interleaved format
-	std::vector<InterleavedVertex> interleavedVertices;
-	Graphics::PRIMITIVE primitive = vao->getPrimitive();
-
 	// TODO: separate draw for non-quads, update quad draws to triangle draws to avoid rewrite overhead here
 
 	// no support for quads, because fuck you
 	// rewrite all quads into triangles
+	std::vector<Vector3> finalVertices = vertices;
+	std::vector<std::vector<Vector2>> finalTexcoords = texcoords;
+	std::vector<Color> colors;
+	std::vector<Color> finalColors;
+
+	for (size_t i = 0; i < vcolors.size(); i++)
+	{
+		Color color = OpenGLES32VertexArrayObject::ARGBtoABGR(vcolors[i]);
+		colors.push_back(color);
+		finalColors.push_back(color);
+	}
+	int maxColorIndex = colors.size() - 1;
+
+	Graphics::PRIMITIVE primitive = vao->getPrimitive();
 	if (primitive == Graphics::PRIMITIVE::PRIMITIVE_QUADS)
 	{
+		finalVertices.clear();
+		for (size_t t = 0; t < finalTexcoords.size(); t++)
+		{
+			finalTexcoords[t].clear();
+		}
+		finalColors.clear();
 		primitive = Graphics::PRIMITIVE::PRIMITIVE_TRIANGLES;
 
-		if (vertices.size() >= 4)
+		if (vertices.size() > 3)
 		{
 			for (size_t i = 0; i < vertices.size(); i += 4)
 			{
-				if (i + 3 >= vertices.size())
-					break; // ensure we have a full quad
+				finalVertices.push_back(vertices[i + 0]);
+				finalVertices.push_back(vertices[i + 1]);
+				finalVertices.push_back(vertices[i + 2]);
 
-				// first triangle (0,1,2)
-				for (int j = 0; j < 3; j++)
+				for (size_t t = 0; t < texcoords.size(); t++)
 				{
-					InterleavedVertex v;
-					v.position = vertices[i + j];
-
-					// default empty values
-					v.texCoord = Vector2(0, 0);
-					v.color = 0xffffffff;
-					v.normal = Vector3(0, 0, 1);
-
-					if (texcoords.size() > 0 && texcoords[0].size() > i + j)
-						v.texCoord = texcoords[0][i + j];
-
-					if (vcolors.size() > i + j)
-						v.color = OpenGLES32VertexArrayObject::ARGBtoABGR(vcolors[i + j]);
-
-					if (normals.size() > i + j)
-						v.normal = normals[i + j];
-
-					interleavedVertices.push_back(v);
+					finalTexcoords[t].push_back(texcoords[t][i + 0]);
+					finalTexcoords[t].push_back(texcoords[t][i + 1]);
+					finalTexcoords[t].push_back(texcoords[t][i + 2]);
 				}
 
-				// second triangle (0,2,3)
-				const int indices[3] = {0, 2, 3};
-				for (int j = 0; j < 3; j++)
+				if (colors.size() > 0)
 				{
-					InterleavedVertex v;
-					v.position = vertices[i + indices[j]];
+					finalColors.push_back(colors[clamp<int>(i + 0, 0, maxColorIndex)]);
+					finalColors.push_back(colors[clamp<int>(i + 1, 0, maxColorIndex)]);
+					finalColors.push_back(colors[clamp<int>(i + 2, 0, maxColorIndex)]);
+				}
 
-					// default empty values
-					v.texCoord = Vector2(0, 0);
-					v.color = 0xffffffff;
-					v.normal = Vector3(0, 0, 1);
+				finalVertices.push_back(vertices[i + 0]);
+				finalVertices.push_back(vertices[i + 2]);
+				finalVertices.push_back(vertices[i + 3]);
 
-					if (texcoords.size() > 0 && texcoords[0].size() > i + indices[j])
-						v.texCoord = texcoords[0][i + indices[j]];
+				for (size_t t = 0; t < texcoords.size(); t++)
+				{
+					finalTexcoords[t].push_back(texcoords[t][i + 0]);
+					finalTexcoords[t].push_back(texcoords[t][i + 2]);
+					finalTexcoords[t].push_back(texcoords[t][i + 3]);
+				}
 
-					if (vcolors.size() > i + indices[j])
-						v.color = OpenGLES32VertexArrayObject::ARGBtoABGR(vcolors[i + indices[j]]);
-
-					if (normals.size() > i + indices[j])
-						v.normal = normals[i + indices[j]];
-
-					interleavedVertices.push_back(v);
+				if (colors.size() > 0)
+				{
+					finalColors.push_back(colors[clamp<int>(i + 0, 0, maxColorIndex)]);
+					finalColors.push_back(colors[clamp<int>(i + 2, 0, maxColorIndex)]);
+					finalColors.push_back(colors[clamp<int>(i + 3, 0, maxColorIndex)]);
 				}
 			}
 		}
 	}
-	else // non-quads
+
+	// upload vertices to gpu
+	if (finalVertices.size() > 0)
 	{
-		for (size_t i = 0; i < vertices.size(); i++)
-		{
-			InterleavedVertex v;
-			v.position = vertices[i];
-
-			v.texCoord = Vector2(0, 0);
-			v.color = 0xffffffff;
-			v.normal = Vector3(0, 0, 1);
-
-			if (texcoords.size() > 0 && texcoords[0].size() > i)
-				v.texCoord = texcoords[0][i];
-
-			if (vcolors.size() > i)
-				v.color = OpenGLES32VertexArrayObject::ARGBtoABGR(vcolors[i]);
-
-			if (normals.size() > i)
-				v.normal = normals[i];
-
-			interleavedVertices.push_back(v);
-		}
+		glBindBuffer(GL_ARRAY_BUFFER, m_iVBOVertices);
+		glBufferSubData(GL_ARRAY_BUFFER, 0, finalVertices.size() * sizeof(Vector3), &(finalVertices[0]));
 	}
 
-	// check if buffer is large enough
-	if (interleavedVertices.size() > m_iMaxVertices)
+	// upload texcoords to gpu
+	if (finalTexcoords.size() > 0 && finalTexcoords[0].size() > 0)
 	{
-		debugLog("WARNING: Vertex count exceeds buffer size! (%zu > %zu)\n", interleavedVertices.size(), m_iMaxVertices);
-		return;
+		glBindBuffer(GL_ARRAY_BUFFER, m_iVBOTexcoords);
+		glBufferSubData(GL_ARRAY_BUFFER, 0, finalTexcoords[0].size() * sizeof(Vector2), &(finalTexcoords[0][0]));
 	}
 
-	// upload interleaved data to GPU
-	glBindBuffer(GL_ARRAY_BUFFER, m_iInterleavedVBO);
-	glBufferSubData(GL_ARRAY_BUFFER, 0, interleavedVertices.size() * sizeof(InterleavedVertex), &interleavedVertices[0]);
+	// upload vertex colors to gpu
+	if (finalColors.size() > 0)
+	{
+		glBindBuffer(GL_ARRAY_BUFFER, m_iVBOTexcolors);
+		glBufferSubData(GL_ARRAY_BUFFER, 0, finalColors.size() * sizeof(Color), &(finalColors[0]));
+	}
 
-	// configure shader type
+	// configure shader
 	if (m_shaderTexturedGeneric->isActive())
 	{
-		// both texcoords and colors (e.g., text rendering)
-		if (texcoords.size() > 0 && texcoords[0].size() > 0 && vcolors.size() > 0)
+		// texcoords and colors (e.g., text rendering)
+		if (finalTexcoords.size() > 0 && finalTexcoords[0].size() > 0 && finalColors.size() > 0)
 		{
 			if (m_iShaderTexturedGenericPrevType != 4)
 			{
@@ -586,7 +576,7 @@ void OpenGLES32Interface::drawVAO(VertexArrayObject *vao)
 			}
 		}
 		// texcoords
-		else if (texcoords.size() > 0 && texcoords[0].size() > 0)
+		else if (finalTexcoords.size() > 0 && finalTexcoords[0].size() > 0)
 		{
 			if (m_iShaderTexturedGenericPrevType != 1)
 			{
@@ -595,7 +585,7 @@ void OpenGLES32Interface::drawVAO(VertexArrayObject *vao)
 			}
 		}
 		// colors
-		else if (vcolors.size() > 0)
+		else if (finalColors.size() > 0)
 		{
 			if (m_iShaderTexturedGenericPrevType != 2)
 			{
@@ -611,8 +601,8 @@ void OpenGLES32Interface::drawVAO(VertexArrayObject *vao)
 		}
 	}
 
-	// draw
-	glDrawArrays(primitiveToOpenGL(primitive), 0, interleavedVertices.size());
+	// draw it
+	glDrawArrays(primitiveToOpenGL(primitive), 0, finalVertices.size());
 }
 
 void OpenGLES32Interface::setClipRect(McRect clipRect)

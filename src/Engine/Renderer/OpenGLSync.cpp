@@ -11,7 +11,7 @@
 #include "ConVar.h"
 #include "Engine.h"
 
-static constexpr auto DEFAULT_SYNC_TIMEOUT_US = 10000000; // 100fps timeout
+static constexpr auto DEFAULT_SYNC_TIMEOUT_US = 5000000; // 5ms timeout for sync operations
 static constexpr auto DEFAULT_MAX_FRAMES_IN_FLIGHT = 2;
 
 ConVar r_sync_timeout("r_sync_timeout", DEFAULT_SYNC_TIMEOUT_US, FCVAR_NONE, "timeout in microseconds for GPU synchronization operations");
