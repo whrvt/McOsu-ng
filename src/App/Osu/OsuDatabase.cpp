@@ -1776,18 +1776,8 @@ void OsuDatabase::loadDB(OsuFile *db, bool &fallbackToRawLoad)
 				const std::vector<UString> pathTokens = path.split("\\"); // NOTE: this is hardcoded to backslash since osu is windows only
 				if (pathTokens.size() > 0 && pathTokens[0].length() > 0)
 				{
-					const std::vector<UString> spaceTokens = pathTokens[0].split(" ");
-					if (spaceTokens.size() > 0 && spaceTokens[0].length() > 0)
-					{
-						try
-						{
-							beatmapSetID = spaceTokens[0].toInt();
-						}
-						catch (...)
-						{
-							beatmapSetID = -1;
-						}
-					}
+					const std::vector<int> spaceTokens = pathTokens[0].split<int>(" ");
+					beatmapSetID = spaceTokens[0] >= 0 ? spaceTokens[0] : -1;
 				}
 			}
 

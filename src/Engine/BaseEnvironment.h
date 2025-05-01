@@ -52,7 +52,8 @@ namespace Env
 		GL		= 1 << 0,
 		GLES2	= 1 << 1,
 		DX11	= 1 << 2,
-		SW		= 1 << 3,
+		VK		= 1 << 3,
+		SW		= 1 << 4,
 		NONE	= 0,
 	};
 
@@ -138,11 +139,14 @@ namespace Env
 	#ifdef MCENGINE_FEATURE_DIRECTX11
 		REND::DX11 |
 	#endif
+	#ifdef MCENGINE_FEATURE_VULKAN
+		REND::VK |
+	#endif
 	#ifdef MCENGINE_FEATURE_SOFTRENDERER
 		REND::SW |
 	#endif
-	#if !(defined(MCENGINE_FEATURE_OPENGL) || defined(MCENGINE_FEATURE_OPENGLES) || defined(MCENGINE_FEATURE_DIRECTX11) || defined(MCENGINE_FEATURE_SOFTRENDERER))
-	#warning "No renderer is defined! Check \"EngineFeatures.h\"."
+	#if !(defined(MCENGINE_FEATURE_OPENGL) || defined(MCENGINE_FEATURE_OPENGLES) || defined(MCENGINE_FEATURE_DIRECTX11) || defined(MCENGINE_FEATURE_VULKAN) || defined(MCENGINE_FEATURE_SOFTRENDERER))
+	#error "No renderer is defined! Check \"EngineFeatures.h\"."
 	#endif
 		REND::NONE;
 	}
@@ -218,5 +222,52 @@ using Env::FEAT;
 	class SoundEngine;
 	using SoundEngineType = SoundEngine;
 #endif
+
+#ifdef __AVX512F__
+static constexpr auto OPTIMAL_UNROLL = 10;
+#elif defined(__AVX2__)
+static constexpr auto OPTIMAL_UNROLL = 8;
+#elif defined(__SSE2__)
+static constexpr auto OPTIMAL_UNROLL = 6;
+#else
+static constexpr auto OPTIMAL_UNROLL = 4;
+#endif
+
+#if defined(__GNUC__) || defined(__clang__)
+#define likely(x) __builtin_expect(bool(x),1)
+#define unlikely(x) __builtin_expect(bool(x),0)
+#define forceinline __attribute__((always_inline)) inline
+#define MC_DO_PRAGMA(x) _Pragma (#x)
+
+#ifdef __clang__
+#define MC_VECTORIZE_LOOP _Pragma("clang loop vectorize(enable)")
+#define MC_UNR_cnt(num) MC_DO_PRAGMA(clang loop unroll_count(num))
+#define NULL_PUSH
+#define NULL_POP
+#else
+#define MC_VECTORIZE_LOOP _Pragma("GCC ivdep")
+#define MC_UNR_cnt(num) MC_DO_PRAGMA(GCC unroll num)
+#define NULL_PUSH MC_DO_PRAGMA(GCC diagnostic ignored "-Wformat") MC_DO_PRAGMA(GCC diagnostic push)
+#define NULL_POP MC_DO_PRAGMA(GCC diagnostic pop)
+#endif
+
+#define MC_VEC_UNR_cnt(num) MC_VECTORIZE_LOOP MC_UNR_cnt(num)
+#define MC_UNROLL_VECTOR MC_VEC_UNR_cnt(OPTIMAL_UNROLL)
+#define MC_UNROLL MC_UNR_cnt(OPTIMAL_UNROLL)
+
+#else
+
+#define likely(x) (x)
+#define unlikely(x) (x)
+#define forceinline
+#define MC_DO_PRAGMA(x)
+#define MC_VECTORIZE_LOOP
+#define MC_UNR_cnt(num)
+#define MC_VEC_UNR_cnt(num)
+#define MC_UNROLL_VECTOR
+#define MC_UNROLL
+#define NULL_PUSH
+#define NULL_POP
+#endif // defined(__GNUC__) || defined(__clang__)
 
 #endif

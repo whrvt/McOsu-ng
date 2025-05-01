@@ -64,17 +64,17 @@ public:
 	[[nodiscard]] constexpr T substr(int offset, int charCount = -1) const
 	{
 		offset = clamp<int>(offset, 0, m_length);
-	
+
 		if (charCount < 0)
 			charCount = m_length - offset;
-	
+
 		charCount = clamp<int>(charCount, 0, m_length - offset);
-	
+
 		UString result;
 		result.m_unicode = m_unicode.substr(offset, charCount);
 		result.m_length = static_cast<int>(result.m_unicode.length());
 		result.updateUtf8();
-	
+
 		return result.to<T>();
 	}
 
@@ -102,7 +102,7 @@ public:
 
 	// conversions
 	template <typename T = UString>
-	[[nodiscard]] constexpr T to() const
+	[[nodiscard]] constexpr T to() const noexcept
 	{
 		if (m_utf8.empty())
 			return T{};
@@ -129,15 +129,15 @@ public:
 		}
 	}
 
-	[[nodiscard]] constexpr float toFloat() const {return to<float>();};
-	[[nodiscard]] constexpr double toDouble() const {return to<double>();};
-	[[nodiscard]] constexpr long double toLongDouble() const {return to<long double>();};
-	[[nodiscard]] constexpr int toInt() const {return to<int>();};
-	[[nodiscard]] constexpr long toLong() const {return to<long>();};
-	[[nodiscard]] constexpr long long toLongLong() const {return to<long long>();};
-	[[nodiscard]] constexpr unsigned int toUnsignedInt() const {return to<unsigned int>();};
-	[[nodiscard]] constexpr unsigned long toUnsignedLong() const {return to<unsigned long>();};
-	[[nodiscard]] constexpr unsigned long long toUnsignedLongLong() const {return to<unsigned long long>();};
+	[[nodiscard]] constexpr float toFloat() 						const noexcept {return to<float>();}
+	[[nodiscard]] constexpr double toDouble() 						const noexcept {return to<double>();}
+	[[nodiscard]] constexpr long double toLongDouble() 				const noexcept {return to<long double>();}
+	[[nodiscard]] constexpr int toInt() 							const noexcept {return to<int>();}
+	[[nodiscard]] constexpr long toLong() 							const noexcept {return to<long>();}
+	[[nodiscard]] constexpr long long toLongLong() 					const noexcept {return to<long long>();}
+	[[nodiscard]] constexpr unsigned int toUnsignedInt() 			const noexcept {return to<unsigned int>();}
+	[[nodiscard]] constexpr unsigned long toUnsignedLong() 			const noexcept {return to<unsigned long>();}
+	[[nodiscard]] constexpr unsigned long long toUnsignedLongLong() const noexcept {return to<unsigned long long>();}
 
 	void lowerCase();
 	void upperCase();

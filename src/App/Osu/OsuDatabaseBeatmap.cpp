@@ -403,8 +403,7 @@ OsuDatabaseBeatmap::PRIMITIVE_CONTAINER OsuDatabaseBeatmap::loadPrimitiveObjects
 						}
 						else if (type & 0x2) // slider
 						{
-							UString curLineString = UString(curLineChar);
-							std::vector<UString> tokens = curLineString.split(",");
+							std::vector<UString> tokens = UString(curLineChar).split(",");
 							if (tokens.size() < 8)
 							{
 								debugLog("Invalid slider in beatmap: %s\n\ncurLine = %s\n", osuFilePath.toUtf8(), curLineChar);
@@ -480,8 +479,7 @@ OsuDatabaseBeatmap::PRIMITIVE_CONTAINER OsuDatabaseBeatmap::loadPrimitiveObjects
 						}
 						else if (type & 0x8) // spinner
 						{
-							UString curLineString = UString(curLineChar);
-							std::vector<UString> tokens = curLineString.split(",");
+							auto tokens = UString(curLineChar).split<float>(",");
 							if (tokens.size() < 6)
 							{
 								debugLog("Invalid spinner in beatmap: %s\n\ncurLine = %s\n", osuFilePath.toUtf8(), curLineChar);
@@ -496,7 +494,7 @@ OsuDatabaseBeatmap::PRIMITIVE_CONTAINER OsuDatabaseBeatmap::loadPrimitiveObjects
 								s.y = y;
 								s.time = time;
 								s.sampleType = hitSound;
-								s.endTime = tokens[5].toFloat();
+								s.endTime = tokens[5];
 							}
 							c.spinners.push_back(s);
 						}

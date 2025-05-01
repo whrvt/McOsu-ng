@@ -678,7 +678,7 @@ void OpenVRInterface::draw(Graphics *g)
 	if (!vr_spectator_mode.getBool() && vr_draw_hmd_to_window.getBool())
 		renderStereoToWindow(g);
 
-	if constexpr (Env::cfg(REND::GL))
+#ifdef MCENGINE_FEATURE_OPENGL
 	{
 		// push to hmd
 		// only OpenGL is supported atm
@@ -746,6 +746,7 @@ void OpenVRInterface::draw(Graphics *g)
 			m_bSteamVRBugWorkaroundCompositorSSChangeAllowed = false; // we can no longer change the texture size, after the first submit
 		}
 	}
+#endif
 
 	// spectator mode
 	if (vr_spectator_mode.getBool())

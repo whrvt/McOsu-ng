@@ -9,7 +9,7 @@
 #ifndef STEAMWORKSINTERFACE_H
 #define STEAMWORKSINTERFACE_H
 
-#include "EngineFeatures.h"
+#include "BaseEnvironment.h"
 
 #ifdef MCENGINE_FEATURE_STEAMWORKS
 
@@ -122,7 +122,7 @@ public:
 	[[maybe_unused]] constexpr auto getUsername(){}
 };
 
-constexpr SteamworksInterface *steam{};
+[[gnu::unused]] static SteamworksInterface *steam = new SteamworksInterface(); // stfu mingw-gcc
 
 #endif
 

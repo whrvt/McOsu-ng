@@ -111,7 +111,7 @@ static void SDLLogCallback(void *, int category, SDL_LogPriority, const char *me
 	fprintf(stderr, "SDL[%s]: %s\n", catStr, message);
 }
 
-static void dumpSDLAttribs()
+[[maybe_unused]] static void dumpSDLGLAttribs()
 {
 	int value;
 	const char *attrNames[] = {"SDL_GL_RED_SIZE",
@@ -223,10 +223,15 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
 	}
 
-	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+	if constexpr (Env::cfg((REND::GL | REND::GLES2), !REND::DX11))
+		SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 
 	constexpr auto windowFlags = SDL_WINDOW_HIDDEN | SDL_WINDOW_INPUT_FOCUS | SDL_WINDOW_MOUSE_FOCUS |
-						   		 (Env::cfg((REND::GL | REND::GLES2), !REND::DX11) ? SDL_WINDOW_OPENGL : 0UL);
+						   	   ((Env::cfg((REND::GL | REND::GLES2), !REND::DX11))
+							   ? SDL_WINDOW_OPENGL
+							   : (Env::cfg(REND::VK, !REND::DX11))
+							   ? SDL_WINDOW_VULKAN
+							   : 0UL);
 
     SDL_PropertiesID props = SDL_CreateProperties();
     SDL_SetStringProperty(props, SDL_PROP_WINDOW_CREATE_TITLE_STRING, WINDOW_TITLE);
@@ -352,9 +357,8 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 	if constexpr (Env::cfg((REND::GL | REND::GLES2), !REND::DX11))
 	{
 		SDL_GL_MakeCurrent(g_window, context);
-
 		if (environment->sdlDebug()) // TODO: the variable somehow isn't loaded from the engine config at this point yet, so this is unreachable
-			dumpSDLAttribs();
+			dumpSDLGLAttribs();
 	}
 
 	const bool shouldBeBorderless = convar->getConVarByName("fullscreen_windowed_borderless")->getBool();
