@@ -9,25 +9,25 @@
 
 #ifdef MCENGINE_FEATURE_GLES32
 
-#include "Engine.h"
-#include "ConVar.h"
 #include "Camera.h"
+#include "ConVar.h"
+#include "Engine.h"
 
 #include "Font.h"
-#include "OpenGLImage.h"
-#include "OpenGLRenderTarget.h"
 #include "OpenGLES32Shader.h"
 #include "OpenGLES32VertexArrayObject.h"
+#include "OpenGLImage.h"
+#include "OpenGLRenderTarget.h"
 
 #include "OpenGLHeaders.h"
 
-#define GPU_MEMORY_INFO_DEDICATED_VIDMEM_NVX			0x9047
-#define GPU_MEMORY_INFO_TOTAL_AVAILABLE_MEMORY_NVX		0x9048
-#define GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX	0x9049
+#define GPU_MEMORY_INFO_DEDICATED_VIDMEM_NVX 0x9047
+#define GPU_MEMORY_INFO_TOTAL_AVAILABLE_MEMORY_NVX 0x9048
+#define GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX 0x9049
 
-#define VBO_FREE_MEMORY_ATI								0x87FB
-#define TEXTURE_FREE_MEMORY_ATI							0x87FC
-#define RENDERBUFFER_FREE_MEMORY_ATI					0x87FD
+#define VBO_FREE_MEMORY_ATI 0x87FB
+#define TEXTURE_FREE_MEMORY_ATI 0x87FC
+#define RENDERBUFFER_FREE_MEMORY_ATI 0x87FD
 
 OpenGLES32Interface::OpenGLES32Interface() : NullGraphicsInterface()
 {
@@ -80,8 +80,9 @@ void OpenGLES32Interface::init()
 	// culling
 	glFrontFace(GL_CCW);
 
-	//setWireframe(true);
+	// setWireframe(true);
 
+	// TODO: move these out to a McShader and load like the other OpenGL interface
 	constexpr auto texturedGenericV = R"(#version 100
 
 attribute vec3 position;
@@ -125,19 +126,32 @@ uniform vec3 lightDir;  // normalized direction to light source
 
 void main() {
     // base color calculation
-    vec4 baseColor = mix(col, mix(texture2D(tex, texcoords) * col, texcolor, clamp(type - 1.0, 0.0, 1.0)), clamp(type, 0.0, 1.0));
+    vec4 baseColor;
 
-    // diffuse lighting when normals are available
-    if (type >= 3.0 && length(texnormal) > 0.01) {
-        vec3 N = normalize(texnormal);
-        float diffuse = max(dot(N, lightDir), 0.3); // Add ambient component
-        baseColor.rgb *= diffuse;
+    if (type < 0.5) { // no texture
+        baseColor = col;
+    } else if (type < 1.5) { // texture with uniform color
+        baseColor = texture2D(tex, texcoords) * col;
+    } else if (type < 2.5) { // vertex color only
+        baseColor = texcolor;
+    } else if (type < 3.5) { // normal mapping
+        baseColor = mix(col, mix(texture2D(tex, texcoords) * col, texcolor, clamp(type - 1.0, 0.0, 1.0)), clamp(type, 0.0, 1.0));
+
+        // lighting effects for normal mapping
+        if (length(texnormal) > 0.01) {
+            vec3 N = normalize(texnormal);
+            float diffuse = max(dot(N, lightDir), 0.3); // ambient component
+            baseColor.rgb *= diffuse;
+        }
+    } else {
+        // texture with vertex color (for text rendering)
+        baseColor = texture2D(tex, texcoords) * texcolor;
     }
 
     gl_FragColor = baseColor;
 }
 )";
-	m_shaderTexturedGeneric = (OpenGLES32Shader*)createShaderFromSource(texturedGenericV, texturedGenericP);
+	m_shaderTexturedGeneric = (OpenGLES32Shader *)createShaderFromSource(texturedGenericV, texturedGenericP);
 	m_shaderTexturedGeneric->load();
 
 	glGenBuffers(1, &m_iVBOVertices);
@@ -150,18 +164,18 @@ void main() {
 
 	// TODO: handle cases where more than 16384 elements are in an unbaked vao
 	glBindBuffer(GL_ARRAY_BUFFER, m_iVBOVertices);
-	glVertexAttribPointer(m_iShaderTexturedGenericAttribPosition, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
-	glBufferData(GL_ARRAY_BUFFER, 16384*sizeof(Vector3), NULL, GL_STREAM_DRAW);
+	glVertexAttribPointer(m_iShaderTexturedGenericAttribPosition, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid *)0);
+	glBufferData(GL_ARRAY_BUFFER, 16384 * sizeof(Vector3), NULL, GL_STREAM_DRAW);
 	glEnableVertexAttribArray(m_iShaderTexturedGenericAttribPosition);
 
 	glBindBuffer(GL_ARRAY_BUFFER, m_iVBOTexcoords);
-	glVertexAttribPointer(m_iShaderTexturedGenericAttribUV, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (GLvoid*)0);
-	glBufferData(GL_ARRAY_BUFFER, 16384*sizeof(Vector2), NULL, GL_STREAM_DRAW);
+	glVertexAttribPointer(m_iShaderTexturedGenericAttribUV, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (GLvoid *)0);
+	glBufferData(GL_ARRAY_BUFFER, 16384 * sizeof(Vector2), NULL, GL_STREAM_DRAW);
 	glEnableVertexAttribArray(m_iShaderTexturedGenericAttribUV);
 
 	glBindBuffer(GL_ARRAY_BUFFER, m_iVBOTexcolors);
-	glVertexAttribPointer(m_iShaderTexturedGenericAttribCol, 4, GL_UNSIGNED_BYTE, GL_TRUE, 4 * sizeof(Color), (GLvoid*)0);
-	glBufferData(GL_ARRAY_BUFFER, 16384*sizeof(Vector4), NULL, GL_STREAM_DRAW);
+	glVertexAttribPointer(m_iShaderTexturedGenericAttribCol, 4, GL_UNSIGNED_BYTE, GL_TRUE, 4 * sizeof(Color), (GLvoid *)0);
+	glBufferData(GL_ARRAY_BUFFER, 16384 * sizeof(Vector4), NULL, GL_STREAM_DRAW);
 	glEnableVertexAttribArray(m_iShaderTexturedGenericAttribCol);
 }
 
@@ -183,8 +197,8 @@ void OpenGLES32Interface::beginScene()
 	updateTransform();
 
 	// set clear color and clear
-	//glClearColor(1, 1, 1, 1);
-	//glClearColor(0.9568f, 0.9686f, 0.9882f, 1);
+	// glClearColor(1, 1, 1, 1);
+	// glClearColor(0.9568f, 0.9686f, 0.9882f, 1);
 	glClearColor(0, 0, 0, 0.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
@@ -203,7 +217,8 @@ void OpenGLES32Interface::endSceneInternal(bool finish)
 		engine->showMessageErrorFatal("ClipRect Stack Leak", "Make sure all push*() have a pop*()!");
 		engine->shutdown();
 	}
-	if (finish) glFinish();
+	if (finish)
+		glFinish();
 	m_bInScene = false;
 }
 
@@ -214,12 +229,13 @@ void OpenGLES32Interface::clearDepthBuffer()
 
 void OpenGLES32Interface::setColor(Color color)
 {
-	if (color == m_color) return;
+	if (color == m_color)
+		return;
 
 	if (m_shaderTexturedGeneric->isActive())
 	{
 		m_color = color;
-		m_shaderTexturedGeneric->setUniform4f("col", ((unsigned char)(m_color >> 16))  / 255.0f, ((unsigned char)(m_color >> 8)) / 255.0f, ((unsigned char)(m_color >> 0)) / 255.0f, ((unsigned char)(m_color >> 24)) / 255.0f);
+		m_shaderTexturedGeneric->setUniform4f("col", ((unsigned char)(m_color >> 16)) / 255.0f, ((unsigned char)(m_color >> 8)) / 255.0f, ((unsigned char)(m_color >> 0)) / 255.0f, ((unsigned char)(m_color >> 24)) / 255.0f);
 	}
 }
 
@@ -250,22 +266,22 @@ void OpenGLES32Interface::drawLine(Vector2 pos1, Vector2 pos2)
 
 void OpenGLES32Interface::drawRect(int x, int y, int width, int height)
 {
-	drawLine(x, y, x+width, y);
-	drawLine(x, y, x, y+height);
-	drawLine(x, y+height, x+width+1, y+height);
-	drawLine(x+width, y, x+width, y+height);
+	drawLine(x, y, x + width, y);
+	drawLine(x, y, x, y + height);
+	drawLine(x, y + height, x + width + 1, y + height);
+	drawLine(x + width, y, x + width, y + height);
 }
 
 void OpenGLES32Interface::drawRect(int x, int y, int width, int height, Color top, Color right, Color bottom, Color left)
 {
 	setColor(top);
-	drawLine(x, y, x+width, y);
+	drawLine(x, y, x + width, y);
 	setColor(left);
-	drawLine(x, y, x, y+height);
+	drawLine(x, y, x, y + height);
 	setColor(bottom);
-	drawLine(x, y+height, x+width+1, y+height);
+	drawLine(x, y + height, x + width + 1, y + height);
 	setColor(right);
-	drawLine(x+width, y, x+width, y+height);
+	drawLine(x + width, y, x + width, y + height);
 }
 
 void OpenGLES32Interface::fillRect(int x, int y, int width, int height)
@@ -347,8 +363,8 @@ void OpenGLES32Interface::drawImage(Image *image)
 	float width = image->getWidth();
 	float height = image->getHeight();
 
-	float x = -width/2;
-	float y = -height/2;
+	float x = -width / 2;
+	float y = -height / 2;
 
 	VertexArrayObject vao(Graphics::PRIMITIVE::PRIMITIVE_QUADS);
 	vao.addVertex(x, y);
@@ -373,7 +389,8 @@ void OpenGLES32Interface::drawImage(Image *image)
 
 void OpenGLES32Interface::drawString(McFont *font, UString text)
 {
-	if (font == NULL || text.length() < 1 || !font->isReady()) return;
+	if (font == NULL || text.length() < 1 || !font->isReady())
+		return;
 
 	updateTransform();
 
@@ -382,20 +399,30 @@ void OpenGLES32Interface::drawString(McFont *font, UString text)
 
 void OpenGLES32Interface::drawVAO(VertexArrayObject *vao)
 {
-	if (vao == NULL) return;
+	if (vao == NULL)
+		return;
 
 	updateTransform();
 
 	// if baked, then we can directly draw the buffer
 	if (vao->isReady())
 	{
-		OpenGLES32VertexArrayObject *glvao = (OpenGLES32VertexArrayObject*)vao;
+		OpenGLES32VertexArrayObject *glvao = (OpenGLES32VertexArrayObject *)vao;
 
 		// configure shader
 		if (m_shaderTexturedGeneric->isActive())
 		{
-			// VAOs with texcoords
-			if (glvao->getNumTexcoords0() > 0)
+			// both texcoords and colors (e.g., text rendering)
+			if (glvao->getNumTexcoords0() > 0 && glvao->getNumColors() > 0)
+			{
+				if (m_iShaderTexturedGenericPrevType != 4)
+				{
+					m_shaderTexturedGeneric->setUniform1f("type", 4.0f);
+					m_iShaderTexturedGenericPrevType = 4;
+				}
+			}
+			// texcoords
+			else if (glvao->getNumTexcoords0() > 0)
 			{
 				if (m_iShaderTexturedGenericPrevType != 1)
 				{
@@ -403,20 +430,20 @@ void OpenGLES32Interface::drawVAO(VertexArrayObject *vao)
 					m_iShaderTexturedGenericPrevType = 1;
 				}
 			}
-			else if (m_iShaderTexturedGenericPrevType != 0)
-			{
-				m_shaderTexturedGeneric->setUniform1f("type", 0.0f);
-				m_iShaderTexturedGenericPrevType = 0;
-			}
-
-			// VAOs with colors
-			if (glvao->getNumColors() > 0)
+			// colors
+			else if (glvao->getNumColors() > 0)
 			{
 				if (m_iShaderTexturedGenericPrevType != 2)
 				{
 					m_shaderTexturedGeneric->setUniform1f("type", 2.0f);
 					m_iShaderTexturedGenericPrevType = 2;
 				}
+			}
+			// neither
+			else if (m_iShaderTexturedGenericPrevType != 0)
+			{
+				m_shaderTexturedGeneric->setUniform1f("type", 0.0f);
+				m_iShaderTexturedGenericPrevType = 0;
 			}
 		}
 
@@ -430,7 +457,8 @@ void OpenGLES32Interface::drawVAO(VertexArrayObject *vao)
 	const std::vector<std::vector<Vector2>> &texcoords = vao->getTexcoords();
 	const std::vector<Color> &vcolors = vao->getColors();
 
-	if (vertices.size() < 2) return;
+	if (vertices.size() < 2)
+		return;
 
 	// TODO: separate draw for non-quads, update quad draws to triangle draws to avoid rewrite overhead here
 
@@ -440,20 +468,20 @@ void OpenGLES32Interface::drawVAO(VertexArrayObject *vao)
 	std::vector<std::vector<Vector2>> finalTexcoords = texcoords;
 	std::vector<Color> colors;
 	std::vector<Color> finalColors;
-	
-	for (size_t i=0; i<vcolors.size(); i++)
+
+	for (size_t i = 0; i < vcolors.size(); i++)
 	{
 		Color color = OpenGLES32VertexArrayObject::ARGBtoABGR(vcolors[i]);
 		colors.push_back(color);
 		finalColors.push_back(color);
-	}	
+	}
 	int maxColorIndex = colors.size() - 1;
 
 	Graphics::PRIMITIVE primitive = vao->getPrimitive();
 	if (primitive == Graphics::PRIMITIVE::PRIMITIVE_QUADS)
 	{
 		finalVertices.clear();
-		for (size_t t=0; t<finalTexcoords.size(); t++)
+		for (size_t t = 0; t < finalTexcoords.size(); t++)
 		{
 			finalTexcoords[t].clear();
 		}
@@ -462,13 +490,13 @@ void OpenGLES32Interface::drawVAO(VertexArrayObject *vao)
 
 		if (vertices.size() > 3)
 		{
-			for (size_t i=0; i<vertices.size(); i+=4)
+			for (size_t i = 0; i < vertices.size(); i += 4)
 			{
 				finalVertices.push_back(vertices[i + 0]);
 				finalVertices.push_back(vertices[i + 1]);
 				finalVertices.push_back(vertices[i + 2]);
 
-				for (size_t t=0; t<texcoords.size(); t++)
+				for (size_t t = 0; t < texcoords.size(); t++)
 				{
 					finalTexcoords[t].push_back(texcoords[t][i + 0]);
 					finalTexcoords[t].push_back(texcoords[t][i + 1]);
@@ -486,7 +514,7 @@ void OpenGLES32Interface::drawVAO(VertexArrayObject *vao)
 				finalVertices.push_back(vertices[i + 2]);
 				finalVertices.push_back(vertices[i + 3]);
 
-				for (size_t t=0; t<texcoords.size(); t++)
+				for (size_t t = 0; t < texcoords.size(); t++)
 				{
 					finalTexcoords[t].push_back(texcoords[t][i + 0]);
 					finalTexcoords[t].push_back(texcoords[t][i + 2]);
@@ -527,8 +555,17 @@ void OpenGLES32Interface::drawVAO(VertexArrayObject *vao)
 	// configure shader
 	if (m_shaderTexturedGeneric->isActive())
 	{
-		// TODO: multitexturing support
-		if (finalTexcoords.size() > 0 && finalTexcoords[0].size() > 0)
+		// texcoords and colors (e.g., text rendering)
+		if (finalTexcoords.size() > 0 && finalTexcoords[0].size() > 0 && finalColors.size() > 0)
+		{
+			if (m_iShaderTexturedGenericPrevType != 4)
+			{
+				m_shaderTexturedGeneric->setUniform1f("type", 4.0f);
+				m_iShaderTexturedGenericPrevType = 4;
+			}
+		}
+		// texcoords
+		else if (finalTexcoords.size() > 0 && finalTexcoords[0].size() > 0)
 		{
 			if (m_iShaderTexturedGenericPrevType != 1)
 			{
@@ -536,19 +573,20 @@ void OpenGLES32Interface::drawVAO(VertexArrayObject *vao)
 				m_iShaderTexturedGenericPrevType = 1;
 			}
 		}
-		else if (m_iShaderTexturedGenericPrevType != 0)
-		{
-			m_shaderTexturedGeneric->setUniform1f("type", 0.0f);
-			m_iShaderTexturedGenericPrevType = 0;
-		}
-
-		if (finalColors.size() > 0)
+		// colors
+		else if (finalColors.size() > 0)
 		{
 			if (m_iShaderTexturedGenericPrevType != 2)
 			{
 				m_shaderTexturedGeneric->setUniform1f("type", 2.0f);
 				m_iShaderTexturedGenericPrevType = 2;
 			}
+		}
+		// neither
+		else if (m_iShaderTexturedGenericPrevType != 0)
+		{
+			m_shaderTexturedGeneric->setUniform1f("type", 0.0f);
+			m_iShaderTexturedGenericPrevType = 0;
 		}
 	}
 
@@ -558,19 +596,20 @@ void OpenGLES32Interface::drawVAO(VertexArrayObject *vao)
 
 void OpenGLES32Interface::setClipRect(McRect clipRect)
 {
-	if (r_debug_disable_cliprect->getBool()) return;
-	//if (m_bIs3DScene) return; // HACKHACK:TODO:
+	if (r_debug_disable_cliprect->getBool())
+		return;
+	// if (m_bIs3DScene) return; // HACKHACK:TODO:
 
 	// HACKHACK: compensate for viewport changes caused by RenderTargets!
 	int viewport[4];
 	glGetIntegerv(GL_VIEWPORT, viewport);
 
-	//debugLog("viewport = %i, %i, %i, %i\n", viewport[0], viewport[1], viewport[2], viewport[3]);
+	// debugLog("viewport = %i, %i, %i, %i\n", viewport[0], viewport[1], viewport[2], viewport[3]);
 
 	glEnable(GL_SCISSOR_TEST);
-	glScissor((int)clipRect.getX()+viewport[0], viewport[3]-((int)clipRect.getY()-viewport[1]-1+(int)clipRect.getHeight()), (int)clipRect.getWidth(), (int)clipRect.getHeight());
+	glScissor((int)clipRect.getX() + viewport[0], viewport[3] - ((int)clipRect.getY() - viewport[1] - 1 + (int)clipRect.getHeight()), (int)clipRect.getWidth(), (int)clipRect.getHeight());
 
-	//debugLog("scissor = %i, %i, %i, %i\n", (int)clipRect.getX()+viewport[0], viewport[3]-((int)clipRect.getY()-viewport[1]-1+(int)clipRect.getHeight()), (int)clipRect.getWidth(), (int)clipRect.getHeight());
+	// debugLog("scissor = %i, %i, %i, %i\n", (int)clipRect.getX()+viewport[0], viewport[3]-((int)clipRect.getY()-viewport[1]-1+(int)clipRect.getHeight()), (int)clipRect.getWidth(), (int)clipRect.getHeight());
 }
 
 void OpenGLES32Interface::pushClipRect(McRect clipRect)
@@ -694,8 +733,8 @@ int OpenGLES32Interface::getVRAMTotal()
 {
 	int nvidiaMemory[4];
 	int atiMemory[4];
-	
-	for (int i=0; i<4; i++)
+
+	for (int i = 0; i < 4; i++)
 	{
 		nvidiaMemory[i] = -1;
 		atiMemory[i] = -1;
@@ -716,8 +755,8 @@ int OpenGLES32Interface::getVRAMRemaining()
 {
 	int nvidiaMemory[4];
 	int atiMemory[4];
-	
-	for (int i=0; i<4; i++)
+
+	for (int i = 0; i < 4; i++)
 	{
 		nvidiaMemory[i] = -1;
 		atiMemory[i] = -1;
@@ -816,7 +855,7 @@ void OpenGLES32Interface::handleGLErrors()
 {
 	int error = glGetError();
 	if (error != 0)
-		debugLog("OpenGL Error: %i on frame %i\n",error,engine->getFrameCount());
+		debugLog("OpenGL Error: %i on frame %i\n", error, engine->getFrameCount());
 }
 
 int OpenGLES32Interface::primitiveToOpenGL(Graphics::PRIMITIVE primitive)
