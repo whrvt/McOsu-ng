@@ -19,17 +19,17 @@
 /*
  * OpenGL graphics (Desktop, legacy + modern)
  */
-//#define MCENGINE_FEATURE_OPENGL
+#define MCENGINE_FEATURE_OPENGL
 
 /*
- * OpenGL graphics (Mobile, ES/EGL, Web)
+ * OpenGL graphics (Mobile, ES/EGL, Nintendo Switch)
  */
 //#define MCENGINE_FEATURE_GLES2
 
 /*
- * OpenGLES 3.2 graphics (WIP)
+ * OpenGLES 3.2 graphics (Desktop, WebGL)
  */
-#define MCENGINE_FEATURE_GLES32
+//#define MCENGINE_FEATURE_GLES32
 
 /*
  * Software-only graphics renderer (Windows only) (untested)

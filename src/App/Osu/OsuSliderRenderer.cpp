@@ -388,6 +388,18 @@ void OsuSliderRenderer::draw(Graphics *g, Osu *osu, VertexArrayObject *vao, cons
 						g->translate(translation.x, translation.y);
 						///g->scale(scaleToApplyAfterTranslationX, scaleToApplyAfterTranslationY); // aspire slider distortions
 
+						if constexpr (Env::cfg(REND::GLES2)) {
+						if (!osu_slider_use_gradient_image.getBool())
+						{
+							OpenGLES2Interface *gles2 = dynamic_cast<OpenGLES2Interface*>(g);
+							if (gles2 != NULL)
+							{
+								g->forceUpdateTransform();
+								Matrix4 mvp = g->getMVP();
+								BLEND_SHADER->setUniformMatrix4fv("mvp", mvp);
+							}
+						}
+						}
 						if constexpr (Env::cfg(REND::DX11)) {
 						if (!osu_slider_use_gradient_image.getBool())
 						{
