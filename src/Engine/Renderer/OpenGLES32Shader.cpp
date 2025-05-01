@@ -67,6 +67,7 @@ void OpenGLES32Shader::destroy()
 	m_iVertexShader = 0;
 
 	m_iProgramBackup = 0;
+	m_uniformLocationCache.clear();
 }
 
 void OpenGLES32Shader::enable()
@@ -84,20 +85,38 @@ void OpenGLES32Shader::disable()
 	glUseProgram(m_iProgramBackup); // restore
 }
 
+int OpenGLES32Shader::getAndCacheUniformLocation(const UString &name)
+{
+	if (!m_bReady) return -1;
+
+	m_sTempStringBuffer.reserve(name.lengthUtf8());
+	m_sTempStringBuffer.assign(name.toUtf8(), name.lengthUtf8());
+
+	const auto cachedValue = m_uniformLocationCache.find(m_sTempStringBuffer);
+	const bool cached = (cachedValue != m_uniformLocationCache.end());
+
+	const int id = (cached ? cachedValue->second : glGetUniformLocation(m_iProgram, name.toUtf8()));
+	if (!cached && id != -1)
+		m_uniformLocationCache[m_sTempStringBuffer] = id;
+
+	return id;
+}
+
 void OpenGLES32Shader::setUniform1f(UString name, float value)
 {
 	if (!m_bReady) return;
-	int id = glGetUniformLocation(m_iProgram, name.toUtf8());
+
+	const int id = getAndCacheUniformLocation(name);
 	if (id != -1)
 		glUniform1f(id, value);
 	else if (debug_shaders->getBool())
-		debugLog("OpenGLES32Shader Warning: Can't find uniform %s\n",name.toUtf8());
+		debugLog("OpenGLES32Shader Warning: Can't find uniform %s\n", name.toUtf8());
 }
 
 void OpenGLES32Shader::setUniform1fv(UString name, int count, float *values)
 {
 	if (!m_bReady) return;
-	int id = glGetUniformLocation(m_iProgram, name.toUtf8());
+	const int id = getAndCacheUniformLocation(name);
 	if (id != -1)
 		glUniform1fv(id, count, values);
 	else if (debug_shaders->getBool())
@@ -107,7 +126,7 @@ void OpenGLES32Shader::setUniform1fv(UString name, int count, float *values)
 void OpenGLES32Shader::setUniform1i(UString name, int value)
 {
 	if (!m_bReady) return;
-	int id = glGetUniformLocation(m_iProgram, name.toUtf8());
+	const int id = getAndCacheUniformLocation(name);
 	if (id != -1)
 		glUniform1i(id, value);
 	else if (debug_shaders->getBool())
@@ -117,7 +136,7 @@ void OpenGLES32Shader::setUniform1i(UString name, int value)
 void OpenGLES32Shader::setUniform2f(UString name, float value1, float value2)
 {
 	if (!m_bReady) return;
-	int id = glGetUniformLocation(m_iProgram, name.toUtf8());
+	const int id = getAndCacheUniformLocation(name);
 	if (id != -1)
 		glUniform2f(id, value1, value2);
 	else if (debug_shaders->getBool())
@@ -127,7 +146,7 @@ void OpenGLES32Shader::setUniform2f(UString name, float value1, float value2)
 void OpenGLES32Shader::setUniform2fv(UString name, int count, float *vectors)
 {
 	if (!m_bReady) return;
-	int id = glGetUniformLocation(m_iProgram, name.toUtf8());
+	const int id = getAndCacheUniformLocation(name);
 	if (id != -1)
 		glUniform2fv(id, count, (float*)&vectors[0]);
 	else if (debug_shaders->getBool())
@@ -137,7 +156,7 @@ void OpenGLES32Shader::setUniform2fv(UString name, int count, float *vectors)
 void OpenGLES32Shader::setUniform3f(UString name, float x, float y, float z)
 {
 	if (!m_bReady) return;
-	int id = glGetUniformLocation(m_iProgram, name.toUtf8());
+	const int id = getAndCacheUniformLocation(name);
 	if (id != -1)
 		glUniform3f(id, x, y, z);
 	else if (debug_shaders->getBool())
@@ -147,7 +166,7 @@ void OpenGLES32Shader::setUniform3f(UString name, float x, float y, float z)
 void OpenGLES32Shader::setUniform3fv(UString name, int count, float *vectors)
 {
 	if (!m_bReady) return;
-	int id = glGetUniformLocation(m_iProgram, name.toUtf8());
+	const int id = getAndCacheUniformLocation(name);
 	if (id != -1)
 		glUniform3fv(id, count, (float*)&vectors[0]);
 	else if (debug_shaders->getBool())
@@ -157,7 +176,7 @@ void OpenGLES32Shader::setUniform3fv(UString name, int count, float *vectors)
 void OpenGLES32Shader::setUniform4f(UString name, float x, float y, float z, float w)
 {
 	if (!m_bReady) return;
-	int id = glGetUniformLocation(m_iProgram, name.toUtf8());
+	const int id = getAndCacheUniformLocation(name);
 	if (id != -1)
 		glUniform4f(id, x, y, z, w);
 	else if (debug_shaders->getBool())
@@ -167,7 +186,7 @@ void OpenGLES32Shader::setUniform4f(UString name, float x, float y, float z, flo
 void OpenGLES32Shader::setUniformMatrix4fv(UString name, Matrix4 &matrix)
 {
 	if (!m_bReady) return;
-	int id = glGetUniformLocation(m_iProgram, name.toUtf8());
+	const int id = getAndCacheUniformLocation(name);
 	if (id != -1)
 		glUniformMatrix4fv(id, 1, GL_FALSE, matrix.get());
 	else if (debug_shaders->getBool())
@@ -177,7 +196,7 @@ void OpenGLES32Shader::setUniformMatrix4fv(UString name, Matrix4 &matrix)
 void OpenGLES32Shader::setUniformMatrix4fv(UString name, float *v)
 {
 	if (!m_bReady) return;
-	int id = glGetUniformLocation(m_iProgram, name.toUtf8());
+	const int id = getAndCacheUniformLocation(name);
 	if (id != -1)
 		glUniformMatrix4fv(id, 1, GL_FALSE, v);
 	else if (debug_shaders->getBool())

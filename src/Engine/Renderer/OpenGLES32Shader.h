@@ -47,6 +47,7 @@ private:
 	bool compile(UString vertexShader, UString fragmentShader, bool source);
 	int createShaderFromString(UString shaderSource, int shaderType);
 	int createShaderFromFile(UString fileName, int shaderType);
+	int getAndCacheUniformLocation(const UString &name);
 
 	UString m_sVsh, m_sFsh;
 
@@ -56,6 +57,9 @@ private:
 	int m_iProgram;
 
 	int m_iProgramBackup;
+
+	std::unordered_map<std::string, int> m_uniformLocationCache;
+	std::string m_sTempStringBuffer;
 };
 
 #endif
