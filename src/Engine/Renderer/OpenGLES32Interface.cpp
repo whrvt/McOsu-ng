@@ -85,16 +85,17 @@ void OpenGLES32Interface::init()
 	// setWireframe(true);
 
 	// TODO: move these out to a .mcshader (or something) and load like the other OpenGL interface
-	constexpr auto texturedGenericV = R"(#version 100
+	constexpr auto texturedGenericV = R"(
+#version 320 es
 
-attribute vec3 position;
-attribute vec2 uv;
-attribute vec4 vcolor;
-attribute vec3 normal;
+layout(location = 0) in vec3 position;
+layout(location = 1) in vec2 uv;
+layout(location = 2) in vec4 vcolor;
+layout(location = 3) in vec3 normal;
 
-varying vec2 texcoords;
-varying vec4 texcolor;
-varying vec3 texnormal;
+out vec2 texcoords;
+out vec4 texcolor;
+out vec3 texnormal;
 
 uniform float type;  // 0=no texture, 1=texture, 2=texture+color, 3=texture+normal
 uniform mat4 mvp;
@@ -114,17 +115,20 @@ void main() {
 }
 )";
 
-	constexpr auto texturedGenericP = R"(#version 100
+	constexpr auto texturedGenericP = R"(
+#version 320 es
 precision highp float;
 
-varying vec2 texcoords;
-varying vec4 texcolor;
-varying vec3 texnormal;
+in vec2 texcoords;
+in vec4 texcolor;
+in vec3 texnormal;
 
 uniform float type;  // 0=no texture, 1=texture, 2=texture+color, 3=texture+normal
 uniform vec4 col;
 uniform sampler2D tex;
 uniform vec3 lightDir;  // normalized direction to light source
+
+out vec4 fragColor;
 
 void main() {
     // base color calculation
@@ -133,11 +137,11 @@ void main() {
     if (type < 0.5) { // no texture
         baseColor = col;
     } else if (type < 1.5) { // texture with uniform color
-        baseColor = texture2D(tex, texcoords) * col;
+        baseColor = texture(tex, texcoords) * col;
     } else if (type < 2.5) { // vertex color only
         baseColor = texcolor;
     } else if (type < 3.5) { // normal mapping
-        baseColor = mix(col, mix(texture2D(tex, texcoords) * col, texcolor, clamp(type - 1.0, 0.0, 1.0)), clamp(type, 0.0, 1.0));
+        baseColor = mix(col, mix(texture(tex, texcoords) * col, texcolor, clamp(type - 1.0, 0.0, 1.0)), clamp(type, 0.0, 1.0));
 
         // lighting effects for normal mapping
         if (length(texnormal) > 0.01) {
@@ -147,10 +151,10 @@ void main() {
         }
     } else {
         // texture with vertex color (for text rendering)
-        baseColor = texture2D(tex, texcoords) * texcolor;
+        baseColor = texture(tex, texcoords) * texcolor;
     }
 
-    gl_FragColor = baseColor;
+    fragColor = baseColor;
 }
 )";
 	m_shaderTexturedGeneric = (OpenGLES32Shader *)createShaderFromSource(texturedGenericV, texturedGenericP);
@@ -294,11 +298,11 @@ void OpenGLES32Interface::fillRect(int x, int y, int width, int height)
 {
 	updateTransform();
 
-	VertexArrayObject vao(Graphics::PRIMITIVE::PRIMITIVE_QUADS);
+	VertexArrayObject vao(Graphics::PRIMITIVE::PRIMITIVE_TRIANGLE_STRIP);
 	vao.addVertex(x, y);
 	vao.addVertex(x, y + height);
-	vao.addVertex(x + width, y + height);
 	vao.addVertex(x + width, y);
+	vao.addVertex(x + width, y + height);
 	drawVAO(&vao);
 }
 
@@ -306,15 +310,15 @@ void OpenGLES32Interface::fillGradient(int x, int y, int width, int height, Colo
 {
 	updateTransform();
 
-	VertexArrayObject vao(Graphics::PRIMITIVE::PRIMITIVE_QUADS);
+	VertexArrayObject vao(Graphics::PRIMITIVE::PRIMITIVE_TRIANGLE_STRIP);
 	vao.addVertex(x, y);
 	vao.addColor(topLeftColor);
+	vao.addVertex(x, y + height);
+	vao.addColor(bottomLeftColor);
 	vao.addVertex(x + width, y);
 	vao.addColor(topRightColor);
 	vao.addVertex(x + width, y + height);
 	vao.addColor(bottomRightColor);
-	vao.addVertex(x, y + height);
-	vao.addColor(bottomLeftColor);
 	drawVAO(&vao);
 }
 
@@ -322,15 +326,15 @@ void OpenGLES32Interface::drawQuad(int x, int y, int width, int height)
 {
 	updateTransform();
 
-	VertexArrayObject vao(Graphics::PRIMITIVE::PRIMITIVE_QUADS);
+	VertexArrayObject vao(Graphics::PRIMITIVE::PRIMITIVE_TRIANGLE_STRIP);
 	vao.addVertex(x, y);
 	vao.addTexcoord(0, 0);
 	vao.addVertex(x, y + height);
 	vao.addTexcoord(0, 1);
-	vao.addVertex(x + width, y + height);
-	vao.addTexcoord(1, 1);
 	vao.addVertex(x + width, y);
 	vao.addTexcoord(1, 0);
+	vao.addVertex(x + width, y + height);
+	vao.addTexcoord(1, 1);
 	drawVAO(&vao);
 }
 
@@ -338,19 +342,19 @@ void OpenGLES32Interface::drawQuad(Vector2 topLeft, Vector2 topRight, Vector2 bo
 {
 	updateTransform();
 
-	VertexArrayObject vao(Graphics::PRIMITIVE::PRIMITIVE_QUADS);
+	VertexArrayObject vao(Graphics::PRIMITIVE::PRIMITIVE_TRIANGLE_STRIP);
 	vao.addVertex(topLeft.x, topLeft.y);
 	vao.addColor(topLeftColor);
 	vao.addTexcoord(0, 0);
 	vao.addVertex(bottomLeft.x, bottomLeft.y);
 	vao.addColor(bottomLeftColor);
 	vao.addTexcoord(0, 1);
-	vao.addVertex(bottomRight.x, bottomRight.y);
-	vao.addColor(bottomRightColor);
-	vao.addTexcoord(1, 1);
 	vao.addVertex(topRight.x, topRight.y);
 	vao.addColor(topRightColor);
 	vao.addTexcoord(1, 0);
+	vao.addVertex(bottomRight.x, bottomRight.y);
+	vao.addColor(bottomRightColor);
+	vao.addTexcoord(1, 1);
 	drawVAO(&vao);
 }
 
@@ -372,15 +376,15 @@ void OpenGLES32Interface::drawImage(Image *image)
 	float x = -width / 2;
 	float y = -height / 2;
 
-	VertexArrayObject vao(Graphics::PRIMITIVE::PRIMITIVE_QUADS);
+	VertexArrayObject vao(Graphics::PRIMITIVE::PRIMITIVE_TRIANGLE_STRIP);
 	vao.addVertex(x, y);
 	vao.addTexcoord(0, 0);
 	vao.addVertex(x, y + height);
 	vao.addTexcoord(0, 1);
-	vao.addVertex(x + width, y + height);
-	vao.addTexcoord(1, 1);
 	vao.addVertex(x + width, y);
 	vao.addTexcoord(1, 0);
+	vao.addVertex(x + width, y + height);
+	vao.addTexcoord(1, 1);
 
 	image->bind();
 	drawVAO(&vao);
@@ -809,7 +813,7 @@ std::vector<unsigned char> OpenGLES32Interface::getScreenshot()
 			result[(dstRow * width + x) * 3 + 0] = tempBuffer[(srcRow * width + x) * 4 + 0]; // R
 			result[(dstRow * width + x) * 3 + 1] = tempBuffer[(srcRow * width + x) * 4 + 1]; // G
 			result[(dstRow * width + x) * 3 + 2] = tempBuffer[(srcRow * width + x) * 4 + 2]; // B
-			// no alpha
+			                                                                                 // no alpha
 		}
 	}
 

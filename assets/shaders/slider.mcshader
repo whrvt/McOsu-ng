@@ -5,9 +5,9 @@
 varying vec2 tex_coord;
 
 void main()
-{	
+{
 	gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
-	
+
 	gl_FrontColor = gl_Color;
 	tex_coord = gl_MultiTexCoord0.xy;
 }
@@ -56,17 +56,17 @@ void main()
 
 	// output var
 	vec4 out_color = vec4(0.0);
-	
+
 	// dynamic color calculations
 	vec4 borderColor = vec4(colBorder.x, colBorder.y, colBorder.z, 1.0);
 	vec4 bodyColor = vec4(colBody.x, colBody.y, colBody.z, 0.7*bodyAlphaMultiplier);
 	vec4 outerShadowColor = vec4(0, 0, 0, 0.25);
 	vec4 innerBodyColor = getInnerBodyColor(bodyColor);
 	vec4 outerBodyColor = getOuterBodyColor(bodyColor);
-	
+
 	innerBodyColor.rgb *= bodyColorSaturation;
 	outerBodyColor.rgb *= bodyColorSaturation;
-	
+
 	// osu!next style color modifications
 	if (style == 1)
 	{
@@ -75,13 +75,13 @@ void main()
 		innerBodyColor.rgb = bodyColor.rgb * 0.5 * bodyColorSaturation;
 		innerBodyColor.a = 0.0;
 	}
-	
+
 	// a bit of a hack, but better than rough edges
 	if (borderSizeMultiplier < 0.01)
 		borderColor = outerShadowColor;
-	
+
 	// conditional variant
-	
+
 	if (tex_coord.x < outerShadowSize - transitionSize) // just shadow
 	{
 		float delta = tex_coord.x / (outerShadowSize - transitionSize);
@@ -102,35 +102,35 @@ void main()
 		out_color = mix(borderColor, outerBodyColor, delta);
 	}
 	if (tex_coord.x > outerShadowSize + borderSize + transitionSize) // outer body + inner body
-	{	
+	{
 		float size = outerShadowSize + borderSize + transitionSize;
 		float delta = ((tex_coord.x - size) / (1.0-size));
 		out_color = mix(outerBodyColor, innerBodyColor, delta);
 	}
-	
+
 	// linear variant
 	/*
 	// just shadow
 	float delta = tex_coord.x/(outerShadowSize-transitionSize);
 	out_color += mix(vec4(0.0), outerShadowColor, delta) * clamp(ceil(-delta+1.0), 0.0, 1.0);
-	
+
 	// shadow + border
 	delta = (tex_coord.x - outerShadowSize + transitionSize) / (2.0*transitionSize);
 	out_color += mix(outerShadowColor, borderColor, delta) * clamp(ceil(tex_coord.x - (outerShadowSize - transitionSize)), 0.0, 1.0) * clamp(ceil(-abs(delta)+1.0), 0.0, 1.0);
-	
+
 	// just border
 	out_color += borderColor * clamp(ceil(tex_coord.x - (outerShadowSize + transitionSize)), 0.0, 1.0) * clamp(ceil(-(tex_coord.x - (outerShadowSize + borderSize - transitionSize))), 0.0, 1.0);
-	
+
 	// border + outer body
 	delta = (tex_coord.x - outerShadowSize - borderSize + transitionSize) / (2.0*transitionSize);
 	out_color += mix(borderColor, outerBodyColor, delta) * clamp(ceil(tex_coord.x - (outerShadowSize + borderSize - transitionSize)), 0.0, 1.0) * clamp(ceil(-abs(delta)+1.0), 0.0, 1.0);
-	
+
 	// outer body + inner body
 	delta = outerShadowSize + borderSize + transitionSize;
 	delta = (tex_coord.x - delta) / (1.0-delta); // [VARIABLE REUSING INTENSIFIES]
 	out_color += mix(outerBodyColor, innerBodyColor, delta) * clamp(ceil(tex_coord.x - (outerShadowSize + borderSize + transitionSize)), 0.0, 1.0);
 	*/
-	
+
 	gl_FragColor = out_color;
 }
 
@@ -146,7 +146,7 @@ varying vec2 tex_coord;
 uniform mat4 mvp;
 
 void main()
-{	
+{
 	gl_Position = mvp * vec4(position, 1.0);
 	tex_coord = uv;
 }
@@ -196,17 +196,17 @@ void main()
 	// output var
 	vec4 out_color = vec4(0.0);
 
-	
+
 	// dynamic color calculations
 	vec4 borderColor = vec4(colBorder.x, colBorder.y, colBorder.z, 1.0);
 	vec4 bodyColor = vec4(colBody.x, colBody.y, colBody.z, 0.7*bodyAlphaMultiplier);
 	vec4 outerShadowColor = vec4(0, 0, 0, 0.25);
 	vec4 innerBodyColor = getInnerBodyColor(bodyColor);
 	vec4 outerBodyColor = getOuterBodyColor(bodyColor);
-	
+
 	innerBodyColor.rgb *= bodyColorSaturation;
 	outerBodyColor.rgb *= bodyColorSaturation;
-	
+
 	// osu!next style color modifications
 	if (style == 1)
 	{
@@ -215,13 +215,13 @@ void main()
 		innerBodyColor.rgb = bodyColor.rgb * 0.5 * bodyColorSaturation;
 		innerBodyColor.a = 0.0;
 	}
-	
+
 	// a bit of a hack, but better than rough edges
 	if (borderSizeMultiplier < 0.01)
 		borderColor = outerShadowColor;
-	
+
 	// conditional variant
-	
+
 	if (tex_coord.x < outerShadowSize - transitionSize) // just shadow
 	{
 		float delta = tex_coord.x / (outerShadowSize - transitionSize);
@@ -242,59 +242,59 @@ void main()
 		out_color = mix(borderColor, outerBodyColor, delta);
 	}
 	if (tex_coord.x > outerShadowSize + borderSize + transitionSize) // outer body + inner body
-	{	
+	{
 		float size = outerShadowSize + borderSize + transitionSize;
 		float delta = ((tex_coord.x - size) / (1.0-size));
 		out_color = mix(outerBodyColor, innerBodyColor, delta);
 	}
 
-	
+
 	// linear variant
 	/*
 	// just shadow
 	float delta = tex_coord.x/(outerShadowSize-transitionSize);
 	out_color += mix(vec4(0.0), outerShadowColor, delta) * clamp(ceil(-delta+1.0), 0.0, 1.0);
-	
+
 	// shadow + border
 	delta = (tex_coord.x - outerShadowSize + transitionSize) / (2.0*transitionSize);
 	out_color += mix(outerShadowColor, borderColor, delta) * clamp(ceil(tex_coord.x - (outerShadowSize - transitionSize)), 0.0, 1.0) * clamp(ceil(-abs(delta)+1.0), 0.0, 1.0);
-	
+
 	// just border
 	out_color += borderColor * clamp(ceil(tex_coord.x - (outerShadowSize + transitionSize)), 0.0, 1.0) * clamp(ceil(-(tex_coord.x - (outerShadowSize + borderSize - transitionSize))), 0.0, 1.0);
-	
+
 	// border + outer body
 	delta = (tex_coord.x - outerShadowSize - borderSize + transitionSize) / (2.0*transitionSize);
 	out_color += mix(borderColor, outerBodyColor, delta) * clamp(ceil(tex_coord.x - (outerShadowSize + borderSize - transitionSize)), 0.0, 1.0) * clamp(ceil(-abs(delta)+1.0), 0.0, 1.0);
-	
+
 	// outer body + inner body
 	delta = outerShadowSize + borderSize + transitionSize;
 	delta = (tex_coord.x - delta) / (1.0-delta); // [VARIABLE REUSING INTENSIFIES]
 	out_color += mix(outerBodyColor, innerBodyColor, delta) * clamp(ceil(tex_coord.x - (outerShadowSize + borderSize + transitionSize)), 0.0, 1.0);
 	*/
-	
+
 	gl_FragColor = out_color;
 }
 
 ###OpenGLES32Interface::VertexShader#############################################################################################
 
-#version 100
+#version 320 es
 
-attribute vec3 position;
-attribute vec2 uv;
+layout(location = 0) in vec3 position;
+layout(location = 1) in vec2 uv;
 
-varying vec2 tex_coord;
+out vec2 tex_coord;
 
 uniform mat4 mvp;
 
 void main()
-{	
+{
 	gl_Position = mvp * vec4(position, 1.0);
 	tex_coord = uv;
 }
 
 ###OpenGLES32Interface::FragmentShader###########################################################################################
 
-#version 100
+#version 320 es
 precision highp float;
 
 uniform sampler2D tex;
@@ -306,7 +306,8 @@ uniform float borderFeather;
 uniform vec3 colBorder;
 uniform vec3 colBody;
 
-varying vec2 tex_coord;
+in vec2 tex_coord;
+out vec4 fragColor;
 
 const float defaultTransitionSize = 0.011;
 const float defaultBorderSize = 0.11;
@@ -344,10 +345,10 @@ void main()
 	vec4 outerShadowColor = vec4(0, 0, 0, 0.25);
 	vec4 innerBodyColor = getInnerBodyColor(bodyColor);
 	vec4 outerBodyColor = getOuterBodyColor(bodyColor);
-	
+
 	innerBodyColor.rgb *= bodyColorSaturation;
 	outerBodyColor.rgb *= bodyColorSaturation;
-	
+
 	// osu!next style color modifications
 	if (style == 1)
 	{
@@ -356,13 +357,13 @@ void main()
 		innerBodyColor.rgb = bodyColor.rgb * 0.5 * bodyColorSaturation;
 		innerBodyColor.a = 0.0;
 	}
-	
+
 	// a bit of a hack, but better than rough edges
 	if (borderSizeMultiplier < 0.01)
 		borderColor = outerShadowColor;
-	
+
 	// conditional variant
-	
+
 	if (tex_coord.x < outerShadowSize - transitionSize) // just shadow
 	{
 		float delta = tex_coord.x / (outerShadowSize - transitionSize);
@@ -388,8 +389,8 @@ void main()
 		float delta = ((tex_coord.x - size) / (1.0-size));
 		out_color = mix(outerBodyColor, innerBodyColor, delta);
 	}
-	// linear variant (unused?)
-	gl_FragColor = out_color;
+
+	fragColor = out_color;
 }
 
 ###DirectX11Interface::VertexShader#############################################################################################
@@ -507,17 +508,17 @@ PS_OUTPUT psmain(in PS_INPUT In)
 
 	float borderSize = (defaultBorderSize + In.borderFeather) * In.borderSizeMultiplier;
 	float transitionSize = defaultTransitionSize + In.borderFeather;
-	
+
 	// dynamic color calculations
 	float4 borderColor = float4(In.colBorder.x, In.colBorder.y, In.colBorder.z, 1.0f);
 	float4 bodyColor = float4(In.colBody.x, In.colBody.y, In.colBody.z, 0.7f*In.bodyAlphaMultiplier);
 	float4 outerShadowColor = float4(0, 0, 0, 0.25f);
 	float4 innerBodyColor = getInnerBodyColor(bodyColor);
 	float4 outerBodyColor = getOuterBodyColor(bodyColor);
-	
+
 	innerBodyColor.rgb *= In.bodyColorSaturation;
 	outerBodyColor.rgb *= In.bodyColorSaturation;
-	
+
 	// osu!next style color modifications
 	if (In.style == 1)
 	{
@@ -526,13 +527,13 @@ PS_OUTPUT psmain(in PS_INPUT In)
 		innerBodyColor.rgb = bodyColor.rgb * 0.5f * In.bodyColorSaturation;
 		innerBodyColor.a = 0.0f;
 	}
-	
+
 	// a bit of a hack, but better than rough edges
 	if (In.borderSizeMultiplier < 0.01f)
 		borderColor = outerShadowColor;
-	
+
 	// conditional variant
-	
+
 	if (In.tex.x < outerShadowSize - transitionSize) // just shadow
 	{
 		float delta = In.tex.x / (outerShadowSize - transitionSize);
@@ -553,11 +554,11 @@ PS_OUTPUT psmain(in PS_INPUT In)
 		Out.col = lerp(borderColor, outerBodyColor, delta);
 	}
 	if (In.tex.x > outerShadowSize + borderSize + transitionSize) // outer body + inner body
-	{	
+	{
 		float size = outerShadowSize + borderSize + transitionSize;
 		float delta = ((In.tex.x - size) / (1.0f-size));
 		Out.col = lerp(outerBodyColor, innerBodyColor, delta);
 	}
-	
+
 	return Out;
 };
