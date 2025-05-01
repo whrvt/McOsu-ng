@@ -616,8 +616,13 @@ OsuOptionsMenu::OsuOptionsMenu(Osu *osu) : OsuScreenBackable(osu)
 
 	addCheckbox("Show FPS Counter", convar->getConVarByName("osu_draw_fps"));
 
-	if constexpr (Env::cfg(BACKEND::SDL, (REND::GL | REND::GLES2 | REND::GLES32)))
-		addCheckbox("Explicit Sync", "Analogous to \"Reduce dropped frames\" on osu!stable.\nForces the GPU to execute all queued commands before swapping.\nOnly use this if you experience issues at higher framerates.", convar->getConVarByName("gl_finish_before_swap"));
+	if constexpr (Env::cfg(REND::GL | REND::GLES2 | REND::GLES32))
+	{
+		CBaseUISlider *prerenderedFramesSlider = addSlider("Max Queued Frames", 1.0f, 3.0f, convar->getConVarByName("r_sync_max_frames"), -1.0f, true);
+		prerenderedFramesSlider->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onSliderChangeInt) );
+		prerenderedFramesSlider->setKeyDelta(1);
+		addLabel("Raise for higher fps, decrease for lower latency")->setTextColor(0xff666666);
+	}
 
 	if constexpr (!Env::cfg(OS::HORIZON))
 	{

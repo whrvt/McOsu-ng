@@ -48,6 +48,8 @@ OpenGLLegacyInterface::OpenGLLegacyInterface() : Graphics()
 	m_color = 0xffffffff;
 	m_fClearZ = 1;
 	m_fZ = 1;
+
+	m_syncobj = new OpenGLSync();
 }
 
 void OpenGLLegacyInterface::init()
@@ -99,11 +101,13 @@ void OpenGLLegacyInterface::init()
 
 OpenGLLegacyInterface::~OpenGLLegacyInterface()
 {
+	SAFE_DELETE(m_syncobj);
 }
 
 void OpenGLLegacyInterface::beginScene()
 {
 	m_bInScene = true;
+	m_syncobj->begin();
 
 	Matrix4 defaultProjectionMatrix = Camera::buildMatrixOrtho2D(0, m_vResolution.x, m_vResolution.y, 0, -1.0f, 1.0f);
 
@@ -125,7 +129,7 @@ void OpenGLLegacyInterface::beginScene()
 	handleGLErrors();
 }
 
-void OpenGLLegacyInterface::endSceneInternal(bool finish)
+void OpenGLLegacyInterface::endScene()
 {
 	popTransform();
 
@@ -136,7 +140,8 @@ void OpenGLLegacyInterface::endSceneInternal(bool finish)
 		engine->showMessageErrorFatal("ClipRect Stack Leak", "Make sure all push*() have a pop*()!");
 		engine->shutdown();
 	}
-	if (finish) glFinish();
+
+	m_syncobj->end();
 	m_bInScene = false;
 }
 

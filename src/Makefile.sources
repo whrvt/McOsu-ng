@@ -155,6 +155,7 @@ McOsu_ng_SOURCES = \
 	src/Engine/Renderer/OpenGLLegacyInterface.cpp \
 	src/Engine/Renderer/OpenGLRenderTarget.cpp \
 	src/Engine/Renderer/OpenGLShader.cpp \
+	src/Engine/Renderer/OpenGLSync.cpp \
 	src/Engine/Renderer/OpenGLVertexArrayObject.cpp \
 	src/Engine/Renderer/SWGraphicsInterface.cpp \
 	src/Engine/Renderer/SWImage.cpp \

@@ -14,6 +14,8 @@
 
 #ifdef MCENGINE_FEATURE_GLES32
 
+#include "OpenGLSync.h"
+
 class OpenGLES32Shader;
 
 class OpenGLES32Interface : public NullGraphicsInterface
@@ -25,7 +27,7 @@ public:
 
 	// scene
 	virtual void beginScene();
-	virtual inline void endScene() {OpenGLES32Interface::endSceneInternal(false);}
+	virtual void endScene();
 
 	// depth buffer
 	virtual void clearDepthBuffer();
@@ -116,7 +118,6 @@ public:
 protected:
 	virtual void init();
 	virtual void onTransformUpdate(Matrix4 &projectionMatrix, Matrix4 &worldMatrix);
-	void endSceneInternal(bool finish = false); // workaround for driver issues: calls glFinish if finish==true
 
 private:
 	void handleGLErrors();
@@ -144,6 +145,9 @@ private:
 	unsigned int m_iVBOVertices;
 	unsigned int m_iVBOTexcoords;
 	unsigned int m_iVBOTexcolors;
+
+	// synchronization
+	OpenGLSync *m_syncobj;
 
 	// persistent vars
 	Color m_color;

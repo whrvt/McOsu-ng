@@ -23,7 +23,7 @@ class SDLGLESInterface : public OpenGLES32Interface
 #endif
 {
 public:
-	SDLGLESInterface(SDLEnvironment *environment, SDL_Window *window);
+	SDLGLESInterface(SDL_Window *window);
 	virtual ~SDLGLESInterface();
 
 	// scene
@@ -34,7 +34,6 @@ public:
 
 private:
 	SDL_Window *m_window;
-	SDLEnvironment *m_env;
 };
 
 #else

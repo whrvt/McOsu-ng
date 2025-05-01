@@ -20,7 +20,7 @@
 class GenericSDLGLESInterface : public SDLGLESInterface
 {
 public:
-	GenericSDLGLESInterface(SDLEnvironment *environment, SDL_Window *window);
+	GenericSDLGLESInterface(SDL_Window *window);
 	virtual ~GenericSDLGLESInterface();
 };
 

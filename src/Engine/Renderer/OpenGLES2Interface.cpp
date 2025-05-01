@@ -46,6 +46,8 @@ OpenGLES2Interface::OpenGLES2Interface() : NullGraphicsInterface()
 
 	// persistent vars
 	m_color = 0xffffffff;
+
+	m_syncobj = new OpenGLSync();
 }
 
 OpenGLES2Interface::~OpenGLES2Interface()
@@ -58,6 +60,8 @@ OpenGLES2Interface::~OpenGLES2Interface()
 		glDeleteBuffers(1, &m_iVBOTexcoords);
 	if (m_iVBOTexcolors != 0)
 		glDeleteBuffers(1, &m_iVBOTexcolors);
+
+	SAFE_DELETE(m_syncobj);
 }
 
 void OpenGLES2Interface::init()
@@ -147,6 +151,7 @@ void OpenGLES2Interface::init()
 void OpenGLES2Interface::beginScene()
 {
 	m_bInScene = true;
+	m_syncobj->begin();
 
 	// enable default shader (must happen before any uniform calls)
 	m_shaderTexturedGeneric->enable();
@@ -171,7 +176,7 @@ void OpenGLES2Interface::beginScene()
 	handleGLErrors();
 }
 
-void OpenGLES2Interface::endSceneInternal(bool finish)
+void OpenGLES2Interface::endScene()
 {
 	popTransform();
 
@@ -182,7 +187,8 @@ void OpenGLES2Interface::endSceneInternal(bool finish)
 		engine->showMessageErrorFatal("ClipRect Stack Leak", "Make sure all push*() have a pop*()!");
 		engine->shutdown();
 	}
-	if (finish) glFinish();
+
+	m_syncobj->end();
 	m_bInScene = false;
 }
 

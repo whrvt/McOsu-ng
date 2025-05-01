@@ -19,7 +19,7 @@
 class SDLGLLegacyInterface : public OpenGLLegacyInterface
 {
 public:
-	SDLGLLegacyInterface(SDLEnvironment *environment, SDL_Window *window);
+	SDLGLLegacyInterface(SDL_Window *window);
 	virtual ~SDLGLLegacyInterface();
 
 	// scene
@@ -30,7 +30,6 @@ public:
 
 private:
 	SDL_Window *m_window;
-	SDLEnvironment *m_env;
 };
 
 #else

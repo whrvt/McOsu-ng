@@ -21,8 +21,6 @@
 
 #include "OpenGLHeaders.h"
 
-#include <utility>
-
 #define GPU_MEMORY_INFO_DEDICATED_VIDMEM_NVX 0x9047
 #define GPU_MEMORY_INFO_TOTAL_AVAILABLE_MEMORY_NVX 0x9048
 #define GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX 0x9049
@@ -48,6 +46,8 @@ OpenGLES32Interface::OpenGLES32Interface() : NullGraphicsInterface()
 
 	// persistent vars
 	m_color = 0xffffffff;
+
+	m_syncobj = new OpenGLSync();
 }
 
 OpenGLES32Interface::~OpenGLES32Interface()
@@ -60,7 +60,10 @@ OpenGLES32Interface::~OpenGLES32Interface()
 		glDeleteBuffers(1, &m_iVBOTexcoords);
 	if (m_iVBOTexcolors != 0)
 		glDeleteBuffers(1, &m_iVBOTexcolors);
+
+	SAFE_DELETE(m_syncobj);
 }
+
 
 void OpenGLES32Interface::init()
 {
@@ -185,6 +188,8 @@ void OpenGLES32Interface::beginScene()
 {
 	m_bInScene = true;
 
+	m_syncobj->begin();
+
 	// enable default shader (must happen before any uniform calls)
 	m_shaderTexturedGeneric->enable();
 
@@ -208,7 +213,7 @@ void OpenGLES32Interface::beginScene()
 	handleGLErrors();
 }
 
-void OpenGLES32Interface::endSceneInternal(bool finish)
+void OpenGLES32Interface::endScene()
 {
 	popTransform();
 
@@ -219,8 +224,8 @@ void OpenGLES32Interface::endSceneInternal(bool finish)
 		engine->showMessageErrorFatal("ClipRect Stack Leak", "Make sure all push*() have a pop*()!");
 		engine->shutdown();
 	}
-	if (finish)
-		glFinish();
+
+	m_syncobj->end();
 	m_bInScene = false;
 }
 

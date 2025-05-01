@@ -12,13 +12,12 @@
 #include "SDLEnvironment.h"
 
 #ifdef MCENGINE_FEATURE_GLES2
-SDLGLESInterface::SDLGLESInterface(SDLEnvironment *environment, SDL_Window *window) : OpenGLES2Interface()
+SDLGLESInterface::SDLGLESInterface(SDL_Window *window) : OpenGLES2Interface()
 #else
-SDLGLESInterface::SDLGLESInterface(SDLEnvironment *environment, SDL_Window *window) : OpenGLES32Interface()
+SDLGLESInterface::SDLGLESInterface(SDL_Window *window) : OpenGLES32Interface()
 #endif
 {
 	m_window = window;
-	m_env = environment;
 }
 
 SDLGLESInterface::~SDLGLESInterface()
@@ -28,9 +27,9 @@ SDLGLESInterface::~SDLGLESInterface()
 void SDLGLESInterface::endScene()
 {
 #ifdef MCENGINE_FEATURE_GLES2
-	OpenGLES2Interface::endSceneInternal(m_env->getSwapBehavior());
+	OpenGLES2Interface::endScene();
 #else
-	OpenGLES32Interface::endSceneInternal(m_env->getSwapBehavior());
+	OpenGLES32Interface::endScene();
 #endif
 
 	SDL_GL_SwapWindow(m_window);

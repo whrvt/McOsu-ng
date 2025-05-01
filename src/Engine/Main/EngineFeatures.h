@@ -99,7 +99,7 @@
 /*
  * Performance profiling (ctrl+F11)
  */
-//#define MCENGINE_FEATURE_PROFILING
+#define MCENGINE_FEATURE_PROFILING
 
 /* misc, untested */
 //#define MCENGINE_SDL_JOYSTICK

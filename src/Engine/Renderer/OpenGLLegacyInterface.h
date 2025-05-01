@@ -13,6 +13,8 @@
 
 #ifdef MCENGINE_FEATURE_OPENGL
 
+#include "OpenGLSync.h"
+
 class Image;
 
 class OpenGLLegacyInterface : public Graphics
@@ -23,7 +25,7 @@ public:
 
 	// scene
 	virtual void beginScene();
-	virtual inline void endScene() {OpenGLLegacyInterface::endSceneInternal(false);}
+	virtual void endScene();
 
 	// depth buffer
 	virtual void clearDepthBuffer();
@@ -103,7 +105,6 @@ public:
 protected:
 	virtual void init();
 	virtual void onTransformUpdate(Matrix4 &projectionMatrix, Matrix4 &worldMatrix);
-	void endSceneInternal(bool finish = false); // workaround for driver issues: calls glFinish if finish==true
 
 private:
 	static int primitiveToOpenGL(Graphics::PRIMITIVE primitive);
@@ -120,6 +121,9 @@ private:
 	Color m_color;
 	float m_fZ;
 	float m_fClearZ;
+
+	// synchronization
+	OpenGLSync *m_syncobj;
 
 	// clipping
 	std::stack<McRect> m_clipRectStack;

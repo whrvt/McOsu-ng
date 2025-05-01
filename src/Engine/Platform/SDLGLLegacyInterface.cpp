@@ -11,10 +11,9 @@
 
 #include "Engine.h"
 
-SDLGLLegacyInterface::SDLGLLegacyInterface(SDLEnvironment *environment, SDL_Window *window) : OpenGLLegacyInterface()
+SDLGLLegacyInterface::SDLGLLegacyInterface(SDL_Window *window) : OpenGLLegacyInterface()
 {
 	m_window = window;
-	m_env = environment;
 }
 
 SDLGLLegacyInterface::~SDLGLLegacyInterface()
@@ -23,7 +22,7 @@ SDLGLLegacyInterface::~SDLGLLegacyInterface()
 
 void SDLGLLegacyInterface::endScene()
 {
-	OpenGLLegacyInterface::endSceneInternal(m_env->getSwapBehavior());
+	OpenGLLegacyInterface::endScene();
 	SDL_GL_SwapWindow(m_window);
 }
 

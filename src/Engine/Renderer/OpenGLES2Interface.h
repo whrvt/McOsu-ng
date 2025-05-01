@@ -14,6 +14,8 @@
 
 #ifdef MCENGINE_FEATURE_GLES2
 
+#include "OpenGLSync.h"
+
 class OpenGLES2Shader;
 
 class OpenGLES2Interface : public NullGraphicsInterface
@@ -24,7 +26,7 @@ public:
 
 	// scene
 	virtual void beginScene();
-	virtual inline void endScene() {OpenGLES2Interface::endSceneInternal(false);}
+	virtual void endScene();
 
 	// depth buffer
 	virtual void clearDepthBuffer();
@@ -107,7 +109,6 @@ public:
 protected:
 	virtual void init();
 	virtual void onTransformUpdate(Matrix4 &projectionMatrix, Matrix4 &worldMatrix);
-	void endSceneInternal(bool finish = false); // workaround for driver issues: calls glFinish if finish==true
 
 private:
 	void handleGLErrors();
@@ -133,6 +134,9 @@ private:
 
 	// persistent vars
 	Color m_color;
+
+	// synchronization
+	OpenGLSync *m_syncobj;
 
 	// clipping
 	std::stack<McRect> m_clipRectStack;

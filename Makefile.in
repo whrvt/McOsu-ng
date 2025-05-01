@@ -284,6 +284,7 @@ am_McOsu_ng_OBJECTS = src/App/Osu/McOsu_ng-Osu.$(OBJEXT) \
 	src/Engine/Renderer/McOsu_ng-OpenGLLegacyInterface.$(OBJEXT) \
 	src/Engine/Renderer/McOsu_ng-OpenGLRenderTarget.$(OBJEXT) \
 	src/Engine/Renderer/McOsu_ng-OpenGLShader.$(OBJEXT) \
+	src/Engine/Renderer/McOsu_ng-OpenGLSync.$(OBJEXT) \
 	src/Engine/Renderer/McOsu_ng-OpenGLVertexArrayObject.$(OBJEXT) \
 	src/Engine/Renderer/McOsu_ng-SWGraphicsInterface.$(OBJEXT) \
 	src/Engine/Renderer/McOsu_ng-SWImage.$(OBJEXT) \
@@ -516,6 +517,7 @@ am__depfiles_remade = src/App/Osu/$(DEPDIR)/McOsu_ng-Osu.Po \
 	src/Engine/Renderer/$(DEPDIR)/McOsu_ng-OpenGLLegacyInterface.Po \
 	src/Engine/Renderer/$(DEPDIR)/McOsu_ng-OpenGLRenderTarget.Po \
 	src/Engine/Renderer/$(DEPDIR)/McOsu_ng-OpenGLShader.Po \
+	src/Engine/Renderer/$(DEPDIR)/McOsu_ng-OpenGLSync.Po \
 	src/Engine/Renderer/$(DEPDIR)/McOsu_ng-OpenGLVertexArrayObject.Po \
 	src/Engine/Renderer/$(DEPDIR)/McOsu_ng-SWGraphicsInterface.Po \
 	src/Engine/Renderer/$(DEPDIR)/McOsu_ng-SWImage.Po \
@@ -982,6 +984,7 @@ McOsu_ng_SOURCES = \
 	src/Engine/Renderer/OpenGLLegacyInterface.cpp \
 	src/Engine/Renderer/OpenGLRenderTarget.cpp \
 	src/Engine/Renderer/OpenGLShader.cpp \
+	src/Engine/Renderer/OpenGLSync.cpp \
 	src/Engine/Renderer/OpenGLVertexArrayObject.cpp \
 	src/Engine/Renderer/SWGraphicsInterface.cpp \
 	src/Engine/Renderer/SWImage.cpp \
@@ -1684,6 +1687,9 @@ src/Engine/Renderer/McOsu_ng-OpenGLRenderTarget.$(OBJEXT):  \
 src/Engine/Renderer/McOsu_ng-OpenGLShader.$(OBJEXT):  \
 	src/Engine/Renderer/$(am__dirstamp) \
 	src/Engine/Renderer/$(DEPDIR)/$(am__dirstamp)
+src/Engine/Renderer/McOsu_ng-OpenGLSync.$(OBJEXT):  \
+	src/Engine/Renderer/$(am__dirstamp) \
+	src/Engine/Renderer/$(DEPDIR)/$(am__dirstamp)
 src/Engine/Renderer/McOsu_ng-OpenGLVertexArrayObject.$(OBJEXT):  \
 	src/Engine/Renderer/$(am__dirstamp) \
 	src/Engine/Renderer/$(DEPDIR)/$(am__dirstamp)
@@ -2009,6 +2015,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Renderer/$(DEPDIR)/McOsu_ng-OpenGLLegacyInterface.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Renderer/$(DEPDIR)/McOsu_ng-OpenGLRenderTarget.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Renderer/$(DEPDIR)/McOsu_ng-OpenGLShader.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Renderer/$(DEPDIR)/McOsu_ng-OpenGLSync.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Renderer/$(DEPDIR)/McOsu_ng-OpenGLVertexArrayObject.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Renderer/$(DEPDIR)/McOsu_ng-SWGraphicsInterface.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Renderer/$(DEPDIR)/McOsu_ng-SWImage.Po@am__quote@ # am--include-marker
@@ -4242,6 +4249,20 @@ src/Engine/Renderer/McOsu_ng-OpenGLShader.obj: src/Engine/Renderer/OpenGLShader.
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Renderer/McOsu_ng-OpenGLShader.obj `if test -f 'src/Engine/Renderer/OpenGLShader.cpp'; then $(CYGPATH_W) 'src/Engine/Renderer/OpenGLShader.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Renderer/OpenGLShader.cpp'; fi`
 
+src/Engine/Renderer/McOsu_ng-OpenGLSync.o: src/Engine/Renderer/OpenGLSync.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Renderer/McOsu_ng-OpenGLSync.o -MD -MP -MF src/Engine/Renderer/$(DEPDIR)/McOsu_ng-OpenGLSync.Tpo -c -o src/Engine/Renderer/McOsu_ng-OpenGLSync.o `test -f 'src/Engine/Renderer/OpenGLSync.cpp' || echo '$(srcdir)/'`src/Engine/Renderer/OpenGLSync.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Renderer/$(DEPDIR)/McOsu_ng-OpenGLSync.Tpo src/Engine/Renderer/$(DEPDIR)/McOsu_ng-OpenGLSync.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Renderer/OpenGLSync.cpp' object='src/Engine/Renderer/McOsu_ng-OpenGLSync.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Renderer/McOsu_ng-OpenGLSync.o `test -f 'src/Engine/Renderer/OpenGLSync.cpp' || echo '$(srcdir)/'`src/Engine/Renderer/OpenGLSync.cpp
+
+src/Engine/Renderer/McOsu_ng-OpenGLSync.obj: src/Engine/Renderer/OpenGLSync.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Renderer/McOsu_ng-OpenGLSync.obj -MD -MP -MF src/Engine/Renderer/$(DEPDIR)/McOsu_ng-OpenGLSync.Tpo -c -o src/Engine/Renderer/McOsu_ng-OpenGLSync.obj `if test -f 'src/Engine/Renderer/OpenGLSync.cpp'; then $(CYGPATH_W) 'src/Engine/Renderer/OpenGLSync.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Renderer/OpenGLSync.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Renderer/$(DEPDIR)/McOsu_ng-OpenGLSync.Tpo src/Engine/Renderer/$(DEPDIR)/McOsu_ng-OpenGLSync.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Renderer/OpenGLSync.cpp' object='src/Engine/Renderer/McOsu_ng-OpenGLSync.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Renderer/McOsu_ng-OpenGLSync.obj `if test -f 'src/Engine/Renderer/OpenGLSync.cpp'; then $(CYGPATH_W) 'src/Engine/Renderer/OpenGLSync.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Renderer/OpenGLSync.cpp'; fi`
+
 src/Engine/Renderer/McOsu_ng-OpenGLVertexArrayObject.o: src/Engine/Renderer/OpenGLVertexArrayObject.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Renderer/McOsu_ng-OpenGLVertexArrayObject.o -MD -MP -MF src/Engine/Renderer/$(DEPDIR)/McOsu_ng-OpenGLVertexArrayObject.Tpo -c -o src/Engine/Renderer/McOsu_ng-OpenGLVertexArrayObject.o `test -f 'src/Engine/Renderer/OpenGLVertexArrayObject.cpp' || echo '$(srcdir)/'`src/Engine/Renderer/OpenGLVertexArrayObject.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Renderer/$(DEPDIR)/McOsu_ng-OpenGLVertexArrayObject.Tpo src/Engine/Renderer/$(DEPDIR)/McOsu_ng-OpenGLVertexArrayObject.Po
@@ -5393,6 +5414,7 @@ distclean: distclean-am
 	-rm -f src/Engine/Renderer/$(DEPDIR)/McOsu_ng-OpenGLLegacyInterface.Po
 	-rm -f src/Engine/Renderer/$(DEPDIR)/McOsu_ng-OpenGLRenderTarget.Po
 	-rm -f src/Engine/Renderer/$(DEPDIR)/McOsu_ng-OpenGLShader.Po
+	-rm -f src/Engine/Renderer/$(DEPDIR)/McOsu_ng-OpenGLSync.Po
 	-rm -f src/Engine/Renderer/$(DEPDIR)/McOsu_ng-OpenGLVertexArrayObject.Po
 	-rm -f src/Engine/Renderer/$(DEPDIR)/McOsu_ng-SWGraphicsInterface.Po
 	-rm -f src/Engine/Renderer/$(DEPDIR)/McOsu_ng-SWImage.Po
@@ -5645,6 +5667,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f src/Engine/Renderer/$(DEPDIR)/McOsu_ng-OpenGLLegacyInterface.Po
 	-rm -f src/Engine/Renderer/$(DEPDIR)/McOsu_ng-OpenGLRenderTarget.Po
 	-rm -f src/Engine/Renderer/$(DEPDIR)/McOsu_ng-OpenGLShader.Po
+	-rm -f src/Engine/Renderer/$(DEPDIR)/McOsu_ng-OpenGLSync.Po
 	-rm -f src/Engine/Renderer/$(DEPDIR)/McOsu_ng-OpenGLVertexArrayObject.Po
 	-rm -f src/Engine/Renderer/$(DEPDIR)/McOsu_ng-SWGraphicsInterface.Po
 	-rm -f src/Engine/Renderer/$(DEPDIR)/McOsu_ng-SWImage.Po

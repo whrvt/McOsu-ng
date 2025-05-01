@@ -15,7 +15,7 @@
 
 #include "OpenGLHeaders.h"
 
-GenericSDLGLESInterface::GenericSDLGLESInterface(SDLEnvironment *environment, SDL_Window *window) : SDLGLESInterface(environment, window)
+GenericSDLGLESInterface::GenericSDLGLESInterface(SDL_Window *window) : SDLGLESInterface(window)
 {
 	// check GLEW
 	GLenum err = glewInit();

@@ -48,6 +48,8 @@ OpenGL3Interface::OpenGL3Interface() : Graphics()
 
 	// persistent vars
 	m_color = 0xffffffff;
+
+	m_syncobj = new OpenGLSync();
 }
 
 OpenGL3Interface::~OpenGL3Interface()
@@ -55,6 +57,7 @@ OpenGL3Interface::~OpenGL3Interface()
 	SAFE_DELETE(m_shaderTexturedGeneric);
 
 	glDeleteVertexArrays(1, &m_iVA);
+	SAFE_DELETE(m_syncobj);
 }
 
 void OpenGL3Interface::init()
@@ -173,6 +176,7 @@ void OpenGL3Interface::init()
 void OpenGL3Interface::beginScene()
 {
 	m_bInScene = true;
+	m_syncobj->begin();
 
 	Matrix4 defaultProjectionMatrix = Camera::buildMatrixOrtho2D(0, m_vResolution.x, m_vResolution.y, 0, -1.0f, 1.0f);
 
@@ -208,6 +212,7 @@ void OpenGL3Interface::endScene()
 		engine->showMessageErrorFatal("ClipRect Stack Leak", "Make sure all push*() have a pop*()!");
 		engine->shutdown();
 	}
+	m_syncobj->end();
 
 	m_bInScene = false;
 }
