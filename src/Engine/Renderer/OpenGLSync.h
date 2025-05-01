@@ -12,7 +12,6 @@
 #include "cbase.h"
 
 #if defined(MCENGINE_FEATURE_OPENGL) || defined(MCENGINE_FEATURE_GLES32) || defined(MCENGINE_FEATURE_GLES2)
-#include <deque>
 
 #include "OpenGLHeaders.h"
 

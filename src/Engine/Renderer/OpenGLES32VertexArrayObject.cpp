@@ -16,11 +16,7 @@
 
 OpenGLES32VertexArrayObject::OpenGLES32VertexArrayObject(Graphics::PRIMITIVE primitive, Graphics::USAGE_TYPE usage, bool keepInSystemMemory) : VertexArrayObject(primitive, usage, keepInSystemMemory)
 {
-	m_iVertexBuffer = 0;
-	m_iTexcoordBuffer = 0;
-	m_iColorBuffer = 0;
-	m_iNormalBuffer = 0;
-
+	m_iInterleavedVBO = 0;
 	m_iNumTexcoords = 0;
 	m_iNumColors = 0;
 	m_iNumNormals = 0;
@@ -34,108 +30,189 @@ void OpenGLES32VertexArrayObject::init()
 	// handle partial reloads
 	if (m_bReady)
 	{
-		// update vertex buffer
-		if (m_partialUpdateVertexIndices.size() > 0)
+		// update the interleaved buffer for partial vertex/color updates
+		if (m_partialUpdateVertexIndices.size() > 0 || m_partialUpdateColorIndices.size() > 0)
 		{
-			glBindBuffer(GL_ARRAY_BUFFER, m_iVertexBuffer);
+			// for interleaved buffers, we need to update entire vertices even for partial updates
+			std::vector<InterleavedVertex> updatedVertices;
+			bool needsUpdate = false;
+
+			// track which vertices need updating
+			std::vector<bool> vertexNeedsUpdate(m_vertices.size(), false);
+
+			// mark vertices for update based on vertex indices
 			for (size_t i = 0; i < m_partialUpdateVertexIndices.size(); i++)
 			{
-				const int offsetIndex = m_partialUpdateVertexIndices[i];
-
-				// group by continuous chunks to reduce calls
-				int numContinuousIndices = 1;
-				while ((i + 1) < m_partialUpdateVertexIndices.size())
+				const int index = m_partialUpdateVertexIndices[i];
+				if (index >= 0 && index < static_cast<int>(m_vertices.size()))
 				{
-					if ((m_partialUpdateVertexIndices[i + 1] - m_partialUpdateVertexIndices[i]) == 1)
-					{
-						numContinuousIndices++;
-						i++;
-					}
-					else
-						break;
+					vertexNeedsUpdate[index] = true;
+					needsUpdate = true;
 				}
-
-				glBufferSubData(GL_ARRAY_BUFFER, sizeof(Vector3) * offsetIndex, sizeof(Vector3) * numContinuousIndices, &(m_vertices[offsetIndex]));
 			}
-			m_partialUpdateVertexIndices.clear();
-		}
 
-		// update color buffer
-		if (m_partialUpdateColorIndices.size() > 0)
-		{
-			glBindBuffer(GL_ARRAY_BUFFER, m_iColorBuffer);
+			// mark vertices for update based on color indices
 			for (size_t i = 0; i < m_partialUpdateColorIndices.size(); i++)
 			{
-				const int offsetIndex = m_partialUpdateColorIndices[i];
-
-				m_colors[offsetIndex] = ARGBtoABGR(m_colors[offsetIndex]);
-
-				// group by continuous chunks to reduce calls
-				int numContinuousIndices = 1;
-				while ((i + 1) < m_partialUpdateColorIndices.size())
+				const int index = m_partialUpdateColorIndices[i];
+				if (index >= 0 && index < static_cast<int>(m_colors.size()) && index < static_cast<int>(m_vertices.size()))
 				{
-					if ((m_partialUpdateColorIndices[i + 1] - m_partialUpdateColorIndices[i]) == 1)
-					{
-						numContinuousIndices++;
-						i++;
-
-						m_colors[m_partialUpdateColorIndices[i]] = ARGBtoABGR(m_colors[m_partialUpdateColorIndices[i]]);
-					}
-					else
-						break;
+					m_colors[index] = ARGBtoABGR(m_colors[index]);
+					vertexNeedsUpdate[index] = true;
+					needsUpdate = true;
 				}
-
-				glBufferSubData(GL_ARRAY_BUFFER, sizeof(Color) * offsetIndex, sizeof(Color) * numContinuousIndices, &(m_colors[offsetIndex]));
 			}
+
+			// only proceed if updates are needed
+			if (needsUpdate)
+			{
+				glBindBuffer(GL_ARRAY_BUFFER, m_iInterleavedVBO);
+
+				// update continuous ranges
+				int startIndex = -1;
+				for (size_t i = 0; i < vertexNeedsUpdate.size(); i++)
+				{
+					if (vertexNeedsUpdate[i])
+					{
+						if (startIndex == -1)
+							startIndex = i;
+
+						// check if this is the last vertex or the next doesn't need update
+						if (i == vertexNeedsUpdate.size() - 1 || !vertexNeedsUpdate[i + 1])
+						{
+							int endIndex = i;
+							int count = endIndex - startIndex + 1;
+
+							// create interleaved data for this range
+							std::vector<InterleavedVertex> rangeData;
+							for (int j = startIndex; j <= endIndex; j++)
+							{
+								InterleavedVertex v;
+								v.position = m_vertices[j];
+
+								v.texCoord = Vector2(0, 0);
+								if (m_texcoords.size() > 0 && m_texcoords[0].size() > j)
+									v.texCoord = m_texcoords[0][j];
+
+								v.color = 0xffffffff;
+								if (m_colors.size() > j)
+									v.color = m_colors[j];
+
+								v.normal = Vector3(0, 0, 1);
+								if (m_normals.size() > j)
+									v.normal = m_normals[j];
+
+								rangeData.push_back(v);
+							}
+
+							// update buffer with this range
+							glBufferSubData(GL_ARRAY_BUFFER, sizeof(InterleavedVertex) * startIndex, sizeof(InterleavedVertex) * count, &(rangeData[0]));
+
+							startIndex = -1; // reset for next range
+						}
+					}
+				}
+			}
+
+			m_partialUpdateVertexIndices.clear();
 			m_partialUpdateColorIndices.clear();
 		}
 	}
 
-	if (m_iVertexBuffer != 0 && (!m_bKeepInSystemMemory || m_bReady))
+	if (m_iInterleavedVBO != 0 && (!m_bKeepInSystemMemory || m_bReady))
 		return; // only fully load if we are not already loaded
 
-	// handle full loads
+	// full load, convert all data to interleaved format
+	std::vector<InterleavedVertex> interleavedData;
 
-	// build and fill vertex buffer
-	glGenBuffers(1, &m_iVertexBuffer);
-	glBindBuffer(GL_ARRAY_BUFFER, m_iVertexBuffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3) * m_vertices.size(), &(m_vertices[0]), usageToOpenGL(m_usage));
-
-	// build and fill texcoord buffer
-	if (m_texcoords.size() > 0 && m_texcoords[0].size() > 0)
+	// need to convert quads to triangles
+	if (m_primitive == Graphics::PRIMITIVE::PRIMITIVE_QUADS && m_vertices.size() >= 4)
 	{
-		m_iNumTexcoords = m_texcoords[0].size();
-
-		glGenBuffers(1, &m_iTexcoordBuffer);
-		glBindBuffer(GL_ARRAY_BUFFER, m_iTexcoordBuffer);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(Vector2) * m_texcoords[0].size(), &(m_texcoords[0][0]), usageToOpenGL(m_usage));
-	}
-
-	// build and fill color buffer
-	if (m_colors.size() > 0)
-	{
-		m_iNumColors = m_colors.size();
-
-		// convert ARGB to ABGR for OpenGL
-		for (size_t i = 0; i < m_colors.size(); i++)
+		for (size_t i = 0; i < m_vertices.size(); i += 4)
 		{
-			m_colors[i] = ARGBtoABGR(m_colors[i]);
+			if (i + 3 >= m_vertices.size())
+				break; // ensure we have a full quad
+
+			// first triangle (0,1,2)
+			for (int j = 0; j < 3; j++)
+			{
+				InterleavedVertex v;
+				v.position = m_vertices[i + j];
+
+				v.texCoord = Vector2(0, 0);
+				if (m_texcoords.size() > 0 && m_texcoords[0].size() > i + j)
+					v.texCoord = m_texcoords[0][i + j];
+
+				v.color = 0xffffffff;
+				if (m_colors.size() > i + j)
+					v.color = ARGBtoABGR(m_colors[i + j]);
+
+				v.normal = Vector3(0, 0, 1);
+				if (m_normals.size() > i + j)
+					v.normal = m_normals[i + j];
+
+				interleavedData.push_back(v);
+			}
+
+			// second triangle (0,2,3)
+			const int indices[3] = {0, 2, 3};
+			for (int j = 0; j < 3; j++)
+			{
+				InterleavedVertex v;
+				v.position = m_vertices[i + indices[j]];
+
+				v.texCoord = Vector2(0, 0);
+				if (m_texcoords.size() > 0 && m_texcoords[0].size() > i + indices[j])
+					v.texCoord = m_texcoords[0][i + indices[j]];
+
+				v.color = 0xffffffff;
+				if (m_colors.size() > i + indices[j])
+					v.color = ARGBtoABGR(m_colors[i + indices[j]]);
+
+				v.normal = Vector3(0, 0, 1);
+				if (m_normals.size() > i + indices[j])
+					v.normal = m_normals[i + indices[j]];
+
+				interleavedData.push_back(v);
+			}
 		}
 
-		glGenBuffers(1, &m_iColorBuffer);
-		glBindBuffer(GL_ARRAY_BUFFER, m_iColorBuffer);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(Color) * m_colors.size(), &(m_colors[0]), usageToOpenGL(m_usage));
+		// update the primitive type to reflect the conversion
+		m_primitive = Graphics::PRIMITIVE::PRIMITIVE_TRIANGLES;
 	}
-
-	// build and fill normal buffer
-	if (m_normals.size() > 0)
+	else
 	{
-		m_iNumNormals = m_normals.size();
+		// non-quad primitives
+		for (size_t i = 0; i < m_vertices.size(); i++)
+		{
+			InterleavedVertex v;
+			v.position = m_vertices[i];
 
-		glGenBuffers(1, &m_iNormalBuffer);
-		glBindBuffer(GL_ARRAY_BUFFER, m_iNormalBuffer);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3) * m_normals.size(), &(m_normals[0]), usageToOpenGL(m_usage));
+			v.texCoord = Vector2(0, 0);
+			if (m_texcoords.size() > 0 && m_texcoords[0].size() > i)
+				v.texCoord = m_texcoords[0][i];
+
+			v.color = 0xffffffff;
+			if (m_colors.size() > i)
+				v.color = ARGBtoABGR(m_colors[i]);
+
+			v.normal = Vector3(0, 0, 1);
+			if (m_normals.size() > i)
+				v.normal = m_normals[i];
+
+			interleavedData.push_back(v);
+		}
 	}
+
+	m_iNumVertices = interleavedData.size();
+	m_iNumTexcoords = (m_texcoords.size() > 0 && m_texcoords[0].size() > 0) ? m_texcoords[0].size() : 0;
+	m_iNumColors = m_colors.size();
+	m_iNumNormals = m_normals.size();
+
+	// create and fill interleaved VBO
+	glGenBuffers(1, &m_iInterleavedVBO);
+	glBindBuffer(GL_ARRAY_BUFFER, m_iInterleavedVBO);
+	glBufferData(GL_ARRAY_BUFFER, interleavedData.size() * sizeof(InterleavedVertex), interleavedData.size() > 0 ? &(interleavedData[0]) : NULL, usageToOpenGL(m_usage));
 
 	// free memory
 	if (!m_bKeepInSystemMemory)
@@ -153,22 +230,13 @@ void OpenGLES32VertexArrayObject::destroy()
 {
 	VertexArrayObject::destroy();
 
-	if (m_iVertexBuffer > 0)
-		glDeleteBuffers(1, &m_iVertexBuffer);
+	if (m_iInterleavedVBO > 0)
+		glDeleteBuffers(1, &m_iInterleavedVBO);
 
-	if (m_iTexcoordBuffer > 0)
-		glDeleteBuffers(1, &m_iTexcoordBuffer);
-
-	if (m_iColorBuffer > 0)
-		glDeleteBuffers(1, &m_iColorBuffer);
-
-	if (m_iNormalBuffer > 0)
-		glDeleteBuffers(1, &m_iNormalBuffer);
-
-	m_iVertexBuffer = 0;
-	m_iTexcoordBuffer = 0;
-	m_iColorBuffer = 0;
-	m_iNormalBuffer = 0;
+	m_iInterleavedVBO = 0;
+	m_iNumTexcoords = 0;
+	m_iNumColors = 0;
+	m_iNumNormals = 0;
 }
 
 void OpenGLES32VertexArrayObject::draw()
@@ -187,9 +255,27 @@ void OpenGLES32VertexArrayObject::draw()
 
 	OpenGLES32Interface *g = (OpenGLES32Interface *)engine->getGraphics();
 
-	// configure shader state for our vertex attributes
+	glBindBuffer(GL_ARRAY_BUFFER, m_iInterleavedVBO);
+
+	// position (always)
+	glVertexAttribPointer(g->getShaderGenericAttribPosition(), 3, GL_FLOAT, GL_FALSE, sizeof(InterleavedVertex), (GLvoid *)offsetof(InterleavedVertex, position));
+	glEnableVertexAttribArray(g->getShaderGenericAttribPosition());
+
+	// texcoords
+	if (m_iNumTexcoords > 0)
+	{
+		glVertexAttribPointer(g->getShaderGenericAttribUV(), 2, GL_FLOAT, GL_FALSE, sizeof(InterleavedVertex), (GLvoid *)offsetof(InterleavedVertex, texCoord));
+		glEnableVertexAttribArray(g->getShaderGenericAttribUV());
+	}
+	else
+	{
+		glDisableVertexAttribArray(g->getShaderGenericAttribUV());
+	}
+
+	// color
 	if (m_iNumColors > 0)
 	{
+		glVertexAttribPointer(g->getShaderGenericAttribCol(), 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(InterleavedVertex), (GLvoid *)offsetof(InterleavedVertex, color));
 		glEnableVertexAttribArray(g->getShaderGenericAttribCol());
 	}
 	else
@@ -197,36 +283,33 @@ void OpenGLES32VertexArrayObject::draw()
 		glDisableVertexAttribArray(g->getShaderGenericAttribCol());
 	}
 
-	// set vertex attribute pointers
-	glBindBuffer(GL_ARRAY_BUFFER, m_iVertexBuffer);
-	glVertexAttribPointer(g->getShaderGenericAttribPosition(), 3, GL_FLOAT, GL_FALSE, 0, (GLvoid *)0);
-
-	if (m_iNumTexcoords > 0)
+	// normal (if used)
+	if (m_iNumNormals > 0)
 	{
-		glBindBuffer(GL_ARRAY_BUFFER, m_iTexcoordBuffer);
-		glVertexAttribPointer(g->getShaderGenericAttribUV(), 2, GL_FLOAT, GL_FALSE, 0, (GLvoid *)0);
+		glVertexAttribPointer(g->getShaderGenericAttribNormal(), 3, GL_FLOAT, GL_FALSE, sizeof(InterleavedVertex), (GLvoid *)offsetof(InterleavedVertex, normal));
+		glEnableVertexAttribArray(g->getShaderGenericAttribNormal());
 	}
-
-	if (m_iNumColors > 0)
+	else
 	{
-		glBindBuffer(GL_ARRAY_BUFFER, m_iColorBuffer);
-		glVertexAttribPointer(g->getShaderGenericAttribCol(), 4, GL_UNSIGNED_BYTE, GL_TRUE, 0, (GLvoid *)0);
+		glDisableVertexAttribArray(g->getShaderGenericAttribNormal());
 	}
 
 	// draw the geometry
 	glDrawArrays(primitiveToOpenGL(m_primitive), start, end - start);
 
 	// restore default state
-	glBindBuffer(GL_ARRAY_BUFFER, g->getVBOVertices());
-	glVertexAttribPointer(g->getShaderGenericAttribPosition(), 3, GL_FLOAT, GL_FALSE, 0, (GLvoid *)0);
+	glBindBuffer(GL_ARRAY_BUFFER, g->getInterleavedVBO());
 
-	glBindBuffer(GL_ARRAY_BUFFER, g->getVBOTexcoords());
-	glVertexAttribPointer(g->getShaderGenericAttribUV(), 2, GL_FLOAT, GL_FALSE, 0, (GLvoid *)0);
+	// reset attribs
+	glVertexAttribPointer(g->getShaderGenericAttribPosition(), 3, GL_FLOAT, GL_FALSE, sizeof(InterleavedVertex), (GLvoid *)offsetof(InterleavedVertex, position));
+	glVertexAttribPointer(g->getShaderGenericAttribUV(), 2, GL_FLOAT, GL_FALSE, sizeof(InterleavedVertex), (GLvoid *)offsetof(InterleavedVertex, texCoord));
+	glVertexAttribPointer(g->getShaderGenericAttribCol(), 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(InterleavedVertex), (GLvoid *)offsetof(InterleavedVertex, color));
+	glVertexAttribPointer(g->getShaderGenericAttribNormal(), 3, GL_FLOAT, GL_FALSE, sizeof(InterleavedVertex), (GLvoid *)offsetof(InterleavedVertex, normal));
 
-	// always enable color attrib as the default state
-	glBindBuffer(GL_ARRAY_BUFFER, g->getVBOTexcolors());
-	glVertexAttribPointer(g->getShaderGenericAttribCol(), 4, GL_UNSIGNED_BYTE, GL_TRUE, 0, (GLvoid *)0);
+	glEnableVertexAttribArray(g->getShaderGenericAttribPosition());
+	glEnableVertexAttribArray(g->getShaderGenericAttribUV());
 	glEnableVertexAttribArray(g->getShaderGenericAttribCol());
+	glEnableVertexAttribArray(g->getShaderGenericAttribNormal());
 }
 
 int OpenGLES32VertexArrayObject::primitiveToOpenGL(Graphics::PRIMITIVE primitive)
