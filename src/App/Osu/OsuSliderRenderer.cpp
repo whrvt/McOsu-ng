@@ -388,18 +388,6 @@ void OsuSliderRenderer::draw(Graphics *g, Osu *osu, VertexArrayObject *vao, cons
 						g->translate(translation.x, translation.y);
 						///g->scale(scaleToApplyAfterTranslationX, scaleToApplyAfterTranslationY); // aspire slider distortions
 
-						if constexpr (Env::cfg(REND::GLES2)) {
-						if (!osu_slider_use_gradient_image.getBool())
-						{
-							OpenGLES2Interface *gles2 = dynamic_cast<OpenGLES2Interface*>(g);
-							if (gles2 != NULL)
-							{
-								g->forceUpdateTransform();
-								Matrix4 mvp = g->getMVP();
-								BLEND_SHADER->setUniformMatrix4fv("mvp", mvp);
-							}
-						}
-						}
 						if constexpr (Env::cfg(REND::DX11)) {
 						if (!osu_slider_use_gradient_image.getBool())
 						{
@@ -490,10 +478,10 @@ void OsuSliderRenderer::drawVR(Graphics *g, Osu *osu, OsuVR *vr, Matrix4 &mvp, f
 		g->setColor(0xffffffff);
 		osu->getSkin()->getSliderGradient()->bind();
 		{
-#if defined(MCENGINE_FEATURE_OPENGL)
+#if defined(MCENGINE_FEATURE_OPENGL) || defined(MCENGINE_FEATURE_GLES32)
 			// note: i have no idea why there were originally both preprocessor AND runtime checks for these, but im keeping it because it's funny
 			// when are multiple renderers going to be built at the same time?
-			if constexpr (Env::cfg(REND::GL))
+			if constexpr (Env::cfg(REND::GL | REND::GLES32))
 				glBlendEquation(GL_MAX); // HACKHACK: OpenGL hardcoded
 #endif
 
@@ -512,8 +500,8 @@ void OsuSliderRenderer::drawVR(Graphics *g, Osu *osu, OsuVR *vr, Matrix4 &mvp, f
 					drawFillSliderBodyPeppyVR(g, osu, vr, mvp, alwaysPoints, UNIT_CIRCLE_VAO_BAKED, hitcircleDiameter/2.0f, 0, alwaysPoints.size());
 			}
 
-#if defined(MCENGINE_FEATURE_OPENGL)
-			if constexpr (Env::cfg(REND::GL))
+#if defined(MCENGINE_FEATURE_OPENGL) || defined(MCENGINE_FEATURE_GLES32)
+			if constexpr (Env::cfg(REND::GL | REND::GLES32))
 				glBlendEquation(GL_FUNC_ADD); // HACKHACK: OpenGL hardcoded
 #endif
 
@@ -576,8 +564,8 @@ void OsuSliderRenderer::drawVR(Graphics *g, Osu *osu, OsuVR *vr, Matrix4 &mvp, f
 		osu->getSkin()->getSliderGradient()->bind();
 		{
 
-#if defined(MCENGINE_FEATURE_OPENGL)
-			if constexpr (Env::cfg(REND::GL))
+#if defined(MCENGINE_FEATURE_OPENGL) || defined(MCENGINE_FEATURE_GLES32)
+			if constexpr (Env::cfg(REND::GL | REND::GLES32))
 				glBlendEquation(GL_MAX); // HACKHACK: OpenGL hardcoded
 #endif
 
@@ -598,8 +586,8 @@ void OsuSliderRenderer::drawVR(Graphics *g, Osu *osu, OsuVR *vr, Matrix4 &mvp, f
 					drawFillSliderBodyPeppyVR(g, osu, vr, mvp, alwaysPoints, UNIT_CIRCLE_VAO_BAKED, hitcircleDiameter/2.0f, 0, alwaysPoints.size());
 			}
 
-#if defined(MCENGINE_FEATURE_OPENGL)
-			if constexpr (Env::cfg(REND::GL))
+#if defined(MCENGINE_FEATURE_OPENGL) || defined(MCENGINE_FEATURE_GLES32)
+			if constexpr (Env::cfg(REND::GL | REND::GLES32))
 				glBlendEquation(GL_FUNC_ADD); // HACKHACK: OpenGL hardcoded
 #endif
 

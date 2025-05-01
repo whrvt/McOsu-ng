@@ -82,7 +82,7 @@ void OpenGLES32Interface::init()
 
 	// setWireframe(true);
 
-	// TODO: move these out to a McShader and load like the other OpenGL interface
+	// TODO: move these out to a .mcshader (or something) and load like the other OpenGL interface
 	constexpr auto texturedGenericV = R"(#version 100
 
 attribute vec3 position;
