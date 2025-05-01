@@ -1,13 +1,13 @@
-//================ Copyright (c) 2019, PG, All rights reserved. =================//
+//================ Copyright (c) 2025, WH, All rights reserved. =================//
 //
-// Purpose:		raw opengl es 2.x graphics interface
+// Purpose:		raw opengl es 3.2 graphics interface
 //
-// $NoKeywords: $gles2i
+// $NoKeywords: $gles32i
 //===============================================================================//
 
-#include "OpenGLES2Interface.h"
+#include "OpenGLES32Interface.h"
 
-#ifdef MCENGINE_FEATURE_GLES2
+#ifdef MCENGINE_FEATURE_GLES32
 
 #include "Engine.h"
 #include "ConVar.h"
@@ -16,8 +16,8 @@
 #include "Font.h"
 #include "OpenGLImage.h"
 #include "OpenGLRenderTarget.h"
-#include "OpenGLES2Shader.h"
-#include "OpenGLES2VertexArrayObject.h"
+#include "OpenGLES32Shader.h"
+#include "OpenGLES32VertexArrayObject.h"
 
 #include "OpenGLHeaders.h"
 
@@ -29,7 +29,7 @@
 #define TEXTURE_FREE_MEMORY_ATI							0x87FC
 #define RENDERBUFFER_FREE_MEMORY_ATI					0x87FD
 
-OpenGLES2Interface::OpenGLES2Interface() : NullGraphicsInterface()
+OpenGLES32Interface::OpenGLES32Interface() : NullGraphicsInterface()
 {
 	// renderer
 	m_bInScene = false;
@@ -48,7 +48,7 @@ OpenGLES2Interface::OpenGLES2Interface() : NullGraphicsInterface()
 	m_color = 0xffffffff;
 }
 
-OpenGLES2Interface::~OpenGLES2Interface()
+OpenGLES32Interface::~OpenGLES32Interface()
 {
 	SAFE_DELETE(m_shaderTexturedGeneric);
 
@@ -60,11 +60,11 @@ OpenGLES2Interface::~OpenGLES2Interface()
 		glDeleteBuffers(1, &m_iVBOTexcolors);
 }
 
-void OpenGLES2Interface::init()
+void OpenGLES32Interface::init()
 {
 	// check GL version
 	const GLubyte *version = glGetString(GL_VERSION);
-	debugLog("OpenGL: OpenGL Version %s\n", version);
+	debugLog("OpenGLES: OpenGL Version %s\n", version);
 
 	// enable
 	glEnable(GL_BLEND);
@@ -82,41 +82,42 @@ void OpenGLES2Interface::init()
 
 	//setWireframe(true);
 
-	UString texturedGenericV =	"#version 100\n"
-								"\n"
-								"attribute vec3 position;\n"
-								"attribute vec2 uv;\n"
-								"attribute vec4 vcolor;\n"
-								"\n"
-								"varying vec2 texcoords;\n"
-								"varying vec4 texcolor;\n"
-								"\n"
-								"uniform float type;\n"
-								"uniform mat4 mvp;\n"
-								"\n"
-								"void main() {\n"
-								"	texcoords = uv;\n"
-								"	texcolor = vcolor;\n"
-								"	gl_Position = mvp * vec4(position, 1.0);\n"
-								"}\n"
-								"\n";
+	constexpr auto texturedGenericV =
+R"(#version 100
 
-	UString texturedGenericP =	"#version 100\n"
-								"precision highp float;\n"
-								"\n"
-								"varying vec2 texcoords;\n"
-								"varying vec4 texcolor;\n"
-								"\n"
-								"uniform float type;\n"
-								"uniform vec4 col;\n"
-								"uniform sampler2D tex;\n"
-								"\n"
-								"void main() {\n"
-								//"	gl_FragColor = col;\n"
-								"	gl_FragColor = mix(col, mix(texture2D(tex, texcoords) * col, texcolor, clamp(type - 1.0, 0.0, 1.0)), clamp(type, 0.0, 1.0));\n"
-								"}\n"
-								"\n";
-	m_shaderTexturedGeneric = (OpenGLES2Shader*)createShaderFromSource(texturedGenericV, texturedGenericP);
+attribute vec3 position;
+attribute vec2 uv;
+attribute vec4 vcolor;
+
+varying vec2 texcoords;
+varying vec4 texcolor;
+
+uniform float type;
+uniform mat4 mvp;
+
+void main() {
+	texcoords = uv;
+	texcolor = vcolor;
+	gl_Position = mvp * vec4(position, 1.0);
+}
+)";
+
+	constexpr auto texturedGenericP =
+R"(#version 100
+precision highp float;
+
+varying vec2 texcoords;
+varying vec4 texcolor;
+
+uniform float type;
+uniform vec4 col;
+uniform sampler2D tex;
+
+void main() {
+	gl_FragColor = mix(col, mix(texture2D(tex, texcoords) * col, texcolor, clamp(type - 1.0, 0.0, 1.0)), clamp(type, 0.0, 1.0));
+}
+)";
+	m_shaderTexturedGeneric = (OpenGLES32Shader*)createShaderFromSource(texturedGenericV, texturedGenericP);
 	m_shaderTexturedGeneric->load();
 
 	glGenBuffers(1, &m_iVBOVertices);
@@ -144,7 +145,7 @@ void OpenGLES2Interface::init()
 	glEnableVertexAttribArray(m_iShaderTexturedGenericAttribCol);
 }
 
-void OpenGLES2Interface::beginScene()
+void OpenGLES32Interface::beginScene()
 {
 	m_bInScene = true;
 
@@ -171,7 +172,7 @@ void OpenGLES2Interface::beginScene()
 	handleGLErrors();
 }
 
-void OpenGLES2Interface::endSceneInternal(bool finish)
+void OpenGLES32Interface::endSceneInternal(bool finish)
 {
 	popTransform();
 
@@ -186,12 +187,12 @@ void OpenGLES2Interface::endSceneInternal(bool finish)
 	m_bInScene = false;
 }
 
-void OpenGLES2Interface::clearDepthBuffer()
+void OpenGLES32Interface::clearDepthBuffer()
 {
 	glClear(GL_DEPTH_BUFFER_BIT);
 }
 
-void OpenGLES2Interface::setColor(Color color)
+void OpenGLES32Interface::setColor(Color color)
 {
 	if (color == m_color) return;
 
@@ -202,7 +203,7 @@ void OpenGLES2Interface::setColor(Color color)
 	}
 }
 
-void OpenGLES2Interface::setAlpha(float alpha)
+void OpenGLES32Interface::setAlpha(float alpha)
 {
 	Color tempColor = m_color;
 
@@ -212,7 +213,7 @@ void OpenGLES2Interface::setAlpha(float alpha)
 	setColor(tempColor);
 }
 
-void OpenGLES2Interface::drawLine(int x1, int y1, int x2, int y2)
+void OpenGLES32Interface::drawLine(int x1, int y1, int x2, int y2)
 {
 	updateTransform();
 
@@ -222,12 +223,12 @@ void OpenGLES2Interface::drawLine(int x1, int y1, int x2, int y2)
 	drawVAO(&vao);
 }
 
-void OpenGLES2Interface::drawLine(Vector2 pos1, Vector2 pos2)
+void OpenGLES32Interface::drawLine(Vector2 pos1, Vector2 pos2)
 {
 	drawLine(pos1.x, pos1.y, pos2.x, pos2.y);
 }
 
-void OpenGLES2Interface::drawRect(int x, int y, int width, int height)
+void OpenGLES32Interface::drawRect(int x, int y, int width, int height)
 {
 	drawLine(x, y, x+width, y);
 	drawLine(x, y, x, y+height);
@@ -235,7 +236,7 @@ void OpenGLES2Interface::drawRect(int x, int y, int width, int height)
 	drawLine(x+width, y, x+width, y+height);
 }
 
-void OpenGLES2Interface::drawRect(int x, int y, int width, int height, Color top, Color right, Color bottom, Color left)
+void OpenGLES32Interface::drawRect(int x, int y, int width, int height, Color top, Color right, Color bottom, Color left)
 {
 	setColor(top);
 	drawLine(x, y, x+width, y);
@@ -247,7 +248,7 @@ void OpenGLES2Interface::drawRect(int x, int y, int width, int height, Color top
 	drawLine(x+width, y, x+width, y+height);
 }
 
-void OpenGLES2Interface::fillRect(int x, int y, int width, int height)
+void OpenGLES32Interface::fillRect(int x, int y, int width, int height)
 {
 	updateTransform();
 
@@ -259,7 +260,7 @@ void OpenGLES2Interface::fillRect(int x, int y, int width, int height)
 	drawVAO(&vao);
 }
 
-void OpenGLES2Interface::fillGradient(int x, int y, int width, int height, Color topLeftColor, Color topRightColor, Color bottomLeftColor, Color bottomRightColor)
+void OpenGLES32Interface::fillGradient(int x, int y, int width, int height, Color topLeftColor, Color topRightColor, Color bottomLeftColor, Color bottomRightColor)
 {
 	updateTransform();
 
@@ -275,7 +276,7 @@ void OpenGLES2Interface::fillGradient(int x, int y, int width, int height, Color
 	drawVAO(&vao);
 }
 
-void OpenGLES2Interface::drawQuad(int x, int y, int width, int height)
+void OpenGLES32Interface::drawQuad(int x, int y, int width, int height)
 {
 	updateTransform();
 
@@ -291,7 +292,7 @@ void OpenGLES2Interface::drawQuad(int x, int y, int width, int height)
 	drawVAO(&vao);
 }
 
-void OpenGLES2Interface::drawQuad(Vector2 topLeft, Vector2 topRight, Vector2 bottomRight, Vector2 bottomLeft, Color topLeftColor, Color topRightColor, Color bottomRightColor, Color bottomLeftColor)
+void OpenGLES32Interface::drawQuad(Vector2 topLeft, Vector2 topRight, Vector2 bottomRight, Vector2 bottomLeft, Color topLeftColor, Color topRightColor, Color bottomRightColor, Color bottomLeftColor)
 {
 	updateTransform();
 
@@ -311,7 +312,7 @@ void OpenGLES2Interface::drawQuad(Vector2 topLeft, Vector2 topRight, Vector2 bot
 	drawVAO(&vao);
 }
 
-void OpenGLES2Interface::drawImage(Image *image)
+void OpenGLES32Interface::drawImage(Image *image)
 {
 	if (image == NULL)
 	{
@@ -350,7 +351,7 @@ void OpenGLES2Interface::drawImage(Image *image)
 	}
 }
 
-void OpenGLES2Interface::drawString(McFont *font, UString text)
+void OpenGLES32Interface::drawString(McFont *font, UString text)
 {
 	if (font == NULL || text.length() < 1 || !font->isReady()) return;
 
@@ -359,7 +360,7 @@ void OpenGLES2Interface::drawString(McFont *font, UString text)
 	font->drawString(this, text);
 }
 
-void OpenGLES2Interface::drawVAO(VertexArrayObject *vao)
+void OpenGLES32Interface::drawVAO(VertexArrayObject *vao)
 {
 	if (vao == NULL) return;
 
@@ -368,7 +369,7 @@ void OpenGLES2Interface::drawVAO(VertexArrayObject *vao)
 	// if baked, then we can directly draw the buffer
 	if (vao->isReady())
 	{
-		OpenGLES2VertexArrayObject *glvao = (OpenGLES2VertexArrayObject*)vao;
+		OpenGLES32VertexArrayObject *glvao = (OpenGLES32VertexArrayObject*)vao;
 
 		// configure shader
 		if (m_shaderTexturedGeneric->isActive())
@@ -524,7 +525,7 @@ void OpenGLES2Interface::drawVAO(VertexArrayObject *vao)
 	glDrawArrays(primitiveToOpenGL(primitive), 0, finalVertices.size());
 }
 
-void OpenGLES2Interface::setClipRect(McRect clipRect)
+void OpenGLES32Interface::setClipRect(McRect clipRect)
 {
 	if (r_debug_disable_cliprect->getBool()) return;
 	//if (m_bIs3DScene) return; // HACKHACK:TODO:
@@ -541,7 +542,7 @@ void OpenGLES2Interface::setClipRect(McRect clipRect)
 	//debugLog("scissor = %i, %i, %i, %i\n", (int)clipRect.getX()+viewport[0], viewport[3]-((int)clipRect.getY()-viewport[1]-1+(int)clipRect.getHeight()), (int)clipRect.getWidth(), (int)clipRect.getHeight());
 }
 
-void OpenGLES2Interface::pushClipRect(McRect clipRect)
+void OpenGLES32Interface::pushClipRect(McRect clipRect)
 {
 	if (m_clipRectStack.size() > 0)
 		m_clipRectStack.push(m_clipRectStack.top().intersect(clipRect));
@@ -551,7 +552,7 @@ void OpenGLES2Interface::pushClipRect(McRect clipRect)
 	setClipRect(m_clipRectStack.top());
 }
 
-void OpenGLES2Interface::popClipRect()
+void OpenGLES32Interface::popClipRect()
 {
 	m_clipRectStack.pop();
 
@@ -561,7 +562,7 @@ void OpenGLES2Interface::popClipRect()
 		setClipping(false);
 }
 
-void OpenGLES2Interface::setClipping(bool enabled)
+void OpenGLES32Interface::setClipping(bool enabled)
 {
 	if (enabled)
 	{
@@ -572,7 +573,7 @@ void OpenGLES2Interface::setClipping(bool enabled)
 		glDisable(GL_SCISSOR_TEST);
 }
 
-void OpenGLES2Interface::setAlphaTesting(bool enabled)
+void OpenGLES32Interface::setAlphaTesting(bool enabled)
 {
 	if (enabled)
 		glEnable(GL_ALPHA_TEST);
@@ -580,12 +581,12 @@ void OpenGLES2Interface::setAlphaTesting(bool enabled)
 		glDisable(GL_ALPHA_TEST);
 }
 
-void OpenGLES2Interface::setAlphaTestFunc(COMPARE_FUNC alphaFunc, float ref)
+void OpenGLES32Interface::setAlphaTestFunc(COMPARE_FUNC alphaFunc, float ref)
 {
 	glAlphaFunc(compareFuncToOpenGL(alphaFunc), ref);
 }
 
-void OpenGLES2Interface::setBlending(bool enabled)
+void OpenGLES32Interface::setBlending(bool enabled)
 {
 	if (enabled)
 		glEnable(GL_BLEND);
@@ -593,7 +594,7 @@ void OpenGLES2Interface::setBlending(bool enabled)
 		glDisable(GL_BLEND);
 }
 
-void OpenGLES2Interface::setBlendMode(BLEND_MODE blendMode)
+void OpenGLES32Interface::setBlendMode(BLEND_MODE blendMode)
 {
 	switch (blendMode)
 	{
@@ -612,7 +613,7 @@ void OpenGLES2Interface::setBlendMode(BLEND_MODE blendMode)
 	}
 }
 
-void OpenGLES2Interface::setDepthBuffer(bool enabled)
+void OpenGLES32Interface::setDepthBuffer(bool enabled)
 {
 	if (enabled)
 		glEnable(GL_DEPTH_TEST);
@@ -620,7 +621,7 @@ void OpenGLES2Interface::setDepthBuffer(bool enabled)
 		glDisable(GL_DEPTH_TEST);
 }
 
-void OpenGLES2Interface::setCulling(bool culling)
+void OpenGLES32Interface::setCulling(bool culling)
 {
 	if (culling)
 		glEnable(GL_CULL_FACE);
@@ -628,12 +629,12 @@ void OpenGLES2Interface::setCulling(bool culling)
 		glDisable(GL_CULL_FACE);
 }
 
-void OpenGLES2Interface::setWireframe(bool enabled)
+void OpenGLES32Interface::setWireframe(bool enabled)
 {
-	// only GL_FILL is supported
+	// TODO
 }
 
-int OpenGLES2Interface::getVRAMTotal()
+int OpenGLES32Interface::getVRAMTotal()
 {
 	int nvidiaMemory[4];
 	int atiMemory[4];
@@ -655,7 +656,7 @@ int OpenGLES2Interface::getVRAMTotal()
 		return nvidiaMemory[0];
 }
 
-int OpenGLES2Interface::getVRAMRemaining()
+int OpenGLES32Interface::getVRAMRemaining()
 {
 	int nvidiaMemory[4];
 	int atiMemory[4];
@@ -677,7 +678,7 @@ int OpenGLES2Interface::getVRAMRemaining()
 		return nvidiaMemory[0];
 }
 
-void OpenGLES2Interface::onResolutionChange(Vector2 newResolution)
+void OpenGLES32Interface::onResolutionChange(Vector2 newResolution)
 {
 	// rebuild viewport
 	m_vResolution = newResolution;
@@ -691,52 +692,52 @@ void OpenGLES2Interface::onResolutionChange(Vector2 newResolution)
 	}
 }
 
-Image *OpenGLES2Interface::createImage(UString filePath, bool mipmapped, bool keepInSystemMemory)
+Image *OpenGLES32Interface::createImage(UString filePath, bool mipmapped, bool keepInSystemMemory)
 {
 	return new OpenGLImage(filePath, mipmapped, keepInSystemMemory);
 }
 
-Image *OpenGLES2Interface::createImage(int width, int height, bool mipmapped, bool keepInSystemMemory)
+Image *OpenGLES32Interface::createImage(int width, int height, bool mipmapped, bool keepInSystemMemory)
 {
 	return new OpenGLImage(width, height, mipmapped, keepInSystemMemory);
 }
 
-RenderTarget *OpenGLES2Interface::createRenderTarget(int x, int y, int width, int height, Graphics::MULTISAMPLE_TYPE multiSampleType)
+RenderTarget *OpenGLES32Interface::createRenderTarget(int x, int y, int width, int height, Graphics::MULTISAMPLE_TYPE multiSampleType)
 {
 	return new OpenGLRenderTarget(x, y, width, height, multiSampleType);
 }
 
-Shader *OpenGLES2Interface::createShaderFromFile(UString vertexShaderFilePath, UString fragmentShaderFilePath)
+Shader *OpenGLES32Interface::createShaderFromFile(UString vertexShaderFilePath, UString fragmentShaderFilePath)
 {
-	return new OpenGLES2Shader(vertexShaderFilePath, fragmentShaderFilePath, false);
+	return new OpenGLES32Shader(vertexShaderFilePath, fragmentShaderFilePath, false);
 }
 
-Shader *OpenGLES2Interface::createShaderFromSource(UString vertexShader, UString fragmentShader)
+Shader *OpenGLES32Interface::createShaderFromSource(UString vertexShader, UString fragmentShader)
 {
-	return new OpenGLES2Shader(vertexShader, fragmentShader, true);
+	return new OpenGLES32Shader(vertexShader, fragmentShader, true);
 }
 
-Shader *OpenGLES2Interface::createShaderFromFile(UString shaderFilePath)
+Shader *OpenGLES32Interface::createShaderFromFile(UString shaderFilePath)
 {
-	return new OpenGLES2Shader(shaderFilePath, false);
+	return new OpenGLES32Shader(shaderFilePath, false);
 }
 
-Shader *OpenGLES2Interface::createShaderFromSource(UString shaderSource)
+Shader *OpenGLES32Interface::createShaderFromSource(UString shaderSource)
 {
-	return new OpenGLES2Shader(shaderSource, true);
+	return new OpenGLES32Shader(shaderSource, true);
 }
 
-VertexArrayObject *OpenGLES2Interface::createVertexArrayObject(Graphics::PRIMITIVE primitive, Graphics::USAGE_TYPE usage, bool keepInSystemMemory)
+VertexArrayObject *OpenGLES32Interface::createVertexArrayObject(Graphics::PRIMITIVE primitive, Graphics::USAGE_TYPE usage, bool keepInSystemMemory)
 {
-	return new OpenGLES2VertexArrayObject(primitive, usage, keepInSystemMemory);
+	return new OpenGLES32VertexArrayObject(primitive, usage, keepInSystemMemory);
 }
 
-void OpenGLES2Interface::forceUpdateTransform()
+void OpenGLES32Interface::forceUpdateTransform()
 {
 	updateTransform();
 }
 
-void OpenGLES2Interface::onTransformUpdate(Matrix4 &projectionMatrix, Matrix4 &worldMatrix)
+void OpenGLES32Interface::onTransformUpdate(Matrix4 &projectionMatrix, Matrix4 &worldMatrix)
 {
 	m_projectionMatrix = projectionMatrix;
 	m_worldMatrix = worldMatrix;
@@ -747,14 +748,14 @@ void OpenGLES2Interface::onTransformUpdate(Matrix4 &projectionMatrix, Matrix4 &w
 		m_shaderTexturedGeneric->setUniformMatrix4fv("mvp", m_MP);
 }
 
-void OpenGLES2Interface::handleGLErrors()
+void OpenGLES32Interface::handleGLErrors()
 {
 	int error = glGetError();
 	if (error != 0)
 		debugLog("OpenGL Error: %i on frame %i\n",error,engine->getFrameCount());
 }
 
-int OpenGLES2Interface::primitiveToOpenGL(Graphics::PRIMITIVE primitive)
+int OpenGLES32Interface::primitiveToOpenGL(Graphics::PRIMITIVE primitive)
 {
 	switch (primitive)
 	{
@@ -775,7 +776,7 @@ int OpenGLES2Interface::primitiveToOpenGL(Graphics::PRIMITIVE primitive)
 	return GL_TRIANGLES;
 }
 
-int OpenGLES2Interface::compareFuncToOpenGL(Graphics::COMPARE_FUNC compareFunc)
+int OpenGLES32Interface::compareFuncToOpenGL(Graphics::COMPARE_FUNC compareFunc)
 {
 	switch (compareFunc)
 	{

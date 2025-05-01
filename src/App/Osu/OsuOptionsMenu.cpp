@@ -616,7 +616,7 @@ OsuOptionsMenu::OsuOptionsMenu(Osu *osu) : OsuScreenBackable(osu)
 
 	addCheckbox("Show FPS Counter", convar->getConVarByName("osu_draw_fps"));
 
-	if constexpr (Env::cfg(BACKEND::SDL, OS::LINUX))
+	if constexpr (Env::cfg(BACKEND::SDL, (REND::GL | REND::GLES2 | REND::GLES32)))
 		addCheckbox("Explicit Sync", "Analogous to \"Reduce dropped frames\" on osu!stable.\nForces the GPU to execute all queued commands before swapping.\nOnly use this if you experience issues at higher framerates.", convar->getConVarByName("gl_finish_before_swap"));
 
 	if constexpr (!Env::cfg(OS::HORIZON))

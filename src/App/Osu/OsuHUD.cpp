@@ -47,6 +47,7 @@
 
 #include "DirectX11Interface.h"
 #include "OpenGLES2Interface.h"
+#include "OpenGLES32Interface.h"
 
 ConVar osu_automatic_cursor_size("osu_automatic_cursor_size", false, FCVAR_NONE);
 
@@ -949,6 +950,17 @@ void OsuHUD::drawCursorTrailInt(Graphics *g, Shader *trailShader, std::vector<CU
 				{
 					OpenGLES2Interface *gles2 = dynamic_cast<OpenGLES2Interface*>(g);
 					if (gles2 != NULL)
+					{
+						g->forceUpdateTransform();
+						Matrix4 mvp = g->getMVP();
+						trailShader->setUniformMatrix4fv("mvp", mvp);
+					}
+				}
+
+				if constexpr (Env::cfg(REND::GLES32))
+				{
+					OpenGLES32Interface *gles32 = dynamic_cast<OpenGLES32Interface*>(g);
+					if (gles32 != NULL)
 					{
 						g->forceUpdateTransform();
 						Matrix4 mvp = g->getMVP();

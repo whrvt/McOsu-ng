@@ -229,7 +229,7 @@ am_McOsu_ng_OBJECTS = src/App/Osu/McOsu_ng-Osu.$(OBJEXT) \
 	src/Engine/McOsu_ng-OpenVRInterface.$(OBJEXT) \
 	src/Engine/Platform/McOsu_ng-BassSound.$(OBJEXT) \
 	src/Engine/Platform/McOsu_ng-BassSoundEngine.$(OBJEXT) \
-	src/Engine/Platform/McOsu_ng-GenericSDLGLES2Interface.$(OBJEXT) \
+	src/Engine/Platform/McOsu_ng-GenericSDLGLESInterface.$(OBJEXT) \
 	src/Engine/Platform/McOsu_ng-HorizonSDLEnvironment.$(OBJEXT) \
 	src/Engine/Platform/McOsu_ng-HorizonThread.$(OBJEXT) \
 	src/Engine/Platform/McOsu_ng-HorizonTimer.$(OBJEXT) \
@@ -245,7 +245,7 @@ am_McOsu_ng_OBJECTS = src/App/Osu/McOsu_ng-Osu.$(OBJEXT) \
 	src/Engine/Platform/McOsu_ng-NullContextMenu.$(OBJEXT) \
 	src/Engine/Platform/McOsu_ng-NullEnvironment.$(OBJEXT) \
 	src/Engine/Platform/McOsu_ng-SDLEnvironment.$(OBJEXT) \
-	src/Engine/Platform/McOsu_ng-SDLGLES2Interface.$(OBJEXT) \
+	src/Engine/Platform/McOsu_ng-SDLGLESInterface.$(OBJEXT) \
 	src/Engine/Platform/McOsu_ng-SDLGLLegacyInterface.$(OBJEXT) \
 	src/Engine/Platform/McOsu_ng-SDLSound.$(OBJEXT) \
 	src/Engine/Platform/McOsu_ng-SDLSoundEngine.$(OBJEXT) \
@@ -277,6 +277,9 @@ am_McOsu_ng_OBJECTS = src/App/Osu/McOsu_ng-Osu.$(OBJEXT) \
 	src/Engine/Renderer/McOsu_ng-OpenGLES2Interface.$(OBJEXT) \
 	src/Engine/Renderer/McOsu_ng-OpenGLES2Shader.$(OBJEXT) \
 	src/Engine/Renderer/McOsu_ng-OpenGLES2VertexArrayObject.$(OBJEXT) \
+	src/Engine/Renderer/McOsu_ng-OpenGLES32Interface.$(OBJEXT) \
+	src/Engine/Renderer/McOsu_ng-OpenGLES32Shader.$(OBJEXT) \
+	src/Engine/Renderer/McOsu_ng-OpenGLES32VertexArrayObject.$(OBJEXT) \
 	src/Engine/Renderer/McOsu_ng-OpenGLImage.$(OBJEXT) \
 	src/Engine/Renderer/McOsu_ng-OpenGLLegacyInterface.$(OBJEXT) \
 	src/Engine/Renderer/McOsu_ng-OpenGLRenderTarget.$(OBJEXT) \
@@ -460,7 +463,7 @@ am__depfiles_remade = src/App/Osu/$(DEPDIR)/McOsu_ng-Osu.Po \
 	src/Engine/Main/$(DEPDIR)/McOsu_ng-main_Windows.Po \
 	src/Engine/Platform/$(DEPDIR)/McOsu_ng-BassSound.Po \
 	src/Engine/Platform/$(DEPDIR)/McOsu_ng-BassSoundEngine.Po \
-	src/Engine/Platform/$(DEPDIR)/McOsu_ng-GenericSDLGLES2Interface.Po \
+	src/Engine/Platform/$(DEPDIR)/McOsu_ng-GenericSDLGLESInterface.Po \
 	src/Engine/Platform/$(DEPDIR)/McOsu_ng-HorizonSDLEnvironment.Po \
 	src/Engine/Platform/$(DEPDIR)/McOsu_ng-HorizonThread.Po \
 	src/Engine/Platform/$(DEPDIR)/McOsu_ng-HorizonTimer.Po \
@@ -476,7 +479,7 @@ am__depfiles_remade = src/App/Osu/$(DEPDIR)/McOsu_ng-Osu.Po \
 	src/Engine/Platform/$(DEPDIR)/McOsu_ng-NullContextMenu.Po \
 	src/Engine/Platform/$(DEPDIR)/McOsu_ng-NullEnvironment.Po \
 	src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLEnvironment.Po \
-	src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLGLES2Interface.Po \
+	src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLGLESInterface.Po \
 	src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLGLLegacyInterface.Po \
 	src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLSound.Po \
 	src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLSoundEngine.Po \
@@ -506,6 +509,9 @@ am__depfiles_remade = src/App/Osu/$(DEPDIR)/McOsu_ng-Osu.Po \
 	src/Engine/Renderer/$(DEPDIR)/McOsu_ng-OpenGLES2Interface.Po \
 	src/Engine/Renderer/$(DEPDIR)/McOsu_ng-OpenGLES2Shader.Po \
 	src/Engine/Renderer/$(DEPDIR)/McOsu_ng-OpenGLES2VertexArrayObject.Po \
+	src/Engine/Renderer/$(DEPDIR)/McOsu_ng-OpenGLES32Interface.Po \
+	src/Engine/Renderer/$(DEPDIR)/McOsu_ng-OpenGLES32Shader.Po \
+	src/Engine/Renderer/$(DEPDIR)/McOsu_ng-OpenGLES32VertexArrayObject.Po \
 	src/Engine/Renderer/$(DEPDIR)/McOsu_ng-OpenGLImage.Po \
 	src/Engine/Renderer/$(DEPDIR)/McOsu_ng-OpenGLLegacyInterface.Po \
 	src/Engine/Renderer/$(DEPDIR)/McOsu_ng-OpenGLRenderTarget.Po \
@@ -921,7 +927,7 @@ McOsu_ng_SOURCES = \
 	src/Engine/OpenVRInterface.cpp \
 	src/Engine/Platform/BassSound.cpp \
 	src/Engine/Platform/BassSoundEngine.cpp \
-	src/Engine/Platform/GenericSDLGLES2Interface.cpp \
+	src/Engine/Platform/GenericSDLGLESInterface.cpp \
 	src/Engine/Platform/HorizonSDLEnvironment.cpp \
 	src/Engine/Platform/HorizonThread.cpp \
 	src/Engine/Platform/HorizonTimer.cpp \
@@ -937,7 +943,7 @@ McOsu_ng_SOURCES = \
 	src/Engine/Platform/NullContextMenu.cpp \
 	src/Engine/Platform/NullEnvironment.cpp \
 	src/Engine/Platform/SDLEnvironment.cpp \
-	src/Engine/Platform/SDLGLES2Interface.cpp \
+	src/Engine/Platform/SDLGLESInterface.cpp \
 	src/Engine/Platform/SDLGLLegacyInterface.cpp \
 	src/Engine/Platform/SDLSound.cpp \
 	src/Engine/Platform/SDLSoundEngine.cpp \
@@ -969,6 +975,9 @@ McOsu_ng_SOURCES = \
 	src/Engine/Renderer/OpenGLES2Interface.cpp \
 	src/Engine/Renderer/OpenGLES2Shader.cpp \
 	src/Engine/Renderer/OpenGLES2VertexArrayObject.cpp \
+	src/Engine/Renderer/OpenGLES32Interface.cpp \
+	src/Engine/Renderer/OpenGLES32Shader.cpp \
+	src/Engine/Renderer/OpenGLES32VertexArrayObject.cpp \
 	src/Engine/Renderer/OpenGLImage.cpp \
 	src/Engine/Renderer/OpenGLLegacyInterface.cpp \
 	src/Engine/Renderer/OpenGLRenderTarget.cpp \
@@ -1505,7 +1514,7 @@ src/Engine/Platform/McOsu_ng-BassSound.$(OBJEXT):  \
 src/Engine/Platform/McOsu_ng-BassSoundEngine.$(OBJEXT):  \
 	src/Engine/Platform/$(am__dirstamp) \
 	src/Engine/Platform/$(DEPDIR)/$(am__dirstamp)
-src/Engine/Platform/McOsu_ng-GenericSDLGLES2Interface.$(OBJEXT):  \
+src/Engine/Platform/McOsu_ng-GenericSDLGLESInterface.$(OBJEXT):  \
 	src/Engine/Platform/$(am__dirstamp) \
 	src/Engine/Platform/$(DEPDIR)/$(am__dirstamp)
 src/Engine/Platform/McOsu_ng-HorizonSDLEnvironment.$(OBJEXT):  \
@@ -1553,7 +1562,7 @@ src/Engine/Platform/McOsu_ng-NullEnvironment.$(OBJEXT):  \
 src/Engine/Platform/McOsu_ng-SDLEnvironment.$(OBJEXT):  \
 	src/Engine/Platform/$(am__dirstamp) \
 	src/Engine/Platform/$(DEPDIR)/$(am__dirstamp)
-src/Engine/Platform/McOsu_ng-SDLGLES2Interface.$(OBJEXT):  \
+src/Engine/Platform/McOsu_ng-SDLGLESInterface.$(OBJEXT):  \
 	src/Engine/Platform/$(am__dirstamp) \
 	src/Engine/Platform/$(DEPDIR)/$(am__dirstamp)
 src/Engine/Platform/McOsu_ng-SDLGLLegacyInterface.$(OBJEXT):  \
@@ -1652,6 +1661,15 @@ src/Engine/Renderer/McOsu_ng-OpenGLES2Shader.$(OBJEXT):  \
 	src/Engine/Renderer/$(am__dirstamp) \
 	src/Engine/Renderer/$(DEPDIR)/$(am__dirstamp)
 src/Engine/Renderer/McOsu_ng-OpenGLES2VertexArrayObject.$(OBJEXT):  \
+	src/Engine/Renderer/$(am__dirstamp) \
+	src/Engine/Renderer/$(DEPDIR)/$(am__dirstamp)
+src/Engine/Renderer/McOsu_ng-OpenGLES32Interface.$(OBJEXT):  \
+	src/Engine/Renderer/$(am__dirstamp) \
+	src/Engine/Renderer/$(DEPDIR)/$(am__dirstamp)
+src/Engine/Renderer/McOsu_ng-OpenGLES32Shader.$(OBJEXT):  \
+	src/Engine/Renderer/$(am__dirstamp) \
+	src/Engine/Renderer/$(DEPDIR)/$(am__dirstamp)
+src/Engine/Renderer/McOsu_ng-OpenGLES32VertexArrayObject.$(OBJEXT):  \
 	src/Engine/Renderer/$(am__dirstamp) \
 	src/Engine/Renderer/$(DEPDIR)/$(am__dirstamp)
 src/Engine/Renderer/McOsu_ng-OpenGLImage.$(OBJEXT):  \
@@ -1938,7 +1956,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Main/$(DEPDIR)/McOsu_ng-main_Windows.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-BassSound.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-BassSoundEngine.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-GenericSDLGLES2Interface.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-GenericSDLGLESInterface.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-HorizonSDLEnvironment.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-HorizonThread.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-HorizonTimer.Po@am__quote@ # am--include-marker
@@ -1954,7 +1972,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-NullContextMenu.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-NullEnvironment.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLEnvironment.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLGLES2Interface.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLGLESInterface.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLGLLegacyInterface.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLSound.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLSoundEngine.Po@am__quote@ # am--include-marker
@@ -1984,6 +2002,9 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Renderer/$(DEPDIR)/McOsu_ng-OpenGLES2Interface.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Renderer/$(DEPDIR)/McOsu_ng-OpenGLES2Shader.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Renderer/$(DEPDIR)/McOsu_ng-OpenGLES2VertexArrayObject.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Renderer/$(DEPDIR)/McOsu_ng-OpenGLES32Interface.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Renderer/$(DEPDIR)/McOsu_ng-OpenGLES32Shader.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Renderer/$(DEPDIR)/McOsu_ng-OpenGLES32VertexArrayObject.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Renderer/$(DEPDIR)/McOsu_ng-OpenGLImage.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Renderer/$(DEPDIR)/McOsu_ng-OpenGLLegacyInterface.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Renderer/$(DEPDIR)/McOsu_ng-OpenGLRenderTarget.Po@am__quote@ # am--include-marker
@@ -3451,19 +3472,19 @@ src/Engine/Platform/McOsu_ng-BassSoundEngine.obj: src/Engine/Platform/BassSoundE
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Platform/McOsu_ng-BassSoundEngine.obj `if test -f 'src/Engine/Platform/BassSoundEngine.cpp'; then $(CYGPATH_W) 'src/Engine/Platform/BassSoundEngine.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Platform/BassSoundEngine.cpp'; fi`
 
-src/Engine/Platform/McOsu_ng-GenericSDLGLES2Interface.o: src/Engine/Platform/GenericSDLGLES2Interface.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Platform/McOsu_ng-GenericSDLGLES2Interface.o -MD -MP -MF src/Engine/Platform/$(DEPDIR)/McOsu_ng-GenericSDLGLES2Interface.Tpo -c -o src/Engine/Platform/McOsu_ng-GenericSDLGLES2Interface.o `test -f 'src/Engine/Platform/GenericSDLGLES2Interface.cpp' || echo '$(srcdir)/'`src/Engine/Platform/GenericSDLGLES2Interface.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Platform/$(DEPDIR)/McOsu_ng-GenericSDLGLES2Interface.Tpo src/Engine/Platform/$(DEPDIR)/McOsu_ng-GenericSDLGLES2Interface.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Platform/GenericSDLGLES2Interface.cpp' object='src/Engine/Platform/McOsu_ng-GenericSDLGLES2Interface.o' libtool=no @AMDEPBACKSLASH@
+src/Engine/Platform/McOsu_ng-GenericSDLGLESInterface.o: src/Engine/Platform/GenericSDLGLESInterface.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Platform/McOsu_ng-GenericSDLGLESInterface.o -MD -MP -MF src/Engine/Platform/$(DEPDIR)/McOsu_ng-GenericSDLGLESInterface.Tpo -c -o src/Engine/Platform/McOsu_ng-GenericSDLGLESInterface.o `test -f 'src/Engine/Platform/GenericSDLGLESInterface.cpp' || echo '$(srcdir)/'`src/Engine/Platform/GenericSDLGLESInterface.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Platform/$(DEPDIR)/McOsu_ng-GenericSDLGLESInterface.Tpo src/Engine/Platform/$(DEPDIR)/McOsu_ng-GenericSDLGLESInterface.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Platform/GenericSDLGLESInterface.cpp' object='src/Engine/Platform/McOsu_ng-GenericSDLGLESInterface.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Platform/McOsu_ng-GenericSDLGLES2Interface.o `test -f 'src/Engine/Platform/GenericSDLGLES2Interface.cpp' || echo '$(srcdir)/'`src/Engine/Platform/GenericSDLGLES2Interface.cpp
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Platform/McOsu_ng-GenericSDLGLESInterface.o `test -f 'src/Engine/Platform/GenericSDLGLESInterface.cpp' || echo '$(srcdir)/'`src/Engine/Platform/GenericSDLGLESInterface.cpp
 
-src/Engine/Platform/McOsu_ng-GenericSDLGLES2Interface.obj: src/Engine/Platform/GenericSDLGLES2Interface.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Platform/McOsu_ng-GenericSDLGLES2Interface.obj -MD -MP -MF src/Engine/Platform/$(DEPDIR)/McOsu_ng-GenericSDLGLES2Interface.Tpo -c -o src/Engine/Platform/McOsu_ng-GenericSDLGLES2Interface.obj `if test -f 'src/Engine/Platform/GenericSDLGLES2Interface.cpp'; then $(CYGPATH_W) 'src/Engine/Platform/GenericSDLGLES2Interface.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Platform/GenericSDLGLES2Interface.cpp'; fi`
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Platform/$(DEPDIR)/McOsu_ng-GenericSDLGLES2Interface.Tpo src/Engine/Platform/$(DEPDIR)/McOsu_ng-GenericSDLGLES2Interface.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Platform/GenericSDLGLES2Interface.cpp' object='src/Engine/Platform/McOsu_ng-GenericSDLGLES2Interface.obj' libtool=no @AMDEPBACKSLASH@
+src/Engine/Platform/McOsu_ng-GenericSDLGLESInterface.obj: src/Engine/Platform/GenericSDLGLESInterface.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Platform/McOsu_ng-GenericSDLGLESInterface.obj -MD -MP -MF src/Engine/Platform/$(DEPDIR)/McOsu_ng-GenericSDLGLESInterface.Tpo -c -o src/Engine/Platform/McOsu_ng-GenericSDLGLESInterface.obj `if test -f 'src/Engine/Platform/GenericSDLGLESInterface.cpp'; then $(CYGPATH_W) 'src/Engine/Platform/GenericSDLGLESInterface.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Platform/GenericSDLGLESInterface.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Platform/$(DEPDIR)/McOsu_ng-GenericSDLGLESInterface.Tpo src/Engine/Platform/$(DEPDIR)/McOsu_ng-GenericSDLGLESInterface.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Platform/GenericSDLGLESInterface.cpp' object='src/Engine/Platform/McOsu_ng-GenericSDLGLESInterface.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Platform/McOsu_ng-GenericSDLGLES2Interface.obj `if test -f 'src/Engine/Platform/GenericSDLGLES2Interface.cpp'; then $(CYGPATH_W) 'src/Engine/Platform/GenericSDLGLES2Interface.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Platform/GenericSDLGLES2Interface.cpp'; fi`
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Platform/McOsu_ng-GenericSDLGLESInterface.obj `if test -f 'src/Engine/Platform/GenericSDLGLESInterface.cpp'; then $(CYGPATH_W) 'src/Engine/Platform/GenericSDLGLESInterface.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Platform/GenericSDLGLESInterface.cpp'; fi`
 
 src/Engine/Platform/McOsu_ng-HorizonSDLEnvironment.o: src/Engine/Platform/HorizonSDLEnvironment.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Platform/McOsu_ng-HorizonSDLEnvironment.o -MD -MP -MF src/Engine/Platform/$(DEPDIR)/McOsu_ng-HorizonSDLEnvironment.Tpo -c -o src/Engine/Platform/McOsu_ng-HorizonSDLEnvironment.o `test -f 'src/Engine/Platform/HorizonSDLEnvironment.cpp' || echo '$(srcdir)/'`src/Engine/Platform/HorizonSDLEnvironment.cpp
@@ -3675,19 +3696,19 @@ src/Engine/Platform/McOsu_ng-SDLEnvironment.obj: src/Engine/Platform/SDLEnvironm
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Platform/McOsu_ng-SDLEnvironment.obj `if test -f 'src/Engine/Platform/SDLEnvironment.cpp'; then $(CYGPATH_W) 'src/Engine/Platform/SDLEnvironment.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Platform/SDLEnvironment.cpp'; fi`
 
-src/Engine/Platform/McOsu_ng-SDLGLES2Interface.o: src/Engine/Platform/SDLGLES2Interface.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Platform/McOsu_ng-SDLGLES2Interface.o -MD -MP -MF src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLGLES2Interface.Tpo -c -o src/Engine/Platform/McOsu_ng-SDLGLES2Interface.o `test -f 'src/Engine/Platform/SDLGLES2Interface.cpp' || echo '$(srcdir)/'`src/Engine/Platform/SDLGLES2Interface.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLGLES2Interface.Tpo src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLGLES2Interface.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Platform/SDLGLES2Interface.cpp' object='src/Engine/Platform/McOsu_ng-SDLGLES2Interface.o' libtool=no @AMDEPBACKSLASH@
+src/Engine/Platform/McOsu_ng-SDLGLESInterface.o: src/Engine/Platform/SDLGLESInterface.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Platform/McOsu_ng-SDLGLESInterface.o -MD -MP -MF src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLGLESInterface.Tpo -c -o src/Engine/Platform/McOsu_ng-SDLGLESInterface.o `test -f 'src/Engine/Platform/SDLGLESInterface.cpp' || echo '$(srcdir)/'`src/Engine/Platform/SDLGLESInterface.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLGLESInterface.Tpo src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLGLESInterface.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Platform/SDLGLESInterface.cpp' object='src/Engine/Platform/McOsu_ng-SDLGLESInterface.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Platform/McOsu_ng-SDLGLES2Interface.o `test -f 'src/Engine/Platform/SDLGLES2Interface.cpp' || echo '$(srcdir)/'`src/Engine/Platform/SDLGLES2Interface.cpp
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Platform/McOsu_ng-SDLGLESInterface.o `test -f 'src/Engine/Platform/SDLGLESInterface.cpp' || echo '$(srcdir)/'`src/Engine/Platform/SDLGLESInterface.cpp
 
-src/Engine/Platform/McOsu_ng-SDLGLES2Interface.obj: src/Engine/Platform/SDLGLES2Interface.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Platform/McOsu_ng-SDLGLES2Interface.obj -MD -MP -MF src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLGLES2Interface.Tpo -c -o src/Engine/Platform/McOsu_ng-SDLGLES2Interface.obj `if test -f 'src/Engine/Platform/SDLGLES2Interface.cpp'; then $(CYGPATH_W) 'src/Engine/Platform/SDLGLES2Interface.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Platform/SDLGLES2Interface.cpp'; fi`
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLGLES2Interface.Tpo src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLGLES2Interface.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Platform/SDLGLES2Interface.cpp' object='src/Engine/Platform/McOsu_ng-SDLGLES2Interface.obj' libtool=no @AMDEPBACKSLASH@
+src/Engine/Platform/McOsu_ng-SDLGLESInterface.obj: src/Engine/Platform/SDLGLESInterface.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Platform/McOsu_ng-SDLGLESInterface.obj -MD -MP -MF src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLGLESInterface.Tpo -c -o src/Engine/Platform/McOsu_ng-SDLGLESInterface.obj `if test -f 'src/Engine/Platform/SDLGLESInterface.cpp'; then $(CYGPATH_W) 'src/Engine/Platform/SDLGLESInterface.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Platform/SDLGLESInterface.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLGLESInterface.Tpo src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLGLESInterface.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Platform/SDLGLESInterface.cpp' object='src/Engine/Platform/McOsu_ng-SDLGLESInterface.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Platform/McOsu_ng-SDLGLES2Interface.obj `if test -f 'src/Engine/Platform/SDLGLES2Interface.cpp'; then $(CYGPATH_W) 'src/Engine/Platform/SDLGLES2Interface.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Platform/SDLGLES2Interface.cpp'; fi`
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Platform/McOsu_ng-SDLGLESInterface.obj `if test -f 'src/Engine/Platform/SDLGLESInterface.cpp'; then $(CYGPATH_W) 'src/Engine/Platform/SDLGLESInterface.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Platform/SDLGLESInterface.cpp'; fi`
 
 src/Engine/Platform/McOsu_ng-SDLGLLegacyInterface.o: src/Engine/Platform/SDLGLLegacyInterface.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Platform/McOsu_ng-SDLGLLegacyInterface.o -MD -MP -MF src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLGLLegacyInterface.Tpo -c -o src/Engine/Platform/McOsu_ng-SDLGLLegacyInterface.o `test -f 'src/Engine/Platform/SDLGLLegacyInterface.cpp' || echo '$(srcdir)/'`src/Engine/Platform/SDLGLLegacyInterface.cpp
@@ -4122,6 +4143,48 @@ src/Engine/Renderer/McOsu_ng-OpenGLES2VertexArrayObject.obj: src/Engine/Renderer
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Renderer/OpenGLES2VertexArrayObject.cpp' object='src/Engine/Renderer/McOsu_ng-OpenGLES2VertexArrayObject.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Renderer/McOsu_ng-OpenGLES2VertexArrayObject.obj `if test -f 'src/Engine/Renderer/OpenGLES2VertexArrayObject.cpp'; then $(CYGPATH_W) 'src/Engine/Renderer/OpenGLES2VertexArrayObject.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Renderer/OpenGLES2VertexArrayObject.cpp'; fi`
+
+src/Engine/Renderer/McOsu_ng-OpenGLES32Interface.o: src/Engine/Renderer/OpenGLES32Interface.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Renderer/McOsu_ng-OpenGLES32Interface.o -MD -MP -MF src/Engine/Renderer/$(DEPDIR)/McOsu_ng-OpenGLES32Interface.Tpo -c -o src/Engine/Renderer/McOsu_ng-OpenGLES32Interface.o `test -f 'src/Engine/Renderer/OpenGLES32Interface.cpp' || echo '$(srcdir)/'`src/Engine/Renderer/OpenGLES32Interface.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Renderer/$(DEPDIR)/McOsu_ng-OpenGLES32Interface.Tpo src/Engine/Renderer/$(DEPDIR)/McOsu_ng-OpenGLES32Interface.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Renderer/OpenGLES32Interface.cpp' object='src/Engine/Renderer/McOsu_ng-OpenGLES32Interface.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Renderer/McOsu_ng-OpenGLES32Interface.o `test -f 'src/Engine/Renderer/OpenGLES32Interface.cpp' || echo '$(srcdir)/'`src/Engine/Renderer/OpenGLES32Interface.cpp
+
+src/Engine/Renderer/McOsu_ng-OpenGLES32Interface.obj: src/Engine/Renderer/OpenGLES32Interface.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Renderer/McOsu_ng-OpenGLES32Interface.obj -MD -MP -MF src/Engine/Renderer/$(DEPDIR)/McOsu_ng-OpenGLES32Interface.Tpo -c -o src/Engine/Renderer/McOsu_ng-OpenGLES32Interface.obj `if test -f 'src/Engine/Renderer/OpenGLES32Interface.cpp'; then $(CYGPATH_W) 'src/Engine/Renderer/OpenGLES32Interface.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Renderer/OpenGLES32Interface.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Renderer/$(DEPDIR)/McOsu_ng-OpenGLES32Interface.Tpo src/Engine/Renderer/$(DEPDIR)/McOsu_ng-OpenGLES32Interface.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Renderer/OpenGLES32Interface.cpp' object='src/Engine/Renderer/McOsu_ng-OpenGLES32Interface.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Renderer/McOsu_ng-OpenGLES32Interface.obj `if test -f 'src/Engine/Renderer/OpenGLES32Interface.cpp'; then $(CYGPATH_W) 'src/Engine/Renderer/OpenGLES32Interface.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Renderer/OpenGLES32Interface.cpp'; fi`
+
+src/Engine/Renderer/McOsu_ng-OpenGLES32Shader.o: src/Engine/Renderer/OpenGLES32Shader.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Renderer/McOsu_ng-OpenGLES32Shader.o -MD -MP -MF src/Engine/Renderer/$(DEPDIR)/McOsu_ng-OpenGLES32Shader.Tpo -c -o src/Engine/Renderer/McOsu_ng-OpenGLES32Shader.o `test -f 'src/Engine/Renderer/OpenGLES32Shader.cpp' || echo '$(srcdir)/'`src/Engine/Renderer/OpenGLES32Shader.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Renderer/$(DEPDIR)/McOsu_ng-OpenGLES32Shader.Tpo src/Engine/Renderer/$(DEPDIR)/McOsu_ng-OpenGLES32Shader.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Renderer/OpenGLES32Shader.cpp' object='src/Engine/Renderer/McOsu_ng-OpenGLES32Shader.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Renderer/McOsu_ng-OpenGLES32Shader.o `test -f 'src/Engine/Renderer/OpenGLES32Shader.cpp' || echo '$(srcdir)/'`src/Engine/Renderer/OpenGLES32Shader.cpp
+
+src/Engine/Renderer/McOsu_ng-OpenGLES32Shader.obj: src/Engine/Renderer/OpenGLES32Shader.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Renderer/McOsu_ng-OpenGLES32Shader.obj -MD -MP -MF src/Engine/Renderer/$(DEPDIR)/McOsu_ng-OpenGLES32Shader.Tpo -c -o src/Engine/Renderer/McOsu_ng-OpenGLES32Shader.obj `if test -f 'src/Engine/Renderer/OpenGLES32Shader.cpp'; then $(CYGPATH_W) 'src/Engine/Renderer/OpenGLES32Shader.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Renderer/OpenGLES32Shader.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Renderer/$(DEPDIR)/McOsu_ng-OpenGLES32Shader.Tpo src/Engine/Renderer/$(DEPDIR)/McOsu_ng-OpenGLES32Shader.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Renderer/OpenGLES32Shader.cpp' object='src/Engine/Renderer/McOsu_ng-OpenGLES32Shader.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Renderer/McOsu_ng-OpenGLES32Shader.obj `if test -f 'src/Engine/Renderer/OpenGLES32Shader.cpp'; then $(CYGPATH_W) 'src/Engine/Renderer/OpenGLES32Shader.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Renderer/OpenGLES32Shader.cpp'; fi`
+
+src/Engine/Renderer/McOsu_ng-OpenGLES32VertexArrayObject.o: src/Engine/Renderer/OpenGLES32VertexArrayObject.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Renderer/McOsu_ng-OpenGLES32VertexArrayObject.o -MD -MP -MF src/Engine/Renderer/$(DEPDIR)/McOsu_ng-OpenGLES32VertexArrayObject.Tpo -c -o src/Engine/Renderer/McOsu_ng-OpenGLES32VertexArrayObject.o `test -f 'src/Engine/Renderer/OpenGLES32VertexArrayObject.cpp' || echo '$(srcdir)/'`src/Engine/Renderer/OpenGLES32VertexArrayObject.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Renderer/$(DEPDIR)/McOsu_ng-OpenGLES32VertexArrayObject.Tpo src/Engine/Renderer/$(DEPDIR)/McOsu_ng-OpenGLES32VertexArrayObject.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Renderer/OpenGLES32VertexArrayObject.cpp' object='src/Engine/Renderer/McOsu_ng-OpenGLES32VertexArrayObject.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Renderer/McOsu_ng-OpenGLES32VertexArrayObject.o `test -f 'src/Engine/Renderer/OpenGLES32VertexArrayObject.cpp' || echo '$(srcdir)/'`src/Engine/Renderer/OpenGLES32VertexArrayObject.cpp
+
+src/Engine/Renderer/McOsu_ng-OpenGLES32VertexArrayObject.obj: src/Engine/Renderer/OpenGLES32VertexArrayObject.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Renderer/McOsu_ng-OpenGLES32VertexArrayObject.obj -MD -MP -MF src/Engine/Renderer/$(DEPDIR)/McOsu_ng-OpenGLES32VertexArrayObject.Tpo -c -o src/Engine/Renderer/McOsu_ng-OpenGLES32VertexArrayObject.obj `if test -f 'src/Engine/Renderer/OpenGLES32VertexArrayObject.cpp'; then $(CYGPATH_W) 'src/Engine/Renderer/OpenGLES32VertexArrayObject.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Renderer/OpenGLES32VertexArrayObject.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Renderer/$(DEPDIR)/McOsu_ng-OpenGLES32VertexArrayObject.Tpo src/Engine/Renderer/$(DEPDIR)/McOsu_ng-OpenGLES32VertexArrayObject.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Renderer/OpenGLES32VertexArrayObject.cpp' object='src/Engine/Renderer/McOsu_ng-OpenGLES32VertexArrayObject.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Renderer/McOsu_ng-OpenGLES32VertexArrayObject.obj `if test -f 'src/Engine/Renderer/OpenGLES32VertexArrayObject.cpp'; then $(CYGPATH_W) 'src/Engine/Renderer/OpenGLES32VertexArrayObject.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Renderer/OpenGLES32VertexArrayObject.cpp'; fi`
 
 src/Engine/Renderer/McOsu_ng-OpenGLImage.o: src/Engine/Renderer/OpenGLImage.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Renderer/McOsu_ng-OpenGLImage.o -MD -MP -MF src/Engine/Renderer/$(DEPDIR)/McOsu_ng-OpenGLImage.Tpo -c -o src/Engine/Renderer/McOsu_ng-OpenGLImage.o `test -f 'src/Engine/Renderer/OpenGLImage.cpp' || echo '$(srcdir)/'`src/Engine/Renderer/OpenGLImage.cpp
@@ -5277,7 +5340,7 @@ distclean: distclean-am
 	-rm -f src/Engine/Main/$(DEPDIR)/McOsu_ng-main_Windows.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-BassSound.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-BassSoundEngine.Po
-	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-GenericSDLGLES2Interface.Po
+	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-GenericSDLGLESInterface.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-HorizonSDLEnvironment.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-HorizonThread.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-HorizonTimer.Po
@@ -5293,7 +5356,7 @@ distclean: distclean-am
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-NullContextMenu.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-NullEnvironment.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLEnvironment.Po
-	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLGLES2Interface.Po
+	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLGLESInterface.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLGLLegacyInterface.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLSound.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLSoundEngine.Po
@@ -5323,6 +5386,9 @@ distclean: distclean-am
 	-rm -f src/Engine/Renderer/$(DEPDIR)/McOsu_ng-OpenGLES2Interface.Po
 	-rm -f src/Engine/Renderer/$(DEPDIR)/McOsu_ng-OpenGLES2Shader.Po
 	-rm -f src/Engine/Renderer/$(DEPDIR)/McOsu_ng-OpenGLES2VertexArrayObject.Po
+	-rm -f src/Engine/Renderer/$(DEPDIR)/McOsu_ng-OpenGLES32Interface.Po
+	-rm -f src/Engine/Renderer/$(DEPDIR)/McOsu_ng-OpenGLES32Shader.Po
+	-rm -f src/Engine/Renderer/$(DEPDIR)/McOsu_ng-OpenGLES32VertexArrayObject.Po
 	-rm -f src/Engine/Renderer/$(DEPDIR)/McOsu_ng-OpenGLImage.Po
 	-rm -f src/Engine/Renderer/$(DEPDIR)/McOsu_ng-OpenGLLegacyInterface.Po
 	-rm -f src/Engine/Renderer/$(DEPDIR)/McOsu_ng-OpenGLRenderTarget.Po
@@ -5526,7 +5592,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f src/Engine/Main/$(DEPDIR)/McOsu_ng-main_Windows.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-BassSound.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-BassSoundEngine.Po
-	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-GenericSDLGLES2Interface.Po
+	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-GenericSDLGLESInterface.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-HorizonSDLEnvironment.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-HorizonThread.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-HorizonTimer.Po
@@ -5542,7 +5608,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-NullContextMenu.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-NullEnvironment.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLEnvironment.Po
-	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLGLES2Interface.Po
+	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLGLESInterface.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLGLLegacyInterface.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLSound.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLSoundEngine.Po
@@ -5572,6 +5638,9 @@ maintainer-clean: maintainer-clean-am
 	-rm -f src/Engine/Renderer/$(DEPDIR)/McOsu_ng-OpenGLES2Interface.Po
 	-rm -f src/Engine/Renderer/$(DEPDIR)/McOsu_ng-OpenGLES2Shader.Po
 	-rm -f src/Engine/Renderer/$(DEPDIR)/McOsu_ng-OpenGLES2VertexArrayObject.Po
+	-rm -f src/Engine/Renderer/$(DEPDIR)/McOsu_ng-OpenGLES32Interface.Po
+	-rm -f src/Engine/Renderer/$(DEPDIR)/McOsu_ng-OpenGLES32Shader.Po
+	-rm -f src/Engine/Renderer/$(DEPDIR)/McOsu_ng-OpenGLES32VertexArrayObject.Po
 	-rm -f src/Engine/Renderer/$(DEPDIR)/McOsu_ng-OpenGLImage.Po
 	-rm -f src/Engine/Renderer/$(DEPDIR)/McOsu_ng-OpenGLLegacyInterface.Po
 	-rm -f src/Engine/Renderer/$(DEPDIR)/McOsu_ng-OpenGLRenderTarget.Po

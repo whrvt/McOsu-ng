@@ -15,11 +15,12 @@
 
 #include "NullGraphicsInterface.h"
 #include "SDLGLLegacyInterface.h"
-#include "SDLGLES2Interface.h"
-#include "GenericSDLGLES2Interface.h"
+#include "SDLGLESInterface.h"
+#include "GenericSDLGLESInterface.h"
 #include "NullContextMenu.h"
 
 ConVar debug_sdl("debug_sdl", false, FCVAR_NONE);
+ConVar gl_finish_before_swap("gl_finish_before_swap", false, FCVAR_NONE, "force GL operations to complete before swapping");
 
 SDLEnvironment::SDLEnvironment(SDL_Window *window) : Environment()
 {
@@ -34,7 +35,7 @@ SDLEnvironment::SDLEnvironment(SDL_Window *window) : Environment()
 	m_bCursorVisible = true;
 	m_bCursorClipped = false;
 	m_cursorType = CURSORTYPE::CURSOR_NORMAL;
-
+	m_glfinish = false;
 #ifdef MCENGINE_SDL_TOUCHSUPPORT
 	m_bWasLastMouseInputTouch = false;
 #endif
@@ -53,6 +54,7 @@ SDLEnvironment::SDLEnvironment(SDL_Window *window) : Environment()
 	if (m_sdlDebug)
 		onLogLevelChange("", "1");
 	debug_sdl.setCallback( fastdelegate::MakeDelegate(this, &SDLEnvironment::onLogLevelChange) );
+	gl_finish_before_swap.setCallback( fastdelegate::MakeDelegate(this, &SDLEnvironment::onSwapBehaviorChange) );
 }
 
 void SDLEnvironment::update()
@@ -64,16 +66,16 @@ void SDLEnvironment::update()
 
 Graphics *SDLEnvironment::createRenderer()
 {
-#ifdef MCENGINE_FEATURE_OPENGLES
+#if defined(MCENGINE_FEATURE_GLES2) || defined(MCENGINE_FEATURE_GLES32)
 
 #ifndef __SWITCH__
-	return new GenericSDLGLES2Interface(m_window);
+	return new GenericSDLGLESInterface(this, m_window);
 #else
-	return new SDLGLES2Interface(m_window); // this just skips glewInit
+	return new SDLGLESInterface(this, m_window); // this just skips glewInit
 #endif
 
 #elif defined(MCENGINE_FEATURE_OPENGL)
-	return new SDLGLLegacyInterface(m_window);
+	return new SDLGLLegacyInterface(this, m_window);
 #else
 	return new NullGraphicsInterface();
 #endif

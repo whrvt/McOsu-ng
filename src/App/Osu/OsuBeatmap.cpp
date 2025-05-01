@@ -50,7 +50,11 @@ ConVar osu_draw_beatmap_background_image("osu_draw_beatmap_background_image", tr
 ConVar osu_vr_draw_desktop_playfield("osu_vr_draw_desktop_playfield", true, FCVAR_NONE);
 
 ConVar osu_universal_offset("osu_universal_offset", 0.0f, FCVAR_NONE);
-ConVar osu_universal_offset_hardcoded("osu_universal_offset_hardcoded", 0.0f, FCVAR_NONE);
+ConVar osu_universal_offset_hardcoded("osu_universal_offset_hardcoded",
+										Env::cfg(AUD::WASAPI) ? -25.0f  :
+										Env::cfg(AUD::BASS)	  ?  15.0f  :
+										Env::cfg(AUD::SDL)	  ? -110.0f :
+										Env::cfg(AUD::SOLOUD) ? -20.0f  : 0.0f, FCVAR_NONE);
 ConVar osu_universal_offset_hardcoded_fallback_dsound("osu_universal_offset_hardcoded_fallback_dsound", -15.0f, FCVAR_NONE);
 ConVar osu_old_beatmap_offset("osu_old_beatmap_offset", 24.0f, FCVAR_NONE, "offset in ms which is added to beatmap versions < 5 (default value is hardcoded 24 ms in stable)");
 ConVar osu_timingpoints_offset("osu_timingpoints_offset", 5.0f, FCVAR_NONE, "Offset in ms which is added before determining the active timingpoint for the sample type and sample volume (hitsounds) of the current frame");

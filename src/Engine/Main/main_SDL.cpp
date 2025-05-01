@@ -9,7 +9,7 @@
 
 #ifdef MCENGINE_FEATURE_SDL
 
-#if !defined(MCENGINE_FEATURE_OPENGL) && !defined(MCENGINE_FEATURE_OPENGLES)
+#if !defined(MCENGINE_FEATURE_OPENGL) && !defined(MCENGINE_FEATURE_GLES2) && !defined(MCENGINE_FEATURE_GLES32)
 #error OpenGL support is currently required for SDL
 #endif
 
@@ -215,19 +215,18 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 		SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 	}
 
-	if constexpr (Env::cfg(REND::GLES2, !REND::DX11))
+	if constexpr (Env::cfg(REND::GLES2 | REND::GLES32, !REND::DX11))
 	{
-		// NOTE: hardcoded to OpenGL ES 2.0 currently
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
-		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
-		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, Env::cfg(REND::GLES2) ? 2 : 3);
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, Env::cfg(REND::GLES2) ? 0 : 2);
 	}
 
-	if constexpr (Env::cfg((REND::GL | REND::GLES2), !REND::DX11))
+	if constexpr (Env::cfg((REND::GL | REND::GLES2 | REND::GLES32), !REND::DX11))
 		SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 
 	constexpr auto windowFlags = SDL_WINDOW_HIDDEN | SDL_WINDOW_INPUT_FOCUS | SDL_WINDOW_MOUSE_FOCUS |
-						   	   ((Env::cfg((REND::GL | REND::GLES2), !REND::DX11))
+						   	   ((Env::cfg((REND::GL | REND::GLES2 | REND::GLES32), !REND::DX11))
 							   ? SDL_WINDOW_OPENGL
 							   : (Env::cfg(REND::VK, !REND::DX11))
 							   ? SDL_WINDOW_VULKAN
@@ -276,7 +275,7 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 
 	// create OpenGL context
 	SDL_GLContext context;
-	if constexpr (Env::cfg((REND::GL | REND::GLES2), !REND::DX11))
+	if constexpr (Env::cfg((REND::GL | REND::GLES2 | REND::GLES32), !REND::DX11))
 		context = SDL_GL_CreateContext(g_window);
 
 	if constexpr (Env::cfg(FEAT::JOY | FEAT::JOY_MOU))
@@ -354,7 +353,7 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 	deltaTimer->update();
 	fpsCalcTimer->update();
 
-	if constexpr (Env::cfg((REND::GL | REND::GLES2), !REND::DX11))
+	if constexpr (Env::cfg((REND::GL | REND::GLES2 | REND::GLES32), !REND::DX11))
 	{
 		SDL_GL_MakeCurrent(g_window, context);
 		if (environment->sdlDebug()) // TODO: the variable somehow isn't loaded from the engine config at this point yet, so this is unreachable
@@ -664,7 +663,7 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
     SAFE_DELETE(g_engine);
 
     // and the opengl context
-	if constexpr (Env::cfg((REND::GL | REND::GLES2), !REND::DX11))
+	if constexpr (Env::cfg((REND::GL | REND::GLES2 | REND::GLES32), !REND::DX11))
 		SDL_GL_DestroyContext(context);
 
 	SDL_StopTextInput(g_window);

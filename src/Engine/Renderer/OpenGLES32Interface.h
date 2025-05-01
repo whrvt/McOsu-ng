@@ -1,30 +1,30 @@
-//================ Copyright (c) 2019, PG, All rights reserved. =================//
+//================ Copyright (c) 2025, WH, All rights reserved. =================//
 //
-// Purpose:		raw opengl es 2.x graphics interface
+// Purpose:		raw opengl es 3.2 graphics interface
 //
-// $NoKeywords: $gles2i
+// $NoKeywords: $gles32i
 //===============================================================================//
 
 #pragma once
-#ifndef OPENGLES2INTERFACE_H
-#define OPENGLES2INTERFACE_H
+#ifndef OPENGLES32INTERFACE_H
+#define OPENGLES32INTERFACE_H
 
 #include "cbase.h"
 #include "NullGraphicsInterface.h"
 
-#ifdef MCENGINE_FEATURE_GLES2
+#ifdef MCENGINE_FEATURE_GLES32
 
-class OpenGLES2Shader;
+class OpenGLES32Shader;
 
-class OpenGLES2Interface : public NullGraphicsInterface
+class OpenGLES32Interface : public NullGraphicsInterface
 {
 public:
-	OpenGLES2Interface();
-	virtual ~OpenGLES2Interface();
+	OpenGLES32Interface();
+	virtual ~OpenGLES32Interface();
 
 	// scene
 	virtual void beginScene();
-	virtual inline void endScene() {OpenGLES2Interface::endSceneInternal(false);}
+	virtual inline void endScene() {OpenGLES32Interface::endSceneInternal(false);}
 
 	// depth buffer
 	virtual void clearDepthBuffer();
@@ -122,7 +122,7 @@ private:
 	Matrix4 m_worldMatrix;
 	Matrix4 m_MP;
 
-	OpenGLES2Shader *m_shaderTexturedGeneric;
+	OpenGLES32Shader *m_shaderTexturedGeneric;
 	int m_iShaderTexturedGenericPrevType;
 	int m_iShaderTexturedGenericAttribPosition;
 	int m_iShaderTexturedGenericAttribUV;
@@ -139,7 +139,7 @@ private:
 };
 
 #else
-class OpenGLES2Interface : public NullGraphicsInterface{};
+class OpenGLES32Interface : public NullGraphicsInterface{};
 #endif
 
 #endif

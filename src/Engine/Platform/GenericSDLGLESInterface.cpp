@@ -1,24 +1,23 @@
 //========== Copyright (c) 2019, PG & 2025, WH, All rights reserved. ============//
 //
-// Purpose:		non-switch sdl opengl es 2.x interface
+// Purpose:		non-switch sdl opengl es interface
 //
-// $NoKeywords: $sdlgles2i
+// $NoKeywords: $sdlglesi
 //===============================================================================//
 
 #ifndef __SWITCH__
 
-#include "GenericSDLGLES2Interface.h"
+#include "GenericSDLGLESInterface.h"
 
-#if defined(MCENGINE_FEATURE_SDL) && defined(MCENGINE_FEATURE_OPENGLES)
+#if defined(MCENGINE_FEATURE_SDL) && (defined(MCENGINE_FEATURE_GLES2) || defined(MCENGINE_FEATURE_GLES32))
 
 #include "Engine.h"
 
 #include "OpenGLHeaders.h"
 
-GenericSDLGLES2Interface::GenericSDLGLES2Interface(SDL_Window *window) : SDLGLES2Interface(window)
+GenericSDLGLESInterface::GenericSDLGLESInterface(SDLEnvironment *environment, SDL_Window *window) : SDLGLESInterface(environment, window)
 {
 	// check GLEW
-	//glewExperimental = GL_TRUE; // TODO: upgrade to glew >= 2.0.0 to fix this (would cause crash in e.g. glGenVertexArrays() without it)
 	GLenum err = glewInit();
 	if (GLEW_OK != err)
 	{
@@ -29,7 +28,7 @@ GenericSDLGLES2Interface::GenericSDLGLES2Interface(SDL_Window *window) : SDLGLES
 	}
 }
 
-GenericSDLGLES2Interface::~GenericSDLGLES2Interface()
+GenericSDLGLESInterface::~GenericSDLGLESInterface()
 {
 }
 

@@ -11,7 +11,7 @@
 
 #include "Image.h"
 
-#if defined(MCENGINE_FEATURE_OPENGL) || defined (MCENGINE_FEATURE_OPENGLES)
+#if defined(MCENGINE_FEATURE_OPENGL) || defined (MCENGINE_FEATURE_GLES2) || defined(MCENGINE_FEATURE_GLES32)
 
 class OpenGLImage : public Image
 {

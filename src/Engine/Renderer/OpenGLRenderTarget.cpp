@@ -7,7 +7,7 @@
 
 #include "OpenGLRenderTarget.h"
 
-#if defined(MCENGINE_FEATURE_OPENGL) || defined(MCENGINE_FEATURE_OPENGLES)
+#if defined(MCENGINE_FEATURE_OPENGL) || defined (MCENGINE_FEATURE_GLES2) || defined(MCENGINE_FEATURE_GLES32)
 
 #include "Engine.h"
 #include "ConVar.h"

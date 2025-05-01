@@ -51,9 +51,10 @@ namespace Env
 	{
 		GL		= 1 << 0,
 		GLES2	= 1 << 1,
-		DX11	= 1 << 2,
-		VK		= 1 << 3,
-		SW		= 1 << 4,
+		GLES32	= 1 << 2,
+		DX11	= 1 << 3,
+		VK		= 1 << 4,
+		SW		= 1 << 5,
 		NONE	= 0,
 	};
 
@@ -133,8 +134,11 @@ namespace Env
 	#ifdef MCENGINE_FEATURE_OPENGL
 		REND::GL |
 	#endif
-	#ifdef MCENGINE_FEATURE_OPENGLES
+	#ifdef MCENGINE_FEATURE_GLES2
 		REND::GLES2 |
+	#endif
+	#ifdef MCENGINE_FEATURE_GLES32
+		REND::GLES32 |
 	#endif
 	#ifdef MCENGINE_FEATURE_DIRECTX11
 		REND::DX11 |
@@ -145,7 +149,7 @@ namespace Env
 	#ifdef MCENGINE_FEATURE_SOFTRENDERER
 		REND::SW |
 	#endif
-	#if !(defined(MCENGINE_FEATURE_OPENGL) || defined(MCENGINE_FEATURE_OPENGLES) || defined(MCENGINE_FEATURE_DIRECTX11) || defined(MCENGINE_FEATURE_VULKAN) || defined(MCENGINE_FEATURE_SOFTRENDERER))
+	#if !(defined(MCENGINE_FEATURE_OPENGL) || defined(MCENGINE_FEATURE_GLES2) || defined(MCENGINE_FEATURE_GLES32) || defined(MCENGINE_FEATURE_DIRECTX11) || defined(MCENGINE_FEATURE_VULKAN) || defined(MCENGINE_FEATURE_SOFTRENDERER))
 	#error "No renderer is defined! Check \"EngineFeatures.h\"."
 	#endif
 		REND::NONE;

@@ -24,6 +24,7 @@
 #include "OpenGLLegacyInterface.h"
 #include "OpenGL3Interface.h"
 #include "OpenGLES2Interface.h"
+#include "OpenGLES32Interface.h"
 #include "DirectX11Interface.h"
 
 Shader *OsuSliderRenderer::BLEND_SHADER = NULL;
@@ -399,7 +400,18 @@ void OsuSliderRenderer::draw(Graphics *g, Osu *osu, VertexArrayObject *vao, cons
 							}
 						}
 						}
-
+						if constexpr (Env::cfg(REND::GLES32)) {
+						if (!osu_slider_use_gradient_image.getBool())
+						{
+							OpenGLES32Interface *gles32 = dynamic_cast<OpenGLES32Interface*>(g);
+							if (gles32 != NULL)
+							{
+								g->forceUpdateTransform();
+								Matrix4 mvp = g->getMVP();
+								BLEND_SHADER->setUniformMatrix4fv("mvp", mvp);
+							}
+						}
+						}
 						if constexpr (Env::cfg(REND::DX11)) {
 						if (!osu_slider_use_gradient_image.getBool())
 						{
@@ -617,17 +629,19 @@ void OsuSliderRenderer::drawFillSliderBodyPeppy(Graphics *g, Osu *osu, const std
 {
 	OpenGLES2Interface *gles2;
 	DirectX11Interface *dx11;
+	OpenGLES32Interface *gles32;
+
+	if constexpr (Env::cfg(REND::GLES2))
+		gles2 = dynamic_cast<OpenGLES2Interface*>(g);
+	if constexpr (Env::cfg(REND::DX11))
+		dx11 = dynamic_cast<DirectX11Interface*>(g);
+	if constexpr (Env::cfg(REND::GLES32))
+		gles32 = dynamic_cast<OpenGLES32Interface*>(g);
 
 	if (drawFromIndex < 0)
 		drawFromIndex = 0;
 	if (drawUpToIndex < 0)
 		drawUpToIndex = points.size();
-
-	if constexpr (Env::cfg(REND::GLES2))
-		gles2 = dynamic_cast<OpenGLES2Interface*>(g);
-
-	if constexpr (Env::cfg(REND::DX11))
-		dx11 = dynamic_cast<DirectX11Interface*>(g);
 
 	g->pushTransform();
 	{
@@ -653,7 +667,14 @@ void OsuSliderRenderer::drawFillSliderBodyPeppy(Graphics *g, Osu *osu, const std
 				shader->setUniformMatrix4fv("mvp", mvp);
 			}
 			}
-
+			if constexpr (Env::cfg(REND::GLES32)) {
+			if (shader != NULL && gles32 != NULL)
+			{
+				g->forceUpdateTransform();
+				Matrix4 mvp = g->getMVP();
+				shader->setUniformMatrix4fv("mvp", mvp);
+			}
+			}
 			if constexpr (Env::cfg(REND::DX11)) {
 			if (shader != NULL && dx11 != NULL)
 			{

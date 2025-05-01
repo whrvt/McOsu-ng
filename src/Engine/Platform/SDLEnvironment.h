@@ -123,14 +123,17 @@ public:
 
 	inline bool sdlDebug() {return m_sdlDebug;}
 	inline bool sdlDebug(bool enable) {m_sdlDebug = enable; return m_sdlDebug;}
+	inline bool getSwapBehavior() {return m_glfinish;}
 protected:
 	SDL_Window *m_window;
 
 private:
+	inline void onSwapBehaviorChange(UString oldValue, UString newValue) {m_glfinish = !!newValue.toInt();}
 	void onLogLevelChange(UString oldValue, UString newValue);
 	ConVar *m_mouse_sensitivity_ref;
-	
+
 	bool m_sdlDebug;
+	bool m_glfinish;
 	// monitors
 	std::vector<McRect> m_vMonitors;
 

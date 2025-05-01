@@ -1,20 +1,20 @@
-//================ Copyright (c) 2019, PG, All rights reserved. =================//
+//================ Copyright (c) 2025, WH, All rights reserved. =================//
 //
-// Purpose:		OpenGLES2 baking support for vao
+// Purpose:		OpenGLES 3.2 baking support for vao
 //
-// $NoKeywords: $gles2vao
+// $NoKeywords: $gles32vao
 //===============================================================================//
 
-#include "OpenGLES2VertexArrayObject.h"
+#include "OpenGLES32VertexArrayObject.h"
 
-#ifdef MCENGINE_FEATURE_GLES2
+#ifdef MCENGINE_FEATURE_GLES32
 
 #include "Engine.h"
-#include "OpenGLES2Interface.h"
+#include "OpenGLES32Interface.h"
 
 #include "OpenGLHeaders.h"
 
-OpenGLES2VertexArrayObject::OpenGLES2VertexArrayObject(Graphics::PRIMITIVE primitive, Graphics::USAGE_TYPE usage, bool keepInSystemMemory) : VertexArrayObject(primitive, usage, keepInSystemMemory)
+OpenGLES32VertexArrayObject::OpenGLES32VertexArrayObject(Graphics::PRIMITIVE primitive, Graphics::USAGE_TYPE usage, bool keepInSystemMemory) : VertexArrayObject(primitive, usage, keepInSystemMemory)
 {
 	m_iVertexBuffer = 0;
 	m_iTexcoordBuffer = 0;
@@ -22,7 +22,7 @@ OpenGLES2VertexArrayObject::OpenGLES2VertexArrayObject(Graphics::PRIMITIVE primi
 	m_iNumTexcoords = 0;
 }
 
-void OpenGLES2VertexArrayObject::init()
+void OpenGLES32VertexArrayObject::init()
 {
 	if (m_vertices.size() < 2) return;
 
@@ -48,12 +48,12 @@ void OpenGLES2VertexArrayObject::init()
 	m_bReady = true;
 }
 
-void OpenGLES2VertexArrayObject::initAsync()
+void OpenGLES32VertexArrayObject::initAsync()
 {
 	m_bAsyncReady = true;
 }
 
-void OpenGLES2VertexArrayObject::destroy()
+void OpenGLES32VertexArrayObject::destroy()
 {
 	VertexArrayObject::destroy();
 
@@ -67,7 +67,7 @@ void OpenGLES2VertexArrayObject::destroy()
 	m_iTexcoordBuffer = 0;
 }
 
-void OpenGLES2VertexArrayObject::draw()
+void OpenGLES32VertexArrayObject::draw()
 {
 	if (!m_bReady)
 	{
@@ -81,7 +81,7 @@ void OpenGLES2VertexArrayObject::draw()
 	if (start > end || std::abs(end-start) == 0)
 		return;
 
-	OpenGLES2Interface *g = (OpenGLES2Interface*)engine->getGraphics();
+	OpenGLES32Interface *g = (OpenGLES32Interface*)engine->getGraphics();
 
 	// bind
 	{
@@ -114,7 +114,7 @@ void OpenGLES2VertexArrayObject::draw()
 	}
 }
 
-int OpenGLES2VertexArrayObject::primitiveToOpenGL(Graphics::PRIMITIVE primitive)
+int OpenGLES32VertexArrayObject::primitiveToOpenGL(Graphics::PRIMITIVE primitive)
 {
 	switch (primitive)
 	{
@@ -135,7 +135,7 @@ int OpenGLES2VertexArrayObject::primitiveToOpenGL(Graphics::PRIMITIVE primitive)
 	return GL_TRIANGLES;
 }
 
-unsigned int OpenGLES2VertexArrayObject::usageToOpenGL(Graphics::USAGE_TYPE usage)
+unsigned int OpenGLES32VertexArrayObject::usageToOpenGL(Graphics::USAGE_TYPE usage)
 {
 	switch (usage)
 	{

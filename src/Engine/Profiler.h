@@ -9,7 +9,7 @@
 #ifndef PROFILER_H
 #define PROFILER_H
 
-#if defined(_DEBUG) || (defined(MCENGINE_FEATURE_PROFILING) && !defined(MCENGINE_FEATURE_OPENGLES2)) // TODO: implement GLES2 features for profiling to work
+#if defined(_DEBUG) || (defined(MCENGINE_FEATURE_PROFILING) && !defined(MCENGINE_FEATURE_GLES2)) // TODO: implement GLES2 features for profiling to work
 
 #define VPROF_MAIN()						g_profCurrentProfile.main(); VPROF("Main")
 

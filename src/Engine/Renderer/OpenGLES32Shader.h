@@ -1,24 +1,24 @@
-//================ Copyright (c) 2019, PG, All rights reserved. =================//
+//================ Copyright (c) 2025, WH, All rights reserved. =================//
 //
-// Purpose:		OpenGLES2 GLSL implementation of Shader
+// Purpose:		OpenGLES 3.2 GLSL implementation of Shader
 //
-// $NoKeywords: $gles2shader
+// $NoKeywords: $gles32shader
 //===============================================================================//
 
 #pragma once
-#ifndef OPENGLES2SHADER_H
-#define OPENGLES2SHADER_H
+#ifndef OPENGLES32SHADER_H
+#define OPENGLES32SHADER_H
 
 #include "Shader.h"
 
-#ifdef MCENGINE_FEATURE_GLES2
+#ifdef MCENGINE_FEATURE_GLES32
 
-class OpenGLES2Shader : public Shader
+class OpenGLES32Shader : public Shader
 {
 public:
-	OpenGLES2Shader(UString shader, bool source);
-	OpenGLES2Shader(UString vertexShader, UString fragmentShader, bool source); // DEPRECATED
-	virtual ~OpenGLES2Shader() {destroy();}
+	OpenGLES32Shader(UString shader, bool source);
+	OpenGLES32Shader(UString vertexShader, UString fragmentShader, bool source); // DEPRECATED
+	virtual ~OpenGLES32Shader() {destroy();}
 
 	virtual void enable();
 	virtual void disable();

@@ -13,12 +13,13 @@
 
 #if defined(MCENGINE_FEATURE_SDL) && defined(MCENGINE_FEATURE_OPENGL)
 
+#include "SDLEnvironment.h"
 #include <SDL3/SDL.h>
 
 class SDLGLLegacyInterface : public OpenGLLegacyInterface
 {
 public:
-	SDLGLLegacyInterface(SDL_Window *window);
+	SDLGLLegacyInterface(SDLEnvironment *environment, SDL_Window *window);
 	virtual ~SDLGLLegacyInterface();
 
 	// scene
@@ -28,9 +29,8 @@ public:
 	void setVSync(bool vsync);
 
 private:
-	inline void onSwapBehaviorChange(UString oldValue, UString newValue) {m_glfinish = !!newValue.toInt();}
 	SDL_Window *m_window;
-	bool m_glfinish;
+	SDLEnvironment *m_env;
 };
 
 #else

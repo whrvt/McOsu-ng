@@ -24,7 +24,12 @@
 /*
  * OpenGL graphics (Mobile, ES/EGL, Web)
  */
-//#define MCENGINE_FEATURE_OPENGLES
+//#define MCENGINE_FEATURE_GLES2
+
+/*
+ * OpenGLES 3.2 graphics (WIP)
+ */
+//#define MCENGINE_FEATURE_GLES32
 
 /*
  * Software-only graphics renderer (Windows only) (untested)

@@ -100,7 +100,7 @@ McOsu_ng_SOURCES = \
 	src/Engine/OpenVRInterface.cpp \
 	src/Engine/Platform/BassSound.cpp \
 	src/Engine/Platform/BassSoundEngine.cpp \
-	src/Engine/Platform/GenericSDLGLES2Interface.cpp \
+	src/Engine/Platform/GenericSDLGLESInterface.cpp \
 	src/Engine/Platform/HorizonSDLEnvironment.cpp \
 	src/Engine/Platform/HorizonThread.cpp \
 	src/Engine/Platform/HorizonTimer.cpp \
@@ -116,7 +116,7 @@ McOsu_ng_SOURCES = \
 	src/Engine/Platform/NullContextMenu.cpp \
 	src/Engine/Platform/NullEnvironment.cpp \
 	src/Engine/Platform/SDLEnvironment.cpp \
-	src/Engine/Platform/SDLGLES2Interface.cpp \
+	src/Engine/Platform/SDLGLESInterface.cpp \
 	src/Engine/Platform/SDLGLLegacyInterface.cpp \
 	src/Engine/Platform/SDLSound.cpp \
 	src/Engine/Platform/SDLSoundEngine.cpp \
@@ -148,6 +148,9 @@ McOsu_ng_SOURCES = \
 	src/Engine/Renderer/OpenGLES2Interface.cpp \
 	src/Engine/Renderer/OpenGLES2Shader.cpp \
 	src/Engine/Renderer/OpenGLES2VertexArrayObject.cpp \
+	src/Engine/Renderer/OpenGLES32Interface.cpp \
+	src/Engine/Renderer/OpenGLES32Shader.cpp \
+	src/Engine/Renderer/OpenGLES32VertexArrayObject.cpp \
 	src/Engine/Renderer/OpenGLImage.cpp \
 	src/Engine/Renderer/OpenGLLegacyInterface.cpp \
 	src/Engine/Renderer/OpenGLRenderTarget.cpp \
