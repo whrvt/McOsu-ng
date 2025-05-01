@@ -957,17 +957,6 @@ void OsuHUD::drawCursorTrailInt(Graphics *g, Shader *trailShader, std::vector<CU
 					}
 				}
 
-				if constexpr (Env::cfg(REND::GLES32))
-				{
-					OpenGLES32Interface *gles32 = dynamic_cast<OpenGLES32Interface*>(g);
-					if (gles32 != NULL)
-					{
-						g->forceUpdateTransform();
-						Matrix4 mvp = g->getMVP();
-						trailShader->setUniformMatrix4fv("mvp", mvp);
-					}
-				}
-
 				if constexpr (Env::cfg(REND::DX11))
 				{
 					DirectX11Interface *dx11 = dynamic_cast<DirectX11Interface*>(g);

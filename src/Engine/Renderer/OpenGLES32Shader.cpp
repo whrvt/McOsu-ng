@@ -13,6 +13,7 @@
 #include "ConVar.h"
 
 #include "OpenGLHeaders.h"
+#include "OpenGLES32Interface.h"
 
 OpenGLES32Shader::OpenGLES32Shader(UString shader, bool source)
 {
@@ -55,6 +56,10 @@ void OpenGLES32Shader::initAsync()
 
 void OpenGLES32Shader::destroy()
 {
+	OpenGLES32Interface *gles32 = dynamic_cast<OpenGLES32Interface *>(engine->getGraphics());
+	if (gles32 != NULL)
+		gles32->unregisterShader(this);
+
 	if (m_iProgram != 0)
 		glDeleteProgram(m_iProgram);
 	if (m_iFragmentShader != 0)

@@ -19,6 +19,7 @@ class OpenGLES32Shader;
 class OpenGLES32Interface : public NullGraphicsInterface
 {
 public:
+	friend class OpenGLES32Shader;
 	OpenGLES32Interface();
 	virtual ~OpenGLES32Interface();
 
@@ -115,6 +116,10 @@ private:
 	static int primitiveToOpenGL(Graphics::PRIMITIVE primitive);
 	static int compareFuncToOpenGL(Graphics::COMPARE_FUNC compareFunc);
 
+    void registerShader(OpenGLES32Shader* shader);
+    void unregisterShader(OpenGLES32Shader* shader);
+    void updateAllShaderTransforms();
+
 	// renderer
 	bool m_bInScene;
 	Vector2 m_vResolution;
@@ -123,6 +128,7 @@ private:
 	Matrix4 m_MP;
 
 	OpenGLES32Shader *m_shaderTexturedGeneric;
+	std::vector<OpenGLES32Shader*> m_registeredShaders;
 	int m_iShaderTexturedGenericPrevType;
 	int m_iShaderTexturedGenericAttribPosition;
 	int m_iShaderTexturedGenericAttribUV;

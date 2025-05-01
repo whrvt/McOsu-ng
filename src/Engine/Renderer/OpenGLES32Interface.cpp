@@ -709,22 +709,30 @@ RenderTarget *OpenGLES32Interface::createRenderTarget(int x, int y, int width, i
 
 Shader *OpenGLES32Interface::createShaderFromFile(UString vertexShaderFilePath, UString fragmentShaderFilePath)
 {
-	return new OpenGLES32Shader(vertexShaderFilePath, fragmentShaderFilePath, false);
+	OpenGLES32Shader *shader = new OpenGLES32Shader(vertexShaderFilePath, fragmentShaderFilePath, false);
+	registerShader(shader);
+	return shader;
 }
 
 Shader *OpenGLES32Interface::createShaderFromSource(UString vertexShader, UString fragmentShader)
 {
-	return new OpenGLES32Shader(vertexShader, fragmentShader, true);
+	OpenGLES32Shader *shader = new OpenGLES32Shader(vertexShader, fragmentShader, true);
+	registerShader(shader);
+	return shader;
 }
 
 Shader *OpenGLES32Interface::createShaderFromFile(UString shaderFilePath)
 {
-	return new OpenGLES32Shader(shaderFilePath, false);
+	OpenGLES32Shader *shader = new OpenGLES32Shader(shaderFilePath, false);
+	registerShader(shader);
+	return shader;
 }
 
 Shader *OpenGLES32Interface::createShaderFromSource(UString shaderSource)
 {
-	return new OpenGLES32Shader(shaderSource, true);
+	OpenGLES32Shader *shader = new OpenGLES32Shader(shaderSource, true);
+	registerShader(shader);
+	return shader;
 }
 
 VertexArrayObject *OpenGLES32Interface::createVertexArrayObject(Graphics::PRIMITIVE primitive, Graphics::USAGE_TYPE usage, bool keepInSystemMemory)
@@ -744,8 +752,8 @@ void OpenGLES32Interface::onTransformUpdate(Matrix4 &projectionMatrix, Matrix4 &
 
 	m_MP = m_projectionMatrix * m_worldMatrix;
 
-	if (m_shaderTexturedGeneric->isActive())
-		m_shaderTexturedGeneric->setUniformMatrix4fv("mvp", m_MP);
+	// update all registered shaders, including the default one
+	updateAllShaderTransforms();
 }
 
 void OpenGLES32Interface::handleGLErrors()
@@ -799,6 +807,42 @@ int OpenGLES32Interface::compareFuncToOpenGL(Graphics::COMPARE_FUNC compareFunc)
 	}
 
 	return GL_ALWAYS;
+}
+
+void OpenGLES32Interface::registerShader(OpenGLES32Shader *shader)
+{
+	// check if already registered
+	for (size_t i = 0; i < m_registeredShaders.size(); i++)
+	{
+		if (m_registeredShaders[i] == shader)
+			return;
+	}
+
+	m_registeredShaders.push_back(shader);
+}
+
+void OpenGLES32Interface::unregisterShader(OpenGLES32Shader *shader)
+{
+	// remove from registry if found
+	for (size_t i = 0; i < m_registeredShaders.size(); i++)
+	{
+		if (m_registeredShaders[i] == shader)
+		{
+			m_registeredShaders.erase(m_registeredShaders.begin() + i);
+			return;
+		}
+	}
+}
+
+void OpenGLES32Interface::updateAllShaderTransforms()
+{
+	for (size_t i = 0; i < m_registeredShaders.size(); i++)
+	{
+		if (m_registeredShaders[i]->isActive())
+		{
+			m_registeredShaders[i]->setUniformMatrix4fv("mvp", m_MP);
+		}
+	}
 }
 
 #endif
