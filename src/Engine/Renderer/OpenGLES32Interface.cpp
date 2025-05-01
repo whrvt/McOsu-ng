@@ -82,39 +82,59 @@ void OpenGLES32Interface::init()
 
 	//setWireframe(true);
 
-	constexpr auto texturedGenericV =
-R"(#version 100
+	constexpr auto texturedGenericV = R"(#version 100
 
 attribute vec3 position;
 attribute vec2 uv;
 attribute vec4 vcolor;
+attribute vec3 normal;
 
 varying vec2 texcoords;
 varying vec4 texcolor;
+varying vec3 texnormal;
 
-uniform float type;
+uniform float type;  // 0=no texture, 1=texture, 2=texture+color, 3=texture+normal
 uniform mat4 mvp;
+uniform mat3 normalMatrix;
 
 void main() {
-	texcoords = uv;
-	texcolor = vcolor;
-	gl_Position = mvp * vec4(position, 1.0);
+    texcoords = uv;
+    texcolor = vcolor;
+    texnormal = normal;
+
+    // apply normal matrix if we're using normals
+    if (type >= 3.0) {
+        texnormal = normalMatrix * normal;
+    }
+
+    gl_Position = mvp * vec4(position, 1.0);
 }
 )";
 
-	constexpr auto texturedGenericP =
-R"(#version 100
+	constexpr auto texturedGenericP = R"(#version 100
 precision highp float;
 
 varying vec2 texcoords;
 varying vec4 texcolor;
+varying vec3 texnormal;
 
-uniform float type;
+uniform float type;  // 0=no texture, 1=texture, 2=texture+color, 3=texture+normal
 uniform vec4 col;
 uniform sampler2D tex;
+uniform vec3 lightDir;  // normalized direction to light source
 
 void main() {
-	gl_FragColor = mix(col, mix(texture2D(tex, texcoords) * col, texcolor, clamp(type - 1.0, 0.0, 1.0)), clamp(type, 0.0, 1.0));
+    // base color calculation
+    vec4 baseColor = mix(col, mix(texture2D(tex, texcoords) * col, texcolor, clamp(type - 1.0, 0.0, 1.0)), clamp(type, 0.0, 1.0));
+
+    // diffuse lighting when normals are available
+    if (type >= 3.0 && length(texnormal) > 0.01) {
+        vec3 N = normalize(texnormal);
+        float diffuse = max(dot(N, lightDir), 0.3); // Add ambient component
+        baseColor.rgb *= diffuse;
+    }
+
+    gl_FragColor = baseColor;
 }
 )";
 	m_shaderTexturedGeneric = (OpenGLES32Shader*)createShaderFromSource(texturedGenericV, texturedGenericP);
@@ -140,7 +160,7 @@ void main() {
 	glEnableVertexAttribArray(m_iShaderTexturedGenericAttribUV);
 
 	glBindBuffer(GL_ARRAY_BUFFER, m_iVBOTexcolors);
-	glVertexAttribPointer(m_iShaderTexturedGenericAttribCol, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (GLvoid*)0);
+	glVertexAttribPointer(m_iShaderTexturedGenericAttribCol, 4, GL_UNSIGNED_BYTE, GL_TRUE, 4 * sizeof(Color), (GLvoid*)0);
 	glBufferData(GL_ARRAY_BUFFER, 16384*sizeof(Vector4), NULL, GL_STREAM_DRAW);
 	glEnableVertexAttribArray(m_iShaderTexturedGenericAttribCol);
 }
@@ -374,6 +394,7 @@ void OpenGLES32Interface::drawVAO(VertexArrayObject *vao)
 		// configure shader
 		if (m_shaderTexturedGeneric->isActive())
 		{
+			// VAOs with texcoords
 			if (glvao->getNumTexcoords0() > 0)
 			{
 				if (m_iShaderTexturedGenericPrevType != 1)
@@ -386,6 +407,16 @@ void OpenGLES32Interface::drawVAO(VertexArrayObject *vao)
 			{
 				m_shaderTexturedGeneric->setUniform1f("type", 0.0f);
 				m_iShaderTexturedGenericPrevType = 0;
+			}
+
+			// VAOs with colors
+			if (glvao->getNumColors() > 0)
+			{
+				if (m_iShaderTexturedGenericPrevType != 2)
+				{
+					m_shaderTexturedGeneric->setUniform1f("type", 2.0f);
+					m_iShaderTexturedGenericPrevType = 2;
+				}
 			}
 		}
 
@@ -407,15 +438,15 @@ void OpenGLES32Interface::drawVAO(VertexArrayObject *vao)
 	// rewrite all quads into triangles
 	std::vector<Vector3> finalVertices = vertices;
 	std::vector<std::vector<Vector2>> finalTexcoords = texcoords;
-	std::vector<Vector4> colors;
-	std::vector<Vector4> finalColors;
-
+	std::vector<Color> colors;
+	std::vector<Color> finalColors;
+	
 	for (size_t i=0; i<vcolors.size(); i++)
 	{
-		Vector4 color = Vector4(COLOR_GET_Rf(vcolors[i]), COLOR_GET_Gf(vcolors[i]), COLOR_GET_Bf(vcolors[i]), COLOR_GET_Af(vcolors[i]));
+		Color color = OpenGLES32VertexArrayObject::ARGBtoABGR(vcolors[i]);
 		colors.push_back(color);
 		finalColors.push_back(color);
-	}
+	}	
 	int maxColorIndex = colors.size() - 1;
 
 	Graphics::PRIMITIVE primitive = vao->getPrimitive();
@@ -490,7 +521,7 @@ void OpenGLES32Interface::drawVAO(VertexArrayObject *vao)
 	if (finalColors.size() > 0)
 	{
 		glBindBuffer(GL_ARRAY_BUFFER, m_iVBOTexcolors);
-		glBufferSubData(GL_ARRAY_BUFFER, 0, finalColors.size() * sizeof(Vector4), &(finalColors[0]));
+		glBufferSubData(GL_ARRAY_BUFFER, 0, finalColors.size() * sizeof(Color), &(finalColors[0]));
 	}
 
 	// configure shader
@@ -560,6 +591,31 @@ void OpenGLES32Interface::popClipRect()
 		setClipRect(m_clipRectStack.top());
 	else
 		setClipping(false);
+}
+
+void OpenGLES32Interface::pushStencil()
+{
+	// init and clear
+	glClearStencil(0);
+	glClear(GL_STENCIL_BUFFER_BIT);
+	glEnable(GL_STENCIL_TEST);
+
+	// set mask
+	glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+	glStencilFunc(GL_ALWAYS, 1, 1);
+	glStencilOp(GL_REPLACE, GL_REPLACE, GL_REPLACE);
+}
+
+void OpenGLES32Interface::fillStencil(bool inside)
+{
+	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+	glStencilFunc(GL_NOTEQUAL, inside ? 0 : 1, 1);
+	glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+}
+
+void OpenGLES32Interface::popStencil()
+{
+	glDisable(GL_STENCIL_TEST);
 }
 
 void OpenGLES32Interface::setClipping(bool enabled)

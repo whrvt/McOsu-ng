@@ -60,7 +60,10 @@ public:
 	virtual void pushClipRect(McRect clipRect);
 	virtual void popClipRect();
 
-	// TODO
+	// stencil
+	virtual void pushStencil();
+	virtual void fillStencil(bool inside);
+	virtual void popStencil();
 
 	// renderer settings
 	virtual void setClipping(bool enabled);
