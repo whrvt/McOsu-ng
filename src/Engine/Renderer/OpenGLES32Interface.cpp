@@ -21,6 +21,8 @@
 
 #include "OpenGLHeaders.h"
 
+#include <utility>
+
 #define GPU_MEMORY_INFO_DEDICATED_VIDMEM_NVX 0x9047
 #define GPU_MEMORY_INFO_TOTAL_AVAILABLE_MEMORY_NVX 0x9048
 #define GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX 0x9049
@@ -727,6 +729,94 @@ void OpenGLES32Interface::setCulling(bool culling)
 void OpenGLES32Interface::setWireframe(bool enabled)
 {
 	// TODO
+}
+
+void OpenGLES32Interface::flush()
+{
+	glFlush();
+}
+
+std::vector<unsigned char> OpenGLES32Interface::getScreenshot()
+{
+	unsigned int width = m_vResolution.x;
+	unsigned int height = m_vResolution.y;
+
+	// sanity check
+	if (width > 65535 || height > 65535 || width < 1 || height < 1)
+	{
+		engine->showMessageError("Renderer Error", "getScreenshot() called with invalid arguments!");
+		return {};
+	}
+
+	// returned buffer, no alpha component
+	std::vector<unsigned char> result(width * height * 3);
+
+	// buffer to read into
+	std::vector<unsigned char> tempBuffer(width * height * 4);
+
+	// prep framebuffer for reading
+	GLint currentFramebuffer;
+	glGetIntegerv(GL_FRAMEBUFFER_BINDING, &currentFramebuffer);
+	GLint previousAlignment;
+	glGetIntegerv(GL_PACK_ALIGNMENT, &previousAlignment);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glPixelStorei(GL_PACK_ALIGNMENT, 1);
+	glFinish();
+
+	// read
+	GLenum error = GL_NO_ERROR;
+	glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, tempBuffer.data());
+
+	error = glGetError();
+	if (error != GL_NO_ERROR)
+	{
+		engine->showMessageError("Screenshot Error", UString::format("glReadPixels failed with error code: %d", error));
+		result.clear();
+
+		glPixelStorei(GL_PACK_ALIGNMENT, previousAlignment);
+		glBindFramebuffer(GL_FRAMEBUFFER, currentFramebuffer);
+		return result;
+	}
+
+	// restore state
+	glPixelStorei(GL_PACK_ALIGNMENT, previousAlignment);
+	glBindFramebuffer(GL_FRAMEBUFFER, currentFramebuffer);
+
+	// discard alpha component and flip it (Engine coordinates vs GL coordinates)
+	for (unsigned int y = 0; y < height; ++y)
+	{
+		const unsigned int srcRow = height - y - 1;
+		const unsigned int dstRow = y;
+
+		for (unsigned int x = 0; x < width; ++x)
+		{
+			result[(dstRow * width + x) * 3 + 0] = tempBuffer[(srcRow * width + x) * 4 + 0]; // R
+			result[(dstRow * width + x) * 3 + 1] = tempBuffer[(srcRow * width + x) * 4 + 1]; // G
+			result[(dstRow * width + x) * 3 + 2] = tempBuffer[(srcRow * width + x) * 4 + 2]; // B
+			// no alpha
+		}
+	}
+
+	return result;
+}
+
+UString OpenGLES32Interface::getVendor()
+{
+	const GLubyte *vendor = glGetString(GL_VENDOR);
+	return reinterpret_cast<const char *>(vendor);
+}
+
+UString OpenGLES32Interface::getModel()
+{
+	const GLubyte *model = glGetString(GL_RENDERER);
+	return reinterpret_cast<const char *>(model);
+}
+
+UString OpenGLES32Interface::getVersion()
+{
+	const GLubyte *version = glGetString(GL_VERSION);
+	return reinterpret_cast<const char *>(version);
 }
 
 int OpenGLES32Interface::getVRAMTotal()

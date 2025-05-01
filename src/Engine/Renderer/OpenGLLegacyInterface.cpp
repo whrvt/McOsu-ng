@@ -7,7 +7,6 @@
 
 #include "OpenGLLegacyInterface.h"
 
-#include <utility>
 
 #ifdef MCENGINE_FEATURE_OPENGL
 
@@ -22,6 +21,8 @@
 #include "OpenGLVertexArrayObject.h"
 
 #include "OpenGLHeaders.h"
+
+#include <utility>
 
 #define GPU_MEMORY_INFO_DEDICATED_VIDMEM_NVX          0x9047
 #define GPU_MEMORY_INFO_TOTAL_AVAILABLE_MEMORY_NVX    0x9048

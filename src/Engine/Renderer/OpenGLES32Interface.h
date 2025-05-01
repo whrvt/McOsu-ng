@@ -75,10 +75,15 @@ public:
 	virtual void setCulling(bool culling);
 	virtual void setWireframe(bool enabled);
 
-	// TODO
+	// renderer actions
+	virtual void flush();
+	virtual std::vector<unsigned char> getScreenshot();
 
 	// renderer info
 	virtual Vector2 getResolution() const {return m_vResolution;}
+	virtual UString getVendor();
+	virtual UString getModel();
+	virtual UString getVersion();
 	virtual int getVRAMTotal();
 	virtual int getVRAMRemaining();
 
