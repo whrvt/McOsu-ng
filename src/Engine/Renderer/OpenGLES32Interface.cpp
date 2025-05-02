@@ -46,6 +46,7 @@ OpenGLES32Interface::OpenGLES32Interface() : NullGraphicsInterface()
 
 	// persistent vars
 	m_color = 0xffffffff;
+	m_bAntiAliasing = true;
 
 	m_syncobj = new OpenGLSync();
 }
@@ -734,6 +735,16 @@ void OpenGLES32Interface::setCulling(bool culling)
 	else
 		glDisable(GL_CULL_FACE);
 }
+
+void OpenGLES32Interface::setAntialiasing(bool aa)
+{
+	m_bAntiAliasing = aa;
+	if (aa)
+		glEnable(GL_MULTISAMPLE);
+	else
+		glDisable(GL_MULTISAMPLE);
+}
+
 
 void OpenGLES32Interface::setWireframe(bool enabled)
 {

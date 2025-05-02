@@ -259,6 +259,7 @@ LDFLAGS="$LDFLAGS -static-libstdc++ -static-libgcc"
 # use c/c++23 because we can
 AC_LANG_PUSH([C++])
 AX_CHECK_COMPILE_FLAG([-std=gnu++23], [
+    AX_CHECK_COMPILE_FLAG([-std=gnu++26], [MCOSU_CXXFLAGS="$MCOSU_CXXFLAGS -std=gnu++26"])
     CXXFLAGS="$CXXFLAGS -std=gnu++23"
 ], [
     AC_MSG_ERROR([Compiler does not support gnu++23])

@@ -75,9 +75,9 @@ extern ConVar mouse_raw_input;
 
 static forceinline bool deckTouchHack(SDLEnvironment *environment) {
 	if constexpr (Env::cfg(FEAT::TOUCH))
-		return true;
-	else
 		return g_bIsSteamDeck && environment->wasLastMouseInputTouch();
+	else
+		return false;
 }
 
 static const char *getCategoryString(int category)
@@ -209,21 +209,14 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 	SDL_SetLogOutputFunction(SDLLogCallback, nullptr);
 
 	// pre window-creation settings
-	if constexpr (Env::cfg(REND::GL, !REND::DX11))
+	if constexpr (Env::cfg((REND::GL | REND::GLES2 | REND::GLES32), !REND::DX11))
 	{
-		SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY);
 		SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-	}
-
-	if constexpr (Env::cfg(REND::GLES2 | REND::GLES32, !REND::DX11))
-	{
-		SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, Env::cfg(REND::GL) ? SDL_GL_CONTEXT_PROFILE_COMPATIBILITY : SDL_GL_CONTEXT_PROFILE_ES);
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, Env::cfg(REND::GLES2) ? 2 : 3);
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, Env::cfg(REND::GLES2) ? 0 : 2);
-	}
-
-	if constexpr (Env::cfg((REND::GL | REND::GLES2 | REND::GLES32), !REND::DX11))
 		SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+	}
 
 	constexpr auto windowFlags = SDL_WINDOW_HIDDEN | SDL_WINDOW_INPUT_FOCUS | SDL_WINDOW_MOUSE_FOCUS |
 						   	   ((Env::cfg((REND::GL | REND::GLES2 | REND::GLES32), !REND::DX11))
@@ -276,7 +269,10 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 	// create OpenGL context
 	SDL_GLContext context;
 	if constexpr (Env::cfg((REND::GL | REND::GLES2 | REND::GLES32), !REND::DX11))
+	{
 		context = SDL_GL_CreateContext(g_window);
+		SDL_GL_MakeCurrent(g_window, context);
+	}
 
 	if constexpr (Env::cfg(FEAT::JOY | FEAT::JOY_MOU))
 	{
@@ -355,7 +351,6 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 
 	if constexpr (Env::cfg((REND::GL | REND::GLES2 | REND::GLES32), !REND::DX11))
 	{
-		SDL_GL_MakeCurrent(g_window, context);
 		if (environment->sdlDebug()) // TODO: the variable somehow isn't loaded from the engine config at this point yet, so this is unreachable
 			dumpSDLGLAttribs();
 	}

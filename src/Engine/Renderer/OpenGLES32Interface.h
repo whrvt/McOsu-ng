@@ -75,6 +75,7 @@ public:
 	virtual void setBlendMode(BLEND_MODE blendMode);
 	virtual void setDepthBuffer(bool enabled);
 	virtual void setCulling(bool culling);
+	virtual void setAntialiasing(bool aa);
 	virtual void setWireframe(bool enabled);
 
 	// renderer actions
@@ -151,6 +152,7 @@ private:
 
 	// persistent vars
 	Color m_color;
+	bool m_bAntiAliasing;
 
 	// clipping
 	std::stack<McRect> m_clipRectStack;
