@@ -17,24 +17,23 @@ class OpenGLES32VertexArrayObject : public VertexArrayObject
 {
 public:
 	friend class OpenGLES32Interface;
-	OpenGLES32VertexArrayObject(Graphics::PRIMITIVE primitive = Graphics::PRIMITIVE::PRIMITIVE_TRIANGLES,
-	                            Graphics::USAGE_TYPE usage = Graphics::USAGE_TYPE::USAGE_STATIC, bool keepInSystemMemory = false);
-	virtual ~OpenGLES32VertexArrayObject() { destroy(); }
+	OpenGLES32VertexArrayObject(Graphics::PRIMITIVE primitive = Graphics::PRIMITIVE::PRIMITIVE_TRIANGLES, Graphics::USAGE_TYPE usage = Graphics::USAGE_TYPE::USAGE_STATIC, bool keepInSystemMemory = false);
+	~OpenGLES32VertexArrayObject() override { destroy(); }
 
 	void draw();
 
-	inline unsigned int const getNumTexcoords0() const { return m_iNumTexcoords; }
-	inline unsigned int const getNumColors() const { return m_iNumColors; }
-	inline unsigned int const getNumNormals() const { return m_iNumNormals; }
+	[[nodiscard]] inline unsigned int getNumTexcoords0() const { return m_iNumTexcoords; }
+	[[nodiscard]] inline unsigned int getNumColors() const { return m_iNumColors; }
+	[[nodiscard]] inline unsigned int getNumNormals() const { return m_iNumNormals; }
 
 private:
 	static int primitiveToOpenGL(Graphics::PRIMITIVE primitive);
 	static unsigned int usageToOpenGL(Graphics::USAGE_TYPE usage);
-	static Color ARGBtoABGR(Color color);
+	static forceinline Color ARGBtoABGR(Color color) { return ((color & 0xff000000) >> 0) | ((color & 0x00ff0000) >> 16) | ((color & 0x0000ff00) << 0) | ((color & 0x000000ff) << 16); }
 
-	virtual void init();
-	virtual void initAsync();
-	virtual void destroy();
+	void init() override;
+	void initAsync() override;
+	void destroy() override;
 
 	unsigned int m_iVertexBuffer;
 	unsigned int m_iTexcoordBuffer;

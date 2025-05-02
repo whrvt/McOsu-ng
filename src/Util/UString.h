@@ -9,7 +9,10 @@
 #ifndef USTRING_H
 #define USTRING_H
 
-#include "cbase.h"
+#include "BaseEnvironment.h" // for Env::cfg (consteval)
+#include <algorithm>
+#include <vector>
+#include <string>
 
 class UString
 {
@@ -63,12 +66,12 @@ public:
 	template <typename T = UString>
 	[[nodiscard]] constexpr T substr(int offset, int charCount = -1) const
 	{
-		offset = clamp<int>(offset, 0, m_length);
+		offset = std::clamp<int>(offset, 0, m_length);
 
 		if (charCount < 0)
 			charCount = m_length - offset;
 
-		charCount = clamp<int>(charCount, 0, m_length - offset);
+		charCount = std::clamp<int>(charCount, 0, m_length - offset);
 
 		UString result;
 		result.m_unicode = m_unicode.substr(offset, charCount);
@@ -154,8 +157,6 @@ public:
 	[[nodiscard]] bool lessThanIgnoreCase(const UString &ustr) const;
 
 private:
-	static constexpr char ESCAPE_CHAR = '\\';
-
 	int fromUtf8(const char *utf8, int length = -1);
 	void updateUtf8();
 

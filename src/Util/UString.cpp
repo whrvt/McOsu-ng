@@ -6,10 +6,10 @@
 //====================================================================================//
 
 #include "UString.h"
-
-#include <algorithm>
+#include <cstdarg>
 #include <cstring>
-#include <cwchar>
+#include <cwctype>
+#include <utility>
 
 #define USTRING_MASK_1BYTE 0x80  /* 1000 0000 */
 #define USTRING_VALUE_1BYTE 0x00 /* 0000 0000 */
@@ -25,6 +25,8 @@
 #define USTRING_VALUE_6BYTE 0xFC /* 1111 1100 */
 
 #define USTRING_MASK_MULTIBYTE 0x3F /* 0011 1111 */
+
+static constexpr char ESCAPE_CHAR = '\\';
 
 UString::UString() : m_length(0), m_lengthUtf8(0), m_isAsciiOnly(true) {}
 
@@ -56,9 +58,7 @@ UString::UString(const char *utf8, int length) : m_length(0), m_lengthUtf8(lengt
 
 UString::UString(const UString &ustr) = default;
 
-UString::UString(UString &&ustr) noexcept
-    : m_unicode(std::move(ustr.m_unicode)), m_utf8(std::move(ustr.m_utf8)), m_length(ustr.m_length), m_lengthUtf8(ustr.m_lengthUtf8),
-      m_isAsciiOnly(ustr.m_isAsciiOnly)
+UString::UString(UString &&ustr) noexcept : m_unicode(std::move(ustr.m_unicode)), m_utf8(std::move(ustr.m_utf8)), m_length(ustr.m_length), m_lengthUtf8(ustr.m_lengthUtf8), m_isAsciiOnly(ustr.m_isAsciiOnly)
 {
 	// reset moved-from object
 	ustr.m_length = 0;
@@ -155,8 +155,12 @@ int UString::findChar(wchar_t ch, int start, bool respectEscapeChars) const
 
 int UString::findChar(const UString &str, int start, bool respectEscapeChars) const
 {
-	if (start < 0 || start >= m_length)
+	if (start < 0 || start >= m_length || str.m_length == 0)
 		return -1;
+
+	bool charMap[0x10000] = {}; // lookup table, assumes 16-bit wide chars
+	for (int i = 0; i < str.m_length; i++)
+		charMap[str.m_unicode[i]] = true;
 
 	bool escaped = false;
 	for (int i = start; i < m_length; i++)
@@ -170,7 +174,7 @@ int UString::findChar(const UString &str, int start, bool respectEscapeChars) co
 		}
 		else
 		{
-			if (!escaped && str.findChar(m_unicode[i]) >= 0)
+			if (!escaped && charMap[m_unicode[i]])
 				return i;
 
 			escaped = false;
@@ -194,29 +198,26 @@ int UString::find(const UString &str, int start, int end) const
 	if (start < 0 || end > m_length || start >= end || str.m_length == 0)
 		return -1;
 
-	const int lastPossibleMatch = std::min(end - str.m_length, m_length - str.m_length);
-	for (int i = start; i <= lastPossibleMatch; i++)
+	if (end < m_length)
 	{
-		if (std::memcmp(&m_unicode[i], str.m_unicode.c_str(), str.m_length * sizeof(wchar_t)) == 0)
-			return i;
+		auto tempSubstr = m_unicode.substr(start, end - start);
+		size_t pos = tempSubstr.find(str.m_unicode);
+		return (pos != std::wstring::npos) ? static_cast<int>(pos + start) : -1;
 	}
 
-	return -1;
+	return find(str, start);
 }
 
 int UString::findLast(const UString &str, int start) const
 {
-	if (start < 0 || str.m_length == 0 || start >= m_length)
+	if (start < 0 || str.m_length == 0 || start > m_length - str.m_length)
 		return -1;
 
-	int lastI = -1;
-	for (int i = start; i <= m_length - str.m_length; i++)
-	{
-		if (std::memcmp(&m_unicode[i], str.m_unicode.c_str(), str.m_length * sizeof(wchar_t)) == 0)
-			lastI = i;
-	}
+	size_t pos = m_unicode.rfind(str.m_unicode, m_length - str.m_length);
+	if (pos != std::wstring::npos && std::cmp_greater_equal(pos, start))
+		return static_cast<int>(pos);
 
-	return lastI;
+	return -1;
 }
 
 int UString::findLast(const UString &str, int start, int end) const
@@ -224,15 +225,14 @@ int UString::findLast(const UString &str, int start, int end) const
 	if (start < 0 || end > m_length || start >= end || str.m_length == 0)
 		return -1;
 
-	int lastI = -1;
-	const int lastPossibleMatch = std::min(end - str.m_length, m_length - str.m_length);
-	for (int i = start; i <= lastPossibleMatch; i++)
+	int lastPossibleMatch = std::min(end - str.m_length, m_length - str.m_length);
+	for (int i = lastPossibleMatch; i >= start; i--)
 	{
 		if (std::memcmp(&m_unicode[i], str.m_unicode.c_str(), str.m_length * sizeof(wchar_t)) == 0)
-			lastI = i;
+			return i;
 	}
 
-	return lastI;
+	return -1;
 }
 
 int UString::findIgnoreCase(const UString &str, int start) const
@@ -240,23 +240,13 @@ int UString::findIgnoreCase(const UString &str, int start) const
 	if (start < 0 || str.m_length == 0 || start > m_length - str.m_length)
 		return -1;
 
-	const int lastPossibleMatch = m_length - str.m_length;
-	for (int i = start; i <= lastPossibleMatch; i++)
-	{
-		bool equal = true;
-		for (int c = 0; c < str.m_length; c++)
-		{
-			if (std::towlower(m_unicode[i + c]) != std::towlower(str.m_unicode[c]))
-			{
-				equal = false;
-				break;
-			}
-		}
-		if (equal)
-			return i;
-	}
+	std::wstring lowerThis = m_unicode;
+	std::wstring lowerStr = str.m_unicode;
+	std::ranges::transform(lowerThis, lowerThis.begin(), [](wchar_t c) { return std::towlower(c); });
+	std::ranges::transform(lowerStr, lowerStr.begin(), [](wchar_t c) { return std::towlower(c); });
 
-	return -1;
+	size_t pos = lowerThis.find(lowerStr, start);
+	return (pos != std::wstring::npos) ? static_cast<int>(pos) : -1;
 }
 
 int UString::findIgnoreCase(const UString &str, int start, int end) const
@@ -264,23 +254,13 @@ int UString::findIgnoreCase(const UString &str, int start, int end) const
 	if (start < 0 || end > m_length || start >= end || str.m_length == 0)
 		return -1;
 
-	const int lastPossibleMatch = std::min(end - str.m_length, m_length - str.m_length);
-	for (int i = start; i <= lastPossibleMatch; i++)
-	{
-		bool equal = true;
-		for (int c = 0; c < str.m_length; c++)
-		{
-			if (std::towlower(m_unicode[i + c]) != std::towlower(str.m_unicode[c]))
-			{
-				equal = false;
-				break;
-			}
-		}
-		if (equal)
-			return i;
-	}
+	std::wstring lowerThis = m_unicode.substr(start, end - start);
+	std::wstring lowerStr = str.m_unicode;
+	std::ranges::transform(lowerThis, lowerThis.begin(), [](wchar_t c) { return std::towlower(c); });
+	std::ranges::transform(lowerStr, lowerStr.begin(), [](wchar_t c) { return std::towlower(c); });
 
-	return -1;
+	size_t pos = lowerThis.find(lowerStr);
+	return (pos != std::wstring::npos) ? static_cast<int>(pos + start) : -1;
 }
 
 void UString::collapseEscapes()
@@ -334,7 +314,7 @@ void UString::insert(int offset, const UString &str)
 	if (str.m_length == 0)
 		return;
 
-	offset = clamp(offset, 0, m_length);
+	offset = std::clamp(offset, 0, m_length);
 	m_unicode.insert(offset, str.m_unicode);
 	m_length = static_cast<int>(m_unicode.length());
 	updateUtf8();
@@ -342,7 +322,7 @@ void UString::insert(int offset, const UString &str)
 
 void UString::insert(int offset, wchar_t ch)
 {
-	offset = clamp(offset, 0, m_length);
+	offset = std::clamp(offset, 0, m_length);
 	m_unicode.insert(offset, 1, ch);
 	m_length = static_cast<int>(m_unicode.length());
 	updateUtf8();
@@ -353,8 +333,8 @@ void UString::erase(int offset, int count)
 	if (m_length == 0 || count == 0 || offset >= m_length)
 		return;
 
-	offset = clamp(offset, 0, m_length);
-	count = clamp(count, 0, m_length - offset);
+	offset = std::clamp(offset, 0, m_length);
+	count = std::clamp(count, 0, m_length - offset);
 
 	m_unicode.erase(offset, count);
 	m_length = static_cast<int>(m_unicode.length());
@@ -413,7 +393,7 @@ void UString::upperCase()
 wchar_t UString::operator[](int index) const
 {
 	if (m_length > 0)
-		return m_unicode[clamp(index, 0, m_length - 1)];
+		return m_unicode[std::clamp(index, 0, m_length - 1)];
 
 	return static_cast<wchar_t>(0);
 }

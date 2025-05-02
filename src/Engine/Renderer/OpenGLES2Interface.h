@@ -14,8 +14,6 @@
 
 #ifdef MCENGINE_FEATURE_GLES2
 
-#include "OpenGLSync.h"
-
 class OpenGLES2Shader;
 
 class OpenGLES2Interface : public NullGraphicsInterface

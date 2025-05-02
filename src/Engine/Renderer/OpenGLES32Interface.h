@@ -9,11 +9,11 @@
 #ifndef OPENGLES32INTERFACE_H
 #define OPENGLES32INTERFACE_H
 
-#include "cbase.h"
-#include "NullGraphicsInterface.h"
+#include "EngineFeatures.h"
 
 #ifdef MCENGINE_FEATURE_GLES32
 
+#include "NullGraphicsInterface.h"
 #include "OpenGLSync.h"
 
 class OpenGLES32Shader;
@@ -23,102 +23,102 @@ class OpenGLES32Interface : public NullGraphicsInterface
 public:
 	friend class OpenGLES32Shader;
 	OpenGLES32Interface();
-	virtual ~OpenGLES32Interface();
+	~OpenGLES32Interface() override;
 
 	// scene
-	virtual void beginScene();
-	virtual void endScene();
+	void beginScene() override;
+	void endScene() override;
 
 	// depth buffer
-	virtual void clearDepthBuffer();
+	void clearDepthBuffer() override;
 
 	// color
-	virtual void setColor(Color color);
-	virtual void setAlpha(float alpha);
+	void setColor(Color color) override;
+	void setAlpha(float alpha) override;
 
 	// 2d primitive drawing
-	virtual void drawLine(int x1, int y1, int x2, int y2);
-	virtual void drawLine(Vector2 pos1, Vector2 pos2);
-	virtual void drawRect(int x, int y, int width, int height);
-	virtual void drawRect(int x, int y, int width, int height, Color top, Color right, Color bottom, Color left);
+	void drawLine(int x1, int y1, int x2, int y2) override;
+	void drawLine(Vector2 pos1, Vector2 pos2) override;
+	void drawRect(int x, int y, int width, int height) override;
+	void drawRect(int x, int y, int width, int height, Color top, Color right, Color bottom, Color left) override;
 
 	// TODO
 
-	virtual void fillRect(int x, int y, int width, int height);
-	virtual void fillGradient(int x, int y, int width, int height, Color topLeftColor, Color topRightColor, Color bottomLeftColor, Color bottomRightColor);
+	void fillRect(int x, int y, int width, int height) override;
+	void fillGradient(int x, int y, int width, int height, Color topLeftColor, Color topRightColor, Color bottomLeftColor, Color bottomRightColor) override;
 
-	virtual void drawQuad(int x, int y, int width, int height);
-	virtual void drawQuad(Vector2 topLeft, Vector2 topRight, Vector2 bottomRight, Vector2 bottomLeft, Color topLeftColor, Color topRightColor, Color bottomRightColor, Color bottomLeftColor);
+	void drawQuad(int x, int y, int width, int height) override;
+	void drawQuad(Vector2 topLeft, Vector2 topRight, Vector2 bottomRight, Vector2 bottomLeft, Color topLeftColor, Color topRightColor, Color bottomRightColor, Color bottomLeftColor) override;
 
 	// 2d resource drawing
-	virtual void drawImage(Image *image);
-	virtual void drawString(McFont *font, UString text);
+	void drawImage(Image *image) override;
+	void drawString(McFont *font, UString text) override;
 
 	// 3d type drawing
-	void drawVAO(VertexArrayObject *vao);
+	void drawVAO(VertexArrayObject *vao) override;
 
 	// DEPRECATED: 2d clipping
-	virtual void setClipRect(McRect clipRect);
-	virtual void pushClipRect(McRect clipRect);
-	virtual void popClipRect();
+	void setClipRect(McRect clipRect) override;
+	void pushClipRect(McRect clipRect) override;
+	void popClipRect() override;
 
 	// stencil
-	virtual void pushStencil();
-	virtual void fillStencil(bool inside);
-	virtual void popStencil();
+	void pushStencil() override;
+	void fillStencil(bool inside) override;
+	void popStencil() override;
 
 	// renderer settings
-	virtual void setClipping(bool enabled);
-	virtual void setAlphaTesting(bool enabled);
-	virtual void setAlphaTestFunc(COMPARE_FUNC alphaFunc, float ref);
-	virtual void setBlending(bool enabled);
-	virtual void setBlendMode(BLEND_MODE blendMode);
-	virtual void setDepthBuffer(bool enabled);
-	virtual void setCulling(bool culling);
-	virtual void setAntialiasing(bool aa);
-	virtual void setWireframe(bool enabled);
+	void setClipping(bool enabled) override;
+	void setAlphaTesting(bool enabled) override;
+	void setAlphaTestFunc(COMPARE_FUNC alphaFunc, float ref) override;
+	void setBlending(bool enabled) override;
+	void setBlendMode(BLEND_MODE blendMode) override;
+	void setDepthBuffer(bool enabled) override;
+	void setCulling(bool culling) override;
+	void setAntialiasing(bool aa) override;
+	void setWireframe(bool _) override;
 
 	// renderer actions
-	virtual void flush();
-	virtual std::vector<unsigned char> getScreenshot();
+	void flush() override;
+	std::vector<unsigned char> getScreenshot() override;
 
 	// renderer info
-	virtual Vector2 getResolution() const {return m_vResolution;}
-	virtual UString getVendor();
-	virtual UString getModel();
-	virtual UString getVersion();
-	virtual int getVRAMTotal();
-	virtual int getVRAMRemaining();
+	[[nodiscard]] Vector2 getResolution() const override {return m_vResolution;}
+	UString getVendor() override;
+	UString getModel() override;
+	UString getVersion() override;
+	int getVRAMTotal() override;
+	int getVRAMRemaining() override;
 
 	// callbacks
-	virtual void onResolutionChange(Vector2 newResolution);
+	void onResolutionChange(Vector2 newResolution) override;
 
 	// factory
-	virtual Image *createImage(UString filePath, bool mipmapped, bool keepInSystemMemory);
-	virtual Image *createImage(int width, int height, bool mipmapped, bool keepInSystemMemory);
-	virtual RenderTarget *createRenderTarget(int x, int y, int width, int height, Graphics::MULTISAMPLE_TYPE multiSampleType);
-	virtual Shader *createShaderFromFile(UString vertexShaderFilePath, UString fragmentShaderFilePath);	// DEPRECATED
-	virtual Shader *createShaderFromSource(UString vertexShader, UString fragmentShader);				// DEPRECATED
-	virtual Shader *createShaderFromFile(UString shaderFilePath);
-	virtual Shader *createShaderFromSource(UString shaderSource);
-	virtual VertexArrayObject *createVertexArrayObject(Graphics::PRIMITIVE primitive, Graphics::USAGE_TYPE usage, bool keepInSystemMemory);
+	Image *createImage(UString filePath, bool mipmapped, bool keepInSystemMemory) override;
+	Image *createImage(int width, int height, bool mipmapped, bool keepInSystemMemory) override;
+	RenderTarget *createRenderTarget(int x, int y, int width, int height, Graphics::MULTISAMPLE_TYPE multiSampleType) override;
+	Shader *createShaderFromFile(UString vertexShaderFilePath, UString fragmentShaderFilePath) override;	// DEPRECATED
+	Shader *createShaderFromSource(UString vertexShader, UString fragmentShader) override;				// DEPRECATED
+	Shader *createShaderFromFile(UString shaderFilePath) override;
+	Shader *createShaderFromSource(UString shaderSource) override;
+	VertexArrayObject *createVertexArrayObject(Graphics::PRIMITIVE primitive, Graphics::USAGE_TYPE usage, bool keepInSystemMemory) override;
 
 	// matrices & transforms
 	void forceUpdateTransform();
 
-	inline const int getShaderGenericAttribPosition() const {return m_iShaderTexturedGenericAttribPosition;}
-	inline const int getShaderGenericAttribUV() const {return m_iShaderTexturedGenericAttribUV;}
-	inline const int getShaderGenericAttribCol() const {return m_iShaderTexturedGenericAttribCol;}
+	[[nodiscard]] inline int getShaderGenericAttribPosition() const {return m_iShaderTexturedGenericAttribPosition;}
+	[[nodiscard]] inline int getShaderGenericAttribUV() const {return m_iShaderTexturedGenericAttribUV;}
+	[[nodiscard]] inline int getShaderGenericAttribCol() const {return m_iShaderTexturedGenericAttribCol;}
 
-	inline const int getVBOVertices() const {return m_iVBOVertices;}
-	inline const int getVBOTexcoords() const {return m_iVBOTexcoords;}
-	inline const int getVBOTexcolors() const {return m_iVBOTexcolors;}
+	[[nodiscard]] inline int getVBOVertices() const {return m_iVBOVertices;}
+	[[nodiscard]] inline int getVBOTexcoords() const {return m_iVBOTexcoords;}
+	[[nodiscard]] inline int getVBOTexcolors() const {return m_iVBOTexcolors;}
 
-	inline Matrix4 getMVP() const {return m_MP;}
+	[[nodiscard]] inline Matrix4 getMVP() const {return m_MP;}
 
 protected:
-	virtual void init();
-	virtual void onTransformUpdate(Matrix4 &projectionMatrix, Matrix4 &worldMatrix);
+	void init() override;
+	void onTransformUpdate(Matrix4 &projectionMatrix, Matrix4 &worldMatrix) override;
 
 private:
 	void handleGLErrors();

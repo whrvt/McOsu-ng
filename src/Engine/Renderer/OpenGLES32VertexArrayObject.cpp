@@ -265,9 +265,4 @@ unsigned int OpenGLES32VertexArrayObject::usageToOpenGL(Graphics::USAGE_TYPE usa
 	return GL_STATIC_DRAW;
 }
 
-Color OpenGLES32VertexArrayObject::ARGBtoABGR(Color color)
-{
-	return ((color & 0xff000000) >> 0) | ((color & 0x00ff0000) >> 16) | ((color & 0x0000ff00) << 0) | ((color & 0x000000ff) << 16);
-}
-
 #endif

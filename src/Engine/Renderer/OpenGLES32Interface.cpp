@@ -465,7 +465,7 @@ void OpenGLES32Interface::drawVAO(VertexArrayObject *vao)
 	}
 
 	const std::vector<Vector3> &vertices = vao->getVertices();
-	const std::vector<Vector3> &normals = vao->getNormals();
+	[[maybe_unused]] const std::vector<Vector3> &normals = vao->getNormals();
 	const std::vector<std::vector<Vector2>> &texcoords = vao->getTexcoords();
 	const std::vector<Color> &vcolors = vao->getColors();
 
@@ -746,7 +746,7 @@ void OpenGLES32Interface::setAntialiasing(bool aa)
 }
 
 
-void OpenGLES32Interface::setWireframe(bool enabled)
+void OpenGLES32Interface::setWireframe(bool _)
 {
 	// TODO
 }
