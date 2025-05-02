@@ -135,9 +135,6 @@ private:
 	// persistent vars
 	Color m_color;
 
-	// synchronization
-	OpenGLSync *m_syncobj;
-
 	// clipping
 	std::stack<McRect> m_clipRectStack;
 };
