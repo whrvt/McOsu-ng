@@ -245,6 +245,7 @@ am_McOsu_ng_OBJECTS = src/App/Osu/McOsu_ng-Osu.$(OBJEXT) \
 	src/Engine/Platform/McOsu_ng-NullContextMenu.$(OBJEXT) \
 	src/Engine/Platform/McOsu_ng-NullEnvironment.$(OBJEXT) \
 	src/Engine/Platform/McOsu_ng-SDLEnvironment.$(OBJEXT) \
+	src/Engine/Platform/McOsu_ng-SDLEnvironmentTouchHacks.$(OBJEXT) \
 	src/Engine/Platform/McOsu_ng-SDLGLESInterface.$(OBJEXT) \
 	src/Engine/Platform/McOsu_ng-SDLGLLegacyInterface.$(OBJEXT) \
 	src/Engine/Platform/McOsu_ng-SDLSound.$(OBJEXT) \
@@ -480,6 +481,7 @@ am__depfiles_remade = src/App/Osu/$(DEPDIR)/McOsu_ng-Osu.Po \
 	src/Engine/Platform/$(DEPDIR)/McOsu_ng-NullContextMenu.Po \
 	src/Engine/Platform/$(DEPDIR)/McOsu_ng-NullEnvironment.Po \
 	src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLEnvironment.Po \
+	src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLEnvironmentTouchHacks.Po \
 	src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLGLESInterface.Po \
 	src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLGLLegacyInterface.Po \
 	src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLSound.Po \
@@ -945,6 +947,7 @@ McOsu_ng_SOURCES = \
 	src/Engine/Platform/NullContextMenu.cpp \
 	src/Engine/Platform/NullEnvironment.cpp \
 	src/Engine/Platform/SDLEnvironment.cpp \
+	src/Engine/Platform/SDLEnvironmentTouchHacks.cpp \
 	src/Engine/Platform/SDLGLESInterface.cpp \
 	src/Engine/Platform/SDLGLLegacyInterface.cpp \
 	src/Engine/Platform/SDLSound.cpp \
@@ -1565,6 +1568,9 @@ src/Engine/Platform/McOsu_ng-NullEnvironment.$(OBJEXT):  \
 src/Engine/Platform/McOsu_ng-SDLEnvironment.$(OBJEXT):  \
 	src/Engine/Platform/$(am__dirstamp) \
 	src/Engine/Platform/$(DEPDIR)/$(am__dirstamp)
+src/Engine/Platform/McOsu_ng-SDLEnvironmentTouchHacks.$(OBJEXT):  \
+	src/Engine/Platform/$(am__dirstamp) \
+	src/Engine/Platform/$(DEPDIR)/$(am__dirstamp)
 src/Engine/Platform/McOsu_ng-SDLGLESInterface.$(OBJEXT):  \
 	src/Engine/Platform/$(am__dirstamp) \
 	src/Engine/Platform/$(DEPDIR)/$(am__dirstamp)
@@ -1978,6 +1984,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-NullContextMenu.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-NullEnvironment.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLEnvironment.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLEnvironmentTouchHacks.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLGLESInterface.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLGLLegacyInterface.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLSound.Po@am__quote@ # am--include-marker
@@ -3703,6 +3710,20 @@ src/Engine/Platform/McOsu_ng-SDLEnvironment.obj: src/Engine/Platform/SDLEnvironm
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Platform/McOsu_ng-SDLEnvironment.obj `if test -f 'src/Engine/Platform/SDLEnvironment.cpp'; then $(CYGPATH_W) 'src/Engine/Platform/SDLEnvironment.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Platform/SDLEnvironment.cpp'; fi`
 
+src/Engine/Platform/McOsu_ng-SDLEnvironmentTouchHacks.o: src/Engine/Platform/SDLEnvironmentTouchHacks.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Platform/McOsu_ng-SDLEnvironmentTouchHacks.o -MD -MP -MF src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLEnvironmentTouchHacks.Tpo -c -o src/Engine/Platform/McOsu_ng-SDLEnvironmentTouchHacks.o `test -f 'src/Engine/Platform/SDLEnvironmentTouchHacks.cpp' || echo '$(srcdir)/'`src/Engine/Platform/SDLEnvironmentTouchHacks.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLEnvironmentTouchHacks.Tpo src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLEnvironmentTouchHacks.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Platform/SDLEnvironmentTouchHacks.cpp' object='src/Engine/Platform/McOsu_ng-SDLEnvironmentTouchHacks.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Platform/McOsu_ng-SDLEnvironmentTouchHacks.o `test -f 'src/Engine/Platform/SDLEnvironmentTouchHacks.cpp' || echo '$(srcdir)/'`src/Engine/Platform/SDLEnvironmentTouchHacks.cpp
+
+src/Engine/Platform/McOsu_ng-SDLEnvironmentTouchHacks.obj: src/Engine/Platform/SDLEnvironmentTouchHacks.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Platform/McOsu_ng-SDLEnvironmentTouchHacks.obj -MD -MP -MF src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLEnvironmentTouchHacks.Tpo -c -o src/Engine/Platform/McOsu_ng-SDLEnvironmentTouchHacks.obj `if test -f 'src/Engine/Platform/SDLEnvironmentTouchHacks.cpp'; then $(CYGPATH_W) 'src/Engine/Platform/SDLEnvironmentTouchHacks.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Platform/SDLEnvironmentTouchHacks.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLEnvironmentTouchHacks.Tpo src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLEnvironmentTouchHacks.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Platform/SDLEnvironmentTouchHacks.cpp' object='src/Engine/Platform/McOsu_ng-SDLEnvironmentTouchHacks.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Platform/McOsu_ng-SDLEnvironmentTouchHacks.obj `if test -f 'src/Engine/Platform/SDLEnvironmentTouchHacks.cpp'; then $(CYGPATH_W) 'src/Engine/Platform/SDLEnvironmentTouchHacks.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Platform/SDLEnvironmentTouchHacks.cpp'; fi`
+
 src/Engine/Platform/McOsu_ng-SDLGLESInterface.o: src/Engine/Platform/SDLGLESInterface.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Platform/McOsu_ng-SDLGLESInterface.o -MD -MP -MF src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLGLESInterface.Tpo -c -o src/Engine/Platform/McOsu_ng-SDLGLESInterface.o `test -f 'src/Engine/Platform/SDLGLESInterface.cpp' || echo '$(srcdir)/'`src/Engine/Platform/SDLGLESInterface.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLGLESInterface.Tpo src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLGLESInterface.Po
@@ -5377,6 +5398,7 @@ distclean: distclean-am
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-NullContextMenu.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-NullEnvironment.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLEnvironment.Po
+	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLEnvironmentTouchHacks.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLGLESInterface.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLGLLegacyInterface.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLSound.Po
@@ -5630,6 +5652,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-NullContextMenu.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-NullEnvironment.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLEnvironment.Po
+	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLEnvironmentTouchHacks.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLGLESInterface.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLGLLegacyInterface.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLSound.Po

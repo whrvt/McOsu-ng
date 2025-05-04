@@ -11,13 +11,11 @@
 
 #ifdef MCENGINE_FEATURE_SDL
 
-#include "LinuxSDLEnvironment.h"
-
-extern int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment);
+#include "SDLEnvironment.h"
 
 int main(int argc, char *argv[])
 {
-	return mainSDL(argc, argv, new LinuxSDLEnvironment());
+	return SDLEnvironment().main(argc, argv);
 }
 
 #else

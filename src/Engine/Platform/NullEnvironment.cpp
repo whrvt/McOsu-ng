@@ -11,10 +11,9 @@
 #include "NullGraphicsInterface.h"
 #include "NullContextMenu.h"
 
-extern bool g_bRunning;
-
 NullEnvironment::NullEnvironment()
 {
+	m_bRunning = true;
 }
 
 Graphics *NullEnvironment::createRenderer()
@@ -29,7 +28,7 @@ ContextMenu *NullEnvironment::createContextMenu()
 
 void NullEnvironment::shutdown()
 {
-	g_bRunning = false;
+	m_bRunning = false;
 }
 
 void NullEnvironment::restart()

@@ -1,6 +1,6 @@
-//================ Copyright (c) 2018, PG, All rights reserved. =================//
+//========== Copyright (c) 2018, PG & 2025, WH, All rights reserved. ============//
 //
-// Purpose:		SDL ("partial", SDL does not provide all functions!)
+// Purpose:		SDL environment functionality
 //
 // $NoKeywords: $sdlenv
 //===============================================================================//
@@ -16,127 +16,141 @@
 #include "cbase.h"
 #include <SDL3/SDL.h>
 
+#include "ConVar.h"
+#include "Engine.h"
+
+extern ConVar mouse_raw_input;
+
+class Engine;
 class SDLEnvironment : public Environment
 {
 public:
-	SDLEnvironment(SDL_Window *window);
-	virtual ~SDLEnvironment() {;}
+	SDLEnvironment();
+	~SDLEnvironment() override;
 
-	virtual void update();
+	int main(int argc, char *argv[]);
+
+	void update() override;
 
 	// engine/factory
-	virtual Graphics *createRenderer();
-	virtual ContextMenu *createContextMenu();
+	Graphics *createRenderer() override;
+	ContextMenu *createContextMenu() override;
 
 	// system
-	virtual void shutdown();
-	virtual void restart();
-	virtual void sleep(unsigned int us);
-	virtual UString getExecutablePath();
-	virtual void openURLInDefaultBrowser(UString url); // NOTE: non-SDL
+	void shutdown() override;
+	void restart() override;
+	void sleep(unsigned int us) override;
+	[[nodiscard]] UString getExecutablePath() const override;
+	void openURLInDefaultBrowser(UString url) const override; // NOTE: non-SDL
 	// returns at least 1
-	[[nodiscard]] virtual inline int getLogicalCPUCount() {return SDL_GetNumLogicalCPUCores();}
+	[[nodiscard]] inline int getLogicalCPUCount() const override { return SDL_GetNumLogicalCPUCores(); }
 
 	// user
-	virtual UString getUsername(); // NOTE: non-SDL
-	virtual UString getUserDataPath();
+	[[nodiscard]] UString getUsername() const override; // NOTE: non-SDL
+	[[nodiscard]] UString getUserDataPath() const override;
 
 	// file IO
-	virtual bool fileExists(UString filename);
-	virtual bool directoryExists(UString directoryName); // NOTE: non-SDL
-	virtual bool createDirectory(UString directoryName); // NOTE: non-SDL
-	virtual bool renameFile(UString oldFileName, UString newFileName);
-	virtual bool deleteFile(UString filePath);
-	virtual std::vector<UString> getFilesInFolder(UString folder);		// NOTE: non-SDL
-	virtual std::vector<UString> getFoldersInFolder(UString folder);	// NOTE: non-SDL
-	virtual std::vector<UString> getLogicalDrives();					// NOTE: non-SDL
-	virtual UString getFolderFromFilePath(UString filepath);			// NOTE: non-SDL
-	virtual UString getFileExtensionFromFilePath(UString filepath, bool includeDot = false);
-	virtual UString getFileNameFromFilePath(UString filePath);			// NOTE: non-SDL
+	[[nodiscard]] bool fileExists(UString filename) const override;
+	[[nodiscard]] bool directoryExists(UString directoryName) const override; // NOTE: non-SDL
+	bool createDirectory(UString directoryName) override;                     // NOTE: non-SDL
+	bool renameFile(UString oldFileName, UString newFileName) override;
+	bool deleteFile(UString filePath) override;
+	[[nodiscard]] std::vector<UString> getFilesInFolder(UString folder) const override;   // NOTE: non-SDL
+	[[nodiscard]] std::vector<UString> getFoldersInFolder(UString folder) const override; // NOTE: non-SDL
+	[[nodiscard]] std::vector<UString> getLogicalDrives() const override;                 // NOTE: non-SDL
+	[[nodiscard]] UString getFolderFromFilePath(UString filepath) const override;         // NOTE: non-SDL
+	[[nodiscard]] UString getFileExtensionFromFilePath(UString filepath, bool includeDot = false) const override;
+	[[nodiscard]] UString getFileNameFromFilePath(UString filePath) const override; // NOTE: non-SDL
 
 	// clipboard
-	virtual UString getClipBoardText();
-	virtual void setClipBoardText(UString text);
+	[[nodiscard]] UString getClipBoardText() override;
+	void setClipBoardText(UString text) override;
 
 	// dialogs & message boxes
-	virtual void showMessageInfo(UString title, UString message);
-	virtual void showMessageWarning(UString title, UString message);
-	virtual void showMessageError(UString title, UString message);
-	virtual void showMessageErrorFatal(UString title, UString message);
-	virtual UString openFileWindow(const char *filetypefilters, UString title, UString initialpath);	// NOTE: non-SDL
-	virtual UString openFolderWindow(UString title, UString initialpath);								// NOTE: non-SDL
+	void showMessageInfo(UString title, UString message) const override;
+	void showMessageWarning(UString title, UString message) const override;
+	void showMessageError(UString title, UString message) const override;
+	void showMessageErrorFatal(UString title, UString message) const override;
+	UString openFileWindow(const char *filetypefilters, UString title, UString initialpath) const override; // NOTE: non-SDL
+	[[nodiscard]] UString openFolderWindow(UString title, UString initialpath) const override;              // NOTE: non-SDL
 
 	// window
-	virtual void focus();
-	virtual void center();
-	virtual void minimize();
-	virtual void maximize();
-	virtual void enableFullscreen();
-	virtual void disableFullscreen();
-	virtual void setWindowTitle(UString title);
-	virtual void setWindowPos(int x, int y);
-	virtual void setWindowSize(int width, int height);
-	virtual void setWindowResizable(bool resizable);
-	virtual void setWindowGhostCorporeal(bool corporeal);
-	virtual void setMonitor(int monitor);
-	virtual Vector2 getWindowPos();
-	virtual Vector2 getWindowSize();
-	virtual int getMonitor();
-	virtual std::vector<McRect> getMonitors() {return m_vMonitors;}
-	virtual Vector2 getNativeScreenSize();
-	virtual McRect getVirtualScreenRect();
-	virtual McRect getDesktopRect();
-	virtual int getDPI();
-	virtual bool isFullscreen() {return m_bFullscreen;}
-	virtual bool isWindowResizable() {return m_bResizable;}
+	void focus() override;
+	void center() override;
+	void minimize() override;
+	void maximize() override;
+	void enableFullscreen() override;
+	void disableFullscreen() override;
+	void setWindowTitle(UString title) override;
+	void setWindowPos(int x, int y) override;
+	void setWindowSize(int width, int height) override;
+	void setWindowResizable(bool resizable) override;
+	void setWindowGhostCorporeal(bool corporeal) override;
+	void setMonitor(int monitor) override;
+	[[nodiscard]] Vector2 getWindowPos() const override;
+	[[nodiscard]] Vector2 getWindowSize() const override;
+	[[nodiscard]] int getMonitor() const override;
+	[[nodiscard]] inline std::vector<McRect> getMonitors() const override { return m_vMonitors; }
+	[[nodiscard]] Vector2 getNativeScreenSize() const override;
+	[[nodiscard]] McRect getVirtualScreenRect() const override;
+	[[nodiscard]] McRect getDesktopRect() const override;
+	[[nodiscard]] int getDPI() const override;
+	[[nodiscard]] inline bool isFullscreen() const override { return m_bFullscreen; }
+	[[nodiscard]] inline bool isWindowResizable() const override { return m_bResizable; }
 
 	// mouse
-	virtual bool isCursorInWindow() {return m_bIsCursorInsideWindow;}
-	virtual bool isCursorVisible() {return m_bCursorVisible;}
-	virtual bool isCursorClipped() {return m_bCursorClipped;}
-	virtual Vector2 getMousePos();
-	virtual McRect getCursorClip() {return m_cursorClip;}
-	virtual CURSORTYPE getCursor() {return m_cursorType;}
-	virtual void setCursor(CURSORTYPE cur);
-	virtual void setCursorVisible(bool visible);
-	virtual void setMousePos(int x, int y);
-	virtual void setMousePos(float x, float y);
-	virtual void setCursorClip(bool clip, McRect rect);
+	[[nodiscard]] inline bool isCursorInWindow() const override { return m_bIsCursorInsideWindow; }
+	[[nodiscard]] inline bool isCursorVisible() const override { return m_bCursorVisible; }
+	[[nodiscard]] inline bool isCursorClipped() const override { return m_bCursorClipped; }
+	[[nodiscard]] Vector2 getMousePos() const override;
+	[[nodiscard]] inline McRect getCursorClip() const override { return m_cursorClip; }
+	[[nodiscard]] inline CURSORTYPE getCursor() const override { return m_cursorType; }
+	void setCursor(CURSORTYPE cur) override;
+	void setCursorVisible(bool visible) override;
+	void setCursorClip(bool clip, McRect rect) override;
 
 	// keyboard
-	virtual UString keyCodeToString(KEYCODE keyCode);
-	virtual void listenToTextInput(bool listen);
-
-	// ILLEGAL:
-	void setWindow(SDL_Window *window) {m_window = window;}
-	inline SDL_Window *getWindow() {return m_window;}
-#ifdef MCENGINE_SDL_TOUCHSUPPORT
-	void setWasLastMouseInputTouch(bool wasLastMouseInputTouch) {m_bWasLastMouseInputTouch = wasLastMouseInputTouch;}
-	inline bool wasLastMouseInputTouch() const {return m_bWasLastMouseInputTouch;}
-#else
-	void setWasLastMouseInputTouch(bool unused) {;}
-	inline bool wasLastMouseInputTouch() const {return false;}
-#endif
-
-	inline void setLastAbsMousePos(Vector2 abs) {m_vLastAbsMousePos=abs;}
-	inline void setLastRelMousePos(Vector2 rel) {m_vLastRelMousePos=rel;}
-
-	inline bool sdlDebug() {return m_sdlDebug;}
-	inline bool sdlDebug(bool enable) {m_sdlDebug = enable; return m_sdlDebug;}
+	UString keyCodeToString(KEYCODE keyCode) override;
+	void listenToTextInput(bool listen) override;
 
 protected:
-	SDL_Window *m_window;
+	inline void setCursorPosition() const override
+	{
+		if (!m_bCursorVisible) // i highly doubt we ever want to mess with the OS cursor position
+			SDL_WarpMouseInWindow(m_window, m_vLastAbsMousePos.x, m_vLastAbsMousePos.y);
+	}
 
 private:
+	// logging
+	[[nodiscard]] inline bool sdlDebug() const { return m_sdlDebug; }
+	inline bool sdlDebug(bool enable)
+	{
+		m_sdlDebug = enable;
+		return m_sdlDebug;
+	}
 	void onLogLevelChange(UString oldValue, UString newValue);
-	ConVar *m_mouse_sensitivity_ref;
 
+	Engine *m_engine;
+
+	static constexpr bool m_bUpdate = true;
+	static constexpr bool m_bDraw = true;
+
+	bool m_bRunning;
+	bool m_bDrawing;
+
+	bool m_bMinimized; // for fps_max_background
+	bool m_bHasFocus;  // for fps_max_background
+
+	bool m_bHackRestoreRawinput; // HACK: set/unset the convar as a global state so we don't mess with the OS cursor when we don't want to
+
+	// logging
 	bool m_sdlDebug;
 
 	// monitors
 	std::vector<McRect> m_vMonitors;
 
 	// window
+	SDL_Window *m_window;
 	bool m_bResizable;
 	bool m_bFullscreen;
 
@@ -147,23 +161,78 @@ private:
 	McRect m_cursorClip;
 	CURSORTYPE m_cursorType;
 
-	// the absolute/relative mouse position from the last SDL_PumpEvents call
-	// relative only useful if raw input is enabled, value is undefined/garbage otherwise
-	Vector2 m_vLastAbsMousePos;
-	Vector2 m_vLastRelMousePos;
+	// clipboard
+	const char *m_sPrevClipboardTextSDL;
+
+	// FIXME: this is retarded?
+	forceinline bool doStupidRawinputLogicCheck()
+	{
+		bool isRawInputEnabled = (SDL_GetWindowRelativeMouseMode(m_window) == true);
+		{
+			bool shouldRawInputBeEnabled = mouse_raw_input.getBool();
+
+			if (isCursorVisible() || !m_bHasFocus)
+			{
+				m_bHackRestoreRawinput = m_bHackRestoreRawinput || shouldRawInputBeEnabled;
+				mouse_raw_input.setValue(false);
+				shouldRawInputBeEnabled = false;
+			}
+			else if (m_bHackRestoreRawinput)
+			{
+				m_bHackRestoreRawinput = false;
+				mouse_raw_input.setValue(true);
+				shouldRawInputBeEnabled = true;
+			}
+
+			if (shouldRawInputBeEnabled != isRawInputEnabled)
+			{
+				SDL_SetWindowRelativeMouseMode(m_window, shouldRawInputBeEnabled ? true : false);
+				if (unlikely(sdlDebug()))
+					debugLog("%sing relative mouse\n", shouldRawInputBeEnabled ? "enabl" : "disabl");
+
+				isRawInputEnabled = shouldRawInputBeEnabled;
+			}
+		}
+		return isRawInputEnabled;
+	}
+
+	// misc touch-related hacks and joystick stuff
+	[[maybe_unused]] void handleTouchEvent(SDL_Event event, Uint32 eventtype, Vector2 *mousePos);
+	[[maybe_unused]] void handleJoystickEvent(SDL_Event event, Uint32 eventtype);
+	[[maybe_unused]] void handleJoystickMouse(Vector2 *mousePos);
+	[[maybe_unused]] bool m_bIsSteamDeck;
+
+	[[maybe_unused]] ConVar *m_cvSdl_joystick_mouse_sensitivity;
+	[[maybe_unused]] ConVar *m_cvSdl_joystick0_deadzone;
+	[[maybe_unused]] ConVar *m_cvSdl_joystick_zl_threshold;
+	[[maybe_unused]] ConVar *m_cvSdl_joystick_zr_threshold;
+	[[maybe_unused]] ConVar *m_cvSdl_steamdeck_doubletouch_workaround;
+
+	[[maybe_unused]] float m_fJoystick0XPercent;
+	[[maybe_unused]] float m_fJoystick0YPercent;
 
 #ifdef MCENGINE_SDL_TOUCHSUPPORT
 	bool m_bWasLastMouseInputTouch;
+	void setWasLastMouseInputTouch(bool wasLastMouseInputTouch) { m_bWasLastMouseInputTouch = wasLastMouseInputTouch; }
+	inline bool wasLastMouseInputTouch() const { return m_bWasLastMouseInputTouch; }
 #else
 	static constexpr bool m_bWasLastMouseInputTouch = false;
+	[[maybe_unused]] void setWasLastMouseInputTouch(bool _) { ; }
+	[[nodiscard]] constexpr bool wasLastMouseInputTouch() const { return false; }
 #endif
 
-	// clipboard
-	const char *m_sPrevClipboardTextSDL;
+	[[nodiscard]] forceinline bool deckTouchHack() const
+	{
+		if constexpr (Env::cfg(FEAT::TOUCH))
+			return m_bIsSteamDeck && wasLastMouseInputTouch();
+		else
+			return false;
+	}
 };
 
 #else
-class SDLEnvironment : public Environment{};
+class SDLEnvironment : public Environment
+{};
 #endif
 
 #endif

@@ -261,8 +261,8 @@ Engine::~Engine()
 	debugLog("Engine: Freeing Vulkan...\n");
 	SAFE_DELETE(m_vulkan);
 
-	debugLog("Engine: Freeing environment...\n");
-	SAFE_DELETE(m_environment);
+	// debugLog("Engine: Freeing environment...\n"); // the environment creates the engine
+	// SAFE_DELETE(m_environment);
 
 	debugLog("Engine: Freeing math...\n");
 	SAFE_DELETE(m_math);

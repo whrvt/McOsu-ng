@@ -116,6 +116,7 @@ McOsu_ng_SOURCES = \
 	src/Engine/Platform/NullContextMenu.cpp \
 	src/Engine/Platform/NullEnvironment.cpp \
 	src/Engine/Platform/SDLEnvironment.cpp \
+	src/Engine/Platform/SDLEnvironmentTouchHacks.cpp \
 	src/Engine/Platform/SDLGLESInterface.cpp \
 	src/Engine/Platform/SDLGLLegacyInterface.cpp \
 	src/Engine/Platform/SDLSound.cpp \

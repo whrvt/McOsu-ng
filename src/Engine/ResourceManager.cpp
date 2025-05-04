@@ -24,6 +24,8 @@ static std::mutex g_resourceManagerLoadingWorkMutex;	// work vector lock across 
 
 static void *_resourceLoaderThread(void *data);
 
+#else
+static constexpr int default_numthreads = 0;
 #endif
 
 class ResourceManagerLoaderThread

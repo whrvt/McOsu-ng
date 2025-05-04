@@ -11,7 +11,7 @@
 
 #include "SDLEnvironment.h"
 
-#ifdef __linux__
+#if 0 //def __linux__
 
 #ifdef MCENGINE_FEATURE_SDL
 
