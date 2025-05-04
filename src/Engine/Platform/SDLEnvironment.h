@@ -6,6 +6,7 @@
 //===============================================================================//
 
 #pragma once
+
 #ifndef SDLENVIRONMENT_H
 #define SDLENVIRONMENT_H
 
@@ -18,6 +19,8 @@
 
 #include "ConVar.h"
 #include "Engine.h"
+
+#include <map>
 
 extern ConVar mouse_raw_input;
 
@@ -160,6 +163,7 @@ private:
 	bool m_bCursorClipped;
 	McRect m_cursorClip;
 	CURSORTYPE m_cursorType;
+	std::map<CURSORTYPE, SDL_Cursor *> m_mCursorIcons;
 
 	// clipboard
 	const char *m_sPrevClipboardTextSDL;

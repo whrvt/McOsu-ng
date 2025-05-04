@@ -50,6 +50,17 @@ SDLEnvironment::SDLEnvironment() : Environment()
 	m_bCursorClipped = false;
 	m_cursorType = CURSORTYPE::CURSOR_NORMAL;
 
+	// create sdl system cursor map
+	m_mCursorIcons = {
+		{CURSORTYPE::CURSOR_NORMAL	, SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_DEFAULT)},
+		{CURSORTYPE::CURSOR_WAIT	, SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_WAIT)},
+		{CURSORTYPE::CURSOR_SIZE_H	, SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_EW_RESIZE)},
+		{CURSORTYPE::CURSOR_SIZE_V	, SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_NS_RESIZE)},
+		{CURSORTYPE::CURSOR_SIZE_HV	, SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_NESW_RESIZE)},
+		{CURSORTYPE::CURSOR_SIZE_VH	, SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_NWSE_RESIZE)},
+		{CURSORTYPE::CURSOR_TEXT	, SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_TEXT)},
+	};
+
 #ifdef MCENGINE_SDL_TOUCHSUPPORT
 	m_bWasLastMouseInputTouch = false;
 #endif
@@ -103,6 +114,7 @@ SDLEnvironment::~SDLEnvironment()
 	SAFE_DELETE(m_cvSdl_joystick_zl_threshold);
 	SAFE_DELETE(m_cvSdl_joystick_zr_threshold);
 	SAFE_DELETE(m_cvSdl_steamdeck_doubletouch_workaround);
+	for (auto cur : m_mCursorIcons){SDL_DestroyCursor(cur.second);}
 }
 
 void SDLEnvironment::update()
@@ -444,7 +456,9 @@ Vector2 SDLEnvironment::getMousePos() const
 
 void SDLEnvironment::setCursor(CURSORTYPE cur)
 {
-	// (not properly supported in SDL)
+	m_cursorType = cur;
+
+	SDL_SetCursor(m_mCursorIcons.at(m_cursorType)); // does not make visible if the cursor isn't visible
 }
 
 void SDLEnvironment::setCursorVisible(bool visible)
