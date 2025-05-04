@@ -32,7 +32,12 @@ ConVar fps_max("fps_max", 60.0f, FCVAR_NONE, "framerate limiter, foreground");
 ConVar fps_max_yield("fps_max_yield", true, FCVAR_NONE, "always release rest of timeslice once per frame (call scheduler via sleep(0))");
 ConVar fps_max_background("fps_max_background", 30.0f, FCVAR_NONE, "framerate limiter, background");
 ConVar fps_unlimited("fps_unlimited", false, FCVAR_NONE);
-ConVar fps_unlimited_yield("fps_unlimited_yield", true, FCVAR_NONE, "always release rest of timeslice once per frame (call scheduler via sleep(0)), even if unlimited fps are enabled");
+ConVar fps_unlimited_yield("fps_unlimited_yield", true, FCVAR_NONE,
+                           "always release rest of timeslice once per frame (call scheduler via sleep(0)), even if unlimited fps are enabled");
+
+extern ConVar _fullscreen_;
+extern ConVar _windowed_;
+extern ConVar _fullscreen_windowed_borderless_;
 
 static const char *getCategoryString(int category)
 {
@@ -153,10 +158,16 @@ int SDLEnvironment::main(int argc, char *argv[])
 	SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_WIDTH_NUMBER, WINDOW_WIDTH);
 	SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_HEIGHT_NUMBER, WINDOW_HEIGHT);
 	SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_RESIZABLE_BOOLEAN, false);
-	SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_BORDERLESS_BOOLEAN, false); // set these props later, after engine starts and loads cfgs
-	SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_FULLSCREEN_BOOLEAN, false);
 	SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_MAXIMIZED_BOOLEAN, false);
 	SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_FLAGS_NUMBER, windowFlags);
+
+	const bool shouldBeBorderless = _fullscreen_windowed_borderless_.getBool();
+	const bool shouldBeFullscreen = _fullscreen_.getBool() || !_windowed_.getBool() || shouldBeBorderless;
+
+	if (shouldBeBorderless)
+		SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_BORDERLESS_BOOLEAN, true);
+	else if (shouldBeFullscreen)
+		SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_FULLSCREEN_BOOLEAN, true);
 
 	// create window
 	m_window = SDL_CreateWindowWithProperties(props);
@@ -242,11 +253,14 @@ int SDLEnvironment::main(int argc, char *argv[])
 	uint64_t frameCountSinceLastFpsCalc = 0;
 	double fpsAdjustment = 0.0;
 
+	SDL_SetWindowMinimumSize(m_window, WINDOW_WIDTH_MIN, WINDOW_HEIGHT_MIN);
+
 	// initialize engine
 	m_engine = new Engine(this, argc > 1 ? argv[1] : ""); // TODO: proper arg support
 
-	// post window-creation settings
-	SDL_SetWindowMinimumSize(m_window, WINDOW_WIDTH_MIN, WINDOW_HEIGHT_MIN);
+	// make the window visible
+	SDL_ShowWindow(m_window);
+	SDL_RaiseWindow(m_window);
 
 	m_engine->loadApp();
 
@@ -259,23 +273,6 @@ int SDLEnvironment::main(int argc, char *argv[])
 		if (sdlDebug()) // TODO: the variable somehow isn't loaded from the engine config at this point yet, so this is unreachable
 			dumpSDLGLAttribs();
 	}
-
-	const bool shouldBeBorderless = convar->getConVarByName("fullscreen_windowed_borderless")->getBool();
-	const bool shouldBeFullscreen = !(convar->getConVarByName("windowed") != NULL) || shouldBeBorderless;
-
-	if (!(shouldBeBorderless || shouldBeFullscreen))
-	{
-		disableFullscreen();
-		center();
-	}
-	else
-	{
-		enableFullscreen();
-	}
-
-	// make the window visible
-	SDL_ShowWindow(m_window);
-	SDL_RaiseWindow(m_window);
 
 	// sdl3 stops listening to text input globally when window is created
 	SDL_StartTextInput(m_window);
@@ -302,9 +299,7 @@ int SDLEnvironment::main(int argc, char *argv[])
 		{
 			VPROF_BUDGET("SDL", VPROF_BUDGETGROUP_WNDPROC);
 
-			// handle automatic raw input toggling
 			const bool isDebugSdl = sdlDebug();
-			const bool isRawInputEnabled = doStupidRawinputLogicCheck();
 
 			SDL_PumpEvents();
 			auto eventCount = 0u;
@@ -440,9 +435,11 @@ int SDLEnvironment::main(int argc, char *argv[])
 
 					case SDL_EVENT_MOUSE_WHEEL:
 						if (events[i].wheel.x != 0)
-							m_engine->onMouseWheelHorizontal(events[i].wheel.x > 0 ? 120 * std::abs(events[i].wheel.x) : -120 * std::abs(events[i].wheel.x)); // NOTE: convert to Windows units
+							m_engine->onMouseWheelHorizontal(events[i].wheel.x > 0 ? 120 * std::abs(events[i].wheel.x)
+							                                                       : -120 * std::abs(events[i].wheel.x)); // NOTE: convert to Windows units
 						if (events[i].wheel.y != 0)
-							m_engine->onMouseWheelVertical(events[i].wheel.y > 0 ? 120 * std::abs(events[i].wheel.y) : -120 * std::abs(events[i].wheel.y)); // NOTE: convert to Windows units
+							m_engine->onMouseWheelVertical(events[i].wheel.y > 0 ? 120 * std::abs(events[i].wheel.y)
+							                                                     : -120 * std::abs(events[i].wheel.y)); // NOTE: convert to Windows units
 						break;
 
 					case SDL_EVENT_MOUSE_MOTION:
@@ -453,10 +450,11 @@ int SDLEnvironment::main(int argc, char *argv[])
 									setWasLastMouseInputTouch(false);
 
 							if (unlikely(isDebugSdl))
-								debugLog("SDL_MOUSEMOTION: x = %.2f, xrel = %.2f, y = %.2f, yrel = %.2f, which = %i\n", events[i].motion.x, events[i].motion.xrel, events[i].motion.y, events[i].motion.yrel, (int)events[i].motion.which);
+								debugLog("SDL_MOUSEMOTION: x = %.2f, xrel = %.2f, y = %.2f, yrel = %.2f, which = %i\n", events[i].motion.x, events[i].motion.xrel,
+								         events[i].motion.y, events[i].motion.yrel, (int)events[i].motion.which);
 
 							// which!=0 means relative, ignore non-relative motion events if we want raw input
-							if (isRawInputEnabled == !!events[i].motion.which)
+							if (isCursorVisible() || (m_bIsRawInput == !!events[i].motion.which))
 							{
 								// store the position for future queries
 								m_vLastAbsMousePos.x = events[i].motion.x;
@@ -465,13 +463,14 @@ int SDLEnvironment::main(int argc, char *argv[])
 								m_vLastRelMousePos.x = events[i].motion.xrel; // TODO: use?
 								m_vLastRelMousePos.y = events[i].motion.yrel;
 							}
-							if (isRawInputEnabled)
+							if (!isCursorVisible() && m_bIsRawInput)
 								m_engine->onMouseRawMove(events[i].motion.xrel, events[i].motion.yrel);
 						}
 						break;
 
 					// touch mouse
-					// NOTE: sometimes when quickly tapping with two fingers, events will get lost (due to the touchscreen believing that it was one finger which moved very quickly, instead of 2 tapping fingers)
+					// NOTE: sometimes when quickly tapping with two fingers, events will get lost (due to the touchscreen believing that it was one finger which moved very
+					// quickly, instead of 2 tapping fingers)
 					case SDL_EVENT_FINGER_DOWN ... SDL_EVENT_FINGER_CANCELED:
 						if constexpr (Env::cfg(FEAT::TOUCH))
 							handleTouchEvent(events[i], events[i].type, &mousePos);

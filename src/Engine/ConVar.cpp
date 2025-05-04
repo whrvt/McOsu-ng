@@ -100,6 +100,7 @@ void ConVar::init(int flags)
 {
 	m_callbackfunc = NULL;
 	m_callbackfuncargs = NULL;
+	m_callbackfuncfloat = NULL;
 	m_changecallback = NULL;
 
 	m_fValue = 0.0f;
@@ -162,6 +163,24 @@ void ConVar::init(UString &name, int flags, UString helpString, ConVarCallbackAr
 	m_sHelpString = helpString;
 }
 
+void ConVar::init(UString &name, int flags, ConVarCallbackFloat callbackFLOAT)
+{
+	init(flags);
+
+	m_sName = name;
+	m_callbackfuncfloat = callbackFLOAT;
+
+	m_bHasValue = false;
+	m_type = CONVAR_TYPE::CONVAR_TYPE_INT;
+}
+
+void ConVar::init(UString &name, int flags, UString helpString, ConVarCallbackFloat callbackFLOAT)
+{
+	init(name, flags, callbackFLOAT);
+
+	m_sHelpString = helpString;
+}
+
 void ConVar::init(UString &name, float defaultValue, int flags, UString helpString, ConVarChangeCallback callback)
 {
 	init(flags);
@@ -217,6 +236,18 @@ ConVar::ConVar(UString name, int flags, ConVarCallbackArgs callbackARGS)
 ConVar::ConVar(UString name, int flags, const char *helpString, ConVarCallbackArgs callbackARGS)
 {
 	init(name, flags, helpString, callbackARGS);
+	_addConVar(this);
+}
+
+ConVar::ConVar(UString name, int flags, ConVarCallbackFloat callbackFLOAT)
+{
+	init(name, flags, callbackFLOAT);
+	_addConVar(this);
+}
+
+ConVar::ConVar(UString name, int flags, const char *helpString, ConVarCallbackFloat callbackFLOAT)
+{
+	init(name, flags, helpString, callbackFLOAT);
 	_addConVar(this);
 }
 
@@ -356,6 +387,14 @@ void ConVar::execArgs(UString args)
 		m_callbackfuncargs(args);
 }
 
+void ConVar::execInt(float args)
+{
+	if (isFlagSet(FCVAR_CHEAT) && !ConVars::sv_cheats.getRaw()) return;
+
+	if (m_callbackfuncfloat != NULL)
+		m_callbackfuncfloat(args);
+}
+
 void ConVar::setDefaultFloat(float defaultValue)
 {
 	if (isFlagSet(FCVAR_HARDCODED)) return;
@@ -406,6 +445,7 @@ void ConVar::setValueInt(float value)
 
 		// possible arg callback
 		execArgs(newStringValue);
+		execInt(static_cast<float>(m_fValue));
 	}
 }
 
@@ -440,12 +480,18 @@ void ConVar::setValueInt(UString sValue)
 
 		// possible arg callback
 		execArgs(sValue);
+		execInt(static_cast<float>(m_fValue));
 	}
 }
 
 void ConVar::setCallback(NativeConVarCallback callback)
 {
 	m_callbackfunc = callback;
+}
+
+void ConVar::setCallback(NativeConVarCallbackFloat callback)
+{
+	m_callbackfuncfloat = callback;
 }
 
 void ConVar::setCallback(NativeConVarCallbackArgs callback)

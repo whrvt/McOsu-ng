@@ -120,6 +120,7 @@ public:
 
 protected:
 	virtual void setCursorPosition() const = 0;
+	virtual void setCursorPosition(Vector2 pos) const = 0;
 
 	static ConVar *debug_env;
 

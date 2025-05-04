@@ -117,11 +117,8 @@ public:
 	void listenToTextInput(bool listen) override;
 
 protected:
-	inline void setCursorPosition() const override
-	{
-		if (!m_bCursorVisible) // i highly doubt we ever want to mess with the OS cursor position
-			SDL_WarpMouseInWindow(m_window, m_vLastAbsMousePos.x, m_vLastAbsMousePos.y);
-	}
+	inline void setCursorPosition() const override { SDL_WarpMouseInWindow(m_window, m_vLastAbsMousePos.x, m_vLastAbsMousePos.y); }
+	inline void setCursorPosition(Vector2 pos) const override { SDL_WarpMouseInWindow(m_window, pos.x, pos.y); }
 
 private:
 	// logging
@@ -144,7 +141,7 @@ private:
 	bool m_bMinimized; // for fps_max_background
 	bool m_bHasFocus;  // for fps_max_background
 
-	bool m_bHackRestoreRawinput; // HACK: set/unset the convar as a global state so we don't mess with the OS cursor when we don't want to
+	bool m_bIsRawInput;
 
 	// logging
 	bool m_sdlDebug;
@@ -168,37 +165,7 @@ private:
 	// clipboard
 	const char *m_sPrevClipboardTextSDL;
 
-	// FIXME: this is retarded?
-	forceinline bool doStupidRawinputLogicCheck()
-	{
-		bool isRawInputEnabled = (SDL_GetWindowRelativeMouseMode(m_window) == true);
-		{
-			bool shouldRawInputBeEnabled = mouse_raw_input.getBool();
-
-			if (isCursorVisible() || !m_bHasFocus)
-			{
-				m_bHackRestoreRawinput = m_bHackRestoreRawinput || shouldRawInputBeEnabled;
-				mouse_raw_input.setValue(false);
-				shouldRawInputBeEnabled = false;
-			}
-			else if (m_bHackRestoreRawinput)
-			{
-				m_bHackRestoreRawinput = false;
-				mouse_raw_input.setValue(true);
-				shouldRawInputBeEnabled = true;
-			}
-
-			if (shouldRawInputBeEnabled != isRawInputEnabled)
-			{
-				SDL_SetWindowRelativeMouseMode(m_window, shouldRawInputBeEnabled ? true : false);
-				if (unlikely(sdlDebug()))
-					debugLog("%sing relative mouse\n", shouldRawInputBeEnabled ? "enabl" : "disabl");
-
-				isRawInputEnabled = shouldRawInputBeEnabled;
-			}
-		}
-		return isRawInputEnabled;
-	}
+	void onRawInputChange(float newval);
 
 	// misc touch-related hacks and joystick stuff
 	[[maybe_unused]] void handleTouchEvent(SDL_Event event, Uint32 eventtype, Vector2 *mousePos);

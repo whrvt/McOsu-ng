@@ -42,10 +42,12 @@ public:
 	typedef void (*ConVarCallback)(void);
 	typedef void (*ConVarChangeCallback)(UString oldValue, UString newValue);
 	typedef void (*ConVarCallbackArgs)(UString args);
+	typedef void (*ConVarCallbackFloat)(float args);
 
 	// delegate callbacks
 	typedef fastdelegate::FastDelegate0<> NativeConVarCallback;
 	typedef fastdelegate::FastDelegate1<UString> NativeConVarCallbackArgs;
+	typedef fastdelegate::FastDelegate1<float> NativeConVarCallbackFloat;
 	typedef fastdelegate::FastDelegate2<UString, UString> NativeConVarChangeCallback;
 
 public:
@@ -63,6 +65,9 @@ public:
 
 	explicit ConVar(UString name, int flags, ConVarCallbackArgs callbackARGS);
 	explicit ConVar(UString name, int flags, const char *helpString, ConVarCallbackArgs callbackARGS);
+
+	explicit ConVar(UString name, int flags, ConVarCallbackFloat callbackFLOAT);
+	explicit ConVar(UString name, int flags, const char *helpString, ConVarCallbackFloat callbackFLOAT);
 
 	explicit ConVar(UString name, float defaultValue, int flags);
 	explicit ConVar(UString name, float defaultValue, int flags, ConVarChangeCallback callback);
@@ -87,6 +92,7 @@ public:
 	// callbacks
 	void exec();
 	void execArgs(UString args);
+	void execInt(float args);
 
 	// get
 	[[nodiscard]] constexpr float getDefaultFloat() const {return m_fDefaultValue.load();}
@@ -128,6 +134,7 @@ public:
 
 	void setCallback(NativeConVarCallback callback);
 	void setCallback(NativeConVarCallbackArgs callback);
+	void setCallback(NativeConVarCallbackFloat callback);
 	void setCallback(NativeConVarChangeCallback callback);
 
 	void setHelpString(UString helpString);
@@ -139,6 +146,8 @@ private:
 	void init(UString &name, int flags, UString helpString, ConVarCallback callback);
 	void init(UString &name, int flags, ConVarCallbackArgs callbackARGS);
 	void init(UString &name, int flags, UString helpString, ConVarCallbackArgs callbackARGS);
+	void init(UString &name, int flags, ConVarCallbackFloat callbackARGS);
+	void init(UString &name, int flags, UString helpString, ConVarCallbackFloat callbackARGS);
 	void init(UString &name, float defaultValue, int flags, UString helpString, ConVarChangeCallback callback);
 	void init(UString &name, UString defaultValue, int flags, UString helpString, ConVarChangeCallback callback);
 
@@ -164,6 +173,7 @@ private:
 
 	NativeConVarCallback m_callbackfunc;
 	NativeConVarCallbackArgs m_callbackfuncargs;
+	NativeConVarCallbackFloat m_callbackfuncfloat;
 	NativeConVarChangeCallback m_changecallback;
 };
 

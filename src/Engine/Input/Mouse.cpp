@@ -244,7 +244,7 @@ void Mouse::update()
 	// first person games which call engine->getMouse()->setPos() every frame to manually re-center the cursor NEVER need env->setPos()
 	// absolute input NEVER needs env->setPos()
 	// also update prevOsMousePos
-	if (windowRect.contains(osMousePos) && (sensitivityAdjustmentNeeded || mouse_raw_input.getBool()) && !m_bSetPosWasCalledLastFrame && !m_bAbsolute) //  && Env::getOS() != OS::LINUX HACKHACK: linux hack
+	if (!osCursorVisible && windowRect.contains(osMousePos) && (sensitivityAdjustmentNeeded || mouse_raw_input.getBool()) && !m_bSetPosWasCalledLastFrame && !m_bAbsolute) //  && Env::getOS() != OS::LINUX HACKHACK: linux hack
 	{
 		const Vector2 newOsMousePos = m_vPosWithoutOffset;
 
@@ -464,8 +464,6 @@ void Mouse::setPos(Vector2 newPos)
 	env->setMousePos(m_vPos.x, m_vPos.y);
 
 	m_vPrevOsMousePos = m_vPos;
-	m_vPrevOsMousePos.x = m_vPrevOsMousePos.x;
-	m_vPrevOsMousePos.y = m_vPrevOsMousePos.y;
 }
 
 void Mouse::setCursorType(CURSORTYPE cursorType)

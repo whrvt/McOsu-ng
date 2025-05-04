@@ -50,7 +50,8 @@ SDLEnvironment::SDLEnvironment() : Environment()
 	m_bMinimized = false; // for fps_max_background
 	m_bHasFocus = true;   // for fps_max_background
 
-	m_bHackRestoreRawinput = false; // HACK: set/unset the convar as a global state so we don't mess with the OS cursor when we don't want to
+	m_bIsRawInput = false;
+	m_bCursorVisible = false;
 
 	m_bResizable = false;
 	m_bFullscreen = false;
@@ -87,6 +88,8 @@ SDLEnvironment::SDLEnvironment() : Environment()
 	if (m_sdlDebug)
 		onLogLevelChange("", "1");
 	debug_sdl.setCallback(fastdelegate::MakeDelegate(this, &SDLEnvironment::onLogLevelChange));
+
+	mouse_raw_input.setCallback( fastdelegate::MakeDelegate(this, &SDLEnvironment::onRawInputChange) );
 
 	// TOUCH/JOY LEGACY
 	if constexpr (Env::cfg(FEAT::TOUCH))
@@ -127,7 +130,7 @@ void SDLEnvironment::update()
 {
 	Environment::update();
 
-	m_bIsCursorInsideWindow = McRect(0, 0, m_engine->getScreenWidth(), m_engine->getScreenHeight()).contains(getMousePos());
+	m_bIsCursorInsideWindow = m_bHasFocus && McRect(0, 0, m_engine->getScreenWidth(), m_engine->getScreenHeight()).contains(getMousePos());
 }
 
 Graphics *SDLEnvironment::createRenderer()
@@ -139,7 +142,7 @@ Graphics *SDLEnvironment::createRenderer()
 #endif
 }
 
-ContextMenu *SDLEnvironment::createContextMenu()
+ContextMenu *SDLEnvironment::createContextMenu() // DEPRECATED
 {
 	return new NullContextMenu();
 }
@@ -528,6 +531,7 @@ UString SDLEnvironment::openFolderWindow(UString title, UString initialpath) con
 void SDLEnvironment::focus()
 {
 	SDL_RaiseWindow(m_window);
+	m_bHasFocus = true;
 }
 
 void SDLEnvironment::center()
@@ -540,6 +544,7 @@ void SDLEnvironment::center()
 void SDLEnvironment::minimize()
 {
 	SDL_MinimizeWindow(m_window);
+	m_bHasFocus = false;
 }
 
 void SDLEnvironment::maximize()
@@ -663,9 +668,10 @@ void SDLEnvironment::setCursor(CURSORTYPE cur)
 
 void SDLEnvironment::setCursorVisible(bool visible)
 {
-	visible ? SDL_ShowCursor() : SDL_HideCursor();
-
 	m_bCursorVisible = visible;
+	if (m_bIsRawInput)
+		SDL_SetWindowRelativeMouseMode(m_window, !visible);
+	visible ? SDL_ShowCursor() : SDL_HideCursor();
 }
 
 void SDLEnvironment::setCursorClip(bool clip, McRect rect)
@@ -706,6 +712,12 @@ void SDLEnvironment::listenToTextInput(bool listen)
 {
 	listen ? SDL_StartTextInput(m_window) : SDL_StopTextInput(m_window);
 	SDL_SetWindowKeyboardGrab(m_window, !listen);
+}
+
+void SDLEnvironment::onRawInputChange(float newval)
+{
+	m_bIsRawInput = !!static_cast<int>(newval);
+	SDL_SetWindowRelativeMouseMode(m_window, m_bIsRawInput);
 }
 
 void SDLEnvironment::onLogLevelChange(UString oldValue, UString newValue)

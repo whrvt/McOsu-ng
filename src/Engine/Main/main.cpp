@@ -2,7 +2,7 @@
 //
 // Purpose:		Cross-platform main() entrypoint
 //
-// $NoKeywords: $env
+// $NoKeywords: $main
 //===============================================================================//
 
 #include "SDLEnvironment.h"
@@ -21,6 +21,7 @@
 // TODO: fix this strange argument parsing
 #define MAIN int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 
+// TODO: handle apple-specific shit (not that i can really test that easily...)
 #elif defined(MCENGINE_PLATFORM_LINUX) || defined(__SWITCH__) || defined(__APPLE__) || defined(__EMSCRIPTEN__) || defined(MCENGINE_PLATFORM_WASM)
 #define MAIN int main(int argc, char *argv[])
 #else
