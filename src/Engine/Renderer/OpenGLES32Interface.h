@@ -11,9 +11,9 @@
 
 #include "EngineFeatures.h"
 
+#include "NullGraphicsInterface.h"
 #ifdef MCENGINE_FEATURE_GLES32
 
-#include "NullGraphicsInterface.h"
 #include "OpenGLSync.h"
 
 class OpenGLES32Shader;
