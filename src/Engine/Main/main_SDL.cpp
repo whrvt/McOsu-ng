@@ -20,13 +20,13 @@
 #include "SDLEnvironment.h"
 #include "WinSDLEnvironment.h"
 
-#define WINDOW_TITLE "McEngine"
+static constexpr auto WINDOW_TITLE = "McEngine"; // only the initial title
 
-#define WINDOW_WIDTH (1280)
-#define WINDOW_HEIGHT (720)
+static constexpr auto WINDOW_WIDTH = 1280L;
+static constexpr auto WINDOW_HEIGHT = 720L;
 
-#define WINDOW_WIDTH_MIN 100
-#define WINDOW_HEIGHT_MIN 100
+static constexpr auto WINDOW_WIDTH_MIN = 100;
+static constexpr auto WINDOW_HEIGHT_MIN = 100;
 
 ConVar fps_max("fps_max", 60.0f, FCVAR_NONE, "framerate limiter, foreground");
 ConVar fps_max_yield("fps_max_yield", true, FCVAR_NONE, "always release rest of timeslice once per frame (call scheduler via sleep(0))");

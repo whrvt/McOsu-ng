@@ -25,6 +25,12 @@
 #elif defined(__APPLE__) || defined(MCENGINE_PLATFORM_LINUX)
 #include <unistd.h>
 #include <pwd.h>
+#elif defined(__SWITCH__)
+#include <switch.h>
+#include <dirent.h>
+#include <sys/stat.h>
+#elif defined(__EMSCRIPTEN__)
+// TODO
 #endif
 
 // definitions
@@ -594,7 +600,7 @@ void SDLEnvironment::setWindowResizable(bool resizable)
 
 void SDLEnvironment::setWindowGhostCorporeal(bool corporeal)
 {
-	// TODO
+	// TODO (wtf is this?)
 }
 
 void SDLEnvironment::setMonitor(int monitor)
