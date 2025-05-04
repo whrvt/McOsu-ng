@@ -19,6 +19,14 @@
 #include "SDLGLESInterface.h"
 #include "SDLGLLegacyInterface.h"
 
+#if defined(MCENGINE_PLATFORM_WINDOWS)
+#include <windows.h>
+#include <lmcons.h>
+#elif defined(__APPLE__) || defined(MCENGINE_PLATFORM_LINUX)
+#include <unistd.h>
+#include <pwd.h>
+#endif
+
 // definitions
 ConVar debug_sdl("debug_sdl", false, FCVAR_NONE);
 SDLEnvironment::FileDialogState SDLEnvironment::s_fileDialogState = {.done = true, .result = ""};
@@ -154,7 +162,7 @@ void SDLEnvironment::shutdown()
 
 void SDLEnvironment::restart()
 {
-	// TODO:
+	// TODO: (maybe restart, might never be necessary)
 	shutdown();
 }
 
@@ -184,7 +192,80 @@ void SDLEnvironment::openURLInDefaultBrowser(UString url) const
 
 UString SDLEnvironment::getUsername() const
 {
-	return UString("");
+#if defined(MCENGINE_PLATFORM_WINDOWS)
+    DWORD username_len = UNLEN + 1;
+    wchar_t username[username_len];
+    
+    if (GetUserNameW(username, &username_len))
+        return {username};
+#elif defined(__APPLE__) || defined(MCENGINE_PLATFORM_LINUX)
+    const char* user = getenv("USER");
+    if (user != nullptr)
+        return {user};
+
+    struct passwd* pwd = getpwuid(getuid());
+    if (pwd != nullptr)
+        return {pwd->pw_name};
+#elif defined(__SWITCH__) // copied from HorizonSDLEnvironment
+	UString uUsername = convar->getConVarByName("name")->getString();
+
+	// this was directly taken from the libnx examples
+
+	Result rc = 0;
+
+	AccountUid userID;
+	///bool account_selected = 0;
+	AccountProfile profile;
+	AccountUserData userdata;
+	AccountProfileBase profilebase;
+
+	char username[0x21];
+
+	memset(&userdata, 0, sizeof(userdata));
+	memset(&profilebase, 0, sizeof(profilebase));
+
+	rc = accountInitialize(AccountServiceType_Application);
+	if (R_FAILED(rc))
+		debugLog("accountInitialize() failed: 0x%x\n", rc);
+
+	if (R_SUCCEEDED(rc))
+	{
+		rc = accountGetLastOpenedUser(&userID);
+
+		if (R_FAILED(rc))
+			debugLog("accountGetActiveUser() failed: 0x%x\n", rc);
+
+		if (R_SUCCEEDED(rc))
+		{
+
+			rc = accountGetProfile(&profile, userID);
+
+			if (R_FAILED(rc))
+				debugLog("accountGetProfile() failed: 0x%x\n", rc);
+		}
+
+		if (R_SUCCEEDED(rc))
+		{
+			rc = accountProfileGet(&profile, &userdata, &profilebase); // userdata is otional, see libnx acc.h.
+
+			if (R_FAILED(rc))
+				debugLog("accountProfileGet() failed: 0x%x\n", rc);
+
+			if (R_SUCCEEDED(rc)) {
+				memset(username,  0, sizeof(username));
+				strncpy(username, profilebase.nickname, sizeof(username)-1); // even though profilebase.username usually has a NUL-terminator, don't assume it does for safety.
+				debugLog("Username: %s\n", username);
+				uUsername = UString(username);
+			}
+			accountProfileClose(&profile);
+		}
+		accountExit();
+	}
+
+	return uUsername;
+#endif
+	// fallback
+    return {PACKAGE_NAME "user"};
 }
 
 UString SDLEnvironment::getUserDataPath() const
@@ -250,10 +331,49 @@ std::vector<UString> SDLEnvironment::getFoldersInFolder(UString folder) const
 	return folders;
 }
 
+// sadly, sdl doesn't give a way to do this
 std::vector<UString> SDLEnvironment::getLogicalDrives() const
 {
-	debugLog("WARNING: not available in SDL!\n");
-	return std::vector<UString>();
+    std::vector<UString> drives{};
+
+    if constexpr (Env::cfg(OS::HORIZON))
+    {
+        drives.emplace_back("sdmc");
+        drives.emplace_back("romfs");
+    }
+    else if constexpr (Env::cfg(OS::LINUX | OS::MACOS))
+    {
+        drives.emplace_back("/");
+    }
+    else if constexpr (Env::cfg(OS::WINDOWS))
+    {
+#if defined(MCENGINE_PLATFORM_WINDOWS)
+        DWORD dwDrives = GetLogicalDrives();
+        for (int i = 0; i < 26; i++) // A-Z
+        {
+            if (dwDrives & (1 << i))
+            {
+                char driveLetter = 'A' + i;
+                UString drivePath = UString::format("%c:/", driveLetter);
+
+                SDL_PathInfo info;
+                UString testPath = UString::format("%c:\\", driveLetter);
+                
+                if (SDL_GetPathInfo(testPath.toUtf8(), &info))
+                {
+                    drives.emplace_back(drivePath);
+                }
+            }
+        }
+#endif
+    }
+    else if constexpr (Env::cfg(OS::WASM))
+    {
+        // TODO: VFS
+        drives.emplace_back("/");
+    }
+
+    return drives;
 }
 
 UString SDLEnvironment::getFolderFromFilePath(UString filepath) const
