@@ -1,8 +1,8 @@
-//================ Copyright (c) 2018, PG, All rights reserved. =================//
+//========== Copyright (c) 2018, PG & 2025, WH, All rights reserved. ============//
 //
-// Purpose:		main entry point
+// Purpose:		main SDL entry point
 //
-// $NoKeywords: $main
+// $NoKeywords: $mainSDL
 //===============================================================================//
 
 #include "EngineFeatures.h"
@@ -565,9 +565,6 @@ int SDLEnvironment::main(int argc, char *argv[])
 	SAFE_DELETE(frameTimer);
 	SAFE_DELETE(deltaTimer);
 	SAFE_DELETE(fpsCalcTimer);
-
-	// release engine
-	SAFE_DELETE(m_engine);
 
 	// and the opengl context
 	if constexpr (Env::cfg((REND::GL | REND::GLES2 | REND::GLES32), !REND::DX11))

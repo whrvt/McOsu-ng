@@ -9,6 +9,7 @@
 #include <cstdarg>
 #include <cstring>
 #include <cwctype>
+#include <cwchar>
 #include <utility>
 
 #define USTRING_MASK_1BYTE 0x80  /* 1000 0000 */
@@ -550,19 +551,20 @@ static inline int encode(const std::wstring &unicode, int length, char *utf8)
 				getUtf8(ch, &(utf8[utf8len]), 2, USTRING_VALUE_2BYTE);
 			utf8len += 2;
 		}
-		else if (ch < 0x00010000) // 3 bytes
+		else if (ch <= 0xFFFF) // 3 bytes
 		{
 			if (utf8 != nullptr)
 				getUtf8(ch, &(utf8[utf8len]), 3, USTRING_VALUE_3BYTE);
 			utf8len += 3;
 		}
-		else if (ch < 0x00200000) // 4 bytes
+#if WCHAR_MAX > 0xFFFF
+		else if (ch <= 0x1FFFFF) // 4 bytes
 		{
 			if (utf8 != nullptr)
 				getUtf8(ch, &(utf8[utf8len]), 4, USTRING_VALUE_4BYTE);
 			utf8len += 4;
 		}
-		else if (ch < 0x04000000) // 5 bytes
+		else if (ch <= 0x3FFFFFF) // 5 bytes
 		{
 			if (utf8 != nullptr)
 				getUtf8(ch, &(utf8[utf8len]), 5, USTRING_VALUE_5BYTE);
@@ -574,6 +576,7 @@ static inline int encode(const std::wstring &unicode, int length, char *utf8)
 				getUtf8(ch, &(utf8[utf8len]), 6, USTRING_VALUE_6BYTE);
 			utf8len += 6;
 		}
+#endif
 	}
 
 	return utf8len;

@@ -58,16 +58,6 @@ void OpenGLLegacyInterface::init()
 	const GLubyte *version = glGetString(GL_VERSION);
 	debugLog("OpenGL: OpenGL Version %s\n", version);
 
-	// check GLEW
-	GLenum err = glewInit();
-	if (GLEW_OK != err)
-	{
-		debugLog("glewInit() Error: %s\n", glewGetErrorString(err));
-		engine->showMessageErrorFatal("OpenGL Error", "Couldn't glewInit()!\nThe engine will exit now.");
-		engine->shutdown();
-		return;
-	}
-
 	// check GL version again
 	if (!glewIsSupported("GL_VERSION_3_0") && !glewIsSupported("GLEW_VERSION_3_0"))
 		engine->showMessageWarning("OpenGL Warning", UString::format("Your GPU does not support OpenGL version 3.0!\nThe engine will try to continue, but probably crash.\nOpenGL version = %s", version));

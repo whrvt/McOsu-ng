@@ -5,11 +5,11 @@
 // $NoKeywords: $main
 //===============================================================================//
 
-#ifdef __linux__
+#if 0//def __linux__
 
 #include "cbase.h"
 
-#ifdef MCENGINE_FEATURE_SDL
+#ifdef MCENGINE_FEATURE_SDL // TODO: remove, assume SDL
 
 #include "SDLEnvironment.h"
 

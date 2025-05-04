@@ -89,6 +89,7 @@ McOsu_ng_SOURCES = \
 	src/Engine/Input/KeyboardEvent.cpp \
 	src/Engine/Input/Mouse.cpp \
 	src/Engine/Input/OpenVRController.cpp \
+	src/Engine/Main/main.cpp \
 	src/Engine/Main/main_Horizon.cpp \
 	src/Engine/Main/main_Linux.cpp \
 	src/Engine/Main/main_OSX_cpp.cpp \
@@ -100,7 +101,6 @@ McOsu_ng_SOURCES = \
 	src/Engine/OpenVRInterface.cpp \
 	src/Engine/Platform/BassSound.cpp \
 	src/Engine/Platform/BassSoundEngine.cpp \
-	src/Engine/Platform/GenericSDLGLESInterface.cpp \
 	src/Engine/Platform/HorizonSDLEnvironment.cpp \
 	src/Engine/Platform/HorizonThread.cpp \
 	src/Engine/Platform/HorizonTimer.cpp \
@@ -117,8 +117,7 @@ McOsu_ng_SOURCES = \
 	src/Engine/Platform/NullEnvironment.cpp \
 	src/Engine/Platform/SDLEnvironment.cpp \
 	src/Engine/Platform/SDLEnvironmentTouchHacks.cpp \
-	src/Engine/Platform/SDLGLESInterface.cpp \
-	src/Engine/Platform/SDLGLLegacyInterface.cpp \
+	src/Engine/Platform/SDLGLInterface.cpp \
 	src/Engine/Platform/SDLSound.cpp \
 	src/Engine/Platform/SDLSoundEngine.cpp \
 	src/Engine/Platform/SoLoudSound.cpp \

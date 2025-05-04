@@ -66,16 +66,6 @@ void OpenGL3Interface::init()
 	const GLubyte *version = glGetString(GL_VERSION);
 	debugLog("OpenGL: OpenGL Version %s\n",version);
 
-	// check GLEW
-	glewExperimental = GL_TRUE; // TODO: upgrade to glew >= 2.0.0 to fix this (would cause crash in e.g. glGenVertexArrays() without it)
-	GLenum err = glewInit();
-	if (GLEW_OK != err)
-	{
-		debugLog("glewInit() Error: %s\n", glewGetErrorString(err));
-		engine->showMessageErrorFatal("OpenGL Error", "Couldn't glewInit()!\nThe engine will exit now.");
-		engine->shutdown();
-	}
-
 	// check GL version again
 	if (!glewIsSupported("GL_VERSION_3_0"))
 		engine->showMessageWarning("OpenGL Warning", "Your GPU does not support OpenGL version 3.0!\nThe engine will try to continue, but probably crash.");

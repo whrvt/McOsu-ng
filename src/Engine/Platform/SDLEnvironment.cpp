@@ -13,21 +13,19 @@
 
 #include "Mouse.h"
 
-#include "GenericSDLGLESInterface.h"
 #include "NullContextMenu.h"
 #include "NullGraphicsInterface.h"
-#include "SDLGLESInterface.h"
-#include "SDLGLLegacyInterface.h"
+#include "SDLGLInterface.h"
 
 #if defined(MCENGINE_PLATFORM_WINDOWS)
-#include <windows.h>
 #include <lmcons.h>
+#include <windows.h>
 #elif defined(__APPLE__) || defined(MCENGINE_PLATFORM_LINUX)
-#include <unistd.h>
 #include <pwd.h>
+#include <unistd.h>
 #elif defined(__SWITCH__)
-#include <switch.h>
 #include <dirent.h>
+#include <switch.h>
 #include <sys/stat.h>
 #elif defined(__EMSCRIPTEN__)
 // TODO
@@ -119,11 +117,6 @@ SDLEnvironment::SDLEnvironment() : Environment()
 SDLEnvironment::~SDLEnvironment()
 {
 	SAFE_DELETE(m_engine);
-	SAFE_DELETE(m_cvSdl_joystick_mouse_sensitivity);
-	SAFE_DELETE(m_cvSdl_joystick0_deadzone);
-	SAFE_DELETE(m_cvSdl_joystick_zl_threshold);
-	SAFE_DELETE(m_cvSdl_joystick_zr_threshold);
-	SAFE_DELETE(m_cvSdl_steamdeck_doubletouch_workaround);
 	for (auto cur : m_mCursorIcons)
 	{
 		SDL_DestroyCursor(cur.second);
@@ -139,17 +132,9 @@ void SDLEnvironment::update()
 
 Graphics *SDLEnvironment::createRenderer()
 {
-#if defined(MCENGINE_FEATURE_GLES2) || defined(MCENGINE_FEATURE_GLES32)
-
-#ifndef __SWITCH__
-	return new GenericSDLGLESInterface(m_window);
-#else
-	return new SDLGLESInterface(m_window); // this just skips glewInit
-#endif
-
-#elif defined(MCENGINE_FEATURE_OPENGL)
-	return new SDLGLLegacyInterface(m_window);
-#else
+#if defined(MCENGINE_FEATURE_GLES2) || defined(MCENGINE_FEATURE_GLES32) || defined(MCENGINE_FEATURE_OPENGL)
+	return new SDLGLInterface(m_window);
+#else // TODO hook up DX11/OpenGL3
 	return new NullGraphicsInterface();
 #endif
 }
@@ -199,19 +184,19 @@ void SDLEnvironment::openURLInDefaultBrowser(UString url) const
 UString SDLEnvironment::getUsername() const
 {
 #if defined(MCENGINE_PLATFORM_WINDOWS)
-    DWORD username_len = UNLEN + 1;
-    wchar_t username[username_len];
-    
-    if (GetUserNameW(username, &username_len))
-        return {username};
-#elif defined(__APPLE__) || defined(MCENGINE_PLATFORM_LINUX)
-    const char* user = getenv("USER");
-    if (user != nullptr)
-        return {user};
+	DWORD username_len = UNLEN + 1;
+	wchar_t username[UNLEN + 1];
 
-    struct passwd* pwd = getpwuid(getuid());
-    if (pwd != nullptr)
-        return {pwd->pw_name};
+	if (GetUserNameW(username, &username_len))
+		return {username};
+#elif defined(__APPLE__) || defined(MCENGINE_PLATFORM_LINUX)
+	const char *user = getenv("USER");
+	if (user != nullptr)
+		return {user};
+
+	struct passwd *pwd = getpwuid(getuid());
+	if (pwd != nullptr)
+		return {pwd->pw_name};
 #elif defined(__SWITCH__) // copied from HorizonSDLEnvironment
 	UString uUsername = convar->getConVarByName("name")->getString();
 
@@ -220,7 +205,7 @@ UString SDLEnvironment::getUsername() const
 	Result rc = 0;
 
 	AccountUid userID;
-	///bool account_selected = 0;
+	/// bool account_selected = 0;
 	AccountProfile profile;
 	AccountUserData userdata;
 	AccountProfileBase profilebase;
@@ -257,9 +242,10 @@ UString SDLEnvironment::getUsername() const
 			if (R_FAILED(rc))
 				debugLog("accountProfileGet() failed: 0x%x\n", rc);
 
-			if (R_SUCCEEDED(rc)) {
-				memset(username,  0, sizeof(username));
-				strncpy(username, profilebase.nickname, sizeof(username)-1); // even though profilebase.username usually has a NUL-terminator, don't assume it does for safety.
+			if (R_SUCCEEDED(rc))
+			{
+				memset(username, 0, sizeof(username));
+				strncpy(username, profilebase.nickname, sizeof(username) - 1); // even though profilebase.username usually has a NUL-terminator, don't assume it does for safety.
 				debugLog("Username: %s\n", username);
 				uUsername = UString(username);
 			}
@@ -271,7 +257,7 @@ UString SDLEnvironment::getUsername() const
 	return uUsername;
 #endif
 	// fallback
-    return {PACKAGE_NAME "user"};
+	return {PACKAGE_NAME "user"};
 }
 
 UString SDLEnvironment::getUserDataPath() const
@@ -315,12 +301,12 @@ bool SDLEnvironment::createDirectory(UString directoryName) const
 
 bool SDLEnvironment::renameFile(UString oldFileName, UString newFileName)
 {
-	return std::rename(oldFileName.toUtf8(), newFileName.toUtf8());
+	return std::rename(oldFileName.toUtf8(), newFileName.toUtf8()); // TODO: use SDL for this?
 }
 
 bool SDLEnvironment::deleteFile(UString filePath)
 {
-	return std::remove(filePath.toUtf8()) == 0;
+	return std::remove(filePath.toUtf8()) == 0; // TODO: maybe use SDL for this?
 }
 
 std::vector<UString> SDLEnvironment::getFilesInFolder(UString folder) const
@@ -340,46 +326,46 @@ std::vector<UString> SDLEnvironment::getFoldersInFolder(UString folder) const
 // sadly, sdl doesn't give a way to do this
 std::vector<UString> SDLEnvironment::getLogicalDrives() const
 {
-    std::vector<UString> drives{};
+	std::vector<UString> drives{};
 
-    if constexpr (Env::cfg(OS::HORIZON))
-    {
-        drives.emplace_back("sdmc");
-        drives.emplace_back("romfs");
-    }
-    else if constexpr (Env::cfg(OS::LINUX | OS::MACOS))
-    {
-        drives.emplace_back("/");
-    }
-    else if constexpr (Env::cfg(OS::WINDOWS))
-    {
+	if constexpr (Env::cfg(OS::HORIZON))
+	{
+		drives.emplace_back("sdmc");
+		drives.emplace_back("romfs");
+	}
+	else if constexpr (Env::cfg(OS::LINUX | OS::MACOS))
+	{
+		drives.emplace_back("/");
+	}
+	else if constexpr (Env::cfg(OS::WINDOWS))
+	{
 #if defined(MCENGINE_PLATFORM_WINDOWS)
-        DWORD dwDrives = GetLogicalDrives();
-        for (int i = 0; i < 26; i++) // A-Z
-        {
-            if (dwDrives & (1 << i))
-            {
-                char driveLetter = 'A' + i;
-                UString drivePath = UString::format("%c:/", driveLetter);
+		DWORD dwDrives = GetLogicalDrives();
+		for (int i = 0; i < 26; i++) // A-Z
+		{
+			if (dwDrives & (1 << i))
+			{
+				char driveLetter = 'A' + i;
+				UString drivePath = UString::format("%c:/", driveLetter);
 
-                SDL_PathInfo info;
-                UString testPath = UString::format("%c:\\", driveLetter);
-                
-                if (SDL_GetPathInfo(testPath.toUtf8(), &info))
-                {
-                    drives.emplace_back(drivePath);
-                }
-            }
-        }
+				SDL_PathInfo info;
+				UString testPath = UString::format("%c:\\", driveLetter);
+
+				if (SDL_GetPathInfo(testPath.toUtf8(), &info))
+				{
+					drives.emplace_back(drivePath);
+				}
+			}
+		}
 #endif
-    }
-    else if constexpr (Env::cfg(OS::WASM))
-    {
-        // TODO: VFS
-        drives.emplace_back("/");
-    }
+	}
+	else if constexpr (Env::cfg(OS::WASM))
+	{
+		// TODO: VFS
+		drives.emplace_back("/");
+	}
 
-    return drives;
+	return drives;
 }
 
 UString SDLEnvironment::getFolderFromFilePath(UString filepath) const
