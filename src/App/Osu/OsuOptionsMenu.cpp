@@ -616,7 +616,7 @@ OsuOptionsMenu::OsuOptionsMenu(Osu *osu) : OsuScreenBackable(osu)
 
 	addCheckbox("Show FPS Counter", convar->getConVarByName("osu_draw_fps"));
 
-	if constexpr (Env::cfg(REND::GL | REND::GLES2))
+	if constexpr (Env::cfg(REND::GL | REND::GLES32))
 	{
 		CBaseUISlider *prerenderedFramesSlider = addSlider("Max Queued Frames", 1.0f, 3.0f, convar->getConVarByName("r_sync_max_frames"), -1.0f, true);
 		prerenderedFramesSlider->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onSliderChangeInt) );

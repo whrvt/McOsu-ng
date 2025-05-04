@@ -213,8 +213,11 @@ int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment)
 	{
 		SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, Env::cfg(REND::GL) ? SDL_GL_CONTEXT_PROFILE_COMPATIBILITY : SDL_GL_CONTEXT_PROFILE_ES);
-		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, Env::cfg(REND::GLES2) ? 2 : 3);
-		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, Env::cfg(REND::GLES2) ? 0 : 2);
+		if constexpr (!Env::cfg(REND::GL))
+		{
+			SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, Env::cfg(REND::GLES2) ? 2 : 3);
+			SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, Env::cfg(REND::GLES2) ? 0 : 2);
+		}
 		SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 	}
 

@@ -20,8 +20,6 @@ class VertexArrayObject;
 class McFont : public Resource
 {
 public:
-    static constexpr wchar_t UNKNOWN_CHAR = 63; // ASCII '?'
-
 	McFont(UString filepath, int fontSize = 16, bool antialiasing = true, int fontDPI = 96);
 	McFont(UString filepath, std::vector<wchar_t> characters, int fontSize = 16, bool antialiasing = true, int fontDPI = 96);
 	~McFont() override { destroy(); }
@@ -74,6 +72,12 @@ private:
 		Color color;
 	};
 
+	struct TextBatch
+	{
+		size_t totalVerts;
+		std::vector<BatchEntry> entryList;
+	};
+
 	forceinline bool hasGlyph(wchar_t ch) const { return m_vGlyphMetrics.find(ch) != m_vGlyphMetrics.end(); };
 	bool addGlyph(wchar_t ch);
 
@@ -97,7 +101,7 @@ private:
 	std::unordered_map<wchar_t, GLYPH_METRICS> m_vGlyphMetrics;
 
 	VertexArrayObject m_vao;
-	std::vector<BatchEntry> m_batchQueue;
+	TextBatch m_batchQueue;
 	std::vector<Vector3> m_vertices;
 	std::vector<Vector2> m_texcoords;
 	bool m_batchActive;
