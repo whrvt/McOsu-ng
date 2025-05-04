@@ -36,7 +36,7 @@ public:
 	// file IO
 	[[nodiscard]] bool fileExists(UString filename) const override {return false;}
 	[[nodiscard]] bool directoryExists(UString directoryName) const override {return false;}
-	bool createDirectory(UString directoryName) override {return false;}
+	[[nodiscard]] bool createDirectory(UString directoryName) const override {return false;}
 	bool renameFile(UString oldFileName, UString newFileName) override {return false;}
 	bool deleteFile(UString filePath) override {return false;}
 	[[nodiscard]] std::vector<UString> getFilesInFolder(UString folder) const override {return {};}

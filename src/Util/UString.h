@@ -43,6 +43,12 @@ public:
 	[[nodiscard]] inline bool isAsciiOnly() const { return m_isAsciiOnly; }
 	[[nodiscard]] bool isWhitespaceOnly() const;
 	[[nodiscard]] inline bool isEmpty() const { return length() > 0 && !isWhitespaceOnly(); }
+	[[nodiscard]] inline bool endsWith(char ch) const {	return m_lengthUtf8 > 0 && m_utf8[m_lengthUtf8 - 1] == ch; }
+	[[nodiscard]] inline bool endsWith(wchar_t ch) const { return m_length > 0 && m_unicode[m_length - 1] == ch; }
+	[[nodiscard]] inline bool endsWith(const UString& suffix) const {
+		if (suffix.m_length > m_length) return false;
+		return m_unicode.substr(m_length - suffix.m_length) == suffix.m_unicode;
+	}
 
 	[[nodiscard]] int findChar(wchar_t ch, int start = 0, bool respectEscapeChars = false) const;
 	[[nodiscard]] int findChar(const UString &str, int start = 0, bool respectEscapeChars = false) const;
@@ -152,6 +158,13 @@ public:
 	bool operator==(const UString &ustr) const;
 	bool operator!=(const UString &ustr) const;
 	bool operator<(const UString &ustr) const;
+
+	UString &operator+=(const UString& ustr);
+	UString  operator+(const UString& ustr) const;
+	UString &operator+=(wchar_t ch);
+	UString  operator+(wchar_t ch) const;
+	UString &operator+=(char ch);
+	UString  operator+(char ch) const;
 
 	[[nodiscard]] bool equalsIgnoreCase(const UString &ustr) const;
 	[[nodiscard]] bool lessThanIgnoreCase(const UString &ustr) const;

@@ -28,9 +28,14 @@ McFile::McFile(UString filePath, TYPE type) : m_filePath(filePath), m_type(type)
 	if (type == TYPE::READ)
 	{
 		// check if path exists and is a regular file
-		if (!std::filesystem::exists(path) || !std::filesystem::is_regular_file(path))
+		if (!std::filesystem::exists(path))
 		{
-			debugLog("File Error: Path %s does not exist or is not a regular file\n", filePath.toUtf8());
+			debugLog("File Error: Path %s does not exist\n", filePath.toUtf8());
+			return;
+		}
+		if (!std::filesystem::is_regular_file(path))
+		{
+			debugLog("File Error: %s is not a regular file\n", filePath.toUtf8());
 			return;
 		}
 

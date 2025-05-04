@@ -7,6 +7,8 @@
 
 #include "SDLEnvironment.h"
 
+#include <algorithm>
+
 #ifdef MCENGINE_FEATURE_SDL
 
 #include "Mouse.h"
@@ -17,18 +19,14 @@
 #include "SDLGLESInterface.h"
 #include "SDLGLLegacyInterface.h"
 
+// definitions
 ConVar debug_sdl("debug_sdl", false, FCVAR_NONE);
+SDLEnvironment::FileDialogState SDLEnvironment::s_fileDialogState = {.done = true, .result = ""};
 
-[[maybe_unused]] static inline bool isSteamDeckInt()
-{
-	const char *steamDeck = std::getenv("SteamDeck");
-	if (steamDeck != NULL)
-	{
-		const std::string stdSteamDeck(steamDeck);
-		return (stdSteamDeck == "1");
-	}
-	return false;
-}
+// declarations
+static inline std::vector<UString> enumerateDirectory(const char *pathToEnum, SDL_PathType type);
+static inline void winSortInPlace(std::vector<UString> &toSort);
+[[maybe_unused]] static inline bool isSteamDeckInt();
 
 SDLEnvironment::SDLEnvironment() : Environment()
 {
@@ -52,13 +50,10 @@ SDLEnvironment::SDLEnvironment() : Environment()
 
 	// create sdl system cursor map
 	m_mCursorIcons = {
-		{CURSORTYPE::CURSOR_NORMAL	, SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_DEFAULT)},
-		{CURSORTYPE::CURSOR_WAIT	, SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_WAIT)},
-		{CURSORTYPE::CURSOR_SIZE_H	, SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_EW_RESIZE)},
-		{CURSORTYPE::CURSOR_SIZE_V	, SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_NS_RESIZE)},
-		{CURSORTYPE::CURSOR_SIZE_HV	, SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_NESW_RESIZE)},
-		{CURSORTYPE::CURSOR_SIZE_VH	, SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_NWSE_RESIZE)},
-		{CURSORTYPE::CURSOR_TEXT	, SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_TEXT)},
+	    {CURSORTYPE::CURSOR_NORMAL, SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_DEFAULT)},      {CURSORTYPE::CURSOR_WAIT, SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_WAIT)},
+	    {CURSORTYPE::CURSOR_SIZE_H, SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_EW_RESIZE)},    {CURSORTYPE::CURSOR_SIZE_V, SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_NS_RESIZE)},
+	    {CURSORTYPE::CURSOR_SIZE_HV, SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_NESW_RESIZE)}, {CURSORTYPE::CURSOR_SIZE_VH, SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_NWSE_RESIZE)},
+	    {CURSORTYPE::CURSOR_TEXT, SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_TEXT)},
 	};
 
 #ifdef MCENGINE_SDL_TOUCHSUPPORT
@@ -86,7 +81,8 @@ SDLEnvironment::SDLEnvironment() : Environment()
 	{
 		m_cvSdl_steamdeck_doubletouch_workaround =
 		    new ConVar("sdl_steamdeck_doubletouch_workaround", true, FCVAR_NONE,
-		               "currently used to fix a Valve/SDL2 bug on the Steam Deck (fixes \"Touchscreen Native Support\" firing 4 events for one single touch under gamescope, i.e. DOWN/UP/DOWN/UP instead of just DOWN/UP)");
+		               "currently used to fix a Valve/SDL2 bug on the Steam Deck (fixes \"Touchscreen Native Support\" firing 4 events for one single touch "
+		               "under gamescope, i.e. DOWN/UP/DOWN/UP instead of just DOWN/UP)");
 		m_bIsSteamDeck = isSteamDeckInt();
 	}
 	else
@@ -114,7 +110,10 @@ SDLEnvironment::~SDLEnvironment()
 	SAFE_DELETE(m_cvSdl_joystick_zl_threshold);
 	SAFE_DELETE(m_cvSdl_joystick_zr_threshold);
 	SAFE_DELETE(m_cvSdl_steamdeck_doubletouch_workaround);
-	for (auto cur : m_mCursorIcons){SDL_DestroyCursor(cur.second);}
+	for (auto cur : m_mCursorIcons)
+	{
+		SDL_DestroyCursor(cur.second);
+	}
 }
 
 void SDLEnvironment::update()
@@ -179,7 +178,8 @@ UString SDLEnvironment::getExecutablePath() const
 
 void SDLEnvironment::openURLInDefaultBrowser(UString url) const
 {
-	debugLog("WARNING: not available in SDL!\n");
+	if (!SDL_OpenURL(url.toUtf8()))
+		debugLog("Failed to open URL: %s\n", SDL_GetError());
 }
 
 UString SDLEnvironment::getUsername() const
@@ -189,7 +189,7 @@ UString SDLEnvironment::getUsername() const
 
 UString SDLEnvironment::getUserDataPath() const
 {
-	const char *path = SDL_GetPrefPath("McEngine", "McEngine");
+	const char *path = SDL_GetPrefPath("McEngine", PACKAGE_NAME);
 	if (path != NULL)
 	{
 		UString uPath = UString(path);
@@ -214,14 +214,16 @@ bool SDLEnvironment::fileExists(UString filename) const
 
 bool SDLEnvironment::directoryExists(UString directoryName) const
 {
-	debugLog("WARNING: not available in SDL!\n");
+	SDL_PathInfo info;
+	if (SDL_GetPathInfo(directoryName.toUtf8(), &info))
+		return info.type == SDL_PATHTYPE_DIRECTORY;
+
 	return false;
 }
 
-bool SDLEnvironment::createDirectory(UString directoryName)
+bool SDLEnvironment::createDirectory(UString directoryName) const
 {
-	debugLog("WARNING: not available in SDL!\n");
-	return false;
+	return SDL_CreateDirectory(directoryName.toUtf8());
 }
 
 bool SDLEnvironment::renameFile(UString oldFileName, UString newFileName)
@@ -236,14 +238,16 @@ bool SDLEnvironment::deleteFile(UString filePath)
 
 std::vector<UString> SDLEnvironment::getFilesInFolder(UString folder) const
 {
-	debugLog("WARNING: not available in SDL!\n");
-	return std::vector<UString>();
+	return enumerateDirectory(folder.toUtf8(), SDL_PATHTYPE_FILE);
 }
 
 std::vector<UString> SDLEnvironment::getFoldersInFolder(UString folder) const
 {
-	debugLog("WARNING: not available in SDL!\n");
-	return std::vector<UString>();
+	// TODO: if this turns out to be too slow for folders with a lot of subfolders, split out the sorting
+	// currently only the skinlist really uses it, shouldn't have more than 5000 skins in it for normal human beings
+	auto folders = enumerateDirectory(folder.toUtf8(), SDL_PATHTYPE_DIRECTORY);
+	winSortInPlace(folders);
+	return folders;
 }
 
 std::vector<UString> SDLEnvironment::getLogicalDrives() const
@@ -254,7 +258,17 @@ std::vector<UString> SDLEnvironment::getLogicalDrives() const
 
 UString SDLEnvironment::getFolderFromFilePath(UString filepath) const
 {
-	debugLog("WARNING: not available in SDL!\n");
+	if (filepath.length() < 1)
+		return filepath;
+
+	size_t lastSlash = filepath.findLast("/");
+	if (lastSlash != std::string::npos)
+		return filepath.substr(0, lastSlash + 1);
+
+	lastSlash = filepath.findLast("\\");
+	if (lastSlash != std::string::npos)
+		return filepath.substr(0, lastSlash + 1);
+
 	return filepath;
 }
 
@@ -267,16 +281,16 @@ UString SDLEnvironment::getFileExtensionFromFilePath(UString filepath, bool incl
 		return UString("");
 }
 
-UString SDLEnvironment::getFileNameFromFilePath(UString filePath) const
+UString SDLEnvironment::getFileNameFromFilePath(UString filepath) const
 {
-	if (filePath.length() < 1)
-		return filePath;
+	if (filepath.length() < 1)
+		return filepath;
 
-	const size_t lastSlashIndex = filePath.findLast("/");
+	const size_t lastSlashIndex = filepath.findLast("/");
 	if (lastSlashIndex != std::string::npos)
-		return filePath.substr(lastSlashIndex + 1);
+		return filepath.substr(lastSlashIndex + 1);
 
-	return filePath;
+	return filepath;
 }
 
 UString SDLEnvironment::getClipBoardText()
@@ -314,16 +328,89 @@ void SDLEnvironment::showMessageErrorFatal(UString title, UString message) const
 	showMessageError(title, message);
 }
 
-UString SDLEnvironment::openFileWindow(const char *filetypefilters, UString title, UString initialpath) const
+void SDLEnvironment::fileDialogCallback(void *userdata, const char *const *filelist, int filter)
 {
-	debugLog("WARNING: not available in SDL!\n");
-	return UString("");
+	if (filelist && *filelist)
+	{
+		s_fileDialogState.result = UString(*filelist);
+	}
+	else
+	{
+		s_fileDialogState.result = "";
+	}
+	s_fileDialogState.done = true;
 }
 
+UString SDLEnvironment::openFileWindow(const char *filetypefilters, UString title, UString initialpath) const
+{
+	// convert filetypefilters (Windows-style)
+	std::vector<std::string> filterNames;
+	std::vector<std::string> filterPatterns;
+	std::vector<SDL_DialogFileFilter> sdlFilters;
+
+	if (filetypefilters && *filetypefilters)
+	{
+		const char *curr = filetypefilters;
+		// add the filetype filters to the SDL dialog filter
+		while (*curr)
+		{
+			const char *name = curr;
+			curr += strlen(name) + 1;
+
+			if (!*curr)
+				break;
+
+			const char *pattern = curr;
+			curr += strlen(pattern) + 1;
+
+			filterNames.emplace_back(name);
+			filterPatterns.emplace_back(pattern);
+
+			SDL_DialogFileFilter filter = {filterNames.back().c_str(), filterPatterns.back().c_str()};
+			sdlFilters.push_back(filter);
+		}
+	}
+
+	// reset static file dialog state
+	s_fileDialogState.done = false;
+	s_fileDialogState.result = "";
+
+	// show it
+	SDL_ShowOpenFileDialog(fileDialogCallback, nullptr, m_window, sdlFilters.empty() ? nullptr : sdlFilters.data(), static_cast<int>(sdlFilters.size()),
+	                       initialpath.length() > 0 ? initialpath.toUtf8() : nullptr, false);
+
+	// wait for it to close
+	while (!s_fileDialogState.done)
+	{
+		SDL_Event event;
+		if (SDL_WaitEventTimeout(&event, 100))
+			if (event.type == SDL_EVENT_QUIT)
+				break;
+	}
+
+	return s_fileDialogState.result;
+}
+
+// TODO: what if multiple of these could be opened at once? or openFolderWindow + openFileWindow?
 UString SDLEnvironment::openFolderWindow(UString title, UString initialpath) const
 {
-	debugLog("WARNING: not available in SDL!\n");
-	return UString("");
+	// reset static file dialog state
+	s_fileDialogState.done = false;
+	s_fileDialogState.result = "";
+
+	// show it
+	SDL_ShowOpenFolderDialog(fileDialogCallback, nullptr, m_window, initialpath.length() > 0 ? initialpath.toUtf8() : nullptr, false);
+
+	// wait for it to close
+	while (!s_fileDialogState.done)
+	{
+		SDL_Event event;
+		if (SDL_WaitEventTimeout(&event, 100))
+			if (event.type == SDL_EVENT_QUIT)
+				break;
+	}
+
+	return s_fileDialogState.result;
 }
 
 void SDLEnvironment::focus()
@@ -446,7 +533,8 @@ int SDLEnvironment::getDPI() const
 Vector2 SDLEnvironment::getMousePos() const
 {
 	// HACKHACK: workaround, we don't want any finger besides the first initial finger changing the position
-	// NOTE: on the Steam Deck, even with "Touchscreen Native Support" enabled, SDL_GetMouseState() will always return the most recent touch position, which we do not want
+	// NOTE: on the Steam Deck, even with "Touchscreen Native Support" enabled, SDL_GetMouseState() will always return the most recent touch position, which we
+	// do not want
 	if constexpr (Env::cfg(FEAT::TOUCH))
 		if (m_bWasLastMouseInputTouch)
 			return m_engine->getMouse()->getActualPos(); // so instead, we return our own which is always guaranteed to be the first finger position (and no other fingers)
@@ -521,6 +609,119 @@ void SDLEnvironment::onLogLevelChange(UString oldValue, UString newValue)
 		sdlDebug(false);
 		SDL_ResetLogPriorities();
 	}
+}
+
+// static helpers
+
+// for getting files in folder/ folders in folder
+static inline std::vector<UString> enumerateDirectory(const char *pathToEnum, SDL_PathType type)
+{
+	struct EnumContext
+	{
+		UString dirName;
+		std::vector<UString> *contents;
+		SDL_PathType type;
+	};
+
+	auto enumCallback = [](void *userData, const char *, const char *fname) -> SDL_EnumerationResult {
+		auto *ctx = static_cast<EnumContext *>(userData);
+
+		if (std::strcmp(fname, ".") == 0 || std::strcmp(fname, "..") == 0)
+			return SDL_ENUM_CONTINUE;
+
+		SDL_PathInfo info;
+		if (SDL_GetPathInfo((ctx->dirName + fname).toUtf8(), &info) && info.type == ctx->type)
+			ctx->contents->emplace_back(fname); // only want the filename
+
+		return SDL_ENUM_CONTINUE;
+	};
+
+	UString path = pathToEnum;
+	if (!path.endsWith('/') && !path.endsWith('\\'))
+		path += '/';
+
+	std::vector<UString> contents;
+
+	EnumContext context{.dirName = path, .contents = &contents, .type = type};
+
+	if (!SDL_EnumerateDirectory(path.toUtf8(), enumCallback, &context))
+		debugLog("Failed to enumerate directory: %s\n", SDL_GetError());
+
+	return contents;
+}
+
+// return a more naturally windows-like sorted order for folders, useful for e.g. osu! skin list dropdown order
+static inline void winSortInPlace(std::vector<UString> &toSort)
+{
+	auto naturalCompare = [](const UString &a, const UString &b) -> bool {
+		const char *aStr = a.toUtf8();
+		const char *bStr = b.toUtf8();
+
+		while (*aStr && *bStr) // skip to the first difference
+		{
+			bool aIsDigit = std::isdigit(static_cast<unsigned char>(*aStr));
+			bool bIsDigit = std::isdigit(static_cast<unsigned char>(*bStr));
+
+			if (aIsDigit != bIsDigit) // different types
+				return aIsDigit;
+
+			if (aIsDigit) // collect and compare the complete numbers if both are digits
+			{
+				const char *aNumStart = aStr;
+				const char *bNumStart = bStr;
+				while (*aStr == '0' && std::isdigit(static_cast<unsigned char>(*(aStr + 1)))) // skip leading zeros
+					++aStr;
+				while (*bStr == '0' && std::isdigit(static_cast<unsigned char>(*(bStr + 1))))
+					++bStr;
+				const char *aPtr = aStr;
+				const char *bPtr = bStr;
+				while (std::isdigit(static_cast<unsigned char>(*aPtr))) // count digits
+					++aPtr;
+				while (std::isdigit(static_cast<unsigned char>(*bPtr)))
+					++bPtr;
+				size_t aDigits = aPtr - aStr;
+				size_t bDigits = bPtr - bStr;
+				if (aDigits != bDigits) // different digit counts
+					return aDigits < bDigits;
+				while (aStr < aPtr) // same number of digits, compare them
+				{
+					if (*aStr != *bStr)
+						return *aStr < *bStr;
+					++aStr;
+					++bStr;
+				}
+				// numbers are equal, check if the originals had different lengths due to leading zeros
+				size_t aFullLen = aPtr - aNumStart;
+				size_t bFullLen = bPtr - bNumStart;
+				if (aFullLen != bFullLen)
+					return aFullLen < bFullLen;
+			}
+			else
+			{
+				// simple case-insensitive compare if neither are digits
+				char aLower = std::tolower(static_cast<unsigned char>(*aStr));
+				char bLower = std::tolower(static_cast<unsigned char>(*bStr));
+				if (aLower != bLower)
+					return aLower < bLower;
+				++aStr;
+				++bStr;
+			}
+		}
+		return *aStr == 0 && *bStr != 0;
+	};
+	std::ranges::sort(toSort, naturalCompare);
+}
+
+// for touch support hack (DEPRECATED)
+[[maybe_unused]] static inline bool isSteamDeckInt()
+{
+	const char *steamDeck = std::getenv("SteamDeck");
+	if (steamDeck != NULL)
+	{
+		const std::string stdSteamDeck(steamDeck);
+		return (stdSteamDeck == "1");
+	}
+	return false;
 }
 
 #endif

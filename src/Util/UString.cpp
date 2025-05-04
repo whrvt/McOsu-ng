@@ -449,6 +449,41 @@ bool UString::operator<(const UString &ustr) const
 	return m_unicode < ustr.m_unicode;
 }
 
+// appends to an existing string
+UString& UString::operator+=(const UString& ustr) {
+    append(ustr);
+    return *this;
+}
+
+// creates a new string
+UString UString::operator+(const UString& ustr) const {
+    UString result(*this);
+    result.append(ustr);
+    return result;
+}
+
+UString& UString::operator+=(wchar_t ch) {
+    append(ch);
+    return *this;
+}
+
+UString UString::operator+(wchar_t ch) const {
+    UString result(*this);
+    result.append(ch);
+    return result;
+}
+
+UString& UString::operator+=(char ch) {
+    append(ch);
+    return *this;
+}
+
+UString UString::operator+(char ch) const {
+    UString result(*this);
+    result.append(ch);
+    return result;
+}
+
 bool UString::equalsIgnoreCase(const UString &ustr) const
 {
 	if (m_length != ustr.m_length)

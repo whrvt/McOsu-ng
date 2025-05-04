@@ -2,7 +2,7 @@ Language: C
 BasedOnStyle: Microsoft
 UseTab: ForIndentation
 IndentWidth: 4
-ColumnLimit: 240
+ColumnLimit: 180
 AllowShortFunctionsOnASingleLine: Inline
 IndentAccessModifiers: false
 AccessModifierOffset: -4
@@ -15,7 +15,7 @@ Language: Cpp
 BasedOnStyle: Microsoft
 UseTab: ForIndentation
 IndentWidth: 4
-ColumnLimit: 240
+ColumnLimit: 180
 AllowShortFunctionsOnASingleLine: Inline
 IndentAccessModifiers: false
 AccessModifierOffset: -4

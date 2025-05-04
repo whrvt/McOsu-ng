@@ -44,7 +44,7 @@ public:
 	void restart() override;
 	void sleep(unsigned int us) override;
 	[[nodiscard]] UString getExecutablePath() const override;
-	void openURLInDefaultBrowser(UString url) const override; // NOTE: non-SDL
+	void openURLInDefaultBrowser(UString url) const override;
 	// returns at least 1
 	[[nodiscard]] inline int getLogicalCPUCount() const override { return SDL_GetNumLogicalCPUCores(); }
 
@@ -54,16 +54,16 @@ public:
 
 	// file IO
 	[[nodiscard]] bool fileExists(UString filename) const override;
-	[[nodiscard]] bool directoryExists(UString directoryName) const override; // NOTE: non-SDL
-	bool createDirectory(UString directoryName) override;                     // NOTE: non-SDL
+	[[nodiscard]] bool directoryExists(UString directoryName) const override;
+	[[nodiscard]] bool createDirectory(UString directoryName) const override;
 	bool renameFile(UString oldFileName, UString newFileName) override;
 	bool deleteFile(UString filePath) override;
-	[[nodiscard]] std::vector<UString> getFilesInFolder(UString folder) const override;   // NOTE: non-SDL
-	[[nodiscard]] std::vector<UString> getFoldersInFolder(UString folder) const override; // NOTE: non-SDL
+	[[nodiscard]] std::vector<UString> getFilesInFolder(UString folder) const override;
+	[[nodiscard]] std::vector<UString> getFoldersInFolder(UString folder) const override;
 	[[nodiscard]] std::vector<UString> getLogicalDrives() const override;                 // NOTE: non-SDL
-	[[nodiscard]] UString getFolderFromFilePath(UString filepath) const override;         // NOTE: non-SDL
+	[[nodiscard]] UString getFolderFromFilePath(UString filepath) const override;
 	[[nodiscard]] UString getFileExtensionFromFilePath(UString filepath, bool includeDot = false) const override;
-	[[nodiscard]] UString getFileNameFromFilePath(UString filePath) const override; // NOTE: non-SDL
+	[[nodiscard]] UString getFileNameFromFilePath(UString filePath) const override;
 
 	// clipboard
 	[[nodiscard]] UString getClipBoardText() override;
@@ -74,8 +74,8 @@ public:
 	void showMessageWarning(UString title, UString message) const override;
 	void showMessageError(UString title, UString message) const override;
 	void showMessageErrorFatal(UString title, UString message) const override;
-	UString openFileWindow(const char *filetypefilters, UString title, UString initialpath) const override; // NOTE: non-SDL
-	[[nodiscard]] UString openFolderWindow(UString title, UString initialpath) const override;              // NOTE: non-SDL
+	UString openFileWindow(const char *filetypefilters, UString title, UString initialpath) const override;
+	[[nodiscard]] UString openFolderWindow(UString title, UString initialpath) const override;
 
 	// window
 	void focus() override;
@@ -232,6 +232,14 @@ private:
 		else
 			return false;
 	}
+private:
+	// SDL dialog callbacks/helpers
+	struct FileDialogState {
+		bool done;
+		UString result;
+	};
+	static FileDialogState s_fileDialogState;
+	static void fileDialogCallback(void *userdata, const char * const *filelist, int filter);
 };
 
 #else

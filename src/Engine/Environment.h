@@ -42,7 +42,7 @@ public:
 	// file IO
 	[[nodiscard]] virtual bool fileExists(UString fileName) const = 0;
 	[[nodiscard]] virtual bool directoryExists(UString directoryName) const = 0;
-	virtual bool createDirectory(UString directoryName) = 0;
+	[[nodiscard]] virtual bool createDirectory(UString directoryName) const = 0;
 	virtual bool renameFile(UString oldFileName, UString newFileName) = 0;
 	virtual bool deleteFile(UString filePath) = 0;
 	[[nodiscard]] virtual std::vector<UString> getFilesInFolder(UString folder) const = 0;

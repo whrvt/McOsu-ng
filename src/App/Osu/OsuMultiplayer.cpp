@@ -1320,13 +1320,13 @@ void OsuMultiplayer::onBeatmapDownloadFinished(const BeatmapDownloadState &dl)
 	// create folder structure
 	UString beatmapFolderPath = "tmp/";
 	{
-		if (!env->directoryExists(beatmapFolderPath))
-			env->createDirectory(beatmapFolderPath);
-
 		beatmapFolderPath.append(dl.osuFileMD5Hash);
 		beatmapFolderPath.append("/");
-		if (!env->directoryExists(beatmapFolderPath))
-			env->createDirectory(beatmapFolderPath);
+		if (!env->directoryExists(beatmapFolderPath) && !env->createDirectory(beatmapFolderPath))
+		{
+			engine->showMessageError("OsuMultiplayer::onBeatmapDownloadFinished()", UString::format("Couldn't create beatmap folder path:\n%s\n", beatmapFolderPath.toUtf8()));
+			return;
+		}
 	}
 
 	// write downloaded files to disk
