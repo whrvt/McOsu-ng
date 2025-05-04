@@ -46,6 +46,9 @@ public:
 	size_t getFileSize() const;
 
 private:
+	// fallback for case-insensitive file finding (i.e. Skin.ini vs skin.ini)
+	bool tryFindCaseInsensitive(UString& filePath);
+
 	UString m_filePath;
 	TYPE m_type;
 	bool m_ready;

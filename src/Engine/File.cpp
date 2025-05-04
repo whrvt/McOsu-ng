@@ -13,8 +13,8 @@
 #include <utility>
 
 using std::filesystem::exists;
-using std::filesystem::path;
 using std::filesystem::is_regular_file;
+using std::filesystem::path;
 
 ConVar debug_file("debug_file", false, FCVAR_NONE);
 ConVar file_size_max("file_size_max", 1024, FCVAR_NONE, "maximum filesize sanity limit in MB, all files bigger than this are not allowed to load");
@@ -27,15 +27,17 @@ McFile::McFile(UString filePath, TYPE type) : m_filePath(filePath), m_type(type)
 	auto path = ::path(m_filePath.plat_str());
 	if (type == TYPE::READ)
 	{
-		// check if path exists and is a regular file
-		if (!std::filesystem::exists(path))
+		// case-insensitive lookup if exact match fails
+		if (!tryFindCaseInsensitive(m_filePath))
 		{
 			debugLog("File Error: Path %s does not exist\n", filePath.toUtf8());
 			return;
 		}
+
+		auto path = std::filesystem::path(m_filePath.plat_str());
 		if (!std::filesystem::is_regular_file(path))
 		{
-			debugLog("File Error: %s is not a regular file\n", filePath.toUtf8());
+			debugLog("File Error: %s is not a regular file\n", m_filePath.toUtf8());
 			return;
 		}
 
@@ -183,4 +185,44 @@ const char *McFile::readFile()
 size_t McFile::getFileSize() const
 {
 	return m_fileSize;
+}
+
+bool McFile::tryFindCaseInsensitive(UString &filePath)
+{
+	auto path = std::filesystem::path(filePath.plat_str()); // direct match
+	if (std::filesystem::exists(path))
+		return true;
+
+	auto parentPath = path.parent_path();
+	auto filename = path.filename().string();
+
+	// don't try scanning all the way back to the root directory lol, that would be horrendous
+	if (!std::filesystem::exists(parentPath) || !std::filesystem::is_directory(parentPath))
+		return false;
+
+	UString targetFilename(filename.c_str());
+
+	// now compare all of the directory entries case-insensitively to try finding it
+	for (const auto &entry : std::filesystem::directory_iterator(parentPath))
+	{
+		if (!entry.is_regular_file())
+			continue;
+
+		UString entryFilename(entry.path().filename().string().c_str());
+
+		if (entryFilename.equalsIgnoreCase(targetFilename))
+		{
+			filePath = UString(parentPath.string().c_str());
+			if (!filePath.endsWith('/') && !filePath.endsWith('\\'))
+				filePath.append('/');
+			filePath.append(entryFilename);
+
+			if (McFile::debug->getBool())
+				debugLog("File: Case-insensitive match found for %s -> %s\n", path.string().c_str(), filePath.toUtf8());
+
+			return true;
+		}
+	}
+
+	return false;
 }
