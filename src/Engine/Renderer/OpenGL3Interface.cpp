@@ -781,7 +781,7 @@ int OpenGL3Interface::getVRAMTotal()
 	glGetIntegerv(GPU_MEMORY_INFO_TOTAL_AVAILABLE_MEMORY_NVX, nvidiaMemory);
 	glGetIntegerv(TEXTURE_FREE_MEMORY_ATI, atiMemory);
 
-	glGetError(); // clear error state
+	//glGetError(); // clear error state
 
 	if (nvidiaMemory[0] < 1)
 		return atiMemory[0];
@@ -803,7 +803,7 @@ int OpenGL3Interface::getVRAMRemaining()
 	glGetIntegerv(GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX, nvidiaMemory);
 	glGetIntegerv(TEXTURE_FREE_MEMORY_ATI, atiMemory);
 
-	glGetError(); // clear error state
+	//glGetError(); // clear error state
 
 	if (nvidiaMemory[0] < 1)
 		return atiMemory[0];
@@ -876,9 +876,9 @@ void OpenGL3Interface::onTransformUpdate(Matrix4 &projectionMatrix, Matrix4 &wor
 
 void OpenGL3Interface::handleGLErrors()
 {
-	int error = glGetError();
-	if (error != 0)
-		debugLog("OpenGL Error: %i on frame %i\n",error,engine->getFrameCount());
+	// int error = glGetError();
+	// if (error != 0)
+	// 	debugLog("OpenGL Error: %i on frame %i\n",error,engine->getFrameCount());
 }
 
 int OpenGL3Interface::primitiveToOpenGL(Graphics::PRIMITIVE primitive)

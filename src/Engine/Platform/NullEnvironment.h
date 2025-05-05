@@ -30,7 +30,7 @@ public:
 	[[nodiscard]] inline int getLogicalCPUCount() const override {return 1;}
 
 	// user
-	[[nodiscard]] UString getUsername() const override {return "<NULL>";}
+	[[nodiscard]] UString getUsername() override {return "<NULL>";}
 	[[nodiscard]] UString getUserDataPath() const override {return "<NULL>";}
 
 	// file IO

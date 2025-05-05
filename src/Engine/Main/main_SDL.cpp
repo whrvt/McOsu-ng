@@ -194,7 +194,6 @@ int SDLEnvironment::main(int argc, char *argv[])
 		else
 		{
 			debugLog("Couldn't SDL_GetCurrentDisplayMode(SDL display: %d): %s\n", display, SDL_GetError());
-			fps_max.setValue(fps_max.getInt());
 		}
 	}
 
@@ -281,8 +280,8 @@ int SDLEnvironment::main(int argc, char *argv[])
 	Vector2 mousePos;
 
 	// main loop
-	constexpr auto SIZE_EVENTS = 64u;
-	SDL_Event events[SIZE_EVENTS];
+	constexpr auto SIZE_EVENTS = 64;
+	std::array<SDL_Event, SIZE_EVENTS> events;
 	while (m_bRunning)
 	{
 		VPROF_MAIN();
@@ -385,52 +384,12 @@ int SDLEnvironment::main(int argc, char *argv[])
 					// mouse
 					case SDL_EVENT_MOUSE_BUTTON_DOWN:
 						if (likely(!deckTouchHack())) // HACKHACK: Steam Deck workaround (sends mouse events even though native touchscreen support is enabled)
-						{
-							switch (events[i].button.button)
-							{
-							case SDL_BUTTON_LEFT:
-								m_engine->onMouseLeftChange(true);
-								break;
-							case SDL_BUTTON_MIDDLE:
-								m_engine->onMouseMiddleChange(true);
-								break;
-							case SDL_BUTTON_RIGHT:
-								m_engine->onMouseRightChange(true);
-								break;
-
-							case SDL_BUTTON_X1:
-								m_engine->onMouseButton4Change(true);
-								break;
-							case SDL_BUTTON_X2:
-								m_engine->onMouseButton5Change(true);
-								break;
-							}
-						}
+							m_engine->onMouseButtonChange(events[i].button.button, true);
 						break;
 
 					case SDL_EVENT_MOUSE_BUTTON_UP:
 						if (likely(!deckTouchHack())) // HACKHACK: Steam Deck workaround (sends mouse events even though native touchscreen support is enabled)
-						{
-							switch (events[i].button.button)
-							{
-							case SDL_BUTTON_LEFT:
-								m_engine->onMouseLeftChange(false);
-								break;
-							case SDL_BUTTON_MIDDLE:
-								m_engine->onMouseMiddleChange(false);
-								break;
-							case SDL_BUTTON_RIGHT:
-								m_engine->onMouseRightChange(false);
-								break;
-
-							case SDL_BUTTON_X1:
-								m_engine->onMouseButton4Change(false);
-								break;
-							case SDL_BUTTON_X2:
-								m_engine->onMouseButton5Change(false);
-								break;
-							}
-						}
+							m_engine->onMouseButtonChange(events[i].button.button, false);
 						break;
 
 					case SDL_EVENT_MOUSE_WHEEL:
@@ -443,28 +402,19 @@ int SDLEnvironment::main(int argc, char *argv[])
 						break;
 
 					case SDL_EVENT_MOUSE_MOTION:
-						if (likely(!deckTouchHack())) // HACKHACK: Steam Deck workaround (sends mouse events even though native touchscreen support is enabled)
+						if (likely(!deckTouchHack())) // HACKHACK: Steam Deck workaround
 						{
 							if constexpr (Env::cfg(FEAT::TOUCH))
 								if (events[i].motion.which != SDL_TOUCH_MOUSEID)
 									setWasLastMouseInputTouch(false);
 
-							if (unlikely(isDebugSdl))
-								debugLog("SDL_MOUSEMOTION: x = %.2f, xrel = %.2f, y = %.2f, yrel = %.2f, which = %i\n", events[i].motion.x, events[i].motion.xrel,
-								         events[i].motion.y, events[i].motion.yrel, (int)events[i].motion.which);
+							// cache the position
+							m_vLastAbsMousePos.x = events[i].motion.x;
+							m_vLastAbsMousePos.y = events[i].motion.y;
+							m_vLastRelMousePos.x = events[i].motion.xrel;
+							m_vLastRelMousePos.y = events[i].motion.yrel;
 
-							// which!=0 means relative, ignore non-relative motion events if we want raw input
-							if (isCursorVisible() || (m_bIsRawInput == !!events[i].motion.which))
-							{
-								// store the position for future queries
-								m_vLastAbsMousePos.x = events[i].motion.x;
-								m_vLastAbsMousePos.y = events[i].motion.y;
-
-								m_vLastRelMousePos.x = events[i].motion.xrel; // TODO: use?
-								m_vLastRelMousePos.y = events[i].motion.yrel;
-							}
-							if (!isCursorVisible() && m_bIsRawInput)
-								m_engine->onMouseRawMove(events[i].motion.xrel, events[i].motion.yrel);
+							m_engine->onMouseMotion(events[i].motion.x, events[i].motion.y, events[i].motion.xrel, events[i].motion.yrel, events[i].motion.which != 0);
 						}
 						break;
 

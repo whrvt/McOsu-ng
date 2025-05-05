@@ -24,6 +24,7 @@
 
 extern ConVar mouse_raw_input;
 
+class UString;
 class Engine;
 class SDLEnvironment : public Environment
 {
@@ -49,7 +50,7 @@ public:
 	[[nodiscard]] inline int getLogicalCPUCount() const override { return SDL_GetNumLogicalCPUCores(); }
 
 	// user
-	[[nodiscard]] UString getUsername() const override; // NOTE: non-SDL
+	[[nodiscard]] UString getUsername() override;
 	[[nodiscard]] UString getUserDataPath() const override;
 
 	// file IO
@@ -60,7 +61,7 @@ public:
 	bool deleteFile(UString filePath) override;
 	[[nodiscard]] std::vector<UString> getFilesInFolder(UString folder) const override;
 	[[nodiscard]] std::vector<UString> getFoldersInFolder(UString folder) const override;
-	[[nodiscard]] std::vector<UString> getLogicalDrives() const override;                 // NOTE: non-SDL
+	[[nodiscard]] std::vector<UString> getLogicalDrives() const override;
 	[[nodiscard]] UString getFolderFromFilePath(UString filepath) const override;
 	[[nodiscard]] UString getFileExtensionFromFilePath(UString filepath, bool includeDot = false) const override;
 	[[nodiscard]] UString getFileNameFromFilePath(UString filePath) const override;
@@ -143,6 +144,9 @@ private:
 
 	bool m_bIsRawInput;
 
+	// cache
+	UString m_sUsername;
+
 	// logging
 	bool m_sdlDebug;
 
@@ -161,11 +165,11 @@ private:
 	McRect m_cursorClip;
 	CURSORTYPE m_cursorType;
 	std::map<CURSORTYPE, SDL_Cursor *> m_mCursorIcons;
+	void onRawInputChange(float newval);
+	void setRawInput(bool state);
 
 	// clipboard
 	const char *m_sPrevClipboardTextSDL;
-
-	void onRawInputChange(float newval);
 
 	// misc touch-related hacks and joystick stuff
 	[[maybe_unused]] void handleTouchEvent(SDL_Event event, Uint32 eventtype, Vector2 *mousePos);

@@ -193,6 +193,9 @@ bool McFile::tryFindCaseInsensitive(UString &filePath)
 	if (std::filesystem::exists(path))
 		return true;
 
+	if constexpr (Env::cfg(OS::WINDOWS)) // no point in continuing, windows is already case insensitive
+		return false;
+
 	auto parentPath = path.parent_path();
 	auto filename = path.filename().string();
 

@@ -306,7 +306,7 @@ void OpenGLRenderTarget::bind(unsigned int textureUnit)
 	// needed for legacy support (OpenGLLegacyInterface)
 	// DEPRECATED LEGACY
 	glEnable(GL_TEXTURE_2D);
-	glGetError(); // clear gl error state
+	//glGetError(); // clear gl error state
 }
 
 void OpenGLRenderTarget::unbind()

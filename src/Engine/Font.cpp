@@ -56,16 +56,16 @@ void McFont::constructor(std::vector<wchar_t> characters, int fontSize, bool ant
 
 	// setup error glyph
 	m_errorGlyph = {
-	    .character = UNKNOWN_CHAR, // character
-	    .uvPixelsX = 10,           // advance_x
-	    .uvPixelsY = 1,            // sizepixelsx
-	    .sizePixelsX = 1,          // sizepixelsy
-	    .sizePixelsY = 0,          // uvpixelsx
-	    .left = 0,                 // uvpixelsy
-	    .top = 10,                 // top
-	    .width = 10,               // width
-	    .rows = 1,                 // rows
-	    .advance_x = 0             // left
+	    .character = UNKNOWN_CHAR,
+	    .uvPixelsX = 10,
+	    .uvPixelsY = 1,
+	    .sizePixelsX = 1,
+	    .sizePixelsY = 0,
+	    .left = 0,
+	    .top = 10,
+	    .width = 10,
+	    .rows = 1,
+	    .advance_x = 0
 	};
 
 	// pre-allocate space for glyphs

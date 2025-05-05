@@ -14,6 +14,8 @@ class MouseListener
 public:
 	virtual ~MouseListener() {;}
 
+	virtual void onButtonChange(int button, bool down) {;}
+
 	virtual void onLeftChange(bool down) {;}
 	virtual void onMiddleChange(bool down) {;}
 	virtual void onRightChange(bool down) {;}

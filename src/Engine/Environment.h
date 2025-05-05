@@ -36,7 +36,7 @@ public:
 	[[nodiscard]] virtual int getLogicalCPUCount() const = 0;
 
 	// user
-	[[nodiscard]] virtual UString getUsername() const = 0;
+	[[nodiscard]] virtual UString getUsername() = 0;
 	[[nodiscard]] virtual UString getUserDataPath() const = 0;
 
 	// file IO

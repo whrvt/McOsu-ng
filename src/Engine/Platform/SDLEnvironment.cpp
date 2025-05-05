@@ -31,6 +31,9 @@
 // TODO
 #endif
 
+// extern convars
+extern ConVar mouse_sensitivity;
+
 // definitions
 ConVar debug_sdl("debug_sdl", false, FCVAR_NONE);
 SDLEnvironment::FileDialogState SDLEnvironment::s_fileDialogState = {.done = true, .result = ""};
@@ -38,6 +41,7 @@ SDLEnvironment::FileDialogState SDLEnvironment::s_fileDialogState = {.done = tru
 // declarations
 static inline std::vector<UString> enumerateDirectory(const char *pathToEnum, SDL_PathType type);
 static inline void winSortInPlace(std::vector<UString> &toSort);
+static void sensTransformFunc(void *userdata, Uint64 timestamp, SDL_Window *window, SDL_MouseID mouseID, float *x, float *y);
 [[maybe_unused]] static inline bool isSteamDeckInt();
 
 SDLEnvironment::SDLEnvironment() : Environment()
@@ -55,6 +59,8 @@ SDLEnvironment::SDLEnvironment() : Environment()
 
 	m_bResizable = false;
 	m_bFullscreen = false;
+
+	m_sUsername = {};
 
 	m_bIsCursorInsideWindow = false;
 	m_bCursorVisible = true;
@@ -89,7 +95,7 @@ SDLEnvironment::SDLEnvironment() : Environment()
 		onLogLevelChange("", "1");
 	debug_sdl.setCallback(fastdelegate::MakeDelegate(this, &SDLEnvironment::onLogLevelChange));
 
-	mouse_raw_input.setCallback( fastdelegate::MakeDelegate(this, &SDLEnvironment::onRawInputChange) );
+	mouse_raw_input.setCallback(fastdelegate::MakeDelegate(this, &SDLEnvironment::onRawInputChange));
 
 	// TOUCH/JOY LEGACY
 	if constexpr (Env::cfg(FEAT::TOUCH))
@@ -184,22 +190,26 @@ void SDLEnvironment::openURLInDefaultBrowser(UString url) const
 		debugLog("Failed to open URL: %s\n", SDL_GetError());
 }
 
-UString SDLEnvironment::getUsername() const
+UString SDLEnvironment::getUsername()
 {
+	if (!m_sUsername.isEmpty())
+		return m_sUsername;
 #if defined(MCENGINE_PLATFORM_WINDOWS)
 	DWORD username_len = UNLEN + 1;
 	wchar_t username[UNLEN + 1];
 
 	if (GetUserNameW(username, &username_len))
-		return {username};
-#elif defined(__APPLE__) || defined(MCENGINE_PLATFORM_LINUX)
+		m_sUsername = username;
+#elif defined(__APPLE__) || defined(MCENGINE_PLATFORM_LINUX) || defined(MCENGINE_PLATFORM_WASM)
 	const char *user = getenv("USER");
 	if (user != nullptr)
-		return {user};
-
-	struct passwd *pwd = getpwuid(getuid());
-	if (pwd != nullptr)
-		return {pwd->pw_name};
+		m_sUsername = user;
+	else
+	{
+		struct passwd *pwd = getpwuid(getuid());
+		if (pwd != nullptr)
+			m_sUsername = pwd->pw_name;
+	}
 #elif defined(__SWITCH__) // copied from HorizonSDLEnvironment
 	UString uUsername = convar->getConVarByName("name")->getString();
 
@@ -257,10 +267,12 @@ UString SDLEnvironment::getUsername() const
 		accountExit();
 	}
 
-	return uUsername;
+	m_sUsername = uUsername;
 #endif
 	// fallback
-	return {PACKAGE_NAME "user"};
+	if (m_sUsername.isEmpty())
+		m_sUsername = PACKAGE_NAME "user";
+	return m_sUsername;
 }
 
 UString SDLEnvironment::getUserDataPath() const
@@ -355,9 +367,7 @@ std::vector<UString> SDLEnvironment::getLogicalDrives() const
 				UString testPath = UString::format("%c:\\", driveLetter);
 
 				if (SDL_GetPathInfo(testPath.toUtf8(), &info))
-				{
 					drives.emplace_back(drivePath);
-				}
 			}
 		}
 #endif
@@ -662,15 +672,20 @@ Vector2 SDLEnvironment::getMousePos() const
 void SDLEnvironment::setCursor(CURSORTYPE cur)
 {
 	m_cursorType = cur;
-
 	SDL_SetCursor(m_mCursorIcons.at(m_cursorType)); // does not make visible if the cursor isn't visible
+}
+
+void SDLEnvironment::setRawInput(bool state)
+{
+	SDL_SetRelativeMouseTransform(!state ? nullptr : sensTransformFunc, nullptr);
+	SDL_SetWindowRelativeMouseMode(m_window, state);
 }
 
 void SDLEnvironment::setCursorVisible(bool visible)
 {
 	m_bCursorVisible = visible;
 	if (m_bIsRawInput)
-		SDL_SetWindowRelativeMouseMode(m_window, !visible);
+		setRawInput(!visible);
 	visible ? SDL_ShowCursor() : SDL_HideCursor();
 }
 
@@ -717,7 +732,7 @@ void SDLEnvironment::listenToTextInput(bool listen)
 void SDLEnvironment::onRawInputChange(float newval)
 {
 	m_bIsRawInput = !!static_cast<int>(newval);
-	SDL_SetWindowRelativeMouseMode(m_window, m_bIsRawInput);
+	setRawInput(m_bIsRawInput);
 }
 
 void SDLEnvironment::onLogLevelChange(UString oldValue, UString newValue)
@@ -736,6 +751,13 @@ void SDLEnvironment::onLogLevelChange(UString oldValue, UString newValue)
 }
 
 // static helpers
+
+static void sensTransformFunc(void *, Uint64, SDL_Window *, SDL_MouseID, float *x, float *y)
+{
+	float sensitivity = mouse_sensitivity.getFloat();
+	*x *= sensitivity;
+	*y *= sensitivity;
+}
 
 // for getting files in folder/ folders in folder
 static inline std::vector<UString> enumerateDirectory(const char *pathToEnum, SDL_PathType type)

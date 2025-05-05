@@ -542,7 +542,7 @@ void OsuModFPoSu::update()
 		// regular mouse position mode
 
 		// calculate mouse delta
-		Vector2 rawDelta = engine->getMouse()->getRawDelta() / m_mouse_sensitivity_ref->getFloat(); // HACKHACK: undo engine mouse sensitivity multiplier
+		Vector2 rawDelta = engine->getMouse()->getDelta() / m_mouse_sensitivity_ref->getFloat(); // HACKHACK: undo engine mouse sensitivity multiplier
 
 		// apply fposu mouse sensitivity multiplier
 		const double countsPerCm = (double)fposu_mouse_dpi.getInt() / 2.54;
@@ -604,7 +604,7 @@ void OsuModFPoSu::update()
 		{
 			if constexpr (Env::cfg(OS::WINDOWS))
 			{
-				delta = (engine->getMouse()->getRawDelta() / m_mouse_sensitivity_ref->getFloat()); // HACKHACK: undo engine mouse sensitivity multiplier
+				delta = (engine->getMouse()->getDelta() / m_mouse_sensitivity_ref->getFloat()); // HACKHACK: undo engine mouse sensitivity multiplier
 
 				// apply fposu mouse sensitivity multiplier
 				const double countsPerCm = (double)fposu_mouse_dpi.getInt() / 2.54;

@@ -591,14 +591,9 @@ void Engine::onShutdown()
 	m_environment->shutdown();
 }
 
-void Engine::onMouseRawMove(float xDelta, float yDelta, bool absolute, bool virtualDesktop)
+void Engine::onMouseMotion(float x, float y, float xRel, float yRel, bool isRawInput)
 {
-	m_mouse->onRawMove(xDelta, yDelta, absolute, virtualDesktop);
-}
-
-void Engine::onMouseRawMove(int xDelta, int yDelta, bool absolute, bool virtualDesktop)
-{
-	m_mouse->onRawMove(xDelta, yDelta, absolute, virtualDesktop);
+	m_mouse->onMotion(x, y, xRel, yRel, isRawInput);
 }
 
 void Engine::onMouseWheelVertical(int delta)
@@ -611,21 +606,22 @@ void Engine::onMouseWheelHorizontal(int delta)
 	m_mouse->onWheelHorizontal(delta);
 }
 
-#ifdef MCENGINE_FEATURE_MULTITHREADING
+void Engine::onMouseButtonChange(int button, bool down)
+{
+    m_mouse->onButtonChange(button, down);
+}
 
+#if defined(MCENGINE_FEATURE_MULTITHREADING) && defined(MCENGINE_SDL_TOUCHSUPPORT)
 std::mutex g_engineMouseLeftClickMutex;
-
 #endif
 
 void Engine::onMouseLeftChange(bool mouseLeftDown)
 {
-#ifdef MCENGINE_FEATURE_MULTITHREADING
-
+#if defined(MCENGINE_FEATURE_MULTITHREADING) && defined(MCENGINE_SDL_TOUCHSUPPORT)
 	std::lock_guard<std::mutex> lk(g_engineMouseLeftClickMutex); // async calls from WinRealTimeStylus must be protected
 
-#endif
-
 	if (m_mouse->isLeftDown() != mouseLeftDown) // necessary due to WinRealTimeStylus and Touch, would cause double clicks otherwise
+#endif
 		m_mouse->onLeftChange(mouseLeftDown);
 }
 
@@ -636,7 +632,9 @@ void Engine::onMouseMiddleChange(bool mouseMiddleDown)
 
 void Engine::onMouseRightChange(bool mouseRightDown)
 {
+#if defined(MCENGINE_FEATURE_MULTITHREADING) && defined(MCENGINE_SDL_TOUCHSUPPORT)
 	if (m_mouse->isRightDown() != mouseRightDown) // necessary due to Touch, would cause double clicks otherwise
+#endif
 		m_mouse->onRightChange(mouseRightDown);
 }
 

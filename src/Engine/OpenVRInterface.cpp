@@ -1241,7 +1241,7 @@ void OpenVRInterface::update()
 		// rotation
 		if (m_bCaptureMouse)
 		{
-			Vector2 rawDelta = engine->getMouse()->getRawDelta();
+			Vector2 rawDelta = engine->getMouse()->getDelta();
 			if (rawDelta.x != 0.0f || rawDelta.y != 0.0f)
 			{
 				m_fakeCamera->rotateX(rawDelta.y*vr_mousespeed.getFloat());
