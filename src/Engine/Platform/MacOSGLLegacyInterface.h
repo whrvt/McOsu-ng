@@ -5,13 +5,13 @@
 // $NoKeywords: $macgli
 //===============================================================================//
 
-#ifdef __APPLE__
-
 #pragma once
 #ifndef MACOSGLLEGACYINTERFACE_H
 #define MACOSGLLEGACYINTERFACE_H
 
 #include "OpenGLLegacyInterface.h"
+
+#ifdef __APPLE__
 
 #ifdef MCENGINE_FEATURE_OPENGL
 
@@ -32,6 +32,8 @@ private:
 
 #endif
 
+#else
+class MacOSGLLegacyInterface : public OpenGLLegacyInterface{};
 #endif
 
 #endif

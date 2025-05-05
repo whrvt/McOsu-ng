@@ -48,6 +48,8 @@ OpenGL3Interface::OpenGL3Interface() : Graphics()
 
 	// persistent vars
 	m_color = 0xffffffff;
+
+	m_syncobj = new OpenGLSync();
 }
 
 OpenGL3Interface::~OpenGL3Interface()
@@ -55,6 +57,7 @@ OpenGL3Interface::~OpenGL3Interface()
 	SAFE_DELETE(m_shaderTexturedGeneric);
 
 	glDeleteVertexArrays(1, &m_iVA);
+	SAFE_DELETE(m_syncobj);
 }
 
 void OpenGL3Interface::init()
@@ -62,16 +65,6 @@ void OpenGL3Interface::init()
 	// check GL version
 	const GLubyte *version = glGetString(GL_VERSION);
 	debugLog("OpenGL: OpenGL Version %s\n",version);
-
-	// check GLEW
-	glewExperimental = GL_TRUE; // TODO: upgrade to glew >= 2.0.0 to fix this (would cause crash in e.g. glGenVertexArrays() without it)
-	GLenum err = glewInit();
-	if (GLEW_OK != err)
-	{
-		debugLog("glewInit() Error: %s\n", glewGetErrorString(err));
-		engine->showMessageErrorFatal("OpenGL Error", "Couldn't glewInit()!\nThe engine will exit now.");
-		engine->shutdown();
-	}
 
 	// check GL version again
 	if (!glewIsSupported("GL_VERSION_3_0"))
@@ -173,6 +166,7 @@ void OpenGL3Interface::init()
 void OpenGL3Interface::beginScene()
 {
 	m_bInScene = true;
+	m_syncobj->begin();
 
 	Matrix4 defaultProjectionMatrix = Camera::buildMatrixOrtho2D(0, m_vResolution.x, m_vResolution.y, 0, -1.0f, 1.0f);
 
@@ -208,6 +202,7 @@ void OpenGL3Interface::endScene()
 		engine->showMessageErrorFatal("ClipRect Stack Leak", "Make sure all push*() have a pop*()!");
 		engine->shutdown();
 	}
+	m_syncobj->end();
 
 	m_bInScene = false;
 }
@@ -786,7 +781,7 @@ int OpenGL3Interface::getVRAMTotal()
 	glGetIntegerv(GPU_MEMORY_INFO_TOTAL_AVAILABLE_MEMORY_NVX, nvidiaMemory);
 	glGetIntegerv(TEXTURE_FREE_MEMORY_ATI, atiMemory);
 
-	glGetError(); // clear error state
+	//glGetError(); // clear error state
 
 	if (nvidiaMemory[0] < 1)
 		return atiMemory[0];
@@ -808,7 +803,7 @@ int OpenGL3Interface::getVRAMRemaining()
 	glGetIntegerv(GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX, nvidiaMemory);
 	glGetIntegerv(TEXTURE_FREE_MEMORY_ATI, atiMemory);
 
-	glGetError(); // clear error state
+	//glGetError(); // clear error state
 
 	if (nvidiaMemory[0] < 1)
 		return atiMemory[0];
@@ -881,9 +876,9 @@ void OpenGL3Interface::onTransformUpdate(Matrix4 &projectionMatrix, Matrix4 &wor
 
 void OpenGL3Interface::handleGLErrors()
 {
-	int error = glGetError();
-	if (error != 0)
-		debugLog("OpenGL Error: %i on frame %i\n",error,engine->getFrameCount());
+	// int error = glGetError();
+	// if (error != 0)
+	// 	debugLog("OpenGL Error: %i on frame %i\n",error,engine->getFrameCount());
 }
 
 int OpenGL3Interface::primitiveToOpenGL(Graphics::PRIMITIVE primitive)

@@ -2,16 +2,26 @@ Language: C
 BasedOnStyle: Microsoft
 UseTab: ForIndentation
 IndentWidth: 4
-ColumnLimit: 160
+ColumnLimit: 180
 AllowShortFunctionsOnASingleLine: Inline
 IndentAccessModifiers: false
 AccessModifierOffset: -4
+AllowShortBlocksOnASingleLine: Empty
+BraceWrapping:
+  SplitEmptyRecord: false
+  SplitEmptyNamespace: false
 ---
 Language: Cpp
 BasedOnStyle: Microsoft
 UseTab: ForIndentation
 IndentWidth: 4
-ColumnLimit: 160
+ColumnLimit: 180
 AllowShortFunctionsOnASingleLine: Inline
 IndentAccessModifiers: false
 AccessModifierOffset: -4
+AllowShortBlocksOnASingleLine: Empty
+BreakBeforeBraces: Custom
+BraceWrapping:
+  SplitEmptyRecord: false
+  SplitEmptyNamespace: false
+

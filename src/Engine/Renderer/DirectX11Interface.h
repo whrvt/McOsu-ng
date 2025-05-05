@@ -12,11 +12,11 @@
 #include "cbase.h"
 #include "NullGraphicsInterface.h"
 
+class DirectX11Shader;
+
 #ifdef MCENGINE_FEATURE_DIRECTX11
 
 #include "d3d11.h"
-
-class DirectX11Shader;
 
 class DirectX11Interface : public NullGraphicsInterface
 {
@@ -178,6 +178,15 @@ private:
 
 	// stats
 	int m_iStatsNumDrawCalls;
+};
+
+#else
+
+class DirectX11Interface : public NullGraphicsInterface{
+public:
+	void resizeTarget(Vector2){}
+	bool enableFullscreen(bool){return false;}
+	void disableFullscreen(){}
 };
 
 #endif

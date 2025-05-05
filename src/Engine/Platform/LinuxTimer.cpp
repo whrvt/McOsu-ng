@@ -5,9 +5,9 @@
 // $NoKeywords: $linuxtime $os
 //===============================================================================//
 
-#ifdef __linux__
-
 #include "LinuxTimer.h"
+
+#if defined(__linux__) && !defined(MCENGINE_FEATURE_SDL)
 
 static timespec diff(timespec start, timespec end)
 {
@@ -23,18 +23,6 @@ static timespec diff(timespec start, timespec end)
 		temp.tv_nsec = end.tv_nsec - start.tv_nsec;
 	}
 	return temp;
-}
-
-LinuxTimer::LinuxTimer() : BaseTimer()
-{
-	m_startTime.tv_sec = 0;
-	m_startTime.tv_nsec = 0;
-	m_currentTime.tv_sec = 0;
-	m_currentTime.tv_nsec = 0;
-
-	m_delta = 0.0;
-	m_elapsedTime = 0.0;
-	m_elapsedTimeMS = 0;
 }
 
 void LinuxTimer::start()

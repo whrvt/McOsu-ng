@@ -37,6 +37,8 @@ public:
 	void setLoop(bool loop) override;
 
 	SOUNDHANDLE getHandle() override;
+	constexpr SoundType* getSound() override {return this;}
+	[[nodiscard]] constexpr const SoundType* getSound() const override {return this;}
 	float getPosition() override;
 	unsigned long getPositionMS() override;
 	unsigned long getLengthMS() override;
@@ -65,5 +67,7 @@ private:
 	SOUNDHANDLE m_HCHANNEL;
 };
 
+#else
+class SDLSound : public Sound{};
 #endif
 #endif

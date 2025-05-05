@@ -14,6 +14,8 @@
 class OsuKeyBindings
 {
 public:
+	OsuKeyBindings();
+	~OsuKeyBindings();
 	static ConVar LEFT_CLICK;
 	static ConVar RIGHT_CLICK;
 	static ConVar LEFT_CLICK_2;
@@ -60,10 +62,14 @@ public:
 	static ConVar MOD_AUTO;
 	static ConVar MOD_SCOREV2;
 
-	static std::vector<ConVar*> ALL;
-	static std::vector<std::vector<ConVar*>> MANIA;
+	[[nodiscard]] constexpr const std::vector<ConVar*>* get() const {return &ALL;}
+	[[nodiscard]] constexpr const std::vector<std::vector<ConVar*>>* getMania() const {return &MANIA;}
 
 private:
+
+	std::vector<ConVar*> ALL;
+	std::vector<std::vector<ConVar*>> MANIA;
+
 	static std::vector<ConVar*> createManiaConVarSet(int k);
 	static std::vector<std::vector<ConVar*>> createManiaConVarSets();
 	static void setDefaultManiaKeys(std::vector<std::vector<ConVar*>> mania);

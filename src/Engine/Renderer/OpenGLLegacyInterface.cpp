@@ -7,7 +7,6 @@
 
 #include "OpenGLLegacyInterface.h"
 
-#include <utility>
 
 #ifdef MCENGINE_FEATURE_OPENGL
 
@@ -22,6 +21,8 @@
 #include "OpenGLVertexArrayObject.h"
 
 #include "OpenGLHeaders.h"
+
+#include <utility>
 
 #define GPU_MEMORY_INFO_DEDICATED_VIDMEM_NVX          0x9047
 #define GPU_MEMORY_INFO_TOTAL_AVAILABLE_MEMORY_NVX    0x9048
@@ -47,6 +48,8 @@ OpenGLLegacyInterface::OpenGLLegacyInterface() : Graphics()
 	m_color = 0xffffffff;
 	m_fClearZ = 1;
 	m_fZ = 1;
+
+	m_syncobj = new OpenGLSync();
 }
 
 void OpenGLLegacyInterface::init()
@@ -54,16 +57,6 @@ void OpenGLLegacyInterface::init()
 	// check GL version
 	const GLubyte *version = glGetString(GL_VERSION);
 	debugLog("OpenGL: OpenGL Version %s\n", version);
-
-	// check GLEW
-	GLenum err = glewInit();
-	if (GLEW_OK != err)
-	{
-		debugLog("glewInit() Error: %s\n", glewGetErrorString(err));
-		engine->showMessageErrorFatal("OpenGL Error", "Couldn't glewInit()!\nThe engine will exit now.");
-		engine->shutdown();
-		return;
-	}
 
 	// check GL version again
 	if (!glewIsSupported("GL_VERSION_3_0") && !glewIsSupported("GLEW_VERSION_3_0"))
@@ -98,11 +91,13 @@ void OpenGLLegacyInterface::init()
 
 OpenGLLegacyInterface::~OpenGLLegacyInterface()
 {
+	SAFE_DELETE(m_syncobj);
 }
 
 void OpenGLLegacyInterface::beginScene()
 {
 	m_bInScene = true;
+	m_syncobj->begin();
 
 	Matrix4 defaultProjectionMatrix = Camera::buildMatrixOrtho2D(0, m_vResolution.x, m_vResolution.y, 0, -1.0f, 1.0f);
 
@@ -124,7 +119,7 @@ void OpenGLLegacyInterface::beginScene()
 	handleGLErrors();
 }
 
-void OpenGLLegacyInterface::endSceneInternal(bool finish)
+void OpenGLLegacyInterface::endScene()
 {
 	popTransform();
 
@@ -135,7 +130,8 @@ void OpenGLLegacyInterface::endSceneInternal(bool finish)
 		engine->showMessageErrorFatal("ClipRect Stack Leak", "Make sure all push*() have a pop*()!");
 		engine->shutdown();
 	}
-	if (finish) glFinish();
+
+	m_syncobj->end();
 	m_bInScene = false;
 }
 
@@ -698,7 +694,7 @@ int OpenGLLegacyInterface::getVRAMTotal()
 	glGetIntegerv(GPU_MEMORY_INFO_TOTAL_AVAILABLE_MEMORY_NVX, nvidiaMemory);
 	glGetIntegerv(TEXTURE_FREE_MEMORY_ATI, atiMemory);
 
-	glGetError(); // clear error state
+	//glGetError(); // clear error state
 
 	if (nvidiaMemory[0] < 1)
 		return atiMemory[0];
@@ -720,7 +716,7 @@ int OpenGLLegacyInterface::getVRAMRemaining()
 	glGetIntegerv(GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX, nvidiaMemory);
 	glGetIntegerv(TEXTURE_FREE_MEMORY_ATI, atiMemory);
 
-	glGetError(); // clear error state
+	//glGetError(); // clear error state
 
 	if (nvidiaMemory[0] < 1)
 		return atiMemory[0];
@@ -839,9 +835,9 @@ int OpenGLLegacyInterface::compareFuncToOpenGL(Graphics::COMPARE_FUNC compareFun
 
 void OpenGLLegacyInterface::handleGLErrors()
 {
-	int error = glGetError();
-	if (error != 0)
-		debugLog("OpenGL Error: %i on frame %i\n",error,engine->getFrameCount());
+	// int error = glGetError();
+	// if (error != 0)
+	// 	debugLog("OpenGL Error: %i on frame %i\n",error,engine->getFrameCount());
 }
 
 #endif

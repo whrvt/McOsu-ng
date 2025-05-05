@@ -7,7 +7,7 @@
 
 #include "OpenGLImage.h"
 
-#if defined(MCENGINE_FEATURE_OPENGL) || defined (MCENGINE_FEATURE_OPENGLES)
+#if defined(MCENGINE_FEATURE_OPENGL) || defined (MCENGINE_FEATURE_GLES2) || defined(MCENGINE_FEATURE_GLES32)
 
 #include "ResourceManager.h"
 #include "Environment.h"
@@ -38,15 +38,15 @@ void OpenGLImage::init()
 	{
 		// DEPRECATED LEGACY (1)
 		glEnable(GL_TEXTURE_2D);
-		glGetError(); // clear gl error state
+		// glGetError(); // clear gl error state
 
 		// create texture and bind
 		glGenTextures(1, &m_GLTexture);
 		glBindTexture(GL_TEXTURE_2D, m_GLTexture);
 
 		// DEPRECATED LEGACY (2)
-		glEnable(GL_TEXTURE_2D);
-		glGetError(); // clear gl error state
+		// glEnable(GL_TEXTURE_2D);
+		// glGetError(); // clear gl error state
 
 		// set texture filtering mode (mipmapping is disabled by default)
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, m_bMipmapped ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR);
@@ -70,7 +70,7 @@ void OpenGLImage::init()
 	}
 
 	// upload to gpu
-	int GLerror = 0;
+	//int GLerror = 0;
 	{
 		glBindTexture(GL_TEXTURE_2D, m_GLTexture);
 
@@ -88,32 +88,32 @@ void OpenGLImage::init()
 		glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, m_iWidth, m_iHeight, 0, format, GL_UNSIGNED_BYTE, &m_rawImage[0]);
 		if (m_bMipmapped)
 		{
-			// DEPRECATED LEGACY (1) (ignore mipmap generation errors)
-			GLerror = (GLerror == 0 ? glGetError() : GLerror);
+			// // DEPRECATED LEGACY (1) (ignore mipmap generation errors)
+			// GLerror = (GLerror == 0 ? glGetError() : GLerror);
 
 			glGenerateMipmap(GL_TEXTURE_2D);
 
-			// DEPRECATED LEGACY (2)
-			glGetError(); // clear gl error state
+			// // DEPRECATED LEGACY (2)
+			// glGetError(); // clear gl error state
 		}
 
 		if (m_type == Image::TYPE::TYPE_JPG && prevUnpackAlignment != jpgUnpackAlignment)
 			glPixelStorei(GL_UNPACK_ALIGNMENT, prevUnpackAlignment);
 	}
 
-	// free memory
-	if (!m_bKeepInSystemMemory)
-		m_rawImage = std::vector<unsigned char>();
-
 	// check for errors
-	GLerror = (GLerror == 0 ? glGetError() : GLerror);
-	if (GLerror != 0)
+	//GLerror = (GLerror == 0 ? glGetError() : GLerror);
+	if (m_rawImage.empty())
 	{
-		m_GLTexture = 0;
+		auto GLerror = glGetError();
 		debugLog("OpenGL Image Error: %i on file %s!\n", GLerror, m_sFilePath.toUtf8());
 		engine->showMessageError("Image Error", UString::format("OpenGL Image error %i on file %s", GLerror, m_sFilePath.toUtf8()));
 		return;
 	}
+
+	// free memory
+	if (!m_bKeepInSystemMemory)
+		m_rawImage = std::vector<unsigned char>();
 
 	m_bReady = true;
 
@@ -163,7 +163,7 @@ void OpenGLImage::bind(unsigned int textureUnit)
 	// needed for legacy support (OpenGLLegacyInterface)
 	// DEPRECATED LEGACY
 	glEnable(GL_TEXTURE_2D);
-	glGetError(); // clear gl error state
+	//glGetError(); // clear gl error state
 }
 
 void OpenGLImage::unbind()
@@ -229,9 +229,9 @@ void OpenGLImage::setWrapMode(Graphics::WRAP_MODE wrapMode)
 
 void OpenGLImage::handleGLErrors()
 {
-	int GLerror = glGetError();
-	if (GLerror != 0)
-		debugLog("OpenGL Image Error: %i on file %s!\n", GLerror, m_sFilePath.toUtf8());
+	// int GLerror = glGetError();
+	// if (GLerror != 0)
+	// 	debugLog("OpenGL Image Error: %i on file %s!\n", GLerror, m_sFilePath.toUtf8());
 }
 
 #endif

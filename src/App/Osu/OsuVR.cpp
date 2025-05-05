@@ -1088,8 +1088,8 @@ void OsuVR::onOffsetUpClicked()
 	openvr->getController()->triggerHapticPulse(2500);
 	engine->getSound()->play(m_osu->getSkin()->getCheckOn());
 
-	engine->onKeyboardKeyDown((KEYCODE)OsuKeyBindings::INCREASE_LOCAL_OFFSET.getInt());
-	engine->onKeyboardKeyUp((KEYCODE)OsuKeyBindings::INCREASE_LOCAL_OFFSET.getInt());
+	engine->onKeyboardKeyDown(OsuKeyBindings::INCREASE_LOCAL_OFFSET.getVal<KEYCODE>());
+	engine->onKeyboardKeyUp(OsuKeyBindings::INCREASE_LOCAL_OFFSET.getVal<KEYCODE>());
 }
 
 void OsuVR::onOffsetDownClicked()
@@ -1097,8 +1097,8 @@ void OsuVR::onOffsetDownClicked()
 	openvr->getController()->triggerHapticPulse(2500);
 	engine->getSound()->play(m_osu->getSkin()->getCheckOff());
 
-	engine->onKeyboardKeyDown((KEYCODE)OsuKeyBindings::DECREASE_LOCAL_OFFSET.getInt());
-	engine->onKeyboardKeyUp((KEYCODE)OsuKeyBindings::DECREASE_LOCAL_OFFSET.getInt());
+	engine->onKeyboardKeyDown(OsuKeyBindings::DECREASE_LOCAL_OFFSET.getVal<KEYCODE>());
+	engine->onKeyboardKeyUp(OsuKeyBindings::DECREASE_LOCAL_OFFSET.getVal<KEYCODE>());
 }
 
 void OsuVR::onVolumeSliderChange(OsuVRUISlider *slider)

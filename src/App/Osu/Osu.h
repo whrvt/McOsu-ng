@@ -13,6 +13,7 @@
 
 #include "App.h"
 #include "MouseListener.h"
+#include "OsuKeyBindings.h"
 
 class CWindowManager;
 
@@ -132,34 +133,35 @@ public:
 
 	OsuBeatmap *getSelectedBeatmap();
 
-	inline OsuVR *getVR() const {return m_vr;}
-	inline OsuMultiplayer *getMultiplayer() const {return m_multiplayer;}
-	inline OsuOptionsMenu *getOptionsMenu() const {return m_optionsMenu;}
-	inline OsuSongBrowser2 *getSongBrowser() const {return m_songBrowser2;}
-	inline OsuBackgroundImageHandler *getBackgroundImageHandler() const {return m_backgroundImageHandler;}
-	inline OsuSkin *getSkin() const {return m_skin;}
-	inline OsuHUD *getHUD() const {return m_hud;}
-	inline OsuNotificationOverlay *getNotificationOverlay() const {return m_notificationOverlay;}
-	inline OsuTooltipOverlay *getTooltipOverlay() const {return m_tooltipOverlay;}
-	inline OsuModSelector *getModSelector() const {return m_modSelector;}
-	inline OsuModFPoSu *getFPoSu() const {return m_fposu;}
-	inline OsuPauseMenu *getPauseMenu() const {return m_pauseMenu;}
-	inline OsuMainMenu *getMainMenu() const {return m_mainMenu;}
-	inline OsuRankingScreen *getRankingScreen() const {return m_rankingScreen;}
-	inline OsuScore *getScore() const {return m_score;}
-	inline OsuUpdateHandler *getUpdateHandler() const {return m_updateHandler;}
-	inline OsuSteamWorkshop *getSteamWorkshop() const {return m_steamWorkshop;}
-	inline OsuUserStatsScreen *getUserStatsScreen() const {return m_userStatsScreen;}
+	[[nodiscard]] inline OsuVR *getVR() const {return m_vr;}
+	[[nodiscard]] inline OsuMultiplayer *getMultiplayer() const {return m_multiplayer;}
+	[[nodiscard]] inline OsuOptionsMenu *getOptionsMenu() const {return m_optionsMenu;}
+	[[nodiscard]] inline OsuSongBrowser2 *getSongBrowser() const {return m_songBrowser2;}
+	[[nodiscard]] inline OsuBackgroundImageHandler *getBackgroundImageHandler() const {return m_backgroundImageHandler;}
+	[[nodiscard]] inline OsuSkin *getSkin() const {return m_skin;}
+	[[nodiscard]] inline OsuHUD *getHUD() const {return m_hud;}
+	[[nodiscard]] inline OsuNotificationOverlay *getNotificationOverlay() const {return m_notificationOverlay;}
+	[[nodiscard]] inline OsuTooltipOverlay *getTooltipOverlay() const {return m_tooltipOverlay;}
+	[[nodiscard]] inline OsuModSelector *getModSelector() const {return m_modSelector;}
+	[[nodiscard]] inline OsuModFPoSu *getFPoSu() const {return m_fposu;}
+	[[nodiscard]] inline OsuPauseMenu *getPauseMenu() const {return m_pauseMenu;}
+	[[nodiscard]] inline OsuMainMenu *getMainMenu() const {return m_mainMenu;}
+	[[nodiscard]] inline OsuRankingScreen *getRankingScreen() const {return m_rankingScreen;}
+	[[nodiscard]] inline OsuScore *getScore() const {return m_score;}
+	[[nodiscard]] inline OsuUpdateHandler *getUpdateHandler() const {return m_updateHandler;}
+	[[nodiscard]] [[maybe_unused]] inline OsuSteamWorkshop *getSteamWorkshop() const {return m_steamWorkshop;}
+	[[nodiscard]] inline OsuUserStatsScreen *getUserStatsScreen() const {return m_userStatsScreen;}
+	[[nodiscard]] inline OsuKeyBindings* getBindings() const {return m_bindings;}
 
-	inline RenderTarget *getPlayfieldBuffer() const {return m_playfieldBuffer;}
-	inline RenderTarget *getSliderFrameBuffer() const {return m_sliderFrameBuffer;}
-	inline RenderTarget *getFrameBuffer() const {return m_frameBuffer;}
-	inline RenderTarget *getFrameBuffer2() const {return m_frameBuffer2;}
-	inline McFont *getTitleFont() const {return m_titleFont;}
-	inline McFont *getSubTitleFont() const {return m_subTitleFont;}
-	inline McFont *getSongBrowserFont() const {return m_songBrowserFont;}
-	inline McFont *getSongBrowserFontBold() const {return m_songBrowserFontBold;}
-	inline McFont *getFontIcons() const {return m_fontIcons;}
+	[[nodiscard]] inline RenderTarget *getPlayfieldBuffer() const {return m_playfieldBuffer;}
+	[[nodiscard]] inline RenderTarget *getSliderFrameBuffer() const {return m_sliderFrameBuffer;}
+	[[nodiscard]] inline RenderTarget *getFrameBuffer() const {return m_frameBuffer;}
+	[[nodiscard]] inline RenderTarget *getFrameBuffer2() const {return m_frameBuffer2;}
+	[[nodiscard]] inline McFont *getTitleFont() const {return m_titleFont;}
+	[[nodiscard]] inline McFont *getSubTitleFont() const {return m_subTitleFont;}
+	[[nodiscard]] inline McFont *getSongBrowserFont() const {return m_songBrowserFont;}
+	[[nodiscard]] inline McFont *getSongBrowserFontBold() const {return m_songBrowserFontBold;}
+	[[nodiscard]] inline McFont *getFontIcons() const {return m_fontIcons;}
 
 	float getDifficultyMultiplier();
 	float getCSDifficultyMultiplier();
@@ -304,8 +306,9 @@ private:
 	OsuChangelog *m_changelog;
 	OsuEditor *m_editor;
 	OsuUpdateHandler *m_updateHandler;
-	OsuSteamWorkshop *m_steamWorkshop;
+	[[maybe_unused]] OsuSteamWorkshop *m_steamWorkshop;
 	OsuModFPoSu *m_fposu;
+	OsuKeyBindings *m_bindings;
 
 	std::vector<OsuScreen*> m_screens;
 	float m_fPrevNoScreenVisibleWorkaroundTime;

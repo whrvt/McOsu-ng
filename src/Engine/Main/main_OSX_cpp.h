@@ -11,7 +11,7 @@
 #ifndef MAIN_OSX_CPP_H
 #define MAIN_OSX_CPP_H
 
-class Timer;
+#include "Timer.h"
 
 class MacOSWrapper
 {

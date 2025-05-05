@@ -90,6 +90,54 @@ void main()
 	gl_FragColor = color; 
 }
 
+###OpenGLES32Interface::VertexShader#############################################################################################
+
+#version 100
+
+attribute vec3 position;
+attribute vec2 uv;
+
+uniform float time;
+uniform mat4 mvp;
+
+varying vec2 tex_coord;
+varying float vtx_alpha;
+
+void main()
+{	
+	gl_Position = mvp * vec4(position, 1.0);
+	
+	tex_coord = uv;
+	vtx_alpha = position.z;
+}
+
+###OpenGLES32Interface::FragmentShader###########################################################################################
+
+#version 100
+precision highp float;
+
+uniform float time;
+uniform sampler2D tex;
+
+varying vec2 tex_coord;
+varying float vtx_alpha;
+
+void main()
+{
+	vec4 color = texture2D(tex, tex_coord);
+	color.a *= vtx_alpha;
+	
+	/*
+	float speedMultiplier = 0.8;
+	float spreadMultiplier = 2.0;
+	color.r = sin(time*speedMultiplier + vtx_alpha*spreadMultiplier + 0.0)*0.5 + 0.5;
+	color.g = sin(time*speedMultiplier + vtx_alpha*spreadMultiplier + 2.0)*0.5 + 0.5;
+	color.b = sin(time*speedMultiplier + vtx_alpha*spreadMultiplier + 4.0)*0.5 + 0.5;
+	*/
+	
+	gl_FragColor = color; 
+}
+
 ###DirectX11Interface::VertexShader#############################################################################################
 
 ##D3D11_INPUT_ELEMENT_DESC::VS_INPUT::POSITION::DXGI_FORMAT_R32G32B32_FLOAT::D3D11_INPUT_PER_VERTEX_DATA

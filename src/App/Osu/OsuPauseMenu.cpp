@@ -162,7 +162,7 @@ void OsuPauseMenu::update()
 		m_fWarningArrowsAnimStartTime = engine->getTime();
 
 	// HACKHACK: handle joystick mouse select, inject enter keydown
-	if (env->getOS() == Environment::OS::OS_HORIZON)
+	if constexpr (Env::cfg(OS::HORIZON))
 	{
 		if (engine->getMouse()->isLeftDown())
 		{
@@ -237,16 +237,16 @@ void OsuPauseMenu::onKeyDown(KeyboardEvent &e)
 	OsuScreen::onKeyDown(e); // only used for options menu
 	if (!m_bVisible || e.isConsumed()) return;
 
-	if (e == (KEYCODE)OsuKeyBindings::LEFT_CLICK.getInt() || e == (KEYCODE)OsuKeyBindings::RIGHT_CLICK.getInt()
-	 || e == (KEYCODE)OsuKeyBindings::LEFT_CLICK_2.getInt() || e == (KEYCODE)OsuKeyBindings::RIGHT_CLICK_2.getInt())
+	if (e == OsuKeyBindings::LEFT_CLICK.getVal<KEYCODE>() || e == OsuKeyBindings::RIGHT_CLICK.getVal<KEYCODE>()
+	 || e == OsuKeyBindings::LEFT_CLICK_2.getVal<KEYCODE>() || e == OsuKeyBindings::RIGHT_CLICK_2.getVal<KEYCODE>())
 	{
 		bool fireButtonClick = false;
-		if ((e == (KEYCODE)OsuKeyBindings::LEFT_CLICK.getInt() || e == (KEYCODE)OsuKeyBindings::LEFT_CLICK_2.getInt()) && !m_bClick1Down)
+		if ((e == OsuKeyBindings::LEFT_CLICK.getVal<KEYCODE>() || e == OsuKeyBindings::LEFT_CLICK_2.getVal<KEYCODE>()) && !m_bClick1Down)
 		{
 			m_bClick1Down = true;
 			fireButtonClick = true;
 		}
-		if ((e == (KEYCODE)OsuKeyBindings::RIGHT_CLICK.getInt() || e == (KEYCODE)OsuKeyBindings::RIGHT_CLICK_2.getInt()) && !m_bClick2Down)
+		if ((e == OsuKeyBindings::RIGHT_CLICK.getVal<KEYCODE>() || e == OsuKeyBindings::RIGHT_CLICK_2.getVal<KEYCODE>()) && !m_bClick2Down)
 		{
 			m_bClick2Down = true;
 			fireButtonClick = true;
@@ -338,16 +338,16 @@ void OsuPauseMenu::onKeyDown(KeyboardEvent &e)
 	}
 
 	// consume ALL events, except for a few special binds which are allowed through (e.g. for unpause or changing the local offset in Osu.cpp)
-	if (e != KEY_ESCAPE && e != (KEYCODE)OsuKeyBindings::GAME_PAUSE.getInt() && e != (KEYCODE)OsuKeyBindings::INCREASE_LOCAL_OFFSET.getInt() && e != (KEYCODE)OsuKeyBindings::DECREASE_LOCAL_OFFSET.getInt())
+	if (e != KEY_ESCAPE && e != OsuKeyBindings::GAME_PAUSE.getVal<KEYCODE>() && e != OsuKeyBindings::INCREASE_LOCAL_OFFSET.getVal<KEYCODE>() && e != OsuKeyBindings::DECREASE_LOCAL_OFFSET.getVal<KEYCODE>())
 		e.consume();
 }
 
 void OsuPauseMenu::onKeyUp(KeyboardEvent &e)
 {
-	if (e == (KEYCODE)OsuKeyBindings::LEFT_CLICK.getInt() || e == (KEYCODE)OsuKeyBindings::LEFT_CLICK_2.getInt())
+	if (e == OsuKeyBindings::LEFT_CLICK.getVal<KEYCODE>() || e == OsuKeyBindings::LEFT_CLICK_2.getVal<KEYCODE>())
 		m_bClick1Down = false;
 
-	if (e == (KEYCODE)OsuKeyBindings::RIGHT_CLICK.getInt() || e == (KEYCODE)OsuKeyBindings::RIGHT_CLICK_2.getInt())
+	if (e == OsuKeyBindings::RIGHT_CLICK.getVal<KEYCODE>() || e == OsuKeyBindings::RIGHT_CLICK_2.getVal<KEYCODE>())
 		m_bClick2Down = false;
 }
 

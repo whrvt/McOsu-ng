@@ -12,7 +12,7 @@
 #include "cbase.h"
 #include "NullGraphicsInterface.h"
 
-#ifdef MCENGINE_FEATURE_OPENGLES
+#ifdef MCENGINE_FEATURE_GLES2
 
 class OpenGLES2Shader;
 
@@ -137,6 +137,8 @@ private:
 	std::stack<McRect> m_clipRectStack;
 };
 
+#else
+class OpenGLES2Interface : public NullGraphicsInterface{};
 #endif
 
 #endif

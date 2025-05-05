@@ -59,7 +59,23 @@ static ConVar *_getConVar(const UString &name)
 		return NULL;
 }
 
+ConVar::~ConVar()
+{
+    if (!isFlagSet(FCVAR_UNREGISTERED))
+    {
+        std::vector<ConVar*> &conVarArray = _getGlobalConVarArray();
+        std::unordered_map<std::string, ConVar*> &conVarMap = _getGlobalConVarMap();
 
+        auto it = std::ranges::find(conVarArray, this);
+        if (it != conVarArray.end())
+            conVarArray.erase(it);
+
+        std::string nameStr(m_sName.toUtf8(), m_sName.lengthUtf8());
+        auto mapIt = conVarMap.find(nameStr);
+        if (mapIt != conVarMap.end() && mapIt->second == this)
+            conVarMap.erase(mapIt);
+    }
+}
 
 UString ConVar::typeToString(CONVAR_TYPE type)
 {
@@ -84,6 +100,7 @@ void ConVar::init(int flags)
 {
 	m_callbackfunc = NULL;
 	m_callbackfuncargs = NULL;
+	m_callbackfuncfloat = NULL;
 	m_changecallback = NULL;
 
 	m_fValue = 0.0f;
@@ -146,6 +163,24 @@ void ConVar::init(UString &name, int flags, UString helpString, ConVarCallbackAr
 	m_sHelpString = helpString;
 }
 
+void ConVar::init(UString &name, int flags, ConVarCallbackFloat callbackFLOAT)
+{
+	init(flags);
+
+	m_sName = name;
+	m_callbackfuncfloat = callbackFLOAT;
+
+	m_bHasValue = false;
+	m_type = CONVAR_TYPE::CONVAR_TYPE_INT;
+}
+
+void ConVar::init(UString &name, int flags, UString helpString, ConVarCallbackFloat callbackFLOAT)
+{
+	init(name, flags, callbackFLOAT);
+
+	m_sHelpString = helpString;
+}
+
 void ConVar::init(UString &name, float defaultValue, int flags, UString helpString, ConVarChangeCallback callback)
 {
 	init(flags);
@@ -201,6 +236,18 @@ ConVar::ConVar(UString name, int flags, ConVarCallbackArgs callbackARGS)
 ConVar::ConVar(UString name, int flags, const char *helpString, ConVarCallbackArgs callbackARGS)
 {
 	init(name, flags, helpString, callbackARGS);
+	_addConVar(this);
+}
+
+ConVar::ConVar(UString name, int flags, ConVarCallbackFloat callbackFLOAT)
+{
+	init(name, flags, callbackFLOAT);
+	_addConVar(this);
+}
+
+ConVar::ConVar(UString name, int flags, const char *helpString, ConVarCallbackFloat callbackFLOAT)
+{
+	init(name, flags, helpString, callbackFLOAT);
 	_addConVar(this);
 }
 
@@ -326,7 +373,7 @@ ConVar::ConVar(UString name, const char *sDefaultValue, int flags, const char *h
 
 void ConVar::exec()
 {
-	if (isFlagSet(FCVAR_CHEAT) && !ConVars::sv_cheats.getBool()) return;
+	if (isFlagSet(FCVAR_CHEAT) && !ConVars::sv_cheats.getRaw()) return;
 
 	if (m_callbackfunc != NULL)
 		m_callbackfunc();
@@ -334,10 +381,18 @@ void ConVar::exec()
 
 void ConVar::execArgs(UString args)
 {
-	if (isFlagSet(FCVAR_CHEAT) && !ConVars::sv_cheats.getBool()) return;
+	if (isFlagSet(FCVAR_CHEAT) && !ConVars::sv_cheats.getRaw()) return;
 
 	if (m_callbackfuncargs != NULL)
 		m_callbackfuncargs(args);
+}
+
+void ConVar::execInt(float args)
+{
+	if (isFlagSet(FCVAR_CHEAT) && !ConVars::sv_cheats.getRaw()) return;
+
+	if (m_callbackfuncfloat != NULL)
+		m_callbackfuncfloat(args);
 }
 
 void ConVar::setDefaultFloat(float defaultValue)
@@ -365,13 +420,6 @@ void ConVar::setDefaultStringInt(UString defaultValue)
 	m_sDefaultValue = defaultValue;
 }
 
-void ConVar::setValue(float value)
-{
-	if (isFlagSet(FCVAR_HARDCODED) || (isFlagSet(FCVAR_CHEAT) && !ConVars::sv_cheats.getBool())) return;
-
-	setValueInt(value);
-}
-
 void ConVar::setValueInt(float value)
 {
 	// TODO: make this less unsafe in multithreaded environments (for float convars at least)
@@ -397,12 +445,13 @@ void ConVar::setValueInt(float value)
 
 		// possible arg callback
 		execArgs(newStringValue);
+		execInt(static_cast<float>(m_fValue));
 	}
 }
 
 void ConVar::setValue(UString sValue)
 {
-	if (isFlagSet(FCVAR_HARDCODED) || (isFlagSet(FCVAR_CHEAT) && !ConVars::sv_cheats.getBool())) return;
+	if (isFlagSet(FCVAR_HARDCODED) || (isFlagSet(FCVAR_CHEAT) && !ConVars::sv_cheats.getRaw())) return;
 
 	setValueInt(sValue);
 }
@@ -431,12 +480,18 @@ void ConVar::setValueInt(UString sValue)
 
 		// possible arg callback
 		execArgs(sValue);
+		execInt(static_cast<float>(m_fValue));
 	}
 }
 
 void ConVar::setCallback(NativeConVarCallback callback)
 {
 	m_callbackfunc = callback;
+}
+
+void ConVar::setCallback(NativeConVarCallbackFloat callback)
+{
+	m_callbackfuncfloat = callback;
 }
 
 void ConVar::setCallback(NativeConVarCallbackArgs callback)

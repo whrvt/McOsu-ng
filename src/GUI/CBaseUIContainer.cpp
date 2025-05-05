@@ -151,6 +151,7 @@ CBaseUIContainer *CBaseUIContainer::deleteBaseUIElement(CBaseUIElement *element)
 
 CBaseUIElement *CBaseUIContainer::getBaseUIElement(UString name)
 {
+	MC_UNROLL
 	for (size_t i=0; i<m_vElements.size(); i++)
 	{
 		if (m_vElements[i]->getName() == name)
@@ -164,6 +165,7 @@ void CBaseUIContainer::draw(Graphics *g)
 {
 	if (!m_bVisible) return;
 
+	MC_UNROLL
 	for (size_t i=0; i<m_vElements.size(); i++)
 	{
 		if (!m_vElements[i]->isDrawnManually())
@@ -185,6 +187,7 @@ void CBaseUIContainer::update()
 	CBaseUIElement::update();
 	if (!m_bVisible) return;
 
+	MC_UNROLL
 	for (size_t i=0; i<m_vElements.size(); i++)
 	{
 		m_vElements[i]->update();
@@ -193,6 +196,7 @@ void CBaseUIContainer::update()
 
 void CBaseUIContainer::update_pos()
 {
+	MC_UNROLL
 	for (size_t i=0; i<m_vElements.size(); i++)
 	{
 		if (!m_vElements[i]->isPositionedManually())

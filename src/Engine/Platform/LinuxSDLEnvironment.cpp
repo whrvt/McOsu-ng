@@ -5,7 +5,7 @@
 // $NoKeywords: $sdllinuxenv
 //===============================================================================//
 
-#ifdef __linux__
+#if 0//def __linux__
 
 #include "LinuxSDLEnvironment.h"
 

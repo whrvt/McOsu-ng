@@ -28,6 +28,7 @@
 #include "OpenGLLegacyInterface.h"
 #include "OpenGL3Interface.h"
 #include "OpenGLES2Interface.h"
+#include "OpenGLES32Interface.h"
 
 ConVar osu_bug_flicker_log("osu_bug_flicker_log", false, FCVAR_NONE);
 
@@ -488,16 +489,6 @@ void OsuCircle::draw3DHitCircle(Graphics *g, OsuModFPoSu *fposu, OsuSkin *skin, 
 	{
 		if (m_fposu_3d_spheres_ref->getBool())
 		{
-#if defined(MCENGINE_FEATURE_OPENGL)
-
-			const bool isOpenGLRendererHack = (dynamic_cast<OpenGLLegacyInterface*>(g) != NULL || dynamic_cast<OpenGL3Interface*>(g) != NULL);
-
-#elif defined(MCENGINE_FEATURE_OPENGLES)
-
-			const bool isOpenGLRendererHack = (dynamic_cast<OpenGLES2Interface*>(g) != NULL);
-
-#endif
-
 			Matrix4 modelMatrix;
 			{
 				Matrix4 translation;
@@ -514,11 +505,9 @@ void OsuCircle::draw3DHitCircle(Graphics *g, OsuModFPoSu *fposu, OsuSkin *skin, 
 			modelMatrixInverseTransposed.invert();
 			modelMatrixInverseTransposed.transpose();
 
-#if defined(MCENGINE_FEATURE_OPENGL) || defined (MCENGINE_FEATURE_OPENGLES)
-
-			if (isOpenGLRendererHack)
+#if defined(MCENGINE_FEATURE_OPENGL) || defined (MCENGINE_FEATURE_GLES2) || defined(MCENGINE_FEATURE_GLES32)
+			if constexpr (Env::cfg(REND::GL | REND::GLES2 | REND::GLES32))
 				glBlendEquation(GL_MAX); // HACKHACK: OpenGL hardcoded
-
 #endif
 
 			fposu->getHitcircleShader()->enable();
@@ -530,11 +519,9 @@ void OsuCircle::draw3DHitCircle(Graphics *g, OsuModFPoSu *fposu, OsuSkin *skin, 
 			}
 			fposu->getHitcircleShader()->disable();
 
-#if defined(MCENGINE_FEATURE_OPENGL) || defined (MCENGINE_FEATURE_OPENGLES)
-
-			if (isOpenGLRendererHack)
+#if defined(MCENGINE_FEATURE_OPENGL) || defined (MCENGINE_FEATURE_GLES2) || defined(MCENGINE_FEATURE_GLES32)
+			if constexpr (Env::cfg(REND::GL | REND::GLES2 | REND::GLES32))
 				glBlendEquation(GL_FUNC_ADD); // HACKHACK: OpenGL hardcoded
-
 #endif
 		}
 		else
@@ -1087,7 +1074,7 @@ void OsuCircle::onReset(long curPos)
 	}
 }
 
-Vector2 OsuCircle::getAutoCursorPos(long curPos)
+Vector2 OsuCircle::getAutoCursorPos(long curPos) const
 {
 	return m_beatmap->osuCoords2Pixels(m_vRawPos);
 }

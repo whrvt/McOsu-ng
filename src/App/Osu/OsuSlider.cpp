@@ -1876,7 +1876,7 @@ void OsuSlider::miss(long curPos)
 	}
 }
 
-Vector2 OsuSlider::getRawPosAt(long pos)
+Vector2 OsuSlider::getRawPosAt(long pos) const
 {
 	if (m_curve == NULL) return Vector2(0, 0);
 
@@ -1893,7 +1893,7 @@ Vector2 OsuSlider::getRawPosAt(long pos)
 		return m_curve->pointAt(getT(pos, false));
 }
 
-Vector2 OsuSlider::getOriginalRawPosAt(long pos)
+Vector2 OsuSlider::getOriginalRawPosAt(long pos) const
 {
 	if (m_curve == NULL) return Vector2(0, 0);
 
@@ -1910,7 +1910,7 @@ Vector2 OsuSlider::getOriginalRawPosAt(long pos)
 		return m_curve->originalPointAt(getT(pos, false));
 }
 
-float OsuSlider::getT(long pos, bool raw)
+float OsuSlider::getT(long pos, bool raw) const
 {
 	float t = (float)((long)pos - (long)m_iTime) / m_fSliderTimeWithoutRepeats;
 	if (raw)

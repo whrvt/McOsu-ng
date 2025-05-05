@@ -9,6 +9,10 @@
 #ifndef STEAMWORKSINTERFACE_H
 #define STEAMWORKSINTERFACE_H
 
+#include "BaseEnvironment.h"
+
+#ifdef MCENGINE_FEATURE_STEAMWORKS
+
 #include "cbase.h"
 
 class SteamworksInterface
@@ -73,5 +77,53 @@ private:
 };
 
 extern SteamworksInterface *steam;
+
+#else
+class SteamworksInterface
+{
+public:
+	[[maybe_unused]] constexpr SteamworksInterface() = default;
+	[[maybe_unused]] constexpr ~SteamworksInterface() = default;
+
+	[[maybe_unused]] constexpr void update(){}
+
+	[[maybe_unused]] constexpr auto createWorkshopItem(){}
+
+	[[maybe_unused]] constexpr bool pushWorkshopItemUpdate(auto){return false;}
+	[[maybe_unused]] constexpr bool setWorkshopItemTitle(auto){return false;}
+	[[maybe_unused]] constexpr bool setWorkshopItemDescription(auto){return false;}
+	[[maybe_unused]] constexpr bool setWorkshopItemLanguage(auto){return false;}
+	[[maybe_unused]] constexpr bool setWorkshopItemMetadata(auto){return false;}
+	[[maybe_unused]] constexpr bool setWorkshopItemVisibility(auto, auto = false){return false;}
+	[[maybe_unused]] constexpr bool setWorkshopItemTags(auto){return false;}
+	[[maybe_unused]] constexpr bool setWorkshopItemContent(auto){return false;}
+	[[maybe_unused]] constexpr bool setWorkshopItemPreview(auto){return false;}
+	[[maybe_unused]] constexpr bool popWorkshopItemUpdate(auto){return false;}
+
+	[[maybe_unused]] constexpr auto getWorkshopSubscribedItems(){}
+	[[maybe_unused]] constexpr bool isWorkshopSubscribedItemInstalled(auto){return false;}
+	[[maybe_unused]] constexpr bool isWorkshopSubscribedItemDownloading(auto){return false;}
+	[[maybe_unused]] constexpr auto getWorkshopItemInstallInfo(auto){}
+	[[maybe_unused]] constexpr auto getWorkshopItemDetails(auto&){}
+	[[maybe_unused]] constexpr void forceWorkshopItemUpdateDownload(auto){}
+
+	[[maybe_unused]] constexpr void startWorkshopItemPlaytimeTracking(auto){}
+	[[maybe_unused]] constexpr void stopWorkshopItemPlaytimeTracking(auto){}
+	[[maybe_unused]] constexpr void stopWorkshopPlaytimeTrackingForAllItems(){}
+
+	[[maybe_unused]] constexpr void openURLInGameOverlay(auto){}
+	[[maybe_unused]] constexpr void openWorkshopItemURLInGameOverlay(auto){}
+
+	[[maybe_unused]] constexpr void setRichPresence(auto, auto){}
+
+	[[maybe_unused]] constexpr bool isReady(){return false;}
+	[[maybe_unused]] constexpr auto getLastError(){}
+	[[maybe_unused]] constexpr bool isGameOverlayEnabled(){return false;}
+	[[maybe_unused]] constexpr auto getUsername(){}
+};
+
+[[gnu::unused]] static SteamworksInterface *steam = new SteamworksInterface(); // stfu mingw-gcc
+
+#endif
 
 #endif

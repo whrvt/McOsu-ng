@@ -23,7 +23,7 @@ extern ConVar snd_wav_file_min_size;
 
 SoLoudSound::SoLoudSound(UString filepath, bool stream, bool threeD, bool loop, bool prescan)
     : Sound(filepath, stream, threeD, loop, prescan), m_handle(0), m_speed(1.0f), m_pitch(1.0f), m_frequency(44100.0f), m_audioSource(nullptr),
-      m_filter(nullptr), m_engine(nullptr), m_usingFilter(false), m_fActualSpeedForDisabledPitchCompensation(1.0f), m_fLastRawSoLoudPosition(0.0),
+      m_filter(nullptr), m_usingFilter(false), m_fActualSpeedForDisabledPitchCompensation(1.0f), m_fLastRawSoLoudPosition(0.0),
       m_fLastSoLoudPositionTime(0.0), m_fSoLoudPositionRate(1000.0)
 {
 }
@@ -35,8 +35,6 @@ void SoLoudSound::init()
 
 	// re-set some values to their defaults (only necessary because of the existence of rebuild())
 	m_fActualSpeedForDisabledPitchCompensation = 1.0f;
-
-	getSoLoudEngine();
 
 	if (!m_audioSource)
 	{

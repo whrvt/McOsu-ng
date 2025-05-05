@@ -57,7 +57,7 @@ void SDLSound::initAsync()
 			fileExtensionLowerCase.lowerCase();
 			if (fileExtensionLowerCase == "wav")
 			{
-				File wavFile(m_sFilePath);
+				McFile wavFile(m_sFilePath);
 				if (wavFile.getFileSize() < (size_t)minWavFileSize)
 				{
 					debugLog("Sound: Ignoring malformed/corrupt WAV file (%i) %s\n", (int)wavFile.getFileSize(), m_sFilePath.toUtf8());
@@ -208,7 +208,7 @@ void SDLSound::setVolume(float volume)
 
 	if (m_bStream)
 	{
-		SDLSoundEngine *soundEngine = dynamic_cast<SDLSoundEngine *>(engine->getSound());
+		SDLSoundEngine *soundEngine = engine->getSound()->getSndEngine();
 		if (soundEngine != nullptr)
 		{
 			soundEngine->setVolumeMixMusic(m_fVolume);
@@ -259,7 +259,7 @@ void SDLSound::setPan(float pan)
 	if (!m_bStream)
 	{
 		const float rangeHalfLimit = 96.0f; // NOTE: trying to match BASS behavior
-		const int left = (int)lerp<float>(rangeHalfLimit / 2.0f, 254.0f - rangeHalfLimit / 2.0f, 1.0f - ((pan + 1.0f) / 2.0f));
+		const int left = (int)lerp(rangeHalfLimit / 2.0f, 254.0f - rangeHalfLimit / 2.0f, 1.0f - ((pan + 1.0f) / 2.0f));
 		Mix_SetPanning(getHandle(), left, 254 - left);
 	}
 }

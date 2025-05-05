@@ -89,6 +89,7 @@ McOsu_ng_SOURCES = \
 	src/Engine/Input/KeyboardEvent.cpp \
 	src/Engine/Input/Mouse.cpp \
 	src/Engine/Input/OpenVRController.cpp \
+	src/Engine/Main/main.cpp \
 	src/Engine/Main/main_Horizon.cpp \
 	src/Engine/Main/main_Linux.cpp \
 	src/Engine/Main/main_OSX_cpp.cpp \
@@ -115,22 +116,19 @@ McOsu_ng_SOURCES = \
 	src/Engine/Platform/NullContextMenu.cpp \
 	src/Engine/Platform/NullEnvironment.cpp \
 	src/Engine/Platform/SDLEnvironment.cpp \
-	src/Engine/Platform/SDLGLES2Interface.cpp \
-	src/Engine/Platform/SDLGLLegacyInterface.cpp \
+	src/Engine/Platform/SDLEnvironmentTouchHacks.cpp \
+	src/Engine/Platform/SDLGLInterface.cpp \
 	src/Engine/Platform/SDLSound.cpp \
 	src/Engine/Platform/SDLSoundEngine.cpp \
-	src/Engine/Platform/SDLTimer.cpp \
 	src/Engine/Platform/SoLoudSound.cpp \
 	src/Engine/Platform/SoLoudSoundEngine.cpp \
 	src/Engine/Platform/SoundTouchFilter.cpp \
 	src/Engine/Platform/Thread.cpp \
-	src/Engine/Platform/Timer.cpp \
 	src/Engine/Platform/WinContextMenu.cpp \
 	src/Engine/Platform/WinEnvironment.cpp \
 	src/Engine/Platform/WinGL3Interface.cpp \
 	src/Engine/Platform/WinGLLegacyInterface.cpp \
 	src/Engine/Platform/WinSDLEnvironment.cpp \
-	src/Engine/Platform/WinSDLGLES2Interface.cpp \
 	src/Engine/Platform/WinSWGraphicsInterface.cpp \
 	src/Engine/Platform/WinTimer.cpp \
 	src/Engine/Platform/XInputGamepad.cpp \
@@ -150,10 +148,14 @@ McOsu_ng_SOURCES = \
 	src/Engine/Renderer/OpenGLES2Interface.cpp \
 	src/Engine/Renderer/OpenGLES2Shader.cpp \
 	src/Engine/Renderer/OpenGLES2VertexArrayObject.cpp \
+	src/Engine/Renderer/OpenGLES32Interface.cpp \
+	src/Engine/Renderer/OpenGLES32Shader.cpp \
+	src/Engine/Renderer/OpenGLES32VertexArrayObject.cpp \
 	src/Engine/Renderer/OpenGLImage.cpp \
 	src/Engine/Renderer/OpenGLLegacyInterface.cpp \
 	src/Engine/Renderer/OpenGLRenderTarget.cpp \
 	src/Engine/Renderer/OpenGLShader.cpp \
+	src/Engine/Renderer/OpenGLSync.cpp \
 	src/Engine/Renderer/OpenGLVertexArrayObject.cpp \
 	src/Engine/Renderer/SWGraphicsInterface.cpp \
 	src/Engine/Renderer/SWImage.cpp \

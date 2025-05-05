@@ -7,6 +7,8 @@
 
 #include "SWShader.h"
 
+#ifdef MCENGINE_FEATURE_SOFTRENDERER
+
 SWShader::SWShader(UString shader, bool source)
 {
 	// TODO:
@@ -91,3 +93,5 @@ void SWShader::setUniformMatrix4fv(UString name, float *v)
 {
 	// TODO:
 }
+
+#endif

@@ -22,9 +22,19 @@
 #define MCENGINE_FEATURE_OPENGL
 
 /*
- * OpenGL graphics (Mobile, ES/EGL)
+ * OpenGL graphics (Mobile, ES/EGL, Nintendo Switch)
  */
-//#define MCENGINE_FEATURE_OPENGLES
+//#define MCENGINE_FEATURE_GLES2
+
+/*
+ * OpenGLES 3.2 graphics (Desktop, WebGL)
+ */
+//#define MCENGINE_FEATURE_GLES32
+
+/*
+ * Software-only graphics renderer (Windows only) (untested)
+ */
+//#define MCENGINE_FEATURE_SOFTRENDERER
 
 /*
  * DirectX 11 graphics
@@ -85,5 +95,15 @@
  * Steam
  */
 //#define MCENGINE_FEATURE_STEAMWORKS
+
+/*
+ * Performance profiling (ctrl+F11)
+ */
+#define MCENGINE_FEATURE_PROFILING
+
+/* misc, untested */
+//#define MCENGINE_SDL_JOYSTICK
+//#define MCENGINE_SDL_JOYSTICK_MOUSE
+//#define MCENGINE_SDL_TOUCHSUPPORT
 
 #endif

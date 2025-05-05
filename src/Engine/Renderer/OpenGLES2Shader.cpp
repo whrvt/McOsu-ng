@@ -7,7 +7,7 @@
 
 #include "OpenGLES2Shader.h"
 
-#ifdef MCENGINE_FEATURE_OPENGLES
+#ifdef MCENGINE_FEATURE_GLES2
 
 #include "Engine.h"
 #include "ConVar.h"

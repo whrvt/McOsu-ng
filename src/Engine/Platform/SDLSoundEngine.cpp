@@ -85,7 +85,7 @@ bool SDLSoundEngine::play(Sound *snd, float pan, float pitch)
 	if (!m_bReady || snd == NULL || !snd->isReady())
 		return false;
 
-	auto *sdlSound = dynamic_cast<SDLSound *>(snd);
+	SDLSound *sdlSound = snd->getSound();
 	if (!sdlSound)
 		return false;
 
@@ -151,8 +151,7 @@ void SDLSoundEngine::pause(Sound *snd)
 	if (!m_bReady || snd == NULL || !snd->isReady())
 		return;
 
-	// Try casting to SDLSound
-	SDLSound *sdlSound = dynamic_cast<SDLSound *>(snd);
+	SDLSound *sdlSound = snd->getSound();
 	if (!sdlSound)
 		return;
 
@@ -167,8 +166,7 @@ void SDLSoundEngine::stop(Sound *snd)
 	if (!m_bReady || snd == NULL || !snd->isReady())
 		return;
 
-	// Try casting to SDLSound
-	SDLSound *sdlSound = dynamic_cast<SDLSound *>(snd);
+	SDLSound *sdlSound = snd->getSound();
 	if (!sdlSound)
 		return;
 

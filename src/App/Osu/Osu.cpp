@@ -226,28 +226,30 @@ Osu::Osu(Osu2 *osu2, int instanceID)
 	osu_resolution.setValue(UString::format("%ix%i", engine->getScreenWidth(), engine->getScreenHeight()));
 
 	// init steam rich presence localization
-	steam->setRichPresence("steam_display", "#Status");
-	steam->setRichPresence("status", "...");
+	if constexpr (Env::cfg(FEAT::STEAM))
+	{
+		steam->setRichPresence("steam_display", "#Status");
+		steam->setRichPresence("status", "...");
+	}
 
-#ifdef MCENGINE_FEATURE_BASS
+	constexpr float unioffset = Env::cfg(AUD::WASAPI) ? -25.0f  :
+								Env::cfg(AUD::BASS)	  ?  15.0f  :
+								Env::cfg(AUD::SDL)	  ? -110.0f :
+								Env::cfg(AUD::SOLOUD) ? -20.0f  : 0.0f;
 
-	// starting with bass 2020 2.4.15.2 which has all offset problems fixed, this is the non-dsound backend compensation
+	// BASS: starting with bass 2020 2.4.15.2 which has all offset problems fixed, this is the non-dsound backend compensation
 	// NOTE: this depends on BASS_CONFIG_UPDATEPERIOD/BASS_CONFIG_DEV_BUFFER
-	convar->getConVarByName("osu_universal_offset_hardcoded")->setValue(15.0f);
 
-#elif defined(MCENGINE_FEATURE_BASS_WASAPI)
+	// WASAPI: since we use the newer bass/fx dlls for wasapi builds anyway (which have different time handling)
 
-	// since we use the newer bass/fx dlls for wasapi builds anyway (which have different time handling)
-	convar->getConVarByName("osu_universal_offset_hardcoded")->setValue(-25.0f);
+	// SDL_mixer: it really needs that much
 
-#elif defined(MCENGINE_FEATURE_SDL_MIXER)
+	// SoLoud: im not sure yet
+	convar->getConVarByName("osu_universal_offset_hardcoded")->setValue(unioffset);
 
-	convar->getConVarByName("osu_universal_offset_hardcoded")->setValue(-110.0f);
-
-#endif
 
 	// OS specific engine settings/overrides
-	if (env->getOS() == Environment::OS::OS_HORIZON)
+	if constexpr (Env::cfg(OS::HORIZON))
 	{
 		convar->getConVarByName("fps_max")->setValue(60.0f);
 		convar->getConVarByName("ui_scrollview_resistance")->setValue(25.0f);
@@ -287,7 +289,7 @@ Osu::Osu(Osu2 *osu2, int instanceID)
 	if (userDataPath.length() > 1)
 	{
 		UString defaultOsuFolder = userDataPath;
-		defaultOsuFolder.append(env->getOS() == Environment::OS::OS_WINDOWS ? "\\osu!\\" : "/osu!/");
+		defaultOsuFolder.append(Env::cfg(OS::WINDOWS) ? "\\osu!\\" : "/osu!/");
 		m_osu_folder_ref->setValue(defaultOsuFolder);
 	}
 
@@ -329,6 +331,7 @@ Osu::Osu(Osu2 *osu2, int instanceID)
 	m_modSelector = NULL;
 	m_updateHandler = NULL;
 	m_multiplayer = NULL;
+	m_bindings = new OsuKeyBindings();
 
 	m_bF1 = false;
 	m_bUIToggleCheck = false;
@@ -493,7 +496,8 @@ Osu::Osu(Osu2 *osu2, int instanceID)
 	m_vrTutorial = new OsuVRTutorial(this);
 	m_changelog = new OsuChangelog(this);
 	m_editor = new OsuEditor(this);
-	m_steamWorkshop = new OsuSteamWorkshop(this);
+	if constexpr (Env::cfg(FEAT::STEAM))
+		m_steamWorkshop = new OsuSteamWorkshop(this);
 	m_fposu = new OsuModFPoSu(this);
 
 	// the order in this vector will define in which order events are handled/consumed
@@ -571,7 +575,8 @@ Osu::~Osu()
 		SAFE_DELETE(m_screens[i]);
 	}
 
-	SAFE_DELETE(m_steamWorkshop);
+	if constexpr (Env::cfg(FEAT::STEAM))
+		SAFE_DELETE(m_steamWorkshop);
 	SAFE_DELETE(m_fposu);
 
 	SAFE_DELETE(m_score);
@@ -579,6 +584,7 @@ Osu::~Osu()
 	SAFE_DELETE(m_multiplayer);
 	SAFE_DELETE(m_skin);
 	SAFE_DELETE(m_backgroundImageHandler);
+	SAFE_DELETE(m_bindings);
 }
 
 void Osu::draw(Graphics *g)
@@ -591,7 +597,7 @@ void Osu::draw(Graphics *g)
 	}
 
 	// if we are not using the native window resolution, or in vr mode, or playing on a nintendo switch, or multiple instances are active, draw into the buffer
-	const bool isBufferedDraw = osu_resolution_enabled.getBool() || isInVRMode() || env->getOS() == Environment::OS::OS_HORIZON || m_iInstanceID > 0;
+	const bool isBufferedDraw = osu_resolution_enabled.getBool() || isInVRMode() || Env::cfg(OS::HORIZON) || m_iInstanceID > 0;
 
 	if (isBufferedDraw)
 		m_backBuffer->enable();
@@ -636,7 +642,7 @@ void Osu::draw(Graphics *g)
 
 		// special cursor handling (fading cursor + invisible cursor mods + draw order etc.)
 		const bool isAuto = (m_bModAuto || m_bModAutopilot);
-		const bool allowDoubleCursor = (env->getOS() == Environment::OS::OS_HORIZON || isFPoSu);
+		const bool allowDoubleCursor = (Env::cfg(OS::HORIZON) || isFPoSu);
 		const bool allowDrawCursor = (!osu_hide_cursor_during_gameplay.getBool() || getSelectedBeatmap()->isPaused());
 		float fadingCursorAlpha = 1.0f - clamp<float>((float)m_score->getCombo()/osu_mod_fadingcursor_combo.getFloat(), 0.0f, 1.0f);
 		if (m_pauseMenu->isVisible() || getSelectedBeatmap()->isContinueScheduled())
@@ -742,7 +748,7 @@ void Osu::draw(Graphics *g)
 	m_notificationOverlay->draw(g);
 
 	// loading spinner for some async tasks
-	if ((m_bSkinLoadScheduled && m_skin != m_skinScheduledToLoad) || m_optionsMenu->isWorkshopLoading() || m_steamWorkshop->isUploading())
+	if ((m_bSkinLoadScheduled && m_skin != m_skinScheduledToLoad) || (Env::cfg(FEAT::STEAM) && (m_optionsMenu->isWorkshopLoading() || m_steamWorkshop->isUploading())))
 	{
 		m_hud->drawLoadingSmall(g);
 	}
@@ -795,7 +801,7 @@ void Osu::draw(Graphics *g)
 
 		g->setBlending(false);
 		{
-			if (env->getOS() == Environment::OS::OS_HORIZON)
+			if constexpr (Env::cfg(OS::HORIZON))
 			{
 				// NOTE: the nintendo switch always draws in 1080p, even undocked
 				const Vector2 backupResolution = engine->getGraphics()->getResolution();
@@ -1189,7 +1195,7 @@ void Osu::update()
 	// volume inactive to active animation
 	if (m_bVolumeInactiveToActiveScheduled && m_fVolumeInactiveToActiveAnim > 0.0f)
 	{
-		engine->getSound()->setVolume(lerp<float>(osu_volume_master_inactive.getFloat() * osu_volume_master.getFloat(), osu_volume_master.getFloat(), m_fVolumeInactiveToActiveAnim));
+		engine->getSound()->setVolume(lerp(osu_volume_master_inactive.getFloat() * osu_volume_master.getFloat(), osu_volume_master.getFloat(), m_fVolumeInactiveToActiveAnim));
 
 		// check if we're done
 		if (m_fVolumeInactiveToActiveAnim == 1.0f)
@@ -1286,7 +1292,7 @@ void Osu::onKeyDown(KeyboardEvent &key)
 	{
 		if (engine->getKeyboard()->isControlDown())
 		{
-			switch ((KEYCODE)key)
+			switch (static_cast<KEYCODE>(key))
 			{
 			case KEY_R: {
 				Shader *sliderShader = engine->getResourceManager()->getShader("slider");
@@ -1313,12 +1319,12 @@ void Osu::onKeyDown(KeyboardEvent &key)
 			key.consume();
 		}
 		// arrow keys volume (alt)
-		else if (key == (KEYCODE)OsuKeyBindings::INCREASE_VOLUME.getInt())
+		else if (key == OsuKeyBindings::INCREASE_VOLUME.getVal<KEYCODE>())
 		{
 			volumeUp();
 			key.consume();
 		}
-		else if (key == (KEYCODE)OsuKeyBindings::DECREASE_VOLUME.getInt())
+		else if (key == OsuKeyBindings::DECREASE_VOLUME.getVal<KEYCODE>())
 		{
 			volumeDown();
 			key.consume();
@@ -1326,7 +1332,7 @@ void Osu::onKeyDown(KeyboardEvent &key)
 	}
 
 	// disable mouse buttons hotkey
-	if (key == (KEYCODE)OsuKeyBindings::DISABLE_MOUSE_BUTTONS.getInt())
+	if (key == OsuKeyBindings::DISABLE_MOUSE_BUTTONS.getVal<KEYCODE>())
 	{
 		if (osu_disable_mousebuttons.getBool())
 		{
@@ -1340,10 +1346,10 @@ void Osu::onKeyDown(KeyboardEvent &key)
 		}
 	}
 	// screenshots
-	else if (key == (KEYCODE)OsuKeyBindings::SAVE_SCREENSHOT.getInt())
+	else if (key == OsuKeyBindings::SAVE_SCREENSHOT.getVal<KEYCODE>())
 		saveScreenshot();
 	// boss key (minimize + mute)
-	else if (key == (KEYCODE)OsuKeyBindings::BOSS_KEY.getInt())
+	else if (key == OsuKeyBindings::BOSS_KEY.getVal<KEYCODE>())
 	{
 		engine->getEnvironment()->minimize();
 		if (getSelectedBeatmap() != NULL)
@@ -1365,8 +1371,8 @@ void Osu::onKeyDown(KeyboardEvent &key)
 
 			// K1
 			{
-				const bool isKeyLeftClick = (key == (KEYCODE)OsuKeyBindings::LEFT_CLICK.getInt());
-				const bool isKeyLeftClick2 = (key == (KEYCODE)OsuKeyBindings::LEFT_CLICK_2.getInt());
+				const bool isKeyLeftClick = (key == OsuKeyBindings::LEFT_CLICK.getVal<KEYCODE>());
+				const bool isKeyLeftClick2 = (key == OsuKeyBindings::LEFT_CLICK_2.getVal<KEYCODE>());
 				if ((!m_bKeyboardKey1Down && isKeyLeftClick) || (!m_bKeyboardKey12Down && isKeyLeftClick2))
 				{
 					if (isKeyLeftClick2)
@@ -1388,8 +1394,8 @@ void Osu::onKeyDown(KeyboardEvent &key)
 
 			// K2
 			{
-				const bool isKeyRightClick = (key == (KEYCODE)OsuKeyBindings::RIGHT_CLICK.getInt());
-				const bool isKeyRightClick2 = (key == (KEYCODE)OsuKeyBindings::RIGHT_CLICK_2.getInt());
+				const bool isKeyRightClick = (key == OsuKeyBindings::RIGHT_CLICK.getVal<KEYCODE>());
+				const bool isKeyRightClick2 = (key == OsuKeyBindings::RIGHT_CLICK_2.getVal<KEYCODE>());
 				if ((!m_bKeyboardKey2Down && isKeyRightClick) || (!m_bKeyboardKey22Down && isKeyRightClick2))
 				{
 					if (isKeyRightClick2)
@@ -1410,11 +1416,11 @@ void Osu::onKeyDown(KeyboardEvent &key)
 			}
 
 			// handle skipping
-			if (key == KEY_ENTER || key == (KEYCODE)OsuKeyBindings::SKIP_CUTSCENE.getInt())
+			if (key == KEY_ENTER || key == OsuKeyBindings::SKIP_CUTSCENE.getVal<KEYCODE>())
 				m_bSkipScheduled = true;
 
 			// toggle ui
-			if (!key.isConsumed() && key == (KEYCODE)OsuKeyBindings::TOGGLE_SCOREBOARD.getInt() && !m_bScoreboardToggleCheck)
+			if (!key.isConsumed() && key == OsuKeyBindings::TOGGLE_SCOREBOARD.getVal<KEYCODE>() && !m_bScoreboardToggleCheck)
 			{
 				m_bScoreboardToggleCheck = true;
 
@@ -1440,9 +1446,9 @@ void Osu::onKeyDown(KeyboardEvent &key)
 
 			// allow live mod changing while playing
 			if (!key.isConsumed()
-				&& (key == KEY_F1 || key == (KEYCODE)OsuKeyBindings::TOGGLE_MODSELECT.getInt())
-				&& ((KEY_F1 != (KEYCODE)OsuKeyBindings::LEFT_CLICK.getInt() && KEY_F1 != (KEYCODE)OsuKeyBindings::LEFT_CLICK_2.getInt()) || (!m_bKeyboardKey1Down && !m_bKeyboardKey12Down))
-				&& ((KEY_F1 != (KEYCODE)OsuKeyBindings::RIGHT_CLICK.getInt() && KEY_F1 != (KEYCODE)OsuKeyBindings::RIGHT_CLICK_2.getInt() ) || (!m_bKeyboardKey2Down && !m_bKeyboardKey22Down))
+				&& (key == KEY_F1 || key == OsuKeyBindings::TOGGLE_MODSELECT.getVal<KEYCODE>())
+				&& ((KEY_F1 != OsuKeyBindings::LEFT_CLICK.getVal<KEYCODE>() && KEY_F1 != OsuKeyBindings::LEFT_CLICK_2.getVal<KEYCODE>()) || (!m_bKeyboardKey1Down && !m_bKeyboardKey12Down))
+				&& ((KEY_F1 != OsuKeyBindings::RIGHT_CLICK.getVal<KEYCODE>() && KEY_F1 != OsuKeyBindings::RIGHT_CLICK_2.getVal<KEYCODE>() ) || (!m_bKeyboardKey2Down && !m_bKeyboardKey22Down))
 				&& !m_bF1
 				&& !getSelectedBeatmap()->hasFailed()) // only if not failed though
 			{
@@ -1453,10 +1459,10 @@ void Osu::onKeyDown(KeyboardEvent &key)
 			// quick save/load
 			if (!isInMultiplayer() || m_multiplayer->isServer())
 			{
-				if (key == (KEYCODE)OsuKeyBindings::QUICK_SAVE.getInt())
+				if (key == OsuKeyBindings::QUICK_SAVE.getVal<KEYCODE>())
 					m_fQuickSaveTime = getSelectedBeatmap()->getPercentFinished();
 
-				if (key == (KEYCODE)OsuKeyBindings::QUICK_LOAD.getInt())
+				if (key == OsuKeyBindings::QUICK_LOAD.getVal<KEYCODE>())
 				{
 					// special case: allow cancelling the failing animation here
 					if (getSelectedBeatmap()->hasFailed())
@@ -1469,8 +1475,8 @@ void Osu::onKeyDown(KeyboardEvent &key)
 			// quick seek
 			if (!isInMultiplayer() || m_multiplayer->isServer())
 			{
-				const bool backward = (key == (KEYCODE)OsuKeyBindings::SEEK_TIME_BACKWARD.getInt());
-				const bool forward = (key == (KEYCODE)OsuKeyBindings::SEEK_TIME_FORWARD.getInt());
+				const bool backward = (key == OsuKeyBindings::SEEK_TIME_BACKWARD.getVal<KEYCODE>());
+				const bool forward = (key == OsuKeyBindings::SEEK_TIME_FORWARD.getVal<KEYCODE>());
 
 				if (backward || forward)
 				{
@@ -1485,9 +1491,9 @@ void Osu::onKeyDown(KeyboardEvent &key)
 						{
 							double seekedPercent = 0.0;
 							if (backward)
-								seekedPercent -= (double)osu_seek_delta.getInt() * (1.0 / (double)lengthMS) * 1000.0;
+								seekedPercent -= osu_seek_delta.getVal<double>() * (1.0 / (double)lengthMS) * 1000.0;
 							else if (forward)
-								seekedPercent += (double)osu_seek_delta.getInt() * (1.0 / (double)lengthMS) * 1000.0;
+								seekedPercent += osu_seek_delta.getVal<double>() * (1.0 / (double)lengthMS) * 1000.0;
 
 							if (seekedPercent != 0.0f)
 							{
@@ -1506,14 +1512,14 @@ void Osu::onKeyDown(KeyboardEvent &key)
 		// while paused or maybe not paused
 
 		// handle quick restart
-		if (((key == (KEYCODE)OsuKeyBindings::QUICK_RETRY.getInt() || (engine->getKeyboard()->isControlDown() && !engine->getKeyboard()->isAltDown() && key == KEY_R)) && !m_bQuickRetryDown))
+		if (((key == OsuKeyBindings::QUICK_RETRY.getVal<KEYCODE>() || (engine->getKeyboard()->isControlDown() && !engine->getKeyboard()->isAltDown() && key == KEY_R)) && !m_bQuickRetryDown))
 		{
 			m_bQuickRetryDown = true;
 			m_fQuickRetryTime = engine->getTime() + osu_quick_retry_delay.getFloat();
 		}
 
 		// handle seeking
-		if (key == (KEYCODE)OsuKeyBindings::SEEK_TIME.getInt())
+		if (key == OsuKeyBindings::SEEK_TIME.getVal<KEYCODE>())
 			m_bSeekKey = true;
 
 		// handle fposu key handling
@@ -1536,7 +1542,7 @@ void Osu::onKeyDown(KeyboardEvent &key)
 		if (isInPlayMode())
 		{
 			// toggle pause menu
-			if ((key == (KEYCODE)OsuKeyBindings::GAME_PAUSE.getInt() || key == KEY_ESCAPE) && !m_bEscape)
+			if ((key == OsuKeyBindings::GAME_PAUSE.getVal<KEYCODE>() || key == KEY_ESCAPE) && !m_bEscape)
 			{
 				if (!isInMultiplayer() || m_multiplayer->isServer() || m_iMultiplayerClientNumEscPresses > 1)
 				{
@@ -1570,13 +1576,13 @@ void Osu::onKeyDown(KeyboardEvent &key)
 			}
 
 			// local offset
-			if (key == (KEYCODE)OsuKeyBindings::INCREASE_LOCAL_OFFSET.getInt())
+			if (key == OsuKeyBindings::INCREASE_LOCAL_OFFSET.getVal<KEYCODE>())
 			{
 				long offsetAdd = engine->getKeyboard()->isAltDown() ? 1 : 5;
 				getSelectedBeatmap()->getSelectedDifficulty2()->setLocalOffset(getSelectedBeatmap()->getSelectedDifficulty2()->getLocalOffset() + offsetAdd);
 				m_notificationOverlay->addNotification(UString::format("Local beatmap offset set to %ld ms", getSelectedBeatmap()->getSelectedDifficulty2()->getLocalOffset()));
 			}
-			if (key == (KEYCODE)OsuKeyBindings::DECREASE_LOCAL_OFFSET.getInt())
+			if (key == OsuKeyBindings::DECREASE_LOCAL_OFFSET.getVal<KEYCODE>())
 			{
 				long offsetAdd = -(engine->getKeyboard()->isAltDown() ? 1 : 5);
 				getSelectedBeatmap()->getSelectedDifficulty2()->setLocalOffset(getSelectedBeatmap()->getSelectedDifficulty2()->getLocalOffset() + offsetAdd);
@@ -1585,13 +1591,13 @@ void Osu::onKeyDown(KeyboardEvent &key)
 
 			// mania scroll speed
 			/*
-			if (key == (KEYCODE)OsuKeyBindings::INCREASE_SPEED.getInt())
+			if (key == OsuKeyBindings::INCREASE_SPEED.getVal<KEYCODE>())
 			{
 				ConVar *maniaSpeed = convar->getConVarByName("osu_mania_speed");
 				maniaSpeed->setValue(clamp<float>(std::round((maniaSpeed->getFloat() + 0.05f) * 100.0f) / 100.0f, 0.05f, 10.0f));
 				m_notificationOverlay->addNotification(UString::format("osu!mania speed set to %gx (fixed)", maniaSpeed->getFloat()));
 			}
-			if (key == (KEYCODE)OsuKeyBindings::DECREASE_SPEED.getInt())
+			if (key == OsuKeyBindings::DECREASE_SPEED.getVal<KEYCODE>())
 			{
 				ConVar *maniaSpeed = convar->getConVarByName("osu_mania_speed");
 				maniaSpeed->setValue(clamp<float>(std::round((maniaSpeed->getFloat() - 0.05f) * 100.0f) / 100.0f, 0.05f, 10.0f));
@@ -1603,15 +1609,15 @@ void Osu::onKeyDown(KeyboardEvent &key)
 		// if playing or not playing
 
 		// volume
-		if (key == (KEYCODE)OsuKeyBindings::INCREASE_VOLUME.getInt())
+		if (key == OsuKeyBindings::INCREASE_VOLUME.getVal<KEYCODE>())
 			volumeUp();
-		if (key == (KEYCODE)OsuKeyBindings::DECREASE_VOLUME.getInt())
+		if (key == OsuKeyBindings::DECREASE_VOLUME.getVal<KEYCODE>())
 			volumeDown();
 
 		// volume slider selection
 		if (m_hud->isVolumeOverlayVisible())
 		{
-			if (key != (KEYCODE)OsuKeyBindings::INCREASE_VOLUME.getInt() && key != (KEYCODE)OsuKeyBindings::DECREASE_VOLUME.getInt())
+			if (key != OsuKeyBindings::INCREASE_VOLUME.getVal<KEYCODE>() && key != OsuKeyBindings::DECREASE_VOLUME.getVal<KEYCODE>())
 			{
 				if (key == KEY_LEFT)
 					m_hud->selectVolumeNext();
@@ -1634,8 +1640,8 @@ void Osu::onKeyUp(KeyboardEvent &key)
 	{
 		// K1
 		{
-			const bool isKeyLeftClick = (key == (KEYCODE)OsuKeyBindings::LEFT_CLICK.getInt());
-			const bool isKeyLeftClick2 = (key == (KEYCODE)OsuKeyBindings::LEFT_CLICK_2.getInt());
+			const bool isKeyLeftClick = (key == OsuKeyBindings::LEFT_CLICK.getVal<KEYCODE>());
+			const bool isKeyLeftClick2 = (key == OsuKeyBindings::LEFT_CLICK_2.getVal<KEYCODE>());
 			if ((isKeyLeftClick && m_bKeyboardKey1Down) || (isKeyLeftClick2 && m_bKeyboardKey12Down))
 			{
 				if (isKeyLeftClick2)
@@ -1650,8 +1656,8 @@ void Osu::onKeyUp(KeyboardEvent &key)
 
 		// K2
 		{
-			const bool isKeyRightClick = (key == (KEYCODE)OsuKeyBindings::RIGHT_CLICK.getInt());
-			const bool isKeyRightClick2 = (key == (KEYCODE)OsuKeyBindings::RIGHT_CLICK_2.getInt());
+			const bool isKeyRightClick = (key == OsuKeyBindings::RIGHT_CLICK.getVal<KEYCODE>());
+			const bool isKeyRightClick2 = (key == OsuKeyBindings::RIGHT_CLICK_2.getVal<KEYCODE>());
 			if ((isKeyRightClick && m_bKeyboardKey2Down) || (isKeyRightClick2 && m_bKeyboardKey22Down))
 			{
 				if (isKeyRightClick2)
@@ -1675,20 +1681,20 @@ void Osu::onKeyUp(KeyboardEvent &key)
 	}
 
 	// misc hotkeys release
-	if (key == KEY_F1 || key == (KEYCODE)OsuKeyBindings::TOGGLE_MODSELECT.getInt())
+	if (key == KEY_F1 || key == OsuKeyBindings::TOGGLE_MODSELECT.getVal<KEYCODE>())
 		m_bF1 = false;
-	if (key == (KEYCODE)OsuKeyBindings::GAME_PAUSE.getInt() || key == KEY_ESCAPE)
+	if (key == OsuKeyBindings::GAME_PAUSE.getVal<KEYCODE>() || key == KEY_ESCAPE)
 		m_bEscape = false;
 	if (key == KEY_SHIFT)
 		m_bUIToggleCheck = false;
-	if (key == (KEYCODE)OsuKeyBindings::TOGGLE_SCOREBOARD.getInt())
+	if (key == OsuKeyBindings::TOGGLE_SCOREBOARD.getVal<KEYCODE>())
 	{
 		m_bScoreboardToggleCheck = false;
 		m_bUIToggleCheck = false;
 	}
-	if (key == (KEYCODE)OsuKeyBindings::QUICK_RETRY.getInt() || key == KEY_R)
+	if (key == OsuKeyBindings::QUICK_RETRY.getVal<KEYCODE>() || key == KEY_R)
 		m_bQuickRetryDown = false;
-	if (key == (KEYCODE)OsuKeyBindings::SEEK_TIME.getInt())
+	if (key == OsuKeyBindings::SEEK_TIME.getVal<KEYCODE>())
 		m_bSeekKey = false;
 
 	// handle fposu key handling
@@ -2146,7 +2152,7 @@ void Osu::onResolutionChanged(Vector2 newResolution)
 				g_vInternalResolution.y = newResolution.y;
 
 			// disable internal resolution on specific conditions
-			bool windowsBorderlessHackCondition = (env->getOS() == Environment::OS::OS_WINDOWS && env->isFullscreen() && env->isFullscreenWindowedBorderless() && (int)g_vInternalResolution.y == (int)env->getNativeScreenSize().y); // HACKHACK
+			bool windowsBorderlessHackCondition = (Env::cfg(OS::WINDOWS) && env->isFullscreen() && env->isFullscreenWindowedBorderless() && (int)g_vInternalResolution.y == (int)env->getNativeScreenSize().y); // HACKHACK
 			if (((int)g_vInternalResolution.x == engine->getScreenWidth() && (int)g_vInternalResolution.y == engine->getScreenHeight()) || !env->isFullscreen() || windowsBorderlessHackCondition)
 			{
 				debugLog("Internal resolution == Engine resolution || !Fullscreen, disabling resampler (%i, %i)\n", (int)(g_vInternalResolution == engine->getScreenSize()), (int)(!env->isFullscreen()));
@@ -2353,12 +2359,11 @@ void Osu::onFocusGained()
 
 	updateWindowsKeyDisable();
 
-#ifndef MCENGINE_FEATURE_BASS_WASAPI // NOTE: wasapi exclusive mode controls the system volume, so don't bother
+	if constexpr (Env::cfg(AUD::WASAPI)) // NOTE: wasapi exclusive mode controls the system volume, so don't bother
+		return;
 
 	m_fVolumeInactiveToActiveAnim = 0.0f;
 	anim->moveLinear(&m_fVolumeInactiveToActiveAnim, 1.0f, 0.3f, 0.1f, true);
-
-#endif
 }
 
 void Osu::onFocusLost()
@@ -2378,7 +2383,8 @@ void Osu::onFocusLost()
 	// release cursor clip
 	env->setCursorClip(false, McRect());
 
-#ifndef MCENGINE_FEATURE_BASS_WASAPI // NOTE: wasapi exclusive mode controls the system volume, so don't bother
+	if constexpr (Env::cfg(AUD::WASAPI)) // NOTE: wasapi exclusive mode controls the system volume, so don't bother
+		return;
 
 	m_bVolumeInactiveToActiveScheduled = true;
 
@@ -2386,22 +2392,19 @@ void Osu::onFocusLost()
 	m_fVolumeInactiveToActiveAnim = 0.0f;
 
 	engine->getSound()->setVolume(osu_volume_master_inactive.getFloat() * osu_volume_master.getFloat());
-
-#endif
 }
 
 void Osu::onMinimized()
 {
-#ifndef MCENGINE_FEATURE_BASS_WASAPI // NOTE: wasapi exclusive mode controls the system volume, so don't bother
-
+	if constexpr (Env::cfg(AUD::WASAPI)) // NOTE: wasapi exclusive mode controls the system volume, so don't bother
+		return;
+	
 	m_bVolumeInactiveToActiveScheduled = true;
 
 	anim->deleteExistingAnimation(&m_fVolumeInactiveToActiveAnim);
 	m_fVolumeInactiveToActiveAnim = 0.0f;
 
 	engine->getSound()->setVolume(osu_volume_master_inactive.getFloat() * osu_volume_master.getFloat());
-
-#endif
 }
 
 bool Osu::onShutdown()
@@ -2444,26 +2447,33 @@ void Osu::onSkinChange(UString oldValue, UString newValue)
 	skinFolder.append("/");
 
 	// reset playtime tracking
-	steam->stopWorkshopPlaytimeTrackingForAllItems();
-
-	// workshop skins use absolute paths
-	const bool isWorkshopSkin = osu_skin_is_from_workshop.getBool();
-	if (isWorkshopSkin)
+	if constexpr (Env::cfg(FEAT::STEAM))
 	{
-		skinFolder = newValue;
+		steam->stopWorkshopPlaytimeTrackingForAllItems();
 
-		// ensure that the skinFolder ends with a slash
-		if (skinFolder[skinFolder.length()-1] != L'/' && skinFolder[skinFolder.length()-1] != L'\\')
-			skinFolder.append("/");
+		// workshop skins use absolute paths
+		const bool isWorkshopSkin = osu_skin_is_from_workshop.getBool();
+		if (isWorkshopSkin)
+		{
+			skinFolder = newValue;
 
-		// start playtime tracking
-		steam->startWorkshopItemPlaytimeTracking((uint64_t)osu_skin_workshop_id.getString().toLong());
+			// ensure that the skinFolder ends with a slash
+			if (skinFolder[skinFolder.length()-1] != L'/' && skinFolder[skinFolder.length()-1] != L'\\')
+				skinFolder.append("/");
 
-		// set correct name of workshop skin
-		newValue = osu_skin_workshop_title.getString();
+			// start playtime tracking
+			if constexpr (Env::cfg(FEAT::STEAM))
+				steam->startWorkshopItemPlaytimeTracking((uint64_t)osu_skin_workshop_id.getString().toLong());
+
+			// set correct name of workshop skin
+			newValue = osu_skin_workshop_title.getString();
+		}
+		m_skinScheduledToLoad = new OsuSkin(this, newValue, skinFolder, (newValue == "default" || newValue == "defaultvr"), isWorkshopSkin);
 	}
-
-	m_skinScheduledToLoad = new OsuSkin(this, newValue, skinFolder, (newValue == "default" || newValue == "defaultvr"), isWorkshopSkin);
+	else
+	{
+		m_skinScheduledToLoad = new OsuSkin(this, newValue, skinFolder, (newValue == "default" || newValue == "defaultvr"), false);
+	}
 
 	// initial load
 	if (m_skin == NULL)

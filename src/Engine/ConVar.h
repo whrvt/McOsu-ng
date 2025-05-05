@@ -11,6 +11,8 @@
 
 #include "cbase.h"
 
+#include <concepts>
+
 class ConVars
 {
 public:
@@ -40,16 +42,22 @@ public:
 	typedef void (*ConVarCallback)(void);
 	typedef void (*ConVarChangeCallback)(UString oldValue, UString newValue);
 	typedef void (*ConVarCallbackArgs)(UString args);
+	typedef void (*ConVarCallbackFloat)(float args);
 
 	// delegate callbacks
 	typedef fastdelegate::FastDelegate0<> NativeConVarCallback;
 	typedef fastdelegate::FastDelegate1<UString> NativeConVarCallbackArgs;
+	typedef fastdelegate::FastDelegate1<float> NativeConVarCallbackFloat;
 	typedef fastdelegate::FastDelegate2<UString, UString> NativeConVarChangeCallback;
 
 public:
 	static UString typeToString(CONVAR_TYPE type);
 
+private:
+	[[nodiscard]] constexpr auto getRaw() const {return m_fValue.load();} // forward def
+
 public:
+	~ConVar();
 	explicit ConVar(UString name);
 
 	explicit ConVar(UString name, int flags, ConVarCallback callback);
@@ -57,6 +65,9 @@ public:
 
 	explicit ConVar(UString name, int flags, ConVarCallbackArgs callbackARGS);
 	explicit ConVar(UString name, int flags, const char *helpString, ConVarCallbackArgs callbackARGS);
+
+	explicit ConVar(UString name, int flags, ConVarCallbackFloat callbackFLOAT);
+	explicit ConVar(UString name, int flags, const char *helpString, ConVarCallbackFloat callbackFLOAT);
 
 	explicit ConVar(UString name, float defaultValue, int flags);
 	explicit ConVar(UString name, float defaultValue, int flags, ConVarChangeCallback callback);
@@ -81,37 +92,52 @@ public:
 	// callbacks
 	void exec();
 	void execArgs(UString args);
+	void execInt(float args);
+
+	// get
+	[[nodiscard]] constexpr float getDefaultFloat() const {return m_fDefaultValue.load();}
+	[[nodiscard]] constexpr const UString &getDefaultString() const {return m_sDefaultValue;}
+
+	[[nodiscard]] constexpr bool isFlagSet(int flag) const {return (bool)(m_iFlags & flag);}
+
+	template <typename T = int>
+	[[nodiscard]] constexpr auto getVal(bool cheat = false) const {return static_cast<T>((!cheat || ConVars::sv_cheats.getRaw()) ? m_fValue.load() : m_fDefaultValue.load());}
+
+	[[nodiscard]] constexpr int getInt() const	   	{return getVal<int>(isFlagSet(FCVAR_CHEAT));}
+	[[nodiscard]] constexpr bool getBool() const	{return getVal<bool>(isFlagSet(FCVAR_CHEAT));}
+	[[nodiscard]] constexpr float getFloat() const	{return	getVal<float>(isFlagSet(FCVAR_CHEAT));}
+
+	[[nodiscard]]
+	constexpr const UString &getString() const		 {return (isFlagSet(FCVAR_CHEAT) && !ConVars::sv_cheats.getRaw() ? m_sDefaultValue : m_sValue);}
+
+	[[nodiscard]] constexpr const UString &getHelpstring() const {return m_sHelpString;}
+	[[nodiscard]] constexpr const UString &getName() const {return m_sName;}
+	[[nodiscard]] constexpr CONVAR_TYPE getType() const {return m_type;}
+	[[nodiscard]] constexpr int getFlags() const {return m_iFlags;}
+
+	[[nodiscard]] constexpr bool hasValue() const {return m_bHasValue;}
+	[[nodiscard]] constexpr bool hasCallbackArgs() const {return (m_callbackfuncargs || m_changecallback);}
 
 	// set
 	void setDefaultFloat(float defaultValue);
 	void setDefaultString(UString defaultValue);
 
-	void setValue(float value);
+	template <typename T>
+		requires (std::is_same_v<T, float> || std::convertible_to<T, float>)
+	constexpr void setValue(T value)
+	{
+		if (isFlagSet(FCVAR_HARDCODED) || (isFlagSet(FCVAR_CHEAT) && !ConVars::sv_cheats.getRaw())) return;
+		setValueInt(value); // setValueInt(ernal)...
+	}
+
 	void setValue(UString sValue);
 
 	void setCallback(NativeConVarCallback callback);
 	void setCallback(NativeConVarCallbackArgs callback);
+	void setCallback(NativeConVarCallbackFloat callback);
 	void setCallback(NativeConVarChangeCallback callback);
 
 	void setHelpString(UString helpString);
-
-	// get
-	inline float getDefaultFloat() const {return m_fDefaultValue.load();}
-	inline const UString &getDefaultString() const {return m_sDefaultValue;}
-
-	inline bool getBool() const				{return		((isFlagSet(FCVAR_CHEAT) && !ConVars::sv_cheats.getBool() ? m_fDefaultValue.load() : m_fValue.load()) > 0);}
-	inline float getFloat() const			{return		 (isFlagSet(FCVAR_CHEAT) && !ConVars::sv_cheats.getBool() ? m_fDefaultValue.load() : m_fValue.load());}
-	inline int getInt() const				{return (int)(isFlagSet(FCVAR_CHEAT) && !ConVars::sv_cheats.getBool() ? m_fDefaultValue.load() : m_fValue.load());}
-	inline const UString &getString() const	{return		 (isFlagSet(FCVAR_CHEAT) && !ConVars::sv_cheats.getBool() ? m_sDefaultValue : m_sValue);}
-
-	inline const UString &getHelpstring() const {return m_sHelpString;}
-	inline const UString &getName() const {return m_sName;}
-	inline CONVAR_TYPE getType() const {return m_type;}
-	inline int getFlags() const {return m_iFlags;}
-
-	inline bool hasValue() const {return m_bHasValue;}
-	inline bool hasCallbackArgs() const {return (m_callbackfuncargs || m_changecallback);}
-	inline bool isFlagSet(int flag) const {return (bool)(m_iFlags & flag);}
 
 private:
 	void init(int flags);
@@ -120,6 +146,8 @@ private:
 	void init(UString &name, int flags, UString helpString, ConVarCallback callback);
 	void init(UString &name, int flags, ConVarCallbackArgs callbackARGS);
 	void init(UString &name, int flags, UString helpString, ConVarCallbackArgs callbackARGS);
+	void init(UString &name, int flags, ConVarCallbackFloat callbackARGS);
+	void init(UString &name, int flags, UString helpString, ConVarCallbackFloat callbackARGS);
 	void init(UString &name, float defaultValue, int flags, UString helpString, ConVarChangeCallback callback);
 	void init(UString &name, UString defaultValue, int flags, UString helpString, ConVarChangeCallback callback);
 
@@ -145,6 +173,7 @@ private:
 
 	NativeConVarCallback m_callbackfunc;
 	NativeConVarCallbackArgs m_callbackfuncargs;
+	NativeConVarCallbackFloat m_callbackfuncfloat;
 	NativeConVarChangeCallback m_changecallback;
 };
 

@@ -11,6 +11,8 @@
 
 #include "Graphics.h"
 
+#ifdef MCENGINE_FEATURE_SOFTRENDERER
+
 class SWGraphicsInterface : public Graphics
 {
 public:
@@ -138,5 +140,9 @@ private:
 	// texturing
 	Image *m_boundTexture;
 };
+
+#else
+class SWGraphicsInterface : public Graphics{};
+#endif
 
 #endif

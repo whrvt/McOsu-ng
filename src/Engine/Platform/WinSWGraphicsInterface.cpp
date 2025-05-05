@@ -5,9 +5,11 @@
 // $NoKeywords: $winswi
 //===============================================================================//
 
+#include "WinSWGraphicsInterface.h"
+
+#ifdef MCENGINE_FEATURE_SOFTRENDERER
 #if defined(_WIN32) || defined(_WIN64) || defined(__WIN32__) || defined(__CYGWIN__) || defined(__CYGWIN32__) || defined(__TOS_WIN__) || defined(__WINDOWS__)
 
-#include "WinSWGraphicsInterface.h"
 #include "WinGLLegacyInterface.h"
 #include "WinEnvironment.h"
 #include "Engine.h"
@@ -57,4 +59,5 @@ void WinSWGraphicsInterface::setVSync(bool vsync)
 {
 }
 
+#endif
 #endif

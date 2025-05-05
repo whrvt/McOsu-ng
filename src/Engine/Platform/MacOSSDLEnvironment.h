@@ -5,13 +5,14 @@
 // $NoKeywords: $macsdlenv
 //===============================================================================//
 
-#ifdef __APPLE__
 
 #pragma once
 #ifndef MACOSSDLENVIRONMENT_H
 #define MACOSSDLENVIRONMENT_H
 
 #include "SDLEnvironment.h"
+
+#ifdef __APPLE__
 
 #ifdef MCENGINE_FEATURE_SDL
 
@@ -52,6 +53,8 @@ private:
 
 #endif
 
+#else
+class MacOSSDLEnvironment : public SDLEnvironment{};
 #endif
 
 #endif

@@ -5,7 +5,7 @@
 // $NoKeywords: $main
 //===============================================================================//
 
-#if defined(_WIN32) || defined(_WIN64) || defined(__WIN32__) || defined(__CYGWIN__) || defined(__CYGWIN32__) || defined(__TOS_WIN__) || defined(__WINDOWS__)
+#if 0// defined(_WIN32) || defined(_WIN64) || defined(__WIN32__) || defined(__CYGWIN__) || defined(__CYGWIN32__) || defined(__TOS_WIN__) || defined(__WINDOWS__)
 
 //#define MCENGINE_WINDOWS_REALTIMESTYLUS_SUPPORT
 //#define MCENGINE_WINDOWS_TOUCH_SUPPORT
@@ -766,12 +766,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		case WM_GETMINMAXINFO:
 			{
 				// NOTE: if rendering via DirectX then don't interfere here, since it handles all window management stuff for us
-#ifdef MCENGINE_FEATURE_DIRECTX11
-
-				if (g_engine != NULL && dynamic_cast<DirectX11Interface*>(g_engine->getGraphics()) != NULL)
-					return DefWindowProcW(hwnd, msg, wParam, lParam);
-
-#endif
+				if constexpr (Env::cfg(REND::DX11))
+					if (g_engine != NULL && dynamic_cast<DirectX11Interface*>(g_engine->getGraphics()) != NULL)
+						return DefWindowProcW(hwnd, msg, wParam, lParam);
 
 				WINDOWPLACEMENT wPos;
 				{
@@ -1304,12 +1301,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	// create timers
 	Timer *frameTimer = new Timer();
-	frameTimer->start();
-	frameTimer->update();
-
 	Timer *deltaTimer = new Timer();
-	deltaTimer->start();
-	deltaTimer->update();
 
 	// NOTE: it seems that focus events get lost between CreateWindow() above and ShowWindow() here
 	// can be simulated by sleeping and alt-tab for testing.

@@ -16,6 +16,11 @@ class ConVar;
 class OsuModFPoSu;
 class OsuBeatmapStandard;
 
+class OsuCircle;
+class OsuSlider;
+class OsuSpinner;
+class OsuManiaNote;
+
 class OsuHitObject
 {
 public:
@@ -41,6 +46,8 @@ public:
 	static ConVar *m_fposu_3d_approachcircles_look_at_player_ref;
 
 public:
+	enum Type : uint8_t { CIRCLE, SLIDER, SPINNER, NOTE };
+
 	OsuHitObject(long time, int sampleType, int comboNumber, bool isEndOfCombo, int colorCounter, int colorOffset, OsuBeatmap *beatmap);
 	virtual ~OsuHitObject() {;}
 
@@ -55,12 +62,21 @@ public:
 	virtual void updateStackPosition(float stackOffset) = 0;
 	virtual void miss(long curPos) = 0; // only used by notelock
 
-	inline OsuBeatmap *getBeatmap() const {return m_beatmap;}
+	[[nodiscard]] inline OsuBeatmap *getBeatmap() const {return m_beatmap;}
 
-	virtual constexpr forceinline int getCombo() const {return 1;} // how much combo this hitobject is "worth"
-	virtual constexpr forceinline bool isCircle() const {return false;}
-	virtual constexpr forceinline bool isSlider() const {return false;}
-	virtual constexpr forceinline bool isSpinner() const {return false;}
+	[[nodiscard]] virtual constexpr forceinline int getCombo() const {return 1;} // how much combo this hitobject is "worth"
+
+	[[nodiscard]] virtual Type getType() const = 0;
+
+	virtual OsuCircle* asCircle() { return nullptr; }
+    virtual OsuSlider* asSlider() { return nullptr; }
+    virtual OsuSpinner* asSpinner() { return nullptr; }
+	virtual OsuManiaNote* asNote() { return nullptr; }
+	[[nodiscard]] const virtual OsuCircle* asCircle() const { return nullptr; }
+    [[nodiscard]] const virtual OsuSlider* asSlider() const { return nullptr; }
+    [[nodiscard]] const virtual OsuSpinner* asSpinner() const { return nullptr; }
+	[[nodiscard]] const virtual OsuManiaNote* asNote() const { return nullptr; }
+
 	void addHitResult(OsuScore::HIT result, long delta, bool isEndOfCombo, Vector2 posRaw, float targetDelta = 0.0f, float targetAngle = 0.0f, bool ignoreOnHitErrorBar = false, bool ignoreCombo = false, bool ignoreHealth = false, bool addObjectDurationToSkinAnimationTimeStartOffset = true);
 	void misAimed() {m_bMisAim = true;}
 
@@ -71,27 +87,27 @@ public:
 	void setBlocked(bool blocked) {m_bBlocked = blocked;}
 	void setComboNumber(int comboNumber) {m_iComboNumber = comboNumber;}
 
-	virtual Vector2 getRawPosAt(long pos) = 0; // with stack calculation modifications
-	virtual Vector2 getOriginalRawPosAt(long pos) = 0; // without stack calculations
-	virtual Vector2 getAutoCursorPos(long curPos) = 0;
+	[[nodiscard]] virtual Vector2 getRawPosAt(long pos) const = 0; // with stack calculation modifications
+	[[nodiscard]] virtual Vector2 getOriginalRawPosAt(long pos) const = 0; // without stack calculations
+	[[nodiscard]] virtual Vector2 getAutoCursorPos(long curPos) const = 0;
 
-	inline long getTime() const {return m_iTime;}
-	inline long getDuration() const {return m_iObjectDuration;}
-	inline int getStack() const {return m_iStack;}
-	inline int getComboNumber() const {return m_iComboNumber;}
-	inline bool isEndOfCombo() const {return m_bIsEndOfCombo;}
-	inline int getColorCounter() const {return m_iColorCounter;}
-	inline int getColorOffset() const {return m_iColorOffset;}
-	inline float getApproachScale() const {return m_fApproachScale;}
-	inline long getDelta() const {return m_iDelta;}
-	inline long getApproachTime() const {return m_iApproachTime;}
-	inline long getAutopilotDelta() const {return m_iAutopilotDelta;}
-	inline unsigned long long getSortHack() const {return m_iSortHack;}
+	[[nodiscard]] inline long getTime() const {return m_iTime;}
+	[[nodiscard]] inline long getDuration() const {return m_iObjectDuration;}
+	[[nodiscard]] inline int getStack() const {return m_iStack;}
+	[[nodiscard]] inline int getComboNumber() const {return m_iComboNumber;}
+	[[nodiscard]] inline bool isEndOfCombo() const {return m_bIsEndOfCombo;}
+	[[nodiscard]] inline int getColorCounter() const {return m_iColorCounter;}
+	[[nodiscard]] inline int getColorOffset() const {return m_iColorOffset;}
+	[[nodiscard]] inline float getApproachScale() const {return m_fApproachScale;}
+	[[nodiscard]] inline long getDelta() const {return m_iDelta;}
+	[[nodiscard]] inline long getApproachTime() const {return m_iApproachTime;}
+	[[nodiscard]] inline long getAutopilotDelta() const {return m_iAutopilotDelta;}
+	[[nodiscard]] inline unsigned long long getSortHack() const {return m_iSortHack;}
 
-	inline bool isVisible() const {return m_bVisible;}
-	inline bool isFinished() const {return m_bFinished;}
-	inline bool isBlocked() const {return m_bBlocked;}
-	inline bool hasMisAimed() const {return m_bMisAim;}
+	[[nodiscard]] inline bool isVisible() const {return m_bVisible;}
+	[[nodiscard]] inline bool isFinished() const {return m_bFinished;}
+	[[nodiscard]] inline bool isBlocked() const {return m_bBlocked;}
+	[[nodiscard]] inline bool hasMisAimed() const {return m_bMisAim;}
 
 	virtual void onClickEvent(std::vector<OsuBeatmap::CLICK> &clicks) {;}
 	virtual void onKeyUpEvent(std::vector<OsuBeatmap::CLICK> &keyUps) {;}

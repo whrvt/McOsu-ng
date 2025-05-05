@@ -5,8 +5,6 @@
 // $NoKeywords: $linuxgli
 //===============================================================================//
 
-#ifdef __linux__
-
 #pragma once
 #ifndef LINUXGLINTERFACE_H
 #define LINUXGLINTERFACE_H
@@ -15,7 +13,9 @@ typedef unsigned char BYTE;
 
 #include "OpenGLLegacyInterface.h"
 
-#ifdef MCENGINE_FEATURE_OPENGL
+#ifdef __linux__
+
+#if defined(MCENGINE_FEATURE_OPENGL) && !defined(MCENGINE_FEATURE_SDL)
 
 #include <X11/X.h>
 #include <X11/Xlib.h>
@@ -48,6 +48,8 @@ private:
 
 #endif
 
+#else
+class LinuxGLLegacyInterface : public OpenGLLegacyInterface{};
 #endif
 
 #endif

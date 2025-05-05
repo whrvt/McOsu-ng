@@ -15,6 +15,8 @@ CLEANFILES = \
 	*~ \
 	*.bak
 
+comma:= ,# bruh
+
 $(DEPS_CACHE)/mimalloc-$(MIMALLOC_VERSION).source:
 	$(MKDIR_P) $(DEPS_CACHE)
 	$(WGET) -qO $(DEPS_CACHE)/mimalloc-$(MIMALLOC_VERSION).tar.gz "https://github.com/microsoft/mimalloc/archive/refs/tags/v$(MIMALLOC_VERSION).tar.gz" && \
@@ -155,12 +157,13 @@ else
 AUDIO_CFLAGS = -I$(DEPS_PREFIX)/include $(shell $(PKG_CONFIG) --cflags soundtouch)
 # the dynamic soloud lib is busted somehow
 AUDIO_LIBS = -L$(DEPS_PREFIX)/lib -lsoloud_static_x$(if $(filter x86_64,$(host_cpu)),64,32)$(if $(ENABLE_DEBUG),_d,) $(shell $(PKG_CONFIG) --libs soundtouch)
-comma:= ,# bruh
 $(DEPS_PREFIX)/SoLoud.built: $(DEPS_CACHE)/SoLoud.source
 	rm -rf $(DEPS_PREFIX)/SoLoud
 	$(MKDIR_P) $(DEPS_PREFIX) $(DEPS_PREFIX)/include $(DEPS_PREFIX)/lib/pkgconfig $(DEPS_PREFIX)/SoLoud/build
 	$(TAR) xf $(DEPS_CACHE)/SoLoud-$(SOLOUD_VERSION).tar.gz -C $(DEPS_PREFIX)/SoLoud --strip-components=1 && \
-	cd $(DEPS_PREFIX)/SoLoud && patch -Np1<$(abs_top_srcdir)/build/aux/revert-soloud.patch && \
+	cd $(DEPS_PREFIX)/SoLoud && \
+	patch -Np1<$(abs_top_srcdir)/build/aux/revert-soloud.patch && \
+	patch -Np1<$(abs_top_srcdir)/build/aux/soloud-miniaudio-latest.patch && \
 	cd $(DEPS_PREFIX)/SoLoud/build && \
 	$(SED) -i 's|"NoRTTI"$(comma)||g' genie.lua && \
 	PKG_CONFIG="$(PKG_CONFIG) --static" CC="$(CC)" CXX="$(CXX)" LD="$(LD)" CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS)" \
@@ -240,9 +243,10 @@ $(DEPS_PREFIX)/GLEW.built: $(DEPS_CACHE)/GLEW-$(GLEW_VERSION).source
 	cd $(DEPS_PREFIX)/GLEW && \
 	$(if $(findstring linux,$(host_os)),cd $(DEPS_PREFIX)/GLEW && patch -Np1<$(abs_top_srcdir)/build/aux/glew-install.patch && patch -Np1<$(abs_top_srcdir)/build/aux/egl+glx.patch && ,) \
 		$(SED) -i -e 's|lib64|lib|' -e 's|-Wl,-soname|-soname|' config/Makefile.linux && \
+		$(if $(LLVMMINGW),$(SED) -i -e 's|glew.lib: .*|glew.lib: glew.lib.static|' -e 's|install.lib:|install.libSHIT:|' -e 's|.*development files.*|install.lib: glew.lib|' Makefile,true) && \
   		$(SED) -i '/^.PHONY: .*\.pc$$/d' Makefile && \
 		$(MAKE) SYSTEM=$(if $(findstring linux,$(host_os)),linux-egl,linux-mingw$(if $(filter x86_64,$(host_cpu)),64,32)) GLEW_DEST="$(DEPS_PREFIX)" \
-		STRIP= CC="$(CC) -Wno-cast-function-type -Wno-strict-prototypes" CXX="$(CXX)" LD="$(LD)" \
+		STRIP= CC="$(CC) -Wno-cast-function-type -Wno-strict-prototypes" CXX="$(CXX)" LD="$(if $(LLVMMINGW),$(CC),$(LD))" \
 		$(if $(SDL3_STATIC),glew.lib.static,glew.lib.shared)
 	cd $(DEPS_PREFIX)/GLEW && \
 		$(MAKE) SYSTEM=$(if $(findstring linux,$(host_os)),linux-egl,linux-mingw$(if $(filter x86_64,$(host_cpu)),64,32)) GLEW_DEST="$(DEPS_PREFIX)" \
@@ -290,6 +294,7 @@ $(DEPS_PREFIX)/libjpeg.built: $(DEPS_CACHE)/libjpeg-$(LIBJPEG_VERSION).source
 		-DCMAKE_C_FLAGS="$(CFLAGS)" \
 		-DCMAKE_SYSTEM_NAME="$(CMAKE_SYSTEM_NAME)" \
 		-DCMAKE_ASM_NASM_FLAGS="-DPIC" \
+		-DWITH_JPEG8=ON \
 		$(if $(filter x86_64,$(host_cpu)),-DWITH_SIMD=ON,-DCMAKE_ASM_NASM_OBJECT_FORMAT="elf32" $(if $(findstring gcc,$(CC)),-DWITH_SIMD=ON,-DWITH_SIMD=OFF)) \
 		$(if $(SDL3_STATIC),-DENABLE_STATIC=ON -DENABLE_SHARED=OFF,-DENABLE_STATIC=OFF -DENABLE_SHARED=ON) && \
 	cmake --build build && \
@@ -317,7 +322,7 @@ $(DEPS_PREFIX)/libpng.built: $(DEPS_PREFIX)/zlib.built $(DEPS_CACHE)/libpng-$(LI
 	cd $(DEPS_PREFIX)/libpng && PKG_CONFIG="$(PKG_CONFIG)" \
 		./configure --host=$(host_alias) --prefix="$(DEPS_PREFIX)" \
 		$(if $(SDL3_STATIC),--enable-static --disable-shared,--enable-shared --disable-static) \
-		CC="$(CC)" CXX="$(CXX)" LD="$(LD)" CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS)" && \
+		CC="$(CC) $(shell $(PKG_CONFIG) --cflags zlib)" CXX="$(CXX)" LD="$(LD)" CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS) $(shell $(PKG_CONFIG) --libs zlib)" && \
 	$(MAKE) && \
 	$(MAKE) install
 	PKG_CONFIG="$(PKG_CONFIG)" \

@@ -13,6 +13,8 @@
 
 #ifdef MCENGINE_FEATURE_OPENGL
 
+#include "OpenGLSync.h"
+
 class OpenGLShader;
 
 class OpenGL3Interface : public Graphics
@@ -135,10 +137,15 @@ private:
 	// persistent vars
 	Color m_color;
 
+	// synchronization
+	OpenGLSync *m_syncobj;
+
 	// clipping
 	std::stack<McRect> m_clipRectStack;
 };
 
+#else
+class OpenGL3Interface : public Graphics{};
 #endif
 
 #endif

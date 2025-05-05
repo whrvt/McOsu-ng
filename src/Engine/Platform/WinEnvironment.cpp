@@ -5,9 +5,10 @@
 // $NoKeywords: $winenv
 //===============================================================================//
 
-#if defined(_WIN32) || defined(_WIN64) || defined(__WIN32__) || defined(__CYGWIN__) || defined(__CYGWIN32__) || defined(__TOS_WIN__) || defined(__WINDOWS__)
-
 #include "WinEnvironment.h"
+
+#if !defined(MCENGINE_FEATURE_SDL) && (defined(_WIN32) || defined(_WIN64) || defined(__WIN32__) || defined(__CYGWIN__) || defined(__CYGWIN32__) || defined(__TOS_WIN__) || defined(__WINDOWS__))
+
 #include "Engine.h"
 #include "ConVar.h"
 #include "Mouse.h"
@@ -88,8 +89,11 @@ Graphics *WinEnvironment::createRenderer()
 
 	//return new NullGraphicsInterface();
 	//return new VulkanGraphicsInterface();
-	//return new WinSWGraphicsInterface(m_hwnd);
+#ifdef MCENGINE_FEATURE_SOFTRENDERER
+	return new WinSWGraphicsInterface(m_hwnd);
+#else
 	return new WinGLLegacyInterface(m_hwnd);
+#endif
 	//return new WinGL3Interface(m_hwnd);
 	//return new DirectX11Interface(m_hwnd);
 }
@@ -493,12 +497,11 @@ void WinEnvironment::focus()
 
 void WinEnvironment::center()
 {
-#ifdef MCENGINE_FEATURE_DIRECTX11
+	if constexpr (Env::cfg(REND::DX11))
 	{
 		DirectX11Interface *dx11 = dynamic_cast<DirectX11Interface*>(engine->getGraphics());
 		if (dx11 != NULL && m_bFullScreen) return;
 	}
-#endif
 
 	RECT clientRect;
 	GetClientRect(m_hwnd, &clientRect);
@@ -556,7 +559,7 @@ void WinEnvironment::enableFullscreen()
 
 	bool isDirectX11Renderer = false;
 
-#ifdef MCENGINE_FEATURE_DIRECTX11
+	if constexpr (Env::cfg(REND::DX11))
 	{
 		DirectX11Interface *dx11 = dynamic_cast<DirectX11Interface*>(engine->getGraphics());
 		if (dx11 != NULL)
@@ -579,9 +582,8 @@ void WinEnvironment::enableFullscreen()
 			}
 		}
 	}
-#endif
 
-	if (!isDirectX11Renderer)
+	if (!Env::cfg(REND::DX11) || !isDirectX11Renderer)
 	{
 		// get nearest monitor, build fullscreen resolution
 		const McRect desktopRect = getDesktopRect();
@@ -617,7 +619,7 @@ void WinEnvironment::disableFullscreen()
 	m_vWindowSize.x = std::abs(rect.right - rect.left);
 	m_vWindowSize.y = std::abs(rect.bottom - rect.top);
 
-#ifdef MCENGINE_FEATURE_DIRECTX11
+	if constexpr (Env::cfg(REND::DX11))
 	{
 		DirectX11Interface *dx11 = dynamic_cast<DirectX11Interface*>(engine->getGraphics());
 		if (dx11 != NULL)
@@ -628,7 +630,6 @@ void WinEnvironment::disableFullscreen()
 			dx11->disableFullscreen();
 		}
 	}
-#endif
 
 	// HACKHACK: double MoveWindow is a workaround for a windows bug (otherwise overscale would get clamped to taskbar)
 	SetWindowLongPtr(m_hwnd, GWL_STYLE, getWindowStyleWindowed());
@@ -645,12 +646,11 @@ void WinEnvironment::setWindowTitle(UString title)
 
 void WinEnvironment::setWindowPos(int x, int y)
 {
-#ifdef MCENGINE_FEATURE_DIRECTX11
+	if constexpr (Env::cfg(REND::DX11))
 	{
 		DirectX11Interface *dx11 = dynamic_cast<DirectX11Interface*>(engine->getGraphics());
 		if (dx11 != NULL && m_bFullScreen) return;
 	}
-#endif
 
 	SetWindowPos(m_hwnd, m_hwnd, x, y, 0, 0, SWP_NOZORDER | SWP_NOSIZE | SWP_NOOWNERZORDER | SWP_NOACTIVATE);
 }
@@ -669,7 +669,7 @@ void WinEnvironment::setWindowSize(int width, int height)
 
 	bool isDirectX11Renderer = false;
 
-#ifdef MCENGINE_FEATURE_DIRECTX11
+	if constexpr (Env::cfg(REND::DX11))
 	{
 		DirectX11Interface *dx11 = dynamic_cast<DirectX11Interface*>(engine->getGraphics());
 		if (dx11 != NULL)
@@ -681,7 +681,6 @@ void WinEnvironment::setWindowSize(int width, int height)
 			dx11->resizeTarget(Vector2(width, height));
 		}
 	}
-#endif
 
 	if (!isDirectX11Renderer)
 	{

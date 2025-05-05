@@ -47,6 +47,7 @@
 
 #include "DirectX11Interface.h"
 #include "OpenGLES2Interface.h"
+#include "OpenGLES32Interface.h"
 
 ConVar osu_automatic_cursor_size("osu_automatic_cursor_size", false, FCVAR_NONE);
 
@@ -262,7 +263,7 @@ OsuHUD::OsuHUD(Osu *osu) : OsuScreen(osu)
 	m_tempFont = engine->getResourceManager()->getFont("FONT_DEFAULT");
 	m_cursorTrailShader = engine->getResourceManager()->loadShader2("cursortrail.mcshader", "cursortrail");
 	m_cursorTrail.reserve(osu_cursor_trail_max_size.getInt()*2);
-	if (env->getOS() == Environment::OS::OS_HORIZON)
+	if constexpr (Env::cfg(OS::HORIZON))
 		m_cursorTrail2.reserve(osu_cursor_trail_max_size.getInt()*2);
 
 	m_cursorTrailShaderVR = NULL;
@@ -945,7 +946,7 @@ void OsuHUD::drawCursorTrailInt(Graphics *g, Shader *trailShader, std::vector<CU
 
 				trailShader->setUniform1f("time", (float)engine->getTime());
 
-#ifdef MCENGINE_FEATURE_OPENGLES
+				if constexpr (Env::cfg(REND::GLES2))
 				{
 					OpenGLES2Interface *gles2 = dynamic_cast<OpenGLES2Interface*>(g);
 					if (gles2 != NULL)
@@ -955,9 +956,8 @@ void OsuHUD::drawCursorTrailInt(Graphics *g, Shader *trailShader, std::vector<CU
 						trailShader->setUniformMatrix4fv("mvp", mvp);
 					}
 				}
-#endif
 
-#ifdef MCENGINE_FEATURE_DIRECTX11
+				if constexpr (Env::cfg(REND::DX11))
 				{
 					DirectX11Interface *dx11 = dynamic_cast<DirectX11Interface*>(g);
 					if (dx11 != NULL)
@@ -967,7 +967,6 @@ void OsuHUD::drawCursorTrailInt(Graphics *g, Shader *trailShader, std::vector<CU
 						trailShader->setUniformMatrix4fv("mvp", mvp);
 					}
 				}
-#endif
 
 				trailImage->bind();
 				{
@@ -1085,7 +1084,7 @@ void OsuHUD::drawCursorRipples(Graphics *g)
 			const float animPercent = 1.0f - clamp<float>((time - engine->getTime()) / duration, 0.0f, 1.0f);
 			const float fadePercent = 1.0f - clamp<float>((time - engine->getTime()) / fadeDuration, 0.0f, 1.0f);
 
-			const float scale = lerp<float>(osu_cursor_ripple_anim_start_scale.getFloat(), osu_cursor_ripple_anim_end_scale.getFloat(), 1.0f - (1.0f - animPercent)*(1.0f - animPercent)); // quad out
+			const float scale = lerp(osu_cursor_ripple_anim_start_scale.getFloat(), osu_cursor_ripple_anim_end_scale.getFloat(), 1.0f - (1.0f - animPercent)*(1.0f - animPercent)); // quad out
 
 			g->setAlpha(osu_cursor_ripple_alpha.getFloat() * (1.0f - fadePercent));
 			g->drawQuad(pos.x - normalizedWidth*scale/2, pos.y - normalizedHeight*scale/2, normalizedWidth*scale, normalizedHeight*scale);
@@ -1124,9 +1123,9 @@ void OsuHUD::drawFps(Graphics *g, McFont *font, float fps)
 	g->popTransform();
 
 	// top
-	if (fps >= 200 || (m_osu->isInVRMode() && fps >= 80) || (env->getOS() == Environment::OS::OS_HORIZON && fps >= 50))
+	if (fps >= 200 || (m_osu->isInVRMode() && fps >= 80) || (Env::cfg(OS::HORIZON) && fps >= 50))
 		g->setColor(0xffffffff);
-	else if (fps >= 120 || (m_osu->isInVRMode() && fps >= 60) || (env->getOS() == Environment::OS::OS_HORIZON && fps >= 40))
+	else if (fps >= 120 || (m_osu->isInVRMode() && fps >= 60) || (Env::cfg(OS::HORIZON) && fps >= 40))
 		g->setColor(0xffdddd00);
 	else
 	{
@@ -1670,13 +1669,13 @@ void OsuHUD::drawHPBar(Graphics *g, double health, float alpha, float breakAnim)
 		if (health < 0.2)
 		{
 			const float factor = std::max(0.0, (0.2 - health) / 0.2);
-			const float value = lerp<float>(0.0f, 1.0f, factor);
+			const float value = lerp(0.0f, 1.0f, factor);
 			g->setColor(COLORf(1.0f, value, 0.0f, 0.0f));
 		}
 		else if (health < 0.5)
 		{
 			const float factor = std::max(0.0, (0.5 - health) / 0.5);
-			const float value = lerp<float>(1.0f, 0.0f, factor);
+			const float value = lerp(1.0f, 0.0f, factor);
 			g->setColor(COLORf(1.0f, value, value, value));
 		}
 		else

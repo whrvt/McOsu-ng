@@ -34,6 +34,7 @@ OsuBeatmapMania::OsuBeatmapMania(Osu *osu) : OsuBeatmap(osu)
 	}
 
 	m_fZoom = 0.0f;
+	m_osu = osu;
 }
 
 void OsuBeatmapMania::draw(Graphics *g)
@@ -221,7 +222,7 @@ int OsuBeatmapMania::getColumnForKey(int numColumns, KeyboardEvent &key)
 	{
 		for (int i=0; i<numColumns; i++)
 		{
-			if (key == (KEYCODE)OsuKeyBindings::MANIA[numColumns - 1][i]->getInt())
+			if (key == (m_osu->getBindings()->getMania()->begin())[numColumns - 1][i]->getVal<KEYCODE>())
 				return i;
 		}
 	}

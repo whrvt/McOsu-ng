@@ -9,7 +9,7 @@
 
 #include "LinuxGLLegacyInterface.h"
 
-#ifdef MCENGINE_FEATURE_OPENGL
+#if defined(MCENGINE_FEATURE_OPENGL) && !defined(MCENGINE_FEATURE_SDL)
 
 #include "LinuxEnvironment.h"
 #include "Engine.h"

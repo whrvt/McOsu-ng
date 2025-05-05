@@ -10,6 +10,9 @@
 #define ENGINE_H
 
 #include "cbase.h"
+#include "Timer.h"
+#include "McMath.h"
+
 #include <type_traits>
 #include <source_location>
 
@@ -20,7 +23,6 @@
 #endif
 
 class App;
-class Timer;
 class Mouse;
 class ConVar;
 class Gamepad;
@@ -108,8 +110,8 @@ public:
 	void onShutdown();
 
 	// primary mouse messages
-	void onMouseRawMove(float xDelta, float yDelta, bool absolute = false, bool virtualDesktop = false);
-	void onMouseRawMove(int xDelta, int yDelta, bool absolute = false, bool virtualDesktop = false);
+	void onMouseMotion(float x, float y, float xRel, float yRel, bool isRawInput);
+	void onMouseButtonChange(int button, bool down);
 	void onMouseWheelVertical(int delta);
 	void onMouseWheelHorizontal(int delta);
 	void onMouseLeftChange(bool mouseLeftDown);

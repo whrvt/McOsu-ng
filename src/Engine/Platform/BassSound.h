@@ -40,6 +40,8 @@ public:
 	void setLoop(bool loop) override;
 
 	SOUNDHANDLE getHandle() override;
+	constexpr SoundType* getSound() override {return this;}
+	[[nodiscard]] constexpr const SoundType* getSound() const override {return this;}
 	float getPosition() override;
 	unsigned long getPositionMS() override;
 	unsigned long getLengthMS() override;
@@ -74,5 +76,7 @@ private:
 	[[nodiscard]] inline HSTREAM _BASS_FX_TempoCreate(DWORD chan, DWORD flags) const;
 };
 
+#else
+class BassSound : public Sound{};
 #endif
 #endif

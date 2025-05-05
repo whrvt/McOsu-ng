@@ -7,6 +7,8 @@
 
 #include "SWImage.h"
 
+#ifdef MCENGINE_FEATURE_SOFTRENDERER
+
 #include "ResourceManager.h"
 #include "Environment.h"
 #include "Engine.h"
@@ -65,3 +67,5 @@ void SWImage::setWrapMode(Graphics::WRAP_MODE wrapMode)
 {
 	Image::setWrapMode(wrapMode);
 }
+
+#endif

@@ -11,16 +11,6 @@
 
 #include <switch.h>
 
-HorizonTimer::HorizonTimer() : BaseTimer()
-{
-	m_startTime = 0;
-	m_currentTime = 0;
-
-	m_delta = 0.0;
-	m_elapsedTime = 0.0;
-	m_elapsedTimeMS = 0;
-}
-
 void HorizonTimer::start()
 {
 	m_startTime = armGetSystemTick();

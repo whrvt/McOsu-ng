@@ -11,7 +11,7 @@
 
 std::vector<wchar_t> OsuIcons::icons;
 
-wchar_t OsuIcons::Z_UNKNOWN_CHAR = OsuIcons::addIcon(McFont::UNKNOWN_CHAR);
+wchar_t OsuIcons::Z_UNKNOWN_CHAR = OsuIcons::addIcon('?');
 wchar_t OsuIcons::Z_SPACE = OsuIcons::addIcon(0x20);
 
 wchar_t OsuIcons::GEAR = OsuIcons::addIcon(0xf013);

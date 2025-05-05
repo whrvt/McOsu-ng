@@ -194,14 +194,14 @@ void OsuHitObject::drawHitResult(Graphics *g, OsuSkin *skin, float hitcircleDiam
 			if (!hasParticle)
 			{
 				if (animPercent < fadeInEndPercent * 0.8f)
-					scale = lerp<float>(0.6f, 1.1f, clamp<float>(animPercent / (fadeInEndPercent * 0.8f), 0.0f, 1.0f));
+					scale = lerp(0.6f, 1.1f, clamp<float>(animPercent / (fadeInEndPercent * 0.8f), 0.0f, 1.0f));
 				else if (animPercent < fadeInEndPercent * 1.2f)
-					scale = lerp<float>(1.1f, 0.9f, clamp<float>((animPercent - fadeInEndPercent * 0.8f) / (fadeInEndPercent * 1.2f - fadeInEndPercent * 0.8f), 0.0f, 1.0f));
+					scale = lerp(1.1f, 0.9f, clamp<float>((animPercent - fadeInEndPercent * 0.8f) / (fadeInEndPercent * 1.2f - fadeInEndPercent * 0.8f), 0.0f, 1.0f));
 				else if (animPercent < fadeInEndPercent * 1.4f)
-					scale = lerp<float>(0.9f, 1.0f, clamp<float>((animPercent - fadeInEndPercent * 1.2f) / (fadeInEndPercent * 1.4f - fadeInEndPercent * 1.2f), 0.0f, 1.0f));
+					scale = lerp(0.9f, 1.0f, clamp<float>((animPercent - fadeInEndPercent * 1.2f) / (fadeInEndPercent * 1.4f - fadeInEndPercent * 1.2f), 0.0f, 1.0f));
 			}
 			else
-				scale = lerp<float>(0.9f, 1.05f, clamp<float>(animPercent, 0.0f, 1.0f));
+				scale = lerp(0.9f, 1.05f, clamp<float>(animPercent, 0.0f, 1.0f));
 
 			// TODO: osu draws an additive copy of the hitresult on top (?) with 0.5 alpha anim and negative timing, if the skin hasParticle. in this case only the copy does the wobble anim, while the main result just scales
 		}
@@ -213,7 +213,7 @@ void OsuHitObject::drawHitResult(Graphics *g, OsuSkin *skin, float hitcircleDiam
 				// special case: animated misses don't move down, and skins with version <= 1 also don't move down
 				Vector2 downAnim;
 				if (skin->getHit0()->getNumImages() < 2 && skin->getVersion() > 1.0f)
-					downAnim.y = lerp<float>(-5.0f, 40.0f, clamp<float>(animPercent*animPercent*animPercent, 0.0f, 1.0f)) * osuCoordScaleMultiplier;
+					downAnim.y = lerp(-5.0f, 40.0f, clamp<float>(animPercent*animPercent*animPercent, 0.0f, 1.0f)) * osuCoordScaleMultiplier;
 
 				float missScale = 1.0f + clamp<float>((1.0f - (animPercent / fadeInEndPercent)), 0.0f, 1.0f) * (osu_hitresult_miss_fadein_scale.getFloat() - 1.0f);
 				if (!osu_hitresult_animated.getBool())
@@ -473,7 +473,7 @@ void OsuHitObject::update(long curPos)
 				}
 				// NOTE: some of the easing functions will overflow/underflow, don't clamp and instead allow it on purpose
 			}
-			m_fApproachScale = 1 + lerp<float>(osu_mod_approach_different_initial_size.getFloat() - 1.0f, 0.0f, time);
+			m_fApproachScale = 1 + lerp(osu_mod_approach_different_initial_size.getFloat() - 1.0f, 0.0f, time);
 		}
 
 		// hitobject body fadein
@@ -507,7 +507,7 @@ void OsuHitObject::update(long curPos)
 			const long hittableDimFadeStart = m_iTime - (long)OsuGameRules::getHitWindowMiss(m_beatmap);
 			const long hittableDimFadeEnd = hittableDimFadeStart + (long)OsuGameRules::osu_hitobject_hittable_dim_duration.getInt(); // yes, this means the un-dim animation cuts into the already clickable range
 
-			m_fHittableDimRGBColorMultiplierPercent = lerp<float>(OsuGameRules::osu_hitobject_hittable_dim_start_percent.getFloat(), 1.0f, clamp<float>(1.0f - (float)(hittableDimFadeEnd - curPos) / (float)(hittableDimFadeEnd - hittableDimFadeStart), 0.0f, 1.0f));
+			m_fHittableDimRGBColorMultiplierPercent = lerp(OsuGameRules::osu_hitobject_hittable_dim_start_percent.getFloat(), 1.0f, clamp<float>(1.0f - (float)(hittableDimFadeEnd - curPos) / (float)(hittableDimFadeEnd - hittableDimFadeStart), 0.0f, 1.0f));
 		}
 
 		m_bVisible = true;
@@ -565,7 +565,7 @@ void OsuHitObject::onReset(long curPos)
 float OsuHitObject::lerp3f(float a, float b, float c, float percent)
 {
 	if (percent <= 0.5f)
-		return lerp<float>(a, b, percent * 2.0f);
+		return lerp(a, b, percent * 2.0f);
 	else
-		return lerp<float>(b, c, (percent - 0.5f) * 2.0f);
+		return lerp(b, c, (percent - 0.5f) * 2.0f);
 }

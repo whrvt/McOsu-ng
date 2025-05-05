@@ -241,7 +241,12 @@ void OsuSliderCurveEqualDistanceMulti::init(const std::vector<OsuSliderCurveType
 	std::vector<Vector2> curCurvePoints;
 	for (int i=0; i<(m_iNCurve + 1); i++)
 	{
-		const int prefDistance = (int)(((float)i * m_fPixelLength) / (float)m_iNCurve);
+		const float temp_dist = static_cast<float>((i * m_fPixelLength)) / static_cast<float>(m_iNCurve);
+		const int prefDistance = (isfinite(temp_dist)
+								  && temp_dist >= static_cast<float>(std::numeric_limits<int>::min())
+								  && temp_dist <= static_cast<float>(std::numeric_limits<int>::max()))
+								  ? static_cast<int>(temp_dist)
+								  : 0;
 
 		while (distanceAt < prefDistance)
 		{
@@ -297,7 +302,7 @@ void OsuSliderCurveEqualDistanceMulti::init(const std::vector<OsuSliderCurveType
 		if (distanceAt - lastDistanceAt > 1)
 		{
 			const float t = (prefDistance - lastDistanceAt) / (distanceAt - lastDistanceAt);
-			m_curvePoints[i] = Vector2(lerp<float>(lastCurve.x, thisCurve.x, t), lerp<float>(lastCurve.y, thisCurve.y, t));
+			m_curvePoints[i] = Vector2(lerp(lastCurve.x, thisCurve.x, t), lerp(lastCurve.y, thisCurve.y, t));
 		}
 		else
 			m_curvePoints[i] = thisCurve;

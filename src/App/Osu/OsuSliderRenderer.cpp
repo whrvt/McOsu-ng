@@ -24,6 +24,7 @@
 #include "OpenGLLegacyInterface.h"
 #include "OpenGL3Interface.h"
 #include "OpenGLES2Interface.h"
+#include "OpenGLES32Interface.h"
 #include "DirectX11Interface.h"
 
 Shader *OsuSliderRenderer::BLEND_SHADER = NULL;
@@ -387,8 +388,7 @@ void OsuSliderRenderer::draw(Graphics *g, Osu *osu, VertexArrayObject *vao, cons
 						g->translate(translation.x, translation.y);
 						///g->scale(scaleToApplyAfterTranslationX, scaleToApplyAfterTranslationY); // aspire slider distortions
 
-#ifdef MCENGINE_FEATURE_OPENGLES
-
+						if constexpr (Env::cfg(REND::GLES2)) {
 						if (!osu_slider_use_gradient_image.getBool())
 						{
 							OpenGLES2Interface *gles2 = dynamic_cast<OpenGLES2Interface*>(g);
@@ -399,11 +399,8 @@ void OsuSliderRenderer::draw(Graphics *g, Osu *osu, VertexArrayObject *vao, cons
 								BLEND_SHADER->setUniformMatrix4fv("mvp", mvp);
 							}
 						}
-
-#endif
-
-#ifdef MCENGINE_FEATURE_DIRECTX11
-
+						}
+						if constexpr (Env::cfg(REND::DX11)) {
 						if (!osu_slider_use_gradient_image.getBool())
 						{
 							DirectX11Interface *dx11 = dynamic_cast<DirectX11Interface*>(g);
@@ -414,8 +411,7 @@ void OsuSliderRenderer::draw(Graphics *g, Osu *osu, VertexArrayObject *vao, cons
 								BLEND_SHADER->setUniformMatrix4fv("mvp", mvp);
 							}
 						}
-
-#endif
+						}
 
 						g->drawVAO(vao);
 					}
@@ -446,12 +442,6 @@ void OsuSliderRenderer::draw(Graphics *g, Osu *osu, VertexArrayObject *vao, cons
 void OsuSliderRenderer::drawVR(Graphics *g, Osu *osu, OsuVR *vr, Matrix4 &mvp, float approachScale, const std::vector<Vector2> &points, const std::vector<Vector2> &alwaysPoints, float hitcircleDiameter, float from, float to, Color undimmedColor, float colorRGBMultiplier, float alpha, long sliderTimeForRainbow)
 {
 	if (osu_slider_alpha_multiplier.getFloat() <= 0.0f || alpha <= 0.0f) return;
-
-#if defined(MCENGINE_FEATURE_OPENGL)
-
-	const bool isOpenGLRendererHack = (dynamic_cast<OpenGLLegacyInterface*>(g) != NULL || dynamic_cast<OpenGL3Interface*>(g) != NULL);
-
-#endif
 
 	checkUpdateVars(osu, hitcircleDiameter);
 
@@ -500,11 +490,11 @@ void OsuSliderRenderer::drawVR(Graphics *g, Osu *osu, OsuVR *vr, Matrix4 &mvp, f
 		g->setColor(0xffffffff);
 		osu->getSkin()->getSliderGradient()->bind();
 		{
-#if defined(MCENGINE_FEATURE_OPENGL)
-
-			if (isOpenGLRendererHack)
+#if defined(MCENGINE_FEATURE_OPENGL) || defined(MCENGINE_FEATURE_GLES32)
+			// note: i have no idea why there were originally both preprocessor AND runtime checks for these, but im keeping it because it's funny
+			// when are multiple renderers going to be built at the same time?
+			if constexpr (Env::cfg(REND::GL | REND::GLES32))
 				glBlendEquation(GL_MAX); // HACKHACK: OpenGL hardcoded
-
 #endif
 
 			// draw curve mesh
@@ -522,11 +512,9 @@ void OsuSliderRenderer::drawVR(Graphics *g, Osu *osu, OsuVR *vr, Matrix4 &mvp, f
 					drawFillSliderBodyPeppyVR(g, osu, vr, mvp, alwaysPoints, UNIT_CIRCLE_VAO_BAKED, hitcircleDiameter/2.0f, 0, alwaysPoints.size());
 			}
 
-#if defined(MCENGINE_FEATURE_OPENGL)
-
-			if (isOpenGLRendererHack)
+#if defined(MCENGINE_FEATURE_OPENGL) || defined(MCENGINE_FEATURE_GLES32)
+			if constexpr (Env::cfg(REND::GL | REND::GLES32))
 				glBlendEquation(GL_FUNC_ADD); // HACKHACK: OpenGL hardcoded
-
 #endif
 
 			//if (!osu_slider_use_gradient_image.getBool())
@@ -542,16 +530,6 @@ void OsuSliderRenderer::drawVR(Graphics *g, Osu *osu, OsuVR *vr, Matrix4 &mvp, f
 void OsuSliderRenderer::drawVR(Graphics *g, Osu *osu, OsuVR *vr, Matrix4 &mvp, float approachScale, VertexArrayObject *vao1, VertexArrayObject *vao2, const std::vector<Vector2> &alwaysPoints, float hitcircleDiameter, float from, float to, Color undimmedColor, float colorRGBMultiplier, float alpha, long sliderTimeForRainbow)
 {
 	if (osu_slider_alpha_multiplier.getFloat() <= 0.0f || alpha <= 0.0f || vao1 == NULL || vao2 == NULL) return;
-
-#if defined(MCENGINE_FEATURE_OPENGL)
-
-	const bool isOpenGLRendererHack = (dynamic_cast<OpenGLLegacyInterface*>(g) != NULL || dynamic_cast<OpenGL3Interface*>(g) != NULL);
-
-#elif defined(MCENGINE_FEATURE_OPENGLES)
-
-	//const bool isOpenGLRendererHack = (dynamic_cast<OpenGLES2Interface*>(g) != NULL);
-
-#endif
 
 	checkUpdateVars(osu, hitcircleDiameter);
 
@@ -598,11 +576,9 @@ void OsuSliderRenderer::drawVR(Graphics *g, Osu *osu, OsuVR *vr, Matrix4 &mvp, f
 		osu->getSkin()->getSliderGradient()->bind();
 		{
 
-#if defined(MCENGINE_FEATURE_OPENGL)
-
-			if (isOpenGLRendererHack)
+#if defined(MCENGINE_FEATURE_OPENGL) || defined(MCENGINE_FEATURE_GLES32)
+			if constexpr (Env::cfg(REND::GL | REND::GLES32))
 				glBlendEquation(GL_MAX); // HACKHACK: OpenGL hardcoded
-
 #endif
 
 			// draw curve mesh
@@ -622,11 +598,9 @@ void OsuSliderRenderer::drawVR(Graphics *g, Osu *osu, OsuVR *vr, Matrix4 &mvp, f
 					drawFillSliderBodyPeppyVR(g, osu, vr, mvp, alwaysPoints, UNIT_CIRCLE_VAO_BAKED, hitcircleDiameter/2.0f, 0, alwaysPoints.size());
 			}
 
-#if defined(MCENGINE_FEATURE_OPENGL)
-
-			if (isOpenGLRendererHack)
+#if defined(MCENGINE_FEATURE_OPENGL) || defined(MCENGINE_FEATURE_GLES32)
+			if constexpr (Env::cfg(REND::GL | REND::GLES32))
 				glBlendEquation(GL_FUNC_ADD); // HACKHACK: OpenGL hardcoded
-
 #endif
 
 			//if (!osu_slider_use_gradient_image.getBool())
@@ -641,22 +615,18 @@ void OsuSliderRenderer::drawVR(Graphics *g, Osu *osu, OsuVR *vr, Matrix4 &mvp, f
 
 void OsuSliderRenderer::drawFillSliderBodyPeppy(Graphics *g, Osu *osu, const std::vector<Vector2> &points, VertexArrayObject *circleMesh, float radius, int drawFromIndex, int drawUpToIndex, Shader *shader)
 {
+	OpenGLES2Interface *gles2;
+	DirectX11Interface *dx11;
+
+	if constexpr (Env::cfg(REND::GLES2))
+		gles2 = dynamic_cast<OpenGLES2Interface*>(g);
+	if constexpr (Env::cfg(REND::DX11))
+		dx11 = dynamic_cast<DirectX11Interface*>(g);
+
 	if (drawFromIndex < 0)
 		drawFromIndex = 0;
 	if (drawUpToIndex < 0)
 		drawUpToIndex = points.size();
-
-#ifdef MCENGINE_FEATURE_OPENGLES
-
-	OpenGLES2Interface *gles2 = dynamic_cast<OpenGLES2Interface*>(g);
-
-#endif
-
-#ifdef MCENGINE_FEATURE_DIRECTX11
-
-	DirectX11Interface *dx11 = dynamic_cast<DirectX11Interface*>(g);
-
-#endif
 
 	g->pushTransform();
 	{
@@ -674,27 +644,22 @@ void OsuSliderRenderer::drawFillSliderBodyPeppy(Graphics *g, Osu *osu, const std
 
 			g->translate(x-startX, y-startY, 0);
 
-#ifdef MCENGINE_FEATURE_OPENGLES
-
+			if constexpr (Env::cfg(REND::GLES2)) {
 			if (shader != NULL && gles2 != NULL)
 			{
 				g->forceUpdateTransform();
 				Matrix4 mvp = g->getMVP();
 				shader->setUniformMatrix4fv("mvp", mvp);
 			}
-
-#endif
-
-#ifdef MCENGINE_FEATURE_DIRECTX11
-
+			}
+			if constexpr (Env::cfg(REND::DX11)) {
 			if (shader != NULL && dx11 != NULL)
 			{
 				g->forceUpdateTransform();
 				Matrix4 mvp = g->getMVP();
 				shader->setUniformMatrix4fv("mvp", mvp);
 			}
-
-#endif
+			}
 
 			g->drawVAO(circleMesh);
 
@@ -774,8 +739,7 @@ void OsuSliderRenderer::checkUpdateVars(Osu *osu, float hitcircleDiameter)
 {
 	// static globals
 
-#ifdef MCENGINE_FEATURE_DIRECTX11
-
+	if constexpr (Env::cfg(REND::DX11))
 	{
 		DirectX11Interface *dx11 = dynamic_cast<DirectX11Interface*>(engine->getGraphics());
 		if (dx11 != NULL)
@@ -785,8 +749,6 @@ void OsuSliderRenderer::checkUpdateVars(Osu *osu, float hitcircleDiameter)
 				MESH_CENTER_HEIGHT = -MESH_CENTER_HEIGHT;
 		}
 	}
-
-#endif
 
 	// build shaders and circle mesh
 	if (BLEND_SHADER == NULL) // only do this once

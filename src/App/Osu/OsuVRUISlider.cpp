@@ -112,7 +112,7 @@ void OsuVRUISlider::update(Vector2 cursorPos)
 		const float percent = clamp<float>((cursorPos.x - m_vPos.x)/m_vSize.x, 0.0f, 1.0f);
 		bool hasChanged = percent != m_fCurPercent;
 		m_fCurPercent = percent;
-		m_fCurValue = lerp<float>(m_fMinValue, m_fMaxValue, m_fCurPercent);
+		m_fCurValue = lerp(m_fMinValue, m_fMaxValue, m_fCurPercent);
 
 		if (m_sliderChangeCallback != NULL && hasChanged)
 			m_sliderChangeCallback(this);

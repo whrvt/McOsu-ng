@@ -57,12 +57,12 @@ ConVar osu_options_slider_preview_use_legacy_renderer("osu_options_slider_previe
 
 void _osuOptionsSliderQualityWrapper(UString oldValue, UString newValue)
 {
-	float value = lerp<float>(1.0f, 2.5f, 1.0f - newValue.toFloat());
+	float value = lerp(1.0f, 2.5f, 1.0f - newValue.toFloat());
 	convar->getConVarByName("osu_slider_curve_points_separation")->setValue(value);
 };
 ConVar osu_options_slider_quality("osu_options_slider_quality", 0.0f, FCVAR_NONE, _osuOptionsSliderQualityWrapper);
 
-const char *OsuOptionsMenu::OSU_CONFIG_FILE_NAME = ""; // set dynamically below in the constructor
+const char *OsuOptionsMenu::OSU_CONFIG_FILE_NAME = ""; // set dynamically below in the constructor (how is that "const" ?)
 
 
 
@@ -278,12 +278,12 @@ public:
 		CBaseUILabel::update();
 		if (!m_bVisible) return;
 
-		const KEYCODE keyCode = (KEYCODE)m_key->getInt();
+		const KEYCODE keyCode = m_key->getVal<KEYCODE>();
 
 		// succ
 		UString labelText = env->keyCodeToString(keyCode);
 		if (labelText.find("?") != -1)
-			labelText.append(UString::format("  (%i)", m_key->getInt()));
+			labelText.append(UString::format("  (%i)", m_key->getVal<KEYCODE>()));
 
 		// handle bound/unbound
 		if (keyCode == 0)
@@ -583,9 +583,9 @@ OsuOptionsMenu::OsuOptionsMenu(Osu *osu) : OsuScreenBackable(osu)
 	//addSpacer();
 	addLabel("");
 	addCheckbox("Use osu!stable osu!.db database (read-only)", "If you have an existing osu!stable installation,\nthen this will massively speed up songbrowser beatmap loading.", convar->getConVarByName("osu_database_enabled"));
-	if (env->getOS() != Environment::OS::OS_HORIZON)
+	if constexpr (!Env::cfg(OS::HORIZON))
 		addCheckbox("Load osu!stable collection.db (read-only)", "If you have an existing osu!stable installation,\nalso load and display your created collections from there.", convar->getConVarByName("osu_collections_legacy_enabled"));
-	if (env->getOS() != Environment::OS::OS_HORIZON)
+	if constexpr (!Env::cfg(OS::HORIZON))
 		addCheckbox("Load osu!stable scores.db (read-only)", "If you have an existing osu!stable installation,\nalso load and display your achieved scores from there.", convar->getConVarByName("osu_scores_legacy_enabled"));
 
 	addSubSection("Player (Name)");
@@ -611,16 +611,20 @@ OsuOptionsMenu::OsuOptionsMenu(Osu *osu) : OsuScreenBackable(osu)
 	addSubSection("Renderer");
 	addCheckbox("VSync", "If enabled: plz enjoy input lag.", convar->getConVarByName("vsync"));
 
-	if (env->getOS() == Environment::OS::OS_WINDOWS)
+	if constexpr (Env::cfg(OS::WINDOWS))
 		addCheckbox("High Priority (!)", "WARNING: Only enable this if nothing else works!\nSets the process priority to High.\nMay fix microstuttering and other weird problems.\nTry to fix your broken computer/OS/drivers first!", convar->getConVarByName("win_processpriority"));
 
 	addCheckbox("Show FPS Counter", convar->getConVarByName("osu_draw_fps"));
 
-#if defined(MCENGINE_FEATURE_SDL) && defined(MCENGINE_FEATURE_OPENGL)
-	addCheckbox("Explicit Sync", "Analogous to \"Reduce dropped frames\" on osu!stable.\nForces the GPU to execute all queued commands before swapping.\nOnly use this if you experience issues at higher framerates.", convar->getConVarByName("gl_finish_before_swap"));
-#endif
+	if constexpr (Env::cfg(REND::GL | REND::GLES32))
+	{
+		CBaseUISlider *prerenderedFramesSlider = addSlider("Max Queued Frames", 1.0f, 3.0f, convar->getConVarByName("r_sync_max_frames"), -1.0f, true);
+		prerenderedFramesSlider->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onSliderChangeInt) );
+		prerenderedFramesSlider->setKeyDelta(1);
+		addLabel("Raise for higher fps, decrease for lower latency")->setTextColor(0xff666666);
+	}
 
-	if (env->getOS() != Environment::OS::OS_HORIZON)
+	if constexpr (!Env::cfg(OS::HORIZON))
 	{
 		addSpacer();
 
@@ -661,7 +665,7 @@ OsuOptionsMenu::OsuOptionsMenu(Osu *osu) : OsuScreenBackable(osu)
 	addCheckbox("Snaking in sliders", "\"Growing\" sliders.\nSliders gradually snake out from their starting point while fading in.\nHas no impact on performance whatsoever.", convar->getConVarByName("osu_snaking_sliders"));
 	addCheckbox("Snaking out sliders", "\"Shrinking\" sliders.\nSliders will shrink with the sliderball while sliding.\nCan improve performance a tiny bit, since there will be less to draw overall.", convar->getConVarByName("osu_slider_shrink"));
 	addSpacer();
-	if (env->getOS() != Environment::OS::OS_HORIZON)
+	if constexpr (!Env::cfg(OS::HORIZON))
 	{
 		addCheckbox("Legacy Slider Renderer (!)", "WARNING: Only try enabling this on shitty old computers!\nMay or may not improve fps while few sliders are visible.\nGuaranteed lower fps while many sliders are visible!", convar->getConVarByName("osu_force_legacy_slider_renderer"));
 		addCheckbox("Higher Quality Sliders (!)", "Disable this if your fps drop too low while sliders are visible.", convar->getConVarByName("osu_options_high_quality_sliders"))->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onHighQualitySlidersCheckboxChange) );
@@ -751,24 +755,20 @@ OsuOptionsMenu::OsuOptionsMenu(Osu *osu) : OsuScreenBackable(osu)
 	CBaseUIElement *sectionAudio = addSection("Audio");
 
 	addSubSection("Devices");
-	if (env->getOS() != Environment::OS::OS_HORIZON)
+	if constexpr (!Env::cfg(OS::HORIZON))
 	{
 		OPTIONS_ELEMENT outputDeviceSelect = addButton("Select Output Device", "Default", true);
 		((CBaseUIButton*)outputDeviceSelect.elements[0])->setClickCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onOutputDeviceSelect) );
 		outputDeviceSelect.resetButton->setClickCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onOutputDeviceResetClicked) );
 
-		if (env->getOS() == Environment::OS::OS_WINDOWS)
+		if constexpr (Env::cfg(OS::WINDOWS, !AUD::WASAPI))
 		{
-#ifndef MCENGINE_FEATURE_BASS_WASAPI
-
 			CBaseUICheckbox *audioCompatibilityModeCheckbox = addCheckbox("Audio compatibility mode (!)", "Use legacy audio engine (higher latency but more compatible)\nWARNING: May cause hitsound delays and stuttering!", m_win_snd_fallback_dsound_ref);
 			audioCompatibilityModeCheckbox->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onAudioCompatibilityModeChange) );
 
 			// HACKHACK: force manual change if user has enabled it (don't use convar callback)
 			if (m_win_snd_fallback_dsound_ref->getBool())
 				onAudioCompatibilityModeChange(audioCompatibilityModeCheckbox);
-
-#endif
 		}
 
 		m_outputDeviceResetButton = outputDeviceSelect.resetButton;
@@ -778,33 +778,32 @@ OsuOptionsMenu::OsuOptionsMenu(Osu *osu) : OsuScreenBackable(osu)
 	else
 		addButton("Restart SoundEngine (fix crackling)")->setClickCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onOutputDeviceRestart) );
 
-#ifdef MCENGINE_FEATURE_BASS_WASAPI
-
-	addSubSection("WASAPI");
-	m_wasapiBufferSizeSlider = addSlider("Buffer Size:", 0.000f, 0.050f, convar->getConVarByName("win_snd_wasapi_buffer_size")); // NOTE: allow 0 for shared mode windows 10 + period
-	m_wasapiBufferSizeSlider->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onWASAPIBufferChange) );
-	m_wasapiBufferSizeSlider->setKeyDelta(0.001f);
-	m_wasapiBufferSizeSlider->setAnimated(false);
-	addLabel("Windows 7: Start at 11 ms,")->setTextColor(0xff666666);
-	addLabel("Windows 10: Start at 1 ms,")->setTextColor(0xff666666);
-	addLabel("and if crackling: increment until fixed.")->setTextColor(0xff666666);
-	addLabel("(lower is better, non-wasapi has ~40 ms minimum)")->setTextColor(0xff666666);
-	addCheckbox("Exclusive Mode", "Dramatically reduces audio latency, leave this enabled.\nExclusive Mode = No other application can use audio.", convar->getConVarByName("win_snd_wasapi_exclusive"));
-	//addLabel("(On Windows 10 non-exclusive mode, try buffer = 0)")->setTextColor(0xff666666);
-	//addLabel("(then, try getting the smallest possible period)")->setTextColor(0xff666666);
-	addLabel("");
-	addLabel("");
-	addLabel("WARNING: Only if you know what you are doing")->setTextColor(0xffff0000);
-	m_wasapiPeriodSizeSlider = addSlider("Period Size:", 0.0f, 0.050f, convar->getConVarByName("win_snd_wasapi_period_size"));
-	m_wasapiPeriodSizeSlider->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onWASAPIPeriodChange) );
-	m_wasapiPeriodSizeSlider->setKeyDelta(0.001f);
-	m_wasapiPeriodSizeSlider->setAnimated(false);
-	OsuUIButton *restartSoundEngine = addButton("Restart SoundEngine");
-	restartSoundEngine->setClickCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onOutputDeviceRestart) );
-	restartSoundEngine->setColor(0xff00566b);
-	addLabel("");
-
-#endif
+	if constexpr (Env::cfg(AUD::WASAPI))
+	{
+		addSubSection("WASAPI");
+		m_wasapiBufferSizeSlider = addSlider("Buffer Size:", 0.000f, 0.050f, convar->getConVarByName("win_snd_wasapi_buffer_size")); // NOTE: allow 0 for shared mode windows 10 + period
+		m_wasapiBufferSizeSlider->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onWASAPIBufferChange) );
+		m_wasapiBufferSizeSlider->setKeyDelta(0.001f);
+		m_wasapiBufferSizeSlider->setAnimated(false);
+		addLabel("Windows 7: Start at 11 ms,")->setTextColor(0xff666666);
+		addLabel("Windows 10: Start at 1 ms,")->setTextColor(0xff666666);
+		addLabel("and if crackling: increment until fixed.")->setTextColor(0xff666666);
+		addLabel("(lower is better, non-wasapi has ~40 ms minimum)")->setTextColor(0xff666666);
+		addCheckbox("Exclusive Mode", "Dramatically reduces audio latency, leave this enabled.\nExclusive Mode = No other application can use audio.", convar->getConVarByName("win_snd_wasapi_exclusive"));
+		//addLabel("(On Windows 10 non-exclusive mode, try buffer = 0)")->setTextColor(0xff666666);
+		//addLabel("(then, try getting the smallest possible period)")->setTextColor(0xff666666);
+		addLabel("");
+		addLabel("");
+		addLabel("WARNING: Only if you know what you are doing")->setTextColor(0xffff0000);
+		m_wasapiPeriodSizeSlider = addSlider("Period Size:", 0.0f, 0.050f, convar->getConVarByName("win_snd_wasapi_period_size"));
+		m_wasapiPeriodSizeSlider->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onWASAPIPeriodChange) );
+		m_wasapiPeriodSizeSlider->setKeyDelta(0.001f);
+		m_wasapiPeriodSizeSlider->setAnimated(false);
+		OsuUIButton *restartSoundEngine = addButton("Restart SoundEngine");
+		restartSoundEngine->setClickCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onOutputDeviceRestart) );
+		restartSoundEngine->setColor(0xff00566b);
+		addLabel("");
+	}
 
 	addSubSection("Volume");
 	CBaseUISlider *masterVolumeSlider = addSlider("Master:", 0.0f, 1.0f, convar->getConVarByName("osu_volume_master"), 70.0f);
@@ -825,7 +824,7 @@ OsuOptionsMenu::OsuOptionsMenu(Osu *osu) : OsuScreenBackable(osu)
 	offsetSlider->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onSliderChangeIntMS) );
 	offsetSlider->setKeyDelta(1);
 
-	if (env->getOS() != Environment::OS::OS_HORIZON)
+	if constexpr (!Env::cfg(OS::HORIZON))
 	{
 		addSubSection("Songbrowser");
 		addCheckbox("Apply speed/pitch mods while browsing", "Whether to always apply all mods, or keep the preview music normal.", convar->getConVarByName("osu_beatmap_preview_mods_live"));
@@ -839,7 +838,7 @@ OsuOptionsMenu::OsuOptionsMenu(Osu *osu) : OsuScreenBackable(osu)
 	addSkinPreview();
 	{
 		OPTIONS_ELEMENT skinSelect;
-		if (steam->isReady())
+		if (Env::cfg(FEAT::STEAM) && steam->isReady())
 		{
 			skinSelect = addButtonButtonLabel("Local Skin ...", "Workshop ...", "default");
 			m_skinSelectLocalButton = skinSelect.elements[0];
@@ -903,32 +902,24 @@ OsuOptionsMenu::OsuOptionsMenu(Osu *osu) : OsuScreenBackable(osu)
 	CBaseUIElement *sectionInput = addSection("Input");
 
 	addSubSection("Mouse", "scroll");
-	if (env->getOS() == Environment::OS::OS_WINDOWS || env->getOS() == Environment::OS::OS_MACOS || env->getOS() == Environment::OS::OS_HORIZON
-#ifdef MCENGINE_FEATURE_SDL
-		|| env->getOS() == Environment::OS::OS_LINUX
-#endif
-	)
+	if constexpr ((Env::cfg(OS::WINDOWS | OS::MACOS | OS::HORIZON)) || (Env::cfg(BACKEND::SDL, OS::LINUX)))
 	{
-		addSlider("Sensitivity:", (env->getOS() == Environment::OS::OS_HORIZON ? 1.0f : 0.1f), 6.0f, convar->getConVarByName("mouse_sensitivity"))->setKeyDelta(0.01f);
+		addSlider("Sensitivity:", (Env::cfg(OS::HORIZON) ? 1.0f : 0.1f), 6.0f, convar->getConVarByName("mouse_sensitivity"))->setKeyDelta(0.01f);
 
-		if (env->getOS() == Environment::OS::OS_HORIZON)
+		if constexpr (Env::cfg(OS::HORIZON, FEAT::JOY_MOU))
 			addSlider("Joystick S.:", 0.1f, 6.0f, convar->getConVarByName("sdl_joystick_mouse_sensitivity"))->setKeyDelta(0.01f);
 
-		if (env->getOS() == Environment::OS::OS_MACOS)
+		if constexpr (Env::cfg(OS::MACOS))
 		{
 			addLabel("");
 			addLabel("WARNING: Set Sensitivity to 1 for tablets!")->setTextColor(0xffff0000);
 			addLabel("");
 		}
 	}
-	if (env->getOS() == Environment::OS::OS_WINDOWS
-#ifdef MCENGINE_FEATURE_SDL
-		|| env->getOS() == Environment::OS::OS_LINUX
-#endif
-	)
+	if constexpr (Env::cfg(OS::WINDOWS | OS::LINUX))
 	{
 		addCheckbox("Raw Input", convar->getConVarByName("mouse_raw_input"));
-		if (env->getOS() == Environment::OS::OS_WINDOWS)
+		if constexpr (Env::cfg(OS::WINDOWS))
 		{
 			ConVar *win_mouse_raw_input_buffer_ref = convar->getConVarByName("win_mouse_raw_input_buffer", false);
 			if (win_mouse_raw_input_buffer_ref != NULL)
@@ -936,18 +927,14 @@ OsuOptionsMenu::OsuOptionsMenu(Osu *osu) : OsuScreenBackable(osu)
 		}
 		addCheckbox("Map Absolute Raw Input to Window", convar->getConVarByName("mouse_raw_input_absolute_to_window"))->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onRawInputToAbsoluteWindowChange) );
 	}
-	if (env->getOS() == Environment::OS::OS_LINUX
-#ifdef MCENGINE_FEATURE_SDL
-		&& false
-#endif
-	)
+	if constexpr (Env::cfg(!BACKEND::SDL, OS::LINUX))
 	{
 		addLabel("Use system settings to change the mouse sensitivity.")->setTextColor(0xff555555);
 		addLabel("");
 		addLabel("Use xinput or xsetwacom to change the tablet area.")->setTextColor(0xff555555);
 		addLabel("");
 	}
-	if (env->getOS() != Environment::OS::OS_HORIZON)
+	if constexpr (!Env::cfg(OS::HORIZON))
 	{
 		addCheckbox("Confine Cursor (Windowed)", convar->getConVarByName("osu_confine_cursor_windowed"));
 		addCheckbox("Confine Cursor (Fullscreen)", convar->getConVarByName("osu_confine_cursor_fullscreen"));
@@ -957,25 +944,19 @@ OsuOptionsMenu::OsuOptionsMenu(Osu *osu) : OsuScreenBackable(osu)
 	addCheckbox("Disable Mouse Buttons in Play Mode", convar->getConVarByName("osu_disable_mousebuttons"));
 	addCheckbox("Cursor ripples", "The cursor will ripple outwards on clicking.", convar->getConVarByName("osu_draw_cursor_ripples"));
 
-	if (env->getOS() == Environment::OS::OS_WINDOWS)
+	if constexpr (Env::cfg(!BACKEND::SDL, OS::WINDOWS))
 	{
-#ifndef MCENGINE_FEATURE_SDL
-
 		addSubSection("Tablet");
 		addCheckbox("OS TabletPC Support (!)", "WARNING: Windows 10 may break raw mouse input if this is enabled!\nWARNING: Do not enable this with a mouse (will break right click)!\nEnable this if your tablet clicks aren't handled correctly.", convar->getConVarByName("win_realtimestylus"));
 		addCheckbox("Windows Ink Workaround", "Enable this if your tablet cursor is stuck in a tiny area on the top left of the screen.\nIf this doesn't fix it, use \"Ignore Sensitivity & Raw Input\" below.", convar->getConVarByName("win_ink_workaround"));
 		addCheckbox("Ignore Sensitivity & Raw Input", "Only use this if nothing else works.\nIf this is enabled, then the in-game sensitivity slider will no longer work for tablets!\n(You can then instead use your tablet configuration software to change the tablet area.)", convar->getConVarByName("tablet_sensitivity_ignore"));
-
-#endif
 	}
-
-#ifdef MCENGINE_FEATURE_SDL
-
-	addSubSection("Gamepad");
-	addSlider("Stick Sens.:", 0.1f, 6.0f, convar->getConVarByName("sdl_joystick_mouse_sensitivity"))->setKeyDelta(0.01f);
-	addSlider("Stick Deadzone:", 0.0f, 0.95f, convar->getConVarByName("sdl_joystick0_deadzone"))->setKeyDelta(0.01f)->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onSliderChangePercent) );
-
-#endif
+	if constexpr (Env::cfg(BACKEND::SDL, (FEAT::JOY_MOU | FEAT::JOY)))
+	{
+		addSubSection("Gamepad");
+		addSlider("Stick Sens.:", 0.1f, 6.0f, convar->getConVarByName("sdl_joystick_mouse_sensitivity"))->setKeyDelta(0.01f);
+		addSlider("Stick Deadzone:", 0.0f, 0.95f, convar->getConVarByName("sdl_joystick0_deadzone"))->setKeyDelta(0.01f)->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onSliderChangePercent) );
+	}
 
 	addSpacer();
 	const UString keyboardSectionTags = "keyboard keys key bindings binds keybinds keybindings";
@@ -1183,9 +1164,9 @@ OsuOptionsMenu::OsuOptionsMenu(Osu *osu) : OsuScreenBackable(osu)
 	CBaseUIElement *sectionFposu = addSection("FPoSu (3D)");
 
 	addSubSection("FPoSu - General");
-	addCheckbox("FPoSu", (env->getOS() == Environment::OS::OS_WINDOWS ? "The real 3D FPS mod.\nPlay from a first person shooter perspective in a 3D environment.\nThis is only intended for mouse! (Enable \"Tablet/Absolute Mode\" for tablets.)" : "The real 3D FPS mod.\nPlay from a first person shooter perspective in a 3D environment.\nThis is only intended for mouse!"), convar->getConVarByName("osu_mod_fposu"));
+	addCheckbox("FPoSu", (Env::cfg(OS::WINDOWS) ? "The real 3D FPS mod.\nPlay from a first person shooter perspective in a 3D environment.\nThis is only intended for mouse! (Enable \"Tablet/Absolute Mode\" for tablets.)" : "The real 3D FPS mod.\nPlay from a first person shooter perspective in a 3D environment.\nThis is only intended for mouse!"), convar->getConVarByName("osu_mod_fposu"));
 #ifdef MCOSU_FPOSU_4D_MODE_FINISHED
-	addCheckbox("[Beta] 4D Mode", (env->getOS() == Environment::OS::OS_WINDOWS ? "Actual 3D circles instead of \"just\" a flat playfield in 3D.\nNOTE: Not compatible with \"Tablet/Absolute Mode\"." : "Actual 3D circles instead of \"just\" a flat playfield in 3D."), convar->getConVarByName("fposu_3d"));
+	addCheckbox("[Beta] 4D Mode", (Env::cfg(OS::WINDOWS) ? "Actual 3D circles instead of \"just\" a flat playfield in 3D.\nNOTE: Not compatible with \"Tablet/Absolute Mode\"." : "Actual 3D circles instead of \"just\" a flat playfield in 3D."), convar->getConVarByName("fposu_3d"));
 	addCheckbox("[Beta] 4D Mode - Spheres", "Combocolored lit 3D spheres instead of flat 3D circles.\nOnly relevant if \"[Beta] 4D Mode\" is enabled.", convar->getConVarByName("fposu_3d_spheres"));
 #endif
 	addLabel("");
@@ -1217,7 +1198,7 @@ OsuOptionsMenu::OsuOptionsMenu(Osu *osu) : OsuScreenBackable(osu)
 	spheresAASlider->setKeyDelta(2.0f);
 	spheresAASlider->setAnimated(false);
 #endif
-	if (env->getOS() == Environment::OS::OS_WINDOWS)
+	if constexpr (Env::cfg(OS::WINDOWS))
 	{
 		addSubSection("FPoSu - Mouse");
 		OsuUIButton *cm360CalculatorLinkButton = addButton("https://www.mouse-sensitivity.com/");
@@ -1231,18 +1212,18 @@ OsuOptionsMenu::OsuOptionsMenu(Osu *osu) : OsuScreenBackable(osu)
 		addCheckbox("Invert Horizontal", convar->getConVarByName("fposu_invert_horizontal"));
 		addCheckbox("Tablet/Absolute Mode (!)", "WARNING: Do NOT enable this if you are using a mouse!\nIf this is enabled, then DPI and cm per 360 will be ignored!", convar->getConVarByName("fposu_absolute_mode"));
 	}
-	else if (env->getOS() == Environment::OS::OS_LINUX)
+	else if constexpr (Env::cfg(OS::LINUX))
 	{
 #ifdef MCOSU_FPOSU_4D_MODE_FINISHED
 		addSubSection("[Beta] FPoSu 4D Mode - Mouse");
-		addSlider("Sensitivity:", (env->getOS() == Environment::OS::OS_HORIZON ? 1.0f : 0.1f), 6.0f, convar->getConVarByName("mouse_sensitivity"))->setKeyDelta(0.01f);
+		addSlider("Sensitivity:", (Env::cfg(OS::HORIZON) ? 1.0f : 0.1f), 6.0f, convar->getConVarByName("mouse_sensitivity"))->setKeyDelta(0.01f);
 #endif
 	}
 
 	//**************************************************************************************************************************//
 
 	CBaseUIElement *sectionOnline = NULL;
-	if (env->getOS() != Environment::OS::OS_HORIZON)
+	if constexpr (!Env::cfg(OS::HORIZON))
 	{
 		sectionOnline = addSection("Online");
 
@@ -1448,14 +1429,17 @@ void OsuOptionsMenu::update()
 
 	// workshop background refresh takes some time, open context menu after loading is finished
 	// do this even if options menu is invisible (but only show context menu if visible after finished)
-	if (m_bWorkshopSkinSelectScheduled)
+	if constexpr (Env::cfg(FEAT::STEAM))
 	{
-		if (m_osu->getSteamWorkshop()->isReady())
+		if (m_bWorkshopSkinSelectScheduled)
 		{
-			m_bWorkshopSkinSelectScheduled = false;
+			if (m_osu->getSteamWorkshop()->isReady())
+			{
+				m_bWorkshopSkinSelectScheduled = false;
 
-			if (isVisible())
-				onSkinSelectWorkshop3();
+				if (isVisible())
+					onSkinSelectWorkshop3();
+			}
 		}
 	}
 
@@ -1623,7 +1607,7 @@ void OsuOptionsMenu::onKeyDown(KeyboardEvent &e)
 	m_container->onKeyDown(e);
 	if (e.isConsumed()) return;
 
-	if (e == KEY_ESCAPE || e == (KEYCODE)OsuKeyBindings::GAME_PAUSE.getInt())
+	if (e == KEY_ESCAPE || e == OsuKeyBindings::GAME_PAUSE.getVal<KEYCODE>())
 	{
 		if (m_contextMenu->isVisible())
 		{
@@ -1673,7 +1657,7 @@ void OsuOptionsMenu::onKeyDown(KeyboardEvent &e)
 	}
 	else
 	{
-		if (e == KEY_ESCAPE || e == (KEYCODE)OsuKeyBindings::GAME_PAUSE.getInt())
+		if (e == KEY_ESCAPE || e == OsuKeyBindings::GAME_PAUSE.getVal<KEYCODE>())
 			onBack();
 	}
 
@@ -1728,7 +1712,7 @@ void OsuOptionsMenu::onResolutionChange(Vector2 newResolution)
 	OsuScreenBackable::onResolutionChange(newResolution);
 
 	// HACKHACK: magic
-	if ((env->getOS() == Environment::OS::OS_WINDOWS && env->isFullscreen() && env->isFullscreenWindowedBorderless() && (int)newResolution.y == (int)env->getNativeScreenSize().y+1))
+	if ((Env::cfg(OS::WINDOWS) && env->isFullscreen() && env->isFullscreenWindowedBorderless() && (int)newResolution.y == (int)env->getNativeScreenSize().y+1))
 		newResolution.y--;
 
 	if (m_resolutionLabel != NULL)
@@ -1748,7 +1732,7 @@ void OsuOptionsMenu::onKey(KeyboardEvent &e)
 		if (e.getKeyCode() != (KEYCODE)0) // if not the first call
 		{
 			if (m_iManiaK > -1 && m_iManiaK < 10 && m_iManiaKey > -1 && m_iManiaKey <= m_iManiaK)
-				OsuKeyBindings::MANIA[m_iManiaK][m_iManiaKey]->setValue(e.getKeyCode());
+				(m_osu->getBindings()->getMania()->begin())[m_iManiaK][m_iManiaKey]->setValue(e.getKeyCode());
 
 			// go to next key
 			m_iManiaKey++;
@@ -2434,9 +2418,16 @@ void OsuOptionsMenu::updateVRRenderTargetResolutionLabel()
 void OsuOptionsMenu::updateSkinNameLabel()
 {
 	if (m_skinLabel == NULL) return;
-
-	m_skinLabel->setText(m_osu_skin_is_from_workshop_ref->getBool() ? m_osu_skin_workshop_title_ref->getString() : m_osu_skin_ref->getString());
-	m_skinLabel->setTextColor(m_osu_skin_is_from_workshop_ref->getBool() ? 0xff37adff : 0xffffffff);
+	if constexpr (Env::cfg(FEAT::STEAM))
+	{
+		m_skinLabel->setText(m_osu_skin_is_from_workshop_ref->getBool() ? m_osu_skin_workshop_title_ref->getString() : m_osu_skin_ref->getString());
+		m_skinLabel->setTextColor(m_osu_skin_is_from_workshop_ref->getBool() ? 0xff37adff : 0xffffffff);
+	}
+	else
+	{
+		m_skinLabel->setText(m_osu_skin_ref->getString());
+		m_skinLabel->setTextColor(0xffffffff);
+	}
 }
 
 void OsuOptionsMenu::updateNotelockSelectLabel()
@@ -2609,7 +2600,8 @@ void OsuOptionsMenu::onSkinSelect()
 
 void OsuOptionsMenu::onSkinSelect2(UString skinName, int id)
 {
-	m_osu_skin_is_from_workshop_ref->setValue(0.0f);
+	if constexpr (Env::cfg(FEAT::STEAM))
+		m_osu_skin_is_from_workshop_ref->setValue(0.0f);
 
 	if (m_osu->getInstanceID() < 1)
 		m_osu_skin_ref->setValue(skinName);
@@ -2621,91 +2613,103 @@ void OsuOptionsMenu::onSkinSelect2(UString skinName, int id)
 
 void OsuOptionsMenu::onSkinSelectWorkshop()
 {
-	if (m_skinSelectWorkshopButton == NULL) return;
-
-	if (m_osu->getSteamWorkshop()->isReady() && m_osu->getSteamWorkshop()->areDetailsLoaded())
+	if constexpr (Env::cfg(FEAT::STEAM))
 	{
-		onSkinSelectWorkshop3();
-		return;
-	}
+		if (m_skinSelectWorkshopButton == NULL) return;
 
-	onSkinSelectWorkshop2();
+		if (m_osu->getSteamWorkshop()->isReady() && m_osu->getSteamWorkshop()->areDetailsLoaded())
+		{
+			onSkinSelectWorkshop3();
+			return;
+		}
+
+		onSkinSelectWorkshop2();
+	}
 }
 
 void OsuOptionsMenu::onSkinSelectWorkshop2()
 {
-	m_osu->getSteamWorkshop()->refresh(true);
-	m_bWorkshopSkinSelectScheduled = true;
-
-	m_contextMenu->setPos(m_skinSelectWorkshopButton->getPos());
-	m_contextMenu->setRelPos(m_skinSelectWorkshopButton->getRelPos());
-	m_contextMenu->begin();
+	if constexpr (Env::cfg(FEAT::STEAM))
 	{
-		m_contextMenu->addButton("(Loading, please wait ...)", -4)->setEnabled(false);
+		m_osu->getSteamWorkshop()->refresh(true);
+		m_bWorkshopSkinSelectScheduled = true;
+
+		m_contextMenu->setPos(m_skinSelectWorkshopButton->getPos());
+		m_contextMenu->setRelPos(m_skinSelectWorkshopButton->getRelPos());
+		m_contextMenu->begin();
+		{
+			m_contextMenu->addButton("(Loading, please wait ...)", -4)->setEnabled(false);
+		}
+		m_contextMenu->end(false, false);
 	}
-	m_contextMenu->end(false, false);
 }
 
 void OsuOptionsMenu::onSkinSelectWorkshop3()
 {
-	m_contextMenu->setPos(m_skinSelectWorkshopButton->getPos());
-	m_contextMenu->setRelPos(m_skinSelectWorkshopButton->getRelPos());
-	m_contextMenu->begin();
+	if constexpr (Env::cfg(FEAT::STEAM))
 	{
-		m_contextMenu->addButton(">>> Refresh <<<", -2)->setTextLeft(false);
-		m_contextMenu->addButton("", -4)->setEnabled(false);
-
-		const std::vector<OsuSteamWorkshop::SUBSCRIBED_ITEM> &subscribedItems = m_osu->getSteamWorkshop()->getSubscribedItems();
-		if (subscribedItems.size() > 0)
+		m_contextMenu->setPos(m_skinSelectWorkshopButton->getPos());
+		m_contextMenu->setRelPos(m_skinSelectWorkshopButton->getRelPos());
+		m_contextMenu->begin();
 		{
-			for (int i=0; i<subscribedItems.size(); i++)
+			m_contextMenu->addButton(">>> Refresh <<<", -2)->setTextLeft(false);
+			m_contextMenu->addButton("", -4)->setEnabled(false);
+
+			const std::vector<OsuSteamWorkshop::SUBSCRIBED_ITEM> &subscribedItems = m_osu->getSteamWorkshop()->getSubscribedItems();
+			if (subscribedItems.size() > 0)
 			{
-				if (subscribedItems[i].status != OsuSteamWorkshop::SUBSCRIBED_ITEM_STATUS::INSTALLED)
-					m_contextMenu->addButton("(Downloading ...)", -4)->setEnabled(false)->setTextColor(0xff888888)->setTextDarkColor(0xff000000);
-				else
-					m_contextMenu->addButton(subscribedItems[i].title, i);
+				for (int i=0; i<subscribedItems.size(); i++)
+				{
+					if (subscribedItems[i].status != OsuSteamWorkshop::SUBSCRIBED_ITEM_STATUS::INSTALLED)
+						m_contextMenu->addButton("(Downloading ...)", -4)->setEnabled(false)->setTextColor(0xff888888)->setTextDarkColor(0xff000000);
+					else
+						m_contextMenu->addButton(subscribedItems[i].title, i);
+				}
 			}
+			else
+				m_contextMenu->addButton("(Empty. Click for Workshop!)", -3)->setTextLeft(false);
 		}
-		else
-			m_contextMenu->addButton("(Empty. Click for Workshop!)", -3)->setTextLeft(false);
+		m_contextMenu->end(false, false);
+		m_contextMenu->setClickCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onSkinSelectWorkshop4) );
 	}
-	m_contextMenu->end(false, false);
-	m_contextMenu->setClickCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onSkinSelectWorkshop4) );
 }
 
 void OsuOptionsMenu::onSkinSelectWorkshop4(UString skinName, int id)
 {
-	if (id == -2) // ">>> Refresh <<<"
+	if constexpr (Env::cfg(FEAT::STEAM))
 	{
-		onSkinSelectWorkshop2();
-		return;
-	}
-	else if (id == -3) // "(Empty. Click for Workshop!)"
-	{
-		OsuMainMenu::openSteamWorkshopInGameOverlay(m_osu, true);
-		return;
-	}
-
-	const std::vector<OsuSteamWorkshop::SUBSCRIBED_ITEM> &subscribedItems = m_osu->getSteamWorkshop()->getSubscribedItems();
-	if (id >= 0 && id < subscribedItems.size())
-	{
-		const OsuSteamWorkshop::SUBSCRIBED_ITEM &subscribedItem = subscribedItems[id];
-		debugLog("installInfo = %s\n", subscribedItem.installInfo.toUtf8());
-		if (env->directoryExists(subscribedItem.installInfo))
+		if (id == -2) // ">>> Refresh <<<"
 		{
-			m_osu_skin_is_from_workshop_ref->setValue(1.0f);
-			m_osu_skin_workshop_title_ref->setValue(subscribedItem.title);
-			m_osu_skin_workshop_id_ref->setValue(UString::format("%llu", subscribedItem.id));
-
-			if (m_osu->getInstanceID() < 1)
-				m_osu_skin_ref->setValue(subscribedItem.installInfo);
-			else
-				m_osu->setSkin(subscribedItem.installInfo);
-
-			updateSkinNameLabel();
+			onSkinSelectWorkshop2();
+			return;
 		}
-		else
-			m_osu->getNotificationOverlay()->addNotification("Error: Workshop skin does not exist!", 0xffff0000);
+		else if (id == -3) // "(Empty. Click for Workshop!)"
+		{
+			OsuMainMenu::openSteamWorkshopInGameOverlay(m_osu, true);
+			return;
+		}
+
+		const std::vector<OsuSteamWorkshop::SUBSCRIBED_ITEM> &subscribedItems = m_osu->getSteamWorkshop()->getSubscribedItems();
+		if (id >= 0 && id < subscribedItems.size())
+		{
+			const OsuSteamWorkshop::SUBSCRIBED_ITEM &subscribedItem = subscribedItems[id];
+			debugLog("installInfo = %s\n", subscribedItem.installInfo.toUtf8());
+			if (env->directoryExists(subscribedItem.installInfo))
+			{
+				m_osu_skin_is_from_workshop_ref->setValue(1.0f);
+				m_osu_skin_workshop_title_ref->setValue(subscribedItem.title);
+				m_osu_skin_workshop_id_ref->setValue(UString::format("%llu", subscribedItem.id));
+
+				if (m_osu->getInstanceID() < 1)
+					m_osu_skin_ref->setValue(subscribedItem.installInfo);
+				else
+					m_osu->setSkin(subscribedItem.installInfo);
+
+				updateSkinNameLabel();
+			}
+			else
+				m_osu->getNotificationOverlay()->addNotification("Error: Workshop skin does not exist!", 0xffff0000);
+		}
 	}
 }
 
@@ -2880,15 +2884,10 @@ void OsuOptionsMenu::onOutputDeviceResetUpdate()
 
 void OsuOptionsMenu::onOutputDeviceRestart()
 {
-#ifdef MCENGINE_FEATURE_BASS_WASAPI
-
-	engine->getSound()->setOutputDeviceForce(engine->getSound()->getOutputDevice());
-
-#else
-
-	engine->getSound()->setOutputDevice("Default"); // NOTE: only relevant for horizon builds atm
-
-#endif
+	if constexpr (Env::cfg(AUD::WASAPI))
+		engine->getSound()->setOutputDeviceForce(engine->getSound()->getOutputDevice());
+	else
+		engine->getSound()->setOutputDevice("Default"); // NOTE: only relevant for horizon builds atm
 }
 
 void OsuOptionsMenu::onAudioCompatibilityModeChange(CBaseUICheckbox *checkbox)
@@ -2901,7 +2900,7 @@ void OsuOptionsMenu::onAudioCompatibilityModeChange(CBaseUICheckbox *checkbox)
 
 void OsuOptionsMenu::onDownloadOsuClicked()
 {
-	if (env->getOS() == Environment::OS::OS_HORIZON)
+	if constexpr (Env::cfg(OS::HORIZON))
 	{
 		m_osu->getNotificationOverlay()->addNotification("Go to https://osu.ppy.sh/home/download", 0xffffffff, false, 0.75f);
 		return;
@@ -2913,7 +2912,7 @@ void OsuOptionsMenu::onDownloadOsuClicked()
 
 void OsuOptionsMenu::onManuallyManageBeatmapsClicked()
 {
-	if (env->getOS() == Environment::OS::OS_HORIZON)
+	if constexpr (Env::cfg(OS::HORIZON))
 	{
 		m_osu->getNotificationOverlay()->addNotification("Google \"How to use McOsu without osu!\"", 0xffffffff, false, 0.75f);
 		return;
@@ -2925,7 +2924,7 @@ void OsuOptionsMenu::onManuallyManageBeatmapsClicked()
 
 void OsuOptionsMenu::onCM360CalculatorLinkClicked()
 {
-	if (env->getOS() == Environment::OS::OS_HORIZON)
+	if constexpr (Env::cfg(OS::HORIZON))
 	{
 		m_osu->getNotificationOverlay()->addNotification("Go to https://www.mouse-sensitivity.com/", 0xffffffff, false, 0.75f);
 		return;
@@ -3295,7 +3294,7 @@ void OsuOptionsMenu::onKeyBindingsResetAllPressed(CBaseUIButton *button)
 	{
 		m_iNumResetAllKeyBindingsPressed = 0;
 
-		for (ConVar *bind : OsuKeyBindings::ALL)
+		for (ConVar *bind : *(m_osu->getBindings()->get()))
 		{
 			bind->setValue(bind->getDefaultFloat());
 		}
@@ -3691,7 +3690,7 @@ void OsuOptionsMenu::onResetEverythingClicked(CBaseUIButton *button)
 		}
 
 		// and then all key bindings (since these don't use the yellow reset button system)
-		for (ConVar *bind : OsuKeyBindings::ALL)
+		for (ConVar *bind : *(m_osu->getBindings()->get()))
 		{
 			bind->setValue(bind->getDefaultFloat());
 		}
@@ -4228,11 +4227,14 @@ void OsuOptionsMenu::save()
 	}
 
 	out << "osu_skin_mipmaps " << convar->getConVarByName("osu_skin_mipmaps")->getString().toUtf8() << "\n";
-	if (m_osu_skin_is_from_workshop_ref->getBool())
+	if constexpr (Env::cfg(FEAT::STEAM))
 	{
-		out << "osu_skin_is_from_workshop " << m_osu_skin_is_from_workshop_ref->getString().toUtf8() << "\n";
-		out << "osu_skin_workshop_title " << m_osu_skin_workshop_title_ref->getString().toUtf8() << "\n";
-		out << "osu_skin_workshop_id " << m_osu_skin_workshop_id_ref->getString().toUtf8() << "\n";
+		if (m_osu_skin_is_from_workshop_ref->getBool())
+		{
+			out << "osu_skin_is_from_workshop " << m_osu_skin_is_from_workshop_ref->getString().toUtf8() << "\n";
+			out << "osu_skin_workshop_title " << m_osu_skin_workshop_title_ref->getString().toUtf8() << "\n";
+			out << "osu_skin_workshop_id " << m_osu_skin_workshop_id_ref->getString().toUtf8() << "\n";
+		}
 	}
 	out << "osu_skin " << m_osu_skin_ref->getString().toUtf8() << "\n";
 

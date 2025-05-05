@@ -44,6 +44,9 @@ public:
 
 	std::vector<UString> getOutputDevices() override;
 
+	SoundEngineType* getSndEngine() override {return this;}
+	[[nodiscard]] const SoundEngineType* getSndEngine() const override {return this;}
+
 private:
 	void updateOutputDevices(bool handleOutputDeviceChanges, bool printInfo) override;
 	bool initializeOutputDevice(int id = -1) override;
@@ -61,5 +64,7 @@ private:
 #endif
 };
 
+#else
+class BassSoundEngine : public SoundEngine{};
 #endif
 #endif

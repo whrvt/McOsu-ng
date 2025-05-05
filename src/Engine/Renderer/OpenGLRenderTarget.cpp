@@ -7,7 +7,7 @@
 
 #include "OpenGLRenderTarget.h"
 
-#if defined(MCENGINE_FEATURE_OPENGL) || defined(MCENGINE_FEATURE_OPENGLES)
+#if defined(MCENGINE_FEATURE_OPENGL) || defined (MCENGINE_FEATURE_GLES2) || defined(MCENGINE_FEATURE_GLES32)
 
 #include "Engine.h"
 #include "ConVar.h"
@@ -80,16 +80,16 @@ void OpenGLRenderTarget::init()
 	}
 
 	// fill depth buffer
-#ifdef MCENGINE_FEATURE_OPENGL
+	constexpr auto DEPTH_COMPONENT = Env::cfg(REND::GL) ? GL_DEPTH_COMPONENT : GL_DEPTH_COMPONENT24; // GL ES needs this manually specified to avoid artifacts
+#if defined(MCENGINE_FEATURE_OPENGL) || defined(MCENGINE_FEATURE_GLES32)
 
 	if (isMultiSampled())
-		glRenderbufferStorageMultisample(GL_RENDERBUFFER, numMultiSamples, GL_DEPTH_COMPONENT, (int)m_vSize.x, (int)m_vSize.y);
+		glRenderbufferStorageMultisample(GL_RENDERBUFFER, numMultiSamples, DEPTH_COMPONENT, (int)m_vSize.x, (int)m_vSize.y);
 	else
-		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, (int)m_vSize.x, (int)m_vSize.y);
-
+		glRenderbufferStorage(GL_RENDERBUFFER, DEPTH_COMPONENT, (int)m_vSize.x, (int)m_vSize.y);
 #else
 
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, (int)m_vSize.x, (int)m_vSize.y);
+	glRenderbufferStorage(GL_RENDERBUFFER, DEPTH_COMPONENT, (int)m_vSize.x, (int)m_vSize.y);
 
 #endif
 
@@ -99,7 +99,7 @@ void OpenGLRenderTarget::init()
 	// create texture
 	glGenTextures(1, &m_iRenderTexture);
 
-#ifdef MCENGINE_FEATURE_OPENGL
+#if defined(MCENGINE_FEATURE_OPENGL) || defined(MCENGINE_FEATURE_GLES32)
 
 	glBindTexture(isMultiSampled() ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D, m_iRenderTexture);
 
@@ -116,10 +116,15 @@ void OpenGLRenderTarget::init()
 	}
 
 	// fill texture
-#ifdef MCENGINE_FEATURE_OPENGL
+#if defined(MCENGINE_FEATURE_OPENGL) || defined(MCENGINE_FEATURE_GLES32)
 
 	if (isMultiSampled())
-		glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, numMultiSamples, GL_RGBA8, (int)m_vSize.x, (int)m_vSize.y, true); // use fixed sample locations
+	{
+		if constexpr (Env::cfg(REND::GL))
+			glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, numMultiSamples, GL_RGBA8, (int)m_vSize.x, (int)m_vSize.y, true); // use fixed sample locations
+		else
+			glTexStorage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, numMultiSamples, GL_RGBA8, (int)m_vSize.x, (int)m_vSize.y, true);
+	}
 	else
 	{
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, (int)m_vSize.x, (int)m_vSize.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
@@ -145,7 +150,7 @@ void OpenGLRenderTarget::init()
 #endif
 
 	// set render texture as color attachment0 on the framebuffer
-#ifdef MCENGINE_FEATURE_OPENGL
+#if defined(MCENGINE_FEATURE_OPENGL) || defined(MCENGINE_FEATURE_GLES32)
 
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, isMultiSampled() ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D, m_iRenderTexture, 0);
 
@@ -156,7 +161,7 @@ void OpenGLRenderTarget::init()
 #endif
 
 	// if multisampled, create resolve framebuffer/texture
-#ifdef MCENGINE_FEATURE_OPENGL
+#if defined(MCENGINE_FEATURE_OPENGL) || defined(MCENGINE_FEATURE_GLES32)
 
 	if (isMultiSampled())
 	{
@@ -195,9 +200,10 @@ void OpenGLRenderTarget::init()
 #endif
 
 	// error checking
-	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+	GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+	if (status != GL_FRAMEBUFFER_COMPLETE)
 	{
-		engine->showMessageError("RenderTarget Error", UString::format("!GL_FRAMEBUFFER_COMPLETE, size = (%ix%i), multisampled = %i", (int)m_vSize.x, (int)m_vSize.y, (int)isMultiSampled()));
+		engine->showMessageError("RenderTarget Error", UString::format("!GL_FRAMEBUFFER_COMPLETE, size = (%ix%i), multisampled = %i, status = %u", (int)m_vSize.x, (int)m_vSize.y, (int)isMultiSampled(), status));
 		return;
 	}
 
@@ -259,7 +265,7 @@ void OpenGLRenderTarget::disable()
 	if (!m_bReady) return;
 
 	// if multisampled, blit content for multisampling into resolve texture
-#ifdef MCENGINE_FEATURE_OPENGL
+#if defined(MCENGINE_FEATURE_OPENGL) || defined(MCENGINE_FEATURE_GLES32)
 
 	if (isMultiSampled())
 	{
@@ -300,7 +306,7 @@ void OpenGLRenderTarget::bind(unsigned int textureUnit)
 	// needed for legacy support (OpenGLLegacyInterface)
 	// DEPRECATED LEGACY
 	glEnable(GL_TEXTURE_2D);
-	glGetError(); // clear gl error state
+	//glGetError(); // clear gl error state
 }
 
 void OpenGLRenderTarget::unbind()
@@ -318,7 +324,7 @@ void OpenGLRenderTarget::unbind()
 
 void OpenGLRenderTarget::blitResolveFrameBufferIntoFrameBuffer(OpenGLRenderTarget *rt)
 {
-#ifdef MCENGINE_FEATURE_OPENGL
+#if defined(MCENGINE_FEATURE_OPENGL) || defined(MCENGINE_FEATURE_GLES32)
 
 	if (isMultiSampled())
 	{
@@ -339,7 +345,7 @@ void OpenGLRenderTarget::blitResolveFrameBufferIntoFrameBuffer(OpenGLRenderTarge
 
 void OpenGLRenderTarget::blitFrameBufferIntoFrameBuffer(OpenGLRenderTarget *rt)
 {
-#ifdef MCENGINE_FEATURE_OPENGL
+#if defined(MCENGINE_FEATURE_OPENGL) || defined(MCENGINE_FEATURE_GLES32)
 
 	// HACKHACK: force disable antialiasing
 	engine->getGraphics()->setAntialiasing(false);

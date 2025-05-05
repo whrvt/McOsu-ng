@@ -5,13 +5,13 @@
 // $NoKeywords: $nxthread $os
 //===============================================================================//
 
-#ifdef __SWITCH__
-
 #pragma once
 #ifndef HORIZONTHREAD_H
 #define HORIZONTHREAD_H
 
 #include "Thread.h"
+
+#ifdef __SWITCH__
 
 #include <switch.h>
 
@@ -21,7 +21,7 @@ public:
 	HorizonThread(McThread::START_ROUTINE start_routine, void *arg);
 	virtual ~HorizonThread();
 
-	bool isReady() {return m_bReady;}
+	[[nodiscard]] inline bool isReady() const {return m_bReady;}
 
 private:
 	bool m_bReady;
@@ -29,6 +29,8 @@ private:
 	Thread m_thread;
 };
 
+#else
+class HorizonThread : public BaseThread{};
 #endif
 
 #endif

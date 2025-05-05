@@ -5,8 +5,6 @@
 // $NoKeywords: $engine
 //===============================================================================//
 
-#include "Engine.h"
-
 #include <cstdio>
 
 #ifdef MCENGINE_FEATURE_MULTITHREADING
@@ -35,6 +33,8 @@
 #include "Console.h"
 #include "ConsoleBox.h"
 #include "VisualProfiler.h"
+
+#include "Engine.h"
 
 #include <utility>
 
@@ -129,7 +129,7 @@ Engine::Engine(Environment *environment, const char *args)
 	debugLog("Engine: args = %s\n", m_sArgs.toUtf8());
 
 	// timing
-	m_timer = new Timer();
+	m_timer = new Timer(false);
 	m_dTime = 0;
 	m_dRunTime = 0;
 	m_iFrameCount = 0;
@@ -185,7 +185,8 @@ Engine::Engine(Environment *environment, const char *args)
 		m_openCL = new OpenCLInterface();
 		m_openVR = new OpenVRInterface();
 		m_networkHandler = new NetworkHandler();
-		m_steam = new SteamworksInterface();
+		if constexpr (Env::cfg(FEAT::STEAM))
+			m_steam = new SteamworksInterface();
 		m_discord = new DiscordInterface();
 
 		// default launch overrides
@@ -235,8 +236,11 @@ Engine::~Engine()
 	debugLog("Engine: Freeing network handler...\n");
 	SAFE_DELETE(m_networkHandler);
 
-	debugLog("Engine: Freeing Steam...\n");
-	SAFE_DELETE(m_steam);
+	if constexpr (Env::cfg(FEAT::STEAM))
+	{
+		debugLog("Engine: Freeing Steam...\n");
+		SAFE_DELETE(m_steam);
+	}
 
 	debugLog("Engine: Freeing Discord...\n");
 	SAFE_DELETE(m_discord);
@@ -257,8 +261,11 @@ Engine::~Engine()
 	debugLog("Engine: Freeing Vulkan...\n");
 	SAFE_DELETE(m_vulkan);
 
-	debugLog("Engine: Freeing environment...\n");
-	SAFE_DELETE(m_environment);
+	// debugLog("Engine: Freeing environment...\n"); // the environment creates the engine
+	// SAFE_DELETE(m_environment);
+
+	debugLog("Engine: Freeing math...\n");
+	SAFE_DELETE(m_math);
 
 	debugLog("Engine: Goodbye.");
 
@@ -584,14 +591,9 @@ void Engine::onShutdown()
 	m_environment->shutdown();
 }
 
-void Engine::onMouseRawMove(float xDelta, float yDelta, bool absolute, bool virtualDesktop)
+void Engine::onMouseMotion(float x, float y, float xRel, float yRel, bool isRawInput)
 {
-	m_mouse->onRawMove(xDelta, yDelta, absolute, virtualDesktop);
-}
-
-void Engine::onMouseRawMove(int xDelta, int yDelta, bool absolute, bool virtualDesktop)
-{
-	m_mouse->onRawMove(xDelta, yDelta, absolute, virtualDesktop);
+	m_mouse->onMotion(x, y, xRel, yRel, isRawInput);
 }
 
 void Engine::onMouseWheelVertical(int delta)
@@ -604,21 +606,22 @@ void Engine::onMouseWheelHorizontal(int delta)
 	m_mouse->onWheelHorizontal(delta);
 }
 
-#ifdef MCENGINE_FEATURE_MULTITHREADING
+void Engine::onMouseButtonChange(int button, bool down)
+{
+    m_mouse->onButtonChange(button, down);
+}
 
+#if defined(MCENGINE_FEATURE_MULTITHREADING) && defined(MCENGINE_SDL_TOUCHSUPPORT)
 std::mutex g_engineMouseLeftClickMutex;
-
 #endif
 
 void Engine::onMouseLeftChange(bool mouseLeftDown)
 {
-#ifdef MCENGINE_FEATURE_MULTITHREADING
-
+#if defined(MCENGINE_FEATURE_MULTITHREADING) && defined(MCENGINE_SDL_TOUCHSUPPORT)
 	std::lock_guard<std::mutex> lk(g_engineMouseLeftClickMutex); // async calls from WinRealTimeStylus must be protected
 
-#endif
-
 	if (m_mouse->isLeftDown() != mouseLeftDown) // necessary due to WinRealTimeStylus and Touch, would cause double clicks otherwise
+#endif
 		m_mouse->onLeftChange(mouseLeftDown);
 }
 
@@ -629,7 +632,9 @@ void Engine::onMouseMiddleChange(bool mouseMiddleDown)
 
 void Engine::onMouseRightChange(bool mouseRightDown)
 {
+#if defined(MCENGINE_FEATURE_MULTITHREADING) && defined(MCENGINE_SDL_TOUCHSUPPORT)
 	if (m_mouse->isRightDown() != mouseRightDown) // necessary due to Touch, would cause double clicks otherwise
+#endif
 		m_mouse->onRightChange(mouseRightDown);
 }
 

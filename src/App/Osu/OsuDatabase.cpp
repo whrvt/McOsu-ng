@@ -214,31 +214,22 @@ struct SortScoreByPP : public OsuDatabase::SCORE_SORTING_COMPARATOR
 	bool operator() (OsuDatabase::Score const &a, OsuDatabase::Score const &b) const
 	{
 		// first: pp
-		unsigned long long score1 = (unsigned long long)std::max((a.isLegacyScore ? -b.score : a.pp) * 100.0f, 0.0f);
-		unsigned long long score2 = (unsigned long long)std::max((b.isLegacyScore ? -a.score : b.pp) * 100.0f, 0.0f);
+		float ppA = std::max((a.isLegacyScore ? -b.score : a.pp), 0.0f);
+		float ppB = std::max((b.isLegacyScore ? -a.score : b.pp), 0.0f);
 
+		if (ppA != ppB)
+			return ppA > ppB;
 
 		// second: score
-		if (score1 == score2)
-		{
-			score1 = a.score;
-			score2 = b.score;
-		}
+		if (a.score != b.score)
+			return a.score > b.score;
 
 		// third: time
-		if (score1 == score2)
-		{
-			score1 = a.unixTimestamp;
-			score2 = b.unixTimestamp;
-		}
+		if (a.unixTimestamp != b.unixTimestamp)
+			return a.unixTimestamp > b.unixTimestamp;
 
 		// strict weak ordering!
-		if (score1 == score2)
-		{
-			return a.sortHack > b.sortHack;
-		}
-
-		return score1 > score2;
+		return a.sortHack > b.sortHack;
 	}
 };
 
@@ -373,7 +364,7 @@ OsuDatabase::OsuDatabase(Osu *osu)
 	osu_scores_export.setCallback( fastdelegate::MakeDelegate(this, &OsuDatabase::onScoresExport) );
 
 	// vars
-	m_importTimer = new Timer();
+	m_importTimer = new Timer(false);
 	m_bIsFirstLoad = true;
 	m_bFoundChanges = true;
 
@@ -432,7 +423,6 @@ void OsuDatabase::update()
 	if (m_bRawBeatmapLoadScheduled)
 	{
 		Timer t;
-		t.start();
 
 		while (t.getElapsedTime() < 0.033f)
 		{
@@ -1551,7 +1541,7 @@ void OsuDatabase::loadDB(OsuFile *db, bool &fallbackToRawLoad)
 		//debugLog("ignoreBeatmapSounds = %i, ignoreBeatmapSkin = %i, disableStoryboard = %i, disableVideo = %i, visualOverride = %i, maniaScrollSpeed = %i\n", (int)ignoreBeatmapSounds, (int)ignoreBeatmapSkin, (int)disableStoryboard, (int)disableVideo, (int)visualOverride, maniaScrollSpeed);
 
 		// HACKHACK: workaround for linux and macos: it can happen that nested beatmaps are stored in the database, and that osu! stores that filepath with a backslash (because windows)
-		if (env->getOS() == Environment::OS::OS_LINUX || env->getOS() == Environment::OS::OS_MACOS)
+		if constexpr (Env::cfg(OS::LINUX | OS::MACOS))
 		{
 			for (int c=0; c<path.length(); c++)
 			{
@@ -1786,18 +1776,8 @@ void OsuDatabase::loadDB(OsuFile *db, bool &fallbackToRawLoad)
 				const std::vector<UString> pathTokens = path.split("\\"); // NOTE: this is hardcoded to backslash since osu is windows only
 				if (pathTokens.size() > 0 && pathTokens[0].length() > 0)
 				{
-					const std::vector<UString> spaceTokens = pathTokens[0].split(" ");
-					if (spaceTokens.size() > 0 && spaceTokens[0].length() > 0)
-					{
-						try
-						{
-							beatmapSetID = spaceTokens[0].toInt();
-						}
-						catch (...)
-						{
-							beatmapSetID = -1;
-						}
-					}
+					const std::vector<int> spaceTokens = pathTokens[0].split<int>(" ");
+					beatmapSetID = spaceTokens[0] >= 0 ? spaceTokens[0] : -1;
 				}
 			}
 

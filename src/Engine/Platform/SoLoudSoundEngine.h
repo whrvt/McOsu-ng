@@ -59,6 +59,9 @@ public:
 	bool isValidVoiceHandleSound(unsigned int handle);
 	bool getPauseSound(unsigned int handle);
 
+	SoundEngineType* getSndEngine() override {return this;}
+	[[nodiscard]] const SoundEngineType* getSndEngine() const override {return this;}
+
 private:
 	void updateOutputDevices(bool handleOutputDeviceChanges, bool printInfo) override;
 	bool initializeOutputDevice(int id = -1) override;
@@ -67,5 +70,7 @@ private:
 	SoLoud::Soloud m_engine;
 };
 
+#else
+class SoLoudSoundEngine : public SoundEngine{};
 #endif
 #endif

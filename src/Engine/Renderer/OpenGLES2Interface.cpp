@@ -7,7 +7,7 @@
 
 #include "OpenGLES2Interface.h"
 
-#ifdef MCENGINE_FEATURE_OPENGLES
+#ifdef MCENGINE_FEATURE_GLES2
 
 #include "Engine.h"
 #include "ConVar.h"
@@ -647,7 +647,7 @@ int OpenGLES2Interface::getVRAMTotal()
 	glGetIntegerv(GPU_MEMORY_INFO_TOTAL_AVAILABLE_MEMORY_NVX, nvidiaMemory);
 	glGetIntegerv(TEXTURE_FREE_MEMORY_ATI, atiMemory);
 
-	glGetError(); // clear error state
+	//glGetError(); // clear error state
 
 	if (nvidiaMemory[0] < 1)
 		return atiMemory[0];
@@ -669,7 +669,7 @@ int OpenGLES2Interface::getVRAMRemaining()
 	glGetIntegerv(GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX, nvidiaMemory);
 	glGetIntegerv(TEXTURE_FREE_MEMORY_ATI, atiMemory);
 
-	glGetError(); // clear error state
+	//glGetError(); // clear error state
 
 	if (nvidiaMemory[0] < 1)
 		return atiMemory[0];
@@ -749,9 +749,9 @@ void OpenGLES2Interface::onTransformUpdate(Matrix4 &projectionMatrix, Matrix4 &w
 
 void OpenGLES2Interface::handleGLErrors()
 {
-	int error = glGetError();
-	if (error != 0)
-		debugLog("OpenGL Error: %i on frame %i\n",error,engine->getFrameCount());
+	// int error = glGetError();
+	// if (error != 0)
+	// 	debugLog("OpenGL Error: %i on frame %i\n",error,engine->getFrameCount());
 }
 
 int OpenGLES2Interface::primitiveToOpenGL(Graphics::PRIMITIVE primitive)

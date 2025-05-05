@@ -15,87 +15,93 @@ class NullEnvironment : public Environment
 {
 public:
 	NullEnvironment();
-	virtual ~NullEnvironment() {;}
+	~NullEnvironment() override {;}
 
 	// engine/factory
-	Graphics *createRenderer();
-	ContextMenu *createContextMenu();
+	Graphics *createRenderer() override;
+	ContextMenu *createContextMenu() override;
 
 	// system
-	void shutdown();
-	void restart();
-	void sleep(unsigned int us) {;}
-	UString getExecutablePath() {return "";}
-	void openURLInDefaultBrowser(UString url) {;}
+	void shutdown() override;
+	void restart() override;
+	void sleep(unsigned int us) override {;}
+	[[nodiscard]] UString getExecutablePath() const override {return "";}
+	void openURLInDefaultBrowser(UString url) const override {;}
+	[[nodiscard]] inline int getLogicalCPUCount() const override {return 1;}
 
 	// user
-	UString getUsername() {return "<NULL>";}
-	UString getUserDataPath() {return "<NULL>";}
+	[[nodiscard]] UString getUsername() override {return "<NULL>";}
+	[[nodiscard]] UString getUserDataPath() const override {return "<NULL>";}
 
 	// file IO
-	bool fileExists(UString filename) {return false;}
-	bool directoryExists(UString directoryName) {return false;}
-	bool createDirectory(UString directoryName) {return false;}
-	bool renameFile(UString oldFileName, UString newFileName) {return false;}
-	bool deleteFile(UString filePath) {return false;}
-	std::vector<UString> getFilesInFolder(UString folder) {return std::vector<UString>();}
-	std::vector<UString> getFoldersInFolder(UString folder) {return std::vector<UString>();}
-	std::vector<UString> getLogicalDrives() {return std::vector<UString>();}
-	UString getFolderFromFilePath(UString filepath) {return "";}
-	UString getFileExtensionFromFilePath(UString filepath, bool includeDot = false) {return "";}
-	UString getFileNameFromFilePath(UString filePath) {return "";}
+	[[nodiscard]] bool fileExists(UString filename) const override {return false;}
+	[[nodiscard]] bool directoryExists(UString directoryName) const override {return false;}
+	[[nodiscard]] bool createDirectory(UString directoryName) const override {return false;}
+	bool renameFile(UString oldFileName, UString newFileName) override {return false;}
+	bool deleteFile(UString filePath) override {return false;}
+	[[nodiscard]] std::vector<UString> getFilesInFolder(UString folder) const override {return {};}
+	[[nodiscard]] std::vector<UString> getFoldersInFolder(UString folder) const override {return {};}
+	[[nodiscard]] std::vector<UString> getLogicalDrives() const override {return {};}
+	[[nodiscard]] UString getFolderFromFilePath(UString filepath) const override {return "";}
+	[[nodiscard]] UString getFileExtensionFromFilePath(UString filepath, bool includeDot = false) const override {return "";}
+	[[nodiscard]] UString getFileNameFromFilePath(UString filePath) const override {return "";}
 
 	// clipboard
-	UString getClipBoardText() {return "";}
-	void setClipBoardText(UString text) {;}
+	[[nodiscard]] UString getClipBoardText() override {return "";}
+	void setClipBoardText(UString text) override {;}
 
 	// dialogs & message boxes
-	void showMessageInfo(UString title, UString message) {;}
-	void showMessageWarning(UString title, UString message) {;}
-	void showMessageError(UString title, UString message) {;}
-	void showMessageErrorFatal(UString title, UString message) {;}
-	UString openFileWindow(const char *filetypefilters, UString title, UString initialpath) {return "";}
-	UString openFolderWindow(UString title, UString initialpath) {return "";}
+	void showMessageInfo(UString title, UString message) const override {;}
+	void showMessageWarning(UString title, UString message) const override {;}
+	void showMessageError(UString title, UString message) const override {;}
+	void showMessageErrorFatal(UString title, UString message) const override {;}
+	UString openFileWindow(const char *filetypefilters, UString title, UString initialpath) const override {return "";}
+	[[nodiscard]] UString openFolderWindow(UString title, UString initialpath) const override {return "";}
 
 	// window
-	void focus() {;}
-	void center() {;}
-	void minimize() {;}
-	void maximize() {;}
-	void enableFullscreen() {;}
-	void disableFullscreen() {;}
-	void setWindowTitle(UString title) {;}
-	void setWindowPos(int x, int y) {;}
-	void setWindowSize(int width, int height) {;}
-	void setWindowResizable(bool resizable) {;}
-	void setWindowGhostCorporeal(bool corporeal) {;}
-	void setMonitor(int monitor) {;}
-	Vector2 getWindowPos() {return Vector2(0, 0);}
-	Vector2 getWindowSize() {return Vector2(1280, 720);}
-	int getMonitor() {return 0;}
-	std::vector<McRect> getMonitors() {return std::vector<McRect>();}
-	Vector2 getNativeScreenSize() {return Vector2(1920, 1080);}
-	McRect getVirtualScreenRect() {return McRect(0, 0, 1920, 1080);}
-	McRect getDesktopRect() {return McRect(0, 0, 1920, 1080);}
-	int getDPI() {return 96;}
-	bool isFullscreen() {return false;}
-	bool isWindowResizable() {return true;}
+	void focus() override {;}
+	void center() override {;}
+	void minimize() override {;}
+	void maximize() override {;}
+	void enableFullscreen() override {;}
+	void disableFullscreen() override {;}
+	void setWindowTitle(UString title) override {;}
+	void setWindowPos(int x, int y) override {;}
+	void setWindowSize(int width, int height) override {;}
+	void setWindowResizable(bool resizable) override {;}
+	void setWindowGhostCorporeal(bool corporeal) override {;}
+	void setMonitor(int monitor) override {;}
+	[[nodiscard]] Vector2 getWindowPos() const override {return {0, 0};}
+	[[nodiscard]] Vector2 getWindowSize() const override {return {1280, 720};}
+	[[nodiscard]] int getMonitor() const override {return 0;}
+	[[nodiscard]] std::vector<McRect> getMonitors() const override {return {};}
+	[[nodiscard]] Vector2 getNativeScreenSize() const override {return {1920, 1080};}
+	[[nodiscard]] McRect getVirtualScreenRect() const override {return {0, 0, 1920, 1080};}
+	[[nodiscard]] McRect getDesktopRect() const override {return {0, 0, 1920, 1080};}
+	[[nodiscard]] int getDPI() const override {return 96;}
+	[[nodiscard]] bool isFullscreen() const override {return false;}
+	[[nodiscard]] bool isWindowResizable() const override {return true;}
 
 	// mouse
-	bool isCursorInWindow() {return true;}
-	bool isCursorVisible() {return true;}
-	bool isCursorClipped() {return false;}
-	Vector2 getMousePos() {return Vector2(0, 0);}
-	McRect getCursorClip() {return McRect(0, 0, 0, 0);}
-	CURSORTYPE getCursor() {return CURSORTYPE::CURSOR_NORMAL;}
-	void setCursor(CURSORTYPE cur) {;}
-	void setCursorVisible(bool visible) {;}
-	void setMousePos(int x, int y) {;}
-	void setCursorClip(bool clip, McRect rect) {;}
+	[[nodiscard]] bool isCursorInWindow() const override {return true;}
+	[[nodiscard]] bool isCursorVisible() const override {return true;}
+	[[nodiscard]] bool isCursorClipped() const override {return false;}
+	[[nodiscard]] Vector2 getMousePos() const override {return {0, 0};}
+	[[nodiscard]] McRect getCursorClip() const override {return {0, 0, 0, 0};}
+	[[nodiscard]] CURSORTYPE getCursor() const override {return CURSORTYPE::CURSOR_NORMAL;}
+	void setCursor(CURSORTYPE cur) override {;}
+	void setCursorVisible(bool visible) override {;}
+	void setCursorClip(bool clip, McRect rect) override {;}
 
 	// keyboard
-	UString keyCodeToString(KEYCODE keyCode) {return UString::format("%lu", keyCode);}
-	void listenToTextInput(bool) {;}
+	UString keyCodeToString(KEYCODE keyCode) override {return UString::format("%lu", keyCode);}
+	void listenToTextInput(bool) override {;}
+
+protected:
+	void setCursorPosition() const override {;}
+
+private:
+	bool m_bRunning{};
 };
 
 #endif

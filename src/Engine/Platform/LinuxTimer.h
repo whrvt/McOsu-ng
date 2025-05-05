@@ -5,38 +5,43 @@
 // $NoKeywords: $linuxtime $os
 //===============================================================================//
 
-#ifdef __linux__
-
 #pragma once
 #ifndef LINUXTIMER_H
 #define LINUXTIMER_H
 
 #include "Timer.h"
 
+#if defined(__linux__) && !defined(MCENGINE_FEATURE_SDL)
+
 #include <time.h>
 
 class LinuxTimer : public BaseTimer
 {
 public:
-	LinuxTimer();
-	virtual ~LinuxTimer() {;}
+	inline LinuxTimer(bool startOnCtor = true) {if (startOnCtor) start();}
+	~LinuxTimer() override = default;
 
-	virtual void start() override;
-	virtual void update() override;
+	void start() override;
+	void update() override;
 
-	virtual inline double getDelta() const override {return m_delta;}
-	virtual inline double getElapsedTime() const override {return m_elapsedTime;}
-	virtual inline uint64_t getElapsedTimeMS() const override {return m_elapsedTimeMS;}
+	[[nodiscard]] inline double getDelta() const override { return m_delta; }
+	[[nodiscard]] inline double getElapsedTime() const override { return m_elapsedTime; }
+	[[nodiscard]] inline uint64_t getElapsedTimeMS() const override { return m_elapsedTimeMS; }
 
 private:
-	timespec m_startTime;
-	timespec m_currentTime;
+	timespec m_startTime{};
+	timespec m_currentTime{};
 
-	double m_delta;
-	double m_elapsedTime;
-	uint64_t m_elapsedTimeMS;
+	double m_delta{};
+	double m_elapsedTime{};
+	uint64_t m_elapsedTimeMS{};
 };
 
+using Timer = LinuxTimer;
+
+#else
+class LinuxTimer : public BaseTimer
+{};
 #endif
 
 #endif

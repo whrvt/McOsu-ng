@@ -35,8 +35,8 @@ public:
 	static UString MCOSU_MAIN_BUTTON_TEXT;
 	static UString MCOSU_MAIN_BUTTON_SUBTEXT;
 
-	static void openSteamWorkshopInGameOverlay(Osu *osu, bool launchInSteamIfOverlayDisabled = false);
-	static void openSteamWorkshopInDefaultBrowser(bool launchInSteam = false);
+	[[maybe_unused]] static void openSteamWorkshopInGameOverlay(Osu *osu, bool launchInSteamIfOverlayDisabled = false);
+	[[maybe_unused]] static void openSteamWorkshopInDefaultBrowser(bool launchInSteam = false);
 
 public:
 	friend class OsuMainMenuMainButton;
@@ -95,7 +95,7 @@ private:
 
 	void onPausePressed();
 	void onUpdatePressed();
-	void onSteamWorkshopPressed();
+	[[maybe_unused]] void onSteamWorkshopPressed();
 	void onGithubPressed();
 	void onVersionPressed();
 
@@ -119,7 +119,7 @@ private:
 
 	OsuMainMenuPauseButton *m_pauseButton;
 	OsuUIButton *m_updateAvailableButton;
-	OsuUIButton *m_steamWorkshopButton;
+	[[maybe_unused]] OsuUIButton *m_steamWorkshopButton;
 	OsuUIButton *m_githubButton;
 	CBaseUIButton *m_versionButton;
 

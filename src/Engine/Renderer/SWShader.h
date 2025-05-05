@@ -11,6 +11,8 @@
 
 #include "Shader.h"
 
+#ifdef MCENGINE_FEATURE_SOFTRENDERER
+
 class SWShader : public Shader
 {
 public:
@@ -37,5 +39,9 @@ private:
 	virtual void initAsync();
 	virtual void destroy();
 };
+
+#else
+class SWShader : public Shader{};
+#endif
 
 #endif

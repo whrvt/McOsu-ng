@@ -17,6 +17,8 @@
 
 #include "OsuSliderCurves.h"
 
+#include "McMath.h"
+
 #include <algorithm>
 #include <climits> // for INT_MAX
 
@@ -163,7 +165,7 @@ void OsuDifficultyHitObject::updateCurveStackPosition(float stackOffset)
 		curve->updateStackPosition(stack * stackOffset, false);
 }
 
-Vector2 OsuDifficultyHitObject::getOriginalRawPosAt(long pos)
+Vector2 OsuDifficultyHitObject::getOriginalRawPosAt(long pos) const
 {
 	// NOTE: the delayed curve creation has been deliberately disabled here for stacking purposes for beatmaps with insane slider counts for performance reasons
 	// NOTE: this means that these aspire maps will have incorrect stars due to incorrect slider stacking, but the delta is below 0.02 even for the most insane maps which currently exist
@@ -218,7 +220,7 @@ Vector2 OsuDifficultyHitObject::getOriginalRawPosAt(long pos)
 	}
 }
 
-float OsuDifficultyHitObject::getT(long pos, bool raw)
+float OsuDifficultyHitObject::getT(long pos, bool raw) const
 {
 	float t = (float)((long)pos - (long)time) / spanDuration;
 	if (raw)
@@ -860,7 +862,7 @@ double OsuDifficultyCalculator::calculateSpeedHighDeviationNerf(const Attributes
 	const double scale = 50.0;
 	double adjustedSpeedValue = scale * (std::log((speedValue - excessSpeedDifficultyCutoff) / scale + 1.0) + excessSpeedDifficultyCutoff / scale);
 	double lerpVal = 1.0 - clamp<double>((speedDeviation - 22.0) / (27.0 - 22.0), 0.0, 1.0);
-	adjustedSpeedValue = lerp<double>(adjustedSpeedValue, speedValue, lerpVal);
+	adjustedSpeedValue = lerp(adjustedSpeedValue, speedValue, lerpVal);
 
 	return adjustedSpeedValue / speedValue;
 }
@@ -1415,8 +1417,8 @@ double OsuDifficultyCalculator::DiffObject::calculate_difficulty(const Skills::S
 		size_t actualReducedSectionCount = std::min(highestStrains.size(), skillSpecificReducedSectionCount);
 		for (size_t i=0; i<actualReducedSectionCount; i++)
 		{
-			const double scale = std::log10(lerp<double>(1.0, 10.0, clamp<double>((double)i / (double)skillSpecificReducedSectionCount, 0.0, 1.0)));
-			highestStrains[highestStrains.size() - i - 1] *= lerp<double>(reducedStrainBaseline, 1.0, scale);
+			const double scale = std::log10(lerp(1.0, 10.0, clamp<double>((double)i / (double)skillSpecificReducedSectionCount, 0.0, 1.0)));
+			highestStrains[highestStrains.size() - i - 1] *= lerp(reducedStrainBaseline, 1.0, scale);
 		}
 
 		// re-sort
@@ -1457,6 +1459,7 @@ double OsuDifficultyCalculator::DiffObject::calculate_difficulty(const Skills::S
 				}
 				else
 				{
+					MC_UNROLL
 					for (size_t i=0; i<dobjectCount; i++)
 					{
 						tempSum += 1.1 / (1.0 + McMath::fastExp(-10.0 * (dobjects[i].get_strain(type) / consistentTopStrain - 0.88)));

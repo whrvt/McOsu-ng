@@ -65,7 +65,7 @@ public:
 	inline bool isFullscreen() const {return m_bFullscreen;}
 	bool isMouseInside();
 	bool isBusy();
-	inline bool isWorkshopLoading() const {return m_bWorkshopSkinSelectScheduled;}
+	[[maybe_unused]] inline bool isWorkshopLoading() const {return m_bWorkshopSkinSelectScheduled;}
 
 	bool shouldDrawVRDummyHUD();
 
@@ -123,10 +123,10 @@ private:
 	void onRawInputToAbsoluteWindowChange(CBaseUICheckbox *checkbox);
 	void onSkinSelect();
 	void onSkinSelect2(UString skinName, int id = -1);
-	void onSkinSelectWorkshop();
-	void onSkinSelectWorkshop2();
-	void onSkinSelectWorkshop3();
-	void onSkinSelectWorkshop4(UString skinName, int id);
+	[[maybe_unused]] void onSkinSelectWorkshop();
+	[[maybe_unused]] void onSkinSelectWorkshop2();
+	[[maybe_unused]] void onSkinSelectWorkshop3();
+	[[maybe_unused]] void onSkinSelectWorkshop4(UString skinName, int id);
 	void onSkinReload();
 	void onSkinRandom();
 	void onResolutionSelect();

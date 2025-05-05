@@ -72,8 +72,8 @@ public:
 	void updateStackPosition(float stackOffset);
 	void updateCurveStackPosition(float stackOffset);
 
-	Vector2 getOriginalRawPosAt(long pos); // for stacking calculations, always returns the unstacked original position at that point in time
-	float getT(long pos, bool raw);
+	Vector2 getOriginalRawPosAt(long pos) const; // for stacking calculations, always returns the unstacked original position at that point in time
+	[[nodiscard]] float getT(long pos, bool raw) const;
 
 	inline long getDuration() const {return endTime - time;}
 
@@ -290,7 +290,7 @@ private:
 	static double erfInvImp(double p, double q, double s);
 
 	template<size_t N>
-	static double evaluatePolynomial(double z, const double (&coefficients)[N])
+	static forceinline double evaluatePolynomial(double z, const double (&coefficients)[N])
 	{
 		double sum = coefficients[N - 1];
 		for (int i = N - 2; i >= 0; --i)

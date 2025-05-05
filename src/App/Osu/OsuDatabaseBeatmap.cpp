@@ -356,8 +356,16 @@ OsuDatabaseBeatmap::PRIMITIVE_CONTAINER OsuDatabaseBeatmap::loadPrimitiveObjects
 					{
 						float fX,fY;
 						floatScan = (sscanf(curLineChar, " %f , %f , %li , %i , %i", &fX, &fY, &time, &type, &hitSound) == 5);
-						x = (int)fX;
-						y = (int)fY;
+						x = (isfinite(fX)
+							 && fX >= static_cast<float>(std::numeric_limits<int>::min())
+							 && fX <= static_cast<float>(std::numeric_limits<int>::max()))
+							 ? static_cast<int>(fX)
+							 : 0;
+						y = (isfinite(fY)
+							 && fY >= static_cast<float>(std::numeric_limits<int>::min())
+							 && fY <= static_cast<float>(std::numeric_limits<int>::max()))
+							 ? static_cast<int>(fY)
+							 : 0;
 					}
 
 					if (intScan || floatScan)
@@ -395,8 +403,7 @@ OsuDatabaseBeatmap::PRIMITIVE_CONTAINER OsuDatabaseBeatmap::loadPrimitiveObjects
 						}
 						else if (type & 0x2) // slider
 						{
-							UString curLineString = UString(curLineChar);
-							std::vector<UString> tokens = curLineString.split(",");
+							std::vector<UString> tokens = UString(curLineChar).split(",");
 							if (tokens.size() < 8)
 							{
 								debugLog("Invalid slider in beatmap: %s\n\ncurLine = %s\n", osuFilePath.toUtf8(), curLineChar);
@@ -449,37 +456,30 @@ OsuDatabaseBeatmap::PRIMITIVE_CONTAINER OsuDatabaseBeatmap::loadPrimitiveObjects
 							if (sliderTokens.size() < 2 && points.size() > 0)
 								points.push_back(points[0]);
 
-							SLIDER s;
-							{
-								s.x = x;
-								s.y = y;
-								s.type = sliderTokens[0][0];
-								s.repeat = clamp<int>((int)tokens[6].toFloat(), -sliderMaxRepeatRange, sliderMaxRepeatRange);
-								s.repeat = s.repeat >= 0 ? s.repeat : 0; // sanity check
-								s.pixelLength = clamp<float>(tokens[7].toFloat(), -sliderSanityRange, sliderSanityRange);
-								s.time = time;
-								s.sampleType = hitSound;
-								s.number = comboNumber++;
-								s.colorCounter = colorCounter;
-								s.colorOffset = colorOffset;
-								s.points = points;
-
+							SLIDER s{
+								.x = x,
+								.y = y,
+								.type = (sliderTokens[0].toUtf8())[0],
+								.repeat = clamp<int>((int)tokens[6].toFloat(), 0, sliderMaxRepeatRange),
+								.pixelLength = clamp<float>(tokens[7].toFloat(), -sliderSanityRange, sliderSanityRange),
+								.time = time,
+								.sampleType = hitSound,
+								.number = comboNumber++,
+								.colorCounter = colorCounter,
+								.colorOffset = colorOffset,
+								.points = points,
 								// new beatmaps: slider hitsounds
-								if (tokens.size() > 8)
-								{
-									std::vector<UString> hitSoundTokens = tokens[8].split("|");
-									for (int i=0; i<hitSoundTokens.size(); i++)
-									{
-										s.hitSounds.push_back(hitSoundTokens[i].toInt());
-									}
-								}
-							}
+								.hitSounds = tokens.size() > 8 ? tokens[8].split<int>("|") : std::vector<int>{},
+								.sliderTime{},
+								.sliderTimeWithoutRepeats{},
+								.ticks{},
+								.scoringTimesForStarCalc{}
+							};
 							c.sliders.push_back(s);
 						}
 						else if (type & 0x8) // spinner
 						{
-							UString curLineString = UString(curLineChar);
-							std::vector<UString> tokens = curLineString.split(",");
+							auto tokens = UString(curLineChar).split<float>(",");
 							if (tokens.size() < 6)
 							{
 								debugLog("Invalid spinner in beatmap: %s\n\ncurLine = %s\n", osuFilePath.toUtf8(), curLineChar);
@@ -494,7 +494,7 @@ OsuDatabaseBeatmap::PRIMITIVE_CONTAINER OsuDatabaseBeatmap::loadPrimitiveObjects
 								s.y = y;
 								s.time = time;
 								s.sampleType = hitSound;
-								s.endTime = tokens[5].toFloat();
+								s.endTime = tokens[5];
 							}
 							c.spinners.push_back(s);
 						}
@@ -1698,9 +1698,9 @@ OsuDatabaseBeatmap::LOAD_GAMEPLAY_RESULT OsuDatabaseBeatmap::loadGameplay(OsuDat
 			OsuHitObject *currentHitObject = result.hitobjects[i];
 			const OsuHitObject *nextHitObject = (i + 1 < result.hitobjects.size() ? result.hitobjects[i + 1] : NULL);
 
-			const OsuCircle *circlePointer = dynamic_cast<OsuCircle*>(currentHitObject);
-			const OsuSlider *sliderPointer = dynamic_cast<OsuSlider*>(currentHitObject);
-			const OsuSpinner *spinnerPointer = dynamic_cast<OsuSpinner*>(currentHitObject);
+			const auto *circlePointer = currentHitObject->asCircle();
+			const auto *sliderPointer = currentHitObject->asSlider();
+			const auto *spinnerPointer = currentHitObject->asSpinner();
 
 			int scoreComboMultiplier = std::max(combo-1, 0);
 
@@ -1742,9 +1742,7 @@ OsuDatabaseBeatmap::LOAD_GAMEPLAY_RESULT OsuDatabaseBeatmap::loadGameplay(OsuDat
 			{
 				OsuHitObject *currentHitObject = result.hitobjects[i];
 
-				const OsuSpinner *spinnerPointer = dynamic_cast<OsuSpinner*>(currentHitObject);
-
-				if (spinnerPointer == NULL)
+				if (currentHitObject->getType() != OsuHitObject::SPINNER)
 				{
 					currentHitObject->setComboNumber(comboNumber);
 					comboNumber++;

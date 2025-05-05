@@ -7,7 +7,7 @@
 
 #include "OpenGLES2VertexArrayObject.h"
 
-#ifdef MCENGINE_FEATURE_OPENGLES
+#ifdef MCENGINE_FEATURE_GLES2
 
 #include "Engine.h"
 #include "OpenGLES2Interface.h"

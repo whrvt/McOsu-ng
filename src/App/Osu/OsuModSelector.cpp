@@ -215,7 +215,7 @@ OsuModSelector::OsuModSelector(Osu *osu) : OsuScreen(osu)
 	m_ARLock = overrideAR.lock;
 	m_ODLock = overrideOD.lock;
 
-	if (env->getOS() != Environment::OS::OS_HORIZON)
+	if constexpr (!Env::cfg(OS::HORIZON))
 	{
 		OVERRIDE_SLIDER overrideSpeed = addOverrideSlider("Speed/BPM Multiplier", "x", convar->getConVarByName("osu_speed_override"), 0.0f, 2.5f);
 
@@ -236,7 +236,7 @@ OsuModSelector::OsuModSelector(Osu *osu) : OsuScreen(osu)
 	addExperimentalCheckbox("AR Wobble", "Approach rate oscillates between -1 and +1.", convar->getConVarByName("osu_mod_arwobble"));
 	addExperimentalCheckbox("Approach Different", "Customize the approach circle animation.\nSee osu_mod_approach_different_style.\nSee osu_mod_approach_different_initial_size.", convar->getConVarByName("osu_mod_approach_different"));
 
-	if (env->getOS() != Environment::OS::OS_HORIZON)
+	if constexpr (!Env::cfg(OS::HORIZON))
 		addExperimentalCheckbox("Timewarp", "Speed increases from 100% to 150% over the course of the beatmap.", convar->getConVarByName("osu_mod_timewarp"));
 
 	addExperimentalCheckbox("AR Timewarp", "Approach rate decreases from 100% to 50% over the course of the beatmap.", convar->getConVarByName("osu_mod_artimewarp"));
@@ -304,7 +304,7 @@ void OsuModSelector::updateButtons(bool initial)
 	setModButtonOnGrid(4, 2, 0, initial && m_osu->getModTarget(), "practicetarget", "Accuracy is based on the distance to the center of all hitobjects.\n300s still require at least being in the hit window of a 100 in addition to the rule above.", [this]() -> OsuSkinImage *{return m_osu->getSkin()->getSelectionModTarget();});
 	m_modButtonScoreV2 = setModButtonOnGrid(5, 2, 0, initial && m_osu->getModScorev2(), "v2", "Try the future scoring system.\n** UNRANKED **", [this]() -> OsuSkinImage *{return m_osu->getSkin()->getSelectionModScorev2();});
 
-	if (env->getOS() == Environment::OS::OS_HORIZON)
+	if constexpr (Env::cfg(OS::HORIZON))
 	{
 		getModButtonOnGrid(2, 1)->setAvailable(false);
 		getModButtonOnGrid(2, 0)->setAvailable(false);
@@ -634,35 +634,35 @@ void OsuModSelector::onKeyDown(KeyboardEvent &key)
 	if (key == KEY_1)
 		resetMods();
 
-	if (((key == KEY_F1 || key == (KEYCODE)OsuKeyBindings::TOGGLE_MODSELECT.getInt()) && !m_bWaitForF1KeyUp) || key == KEY_2 || key == (KEYCODE)OsuKeyBindings::GAME_PAUSE.getInt() || key == KEY_ESCAPE || key == KEY_ENTER)
+	if (((key == KEY_F1 || key == OsuKeyBindings::TOGGLE_MODSELECT.getVal<KEYCODE>()) && !m_bWaitForF1KeyUp) || key == KEY_2 || key == OsuKeyBindings::GAME_PAUSE.getVal<KEYCODE>() || key == KEY_ESCAPE || key == KEY_ENTER)
 		close();
 
 	// mod hotkeys
-	if (key == (KEYCODE)OsuKeyBindings::MOD_EASY.getInt())
+	if (key == OsuKeyBindings::MOD_EASY.getVal<KEYCODE>())
 		m_modButtonEasy->click();
-	if (key == (KEYCODE)OsuKeyBindings::MOD_NOFAIL.getInt())
+	if (key == OsuKeyBindings::MOD_NOFAIL.getVal<KEYCODE>())
 		m_modButtonNofail->click();
-	if (key == (KEYCODE)OsuKeyBindings::MOD_HALFTIME.getInt())
+	if (key == OsuKeyBindings::MOD_HALFTIME.getVal<KEYCODE>())
 		m_modButtonHalftime->click();
-	if (key == (KEYCODE)OsuKeyBindings::MOD_HARDROCK.getInt())
+	if (key == OsuKeyBindings::MOD_HARDROCK.getVal<KEYCODE>())
 		m_modButtonHardrock->click();
-	if (key == (KEYCODE)OsuKeyBindings::MOD_SUDDENDEATH.getInt())
+	if (key == OsuKeyBindings::MOD_SUDDENDEATH.getVal<KEYCODE>())
 		m_modButtonSuddendeath->click();
-	if (key == (KEYCODE)OsuKeyBindings::MOD_DOUBLETIME.getInt())
+	if (key == OsuKeyBindings::MOD_DOUBLETIME.getVal<KEYCODE>())
 		m_modButtonDoubletime->click();
-	if (key == (KEYCODE)OsuKeyBindings::MOD_HIDDEN.getInt())
+	if (key == OsuKeyBindings::MOD_HIDDEN.getVal<KEYCODE>())
 		m_modButtonHidden->click();
-	if (key == (KEYCODE)OsuKeyBindings::MOD_FLASHLIGHT.getInt())
+	if (key == OsuKeyBindings::MOD_FLASHLIGHT.getVal<KEYCODE>())
 		m_modButtonFlashlight->click();
-	if (key == (KEYCODE)OsuKeyBindings::MOD_RELAX.getInt())
+	if (key == OsuKeyBindings::MOD_RELAX.getVal<KEYCODE>())
 		m_modButtonRelax->click();
-	if (key == (KEYCODE)OsuKeyBindings::MOD_AUTOPILOT.getInt())
+	if (key == OsuKeyBindings::MOD_AUTOPILOT.getVal<KEYCODE>())
 		m_modButtonAutopilot->click();
-	if (key == (KEYCODE)OsuKeyBindings::MOD_SPUNOUT.getInt())
+	if (key == OsuKeyBindings::MOD_SPUNOUT.getVal<KEYCODE>())
 		m_modButtonSpunout->click();
-	if (key == (KEYCODE)OsuKeyBindings::MOD_AUTO.getInt())
+	if (key == OsuKeyBindings::MOD_AUTO.getVal<KEYCODE>())
 		m_modButtonAuto->click();
-	if (key == (KEYCODE)OsuKeyBindings::MOD_SCOREV2.getInt())
+	if (key == OsuKeyBindings::MOD_SCOREV2.getVal<KEYCODE>())
 		m_modButtonScoreV2->click();
 
 	key.consume();
@@ -672,7 +672,7 @@ void OsuModSelector::onKeyUp(KeyboardEvent &key)
 {
 	if (!m_bVisible) return;
 
-	if (key == KEY_F1 || key == (KEYCODE)OsuKeyBindings::TOGGLE_MODSELECT.getInt())
+	if (key == KEY_F1 || key == OsuKeyBindings::TOGGLE_MODSELECT.getVal<KEYCODE>())
 		m_bWaitForF1KeyUp = false;
 }
 

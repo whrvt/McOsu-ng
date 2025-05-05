@@ -10,28 +10,54 @@
 #define SDLTIMER_H
 
 #include "Timer.h"
+
+#ifdef MCENGINE_FEATURE_SDL
+
 #include <SDL3/SDL.h>
 
 class SDLTimer : public BaseTimer
 {
 public:
-	SDLTimer();
-	virtual ~SDLTimer() {;}
+	inline SDLTimer(bool startOnCtor = true) {if (startOnCtor) start();}
+	~SDLTimer() override = default;
 
-	virtual void start() override;
-	virtual void update() override;
+	inline void start() override
+	{
+		m_startTimeNS = SDL_GetTicksNS();
+		m_currentTimeNS = m_startTimeNS;
+		m_delta = 0.0;
+		m_elapsedTime = 0.0;
+		m_elapsedTimeMS = 0;
+	}
 
-	virtual inline double getDelta() const override {return m_delta;}
-	virtual inline double getElapsedTime() const override {return m_elapsedTime;}
-	virtual inline uint64_t getElapsedTimeMS() const override {return m_elapsedTimeMS;}
+	inline void update() override
+	{
+		const uint64_t now = SDL_GetTicksNS();
+		m_delta = static_cast<double>(now - m_currentTimeNS) / static_cast<double>(SDL_NS_PER_SECOND);
+		const uint64_t elapsed = now - m_startTimeNS;
+		m_elapsedTime = static_cast<double>(elapsed) / static_cast<double>(SDL_NS_PER_SECOND);
+		m_elapsedTimeMS = elapsed / SDL_NS_PER_MS;
+		m_currentTimeNS = now;
+	}
+
+	[[nodiscard]] inline double getDelta() const override { return m_delta; }
+	[[nodiscard]] inline double getElapsedTime() const override { return m_elapsedTime; }
+	[[nodiscard]] inline uint64_t getElapsedTimeMS() const override { return m_elapsedTimeMS; }
 
 private:
-	uint64_t m_startTimeNS;
-	uint64_t m_currentTimeNS;
+	uint64_t m_startTimeNS{};
+	uint64_t m_currentTimeNS{};
 
-	double m_delta;
-	double m_elapsedTime;
-	uint64_t m_elapsedTimeMS;
+	double m_delta{};
+	double m_elapsedTime{};
+	uint64_t m_elapsedTimeMS{};
 };
+
+using Timer = SDLTimer;
+
+#else
+class SDLTimer : public BaseTimer
+{};
+#endif
 
 #endif

@@ -23,6 +23,7 @@
 #include <functional>
 #include <unordered_map>
 #include <unordered_set>
+#include <numbers>
 
 #include <fstream>
 #include <iostream>
@@ -35,49 +36,7 @@
 #include <cstdint>
 #include <cstring>
 
-#define forceinline __attribute__((always_inline)) inline
-
-// ENGINE INCLUDES
-
-#include "EngineFeatures.h"
-
-#include "FastDelegate.h"
-
-#include "Graphics.h"
-#include "Environment.h"
-#include "KeyboardEvent.h"
-
-#include "Vectors.h"
-#include "Matrices.h"
-#include "Rect.h"
-#include "UString.h"
-#include "McMath.h"
-
-
-
-// DEFS
-
-#ifdef NULL 
-#undef NULL
-#endif
-#define NULL nullptr
-
-using COLORPART = unsigned char;
-
-/*
-#ifndef DWORD
-typedef unsigned long 	DWORD;
-#endif
-#ifndef WORD
-typedef unsigned short	WORD;
-#endif
-#ifndef BYTE
-typedef unsigned char	BYTE;
-#endif
-#ifndef UINT8
-typedef unsigned char 	UINT8;
-#endif
-*/
+#include "BaseEnvironment.h"
 
 #define SAFE_DELETE(p) { if(p) { delete (p); (p) = NULL; } }
 
@@ -167,5 +126,45 @@ template <typename T>
 	// use the smaller value to calculate relative error
 	return diff < relativeTolerance * std::min(absX, absY);
 }
+
+// ENGINE INCLUDES
+
+#include "EngineFeatures.h"
+
+#include "FastDelegate.h"
+
+#include "Graphics.h"
+#include "Environment.h"
+#include "KeyboardEvent.h"
+
+#include "Vectors.h"
+#include "Matrices.h"
+#include "Rect.h"
+#include "UString.h"
+
+
+// DEFS
+
+#ifdef NULL
+#undef NULL
+#endif
+#define NULL nullptr
+
+using COLORPART = unsigned char;
+
+/*
+#ifndef DWORD
+typedef unsigned long 	DWORD;
+#endif
+#ifndef WORD
+typedef unsigned short	WORD;
+#endif
+#ifndef BYTE
+typedef unsigned char	BYTE;
+#endif
+#ifndef UINT8
+typedef unsigned char 	UINT8;
+#endif
+*/
 
 #endif

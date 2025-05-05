@@ -156,13 +156,8 @@ BassSoundEngine::BassSoundEngine() : SoundEngine()
 	BASS_SetConfig(BASS_CONFIG_DEV_NONSTOP,
 	               1); // NOTE: only used by osu atm (avoids lag/jitter in BASS_ChannelGetPosition() shortly after a BASS_ChannelPlay() after loading/silence)
 
-#ifdef MCENGINE_FEATURE_BASS_WASAPI
-	BASS_SetConfig(BASS_CONFIG_UPDATEPERIOD, 0);
-	BASS_SetConfig(BASS_CONFIG_UPDATETHREADS, 0);
-#else
-	BASS_SetConfig(BASS_CONFIG_UPDATEPERIOD, 5); // NOTE: only used by osu atm
-	BASS_SetConfig(BASS_CONFIG_UPDATETHREADS, 1);
-#endif
+	BASS_SetConfig(BASS_CONFIG_UPDATEPERIOD, (Env::cfg(AUD::WASAPI) ? 0 : 5)); // NOTE: only used by osu atm
+	BASS_SetConfig(BASS_CONFIG_UPDATETHREADS, (Env::cfg(AUD::WASAPI) ? 0 : 1));
 
 	BASS_SetConfig(BASS_CONFIG_VISTA_TRUEPOS, 0); // NOTE: if set to 1, increases sample playback latency +10 ms
 
@@ -266,8 +261,7 @@ bool BassSoundEngine::play(Sound *snd, float pan, float pitch)
 	if (!m_bReady || snd == NULL || !snd->isReady())
 		return false;
 
-	// Try casting to BassSound
-	BassSound *bassSound = dynamic_cast<BassSound *>(snd);
+	BassSound *bassSound = snd->getSound();
 	if (!bassSound)
 		return false;
 
@@ -324,7 +318,7 @@ bool BassSoundEngine::play(Sound *snd, float pan, float pitch)
 			float freq = snd_freq.getFloat();
 			BASS_ChannelGetAttribute(handle, BASS_ATTRIB_FREQ, &freq);
 
-			const float semitonesShift = lerp<float>(-60.0f, 60.0f, pitch / 2.0f);
+			const float semitonesShift = lerp(-60.0f, 60.0f, pitch / 2.0f);
 			BASS_ChannelSetAttribute(handle, BASS_ATTRIB_FREQ, std::pow(2.0f, (semitonesShift / 12.0f)) * freq);
 		}
 
@@ -381,8 +375,7 @@ bool BassSoundEngine::play3d(Sound *snd, Vector3 pos)
 	if (!m_bReady || snd == NULL || !snd->isReady() || !snd->is3d())
 		return false;
 
-	// Try casting to BassSound
-	BassSound *bassSound = dynamic_cast<BassSound *>(snd);
+	BassSound *bassSound = snd->getSound();
 	if (!bassSound)
 		return false;
 
@@ -415,8 +408,7 @@ void BassSoundEngine::pause(Sound *snd)
 	if (!m_bReady || snd == NULL || !snd->isReady())
 		return;
 
-	// Try casting to BassSound
-	BassSound *bassSound = dynamic_cast<BassSound *>(snd);
+	BassSound *bassSound = snd->getSound();
 	if (!bassSound)
 		return;
 
@@ -456,8 +448,7 @@ void BassSoundEngine::stop(Sound *snd)
 	if (!m_bReady || snd == NULL || !snd->isReady())
 		return;
 
-	// Try casting to BassSound
-	BassSound *bassSound = dynamic_cast<BassSound *>(snd);
+	BassSound *bassSound = snd->getSound();
 	if (!bassSound)
 		return;
 
@@ -704,31 +695,29 @@ bool BassSoundEngine::initializeOutputDevice(int id)
 	{
 		m_bReady = false;
 
-#ifndef MCENGINE_FEATURE_BASS_WASAPI
-		// try again with dsound fallback, once
-		if (!win_snd_fallback_dsound.getBool())
+		if constexpr (Env::cfg(AUD::WASAPI))
 		{
-			debugLog("Sound Error: BASS_Init() failed (%i)!\n", BASS_ErrorGetCode());
-			debugLog("Trying to fall back to DirectSound ...\n");
-
-			win_snd_fallback_dsound.setValue(1.0f);
-
-			const bool didFallbackSucceed = initializeOutputDevice(id);
-
-			if (!didFallbackSucceed)
+			// try again with dsound fallback, once
+			if (!win_snd_fallback_dsound.getBool())
 			{
-				// we're fucked, reset and fail
-				win_snd_fallback_dsound.setValue(0.0f);
-			}
+				debugLog("Sound Error: BASS_Init() failed (%i)!\n", BASS_ErrorGetCode());
+				debugLog("Trying to fall back to DirectSound ...\n");
 
-			return didFallbackSucceed;
+				win_snd_fallback_dsound.setValue(1.0f);
+
+				const bool didFallbackSucceed = initializeOutputDevice(id);
+
+				if (!didFallbackSucceed)
+				{
+					// we're fucked, reset and fail
+					win_snd_fallback_dsound.setValue(0.0f);
+				}
+
+				return didFallbackSucceed;
+			}
 		}
-		else
-#endif
-		{
-			engine->showMessageError("Sound Error", UString::format("BASS_Init() failed (%i)!", BASS_ErrorGetCode()));
-			return false;
-		}
+		engine->showMessageError("Sound Error", UString::format("BASS_Init() failed (%i)!", BASS_ErrorGetCode()));
+		return false;
 	}
 
 #ifdef MCENGINE_FEATURE_BASS_WASAPI

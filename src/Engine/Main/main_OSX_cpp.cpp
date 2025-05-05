@@ -42,12 +42,7 @@ MacOSWrapper::MacOSWrapper()
 {
     // create timers
 	m_frameTimer = new Timer();
-	m_frameTimer->start();
-	m_frameTimer->update();
-
 	m_deltaTimer = new Timer();
-	m_deltaTimer->start();
-	m_deltaTimer->update();
 
 	m_fPrevTime = 0.0f;
 

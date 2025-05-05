@@ -5,19 +5,17 @@
 // $NoKeywords: $main
 //===============================================================================//
 
-#ifdef __linux__
+#if 0//def __linux__
 
 #include "cbase.h"
 
-#ifdef MCENGINE_FEATURE_SDL
+#ifdef MCENGINE_FEATURE_SDL // TODO: remove, assume SDL
 
-#include "LinuxSDLEnvironment.h"
-
-extern int mainSDL(int argc, char *argv[], SDLEnvironment *customSDLEnvironment);
+#include "SDLEnvironment.h"
 
 int main(int argc, char *argv[])
 {
-	return mainSDL(argc, argv, new LinuxSDLEnvironment());
+	return SDLEnvironment().main(argc, argv);
 }
 
 #else
@@ -57,8 +55,8 @@ Engine *g_engine = NULL;
 LinuxEnvironment *g_environment = NULL;
 
 bool g_bRunning = true;
-bool g_bUpdate = true;
-bool g_bDraw = true;
+constexpr bool g_bUpdate = true;
+constexpr bool g_bDraw = true;
 bool g_bDrawing = false;
 
 bool g_bHasFocus = false; // for fps_max_background
@@ -393,21 +391,13 @@ int main(int argc, char *argv[])
 
     // create timers
     Timer *frameTimer = new Timer();
-    frameTimer->start();
-    frameTimer->update();
-
     Timer *deltaTimer = new Timer();
-    deltaTimer->start();
-    deltaTimer->update();
 
     // initialize engine
 	LinuxEnvironment *environment = new LinuxEnvironment(dpy, win);
 	g_environment = environment;
     g_engine = new Engine(environment, argc > 1 ? argv[1] : ""); // TODO: proper arg support
     g_engine->loadApp();
-
-    frameTimer->update();
-    deltaTimer->update();
 
     // main loop
 	while (g_bRunning)
@@ -430,12 +420,12 @@ int main(int argc, char *argv[])
 			deltaTimer->update();
 			engine->setFrameTime(deltaTimer->getDelta());
 
-			if (g_bUpdate)
+			if constexpr (g_bUpdate)
 				g_engine->onUpdate();
 		}
 
 		// draw
-		if (g_bDraw)
+		if constexpr (g_bDraw)
 		{
 			g_bDrawing = true;
 			{

@@ -5,13 +5,14 @@
 // $NoKeywords: $macenv
 //===============================================================================//
 
-#ifdef __APPLE__
 
 #pragma once
 #ifndef MACOSENVIRONMENT_H
 #define MACOSENVIRONMENT_H
 
 #include "Environment.h"
+
+#ifdef __APPLE__
 
 class MacOSWrapper;
 
@@ -33,6 +34,7 @@ public:
 	void sleep(unsigned int us);
 	UString getExecutablePath();
 	void openURLInDefaultBrowser(UString url);
+	inline int getLogicalCPUCount(){return 1;}
 
 	// user
 	UString getUsername();
@@ -134,6 +136,8 @@ private:
 	CURSORTYPE m_cursorType;
 };
 
+#else
+class MacOSEnvironment : public Environment{};
 #endif
 
 #endif

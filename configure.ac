@@ -110,6 +110,16 @@ AS_IF([test "x$with_soloud" = "xyes"], [
     AC_PROG_GENIE
 ])
 
+# FIXME: GLEW esp. doesnt wanna build shared
+AS_IF([test "$host_os" = "mingw32" && test "x$enable_clang" = "xyes"], [
+    LLVMMINGW=1
+    AC_SUBST([LLVMMINGW])
+    enable_static=yes
+    disable_shared=yes
+    CXXFLAGS="$CXXFLAGS --target=$host_cpu-w64-windows-gnu"
+    CFLAGS="$CFLAGS --target=$host_cpu-w64-windows-gnu"
+])
+
 AS_IF([test "x$enable_static" = "xyes"], [
     PKGTYPE="--static"
 ])
@@ -135,6 +145,7 @@ AS_IF([test "x$enable_clang" = "xyes"], [
 ],[
     CC=gcc
     CXX=g++
+    MCOSU_CXXFLAGS="$MCOSU_CXXFLAGS -fimplicit-constexpr"
 ])
 
 AS_IF([[case "$host_cpu" in
@@ -248,6 +259,7 @@ LDFLAGS="$LDFLAGS -static-libstdc++ -static-libgcc"
 # use c/c++23 because we can
 AC_LANG_PUSH([C++])
 AX_CHECK_COMPILE_FLAG([-std=gnu++23], [
+    AX_CHECK_COMPILE_FLAG([-std=gnu++26], [MCOSU_CXXFLAGS="$MCOSU_CXXFLAGS -std=gnu++26"])
     CXXFLAGS="$CXXFLAGS -std=gnu++23"
 ], [
     AC_MSG_ERROR([Compiler does not support gnu++23])
@@ -281,6 +293,9 @@ AS_IF([test "x$enable_native" != "xno"], [
 AS_IF([test "x$enable_asan" = "xyes"], [
     CXXFLAGS="$CXXFLAGS -fsanitize=address,undefined"
     CFLAGS="$CFLAGS -fsanitize=address,undefined"
+    AS_IF([test -z "$LLVMMINGW"],[
+        LDFLAGS="$LDFLAGS -static-libasan" CFLAGS="$CFLAGS -static-libasan" CXXFLAGS="$CXXFLAGS -static-libasan"
+    ])
     enable_debug="yes"
     ENABLE_ASAN=$enable_asan
     AC_SUBST([ENABLE_ASAN])
@@ -297,7 +312,15 @@ AS_IF([test "x$enable_debug" = "xyes"], [
         CPPFLAGS="$CPPFLAGS -DNDEBUG -D_NDEBUG"
         CXXFLAGS="${CXXFLAGS//-g -O2/} -O3 -g0" # where do those -g -O2 flags even come from...
         CFLAGS="${CFLAGS//-g -O2/} -O3 -g0"
+        AS_IF([test "x$enable_clang" = "xyes"], [
+            CXXFLAGS="$CXXFLAGS"
+            CFLAGS="$CFLAGS"
+        ],[
+            CXXFLAGS="$CXXFLAGS -fipa-pta"
+            CFLAGS="$CFLAGS -fipa-pta"
+        ])
     ])
+    # MCOSU_CXXFLAGS="$MCOSU_CXXFLAGS -fno-rtti" # TODO: remove needless dynamic_casts everywhere
     MCOSU_LDFLAGS="$MCOSU_LDFLAGS -Wl,-s,--gc-sections" # strip and GC unless debug
 ])
 
@@ -310,10 +333,10 @@ AS_IF([test "x$enable_lto" != "xno"], [
             LD="${LD}.lld"
         ])], [
         # gcc
-        AX_CHECK_LINK_FLAG([-flto=auto -ffat-lto-objects -fuse-linker-plugin], [
-            CXXFLAGS="$CXXFLAGS -flto=auto -ffat-lto-objects -fuse-linker-plugin"
-            CFLAGS="$CFLAGS -flto=auto -ffat-lto-objects -fuse-linker-plugin"
-            LDFLAGS="$LDFLAGS -flto=auto -ffat-lto-objects -fuse-linker-plugin"
+        AX_CHECK_LINK_FLAG([-flto=auto -ffat-lto-objects -fuse-linker-plugin -fdevirtualize-at-ltrans], [
+            CXXFLAGS="$CXXFLAGS -flto=auto -ffat-lto-objects -fuse-linker-plugin -fdevirtualize-at-ltrans"
+            CFLAGS="$CFLAGS -flto=auto -ffat-lto-objects -fuse-linker-plugin -fdevirtualize-at-ltrans"
+            LDFLAGS="$LDFLAGS -flto=auto -ffat-lto-objects -fuse-linker-plugin -fdevirtualize-at-ltrans"
         ])
     ])
 ])

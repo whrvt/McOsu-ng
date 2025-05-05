@@ -50,7 +50,11 @@ ConVar osu_draw_beatmap_background_image("osu_draw_beatmap_background_image", tr
 ConVar osu_vr_draw_desktop_playfield("osu_vr_draw_desktop_playfield", true, FCVAR_NONE);
 
 ConVar osu_universal_offset("osu_universal_offset", 0.0f, FCVAR_NONE);
-ConVar osu_universal_offset_hardcoded("osu_universal_offset_hardcoded", 0.0f, FCVAR_NONE);
+ConVar osu_universal_offset_hardcoded("osu_universal_offset_hardcoded",
+										Env::cfg(AUD::WASAPI) ? -25.0f  :
+										Env::cfg(AUD::BASS)	  ?  15.0f  :
+										Env::cfg(AUD::SDL)	  ? -110.0f :
+										Env::cfg(AUD::SOLOUD) ? -20.0f  : 0.0f, FCVAR_NONE);
 ConVar osu_universal_offset_hardcoded_fallback_dsound("osu_universal_offset_hardcoded_fallback_dsound", -15.0f, FCVAR_NONE);
 ConVar osu_old_beatmap_offset("osu_old_beatmap_offset", 24.0f, FCVAR_NONE, "offset in ms which is added to beatmap versions < 5 (default value is hardcoded 24 ms in stable)");
 ConVar osu_timingpoints_offset("osu_timingpoints_offset", 5.0f, FCVAR_NONE, "Offset in ms which is added before determining the active timingpoint for the sample type and sample volume (hitsounds) of the current frame");
@@ -629,9 +633,10 @@ void OsuBeatmap::update()
 			// (because the hitobjects need to know about note blocking before handling the click events)
 
 			// ************ live pp block start ************ //
-			const bool isCircle = m_hitobjects[i]->isCircle();
-			const bool isSlider = m_hitobjects[i]->isSlider();
-			const bool isSpinner = m_hitobjects[i]->isSpinner();
+			const auto type = m_hitobjects[i]->getType();
+			const bool isCircle = (type == OsuHitObject::CIRCLE);
+			const bool isSlider = (type == OsuHitObject::SLIDER);
+			const bool isSpinner = (type == OsuHitObject::SPINNER);
 			// ************ live pp block end ************** //
 
 			// determine previous & next object time, used for auto + followpoints + warning arrows + empty section skipping
@@ -681,7 +686,7 @@ void OsuBeatmap::update()
 			m_hitobjects[i]->update(m_iCurMusicPosWithOffsets);
 
 			// note blocking / notelock (1)
-			const OsuSlider *currentSliderPointer = dynamic_cast<OsuSlider*>(m_hitobjects[i]);
+			auto *currentSliderPointer = m_hitobjects[i]->asSlider();
 			if (notelockType > 0)
 			{
 				m_hitobjects[i]->setBlocked(blockNextNotes);
@@ -700,7 +705,7 @@ void OsuBeatmap::update()
 						// sliders are "finished" after their startcircle
 						/*
 						{
-							OsuSlider *sliderPointer = dynamic_cast<OsuSlider*>(m_hitobjects[i]);
+							auto *sliderPointer = m_hitobjects[i]->asSlider();
 
 							// sliders with finished startcircles do not block
 							if (sliderPointer != NULL && sliderPointer->isStartCircleFinished())
@@ -714,7 +719,7 @@ void OsuBeatmap::update()
 						// NOTE: this will (same as the old implementation) still unlock some simultaneous/2b patterns too early (slider slider circle [circle]), but nobody from that niche has complained so far
 						{
 							const bool isSlider = (currentSliderPointer != NULL);
-							const bool isSpinner = (!isSlider && !isCircle);
+							const bool isSpinner = (!isSlider && !(type == OsuHitObject::CIRCLE));
 
 							if (isSlider || isSpinner)
 							{
@@ -798,7 +803,7 @@ void OsuBeatmap::update()
 					{
 						if (!m_hitobjects[m]->isFinished())
 						{
-							const OsuSlider *sliderPointer = dynamic_cast<OsuSlider*>(m_hitobjects[m]);
+							const auto *sliderPointer = m_hitobjects[m]->asSlider();
 
 							const bool isSlider = (sliderPointer != NULL);
 							const bool isSpinner = (!isSlider && !isCircle);
@@ -826,7 +831,7 @@ void OsuBeatmap::update()
 					{
 						if (!m_hitobjects[m]->isFinished())
 						{
-							const OsuSlider *sliderPointer = dynamic_cast<OsuSlider*>(m_hitobjects[m]);
+							const auto *sliderPointer = m_hitobjects[m]->asSlider();
 
 							const bool isSlider = (sliderPointer != NULL);
 							const bool isSpinner = (!isSlider && !isCircle);

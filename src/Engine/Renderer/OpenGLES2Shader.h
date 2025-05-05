@@ -11,7 +11,7 @@
 
 #include "Shader.h"
 
-#ifdef MCENGINE_FEATURE_OPENGLES
+#ifdef MCENGINE_FEATURE_GLES2
 
 class OpenGLES2Shader : public Shader
 {

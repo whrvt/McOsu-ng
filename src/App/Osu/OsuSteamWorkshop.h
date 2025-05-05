@@ -9,6 +9,11 @@
 #ifndef OSUSTEAMWORKSHOP_H
 #define OSUSTEAMWORKSHOP_H
 
+#include "EngineFeatures.h"
+#include "UString.h"
+
+#ifdef MCENGINE_FEATURE_STEAMWORKS
+
 #include "cbase.h"
 
 class Osu;
@@ -67,4 +72,31 @@ private:
 	ConVar *m_osu_skin_is_from_workshop_ref;
 };
 
+#else
+class OsuSteamWorkshop
+{
+public:
+	enum class SUBSCRIBED_ITEM_TYPE{SKIN};
+	enum class SUBSCRIBED_ITEM_STATUS{DOWNLOADING,INSTALLED};
+	struct SUBSCRIBED_ITEM
+	{
+		SUBSCRIBED_ITEM_TYPE type;
+		SUBSCRIBED_ITEM_STATUS status;
+		long long unsigned int id;
+		UString title;
+		UString installInfo;
+	};
+
+	[[maybe_unused]] constexpr OsuSteamWorkshop() = default;
+	[[maybe_unused]] constexpr OsuSteamWorkshop(auto *){OsuSteamWorkshop();};
+	[[maybe_unused]] constexpr ~OsuSteamWorkshop() = default;
+
+	[[maybe_unused]] constexpr void refresh(bool,bool _ = true){}
+
+	[[maybe_unused]] constexpr bool isReady(){return false;}
+	[[maybe_unused]] constexpr bool areDetailsLoaded(){return false;}
+	[[maybe_unused]] constexpr bool isUploading(){return false;}
+	[[maybe_unused]] constexpr std::vector<SUBSCRIBED_ITEM> getSubscribedItems() {return std::vector<SUBSCRIBED_ITEM>{};}
+};
+#endif
 #endif

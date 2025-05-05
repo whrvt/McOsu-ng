@@ -34,6 +34,7 @@ public:
 	void sleep(unsigned int us);
 	UString getExecutablePath();
 	void openURLInDefaultBrowser(UString url);
+	inline int getLogicalCPUCount(){return 1;}
 
 	// user
 	UString getUsername();
