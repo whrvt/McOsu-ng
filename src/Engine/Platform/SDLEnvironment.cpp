@@ -86,7 +86,7 @@ SDLEnvironment::SDLEnvironment() : Environment()
 
 	m_sdlDebug = !!debug_sdl.getInt();
 	if (m_sdlDebug)
-		onLogLevelChange("", "1");
+		onLogLevelChange(1.0f);
 	debug_sdl.setCallback(fastdelegate::MakeDelegate(this, &SDLEnvironment::onLogLevelChange));
 
 	mouse_raw_input.setCallback(fastdelegate::MakeDelegate(this, &SDLEnvironment::onRawInputChange));
@@ -555,7 +555,7 @@ Vector2 SDLEnvironment::getWindowPos() const
 	int x = 0;
 	int y = 0;
 	SDL_GetWindowPosition(m_window, &x, &y);
-	return Vector2(x, y);
+	return {static_cast<float>(x), static_cast<float>(y)};
 }
 
 Vector2 SDLEnvironment::getWindowSize() const
@@ -563,31 +563,35 @@ Vector2 SDLEnvironment::getWindowSize() const
 	int width = 100;
 	int height = 100;
 	SDL_GetWindowSize(m_window, &width, &height);
-	return Vector2(width, height);
+	return {static_cast<float>(width), static_cast<float>(height)};
 }
 
 int SDLEnvironment::getMonitor() const
 {
-	const int display = static_cast<int>(SDL_GetDisplayForWindow(m_window)); // HACK: 0 means invalid display in SDL, decrement by 1 for engine/app
-	return display - 1 < 0 ? 0 : display - 1;
+	const int display = static_cast<int>(SDL_GetDisplayForWindow(m_window));
+	return display - 1 < 0 ? 0 : display - 1; // HACK: 0 means invalid display in SDL, decrement by 1 for engine/app
 }
 
 Vector2 SDLEnvironment::getNativeScreenSize() const
 {
 	SDL_DisplayID di = SDL_GetDisplayForWindow(m_window);
-	return Vector2(SDL_GetDesktopDisplayMode(di)->w, SDL_GetDesktopDisplayMode(di)->h);
+	return {static_cast<float>(SDL_GetDesktopDisplayMode(di)->w), static_cast<float>(SDL_GetDesktopDisplayMode(di)->h)};
 }
 
 McRect SDLEnvironment::getVirtualScreenRect() const
 {
 	// TODO:
-	return McRect(0, 0, 1, 1);
+	return {0, 0, 1, 1};
 }
 
 McRect SDLEnvironment::getDesktopRect() const
 {
-	Vector2 screen = getNativeScreenSize();
-	return McRect(0, 0, screen.x, screen.y);
+	return {{0, 0}, getNativeScreenSize()};
+}
+
+McRect SDLEnvironment::getWindowRect() const
+{
+	return {getWindowPos(), getWindowSize()};
 }
 
 int SDLEnvironment::getDPI() const
@@ -608,25 +612,6 @@ void SDLEnvironment::setCursor(CURSORTYPE cur)
 	SDL_SetCursor(m_mCursorIcons.at(m_cursorType)); // does not make visible if the cursor isn't visible
 }
 
-void SDLEnvironment::setRawInput(bool on)
-{
-	if (on)
-	{
-		const SDL_Rect clipRect{.x=static_cast<int>(m_cursorClip.getX()), .y=static_cast<int>(m_cursorClip.getY()), .w=static_cast<int>(m_cursorClip.getWidth()), .h=static_cast<int>(m_cursorClip.getHeight())};
-		if (m_bCursorClipped)
-			SDL_SetWindowMouseRect(m_window, &clipRect);
-		setCursorPosition(m_engine->getMouse()->getRealPos()); // when enabling, we need to make sure we start from the virtual cursor position
-	}
-	else if (m_bCursorClipped)
-	{
-		// let the mouse handler clip the cursor
-		SDL_SetWindowMouseRect(m_window, NULL);
-	}
-
-	SDL_SetRelativeMouseTransform(on ? sensTransformFunc : nullptr, nullptr);
-	SDL_SetWindowRelativeMouseMode(m_window, on);
-}
-
 void SDLEnvironment::setCursorVisible(bool visible)
 {
 	m_bCursorVisible = visible;
@@ -636,10 +621,10 @@ void SDLEnvironment::setCursorVisible(bool visible)
 		if (m_bIsRawInput)
 		{
 			setRawInput(false);
-			setCursorPosition(getMousePos().nudge(getWindowSize()/2, 2.0f)); // nudge it outwards
+			setCursorPosition(getMousePos().nudge(getWindowSize()/2, 0.5f)); // nudge it outwards
 		}
 		else // snap the OS cursor to virtual cursor position
-			setCursorPosition(m_engine->getMouse()->getRealPos().nudge(getWindowSize()/2, 2.0f)); // nudge it outwards
+			setCursorPosition(m_engine->getMouse()->getRealPos().nudge(getWindowSize()/2, 0.5f)); // nudge it outwards
 		SDL_ShowCursor();
 	}
 	else
@@ -692,15 +677,41 @@ void SDLEnvironment::listenToTextInput(bool listen)
 	SDL_SetWindowKeyboardGrab(m_window, !listen);
 }
 
+//===============//
+// PRIVATE BELOW //
+//===============//
+
+void SDLEnvironment::setRawInput(bool on)
+{
+	if (on)
+	{
+		setCursorPosition(m_engine->getMouse()->getRealPos()); // when enabling, we need to make sure we start from the virtual cursor position
+		if (m_bCursorClipped)
+		{
+			const SDL_Rect clipRect{.x=static_cast<int>(m_cursorClip.getX()), .y=static_cast<int>(m_cursorClip.getY()), .w=static_cast<int>(m_cursorClip.getWidth()), .h=static_cast<int>(m_cursorClip.getHeight())};
+			SDL_SetWindowMouseRect(m_window, &clipRect);
+		}
+	}
+	else
+	{
+		// let the mouse handler clip the cursor as it sees fit
+		// this is because SDL has no equivalent of sensTransformFunc for non-relative mouse mode
+		SDL_SetWindowMouseRect(m_window, NULL);
+	}
+
+	SDL_SetRelativeMouseTransform(on ? sensTransformFunc : nullptr, nullptr);
+	SDL_SetWindowRelativeMouseMode(m_window, on);
+}
+
 void SDLEnvironment::onRawInputChange(float newval)
 {
 	m_bIsRawInput = !!static_cast<int>(newval);
 	setRawInput(m_bIsRawInput);
 }
 
-void SDLEnvironment::onLogLevelChange(UString oldValue, UString newValue)
+void SDLEnvironment::onLogLevelChange(float newval)
 {
-	const bool enable = !!newValue.toInt();
+	const bool enable = !!static_cast<int>(newval);
 	if (enable)
 	{
 		sdlDebug(true);
@@ -713,7 +724,7 @@ void SDLEnvironment::onLogLevelChange(UString oldValue, UString newValue)
 	}
 }
 
-// static helpers
+// internal helpers/callbacks
 
 static void sensTransformFunc(void *, Uint64, SDL_Window *, SDL_MouseID, float *x, float *y)
 {

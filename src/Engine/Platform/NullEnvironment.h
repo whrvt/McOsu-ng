@@ -79,6 +79,7 @@ public:
 	[[nodiscard]] Vector2 getNativeScreenSize() const override {return {1920, 1080};}
 	[[nodiscard]] McRect getVirtualScreenRect() const override {return {0, 0, 1920, 1080};}
 	[[nodiscard]] McRect getDesktopRect() const override {return {0, 0, 1920, 1080};}
+	[[nodiscard]] McRect getWindowRect() const override {return {0, 0, 1920, 1080};}
 	[[nodiscard]] int getDPI() const override {return 96;}
 	[[nodiscard]] bool isFullscreen() const override {return false;}
 	[[nodiscard]] bool isWindowResizable() const override {return true;}

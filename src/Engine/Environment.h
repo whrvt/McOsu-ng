@@ -85,6 +85,7 @@ public:
 	[[nodiscard]] virtual Vector2 getNativeScreenSize() const = 0;
 	[[nodiscard]] virtual McRect getVirtualScreenRect() const = 0;
 	[[nodiscard]] virtual McRect getDesktopRect() const = 0;
+	[[nodiscard]] virtual McRect getWindowRect() const = 0;
 	[[nodiscard]] virtual int getDPI() const = 0;
 	[[nodiscard]] virtual bool isFullscreen() const = 0;
 	[[nodiscard]] virtual bool isWindowResizable() const = 0;
@@ -98,6 +99,11 @@ public:
 	[[nodiscard]] virtual CURSORTYPE getCursor() const = 0;
 	virtual void setCursor(CURSORTYPE cur) = 0;
 	virtual void setCursorVisible(bool visible) = 0;
+	inline void setMousePos(const Vector2& pos)
+	{
+		m_vLastAbsMousePos = pos;
+		setCursorPosition();
+	}
 	template <typename T = float>
 	inline void setMousePos(T x, T y)
 	{

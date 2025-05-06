@@ -97,6 +97,7 @@ public:
 	[[nodiscard]] Vector2 getNativeScreenSize() const override;
 	[[nodiscard]] McRect getVirtualScreenRect() const override;
 	[[nodiscard]] McRect getDesktopRect() const override;
+	[[nodiscard]] McRect getWindowRect() const override;
 	[[nodiscard]] int getDPI() const override;
 	[[nodiscard]] inline bool isFullscreen() const override { return m_bFullscreen; }
 	[[nodiscard]] inline bool isWindowResizable() const override { return m_bResizable; }
@@ -128,7 +129,7 @@ private:
 		m_sdlDebug = enable;
 		return m_sdlDebug;
 	}
-	void onLogLevelChange(UString oldValue, UString newValue);
+	void onLogLevelChange(float newval);
 
 	Engine *m_engine;
 

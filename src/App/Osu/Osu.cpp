@@ -2342,7 +2342,7 @@ void Osu::onFocusLost()
 	updateWindowsKeyDisable();
 
 	// release cursor clip
-	env->setCursorClip(false, McRect());
+	updateConfineCursor();
 
 	if constexpr (Env::cfg(AUD::WASAPI)) // NOTE: wasapi exclusive mode controls the system volume, so don't bother
 		return;
@@ -2526,7 +2526,8 @@ void Osu::updateConfineCursor()
 
 	if (isInVRMode() || m_iInstanceID > 0) return;
 
-	if (!osu_confine_cursor_never.getBool()
+	if (engine->hasFocus()
+			&& !osu_confine_cursor_never.getBool()
 			&& ((osu_confine_cursor_fullscreen.getBool() && env->isFullscreen())
 			||  (osu_confine_cursor_windowed.getBool() && !env->isFullscreen())
 			||  (isInPlayMode() && !m_pauseMenu->isVisible() && !getModAuto() && !getModAutopilot())))

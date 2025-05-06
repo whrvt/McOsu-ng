@@ -124,15 +124,20 @@ void Mouse::update()
 	}
 	else
 	{
-		// center the OS cursor if it's close to the screen edges, for non-raw input
+		// center the OS cursor if it's close to the screen edges, for non-raw input with sensitivity <1.0
 		if (!m_bAbsolute)
 		{
-			const McRect clipRect = env->isCursorClipped() ? env->getCursorClip() : env->getDesktopRect();
+			const bool clipped = env->isCursorClipped();
+			const McRect clipRect = clipped ? env->getCursorClip() : McRect{{0,0}, engine->getScreenSize()};
 			const Vector2 center = clipRect.getCenter();
-			const Vector2 realPosNudgedOut = env->getMousePos().nudge(center, 5.0f);
-
+			const Vector2 realPosNudgedOut = env->getMousePos().nudge(center, 10.0f);
 			if (!clipRect.contains(realPosNudgedOut))
-				env->setMousePos(center.x, center.y);
+			{
+				if (clipped)
+					env->setMousePos(center);
+				else if (!env->isCursorVisible() && env->isCursorInWindow())
+					env->setMousePos(m_vPosWithoutOffset.nudge(center, 0.1f)); // this is crazy. for windowed mode, need to "pop out" the OS cursor
+			}
 		}
 
 		onPosChange(m_vPosWithoutOffset);
