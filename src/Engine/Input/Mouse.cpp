@@ -125,6 +125,8 @@ void Mouse::update()
 	else
 	{
 		// center the OS cursor if it's close to the screen edges, for non-raw input with sensitivity <1.0
+		// the reason for trying hard to avoid env->setMousePos is because setting the OS cursor position can take a long time
+		// so we try to use the virtual cursor position as much as possible and only update the OS cursor when it's going to go somewhere we don't want
 		if (!m_bAbsolute)
 		{
 			const bool clipped = env->isCursorClipped();
@@ -135,8 +137,8 @@ void Mouse::update()
 			{
 				if (clipped)
 					env->setMousePos(center);
-				else if (!env->isCursorVisible() && env->isCursorInWindow())
-					env->setMousePos(m_vPosWithoutOffset.nudge(center, 0.1f)); // this is crazy. for windowed mode, need to "pop out" the OS cursor
+				else if (!env->isCursorVisible()) // FIXME: this is crazy. for windowed mode, need to "pop out" the OS cursor
+					env->setMousePos(m_vPosWithoutOffset.nudge(center, 0.1f));
 			}
 		}
 
@@ -159,7 +161,9 @@ void Mouse::onMotion(float x, float y, float xRel, float yRel, bool isRawInput)
 
 	const bool osCursorVisible = (env->isCursorVisible() || !env->isCursorInWindow() || !engine->hasFocus());
 
-	if (!isRawInput && !osCursorVisible) // rawinput has sensitivity pre-applied
+ 	// rawinput has sensitivity pre-applied
+	// this entire block may be skipped if: (isRawInput || (sens == 1 && !clipped))
+	if (!isRawInput && !osCursorVisible)
 	{
 		// need to apply sensitivity
 		if (!almostEqual(sens, 1.0f))
@@ -172,12 +176,14 @@ void Mouse::onMotion(float x, float y, float xRel, float yRel, bool isRawInput)
 				newRel.zero();
 			newAbs = m_vPosWithoutOffset + newRel;
 		}
+		if (env->isCursorClipped())
+		{
+			const McRect clipRect = env->getCursorClip();
 
-		const McRect clipRect = env->isCursorClipped() ? env->getCursorClip() : env->getDesktopRect();
-
-		// clamp the final position to the clip rect
-		newAbs.x = clamp<float>(newAbs.x, clipRect.getMinX(), clipRect.getMaxX());
-		newAbs.y = clamp<float>(newAbs.y, clipRect.getMinY(), clipRect.getMaxY());
+			// clamp the final position to the clip rect
+			newAbs.x = clamp<float>(newAbs.x, clipRect.getMinX(), clipRect.getMaxX());
+			newAbs.y = clamp<float>(newAbs.y, clipRect.getMinY(), clipRect.getMaxY());
+		}
 	}
 
 	m_vDelta = newAbs - m_vPosWithoutOffset;
