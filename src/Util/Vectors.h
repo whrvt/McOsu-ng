@@ -40,6 +40,7 @@ struct Vector2
     Vector2&    normalize();                            //
     float       dot(const Vector2& vec) const;          // dot product
     bool        equal(const Vector2& vec, float e) const; // compare with epsilon
+    Vector2&    nudge(const Vector2& vec, float amount);  // move away/towards vec by amount
 
     // operators
     Vector2     operator-() const;                      // unary operator (negate)
@@ -88,6 +89,7 @@ struct Vector3
     float       dot(const Vector3& vec) const;          // dot product
     Vector3     cross(const Vector3& vec) const;        // cross product
     bool        equal(const Vector3& vec, float e) const; // compare with epsilon
+    Vector3&    nudge(const Vector3& vec, float amount);  // move away/towards vec by amount
 
     // operators
     Vector3     operator-() const;                      // unary operator (negate)
@@ -134,6 +136,7 @@ struct Vector4
     Vector4&    normalize();                            //
     float       dot(const Vector4& vec) const;          // dot product
     bool        equal(const Vector4& vec, float e) const; // compare with epsilon
+    Vector4&    nudge(const Vector4& vec, float amount);  // move away/towards vec by amount
 
     // operators
     Vector4     operator-() const;                      // unary operator (negate)
@@ -281,6 +284,13 @@ inline bool Vector2::equal(const Vector2& rhs, float epsilon) const {
     return fabs(x - rhs.x) < epsilon && fabs(y - rhs.y) < epsilon;
 }
 
+inline Vector2& Vector2::nudge(const Vector2& vec, float amount) {
+    Vector2 dir = *this - vec;
+    dir.normalize();
+    *this += dir * amount;
+    return *this;
+}
+
 inline Vector2 operator*(const float a, const Vector2 vec) {
     return Vector2(a*vec.x, a*vec.y);
 }
@@ -416,6 +426,13 @@ inline bool Vector3::equal(const Vector3& rhs, float epsilon) const {
     return fabs(x - rhs.x) < epsilon && fabs(y - rhs.y) < epsilon && fabs(z - rhs.z) < epsilon;
 }
 
+inline Vector3& Vector3::nudge(const Vector3& vec, float amount) {
+    Vector3 dir = *this - vec;
+    dir.normalize();
+    *this += dir * amount;
+    return *this;
+}
+
 inline Vector3 operator*(const float a, const Vector3 vec) {
     return Vector3(a*vec.x, a*vec.y, a*vec.z);
 }
@@ -536,6 +553,13 @@ inline float Vector4::dot(const Vector4& rhs) const {
 inline bool Vector4::equal(const Vector4& rhs, float epsilon) const {
     return fabs(x - rhs.x) < epsilon && fabs(y - rhs.y) < epsilon &&
            fabs(z - rhs.z) < epsilon && fabs(w - rhs.w) < epsilon;
+}
+
+inline Vector4& Vector4::nudge(const Vector4& vec, float amount) {
+    Vector4 dir = *this - vec;
+    dir.normalize();
+    *this += dir * amount;
+    return *this;
 }
 
 inline Vector4 operator*(const float a, const Vector4 vec) {

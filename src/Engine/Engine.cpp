@@ -569,6 +569,7 @@ void Engine::onDPIChange()
 
 void Engine::onShutdown()
 {
+	m_environment->setCursorClip(false, {});
 	if (m_bBlackout || (m_app != NULL && !m_app->onShutdown())) return;
 
 	m_bBlackout = true;

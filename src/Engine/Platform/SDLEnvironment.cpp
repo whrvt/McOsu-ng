@@ -608,36 +608,66 @@ void SDLEnvironment::setCursor(CURSORTYPE cur)
 	SDL_SetCursor(m_mCursorIcons.at(m_cursorType)); // does not make visible if the cursor isn't visible
 }
 
-void SDLEnvironment::setRawInput(bool state)
+void SDLEnvironment::setRawInput(bool on)
 {
-	SDL_SetRelativeMouseTransform(!state ? nullptr : sensTransformFunc, nullptr);
-	SDL_SetWindowRelativeMouseMode(m_window, state);
+	if (on)
+	{
+		const SDL_Rect clipRect{.x=static_cast<int>(m_cursorClip.getX()), .y=static_cast<int>(m_cursorClip.getY()), .w=static_cast<int>(m_cursorClip.getWidth()), .h=static_cast<int>(m_cursorClip.getHeight())};
+		if (m_bCursorClipped)
+			SDL_SetWindowMouseRect(m_window, &clipRect);
+		setCursorPosition(m_engine->getMouse()->getRealPos()); // when enabling, we need to make sure we start from the virtual cursor position
+	}
+	else if (m_bCursorClipped)
+	{
+		// let the mouse handler clip the cursor
+		SDL_SetWindowMouseRect(m_window, NULL);
+	}
+
+	SDL_SetRelativeMouseTransform(on ? sensTransformFunc : nullptr, nullptr);
+	SDL_SetWindowRelativeMouseMode(m_window, on);
 }
 
 void SDLEnvironment::setCursorVisible(bool visible)
 {
 	m_bCursorVisible = visible;
-	if (m_bIsRawInput)
-		setRawInput(!visible);
-	visible ? SDL_ShowCursor() : SDL_HideCursor();
+	if (visible)
+	{
+		// disable rawinput (allow regular mouse movement)
+		if (m_bIsRawInput)
+		{
+			setRawInput(false);
+			setCursorPosition(getMousePos().nudge(getWindowSize()/2, 2.0f)); // nudge it outwards
+		}
+		else // snap the OS cursor to virtual cursor position
+			setCursorPosition(m_engine->getMouse()->getRealPos().nudge(getWindowSize()/2, 2.0f)); // nudge it outwards
+		SDL_ShowCursor();
+	}
+	else
+	{
+		SDL_HideCursor();
+		if (m_bIsRawInput) // re-enable rawinput
+			setRawInput(true);
+	}
 }
 
 void SDLEnvironment::setCursorClip(bool clip, McRect rect)
 {
 	m_cursorClip = rect;
-
 	if (clip)
 	{
-		const SDL_Rect clipRect{static_cast<int>(rect.getX()), static_cast<int>(rect.getY()), static_cast<int>(rect.getWidth()), static_cast<int>(rect.getHeight())};
-		SDL_SetWindowMouseRect(m_window, &clipRect);
+		if (m_bIsRawInput)
+		{
+			const SDL_Rect clipRect{static_cast<int>(rect.getX()), static_cast<int>(rect.getY()), static_cast<int>(rect.getWidth()), static_cast<int>(rect.getHeight())};
+			SDL_SetWindowMouseRect(m_window, &clipRect);
+		}
 		SDL_SetWindowMouseGrab(m_window, true);
 		m_bCursorClipped = true;
 	}
 	else
 	{
 		m_bCursorClipped = false;
-		SDL_SetWindowMouseGrab(m_window, false);
 		SDL_SetWindowMouseRect(m_window, NULL);
+		SDL_SetWindowMouseGrab(m_window, false);
 	}
 }
 

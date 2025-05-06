@@ -15,6 +15,7 @@
 #include "Timer.h"
 
 #include "SDLEnvironment.h"
+#include "Mouse.h"
 
 static constexpr auto WINDOW_TITLE = "McEngine"; // only the initial title
 
@@ -382,11 +383,10 @@ int SDLEnvironment::main(int argc, char *argv[])
 
 					case SDL_EVENT_MOUSE_MOTION:
 						// cache the position
+						m_vLastRelMousePos.x = events[i].motion.xrel;
+						m_vLastRelMousePos.y = events[i].motion.yrel; // TODO?: unused
 						m_vLastAbsMousePos.x = events[i].motion.x;
 						m_vLastAbsMousePos.y = events[i].motion.y;
-						m_vLastRelMousePos.x = events[i].motion.xrel;
-						m_vLastRelMousePos.y = events[i].motion.yrel;
-
 						m_engine->onMouseMotion(events[i].motion.x, events[i].motion.y, events[i].motion.xrel, events[i].motion.yrel, events[i].motion.which != 0);
 						break;
 					default:

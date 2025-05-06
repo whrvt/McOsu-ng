@@ -1077,7 +1077,7 @@ void Osu::update()
 	{
 		McRect internalWindow = McRect(0, 0, g_vInternalResolution.x, g_vInternalResolution.y);
 		bool cursorVisible = env->isCursorVisible();
-		if (!internalWindow.contains(engine->getMouse()->getPos()))
+		if (!internalWindow.contains(engine->getMouse()->getPos()) && !env->isCursorClipped())
 		{
 			if (!cursorVisible)
 				env->setCursorVisible(true);
@@ -2671,6 +2671,7 @@ void Osu::onModFPoSu3DSpheresAAChange(UString oldValue, UString newValue)
 void Osu::onLetterboxingOffsetChange(UString oldValue, UString newValue)
 {
 	updateMouseSettings();
+	updateConfineCursor();
 }
 
 void Osu::onNotification(UString args)

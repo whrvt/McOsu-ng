@@ -166,19 +166,20 @@ private:
 	CURSORTYPE m_cursorType;
 	std::map<CURSORTYPE, SDL_Cursor *> m_mCursorIcons;
 	void onRawInputChange(float newval);
-	void setRawInput(bool state);
+	void setRawInput(bool on);
 
 	// clipboard
 	const char *m_sPrevClipboardTextSDL;
 
 private:
 	// SDL dialog callbacks/helpers
-	struct FileDialogState {
+	struct FileDialogState
+	{
 		bool done;
 		UString result;
 	};
 	static FileDialogState s_fileDialogState;
-	static void fileDialogCallback(void *userdata, const char * const *filelist, int filter);
+	static void fileDialogCallback(void *userdata, const char *const *filelist, int filter);
 };
 
 #endif

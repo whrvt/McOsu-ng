@@ -1148,21 +1148,19 @@ OsuOptionsMenu::OsuOptionsMenu(Osu *osu) : OsuScreenBackable(osu)
 	spheresAASlider->setKeyDelta(2.0f);
 	spheresAASlider->setAnimated(false);
 #endif
-	if constexpr (Env::cfg(OS::WINDOWS))
-	{
-		addSubSection("FPoSu - Mouse");
-		OsuUIButton *cm360CalculatorLinkButton = addButton("https://www.mouse-sensitivity.com/");
-		cm360CalculatorLinkButton->setClickCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onCM360CalculatorLinkClicked) );
-		cm360CalculatorLinkButton->setColor(0xff10667b);
-		addLabel("");
-		m_dpiTextbox = addTextbox(convar->getConVarByName("fposu_mouse_dpi")->getString(), "DPI:", convar->getConVarByName("fposu_mouse_dpi"));
-		m_cm360Textbox = addTextbox(convar->getConVarByName("fposu_mouse_cm_360")->getString(), "cm per 360:", convar->getConVarByName("fposu_mouse_cm_360"));
-		addLabel("");
-		addCheckbox("Invert Vertical", convar->getConVarByName("fposu_invert_vertical"));
-		addCheckbox("Invert Horizontal", convar->getConVarByName("fposu_invert_horizontal"));
-		addCheckbox("Tablet/Absolute Mode (!)", "WARNING: Do NOT enable this if you are using a mouse!\nIf this is enabled, then DPI and cm per 360 will be ignored!", convar->getConVarByName("fposu_absolute_mode"));
-	}
-	else if constexpr (Env::cfg(OS::LINUX))
+
+	addSubSection("FPoSu - Mouse");
+	OsuUIButton *cm360CalculatorLinkButton = addButton("https://www.mouse-sensitivity.com/");
+	cm360CalculatorLinkButton->setClickCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onCM360CalculatorLinkClicked) );
+	cm360CalculatorLinkButton->setColor(0xff10667b);
+	addLabel("");
+	m_dpiTextbox = addTextbox(convar->getConVarByName("fposu_mouse_dpi")->getString(), "DPI:", convar->getConVarByName("fposu_mouse_dpi"));
+	m_cm360Textbox = addTextbox(convar->getConVarByName("fposu_mouse_cm_360")->getString(), "cm per 360:", convar->getConVarByName("fposu_mouse_cm_360"));
+	addLabel("");
+	addCheckbox("Invert Vertical", convar->getConVarByName("fposu_invert_vertical"));
+	addCheckbox("Invert Horizontal", convar->getConVarByName("fposu_invert_horizontal"));
+	addCheckbox("Tablet/Absolute Mode (!)", "WARNING: Do NOT enable this if you are using a mouse!\nIf this is enabled, then DPI and cm per 360 will be ignored!", convar->getConVarByName("fposu_absolute_mode"));
+	if constexpr (Env::cfg(OS::LINUX))
 	{
 #ifdef MCOSU_FPOSU_4D_MODE_FINISHED
 		addSubSection("[Beta] FPoSu 4D Mode - Mouse");

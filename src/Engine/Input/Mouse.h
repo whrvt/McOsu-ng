@@ -58,6 +58,7 @@ public:
 	inline Vector2 getRealPos() const { return m_vPosWithoutOffset; }
 	inline Vector2 getActualPos() const { return m_vActualPos; }
 	inline Vector2 getDelta() const { return m_vDelta; }
+	inline Vector2 getRawDelta() const { return m_vRawDelta; }
 
 	inline Vector2 getOffset() const { return m_vOffset; }
 	inline Vector2 getScale() const { return m_vScale; }
@@ -98,10 +99,11 @@ private:
 	Vector2 m_vPos;              // position with offset applied
 	Vector2 m_vPosWithoutOffset; // position without offset
 	Vector2 m_vDelta;            // movement delta in the current frame
+	Vector2 m_vRawDelta;         // movement delta in the current frame, without consideration for clipping or sensitivity
 	Vector2 m_vActualPos;        // final cursor position after all transformations
 
 	// mode tracking
-	bool m_bSetPosWasCalledLastFrame; // whether setPos was called in the previous frame
+	bool m_bLastFrameHadMotion; // whether setPos was called in the previous frame
 	bool m_bAbsolute;                 // whether using absolute input (tablets)
 	bool m_bVirtualDesktop;           // whether using virtual desktop coordinates
 

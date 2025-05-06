@@ -133,7 +133,7 @@ OsuModFPoSu::OsuModFPoSu(Osu *osu)
 	m_fZoomFOVAnimPercent = 0.0f;
 
 	m_fEdgeDistance = 0.0f;
-	m_bCrosshairIntersectsScreen = false;
+	m_bCrosshairIntersectsScreen = true;
 
 	// load resources
 	m_vao = engine->getResourceManager()->createVertexArrayObject();
@@ -537,12 +537,12 @@ void OsuModFPoSu::update()
 	const bool isAutoCursor = (m_osu->getModAuto() || m_osu->getModAutopilot());
 
 	m_bCrosshairIntersectsScreen = true;
-	if (Env::cfg(OS::WINDOWS) && !fposu_3d.getBool() && !fposu_absolute_mode.getBool() && !isAutoCursor) // HACKHACK: windows only for now (raw input support)
+	if (!fposu_3d.getBool() && !fposu_absolute_mode.getBool() && !isAutoCursor)
 	{
 		// regular mouse position mode
 
 		// calculate mouse delta
-		Vector2 rawDelta = engine->getMouse()->getDelta() / m_mouse_sensitivity_ref->getFloat(); // HACKHACK: undo engine mouse sensitivity multiplier
+		Vector2 rawDelta = engine->getMouse()->getRawDelta();
 
 		// apply fposu mouse sensitivity multiplier
 		const double countsPerCm = (double)fposu_mouse_dpi.getInt() / 2.54;
@@ -568,14 +568,15 @@ void OsuModFPoSu::update()
 
 		if (!osCursorVisible)
 		{
-			// special case: force to center of screen if no intersection
-			if (newMousePos.x == 0.0f && newMousePos.y == 0.0f)
+			if (newMousePos.x != 0.0f || newMousePos.y != 0.0f)
 			{
-				m_bCrosshairIntersectsScreen = false;
-				newMousePos = m_osu->getScreenSize() / 2;
+				setMousePosCompensated(newMousePos);
 			}
-
-			setMousePosCompensated(newMousePos);
+			else
+			{
+				// special case: don't move the cursor if there's no intersection, the OS cursor isn't visible, and the cursor is to be confined to the window
+				m_bCrosshairIntersectsScreen = false;
+			}
 		}
 	}
 	else if (!fposu_3d.getBool())
@@ -602,19 +603,14 @@ void OsuModFPoSu::update()
 		// calculate mouse delta
 		Vector2 delta;
 		{
-			if constexpr (Env::cfg(OS::WINDOWS))
-			{
-				delta = (engine->getMouse()->getDelta() / m_mouse_sensitivity_ref->getFloat()); // HACKHACK: undo engine mouse sensitivity multiplier
+			delta = (engine->getMouse()->getRawDelta());
 
-				// apply fposu mouse sensitivity multiplier
-				const double countsPerCm = (double)fposu_mouse_dpi.getInt() / 2.54;
-				const double cmPer360 = fposu_mouse_cm_360.getFloat();
-				const double countsPer360 = cmPer360 * countsPerCm;
-				const double multiplier = 360.0 / countsPer360;
-				delta *= multiplier;
-			}
-			else
-				delta = engine->getMouse()->getDelta() * m_mouse_sensitivity_ref->getFloat();
+			// apply fposu mouse sensitivity multiplier
+			const double countsPerCm = (double)fposu_mouse_dpi.getInt() / 2.54;
+			const double cmPer360 = fposu_mouse_cm_360.getFloat();
+			const double countsPer360 = cmPer360 * countsPerCm;
+			const double multiplier = 360.0 / countsPer360;
+			delta *= multiplier;
 
 			// apply zoom_sensitivity_ratio if zoomed
 			if (m_bZoomed && fposu_zoom_sensitivity_ratio.getFloat() > 0.0f)
@@ -801,7 +797,7 @@ void OsuModFPoSu::setMousePosCompensated(Vector2 newMousePos)
 	newMousePos -= engine->getMouse()->getOffset();
 
 	engine->getMouse()->onPosChange(newMousePos);
-	env->setMousePos(newMousePos.x, newMousePos.y);
+	//env->setMousePos(newMousePos.x, newMousePos.y);
 }
 
 Vector2 OsuModFPoSu::intersectRayMesh(Vector3 pos, Vector3 dir)
