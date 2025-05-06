@@ -163,6 +163,8 @@ void Mouse::onMotion(float x, float y, float xRel, float yRel, bool isRawInput)
 			if (sens < 0.995f)
 				m_bAbsolute = false;
 			newRel *= sens;
+			if (newRel.length() > 50.0f) // don't allow obviously bogus values
+				newRel.zero();
 			newAbs = m_vPosWithoutOffset + newRel;
 		}
 
