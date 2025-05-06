@@ -45,7 +45,7 @@ SoundEngine *SoundEngine::createSoundEngine()
 {
 #ifdef MCENGINE_FEATURE_BASS
 	return new BassSoundEngine();
-#elif defined(MCENGINE_FEATURE_SDL) && defined(MCENGINE_FEATURE_SDL_MIXER)
+#elif defined(MCENGINE_FEATURE_SDL_MIXER)
 	return new SDLSoundEngine();
 #elif defined(MCENGINE_FEATURE_SOLOUD)
 	return new SoLoudSoundEngine();

@@ -12,8 +12,6 @@
 
 #include "Environment.h"
 
-#ifdef MCENGINE_FEATURE_SDL
-
 #include "cbase.h"
 #include <SDL3/SDL.h>
 
@@ -91,6 +89,7 @@ public:
 	void setWindowResizable(bool resizable) override;
 	void setWindowGhostCorporeal(bool corporeal) override;
 	void setMonitor(int monitor) override;
+	[[nodiscard]] HWND getHwnd() const override;
 	[[nodiscard]] Vector2 getWindowPos() const override;
 	[[nodiscard]] Vector2 getWindowSize() const override;
 	[[nodiscard]] int getMonitor() const override;
@@ -146,6 +145,7 @@ private:
 
 	// cache
 	UString m_sUsername;
+	HWND m_hwnd;
 
 	// logging
 	bool m_sdlDebug;
@@ -171,38 +171,6 @@ private:
 	// clipboard
 	const char *m_sPrevClipboardTextSDL;
 
-	// misc touch-related hacks and joystick stuff
-	[[maybe_unused]] void handleTouchEvent(SDL_Event event, Uint32 eventtype, Vector2 *mousePos);
-	[[maybe_unused]] void handleJoystickEvent(SDL_Event event, Uint32 eventtype);
-	[[maybe_unused]] void handleJoystickMouse(Vector2 *mousePos);
-	[[maybe_unused]] bool m_bIsSteamDeck;
-
-	[[maybe_unused]] ConVar *m_cvSdl_joystick_mouse_sensitivity;
-	[[maybe_unused]] ConVar *m_cvSdl_joystick0_deadzone;
-	[[maybe_unused]] ConVar *m_cvSdl_joystick_zl_threshold;
-	[[maybe_unused]] ConVar *m_cvSdl_joystick_zr_threshold;
-	[[maybe_unused]] ConVar *m_cvSdl_steamdeck_doubletouch_workaround;
-
-	[[maybe_unused]] float m_fJoystick0XPercent;
-	[[maybe_unused]] float m_fJoystick0YPercent;
-
-#ifdef MCENGINE_SDL_TOUCHSUPPORT
-	bool m_bWasLastMouseInputTouch;
-	void setWasLastMouseInputTouch(bool wasLastMouseInputTouch) { m_bWasLastMouseInputTouch = wasLastMouseInputTouch; }
-	inline bool wasLastMouseInputTouch() const { return m_bWasLastMouseInputTouch; }
-#else
-	static constexpr bool m_bWasLastMouseInputTouch = false;
-	[[maybe_unused]] void setWasLastMouseInputTouch(bool _) { ; }
-	[[nodiscard]] constexpr bool wasLastMouseInputTouch() const { return false; }
-#endif
-
-	[[nodiscard]] forceinline bool deckTouchHack() const
-	{
-		if constexpr (Env::cfg(FEAT::TOUCH))
-			return m_bIsSteamDeck && wasLastMouseInputTouch();
-		else
-			return false;
-	}
 private:
 	// SDL dialog callbacks/helpers
 	struct FileDialogState {
@@ -212,10 +180,5 @@ private:
 	static FileDialogState s_fileDialogState;
 	static void fileDialogCallback(void *userdata, const char * const *filelist, int filter);
 };
-
-#else
-class SDLEnvironment : public Environment
-{};
-#endif
 
 #endif

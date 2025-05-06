@@ -19,8 +19,6 @@
 #include "ConVar.h"
 #include "File.h"
 
-#include "HorizonSDLEnvironment.h"
-
 #include "Osu.h"
 #include "OsuSkin.h"
 #include "OsuSkinImage.h"
@@ -268,8 +266,6 @@ void OsuMainMenu::openSteamWorkshopInDefaultBrowser(bool launchInSteam)
 
 OsuMainMenu::OsuMainMenu(Osu *osu) : OsuScreen(osu)
 {
-	if constexpr (Env::cfg(OS::HORIZON))
-		MCOSU_MAIN_BUTTON_TEXT.append(" NX");
 	if (m_osu->isInVRMode())
 		MCOSU_MAIN_BUTTON_TEXT.append(" VR");
 	if (m_osu->isInVRMode())
@@ -573,12 +569,6 @@ void OsuMainMenu::draw(Graphics *g)
 	McRect mainButtonRect = McRect(m_vCenter.x - size.x/2.0f - m_fCenterOffsetAnim, m_vCenter.y - size.y/2.0f, size.x, size.y);
 
 	bool drawBanner = true;
-
-#ifdef __SWITCH__
-
-	drawBanner = ((HorizonSDLEnvironment*)env)->getMemAvailableMB() < 1024;
-
-#endif
 
 	if (drawBanner)
 	{
@@ -1754,12 +1744,6 @@ void OsuMainMenu::onSteamWorkshopPressed()
 void OsuMainMenu::onGithubPressed()
 {
 	if (m_osu->getInstanceID() > 1) return;
-
-	if constexpr (Env::cfg(OS::HORIZON))
-	{
-		m_osu->getNotificationOverlay()->addNotification("Go to " PACKAGE_URL, 0xffffffff, false, 0.75f);
-		return;
-	}
 
 	m_osu->getNotificationOverlay()->addNotification("Opening browser, please wait ...", 0xffffffff, false, 0.75f);
 	env->openURLInDefaultBrowser(PACKAGE_URL);

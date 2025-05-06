@@ -11,8 +11,6 @@
 
 #include "Timer.h"
 
-#ifdef MCENGINE_FEATURE_SDL
-
 #include <SDL3/SDL.h>
 
 class SDLTimer : public BaseTimer
@@ -54,10 +52,5 @@ private:
 };
 
 using Timer = SDLTimer;
-
-#else
-class SDLTimer : public BaseTimer
-{};
-#endif
 
 #endif

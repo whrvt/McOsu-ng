@@ -8,12 +8,11 @@
 #include "SDLSoundEngine.h"
 #include "SDLSound.h"
 
-#if defined(MCENGINE_FEATURE_SDL) && defined(MCENGINE_FEATURE_SDL_MIXER)
+#if defined(MCENGINE_FEATURE_SDL_MIXER)
 
 #include "ConVar.h"
 #include "Engine.h"
 #include "Environment.h"
-#include "HorizonSDLEnvironment.h"
 
 #include "Thread.h"
 
@@ -256,4 +255,4 @@ bool SDLSoundEngine::initializeOutputDevice(int id)
 	return true;
 }
 
-#endif // defined(MCENGINE_FEATURE_SDL) && defined(MCENGINE_FEATURE_SDL_MIXER)
+#endif // defined(MCENGINE_FEATURE_SDL_MIXER)

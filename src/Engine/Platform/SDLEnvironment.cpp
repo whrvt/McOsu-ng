@@ -9,8 +9,6 @@
 
 #include <algorithm>
 
-#ifdef MCENGINE_FEATURE_SDL
-
 #include "Mouse.h"
 
 #include "NullContextMenu.h"
@@ -23,10 +21,6 @@
 #elif defined(__APPLE__) || defined(MCENGINE_PLATFORM_LINUX)
 #include <pwd.h>
 #include <unistd.h>
-#elif defined(__SWITCH__)
-#include <dirent.h>
-#include <switch.h>
-#include <sys/stat.h>
 #elif defined(__EMSCRIPTEN__)
 // TODO
 #endif
@@ -42,7 +36,6 @@ SDLEnvironment::FileDialogState SDLEnvironment::s_fileDialogState = {.done = tru
 static inline std::vector<UString> enumerateDirectory(const char *pathToEnum, SDL_PathType type);
 static inline void winSortInPlace(std::vector<UString> &toSort);
 static void sensTransformFunc(void *userdata, Uint64 timestamp, SDL_Window *window, SDL_MouseID mouseID, float *x, float *y);
-[[maybe_unused]] static inline bool isSteamDeckInt();
 
 SDLEnvironment::SDLEnvironment() : Environment()
 {
@@ -61,6 +54,7 @@ SDLEnvironment::SDLEnvironment() : Environment()
 	m_bFullscreen = false;
 
 	m_sUsername = {};
+	m_hwnd = nullptr;
 
 	m_bIsCursorInsideWindow = false;
 	m_bCursorVisible = true;
@@ -96,31 +90,6 @@ SDLEnvironment::SDLEnvironment() : Environment()
 	debug_sdl.setCallback(fastdelegate::MakeDelegate(this, &SDLEnvironment::onLogLevelChange));
 
 	mouse_raw_input.setCallback(fastdelegate::MakeDelegate(this, &SDLEnvironment::onRawInputChange));
-
-	// TOUCH/JOY LEGACY
-	if constexpr (Env::cfg(FEAT::TOUCH))
-	{
-		m_cvSdl_steamdeck_doubletouch_workaround =
-		    new ConVar("sdl_steamdeck_doubletouch_workaround", true, FCVAR_NONE,
-		               "currently used to fix a Valve/SDL2 bug on the Steam Deck (fixes \"Touchscreen Native Support\" firing 4 events for one single touch "
-		               "under gamescope, i.e. DOWN/UP/DOWN/UP instead of just DOWN/UP)");
-		m_bIsSteamDeck = isSteamDeckInt();
-	}
-	else
-	{
-		m_bIsSteamDeck = false;
-	}
-	if constexpr (Env::cfg(FEAT::JOY | FEAT::JOY_MOU))
-	{
-		// the switch has its own internal deadzone handling already applied
-		m_cvSdl_joystick_mouse_sensitivity = new ConVar("sdl_joystick_mouse_sensitivity", (Env::cfg(OS::HORIZON) ? 0.0f : 1.0f), FCVAR_NONE);
-		m_cvSdl_joystick0_deadzone = new ConVar("sdl_joystick0_deadzone", 0.3f, FCVAR_NONE);
-		m_cvSdl_joystick_zl_threshold = new ConVar("sdl_joystick_zl_threshold", -0.5f, FCVAR_NONE);
-		m_cvSdl_joystick_zr_threshold = new ConVar("sdl_joystick_zr_threshold", -0.5f, FCVAR_NONE);
-	}
-
-	m_fJoystick0XPercent = 0.0f;
-	m_fJoystick0YPercent = 0.0f;
 }
 
 SDLEnvironment::~SDLEnvironment()
@@ -210,64 +179,6 @@ UString SDLEnvironment::getUsername()
 		if (pwd != nullptr)
 			m_sUsername = pwd->pw_name;
 	}
-#elif defined(__SWITCH__) // copied from HorizonSDLEnvironment
-	UString uUsername = convar->getConVarByName("name")->getString();
-
-	// this was directly taken from the libnx examples
-
-	Result rc = 0;
-
-	AccountUid userID;
-	/// bool account_selected = 0;
-	AccountProfile profile;
-	AccountUserData userdata;
-	AccountProfileBase profilebase;
-
-	char username[0x21];
-
-	memset(&userdata, 0, sizeof(userdata));
-	memset(&profilebase, 0, sizeof(profilebase));
-
-	rc = accountInitialize(AccountServiceType_Application);
-	if (R_FAILED(rc))
-		debugLog("accountInitialize() failed: 0x%x\n", rc);
-
-	if (R_SUCCEEDED(rc))
-	{
-		rc = accountGetLastOpenedUser(&userID);
-
-		if (R_FAILED(rc))
-			debugLog("accountGetActiveUser() failed: 0x%x\n", rc);
-
-		if (R_SUCCEEDED(rc))
-		{
-
-			rc = accountGetProfile(&profile, userID);
-
-			if (R_FAILED(rc))
-				debugLog("accountGetProfile() failed: 0x%x\n", rc);
-		}
-
-		if (R_SUCCEEDED(rc))
-		{
-			rc = accountProfileGet(&profile, &userdata, &profilebase); // userdata is otional, see libnx acc.h.
-
-			if (R_FAILED(rc))
-				debugLog("accountProfileGet() failed: 0x%x\n", rc);
-
-			if (R_SUCCEEDED(rc))
-			{
-				memset(username, 0, sizeof(username));
-				strncpy(username, profilebase.nickname, sizeof(username) - 1); // even though profilebase.username usually has a NUL-terminator, don't assume it does for safety.
-				debugLog("Username: %s\n", username);
-				uUsername = UString(username);
-			}
-			accountProfileClose(&profile);
-		}
-		accountExit();
-	}
-
-	m_sUsername = uUsername;
 #endif
 	// fallback
 	if (m_sUsername.isEmpty())
@@ -334,7 +245,8 @@ std::vector<UString> SDLEnvironment::getFoldersInFolder(UString folder) const
 	// TODO: if this turns out to be too slow for folders with a lot of subfolders, split out the sorting
 	// currently only the skinlist really uses it, shouldn't have more than 5000 skins in it for normal human beings
 	auto folders = enumerateDirectory(folder.toUtf8(), SDL_PATHTYPE_DIRECTORY);
-	winSortInPlace(folders);
+	if (!Env::cfg(OS::WINDOWS))
+		winSortInPlace(folders);
 	return folders;
 }
 
@@ -343,12 +255,7 @@ std::vector<UString> SDLEnvironment::getLogicalDrives() const
 {
 	std::vector<UString> drives{};
 
-	if constexpr (Env::cfg(OS::HORIZON))
-	{
-		drives.emplace_back("sdmc");
-		drives.emplace_back("romfs");
-	}
-	else if constexpr (Env::cfg(OS::LINUX | OS::MACOS))
+	if constexpr (Env::cfg(OS::LINUX))
 	{
 		drives.emplace_back("/");
 	}
@@ -610,6 +517,39 @@ void SDLEnvironment::setMonitor(int monitor)
 	center();
 }
 
+HWND SDLEnvironment::getHwnd() const
+{
+	HWND hwnd = nullptr;
+#if defined(MCENGINE_PLATFORM_WINDOWS)
+    hwnd = (HWND)SDL_GetPointerProperty(SDL_GetWindowProperties(m_window), SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
+    if (!hwnd)
+        debugLog("(Windows) hwnd is null! SDL: %s\n", SDL_GetError());
+#elif defined(__MACOS__)
+#error "no macos support currently"
+    NSWindow *nswindow = (__bridge NSWindow *)SDL_GetPointerProperty(SDL_GetWindowProperties(m_window), SDL_PROP_WINDOW_COCOA_WINDOW_POINTER, NULL);
+    if (nswindow) {
+    }
+#elif defined(MCENGINE_PLATFORM_LINUX)
+    if (SDL_strcmp(SDL_GetCurrentVideoDriver(), "x11") == 0) {
+        auto *xdisplay = (Display *)SDL_GetPointerProperty(SDL_GetWindowProperties(m_window), SDL_PROP_WINDOW_X11_DISPLAY_POINTER, NULL);
+        auto xwindow = (Window)SDL_GetNumberProperty(SDL_GetWindowProperties(m_window), SDL_PROP_WINDOW_X11_WINDOW_NUMBER, 0);
+        if (xdisplay && xwindow)
+            hwnd = (HWND)xwindow;
+		else
+			debugLog("(X11) no display/no surface! SDL: %s\n", SDL_GetError());
+    } else if (SDL_strcmp(SDL_GetCurrentVideoDriver(), "wayland") == 0) {
+        struct wl_display *display = (struct wl_display *)SDL_GetPointerProperty(SDL_GetWindowProperties(m_window), SDL_PROP_WINDOW_WAYLAND_DISPLAY_POINTER, NULL);
+        struct wl_surface *surface = (struct wl_surface *)SDL_GetPointerProperty(SDL_GetWindowProperties(m_window), SDL_PROP_WINDOW_WAYLAND_SURFACE_POINTER, NULL);
+        if (display && surface)
+            hwnd = (HWND)surface;
+		else
+			debugLog("(Wayland) no display/no surface! SDL: %s\n", SDL_GetError());
+    }
+#endif
+
+	return hwnd;
+}
+
 Vector2 SDLEnvironment::getWindowPos() const
 {
 	int x = 0;
@@ -659,13 +599,6 @@ int SDLEnvironment::getDPI() const
 
 Vector2 SDLEnvironment::getMousePos() const
 {
-	// HACKHACK: workaround, we don't want any finger besides the first initial finger changing the position
-	// NOTE: on the Steam Deck, even with "Touchscreen Native Support" enabled, SDL_GetMouseState() will always return the most recent touch position, which we
-	// do not want
-	if constexpr (Env::cfg(FEAT::TOUCH))
-		if (m_bWasLastMouseInputTouch)
-			return m_engine->getMouse()->getActualPos(); // so instead, we return our own which is always guaranteed to be the first finger position (and no other fingers)
-
 	return m_vLastAbsMousePos;
 }
 
@@ -857,17 +790,3 @@ static inline void winSortInPlace(std::vector<UString> &toSort)
 	};
 	std::ranges::sort(toSort, naturalCompare);
 }
-
-// for touch support hack (DEPRECATED)
-[[maybe_unused]] static inline bool isSteamDeckInt()
-{
-	const char *steamDeck = std::getenv("SteamDeck");
-	if (steamDeck != NULL)
-	{
-		const std::string stdSteamDeck(steamDeck);
-		return (stdSteamDeck == "1");
-	}
-	return false;
-}
-
-#endif

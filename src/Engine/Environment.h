@@ -77,6 +77,7 @@ public:
 	virtual void setWindowResizable(bool resizable) = 0;
 	virtual void setWindowGhostCorporeal(bool corporeal) = 0;
 	virtual void setMonitor(int monitor) = 0;
+	[[nodiscard]] virtual HWND getHwnd() const = 0;
 	[[nodiscard]] virtual Vector2 getWindowPos() const = 0;
 	[[nodiscard]] virtual Vector2 getWindowSize() const = 0;
 	[[nodiscard]] virtual int getMonitor() const = 0;

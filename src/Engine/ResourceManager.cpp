@@ -66,20 +66,10 @@ ResourceManager::ResourceManager()
 	m_iNumResourceInitPerFrameLimit = 1;
 
 	m_loadingWork.reserve(32);
-	int threads = default_numthreads;
-	// OS specific engine settings/overrides
-	if constexpr (Env::cfg(OS::HORIZON))
-	{
-		rm_numthreads.setValue(1.0f);
-		rm_numthreads.setDefaultFloat(1.0f);
-	}
-	// TODO: itd be nice to have a way to consistently determine whether the environment has a certain feature implemented or not
-	else
-	{
-		threads = clamp(env->getLogicalCPUCount(), 1, 32); // sanity
-		if (threads > default_numthreads)
-			rm_numthreads.setValue(threads);
-	}
+	
+	int threads = clamp(env->getLogicalCPUCount(), default_numthreads, 32); // sanity
+	if (threads > default_numthreads)
+		rm_numthreads.setValue(threads);
 
 	// create loader threads
 #ifdef MCENGINE_FEATURE_MULTITHREADING

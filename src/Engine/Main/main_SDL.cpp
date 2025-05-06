@@ -7,8 +7,6 @@
 
 #include "EngineFeatures.h"
 
-#ifdef MCENGINE_FEATURE_SDL
-
 #if !defined(MCENGINE_FEATURE_OPENGL) && !defined(MCENGINE_FEATURE_GLES2) && !defined(MCENGINE_FEATURE_GLES32)
 #error OpenGL support is currently required for SDL
 #endif
@@ -16,9 +14,7 @@
 #include "Profiler.h"
 #include "Timer.h"
 
-#include "HorizonSDLEnvironment.h"
 #include "SDLEnvironment.h"
-#include "WinSDLEnvironment.h"
 
 static constexpr auto WINDOW_TITLE = "McEngine"; // only the initial title
 
@@ -122,7 +118,7 @@ static void SDLLogCallback(void *, int category, SDL_LogPriority, const char *me
 
 int SDLEnvironment::main(int argc, char *argv[])
 {
-	constexpr auto flags = SDL_INIT_VIDEO | (Env::cfg(FEAT::JOY | FEAT::JOY_MOU) ? SDL_INIT_JOYSTICK : 0u);
+	constexpr auto flags = SDL_INIT_VIDEO;
 
 	// initialize sdl
 	if (!SDL_Init(flags))
@@ -205,12 +201,7 @@ int SDLEnvironment::main(int argc, char *argv[])
 		SDL_GL_MakeCurrent(m_window, context);
 	}
 
-	if constexpr (Env::cfg(FEAT::JOY | FEAT::JOY_MOU))
-	{
-		SDL_OpenJoystick(0);
-		SDL_OpenJoystick(1);
-	}
-	else
+	// TODO: add SDL joystick support (maybe)
 	{
 		SDL_SetEventEnabled(SDL_EVENT_JOYSTICK_AXIS_MOTION, false);
 		SDL_SetEventEnabled(SDL_EVENT_JOYSTICK_BALL_MOTION, false);
@@ -223,7 +214,7 @@ int SDLEnvironment::main(int argc, char *argv[])
 		SDL_SetEventEnabled(SDL_EVENT_JOYSTICK_UPDATE_COMPLETE, false);
 	}
 
-	// TODO: add SDL pen support
+	// TODO: add SDL pen support (maybe)
 	{
 		SDL_SetEventEnabled(SDL_EVENT_PEN_PROXIMITY_IN, false);
 		SDL_SetEventEnabled(SDL_EVENT_PEN_PROXIMITY_OUT, false);
@@ -235,7 +226,7 @@ int SDLEnvironment::main(int argc, char *argv[])
 		SDL_SetEventEnabled(SDL_EVENT_PEN_AXIS, false);
 	}
 
-	if constexpr (!Env::cfg(FEAT::TOUCH))
+	// TODO: add SDL touch support (maybe)
 	{
 		SDL_SetEventEnabled(SDL_EVENT_FINGER_DOWN, false);
 		SDL_SetEventEnabled(SDL_EVENT_FINGER_UP, false);
@@ -286,19 +277,9 @@ int SDLEnvironment::main(int argc, char *argv[])
 	{
 		VPROF_MAIN();
 
-		// HACKHACK: switch hack (usb mouse/keyboard support)
-		// if constexpr (Env::cfg(OS::HORIZON))
-		// {
-		// 	HorizonSDLEnvironment *horizonSDLenv = dynamic_cast<HorizonSDLEnvironment*>(environment);
-		// 	if (horizonSDLenv != NULL)
-		// 		horizonSDLenv->update_before_winproc();
-		// }
-
 		// handle window message queue
 		{
 			VPROF_BUDGET("SDL", VPROF_BUDGETGROUP_WNDPROC);
-
-			const bool isDebugSdl = sdlDebug();
 
 			SDL_PumpEvents();
 			auto eventCount = 0u;
@@ -383,13 +364,11 @@ int SDLEnvironment::main(int argc, char *argv[])
 
 					// mouse
 					case SDL_EVENT_MOUSE_BUTTON_DOWN:
-						if (likely(!deckTouchHack())) // HACKHACK: Steam Deck workaround (sends mouse events even though native touchscreen support is enabled)
-							m_engine->onMouseButtonChange(events[i].button.button, true);
+						m_engine->onMouseButtonChange(events[i].button.button, true);
 						break;
 
 					case SDL_EVENT_MOUSE_BUTTON_UP:
-						if (likely(!deckTouchHack())) // HACKHACK: Steam Deck workaround (sends mouse events even though native touchscreen support is enabled)
-							m_engine->onMouseButtonChange(events[i].button.button, false);
+						m_engine->onMouseButtonChange(events[i].button.button, false);
 						break;
 
 					case SDL_EVENT_MOUSE_WHEEL:
@@ -402,35 +381,15 @@ int SDLEnvironment::main(int argc, char *argv[])
 						break;
 
 					case SDL_EVENT_MOUSE_MOTION:
-						if (likely(!deckTouchHack())) // HACKHACK: Steam Deck workaround
-						{
-							if constexpr (Env::cfg(FEAT::TOUCH))
-								if (events[i].motion.which != SDL_TOUCH_MOUSEID)
-									setWasLastMouseInputTouch(false);
+						// cache the position
+						m_vLastAbsMousePos.x = events[i].motion.x;
+						m_vLastAbsMousePos.y = events[i].motion.y;
+						m_vLastRelMousePos.x = events[i].motion.xrel;
+						m_vLastRelMousePos.y = events[i].motion.yrel;
 
-							// cache the position
-							m_vLastAbsMousePos.x = events[i].motion.x;
-							m_vLastAbsMousePos.y = events[i].motion.y;
-							m_vLastRelMousePos.x = events[i].motion.xrel;
-							m_vLastRelMousePos.y = events[i].motion.yrel;
-
-							m_engine->onMouseMotion(events[i].motion.x, events[i].motion.y, events[i].motion.xrel, events[i].motion.yrel, events[i].motion.which != 0);
-						}
+						m_engine->onMouseMotion(events[i].motion.x, events[i].motion.y, events[i].motion.xrel, events[i].motion.yrel, events[i].motion.which != 0);
 						break;
-
-					// touch mouse
-					// NOTE: sometimes when quickly tapping with two fingers, events will get lost (due to the touchscreen believing that it was one finger which moved very
-					// quickly, instead of 2 tapping fingers)
-					case SDL_EVENT_FINGER_DOWN ... SDL_EVENT_FINGER_CANCELED:
-						if constexpr (Env::cfg(FEAT::TOUCH))
-							handleTouchEvent(events[i], events[i].type, &mousePos);
-						break;
-
-					// joystick keyboard
-					// NOTE: defaults to xbox 360 controller layout on all non-horizon environments
-					case SDL_EVENT_JOYSTICK_AXIS_MOTION ... SDL_EVENT_JOYSTICK_UPDATE_COMPLETE:
-						if constexpr (Env::cfg(FEAT::JOY))
-							handleJoystickEvent(events[i], events[i].type);
+					default:
 						break;
 					}
 				}
@@ -441,9 +400,6 @@ int SDLEnvironment::main(int argc, char *argv[])
 		{
 			deltaTimer->update();
 			m_engine->setFrameTime(deltaTimer->getDelta());
-
-			if constexpr (Env::cfg(FEAT::JOY_MOU))
-				handleJoystickMouse(&mousePos);
 
 			if constexpr (m_bUpdate)
 				m_engine->onUpdate();
@@ -529,5 +485,3 @@ int SDLEnvironment::main(int argc, char *argv[])
 
 	return 0;
 }
-
-#endif

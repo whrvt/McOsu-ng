@@ -11,7 +11,7 @@
 
 #include "Sound.h"
 
-#if defined(MCENGINE_FEATURE_SDL) && defined(MCENGINE_FEATURE_SDL_MIXER)
+#if defined(MCENGINE_FEATURE_SDL_MIXER)
 
 #include <SDL3/SDL.h>
 #include <SDL3_mixer/SDL_mixer.h>

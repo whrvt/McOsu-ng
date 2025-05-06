@@ -20,23 +20,13 @@ namespace Env
     {
         WINDOWS	= 1 << 0,
         LINUX	= 1 << 1,
-        MACOS	= 1 << 2,
-        HORIZON	= 1 << 3,
 		WASM	= 1 << 4,
-		NONE	= 0,
-	};
-	enum class BACKEND : uint32_t
-	{
-		NATIVE	= 1 << 0,
-		SDL		= 1 << 1,
 		NONE	= 0,
 	};
 	enum class FEAT : uint32_t
 	{
-		JOY	    = 1 << 0,
-		JOY_MOU	= 1 << 1,
-		TOUCH	= 1 << 2,
-		STEAM	= 1 << 3,
+		STEAM	= 1 << 1,
+		DISCORD = 1 << 2,
 		NONE	= 0,
 	};
 	enum class AUD : uint32_t
@@ -59,7 +49,6 @@ namespace Env
 	};
 
     constexpr OS operator|(OS lhs, OS rhs) {return static_cast<OS>(static_cast<uint32_t>(lhs) | static_cast<uint32_t>(rhs));}
-    constexpr BACKEND operator|(BACKEND lhs, BACKEND rhs) {return static_cast<BACKEND>(static_cast<uint32_t>(lhs) | static_cast<uint32_t>(rhs));}
 	constexpr FEAT operator|(FEAT lhs, FEAT rhs) {return static_cast<FEAT>(static_cast<uint32_t>(lhs) | static_cast<uint32_t>(rhs));}
 	constexpr AUD operator|(AUD lhs, AUD rhs) {return static_cast<AUD>(static_cast<uint32_t>(lhs) | static_cast<uint32_t>(rhs));}
     constexpr REND operator|(REND lhs, REND rhs) {return static_cast<REND>(static_cast<uint32_t>(lhs) | static_cast<uint32_t>(rhs));}
@@ -70,10 +59,6 @@ namespace Env
 		return OS::WINDOWS;
 	#elif defined __linux__
 		return OS::LINUX;
-	#elif defined __APPLE__
-		return OS::MACOS;
-	#elif defined __SWITCH__
-		return OS::HORIZON;
 	#elif defined __EMSCRIPTEN__
 		return OS::WASM;
 	#else
@@ -82,29 +67,9 @@ namespace Env
 	#endif
 	}
 
-	// environment abstraction backend
-	consteval BACKEND getBackend() {
-	#ifdef MCENGINE_FEATURE_SDL
-		return BACKEND::SDL;
-	#elif 1
-		return BACKEND::NATIVE;
-	#else
-		return BACKEND::NONE;
-	#endif
-	}
-
 	// miscellaneous compile-time features
 	consteval FEAT getFeatures() {
 		return
-	#ifdef MCENGINE_SDL_JOYSTICK
-		FEAT::JOY |
-	#endif
-	#ifdef MCENGINE_SDL_JOYSTICK_MOUSE
-		FEAT::JOY_MOU |
-	#endif
-	#ifdef MCENGINE_SDL_TOUCHSUPPORT
-		FEAT::TOUCH |
-	#endif
 	#ifdef MCENGINE_FEATURE_STEAMWORKS
 		FEAT::STEAM |
 	#endif
@@ -172,8 +137,6 @@ namespace Env
     consteval bool matchesCurrentConfig(T mask) {
         if constexpr (std::is_same_v<T, OS>) {
             return (static_cast<uint32_t>(mask) & static_cast<uint32_t>(getOS())) != 0;
-        } else if constexpr (std::is_same_v<T, BACKEND>) {
-            return (static_cast<uint32_t>(mask) & static_cast<uint32_t>(getBackend())) != 0;
 		} else if constexpr (std::is_same_v<T, FEAT>) {
             return (static_cast<uint32_t>(mask) & static_cast<uint32_t>(getFeatures())) != 0;
 		} else if constexpr (std::is_same_v<T, AUD>) {
@@ -198,7 +161,6 @@ namespace Env
 }
 
 using Env::OS;
-using Env::BACKEND;
 using Env::REND;
 using Env::AUD;
 using Env::FEAT;
@@ -273,5 +235,11 @@ static constexpr auto OPTIMAL_UNROLL = 4;
 #define NULL_PUSH
 #define NULL_POP
 #endif // defined(__GNUC__) || defined(__clang__)
+
+#if !(defined(MCENGINE_PLATFORM_WINDOWS) || defined(_WIN32) || defined(_WIN64) || defined(__WIN32__) || defined(__CYGWIN__) || defined(__CYGWIN32__) || defined(__TOS_WIN__) || defined(__WINDOWS__))
+typedef void* HWND;
+#else
+#include <windef.h>
+#endif
 
 #endif

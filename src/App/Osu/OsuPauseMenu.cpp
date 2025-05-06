@@ -160,16 +160,6 @@ void OsuPauseMenu::update()
 
 	if (anim->isAnimating(&m_fWarningArrowsAnimX))
 		m_fWarningArrowsAnimStartTime = engine->getTime();
-
-	// HACKHACK: handle joystick mouse select, inject enter keydown
-	if constexpr (Env::cfg(OS::HORIZON))
-	{
-		if (engine->getMouse()->isLeftDown())
-		{
-			KeyboardEvent e(KEY_ENTER);
-			onKeyDown(e);
-		}
-	}
 }
 
 void OsuPauseMenu::onContinueClicked()

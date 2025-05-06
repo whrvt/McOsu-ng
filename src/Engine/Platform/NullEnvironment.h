@@ -71,6 +71,7 @@ public:
 	void setWindowResizable(bool resizable) override {;}
 	void setWindowGhostCorporeal(bool corporeal) override {;}
 	void setMonitor(int monitor) override {;}
+	[[nodiscard]] HWND getHwnd() const override {return 0;}
 	[[nodiscard]] Vector2 getWindowPos() const override {return {0, 0};}
 	[[nodiscard]] Vector2 getWindowSize() const override {return {1280, 720};}
 	[[nodiscard]] int getMonitor() const override {return 0;}

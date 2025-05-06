@@ -27,9 +27,5 @@ public:
 };
 
 #include "SDLTimer.h"
-#include "WinTimer.h"
-#include "LinuxTimer.h"
-#include "MacOSTimer.h"
-#include "HorizonTimer.h"
 
 #endif

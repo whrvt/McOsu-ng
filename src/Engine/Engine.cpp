@@ -14,12 +14,10 @@
 #include "SteamworksInterface.h"
 #include "AnimationHandler.h"
 #include "DiscordInterface.h"
-#include "OpenCLInterface.h"
 #include "OpenVRInterface.h"
 #include "VulkanInterface.h"
 #include "ResourceManager.h"
 #include "NetworkHandler.h"
-#include "XInputGamepad.h"
 #include "SoundEngine.h"
 #include "ContextMenu.h"
 #include "Keyboard.h"
@@ -166,10 +164,6 @@ Engine::Engine(Environment *environment, const char *args)
 		m_inputDevices.push_back(m_keyboard);
 		m_keyboards.push_back(m_keyboard);
 
-		m_gamepad = new XInputGamepad();
-		m_inputDevices.push_back(m_gamepad);
-		m_gamepads.push_back(m_gamepad);
-
 		// init platform specific interfaces
 		m_vulkan = new VulkanInterface(); // needs to be created before Graphics
 		m_graphics = m_environment->createRenderer();
@@ -182,7 +176,6 @@ Engine::Engine(Environment *environment, const char *args)
 		m_resourceManager = new ResourceManager();
 		m_sound = SoundEngine::createSoundEngine();
 		m_animationHandler = new AnimationHandler();
-		m_openCL = new OpenCLInterface();
 		m_openVR = new OpenVRInterface();
 		m_networkHandler = new NetworkHandler();
 		if constexpr (Env::cfg(FEAT::STEAM))
@@ -217,9 +210,6 @@ Engine::~Engine()
 
 	debugLog("Engine: Freeing resource manager...\n");
 	SAFE_DELETE(m_resourceManager);
-
-	debugLog("Engine: Freeing OpenCL...\n");
-	SAFE_DELETE(m_openCL);
 
 	debugLog("Engine: Freeing OpenVR...\n");
 	SAFE_DELETE(m_openVR);
@@ -260,9 +250,6 @@ Engine::~Engine()
 
 	debugLog("Engine: Freeing Vulkan...\n");
 	SAFE_DELETE(m_vulkan);
-
-	// debugLog("Engine: Freeing environment...\n"); // the environment creates the engine
-	// SAFE_DELETE(m_environment);
 
 	debugLog("Engine: Freeing math...\n");
 	SAFE_DELETE(m_math);
@@ -763,35 +750,6 @@ void Engine::showMessageErrorFatal(UString title, UString message)
 {
 	debugLog("FATAL ERROR: [%s] | %s\n", title.toUtf8(), message.toUtf8());
 	m_environment->showMessageErrorFatal(title, message);
-}
-
-void Engine::addGamepad(Gamepad *gamepad)
-{
-	if (gamepad == NULL)
-	{
-		showMessageError("Engine Error", "addGamepad(NULL)!");
-		return;
-	}
-
-	m_gamepads.push_back(gamepad);
-}
-
-void Engine::removeGamepad(Gamepad *gamepad)
-{
-	if (gamepad == NULL)
-	{
-		showMessageError("Engine Error", "removeGamepad(NULL)!");
-		return;
-	}
-
-	for (size_t i=0; i<m_gamepads.size(); i++)
-	{
-		if (m_gamepads[i] == gamepad)
-		{
-			m_gamepads.erase(m_gamepads.begin()+i);
-			break;
-		}
-	}
 }
 
 void Engine::requestResolutionChange(Vector2 newResolution)

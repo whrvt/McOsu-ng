@@ -9,10 +9,10 @@
 #include <SDL3/SDL.h>
 
 #if defined(MCENGINE_FEATURE_GLES2) || defined(MCENGINE_FEATURE_GLES32) || defined(MCENGINE_FEATURE_OPENGL)
-#ifndef __SWITCH__
+
 #include "OpenGLHeaders.h"
 #include "Engine.h"
-#endif
+
 
 #ifdef MCENGINE_FEATURE_GLES2
 SDLGLInterface::SDLGLInterface(SDL_Window *window) : OpenGLES2Interface()
@@ -22,7 +22,6 @@ SDLGLInterface::SDLGLInterface(SDL_Window *window) : OpenGLES32Interface()
 SDLGLInterface::SDLGLInterface(SDL_Window *window) : OpenGLLegacyInterface()
 #endif
 {
-#ifndef __SWITCH__
 	// resolve GL functions
 	GLenum err = glewInit();
 	if (GLEW_OK != err)
@@ -30,8 +29,7 @@ SDLGLInterface::SDLGLInterface(SDL_Window *window) : OpenGLLegacyInterface()
 		debugLog("glewInit() Error: %s\n", glewGetErrorString(err));
 		engine->showMessageErrorFatal("OpenGL Error", "Couldn't glewInit()!\nThe engine will exit now.");
 		engine->shutdown();
-	}	
-#endif
+	}
 	m_window = window;
 }
 

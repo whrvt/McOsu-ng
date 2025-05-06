@@ -57,16 +57,6 @@
 //#define MCENGINE_FEATURE_BASS_WASAPI
 
 /*
- * XInput gamepads
- */
-//#define MCENGINE_FEATURE_GAMEPAD
-
-/*
- * OpenCL
- */
-//#define MCENGINE_FEATURE_OPENCL
-
-/*
  * Vulkan
  */
 //#define MCENGINE_FEATURE_VULKAN
@@ -75,11 +65,6 @@
  * OpenVR
  */
 //#define MCENGINE_FEATURE_OPENVR
-
-/*
- * SDL3 main + Environment (defined in config.h)
- */
-//#define MCENGINE_FEATURE_SDL
 
 /*
  * SDL3 mixer (audio) (defined in config.h)

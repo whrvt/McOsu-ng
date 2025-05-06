@@ -22,7 +22,6 @@
 #include "Engine.h"
 #include "Environment.h"
 #include "Thread.h"
-#include "WinEnvironment.h"
 
 extern ConVar snd_output_device;
 extern ConVar snd_restart;
@@ -685,8 +684,7 @@ bool BassSoundEngine::initializeOutputDevice(int id)
 	idForBassInit = 0;
 #endif
 
-	const WinEnvironment *winEnv = dynamic_cast<WinEnvironment *>(env);
-	ret = BASS_Init(idForBassInit, freq, flags, (winEnv != NULL ? winEnv->getHwnd() : (HWND)NULL), NULL);
+	ret = BASS_Init(idForBassInit, freq, flags, env->getHwnd(), NULL);
 #else
 	ret = BASS_Init(id, freq, flags, 0, NULL);
 #endif

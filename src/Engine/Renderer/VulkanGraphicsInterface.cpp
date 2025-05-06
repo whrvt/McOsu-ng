@@ -69,8 +69,8 @@ VulkanGraphicsInterface::VulkanGraphicsInterface() : NullGraphicsInterface()
 	surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
 	surfaceCreateInfo.pNext = NULL;
 	surfaceCreateInfo.flags = 0;
-	surfaceCreateInfo.hinstance = ((WinEnvironment*)(env))->getHInstance();
-	surfaceCreateInfo.hwnd = ((WinEnvironment*)(env))->getHwnd();
+	surfaceCreateInfo.hinstance = env->getHInstance(); // TODO
+	surfaceCreateInfo.hwnd = env->getHwnd();
 	res = vkCreateWin32SurfaceKHR(vulkan->getInstance(), &surfaceCreateInfo, NULL, &m_surface);
 
 #else

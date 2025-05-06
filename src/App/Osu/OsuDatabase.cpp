@@ -26,25 +26,13 @@
 #include <utility>
 
 #if defined(_WIN32) || defined(_WIN64) || defined(__WIN32__) || defined(__CYGWIN__) || defined(__CYGWIN32__) || defined(__TOS_WIN__) || defined(__WINDOWS__)
-
 ConVar osu_folder("osu_folder", "C:/Program Files (x86)/osu!/", FCVAR_NONE);
-
 #elif defined __linux__
-
 ConVar osu_folder("osu_folder", "/home/pg/Desktop/osu!/", FCVAR_NONE);
-
 #elif defined __APPLE__
-
 ConVar osu_folder("osu_folder", "/osu!/", FCVAR_NONE);
-
-#elif defined __SWITCH__
-
-ConVar osu_folder("osu_folder", "sdmc:/switch/McOsu/", FCVAR_NONE);
-
 #else
-
 #error "put correct default folder convar here"
-
 #endif
 
 ConVar osu_folder_sub_songs("osu_folder_sub_songs", "Songs/", FCVAR_NONE);
@@ -1541,7 +1529,7 @@ void OsuDatabase::loadDB(OsuFile *db, bool &fallbackToRawLoad)
 		//debugLog("ignoreBeatmapSounds = %i, ignoreBeatmapSkin = %i, disableStoryboard = %i, disableVideo = %i, visualOverride = %i, maniaScrollSpeed = %i\n", (int)ignoreBeatmapSounds, (int)ignoreBeatmapSkin, (int)disableStoryboard, (int)disableVideo, (int)visualOverride, maniaScrollSpeed);
 
 		// HACKHACK: workaround for linux and macos: it can happen that nested beatmaps are stored in the database, and that osu! stores that filepath with a backslash (because windows)
-		if constexpr (Env::cfg(OS::LINUX | OS::MACOS))
+		if constexpr (Env::cfg(OS::LINUX))
 		{
 			for (int c=0; c<path.length(); c++)
 			{

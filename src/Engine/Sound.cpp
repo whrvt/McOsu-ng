@@ -40,7 +40,7 @@ Sound *Sound::createSound(UString filepath, bool stream, bool threeD, bool loop,
 {
 #ifdef MCENGINE_FEATURE_BASS
 	return new BassSound(filepath, stream, threeD, loop, prescan);
-#elif defined(MCENGINE_FEATURE_SDL) && defined(MCENGINE_FEATURE_SDL_MIXER)
+#elif defined(MCENGINE_FEATURE_SDL_MIXER)
 	return new SDLSound(filepath, stream, threeD, loop, prescan);
 #elif defined(MCENGINE_FEATURE_SOLOUD)
 	return new SoLoudSound(filepath, stream, threeD, loop, prescan);

@@ -20,7 +20,7 @@
 
 ConVar *OsuUpdateHandler::m_osu_release_stream_ref = NULL;
 
-#if defined(MCENGINE_FEATURE_MULTITHREADING) && !defined(__SWITCH__)
+#if defined(MCENGINE_FEATURE_MULTITHREADING)
 
 void *OsuUpdateHandler::run(void *data)
 {
@@ -83,7 +83,7 @@ void *OsuUpdateHandler::run(void *data)
 
 OsuUpdateHandler::OsuUpdateHandler()
 {
-#if defined(MCENGINE_FEATURE_MULTITHREADING) && !defined(__SWITCH__)
+#if defined(MCENGINE_FEATURE_MULTITHREADING)
 	m_updateThread = NULL;
 	m_bThreadDone = false;
 #endif
@@ -99,7 +99,7 @@ OsuUpdateHandler::OsuUpdateHandler()
 
 OsuUpdateHandler::~OsuUpdateHandler()
 {
-#if defined(MCENGINE_FEATURE_MULTITHREADING) && !defined(__SWITCH__)
+#if defined(MCENGINE_FEATURE_MULTITHREADING)
 	if (m_updateThread != NULL && !m_bThreadDone)
 		engine->showMessageErrorFatal("Fatal Error", "OsuUpdateHandler was destroyed while the update thread is still running!!!");
 
@@ -113,7 +113,7 @@ OsuUpdateHandler::~OsuUpdateHandler()
 
 void OsuUpdateHandler::stop()
 {
-#if defined(MCENGINE_FEATURE_MULTITHREADING) && !defined(__SWITCH__)
+#if defined(MCENGINE_FEATURE_MULTITHREADING)
 	if (m_updateThread != NULL)
 	{
 		_m_bKYS = true;
@@ -124,7 +124,7 @@ void OsuUpdateHandler::stop()
 
 void OsuUpdateHandler::wait()
 {
-#if defined(MCENGINE_FEATURE_MULTITHREADING) && !defined(__SWITCH__)
+#if defined(MCENGINE_FEATURE_MULTITHREADING)
 	if (m_updateThread != NULL)
 	{
 		delete m_updateThread; // McThread dtor joins the thread
@@ -136,7 +136,7 @@ void OsuUpdateHandler::wait()
 
 void OsuUpdateHandler::checkForUpdates()
 {
-#if defined(MCENGINE_FEATURE_MULTITHREADING) && !defined(__SWITCH__)
+#if defined(MCENGINE_FEATURE_MULTITHREADING)
 
 	// clean up previous thread if it's marked as done
 	if (m_updateThread != NULL && m_bThreadDone)
@@ -475,8 +475,6 @@ OS OsuUpdateHandler::stringToOS(UString osString)
 		os = OS::WINDOWS;
 	else if (osString.find("linux") != -1)
 		os = OS::LINUX;
-	else if (osString.find("macos") != -1)
-		os = OS::MACOS;
 
 	return os;
 }

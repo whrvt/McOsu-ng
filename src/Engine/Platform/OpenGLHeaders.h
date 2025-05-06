@@ -48,11 +48,4 @@
 
 #endif
 
-#ifdef __SWITCH__
-
-#include <EGL/egl.h>
-#include <GLES2/gl2.h>
-
-#endif
-
 #endif

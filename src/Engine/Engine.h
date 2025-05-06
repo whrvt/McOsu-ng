@@ -25,13 +25,11 @@
 class App;
 class Mouse;
 class ConVar;
-class Gamepad;
 class Keyboard;
 class InputDevice;
 class SoundEngine;
 class ContextMenu;
 class NetworkHandler;
-class OpenCLInterface;
 class OpenVRInterface;
 class VulkanInterface;
 class ResourceManager;
@@ -141,8 +139,6 @@ public:
 
 	// engine specifics
 	void blackout() {m_bBlackout = true;}
-	void addGamepad(Gamepad *gamepad);
-	void removeGamepad(Gamepad *gamepad);
 
 	// interfaces
 	inline App *getApp() const {return m_app;}
@@ -155,10 +151,8 @@ public:
 	// input devices
 	inline Mouse *getMouse() const {return m_mouse;}
 	inline Keyboard *getKeyboard() const {return m_keyboard;}
-	inline Gamepad *getGamepad() const {return m_gamepad;}
 	inline const std::vector<Mouse*> &getMice() const {return m_mice;}
 	inline const std::vector<Keyboard*> &getKeyboards() const {return m_keyboards;}
-	inline const std::vector<Gamepad*> &getGamepads() const {return m_gamepads;}
 
 	// screen
 	void requestResolutionChange(Vector2 newResolution);
@@ -191,7 +185,6 @@ private:
 	App *m_app;
 	Graphics *m_graphics;
 	SoundEngine *m_sound;
-	OpenCLInterface *m_openCL;
 	OpenVRInterface *m_openVR;
 	VulkanInterface *m_vulkan;
 	ContextMenu *m_contextMenu;
@@ -205,10 +198,8 @@ private:
 	// input devices
 	Mouse *m_mouse;
 	Keyboard *m_keyboard;
-	Gamepad *m_gamepad;
 	std::vector<Mouse*> m_mice;
 	std::vector<Keyboard*> m_keyboards;
-	std::vector<Gamepad*> m_gamepads;
 	std::vector<InputDevice*> m_inputDevices;
 
 	// timing

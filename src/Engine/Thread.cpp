@@ -9,9 +9,7 @@
 #include "ConVar.h"
 #include "Engine.h"
 
-#include "HorizonThread.h"
-
-#if defined(MCENGINE_FEATURE_MULTITHREADING) && !defined(__SWITCH__)
+#if defined(MCENGINE_FEATURE_MULTITHREADING)
 #include <thread>
 
 // std::thread implementation of Thread
@@ -53,7 +51,7 @@ private:
 
 #else
 class StdThread : public BaseThread{};
-#endif // defined(MCENGINE_FEATURE_MULTITHREADING) && !defined(__SWITCH__)
+#endif // defined(MCENGINE_FEATURE_MULTITHREADING)
 
 ConVar debug_thread("debug_thread", false, FCVAR_NONE);
 
@@ -62,13 +60,7 @@ ConVar *McThread::debug = &debug_thread;
 McThread::McThread(START_ROUTINE start_routine, void *arg)
 {
 #ifdef MCENGINE_FEATURE_MULTITHREADING
-
-#ifdef __SWITCH__
-	m_baseThread = new HorizonThread(start_routine, arg);
-#else
 	m_baseThread = new StdThread(start_routine, arg);
-#endif
-
 #else
 	m_baseThread = NULL;
 #endif // MCENGINE_FEATURE_MULTITHREADING

@@ -8,7 +8,7 @@
 #include "SDLSound.h"
 #include "SDLSoundEngine.h"
 
-#if defined(MCENGINE_FEATURE_SDL) && defined(MCENGINE_FEATURE_SDL_MIXER)
+#if defined(MCENGINE_FEATURE_SDL_MIXER)
 
 #include "ConVar.h"
 #include "Engine.h"
@@ -430,4 +430,4 @@ void SDLSound::rebuild(UString newFilePath)
 	reload();
 }
 
-#endif // defined(MCENGINE_FEATURE_SDL) && defined(MCENGINE_FEATURE_SDL_MIXER)
+#endif // defined(MCENGINE_FEATURE_SDL_MIXER)
