@@ -186,7 +186,7 @@ __EOF__
     SYSNAME="linux"
     DLLEXT=".so"
     LIBPREFIX="lib"
-    BASS_LIBS="-lbass" # bass_fx is dlopen'd
+    BASS_LIBS="-lbass -lbass_fx"
 
     AC_DEFINE([MCENGINE_PLATFORM_LINUX], [1], [Define if compiling for Linux.])
 ],[

@@ -151,24 +151,25 @@ void Mouse::update()
 		updateFakelagBuffer();
 }
 
-void Mouse::onMotion(float x, float y, float xRel, float yRel, bool isRawInput)
+void Mouse::onMotion(float x, float y, float xRel, float yRel, bool preTransformed)
 {
 	Vector2 newRel{xRel, yRel}, newAbs{x, y};
 	auto sens = mouse_sensitivity.getFloat();
-	m_vRawDelta = newRel / sens; // rawdelta doesn't include sensitivity or clipping
 
 	m_bAbsolute = true; // assume we don't have to lock the cursor
 
 	const bool osCursorVisible = (env->isCursorVisible() || !env->isCursorInWindow() || !engine->hasFocus());
 
  	// rawinput has sensitivity pre-applied
-	// this entire block may be skipped if: (isRawInput || (sens == 1 && !clipped))
-	if (!isRawInput && !osCursorVisible)
+	// this entire block may be skipped if: (preTransformed || (sens == 1 && !clipped))
+	if (!preTransformed && !osCursorVisible)
 	{
 		// need to apply sensitivity
 		if (!almostEqual(sens, 1.0f))
 		{
 			// need to lock the OS cursor to the center of the screen if rawinput is disabled, otherwise it can exit the screen rect before the virtual cursor does
+			// don't do it here because we don't want the event loop to make more external calls than necessary,
+			// just set a flag to do it on the engine update loop
 			if (sens < 0.995f)
 				m_bAbsolute = false;
 			newRel *= sens;
@@ -186,6 +187,7 @@ void Mouse::onMotion(float x, float y, float xRel, float yRel, bool isRawInput)
 		}
 	}
 
+	m_vRawDelta = newRel / sens; // rawdelta doesn't include sensitivity or clipping
 	m_vDelta = newAbs - m_vPosWithoutOffset;
 	m_vPosWithoutOffset = newAbs;
 

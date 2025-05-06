@@ -12,14 +12,6 @@
 #include "SoundEngine.h"
 #ifdef MCENGINE_FEATURE_BASS
 
-#include <bass.h>
-#include <bass_fx.h>
-
-#ifdef MCENGINE_FEATURE_BASS_WASAPI
-#include <bassmix.h>
-#include <basswasapi.h>
-#endif
-
 class BassSound;
 class SoundEngineThread;
 
@@ -56,7 +48,6 @@ private:
 	void *m_bassfx_handle;
 
 	friend class BassSound;
-	static inline HSTREAM (*m_BASS_FX_TempoCreate)(DWORD, DWORD);
 	uint32_t m_iBASSVersion;
 
 #ifdef MCENGINE_FEATURE_MULTITHREADING

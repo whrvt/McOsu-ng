@@ -10,10 +10,12 @@
 
 #ifdef MCENGINE_FEATURE_BASS
 
-#ifdef __linux__
-#include <dlfcn.h>
-#else
-#define DL_CALL_FCT(fctp, args) ((*(fctp))args)
+#include <bass.h>
+#include <bass_fx.h>
+
+#ifdef MCENGINE_FEATURE_BASS_WASAPI
+#include <bassmix.h>
+#include <basswasapi.h>
 #endif
 
 #include "ConVar.h"
@@ -112,7 +114,7 @@ void BassSound::initAsync()
 		m_HSTREAM = BASS_StreamCreateFile(FALSE, m_sFilePath.plat_str(), 0, 0,
 		                                  (m_bPrescan ? BASS_STREAM_PRESCAN : 0) | BASS_STREAM_DECODE | extraStreamCreateFileFlags | unicodeFlag);
 
-		m_HSTREAM = _BASS_FX_TempoCreate(m_HSTREAM, BASS_FX_TEMPO_ALGO_SHANNON | BASS_FX_FREESOURCE | extraFXTempoCreateFlags);
+		m_HSTREAM = BASS_FX_TempoCreate(m_HSTREAM, BASS_FX_TEMPO_ALGO_SHANNON | BASS_FX_FREESOURCE | extraFXTempoCreateFlags);
 
 		BASS_ChannelSetAttribute(m_HSTREAM, BASS_ATTRIB_TEMPO_OPTION_USE_QUICKALGO, false);
 		BASS_ChannelSetAttribute(m_HSTREAM, BASS_ATTRIB_TEMPO_OPTION_OVERLAP_MS, 4.0f);
@@ -516,11 +518,6 @@ void BassSound::rebuild(UString newFilePath)
 {
 	m_sFilePath = newFilePath;
 	reload();
-}
-
-inline HSTREAM BassSound::_BASS_FX_TempoCreate(DWORD chan, DWORD flags) const
-{
-	return DL_CALL_FCT((BassSoundEngine::m_BASS_FX_TempoCreate), (chan, flags));
 }
 
 #endif // MCENGINE_FEATURE_BASS

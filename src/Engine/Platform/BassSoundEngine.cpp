@@ -10,8 +10,12 @@
 
 #ifdef MCENGINE_FEATURE_BASS
 
-#ifdef __linux__
-#include <dlfcn.h>
+#include <bass.h>
+#include <bass_fx.h>
+
+#ifdef MCENGINE_FEATURE_BASS_WASAPI
+#include <bassmix.h>
+#include <basswasapi.h>
 #endif
 
 #ifdef MCENGINE_FEATURE_MULTITHREADING
@@ -182,25 +186,6 @@ BassSoundEngine::BassSoundEngine() : SoundEngine()
 	snd_freq.setCallback(fastdelegate::MakeDelegate(this, &BassSoundEngine::onFreqChanged));
 	snd_restart.setCallback(fastdelegate::MakeDelegate(this, &BassSoundEngine::restart));
 	snd_output_device.setCallback(fastdelegate::MakeDelegate(this, &BassSoundEngine::setOutputDevice));
-
-#ifdef __linux__
-	m_bassfx_handle = dlopen("libbass_fx.so", RTLD_NOW);
-	if (!m_bassfx_handle)
-	{
-		engine->showMessageErrorFatal("failed to get handle to libbass_fx.so: %s\n", dlerror());
-		engine->shutdown();
-		return;
-	}
-	m_BASS_FX_TempoCreate = (HSTREAM (*)(DWORD, DWORD))dlsym(m_bassfx_handle, "BASS_FX_TempoCreate");
-	if (!m_BASS_FX_TempoCreate)
-	{
-		engine->showMessageErrorFatal("failed to find BASS_FX_TempoCreate in libbass_fx.so: %s\n", dlerror());
-		engine->shutdown();
-		return;
-	}
-#else
-	m_BASS_FX_TempoCreate = BASS_FX_TempoCreate;
-#endif
 }
 
 BassSoundEngine::~BassSoundEngine()
@@ -226,10 +211,6 @@ BassSoundEngine::~BassSoundEngine()
 		// BASS_WASAPI_Free();
 #endif
 	}
-
-#if defined(__linux__) && defined(MCENGINE_FEATURE_BASS)
-	dlclose(m_bassfx_handle);
-#endif
 }
 
 void BassSoundEngine::restart()

@@ -119,6 +119,7 @@ static void SDLLogCallback(void *, int category, SDL_LogPriority, const char *me
 
 int SDLEnvironment::main(int argc, char *argv[])
 {
+	SDL_SetHint(SDL_HINT_VIDEO_DOUBLE_BUFFER, "1");
 	constexpr auto flags = SDL_INIT_VIDEO;
 
 	// initialize sdl
@@ -165,6 +166,13 @@ int SDLEnvironment::main(int argc, char *argv[])
 		SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_BORDERLESS_BOOLEAN, true);
 	else if (shouldBeFullscreen)
 		SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_FULLSCREEN_BOOLEAN, true);
+
+	if constexpr (Env::cfg(OS::WINDOWS))
+		SDL_SetHintWithPriority(SDL_HINT_WINDOWS_RAW_KEYBOARD, "1", SDL_HINT_OVERRIDE);
+
+	SDL_SetHintWithPriority(SDL_HINT_MOUSE_RELATIVE_MODE_CENTER, "0", SDL_HINT_OVERRIDE);
+	SDL_SetHintWithPriority(SDL_HINT_TOUCH_MOUSE_EVENTS, "0", SDL_HINT_OVERRIDE);
+	SDL_SetHintWithPriority(SDL_HINT_MOUSE_EMULATE_WARP_WITH_RELATIVE, "0", SDL_HINT_OVERRIDE);
 
 	// create window
 	m_window = SDL_CreateWindowWithProperties(props);
@@ -276,6 +284,7 @@ int SDLEnvironment::main(int argc, char *argv[])
 	std::array<SDL_Event, SIZE_EVENTS> events;
 	while (m_bRunning)
 	{
+		
 		VPROF_MAIN();
 
 		// handle window message queue

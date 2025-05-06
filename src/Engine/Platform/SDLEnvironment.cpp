@@ -618,13 +618,14 @@ void SDLEnvironment::setCursorVisible(bool visible)
 	if (visible)
 	{
 		// disable rawinput (allow regular mouse movement)
+		// TODO: consolidate all this BS transition logic into some onPointerEnter/onPointerLeave handler
 		if (m_bIsRawInput)
 		{
 			setRawInput(false);
-			setCursorPosition(getMousePos().nudge(getWindowSize()/2, 0.5f)); // nudge it outwards
+			setCursorPosition(getMousePos().nudge(getWindowSize()/2, 1.0f)); // nudge it outwards
 		}
 		else // snap the OS cursor to virtual cursor position
-			setCursorPosition(m_engine->getMouse()->getRealPos().nudge(getWindowSize()/2, 0.5f)); // nudge it outwards
+			setCursorPosition(m_engine->getMouse()->getRealPos().nudge(getWindowSize()/2, 1.0f)); // nudge it outwards
 		SDL_ShowCursor();
 	}
 	else

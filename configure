@@ -6015,7 +6015,7 @@ __EOF__
     SYSNAME="linux"
     DLLEXT=".so"
     LIBPREFIX="lib"
-    BASS_LIBS="-lbass" # bass_fx is dlopen'd
+    BASS_LIBS="-lbass -lbass_fx"
 
 
 printf "%s\n" "#define MCENGINE_PLATFORM_LINUX 1" >>confdefs.h

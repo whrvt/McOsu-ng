@@ -12,12 +12,6 @@
 #include "Sound.h"
 #ifdef MCENGINE_FEATURE_BASS
 
-#include <bass.h>
-#include <bass_fx.h>
-
-#ifdef MCENGINE_FEATURE_BASS_WASAPI
-#include <bassmix.h>
-#endif
 
 class BassSoundEngine;
 
@@ -72,8 +66,6 @@ private:
 	unsigned long long m_iWasapiSampleBufferSize;
 	std::vector<SOUNDHANDLE> m_danglingWasapiStreams;
 	unsigned long m_iPrevPosition;
-
-	[[nodiscard]] inline HSTREAM _BASS_FX_TempoCreate(DWORD chan, DWORD flags) const;
 };
 
 #else

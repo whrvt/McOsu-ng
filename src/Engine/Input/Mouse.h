@@ -31,7 +31,7 @@ public:
 
 	// input handling
 	void onPosChange(Vector2 pos);
-	void onMotion(float x, float y, float xRel, float yRel, bool isRawInput);
+	void onMotion(float x, float y, float xRel, float yRel, bool preTransformed);
 	void onWheelVertical(int delta);
 	void onWheelHorizontal(int delta);
 	void onButtonChange(int button, bool down);

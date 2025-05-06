@@ -1,31 +1,52 @@
 //========== Copyright (c) 2015, PG & 2025, WH, All rights reserved. ============//
 //
-// Purpose:		fps timer
+// Purpose:		stopwatch/timer
 //
-// $NoKeywords: $time
+// $NoKeywords: $time $sdltime
 //===============================================================================//
 
 #pragma once
 #ifndef TIMER_H
 #define TIMER_H
 
-#include "config.h"
-#include <cstdint>
+#include <SDL3/SDL.h>
 
-class BaseTimer
+class Timer
 {
 public:
-	BaseTimer() = default;
-	virtual ~BaseTimer() = default;
+	inline Timer(bool startOnCtor = true) {if (startOnCtor) start();}
+	~Timer() = default;
 
-	virtual void start() = 0;
-	virtual void update() = 0;
+	inline void start()
+	{
+		m_startTimeNS = SDL_GetTicksNS();
+		m_currentTimeNS = m_startTimeNS;
+		m_delta = 0.0;
+		m_elapsedTime = 0.0;
+		m_elapsedTimeMS = 0;
+	}
 
-	[[nodiscard]] virtual inline double getDelta() const = 0;
-	[[nodiscard]] virtual inline double getElapsedTime() const = 0;
-	[[nodiscard]] virtual inline uint64_t getElapsedTimeMS() const = 0;
+	inline void update()
+	{
+		const uint64_t now = SDL_GetTicksNS();
+		m_delta = static_cast<double>(now - m_currentTimeNS) / static_cast<double>(SDL_NS_PER_SECOND);
+		const uint64_t elapsed = now - m_startTimeNS;
+		m_elapsedTime = static_cast<double>(elapsed) / static_cast<double>(SDL_NS_PER_SECOND);
+		m_elapsedTimeMS = elapsed / SDL_NS_PER_MS;
+		m_currentTimeNS = now;
+	}
+
+	[[nodiscard]] inline double getDelta() const { return m_delta; }
+	[[nodiscard]] inline double getElapsedTime() const { return m_elapsedTime; }
+	[[nodiscard]] inline uint64_t getElapsedTimeMS() const { return m_elapsedTimeMS; }
+
+private:
+	uint64_t m_startTimeNS{};
+	uint64_t m_currentTimeNS{};
+
+	double m_delta{};
+	double m_elapsedTime{};
+	uint64_t m_elapsedTimeMS{};
 };
-
-#include "SDLTimer.h"
 
 #endif
