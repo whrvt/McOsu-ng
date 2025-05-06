@@ -19,7 +19,6 @@ ConVar mouse_raw_input("mouse_raw_input", false, FCVAR_NONE);
 ConVar mouse_raw_input_absolute_to_window("mouse_raw_input_absolute_to_window", false, FCVAR_NONE);
 ConVar mouse_fakelag("mouse_fakelag", 0.000f, FCVAR_NONE, "delay all mouse movement by this many seconds (e.g. 0.1 = 100 ms delay)");
 ConVar tablet_sensitivity_ignore("tablet_sensitivity_ignore", false, FCVAR_NONE);
-ConVar win_ink_workaround("win_ink_workaround", false, FCVAR_NONE);
 
 Mouse::Mouse() : InputDevice()
 {
