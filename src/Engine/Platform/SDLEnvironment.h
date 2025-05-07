@@ -112,7 +112,7 @@ public:
 	void setCursor(CURSORTYPE cur) override;
 	void setCursorVisible(bool visible) override;
 	void setCursorClip(bool clip, McRect rect) override;
-	inline void setMousePos(const Vector2& pos) override
+	inline void setMousePos(Vector2 pos) override
 	{
 		m_vLastAbsMousePos = pos;
 		setCursorPosition();

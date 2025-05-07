@@ -93,6 +93,9 @@ public:
 	[[nodiscard]] CURSORTYPE getCursor() const override {return CURSORTYPE::CURSOR_NORMAL;}
 	void setCursor(CURSORTYPE cur) override {;}
 	void setCursorVisible(bool visible) override {;}
+	void setMousePos(Vector2 pos) override {;}
+	void setMousePos(float x, float y) override {;}
+
 	void setCursorClip(bool clip, McRect rect) override {;}
 
 	// keyboard

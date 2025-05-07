@@ -216,7 +216,16 @@ __EOF__
     DLLEXT=".dll"
     LIBPREFIX=""
     BASS_LIBS="-lbass -lbass_fx"
-    LDFLAGS="$LDFLAGS -Wl,-Bstatic,--whole-archive -lwinpthread -Wl,--no-whole-archive,-Bdynamic"
+
+    AS_IF([test "$host_cpu" = "i686"], [ # uber compatibility configuration, works on winxp
+        LDFLAGS="$LDFLAGS -m32 -lwinpthread"
+        CPPFLAGS="$CPPFLAGS -DWINVER=0x0501 -D_WIN32_WINNT=0x0501 -D_WIN32_WINDOWS=0x0501 -D_WIN32_IE=0x0501"
+        CFLAGS="$CFLAGS -m32 -DWINVER=0x0501 -D_WIN32_WINNT=0x0501 -D_WIN32_WINDOWS=0x0501 -D_WIN32_IE=0x0501"
+        CXXFLAGS="$CXXFLAGS -m32 -DWINVER=0x0501 -D_WIN32_WINNT=0x0501 -D_WIN32_WINDOWS=0x0501 -D_WIN32_IE=0x0501"
+    ], [
+        LDFLAGS="$LDFLAGS -Wl,-Bstatic,--whole-archive -lwinpthread -Wl,--no-whole-archive,-Bdynamic"
+    ])
+
     AC_DEFINE([MCENGINE_PLATFORM_WINDOWS], [1], [Define if compiling for Windows.])
 ])
 
@@ -290,6 +299,7 @@ AS_IF([test "x$enable_native" != "xno"], [
 ],[
     CXXFLAGS="$CXXFLAGS -march=${host_cpu//_/-} -mtune=generic"
     CFLAGS="$CFLAGS -march=${host_cpu//_/-} -mtune=generic"
+    AC_SUBST([DISABLE_NATIVE],[1])
 ])
 
 AS_IF([test "x$enable_asan" = "xyes"], [
@@ -345,7 +355,7 @@ AS_IF([test "x$enable_lto" != "xno"], [
 ])
 
 MCOSU_CPPFLAGS="$MCOSU_CPPFLAGS"
-MCOSU_CXXFLAGS="$MCOSU_CXXFLAGS -Wall -pthread -Wno-sign-compare"
+MCOSU_CXXFLAGS="$MCOSU_CXXFLAGS -Wall -Wno-sign-compare -pthread"
 MCOSU_LDFLAGS="$MCOSU_LDFLAGS -pthread"
 AC_SUBST([MCOSU_CPPFLAGS])
 AC_SUBST([MCOSU_CXXFLAGS])
@@ -370,7 +380,7 @@ AS_IF([test "$SYSNAME" = "linux"], [
 PKG_CHECK_AUTO([GL], [gl], [have_gl=yes], [have_gl=no])
 PKG_CHECK_AUTO([GLU], [glu], [have_glu=yes], [have_glu=no])
 
-SDL3_MIN_VERSION=3.2.0
+SDL3_MIN_VERSION=3.2.10
 SDL3_BUILD_VERSION=3.99.99 # git
 GLEW_MIN_VERSION=2.2.0
 GLEW_BUILD_VERSION=2.2.0
@@ -461,12 +471,13 @@ AM_CONDITIONAL([BUILD_LIBPNG], [test "x$have_libpng" != "xyes"])
 AM_CONDITIONAL([BUILD_BZIP2], [test "x$have_bzip2" != "xyes"])
 AM_CONDITIONAL([BUILD_ZLIB], [test "x$have_zlib" != "xyes"])
 AM_CONDITIONAL([BUILD_FREETYPE2], [test "x$have_freetype2" != "xyes"])
-AM_CONDITIONAL([BUILD_MIMALLOC], [test "x$enable_debug" != "xyes" || test "x$with_mimalloc" = "xno"])
+AM_CONDITIONAL([BUILD_MIMALLOC], [test "x$enable_debug" != "xyes" && test "x$with_mimalloc" != "xno"])
 
 AM_CONDITIONAL([USE_BASS], [test "x$with_sdlmixer" != "xyes" && test "x$with_soloud" != "xyes"])
 AM_CONDITIONAL([USE_SDLMIXER], [test "x$with_sdlmixer" = "xyes"])
 AM_CONDITIONAL([USE_SOLOUD], [test "x$with_soloud" = "xyes"])
 AM_CONDITIONAL([WIN_PLATFORM], [test "$SYSNAME" = "windows"])
+AM_CONDITIONAL([WINPTHREAD_DLL_NEEDED], [test "$SYSNAME" = "windows" && test "$host_cpu" = "i686"])
 
 ASSETS_DIR=assets
 AC_SUBST([ASSETS_DIR])

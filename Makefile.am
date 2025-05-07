@@ -24,7 +24,7 @@ $(DEPS_CACHE)/mimalloc-$(MIMALLOC_VERSION).source:
 
 if BUILD_MIMALLOC
 if WIN_PLATFORM
-MIMALLOC_LIBS = -L$(DEPS_PREFIX)/lib -Wl,--whole-archive -l:libmimalloc.dll.a -Wl,--no-whole-archive -L$(DEPS_PREFIX)/bin -lmimalloc -lmimalloc-redirect
+MIMALLOC_LIBS = -L$(DEPS_PREFIX)/lib -Wl,--whole-archive -l:libmimalloc.dll.a -Wl,--no-whole-archive -L$(DEPS_PREFIX)/bin -lmimalloc -lmimalloc-redirect$(if $(filter x86_64,$(host_cpu)),,32)
 else
 MIMALLOC_LIBS = $(DEPS_PREFIX)/lib/mimalloc$(if $(ENABLE_ASAN),-asan-debug,$(if $(ENABLE_DEBUG),-debug,)).o
 endif
@@ -43,10 +43,9 @@ $(DEPS_PREFIX)/mimalloc.built: $(DEPS_CACHE)/mimalloc-$(MIMALLOC_VERSION).source
 		-D CMAKE_CXX_COMPILER="$(CXX)" \
 		-D CMAKE_CXX_FLAGS="$(CXXFLAGS) -xc++ -Wno-array-bounds" \
 		-D CMAKE_INSTALL_PREFIX="$(DEPS_PREFIX)" \
-		-D MI_OPT_ARCH=ON \
+		-D MI_OPT_ARCH=$(if $(DISABLE_NATIVE),OFF,ON) \
 		-D MI_OPT_SIMD=ON \
 		-D MI_USE_CXX=ON \
-		-D MI_NO_OPT_ARCH=OFF \
 		-D MI_WIN_USE_FIXED_TLS=OFF \
 		-D MI_BUILD_SHARED=$(if $(findstring linux,$(host_os)),OFF,ON) \
 		-D MI_BUILD_TESTS=OFF \
@@ -252,11 +251,11 @@ $(DEPS_PREFIX)/GLEW.built: $(DEPS_CACHE)/GLEW-$(GLEW_VERSION).source
 		$(if $(LLVMMINGW),$(SED) -i -e 's|glew.lib: .*|glew.lib: glew.lib.static|' -e 's|install.lib:|install.libSHIT:|' -e 's|.*development files.*|install.lib: glew.lib|' Makefile,true) && \
   		$(SED) -i '/^.PHONY: .*\.pc$$/d' Makefile && \
 		$(MAKE) SYSTEM=$(if $(findstring linux,$(host_os)),linux-egl,linux-mingw$(if $(filter x86_64,$(host_cpu)),64,32)) GLEW_DEST="$(DEPS_PREFIX)" \
-		STRIP= CC="$(CC) -Wno-cast-function-type -Wno-strict-prototypes" CXX="$(CXX)" LD="$(if $(LLVMMINGW),$(CC),$(LD))" \
+		STRIP= CC="$(CC) -Wno-cast-function-type -Wno-strict-prototypes $(CPPFLAGS)" CXX="$(CXX)" LD="$(if $(LLVMMINGW),$(CC),$(LD))" \
 		$(if $(SDL3_STATIC),glew.lib.static,glew.lib.shared)
 	cd $(DEPS_PREFIX)/GLEW && \
 		$(MAKE) SYSTEM=$(if $(findstring linux,$(host_os)),linux-egl,linux-mingw$(if $(filter x86_64,$(host_cpu)),64,32)) GLEW_DEST="$(DEPS_PREFIX)" \
-		STRIP= CC="$(CC) -Wno-cast-function-type -Wno-strict-prototypes" CXX="$(CXX)" LD="$(LD)" \
+		STRIP= CC="$(CC) -Wno-cast-function-type -Wno-strict-prototypes $(CPPFLAGS)" CXX="$(CXX)" LD="$(LD)" \
 		install
 	$(MKDIR_P) "$(DEPS_PREFIX)/lib/pkgconfig"
 	( echo 'prefix=$(DEPS_PREFIX)'; \
@@ -413,7 +412,9 @@ $(DEPS_PREFIX)/FREETYPE2.built: $(DEPS_PREFIX)/libpng.built $(DEPS_PREFIX)/bzip2
 	rm -rf $(DEPS_PREFIX)/FREETYPE2
 	$(MKDIR_P) $(DEPS_PREFIX)/FREETYPE2/build $(DEPS_PREFIX)/lib/pkgconfig
 	$(TAR) xf $(DEPS_CACHE)/freetype-$(FREETYPE2_VERSION).tar.gz -C $(DEPS_PREFIX)/FREETYPE2 --strip-components=1 && \
-	cd $(DEPS_PREFIX)/FREETYPE2 && PKG_CONFIG="$(PKG_CONFIG)" \
+	cd $(DEPS_PREFIX)/FREETYPE2 && \
+	patch -Np1<$(abs_top_srcdir)/build/aux/freetype-win.patch && \
+	PKG_CONFIG="$(PKG_CONFIG)" \
 		./configure --host=$(host_alias) --prefix="$(DEPS_PREFIX)" --with-harfbuzz=no --with-brotli=no \
 		$(if $(SDL3_STATIC),--enable-static --disable-shared,--enable-shared --disable-static) \
 		CC="$(CC)" CXX="$(CXX)" LD="$(LD)" CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS)" && \
@@ -515,9 +516,12 @@ install-libs:
 	find $(srcdir)/$(ASSETS_DIR)/models -type f -exec $(INSTALL) -Dm 644 '{''}' "$(DESTDIR)$(bindir)/models" ';'
 	find $(srcdir)/$(ASSETS_DIR)/shaders -type f -exec $(INSTALL) -Dm 644 '{''}' "$(DESTDIR)$(bindir)/shaders" ';'
 	find $(srcdir)/$(ASSETS_DIR)/fonts -type f -exec $(INSTALL) -Dm 644 '{''}' "$(DESTDIR)$(bindir)/fonts" ';'
-if BUILD_MIMALLOC
 if WIN_PLATFORM
-	@cp -P "$(DEPS_PREFIX)/bin/mimalloc"{,-redirect}".dll" "$(DESTDIR)$(bindir)/$(LIBDEST)"
+if BUILD_MIMALLOC
+	@cp -P "$(DEPS_PREFIX)/bin/mimalloc"{,-redirect$(if $(filter x86_64,$(host_cpu)),,32)}".dll" "$(DESTDIR)$(bindir)/$(LIBDEST)"
+endif
+if WINPTHREAD_DLL_NEEDED
+	@cp -P $(shell $(CC) -print-prog-name=ar | sed 's|/ar|/libwinpthread-1.dll|') "$(DESTDIR)$(bindir)/$(LIBDEST)" # idk how else
 endif
 endif
 if !USE_BASS

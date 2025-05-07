@@ -781,8 +781,6 @@ int OpenGL3Interface::getVRAMTotal()
 	glGetIntegerv(GPU_MEMORY_INFO_TOTAL_AVAILABLE_MEMORY_NVX, nvidiaMemory);
 	glGetIntegerv(TEXTURE_FREE_MEMORY_ATI, atiMemory);
 
-	//glGetError(); // clear error state
-
 	if (nvidiaMemory[0] < 1)
 		return atiMemory[0];
 	else
@@ -802,8 +800,6 @@ int OpenGL3Interface::getVRAMRemaining()
 
 	glGetIntegerv(GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX, nvidiaMemory);
 	glGetIntegerv(TEXTURE_FREE_MEMORY_ATI, atiMemory);
-
-	//glGetError(); // clear error state
 
 	if (nvidiaMemory[0] < 1)
 		return atiMemory[0];

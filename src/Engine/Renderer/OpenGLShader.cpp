@@ -9,13 +9,14 @@
 
 #ifdef MCENGINE_FEATURE_OPENGL
 
-#include "Engine.h"
 #include "ConVar.h"
+#include "Engine.h"
 
 #include "OpenGLHeaders.h"
+#include "OpenGLStateCache.h"
 
-#include "OpenGLLegacyInterface.h"
 #include "OpenGL3Interface.h"
+#include "OpenGLLegacyInterface.h"
 
 OpenGLShader::OpenGLShader(UString shader, bool source)
 {
@@ -52,8 +53,8 @@ void OpenGLShader::init()
 		UString graphicsInterfaceAndVertexShaderTypePrefix;
 		UString graphicsInterfaceAndFragmentShaderTypePrefix;
 		{
-			const OpenGLLegacyInterface *legacy = dynamic_cast<OpenGLLegacyInterface*>(engine->getGraphics());
-			const OpenGL3Interface *gl3 = dynamic_cast<OpenGL3Interface*>(engine->getGraphics());
+			const OpenGLLegacyInterface *legacy = dynamic_cast<OpenGLLegacyInterface *>(engine->getGraphics());
+			const OpenGL3Interface *gl3 = dynamic_cast<OpenGL3Interface *>(engine->getGraphics());
 
 			if (legacy != NULL)
 			{
@@ -102,22 +103,32 @@ void OpenGLShader::destroy()
 
 void OpenGLShader::enable()
 {
-	if (!m_bReady) return;
+	if (!m_bReady)
+		return;
 
-	glGetIntegerv(GL_CURRENT_PROGRAM, &m_iProgramBackup); // backup
+	// use the state cache instead of querying gl directly
+	m_iProgramBackup = OpenGLStateCache::getInstance().getCurrentProgram();
 	glUseProgramObjectARB(m_iProgram);
+
+	// update cache
+	OpenGLStateCache::getInstance().setCurrentProgram(m_iProgram);
 }
 
 void OpenGLShader::disable()
 {
-	if (!m_bReady) return;
+	if (!m_bReady)
+		return;
 
-	glUseProgramObjectARB(m_iProgramBackup); // restore
+	glUseProgramObjectARB(m_iProgramBackup);
+
+	// update cache
+	OpenGLStateCache::getInstance().setCurrentProgram(m_iProgramBackup);
 }
 
 void OpenGLShader::setUniform1f(UString name, float value)
 {
-	if (!m_bReady) return;
+	if (!m_bReady)
+		return;
 
 	const int id = getAndCacheUniformLocation(name);
 	if (id != -1)
@@ -128,7 +139,8 @@ void OpenGLShader::setUniform1f(UString name, float value)
 
 void OpenGLShader::setUniform1fv(UString name, int count, float *values)
 {
-	if (!m_bReady) return;
+	if (!m_bReady)
+		return;
 
 	const int id = getAndCacheUniformLocation(name);
 	if (id != -1)
@@ -139,7 +151,8 @@ void OpenGLShader::setUniform1fv(UString name, int count, float *values)
 
 void OpenGLShader::setUniform1i(UString name, int value)
 {
-	if (!m_bReady) return;
+	if (!m_bReady)
+		return;
 
 	const int id = getAndCacheUniformLocation(name);
 	if (id != -1)
@@ -150,7 +163,8 @@ void OpenGLShader::setUniform1i(UString name, int value)
 
 void OpenGLShader::setUniform2f(UString name, float value1, float value2)
 {
-	if (!m_bReady) return;
+	if (!m_bReady)
+		return;
 
 	const int id = getAndCacheUniformLocation(name);
 	if (id != -1)
@@ -161,18 +175,20 @@ void OpenGLShader::setUniform2f(UString name, float value1, float value2)
 
 void OpenGLShader::setUniform2fv(UString name, int count, float *vectors)
 {
-	if (!m_bReady) return;
+	if (!m_bReady)
+		return;
 
 	const int id = getAndCacheUniformLocation(name);
 	if (id != -1)
-		glUniform2fv(id, count, (float*)&vectors[0]);
+		glUniform2fv(id, count, (float *)&vectors[0]);
 	else if (debug_shaders->getBool())
 		debugLog("[%s] OpenGLShader Warning: Can't find uniform %s\n", __PRETTY_FUNCTION__, name.toUtf8());
 }
 
 void OpenGLShader::setUniform3f(UString name, float x, float y, float z)
 {
-	if (!m_bReady) return;
+	if (!m_bReady)
+		return;
 
 	const int id = getAndCacheUniformLocation(name);
 	if (id != -1)
@@ -183,18 +199,20 @@ void OpenGLShader::setUniform3f(UString name, float x, float y, float z)
 
 void OpenGLShader::setUniform3fv(UString name, int count, float *vectors)
 {
-	if (!m_bReady) return;
+	if (!m_bReady)
+		return;
 
 	const int id = getAndCacheUniformLocation(name);
 	if (id != -1)
-		glUniform3fv(id, count, (float*)&vectors[0]);
+		glUniform3fv(id, count, (float *)&vectors[0]);
 	else if (debug_shaders->getBool())
 		debugLog("[%s] OpenGLShader Warning: Can't find uniform %s\n", __PRETTY_FUNCTION__, name.toUtf8());
 }
 
 void OpenGLShader::setUniform4f(UString name, float x, float y, float z, float w)
 {
-	if (!m_bReady) return;
+	if (!m_bReady)
+		return;
 
 	const int id = getAndCacheUniformLocation(name);
 	if (id != -1)
@@ -205,7 +223,8 @@ void OpenGLShader::setUniform4f(UString name, float x, float y, float z, float w
 
 void OpenGLShader::setUniformMatrix4fv(UString name, Matrix4 &matrix)
 {
-	if (!m_bReady) return;
+	if (!m_bReady)
+		return;
 
 	const int id = getAndCacheUniformLocation(name);
 	if (id != -1)
@@ -216,7 +235,8 @@ void OpenGLShader::setUniformMatrix4fv(UString name, Matrix4 &matrix)
 
 void OpenGLShader::setUniformMatrix4fv(UString name, float *v)
 {
-	if (!m_bReady) return;
+	if (!m_bReady)
+		return;
 
 	const int id = getAndCacheUniformLocation(name);
 	if (id != -1)
@@ -227,14 +247,16 @@ void OpenGLShader::setUniformMatrix4fv(UString name, float *v)
 
 int OpenGLShader::getAttribLocation(UString name)
 {
-	if (!m_bReady) return -1;
+	if (!m_bReady)
+		return -1;
 
 	return glGetAttribLocation(m_iProgram, name.toUtf8());
 }
 
 int OpenGLShader::getAndCacheUniformLocation(const UString &name)
 {
-	if (!m_bReady) return -1;
+	if (!m_bReady)
+		return -1;
 
 	m_sTempStringBuffer.reserve(name.lengthUtf8());
 	m_sTempStringBuffer.assign(name.toUtf8(), name.lengthUtf8());
@@ -349,12 +371,12 @@ int OpenGLShader::createShaderFromFile(UString fileName, int shaderType)
 	}
 	std::string line;
 	std::string shaderSource;
-	//int linecount = 0;
+	// int linecount = 0;
 	while (inFile.good())
 	{
 		std::getline(inFile, line);
 		shaderSource += line + "\n\0";
-		//linecount++;
+		// linecount++;
 	}
 	shaderSource += "\n\0";
 	inFile.close();

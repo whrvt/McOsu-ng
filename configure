@@ -653,6 +653,8 @@ BUNDLED_LIBS_DIR
 BASS_LIBS
 BASS_CFLAGS
 ASSETS_DIR
+WINPTHREAD_DLL_NEEDED_FALSE
+WINPTHREAD_DLL_NEEDED_TRUE
 WIN_PLATFORM_FALSE
 WIN_PLATFORM_TRUE
 USE_SOLOUD_FALSE
@@ -733,6 +735,7 @@ MCOSU_CXXFLAGS
 MCOSU_CPPFLAGS
 ENABLE_DEBUG
 ENABLE_ASAN
+DISABLE_NATIVE
 BEAR
 CCACHE
 am__fastdepCXX_FALSE
@@ -6065,7 +6068,22 @@ fi
     DLLEXT=".dll"
     LIBPREFIX=""
     BASS_LIBS="-lbass -lbass_fx"
-    LDFLAGS="$LDFLAGS -Wl,-Bstatic,--whole-archive -lwinpthread -Wl,--no-whole-archive,-Bdynamic"
+
+    if test "$host_cpu" = "i686"
+then :
+   # uber compatibility configuration, works on winxp
+        LDFLAGS="$LDFLAGS -m32 -lwinpthread"
+        CPPFLAGS="$CPPFLAGS -DWINVER=0x0501 -D_WIN32_WINNT=0x0501 -D_WIN32_WINDOWS=0x0501 -D_WIN32_IE=0x0501"
+        CFLAGS="$CFLAGS -m32 -DWINVER=0x0501 -D_WIN32_WINNT=0x0501 -D_WIN32_WINDOWS=0x0501 -D_WIN32_IE=0x0501"
+        CXXFLAGS="$CXXFLAGS -m32 -DWINVER=0x0501 -D_WIN32_WINNT=0x0501 -D_WIN32_WINDOWS=0x0501 -D_WIN32_IE=0x0501"
+
+else case e in #(
+  e)
+        LDFLAGS="$LDFLAGS -Wl,-Bstatic,--whole-archive -lwinpthread -Wl,--no-whole-archive,-Bdynamic"
+     ;;
+esac
+fi
+
 
 printf "%s\n" "#define MCENGINE_PLATFORM_WINDOWS 1" >>confdefs.h
 
@@ -7408,6 +7426,8 @@ else case e in #(
   e)
     CXXFLAGS="$CXXFLAGS -march=${host_cpu//_/-} -mtune=generic"
     CFLAGS="$CFLAGS -march=${host_cpu//_/-} -mtune=generic"
+    DISABLE_NATIVE=1
+
  ;;
 esac
 fi
@@ -7614,7 +7634,7 @@ fi
 fi
 
 MCOSU_CPPFLAGS="$MCOSU_CPPFLAGS"
-MCOSU_CXXFLAGS="$MCOSU_CXXFLAGS -Wall -pthread -Wno-sign-compare"
+MCOSU_CXXFLAGS="$MCOSU_CXXFLAGS -Wall -Wno-sign-compare -pthread"
 MCOSU_LDFLAGS="$MCOSU_LDFLAGS -pthread"
 
 
@@ -8531,7 +8551,7 @@ esac
 fi
 
 
-SDL3_MIN_VERSION=3.2.0
+SDL3_MIN_VERSION=3.2.10
 SDL3_BUILD_VERSION=3.99.99 # git
 GLEW_MIN_VERSION=2.2.0
 GLEW_BUILD_VERSION=2.2.0
@@ -9807,7 +9827,7 @@ else
   BUILD_FREETYPE2_FALSE=
 fi
 
- if test "x$enable_debug" != "xyes" || test "x$with_mimalloc" = "xno"; then
+ if test "x$enable_debug" != "xyes" && test "x$with_mimalloc" != "xno"; then
   BUILD_MIMALLOC_TRUE=
   BUILD_MIMALLOC_FALSE='#'
 else
@@ -9846,6 +9866,14 @@ fi
 else
   WIN_PLATFORM_TRUE='#'
   WIN_PLATFORM_FALSE=
+fi
+
+ if test "$SYSNAME" = "windows" && test "$host_cpu" = "i686"; then
+  WINPTHREAD_DLL_NEEDED_TRUE=
+  WINPTHREAD_DLL_NEEDED_FALSE='#'
+else
+  WINPTHREAD_DLL_NEEDED_TRUE='#'
+  WINPTHREAD_DLL_NEEDED_FALSE=
 fi
 
 
@@ -10252,6 +10280,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${WIN_PLATFORM_TRUE}" && test -z "${WIN_PLATFORM_FALSE}"; then
   as_fn_error $? "conditional \"WIN_PLATFORM\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${WINPTHREAD_DLL_NEEDED_TRUE}" && test -z "${WINPTHREAD_DLL_NEEDED_FALSE}"; then
+  as_fn_error $? "conditional \"WINPTHREAD_DLL_NEEDED\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 
