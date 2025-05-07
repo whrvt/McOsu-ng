@@ -99,18 +99,9 @@ public:
 	[[nodiscard]] virtual CURSORTYPE getCursor() const = 0;
 	virtual void setCursor(CURSORTYPE cur) = 0;
 	virtual void setCursorVisible(bool visible) = 0;
-	inline void setMousePos(const Vector2& pos)
-	{
-		m_vLastAbsMousePos = pos;
-		setCursorPosition();
-	}
-	template <typename T = float>
-	inline void setMousePos(T x, T y)
-	{
-		m_vLastAbsMousePos.x = static_cast<float>(x);
-		m_vLastAbsMousePos.y = static_cast<float>(y);
-		setCursorPosition();
-	}
+
+	virtual void setMousePos(const Vector2& pos) = 0;
+	virtual void setMousePos(float x, float y) = 0;
 	virtual void setCursorClip(bool clip, McRect rect) = 0;
 
 	// keyboard
@@ -132,11 +123,6 @@ protected:
 	static ConVar *debug_env;
 
 	bool m_bFullscreenWindowedBorderless;
-
-	// the absolute/relative mouse position from the most recent iteration of the event loop
-	// relative only useful if raw input is enabled, value is undefined/garbage otherwise
-	Vector2 m_vLastAbsMousePos{};
-	Vector2 m_vLastRelMousePos{};
 };
 
 extern Environment *env;

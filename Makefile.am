@@ -19,11 +19,15 @@ comma:= ,# bruh
 
 $(DEPS_CACHE)/mimalloc-$(MIMALLOC_VERSION).source:
 	$(MKDIR_P) $(DEPS_CACHE)
-	$(WGET) -qO $(DEPS_CACHE)/mimalloc-$(MIMALLOC_VERSION).tar.gz "https://github.com/microsoft/mimalloc/archive/refs/tags/v$(MIMALLOC_VERSION).tar.gz" && \
+	$(WGET) -qO $(DEPS_CACHE)/mimalloc-$(MIMALLOC_VERSION).tar.gz "https://github.com/microsoft/mimalloc/archive/$(MIMALLOC_VERSION).tar.gz" && \
 	touch $@
 
 if BUILD_MIMALLOC
+if WIN_PLATFORM
+MIMALLOC_LIBS = -L$(DEPS_PREFIX)/lib -Wl,--whole-archive -l:libmimalloc.dll.a -Wl,--no-whole-archive -L$(DEPS_PREFIX)/bin -lmimalloc -lmimalloc-redirect
+else
 MIMALLOC_LIBS = $(DEPS_PREFIX)/lib/mimalloc$(if $(ENABLE_ASAN),-asan-debug,$(if $(ENABLE_DEBUG),-debug,)).o
+endif
 $(DEPS_PREFIX)/mimalloc.built: $(DEPS_CACHE)/mimalloc-$(MIMALLOC_VERSION).source
 	rm -rf $(DEPS_PREFIX)/mimalloc
 	$(MKDIR_P) $(DEPS_PREFIX)/mimalloc && \
@@ -33,21 +37,23 @@ $(DEPS_PREFIX)/mimalloc.built: $(DEPS_CACHE)/mimalloc-$(MIMALLOC_VERSION).source
 	env PKG_CONFIG="$(PKG_CONFIG)" \
 		LDFLAGS="$(LDFLAGS) -xnone" cmake \
 		-D CMAKE_C_COMPILER="$(CC)" \
-		-D CMAKE_C_FLAGS="$(CFLAGS)" \
+		-D CMAKE_C_FLAGS="$(CFLAGS) -Wno-array-bounds" \
 		-D CMAKE_SYSTEM_NAME="$(CMAKE_SYSTEM_NAME)" \
 		-D CMAKE_SYSTEM_PROCESSOR="$(host_cpu)" \
 		-D CMAKE_CXX_COMPILER="$(CXX)" \
-		-D CMAKE_CXX_FLAGS="$(CXXFLAGS) -xc++" \
+		-D CMAKE_CXX_FLAGS="$(CXXFLAGS) -xc++ -Wno-array-bounds" \
 		-D CMAKE_INSTALL_PREFIX="$(DEPS_PREFIX)" \
 		-D MI_OPT_ARCH=ON \
+		-D MI_OPT_SIMD=ON \
 		-D MI_USE_CXX=ON \
 		-D MI_NO_OPT_ARCH=OFF \
-		-D MI_BUILD_SHARED=OFF \
+		-D MI_WIN_USE_FIXED_TLS=OFF \
+		-D MI_BUILD_SHARED=$(if $(findstring linux,$(host_os)),OFF,ON) \
 		-D MI_BUILD_TESTS=OFF \
 		$(if $(ENABLE_ASAN),-DMI_LOCAL_DYNAMIC_TLS=ON -DMI_TRACK_ASAN=ON -DMI_DEBUG_UBSAN=ON,) \
 		-D MI_INSTALL_TOPLEVEL=ON \
 		-D MI_BUILD_STATIC=OFF \
-		-D MI_BUILD_OBJECT=ON ../.. && \
+		-D MI_BUILD_OBJECT=$(if $(findstring linux,$(host_os)),ON,OFF) ../.. && \
 	make install
 	touch $@
 else
@@ -509,6 +515,11 @@ install-libs:
 	find $(srcdir)/$(ASSETS_DIR)/models -type f -exec $(INSTALL) -Dm 644 '{''}' "$(DESTDIR)$(bindir)/models" ';'
 	find $(srcdir)/$(ASSETS_DIR)/shaders -type f -exec $(INSTALL) -Dm 644 '{''}' "$(DESTDIR)$(bindir)/shaders" ';'
 	find $(srcdir)/$(ASSETS_DIR)/fonts -type f -exec $(INSTALL) -Dm 644 '{''}' "$(DESTDIR)$(bindir)/fonts" ';'
+if BUILD_MIMALLOC
+if WIN_PLATFORM
+	@cp -P "$(DEPS_PREFIX)/bin/mimalloc"{,-redirect}".dll" "$(DESTDIR)$(bindir)/$(LIBDEST)"
+endif
+endif
 if !USE_BASS
 if USE_SDLMIXER
 	$(if $(SDL3_STATIC),,@cp -P "$(SDL3_MIXER_PREFIX)/lib"/{*$(LIBPREFIX)SDL3_mixer*$(DLLEXT)*,*$(LIBPREFIX)mpg123*$(DLLEXT)*,*$(LIBPREFIX)xmp*$(DLLEXT)*,*$(LIBPREFIX)wavpack*$(DLLEXT)*,*$(LIBPREFIX)opus*$(DLLEXT)*,*$(LIBPREFIX)ogg*$(DLLEXT)*} "$(DESTDIR)$(bindir)/$(LIBDEST)")

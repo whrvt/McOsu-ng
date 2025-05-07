@@ -254,6 +254,14 @@ int SDLEnvironment::main(int argc, char *argv[])
 
 	SDL_SetWindowMinimumSize(m_window, WINDOW_WIDTH_MIN, WINDOW_HEIGHT_MIN);
 
+	// initialize mouse position
+	{
+		float x, y;
+		SDL_GetGlobalMouseState(&x, &y);
+		m_vLastAbsMousePos.x = x;
+		m_vLastAbsMousePos.y = y;
+	}
+
 	// initialize engine
 	m_engine = new Engine(this, argc > 1 ? argv[1] : ""); // TODO: proper arg support
 
@@ -276,8 +284,6 @@ int SDLEnvironment::main(int argc, char *argv[])
 	// sdl3 stops listening to text input globally when window is created
 	SDL_StartTextInput(m_window);
 	SDL_SetWindowKeyboardGrab(m_window, false); // this allows windows key and such to work, listenToTextInput will set/unset the keyboard grab when necessary
-
-	Vector2 mousePos;
 
 	// main loop
 	constexpr auto SIZE_EVENTS = 64;

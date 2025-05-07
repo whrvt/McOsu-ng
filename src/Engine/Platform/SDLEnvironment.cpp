@@ -61,6 +61,9 @@ SDLEnvironment::SDLEnvironment() : Environment()
 	m_bCursorClipped = false;
 	m_cursorType = CURSORTYPE::CURSOR_NORMAL;
 
+	m_vLastAbsMousePos = {};
+	m_vLastRelMousePos = {};
+
 	// create sdl system cursor map
 	m_mCursorIcons = {
 	    {CURSORTYPE::CURSOR_NORMAL, SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_DEFAULT)},      {CURSORTYPE::CURSOR_WAIT, SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_WAIT)},

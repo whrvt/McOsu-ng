@@ -8,6 +8,11 @@
 #include "SDLEnvironment.h"
 
 #if defined(MCENGINE_PLATFORM_WINDOWS) || (defined(_WIN32) && !defined(__linux__)) // mingw, who knows
+// #if __has_include("mimalloc-new-delete.h")
+// #warning "adding mimalloc-new-delete.h override"
+// #include "mimalloc-new-delete.h"
+// #endif
+
 //#define MCENGINE_WINDOWS_REALTIMESTYLUS_SUPPORT
 //#define MCENGINE_WINDOWS_TOUCH_SUPPORT
 #ifdef MCENGINE_WINDOWS_TOUCH_SUPPORT

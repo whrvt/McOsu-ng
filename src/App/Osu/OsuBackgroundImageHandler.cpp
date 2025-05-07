@@ -136,7 +136,7 @@ void OsuBackgroundImageHandler::handleLoadImageForEntry(ENTRY &entry)
 	// start image load
 	engine->getResourceManager()->requestNextLoadAsync();
 	engine->getResourceManager()->requestNextLoadUnmanaged();
-	entry.image = engine->getResourceManager()->loadImageAbsUnnamed(fullBackgroundImageFilePath);
+	entry.image = engine->getResourceManager()->loadImageAbsUnnamed(fullBackgroundImageFilePath, true);
 }
 
 Image *OsuBackgroundImageHandler::getLoadBackgroundImage(const OsuDatabaseBeatmap *beatmap)

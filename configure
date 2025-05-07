@@ -879,6 +879,7 @@ enable_system_deps
 enable_static
 with_sdlmixer
 with_soloud
+with_mimalloc
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1570,6 +1571,8 @@ Optional Packages:
                           (default: no)
   --with-soloud           Use the SoLoud backend for audio instead of BASS
                           (default: no)
+  --with-mimalloc         Use mimalloc instead of the default memory allocator
+                          (faster) (default: on if not debug)
 
 Some influential environment variables:
   CC          C compiler command
@@ -5752,6 +5755,13 @@ then :
 fi
 
 
+# Check whether --with-mimalloc was given.
+if test ${with_mimalloc+y}
+then :
+  withval=$with_mimalloc;
+fi
+
+
 if test "x$with_sdlmixer" = "xyes" && test "x$with_soloud" = "xyes"
 then :
 
@@ -7422,6 +7432,7 @@ fi
 if test "x$enable_debug" = "xyes"
 then :
 
+    with_mimalloc="no"
     CXXFLAGS="$CXXFLAGS -ggdb3 -gdwarf-5 -Og -fasynchronous-unwind-tables"
     CFLAGS="$CFLAGS -ggdb3 -gdwarf-5 -Og -fasynchronous-unwind-tables"
     ENABLE_DEBUG=$enable_debug
@@ -8548,7 +8559,7 @@ SDL3_MIXER_VERSION=b8017938de8b31c1962c2c8044a127519c2c1cdf
 
 SDL3_MIXER_PREFIX=$DEPS_PREFIX
 
-MIMALLOC_VERSION=3.0.3
+MIMALLOC_VERSION=1aa832873b7824b84ca70152fdf1af851ec8bb52
 
 MIMALLOC_PREFIX=$DEPS_PREFIX
 
@@ -9796,14 +9807,14 @@ else
   BUILD_FREETYPE2_FALSE=
 fi
 
- if test "x$enable_debug" != "xyes" && test "$host_os" != "mingw32"; then
+ if test "x$enable_debug" != "xyes" || test "x$with_mimalloc" = "xno"; then
   BUILD_MIMALLOC_TRUE=
   BUILD_MIMALLOC_FALSE='#'
 else
   BUILD_MIMALLOC_TRUE='#'
   BUILD_MIMALLOC_FALSE=
 fi
- # can't find a way to make it work...
+
 
  if test "x$with_sdlmixer" != "xyes" && test "x$with_soloud" != "xyes"; then
   USE_BASS_TRUE=
@@ -11578,6 +11589,7 @@ McOsu-ng build configuration:
     C compiler:         ${CC}
     C flags:            ${CFLAGS}
     Linker flags:       ${LDFLAGS}
+    mimalloc:           ${with_mimalloc-yes}
     SDL_mixer:          ${with_sdlmixer-no}
     SoLoud:             ${with_soloud-no}
     LTO:                ${enable_lto-auto}
@@ -11612,6 +11624,7 @@ McOsu-ng build configuration:
     C compiler:         ${CC}
     C flags:            ${CFLAGS}
     Linker flags:       ${LDFLAGS}
+    mimalloc:           ${with_mimalloc-yes}
     SDL_mixer:          ${with_sdlmixer-no}
     SoLoud:             ${with_soloud-no}
     LTO:                ${enable_lto-auto}

@@ -101,6 +101,8 @@ AC_ARG_WITH([sdlmixer],
     AS_HELP_STRING([--with-sdlmixer], [Use the SDL_mixer backend for audio instead of BASS (default: no)]))
 AC_ARG_WITH([soloud],
     AS_HELP_STRING([--with-soloud], [Use the SoLoud backend for audio instead of BASS (default: no)]))
+AC_ARG_WITH([mimalloc],
+    AS_HELP_STRING([--with-mimalloc], [Use mimalloc instead of the default memory allocator (faster) (default: on if not debug)]))
 
 AS_IF([test "x$with_sdlmixer" = "xyes" && test "x$with_soloud" = "xyes"], [
     AC_MSG_ERROR([Only one of --with-sdlmixer or --with-soloud can be used at once!])
@@ -302,6 +304,7 @@ AS_IF([test "x$enable_asan" = "xyes"], [
 ])
 
 AS_IF([test "x$enable_debug" = "xyes"], [
+    with_mimalloc="no"
     CXXFLAGS="$CXXFLAGS -ggdb3 -gdwarf-5 -Og -fasynchronous-unwind-tables"
     CFLAGS="$CFLAGS -ggdb3 -gdwarf-5 -Og -fasynchronous-unwind-tables"
     ENABLE_DEBUG=$enable_debug
@@ -389,7 +392,7 @@ AC_SUBST([SOUNDTOUCH_VERSION], [2.4.0])
 AC_SUBST([SOUNDTOUCH_PREFIX],[$DEPS_PREFIX])
 AC_SUBST([SDL3_MIXER_VERSION], [b8017938de8b31c1962c2c8044a127519c2c1cdf])
 AC_SUBST([SDL3_MIXER_PREFIX],[$DEPS_PREFIX])
-AC_SUBST([MIMALLOC_VERSION], [3.0.3])
+AC_SUBST([MIMALLOC_VERSION], [1aa832873b7824b84ca70152fdf1af851ec8bb52])
 AC_SUBST([MIMALLOC_PREFIX],[$DEPS_PREFIX])
 
 # TODO: add all deps and transitive deps (fun!)
@@ -458,7 +461,7 @@ AM_CONDITIONAL([BUILD_LIBPNG], [test "x$have_libpng" != "xyes"])
 AM_CONDITIONAL([BUILD_BZIP2], [test "x$have_bzip2" != "xyes"])
 AM_CONDITIONAL([BUILD_ZLIB], [test "x$have_zlib" != "xyes"])
 AM_CONDITIONAL([BUILD_FREETYPE2], [test "x$have_freetype2" != "xyes"])
-AM_CONDITIONAL([BUILD_MIMALLOC], [test "x$enable_debug" != "xyes" && test "$host_os" != "mingw32"]) # can't find a way to make it work...
+AM_CONDITIONAL([BUILD_MIMALLOC], [test "x$enable_debug" != "xyes" || test "x$with_mimalloc" = "xno"])
 
 AM_CONDITIONAL([USE_BASS], [test "x$with_sdlmixer" != "xyes" && test "x$with_soloud" != "xyes"])
 AM_CONDITIONAL([USE_SDLMIXER], [test "x$with_sdlmixer" = "xyes"])
@@ -536,6 +539,7 @@ McOsu-ng build configuration:
     C compiler:         ${CC}
     C flags:            ${CFLAGS}
     Linker flags:       ${LDFLAGS}
+    mimalloc:           ${with_mimalloc-yes}
     SDL_mixer:          ${with_sdlmixer-no}
     SoLoud:             ${with_soloud-no}
     LTO:                ${enable_lto-auto}

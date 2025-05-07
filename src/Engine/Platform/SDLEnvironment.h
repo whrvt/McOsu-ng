@@ -112,7 +112,17 @@ public:
 	void setCursor(CURSORTYPE cur) override;
 	void setCursorVisible(bool visible) override;
 	void setCursorClip(bool clip, McRect rect) override;
-
+	inline void setMousePos(const Vector2& pos) override
+	{
+		m_vLastAbsMousePos = pos;
+		setCursorPosition();
+	}
+	inline void setMousePos(float x, float y) override
+	{
+		m_vLastAbsMousePos.x = x;
+		m_vLastAbsMousePos.y = y;
+		setCursorPosition();
+	}
 	// keyboard
 	UString keyCodeToString(KEYCODE keyCode) override;
 	void listenToTextInput(bool listen) override;
@@ -166,6 +176,12 @@ private:
 	McRect m_cursorClip;
 	CURSORTYPE m_cursorType;
 	std::map<CURSORTYPE, SDL_Cursor *> m_mCursorIcons;
+
+	// the absolute/relative mouse position from the most recent iteration of the event loop
+	// relative only useful if raw input is enabled, value is undefined/garbage otherwise
+	Vector2 m_vLastAbsMousePos;
+	Vector2 m_vLastRelMousePos;
+
 	void onRawInputChange(float newval);
 	void setRawInput(bool on);
 

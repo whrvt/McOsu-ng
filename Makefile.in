@@ -974,7 +974,8 @@ CLEANFILES = \
 
 comma := ,# bruh
 @BUILD_MIMALLOC_FALSE@MIMALLOC_LIBS := 
-@BUILD_MIMALLOC_TRUE@MIMALLOC_LIBS = $(DEPS_PREFIX)/lib/mimalloc$(if $(ENABLE_ASAN),-asan-debug,$(if $(ENABLE_DEBUG),-debug,)).o
+@BUILD_MIMALLOC_TRUE@@WIN_PLATFORM_FALSE@MIMALLOC_LIBS = $(DEPS_PREFIX)/lib/mimalloc$(if $(ENABLE_ASAN),-asan-debug,$(if $(ENABLE_DEBUG),-debug,)).o
+@BUILD_MIMALLOC_TRUE@@WIN_PLATFORM_TRUE@MIMALLOC_LIBS = -L$(DEPS_PREFIX)/lib -Wl,--whole-archive -l:libmimalloc.dll.a -Wl,--no-whole-archive -L$(DEPS_PREFIX)/bin -lmimalloc -lmimalloc-redirect
 @USE_BASS_FALSE@@USE_SDLMIXER_FALSE@AUDIO_CFLAGS = -I$(DEPS_PREFIX)/include $(shell $(PKG_CONFIG) --cflags soundtouch)
 @USE_BASS_FALSE@@USE_SDLMIXER_TRUE@AUDIO_CFLAGS = $(shell $(PKG_CONFIG) --cflags sdl3-mixer)
 @USE_BASS_TRUE@AUDIO_CFLAGS := $(BASS_CFLAGS)
@@ -5154,7 +5155,7 @@ uninstall-am: uninstall-binPROGRAMS uninstall-local
 
 $(DEPS_CACHE)/mimalloc-$(MIMALLOC_VERSION).source:
 	$(MKDIR_P) $(DEPS_CACHE)
-	$(WGET) -qO $(DEPS_CACHE)/mimalloc-$(MIMALLOC_VERSION).tar.gz "https://github.com/microsoft/mimalloc/archive/refs/tags/v$(MIMALLOC_VERSION).tar.gz" && \
+	$(WGET) -qO $(DEPS_CACHE)/mimalloc-$(MIMALLOC_VERSION).tar.gz "https://github.com/microsoft/mimalloc/archive/$(MIMALLOC_VERSION).tar.gz" && \
 	touch $@
 @BUILD_MIMALLOC_TRUE@$(DEPS_PREFIX)/mimalloc.built: $(DEPS_CACHE)/mimalloc-$(MIMALLOC_VERSION).source
 @BUILD_MIMALLOC_TRUE@	rm -rf $(DEPS_PREFIX)/mimalloc
@@ -5165,21 +5166,23 @@ $(DEPS_CACHE)/mimalloc-$(MIMALLOC_VERSION).source:
 @BUILD_MIMALLOC_TRUE@	env PKG_CONFIG="$(PKG_CONFIG)" \
 @BUILD_MIMALLOC_TRUE@		LDFLAGS="$(LDFLAGS) -xnone" cmake \
 @BUILD_MIMALLOC_TRUE@		-D CMAKE_C_COMPILER="$(CC)" \
-@BUILD_MIMALLOC_TRUE@		-D CMAKE_C_FLAGS="$(CFLAGS)" \
+@BUILD_MIMALLOC_TRUE@		-D CMAKE_C_FLAGS="$(CFLAGS) -Wno-array-bounds" \
 @BUILD_MIMALLOC_TRUE@		-D CMAKE_SYSTEM_NAME="$(CMAKE_SYSTEM_NAME)" \
 @BUILD_MIMALLOC_TRUE@		-D CMAKE_SYSTEM_PROCESSOR="$(host_cpu)" \
 @BUILD_MIMALLOC_TRUE@		-D CMAKE_CXX_COMPILER="$(CXX)" \
-@BUILD_MIMALLOC_TRUE@		-D CMAKE_CXX_FLAGS="$(CXXFLAGS) -xc++" \
+@BUILD_MIMALLOC_TRUE@		-D CMAKE_CXX_FLAGS="$(CXXFLAGS) -xc++ -Wno-array-bounds" \
 @BUILD_MIMALLOC_TRUE@		-D CMAKE_INSTALL_PREFIX="$(DEPS_PREFIX)" \
 @BUILD_MIMALLOC_TRUE@		-D MI_OPT_ARCH=ON \
+@BUILD_MIMALLOC_TRUE@		-D MI_OPT_SIMD=ON \
 @BUILD_MIMALLOC_TRUE@		-D MI_USE_CXX=ON \
 @BUILD_MIMALLOC_TRUE@		-D MI_NO_OPT_ARCH=OFF \
-@BUILD_MIMALLOC_TRUE@		-D MI_BUILD_SHARED=OFF \
+@BUILD_MIMALLOC_TRUE@		-D MI_WIN_USE_FIXED_TLS=OFF \
+@BUILD_MIMALLOC_TRUE@		-D MI_BUILD_SHARED=$(if $(findstring linux,$(host_os)),OFF,ON) \
 @BUILD_MIMALLOC_TRUE@		-D MI_BUILD_TESTS=OFF \
 @BUILD_MIMALLOC_TRUE@		$(if $(ENABLE_ASAN),-DMI_LOCAL_DYNAMIC_TLS=ON -DMI_TRACK_ASAN=ON -DMI_DEBUG_UBSAN=ON,) \
 @BUILD_MIMALLOC_TRUE@		-D MI_INSTALL_TOPLEVEL=ON \
 @BUILD_MIMALLOC_TRUE@		-D MI_BUILD_STATIC=OFF \
-@BUILD_MIMALLOC_TRUE@		-D MI_BUILD_OBJECT=ON ../.. && \
+@BUILD_MIMALLOC_TRUE@		-D MI_BUILD_OBJECT=$(if $(findstring linux,$(host_os)),ON,OFF) ../.. && \
 @BUILD_MIMALLOC_TRUE@	make install
 @BUILD_MIMALLOC_TRUE@	touch $@
 @BUILD_MIMALLOC_FALSE@$(DEPS_PREFIX)/mimalloc.built:
@@ -5531,6 +5534,7 @@ install-libs:
 	find $(srcdir)/$(ASSETS_DIR)/models -type f -exec $(INSTALL) -Dm 644 '{''}' "$(DESTDIR)$(bindir)/models" ';'
 	find $(srcdir)/$(ASSETS_DIR)/shaders -type f -exec $(INSTALL) -Dm 644 '{''}' "$(DESTDIR)$(bindir)/shaders" ';'
 	find $(srcdir)/$(ASSETS_DIR)/fonts -type f -exec $(INSTALL) -Dm 644 '{''}' "$(DESTDIR)$(bindir)/fonts" ';'
+@BUILD_MIMALLOC_TRUE@@WIN_PLATFORM_TRUE@	@cp -P "$(DEPS_PREFIX)/bin/mimalloc"{,-redirect}".dll" "$(DESTDIR)$(bindir)/$(LIBDEST)"
 @USE_BASS_FALSE@@USE_SDLMIXER_TRUE@	$(if $(SDL3_STATIC),,@cp -P "$(SDL3_MIXER_PREFIX)/lib"/{*$(LIBPREFIX)SDL3_mixer*$(DLLEXT)*,*$(LIBPREFIX)mpg123*$(DLLEXT)*,*$(LIBPREFIX)xmp*$(DLLEXT)*,*$(LIBPREFIX)wavpack*$(DLLEXT)*,*$(LIBPREFIX)opus*$(DLLEXT)*,*$(LIBPREFIX)ogg*$(DLLEXT)*} "$(DESTDIR)$(bindir)/$(LIBDEST)")
 @USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	$(if $(SDL3_STATIC),,@cp -P "$(SOLOUD_PREFIX)/lib"/*$(LIBPREFIX)SoundTouch*$(DLLEXT)* "$(DESTDIR)$(bindir)/$(LIBDEST)")
 @USE_BASS_TRUE@	$(INSTALL) -m 755 $(srcdir)/$(BUNDLED_BASS_DIR)/lib/$(SYSNAME)/$(host_cpu)/$(LIBPREFIX)bass$(DLLEXT) "$(DESTDIR)$(bindir)/$(LIBDEST)"
