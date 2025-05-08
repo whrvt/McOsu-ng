@@ -758,6 +758,9 @@ PKG_CONFIG_PATH
 PKGTYPE
 LLVMMINGW
 GENIE
+CMAKE
+MESON
+NINJA
 PKGCONF
 TAR
 GIT
@@ -5496,6 +5499,9 @@ printf "%s\n" "$ac_cv_path_SED" >&6; }
 
 
 
+
+
+
 # needed for building SoLoud (if enabled)
 
 # needed for building libjpeg (if building it is required)
@@ -5695,6 +5701,150 @@ fi
     fi
 
 
+    # Extract the first word of "ninja", so it can be a program name with args.
+set dummy ninja; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+if test ${ac_cv_prog_NINJA+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) if test -n "$NINJA"; then
+  ac_cv_prog_NINJA="$NINJA" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    ac_cv_prog_NINJA="ninja"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi ;;
+esac
+fi
+NINJA=$ac_cv_prog_NINJA
+if test -n "$NINJA"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $NINJA" >&5
+printf "%s\n" "$NINJA" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+
+    if test -z "$NINJA"; then
+        as_fn_error $? "ninja not found - required for building dependencies" "$LINENO" 5
+    fi
+
+
+    # Extract the first word of "meson", so it can be a program name with args.
+set dummy meson; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+if test ${ac_cv_prog_MESON+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) if test -n "$MESON"; then
+  ac_cv_prog_MESON="$MESON" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    ac_cv_prog_MESON="meson"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi ;;
+esac
+fi
+MESON=$ac_cv_prog_MESON
+if test -n "$MESON"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $MESON" >&5
+printf "%s\n" "$MESON" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+
+    if test -z "$MESON"; then
+        as_fn_error $? "meson not found - required for building dependencies" "$LINENO" 5
+    fi
+
+
+    # Extract the first word of "cmake", so it can be a program name with args.
+set dummy cmake; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+if test ${ac_cv_prog_CMAKE+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) if test -n "$CMAKE"; then
+  ac_cv_prog_CMAKE="$CMAKE" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    ac_cv_prog_CMAKE="cmake"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi ;;
+esac
+fi
+CMAKE=$ac_cv_prog_CMAKE
+if test -n "$CMAKE"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $CMAKE" >&5
+printf "%s\n" "$CMAKE" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+
+    if test -z "$CMAKE"; then
+        as_fn_error $? "cmake not found - required for building dependencies" "$LINENO" 5
+    fi
+
+
 # Check whether --enable-optimize was given.
 if test ${enable_optimize+y}
 then :
@@ -5827,16 +5977,23 @@ fi
 
 fi
 
-# FIXME: GLEW esp. doesnt wanna build shared
-if test "$host_os" = "mingw32" && test "x$enable_clang" = "xyes"
+if test "$host_os" = "mingw32"
 then :
 
-    LLVMMINGW=1
-
+    # its too much of a headache to cross-build shared with host libs
     enable_static=yes
     disable_shared=yes
-    CXXFLAGS="$CXXFLAGS --target=$host_cpu-w64-windows-gnu"
-    CFLAGS="$CFLAGS --target=$host_cpu-w64-windows-gnu"
+    enable_system_deps=no
+    disable_system_deps=yes
+    if test "x$enable_clang" = "xyes"
+then :
+
+        LLVMMINGW=1
+
+        CXXFLAGS="$CXXFLAGS --target=$host_cpu-w64-windows-gnu"
+        CFLAGS="$CFLAGS --target=$host_cpu-w64-windows-gnu"
+
+fi
 
 fi
 
@@ -7293,68 +7450,6 @@ else case e in #(
  ;;
 esac
 fi
-
-
-ac_ext=c
-ac_cpp='$CPP $CPPFLAGS'
-ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
-ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
-ac_compiler_gnu=$ac_cv_c_compiler_gnu
-
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether the C compiler accepts -std=gnu23" >&5
-printf %s "checking whether the C compiler accepts -std=gnu23... " >&6; }
-if test ${ax_cv_check_cflags___std_gnu23+y}
-then :
-  printf %s "(cached) " >&6
-else case e in #(
-  e)
-  ax_check_save_flags=$CFLAGS
-  if test x"$GCC" = xyes ; then
-    add_gnu_werror="-Werror"
-  fi
-  CFLAGS="$CFLAGS  -std=gnu23 $add_gnu_werror"
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-int
-main (void)
-{
-
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"
-then :
-  ax_cv_check_cflags___std_gnu23=yes
-else case e in #(
-  e) ax_cv_check_cflags___std_gnu23=no ;;
-esac
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
-  CFLAGS=$ax_check_save_flags ;;
-esac
-fi
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ax_cv_check_cflags___std_gnu23" >&5
-printf "%s\n" "$ax_cv_check_cflags___std_gnu23" >&6; }
-if test "x$ax_cv_check_cflags___std_gnu23" = xyes
-then :
-
-    CFLAGS="$CFLAGS -std=gnu23"
-
-else case e in #(
-  e)
-    as_fn_error $? "Compiler does not support gnu23" "$LINENO" 5
- ;;
-esac
-fi
-
-
-ac_ext=cpp
-ac_cpp='$CXXCPP $CPPFLAGS'
-ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
-ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
-ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 
 
 if test "$host_os" = "linux-gnu"

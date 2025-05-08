@@ -59,6 +59,24 @@ AC_DEFUN([AC_PROG_PKGCONF], [
         AC_MSG_ERROR([pkgconf not found - required for finding include/library paths])
     fi
 ])
+AC_DEFUN([AC_PROG_CMAKE], [
+    AC_CHECK_PROG([CMAKE], [cmake], [cmake])
+    if test -z "$CMAKE"; then
+        AC_MSG_ERROR([cmake not found - required for building dependencies])
+    fi
+])
+AC_DEFUN([AC_PROG_MESON], [
+    AC_CHECK_PROG([MESON], [meson], [meson])
+    if test -z "$MESON"; then
+        AC_MSG_ERROR([meson not found - required for building dependencies])
+    fi
+])
+AC_DEFUN([AC_PROG_NINJA], [
+    AC_CHECK_PROG([NINJA], [ninja], [ninja])
+    if test -z "$NINJA"; then
+        AC_MSG_ERROR([ninja not found - required for building dependencies])
+    fi
+])
 # needed for building SoLoud (if enabled)
 AC_DEFUN([AC_PROG_GENIE], [
     AC_CHECK_PROG([GENIE], [genie], [genie])
@@ -79,6 +97,9 @@ AC_PROG_WGET
 AC_PROG_GIT
 AC_PROG_TAR
 AC_PROG_PKGCONF
+AC_PROG_NINJA
+AC_PROG_MESON
+AC_PROG_CMAKE
 
 AC_ARG_ENABLE([optimize],
     AS_HELP_STRING([--enable-optimize], [Optimize for speed (default: yes)]))
@@ -112,14 +133,18 @@ AS_IF([test "x$with_soloud" = "xyes"], [
     AC_PROG_GENIE
 ])
 
-# FIXME: GLEW esp. doesnt wanna build shared
-AS_IF([test "$host_os" = "mingw32" && test "x$enable_clang" = "xyes"], [
-    LLVMMINGW=1
-    AC_SUBST([LLVMMINGW])
+AS_IF([test "$host_os" = "mingw32"], [
+    # its too much of a headache to cross-build shared with host libs
     enable_static=yes
     disable_shared=yes
-    CXXFLAGS="$CXXFLAGS --target=$host_cpu-w64-windows-gnu"
-    CFLAGS="$CFLAGS --target=$host_cpu-w64-windows-gnu"
+    enable_system_deps=no
+    disable_system_deps=yes
+    AS_IF([test "x$enable_clang" = "xyes"], [
+        LLVMMINGW=1
+        AC_SUBST([LLVMMINGW])
+        CXXFLAGS="$CXXFLAGS --target=$host_cpu-w64-windows-gnu"
+        CFLAGS="$CFLAGS --target=$host_cpu-w64-windows-gnu"
+    ])
 ])
 
 AS_IF([test "x$enable_static" = "xyes"], [
@@ -279,15 +304,6 @@ AX_CHECK_COMPILE_FLAG([-std=gnu++23], [
 ], [
     AC_MSG_ERROR([Compiler does not support gnu++23])
 ])
-
-AC_LANG_PUSH([C])
-AX_CHECK_COMPILE_FLAG([-std=gnu23], [
-    CFLAGS="$CFLAGS -std=gnu23"
-], [
-    AC_MSG_ERROR([Compiler does not support gnu23])
-])
-
-AC_LANG_POP
 
 AS_IF([test "$host_os" = "linux-gnu"],[
     AC_CHECK_HEADERS([X11/Xlib.h GL/gl.h GL/glu.h], [],
