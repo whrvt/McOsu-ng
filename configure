@@ -650,7 +650,6 @@ LIBOBJS
 BUNDLED_BASS_FX_DIR
 BUNDLED_BASS_DIR
 BUNDLED_LIBS_DIR
-BASS_LIBS
 BASS_CFLAGS
 ASSETS_DIR
 WINPTHREAD_DLL_NEEDED_FALSE
@@ -5985,6 +5984,8 @@ then :
     disable_shared=yes
     enable_system_deps=no
     disable_system_deps=yes
+    MCOSU_CPPFLAGS="$CPPFLAGS -DUNICODE"
+    MCOSU_CXXFLAGS="$CXXFLAGS -DUNICODE -municode"
     if test "x$enable_clang" = "xyes"
 then :
 
@@ -6186,7 +6187,6 @@ __EOF__
     SYSNAME="linux"
     DLLEXT=".so"
     LIBPREFIX="lib"
-    BASS_LIBS="-lbass" #bassfx is loaded with dlsym
 
 
 printf "%s\n" "#define MCENGINE_PLATFORM_LINUX 1" >>confdefs.h
@@ -6225,7 +6225,6 @@ fi
     SYSNAME="windows"
     DLLEXT=".dll"
     LIBPREFIX=""
-    BASS_LIBS="-lbass -lbass_fx"
 
     if test "$host_cpu" = "i686"
 then :
@@ -10029,14 +10028,12 @@ else case e in #(
 esac
 fi
     BASS_CFLAGS="-I\$(srcdir)/\$(BUNDLED_BASS_DIR)/include -I\$(srcdir)/\$(BUNDLED_BASS_FX_DIR)/include"
-    BASS_LIBS="-L\$(srcdir)/\$(BUNDLED_BASS_DIR)/lib/\$(SYSNAME)/\$(host_cpu) -L\$(srcdir)/\$(BUNDLED_BASS_FX_DIR)/lib/\$(SYSNAME)/\$(host_cpu) $BASS_LIBS"
 
 printf "%s\n" "#define MCENGINE_FEATURE_BASS 1" >>confdefs.h
 
 
 else case e in #(
   e)
-    BASS_LIBS=""
     BASS_CFLAGS=""
     if test "x$with_sdlmixer" = "xyes"
 then :
@@ -10057,7 +10054,6 @@ fi
  ;;
 esac
 fi
-
 
 
 

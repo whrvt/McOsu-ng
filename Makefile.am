@@ -226,7 +226,7 @@ $(DEPS_PREFIX)/SDL3_mixer.built:
 endif
 else
 AUDIO_CFLAGS := $(BASS_CFLAGS)
-AUDIO_LIBS := $(BASS_LIBS)
+AUDIO_LIBS :=
 $(DEPS_PREFIX)/SDL3_mixer.built:
 	$(MKDIR_P) $(DEPS_PREFIX) && touch $@
 $(DEPS_PREFIX)/SoLoud.built:
@@ -327,10 +327,10 @@ $(DEPS_PREFIX)/libpng.built: $(DEPS_PREFIX)/zlib.built $(DEPS_CACHE)/libpng-$(LI
 	$(MKDIR_P) $(DEPS_PREFIX)/libpng/build $(DEPS_PREFIX)/lib/pkgconfig
 	$(TAR) xf $(DEPS_CACHE)/libpng-$(LIBPNG_VERSION).tar.gz -C $(DEPS_PREFIX)/libpng --strip-components=1 && \
 	cd $(DEPS_PREFIX)/libpng && PKG_CONFIG="$(PKG_CONFIG)" \
-		./configure --host=$(host_alias) --prefix="$(DEPS_PREFIX)" \
+		./configure lt_cv_prog_gnu_ld=yes --host=$(host_alias) --build=$(build) --prefix="$(DEPS_PREFIX)" \
 		$(if $(SDL3_STATIC),--enable-static --disable-shared,--enable-shared --disable-static) \
 		--disable-tools --disable-tests \
-		CC="$(CC) $(shell $(PKG_CONFIG) --cflags zlib)" CXX="$(CXX)" LD="$(LD)" CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS) $(shell $(PKG_CONFIG) --libs zlib)" && \
+		CC="$(CC) $(shell $(PKG_CONFIG) --cflags zlib)" CXX="$(CXX)" LD="$(CC)" CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS) $(shell $(PKG_CONFIG) --libs zlib)" && \
 	$(MAKE) && \
 	$(MAKE) install
 	PKG_CONFIG="$(PKG_CONFIG)" \
@@ -418,7 +418,7 @@ $(DEPS_PREFIX)/FREETYPE2.built: $(DEPS_PREFIX)/libpng.built $(DEPS_PREFIX)/bzip2
 	cd $(DEPS_PREFIX)/FREETYPE2 && \
 	patch -Np1<$(abs_top_srcdir)/build/aux/freetype-win.patch && \
 	PKG_CONFIG="$(PKG_CONFIG)" \
-		./configure --host=$(host_alias) --prefix="$(DEPS_PREFIX)" --with-harfbuzz=no --with-brotli=no \
+		./configure lt_cv_prog_gnu_ld=yes --host=$(host_alias) --prefix="$(DEPS_PREFIX)" --with-harfbuzz=no --with-brotli=no \
 		$(if $(SDL3_STATIC),--enable-static --disable-shared,--enable-shared --disable-static) \
 		CC="$(CC)" CXX="$(CXX)" LD="$(LD)" CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS)" && \
 	$(MAKE) && \

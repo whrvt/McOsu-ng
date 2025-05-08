@@ -221,6 +221,7 @@ am_McOsu_ng_OBJECTS = src/App/Osu/McOsu_ng-Osu.$(OBJEXT) \
 	src/Engine/Main/McOsu_ng-main_SDL.$(OBJEXT) \
 	src/Engine/McOsu_ng-NetworkHandler.$(OBJEXT) \
 	src/Engine/McOsu_ng-OpenVRInterface.$(OBJEXT) \
+	src/Engine/Platform/McOsu_ng-BassLoader.$(OBJEXT) \
 	src/Engine/Platform/McOsu_ng-BassSound.$(OBJEXT) \
 	src/Engine/Platform/McOsu_ng-BassSoundEngine.$(OBJEXT) \
 	src/Engine/Platform/McOsu_ng-NullContextMenu.$(OBJEXT) \
@@ -432,6 +433,7 @@ am__depfiles_remade = src/App/Osu/$(DEPDIR)/McOsu_ng-Osu.Po \
 	src/Engine/Input/$(DEPDIR)/McOsu_ng-OpenVRController.Po \
 	src/Engine/Main/$(DEPDIR)/McOsu_ng-main.Po \
 	src/Engine/Main/$(DEPDIR)/McOsu_ng-main_SDL.Po \
+	src/Engine/Platform/$(DEPDIR)/McOsu_ng-BassLoader.Po \
 	src/Engine/Platform/$(DEPDIR)/McOsu_ng-BassSound.Po \
 	src/Engine/Platform/$(DEPDIR)/McOsu_ng-BassSoundEngine.Po \
 	src/Engine/Platform/$(DEPDIR)/McOsu_ng-NullContextMenu.Po \
@@ -592,7 +594,6 @@ AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
 AWK = @AWK@
 BASS_CFLAGS = @BASS_CFLAGS@
-BASS_LIBS = @BASS_LIBS@
 BEAR = @BEAR@
 BUNDLED_BASS_DIR = @BUNDLED_BASS_DIR@
 BUNDLED_BASS_FX_DIR = @BUNDLED_BASS_FX_DIR@
@@ -876,6 +877,7 @@ McOsu_ng_SOURCES = \
 	src/Engine/Main/main_SDL.cpp \
 	src/Engine/NetworkHandler.cpp \
 	src/Engine/OpenVRInterface.cpp \
+	src/Engine/Platform/BassLoader.cpp \
 	src/Engine/Platform/BassSound.cpp \
 	src/Engine/Platform/BassSoundEngine.cpp \
 	src/Engine/Platform/NullContextMenu.cpp \
@@ -990,7 +992,7 @@ comma := ,# bruh
 # the dynamic soloud lib is busted somehow
 @USE_BASS_FALSE@@USE_SDLMIXER_FALSE@AUDIO_LIBS = -L$(DEPS_PREFIX)/lib -lsoloud_static_x$(if $(filter x86_64,$(host_cpu)),64,32)$(if $(ENABLE_DEBUG),_d,) $(shell $(PKG_CONFIG) --libs soundtouch)
 @USE_BASS_FALSE@@USE_SDLMIXER_TRUE@AUDIO_LIBS = $(shell $(PKG_CONFIG) --libs sdl3-mixer)
-@USE_BASS_TRUE@AUDIO_LIBS := $(BASS_LIBS)
+@USE_BASS_TRUE@AUDIO_LIBS := 
 BUILT_SOURCES := $(DEPS_PREFIX)/mimalloc.built $(DEPS_PREFIX)/SDL3.built $(DEPS_PREFIX)/SDL3_mixer.built $(DEPS_PREFIX)/GLEW.built $(DEPS_PREFIX)/libjpeg.built \
 	$(DEPS_PREFIX)/libpng.built $(DEPS_PREFIX)/bzip2.built $(DEPS_PREFIX)/zlib.built $(DEPS_PREFIX)/FREETYPE2.built $(DEPS_PREFIX)/SoLoud.built $(DEPS_PREFIX)/SoundTouch.built
 
@@ -1424,6 +1426,9 @@ src/Engine/Platform/$(am__dirstamp):
 src/Engine/Platform/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) src/Engine/Platform/$(DEPDIR)
 	@: >>src/Engine/Platform/$(DEPDIR)/$(am__dirstamp)
+src/Engine/Platform/McOsu_ng-BassLoader.$(OBJEXT):  \
+	src/Engine/Platform/$(am__dirstamp) \
+	src/Engine/Platform/$(DEPDIR)/$(am__dirstamp)
 src/Engine/Platform/McOsu_ng-BassSound.$(OBJEXT):  \
 	src/Engine/Platform/$(am__dirstamp) \
 	src/Engine/Platform/$(DEPDIR)/$(am__dirstamp)
@@ -1810,6 +1815,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Input/$(DEPDIR)/McOsu_ng-OpenVRController.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Main/$(DEPDIR)/McOsu_ng-main.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Main/$(DEPDIR)/McOsu_ng-main_SDL.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-BassLoader.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-BassSound.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-BassSoundEngine.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-NullContextMenu.Po@am__quote@ # am--include-marker
@@ -3196,6 +3202,20 @@ src/Engine/McOsu_ng-OpenVRInterface.obj: src/Engine/OpenVRInterface.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/OpenVRInterface.cpp' object='src/Engine/McOsu_ng-OpenVRInterface.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/McOsu_ng-OpenVRInterface.obj `if test -f 'src/Engine/OpenVRInterface.cpp'; then $(CYGPATH_W) 'src/Engine/OpenVRInterface.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/OpenVRInterface.cpp'; fi`
+
+src/Engine/Platform/McOsu_ng-BassLoader.o: src/Engine/Platform/BassLoader.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Platform/McOsu_ng-BassLoader.o -MD -MP -MF src/Engine/Platform/$(DEPDIR)/McOsu_ng-BassLoader.Tpo -c -o src/Engine/Platform/McOsu_ng-BassLoader.o `test -f 'src/Engine/Platform/BassLoader.cpp' || echo '$(srcdir)/'`src/Engine/Platform/BassLoader.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Platform/$(DEPDIR)/McOsu_ng-BassLoader.Tpo src/Engine/Platform/$(DEPDIR)/McOsu_ng-BassLoader.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Platform/BassLoader.cpp' object='src/Engine/Platform/McOsu_ng-BassLoader.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Platform/McOsu_ng-BassLoader.o `test -f 'src/Engine/Platform/BassLoader.cpp' || echo '$(srcdir)/'`src/Engine/Platform/BassLoader.cpp
+
+src/Engine/Platform/McOsu_ng-BassLoader.obj: src/Engine/Platform/BassLoader.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Platform/McOsu_ng-BassLoader.obj -MD -MP -MF src/Engine/Platform/$(DEPDIR)/McOsu_ng-BassLoader.Tpo -c -o src/Engine/Platform/McOsu_ng-BassLoader.obj `if test -f 'src/Engine/Platform/BassLoader.cpp'; then $(CYGPATH_W) 'src/Engine/Platform/BassLoader.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Platform/BassLoader.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Platform/$(DEPDIR)/McOsu_ng-BassLoader.Tpo src/Engine/Platform/$(DEPDIR)/McOsu_ng-BassLoader.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Platform/BassLoader.cpp' object='src/Engine/Platform/McOsu_ng-BassLoader.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Platform/McOsu_ng-BassLoader.obj `if test -f 'src/Engine/Platform/BassLoader.cpp'; then $(CYGPATH_W) 'src/Engine/Platform/BassLoader.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Platform/BassLoader.cpp'; fi`
 
 src/Engine/Platform/McOsu_ng-BassSound.o: src/Engine/Platform/BassSound.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Platform/McOsu_ng-BassSound.o -MD -MP -MF src/Engine/Platform/$(DEPDIR)/McOsu_ng-BassSound.Tpo -c -o src/Engine/Platform/McOsu_ng-BassSound.o `test -f 'src/Engine/Platform/BassSound.cpp' || echo '$(srcdir)/'`src/Engine/Platform/BassSound.cpp
@@ -4834,6 +4854,7 @@ distclean: distclean-am
 	-rm -f src/Engine/Input/$(DEPDIR)/McOsu_ng-OpenVRController.Po
 	-rm -f src/Engine/Main/$(DEPDIR)/McOsu_ng-main.Po
 	-rm -f src/Engine/Main/$(DEPDIR)/McOsu_ng-main_SDL.Po
+	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-BassLoader.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-BassSound.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-BassSoundEngine.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-NullContextMenu.Po
@@ -5062,6 +5083,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f src/Engine/Input/$(DEPDIR)/McOsu_ng-OpenVRController.Po
 	-rm -f src/Engine/Main/$(DEPDIR)/McOsu_ng-main.Po
 	-rm -f src/Engine/Main/$(DEPDIR)/McOsu_ng-main_SDL.Po
+	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-BassLoader.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-BassSound.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-BassSoundEngine.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-NullContextMenu.Po
@@ -5445,10 +5467,10 @@ $(DEPS_CACHE)/libpng-$(LIBPNG_VERSION).source:
 @BUILD_LIBPNG_TRUE@	$(MKDIR_P) $(DEPS_PREFIX)/libpng/build $(DEPS_PREFIX)/lib/pkgconfig
 @BUILD_LIBPNG_TRUE@	$(TAR) xf $(DEPS_CACHE)/libpng-$(LIBPNG_VERSION).tar.gz -C $(DEPS_PREFIX)/libpng --strip-components=1 && \
 @BUILD_LIBPNG_TRUE@	cd $(DEPS_PREFIX)/libpng && PKG_CONFIG="$(PKG_CONFIG)" \
-@BUILD_LIBPNG_TRUE@		./configure --host=$(host_alias) --prefix="$(DEPS_PREFIX)" \
+@BUILD_LIBPNG_TRUE@		./configure lt_cv_prog_gnu_ld=yes --host=$(host_alias) --build=$(build) --prefix="$(DEPS_PREFIX)" \
 @BUILD_LIBPNG_TRUE@		$(if $(SDL3_STATIC),--enable-static --disable-shared,--enable-shared --disable-static) \
 @BUILD_LIBPNG_TRUE@		--disable-tools --disable-tests \
-@BUILD_LIBPNG_TRUE@		CC="$(CC) $(shell $(PKG_CONFIG) --cflags zlib)" CXX="$(CXX)" LD="$(LD)" CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS) $(shell $(PKG_CONFIG) --libs zlib)" && \
+@BUILD_LIBPNG_TRUE@		CC="$(CC) $(shell $(PKG_CONFIG) --cflags zlib)" CXX="$(CXX)" LD="$(CC)" CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS) $(shell $(PKG_CONFIG) --libs zlib)" && \
 @BUILD_LIBPNG_TRUE@	$(MAKE) && \
 @BUILD_LIBPNG_TRUE@	$(MAKE) install
 @BUILD_LIBPNG_TRUE@	PKG_CONFIG="$(PKG_CONFIG)" \
@@ -5518,7 +5540,7 @@ $(DEPS_CACHE)/FREETYPE2-$(FREETYPE2_VERSION).source:
 @BUILD_FREETYPE2_TRUE@	cd $(DEPS_PREFIX)/FREETYPE2 && \
 @BUILD_FREETYPE2_TRUE@	patch -Np1<$(abs_top_srcdir)/build/aux/freetype-win.patch && \
 @BUILD_FREETYPE2_TRUE@	PKG_CONFIG="$(PKG_CONFIG)" \
-@BUILD_FREETYPE2_TRUE@		./configure --host=$(host_alias) --prefix="$(DEPS_PREFIX)" --with-harfbuzz=no --with-brotli=no \
+@BUILD_FREETYPE2_TRUE@		./configure lt_cv_prog_gnu_ld=yes --host=$(host_alias) --prefix="$(DEPS_PREFIX)" --with-harfbuzz=no --with-brotli=no \
 @BUILD_FREETYPE2_TRUE@		$(if $(SDL3_STATIC),--enable-static --disable-shared,--enable-shared --disable-static) \
 @BUILD_FREETYPE2_TRUE@		CC="$(CC)" CXX="$(CXX)" LD="$(LD)" CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS)" && \
 @BUILD_FREETYPE2_TRUE@	$(MAKE) && \

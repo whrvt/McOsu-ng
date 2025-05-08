@@ -10,22 +10,11 @@
 
 #ifdef MCENGINE_FEATURE_BASS
 
-#include <bass.h>
-
-#ifdef __linux__
-#include <dlfcn.h>
-static void *bassfx_handle = NULL;
-HSTREAM (*pBASS_FX_TempoCreate)(DWORD, DWORD);
-#endif
-
-#ifdef MCENGINE_FEATURE_BASS_WASAPI
-#include <bassmix.h>
-#include <basswasapi.h>
-#endif
-
 #ifdef MCENGINE_FEATURE_MULTITHREADING
 #include <mutex>
 #endif
+
+#include "BassLoader.h"
 
 #include "ConVar.h"
 #include "Engine.h"
@@ -146,6 +135,12 @@ BassSoundEngine::BassSoundEngine() : SoundEngine()
 	*/
 #endif
 
+	if (!BassLoader::init()) {
+		engine->showMessageErrorFatal("Fatal Sound Error", "Failed to load BASS libraries!");
+		engine->shutdown();
+		return;
+	}
+
 	// lib version check
 	m_iBASSVersion = BASS_GetVersion();
 	debugLog("SoundEngine: BASS version = 0x%08x\n", m_iBASSVersion);
@@ -155,21 +150,6 @@ BassSoundEngine::BassSoundEngine() : SoundEngine()
 		engine->shutdown();
 		return;
 	}
-
-#ifdef __linux__
-	if (!bassfx_handle && !(bassfx_handle = dlopen("libbass_fx.so", RTLD_NOW)))
-	{
-		engine->showMessageErrorFatal("failed to get handle to libbass_fx.so: %s\n", dlerror());
-		engine->shutdown();
-		return;
-	}
-	else if (!pBASS_FX_TempoCreate && !(pBASS_FX_TempoCreate = (HSTREAM (*)(DWORD, DWORD))dlsym(bassfx_handle, "BASS_FX_TempoCreate")))
-	{
-		engine->showMessageErrorFatal("failed to find BASS_FX_TempoCreate in libbass_fx.so: %s\n", dlerror());
-		engine->shutdown();
-		return;
-	}
-#endif
 
 	// apply default global settings
 	BASS_SetConfig(BASS_CONFIG_BUFFER, 100);
@@ -232,9 +212,7 @@ BassSoundEngine::~BassSoundEngine()
 #endif
 	}
 
-#ifdef __linux__
-	dlclose(bassfx_handle);
-#endif
+	BassLoader::cleanup();
 }
 
 void BassSoundEngine::restart()

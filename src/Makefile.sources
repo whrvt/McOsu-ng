@@ -92,6 +92,7 @@ McOsu_ng_SOURCES = \
 	src/Engine/Main/main_SDL.cpp \
 	src/Engine/NetworkHandler.cpp \
 	src/Engine/OpenVRInterface.cpp \
+	src/Engine/Platform/BassLoader.cpp \
 	src/Engine/Platform/BassSound.cpp \
 	src/Engine/Platform/BassSoundEngine.cpp \
 	src/Engine/Platform/NullContextMenu.cpp \

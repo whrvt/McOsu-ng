@@ -8,10 +8,6 @@
 #include "SDLEnvironment.h"
 
 #if defined(MCENGINE_PLATFORM_WINDOWS) || (defined(_WIN32) && !defined(__linux__)) // mingw, who knows
-// #if __has_include("mimalloc-new-delete.h")
-// #warning "adding mimalloc-new-delete.h override"
-// #include "mimalloc-new-delete.h"
-// #endif
 
 //#define MCENGINE_WINDOWS_REALTIMESTYLUS_SUPPORT
 //#define MCENGINE_WINDOWS_TOUCH_SUPPORT
@@ -23,8 +19,13 @@
 #endif
 #include <windows.h>
 #include <dwmapi.h>
+#include <libloaderapi.h>
 // TODO: fix this strange argument parsing
-#define MAIN int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
+#ifdef UNICODE
+#define MAIN int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow)
+#else
+#define MAIN int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine, int nCmdShow)
+#endif
 
 // TODO: handle apple-specific shit (not that i can really test that easily...)
 #elif defined(MCENGINE_PLATFORM_LINUX) || defined(__APPLE__) || defined(__EMSCRIPTEN__) || defined(MCENGINE_PLATFORM_WASM)
@@ -37,11 +38,14 @@ MAIN
 {
 #if defined(MCENGINE_PLATFORM_WINDOWS) || (defined(_WIN32) && !defined(__linux__))
 	// disable IME text input
-	if (strstr(lpCmdLine, "-noime") != NULL)
+#ifdef UNICODE
+	if (wcsstr(pCmdLine, TEXT("-noime")) != NULL)
+#else
+	if (strstr(pCmdLine, TEXT("-noime")) != NULL)
+#endif
 	{
 		typedef BOOL (WINAPI *pfnImmDisableIME)(DWORD);
-
-		HMODULE hImm32 = LoadLibrary("imm32.dll");
+		HMODULE hImm32 = LoadLibrary(TEXT("imm32.dll"));
 		if (hImm32 != NULL)
 		{
 			pfnImmDisableIME pImmDisableIME = (pfnImmDisableIME)GetProcAddress(hImm32, "ImmDisableIME");
@@ -57,7 +61,11 @@ MAIN
 
 	// if supported (>= Windows Vista), enable DPI awareness so that GetSystemMetrics returns correct values
 	// without this, on e.g. 150% scaling, the screen pixels of a 1080p monitor would be reported by GetSystemMetrics(SM_CXSCREEN/SM_CYSCREEN) as only 720p!
-	if (strstr(lpCmdLine, "-nodpi") == NULL)
+#ifdef UNICODE
+	if (wcsstr(pCmdLine, TEXT("-nodpi")) == NULL)
+#else
+	if (strstr(pCmdLine, TEXT("-nodpi")) == NULL)
+#endif
 	{
 		typedef WINBOOL (WINAPI *PSPDA)(void);
 		PSPDA g_SetProcessDPIAware = (PSPDA)GetProcAddress(GetModuleHandle(TEXT("user32.dll")), "SetProcessDPIAware");
@@ -65,13 +73,19 @@ MAIN
 			g_SetProcessDPIAware();
 	}
 
-	// build "fake" argc + argv
+	// build "fake" argc + argv (whyyy)
 	const int argc = 2;
 	char *argv[argc];
-	char arg1 = '\0';
-	argv[0] = &arg1;
-	argv[1] = lpCmdLine;
-#endif
+	char arg0[] = PACKAGE_NAME;
+	argv[0] = arg0;
 
+#ifdef UNICODE
+	size_t mbssize = std::wcstombs(NULL, pCmdLine, 0) + 1;
+	argv[1] = (char*)malloc(mbssize);
+	wcstombs(argv[1], pCmdLine, mbssize);
+#else
+	argv[1] = pCmdLine;
+#endif
+#endif
 	return SDLEnvironment().main(argc, argv);
 }
