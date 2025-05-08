@@ -5469,7 +5469,7 @@ $(DEPS_CACHE)/bzip2-$(BZIP2_VERSION).source:
 @BUILD_BZIP2_TRUE@	$(MAKE) $(if $(SDL3_STATIC),"libbz2.a",-f Makefile-libbz2_so) \
 @BUILD_BZIP2_TRUE@		PREFIX="$(DEPS_PREFIX)" CC="$(CC)" CXX="$(CXX)" LD="$(LD)" CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS)" && \
 @BUILD_BZIP2_TRUE@	cp -f bzlib.h $(DEPS_PREFIX)/include/ && \
-@BUILD_BZIP2_TRUE@	cp -f $(if $(SDL3_STATIC),"libbz2.a",libbz2*.so*) $(DEPS_PREFIX)/lib/ && \
+@BUILD_BZIP2_TRUE@	cp -f $(if $(SDL3_STATIC),"libbz2.a",libbz2*$(DLLEXT)*) $(DEPS_PREFIX)/lib/ && \
 @BUILD_BZIP2_TRUE@	$(MKDIR_P) "$(DEPS_PREFIX)/lib/pkgconfig" && \
 @BUILD_BZIP2_TRUE@	( echo 'prefix=$(DEPS_PREFIX)'; \
 @BUILD_BZIP2_TRUE@	  echo 'exec_prefix=$${prefix}'; \
