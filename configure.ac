@@ -243,9 +243,11 @@ __EOF__
     BASS_LIBS="-lbass -lbass_fx"
 
     AS_IF([test "$host_cpu" = "i686"], [ # uber compatibility configuration, works on winxp
+        AS_IF([test "x$enable_native" != "xyes"], [ # compatibility, disable unless explicitly requested
+            enable_native=no
+            disable_native=yes
+        ])
         with_mimalloc="no"
-        enable_native=no
-        disable_native=yes # compatibility
         LDFLAGS="$LDFLAGS -m32 -lwinpthread"
         CPPFLAGS="$CPPFLAGS -DWINVER=0x0501 -D_WIN32_WINNT=0x0501 -D_WIN32_WINDOWS=0x0501 -D_WIN32_IE=0x0501"
         CFLAGS="$CFLAGS -m32 -DWINVER=0x0501 -D_WIN32_WINNT=0x0501 -D_WIN32_WINDOWS=0x0501 -D_WIN32_IE=0x0501"

@@ -2421,13 +2421,15 @@ void Osu::onSkinChange(UString oldValue, UString newValue)
 	skinFolder.append(newValue);
 	skinFolder.append("/");
 
+	// workshop skins use absolute paths
+
+	const bool isWorkshopSkin = Env::cfg(FEAT::STEAM) ? osu_skin_is_from_workshop.getBool() : false;
+
 	// reset playtime tracking
 	if constexpr (Env::cfg(FEAT::STEAM))
 	{
 		steam->stopWorkshopPlaytimeTrackingForAllItems();
 
-		// workshop skins use absolute paths
-		const bool isWorkshopSkin = osu_skin_is_from_workshop.getBool();
 		if (isWorkshopSkin)
 		{
 			skinFolder = newValue;
@@ -2436,19 +2438,13 @@ void Osu::onSkinChange(UString oldValue, UString newValue)
 			if (skinFolder[skinFolder.length()-1] != L'/' && skinFolder[skinFolder.length()-1] != L'\\')
 				skinFolder.append("/");
 
-			// start playtime tracking
-			if constexpr (Env::cfg(FEAT::STEAM))
-				steam->startWorkshopItemPlaytimeTracking((uint64_t)osu_skin_workshop_id.getString().toLong());
+			steam->startWorkshopItemPlaytimeTracking((uint64_t)osu_skin_workshop_id.getString().toLong());
 
 			// set correct name of workshop skin
 			newValue = osu_skin_workshop_title.getString();
 		}
-		m_skinScheduledToLoad = new OsuSkin(this, newValue, skinFolder, (newValue == "default" || newValue == "defaultvr"), isWorkshopSkin);
 	}
-	else
-	{
-		m_skinScheduledToLoad = new OsuSkin(this, newValue, skinFolder, (newValue == "default" || newValue == "defaultvr"), false);
-	}
+	m_skinScheduledToLoad = new OsuSkin(this, newValue, skinFolder, (newValue == "default" || newValue == "defaultvr"), isWorkshopSkin);
 
 	// initial load
 	if (m_skin == NULL)
