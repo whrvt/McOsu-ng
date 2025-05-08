@@ -8558,8 +8558,8 @@ esac
 fi
 
 
-SDL3_MIN_VERSION=3.9.99 # needs SDL_SetRelativeMouseTransform
-SDL3_BUILD_VERSION=8ae962c90457b28e058e5611383a21c3e315aab7 # git
+SDL3_MIN_VERSION=3.9.99 # needs SDL_SetRelativeMouseTransform, not in any current releases
+SDL3_BUILD_VERSION=8ae962c90457b28e058e5611383a21c3e315aab7 # git, latest commit (as of now) has some regression with keyboard inputs being dropped
 GLEW_MIN_VERSION=2.2.0
 GLEW_BUILD_VERSION=2.2.0
 FREETYPE2_MIN_VERSION=2.10.0

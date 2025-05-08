@@ -1785,8 +1785,14 @@ void Osu::onAudioOutputDeviceChange()
 
 void Osu::saveScreenshot()
 {
-    engine->getSound()->play(m_skin->getShutter());
-    int screenshotNumber = 0;
+    static int screenshotNumber = 0;
+
+	if (!env->directoryExists("screenshots") && !env->createDirectory("screenshots"))
+	{
+		m_notificationOverlay->addNotification("Error: Couldn't create screenshots folder.", 0xffff0000, false, 3.0f);
+		return;
+	}
+
     while (env->fileExists(UString::format("screenshots/screenshot%i.png", screenshotNumber)))
         screenshotNumber++;
 
@@ -1797,11 +1803,16 @@ void Osu::saveScreenshot()
     const float innerWidth = m_vInternalResolution.x;
     const float innerHeight = m_vInternalResolution.y;
 
+    engine->getSound()->play(m_skin->getShutter());
+
 	// don't need cropping
 	if (static_cast<int>(innerWidth)  == static_cast<int>(outerWidth) &&
 		static_cast<int>(innerHeight) == static_cast<int>(outerHeight))
 	{
-		Image::saveToImage(&pixels[0], innerWidth, innerHeight, UString::format("screenshots/screenshot%i.png", screenshotNumber));
+		Image::saveToImage(&pixels[0],
+						   static_cast<unsigned int>(innerWidth),
+						   static_cast<unsigned int>(innerHeight),
+						   UString::format("screenshots/screenshot%i.png", screenshotNumber));
 		return;
 	}
 
@@ -1819,14 +1830,17 @@ void Osu::saveScreenshot()
 
     std::vector<unsigned char> croppedPixels(static_cast<size_t>(innerWidth * innerHeight * 3));
 
-    for (int y = 0; y < innerHeight; ++y) {
-        auto srcRowStart = pixels.begin() + ((startY + y) * static_cast<int>(outerWidth) + startX) * 3;
-        auto destRowStart = croppedPixels.begin() + (y * static_cast<int>(innerWidth)) * 3;
+    for (ssize_t y = 0; y < static_cast<ssize_t>(innerHeight); ++y) {
+        auto srcRowStart = pixels.begin() + ((startY + y) * static_cast<ssize_t>(outerWidth) + startX) * 3;
+        auto destRowStart = croppedPixels.begin() + (y * static_cast<ssize_t>(innerWidth)) * 3;
 		// copy the entire row
-        std::ranges::copy_n(srcRowStart, static_cast<int>(innerWidth) * 3, destRowStart);
+        std::ranges::copy_n(srcRowStart, static_cast<ssize_t>(innerWidth) * 3, destRowStart);
     }
 
-    Image::saveToImage(&croppedPixels[0], innerWidth, innerHeight, UString::format("screenshots/screenshot%i.png", screenshotNumber));
+	Image::saveToImage(&croppedPixels[0],
+		static_cast<unsigned int>(innerWidth),
+		static_cast<unsigned int>(innerHeight),
+		UString::format("screenshots/screenshot%i.png", screenshotNumber));
 }
 
 
