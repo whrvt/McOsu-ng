@@ -6073,6 +6073,7 @@ fi
     if test "$host_cpu" = "i686"
 then :
    # uber compatibility configuration, works on winxp
+        with_mimalloc="no"
         LDFLAGS="$LDFLAGS -m32 -lwinpthread"
         CPPFLAGS="$CPPFLAGS -DWINVER=0x0501 -D_WIN32_WINNT=0x0501 -D_WIN32_WINDOWS=0x0501 -D_WIN32_IE=0x0501"
         CFLAGS="$CFLAGS -m32 -DWINVER=0x0501 -D_WIN32_WINNT=0x0501 -D_WIN32_WINDOWS=0x0501 -D_WIN32_IE=0x0501"
@@ -7651,7 +7652,7 @@ MCOSU_LDFLAGS="$MCOSU_LDFLAGS -pthread"
 
 DEPS_PREFIX='${abs_top_builddir}/build/deps'
 
-DEPS_CACHE='${abs_top_builddir}/build/cache'
+DEPS_CACHE='${abs_top_srcdir}/build/cache'
 
 bindir=$bindir-$host_cpu
 
@@ -8558,7 +8559,7 @@ esac
 fi
 
 
-SDL3_MIN_VERSION=3.9.99 # needs SDL_SetRelativeMouseTransform, not in any current releases
+SDL3_MIN_VERSION=3.4.0 # needs SDL_SetRelativeMouseTransform, not in any current (3.2.x) releases
 SDL3_BUILD_VERSION=8ae962c90457b28e058e5611383a21c3e315aab7 # git, latest commit (as of now) has some regression with keyboard inputs being dropped
 GLEW_MIN_VERSION=2.2.0
 GLEW_BUILD_VERSION=2.2.0

@@ -218,6 +218,7 @@ __EOF__
     BASS_LIBS="-lbass -lbass_fx"
 
     AS_IF([test "$host_cpu" = "i686"], [ # uber compatibility configuration, works on winxp
+        with_mimalloc="no"
         LDFLAGS="$LDFLAGS -m32 -lwinpthread"
         CPPFLAGS="$CPPFLAGS -DWINVER=0x0501 -D_WIN32_WINNT=0x0501 -D_WIN32_WINDOWS=0x0501 -D_WIN32_IE=0x0501"
         CFLAGS="$CFLAGS -m32 -DWINVER=0x0501 -D_WIN32_WINNT=0x0501 -D_WIN32_WINDOWS=0x0501 -D_WIN32_IE=0x0501"
@@ -371,7 +372,7 @@ AC_DEFUN([PKG_CHECK_AUTO], [
 ])
 
 AC_SUBST([DEPS_PREFIX], ['${abs_top_builddir}/build/deps'])
-AC_SUBST([DEPS_CACHE], ['${abs_top_builddir}/build/cache'])
+AC_SUBST([DEPS_CACHE], ['${abs_top_srcdir}/build/cache'])
 AC_SUBST([bindir], [$bindir-$host_cpu])
 
 AS_IF([test "$SYSNAME" = "linux"], [
