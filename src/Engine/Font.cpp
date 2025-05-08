@@ -391,8 +391,6 @@ void McFont::flushBatch(Graphics *g)
 		}
 	}
 
-	m_textureAtlas->getAtlasImage()->setFilterMode(m_bAntialiasing ? Graphics::FILTER_MODE::FILTER_MODE_LINEAR : Graphics::FILTER_MODE::FILTER_MODE_NONE);
-
 	m_textureAtlas->getAtlasImage()->bind();
 
 	g->drawVAO(&m_vao);

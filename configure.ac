@@ -213,7 +213,7 @@ __EOF__
     SYSNAME="linux"
     DLLEXT=".so"
     LIBPREFIX="lib"
-    BASS_LIBS="-lbass -lbass_fx"
+    BASS_LIBS="-lbass" #bassfx is loaded with dlsym
 
     AC_DEFINE([MCENGINE_PLATFORM_LINUX], [1], [Define if compiling for Linux.])
 ],[
@@ -405,7 +405,7 @@ PKG_CHECK_AUTO([GL], [gl], [have_gl=yes], [have_gl=no])
 PKG_CHECK_AUTO([GLU], [glu], [have_glu=yes], [have_glu=no])
 
 SDL3_MIN_VERSION=3.4.0 # needs SDL_SetRelativeMouseTransform, not in any current (3.2.x) releases
-SDL3_BUILD_VERSION=8ae962c90457b28e058e5611383a21c3e315aab7 # git, latest commit (as of now) has some regression with keyboard inputs being dropped
+SDL3_BUILD_VERSION=09c8d4b55687d65f0f6052a60876308e95be3b44 # git, latest commit (as of now) has some regression with keyboard inputs being dropped
 GLEW_MIN_VERSION=2.2.0
 GLEW_BUILD_VERSION=2.2.0
 FREETYPE2_MIN_VERSION=2.10.0
@@ -426,7 +426,7 @@ AC_SUBST([SOUNDTOUCH_VERSION], [2.4.0])
 AC_SUBST([SOUNDTOUCH_PREFIX],[$DEPS_PREFIX])
 AC_SUBST([SDL3_MIXER_VERSION], [b8017938de8b31c1962c2c8044a127519c2c1cdf])
 AC_SUBST([SDL3_MIXER_PREFIX],[$DEPS_PREFIX])
-AC_SUBST([MIMALLOC_VERSION], [1aa832873b7824b84ca70152fdf1af851ec8bb52])
+AC_SUBST([MIMALLOC_VERSION], [3.0.3])
 AC_SUBST([MIMALLOC_PREFIX],[$DEPS_PREFIX])
 
 # TODO: add all deps and transitive deps (fun!)
@@ -495,7 +495,10 @@ AM_CONDITIONAL([BUILD_LIBPNG], [test "x$have_libpng" != "xyes"])
 AM_CONDITIONAL([BUILD_BZIP2], [test "x$have_bzip2" != "xyes"])
 AM_CONDITIONAL([BUILD_ZLIB], [test "x$have_zlib" != "xyes"])
 AM_CONDITIONAL([BUILD_FREETYPE2], [test "x$have_freetype2" != "xyes"])
-AM_CONDITIONAL([BUILD_MIMALLOC], [test "x$enable_debug" != "xyes" && test "x$with_mimalloc" != "xno"])
+AM_CONDITIONAL([BUILD_MIMALLOC], [test "x$enable_debug" != "xyes" &&
+                                { { test "$SYSNAME" = "windows" && test "x$with_mimalloc" = "xyes" ; } ||
+                                  { test "$SYSNAME" != "windows" && test "x$with_mimalloc" != "xno" ; };
+                                }]) # default off for windows, kinda buggy
 
 AM_CONDITIONAL([USE_BASS], [test "x$with_sdlmixer" != "xyes" && test "x$with_soloud" != "xyes"])
 AM_CONDITIONAL([USE_SDLMIXER], [test "x$with_sdlmixer" = "xyes"])

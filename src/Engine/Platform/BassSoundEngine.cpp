@@ -11,7 +11,12 @@
 #ifdef MCENGINE_FEATURE_BASS
 
 #include <bass.h>
-#include <bass_fx.h>
+
+#ifdef __linux__
+#include <dlfcn.h>
+static void *bassfx_handle = NULL;
+HSTREAM (*pBASS_FX_TempoCreate)(DWORD, DWORD);
+#endif
 
 #ifdef MCENGINE_FEATURE_BASS_WASAPI
 #include <bassmix.h>
@@ -151,6 +156,21 @@ BassSoundEngine::BassSoundEngine() : SoundEngine()
 		return;
 	}
 
+#ifdef __linux__
+	if (!bassfx_handle && !(bassfx_handle = dlopen("libbass_fx.so", RTLD_NOW)))
+	{
+		engine->showMessageErrorFatal("failed to get handle to libbass_fx.so: %s\n", dlerror());
+		engine->shutdown();
+		return;
+	}
+	else if (!pBASS_FX_TempoCreate && !(pBASS_FX_TempoCreate = (HSTREAM (*)(DWORD, DWORD))dlsym(bassfx_handle, "BASS_FX_TempoCreate")))
+	{
+		engine->showMessageErrorFatal("failed to find BASS_FX_TempoCreate in libbass_fx.so: %s\n", dlerror());
+		engine->shutdown();
+		return;
+	}
+#endif
+
 	// apply default global settings
 	BASS_SetConfig(BASS_CONFIG_BUFFER, 100);
 	BASS_SetConfig(BASS_CONFIG_DEV_BUFFER, 10); // NOTE: only used by new osu atm
@@ -211,6 +231,10 @@ BassSoundEngine::~BassSoundEngine()
 		// BASS_WASAPI_Free();
 #endif
 	}
+
+#ifdef __linux__
+	dlclose(bassfx_handle);
+#endif
 }
 
 void BassSoundEngine::restart()

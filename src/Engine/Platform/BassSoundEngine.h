@@ -45,8 +45,6 @@ private:
 
 	void onFreqChanged(UString oldValue, UString newValue);
 
-	void *m_bassfx_handle;
-
 	friend class BassSound;
 	uint32_t m_iBASSVersion;
 
