@@ -357,7 +357,7 @@ $(DEPS_PREFIX)/bzip2.built: $(DEPS_CACHE)/bzip2-$(BZIP2_VERSION).source
 	$(MAKE) $(if $(SDL3_STATIC),"libbz2.a",-f Makefile-libbz2_so) \
 		PREFIX="$(DEPS_PREFIX)" CC="$(CC)" CXX="$(CXX)" LD="$(LD)" CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS)" && \
 	cp -f bzlib.h $(DEPS_PREFIX)/include/ && \
-	cp -f $(if $(SDL3_STATIC),"libbz2.a",libbz2*.so*) $(DEPS_PREFIX)/lib/ && \
+	cp -f $(if $(SDL3_STATIC),"libbz2.a",libbz2*$(DLLEXT)*) $(DEPS_PREFIX)/lib/ && \
 	$(MKDIR_P) "$(DEPS_PREFIX)/lib/pkgconfig" && \
 	( echo 'prefix=$(DEPS_PREFIX)'; \
 	  echo 'exec_prefix=$${prefix}'; \
