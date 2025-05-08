@@ -222,6 +222,9 @@ __EOF__
         CPPFLAGS="$CPPFLAGS -DWINVER=0x0501 -D_WIN32_WINNT=0x0501 -D_WIN32_WINDOWS=0x0501 -D_WIN32_IE=0x0501"
         CFLAGS="$CFLAGS -m32 -DWINVER=0x0501 -D_WIN32_WINNT=0x0501 -D_WIN32_WINDOWS=0x0501 -D_WIN32_IE=0x0501"
         CXXFLAGS="$CXXFLAGS -m32 -DWINVER=0x0501 -D_WIN32_WINNT=0x0501 -D_WIN32_WINDOWS=0x0501 -D_WIN32_IE=0x0501"
+        # won't work unfortunately, https://github.com/mstorsjo/llvm-mingw/issues/44
+        # but i tried
+        AS_IF([test "x$enable_clang" = "xyes"], [LDFLAGS="$LDFLAGS -Xlinker /subsystem:windows,5.0"])
     ], [
         LDFLAGS="$LDFLAGS -Wl,-Bstatic,--whole-archive -lwinpthread -Wl,--no-whole-archive,-Bdynamic"
     ])
@@ -380,8 +383,8 @@ AS_IF([test "$SYSNAME" = "linux"], [
 PKG_CHECK_AUTO([GL], [gl], [have_gl=yes], [have_gl=no])
 PKG_CHECK_AUTO([GLU], [glu], [have_glu=yes], [have_glu=no])
 
-SDL3_MIN_VERSION=3.2.10
-SDL3_BUILD_VERSION=3.99.99 # git
+SDL3_MIN_VERSION=3.9.99 # needs SDL_SetRelativeMouseTransform, not in any current releases
+SDL3_BUILD_VERSION=8ae962c90457b28e058e5611383a21c3e315aab7 # git, latest commit (as of now) has some regression with keyboard inputs being dropped
 GLEW_MIN_VERSION=2.2.0
 GLEW_BUILD_VERSION=2.2.0
 FREETYPE2_MIN_VERSION=2.10.0
@@ -477,7 +480,13 @@ AM_CONDITIONAL([USE_BASS], [test "x$with_sdlmixer" != "xyes" && test "x$with_sol
 AM_CONDITIONAL([USE_SDLMIXER], [test "x$with_sdlmixer" = "xyes"])
 AM_CONDITIONAL([USE_SOLOUD], [test "x$with_soloud" = "xyes"])
 AM_CONDITIONAL([WIN_PLATFORM], [test "$SYSNAME" = "windows"])
-AM_CONDITIONAL([WINPTHREAD_DLL_NEEDED], [test "$SYSNAME" = "windows" && test "$host_cpu" = "i686"])
+
+# need dynamic winpthread for old windows 32bit compat builds
+AS_IF([test "$SYSNAME" = "windows" && test "$host_cpu" = "i686"],[
+    WINPTHREAD_DLL="$($CC -print-prog-name=ld | sed -e 's|/bin/.*||' | tr -d '\n' | find -files0-from - -iregex ".*$host_cpu"'.*libwinpthread-1.dll' -printf '%h/%f')"
+    AC_SUBST([WINPTHREAD_DLL])
+])
+AM_CONDITIONAL([WINPTHREAD_DLL_NEEDED], [test -n "$WINPTHREAD_DLL"])
 
 ASSETS_DIR=assets
 AC_SUBST([ASSETS_DIR])

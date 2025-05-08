@@ -655,6 +655,7 @@ BASS_CFLAGS
 ASSETS_DIR
 WINPTHREAD_DLL_NEEDED_FALSE
 WINPTHREAD_DLL_NEEDED_TRUE
+WINPTHREAD_DLL
 WIN_PLATFORM_FALSE
 WIN_PLATFORM_TRUE
 USE_SOLOUD_FALSE
@@ -6076,6 +6077,12 @@ then :
         CPPFLAGS="$CPPFLAGS -DWINVER=0x0501 -D_WIN32_WINNT=0x0501 -D_WIN32_WINDOWS=0x0501 -D_WIN32_IE=0x0501"
         CFLAGS="$CFLAGS -m32 -DWINVER=0x0501 -D_WIN32_WINNT=0x0501 -D_WIN32_WINDOWS=0x0501 -D_WIN32_IE=0x0501"
         CXXFLAGS="$CXXFLAGS -m32 -DWINVER=0x0501 -D_WIN32_WINNT=0x0501 -D_WIN32_WINDOWS=0x0501 -D_WIN32_IE=0x0501"
+        # won't work unfortunately, https://github.com/mstorsjo/llvm-mingw/issues/44
+        # but i tried
+        if test "x$enable_clang" = "xyes"
+then :
+  LDFLAGS="$LDFLAGS -Xlinker /subsystem:windows,5.0"
+fi
 
 else case e in #(
   e)
@@ -8551,8 +8558,8 @@ esac
 fi
 
 
-SDL3_MIN_VERSION=3.2.10
-SDL3_BUILD_VERSION=3.99.99 # git
+SDL3_MIN_VERSION=3.9.99 # needs SDL_SetRelativeMouseTransform
+SDL3_BUILD_VERSION=8ae962c90457b28e058e5611383a21c3e315aab7 # git
 GLEW_MIN_VERSION=2.2.0
 GLEW_BUILD_VERSION=2.2.0
 FREETYPE2_MIN_VERSION=2.10.0
@@ -9868,7 +9875,16 @@ else
   WIN_PLATFORM_FALSE=
 fi
 
- if test "$SYSNAME" = "windows" && test "$host_cpu" = "i686"; then
+
+# need dynamic winpthread for old windows 32bit compat builds
+if test "$SYSNAME" = "windows" && test "$host_cpu" = "i686"
+then :
+
+    WINPTHREAD_DLL="$($CC -print-prog-name=ld | sed -e 's|/bin/.*||' | tr -d '\n' | find -files0-from - -iregex ".*$host_cpu"'.*libwinpthread-1.dll' -printf '%h/%f')"
+
+
+fi
+ if test -n "$WINPTHREAD_DLL"; then
   WINPTHREAD_DLL_NEEDED_TRUE=
   WINPTHREAD_DLL_NEEDED_FALSE='#'
 else

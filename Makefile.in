@@ -711,6 +711,7 @@ SYSNAME = @SYSNAME@
 TAR = @TAR@
 VERSION = @VERSION@
 WGET = @WGET@
+WINPTHREAD_DLL = @WINPTHREAD_DLL@
 X11_CFLAGS = @X11_CFLAGS@
 X11_LIBS = @X11_LIBS@
 XI_CFLAGS = @XI_CFLAGS@
@@ -5220,7 +5221,7 @@ $(DEPS_CACHE)/SDL3.source:
 @BUILD_SDL3_TRUE@	$(MKDIR_P) $(DEPS_PREFIX) $(DEPS_PREFIX)/lib/pkgconfig
 @BUILD_SDL3_TRUE@	$(GIT) clone $(DEPS_CACHE)/SDL3 $(DEPS_PREFIX)/SDL3 && \
 @BUILD_SDL3_TRUE@	$(GIT) -C $(DEPS_PREFIX)/SDL3 remote set-url origin https://github.com/libsdl-org/SDL.git && \
-@BUILD_SDL3_TRUE@	$(GIT) -C $(DEPS_PREFIX)/SDL3 pull && \
+@BUILD_SDL3_TRUE@	$(GIT) -C $(DEPS_PREFIX)/SDL3 pull && $(GIT) -C $(DEPS_PREFIX)/SDL3 checkout $(SDL3_VERSION) && \
 @BUILD_SDL3_TRUE@	$(MKDIR_P) $(DEPS_PREFIX)/SDL3/build
 @BUILD_SDL3_TRUE@	cd $(DEPS_PREFIX)/SDL3 && \
 @BUILD_SDL3_TRUE@	patch -Np1<$(abs_top_srcdir)/build/aux/sdl-c23bool.patch && \
@@ -5373,15 +5374,15 @@ $(DEPS_CACHE)/GLEW-$(GLEW_VERSION).source:
 @BUILD_GLEW_TRUE@	$(TAR) xf $(DEPS_CACHE)/glew-$(GLEW_VERSION).tgz -C $(DEPS_PREFIX)/GLEW --strip-components=1 && \
 @BUILD_GLEW_TRUE@	cd $(DEPS_PREFIX)/GLEW && \
 @BUILD_GLEW_TRUE@	$(if $(findstring linux,$(host_os)),cd $(DEPS_PREFIX)/GLEW && patch -Np1<$(abs_top_srcdir)/build/aux/glew-install.patch && patch -Np1<$(abs_top_srcdir)/build/aux/egl+glx.patch && ,) \
-@BUILD_GLEW_TRUE@		$(SED) -i -e 's|lib64|lib|' -e 's|-Wl,-soname|-soname|' config/Makefile.linux && \
+@BUILD_GLEW_TRUE@		$(SED) -i -e 's|/usr/lib|/usr/lib32/|' -e 's|lib64|lib/|' -e 's|-Wl,-soname|-soname|' config/Makefile.linux && \
 @BUILD_GLEW_TRUE@		$(if $(LLVMMINGW),$(SED) -i -e 's|glew.lib: .*|glew.lib: glew.lib.static|' -e 's|install.lib:|install.libSHIT:|' -e 's|.*development files.*|install.lib: glew.lib|' Makefile,true) && \
 @BUILD_GLEW_TRUE@  		$(SED) -i '/^.PHONY: .*\.pc$$/d' Makefile && \
-@BUILD_GLEW_TRUE@		$(MAKE) SYSTEM=$(if $(findstring linux,$(host_os)),linux-egl,linux-mingw$(if $(filter x86_64,$(host_cpu)),64,32)) GLEW_DEST="$(DEPS_PREFIX)" \
+@BUILD_GLEW_TRUE@		$(MAKE) SYSTEM=$(if $(findstring linux,$(host_os)),linux-egl M_ARCH=$(host_cpu),linux-mingw$(if $(filter x86_64,$(host_cpu)),64,32)) GLEW_DEST="$(DEPS_PREFIX)" \
 @BUILD_GLEW_TRUE@		STRIP= CC="$(CC) -Wno-cast-function-type -Wno-strict-prototypes $(CPPFLAGS)" CXX="$(CXX)" LD="$(if $(LLVMMINGW),$(CC),$(LD))" \
 @BUILD_GLEW_TRUE@		$(if $(SDL3_STATIC),glew.lib.static,glew.lib.shared)
 @BUILD_GLEW_TRUE@	cd $(DEPS_PREFIX)/GLEW && \
-@BUILD_GLEW_TRUE@		$(MAKE) SYSTEM=$(if $(findstring linux,$(host_os)),linux-egl,linux-mingw$(if $(filter x86_64,$(host_cpu)),64,32)) GLEW_DEST="$(DEPS_PREFIX)" \
-@BUILD_GLEW_TRUE@		STRIP= CC="$(CC) -Wno-cast-function-type -Wno-strict-prototypes $(CPPFLAGS)" CXX="$(CXX)" LD="$(LD)" \
+@BUILD_GLEW_TRUE@		$(MAKE) SYSTEM=$(if $(findstring linux,$(host_os)),linux-egl M_ARCH=$(host_cpu),linux-mingw$(if $(filter x86_64,$(host_cpu)),64,32)) GLEW_DEST="$(DEPS_PREFIX)" \
+@BUILD_GLEW_TRUE@		STRIP= CC="$(CC) -Wno-cast-function-type -Wno-strict-prototypes $(CPPFLAGS)" CXX="$(CXX)" LD="$(LD) $(if $(findstring linux,$(host_os)),$(if $(filter x86_64,$(host_cpu)),,-melf_i386),)" \
 @BUILD_GLEW_TRUE@		install
 @BUILD_GLEW_TRUE@	$(MKDIR_P) "$(DEPS_PREFIX)/lib/pkgconfig"
 @BUILD_GLEW_TRUE@	( echo 'prefix=$(DEPS_PREFIX)'; \
@@ -5441,6 +5442,7 @@ $(DEPS_CACHE)/libpng-$(LIBPNG_VERSION).source:
 @BUILD_LIBPNG_TRUE@	cd $(DEPS_PREFIX)/libpng && PKG_CONFIG="$(PKG_CONFIG)" \
 @BUILD_LIBPNG_TRUE@		./configure --host=$(host_alias) --prefix="$(DEPS_PREFIX)" \
 @BUILD_LIBPNG_TRUE@		$(if $(SDL3_STATIC),--enable-static --disable-shared,--enable-shared --disable-static) \
+@BUILD_LIBPNG_TRUE@		--disable-tools --disable-tests \
 @BUILD_LIBPNG_TRUE@		CC="$(CC) $(shell $(PKG_CONFIG) --cflags zlib)" CXX="$(CXX)" LD="$(LD)" CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS) $(shell $(PKG_CONFIG) --libs zlib)" && \
 @BUILD_LIBPNG_TRUE@	$(MAKE) && \
 @BUILD_LIBPNG_TRUE@	$(MAKE) install
@@ -5560,7 +5562,7 @@ install-libs:
 	find $(srcdir)/$(ASSETS_DIR)/shaders -type f -exec $(INSTALL) -Dm 644 '{''}' "$(DESTDIR)$(bindir)/shaders" ';'
 	find $(srcdir)/$(ASSETS_DIR)/fonts -type f -exec $(INSTALL) -Dm 644 '{''}' "$(DESTDIR)$(bindir)/fonts" ';'
 @BUILD_MIMALLOC_TRUE@@WIN_PLATFORM_TRUE@	@cp -P "$(DEPS_PREFIX)/bin/mimalloc"{,-redirect$(if $(filter x86_64,$(host_cpu)),,32)}".dll" "$(DESTDIR)$(bindir)/$(LIBDEST)"
-@WINPTHREAD_DLL_NEEDED_TRUE@@WIN_PLATFORM_TRUE@	@cp -P $(shell $(CC) -print-prog-name=ar | sed 's|/ar|/libwinpthread-1.dll|') "$(DESTDIR)$(bindir)/$(LIBDEST)" # idk how else
+@WINPTHREAD_DLL_NEEDED_TRUE@@WIN_PLATFORM_TRUE@	@cp -P $(WINPTHREAD_DLL) "$(DESTDIR)$(bindir)/$(LIBDEST)"
 @USE_BASS_FALSE@@USE_SDLMIXER_TRUE@	$(if $(SDL3_STATIC),,@cp -P "$(SDL3_MIXER_PREFIX)/lib"/{*$(LIBPREFIX)SDL3_mixer*$(DLLEXT)*,*$(LIBPREFIX)mpg123*$(DLLEXT)*,*$(LIBPREFIX)xmp*$(DLLEXT)*,*$(LIBPREFIX)wavpack*$(DLLEXT)*,*$(LIBPREFIX)opus*$(DLLEXT)*,*$(LIBPREFIX)ogg*$(DLLEXT)*} "$(DESTDIR)$(bindir)/$(LIBDEST)")
 @USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	$(if $(SDL3_STATIC),,@cp -P "$(SOLOUD_PREFIX)/lib"/*$(LIBPREFIX)SoundTouch*$(DLLEXT)* "$(DESTDIR)$(bindir)/$(LIBDEST)")
 @USE_BASS_TRUE@	$(INSTALL) -m 755 $(srcdir)/$(BUNDLED_BASS_DIR)/lib/$(SYSNAME)/$(host_cpu)/$(LIBPREFIX)bass$(DLLEXT) "$(DESTDIR)$(bindir)/$(LIBDEST)"

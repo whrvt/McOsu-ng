@@ -74,7 +74,7 @@ $(DEPS_PREFIX)/SDL3.built: $(DEPS_PREFIX)/FREETYPE2.built $(DEPS_CACHE)/SDL3.sou
 	$(MKDIR_P) $(DEPS_PREFIX) $(DEPS_PREFIX)/lib/pkgconfig
 	$(GIT) clone $(DEPS_CACHE)/SDL3 $(DEPS_PREFIX)/SDL3 && \
 	$(GIT) -C $(DEPS_PREFIX)/SDL3 remote set-url origin https://github.com/libsdl-org/SDL.git && \
-	$(GIT) -C $(DEPS_PREFIX)/SDL3 pull && \
+	$(GIT) -C $(DEPS_PREFIX)/SDL3 pull && $(GIT) -C $(DEPS_PREFIX)/SDL3 checkout $(SDL3_VERSION) && \
 	$(MKDIR_P) $(DEPS_PREFIX)/SDL3/build
 	cd $(DEPS_PREFIX)/SDL3 && \
 	patch -Np1<$(abs_top_srcdir)/build/aux/sdl-c23bool.patch && \
@@ -327,6 +327,7 @@ $(DEPS_PREFIX)/libpng.built: $(DEPS_PREFIX)/zlib.built $(DEPS_CACHE)/libpng-$(LI
 	cd $(DEPS_PREFIX)/libpng && PKG_CONFIG="$(PKG_CONFIG)" \
 		./configure --host=$(host_alias) --prefix="$(DEPS_PREFIX)" \
 		$(if $(SDL3_STATIC),--enable-static --disable-shared,--enable-shared --disable-static) \
+		--disable-tools --disable-tests \
 		CC="$(CC) $(shell $(PKG_CONFIG) --cflags zlib)" CXX="$(CXX)" LD="$(LD)" CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS) $(shell $(PKG_CONFIG) --libs zlib)" && \
 	$(MAKE) && \
 	$(MAKE) install
@@ -521,7 +522,7 @@ if BUILD_MIMALLOC
 	@cp -P "$(DEPS_PREFIX)/bin/mimalloc"{,-redirect$(if $(filter x86_64,$(host_cpu)),,32)}".dll" "$(DESTDIR)$(bindir)/$(LIBDEST)"
 endif
 if WINPTHREAD_DLL_NEEDED
-	@cp -P $(shell $(CC) -print-prog-name=ar | sed 's|/ar|/libwinpthread-1.dll|') "$(DESTDIR)$(bindir)/$(LIBDEST)" # idk how else
+	@cp -P $(WINPTHREAD_DLL) "$(DESTDIR)$(bindir)/$(LIBDEST)"
 endif
 endif
 if !USE_BASS
