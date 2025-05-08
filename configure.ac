@@ -500,10 +500,10 @@ AC_DEFINE([MCENGINE_FEATURE_SDL], [1], [Define if the SDL environment McEngine b
 
 # sanity check
 AS_IF([test "x$with_sdlmixer" != "xyes" && test "x$with_soloud" != "xyes"], [
-    AC_CHECK_FILE([$srcdir/$BUNDLED_BASS_DIR/lib/$SYSNAME/$host_cpu/${LIBPREFIX}bass$DLLEXT],
+    AS_IF([test -f "$srcdir/$BUNDLED_BASS_DIR/lib/$SYSNAME/$host_cpu/${LIBPREFIX}bass$DLLEXT"], 
         [],
         [AC_MSG_ERROR([Required bundled library ${LIBPREFIX}bass$DLLEXT not found])])
-    AC_CHECK_FILE([$srcdir/$BUNDLED_BASS_FX_DIR/lib/$SYSNAME/$host_cpu/${LIBPREFIX}bass_fx$DLLEXT],
+    AS_IF([test -f "$srcdir/$BUNDLED_BASS_FX_DIR/lib/$SYSNAME/$host_cpu/${LIBPREFIX}bass_fx$DLLEXT"],
         [],
         [AC_MSG_ERROR([Required bundled library ${LIBPREFIX}bass_fx$DLLEXT not found])])
     BASS_CFLAGS="-I\$(srcdir)/\$(BUNDLED_BASS_DIR)/include -I\$(srcdir)/\$(BUNDLED_BASS_FX_DIR)/include"
@@ -526,15 +526,29 @@ AC_SUBST([BUNDLED_LIBS_DIR])
 AC_SUBST([BUNDLED_BASS_DIR])
 AC_SUBST([BUNDLED_BASS_FX_DIR])
 
-AC_CHECK_FILE([$srcdir/$ASSETS_DIR/models],
-    [],
-    [AC_MSG_ERROR([McOsu-ng model assets are missing!])])
-AC_CHECK_FILE([$srcdir/$ASSETS_DIR/shaders],
-    [],
-    [AC_MSG_ERROR([McOsu-ng shader assets are missing!])])
-AC_CHECK_FILE([$srcdir/$ASSETS_DIR/fonts],
-    [],
-    [AC_MSG_ERROR([McOsu-ng fonts are missing!])])
+AC_MSG_CHECKING([for models in $srcdir/$ASSETS_DIR/models])
+AS_IF([test -d "$srcdir/$ASSETS_DIR/models"], [
+    AC_MSG_RESULT([yes])
+], [
+    AC_MSG_RESULT([no])
+    AC_MSG_ERROR([McOsu-ng model assets are missing!])
+])
+
+AC_MSG_CHECKING([for shaders in $srcdir/$ASSETS_DIR/shaders])
+AS_IF([test -d "$srcdir/$ASSETS_DIR/shaders"], [
+    AC_MSG_RESULT([yes])
+], [
+    AC_MSG_RESULT([no])
+    AC_MSG_ERROR([McOsu-ng shader assets are missing!])
+])
+
+AC_MSG_CHECKING([for fonts in $srcdir/$ASSETS_DIR/fonts])
+AS_IF([test -d "$srcdir/$ASSETS_DIR/fonts"], [
+    AC_MSG_RESULT([yes])
+], [
+    AC_MSG_RESULT([no])
+    AC_MSG_ERROR([McOsu-ng fonts are missing!])
+])
 
 AC_MSG_CHECKING([for src/Makefile.sources])
 AS_IF([test -f "$srcdir/src/Makefile.sources"], [
