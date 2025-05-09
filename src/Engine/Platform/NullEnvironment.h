@@ -65,6 +65,8 @@ public:
 	void maximize() override {;}
 	void enableFullscreen() override {;}
 	void disableFullscreen() override {;}
+	void foregrounded() override {;}
+	void backgrounded() override {;}
 	void setWindowTitle(UString title) override {;}
 	void setWindowPos(int x, int y) override {;}
 	void setWindowSize(int width, int height) override {;}

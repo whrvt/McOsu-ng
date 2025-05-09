@@ -123,6 +123,8 @@ public:
 			return std::strtold(m_utf8.c_str(), nullptr);
 		} else if constexpr (std::is_same_v<T, int>) {
 			return static_cast<int>(std::strtol(m_utf8.c_str(), nullptr, 0));
+		} else if constexpr (std::is_same_v<T, bool>) {
+			return !!static_cast<int>(std::strtol(m_utf8.c_str(), nullptr, 0));
 		} else if constexpr (std::is_same_v<T, long>) {
 			return std::strtol(m_utf8.c_str(), nullptr, 0);
 		} else if constexpr (std::is_same_v<T, long long>) {
@@ -142,6 +144,7 @@ public:
 	[[nodiscard]] constexpr double toDouble() 						const noexcept {return to<double>();}
 	[[nodiscard]] constexpr long double toLongDouble() 				const noexcept {return to<long double>();}
 	[[nodiscard]] constexpr int toInt() 							const noexcept {return to<int>();}
+	[[nodiscard]] constexpr int toBool() 							const noexcept {return to<bool>();}
 	[[nodiscard]] constexpr long toLong() 							const noexcept {return to<long>();}
 	[[nodiscard]] constexpr long long toLongLong() 					const noexcept {return to<long long>();}
 	[[nodiscard]] constexpr unsigned int toUnsignedInt() 			const noexcept {return to<unsigned int>();}

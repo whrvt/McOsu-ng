@@ -217,6 +217,7 @@ am_McOsu_ng_OBJECTS = src/App/Osu/McOsu_ng-Osu.$(OBJEXT) \
 	src/Engine/Input/McOsu_ng-KeyboardEvent.$(OBJEXT) \
 	src/Engine/Input/McOsu_ng-Mouse.$(OBJEXT) \
 	src/Engine/Input/McOsu_ng-OpenVRController.$(OBJEXT) \
+	src/Engine/Main/McOsu_ng-SDLMain.$(OBJEXT) \
 	src/Engine/Main/McOsu_ng-main.$(OBJEXT) \
 	src/Engine/McOsu_ng-NetworkHandler.$(OBJEXT) \
 	src/Engine/McOsu_ng-OpenVRInterface.$(OBJEXT) \
@@ -430,6 +431,7 @@ am__depfiles_remade = src/App/Osu/$(DEPDIR)/McOsu_ng-Osu.Po \
 	src/Engine/Input/$(DEPDIR)/McOsu_ng-KeyboardEvent.Po \
 	src/Engine/Input/$(DEPDIR)/McOsu_ng-Mouse.Po \
 	src/Engine/Input/$(DEPDIR)/McOsu_ng-OpenVRController.Po \
+	src/Engine/Main/$(DEPDIR)/McOsu_ng-SDLMain.Po \
 	src/Engine/Main/$(DEPDIR)/McOsu_ng-main.Po \
 	src/Engine/Platform/$(DEPDIR)/McOsu_ng-BassLoader.Po \
 	src/Engine/Platform/$(DEPDIR)/McOsu_ng-BassSound.Po \
@@ -606,6 +608,7 @@ CCACHE = @CCACHE@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
 CMAKE = @CMAKE@
+CMAKERCOPT = @CMAKERCOPT@
 CMAKE_SYSTEM_NAME = @CMAKE_SYSTEM_NAME@
 CPPFLAGS = @CPPFLAGS@
 CPU_COUNT = @CPU_COUNT@
@@ -874,6 +877,7 @@ McOsu_ng_SOURCES = \
 	src/Engine/Input/KeyboardEvent.cpp \
 	src/Engine/Input/Mouse.cpp \
 	src/Engine/Input/OpenVRController.cpp \
+	src/Engine/Main/SDLMain.cpp \
 	src/Engine/Main/main.cpp \
 	src/Engine/NetworkHandler.cpp \
 	src/Engine/OpenVRInterface.cpp \
@@ -1408,6 +1412,9 @@ src/Engine/Main/$(am__dirstamp):
 src/Engine/Main/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) src/Engine/Main/$(DEPDIR)
 	@: >>src/Engine/Main/$(DEPDIR)/$(am__dirstamp)
+src/Engine/Main/McOsu_ng-SDLMain.$(OBJEXT):  \
+	src/Engine/Main/$(am__dirstamp) \
+	src/Engine/Main/$(DEPDIR)/$(am__dirstamp)
 src/Engine/Main/McOsu_ng-main.$(OBJEXT):  \
 	src/Engine/Main/$(am__dirstamp) \
 	src/Engine/Main/$(DEPDIR)/$(am__dirstamp)
@@ -1810,6 +1817,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Input/$(DEPDIR)/McOsu_ng-KeyboardEvent.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Input/$(DEPDIR)/McOsu_ng-Mouse.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Input/$(DEPDIR)/McOsu_ng-OpenVRController.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Main/$(DEPDIR)/McOsu_ng-SDLMain.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Main/$(DEPDIR)/McOsu_ng-main.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-BassLoader.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-BassSound.Po@am__quote@ # am--include-marker
@@ -3142,6 +3150,20 @@ src/Engine/Input/McOsu_ng-OpenVRController.obj: src/Engine/Input/OpenVRControlle
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Input/OpenVRController.cpp' object='src/Engine/Input/McOsu_ng-OpenVRController.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Input/McOsu_ng-OpenVRController.obj `if test -f 'src/Engine/Input/OpenVRController.cpp'; then $(CYGPATH_W) 'src/Engine/Input/OpenVRController.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Input/OpenVRController.cpp'; fi`
+
+src/Engine/Main/McOsu_ng-SDLMain.o: src/Engine/Main/SDLMain.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Main/McOsu_ng-SDLMain.o -MD -MP -MF src/Engine/Main/$(DEPDIR)/McOsu_ng-SDLMain.Tpo -c -o src/Engine/Main/McOsu_ng-SDLMain.o `test -f 'src/Engine/Main/SDLMain.cpp' || echo '$(srcdir)/'`src/Engine/Main/SDLMain.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Main/$(DEPDIR)/McOsu_ng-SDLMain.Tpo src/Engine/Main/$(DEPDIR)/McOsu_ng-SDLMain.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Main/SDLMain.cpp' object='src/Engine/Main/McOsu_ng-SDLMain.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Main/McOsu_ng-SDLMain.o `test -f 'src/Engine/Main/SDLMain.cpp' || echo '$(srcdir)/'`src/Engine/Main/SDLMain.cpp
+
+src/Engine/Main/McOsu_ng-SDLMain.obj: src/Engine/Main/SDLMain.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Main/McOsu_ng-SDLMain.obj -MD -MP -MF src/Engine/Main/$(DEPDIR)/McOsu_ng-SDLMain.Tpo -c -o src/Engine/Main/McOsu_ng-SDLMain.obj `if test -f 'src/Engine/Main/SDLMain.cpp'; then $(CYGPATH_W) 'src/Engine/Main/SDLMain.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Main/SDLMain.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Main/$(DEPDIR)/McOsu_ng-SDLMain.Tpo src/Engine/Main/$(DEPDIR)/McOsu_ng-SDLMain.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Main/SDLMain.cpp' object='src/Engine/Main/McOsu_ng-SDLMain.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Main/McOsu_ng-SDLMain.obj `if test -f 'src/Engine/Main/SDLMain.cpp'; then $(CYGPATH_W) 'src/Engine/Main/SDLMain.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Main/SDLMain.cpp'; fi`
 
 src/Engine/Main/McOsu_ng-main.o: src/Engine/Main/main.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Main/McOsu_ng-main.o -MD -MP -MF src/Engine/Main/$(DEPDIR)/McOsu_ng-main.Tpo -c -o src/Engine/Main/McOsu_ng-main.o `test -f 'src/Engine/Main/main.cpp' || echo '$(srcdir)/'`src/Engine/Main/main.cpp
@@ -4834,6 +4856,7 @@ distclean: distclean-am
 	-rm -f src/Engine/Input/$(DEPDIR)/McOsu_ng-KeyboardEvent.Po
 	-rm -f src/Engine/Input/$(DEPDIR)/McOsu_ng-Mouse.Po
 	-rm -f src/Engine/Input/$(DEPDIR)/McOsu_ng-OpenVRController.Po
+	-rm -f src/Engine/Main/$(DEPDIR)/McOsu_ng-SDLMain.Po
 	-rm -f src/Engine/Main/$(DEPDIR)/McOsu_ng-main.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-BassLoader.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-BassSound.Po
@@ -5062,6 +5085,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f src/Engine/Input/$(DEPDIR)/McOsu_ng-KeyboardEvent.Po
 	-rm -f src/Engine/Input/$(DEPDIR)/McOsu_ng-Mouse.Po
 	-rm -f src/Engine/Input/$(DEPDIR)/McOsu_ng-OpenVRController.Po
+	-rm -f src/Engine/Main/$(DEPDIR)/McOsu_ng-SDLMain.Po
 	-rm -f src/Engine/Main/$(DEPDIR)/McOsu_ng-main.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-BassLoader.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-BassSound.Po
@@ -5201,6 +5225,7 @@ $(DEPS_CACHE)/mimalloc-$(MIMALLOC_VERSION).source:
 @BUILD_MIMALLOC_TRUE@		-D CMAKE_SYSTEM_PROCESSOR="$(host_cpu)" \
 @BUILD_MIMALLOC_TRUE@		-D CMAKE_CXX_COMPILER="$(CXX)" \
 @BUILD_MIMALLOC_TRUE@		-D CMAKE_CXX_FLAGS="$(CXXFLAGS) -xc++ -Wno-array-bounds" \
+@BUILD_MIMALLOC_TRUE@		$(CMAKERCOPT) \
 @BUILD_MIMALLOC_TRUE@		-D CMAKE_INSTALL_PREFIX="$(DEPS_PREFIX)" \
 @BUILD_MIMALLOC_TRUE@		-D MI_OPT_ARCH=$(if $(DISABLE_NATIVE),OFF,ON) \
 @BUILD_MIMALLOC_TRUE@		-D MI_OPT_SIMD=ON \
@@ -5239,6 +5264,7 @@ $(DEPS_CACHE)/SDL3.source:
 @BUILD_SDL3_TRUE@		-D SDL_SHARED="$(if $(SDL3_STATIC),OFF,ON)" \
 @BUILD_SDL3_TRUE@		-D SDL_STATIC="$(if $(SDL3_STATIC),ON,OFF)" \
 @BUILD_SDL3_TRUE@		-D CMAKE_SYSTEM_NAME="$(CMAKE_SYSTEM_NAME)" \
+@BUILD_SDL3_TRUE@		$(CMAKERCOPT) \
 @BUILD_SDL3_TRUE@		-D CMAKE_SYSTEM_PROCESSOR="$(host_cpu)" \
 @BUILD_SDL3_TRUE@		-D SDL_RPATH=OFF \
 @BUILD_SDL3_TRUE@		-D SDL_IBUS=OFF \
@@ -5287,6 +5313,7 @@ $(DEPS_CACHE)/SoundTouch.source:
 @USE_BASS_FALSE@@USE_SDLMIXER_TRUE@		-D CMAKE_SYSTEM_PROCESSOR="$(host_cpu)" \
 @USE_BASS_FALSE@@USE_SDLMIXER_TRUE@		-D CMAKE_C_COMPILER="$(CC)" \
 @USE_BASS_FALSE@@USE_SDLMIXER_TRUE@		-D CMAKE_C_FLAGS="$(CFLAGS) -Wno-error=incompatible-pointer-types" \
+@USE_BASS_FALSE@@USE_SDLMIXER_TRUE@		$(CMAKERCOPT) \
 @USE_BASS_FALSE@@USE_SDLMIXER_TRUE@		-D SDLMIXER_GME=OFF \
 @USE_BASS_FALSE@@USE_SDLMIXER_TRUE@		-D SDLMIXER_MIDI=OFF \
 @USE_BASS_FALSE@@USE_SDLMIXER_TRUE@		-D SDLMIXER_STRICT=ON \
@@ -5327,6 +5354,7 @@ $(DEPS_CACHE)/SoundTouch.source:
 @USE_BASS_FALSE@@USE_SDLMIXER_FALSE@		-D CMAKE_SYSTEM_NAME="$(CMAKE_SYSTEM_NAME)" \
 @USE_BASS_FALSE@@USE_SDLMIXER_FALSE@		-D CMAKE_SYSTEM_PROCESSOR="$(host_cpu)" \
 @USE_BASS_FALSE@@USE_SDLMIXER_FALSE@		-D CMAKE_C_COMPILER="$(CC)" \
+@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@		$(CMAKERCOPT) \
 @USE_BASS_FALSE@@USE_SDLMIXER_FALSE@		-D CMAKE_C_FLAGS="$(CFLAGS)" \
 @USE_BASS_FALSE@@USE_SDLMIXER_FALSE@		-D CMAKE_CXX_COMPILER="$(CXX)" \
 @USE_BASS_FALSE@@USE_SDLMIXER_FALSE@		-D CMAKE_CXX_FLAGS="$(CXXFLAGS)" && \
@@ -5352,6 +5380,7 @@ $(DEPS_CACHE)/SoundTouch.source:
 @USE_BASS_FALSE@@USE_SDLMIXER_FALSE@		-D CMAKE_C_FLAGS="$(CFLAGS)" \
 @USE_BASS_FALSE@@USE_SDLMIXER_FALSE@		-D CMAKE_CXX_COMPILER="$(CXX)" \
 @USE_BASS_FALSE@@USE_SDLMIXER_FALSE@		-D CMAKE_CXX_FLAGS="$(CXXFLAGS)" \
+@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@		$(CMAKERCOPT) \
 @USE_BASS_FALSE@@USE_SDLMIXER_FALSE@		-D SOUNDSTRETCH=OFF \
 @USE_BASS_FALSE@@USE_SDLMIXER_FALSE@		-D SOUNDTOUCH_DLL=OFF \
 @USE_BASS_FALSE@@USE_SDLMIXER_FALSE@		-D OPENMP="$(if $(SDL3_STATIC),OFF,ON)" \
@@ -5424,6 +5453,7 @@ $(DEPS_CACHE)/libjpeg-$(LIBJPEG_VERSION).source:
 @BUILD_LIBJPEG_TRUE@		-D CMAKE_INSTALL_PREFIX="$(DEPS_PREFIX)" \
 @BUILD_LIBJPEG_TRUE@		-D CMAKE_C_COMPILER="$(CC)" \
 @BUILD_LIBJPEG_TRUE@		-D CMAKE_SYSTEM_PROCESSOR="$(host_cpu)" \
+@BUILD_LIBJPEG_TRUE@		$(CMAKERCOPT) \
 @BUILD_LIBJPEG_TRUE@		-DCMAKE_C_FLAGS="$(CFLAGS)" \
 @BUILD_LIBJPEG_TRUE@		-DCMAKE_SYSTEM_NAME="$(CMAKE_SYSTEM_NAME)" \
 @BUILD_LIBJPEG_TRUE@		-DCMAKE_ASM_NASM_FLAGS="-DPIC" \

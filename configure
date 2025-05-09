@@ -750,6 +750,7 @@ CXX
 LIBPREFIX
 DLLEXT
 SYSNAME
+CMAKERCOPT
 CMAKE_SYSTEM_NAME
 PKG_CONFIG
 PKG_CONFIG_SYSTEM_INCLUDE_PATH
@@ -5992,8 +5993,8 @@ then :
 fi
     enable_system_deps=no
     disable_system_deps=yes
-    MCOSU_CPPFLAGS="$CPPFLAGS -DUNICODE"
-    MCOSU_CXXFLAGS="$CXXFLAGS -DUNICODE -municode"
+    MCOSU_CPPFLAGS="$CPPFLAGS -D_UNICODE -DUNICODE"
+    MCOSU_CXXFLAGS="$CXXFLAGS -D_UNICODE -DUNICODE -municode"
     if test "x$enable_clang" = "xyes"
 then :
 
@@ -6129,6 +6130,7 @@ esac
 fi
 
     CMAKE_SYSTEM_NAME="Windows"
+    CMAKERCOPT="-DCMAKE_RC_COMPILER=$host_cpu-w64-mingw32-windres"
     SYSNAME="windows"
     DLLEXT=".dll"
     LIBPREFIX=""
@@ -6175,6 +6177,7 @@ esac
 fi
 
 PKG_CONFIG="$PWD/build/pkg-config"
+
 
 
 
@@ -7267,7 +7270,7 @@ fi
 COMMON_FLAGS="$COMMON_FLAGS -ffunction-sections -fdata-sections -fwrapv -fno-strict-aliasing -fno-semantic-interposition"
 CXXFLAGS="$CXXFLAGS $COMMON_FLAGS"
 CFLAGS="$CFLAGS $COMMON_FLAGS"
-if test -z "$ubercompat"
+if test -z "$ubercompat" || test "x$enable_static" = "xyes"
 then :
 
     LDFLAGS="$LDFLAGS -static-libstdc++ -static-libgcc"
@@ -10231,9 +10234,22 @@ fi
 if test -n "$ubercompat"
 then :
 
-    WINSHARED_DLLS="$($CC -print-prog-name=ld | sed -e 's|/bin/.*||' | tr -d '\n' | find -files0-from - \
-        '(' -iregex ".*$host_cpu"'.*libwinpthread-1.dll' -o -iregex ".*$host_cpu"'.*libgcc_.*.dll' -o -iregex ".*$host_cpu"'.*libstdc.*.dll' ')' \
-        -printf '%h/%f ')"
+    if test "x$enable_static" = "xyes"
+then :
+   # still need winpthread dynamic, breaks otherwise for reasons i dont understand
+        WINSHARED_DLLS="$($CC -print-prog-name=ld | sed -e 's|/bin/.*||' | tr -d '\n' | find -files0-from - \
+            -iregex ".*$host_cpu"'.*libwinpthread-1.dll' \
+            -printf '%h/%f ')"
+
+else case e in #(
+  e)
+        WINSHARED_DLLS="$($CC -print-prog-name=ld | sed -e 's|/bin/.*||' | tr -d '\n' | find -files0-from - \
+            '(' -iregex ".*$host_cpu"'.*libwinpthread-1.dll' -o -iregex ".*$host_cpu"'.*libgcc_.*.dll' -o -iregex ".*$host_cpu"'.*libstdc.*.dll' ')' \
+            -printf '%h/%f ')"
+     ;;
+esac
+fi
+
 
 
 fi

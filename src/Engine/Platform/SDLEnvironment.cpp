@@ -8,6 +8,8 @@
 #include "SDLEnvironment.h"
 
 #include <algorithm>
+#include <cassert>
+#include <cstddef>
 
 #include "Mouse.h"
 
@@ -63,6 +65,9 @@ SDLEnvironment::SDLEnvironment() : Environment()
 
 	m_vLastAbsMousePos = {};
 	m_vLastRelMousePos = {};
+
+	fps_max_str = "60";
+	fps_max_bg_str = "30";
 
 	// create sdl system cursor map
 	m_mCursorIcons = {
@@ -140,7 +145,7 @@ void SDLEnvironment::restart()
 
 void SDLEnvironment::sleep(unsigned int us)
 {
-	!!us ? SDL_DelayPrecise(us * 1000) : SDL_Delay(0);
+	!!us ? SDL_DelayPrecise(static_cast<uint64_t>(us) * 1000) : SDL_Delay(0);
 }
 
 UString SDLEnvironment::getExecutablePath() const

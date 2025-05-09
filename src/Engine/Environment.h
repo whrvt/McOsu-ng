@@ -71,6 +71,8 @@ public:
 	virtual void maximize() = 0;
 	virtual void enableFullscreen() = 0;
 	virtual void disableFullscreen() = 0;
+	virtual void foregrounded() = 0; // callbacks
+	virtual void backgrounded() = 0;
 	virtual void setWindowTitle(UString title) = 0;
 	virtual void setWindowPos(int x, int y) = 0;
 	virtual void setWindowSize(int width, int height) = 0;

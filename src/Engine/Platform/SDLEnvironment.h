@@ -81,6 +81,8 @@ public:
 	void maximize() override;
 	void enableFullscreen() override;
 	void disableFullscreen() override;
+	inline void foregrounded() override { SDL_SetHint(SDL_HINT_MAIN_CALLBACK_RATE, fps_max_str.toUtf8()); }
+	inline void backgrounded() override { SDL_SetHint(SDL_HINT_MAIN_CALLBACK_RATE, fps_max_bg_str.toUtf8()); }
 	void setWindowTitle(UString title) override;
 	void setWindowPos(int x, int y) override;
 	void setWindowSize(int width, int height) override;
@@ -129,9 +131,8 @@ protected:
 	inline void setCursorPosition() const override { SDL_WarpMouseInWindow(m_window, m_vLastAbsMousePos.x, m_vLastAbsMousePos.y); }
 	inline void setCursorPosition(Vector2 pos) const override { SDL_WarpMouseInWindow(m_window, pos.x, pos.y); }
 
-	// Made public for callback access
-public:
 	Engine *m_engine;
+
 	SDL_Window *m_window;
 
 	bool m_bRunning;
@@ -145,6 +146,10 @@ public:
 	Vector2 m_vLastAbsMousePos;
 	Vector2 m_vLastRelMousePos;
 
+	// SDL hint cache for main loop iteration rate
+	UString fps_max_str;
+	UString fps_max_bg_str;
+
 private:
 	// logging
 	[[nodiscard]] inline bool sdlDebug() const { return m_sdlDebug; }
@@ -154,9 +159,6 @@ private:
 		return m_sdlDebug;
 	}
 	void onLogLevelChange(float newval);
-
-	static constexpr bool m_bUpdate = true;
-	static constexpr bool m_bDraw = true;
 
 	bool m_bIsRawInput;
 
@@ -170,6 +172,7 @@ private:
 	// monitors
 	std::vector<McRect> m_vMonitors;
 
+	// window
 	bool m_bResizable;
 	bool m_bFullscreen;
 

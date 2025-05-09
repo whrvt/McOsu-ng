@@ -522,12 +522,12 @@ static forceinline void getUtf8(wchar_t ch, char *utf8, int numBytes, int firstB
 	for (int i = numBytes - 1; i > 0; i--)
 	{
 		// store the lowest bits in a utf8 byte
-		utf8[i] = (ch & USTRING_MASK_MULTIBYTE) | 0x80;
+		utf8[i] = static_cast<char>((ch & USTRING_MASK_MULTIBYTE) | 0x80);
 		ch >>= 6;
 	}
 
 	// store the remaining bits
-	*utf8 = (firstByteValue | ch);
+	*utf8 = static_cast<char>((firstByteValue | ch));
 }
 
 // helper function to encode a wide character string to UTF-8

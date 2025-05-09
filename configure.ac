@@ -141,8 +141,8 @@ AS_IF([test "$host_os" = "mingw32"], [
     ])
     enable_system_deps=no
     disable_system_deps=yes
-    MCOSU_CPPFLAGS="$CPPFLAGS -DUNICODE"
-    MCOSU_CXXFLAGS="$CXXFLAGS -DUNICODE -municode"
+    MCOSU_CPPFLAGS="$CPPFLAGS -D_UNICODE -DUNICODE"
+    MCOSU_CXXFLAGS="$CXXFLAGS -D_UNICODE -DUNICODE -municode"
     AS_IF([test "x$enable_clang" = "xyes"], [
         LLVMMINGW=1
         AC_SUBST([LLVMMINGW])
@@ -240,6 +240,7 @@ __EOF__
     ])
 
     CMAKE_SYSTEM_NAME="Windows"
+    CMAKERCOPT="-DCMAKE_RC_COMPILER=$host_cpu-w64-mingw32-windres"
     SYSNAME="windows"
     DLLEXT=".dll"
     LIBPREFIX=""
@@ -270,6 +271,7 @@ __EOF__
 PKG_CONFIG="$PWD/build/pkg-config"
 AC_SUBST([PKG_CONFIG])
 AC_SUBST([CMAKE_SYSTEM_NAME])
+AC_SUBST([CMAKERCOPT])
 AC_SUBST([SYSNAME])
 AC_SUBST([DLLEXT])
 AC_SUBST([LIBPREFIX])
@@ -303,7 +305,7 @@ AS_IF([test "$host_cpu" = "x86_64"], [COMMON_FLAGS="$COMMON_FLAGS -mcmodel=small
 COMMON_FLAGS="$COMMON_FLAGS -ffunction-sections -fdata-sections -fwrapv -fno-strict-aliasing -fno-semantic-interposition"
 CXXFLAGS="$CXXFLAGS $COMMON_FLAGS"
 CFLAGS="$CFLAGS $COMMON_FLAGS"
-AS_IF([test -z "$ubercompat"], [
+AS_IF([test -z "$ubercompat" || test "x$enable_static" = "xyes"], [
     LDFLAGS="$LDFLAGS -static-libstdc++ -static-libgcc"
 ])
 
@@ -525,9 +527,16 @@ AM_CONDITIONAL([WIN_PLATFORM], [test "$SYSNAME" = "windows"])
 
 # need dynamic winpthread for old windows 32bit compat builds
 AS_IF([test -n "$ubercompat"], [
-    WINSHARED_DLLS="$($CC -print-prog-name=ld | sed -e 's|/bin/.*||' | tr -d '\n' | find -files0-from - \
-        '(' -iregex ".*$host_cpu"'.*libwinpthread-1.dll' -o -iregex ".*$host_cpu"'.*libgcc_.*.dll' -o -iregex ".*$host_cpu"'.*libstdc.*.dll' ')' \
-        -printf '%h/%f ')"
+    AS_IF([test "x$enable_static" = "xyes"], [ # still need winpthread dynamic, breaks otherwise for reasons i dont understand
+        WINSHARED_DLLS="$($CC -print-prog-name=ld | sed -e 's|/bin/.*||' | tr -d '\n' | find -files0-from - \
+            -iregex ".*$host_cpu"'.*libwinpthread-1.dll' \
+            -printf '%h/%f ')"
+    ], [
+        WINSHARED_DLLS="$($CC -print-prog-name=ld | sed -e 's|/bin/.*||' | tr -d '\n' | find -files0-from - \
+            '(' -iregex ".*$host_cpu"'.*libwinpthread-1.dll' -o -iregex ".*$host_cpu"'.*libgcc_.*.dll' -o -iregex ".*$host_cpu"'.*libstdc.*.dll' ')' \
+            -printf '%h/%f ')"
+    ])
+
     AC_SUBST([WINSHARED_DLLS])
 ])
 AM_CONDITIONAL([WINSHARED_DLLS_NEEDED], [test -n "$WINSHARED_DLLS"])
