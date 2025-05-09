@@ -7,13 +7,12 @@
 
 #include "BassLoader.h"
 
-#if defined(MCENGINE_FEATURE_BASS) && !defined(MCENGINE_PLATFORM_WINDOWS) // FIXME: broken on 32bit windows
+#if defined(MCENGINE_FEATURE_BASS)
 
 #include "Engine.h"
 
 namespace BassLoader
 {
-using namespace std::string_view_literals;
 static SDL_SharedObject *s_bassLib = nullptr;
 static SDL_SharedObject *s_bassFxLib = nullptr;
 #ifdef MCENGINE_FEATURE_BASS_WASAPI
@@ -38,52 +37,56 @@ constexpr auto BASS_FX_LIB_NAME = "libbass_fx.dylib";
 #endif
 
 // BASS
-DWORD (*BASS_GetVersion)() = nullptr;
-BOOL (*BASS_SetConfig)(DWORD option, DWORD value) = nullptr;
-DWORD (*BASS_GetConfig)(DWORD option) = nullptr;
-BOOL (*BASS_Init)(int device, DWORD freq, DWORD flags, void *win, void *dsguid) = nullptr;
-BOOL (*BASS_Free)() = nullptr;
-BOOL (*BASS_GetDeviceInfo)(DWORD device, BASS_DEVICEINFO *info) = nullptr;
-DWORD (*BASS_ErrorGetCode)() = nullptr;
-HSTREAM (*BASS_StreamCreateFile)(BOOL mem, const void *file, DWORD offset, DWORD length, DWORD flags) = nullptr;
-HSAMPLE (*BASS_SampleLoad)(BOOL mem, const void *file, DWORD offset, DWORD length, DWORD max, DWORD flags) = nullptr;
-BOOL (*BASS_SampleFree)(HSAMPLE handle) = nullptr;
-HCHANNEL (*BASS_SampleGetChannel)(HSAMPLE handle, BOOL onlynew) = nullptr;
-BOOL (*BASS_ChannelPlay)(DWORD handle, BOOL restart) = nullptr;
-BOOL (*BASS_ChannelPause)(DWORD handle) = nullptr;
-BOOL (*BASS_ChannelStop)(DWORD handle) = nullptr;
-BOOL (*BASS_ChannelSetAttribute)(DWORD handle, DWORD attrib, float value) = nullptr;
-BOOL (*BASS_ChannelGetAttribute)(DWORD handle, DWORD attrib, float *value) = nullptr;
-BOOL (*BASS_ChannelSetPosition)(DWORD handle, DWORD pos, DWORD mode) = nullptr;
-DWORD (*BASS_ChannelGetPosition)(DWORD handle, DWORD mode) = nullptr;
-DWORD (*BASS_ChannelGetLength)(DWORD handle, DWORD mode) = nullptr;
-DWORD (*BASS_ChannelFlags)(DWORD handle, DWORD flags, DWORD mask) = nullptr;
-DWORD (*BASS_ChannelIsActive)(DWORD handle) = nullptr;
-double (*BASS_ChannelBytes2Seconds)(DWORD handle, DWORD pos) = nullptr;
-DWORD (*BASS_ChannelSeconds2Bytes)(DWORD handle, double pos) = nullptr;
-BOOL (*BASS_ChannelSet3DPosition)(DWORD handle, const BASS_3DVECTOR *pos, const BASS_3DVECTOR *orient, const BASS_3DVECTOR *vel) = nullptr;
-BOOL (*BASS_Set3DPosition)(const BASS_3DVECTOR *pos, const BASS_3DVECTOR *vel, const BASS_3DVECTOR *front, const BASS_3DVECTOR *top) = nullptr;
-BOOL (*BASS_Apply3D)() = nullptr;
-BOOL (*BASS_StreamFree)(HSTREAM handle) = nullptr;
+DWORD WINAPI (*BASS_GetVersion)() = nullptr;
+BOOL WINAPI (*BASS_SetConfig)(DWORD option, DWORD value) = nullptr;
+DWORD WINAPI (*BASS_GetConfig)(DWORD option) = nullptr;
+#if defined(_WIN32) && !defined(_WIN32_WCE) && !(defined(WINAPI_FAMILY) && WINAPI_FAMILY != WINAPI_FAMILY_DESKTOP_APP)
+BOOL WINAPI (*BASS_Init)(int device, DWORD freq, DWORD flags, HWND win, const void *dsguid) = nullptr;
+#else
+BOOL WINAPI (*BASS_Init)(int device, DWORD freq, DWORD flags, void *win, const void *dsguid) = nullptr;
+#endif
+BOOL WINAPI (*BASS_Free)() = nullptr;
+BOOL WINAPI (*BASS_GetDeviceInfo)(DWORD device, BASS_DEVICEINFO *info) = nullptr;
+DWORD WINAPI (*BASS_ErrorGetCode)() = nullptr;
+HSTREAM WINAPI (*BASS_StreamCreateFile_plat)(BOOL mem, const void *file, QWORD offset, QWORD length, DWORD flags) = nullptr;
+HSAMPLE WINAPI (*BASS_SampleLoad_plat)(BOOL mem, const void *file, QWORD offset, DWORD length, DWORD max, DWORD flags) = nullptr;
+BOOL WINAPI (*BASS_SampleFree)(HSAMPLE handle) = nullptr;
+HCHANNEL WINAPI (*BASS_SampleGetChannel)(HSAMPLE handle, BOOL onlynew) = nullptr;
+BOOL WINAPI (*BASS_ChannelPlay)(DWORD handle, BOOL restart) = nullptr;
+BOOL WINAPI (*BASS_ChannelPause)(DWORD handle) = nullptr;
+BOOL WINAPI (*BASS_ChannelStop)(DWORD handle) = nullptr;
+BOOL WINAPI (*BASS_ChannelSetAttribute)(DWORD handle, DWORD attrib, float value) = nullptr;
+BOOL WINAPI (*BASS_ChannelGetAttribute)(DWORD handle, DWORD attrib, float *value) = nullptr;
+BOOL WINAPI (*BASS_ChannelSetPosition)(DWORD handle, QWORD pos, DWORD mode) = nullptr;
+QWORD WINAPI (*BASS_ChannelGetPosition)(DWORD handle, DWORD mode) = nullptr;
+QWORD WINAPI (*BASS_ChannelGetLength)(DWORD handle, DWORD mode) = nullptr;
+DWORD WINAPI (*BASS_ChannelFlags)(DWORD handle, DWORD flags, DWORD mask) = nullptr;
+DWORD WINAPI (*BASS_ChannelIsActive)(DWORD handle) = nullptr;
+double WINAPI (*BASS_ChannelBytes2Seconds)(DWORD handle, QWORD pos) = nullptr;
+QWORD WINAPI (*BASS_ChannelSeconds2Bytes)(DWORD handle, double pos) = nullptr;
+BOOL WINAPI (*BASS_ChannelSet3DPosition)(DWORD handle, const BASS_3DVECTOR *pos, const BASS_3DVECTOR *orient, const BASS_3DVECTOR *vel) = nullptr;
+BOOL WINAPI (*BASS_Set3DPosition)(const BASS_3DVECTOR *pos, const BASS_3DVECTOR *vel, const BASS_3DVECTOR *front, const BASS_3DVECTOR *top) = nullptr;
+BOOL WINAPI (*BASS_Apply3D)() = nullptr;
+BOOL WINAPI (*BASS_StreamFree)(HSTREAM handle) = nullptr;
 
 // BASS_FX
-HSTREAM (*BASS_FX_TempoCreate)(DWORD chan, DWORD flags) = nullptr;
+HSTREAM WINAPI (*BASS_FX_TempoCreate)(DWORD chan, DWORD flags) = nullptr;
 
 #ifdef MCENGINE_FEATURE_BASS_WASAPI
 // BASSWASAPI
-BOOL (*BASS_WASAPI_Init)(int device, DWORD freq, DWORD chans, DWORD flags, float buffer, float period, void *proc, void *user) = nullptr;
-BOOL (*BASS_WASAPI_Free)() = nullptr;
-BOOL (*BASS_WASAPI_Start)() = nullptr;
-BOOL (*BASS_WASAPI_Stop)(BOOL reset) = nullptr;
-BOOL (*BASS_WASAPI_SetVolume)(DWORD mode, float volume) = nullptr;
-BOOL (*BASS_WASAPI_GetInfo)(BASS_WASAPI_INFO *info) = nullptr;
-BOOL (*BASS_WASAPI_GetDeviceInfo)(DWORD device, BASS_WASAPI_DEVICEINFO *info) = nullptr;
+BOOL WINAPI (*BASS_WASAPI_Init)(int device, DWORD freq, DWORD chans, DWORD flags, float buffer, float period, void *proc, void *user) = nullptr;
+BOOL WINAPI (*BASS_WASAPI_Free)() = nullptr;
+BOOL WINAPI (*BASS_WASAPI_Start)() = nullptr;
+BOOL WINAPI (*BASS_WASAPI_Stop)(BOOL reset) = nullptr;
+BOOL WINAPI (*BASS_WASAPI_SetVolume)(DWORD mode, float volume) = nullptr;
+BOOL WINAPI (*BASS_WASAPI_GetInfo)(BASS_WASAPI_INFO *info) = nullptr;
+BOOL WINAPI (*BASS_WASAPI_GetDeviceInfo)(DWORD device, BASS_WASAPI_DEVICEINFO *info) = nullptr;
 
 // BASSMIX
-HSTREAM (*BASS_Mixer_StreamCreate)(DWORD freq, DWORD chans, DWORD flags) = nullptr;
-BOOL (*BASS_Mixer_StreamAddChannel)(HSTREAM handle, DWORD channel, DWORD flags) = nullptr;
-DWORD (*BASS_Mixer_ChannelGetMixer)(DWORD handle) = nullptr;
-BOOL (*BASS_Mixer_ChannelRemove)(DWORD handle) = nullptr;
+HSTREAM WINAPI (*BASS_Mixer_StreamCreate)(DWORD freq, DWORD chans, DWORD flags) = nullptr;
+BOOL WINAPI (*BASS_Mixer_StreamAddChannel)(HSTREAM handle, DWORD channel, DWORD flags) = nullptr;
+DWORD WINAPI (*BASS_Mixer_ChannelGetMixer)(DWORD handle) = nullptr;
+BOOL WINAPI (*BASS_Mixer_ChannelRemove)(DWORD handle) = nullptr;
 #endif
 
 template <typename T> T loadFunction(SDL_SharedObject *lib, const char *funcName)
@@ -113,8 +116,8 @@ bool init()
 	BASS_Free = loadFunction<decltype(BASS_Free)>(s_bassLib, "BASS_Free");
 	BASS_GetDeviceInfo = loadFunction<decltype(BASS_GetDeviceInfo)>(s_bassLib, "BASS_GetDeviceInfo");
 	BASS_ErrorGetCode = loadFunction<decltype(BASS_ErrorGetCode)>(s_bassLib, "BASS_ErrorGetCode");
-	BASS_StreamCreateFile = loadFunction<decltype(BASS_StreamCreateFile)>(s_bassLib, "BASS_StreamCreateFile");
-	BASS_SampleLoad = loadFunction<decltype(BASS_SampleLoad)>(s_bassLib, "BASS_SampleLoad");
+	BASS_StreamCreateFile_plat = loadFunction<decltype(BASS_StreamCreateFile_plat)>(s_bassLib, "BASS_StreamCreateFile");
+	BASS_SampleLoad_plat = loadFunction<decltype(BASS_SampleLoad_plat)>(s_bassLib, "BASS_SampleLoad");
 	BASS_SampleFree = loadFunction<decltype(BASS_SampleFree)>(s_bassLib, "BASS_SampleFree");
 	BASS_SampleGetChannel = loadFunction<decltype(BASS_SampleGetChannel)>(s_bassLib, "BASS_SampleGetChannel");
 	BASS_ChannelPlay = loadFunction<decltype(BASS_ChannelPlay)>(s_bassLib, "BASS_ChannelPlay");
@@ -141,7 +144,7 @@ bool init()
 		cleanup();
 		return false;
 	}
-
+	
 	// BASS_FX
 	if (!(s_bassFxLib = SDL_LoadObject(BASS_FX_LIB_NAME)) && !(s_bassFxLib = SDL_LoadObject(std::format("lib/{}", BASS_FX_LIB_NAME).c_str())))
 	{
@@ -234,8 +237,8 @@ void cleanup()
 	BASS_Free = nullptr;
 	BASS_GetDeviceInfo = nullptr;
 	BASS_ErrorGetCode = nullptr;
-	BASS_StreamCreateFile = nullptr;
-	BASS_SampleLoad = nullptr;
+	BASS_StreamCreateFile_plat = nullptr;
+	BASS_SampleLoad_plat = nullptr;
 	BASS_SampleFree = nullptr;
 	BASS_SampleGetChannel = nullptr;
 	BASS_ChannelPlay = nullptr;
@@ -271,11 +274,5 @@ void cleanup()
 #endif
 }
 } // namespace BassLoader
-
-#else
-namespace BassLoader {
-	bool init() {return true;}
-	void cleanup() {return;}
-};
 
 #endif

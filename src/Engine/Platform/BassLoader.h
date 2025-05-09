@@ -11,7 +11,7 @@
 
 #include "EngineFeatures.h"
 
-#if defined(MCENGINE_FEATURE_BASS) && !defined(MCENGINE_PLATFORM_WINDOWS)
+#if defined(MCENGINE_FEATURE_BASS)
 
 #include <SDL3/SDL_loadso.h>
 
@@ -82,71 +82,80 @@ bool init();
 void cleanup();
 
 // BASS
-extern DWORD (*BASS_GetVersion)();
-extern BOOL (*BASS_SetConfig)(DWORD option, DWORD value);
-extern DWORD (*BASS_GetConfig)(DWORD option);
-extern BOOL (*BASS_Init)(int device, DWORD freq, DWORD flags, void *win, void *dsguid);
-extern BOOL (*BASS_Free)();
-extern BOOL (*BASS_GetDeviceInfo)(DWORD device, BASS_DEVICEINFO *info);
-extern DWORD (*BASS_ErrorGetCode)();
-extern HSTREAM (*BASS_StreamCreateFile)(BOOL mem, const void *file, DWORD offset, DWORD length, DWORD flags);
-extern HSAMPLE (*BASS_SampleLoad)(BOOL mem, const void *file, DWORD offset, DWORD length, DWORD max, DWORD flags);
-extern BOOL (*BASS_SampleFree)(HSAMPLE handle);
-extern HCHANNEL (*BASS_SampleGetChannel)(HSAMPLE handle, BOOL onlynew);
-extern BOOL (*BASS_ChannelPlay)(DWORD handle, BOOL restart);
-extern BOOL (*BASS_ChannelPause)(DWORD handle);
-extern BOOL (*BASS_ChannelStop)(DWORD handle);
-extern BOOL (*BASS_ChannelSetAttribute)(DWORD handle, DWORD attrib, float value);
-extern BOOL (*BASS_ChannelGetAttribute)(DWORD handle, DWORD attrib, float *value);
-extern BOOL (*BASS_ChannelSetPosition)(DWORD handle, DWORD pos, DWORD mode);
-extern DWORD (*BASS_ChannelGetPosition)(DWORD handle, DWORD mode);
-extern DWORD (*BASS_ChannelGetLength)(DWORD handle, DWORD mode);
-extern DWORD (*BASS_ChannelFlags)(DWORD handle, DWORD flags, DWORD mask);
-extern DWORD (*BASS_ChannelIsActive)(DWORD handle);
-extern double (*BASS_ChannelBytes2Seconds)(DWORD handle, DWORD pos);
-extern DWORD (*BASS_ChannelSeconds2Bytes)(DWORD handle, double pos);
-extern BOOL (*BASS_ChannelSet3DPosition)(DWORD handle, const BASS_3DVECTOR *pos, const BASS_3DVECTOR *orient, const BASS_3DVECTOR *vel);
-extern BOOL (*BASS_Set3DPosition)(const BASS_3DVECTOR *pos, const BASS_3DVECTOR *vel, const BASS_3DVECTOR *front, const BASS_3DVECTOR *top);
-extern BOOL (*BASS_Apply3D)();
-extern BOOL (*BASS_StreamFree)(HSTREAM handle);
+extern DWORD WINAPI (*BASS_GetVersion)();
+extern BOOL WINAPI (*BASS_SetConfig)(DWORD option, DWORD value);
+extern DWORD WINAPI (*BASS_GetConfig)(DWORD option);
+#if defined(_WIN32) && !defined(_WIN32_WCE) && !(defined(WINAPI_FAMILY) && WINAPI_FAMILY != WINAPI_FAMILY_DESKTOP_APP)
+extern BOOL WINAPI (*BASS_Init)(int device, DWORD freq, DWORD flags, HWND win, const void *dsguid);
+#else
+extern BOOL WINAPI (*BASS_Init)(int device, DWORD freq, DWORD flags, void *win, const void *dsguid);
+#endif
+extern BOOL WINAPI (*BASS_Free)();
+extern BOOL WINAPI (*BASS_GetDeviceInfo)(DWORD device, BASS_DEVICEINFO *info);
+extern DWORD WINAPI (*BASS_ErrorGetCode)();
+extern HSTREAM WINAPI (*BASS_StreamCreateFile_plat)(BOOL mem, const void *file, QWORD offset, QWORD length, DWORD flags);
+extern HSAMPLE WINAPI (*BASS_SampleLoad_plat)(BOOL mem, const void *file, QWORD offset, DWORD length, DWORD max, DWORD flags);
+// overloads copied from headers
+static inline HSAMPLE BASS_SampleLoad(BOOL mem, const void *file, QWORD offset, DWORD length, DWORD max, DWORD flags)
+{
+	return BASS_SampleLoad_plat(mem, file, offset, length, max, flags);
+}
+static inline HSTREAM BASS_StreamCreateFile(BOOL mem, const void *file, QWORD offset, QWORD length, DWORD flags)
+{
+	return BASS_StreamCreateFile_plat(mem, file, offset, length, flags);
+}
+#ifdef MCENGINE_PLATFORM_WINDOWS
+static inline HSAMPLE BASS_SampleLoad(BOOL mem, const WCHAR *file, QWORD offset, DWORD length, DWORD max, DWORD flags)
+{
+	return BASS_SampleLoad_plat(mem, (const void*)file, offset, length, max, flags | BASS_UNICODE);
+}
+static inline HSTREAM BASS_StreamCreateFile(BOOL mem, const WCHAR *file, QWORD offset, QWORD length, DWORD flags)
+{
+	return BASS_StreamCreateFile_plat(mem, (const void*)file, offset, length, flags | BASS_UNICODE);
+}
+#endif
+extern BOOL WINAPI (*BASS_SampleFree)(HSAMPLE handle);
+extern HCHANNEL WINAPI (*BASS_SampleGetChannel)(HSAMPLE handle, BOOL onlynew);
+extern BOOL WINAPI (*BASS_ChannelPlay)(DWORD handle, BOOL restart);
+extern BOOL WINAPI (*BASS_ChannelPause)(DWORD handle);
+extern BOOL WINAPI (*BASS_ChannelStop)(DWORD handle);
+extern BOOL WINAPI (*BASS_ChannelSetAttribute)(DWORD handle, DWORD attrib, float value);
+extern BOOL WINAPI (*BASS_ChannelGetAttribute)(DWORD handle, DWORD attrib, float *value);
+extern BOOL WINAPI (*BASS_ChannelSetPosition)(DWORD handle, QWORD pos, DWORD mode);
+extern QWORD WINAPI (*BASS_ChannelGetPosition)(DWORD handle, DWORD mode);
+extern QWORD WINAPI (*BASS_ChannelGetLength)(DWORD handle, DWORD mode);
+extern DWORD WINAPI (*BASS_ChannelFlags)(DWORD handle, DWORD flags, DWORD mask);
+extern DWORD WINAPI (*BASS_ChannelIsActive)(DWORD handle);
+extern double WINAPI (*BASS_ChannelBytes2Seconds)(DWORD handle, QWORD pos);
+extern QWORD WINAPI (*BASS_ChannelSeconds2Bytes)(DWORD handle, double pos);
+extern BOOL WINAPI (*BASS_ChannelSet3DPosition)(DWORD handle, const BASS_3DVECTOR *pos, const BASS_3DVECTOR *orient, const BASS_3DVECTOR *vel);
+extern BOOL WINAPI (*BASS_Set3DPosition)(const BASS_3DVECTOR *pos, const BASS_3DVECTOR *vel, const BASS_3DVECTOR *front, const BASS_3DVECTOR *top);
+extern BOOL WINAPI (*BASS_Apply3D)();
+extern BOOL WINAPI (*BASS_StreamFree)(HSTREAM handle);
 
 // BASS_FX
-extern HSTREAM (*BASS_FX_TempoCreate)(DWORD chan, DWORD flags);
+extern HSTREAM WINAPI (*BASS_FX_TempoCreate)(DWORD chan, DWORD flags);
 
 #ifdef MCENGINE_FEATURE_BASS_WASAPI
 // BASSWASAPI
-extern BOOL (*BASS_WASAPI_Init)(int device, DWORD freq, DWORD chans, DWORD flags, float buffer, float period, void *proc, void *user);
-extern BOOL (*BASS_WASAPI_Free)();
-extern BOOL (*BASS_WASAPI_Start)();
-extern BOOL (*BASS_WASAPI_Stop)(BOOL reset);
-extern BOOL (*BASS_WASAPI_SetVolume)(DWORD mode, float volume);
-extern BOOL (*BASS_WASAPI_GetInfo)(BASS_WASAPI_INFO *info);
-extern BOOL (*BASS_WASAPI_GetDeviceInfo)(DWORD device, BASS_WASAPI_DEVICEINFO *info);
+extern BOOL WINAPI (*BASS_WASAPI_Init)(int device, DWORD freq, DWORD chans, DWORD flags, float buffer, float period, void *proc, void *user);
+extern BOOL WINAPI (*BASS_WASAPI_Free)();
+extern BOOL WINAPI (*BASS_WASAPI_Start)();
+extern BOOL WINAPI (*BASS_WASAPI_Stop)(BOOL reset);
+extern BOOL WINAPI (*BASS_WASAPI_SetVolume)(DWORD mode, float volume);
+extern BOOL WINAPI (*BASS_WASAPI_GetInfo)(BASS_WASAPI_INFO *info);
+extern BOOL WINAPI (*BASS_WASAPI_GetDeviceInfo)(DWORD device, BASS_WASAPI_DEVICEINFO *info);
 
 // BASSMIX
-extern HSTREAM (*BASS_Mixer_StreamCreate)(DWORD freq, DWORD chans, DWORD flags);
-extern BOOL (*BASS_Mixer_StreamAddChannel)(HSTREAM handle, DWORD channel, DWORD flags);
-extern DWORD (*BASS_Mixer_ChannelGetMixer)(DWORD handle);
-extern BOOL (*BASS_Mixer_ChannelRemove)(DWORD handle);
+extern HSTREAM WINAPI (*BASS_Mixer_StreamCreate)(DWORD freq, DWORD chans, DWORD flags);
+extern BOOL WINAPI (*BASS_Mixer_StreamAddChannel)(HSTREAM handle, DWORD channel, DWORD flags);
+extern DWORD WINAPI (*BASS_Mixer_ChannelGetMixer)(DWORD handle);
+extern BOOL WINAPI (*BASS_Mixer_ChannelRemove)(DWORD handle);
 #endif
 }; // namespace BassLoader
 
 using namespace BassLoader;
 
-#else
-
-#include <bass.h>
-#include <bass_fx.h>
-
-#ifdef MCENGINE_FEATURE_BASS_WASAPI
-#include <bassmix.h>
-#include <basswasapi.h>
-#endif
-
-namespace BassLoader { // windows 32 broken
-	bool init();
-	void cleanup();
-};
 #endif
 
 #endif // BASS_LOADER_H

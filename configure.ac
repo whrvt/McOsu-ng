@@ -217,7 +217,6 @@ __EOF__
     SYSNAME="linux"
     DLLEXT=".so"
     LIBPREFIX="lib"
-    BASS_LIBS="" # loaded at runtime
 
     AC_DEFINE([MCENGINE_PLATFORM_LINUX], [1], [Define if compiling for Linux.])
 ],[
@@ -244,7 +243,6 @@ __EOF__
     SYSNAME="windows"
     DLLEXT=".dll"
     LIBPREFIX=""
-    BASS_LIBS="-lbass -lbass_fx"
 
     AS_IF([test "$host_cpu" = "i686"], [ # uber compatibility configuration, works on winxp
         AS_IF([test "x$enable_native" != "xyes"], [ # compatibility, disable unless explicitly requested
@@ -552,11 +550,9 @@ AS_IF([test "x$with_sdlmixer" != "xyes" && test "x$with_soloud" != "xyes"], [
         [],
         [AC_MSG_ERROR([Required bundled library ${LIBPREFIX}bass_fx$DLLEXT not found])])
     BASS_CFLAGS="-I\$(srcdir)/\$(BUNDLED_BASS_DIR)/include -I\$(srcdir)/\$(BUNDLED_BASS_FX_DIR)/include"
-    BASS_LIBS="-L\$(srcdir)/\$(BUNDLED_BASS_DIR)/lib/\$(SYSNAME)/\$(host_cpu) -L\$(srcdir)/\$(BUNDLED_BASS_FX_DIR)/lib/\$(SYSNAME)/\$(host_cpu) $BASS_LIBS"
     AC_DEFINE([MCENGINE_FEATURE_BASS], [1], [Define if the BASS audio backend is desired.])
 ], [
     BASS_CFLAGS=""
-    BASS_LIBS=""
     AS_IF([test "x$with_sdlmixer" = "xyes"], [
         AC_DEFINE([MCENGINE_FEATURE_SDL_MIXER], [1], [Define if the SDL_mixer audio backend is desired.])
     ])
@@ -565,7 +561,6 @@ AS_IF([test "x$with_sdlmixer" != "xyes" && test "x$with_soloud" != "xyes"], [
     ])
 ])
 
-AC_SUBST([BASS_LIBS])
 AC_SUBST([BASS_CFLAGS])
 AC_SUBST([BUNDLED_LIBS_DIR])
 AC_SUBST([BUNDLED_BASS_DIR])

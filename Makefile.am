@@ -226,7 +226,7 @@ $(DEPS_PREFIX)/SDL3_mixer.built:
 endif
 else
 AUDIO_CFLAGS := $(BASS_CFLAGS)
-AUDIO_LIBS := $(BASS_LIBS)
+AUDIO_LIBS :=
 $(DEPS_PREFIX)/SDL3_mixer.built:
 	$(MKDIR_P) $(DEPS_PREFIX) && touch $@
 $(DEPS_PREFIX)/SoLoud.built:
