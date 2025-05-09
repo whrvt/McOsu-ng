@@ -218,7 +218,6 @@ am_McOsu_ng_OBJECTS = src/App/Osu/McOsu_ng-Osu.$(OBJEXT) \
 	src/Engine/Input/McOsu_ng-Mouse.$(OBJEXT) \
 	src/Engine/Input/McOsu_ng-OpenVRController.$(OBJEXT) \
 	src/Engine/Main/McOsu_ng-main.$(OBJEXT) \
-	src/Engine/Main/McOsu_ng-main_SDL.$(OBJEXT) \
 	src/Engine/McOsu_ng-NetworkHandler.$(OBJEXT) \
 	src/Engine/McOsu_ng-OpenVRInterface.$(OBJEXT) \
 	src/Engine/Platform/McOsu_ng-BassLoader.$(OBJEXT) \
@@ -432,7 +431,6 @@ am__depfiles_remade = src/App/Osu/$(DEPDIR)/McOsu_ng-Osu.Po \
 	src/Engine/Input/$(DEPDIR)/McOsu_ng-Mouse.Po \
 	src/Engine/Input/$(DEPDIR)/McOsu_ng-OpenVRController.Po \
 	src/Engine/Main/$(DEPDIR)/McOsu_ng-main.Po \
-	src/Engine/Main/$(DEPDIR)/McOsu_ng-main_SDL.Po \
 	src/Engine/Platform/$(DEPDIR)/McOsu_ng-BassLoader.Po \
 	src/Engine/Platform/$(DEPDIR)/McOsu_ng-BassSound.Po \
 	src/Engine/Platform/$(DEPDIR)/McOsu_ng-BassSoundEngine.Po \
@@ -877,7 +875,6 @@ McOsu_ng_SOURCES = \
 	src/Engine/Input/Mouse.cpp \
 	src/Engine/Input/OpenVRController.cpp \
 	src/Engine/Main/main.cpp \
-	src/Engine/Main/main_SDL.cpp \
 	src/Engine/NetworkHandler.cpp \
 	src/Engine/OpenVRInterface.cpp \
 	src/Engine/Platform/BassLoader.cpp \
@@ -1414,9 +1411,6 @@ src/Engine/Main/$(DEPDIR)/$(am__dirstamp):
 src/Engine/Main/McOsu_ng-main.$(OBJEXT):  \
 	src/Engine/Main/$(am__dirstamp) \
 	src/Engine/Main/$(DEPDIR)/$(am__dirstamp)
-src/Engine/Main/McOsu_ng-main_SDL.$(OBJEXT):  \
-	src/Engine/Main/$(am__dirstamp) \
-	src/Engine/Main/$(DEPDIR)/$(am__dirstamp)
 src/Engine/McOsu_ng-NetworkHandler.$(OBJEXT):  \
 	src/Engine/$(am__dirstamp) \
 	src/Engine/$(DEPDIR)/$(am__dirstamp)
@@ -1817,7 +1811,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Input/$(DEPDIR)/McOsu_ng-Mouse.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Input/$(DEPDIR)/McOsu_ng-OpenVRController.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Main/$(DEPDIR)/McOsu_ng-main.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Main/$(DEPDIR)/McOsu_ng-main_SDL.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-BassLoader.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-BassSound.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-BassSoundEngine.Po@am__quote@ # am--include-marker
@@ -3163,20 +3156,6 @@ src/Engine/Main/McOsu_ng-main.obj: src/Engine/Main/main.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Main/main.cpp' object='src/Engine/Main/McOsu_ng-main.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Main/McOsu_ng-main.obj `if test -f 'src/Engine/Main/main.cpp'; then $(CYGPATH_W) 'src/Engine/Main/main.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Main/main.cpp'; fi`
-
-src/Engine/Main/McOsu_ng-main_SDL.o: src/Engine/Main/main_SDL.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Main/McOsu_ng-main_SDL.o -MD -MP -MF src/Engine/Main/$(DEPDIR)/McOsu_ng-main_SDL.Tpo -c -o src/Engine/Main/McOsu_ng-main_SDL.o `test -f 'src/Engine/Main/main_SDL.cpp' || echo '$(srcdir)/'`src/Engine/Main/main_SDL.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Main/$(DEPDIR)/McOsu_ng-main_SDL.Tpo src/Engine/Main/$(DEPDIR)/McOsu_ng-main_SDL.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Main/main_SDL.cpp' object='src/Engine/Main/McOsu_ng-main_SDL.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Main/McOsu_ng-main_SDL.o `test -f 'src/Engine/Main/main_SDL.cpp' || echo '$(srcdir)/'`src/Engine/Main/main_SDL.cpp
-
-src/Engine/Main/McOsu_ng-main_SDL.obj: src/Engine/Main/main_SDL.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Main/McOsu_ng-main_SDL.obj -MD -MP -MF src/Engine/Main/$(DEPDIR)/McOsu_ng-main_SDL.Tpo -c -o src/Engine/Main/McOsu_ng-main_SDL.obj `if test -f 'src/Engine/Main/main_SDL.cpp'; then $(CYGPATH_W) 'src/Engine/Main/main_SDL.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Main/main_SDL.cpp'; fi`
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Main/$(DEPDIR)/McOsu_ng-main_SDL.Tpo src/Engine/Main/$(DEPDIR)/McOsu_ng-main_SDL.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Main/main_SDL.cpp' object='src/Engine/Main/McOsu_ng-main_SDL.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Main/McOsu_ng-main_SDL.obj `if test -f 'src/Engine/Main/main_SDL.cpp'; then $(CYGPATH_W) 'src/Engine/Main/main_SDL.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Main/main_SDL.cpp'; fi`
 
 src/Engine/McOsu_ng-NetworkHandler.o: src/Engine/NetworkHandler.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/McOsu_ng-NetworkHandler.o -MD -MP -MF src/Engine/$(DEPDIR)/McOsu_ng-NetworkHandler.Tpo -c -o src/Engine/McOsu_ng-NetworkHandler.o `test -f 'src/Engine/NetworkHandler.cpp' || echo '$(srcdir)/'`src/Engine/NetworkHandler.cpp
@@ -4856,7 +4835,6 @@ distclean: distclean-am
 	-rm -f src/Engine/Input/$(DEPDIR)/McOsu_ng-Mouse.Po
 	-rm -f src/Engine/Input/$(DEPDIR)/McOsu_ng-OpenVRController.Po
 	-rm -f src/Engine/Main/$(DEPDIR)/McOsu_ng-main.Po
-	-rm -f src/Engine/Main/$(DEPDIR)/McOsu_ng-main_SDL.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-BassLoader.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-BassSound.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-BassSoundEngine.Po
@@ -5085,7 +5063,6 @@ maintainer-clean: maintainer-clean-am
 	-rm -f src/Engine/Input/$(DEPDIR)/McOsu_ng-Mouse.Po
 	-rm -f src/Engine/Input/$(DEPDIR)/McOsu_ng-OpenVRController.Po
 	-rm -f src/Engine/Main/$(DEPDIR)/McOsu_ng-main.Po
-	-rm -f src/Engine/Main/$(DEPDIR)/McOsu_ng-main_SDL.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-BassLoader.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-BassSound.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-BassSoundEngine.Po

@@ -30,8 +30,6 @@ public:
 	SDLEnvironment();
 	~SDLEnvironment() override;
 
-	int main(int argc, char *argv[]);
-
 	void update() override;
 
 	// engine/factory
@@ -131,6 +129,22 @@ protected:
 	inline void setCursorPosition() const override { SDL_WarpMouseInWindow(m_window, m_vLastAbsMousePos.x, m_vLastAbsMousePos.y); }
 	inline void setCursorPosition(Vector2 pos) const override { SDL_WarpMouseInWindow(m_window, pos.x, pos.y); }
 
+	// Made public for callback access
+public:
+	Engine *m_engine;
+	SDL_Window *m_window;
+
+	bool m_bRunning;
+	bool m_bDrawing;
+
+	bool m_bMinimized; // for fps_max_background
+	bool m_bHasFocus;  // for fps_max_background
+
+	// the absolute/relative mouse position from the most recent iteration of the event loop
+	// relative only useful if raw input is enabled, value is undefined/garbage otherwise
+	Vector2 m_vLastAbsMousePos;
+	Vector2 m_vLastRelMousePos;
+
 private:
 	// logging
 	[[nodiscard]] inline bool sdlDebug() const { return m_sdlDebug; }
@@ -141,16 +155,8 @@ private:
 	}
 	void onLogLevelChange(float newval);
 
-	Engine *m_engine;
-
 	static constexpr bool m_bUpdate = true;
 	static constexpr bool m_bDraw = true;
-
-	bool m_bRunning;
-	bool m_bDrawing;
-
-	bool m_bMinimized; // for fps_max_background
-	bool m_bHasFocus;  // for fps_max_background
 
 	bool m_bIsRawInput;
 
@@ -164,8 +170,6 @@ private:
 	// monitors
 	std::vector<McRect> m_vMonitors;
 
-	// window
-	SDL_Window *m_window;
 	bool m_bResizable;
 	bool m_bFullscreen;
 
@@ -176,11 +180,6 @@ private:
 	McRect m_cursorClip;
 	CURSORTYPE m_cursorType;
 	std::map<CURSORTYPE, SDL_Cursor *> m_mCursorIcons;
-
-	// the absolute/relative mouse position from the most recent iteration of the event loop
-	// relative only useful if raw input is enabled, value is undefined/garbage otherwise
-	Vector2 m_vLastAbsMousePos;
-	Vector2 m_vLastRelMousePos;
 
 	void onRawInputChange(float newval);
 	void setRawInput(bool on);
