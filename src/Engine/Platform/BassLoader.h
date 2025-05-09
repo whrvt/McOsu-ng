@@ -11,7 +11,7 @@
 
 #include "EngineFeatures.h"
 
-#ifdef MCENGINE_FEATURE_BASS
+#if defined(MCENGINE_FEATURE_BASS) && !defined(MCENGINE_PLATFORM_WINDOWS)
 
 #include <SDL3/SDL_loadso.h>
 
@@ -133,6 +133,20 @@ extern BOOL (*BASS_Mixer_ChannelRemove)(DWORD handle);
 
 using namespace BassLoader;
 
-#endif // BASS_LOADER_H
+#else
 
+#include <bass.h>
+#include <bass_fx.h>
+
+#ifdef MCENGINE_FEATURE_BASS_WASAPI
+#include <bassmix.h>
+#include <basswasapi.h>
 #endif
+
+namespace BassLoader { // windows 32 broken
+	bool init();
+	void cleanup();
+};
+#endif
+
+#endif // BASS_LOADER_H

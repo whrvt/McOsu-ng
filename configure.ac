@@ -135,8 +135,10 @@ AS_IF([test "x$with_soloud" = "xyes"], [
 
 AS_IF([test "$host_os" = "mingw32"], [
     # its too much of a headache to cross-build shared with host libs
-    enable_static=yes
-    disable_shared=yes
+    AS_IF([test "x$enable_static" != "xno"], [
+        enable_static=yes
+        disable_shared=yes
+    ])
     enable_system_deps=no
     disable_system_deps=yes
     MCOSU_CPPFLAGS="$CPPFLAGS -DUNICODE"
@@ -161,8 +163,6 @@ PKG_CONFIG_PATH="$PWD/build/deps/lib/pkgconfig:$PWD/build/deps/lib64/pkgconfig"
 PKG_CONFIG_PATH_CUSTOM="$PKG_CONFIG_PATH"
 AC_SUBST([PKG_CONFIG_PATH])
 AC_SUBST([PKG_CONFIG_PATH_CUSTOM])
-
-AC_CHECK_TOOL([LD], [ld], [ld])
 
 mkdir -p build/deps
 
@@ -192,6 +192,7 @@ EOF
 $CXX -m32 "\$@"
 EOF
         [[ "x$enable_clang" = "xyes" ]] && MCOSU_LDFLAGS="$MCOSU_LDFLAGS -latomic"
+        AC_SUBST([NASMOBJ],[elf32])
     ],[
         install -Dm755 /dev/stdin $PWD/build/$target-$CC <<EOF
 #!/usr/bin/env sh
@@ -201,6 +202,7 @@ EOF
 #!/usr/bin/env sh
 $CXX "\$@"
 EOF
+        AC_SUBST([NASMOBJ],[elf64])
     ])
 
     install -Dm755 /dev/stdin $PWD/build/pkg-config <<__EOF__
@@ -215,6 +217,7 @@ __EOF__
     SYSNAME="linux"
     DLLEXT=".so"
     LIBPREFIX="lib"
+    BASS_LIBS="" # loaded at runtime
 
     AC_DEFINE([MCENGINE_PLATFORM_LINUX], [1], [Define if compiling for Linux.])
 ],[
@@ -241,12 +244,14 @@ __EOF__
     SYSNAME="windows"
     DLLEXT=".dll"
     LIBPREFIX=""
+    BASS_LIBS="-lbass -lbass_fx"
 
     AS_IF([test "$host_cpu" = "i686"], [ # uber compatibility configuration, works on winxp
         AS_IF([test "x$enable_native" != "xyes"], [ # compatibility, disable unless explicitly requested
             enable_native=no
             disable_native=yes
         ])
+        ubercompat=on
         with_mimalloc="no"
         LDFLAGS="$LDFLAGS -m32 -lwinpthread"
         CPPFLAGS="$CPPFLAGS -DWINVER=0x0501 -D_WIN32_WINNT=0x0501 -D_WIN32_WINDOWS=0x0501 -D_WIN32_IE=0x0501"
@@ -255,8 +260,10 @@ __EOF__
         # won't work unfortunately, https://github.com/mstorsjo/llvm-mingw/issues/44
         # but i tried
         AS_IF([test "x$enable_clang" = "xyes"], [LDFLAGS="$LDFLAGS -Xlinker /subsystem:windows,5.0"])
+        AC_SUBST([NASMOBJ],[win32])
     ], [
         LDFLAGS="$LDFLAGS -Wl,-Bstatic,--whole-archive -lwinpthread -Wl,--no-whole-archive,-Bdynamic"
+        AC_SUBST([NASMOBJ],[win64])
     ])
 
     AC_DEFINE([MCENGINE_PLATFORM_WINDOWS], [1], [Define if compiling for Windows.])
@@ -298,7 +305,9 @@ AS_IF([test "$host_cpu" = "x86_64"], [COMMON_FLAGS="$COMMON_FLAGS -mcmodel=small
 COMMON_FLAGS="$COMMON_FLAGS -ffunction-sections -fdata-sections -fwrapv -fno-strict-aliasing -fno-semantic-interposition"
 CXXFLAGS="$CXXFLAGS $COMMON_FLAGS"
 CFLAGS="$CFLAGS $COMMON_FLAGS"
-LDFLAGS="$LDFLAGS -static-libstdc++ -static-libgcc"
+AS_IF([test -z "$ubercompat"], [
+    LDFLAGS="$LDFLAGS -static-libstdc++ -static-libgcc"
+])
 
 # use c/c++23 because we can
 AC_LANG_PUSH([C++])
@@ -308,6 +317,10 @@ AX_CHECK_COMPILE_FLAG([-std=gnu++23], [
 ], [
     AC_MSG_ERROR([Compiler does not support gnu++23])
 ])
+
+AC_CHECK_TOOL([LD], [ld], [ld])
+AC_CHECK_TOOL([AR], [ar], [ar])
+AC_CHECK_TOOL([RANLIB], [ranlib], [ranlib])
 
 AS_IF([test "$host_os" = "linux-gnu"],[
     AC_CHECK_HEADERS([X11/Xlib.h GL/gl.h GL/glu.h], [],
@@ -339,8 +352,13 @@ AS_IF([test "x$enable_asan" = "xyes"], [
 
 AS_IF([test "x$enable_debug" = "xyes"], [
     with_mimalloc="no"
-    CXXFLAGS="$CXXFLAGS -ggdb3 -gdwarf-5 -Og -fasynchronous-unwind-tables"
-    CFLAGS="$CFLAGS -ggdb3 -gdwarf-5 -Og -fasynchronous-unwind-tables"
+    AS_IF([test -n "$ubercompat"],[
+        CXXFLAGS="$CXXFLAGS -gdwarf-4 -Og"
+        CFLAGS="$CFLAGS -gdwarf-4 -Og"
+    ], [
+        CXXFLAGS="$CXXFLAGS -ggdb3 -gdwarf-5 -Og -fasynchronous-unwind-tables"
+        CFLAGS="$CFLAGS -ggdb3 -gdwarf-5 -Og -fasynchronous-unwind-tables"
+    ])
     ENABLE_DEBUG=$enable_debug
     MCOSU_CPPFLAGS="$MCOSU_CPPFLAGS -D_DEBUG"
     AC_SUBST([ENABLE_DEBUG])
@@ -443,7 +461,9 @@ AS_IF([test "x$enable_system_deps" != "xno"], [
 AS_IF([test "x$have_sdl3" != "xyes"], [have_sdl3="build from source"])
 SDL3_VERSION=$SDL3_BUILD_VERSION
 SDL3_PREFIX="${DEPS_PREFIX}"
-SDL3_STATIC=$enable_static
+AS_IF([test "x$enable_static" = "xyes"], [
+    SDL3_STATIC=1
+])
 AC_SUBST([SDL3_VERSION])
 AC_SUBST([SDL3_PREFIX])
 AC_SUBST([SDL3_STATIC])
@@ -506,11 +526,13 @@ AM_CONDITIONAL([USE_SOLOUD], [test "x$with_soloud" = "xyes"])
 AM_CONDITIONAL([WIN_PLATFORM], [test "$SYSNAME" = "windows"])
 
 # need dynamic winpthread for old windows 32bit compat builds
-AS_IF([test "$SYSNAME" = "windows" && test "$host_cpu" = "i686"],[
-    WINPTHREAD_DLL="$($CC -print-prog-name=ld | sed -e 's|/bin/.*||' | tr -d '\n' | find -files0-from - -iregex ".*$host_cpu"'.*libwinpthread-1.dll' -printf '%h/%f')"
-    AC_SUBST([WINPTHREAD_DLL])
+AS_IF([test -n "$ubercompat"], [
+    WINSHARED_DLLS="$($CC -print-prog-name=ld | sed -e 's|/bin/.*||' | tr -d '\n' | find -files0-from - \
+        '(' -iregex ".*$host_cpu"'.*libwinpthread-1.dll' -o -iregex ".*$host_cpu"'.*libgcc_.*.dll' -o -iregex ".*$host_cpu"'.*libstdc.*.dll' ')' \
+        -printf '%h/%f ')"
+    AC_SUBST([WINSHARED_DLLS])
 ])
-AM_CONDITIONAL([WINPTHREAD_DLL_NEEDED], [test -n "$WINPTHREAD_DLL"])
+AM_CONDITIONAL([WINSHARED_DLLS_NEEDED], [test -n "$WINSHARED_DLLS"])
 
 ASSETS_DIR=assets
 AC_SUBST([ASSETS_DIR])
@@ -530,9 +552,11 @@ AS_IF([test "x$with_sdlmixer" != "xyes" && test "x$with_soloud" != "xyes"], [
         [],
         [AC_MSG_ERROR([Required bundled library ${LIBPREFIX}bass_fx$DLLEXT not found])])
     BASS_CFLAGS="-I\$(srcdir)/\$(BUNDLED_BASS_DIR)/include -I\$(srcdir)/\$(BUNDLED_BASS_FX_DIR)/include"
+    BASS_LIBS="-L\$(srcdir)/\$(BUNDLED_BASS_DIR)/lib/\$(SYSNAME)/\$(host_cpu) -L\$(srcdir)/\$(BUNDLED_BASS_FX_DIR)/lib/\$(SYSNAME)/\$(host_cpu) $BASS_LIBS"
     AC_DEFINE([MCENGINE_FEATURE_BASS], [1], [Define if the BASS audio backend is desired.])
 ], [
     BASS_CFLAGS=""
+    BASS_LIBS=""
     AS_IF([test "x$with_sdlmixer" = "xyes"], [
         AC_DEFINE([MCENGINE_FEATURE_SDL_MIXER], [1], [Define if the SDL_mixer audio backend is desired.])
     ])
@@ -541,6 +565,7 @@ AS_IF([test "x$with_sdlmixer" != "xyes" && test "x$with_soloud" != "xyes"], [
     ])
 ])
 
+AC_SUBST([BASS_LIBS])
 AC_SUBST([BASS_CFLAGS])
 AC_SUBST([BUNDLED_LIBS_DIR])
 AC_SUBST([BUNDLED_BASS_DIR])

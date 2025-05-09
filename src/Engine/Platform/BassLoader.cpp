@@ -5,15 +5,15 @@
 // $NoKeywords: $snd $bass $loader
 //===============================================================================//
 
-#include "EngineFeatures.h"
-
-#ifdef MCENGINE_FEATURE_BASS
-
 #include "BassLoader.h"
+
+#if defined(MCENGINE_FEATURE_BASS) && !defined(MCENGINE_PLATFORM_WINDOWS) // FIXME: broken on 32bit windows
+
 #include "Engine.h"
 
 namespace BassLoader
 {
+using namespace std::string_view_literals;
 static SDL_SharedObject *s_bassLib = nullptr;
 static SDL_SharedObject *s_bassFxLib = nullptr;
 #ifdef MCENGINE_FEATURE_BASS_WASAPI
@@ -23,18 +23,18 @@ static SDL_SharedObject *s_bassMixLib = nullptr;
 
 // Library file names for different platforms
 #if MCENGINE_PLATFORM_WINDOWS
-constexpr const char *BASS_LIB_NAME = "bass.dll";
-constexpr const char *BASS_FX_LIB_NAME = "bass_fx.dll";
+constexpr auto BASS_LIB_NAME = "bass.dll";
+constexpr auto BASS_FX_LIB_NAME = "bass_fx.dll";
 #ifdef MCENGINE_FEATURE_BASS_WASAPI
-constexpr const char *BASS_WASAPI_LIB_NAME = "basswasapi.dll";
-constexpr const char *BASS_MIX_LIB_NAME = "bassmix.dll";
+constexpr auto BASS_WASAPI_LIB_NAME = "basswasapi.dll";
+constexpr auto BASS_MIX_LIB_NAME = "bassmix.dll";
 #endif
 #elif MCENGINE_PLATFORM_LINUX
-constexpr const char *BASS_LIB_NAME = "libbass.so";
-constexpr const char *BASS_FX_LIB_NAME = "libbass_fx.so";
+constexpr auto BASS_LIB_NAME = "libbass.so";
+constexpr auto BASS_FX_LIB_NAME = "libbass_fx.so";
 #elif defined(__APPLE__)
-constexpr const char *BASS_LIB_NAME = "libbass.dylib";
-constexpr const char *BASS_FX_LIB_NAME = "libbass_fx.dylib";
+constexpr auto BASS_LIB_NAME = "libbass.dylib";
+constexpr auto BASS_FX_LIB_NAME = "libbass_fx.dylib";
 #endif
 
 // BASS
@@ -100,8 +100,7 @@ bool init()
 	cleanup();
 
 	// BASS
-	s_bassLib = SDL_LoadObject(BASS_LIB_NAME);
-	if (!s_bassLib)
+	if (!(s_bassLib = SDL_LoadObject(BASS_LIB_NAME)) && !(s_bassLib = SDL_LoadObject(std::format("lib/{}", BASS_LIB_NAME).c_str())))
 	{
 		debugLog("BassLoader: Failed to load BASS library: %s\n", SDL_GetError());
 		return false;
@@ -144,8 +143,7 @@ bool init()
 	}
 
 	// BASS_FX
-	s_bassFxLib = SDL_LoadObject(BASS_FX_LIB_NAME);
-	if (!s_bassFxLib)
+	if (!(s_bassFxLib = SDL_LoadObject(BASS_FX_LIB_NAME)) && !(s_bassFxLib = SDL_LoadObject(std::format("lib/{}", BASS_FX_LIB_NAME).c_str())))
 	{
 		debugLog("BassLoader: Failed to load BASS_FX library: %s\n", SDL_GetError());
 		cleanup();
@@ -164,8 +162,7 @@ bool init()
 
 #ifdef MCENGINE_FEATURE_BASS_WASAPI
 	// BASSWASAPI
-	s_bassWasapiLib = SDL_LoadObject(BASS_WASAPI_LIB_NAME);
-	if (!s_bassWasapiLib)
+	if (!(s_bassWasapiLib = SDL_LoadObject(BASS_WASAPI_LIB_NAME)) && !(s_bassWasapiLib = SDL_LoadObject(std::format("lib/{}", BASS_WASAPI_LIB_NAME).c_str())))
 	{
 		debugLog("BassLoader: Failed to load BASSWASAPI library: %s\n", SDL_GetError());
 		// TODO: graceful failure here?
@@ -182,8 +179,7 @@ bool init()
 	BASS_WASAPI_GetDeviceInfo = loadFunction<decltype(BASS_WASAPI_GetDeviceInfo)>(s_bassWasapiLib, "BASS_WASAPI_GetDeviceInfo");
 
 	// BASSMIX
-	s_bassMixLib = SDL_LoadObject(BASS_MIX_LIB_NAME);
-	if (!s_bassMixLib)
+	if (!(s_bassMixLib = SDL_LoadObject(BASS_MIX_LIB_NAME)) && !(s_bassMixLib = SDL_LoadObject(std::format("lib/{}", BASS_MIX_LIB_NAME).c_str())))
 	{
 		debugLog("BassLoader: Failed to load BASSMIX library: %s\n", SDL_GetError());
 		// TODO: graceful failure here?
@@ -275,5 +271,11 @@ void cleanup()
 #endif
 }
 } // namespace BassLoader
+
+#else
+namespace BassLoader {
+	bool init() {return true;}
+	void cleanup() {return;}
+};
 
 #endif

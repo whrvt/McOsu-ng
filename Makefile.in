@@ -588,12 +588,14 @@ distcleancheck_listfiles = \
 ACLOCAL = @ACLOCAL@
 AMTAR = @AMTAR@
 AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
+AR = @AR@
 ASSETS_DIR = @ASSETS_DIR@
 AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
 AWK = @AWK@
 BASS_CFLAGS = @BASS_CFLAGS@
+BASS_LIBS = @BASS_LIBS@
 BEAR = @BEAR@
 BUNDLED_BASS_DIR = @BUNDLED_BASS_DIR@
 BUNDLED_BASS_FX_DIR = @BUNDLED_BASS_FX_DIR@
@@ -678,6 +680,7 @@ MIMALLOC_PREFIX = @MIMALLOC_PREFIX@
 MIMALLOC_VERSION = @MIMALLOC_VERSION@
 MKDIR_P = @MKDIR_P@
 NASM = @NASM@
+NASMOBJ = @NASMOBJ@
 NINJA = @NINJA@
 OBJEXT = @OBJEXT@
 PACKAGE = @PACKAGE@
@@ -696,6 +699,7 @@ PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
 PKG_CONFIG_PATH_CUSTOM = @PKG_CONFIG_PATH_CUSTOM@
 PKG_CONFIG_SYSTEM_INCLUDE_PATH = @PKG_CONFIG_SYSTEM_INCLUDE_PATH@
 PKG_CONFIG_SYSTEM_LIBRARY_PATH = @PKG_CONFIG_SYSTEM_LIBRARY_PATH@
+RANLIB = @RANLIB@
 SDL3_CFLAGS = @SDL3_CFLAGS@ $(am__append_1)
 SDL3_LIBS = @SDL3_LIBS@ $(am__append_2)
 SDL3_MIXER_PREFIX = @SDL3_MIXER_PREFIX@
@@ -715,7 +719,7 @@ SYSNAME = @SYSNAME@
 TAR = @TAR@
 VERSION = @VERSION@
 WGET = @WGET@
-WINPTHREAD_DLL = @WINPTHREAD_DLL@
+WINSHARED_DLLS = @WINSHARED_DLLS@
 X11_CFLAGS = @X11_CFLAGS@
 X11_LIBS = @X11_LIBS@
 XI_CFLAGS = @XI_CFLAGS@
@@ -992,7 +996,7 @@ comma := ,# bruh
 # the dynamic soloud lib is busted somehow
 @USE_BASS_FALSE@@USE_SDLMIXER_FALSE@AUDIO_LIBS = -L$(DEPS_PREFIX)/lib -lsoloud_static_x$(if $(filter x86_64,$(host_cpu)),64,32)$(if $(ENABLE_DEBUG),_d,) $(shell $(PKG_CONFIG) --libs soundtouch)
 @USE_BASS_FALSE@@USE_SDLMIXER_TRUE@AUDIO_LIBS = $(shell $(PKG_CONFIG) --libs sdl3-mixer)
-@USE_BASS_TRUE@AUDIO_LIBS := 
+@USE_BASS_TRUE@AUDIO_LIBS := $(BASS_LIBS)
 BUILT_SOURCES := $(DEPS_PREFIX)/mimalloc.built $(DEPS_PREFIX)/SDL3.built $(DEPS_PREFIX)/SDL3_mixer.built $(DEPS_PREFIX)/GLEW.built $(DEPS_PREFIX)/libjpeg.built \
 	$(DEPS_PREFIX)/libpng.built $(DEPS_PREFIX)/bzip2.built $(DEPS_PREFIX)/zlib.built $(DEPS_PREFIX)/FREETYPE2.built $(DEPS_PREFIX)/SoLoud.built $(DEPS_PREFIX)/SoundTouch.built
 
@@ -5448,7 +5452,8 @@ $(DEPS_CACHE)/libjpeg-$(LIBJPEG_VERSION).source:
 @BUILD_LIBJPEG_TRUE@		-DCMAKE_SYSTEM_NAME="$(CMAKE_SYSTEM_NAME)" \
 @BUILD_LIBJPEG_TRUE@		-DCMAKE_ASM_NASM_FLAGS="-DPIC" \
 @BUILD_LIBJPEG_TRUE@		-DWITH_JPEG8=ON \
-@BUILD_LIBJPEG_TRUE@		$(if $(filter x86_64,$(host_cpu)),-DWITH_SIMD=ON,-DCMAKE_ASM_NASM_OBJECT_FORMAT="elf32" $(if $(findstring gcc,$(CC)),-DWITH_SIMD=ON,-DWITH_SIMD=OFF)) \
+@BUILD_LIBJPEG_TRUE@		-DCMAKE_ASM_NASM_OBJECT_FORMAT=$(NASMOBJ) \
+@BUILD_LIBJPEG_TRUE@		$(if $(filter x86_64,$(host_cpu)),-DWITH_SIMD=ON,$(if $(findstring gcc,$(CC)),-DWITH_SIMD=ON,-DWITH_SIMD=OFF)) \
 @BUILD_LIBJPEG_TRUE@		$(if $(SDL3_STATIC),-DENABLE_STATIC=ON -DENABLE_SHARED=OFF,-DENABLE_STATIC=OFF -DENABLE_SHARED=ON) && \
 @BUILD_LIBJPEG_TRUE@	cmake --build build && \
 @BUILD_LIBJPEG_TRUE@	cmake --install build
@@ -5469,8 +5474,9 @@ $(DEPS_CACHE)/libpng-$(LIBPNG_VERSION).source:
 @BUILD_LIBPNG_TRUE@	cd $(DEPS_PREFIX)/libpng && PKG_CONFIG="$(PKG_CONFIG)" \
 @BUILD_LIBPNG_TRUE@		./configure lt_cv_prog_gnu_ld=yes --host=$(host_alias) --build=$(build) --prefix="$(DEPS_PREFIX)" \
 @BUILD_LIBPNG_TRUE@		$(if $(SDL3_STATIC),--enable-static --disable-shared,--enable-shared --disable-static) \
-@BUILD_LIBPNG_TRUE@		--disable-tools --disable-tests \
-@BUILD_LIBPNG_TRUE@		CC="$(CC) $(shell $(PKG_CONFIG) --cflags zlib)" CXX="$(CXX)" LD="$(CC)" CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS) $(shell $(PKG_CONFIG) --libs zlib)" && \
+@BUILD_LIBPNG_TRUE@		--disable-tools --disable-tests --with-gnu-ld \
+@BUILD_LIBPNG_TRUE@			CC="$(CC) $(shell $(PKG_CONFIG) --cflags zlib)" RANLIB="$(RANLIB)" AR="$(AR)" CXX="$(CXX)" LD="$(if $(findstring linux,$(host_os)),$(CC),$(LD))" \
+@BUILD_LIBPNG_TRUE@			CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS) $(shell $(PKG_CONFIG) --libs zlib)" && \
 @BUILD_LIBPNG_TRUE@	$(MAKE) && \
 @BUILD_LIBPNG_TRUE@	$(MAKE) install
 @BUILD_LIBPNG_TRUE@	PKG_CONFIG="$(PKG_CONFIG)" \
@@ -5488,10 +5494,11 @@ $(DEPS_CACHE)/bzip2-$(BZIP2_VERSION).source:
 @BUILD_BZIP2_TRUE@	$(MKDIR_P) $(DEPS_PREFIX)/bzip2/build $(DEPS_PREFIX)/lib/pkgconfig $(DEPS_PREFIX)/include
 @BUILD_BZIP2_TRUE@	$(TAR) xf $(DEPS_CACHE)/bzip2-$(BZIP2_VERSION).tar.gz -C $(DEPS_PREFIX)/bzip2 --strip-components=1 && \
 @BUILD_BZIP2_TRUE@	cd $(DEPS_PREFIX)/bzip2 && \
-@BUILD_BZIP2_TRUE@	$(MAKE) $(if $(SDL3_STATIC),"libbz2.a",-f Makefile-libbz2_so) \
-@BUILD_BZIP2_TRUE@		PREFIX="$(DEPS_PREFIX)" CC="$(CC)" CXX="$(CXX)" LD="$(LD)" CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS)" && \
+@BUILD_BZIP2_TRUE@	$(if $(findstring linux,$(host_os)),true,$(if $(SDL3_STATIC),true,cp $(abs_top_srcdir)/build/aux/libbz2-Makefile-mingw) ./) && \
+@BUILD_BZIP2_TRUE@	$(MAKE) PREFIX="$(DEPS_PREFIX)" RANLIB="$(RANLIB)" AR="$(AR)" CC="$(CC)" CXX="$(CXX)" LD="$(LD)" CFLAGS="$(CFLAGS) $(if $(SDL3_STATIC),,-fPIC)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS) $(if $(SDL3_STATIC),,-fPIC)" \
+@BUILD_BZIP2_TRUE@		$(if $(SDL3_STATIC),"libbz2.a",$(if $(findstring linux,$(host_os)),-f Makefile-libbz2_so,-f libbz2-Makefile-mingw install)) && \
 @BUILD_BZIP2_TRUE@	cp -f bzlib.h $(DEPS_PREFIX)/include/ && \
-@BUILD_BZIP2_TRUE@	cp -f $(if $(SDL3_STATIC),"libbz2.a",libbz2*$(DLLEXT)*) $(DEPS_PREFIX)/lib/ && \
+@BUILD_BZIP2_TRUE@	test -f $(DEPS_PREFIX)/lib/pkgconfig/bzip2.pc || { cp -f $(if $(SDL3_STATIC),"libbz2.a",libbz2*$(DLLEXT)*) $(DEPS_PREFIX)/lib/ && \
 @BUILD_BZIP2_TRUE@	$(MKDIR_P) "$(DEPS_PREFIX)/lib/pkgconfig" && \
 @BUILD_BZIP2_TRUE@	( echo 'prefix=$(DEPS_PREFIX)'; \
 @BUILD_BZIP2_TRUE@	  echo 'exec_prefix=$${prefix}'; \
@@ -5499,10 +5506,10 @@ $(DEPS_CACHE)/bzip2-$(BZIP2_VERSION).source:
 @BUILD_BZIP2_TRUE@	  echo 'includedir=$${prefix}/include'; \
 @BUILD_BZIP2_TRUE@	  echo ''; \
 @BUILD_BZIP2_TRUE@	  echo 'Name: bzip2'; \
-@BUILD_BZIP2_TRUE@	  echo 'Description: A file compression library'; \
+@BUILD_BZIP2_TRUE@	  echo 'Description: A file compression library.'; \
 @BUILD_BZIP2_TRUE@	  echo 'Version: $(BZIP2_VERSION)'; \
 @BUILD_BZIP2_TRUE@	  echo 'Cflags: -I$${includedir}'; \
-@BUILD_BZIP2_TRUE@	  echo 'Libs: -L$${libdir} -lbz2' ) > "$(DEPS_PREFIX)/lib/pkgconfig/bzip2.pc"
+@BUILD_BZIP2_TRUE@	  echo 'Libs: -L$${libdir} -lbz2' ) > "$(DEPS_PREFIX)/lib/pkgconfig/bzip2.pc" ; }
 @BUILD_BZIP2_TRUE@	PKG_CONFIG="$(PKG_CONFIG)" \
 @BUILD_BZIP2_TRUE@		$(PKG_CONFIG) --exists --print-errors bzip2
 @BUILD_BZIP2_TRUE@	touch $@
@@ -5518,10 +5525,9 @@ $(DEPS_CACHE)/zlib-$(ZLIB_VERSION).source:
 @BUILD_ZLIB_TRUE@	$(MKDIR_P) $(DEPS_PREFIX)/zlib/build $(DEPS_PREFIX)/lib/pkgconfig
 @BUILD_ZLIB_TRUE@	$(TAR) xf $(DEPS_CACHE)/zlib-$(ZLIB_VERSION).tar.gz -C $(DEPS_PREFIX)/zlib --strip-components=1 && \
 @BUILD_ZLIB_TRUE@	cd $(DEPS_PREFIX)/zlib/build && PKG_CONFIG="$(PKG_CONFIG)" \
-@BUILD_ZLIB_TRUE@		$(if $(findstring linux,$(host_os)),,uname=mingw) CC="$(CC)" CXX="$(CXX)" LD="$(LD)" CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS)" \
+@BUILD_ZLIB_TRUE@		$(if $(findstring linux,$(host_os)),,uname=mingw CHOST=$(host_alias)) RANLIB="$(RANLIB)" AR="$(AR)" CC="$(CC)" CXX="$(CXX)" LD="$(LD)" CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS)" \
 @BUILD_ZLIB_TRUE@		../configure --zlib-compat --prefix="$(DEPS_PREFIX)" $(if $(SDL3_STATIC),--static,) && \
-@BUILD_ZLIB_TRUE@	$(MAKE) && \
-@BUILD_ZLIB_TRUE@	$(MAKE) install
+@BUILD_ZLIB_TRUE@	$(MAKE) install && \
 @BUILD_ZLIB_TRUE@	$(SED) -i 's|sharedlibdir=.*|sharedlibdir=$${libdir}|' $(DEPS_PREFIX)/lib/pkgconfig/zlib.pc && \
 @BUILD_ZLIB_TRUE@	PKG_CONFIG="$(PKG_CONFIG)" \
 @BUILD_ZLIB_TRUE@		$(PKG_CONFIG) --exists --print-errors zlib
@@ -5542,7 +5548,7 @@ $(DEPS_CACHE)/FREETYPE2-$(FREETYPE2_VERSION).source:
 @BUILD_FREETYPE2_TRUE@	PKG_CONFIG="$(PKG_CONFIG)" \
 @BUILD_FREETYPE2_TRUE@		./configure lt_cv_prog_gnu_ld=yes --host=$(host_alias) --prefix="$(DEPS_PREFIX)" --with-harfbuzz=no --with-brotli=no \
 @BUILD_FREETYPE2_TRUE@		$(if $(SDL3_STATIC),--enable-static --disable-shared,--enable-shared --disable-static) \
-@BUILD_FREETYPE2_TRUE@		CC="$(CC)" CXX="$(CXX)" LD="$(LD)" CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS)" && \
+@BUILD_FREETYPE2_TRUE@		RANLIB="$(RANLIB)" AR="$(AR)" CC="$(CC)" CXX="$(CXX)" LD="$(LD)" CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS)" && \
 @BUILD_FREETYPE2_TRUE@	$(MAKE) && \
 @BUILD_FREETYPE2_TRUE@	$(MAKE) install
 @BUILD_FREETYPE2_TRUE@	PKG_CONFIG="$(PKG_CONFIG)" \
@@ -5589,19 +5595,18 @@ install-libs:
 	find $(srcdir)/$(ASSETS_DIR)/shaders -type f -exec $(INSTALL) -Dm 644 '{''}' "$(DESTDIR)$(bindir)/shaders" ';'
 	find $(srcdir)/$(ASSETS_DIR)/fonts -type f -exec $(INSTALL) -Dm 644 '{''}' "$(DESTDIR)$(bindir)/fonts" ';'
 @BUILD_MIMALLOC_TRUE@@WIN_PLATFORM_TRUE@	@cp -P "$(DEPS_PREFIX)/bin/mimalloc"{,-redirect$(if $(filter x86_64,$(host_cpu)),,32)}".dll" "$(DESTDIR)$(bindir)/$(LIBDEST)"
-@WINPTHREAD_DLL_NEEDED_TRUE@@WIN_PLATFORM_TRUE@	@cp -P $(WINPTHREAD_DLL) "$(DESTDIR)$(bindir)/$(LIBDEST)"
+@WINSHARED_DLLS_NEEDED_TRUE@@WIN_PLATFORM_TRUE@	@cp -P $(WINSHARED_DLLS) "$(DESTDIR)$(bindir)/$(LIBDEST)"
 @USE_BASS_FALSE@@USE_SDLMIXER_TRUE@	$(if $(SDL3_STATIC),,@cp -P "$(SDL3_MIXER_PREFIX)/lib"/{*$(LIBPREFIX)SDL3_mixer*$(DLLEXT)*,*$(LIBPREFIX)mpg123*$(DLLEXT)*,*$(LIBPREFIX)xmp*$(DLLEXT)*,*$(LIBPREFIX)wavpack*$(DLLEXT)*,*$(LIBPREFIX)opus*$(DLLEXT)*,*$(LIBPREFIX)ogg*$(DLLEXT)*} "$(DESTDIR)$(bindir)/$(LIBDEST)")
 @USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	$(if $(SDL3_STATIC),,@cp -P "$(SOLOUD_PREFIX)/lib"/*$(LIBPREFIX)SoundTouch*$(DLLEXT)* "$(DESTDIR)$(bindir)/$(LIBDEST)")
 @USE_BASS_TRUE@	$(INSTALL) -m 755 $(srcdir)/$(BUNDLED_BASS_DIR)/lib/$(SYSNAME)/$(host_cpu)/$(LIBPREFIX)bass$(DLLEXT) "$(DESTDIR)$(bindir)/$(LIBDEST)"
 @USE_BASS_TRUE@	$(INSTALL) -m 755 $(srcdir)/$(BUNDLED_BASS_FX_DIR)/lib/$(SYSNAME)/$(host_cpu)/$(LIBPREFIX)bass_fx$(DLLEXT) "$(DESTDIR)$(bindir)/$(LIBDEST)"
-@BUILD_SDL3_TRUE@	$(if $(SDL3_STATIC),,@cp -P "$(SDL3_PREFIX)/lib"/*$(LIBPREFIX)SDL3*$(DLLEXT)* "$(DESTDIR)$(bindir)/$(LIBDEST)")
-@BUILD_GLEW_TRUE@	$(if $(SDL3_STATIC),,@cp -P "$(GLEW_PREFIX)/lib"/*$(LIBPREFIX){glew32,GLEW}*$(DLLEXT)* "$(DESTDIR)$(bindir)/$(LIBDEST)")
-@BUILD_LIBJPEG_TRUE@	$(if $(SDL3_STATIC),,@@libdir=$(LIBJPEG_PREFIX)/`test -d "$(LIBJPEG_PREFIX)/lib64" && echo "lib64" || echo "lib"`; \
-@BUILD_LIBJPEG_TRUE@	cp -P "$$libdir"/*$(LIBPREFIX)jpeg*$(DLLEXT)* "$(DESTDIR)$(bindir)/$(LIBDEST)")
-@BUILD_LIBPNG_TRUE@	$(if $(SDL3_STATIC),,@cp -P "$(LIBPNG_PREFIX)/lib"/*$(LIBPREFIX)png*$(DLLEXT)* "$(DESTDIR)$(bindir)/$(LIBDEST)")
-@BUILD_BZIP2_TRUE@	$(if $(SDL3_STATIC),,@cp -P "$(BZIP2_PREFIX)/lib"/*$(LIBPREFIX)bz2*$(DLLEXT)* "$(DESTDIR)$(bindir)/$(LIBDEST)")
-@BUILD_ZLIB_TRUE@	$(if $(SDL3_STATIC),,@cp -P "$(ZLIB_PREFIX)/lib"/*$(LIBPREFIX)z*$(DLLEXT)* "$(DESTDIR)$(bindir)/$(LIBDEST)")
-@BUILD_FREETYPE2_TRUE@	$(if $(SDL3_STATIC),,@cp -P "$(FREETYPE2_PREFIX)/lib"/*$(LIBPREFIX)freetype*$(DLLEXT)* "$(DESTDIR)$(bindir)/$(LIBDEST)")
+@BUILD_SDL3_TRUE@	$(if $(SDL3_STATIC),,@`find $(SDL3_PREFIX) '(' -iname '*SDL3*'$(DLLEXT) -o -iname '*SDL3*''.so.*' ')' -exec cp -P '{''}' "$(DESTDIR)$(bindir)/$(LIBDEST)" ';'`)
+@BUILD_GLEW_TRUE@	$(if $(SDL3_STATIC),,@`find $(GLEW_PREFIX) '(' -iname '*glew*'$(DLLEXT) -o -iname '*glew*''.so.*' ')' -exec cp -P '{''}' "$(DESTDIR)$(bindir)/$(LIBDEST)" ';'`)
+@BUILD_LIBJPEG_TRUE@	$(if $(SDL3_STATIC),,@`find $(LIBJPEG_PREFIX) '(' -iname '*libjpeg-*'$(DLLEXT) -o -iname '*libjpeg*''.so.*' ')' -exec cp -P '{''}' "$(DESTDIR)$(bindir)/$(LIBDEST)" ';'`)
+@BUILD_LIBPNG_TRUE@	$(if $(SDL3_STATIC),,@`find $(LIBPNG_PREFIX) '(' -iname '*libpng*'$(DLLEXT) -o -iname '*libpng*''.so.*' ')' -exec cp -P '{''}' "$(DESTDIR)$(bindir)/$(LIBDEST)" ';'`)
+@BUILD_BZIP2_TRUE@	$(if $(SDL3_STATIC),,@`find $(BZIP2_PREFIX) '(' -iname '*bz2*'$(DLLEXT) -o -iname '*bz2*''.so.*' ')' -exec cp -P '{''}' "$(DESTDIR)$(bindir)/$(LIBDEST)" ';'`)
+@BUILD_ZLIB_TRUE@	$(if $(SDL3_STATIC),,@`find $(ZLIB_PREFIX) '(' -iname '*libz-*'$(DLLEXT) -o -iname '*libz*''.so.*' ')' -exec cp -P '{''}' "$(DESTDIR)$(bindir)/$(LIBDEST)" ';'`)
+@BUILD_FREETYPE2_TRUE@	$(if $(SDL3_STATIC),,@`find $(FREETYPE2_PREFIX) '(' -iname '*freetype*'$(DLLEXT) -o -iname '*freetype*''.so.*' ')' -exec cp -P '{''}' "$(DESTDIR)$(bindir)/$(LIBDEST)" ';'`)
 
 # install hooks
 install-exec-hook: install-libs

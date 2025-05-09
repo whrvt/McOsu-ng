@@ -1,0 +1,88 @@
+VERSION = 1.0.8
+
+CC ?= x86_64-w64-mingw32-gcc
+AR ?= x86_64-w64-mingw32-ar
+RANLIB ?= x86_64-w64-mingw32-ranlib
+STRIP ?= x86_64-w64-mingw32-strip
+WINDRES ?= x86_64-w64-mingw32-windres
+
+PREFIX ?= /usr/local/mingw
+DESTDIR ?=
+
+BASE_CFLAGS = -O2 -Wall -D_FILE_OFFSET_BITS=64 -DWIN32 -fPIC
+BASE_LDFLAGS = 
+
+CFLAGS := $(BASE_CFLAGS) $(CFLAGS)
+LDFLAGS := $(BASE_LDFLAGS) $(LDFLAGS)
+
+DLL_FLAGS = -shared -Wl,--out-implib,libbz2.dll.a -Wl,--output-def,libbz2.def
+
+OBJS = blocksort.o \
+       huffman.o \
+       crctable.o \
+       randtable.o \
+       compress.o \
+       decompress.o \
+       bzlib.o
+
+all: lib
+
+lib: libbz2.a libbz2.dll
+
+libbz2.a: $(OBJS)
+	$(AR) rcs $@ $(OBJS)
+	$(RANLIB) $@
+
+libbz2.dll: $(OBJS)
+	$(CC) $(LDFLAGS) $(DLL_FLAGS) -o $@ $(OBJS)
+
+bzip2.pc:
+	@echo "Creating pkg-config file"
+	@echo 'prefix=$(PREFIX)' > $@
+	@echo 'exec_prefix=$${prefix}' >> $@
+	@echo 'libdir=$${exec_prefix}/lib' >> $@
+	@echo 'includedir=$${prefix}/include' >> $@
+	@echo '' >> $@
+	@echo 'Name: bzip2' >> $@
+	@echo 'Description: A file compression library' >> $@
+	@echo 'Version: $(VERSION)' >> $@
+	@echo 'Cflags: -I$${includedir}' >> $@
+	@echo 'Libs: -L$${libdir} -lbz2' >> $@
+	@echo 'Libs.private: ' >> $@
+
+# Install target
+install: all bzip2.pc
+	@echo "Installing to $(DESTDIR)$(PREFIX)"
+	install -d $(DESTDIR)$(PREFIX)/bin
+	install -d $(DESTDIR)$(PREFIX)/lib
+	install -d $(DESTDIR)$(PREFIX)/lib/pkgconfig
+	install -d $(DESTDIR)$(PREFIX)/include
+	install -m 755 libbz2.dll $(DESTDIR)$(PREFIX)/bin
+	install -m 644 libbz2.a $(DESTDIR)$(PREFIX)/lib
+	install -m 644 libbz2.dll.a $(DESTDIR)$(PREFIX)/lib
+	install -m 644 libbz2.def $(DESTDIR)$(PREFIX)/lib
+	install -m 644 bzlib.h $(DESTDIR)$(PREFIX)/include
+	install -m 644 bzip2.pc $(DESTDIR)$(PREFIX)/lib/pkgconfig
+
+clean: 
+	rm -f *.o *.a *.dll *.dll.a *.exe *.def bzip2.pc sample1.rb2 sample2.rb2 sample3.rb2 sample1.tst sample2.tst sample3.tst
+
+%.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+config:
+	@echo "Toolchain configuration:"
+	@echo "  CC      = $(CC)"
+	@echo "  AR      = $(AR)"
+	@echo "  RANLIB  = $(RANLIB)"
+	@echo "  LD      = $(CC)"
+	@echo "  STRIP   = $(STRIP)"
+	@echo "  CFLAGS  = $(CFLAGS)"
+	@echo "  LDFLAGS = $(LDFLAGS)"
+	@echo "Installation paths:"
+	@echo "  PREFIX  = $(PREFIX)"
+	@echo "  DESTDIR = $(DESTDIR)"
+	@echo "Build information:"
+	@echo "  VERSION = $(VERSION)"
+
+.PHONY: all lib test install clean config
