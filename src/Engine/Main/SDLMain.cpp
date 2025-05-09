@@ -104,9 +104,8 @@ SDL_AppResult SDLMain::initialize(int argc, char *argv[])
 
 	// get the screen refresh rate, and set fps_max to that as default
 	{
-		const SDL_DisplayMode *currentDisplayMode;
 		const SDL_DisplayID display = SDL_GetDisplayForWindow(m_window);
-		currentDisplayMode = SDL_GetCurrentDisplayMode(display);
+		const SDL_DisplayMode *currentDisplayMode = SDL_GetCurrentDisplayMode(display);
 
 		if (currentDisplayMode && currentDisplayMode->refresh_rate > 0)
 		{

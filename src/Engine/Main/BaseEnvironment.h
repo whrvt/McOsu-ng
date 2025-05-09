@@ -166,7 +166,6 @@ using Env::AUD;
 using Env::FEAT;
 
 // typedefs for virtual overrides
-// TODO: change the pattern to be more like Timer
 #ifdef MCENGINE_FEATURE_BASS
 	class BassSound;
 	using SoundType = BassSound;

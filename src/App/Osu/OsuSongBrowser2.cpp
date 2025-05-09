@@ -13,7 +13,7 @@
 #include "ResourceManager.h"
 #include "Keyboard.h"
 #include "Mouse.h"
-#include "Timer.h"
+#include "Timing.h"
 #include "SoundEngine.h"
 #include "AnimationHandler.h"
 #include "VertexArrayObject.h"
@@ -3015,10 +3015,10 @@ void OsuSongBrowser2::checkHandleKillBackgroundStarCalculator()
 	{
 		m_backgroundStarCalculator->kill();
 
-		const double startTime = engine->getTimeReal();
+		const double startTime = Timing::getTimeReal();
 		while (!m_backgroundStarCalculator->isAsyncReady())
 		{
-			if (engine->getTimeReal() - startTime > 2)
+			if (Timing::getTimeReal() - startTime > 2)
 			{
 				debugLog("WARNING: Ignoring stuck BackgroundStarCalculator thread!\n");
 				break;
@@ -3035,12 +3035,12 @@ bool OsuSongBrowser2::checkHandleKillDynamicStarCalculator(bool timeout)
 
 		if (!timeout)
 		{
-			const double startTime = engine->getTimeReal();
+			const double startTime = Timing::getTimeReal();
 			while (!m_dynamicStarCalculator->isAsyncReady())
 			{
-				env->sleep(1);
+				Timing::sleep(1);
 
-				if (engine->getTimeReal() - startTime > 20.0)
+				if (Timing::getTimeReal() - startTime > 20.0)
 				{
 					debugLog("WARNING: Ignoring stuck DynamicStarCalculator thread!\n");
 					break;
@@ -3060,10 +3060,10 @@ void OsuSongBrowser2::checkHandleKillBackgroundSearchMatcher()
 	{
 		m_backgroundSearchMatcher->kill();
 
-		const double startTime = engine->getTimeReal();
+		const double startTime = Timing::getTimeReal();
 		while (!m_backgroundSearchMatcher->isAsyncReady())
 		{
-			if (engine->getTimeReal() - startTime > 2)
+			if (Timing::getTimeReal() - startTime > 2)
 			{
 				debugLog("WARNING: Ignoring stuck SearchMatcher thread!\n");
 				break;

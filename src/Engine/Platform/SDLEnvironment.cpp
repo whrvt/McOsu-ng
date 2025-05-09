@@ -143,11 +143,6 @@ void SDLEnvironment::restart()
 	shutdown();
 }
 
-void SDLEnvironment::sleep(unsigned int us)
-{
-	!!us ? SDL_DelayPrecise(static_cast<uint64_t>(us) * 1000) : SDL_Delay(0);
-}
-
 UString SDLEnvironment::getExecutablePath() const
 {
 	const char *path = SDL_GetBasePath();

@@ -9,7 +9,7 @@
 
 #include "Engine.h"
 #include "ConVar.h"
-#include "Timer.h"
+#include "Timing.h"
 #include "File.h"
 #include "ResourceManager.h"
 
@@ -1973,7 +1973,7 @@ void OsuDatabase::saveStars()
 	const UString starsFilePath = "stars.cache";
 	const int starsCacheVersion = 20221108;
 
-	//const double startTime = engine->getTimeReal();
+	//const double startTime = Timing::getTimeReal();
 	{
 		// count
 		int64_t numStarsCacheEntries = 0;
@@ -2036,7 +2036,7 @@ void OsuDatabase::saveStars()
 		else
 			debugLog("Couldn't write stars.cache!\n");
 	}
-	//debugLog("Took %f seconds.\n", (engine->getTimeReal() - startTime));
+	//debugLog("Took %f seconds.\n", (Timing::getTimeReal() - startTime));
 }
 
 void OsuDatabase::loadScores()
@@ -2405,7 +2405,7 @@ void OsuDatabase::saveScores()
 		OsuFile db((m_osu->isInVRMode() ? "scoresvr.db" : "scores.db"), true);
 		if (db.isReady())
 		{
-			const double startTime = engine->getTimeReal();
+			const double startTime = Timing::getTimeReal();
 
 			// count number of beatmaps with valid scores
 			int numBeatmaps = 0;
@@ -2499,7 +2499,7 @@ void OsuDatabase::saveScores()
 
 			db.write();
 
-			debugLog("Took %f seconds.\n", (engine->getTimeReal() - startTime));
+			debugLog("Took %f seconds.\n", (Timing::getTimeReal() - startTime));
 		}
 		else
 			debugLog("Couldn't write scores.db!\n");
@@ -2785,7 +2785,7 @@ void OsuDatabase::saveCollections()
 		OsuFile db("collections.db", true);
 		if (db.isReady())
 		{
-			const double startTime = engine->getTimeReal();
+			const double startTime = Timing::getTimeReal();
 
 			// check how much we actually have to save
 			// note that we are only saving non-legacy collections and entries (i.e. things which were added/deleted inside mcosu)
@@ -2853,7 +2853,7 @@ void OsuDatabase::saveCollections()
 
 			db.write();
 
-			debugLog("Took %f seconds.\n", (engine->getTimeReal() - startTime));
+			debugLog("Took %f seconds.\n", (Timing::getTimeReal() - startTime));
 		}
 		else
 			debugLog("Couldn't write collections.db!\n");

@@ -9,7 +9,7 @@
 
 #include "Engine.h"
 #include "ConVar.h"
-#include "Timer.h"
+#include "Timing.h"
 #include "Environment.h"
 
 #ifdef MCENGINE_FEATURE_STEAMWORKS

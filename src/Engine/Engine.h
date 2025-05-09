@@ -10,7 +10,7 @@
 #define ENGINE_H
 
 #include "cbase.h"
-#include "Timer.h"
+#include "Timing.h"
 #include "McMath.h"
 
 #include <type_traits>
@@ -126,7 +126,6 @@ public:
 	// convenience functions (passthroughs)
 	void shutdown();
 	void restart();
-	void sleep(unsigned int us);
 	void focus();
 	void center();
 	void toggleFullscreen();
@@ -163,7 +162,6 @@ public:
 	// vars
 	void setFrameTime(double delta);
 	inline double getTime() const {return m_dTime;}
-	double const getTimeReal();
 	inline double getTimeRunning() const {return m_dRunTime;}
 	inline double getFrameTime() const {return m_dFrameTime;}
 	inline unsigned long getFrameCount() const {return m_iFrameCount;}

@@ -24,7 +24,6 @@ public:
 	// system
 	void shutdown() override;
 	void restart() override;
-	void sleep(unsigned int us) override {;}
 	[[nodiscard]] UString getExecutablePath() const override {return "";}
 	void openURLInDefaultBrowser(UString url) const override {;}
 	[[nodiscard]] inline int getLogicalCPUCount() const override {return 1;}

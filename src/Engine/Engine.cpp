@@ -24,7 +24,7 @@
 #include "Profiler.h"
 #include "ConVar.h"
 #include "Mouse.h"
-#include "Timer.h"
+#include "Timing.h"
 
 #include "CBaseUIContainer.h"
 
@@ -686,11 +686,6 @@ void Engine::restart()
 	m_environment->restart();
 }
 
-void Engine::sleep(unsigned int us)
-{
-	m_environment->sleep(us);
-}
-
 void Engine::focus()
 {
 	m_environment->focus();
@@ -755,12 +750,6 @@ void Engine::setFrameTime(double delta)
 		m_dFrameTime = delta;
 	else
 		m_dFrameTime = clamp<double>(delta, 0.0001, 1.0);
-}
-
-double const Engine::getTimeReal()
-{
-	m_timer->update();
-	return m_timer->getElapsedTime();
 }
 
 void Engine::debugLog_(const char *fmt, va_list args)

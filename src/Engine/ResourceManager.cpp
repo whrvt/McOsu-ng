@@ -11,7 +11,7 @@
 #include "Engine.h"
 #include "Environment.h"
 #include "Thread.h"
-#include "Timer.h"
+#include "Timing.h"
 
 #ifdef MCENGINE_FEATURE_MULTITHREADING
 
@@ -851,7 +851,7 @@ static void *_resourceLoaderThread(void *data)
 		{
 			// debug pause
 			if (rm_debug_async_delay.getFloat() > 0.0f)
-				env->sleep(rm_debug_async_delay.getFloat() * 1000 * 1000);
+				Timing::sleep(rm_debug_async_delay.getFloat() * 1000 * 1000);
 
 			// asynchronous initAsync() (do the actual work)
 			resourceToLoad->loadAsync();

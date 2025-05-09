@@ -788,7 +788,7 @@ void *_soundEngineThread(void *data)
 			channelPlayWork.clear();
 		}
 		else
-			env->sleep(1000); // 1000 Hz idle
+			Timing::sleep(1000); // 1000 Hz idle
 	}
 
 	return NULL;

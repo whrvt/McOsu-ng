@@ -39,7 +39,6 @@ public:
 	// system
 	void shutdown() override;
 	void restart() override;
-	void sleep(unsigned int us) override;
 	[[nodiscard]] UString getExecutablePath() const override;
 	void openURLInDefaultBrowser(UString url) const override;
 	// returns at least 1

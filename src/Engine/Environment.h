@@ -30,7 +30,6 @@ public:
 
 	virtual void shutdown() = 0;
 	virtual void restart() = 0;
-	virtual void sleep(unsigned int us) = 0;
 	[[nodiscard]] virtual UString getExecutablePath() const = 0;
 	virtual void openURLInDefaultBrowser(UString url) const = 0;
 	[[nodiscard]] virtual int getLogicalCPUCount() const = 0;

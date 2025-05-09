@@ -1005,7 +1005,7 @@ void OsuSkin::load()
 		while (engine->getResourceManager()->isLoading())
 		{
 			engine->getResourceManager()->update();
-			env->sleep(0);
+			Timing::sleep(0);
 		}
 	}
 }

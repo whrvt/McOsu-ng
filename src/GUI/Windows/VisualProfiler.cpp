@@ -571,7 +571,7 @@ void VisualProfiler::update()
 				// if enabled, calculate and draw overhead
 				// the overhead is the time spent between not having any profiler node active/alive, and should always be <= 0
 				// it is usually slightly negative (in the order of 10 microseconds, includes rounding errors and timer inaccuracies)
-				// if the overhead ever gets positive then either there are no nodes covering all paths below VPROF_MAIN(), or there is a serious problem with measuring time via engine->getTimeReal()
+				// if the overhead ever gets positive then either there are no nodes covering all paths below VPROF_MAIN(), or there is a serious problem with measuring time via Timing::getTimeReal()
 				double profilingOverheadTime = 0.0;
 				if (vprof_graph_draw_overhead.getBool())
 				{

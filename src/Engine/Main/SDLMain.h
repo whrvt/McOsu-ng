@@ -8,7 +8,7 @@
 #pragma once
 
 #include "SDLEnvironment.h"
-#include "Timer.h"
+#include "Timing.h"
 #include <SDL3/SDL.h>
 
 class SDLMain : public SDLEnvironment

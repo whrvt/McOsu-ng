@@ -8,7 +8,7 @@
 #include "OsuBackgroundStarCacheLoader.h"
 
 #include "Engine.h"
-#include "Timer.h"
+#include "Timing.h"
 #include "ConVar.h"
 
 #include "OsuBeatmap.h"

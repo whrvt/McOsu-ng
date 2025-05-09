@@ -144,7 +144,7 @@ bool init()
 		cleanup();
 		return false;
 	}
-	
+
 	// BASS_FX
 	if (!(s_bassFxLib = SDL_LoadObject(BASS_FX_LIB_NAME)) && !(s_bassFxLib = SDL_LoadObject(std::format("lib/{}", BASS_FX_LIB_NAME).c_str())))
 	{

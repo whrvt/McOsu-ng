@@ -1446,8 +1446,8 @@ void OsuMainMenu::setVisible(bool visible)
 	if (visible && m_bStartupAnim)
 	{
 		m_bStartupAnim = false;
-		anim->moveQuadOut(&m_fStartupAnim, 1.0f, osu_main_menu_startup_anim_duration.getFloat(), (float)engine->getTimeReal());
-		anim->moveQuartOut(&m_fStartupAnim2, 1.0f, osu_main_menu_startup_anim_duration.getFloat()*6.0f, (float)engine->getTimeReal() + osu_main_menu_startup_anim_duration.getFloat()*0.5f);
+		anim->moveQuadOut(&m_fStartupAnim, 1.0f, osu_main_menu_startup_anim_duration.getFloat(), (float)Timing::getTimeReal());
+		anim->moveQuartOut(&m_fStartupAnim2, 1.0f, osu_main_menu_startup_anim_duration.getFloat()*6.0f, (float)Timing::getTimeReal() + osu_main_menu_startup_anim_duration.getFloat()*0.5f);
 	}
 }
 
