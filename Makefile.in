@@ -5411,7 +5411,7 @@ $(DEPS_CACHE)/GLEW-$(GLEW_VERSION).source:
 @BUILD_GLEW_TRUE@	cd $(DEPS_PREFIX)/GLEW && \
 @BUILD_GLEW_TRUE@	$(if $(findstring linux,$(host_os)),cd $(DEPS_PREFIX)/GLEW && patch -Np1<$(abs_top_srcdir)/build/aux/glew-install.patch && patch -Np1<$(abs_top_srcdir)/build/aux/egl+glx.patch && ,) \
 @BUILD_GLEW_TRUE@		$(SED) -i -e 's|/usr/lib[^/64]|/usr/lib32/|' -e 's|lib64|lib/|' -e 's|-Wl,-soname|-soname|' config/Makefile.linux && \
-@BUILD_GLEW_TRUE@		$(if $(LLVMMINGW),$(SED) -i -e 's|glew.lib: .*|glew.lib: glew.lib.static|' -e 's|install.lib:|install.libSHIT:|' -e 's|.*development files.*|install.lib: glew.lib|' Makefile,true) && \
+@BUILD_GLEW_TRUE@		$(if $(SDL3_STATIC),$(SED) -i -e 's|glew.lib: .*|glew.lib: glew.lib.static|' -e 's|install.lib:|install.libSHIT:|' -e 's|.*development files.*|install.lib: glew.lib|' Makefile,true) && \
 @BUILD_GLEW_TRUE@  		$(SED) -i '/^.PHONY: .*\.pc$$/d' Makefile && \
 @BUILD_GLEW_TRUE@		$(MAKE) SYSTEM=$(if $(findstring linux,$(host_os)),linux-egl M_ARCH=$(host_cpu),linux-mingw$(if $(filter x86_64,$(host_cpu)),64,32)) GLEW_DEST="$(DEPS_PREFIX)" \
 @BUILD_GLEW_TRUE@		STRIP= CC="$(CC) -Wno-cast-function-type -Wno-strict-prototypes $(CPPFLAGS)" CXX="$(CXX)" LD="$(if $(LLVMMINGW),$(CC),$(LD))" \
