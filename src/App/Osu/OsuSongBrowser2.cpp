@@ -510,7 +510,7 @@ OsuSongBrowser2::OsuSongBrowser2(Osu *osu) : OsuScreenBackable(osu)
 		m_difficultiesButton->setClickCallback( fastdelegate::MakeDelegate(this, &OsuSongBrowser2::onGroupTabButtonClicked) );
 		m_noGroupingButton = addTopBarRightTabButton("No Grouping");
 		m_noGroupingButton->setClickCallback( fastdelegate::MakeDelegate(this, &OsuSongBrowser2::onGroupTabButtonClicked) );
-		m_noGroupingButton->setTextBrightColor(COLOR(255, 0, 255, 0));
+		m_noGroupingButton->setTextBrightColor(rgb(0, 255, 0));
 	}
 
 	addTopBarRightSortButton("")->setVisible(false); // NOTE: align with last tab (1)
@@ -819,8 +819,8 @@ void OsuSongBrowser2::draw(Graphics *g)
 
 				const float alpha = (graphRect.contains(engine->getMouse()->getPos()) ? 1.0f : m_osu_hud_scrubbing_timeline_strains_alpha_ref->getFloat());
 
-				const Color aimStrainColor = COLORf(alpha, m_osu_hud_scrubbing_timeline_strains_aim_color_r_ref->getInt() / 255.0f, m_osu_hud_scrubbing_timeline_strains_aim_color_g_ref->getInt() / 255.0f, m_osu_hud_scrubbing_timeline_strains_aim_color_b_ref->getInt() / 255.0f);
-				const Color speedStrainColor = COLORf(alpha, m_osu_hud_scrubbing_timeline_strains_speed_color_r_ref->getInt() / 255.0f, m_osu_hud_scrubbing_timeline_strains_speed_color_g_ref->getInt() / 255.0f, m_osu_hud_scrubbing_timeline_strains_speed_color_b_ref->getInt() / 255.0f);
+				const Color aimStrainColor = argb(alpha, m_osu_hud_scrubbing_timeline_strains_aim_color_r_ref->getInt() / 255.0f, m_osu_hud_scrubbing_timeline_strains_aim_color_g_ref->getInt() / 255.0f, m_osu_hud_scrubbing_timeline_strains_aim_color_b_ref->getInt() / 255.0f);
+				const Color speedStrainColor = argb(alpha, m_osu_hud_scrubbing_timeline_strains_speed_color_r_ref->getInt() / 255.0f, m_osu_hud_scrubbing_timeline_strains_speed_color_g_ref->getInt() / 255.0f, m_osu_hud_scrubbing_timeline_strains_speed_color_b_ref->getInt() / 255.0f);
 
 				g->setDepthBuffer(true);
 				for (int i=0; i<aimStrains.size(); i++)
@@ -1004,7 +1004,7 @@ void OsuSongBrowser2::draw(Graphics *g)
 	if (m_fPulseAnimation > 0.0f)
 	{
 		Color topColor = 0x00ffffff;
-		Color bottomColor = COLOR((int)(25*m_fPulseAnimation), 255, 255, 255);
+		Color bottomColor = argb((int)(25*m_fPulseAnimation), 255, 255, 255);
 
 		g->fillGradient(0, 0, m_osu->getScreenWidth(), m_osu->getScreenHeight(), topColor, topColor, bottomColor, bottomColor);
 	}
@@ -3578,8 +3578,8 @@ void OsuSongBrowser2::onGroupChange(UString text, int id)
 	}
 	if (grouping == NULL) return;
 
-	const Color highlightColor = COLOR(255, 0, 255, 0);
-	const Color defaultColor = COLOR(255, 255, 255, 255);
+	const Color highlightColor = rgb(0, 255, 0);
+	const Color defaultColor = rgb(255, 255, 255);
 
 	// update group combobox button text
 	m_groupButton->setText(grouping->name);

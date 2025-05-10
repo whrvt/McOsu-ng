@@ -544,7 +544,7 @@ void VisualProfiler::update()
 			{
 				for (int g=0; g<numGroups; g++)
 				{
-					const Color color = COLOR((unsigned char)(m_fPrevVaoAlpha * 255.0f), COLOR_GET_Ri(m_groups[g].color), COLOR_GET_Gi(m_groups[g].color), COLOR_GET_Bi(m_groups[g].color));
+					const Color color = argb((unsigned char)(m_fPrevVaoAlpha * 255.0f), Ri(m_groups[g].color), Gi(m_groups[g].color), Bi(m_groups[g].color));
 
 					//m_lineVao->addVertex(x, -(((float)graphHeight)/(float)numGroups)*g, 0);
 					m_lineVao->addVertex(x, 0, 0);

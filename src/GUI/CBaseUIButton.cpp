@@ -21,10 +21,10 @@ CBaseUIButton::CBaseUIButton(float xPos, float yPos, float xSize, float ySize, U
 	m_bTextLeft = false;
 
 	// colors
-	m_frameColor = COLOR(255, 255, 255, 255);
-	m_backgroundColor = COLOR(255, 0, 0, 0);
-	m_textColor = COLOR(255, 255, 255, 255);
-	m_textBrightColor = m_textDarkColor = COLOR(0, 0, 0, 0);
+	m_frameColor = rgb(255, 255, 255);
+	m_backgroundColor = rgb(0, 0, 0);
+	m_textColor = rgb(255, 255, 255);
+	m_textBrightColor = m_textDarkColor = argb(0, 0, 0, 0);
 
 	setText(text);
 }
@@ -97,7 +97,7 @@ void CBaseUIButton::drawText(Graphics *g)
 				if (m_textDarkColor != 0)
 					g->setColor(m_textDarkColor);
 				else
-					g->setColor(COLOR_INVERT(m_textColor));
+					g->setColor(Colors::invert(m_textColor));
 			}
 			g->drawString(m_font, m_sText);
 

@@ -228,7 +228,7 @@ void OsuSlider::draw(Graphics *g)
 
 		// draw slider ticks
 		Color tickColor = 0xffffffff;
-		tickColor = COLOR(255, (int)(COLOR_GET_Ri(tickColor)*m_fHittableDimRGBColorMultiplierPercent), (int)(COLOR_GET_Gi(tickColor)*m_fHittableDimRGBColorMultiplierPercent), (int)(COLOR_GET_Bi(tickColor)*m_fHittableDimRGBColorMultiplierPercent));
+		tickColor = rgb((int)(Ri(tickColor)*m_fHittableDimRGBColorMultiplierPercent), (int)(Gi(tickColor)*m_fHittableDimRGBColorMultiplierPercent), (int)(Bi(tickColor)*m_fHittableDimRGBColorMultiplierPercent));
 		const float tickImageScale = (m_beatmap->getHitcircleDiameter() / (16.0f * (skin->isSliderScorePoint2x() ? 2.0f : 1.0f)))*0.125f;
 		for (int t=0; t<m_ticks.size(); t++)
 		{
@@ -299,10 +299,10 @@ void OsuSlider::draw(Graphics *g)
 				// if the combo color is nearly white, blacken the reverse arrow
 				Color comboColor = skin->getComboColorForCounter(m_iColorCounter, m_iColorOffset);
 				Color reverseArrowColor = 0xffffffff;
-				if ((COLOR_GET_Rf(comboColor) + COLOR_GET_Gf(comboColor) + COLOR_GET_Bf(comboColor))/3.0f > osu_slider_reverse_arrow_black_threshold.getFloat())
+				if ((Rf(comboColor) + Gf(comboColor) + Bf(comboColor))/3.0f > osu_slider_reverse_arrow_black_threshold.getFloat())
 					reverseArrowColor = 0xff000000;
 
-				reverseArrowColor = COLOR(255, (int)(COLOR_GET_Ri(reverseArrowColor)*m_fHittableDimRGBColorMultiplierPercent), (int)(COLOR_GET_Gi(reverseArrowColor)*m_fHittableDimRGBColorMultiplierPercent), (int)(COLOR_GET_Bi(reverseArrowColor)*m_fHittableDimRGBColorMultiplierPercent));
+				reverseArrowColor = rgb((int)(Ri(reverseArrowColor)*m_fHittableDimRGBColorMultiplierPercent), (int)(Gi(reverseArrowColor)*m_fHittableDimRGBColorMultiplierPercent), (int)(Bi(reverseArrowColor)*m_fHittableDimRGBColorMultiplierPercent));
 
 				float div = 0.30f;
 				float pulse = (div - fmod(std::abs(m_beatmap->getCurMusicPos())/1000.0f, div))/div;
@@ -664,7 +664,7 @@ void OsuSlider::drawVR(Graphics *g, Matrix4 &mvp, OsuVR *vr)
 				// if the combo color is nearly white, blacken the reverse arrow
 				Color comboColor = skin->getComboColorForCounter(m_iColorCounter, m_iColorOffset);
 				Color reverseArrowColor = 0xffffffff;
-				if ((COLOR_GET_Rf(comboColor) + COLOR_GET_Gf(comboColor) + COLOR_GET_Bf(comboColor))/3.0f > osu_slider_reverse_arrow_black_threshold.getFloat())
+				if ((Rf(comboColor) + Gf(comboColor) + Bf(comboColor))/3.0f > osu_slider_reverse_arrow_black_threshold.getFloat())
 					reverseArrowColor = 0xff000000;
 
 				float div = 0.30f;
@@ -862,7 +862,7 @@ void OsuSlider::draw3D(Graphics *g)
 
 		// draw slider ticks
 		Color tickColor = 0xffffffff;
-		tickColor = COLOR(255, (int)(COLOR_GET_Ri(tickColor)*m_fHittableDimRGBColorMultiplierPercent), (int)(COLOR_GET_Gi(tickColor)*m_fHittableDimRGBColorMultiplierPercent), (int)(COLOR_GET_Bi(tickColor)*m_fHittableDimRGBColorMultiplierPercent));
+		tickColor = rgb((int)(Ri(tickColor)*m_fHittableDimRGBColorMultiplierPercent), (int)(Gi(tickColor)*m_fHittableDimRGBColorMultiplierPercent), (int)(Bi(tickColor)*m_fHittableDimRGBColorMultiplierPercent));
 		for (int t=0; t<m_ticks.size(); t++)
 		{
 			if (m_ticks[t].finished || m_ticks[t].percent > sliderSnake)
@@ -935,10 +935,10 @@ void OsuSlider::draw3D(Graphics *g)
 				// if the combo color is nearly white, blacken the reverse arrow
 				Color comboColor = skin->getComboColorForCounter(m_iColorCounter, m_iColorOffset);
 				Color reverseArrowColor = 0xffffffff;
-				if ((COLOR_GET_Rf(comboColor) + COLOR_GET_Gf(comboColor) + COLOR_GET_Bf(comboColor))/3.0f > osu_slider_reverse_arrow_black_threshold.getFloat())
+				if ((Rf(comboColor) + Gf(comboColor) + Bf(comboColor))/3.0f > osu_slider_reverse_arrow_black_threshold.getFloat())
 					reverseArrowColor = 0xff000000;
 
-				reverseArrowColor = COLOR(255, (int)(COLOR_GET_Ri(reverseArrowColor)*m_fHittableDimRGBColorMultiplierPercent), (int)(COLOR_GET_Gi(reverseArrowColor)*m_fHittableDimRGBColorMultiplierPercent), (int)(COLOR_GET_Bi(reverseArrowColor)*m_fHittableDimRGBColorMultiplierPercent));
+				reverseArrowColor = rgb((int)(Ri(reverseArrowColor)*m_fHittableDimRGBColorMultiplierPercent), (int)(Gi(reverseArrowColor)*m_fHittableDimRGBColorMultiplierPercent), (int)(Bi(reverseArrowColor)*m_fHittableDimRGBColorMultiplierPercent));
 
 				float div = 0.30f;
 				float pulse = (div - fmod(std::abs(m_beatmap->getCurMusicPos())/1000.0f, div))/div;
@@ -1357,7 +1357,7 @@ void OsuSlider::drawBodyVR(Graphics *g, OsuVR *vr, Matrix4 &mvp, float alpha, fl
 	// HACKHACK: code duplication aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 
 	Color comboColor = m_beatmap->getSkin()->getComboColorForCounter(m_iColorCounter, m_iColorOffset);
-	comboColor = COLOR(255, (int)(COLOR_GET_Ri(comboColor)*m_fHittableDimRGBColorMultiplierPercent), (int)(COLOR_GET_Gi(comboColor)*m_fHittableDimRGBColorMultiplierPercent), (int)(COLOR_GET_Bi(comboColor)*m_fHittableDimRGBColorMultiplierPercent));
+	comboColor = rgb((int)(Ri(comboColor)*m_fHittableDimRGBColorMultiplierPercent), (int)(Gi(comboColor)*m_fHittableDimRGBColorMultiplierPercent), (int)(Bi(comboColor)*m_fHittableDimRGBColorMultiplierPercent));
 
 	// smooth begin/end while snaking/shrinking
 	std::vector<Vector2> alwaysPoints;

@@ -239,7 +239,7 @@ void Engine::loadApp()
 			{
 				int rowCounter = (x / 64);
 				int columnCounter = (y / 64);
-				Color color = (((rowCounter+columnCounter) % 2 == 0) ? COLOR(255, 255, 0, 221) : COLOR(255, 0, 0, 0));
+				Color color = (((rowCounter+columnCounter) % 2 == 0) ? rgb(255, 0, 221) : rgb(0, 0, 0));
 				missingTexture->setPixel(x, y, color);
 			}
 		}
@@ -303,7 +303,7 @@ void Engine::onPaint()
 
 			if (epilepsy.getBool())
 			{
-				m_graphics->setColor(COLOR(255, rand()%256, rand()%256, rand()%256));
+				m_graphics->setColor(rgb(rand()%256, rand()%256, rand()%256));
 				m_graphics->fillRect(0, 0, engine->getScreenWidth(), engine->getScreenHeight());
 			}
 		}

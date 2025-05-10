@@ -329,7 +329,7 @@ OsuDatabaseBeatmap::PRIMITIVE_CONTAINER OsuDatabaseBeatmap::loadPrimitiveObjects
 						int comboNum;
 						int r,g,b;
 						if (sscanf(curLineChar, " Combo %i : %i , %i , %i \n", &comboNum, &r, &g, &b) == 4)
-							c.combocolors.push_back(COLOR(255, r, g, b));
+							c.combocolors.push_back(rgb(r, g, b));
 					}
 					break;
 

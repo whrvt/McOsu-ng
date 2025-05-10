@@ -140,8 +140,8 @@ ConsoleBox::ConsoleBox() : CBaseUIElement(0, 0, 0, 0, "")
 	m_suggestion = new CBaseUIScrollView(5 * dpiScale, engine->getScreenHeight(), engine->getScreenWidth() - 10 * dpiScale, 90 * dpiScale, "consoleboxsuggestion");
 	{
 		m_suggestion->setDrawBackground(true);
-		m_suggestion->setBackgroundColor(COLOR(255, 0, 0, 0));
-		m_suggestion->setFrameColor(COLOR(255, 255, 255, 255));
+		m_suggestion->setBackgroundColor(rgb(0, 0, 0));
+		m_suggestion->setFrameColor(rgb(255, 255, 255));
 		m_suggestion->setHorizontalScrolling(false);
 		m_suggestion->setVerticalScrolling(true);
 		m_suggestion->setVisible(false);

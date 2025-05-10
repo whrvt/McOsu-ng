@@ -309,11 +309,11 @@ void OsuModSelector::updateScoreMultiplierLabelText()
 
 	const int alpha = 200;
 	if (scoreMultiplier > 1.0f)
-		m_scoreMultiplierLabel->setTextColor(COLOR(alpha, 173, 255, 47));
+		m_scoreMultiplierLabel->setTextColor(argb(alpha, 173, 255, 47));
 	else if (scoreMultiplier == 1.0f)
-		m_scoreMultiplierLabel->setTextColor(COLOR(alpha, 255, 255, 255));
+		m_scoreMultiplierLabel->setTextColor(argb(alpha, 255, 255, 255));
 	else
-		m_scoreMultiplierLabel->setTextColor(COLOR(alpha, 255, 69, 00));
+		m_scoreMultiplierLabel->setTextColor(argb(alpha, 255, 69, 00));
 
 	m_scoreMultiplierLabel->setText(UString::format("Score Multiplier: %.2fX", scoreMultiplier));
 }

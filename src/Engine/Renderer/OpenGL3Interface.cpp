@@ -481,7 +481,7 @@ void OpenGL3Interface::drawVAO(VertexArrayObject *vao)
 
 	for (size_t i=0; i<vcolors.size(); i++)
 	{
-		Vector4 color = Vector4(COLOR_GET_Rf(vcolors[i]), COLOR_GET_Gf(vcolors[i]), COLOR_GET_Bf(vcolors[i]), COLOR_GET_Af(vcolors[i]));
+		Vector4 color = Vector4(Rf(vcolors[i]), Gf(vcolors[i]), Bf(vcolors[i]), Af(vcolors[i]));
 		colors.push_back(color);
 		finalColors.push_back(color);
 	}

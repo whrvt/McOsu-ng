@@ -187,7 +187,7 @@ void OsuSpinner::draw(Graphics *g)
 		{
 			const float spinnerMiddleImageScale = globalBaseSize / (globalBaseSkinSize * (skin->isSpinnerMiddle2x() ? 2.0f : 1.0f));
 
-			g->setColor(COLOR(255, 255, (int)(255*m_fPercent), (int)(255*m_fPercent)));
+			g->setColor(rgb(255, (int)(255*m_fPercent), (int)(255*m_fPercent)));
 			g->setAlpha(m_fAlphaWithoutHidden * alphaMultiplier);
 			g->pushTransform();
 			{

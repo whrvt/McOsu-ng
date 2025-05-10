@@ -102,7 +102,7 @@ void DirectX11VertexArrayObject::init()
 
 		for (size_t i=0; i<m_colors.size(); i++)
 		{
-			const Vector4 color = Vector4(COLOR_GET_Rf(m_colors[i]), COLOR_GET_Gf(m_colors[i]), COLOR_GET_Bf(m_colors[i]), COLOR_GET_Af(m_colors[i]));
+			const Vector4 color = Vector4(Rf(m_colors[i]), Gf(m_colors[i]), Bf(m_colors[i]), Af(m_colors[i]));
 			colors.push_back(color);
 			finalColors.push_back(color);
 		}

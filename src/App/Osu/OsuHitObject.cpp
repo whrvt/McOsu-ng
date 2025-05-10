@@ -122,7 +122,7 @@ void OsuHitObject::drawHitResult(Graphics *g, OsuSkin *skin, float hitcircleDiam
 				const float gf = lerp3f(osu_hitresult_delta_colorize_early_g.getFloat() / 255.0f, 1.0f, osu_hitresult_delta_colorize_late_g.getFloat() / 255.0f, osu_hitresult_delta_colorize_interpolate.getBool() ? hitDeltaRangePercent / 2.0f + 0.5f : (hitDeltaRangePercent < 0.0f ? -1.0f : 1.0f));
 				const float bf = lerp3f(osu_hitresult_delta_colorize_early_b.getFloat() / 255.0f, 1.0f, osu_hitresult_delta_colorize_late_b.getFloat() / 255.0f, osu_hitresult_delta_colorize_interpolate.getBool() ? hitDeltaRangePercent / 2.0f + 0.5f : (hitDeltaRangePercent < 0.0f ? -1.0f : 1.0f));
 
-				g->setColor(COLORf(1.0f, rf, gf, bf));
+				g->setColor(argb(1.0f, rf, gf, bf));
 			}
 		}
 

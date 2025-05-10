@@ -250,7 +250,7 @@ void OsuModFPoSu::draw(Graphics *g)
 							{
 								m_osu->getSkin()->getBackgroundCube()->bind();
 								{
-									g->setColor(COLOR(255, std::clamp<int>(fposu_cube_tint_r.getInt(), 0, 255), std::clamp<int>(fposu_cube_tint_g.getInt(), 0, 255), std::clamp<int>(fposu_cube_tint_b.getInt(), 0, 255)));
+									g->setColor(rgb(std::clamp<int>(fposu_cube_tint_r.getInt(), 0, 255), std::clamp<int>(fposu_cube_tint_g.getInt(), 0, 255), std::clamp<int>(fposu_cube_tint_b.getInt(), 0, 255)));
 									g->drawVAO(m_vaoCube);
 								}
 								m_osu->getSkin()->getBackgroundCube()->unbind();
@@ -432,7 +432,7 @@ void OsuModFPoSu::draw(Graphics *g)
 								{
 									m_osu->getSkin()->getBackgroundCube()->bind();
 									{
-										g->setColor(COLOR(255, std::clamp<int>(fposu_cube_tint_r.getInt(), 0, 255), std::clamp<int>(fposu_cube_tint_g.getInt(), 0, 255), std::clamp<int>(fposu_cube_tint_b.getInt(), 0, 255)));
+										g->setColor(rgb(std::clamp<int>(fposu_cube_tint_r.getInt(), 0, 255), std::clamp<int>(fposu_cube_tint_g.getInt(), 0, 255), std::clamp<int>(fposu_cube_tint_b.getInt(), 0, 255)));
 										g->drawVAO(m_vaoCube);
 									}
 									m_osu->getSkin()->getBackgroundCube()->unbind();
@@ -1217,7 +1217,7 @@ OsuModFPoSu3DModel::OsuModFPoSu3DModel(const UString &objFilePathOrContents, Ima
 					if (sscanf(line.c_str(), "v %f %f %f %f %f %f ", &vertex.x, &vertex.y, &vertex.z, &rgb.x, &rgb.y, &rgb.z) == 6)
 					{
 						rawVertices.push_back(vertex);
-						rawColors.push_back(COLORf(1.0f, rgb.x, rgb.y, rgb.z));
+						rawColors.push_back(argb(1.0f, rgb.x, rgb.y, rgb.z));
 					}
 					else if (sscanf(line.c_str(), "v %f %f %f ", &vertex.x, &vertex.y, &vertex.z) == 3)
 						rawVertices.push_back(vertex);

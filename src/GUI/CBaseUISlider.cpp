@@ -22,8 +22,8 @@ CBaseUISlider::CBaseUISlider(float xPos, float yPos, float xSize, float ySize, U
 	m_bLiveUpdate = false;
 	m_bAllowMouseWheel = true;
 
-	m_backgroundColor = COLOR(255, 0, 0, 0);
-	m_frameColor = COLOR(255,255,255,255);
+	m_backgroundColor = rgb(0, 0, 0);
+	m_frameColor = rgb(255,255,255);
 
 	m_fCurValue = 0.0f;
 	m_fCurPercent = 0.0f;
@@ -78,19 +78,19 @@ void CBaseUISlider::drawBlock(Graphics *g)
 				topRight,
 				halfRight + Vector2(0,1),
 				halfLeft + Vector2(0,1),
-				COLOR(255,255,255,255),
-				COLOR(255,255,255,255),
-				COLOR(255,241,241,241),
-				COLOR(255,241,241,241));
+				rgb(255,255,255),
+				rgb(255,255,255),
+				rgb(241,241,241),
+				rgb(241,241,241));
 
 	g->drawQuad(halfLeft,
 				halfRight,
 				bottomRight,
 				bottomLeft,
-				COLOR(255,225,225,225),
-				COLOR(255,225,225,225),
-				COLOR(255,255,255,255),
-				COLOR(255,255,255,255));
+				rgb(225,225,225),
+				rgb(225,225,225),
+				rgb(255,255,255),
+				rgb(255,255,255));
 
 
 	/*
@@ -98,19 +98,19 @@ void CBaseUISlider::drawBlock(Graphics *g)
 				Vector2(m_vPos.x+std::round(m_vBlockPos.x)+1 + m_vBlockSize.x-1, m_vPos.y+std::round(m_vBlockPos.y)+1),
 				Vector2(m_vPos.x+std::round(m_vBlockPos.x)+1 + m_vBlockSize.x-1, m_vPos.y+std::round(m_vBlockPos.y)+1 + m_vBlockSize.y/2),
 				Vector2(m_vPos.x+std::round(m_vBlockPos.x)+1,  m_vPos.y+std::round(m_vBlockPos.y)+1 + m_vBlockSize.y/2),
-				COLOR(255,255,255,255),
-				COLOR(255,255,255,255),
-				COLOR(255,241,241,241),
-				COLOR(255,241,241,241));
+				rgb(255,255,255),
+				rgb(255,255,255),
+				rgb(241,241,241),
+				rgb(241,241,241));
 
 	g->drawQuad(Vector2(m_vPos.x+std::round(m_vBlockPos.x)+1, m_vPos.y+std::round(m_vBlockPos.y)+1+std::round(m_vBlockSize.y/2.0f)),
 				Vector2(m_vPos.x+std::round(m_vBlockPos.x)+1 + m_vBlockSize.x-1, m_vPos.y+std::round(m_vBlockPos.y)+1+std::round(m_vBlockSize.y/2.0f)),
 				Vector2(m_vPos.x+std::round(m_vBlockPos.x)+1 + m_vBlockSize.x-1, m_vPos.y+std::round(m_vBlockPos.y)+1+std::round(m_vBlockSize.y/2.0f) + m_vBlockSize.y-(std::round(m_vBlockSize.y/2.0f))),
 				Vector2(m_vPos.x+std::round(m_vBlockPos.x)+1, m_vPos.y+std::round(m_vBlockPos.y)+1+std::round(m_vBlockSize.y/2.0f)  + m_vBlockSize.y-(std::round(m_vBlockSize.y/2.0f))),
-				COLOR(255,225,225,225),
-				COLOR(255,225,225,225),
-				COLOR(255,255,255,255),
-				COLOR(255,255,255,255));
+				rgb(225,225,225),
+				rgb(225,225,225),
+				rgb(255,255,255),
+				rgb(255,255,255));
 	*/
 
 	/*

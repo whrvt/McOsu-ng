@@ -44,10 +44,10 @@ void OsuUIButton::draw(Graphics *g)
 
 	float middleWidth = m_vSize.x - leftWidth - rightWidth;
 
-	char red = std::max((unsigned int)(COLOR_GET_Ri(m_color)*m_fBrightness), (unsigned int)(m_fAnim*255.0f));
-	char green = std::max((unsigned int)(COLOR_GET_Gi(m_color)*m_fBrightness), (unsigned int)(m_fAnim*255.0f));
-	char blue = std::max((unsigned int)(COLOR_GET_Bi(m_color)*m_fBrightness), (unsigned int)(m_fAnim*255.0f));
-	g->setColor(COLOR(std::clamp<int>(COLOR_GET_Ai(m_color) + (isMouseInside() ? (int)(m_fAlphaAddOnHover*255.0f) : 0), 0, 255), red, green, blue));
+	const auto red = static_cast<Channel>(std::max(static_cast<float>(Ri(m_color))*m_fBrightness, m_fAnim*255.0f));
+	const auto green = static_cast<Channel>(std::max(static_cast<float>(Gi(m_color))*m_fBrightness, m_fAnim*255.0f));
+	const auto blue = static_cast<Channel>(std::max(static_cast<float>(Bi(m_color))*m_fBrightness, m_fAnim*255.0f));
+	g->setColor(argb(std::clamp<int>(Ai(m_color) + (isMouseInside() ? (int)(m_fAlphaAddOnHover*255.0f) : 0), 0, 255), red, green, blue));
 
 	buttonLeft->bind();
 	{

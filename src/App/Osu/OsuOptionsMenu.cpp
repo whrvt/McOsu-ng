@@ -389,8 +389,8 @@ public:
 
 		const int fullColorBlockSize = 4 * Osu::getUIScale(m_osu);
 
-		Color left = COLOR((int)(255*m_fAnim), 255, 233, 50);
-		Color middle = COLOR((int)(255*m_fAnim), 255, 211, 50);
+		Color left = argb((int)(255*m_fAnim), 255, 233, 50);
+		Color middle = argb((int)(255*m_fAnim), 255, 211, 50);
 		Color right = 0x00000000;
 
 		g->fillGradient(m_vPos.x, m_vPos.y, m_vSize.x*1.25f, m_vSize.y, middle, right, middle, right);
@@ -1268,7 +1268,7 @@ void OsuOptionsMenu::draw(Graphics *g)
 			const short blue = std::clamp<float>(brightness * m_osu_background_color_b_ref->getFloat(), 0.0f, 255.0f);
 			if (brightness > 0.0f)
 			{
-				g->setColor(COLOR(255, red, green, blue));
+				g->setColor(rgb(red, green, blue));
 				g->fillRect(0, 0, m_osu->getScreenWidth(), m_osu->getScreenHeight());
 			}
 		}
@@ -1279,7 +1279,7 @@ void OsuOptionsMenu::draw(Graphics *g)
 		if (!isPlayingBeatmap)
 		{
 			const short dim = std::clamp<float>(m_backgroundDimSlider->getFloat(), 0.0f, 1.0f)*255.0f;
-			g->setColor(COLOR(dim, 0, 0, 0));
+			g->setColor(argb(dim, 0, 0, 0));
 			g->fillRect(0, 0, m_osu->getScreenWidth(), m_osu->getScreenHeight());
 		}
 	}
@@ -1372,7 +1372,7 @@ void OsuOptionsMenu::draw(Graphics *g)
 			g->rotate3DScene(0, -(1.0f - m_fAnimation)*90, 0);
 			g->translate3DScene(-(1.0f - m_fAnimation)*m_options->getSize().x*1.25f, 0, -(1.0f - m_fAnimation)*700);
 
-			m_osu->getSliderFrameBuffer()->setColor(COLORf(m_fAnimation, 1.0f, 1.0f, 1.0f));
+			m_osu->getSliderFrameBuffer()->setColor(argb(m_fAnimation, 1.0f, 1.0f, 1.0f));
 			m_osu->getSliderFrameBuffer()->draw(g, 0, 0);
 		}
 		g->pop3DScene();
@@ -1430,8 +1430,8 @@ void OsuOptionsMenu::update()
 	// flash osu!folder textbox red if incorrect
 	if (m_fOsuFolderTextboxInvalidAnim > engine->getTime())
 	{
-		char redness = std::abs(std::sin((m_fOsuFolderTextboxInvalidAnim - engine->getTime())*3))*128;
-		m_osuFolderTextbox->setBackgroundColor(COLOR(255, redness, 0, 0));
+		Channel redness = std::abs(std::sin((m_fOsuFolderTextboxInvalidAnim - engine->getTime())*3))*128;
+		m_osuFolderTextbox->setBackgroundColor(rgb(redness, 0, 0));
 	}
 	else
 		m_osuFolderTextbox->setBackgroundColor(0xff000000);

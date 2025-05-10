@@ -611,7 +611,7 @@ void Osu::draw(Graphics *g)
 			if (engine->getTime() > m_fQuickRetryTime)
 				alphaPercent = 1.0f;
 
-			g->setColor(COLOR((int)(255*alphaPercent), 0, 0, 0));
+			g->setColor(argb((Channel)(255*alphaPercent), 0, 0, 0));
 			g->fillRect(0, 0, getScreenWidth(), getScreenHeight());
 		}
 
@@ -2684,7 +2684,7 @@ void Osu::onLetterboxingOffsetChange(UString oldValue, UString newValue)
 
 void Osu::onNotification(UString args)
 {
-	m_notificationOverlay->addNotification(args, COLOR(255, osu_notification_color_r.getInt(), osu_notification_color_g.getInt(), osu_notification_color_b.getInt()));
+	m_notificationOverlay->addNotification(args, rgb(osu_notification_color_r.getInt(), osu_notification_color_g.getInt(), osu_notification_color_b.getInt()));
 }
 
 

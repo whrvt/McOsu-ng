@@ -18,8 +18,6 @@
 
 #include <map>
 
-extern ConVar mouse_raw_input;
-
 class ContextMenu;
 class UString;
 class Engine;

@@ -758,8 +758,8 @@ void OsuMainMenu::draw(Graphics *g)
 		*/
 	}
 
-	const Color cubeColor = COLORf(1.0f, std::lerp(0.0f, 0.5f, m_fMainMenuAnimFriendPercent), std::lerp(0.0f, 0.768f, m_fMainMenuAnimFriendPercent), std::lerp(0.0f, 0.965f, m_fMainMenuAnimFriendPercent));
-	const Color cubeBorderColor = COLORf(1.0f, std::lerp(1.0f, 0.5f, m_fMainMenuAnimFriendPercent), std::lerp(1.0f, 0.768f, m_fMainMenuAnimFriendPercent), std::lerp(1.0f, 0.965f, m_fMainMenuAnimFriendPercent));
+	const Color cubeColor = argb(1.0f, std::lerp(0.0f, 0.5f, m_fMainMenuAnimFriendPercent), std::lerp(0.0f, 0.768f, m_fMainMenuAnimFriendPercent), std::lerp(0.0f, 0.965f, m_fMainMenuAnimFriendPercent));
+	const Color cubeBorderColor = argb(1.0f, std::lerp(1.0f, 0.5f, m_fMainMenuAnimFriendPercent), std::lerp(1.0f, 0.768f, m_fMainMenuAnimFriendPercent), std::lerp(1.0f, 0.965f, m_fMainMenuAnimFriendPercent));
 
 	if (osu_draw_main_menu_button.getBool())
 	{
@@ -1033,7 +1033,7 @@ void OsuMainMenu::draw(Graphics *g)
 
 			const bool doScissor = osu_main_menu_slider_text_scissor.getBool();
 
-			m_osu->getSliderFrameBuffer()->setColor(COLORf(alpha*osu_main_menu_slider_text_alpha.getFloat(), 1.0f, 1.0f, 1.0f));
+			m_osu->getSliderFrameBuffer()->setColor(argb(alpha*osu_main_menu_slider_text_alpha.getFloat(), 1.0f, 1.0f, 1.0f));
 			m_osu->getSliderFrameBuffer()->drawRect(g, (doScissor ? mainButtonRect.getX() : 0) + inset, (doScissor ? mainButtonRect.getY() : 0) + inset, (doScissor ? mainButtonRect.getWidth() : m_osu->getScreenWidth()) - 2*inset, (doScissor ? mainButtonRect.getHeight() : m_osu->getScreenHeight()) - 2*inset);
 		}
 	}
@@ -1044,7 +1044,7 @@ void OsuMainMenu::draw(Graphics *g)
 		float invertedPulse = 1.0f - pulse;
 
 		if (haveTimingpoints)
-			g->setColor(COLORf(1.0f, 0.10f + 0.15f*invertedPulse, 0.10f + 0.15f*invertedPulse, 0.10f + 0.15f*invertedPulse));
+			g->setColor(argb(1.0f, 0.10f + 0.15f*invertedPulse, 0.10f + 0.15f*invertedPulse, 0.10f + 0.15f*invertedPulse));
 		else
 			g->setColor(0xff444444);
 
@@ -1446,8 +1446,8 @@ void OsuMainMenu::setVisible(bool visible)
 	if (visible && m_bStartupAnim)
 	{
 		m_bStartupAnim = false;
-		anim->moveQuadOut(&m_fStartupAnim, 1.0f, osu_main_menu_startup_anim_duration.getFloat(), (float)Timing::getTimeReal());
-		anim->moveQuartOut(&m_fStartupAnim2, 1.0f, osu_main_menu_startup_anim_duration.getFloat()*6.0f, (float)Timing::getTimeReal() + osu_main_menu_startup_anim_duration.getFloat()*0.5f);
+		anim->moveQuadOut(&m_fStartupAnim, 1.0f, osu_main_menu_startup_anim_duration.getFloat(), Timing::getTimeReal<float>());
+		anim->moveQuartOut(&m_fStartupAnim2, 1.0f, osu_main_menu_startup_anim_duration.getFloat()*6.0f, Timing::getTimeReal<float>() + osu_main_menu_startup_anim_duration.getFloat()*0.5f);
 	}
 }
 
@@ -1497,9 +1497,9 @@ void OsuMainMenu::updateLayout()
 		m_menuElements[i]->onResized(); // HACKHACK: framework, setSize() does not update string metrics
 		m_menuElements[i]->setRelPos(m_mainButton->getRelPos().x + m_mainButton->getSize().x*offsetPercent - menuElementExtraWidth*offsetPercent + menuElementExtraWidth*(1.0f - offsetPercent), curY);
 		m_menuElements[i]->setSize(m_mainButton->getSize().x + menuElementExtraWidth*offsetPercent - 2.0f*menuElementExtraWidth*(1.0f - offsetPercent), menuElementHeight);
-		m_menuElements[i]->setTextColor(COLORf(offsetPercent, 1.0f, 1.0f, 1.0f));
-		m_menuElements[i]->setFrameColor(COLORf(offsetPercent, 1.0f, 1.0f, 1.0f));
-		m_menuElements[i]->setBackgroundColor(COLORf(offsetPercent, 0.0f, 0.0f, 0.0f));
+		m_menuElements[i]->setTextColor(argb(offsetPercent, 1.0f, 1.0f, 1.0f));
+		m_menuElements[i]->setFrameColor(argb(offsetPercent, 1.0f, 1.0f, 1.0f));
+		m_menuElements[i]->setBackgroundColor(argb(offsetPercent, 0.0f, 0.0f, 0.0f));
 	}
 
 	m_container->setSize(m_osu->getScreenSize() + Vector2(1,1));

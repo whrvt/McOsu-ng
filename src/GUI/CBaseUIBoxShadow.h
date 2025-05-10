@@ -21,7 +21,7 @@ class GaussianBlurKernel;
 class CBaseUIBoxShadow : public CBaseUIElement
 {
 public:
-	CBaseUIBoxShadow(Color color=COLOR(0, 0, 0, 0), float radius=0, float xPos=0, float yPos=0, float xSize=0, float ySize=0, UString name="");
+	CBaseUIBoxShadow(Color color=argb(0, 0, 0, 0), float radius=0, float xPos=0, float yPos=0, float xSize=0, float ySize=0, UString name="");
 	virtual ~CBaseUIBoxShadow();
 
 	ELEMENT_BODY(CBaseUIBoxShadow)

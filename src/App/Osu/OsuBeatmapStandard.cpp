@@ -870,7 +870,7 @@ void OsuBeatmapStandard::update()
 		if (Osu::debug->getBool() && m_iPreLoadingIndex == 0)
 			debugLog("OsuBeatmapStandard: Preloading slider vertexbuffers ...\n");
 
-		double startTime = Timing::getTimeReal<float>();
+		double startTime = Timing::getTimeReal();
 		double delta = 0.0;
 		while (delta < 0.010 && m_bIsPreLoading) // hardcoded VR deadline of 10 ms (11 but sanity), will temporarily bring us down to 45 fps on average (better than freezing). works fine for desktop gameplay too
 		{
@@ -888,7 +888,7 @@ void OsuBeatmapStandard::update()
 			}
 
 			m_iPreLoadingIndex++;
-			delta = Timing::getTimeReal<float>() - startTime;
+			delta = Timing::getTimeReal() - startTime;
 		}
 	}
 

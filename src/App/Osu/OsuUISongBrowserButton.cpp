@@ -36,7 +36,7 @@ int OsuUISongBrowserButton::marginPixelsY = 9;
 float OsuUISongBrowserButton::lastHoverSoundTime = 0;
 int OsuUISongBrowserButton::sortHackCounter = 0;
 
-// Color OsuUISongBrowserButton::inactiveDifficultyBackgroundColor = COLOR(255, 0, 150, 236); // blue
+// Color OsuUISongBrowserButton::inactiveDifficultyBackgroundColor = rgb(0, 150, 236); // blue
 
 OsuUISongBrowserButton::OsuUISongBrowserButton(Osu *osu, OsuSongBrowser2 *songBrowser, CBaseUIScrollView *view, OsuUIContextMenu *contextMenu, float xPos, float yPos, float xSize, float ySize, UString name) : CBaseUIButton(xPos, yPos, xSize, ySize, name, "")
 {
@@ -387,10 +387,10 @@ void OsuUISongBrowserButton::setMoveAwayState(OsuUISongBrowserButton::MOVE_AWAY_
 
 Color OsuUISongBrowserButton::getActiveBackgroundColor() const
 {
-	return COLOR(std::clamp<int>(osu_songbrowser_button_active_color_a.getInt(), 0, 255), std::clamp<int>(osu_songbrowser_button_active_color_r.getInt(), 0, 255), std::clamp<int>(osu_songbrowser_button_active_color_g.getInt(), 0, 255), std::clamp<int>(osu_songbrowser_button_active_color_b.getInt(), 0, 255));
+	return argb(std::clamp<int>(osu_songbrowser_button_active_color_a.getInt(), 0, 255), std::clamp<int>(osu_songbrowser_button_active_color_r.getInt(), 0, 255), std::clamp<int>(osu_songbrowser_button_active_color_g.getInt(), 0, 255), std::clamp<int>(osu_songbrowser_button_active_color_b.getInt(), 0, 255));
 }
 
 Color OsuUISongBrowserButton::getInactiveBackgroundColor() const
 {
-	return COLOR(std::clamp<int>(osu_songbrowser_button_inactive_color_a.getInt(), 0, 255), std::clamp<int>(osu_songbrowser_button_inactive_color_r.getInt(), 0, 255), std::clamp<int>(osu_songbrowser_button_inactive_color_g.getInt(), 0, 255), std::clamp<int>(osu_songbrowser_button_inactive_color_b.getInt(), 0, 255));
+	return argb(std::clamp<int>(osu_songbrowser_button_inactive_color_a.getInt(), 0, 255), std::clamp<int>(osu_songbrowser_button_inactive_color_r.getInt(), 0, 255), std::clamp<int>(osu_songbrowser_button_inactive_color_g.getInt(), 0, 255), std::clamp<int>(osu_songbrowser_button_inactive_color_b.getInt(), 0, 255));
 }

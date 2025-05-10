@@ -50,7 +50,7 @@ public:
 	inline std::vector<std::shared_ptr<CBaseUIElement>> *getAllElementsReference(){return &m_vElements;}
 
 	virtual void draw(Graphics *g);
-	virtual void drawDebug(Graphics *g, Color color=COLOR(255,255,0,0)) {;}
+	virtual void drawDebug(Graphics *g, Color color=rgb(255,0,0)) {;}
 	virtual void update();
 
 	virtual void empty();

@@ -508,10 +508,10 @@ void OsuSkin::load()
 	// default values, if none were loaded
 	if (m_comboColors.size() == 0)
 	{
-		m_comboColors.push_back(COLOR(255, 255, 192, 0));
-		m_comboColors.push_back(COLOR(255, 0, 202, 0));
-		m_comboColors.push_back(COLOR(255, 18, 124, 255));
-		m_comboColors.push_back(COLOR(255, 242, 24, 57));
+		m_comboColors.push_back(rgb(255, 192, 0));
+		m_comboColors.push_back(rgb(0, 202, 0));
+		m_comboColors.push_back(rgb(18, 124, 255));
+		m_comboColors.push_back(rgb(242, 24, 57));
 	}
 
 	// images
@@ -1104,24 +1104,24 @@ bool OsuSkin::parseSkinINI(UString filepath)
 					int r,g,b;
 
 					if (sscanf(curLineChar, " Combo %i : %i , %i , %i \n", &comboNum, &r, &g, &b) == 4)
-						m_comboColors.push_back(COLOR(255, r, g, b));
+						m_comboColors.push_back(rgb(r, g, b));
 					if (sscanf(curLineChar, " SpinnerApproachCircle : %i , %i , %i \n", &r, &g, &b) == 3)
-						m_spinnerApproachCircleColor = COLOR(255, r, g, b);
+						m_spinnerApproachCircleColor = rgb(r, g, b);
 					if (sscanf(curLineChar, " SliderBorder: %i , %i , %i \n", &r, &g, &b) == 3)
-						m_sliderBorderColor = COLOR(255, r, g, b);
+						m_sliderBorderColor = rgb(r, g, b);
 					if (sscanf(curLineChar, " SliderTrackOverride : %i , %i , %i \n", &r, &g, &b) == 3)
 					{
-						m_sliderTrackOverride = COLOR(255, r, g, b);
+						m_sliderTrackOverride = rgb(r, g, b);
 						m_bSliderTrackOverride = true;
 					}
 					if (sscanf(curLineChar, " SliderBall : %i , %i , %i \n", &r, &g, &b) == 3)
-						m_sliderBallColor = COLOR(255, r, g, b);
+						m_sliderBallColor = rgb(r, g, b);
 					if (sscanf(curLineChar, " SongSelectActiveText : %i , %i , %i \n", &r, &g, &b) == 3)
-						m_songSelectActiveText = COLOR(255, r, g, b);
+						m_songSelectActiveText = rgb(r, g, b);
 					if (sscanf(curLineChar, " SongSelectInactiveText : %i , %i , %i \n", &r, &g, &b) == 3)
-						m_songSelectInactiveText = COLOR(255, r, g, b);
+						m_songSelectInactiveText = rgb(r, g, b);
 					if (sscanf(curLineChar, " InputOverlayText : %i , %i , %i \n", &r, &g, &b) == 3)
-						m_inputOverlayText = COLOR(255, r, g, b);
+						m_inputOverlayText = rgb(r, g, b);
 				}
 				break;
 			case 2: // Fonts
@@ -1318,7 +1318,7 @@ Color OsuSkin::getComboColorForCounter(int i, int offset)
 	else if (m_comboColors.size() > 0)
 		return m_comboColors[i % m_comboColors.size()];
 	else
-		return COLOR(255, 0, 255, 0);
+		return rgb(0, 255, 0);
 }
 
 void OsuSkin::setBeatmapComboColors(std::vector<Color> colors)

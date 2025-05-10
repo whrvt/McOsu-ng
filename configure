@@ -7987,7 +7987,7 @@ fi
 fi
 
 MCOSU_CPPFLAGS="$MCOSU_CPPFLAGS"
-MCOSU_CXXFLAGS="$MCOSU_CXXFLAGS -Wall -Wno-sign-compare -pthread"
+MCOSU_CXXFLAGS="$MCOSU_CXXFLAGS -Wall -Wno-sign-compare -Werror=deprecated-declarations -pthread"
 MCOSU_LDFLAGS="$MCOSU_LDFLAGS -pthread"
 
 

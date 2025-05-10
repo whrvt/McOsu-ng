@@ -245,8 +245,8 @@ protected:
 	float m_fShouldFlashSectionFail;
 	bool m_bContinueScheduled;
 	unsigned long m_iContinueMusicPos;
-	float m_fWaitTime;
-	float m_fPrevUnpauseTime;
+	double m_fWaitTime;
+	double m_fPrevUnpauseTime;
 
 	// database
 	OsuDatabaseBeatmap *m_selectedDifficulty2;
@@ -262,7 +262,7 @@ protected:
 	double m_fLastRealTimeForInterpolationDelta;
 	int m_iResourceLoadUpdateDelayHack;
 	bool m_bForceStreamPlayback;
-	float m_fAfterMusicIsFinishedVirtualAudioTimeStart;
+	double m_fAfterMusicIsFinishedVirtualAudioTimeStart;
 	bool m_bIsFirstMissSound;
 
 	// health
