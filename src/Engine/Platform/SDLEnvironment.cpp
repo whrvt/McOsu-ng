@@ -56,6 +56,8 @@ SDLEnvironment::SDLEnvironment() : Environment()
 	m_bFullscreen = false;
 
 	m_sUsername = {};
+	m_sProgDataPath = {}; // local data for McEngine files
+	m_sAppDataPath = {};
 	m_hwnd = nullptr;
 
 	m_bIsCursorInsideWindow = false;
@@ -148,7 +150,7 @@ UString SDLEnvironment::getExecutablePath() const
 {
 	const char *path = SDL_GetBasePath();
 	if (!path)
-		return {""};
+		return {Env::cfg(OS::WINDOWS) ? ".\\" : "./"};
 
 	return {path};
 }
@@ -168,35 +170,63 @@ UString SDLEnvironment::getUsername()
 	wchar_t username[UNLEN + 1];
 
 	if (GetUserNameW(username, &username_len))
-		m_sUsername = username;
+		m_sUsername = {username};
 #elif defined(__APPLE__) || defined(MCENGINE_PLATFORM_LINUX) || defined(MCENGINE_PLATFORM_WASM)
 	const char *user = getenv("USER");
 	if (user != nullptr)
-		m_sUsername = user;
+		m_sUsername = {user};
 	else
 	{
 		struct passwd *pwd = getpwuid(getuid());
 		if (pwd != nullptr)
-			m_sUsername = pwd->pw_name;
+			m_sUsername = {pwd->pw_name};
 	}
 #endif
 	// fallback
 	if (m_sUsername.isEmpty())
-		m_sUsername = PACKAGE_NAME "user";
+		m_sUsername = {PACKAGE_NAME "-user"};
 	return m_sUsername;
 }
 
-UString SDLEnvironment::getUserDataPath() const
+// i.e. toplevel appdata path
+UString SDLEnvironment::getUserDataPath()
 {
-	const char *path = SDL_GetPrefPath("McEngine", PACKAGE_NAME);
+	if (!m_sAppDataPath.isEmpty())
+		return m_sAppDataPath;
+
+	char *path = SDL_GetPrefPath("", "");
 	if (path != NULL)
 	{
-		UString uPath = path;
-		SDL_free((void *)path);
-		return uPath;
+		m_sAppDataPath = {path};
+		// since this is kind of an abuse of SDL_GetPrefPath, we remove the double slash
+		if (m_sAppDataPath.endsWith(Env::cfg(OS::WINDOWS) ? "\\\\" : "//"))
+			m_sAppDataPath.erase(m_sAppDataPath.length() - 1, 1);
 	}
-	else
-		return UString("");
+
+	SDL_free(path);
+
+	if (m_sAppDataPath.isEmpty())
+		m_sAppDataPath = Env::cfg(OS::WINDOWS) ? "C:\\" : "/"; // TODO: fallback?
+
+	return m_sAppDataPath;
+}
+
+// i.e. ~/.local/share/PACKAGE_NAME
+UString SDLEnvironment::getLocalDataPath()
+{
+	if (!m_sProgDataPath.isEmpty())
+		return m_sProgDataPath;
+
+	char *path = SDL_GetPrefPath("McEngine", PACKAGE_NAME);
+	if (path != NULL)
+		m_sProgDataPath = {path};
+
+	SDL_free(path);
+
+	if (m_sProgDataPath.isEmpty()) // fallback to exe dir
+		m_sProgDataPath = getExecutablePath();
+
+	return m_sProgDataPath;
 }
 
 bool SDLEnvironment::fileExists(UString filename) const
@@ -605,8 +635,11 @@ Vector2 SDLEnvironment::getMousePos() const
 
 void SDLEnvironment::setCursor(CURSORTYPE cur)
 {
-	m_cursorType = cur;
-	SDL_SetCursor(m_mCursorIcons.at(m_cursorType)); // does not make visible if the cursor isn't visible
+	if (m_cursorType != cur)
+	{
+		m_cursorType = cur;
+		SDL_SetCursor(m_mCursorIcons.at(m_cursorType)); // does not make visible if the cursor isn't visible
+	}
 }
 
 void SDLEnvironment::setCursorVisible(bool visible)
@@ -627,6 +660,7 @@ void SDLEnvironment::setCursorVisible(bool visible)
 	}
 	else
 	{
+		setCursor(CURSORTYPE::CURSOR_NORMAL);
 		SDL_HideCursor();
 		if (m_bIsRawInput) // re-enable rawinput
 			setRawInput(true);

@@ -36,8 +36,10 @@ public:
 
 	// user
 	[[nodiscard]] virtual UString getUsername() = 0;
-	[[nodiscard]] virtual UString getUserDataPath() const = 0;
-
+	/* i.e. C:\\Users\\bob\\AppData\\Roaming\\ */
+	[[nodiscard]] virtual UString getUserDataPath() = 0;
+	// i.e. C:\\Users\\bob\\AppData\\Roaming\\<APP_NAME>
+	[[nodiscard]] virtual UString getLocalDataPath() = 0;
 	// file IO
 	[[nodiscard]] virtual bool fileExists(UString fileName) const = 0;
 	[[nodiscard]] virtual bool directoryExists(UString directoryName) const = 0;

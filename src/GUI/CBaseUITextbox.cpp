@@ -135,16 +135,18 @@ void CBaseUITextbox::update()
 	CBaseUIElement::update();
 	if (!m_bVisible) return;
 
-	const Vector2 mousepos = engine->getMouse()->getPos();
-	const bool mleft = engine->getMouse()->isLeftDown();
-	const bool mright = engine->getMouse()->isRightDown();
+	const auto& mouse = engine->getMouse();
+
+	const Vector2 mousepos = mouse->getPos();
+	const bool mleft = mouse->isLeftDown();
+	const bool mright = mouse->isRightDown();
 
 	// HACKHACK: should do this with the proper events! this will only work properly though if we can event.consume() charDown's
 	if (!m_bEnabled && m_bActive && mleft && !m_bMouseInside)
 		m_bActive = false;
 
 	if ((m_bMouseInside || (m_bBusy && (mleft || mright))) && (m_bActive || (!mleft && !mright)) && m_bEnabled)
-		engine->getMouse()->setCursorType(CURSORTYPE::CURSOR_TEXT);
+		mouse->setCursorType(CURSORTYPE::CURSOR_TEXT);
 
 	// update caret blinking
 	{
@@ -267,7 +269,7 @@ void CBaseUITextbox::update()
 	{
 		m_bContextMouse = false;
 		/*
-		engine->getMouse()->setCursorType(CURSORTYPE::CURSOR_NORMAL);
+		mouse->setCursorType(CURSORTYPE::CURSOR_NORMAL);
 		cmenu->begin();
 		{
 			cmenu->addItem("Clear", 5);

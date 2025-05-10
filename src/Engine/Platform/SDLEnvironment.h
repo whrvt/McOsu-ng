@@ -46,7 +46,8 @@ public:
 
 	// user
 	[[nodiscard]] UString getUsername() override;
-	[[nodiscard]] UString getUserDataPath() const override;
+	[[nodiscard]] UString getUserDataPath() override;
+	[[nodiscard]] UString getLocalDataPath() override;
 
 	// file IO
 	[[nodiscard]] bool fileExists(UString filename) const override;
@@ -163,6 +164,8 @@ private:
 
 	// cache
 	UString m_sUsername;
+	UString m_sProgDataPath;
+	UString m_sAppDataPath;
 	HWND m_hwnd;
 
 	// logging

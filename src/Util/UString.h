@@ -42,7 +42,7 @@ public:
 	}
 	[[nodiscard]] inline bool isAsciiOnly() const { return m_isAsciiOnly; }
 	[[nodiscard]] bool isWhitespaceOnly() const;
-	[[nodiscard]] inline bool isEmpty() const { return length() > 0 && !isWhitespaceOnly(); }
+	[[nodiscard]] inline bool isEmpty() const { return m_unicode.empty() || m_utf8.empty(); }
 	[[nodiscard]] inline bool endsWith(char ch) const {	return m_lengthUtf8 > 0 && m_utf8[m_lengthUtf8 - 1] == ch; }
 	[[nodiscard]] inline bool endsWith(wchar_t ch) const { return m_length > 0 && m_unicode[m_length - 1] == ch; }
 	[[nodiscard]] inline bool endsWith(const UString& suffix) const {

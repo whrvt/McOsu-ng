@@ -320,6 +320,11 @@ void Mouse::setOffset(Vector2 offset)
 	m_vActualPos += posAdjustment;
 }
 
+CURSORTYPE Mouse::getCursorType()
+{
+	return env->getCursor();
+}
+
 void Mouse::setCursorType(CURSORTYPE cursorType)
 {
 	env->setCursor(cursorType);

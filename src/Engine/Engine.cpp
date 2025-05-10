@@ -346,9 +346,9 @@ void Engine::onUpdate()
 
 	// update miscellaneous engine subsystems
 	{
-		for (size_t i=0; i<m_inputDevices.size(); i++)
+		for (auto & m_inputDevice : m_inputDevices)
 		{
-			m_inputDevices[i]->update();
+			m_inputDevice->update();
 		}
 
 		m_openVR->update(); // (this also handles its input devices)
@@ -376,9 +376,9 @@ void Engine::onUpdate()
 		// TODO: this is shit
 		if (Console::g_commandQueue.size() > 0)
 		{
-			for (size_t i=0; i<Console::g_commandQueue.size(); i++)
+			for (const auto & i : Console::g_commandQueue)
 			{
-				Console::processCommand(Console::g_commandQueue[i]);
+				Console::processCommand(i);
 			}
 			Console::g_commandQueue = std::vector<UString>(); // reset
 		}

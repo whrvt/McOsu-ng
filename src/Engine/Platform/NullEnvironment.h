@@ -30,7 +30,8 @@ public:
 
 	// user
 	[[nodiscard]] UString getUsername() override {return "<NULL>";}
-	[[nodiscard]] UString getUserDataPath() const override {return "<NULL>";}
+	[[nodiscard]] UString getUserDataPath() override {return "<NULL>";}
+	[[nodiscard]] UString getLocalDataPath() override {return "<NULL>";}
 
 	// file IO
 	[[nodiscard]] bool fileExists(UString filename) const override {return false;}
