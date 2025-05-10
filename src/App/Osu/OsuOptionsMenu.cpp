@@ -54,6 +54,7 @@ ConVar osu_options_save_on_back("osu_options_save_on_back", true, FCVAR_NONE);
 ConVar osu_options_high_quality_sliders("osu_options_high_quality_sliders", false, FCVAR_NONE);
 ConVar osu_mania_keylayout_wizard("osu_mania_keylayout_wizard");
 ConVar osu_options_slider_preview_use_legacy_renderer("osu_options_slider_preview_use_legacy_renderer", false, FCVAR_NONE, "apparently newer AMD drivers with old gpus are crashing here with the legacy renderer? was just me being lazy anyway, so now there is a vao render path as it should be");
+ConVar osu_options_osu_folder("osu_options_osu_folder");
 
 void _osuOptionsSliderQualityWrapper(UString oldValue, UString newValue)
 {
@@ -572,12 +573,21 @@ OsuOptionsMenu::OsuOptionsMenu(Osu *osu) : OsuScreenBackable(osu)
 	manuallyManageBeatmapsButton->setClickCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onManuallyManageBeatmapsClicked) );
 	manuallyManageBeatmapsButton->setColor(0xff10667b);
 
-	addSubSection("osu!folder");
+	addSubSection("osu! folder");
 	addLabel("1) If you have an existing osu!stable installation:")->setTextColor(0xff666666);
 	addLabel("2) osu!stable > Options > \"Open osu! folder\"")->setTextColor(0xff666666);
 	addLabel("3) Copy & Paste the full path into the textbox:")->setTextColor(0xff666666);
 	addLabel("");
 	m_osuFolderTextbox = addTextbox(convar->getConVarByName("osu_folder")->getString(), convar->getConVarByName("osu_folder"));
+
+	addLabel("... or ...")->setCenterText(true);
+	OsuUIButton *browseForOsuFolderButton = addButton("Browse to your osu! folder");
+	browseForOsuFolderButton->setClickCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onBrowseOsuFolderClicked) );
+	browseForOsuFolderButton->setColor(0xff999999);
+
+	osu_options_osu_folder.setValue(convar->getConVarByName("osu_folder")->getString());
+	osu_options_osu_folder.setCallback(fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onBrowseOsuFolderChanged));
+
 	addLabel("");
 	addLabel("osu!lazer databases are not supported.")->setTextColor(0xff770000);
 	//addSpacer();
@@ -2854,6 +2864,27 @@ void OsuOptionsMenu::onManuallyManageBeatmapsClicked()
 {
 	m_osu->getNotificationOverlay()->addNotification("Opening browser, please wait ...", 0xffffffff, false, 0.75f);
 	env->openURLInDefaultBrowser("https://steamcommunity.com/sharedfiles/filedetails/?id=880768265");
+}
+
+void OsuOptionsMenu::onBrowseOsuFolderChanged(UString oldval, UString newval)
+{
+	if (oldval == newval)
+		return;
+
+	if (newval.isEmpty())
+		m_osu->getNotificationOverlay()->addNotification("Please enter your beatmap folder manually.", 0xff770000, false, 1.0f);
+	else
+	{
+		convar->getConVarByName("osu_folder")->setValue(newval);
+		m_osuFolderTextbox->setText(newval);
+		updateOsuFolder();
+	}
+}
+
+void OsuOptionsMenu::onBrowseOsuFolderClicked()
+{
+	m_osu->getNotificationOverlay()->addNotification("Opening file browser ...", 0xffffffff, false, 0.75f);
+	env->openFolderWindow(osu_options_osu_folder, convar->getConVarByName("osu_folder")->getString());
 }
 
 void OsuOptionsMenu::onCM360CalculatorLinkClicked()

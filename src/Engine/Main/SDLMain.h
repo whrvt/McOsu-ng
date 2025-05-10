@@ -7,11 +7,11 @@
 
 #pragma once
 
-#include "SDLEnvironment.h"
+#include "Environment.h"
 #include "Timing.h"
 #include <SDL3/SDL.h>
 
-class SDLMain : public SDLEnvironment
+class SDLMain : public Environment
 {
 public:
 	SDLMain(int argc, char *argv[]);
@@ -20,7 +20,7 @@ public:
 	SDL_AppResult initialize(int argc, char *argv[]);
 	SDL_AppResult iterate();
 	SDL_AppResult handleEvent(SDL_Event *event);
-	void shutdown() override { SDLEnvironment::shutdown(); }
+	void shutdown() { Environment::shutdown(); }
 	void shutdown(SDL_AppResult result);
 
 private:

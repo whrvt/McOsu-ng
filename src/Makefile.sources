@@ -96,8 +96,6 @@ McOsu_ng_SOURCES = \
 	src/Engine/Platform/BassSound.cpp \
 	src/Engine/Platform/BassSoundEngine.cpp \
 	src/Engine/Platform/NullContextMenu.cpp \
-	src/Engine/Platform/NullEnvironment.cpp \
-	src/Engine/Platform/SDLEnvironment.cpp \
 	src/Engine/Platform/SDLGLInterface.cpp \
 	src/Engine/Platform/SDLSound.cpp \
 	src/Engine/Platform/SDLSoundEngine.cpp \

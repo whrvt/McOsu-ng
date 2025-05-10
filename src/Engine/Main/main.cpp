@@ -12,14 +12,12 @@
 
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 {
-	__sync_synchronize(); // why is this necessary?
 	SDL_SetHint(SDL_HINT_VIDEO_DOUBLE_BUFFER, "1");
 	if (!SDL_Init(SDL_INIT_VIDEO)) // other subsystems can be init later
 	{
 		fprintf(stderr, "Couldn't SDL_Init(): %s\n", SDL_GetError());
 		return SDL_APP_FAILURE;
 	}
-	__sync_synchronize();
 
 	auto *fmain = new SDLMain(argc, argv);
 	*appstate = fmain;

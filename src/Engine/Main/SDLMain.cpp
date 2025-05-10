@@ -1,6 +1,6 @@
 //================ Copyright (c) 2025, WH, All rights reserved. =================//
 //
-// Purpose:		SDLEnvironment subclass for implementing SDL3 main callbacks (main loop)
+// Purpose:		Environment subclass for implementing SDL3 main callbacks (main loop)
 //
 // $NoKeywords: $sdlmain
 //===============================================================================//
@@ -41,7 +41,7 @@ extern ConVar _fullscreen_;
 extern ConVar _windowed_;
 extern ConVar _fullscreen_windowed_borderless_;
 
-SDLMain::SDLMain(int, char *[]) : SDLEnvironment()
+SDLMain::SDLMain(int, char *[]) : Environment()
 {
 	m_context = nullptr;
 	m_deltaTimer = nullptr;
@@ -61,7 +61,7 @@ SDLMain::~SDLMain()
 	if (m_context && (Env::cfg((REND::GL | REND::GLES2 | REND::GLES32), !REND::DX11)))
 		SDL_GL_DestroyContext(m_context);
 
-	// engine is deleted by parent (SDLEnvironment) destructor
+	// engine is deleted by parent (Environment) destructor
 }
 
 SDL_AppResult SDLMain::initialize(int argc, char *argv[])

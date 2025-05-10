@@ -127,7 +127,7 @@ template <typename T>
 #include "EngineFeatures.h"
 
 #include "FastDelegate.h"
-
+#include "UString.h"
 #include "Graphics.h"
 #include "Environment.h"
 #include "KeyboardEvent.h"
@@ -135,7 +135,6 @@ template <typename T>
 #include "Vectors.h"
 #include "Matrices.h"
 #include "Rect.h"
-#include "UString.h"
 
 
 // DEFS

@@ -35,8 +35,16 @@ OsuChangelog::OsuChangelog(Osu *osu) : OsuScreenBackable(osu)
 
 	std::vector<CHANGELOG> changelogs;
 
+	CHANGELOG alpha3400;
+	alpha3400.title = UString::format(PACKAGE_VERSION " (Build Date: %s, %s)", __DATE__, __TIME__); // (10.05.2025 - ?)
+	alpha3400.changes.emplace_back("- First " PACKAGE_NAME " test version bump");
+	alpha3400.changes.emplace_back("- Added osu! folder browse button to options menu");
+	alpha3400.changes.emplace_back("- Many internal optimizations");
+	alpha3400.changes.emplace_back("- For more information see " PACKAGE_URL);
+	changelogs.push_back(alpha3400);
+
 	CHANGELOG alpha317;
-	alpha317.title = UString::format(PACKAGE_VERSION " (Build Date: %s, %s)", __DATE__, __TIME__); // (09.01.2022 - ?)
+	alpha317.title = "33 - 33.11 (09.01.2022 - 10.05.2025)";
 	alpha317.changes.emplace_back("- For more info on the star/pp changes in this update see https://osu.ppy.sh/home/news/2025-03-06-performance-points-star-rating-updates");
 	alpha317.changes.emplace_back("- Updated star + pp algorithms to match current lazer implementation aka 20250306 (19) (thanks to @Khangaroo!)");
 	alpha317.changes.emplace_back("- Added \"Sort by Unstable Rate (Mc)\" to score sorting options");

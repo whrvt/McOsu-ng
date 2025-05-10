@@ -139,6 +139,8 @@ private:
 	void onAudioCompatibilityModeChange(CBaseUICheckbox *checkbox);
 	void onDownloadOsuClicked();
 	void onManuallyManageBeatmapsClicked();
+	void onBrowseOsuFolderClicked();
+	void onBrowseOsuFolderChanged(UString oldval, UString newval);
 	void onCM360CalculatorLinkClicked();
 	void onNotelockSelect();
 	void onNotelockSelect2(UString notelockType, int id = -1);
