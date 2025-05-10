@@ -88,8 +88,8 @@ bool SDLSoundEngine::play(Sound *snd, float pan, float pitch)
 	if (!sdlSound)
 		return false;
 
-	pan = clamp<float>(pan, -1.0f, 1.0f);
-	pitch = clamp<float>(pitch, 0.0f, 2.0f);
+	pan = std::clamp<float>(pan, -1.0f, 1.0f);
+	pitch = std::clamp<float>(pitch, 0.0f, 2.0f);
 
 	const bool allowPlayFrame = !snd->isOverlayable() || !snd_restrict_play_frame.getBool() || engine->getTime() > snd->getLastPlayTime();
 
@@ -190,7 +190,7 @@ void SDLSoundEngine::setVolume(float volume)
 	if (!m_bReady)
 		return;
 
-	m_fVolume = clamp<float>(volume, 0.0f, 1.0f);
+	m_fVolume = std::clamp<float>(volume, 0.0f, 1.0f);
 
 	Mix_VolumeMusic((int)(m_fVolume * m_fVolumeMixMusic * MIX_MAX_VOLUME));
 	Mix_Volume(-1, (int)(m_fVolume * MIX_MAX_VOLUME));

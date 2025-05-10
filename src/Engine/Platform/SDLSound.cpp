@@ -104,7 +104,7 @@ void SDLSound::setPosition(double percent)
 	if (!m_bReady)
 		return;
 
-	percent = clamp<double>(percent, 0.0, 1.0);
+	percent = std::clamp<double>(percent, 0.0, 1.0);
 
 	if (m_bStream)
 	{
@@ -131,7 +131,7 @@ void SDLSound::setPosition(double percent)
 			int loopCounter = 0;
 			while (std::abs(deltaMS) > 1.1 * 1000.0)
 			{
-				positionMS -= signbit(deltaMS) * 1000.0;
+				positionMS -= std::signbit(deltaMS) * 1000.0;
 
 				if (!Mix_SetMusicPosition(positionMS / 1000.0) && (positionMS / 1000.0) > 0.1)
 					debugLog("Mix_SetMusicPosition(%.2f) failed! SDL Error: %s\n", positionMS / 1000.0, SDL_GetError());
@@ -180,7 +180,7 @@ void SDLSound::setPositionMS(unsigned long ms, bool internal)
 		int loopCounter = 0;
 		while (std::abs(deltaMS) > 1.1 * 1000.0)
 		{
-			positionMS -= signbit(deltaMS) * 1000.0;
+			positionMS -= std::signbit(deltaMS) * 1000.0;
 
 			if (!Mix_SetMusicPosition(positionMS / 1000.0) && (positionMS / 1000.0) > 0.1)
 				debugLog("Mix_SetMusicPosition(%.2f) failed! SDL Error: %s\n", positionMS / 1000.0, SDL_GetError());
@@ -204,7 +204,7 @@ void SDLSound::setVolume(float volume)
 	if (!m_bReady)
 		return;
 
-	m_fVolume = clamp<float>(volume, 0.0f, 1.0f);
+	m_fVolume = std::clamp<float>(volume, 0.0f, 1.0f);
 
 	if (m_bStream)
 	{
@@ -226,7 +226,7 @@ void SDLSound::setSpeed(float speed)
 	if (!m_bReady)
 		return;
 
-	speed = clamp<float>(speed, 0.05f, 50.0f);
+	speed = std::clamp<float>(speed, 0.05f, 50.0f);
 
 	// Update our rate for position interpolation
 	if (m_bStream && isPlaying())
@@ -254,12 +254,12 @@ void SDLSound::setPan(float pan)
 	if (!m_bReady)
 		return;
 
-	pan = clamp<float>(pan, -1.0f, 1.0f);
+	pan = std::clamp<float>(pan, -1.0f, 1.0f);
 
 	if (!m_bStream)
 	{
 		const float rangeHalfLimit = 96.0f; // NOTE: trying to match BASS behavior
-		const int left = (int)lerp(rangeHalfLimit / 2.0f, 254.0f - rangeHalfLimit / 2.0f, 1.0f - ((pan + 1.0f) / 2.0f));
+		const int left = (int)std::lerp(rangeHalfLimit / 2.0f, 254.0f - rangeHalfLimit / 2.0f, 1.0f - ((pan + 1.0f) / 2.0f));
 		Mix_SetPanning(getHandle(), left, 254 - left);
 	}
 }

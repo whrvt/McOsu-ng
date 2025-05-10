@@ -86,7 +86,7 @@ CBaseUIContainer *CBaseUIContainer::insertBaseUIElement(CBaseUIElement *element,
 	{
 		if (m_vElements[i] == index)
 		{
-			m_vElements.insert(m_vElements.begin() + clamp<int>(i, 0, m_vElements.size()), element);
+			m_vElements.insert(m_vElements.begin() + std::clamp<int>(i, 0, m_vElements.size()), element);
 			return this;
 		}
 	}
@@ -106,7 +106,7 @@ CBaseUIContainer *CBaseUIContainer::insertBaseUIElementBack(CBaseUIElement *elem
 	{
 		if (m_vElements[i] == index)
 		{
-			m_vElements.insert(m_vElements.begin() + clamp<int>(i+1, 0, m_vElements.size()), element);
+			m_vElements.insert(m_vElements.begin() + std::clamp<int>(i+1, 0, m_vElements.size()), element);
 			return this;
 		}
 	}

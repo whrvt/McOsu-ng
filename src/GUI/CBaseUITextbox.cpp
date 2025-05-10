@@ -208,7 +208,7 @@ void CBaseUITextbox::update()
 					const int scrollspeed = mouseX < 0 ? std::abs(mouseX)/2 + 1 : 3;
 
 					// TODO: animations which don't suck for usability
-					m_fTextScrollAddX = clamp<int>(m_fTextScrollAddX + scrollspeed, 0, m_fTextWidth - m_vSize.x + ui_textbox_text_offset_x.getInt()*2);
+					m_fTextScrollAddX = std::clamp<int>(m_fTextScrollAddX + scrollspeed, 0, m_fTextWidth - m_vSize.x + ui_textbox_text_offset_x.getInt()*2);
 					///animation->moveSmoothEnd(&m_fTextScrollAddX, clampi(m_fTextScrollAddX+scrollspeed, 0, m_fTextWidth-m_vSize.x+ui_textbox_text_offset_x.getInt()*2), 1);
 				}
 
@@ -217,7 +217,7 @@ void CBaseUITextbox::update()
 					const int scrollspeed = mouseX > m_vSize.x ? std::abs(mouseX - m_vSize.x)/2 + 1 : 1;
 
 					// TODO: animations which don't suck for usability
-					m_fTextScrollAddX = clamp<int>(m_fTextScrollAddX - scrollspeed, 0, m_fTextWidth - m_vSize.x + ui_textbox_text_offset_x.getInt()*2);
+					m_fTextScrollAddX = std::clamp<int>(m_fTextScrollAddX - scrollspeed, 0, m_fTextWidth - m_vSize.x + ui_textbox_text_offset_x.getInt()*2);
 					///animation->moveSmoothEnd(&m_fTextScrollAddX, clampi(m_fTextScrollAddX-scrollspeed, 0, m_fTextWidth-m_vSize.x+ui_textbox_text_offset_x.getInt()*2), 1);
 				}
 			}
@@ -392,9 +392,9 @@ void CBaseUITextbox::onKeyDown(KeyboardEvent &e)
 			deselectText();
 
 			if (!hadSelectedText)
-				m_iCaretPosition = clamp<int>(m_iCaretPosition - 1, 0, m_sText.length());
+				m_iCaretPosition = std::clamp<int>(m_iCaretPosition - 1, 0, m_sText.length());
 			else
-				m_iCaretPosition = clamp<int>(prevSelectPos, 0, m_sText.length());
+				m_iCaretPosition = std::clamp<int>(prevSelectPos, 0, m_sText.length());
 
 			tickCaret();
 			handleCaretKeyboardMove();
@@ -410,9 +410,9 @@ void CBaseUITextbox::onKeyDown(KeyboardEvent &e)
 			deselectText();
 
 			if (!hadSelectedText)
-				m_iCaretPosition = clamp<int>(m_iCaretPosition + 1, 0, m_sText.length());
+				m_iCaretPosition = std::clamp<int>(m_iCaretPosition + 1, 0, m_sText.length());
 			else
-				m_iCaretPosition = clamp<int>(prevSelectPos, 0, m_sText.length());
+				m_iCaretPosition = std::clamp<int>(prevSelectPos, 0, m_sText.length());
 
 			tickCaret();
 			handleCaretKeyboardMove();
@@ -554,7 +554,7 @@ CBaseUITextbox *CBaseUITextbox::setFont(McFont *font)
 CBaseUITextbox *CBaseUITextbox::setText(UString text)
 {
 	m_sText = text;
-	m_iCaretPosition = clamp<int>(m_iCaretPosition, 0, text.length());
+	m_iCaretPosition = std::clamp<int>(m_iCaretPosition, 0, text.length());
 
 	// handle text justification
 	m_fTextWidth = m_font->getStringWidth(m_sText);

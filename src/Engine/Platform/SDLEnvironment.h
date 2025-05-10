@@ -80,8 +80,8 @@ public:
 	void maximize() override;
 	void enableFullscreen() override;
 	void disableFullscreen() override;
-	inline void foregrounded() override { SDL_SetHint(SDL_HINT_MAIN_CALLBACK_RATE, fps_max_str.toUtf8()); }
-	inline void backgrounded() override { SDL_SetHint(SDL_HINT_MAIN_CALLBACK_RATE, fps_max_bg_str.toUtf8()); }
+	inline void foregrounded() override { SDL_SetHint(SDL_HINT_MAIN_CALLBACK_RATE, m_sFpsMax.toUtf8()); }
+	inline void backgrounded() override { SDL_SetHint(SDL_HINT_MAIN_CALLBACK_RATE, m_sFpsMaxBG.toUtf8()); }
 	void setWindowTitle(UString title) override;
 	void setWindowPos(int x, int y) override;
 	void setWindowSize(int width, int height) override;
@@ -146,8 +146,8 @@ protected:
 	Vector2 m_vLastRelMousePos;
 
 	// SDL hint cache for main loop iteration rate
-	UString fps_max_str;
-	UString fps_max_bg_str;
+	UString m_sFpsMax;
+	UString m_sFpsMaxBG;
 
 private:
 	// logging

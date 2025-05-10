@@ -790,7 +790,7 @@ void OsuCircle::drawVR(Graphics *g, Matrix4 &mvp, OsuVR *vr)
 	///if (m_bVisible)
 	{
 		float clampedApproachScalePercent = m_fApproachScale - 1.0f; // goes from <m_osu_approach_scale_multiplier_ref> to 0
-		clampedApproachScalePercent = clamp<float>(clampedApproachScalePercent / m_osu_approach_scale_multiplier_ref->getFloat(), 0.0f, 1.0f); // goes from 1 to 0
+		clampedApproachScalePercent = std::clamp<float>(clampedApproachScalePercent / m_osu_approach_scale_multiplier_ref->getFloat(), 0.0f, 1.0f); // goes from 1 to 0
 
 		Matrix4 translation;
 		translation.translate(0, 0, -clampedApproachScalePercent*vr->getApproachDistance());
@@ -815,7 +815,7 @@ void OsuCircle::drawVR2(Graphics *g, Matrix4 &mvp, OsuVR *vr)
 	///if (m_bVisible)
 	{
 		float clampedApproachScalePercent = m_fApproachScale - 1.0f; // goes from <m_osu_approach_scale_multiplier_ref> to 0
-		clampedApproachScalePercent = clamp<float>(clampedApproachScalePercent / m_osu_approach_scale_multiplier_ref->getFloat(), 0.0f, 1.0f); // goes from 1 to 0
+		clampedApproachScalePercent = std::clamp<float>(clampedApproachScalePercent / m_osu_approach_scale_multiplier_ref->getFloat(), 0.0f, 1.0f); // goes from 1 to 0
 
 		if (m_osu_vr_approach_circles_on_playfield->getBool())
 			clampedApproachScalePercent = 0.0f;

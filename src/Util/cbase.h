@@ -44,7 +44,7 @@
     ((Color)((((a)&0xff)<<24)|(((r)&0xff)<<16)|(((g)&0xff)<<8)|((b)&0xff)))
 
 #define COLORf(a,r,g,b) \
-    ((Color)(((((int)( clamp<float>(a,0.0f,1.0f)*255.0f ))&0xff)<<24)|((((int)( clamp<float>(r,0.0f,1.0f)*255.0f ))&0xff)<<16)|((((int)( clamp<float>(g,0.0f,1.0f)*255.0f ))&0xff)<<8)|(((int)( clamp<float>(b,0.0f,1.0f)*255.0f ))&0xff)))
+    ((Color)(((((int)( std::clamp<float>(a,0.0f,1.0f)*255.0f ))&0xff)<<24)|((((int)( std::clamp<float>(r,0.0f,1.0f)*255.0f ))&0xff)<<16)|((((int)( std::clamp<float>(g,0.0f,1.0f)*255.0f ))&0xff)<<8)|(((int)( std::clamp<float>(b,0.0f,1.0f)*255.0f ))&0xff)))
 
 #define COLOR_GET_Ri(color) \
 	(((COLORPART)((color) >> 16)))
@@ -77,21 +77,16 @@
 	(COLORf(1.0f, COLOR_GET_Rf(color1)*COLOR_GET_Rf(color2), COLOR_GET_Gf(color1)*COLOR_GET_Gf(color2), COLOR_GET_Bf(color1)*COLOR_GET_Bf(color2)))
 
 #define COLOR_ADD(color1, color2) \
-	(COLORf(1.0f, clamp<float>(COLOR_GET_Rf(color1)+COLOR_GET_Rf(color2),0.0f,1.0f), clamp<float>(COLOR_GET_Gf(color1)+COLOR_GET_Gf(color2),0.0f,1.0f), clamp<float>(COLOR_GET_Bf(color1)+COLOR_GET_Bf(color2),0.0f,1.0f)))
+	(COLORf(1.0f, std::clamp<float>(COLOR_GET_Rf(color1)+COLOR_GET_Rf(color2),0.0f,1.0f), std::clamp<float>(COLOR_GET_Gf(color1)+COLOR_GET_Gf(color2),0.0f,1.0f), std::clamp<float>(COLOR_GET_Bf(color1)+COLOR_GET_Bf(color2),0.0f,1.0f)))
 
 #define COLOR_SUBTRACT(color1, color2) \
-	(COLORf(1.0f, clamp<float>(COLOR_GET_Rf(color1)-COLOR_GET_Rf(color2),0.0f,1.0f), clamp<float>(COLOR_GET_Gf(color1)-COLOR_GET_Gf(color2),0.0f,1.0f), clamp<float>(COLOR_GET_Bf(color1)-COLOR_GET_Bf(color2),0.0f,1.0f)))
+	(COLORf(1.0f, std::clamp<float>(COLOR_GET_Rf(color1)-COLOR_GET_Rf(color2),0.0f,1.0f), std::clamp<float>(COLOR_GET_Gf(color1)-COLOR_GET_Gf(color2),0.0f,1.0f), std::clamp<float>(COLOR_GET_Bf(color1)-COLOR_GET_Bf(color2),0.0f,1.0f)))
 
 constexpr const auto PI = std::numbers::pi;
 constexpr const auto PIOVER180 = (PI/180.0f);
 constexpr const auto ONE80OVERPI = (180.0f/PI);
 
 // UTIL
-
-using std::clamp;
-using std::lerp;
-using std::isfinite;
-using std::signbit;
 
 template <class T>
 constexpr forceinline float deg2rad(T deg)

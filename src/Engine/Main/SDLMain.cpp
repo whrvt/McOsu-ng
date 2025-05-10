@@ -126,6 +126,7 @@ SDL_AppResult SDLMain::initialize(int argc, char *argv[])
 	SDL_StartTextInput(m_window);
 	SDL_SetWindowKeyboardGrab(m_window, false); // this allows windows key and such to work
 
+	// return init success
 	return SDL_APP_CONTINUE;
 }
 
@@ -284,7 +285,7 @@ bool SDLMain::createWindow(int width, int height)
 		if constexpr (!Env::cfg(REND::GL))
 		{
 			SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, Env::cfg(REND::GLES2) ? 2 : 3);
-			SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, Env::cfg(REND::GLES2) ? 0 : 2);
+			SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
 		}
 		SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 	}
@@ -456,7 +457,7 @@ void SDLMain::fps_max_callback(UString, UString newVal)
 {
 	int newFps = newVal.toInt();
 	if ((newFps == 0 || newFps > 30) && !fps_unlimited.getBool())
-		fps_max_str = newVal;
+		m_sFpsMax = newVal;
 	if (m_bHasFocus)
 		foregrounded();
 }
@@ -465,7 +466,7 @@ void SDLMain::fps_max_background_callback(UString, UString newVal)
 {
 	int newFps = newVal.toInt();
 	if (newFps >= 0)
-		fps_max_bg_str = newVal;
+		m_sFpsMaxBG = newVal;
 	if (!m_bHasFocus)
 		backgrounded();
 }
@@ -473,9 +474,9 @@ void SDLMain::fps_max_background_callback(UString, UString newVal)
 void SDLMain::fps_unlimited_callback(UString, UString newVal)
 {
 	if (newVal.toBool())
-		fps_max_str = "0";
+		m_sFpsMax = "0";
 	else
-		fps_max_str = fps_max.getString();
+		m_sFpsMax = fps_max.getString();
 	if (m_bHasFocus)
 		foregrounded();
 }

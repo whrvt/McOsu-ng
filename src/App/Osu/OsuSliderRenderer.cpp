@@ -132,8 +132,8 @@ void OsuSliderRenderer::draw(Graphics *g, Osu *osu, const std::vector<Vector2> &
 
 	checkUpdateVars(osu, hitcircleDiameter);
 
-	const int drawFromIndex = clamp<int>((int)std::round(points.size() * from), 0, points.size());
-	const int drawUpToIndex = clamp<int>((int)std::round(points.size() * to), 0, points.size());
+	const int drawFromIndex = std::clamp<int>((int)std::round(points.size() * from), 0, points.size());
+	const int drawUpToIndex = std::clamp<int>((int)std::round(points.size() * to), 0, points.size());
 
 	// debug sliders
 	if (osu_slider_debug_draw.getBool())
@@ -445,8 +445,8 @@ void OsuSliderRenderer::drawVR(Graphics *g, Osu *osu, OsuVR *vr, Matrix4 &mvp, f
 
 	checkUpdateVars(osu, hitcircleDiameter);
 
-	const int drawFromIndex = clamp<int>((int)std::round(points.size() * from), 0, points.size());
-	const int drawUpToIndex = clamp<int>((int)std::round(points.size() * to), 0, points.size());
+	const int drawFromIndex = std::clamp<int>((int)std::round(points.size() * from), 0, points.size());
+	const int drawUpToIndex = std::clamp<int>((int)std::round(points.size() * to), 0, points.size());
 
 	// draw entire slider into framebuffer
 	g->setDepthBuffer(true);

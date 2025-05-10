@@ -166,7 +166,7 @@ void OsuModFPoSu::draw(Graphics *g)
 {
 	if (!osu_mod_fposu.getBool()) return;
 
-	const float fov = lerp(fposu_fov.getFloat(), fposu_zoom_fov.getFloat(), m_fZoomFOVAnimPercent);
+	const float fov = std::lerp(fposu_fov.getFloat(), fposu_zoom_fov.getFloat(), m_fZoomFOVAnimPercent);
 	Matrix4 projectionMatrix = fposu_vertical_fov.getBool() ? Camera::buildMatrixPerspectiveFovVertical(deg2rad(fov), ((float)m_osu->getScreenWidth()/(float)m_osu->getScreenHeight()), 0.05f, 1000.0f)
 															: Camera::buildMatrixPerspectiveFovHorizontal(deg2rad(fov), ((float)m_osu->getScreenHeight() / (float)m_osu->getScreenWidth()), 0.05f, 1000.0f);
 	Matrix4 viewMatrix = Camera::buildMatrixLookAt(m_camera->getPos(), m_camera->getPos() + m_camera->getViewDirection(), m_camera->getViewUp());
@@ -250,7 +250,7 @@ void OsuModFPoSu::draw(Graphics *g)
 							{
 								m_osu->getSkin()->getBackgroundCube()->bind();
 								{
-									g->setColor(COLOR(255, clamp<int>(fposu_cube_tint_r.getInt(), 0, 255), clamp<int>(fposu_cube_tint_g.getInt(), 0, 255), clamp<int>(fposu_cube_tint_b.getInt(), 0, 255)));
+									g->setColor(COLOR(255, std::clamp<int>(fposu_cube_tint_r.getInt(), 0, 255), std::clamp<int>(fposu_cube_tint_g.getInt(), 0, 255), std::clamp<int>(fposu_cube_tint_b.getInt(), 0, 255)));
 									g->drawVAO(m_vaoCube);
 								}
 								m_osu->getSkin()->getBackgroundCube()->unbind();
@@ -432,7 +432,7 @@ void OsuModFPoSu::draw(Graphics *g)
 								{
 									m_osu->getSkin()->getBackgroundCube()->bind();
 									{
-										g->setColor(COLOR(255, clamp<int>(fposu_cube_tint_r.getInt(), 0, 255), clamp<int>(fposu_cube_tint_g.getInt(), 0, 255), clamp<int>(fposu_cube_tint_b.getInt(), 0, 255)));
+										g->setColor(COLOR(255, std::clamp<int>(fposu_cube_tint_r.getInt(), 0, 255), std::clamp<int>(fposu_cube_tint_g.getInt(), 0, 255), std::clamp<int>(fposu_cube_tint_b.getInt(), 0, 255)));
 										g->drawVAO(m_vaoCube);
 									}
 									m_osu->getSkin()->getBackgroundCube()->unbind();
@@ -870,8 +870,8 @@ Vector2 OsuModFPoSu::intersectRayMesh(Vector3 pos, Vector3 dir)
 Vector3 OsuModFPoSu::calculateUnProjectedVector(Vector2 pos)
 {
 	// calculate 3d position of 2d cursor on screen mesh
-	const float cursorXPercent = clamp<float>(pos.x / (float)m_osu->getScreenWidth(), 0.0f, 1.0f);
-	const float cursorYPercent = clamp<float>(pos.y / (float)m_osu->getScreenHeight(), 0.0f, 1.0f);
+	const float cursorXPercent = std::clamp<float>(pos.x / (float)m_osu->getScreenWidth(), 0.0f, 1.0f);
+	const float cursorYPercent = std::clamp<float>(pos.y / (float)m_osu->getScreenHeight(), 0.0f, 1.0f);
 
 	std::list<VertexPair>::iterator begin = m_meshList.begin();
 	std::list<VertexPair>::iterator next = ++m_meshList.begin();
@@ -1096,9 +1096,9 @@ float OsuModFPoSu::subdivide(std::list<VertexPair> &meshList, const std::list<Ve
 {
 	const Vector3 a = Vector3((*begin).a.x, 0.0f, (*begin).a.z);
 	const Vector3 b = Vector3((*end).a.x, 0.0f, (*end).a.z);
-	Vector3 middlePoint = Vector3(lerp(a.x, b.x, 0.5f),
-								  lerp(a.y, b.y, 0.5f),
-								  lerp(a.z, b.z, 0.5f));
+	Vector3 middlePoint = Vector3(std::lerp(a.x, b.x, 0.5f),
+								  std::lerp(a.y, b.y, 0.5f),
+								  std::lerp(a.z, b.z, 0.5f));
 
 	if (fposu_curved.getBool())
 		middlePoint.setLength(edgeDistance);
@@ -1109,7 +1109,7 @@ float OsuModFPoSu::subdivide(std::list<VertexPair> &meshList, const std::list<Ve
 	top.y = (*begin).a.y;
 	bottom.y = (*begin).b.y;
 
-	const float tc = lerp((*begin).textureCoordinate, (*end).textureCoordinate, 0.5f);
+	const float tc = std::lerp((*begin).textureCoordinate, (*end).textureCoordinate, 0.5f);
 
 	VertexPair newVP = VertexPair(top, bottom, tc);
 	const std::list<VertexPair>::iterator newPos = meshList.insert(end, newVP);

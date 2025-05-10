@@ -522,7 +522,7 @@ void OsuMainMenu::draw(Graphics *g)
 					m_fBackgroundFadeInTime = engine->getTime();
 				else if (m_fBackgroundFadeInTime > 0.0f && engine->getTime() > m_fBackgroundFadeInTime)
 				{
-					alpha = clamp<float>((engine->getTime() - m_fBackgroundFadeInTime)/m_osu_songbrowser_background_fade_in_duration_ref->getFloat(), 0.0f, 1.0f);
+					alpha = std::clamp<float>((engine->getTime() - m_fBackgroundFadeInTime)/m_osu_songbrowser_background_fade_in_duration_ref->getFloat(), 0.0f, 1.0f);
 					alpha = 1.0f - (1.0f - alpha)*(1.0f - alpha);
 				}
 			}
@@ -553,7 +553,7 @@ void OsuMainMenu::draw(Graphics *g)
 
 		m_iMainMenuAnimBeatCounter = (curMusicPos - t.offset - (long)(std::max((long)t.beatLengthBase, (long)1)*0.5f)) / std::max((long)t.beatLengthBase, (long)1);
 		pulse = (float)((curMusicPos - t.offset) % std::max((long)t.beatLengthBase, (long)1)) / t.beatLengthBase; // modulo must be >= 1
-		pulse = clamp<float>(pulse, -1.0f, 1.0f);
+		pulse = std::clamp<float>(pulse, -1.0f, 1.0f);
 		if (pulse < 0.0f)
 			pulse = 1.0f - std::abs(pulse);
 	}
@@ -734,7 +734,7 @@ void OsuMainMenu::draw(Graphics *g)
 
 			customPulse = 1.0f - customPulse;
 
-			const float anim = lerp((1.0f - customPulse)*(1.0f - customPulse), (1.0f - customPulse), 0.25f);
+			const float anim = std::lerp((1.0f - customPulse)*(1.0f - customPulse), (1.0f - customPulse), 0.25f);
 			const float anim2 = anim * (m_iMainMenuAnimBeatCounter % 2 == 1 ? 1.0f : -1.0f);
 			const float anim3 = anim;
 
@@ -758,8 +758,8 @@ void OsuMainMenu::draw(Graphics *g)
 		*/
 	}
 
-	const Color cubeColor = COLORf(1.0f, lerp(0.0f, 0.5f, m_fMainMenuAnimFriendPercent), lerp(0.0f, 0.768f, m_fMainMenuAnimFriendPercent), lerp(0.0f, 0.965f, m_fMainMenuAnimFriendPercent));
-	const Color cubeBorderColor = COLORf(1.0f, lerp(1.0f, 0.5f, m_fMainMenuAnimFriendPercent), lerp(1.0f, 0.768f, m_fMainMenuAnimFriendPercent), lerp(1.0f, 0.965f, m_fMainMenuAnimFriendPercent));
+	const Color cubeColor = COLORf(1.0f, std::lerp(0.0f, 0.5f, m_fMainMenuAnimFriendPercent), std::lerp(0.0f, 0.768f, m_fMainMenuAnimFriendPercent), std::lerp(0.0f, 0.965f, m_fMainMenuAnimFriendPercent));
+	const Color cubeBorderColor = COLORf(1.0f, std::lerp(1.0f, 0.5f, m_fMainMenuAnimFriendPercent), std::lerp(1.0f, 0.768f, m_fMainMenuAnimFriendPercent), std::lerp(1.0f, 0.965f, m_fMainMenuAnimFriendPercent));
 
 	if (osu_draw_main_menu_button.getBool())
 	{
@@ -980,7 +980,7 @@ void OsuMainMenu::draw(Graphics *g)
 			const float animLeftMultiplier = (m_iMainMenuAnimBeatCounter % 2 == 0 ? 1.0f : 0.1f);
 			const float animRightMultiplier = (m_iMainMenuAnimBeatCounter % 2 == 1 ? 1.0f : 0.1f);
 
-			const float animMoveUp = lerp((1.0f - customPulse)*(1.0f - customPulse), (1.0f - customPulse), 0.35f) * m_fMainMenuAnimFriendPercent;
+			const float animMoveUp = std::lerp((1.0f - customPulse)*(1.0f - customPulse), (1.0f - customPulse), 0.35f) * m_fMainMenuAnimFriendPercent;
 
 			const float animLeftMoveUp = animMoveUp * animLeftMultiplier;
 			const float animRightMoveUp = animMoveUp * animRightMultiplier;
@@ -1181,7 +1181,7 @@ void OsuMainMenu::draw(Graphics *g)
 	if (m_fShutdownScheduledTime != 0.0f)
 	{
 		g->setColor(0xff000000);
-		g->setAlpha(1.0f - clamp<float>((m_fShutdownScheduledTime - engine->getTime()) / 0.3f, 0.0f, 1.0f));
+		g->setAlpha(1.0f - std::clamp<float>((m_fShutdownScheduledTime - engine->getTime()) / 0.3f, 0.0f, 1.0f));
 		g->fillRect(0, 0, m_osu->getScreenWidth(), m_osu->getScreenHeight());
 	}
 	*/
@@ -1259,12 +1259,12 @@ void OsuMainMenu::update()
 	if (m_bInMainMenuRandomAnim && m_iMainMenuRandomAnimType == 1 && anim->isAnimating(&m_fMainMenuAnim))
 	{
 		Vector2 mouseDelta = (m_mainButton->getPos() + m_mainButton->getSize()/2) - engine->getMouse()->getPos();
-		mouseDelta.x = clamp<float>(mouseDelta.x, -engine->getScreenSize().x/2, engine->getScreenSize().x/2);
-		mouseDelta.y = clamp<float>(mouseDelta.y, -engine->getScreenSize().y/2, engine->getScreenSize().y/2);
+		mouseDelta.x = std::clamp<float>(mouseDelta.x, -engine->getScreenSize().x/2, engine->getScreenSize().x/2);
+		mouseDelta.y = std::clamp<float>(mouseDelta.y, -engine->getScreenSize().y/2, engine->getScreenSize().y/2);
 		mouseDelta.x /= engine->getScreenSize().x;
 		mouseDelta.y /= engine->getScreenSize().y;
 
-		const float decay = clamp<float>((1.0f - m_fMainMenuAnim - 0.075f) / 0.025f, 0.0f, 1.0f);
+		const float decay = std::clamp<float>((1.0f - m_fMainMenuAnim - 0.075f) / 0.025f, 0.0f, 1.0f);
 
 		const Vector2 pushAngle = Vector2(mouseDelta.y, -mouseDelta.x) * Vector2(0.15f, 0.15f) * decay;
 
@@ -1276,16 +1276,16 @@ void OsuMainMenu::update()
 	}
 
 	{
-		m_fMainMenuAnimFriendPercent = 1.0f - clamp<float>((m_fMainMenuAnimDuration > 0.0f ? (m_fMainMenuAnimTime - engine->getTime()) / m_fMainMenuAnimDuration : 0.0f), 0.0f, 1.0f);
-		m_fMainMenuAnimFriendPercent = clamp<float>((m_fMainMenuAnimFriendPercent - 0.5f)/0.5f, 0.0f, 1.0f);
+		m_fMainMenuAnimFriendPercent = 1.0f - std::clamp<float>((m_fMainMenuAnimDuration > 0.0f ? (m_fMainMenuAnimTime - engine->getTime()) / m_fMainMenuAnimDuration : 0.0f), 0.0f, 1.0f);
+		m_fMainMenuAnimFriendPercent = std::clamp<float>((m_fMainMenuAnimFriendPercent - 0.5f)/0.5f, 0.0f, 1.0f);
 		if (m_bMainMenuAnimFriend)
 			m_fMainMenuAnimFriendPercent = 1.0f;
 		if (!m_bMainMenuAnimFriendScheduled)
 			m_fMainMenuAnimFriendPercent = 0.0f;
 
 		Vector2 mouseDelta = (m_mainButton->getPos() + m_mainButton->getSize()/2) - engine->getMouse()->getPos();
-		mouseDelta.x = clamp<float>(mouseDelta.x, -engine->getScreenSize().x/2, engine->getScreenSize().x/2);
-		mouseDelta.y = clamp<float>(mouseDelta.y, -engine->getScreenSize().y/2, engine->getScreenSize().y/2);
+		mouseDelta.x = std::clamp<float>(mouseDelta.x, -engine->getScreenSize().x/2, engine->getScreenSize().x/2);
+		mouseDelta.y = std::clamp<float>(mouseDelta.y, -engine->getScreenSize().y/2, engine->getScreenSize().y/2);
 		mouseDelta.x /= engine->getScreenSize().x;
 		mouseDelta.y /= engine->getScreenSize().y;
 
@@ -1644,8 +1644,8 @@ void OsuMainMenu::onMainMenuButtonPressed()
 		m_bInMainMenuRandomAnim = false;
 
 		Vector2 mouseDelta = (m_mainButton->getPos() + m_mainButton->getSize()/2) - engine->getMouse()->getPos();
-		mouseDelta.x = clamp<float>(mouseDelta.x, -m_mainButton->getSize().x/2, m_mainButton->getSize().x/2);
-		mouseDelta.y = clamp<float>(mouseDelta.y, -m_mainButton->getSize().y/2, m_mainButton->getSize().y/2);
+		mouseDelta.x = std::clamp<float>(mouseDelta.x, -m_mainButton->getSize().x/2, m_mainButton->getSize().x/2);
+		mouseDelta.y = std::clamp<float>(mouseDelta.y, -m_mainButton->getSize().y/2, m_mainButton->getSize().y/2);
 		mouseDelta.x /= m_mainButton->getSize().x;
 		mouseDelta.y /= m_mainButton->getSize().y;
 

@@ -187,7 +187,7 @@ Vector2 OsuDifficultyHitObject::getOriginalRawPosAt(long pos) const
 
 		// old (broken)
 		/*
-        float progress = (float)(clamp<long>(pos, time, endTime)) / spanDuration;
+        float progress = (float)(std::clamp<long>(pos, time, endTime)) / spanDuration;
         if (std::fmod(progress, 2.0f) >= 1.0f)
             progress = 1.0f - std::fmod(progress, 1.0f);
         else
@@ -268,7 +268,7 @@ double OsuDifficultyCalculator::calculateStarDiffForHitObjectsInt(std::vector<Di
 		m_osu_slider_end_inside_check_offset_ref = convar->getConVarByName("osu_slider_end_inside_check_offset");
 
 	// global independent variables/constants
-	float circleRadiusInOsuPixels = 64.0f * OsuGameRules::getRawHitCircleScale(clamp<float>(CS, 0.0f, 12.142f)); // NOTE: clamped CS because McOsu allows CS > ~12.1429 (at which point the diameter becomes negative)
+	float circleRadiusInOsuPixels = 64.0f * OsuGameRules::getRawHitCircleScale(std::clamp<float>(CS, 0.0f, 12.142f)); // NOTE: clamped CS because McOsu allows CS > ~12.1429 (at which point the diameter becomes negative)
 	const float hitWindow300 = 2.0f * OsuGameRules::getRawHitWindow300(OD) / speedMultiplier;
 
 	// ****************************************************************************************************************************************** //
@@ -345,7 +345,7 @@ double OsuDifficultyCalculator::calculateStarDiffForHitObjectsInt(std::vector<Di
 				}
 				else
 				{
-					double progress = (clamp<float>(slider.ho->scoringTimes[i].time - (float)slider.ho->time, 0.0f, slider.ho->getDuration())) / slider.ho->spanDuration;
+					double progress = (std::clamp<float>(slider.ho->scoringTimes[i].time - (float)slider.ho->time, 0.0f, slider.ho->getDuration())) / slider.ho->spanDuration;
 					if (std::fmod(progress, 2.0) >= 1.0)
 						progress = 1.0 - std::fmod(progress, 1.0);
 					else
@@ -629,7 +629,7 @@ double OsuDifficultyCalculator::calculatePPv2(int modsLegacy, double timescale, 
 		if ((double)combo < fullComboThreshold)
 			comboBasedMissCount = fullComboThreshold / std::max(1.0, (double)combo);
 	}
-	double effectiveMissCount = clamp<double>(comboBasedMissCount, (double)misses, (double)(c50 + c100 + misses));
+	double effectiveMissCount = std::clamp<double>(comboBasedMissCount, (double)misses, (double)(c50 + c100 + misses));
 
 	// custom multipliers for nofail and spunout
 	double multiplier = 1.15; // keep final pp normalized across changes
@@ -686,7 +686,7 @@ double OsuDifficultyCalculator::computeAimValue(const ScoreData &score, const Os
 	if (attributes.SliderCount > 0 && attributes.AimDifficultSliderCount > 0)
 	{
 		int maximumPossibleDroppedSliders = score.countGood + score.countMeh + score.countMiss;
-		double estimateImproperlyFollowedDifficultSliders = clamp<double>((double)std::min(maximumPossibleDroppedSliders, score.beatmapMaxCombo - score.scoreMaxCombo), 0.0, attributes.AimDifficultSliderCount);
+		double estimateImproperlyFollowedDifficultSliders = std::clamp<double>((double)std::min(maximumPossibleDroppedSliders, score.beatmapMaxCombo - score.scoreMaxCombo), 0.0, attributes.AimDifficultSliderCount);
 		double sliderNerfFactor = (1.0 - attributes.SliderFactor) * std::pow(1.0 - estimateImproperlyFollowedDifficultSliders / attributes.AimDifficultSliderCount, 3.0) + attributes.SliderFactor;
 		aimDifficulty *= sliderNerfFactor;
 	}
@@ -861,8 +861,8 @@ double OsuDifficultyCalculator::calculateSpeedHighDeviationNerf(const Attributes
 
 	const double scale = 50.0;
 	double adjustedSpeedValue = scale * (std::log((speedValue - excessSpeedDifficultyCutoff) / scale + 1.0) + excessSpeedDifficultyCutoff / scale);
-	double lerpVal = 1.0 - clamp<double>((speedDeviation - 22.0) / (27.0 - 22.0), 0.0, 1.0);
-	adjustedSpeedValue = lerp(adjustedSpeedValue, speedValue, lerpVal);
+	double lerpVal = 1.0 - std::clamp<double>((speedDeviation - 22.0) / (27.0 - 22.0), 0.0, 1.0);
+	adjustedSpeedValue = std::lerp(adjustedSpeedValue, speedValue, lerpVal);
 
 	return adjustedSpeedValue / speedValue;
 }
@@ -1417,8 +1417,8 @@ double OsuDifficultyCalculator::DiffObject::calculate_difficulty(const Skills::S
 		size_t actualReducedSectionCount = std::min(highestStrains.size(), skillSpecificReducedSectionCount);
 		for (size_t i=0; i<actualReducedSectionCount; i++)
 		{
-			const double scale = std::log10(lerp(1.0, 10.0, clamp<double>((double)i / (double)skillSpecificReducedSectionCount, 0.0, 1.0)));
-			highestStrains[highestStrains.size() - i - 1] *= lerp(reducedStrainBaseline, 1.0, scale);
+			const double scale = std::log10(std::lerp(1.0, 10.0, std::clamp<double>((double)i / (double)skillSpecificReducedSectionCount, 0.0, 1.0)));
+			highestStrains[highestStrains.size() - i - 1] *= std::lerp(reducedStrainBaseline, 1.0, scale);
 		}
 
 		// re-sort
@@ -1544,7 +1544,7 @@ double OsuDifficultyCalculator::DiffObject::spacing_weight2(const Skills::Skill 
 				const double distance = std::min(single_spacing_threshold, prev.travelDistance + minJumpDistance);
 
 				double strain_time = this->strain_time;
-				strain_time /= clamp<double>((strain_time / hitWindow300) / 0.93, 0.92, 1.0);
+				strain_time /= std::clamp<double>((strain_time / hitWindow300) / 0.93, 0.92, 1.0);
 
 				double doubletapness = 1.0 - get_doubletapness(next, hitWindow300);
 
@@ -1602,7 +1602,7 @@ double OsuDifficultyCalculator::DiffObject::spacing_weight2(const Skills::Skill 
 
 					// reduce ratio bonus if delta difference is too big
 					double fraction = std::max(prevDelta / currDelta, currDelta / prevDelta);
-					double fractionMultiplier = clamp<double>(2.0 - fraction / 8.0, 0.0, 1.0);
+					double fractionMultiplier = std::clamp<double>(2.0 - fraction / 8.0, 0.0, 1.0);
 
 					double windowPenalty = std::min(1.0, std::max(0.0, std::abs(prevDelta - currDelta) - deltaDifferenceEpsilon) / deltaDifferenceEpsilon);
 
@@ -1720,7 +1720,7 @@ double OsuDifficultyCalculator::DiffObject::spacing_weight2(const Skills::Skill 
 					return 0.0;
 
 				auto reverseLerp = [] (double x, double start, double end) {
-					return clamp<double>((x - start) / (end - start), 0.0, 1.0);
+					return std::clamp<double>((x - start) / (end - start), 0.0, 1.0);
 				};
 				auto smoothStep = [=] (double x, double start, double end) {
 					x = reverseLerp(x, start, end);

@@ -201,7 +201,7 @@ Vector2 OsuSliderCurveTypeCentripetalCatmullRom::pointAt(float t)
 
 OsuSliderCurveEqualDistanceMulti::OsuSliderCurveEqualDistanceMulti(std::vector<Vector2> controlPoints, float pixelLength, float curvePointsSeparation) : OsuSliderCurve(controlPoints, pixelLength)
 {
-	m_iNCurve = std::min((int)(m_fPixelLength / clamp<float>(curvePointsSeparation, 1.0f, 100.0f)), osu_slider_curve_max_points.getInt());
+	m_iNCurve = std::min((int)(m_fPixelLength / std::clamp<float>(curvePointsSeparation, 1.0f, 100.0f)), osu_slider_curve_max_points.getInt());
 }
 
 void OsuSliderCurveEqualDistanceMulti::init(const std::vector<OsuSliderCurveType*> &curvesList)
@@ -242,7 +242,7 @@ void OsuSliderCurveEqualDistanceMulti::init(const std::vector<OsuSliderCurveType
 	for (int i=0; i<(m_iNCurve + 1); i++)
 	{
 		const float temp_dist = static_cast<float>((i * m_fPixelLength)) / static_cast<float>(m_iNCurve);
-		const int prefDistance = (isfinite(temp_dist)
+		const int prefDistance = (std::isfinite(temp_dist)
 								  && temp_dist >= static_cast<float>(std::numeric_limits<int>::min())
 								  && temp_dist <= static_cast<float>(std::numeric_limits<int>::max()))
 								  ? static_cast<int>(temp_dist)
@@ -302,7 +302,7 @@ void OsuSliderCurveEqualDistanceMulti::init(const std::vector<OsuSliderCurveType
 		if (distanceAt - lastDistanceAt > 1)
 		{
 			const float t = (prefDistance - lastDistanceAt) / (distanceAt - lastDistanceAt);
-			m_curvePoints[i] = Vector2(lerp(lastCurve.x, thisCurve.x, t), lerp(lastCurve.y, thisCurve.y, t));
+			m_curvePoints[i] = Vector2(std::lerp(lastCurve.x, thisCurve.x, t), std::lerp(lastCurve.y, thisCurve.y, t));
 		}
 		else
 			m_curvePoints[i] = thisCurve;
@@ -438,7 +438,7 @@ Vector2 OsuSliderCurveEqualDistanceMulti::pointAt(float t)
 
 		const float t2 = indexF - index;
 
-		return Vector2(lerp(poi.x, poi2.x, t2), lerp(poi.y, poi2.y, t2));
+		return Vector2(std::lerp(poi.x, poi2.x, t2), std::lerp(poi.y, poi2.y, t2));
 	}
 }
 
@@ -471,7 +471,7 @@ Vector2 OsuSliderCurveEqualDistanceMulti::originalPointAt(float t)
 
 		const float t2 = indexF - index;
 
-		return Vector2(lerp(poi.x, poi2.x, t2), lerp(poi.y, poi2.y, t2));
+		return Vector2(std::lerp(poi.x, poi2.x, t2), std::lerp(poi.y, poi2.y, t2));
 	}
 }
 
@@ -649,11 +649,11 @@ OsuSliderCurveCircumscribedCircle::OsuSliderCurveCircumscribedCircle(std::vector
 	m_fStartAngle = (float)((m_fCalculationStartAngle + (m_fCalculationStartAngle > m_fCalculationEndAngle ? -PI/2.0f : PI/2.0f)) * 180.0f / PI);
 
 	// calculate points
-	const float steps = std::min(m_fPixelLength / (clamp<float>(curvePointsSeparation, 1.0f, 100.0f)), osu_slider_curve_max_points.getFloat());
+	const float steps = std::min(m_fPixelLength / (std::clamp<float>(curvePointsSeparation, 1.0f, 100.0f)), osu_slider_curve_max_points.getFloat());
 	const int intSteps = (int)std::round(steps) + 2; // must guarantee an int range of 0 to steps!
 	for (int i=0; i<intSteps; i++)
 	{
-		float t = clamp<float>((float)i / steps, 0.0f, 1.0f);
+		float t = std::clamp<float>((float)i / steps, 0.0f, 1.0f);
 		m_curvePoints.push_back(pointAt(t));
 
 		if (t >= 1.0f) // early break if we've already reached the end
@@ -678,19 +678,19 @@ void OsuSliderCurveCircumscribedCircle::updateStackPosition(float stackMulStackO
 Vector2 OsuSliderCurveCircumscribedCircle::pointAt(float t)
 {
 	const float sanityRange = osu_slider_curve_max_length.getFloat(); // NOTE: added to fix some aspire problems (endless drawFollowPoints and star calc etc.)
-	const float ang = lerp(m_fCalculationStartAngle, m_fCalculationEndAngle, t);
+	const float ang = std::lerp(m_fCalculationStartAngle, m_fCalculationEndAngle, t);
 
-	return Vector2(clamp<float>(std::cos(ang) * m_fRadius + m_vCircleCenter.x, -sanityRange, sanityRange),
-				   clamp<float>(std::sin(ang) * m_fRadius + m_vCircleCenter.y, -sanityRange, sanityRange));
+	return Vector2(std::clamp<float>(std::cos(ang) * m_fRadius + m_vCircleCenter.x, -sanityRange, sanityRange),
+				   std::clamp<float>(std::sin(ang) * m_fRadius + m_vCircleCenter.y, -sanityRange, sanityRange));
 }
 
 Vector2 OsuSliderCurveCircumscribedCircle::originalPointAt(float t)
 {
 	const float sanityRange = osu_slider_curve_max_length.getFloat(); // NOTE: added to fix some aspire problems (endless drawFollowPoints and star calc etc.)
-	const float ang = lerp(m_fCalculationStartAngle, m_fCalculationEndAngle, t);
+	const float ang = std::lerp(m_fCalculationStartAngle, m_fCalculationEndAngle, t);
 
-	return Vector2(clamp<float>(std::cos(ang) * m_fRadius + m_vOriginalCircleCenter.x, -sanityRange, sanityRange),
-				   clamp<float>(std::sin(ang) * m_fRadius + m_vOriginalCircleCenter.y, -sanityRange, sanityRange));
+	return Vector2(std::clamp<float>(std::cos(ang) * m_fRadius + m_vOriginalCircleCenter.x, -sanityRange, sanityRange),
+				   std::clamp<float>(std::sin(ang) * m_fRadius + m_vOriginalCircleCenter.y, -sanityRange, sanityRange));
 }
 
 Vector2 OsuSliderCurveCircumscribedCircle::intersect(Vector2 a, Vector2 ta, Vector2 b, Vector2 tb)

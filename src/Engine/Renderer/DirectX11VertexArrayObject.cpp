@@ -134,9 +134,9 @@ void DirectX11VertexArrayObject::init()
 
 					if (colors.size() > 0)
 					{
-						finalColors.push_back(colors[clamp<int>(i + 0, 0, maxColorIndex)]);
-						finalColors.push_back(colors[clamp<int>(i + 1, 0, maxColorIndex)]);
-						finalColors.push_back(colors[clamp<int>(i + 2, 0, maxColorIndex)]);
+						finalColors.push_back(colors[std::clamp<int>(i + 0, 0, maxColorIndex)]);
+						finalColors.push_back(colors[std::clamp<int>(i + 1, 0, maxColorIndex)]);
+						finalColors.push_back(colors[std::clamp<int>(i + 2, 0, maxColorIndex)]);
 					}
 
 					finalVertices.push_back(m_vertices[i + 0]);
@@ -152,9 +152,9 @@ void DirectX11VertexArrayObject::init()
 
 					if (colors.size() > 0)
 					{
-						finalColors.push_back(colors[clamp<int>(i + 0, 0, maxColorIndex)]);
-						finalColors.push_back(colors[clamp<int>(i + 2, 0, maxColorIndex)]);
-						finalColors.push_back(colors[clamp<int>(i + 3, 0, maxColorIndex)]);
+						finalColors.push_back(colors[std::clamp<int>(i + 0, 0, maxColorIndex)]);
+						finalColors.push_back(colors[std::clamp<int>(i + 2, 0, maxColorIndex)]);
+						finalColors.push_back(colors[std::clamp<int>(i + 3, 0, maxColorIndex)]);
 					}
 				}
 			}
@@ -187,9 +187,9 @@ void DirectX11VertexArrayObject::init()
 
 					if (colors.size() > 0)
 					{
-						finalColors.push_back(colors[clamp<int>(0, 0, maxColorIndex)]);
-						finalColors.push_back(colors[clamp<int>(i, 0, maxColorIndex)]);
-						finalColors.push_back(colors[clamp<int>(i - 1, 0, maxColorIndex)]);
+						finalColors.push_back(colors[std::clamp<int>(0, 0, maxColorIndex)]);
+						finalColors.push_back(colors[std::clamp<int>(i, 0, maxColorIndex)]);
+						finalColors.push_back(colors[std::clamp<int>(i - 1, 0, maxColorIndex)]);
 					}
 				}
 			}
@@ -211,7 +211,7 @@ void DirectX11VertexArrayObject::init()
 				m_convertedVertices[i].pos.z = finalVertices[i].z;
 
 				if (hasColors)
-					m_convertedVertices[i].col = finalColors[clamp<size_t>(i, 0, maxColorIndex)];
+					m_convertedVertices[i].col = finalColors[std::clamp<size_t>(i, 0, maxColorIndex)];
 				else
 				{
 					m_convertedVertices[i].col.x = 1.0f;
@@ -318,8 +318,8 @@ void DirectX11VertexArrayObject::draw()
 		return;
 	}
 
-	const int start = clamp<int>(m_iDrawRangeFromIndex > -1 ? m_iDrawRangeFromIndex : nearestMultipleUp((int)(m_iNumVertices*m_fDrawPercentFromPercent), m_iDrawPercentNearestMultiple), 0, m_iNumVertices);
-	const int end = clamp<int>(m_iDrawRangeToIndex > -1 ? m_iDrawRangeToIndex : nearestMultipleDown((int)(m_iNumVertices*m_fDrawPercentToPercent), m_iDrawPercentNearestMultiple), 0, m_iNumVertices);
+	const int start = std::clamp<int>(m_iDrawRangeFromIndex > -1 ? m_iDrawRangeFromIndex : nearestMultipleUp((int)(m_iNumVertices*m_fDrawPercentFromPercent), m_iDrawPercentNearestMultiple), 0, m_iNumVertices);
+	const int end = std::clamp<int>(m_iDrawRangeToIndex > -1 ? m_iDrawRangeToIndex : nearestMultipleDown((int)(m_iNumVertices*m_fDrawPercentToPercent), m_iDrawPercentNearestMultiple), 0, m_iNumVertices);
 
 	if (start > end || std::abs(end - start) == 0) return;
 

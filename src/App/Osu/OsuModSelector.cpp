@@ -1346,7 +1346,7 @@ UString OsuModSelector::getOverrideSliderLabelText(OsuModSelector::OVERRIDE_SLID
 		float beatmapValue = 1.0f;
 		if (s.label->getName().find("CS") != -1)
 		{
-			beatmapValue = clamp<float>(m_osu->getSelectedBeatmap()->getSelectedDifficulty2()->getCS()*m_osu->getCSDifficultyMultiplier(), 0.0f, 10.0f);
+			beatmapValue = std::clamp<float>(m_osu->getSelectedBeatmap()->getSelectedDifficulty2()->getCS()*m_osu->getCSDifficultyMultiplier(), 0.0f, 10.0f);
 			convarValue = m_osu->getSelectedBeatmap()->getCS();
 		}
 		else if (s.label->getName().find("AR") != -1)
@@ -1373,7 +1373,7 @@ UString OsuModSelector::getOverrideSliderLabelText(OsuModSelector::OVERRIDE_SLID
 		}
 		else if (s.label->getName().find("HP") != -1)
 		{
-			beatmapValue = clamp<float>(m_osu->getSelectedBeatmap()->getSelectedDifficulty2()->getHP()*m_osu->getDifficultyMultiplier(), 0.0f, 10.0f);
+			beatmapValue = std::clamp<float>(m_osu->getSelectedBeatmap()->getSelectedDifficulty2()->getHP()*m_osu->getDifficultyMultiplier(), 0.0f, 10.0f);
 			convarValue = m_osu->getSelectedBeatmap()->getHP();
 		}
 		else if (s.desc->getText().find("Speed") != -1)

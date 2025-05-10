@@ -47,10 +47,10 @@ OsuReplay::BEATMAP_VALUES OsuReplay::getBeatmapValuesForModsLegacy(int modsLegac
 	}
 
 	// apply legacy mods to legacy beatmap values
-	v.AR = clamp<float>(legacyAR * v.difficultyMultiplier, 0.0f, 10.0f);
-	v.CS = clamp<float>(legacyCS * v.csDifficultyMultiplier, 0.0f, 10.0f);
-	v.OD = clamp<float>(legacyOD * v.difficultyMultiplier, 0.0f, 10.0f);
-	v.HP = clamp<float>(legacyHP * v.difficultyMultiplier, 0.0f, 10.0f);
+	v.AR = std::clamp<float>(legacyAR * v.difficultyMultiplier, 0.0f, 10.0f);
+	v.CS = std::clamp<float>(legacyCS * v.csDifficultyMultiplier, 0.0f, 10.0f);
+	v.OD = std::clamp<float>(legacyOD * v.difficultyMultiplier, 0.0f, 10.0f);
+	v.HP = std::clamp<float>(legacyHP * v.difficultyMultiplier, 0.0f, 10.0f);
 
 	return v;
 }

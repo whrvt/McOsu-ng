@@ -384,9 +384,6 @@ Osu::Osu(Osu2 *osu2, int instanceID)
 	*/
 
 	// renderer
-
-    /* HACK: update global resolution once with actually created window */
-    engine->onResolutionChange(env->getWindowSize());
 	g_vInternalResolution = engine->getScreenSize();
 
 	m_backBuffer = engine->getResourceManager()->createRenderTarget(0, 0, getScreenWidth(), getScreenHeight());
@@ -622,7 +619,7 @@ void Osu::draw(Graphics *g)
 		const bool isAuto = (m_bModAuto || m_bModAutopilot);
 		const bool allowDoubleCursor = isFPoSu;
 		const bool allowDrawCursor = (!osu_hide_cursor_during_gameplay.getBool() || getSelectedBeatmap()->isPaused());
-		float fadingCursorAlpha = 1.0f - clamp<float>((float)m_score->getCombo()/osu_mod_fadingcursor_combo.getFloat(), 0.0f, 1.0f);
+		float fadingCursorAlpha = 1.0f - std::clamp<float>((float)m_score->getCombo()/osu_mod_fadingcursor_combo.getFloat(), 0.0f, 1.0f);
 		if (m_pauseMenu->isVisible() || getSelectedBeatmap()->isContinueScheduled())
 			fadingCursorAlpha = 1.0f;
 
@@ -868,7 +865,7 @@ void Osu::update()
 			{
 				m_bSeeking = true;
 				const float mousePosX = (int)engine->getMouse()->getPos().x;
-				const float percent = clamp<float>(mousePosX / (float)getScreenWidth(), 0.0f, 1.0f);
+				const float percent = std::clamp<float>(mousePosX / (float)getScreenWidth(), 0.0f, 1.0f);
 
 				if (engine->getMouse()->isLeftDown())
 				{
@@ -892,7 +889,7 @@ void Osu::update()
 					m_fPrevSeekMousePosX = -1.0f;
 
 				if (engine->getMouse()->isRightDown())
-					m_fQuickSaveTime = clamp<float>((float)((getSelectedBeatmap()->getStartTimePlayable()+getSelectedBeatmap()->getLengthPlayable())*percent) / (float)getSelectedBeatmap()->getLength(), 0.0f, 1.0f);
+					m_fQuickSaveTime = std::clamp<float>((float)((getSelectedBeatmap()->getStartTimePlayable()+getSelectedBeatmap()->getLengthPlayable())*percent) / (float)getSelectedBeatmap()->getLength(), 0.0f, 1.0f);
 			}
 		}
 
@@ -1156,7 +1153,7 @@ void Osu::update()
 	// volume inactive to active animation
 	if (m_bVolumeInactiveToActiveScheduled && m_fVolumeInactiveToActiveAnim > 0.0f)
 	{
-		engine->getSound()->setVolume(lerp(osu_volume_master_inactive.getFloat() * osu_volume_master.getFloat(), osu_volume_master.getFloat(), m_fVolumeInactiveToActiveAnim));
+		engine->getSound()->setVolume(std::lerp(osu_volume_master_inactive.getFloat() * osu_volume_master.getFloat(), osu_volume_master.getFloat(), m_fVolumeInactiveToActiveAnim));
 
 		// check if we're done
 		if (m_fVolumeInactiveToActiveAnim == 1.0f)
@@ -1555,13 +1552,13 @@ void Osu::onKeyDown(KeyboardEvent &key)
 			if (key == OsuKeyBindings::INCREASE_SPEED.getVal<KEYCODE>())
 			{
 				ConVar *maniaSpeed = convar->getConVarByName("osu_mania_speed");
-				maniaSpeed->setValue(clamp<float>(std::round((maniaSpeed->getFloat() + 0.05f) * 100.0f) / 100.0f, 0.05f, 10.0f));
+				maniaSpeed->setValue(std::clamp<float>(std::round((maniaSpeed->getFloat() + 0.05f) * 100.0f) / 100.0f, 0.05f, 10.0f));
 				m_notificationOverlay->addNotification(UString::format("osu!mania speed set to %gx (fixed)", maniaSpeed->getFloat()));
 			}
 			if (key == OsuKeyBindings::DECREASE_SPEED.getVal<KEYCODE>())
 			{
 				ConVar *maniaSpeed = convar->getConVarByName("osu_mania_speed");
-				maniaSpeed->setValue(clamp<float>(std::round((maniaSpeed->getFloat() - 0.05f) * 100.0f) / 100.0f, 0.05f, 10.0f));
+				maniaSpeed->setValue(std::clamp<float>(std::round((maniaSpeed->getFloat() - 0.05f) * 100.0f) / 100.0f, 0.05f, 10.0f));
 				m_notificationOverlay->addNotification(UString::format("osu!mania speed set to %gx (fixed)", maniaSpeed->getFloat()));
 			}
 			*/
@@ -1764,7 +1761,7 @@ void Osu::onVolumeChange(int multiplier)
 	// change the volume
 	if (m_hud->isVolumeOverlayVisible())
 	{
-		float newVolume = clamp<float>(volumeConVar->getFloat() + osu_volume_change_interval.getFloat()*multiplier, 0.0f, 1.0f);
+		float newVolume = std::clamp<float>(volumeConVar->getFloat() + osu_volume_change_interval.getFloat()*multiplier, 0.0f, 1.0f);
 		volumeConVar->setValue(newVolume);
 	}
 
@@ -1823,9 +1820,9 @@ void Osu::saveScreenshot()
         offsetYpct = osu_letterboxing_offset_y.getFloat();
     }
 
-    const int startX = clamp<int>(static_cast<int>((outerWidth - innerWidth) * (1 + offsetXpct) / 2), 0,
+    const int startX = std::clamp<int>(static_cast<int>((outerWidth - innerWidth) * (1 + offsetXpct) / 2), 0,
                                   static_cast<int>(outerWidth - innerWidth));
-    const int startY = clamp<int>(static_cast<int>((outerHeight - innerHeight) * (1 + offsetYpct) / 2), 0,
+    const int startY = std::clamp<int>(static_cast<int>((outerHeight - innerHeight) * (1 + offsetYpct) / 2), 0,
                                   static_cast<int>(outerHeight - innerHeight));
 
     std::vector<unsigned char> croppedPixels(static_cast<size_t>(innerWidth * innerHeight * 3));

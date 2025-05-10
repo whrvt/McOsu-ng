@@ -247,8 +247,8 @@ bool BassSoundEngine::play(Sound *snd, float pan, float pitch)
 	if (!bassSound)
 		return false;
 
-	pan = clamp<float>(pan, -1.0f, 1.0f);
-	pitch = clamp<float>(pitch, 0.0f, 2.0f);
+	pan = std::clamp<float>(pan, -1.0f, 1.0f);
+	pitch = std::clamp<float>(pitch, 0.0f, 2.0f);
 
 	const bool allowPlayFrame = !snd->isOverlayable() || !snd_restrict_play_frame.getBool() || engine->getTime() > snd->getLastPlayTime();
 
@@ -300,7 +300,7 @@ bool BassSoundEngine::play(Sound *snd, float pan, float pitch)
 			float freq = snd_freq.getFloat();
 			BASS_ChannelGetAttribute(handle, BASS_ATTRIB_FREQ, &freq);
 
-			const float semitonesShift = lerp(-60.0f, 60.0f, pitch / 2.0f);
+			const float semitonesShift = std::lerp(-60.0f, 60.0f, pitch / 2.0f);
 			BASS_ChannelSetAttribute(handle, BASS_ATTRIB_FREQ, std::pow(2.0f, (semitonesShift / 12.0f)) * freq);
 		}
 
@@ -495,7 +495,7 @@ void BassSoundEngine::setVolume(float volume)
 	if (!m_bReady)
 		return;
 
-	m_fVolume = clamp<float>(volume, 0.0f, 1.0f);
+	m_fVolume = std::clamp<float>(volume, 0.0f, 1.0f);
 
 	// 0 (silent) - 10000 (full).
 	BASS_SetConfig(BASS_CONFIG_GVOL_SAMPLE, (DWORD)(m_fVolume * 10000));

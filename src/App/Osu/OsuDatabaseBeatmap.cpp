@@ -356,12 +356,12 @@ OsuDatabaseBeatmap::PRIMITIVE_CONTAINER OsuDatabaseBeatmap::loadPrimitiveObjects
 					{
 						float fX,fY;
 						floatScan = (sscanf(curLineChar, " %f , %f , %li , %i , %i", &fX, &fY, &time, &type, &hitSound) == 5);
-						x = (isfinite(fX)
+						x = (std::isfinite(fX)
 							 && fX >= static_cast<float>(std::numeric_limits<int>::min())
 							 && fX <= static_cast<float>(std::numeric_limits<int>::max()))
 							 ? static_cast<int>(fX)
 							 : 0;
-						y = (isfinite(fY)
+						y = (std::isfinite(fY)
 							 && fY >= static_cast<float>(std::numeric_limits<int>::min())
 							 && fY <= static_cast<float>(std::numeric_limits<int>::max()))
 							 ? static_cast<int>(fY)
@@ -437,12 +437,12 @@ OsuDatabaseBeatmap::PRIMITIVE_CONTAINER OsuDatabaseBeatmap::loadPrimitiveObjects
 									//return false;
 								}
 
-								points.emplace_back((int)clamp<float>(sliderXY[0].toFloat(), -sliderSanityRange, sliderSanityRange), (int)clamp<float>(sliderXY[1].toFloat(), -sliderSanityRange, sliderSanityRange));
+								points.emplace_back((int)std::clamp<float>(sliderXY[0].toFloat(), -sliderSanityRange, sliderSanityRange), (int)std::clamp<float>(sliderXY[1].toFloat(), -sliderSanityRange, sliderSanityRange));
 							}
 
 							// special case: osu! logic for handling the hitobject point vs the controlpoints (since sliders have both, and older beatmaps store the start point inside the control points)
 							{
-								const Vector2 xy = Vector2(clamp<float>(x, -sliderSanityRange, sliderSanityRange), clamp<float>(y, -sliderSanityRange, sliderSanityRange));
+								const Vector2 xy = Vector2(std::clamp<float>(x, -sliderSanityRange, sliderSanityRange), std::clamp<float>(y, -sliderSanityRange, sliderSanityRange));
 								if (points.size() > 0)
 								{
 				                    if (points[0] != xy)
@@ -460,8 +460,8 @@ OsuDatabaseBeatmap::PRIMITIVE_CONTAINER OsuDatabaseBeatmap::loadPrimitiveObjects
 								.x = x,
 								.y = y,
 								.type = (sliderTokens[0].toUtf8())[0],
-								.repeat = clamp<int>((int)tokens[6].toFloat(), 0, sliderMaxRepeatRange),
-								.pixelLength = clamp<float>(tokens[7].toFloat(), -sliderSanityRange, sliderSanityRange),
+								.repeat = std::clamp<int>((int)tokens[6].toFloat(), 0, sliderMaxRepeatRange),
+								.pixelLength = std::clamp<float>(tokens[7].toFloat(), -sliderSanityRange, sliderSanityRange),
 								.time = time,
 								.sampleType = hitSound,
 								.number = comboNumber++,
@@ -1312,14 +1312,14 @@ bool OsuDatabaseBeatmap::loadMetadata(OsuDatabaseBeatmap *databaseBeatmap)
 
 		if (tempMinBPM > 0 && tempMinBPM < std::numeric_limits<float>::max()) {
 			minBPM = msPerMinute / tempMinBPM;
-			if (isfinite(minBPM) && minBPM <= static_cast<float>(std::numeric_limits<int>::max())) {
+			if (std::isfinite(minBPM) && minBPM <= static_cast<float>(std::numeric_limits<int>::max())) {
 				databaseBeatmap->m_iMinBPM = static_cast<int>(std::round(minBPM));
 			}
 		}
 
 		if (tempMaxBPM > 0 && tempMaxBPM < std::numeric_limits<float>::max()) {
 			maxBPM = msPerMinute / tempMaxBPM;
-			if (isfinite(maxBPM) && maxBPM <= static_cast<float>(std::numeric_limits<int>::max())) {
+			if (std::isfinite(maxBPM) && maxBPM <= static_cast<float>(std::numeric_limits<int>::max())) {
 				databaseBeatmap->m_iMaxBPM = static_cast<int>(std::round(maxBPM));
 			}
 		}
@@ -1515,8 +1515,8 @@ OsuDatabaseBeatmap::LOAD_GAMEPLAY_RESULT OsuDatabaseBeatmap::loadGameplay(OsuDat
 
 				if (osu_mod_random.getBool())
 				{
-					h.x = clamp<int>(h.x - (int)(((Helper::pcgHash(result.randomSeed + h.x) % OsuGameRules::OSU_COORD_WIDTH) / 8.0f) * osu_mod_random_circle_offset_x_percent.getFloat()), 0, OsuGameRules::OSU_COORD_WIDTH);
-					h.y = clamp<int>(h.y - (int)(((Helper::pcgHash(result.randomSeed + h.y) % OsuGameRules::OSU_COORD_HEIGHT) / 8.0f) * osu_mod_random_circle_offset_y_percent.getFloat()), 0, OsuGameRules::OSU_COORD_HEIGHT);
+					h.x = std::clamp<int>(h.x - (int)(((Helper::pcgHash(result.randomSeed + h.x) % OsuGameRules::OSU_COORD_WIDTH) / 8.0f) * osu_mod_random_circle_offset_x_percent.getFloat()), 0, OsuGameRules::OSU_COORD_WIDTH);
+					h.y = std::clamp<int>(h.y - (int)(((Helper::pcgHash(result.randomSeed + h.y) % OsuGameRules::OSU_COORD_HEIGHT) / 8.0f) * osu_mod_random_circle_offset_y_percent.getFloat()), 0, OsuGameRules::OSU_COORD_HEIGHT);
 				}
 
 				result.hitobjects.push_back(new OsuCircle(h.x, h.y, h.time, h.sampleType, h.number, false, h.colorCounter, h.colorOffset, beatmapStandard));
@@ -1575,8 +1575,8 @@ OsuDatabaseBeatmap::LOAD_GAMEPLAY_RESULT OsuDatabaseBeatmap::loadGameplay(OsuDat
 				{
 					for (int p=0; p<s.points.size(); p++)
 					{
-						s.points[p].x = clamp<int>(s.points[p].x - (int)(((Helper::pcgHash(result.randomSeed + s.points[p].x) % OsuGameRules::OSU_COORD_WIDTH) / 3.0f) * osu_mod_random_slider_offset_x_percent.getFloat()), 0, OsuGameRules::OSU_COORD_WIDTH);
-						s.points[p].y = clamp<int>(s.points[p].y - (int)(((Helper::pcgHash(result.randomSeed + s.points[p].y) % OsuGameRules::OSU_COORD_HEIGHT) / 3.0f) * osu_mod_random_slider_offset_y_percent.getFloat()), 0, OsuGameRules::OSU_COORD_HEIGHT);
+						s.points[p].x = std::clamp<int>(s.points[p].x - (int)(((Helper::pcgHash(result.randomSeed + s.points[p].x) % OsuGameRules::OSU_COORD_WIDTH) / 3.0f) * osu_mod_random_slider_offset_x_percent.getFloat()), 0, OsuGameRules::OSU_COORD_WIDTH);
+						s.points[p].y = std::clamp<int>(s.points[p].y - (int)(((Helper::pcgHash(result.randomSeed + s.points[p].y) % OsuGameRules::OSU_COORD_HEIGHT) / 3.0f) * osu_mod_random_slider_offset_y_percent.getFloat()), 0, OsuGameRules::OSU_COORD_HEIGHT);
 					}
 				}
 
@@ -1595,8 +1595,8 @@ OsuDatabaseBeatmap::LOAD_GAMEPLAY_RESULT OsuDatabaseBeatmap::loadGameplay(OsuDat
 
 				if (osu_mod_random.getBool())
 				{
-					s.x = clamp<int>(s.x - (int)(((Helper::pcgHash(result.randomSeed + s.x) % OsuGameRules::OSU_COORD_WIDTH) / 1.25f) * (Helper::pcgHash(result.randomSeed + s.x) % 2 == 0 ? 1.0f : -1.0f) * osu_mod_random_spinner_offset_x_percent.getFloat()), 0, OsuGameRules::OSU_COORD_WIDTH);
-					s.y = clamp<int>(s.y - (int)(((Helper::pcgHash(result.randomSeed + s.y) % OsuGameRules::OSU_COORD_HEIGHT) / 1.25f) * (Helper::pcgHash(result.randomSeed + s.y) % 2 == 0 ? 1.0f : -1.0f) * osu_mod_random_spinner_offset_y_percent.getFloat()), 0, OsuGameRules::OSU_COORD_HEIGHT);
+					s.x = std::clamp<int>(s.x - (int)(((Helper::pcgHash(result.randomSeed + s.x) % OsuGameRules::OSU_COORD_WIDTH) / 1.25f) * (Helper::pcgHash(result.randomSeed + s.x) % 2 == 0 ? 1.0f : -1.0f) * osu_mod_random_spinner_offset_x_percent.getFloat()), 0, OsuGameRules::OSU_COORD_WIDTH);
+					s.y = std::clamp<int>(s.y - (int)(((Helper::pcgHash(result.randomSeed + s.y) % OsuGameRules::OSU_COORD_HEIGHT) / 1.25f) * (Helper::pcgHash(result.randomSeed + s.y) % 2 == 0 ? 1.0f : -1.0f) * osu_mod_random_spinner_offset_y_percent.getFloat()), 0, OsuGameRules::OSU_COORD_HEIGHT);
 				}
 
 				result.hitobjects.push_back(new OsuSpinner(s.x, s.y, s.time, s.sampleType, false, s.endTime, beatmapStandard));
@@ -1642,11 +1642,11 @@ OsuDatabaseBeatmap::LOAD_GAMEPLAY_RESULT OsuDatabaseBeatmap::loadGameplay(OsuDat
 					if (allowSpecial && availableColumns == 8)
 					{
 						const float local_x_divisor = 512.0f / 7;
-						return clamp<int>((int)std::floor(position / local_x_divisor), 0, 6) + 1;
+						return std::clamp<int>((int)std::floor(position / local_x_divisor), 0, 6) + 1;
 					}
 
 					const float localXDivisor = 512.0f / availableColumns;
-					return clamp<int>((int)std::floor(position / localXDivisor), 0, availableColumns - 1);
+					return std::clamp<int>((int)std::floor(position / localXDivisor), 0, availableColumns - 1);
 				}
 			};
 
@@ -1877,7 +1877,7 @@ OsuDatabaseBeatmap::TIMING_INFO OsuDatabaseBeatmap::getTimingInfoForTimeAndTimin
 			if (timingpoints[samplePoint].msPerBeat >= 0)
 				mult = 1;
 			else
-				mult = clamp<float>((float)-timingpoints[samplePoint].msPerBeat, 10.0f, 1000.0f) / 100.0f;
+				mult = std::clamp<float>((float)-timingpoints[samplePoint].msPerBeat, 10.0f, 1000.0f) / 100.0f;
 		}
 
 		ti.beatLengthBase = timingpoints[point].msPerBeat;
@@ -1926,7 +1926,7 @@ OsuDatabaseBeatmap::TIMING_INFO OsuDatabaseBeatmap::getTimingInfoForTimeAndTimin
 		{
 			// note how msPerBeat is clamped
 			ti.isNaN = std::isnan(t->msPerBeat);
-			ti.beatLength = ti.beatLengthBase * (clamp<float>(!ti.isNaN ? std::abs(t->msPerBeat) : 1000, 10, 1000) / 100.0f); // sliderMultiplier of a timingpoint = (t->velocity / -100.0f)
+			ti.beatLength = ti.beatLengthBase * (std::clamp<float>(!ti.isNaN ? std::abs(t->msPerBeat) : 1000, 10, 1000) / 100.0f); // sliderMultiplier of a timingpoint = (t->velocity / -100.0f)
 		}
 
 		ti.volume = t->volume;

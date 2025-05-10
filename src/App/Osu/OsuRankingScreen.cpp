@@ -479,7 +479,7 @@ void OsuRankingScreen::update()
 	// button transparency
 	const float transparencyStart = m_container->getPos().y + m_container->getSize().y;
 	const float transparencyEnd = m_container->getPos().y + m_container->getSize().y + m_rankingIndex->getSize().y/2;
-	const float alpha = clamp<float>((m_rankingIndex->getPos().y + (transparencyEnd - transparencyStart) - transparencyStart)/(transparencyEnd - transparencyStart), 0.0f, 1.0f);
+	const float alpha = std::clamp<float>((m_rankingIndex->getPos().y + (transparencyEnd - transparencyStart) - transparencyStart)/(transparencyEnd - transparencyStart), 0.0f, 1.0f);
 	anim->moveLinear(&m_fRankingScrollDownInfoButtonAlphaAnim, alpha, 0.075*m_fRankingScrollDownInfoButtonAlphaAnim, true);
 	m_rankingScrollDownInfoButton->setAlpha(m_fRankingScrollDownInfoButtonAlphaAnim);
 }

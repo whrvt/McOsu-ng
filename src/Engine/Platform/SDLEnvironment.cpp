@@ -66,8 +66,8 @@ SDLEnvironment::SDLEnvironment() : Environment()
 	m_vLastAbsMousePos = {};
 	m_vLastRelMousePos = {};
 
-	fps_max_str = "60";
-	fps_max_bg_str = "30";
+	m_sFpsMax = "60";
+	m_sFpsMaxBG = "30";
 
 	// create sdl system cursor map
 	m_mCursorIcons = {
@@ -109,9 +109,10 @@ SDLEnvironment::~SDLEnvironment()
 	}
 }
 
+// well this doesn't do much atm... called at the end of engine->onUpdate
 void SDLEnvironment::update()
 {
-	Environment::update();
+	//Environment::update();
 
 	m_bIsCursorInsideWindow = m_bHasFocus && McRect(0, 0, m_engine->getScreenWidth(), m_engine->getScreenHeight()).contains(getMousePos());
 }
@@ -139,21 +140,17 @@ void SDLEnvironment::shutdown()
 
 void SDLEnvironment::restart()
 {
-	// TODO: (maybe restart, might never be necessary)
+	// TODO (probably the environment should never be restarted, just the engine (somehow))
 	shutdown();
 }
 
 UString SDLEnvironment::getExecutablePath() const
 {
 	const char *path = SDL_GetBasePath();
-	if (path != NULL)
-	{
-		UString uPath = UString(path);
-		SDL_free((void *)path);
-		return uPath;
-	}
-	else
-		return UString("");
+	if (!path)
+		return {""};
+
+	return {path};
 }
 
 void SDLEnvironment::openURLInDefaultBrowser(UString url) const
@@ -194,7 +191,7 @@ UString SDLEnvironment::getUserDataPath() const
 	const char *path = SDL_GetPrefPath("McEngine", PACKAGE_NAME);
 	if (path != NULL)
 	{
-		UString uPath = UString(path);
+		UString uPath = path;
 		SDL_free((void *)path);
 		return uPath;
 	}
@@ -204,14 +201,11 @@ UString SDLEnvironment::getUserDataPath() const
 
 bool SDLEnvironment::fileExists(UString filename) const
 {
-	SDL_IOStream *file = SDL_IOFromFile(filename.toUtf8(), "r");
-	if (file != NULL)
-	{
-		SDL_CloseIO(file);
-		return true;
-	}
-	else
-		return false;
+	SDL_PathInfo info;
+	if (SDL_GetPathInfo(filename.toUtf8(), &info))
+		return info.type == SDL_PATHTYPE_FILE;
+
+	return false;
 }
 
 bool SDLEnvironment::directoryExists(UString directoryName) const
@@ -601,7 +595,7 @@ int SDLEnvironment::getDPI() const
 {
 	float dpi = SDL_GetWindowDisplayScale(m_window) * 96;
 
-	return clamp<int>((int)dpi, 96, 96 * 2); // sanity clamp
+	return std::clamp<int>((int)dpi, 96, 96 * 2); // sanity clamp
 }
 
 Vector2 SDLEnvironment::getMousePos() const

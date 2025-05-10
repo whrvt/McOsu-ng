@@ -844,9 +844,9 @@ void DirectX11Interface::drawVAO(VertexArrayObject *vao)
 
 				if (colors.size() > 0)
 				{
-					finalColors.push_back(colors[clamp<size_t>(i + 0, 0, maxColorIndex)]);
-					finalColors.push_back(colors[clamp<size_t>(i + 1, 0, maxColorIndex)]);
-					finalColors.push_back(colors[clamp<size_t>(i + 2, 0, maxColorIndex)]);
+					finalColors.push_back(colors[std::clamp<size_t>(i + 0, 0, maxColorIndex)]);
+					finalColors.push_back(colors[std::clamp<size_t>(i + 1, 0, maxColorIndex)]);
+					finalColors.push_back(colors[std::clamp<size_t>(i + 2, 0, maxColorIndex)]);
 				}
 
 				finalVertices.push_back(vertices[i + 0]);
@@ -862,9 +862,9 @@ void DirectX11Interface::drawVAO(VertexArrayObject *vao)
 
 				if (colors.size() > 0)
 				{
-					finalColors.push_back(colors[clamp<size_t>(i + 0, 0, maxColorIndex)]);
-					finalColors.push_back(colors[clamp<size_t>(i + 2, 0, maxColorIndex)]);
-					finalColors.push_back(colors[clamp<size_t>(i + 3, 0, maxColorIndex)]);
+					finalColors.push_back(colors[std::clamp<size_t>(i + 0, 0, maxColorIndex)]);
+					finalColors.push_back(colors[std::clamp<size_t>(i + 2, 0, maxColorIndex)]);
+					finalColors.push_back(colors[std::clamp<size_t>(i + 3, 0, maxColorIndex)]);
 				}
 			}
 		}
@@ -897,9 +897,9 @@ void DirectX11Interface::drawVAO(VertexArrayObject *vao)
 
 				if (colors.size() > 0)
 				{
-					finalColors.push_back(colors[clamp<size_t>(0, 0, maxColorIndex)]);
-					finalColors.push_back(colors[clamp<size_t>(i, 0, maxColorIndex)]);
-					finalColors.push_back(colors[clamp<size_t>(i - 1, 0, maxColorIndex)]);
+					finalColors.push_back(colors[std::clamp<size_t>(0, 0, maxColorIndex)]);
+					finalColors.push_back(colors[std::clamp<size_t>(i, 0, maxColorIndex)]);
+					finalColors.push_back(colors[std::clamp<size_t>(i - 1, 0, maxColorIndex)]);
 				}
 			}
 		}
@@ -921,13 +921,13 @@ void DirectX11Interface::drawVAO(VertexArrayObject *vao)
 			m_vertices[i].pos = finalVertices[i];
 
 			if (hasColors)
-				m_vertices[i].col = finalColors[clamp<size_t>(i, 0, maxColorIndex)];
+				m_vertices[i].col = finalColors[std::clamp<size_t>(i, 0, maxColorIndex)];
 			else
 				m_vertices[i].col = color;
 
 			// TODO: multitexturing
 			if (hasTexcoords0)
-				m_vertices[i].tex = finalTexcoords[0][clamp<size_t>(i, 0, maxTexcoords0Index)];
+				m_vertices[i].tex = finalTexcoords[0][std::clamp<size_t>(i, 0, maxTexcoords0Index)];
 		}
 	}
 

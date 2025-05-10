@@ -109,10 +109,10 @@ void OsuVRUISlider::update(Vector2 cursorPos)
 	// handle sliding
 	if (m_bIsActive)
 	{
-		const float percent = clamp<float>((cursorPos.x - m_vPos.x)/m_vSize.x, 0.0f, 1.0f);
+		const float percent = std::clamp<float>((cursorPos.x - m_vPos.x)/m_vSize.x, 0.0f, 1.0f);
 		bool hasChanged = percent != m_fCurPercent;
 		m_fCurPercent = percent;
-		m_fCurValue = lerp(m_fMinValue, m_fMaxValue, m_fCurPercent);
+		m_fCurValue = std::lerp(m_fMinValue, m_fMaxValue, m_fCurPercent);
 
 		if (m_sliderChangeCallback != NULL && hasChanged)
 			m_sliderChangeCallback(this);
@@ -123,11 +123,11 @@ void OsuVRUISlider::setValue(float value, bool ignoreCallback)
 {
 	if (value == m_fCurValue || m_bIsActive) return;
 
-	float newValue = clamp<float>(value, m_fMinValue, m_fMaxValue);
+	float newValue = std::clamp<float>(value, m_fMinValue, m_fMaxValue);
 	if (newValue == m_fCurValue) return;
 
 	m_fCurValue = newValue;
-	m_fCurPercent = clamp<float>((m_fCurValue-m_fMinValue) / (std::abs(m_fMaxValue-m_fMinValue)), 0.0f, 1.0f);
+	m_fCurPercent = std::clamp<float>((m_fCurValue-m_fMinValue) / (std::abs(m_fMaxValue-m_fMinValue)), 0.0f, 1.0f);
 
 	if (m_sliderChangeCallback != NULL && !ignoreCallback)
 		m_sliderChangeCallback(this);

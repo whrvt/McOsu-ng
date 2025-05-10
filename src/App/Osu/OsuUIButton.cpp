@@ -47,7 +47,7 @@ void OsuUIButton::draw(Graphics *g)
 	char red = std::max((unsigned int)(COLOR_GET_Ri(m_color)*m_fBrightness), (unsigned int)(m_fAnim*255.0f));
 	char green = std::max((unsigned int)(COLOR_GET_Gi(m_color)*m_fBrightness), (unsigned int)(m_fAnim*255.0f));
 	char blue = std::max((unsigned int)(COLOR_GET_Bi(m_color)*m_fBrightness), (unsigned int)(m_fAnim*255.0f));
-	g->setColor(COLOR(clamp<int>(COLOR_GET_Ai(m_color) + (isMouseInside() ? (int)(m_fAlphaAddOnHover*255.0f) : 0), 0, 255), red, green, blue));
+	g->setColor(COLOR(std::clamp<int>(COLOR_GET_Ai(m_color) + (isMouseInside() ? (int)(m_fAlphaAddOnHover*255.0f) : 0), 0, 255), red, green, blue));
 
 	buttonLeft->bind();
 	{

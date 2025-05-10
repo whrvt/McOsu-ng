@@ -535,7 +535,7 @@ void OsuSlider::draw2(Graphics *g, bool drawApproachCircle, bool drawOnlyApproac
 		if (m_fFollowCircleTickAnimationScale < 0.1f)
 		{
 			tickAnimation = -tickAnimation*(tickAnimation-2.0f);
-			tickAnimation = clamp<float>(tickAnimation / 0.02f, 0.0f, 1.0f);
+			tickAnimation = std::clamp<float>(tickAnimation / 0.02f, 0.0f, 1.0f);
 		}
 		float tickAnimationScale = 1.0f + tickAnimation*OsuGameRules::osu_slider_followcircle_tick_pulse_scale.getFloat();
 
@@ -579,7 +579,7 @@ void OsuSlider::drawVR(Graphics *g, Matrix4 &mvp, OsuVR *vr)
 
 	// the approachscale for sliders will get negative (since they are hitobjects with a duration)
 	float clampedApproachScalePercent = m_fApproachScale - 1.0f; // goes from <m_osu_approach_scale_multiplier_ref> to 0
-	clampedApproachScalePercent = clamp<float>(clampedApproachScalePercent / m_osu_approach_scale_multiplier_ref->getFloat(), 0.0f, 1.0f); // goes from 1 to 0
+	clampedApproachScalePercent = std::clamp<float>(clampedApproachScalePercent / m_osu_approach_scale_multiplier_ref->getFloat(), 0.0f, 1.0f); // goes from 1 to 0
 
 	Matrix4 translation;
 	translation.translate(0, 0, -clampedApproachScalePercent*vr->getApproachDistance());
@@ -815,7 +815,7 @@ void OsuSlider::drawVR2(Graphics *g, Matrix4 &mvp, OsuVR *vr)
 
 	// the approachscale for sliders will get negative (since they are hitobjects with a duration)
 	float clampedApproachScalePercent = m_fApproachScale - 1.0f; // goes from <m_osu_approach_scale_multiplier_ref> to 0
-	clampedApproachScalePercent = clamp<float>(clampedApproachScalePercent / m_osu_approach_scale_multiplier_ref->getFloat(), 0.0f, 1.0f); // goes from 1 to 0
+	clampedApproachScalePercent = std::clamp<float>(clampedApproachScalePercent / m_osu_approach_scale_multiplier_ref->getFloat(), 0.0f, 1.0f); // goes from 1 to 0
 
 	if (m_osu_vr_approach_circles_on_playfield->getBool())
 		clampedApproachScalePercent = 0.0f;
@@ -1165,7 +1165,7 @@ void OsuSlider::draw3D2(Graphics *g)
 		if (m_fFollowCircleTickAnimationScale < 0.1f)
 		{
 			tickAnimation = -tickAnimation*(tickAnimation-2.0f);
-			tickAnimation = clamp<float>(tickAnimation / 0.02f, 0.0f, 1.0f);
+			tickAnimation = std::clamp<float>(tickAnimation / 0.02f, 0.0f, 1.0f);
 		}
 		float tickAnimationScale = 1.0f + tickAnimation*OsuGameRules::osu_slider_followcircle_tick_pulse_scale.getFloat();
 
@@ -1412,7 +1412,7 @@ void OsuSlider::update(long curPos)
 	// slider slide percent
 	m_fSlidePercent = 0.0f;
 	if (curPos > m_iTime)
-		m_fSlidePercent = clamp<float>(clamp<long>((curPos - (m_iTime)), 0, (long)m_fSliderTime) / m_fSliderTime, 0.0f, 1.0f);
+		m_fSlidePercent = std::clamp<float>(std::clamp<long>((curPos - (m_iTime)), 0, (long)m_fSliderTime) / m_fSliderTime, 0.0f, 1.0f);
 
 	m_fActualSlidePercent = m_fSlidePercent;
 
@@ -1421,7 +1421,7 @@ void OsuSlider::update(long curPos)
 
 	const long reverseArrowFadeInStart = m_iTime - (osu_snaking_sliders.getBool() ? (m_iApproachTime - sliderSnakeDuration) : m_iApproachTime);
 	const long reverseArrowFadeInEnd = reverseArrowFadeInStart + osu_slider_reverse_arrow_fadein_duration.getInt();
-	m_fReverseArrowAlpha = 1.0f - clamp<float>(((float)(reverseArrowFadeInEnd - curPos) / (float)(reverseArrowFadeInEnd - reverseArrowFadeInStart)), 0.0f, 1.0f);
+	m_fReverseArrowAlpha = 1.0f - std::clamp<float>(((float)(reverseArrowFadeInEnd - curPos) / (float)(reverseArrowFadeInEnd - reverseArrowFadeInStart)), 0.0f, 1.0f);
 	m_fReverseArrowAlpha *= osu_slider_reverse_arrow_alpha_multiplier.getFloat();
 
 	m_fBodyAlpha = m_fAlpha;
@@ -1434,7 +1434,7 @@ void OsuSlider::update(long curPos)
 		const long hiddenSliderBodyFadeOutEnd = m_iTime + (long)(osu_mod_hd_slider_fade_percent.getFloat()*m_fSliderTime);
 		if (curPos >= hiddenSliderBodyFadeOutStart)
 		{
-			m_fBodyAlpha = clamp<float>(((float)(hiddenSliderBodyFadeOutEnd - curPos) / (float)(hiddenSliderBodyFadeOutEnd - hiddenSliderBodyFadeOutStart)), 0.0f, 1.0f);
+			m_fBodyAlpha = std::clamp<float>(((float)(hiddenSliderBodyFadeOutEnd - curPos) / (float)(hiddenSliderBodyFadeOutEnd - hiddenSliderBodyFadeOutStart)), 0.0f, 1.0f);
 			m_fBodyAlpha *= m_fBodyAlpha; // quad in body fadeout
 		}
 	}
@@ -1804,17 +1804,17 @@ void OsuSlider::update(long curPos)
 void OsuSlider::updateAnimations(long curPos)
 {
 	// handle followcircle animations
-	m_fFollowCircleAnimationAlpha = clamp<float>((float)((curPos - m_iTime)) / 1000.0f / clamp<float>(OsuGameRules::osu_slider_followcircle_fadein_fade_time.getFloat(), 0.0f, m_iObjectDuration/1000.0f), 0.0f, 1.0f);
+	m_fFollowCircleAnimationAlpha = std::clamp<float>((float)((curPos - m_iTime)) / 1000.0f / std::clamp<float>(OsuGameRules::osu_slider_followcircle_fadein_fade_time.getFloat(), 0.0f, m_iObjectDuration/1000.0f), 0.0f, 1.0f);
 	if (m_bFinished)
 	{
-		m_fFollowCircleAnimationAlpha = 1.0f - clamp<float>((float)((curPos - (m_iTime+m_iObjectDuration))) / 1000.0f / OsuGameRules::osu_slider_followcircle_fadeout_fade_time.getFloat(), 0.0f, 1.0f);
+		m_fFollowCircleAnimationAlpha = 1.0f - std::clamp<float>((float)((curPos - (m_iTime+m_iObjectDuration))) / 1000.0f / OsuGameRules::osu_slider_followcircle_fadeout_fade_time.getFloat(), 0.0f, 1.0f);
 		m_fFollowCircleAnimationAlpha *= m_fFollowCircleAnimationAlpha; // quad in
 	}
 
-	m_fFollowCircleAnimationScale = clamp<float>((float)((curPos - m_iTime)) / 1000.0f / clamp<float>(OsuGameRules::osu_slider_followcircle_fadein_scale_time.getFloat(), 0.0f, m_iObjectDuration/1000.0f), 0.0f, 1.0f);
+	m_fFollowCircleAnimationScale = std::clamp<float>((float)((curPos - m_iTime)) / 1000.0f / std::clamp<float>(OsuGameRules::osu_slider_followcircle_fadein_scale_time.getFloat(), 0.0f, m_iObjectDuration/1000.0f), 0.0f, 1.0f);
 	if (m_bFinished)
 	{
-		m_fFollowCircleAnimationScale = clamp<float>((float)((curPos - (m_iTime+m_iObjectDuration))) / 1000.0f / OsuGameRules::osu_slider_followcircle_fadeout_scale_time.getFloat(), 0.0f, 1.0f);
+		m_fFollowCircleAnimationScale = std::clamp<float>((float)((curPos - (m_iTime+m_iObjectDuration))) / 1000.0f / OsuGameRules::osu_slider_followcircle_fadeout_scale_time.getFloat(), 0.0f, 1.0f);
 	}
 	m_fFollowCircleAnimationScale = -m_fFollowCircleAnimationScale*(m_fFollowCircleAnimationScale-2.0f); // quad out
 

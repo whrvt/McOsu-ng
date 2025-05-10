@@ -838,7 +838,7 @@ void OsuMultiplayer::onServerClientChange(uint32_t id, UString name, bool connec
 	PLAYER_CHANGE_PACKET pp;
 	pp.id = id;
 	pp.connected = connected;
-	pp.size = clamp<int>(name.length(), 0, 254);
+	pp.size = std::clamp<int>(name.length(), 0, 254);
 	for (int i=0; std::cmp_less(i,pp.size); i++)
 	{
 		pp.name[i] = name[i];
@@ -879,7 +879,7 @@ void OsuMultiplayer::onServerClientChange(uint32_t id, UString name, bool connec
 			{
 				pp.id = m_serverPlayers[i].id;
 				pp.connected = true;
-				pp.size = clamp<int>(m_serverPlayers[i].name.length(), 0, 254);
+				pp.size = std::clamp<int>(m_serverPlayers[i].name.length(), 0, 254);
 				for (int n=0; std::cmp_less(n,pp.size); n++)
 				{
 					pp.name[n] = m_serverPlayers[i].name[n];
@@ -1274,7 +1274,7 @@ void OsuMultiplayer::onClientCommandInt(UString string, bool executeLocallyToo)
 	//debugLog("length = %i", string.length());
 
 	CONVAR_PACKET pp;
-	pp.len = clamp<int>(string.length(), 0, 2047);
+	pp.len = std::clamp<int>(string.length(), 0, 2047);
 	for (int i=0; std::cmp_less(i,pp.len); i++)
 	{
 		pp.str[i] = string[i];

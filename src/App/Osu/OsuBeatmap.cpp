@@ -334,10 +334,10 @@ void OsuBeatmap::drawBackground(Graphics *g)
 			const float scale = Osu::getImageScaleToFillResolution(backgroundImage, m_osu->getScreenSize());
 			const Vector2 centerTrans = (m_osu->getScreenSize()/2);
 
-			const float backgroundFadeDimMultiplier = clamp<float>(1.0f - (osu_background_dim.getFloat() - 0.3f), 0.0f, 1.0f);
-			const short dim = clamp<float>((1.0f - osu_background_dim.getFloat()) + m_fBreakBackgroundFade*backgroundFadeDimMultiplier, 0.0f, 1.0f)*255.0f;
+			const float backgroundFadeDimMultiplier = std::clamp<float>(1.0f - (osu_background_dim.getFloat() - 0.3f), 0.0f, 1.0f);
+			const short dim = std::clamp<float>((1.0f - osu_background_dim.getFloat()) + m_fBreakBackgroundFade*backgroundFadeDimMultiplier, 0.0f, 1.0f)*255.0f;
 
-			g->setColor(COLOR((uint8_t)clamp<float>((m_osu_mod_fposu_ref->getBool() ? osu_background_alpha.getFloat() : 1.0f) * 255.0f, 0.0f, 255.0f), (uint8_t)dim, (uint8_t)dim, (uint8_t)dim));
+			g->setColor(COLOR((uint8_t)std::clamp<float>((m_osu_mod_fposu_ref->getBool() ? osu_background_alpha.getFloat() : 1.0f) * 255.0f, 0.0f, 255.0f), (uint8_t)dim, (uint8_t)dim, (uint8_t)dim));
 			g->pushTransform();
 			{
 				g->scale(scale, scale);
@@ -353,10 +353,10 @@ void OsuBeatmap::drawBackground(Graphics *g)
 	{
 		const float brightness = osu_background_brightness.getFloat();
 
-		const short red = clamp<float>(brightness * osu_background_color_r.getFloat(), 0.0f, 255.0f);
-		const short green = clamp<float>(brightness * osu_background_color_g.getFloat(), 0.0f, 255.0f);
-		const short blue = clamp<float>(brightness * osu_background_color_b.getFloat(), 0.0f, 255.0f);
-		const short alpha = clamp<float>((1.0f - m_fBreakBackgroundFade) * (m_osu_mod_fposu_ref->getBool() ? osu_background_alpha.getFloat() : 1.0f), 0.0f, 1.0f) * 255.0f;
+		const short red = std::clamp<float>(brightness * osu_background_color_r.getFloat(), 0.0f, 255.0f);
+		const short green = std::clamp<float>(brightness * osu_background_color_g.getFloat(), 0.0f, 255.0f);
+		const short blue = std::clamp<float>(brightness * osu_background_color_b.getFloat(), 0.0f, 255.0f);
+		const short alpha = std::clamp<float>((1.0f - m_fBreakBackgroundFade) * (m_osu_mod_fposu_ref->getBool() ? osu_background_alpha.getFloat() : 1.0f), 0.0f, 1.0f) * 255.0f;
 
 		g->setColor(COLOR((uint8_t)alpha, (uint8_t)red, (uint8_t)green, (uint8_t)blue));
 		g->fillRect(0, 0, m_osu->getScreenWidth(), m_osu->getScreenHeight());
@@ -612,7 +612,7 @@ void OsuBeatmap::update()
 	{
 		bool blockNextNotes = false;
 
-		const long pvs = !OsuGameRules::osu_mod_mafham.getBool() ? getPVS() : (m_hitobjects.size() > 0 ? (m_hitobjects[clamp<int>(m_iCurrentHitObjectIndex + OsuGameRules::osu_mod_mafham_render_livesize.getInt() + 1, 0, m_hitobjects.size()-1)]->getTime() - m_iCurMusicPosWithOffsets + 1500) : getPVS());
+		const long pvs = !OsuGameRules::osu_mod_mafham.getBool() ? getPVS() : (m_hitobjects.size() > 0 ? (m_hitobjects[std::clamp<int>(m_iCurrentHitObjectIndex + OsuGameRules::osu_mod_mafham_render_livesize.getInt() + 1, 0, m_hitobjects.size()-1)]->getTime() - m_iCurMusicPosWithOffsets + 1500) : getPVS());
 		const bool usePVS = m_osu_pvs->getBool();
 
 		const int notelockType = osu_notelock_type.getInt();
@@ -1858,7 +1858,7 @@ float OsuBeatmap::getRawAR() const
 {
 	if (m_selectedDifficulty2 == NULL) return 5.0f;
 
-	return clamp<float>(m_selectedDifficulty2->getAR() * m_osu->getDifficultyMultiplier(), 0.0f, 10.0f);
+	return std::clamp<float>(m_selectedDifficulty2->getAR() * m_osu->getDifficultyMultiplier(), 0.0f, 10.0f);
 }
 
 float OsuBeatmap::getAR() const
@@ -1892,7 +1892,7 @@ float OsuBeatmap::getCS() const
 {
 	if (m_selectedDifficulty2 == NULL) return 5.0f;
 
-	float CS = clamp<float>(m_selectedDifficulty2->getCS() * m_osu->getCSDifficultyMultiplier(), 0.0f, 10.0f);
+	float CS = std::clamp<float>(m_selectedDifficulty2->getCS() * m_osu->getCSDifficultyMultiplier(), 0.0f, 10.0f);
 	{
 		if (osu_cs_override.getFloat() >= 0.0f)
 			CS = osu_cs_override.getFloat();
@@ -1919,7 +1919,7 @@ float OsuBeatmap::getHP() const
 {
 	if (m_selectedDifficulty2 == NULL) return 5.0f;
 
-	float HP = clamp<float>(m_selectedDifficulty2->getHP() * m_osu->getDifficultyMultiplier(), 0.0f, 10.0f);
+	float HP = std::clamp<float>(m_selectedDifficulty2->getHP() * m_osu->getDifficultyMultiplier(), 0.0f, 10.0f);
 	if (osu_hp_override.getFloat() >= 0.0f)
 		HP = osu_hp_override.getFloat();
 
@@ -1930,7 +1930,7 @@ float OsuBeatmap::getRawOD() const
 {
 	if (m_selectedDifficulty2 == NULL) return 5.0f;
 
-	return clamp<float>(m_selectedDifficulty2->getOD() * m_osu->getDifficultyMultiplier(), 0.0f, 10.0f);
+	return std::clamp<float>(m_selectedDifficulty2->getOD() * m_osu->getDifficultyMultiplier(), 0.0f, 10.0f);
 }
 
 float OsuBeatmap::getOD() const
@@ -2143,14 +2143,14 @@ void OsuBeatmap::addHealth(double percent, bool isFromHitResult)
 	{
 	case 1: // VR
 		{
-			const float targetHealth = clamp<float>(m_fHealth2 + percent, -0.1f, 1.0f);
+			const float targetHealth = std::clamp<float>(m_fHealth2 + percent, -0.1f, 1.0f);
 			m_fHealth = targetHealth;
 			anim->moveQuadOut(&m_fHealth2, targetHealth, osu_drain_vr_duration.getFloat(), true);
 		}
 		break;
 
 	default:
-		m_fHealth = clamp<double>(m_fHealth + percent, 0.0, 1.0);
+		m_fHealth = std::clamp<double>(m_fHealth + percent, 0.0, 1.0);
 		break;
 	}
 
@@ -2198,7 +2198,7 @@ void OsuBeatmap::updateTimingPoints(long curPos)
 
 	const OsuDatabaseBeatmap::TIMING_INFO t = m_selectedDifficulty2->getTimingInfoForTime(curPos + (long)osu_timingpoints_offset.getInt());
 	m_osu->getSkin()->setSampleSet(t.sampleType); // normal/soft/drum is stored in the sample type! the sample set number is for custom sets
-	m_osu->getSkin()->setSampleVolume(clamp<float>(t.volume / 100.0f, 0.0f, 1.0f));
+	m_osu->getSkin()->setSampleVolume(std::clamp<float>(t.volume / 100.0f, 0.0f, 1.0f));
 }
 
 bool OsuBeatmap::isLoading()

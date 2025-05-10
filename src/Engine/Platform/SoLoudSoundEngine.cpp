@@ -108,8 +108,8 @@ bool SoLoudSoundEngine::playSound(SoLoudSound *soloudSound, float pan, float pit
 	if (!soloudSound)
 		return false;
 
-	pan = clamp<float>(pan, -1.0f, 1.0f);
-	pitch = clamp<float>(pitch, 0.0f, 2.0f);
+	pan = std::clamp<float>(pan, -1.0f, 1.0f);
+	pitch = std::clamp<float>(pitch, 0.0f, 2.0f);
 
 	// check if we should allow playing this frame (for overlayable sounds)
 	const bool allowPlayFrame = !soloudSound->isOverlayable() || !snd_restrict_play_frame.getBool() || engine->getTime() > soloudSound->getLastPlayTime();
@@ -354,7 +354,7 @@ void SoLoudSoundEngine::setVolume(float volume)
 	if (!m_bReady)
 		return;
 
-	m_fVolume = clamp<float>(volume, 0.0f, 1.0f);
+	m_fVolume = std::clamp<float>(volume, 0.0f, 1.0f);
 	m_engine.setGlobalVolume(m_fVolume);
 }
 

@@ -28,6 +28,10 @@
 
 #endif
 
+#ifdef __EMSCRIPTEN__
+#include <GL/glew.h>
+#endif
+
 #ifdef __linux__
 
 #define GLEW_STATIC

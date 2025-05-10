@@ -1199,13 +1199,13 @@ void OsuSkin::onEffectVolumeChange(UString oldValue, UString newValue)
 	}
 
 	// restore sample volumes
-	setSampleVolume(clamp<float>((float)m_iSampleVolume / 100.0f, 0.0f, 1.0f), true);
+	setSampleVolume(std::clamp<float>((float)m_iSampleVolume / 100.0f, 0.0f, 1.0f), true);
 }
 
 void OsuSkin::onIgnoreBeatmapSampleVolumeChange(UString oldValue, UString newValue)
 {
 	// restore sample volumes
-	setSampleVolume(clamp<float>((float)m_iSampleVolume / 100.0f, 0.0f, 1.0f), true);
+	setSampleVolume(std::clamp<float>((float)m_iSampleVolume / 100.0f, 0.0f, 1.0f), true);
 }
 
 void OsuSkin::onExport(UString folderName)

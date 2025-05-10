@@ -57,7 +57,7 @@ ConVar osu_options_slider_preview_use_legacy_renderer("osu_options_slider_previe
 
 void _osuOptionsSliderQualityWrapper(UString oldValue, UString newValue)
 {
-	float value = lerp(1.0f, 2.5f, 1.0f - newValue.toFloat());
+	float value = std::lerp(1.0f, 2.5f, 1.0f - newValue.toFloat());
 	convar->getConVarByName("osu_slider_curve_points_separation")->setValue(value);
 };
 ConVar osu_options_slider_quality("osu_options_slider_quality", 0.0f, FCVAR_NONE, _osuOptionsSliderQualityWrapper);
@@ -84,8 +84,8 @@ public:
 
 		if (m_iMode == 0)
 		{
-			float approachScale = clamp<float>(1.0f + 1.5f - fmod(engine->getTime()*3, 3.0f), 0.0f, 2.5f);
-			float approachAlpha = clamp<float>(fmod(engine->getTime()*3, 3.0f)/1.5f, 0.0f, 1.0f);
+			float approachScale = std::clamp<float>(1.0f + 1.5f - fmod(engine->getTime()*3, 3.0f), 0.0f, 2.5f);
+			float approachAlpha = std::clamp<float>(fmod(engine->getTime()*3, 3.0f)/1.5f, 0.0f, 1.0f);
 			approachAlpha = -approachAlpha*(approachAlpha-2.0f);
 			approachAlpha = -approachAlpha*(approachAlpha-2.0f);
 			float approachCircleAlpha = approachAlpha;
@@ -163,8 +163,8 @@ public:
 		const float numberScale = (hitcircleDiameter / (160.0f * (m_osu->getSkin()->isDefault12x() ? 2.0f : 1.0f))) * 1 * convar->getConVarByName("osu_number_scale_multiplier")->getFloat();
 		const float overlapScale = (hitcircleDiameter / (160.0f)) * 1 * convar->getConVarByName("osu_number_scale_multiplier")->getFloat();
 
-		const float approachScale = clamp<float>(1.0f + 1.5f - fmod(engine->getTime()*3, 3.0f), 0.0f, 2.5f);
-		float approachAlpha = clamp<float>(fmod(engine->getTime()*3, 3.0f)/1.5f, 0.0f, 1.0f);
+		const float approachScale = std::clamp<float>(1.0f + 1.5f - fmod(engine->getTime()*3, 3.0f), 0.0f, 2.5f);
+		float approachAlpha = std::clamp<float>(fmod(engine->getTime()*3, 3.0f)/1.5f, 0.0f, 1.0f);
 
 		approachAlpha = -approachAlpha*(approachAlpha-2.0f);
 		approachAlpha = -approachAlpha*(approachAlpha-2.0f);
@@ -1252,10 +1252,10 @@ void OsuOptionsMenu::draw(Graphics *g)
 	{
 		if (!isPlayingBeatmap)
 		{
-			const float brightness = clamp<float>(m_backgroundBrightnessSlider->getFloat(), 0.0f, 1.0f);
-			const short red = clamp<float>(brightness * m_osu_background_color_r_ref->getFloat(), 0.0f, 255.0f);
-			const short green = clamp<float>(brightness * m_osu_background_color_g_ref->getFloat(), 0.0f, 255.0f);
-			const short blue = clamp<float>(brightness * m_osu_background_color_b_ref->getFloat(), 0.0f, 255.0f);
+			const float brightness = std::clamp<float>(m_backgroundBrightnessSlider->getFloat(), 0.0f, 1.0f);
+			const short red = std::clamp<float>(brightness * m_osu_background_color_r_ref->getFloat(), 0.0f, 255.0f);
+			const short green = std::clamp<float>(brightness * m_osu_background_color_g_ref->getFloat(), 0.0f, 255.0f);
+			const short blue = std::clamp<float>(brightness * m_osu_background_color_b_ref->getFloat(), 0.0f, 255.0f);
 			if (brightness > 0.0f)
 			{
 				g->setColor(COLOR(255, red, green, blue));
@@ -1268,7 +1268,7 @@ void OsuOptionsMenu::draw(Graphics *g)
 	{
 		if (!isPlayingBeatmap)
 		{
-			const short dim = clamp<float>(m_backgroundDimSlider->getFloat(), 0.0f, 1.0f)*255.0f;
+			const short dim = std::clamp<float>(m_backgroundDimSlider->getFloat(), 0.0f, 1.0f)*255.0f;
 			g->setColor(COLOR(dim, 0, 0, 0));
 			g->fillRect(0, 0, m_osu->getScreenWidth(), m_osu->getScreenHeight());
 		}
@@ -2380,14 +2380,14 @@ void OsuOptionsMenu::updateNotelockSelectLabel()
 {
 	if (m_notelockSelectLabel == NULL) return;
 
-	m_notelockSelectLabel->setText(m_notelockTypes[clamp<int>(m_osu_notelock_type_ref->getInt(), 0, m_notelockTypes.size() - 1)]);
+	m_notelockSelectLabel->setText(m_notelockTypes[std::clamp<int>(m_osu_notelock_type_ref->getInt(), 0, m_notelockTypes.size() - 1)]);
 }
 
 void OsuOptionsMenu::updateHPDrainSelectLabel()
 {
 	if (m_hpDrainSelectLabel == NULL) return;
 
-	m_hpDrainSelectLabel->setText(m_drainTypes[clamp<int>(m_osu_drain_type_ref->getInt(), 0, m_drainTypes.size() - 1)]);
+	m_hpDrainSelectLabel->setText(m_drainTypes[std::clamp<int>(m_osu_drain_type_ref->getInt(), 0, m_drainTypes.size() - 1)]);
 }
 
 void OsuOptionsMenu::onFullscreenChange(CBaseUICheckbox *checkbox)

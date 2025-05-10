@@ -225,7 +225,7 @@ void SoLoudSound::setPosition(double percent)
 	if (!m_bReady || !m_audioSource)
 		return;
 
-	percent = clamp<double>(percent, 0.0, 1.0);
+	percent = std::clamp<double>(percent, 0.0, 1.0);
 
 	const double sourceLengthInSeconds = m_bStream ? asWavStream()->getLength() : asWav()->getLength();
 
@@ -274,7 +274,7 @@ void SoLoudSound::setVolume(float volume)
 	if (!m_bReady)
 		return;
 
-	m_fVolume = clamp<float>(volume, 0.0f, 1.0f);
+	m_fVolume = std::clamp<float>(volume, 0.0f, 1.0f);
 
 	// apply to active voice if not overlayable
 	if (!m_bIsOverlayable && m_handle != 0)
@@ -292,7 +292,7 @@ void SoLoudSound::setSpeed(float speed)
 	if (!m_bReady)
 		return;
 
-	speed = clamp<float>(speed, 0.05f, 50.0f);
+	speed = std::clamp<float>(speed, 0.05f, 50.0f);
 
 	if (m_speed != speed)
 	{
@@ -337,7 +337,7 @@ void SoLoudSound::setPitch(float pitch)
 	if (!m_bReady)
 		return;
 
-	pitch = clamp<float>(pitch, 0.0f, 2.0f);
+	pitch = std::clamp<float>(pitch, 0.0f, 2.0f);
 
 	if (m_pitch != pitch)
 	{
@@ -372,7 +372,7 @@ void SoLoudSound::setFrequency(float frequency)
 	if (!m_bReady)
 		return;
 
-	frequency = (frequency > 99.0f ? clamp<float>(frequency, 100.0f, 100000.0f) : 0.0f);
+	frequency = (frequency > 99.0f ? std::clamp<float>(frequency, 100.0f, 100000.0f) : 0.0f);
 
 	if (m_frequency != frequency && frequency > 0)
 	{
@@ -390,7 +390,7 @@ void SoLoudSound::setPan(float pan)
 	if (!m_bReady)
 		return;
 
-	pan = clamp<float>(pan, -1.0f, 1.0f);
+	pan = std::clamp<float>(pan, -1.0f, 1.0f);
 
 	// apply to the active voice
 	SoLoudSoundEngine *engine = getSoLoudEngine();
@@ -446,7 +446,7 @@ float SoLoudSound::getPosition()
 		return 0.0f;
 
 	// return relative position
-	return clamp<float>(positionInSeconds / sourceLengthInSeconds, 0.0f, 1.0f);
+	return std::clamp<float>(positionInSeconds / sourceLengthInSeconds, 0.0f, 1.0f);
 }
 
 // slightly tweaked interp algo from the SDL_mixer version, to smooth out position updates

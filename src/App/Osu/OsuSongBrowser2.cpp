@@ -689,7 +689,7 @@ void OsuSongBrowser2::draw(Graphics *g)
 	g->fillRect(0, 0, m_osu->getScreenWidth(), m_osu->getScreenHeight());
 	/*
 	g->setColor(0xffffffff);
-	g->setAlpha(clamp<float>(engine->getMouse()->getPos().x / 400.0f, 0.0f, 1.0f));
+	g->setAlpha(std::clamp<float>(engine->getMouse()->getPos().x / 400.0f, 0.0f, 1.0f));
 	g->fillRect(0, 0, m_osu->getScreenWidth(), m_osu->getScreenHeight());
 	*/
 
@@ -726,7 +726,7 @@ void OsuSongBrowser2::draw(Graphics *g)
 				m_fBackgroundFadeInTime = engine->getTime();
 			else if (m_fBackgroundFadeInTime > 0.0f && engine->getTime() > m_fBackgroundFadeInTime)
 			{
-				alpha = clamp<float>((engine->getTime() - m_fBackgroundFadeInTime)/osu_songbrowser_background_fade_in_duration.getFloat(), 0.0f, 1.0f);
+				alpha = std::clamp<float>((engine->getTime() - m_fBackgroundFadeInTime)/osu_songbrowser_background_fade_in_duration.getFloat(), 0.0f, 1.0f);
 				alpha = 1.0f - (1.0f - alpha)*(1.0f - alpha);
 			}
 		}
@@ -1317,7 +1317,7 @@ void OsuSongBrowser2::update()
 				if (m_iBackgroundStarCalculationIndex >= m_beatmaps.size())
 					m_iBackgroundStarCalculationIndex = 0;
 
-				m_iBackgroundStarCalculationIndex = clamp<int>(m_iBackgroundStarCalculationIndex, 0, m_beatmaps.size());
+				m_iBackgroundStarCalculationIndex = std::clamp<int>(m_iBackgroundStarCalculationIndex, 0, m_beatmaps.size());
 			}
 		}
 	}
@@ -2060,7 +2060,7 @@ void OsuSongBrowser2::addBeatmap(OsuDatabaseBeatmap *beatmap)
 		{
 			for (size_t i=0; i<tempChildrenForGroups.size(); i++)
 			{
-				const int index = clamp<int>((int)tempChildrenForGroups[i]->getDatabaseBeatmap()->getStarsNomod(), 0, 11);
+				const int index = std::clamp<int>((int)tempChildrenForGroups[i]->getDatabaseBeatmap()->getStarsNomod(), 0, 11);
 				m_difficultyCollectionButtons[index]->getChildren().push_back(tempChildrenForGroups[i]);
 			}
 		}
@@ -2187,7 +2187,7 @@ void OsuSongBrowser2::readdBeatmap(OsuDatabaseBeatmap *diff2)
 			// HACKHACK: partial code duplication, see addBeatmap()
 			if (m_difficultyCollectionButtons.size() == 12)
 			{
-				const int index = clamp<int>((int)diff2->getStarsNomod(), 0, 11);
+				const int index = std::clamp<int>((int)diff2->getStarsNomod(), 0, 11);
 				m_difficultyCollectionButtons[index]->getChildren().push_back(difficultyGroupButton);
 			}
 		}
@@ -2803,7 +2803,7 @@ void OsuSongBrowser2::updateLayout()
 
 	const int topbarRightTabButtonMargin = 10 * dpiScale;
 	const int topbarRightTabButtonHeight = 30 * dpiScale;
-	const int topbarRightTabButtonWidth = clamp<float>((float)(m_topbarRight->getSize().x - 2*topbarRightTabButtonMargin) / (float)m_topbarRightTabButtons.size(), 0.0f, 200.0f * dpiScale);
+	const int topbarRightTabButtonWidth = std::clamp<float>((float)(m_topbarRight->getSize().x - 2*topbarRightTabButtonMargin) / (float)m_topbarRightTabButtons.size(), 0.0f, 200.0f * dpiScale);
 	for (int i=0; i<m_topbarRightTabButtons.size(); i++)
 	{
 		m_topbarRightTabButtons[i]->onResized(); // HACKHACK: framework bug (should update string metrics on setSize())
@@ -2820,7 +2820,7 @@ void OsuSongBrowser2::updateLayout()
 
 	const int topbarRightSortButtonMargin = 10 * dpiScale;
 	const int topbarRightSortButtonHeight = 30 * dpiScale;
-	const int topbarRightSortButtonWidth = clamp<float>((float)(m_topbarRight->getSize().x - 2*topbarRightSortButtonMargin) / (float)m_topbarRightSortButtons.size(), 0.0f, 200.0f * dpiScale);
+	const int topbarRightSortButtonWidth = std::clamp<float>((float)(m_topbarRight->getSize().x - 2*topbarRightSortButtonMargin) / (float)m_topbarRightSortButtons.size(), 0.0f, 200.0f * dpiScale);
 	for (int i=0; i<m_topbarRightSortButtons.size(); i++)
 	{
 		m_topbarRightSortButtons[i]->setSize(topbarRightSortButtonWidth, topbarRightSortButtonHeight);

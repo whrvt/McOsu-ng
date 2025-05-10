@@ -180,7 +180,7 @@ void OsuUISongBrowserUserButton::draw(Graphics *g)
 			const float barWidth = (int)((m_vSize.x - 2*barBorder)*0.55f);
 			g->setColor(0xffaaaaaa);
 			g->drawRect(m_vPos.x + m_vSize.x - barWidth - barBorder - 1, m_vPos.y + m_vSize.y - barHeight - barBorder, barWidth, barHeight);
-			g->fillRect(m_vPos.x + m_vSize.x - barWidth - barBorder - 1, m_vPos.y + m_vSize.y - barHeight - barBorder, barWidth*clamp<float>(m_fPercentToNextLevel, 0.0f, 1.0f), barHeight);
+			g->fillRect(m_vPos.x + m_vSize.x - barWidth - barBorder - 1, m_vPos.y + m_vSize.y - barHeight - barBorder, barWidth*std::clamp<float>(m_fPercentToNextLevel, 0.0f, 1.0f), barHeight);
 		}
 
 		// draw pp increase/decrease delta
