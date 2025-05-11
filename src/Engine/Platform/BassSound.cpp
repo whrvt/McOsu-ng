@@ -88,7 +88,8 @@ void BassSound::initAsync()
 				McFile wavFile(m_sFilePath);
 				if (wavFile.getFileSize() < (size_t)minWavFileSize)
 				{
-					debugLog("Sound: Ignoring malformed/corrupt WAV file (%i) %s\n", (int)wavFile.getFileSize(), m_sFilePath.toUtf8());
+					if (debug_snd.getBool())
+						debugLog("Sound: Ignoring malformed/corrupt WAV file (%i) %s\n", (int)wavFile.getFileSize(), m_sFilePath.toUtf8());
 					return;
 				}
 			}
@@ -107,7 +108,7 @@ void BassSound::initAsync()
 			extraStreamCreateFileFlags |= BASS_SAMPLE_FLOAT;
 			extraFXTempoCreateFlags |= BASS_STREAM_DECODE;
 		}
-		m_HSTREAM = BASS_StreamCreateFile(FALSE, m_sFilePath.plat_str(), 0, 0,
+		m_HSTREAM = BASS_StreamCreateFile(BASS_FILE_NAME, m_sFilePath.plat_str(), 0, 0,
 		                                  (m_bPrescan ? BASS_STREAM_PRESCAN : 0) | BASS_STREAM_DECODE | extraStreamCreateFileFlags | unicodeFlag);
 
 		m_HSTREAM = BASS_FX_TempoCreate(m_HSTREAM, BASS_FX_TEMPO_ALGO_SHANNON | BASS_FX_FREESOURCE | extraFXTempoCreateFlags);
@@ -145,7 +146,11 @@ void BassSound::initAsync()
 		m_HSTREAMBACKUP = m_HSTREAM; // needed for proper cleanup for FX HSAMPLES
 
 		if (m_HSTREAM == 0)
-			debugLog("Sound Error: BASS_SampleLoad() error %i on file %s\n", BASS_ErrorGetCode(), m_sFilePath.toUtf8());
+		{
+			auto code = BASS_ErrorGetCode();
+			if (debug_snd.getBool() || (code != BASS_ERROR_NOTAUDIO && code != BASS_ERROR_EMPTY))
+				debugLog("Sound Error: BASS_SampleLoad() error %i on file %s\n", code, m_sFilePath.toUtf8());
+		}
 	}
 
 	m_bAsyncReady = true;

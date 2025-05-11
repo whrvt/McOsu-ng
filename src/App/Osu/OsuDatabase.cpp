@@ -2078,7 +2078,7 @@ void OsuDatabase::loadScores()
 
 						if (md5hash.length() < 32)
 						{
-							debugLog("WARNING: Invalid score with md5hash.length() = %i!\n", md5hash.length());
+							debugLog("WARNING: Invalid score on beatmap %i with md5hash.length() = %i!\n", b, md5hash.length());
 							continue;
 						}
 						else if (md5hash.length() > 32)
@@ -2254,7 +2254,7 @@ void OsuDatabase::loadScores()
 
 					if (md5hash.length() < 32)
 					{
-						debugLog("WARNING: Invalid score with md5hash.length() = %i!\n", md5hash.length());
+						debugLog("WARNING: Invalid score on beatmap %i with md5hash.length() = %i!\n", b, md5hash.length());
 						continue;
 					}
 					else if (md5hash.length() > 32)

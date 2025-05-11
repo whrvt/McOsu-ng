@@ -24,6 +24,9 @@ ConVar *McFile::size_max = &file_size_max;
 
 McFile::McFile(UString filePath, TYPE type) : m_filePath(filePath), m_type(type), m_ready(false), m_fileSize(0)
 {
+	if (filePath.isEmpty())
+		return;
+
 	auto path = ::path(m_filePath.plat_str());
 	if (type == TYPE::READ)
 	{

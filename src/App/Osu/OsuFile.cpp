@@ -9,6 +9,8 @@
 
 #include "Engine.h"
 #include "File.h"
+
+#include <utility>
 #include "MD5.h"
 
 constexpr const uint64_t OsuFile::MAX_STRING_LENGTH;
@@ -277,20 +279,20 @@ std::string OsuFile::readStdString()
 {
 	std::string value;
 
-	const unsigned char flag = readByte();
+	const auto flag = readByte();
 	if (flag > 0)
 	{
-		const uint64_t strLength = readULEB128();
+		const auto strLength = readULEB128();
 
 		if (strLength > 0)
 		{
 			value.reserve(std::min(strLength, MAX_STRING_LENGTH));
 
-			for (uint64_t i=0; i<strLength; i++)
+			for (auto i=0; std::cmp_less(i, strLength); i++)
 			{
-				const unsigned char character = readByte();
-				if (i < std::min(strLength, MAX_STRING_LENGTH))
-					value += character;
+				const auto character = readByte();
+				if (std::cmp_less(i, std::min(strLength, MAX_STRING_LENGTH)))
+					value += static_cast<char>(character);
 			}
 		}
 	}
