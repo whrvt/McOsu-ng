@@ -575,6 +575,14 @@ AC_SUBST([BUNDLED_LIBS_DIR])
 AC_SUBST([BUNDLED_BASS_DIR])
 AC_SUBST([BUNDLED_BASS_FX_DIR])
 
+AC_MSG_CHECKING([for default config in $srcdir/$ASSETS_DIR/cfg])
+AS_IF([test -f "$srcdir/$ASSETS_DIR/cfg/override.cfg"], [
+    AC_MSG_RESULT([yes])
+], [
+    AC_MSG_RESULT([no])
+    AC_MSG_ERROR([McOsu-ng default config is missing!])
+])
+
 AC_MSG_CHECKING([for models in $srcdir/$ASSETS_DIR/models])
 AS_IF([test -d "$srcdir/$ASSETS_DIR/models"], [
     AC_MSG_RESULT([yes])

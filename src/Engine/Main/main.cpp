@@ -177,9 +177,6 @@ SDL_AppResult SDLMain::initialize(int argc, char *argv[])
 	// initialize engine
 	m_engine = new Engine(this, argc > 1 ? argv[1] : "");
 
-	// create timer
-	m_deltaTimer = new Timer();
-
 	// make window visible
 	SDL_ShowWindow(m_window);
 	SDL_RaiseWindow(m_window);
@@ -187,8 +184,8 @@ SDL_AppResult SDLMain::initialize(int argc, char *argv[])
 	// load app
 	m_engine->loadApp();
 
-	// start timer
-	m_deltaTimer->update();
+	// start engine frame timer
+	m_deltaTimer = new Timer();
 
 	// get the screen refresh rate, and set fps_max to that as default
 	{

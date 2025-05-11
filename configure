@@ -10324,6 +10324,23 @@ fi
 
 
 
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for default config in $srcdir/$ASSETS_DIR/cfg" >&5
+printf %s "checking for default config in $srcdir/$ASSETS_DIR/cfg... " >&6; }
+if test -f "$srcdir/$ASSETS_DIR/cfg/override.cfg"
+then :
+
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+
+else case e in #(
+  e)
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+    as_fn_error $? "McOsu-ng default config is missing!" "$LINENO" 5
+ ;;
+esac
+fi
+
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for models in $srcdir/$ASSETS_DIR/models" >&5
 printf %s "checking for models in $srcdir/$ASSETS_DIR/models... " >&6; }
 if test -d "$srcdir/$ASSETS_DIR/models"
