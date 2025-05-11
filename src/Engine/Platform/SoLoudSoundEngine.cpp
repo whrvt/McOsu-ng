@@ -404,7 +404,7 @@ void SoLoudSoundEngine::updateOutputDevices(bool handleOutputDeviceChanges, bool
 	}
 }
 
-bool SoLoudSoundEngine::initializeOutputDevice(int id)
+bool SoLoudSoundEngine::initializeOutputDevice(int id, bool force)
 {
 	debugLog("SoundEngine: initializeOutputDevice(%i) ...\n", id);
 

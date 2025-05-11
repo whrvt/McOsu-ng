@@ -54,7 +54,6 @@ ConVar osu_options_save_on_back("osu_options_save_on_back", true, FCVAR_NONE);
 ConVar osu_options_high_quality_sliders("osu_options_high_quality_sliders", false, FCVAR_NONE);
 ConVar osu_mania_keylayout_wizard("osu_mania_keylayout_wizard");
 ConVar osu_options_slider_preview_use_legacy_renderer("osu_options_slider_preview_use_legacy_renderer", false, FCVAR_NONE, "apparently newer AMD drivers with old gpus are crashing here with the legacy renderer? was just me being lazy anyway, so now there is a vao render path as it should be");
-ConVar osu_options_osu_folder("osu_options_osu_folder");
 
 void _osuOptionsSliderQualityWrapper(UString oldValue, UString newValue)
 {
@@ -509,6 +508,8 @@ OsuOptionsMenu::OsuOptionsMenu(Osu *osu) : OsuScreenBackable(osu)
 	m_bWASAPIBufferChangeScheduled = false;
 	m_bWASAPIPeriodChangeScheduled = false;
 
+	m_bIsOsuFolderDialogOpen = false;
+
 	m_iNumResetAllKeyBindingsPressed = 0;
 	m_iNumResetEverythingPressed = 0;
 
@@ -585,9 +586,6 @@ OsuOptionsMenu::OsuOptionsMenu(Osu *osu) : OsuScreenBackable(osu)
 	browseForOsuFolderButton->setClickCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onBrowseOsuFolderClicked) );
 	browseForOsuFolderButton->setColor(0xff999999);
 
-	osu_options_osu_folder.setValue(convar->getConVarByName("osu_folder")->getString());
-	osu_options_osu_folder.setCallback(fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onBrowseOsuFolderChanged));
-
 	addLabel("");
 	addLabel("osu!lazer databases are not supported.")->setTextColor(0xff770000);
 	//addSpacer();
@@ -619,8 +617,7 @@ OsuOptionsMenu::OsuOptionsMenu(Osu *osu) : OsuScreenBackable(osu)
 	addSubSection("Renderer");
 	addCheckbox("VSync", "If enabled: plz enjoy input lag.", convar->getConVarByName("vsync"));
 
-	if constexpr (Env::cfg(OS::WINDOWS))
-		addCheckbox("High Priority (!)", "WARNING: Only enable this if nothing else works!\nSets the process priority to High.\nMay fix microstuttering and other weird problems.\nTry to fix your broken computer/OS/drivers first!", convar->getConVarByName("win_processpriority"));
+	addCheckbox("High Priority", "Sets the process priority to High.\nMay fix microstuttering and other weird problems.\nTry to fix your broken computer/OS/drivers first!", convar->getConVarByName("processpriority"));
 
 	addCheckbox("Show FPS Counter", convar->getConVarByName("osu_draw_fps"));
 
@@ -2693,39 +2690,39 @@ void OsuOptionsMenu::onResolutionSelect()
 
 	// 4:3
 	resolutions.emplace_back(800, 600);
-    resolutions.emplace_back(1024, 768);
-    resolutions.emplace_back(1152, 864);
-    resolutions.emplace_back(1280, 960);
-    resolutions.emplace_back(1280, 1024);
-    resolutions.emplace_back(1600, 1200);
-    resolutions.emplace_back(1920, 1440);
-    resolutions.emplace_back(2560, 1920);
+	resolutions.emplace_back(1024, 768);
+	resolutions.emplace_back(1152, 864);
+	resolutions.emplace_back(1280, 960);
+	resolutions.emplace_back(1280, 1024);
+	resolutions.emplace_back(1600, 1200);
+	resolutions.emplace_back(1920, 1440);
+	resolutions.emplace_back(2560, 1920);
 
-    // 16:9 and 16:10
-    resolutions.emplace_back(1024, 600);
-    resolutions.emplace_back(1280, 720);
-    resolutions.emplace_back(1280, 768);
-    resolutions.emplace_back(1280, 800);
-    resolutions.emplace_back(1360, 768);
-    resolutions.emplace_back(1366, 768);
-    resolutions.emplace_back(1440, 900);
-    resolutions.emplace_back(1600, 900);
-    resolutions.emplace_back(1600, 1024);
-    resolutions.emplace_back(1680, 1050);
-    resolutions.emplace_back(1920, 1080);
-    resolutions.emplace_back(1920, 1200);
-    resolutions.emplace_back(2560, 1440);
-    resolutions.emplace_back(2560, 1600);
-    resolutions.emplace_back(3840, 2160);
-    resolutions.emplace_back(5120, 2880);
-    resolutions.emplace_back(7680, 4320);
+	// 16:9 and 16:10
+	resolutions.emplace_back(1024, 600);
+	resolutions.emplace_back(1280, 720);
+	resolutions.emplace_back(1280, 768);
+	resolutions.emplace_back(1280, 800);
+	resolutions.emplace_back(1360, 768);
+	resolutions.emplace_back(1366, 768);
+	resolutions.emplace_back(1440, 900);
+	resolutions.emplace_back(1600, 900);
+	resolutions.emplace_back(1600, 1024);
+	resolutions.emplace_back(1680, 1050);
+	resolutions.emplace_back(1920, 1080);
+	resolutions.emplace_back(1920, 1200);
+	resolutions.emplace_back(2560, 1440);
+	resolutions.emplace_back(2560, 1600);
+	resolutions.emplace_back(3840, 2160);
+	resolutions.emplace_back(5120, 2880);
+	resolutions.emplace_back(7680, 4320);
 
-    // wtf
-    resolutions.emplace_back(4096, 2160);
+	// wtf
+	resolutions.emplace_back(4096, 2160);
 
-    // get custom resolutions
-    std::vector<Vector2> customResolutions;
-    std::ifstream customres("cfg/customres.cfg");
+	// get custom resolutions
+	std::vector<Vector2> customResolutions;
+	std::ifstream customres("cfg/customres.cfg");
 	std::string curLine;
 	while (std::getline(customres, curLine))
 	{
@@ -2790,7 +2787,7 @@ void OsuOptionsMenu::onOutputDeviceSelect()
 {
 	std::vector<UString> outputDevices = engine->getSound()->getOutputDevices();
 
-    // build context menu
+	// build context menu
 	m_contextMenu->setPos(m_outputDeviceSelectButton->getPos());
 	m_contextMenu->setRelPos(m_outputDeviceSelectButton->getRelPos());
 	m_contextMenu->begin();
@@ -2866,25 +2863,30 @@ void OsuOptionsMenu::onManuallyManageBeatmapsClicked()
 	env->openURLInDefaultBrowser("https://steamcommunity.com/sharedfiles/filedetails/?id=880768265");
 }
 
-void OsuOptionsMenu::onBrowseOsuFolderChanged(UString oldval, UString newval)
-{
-	if (oldval == newval)
-		return;
-
-	if (newval.isEmpty())
-		m_osu->getNotificationOverlay()->addNotification("Please enter your beatmap folder manually.", 0xff770000, false, 1.0f);
-	else
-	{
-		convar->getConVarByName("osu_folder")->setValue(newval);
-		m_osuFolderTextbox->setText(newval);
-		updateOsuFolder();
-	}
-}
-
 void OsuOptionsMenu::onBrowseOsuFolderClicked()
 {
-	m_osu->getNotificationOverlay()->addNotification("Opening file browser ...", 0xffffffff, false, 0.75f);
-	env->openFolderWindow(osu_options_osu_folder, convar->getConVarByName("osu_folder")->getString());
+	if (!m_bIsOsuFolderDialogOpen)
+	{
+		m_bIsOsuFolderDialogOpen = true;
+		m_osu->getNotificationOverlay()->addNotification("Opening file browser ...", 0xffffffff, false, 0.75f);
+
+		env->openFolderWindow(
+			[this](const std::vector<UString>& paths) {
+				m_bIsOsuFolderDialogOpen = false;
+				if (paths.empty()) {
+					m_osu->getNotificationOverlay()->addNotification("No folder selected.", 0xff770000, false, 1.0f);
+					return;
+				}
+
+				// use the first selected path
+				UString newPath = paths[0];
+				convar->getConVarByName("osu_folder")->setValue(newPath);
+				m_osuFolderTextbox->setText(newPath);
+				updateOsuFolder();
+			},
+			convar->getConVarByName("osu_folder")->getString()
+		);
+	}
 }
 
 void OsuOptionsMenu::onCM360CalculatorLinkClicked()
@@ -2895,7 +2897,7 @@ void OsuOptionsMenu::onCM360CalculatorLinkClicked()
 
 void OsuOptionsMenu::onNotelockSelect()
 {
-    // build context menu
+	// build context menu
 	m_contextMenu->setPos(m_notelockSelectButton->getPos());
 	m_contextMenu->setRelPos(m_notelockSelectButton->getRelPos());
 	m_contextMenu->begin(m_notelockSelectButton->getSize().x);
@@ -2934,7 +2936,7 @@ void OsuOptionsMenu::onNotelockSelectResetUpdate()
 
 void OsuOptionsMenu::onHPDrainSelect()
 {
-    // build context menu
+	// build context menu
 	m_contextMenu->setPos(m_hpDrainSelectButton->getPos());
 	m_contextMenu->setRelPos(m_hpDrainSelectButton->getRelPos());
 	m_contextMenu->begin(m_hpDrainSelectButton->getSize().x);
@@ -3667,10 +3669,10 @@ void OsuOptionsMenu::onResetEverythingClicked(CBaseUIButton *button)
 
 void OsuOptionsMenu::addSpacer(unsigned num)
 {
-    OPTIONS_ELEMENT e;
-    e.type = 0;
-    e.cvar = NULL;
-    m_elements.insert(m_elements.end(), num, e);
+	OPTIONS_ELEMENT e;
+	e.type = 0;
+	e.cvar = NULL;
+	m_elements.insert(m_elements.end(), num, e);
 }
 
 CBaseUILabel *OsuOptionsMenu::addSection(UString text)

@@ -481,8 +481,8 @@ void BassSoundEngine::setOutputDeviceForce(UString outputDeviceName)
 		if (m_outputDevices[i].name == outputDeviceName)
 		{
 			int previousOutputDevice = m_iCurrentOutputDevice;
-			if (!initializeOutputDevice(m_outputDevices[i].id))
-				initializeOutputDevice(previousOutputDevice); // if something went wrong, automatically switch back to the previous device
+			if (!initializeOutputDevice(m_outputDevices[i].id, true))
+				initializeOutputDevice(previousOutputDevice, true); // if something went wrong, automatically switch back to the previous device
 			return;
 		}
 	}
@@ -526,6 +526,13 @@ void BassSoundEngine::set3dPosition(Vector3 headPos, Vector3 viewDir, Vector3 vi
 
 void BassSoundEngine::onFreqChanged(UString oldValue, UString newValue)
 {
+	if (oldValue == newValue)
+	{
+		debugLog("SoundEngine: frequency unchanged (%s).\n", newValue.toUtf8());
+		return;
+	}
+	debugLog("SoundEngine: frequency changed (%s)->(%s).\n", oldValue.toUtf8(), newValue.toUtf8());
+
 	restart();
 }
 
@@ -620,24 +627,40 @@ void BassSoundEngine::updateOutputDevices(bool handleOutputDeviceChanges, bool p
 	}
 }
 
-bool BassSoundEngine::initializeOutputDevice(int id)
+bool BassSoundEngine::initializeOutputDevice(int id, bool force)
 {
-	debugLog("SoundEngine: initializeOutputDevice( %i, fallback = %i ) ...\n", id, (int)win_snd_fallback_dsound.getBool());
-
-	m_iCurrentOutputDevice = id;
+	bool needsReinit = (!m_bReady || id != m_iCurrentOutputDevice || force);
 
 	// allow users to override some defaults (but which may cause beatmap desyncs)
 	// we only want to set these if their values have been explicitly modified (to avoid sideeffects in the default case, and for my sanity)
 	{
 		if (snd_updateperiod.getFloat() != snd_updateperiod.getDefaultFloat())
+		{
 			BASS_SetConfig(BASS_CONFIG_UPDATEPERIOD, snd_updateperiod.getInt());
+			needsReinit = true;
+		}
 
 		if (snd_dev_buffer.getFloat() != snd_dev_buffer.getDefaultFloat())
+		{
 			BASS_SetConfig(BASS_CONFIG_DEV_BUFFER, snd_dev_buffer.getInt());
+			needsReinit = true;
+		}
 
 		if (snd_dev_period.getFloat() != snd_dev_period.getDefaultFloat())
+		{
 			BASS_SetConfig(BASS_CONFIG_DEV_PERIOD, snd_dev_period.getInt());
+			needsReinit = true;
+		}
 	}
+
+	if (!needsReinit)
+	{
+		debugLog("SoundEngine: initializeOutputDevice( %i ) already init.\n");
+		return true;
+	}
+	debugLog("SoundEngine: initializeOutputDevice( %i, fallback = %i ) ...\n", id, (int)win_snd_fallback_dsound.getBool());
+
+	m_iCurrentOutputDevice = id;
 
 	// cleanup potential previous device
 	BASS_Free();

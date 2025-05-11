@@ -219,7 +219,7 @@ void SDLSoundEngine::updateOutputDevices(bool handleOutputDeviceChanges, bool pr
 	// currently not implemented for SDL
 }
 
-bool SDLSoundEngine::initializeOutputDevice(int id)
+bool SDLSoundEngine::initializeOutputDevice(int id, bool force)
 {
 	// cleanup potential previous device
 	if (m_bReady)

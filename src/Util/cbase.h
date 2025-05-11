@@ -36,15 +36,24 @@
 #include <cstdint>
 #include <cstring>
 
+// DEFS
+
+#ifdef NULL
+#undef NULL
+#endif
+#define NULL nullptr
+
+// ENVIRONMENT
+
 #include "BaseEnvironment.h"
+
+// UTIL
 
 #define SAFE_DELETE(p) { if(p) { delete (p); (p) = NULL; } }
 
 constexpr const auto PI = std::numbers::pi;
 constexpr const auto PIOVER180 = (PI/180.0f);
 constexpr const auto ONE80OVERPI = (180.0f/PI);
-
-// UTIL
 
 template <class T>
 constexpr forceinline float deg2rad(T deg)
@@ -94,28 +103,5 @@ template <typename T>
 #include "Vectors.h"
 #include "Matrices.h"
 #include "Rect.h"
-
-
-// DEFS
-
-#ifdef NULL
-#undef NULL
-#endif
-#define NULL nullptr
-
-/*
-#ifndef DWORD
-typedef unsigned long 	DWORD;
-#endif
-#ifndef WORD
-typedef unsigned short	WORD;
-#endif
-#ifndef BYTE
-typedef unsigned char	BYTE;
-#endif
-#ifndef UINT8
-typedef unsigned char 	UINT8;
-#endif
-*/
 
 #endif

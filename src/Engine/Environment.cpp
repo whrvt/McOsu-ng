@@ -31,6 +31,8 @@
 extern ConVar mouse_sensitivity;
 extern ConVar mouse_raw_input;
 
+extern ConVar _processpriority;
+
 // declarations
 static inline std::vector<UString> enumerateDirectory(const char *pathToEnum, SDL_PathType type);
 static inline void winSortInPlace(std::vector<UString> &toSort);
@@ -41,8 +43,8 @@ ConVar debug_sdl("debug_sdl", false, FCVAR_NONE);
 ConVar _debug_env("debug_env", false, FCVAR_NONE);
 ConVar _fullscreen_windowed_borderless_("fullscreen_windowed_borderless", false, FCVAR_NONE);
 ConVar _monitor_("monitor", 0, FCVAR_NONE, "monitor/display device to switch to, 0 = primary monitor");
+
 ConVar *Environment::debug_env = &_debug_env;
-Environment::FileDialogState Environment::s_fileDialogState = {.done = true, .result = ""};
 
 Environment::Environment()
 {
@@ -108,6 +110,7 @@ Environment::Environment()
 	mouse_raw_input.setCallback(fastdelegate::MakeDelegate(this, &Environment::onRawInputChange));
 	_fullscreen_windowed_borderless_.setCallback(fastdelegate::MakeDelegate(this, &Environment::onFullscreenWindowBorderlessChange));
 	_monitor_.setCallback(fastdelegate::MakeDelegate(this, &Environment::onMonitorChange));
+	_processpriority.setCallback(fastdelegate::MakeDelegate(this, &Environment::onProcessPriorityChange));
 }
 
 Environment::~Environment()
@@ -122,7 +125,7 @@ Environment::~Environment()
 // well this doesn't do much atm... called at the end of engine->onUpdate
 void Environment::update()
 {
-	//Environment::update();
+	// Environment::update();
 
 	m_bIsCursorInsideWindow = m_bHasFocus && McRect(0, 0, m_engine->getScreenWidth(), m_engine->getScreenHeight()).contains(getMousePos());
 }
@@ -395,24 +398,31 @@ void Environment::showMessageErrorFatal(UString title, UString message) const
 	showMessageError(title, message);
 }
 
-// WIP
-void Environment::fileDialogCallback(void *userdata, const char *const *filelist, int filter)
+// TODO: filter?
+void Environment::sdlFileDialogCallback(void *userdata, const char *const *filelist, int filter)
 {
-	if (filelist && *filelist)
+	auto *callbackData = static_cast<FileDialogCallbackData *>(userdata);
+	if (!callbackData)
+		return;
+
+	std::vector<UString> results;
+
+	if (filelist)
 	{
-		s_fileDialogState.result = UString(*filelist);
-		if (userdata != NULL)
-			static_cast<ConVar *>(userdata)->setValue(*filelist); // TODO: make this less fragile (convars are a bad way to handle this, e.g. multiple files???)
+		for (const char *const *curr = filelist; *curr; curr++)
+		{
+			results.emplace_back(*curr);
+		}
 	}
-	else
-	{
-		s_fileDialogState.result = "";
-	}
-	s_fileDialogState.done = true;
+
+	// call the callback
+	callbackData->callback(results);
+
+	// data is no longer needed
+	delete callbackData;
 }
 
-// TODO: result unused, needs a way to signal the callback like openFolderWindow
-void Environment::openFileWindow(const char *filetypefilters, UString title, UString initialpath) const
+void Environment::openFileWindow(FileDialogCallback callback, const char *filetypefilters, UString title, UString initialpath) const
 {
 	// convert filetypefilters (Windows-style)
 	std::vector<std::string> filterNames;
@@ -442,28 +452,21 @@ void Environment::openFileWindow(const char *filetypefilters, UString title, USt
 		}
 	}
 
-	// reset static file dialog state
-	s_fileDialogState.done = false;
-	s_fileDialogState.result = "";
+	// callback data to be passed to SDL
+	auto *callbackData = new FileDialogCallbackData{callback};
 
 	// show it
-	SDL_ShowOpenFileDialog(fileDialogCallback, nullptr, m_window, sdlFilters.empty() ? nullptr : sdlFilters.data(), static_cast<int>(sdlFilters.size()),
+	SDL_ShowOpenFileDialog(sdlFileDialogCallback, callbackData, m_window, sdlFilters.empty() ? nullptr : sdlFilters.data(), static_cast<int>(sdlFilters.size()),
 	                       initialpath.length() > 0 ? initialpath.toUtf8() : nullptr, false);
-
-	return;
 }
 
-// TODO: what if multiple of these could be opened at once? or openFolderWindow + openFileWindow?
-void Environment::openFolderWindow(ConVar &callback, UString initialpath) const
+void Environment::openFolderWindow(FileDialogCallback callback, UString initialpath) const
 {
-	// reset static file dialog state
-	s_fileDialogState.done = false;
-	s_fileDialogState.result = "";
+	// callback data to be passed to SDL
+	auto *callbackData = new FileDialogCallbackData{callback};
 
 	// show it
-	SDL_ShowOpenFolderDialog(fileDialogCallback, &callback, m_window, initialpath.length() > 0 ? initialpath.toUtf8() : nullptr, false);
-
-	return;
+	SDL_ShowOpenFolderDialog(sdlFileDialogCallback, callbackData, m_window, initialpath.length() > 0 ? initialpath.toUtf8() : nullptr, false);
 }
 
 void Environment::focus()
@@ -553,30 +556,34 @@ HWND Environment::getHwnd() const
 {
 	HWND hwnd = nullptr;
 #if defined(MCENGINE_PLATFORM_WINDOWS)
-    hwnd = (HWND)SDL_GetPointerProperty(SDL_GetWindowProperties(m_window), SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
-    if (!hwnd)
-        debugLog("(Windows) hwnd is null! SDL: %s\n", SDL_GetError());
+	hwnd = (HWND)SDL_GetPointerProperty(SDL_GetWindowProperties(m_window), SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
+	if (!hwnd)
+		debugLog("(Windows) hwnd is null! SDL: %s\n", SDL_GetError());
 #elif defined(__MACOS__)
 #error "no macos support currently"
-    NSWindow *nswindow = (__bridge NSWindow *)SDL_GetPointerProperty(SDL_GetWindowProperties(m_window), SDL_PROP_WINDOW_COCOA_WINDOW_POINTER, NULL);
-    if (nswindow) {
-    }
+	NSWindow *nswindow = (__bridge NSWindow *)SDL_GetPointerProperty(SDL_GetWindowProperties(m_window), SDL_PROP_WINDOW_COCOA_WINDOW_POINTER, NULL);
+	if (nswindow)
+	{
+	}
 #elif defined(MCENGINE_PLATFORM_LINUX)
-    if (SDL_strcmp(SDL_GetCurrentVideoDriver(), "x11") == 0) {
-        auto *xdisplay = (Display *)SDL_GetPointerProperty(SDL_GetWindowProperties(m_window), SDL_PROP_WINDOW_X11_DISPLAY_POINTER, NULL);
-        auto xwindow = (Window)SDL_GetNumberProperty(SDL_GetWindowProperties(m_window), SDL_PROP_WINDOW_X11_WINDOW_NUMBER, 0);
-        if (xdisplay && xwindow)
-            hwnd = (HWND)xwindow;
+	if (SDL_strcmp(SDL_GetCurrentVideoDriver(), "x11") == 0)
+	{
+		auto *xdisplay = (Display *)SDL_GetPointerProperty(SDL_GetWindowProperties(m_window), SDL_PROP_WINDOW_X11_DISPLAY_POINTER, NULL);
+		auto xwindow = (Window)SDL_GetNumberProperty(SDL_GetWindowProperties(m_window), SDL_PROP_WINDOW_X11_WINDOW_NUMBER, 0);
+		if (xdisplay && xwindow)
+			hwnd = (HWND)xwindow;
 		else
 			debugLog("(X11) no display/no surface! SDL: %s\n", SDL_GetError());
-    } else if (SDL_strcmp(SDL_GetCurrentVideoDriver(), "wayland") == 0) {
-        struct wl_display *display = (struct wl_display *)SDL_GetPointerProperty(SDL_GetWindowProperties(m_window), SDL_PROP_WINDOW_WAYLAND_DISPLAY_POINTER, NULL);
-        struct wl_surface *surface = (struct wl_surface *)SDL_GetPointerProperty(SDL_GetWindowProperties(m_window), SDL_PROP_WINDOW_WAYLAND_SURFACE_POINTER, NULL);
-        if (display && surface)
-            hwnd = (HWND)surface;
+	}
+	else if (SDL_strcmp(SDL_GetCurrentVideoDriver(), "wayland") == 0)
+	{
+		struct wl_display *display = (struct wl_display *)SDL_GetPointerProperty(SDL_GetWindowProperties(m_window), SDL_PROP_WINDOW_WAYLAND_DISPLAY_POINTER, NULL);
+		struct wl_surface *surface = (struct wl_surface *)SDL_GetPointerProperty(SDL_GetWindowProperties(m_window), SDL_PROP_WINDOW_WAYLAND_SURFACE_POINTER, NULL);
+		if (display && surface)
+			hwnd = (HWND)surface;
 		else
 			debugLog("(Wayland) no display/no surface! SDL: %s\n", SDL_GetError());
-    }
+	}
 #endif
 
 	return hwnd;
@@ -657,10 +664,10 @@ void Environment::setCursorVisible(bool visible)
 		if (m_bIsRawInput)
 		{
 			setRawInput(false);
-			setCursorPosition(getMousePos().nudge(getWindowSize()/2, 1.0f)); // nudge it outwards
+			setCursorPosition(getMousePos().nudge(getWindowSize() / 2, 1.0f)); // nudge it outwards
 		}
-		else // snap the OS cursor to virtual cursor position
-			setCursorPosition(m_engine->getMouse()->getRealPos().nudge(getWindowSize()/2, 1.0f)); // nudge it outwards
+		else                                                                                        // snap the OS cursor to virtual cursor position
+			setCursorPosition(m_engine->getMouse()->getRealPos().nudge(getWindowSize() / 2, 1.0f)); // nudge it outwards
 		SDL_ShowCursor();
 	}
 	else
@@ -725,7 +732,10 @@ void Environment::setRawInput(bool on)
 		setCursorPosition(m_engine->getMouse()->getRealPos()); // when enabling, we need to make sure we start from the virtual cursor position
 		if (m_bCursorClipped)
 		{
-			const SDL_Rect clipRect{.x=static_cast<int>(m_cursorClip.getX()), .y=static_cast<int>(m_cursorClip.getY()), .w=static_cast<int>(m_cursorClip.getWidth()), .h=static_cast<int>(m_cursorClip.getHeight())};
+			const SDL_Rect clipRect{.x = static_cast<int>(m_cursorClip.getX()),
+			                        .y = static_cast<int>(m_cursorClip.getY()),
+			                        .w = static_cast<int>(m_cursorClip.getWidth()),
+			                        .h = static_cast<int>(m_cursorClip.getHeight())};
 			SDL_SetWindowMouseRect(m_window, &clipRect);
 		}
 	}

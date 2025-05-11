@@ -68,8 +68,10 @@ public:
 	void showMessageWarning(UString title, UString message) const;
 	void showMessageError(UString title, UString message) const;
 	void showMessageErrorFatal(UString title, UString message) const;
-	void openFileWindow(const char *filetypefilters, UString title, UString initialpath) const;
-	void openFolderWindow(ConVar &callback, UString initialpath) const;
+
+	using FileDialogCallback = std::function<void(const std::vector<UString> &paths)>;
+	void openFileWindow(FileDialogCallback callback, const char *filetypefilters, UString title, UString initialpath = "") const;
+	void openFolderWindow(FileDialogCallback callback, UString initialpath = "") const;
 
 	// window
 	void focus();
@@ -197,15 +199,16 @@ private:
 	// clipboard
 	const char *m_sPrevClipboardTextSDL;
 
+	// misc
+	inline void onProcessPriorityChange(float newValue) { SDL_SetCurrentThreadPriority(!!static_cast<int>(newValue) ? SDL_THREAD_PRIORITY_HIGH : SDL_THREAD_PRIORITY_NORMAL); }
+
 private:
 	// SDL dialog callbacks/helpers
-	struct FileDialogState
+	struct FileDialogCallbackData
 	{
-		bool done;
-		UString result;
+		FileDialogCallback callback;
 	};
-	static FileDialogState s_fileDialogState;
-	static void fileDialogCallback(void *userdata, const char *const *filelist, int filter);
+    static void sdlFileDialogCallback(void* userdata, const char* const* filelist, int filter);
 };
 
 extern Environment *env;

@@ -130,7 +130,7 @@ ConVar osu_draw_fps("osu_draw_fps", true, FCVAR_NONE);
 ConVar osu_hide_cursor_during_gameplay("osu_hide_cursor_during_gameplay", false, FCVAR_NONE);
 
 ConVar osu_alt_f4_quits_even_while_playing("osu_alt_f4_quits_even_while_playing", true, FCVAR_NONE);
-ConVar osu_win_disable_windows_key_while_playing("osu_win_disable_windows_key_while_playing", true, FCVAR_NONE);
+ConVar osu_disable_windows_key_while_playing("osu_disable_windows_key_while_playing", true, FCVAR_NONE);
 
 ConVar *Osu::version = &osu_version;
 ConVar *Osu::debug = &osu_debug;
@@ -168,7 +168,7 @@ Osu::Osu(Osu2 *osu2, int instanceID)
 	m_snd_change_check_interval_ref = convar->getConVarByName("snd_change_check_interval");
 	m_ui_scrollview_scrollbarwidth_ref = convar->getConVarByName("ui_scrollview_scrollbarwidth");
 	m_mouse_raw_input_absolute_to_window_ref = convar->getConVarByName("mouse_raw_input_absolute_to_window");
-	m_win_disable_windows_key_ref = convar->getConVarByName("win_disable_windows_key");
+	m_disable_windows_key_ref = convar->getConVarByName("disable_windows_key");
 	m_osu_vr_draw_desktop_playfield_ref = convar->getConVarByName("osu_vr_draw_desktop_playfield");
 
 	// experimental mods list
@@ -2260,9 +2260,9 @@ void Osu::updateWindowsKeyDisable()
 		debugLog("\n");
 
 	const bool isPlayerPlaying = engine->hasFocus() && isInPlayMode() && getSelectedBeatmap() != NULL && (!getSelectedBeatmap()->isPaused() || getSelectedBeatmap()->isRestartScheduled()) && !m_bModAuto;
-	if (osu_win_disable_windows_key_while_playing.getBool() && !isInVRMode())
+	if (osu_disable_windows_key_while_playing.getBool() && !isInVRMode())
 	{
-		m_win_disable_windows_key_ref->setValue(isPlayerPlaying ? 1.0f : 0.0f);
+		m_disable_windows_key_ref->setValue(isPlayerPlaying ? 1.0f : 0.0f);
 	}
 	// currently only used to signal SDL
 	env->listenToTextInput(!isPlayerPlaying);

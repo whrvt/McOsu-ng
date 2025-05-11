@@ -140,7 +140,6 @@ private:
 	void onDownloadOsuClicked();
 	void onManuallyManageBeatmapsClicked();
 	void onBrowseOsuFolderClicked();
-	void onBrowseOsuFolderChanged(UString oldval, UString newval);
 	void onCM360CalculatorLinkClicked();
 	void onNotelockSelect();
 	void onNotelockSelect2(UString notelockType, int id = -1);
@@ -309,6 +308,8 @@ private:
 	bool m_bDPIScalingScrollToSliderScheduled;
 	bool m_bWASAPIBufferChangeScheduled;
 	bool m_bWASAPIPeriodChangeScheduled;
+
+	bool m_bIsOsuFolderDialogOpen;
 
 	int m_iNumResetAllKeyBindingsPressed;
 	int m_iNumResetEverythingPressed;
