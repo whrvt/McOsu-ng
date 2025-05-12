@@ -36,62 +36,24 @@
 #include <cstdint>
 #include <cstring>
 
+// DEFS
+
+#ifdef NULL
+#undef NULL
+#endif
+#define NULL nullptr
+
+// ENVIRONMENT
+
 #include "BaseEnvironment.h"
 
+// UTIL
+
 #define SAFE_DELETE(p) { if(p) { delete (p); (p) = NULL; } }
-
-#define COLOR(a,r,g,b) \
-    ((Color)((((a)&0xff)<<24)|(((r)&0xff)<<16)|(((g)&0xff)<<8)|((b)&0xff)))
-
-#define COLORf(a,r,g,b) \
-    ((Color)(((((int)( clamp<float>(a,0.0f,1.0f)*255.0f ))&0xff)<<24)|((((int)( clamp<float>(r,0.0f,1.0f)*255.0f ))&0xff)<<16)|((((int)( clamp<float>(g,0.0f,1.0f)*255.0f ))&0xff)<<8)|(((int)( clamp<float>(b,0.0f,1.0f)*255.0f ))&0xff)))
-
-#define COLOR_GET_Ri(color) \
-	(((COLORPART)((color) >> 16)))
-
-#define COLOR_GET_Gi(color) \
-	(((COLORPART)((color) >> 8)))
-
-#define COLOR_GET_Bi(color) \
-	(((COLORPART)((color) >> 0)))
-
-#define COLOR_GET_Ai(color) \
-	(((COLORPART)((color) >> 24)))
-
-#define COLOR_GET_Rf(color) \
-	(((COLORPART)((color) >> 16))  / 255.0f)
-
-#define COLOR_GET_Gf(color) \
-	(((COLORPART)((color) >> 8)) / 255.0f)
-
-#define COLOR_GET_Bf(color) \
-	(((COLORPART)((color) >> 0)) / 255.0f)
-
-#define COLOR_GET_Af(color) \
-	(((COLORPART)((color) >> 24)) / 255.0f)
-
-#define COLOR_INVERT(color) \
-	(COLOR(255, 255-COLOR_GET_Ri(color), 255-COLOR_GET_Gi(color), 255-COLOR_GET_Bi(color)))
-
-#define COLOR_MULTIPLY(color1, color2) \
-	(COLORf(1.0f, COLOR_GET_Rf(color1)*COLOR_GET_Rf(color2), COLOR_GET_Gf(color1)*COLOR_GET_Gf(color2), COLOR_GET_Bf(color1)*COLOR_GET_Bf(color2)))
-
-#define COLOR_ADD(color1, color2) \
-	(COLORf(1.0f, clamp<float>(COLOR_GET_Rf(color1)+COLOR_GET_Rf(color2),0.0f,1.0f), clamp<float>(COLOR_GET_Gf(color1)+COLOR_GET_Gf(color2),0.0f,1.0f), clamp<float>(COLOR_GET_Bf(color1)+COLOR_GET_Bf(color2),0.0f,1.0f)))
-
-#define COLOR_SUBTRACT(color1, color2) \
-	(COLORf(1.0f, clamp<float>(COLOR_GET_Rf(color1)-COLOR_GET_Rf(color2),0.0f,1.0f), clamp<float>(COLOR_GET_Gf(color1)-COLOR_GET_Gf(color2),0.0f,1.0f), clamp<float>(COLOR_GET_Bf(color1)-COLOR_GET_Bf(color2),0.0f,1.0f)))
 
 constexpr const auto PI = std::numbers::pi;
 constexpr const auto PIOVER180 = (PI/180.0f);
 constexpr const auto ONE80OVERPI = (180.0f/PI);
-
-// UTIL
-
-using std::clamp;
-using std::lerp;
-using std::isfinite;
-using std::signbit;
 
 template <class T>
 constexpr forceinline float deg2rad(T deg)
@@ -132,7 +94,8 @@ template <typename T>
 #include "EngineFeatures.h"
 
 #include "FastDelegate.h"
-
+#include "UString.h"
+#include "Color.h"
 #include "Graphics.h"
 #include "Environment.h"
 #include "KeyboardEvent.h"
@@ -140,31 +103,5 @@ template <typename T>
 #include "Vectors.h"
 #include "Matrices.h"
 #include "Rect.h"
-#include "UString.h"
-
-
-// DEFS
-
-#ifdef NULL
-#undef NULL
-#endif
-#define NULL nullptr
-
-using COLORPART = unsigned char;
-
-/*
-#ifndef DWORD
-typedef unsigned long 	DWORD;
-#endif
-#ifndef WORD
-typedef unsigned short	WORD;
-#endif
-#ifndef BYTE
-typedef unsigned char	BYTE;
-#endif
-#ifndef UINT8
-typedef unsigned char 	UINT8;
-#endif
-*/
 
 #endif

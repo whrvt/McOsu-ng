@@ -42,42 +42,6 @@
 
 #include "Osu.h"
 
-class EngineLoadingScreenApp : public App
-{
-public:
-	virtual ~EngineLoadingScreenApp() {;}
-
-	virtual void draw(Graphics *g) override
-	{
-		McFont *consoleFont = engine->getResourceManager()->getFont("FONT_CONSOLE");
-		if (consoleFont != NULL)
-		{
-			UString loadingText = "Loading ...";
-
-			const float dpiScale = std::round(env->getDPIScale() + 0.255f);
-
-			const float stringHeight = consoleFont->getHeight() * dpiScale;
-			const float stringWidth = consoleFont->getStringWidth(loadingText) * dpiScale;
-
-			const float margin = 5 * dpiScale;
-
-			g->pushTransform();
-			{
-				g->scale(dpiScale, dpiScale);
-				g->translate((int)(engine->getScreenWidth()/2 - stringWidth/2), (int)(engine->getScreenHeight()/2 + stringHeight/2));
-				g->setColor(0xffffffff);
-				g->drawString(consoleFont, loadingText);
-			}
-			g->popTransform();
-
-			g->setColor(0xffffffff);
-			g->drawRect(engine->getScreenWidth()/2 - stringWidth/2 - margin, engine->getScreenHeight()/2 - stringHeight/2 - margin, stringWidth + margin*2, stringHeight + margin*2);
-		}
-	}
-};
-
-
-
 void _version(void);
 void _host_timescale_( UString oldValue, UString newValue );
 ConVar host_timescale("host_timescale", 1.0f, FCVAR_CHEAT, "Scale by which the engine measures elapsed time, affects engine->getTime()", _host_timescale_);
@@ -93,8 +57,8 @@ ConVar epilepsy("epilepsy", false, FCVAR_NONE);
 ConVar debug_engine("debug_engine", false, FCVAR_NONE);
 ConVar minimize_on_focus_lost_if_fullscreen("minimize_on_focus_lost_if_fullscreen", true, FCVAR_NONE);
 ConVar minimize_on_focus_lost_if_borderless_windowed_fullscreen("minimize_on_focus_lost_if_borderless_windowed_fullscreen", false, FCVAR_NONE);
-ConVar _win_processpriority("win_processpriority", 0, FCVAR_NONE, "if compiled on Windows, sets the main process priority (0 = normal, 1 = high)");
-ConVar _win_disable_windows_key("win_disable_windows_key", false, FCVAR_NONE, "if compiled on Windows, set to 0/1 to disable/enable all windows keys via low level keyboard hook");
+ConVar _processpriority("processpriority", 0, FCVAR_NONE, "sets the main process priority (0 = normal, 1 = high)");
+ConVar _disable_windows_key("disable_windows_key", false, FCVAR_NONE, "set to 0/1 to disable/enable the Windows/Super key");
 
 Engine *engine = NULL;
 Environment *env = NULL;
@@ -144,7 +108,6 @@ Engine::Engine(Environment *environment, const char *args)
 
 	// custom
 	m_bDrawing = false;
-	m_iLoadingScreenDelay = 0; // 0 == enabled, -2 == disabled (-1 is reserved)
 
 	// math
 	m_math = new McMath();
@@ -258,27 +221,13 @@ Engine::~Engine()
 
 void Engine::loadApp()
 {
-	// load core default resources (these are required to be able to draw the loading screen)
-	if (m_iLoadingScreenDelay == 0 || m_iLoadingScreenDelay == -2)
+	// load core default resources
+	debugLog("Engine: Loading default resources ...\n");
 	{
-		debugLog("Engine: Loading default resources ...\n");
-		{
-			engine->getResourceManager()->loadFont("weblysleekuisb.ttf", "FONT_DEFAULT", 15, true, m_environment->getDPI());
-			engine->getResourceManager()->loadFont("tahoma.ttf", "FONT_CONSOLE", 8, false, 96);
-		}
-		debugLog("Engine: Loading default resources done.\n");
+		engine->getResourceManager()->loadFont("weblysleekuisb.ttf", "FONT_DEFAULT", 15, true, m_environment->getDPI());
+		engine->getResourceManager()->loadFont("tahoma.ttf", "FONT_CONSOLE", 8, false, 96);
 	}
-
-	// allow the engine to draw an initial loading screen before the real app is loaded
-	// this schedules another delayed loadApp() call in update()
-	if (m_iLoadingScreenDelay == 0)
-	{
-		m_app = new EngineLoadingScreenApp();
-		m_iLoadingScreenDelay = 1; // allow drawing 1 single frame
-		return; // NOTE: early return
-	}
-	else
-		SAFE_DELETE(m_app);
+	debugLog("Engine: Loading default resources done.\n");
 
 	// load other default resources and things which are not strictly necessary
 	{
@@ -290,7 +239,7 @@ void Engine::loadApp()
 			{
 				int rowCounter = (x / 64);
 				int columnCounter = (y / 64);
-				Color color = (((rowCounter+columnCounter) % 2 == 0) ? COLOR(255, 255, 0, 221) : COLOR(255, 0, 0, 0));
+				Color color = (((rowCounter+columnCounter) % 2 == 0) ? rgb(255, 0, 221) : rgb(0, 0, 0));
 				missingTexture->setPixel(x, y, color);
 			}
 		}
@@ -354,7 +303,7 @@ void Engine::onPaint()
 
 			if (epilepsy.getBool())
 			{
-				m_graphics->setColor(COLOR(255, rand()%256, rand()%256, rand()%256));
+				m_graphics->setColor(rgb(rand()%256, rand()%256, rand()%256));
 				m_graphics->fillRect(0, 0, engine->getScreenWidth(), engine->getScreenHeight());
 			}
 		}
@@ -373,12 +322,6 @@ void Engine::onPaint()
 void Engine::onUpdate()
 {
 	VPROF_BUDGET("Engine::onUpdate", VPROF_BUDGETGROUP_UPDATE);
-
-	if (m_iLoadingScreenDelay > 0 && std::cmp_greater_equal(m_iFrameCount, m_iLoadingScreenDelay))
-	{
-		m_iLoadingScreenDelay = -1;
-		loadApp();
-	}
 
 	if (m_bBlackout || (m_bIsMinimized && !(m_networkHandler->isClient() || m_networkHandler->isServer()))) return;
 
@@ -403,9 +346,9 @@ void Engine::onUpdate()
 
 	// update miscellaneous engine subsystems
 	{
-		for (size_t i=0; i<m_inputDevices.size(); i++)
+		for (auto & m_inputDevice : m_inputDevices)
 		{
-			m_inputDevices[i]->update();
+			m_inputDevice->update();
 		}
 
 		m_openVR->update(); // (this also handles its input devices)
@@ -433,9 +376,9 @@ void Engine::onUpdate()
 		// TODO: this is shit
 		if (Console::g_commandQueue.size() > 0)
 		{
-			for (size_t i=0; i<Console::g_commandQueue.size(); i++)
+			for (const auto & i : Console::g_commandQueue)
 			{
-				Console::processCommand(Console::g_commandQueue[i]);
+				Console::processCommand(i);
 			}
 			Console::g_commandQueue = std::vector<UString>(); // reset
 		}
@@ -749,7 +692,7 @@ void Engine::setFrameTime(double delta)
 	if (m_iFrameCount < 3)
 		m_dFrameTime = delta;
 	else
-		m_dFrameTime = clamp<double>(delta, 0.0001, 1.0);
+		m_dFrameTime = std::clamp<double>(delta, 0.0001, 1.0);
 }
 
 void Engine::debugLog_(const char *fmt, va_list args)

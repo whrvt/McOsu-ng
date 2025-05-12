@@ -56,7 +56,7 @@ protected:
 	};
 
 	virtual void updateOutputDevices(bool handleOutputDeviceChanges, bool printInfo) = 0;
-	virtual bool initializeOutputDevice(int id = -1) = 0;
+	virtual bool initializeOutputDevice(int id = -1, bool force = false) = 0;
 
 	bool m_bReady;
 	float m_fPrevOutputDeviceChangeCheckTime;

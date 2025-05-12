@@ -92,7 +92,6 @@ $(DEPS_PREFIX)/SDL3.built: $(DEPS_PREFIX)/FREETYPE2.built $(DEPS_CACHE)/SDL3.sou
 		-D CMAKE_SYSTEM_PROCESSOR="$(host_cpu)" \
 		-D SDL_RPATH=OFF \
 		-D SDL_IBUS=OFF \
-		-D SDL_DBUS=OFF \
 		-D SDL_CCACHE="$(if $(filter ccache,$(CC)),ON,OFF)" \
 		-D CMAKE_C_COMPILER="$(CC)" \
 		-D CMAKE_C_FLAGS="$(CFLAGS) -Wno-error=incompatible-pointer-types" && \
@@ -527,6 +526,7 @@ install-libs:
 	find $(srcdir)/$(ASSETS_DIR)/models -type f -exec $(INSTALL) -Dm 644 '{''}' "$(DESTDIR)$(bindir)/models" ';'
 	find $(srcdir)/$(ASSETS_DIR)/shaders -type f -exec $(INSTALL) -Dm 644 '{''}' "$(DESTDIR)$(bindir)/shaders" ';'
 	find $(srcdir)/$(ASSETS_DIR)/fonts -type f -exec $(INSTALL) -Dm 644 '{''}' "$(DESTDIR)$(bindir)/fonts" ';'
+	find $(srcdir)/$(ASSETS_DIR)/cfg -type f -exec $(INSTALL) -Dm 644 '{''}' "$(DESTDIR)$(bindir)/cfg" ';'
 if WIN_PLATFORM
 if BUILD_MIMALLOC
 	@cp -P "$(DEPS_PREFIX)/bin/mimalloc"{,-redirect$(if $(filter x86_64,$(host_cpu)),,32)}".dll" "$(DESTDIR)$(bindir)/$(LIBDEST)"
@@ -605,6 +605,7 @@ endif
 	cp -r $(srcdir)/$(ASSETS_DIR)/models $(distdir)/
 	cp -r $(srcdir)/$(ASSETS_DIR)/shaders $(distdir)/
 	cp -r $(srcdir)/$(ASSETS_DIR)/fonts $(distdir)/
+	cp -r $(srcdir)/$(ASSETS_DIR)/cfg $(distdir)/
 	find $(distdir) -type f -name ".git*" -delete
 	find $(distdir) -type f -name "*.a" -delete
 	find $(distdir) -type f -name "*.dll" -delete
@@ -615,6 +616,7 @@ EXTRA_DIST := \
 	$(ASSETS_DIR)/models \
 	$(ASSETS_DIR)/shaders \
 	$(ASSETS_DIR)/fonts \
+	$(ASSETS_DIR)/cfg \
 	autogen.sh
 
 if USE_BASS

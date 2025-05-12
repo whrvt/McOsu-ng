@@ -110,7 +110,7 @@ void CBaseUIWindow::draw(Graphics *g)
 		m_shadow->draw(g);
 	else
 	{
-		m_shadow->setColor(COLOR((int)((m_fAnimation)*255.0f), 255, 255, 255));
+		m_shadow->setColor(argb((int)((m_fAnimation)*255.0f), 255, 255, 255));
 
 		// HACKHACK: shadows can't render inside a 3DScene
 		m_shadow->renderOffscreen(g);
@@ -217,7 +217,7 @@ void CBaseUIWindow::draw(Graphics *g)
 		m_rt->disable();
 
 
-		m_rt->setColor(COLOR((int)(m_fAnimation*255.0f), 255, 255, 255));
+		m_rt->setColor(argb((int)(m_fAnimation*255.0f), 255, 255, 255));
 
 		g->push3DScene(McRect(m_vPos.x, m_vPos.y, m_vSize.x, m_vSize.y));
 			g->rotate3DScene((m_bAnimIn ? -1 : 1) * (1-m_fAnimation)*10, 0, 0);
@@ -255,45 +255,45 @@ void CBaseUIWindow::update()
 		switch (m_iResizeType)
 		{
 		case 1:
-			setPos(clamp<float>(m_vLastPos.x + (engine->getMouse()->getPos().x - m_vMousePosBackup.x), -m_vSize.x, m_vLastPos.x + m_vLastSize.x - m_vResizeLimit.x),
-				   clamp<float>(m_vLastPos.y + (engine->getMouse()->getPos().y - m_vMousePosBackup.y), -m_vSize.y, m_vLastPos.y + m_vLastSize.y - m_vResizeLimit.y));
-			setSize(clamp<float>(m_vLastSize.x + (m_vMousePosBackup.x - engine->getMouse()->getPos().x), m_vResizeLimit.x, engine->getScreenWidth()),
-					clamp<float>(m_vLastSize.y + (m_vMousePosBackup.y - engine->getMouse()->getPos().y), m_vResizeLimit.y, engine->getScreenHeight()));
+			setPos(std::clamp<float>(m_vLastPos.x + (engine->getMouse()->getPos().x - m_vMousePosBackup.x), -m_vSize.x, m_vLastPos.x + m_vLastSize.x - m_vResizeLimit.x),
+				   std::clamp<float>(m_vLastPos.y + (engine->getMouse()->getPos().y - m_vMousePosBackup.y), -m_vSize.y, m_vLastPos.y + m_vLastSize.y - m_vResizeLimit.y));
+			setSize(std::clamp<float>(m_vLastSize.x + (m_vMousePosBackup.x - engine->getMouse()->getPos().x), m_vResizeLimit.x, engine->getScreenWidth()),
+					std::clamp<float>(m_vLastSize.y + (m_vMousePosBackup.y - engine->getMouse()->getPos().y), m_vResizeLimit.y, engine->getScreenHeight()));
 			break;
 
 		case 2:
-			setPosX(clamp<float>(m_vLastPos.x + (engine->getMouse()->getPos().x - m_vMousePosBackup.x), -m_vSize.x, m_vLastPos.x + m_vLastSize.x - m_vResizeLimit.x));
-			setSizeX(clamp<float>(m_vLastSize.x + (m_vMousePosBackup.x - engine->getMouse()->getPos().x), m_vResizeLimit.x, engine->getScreenWidth()));
+			setPosX(std::clamp<float>(m_vLastPos.x + (engine->getMouse()->getPos().x - m_vMousePosBackup.x), -m_vSize.x, m_vLastPos.x + m_vLastSize.x - m_vResizeLimit.x));
+			setSizeX(std::clamp<float>(m_vLastSize.x + (m_vMousePosBackup.x - engine->getMouse()->getPos().x), m_vResizeLimit.x, engine->getScreenWidth()));
 			break;
 
 		case 3:
-			setPosX(clamp<float>(m_vLastPos.x + (engine->getMouse()->getPos().x - m_vMousePosBackup.x), -m_vSize.x, m_vLastPos.x + m_vLastSize.x - m_vResizeLimit.x));
-			setSizeX(clamp<float>(m_vLastSize.x + (m_vMousePosBackup.x - engine->getMouse()->getPos().x), m_vResizeLimit.x, engine->getScreenWidth()));
-			setSizeY(clamp<float>(m_vLastSize.y + (engine->getMouse()->getPos().y - m_vMousePosBackup.y), m_vResizeLimit.y, engine->getScreenHeight()));
+			setPosX(std::clamp<float>(m_vLastPos.x + (engine->getMouse()->getPos().x - m_vMousePosBackup.x), -m_vSize.x, m_vLastPos.x + m_vLastSize.x - m_vResizeLimit.x));
+			setSizeX(std::clamp<float>(m_vLastSize.x + (m_vMousePosBackup.x - engine->getMouse()->getPos().x), m_vResizeLimit.x, engine->getScreenWidth()));
+			setSizeY(std::clamp<float>(m_vLastSize.y + (engine->getMouse()->getPos().y - m_vMousePosBackup.y), m_vResizeLimit.y, engine->getScreenHeight()));
 			break;
 
 		case 4:
-			setSizeY(clamp<float>(m_vLastSize.y + (engine->getMouse()->getPos().y - m_vMousePosBackup.y), m_vResizeLimit.y, engine->getScreenHeight()));
+			setSizeY(std::clamp<float>(m_vLastSize.y + (engine->getMouse()->getPos().y - m_vMousePosBackup.y), m_vResizeLimit.y, engine->getScreenHeight()));
 			break;
 
 		case 5:
-			setSize(clamp<float>(m_vLastSize.x + (engine->getMouse()->getPos().x - m_vMousePosBackup.x), m_vResizeLimit.x, engine->getScreenWidth()),
-					clamp<float>(m_vLastSize.y + (engine->getMouse()->getPos().y - m_vMousePosBackup.y), m_vResizeLimit.y, engine->getScreenHeight()));
+			setSize(std::clamp<float>(m_vLastSize.x + (engine->getMouse()->getPos().x - m_vMousePosBackup.x), m_vResizeLimit.x, engine->getScreenWidth()),
+					std::clamp<float>(m_vLastSize.y + (engine->getMouse()->getPos().y - m_vMousePosBackup.y), m_vResizeLimit.y, engine->getScreenHeight()));
 			break;
 
 		case 6:
-			setSizeX(clamp<float>(m_vLastSize.x + (engine->getMouse()->getPos().x - m_vMousePosBackup.x), m_vResizeLimit.x, engine->getScreenWidth()));
+			setSizeX(std::clamp<float>(m_vLastSize.x + (engine->getMouse()->getPos().x - m_vMousePosBackup.x), m_vResizeLimit.x, engine->getScreenWidth()));
 			break;
 
 		case 7:
-			setPosY(clamp<float>(m_vLastPos.y + (engine->getMouse()->getPos().y - m_vMousePosBackup.y), -m_vSize.y, m_vLastPos.y + m_vLastSize.y - m_vResizeLimit.y));
-			setSizeY(clamp<float>(m_vLastSize.y + (m_vMousePosBackup.y - engine->getMouse()->getPos().y), m_vResizeLimit.y, engine->getScreenHeight()));
-			setSizeX(clamp<float>(m_vLastSize.x + (engine->getMouse()->getPos().x - m_vMousePosBackup.x), m_vResizeLimit.x, engine->getScreenWidth()));
+			setPosY(std::clamp<float>(m_vLastPos.y + (engine->getMouse()->getPos().y - m_vMousePosBackup.y), -m_vSize.y, m_vLastPos.y + m_vLastSize.y - m_vResizeLimit.y));
+			setSizeY(std::clamp<float>(m_vLastSize.y + (m_vMousePosBackup.y - engine->getMouse()->getPos().y), m_vResizeLimit.y, engine->getScreenHeight()));
+			setSizeX(std::clamp<float>(m_vLastSize.x + (engine->getMouse()->getPos().x - m_vMousePosBackup.x), m_vResizeLimit.x, engine->getScreenWidth()));
 			break;
 
 		case 8:
-			setPosY(clamp<float>(m_vLastPos.y + (engine->getMouse()->getPos().y - m_vMousePosBackup.y), -m_vSize.y, m_vLastPos.y + m_vLastSize.y - m_vResizeLimit.y));
-			setSizeY(clamp<float>(m_vLastSize.y + (m_vMousePosBackup.y - engine->getMouse()->getPos().y), m_vResizeLimit.y, engine->getScreenHeight()));
+			setPosY(std::clamp<float>(m_vLastPos.y + (engine->getMouse()->getPos().y - m_vMousePosBackup.y), -m_vSize.y, m_vLastPos.y + m_vLastSize.y - m_vResizeLimit.y));
+			setSizeY(std::clamp<float>(m_vLastSize.y + (m_vMousePosBackup.y - engine->getMouse()->getPos().y), m_vResizeLimit.y, engine->getScreenHeight()));
 			break;
 		}
 	}

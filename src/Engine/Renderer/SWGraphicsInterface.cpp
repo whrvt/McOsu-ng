@@ -108,12 +108,12 @@ void SWGraphicsInterface::drawPixel(int x, int y)
 
 	PIXEL ssrcPixel = getColorPixel(m_color);
 	PIXEL sdstPixel = m_backBuffer[index];
-	Color srcPixel = COLOR(ssrcPixel.a, ssrcPixel.r, ssrcPixel.g, ssrcPixel.b);
-	Color dstPixel = COLOR(sdstPixel.a, sdstPixel.r, sdstPixel.g, sdstPixel.b);
-	Color finalColor = COLORf((COLOR_GET_Af(srcPixel)*COLOR_GET_Af(srcPixel) + COLOR_GET_Af(dstPixel)*(1.0f - COLOR_GET_Af(srcPixel))),
-							  (COLOR_GET_Rf(srcPixel)*COLOR_GET_Af(srcPixel) + COLOR_GET_Rf(dstPixel)*(1.0f - COLOR_GET_Af(srcPixel))),
-							  (COLOR_GET_Gf(srcPixel)*COLOR_GET_Af(srcPixel) + COLOR_GET_Gf(dstPixel)*(1.0f - COLOR_GET_Af(srcPixel))),
-							  (COLOR_GET_Bf(srcPixel)*COLOR_GET_Af(srcPixel) + COLOR_GET_Bf(dstPixel)*(1.0f - COLOR_GET_Af(srcPixel))));
+	Color srcPixel = argb(ssrcPixel.a, ssrcPixel.r, ssrcPixel.g, ssrcPixel.b);
+	Color dstPixel = argb(sdstPixel.a, sdstPixel.r, sdstPixel.g, sdstPixel.b);
+	Color finalColor = argb((Af(srcPixel)*Af(srcPixel) + Af(dstPixel)*(1.0f - Af(srcPixel))),
+							  (Rf(srcPixel)*Af(srcPixel) + Rf(dstPixel)*(1.0f - Af(srcPixel))),
+							  (Gf(srcPixel)*Af(srcPixel) + Gf(dstPixel)*(1.0f - Af(srcPixel))),
+							  (Bf(srcPixel)*Af(srcPixel) + Bf(dstPixel)*(1.0f - Af(srcPixel))));
 
 	m_backBuffer[index] = getColorPixel(finalColor);
 }
@@ -596,10 +596,10 @@ void SWGraphicsInterface::onTransformUpdate(Matrix4 &projectionMatrix, Matrix4 &
 SWGraphicsInterface::PIXEL SWGraphicsInterface::getColorPixel(const Color &color)
 {
 	PIXEL p;
-	p.r = (unsigned char)COLOR_GET_Ri(color);
-	p.g = (unsigned char)COLOR_GET_Gi(color);
-	p.b = (unsigned char)COLOR_GET_Bi(color);
-	p.a = (unsigned char)COLOR_GET_Ai(color);
+	p.r = (unsigned char)Ri(color);
+	p.g = (unsigned char)Gi(color);
+	p.b = (unsigned char)Bi(color);
+	p.a = (unsigned char)Ai(color);
 	return p;
 }
 

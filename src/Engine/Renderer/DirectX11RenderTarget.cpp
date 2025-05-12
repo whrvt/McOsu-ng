@@ -256,9 +256,9 @@ void DirectX11RenderTarget::enable()
 	// clear
 	Color clearColor = m_clearColor;
 	if (debug_rt->getBool())
-		clearColor = COLORf(0.5f, 0.0f, 0.5f, 0.0f);
+		clearColor = argb(0.5f, 0.0f, 0.5f, 0.0f);
 
-	float fClearColor[4] = {COLOR_GET_Rf(clearColor), COLOR_GET_Gf(clearColor), COLOR_GET_Bf(clearColor), COLOR_GET_Af(clearColor)};
+	float fClearColor[4] = {Rf(clearColor), Gf(clearColor), Bf(clearColor), Af(clearColor)};
 
 	if (m_bClearColorOnDraw)
 		dx11->getDeviceContext()->ClearRenderTargetView(m_renderTargetView, fClearColor);

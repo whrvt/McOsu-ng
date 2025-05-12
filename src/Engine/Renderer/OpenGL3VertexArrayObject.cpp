@@ -98,8 +98,8 @@ void OpenGL3VertexArrayObject::draw()
 		return;
 	}
 
-	int start = clamp<int>(nearestMultipleUp((int)(m_iNumVertices*m_fDrawPercentFromPercent), m_iDrawPercentNearestMultiple), 0, m_iNumVertices); // HACKHACK: osu sliders
-	int end = clamp<int>(nearestMultipleDown((int)(m_iNumVertices*m_fDrawPercentToPercent), m_iDrawPercentNearestMultiple), 0, m_iNumVertices); // HACKHACK: osu sliders
+	int start = std::clamp<int>(nearestMultipleUp((int)(m_iNumVertices*m_fDrawPercentFromPercent), m_iDrawPercentNearestMultiple), 0, m_iNumVertices); // HACKHACK: osu sliders
+	int end = std::clamp<int>(nearestMultipleDown((int)(m_iNumVertices*m_fDrawPercentToPercent), m_iDrawPercentNearestMultiple), 0, m_iNumVertices); // HACKHACK: osu sliders
 
 	if (start > end || std::abs(end-start) == 0)
 		return;

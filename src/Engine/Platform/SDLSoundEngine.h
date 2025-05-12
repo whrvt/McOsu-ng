@@ -49,7 +49,7 @@ public:
 
 private:
 	void updateOutputDevices(bool handleOutputDeviceChanges, bool printInfo) override;
-	bool initializeOutputDevice(int id = -1) override;
+	bool initializeOutputDevice(int id = -1, bool force = false) override;
 
 	int m_iMixChunkSize;
 	float m_fVolumeMixMusic;

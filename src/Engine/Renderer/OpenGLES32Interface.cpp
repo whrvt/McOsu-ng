@@ -517,9 +517,9 @@ void OpenGLES32Interface::drawVAO(VertexArrayObject *vao)
 
 				if (colors.size() > 0)
 				{
-					finalColors.push_back(colors[clamp<int>(i + 0, 0, maxColorIndex)]);
-					finalColors.push_back(colors[clamp<int>(i + 1, 0, maxColorIndex)]);
-					finalColors.push_back(colors[clamp<int>(i + 2, 0, maxColorIndex)]);
+					finalColors.push_back(colors[std::clamp<int>(i + 0, 0, maxColorIndex)]);
+					finalColors.push_back(colors[std::clamp<int>(i + 1, 0, maxColorIndex)]);
+					finalColors.push_back(colors[std::clamp<int>(i + 2, 0, maxColorIndex)]);
 				}
 
 				finalVertices.push_back(vertices[i + 0]);
@@ -535,9 +535,9 @@ void OpenGLES32Interface::drawVAO(VertexArrayObject *vao)
 
 				if (colors.size() > 0)
 				{
-					finalColors.push_back(colors[clamp<int>(i + 0, 0, maxColorIndex)]);
-					finalColors.push_back(colors[clamp<int>(i + 2, 0, maxColorIndex)]);
-					finalColors.push_back(colors[clamp<int>(i + 3, 0, maxColorIndex)]);
+					finalColors.push_back(colors[std::clamp<int>(i + 0, 0, maxColorIndex)]);
+					finalColors.push_back(colors[std::clamp<int>(i + 2, 0, maxColorIndex)]);
+					finalColors.push_back(colors[std::clamp<int>(i + 3, 0, maxColorIndex)]);
 				}
 			}
 		}
@@ -690,7 +690,9 @@ void OpenGLES32Interface::setAlphaTesting(bool enabled)
 
 void OpenGLES32Interface::setAlphaTestFunc(COMPARE_FUNC alphaFunc, float ref)
 {
+#ifndef MCENGINE_PLATFORM_WASM
 	glAlphaFunc(compareFuncToOpenGL(alphaFunc), ref);
+#endif
 }
 
 void OpenGLES32Interface::setBlending(bool enabled)

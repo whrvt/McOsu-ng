@@ -26,8 +26,8 @@ CBaseUIImage::CBaseUIImage(UString imageResourceName, float xPos, float yPos, fl
 		m_vSize.y = ySize;
 	}
 
-	m_frameColor = COLOR(255,255,255,255);
-	m_backgroundColor = COLOR(255,0,0,0);
+	m_frameColor = rgb(255,255,255);
+	m_backgroundColor = rgb(0,0,0);
 	m_color = 0xffffffff;
 
 	m_bDrawFrame = false;

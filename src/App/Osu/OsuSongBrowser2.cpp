@@ -510,7 +510,7 @@ OsuSongBrowser2::OsuSongBrowser2(Osu *osu) : OsuScreenBackable(osu)
 		m_difficultiesButton->setClickCallback( fastdelegate::MakeDelegate(this, &OsuSongBrowser2::onGroupTabButtonClicked) );
 		m_noGroupingButton = addTopBarRightTabButton("No Grouping");
 		m_noGroupingButton->setClickCallback( fastdelegate::MakeDelegate(this, &OsuSongBrowser2::onGroupTabButtonClicked) );
-		m_noGroupingButton->setTextBrightColor(COLOR(255, 0, 255, 0));
+		m_noGroupingButton->setTextBrightColor(rgb(0, 255, 0));
 	}
 
 	addTopBarRightSortButton("")->setVisible(false); // NOTE: align with last tab (1)
@@ -689,7 +689,7 @@ void OsuSongBrowser2::draw(Graphics *g)
 	g->fillRect(0, 0, m_osu->getScreenWidth(), m_osu->getScreenHeight());
 	/*
 	g->setColor(0xffffffff);
-	g->setAlpha(clamp<float>(engine->getMouse()->getPos().x / 400.0f, 0.0f, 1.0f));
+	g->setAlpha(std::clamp<float>(engine->getMouse()->getPos().x / 400.0f, 0.0f, 1.0f));
 	g->fillRect(0, 0, m_osu->getScreenWidth(), m_osu->getScreenHeight());
 	*/
 
@@ -726,7 +726,7 @@ void OsuSongBrowser2::draw(Graphics *g)
 				m_fBackgroundFadeInTime = engine->getTime();
 			else if (m_fBackgroundFadeInTime > 0.0f && engine->getTime() > m_fBackgroundFadeInTime)
 			{
-				alpha = clamp<float>((engine->getTime() - m_fBackgroundFadeInTime)/osu_songbrowser_background_fade_in_duration.getFloat(), 0.0f, 1.0f);
+				alpha = std::clamp<float>((engine->getTime() - m_fBackgroundFadeInTime)/osu_songbrowser_background_fade_in_duration.getFloat(), 0.0f, 1.0f);
 				alpha = 1.0f - (1.0f - alpha)*(1.0f - alpha);
 			}
 		}
@@ -819,8 +819,8 @@ void OsuSongBrowser2::draw(Graphics *g)
 
 				const float alpha = (graphRect.contains(engine->getMouse()->getPos()) ? 1.0f : m_osu_hud_scrubbing_timeline_strains_alpha_ref->getFloat());
 
-				const Color aimStrainColor = COLORf(alpha, m_osu_hud_scrubbing_timeline_strains_aim_color_r_ref->getInt() / 255.0f, m_osu_hud_scrubbing_timeline_strains_aim_color_g_ref->getInt() / 255.0f, m_osu_hud_scrubbing_timeline_strains_aim_color_b_ref->getInt() / 255.0f);
-				const Color speedStrainColor = COLORf(alpha, m_osu_hud_scrubbing_timeline_strains_speed_color_r_ref->getInt() / 255.0f, m_osu_hud_scrubbing_timeline_strains_speed_color_g_ref->getInt() / 255.0f, m_osu_hud_scrubbing_timeline_strains_speed_color_b_ref->getInt() / 255.0f);
+				const Color aimStrainColor = argb(alpha, m_osu_hud_scrubbing_timeline_strains_aim_color_r_ref->getInt() / 255.0f, m_osu_hud_scrubbing_timeline_strains_aim_color_g_ref->getInt() / 255.0f, m_osu_hud_scrubbing_timeline_strains_aim_color_b_ref->getInt() / 255.0f);
+				const Color speedStrainColor = argb(alpha, m_osu_hud_scrubbing_timeline_strains_speed_color_r_ref->getInt() / 255.0f, m_osu_hud_scrubbing_timeline_strains_speed_color_g_ref->getInt() / 255.0f, m_osu_hud_scrubbing_timeline_strains_speed_color_b_ref->getInt() / 255.0f);
 
 				g->setDepthBuffer(true);
 				for (int i=0; i<aimStrains.size(); i++)
@@ -1004,7 +1004,7 @@ void OsuSongBrowser2::draw(Graphics *g)
 	if (m_fPulseAnimation > 0.0f)
 	{
 		Color topColor = 0x00ffffff;
-		Color bottomColor = COLOR((int)(25*m_fPulseAnimation), 255, 255, 255);
+		Color bottomColor = argb((int)(25*m_fPulseAnimation), 255, 255, 255);
 
 		g->fillGradient(0, 0, m_osu->getScreenWidth(), m_osu->getScreenHeight(), topColor, topColor, bottomColor, bottomColor);
 	}
@@ -1317,7 +1317,7 @@ void OsuSongBrowser2::update()
 				if (m_iBackgroundStarCalculationIndex >= m_beatmaps.size())
 					m_iBackgroundStarCalculationIndex = 0;
 
-				m_iBackgroundStarCalculationIndex = clamp<int>(m_iBackgroundStarCalculationIndex, 0, m_beatmaps.size());
+				m_iBackgroundStarCalculationIndex = std::clamp<int>(m_iBackgroundStarCalculationIndex, 0, m_beatmaps.size());
 			}
 		}
 	}
@@ -2060,7 +2060,7 @@ void OsuSongBrowser2::addBeatmap(OsuDatabaseBeatmap *beatmap)
 		{
 			for (size_t i=0; i<tempChildrenForGroups.size(); i++)
 			{
-				const int index = clamp<int>((int)tempChildrenForGroups[i]->getDatabaseBeatmap()->getStarsNomod(), 0, 11);
+				const int index = std::clamp<int>((int)tempChildrenForGroups[i]->getDatabaseBeatmap()->getStarsNomod(), 0, 11);
 				m_difficultyCollectionButtons[index]->getChildren().push_back(tempChildrenForGroups[i]);
 			}
 		}
@@ -2187,7 +2187,7 @@ void OsuSongBrowser2::readdBeatmap(OsuDatabaseBeatmap *diff2)
 			// HACKHACK: partial code duplication, see addBeatmap()
 			if (m_difficultyCollectionButtons.size() == 12)
 			{
-				const int index = clamp<int>((int)diff2->getStarsNomod(), 0, 11);
+				const int index = std::clamp<int>((int)diff2->getStarsNomod(), 0, 11);
 				m_difficultyCollectionButtons[index]->getChildren().push_back(difficultyGroupButton);
 			}
 		}
@@ -2803,7 +2803,7 @@ void OsuSongBrowser2::updateLayout()
 
 	const int topbarRightTabButtonMargin = 10 * dpiScale;
 	const int topbarRightTabButtonHeight = 30 * dpiScale;
-	const int topbarRightTabButtonWidth = clamp<float>((float)(m_topbarRight->getSize().x - 2*topbarRightTabButtonMargin) / (float)m_topbarRightTabButtons.size(), 0.0f, 200.0f * dpiScale);
+	const int topbarRightTabButtonWidth = std::clamp<float>((float)(m_topbarRight->getSize().x - 2*topbarRightTabButtonMargin) / (float)m_topbarRightTabButtons.size(), 0.0f, 200.0f * dpiScale);
 	for (int i=0; i<m_topbarRightTabButtons.size(); i++)
 	{
 		m_topbarRightTabButtons[i]->onResized(); // HACKHACK: framework bug (should update string metrics on setSize())
@@ -2820,7 +2820,7 @@ void OsuSongBrowser2::updateLayout()
 
 	const int topbarRightSortButtonMargin = 10 * dpiScale;
 	const int topbarRightSortButtonHeight = 30 * dpiScale;
-	const int topbarRightSortButtonWidth = clamp<float>((float)(m_topbarRight->getSize().x - 2*topbarRightSortButtonMargin) / (float)m_topbarRightSortButtons.size(), 0.0f, 200.0f * dpiScale);
+	const int topbarRightSortButtonWidth = std::clamp<float>((float)(m_topbarRight->getSize().x - 2*topbarRightSortButtonMargin) / (float)m_topbarRightSortButtons.size(), 0.0f, 200.0f * dpiScale);
 	for (int i=0; i<m_topbarRightSortButtons.size(); i++)
 	{
 		m_topbarRightSortButtons[i]->setSize(topbarRightSortButtonWidth, topbarRightSortButtonHeight);
@@ -3578,8 +3578,8 @@ void OsuSongBrowser2::onGroupChange(UString text, int id)
 	}
 	if (grouping == NULL) return;
 
-	const Color highlightColor = COLOR(255, 0, 255, 0);
-	const Color defaultColor = COLOR(255, 255, 255, 255);
+	const Color highlightColor = rgb(0, 255, 0);
+	const Color defaultColor = rgb(255, 255, 255);
 
 	// update group combobox button text
 	m_groupButton->setText(grouping->name);

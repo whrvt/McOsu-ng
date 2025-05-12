@@ -33,7 +33,7 @@ void OsuUIPauseMenuButton::draw(Graphics *g)
 	Image *image = getImageFunc();
 	if (image != NULL)
 	{
-		g->setColor(COLORf(m_fAlpha, 1.0f, 1.0f, 1.0f));
+		g->setColor(argb(m_fAlpha, 1.0f, 1.0f, 1.0f));
 		g->pushTransform();
 		{
 			// scale

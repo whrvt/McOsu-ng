@@ -876,12 +876,12 @@ void NetworkHandler::sendClientInfo()
 	// base packet
 	CLIENT_INFO_PACKET cp;
 	cp.version = MC_PROTOCOL_VERSION;
-	for (int i=0; i<clamp<int>(localname.length(), 0, 254); i++)
+	for (int i=0; i<std::clamp<int>(localname.length(), 0, 254); i++)
 	{
 		cp.username[i] = localname[i];
 	}
 	cp.username[254] = '\0';
-	cp.size = clamp<int>(localname.length(), 0, 255);
+	cp.size = std::clamp<int>(localname.length(), 0, 255);
 	cp.extension = false;
 	size += sizeof(CLIENT_INFO_PACKET);
 
@@ -1004,20 +1004,20 @@ void NetworkHandler::singlecastChatMessage(UString username, UString message, EN
 {
 	CHAT_PACKET cp;
 
-	for (int i=0; i<clamp<int>(username.length(), 0, 254); i++)
+	for (int i=0; i<std::clamp<int>(username.length(), 0, 254); i++)
 	{
 		cp.username[i] = username[i];
 	}
 	cp.username[254] = '\0';
 
-	for (int i=0; i<clamp<int>(message.length(), 0, 254); i++)
+	for (int i=0; i<std::clamp<int>(message.length(), 0, 254); i++)
 	{
 		cp.message[i] = message[i];
 	}
 	cp.message[254] = '\0';
 
-	cp.usize = clamp<int>(username.length(), 0, 255);
-	cp.msize = clamp<int>(message.length(), 0, 255);
+	cp.usize = std::clamp<int>(username.length(), 0, 255);
+	cp.msize = std::clamp<int>(message.length(), 0, 255);
 
 	singlecastChatMessage(&cp, host, destination);
 }

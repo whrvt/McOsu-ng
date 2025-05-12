@@ -27,7 +27,7 @@ public:
 
 	CONTAINER_BODY(CBaseUIContainerHorizontalBox)
 
-	virtual void drawDebug(Graphics *g, Color color=COLOR(255,255,0,0));
+	virtual void drawDebug(Graphics *g, Color color=rgb(255,0,0));
 
 	CBaseUIContainerHorizontalBox *setPadding(float padding) {m_padding = padding; return this;}
 	CBaseUIContainerHorizontalBox *setMargin(float marginX, float marginY) {m_vMargin.x = marginX; m_vMargin.y = marginY; return this;}

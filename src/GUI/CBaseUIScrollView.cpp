@@ -319,12 +319,12 @@ void CBaseUIScrollView::update()
 		m_vVelocity.x = m_vVelocity.y = 0;
 		if (m_bScrollbarIsVerticalScrolling)
 		{
-			const float percent = clamp<float>((engine->getMouse()->getPos().y - m_vPos.y - m_verticalScrollbar.getWidth() - m_verticalScrollbar.getHeight() - m_vMouseBackup.y - 1) / (m_vSize.y - 2*m_verticalScrollbar.getWidth()), 0.0f, 1.0f);
+			const float percent = std::clamp<float>((engine->getMouse()->getPos().y - m_vPos.y - m_verticalScrollbar.getWidth() - m_verticalScrollbar.getHeight() - m_vMouseBackup.y - 1) / (m_vSize.y - 2*m_verticalScrollbar.getWidth()), 0.0f, 1.0f);
 			scrollToYInt(-m_vScrollSize.y*percent, true, false);
 		}
 		else
 		{
-			const float percent = clamp<float>((engine->getMouse()->getPos().x - m_vPos.x - m_horizontalScrollbar.getHeight() - m_horizontalScrollbar.getWidth() - m_vMouseBackup.x - 1) / (m_vSize.x - 2*m_horizontalScrollbar.getHeight()), 0.0f, 1.0f);
+			const float percent = std::clamp<float>((engine->getMouse()->getPos().x - m_vPos.x - m_horizontalScrollbar.getHeight() - m_horizontalScrollbar.getWidth() - m_vMouseBackup.x - 1) / (m_vSize.x - 2*m_horizontalScrollbar.getHeight()), 0.0f, 1.0f);
 			scrollToXInt(-m_vScrollSize.x*percent, true, false);
 		}
 	}
@@ -473,7 +473,7 @@ void CBaseUIScrollView::scrollToYInt(int scrollPosY, bool animated, bool slow)
 	if (lowerBounds >= upperBounds)
 		lowerBounds = upperBounds;
 
-	const float targetY = clamp<float>(scrollPosY, lowerBounds, upperBounds);
+	const float targetY = std::clamp<float>(scrollPosY, lowerBounds, upperBounds);
 
 	m_vVelocity.y = targetY;
 
@@ -498,7 +498,7 @@ void CBaseUIScrollView::scrollToXInt(int scrollPosX, bool animated, bool slow)
 	if (lowerBounds >= upperBounds)
 		lowerBounds = upperBounds;
 
-	const float targetX = clamp<float>(scrollPosX, lowerBounds, upperBounds);
+	const float targetX = std::clamp<float>(scrollPosX, lowerBounds, upperBounds);
 
 	m_vVelocity.x = targetX;
 
@@ -561,10 +561,10 @@ void CBaseUIScrollView::updateScrollbars()
 		else if (rawVerticalPercent < 0.0f)
 			overscroll = 1.0f - std::abs(rawVerticalPercent) * 0.95f;
 
-		const float verticalPercent = clamp<float>(rawVerticalPercent, 0.0f, 1.0f);
+		const float verticalPercent = std::clamp<float>(rawVerticalPercent, 0.0f, 1.0f);
 
 		const float verticalHeightPercent = (m_vSize.y - (verticalBlockWidth * 2)) / m_vScrollSize.y;
-		const float verticalBlockHeight = clamp<float>(std::max(verticalHeightPercent * m_vSize.y, verticalBlockWidth) * overscroll, verticalBlockWidth, m_vSize.y);
+		const float verticalBlockHeight = std::clamp<float>(std::max(verticalHeightPercent * m_vSize.y, verticalBlockWidth) * overscroll, verticalBlockWidth, m_vSize.y);
 
 		m_verticalScrollbar = McRect(m_vPos.x + m_vSize.x - (verticalBlockWidth * m_fScrollbarSizeMultiplier), m_vPos.y + (verticalPercent * (m_vSize.y - (verticalBlockWidth * 2) - verticalBlockHeight) + verticalBlockWidth + 1), (verticalBlockWidth * m_fScrollbarSizeMultiplier), verticalBlockHeight);
 	}
@@ -572,7 +572,7 @@ void CBaseUIScrollView::updateScrollbars()
 	// update horizontal scrollbar
 	if (m_bHorizontalScrolling && m_vScrollSize.x > m_vSize.x)
 	{
-		const float horizontalPercent = clamp<float>((m_vScrollPos.x > 0 ? -m_vScrollPos.x : std::abs(m_vScrollPos.x)) / (m_vScrollSize.x - m_vSize.x), 0.0f, 1.0f);
+		const float horizontalPercent = std::clamp<float>((m_vScrollPos.x > 0 ? -m_vScrollPos.x : std::abs(m_vScrollPos.x)) / (m_vScrollSize.x - m_vSize.x), 0.0f, 1.0f);
 		const float horizontalBlockWidth = ui_scrollview_scrollbarwidth.getInt();
 		const float horizontalHeightPercent = (m_vSize.x - (horizontalBlockWidth * 2)) / m_vScrollSize.x;
 		const float horizontalBlockHeight = std::max(horizontalHeightPercent * m_vSize.x, horizontalBlockWidth);

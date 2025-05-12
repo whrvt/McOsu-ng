@@ -32,8 +32,8 @@ public:
 
 		// default background gradient
 		{
-			const Color top = COLOR(255, 244, 244, 244);
-			const Color bottom = COLOR(255, 221, 221, 221);
+			const Color top = rgb(244, 244, 244);
+			const Color bottom = rgb(221, 221, 221);
 
 			g->fillGradient(m_vPos.x + 1, m_vPos.y + 1, m_vSize.x - 1, m_vSize.y, top, top, bottom, bottom);
 		}
@@ -43,9 +43,9 @@ public:
 			const float seekBarPercent = vs_percent.getFloat();
 			if (seekBarPercent > 0.0f)
 			{
-				const Color middle = COLOR(255, 0, 50, 119);
-				const Color third = COLOR(255, 0, 113 - 50, 207 - 50);
-				const Color top = COLOR(255, 0, 196, 223);
+				const Color middle = rgb(0, 50, 119);
+				const Color third = rgb(0, 113 - 50, 207 - 50);
+				const Color top = rgb(0, 196, 223);
 
 				const float sizeThird = m_vSize.y / 3.0f;
 
@@ -58,7 +58,7 @@ public:
 
 		// bottom line
 		{
-			g->setColor(COLOR(255, 204, 204, 204));
+			g->setColor(rgb(204, 204, 204));
 			g->drawLine(m_vPos.x, m_vPos.y + m_vSize.y, m_vPos.x + m_vSize.x, m_vPos.y + m_vSize.y);
 		}
 
@@ -72,7 +72,7 @@ VSTitleBar::VSTitleBar(int x, int y, int xSize, McFont *font) : CBaseUIElement(x
 {
 	m_font = font;
 
-	const Color textColor = COLOR(215, 55, 55, 55);
+	const Color textColor = argb(215, 55, 55, 55);
 
 	m_container = new CBaseUIContainer(0, 0, m_vSize.x, m_vSize.y, "");
 
@@ -161,7 +161,7 @@ void VSTitleBar::drawTitle1(Graphics *g)
 			m_title->draw(g);
 		}
 		g->popClipRect();
-		m_title->setTextColor(COLOR(255, 55, 55, 55));
+		m_title->setTextColor(rgb(55, 55, 55));
 	}
 }
 
@@ -176,7 +176,7 @@ void VSTitleBar::drawTitle2(Graphics *g)
 			m_title2->draw(g);
 		}
 		g->popClipRect();
-		m_title2->setTextColor(COLOR(255, 55, 55, 55));
+		m_title2->setTextColor(rgb(55, 55, 55));
 	}
 }
 
@@ -209,7 +209,7 @@ void VSTitleBar::update()
 	if (m_title2->isActive() && m_bActive)
 	{
 		m_bIsSeeking = true;
-		const float percent = clamp<float>((engine->getMouse()->getPos().x + 1 - m_vPos.x) / m_title->getSize().x, 0.0f, 1.0f);
+		const float percent = std::clamp<float>((engine->getMouse()->getPos().x + 1 - m_vPos.x) / m_title->getSize().x, 0.0f, 1.0f);
 		vs_percent.setValue(percent);
 	}
 	else

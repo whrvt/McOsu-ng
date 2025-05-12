@@ -130,7 +130,7 @@ ConVar osu_draw_fps("osu_draw_fps", true, FCVAR_NONE);
 ConVar osu_hide_cursor_during_gameplay("osu_hide_cursor_during_gameplay", false, FCVAR_NONE);
 
 ConVar osu_alt_f4_quits_even_while_playing("osu_alt_f4_quits_even_while_playing", true, FCVAR_NONE);
-ConVar osu_win_disable_windows_key_while_playing("osu_win_disable_windows_key_while_playing", true, FCVAR_NONE);
+ConVar osu_disable_windows_key_while_playing("osu_disable_windows_key_while_playing", true, FCVAR_NONE);
 
 ConVar *Osu::version = &osu_version;
 ConVar *Osu::debug = &osu_debug;
@@ -168,7 +168,7 @@ Osu::Osu(Osu2 *osu2, int instanceID)
 	m_snd_change_check_interval_ref = convar->getConVarByName("snd_change_check_interval");
 	m_ui_scrollview_scrollbarwidth_ref = convar->getConVarByName("ui_scrollview_scrollbarwidth");
 	m_mouse_raw_input_absolute_to_window_ref = convar->getConVarByName("mouse_raw_input_absolute_to_window");
-	m_win_disable_windows_key_ref = convar->getConVarByName("win_disable_windows_key");
+	m_disable_windows_key_ref = convar->getConVarByName("disable_windows_key");
 	m_osu_vr_draw_desktop_playfield_ref = convar->getConVarByName("osu_vr_draw_desktop_playfield");
 
 	// experimental mods list
@@ -384,9 +384,6 @@ Osu::Osu(Osu2 *osu2, int instanceID)
 	*/
 
 	// renderer
-
-    /* HACK: update global resolution once with actually created window */
-    engine->onResolutionChange(env->getWindowSize());
 	g_vInternalResolution = engine->getScreenSize();
 
 	m_backBuffer = engine->getResourceManager()->createRenderTarget(0, 0, getScreenWidth(), getScreenHeight());
@@ -614,7 +611,7 @@ void Osu::draw(Graphics *g)
 			if (engine->getTime() > m_fQuickRetryTime)
 				alphaPercent = 1.0f;
 
-			g->setColor(COLOR((int)(255*alphaPercent), 0, 0, 0));
+			g->setColor(argb((Channel)(255*alphaPercent), 0, 0, 0));
 			g->fillRect(0, 0, getScreenWidth(), getScreenHeight());
 		}
 
@@ -622,7 +619,7 @@ void Osu::draw(Graphics *g)
 		const bool isAuto = (m_bModAuto || m_bModAutopilot);
 		const bool allowDoubleCursor = isFPoSu;
 		const bool allowDrawCursor = (!osu_hide_cursor_during_gameplay.getBool() || getSelectedBeatmap()->isPaused());
-		float fadingCursorAlpha = 1.0f - clamp<float>((float)m_score->getCombo()/osu_mod_fadingcursor_combo.getFloat(), 0.0f, 1.0f);
+		float fadingCursorAlpha = 1.0f - std::clamp<float>((float)m_score->getCombo()/osu_mod_fadingcursor_combo.getFloat(), 0.0f, 1.0f);
 		if (m_pauseMenu->isVisible() || getSelectedBeatmap()->isContinueScheduled())
 			fadingCursorAlpha = 1.0f;
 
@@ -868,7 +865,7 @@ void Osu::update()
 			{
 				m_bSeeking = true;
 				const float mousePosX = (int)engine->getMouse()->getPos().x;
-				const float percent = clamp<float>(mousePosX / (float)getScreenWidth(), 0.0f, 1.0f);
+				const float percent = std::clamp<float>(mousePosX / (float)getScreenWidth(), 0.0f, 1.0f);
 
 				if (engine->getMouse()->isLeftDown())
 				{
@@ -892,7 +889,7 @@ void Osu::update()
 					m_fPrevSeekMousePosX = -1.0f;
 
 				if (engine->getMouse()->isRightDown())
-					m_fQuickSaveTime = clamp<float>((float)((getSelectedBeatmap()->getStartTimePlayable()+getSelectedBeatmap()->getLengthPlayable())*percent) / (float)getSelectedBeatmap()->getLength(), 0.0f, 1.0f);
+					m_fQuickSaveTime = std::clamp<float>((float)((getSelectedBeatmap()->getStartTimePlayable()+getSelectedBeatmap()->getLengthPlayable())*percent) / (float)getSelectedBeatmap()->getLength(), 0.0f, 1.0f);
 			}
 		}
 
@@ -1156,7 +1153,7 @@ void Osu::update()
 	// volume inactive to active animation
 	if (m_bVolumeInactiveToActiveScheduled && m_fVolumeInactiveToActiveAnim > 0.0f)
 	{
-		engine->getSound()->setVolume(lerp(osu_volume_master_inactive.getFloat() * osu_volume_master.getFloat(), osu_volume_master.getFloat(), m_fVolumeInactiveToActiveAnim));
+		engine->getSound()->setVolume(std::lerp(osu_volume_master_inactive.getFloat() * osu_volume_master.getFloat(), osu_volume_master.getFloat(), m_fVolumeInactiveToActiveAnim));
 
 		// check if we're done
 		if (m_fVolumeInactiveToActiveAnim == 1.0f)
@@ -1555,13 +1552,13 @@ void Osu::onKeyDown(KeyboardEvent &key)
 			if (key == OsuKeyBindings::INCREASE_SPEED.getVal<KEYCODE>())
 			{
 				ConVar *maniaSpeed = convar->getConVarByName("osu_mania_speed");
-				maniaSpeed->setValue(clamp<float>(std::round((maniaSpeed->getFloat() + 0.05f) * 100.0f) / 100.0f, 0.05f, 10.0f));
+				maniaSpeed->setValue(std::clamp<float>(std::round((maniaSpeed->getFloat() + 0.05f) * 100.0f) / 100.0f, 0.05f, 10.0f));
 				m_notificationOverlay->addNotification(UString::format("osu!mania speed set to %gx (fixed)", maniaSpeed->getFloat()));
 			}
 			if (key == OsuKeyBindings::DECREASE_SPEED.getVal<KEYCODE>())
 			{
 				ConVar *maniaSpeed = convar->getConVarByName("osu_mania_speed");
-				maniaSpeed->setValue(clamp<float>(std::round((maniaSpeed->getFloat() - 0.05f) * 100.0f) / 100.0f, 0.05f, 10.0f));
+				maniaSpeed->setValue(std::clamp<float>(std::round((maniaSpeed->getFloat() - 0.05f) * 100.0f) / 100.0f, 0.05f, 10.0f));
 				m_notificationOverlay->addNotification(UString::format("osu!mania speed set to %gx (fixed)", maniaSpeed->getFloat()));
 			}
 			*/
@@ -1764,7 +1761,7 @@ void Osu::onVolumeChange(int multiplier)
 	// change the volume
 	if (m_hud->isVolumeOverlayVisible())
 	{
-		float newVolume = clamp<float>(volumeConVar->getFloat() + osu_volume_change_interval.getFloat()*multiplier, 0.0f, 1.0f);
+		float newVolume = std::clamp<float>(volumeConVar->getFloat() + osu_volume_change_interval.getFloat()*multiplier, 0.0f, 1.0f);
 		volumeConVar->setValue(newVolume);
 	}
 
@@ -1823,9 +1820,9 @@ void Osu::saveScreenshot()
         offsetYpct = osu_letterboxing_offset_y.getFloat();
     }
 
-    const int startX = clamp<int>(static_cast<int>((outerWidth - innerWidth) * (1 + offsetXpct) / 2), 0,
+    const int startX = std::clamp<int>(static_cast<int>((outerWidth - innerWidth) * (1 + offsetXpct) / 2), 0,
                                   static_cast<int>(outerWidth - innerWidth));
-    const int startY = clamp<int>(static_cast<int>((outerHeight - innerHeight) * (1 + offsetYpct) / 2), 0,
+    const int startY = std::clamp<int>(static_cast<int>((outerHeight - innerHeight) * (1 + offsetYpct) / 2), 0,
                                   static_cast<int>(outerHeight - innerHeight));
 
     std::vector<unsigned char> croppedPixels(static_cast<size_t>(innerWidth * innerHeight * 3));
@@ -2263,9 +2260,9 @@ void Osu::updateWindowsKeyDisable()
 		debugLog("\n");
 
 	const bool isPlayerPlaying = engine->hasFocus() && isInPlayMode() && getSelectedBeatmap() != NULL && (!getSelectedBeatmap()->isPaused() || getSelectedBeatmap()->isRestartScheduled()) && !m_bModAuto;
-	if (osu_win_disable_windows_key_while_playing.getBool() && !isInVRMode())
+	if (osu_disable_windows_key_while_playing.getBool() && !isInVRMode())
 	{
-		m_win_disable_windows_key_ref->setValue(isPlayerPlaying ? 1.0f : 0.0f);
+		m_disable_windows_key_ref->setValue(isPlayerPlaying ? 1.0f : 0.0f);
 	}
 	// currently only used to signal SDL
 	env->listenToTextInput(!isPlayerPlaying);
@@ -2687,7 +2684,7 @@ void Osu::onLetterboxingOffsetChange(UString oldValue, UString newValue)
 
 void Osu::onNotification(UString args)
 {
-	m_notificationOverlay->addNotification(args, COLOR(255, osu_notification_color_r.getInt(), osu_notification_color_g.getInt(), osu_notification_color_b.getInt()));
+	m_notificationOverlay->addNotification(args, rgb(osu_notification_color_r.getInt(), osu_notification_color_g.getInt(), osu_notification_color_b.getInt()));
 }
 
 

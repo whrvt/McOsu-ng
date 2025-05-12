@@ -120,7 +120,7 @@ void OsuUISongBrowserSongButton::drawBeatmapBackgroundThumbnail(Graphics *g, Ima
 			m_fThumbnailFadeInTime = engine->getTime();
 		else if (m_fThumbnailFadeInTime > 0.0f && engine->getTime() > m_fThumbnailFadeInTime)
 		{
-			alpha = clamp<float>((engine->getTime() - m_fThumbnailFadeInTime)/osu_songbrowser_thumbnail_fade_in_duration.getFloat(), 0.0f, 1.0f);
+			alpha = std::clamp<float>((engine->getTime() - m_fThumbnailFadeInTime)/osu_songbrowser_thumbnail_fade_in_duration.getFloat(), 0.0f, 1.0f);
 			alpha = 1.0f - (1.0f - alpha)*(1.0f - alpha);
 		}
 	}

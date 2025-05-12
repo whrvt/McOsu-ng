@@ -49,6 +49,7 @@ public:
 	void setScale(Vector2 scale) { m_vScale = scale; }
 
 	// cursor control
+	CURSORTYPE getCursorType();
 	void setCursorType(CURSORTYPE cursorType);
 	void setCursorVisible(bool cursorVisible);
 	bool isCursorVisible();

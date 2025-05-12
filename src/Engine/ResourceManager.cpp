@@ -67,7 +67,7 @@ ResourceManager::ResourceManager()
 
 	m_loadingWork.reserve(32);
 	
-	int threads = clamp(env->getLogicalCPUCount(), default_numthreads, 32); // sanity
+	int threads = std::clamp(env->getLogicalCPUCount(), default_numthreads, 32); // sanity
 	if (threads > default_numthreads)
 		rm_numthreads.setValue(threads);
 
@@ -105,19 +105,19 @@ ResourceManager::~ResourceManager()
 	// let all loader threads exit
 #ifdef MCENGINE_FEATURE_MULTITHREADING
 
-	for (size_t i = 0; i < m_threads.size(); i++)
+	for (auto & m_thread : m_threads)
 	{
-		m_threads[i]->running = false;
+		m_thread->running = false;
 	}
 
 	// notify all threads to check their running state
 	notifyWorkerThreads();
 
 	// wait for threads to stop
-	for (size_t i = 0; i < m_threads.size(); i++)
+	for (auto & m_thread : m_threads)
 	{
-		delete m_threads[i]->thread;
-		delete m_threads[i];
+		delete m_thread->thread;
+		delete m_thread;
 	}
 
 	m_threads.clear();
@@ -125,9 +125,9 @@ ResourceManager::~ResourceManager()
 #endif
 
 	// cleanup leftovers (can only do that after loader threads have exited) (2)
-	for (size_t i = 0; i < m_loadingWorkAsyncDestroy.size(); i++)
+	for (auto & i : m_loadingWorkAsyncDestroy)
 	{
-		delete m_loadingWorkAsyncDestroy[i];
+		delete i;
 	}
 	m_loadingWorkAsyncDestroy.clear();
 }
@@ -199,9 +199,9 @@ void ResourceManager::update()
 #ifdef MCENGINE_FEATURE_MULTITHREADING
 			std::lock_guard<std::mutex> workLock(g_resourceManagerLoadingWorkMutex);
 #endif
-			for (size_t w = 0; w < m_loadingWork.size(); w++)
+			for (auto & w : m_loadingWork)
 			{
-				if (m_loadingWork[w].resource.atomic.load() == m_loadingWorkAsyncDestroy[i])
+				if (w.resource.atomic.load() == m_loadingWorkAsyncDestroy[i])
 				{
 					if (debug_rm->getBool())
 						debugLog("Resource Manager: Waiting for async destroy of #%zu ...\n", i);
@@ -233,13 +233,13 @@ void ResourceManager::update()
 void ResourceManager::notifyWorkerThreads()
 {
 #ifdef MCENGINE_FEATURE_MULTITHREADING
-	for (size_t i = 0; i < m_threads.size(); i++)
+	for (auto & m_thread : m_threads)
 	{
 		{
-			std::lock_guard<std::mutex> lock(m_threads[i]->workMutex);
+			std::lock_guard<std::mutex> lock(m_thread->workMutex);
 			// no need to set hasWork here, that's handled when adding work
 		}
-		m_threads[i]->workCondition.notify_one();
+		m_thread->workCondition.notify_one();
 	}
 #endif
 }
@@ -282,9 +282,9 @@ void ResourceManager::destroyResource(Resource *rs)
 	}
 
 	// handle async destroy
-	for (size_t w = 0; w < m_loadingWork.size(); w++)
+	for (auto & w : m_loadingWork)
 	{
-		if (m_loadingWork[w].resource.atomic.load() == rs)
+		if (w.resource.atomic.load() == rs)
 		{
 			if (debug_rm->getBool())
 				debugLog("Resource Manager: Scheduled async destroy of %s\n", rs->getName().toUtf8());
@@ -309,9 +309,9 @@ void ResourceManager::destroyResource(Resource *rs)
 
 void ResourceManager::reloadResources()
 {
-	for (size_t i = 0; i < m_vResources.size(); i++)
+	for (auto & m_vResource : m_vResources)
 	{
-		m_vResources[i]->reload();
+		m_vResource->reload();
 	}
 }
 
@@ -631,10 +631,10 @@ VertexArrayObject *ResourceManager::createVertexArrayObject(Graphics::PRIMITIVE 
 
 Image *ResourceManager::getImage(UString resourceName) const
 {
-	for (size_t i = 0; i < m_vResources.size(); i++)
+	for (auto m_vResource : m_vResources)
 	{
-		if (m_vResources[i]->getName() == resourceName)
-			return dynamic_cast<Image *>(m_vResources[i]);
+		if (m_vResource->getName() == resourceName)
+			return dynamic_cast<Image *>(m_vResource);
 	}
 
 	doesntExistWarning(resourceName);
@@ -643,10 +643,10 @@ Image *ResourceManager::getImage(UString resourceName) const
 
 McFont *ResourceManager::getFont(UString resourceName) const
 {
-	for (size_t i = 0; i < m_vResources.size(); i++)
+	for (auto m_vResource : m_vResources)
 	{
-		if (m_vResources[i]->getName() == resourceName)
-			return dynamic_cast<McFont *>(m_vResources[i]);
+		if (m_vResource->getName() == resourceName)
+			return dynamic_cast<McFont *>(m_vResource);
 	}
 
 	doesntExistWarning(resourceName);
@@ -655,10 +655,10 @@ McFont *ResourceManager::getFont(UString resourceName) const
 
 Sound *ResourceManager::getSound(UString resourceName) const
 {
-	for (size_t i = 0; i < m_vResources.size(); i++)
+	for (auto m_vResource : m_vResources)
 	{
-		if (m_vResources[i]->getName() == resourceName)
-			return dynamic_cast<Sound *>(m_vResources[i]);
+		if (m_vResource->getName() == resourceName)
+			return dynamic_cast<Sound *>(m_vResource);
 	}
 
 	doesntExistWarning(resourceName);
@@ -667,10 +667,10 @@ Sound *ResourceManager::getSound(UString resourceName) const
 
 Shader *ResourceManager::getShader(UString resourceName) const
 {
-	for (size_t i = 0; i < m_vResources.size(); i++)
+	for (auto m_vResource : m_vResources)
 	{
-		if (m_vResources[i]->getName() == resourceName)
-			return dynamic_cast<Shader *>(m_vResources[i]);
+		if (m_vResource->getName() == resourceName)
+			return dynamic_cast<Shader *>(m_vResource);
 	}
 
 	doesntExistWarning(resourceName);
@@ -684,9 +684,9 @@ bool ResourceManager::isLoading() const
 
 bool ResourceManager::isLoadingResource(Resource *rs) const
 {
-	for (size_t i = 0; i < m_loadingWork.size(); i++)
+	for (const auto & i : m_loadingWork)
 	{
-		if (m_loadingWork[i].resource.atomic.load() == rs)
+		if (i.resource.atomic.load() == rs)
 			return true;
 	}
 
@@ -740,9 +740,9 @@ void ResourceManager::loadResource(Resource *res, bool load)
 
 			// count work for this thread
 			int numLoadingWorkForThreadIndex = 0;
-			for (size_t i = 0; i < m_loadingWork.size(); i++)
+			for (auto & i : m_loadingWork)
 			{
-				if (m_loadingWork[i].threadIndex.atomic.load() == threadIndex)
+				if (i.threadIndex.atomic.load() == threadIndex)
 					numLoadingWorkForThreadIndex++;
 			}
 
@@ -786,9 +786,9 @@ void ResourceManager::doesntExistWarning(UString resourceName) const
 
 Resource *ResourceManager::checkIfExistsAndHandle(UString resourceName)
 {
-	for (size_t i = 0; i < m_vResources.size(); i++)
+	for (auto & m_vResource : m_vResources)
 	{
-		if (m_vResources[i]->getName() == resourceName)
+		if (m_vResource->getName() == resourceName)
 		{
 			if (rm_warnings.getBool())
 				debugLog("RESOURCE MANAGER: Resource \"%s\" already loaded!\n", resourceName.toUtf8());
@@ -796,7 +796,7 @@ Resource *ResourceManager::checkIfExistsAndHandle(UString resourceName)
 			// handle flags (reset them)
 			resetFlags();
 
-			return m_vResources[i];
+			return m_vResource;
 		}
 	}
 
@@ -836,11 +836,11 @@ static void *_resourceLoaderThread(void *data)
 		{
 			std::lock_guard<std::mutex> lock(g_resourceManagerLoadingWorkMutex);
 
-			for (size_t i = 0; i < self->loadingWork->size(); i++)
+			for (auto & i : *self->loadingWork)
 			{
-				if ((*self->loadingWork)[i].threadIndex.atomic.load() == threadIndex && !(*self->loadingWork)[i].done.atomic.load())
+				if (i.threadIndex.atomic.load() == threadIndex && !i.done.atomic.load())
 				{
-					resourceToLoad = (*self->loadingWork)[i].resource.atomic.load();
+					resourceToLoad = i.resource.atomic.load();
 					break;
 				}
 			}
@@ -860,11 +860,11 @@ static void *_resourceLoaderThread(void *data)
 			{
 				std::lock_guard<std::mutex> lock(g_resourceManagerLoadingWorkMutex);
 
-				for (size_t i = 0; i < self->loadingWork->size(); i++)
+				for (auto & i : *self->loadingWork)
 				{
-					if ((*self->loadingWork)[i].threadIndex.atomic.load() == threadIndex && (*self->loadingWork)[i].resource.atomic.load() == resourceToLoad)
+					if (i.threadIndex.atomic.load() == threadIndex && i.resource.atomic.load() == resourceToLoad)
 					{
-						(*self->loadingWork)[i].done = ResourceManager::MobileAtomicBool(true);
+						i.done = ResourceManager::MobileAtomicBool(true);
 						break;
 					}
 				}

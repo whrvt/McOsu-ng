@@ -274,7 +274,7 @@ void OpenGLRenderTarget::enable()
 	if (debug_rt->getBool())
 		glClearColor(0.0f, 0.5f, 0.0f, 0.5f);
 	else
-		glClearColor(COLOR_GET_Rf(m_clearColor), COLOR_GET_Gf(m_clearColor), COLOR_GET_Bf(m_clearColor), COLOR_GET_Af(m_clearColor));
+		glClearColor(Rf(m_clearColor), Gf(m_clearColor), Bf(m_clearColor), Af(m_clearColor));
 
 	if (m_bClearColorOnDraw || m_bClearDepthOnDraw)
 		glClear((m_bClearColorOnDraw ? GL_COLOR_BUFFER_BIT : 0) | (m_bClearDepthOnDraw ? GL_DEPTH_BUFFER_BIT : 0));

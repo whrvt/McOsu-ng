@@ -79,7 +79,7 @@ void OsuUISearchOverlay::draw(Graphics *g)
 		const float height = lineHeight * numLines;
 		const int offsetTextWidthWithOverflow = offsetTextWidthWithoutOverflow + textOverflowXOffset;
 
-		g->setColor(COLOR(m_sSearchString.length() > 0 ? 100 : 30, 0, 0, 0));
+		g->setColor(argb(m_sSearchString.length() > 0 ? 100 : 30, 0, 0, 0));
 		g->fillRect(m_vPos.x + m_vSize.x - offsetTextWidthWithOverflow, m_vPos.y, offsetTextWidthWithOverflow, height);
 	}
 

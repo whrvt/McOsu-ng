@@ -182,7 +182,7 @@ SoundTouchFilterInstance::SoundTouchFilterInstance(SoundTouchFilter *aParent)
 						processingBufferDelay = ((nominalInputSeq - nominalOutputSeq) / 2.0f / (float)mBaseSamplerate) * 1000.0f;
 					}
 
-					float totalOffset = clamp<float>(-(latencyInMs + processingBufferDelay), -200.0f, 0.0f);
+					float totalOffset = std::clamp<float>(-(latencyInMs + processingBufferDelay), -200.0f, 0.0f);
 
 					ST_DEBUG_LOG("SoundTouch: Calculated universal offset = %.2f ms (latency: %.2f, buffer: %.2f)\n", totalOffset, latencyInMs,
 					             processingBufferDelay);

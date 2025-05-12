@@ -487,7 +487,7 @@ bool OpenVRInterface::initRenderTargets()
 	else if (vr_aa.getInt() > 0)
 		multisampleType = Graphics::MULTISAMPLE_TYPE::MULTISAMPLE_2X;
 
-	Color clearColor = COLORf(0.0f, vr_background_brightness.getFloat(), vr_background_brightness.getFloat(), vr_background_brightness.getFloat() + (vr_background_brightness.getFloat() > 0.0f ? 0.03f : 0.0f));
+	Color clearColor = argb(0.0f, vr_background_brightness.getFloat(), vr_background_brightness.getFloat(), vr_background_brightness.getFloat() + (vr_background_brightness.getFloat() > 0.0f ? 0.03f : 0.0f));
 
 	// both eyes
 	if (m_leftEye == NULL)
@@ -860,7 +860,7 @@ void OpenVRInterface::renderScene(Graphics *g,  Matrix4 &matCurrentEye, Matrix4 
 			if (trackedDeviceClass == vr::TrackedDeviceClass_Controller)
 			{
 				m_renderModelShader->setUniform1f("brightness", (trackedDeviceClass == vr::TrackedDeviceClass_Controller ? vr_controller_model_brightness_multiplier.getFloat() : 1.0f));
-				m_renderModelShader->setUniform3f("colorOverride", COLOR_GET_Rf(m_controllerColorOverride), COLOR_GET_Gf(m_controllerColorOverride), COLOR_GET_Bf(m_controllerColorOverride));
+				m_renderModelShader->setUniform3f("colorOverride", Rf(m_controllerColorOverride), Gf(m_controllerColorOverride), Bf(m_controllerColorOverride));
 			}
 			else
 			{
@@ -1857,7 +1857,7 @@ void OpenVRInterface::onBackgroundBrightnessChange(UString oldValue, UString new
 {
 	if (!m_bReady) return;
 
-	Color clearColor = COLORf(0.0f, vr_background_brightness.getFloat(), vr_background_brightness.getFloat(), vr_background_brightness.getFloat() + (vr_background_brightness.getFloat() > 0.0f ? 0.03f : 0.0f));
+	Color clearColor = argb(0.0f, vr_background_brightness.getFloat(), vr_background_brightness.getFloat(), vr_background_brightness.getFloat() + (vr_background_brightness.getFloat() > 0.0f ? 0.03f : 0.0f));
 
 	m_leftEye->setClearColor(clearColor);
 	m_rightEye->setClearColor(clearColor);

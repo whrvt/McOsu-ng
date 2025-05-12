@@ -27,17 +27,26 @@ typedef unsigned __int64 QWORD;
 // shove BASS declarations into their own namespace
 namespace Bass_EXTERN
 {
+extern "C"
+{
+#define NOBASSOVERLOADS
 #include <bass.h>
 #include <bass_fx.h>
+
+#ifndef BASS_CONFIG_MP3_OLDGAPS
+#define BASS_CONFIG_MP3_OLDGAPS 68
+#endif
 
 #ifdef MCENGINE_FEATURE_BASS_WASAPI
 #include <bassmix.h>
 #include <basswasapi.h>
 #endif
+}
 }; // namespace Bass_EXTERN
 
 namespace BassLoader
 {
+// imported enums/defines
 using QWORD = Bass_EXTERN::QWORD;
 #ifdef MCENGINE_PLATFORM_WINDOWS
 using DWORD = DWORD;
@@ -76,82 +85,109 @@ using Bass_EXTERN::BASS_ATTRIB_TEMPO;
 using Bass_EXTERN::BASS_ATTRIB_TEMPO_FREQ;
 using Bass_EXTERN::BASS_ATTRIB_TEMPO_PITCH;
 
+// definitions
+using BASS_GetVersion_t = decltype(&Bass_EXTERN::BASS_GetVersion);
+using BASS_SetConfig_t = decltype(&Bass_EXTERN::BASS_SetConfig);
+using BASS_GetConfig_t = decltype(&Bass_EXTERN::BASS_GetConfig);
+using BASS_Init_t = decltype(&Bass_EXTERN::BASS_Init);
+using BASS_Free_t = decltype(&Bass_EXTERN::BASS_Free);
+using BASS_GetDeviceInfo_t = decltype(&Bass_EXTERN::BASS_GetDeviceInfo);
+using BASS_ErrorGetCode_t = decltype(&Bass_EXTERN::BASS_ErrorGetCode);
+using BASS_StreamCreateFile_t = decltype(&Bass_EXTERN::BASS_StreamCreateFile);
+using BASS_SampleLoad_t = decltype(&Bass_EXTERN::BASS_SampleLoad);
+using BASS_SampleFree_t = decltype(&Bass_EXTERN::BASS_SampleFree);
+using BASS_SampleGetChannel_t = decltype(&Bass_EXTERN::BASS_SampleGetChannel);
+using BASS_ChannelPlay_t = decltype(&Bass_EXTERN::BASS_ChannelPlay);
+using BASS_ChannelPause_t = decltype(&Bass_EXTERN::BASS_ChannelPause);
+using BASS_ChannelStop_t = decltype(&Bass_EXTERN::BASS_ChannelStop);
+using BASS_ChannelSetAttribute_t = decltype(&Bass_EXTERN::BASS_ChannelSetAttribute);
+using BASS_ChannelGetAttribute_t = decltype(&Bass_EXTERN::BASS_ChannelGetAttribute);
+using BASS_ChannelSetPosition_t = decltype(&Bass_EXTERN::BASS_ChannelSetPosition);
+using BASS_ChannelGetPosition_t = decltype(&Bass_EXTERN::BASS_ChannelGetPosition);
+using BASS_ChannelGetLength_t = decltype(&Bass_EXTERN::BASS_ChannelGetLength);
+using BASS_ChannelFlags_t = decltype(&Bass_EXTERN::BASS_ChannelFlags);
+using BASS_ChannelIsActive_t = decltype(&Bass_EXTERN::BASS_ChannelIsActive);
+using BASS_ChannelBytes2Seconds_t = decltype(&Bass_EXTERN::BASS_ChannelBytes2Seconds);
+using BASS_ChannelSeconds2Bytes_t = decltype(&Bass_EXTERN::BASS_ChannelSeconds2Bytes);
+using BASS_ChannelSet3DPosition_t = decltype(&Bass_EXTERN::BASS_ChannelSet3DPosition);
+using BASS_Set3DPosition_t = decltype(&Bass_EXTERN::BASS_Set3DPosition);
+using BASS_Apply3D_t = decltype(&Bass_EXTERN::BASS_Apply3D);
+using BASS_StreamFree_t = decltype(&Bass_EXTERN::BASS_StreamFree);
+
+// BASS_FX
+using BASS_FX_TempoCreate_t = decltype(&Bass_EXTERN::BASS_FX_TempoCreate);
+
+#ifdef MCENGINE_FEATURE_BASS_WASAPI
+// BASSWASAPI
+using BASS_WASAPI_Init_t = decltype(&Bass_EXTERN::BASS_WASAPI_Init);
+using BASS_WASAPI_Free_t = decltype(&Bass_EXTERN::BASS_WASAPI_Free);
+using BASS_WASAPI_Start_t = decltype(&Bass_EXTERN::BASS_WASAPI_Start);
+using BASS_WASAPI_Stop_t = decltype(&Bass_EXTERN::BASS_WASAPI_Stop);
+using BASS_WASAPI_SetVolume_t = decltype(&Bass_EXTERN::BASS_WASAPI_SetVolume);
+using BASS_WASAPI_GetInfo_t = decltype(&Bass_EXTERN::BASS_WASAPI_GetInfo);
+using BASS_WASAPI_GetDeviceInfo_t = decltype(&Bass_EXTERN::BASS_WASAPI_GetDeviceInfo);
+
+// BASSMIX
+using BASS_Mixer_StreamCreate_t = decltype(&Bass_EXTERN::BASS_Mixer_StreamCreate);
+using BASS_Mixer_StreamAddChannel_t = decltype(&Bass_EXTERN::BASS_Mixer_StreamAddChannel);
+using BASS_Mixer_ChannelGetMixer_t = decltype(&Bass_EXTERN::BASS_Mixer_ChannelGetMixer);
+using BASS_Mixer_ChannelRemove_t = decltype(&Bass_EXTERN::BASS_Mixer_ChannelRemove);
+#endif
+
+// declarations
+extern BASS_GetVersion_t BASS_GetVersion;
+extern BASS_SetConfig_t BASS_SetConfig;
+extern BASS_GetConfig_t BASS_GetConfig;
+extern BASS_Init_t BASS_Init;
+extern BASS_Free_t BASS_Free;
+extern BASS_GetDeviceInfo_t BASS_GetDeviceInfo;
+extern BASS_ErrorGetCode_t BASS_ErrorGetCode;
+extern BASS_StreamCreateFile_t BASS_StreamCreateFile;
+extern BASS_SampleLoad_t BASS_SampleLoad;
+extern BASS_SampleFree_t BASS_SampleFree;
+extern BASS_SampleGetChannel_t BASS_SampleGetChannel;
+extern BASS_ChannelPlay_t BASS_ChannelPlay;
+extern BASS_ChannelPause_t BASS_ChannelPause;
+extern BASS_ChannelStop_t BASS_ChannelStop;
+extern BASS_ChannelSetAttribute_t BASS_ChannelSetAttribute;
+extern BASS_ChannelGetAttribute_t BASS_ChannelGetAttribute;
+extern BASS_ChannelSetPosition_t BASS_ChannelSetPosition;
+extern BASS_ChannelGetPosition_t BASS_ChannelGetPosition;
+extern BASS_ChannelGetLength_t BASS_ChannelGetLength;
+extern BASS_ChannelFlags_t BASS_ChannelFlags;
+extern BASS_ChannelIsActive_t BASS_ChannelIsActive;
+extern BASS_ChannelBytes2Seconds_t BASS_ChannelBytes2Seconds;
+extern BASS_ChannelSeconds2Bytes_t BASS_ChannelSeconds2Bytes;
+extern BASS_ChannelSet3DPosition_t BASS_ChannelSet3DPosition;
+extern BASS_Set3DPosition_t BASS_Set3DPosition;
+extern BASS_Apply3D_t BASS_Apply3D;
+extern BASS_StreamFree_t BASS_StreamFree;
+
+// BASS_FX
+extern BASS_FX_TempoCreate_t BASS_FX_TempoCreate;
+
+#ifdef MCENGINE_FEATURE_BASS_WASAPI
+// BASSWASAPI
+extern BASS_WASAPI_Init_t BASS_WASAPI_Init;
+extern BASS_WASAPI_Free_t BASS_WASAPI_Free;
+extern BASS_WASAPI_Start_t BASS_WASAPI_Start;
+extern BASS_WASAPI_Stop_t BASS_WASAPI_Stop;
+extern BASS_WASAPI_SetVolume_t BASS_WASAPI_SetVolume;
+extern BASS_WASAPI_GetInfo_t BASS_WASAPI_GetInfo;
+extern BASS_WASAPI_GetDeviceInfo_t BASS_WASAPI_GetDeviceInfo;
+
+// BASSMIX
+extern BASS_Mixer_StreamCreate_t BASS_Mixer_StreamCreate;
+extern BASS_Mixer_StreamAddChannel_t BASS_Mixer_StreamAddChannel;
+extern BASS_Mixer_ChannelGetMixer_t BASS_Mixer_ChannelGetMixer;
+extern BASS_Mixer_ChannelRemove_t BASS_Mixer_ChannelRemove;
+#endif
+
 // open the libraries and populate the function pointers
 bool init();
 // close the libraries (BassSoundEngine destructor)
 void cleanup();
 
-// BASS
-extern DWORD WINAPI (*BASS_GetVersion)();
-extern BOOL WINAPI (*BASS_SetConfig)(DWORD option, DWORD value);
-extern DWORD WINAPI (*BASS_GetConfig)(DWORD option);
-#if defined(_WIN32) && !defined(_WIN32_WCE) && !(defined(WINAPI_FAMILY) && WINAPI_FAMILY != WINAPI_FAMILY_DESKTOP_APP)
-extern BOOL WINAPI (*BASS_Init)(int device, DWORD freq, DWORD flags, HWND win, const void *dsguid);
-#else
-extern BOOL WINAPI (*BASS_Init)(int device, DWORD freq, DWORD flags, void *win, const void *dsguid);
-#endif
-extern BOOL WINAPI (*BASS_Free)();
-extern BOOL WINAPI (*BASS_GetDeviceInfo)(DWORD device, BASS_DEVICEINFO *info);
-extern DWORD WINAPI (*BASS_ErrorGetCode)();
-extern HSTREAM WINAPI (*BASS_StreamCreateFile_plat)(BOOL mem, const void *file, QWORD offset, QWORD length, DWORD flags);
-extern HSAMPLE WINAPI (*BASS_SampleLoad_plat)(BOOL mem, const void *file, QWORD offset, DWORD length, DWORD max, DWORD flags);
-// overloads copied from headers
-static inline HSAMPLE BASS_SampleLoad(BOOL mem, const void *file, QWORD offset, DWORD length, DWORD max, DWORD flags)
-{
-	return BASS_SampleLoad_plat(mem, file, offset, length, max, flags);
-}
-static inline HSTREAM BASS_StreamCreateFile(BOOL mem, const void *file, QWORD offset, QWORD length, DWORD flags)
-{
-	return BASS_StreamCreateFile_plat(mem, file, offset, length, flags);
-}
-#ifdef MCENGINE_PLATFORM_WINDOWS
-static inline HSAMPLE BASS_SampleLoad(BOOL mem, const WCHAR *file, QWORD offset, DWORD length, DWORD max, DWORD flags)
-{
-	return BASS_SampleLoad_plat(mem, (const void*)file, offset, length, max, flags | BASS_UNICODE);
-}
-static inline HSTREAM BASS_StreamCreateFile(BOOL mem, const WCHAR *file, QWORD offset, QWORD length, DWORD flags)
-{
-	return BASS_StreamCreateFile_plat(mem, (const void*)file, offset, length, flags | BASS_UNICODE);
-}
-#endif
-extern BOOL WINAPI (*BASS_SampleFree)(HSAMPLE handle);
-extern HCHANNEL WINAPI (*BASS_SampleGetChannel)(HSAMPLE handle, BOOL onlynew);
-extern BOOL WINAPI (*BASS_ChannelPlay)(DWORD handle, BOOL restart);
-extern BOOL WINAPI (*BASS_ChannelPause)(DWORD handle);
-extern BOOL WINAPI (*BASS_ChannelStop)(DWORD handle);
-extern BOOL WINAPI (*BASS_ChannelSetAttribute)(DWORD handle, DWORD attrib, float value);
-extern BOOL WINAPI (*BASS_ChannelGetAttribute)(DWORD handle, DWORD attrib, float *value);
-extern BOOL WINAPI (*BASS_ChannelSetPosition)(DWORD handle, QWORD pos, DWORD mode);
-extern QWORD WINAPI (*BASS_ChannelGetPosition)(DWORD handle, DWORD mode);
-extern QWORD WINAPI (*BASS_ChannelGetLength)(DWORD handle, DWORD mode);
-extern DWORD WINAPI (*BASS_ChannelFlags)(DWORD handle, DWORD flags, DWORD mask);
-extern DWORD WINAPI (*BASS_ChannelIsActive)(DWORD handle);
-extern double WINAPI (*BASS_ChannelBytes2Seconds)(DWORD handle, QWORD pos);
-extern QWORD WINAPI (*BASS_ChannelSeconds2Bytes)(DWORD handle, double pos);
-extern BOOL WINAPI (*BASS_ChannelSet3DPosition)(DWORD handle, const BASS_3DVECTOR *pos, const BASS_3DVECTOR *orient, const BASS_3DVECTOR *vel);
-extern BOOL WINAPI (*BASS_Set3DPosition)(const BASS_3DVECTOR *pos, const BASS_3DVECTOR *vel, const BASS_3DVECTOR *front, const BASS_3DVECTOR *top);
-extern BOOL WINAPI (*BASS_Apply3D)();
-extern BOOL WINAPI (*BASS_StreamFree)(HSTREAM handle);
-
-// BASS_FX
-extern HSTREAM WINAPI (*BASS_FX_TempoCreate)(DWORD chan, DWORD flags);
-
-#ifdef MCENGINE_FEATURE_BASS_WASAPI
-// BASSWASAPI
-extern BOOL WINAPI (*BASS_WASAPI_Init)(int device, DWORD freq, DWORD chans, DWORD flags, float buffer, float period, void *proc, void *user);
-extern BOOL WINAPI (*BASS_WASAPI_Free)();
-extern BOOL WINAPI (*BASS_WASAPI_Start)();
-extern BOOL WINAPI (*BASS_WASAPI_Stop)(BOOL reset);
-extern BOOL WINAPI (*BASS_WASAPI_SetVolume)(DWORD mode, float volume);
-extern BOOL WINAPI (*BASS_WASAPI_GetInfo)(BASS_WASAPI_INFO *info);
-extern BOOL WINAPI (*BASS_WASAPI_GetDeviceInfo)(DWORD device, BASS_WASAPI_DEVICEINFO *info);
-
-// BASSMIX
-extern HSTREAM WINAPI (*BASS_Mixer_StreamCreate)(DWORD freq, DWORD chans, DWORD flags);
-extern BOOL WINAPI (*BASS_Mixer_StreamAddChannel)(HSTREAM handle, DWORD channel, DWORD flags);
-extern DWORD WINAPI (*BASS_Mixer_ChannelGetMixer)(DWORD handle);
-extern BOOL WINAPI (*BASS_Mixer_ChannelRemove)(DWORD handle);
-#endif
 }; // namespace BassLoader
 
 using namespace BassLoader;

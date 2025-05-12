@@ -182,8 +182,8 @@ void Mouse::onMotion(float x, float y, float xRel, float yRel, bool preTransform
 			const McRect clipRect = env->getCursorClip();
 
 			// clamp the final position to the clip rect
-			newAbs.x = clamp<float>(newAbs.x, clipRect.getMinX(), clipRect.getMaxX());
-			newAbs.y = clamp<float>(newAbs.y, clipRect.getMinY(), clipRect.getMaxY());
+			newAbs.x = std::clamp<float>(newAbs.x, clipRect.getMinX(), clipRect.getMaxX());
+			newAbs.y = std::clamp<float>(newAbs.y, clipRect.getMinY(), clipRect.getMaxY());
 		}
 	}
 
@@ -318,6 +318,11 @@ void Mouse::setOffset(Vector2 offset)
 	Vector2 posAdjustment = m_vOffset - oldOffset;
 	m_vPos += posAdjustment;
 	m_vActualPos += posAdjustment;
+}
+
+CURSORTYPE Mouse::getCursorType()
+{
+	return env->getCursor();
 }
 
 void Mouse::setCursorType(CURSORTYPE cursorType)

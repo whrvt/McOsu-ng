@@ -57,7 +57,7 @@ ConVar osu_options_slider_preview_use_legacy_renderer("osu_options_slider_previe
 
 void _osuOptionsSliderQualityWrapper(UString oldValue, UString newValue)
 {
-	float value = lerp(1.0f, 2.5f, 1.0f - newValue.toFloat());
+	float value = std::lerp(1.0f, 2.5f, 1.0f - newValue.toFloat());
 	convar->getConVarByName("osu_slider_curve_points_separation")->setValue(value);
 };
 ConVar osu_options_slider_quality("osu_options_slider_quality", 0.0f, FCVAR_NONE, _osuOptionsSliderQualityWrapper);
@@ -84,8 +84,8 @@ public:
 
 		if (m_iMode == 0)
 		{
-			float approachScale = clamp<float>(1.0f + 1.5f - fmod(engine->getTime()*3, 3.0f), 0.0f, 2.5f);
-			float approachAlpha = clamp<float>(fmod(engine->getTime()*3, 3.0f)/1.5f, 0.0f, 1.0f);
+			float approachScale = std::clamp<float>(1.0f + 1.5f - fmod(engine->getTime()*3, 3.0f), 0.0f, 2.5f);
+			float approachAlpha = std::clamp<float>(fmod(engine->getTime()*3, 3.0f)/1.5f, 0.0f, 1.0f);
 			approachAlpha = -approachAlpha*(approachAlpha-2.0f);
 			approachAlpha = -approachAlpha*(approachAlpha-2.0f);
 			float approachCircleAlpha = approachAlpha;
@@ -163,8 +163,8 @@ public:
 		const float numberScale = (hitcircleDiameter / (160.0f * (m_osu->getSkin()->isDefault12x() ? 2.0f : 1.0f))) * 1 * convar->getConVarByName("osu_number_scale_multiplier")->getFloat();
 		const float overlapScale = (hitcircleDiameter / (160.0f)) * 1 * convar->getConVarByName("osu_number_scale_multiplier")->getFloat();
 
-		const float approachScale = clamp<float>(1.0f + 1.5f - fmod(engine->getTime()*3, 3.0f), 0.0f, 2.5f);
-		float approachAlpha = clamp<float>(fmod(engine->getTime()*3, 3.0f)/1.5f, 0.0f, 1.0f);
+		const float approachScale = std::clamp<float>(1.0f + 1.5f - fmod(engine->getTime()*3, 3.0f), 0.0f, 2.5f);
+		float approachAlpha = std::clamp<float>(fmod(engine->getTime()*3, 3.0f)/1.5f, 0.0f, 1.0f);
 
 		approachAlpha = -approachAlpha*(approachAlpha-2.0f);
 		approachAlpha = -approachAlpha*(approachAlpha-2.0f);
@@ -388,8 +388,8 @@ public:
 
 		const int fullColorBlockSize = 4 * Osu::getUIScale(m_osu);
 
-		Color left = COLOR((int)(255*m_fAnim), 255, 233, 50);
-		Color middle = COLOR((int)(255*m_fAnim), 255, 211, 50);
+		Color left = argb((int)(255*m_fAnim), 255, 233, 50);
+		Color middle = argb((int)(255*m_fAnim), 255, 211, 50);
 		Color right = 0x00000000;
 
 		g->fillGradient(m_vPos.x, m_vPos.y, m_vSize.x*1.25f, m_vSize.y, middle, right, middle, right);
@@ -508,6 +508,8 @@ OsuOptionsMenu::OsuOptionsMenu(Osu *osu) : OsuScreenBackable(osu)
 	m_bWASAPIBufferChangeScheduled = false;
 	m_bWASAPIPeriodChangeScheduled = false;
 
+	m_bIsOsuFolderDialogOpen = false;
+
 	m_iNumResetAllKeyBindingsPressed = 0;
 	m_iNumResetEverythingPressed = 0;
 
@@ -572,12 +574,18 @@ OsuOptionsMenu::OsuOptionsMenu(Osu *osu) : OsuScreenBackable(osu)
 	manuallyManageBeatmapsButton->setClickCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onManuallyManageBeatmapsClicked) );
 	manuallyManageBeatmapsButton->setColor(0xff10667b);
 
-	addSubSection("osu!folder");
+	addSubSection("osu! folder");
 	addLabel("1) If you have an existing osu!stable installation:")->setTextColor(0xff666666);
 	addLabel("2) osu!stable > Options > \"Open osu! folder\"")->setTextColor(0xff666666);
 	addLabel("3) Copy & Paste the full path into the textbox:")->setTextColor(0xff666666);
 	addLabel("");
 	m_osuFolderTextbox = addTextbox(convar->getConVarByName("osu_folder")->getString(), convar->getConVarByName("osu_folder"));
+
+	addLabel("... or ...")->setCenterText(true);
+	OsuUIButton *browseForOsuFolderButton = addButton("Browse to your osu! folder");
+	browseForOsuFolderButton->setClickCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onBrowseOsuFolderClicked) );
+	browseForOsuFolderButton->setColor(0xff999999);
+
 	addLabel("");
 	addLabel("osu!lazer databases are not supported.")->setTextColor(0xff770000);
 	//addSpacer();
@@ -609,8 +617,7 @@ OsuOptionsMenu::OsuOptionsMenu(Osu *osu) : OsuScreenBackable(osu)
 	addSubSection("Renderer");
 	addCheckbox("VSync", "If enabled: plz enjoy input lag.", convar->getConVarByName("vsync"));
 
-	if constexpr (Env::cfg(OS::WINDOWS))
-		addCheckbox("High Priority (!)", "WARNING: Only enable this if nothing else works!\nSets the process priority to High.\nMay fix microstuttering and other weird problems.\nTry to fix your broken computer/OS/drivers first!", convar->getConVarByName("win_processpriority"));
+	addCheckbox("High Priority", "Sets the process priority to High.\nMay fix microstuttering and other weird problems.\nTry to fix your broken computer/OS/drivers first!", convar->getConVarByName("processpriority"));
 
 	addCheckbox("Show FPS Counter", convar->getConVarByName("osu_draw_fps"));
 
@@ -1252,13 +1259,13 @@ void OsuOptionsMenu::draw(Graphics *g)
 	{
 		if (!isPlayingBeatmap)
 		{
-			const float brightness = clamp<float>(m_backgroundBrightnessSlider->getFloat(), 0.0f, 1.0f);
-			const short red = clamp<float>(brightness * m_osu_background_color_r_ref->getFloat(), 0.0f, 255.0f);
-			const short green = clamp<float>(brightness * m_osu_background_color_g_ref->getFloat(), 0.0f, 255.0f);
-			const short blue = clamp<float>(brightness * m_osu_background_color_b_ref->getFloat(), 0.0f, 255.0f);
+			const float brightness = std::clamp<float>(m_backgroundBrightnessSlider->getFloat(), 0.0f, 1.0f);
+			const short red = std::clamp<float>(brightness * m_osu_background_color_r_ref->getFloat(), 0.0f, 255.0f);
+			const short green = std::clamp<float>(brightness * m_osu_background_color_g_ref->getFloat(), 0.0f, 255.0f);
+			const short blue = std::clamp<float>(brightness * m_osu_background_color_b_ref->getFloat(), 0.0f, 255.0f);
 			if (brightness > 0.0f)
 			{
-				g->setColor(COLOR(255, red, green, blue));
+				g->setColor(rgb(red, green, blue));
 				g->fillRect(0, 0, m_osu->getScreenWidth(), m_osu->getScreenHeight());
 			}
 		}
@@ -1268,8 +1275,8 @@ void OsuOptionsMenu::draw(Graphics *g)
 	{
 		if (!isPlayingBeatmap)
 		{
-			const short dim = clamp<float>(m_backgroundDimSlider->getFloat(), 0.0f, 1.0f)*255.0f;
-			g->setColor(COLOR(dim, 0, 0, 0));
+			const short dim = std::clamp<float>(m_backgroundDimSlider->getFloat(), 0.0f, 1.0f)*255.0f;
+			g->setColor(argb(dim, 0, 0, 0));
 			g->fillRect(0, 0, m_osu->getScreenWidth(), m_osu->getScreenHeight());
 		}
 	}
@@ -1362,7 +1369,7 @@ void OsuOptionsMenu::draw(Graphics *g)
 			g->rotate3DScene(0, -(1.0f - m_fAnimation)*90, 0);
 			g->translate3DScene(-(1.0f - m_fAnimation)*m_options->getSize().x*1.25f, 0, -(1.0f - m_fAnimation)*700);
 
-			m_osu->getSliderFrameBuffer()->setColor(COLORf(m_fAnimation, 1.0f, 1.0f, 1.0f));
+			m_osu->getSliderFrameBuffer()->setColor(argb(m_fAnimation, 1.0f, 1.0f, 1.0f));
 			m_osu->getSliderFrameBuffer()->draw(g, 0, 0);
 		}
 		g->pop3DScene();
@@ -1420,8 +1427,8 @@ void OsuOptionsMenu::update()
 	// flash osu!folder textbox red if incorrect
 	if (m_fOsuFolderTextboxInvalidAnim > engine->getTime())
 	{
-		char redness = std::abs(std::sin((m_fOsuFolderTextboxInvalidAnim - engine->getTime())*3))*128;
-		m_osuFolderTextbox->setBackgroundColor(COLOR(255, redness, 0, 0));
+		Channel redness = std::abs(std::sin((m_fOsuFolderTextboxInvalidAnim - engine->getTime())*3))*128;
+		m_osuFolderTextbox->setBackgroundColor(rgb(redness, 0, 0));
 	}
 	else
 		m_osuFolderTextbox->setBackgroundColor(0xff000000);
@@ -2380,14 +2387,14 @@ void OsuOptionsMenu::updateNotelockSelectLabel()
 {
 	if (m_notelockSelectLabel == NULL) return;
 
-	m_notelockSelectLabel->setText(m_notelockTypes[clamp<int>(m_osu_notelock_type_ref->getInt(), 0, m_notelockTypes.size() - 1)]);
+	m_notelockSelectLabel->setText(m_notelockTypes[std::clamp<int>(m_osu_notelock_type_ref->getInt(), 0, m_notelockTypes.size() - 1)]);
 }
 
 void OsuOptionsMenu::updateHPDrainSelectLabel()
 {
 	if (m_hpDrainSelectLabel == NULL) return;
 
-	m_hpDrainSelectLabel->setText(m_drainTypes[clamp<int>(m_osu_drain_type_ref->getInt(), 0, m_drainTypes.size() - 1)]);
+	m_hpDrainSelectLabel->setText(m_drainTypes[std::clamp<int>(m_osu_drain_type_ref->getInt(), 0, m_drainTypes.size() - 1)]);
 }
 
 void OsuOptionsMenu::onFullscreenChange(CBaseUICheckbox *checkbox)
@@ -2683,39 +2690,39 @@ void OsuOptionsMenu::onResolutionSelect()
 
 	// 4:3
 	resolutions.emplace_back(800, 600);
-    resolutions.emplace_back(1024, 768);
-    resolutions.emplace_back(1152, 864);
-    resolutions.emplace_back(1280, 960);
-    resolutions.emplace_back(1280, 1024);
-    resolutions.emplace_back(1600, 1200);
-    resolutions.emplace_back(1920, 1440);
-    resolutions.emplace_back(2560, 1920);
+	resolutions.emplace_back(1024, 768);
+	resolutions.emplace_back(1152, 864);
+	resolutions.emplace_back(1280, 960);
+	resolutions.emplace_back(1280, 1024);
+	resolutions.emplace_back(1600, 1200);
+	resolutions.emplace_back(1920, 1440);
+	resolutions.emplace_back(2560, 1920);
 
-    // 16:9 and 16:10
-    resolutions.emplace_back(1024, 600);
-    resolutions.emplace_back(1280, 720);
-    resolutions.emplace_back(1280, 768);
-    resolutions.emplace_back(1280, 800);
-    resolutions.emplace_back(1360, 768);
-    resolutions.emplace_back(1366, 768);
-    resolutions.emplace_back(1440, 900);
-    resolutions.emplace_back(1600, 900);
-    resolutions.emplace_back(1600, 1024);
-    resolutions.emplace_back(1680, 1050);
-    resolutions.emplace_back(1920, 1080);
-    resolutions.emplace_back(1920, 1200);
-    resolutions.emplace_back(2560, 1440);
-    resolutions.emplace_back(2560, 1600);
-    resolutions.emplace_back(3840, 2160);
-    resolutions.emplace_back(5120, 2880);
-    resolutions.emplace_back(7680, 4320);
+	// 16:9 and 16:10
+	resolutions.emplace_back(1024, 600);
+	resolutions.emplace_back(1280, 720);
+	resolutions.emplace_back(1280, 768);
+	resolutions.emplace_back(1280, 800);
+	resolutions.emplace_back(1360, 768);
+	resolutions.emplace_back(1366, 768);
+	resolutions.emplace_back(1440, 900);
+	resolutions.emplace_back(1600, 900);
+	resolutions.emplace_back(1600, 1024);
+	resolutions.emplace_back(1680, 1050);
+	resolutions.emplace_back(1920, 1080);
+	resolutions.emplace_back(1920, 1200);
+	resolutions.emplace_back(2560, 1440);
+	resolutions.emplace_back(2560, 1600);
+	resolutions.emplace_back(3840, 2160);
+	resolutions.emplace_back(5120, 2880);
+	resolutions.emplace_back(7680, 4320);
 
-    // wtf
-    resolutions.emplace_back(4096, 2160);
+	// wtf
+	resolutions.emplace_back(4096, 2160);
 
-    // get custom resolutions
-    std::vector<Vector2> customResolutions;
-    std::ifstream customres("cfg/customres.cfg");
+	// get custom resolutions
+	std::vector<Vector2> customResolutions;
+	std::ifstream customres("cfg/customres.cfg");
 	std::string curLine;
 	while (std::getline(customres, curLine))
 	{
@@ -2780,7 +2787,7 @@ void OsuOptionsMenu::onOutputDeviceSelect()
 {
 	std::vector<UString> outputDevices = engine->getSound()->getOutputDevices();
 
-    // build context menu
+	// build context menu
 	m_contextMenu->setPos(m_outputDeviceSelectButton->getPos());
 	m_contextMenu->setRelPos(m_outputDeviceSelectButton->getRelPos());
 	m_contextMenu->begin();
@@ -2856,6 +2863,32 @@ void OsuOptionsMenu::onManuallyManageBeatmapsClicked()
 	env->openURLInDefaultBrowser("https://steamcommunity.com/sharedfiles/filedetails/?id=880768265");
 }
 
+void OsuOptionsMenu::onBrowseOsuFolderClicked()
+{
+	if (!m_bIsOsuFolderDialogOpen)
+	{
+		m_bIsOsuFolderDialogOpen = true;
+		m_osu->getNotificationOverlay()->addNotification("Opening file browser ...", 0xffffffff, false, 0.75f);
+
+		env->openFolderWindow(
+			[this](const std::vector<UString>& paths) {
+				m_bIsOsuFolderDialogOpen = false;
+				if (paths.empty()) {
+					m_osu->getNotificationOverlay()->addNotification("No folder selected.", 0xff770000, false, 1.0f);
+					return;
+				}
+
+				// use the first selected path
+				UString newPath = paths[0];
+				convar->getConVarByName("osu_folder")->setValue(newPath);
+				m_osuFolderTextbox->setText(newPath);
+				updateOsuFolder();
+			},
+			convar->getConVarByName("osu_folder")->getString()
+		);
+	}
+}
+
 void OsuOptionsMenu::onCM360CalculatorLinkClicked()
 {
 	m_osu->getNotificationOverlay()->addNotification("Opening browser, please wait ...", 0xffffffff, false, 0.75f);
@@ -2864,7 +2897,7 @@ void OsuOptionsMenu::onCM360CalculatorLinkClicked()
 
 void OsuOptionsMenu::onNotelockSelect()
 {
-    // build context menu
+	// build context menu
 	m_contextMenu->setPos(m_notelockSelectButton->getPos());
 	m_contextMenu->setRelPos(m_notelockSelectButton->getRelPos());
 	m_contextMenu->begin(m_notelockSelectButton->getSize().x);
@@ -2903,7 +2936,7 @@ void OsuOptionsMenu::onNotelockSelectResetUpdate()
 
 void OsuOptionsMenu::onHPDrainSelect()
 {
-    // build context menu
+	// build context menu
 	m_contextMenu->setPos(m_hpDrainSelectButton->getPos());
 	m_contextMenu->setRelPos(m_hpDrainSelectButton->getRelPos());
 	m_contextMenu->begin(m_hpDrainSelectButton->getSize().x);
@@ -3636,10 +3669,10 @@ void OsuOptionsMenu::onResetEverythingClicked(CBaseUIButton *button)
 
 void OsuOptionsMenu::addSpacer(unsigned num)
 {
-    OPTIONS_ELEMENT e;
-    e.type = 0;
-    e.cvar = NULL;
-    m_elements.insert(m_elements.end(), num, e);
+	OPTIONS_ELEMENT e;
+	e.type = 0;
+	e.cvar = NULL;
+	m_elements.insert(m_elements.end(), num, e);
 }
 
 CBaseUILabel *OsuOptionsMenu::addSection(UString text)

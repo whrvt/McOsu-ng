@@ -113,8 +113,8 @@ void OsuUISongBrowserSongDifficultyButton::draw(Graphics *g)
 		const float starOffsetY = (size.y*0.85);
 		const float starWidth = (size.y*0.2);
 		const float starScale = starWidth / skin->getStar()->getHeight();
-		const int numFullStars = clamp<int>((int)stars, 0, 25);
-		const float partialStarScale = std::max(0.5f, clamp<float>(stars - numFullStars, 0.0f, 1.0f)); // at least 0.5x
+		const int numFullStars = std::clamp<int>((int)stars, 0, 25);
+		const float partialStarScale = std::max(0.5f, std::clamp<float>(stars - numFullStars, 0.0f, 1.0f)); // at least 0.5x
 
 		g->setColor(m_bSelected ? skin->getSongSelectActiveText() : skin->getSongSelectInactiveText());
 
@@ -174,7 +174,7 @@ void OsuUISongBrowserSongDifficultyButton::update()
 		m_bPrevOffsetPercentSelectionState = newOffsetPercentSelectionState;
 		anim->moveQuadOut(&m_fOffsetPercentAnim, newOffsetPercentSelectionState ? 1.0f : 0.0f, 0.25f * (1.0f - m_fOffsetPercentAnim), true);
 	}
-	setOffsetPercent(lerp(0.0f, 0.075f, m_fOffsetPercentAnim));
+	setOffsetPercent(std::lerp(0.0f, 0.075f, m_fOffsetPercentAnim));
 
 	if (m_bUpdateGradeScheduled)
 	{
@@ -233,5 +233,5 @@ Color OsuUISongBrowserSongDifficultyButton::getInactiveBackgroundColor() const
 	if (isIndependentDiffButton())
 		return OsuUISongBrowserSongButton::getInactiveBackgroundColor();
 	else
-		return COLOR(clamp<int>(osu_songbrowser_button_difficulty_inactive_color_a.getInt(), 0, 255), clamp<int>(osu_songbrowser_button_difficulty_inactive_color_r.getInt(), 0, 255), clamp<int>(osu_songbrowser_button_difficulty_inactive_color_g.getInt(), 0, 255), clamp<int>(osu_songbrowser_button_difficulty_inactive_color_b.getInt(), 0, 255));
+		return argb(std::clamp<int>(osu_songbrowser_button_difficulty_inactive_color_a.getInt(), 0, 255), std::clamp<int>(osu_songbrowser_button_difficulty_inactive_color_r.getInt(), 0, 255), std::clamp<int>(osu_songbrowser_button_difficulty_inactive_color_g.getInt(), 0, 255), std::clamp<int>(osu_songbrowser_button_difficulty_inactive_color_b.getInt(), 0, 255));
 }

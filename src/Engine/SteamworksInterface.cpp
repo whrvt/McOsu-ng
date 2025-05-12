@@ -370,8 +370,8 @@ std::vector<SteamworksInterface::WorkshopItemDetails> SteamworksInterface::getWo
 	const uint32_t numPagesToRequest = (publishedFileIds.size() / kNumUGCResultsPerPage) + 1;
 	for (uint32_t p=0; p<numPagesToRequest; p++)
 	{
-		const uint32_t requestDataOffset = clamp<uint32_t>(p * kNumUGCResultsPerPage, 0, publishedFileIds.size());
-		const uint32_t requestDataSize = clamp<uint32_t>(kNumUGCResultsPerPage, 0, publishedFileIds.size() - requestDataOffset);
+		const uint32_t requestDataOffset = std::clamp<uint32_t>(p * kNumUGCResultsPerPage, 0, publishedFileIds.size());
+		const uint32_t requestDataSize = std::clamp<uint32_t>(kNumUGCResultsPerPage, 0, publishedFileIds.size() - requestDataOffset);
 
 		if (requestDataSize < 1)
 			break;

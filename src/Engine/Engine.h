@@ -226,7 +226,6 @@ private:
 	UString m_sArgs;
 	bool m_bBlackout;
 	bool m_bDrawing;
-	int m_iLoadingScreenDelay;
 
 	// math
 	McMath *m_math;

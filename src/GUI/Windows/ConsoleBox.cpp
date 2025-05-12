@@ -140,8 +140,8 @@ ConsoleBox::ConsoleBox() : CBaseUIElement(0, 0, 0, 0, "")
 	m_suggestion = new CBaseUIScrollView(5 * dpiScale, engine->getScreenHeight(), engine->getScreenWidth() - 10 * dpiScale, 90 * dpiScale, "consoleboxsuggestion");
 	{
 		m_suggestion->setDrawBackground(true);
-		m_suggestion->setBackgroundColor(COLOR(255, 0, 0, 0));
-		m_suggestion->setFrameColor(COLOR(255, 255, 255, 255));
+		m_suggestion->setBackgroundColor(rgb(0, 0, 0));
+		m_suggestion->setFrameColor(rgb(255, 255, 255));
 		m_suggestion->setHorizontalScrolling(false);
 		m_suggestion->setVerticalScrolling(true);
 		m_suggestion->setVisible(false);
@@ -621,7 +621,7 @@ void ConsoleBox::addSuggestion(const UString &text, const UString &helpText, con
 
 	// update suggestion size
 	const int gap = 10 * dpiScale;
-	m_fSuggestionY = clamp<float>(buttonheight * vsize, 0, buttonheight * 4) + (engine->getScreenHeight() - m_textbox->getPos().y) + gap;
+	m_fSuggestionY = std::clamp<float>(buttonheight * vsize, 0, buttonheight * 4) + (engine->getScreenHeight() - m_textbox->getPos().y) + gap;
 
 	if (buttonheight * vsize > buttonheight * 4)
 	{

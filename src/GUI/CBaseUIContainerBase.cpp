@@ -70,9 +70,9 @@ CBaseUIContainerBase *CBaseUIContainerBase::insertElement(CBaseUIElement *elemen
 			element->setParent(this);
 
 			if (back)
-				m_vElements.insert(m_vElements.begin() + clamp<int>(i+1, 0, m_vElements.size()), buffer);
+				m_vElements.insert(m_vElements.begin() + std::clamp<int>(i+1, 0, m_vElements.size()), buffer);
 			else
-				m_vElements.insert(m_vElements.begin() + clamp<int>(i, 0, m_vElements.size()), buffer);
+				m_vElements.insert(m_vElements.begin() + std::clamp<int>(i, 0, m_vElements.size()), buffer);
 
 			updateElement(element);
 			return this;
@@ -96,9 +96,9 @@ CBaseUIContainerBase *CBaseUIContainerBase::insertElement(CBaseUIElement *elemen
 			element->setParent(this);
 
 			if (back)
-				m_vElements.insert(m_vElements.begin() + clamp<int>(i+1, 0, m_vElements.size()), buffer);
+				m_vElements.insert(m_vElements.begin() + std::clamp<int>(i+1, 0, m_vElements.size()), buffer);
 			else
-				m_vElements.insert(m_vElements.begin() + clamp<int>(i, 0, m_vElements.size()), buffer);
+				m_vElements.insert(m_vElements.begin() + std::clamp<int>(i, 0, m_vElements.size()), buffer);
 
 			updateElement(element);
 			return this;
@@ -119,9 +119,9 @@ CBaseUIContainerBase *CBaseUIContainerBase::insertElement(std::shared_ptr<CBaseU
 			element.get()->setParent(this);
 
 			if (back)
-				m_vElements.insert(m_vElements.begin() + clamp<int>(i+1, 0, m_vElements.size()), element);
+				m_vElements.insert(m_vElements.begin() + std::clamp<int>(i+1, 0, m_vElements.size()), element);
 			else
-				m_vElements.insert(m_vElements.begin() + clamp<int>(i, 0, m_vElements.size()), element);
+				m_vElements.insert(m_vElements.begin() + std::clamp<int>(i, 0, m_vElements.size()), element);
 
 			updateElement(element.get());
 			return this;
@@ -142,9 +142,9 @@ CBaseUIContainerBase *CBaseUIContainerBase::insertElement(std::shared_ptr<CBaseU
 		{
 			element->setParent(this);
 			if (back)
-				m_vElements.insert(m_vElements.begin() + clamp<int>(i+1, 0, m_vElements.size()), element);
+				m_vElements.insert(m_vElements.begin() + std::clamp<int>(i+1, 0, m_vElements.size()), element);
 			else
-				m_vElements.insert(m_vElements.begin() + clamp<int>(i, 0, m_vElements.size()), element);
+				m_vElements.insert(m_vElements.begin() + std::clamp<int>(i, 0, m_vElements.size()), element);
 			updateElement(element.get());
 			return this;
 		}

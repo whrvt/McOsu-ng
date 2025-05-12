@@ -1,6 +1,6 @@
 AC_LANG([C++])
 AC_PREREQ([2.69])
-AC_INIT([McOsu-ng], [33.11], [william@horvath.blog], [], [https://github.com/whrvt/McOsu-ng]) # don't report bugs to McKay :)
+AC_INIT([McOsu-ng], [34.00], [william@horvath.blog], [], [https://github.com/whrvt/McOsu-ng]) # don't report bugs to McKay :)
 AC_CONFIG_SRCDIR([src/Engine/Engine.cpp])
 AC_CONFIG_AUX_DIR([build/aux])
 AC_CONFIG_HEADERS([src/config.h])
@@ -397,7 +397,7 @@ AS_IF([test "x$enable_lto" != "xno"], [
 ])
 
 MCOSU_CPPFLAGS="$MCOSU_CPPFLAGS"
-MCOSU_CXXFLAGS="$MCOSU_CXXFLAGS -Wall -Wno-sign-compare -pthread"
+MCOSU_CXXFLAGS="$MCOSU_CXXFLAGS -Wall -Wno-sign-compare -Werror=deprecated-declarations -pthread"
 MCOSU_LDFLAGS="$MCOSU_LDFLAGS -pthread"
 AC_SUBST([MCOSU_CPPFLAGS])
 AC_SUBST([MCOSU_CXXFLAGS])
@@ -574,6 +574,14 @@ AC_SUBST([BASS_CFLAGS])
 AC_SUBST([BUNDLED_LIBS_DIR])
 AC_SUBST([BUNDLED_BASS_DIR])
 AC_SUBST([BUNDLED_BASS_FX_DIR])
+
+AC_MSG_CHECKING([for default config in $srcdir/$ASSETS_DIR/cfg])
+AS_IF([test -f "$srcdir/$ASSETS_DIR/cfg/override.cfg"], [
+    AC_MSG_RESULT([yes])
+], [
+    AC_MSG_RESULT([no])
+    AC_MSG_ERROR([McOsu-ng default config is missing!])
+])
 
 AC_MSG_CHECKING([for models in $srcdir/$ASSETS_DIR/models])
 AS_IF([test -d "$srcdir/$ASSETS_DIR/models"], [

@@ -88,7 +88,8 @@ void BassSound::initAsync()
 				McFile wavFile(m_sFilePath);
 				if (wavFile.getFileSize() < (size_t)minWavFileSize)
 				{
-					debugLog("Sound: Ignoring malformed/corrupt WAV file (%i) %s\n", (int)wavFile.getFileSize(), m_sFilePath.toUtf8());
+					if (debug_snd.getBool())
+						debugLog("Sound: Ignoring malformed/corrupt WAV file (%i) %s\n", (int)wavFile.getFileSize(), m_sFilePath.toUtf8());
 					return;
 				}
 			}
@@ -107,7 +108,7 @@ void BassSound::initAsync()
 			extraStreamCreateFileFlags |= BASS_SAMPLE_FLOAT;
 			extraFXTempoCreateFlags |= BASS_STREAM_DECODE;
 		}
-		m_HSTREAM = BASS_StreamCreateFile(FALSE, m_sFilePath.plat_str(), 0, 0,
+		m_HSTREAM = BASS_StreamCreateFile(BASS_FILE_NAME, m_sFilePath.plat_str(), 0, 0,
 		                                  (m_bPrescan ? BASS_STREAM_PRESCAN : 0) | BASS_STREAM_DECODE | extraStreamCreateFileFlags | unicodeFlag);
 
 		m_HSTREAM = BASS_FX_TempoCreate(m_HSTREAM, BASS_FX_TEMPO_ALGO_SHANNON | BASS_FX_FREESOURCE | extraFXTempoCreateFlags);
@@ -145,7 +146,11 @@ void BassSound::initAsync()
 		m_HSTREAMBACKUP = m_HSTREAM; // needed for proper cleanup for FX HSAMPLES
 
 		if (m_HSTREAM == 0)
-			debugLog("Sound Error: BASS_SampleLoad() error %i on file %s\n", BASS_ErrorGetCode(), m_sFilePath.toUtf8());
+		{
+			auto code = BASS_ErrorGetCode();
+			if (debug_snd.getBool() || (code != BASS_ERROR_NOTAUDIO && code != BASS_ERROR_EMPTY))
+				debugLog("Sound Error: BASS_SampleLoad() error %i on file %s\n", code, m_sFilePath.toUtf8());
+		}
 	}
 
 	m_bAsyncReady = true;
@@ -260,7 +265,7 @@ void BassSound::setPosition(double percent)
 	if (!m_bReady)
 		return;
 
-	percent = clamp<double>(percent, 0.0, 1.0);
+	percent = std::clamp<double>(percent, 0.0, 1.0);
 
 	const SOUNDHANDLE handle = (m_HCHANNELBACKUP != 0 ? m_HCHANNELBACKUP : getHandle());
 
@@ -304,7 +309,7 @@ void BassSound::setVolume(float volume)
 	if (!m_bReady)
 		return;
 
-	m_fVolume = clamp<float>(volume, 0.0f, 1.0f);
+	m_fVolume = std::clamp<float>(volume, 0.0f, 1.0f);
 
 	if (!m_bIsOverlayable)
 	{
@@ -318,7 +323,7 @@ void BassSound::setSpeed(float speed)
 	if (!m_bReady)
 		return;
 
-	speed = clamp<float>(speed, 0.05f, 50.0f);
+	speed = std::clamp<float>(speed, 0.05f, 50.0f);
 
 	const SOUNDHANDLE handle = getHandle();
 
@@ -337,7 +342,7 @@ void BassSound::setPitch(float pitch)
 	if (!m_bReady)
 		return;
 
-	pitch = clamp<float>(pitch, 0.0f, 2.0f);
+	pitch = std::clamp<float>(pitch, 0.0f, 2.0f);
 
 	const SOUNDHANDLE handle = getHandle();
 
@@ -349,7 +354,7 @@ void BassSound::setFrequency(float frequency)
 	if (!m_bReady)
 		return;
 
-	frequency = (frequency > 99.0f ? clamp<float>(frequency, 100.0f, 100000.0f) : 0.0f);
+	frequency = (frequency > 99.0f ? std::clamp<float>(frequency, 100.0f, 100000.0f) : 0.0f);
 
 	const SOUNDHANDLE handle = getHandle();
 
@@ -361,7 +366,7 @@ void BassSound::setPan(float pan)
 	if (!m_bReady)
 		return;
 
-	pan = clamp<float>(pan, -1.0f, 1.0f);
+	pan = std::clamp<float>(pan, -1.0f, 1.0f);
 
 	const SOUNDHANDLE handle = getHandle();
 
@@ -419,8 +424,8 @@ unsigned long BassSound::getPositionMS()
 		if (m_fLastPlayTime > 0.0 && delta < interpDuration && isPlaying())
 		{
 			const double lerpPercent =
-			    clamp<double>(((delta / interpDuration) - snd_play_interp_ratio.getFloat()) / (1.0 - snd_play_interp_ratio.getFloat()), 0.0, 1.0);
-			return static_cast<unsigned long>(lerp(delta * 1000.0, (double)positionMS, lerpPercent));
+			    std::clamp<double>(((delta / interpDuration) - snd_play_interp_ratio.getFloat()) / (1.0 - snd_play_interp_ratio.getFloat()), 0.0, 1.0);
+			return static_cast<unsigned long>(std::lerp(delta * 1000.0, (double)positionMS, lerpPercent));
 		}
 	}
 

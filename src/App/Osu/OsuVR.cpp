@@ -864,7 +864,7 @@ void OsuVR::update()
 		float interpEnd = osu_vr_controller_warning_distance_end.getFloat();
 
 		float percent = 1.0f - ((interpEnd - smallestDist) / (interpEnd - interpStart));
-		openvr->setControllerColorOverride(COLORf(1.0f, percent, 0.0f, 0.0f));
+		openvr->setControllerColorOverride(argb(1.0f, percent, 0.0f, 0.0f));
 	}
 	else
 		openvr->setControllerColorOverride(0xff000000);
