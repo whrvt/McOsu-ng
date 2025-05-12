@@ -11,6 +11,7 @@
 
 #include "cbase.h"
 #include "Timing.h"
+#include "McMath.h"
 
 #include <type_traits>
 #include <source_location>
@@ -225,6 +226,9 @@ private:
 	UString m_sArgs;
 	bool m_bBlackout;
 	bool m_bDrawing;
+
+	// math
+	McMath *m_math;
 };
 
 extern Engine *engine;

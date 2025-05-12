@@ -402,7 +402,7 @@ AS_IF([test "x$enable_lto" != "xno"], [
     ])
 ])
 
-MCOSU_CPPFLAGS="$MCOSU_CPPFLAGS -DGLM_ENABLE_EXPERIMENTAL"
+MCOSU_CPPFLAGS="$MCOSU_CPPFLAGS"
 MCOSU_CXXFLAGS="$MCOSU_CXXFLAGS -Wall -Wno-sign-compare -Werror=deprecated-declarations -pthread"
 MCOSU_LDFLAGS="$MCOSU_LDFLAGS -pthread"
 AC_SUBST([MCOSU_CPPFLAGS])
