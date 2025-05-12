@@ -333,7 +333,7 @@ void OsuBeatmap::drawBackground(Graphics *g)
 		if (osu_draw_beatmap_background_image.getBool() && backgroundImage != NULL && (osu_background_dim.getFloat() < 1.0f || m_fBreakBackgroundFade > 0.0f))
 		{
 			const float scale = Osu::getImageScaleToFillResolution(backgroundImage, m_osu->getScreenSize());
-			const Vector2 centerTrans = (m_osu->getScreenSize()/2);
+			const Vector2 centerTrans = (m_osu->getScreenSize()/2.0f);
 
 			const float backgroundFadeDimMultiplier = 1.0f - (osu_background_dim.getFloat() - 0.3f);
 			const auto dim = (1.0f - osu_background_dim.getFloat()) + m_fBreakBackgroundFade*backgroundFadeDimMultiplier;

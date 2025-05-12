@@ -632,7 +632,7 @@ void OsuModFPoSu::update()
 				if (!osCursorVisible)
 				{
 					if (!m_osu->getSelectedBeatmap()->isPaused() && !m_osu->getOptionsMenu()->isVisible() && !m_osu->getModSelector()->isVisible())
-						setMousePosCompensated(engine->getScreenSize()/2);
+						setMousePosCompensated(engine->getScreenSize()/2.0f);
 				}
 			}
 			else

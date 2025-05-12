@@ -916,7 +916,7 @@ void OsuUserStatsScreen::updateLayout()
 	m_ppVersionInfoLabel->setSizeToContent(1, 10);
 	{
 		const Vector2 center = m_userButton->getPos() + Vector2(0, m_userButton->getSize().y/2) - Vector2((m_userButton->getPos().x - m_scores->getPos().x)/2, 0);
-		const Vector2 topLeft = center - m_ppVersionInfoLabel->getSize()/2;
+		const Vector2 topLeft = center - m_ppVersionInfoLabel->getSize()/2.0f;
 		const float overflow = (center.x + m_ppVersionInfoLabel->getSize().x/2) - m_userButton->getPos().x;
 
 		m_ppVersionInfoLabel->setPos((int)(topLeft.x - std::max(overflow, 0.0f)), (int)(topLeft.y));
