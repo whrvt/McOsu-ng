@@ -105,6 +105,8 @@ public:
 
 	// accessors
 	[[nodiscard]] const float *get() const { return &m_mat[0][0]; }
+	[[nodiscard]] const glm::mat2& getGLM() const { return m_mat; }
+    [[nodiscard]] glm::mat2& getGLM() { return m_mat; }
 	[[nodiscard]] float getDeterminant() const { return glm::determinant(m_mat); }
 
 	Matrix2 &identity()
@@ -309,6 +311,8 @@ public:
 	}
 
 	const float *get() const { return &m_mat[0][0]; }
+	[[nodiscard]] const glm::mat3& getGLM() const { return m_mat; }
+    [[nodiscard]] glm::mat3& getGLM() { return m_mat; }
 	[[nodiscard]] float getDeterminant() const { return glm::determinant(m_mat); }
 
 	Matrix3 &identity()
@@ -548,6 +552,8 @@ public:
 	}
 
 	const float *get() const { return &m_mat[0][0]; }
+	[[nodiscard]] const glm::mat4& getGLM() const { return m_mat; }
+    [[nodiscard]] glm::mat4& getGLM() { return m_mat; }
 	const float *getTranspose()
 	{
 		m_transpose = glm::transpose(m_mat);

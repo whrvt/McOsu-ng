@@ -7,8 +7,6 @@
 
 #include "OsuHUD.h"
 
-#include <utility>
-
 #include "Engine.h"
 #include "Environment.h"
 #include "ConVar.h"
@@ -48,6 +46,8 @@
 #include "DirectX11Interface.h"
 #include "OpenGLES2Interface.h"
 #include "OpenGLES32Interface.h"
+
+#include <utility>
 
 ConVar osu_automatic_cursor_size("osu_automatic_cursor_size", false, FCVAR_NONE);
 
