@@ -302,7 +302,6 @@ am_McOsu_ng_OBJECTS = src/App/Osu/McOsu_ng-Osu.$(OBJEXT) \
 	src/GUI/Windows/VinylScratcher/McOsu_ng-VinylScratcher.$(OBJEXT) \
 	src/GUI/Windows/McOsu_ng-VisualProfiler.$(OBJEXT) \
 	src/Util/McOsu_ng-MD5.$(OBJEXT) \
-	src/Util/McOsu_ng-Matrices.$(OBJEXT) \
 	src/Util/McOsu_ng-McMath.$(OBJEXT) \
 	src/Util/McOsu_ng-Quaternion.$(OBJEXT) \
 	src/Util/McOsu_ng-Rect.$(OBJEXT) \
@@ -499,7 +498,6 @@ am__depfiles_remade = src/App/Osu/$(DEPDIR)/McOsu_ng-Osu.Po \
 	src/GUI/Windows/VinylScratcher/$(DEPDIR)/McOsu_ng-VSTitleBar.Po \
 	src/GUI/Windows/VinylScratcher/$(DEPDIR)/McOsu_ng-VinylScratcher.Po \
 	src/Util/$(DEPDIR)/McOsu_ng-MD5.Po \
-	src/Util/$(DEPDIR)/McOsu_ng-Matrices.Po \
 	src/Util/$(DEPDIR)/McOsu_ng-McMath.Po \
 	src/Util/$(DEPDIR)/McOsu_ng-Quaternion.Po \
 	src/Util/$(DEPDIR)/McOsu_ng-Rect.Po \
@@ -960,7 +958,6 @@ McOsu_ng_SOURCES = \
 	src/GUI/Windows/VinylScratcher/VinylScratcher.cpp \
 	src/GUI/Windows/VisualProfiler.cpp \
 	src/Util/MD5.cpp \
-	src/Util/Matrices.cpp \
 	src/Util/McMath.cpp \
 	src/Util/Quaternion.cpp \
 	src/Util/Rect.cpp \
@@ -1672,8 +1669,6 @@ src/Util/$(DEPDIR)/$(am__dirstamp):
 	@: >>src/Util/$(DEPDIR)/$(am__dirstamp)
 src/Util/McOsu_ng-MD5.$(OBJEXT): src/Util/$(am__dirstamp) \
 	src/Util/$(DEPDIR)/$(am__dirstamp)
-src/Util/McOsu_ng-Matrices.$(OBJEXT): src/Util/$(am__dirstamp) \
-	src/Util/$(DEPDIR)/$(am__dirstamp)
 src/Util/McOsu_ng-McMath.$(OBJEXT): src/Util/$(am__dirstamp) \
 	src/Util/$(DEPDIR)/$(am__dirstamp)
 src/Util/McOsu_ng-Quaternion.$(OBJEXT): src/Util/$(am__dirstamp) \
@@ -1877,7 +1872,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/GUI/Windows/VinylScratcher/$(DEPDIR)/McOsu_ng-VSTitleBar.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/GUI/Windows/VinylScratcher/$(DEPDIR)/McOsu_ng-VinylScratcher.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Util/$(DEPDIR)/McOsu_ng-MD5.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@src/Util/$(DEPDIR)/McOsu_ng-Matrices.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Util/$(DEPDIR)/McOsu_ng-McMath.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Util/$(DEPDIR)/McOsu_ng-Quaternion.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Util/$(DEPDIR)/McOsu_ng-Rect.Po@am__quote@ # am--include-marker
@@ -4314,20 +4308,6 @@ src/Util/McOsu_ng-MD5.obj: src/Util/MD5.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Util/McOsu_ng-MD5.obj `if test -f 'src/Util/MD5.cpp'; then $(CYGPATH_W) 'src/Util/MD5.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Util/MD5.cpp'; fi`
 
-src/Util/McOsu_ng-Matrices.o: src/Util/Matrices.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Util/McOsu_ng-Matrices.o -MD -MP -MF src/Util/$(DEPDIR)/McOsu_ng-Matrices.Tpo -c -o src/Util/McOsu_ng-Matrices.o `test -f 'src/Util/Matrices.cpp' || echo '$(srcdir)/'`src/Util/Matrices.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Util/$(DEPDIR)/McOsu_ng-Matrices.Tpo src/Util/$(DEPDIR)/McOsu_ng-Matrices.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Util/Matrices.cpp' object='src/Util/McOsu_ng-Matrices.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Util/McOsu_ng-Matrices.o `test -f 'src/Util/Matrices.cpp' || echo '$(srcdir)/'`src/Util/Matrices.cpp
-
-src/Util/McOsu_ng-Matrices.obj: src/Util/Matrices.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Util/McOsu_ng-Matrices.obj -MD -MP -MF src/Util/$(DEPDIR)/McOsu_ng-Matrices.Tpo -c -o src/Util/McOsu_ng-Matrices.obj `if test -f 'src/Util/Matrices.cpp'; then $(CYGPATH_W) 'src/Util/Matrices.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Util/Matrices.cpp'; fi`
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Util/$(DEPDIR)/McOsu_ng-Matrices.Tpo src/Util/$(DEPDIR)/McOsu_ng-Matrices.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Util/Matrices.cpp' object='src/Util/McOsu_ng-Matrices.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Util/McOsu_ng-Matrices.obj `if test -f 'src/Util/Matrices.cpp'; then $(CYGPATH_W) 'src/Util/Matrices.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Util/Matrices.cpp'; fi`
-
 src/Util/McOsu_ng-McMath.o: src/Util/McMath.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Util/McOsu_ng-McMath.o -MD -MP -MF src/Util/$(DEPDIR)/McOsu_ng-McMath.Tpo -c -o src/Util/McOsu_ng-McMath.o `test -f 'src/Util/McMath.cpp' || echo '$(srcdir)/'`src/Util/McMath.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Util/$(DEPDIR)/McOsu_ng-McMath.Tpo src/Util/$(DEPDIR)/McOsu_ng-McMath.Po
@@ -4871,7 +4851,6 @@ distclean: distclean-am
 	-rm -f src/GUI/Windows/VinylScratcher/$(DEPDIR)/McOsu_ng-VSTitleBar.Po
 	-rm -f src/GUI/Windows/VinylScratcher/$(DEPDIR)/McOsu_ng-VinylScratcher.Po
 	-rm -f src/Util/$(DEPDIR)/McOsu_ng-MD5.Po
-	-rm -f src/Util/$(DEPDIR)/McOsu_ng-Matrices.Po
 	-rm -f src/Util/$(DEPDIR)/McOsu_ng-McMath.Po
 	-rm -f src/Util/$(DEPDIR)/McOsu_ng-Quaternion.Po
 	-rm -f src/Util/$(DEPDIR)/McOsu_ng-Rect.Po
@@ -5097,7 +5076,6 @@ maintainer-clean: maintainer-clean-am
 	-rm -f src/GUI/Windows/VinylScratcher/$(DEPDIR)/McOsu_ng-VSTitleBar.Po
 	-rm -f src/GUI/Windows/VinylScratcher/$(DEPDIR)/McOsu_ng-VinylScratcher.Po
 	-rm -f src/Util/$(DEPDIR)/McOsu_ng-MD5.Po
-	-rm -f src/Util/$(DEPDIR)/McOsu_ng-Matrices.Po
 	-rm -f src/Util/$(DEPDIR)/McOsu_ng-McMath.Po
 	-rm -f src/Util/$(DEPDIR)/McOsu_ng-Quaternion.Po
 	-rm -f src/Util/$(DEPDIR)/McOsu_ng-Rect.Po
