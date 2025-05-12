@@ -681,7 +681,6 @@ BUILD_GLEW_FALSE
 BUILD_GLEW_TRUE
 BUILD_SDL3_FALSE
 BUILD_SDL3_TRUE
-GLM_LIBS
 GLM_CFLAGS
 GLM_PREFIX
 GLM_VERSION
@@ -10115,52 +10114,7 @@ do :
 if test "x$ac_cv_header_glm_vec3_hpp" = xyes
 then :
   printf "%s\n" "#define HAVE_GLM_VEC3_HPP 1" >>confdefs.h
-
-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for sincos in -lglm" >&5
-printf %s "checking for sincos in -lglm... " >&6; }
-if test ${ac_cv_lib_glm_sincos+y}
-then :
-  printf %s "(cached) " >&6
-else case e in #(
-  e) ac_check_lib_save_LIBS=$LIBS
-LIBS="-lglm  $LIBS"
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-namespace conftest {
-  extern "C" int sincos ();
-}
-int
-main (void)
-{
-return conftest::sincos ();
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_cxx_try_link "$LINENO"
-then :
-  ac_cv_lib_glm_sincos=yes
-else case e in #(
-  e) ac_cv_lib_glm_sincos=no ;;
-esac
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam \
-    conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS ;;
-esac
-fi
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_glm_sincos" >&5
-printf "%s\n" "$ac_cv_lib_glm_sincos" >&6; }
-if test "x$ac_cv_lib_glm_sincos" = xyes
-then :
-  have_glm=yes
-else case e in #(
-  e) have_glm=no ;;
-esac
-fi
-
-
+ have_glm=yes
 else case e in #(
   e) have_glm=no ;;
 esac
@@ -10301,12 +10255,6 @@ GLM_PREFIX=$DEPS_PREFIX
 
 GLM_CFLAGS=""
 
-GLM_LIBS="-lglm"
-
-if test "x$enable_native" != "xno"
-then :
-  MCOSU_CPPFLAGS="$MCOSU_CPPFLAGS -DGLM_FORCE_INTRINSICS"
-fi
 
  if test "x$have_sdl3" != "xyes"; then
   BUILD_SDL3_TRUE=

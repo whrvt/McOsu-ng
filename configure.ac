@@ -462,9 +462,7 @@ AS_IF([test "x$enable_system_deps" != "xno"], [
     PKG_CHECK_AUTO([ZLIB], [zlib >= $ZLIB_MIN_VERSION], [have_zlib=yes], [have_zlib=no])
     PKG_CHECK_AUTO([BZIP2], [bzip2 >= $BZIP2_MIN_VERSION], [have_bzip2=yes], [have_bzip2=no])
     PKG_CHECK_AUTO([FREETYPE2], [freetype2 >= $FREETYPE2_MIN_VERSION], [have_freetype2=yes], [have_freetype2=no])
-    AC_CHECK_HEADERS([glm/vec3.hpp], [
-        AC_CHECK_LIB(glm, sincos, [have_glm=yes], [have_glm=no], [])
-    ], [have_glm=no])
+    AC_CHECK_HEADERS([glm/vec3.hpp], [have_glm=yes], [have_glm=no])
 ])
 
 AS_IF([test "x$have_sdl3" != "xyes"], [have_sdl3="build from source"])
@@ -521,8 +519,6 @@ AS_IF([test "x$have_glm" != "xyes"], [have_glm="build from source"])
 AC_SUBST([GLM_VERSION], [1.0.1])
 AC_SUBST([GLM_PREFIX],[$DEPS_PREFIX])
 AC_SUBST([GLM_CFLAGS], [""])
-AC_SUBST([GLM_LIBS], ["-lglm"])
-AS_IF([test "x$enable_native" != "xno"], [MCOSU_CPPFLAGS="$MCOSU_CPPFLAGS -DGLM_FORCE_INTRINSICS"], [])
 
 AM_CONDITIONAL([BUILD_SDL3], [test "x$have_sdl3" != "xyes"])
 AM_CONDITIONAL([BUILD_GLEW], [test "x$have_glew" != "xyes"])
