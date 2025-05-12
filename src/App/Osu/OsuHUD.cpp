@@ -2823,7 +2823,7 @@ void OsuHUD::drawTargetHeatmap(Graphics *g, float hitcircleDiameter)
 		g->setColor(color);
 		g->setAlpha(std::clamp<float>((m_targets[i].time - engine->getTime())/3.5f, 0.0f, 1.0f));
 
-		const float theta = deg2rad(m_targets[i].angle);
+		const float theta = glm::radians(m_targets[i].angle);
 		const float cs = std::cos(theta);
 		const float sn = std::sin(theta);
 

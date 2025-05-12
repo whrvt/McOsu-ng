@@ -631,7 +631,7 @@ void OsuBeatmapStandard::drawFollowPoints(Graphics *g)
 				g->setAlpha(alpha);
 				g->pushTransform();
 				{
-					g->rotate(rad2deg(std::atan2(yDiff, xDiff)));
+					g->rotate(glm::degrees(std::atan2(yDiff, xDiff)));
 
 					skin->getFollowPoint2()->setAnimationTimeOffset(fadeInTime);
 

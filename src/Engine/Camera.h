@@ -43,7 +43,7 @@ public:
 	// set
 	void setType(CAMERA_TYPE camType);
 	void setPos(Vector3 pos);
-	void setFov(float fovDeg) {m_fFov = deg2rad(fovDeg);}
+	void setFov(float fovDeg) {m_fFov = glm::radians(fovDeg);}
 	void setFovRad(float fovRad) {m_fFov = fovRad;}
 	void setOrbitDistance(float orbitDistance);
 	void setOrbitYAxis(bool orbitYAxis) {m_bOrbitYAxis = orbitYAxis;}
@@ -59,7 +59,7 @@ public:
 	inline Vector3 getPos() const {return m_vPos;}
 	Vector3 getNextPosition(Vector3 velocity) const;
 
-	inline float getFov() const {return rad2deg(m_fFov);}
+	inline float getFov() const {return glm::degrees(m_fFov);}
 	inline float getFovRad() const {return m_fFov;}
 	inline float getOrbitDistance() const {return m_fOrbitDistance;}
 

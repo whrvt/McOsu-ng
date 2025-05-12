@@ -154,12 +154,12 @@ void Graphics::push3DScene(McRect region)
 
 	// calculate height to fit viewport angle
 	float angle = (180.0f - m_fFov) / 2.0f;
-	float b = (engine->getScreenHeight() / std::sin(deg2rad(m_fFov))) * std::sin(deg2rad(angle));
+	float b = (engine->getScreenHeight() / std::sin(glm::radians(m_fFov))) * std::sin(glm::radians(angle));
 	float hc = std::sqrt(std::pow(b,2.0f) - std::pow((engine->getScreenHeight()/2.0f), 2.0f));
 
 	// set projection matrix
 	Matrix4 trans2 = Matrix4().translate(-1 + (region.getWidth()) / (float)engine->getScreenWidth() + (region.getX()*2) / (float)engine->getScreenWidth(), 1 - region.getHeight() / (float)engine->getScreenHeight() - (region.getY()*2) / (float)engine->getScreenHeight(), 0);
-	Matrix4 projectionMatrix = trans2 * Camera::buildMatrixPerspectiveFov(deg2rad(m_fFov),((float) engine->getScreenWidth())/((float) engine->getScreenHeight()), r_3dscene_zn.getFloat(), r_3dscene_zf.getFloat());
+	Matrix4 projectionMatrix = trans2 * Camera::buildMatrixPerspectiveFov(glm::radians(m_fFov),((float) engine->getScreenWidth())/((float) engine->getScreenHeight()), r_3dscene_zn.getFloat(), r_3dscene_zf.getFloat());
 	m_3dSceneProjectionMatrix = projectionMatrix;
 
 	// set world matrix

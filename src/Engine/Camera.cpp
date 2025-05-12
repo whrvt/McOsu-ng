@@ -115,7 +115,7 @@ Camera::Camera(Vector3 pos, Vector3 viewDir, float fovDeg, CAMERA_TYPE camType)
 {
 	m_vPos = pos;
 	m_vViewDir = viewDir;
-	m_fFov = deg2rad(fovDeg);
+	m_fFov = glm::radians(fovDeg);
 	m_camType = camType;
 
 	m_fOrbitDistance = 5.0f;

@@ -93,18 +93,6 @@ template <typename T>
 
 // EXTERNAL INCLUDES
 
-#include <glm/trigonometric.hpp> // for deg2rad/rad2deg
-
-template <class T>
-constexpr forceinline T deg2rad(T deg)
-{
-	return glm::radians<T>(deg);
-}
-
-template <class T>
-constexpr forceinline T rad2deg(T rad)
-{
-	return glm::degrees<T>(rad);
-}
+#include <glm/trigonometric.hpp> // for glm::radians/glm::degrees
 
 #endif

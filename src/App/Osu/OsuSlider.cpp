@@ -556,7 +556,7 @@ void OsuSlider::draw2(Graphics *g, bool drawApproachCircle, bool drawOnlyApproac
 			Vector2 point = m_beatmap->osuCoords2Pixels(m_vCurPointRaw);
 			Vector2 c1 = m_beatmap->osuCoords2Pixels(m_curve->pointAt(m_fSlidePercent + 0.01f <= 1.0f ? m_fSlidePercent : m_fSlidePercent - 0.01f));
 			Vector2 c2 = m_beatmap->osuCoords2Pixels(m_curve->pointAt(m_fSlidePercent + 0.01f <= 1.0f ? m_fSlidePercent + 0.01f : m_fSlidePercent));
-			float ballAngle = rad2deg( atan2(c2.y - c1.y, c2.x - c1.x) );
+			float ballAngle = glm::degrees( atan2(c2.y - c1.y, c2.x - c1.x) );
 			if (skin->getSliderBallFlip())
 				ballAngle += (m_iCurRepeat % 2 == 0) ? 0 : 180;
 
@@ -1214,7 +1214,7 @@ void OsuSlider::draw3D2(Graphics *g)
 			Vector3 point = m_beatmap->osuCoordsTo3D(m_vCurPointRaw, this);
 			Vector2 c1 = m_beatmap->osuCoords2Pixels(m_curve->pointAt(m_fSlidePercent + 0.01f <= 1.0f ? m_fSlidePercent : m_fSlidePercent - 0.01f));
 			Vector2 c2 = m_beatmap->osuCoords2Pixels(m_curve->pointAt(m_fSlidePercent + 0.01f <= 1.0f ? m_fSlidePercent + 0.01f : m_fSlidePercent));
-			float ballAngle = rad2deg( atan2(c2.y - c1.y, c2.x - c1.x) );
+			float ballAngle = glm::degrees( atan2(c2.y - c1.y, c2.x - c1.x) );
 			if (skin->getSliderBallFlip())
 				ballAngle += (m_iCurRepeat % 2 == 0) ? 0 : 180;
 
@@ -1568,7 +1568,7 @@ void OsuSlider::update(long curPos)
 						if (result != OsuScore::HIT::HIT_NULL)
 						{
 							const float targetDelta = cursorDelta / (m_beatmap->getHitcircleDiameter()/2.0f);
-							const float targetAngle = rad2deg(atan2(m_beatmap->getCursorPos().y - pos.y, m_beatmap->getCursorPos().x - pos.x));
+							const float targetAngle = glm::degrees(atan2(m_beatmap->getCursorPos().y - pos.y, m_beatmap->getCursorPos().x - pos.x));
 
 							if (m_beatmap->getOsu()->isInVRMode())
 							{
@@ -1941,7 +1941,7 @@ void OsuSlider::onClickEvent(std::vector<OsuBeatmap::CLICK> &clicks)
 			if (result != OsuScore::HIT::HIT_NULL)
 			{
 				const float targetDelta = cursorDelta / (m_beatmap->getHitcircleDiameter()/2.0f);
-				const float targetAngle = rad2deg(atan2(cursorPos.y - pos.y, cursorPos.x - pos.x));
+				const float targetAngle = glm::degrees(atan2(cursorPos.y - pos.y, cursorPos.x - pos.x));
 
 				clicks.erase(clicks.begin());
 				m_startResult = result;
