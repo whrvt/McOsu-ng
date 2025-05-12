@@ -1,575 +1,484 @@
 ///////////////////////////////////////////////////////////////////////////////
 // Vectors.h
 // =========
-// 2D/3D/4D vectors
+// 2D/3D/4D vectors using GLM under the hood
 //
-//  AUTHOR: Song Ho Ahn (song.ahn@gmail.com)
-// CREATED: 2007-02-14
-// UPDATED: 2013-01-20
-//
-// Copyright (C) 2007-2013 Song Ho Ahn
+// API/ABI compatible with the original McEngine Vectors.h (by Song Ho Ahn)
 ///////////////////////////////////////////////////////////////////////////////
-
 
 #pragma once
 #ifndef VECTORS_H_DEF
 #define VECTORS_H_DEF
 
-#include <cmath>
+#include <glm/geometric.hpp>
+#include <glm/gtc/constants.hpp>
+#include <glm/vec2.hpp>
+#include <glm/vec3.hpp>
+#include <glm/vec4.hpp>
 #include <iostream>
 
 #define VECTOR_NORMALIZE_EPSILON 0.000001f
 
+static_assert(sizeof(glm::vec2) == 2 * sizeof(float), "GLM vec2 layout assumption failed");
+static_assert(sizeof(glm::vec3) == 3 * sizeof(float), "GLM vec3 layout assumption failed");
+static_assert(sizeof(glm::vec4) == 4 * sizeof(float), "GLM vec4 layout assumption failed");
+
 ///////////////////////////////////////////////////////////////////////////////
-// 2D vector
+// 2D vector wrapper around glm::vec2
 ///////////////////////////////////////////////////////////////////////////////
 struct Vector2
 {
-    float x;
-    float y;
+	union {
+		glm::vec2 m_vec;
+		struct
+		{
+			float x, y;
+		};
+	};
 
-    // ctors
-    Vector2() : x(0), y(0) {};
-    Vector2(float x, float y) : x(x), y(y) {};
+	// ctors
+	Vector2() : m_vec(0.0f, 0.0f) {}
+	Vector2(float x, float y) : m_vec(x, y) {}
 
-    // utils functions
-    void 		zero();
-    void        set(float x, float y);
-    float       length() const;                         //
-    float       distance(const Vector2& vec) const;     // distance between two vectors
-    Vector2&    normalize();                            //
-    float       dot(const Vector2& vec) const;          // dot product
-    bool        equal(const Vector2& vec, float e) const; // compare with epsilon
-    Vector2&    nudge(const Vector2& vec, float amount);  // move away/towards vec by amount
+	// copy operations (needed due to union)
+	Vector2(const Vector2 &other) : m_vec(other.m_vec) {}
+	Vector2 &operator=(const Vector2 &other)
+	{
+		if (this != &other)
+		{
+			m_vec = other.m_vec;
+		}
+		return *this;
+	}
 
-    // operators
-    Vector2     operator-() const;                      // unary operator (negate)
-    Vector2     operator+(const Vector2& rhs) const;    // add rhs
-    Vector2     operator-(const Vector2& rhs) const;    // subtract rhs
-    Vector2&    operator+=(const Vector2& rhs);         // add rhs and update this object
-    Vector2&    operator-=(const Vector2& rhs);         // subtract rhs and update this object
-    Vector2     operator*(const float scale) const;     // scale
-    Vector2     operator*(const Vector2& rhs) const;    // multiply each element
-    Vector2&    operator*=(const float scale);          // scale and update this object
-    Vector2&    operator*=(const Vector2& rhs);         // multiply each element and update this object
-    Vector2     operator/(const float scale) const;     // inverse scale
-    Vector2&    operator/=(const float scale);          // scale and update this object
-    bool        operator==(const Vector2& rhs) const;   // exact compare, no epsilon
-    bool        operator!=(const Vector2& rhs) const;   // exact compare, no epsilon
-    bool        operator<(const Vector2& rhs) const;    // comparison for sort
-    float       operator[](int index) const;            // subscript operator v[0], v[1]
-    float&      operator[](int index);                  // subscript operator v[0], v[1]
+	// utils functions
+	void zero() { m_vec = glm::vec2(0.0f); }
+	void set(float x, float y) { m_vec = glm::vec2(x, y); }
+	[[nodiscard]] float length() const { return glm::length(m_vec); }
+	[[nodiscard]] float distance(const Vector2 &vec) const { return glm::distance(m_vec, vec.m_vec); }
+	Vector2 &normalize()
+	{
+		if (glm::length(m_vec) < VECTOR_NORMALIZE_EPSILON)
+			return *this;
+		m_vec = glm::normalize(m_vec);
+		return *this;
+	}
+	[[nodiscard]] float dot(const Vector2 &vec) const { return glm::dot(m_vec, vec.m_vec); }
+	[[nodiscard]] bool equal(const Vector2 &vec, float e) const { return glm::all(glm::lessThan(glm::abs(m_vec - vec.m_vec), glm::vec2(e))); }
+	Vector2 &nudge(const Vector2 &vec, float amount)
+	{
+		glm::vec2 dir = m_vec - vec.m_vec;
+		if (glm::length(dir) > VECTOR_NORMALIZE_EPSILON)
+		{
+			dir = glm::normalize(dir);
+			m_vec += dir * amount;
+		}
+		return *this;
+	}
 
-    friend Vector2 operator*(const float a, const Vector2 vec);
-    friend std::ostream& operator<<(std::ostream& os, const Vector2& vec);
+	// operators
+	Vector2 operator-() const { return {-m_vec.x, -m_vec.y}; }
+	Vector2 operator+(const Vector2 &rhs) const
+	{
+		Vector2 result;
+		result.m_vec = m_vec + rhs.m_vec;
+		return result;
+	}
+	Vector2 operator-(const Vector2 &rhs) const
+	{
+		Vector2 result;
+		result.m_vec = m_vec - rhs.m_vec;
+		return result;
+	}
+	Vector2 &operator+=(const Vector2 &rhs)
+	{
+		m_vec += rhs.m_vec;
+		return *this;
+	}
+	Vector2 &operator-=(const Vector2 &rhs)
+	{
+		m_vec -= rhs.m_vec;
+		return *this;
+	}
+	Vector2 operator*(const float scale) const
+	{
+		Vector2 result;
+		result.m_vec = m_vec * scale;
+		return result;
+	}
+	Vector2 operator*(const Vector2 &rhs) const
+	{
+		Vector2 result;
+		result.m_vec = m_vec * rhs.m_vec;
+		return result;
+	}
+	Vector2 &operator*=(const float scale)
+	{
+		m_vec *= scale;
+		return *this;
+	}
+	Vector2 &operator*=(const Vector2 &rhs)
+	{
+		m_vec *= rhs.m_vec;
+		return *this;
+	}
+	Vector2 operator/(const float scale) const
+	{
+		Vector2 result;
+		result.m_vec = m_vec / scale;
+		return result;
+	}
+	Vector2 &operator/=(const float scale)
+	{
+		m_vec /= scale;
+		return *this;
+	}
+	bool operator==(const Vector2 &rhs) const { return m_vec == rhs.m_vec; }
+	bool operator!=(const Vector2 &rhs) const { return m_vec != rhs.m_vec; }
+	bool operator<(const Vector2 &rhs) const
+	{
+		if (m_vec.x < rhs.m_vec.x)
+			return true;
+		if (m_vec.x > rhs.m_vec.x)
+			return false;
+		return m_vec.y < rhs.m_vec.y;
+	}
+	float operator[](int index) const { return (&x)[index]; }
+	float &operator[](int index) { return (&x)[index]; }
+
+	friend Vector2 operator*(const float a, const Vector2 vec);
+	friend std::ostream &operator<<(std::ostream &os, const Vector2 &vec);
 };
 
+// sanity check
+static_assert(sizeof(Vector2) == sizeof(glm::vec2), "Vector2 size mismatch");
 
+inline Vector2 operator*(const float a, const Vector2 vec)
+{
+	Vector2 result;
+	result.m_vec = a * vec.m_vec;
+	return result;
+}
+
+inline std::ostream &operator<<(std::ostream &os, const Vector2 &vec)
+{
+	os << "(" << vec.x << ", " << vec.y << ")";
+	return os;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
-// 3D vector
+// 3D vector wrapper around glm::vec3
 ///////////////////////////////////////////////////////////////////////////////
 struct Vector3
 {
-    float x;
-    float y;
-    float z;
+	union {
+		glm::vec3 m_vec;
+		struct
+		{
+			float x, y, z;
+		};
+	};
 
-    // ctors
-    Vector3() : x(0), y(0), z(0) {};
-    Vector3(float x, float y, float z) : x(x), y(y), z(z) {};
+	// ctors
+	Vector3() : m_vec(0.0f, 0.0f, 0.0f) {}
+	Vector3(float x, float y, float z) : m_vec(x, y, z) {}
 
-    // utils functions
-    void		zero();
-    void        set(float x, float y, float z);
-    void		setLength(float length);
-    float       length() const;                         //
-    float       distance(const Vector3& vec) const;     // distance between two vectors
-    Vector3&    normalize();                            //
-    float       dot(const Vector3& vec) const;          // dot product
-    Vector3     cross(const Vector3& vec) const;        // cross product
-    bool        equal(const Vector3& vec, float e) const; // compare with epsilon
-    Vector3&    nudge(const Vector3& vec, float amount);  // move away/towards vec by amount
+	// copy operations
+	Vector3(const Vector3 &other) : m_vec(other.m_vec) {}
+	Vector3 &operator=(const Vector3 &other)
+	{
+		if (this != &other)
+		{
+			m_vec = other.m_vec;
+		}
+		return *this;
+	}
 
-    // operators
-    Vector3     operator-() const;                      // unary operator (negate)
-    Vector3     operator+(const Vector3& rhs) const;    // add rhs
-    Vector3     operator-(const Vector3& rhs) const;    // subtract rhs
-    Vector3&    operator+=(const Vector3& rhs);         // add rhs and update this object
-    Vector3&    operator-=(const Vector3& rhs);         // subtract rhs and update this object
-    Vector3     operator*(const float scale) const;     // scale
-    Vector3     operator*(const Vector3& rhs) const;    // multiplay each element
-    Vector3&    operator*=(const float scale);          // scale and update this object
-    Vector3&    operator*=(const Vector3& rhs);         // product each element and update this object
-    Vector3     operator/(const float scale) const;     // inverse scale
-    Vector3&    operator/=(const float scale);          // scale and update this object
-    bool        operator==(const Vector3& rhs) const;   // exact compare, no epsilon
-    bool        operator!=(const Vector3& rhs) const;   // exact compare, no epsilon
-    bool        operator<(const Vector3& rhs) const;    // comparison for sort
-    float       operator[](int index) const;            // subscript operator v[0], v[1]
-    float&      operator[](int index);                  // subscript operator v[0], v[1]
+	// utils functions
+	void zero() { m_vec = glm::vec3(0.0f); }
+	void set(float x, float y, float z) { m_vec = glm::vec3(x, y, z); }
+	void setLength(float length)
+	{
+		if (glm::length(m_vec) > VECTOR_NORMALIZE_EPSILON)
+		{
+			m_vec = glm::normalize(m_vec) * length;
+		}
+	}
+	[[nodiscard]] float length() const { return glm::length(m_vec); }
+	[[nodiscard]] float distance(const Vector3 &vec) const { return glm::distance(m_vec, vec.m_vec); }
+	Vector3 &normalize()
+	{
+		if (glm::length(m_vec) < VECTOR_NORMALIZE_EPSILON)
+			return *this;
+		m_vec = glm::normalize(m_vec);
+		return *this;
+	}
+	[[nodiscard]] float dot(const Vector3 &vec) const { return glm::dot(m_vec, vec.m_vec); }
+	[[nodiscard]] Vector3 cross(const Vector3 &vec) const
+	{
+		Vector3 result;
+		result.m_vec = glm::cross(m_vec, vec.m_vec);
+		return result;
+	}
+	[[nodiscard]] bool equal(const Vector3 &vec, float e) const { return glm::all(glm::lessThan(glm::abs(m_vec - vec.m_vec), glm::vec3(e))); }
+	Vector3 &nudge(const Vector3 &vec, float amount)
+	{
+		glm::vec3 dir = m_vec - vec.m_vec;
+		if (glm::length(dir) > VECTOR_NORMALIZE_EPSILON)
+		{
+			dir = glm::normalize(dir);
+			m_vec += dir * amount;
+		}
+		return *this;
+	}
 
-    friend Vector3 operator*(const float a, const Vector3 vec);
-    friend std::ostream& operator<<(std::ostream& os, const Vector3& vec);
+	// operators
+	Vector3 operator-() const { return {-m_vec.x, -m_vec.y, -m_vec.z}; }
+	Vector3 operator+(const Vector3 &rhs) const
+	{
+		Vector3 result;
+		result.m_vec = m_vec + rhs.m_vec;
+		return result;
+	}
+	Vector3 operator-(const Vector3 &rhs) const
+	{
+		Vector3 result;
+		result.m_vec = m_vec - rhs.m_vec;
+		return result;
+	}
+	Vector3 &operator+=(const Vector3 &rhs)
+	{
+		m_vec += rhs.m_vec;
+		return *this;
+	}
+	Vector3 &operator-=(const Vector3 &rhs)
+	{
+		m_vec -= rhs.m_vec;
+		return *this;
+	}
+	Vector3 operator*(const float scale) const
+	{
+		Vector3 result;
+		result.m_vec = m_vec * scale;
+		return result;
+	}
+	Vector3 operator*(const Vector3 &rhs) const
+	{
+		Vector3 result;
+		result.m_vec = m_vec * rhs.m_vec;
+		return result;
+	}
+	Vector3 &operator*=(const float scale)
+	{
+		m_vec *= scale;
+		return *this;
+	}
+	Vector3 &operator*=(const Vector3 &rhs)
+	{
+		m_vec *= rhs.m_vec;
+		return *this;
+	}
+	Vector3 operator/(const float scale) const
+	{
+		Vector3 result;
+		result.m_vec = m_vec / scale;
+		return result;
+	}
+	Vector3 &operator/=(const float scale)
+	{
+		m_vec /= scale;
+		return *this;
+	}
+	bool operator==(const Vector3 &rhs) const { return m_vec == rhs.m_vec; }
+	bool operator!=(const Vector3 &rhs) const { return m_vec != rhs.m_vec; }
+	bool operator<(const Vector3 &rhs) const
+	{
+		if (m_vec.x < rhs.m_vec.x)
+			return true;
+		if (m_vec.x > rhs.m_vec.x)
+			return false;
+		if (m_vec.y < rhs.m_vec.y)
+			return true;
+		if (m_vec.y > rhs.m_vec.y)
+			return false;
+		return m_vec.z < rhs.m_vec.z;
+	}
+	float operator[](int index) const { return (&x)[index]; }
+	float &operator[](int index) { return (&x)[index]; }
+
+	friend Vector3 operator*(const float a, const Vector3 vec);
+	friend std::ostream &operator<<(std::ostream &os, const Vector3 &vec);
 };
 
+// sanity
+static_assert(sizeof(Vector3) == sizeof(glm::vec3), "Vector3 size mismatch");
 
+inline Vector3 operator*(const float a, const Vector3 vec)
+{
+	Vector3 result;
+	result.m_vec = a * vec.m_vec;
+	return result;
+}
+
+inline std::ostream &operator<<(std::ostream &os, const Vector3 &vec)
+{
+	os << "(" << vec.x << ", " << vec.y << ", " << vec.z << ")";
+	return os;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
-// 4D vector
+// 4D vector wrapper around glm::vec4
 ///////////////////////////////////////////////////////////////////////////////
 struct Vector4
 {
-    float x;
-    float y;
-    float z;
-    float w;
+	union {
+		glm::vec4 m_vec;
+		struct
+		{
+			float x, y, z, w;
+		};
+	};
 
-    // ctors
-    Vector4() : x(0), y(0), z(0), w(0) {};
-    Vector4(float x, float y, float z, float w) : x(x), y(y), z(z), w(w) {};
+	// ctors
+	Vector4() : m_vec(0.0f, 0.0f, 0.0f, 0.0f) {}
+	Vector4(float x, float y, float z, float w) : m_vec(x, y, z, w) {}
 
-    // utils functions
-    void        set(float x, float y, float z, float w);
-    float       length() const;                         //
-    float       distance(const Vector4& vec) const;     // distance between two vectors
-    Vector4&    normalize();                            //
-    float       dot(const Vector4& vec) const;          // dot product
-    bool        equal(const Vector4& vec, float e) const; // compare with epsilon
-    Vector4&    nudge(const Vector4& vec, float amount);  // move away/towards vec by amount
+	// copy operations
+	Vector4(const Vector4 &other) : m_vec(other.m_vec) {}
+	Vector4 &operator=(const Vector4 &other)
+	{
+		if (this != &other)
+		{
+			m_vec = other.m_vec;
+		}
+		return *this;
+	}
 
-    // operators
-    Vector4     operator-() const;                      // unary operator (negate)
-    Vector4     operator+(const Vector4& rhs) const;    // add rhs
-    Vector4     operator-(const Vector4& rhs) const;    // subtract rhs
-    Vector4&    operator+=(const Vector4& rhs);         // add rhs and update this object
-    Vector4&    operator-=(const Vector4& rhs);         // subtract rhs and update this object
-    Vector4     operator*(const float scale) const;     // scale
-    Vector4     operator*(const Vector4& rhs) const;    // multiply each element
-    Vector4&    operator*=(const float scale);          // scale and update this object
-    Vector4&    operator*=(const Vector4& rhs);         // multiply each element and update this object
-    Vector4     operator/(const float scale) const;     // inverse scale
-    Vector4&    operator/=(const float scale);          // scale and update this object
-    bool        operator==(const Vector4& rhs) const;   // exact compare, no epsilon
-    bool        operator!=(const Vector4& rhs) const;   // exact compare, no epsilon
-    bool        operator<(const Vector4& rhs) const;    // comparison for sort
-    float       operator[](int index) const;            // subscript operator v[0], v[1]
-    float&      operator[](int index);                  // subscript operator v[0], v[1]
+	// utils functions
+	void set(float x, float y, float z, float w) { m_vec = glm::vec4(x, y, z, w); }
+	[[nodiscard]] float length() const { return glm::length(m_vec); }
+	[[nodiscard]] float distance(const Vector4 &vec) const { return glm::distance(m_vec, vec.m_vec); }
+	Vector4 &normalize()
+	{
+		// original behavior leaves w-component untouched (bug?)
+		auto xyz = glm::vec3(m_vec);
+		if (glm::length(xyz) < VECTOR_NORMALIZE_EPSILON)
+			return *this;
+		xyz = glm::normalize(xyz);
+		m_vec.x = xyz.x;
+		m_vec.y = xyz.y;
+		m_vec.z = xyz.z;
+		return *this;
+	}
+	[[nodiscard]] float dot(const Vector4 &vec) const { return glm::dot(m_vec, vec.m_vec); }
+	[[nodiscard]] bool equal(const Vector4 &vec, float e) const { return glm::all(glm::lessThan(glm::abs(m_vec - vec.m_vec), glm::vec4(e))); }
+	Vector4 &nudge(const Vector4 &vec, float amount)
+	{
+		glm::vec4 dir = m_vec - vec.m_vec;
+		if (glm::length(dir) > VECTOR_NORMALIZE_EPSILON)
+		{
+			dir = glm::normalize(dir);
+			m_vec += dir * amount;
+		}
+		return *this;
+	}
 
-    friend Vector4 operator*(const float a, const Vector4 vec);
-    friend std::ostream& operator<<(std::ostream& os, const Vector4& vec);
+	// operators
+	Vector4 operator-() const { return {-m_vec.x, -m_vec.y, -m_vec.z, -m_vec.w}; }
+	Vector4 operator+(const Vector4 &rhs) const
+	{
+		Vector4 result;
+		result.m_vec = m_vec + rhs.m_vec;
+		return result;
+	}
+	Vector4 operator-(const Vector4 &rhs) const
+	{
+		Vector4 result;
+		result.m_vec = m_vec - rhs.m_vec;
+		return result;
+	}
+	Vector4 &operator+=(const Vector4 &rhs)
+	{
+		m_vec += rhs.m_vec;
+		return *this;
+	}
+	Vector4 &operator-=(const Vector4 &rhs)
+	{
+		m_vec -= rhs.m_vec;
+		return *this;
+	}
+	Vector4 operator*(const float scale) const
+	{
+		Vector4 result;
+		result.m_vec = m_vec * scale;
+		return result;
+	}
+	Vector4 operator*(const Vector4 &rhs) const
+	{
+		Vector4 result;
+		result.m_vec = m_vec * rhs.m_vec;
+		return result;
+	}
+	Vector4 &operator*=(const float scale)
+	{
+		m_vec *= scale;
+		return *this;
+	}
+	Vector4 &operator*=(const Vector4 &rhs)
+	{
+		m_vec *= rhs.m_vec;
+		return *this;
+	}
+	Vector4 operator/(const float scale) const
+	{
+		Vector4 result;
+		result.m_vec = m_vec / scale;
+		return result;
+	}
+	Vector4 &operator/=(const float scale)
+	{
+		m_vec /= scale;
+		return *this;
+	}
+	bool operator==(const Vector4 &rhs) const { return m_vec == rhs.m_vec; }
+	bool operator!=(const Vector4 &rhs) const { return m_vec != rhs.m_vec; }
+	bool operator<(const Vector4 &rhs) const
+	{
+		if (m_vec.x < rhs.m_vec.x)
+			return true;
+		if (m_vec.x > rhs.m_vec.x)
+			return false;
+		if (m_vec.y < rhs.m_vec.y)
+			return true;
+		if (m_vec.y > rhs.m_vec.y)
+			return false;
+		if (m_vec.z < rhs.m_vec.z)
+			return true;
+		if (m_vec.z > rhs.m_vec.z)
+			return false;
+		return m_vec.w < rhs.m_vec.w;
+	}
+	float operator[](int index) const { return (&x)[index]; }
+	float &operator[](int index) { return (&x)[index]; }
+
+	friend Vector4 operator*(const float a, const Vector4 vec);
+	friend std::ostream &operator<<(std::ostream &os, const Vector4 &vec);
 };
 
+// sanity
+static_assert(sizeof(Vector4) == sizeof(glm::vec4), "Vector4 size mismatch");
 
-
-// fast math routines from Doom3 SDK
-/*
-inline float invSqrt(float x)
+inline Vector4 operator*(const float a, const Vector4 vec)
 {
-    float xhalf = 0.5f * x;
-    int i = *(int*)&x;          // get bits for floating value
-    i = 0x5f3759df - (i>>1);    // gives initial guess
-    x = *(float*)&i;            // convert bits back to float
-    x = x * (1.5f - xhalf*x*x); // Newton step
-    return x;
-}
-*/
-
-
-
-///////////////////////////////////////////////////////////////////////////////
-// inline functions for Vector2
-///////////////////////////////////////////////////////////////////////////////
-inline Vector2 Vector2::operator-() const {
-    return Vector2(-x, -y);
+	Vector4 result;
+	result.m_vec = a * vec.m_vec;
+	return result;
 }
 
-inline Vector2 Vector2::operator+(const Vector2& rhs) const {
-    return Vector2(x+rhs.x, y+rhs.y);
-}
-
-inline Vector2 Vector2::operator-(const Vector2& rhs) const {
-    return Vector2(x-rhs.x, y-rhs.y);
-}
-
-inline Vector2& Vector2::operator+=(const Vector2& rhs) {
-    x += rhs.x; y += rhs.y; return *this;
-}
-
-inline Vector2& Vector2::operator-=(const Vector2& rhs) {
-    x -= rhs.x; y -= rhs.y; return *this;
-}
-
-inline Vector2 Vector2::operator*(const float a) const {
-    return Vector2(x*a, y*a);
-}
-
-inline Vector2 Vector2::operator*(const Vector2& rhs) const {
-    return Vector2(x*rhs.x, y*rhs.y);
-}
-
-inline Vector2& Vector2::operator*=(const float a) {
-    x *= a; y *= a; return *this;
-}
-
-inline Vector2& Vector2::operator*=(const Vector2& rhs) {
-    x *= rhs.x; y *= rhs.y; return *this;
-}
-
-inline Vector2 Vector2::operator/(const float a) const {
-    return Vector2(x/a, y/a);
-}
-
-inline Vector2& Vector2::operator/=(const float a) {
-    x /= a; y /= a; return *this;
-}
-
-inline bool Vector2::operator==(const Vector2& rhs) const {
-    return (x == rhs.x) && (y == rhs.y);
-}
-
-inline bool Vector2::operator!=(const Vector2& rhs) const {
-    return (x != rhs.x) || (y != rhs.y);
-}
-
-inline bool Vector2::operator<(const Vector2& rhs) const {
-    if(x < rhs.x) return true;
-    if(x > rhs.x) return false;
-    if(y < rhs.y) return true;
-    if(y > rhs.y) return false;
-    return false;
-}
-
-inline float Vector2::operator[](int index) const {
-    return (&x)[index];
-}
-
-inline float& Vector2::operator[](int index) {
-    return (&x)[index];
-}
-
-inline void Vector2::zero() {
-	this->x = 0.0f; this->y = 0.0f;
-}
-
-inline void Vector2::set(float x, float y) {
-    this->x = x; this->y = y;
-}
-
-inline float Vector2::length() const {
-    return std::sqrt(x*x + y*y);
-}
-
-inline float Vector2::distance(const Vector2& vec) const {
-    return std::sqrt((vec.x-x)*(vec.x-x) + (vec.y-y)*(vec.y-y));
-}
-
-inline Vector2& Vector2::normalize() {
-    float xxyy = x*x + y*y;
-    if(xxyy < VECTOR_NORMALIZE_EPSILON)
-        return *this; // do nothing if it is ~zero vector
-
-    ///float invLength = invSqrt(xxyy);
-    float invLength = 1.0f / std::sqrt(xxyy);
-    x *= invLength;
-    y *= invLength;
-    return *this;
-}
-
-inline float Vector2::dot(const Vector2& rhs) const {
-    return (x*rhs.x + y*rhs.y);
-}
-
-inline bool Vector2::equal(const Vector2& rhs, float epsilon) const {
-    return fabs(x - rhs.x) < epsilon && fabs(y - rhs.y) < epsilon;
-}
-
-inline Vector2& Vector2::nudge(const Vector2& vec, float amount) {
-    Vector2 dir = *this - vec;
-    dir.normalize();
-    *this += dir * amount;
-    return *this;
-}
-
-inline Vector2 operator*(const float a, const Vector2 vec) {
-    return Vector2(a*vec.x, a*vec.y);
-}
-
-inline std::ostream& operator<<(std::ostream& os, const Vector2& vec) {
-    os << "(" << vec.x << ", " << vec.y << ")";
-    return os;
-}
-// END OF VECTOR2 /////////////////////////////////////////////////////////////
-
-
-
-
-///////////////////////////////////////////////////////////////////////////////
-// inline functions for Vector3
-///////////////////////////////////////////////////////////////////////////////
-inline Vector3 Vector3::operator-() const {
-    return Vector3(-x, -y, -z);
-}
-
-inline Vector3 Vector3::operator+(const Vector3& rhs) const {
-    return Vector3(x+rhs.x, y+rhs.y, z+rhs.z);
-}
-
-inline Vector3 Vector3::operator-(const Vector3& rhs) const {
-    return Vector3(x-rhs.x, y-rhs.y, z-rhs.z);
-}
-
-inline Vector3& Vector3::operator+=(const Vector3& rhs) {
-    x += rhs.x; y += rhs.y; z += rhs.z; return *this;
-}
-
-inline Vector3& Vector3::operator-=(const Vector3& rhs) {
-    x -= rhs.x; y -= rhs.y; z -= rhs.z; return *this;
-}
-
-inline Vector3 Vector3::operator*(const float a) const {
-    return Vector3(x*a, y*a, z*a);
-}
-
-inline Vector3 Vector3::operator*(const Vector3& rhs) const {
-    return Vector3(x*rhs.x, y*rhs.y, z*rhs.z);
-}
-
-inline Vector3& Vector3::operator*=(const float a) {
-    x *= a; y *= a; z *= a; return *this;
-}
-
-inline Vector3& Vector3::operator*=(const Vector3& rhs) {
-    x *= rhs.x; y *= rhs.y; z *= rhs.z; return *this;
-}
-
-inline Vector3 Vector3::operator/(const float a) const {
-    return Vector3(x/a, y/a, z/a);
-}
-
-inline Vector3& Vector3::operator/=(const float a) {
-    x /= a; y /= a; z /= a; return *this;
-}
-
-inline bool Vector3::operator==(const Vector3& rhs) const {
-    return (x == rhs.x) && (y == rhs.y) && (z == rhs.z);
-}
-
-inline bool Vector3::operator!=(const Vector3& rhs) const {
-    return (x != rhs.x) || (y != rhs.y) || (z != rhs.z);
-}
-
-inline bool Vector3::operator<(const Vector3& rhs) const {
-    if(x < rhs.x) return true;
-    if(x > rhs.x) return false;
-    if(y < rhs.y) return true;
-    if(y > rhs.y) return false;
-    if(z < rhs.z) return true;
-    if(z > rhs.z) return false;
-    return false;
-}
-
-inline float Vector3::operator[](int index) const {
-    return (&x)[index];
-}
-
-inline float& Vector3::operator[](int index) {
-    return (&x)[index];
-}
-
-inline void Vector3::zero() {
-	this->x = 0.0f; this->y = 0.0f; this->z = 0.0f;
-}
-
-inline void Vector3::set(float x, float y, float z) {
-    this->x = x; this->y = y; this->z = z;
-}
-
-inline void Vector3::setLength(float length)
+inline std::ostream &operator<<(std::ostream &os, const Vector4 &vec)
 {
-	normalize();
-	x *= length;
-	y *= length;
-	z *= length;
+	os << "(" << vec.x << ", " << vec.y << ", " << vec.z << ", " << vec.w << ")";
+	return os;
 }
-
-inline float Vector3::length() const {
-    return std::sqrt(x*x + y*y + z*z);
-}
-
-inline float Vector3::distance(const Vector3& vec) const {
-    return std::sqrt((vec.x-x)*(vec.x-x) + (vec.y-y)*(vec.y-y) + (vec.z-z)*(vec.z-z));
-}
-
-inline Vector3& Vector3::normalize() {
-    float xxyyzz = x*x + y*y + z*z;
-    if(xxyyzz < VECTOR_NORMALIZE_EPSILON)
-        return *this; // do nothing if it is ~zero vector
-
-    ///float invLength = invSqrt(xxyyzz);
-    float invLength = 1.0f / std::sqrt(xxyyzz);
-    x *= invLength;
-    y *= invLength;
-    z *= invLength;
-    return *this;
-}
-
-inline float Vector3::dot(const Vector3& rhs) const {
-    return (x*rhs.x + y*rhs.y + z*rhs.z);
-}
-
-inline Vector3 Vector3::cross(const Vector3& rhs) const {
-    return Vector3(y*rhs.z - z*rhs.y, z*rhs.x - x*rhs.z, x*rhs.y - y*rhs.x);
-}
-
-inline bool Vector3::equal(const Vector3& rhs, float epsilon) const {
-    return fabs(x - rhs.x) < epsilon && fabs(y - rhs.y) < epsilon && fabs(z - rhs.z) < epsilon;
-}
-
-inline Vector3& Vector3::nudge(const Vector3& vec, float amount) {
-    Vector3 dir = *this - vec;
-    dir.normalize();
-    *this += dir * amount;
-    return *this;
-}
-
-inline Vector3 operator*(const float a, const Vector3 vec) {
-    return Vector3(a*vec.x, a*vec.y, a*vec.z);
-}
-
-inline std::ostream& operator<<(std::ostream& os, const Vector3& vec) {
-    os << "(" << vec.x << ", " << vec.y << ", " << vec.z << ")";
-    return os;
-}
-// END OF VECTOR3 /////////////////////////////////////////////////////////////
-
-
-
-///////////////////////////////////////////////////////////////////////////////
-// inline functions for Vector4
-///////////////////////////////////////////////////////////////////////////////
-inline Vector4 Vector4::operator-() const {
-    return Vector4(-x, -y, -z, -w);
-}
-
-inline Vector4 Vector4::operator+(const Vector4& rhs) const {
-    return Vector4(x+rhs.x, y+rhs.y, z+rhs.z, w+rhs.w);
-}
-
-inline Vector4 Vector4::operator-(const Vector4& rhs) const {
-    return Vector4(x-rhs.x, y-rhs.y, z-rhs.z, w-rhs.w);
-}
-
-inline Vector4& Vector4::operator+=(const Vector4& rhs) {
-    x += rhs.x; y += rhs.y; z += rhs.z; w += rhs.w; return *this;
-}
-
-inline Vector4& Vector4::operator-=(const Vector4& rhs) {
-    x -= rhs.x; y -= rhs.y; z -= rhs.z; w -= rhs.w; return *this;
-}
-
-inline Vector4 Vector4::operator*(const float a) const {
-    return Vector4(x*a, y*a, z*a, w*a);
-}
-
-inline Vector4 Vector4::operator*(const Vector4& rhs) const {
-    return Vector4(x*rhs.x, y*rhs.y, z*rhs.z, w*rhs.w);
-}
-
-inline Vector4& Vector4::operator*=(const float a) {
-    x *= a; y *= a; z *= a; w *= a; return *this;
-}
-
-inline Vector4& Vector4::operator*=(const Vector4& rhs) {
-    x *= rhs.x; y *= rhs.y; z *= rhs.z; w *= rhs.w; return *this;
-}
-
-inline Vector4 Vector4::operator/(const float a) const {
-    return Vector4(x/a, y/a, z/a, w/a);
-}
-
-inline Vector4& Vector4::operator/=(const float a) {
-    x /= a; y /= a; z /= a; w /= a; return *this;
-}
-
-inline bool Vector4::operator==(const Vector4& rhs) const {
-    return (x == rhs.x) && (y == rhs.y) && (z == rhs.z) && (w == rhs.w);
-}
-
-inline bool Vector4::operator!=(const Vector4& rhs) const {
-    return (x != rhs.x) || (y != rhs.y) || (z != rhs.z) || (w != rhs.w);
-}
-
-inline bool Vector4::operator<(const Vector4& rhs) const {
-    if(x < rhs.x) return true;
-    if(x > rhs.x) return false;
-    if(y < rhs.y) return true;
-    if(y > rhs.y) return false;
-    if(z < rhs.z) return true;
-    if(z > rhs.z) return false;
-    if(w < rhs.w) return true;
-    if(w > rhs.w) return false;
-    return false;
-}
-
-inline float Vector4::operator[](int index) const {
-    return (&x)[index];
-}
-
-inline float& Vector4::operator[](int index) {
-    return (&x)[index];
-}
-
-inline void Vector4::set(float x, float y, float z, float w) {
-    this->x = x; this->y = y; this->z = z; this->w = w;
-}
-
-inline float Vector4::length() const {
-    return std::sqrt(x*x + y*y + z*z + w*w);
-}
-
-inline float Vector4::distance(const Vector4& vec) const {
-    return std::sqrt((vec.x-x)*(vec.x-x) + (vec.y-y)*(vec.y-y) + (vec.z-z)*(vec.z-z) + (vec.w-w)*(vec.w-w));
-}
-
-inline Vector4& Vector4::normalize() {
-    //NOTE: leave w-component untouched
-    float xxyyzz = x*x + y*y + z*z;
-    if(xxyyzz < VECTOR_NORMALIZE_EPSILON)
-        return *this; // do nothing if it is zero vector
-
-    ///float invLength = invSqrt(xxyyzz);
-    float invLength = 1.0f / std::sqrt(xxyyzz);
-    x *= invLength;
-    y *= invLength;
-    z *= invLength;
-    return *this;
-}
-
-inline float Vector4::dot(const Vector4& rhs) const {
-    return (x*rhs.x + y*rhs.y + z*rhs.z + w*rhs.w);
-}
-
-inline bool Vector4::equal(const Vector4& rhs, float epsilon) const {
-    return fabs(x - rhs.x) < epsilon && fabs(y - rhs.y) < epsilon &&
-           fabs(z - rhs.z) < epsilon && fabs(w - rhs.w) < epsilon;
-}
-
-inline Vector4& Vector4::nudge(const Vector4& vec, float amount) {
-    Vector4 dir = *this - vec;
-    dir.normalize();
-    *this += dir * amount;
-    return *this;
-}
-
-inline Vector4 operator*(const float a, const Vector4 vec) {
-    return Vector4(a*vec.x, a*vec.y, a*vec.z, a*vec.w);
-}
-
-inline std::ostream& operator<<(std::ostream& os, const Vector4& vec) {
-    os << "(" << vec.x << ", " << vec.y << ", " << vec.z << ", " << vec.w << ")";
-    return os;
-}
-// END OF VECTOR4 /////////////////////////////////////////////////////////////
 
 #endif

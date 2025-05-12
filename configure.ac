@@ -141,8 +141,9 @@ AS_IF([test "$host_os" = "mingw32"], [
     ])
     enable_system_deps=no
     disable_system_deps=yes
-    MCOSU_CPPFLAGS="$CPPFLAGS -D_UNICODE -DUNICODE"
-    MCOSU_CXXFLAGS="$CXXFLAGS -D_UNICODE -DUNICODE -municode"
+    MCOSU_CPPFLAGS="$MCOSU_CPPFLAGS -D_UNICODE -DUNICODE"
+    MCOSU_CXXFLAGS="$MCOSU_CXXFLAGS -D_UNICODE -DUNICODE -municode"
+    MCOSU_LDFLAGS="$MCOSU_LDFLAGS -municode"
     AS_IF([test "x$enable_clang" = "xyes"], [
         LLVMMINGW=1
         AC_SUBST([LLVMMINGW])
@@ -169,8 +170,9 @@ mkdir -p build/deps
 AS_IF([test "x$enable_clang" = "xyes"], [
     CC=clang
     CXX=clang++
-    CXXFLAGS="$CXXFLAGS -Qunused-arguments"
-    CFLAGS="$CFLAGS -Qunused-arguments"
+    CXXFLAGS="$CXXFLAGS -Qunused-arguments -fuse-ld=lld"
+    CFLAGS="$CFLAGS -Qunused-arguments -fuse-ld=lld"
+    LDFLAGS="$LDFLAGS -fuse-ld=lld"
 ],[
     CC=gcc
     CXX=g++
@@ -318,9 +320,14 @@ AX_CHECK_COMPILE_FLAG([-std=gnu++23], [
     AC_MSG_ERROR([Compiler does not support gnu++23])
 ])
 
-AC_CHECK_TOOL([LD], [ld], [ld])
-AC_CHECK_TOOL([AR], [ar], [ar])
-AC_CHECK_TOOL([RANLIB], [ranlib], [ranlib])
+AC_CHECK_TOOL([LD], [ld], [AC_MSG_ERROR([ld not found])])
+AS_IF([test "x$enable_clang" = "xyes" && test "$host_os" = "linux-gnu"], [
+    AC_CHECK_PROG([AR], [llvm-ar], [llvm-ar], [AC_MSG_ERROR([llvm-ar not found])])
+    AC_CHECK_PROG([RANLIB], [llvm-ranlib], [llvm-ranlib], [AC_MSG_ERROR([llvm-ranlib not found])])
+], [
+    AC_CHECK_TOOL([AR], [ar], [AC_MSG_ERROR([ar not found])])
+    AC_CHECK_TOOL([RANLIB], [ranlib], [AC_MSG_ERROR([ranlib not found])])
+])
 
 AS_IF([test "$host_os" = "linux-gnu"],[
     AC_CHECK_HEADERS([X11/Xlib.h GL/gl.h GL/glu.h], [],
@@ -381,11 +388,10 @@ AS_IF([test "x$enable_debug" = "xyes"], [
 
 AS_IF([test "x$enable_lto" != "xno"], [
     AX_CHECK_COMPILE_FLAG([-flto=thin], [
-        AX_CHECK_LINK_FLAG([-fuse-ld=lld -flto=thin -fno-fat-lto-objects -fwhole-program-vtables], [
-            CXXFLAGS="$CXXFLAGS -fuse-ld=lld -flto=thin -fno-fat-lto-objects -fwhole-program-vtables"
-            CFLAGS="$CFLAGS -fuse-ld=lld -flto=thin -fno-fat-lto-objects -fwhole-program-vtables"
-            LDFLAGS="$LDFLAGS -fuse-ld=lld -flto=thin -fno-fat-lto-objects -fwhole-program-vtables"
-            LD="${LD}.lld"
+        AX_CHECK_LINK_FLAG([-flto=thin -fno-fat-lto-objects -fwhole-program-vtables], [
+            CXXFLAGS="$CXXFLAGS -flto=thin -fno-fat-lto-objects -fwhole-program-vtables"
+            CFLAGS="$CFLAGS -flto=thin -fno-fat-lto-objects -fwhole-program-vtables"
+            LDFLAGS="$LDFLAGS -flto=thin -fno-fat-lto-objects -fwhole-program-vtables"
         ])], [
         # gcc
         AX_CHECK_LINK_FLAG([-flto=auto -ffat-lto-objects -fuse-linker-plugin -fdevirtualize-at-ltrans], [
@@ -456,6 +462,9 @@ AS_IF([test "x$enable_system_deps" != "xno"], [
     PKG_CHECK_AUTO([ZLIB], [zlib >= $ZLIB_MIN_VERSION], [have_zlib=yes], [have_zlib=no])
     PKG_CHECK_AUTO([BZIP2], [bzip2 >= $BZIP2_MIN_VERSION], [have_bzip2=yes], [have_bzip2=no])
     PKG_CHECK_AUTO([FREETYPE2], [freetype2 >= $FREETYPE2_MIN_VERSION], [have_freetype2=yes], [have_freetype2=no])
+    AC_CHECK_HEADERS([glm/vec3.hpp], [
+        AC_CHECK_LIB(glm, sincos, [have_glm=yes], [have_glm=no], [])
+    ], [have_glm=no])
 ])
 
 AS_IF([test "x$have_sdl3" != "xyes"], [have_sdl3="build from source"])
@@ -508,6 +517,13 @@ FREETYPE2_PREFIX="${DEPS_PREFIX}"
 AC_SUBST([FREETYPE2_VERSION])
 AC_SUBST([FREETYPE2_PREFIX])
 
+AS_IF([test "x$have_glm" != "xyes"], [have_glm="build from source"])
+AC_SUBST([GLM_VERSION], [1.0.1])
+AC_SUBST([GLM_PREFIX],[$DEPS_PREFIX])
+AC_SUBST([GLM_CFLAGS], [""])
+AC_SUBST([GLM_LIBS], ["-lglm"])
+AS_IF([test "x$enable_native" != "xno"], [MCOSU_CPPFLAGS="$MCOSU_CPPFLAGS -DGLM_FORCE_INTRINSICS"], [])
+
 AM_CONDITIONAL([BUILD_SDL3], [test "x$have_sdl3" != "xyes"])
 AM_CONDITIONAL([BUILD_GLEW], [test "x$have_glew" != "xyes"])
 AM_CONDITIONAL([BUILD_LIBJPEG], [test "x$have_libjpeg" != "xyes"])
@@ -515,6 +531,7 @@ AM_CONDITIONAL([BUILD_LIBPNG], [test "x$have_libpng" != "xyes"])
 AM_CONDITIONAL([BUILD_BZIP2], [test "x$have_bzip2" != "xyes"])
 AM_CONDITIONAL([BUILD_ZLIB], [test "x$have_zlib" != "xyes"])
 AM_CONDITIONAL([BUILD_FREETYPE2], [test "x$have_freetype2" != "xyes"])
+AM_CONDITIONAL([BUILD_GLM], [test "x$have_glm" != "xyes"])
 AM_CONDITIONAL([BUILD_MIMALLOC], [test "x$enable_debug" != "xyes" &&
                                 { { test "$SYSNAME" = "windows" && test "x$with_mimalloc" = "xyes" ; } ||
                                   { test "$SYSNAME" != "windows" && test "x$with_mimalloc" != "xno" ; };
@@ -654,4 +671,5 @@ Dependencies:
     bzip2:              ${have_bzip2-build from source}
     zlib:               ${have_zlib-build from source}
     freetype2:          ${have_freetype2-build from source}
+    glm (math)          ${have_glm-build from source}
 ])
