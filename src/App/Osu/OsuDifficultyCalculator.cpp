@@ -17,7 +17,7 @@
 
 #include "OsuSliderCurves.h"
 
-#include "McMath.h"
+#include <glm/gtx/fast_exponential.hpp>
 
 #include <algorithm>
 #include <climits> // for INT_MAX
@@ -838,7 +838,7 @@ double OsuDifficultyCalculator::calculateDeviation(const Attributes &attributes,
 	double p = relevantCountGreat / n;
 	double pLowerBound = (n * p + z * z / 2.0) / (n + z * z) - z / (n + z * z) * sqrt(n * p * (1.0 - p) + z * z / 4.0);
 	double deviation = greatHitWindow / (sqrt2 * erfInv(pLowerBound));
-	double randomValue = sqrt2OverPi * okHitWindow * McMath::fastExp(-0.5 * std::pow(okHitWindow / deviation, 2.0)) / (deviation * erf(okHitWindow / (sqrt2 * deviation)));
+	double randomValue = sqrt2OverPi * okHitWindow * glm::fastExp(-0.5 * std::pow(okHitWindow / deviation, 2.0)) / (deviation * erf(okHitWindow / (sqrt2 * deviation)));
 	deviation *= std::sqrt(1.0 - randomValue);
 
 	double limitValue = okHitWindow / sqrt3;
@@ -1021,7 +1021,7 @@ double OsuDifficultyCalculator::erfImp(double z, bool invert)
 			b = 0.5641584396f;
 		}
 
-		double g = McMath::fastExp(-z * z) / z;
+		double g = glm::fastExp(-z * z) / z;
 		result = (g * b) + (g * r);
 	}
 	else
@@ -1286,14 +1286,14 @@ double OsuDifficultyCalculator::DiffObject::calculate_difficulty(const Skills::S
 				double tempSum = 0.0;
 				if (incremental && std::abs(incremental->max_object_strain - maxObjectStrain) < DIFFCALC_EPSILON)
 				{
-					incremental->relevant_note_sum += 1.0 / (1.0 + McMath::fastExp(-((dobjects[dobjectCount - 1].get_strain(type) / maxObjectStrain * 12.0) - 6.0)));
+					incremental->relevant_note_sum += 1.0 / (1.0 + glm::fastExp(-((dobjects[dobjectCount - 1].get_strain(type) / maxObjectStrain * 12.0) - 6.0)));
 					tempSum = incremental->relevant_note_sum;
 				}
 				else
 				{
 					for (size_t i=0; i<dobjectCount; i++)
 					{
-						tempSum += 1.0 / (1.0 + McMath::fastExp(-((dobjects[i].get_strain(type) / maxObjectStrain * 12.0) - 6.0)));
+						tempSum += 1.0 / (1.0 + glm::fastExp(-((dobjects[i].get_strain(type) / maxObjectStrain * 12.0) - 6.0)));
 					}
 
 					if (incremental)
@@ -1336,7 +1336,7 @@ double OsuDifficultyCalculator::DiffObject::calculate_difficulty(const Skills::S
 					double tempSum = 0.0;
 					if (incremental && std::abs(incremental->max_slider_strain - maxSliderStrain) < DIFFCALC_EPSILON)
 					{
-						incremental->difficult_sliders += 1.0 / (1.0 + McMath::fastExp(-((curSliderStrain / maxSliderStrain * 12.0) - 6.0)));
+						incremental->difficult_sliders += 1.0 / (1.0 + glm::fastExp(-((curSliderStrain / maxSliderStrain * 12.0) - 6.0)));
 						tempSum = incremental->difficult_sliders;
 					}
 					else
@@ -1345,7 +1345,7 @@ double OsuDifficultyCalculator::DiffObject::calculate_difficulty(const Skills::S
 						{
 							for (size_t i = 0; i < incremental->slider_strains.size(); i++)
 							{
-								tempSum += 1.0 / (1.0 + McMath::fastExp(-((incremental->slider_strains[i] / maxSliderStrain * 12.0) - 6.0)));
+								tempSum += 1.0 / (1.0 + glm::fastExp(-((incremental->slider_strains[i] / maxSliderStrain * 12.0) - 6.0)));
 							}
 							incremental->max_slider_strain = maxSliderStrain;
 							incremental->difficult_sliders = tempSum;
@@ -1356,7 +1356,7 @@ double OsuDifficultyCalculator::DiffObject::calculate_difficulty(const Skills::S
 							{
 								double sliderStrain = dobjects[i].get_slider_aim_strain();
 								if (sliderStrain >= 0.0)
-									tempSum += 1.0 / (1.0 + McMath::fastExp(-((sliderStrain / maxSliderStrain * 12.0) - 6.0)));
+									tempSum += 1.0 / (1.0 + glm::fastExp(-((sliderStrain / maxSliderStrain * 12.0) - 6.0)));
 							}
 						}
 					}
@@ -1454,7 +1454,7 @@ double OsuDifficultyCalculator::DiffObject::calculate_difficulty(const Skills::S
 
 				if (incremental && std::abs(incremental->consistent_top_strain - consistentTopStrain) < DIFFCALC_EPSILON)
 				{
-					incremental->difficult_strains += 1.1 / (1.0 + McMath::fastExp(-10.0 * (dobjects[dobjectCount - 1].get_strain(type) / consistentTopStrain - 0.88)));
+					incremental->difficult_strains += 1.1 / (1.0 + glm::fastExp(-10.0 * (dobjects[dobjectCount - 1].get_strain(type) / consistentTopStrain - 0.88)));
 					tempSum = incremental->difficult_strains;
 				}
 				else
@@ -1462,7 +1462,7 @@ double OsuDifficultyCalculator::DiffObject::calculate_difficulty(const Skills::S
 					MC_UNROLL
 					for (size_t i=0; i<dobjectCount; i++)
 					{
-						tempSum += 1.1 / (1.0 + McMath::fastExp(-10.0 * (dobjects[i].get_strain(type) / consistentTopStrain - 0.88)));
+						tempSum += 1.1 / (1.0 + glm::fastExp(-10.0 * (dobjects[i].get_strain(type) / consistentTopStrain - 0.88)));
 					}
 
 					if (incremental)

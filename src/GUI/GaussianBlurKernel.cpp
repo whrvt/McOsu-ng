@@ -9,7 +9,7 @@
 
 #include "Engine.h"
 
-#include "McMath.h"
+#include <glm/gtx/fast_exponential.hpp>
 
 GaussianBlurKernel::GaussianBlurKernel(int kernelSize, float radius, int targetWidth, int targetHeight)
 {
@@ -51,7 +51,7 @@ void GaussianBlurKernel::build()
 	// now set the real values
 	for (int i=0; i<center; i++)
     {
-        result = McMath::fastExp( -(i*i)/(double)(2 * _sigma*_sigma) ) / sigmaRoot;
+        result = glm::fastExp( -(i*i)/(double)(2 * _sigma*_sigma) ) / sigmaRoot;
         m_kernel[center+i] = m_kernel[center-i] = (float)result;
         sum += result;
         if (i != 0)

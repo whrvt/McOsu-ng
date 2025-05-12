@@ -173,7 +173,6 @@ McOsu_ng_SOURCES = \
 	src/GUI/Windows/VisualProfiler.cpp \
 	src/Util/MD5.cpp \
 	src/Util/Matrices.cpp \
-	src/Util/McMath.cpp \
 	src/Util/Quaternion.cpp \
 	src/Util/Rect.cpp \
 	src/Util/UString.cpp \

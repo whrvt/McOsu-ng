@@ -109,9 +109,6 @@ Engine::Engine(Environment *environment, const char *args)
 	// custom
 	m_bDrawing = false;
 
-	// math
-	m_math = new McMath();
-
 	// initialize all engine subsystems (the order does matter!)
 	debugLog("\nEngine: Initializing subsystems ...\n");
 	{
@@ -210,9 +207,6 @@ Engine::~Engine()
 
 	debugLog("Engine: Freeing Vulkan...\n");
 	SAFE_DELETE(m_vulkan);
-
-	debugLog("Engine: Freeing math...\n");
-	SAFE_DELETE(m_math);
 
 	debugLog("Engine: Goodbye.");
 
