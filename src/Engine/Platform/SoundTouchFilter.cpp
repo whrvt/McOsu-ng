@@ -116,6 +116,8 @@ SoundTouchFilterInstance::SoundTouchFilterInstance(SoundTouchFilter *aParent)
 			mChannels = mParent->mChannels;
 			mBaseSamplerate = mParent->mBaseSamplerate;
 			mFlags = mParent->mFlags;
+			mSetRelativePlaySpeed = mParent->mSpeedFactor;
+			mOverallRelativePlaySpeed = mParent->mSpeedFactor;
 
 			ST_DEBUG_LOG("SoundTouchFilterInstance: Creating with %d channels at %f Hz\n", mChannels, mBaseSamplerate);
 
@@ -264,6 +266,8 @@ unsigned int SoundTouchFilterInstance::getAudio(float *aBuffer, unsigned int aSa
 		mSoundTouch->setPitch(mParent->mPitchFactor);
 		lastSpeed = mParent->mSpeedFactor;
 		lastPitch = mParent->mPitchFactor;
+		mSetRelativePlaySpeed = mParent->mSpeedFactor;
+		mOverallRelativePlaySpeed = mParent->mSpeedFactor;
 	}
 
 	unsigned int samplesInSoundTouch = mSoundTouch->numSamples();
@@ -363,19 +367,11 @@ unsigned int SoundTouchFilterInstance::getAudio(float *aBuffer, unsigned int aSa
 			}
 		}
 
-		// this is the logic for updating the SoLoud source playback position/length at the true playback rate, so we can just
-		// call wav->getLength etc. instead of manually compensating shit post facto
-		// a small downside is that the playback position is slightly unstable due to unpredictable buffer fill/drain rates and processing delays,
-		// but the interpolation in getLatencyMS should make up for most of that.
+		// track total samples processed (just for debugging)
 		if (samplesReceived > 0)
 		{
 			const float samplesInSeconds = (static_cast<float>(samplesReceived) / mBaseSamplerate) / static_cast<float>(mChannels);
 
-			// stream time and position
-			mStreamTime += samplesInSeconds;
-			mStreamPosition += samplesInSeconds;
-
-			// track total samples processed (just for debugging)
 			mTotalSamplesProcessed += samplesReceived;
 
 			if (logThisCall)
