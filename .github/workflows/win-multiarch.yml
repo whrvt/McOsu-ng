@@ -1,4 +1,4 @@
-name: win-x64
+name: win-multiarch
 on:
   push:
     branches:
@@ -8,32 +8,40 @@ jobs:
   build:
     runs-on: ubuntu-latest
     container: archlinux:latest
+    strategy:
+      matrix:
+        arch: [x64, x32]
+        include:
+          - arch: x64
+            host: x86_64-w64-mingw32
+          - arch: x32
+            host: i686-w64-mingw32
     defaults:
       run:
         working-directory: .
-
+  
     steps:
       - uses: actions/checkout@v4
-          
+      
       - name: Installing dependencies
         run: |
           echo -e "[multilib]\nInclude = /etc/pacman.d/mirrorlist" >> /etc/pacman.conf
           pacman -Syu --noconfirm base-devel libx11 libxi glu \
-                      glew libjpeg-turbo libglvnd freetype2 sdl3 zlib wget \
-                      cmake meson nasm git autoconf automake libtool autoconf-archive \
-                      mingw-w64-gcc
+            glew libjpeg-turbo libglvnd freetype2 sdl3 zlib wget \
+            cmake meson nasm git autoconf automake libtool autoconf-archive \
+            mingw-w64-gcc
           useradd user -G wheel && echo "user ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
           chown -R user: .
           chown -R user: . /tmp
           cd ..
-      
+          
       - name: Building McOsu-ng
         run: |
           autoreconf
-          ./configure --disable-system-deps --enable-static --disable-native --host=x86_64-w64-mingw32
+          ./configure --disable-system-deps --enable-static --disable-native --host=${{ matrix.host }}
           make -j$(nproc) install
-      
+          
       - uses: actions/upload-artifact@v4
         with:
-          name: mcosu-ng-win-x64
+          name: mcosu-ng-win-${{ matrix.arch }}
           path: ./dist
