@@ -201,9 +201,7 @@ SoLoud::SoundTouchFilter *SoLoudSound::getOrCreateFilter()
 		m_filter->setPitchFactor(m_pitch);
 
 		if (debug_snd.getBool())
-		{
 			debugLog("SoLoudSound: Created SoundTouch filter for %s with speed=%f, pitch=%f\n", m_sFilePath.toUtf8(), m_speed, m_pitch);
-		}
 	}
 
 	return m_filter;
@@ -233,15 +231,13 @@ void SoLoudSound::setPosition(double percent)
 
 	// reset position interp vars
 	m_fLastRawSoLoudPosition = positionInSeconds * 1000.0;
-	m_fLastSoLoudPositionTime = ::engine->getTime();
+	m_fLastSoLoudPositionTime = Timing::getTimeReal();
 	m_fSoLoudPositionRate = 1000.0 * getSpeed();
 
 	// seek it
 	SoLoudSoundEngine *soloudEngine = getSoLoudEngine();
 	if (soloudEngine && m_handle != 0)
-	{
 		soloudEngine->seekSound(m_handle, positionInSeconds);
-	}
 }
 
 void SoLoudSound::setPositionMS(unsigned long ms, bool internal)
@@ -258,15 +254,13 @@ void SoLoudSound::setPositionMS(unsigned long ms, bool internal)
 
 	// reset position interp vars
 	m_fLastRawSoLoudPosition = ms;
-	m_fLastSoLoudPositionTime = ::engine->getTime();
+	m_fLastSoLoudPositionTime = Timing::getTimeReal();
 	m_fSoLoudPositionRate = 1000.0 * getSpeed();
 
 	// seek it
 	SoLoudSoundEngine *soloudEngine = getSoLoudEngine();
 	if (soloudEngine && m_handle != 0)
-	{
 		soloudEngine->seekSound(m_handle, positionInSeconds);
-	}
 }
 
 void SoLoudSound::setVolume(float volume)
@@ -279,11 +273,9 @@ void SoLoudSound::setVolume(float volume)
 	// apply to active voice if not overlayable
 	if (!m_bIsOverlayable && m_handle != 0)
 	{
-		SoLoudSoundEngine *engine = getSoLoudEngine();
-		if (engine)
-		{
-			engine->setVolumeSound(m_handle, m_fVolume);
-		}
+		SoLoudSoundEngine *soloudEngine = getSoLoudEngine();
+		if (soloudEngine)
+			soloudEngine->setVolumeSound(m_handle, m_fVolume);
 	}
 }
 
@@ -310,21 +302,19 @@ void SoLoudSound::setSpeed(float speed)
 			// thankfully it's not that heavy
 			double pos = getPosition();
 
-			SoLoudSoundEngine *engine = getSoLoudEngine();
-			if (engine)
+			SoLoudSoundEngine *soloudEngine = getSoLoudEngine();
+			if (soloudEngine)
 			{
-				engine->stop(this);
+				soloudEngine->stop(this);
 
 				// this will apply the new parameters
-				engine->play(this, 0.0f, m_pitch);
+				soloudEngine->play(this, 0.0f, m_pitch);
 
 				// restore position
 				setPosition(pos);
 
 				if (debug_snd.getBool())
-				{
 					debugLog("SoLoudSound: Restarted playback after speed change for %s: speed=%f\n", m_sFilePath.toUtf8(), m_speed);
-				}
 			}
 		}
 	}
@@ -349,19 +339,17 @@ void SoLoudSound::setPitch(float pitch)
 			// as above, need to restart playback
 			double pos = getPosition();
 
-			SoLoudSoundEngine *engine = getSoLoudEngine();
-			if (engine)
+			SoLoudSoundEngine *soloudEngine = getSoLoudEngine();
+			if (soloudEngine)
 			{
-				engine->stop(this);
+				soloudEngine->stop(this);
 
-				engine->play(this, 0.0f, pitch);
+				soloudEngine->play(this, 0.0f, pitch);
 
 				setPosition(pos);
 
 				if (debug_snd.getBool())
-				{
 					debugLog("SoLoudSound: Restarted playback after pitch change for %s: pitch=%f\n", m_sFilePath.toUtf8(), m_pitch);
-				}
 			}
 		}
 	}
@@ -395,9 +383,7 @@ void SoLoudSound::setPan(float pan)
 	// apply to the active voice
 	SoLoudSoundEngine *engine = getSoLoudEngine();
 	if (engine && m_handle != 0)
-	{
 		engine->setPanSound(m_handle, pan);
-	}
 }
 
 void SoLoudSound::setLoop(bool loop)
@@ -413,9 +399,7 @@ void SoLoudSound::setLoop(bool loop)
 	// apply to the active voice
 	SoLoudSoundEngine *engine = getSoLoudEngine();
 	if (engine && m_handle != 0)
-	{
 		engine->setLoopingSound(m_handle, loop);
-	}
 }
 
 float SoLoudSound::getPosition()
@@ -427,22 +411,16 @@ float SoLoudSound::getPosition()
 	float positionInSeconds = 0.0f;
 	SoLoudSoundEngine *engine = getSoLoudEngine();
 	if (engine && m_handle != 0)
-	{
 		positionInSeconds = engine->getStreamPositionSound(m_handle);
-	}
 
 	// get source length
-	float sourceLengthInSeconds = 0.0f;
+	double sourceLengthInSeconds = 0.0;
 	if (m_bStream && asWavStream())
-	{
 		sourceLengthInSeconds = asWavStream()->getLength();
-	}
 	else if (!m_bStream && asWav())
-	{
 		sourceLengthInSeconds = asWav()->getLength();
-	}
 
-	if (sourceLengthInSeconds <= 0.0f)
+	if (sourceLengthInSeconds <= 0.0)
 		return 0.0f;
 
 	// return relative position
@@ -459,11 +437,9 @@ unsigned long SoLoudSound::getPositionMS()
 	double rawPositionInSeconds = 0.0;
 	SoLoudSoundEngine *soloudEngine = getSoLoudEngine();
 	if (soloudEngine && m_handle != 0)
-	{
 		rawPositionInSeconds = soloudEngine->getStreamPositionSound(m_handle);
-	}
 
-	const double currentTime = ::engine->getTime();
+	const double currentTime = Timing::getTimeReal();
 	const double rawPositionMS = rawPositionInSeconds * 1000.0;
 
 	// if this is our first reading or if we're not playing, just use the raw value
@@ -570,13 +546,9 @@ unsigned long SoLoudSound::getLengthMS()
 	// get the base length from the source
 	double sourceLengthInSeconds = 0.0;
 	if (m_bStream && asWavStream())
-	{
 		sourceLengthInSeconds = asWavStream()->getLength();
-	}
 	else if (!m_bStream && asWav())
-	{
 		sourceLengthInSeconds = asWav()->getLength();
-	}
 
 	const double lengthInMilliSeconds = sourceLengthInSeconds * 1000.0;
 	return static_cast<unsigned long>(lengthInMilliSeconds);
@@ -612,9 +584,7 @@ float SoLoudSound::getFrequency()
 	{
 		float currentFreq = engine->getSampleRateSound(m_handle);
 		if (currentFreq > 0)
-		{
 			m_frequency = currentFreq;
-		}
 	}
 
 	return m_frequency;
