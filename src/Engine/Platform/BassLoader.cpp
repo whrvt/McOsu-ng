@@ -65,6 +65,7 @@ BASS_Apply3D_t BASS_Apply3D = nullptr;
 BASS_StreamFree_t BASS_StreamFree = nullptr;
 
 // BASS_FX
+BASS_FX_GetVersion_t BASS_FX_GetVersion = nullptr;
 BASS_FX_TempoCreate_t BASS_FX_TempoCreate = nullptr;
 
 #ifdef MCENGINE_FEATURE_BASS_WASAPI
@@ -97,14 +98,26 @@ bool init()
 	// just make sure we don't load more than once
 	cleanup();
 
-	// BASS
-	if (!(s_bassLib = SDL_LoadObject(BASS_LIB_NAME)) && !(s_bassLib = SDL_LoadObject(std::format("lib/{}", BASS_LIB_NAME).c_str())))
+	// make sure we load the right version
+	for (auto path : {std::string(BASS_LIB_NAME), std::format("lib{}{}", Env::cfg(OS::WINDOWS) ? "\\" : "/", BASS_LIB_NAME)})
+	{
+		if (!(s_bassLib = SDL_LoadObject(path.c_str())) || !(BASS_GetVersion = loadFunction<BASS_GetVersion_t>(s_bassLib, "BASS_GetVersion")))
+		{
+			s_bassLib = nullptr;
+			continue;
+		}
+		if (BASS_GetVersion() == BASSVERSION_REAL)
+			break;
+		debugLog("BassLoader: version mismatch for %s (expected %x, got %x)\n", path.c_str(), BASSVERSION_REAL, BASS_GetVersion());
+		s_bassLib = nullptr;
+		BASS_GetVersion = nullptr;
+	}
+	if (!s_bassLib)
 	{
 		debugLog("BassLoader: Failed to load BASS library: %s\n", SDL_GetError());
 		return false;
 	}
 
-	BASS_GetVersion = loadFunction<BASS_GetVersion_t>(s_bassLib, "BASS_GetVersion");
 	BASS_SetConfig = loadFunction<BASS_SetConfig_t>(s_bassLib, "BASS_SetConfig");
 	BASS_GetConfig = loadFunction<BASS_GetConfig_t>(s_bassLib, "BASS_GetConfig");
 	BASS_Init = loadFunction<BASS_Init_t>(s_bassLib, "BASS_Init");
@@ -133,7 +146,7 @@ bool init()
 	BASS_StreamFree = loadFunction<BASS_StreamFree_t>(s_bassLib, "BASS_StreamFree");
 
 	// quick sanity check
-	if (!BASS_GetVersion || !BASS_Init || !BASS_Free || !BASS_ErrorGetCode)
+	if (!BASS_Init || !BASS_Free || !BASS_ErrorGetCode)
 	{
 		debugLog("BassLoader: Failed to load essential BASS functions\n");
 		cleanup();
@@ -141,10 +154,23 @@ bool init()
 	}
 
 	// BASS_FX
-	if (!(s_bassFxLib = SDL_LoadObject(BASS_FX_LIB_NAME)) && !(s_bassFxLib = SDL_LoadObject(std::format("lib/{}", BASS_FX_LIB_NAME).c_str())))
+	// make sure we load the right version
+	for (auto path : {std::string(BASS_FX_LIB_NAME), std::format("lib{}{}", Env::cfg(OS::WINDOWS) ? "\\" : "/", BASS_FX_LIB_NAME)})
+	{
+		if (!(s_bassFxLib = SDL_LoadObject(path.c_str())) || !(BASS_FX_GetVersion = loadFunction<BASS_FX_GetVersion_t>(s_bassFxLib, "BASS_FX_GetVersion")))
+		{
+			s_bassFxLib = nullptr;
+			continue;
+		}
+		if (BASS_FX_GetVersion() == BASSFXVERSION_REAL)
+			break;
+		debugLog("BassLoader: version mismatch for %s (expected %x, got %x)\n", path.c_str(), BASSFXVERSION_REAL, BASS_FX_GetVersion());
+		s_bassFxLib = nullptr;
+		BASS_FX_GetVersion = nullptr;
+	}
+	if (!s_bassFxLib)
 	{
 		debugLog("BassLoader: Failed to load BASS_FX library: %s\n", SDL_GetError());
-		cleanup();
 		return false;
 	}
 
@@ -252,6 +278,8 @@ void cleanup()
 	BASS_Set3DPosition = nullptr;
 	BASS_Apply3D = nullptr;
 	BASS_StreamFree = nullptr;
+
+	BASS_FX_GetVersion = nullptr;
 	BASS_FX_TempoCreate = nullptr;
 
 #ifdef MCENGINE_FEATURE_BASS_WASAPI

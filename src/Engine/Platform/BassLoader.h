@@ -42,6 +42,17 @@ extern "C"
 #include <bassmix.h>
 #include <basswasapi.h>
 #endif
+
+#ifdef MCENGINE_PLATFORM_WINDOWS
+#define BASSVERSION_REAL 0x2041129
+#define BASSFXVERSION_REAL 0x2040c0e
+#elif defined(MCENGINE_PLATFORM_LINUX)
+#define BASSVERSION_REAL 0x2041118 // FIXME: how tf am i supposed to get this ahead of time?
+#define BASSFXVERSION_REAL 0x2040c0f
+#else
+#error "bass unsupported for MacOS currently"
+#endif
+
 }
 }; // namespace Bass_EXTERN
 
@@ -116,6 +127,7 @@ using BASS_Apply3D_t = decltype(&Bass_EXTERN::BASS_Apply3D);
 using BASS_StreamFree_t = decltype(&Bass_EXTERN::BASS_StreamFree);
 
 // BASS_FX
+using BASS_FX_GetVersion_t = decltype(&Bass_EXTERN::BASS_FX_GetVersion);
 using BASS_FX_TempoCreate_t = decltype(&Bass_EXTERN::BASS_FX_TempoCreate);
 
 #ifdef MCENGINE_FEATURE_BASS_WASAPI
@@ -165,6 +177,7 @@ extern BASS_Apply3D_t BASS_Apply3D;
 extern BASS_StreamFree_t BASS_StreamFree;
 
 // BASS_FX
+extern BASS_FX_GetVersion_t BASS_FX_GetVersion;
 extern BASS_FX_TempoCreate_t BASS_FX_TempoCreate;
 
 #ifdef MCENGINE_FEATURE_BASS_WASAPI
