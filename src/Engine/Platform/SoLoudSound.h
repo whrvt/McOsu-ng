@@ -31,7 +31,7 @@ public:
 
 	// Sound interface implementation
 	void setPosition(double percent) override;
-	void setPositionMS(unsigned long ms, bool internal) override;
+	void setPositionMS(unsigned long ms, bool internal = false) override;
 	void setVolume(float volume) override;
 	void setSpeed(float speed) override;
 	void setPitch(float pitch) override;
@@ -40,8 +40,8 @@ public:
 	void setLoop(bool loop) override;
 
 	SOUNDHANDLE getHandle() override;
-	constexpr SoundType* getSound() override {return this;}
-	[[nodiscard]] constexpr const SoundType* getSound() const override {return this;}
+	constexpr SoundType *getSound() override { return this; }
+	[[nodiscard]] constexpr const SoundType *getSound() const override { return this; }
 	float getPosition() override;
 	unsigned long getPositionMS() override;
 	unsigned long getLengthMS() override;
@@ -60,7 +60,7 @@ private:
 	void destroy() override;
 
 	// get the handle to the SoLoud engine instance
-	constexpr inline SoLoudSoundEngine* getSoLoudEngine() {return engine->getSound()->getSndEngine();}
+	constexpr inline SoLoudSoundEngine *getSoLoudEngine() { return engine->getSound()->getSndEngine(); }
 
 	// similar idea to the ugly "m_MixChunkOrMixMusic" casting thing in the SDL_mixer implementation
 	// WavStreams are for beatmap audio, streamed from disk, Wavs are for other (shorter) audio samples, loaded entirely into memory
@@ -70,6 +70,20 @@ private:
 	// pitch/tempo filter management methods
 	SoLoud::SoundTouchFilter *getOrCreateFilter();
 	bool updateFilterParameters();
+	[[nodiscard]] bool isUsingRateChange() const;
+	[[nodiscard]] double convertToOriginalTimeline(double enginePosition) const;
+	[[nodiscard]] double convertFromOriginalTimeline(double originalPosition) const;
+	double getActualAudioPositionInSeconds() // TODO: refactor
+	{
+		if (!m_bReady || !m_audioSource)
+			return 0.0;
+
+		SoLoudSoundEngine *soloudEngine = getSoLoudEngine();
+		if (soloudEngine && m_handle != 0)
+			return soloudEngine->getStreamPositionSound(m_handle);
+
+		return 0.0;
+	}
 
 	// current playback parameters
 	float m_speed;     // speed factor (1.0 = normal)
@@ -94,6 +108,7 @@ private:
 };
 
 #else
-class SoLoudSound : public Sound{};
+class SoLoudSound : public Sound
+{};
 #endif
 #endif

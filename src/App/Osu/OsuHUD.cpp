@@ -7,8 +7,6 @@
 
 #include "OsuHUD.h"
 
-#include <utility>
-
 #include "Engine.h"
 #include "Environment.h"
 #include "ConVar.h"
@@ -48,6 +46,8 @@
 #include "DirectX11Interface.h"
 #include "OpenGLES2Interface.h"
 #include "OpenGLES32Interface.h"
+
+#include <utility>
 
 ConVar osu_automatic_cursor_size("osu_automatic_cursor_size", false, FCVAR_NONE);
 
@@ -1619,7 +1619,7 @@ void OsuHUD::drawSectionPass(Graphics *g, float alpha)
 
 		g->setColor(0xffffffff);
 		g->setAlpha(alpha);
-		m_osu->getSkin()->getSectionPassImage()->draw(g, m_osu->getScreenSize() / 2);
+		m_osu->getSkin()->getSectionPassImage()->draw(g, m_osu->getScreenSize() / 2.0f);
 
 		if (m_osu->isInVRDraw())
 		{
@@ -1640,7 +1640,7 @@ void OsuHUD::drawSectionFail(Graphics *g, float alpha)
 
 		g->setColor(0xffffffff);
 		g->setAlpha(alpha);
-		m_osu->getSkin()->getSectionFailImage()->draw(g, m_osu->getScreenSize() / 2);
+		m_osu->getSkin()->getSectionFailImage()->draw(g, m_osu->getScreenSize() / 2.0f);
 
 		if (m_osu->isInVRDraw())
 		{
@@ -1828,7 +1828,7 @@ void OsuHUD::drawSkip(Graphics *g)
 	const float scale = osu_hud_scale.getFloat();
 
 	g->setColor(0xffffffff);
-	m_osu->getSkin()->getPlaySkip()->draw(g, m_osu->getScreenSize() - (m_osu->getSkin()->getPlaySkip()->getSize()/2)*scale, osu_hud_scale.getFloat());
+	m_osu->getSkin()->getPlaySkip()->draw(g, m_osu->getScreenSize() - (m_osu->getSkin()->getPlaySkip()->getSize()/2.0f)*scale, osu_hud_scale.getFloat());
 }
 
 void OsuHUD::drawWarningArrow(Graphics *g, Vector2 pos, bool flipVertically, bool originLeft)
@@ -2230,7 +2230,7 @@ void OsuHUD::drawContinue(Graphics *g, Vector2 cursor, float hitcircleDiameter)
 
 	// bleh
 	if (cursor.x < cursorImage->getWidth() || cursor.y < cursorImage->getHeight() || cursor.x > m_osu->getScreenWidth()-cursorImage->getWidth() || cursor.y > m_osu->getScreenHeight()-cursorImage->getHeight())
-		cursor = m_osu->getScreenSize()/2;
+		cursor = m_osu->getScreenSize()/2.0f;
 
 	// base
 	g->setColor(rgb(255, 153, 51));
@@ -2823,7 +2823,7 @@ void OsuHUD::drawTargetHeatmap(Graphics *g, float hitcircleDiameter)
 		g->setColor(color);
 		g->setAlpha(std::clamp<float>((m_targets[i].time - engine->getTime())/3.5f, 0.0f, 1.0f));
 
-		const float theta = deg2rad(m_targets[i].angle);
+		const float theta = glm::radians(m_targets[i].angle);
 		const float cs = std::cos(theta);
 		const float sn = std::sin(theta);
 
@@ -3402,10 +3402,10 @@ void OsuHUD::addCursorTrailPosition(std::vector<CURSORTRAIL> &trail, Vector2 pos
 				for (int i=std::clamp<int>(numMidPoints-osu_cursor_trail_max_size.getInt()/2, 0, osu_cursor_trail_max_size.getInt()); i<numMidPoints; i++) // limit to half the maximum new mid points per frame
 				{
 					CURSORTRAIL mid;
-					mid.pos = prevPos + step*(i+1);
-					mid.time = prevTime + timeStep*(i+1);
+					mid.pos = prevPos + step*(i+1.0f);
+					mid.time = prevTime + timeStep*(i+1.0f);
 					mid.alpha = 1.0f;
-					mid.scale = prevScale + scaleStep*(i+1);
+					mid.scale = prevScale + scaleStep*(i+1.0f);
 					trail.push_back(mid);
 				}
 			}

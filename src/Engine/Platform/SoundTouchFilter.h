@@ -63,15 +63,15 @@ class SoundTouchFilterInstance : public AudioSourceInstance
 {
 public:
 	SoundTouchFilterInstance(SoundTouchFilter *aParent);
-	virtual ~SoundTouchFilterInstance();
+	~SoundTouchFilterInstance() override;
 
 	// core audio processing method
-	virtual unsigned int getAudio(float *aBuffer, unsigned int aSamplesToRead, unsigned int aBufferSize) override;
+	unsigned int getAudio(float *aBuffer, unsigned int aSamplesToRead, unsigned int aBufferSize) override;
 
 	// playback state management
-	virtual bool hasEnded() override;
-	virtual result seek(time aSeconds, float *mScratch, unsigned int mScratchSize) override;
-	virtual unsigned int rewind() override;
+	bool hasEnded() override;
+	result seek(time aSeconds, float *mScratch, unsigned int mScratchSize) override;
+	unsigned int rewind() override;
 
 protected:
 	// buffer management

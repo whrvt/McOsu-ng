@@ -1907,7 +1907,7 @@ void OpenVRInterface::toggleFakeCameraMouseCapture()
 	{
 		engine->getEnvironment()->setCursorClip(false, McRect());
 		engine->getMouse()->setCursorVisible(true);
-		engine->getMouse()->setPos(engine->getScreenSize()/2);
+		engine->getMouse()->setPos(engine->getScreenSize()/2.0f);
 
 		saveFakeCamera();
 	}

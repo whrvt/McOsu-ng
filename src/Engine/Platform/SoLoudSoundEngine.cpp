@@ -75,7 +75,7 @@ void SoLoudSoundEngine::update()
 	float checkInterval = snd_change_check_interval.getFloat();
 	if (checkInterval > 0.0f)
 	{
-		float currentTime = engine->getTime();
+		auto currentTime = Timing::getTimeReal<float>();
 		if (currentTime - m_fPrevOutputDeviceChangeCheckTime > checkInterval)
 		{
 			m_fPrevOutputDeviceChangeCheckTime = currentTime;
@@ -112,7 +112,7 @@ bool SoLoudSoundEngine::playSound(SoLoudSound *soloudSound, float pan, float pit
 	pitch = std::clamp<float>(pitch, 0.0f, 2.0f);
 
 	// check if we should allow playing this frame (for overlayable sounds)
-	const bool allowPlayFrame = !soloudSound->isOverlayable() || !snd_restrict_play_frame.getBool() || engine->getTime() > soloudSound->getLastPlayTime();
+	const bool allowPlayFrame = !soloudSound->isOverlayable() || !snd_restrict_play_frame.getBool() || Timing::getTimeReal() > soloudSound->getLastPlayTime();
 	if (!allowPlayFrame)
 		return false;
 
@@ -189,7 +189,7 @@ bool SoLoudSoundEngine::playSound(SoLoudSound *soloudSound, float pan, float pit
 	{
 		// store the handle and mark playback time
 		soloudSound->m_handle = handle;
-		soloudSound->setLastPlayTime(engine->getTime());
+		soloudSound->setLastPlayTime(Timing::getTimeReal());
 
 		// get the actual sample rate for the file from SoLoud
 		float actualFreq = m_engine.getSamplerate(handle);
@@ -252,9 +252,7 @@ unsigned int SoLoudSoundEngine::playDirectSound(SoLoudSound *soloudSound, float 
 		// set relative play speed (affects both pitch and speed)
 		// (again, TODO, i don't think this is reachable currently)
 		if (pitch != 1.0f)
-		{
 			setRelativePlaySpeedSound(handle, pitch);
-		}
 	}
 
 	return handle;
@@ -517,7 +515,7 @@ void SoLoudSoundEngine::setLoopingSound(unsigned int handle, bool loop)
 float SoLoudSoundEngine::getStreamPositionSound(unsigned int handle)
 {
 	if (m_bReady && handle != 0)
-		return m_engine.getStreamPosition(handle);
+		return static_cast<float>(m_engine.getStreamPosition(handle));
 	return 0.0f;
 }
 

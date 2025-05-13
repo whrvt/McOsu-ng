@@ -53,19 +53,6 @@
 
 constexpr const auto PI = std::numbers::pi;
 constexpr const auto PIOVER180 = (PI/180.0f);
-constexpr const auto ONE80OVERPI = (180.0f/PI);
-
-template <class T>
-constexpr forceinline float deg2rad(T deg)
-{
-	return deg * PIOVER180;
-}
-
-template <class T>
-constexpr forceinline float rad2deg(T rad)
-{
-	return rad * ONE80OVERPI;
-}
 
 constexpr forceinline bool isInt(float f)
 {
@@ -103,5 +90,9 @@ template <typename T>
 #include "Vectors.h"
 #include "Matrices.h"
 #include "Rect.h"
+
+// EXTERNAL INCLUDES
+
+#include <glm/trigonometric.hpp> // for glm::radians/glm::degrees
 
 #endif

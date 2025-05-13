@@ -94,7 +94,7 @@ UString UString::format(const char *utf8format, ...)
 	{
 		if (bufSize >= 1024 * 1024)
 		{
-			printf("WARNING: Potential vswprintf(%s, ...) infinite loop, stopping ...\n", utf8format);
+			fprintf(stderr, "WARNING: Potential vswprintf(%s, ...) infinite loop, stopping ...\n", utf8format);
 			return formatted;
 		}
 

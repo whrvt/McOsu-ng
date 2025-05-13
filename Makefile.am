@@ -320,6 +320,40 @@ $(DEPS_PREFIX)/libjpeg.built:
 	$(MKDIR_P) $(DEPS_PREFIX) && touch $@
 endif
 
+$(DEPS_CACHE)/glm-$(GLM_VERSION).source:
+	$(MKDIR_P) $(DEPS_CACHE)
+	$(WGET) -qO $(DEPS_CACHE)/glm-$(GLM_VERSION).tar.gz "https://github.com/g-truc/glm/archive/refs/tags/$(GLM_VERSION).tar.gz" && \
+	touch $@
+
+if BUILD_GLM
+GLM_CFLAGS += -I$(DEPS_PREFIX)/include
+$(DEPS_PREFIX)/glm.built: $(DEPS_CACHE)/glm-$(GLM_VERSION).source
+	rm -rf $(DEPS_PREFIX)/glm
+	$(MKDIR_P) $(DEPS_PREFIX)/glm/build $(DEPS_PREFIX)/include
+	$(TAR) xf $(DEPS_CACHE)/glm-$(GLM_VERSION).tar.gz -C $(DEPS_PREFIX)/glm --strip-components=1 && \
+	cd $(DEPS_PREFIX)/glm && \
+	PKG_CONFIG="$(PKG_CONFIG)" \
+	LDFLAGS="$(LDFLAGS)" cmake -S . -B build -G Ninja \
+		-D GLM_BUILD_TESTS=OFF \
+		-D GLM_BUILD_LIBRARY=OFF \
+		-D BUILD_SHARED_LIBS=OFF \
+		-D BUILD_STATIC_LIBS=OFF \
+		-D GLM_ENABLE_CXX_20=ON \
+		-D GLM_ENABLE_LANG_EXTENSIONS=ON \
+		-D CMAKE_SYSTEM_NAME="$(CMAKE_SYSTEM_NAME)" \
+		-D CMAKE_INSTALL_PREFIX="$(DEPS_PREFIX)" \
+		-D CMAKE_CXX_COMPILER="$(CXX)" \
+		-D CMAKE_CXX_FLAGS="$(CXXFLAGS)" \
+		-D CMAKE_SYSTEM_PROCESSOR="$(host_cpu)" && \
+	cmake --build build && \
+	cmake --install build
+	test -f $(DEPS_PREFIX)/include/glm/glm.hpp
+	touch $@
+else
+$(DEPS_PREFIX)/glm.built:
+	$(MKDIR_P) $(DEPS_PREFIX) && touch $@
+endif
+
 $(DEPS_CACHE)/libpng-$(LIBPNG_VERSION).source:
 	$(MKDIR_P) $(DEPS_CACHE)
 	$(WGET) -qO $(DEPS_CACHE)/libpng-$(LIBPNG_VERSION).tar.gz "https://github.com/pnggroup/libpng/archive/refs/tags/v$(LIBPNG_VERSION).tar.gz" && \
@@ -439,7 +473,7 @@ $(DEPS_PREFIX)/FREETYPE2.built:
 endif
 
 BUILT_SOURCES := $(DEPS_PREFIX)/mimalloc.built $(DEPS_PREFIX)/SDL3.built $(DEPS_PREFIX)/SDL3_mixer.built $(DEPS_PREFIX)/GLEW.built $(DEPS_PREFIX)/libjpeg.built \
-	$(DEPS_PREFIX)/libpng.built $(DEPS_PREFIX)/bzip2.built $(DEPS_PREFIX)/zlib.built $(DEPS_PREFIX)/FREETYPE2.built $(DEPS_PREFIX)/SoLoud.built $(DEPS_PREFIX)/SoundTouch.built
+	$(DEPS_PREFIX)/libpng.built $(DEPS_PREFIX)/bzip2.built $(DEPS_PREFIX)/zlib.built $(DEPS_PREFIX)/FREETYPE2.built $(DEPS_PREFIX)/glm.built $(DEPS_PREFIX)/SoLoud.built $(DEPS_PREFIX)/SoundTouch.built
 
 # making sure deps are built before main compile (continued)
 $(McOsu_ng_OBJECTS): src/config.h $(BUILT_SOURCES)
@@ -464,6 +498,7 @@ McOsu_ng_CXXFLAGS := \
 	$(LIBPNG_CFLAGS) \
 	$(BZIP2_CFLAGS) \
 	$(LIBJPEG_CFLAGS) \
+	$(GLM_CFLAGS) \
 	$(ZLIB_CFLAGS)
 
 # Wl,--start-group with no --end-group is a stupid hack.

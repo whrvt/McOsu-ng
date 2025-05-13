@@ -52,7 +52,8 @@ ConVar osu_vr_draw_desktop_playfield("osu_vr_draw_desktop_playfield", true, FCVA
 ConVar osu_universal_offset("osu_universal_offset", 0.0f, FCVAR_NONE);
 ConVar osu_universal_offset_hardcoded("osu_universal_offset_hardcoded",
 										Env::cfg(AUD::WASAPI) ? -25.0f  :
-										Env::cfg(AUD::BASS)	  ?  15.0f  :
+										Env::cfg(AUD::BASS)	  ?
+											(Env::cfg(OS::WINDOWS) ? 15.0f : 0.0f) : // see https://github.com/ppy/osu/blob/6d8c457c81e40cf438c69a1e6c5f02347333dfc0/osu.Game/Beatmaps/FramedBeatmapClock.cs#L68
 										Env::cfg(AUD::SDL)	  ? -110.0f :
 										Env::cfg(AUD::SOLOUD) ? -20.0f  : 0.0f, FCVAR_NONE);
 ConVar osu_universal_offset_hardcoded_fallback_dsound("osu_universal_offset_hardcoded_fallback_dsound", -15.0f, FCVAR_NONE);
@@ -332,7 +333,7 @@ void OsuBeatmap::drawBackground(Graphics *g)
 		if (osu_draw_beatmap_background_image.getBool() && backgroundImage != NULL && (osu_background_dim.getFloat() < 1.0f || m_fBreakBackgroundFade > 0.0f))
 		{
 			const float scale = Osu::getImageScaleToFillResolution(backgroundImage, m_osu->getScreenSize());
-			const Vector2 centerTrans = (m_osu->getScreenSize()/2);
+			const Vector2 centerTrans = (m_osu->getScreenSize()/2.0f);
 
 			const float backgroundFadeDimMultiplier = 1.0f - (osu_background_dim.getFloat() - 0.3f);
 			const auto dim = (1.0f - osu_background_dim.getFloat()) + m_fBreakBackgroundFade*backgroundFadeDimMultiplier;

@@ -12,7 +12,7 @@
 #include "ConVar.h"
 #include "Engine.h"
 
-extern ConVar osu_universal_offset_hardcoded;
+extern ConVar osu_universal_offset_hardcoded; // TODO: literally just return a position with this offset instead of messing with convars
 ConVar snd_enable_auto_offset("snd_enable_auto_offset", true, FCVAR_NONE, "Control automatic offset calibration for SoLoud + rate change");
 
 #ifdef _DEBUG
@@ -116,6 +116,8 @@ SoundTouchFilterInstance::SoundTouchFilterInstance(SoundTouchFilter *aParent)
 			mChannels = mParent->mChannels;
 			mBaseSamplerate = mParent->mBaseSamplerate;
 			mFlags = mParent->mFlags;
+			mSetRelativePlaySpeed = mParent->mSpeedFactor;
+			mOverallRelativePlaySpeed = mParent->mSpeedFactor;
 
 			ST_DEBUG_LOG("SoundTouchFilterInstance: Creating with %d channels at %f Hz\n", mChannels, mBaseSamplerate);
 
@@ -129,10 +131,10 @@ SoundTouchFilterInstance::SoundTouchFilterInstance(SoundTouchFilter *aParent)
 				// quality settings pulled out of my ass, there is NO documentation for this library...
 				mSoundTouch->setSetting(SETTING_USE_AA_FILTER, 1);
 				mSoundTouch->setSetting(SETTING_AA_FILTER_LENGTH, 32);
-				mSoundTouch->setSetting(SETTING_USE_QUICKSEEK, 1);
+				mSoundTouch->setSetting(SETTING_USE_QUICKSEEK, 0);
 				mSoundTouch->setSetting(SETTING_SEQUENCE_MS, 30);  // wtf should these numbers be?
 				mSoundTouch->setSetting(SETTING_SEEKWINDOW_MS, 15);
-				mSoundTouch->setSetting(SETTING_OVERLAP_MS, 8);
+				mSoundTouch->setSetting(SETTING_OVERLAP_MS, 4);
 
 				// set the actual speed and pitch factors
 				mSoundTouch->setTempo(mParent->mSpeedFactor);
@@ -187,7 +189,7 @@ SoundTouchFilterInstance::SoundTouchFilterInstance(SoundTouchFilter *aParent)
 					ST_DEBUG_LOG("SoundTouch: Calculated universal offset = %.2f ms (latency: %.2f, buffer: %.2f)\n", totalOffset, latencyInMs,
 					             processingBufferDelay);
 
-					osu_universal_offset_hardcoded.setValue(totalOffset);
+					osu_universal_offset_hardcoded.setValue(osu_universal_offset_hardcoded.getDefaultFloat() + totalOffset);
 				}
 			}
 		}
@@ -196,7 +198,7 @@ SoundTouchFilterInstance::SoundTouchFilterInstance(SoundTouchFilter *aParent)
 
 SoundTouchFilterInstance::~SoundTouchFilterInstance()
 {
-	osu_universal_offset_hardcoded.setValue(static_cast<int>(osu_universal_offset_hardcoded.getDefaultFloat()));
+	osu_universal_offset_hardcoded.setValue(osu_universal_offset_hardcoded.getDefaultFloat());
 	delete[] mInterleavedBuffer;
 	delete[] mBuffer;
 	delete mSoundTouch;
@@ -264,6 +266,8 @@ unsigned int SoundTouchFilterInstance::getAudio(float *aBuffer, unsigned int aSa
 		mSoundTouch->setPitch(mParent->mPitchFactor);
 		lastSpeed = mParent->mSpeedFactor;
 		lastPitch = mParent->mPitchFactor;
+		mSetRelativePlaySpeed = mParent->mSpeedFactor;
+		mOverallRelativePlaySpeed = mParent->mSpeedFactor;
 	}
 
 	unsigned int samplesInSoundTouch = mSoundTouch->numSamples();
@@ -363,19 +367,11 @@ unsigned int SoundTouchFilterInstance::getAudio(float *aBuffer, unsigned int aSa
 			}
 		}
 
-		// this is the logic for updating the SoLoud source playback position/length at the true playback rate, so we can just
-		// call wav->getLength etc. instead of manually compensating shit post facto
-		// a small downside is that the playback position is slightly unstable due to unpredictable buffer fill/drain rates and processing delays,
-		// but the interpolation in getLatencyMS should make up for most of that.
+		// track total samples processed (just for debugging)
 		if (samplesReceived > 0)
 		{
-			float samplesInSeconds = ((float)samplesReceived / mBaseSamplerate) / mChannels;
+			const float samplesInSeconds = (static_cast<float>(samplesReceived) / mBaseSamplerate) / static_cast<float>(mChannels);
 
-			// stream time and position
-			mStreamTime += samplesInSeconds;
-			mStreamPosition += samplesInSeconds;
-
-			// track total samples processed (just for debugging)
 			mTotalSamplesProcessed += samplesReceived;
 
 			if (logThisCall)

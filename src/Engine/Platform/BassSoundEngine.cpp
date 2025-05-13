@@ -29,9 +29,10 @@ extern ConVar snd_change_check_interval;
 extern ConVar win_snd_fallback_dsound;
 
 // BASS-specific ConVars
-ConVar snd_updateperiod("snd_updateperiod", 10, FCVAR_NONE, "BASS_CONFIG_UPDATEPERIOD length in milliseconds");
-ConVar snd_dev_period("snd_dev_period", 10, FCVAR_NONE, "BASS_CONFIG_DEV_PERIOD length in milliseconds, or if negative then in samples");
-ConVar snd_dev_buffer("snd_dev_buffer", 30, FCVAR_NONE, "BASS_CONFIG_DEV_BUFFER length in milliseconds");
+ConVar snd_updateperiod("snd_updateperiod", 5, FCVAR_NONE, "BASS_CONFIG_UPDATEPERIOD length in milliseconds, minimum is 5");
+ConVar snd_buffer("snd_buffer", 100, FCVAR_NONE, "BASS_CONFIG_BUFFER length in milliseconds, minimum is 1 above snd_updateperiod");
+ConVar snd_dev_period("snd_dev_period", 5, FCVAR_NONE, "BASS_CONFIG_DEV_PERIOD length in milliseconds, or if negative then in samples");
+ConVar snd_dev_buffer("snd_dev_buffer", 10, FCVAR_NONE, "BASS_CONFIG_DEV_BUFFER length in milliseconds");
 
 #ifdef MCENGINE_FEATURE_BASS_WASAPI
 void _WIN_SND_WASAPI_BUFFER_SIZE_CHANGE(UString oldValue, UString newValue);
@@ -152,17 +153,18 @@ BassSoundEngine::BassSoundEngine() : SoundEngine()
 	}
 
 	// apply default global settings
-	BASS_SetConfig(BASS_CONFIG_BUFFER, 100);
-	BASS_SetConfig(BASS_CONFIG_DEV_BUFFER, 10); // NOTE: only used by new osu atm
+	BASS_SetConfig(BASS_CONFIG_BUFFER, static_cast<DWORD>(snd_buffer.getDefaultFloat()));
+	BASS_SetConfig(BASS_CONFIG_DEV_BUFFER, static_cast<DWORD>(snd_dev_buffer.getDefaultFloat())); // NOTE: only used by new osu atm
 	BASS_SetConfig(BASS_CONFIG_MP3_OLDGAPS,
 	               1); // NOTE: only used by osu atm (all beatmaps timed to non-iTunesSMPB + 529 sample deletion offsets on old dlls pre 2015)
 	BASS_SetConfig(BASS_CONFIG_DEV_NONSTOP,
 	               1); // NOTE: only used by osu atm (avoids lag/jitter in BASS_ChannelGetPosition() shortly after a BASS_ChannelPlay() after loading/silence)
 
-	BASS_SetConfig(BASS_CONFIG_UPDATEPERIOD, (Env::cfg(AUD::WASAPI) ? 0 : 5)); // NOTE: only used by osu atm
+	BASS_SetConfig(BASS_CONFIG_UPDATEPERIOD, (Env::cfg(AUD::WASAPI) ? 0 : static_cast<DWORD>(snd_updateperiod.getDefaultFloat()))); // NOTE: only used by osu atm
 	BASS_SetConfig(BASS_CONFIG_UPDATETHREADS, (Env::cfg(AUD::WASAPI) ? 0 : 1));
 
 	BASS_SetConfig(BASS_CONFIG_VISTA_TRUEPOS, 0); // NOTE: if set to 1, increases sample playback latency +10 ms
+	BASS_SetConfig(BASS_CONFIG_DEV_TIMEOUT, 0); // prevents playback from ever stopping due to device issues
 
 	// add default output device
 	m_iCurrentOutputDevice = -1;
@@ -634,21 +636,28 @@ bool BassSoundEngine::initializeOutputDevice(int id, bool force)
 	// allow users to override some defaults (but which may cause beatmap desyncs)
 	// we only want to set these if their values have been explicitly modified (to avoid sideeffects in the default case, and for my sanity)
 	{
-		if (snd_updateperiod.getFloat() != snd_updateperiod.getDefaultFloat())
-		{
-			BASS_SetConfig(BASS_CONFIG_UPDATEPERIOD, snd_updateperiod.getInt());
-			needsReinit = true;
-		}
-
 		if (snd_dev_buffer.getFloat() != snd_dev_buffer.getDefaultFloat())
 		{
 			BASS_SetConfig(BASS_CONFIG_DEV_BUFFER, snd_dev_buffer.getInt());
 			needsReinit = true;
 		}
-
 		if (snd_dev_period.getFloat() != snd_dev_period.getDefaultFloat())
 		{
 			BASS_SetConfig(BASS_CONFIG_DEV_PERIOD, snd_dev_period.getInt());
+			needsReinit = true;
+		}
+		if (snd_updateperiod.getFloat() != snd_updateperiod.getDefaultFloat())
+		{
+			const auto clamped = static_cast<DWORD>(std::clamp(snd_updateperiod.getFloat(), 5.0f, 100.0f));
+			BASS_SetConfig(BASS_CONFIG_UPDATEPERIOD, clamped);
+			snd_updateperiod.setValue(clamped);
+			needsReinit = true;
+		}
+		if (snd_buffer.getFloat() != snd_buffer.getDefaultFloat())
+		{
+			const auto clamped = static_cast<DWORD>(std::clamp(snd_buffer.getFloat(), snd_updateperiod.getFloat() + 1.0f, 5000.0f));
+			BASS_SetConfig(BASS_CONFIG_BUFFER, clamped);
+			snd_buffer.setValue(clamped);
 			needsReinit = true;
 		}
 	}

@@ -703,7 +703,7 @@ void Engine::debugLog_(const char *fmt, va_list args)
 	va_copy(ap2, args);
 
 	// write to console
-	int numChars = vprintf(fmt, args);
+	int numChars = vfprintf(stderr, fmt, args);
 
 	if (numChars < 1 || numChars > 65534)
 		goto cleanup;
@@ -736,7 +736,7 @@ void Engine::debugLog_(Color color, const char *fmt, va_list args)
 	va_copy(ap2, args);
 
 	// write to console
-	int numChars = vprintf(fmt, args);
+	int numChars = vfprintf(stderr, fmt, args);
 
 	if (numChars < 1 || numChars > 65534)
 		goto cleanup;

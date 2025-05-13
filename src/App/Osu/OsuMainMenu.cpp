@@ -1258,7 +1258,7 @@ void OsuMainMenu::update()
 
 	if (m_bInMainMenuRandomAnim && m_iMainMenuRandomAnimType == 1 && anim->isAnimating(&m_fMainMenuAnim))
 	{
-		Vector2 mouseDelta = (m_mainButton->getPos() + m_mainButton->getSize()/2) - engine->getMouse()->getPos();
+		Vector2 mouseDelta = (m_mainButton->getPos() + m_mainButton->getSize()/2.0f) - engine->getMouse()->getPos();
 		mouseDelta.x = std::clamp<float>(mouseDelta.x, -engine->getScreenSize().x/2, engine->getScreenSize().x/2);
 		mouseDelta.y = std::clamp<float>(mouseDelta.y, -engine->getScreenSize().y/2, engine->getScreenSize().y/2);
 		mouseDelta.x /= engine->getScreenSize().x;
@@ -1283,7 +1283,7 @@ void OsuMainMenu::update()
 		if (!m_bMainMenuAnimFriendScheduled)
 			m_fMainMenuAnimFriendPercent = 0.0f;
 
-		Vector2 mouseDelta = (m_mainButton->getPos() + m_mainButton->getSize()/2) - engine->getMouse()->getPos();
+		Vector2 mouseDelta = (m_mainButton->getPos() + m_mainButton->getSize()/2.0f) - engine->getMouse()->getPos();
 		mouseDelta.x = std::clamp<float>(mouseDelta.x, -engine->getScreenSize().x/2, engine->getScreenSize().x/2);
 		mouseDelta.y = std::clamp<float>(mouseDelta.y, -engine->getScreenSize().y/2, engine->getScreenSize().y/2);
 		mouseDelta.x /= engine->getScreenSize().x;
@@ -1643,7 +1643,7 @@ void OsuMainMenu::onMainMenuButtonPressed()
 	{
 		m_bInMainMenuRandomAnim = false;
 
-		Vector2 mouseDelta = (m_mainButton->getPos() + m_mainButton->getSize()/2) - engine->getMouse()->getPos();
+		Vector2 mouseDelta = (m_mainButton->getPos() + m_mainButton->getSize()/2.0f) - engine->getMouse()->getPos();
 		mouseDelta.x = std::clamp<float>(mouseDelta.x, -m_mainButton->getSize().x/2, m_mainButton->getSize().x/2);
 		mouseDelta.y = std::clamp<float>(mouseDelta.y, -m_mainButton->getSize().y/2, m_mainButton->getSize().y/2);
 		mouseDelta.x /= m_mainButton->getSize().x;

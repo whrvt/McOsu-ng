@@ -39,6 +39,8 @@ OsuChangelog::OsuChangelog(Osu *osu) : OsuScreenBackable(osu)
 	alpha3400.title = UString::format(PACKAGE_VERSION " (Build Date: %s, %s)", __DATE__, __TIME__); // (10.05.2025 - ?)
 	alpha3400.changes.emplace_back("- First " PACKAGE_NAME " test version bump");
 	alpha3400.changes.emplace_back("- Added osu! folder browse button to options menu");
+	alpha3400.changes.emplace_back("- Added \"snd_buffer\" ConVar to set BASS buffer size");
+	alpha3400.changes.emplace_back("- Changed default audio offset for BASS to match lazer (for non-Windows, add +15ms to your global offset)");
 	alpha3400.changes.emplace_back("- Many internal optimizations");
 	alpha3400.changes.emplace_back("- For more information see " PACKAGE_URL);
 	changelogs.push_back(alpha3400);

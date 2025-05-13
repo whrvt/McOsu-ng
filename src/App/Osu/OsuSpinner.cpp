@@ -493,10 +493,10 @@ void OsuSpinner::onHit()
 
 void OsuSpinner::rotate(float rad)
 {
-	m_fDrawRot += rad2deg(rad);
+	m_fDrawRot += glm::degrees(rad);
 
 	rad = std::abs(rad);
-	const float newRotations = m_fRotations + rad2deg(rad);
+	const float newRotations = m_fRotations + glm::degrees(rad);
 
 	// added one whole rotation
 	if (std::floor(newRotations/360.0f) > m_fRotations/360.0f)

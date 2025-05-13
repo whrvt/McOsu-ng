@@ -45,7 +45,7 @@ void OsuUISlider::draw(Graphics *g)
 		g->drawLine((int)(line2Start), (int)(m_vPos.y + m_vSize.y/2.0f + 1), (int)(line2End), (int)(m_vPos.y + m_vSize.y/2.0f + 1));
 
 	// draw sliding block
-	Vector2 blockCenter = m_vPos + m_vBlockPos + m_vBlockSize/2;
+	Vector2 blockCenter = m_vPos + m_vBlockPos + m_vBlockSize/2.0f;
 	Vector2 scale = Vector2(m_vBlockSize.x/img->getWidth(), m_vBlockSize.y/img->getHeight());
 
 	g->setColor(m_frameColor);

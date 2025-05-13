@@ -73,8 +73,8 @@ Environment::Environment()
 	m_bCursorClipped = false;
 	m_cursorType = CURSORTYPE::CURSOR_NORMAL;
 
-	m_vLastAbsMousePos = {};
-	m_vLastRelMousePos = {};
+	m_vLastAbsMousePos = Vector2{};
+	m_vLastRelMousePos = Vector2{};
 
 	m_sFpsMax = "60";
 	m_sFpsMaxBG = "30";
@@ -664,10 +664,10 @@ void Environment::setCursorVisible(bool visible)
 		if (m_bIsRawInput)
 		{
 			setRawInput(false);
-			setCursorPosition(getMousePos().nudge(getWindowSize() / 2, 1.0f)); // nudge it outwards
+			setCursorPosition(getMousePos().nudge(getWindowSize() / 2.0f, 1.0f)); // nudge it outwards
 		}
 		else                                                                                        // snap the OS cursor to virtual cursor position
-			setCursorPosition(m_engine->getMouse()->getRealPos().nudge(getWindowSize() / 2, 1.0f)); // nudge it outwards
+			setCursorPosition(m_engine->getMouse()->getRealPos().nudge(getWindowSize() / 2.0f, 1.0f)); // nudge it outwards
 		SDL_ShowCursor();
 	}
 	else

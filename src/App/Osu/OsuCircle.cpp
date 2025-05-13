@@ -938,7 +938,7 @@ void OsuCircle::update(long curPos)
 						if (result != OsuScore::HIT::HIT_NULL)
 						{
 							const float targetDelta = cursorDelta / (m_beatmap->getHitcircleDiameter()/2.0f);
-							const float targetAngle = rad2deg(atan2(m_beatmap->getCursorPos().y - pos.y, m_beatmap->getCursorPos().x - pos.x));
+							const float targetAngle = glm::degrees(atan2(m_beatmap->getCursorPos().y - pos.y, m_beatmap->getCursorPos().x - pos.x));
 
 							if (m_beatmap->getOsu()->isInVRMode())
 							{
@@ -1016,7 +1016,7 @@ void OsuCircle::onClickEvent(std::vector<OsuBeatmap::CLICK> &clicks)
 		if (result != OsuScore::HIT::HIT_NULL)
 		{
 			const float targetDelta = cursorDelta / (m_beatmap->getHitcircleDiameter()/2.0f);
-			const float targetAngle = rad2deg(atan2(cursorPos.y - pos.y, cursorPos.x - pos.x));
+			const float targetAngle = glm::degrees(atan2(cursorPos.y - pos.y, cursorPos.x - pos.x));
 
 			clicks.erase(clicks.begin());
 			onHit(result, delta, targetDelta, targetAngle);
