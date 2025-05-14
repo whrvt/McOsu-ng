@@ -75,7 +75,6 @@ $(DEPS_PREFIX)/SDL3.built: $(DEPS_PREFIX)/FREETYPE2.built $(DEPS_CACHE)/SDL3.sou
 	$(GIT) clone $(DEPS_CACHE)/SDL3 $(DEPS_PREFIX)/SDL3 && \
 	$(GIT) -C $(DEPS_PREFIX)/SDL3 remote set-url origin https://github.com/libsdl-org/SDL.git && \
 	$(GIT) -C $(DEPS_PREFIX)/SDL3 pull && $(GIT) -C $(DEPS_PREFIX)/SDL3 checkout $(SDL3_VERSION) && \
-	$(GIT) -C $(DEPS_PREFIX)/SDL3 revert --no-commit --no-edit f4813ca2cf9953f60ec406ab63e07bd68f56c4ee && \
 	$(MKDIR_P) $(DEPS_PREFIX)/SDL3/build
 	cd $(DEPS_PREFIX)/SDL3 && \
 	patch -Np1<$(abs_top_srcdir)/build/aux/sdl-c23bool.patch && \
