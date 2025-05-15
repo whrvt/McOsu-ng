@@ -11,8 +11,8 @@
 
 #include "BaseEnvironment.h" // for Env::cfg (consteval)
 #include <algorithm>
-#include <vector>
 #include <string>
+#include <vector>
 
 class UString
 {
@@ -36,16 +36,18 @@ public:
 	[[nodiscard]] inline const char *toUtf8() const { return m_utf8.c_str(); }
 	[[nodiscard]] inline const wchar_t *wc_str() const { return m_unicode.c_str(); }
 	// basically just for autodetecting windows' wchar_t
-	[[nodiscard]] inline auto plat_str() const {
+	[[nodiscard]] inline auto plat_str() const
+	{
 		if constexpr (Env::cfg(OS::WINDOWS)) return m_unicode.c_str();
 		else return m_utf8.c_str();
 	}
 	[[nodiscard]] inline bool isAsciiOnly() const { return m_isAsciiOnly; }
 	[[nodiscard]] bool isWhitespaceOnly() const;
 	[[nodiscard]] inline bool isEmpty() const { return m_unicode.empty() || m_utf8.empty(); }
-	[[nodiscard]] inline bool endsWith(char ch) const {	return m_lengthUtf8 > 0 && m_utf8[m_lengthUtf8 - 1] == ch; }
+	[[nodiscard]] inline bool endsWith(char ch) const { return m_lengthUtf8 > 0 && m_utf8[m_lengthUtf8 - 1] == ch; }
 	[[nodiscard]] inline bool endsWith(wchar_t ch) const { return m_length > 0 && m_unicode[m_length - 1] == ch; }
-	[[nodiscard]] inline bool endsWith(const UString& suffix) const {
+	[[nodiscard]] inline bool endsWith(const UString &suffix) const
+	{
 		if (suffix.m_length > m_length) return false;
 		return m_unicode.substr(m_length - suffix.m_length) == suffix.m_unicode;
 	}
@@ -81,8 +83,7 @@ public:
 	{
 		offset = std::clamp<int>(offset, 0, m_length);
 
-		if (charCount < 0)
-			charCount = m_length - offset;
+		if (charCount < 0) charCount = m_length - offset;
 
 		charCount = std::clamp<int>(charCount, 0, m_length - offset);
 
@@ -91,15 +92,15 @@ public:
 		result.m_length = static_cast<int>(result.m_unicode.length());
 		result.updateUtf8();
 
-		return result.to<T>();
+		if constexpr (std::is_same_v<T, UString>) return result;
+		else return result.to<T>();
 	}
 
 	template <typename T = UString>
 	[[nodiscard]] constexpr std::vector<T> split(UString delim) const
 	{
 		std::vector<T> results;
-		if (delim.m_length < 1 || m_length < 1)
-			return results;
+		if (delim.m_length < 1 || m_length < 1) return results;
 
 		int start = 0;
 		int end = 0;
@@ -116,35 +117,24 @@ public:
 
 	[[nodiscard]] UString trim() const;
 
+	// clang-format off
 	// conversions
 	template <typename T = UString>
 	[[nodiscard]] constexpr T to() const noexcept
 	{
-		if (m_utf8.empty())
-			return T{};
-		if constexpr (std::is_same_v<T, float>) {
-			return std::strtof(m_utf8.c_str(), nullptr);
-		} else if constexpr (std::is_same_v<T, double>) {
-			return std::strtod(m_utf8.c_str(), nullptr);
-		} else if constexpr (std::is_same_v<T, long double>) {
-			return std::strtold(m_utf8.c_str(), nullptr);
-		} else if constexpr (std::is_same_v<T, int>) {
-			return static_cast<int>(std::strtol(m_utf8.c_str(), nullptr, 0));
-		} else if constexpr (std::is_same_v<T, bool>) {
-			return !!static_cast<int>(std::strtol(m_utf8.c_str(), nullptr, 0));
-		} else if constexpr (std::is_same_v<T, long>) {
-			return std::strtol(m_utf8.c_str(), nullptr, 0);
-		} else if constexpr (std::is_same_v<T, long long>) {
-			return std::strtoll(m_utf8.c_str(), nullptr, 0);
-		} else if constexpr (std::is_same_v<T, unsigned int>) {
-			return static_cast<unsigned int>(std::strtoul(m_utf8.c_str(), nullptr, 0));
-		} else if constexpr (std::is_same_v<T, unsigned long>) {
-			return std::strtoul(m_utf8.c_str(), nullptr, 0);
-		} else if constexpr (std::is_same_v<T, unsigned long long>) {
-			return std::strtoull(m_utf8.c_str(), nullptr, 0);
-		} else {
-			return *this;
-		}
+		if (m_utf8.empty()) return T{};
+		else if constexpr (std::is_same_v<T, UString>)				return *this;
+		else if constexpr (std::is_same_v<T, float>)				return std::strtof(m_utf8.c_str(), nullptr);
+		else if constexpr (std::is_same_v<T, double>)				return std::strtod(m_utf8.c_str(), nullptr);
+		else if constexpr (std::is_same_v<T, long double>)			return std::strtold(m_utf8.c_str(), nullptr);
+		else if constexpr (std::is_same_v<T, int>)					return static_cast<int>(std::strtol(m_utf8.c_str(), nullptr, 0));
+		else if constexpr (std::is_same_v<T, bool>)					return !!static_cast<int>(std::strtol(m_utf8.c_str(), nullptr, 0));
+		else if constexpr (std::is_same_v<T, long>)					return std::strtol(m_utf8.c_str(), nullptr, 0);
+		else if constexpr (std::is_same_v<T, long long>)			return std::strtoll(m_utf8.c_str(), nullptr, 0);
+		else if constexpr (std::is_same_v<T, unsigned int>)			return static_cast<unsigned int>(std::strtoul(m_utf8.c_str(), nullptr, 0));
+		else if constexpr (std::is_same_v<T, unsigned long>)		return std::strtoul(m_utf8.c_str(), nullptr, 0);
+		else if constexpr (std::is_same_v<T, unsigned long long>)	return std::strtoull(m_utf8.c_str(), nullptr, 0);
+		else {static_assert(Env::always_false_v<T>, "unsupported type"); return T{};}
 	}
 
 	[[nodiscard]] constexpr float toFloat() 						const noexcept {return to<float>();}
@@ -157,6 +147,7 @@ public:
 	[[nodiscard]] constexpr unsigned int toUnsignedInt() 			const noexcept {return to<unsigned int>();}
 	[[nodiscard]] constexpr unsigned long toUnsignedLong() 			const noexcept {return to<unsigned long>();}
 	[[nodiscard]] constexpr unsigned long long toUnsignedLongLong() const noexcept {return to<unsigned long long>();}
+	// clang-format on
 
 	void lowerCase();
 	void upperCase();
@@ -169,12 +160,12 @@ public:
 	bool operator!=(const UString &ustr) const;
 	bool operator<(const UString &ustr) const;
 
-	UString &operator+=(const UString& ustr);
-	UString  operator+(const UString& ustr) const;
+	UString &operator+=(const UString &ustr);
+	UString operator+(const UString &ustr) const;
 	UString &operator+=(wchar_t ch);
-	UString  operator+(wchar_t ch) const;
+	UString operator+(wchar_t ch) const;
 	UString &operator+=(char ch);
-	UString  operator+(char ch) const;
+	UString operator+(char ch) const;
 
 	[[nodiscard]] bool equalsIgnoreCase(const UString &ustr) const;
 	[[nodiscard]] bool lessThanIgnoreCase(const UString &ustr) const;

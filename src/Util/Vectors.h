@@ -268,15 +268,9 @@ struct Vector4 : public glm::vec4
 	[[nodiscard]] float distance(const Vector4 &vec) const { return glm::distance(static_cast<const glm::vec4 &>(*this), static_cast<const glm::vec4 &>(vec)); }
 	Vector4 &normalize()
 	{
-		// original behavior leaves w-component untouched (bug?)
-		auto xyz = glm::vec3(x, y, z);
-		if (glm::length(xyz) < VECTOR_NORMALIZE_EPSILON)
+		if (glm::length(static_cast<const glm::vec4 &>(*this)) < VECTOR_NORMALIZE_EPSILON)
 			return *this;
-		xyz = glm::normalize(xyz);
-		x = xyz.x;
-		y = xyz.y;
-		z = xyz.z;
-		// w remains unchanged
+		*this = glm::normalize(static_cast<const glm::vec4 &>(*this));
 		return *this;
 	}
 	[[nodiscard]] float dot(const Vector4 &vec) const { return glm::dot(static_cast<const glm::vec4 &>(*this), static_cast<const glm::vec4 &>(vec)); }

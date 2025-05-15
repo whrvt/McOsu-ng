@@ -1454,7 +1454,7 @@ double OsuDifficultyCalculator::DiffObject::calculate_difficulty(const Skills::S
 
 				if (incremental && std::abs(incremental->consistent_top_strain - consistentTopStrain) < DIFFCALC_EPSILON)
 				{
-					incremental->difficult_strains += 1.1 / (1.0 + McMath::fastExp(-10.0 * (dobjects[dobjectCount - 1].get_strain(type) / consistentTopStrain - 0.88)));
+					incremental->difficult_strains += McMath::fastSigmoid(dobjects[dobjectCount - 1].get_strain(type) / consistentTopStrain - 0.88);
 					tempSum = incremental->difficult_strains;
 				}
 				else
@@ -1462,7 +1462,7 @@ double OsuDifficultyCalculator::DiffObject::calculate_difficulty(const Skills::S
 					MC_UNROLL
 					for (size_t i=0; i<dobjectCount; i++)
 					{
-						tempSum += 1.1 / (1.0 + McMath::fastExp(-10.0 * (dobjects[i].get_strain(type) / consistentTopStrain - 0.88)));
+						tempSum += McMath::fastSigmoid(dobjects[i].get_strain(type) / consistentTopStrain - 0.88);
 					}
 
 					if (incremental)
