@@ -255,6 +255,7 @@ __EOF__
         ubercompat=on
         with_mimalloc="no"
         LDFLAGS="$LDFLAGS -m32 -lwinpthread"
+        # winxp
         CPPFLAGS="$CPPFLAGS -DWINVER=0x0501 -D_WIN32_WINNT=0x0501 -D_WIN32_WINDOWS=0x0501 -D_WIN32_IE=0x0501"
         CFLAGS="$CFLAGS -m32 -DWINVER=0x0501 -D_WIN32_WINNT=0x0501 -D_WIN32_WINDOWS=0x0501 -D_WIN32_IE=0x0501"
         CXXFLAGS="$CXXFLAGS -m32 -DWINVER=0x0501 -D_WIN32_WINNT=0x0501 -D_WIN32_WINDOWS=0x0501 -D_WIN32_IE=0x0501"
@@ -263,7 +264,12 @@ __EOF__
         AS_IF([test "x$enable_clang" = "xyes"], [LDFLAGS="$LDFLAGS -Xlinker /subsystem:windows,5.0"])
         AC_SUBST([NASMOBJ],[win32])
     ], [
+        # win10
+        CPPFLAGS="$CPPFLAGS -DWINVER=0x0A00 -D_WIN32_WINNT=0x0A00 -D_WIN32_WINDOWS=0x0A00 -D_WIN32_IE=0x0A00"
+        CFLAGS="$CFLAGS -DWINVER=0x0A00 -D_WIN32_WINNT=0x0A00 -D_WIN32_WINDOWS=0x0A00 -D_WIN32_IE=0x0A00"
+        CXXFLAGS="$CXXFLAGS -DWINVER=0x0A00 -D_WIN32_WINNT=0x0A00 -D_WIN32_WINDOWS=0x0A00 -D_WIN32_IE=0x0A00"
         LDFLAGS="$LDFLAGS -Wl,-Bstatic,--whole-archive -lwinpthread -Wl,--no-whole-archive,-Bdynamic"
+        AS_IF([test "x$enable_clang" = "xyes"], [LDFLAGS="$LDFLAGS -Xlinker /subsystem:windows,10.0"])
         AC_SUBST([NASMOBJ],[win64])
     ])
 

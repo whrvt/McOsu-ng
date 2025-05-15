@@ -10,8 +10,10 @@ CLEANFILES = \
 	src/*.o \
 	src/*/*.o \
 	src/*/*/*.o \
+	src/*/*/*/*.o \
 	src/*/*.o.tmp \
 	src/*/*/*.o.tmp \
+	src/*/*/*/*.o.tmp \
 	*~ \
 	*.bak
 
