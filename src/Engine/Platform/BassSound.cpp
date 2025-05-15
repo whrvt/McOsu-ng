@@ -25,6 +25,15 @@ extern ConVar snd_play_interp_duration;
 extern ConVar snd_play_interp_ratio;
 extern ConVar snd_wav_file_min_size;
 
+// wtf this segfaults inside bass after the audio starts playing again? what am i supposed to do?
+void CALLBACK failRestartCallback(HSYNC, DWORD, DWORD, void *data)
+{
+	//delete static_cast<BassSound*>(data); // no change with/without this for segfault
+	// debugLog("Attempting to restart...\n");
+	// Timing::sleep(5000000); // wait 5 seconds for the driver to come back up.
+	// engine->getSound()->restart();
+}
+
 BassSound::BassSound(UString filepath, bool stream, bool threeD, bool loop, bool prescan) : Sound(filepath, stream, threeD, loop, prescan)
 {
 	m_HSTREAM = 0;
@@ -116,8 +125,9 @@ void BassSound::initAsync()
 		BASS_ChannelSetAttribute(m_HSTREAM, BASS_ATTRIB_TEMPO_OPTION_USE_QUICKALGO, false);
 		BASS_ChannelSetAttribute(m_HSTREAM, BASS_ATTRIB_TEMPO_OPTION_OVERLAP_MS, 4.0f);
 		BASS_ChannelSetAttribute(m_HSTREAM, BASS_ATTRIB_TEMPO_OPTION_SEQUENCE_MS, 30.0f);
-
 		m_HCHANNELBACKUP = m_HSTREAM;
+		if (m_HSTREAM) // TODO: restarting causes segfault, this does nothing atm
+			m_HSYNC = BASS_ChannelSetSync(m_HSTREAM, BASS_SYNC_MIXTIME | BASS_SYNC_DEV_FAIL, 0, failRestartCallback, (void*)this);
 	}
 	else // not a stream
 	{
@@ -138,9 +148,8 @@ void BassSound::initAsync()
 		}
 		else
 		{
-			m_HSTREAM =
-			    BASS_SampleLoad(FALSE, m_sFilePath.plat_str(), 0, 0, 5,
-			                    (m_bIsLooped ? BASS_SAMPLE_LOOP : 0) | (m_bIs3d ? BASS_SAMPLE_3D | BASS_SAMPLE_MONO : 0) | BASS_SAMPLE_OVER_POS | unicodeFlag);
+			m_HSTREAM = BASS_SampleLoad(FALSE, m_sFilePath.plat_str(), 0, 0, 5,
+			                            (m_bIsLooped ? BASS_SAMPLE_LOOP : 0) | (m_bIs3d ? BASS_SAMPLE_3D | BASS_SAMPLE_MONO : 0) | BASS_SAMPLE_OVER_POS | unicodeFlag);
 		}
 
 		m_HSTREAMBACKUP = m_HSTREAM; // needed for proper cleanup for FX HSAMPLES
@@ -152,7 +161,6 @@ void BassSound::initAsync()
 				debugLog("Sound Error: BASS_SampleLoad() error %i on file %s\n", code, m_sFilePath.toUtf8());
 		}
 	}
-
 	m_bAsyncReady = true;
 }
 
@@ -228,7 +236,8 @@ void BassSound::destroy()
 #ifdef MCENGINE_FEATURE_BASS_WASAPI
 		BASS_Mixer_ChannelRemove(m_HSTREAM);
 #endif
-
+		if (m_HSYNC)
+			BASS_ChannelRemoveSync(m_HSTREAM, m_HSYNC);
 		BASS_StreamFree(m_HSTREAM); // fx (but with BASS_FX_FREESOURCE)
 	}
 	else
@@ -258,6 +267,7 @@ void BassSound::destroy()
 	m_HSTREAM = 0;
 	m_HSTREAMBACKUP = 0;
 	m_HCHANNEL = 0;
+	m_HSYNC = 0;
 }
 
 void BassSound::setPosition(double percent)
@@ -333,8 +343,7 @@ void BassSound::setSpeed(float speed)
 	BASS_ChannelSetAttribute(handle, (snd_speed_compensate_pitch.getBool() ? BASS_ATTRIB_TEMPO : BASS_ATTRIB_TEMPO_FREQ),
 	                         (snd_speed_compensate_pitch.getBool() ? (speed - 1.0f) * 100.0f : speed * originalFreq));
 
-	m_fActualSpeedForDisabledPitchCompensation =
-	    speed; // NOTE: currently only used for correctly returning getSpeed() if snd_speed_compensate_pitch is disabled
+	m_fActualSpeedForDisabledPitchCompensation = speed; // NOTE: currently only used for correctly returning getSpeed() if snd_speed_compensate_pitch is disabled
 }
 
 void BassSound::setPitch(float pitch)
@@ -423,8 +432,7 @@ unsigned long BassSound::getPositionMS()
 		const double delta = (engine->getTime() - m_fLastPlayTime) * speedMultiplier;
 		if (m_fLastPlayTime > 0.0 && delta < interpDuration && isPlaying())
 		{
-			const double lerpPercent =
-			    std::clamp<double>(((delta / interpDuration) - snd_play_interp_ratio.getFloat()) / (1.0 - snd_play_interp_ratio.getFloat()), 0.0, 1.0);
+			const double lerpPercent = std::clamp<double>(((delta / interpDuration) - snd_play_interp_ratio.getFloat()) / (1.0 - snd_play_interp_ratio.getFloat()), 0.0, 1.0);
 			return static_cast<unsigned long>(std::lerp(delta * 1000.0, (double)positionMS, lerpPercent));
 		}
 	}

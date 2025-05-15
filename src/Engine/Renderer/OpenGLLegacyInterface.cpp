@@ -151,17 +151,12 @@ void OpenGLLegacyInterface::setColor(Color color)
 	m_color = color;
 	// glColor4f(((unsigned char)(m_color >> 16))  / 255.0f, ((unsigned char)(m_color >> 8)) / 255.0f, ((unsigned char)(m_color >> 0)) / 255.0f, ((unsigned char)(m_color >> 24)) /
 	// 255.0f);
-	glColor4ub((unsigned char)(m_color >> 16), (unsigned char)(m_color >> 8), (unsigned char)(m_color >> 0), (unsigned char)(m_color >> 24));
+	glColor4ub(Ri(m_color), Gi(m_color), Bi(m_color), Ai(m_color));
 }
 
 void OpenGLLegacyInterface::setAlpha(float alpha)
 {
-	Color tempColor = m_color;
-
-	tempColor &= 0x00ffffff;
-	tempColor |= ((int)(255.0f * alpha)) << 24;
-
-	setColor(tempColor);
+	setColor(argb(alpha, Rf(m_color), Gf(m_color), Bf(m_color)));
 }
 
 void OpenGLLegacyInterface::drawPixels(int x, int y, int width, int height, Graphics::DRAWPIXELS_TYPE type, const void *pixels)

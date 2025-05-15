@@ -142,8 +142,8 @@ AS_IF([test "$host_os" = "mingw32"], [
     enable_system_deps=no
     disable_system_deps=yes
     MCOSU_CPPFLAGS="$MCOSU_CPPFLAGS -D_UNICODE -DUNICODE"
-    MCOSU_CXXFLAGS="$MCOSU_CXXFLAGS -D_UNICODE -DUNICODE -municode"
-    MCOSU_LDFLAGS="$MCOSU_LDFLAGS -municode"
+    MCOSU_CXXFLAGS="$MCOSU_CXXFLAGS -D_UNICODE -DUNICODE -municode -mwindows"
+    MCOSU_LDFLAGS="$MCOSU_LDFLAGS -municode -mwindows"
     AS_IF([test "x$enable_clang" = "xyes"], [
         LLVMMINGW=1
         AC_SUBST([LLVMMINGW])
@@ -314,8 +314,11 @@ AS_IF([test -z "$ubercompat" || test "x$enable_static" = "xyes"], [
 # use c/c++23 because we can
 AC_LANG_PUSH([C++])
 AX_CHECK_COMPILE_FLAG([-std=gnu++23], [
-    AX_CHECK_COMPILE_FLAG([-std=gnu++26], [MCOSU_CXXFLAGS="$MCOSU_CXXFLAGS -std=gnu++26"])
-    CXXFLAGS="$CXXFLAGS -std=gnu++23"
+    AX_CHECK_COMPILE_FLAG([-std=gnu++26], [
+        MCOSU_CXXFLAGS="$MCOSU_CXXFLAGS -std=gnu++26"
+        ], [
+        MCOSU_CXXFLAGS="$MCOSU_CXXFLAGS -std=gnu++23"
+    ])
 ], [
     AC_MSG_ERROR([Compiler does not support gnu++23])
 ])
@@ -450,7 +453,7 @@ AC_SUBST([SOUNDTOUCH_VERSION], [2.4.0])
 AC_SUBST([SOUNDTOUCH_PREFIX],[$DEPS_PREFIX])
 AC_SUBST([SDL3_MIXER_VERSION], [b8017938de8b31c1962c2c8044a127519c2c1cdf])
 AC_SUBST([SDL3_MIXER_PREFIX],[$DEPS_PREFIX])
-AC_SUBST([MIMALLOC_VERSION], [3.0.3])
+AC_SUBST([MIMALLOC_VERSION], [bc18e9456ee3fa4449240250e5918175c1898712])
 AC_SUBST([MIMALLOC_PREFIX],[$DEPS_PREFIX])
 
 # TODO: add all deps and transitive deps (fun!)

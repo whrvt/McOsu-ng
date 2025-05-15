@@ -18,6 +18,7 @@
 #include "OpenGLES32VertexArrayObject.h"
 #include "OpenGLImage.h"
 #include "OpenGLRenderTarget.h"
+#include "OpenGLStateCache.h"
 
 #include "OpenGLHeaders.h"
 
@@ -187,6 +188,9 @@ void main() {
 	glVertexAttribPointer(m_iShaderTexturedGenericAttribCol, 4, GL_UNSIGNED_BYTE, GL_TRUE, 4 * sizeof(Color), (GLvoid *)0);
 	glBufferData(GL_ARRAY_BUFFER, 16384 * sizeof(Vector4), NULL, GL_STREAM_DRAW);
 	glEnableVertexAttribArray(m_iShaderTexturedGenericAttribCol);
+
+	// initialize the state cache (TODO: use it, like legacy interface does)
+	OpenGLStateCache::getInstance().initialize();
 }
 
 void OpenGLES32Interface::beginScene()

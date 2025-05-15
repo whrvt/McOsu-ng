@@ -57,6 +57,7 @@ private:
 	SOUNDHANDLE m_HSTREAMBACKUP;
 	SOUNDHANDLE m_HCHANNEL;
 	SOUNDHANDLE m_HCHANNELBACKUP;
+	SOUNDHANDLE m_HSYNC;
 
 	// bass custom
 	float m_fActualSpeedForDisabledPitchCompensation;

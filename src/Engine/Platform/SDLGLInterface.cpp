@@ -11,6 +11,7 @@
 #if defined(MCENGINE_FEATURE_GLES2) || defined(MCENGINE_FEATURE_GLES32) || defined(MCENGINE_FEATURE_OPENGL)
 
 #include "OpenGLHeaders.h"
+#include "OpenGLStateCache.h"
 #include "Engine.h"
 
 
@@ -23,6 +24,7 @@ SDLGLInterface::SDLGLInterface(SDL_Window *window) : OpenGLLegacyInterface()
 #endif
 {
 	// resolve GL functions
+	glewExperimental = true;
 	GLenum err = glewInit();
 	if (GLEW_OK != err)
 	{

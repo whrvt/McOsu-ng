@@ -120,7 +120,7 @@ static constexpr auto WINDOW_WIDTH_MIN = 100;
 static constexpr auto WINDOW_HEIGHT_MIN = 100;
 
 // convars
-ConVar fps_max("fps_max", 60.0f, FCVAR_NONE, "framerate limiter, foreground");
+ConVar fps_max("fps_max", 420.0f, FCVAR_NONE, "framerate limiter, foreground");
 ConVar fps_max_background("fps_max_background", 30.0f, FCVAR_NONE, "framerate limiter, background");
 ConVar fps_unlimited("fps_unlimited", false, FCVAR_NONE);
 
@@ -194,11 +194,12 @@ SDL_AppResult SDLMain::initialize(int argc, char *argv[])
 
 		if (currentDisplayMode && currentDisplayMode->refresh_rate > 0)
 		{
+			auto fourxhz = currentDisplayMode->refresh_rate * 4;
 			if (fps_max.getFloat() == fps_max.getDefaultFloat())
 			{
-				debugLog("Display %d refresh rate is %f Hz, setting default fps_max to %f.\n", display, currentDisplayMode->refresh_rate, currentDisplayMode->refresh_rate);
-				fps_max.setValue(currentDisplayMode->refresh_rate);
-				fps_max.setDefaultFloat(currentDisplayMode->refresh_rate);
+				debugLog("Display %d refresh rate is %f Hz, setting default fps_max to %f.\n", display, currentDisplayMode->refresh_rate, fourxhz);
+				fps_max.setValue(fourxhz);
+				fps_max.setDefaultFloat(fourxhz);
 			}
 		}
 		else

@@ -26,7 +26,7 @@ constexpr Channel to_byte(Numeric auto value)
 template <typename T, typename U>
 constexpr bool is_compatible_v = std::is_same_v<T, U> ||
                                  // integer literals
-                                 (std::is_integral_v<T> && std::is_integral_v<U> && (std::is_constant_evaluated() || std::is_convertible_v<T, U> || std::is_convertible_v<U, T>)) ||
+                                 (std::is_integral_v<T> && std::is_integral_v<U> && (std::is_convertible_v<T, U> || std::is_convertible_v<U, T>)) ||
                                  // same "family" of types (all floating or all integral)
                                  (std::is_floating_point_v<T> && std::is_floating_point_v<U>) || (std::is_integral_v<T> && std::is_integral_v<U>);
 

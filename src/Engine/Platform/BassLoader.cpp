@@ -40,6 +40,7 @@ BASS_GetVersion_t BASS_GetVersion = nullptr;
 BASS_SetConfig_t BASS_SetConfig = nullptr;
 BASS_GetConfig_t BASS_GetConfig = nullptr;
 BASS_Init_t BASS_Init = nullptr;
+BASS_Start_t BASS_Start = nullptr;
 BASS_Free_t BASS_Free = nullptr;
 BASS_GetDeviceInfo_t BASS_GetDeviceInfo = nullptr;
 BASS_ErrorGetCode_t BASS_ErrorGetCode = nullptr;
@@ -50,6 +51,8 @@ BASS_SampleGetChannel_t BASS_SampleGetChannel = nullptr;
 BASS_ChannelPlay_t BASS_ChannelPlay = nullptr;
 BASS_ChannelPause_t BASS_ChannelPause = nullptr;
 BASS_ChannelStop_t BASS_ChannelStop = nullptr;
+BASS_ChannelSetSync_t BASS_ChannelSetSync = nullptr;
+BASS_ChannelRemoveSync_t BASS_ChannelRemoveSync = nullptr;
 BASS_ChannelSetAttribute_t BASS_ChannelSetAttribute = nullptr;
 BASS_ChannelGetAttribute_t BASS_ChannelGetAttribute = nullptr;
 BASS_ChannelSetPosition_t BASS_ChannelSetPosition = nullptr;
@@ -106,7 +109,7 @@ bool init()
 			s_bassLib = nullptr;
 			continue;
 		}
-		if (BASS_GetVersion() == BASSVERSION_REAL)
+		if (static_cast<uint64_t>(BASS_GetVersion()) >= static_cast<uint64_t>(BASSVERSION_REAL))
 			break;
 		debugLog("BassLoader: version mismatch for %s (expected %x, got %x)\n", path.c_str(), BASSVERSION_REAL, BASS_GetVersion());
 		s_bassLib = nullptr;
@@ -121,6 +124,7 @@ bool init()
 	BASS_SetConfig = loadFunction<BASS_SetConfig_t>(s_bassLib, "BASS_SetConfig");
 	BASS_GetConfig = loadFunction<BASS_GetConfig_t>(s_bassLib, "BASS_GetConfig");
 	BASS_Init = loadFunction<BASS_Init_t>(s_bassLib, "BASS_Init");
+	BASS_Start = loadFunction<BASS_Start_t>(s_bassLib, "BASS_Start");
 	BASS_Free = loadFunction<BASS_Free_t>(s_bassLib, "BASS_Free");
 	BASS_GetDeviceInfo = loadFunction<BASS_GetDeviceInfo_t>(s_bassLib, "BASS_GetDeviceInfo");
 	BASS_ErrorGetCode = loadFunction<BASS_ErrorGetCode_t>(s_bassLib, "BASS_ErrorGetCode");
@@ -131,6 +135,8 @@ bool init()
 	BASS_ChannelPlay = loadFunction<BASS_ChannelPlay_t>(s_bassLib, "BASS_ChannelPlay");
 	BASS_ChannelPause = loadFunction<BASS_ChannelPause_t>(s_bassLib, "BASS_ChannelPause");
 	BASS_ChannelStop = loadFunction<BASS_ChannelStop_t>(s_bassLib, "BASS_ChannelStop");
+	BASS_ChannelSetSync = loadFunction<BASS_ChannelSetSync_t>(s_bassLib, "BASS_ChannelSetSync");
+	BASS_ChannelRemoveSync = loadFunction<BASS_ChannelRemoveSync_t>(s_bassLib, "BASS_ChannelRemoveSync");
 	BASS_ChannelSetAttribute = loadFunction<BASS_ChannelSetAttribute_t>(s_bassLib, "BASS_ChannelSetAttribute");
 	BASS_ChannelGetAttribute = loadFunction<BASS_ChannelGetAttribute_t>(s_bassLib, "BASS_ChannelGetAttribute");
 	BASS_ChannelSetPosition = loadFunction<BASS_ChannelSetPosition_t>(s_bassLib, "BASS_ChannelSetPosition");
@@ -162,7 +168,7 @@ bool init()
 			s_bassFxLib = nullptr;
 			continue;
 		}
-		if (BASS_FX_GetVersion() == BASSFXVERSION_REAL)
+		if (static_cast<uint64_t>(BASS_FX_GetVersion()) >= static_cast<uint64_t>(BASSFXVERSION_REAL))
 			break;
 		debugLog("BassLoader: version mismatch for %s (expected %x, got %x)\n", path.c_str(), BASSFXVERSION_REAL, BASS_FX_GetVersion());
 		s_bassFxLib = nullptr;
@@ -255,6 +261,7 @@ void cleanup()
 	BASS_SetConfig = nullptr;
 	BASS_GetConfig = nullptr;
 	BASS_Init = nullptr;
+	BASS_Start = nullptr;
 	BASS_Free = nullptr;
 	BASS_GetDeviceInfo = nullptr;
 	BASS_ErrorGetCode = nullptr;
@@ -265,6 +272,8 @@ void cleanup()
 	BASS_ChannelPlay = nullptr;
 	BASS_ChannelPause = nullptr;
 	BASS_ChannelStop = nullptr;
+	BASS_ChannelSetSync = nullptr;
+	BASS_ChannelRemoveSync = nullptr;
 	BASS_ChannelSetAttribute = nullptr;
 	BASS_ChannelGetAttribute = nullptr;
 	BASS_ChannelSetPosition = nullptr;

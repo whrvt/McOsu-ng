@@ -5124,7 +5124,7 @@ uninstall-am: uninstall-binPROGRAMS uninstall-local
 
 $(DEPS_CACHE)/mimalloc-$(MIMALLOC_VERSION).source:
 	$(MKDIR_P) $(DEPS_CACHE)
-	$(WGET) -qO $(DEPS_CACHE)/mimalloc-$(MIMALLOC_VERSION).tar.gz "https://github.com/microsoft/mimalloc/archive/refs/tags/v$(MIMALLOC_VERSION).tar.gz" && \
+	$(WGET) -qO $(DEPS_CACHE)/mimalloc-$(MIMALLOC_VERSION).tar.gz "https://github.com/microsoft/mimalloc/archive/$(MIMALLOC_VERSION).tar.gz" && \
 	touch $@
 @BUILD_MIMALLOC_TRUE@$(DEPS_PREFIX)/mimalloc.built: $(DEPS_CACHE)/mimalloc-$(MIMALLOC_VERSION).source
 @BUILD_MIMALLOC_TRUE@	rm -rf $(DEPS_PREFIX)/mimalloc
@@ -5147,6 +5147,7 @@ $(DEPS_CACHE)/mimalloc-$(MIMALLOC_VERSION).source:
 @BUILD_MIMALLOC_TRUE@		-D MI_USE_CXX=ON \
 @BUILD_MIMALLOC_TRUE@		-D MI_BUILD_SHARED=$(if $(findstring linux,$(host_os)),OFF,ON) \
 @BUILD_MIMALLOC_TRUE@		-D MI_BUILD_TESTS=OFF \
+@BUILD_MIMALLOC_TRUE@		$(if $(findstring linux,$(host_os)),,-DMI_WIN_USE_FIXED_TLS=ON) \
 @BUILD_MIMALLOC_TRUE@		$(if $(ENABLE_ASAN),-DMI_LOCAL_DYNAMIC_TLS=ON -DMI_TRACK_ASAN=ON -DMI_DEBUG_UBSAN=ON,) \
 @BUILD_MIMALLOC_TRUE@		-D MI_INSTALL_TOPLEVEL=ON \
 @BUILD_MIMALLOC_TRUE@		-D MI_BUILD_STATIC=OFF \
@@ -5182,7 +5183,7 @@ $(DEPS_CACHE)/SDL3.source:
 @BUILD_SDL3_TRUE@		-D CMAKE_SYSTEM_PROCESSOR="$(host_cpu)" \
 @BUILD_SDL3_TRUE@		-D SDL_RPATH=OFF \
 @BUILD_SDL3_TRUE@		-D SDL_IBUS=OFF \
-@BUILD_SDL3_TRUE@		-D SDL_CCACHE="$(if $(filter ccache,$(CC)),ON,OFF)" \
+@BUILD_SDL3_TRUE@		-D SDL_CCACHE="$(if $(filter ccache,$(CCACHE)),ON,OFF)" \
 @BUILD_SDL3_TRUE@		-D CMAKE_C_COMPILER="$(CC)" \
 @BUILD_SDL3_TRUE@		-D CMAKE_C_FLAGS="$(CFLAGS) -Wno-error=incompatible-pointer-types" && \
 @BUILD_SDL3_TRUE@	cmake --build build && \

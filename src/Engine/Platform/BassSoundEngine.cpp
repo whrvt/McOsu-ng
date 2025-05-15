@@ -41,13 +41,10 @@ void _WIN_SND_WASAPI_EXCLUSIVE_CHANGE(UString oldValue, UString newValue);
 
 // WASAPI-specific ConVars
 ConVar win_snd_wasapi_buffer_size("win_snd_wasapi_buffer_size", 0.011f, FCVAR_NONE,
-                                  "buffer size/length in seconds (e.g. 0.011 = 11 ms), directly responsible for audio delay and crackling",
-                                  _WIN_SND_WASAPI_BUFFER_SIZE_CHANGE);
-ConVar win_snd_wasapi_period_size("win_snd_wasapi_period_size", 0.0f, FCVAR_NONE,
-                                  "interval between OutputWasapiProc calls in seconds (e.g. 0.016 = 16 ms) (0 = use default)",
+                                  "buffer size/length in seconds (e.g. 0.011 = 11 ms), directly responsible for audio delay and crackling", _WIN_SND_WASAPI_BUFFER_SIZE_CHANGE);
+ConVar win_snd_wasapi_period_size("win_snd_wasapi_period_size", 0.0f, FCVAR_NONE, "interval between OutputWasapiProc calls in seconds (e.g. 0.016 = 16 ms) (0 = use default)",
                                   _WIN_SND_WASAPI_PERIOD_SIZE_CHANGE);
-ConVar win_snd_wasapi_exclusive("win_snd_wasapi_exclusive", true, FCVAR_NONE, "whether to use exclusive device mode to further reduce latency",
-                                _WIN_SND_WASAPI_EXCLUSIVE_CHANGE);
+ConVar win_snd_wasapi_exclusive("win_snd_wasapi_exclusive", true, FCVAR_NONE, "whether to use exclusive device mode to further reduce latency", _WIN_SND_WASAPI_EXCLUSIVE_CHANGE);
 ConVar win_snd_wasapi_shared_volume_affects_device("win_snd_wasapi_shared_volume_affects_device", false, FCVAR_NONE,
                                                    "if in shared mode, whether to affect device volume globally or use separate session volume (default)");
 #endif
@@ -136,7 +133,8 @@ BassSoundEngine::BassSoundEngine() : SoundEngine()
 	*/
 #endif
 
-	if (!BassLoader::init()) {
+	if (!BassLoader::init())
+	{
 		engine->showMessageErrorFatal("Fatal Sound Error", "Failed to load BASS libraries!");
 		engine->shutdown();
 		return;
@@ -164,7 +162,7 @@ BassSoundEngine::BassSoundEngine() : SoundEngine()
 	BASS_SetConfig(BASS_CONFIG_UPDATETHREADS, (Env::cfg(AUD::WASAPI) ? 0 : 1));
 
 	BASS_SetConfig(BASS_CONFIG_VISTA_TRUEPOS, 0); // NOTE: if set to 1, increases sample playback latency +10 ms
-	BASS_SetConfig(BASS_CONFIG_DEV_TIMEOUT, 0); // prevents playback from ever stopping due to device issues
+	BASS_SetConfig(BASS_CONFIG_DEV_TIMEOUT, 0);   // prevents playback from ever stopping due to device issues
 
 	// add default output device
 	m_iCurrentOutputDevice = -1;
@@ -272,8 +270,7 @@ bool BassSoundEngine::play(Sound *snd, float pan, float pitch)
 	{
 		if (BASS_Mixer_ChannelGetMixer(handle) == 0)
 		{
-			if (!BASS_Mixer_StreamAddChannel(g_wasapiOutputMixer, handle,
-			                                 (!bassSound->isStream() ? BASS_STREAM_AUTOFREE : 0) | BASS_MIXER_DOWNMIX | BASS_MIXER_NORAMPIN))
+			if (!BASS_Mixer_StreamAddChannel(g_wasapiOutputMixer, handle, (!bassSound->isStream() ? BASS_STREAM_AUTOFREE : 0) | BASS_MIXER_DOWNMIX | BASS_MIXER_NORAMPIN))
 				debugLog("BASS_Mixer_StreamAddChannel() failed (%i)!", BASS_ErrorGetCode());
 		}
 	}
@@ -335,8 +332,15 @@ bool BassSoundEngine::play(Sound *snd, float pan, float pitch)
 		*/
 		{
 			ret = BASS_ChannelPlay(handle, FALSE);
+			auto code = BASS_ErrorGetCode();
 			if (!ret)
-				debugLog("couldn't BASS_ChannelPlay(), errorcode %i\n", BASS_ErrorGetCode());
+				debugLog("couldn't BASS_ChannelPlay(), errorcode %i\n", code);
+			if (code == BASS_ERROR_START)
+			{
+				debugLog("Attempting to reinitialize...\n");
+				restart();
+				ret = m_bReady;
+			}
 		}
 #else
 		ret = BASS_ChannelPlay(handle, FALSE);
@@ -505,8 +509,7 @@ void BassSoundEngine::setVolume(float volume)
 	BASS_SetConfig(BASS_CONFIG_GVOL_MUSIC, (DWORD)(m_fVolume * 10000));
 
 #ifdef MCENGINE_FEATURE_BASS_WASAPI
-	BASS_WASAPI_SetVolume(BASS_WASAPI_CURVE_WINDOWS |
-	                          (!win_snd_wasapi_exclusive.getBool() && !win_snd_wasapi_shared_volume_affects_device.getBool() ? BASS_WASAPI_VOL_SESSION : 0),
+	BASS_WASAPI_SetVolume(BASS_WASAPI_CURVE_WINDOWS | (!win_snd_wasapi_exclusive.getBool() && !win_snd_wasapi_shared_volume_affects_device.getBool() ? BASS_WASAPI_VOL_SESSION : 0),
 	                      m_fVolume);
 #endif
 }

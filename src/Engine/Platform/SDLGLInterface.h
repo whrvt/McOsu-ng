@@ -26,13 +26,13 @@ class SDLGLInterface : public OpenGLLegacyInterface
 {
 public:
 	SDLGLInterface(SDL_Window *window);
-	virtual ~SDLGLInterface();
+	~SDLGLInterface() override;
 
 	// scene
-	virtual void endScene();
+	void endScene() override;
 
 	// device settings
-	virtual void setVSync(bool vsync);
+	void setVSync(bool vsync) override;
 
 private:
 	SDL_Window *m_window;

@@ -135,6 +135,7 @@ void OpenGLImage::bind(unsigned int textureUnit)
 	// set texture
 	glBindTexture(GL_TEXTURE_2D, m_GLTexture);
 
+	// DEPRECATED LEGACY (2)
 	glEnable(GL_TEXTURE_2D);
 }
 

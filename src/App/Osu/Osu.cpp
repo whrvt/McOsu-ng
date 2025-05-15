@@ -217,8 +217,6 @@ Osu::Osu(Osu2 *osu2, int instanceID)
 	convar->getConVarByName("name")->setValue("Guest");
 	convar->getConVarByName("console_overlay")->setValue(0.0f);
 	convar->getConVarByName("vsync")->setValue(0.0f);
-	convar->getConVarByName("fps_max")->setValue(420.0f);
-	convar->getConVarByName("fps_max")->setDefaultFloat(420.0f);
 
 	m_snd_change_check_interval_ref->setDefaultFloat(0.5f);
 	m_snd_change_check_interval_ref->setValue(m_snd_change_check_interval_ref->getDefaultFloat());

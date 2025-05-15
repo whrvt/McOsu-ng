@@ -18,6 +18,7 @@
 #include "OpenGLRenderTarget.h"
 #include "OpenGLShader.h"
 #include "OpenGL3VertexArrayObject.h"
+#include "OpenGLStateCache.h"
 
 #include "OpenGLHeaders.h"
 
@@ -161,6 +162,9 @@ void OpenGL3Interface::init()
 	glVertexAttribPointer(m_iShaderTexturedGenericAttribCol, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (GLvoid*)0);
 	glBufferData(GL_ARRAY_BUFFER, 512*sizeof(Vector4), NULL, GL_STREAM_DRAW);
 	glEnableVertexAttribArray(m_iShaderTexturedGenericAttribCol);
+
+	// initialize the state cache (TODO: use it, like legacy interface does)
+	OpenGLStateCache::getInstance().initialize();
 }
 
 void OpenGL3Interface::beginScene()

@@ -5999,8 +5999,8 @@ fi
     enable_system_deps=no
     disable_system_deps=yes
     MCOSU_CPPFLAGS="$MCOSU_CPPFLAGS -D_UNICODE -DUNICODE"
-    MCOSU_CXXFLAGS="$MCOSU_CXXFLAGS -D_UNICODE -DUNICODE -municode"
-    MCOSU_LDFLAGS="$MCOSU_LDFLAGS -municode"
+    MCOSU_CXXFLAGS="$MCOSU_CXXFLAGS -D_UNICODE -DUNICODE -municode -mwindows"
+    MCOSU_LDFLAGS="$MCOSU_LDFLAGS -municode -mwindows"
     if test "x$enable_clang" = "xyes"
 then :
 
@@ -7369,13 +7369,16 @@ fi
 printf "%s\n" "$ax_cv_check_cxxflags___std_gnupp26" >&6; }
 if test "x$ax_cv_check_cxxflags___std_gnupp26" = xyes
 then :
-  MCOSU_CXXFLAGS="$MCOSU_CXXFLAGS -std=gnu++26"
+
+        MCOSU_CXXFLAGS="$MCOSU_CXXFLAGS -std=gnu++26"
+
 else case e in #(
-  e) : ;;
+  e)
+        MCOSU_CXXFLAGS="$MCOSU_CXXFLAGS -std=gnu++23"
+     ;;
 esac
 fi
 
-    CXXFLAGS="$CXXFLAGS -std=gnu++23"
 
 else case e in #(
   e)
@@ -9035,7 +9038,7 @@ SDL3_MIXER_VERSION=b8017938de8b31c1962c2c8044a127519c2c1cdf
 
 SDL3_MIXER_PREFIX=$DEPS_PREFIX
 
-MIMALLOC_VERSION=3.0.3
+MIMALLOC_VERSION=bc18e9456ee3fa4449240250e5918175c1898712
 
 MIMALLOC_PREFIX=$DEPS_PREFIX
 

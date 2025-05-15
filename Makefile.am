@@ -19,7 +19,7 @@ comma:= ,# bruh
 
 $(DEPS_CACHE)/mimalloc-$(MIMALLOC_VERSION).source:
 	$(MKDIR_P) $(DEPS_CACHE)
-	$(WGET) -qO $(DEPS_CACHE)/mimalloc-$(MIMALLOC_VERSION).tar.gz "https://github.com/microsoft/mimalloc/archive/refs/tags/v$(MIMALLOC_VERSION).tar.gz" && \
+	$(WGET) -qO $(DEPS_CACHE)/mimalloc-$(MIMALLOC_VERSION).tar.gz "https://github.com/microsoft/mimalloc/archive/$(MIMALLOC_VERSION).tar.gz" && \
 	touch $@
 
 if BUILD_MIMALLOC
@@ -49,6 +49,7 @@ $(DEPS_PREFIX)/mimalloc.built: $(DEPS_CACHE)/mimalloc-$(MIMALLOC_VERSION).source
 		-D MI_USE_CXX=ON \
 		-D MI_BUILD_SHARED=$(if $(findstring linux,$(host_os)),OFF,ON) \
 		-D MI_BUILD_TESTS=OFF \
+		$(if $(findstring linux,$(host_os)),,-DMI_WIN_USE_FIXED_TLS=ON) \
 		$(if $(ENABLE_ASAN),-DMI_LOCAL_DYNAMIC_TLS=ON -DMI_TRACK_ASAN=ON -DMI_DEBUG_UBSAN=ON,) \
 		-D MI_INSTALL_TOPLEVEL=ON \
 		-D MI_BUILD_STATIC=OFF \
@@ -91,7 +92,7 @@ $(DEPS_PREFIX)/SDL3.built: $(DEPS_PREFIX)/FREETYPE2.built $(DEPS_CACHE)/SDL3.sou
 		-D CMAKE_SYSTEM_PROCESSOR="$(host_cpu)" \
 		-D SDL_RPATH=OFF \
 		-D SDL_IBUS=OFF \
-		-D SDL_CCACHE="$(if $(filter ccache,$(CC)),ON,OFF)" \
+		-D SDL_CCACHE="$(if $(filter ccache,$(CCACHE)),ON,OFF)" \
 		-D CMAKE_C_COMPILER="$(CC)" \
 		-D CMAKE_C_FLAGS="$(CFLAGS) -Wno-error=incompatible-pointer-types" && \
 	cmake --build build && \
