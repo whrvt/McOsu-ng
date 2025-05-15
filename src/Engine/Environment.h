@@ -80,8 +80,6 @@ public:
 	void maximize();
 	void enableFullscreen();
 	void disableFullscreen();
-	inline void foregrounded() { SDL_SetHint(SDL_HINT_MAIN_CALLBACK_RATE, m_sFpsMax.toUtf8()); }
-	inline void backgrounded() { SDL_SetHint(SDL_HINT_MAIN_CALLBACK_RATE, m_sFpsMaxBG.toUtf8()); }
 	void setWindowTitle(UString title);
 	void setWindowPos(int x, int y);
 	void setWindowSize(int width, int height);
@@ -148,10 +146,6 @@ protected:
 	// relative only useful if raw input is enabled, value is undefined/garbage otherwise
 	Vector2 m_vLastAbsMousePos;
 	Vector2 m_vLastRelMousePos;
-
-	// SDL hint cache for main loop iteration rate
-	UString m_sFpsMax;
-	UString m_sFpsMaxBG;
 
 private:
 	// logging

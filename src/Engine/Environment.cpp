@@ -76,9 +76,6 @@ Environment::Environment()
 	m_vLastAbsMousePos = Vector2{};
 	m_vLastRelMousePos = Vector2{};
 
-	m_sFpsMax = "60";
-	m_sFpsMaxBG = "30";
-
 	// create sdl system cursor map
 	m_mCursorIcons = {
 	    {CURSORTYPE::CURSOR_NORMAL, SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_DEFAULT)},      {CURSORTYPE::CURSOR_WAIT, SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_WAIT)},

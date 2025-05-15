@@ -49,6 +49,12 @@ private:
 	// engine update timer
 	Timer *m_deltaTimer;
 
+	// iteration rate control methods
+	inline void foregrounded() { SDL_SetHint(SDL_HINT_MAIN_CALLBACK_RATE, m_sFpsMax.toUtf8()); }
+	inline void backgrounded() { SDL_SetHint(SDL_HINT_MAIN_CALLBACK_RATE, m_sFpsMaxBG.toUtf8()); }
+	UString m_sFpsMax;
+	UString m_sFpsMaxBG;
+
 	// init methods
 	void setupLogging();
 	bool createWindow(int width, int height);
@@ -133,6 +139,9 @@ SDLMain::SDLMain(int, char *[]) : Environment()
 {
 	m_context = nullptr;
 	m_deltaTimer = nullptr;
+
+	m_sFpsMax = "420";
+	m_sFpsMaxBG = "30";
 
 	// setup callbacks
 	fps_max.setCallback(fastdelegate::MakeDelegate(this, &SDLMain::fps_max_callback));
@@ -272,32 +281,32 @@ SDL_AppResult SDLMain::handleEvent(SDL_Event *event)
 
 		case SDL_EVENT_WINDOW_FOCUS_GAINED:
 			m_bHasFocus = true;
-			foregrounded();
 			m_engine->onFocusGained();
+			foregrounded();
 			break;
 
 		case SDL_EVENT_WINDOW_FOCUS_LOST:
 			m_bHasFocus = false;
-			backgrounded();
 			m_engine->onFocusLost();
+			backgrounded();
 			break;
 
 		case SDL_EVENT_WINDOW_MAXIMIZED:
 			m_bMinimized = false;
-			foregrounded();
 			m_engine->onMaximized();
+			foregrounded();
 			break;
 
 		case SDL_EVENT_WINDOW_MINIMIZED:
 			m_bMinimized = true;
-			backgrounded();
 			m_engine->onMinimized();
+			backgrounded();
 			break;
 
 		case SDL_EVENT_WINDOW_RESTORED:
 			m_bMinimized = false;
-			foregrounded();
 			m_engine->onRestored();
+			foregrounded();
 			break;
 
 		case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
