@@ -6,8 +6,8 @@
 //===============================================================================//
 
 #define SDL_MAIN_USE_CALLBACKS
-#include <SDL3/SDL_main.h>
 #include <SDL3/SDL.h>
+#include <SDL3/SDL_main.h>
 
 // platform-specific headers
 #if defined(MCENGINE_PLATFORM_WINDOWS) || (defined(_WIN32) && !defined(__linux__))
@@ -25,8 +25,8 @@
 #endif
 
 #include "Engine.h"
-#include "Profiler.h"
 #include "Environment.h"
+#include "Profiler.h"
 #include "Timing.h"
 
 // thin environment subclass to provide SDL callbacks with direct access to members
@@ -320,14 +320,10 @@ SDL_AppResult SDLMain::handleEvent(SDL_Event *event)
 		m_engine->onKeyboardKeyUp(event->key.scancode);
 		break;
 
-	case SDL_EVENT_TEXT_INPUT: {
-		UString nullTerminatedTextInputString(event->text.text);
-		for (int i = 0; i < nullTerminatedTextInputString.length(); i++)
-		{
-			m_engine->onKeyboardChar((KEYCODE)nullTerminatedTextInputString[i]);
-		}
+	case SDL_EVENT_TEXT_INPUT:
+		for (const auto &key : UString(event->text.text))
+			m_engine->onKeyboardChar(key);
 		break;
-	}
 
 	// mouse events
 	case SDL_EVENT_MOUSE_BUTTON_DOWN:

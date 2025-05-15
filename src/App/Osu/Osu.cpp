@@ -2230,8 +2230,6 @@ void Osu::reloadFonts()
 
 void Osu::updateMouseSettings()
 {
-	debugLog("\n");
-
 	// mouse scaling & offset
 	Vector2 offset = Vector2(0, 0);
 	Vector2 scale = Vector2(1, 1);
@@ -2251,13 +2249,13 @@ void Osu::updateMouseSettings()
 
 	engine->getMouse()->setOffset(offset);
 	engine->getMouse()->setScale(scale);
+
+	if (debug->getBool())
+		debugLog("offset %.2f,%.2f scale %.2f,%.2f\n", offset.x, offset.y, scale.x, scale.y);
 }
 
 void Osu::updateWindowsKeyDisable()
 {
-	if (debug->getBool())
-		debugLog("\n");
-
 	const bool isPlayerPlaying = engine->hasFocus() && isInPlayMode() && getSelectedBeatmap() != NULL && (!getSelectedBeatmap()->isPaused() || getSelectedBeatmap()->isRestartScheduled()) && !m_bModAuto;
 	if (osu_disable_windows_key_while_playing.getBool() && !isInVRMode())
 	{
@@ -2265,6 +2263,9 @@ void Osu::updateWindowsKeyDisable()
 	}
 	// currently only used to signal SDL
 	env->listenToTextInput(!isPlayerPlaying);
+
+	if (debug->getBool())
+		debugLog("isPlayerPlaying %u\n", isPlayerPlaying);
 }
 
 void Osu::fireResolutionChanged()

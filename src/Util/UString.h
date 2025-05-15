@@ -60,6 +60,13 @@ public:
 	[[nodiscard]] int findIgnoreCase(const UString &str, int start = 0) const;
 	[[nodiscard]] int findIgnoreCase(const UString &str, int start, int end) const;
 
+	[[nodiscard]] inline auto begin() noexcept { return m_unicode.begin(); }
+	[[nodiscard]] inline auto end() noexcept { return m_unicode.end(); }
+	[[nodiscard]] inline auto begin() const noexcept { return m_unicode.begin(); }
+	[[nodiscard]] inline auto end() const noexcept { return m_unicode.end(); }
+	[[nodiscard]] inline auto cbegin() const noexcept { return m_unicode.cbegin(); }
+	[[nodiscard]] inline auto cend() const noexcept { return m_unicode.cend(); }
+
 	// modifiers
 	void collapseEscapes();
 	void append(const UString &str);
