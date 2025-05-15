@@ -6,6 +6,7 @@
 //================================================================================//
 
 #include "SoLoudSoundEngine.h"
+#include "SoLoudManager.h"
 #include "SoLoudSound.h"
 
 #ifdef MCENGINE_FEATURE_SOLOUD
@@ -28,6 +29,7 @@ ConVar snd_soloud_backend("snd_soloud_backend", SoLoud::Soloud::MINIAUDIO, FCVAR
 
 SoLoudSoundEngine::SoLoudSoundEngine() : SoundEngine()
 {
+	m_slManager = new SL();
 	m_iCurrentOutputDevice = -1;
 	m_sCurrentOutputDevice = "Default";
 
@@ -55,9 +57,8 @@ SoLoudSoundEngine::SoLoudSoundEngine() : SoundEngine()
 SoLoudSoundEngine::~SoLoudSoundEngine()
 {
 	if (m_bReady)
-	{
-		m_engine.deinit();
-	}
+		SL::deinit();
+	SAFE_DELETE(m_slManager);
 }
 
 void SoLoudSoundEngine::restart()
@@ -93,10 +94,10 @@ bool SoLoudSoundEngine::play(Sound *snd, float pan, float pitch)
 	if (!soloudSound)
 		return false;
 
-	if (soloudSound->m_handle != 0 && getPauseSound(soloudSound->m_handle))
+	if (soloudSound->m_handle != 0 && SL::getPause(soloudSound->m_handle))
 	{
 		// just unpause if paused
-		setPauseSound(soloudSound->m_handle, false);
+		SL::setPause(soloudSound->m_handle, false);
 		return true;
 	}
 
@@ -119,7 +120,7 @@ bool SoLoudSoundEngine::playSound(SoLoudSound *soloudSound, float pan, float pit
 	// if the sound is already playing and not overlayable, stop it
 	if (soloudSound->m_handle != 0 && !soloudSound->isOverlayable())
 	{
-		stopSound(soloudSound->m_handle);
+		SL::stop(soloudSound->m_handle);
 		soloudSound->m_handle = 0;
 	}
 
@@ -141,13 +142,11 @@ bool SoLoudSoundEngine::playSound(SoLoudSound *soloudSound, float pan, float pit
 
 	if (debug_snd.getBool())
 	{
-		debugLog("SoLoudSoundEngine: Playing %s (stream=%d, filter=%d, 3d=%d) with speed=%f, pitch=%f\n", soloudSound->m_sFilePath.toUtf8(),
-		         soloudSound->m_bStream ? 1 : 0, needSoundTouch ? 1 : 0, is3d ? 1 : 0, soloudSound->m_speed, pitch);
+		debugLog("SoLoudSoundEngine: Playing %s (stream=%d, filter=%d, 3d=%d) with speed=%f, pitch=%f\n", soloudSound->m_sFilePath.toUtf8(), soloudSound->m_bStream ? 1 : 0,
+		         needSoundTouch ? 1 : 0, is3d ? 1 : 0, soloudSound->m_speed, pitch);
 	}
 
 	// play the sound with appropriate method
-	// there is room for improvement here, for nightcore/daycore we could just do setRelativePlaybackSpeed and forgo the entire filter business
-	// but meh
 	unsigned int handle = 0;
 
 	if (is3d && pos)
@@ -192,7 +191,7 @@ bool SoLoudSoundEngine::playSound(SoLoudSound *soloudSound, float pan, float pit
 		soloudSound->setLastPlayTime(Timing::getTimeReal());
 
 		// get the actual sample rate for the file from SoLoud
-		float actualFreq = m_engine.getSamplerate(handle);
+		float actualFreq = SL::getSamplerate(handle);
 		if (actualFreq > 0)
 		{
 			soloudSound->m_frequency = actualFreq;
@@ -222,11 +221,11 @@ unsigned int SoLoudSoundEngine::playSoundWithFilter(SoLoudSound *soloudSound, fl
 	soloudSound->updateFilterParameters();
 
 	// play through the damn filter
-	unsigned int handle = m_engine.play(*filter, volume);
+	unsigned int handle = SL::play(*filter, volume);
 
 	if (handle != 0)
 	{
-		setPanSound(handle, pan);
+		SL::setPan(handle, pan);
 
 		if (debug_snd.getBool())
 		{
@@ -243,16 +242,16 @@ unsigned int SoLoudSoundEngine::playDirectSound(SoLoudSound *soloudSound, float 
 		return 0;
 
 	// play directly
-	unsigned int handle = m_engine.play(*soloudSound->m_audioSource, volume);
+	unsigned int handle = SL::play(*soloudSound->m_audioSource, volume);
 
 	if (handle != 0)
 	{
-		setPanSound(handle, pan);
+		SL::setPan(handle, pan);
 
 		// set relative play speed (affects both pitch and speed)
 		// (again, TODO, i don't think this is reachable currently)
 		if (pitch != 1.0f)
-			setRelativePlaySpeedSound(handle, pitch);
+			SL::setRelativePlaySpeed(handle, pitch);
 	}
 
 	return handle;
@@ -263,7 +262,7 @@ unsigned int SoLoudSoundEngine::play3dSound(SoLoudSound *soloudSound, Vector3 po
 	if (!soloudSound || !soloudSound->m_audioSource)
 		return 0;
 
-	unsigned int handle = m_engine.play3d(*soloudSound->m_audioSource, pos.x, pos.y, pos.z, 0, 0, 0, volume);
+	unsigned int handle = SL::play3d(*soloudSound->m_audioSource, pos.x, pos.y, pos.z, 0, 0, 0, volume);
 
 	return handle;
 }
@@ -289,7 +288,7 @@ void SoLoudSoundEngine::pause(Sound *snd)
 	if (!soloudSound || soloudSound->m_handle == 0)
 		return;
 
-	setPauseSound(soloudSound->m_handle, true);
+	SL::setPause(soloudSound->m_handle, true);
 	soloudSound->setLastPlayTime(0.0);
 }
 
@@ -302,7 +301,7 @@ void SoLoudSoundEngine::stop(Sound *snd)
 	if (!soloudSound || soloudSound->m_handle == 0)
 		return;
 
-	stopSound(soloudSound->m_handle);
+	SL::stop(soloudSound->m_handle);
 	soloudSound->m_handle = 0;
 	soloudSound->setPosition(0.0);
 	soloudSound->setLastPlayTime(0.0);
@@ -353,7 +352,7 @@ void SoLoudSoundEngine::setVolume(float volume)
 		return;
 
 	m_fVolume = std::clamp<float>(volume, 0.0f, 1.0f);
-	m_engine.setGlobalVolume(m_fVolume);
+	SL::setGlobalVolume(m_fVolume);
 }
 
 void SoLoudSoundEngine::set3dPosition(Vector3 headPos, Vector3 viewDir, Vector3 viewUp)
@@ -362,14 +361,14 @@ void SoLoudSoundEngine::set3dPosition(Vector3 headPos, Vector3 viewDir, Vector3 
 		return;
 
 	// set listener position
-	m_engine.set3dListenerPosition(headPos.x, headPos.y, headPos.z);
+	SL::set3dListenerPosition(headPos.x, headPos.y, headPos.z);
 
 	// set listener orientation (at and up vectors)
 	Vector3 at = headPos + viewDir; // "at" point = position + direction
-	m_engine.set3dListenerAt(at.x, at.y, at.z);
-	m_engine.set3dListenerUp(viewUp.x, viewUp.y, viewUp.z);
+	SL::set3dListenerAt(at.x, at.y, at.z);
+	SL::set3dListenerUp(viewUp.x, viewUp.y, viewUp.z);
 
-	m_engine.update3dAudio();
+	SL::update3dAudio();
 }
 
 std::vector<UString> SoLoudSoundEngine::getOutputDevices()
@@ -390,14 +389,13 @@ void SoLoudSoundEngine::updateOutputDevices(bool handleOutputDeviceChanges, bool
 	// SoLoud doesn't provide direct device enumeration
 	if (printInfo)
 	{
-		constexpr const char *const backendNames[] = {"Auto",      "SDL1",          "SDL2",      "PortAudio", "WinMM",      "XAudio2",
-		                                              "WASAPI",    "ALSA",          "JACK",      "OSS",       "OpenAL",     "CoreAudio",
-		                                              "OpenSL ES", "Vita Homebrew", "miniaudio", "Nosound",   "Nulldriver", "Unknown"};
+		constexpr const char *const backendNames[] = {"Auto", "SDL1",   "SDL2",      "PortAudio", "WinMM",         "XAudio2",   "WASAPI",  "ALSA",       "JACK",
+		                                              "OSS",  "OpenAL", "CoreAudio", "OpenSL ES", "Vita Homebrew", "miniaudio", "Nosound", "Nulldriver", "Unknown"};
 		debugLog("SoundEngine: Device 0 = \"Default\", enabled = 1, default = 1\n");
 
-		int backend = snd_soloud_backend.getInt();
+		auto backend = snd_soloud_backend.getVal<SoLoud::Soloud::BACKENDS>();
 		if (backend < 0 || backend > SoLoud::Soloud::BACKEND_MAX)
-			backend = SoLoud::Soloud::BACKEND_MAX;
+			backend = snd_soloud_backend.getDefaultVal<SoLoud::Soloud::BACKENDS>();
 		debugLog("SoundEngine: Using SoLoud backend: %s\n", backendNames[backend]);
 	}
 }
@@ -411,7 +409,8 @@ bool SoLoudSoundEngine::initializeOutputDevice(int id, bool force)
 	// cleanup potential previous device
 	if (m_bReady)
 	{
-		m_engine.deinit();
+		SL::deinit();
+		m_bReady = false;
 	}
 
 	// basic flags
@@ -432,8 +431,8 @@ bool SoLoudSoundEngine::initializeOutputDevice(int id, bool force)
 	// use stereo output
 	const unsigned int channels = 2;
 
-	// initialize SoLoud
-	SoLoud::result result = m_engine.init(flags, backend, sampleRate, bufferSize, channels);
+	// initialize SoLoud through the manager
+	SoLoud::result result = SL::init(flags, backend, sampleRate, bufferSize, channels);
 
 	if (result != SoLoud::SO_NO_ERROR)
 	{
@@ -461,83 +460,6 @@ bool SoLoudSoundEngine::initializeOutputDevice(int id, bool force)
 	setVolume(m_fVolume);
 
 	return true;
-}
-
-// SoLoud-specific accessors
-void SoLoudSoundEngine::stopSound(unsigned int handle)
-{
-	if (m_bReady && handle != 0)
-		m_engine.stop(handle);
-}
-
-void SoLoudSoundEngine::seekSound(unsigned int handle, double positionSeconds)
-{
-	if (m_bReady && handle != 0)
-		m_engine.seek(handle, positionSeconds);
-}
-
-void SoLoudSoundEngine::setPauseSound(unsigned int handle, bool pause)
-{
-	if (m_bReady && handle != 0)
-		m_engine.setPause(handle, pause);
-}
-
-void SoLoudSoundEngine::setVolumeSound(unsigned int handle, float volume)
-{
-	if (m_bReady && handle != 0)
-		m_engine.setVolume(handle, volume);
-}
-
-void SoLoudSoundEngine::setRelativePlaySpeedSound(unsigned int handle, float speed)
-{
-	if (m_bReady && handle != 0)
-		m_engine.setRelativePlaySpeed(handle, speed);
-}
-
-void SoLoudSoundEngine::setSampleRateSound(unsigned int handle, float sampleRate)
-{
-	if (m_bReady && handle != 0)
-		m_engine.setSamplerate(handle, sampleRate);
-}
-
-void SoLoudSoundEngine::setPanSound(unsigned int handle, float pan)
-{
-	if (m_bReady && handle != 0)
-		m_engine.setPan(handle, pan);
-}
-
-void SoLoudSoundEngine::setLoopingSound(unsigned int handle, bool loop)
-{
-	if (m_bReady && handle != 0)
-		m_engine.setLooping(handle, loop);
-}
-
-float SoLoudSoundEngine::getStreamPositionSound(unsigned int handle)
-{
-	if (m_bReady && handle != 0)
-		return static_cast<float>(m_engine.getStreamPosition(handle));
-	return 0.0f;
-}
-
-float SoLoudSoundEngine::getSampleRateSound(unsigned int handle)
-{
-	if (m_bReady && handle != 0)
-		return m_engine.getSamplerate(handle);
-	return 44100.0f;
-}
-
-bool SoLoudSoundEngine::isValidVoiceHandleSound(unsigned int handle)
-{
-	if (m_bReady && handle != 0)
-		return m_engine.isValidVoiceHandle(handle);
-	return false;
-}
-
-bool SoLoudSoundEngine::getPauseSound(unsigned int handle)
-{
-	if (m_bReady && handle != 0)
-		return m_engine.getPause(handle);
-	return false;
 }
 
 #endif // MCENGINE_FEATURE_SOLOUD

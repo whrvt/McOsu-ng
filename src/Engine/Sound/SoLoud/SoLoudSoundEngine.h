@@ -14,6 +14,8 @@
 
 #include <soloud/soloud.h>
 
+#include "SoLoudManager.h"
+
 class SoLoudSound;
 
 class SoLoudSoundEngine : public SoundEngine
@@ -43,34 +45,18 @@ public:
 	unsigned int playDirectSound(SoLoudSound *soloudSound, float pan, float pitch, float volume);
 	unsigned int play3dSound(SoLoudSound *soloudSound, Vector3 pos, float volume);
 
-	// SoLoud-specific sound manip methods
-	void stopSound(unsigned int handle);
-	void seekSound(unsigned int handle, double positionSeconds);
-	void setPauseSound(unsigned int handle, bool pause);
-	void setVolumeSound(unsigned int handle, float volume);
-	void setRelativePlaySpeedSound(unsigned int handle, float speed);
-	void setSampleRateSound(unsigned int handle, float sampleRate);
-	void setPanSound(unsigned int handle, float pan);
-	void setLoopingSound(unsigned int handle, bool loop);
-
-	// SoLoud-specific sound info methods
-	float getStreamPositionSound(unsigned int handle);
-	float getSampleRateSound(unsigned int handle);
-	bool isValidVoiceHandleSound(unsigned int handle);
-	bool getPauseSound(unsigned int handle);
-
-	SoundEngineType* getSndEngine() override {return this;}
-	[[nodiscard]] const SoundEngineType* getSndEngine() const override {return this;}
+	SoundEngineType *getSndEngine() override { return this; }
+	[[nodiscard]] const SoundEngineType *getSndEngine() const override { return this; }
 
 private:
 	void updateOutputDevices(bool handleOutputDeviceChanges, bool printInfo) override;
 	bool initializeOutputDevice(int id = -1, bool force = false) override;
-
-	// SoLoud engine instance
-	SoLoud::Soloud m_engine;
+	
+	SL* m_slManager;
 };
 
 #else
-class SoLoudSoundEngine : public SoundEngine{};
+class SoLoudSoundEngine : public SoundEngine
+{};
 #endif
 #endif

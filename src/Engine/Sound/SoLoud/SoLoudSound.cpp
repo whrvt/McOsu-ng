@@ -9,6 +9,7 @@
 
 #ifdef MCENGINE_FEATURE_SOLOUD
 
+#include "SoLoudManager.h"
 #include "SoLoudSoundEngine.h"
 
 #include "ConVar.h"
@@ -152,10 +153,9 @@ void SoLoudSound::destroy()
 	m_bReady = false;
 
 	// stop the sound if it's playing
-	SoLoudSoundEngine *engine = getSoLoudEngine();
-	if (engine && m_handle != 0)
+	if (m_handle != 0)
 	{
-		engine->stopSound(m_handle);
+		SL::stop(m_handle);
 		m_handle = 0;
 	}
 
@@ -237,9 +237,8 @@ void SoLoudSound::setPosition(double percent)
 	m_fSoLoudPositionRate = 1000.0 * getSpeed();
 
 	// seek in the engine
-	SoLoudSoundEngine *soloudEngine = getSoLoudEngine();
-	if (soloudEngine && m_handle != 0)
-		soloudEngine->seekSound(m_handle, seekPositionInSeconds);
+	if (m_handle != 0)
+		SL::seek(m_handle, seekPositionInSeconds);
 }
 
 void SoLoudSound::setPositionMS(unsigned long ms, bool internal)
@@ -263,9 +262,8 @@ void SoLoudSound::setPositionMS(unsigned long ms, bool internal)
 	m_fSoLoudPositionRate = 1000.0 * getSpeed();
 
 	// seek in the engine
-	SoLoudSoundEngine *soloudEngine = getSoLoudEngine();
-	if (soloudEngine && m_handle != 0)
-		soloudEngine->seekSound(m_handle, seekPositionInSeconds);
+	if (m_handle != 0)
+		SL::seek(m_handle, seekPositionInSeconds);
 }
 
 void SoLoudSound::setVolume(float volume)
@@ -278,9 +276,7 @@ void SoLoudSound::setVolume(float volume)
 	// apply to active voice if not overlayable
 	if (!m_bIsOverlayable && m_handle != 0)
 	{
-		SoLoudSoundEngine *soloudEngine = getSoLoudEngine();
-		if (soloudEngine)
-			soloudEngine->setVolumeSound(m_handle, m_fVolume);
+		SL::setVolume(m_handle, m_fVolume);
 	}
 }
 
@@ -306,27 +302,26 @@ void SoLoudSound::setSpeed(float speed)
 
 		if (isPlaying())
 		{
-			SoLoudSoundEngine *soloudEngine = getSoLoudEngine();
-			if (soloudEngine)
-			{
-				soloudEngine->stop(this);
+			// stop and restart with new parameters
+			SL::stop(m_handle);
+			m_handle = 0;
 
-				// this will apply the new parameters
-				soloudEngine->play(this, 0.0f, m_pitch);
+			// this will apply the new parameters
+			engine->getSound()->play(this, 0.0f, m_pitch);
 
-				// restore position to source position
-				soloudEngine->seekSound(m_handle, actualAudioPosition);
+			// restore position to source position
+			if (m_handle != 0)
+				SL::seek(m_handle, actualAudioPosition);
 
-				// interp tracks GAMEPLAY position
-				double gameplayPosition = actualAudioPosition * speed;
-				m_fLastRawSoLoudPosition = gameplayPosition * 1000.0;
-				m_fLastSoLoudPositionTime = Timing::getTimeReal();
-				m_fSoLoudPositionRate = 1000.0 * speed;
+			// interp tracks GAMEPLAY position
+			double gameplayPosition = actualAudioPosition * speed;
+			m_fLastRawSoLoudPosition = gameplayPosition * 1000.0;
+			m_fLastSoLoudPositionTime = Timing::getTimeReal();
+			m_fSoLoudPositionRate = 1000.0 * speed;
 
-				if (debug_snd.getBool())
-					debugLog("SoLoudSound: Speed change %s: %f->%f, actualAudioPos=%.3fs, seekPos=%.3fs (filter: %d->%d)\n", m_sFilePath.toUtf8(), previousSpeed, m_speed,
-					         actualAudioPosition, actualAudioPosition, wasUsingFilter ? 1 : 0, isUsingRateChange() ? 1 : 0);
-			}
+			if (debug_snd.getBool())
+				debugLog("SoLoudSound: Speed change %s: %f->%f, actualAudioPos=%.3fs, seekPos=%.3fs (filter: %d->%d)\n", m_sFilePath.toUtf8(), previousSpeed, m_speed,
+				         actualAudioPosition, actualAudioPosition, wasUsingFilter ? 1 : 0, isUsingRateChange() ? 1 : 0);
 		}
 	}
 
@@ -356,27 +351,26 @@ void SoLoudSound::setPitch(float pitch)
 
 		if (isPlaying())
 		{
-			SoLoudSoundEngine *soloudEngine = getSoLoudEngine();
-			if (soloudEngine)
-			{
-				soloudEngine->stop(this);
+			// stop and restart with new parameters
+			SL::stop(m_handle);
+			m_handle = 0;
 
-				// this will apply the new parameters
-				soloudEngine->play(this, 0.0f, pitch);
+			// this will apply the new parameters
+			engine->getSound()->play(this, 0.0f, pitch);
 
-				// always seek to the actual audio position
-				soloudEngine->seekSound(m_handle, actualAudioPosition);
+			// always seek to the actual audio position
+			if (m_handle != 0)
+				SL::seek(m_handle, actualAudioPosition);
 
-				// reset interpolation with gameplay timeline values
-				double gameplayPosition = actualAudioPosition * getSpeed();
-				m_fLastRawSoLoudPosition = gameplayPosition * 1000.0;
-				m_fLastSoLoudPositionTime = Timing::getTimeReal();
-				m_fSoLoudPositionRate = 1000.0 * getSpeed();
+			// reset interpolation with gameplay timeline values
+			double gameplayPosition = actualAudioPosition * getSpeed();
+			m_fLastRawSoLoudPosition = gameplayPosition * 1000.0;
+			m_fLastSoLoudPositionTime = Timing::getTimeReal();
+			m_fSoLoudPositionRate = 1000.0 * getSpeed();
 
-				if (debug_snd.getBool())
-					debugLog("SoLoudSound: Pitch change %s: %f->%f, actualAudioPos=%.3fs, seekPos=%.3fs (filter: %d->%d)\n", m_sFilePath.toUtf8(), previousPitch, m_pitch,
-					         actualAudioPosition, actualAudioPosition, wasUsingFilter ? 1 : 0, isUsingRateChange() ? 1 : 0);
-			}
+			if (debug_snd.getBool())
+				debugLog("SoLoudSound: Pitch change %s: %f->%f, actualAudioPos=%.3fs, seekPos=%.3fs (filter: %d->%d)\n", m_sFilePath.toUtf8(), previousPitch, m_pitch,
+				         actualAudioPosition, actualAudioPosition, wasUsingFilter ? 1 : 0, isUsingRateChange() ? 1 : 0);
 		}
 	}
 }
@@ -407,9 +401,8 @@ void SoLoudSound::setPan(float pan)
 	pan = std::clamp<float>(pan, -1.0f, 1.0f);
 
 	// apply to the active voice
-	SoLoudSoundEngine *engine = getSoLoudEngine();
-	if (engine && m_handle != 0)
-		engine->setPanSound(m_handle, pan);
+	if (m_handle != 0)
+		SL::setPan(m_handle, pan);
 }
 
 void SoLoudSound::setLoop(bool loop)
@@ -423,9 +416,8 @@ void SoLoudSound::setLoop(bool loop)
 	m_audioSource->setLooping(loop);
 
 	// apply to the active voice
-	SoLoudSoundEngine *engine = getSoLoudEngine();
-	if (engine && m_handle != 0)
-		engine->setLoopingSound(m_handle, loop);
+	if (m_handle != 0)
+		SL::setLooping(m_handle, loop);
 }
 
 bool SoLoudSound::isUsingRateChange() const
@@ -455,10 +447,9 @@ float SoLoudSound::getPosition()
 		return 0.0f;
 
 	// get engine position and convert to original timeline
-	float enginePositionInSeconds = 0.0f;
-	SoLoudSoundEngine *engine = getSoLoudEngine();
-	if (engine && m_handle != 0)
-		enginePositionInSeconds = engine->getStreamPositionSound(m_handle);
+	double enginePositionInSeconds = 0.0;
+	if (m_handle != 0)
+		enginePositionInSeconds = SL::getStreamPosition(m_handle);
 
 	double originalPositionInSeconds = convertToOriginalTimeline(enginePositionInSeconds);
 
@@ -484,9 +475,8 @@ unsigned long SoLoudSound::getPositionMS()
 
 	// get engine position and convert to GAMEPLAY timeline
 	double enginePositionInSeconds = 0.0;
-	SoLoudSoundEngine *soloudEngine = getSoLoudEngine();
-	if (soloudEngine && m_handle != 0)
-		enginePositionInSeconds = soloudEngine->getStreamPositionSound(m_handle);
+	if (m_handle != 0)
+		enginePositionInSeconds = SL::getStreamPosition(m_handle);
 
 	double gameplayPositionInSeconds = convertToOriginalTimeline(enginePositionInSeconds);
 
@@ -618,10 +608,9 @@ float SoLoudSound::getFrequency()
 		return 44100.0f;
 
 	// get sample rate from active voice
-	SoLoudSoundEngine *engine = getSoLoudEngine();
-	if (engine && m_handle != 0)
+	if (m_handle != 0)
 	{
-		float currentFreq = engine->getSampleRateSound(m_handle);
+		float currentFreq = SL::getSamplerate(m_handle);
 		if (currentFreq > 0)
 			m_frequency = currentFreq;
 	}
@@ -634,12 +623,11 @@ bool SoLoudSound::isPlaying()
 	if (!m_bReady)
 		return false;
 
-	SoLoudSoundEngine *engine = getSoLoudEngine();
-	if (!engine || m_handle == 0)
+	if (m_handle == 0)
 		return false;
 
 	// a sound is playing if the handle is valid and the sound isn't paused
-	return engine->isValidVoiceHandleSound(m_handle) && !engine->getPauseSound(m_handle);
+	return SL::isValidVoiceHandle(m_handle) && !SL::getPause(m_handle);
 }
 
 bool SoLoudSound::isFinished()
@@ -647,12 +635,11 @@ bool SoLoudSound::isFinished()
 	if (!m_bReady)
 		return false;
 
-	SoLoudSoundEngine *engine = getSoLoudEngine();
-	if (!engine || m_handle == 0)
+	if (m_handle == 0)
 		return true;
 
 	// a sound is finished if the handle is no longer valid
-	return !engine->isValidVoiceHandleSound(m_handle);
+	return !SL::isValidVoiceHandle(m_handle);
 }
 
 void SoLoudSound::rebuild(UString newFilePath)

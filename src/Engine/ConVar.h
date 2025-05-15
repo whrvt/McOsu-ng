@@ -95,7 +95,9 @@ public:
 	void execInt(float args);
 
 	// get
-	[[nodiscard]] constexpr float getDefaultFloat() const {return m_fDefaultValue.load();}
+	template <typename T = int>
+	[[nodiscard]] constexpr auto getDefaultVal() const {return static_cast<T>(m_fDefaultValue.load());}
+	[[nodiscard]] constexpr float getDefaultFloat() const {return getDefaultVal<float>();}
 	[[nodiscard]] constexpr const UString &getDefaultString() const {return m_sDefaultValue;}
 
 	[[nodiscard]] constexpr bool isFlagSet(int flag) const {return (bool)(m_iFlags & flag);}

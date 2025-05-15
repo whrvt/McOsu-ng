@@ -7,7 +7,7 @@ AllowShortFunctionsOnASingleLine: Inline
 IndentAccessModifiers: false
 AccessModifierOffset: -4
 AllowShortBlocksOnASingleLine: Empty
-AllowShortIfStatementsOnASingleLine: AllIfsAndElse
+AllowShortIfStatementsOnASingleLine: Never
 BraceWrapping:
   SplitEmptyRecord: false
   SplitEmptyNamespace: false
@@ -21,7 +21,7 @@ AllowShortFunctionsOnASingleLine: Inline
 IndentAccessModifiers: false
 AccessModifierOffset: -4
 AllowShortBlocksOnASingleLine: Empty
-AllowShortIfStatementsOnASingleLine: AllIfsAndElse
+AllowShortIfStatementsOnASingleLine: Never
 BreakBeforeConceptDeclarations: Always
 BreakTemplateDeclarations: Yes
 BreakBeforeBraces: Custom

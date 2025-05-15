@@ -18,7 +18,7 @@
 #include <soloud/soloud_wavstream.h>
 
 #include "Engine.h"
-#include "SoLoudSoundEngine.h"
+#include "SoLoudManager.h"
 #include "SoundTouchFilter.h"
 
 class SoLoudSound : public Sound
@@ -59,9 +59,6 @@ private:
 	void initAsync() override;
 	void destroy() override;
 
-	// get the handle to the SoLoud engine instance
-	constexpr inline SoLoudSoundEngine *getSoLoudEngine() { return engine->getSound()->getSndEngine(); }
-
 	// similar idea to the ugly "m_MixChunkOrMixMusic" casting thing in the SDL_mixer implementation
 	// WavStreams are for beatmap audio, streamed from disk, Wavs are for other (shorter) audio samples, loaded entirely into memory
 	[[nodiscard]] inline SoLoud::Wav *asWav() const { return m_bStream ? nullptr : static_cast<SoLoud::Wav *>(m_audioSource); }
@@ -78,9 +75,8 @@ private:
 		if (!m_bReady || !m_audioSource)
 			return 0.0;
 
-		SoLoudSoundEngine *soloudEngine = getSoLoudEngine();
-		if (soloudEngine && m_handle != 0)
-			return soloudEngine->getStreamPositionSound(m_handle);
+		if (m_handle != 0)
+			return SL::getStreamPosition(m_handle);
 
 		return 0.0;
 	}

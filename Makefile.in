@@ -264,6 +264,7 @@ am_McOsu_ng_OBJECTS = src/App/Osu/McOsu_ng-Osu.$(OBJEXT) \
 	src/Engine/Sound/BASS/McOsu_ng-BassSoundEngine.$(OBJEXT) \
 	src/Engine/Sound/SDL_mixer/McOsu_ng-SDLSound.$(OBJEXT) \
 	src/Engine/Sound/SDL_mixer/McOsu_ng-SDLSoundEngine.$(OBJEXT) \
+	src/Engine/Sound/SoLoud/McOsu_ng-SoLoudManager.$(OBJEXT) \
 	src/Engine/Sound/SoLoud/McOsu_ng-SoLoudSound.$(OBJEXT) \
 	src/Engine/Sound/SoLoud/McOsu_ng-SoLoudSoundEngine.$(OBJEXT) \
 	src/Engine/Sound/SoLoud/McOsu_ng-SoundTouchFilter.$(OBJEXT) \
@@ -467,6 +468,7 @@ am__depfiles_remade = src/App/Osu/$(DEPDIR)/McOsu_ng-Osu.Po \
 	src/Engine/Sound/BASS/$(DEPDIR)/McOsu_ng-BassSoundEngine.Po \
 	src/Engine/Sound/SDL_mixer/$(DEPDIR)/McOsu_ng-SDLSound.Po \
 	src/Engine/Sound/SDL_mixer/$(DEPDIR)/McOsu_ng-SDLSoundEngine.Po \
+	src/Engine/Sound/SoLoud/$(DEPDIR)/McOsu_ng-SoLoudManager.Po \
 	src/Engine/Sound/SoLoud/$(DEPDIR)/McOsu_ng-SoLoudSound.Po \
 	src/Engine/Sound/SoLoud/$(DEPDIR)/McOsu_ng-SoLoudSoundEngine.Po \
 	src/Engine/Sound/SoLoud/$(DEPDIR)/McOsu_ng-SoundTouchFilter.Po \
@@ -919,6 +921,7 @@ McOsu_ng_SOURCES = \
 	src/Engine/Sound/BASS/BassSoundEngine.cpp \
 	src/Engine/Sound/SDL_mixer/SDLSound.cpp \
 	src/Engine/Sound/SDL_mixer/SDLSoundEngine.cpp \
+	src/Engine/Sound/SoLoud/SoLoudManager.cpp \
 	src/Engine/Sound/SoLoud/SoLoudSound.cpp \
 	src/Engine/Sound/SoLoud/SoLoudSoundEngine.cpp \
 	src/Engine/Sound/SoLoud/SoundTouchFilter.cpp \
@@ -1573,6 +1576,9 @@ src/Engine/Sound/SoLoud/$(am__dirstamp):
 src/Engine/Sound/SoLoud/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) src/Engine/Sound/SoLoud/$(DEPDIR)
 	@: >>src/Engine/Sound/SoLoud/$(DEPDIR)/$(am__dirstamp)
+src/Engine/Sound/SoLoud/McOsu_ng-SoLoudManager.$(OBJEXT):  \
+	src/Engine/Sound/SoLoud/$(am__dirstamp) \
+	src/Engine/Sound/SoLoud/$(DEPDIR)/$(am__dirstamp)
 src/Engine/Sound/SoLoud/McOsu_ng-SoLoudSound.$(OBJEXT):  \
 	src/Engine/Sound/SoLoud/$(am__dirstamp) \
 	src/Engine/Sound/SoLoud/$(DEPDIR)/$(am__dirstamp)
@@ -1871,6 +1877,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Sound/BASS/$(DEPDIR)/McOsu_ng-BassSoundEngine.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Sound/SDL_mixer/$(DEPDIR)/McOsu_ng-SDLSound.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Sound/SDL_mixer/$(DEPDIR)/McOsu_ng-SDLSoundEngine.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Sound/SoLoud/$(DEPDIR)/McOsu_ng-SoLoudManager.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Sound/SoLoud/$(DEPDIR)/McOsu_ng-SoLoudSound.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Sound/SoLoud/$(DEPDIR)/McOsu_ng-SoLoudSoundEngine.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Sound/SoLoud/$(DEPDIR)/McOsu_ng-SoundTouchFilter.Po@am__quote@ # am--include-marker
@@ -3806,6 +3813,20 @@ src/Engine/Sound/SDL_mixer/McOsu_ng-SDLSoundEngine.obj: src/Engine/Sound/SDL_mix
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Sound/SDL_mixer/McOsu_ng-SDLSoundEngine.obj `if test -f 'src/Engine/Sound/SDL_mixer/SDLSoundEngine.cpp'; then $(CYGPATH_W) 'src/Engine/Sound/SDL_mixer/SDLSoundEngine.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Sound/SDL_mixer/SDLSoundEngine.cpp'; fi`
 
+src/Engine/Sound/SoLoud/McOsu_ng-SoLoudManager.o: src/Engine/Sound/SoLoud/SoLoudManager.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Sound/SoLoud/McOsu_ng-SoLoudManager.o -MD -MP -MF src/Engine/Sound/SoLoud/$(DEPDIR)/McOsu_ng-SoLoudManager.Tpo -c -o src/Engine/Sound/SoLoud/McOsu_ng-SoLoudManager.o `test -f 'src/Engine/Sound/SoLoud/SoLoudManager.cpp' || echo '$(srcdir)/'`src/Engine/Sound/SoLoud/SoLoudManager.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Sound/SoLoud/$(DEPDIR)/McOsu_ng-SoLoudManager.Tpo src/Engine/Sound/SoLoud/$(DEPDIR)/McOsu_ng-SoLoudManager.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Sound/SoLoud/SoLoudManager.cpp' object='src/Engine/Sound/SoLoud/McOsu_ng-SoLoudManager.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Sound/SoLoud/McOsu_ng-SoLoudManager.o `test -f 'src/Engine/Sound/SoLoud/SoLoudManager.cpp' || echo '$(srcdir)/'`src/Engine/Sound/SoLoud/SoLoudManager.cpp
+
+src/Engine/Sound/SoLoud/McOsu_ng-SoLoudManager.obj: src/Engine/Sound/SoLoud/SoLoudManager.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Sound/SoLoud/McOsu_ng-SoLoudManager.obj -MD -MP -MF src/Engine/Sound/SoLoud/$(DEPDIR)/McOsu_ng-SoLoudManager.Tpo -c -o src/Engine/Sound/SoLoud/McOsu_ng-SoLoudManager.obj `if test -f 'src/Engine/Sound/SoLoud/SoLoudManager.cpp'; then $(CYGPATH_W) 'src/Engine/Sound/SoLoud/SoLoudManager.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Sound/SoLoud/SoLoudManager.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Sound/SoLoud/$(DEPDIR)/McOsu_ng-SoLoudManager.Tpo src/Engine/Sound/SoLoud/$(DEPDIR)/McOsu_ng-SoLoudManager.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Sound/SoLoud/SoLoudManager.cpp' object='src/Engine/Sound/SoLoud/McOsu_ng-SoLoudManager.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Sound/SoLoud/McOsu_ng-SoLoudManager.obj `if test -f 'src/Engine/Sound/SoLoud/SoLoudManager.cpp'; then $(CYGPATH_W) 'src/Engine/Sound/SoLoud/SoLoudManager.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Sound/SoLoud/SoLoudManager.cpp'; fi`
+
 src/Engine/Sound/SoLoud/McOsu_ng-SoLoudSound.o: src/Engine/Sound/SoLoud/SoLoudSound.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Sound/SoLoud/McOsu_ng-SoLoudSound.o -MD -MP -MF src/Engine/Sound/SoLoud/$(DEPDIR)/McOsu_ng-SoLoudSound.Tpo -c -o src/Engine/Sound/SoLoud/McOsu_ng-SoLoudSound.o `test -f 'src/Engine/Sound/SoLoud/SoLoudSound.cpp' || echo '$(srcdir)/'`src/Engine/Sound/SoLoud/SoLoudSound.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Sound/SoLoud/$(DEPDIR)/McOsu_ng-SoLoudSound.Tpo src/Engine/Sound/SoLoud/$(DEPDIR)/McOsu_ng-SoLoudSound.Po
@@ -4858,6 +4879,7 @@ distclean: distclean-am
 	-rm -f src/Engine/Sound/BASS/$(DEPDIR)/McOsu_ng-BassSoundEngine.Po
 	-rm -f src/Engine/Sound/SDL_mixer/$(DEPDIR)/McOsu_ng-SDLSound.Po
 	-rm -f src/Engine/Sound/SDL_mixer/$(DEPDIR)/McOsu_ng-SDLSoundEngine.Po
+	-rm -f src/Engine/Sound/SoLoud/$(DEPDIR)/McOsu_ng-SoLoudManager.Po
 	-rm -f src/Engine/Sound/SoLoud/$(DEPDIR)/McOsu_ng-SoLoudSound.Po
 	-rm -f src/Engine/Sound/SoLoud/$(DEPDIR)/McOsu_ng-SoLoudSoundEngine.Po
 	-rm -f src/Engine/Sound/SoLoud/$(DEPDIR)/McOsu_ng-SoundTouchFilter.Po
@@ -5083,6 +5105,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f src/Engine/Sound/BASS/$(DEPDIR)/McOsu_ng-BassSoundEngine.Po
 	-rm -f src/Engine/Sound/SDL_mixer/$(DEPDIR)/McOsu_ng-SDLSound.Po
 	-rm -f src/Engine/Sound/SDL_mixer/$(DEPDIR)/McOsu_ng-SDLSoundEngine.Po
+	-rm -f src/Engine/Sound/SoLoud/$(DEPDIR)/McOsu_ng-SoLoudManager.Po
 	-rm -f src/Engine/Sound/SoLoud/$(DEPDIR)/McOsu_ng-SoLoudSound.Po
 	-rm -f src/Engine/Sound/SoLoud/$(DEPDIR)/McOsu_ng-SoLoudSoundEngine.Po
 	-rm -f src/Engine/Sound/SoLoud/$(DEPDIR)/McOsu_ng-SoundTouchFilter.Po
