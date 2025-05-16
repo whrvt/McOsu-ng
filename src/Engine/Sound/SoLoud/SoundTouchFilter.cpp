@@ -55,7 +55,7 @@ result SoundTouchFilter::setSource(AudioSource *aSource)
 	mBaseSamplerate = mSource->mBaseSamplerate;
 	mFlags = mSource->mFlags;
 
-	ST_DEBUG_LOG("SoundTouchFilter: Set source with %d channels at %f Hz\n", mChannels, mBaseSamplerate);
+	ST_DEBUG_LOG("SoundTouchFilter: Set source with %d channels at %f Hz, mFlags=%x\n", mChannels, mBaseSamplerate, mFlags);
 
 	return SO_NO_ERROR;
 }
@@ -119,7 +119,7 @@ SoundTouchFilterInstance::SoundTouchFilterInstance(SoundTouchFilter *aParent)
 			mSetRelativePlaySpeed = mParent->mSpeedFactor;
 			mOverallRelativePlaySpeed = mParent->mSpeedFactor;
 
-			ST_DEBUG_LOG("SoundTouchFilterInstance: Creating with %d channels at %f Hz\n", mChannels, mBaseSamplerate);
+			ST_DEBUG_LOG("SoundTouchFilterInstance: Creating with %d channels at %f Hz, mFlags=%x\n", mChannels, mBaseSamplerate, mFlags);
 
 			// initialize SoundTouch
 			mSoundTouch = new soundtouch::SoundTouch();

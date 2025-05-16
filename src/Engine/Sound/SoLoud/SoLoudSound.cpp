@@ -179,6 +179,7 @@ void SoLoudSound::destroy()
 	}
 }
 
+// TODO: move this somewhere move appropriate
 SoLoud::SoundTouchFilter *SoLoudSound::getOrCreateFilter()
 {
 	if (m_filter)
@@ -191,13 +192,14 @@ SoLoud::SoundTouchFilter *SoLoudSound::getOrCreateFilter()
 	{
 		// configure initial source
 		if (m_audioSource)
-		{
 			m_filter->setSource(m_audioSource);
-		}
 
 		// set initial parameters
 		m_filter->setSpeedFactor(m_speed);
 		m_filter->setPitchFactor(m_pitch);
+
+		// FIXME: ok, something is messed up, why do i have to manually set looping on the filter instance? why is it not inherited?
+		m_filter->setLooping(m_bIsLooped);
 
 		if (debug_snd.getBool())
 			debugLog("SoLoudSound: Created SoundTouch filter for %s with speed=%f, pitch=%f\n", m_sFilePath.toUtf8(), m_speed, m_pitch);
@@ -213,6 +215,9 @@ bool SoLoudSound::updateFilterParameters()
 
 	m_filter->setSpeedFactor(m_speed);
 	m_filter->setPitchFactor(m_pitch);
+
+	// FIXME: same as above
+	m_filter->setLooping(m_bIsLooped);
 
 	return true;
 }
@@ -275,9 +280,7 @@ void SoLoudSound::setVolume(float volume)
 
 	// apply to active voice if not overlayable
 	if (!m_bIsOverlayable && m_handle != 0)
-	{
 		SL::setVolume(m_handle, m_fVolume);
-	}
 }
 
 void SoLoudSound::setSpeed(float speed)
@@ -289,46 +292,59 @@ void SoLoudSound::setSpeed(float speed)
 
 	if (m_speed != speed)
 	{
-		bool wasUsingFilter = isUsingRateChange();
 		float previousSpeed = m_speed;
-
-		// real source playback position before stopping
-		double actualAudioPosition = 0.0;
-		if (isPlaying())
-			actualAudioPosition = getActualAudioPositionInSeconds();
-
 		m_speed = speed;
-		updateFilterParameters();
 
-		if (isPlaying())
+		// for streaming audio, simply update the filter parameters (no restart needed)
+		if (m_bStream && m_filter)
 		{
-			// stop and restart with new parameters
-			SL::stop(m_handle);
-			m_handle = 0;
-
-			// this will apply the new parameters
-			engine->getSound()->play(this, 0.0f, m_pitch);
-
-			// restore position to source position
-			if (m_handle != 0)
-				SL::seek(m_handle, actualAudioPosition);
-
-			// interp tracks GAMEPLAY position
-			double gameplayPosition = actualAudioPosition * speed;
-			m_fLastRawSoLoudPosition = gameplayPosition * 1000.0;
-			m_fLastSoLoudPositionTime = Timing::getTimeReal();
-			m_fSoLoudPositionRate = 1000.0 * speed;
+			updateFilterParameters();
 
 			if (debug_snd.getBool())
-				debugLog("SoLoudSound: Speed change %s: %f->%f, actualAudioPos=%.3fs, seekPos=%.3fs (filter: %d->%d)\n", m_sFilePath.toUtf8(), previousSpeed, m_speed,
-				         actualAudioPosition, actualAudioPosition, wasUsingFilter ? 1 : 0, isUsingRateChange() ? 1 : 0);
+				debugLog("SoLoudSound: Speed change %s: %f->%f (stream, filter updated live)\n", m_sFilePath.toUtf8(), previousSpeed, m_speed);
+		}
+		// for non-streaming audio, we still need the restart logic
+		// TODO: remove this and all related logic in SoLoudSoundEngine, we never want to play through the filter for non-streamed audio
+		else if (!m_bStream)
+		{
+			bool wasUsingFilter = isUsingRateChange();
+
+			// real source playback position before stopping
+			double actualAudioPosition = 0.0;
+			if (isPlaying())
+				actualAudioPosition = getActualAudioPositionInSeconds();
+
+			updateFilterParameters();
+
+			if (isPlaying())
+			{
+				// stop and restart with new parameters
+				SL::stop(m_handle);
+				m_handle = 0;
+
+				// this will apply the new parameters
+				engine->getSound()->play(this, 0.0f, m_pitch);
+
+				// restore position to source position
+				if (m_handle != 0)
+					SL::seek(m_handle, actualAudioPosition);
+
+				// interp tracks GAMEPLAY position
+				double gameplayPosition = actualAudioPosition * speed;
+				m_fLastRawSoLoudPosition = gameplayPosition * 1000.0;
+				m_fLastSoLoudPositionTime = Timing::getTimeReal();
+				m_fSoLoudPositionRate = 1000.0 * speed;
+
+				if (debug_snd.getBool())
+					debugLog("SoLoudSound: Speed change %s: %f->%f, actualAudioPos=%.3fs, seekPos=%.3fs (filter: %d->%d)\n", m_sFilePath.toUtf8(), previousSpeed, m_speed,
+					         actualAudioPosition, actualAudioPosition, wasUsingFilter ? 1 : 0, isUsingRateChange() ? 1 : 0);
+			}
 		}
 	}
 
 	m_fActualSpeedForDisabledPitchCompensation = speed;
 }
 
-// Updated setPitch with the same approach
 void SoLoudSound::setPitch(float pitch)
 {
 	if (!m_bReady)
@@ -338,39 +354,53 @@ void SoLoudSound::setPitch(float pitch)
 
 	if (m_pitch != pitch)
 	{
-		bool wasUsingFilter = isUsingRateChange();
 		float previousPitch = m_pitch;
-
-		// ACTUAL audio file position
-		double actualAudioPosition = 0.0;
-		if (isPlaying())
-			actualAudioPosition = getActualAudioPositionInSeconds();
-
 		m_pitch = pitch;
-		updateFilterParameters();
 
-		if (isPlaying())
+		// for streaming audio, simply update the filter parameters (no restart needed)
+		if (m_bStream && m_filter)
 		{
-			// stop and restart with new parameters
-			SL::stop(m_handle);
-			m_handle = 0;
-
-			// this will apply the new parameters
-			engine->getSound()->play(this, 0.0f, pitch);
-
-			// always seek to the actual audio position
-			if (m_handle != 0)
-				SL::seek(m_handle, actualAudioPosition);
-
-			// reset interpolation with gameplay timeline values
-			double gameplayPosition = actualAudioPosition * getSpeed();
-			m_fLastRawSoLoudPosition = gameplayPosition * 1000.0;
-			m_fLastSoLoudPositionTime = Timing::getTimeReal();
-			m_fSoLoudPositionRate = 1000.0 * getSpeed();
+			updateFilterParameters();
 
 			if (debug_snd.getBool())
-				debugLog("SoLoudSound: Pitch change %s: %f->%f, actualAudioPos=%.3fs, seekPos=%.3fs (filter: %d->%d)\n", m_sFilePath.toUtf8(), previousPitch, m_pitch,
-				         actualAudioPosition, actualAudioPosition, wasUsingFilter ? 1 : 0, isUsingRateChange() ? 1 : 0);
+				debugLog("SoLoudSound: Pitch change %s: %f->%f (stream, filter updated live)\n", m_sFilePath.toUtf8(), previousPitch, m_pitch);
+		}
+		// for non-streaming audio, we still need the restart logic
+		// TODO: remove this and all related logic in SoLoudSoundEngine, we never want to play through the filter for non-streamed audio
+		else if (!m_bStream)
+		{
+			bool wasUsingFilter = isUsingRateChange();
+
+			// ACTUAL audio file position
+			double actualAudioPosition = 0.0;
+			if (isPlaying())
+				actualAudioPosition = getActualAudioPositionInSeconds();
+
+			updateFilterParameters();
+
+			if (isPlaying())
+			{
+				// stop and restart with new parameters
+				SL::stop(m_handle);
+				m_handle = 0;
+
+				// this will apply the new parameters
+				engine->getSound()->play(this, 0.0f, pitch);
+
+				// always seek to the actual audio position
+				if (m_handle != 0)
+					SL::seek(m_handle, actualAudioPosition);
+
+				// reset interpolation with gameplay timeline values
+				double gameplayPosition = actualAudioPosition * getSpeed();
+				m_fLastRawSoLoudPosition = gameplayPosition * 1000.0;
+				m_fLastSoLoudPositionTime = Timing::getTimeReal();
+				m_fSoLoudPositionRate = 1000.0 * getSpeed();
+
+				if (debug_snd.getBool())
+					debugLog("SoLoudSound: Pitch change %s: %f->%f, actualAudioPos=%.3fs, seekPos=%.3fs (filter: %d->%d)\n", m_sFilePath.toUtf8(), previousPitch, m_pitch,
+					         actualAudioPosition, actualAudioPosition, wasUsingFilter ? 1 : 0, isUsingRateChange() ? 1 : 0);
+			}
 		}
 	}
 }
@@ -428,12 +458,14 @@ bool SoLoudSound::isUsingRateChange() const
 		return (m_speed != 1.0f && m_pitch == 1.0f);
 }
 
+// TODO: factor/clarify/make unnecessary? this is confusing
 double SoLoudSound::convertToOriginalTimeline(double enginePosition) const
 {
 	// for getPositionMS() to return speed-adjusted position for gameplay
 	return isUsingRateChange() ? (enginePosition * m_speed) : enginePosition;
 }
 
+// TODO: factor/clarify/make unnecessary? this is confusing
 double SoLoudSound::convertFromOriginalTimeline(double originalPosition) const
 {
 	// this is only used for setPosition/setPositionMS from external callers

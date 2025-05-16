@@ -117,9 +117,12 @@ bool SoLoudSoundEngine::playSound(SoLoudSound *soloudSound, float pan, float pit
 	if (!allowPlayFrame)
 		return false;
 
+	auto restorePos = 0.0; // position in the track to potentially restore to
+
 	// if the sound is already playing and not overlayable, stop it
 	if (soloudSound->m_handle != 0 && !soloudSound->isOverlayable())
 	{
+		restorePos = SL::getStreamPosition(soloudSound->m_handle);
 		SL::stop(soloudSound->m_handle);
 		soloudSound->m_handle = 0;
 	}
@@ -127,17 +130,25 @@ bool SoLoudSoundEngine::playSound(SoLoudSound *soloudSound, float pan, float pit
 	// determine if we need SoundTouch filter based on parameters
 	bool needSoundTouch = false;
 
-	// we need the filter if speed is not 1.0 or if pitch needs adjustment
-	if (snd_speed_compensate_pitch.getBool())
+	// always use filter for streaming audio (like BASS_FX_TempoCreate)
+	if (soloudSound->m_bStream)
 	{
-		// when compensating pitch, we need filter if either speed != 1.0 or pitch != 1.0
-		needSoundTouch = (soloudSound->m_speed != 1.0f || soloudSound->m_pitch != 1.0f);
+		needSoundTouch = true;
 	}
 	else
 	{
-		// when not compensating pitch, we only need filter if we want to change
-		// speed without changing pitch proportionally
-		needSoundTouch = (soloudSound->m_speed != 1.0f && soloudSound->m_pitch == 1.0f);
+		// for non-streaming audio, use the original logic for now
+		if (snd_speed_compensate_pitch.getBool())
+		{
+			// when compensating pitch, we need filter if either speed != 1.0 or pitch != 1.0
+			needSoundTouch = (soloudSound->m_speed != 1.0f || soloudSound->m_pitch != 1.0f);
+		}
+		else
+		{
+			// when not compensating pitch, we only need filter if we want to change
+			// speed without changing pitch proportionally
+			needSoundTouch = (soloudSound->m_speed != 1.0f && soloudSound->m_pitch == 1.0f);
+		}
 	}
 
 	if (debug_snd.getBool())
@@ -149,6 +160,7 @@ bool SoLoudSoundEngine::playSound(SoLoudSound *soloudSound, float pan, float pit
 	// play the sound with appropriate method
 	unsigned int handle = 0;
 
+	// TODO: cleanup the logic below to only account for what's actually possible
 	if (is3d && pos)
 	{
 		// 3D playback
@@ -170,14 +182,10 @@ bool SoLoudSoundEngine::playSound(SoLoudSound *soloudSound, float pan, float pit
 		// apply the speed through relative play speed
 		// (again, this branch is probably unreachable atm, but should be done in the future)
 		if (!snd_speed_compensate_pitch.getBool() && soloudSound->m_speed != 1.0f)
-		{
 			finalPitch *= soloudSound->m_speed;
-		}
 
 		if (soloudSound->m_pitch != 1.0f)
-		{
 			finalPitch *= soloudSound->m_pitch;
-		}
 
 		handle = playDirectSound(soloudSound, pan, finalPitch, soloudSound->m_fVolume);
 		soloudSound->m_usingFilter = false;
@@ -186,6 +194,9 @@ bool SoLoudSoundEngine::playSound(SoLoudSound *soloudSound, float pan, float pit
 	// finalize playback
 	if (handle != 0)
 	{
+		if (restorePos != 0.0)
+			SL::seek(handle, restorePos); // restore the position to where we were pre-pause
+
 		// store the handle and mark playback time
 		soloudSound->m_handle = handle;
 		soloudSound->setLastPlayTime(Timing::getTimeReal());
@@ -193,17 +204,13 @@ bool SoLoudSoundEngine::playSound(SoLoudSound *soloudSound, float pan, float pit
 		// get the actual sample rate for the file from SoLoud
 		float actualFreq = SL::getSamplerate(handle);
 		if (actualFreq > 0)
-		{
 			soloudSound->m_frequency = actualFreq;
-		}
 
 		return true;
 	}
 
 	if (debug_snd.getBool())
-	{
 		debugLog("SoLoudSoundEngine: Failed to play sound %s\n", soloudSound->m_sFilePath.toUtf8());
-	}
 
 	return false;
 }
@@ -226,11 +233,8 @@ unsigned int SoLoudSoundEngine::playSoundWithFilter(SoLoudSound *soloudSound, fl
 	if (handle != 0)
 	{
 		SL::setPan(handle, pan);
-
 		if (debug_snd.getBool())
-		{
 			debugLog("SoLoudSoundEngine: Playing through SoundTouch filter with speed=%f, pitch=%f\n", soloudSound->m_speed, soloudSound->m_pitch);
-		}
 	}
 
 	return handle;
