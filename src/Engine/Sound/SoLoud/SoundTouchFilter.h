@@ -71,12 +71,15 @@ public:
 	// playback state management
 	bool hasEnded() override;
 	result seek(time aSeconds, float *mScratch, unsigned int mScratchSize) override;
-	unsigned int rewind() override;
+	result rewind() override;
 
 protected:
 	// buffer management
 	void ensureBufferSize(unsigned int samples);
 	void ensureInterleavedBufferSize(unsigned int samples);
+
+    // make sure buffers are filled to ensure position data is synced with the stream source
+    void primeBuffers();
 
 	// member variables
 	SoundTouchFilter *mParent;            // parent filter

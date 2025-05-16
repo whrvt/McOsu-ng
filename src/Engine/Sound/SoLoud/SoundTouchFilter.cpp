@@ -12,7 +12,7 @@
 #include "ConVar.h"
 #include "Engine.h"
 
-extern ConVar osu_universal_offset_hardcoded; // TODO: literally just return a position with this offset instead of messing with convars
+extern ConVar osu_universal_offset_hardcoded; // TODO: literally just return a position with this offset instead of messing with convars (maybe?)
 ConVar snd_enable_auto_offset("snd_enable_auto_offset", true, FCVAR_NONE, "Control automatic offset calibration for SoLoud + rate change");
 
 #ifdef _DEBUG
@@ -22,10 +22,10 @@ ConVar snd_st_debug("snd_st_debug", 0, FCVAR_NONE, "Enable detailed SoundTouch f
 #define ST_DEBUG_ENABLED 0
 #endif
 
-#define ST_DEBUG_LOG(...)                                                                                                                                      \
-	if (ST_DEBUG_ENABLED)                                                                                                                                      \
-	{                                                                                                                                                          \
-		debugLog(__VA_ARGS__);                                                                                                                                 \
+#define ST_DEBUG_LOG(...)                                                                                                                                                          \
+	if (ST_DEBUG_ENABLED)                                                                                                                                                          \
+	{                                                                                                                                                                              \
+		debugLog(__VA_ARGS__);                                                                                                                                                     \
 	}
 
 namespace SoLoud
@@ -97,8 +97,8 @@ float SoundTouchFilter::getPitchFactor() const
 //-------------------------------------------------------------------------
 
 SoundTouchFilterInstance::SoundTouchFilterInstance(SoundTouchFilter *aParent)
-    : mParent(aParent), mSourceInstance(nullptr), mSoundTouch(nullptr), mBuffer(nullptr), mBufferSize(0), mInterleavedBuffer(nullptr),
-      mInterleavedBufferSize(0), mProcessingCounter(0), mTotalSamplesProcessed(0), mSoundTouchPitch(0.0f), mSoundTouchSpeed(0.0f)
+    : mParent(aParent), mSourceInstance(nullptr), mSoundTouch(nullptr), mBuffer(nullptr), mBufferSize(0), mInterleavedBuffer(nullptr), mInterleavedBufferSize(0),
+      mProcessingCounter(0), mTotalSamplesProcessed(0), mSoundTouchPitch(0.0f), mSoundTouchSpeed(0.0f)
 {
 	ST_DEBUG_LOG("SoundTouchFilterInstance: Constructor called\n");
 
@@ -132,7 +132,7 @@ SoundTouchFilterInstance::SoundTouchFilterInstance(SoundTouchFilter *aParent)
 				mSoundTouch->setSetting(SETTING_USE_AA_FILTER, 1);
 				mSoundTouch->setSetting(SETTING_AA_FILTER_LENGTH, 32);
 				mSoundTouch->setSetting(SETTING_USE_QUICKSEEK, 0);
-				mSoundTouch->setSetting(SETTING_SEQUENCE_MS, 30);  // wtf should these numbers be?
+				mSoundTouch->setSetting(SETTING_SEQUENCE_MS, 30); // wtf should these numbers be?
 				mSoundTouch->setSetting(SETTING_SEEKWINDOW_MS, 15);
 				mSoundTouch->setSetting(SETTING_OVERLAP_MS, 4);
 
@@ -146,30 +146,8 @@ SoundTouchFilterInstance::SoundTouchFilterInstance(SoundTouchFilter *aParent)
 				ST_DEBUG_LOG("SoundTouch: Initialized with speed=%f, pitch=%f\n", mParent->mSpeedFactor, mParent->mPitchFactor);
 				ST_DEBUG_LOG("SoundTouch: Version: %s\n", mSoundTouch->getVersionString());
 
-				// prefill, prevents stuttering at the start of playback
-				constexpr unsigned int prefillSamples = 4096;
-				ensureBufferSize(prefillSamples);
-
-				unsigned int sourceSamplesRead = mSourceInstance->getAudio(mBuffer, prefillSamples, mBufferSize);
-
-				if (sourceSamplesRead > 0)
-				{
-					ensureInterleavedBufferSize(sourceSamplesRead);
-
-					// convert from non-interleaved to interleaved
-					for (unsigned int i = 0; i < sourceSamplesRead; i++)
-					{
-						for (unsigned int ch = 0; ch < mChannels; ch++)
-						{
-							mInterleavedBuffer[i * mChannels + ch] = mBuffer[ch * sourceSamplesRead + i];
-						}
-					}
-
-					// feed the interleaved samples to SoundTouch
-					mSoundTouch->putSamples(mInterleavedBuffer, sourceSamplesRead);
-
-					ST_DEBUG_LOG("SoundTouch: Prefilled buffer with %u samples\n", sourceSamplesRead);
-				}
+				// pre-fill
+				primeBuffers();
 
 				// estimate processing delay, somewhat following the SoundTouch header idea
 				if (snd_enable_auto_offset.getBool())
@@ -189,8 +167,7 @@ SoundTouchFilterInstance::SoundTouchFilterInstance(SoundTouchFilter *aParent)
 
 					float totalOffset = std::clamp<float>(-(latencyInMs + processingBufferDelay), -200.0f, 0.0f);
 
-					ST_DEBUG_LOG("SoundTouch: Calculated universal offset = %.2f ms (latency: %.2f, buffer: %.2f)\n", totalOffset, latencyInMs,
-					             processingBufferDelay);
+					ST_DEBUG_LOG("SoundTouch: Calculated universal offset = %.2f ms (latency: %.2f, buffer: %.2f)\n", totalOffset, latencyInMs, processingBufferDelay);
 
 					osu_universal_offset_hardcoded.setValue(osu_universal_offset_hardcoded.getDefaultFloat() + totalOffset);
 				}
@@ -256,21 +233,22 @@ unsigned int SoundTouchFilterInstance::getAudio(float *aBuffer, unsigned int aSa
 		return aSamplesToRead;
 	}
 
-	// update SoundTouch parameters if they've changed (TODO(?))
+	// update SoundTouch parameters if they've changed
 	if (mSoundTouchSpeed != mParent->mSpeedFactor || mSoundTouchPitch != mParent->mPitchFactor)
 	{
 		ST_DEBUG_LOG("Updating parameters, speed: %f->%f, pitch: %f->%f\n", mSoundTouchSpeed, mParent->mSpeedFactor, mSoundTouchPitch, mParent->mPitchFactor);
 
 		mSoundTouch->setTempo(mParent->mSpeedFactor);
 		mSoundTouch->setPitch(mParent->mPitchFactor);
-		mSoundTouchSpeed = mParent->mSpeedFactor; // custom
-		mSoundTouchPitch = mParent->mPitchFactor; // custom
-		mSetRelativePlaySpeed = mParent->mSpeedFactor; // SoLoud inherited
+		mSoundTouchSpeed = mParent->mSpeedFactor;          // custom
+		mSoundTouchPitch = mParent->mPitchFactor;          // custom
+		mSetRelativePlaySpeed = mParent->mSpeedFactor;     // SoLoud inherited
 		mOverallRelativePlaySpeed = mParent->mSpeedFactor; // SoLoud inherited
 	}
 
 	if (logThisCall)
-		ST_DEBUG_LOG("mSoundTouchSpeed: %f, mParent->mSpeedFactor: %f, mSoundTouchPitch: %f, mParent->mPitchFactor: %f\n", mSoundTouchSpeed, mParent->mSpeedFactor, mSoundTouchPitch, mParent->mPitchFactor);
+		ST_DEBUG_LOG("mSoundTouchSpeed: %f, mParent->mSpeedFactor: %f, mSoundTouchPitch: %f, mParent->mPitchFactor: %f\n", mSoundTouchSpeed, mParent->mSpeedFactor,
+		             mSoundTouchPitch, mParent->mPitchFactor);
 
 	unsigned int samplesInSoundTouch = mSoundTouch->numSamples();
 
@@ -359,7 +337,7 @@ unsigned int SoundTouchFilterInstance::getAudio(float *aBuffer, unsigned int aSa
 		if (logThisCall)
 			ST_DEBUG_LOG("Received %u samples from SoundTouch, converting to non-interleaved\n", samplesReceived);
 
-		// Convert from interleaved (LRLRLR...) to non-interleaved (LLLL...RRRR...)
+		// convert from interleaved (LRLRLR...) to non-interleaved (LLLL...RRRR...)
 		for (unsigned int i = 0; i < samplesReceived; i++)
 		{
 			for (unsigned int ch = 0; ch < mChannels; ch++)
@@ -372,13 +350,12 @@ unsigned int SoundTouchFilterInstance::getAudio(float *aBuffer, unsigned int aSa
 		// track total samples processed (just for debugging)
 		if (samplesReceived > 0)
 		{
-			const float samplesInSeconds = (static_cast<float>(samplesReceived) / mBaseSamplerate) / static_cast<float>(mChannels);
+			const float samplesInSeconds = (static_cast<float>(samplesReceived) / mBaseSamplerate);
 
 			mTotalSamplesProcessed += samplesReceived;
 
 			if (logThisCall)
-				ST_DEBUG_LOG("Updated position: received %u samples (%.4f seconds), new position: %.4f seconds\n", samplesReceived, samplesInSeconds,
-				             mStreamPosition);
+				ST_DEBUG_LOG("Updated position: received %u samples (%.4f seconds), new position: %.4f seconds\n", samplesReceived, samplesInSeconds, mStreamPosition);
 		}
 	}
 	else if (logThisCall)
@@ -415,10 +392,10 @@ bool SoundTouchFilterInstance::hasEnded()
 
 result SoundTouchFilterInstance::seek(time aSeconds, float *mScratch, unsigned int mScratchSize)
 {
-	ST_DEBUG_LOG("Seeking to %f seconds\n", aSeconds);
-
-	if (!mSourceInstance)
+	if (!mSourceInstance || !mSoundTouch)
 		return INVALID_PARAMETER;
+
+	ST_DEBUG_LOG("Seeking to %.3f seconds\n", aSeconds);
 
 	// seek the source.
 	result res = mSourceInstance->seek(aSeconds, mScratch, mScratchSize);
@@ -431,38 +408,114 @@ result SoundTouchFilterInstance::seek(time aSeconds, float *mScratch, unsigned i
 
 		// update the position tracking, without this the audio will seek but we'll have no way of knowing
 		// from any outside function
-		mStreamPosition = aSeconds;
-		mStreamTime = 0.0f;
-		mTotalSamplesProcessed = (unsigned int)(aSeconds * mBaseSamplerate);
+		mStreamPosition = mSourceInstance->mStreamPosition;
+		mStreamTime = mSourceInstance->mStreamTime;
+		mTotalSamplesProcessed = (unsigned int)(mStreamTime * mBaseSamplerate);
 
-		ST_DEBUG_LOG("Updated position tracking, new position: %f seconds\n", mStreamPosition);
+		// prime buffers to prevent position desynchronization
+		primeBuffers();
+
+		ST_DEBUG_LOG("Seek complete to %.3f seconds\n", mStreamPosition);
 	}
 
 	return res;
 }
 
-unsigned int SoundTouchFilterInstance::rewind()
+result SoundTouchFilterInstance::rewind()
 {
 	ST_DEBUG_LOG("rewind called\n");
 
-	unsigned int result = 0;
+	result res = SO_NO_ERROR;
 	if (mSourceInstance)
-		result = mSourceInstance->rewind();
+		res = mSourceInstance->rewind();
 
-	if (mSoundTouch)
-		mSoundTouch->clear();
+	if (res == SO_NO_ERROR)
+	{
+		if (mSoundTouch)
+			mSoundTouch->clear();
 
-	// reset position tracking
-	mStreamPosition = 0.0f;
-	mStreamTime = 0.0f;
-	mTotalSamplesProcessed = 0;
+		mStreamPosition = mSourceInstance->mStreamPosition;
+		mStreamTime = mSourceInstance->mStreamTime;
+		mTotalSamplesProcessed = 0;
 
-	return result;
+		// prime buffers to prevent position desynchronization
+		primeBuffers();
+
+		ST_DEBUG_LOG("Rewind complete, buffers primed\n");
+	}
+
+	return res;
+}
+
+void SoundTouchFilterInstance::primeBuffers()
+{
+	if (!mSourceInstance || !mSoundTouch)
+		return;
+
+	// get configuration for buffer sizing
+	int initialLatency = mSoundTouch->getSetting(SETTING_INITIAL_LATENCY);
+	int nominalInputSeq = mSoundTouch->getSetting(SETTING_NOMINAL_INPUT_SEQUENCE);
+
+	// initial latency + nominal sequence should be good for # priming samples
+	unsigned int primingSamples = initialLatency + nominalInputSeq;
+
+	ST_DEBUG_LOG("Priming SoundTouch buffers: initialLatency=%d, nominalInput=%d, priming=%u samples\n", initialLatency, nominalInputSeq, primingSamples);
+
+	// resize the buffers
+	ensureBufferSize(primingSamples);
+	ensureInterleavedBufferSize(primingSamples);
+
+	// store current source position so we can restore it after priming
+	double currentPosition = mSourceInstance->mStreamPosition;
+
+	// get the primingSamples amount of data from the source
+	unsigned int primingRead = mSourceInstance->getAudio(mBuffer, primingSamples, mBufferSize);
+
+	if (primingRead > 0)
+	{
+		// weave the leaves
+		for (unsigned int i = 0; i < primingRead; i++)
+		{
+			for (unsigned int ch = 0; ch < mChannels; ch++)
+			{
+				mInterleavedBuffer[i * mChannels + ch] = mBuffer[ch * primingRead + i];
+			}
+		}
+
+		// feed priming samples to SoundTouch
+		mSoundTouch->putSamples(mInterleavedBuffer, primingRead);
+
+		ST_DEBUG_LOG("Fed %u priming samples to SoundTouch, buffer now has %u samples\n", primingRead, mSoundTouch->numSamples());
+
+		// discard initial output to remove transition artifacts
+		unsigned int samplesToDiscard = mSoundTouch->numSamples();
+		if (samplesToDiscard > 0)
+		{
+			ensureInterleavedBufferSize(samplesToDiscard);
+			unsigned int discarded = mSoundTouch->receiveSamples(mInterleavedBuffer, samplesToDiscard);
+
+			ST_DEBUG_LOG("Discarded %u transition samples, buffer now has %u samples\n", discarded, mSoundTouch->numSamples());
+		}
+	}
+
+	// restore the source to the pre-priming position
+	if (mSourceInstance->seek(currentPosition, mBuffer, mBufferSize) == SO_NO_ERROR)
+	{
+		// make sure our position tracking matches
+		mStreamPosition = mSourceInstance->mStreamPosition;
+		mStreamTime = mSourceInstance->mStreamTime;
+		mTotalSamplesProcessed = (unsigned int)(mStreamTime * mBaseSamplerate);
+
+		ST_DEBUG_LOG("Buffer priming complete, position restored to %.3f seconds\n", mStreamPosition);
+	}
+	else
+	{
+		ST_DEBUG_LOG("Warning: Failed to restore position after buffer priming\n");
+	}
 }
 
 // DEBUG
-void SoundTouchFilterInstance::logBufferData(const char *label, float *buffer, unsigned int channels, unsigned int samples, bool isInterleaved,
-                                             unsigned int maxToLog)
+void SoundTouchFilterInstance::logBufferData(const char *label, float *buffer, unsigned int channels, unsigned int samples, bool isInterleaved, unsigned int maxToLog)
 {
 	if (!ST_DEBUG_ENABLED)
 		return;

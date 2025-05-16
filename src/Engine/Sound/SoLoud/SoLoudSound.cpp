@@ -503,9 +503,6 @@ unsigned long SoLoudSound::getLengthMS()
 		streamLengthInSeconds = asWav()->getLength();
 
 	const double lengthInMilliSeconds = streamLengthInSeconds * 1000.0;
-	if (debug_snd.getBool())
-		debugLog("returning %ulms for length\n", static_cast<unsigned long>(lengthInMilliSeconds));
-
 	return static_cast<unsigned long>(lengthInMilliSeconds);
 }
 
