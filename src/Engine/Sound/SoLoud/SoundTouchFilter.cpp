@@ -98,7 +98,7 @@ float SoundTouchFilter::getPitchFactor() const
 
 SoundTouchFilterInstance::SoundTouchFilterInstance(SoundTouchFilter *aParent)
     : mParent(aParent), mSourceInstance(nullptr), mSoundTouch(nullptr), mBuffer(nullptr), mBufferSize(0), mInterleavedBuffer(nullptr),
-      mInterleavedBufferSize(0), mProcessingCounter(0), mTotalSamplesProcessed(0)
+      mInterleavedBufferSize(0), mProcessingCounter(0), mTotalSamplesProcessed(0), mSoundTouchPitch(0.0f), mSoundTouchSpeed(0.0f)
 {
 	ST_DEBUG_LOG("SoundTouchFilterInstance: Constructor called\n");
 
@@ -139,6 +139,9 @@ SoundTouchFilterInstance::SoundTouchFilterInstance(SoundTouchFilter *aParent)
 				// set the actual speed and pitch factors
 				mSoundTouch->setTempo(mParent->mSpeedFactor);
 				mSoundTouch->setPitch(mParent->mPitchFactor);
+
+				mSoundTouchSpeed = mParent->mSpeedFactor;
+				mSoundTouchPitch = mParent->mPitchFactor;
 
 				ST_DEBUG_LOG("SoundTouch: Initialized with speed=%f, pitch=%f\n", mParent->mSpeedFactor, mParent->mPitchFactor);
 				ST_DEBUG_LOG("SoundTouch: Version: %s\n", mSoundTouch->getVersionString());
@@ -254,21 +257,20 @@ unsigned int SoundTouchFilterInstance::getAudio(float *aBuffer, unsigned int aSa
 	}
 
 	// update SoundTouch parameters if they've changed (TODO(?))
-	static float lastSpeed = 0.0f;
-	static float lastPitch = 0.0f;
-
-	if (lastSpeed != mParent->mSpeedFactor || lastPitch != mParent->mPitchFactor)
+	if (mSoundTouchSpeed != mParent->mSpeedFactor || mSoundTouchPitch != mParent->mPitchFactor)
 	{
-		if (logThisCall)
-			ST_DEBUG_LOG("Updating parameters, speed: %f->%f, pitch: %f->%f\n", lastSpeed, mParent->mSpeedFactor, lastPitch, mParent->mPitchFactor);
+		ST_DEBUG_LOG("Updating parameters, speed: %f->%f, pitch: %f->%f\n", mSoundTouchSpeed, mParent->mSpeedFactor, mSoundTouchPitch, mParent->mPitchFactor);
 
 		mSoundTouch->setTempo(mParent->mSpeedFactor);
 		mSoundTouch->setPitch(mParent->mPitchFactor);
-		lastSpeed = mParent->mSpeedFactor;
-		lastPitch = mParent->mPitchFactor;
-		mSetRelativePlaySpeed = mParent->mSpeedFactor;
-		mOverallRelativePlaySpeed = mParent->mSpeedFactor;
+		mSoundTouchSpeed = mParent->mSpeedFactor; // custom
+		mSoundTouchPitch = mParent->mPitchFactor; // custom
+		mSetRelativePlaySpeed = mParent->mSpeedFactor; // SoLoud inherited
+		mOverallRelativePlaySpeed = mParent->mSpeedFactor; // SoLoud inherited
 	}
+
+	if (logThisCall)
+		ST_DEBUG_LOG("mSoundTouchSpeed: %f, mParent->mSpeedFactor: %f, mSoundTouchPitch: %f, mParent->mPitchFactor: %f\n", mSoundTouchSpeed, mParent->mSpeedFactor, mSoundTouchPitch, mParent->mPitchFactor);
 
 	unsigned int samplesInSoundTouch = mSoundTouch->numSamples();
 

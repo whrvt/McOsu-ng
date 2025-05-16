@@ -214,62 +214,59 @@ bool SoLoudSound::updateFilterParameters()
 
 void SoLoudSound::setPosition(double percent)
 {
-	if (!m_bReady || !m_audioSource)
+	if (!m_bReady || !m_audioSource || !m_handle)
 		return;
 
 	percent = std::clamp<double>(percent, 0.0, 1.0);
 
 	// calculate position based on the ORIGINAL timeline
-	const double originalLengthInSeconds = m_bStream ? asWavStream()->getLength() : asWav()->getLength();
-	double originalPositionInSeconds = originalLengthInSeconds * percent;
+	const double streamLengthInSeconds = m_bStream ? asWavStream()->getLength() : asWav()->getLength();
+	double positionInSeconds = streamLengthInSeconds * percent;
 
-	// convert to the actual seek position for the engine
-	double seekPositionInSeconds = convertFromOriginalTimeline(originalPositionInSeconds);
-
-	// reset position interp vars (use original timeline values)
-	m_fLastRawSoLoudPosition = originalPositionInSeconds * 1000.0;
+	// reset position interp vars
+	m_fLastRawSoLoudPosition = positionInSeconds * 1000.0;
 	m_fLastSoLoudPositionTime = Timing::getTimeReal();
 	m_fSoLoudPositionRate = 1000.0 * getSpeed();
 
-	// seek in the engine
-	if (m_handle != 0)
-		SL::seek(m_handle, seekPositionInSeconds);
+	if (debug_snd.getBool())
+		debugLog("seeking to %.2f percent (position: %ulms, length: %ulms)\n", percent, static_cast<unsigned long>(positionInSeconds * 1000), static_cast<unsigned long>(streamLengthInSeconds * 1000));
+
+	// seek
+	SL::seek(m_handle, positionInSeconds);
 }
 
 void SoLoudSound::setPositionMS(unsigned long ms, bool internal)
 {
-	if (!m_bReady || !m_audioSource)
+	if (!m_bReady || !m_audioSource || !m_handle)
 		return;
 
-	// check against the ORIGINAL length
-	unsigned long originalLengthMS = getLengthMS();
-	if (ms > originalLengthMS)
+	unsigned long streamLengthMS = getLengthMS();
+	if (ms > streamLengthMS)
 		return;
 
-	double originalPositionInSeconds = ms / 1000.0;
+	double positionInSeconds = ms / 1000.0;
 
-	// convert to the actual seek position for the engine
-	double seekPositionInSeconds = convertFromOriginalTimeline(originalPositionInSeconds);
-
-	// reset position interp vars (use original timeline values)
+	// reset position interp vars
 	m_fLastRawSoLoudPosition = ms;
 	m_fLastSoLoudPositionTime = Timing::getTimeReal();
 	m_fSoLoudPositionRate = 1000.0 * getSpeed();
 
-	// seek in the engine
-	if (m_handle != 0)
-		SL::seek(m_handle, seekPositionInSeconds);
+	if (debug_snd.getBool())
+		debugLog("seeking to %ulms (length: %ulms)\n", ms, streamLengthMS);
+
+	// seek
+	SL::seek(m_handle, positionInSeconds);
 }
 
 void SoLoudSound::setVolume(float volume)
 {
-	if (!m_bReady)
+	if (!m_bReady || !m_handle)
 		return;
 
 	m_fVolume = std::clamp<float>(volume, 0.0f, 1.0f);
 
 	// apply to active voice if not overlayable
-	if (!m_bIsOverlayable && m_handle != 0)
+	if (!m_bIsOverlayable)
 		SL::setVolume(m_handle, m_fVolume);
 }
 
@@ -353,14 +350,13 @@ void SoLoudSound::setFrequency(float frequency)
 
 void SoLoudSound::setPan(float pan)
 {
-	if (!m_bReady)
+	if (!m_bReady || !m_handle)
 		return;
 
 	pan = std::clamp<float>(pan, -1.0f, 1.0f);
 
 	// apply to the active voice
-	if (m_handle != 0)
-		SL::setPan(m_handle, pan);
+	SL::setPan(m_handle, pan);
 }
 
 void SoLoudSound::setLoop(bool loop)
@@ -381,81 +377,46 @@ void SoLoudSound::setLoop(bool loop)
 		SL::setLooping(m_handle, loop);
 }
 
-bool SoLoudSound::isUsingRateChange() const
-{
-	if (snd_speed_compensate_pitch.getBool())
-		return (m_speed != 1.0f || m_pitch != 1.0f);
-	else
-		return (m_speed != 1.0f && m_pitch == 1.0f);
-}
-
-// TODO: factor/clarify/make unnecessary? this is confusing
-double SoLoudSound::convertToOriginalTimeline(double enginePosition) const
-{
-	// for getPositionMS() to return speed-adjusted position for gameplay
-	return isUsingRateChange() ? (enginePosition * m_speed) : enginePosition;
-}
-
-// TODO: factor/clarify/make unnecessary? this is confusing
-double SoLoudSound::convertFromOriginalTimeline(double originalPosition) const
-{
-	// this is only used for setPosition/setPositionMS from external callers
-	// they expect to be able to set positions in "gameplay time"
-	return isUsingRateChange() ? (originalPosition / m_speed) : originalPosition;
-}
-
 float SoLoudSound::getPosition()
 {
-	if (!m_bReady || !m_audioSource)
+	if (!m_bReady || !m_audioSource || !m_handle)
 		return 0.0f;
 
-	// get engine position and convert to original timeline
-	double enginePositionInSeconds = 0.0;
-	if (m_handle != 0)
-		enginePositionInSeconds = SL::getStreamPosition(m_handle);
+	double streamPositionInSeconds = SL::getStreamPosition(m_handle);
 
-	double originalPositionInSeconds = convertToOriginalTimeline(enginePositionInSeconds);
-
-	// UNADJUSTED source length
-	double originalLengthInSeconds = 0.0;
+	double streamLengthInSeconds = 0.0;
 	if (m_bStream && asWavStream())
-		originalLengthInSeconds = asWavStream()->getLength();
+		streamLengthInSeconds = asWavStream()->getLength();
 	else if (!m_bStream && asWav())
-		originalLengthInSeconds = asWav()->getLength();
+		streamLengthInSeconds = asWav()->getLength();
 
-	if (originalLengthInSeconds <= 0.0)
+	if (streamLengthInSeconds <= 0.0)
 		return 0.0f;
 
-	// relative position to original timeline
-	return std::clamp<float>(originalPositionInSeconds / originalLengthInSeconds, 0.0f, 1.0f);
+	return std::clamp<float>(streamPositionInSeconds / streamLengthInSeconds, 0.0f, 1.0f);
 }
 
 // slightly tweaked interp algo from the SDL_mixer version, to smooth out position updates
 unsigned long SoLoudSound::getPositionMS()
 {
-	if (!m_bReady || !m_audioSource)
+	if (!m_bReady || !m_audioSource || !m_handle)
 		return 0;
 
-	// get engine position and convert to GAMEPLAY timeline
-	double enginePositionInSeconds = 0.0;
-	if (m_handle != 0)
-		enginePositionInSeconds = SL::getStreamPosition(m_handle);
-
-	double gameplayPositionInSeconds = convertToOriginalTimeline(enginePositionInSeconds);
+	double streamPositionInSeconds = SL::getStreamPosition(m_handle);
 
 	const double currentTime = Timing::getTimeReal();
-	const double gameplayPositionMS = gameplayPositionInSeconds * 1000.0;
+	const double streamPositionMS = streamPositionInSeconds * 1000.0;
 
 	if (m_fLastSoLoudPositionTime <= 0.0 || !isPlaying())
 	{
-		m_fLastRawSoLoudPosition = gameplayPositionMS;
+		m_fLastRawSoLoudPosition = streamPositionMS;
 		m_fLastSoLoudPositionTime = currentTime;
 		m_fSoLoudPositionRate = 1000.0 * getSpeed(); // Gameplay rate
-		return (unsigned long)gameplayPositionMS;
+		return (unsigned long)streamPositionMS;
 	}
 
 	// if the position changed, update our rate estimate
-	if (m_fLastRawSoLoudPosition != gameplayPositionMS)
+	if (m_fLastRawSoLoudPosition != streamPositionMS)
 	{
 		const double timeDelta = currentTime - m_fLastSoLoudPositionTime;
 
@@ -464,9 +425,9 @@ unsigned long SoLoudSound::getPositionMS()
 		{
 			double newRate;
 
-			if (gameplayPositionMS >= m_fLastRawSoLoudPosition)
+			if (streamPositionMS >= m_fLastRawSoLoudPosition)
 			{
-				newRate = (gameplayPositionMS - m_fLastRawSoLoudPosition) / timeDelta;
+				newRate = (streamPositionMS - m_fLastRawSoLoudPosition) / timeDelta;
 			}
 			else if (m_bIsLooped)
 			{
@@ -474,7 +435,7 @@ unsigned long SoLoudSound::getPositionMS()
 				unsigned long length = getLengthMS();
 				if (length > 0)
 				{
-					double wrappedChange = (length - m_fLastRawSoLoudPosition) + gameplayPositionMS;
+					double wrappedChange = (length - m_fLastRawSoLoudPosition) + streamPositionMS;
 					newRate = wrappedChange / timeDelta;
 				}
 				else
@@ -500,7 +461,7 @@ unsigned long SoLoudSound::getPositionMS()
 			m_fSoLoudPositionRate = m_fSoLoudPositionRate * 0.6 + newRate * 0.4;
 		}
 
-		m_fLastRawSoLoudPosition = gameplayPositionMS;
+		m_fLastRawSoLoudPosition = streamPositionMS;
 		m_fLastSoLoudPositionTime = currentTime;
 	}
 	else
@@ -535,14 +496,16 @@ unsigned long SoLoudSound::getLengthMS()
 	if (!m_bReady || !m_audioSource)
 		return 0;
 
-	// UNADJUSTED length
-	double originalLengthInSeconds = 0.0;
+	double streamLengthInSeconds = 0.0;
 	if (m_bStream && asWavStream())
-		originalLengthInSeconds = asWavStream()->getLength();
+		streamLengthInSeconds = asWavStream()->getLength();
 	else if (!m_bStream && asWav())
-		originalLengthInSeconds = asWav()->getLength();
+		streamLengthInSeconds = asWav()->getLength();
 
-	const double lengthInMilliSeconds = originalLengthInSeconds * 1000.0;
+	const double lengthInMilliSeconds = streamLengthInSeconds * 1000.0;
+	if (debug_snd.getBool())
+		debugLog("returning %ulms for length\n", static_cast<unsigned long>(lengthInMilliSeconds));
+
 	return static_cast<unsigned long>(lengthInMilliSeconds);
 }
 
@@ -567,7 +530,7 @@ float SoLoudSound::getPitch()
 
 float SoLoudSound::getFrequency()
 {
-	if (!m_bReady)
+	if (!m_bReady || !m_handle)
 		return 44100.0f;
 
 	// get sample rate from active voice
@@ -583,10 +546,7 @@ float SoLoudSound::getFrequency()
 
 bool SoLoudSound::isPlaying()
 {
-	if (!m_bReady)
-		return false;
-
-	if (m_handle == 0)
+	if (!m_bReady || !m_handle)
 		return false;
 
 	// a sound is playing if the handle is valid and the sound isn't paused

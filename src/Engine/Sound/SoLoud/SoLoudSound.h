@@ -67,19 +67,6 @@ private:
 	// pitch/tempo filter management methods
 	[[nodiscard]] inline SoLoud::SoundTouchFilter *getFilterInstance() const { return m_filter; }
 	bool updateFilterParameters();
-	[[nodiscard]] bool isUsingRateChange() const;
-	[[nodiscard]] double convertToOriginalTimeline(double enginePosition) const;
-	[[nodiscard]] double convertFromOriginalTimeline(double originalPosition) const;
-	double getActualAudioPositionInSeconds() // TODO: refactor
-	{
-		if (!m_bReady || !m_audioSource)
-			return 0.0;
-
-		if (m_handle != 0)
-			return SL::getStreamPosition(m_handle);
-
-		return 0.0;
-	}
 
 	// current playback parameters
 	float m_speed;     // speed factor (1.0 = normal)
@@ -91,7 +78,7 @@ private:
 	SoLoud::SoundTouchFilter *m_filter; // SoundTouch filter instance
 	unsigned int m_handle;              // current voice (i.e. "Sound") handle
 
-	// nightcore things
+	// nightcore things (TODO: this might not be needed)
 	float m_fActualSpeedForDisabledPitchCompensation;
 
 	// position interp

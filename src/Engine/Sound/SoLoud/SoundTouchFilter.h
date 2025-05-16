@@ -83,6 +83,9 @@ protected:
 	AudioSourceInstance *mSourceInstance; // source instance to process
 	soundtouch::SoundTouch *mSoundTouch;  // soundTouch processor
 
+	float mSoundTouchSpeed; // currently set soundtouch playback parameters for the instance
+	float mSoundTouchPitch;
+
 	// buffers for format conversion
 	float *mBuffer;           // non-interleaved audio buffer (SoLoud format)
 	unsigned int mBufferSize; // size in samples
