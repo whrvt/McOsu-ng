@@ -65,7 +65,7 @@ private:
 	[[nodiscard]] inline SoLoud::WavStream *asWavStream() const { return m_bStream ? static_cast<SoLoud::WavStream *>(m_audioSource) : nullptr; }
 
 	// pitch/tempo filter management methods
-	SoLoud::SoundTouchFilter *getOrCreateFilter();
+	[[nodiscard]] inline SoLoud::SoundTouchFilter *getFilterInstance() const { return m_filter; }
 	bool updateFilterParameters();
 	[[nodiscard]] bool isUsingRateChange() const;
 	[[nodiscard]] double convertToOriginalTimeline(double enginePosition) const;

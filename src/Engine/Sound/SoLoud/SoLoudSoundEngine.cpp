@@ -127,17 +127,32 @@ bool SoLoudSoundEngine::playSound(SoLoudSound *soloudSound, float pan, float pit
 		soloudSound->m_handle = 0;
 	}
 
-	// determine if we need SoundTouch filter based on parameters
-	bool needSoundTouch = false;
-
-	// always use filter for streaming audio (like BASS_FX_TempoCreate)
-	if (soloudSound->m_bStream)
+	if (debug_snd.getBool())
 	{
-		needSoundTouch = true;
+		debugLog("SoLoudSoundEngine: Playing %s (stream=%d, 3d=%d) with speed=%f, pitch=%f\n", soloudSound->m_sFilePath.toUtf8(), soloudSound->m_bStream ? 1 : 0, is3d ? 1 : 0,
+		         soloudSound->m_speed, pitch);
+	}
+
+	// play the sound with appropriate method
+	unsigned int handle = 0;
+
+	if (is3d && pos)
+	{
+		// 3D playback - always use direct audio source for 3D
+		handle = play3dSound(soloudSound, *pos, soloudSound->m_fVolume);
+		soloudSound->m_usingFilter = false;
+	}
+	else if (soloudSound->m_bStream)
+	{
+		// streaming audio (music) - always use SoundTouch filter
+		handle = playSoundWithFilter(soloudSound, pan, soloudSound->m_fVolume);
+		soloudSound->m_usingFilter = true;
 	}
 	else
 	{
-		// for non-streaming audio, use the original logic for now
+		// non-streaming audio (sound effects) - determine if filter is needed
+		bool needSoundTouch = false;
+
 		if (snd_speed_compensate_pitch.getBool())
 		{
 			// when compensating pitch, we need filter if either speed != 1.0 or pitch != 1.0
@@ -149,46 +164,29 @@ bool SoLoudSoundEngine::playSound(SoLoudSound *soloudSound, float pan, float pit
 			// speed without changing pitch proportionally
 			needSoundTouch = (soloudSound->m_speed != 1.0f && soloudSound->m_pitch == 1.0f);
 		}
-	}
 
-	if (debug_snd.getBool())
-	{
-		debugLog("SoLoudSoundEngine: Playing %s (stream=%d, filter=%d, 3d=%d) with speed=%f, pitch=%f\n", soloudSound->m_sFilePath.toUtf8(), soloudSound->m_bStream ? 1 : 0,
-		         needSoundTouch ? 1 : 0, is3d ? 1 : 0, soloudSound->m_speed, pitch);
-	}
+		if (needSoundTouch)
+		{
+			// play with SoundTouch filter
+			handle = playSoundWithFilter(soloudSound, pan, soloudSound->m_fVolume);
+			soloudSound->m_usingFilter = true;
+		}
+		else
+		{
+			// play without filter
+			float finalPitch = pitch;
 
-	// play the sound with appropriate method
-	unsigned int handle = 0;
+			// if we're not using the filter but have a speed change (and no pitch compensation),
+			// apply the speed through relative play speed
+			if (!snd_speed_compensate_pitch.getBool() && soloudSound->m_speed != 1.0f)
+				finalPitch *= soloudSound->m_speed;
 
-	// TODO: cleanup the logic below to only account for what's actually possible
-	if (is3d && pos)
-	{
-		// 3D playback
-		handle = play3dSound(soloudSound, *pos, soloudSound->m_fVolume);
-		soloudSound->m_usingFilter = false;
-	}
-	else if (needSoundTouch)
-	{
-		// play with SoundTouch filter
-		handle = playSoundWithFilter(soloudSound, pan, soloudSound->m_fVolume);
-		soloudSound->m_usingFilter = true;
-	}
-	else
-	{
-		// play without filter
-		float finalPitch = pitch;
+			if (soloudSound->m_pitch != 1.0f)
+				finalPitch *= soloudSound->m_pitch;
 
-		// if we're not using the filter but have a speed change (and no pitch compensation),
-		// apply the speed through relative play speed
-		// (again, this branch is probably unreachable atm, but should be done in the future)
-		if (!snd_speed_compensate_pitch.getBool() && soloudSound->m_speed != 1.0f)
-			finalPitch *= soloudSound->m_speed;
-
-		if (soloudSound->m_pitch != 1.0f)
-			finalPitch *= soloudSound->m_pitch;
-
-		handle = playDirectSound(soloudSound, pan, finalPitch, soloudSound->m_fVolume);
-		soloudSound->m_usingFilter = false;
+			handle = playDirectSound(soloudSound, pan, finalPitch, soloudSound->m_fVolume);
+			soloudSound->m_usingFilter = false;
+		}
 	}
 
 	// finalize playback
@@ -220,7 +218,7 @@ unsigned int SoLoudSoundEngine::playSoundWithFilter(SoLoudSound *soloudSound, fl
 	if (!soloudSound || !soloudSound->m_audioSource)
 		return 0;
 
-	SoLoud::SoundTouchFilter *filter = soloudSound->getOrCreateFilter();
+	SoLoud::SoundTouchFilter *filter = soloudSound->getFilterInstance();
 	if (!filter)
 		return 0;
 

@@ -395,7 +395,8 @@ bool SoundTouchFilterInstance::hasEnded()
 {
 	// end when source has ended and we're not looping
 	const bool ended = mSourceInstance && mSourceInstance->hasEnded();
-	const bool looping = ended && (mSourceInstance->mFlags & AudioSourceInstance::LOOPING);
+	// wait, why do i need to access the parent source flags instead of (mSourceInstance->mFlags & AudioSourceInstace::LOOPING) ???
+	const bool looping = ended && (mParent->mSource->mFlags & AudioSource::SHOULD_LOOP);
 
 	if (looping)
 	{
@@ -405,7 +406,7 @@ bool SoundTouchFilterInstance::hasEnded()
 	}
 
 	if (ended && ST_DEBUG_ENABLED)
-		ST_DEBUG_LOG("ended, returning true\n");
+		ST_DEBUG_LOG("ended, returning true (mSourceInstance->flags: %x mParent->mSource->mFlags: %x)\n", mSourceInstance->mFlags, mParent->mSource->mFlags);
 
 	return ended;
 }

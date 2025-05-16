@@ -137,6 +137,29 @@ void SoLoudSound::initAsync()
 		m_audioSource->set3dMinMaxDistance(1.0f, 1000.0f);
 	}
 
+	// always create filter for streaming audio after source is fully configured
+	if (m_bStream)
+	{
+		m_filter = new SoLoud::SoundTouchFilter();
+		if (m_filter)
+		{
+			// configure the filter with the fully configured source
+			m_filter->setSource(m_audioSource);
+
+			// set initial parameters
+			m_filter->setSpeedFactor(m_speed);
+			m_filter->setPitchFactor(m_pitch);
+
+			if (debug_snd.getBool())
+				debugLog("SoLoudSound: Created SoundTouch filter for %s with speed=%f, pitch=%f, looping=%s\n", m_sFilePath.toUtf8(), m_speed, m_pitch,
+				         m_bIsLooped ? "true" : "false");
+		}
+		else
+		{
+			debugLog("Sound Error: Failed to create SoundTouch filter for %s\n", m_sFilePath.toUtf8());
+		}
+	}
+
 	m_bAsyncReady = true;
 }
 
@@ -179,35 +202,6 @@ void SoLoudSound::destroy()
 	}
 }
 
-// TODO: move this somewhere move appropriate
-SoLoud::SoundTouchFilter *SoLoudSound::getOrCreateFilter()
-{
-	if (m_filter)
-		return m_filter;
-
-	// create a new SoundTouch filter instance
-	m_filter = new SoLoud::SoundTouchFilter();
-
-	if (m_filter)
-	{
-		// configure initial source
-		if (m_audioSource)
-			m_filter->setSource(m_audioSource);
-
-		// set initial parameters
-		m_filter->setSpeedFactor(m_speed);
-		m_filter->setPitchFactor(m_pitch);
-
-		// FIXME: ok, something is messed up, why do i have to manually set looping on the filter instance? why is it not inherited?
-		m_filter->setLooping(m_bIsLooped);
-
-		if (debug_snd.getBool())
-			debugLog("SoLoudSound: Created SoundTouch filter for %s with speed=%f, pitch=%f\n", m_sFilePath.toUtf8(), m_speed, m_pitch);
-	}
-
-	return m_filter;
-}
-
 bool SoLoudSound::updateFilterParameters()
 {
 	if (!m_filter)
@@ -215,9 +209,6 @@ bool SoLoudSound::updateFilterParameters()
 
 	m_filter->setSpeedFactor(m_speed);
 	m_filter->setPitchFactor(m_pitch);
-
-	// FIXME: same as above
-	m_filter->setLooping(m_bIsLooped);
 
 	return true;
 }
@@ -439,6 +430,9 @@ void SoLoudSound::setLoop(bool loop)
 {
 	if (!m_bReady || !m_audioSource)
 		return;
+
+	if (debug_snd.getBool())
+		debugLog("setLoop %u and m_filter %s\n", loop, m_filter ? "exists" : "does not exist");
 
 	m_bIsLooped = loop;
 
