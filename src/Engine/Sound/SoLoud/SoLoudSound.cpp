@@ -229,7 +229,7 @@ void SoLoudSound::setPosition(double percent)
 	m_fSoLoudPositionRate = 1000.0 * getSpeed();
 
 	if (debug_snd.getBool())
-		debugLog("seeking to %.2f percent (position: %ulms, length: %ulms)\n", percent, static_cast<unsigned long>(positionInSeconds * 1000), static_cast<unsigned long>(streamLengthInSeconds * 1000));
+		debugLog("seeking to %.2f percent (position: %lums, length: %lums)\n", percent, static_cast<unsigned long>(positionInSeconds * 1000), static_cast<unsigned long>(streamLengthInSeconds * 1000));
 
 	// seek
 	SL::seek(m_handle, positionInSeconds);
@@ -252,7 +252,7 @@ void SoLoudSound::setPositionMS(unsigned long ms, bool internal)
 	m_fSoLoudPositionRate = 1000.0 * getSpeed();
 
 	if (debug_snd.getBool())
-		debugLog("seeking to %ulms (length: %ulms)\n", ms, streamLengthMS);
+		debugLog("seeking to %lums (length: %lums)\n", ms, streamLengthMS);
 
 	// seek
 	SL::seek(m_handle, positionInSeconds);

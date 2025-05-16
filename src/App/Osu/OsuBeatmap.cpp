@@ -54,7 +54,7 @@ ConVar osu_universal_offset_hardcoded("osu_universal_offset_hardcoded",
 										Env::cfg(AUD::WASAPI) ? -25.0f  :
 										Env::cfg(AUD::BASS)	  ?  15.0f  : // see https://github.com/ppy/osu/blob/6d8c457c81e40cf438c69a1e6c5f02347333dfc0/osu.Game/Beatmaps/FramedBeatmapClock.cs#L68
 										Env::cfg(AUD::SDL)	  ? -110.0f :
-										Env::cfg(AUD::SOLOUD) ? -20.0f  : 0.0f, FCVAR_NONE);
+										Env::cfg(AUD::SOLOUD) ? -25.0f  : 0.0f, FCVAR_NONE);
 ConVar osu_universal_offset_hardcoded_fallback_dsound("osu_universal_offset_hardcoded_fallback_dsound", -15.0f, FCVAR_NONE);
 ConVar osu_old_beatmap_offset("osu_old_beatmap_offset", 24.0f, FCVAR_NONE, "offset in ms which is added to beatmap versions < 5 (default value is hardcoded 24 ms in stable)");
 ConVar osu_timingpoints_offset("osu_timingpoints_offset", 5.0f, FCVAR_NONE, "Offset in ms which is added before determining the active timingpoint for the sample type and sample volume (hitsounds) of the current frame");

@@ -58,6 +58,7 @@ protected:
  *
  * handles the audio processing through SoundTouch, incl. converting between
  * SoLoud's non-interleaved format and SoundTouch's interleaved format.
+ * includes special handling for OGG files to maintain frame integrity.
  */
 class SoundTouchFilterInstance : public AudioSourceInstance
 {
@@ -77,9 +78,15 @@ protected:
 	// buffer management
 	void ensureBufferSize(unsigned int samples);
 	void ensureInterleavedBufferSize(unsigned int samples);
+	void ensureOggFrameBuffer(unsigned int samples);
 
-    // make sure buffers are filled to ensure position data is synced with the stream source
-    void primeBuffers();
+	// make sure buffers are filled to ensure position data is synced with the stream source
+	void primeBuffers();
+
+	// OGG-specific handling methods
+	[[nodiscard]] bool isOggSource() const;
+	void feedSoundTouchFromOggFrames(unsigned int targetBufferSize, bool logThis);
+	void feedSoundTouchStandard(unsigned int targetBufferSize, bool logThis);
 
 	// member variables
 	SoundTouchFilter *mParent;            // parent filter
@@ -95,6 +102,11 @@ protected:
 
 	float *mInterleavedBuffer;           // interleaved audio buffer (SoundTouch format)
 	unsigned int mInterleavedBufferSize; // size in samples
+
+	// OGG frame buffering for proper alignment
+	float *mOggFrameBuffer;           // frame-aligned buffer for OGG sources
+	unsigned int mOggFrameBufferSize; // size in samples
+	unsigned int mOggSamplesInBuffer; // current number of samples in OGG buffer
 
 	// DEBUG
 	void logBufferData(const char *label, float *buffer, unsigned int channels, unsigned int samples, bool isInterleaved, unsigned int maxToLog = 16);
