@@ -655,6 +655,8 @@ ASSETS_DIR
 WINSHARED_DLLS_NEEDED_FALSE
 WINSHARED_DLLS_NEEDED_TRUE
 WINSHARED_DLLS
+WIN32_PLATFORM_FALSE
+WIN32_PLATFORM_TRUE
 WIN_PLATFORM_FALSE
 WIN_PLATFORM_TRUE
 USE_SOLOUD_FALSE
@@ -740,11 +742,11 @@ MCOSU_CXXFLAGS
 MCOSU_CPPFLAGS
 ENABLE_DEBUG
 ENABLE_ASAN
-DISABLE_NATIVE
 BEAR
 RANLIB
 AR
 LD
+DISABLE_NATIVE
 CCACHE
 am__fastdepCXX_FALSE
 am__fastdepCXX_TRUE
@@ -6157,8 +6159,8 @@ fi
         LDFLAGS="$LDFLAGS -m32 -lwinpthread"
         # winxp
         CPPFLAGS="$CPPFLAGS -DWINVER=0x0501 -D_WIN32_WINNT=0x0501 -D_WIN32_WINDOWS=0x0501 -D_WIN32_IE=0x0501"
-        CFLAGS="$CFLAGS -m32 -DWINVER=0x0501 -D_WIN32_WINNT=0x0501 -D_WIN32_WINDOWS=0x0501 -D_WIN32_IE=0x0501"
-        CXXFLAGS="$CXXFLAGS -m32 -DWINVER=0x0501 -D_WIN32_WINNT=0x0501 -D_WIN32_WINDOWS=0x0501 -D_WIN32_IE=0x0501"
+        CFLAGS="$CFLAGS -m32 -DWINVER=0x0501 -D_WIN32_WINNT=0x0501 -D_WIN32_WINDOWS=0x0501 -D_WIN32_IE=0x0501 -mfpmath=sse"
+        CXXFLAGS="$CXXFLAGS -m32 -DWINVER=0x0501 -D_WIN32_WINNT=0x0501 -D_WIN32_WINDOWS=0x0501 -D_WIN32_IE=0x0501 -mfpmath=sse"
         # won't work unfortunately, https://github.com/mstorsjo/llvm-mingw/issues/44
         # but i tried
         if test "x$enable_clang" = "xyes"
@@ -7293,13 +7295,40 @@ then :
 
 fi
 
-# use c/c++23 because we can
 ac_ext=cpp
 ac_cpp='$CXXCPP $CPPFLAGS'
 ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 
+if test "x$enable_native" != "xno"
+then :
+
+    CXXFLAGS="$CXXFLAGS -march=native -mtune=native"
+    CFLAGS="$CFLAGS -march=native -mtune=native"
+
+else case e in #(
+  e)
+    if test "$host_cpu" = "i686"
+then :
+
+        CXXFLAGS="$CXXFLAGS -march=pentium4 -mtune=generic"
+        CFLAGS="$CFLAGS -march=pentium4 -mtune=generic"
+
+else case e in #(
+  e)
+        CXXFLAGS="$CXXFLAGS -march=${host_cpu//_/-} -mtune=generic"
+        CFLAGS="$CFLAGS -march=${host_cpu//_/-} -mtune=generic"
+     ;;
+esac
+fi
+
+    DISABLE_NATIVE=1
+
+ ;;
+esac
+fi
+# use c/c++23 because we can
 
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether the C++ compiler accepts -std=gnu++23" >&5
 printf %s "checking whether the C++ compiler accepts -std=gnu++23... " >&6; }
@@ -7873,22 +7902,6 @@ fi
 
 
 
-
-if test "x$enable_native" != "xno"
-then :
-
-    CXXFLAGS="$CXXFLAGS -march=native -mtune=native"
-    CFLAGS="$CFLAGS -march=native -mtune=native"
-
-else case e in #(
-  e)
-    CXXFLAGS="$CXXFLAGS -march=${host_cpu//_/-} -mtune=generic"
-    CFLAGS="$CFLAGS -march=${host_cpu//_/-} -mtune=generic"
-    DISABLE_NATIVE=1
-
- ;;
-esac
-fi
 
 if test "x$enable_asan" = "xyes"
 then :
@@ -10376,6 +10389,14 @@ else
   WIN_PLATFORM_FALSE=
 fi
 
+ if test "$SYSNAME" = "windows" && test "$host_cpu" = "i686"; then
+  WIN32_PLATFORM_TRUE=
+  WIN32_PLATFORM_FALSE='#'
+else
+  WIN32_PLATFORM_TRUE='#'
+  WIN32_PLATFORM_FALSE=
+fi
+ # idk why this has issues with soloud + GENie
 
 # need dynamic winpthread for old windows 32bit compat builds
 if test -n "$ubercompat"
@@ -10759,6 +10780,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${WIN_PLATFORM_TRUE}" && test -z "${WIN_PLATFORM_FALSE}"; then
   as_fn_error $? "conditional \"WIN_PLATFORM\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${WIN32_PLATFORM_TRUE}" && test -z "${WIN32_PLATFORM_FALSE}"; then
+  as_fn_error $? "conditional \"WIN32_PLATFORM\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${WINSHARED_DLLS_NEEDED_TRUE}" && test -z "${WINSHARED_DLLS_NEEDED_FALSE}"; then

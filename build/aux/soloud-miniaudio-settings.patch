@@ -1,0 +1,13 @@
+diff --git a/src/backend/miniaudio/soloud_miniaudio.cpp b/src/backend/miniaudio/soloud_miniaudio.cpp
+index 7afb7a29..cb9ecade 100644
+--- a/src/backend/miniaudio/soloud_miniaudio.cpp
++++ b/src/backend/miniaudio/soloud_miniaudio.cpp
+@@ -70,6 +70,8 @@ namespace SoLoud
+         config.sampleRate         = aSamplerate;
+         config.dataCallback       = soloud_miniaudio_audiomixer;
+         config.pUserData          = (void *)aSoloud;
++        config.noPreSilencedOutputBuffer = true;
++        config.noClip = true;
+ 
+         if (ma_device_init(NULL, &config, &gDevice) != MA_SUCCESS)
+         {

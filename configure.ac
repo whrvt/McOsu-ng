@@ -257,8 +257,8 @@ __EOF__
         LDFLAGS="$LDFLAGS -m32 -lwinpthread"
         # winxp
         CPPFLAGS="$CPPFLAGS -DWINVER=0x0501 -D_WIN32_WINNT=0x0501 -D_WIN32_WINDOWS=0x0501 -D_WIN32_IE=0x0501"
-        CFLAGS="$CFLAGS -m32 -DWINVER=0x0501 -D_WIN32_WINNT=0x0501 -D_WIN32_WINDOWS=0x0501 -D_WIN32_IE=0x0501"
-        CXXFLAGS="$CXXFLAGS -m32 -DWINVER=0x0501 -D_WIN32_WINNT=0x0501 -D_WIN32_WINDOWS=0x0501 -D_WIN32_IE=0x0501"
+        CFLAGS="$CFLAGS -m32 -DWINVER=0x0501 -D_WIN32_WINNT=0x0501 -D_WIN32_WINDOWS=0x0501 -D_WIN32_IE=0x0501 -mfpmath=sse"
+        CXXFLAGS="$CXXFLAGS -m32 -DWINVER=0x0501 -D_WIN32_WINNT=0x0501 -D_WIN32_WINDOWS=0x0501 -D_WIN32_IE=0x0501 -mfpmath=sse"
         # won't work unfortunately, https://github.com/mstorsjo/llvm-mingw/issues/44
         # but i tried
         AS_IF([test "x$enable_clang" = "xyes"], [LDFLAGS="$LDFLAGS -Xlinker /subsystem:windows,5.0"])
@@ -317,8 +317,22 @@ AS_IF([test -z "$ubercompat" || test "x$enable_static" = "xyes"], [
     LDFLAGS="$LDFLAGS -static-libstdc++ -static-libgcc"
 ])
 
-# use c/c++23 because we can
 AC_LANG_PUSH([C++])
+AS_IF([test "x$enable_native" != "xno"], [
+    CXXFLAGS="$CXXFLAGS -march=native -mtune=native"
+    CFLAGS="$CFLAGS -march=native -mtune=native"
+],[
+    AS_IF([test "$host_cpu" = "i686"], [
+        CXXFLAGS="$CXXFLAGS -march=pentium4 -mtune=generic"
+        CFLAGS="$CFLAGS -march=pentium4 -mtune=generic"
+    ], [
+        CXXFLAGS="$CXXFLAGS -march=${host_cpu//_/-} -mtune=generic"
+        CFLAGS="$CFLAGS -march=${host_cpu//_/-} -mtune=generic"
+    ])
+
+    AC_SUBST([DISABLE_NATIVE],[1])
+])
+# use c/c++23 because we can
 AX_CHECK_COMPILE_FLAG([-std=gnu++23], [
     AX_CHECK_COMPILE_FLAG([-std=gnu++26], [
         MCOSU_CXXFLAGS="$MCOSU_CXXFLAGS -std=gnu++26"
@@ -345,15 +359,6 @@ AS_IF([test "$host_os" = "linux-gnu"],[
 
 AC_CHECK_PROG([BEAR], [bear], [bear])
 AC_SUBST([BEAR])
-
-AS_IF([test "x$enable_native" != "xno"], [
-    CXXFLAGS="$CXXFLAGS -march=native -mtune=native"
-    CFLAGS="$CFLAGS -march=native -mtune=native"
-],[
-    CXXFLAGS="$CXXFLAGS -march=${host_cpu//_/-} -mtune=generic"
-    CFLAGS="$CFLAGS -march=${host_cpu//_/-} -mtune=generic"
-    AC_SUBST([DISABLE_NATIVE],[1])
-])
 
 AS_IF([test "x$enable_asan" = "xyes"], [
     CXXFLAGS="$CXXFLAGS -fsanitize=address,undefined"
@@ -546,6 +551,7 @@ AM_CONDITIONAL([USE_BASS], [test "x$with_sdlmixer" != "xyes" && test "x$with_sol
 AM_CONDITIONAL([USE_SDLMIXER], [test "x$with_sdlmixer" = "xyes"])
 AM_CONDITIONAL([USE_SOLOUD], [test "x$with_soloud" = "xyes"])
 AM_CONDITIONAL([WIN_PLATFORM], [test "$SYSNAME" = "windows"])
+AM_CONDITIONAL([WIN32_PLATFORM], [test "$SYSNAME" = "windows" && test "$host_cpu" = "i686"]) # idk why this has issues with soloud + GENie
 
 # need dynamic winpthread for old windows 32bit compat builds
 AS_IF([test -n "$ubercompat"], [

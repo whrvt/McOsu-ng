@@ -167,7 +167,7 @@ $(DEPS_PREFIX)/SoundTouch.built:
 else
 AUDIO_CFLAGS = -I$(DEPS_PREFIX)/include $(shell $(PKG_CONFIG) --cflags soundtouch)
 # the dynamic soloud lib is busted somehow
-AUDIO_LIBS = -L$(DEPS_PREFIX)/lib -lsoloud_static_x$(if $(filter x86_64,$(host_cpu)),64,32)$(if $(ENABLE_DEBUG),_d,) $(shell $(PKG_CONFIG) --libs soundtouch)
+AUDIO_LIBS = -L$(DEPS_PREFIX)/lib -lsoloud_static_x$(if $(filter x86_64,$(host_cpu)),64,$(if $(findstring linux,$(host_os)),32,86))$(if $(ENABLE_DEBUG),_d,) $(shell $(PKG_CONFIG) --libs soundtouch)
 $(DEPS_PREFIX)/SoLoud.built: $(DEPS_CACHE)/SoLoud.source
 	rm -rf $(DEPS_PREFIX)/SoLoud
 	$(MKDIR_P) $(DEPS_PREFIX) $(DEPS_PREFIX)/include $(DEPS_PREFIX)/lib/pkgconfig $(DEPS_PREFIX)/SoLoud/build
@@ -175,8 +175,22 @@ $(DEPS_PREFIX)/SoLoud.built: $(DEPS_CACHE)/SoLoud.source
 	cd $(DEPS_PREFIX)/SoLoud && \
 	patch -Np1<$(abs_top_srcdir)/build/aux/revert-soloud.patch && \
 	patch -Np1<$(abs_top_srcdir)/build/aux/soloud-miniaudio-latest.patch && \
+	patch -Np1<$(abs_top_srcdir)/build/aux/soloud-miniaudio-settings.patch && \
 	cd $(DEPS_PREFIX)/SoLoud/build && \
-	$(SED) -i 's|"NoRTTI"$(comma)||g' genie.lua && \
+	$(SED) -i 's|"NoRTTI"$(comma)||g' genie.lua
+if WIN32_PLATFORM
+	cd $(DEPS_PREFIX)/SoLoud/build && \
+	PKG_CONFIG="$(PKG_CONFIG) --static" CC="$(CC)" CXX="$(CXX)" LD="$(LD)" CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS)" \
+	$(GENIE) --with-miniaudio-only \
+			 --platform=x32 \
+			 --os=windows \
+			 gmake && \
+	cd gmake && $(SED) -i -e 's|^CC.*=.*||g' -e 's|^AR.*=.*||g' -e 's|^CXX.*=.*||g' SoloudStatic.make && \
+	PKG_CONFIG="$(PKG_CONFIG) --static" CC="$(CC)" CXX="$(CXX)" LD="$(LD)" CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS)" \
+	PREFIX="$(DEPS_PREFIX)" RANLIB="$(RANLIB)" AR="$(AR)" config="$(if $(ENABLE_DEBUG),debug,release)" make SoloudStatic && \
+	cp $(DEPS_PREFIX)/SoLoud/lib/libsoloud_static_x86$(if $(ENABLE_DEBUG),_d,).a $(DEPS_PREFIX)/lib/
+else
+	cd $(DEPS_PREFIX)/SoLoud/build && \
 	PKG_CONFIG="$(PKG_CONFIG) --static" CC="$(CC)" CXX="$(CXX)" LD="$(LD)" CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS)" \
 	$(GENIE) --with-miniaudio-only \
 			 --platform=x$(if $(filter x86_64,$(host_cpu)),64,32) \
@@ -195,9 +209,10 @@ $(DEPS_PREFIX)/SoLoud.built: $(DEPS_CACHE)/SoLoud.source
 		-D CMAKE_CXX_COMPILER="$(CXX)" \
 		-D CMAKE_CXX_FLAGS="$(CXXFLAGS)" && \
 	cmake --build build && \
-	cmake --install build && \
+	cmake --install build 
+endif
 	cp -r $(DEPS_PREFIX)/SoLoud/include $(DEPS_PREFIX)/include/soloud && \
-	test -f $(DEPS_PREFIX)/lib/libsoloud_static_x$(if $(filter x86_64,$(host_cpu)),64,32)$(if $(ENABLE_DEBUG),_d,).a
+	test -f $(DEPS_PREFIX)/lib/libsoloud_static_x$(if $(filter x86_64,$(host_cpu)),64,$(if $(findstring linux,$(host_os)),32,86))$(if $(ENABLE_DEBUG),_d,).a
 	touch $@
 
 # TODO: build openmp static, soundtouch benefits from it a retarded amount
