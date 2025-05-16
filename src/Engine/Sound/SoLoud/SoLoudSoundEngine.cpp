@@ -140,53 +140,27 @@ bool SoLoudSoundEngine::playSound(SoLoudSound *soloudSound, float pan, float pit
 	{
 		// 3D playback - always use direct audio source for 3D
 		handle = play3dSound(soloudSound, *pos, soloudSound->m_fVolume);
-		soloudSound->m_usingFilter = false;
 	}
 	else if (soloudSound->m_bStream)
 	{
 		// streaming audio (music) - always use SoundTouch filter
 		handle = playSoundWithFilter(soloudSound, pan, soloudSound->m_fVolume);
-		soloudSound->m_usingFilter = true;
 	}
 	else
 	{
-		// non-streaming audio (sound effects) - determine if filter is needed
-		bool needSoundTouch = false;
+		// non-streaming audio (sound effects) - always use direct playback
+		// speed/pitch changes are applied via SoLoud's native mechanisms
+		float finalPitch = pitch;
 
-		if (snd_speed_compensate_pitch.getBool())
-		{
-			// when compensating pitch, we need filter if either speed != 1.0 or pitch != 1.0
-			needSoundTouch = (soloudSound->m_speed != 1.0f || soloudSound->m_pitch != 1.0f);
-		}
-		else
-		{
-			// when not compensating pitch, we only need filter if we want to change
-			// speed without changing pitch proportionally
-			needSoundTouch = (soloudSound->m_speed != 1.0f && soloudSound->m_pitch == 1.0f);
-		}
+		// combine all pitch modifiers
+		if (soloudSound->m_pitch != 1.0f)
+			finalPitch *= soloudSound->m_pitch;
 
-		if (needSoundTouch)
-		{
-			// play with SoundTouch filter
-			handle = playSoundWithFilter(soloudSound, pan, soloudSound->m_fVolume);
-			soloudSound->m_usingFilter = true;
-		}
-		else
-		{
-			// play without filter
-			float finalPitch = pitch;
+		// if speed compensation is disabled, apply speed as pitch
+		if (!snd_speed_compensate_pitch.getBool() && soloudSound->m_speed != 1.0f)
+			finalPitch *= soloudSound->m_speed;
 
-			// if we're not using the filter but have a speed change (and no pitch compensation),
-			// apply the speed through relative play speed
-			if (!snd_speed_compensate_pitch.getBool() && soloudSound->m_speed != 1.0f)
-				finalPitch *= soloudSound->m_speed;
-
-			if (soloudSound->m_pitch != 1.0f)
-				finalPitch *= soloudSound->m_pitch;
-
-			handle = playDirectSound(soloudSound, pan, finalPitch, soloudSound->m_fVolume);
-			soloudSound->m_usingFilter = false;
-		}
+		handle = playDirectSound(soloudSound, pan, finalPitch, soloudSound->m_fVolume);
 	}
 
 	// finalize playback
@@ -225,7 +199,7 @@ unsigned int SoLoudSoundEngine::playSoundWithFilter(SoLoudSound *soloudSound, fl
 	// make sure filter parameters are up to date (TODO: refactor, this is probably redundant)
 	soloudSound->updateFilterParameters();
 
-	// play through the damn filter
+	// play through the filter
 	unsigned int handle = SL::play(*filter, volume);
 
 	if (handle != 0)
@@ -251,7 +225,6 @@ unsigned int SoLoudSoundEngine::playDirectSound(SoLoudSound *soloudSound, float 
 		SL::setPan(handle, pan);
 
 		// set relative play speed (affects both pitch and speed)
-		// (again, TODO, i don't think this is reachable currently)
 		if (pitch != 1.0f)
 			SL::setRelativePlaySpeed(handle, pitch);
 	}

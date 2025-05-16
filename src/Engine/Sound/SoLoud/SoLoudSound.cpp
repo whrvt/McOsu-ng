@@ -24,7 +24,7 @@ extern ConVar snd_wav_file_min_size;
 
 SoLoudSound::SoLoudSound(UString filepath, bool stream, bool threeD, bool loop, bool prescan)
     : Sound(filepath, stream, threeD, loop, prescan), m_handle(0), m_speed(1.0f), m_pitch(1.0f), m_frequency(44100.0f), m_audioSource(nullptr), m_filter(nullptr),
-      m_usingFilter(false), m_fActualSpeedForDisabledPitchCompensation(1.0f), m_fLastRawSoLoudPosition(0.0), m_fLastSoLoudPositionTime(0.0), m_fSoLoudPositionRate(1000.0)
+      m_fActualSpeedForDisabledPitchCompensation(1.0f), m_fLastRawSoLoudPosition(0.0), m_fLastSoLoudPositionTime(0.0), m_fSoLoudPositionRate(1000.0)
 {
 }
 
@@ -187,7 +187,6 @@ void SoLoudSound::destroy()
 	{
 		delete m_filter;
 		m_filter = nullptr;
-		m_usingFilter = false;
 	}
 
 	// clean up audio source
@@ -294,42 +293,11 @@ void SoLoudSound::setSpeed(float speed)
 			if (debug_snd.getBool())
 				debugLog("SoLoudSound: Speed change %s: %f->%f (stream, filter updated live)\n", m_sFilePath.toUtf8(), previousSpeed, m_speed);
 		}
-		// for non-streaming audio, we still need the restart logic
-		// TODO: remove this and all related logic in SoLoudSoundEngine, we never want to play through the filter for non-streamed audio
+		// for non-streaming audio, no restart needed - speed/pitch is applied during playback
 		else if (!m_bStream)
 		{
-			bool wasUsingFilter = isUsingRateChange();
-
-			// real source playback position before stopping
-			double actualAudioPosition = 0.0;
-			if (isPlaying())
-				actualAudioPosition = getActualAudioPositionInSeconds();
-
-			updateFilterParameters();
-
-			if (isPlaying())
-			{
-				// stop and restart with new parameters
-				SL::stop(m_handle);
-				m_handle = 0;
-
-				// this will apply the new parameters
-				engine->getSound()->play(this, 0.0f, m_pitch);
-
-				// restore position to source position
-				if (m_handle != 0)
-					SL::seek(m_handle, actualAudioPosition);
-
-				// interp tracks GAMEPLAY position
-				double gameplayPosition = actualAudioPosition * speed;
-				m_fLastRawSoLoudPosition = gameplayPosition * 1000.0;
-				m_fLastSoLoudPositionTime = Timing::getTimeReal();
-				m_fSoLoudPositionRate = 1000.0 * speed;
-
-				if (debug_snd.getBool())
-					debugLog("SoLoudSound: Speed change %s: %f->%f, actualAudioPos=%.3fs, seekPos=%.3fs (filter: %d->%d)\n", m_sFilePath.toUtf8(), previousSpeed, m_speed,
-					         actualAudioPosition, actualAudioPosition, wasUsingFilter ? 1 : 0, isUsingRateChange() ? 1 : 0);
-			}
+			if (debug_snd.getBool())
+				debugLog("SoLoudSound: Speed change %s: %f->%f (non-stream, will be applied on next play)\n", m_sFilePath.toUtf8(), previousSpeed, m_speed);
 		}
 	}
 
@@ -356,42 +324,11 @@ void SoLoudSound::setPitch(float pitch)
 			if (debug_snd.getBool())
 				debugLog("SoLoudSound: Pitch change %s: %f->%f (stream, filter updated live)\n", m_sFilePath.toUtf8(), previousPitch, m_pitch);
 		}
-		// for non-streaming audio, we still need the restart logic
-		// TODO: remove this and all related logic in SoLoudSoundEngine, we never want to play through the filter for non-streamed audio
+		// for non-streaming audio, no restart needed - speed/pitch is applied during playback
 		else if (!m_bStream)
 		{
-			bool wasUsingFilter = isUsingRateChange();
-
-			// ACTUAL audio file position
-			double actualAudioPosition = 0.0;
-			if (isPlaying())
-				actualAudioPosition = getActualAudioPositionInSeconds();
-
-			updateFilterParameters();
-
-			if (isPlaying())
-			{
-				// stop and restart with new parameters
-				SL::stop(m_handle);
-				m_handle = 0;
-
-				// this will apply the new parameters
-				engine->getSound()->play(this, 0.0f, pitch);
-
-				// always seek to the actual audio position
-				if (m_handle != 0)
-					SL::seek(m_handle, actualAudioPosition);
-
-				// reset interpolation with gameplay timeline values
-				double gameplayPosition = actualAudioPosition * getSpeed();
-				m_fLastRawSoLoudPosition = gameplayPosition * 1000.0;
-				m_fLastSoLoudPositionTime = Timing::getTimeReal();
-				m_fSoLoudPositionRate = 1000.0 * getSpeed();
-
-				if (debug_snd.getBool())
-					debugLog("SoLoudSound: Pitch change %s: %f->%f, actualAudioPos=%.3fs, seekPos=%.3fs (filter: %d->%d)\n", m_sFilePath.toUtf8(), previousPitch, m_pitch,
-					         actualAudioPosition, actualAudioPosition, wasUsingFilter ? 1 : 0, isUsingRateChange() ? 1 : 0);
-			}
+			if (debug_snd.getBool())
+				debugLog("SoLoudSound: Pitch change %s: %f->%f (non-stream, will be applied on next play)\n", m_sFilePath.toUtf8(), previousPitch, m_pitch);
 		}
 	}
 }

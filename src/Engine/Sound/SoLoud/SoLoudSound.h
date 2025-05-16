@@ -86,9 +86,6 @@ private:
 	float m_pitch;     // pitch factor (1.0 = normal)
 	float m_frequency; // sample rate in Hz
 
-	// flag representing whether the sound has a pitch/tempo filter active
-	bool m_usingFilter;
-
 	// SoLoud-specific members
 	SoLoud::AudioSource *m_audioSource; // base class pointer, could be either Wav or WavStream
 	SoLoud::SoundTouchFilter *m_filter; // SoundTouch filter instance
