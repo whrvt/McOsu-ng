@@ -1,6 +1,6 @@
-From 5270a94044e1955a29c3e35945fa54312cf56691 Mon Sep 17 00:00:00 2001
+From 1512a54c6ceb66facac5ec5501c6c3408aa278bb Mon Sep 17 00:00:00 2001
 From: William Horvath <william@horvath.blog>
-Date: Sat, 17 May 2025 01:40:58 -0700
+Date: Sat, 17 May 2025 02:25:43 -0700
 Subject: [PATCH] add sdl3 static option
 
 ---
@@ -9,9 +9,9 @@ Subject: [PATCH] add sdl3 static option
  include/soloud.h                              |   7 +-
  include/soloud_c.h                            |   1 +
  include/soloud_internal.h                     |   3 +
- .../sdl3_static/soloud_sdl3_static.cpp        | 159 ++++++++++++++++++
+ .../sdl3_static/soloud_sdl3_static.cpp        | 161 ++++++++++++++++++
  src/core/soloud.cpp                           |  21 ++-
- 7 files changed, 265 insertions(+), 6 deletions(-)
+ 7 files changed, 267 insertions(+), 6 deletions(-)
  create mode 100644 src/backend/sdl3_static/soloud_sdl3_static.cpp
 
 diff --git a/.gitignore b/.gitignore
@@ -222,10 +222,10 @@ index c0589ab..0838ce6 100644
  
 diff --git a/src/backend/sdl3_static/soloud_sdl3_static.cpp b/src/backend/sdl3_static/soloud_sdl3_static.cpp
 new file mode 100644
-index 0000000..e46bea7
+index 0000000..12e9d02
 --- /dev/null
 +++ b/src/backend/sdl3_static/soloud_sdl3_static.cpp
-@@ -0,0 +1,159 @@
+@@ -0,0 +1,161 @@
 +/*
 +SoLoud audio engine
 +Copyright (c) 2013-2015 Jari Komppa
@@ -274,6 +274,7 @@ index 0000000..e46bea7
 +
 +namespace SoLoud
 +{
++    static bool gWeInitSDL = false;
 +    static SDL_AudioDeviceID gAudioDeviceID = 0;
 +    static float* gFloatBuffer = nullptr;
 +    static short* gShortBuffer = nullptr;
@@ -304,8 +305,14 @@ index 0000000..e46bea7
 +        gBufferSize = 0;
 +
 +        if (gAudioDeviceID) {
++            SDL_SetAudioPostmixCallback(gAudioDeviceID, NULL, NULL);
 +            SDL_CloseAudioDevice(gAudioDeviceID);
 +            gAudioDeviceID = 0;
++        }
++
++        if (gWeInitSDL && SDL_WasInit(SDL_INIT_AUDIO)) {
++            SDL_QuitSubSystem(SDL_INIT_AUDIO);
++            gWeInitSDL = false;
 +        }
 +    }
 +
@@ -317,12 +324,11 @@ index 0000000..e46bea7
 +            soloud_sdl3static_deinit(aSoloud);
 +        }
 +
-+        if (!SDL_WasInit(SDL_INIT_AUDIO))
-+        {
-+            if (!SDL_InitSubSystem(SDL_INIT_AUDIO))
-+            {
++        if (!SDL_WasInit(SDL_INIT_AUDIO)) {
++            if (!SDL_InitSubSystem(SDL_INIT_AUDIO)) {
 +                return UNKNOWN_ERROR;
 +            }
++            gWeInitSDL = true;
 +        }
 +
 +        SDL_AudioSpec preferredSpec;
@@ -339,13 +345,11 @@ index 0000000..e46bea7
 +        spec.format = SDL_AUDIO_F32;
 +
 +        gAudioDeviceID = SDL_OpenAudioDevice(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &spec);
-+        if (gAudioDeviceID == 0)
-+        {
++        if (gAudioDeviceID == 0) {
 +            spec.format = SDL_AUDIO_S16;
 +            gAudioDeviceID = SDL_OpenAudioDevice(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &spec);
 +
-+            if (gAudioDeviceID == 0)
-+			{
++            if (gAudioDeviceID == 0) {
 +                gAudioDeviceID = SDL_OpenAudioDevice(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, NULL);
 +                if (gAudioDeviceID == 0) {
 +                    return UNKNOWN_ERROR;
@@ -355,8 +359,7 @@ index 0000000..e46bea7
 +
 +        SDL_AudioSpec actualSpec;
 +        int deviceSampleFrames;
-+        if (!SDL_GetAudioDeviceFormat(gAudioDeviceID, &actualSpec, &deviceSampleFrames))
-+        {
++        if (!SDL_GetAudioDeviceFormat(gAudioDeviceID, &actualSpec, &deviceSampleFrames)) {
 +            SDL_CloseAudioDevice(gAudioDeviceID);
 +            gAudioDeviceID = 0;
 +            return UNKNOWN_ERROR;
@@ -370,8 +373,7 @@ index 0000000..e46bea7
 +            soloudBufferSize = deviceSampleFrames >= 16 ? deviceSampleFrames : (soloudBufferSize == 2048 ? 16 : soloudBufferSize);
 +        }
 +
-+        if (!SDL_SetAudioPostmixCallback(gAudioDeviceID, soloud_sdl3static_postmix, aSoloud))
-+        {
++        if (!SDL_SetAudioPostmixCallback(gAudioDeviceID, soloud_sdl3static_postmix, aSoloud)) {
 +            SDL_CloseAudioDevice(gAudioDeviceID);
 +            gAudioDeviceID = 0;
 +            return UNKNOWN_ERROR;
