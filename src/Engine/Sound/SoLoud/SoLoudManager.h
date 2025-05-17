@@ -22,6 +22,7 @@ class SL
 {
 private:
 	static std::unique_ptr<SoLoud::Soloud> m_engine;
+
 public:
 	SL();
 
@@ -57,6 +58,10 @@ public:
 	static inline void set3dListenerAt(float aAtX, float aAtY, float aAtZ) { m_engine->set3dListenerAt(aAtX, aAtY, aAtZ); }
 	static inline void set3dListenerUp(float aUpX, float aUpY, float aUpZ) { m_engine->set3dListenerUp(aUpX, aUpY, aUpZ); }
 	static inline void update3dAudio() { m_engine->update3dAudio(); }
+	static inline void setProtectVoice(unsigned int aVoiceHandle, bool aProtect) { m_engine->setProtectVoice(aVoiceHandle, aProtect); }
+	static inline bool getProtectVoice(unsigned int aVoiceHandle) { return m_engine->getProtectVoice(aVoiceHandle); }
+	static inline SoLoud::result setMaxActiveVoiceCount(unsigned int aVoiceCount) { return m_engine->setMaxActiveVoiceCount(aVoiceCount); }
+	static inline unsigned int getMaxActiveVoiceCount() { return m_engine->getMaxActiveVoiceCount(); }
 };
 
 #else

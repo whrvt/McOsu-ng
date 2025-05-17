@@ -170,12 +170,13 @@ AUDIO_CFLAGS = -I$(DEPS_PREFIX)/include $(shell $(PKG_CONFIG) --cflags soundtouc
 AUDIO_LIBS = -L$(DEPS_PREFIX)/lib -lsoloud_static_x$(if $(filter x86_64,$(host_cpu)),64,$(if $(findstring linux,$(host_os)),32,86))$(if $(ENABLE_DEBUG),_d,) $(shell $(PKG_CONFIG) --libs soundtouch)
 $(DEPS_PREFIX)/SoLoud.built: $(DEPS_CACHE)/SoLoud.source
 	rm -rf $(DEPS_PREFIX)/SoLoud
-	$(MKDIR_P) $(DEPS_PREFIX) $(DEPS_PREFIX)/include $(DEPS_PREFIX)/lib/pkgconfig $(DEPS_PREFIX)/SoLoud/build
+	$(MKDIR_P) $(DEPS_PREFIX) $(DEPS_PREFIX)/include/soloud $(DEPS_PREFIX)/lib/pkgconfig $(DEPS_PREFIX)/SoLoud/build
 	$(TAR) xf $(DEPS_CACHE)/SoLoud-$(SOLOUD_VERSION).tar.gz -C $(DEPS_PREFIX)/SoLoud --strip-components=1 && \
 	cd $(DEPS_PREFIX)/SoLoud && \
 	patch -Np1<$(abs_top_srcdir)/build/aux/revert-soloud.patch && \
 	patch -Np1<$(abs_top_srcdir)/build/aux/soloud-miniaudio-latest.patch && \
 	patch -Np1<$(abs_top_srcdir)/build/aux/soloud-miniaudio-settings.patch && \
+	$(SED) -i 's|#define VOICE_COUNT 1024|#define VOICE_COUNT 4095|g' include/soloud.h # raise max # concurrent voices from 1024 default to 4095 (hard limit)
 	cd $(DEPS_PREFIX)/SoLoud/build && \
 	$(SED) -i 's|"NoRTTI"$(comma)||g' genie.lua
 if WIN32_PLATFORM
@@ -211,7 +212,7 @@ else
 	cmake --build build && \
 	cmake --install build 
 endif
-	cp -r $(DEPS_PREFIX)/SoLoud/include $(DEPS_PREFIX)/include/soloud && \
+	cp -r $(DEPS_PREFIX)/SoLoud/include/* $(DEPS_PREFIX)/include/soloud/ && \
 	test -f $(DEPS_PREFIX)/lib/libsoloud_static_x$(if $(filter x86_64,$(host_cpu)),64,$(if $(findstring linux,$(host_os)),32,86))$(if $(ENABLE_DEBUG),_d,).a
 	touch $@
 

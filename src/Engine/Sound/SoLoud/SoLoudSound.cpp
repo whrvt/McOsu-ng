@@ -125,6 +125,8 @@ void SoLoudSound::initAsync()
 		{
 			m_audioSource = wavStream;
 			m_frequency = 44100.0f; // default, will be updated when played
+
+			m_audioSource->setSingleInstance(true); // only play one music track at a time
 		}
 		else
 		{
@@ -143,6 +145,8 @@ void SoLoudSound::initAsync()
 		{
 			m_audioSource = wav;
 			m_frequency = 44100.0f;
+
+			m_audioSource->setSingleInstance(false); // allow non-music tracks to overlap by default
 		}
 		else
 		{
@@ -400,6 +404,13 @@ void SoLoudSound::setLoop(bool loop)
 	// apply to the active voice
 	if (m_handle != 0)
 		SL::setLooping(m_handle, loop);
+}
+
+void SoLoudSound::setOverlayable(bool overlayable)
+{
+	m_bIsOverlayable = overlayable;
+	if (m_audioSource)
+		m_audioSource->setSingleInstance(overlayable);
 }
 
 float SoLoudSound::getPosition()

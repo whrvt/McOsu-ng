@@ -145,6 +145,10 @@ bool SoLoudSoundEngine::playSound(SoLoudSound *soloudSound, float pan, float pit
 	{
 		// streaming audio (music) - always use SoundTouch filter
 		handle = playSoundWithFilter(soloudSound, pan, soloudSound->m_fVolume);
+		if (handle)
+			SL::setProtectVoice(handle, true); // protect the music channel (don't let it get interrupted when many sounds play back at once)
+		                                       // NOTE: this doesn't seem to work properly, not sure why... need to set setMaxActiveVoiceCount as a workaround,
+		                                       // otherwise stuff like buzzsliders can cause glitches in music playback
 	}
 	else
 	{
@@ -416,20 +420,24 @@ bool SoLoudSoundEngine::initializeOutputDevice(int id, bool force)
 		return false;
 	}
 
-	m_bReady = true;
+	result = SL::setMaxActiveVoiceCount(255);
+	if (result != SoLoud::SO_NO_ERROR)
+		debugLog("SoundEngine WARNING: failed to setMaxActiveVoiceCount (%i)\n", result);
 
 	// set current device name (bogus)
-	for (size_t i = 0; i < m_outputDevices.size(); i++)
+	for (auto & m_outputDevice : m_outputDevices)
 	{
-		if (m_outputDevices[i].id == id)
+		if (m_outputDevice.id == id)
 		{
-			m_sCurrentOutputDevice = m_outputDevices[i].name;
+			m_sCurrentOutputDevice = m_outputDevice.name;
 			break;
 		}
 	}
 
-	debugLog("SoundEngine: Initialized SoLoud with output device = \"%s\" flags: 0x%x, backend: %u, sampleRate: %u, bufferSize: %u, channels: %u\n",
-	         m_sCurrentOutputDevice.toUtf8(), flags, backend, sampleRate, bufferSize, channels);
+	debugLog("SoundEngine: Initialized SoLoud with output device = \"%s\" flags: 0x%x, backend: %u, sampleRate: %u, bufferSize: %u, channels: %u, maxActiveVoiceCount: %u\n",
+	         m_sCurrentOutputDevice.toUtf8(), flags, backend, sampleRate, bufferSize, channels, SL::getMaxActiveVoiceCount());
+
+	m_bReady = true;
 
 	// init global volume
 	setVolume(m_fVolume);

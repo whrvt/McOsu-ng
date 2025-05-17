@@ -5311,12 +5311,13 @@ $(DEPS_CACHE)/SoundTouch.source:
 @USE_BASS_FALSE@@USE_SDLMIXER_TRUE@	$(MKDIR_P) $(DEPS_PREFIX) && touch $@
 @USE_BASS_FALSE@@USE_SDLMIXER_FALSE@$(DEPS_PREFIX)/SoLoud.built: $(DEPS_CACHE)/SoLoud.source
 @USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	rm -rf $(DEPS_PREFIX)/SoLoud
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	$(MKDIR_P) $(DEPS_PREFIX) $(DEPS_PREFIX)/include $(DEPS_PREFIX)/lib/pkgconfig $(DEPS_PREFIX)/SoLoud/build
+@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	$(MKDIR_P) $(DEPS_PREFIX) $(DEPS_PREFIX)/include/soloud $(DEPS_PREFIX)/lib/pkgconfig $(DEPS_PREFIX)/SoLoud/build
 @USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	$(TAR) xf $(DEPS_CACHE)/SoLoud-$(SOLOUD_VERSION).tar.gz -C $(DEPS_PREFIX)/SoLoud --strip-components=1 && \
 @USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	cd $(DEPS_PREFIX)/SoLoud && \
 @USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	patch -Np1<$(abs_top_srcdir)/build/aux/revert-soloud.patch && \
 @USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	patch -Np1<$(abs_top_srcdir)/build/aux/soloud-miniaudio-latest.patch && \
 @USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	patch -Np1<$(abs_top_srcdir)/build/aux/soloud-miniaudio-settings.patch && \
+@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	$(SED) -i 's|#define VOICE_COUNT 1024|#define VOICE_COUNT 4095|g' include/soloud.h # raise max # concurrent voices from 1024 default to 4095 (hard limit)
 @USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	cd $(DEPS_PREFIX)/SoLoud/build && \
 @USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	$(SED) -i 's|"NoRTTI"$(comma)||g' genie.lua
 @USE_BASS_FALSE@@USE_SDLMIXER_FALSE@@WIN32_PLATFORM_TRUE@	cd $(DEPS_PREFIX)/SoLoud/build && \
@@ -5349,7 +5350,7 @@ $(DEPS_CACHE)/SoundTouch.source:
 @USE_BASS_FALSE@@USE_SDLMIXER_FALSE@@WIN32_PLATFORM_FALSE@		-D CMAKE_CXX_FLAGS="$(CXXFLAGS)" && \
 @USE_BASS_FALSE@@USE_SDLMIXER_FALSE@@WIN32_PLATFORM_FALSE@	cmake --build build && \
 @USE_BASS_FALSE@@USE_SDLMIXER_FALSE@@WIN32_PLATFORM_FALSE@	cmake --install build 
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	cp -r $(DEPS_PREFIX)/SoLoud/include $(DEPS_PREFIX)/include/soloud && \
+@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	cp -r $(DEPS_PREFIX)/SoLoud/include/* $(DEPS_PREFIX)/include/soloud/ && \
 @USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	test -f $(DEPS_PREFIX)/lib/libsoloud_static_x$(if $(filter x86_64,$(host_cpu)),64,$(if $(findstring linux,$(host_os)),32,86))$(if $(ENABLE_DEBUG),_d,).a
 @USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	touch $@
 

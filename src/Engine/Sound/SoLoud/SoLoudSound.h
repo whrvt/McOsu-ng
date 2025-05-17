@@ -38,6 +38,7 @@ public:
 	void setFrequency(float frequency) override;
 	void setPan(float pan) override;
 	void setLoop(bool loop) override;
+	void setOverlayable(bool overlayable) override;
 
 	SOUNDHANDLE getHandle() override;
 	constexpr SoundType *getSound() override { return this; }
