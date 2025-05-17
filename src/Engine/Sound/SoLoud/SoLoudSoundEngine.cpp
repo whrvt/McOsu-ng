@@ -25,7 +25,7 @@ extern ConVar debug_snd;
 
 // SoLoud-specific ConVars
 ConVar snd_soloud_buffer("snd_soloud_buffer", SoLoud::Soloud::AUTO, FCVAR_NONE, "SoLoud audio device buffer size");
-ConVar snd_soloud_backend("snd_soloud_backend", Env::cfg(OS::WASM) ? SoLoud::Soloud::SDL3 : SoLoud::Soloud::MINIAUDIO, FCVAR_NONE, "SoLoud backend (0=auto, 3=SDL3, 14=MiniAudio)");
+ConVar snd_soloud_backend("snd_soloud_backend", Env::cfg(OS::WASM) ? "SDL3" : "MiniAudio", FCVAR_NONE, R"(SoLoud backend, "MiniAudio" or "SDL3" (MiniAudio is default on desktop))");
 
 SoLoudSoundEngine::SoLoudSoundEngine() : SoundEngine()
 {
@@ -388,9 +388,15 @@ bool SoLoudSoundEngine::initializeOutputDevice(int id, bool force)
 	// basic flags
 	unsigned int flags = SoLoud::Soloud::CLIP_ROUNDOFF;
 
-	auto backend = snd_soloud_backend.getVal<SoLoud::Soloud::BACKENDS>();
-	if (backend < 0 || backend > SoLoud::Soloud::BACKEND_MAX)
-		backend = snd_soloud_backend.getDefaultVal<SoLoud::Soloud::BACKENDS>();
+	auto backend = Env::cfg(OS::WASM) ? SoLoud::Soloud::SDL3 : SoLoud::Soloud::MINIAUDIO;
+	auto userBackend = snd_soloud_backend.getString();
+	if ((userBackend != snd_soloud_backend.getDefaultString()))
+	{
+		if (userBackend.findIgnoreCase("sdl") != -1)
+			backend = SoLoud::Soloud::SDL3;
+		else
+			backend = SoLoud::Soloud::MINIAUDIO;
+	}
 
 	unsigned int sampleRate = snd_freq.getVal<unsigned int>();
 	if (sampleRate <= 0)
