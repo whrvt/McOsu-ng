@@ -370,7 +370,7 @@ index 0000000..12e9d02
 +        unsigned int soloudBufferSize = aBuffer;
 +        if (deviceSampleFrames > 0 && deviceSampleFrames < (int)soloudBufferSize) {
 +            // 2048 as in default/not set, otherwise respect the set choice if the queried buffer size is way too small
-+            soloudBufferSize = deviceSampleFrames >= 16 ? deviceSampleFrames : (soloudBufferSize == 2048 ? 16 : soloudBufferSize);
++            soloudBufferSize = (((deviceSampleFrames >= 16 ? deviceSampleFrames : (soloudBufferSize == 2048 ? 16 : soloudBufferSize)) + 1) / 2) * 2;
 +        }
 +
 +        if (!SDL_SetAudioPostmixCallback(gAudioDeviceID, soloud_sdl3static_postmix, aSoloud)) {

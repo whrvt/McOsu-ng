@@ -130,14 +130,15 @@ MAIN_FUNC /* int argc, char *argv[] */
 	if (fmain->initialize(argc, argv) == SDL_APP_FAILURE)
 		SDL_AppQuit(fmain, SDL_APP_FAILURE);
 
+	constexpr int SIZE_EVENTS = 64;
+	std::array<SDL_Event, SIZE_EVENTS> events;
+
 	while (fmain->isRunning())
 	{
 		VPROF_MAIN();
 		{
 			// event collection
 			VPROF_BUDGET("SDL", VPROF_BUDGETGROUP_WNDPROC);
-			static constexpr int SIZE_EVENTS = 64;
-			std::array<SDL_Event, SIZE_EVENTS> events;
 			int eventCount = 0;
 
 			SDL_PumpEvents();
@@ -154,7 +155,6 @@ MAIN_FUNC /* int argc, char *argv[] */
 		}
 	}
 
-	SDL_AppQuit(fmain, SDL_APP_SUCCESS);
 	return 0;
 #else
 	*appstate = fmain;
