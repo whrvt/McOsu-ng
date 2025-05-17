@@ -86,9 +86,9 @@
  */
 #define MCENGINE_FEATURE_PROFILING
 
-/* misc, untested */
-//#define MCENGINE_SDL_JOYSTICK
-//#define MCENGINE_SDL_JOYSTICK_MOUSE
-//#define MCENGINE_SDL_TOUCHSUPPORT
+/*
+ * If, for some reason, you want SDL main callbacks on desktop (it's forced on WASM)
+ */
+//#define MCENGINE_FEATURE_MAINCALLBACKS
 
 #endif

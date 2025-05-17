@@ -443,7 +443,7 @@ PKG_CHECK_AUTO([GL], [gl], [have_gl=yes], [have_gl=no])
 PKG_CHECK_AUTO([GLU], [glu], [have_glu=yes], [have_glu=no])
 
 SDL3_MIN_VERSION=3.4.0 # needs SDL_SetRelativeMouseTransform, not in any current (3.2.x) releases
-SDL3_BUILD_VERSION=514d96de07c3b1b8603ee4701229bb055a1dd2e3 # git, latest commit (as of now) has some regression with keyboard inputs being dropped
+SDL3_BUILD_VERSION=514d96de07c3b1b8603ee4701229bb055a1dd2e3 # git
 GLEW_MIN_VERSION=2.2.0
 GLEW_BUILD_VERSION=2.2.0
 FREETYPE2_MIN_VERSION=2.10.0

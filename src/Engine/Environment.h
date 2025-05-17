@@ -36,6 +36,7 @@ public:
 	// system
 	void shutdown();
 	void restart();
+	[[nodiscard]] inline bool isRunning() const { return m_bRunning; }
 	[[nodiscard]] UString getExecutablePath() const;
 	void openURLInDefaultBrowser(UString url) const;
 	// returns at least 1
@@ -202,7 +203,7 @@ private:
 	{
 		FileDialogCallback callback;
 	};
-    static void sdlFileDialogCallback(void* userdata, const char* const* filelist, int filter);
+	static void sdlFileDialogCallback(void *userdata, const char *const *filelist, int filter);
 };
 
 extern Environment *env;

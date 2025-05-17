@@ -5,10 +5,6 @@
 // $NoKeywords: $sdlcallbacks $main
 //===============================================================================//
 
-#define SDL_MAIN_USE_CALLBACKS
-#include <SDL3/SDL.h>
-#include <SDL3/SDL_main.h>
-
 // platform-specific headers
 #if defined(MCENGINE_PLATFORM_WINDOWS) || (defined(_WIN32) && !defined(__linux__))
 // #define MCENGINE_WINDOWS_REALTIMESTYLUS_SUPPORT
@@ -23,6 +19,19 @@
 #include <libloaderapi.h>
 #include <windows.h>
 #endif
+
+#if defined(MCENGINE_PLATFORM_WASM) || defined(MCENGINE_FEATURE_MAINCALLBACKS)
+#define MAIN_FUNC SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
+#define nocbinline
+#define SDL_MAIN_USE_CALLBACKS // this enables the use of SDL_AppInit/AppEvent/AppIterate instead of a traditional mainloop, needed for wasm
+                               // (works on desktop too, but it's not necessary)
+#else
+#define MAIN_FUNC int main(int argc, char *argv[])
+#define nocbinline static forceinline
+#endif
+
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_main.h>
 
 #include "Engine.h"
 #include "Environment.h"
@@ -49,11 +58,17 @@ private:
 	// engine update timer
 	Timer *m_deltaTimer;
 
-	// iteration rate control methods
-	inline void foregrounded() { if constexpr (!Env::cfg(OS::WASM)) SDL_SetHint(SDL_HINT_MAIN_CALLBACK_RATE, m_sFpsMax.toUtf8()); }
-	inline void backgrounded() { if constexpr (!Env::cfg(OS::WASM)) SDL_SetHint(SDL_HINT_MAIN_CALLBACK_RATE, m_sFpsMaxBG.toUtf8()); }
-	UString m_sFpsMax;
-	UString m_sFpsMaxBG;
+	// when the next frame should render (for non-callback fps limiting)
+	uint64_t m_iNextFrameTime;
+
+	int m_iFpsMax;
+	int m_iFpsMaxBG;
+
+	// set iteration rate for callbacks
+	// clang-format off
+	inline void setFgFPS() { if constexpr (Env::cfg(FEAT::MAINCB)) SDL_SetHint(SDL_HINT_MAIN_CALLBACK_RATE, std::format("%i", m_iFpsMax).c_str()); }
+	inline void setBgFPS() { if constexpr (Env::cfg(FEAT::MAINCB)) SDL_SetHint(SDL_HINT_MAIN_CALLBACK_RATE, std::format("%i", m_iFpsMaxBG).c_str()); }
+	// clang-format on
 
 	// init methods
 	void setupLogging();
@@ -69,36 +84,9 @@ private:
 	void parseArgs();
 };
 
-//***********************//
-//	SDL CALLBACKS BEGIN  //
-//***********************//
-
-// main entrypoint, called once
-SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
-{
-	SDL_SetHint(SDL_HINT_VIDEO_DOUBLE_BUFFER, "1");
-	if (!SDL_Init(SDL_INIT_VIDEO)) // other subsystems can be init later
-	{
-		fprintf(stderr, "Couldn't SDL_Init(): %s\n", SDL_GetError());
-		return SDL_APP_FAILURE;
-	}
-
-	auto *fmain = new SDLMain(argc, argv);
-	*appstate = fmain;
-	return fmain->initialize(argc, argv);
-}
-
-// (update tick) serialized with SDL_AppEvent
-SDL_AppResult SDL_AppIterate(void *appstate)
-{
-	return static_cast<SDLMain *>(appstate)->iterate();
-}
-
-// (event queue processing) serialized with SDL_AppIterate
-SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
-{
-	return static_cast<SDLMain *>(appstate)->handleEvent(event);
-}
+//*********************************//
+//	SDL CALLBACKS/MAINLOOP BEGINS  //
+//*********************************//
 
 // called when the SDL_APP_SUCCESS (normal exit) or SDL_APP_FAILURE (something bad happened) event is returned from Init/Iterate/Event
 void SDL_AppQuit(void *appstate, SDL_AppResult result)
@@ -114,9 +102,69 @@ void SDL_AppQuit(void *appstate, SDL_AppResult result)
 	SAFE_DELETE(fmain);
 }
 
-//*********************//
-//	SDL CALLBACKS END  //
-//*********************//
+// (event queue processing) serialized with SDL_AppIterate
+nocbinline SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
+{
+	return static_cast<SDLMain *>(appstate)->handleEvent(event);
+}
+
+// (update tick) serialized with SDL_AppEvent
+nocbinline SDL_AppResult SDL_AppIterate(void *appstate)
+{
+	return static_cast<SDLMain *>(appstate)->iterate();
+}
+
+// actual main/init, called once
+MAIN_FUNC /* int argc, char *argv[] */
+{
+	SDL_SetHint(SDL_HINT_VIDEO_DOUBLE_BUFFER, "1");
+	if (!SDL_Init(SDL_INIT_VIDEO)) // other subsystems can be init later
+	{
+		fprintf(stderr, "Couldn't SDL_Init(): %s\n", SDL_GetError());
+		return SDL_APP_FAILURE;
+	}
+
+	auto *fmain = new SDLMain(argc, argv);
+
+#if !(defined(MCENGINE_PLATFORM_WASM) || defined(MCENGINE_FEATURE_MAINCALLBACKS))
+	if (fmain->initialize(argc, argv) == SDL_APP_FAILURE)
+		SDL_AppQuit(fmain, SDL_APP_FAILURE);
+
+	while (fmain->isRunning())
+	{
+		VPROF_MAIN();
+		{
+			// event collection
+			VPROF_BUDGET("SDL", VPROF_BUDGETGROUP_WNDPROC);
+			static constexpr int SIZE_EVENTS = 64;
+			std::array<SDL_Event, SIZE_EVENTS> events;
+			int eventCount = 0;
+
+			SDL_PumpEvents();
+			do
+			{
+				eventCount = SDL_PeepEvents(&events[0], SIZE_EVENTS, SDL_GETEVENT, SDL_EVENT_FIRST, SDL_EVENT_LAST);
+				for (int i = 0; i < eventCount; ++i)
+					SDL_AppEvent(fmain, &events[i]);
+			} while (eventCount == SIZE_EVENTS);
+		}
+		{
+			// engine update + draw + fps limiter
+			SDL_AppIterate(fmain);
+		}
+	}
+
+	SDL_AppQuit(fmain, SDL_APP_SUCCESS);
+	return 0;
+#else
+	*appstate = fmain;
+	return fmain->initialize(argc, argv);
+#endif // SDL_MAIN_USE_CALLBACKS
+}
+
+//*******************************//
+//	SDL CALLBACKS/MAINLOOP ENDS  //
+//*******************************//
 
 // window configuration
 static constexpr auto WINDOW_TITLE = "McEngine";
@@ -140,8 +188,8 @@ SDLMain::SDLMain(int, char *[]) : Environment()
 	m_context = nullptr;
 	m_deltaTimer = nullptr;
 
-	m_sFpsMax = "420";
-	m_sFpsMaxBG = "30";
+	m_iFpsMax = 420;
+	m_iFpsMaxBG = 30;
 
 	// setup callbacks
 	fps_max.setCallback(fastdelegate::MakeDelegate(this, &SDLMain::fps_max_callback));
@@ -151,7 +199,7 @@ SDLMain::SDLMain(int, char *[]) : Environment()
 
 SDLMain::~SDLMain()
 {
-	// clean up timer
+	// clean up timers
 	SAFE_DELETE(m_deltaTimer);
 
 	// clean up GL context
@@ -197,7 +245,7 @@ SDL_AppResult SDLMain::initialize(int argc, char *argv[])
 	m_deltaTimer = new Timer();
 
 	// get the screen refresh rate, and set fps_max to that as default
-	if constexpr (!Env::cfg(OS::WASM))
+	if constexpr (!Env::cfg(OS::WASM)) // not in WASM
 	{
 		const SDL_DisplayID display = SDL_GetDisplayForWindow(m_window);
 		const SDL_DisplayMode *currentDisplayMode = SDL_GetCurrentDisplayMode(display);
@@ -222,42 +270,14 @@ SDL_AppResult SDLMain::initialize(int argc, char *argv[])
 	SDL_StartTextInput(m_window);
 	SDL_SetWindowKeyboardGrab(m_window, false); // this allows windows key and such to work
 
+	m_iNextFrameTime = SDL_GetTicksNS(); // init fps timer
+
 	// return init success
-	return SDL_APP_CONTINUE;
-}
-
-SDL_AppResult SDLMain::iterate()
-{
-	VPROF_MAIN();
-
-	if (!m_bRunning)
-		return SDL_APP_SUCCESS;
-
-	// update
-	{
-		m_deltaTimer->update();
-		m_engine->setFrameTime(m_deltaTimer->getDelta());
-		m_engine->onUpdate();
-	}
-
-	// draw
-	{
-		m_bDrawing = true;
-		m_engine->onPaint();
-		m_bDrawing = false;
-	}
-
-	{
-		VPROF_BUDGET("FPSLimiter", VPROF_BUDGETGROUP_SLEEP); // this is entirely handled by SDL_HINT_MAIN_CALLBACK_RATE now
-	}
-
 	return SDL_APP_CONTINUE;
 }
 
 SDL_AppResult SDLMain::handleEvent(SDL_Event *event)
 {
-	VPROF_BUDGET("SDL", VPROF_BUDGETGROUP_WNDPROC); // TODO: find a way to make these work again
-
 	switch (event->type)
 	{
 	case SDL_EVENT_QUIT:
@@ -266,7 +286,10 @@ SDL_AppResult SDLMain::handleEvent(SDL_Event *event)
 			m_bRunning = false;
 			m_engine->onShutdown();
 		}
-		return SDL_APP_SUCCESS;
+		if constexpr (Env::cfg(FEAT::MAINCB))
+			return SDL_APP_SUCCESS;
+		else
+			SDL_AppQuit(this, SDL_APP_SUCCESS);
 
 	// window events
 	case SDL_EVENT_WINDOW_FIRST ... SDL_EVENT_WINDOW_LAST:
@@ -278,42 +301,45 @@ SDL_AppResult SDLMain::handleEvent(SDL_Event *event)
 				m_bRunning = false;
 				m_engine->onShutdown();
 			}
-			return SDL_APP_SUCCESS;
+			if constexpr (Env::cfg(FEAT::MAINCB))
+				return SDL_APP_SUCCESS;
+			else
+				SDL_AppQuit(this, SDL_APP_SUCCESS);
 
 		case SDL_EVENT_WINDOW_FOCUS_GAINED:
 			m_bHasFocus = true;
 			m_engine->onFocusGained();
-			foregrounded();
+			setFgFPS();
 			break;
 
 		case SDL_EVENT_WINDOW_FOCUS_LOST:
 			m_bHasFocus = false;
 			m_engine->onFocusLost();
-			backgrounded();
+			setBgFPS();
 			break;
 
 		case SDL_EVENT_WINDOW_MAXIMIZED:
 			m_bMinimized = false;
 			m_engine->onMaximized();
-			foregrounded();
+			setFgFPS();
 			break;
 
 		case SDL_EVENT_WINDOW_MINIMIZED:
 			m_bMinimized = true;
 			m_engine->onMinimized();
-			backgrounded();
+			setBgFPS();
 			break;
 
 		case SDL_EVENT_WINDOW_RESTORED:
 			m_bMinimized = false;
 			m_engine->onRestored();
-			foregrounded();
+			setFgFPS();
 			break;
 
 		case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
 		case SDL_EVENT_WINDOW_RESIZED:
 			m_engine->requestResolutionChange(Vector2(static_cast<float>(event->window.data1), static_cast<float>(event->window.data2)));
-			foregrounded();
+			setFgFPS();
 			break;
 
 		default:
@@ -362,6 +388,56 @@ SDL_AppResult SDLMain::handleEvent(SDL_Event *event)
 
 	default:
 		break;
+	}
+
+	return SDL_APP_CONTINUE;
+}
+
+SDL_AppResult SDLMain::iterate()
+{
+	if (!m_bRunning)
+		return SDL_APP_SUCCESS;
+
+	// update
+	{
+		m_deltaTimer->update();
+		m_engine->setFrameTime(m_deltaTimer->getDelta());
+		m_engine->onUpdate();
+	}
+
+	// draw
+	{
+		m_bDrawing = true;
+		m_engine->onPaint();
+		m_bDrawing = false;
+	}
+
+	if constexpr (!Env::cfg(FEAT::MAINCB)) // main callbacks use SDL iteration rate to limit fps
+	{
+		VPROF_BUDGET("FPSLimiter", VPROF_BUDGETGROUP_SLEEP);
+
+		// if minimized or unfocused, use BG fps, otherwise use fps_max (if 0 it's unlimited)
+		const int targetFPS = m_bMinimized || !m_bHasFocus ? m_iFpsMaxBG : m_iFpsMax;
+
+		if (targetFPS > 0)
+		{
+			const uint64_t frameTimeNS = SDL_NS_PER_SECOND / static_cast<uint64_t>(targetFPS);
+			const uint64_t now = SDL_GetTicksNS();
+
+			// if we're ahead of schedule, sleep until next frame
+			if (m_iNextFrameTime > now)
+			{
+				const uint64_t sleepTime = m_iNextFrameTime - now;
+				SDL_DelayPrecise(sleepTime);
+			}
+			else
+			{
+				// behind schedule or exactly on time, reset to now
+				m_iNextFrameTime = now;
+			}
+			// set time for next frame
+			m_iNextFrameTime += frameTimeNS;
+		}
 	}
 
 	return SDL_APP_CONTINUE;
@@ -558,26 +634,26 @@ void SDLMain::fps_max_callback(UString, UString newVal)
 {
 	int newFps = newVal.toInt();
 	if ((newFps == 0 || newFps > 30) && !fps_unlimited.getBool())
-		m_sFpsMax = newVal;
+		m_iFpsMax = newFps;
 	if (m_bHasFocus)
-		foregrounded();
+		setFgFPS();
 }
 
 void SDLMain::fps_max_background_callback(UString, UString newVal)
 {
 	int newFps = newVal.toInt();
 	if (newFps >= 0)
-		m_sFpsMaxBG = newVal;
+		m_iFpsMaxBG = newFps;
 	if (!m_bHasFocus)
-		backgrounded();
+		setBgFPS();
 }
 
 void SDLMain::fps_unlimited_callback(UString, UString newVal)
 {
 	if (newVal.toBool())
-		m_sFpsMax = "0";
+		m_iFpsMax = 0;
 	else
-		m_sFpsMax = fps_max.getString();
+		m_iFpsMax = fps_max.getInt();
 	if (m_bHasFocus)
-		foregrounded();
+		setFgFPS();
 }

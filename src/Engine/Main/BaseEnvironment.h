@@ -20,13 +20,14 @@ namespace Env
     {
         WINDOWS	= 1 << 0,
         LINUX	= 1 << 1,
-		WASM	= 1 << 4,
+		WASM	= 1 << 2,
 		NONE	= 0,
 	};
 	enum class FEAT : uint32_t
 	{
-		STEAM	= 1 << 1,
-		DISCORD = 1 << 2,
+		STEAM	= 1 << 0,
+		DISCORD = 1 << 1,
+		MAINCB	= 1 << 2,
 		NONE	= 0,
 	};
 	enum class AUD : uint32_t
@@ -72,6 +73,9 @@ namespace Env
 		return
 	#ifdef MCENGINE_FEATURE_STEAMWORKS
 		FEAT::STEAM |
+	#endif
+	#if defined(MCENGINE_PLATFORM_WASM) || defined(MCENGINE_FEATURE_MAINCALLBACKS)
+		FEAT::MAINCB |
 	#endif
 		FEAT::NONE;
 	}
