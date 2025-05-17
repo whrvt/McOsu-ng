@@ -1793,6 +1793,15 @@ void Osu::saveScreenshot()
 
     std::vector<unsigned char> pixels = engine->getGraphics()->getScreenshot();
 
+	if (pixels.empty())
+	{
+		static uint8_t once = 0;
+		if (!once++)
+			m_notificationOverlay->addNotification("Error: Couldn't grab a screenshot :(", 0xffff0000, false, 3.0f);
+		debugLog("failed to get pixel data for screenshot\n");
+		return;
+	}
+
     const float outerWidth = engine->getGraphics()->getResolution().x;
     const float outerHeight = engine->getGraphics()->getResolution().y;
     const float innerWidth = m_vInternalResolution.x;

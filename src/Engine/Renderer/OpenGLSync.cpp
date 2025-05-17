@@ -7,6 +7,7 @@
 
 #include "OpenGLSync.h"
 #if defined(MCENGINE_FEATURE_OPENGL) || defined(MCENGINE_FEATURE_GLES32)
+#include "OpenGLHeaders.h"
 
 #include "ConVar.h"
 #include "Engine.h"

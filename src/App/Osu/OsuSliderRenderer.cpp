@@ -21,10 +21,6 @@
 #include "OsuGameRules.h"
 
 #include "OpenGLHeaders.h"
-#include "OpenGLLegacyInterface.h"
-#include "OpenGL3Interface.h"
-#include "OpenGLES2Interface.h"
-#include "OpenGLES32Interface.h"
 #include "DirectX11Interface.h"
 
 Shader *OsuSliderRenderer::BLEND_SHADER = NULL;
@@ -398,28 +394,12 @@ void OsuSliderRenderer::draw(Graphics *g, Osu *osu, VertexArrayObject *vao, cons
 						g->translate(translation.x, translation.y);
 						///g->scale(scaleToApplyAfterTranslationX, scaleToApplyAfterTranslationY); // aspire slider distortions
 
-						if constexpr (Env::cfg(REND::GLES2)) {
+						if constexpr (Env::cfg(REND::DX11 | REND::GLES2)) {
 						if (!osu_slider_use_gradient_image.getBool())
 						{
-							OpenGLES2Interface *gles2 = dynamic_cast<OpenGLES2Interface*>(g);
-							if (gles2 != NULL)
-							{
-								g->forceUpdateTransform();
-								Matrix4 mvp = g->getMVP();
-								BLEND_SHADER->setUniformMatrix4fv("mvp", mvp);
-							}
-						}
-						}
-						if constexpr (Env::cfg(REND::DX11)) {
-						if (!osu_slider_use_gradient_image.getBool())
-						{
-							DirectX11Interface *dx11 = dynamic_cast<DirectX11Interface*>(g);
-							if (dx11 != NULL)
-							{
-								g->forceUpdateTransform();
-								Matrix4 mvp = g->getMVP();
-								BLEND_SHADER->setUniformMatrix4fv("mvp", mvp);
-							}
+							g->forceUpdateTransform();
+							Matrix4 mvp = g->getMVP();
+							BLEND_SHADER->setUniformMatrix4fv("mvp", mvp);
 						}
 						}
 
@@ -635,14 +615,6 @@ void OsuSliderRenderer::drawVR(Graphics *g, Osu *osu, OsuVR *vr, Matrix4 &mvp, f
 
 void OsuSliderRenderer::drawFillSliderBodyPeppy(Graphics *g, Osu *osu, const std::vector<Vector2> &points, VertexArrayObject *circleMesh, float radius, int drawFromIndex, int drawUpToIndex, Shader *shader)
 {
-	OpenGLES2Interface *gles2;
-	DirectX11Interface *dx11;
-
-	if constexpr (Env::cfg(REND::GLES2))
-		gles2 = dynamic_cast<OpenGLES2Interface*>(g);
-	if constexpr (Env::cfg(REND::DX11))
-		dx11 = dynamic_cast<DirectX11Interface*>(g);
-
 	if (drawFromIndex < 0)
 		drawFromIndex = 0;
 	if (drawUpToIndex < 0)
@@ -664,16 +636,8 @@ void OsuSliderRenderer::drawFillSliderBodyPeppy(Graphics *g, Osu *osu, const std
 
 			g->translate(x-startX, y-startY, 0);
 
-			if constexpr (Env::cfg(REND::GLES2)) {
-			if (shader != NULL && gles2 != NULL)
-			{
-				g->forceUpdateTransform();
-				Matrix4 mvp = g->getMVP();
-				shader->setUniformMatrix4fv("mvp", mvp);
-			}
-			}
-			if constexpr (Env::cfg(REND::DX11)) {
-			if (shader != NULL && dx11 != NULL)
+			if constexpr (Env::cfg(REND::DX11 | REND::GLES2)) {
+			if (shader)
 			{
 				g->forceUpdateTransform();
 				Matrix4 mvp = g->getMVP();
@@ -761,13 +725,9 @@ void OsuSliderRenderer::checkUpdateVars(Osu *osu, float hitcircleDiameter)
 
 	if constexpr (Env::cfg(REND::DX11))
 	{
-		DirectX11Interface *dx11 = dynamic_cast<DirectX11Interface*>(engine->getGraphics());
-		if (dx11 != NULL)
-		{
-			// NOTE: compensate for zn/zf Camera::buildMatrixOrtho2DDXLH() differences compared to OpenGL
-			if (MESH_CENTER_HEIGHT > 0.0f)
-				MESH_CENTER_HEIGHT = -MESH_CENTER_HEIGHT;
-		}
+		// NOTE: compensate for zn/zf Camera::buildMatrixOrtho2DDXLH() differences compared to OpenGL
+		if (MESH_CENTER_HEIGHT > 0.0f)
+			MESH_CENTER_HEIGHT = -MESH_CENTER_HEIGHT;
 	}
 
 	// build shaders and circle mesh

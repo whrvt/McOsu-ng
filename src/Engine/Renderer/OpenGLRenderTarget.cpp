@@ -16,6 +16,8 @@
 #include "OpenGLHeaders.h"
 #include "OpenGLStateCache.h"
 
+extern ConVar debug_opengl;
+
 OpenGLRenderTarget::OpenGLRenderTarget(int x, int y, int width, int height, Graphics::MULTISAMPLE_TYPE multiSampleType) : RenderTarget(x, y, width, height, multiSampleType)
 {
 	m_iFrameBuffer = 0;
@@ -200,13 +202,16 @@ void OpenGLRenderTarget::init()
 
 #endif
 
-	// error checking
-	GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-	if (status != GL_FRAMEBUFFER_COMPLETE)
+	if (debug_opengl.getBool()) // put this behind a flag because glCheckFramebufferStatus causes unnecessary command queue syncs
 	{
-		engine->showMessageError("RenderTarget Error", UString::format("!GL_FRAMEBUFFER_COMPLETE, size = (%ix%i), multisampled = %i, status = %u", (int)m_vSize.x, (int)m_vSize.y,
-		                                                               (int)isMultiSampled(), status));
-		return;
+		// error checking
+		GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+		if (status != GL_FRAMEBUFFER_COMPLETE)
+		{
+			engine->showMessageError("RenderTarget Error", UString::format("!GL_FRAMEBUFFER_COMPLETE, size = (%ix%i), multisampled = %i, status = %u", (int)m_vSize.x, (int)m_vSize.y,
+																		(int)isMultiSampled(), status));
+			return;
+		}
 	}
 
 	// reset bound texture and framebuffer

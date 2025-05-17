@@ -9,20 +9,14 @@
 #ifndef SDLGLINTERFACE_H
 #define SDLGLINTERFACE_H
 
-#include "OpenGLES2Interface.h"
-#include "OpenGLES32Interface.h"
-#include "OpenGLLegacyInterface.h"
+#include "EngineFeatures.h"
 
-#if defined(MCENGINE_FEATURE_GLES2) || defined(MCENGINE_FEATURE_GLES32) || defined(MCENGINE_FEATURE_OPENGL)
+#if defined(MCENGINE_FEATURE_GLES2) || defined(MCENGINE_FEATURE_GLES32) || defined(MCENGINE_FEATURE_GL3) || defined(MCENGINE_FEATURE_OPENGL)
+
+#include "OpenGLHeaders.h"
+
 typedef struct SDL_Window SDL_Window;
-
-#ifdef MCENGINE_FEATURE_GLES2
-class SDLGLInterface : public OpenGLES2Interface
-#elif defined(MCENGINE_FEATURE_GLES32)
-class SDLGLInterface : public OpenGLES32Interface
-#else
-class SDLGLInterface : public OpenGLLegacyInterface
-#endif
+class SDLGLInterface : public BackendGLInterface
 {
 public:
 	SDLGLInterface(SDL_Window *window);
@@ -40,16 +34,14 @@ public:
 	UString getVersion() override;
 	int getVRAMRemaining() override;
 	int getVRAMTotal() override;
+
 private:
 	SDL_Window *m_window;
 };
 
 #else
-#ifdef MCENGINE_FEATURE_GLES2
-class SDLGLInterface : public OpenGLES2Interface{};
-#else
-class SDLGLInterface : public OpenGLES32Interface{};
-#endif
+class SDLGLInterface
+{};
 #endif
 
 #endif

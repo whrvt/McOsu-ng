@@ -240,8 +240,7 @@ OpenVRInterface::OpenVRInterface()
 		return;
 
 	if constexpr (Env::cfg(REND::DX11))
-		if (dynamic_cast<DirectX11Interface*>(engine->getGraphics()) != NULL)
-			return;
+		return;
 
 	// check if openvr runtime is installed
 	if (!vr::VR_IsRuntimeInstalled())

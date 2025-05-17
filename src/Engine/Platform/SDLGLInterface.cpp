@@ -6,21 +6,17 @@
 //===============================================================================//
 
 #include "SDLGLInterface.h"
+
+#if defined(MCENGINE_FEATURE_GLES2) || defined(MCENGINE_FEATURE_GLES32) || defined(MCENGINE_FEATURE_GL3) || defined(MCENGINE_FEATURE_OPENGL)
+
 #include <SDL3/SDL.h>
 
-#if defined(MCENGINE_FEATURE_GLES2) || defined(MCENGINE_FEATURE_GLES32) || defined(MCENGINE_FEATURE_OPENGL)
-
 #include "Engine.h"
-#include "OpenGLHeaders.h"
-#include "OpenGLStateCache.h"
 
-#ifdef MCENGINE_FEATURE_GLES2
-SDLGLInterface::SDLGLInterface(SDL_Window *window) : OpenGLES2Interface()
-#elif defined(MCENGINE_FEATURE_GLES32)
-SDLGLInterface::SDLGLInterface(SDL_Window *window) : OpenGLES32Interface()
-#else
-SDLGLInterface::SDLGLInterface(SDL_Window *window) : OpenGLLegacyInterface()
-#endif
+// shared convars
+ConVar debug_opengl("debug_opengl", false, FCVAR_NONE);
+
+SDLGLInterface::SDLGLInterface(SDL_Window *window) : BackendGLInterface()
 {
 	// resolve GL functions
 	glewExperimental = true;
@@ -38,13 +34,7 @@ SDLGLInterface::~SDLGLInterface() {}
 
 void SDLGLInterface::endScene()
 {
-#ifdef MCENGINE_FEATURE_GLES2
-	OpenGLES2Interface::endScene();
-#elif defined(MCENGINE_FEATURE_GLES32)
-	OpenGLES32Interface::endScene();
-#else
-	OpenGLLegacyInterface::endScene();
-#endif
+	BackendGLInterface::endScene();
 
 	SDL_GL_SwapWindow(m_window);
 }

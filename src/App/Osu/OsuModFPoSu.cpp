@@ -26,10 +26,6 @@
 #include "OsuModSelector.h"
 
 #include "OpenGLHeaders.h"
-#include "OpenGLLegacyInterface.h"
-#include "OpenGL3Interface.h"
-#include "OpenGLES2Interface.h"
-#include "OpenGLES32Interface.h"
 
 #include <sstream>
 
@@ -269,13 +265,9 @@ void OsuModFPoSu::draw(Graphics *g)
 
 						if constexpr (Env::cfg(REND::DX11))
 						{
-							DirectX11Interface *dx11 = dynamic_cast<DirectX11Interface*>(engine->getGraphics());
-							if (dx11 != NULL)
-							{
-								// NOTE: convert from OpenGL coordinate system
-								static Matrix4 zflip = Matrix4().scale(1, 1, -1);
-								worldMatrix = worldMatrix * zflip;
-							}
+							// NOTE: convert from OpenGL coordinate system
+							static Matrix4 zflip = Matrix4().scale(1, 1, -1);
+							worldMatrix = worldMatrix * zflip;
 						}
 
 						g->setWorldMatrixMul(worldMatrix);
@@ -370,8 +362,8 @@ void OsuModFPoSu::draw(Graphics *g)
 
 							g->setBlending(true);
 							{
-#if defined(MCENGINE_FEATURE_OPENGL) || defined (MCENGINE_FEATURE_GLES2) || defined(MCENGINE_FEATURE_GLES32)
-								if constexpr (Env::cfg(REND::GL | REND::GLES2 | REND::GLES32))
+#if defined(MCENGINE_FEATURE_OPENGL) || defined (MCENGINE_FEATURE_GLES2) || defined(MCENGINE_FEATURE_GLES32) || defined(MCENGINE_FEATURE_GL3)
+								if constexpr (Env::cfg(REND::GL | REND::GLES2 | REND::GLES32 | REND::GL3))
 								{
 									// HACKHACK: OpenGL hardcoded
 									glBlendFunc(GL_ONE_MINUS_DST_ALPHA, GL_DST_ALPHA);
@@ -438,8 +430,8 @@ void OsuModFPoSu::draw(Graphics *g)
 									m_osu->getSkin()->getBackgroundCube()->unbind();
 								}
 
-#if defined(MCENGINE_FEATURE_OPENGL) || defined (MCENGINE_FEATURE_GLES2) || defined(MCENGINE_FEATURE_GLES32)
-								if constexpr (Env::cfg(REND::GL | REND::GLES2 | REND::GLES32))
+#if defined(MCENGINE_FEATURE_OPENGL) || defined (MCENGINE_FEATURE_GLES2) || defined(MCENGINE_FEATURE_GLES32) || defined(MCENGINE_FEATURE_GL3)
+								if constexpr (Env::cfg(REND::GL | REND::GLES2 | REND::GLES32 | REND::GL3))
 								{
 									// HACKHACK: OpenGL hardcoded
 									glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -921,12 +913,8 @@ void OsuModFPoSu::makePlayfield()
 
 	if constexpr (Env::cfg(REND::DX11))
 	{
-		DirectX11Interface *dx11 = dynamic_cast<DirectX11Interface *>(engine->getGraphics());
-		if (dx11 != NULL)
-		{
-			topTC = 0.0f;
-			bottomTC = 1.0f;
-		}
+		topTC = 0.0f;
+		bottomTC = 1.0f;
 	}
 
 	const float dist = -fposu_distance.getFloat();

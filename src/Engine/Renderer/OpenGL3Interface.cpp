@@ -7,7 +7,7 @@
 
 #include "OpenGL3Interface.h"
 
-#ifdef MCENGINE_FEATURE_OPENGL
+#ifdef MCENGINE_FEATURE_GL3
 
 #include "Engine.h"
 #include "ConVar.h"
@@ -79,52 +79,55 @@ void OpenGL3Interface::init()
 
 	//setWireframe(true);
 
-	UString texturedGenericV =	"#version 130\n"
-								"\n"
-								"in vec3 position;\n"
-								"in vec2 uv;\n"
-								"in vec4 vcolor;\n"
-								"out vec2 texcoords;\n"
-								"out vec4 texcolor;\n"
-								"\n"
-								"uniform int type;\n"
-								"uniform mat4 mvp;\n"
-								"\n"
-								"void main() {\n"
-								"	gl_Position =  mvp * vec4(position, 1.0);\n"
-								"	if (type == 1)\n"
-								"	{\n"
-								"		texcoords = uv;\n"
-								"	}\n"
-								"	else if (type == 2)\n"
-								"	{\n"
-								"		texcolor = vcolor;"
-								"	}\n"
-								"}\n"
-								"\n";
+	static constexpr auto texturedGenericV =
+R"(
+#version 130
 
-	UString texturedGenericP =	"#version 130\n"
-								"\n"
-								"out vec4 color;\n"
-								"in vec2 texcoords;\n"
-								"in vec4 texcolor;\n"
-								"\n"
-								"uniform int type;\n"
-								"uniform vec4 col;\n"
-								"uniform sampler2D tex;\n"
-								"\n"
-								"void main() {\n"
-								"	color = col;\n"
-								"	if (type == 1)\n"
-								"	{\n"
-								"		color = texture(tex, texcoords) * col;\n"
-								"	}\n"
-								"	else if (type == 2)\n"
-								"	{\n"
-								"		color = texcolor;"
-								"	}\n"
-								"}\n"
-								"\n";
+in vec3 position;
+in vec2 uv;
+in vec4 vcolor;
+out vec2 texcoords;
+out vec4 texcolor;
+
+uniform int type;
+uniform mat4 mvp;
+
+void main() {
+	gl_Position =  mvp * vec4(position, 1.0);
+	if (type == 1)
+	{
+		texcoords = uv;
+	}
+	else if (type == 2)
+	{
+		texcolor = vcolor;
+	}
+}
+)";
+
+	static constexpr auto texturedGenericP =
+R"(#version 130
+
+out vec4 color;
+in vec2 texcoords;
+in vec4 texcolor;
+
+uniform int type;
+uniform vec4 col;
+uniform sampler2D tex;
+
+void main() {
+	color = col;
+	if (type == 1)
+	{
+		color = texture(tex, texcoords) * col;
+	}
+	else if (type == 2)
+	{
+		color = texcolor;
+	}
+}
+)";
 	m_shaderTexturedGeneric = (OpenGLShader*)createShaderFromSource(texturedGenericV, texturedGenericP);
 	m_shaderTexturedGeneric->load();
 

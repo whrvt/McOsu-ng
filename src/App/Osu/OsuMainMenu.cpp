@@ -575,8 +575,7 @@ void OsuMainMenu::draw(Graphics *g)
 		UString bannerText = MCOSU_BANNER_TEXT;
 
 		if constexpr (Env::cfg(REND::DX11))
-			if (dynamic_cast<DirectX11Interface*>(engine->getGraphics()) != NULL)
-				bannerText = "-- DirectX11 Test - Unoptimized renderer (no batching etc.) - VR is not supported - Please report feedback on Discord/Steam Forums --";
+			bannerText = "-- DirectX11 Test - Unoptimized renderer (no batching etc.) - VR is not supported - Please report feedback on Discord/Steam Forums --";
 
 		if constexpr (Env::cfg(AUD::WASAPI))
 			bannerText = UString::format(convar->getConVarByName("win_snd_wasapi_exclusive")->getBool() ?

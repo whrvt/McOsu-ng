@@ -206,7 +206,7 @@ SDLMain::~SDLMain()
 	SAFE_DELETE(m_deltaTimer);
 
 	// clean up GL context
-	if (m_context && (Env::cfg((REND::GL | REND::GLES2 | REND::GLES32), !REND::DX11)))
+	if (m_context && (Env::cfg((REND::GL | REND::GLES2 | REND::GLES32 | REND::GL3), !REND::DX11)))
 		SDL_GL_DestroyContext(m_context);
 
 	// engine is deleted by parent (Environment) destructor
@@ -449,7 +449,7 @@ SDL_AppResult SDLMain::iterate()
 bool SDLMain::createWindow(int width, int height)
 {
 	// pre window-creation settings
-	if constexpr (Env::cfg((REND::GL | REND::GLES2 | REND::GLES32), !REND::DX11))
+	if constexpr (Env::cfg((REND::GL | REND::GLES2 | REND::GLES32 | REND::GL3), !REND::DX11))
 	{
 		SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, Env::cfg(REND::GL) ? SDL_GL_CONTEXT_PROFILE_COMPATIBILITY : SDL_GL_CONTEXT_PROFILE_ES);
@@ -462,7 +462,7 @@ bool SDLMain::createWindow(int width, int height)
 	}
 
 	constexpr auto windowFlags = SDL_WINDOW_HIDDEN | SDL_WINDOW_INPUT_FOCUS | SDL_WINDOW_MOUSE_FOCUS |
-	                             ((Env::cfg((REND::GL | REND::GLES2 | REND::GLES32), !REND::DX11)) ? SDL_WINDOW_OPENGL
+	                             ((Env::cfg((REND::GL | REND::GLES2 | REND::GLES32 | REND::GL3), !REND::DX11)) ? SDL_WINDOW_OPENGL
 	                              : (Env::cfg(REND::VK, !REND::DX11))                              ? SDL_WINDOW_VULKAN
 	                                                                                               : 0UL);
 
@@ -515,7 +515,7 @@ bool SDLMain::createWindow(int width, int height)
 
 void SDLMain::setupOpenGL()
 {
-	if constexpr (Env::cfg((REND::GL | REND::GLES2 | REND::GLES32), !REND::DX11))
+	if constexpr (Env::cfg((REND::GL | REND::GLES2 | REND::GLES32 | REND::GL3), !REND::DX11))
 	{
 		m_context = SDL_GL_CreateContext(m_window);
 		SDL_GL_MakeCurrent(m_window, m_context);

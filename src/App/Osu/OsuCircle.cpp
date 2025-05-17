@@ -25,10 +25,6 @@
 #include "OsuModFPoSu.h"
 
 #include "OpenGLHeaders.h"
-#include "OpenGLLegacyInterface.h"
-#include "OpenGL3Interface.h"
-#include "OpenGLES2Interface.h"
-#include "OpenGLES32Interface.h"
 
 ConVar osu_bug_flicker_log("osu_bug_flicker_log", false, FCVAR_NONE);
 
@@ -505,8 +501,8 @@ void OsuCircle::draw3DHitCircle(Graphics *g, OsuModFPoSu *fposu, OsuSkin *skin, 
 			modelMatrixInverseTransposed.invert();
 			modelMatrixInverseTransposed.transpose();
 
-#if defined(MCENGINE_FEATURE_OPENGL) || defined (MCENGINE_FEATURE_GLES2) || defined(MCENGINE_FEATURE_GLES32)
-			if constexpr (Env::cfg(REND::GL | REND::GLES2 | REND::GLES32))
+#if defined(MCENGINE_FEATURE_OPENGL) || defined (MCENGINE_FEATURE_GLES2) || defined(MCENGINE_FEATURE_GLES32) || defined(MCENGINE_FEATURE_GL3)
+			if constexpr (Env::cfg(REND::GL | REND::GLES2 | REND::GLES32 | REND::GL3))
 				glBlendEquation(GL_MAX); // HACKHACK: OpenGL hardcoded
 #endif
 
@@ -519,8 +515,8 @@ void OsuCircle::draw3DHitCircle(Graphics *g, OsuModFPoSu *fposu, OsuSkin *skin, 
 			}
 			fposu->getHitcircleShader()->disable();
 
-#if defined(MCENGINE_FEATURE_OPENGL) || defined (MCENGINE_FEATURE_GLES2) || defined(MCENGINE_FEATURE_GLES32)
-			if constexpr (Env::cfg(REND::GL | REND::GLES2 | REND::GLES32))
+#if defined(MCENGINE_FEATURE_OPENGL) || defined (MCENGINE_FEATURE_GLES2) || defined(MCENGINE_FEATURE_GLES32) || defined(MCENGINE_FEATURE_GL3)
+			if constexpr (Env::cfg(REND::GL | REND::GLES2 | REND::GLES32 | REND::GL3))
 				glBlendEquation(GL_FUNC_ADD); // HACKHACK: OpenGL hardcoded
 #endif
 		}

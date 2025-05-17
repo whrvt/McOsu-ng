@@ -14,6 +14,7 @@
 
 #include "OpenGLHeaders.h"
 #include "OpenGLES32Interface.h"
+#include "OpenGLStateCache.h"
 
 OpenGLES32Shader::OpenGLES32Shader(UString shader, bool source)
 {
@@ -56,7 +57,7 @@ void OpenGLES32Shader::initAsync()
 
 void OpenGLES32Shader::destroy()
 {
-	OpenGLES32Interface *gles32 = dynamic_cast<OpenGLES32Interface *>(engine->getGraphics());
+	auto *gles32 = static_cast<OpenGLES32Interface *>(engine->getGraphics());
 	if (gles32 != NULL)
 		gles32->unregisterShader(this);
 
@@ -79,8 +80,12 @@ void OpenGLES32Shader::enable()
 {
 	if (!m_bReady) return;
 
-	glGetIntegerv(GL_CURRENT_PROGRAM, &m_iProgramBackup); // backup
+	// use the state cache instead of querying gl directly
+	m_iProgramBackup = OpenGLStateCache::getInstance().getCurrentProgram();
 	glUseProgram(m_iProgram);
+
+	// update cache
+	OpenGLStateCache::getInstance().setCurrentProgram(m_iProgram);
 }
 
 void OpenGLES32Shader::disable()
@@ -88,6 +93,9 @@ void OpenGLES32Shader::disable()
 	if (!m_bReady) return;
 
 	glUseProgram(m_iProgramBackup); // restore
+
+	// update cache
+	OpenGLStateCache::getInstance().setCurrentProgram(m_iProgramBackup);
 }
 
 int OpenGLES32Shader::getAndCacheUniformLocation(const UString &name)
@@ -320,12 +328,10 @@ int OpenGLES32Shader::createShaderFromFile(UString fileName, int shaderType)
 	}
 	std::string line;
 	std::string shaderSource;
-	int linecount = 0;
 	while (inFile.good())
 	{
 		std::getline(inFile, line);
 		shaderSource += line + "\n\0";
-		linecount++;
 	}
 	shaderSource += "\n\0";
 	inFile.close();

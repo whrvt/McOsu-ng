@@ -944,26 +944,11 @@ void OsuHUD::drawCursorTrailInt(Graphics *g, Shader *trailShader, std::vector<CU
 
 				trailShader->setUniform1f("time", (float)engine->getTime());
 
-				if constexpr (Env::cfg(REND::GLES2))
+				if constexpr (Env::cfg(REND::DX11 | REND::GLES2))
 				{
-					OpenGLES2Interface *gles2 = dynamic_cast<OpenGLES2Interface*>(g);
-					if (gles2 != NULL)
-					{
-						g->forceUpdateTransform();
-						Matrix4 mvp = g->getMVP();
-						trailShader->setUniformMatrix4fv("mvp", mvp);
-					}
-				}
-
-				if constexpr (Env::cfg(REND::DX11))
-				{
-					DirectX11Interface *dx11 = dynamic_cast<DirectX11Interface*>(g);
-					if (dx11 != NULL)
-					{
-						g->forceUpdateTransform();
-						Matrix4 mvp = g->getMVP();
-						trailShader->setUniformMatrix4fv("mvp", mvp);
-					}
+					g->forceUpdateTransform();
+					Matrix4 mvp = g->getMVP();
+					trailShader->setUniformMatrix4fv("mvp", mvp);
 				}
 
 				trailImage->bind();

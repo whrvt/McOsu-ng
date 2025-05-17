@@ -7,7 +7,7 @@
 
 #include "OpenGL3VertexArrayObject.h"
 
-#ifdef MCENGINE_FEATURE_OPENGL
+#ifdef MCENGINE_FEATURE_GL3
 
 #include "Engine.h"
 #include "OpenGL3Interface.h"

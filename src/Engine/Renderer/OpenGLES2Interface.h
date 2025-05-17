@@ -136,7 +136,7 @@ private:
 };
 
 #else
-class OpenGLES2Interface : public NullGraphicsInterface{};
+class OpenGLES2Interface{};
 #endif
 
 #endif

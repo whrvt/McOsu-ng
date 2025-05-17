@@ -9,7 +9,7 @@
 
 #include "WinGL3Interface.h"
 
-#ifdef MCENGINE_FEATURE_OPENGL
+#ifdef MCENGINE_FEATURE_GL3
 
 #include "Engine.h"
 

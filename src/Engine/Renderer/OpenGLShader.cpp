@@ -53,15 +53,12 @@ void OpenGLShader::init()
 		UString graphicsInterfaceAndVertexShaderTypePrefix;
 		UString graphicsInterfaceAndFragmentShaderTypePrefix;
 		{
-			const OpenGLLegacyInterface *legacy = dynamic_cast<OpenGLLegacyInterface *>(engine->getGraphics());
-			const OpenGL3Interface *gl3 = dynamic_cast<OpenGL3Interface *>(engine->getGraphics());
-
-			if (legacy != NULL)
+			if constexpr (Env::cfg(REND::GL))
 			{
 				graphicsInterfaceAndVertexShaderTypePrefix = "OpenGLLegacyInterface::VertexShader";
 				graphicsInterfaceAndFragmentShaderTypePrefix = "OpenGLLegacyInterface::FragmentShader";
 			}
-			else if (gl3 != NULL)
+			else if constexpr (Env::cfg(REND::GL3))
 			{
 				graphicsInterfaceAndVertexShaderTypePrefix = "OpenGL3Interface::VertexShader";
 				graphicsInterfaceAndFragmentShaderTypePrefix = "OpenGL3Interface::FragmentShader";

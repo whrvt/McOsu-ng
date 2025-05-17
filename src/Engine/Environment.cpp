@@ -19,6 +19,9 @@
 #elif defined(__APPLE__) || defined(MCENGINE_PLATFORM_LINUX)
 #include <pwd.h>
 #include <unistd.h>
+#ifdef MCENGINE_PLATFORM_LINUX
+#include <X11/Xlib.h>
+#endif
 #elif defined(__EMSCRIPTEN__)
 // TODO
 #endif
@@ -129,11 +132,7 @@ void Environment::update()
 
 Graphics *Environment::createRenderer()
 {
-#if defined(MCENGINE_FEATURE_GLES2) || defined(MCENGINE_FEATURE_GLES32) || defined(MCENGINE_FEATURE_OPENGL)
 	return new SDLGLInterface(m_window);
-#else // TODO hook up DX11/OpenGL3
-	return new NullGraphicsInterface();
-#endif
 }
 
 ContextMenu *Environment::createContextMenu() // DEPRECATED

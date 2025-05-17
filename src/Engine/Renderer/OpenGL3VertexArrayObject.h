@@ -11,7 +11,7 @@
 
 #include "VertexArrayObject.h"
 
-#ifdef MCENGINE_FEATURE_OPENGL
+#ifdef MCENGINE_FEATURE_GL3
 
 class OpenGL3VertexArrayObject : public VertexArrayObject
 {

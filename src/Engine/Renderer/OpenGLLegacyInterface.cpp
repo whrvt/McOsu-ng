@@ -25,7 +25,6 @@
 #include <utility>
 
 ConVar r_image_unbind_after_drawimage("r_image_unbind_after_drawimage", true, FCVAR_NONE);
-ConVar debug_opengl("debug_opengl", false, FCVAR_NONE);
 
 OpenGLLegacyInterface::OpenGLLegacyInterface() : Graphics()
 {
@@ -146,7 +145,7 @@ void OpenGLLegacyInterface::setColor(Color color)
 
 void OpenGLLegacyInterface::setAlpha(float alpha)
 {
-	setColor(argb(alpha, Rf(m_color), Gf(m_color), Bf(m_color)));
+	setColor(rgba(Rf(m_color), Gf(m_color), Bf(m_color), alpha));
 }
 
 void OpenGLLegacyInterface::drawPixels(int x, int y, int width, int height, Graphics::DRAWPIXELS_TYPE type, const void *pixels)

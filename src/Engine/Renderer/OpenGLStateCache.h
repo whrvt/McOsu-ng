@@ -9,9 +9,9 @@
 #ifndef OPENGLSTATECACHE_H
 #define OPENGLSTATECACHE_H
 
-#include "cbase.h"
+#include "EngineFeatures.h"
 
-#if defined(MCENGINE_FEATURE_OPENGL) || defined(MCENGINE_FEATURE_GLES2) || defined(MCENGINE_FEATURE_GLES32)
+#if defined(MCENGINE_FEATURE_OPENGL) || defined(MCENGINE_FEATURE_GLES2) || defined(MCENGINE_FEATURE_GLES32) || defined(MCENGINE_FEATURE_GL3)
 
 class OpenGLStateCache
 {

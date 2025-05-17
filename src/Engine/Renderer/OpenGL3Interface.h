@@ -11,7 +11,7 @@
 
 #include "cbase.h"
 
-#ifdef MCENGINE_FEATURE_OPENGL
+#ifdef MCENGINE_FEATURE_GL3
 
 #include "OpenGLSync.h"
 
@@ -140,7 +140,7 @@ private:
 };
 
 #else
-class OpenGL3Interface : public Graphics{};
+class OpenGL3Interface{};
 #endif
 
 #endif
