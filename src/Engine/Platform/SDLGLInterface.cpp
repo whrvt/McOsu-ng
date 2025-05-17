@@ -10,10 +10,9 @@
 
 #if defined(MCENGINE_FEATURE_GLES2) || defined(MCENGINE_FEATURE_GLES32) || defined(MCENGINE_FEATURE_OPENGL)
 
+#include "Engine.h"
 #include "OpenGLHeaders.h"
 #include "OpenGLStateCache.h"
-#include "Engine.h"
-
 
 #ifdef MCENGINE_FEATURE_GLES2
 SDLGLInterface::SDLGLInterface(SDL_Window *window) : OpenGLES2Interface()
@@ -35,9 +34,7 @@ SDLGLInterface::SDLGLInterface(SDL_Window *window) : OpenGLLegacyInterface()
 	m_window = window;
 }
 
-SDLGLInterface::~SDLGLInterface()
-{
-}
+SDLGLInterface::~SDLGLInterface() {}
 
 void SDLGLInterface::endScene()
 {
@@ -58,6 +55,54 @@ void SDLGLInterface::setVSync(bool vsync)
 		SDL_GL_SetSwapInterval(1);
 	else
 		SDL_GL_SetSwapInterval(vsync ? 1 : 0);
+}
+
+UString SDLGLInterface::getVendor()
+{
+	static const GLubyte *vendor = nullptr; 
+	if (!vendor) vendor = glGetString(GL_VENDOR);
+	return reinterpret_cast<const char *>(vendor);
+}
+
+UString SDLGLInterface::getModel()
+{
+	static const GLubyte *model = nullptr;
+	if (!model) model = glGetString(GL_RENDERER);
+	return reinterpret_cast<const char *>(model);
+}
+
+UString SDLGLInterface::getVersion()
+{
+	static const GLubyte *version = nullptr;
+	if (!version) version = glGetString(GL_VERSION);
+	return reinterpret_cast<const char *>(version);
+}
+
+int SDLGLInterface::getVRAMTotal()
+{
+	static std::array<GLint, 4> totalMem{-1, -1, -1, -1};
+
+	if (totalMem[0] == -1)
+	{
+		glGetIntegerv(GPU_MEMORY_INFO_TOTAL_AVAILABLE_MEMORY_NVX, totalMem.begin());
+		if (!(totalMem[0] > 0 && glGetError() != GL_INVALID_ENUM))
+			totalMem[0] = 0;
+	}
+	return totalMem[0];
+}
+
+int SDLGLInterface::getVRAMRemaining()
+{
+	std::array<GLint, 4> nvidiaMemory{-1, -1, -1, -1};
+	std::array<GLint, 4> atiMemory{-1, -1, -1, -1};
+
+	glGetIntegerv(GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX, nvidiaMemory.begin());
+
+	if (nvidiaMemory[0] > 0)
+		return nvidiaMemory[0];
+
+	glGetIntegerv(TEXTURE_FREE_MEMORY_ATI, atiMemory.begin());
+	return atiMemory[0];
 }
 
 #endif

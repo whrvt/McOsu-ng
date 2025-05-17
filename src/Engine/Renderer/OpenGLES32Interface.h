@@ -84,11 +84,6 @@ public:
 
 	// renderer info
 	[[nodiscard]] Vector2 getResolution() const override {return m_vResolution;}
-	UString getVendor() override;
-	UString getModel() override;
-	UString getVersion() override;
-	int getVRAMTotal() override;
-	int getVRAMRemaining() override;
 
 	// callbacks
 	void onResolutionChange(Vector2 newResolution) override;

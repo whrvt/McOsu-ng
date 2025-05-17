@@ -24,16 +24,6 @@
 
 #include <utility>
 
-#define GPU_MEMORY_INFO_DEDICATED_VIDMEM_NVX 0x9047
-#define GPU_MEMORY_INFO_TOTAL_AVAILABLE_MEMORY_NVX 0x9048
-#define GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX 0x9049
-#define GPU_MEMORY_INFO_EVICTION_COUNT_NVX 0x904A
-#define GPU_MEMORY_INFO_EVICTED_MEMORY_NVX 0x904B
-
-#define VBO_FREE_MEMORY_ATI 0x87FB
-#define TEXTURE_FREE_MEMORY_ATI 0x87FC
-#define RENDERBUFFER_FREE_MEMORY_ATI 0x87FD
-
 ConVar r_image_unbind_after_drawimage("r_image_unbind_after_drawimage", true, FCVAR_NONE);
 ConVar debug_opengl("debug_opengl", false, FCVAR_NONE);
 
@@ -667,64 +657,6 @@ std::vector<unsigned char> OpenGLLegacyInterface::getScreenshot()
 	delete[] pixels;
 
 	return result;
-}
-
-UString OpenGLLegacyInterface::getVendor()
-{
-	const GLubyte *vendor = glGetString(GL_VENDOR);
-	return reinterpret_cast<const char *>(vendor);
-}
-
-UString OpenGLLegacyInterface::getModel()
-{
-	const GLubyte *model = glGetString(GL_RENDERER);
-	return reinterpret_cast<const char *>(model);
-}
-
-UString OpenGLLegacyInterface::getVersion()
-{
-	const GLubyte *version = glGetString(GL_VERSION);
-	return reinterpret_cast<const char *>(version);
-}
-
-int OpenGLLegacyInterface::getVRAMTotal()
-{
-	int nvidiaMemory[4];
-	int atiMemory[4];
-
-	for (int i = 0; i < 4; i++)
-	{
-		nvidiaMemory[i] = -1;
-		atiMemory[i] = -1;
-	}
-
-	glGetIntegerv(GPU_MEMORY_INFO_TOTAL_AVAILABLE_MEMORY_NVX, nvidiaMemory);
-	glGetIntegerv(TEXTURE_FREE_MEMORY_ATI, atiMemory);
-
-	if (nvidiaMemory[0] < 1)
-		return atiMemory[0];
-	else
-		return nvidiaMemory[0];
-}
-
-int OpenGLLegacyInterface::getVRAMRemaining()
-{
-	int nvidiaMemory[4];
-	int atiMemory[4];
-
-	for (int i = 0; i < 4; i++)
-	{
-		nvidiaMemory[i] = -1;
-		atiMemory[i] = -1;
-	}
-
-	glGetIntegerv(GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX, nvidiaMemory);
-	glGetIntegerv(TEXTURE_FREE_MEMORY_ATI, atiMemory);
-
-	if (nvidiaMemory[0] < 1)
-		return atiMemory[0];
-	else
-		return nvidiaMemory[0];
 }
 
 void OpenGLLegacyInterface::onResolutionChange(Vector2 newResolution)

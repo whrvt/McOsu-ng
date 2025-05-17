@@ -93,7 +93,7 @@ void VisualProfiler::draw(Graphics *g)
 			case INFO_BLADE_DISPLAY_MODE::INFO_BLADE_DISPLAY_MODE_GPU_INFO:
 				{
 					const int vramTotalMB = g->getVRAMTotal() / 1024;
-					const int vramRemainingMB = g->getVRAMRemaining() / 1024;
+					const int vramAvailableMB = g->getVRAMRemaining() / 1024;
 
 					UString vendor = g->getVendor();
 					UString model = g->getModel();
@@ -110,7 +110,7 @@ void VisualProfiler::draw(Graphics *g)
 					addTextLine(UString::format("Env DPI Scale: %f", env->getDPIScale()), textFont, m_textLines);
 					addTextLine(UString::format("Env DPI: %i", (int)env->getDPI()), textFont, m_textLines);
 					//addTextLine(UString::format("Renderer: %s", typeid(g).name()), textFont, m_textLines); // TODO: add g->getName() or something
-					addTextLine(UString::format("VRAM: %i MB / %i MB", vramRemainingMB, vramTotalMB), textFont, m_textLines);
+					addTextLine(UString::format("VRAM: %i MB avail. / %i MB tot.", vramAvailableMB, vramTotalMB), textFont, m_textLines);
 				}
 				break;
 

@@ -34,6 +34,12 @@ public:
 	// device settings
 	void setVSync(bool vsync) override;
 
+	// device info
+	UString getVendor() override;
+	UString getModel() override;
+	UString getVersion() override;
+	int getVRAMRemaining() override;
+	int getVRAMTotal() override;
 private:
 	SDL_Window *m_window;
 };

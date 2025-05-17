@@ -22,14 +22,6 @@
 
 #include "OpenGLHeaders.h"
 
-#define GPU_MEMORY_INFO_DEDICATED_VIDMEM_NVX			0x9047
-#define GPU_MEMORY_INFO_TOTAL_AVAILABLE_MEMORY_NVX		0x9048
-#define GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX	0x9049
-
-#define VBO_FREE_MEMORY_ATI								0x87FB
-#define TEXTURE_FREE_MEMORY_ATI							0x87FC
-#define RENDERBUFFER_FREE_MEMORY_ATI					0x87FD
-
 OpenGL3Interface::OpenGL3Interface() : Graphics()
 {
 	// renderer
@@ -751,64 +743,6 @@ std::vector<unsigned char> OpenGL3Interface::getScreenshot()
 	// TODO
 	std::vector<unsigned char> temp;
 	return temp;
-}
-
-UString OpenGL3Interface::getVendor()
-{
-	// TODO
-	return UString("TODO");
-}
-
-UString OpenGL3Interface::getModel()
-{
-	// TODO
-	return UString("TODO");
-}
-
-UString OpenGL3Interface::getVersion()
-{
-	// TODO
-	return UString("-1");
-}
-
-int OpenGL3Interface::getVRAMTotal()
-{
-	int nvidiaMemory[4];
-	int atiMemory[4];
-	
-	for (int i=0; i<4; i++)
-	{
-		nvidiaMemory[i] = -1;
-		atiMemory[i] = -1;
-	}
-
-	glGetIntegerv(GPU_MEMORY_INFO_TOTAL_AVAILABLE_MEMORY_NVX, nvidiaMemory);
-	glGetIntegerv(TEXTURE_FREE_MEMORY_ATI, atiMemory);
-
-	if (nvidiaMemory[0] < 1)
-		return atiMemory[0];
-	else
-		return nvidiaMemory[0];
-}
-
-int OpenGL3Interface::getVRAMRemaining()
-{
-	int nvidiaMemory[4];
-	int atiMemory[4];
-	
-	for (int i=0; i<4; i++)
-	{
-		nvidiaMemory[i] = -1;
-		atiMemory[i] = -1;
-	}
-
-	glGetIntegerv(GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX, nvidiaMemory);
-	glGetIntegerv(TEXTURE_FREE_MEMORY_ATI, atiMemory);
-
-	if (nvidiaMemory[0] < 1)
-		return atiMemory[0];
-	else
-		return nvidiaMemory[0];
 }
 
 void OpenGL3Interface::onResolutionChange(Vector2 newResolution)

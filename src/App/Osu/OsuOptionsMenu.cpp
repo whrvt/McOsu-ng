@@ -763,7 +763,7 @@ OsuOptionsMenu::OsuOptionsMenu(Osu *osu) : OsuScreenBackable(osu)
 		((CBaseUIButton*)outputDeviceSelect.elements[0])->setClickCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onOutputDeviceSelect) );
 		outputDeviceSelect.resetButton->setClickCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onOutputDeviceResetClicked) );
 
-		if constexpr (Env::cfg(OS::WINDOWS, !AUD::WASAPI))
+		if constexpr (Env::cfg(OS::WINDOWS, AUD::BASS, !AUD::WASAPI))
 		{
 			CBaseUICheckbox *audioCompatibilityModeCheckbox = addCheckbox("Audio compatibility mode (!)", "Use legacy audio engine (higher latency but more compatible)\nWARNING: May cause hitsound delays and stuttering!", m_win_snd_fallback_dsound_ref);
 			audioCompatibilityModeCheckbox->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onAudioCompatibilityModeChange) );

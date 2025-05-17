@@ -22,14 +22,6 @@
 
 #include "OpenGLHeaders.h"
 
-#define GPU_MEMORY_INFO_DEDICATED_VIDMEM_NVX			0x9047
-#define GPU_MEMORY_INFO_TOTAL_AVAILABLE_MEMORY_NVX		0x9048
-#define GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX	0x9049
-
-#define VBO_FREE_MEMORY_ATI								0x87FB
-#define TEXTURE_FREE_MEMORY_ATI							0x87FC
-#define RENDERBUFFER_FREE_MEMORY_ATI					0x87FD
-
 OpenGLES2Interface::OpenGLES2Interface() : NullGraphicsInterface()
 {
 	// renderer
@@ -635,50 +627,6 @@ void OpenGLES2Interface::setCulling(bool culling)
 void OpenGLES2Interface::setWireframe(bool enabled)
 {
 	// only GL_FILL is supported
-}
-
-int OpenGLES2Interface::getVRAMTotal()
-{
-	int nvidiaMemory[4];
-	int atiMemory[4];
-	
-	for (int i=0; i<4; i++)
-	{
-		nvidiaMemory[i] = -1;
-		atiMemory[i] = -1;
-	}
-
-	glGetIntegerv(GPU_MEMORY_INFO_TOTAL_AVAILABLE_MEMORY_NVX, nvidiaMemory);
-	glGetIntegerv(TEXTURE_FREE_MEMORY_ATI, atiMemory);
-
-	//glGetError(); // clear error state
-
-	if (nvidiaMemory[0] < 1)
-		return atiMemory[0];
-	else
-		return nvidiaMemory[0];
-}
-
-int OpenGLES2Interface::getVRAMRemaining()
-{
-	int nvidiaMemory[4];
-	int atiMemory[4];
-	
-	for (int i=0; i<4; i++)
-	{
-		nvidiaMemory[i] = -1;
-		atiMemory[i] = -1;
-	}
-
-	glGetIntegerv(GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX, nvidiaMemory);
-	glGetIntegerv(TEXTURE_FREE_MEMORY_ATI, atiMemory);
-
-	//glGetError(); // clear error state
-
-	if (nvidiaMemory[0] < 1)
-		return atiMemory[0];
-	else
-		return nvidiaMemory[0];
 }
 
 void OpenGLES2Interface::onResolutionChange(Vector2 newResolution)

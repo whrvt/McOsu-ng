@@ -22,14 +22,6 @@
 
 #include "OpenGLHeaders.h"
 
-#define GPU_MEMORY_INFO_DEDICATED_VIDMEM_NVX 0x9047
-#define GPU_MEMORY_INFO_TOTAL_AVAILABLE_MEMORY_NVX 0x9048
-#define GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX 0x9049
-
-#define VBO_FREE_MEMORY_ATI 0x87FB
-#define TEXTURE_FREE_MEMORY_ATI 0x87FC
-#define RENDERBUFFER_FREE_MEMORY_ATI 0x87FD
-
 OpenGLES32Interface::OpenGLES32Interface() : NullGraphicsInterface()
 {
 	// renderer
@@ -825,68 +817,6 @@ std::vector<unsigned char> OpenGLES32Interface::getScreenshot()
 	}
 
 	return result;
-}
-
-UString OpenGLES32Interface::getVendor()
-{
-	const GLubyte *vendor = glGetString(GL_VENDOR);
-	return reinterpret_cast<const char *>(vendor);
-}
-
-UString OpenGLES32Interface::getModel()
-{
-	const GLubyte *model = glGetString(GL_RENDERER);
-	return reinterpret_cast<const char *>(model);
-}
-
-UString OpenGLES32Interface::getVersion()
-{
-	const GLubyte *version = glGetString(GL_VERSION);
-	return reinterpret_cast<const char *>(version);
-}
-
-int OpenGLES32Interface::getVRAMTotal()
-{
-	int nvidiaMemory[4];
-	int atiMemory[4];
-
-	for (int i = 0; i < 4; i++)
-	{
-		nvidiaMemory[i] = -1;
-		atiMemory[i] = -1;
-	}
-
-	glGetIntegerv(GPU_MEMORY_INFO_TOTAL_AVAILABLE_MEMORY_NVX, nvidiaMemory);
-	glGetIntegerv(TEXTURE_FREE_MEMORY_ATI, atiMemory);
-
-	//glGetError(); // clear error state
-
-	if (nvidiaMemory[0] < 1)
-		return atiMemory[0];
-	else
-		return nvidiaMemory[0];
-}
-
-int OpenGLES32Interface::getVRAMRemaining()
-{
-	int nvidiaMemory[4];
-	int atiMemory[4];
-
-	for (int i = 0; i < 4; i++)
-	{
-		nvidiaMemory[i] = -1;
-		atiMemory[i] = -1;
-	}
-
-	glGetIntegerv(GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX, nvidiaMemory);
-	glGetIntegerv(TEXTURE_FREE_MEMORY_ATI, atiMemory);
-
-	//glGetError(); // clear error state
-
-	if (nvidiaMemory[0] < 1)
-		return atiMemory[0];
-	else
-		return nvidiaMemory[0];
 }
 
 void OpenGLES32Interface::onResolutionChange(Vector2 newResolution)

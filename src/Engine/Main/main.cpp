@@ -66,7 +66,7 @@ private:
 
 	// set iteration rate for callbacks
 	// clang-format off
-	inline void setFgFPS() { if constexpr (Env::cfg(FEAT::MAINCB)) SDL_SetHint(SDL_HINT_MAIN_CALLBACK_RATE, std::format("%i", m_iFpsMax).c_str()); }
+	inline void setFgFPS() { if constexpr (Env::cfg(FEAT::MAINCB)) SDL_SetHint(SDL_HINT_MAIN_CALLBACK_RATE, std::format("%i", m_iFpsMax).c_str()); else m_iNextFrameTime = SDL_GetTicksNS(); }
 	inline void setBgFPS() { if constexpr (Env::cfg(FEAT::MAINCB)) SDL_SetHint(SDL_HINT_MAIN_CALLBACK_RATE, std::format("%i", m_iFpsMaxBG).c_str()); }
 	// clang-format on
 
