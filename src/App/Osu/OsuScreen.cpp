@@ -25,7 +25,7 @@ void OsuScreen::onKeyDown(KeyboardEvent &e)
 	if (!m_bVisible) return;
 
 	// global hotkey
-	if (e == KEY_O && engine->getKeyboard()->isControlDown())
+	if (e == KEY_O && keyboard->isControlDown())
 	{
 		m_osu->toggleOptionsMenu();
 		e.consume();

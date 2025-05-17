@@ -235,7 +235,7 @@ SDL_AppResult SDLMain::initialize(int argc, char *argv[])
 	}
 
 	// initialize engine
-	m_engine = new Engine(this, argc > 1 ? argv[1] : "");
+	m_engine = new Engine(argc > 1 ? argv[1] : "");
 
 	// make window visible
 	SDL_ShowWindow(m_window);
@@ -323,29 +323,34 @@ SDL_AppResult SDLMain::handleEvent(SDL_Event *event)
 
 		case SDL_EVENT_WINDOW_MAXIMIZED:
 			m_bMinimized = false;
+			m_bHasFocus = true;
 			m_engine->onMaximized();
 			setFgFPS();
 			break;
 
 		case SDL_EVENT_WINDOW_MINIMIZED:
 			m_bMinimized = true;
+			m_bHasFocus = false;
 			m_engine->onMinimized();
 			setBgFPS();
 			break;
 
 		case SDL_EVENT_WINDOW_RESTORED:
 			m_bMinimized = false;
+			m_bHasFocus = true;
 			m_engine->onRestored();
 			setFgFPS();
 			break;
 
 		case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
 		case SDL_EVENT_WINDOW_RESIZED:
+			m_bHasFocus = true;
 			m_engine->requestResolutionChange(Vector2(static_cast<float>(event->window.data1), static_cast<float>(event->window.data2)));
 			setFgFPS();
 			break;
 
 		default:
+			debugLog("DEBUG: unhandled window event %i\n", event->window.type);
 			break;
 		}
 		break;
@@ -452,8 +457,9 @@ bool SDLMain::createWindow(int width, int height)
 	if constexpr (Env::cfg((REND::GL | REND::GLES2 | REND::GLES32 | REND::GL3), !REND::DX11))
 	{
 		SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-		SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, Env::cfg(REND::GL) ? SDL_GL_CONTEXT_PROFILE_COMPATIBILITY : SDL_GL_CONTEXT_PROFILE_ES);
-		if constexpr (!Env::cfg(REND::GL))
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK,
+		                    Env::cfg(REND::GL) ? SDL_GL_CONTEXT_PROFILE_COMPATIBILITY : (Env::cfg(REND::GL3) ? SDL_GL_CONTEXT_PROFILE_CORE : SDL_GL_CONTEXT_PROFILE_ES));
+		if constexpr (!Env::cfg(REND::GL | REND::GL3))
 		{
 			SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, Env::cfg(REND::GLES2) ? 2 : 3);
 			SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
@@ -463,8 +469,8 @@ bool SDLMain::createWindow(int width, int height)
 
 	constexpr auto windowFlags = SDL_WINDOW_HIDDEN | SDL_WINDOW_INPUT_FOCUS | SDL_WINDOW_MOUSE_FOCUS |
 	                             ((Env::cfg((REND::GL | REND::GLES2 | REND::GLES32 | REND::GL3), !REND::DX11)) ? SDL_WINDOW_OPENGL
-	                              : (Env::cfg(REND::VK, !REND::DX11))                              ? SDL_WINDOW_VULKAN
-	                                                                                               : 0UL);
+	                              : (Env::cfg(REND::VK, !REND::DX11))                                          ? SDL_WINDOW_VULKAN
+	                                                                                                           : 0UL);
 
 	SDL_PropertiesID props = SDL_CreateProperties();
 	SDL_SetStringProperty(props, SDL_PROP_WINDOW_CREATE_TITLE_STRING, WINDOW_TITLE);

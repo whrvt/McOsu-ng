@@ -26,7 +26,7 @@ ConVar snd_change_check_interval("snd_change_check_interval", 0.0f, FCVAR_NONE,
 
 void _volume(UString oldValue, UString newValue)
 {
-	engine->getSound()->setVolume(newValue.toFloat());
+	soundEngine->setVolume(newValue.toFloat());
 }
 
 ConVar _volume_("volume", 1.0f, FCVAR_NONE, _volume);

@@ -133,7 +133,7 @@ void OsuUIContextMenu::update()
 	if (m_bClampUnderflowAndOverflowAndEnableScrollingIfNecessary)
 	{
 		if (isMouseInside())
-			engine->getMouse()->resetWheelDelta();
+			mouse->resetWheelDelta();
 	}
 
 	if (m_selfDeletionCrashWorkaroundScheduledElementDeleteHack.size() > 0)

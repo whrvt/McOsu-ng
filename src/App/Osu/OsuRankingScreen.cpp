@@ -420,7 +420,7 @@ void OsuRankingScreen::update()
 
 	// HACKHACK:
 	if (m_osu->getOptionsMenu()->isMouseInside())
-		engine->getMouse()->resetWheelDelta();
+		mouse->resetWheelDelta();
 
 	// update and focus handling
 	m_container->update();
@@ -432,7 +432,7 @@ void OsuRankingScreen::update()
 		m_container->stealFocus();
 
 	// tooltip (pp + accuracy + unstable rate)
-	if (!m_osu->getOptionsMenu()->isMouseInside() && !m_bIsLegacyScore && engine->getMouse()->getPos().x < m_osu->getScreenWidth() * 0.5f)
+	if (!m_osu->getOptionsMenu()->isMouseInside() && !m_bIsLegacyScore && mouse->getPos().x < m_osu->getScreenWidth() * 0.5f)
 	{
 		m_osu->getTooltipOverlay()->begin();
 		{
@@ -458,7 +458,7 @@ void OsuRankingScreen::update()
 	}
 
 	// frustration multiplier
-	Vector2 cursorDelta = getPPPosCenterRaw() - engine->getMouse()->getPos();
+	Vector2 cursorDelta = getPPPosCenterRaw() - mouse->getPos();
 	Vector2 norm;
 	const float dist = 150.0f;
 	if (cursorDelta.length() > dist)
@@ -678,11 +678,11 @@ void OsuRankingScreen::updateLayout()
 
 void OsuRankingScreen::onBack()
 {
-	engine->getSound()->play(m_osu->getSkin()->getMenuClick());
+	soundEngine->play(m_osu->getSkin()->getMenuClick());
 
 	// stop applause sound
 	if (m_osu->getSkin()->getApplause() != NULL && m_osu->getSkin()->getApplause()->isPlaying())
-		engine->getSound()->stop(m_osu->getSkin()->getApplause());
+		soundEngine->stop(m_osu->getSkin()->getApplause());
 
 	m_osu->toggleRankingScreen();
 }

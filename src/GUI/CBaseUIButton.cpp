@@ -13,7 +13,7 @@
 
 CBaseUIButton::CBaseUIButton(float xPos, float yPos, float xSize, float ySize, UString name, UString text) : CBaseUIElement(xPos, yPos, xSize, ySize, name)
 {
-	m_font = engine->getResourceManager()->getFont("FONT_DEFAULT");
+	m_font = resourceManager->getFont("FONT_DEFAULT");
 
 	// settings
 	m_bDrawFrame = true;
@@ -66,7 +66,7 @@ void CBaseUIButton::draw(Graphics *g)
 	g->setColor(m_frameColor);
 	if (m_bMouseInside && m_bEnabled)
 	{
-		if (!m_bActive && !engine->getMouse()->isLeftDown())
+		if (!m_bActive && !mouse->isLeftDown())
 			drawHoverRect(g, hoverRectOffset);
 		else if (m_bActive)
 			drawHoverRect(g, hoverRectOffset);

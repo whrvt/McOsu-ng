@@ -27,7 +27,7 @@ CBaseUITextbox::CBaseUITextbox(float xPos, float yPos, float xSize, float ySize,
 {
 	setKeepActive(true);
 
-	m_font = engine->getResourceManager()->getFont("FONT_DEFAULT");
+	m_font = resourceManager->getFont("FONT_DEFAULT");
 
 	m_textColor = m_frameColor = m_caretColor = 0xffffffff;
 	m_backgroundColor = 0xff000000;
@@ -134,8 +134,6 @@ void CBaseUITextbox::update()
 {
 	CBaseUIElement::update();
 	if (!m_bVisible) return;
-
-	const auto& mouse = engine->getMouse();
 
 	const Vector2 mousepos = mouse->getPos();
 	const bool mleft = mouse->isLeftDown();
@@ -355,7 +353,7 @@ void CBaseUITextbox::onKeyDown(KeyboardEvent &e)
 				handleDeleteSelectedText();
 			else if (m_iCaretPosition-1 >= 0)
 			{
-				if (engine->getKeyboard()->isControlDown())
+				if (keyboard->isControlDown())
 				{
 					// delete everything from the current caret position to the left, until after the first non-space character (but including it)
 					bool foundNonSpaceChar = false;
@@ -423,17 +421,17 @@ void CBaseUITextbox::onKeyDown(KeyboardEvent &e)
 		break;
 
 	case KEY_C:
-		if (engine->getKeyboard()->isControlDown())
+		if (keyboard->isControlDown())
 			env->setClipBoardText(getSelectedText());
 		break;
 
 	case KEY_V:
-		if (engine->getKeyboard()->isControlDown())
+		if (keyboard->isControlDown())
 			insertTextFromClipboard();
 		break;
 
 	case KEY_A:
-		if (engine->getKeyboard()->isControlDown())
+		if (keyboard->isControlDown())
 		{
 			// HACKHACK: make proper setSelectedText() function
 			m_iSelectStart = 0;
@@ -447,7 +445,7 @@ void CBaseUITextbox::onKeyDown(KeyboardEvent &e)
 		break;
 
 	case KEY_X:
-		if (engine->getKeyboard()->isControlDown() && hasSelectedText())
+		if (keyboard->isControlDown() && hasSelectedText())
 		{
 			env->setClipBoardText(getSelectedText());
 			handleDeleteSelectedText();
@@ -480,7 +478,7 @@ void CBaseUITextbox::onChar(KeyboardEvent &e)
 
 	// ignore any control characters, we only want text
 	// funny story: Windows 10 still has this bug even today, where when editing the name of any shortcut/folder on the desktop, hitting CTRL + BACKSPACE will insert an invalid character
-	if (e.getCharCode() < 32 || (engine->getKeyboard()->isControlDown() && !engine->getKeyboard()->isAltDown())) return;
+	if (e.getCharCode() < 32 || (keyboard->isControlDown() && !keyboard->isAltDown())) return;
 
 	// delete any potentially selected text
 	handleDeleteSelectedText();

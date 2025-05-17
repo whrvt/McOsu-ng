@@ -1333,7 +1333,7 @@ bool NetworkHandler::isServer() const
 /*
 void _httpget(UString args)
 {
-	UString response = engine->getNetworkHandler()->httpGet(args);
+	UString response = networkHandler->httpGet(args);
 	debugLog("response = %s", response.toUtf8());
 }
 ConVar _httpget_("httpget", _httpget);

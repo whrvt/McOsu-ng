@@ -327,7 +327,7 @@ OsuUserStatsScreen::~OsuUserStatsScreen()
 	if (m_backgroundPPRecalculator != NULL)
 	{
 		m_backgroundPPRecalculator->interruptLoad();
-		engine->getResourceManager()->destroyResource(m_backgroundPPRecalculator);
+		resourceManager->destroyResource(m_backgroundPPRecalculator);
 		m_backgroundPPRecalculator = NULL;
 	}
 
@@ -459,7 +459,7 @@ void OsuUserStatsScreen::onBack()
 	}
 	else
 	{
-		engine->getSound()->play(m_osu->getSkin()->getMenuClick());
+		soundEngine->play(m_osu->getSkin()->getMenuClick());
 		m_osu->toggleSongBrowser();
 	}
 }
@@ -508,7 +508,7 @@ void OsuUserStatsScreen::rebuildScoreButtons(UString playerName)
 
 void OsuUserStatsScreen::onUserClicked(CBaseUIButton *button)
 {
-	engine->getSound()->play(m_osu->getSkin()->getMenuClick());
+	soundEngine->play(m_osu->getSkin()->getMenuClick());
 
 	// NOTE: code duplication (see OsuSongbrowser2.cpp)
 	std::vector<UString> names = m_osu->getSongBrowser()->getDatabase()->getPlayerNamesWithScoresForUserSwitcher();
@@ -661,7 +661,7 @@ void OsuUserStatsScreen::onRecalculatePP(bool importLegacyScores)
 	if (m_backgroundPPRecalculator != NULL)
 	{
 		m_backgroundPPRecalculator->interruptLoad();
-		engine->getResourceManager()->destroyResource(m_backgroundPPRecalculator);
+		resourceManager->destroyResource(m_backgroundPPRecalculator);
 		m_backgroundPPRecalculator = NULL;
 	}
 
@@ -670,8 +670,8 @@ void OsuUserStatsScreen::onRecalculatePP(bool importLegacyScores)
 	// NOTE: force disable all runtime mods (including all experimental mods!), as they directly influence global OsuGameRules which are used during pp calculation
 	m_osu->getModSelector()->resetMods();
 
-	engine->getResourceManager()->requestNextLoadAsync();
-	engine->getResourceManager()->loadResource(m_backgroundPPRecalculator);
+	resourceManager->requestNextLoadAsync();
+	resourceManager->loadResource(m_backgroundPPRecalculator);
 }
 
 void OsuUserStatsScreen::onCopyAllScoresClicked()

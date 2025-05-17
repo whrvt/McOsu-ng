@@ -132,8 +132,8 @@ OsuModFPoSu::OsuModFPoSu(Osu *osu)
 	m_bCrosshairIntersectsScreen = true;
 
 	// load resources
-	m_vao = engine->getResourceManager()->createVertexArrayObject();
-	m_vaoCube = engine->getResourceManager()->createVertexArrayObject();
+	m_vao = resourceManager->createVertexArrayObject();
+	m_vaoCube = resourceManager->createVertexArrayObject();
 
 	m_uvPlaneModel = NULL;
 	m_skyboxModel = NULL;
@@ -534,7 +534,7 @@ void OsuModFPoSu::update()
 		// regular mouse position mode
 
 		// calculate mouse delta
-		Vector2 rawDelta = engine->getMouse()->getRawDelta();
+		Vector2 rawDelta = mouse->getRawDelta();
 
 		// apply fposu mouse sensitivity multiplier
 		const double countsPerCm = (double)fposu_mouse_dpi.getInt() / 2.54;
@@ -578,7 +578,7 @@ void OsuModFPoSu::update()
 		m_bCrosshairIntersectsScreen = true;
 
 		// auto support, because it looks pretty cool
-		Vector2 mousePos = engine->getMouse()->getPos();
+		Vector2 mousePos = mouse->getPos();
 		if (isAutoCursor && m_osu->isInPlayMode() && m_osu->getSelectedBeatmap() != NULL)
 		{
 			OsuBeatmapStandard *beatmapStd = dynamic_cast<OsuBeatmapStandard*>(m_osu->getSelectedBeatmap());
@@ -595,7 +595,7 @@ void OsuModFPoSu::update()
 		// calculate mouse delta
 		Vector2 delta;
 		{
-			delta = (engine->getMouse()->getRawDelta());
+			delta = (mouse->getRawDelta());
 
 			// apply fposu mouse sensitivity multiplier
 			const double countsPerCm = (double)fposu_mouse_dpi.getInt() / 2.54;
@@ -640,7 +640,7 @@ void OsuModFPoSu::update()
 
 void OsuModFPoSu::noclipMove()
 {
-	const float noclipSpeed = fposu_noclipspeed.getFloat() * (engine->getKeyboard()->isShiftDown() ? 3.0f : 1.0f) * (engine->getKeyboard()->isControlDown() ? 0.2f : 1);
+	const float noclipSpeed = fposu_noclipspeed.getFloat() * (keyboard->isShiftDown() ? 3.0f : 1.0f) * (keyboard->isControlDown() ? 0.2f : 1);
 	const float noclipAccelerate = fposu_noclipaccelerate.getFloat();
 	const float friction = fposu_noclipfriction.getFloat();
 
@@ -786,9 +786,9 @@ void OsuModFPoSu::handleZoomedChange()
 void OsuModFPoSu::setMousePosCompensated(Vector2 newMousePos)
 {
 	// NOTE: letterboxing uses Mouse::setOffset() to offset the virtual engine cursor coordinate system, so we have to respect that when setting a new (absolute) position
-	newMousePos -= engine->getMouse()->getOffset();
+	newMousePos -= mouse->getOffset();
 
-	engine->getMouse()->onPosChange(newMousePos);
+	mouse->onPosChange(newMousePos);
 	//env->setMousePos(newMousePos.x, newMousePos.y);
 }
 
@@ -1056,7 +1056,7 @@ f 2/1 4/4 3/2
 void OsuModFPoSu::handleLazyLoad3DShaders()
 {
 	if (m_hitcircleShader == NULL)
-		m_hitcircleShader = engine->getResourceManager()->loadShader2("hitcircle3D.mcshader", "hitcircle3D");
+		m_hitcircleShader = resourceManager->loadShader2("hitcircle3D.mcshader", "hitcircle3D");
 }
 
 void OsuModFPoSu::onCurvedChange(UString oldValue, UString newValue)
@@ -1132,7 +1132,7 @@ OsuModFPoSu3DModel::OsuModFPoSu3DModel(const UString &objFilePathOrContents, Ima
 {
 	m_texture = texture;
 
-	m_vao = engine->getResourceManager()->createVertexArrayObject(Graphics::PRIMITIVE::PRIMITIVE_TRIANGLES);
+	m_vao = resourceManager->createVertexArrayObject(Graphics::PRIMITIVE::PRIMITIVE_TRIANGLES);
 
 	// load
 	{
@@ -1292,14 +1292,14 @@ OsuModFPoSu3DModel::OsuModFPoSu3DModel(const UString &objFilePathOrContents, Ima
 
 			// bake it for performance
 			if (hasAtLeastOneTriangle)
-				engine->getResourceManager()->loadResource(m_vao);
+				resourceManager->loadResource(m_vao);
 		}
 	}
 }
 
 OsuModFPoSu3DModel::~OsuModFPoSu3DModel()
 {
-	engine->getResourceManager()->destroyResource(m_vao);
+	resourceManager->destroyResource(m_vao);
 }
 
 void OsuModFPoSu3DModel::draw3D(Graphics *g)

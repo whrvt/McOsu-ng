@@ -17,8 +17,8 @@ TextureAtlas::TextureAtlas(int width, int height) : Resource()
 
 	m_iPadding = 1;
 
-	engine->getResourceManager()->requestNextLoadUnmanaged();
-	m_atlasImage = engine->getResourceManager()->createImage(m_iWidth, m_iHeight);
+	resourceManager->requestNextLoadUnmanaged();
+	m_atlasImage = resourceManager->createImage(m_iWidth, m_iHeight);
 
 	m_iCurX = m_iPadding;
 	m_iCurY = m_iPadding;
@@ -27,7 +27,7 @@ TextureAtlas::TextureAtlas(int width, int height) : Resource()
 
 void TextureAtlas::init()
 {
-	engine->getResourceManager()->loadResource(m_atlasImage);
+	resourceManager->loadResource(m_atlasImage);
 
 	m_bReady = true;
 }

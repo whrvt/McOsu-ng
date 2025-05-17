@@ -25,7 +25,7 @@ void OsuBeatmapExample::draw(Graphics *g)
 	{
 		g->pushTransform();
 		g->translate(200, 200);
-		g->drawString(engine->getResourceManager()->getFont("FONT_DEFAULT"), UString::format("Fake Loading Time: %f", m_fFakeExtraLoadingTime - engine->getTime()));
+		g->drawString(resourceManager->getFont("FONT_DEFAULT"), UString::format("Fake Loading Time: %f", m_fFakeExtraLoadingTime - engine->getTime()));
 		g->popTransform();
 	}
 

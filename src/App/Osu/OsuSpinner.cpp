@@ -251,7 +251,7 @@ void OsuSpinner::draw(Graphics *g)
 	// draw RPM
 	if (m_iDelta < 0)
 	{
-		McFont *rpmFont = engine->getResourceManager()->getFont("FONT_DEFAULT");
+		McFont *rpmFont = resourceManager->getFont("FONT_DEFAULT");
 		const float stringWidth = rpmFont->getStringWidth("RPM: 477");
 		g->setColor(0xffffffff);
 		g->setAlpha(m_fAlphaWithoutHidden * m_fAlphaWithoutHidden * m_fAlphaWithoutHidden * alphaMultiplier);
@@ -325,7 +325,7 @@ void OsuSpinner::update(long curPos)
 			angleDiff = engine->getFrameTime() * 1000.0f * AUTO_MULTIPLIER * m_beatmap->getOsu()->getSpeedMultiplier();
 		else // user spin
 		{
-			Vector2 mouseDelta = engine->getMouse()->getPos() - m_beatmap->osuCoords2Pixels(m_vRawPos);
+			Vector2 mouseDelta = mouse->getPos() - m_beatmap->osuCoords2Pixels(m_vRawPos);
 			const float currentMouseAngle = (float)std::atan2(mouseDelta.y, mouseDelta.x);
 			angleDiff = (currentMouseAngle - m_fLastMouseAngle);
 

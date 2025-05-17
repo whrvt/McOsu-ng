@@ -29,8 +29,8 @@ OsuBackgroundImageHandler::~OsuBackgroundImageHandler()
 {
 	for (size_t i=0; i<m_cache.size(); i++)
 	{
-		engine->getResourceManager()->destroyResource(m_cache[i].backgroundImagePathLoader);
-		engine->getResourceManager()->destroyResource(m_cache[i].image);
+		resourceManager->destroyResource(m_cache[i].backgroundImagePathLoader);
+		resourceManager->destroyResource(m_cache[i].image);
 	}
 	m_cache.clear();
 }
@@ -57,8 +57,8 @@ void OsuBackgroundImageHandler::update(bool allowEviction)
 					if (entry.image != NULL)
 						entry.image->interruptLoad();
 
-					engine->getResourceManager()->destroyResource(entry.backgroundImagePathLoader);
-					engine->getResourceManager()->destroyResource(entry.image);
+					resourceManager->destroyResource(entry.backgroundImagePathLoader);
+					resourceManager->destroyResource(entry.image);
 
 					m_cache.erase(m_cache.begin() + i);
 					i--;
@@ -105,7 +105,7 @@ void OsuBackgroundImageHandler::update(bool allowEviction)
 						handleLoadImageForEntry(entry);
 					}
 
-					engine->getResourceManager()->destroyResource(entry.backgroundImagePathLoader);
+					resourceManager->destroyResource(entry.backgroundImagePathLoader);
 					entry.backgroundImagePathLoader = NULL;
 				}
 			}
@@ -124,8 +124,8 @@ void OsuBackgroundImageHandler::handleLoadPathForEntry(ENTRY &entry)
 	entry.backgroundImagePathLoader = new OsuDatabaseBeatmapBackgroundImagePathLoader(entry.osuFilePath);
 
 	// start path load
-	engine->getResourceManager()->requestNextLoadAsync();
-	engine->getResourceManager()->loadResource(entry.backgroundImagePathLoader);
+	resourceManager->requestNextLoadAsync();
+	resourceManager->loadResource(entry.backgroundImagePathLoader);
 }
 
 void OsuBackgroundImageHandler::handleLoadImageForEntry(ENTRY &entry)
@@ -134,9 +134,9 @@ void OsuBackgroundImageHandler::handleLoadImageForEntry(ENTRY &entry)
 	fullBackgroundImageFilePath.append(entry.backgroundImageFileName);
 
 	// start image load
-	engine->getResourceManager()->requestNextLoadAsync();
-	engine->getResourceManager()->requestNextLoadUnmanaged();
-	entry.image = engine->getResourceManager()->loadImageAbsUnnamed(fullBackgroundImageFilePath, true);
+	resourceManager->requestNextLoadAsync();
+	resourceManager->requestNextLoadUnmanaged();
+	entry.image = resourceManager->loadImageAbsUnnamed(fullBackgroundImageFilePath, true);
 }
 
 Image *OsuBackgroundImageHandler::getLoadBackgroundImage(const OsuDatabaseBeatmap *beatmap)

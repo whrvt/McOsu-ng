@@ -277,22 +277,22 @@ OsuSteamWorkshop::OsuSteamWorkshop(Osu *osu)
 
 OsuSteamWorkshop::~OsuSteamWorkshop()
 {
-	if (engine->getResourceManager()->isLoadingResource(m_loader))
+	if (resourceManager->isLoadingResource(m_loader))
 		while (!m_loader->isAsyncReady()) {;}
 
-	engine->getResourceManager()->destroyResource(m_loader);
+	resourceManager->destroyResource(m_loader);
 
-	if (engine->getResourceManager()->isLoadingResource(m_uploader))
+	if (resourceManager->isLoadingResource(m_uploader))
 		while (!m_uploader->isAsyncReady()) {;}
 
-	engine->getResourceManager()->destroyResource(m_uploader);
+	resourceManager->destroyResource(m_uploader);
 }
 
 void OsuSteamWorkshop::refresh(bool async, bool alsoLoadDetailsWhichTakeVeryLongToLoad)
 {
 	if (!steam->isReady()) return;
 
-	if (engine->getResourceManager()->isLoadingResource(m_loader))
+	if (resourceManager->isLoadingResource(m_loader))
 	{
 		if (!m_loader->isAsyncReady())
 			return;
@@ -304,9 +304,9 @@ void OsuSteamWorkshop::refresh(bool async, bool alsoLoadDetailsWhichTakeVeryLong
 
 	// schedule
 	if (async)
-		engine->getResourceManager()->requestNextLoadAsync();
+		resourceManager->requestNextLoadAsync();
 
-	engine->getResourceManager()->loadResource(m_loader);
+	resourceManager->loadResource(m_loader);
 }
 
 bool OsuSteamWorkshop::isReady() const
@@ -327,14 +327,14 @@ bool OsuSteamWorkshop::isUploading() const
 {
 	if (!steam->isReady()) return false;
 
-	return engine->getResourceManager()->isLoadingResource(m_uploader);
+	return resourceManager->isLoadingResource(m_uploader);
 }
 
 void OsuSteamWorkshop::onUpload()
 {
 	if (m_osu->getSkin() == NULL) return;
 
-	if (engine->getResourceManager()->isLoadingResource(m_uploader))
+	if (resourceManager->isLoadingResource(m_uploader))
 	{
 		if (!m_uploader->isAsyncReady())
 			return;
@@ -414,9 +414,9 @@ void OsuSteamWorkshop::onUpload()
 
 	// thumbnail must be readable (engine)
 	{
-		Image *image = engine->getResourceManager()->loadImageAbs(thumbnailFilePath, "");
+		Image *image = resourceManager->loadImageAbs(thumbnailFilePath, "");
 		const bool isImageReady = image->isReady();
-		engine->getResourceManager()->destroyResource(image);
+		resourceManager->destroyResource(image);
 
 		if (!isImageReady)
 		{
@@ -462,8 +462,8 @@ void OsuSteamWorkshop::onUpload()
 	m_uploader->set(skinName, skinPath, thumbnailFilePath, workshopitemidFilePath, itemId);
 
 	// schedule
-	engine->getResourceManager()->requestNextLoadAsync();
-	engine->getResourceManager()->loadResource(m_uploader);
+	resourceManager->requestNextLoadAsync();
+	resourceManager->loadResource(m_uploader);
 
 	m_osu->getNotificationOverlay()->addNotification((itemId == 0 ? "Uploading ...                                   " : "Updating ...                                 "), 0xffffffff, false, 60.0f);
 }

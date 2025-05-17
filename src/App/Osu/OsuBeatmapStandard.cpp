@@ -202,10 +202,10 @@ OsuBeatmapStandard::~OsuBeatmapStandard()
 {
 	m_starCacheLoader->kill();
 
-	if (engine->getResourceManager()->isLoadingResource(m_starCacheLoader))
+	if (resourceManager->isLoadingResource(m_starCacheLoader))
 		while (!m_starCacheLoader->isAsyncReady()) {;}
 
-	engine->getResourceManager()->destroyResource(m_starCacheLoader);
+	resourceManager->destroyResource(m_starCacheLoader);
 }
 
 void OsuBeatmapStandard::draw(Graphics *g)
@@ -1556,7 +1556,7 @@ Vector2 OsuBeatmapStandard::getCursorPos() const
 		return m_vAutoCursorPos;
 	else
 	{
-		Vector2 pos = engine->getMouse()->getPos();
+		Vector2 pos = mouse->getPos();
 		if (osu_mod_shirone.getBool() && m_osu->getScore()->getCombo() > 0) // <3
 			return pos + Vector2(std::sin((m_iCurMusicPos/20.0f)*1.15f)*((float)m_osu->getScore()->getCombo()/osu_mod_shirone_combo.getFloat()), std::cos((m_iCurMusicPos/20.0f)*1.3f)*((float)m_osu->getScore()->getCombo()/osu_mod_shirone_combo.getFloat()));
 		else
@@ -1566,7 +1566,7 @@ Vector2 OsuBeatmapStandard::getCursorPos() const
 
 Vector2 OsuBeatmapStandard::getFirstPersonCursorDelta() const
 {
-	return m_vPlayfieldCenter - (m_osu->getModAuto() || m_osu->getModAutopilot() ? m_vAutoCursorPos : engine->getMouse()->getPos());
+	return m_vPlayfieldCenter - (m_osu->getModAuto() || m_osu->getModAutopilot() ? m_vAutoCursorPos : mouse->getPos());
 }
 
 float OsuBeatmapStandard::getHitcircleDiameter() const
@@ -1777,7 +1777,7 @@ void OsuBeatmapStandard::onPaused(bool first)
 
 	if (first)
 	{
-		m_vContinueCursorPoint = engine->getMouse()->getPos();
+		m_vContinueCursorPoint = mouse->getPos();
 
 		if (OsuGameRules::osu_mod_fps.getBool())
 			m_vContinueCursorPoint = OsuGameRules::getPlayfieldCenter(m_osu);
@@ -2532,13 +2532,13 @@ void OsuBeatmapStandard::updateStarCache()
 
 		// kill any running loader, so we get to a clean state
 		stopStarCacheLoader();
-		engine->getResourceManager()->destroyResource(m_starCacheLoader);
+		resourceManager->destroyResource(m_starCacheLoader);
 
 		// create new loader
 		m_starCacheLoader = new OsuBackgroundStarCacheLoader(this);
 		m_starCacheLoader->revive(); // activate it
-		engine->getResourceManager()->requestNextLoadAsync();
-		engine->getResourceManager()->loadResource(m_starCacheLoader);
+		resourceManager->requestNextLoadAsync();
+		resourceManager->loadResource(m_starCacheLoader);
 	}
 }
 

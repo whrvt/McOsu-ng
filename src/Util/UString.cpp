@@ -8,8 +8,8 @@
 #include "UString.h"
 #include <cstdarg>
 #include <cstring>
-#include <cwctype>
 #include <cwchar>
+#include <cwctype>
 #include <utility>
 
 #define USTRING_MASK_1BYTE 0x80  /* 1000 0000 */
@@ -59,7 +59,8 @@ UString::UString(const char *utf8, int length) : m_length(0), m_lengthUtf8(lengt
 
 UString::UString(const UString &ustr) = default;
 
-UString::UString(UString &&ustr) noexcept : m_unicode(std::move(ustr.m_unicode)), m_utf8(std::move(ustr.m_utf8)), m_length(ustr.m_length), m_lengthUtf8(ustr.m_lengthUtf8), m_isAsciiOnly(ustr.m_isAsciiOnly)
+UString::UString(UString &&ustr) noexcept
+    : m_unicode(std::move(ustr.m_unicode)), m_utf8(std::move(ustr.m_utf8)), m_length(ustr.m_length), m_lengthUtf8(ustr.m_lengthUtf8), m_isAsciiOnly(ustr.m_isAsciiOnly)
 {
 	// reset moved-from object
 	ustr.m_length = 0;
@@ -80,21 +81,23 @@ void UString::clear()
 
 UString UString::format(const char *utf8format, ...)
 {
+	if (!utf8format || *utf8format == '\0')
+		return {};
+
 	// create a UString from the format string
 	UString formatted(utf8format);
 	if (formatted.m_length == 0)
 		return formatted;
 
-	// print the args to the format
-	int bufSize = formatted.m_length + 1; // +1 for null terminator
+	int bufSize = std::max(128, formatted.m_length * 2);
 	std::wstring buffer;
 	int written = -1;
 
 	while (true)
 	{
-		if (bufSize >= 1024 * 1024)
+		if (unlikely(bufSize >= 1024 * 1024))
 		{
-			printf("WARNING: Potential vswprintf(%s, ...) infinite loop, stopping ...\n", utf8format);
+			printf("WARNING: UString::format buffer size limit reached for format: %s\n", utf8format);
 			return formatted;
 		}
 
@@ -106,10 +109,10 @@ UString UString::format(const char *utf8format, ...)
 		va_end(ap);
 
 		// if we didn't use the entire buffer
-		if (written > 0 && written < bufSize)
+		if (likely(written >= 0))
 		{
-			buffer.resize(written);
 			UString result;
+			buffer.resize(written);
 			result.m_unicode = std::move(buffer);
 			result.m_length = written;
 			result.updateUtf8();
@@ -119,7 +122,7 @@ UString UString::format(const char *utf8format, ...)
 		bufSize *= 2;
 	}
 
-	return formatted; // should never reach here
+	std::unreachable();
 }
 
 bool UString::isWhitespaceOnly() const
@@ -451,38 +454,44 @@ bool UString::operator<(const UString &ustr) const
 }
 
 // appends to an existing string
-UString& UString::operator+=(const UString& ustr) {
-    append(ustr);
-    return *this;
+UString &UString::operator+=(const UString &ustr)
+{
+	append(ustr);
+	return *this;
 }
 
 // creates a new string
-UString UString::operator+(const UString& ustr) const {
-    UString result(*this);
-    result.append(ustr);
-    return result;
+UString UString::operator+(const UString &ustr) const
+{
+	UString result(*this);
+	result.append(ustr);
+	return result;
 }
 
-UString& UString::operator+=(wchar_t ch) {
-    append(ch);
-    return *this;
+UString &UString::operator+=(wchar_t ch)
+{
+	append(ch);
+	return *this;
 }
 
-UString UString::operator+(wchar_t ch) const {
-    UString result(*this);
-    result.append(ch);
-    return result;
+UString UString::operator+(wchar_t ch) const
+{
+	UString result(*this);
+	result.append(ch);
+	return result;
 }
 
-UString& UString::operator+=(char ch) {
-    append(ch);
-    return *this;
+UString &UString::operator+=(char ch)
+{
+	append(ch);
+	return *this;
 }
 
-UString UString::operator+(char ch) const {
-    UString result(*this);
-    result.append(ch);
-    return result;
+UString UString::operator+(char ch) const
+{
+	UString result(*this);
+	result.append(ch);
+	return result;
 }
 
 bool UString::equalsIgnoreCase(const UString &ustr) const

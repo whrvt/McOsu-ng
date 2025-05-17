@@ -226,7 +226,7 @@ public:
 
 							if (m_vao != NULL)
 							{
-								engine->getResourceManager()->destroyResource(m_vao);
+								resourceManager->destroyResource(m_vao);
 								m_vao = NULL;
 							}
 
@@ -1308,7 +1308,7 @@ void OsuOptionsMenu::draw(Graphics *g)
 		OsuScreenBackable::draw(g);
 
 	if (m_cursorSizeSlider->getFloat() < 0.15f)
-		engine->getMouse()->drawDebug(g);
+		mouse->drawDebug(g);
 
 	/*
 	if (m_sliderQualitySlider->isActive())
@@ -1580,7 +1580,7 @@ void OsuOptionsMenu::onKeyDown(KeyboardEvent &e)
 		case KEY_BACKSPACE:
 			if (m_sSearchString.length() > 0)
 			{
-				if (engine->getKeyboard()->isControlDown())
+				if (keyboard->isControlDown())
 				{
 					// delete everything from the current caret position to the left, until after the first non-space character (but including it)
 					bool foundNonSpaceChar = false;
@@ -1617,7 +1617,7 @@ void OsuOptionsMenu::onKeyDown(KeyboardEvent &e)
 	// paste clipboard support
 	if (e == KEY_V)
 	{
-		if (engine->getKeyboard()->isControlDown())
+		if (keyboard->isControlDown())
 		{
 			const UString clipstring = env->getClipBoardText();
 			if (clipstring.length() > 0)
@@ -1647,7 +1647,7 @@ void OsuOptionsMenu::onChar(KeyboardEvent &e)
 	if (e.isConsumed()) return;
 
 	// handle searching
-	if (e.getCharCode() < 32 || !m_bVisible || (engine->getKeyboard()->isControlDown() && !engine->getKeyboard()->isAltDown()) || m_fSearchOnCharKeybindHackTime > engine->getTime())
+	if (e.getCharCode() < 32 || !m_bVisible || (keyboard->isControlDown() && !keyboard->isAltDown()) || m_fSearchOnCharKeybindHackTime > engine->getTime())
 		return;
 
 	KEYCODE charCode = e.getCharCode();
@@ -1861,7 +1861,7 @@ void OsuOptionsMenu::updateLayout()
 	updateHPDrainSelectLabel();
 
 	if (m_outputDeviceLabel != NULL)
-		m_outputDeviceLabel->setText(engine->getSound()->getOutputDevice());
+		m_outputDeviceLabel->setText(soundEngine->getOutputDevice());
 
 	onOutputDeviceResetUpdate();
 	onNotelockSelectResetUpdate();
@@ -2279,7 +2279,7 @@ void OsuOptionsMenu::onBack()
 {
 	m_osu->getNotificationOverlay()->stopWaitingForKey();
 
-	engine->getSound()->play(m_osu->getSkin()->getMenuClick());
+	soundEngine->play(m_osu->getSkin()->getMenuClick());
 	save();
 
 	if (m_bFullscreen)
@@ -2785,7 +2785,7 @@ void OsuOptionsMenu::onResolutionSelect2(UString resolution, int id)
 
 void OsuOptionsMenu::onOutputDeviceSelect()
 {
-	std::vector<UString> outputDevices = engine->getSound()->getOutputDevices();
+	std::vector<UString> outputDevices = soundEngine->getOutputDevices();
 
 	// build context menu
 	m_contextMenu->setPos(m_outputDeviceSelectButton->getPos());
@@ -2794,7 +2794,7 @@ void OsuOptionsMenu::onOutputDeviceSelect()
 	for (int i=0; i<outputDevices.size(); i++)
 	{
 		CBaseUIButton *button = m_contextMenu->addButton(outputDevices[i]);
-		if (outputDevices[i] == engine->getSound()->getOutputDevice())
+		if (outputDevices[i] == soundEngine->getOutputDevice())
 			button->setTextBrightColor(0xff00ff00);
 	}
 	m_contextMenu->end(false, false);
@@ -2807,8 +2807,8 @@ void OsuOptionsMenu::onOutputDeviceSelect2(UString outputDeviceName, int id)
 	if (!m_osu->isInPlayMode() && m_osu->getSelectedBeatmap() != NULL && m_osu->getSelectedBeatmap()->getMusic() != NULL)
 		prevMusicPositionMS = m_osu->getSelectedBeatmap()->getMusic()->getPositionMS();
 
-	engine->getSound()->setOutputDevice(outputDeviceName);
-	m_outputDeviceLabel->setText(engine->getSound()->getOutputDevice());
+	soundEngine->setOutputDevice(outputDeviceName);
+	m_outputDeviceLabel->setText(soundEngine->getOutputDevice());
 	m_osu->getSkin()->reloadSounds();
 
 	// and update reset button as usual
@@ -2825,28 +2825,28 @@ void OsuOptionsMenu::onOutputDeviceSelect2(UString outputDeviceName, int id)
 
 void OsuOptionsMenu::onOutputDeviceResetClicked()
 {
-	if (engine->getSound()->getOutputDevices().size() > 0)
-		onOutputDeviceSelect2(engine->getSound()->getOutputDevices()[0]);
+	if (soundEngine->getOutputDevices().size() > 0)
+		onOutputDeviceSelect2(soundEngine->getOutputDevices()[0]);
 }
 
 void OsuOptionsMenu::onOutputDeviceResetUpdate()
 {
 	if (m_outputDeviceResetButton != NULL)
-		m_outputDeviceResetButton->setEnabled(engine->getSound()->getOutputDevices().size() > 0 && engine->getSound()->getOutputDevice() != engine->getSound()->getOutputDevices()[0]);
+		m_outputDeviceResetButton->setEnabled(soundEngine->getOutputDevices().size() > 0 && soundEngine->getOutputDevice() != soundEngine->getOutputDevices()[0]);
 }
 
 void OsuOptionsMenu::onOutputDeviceRestart()
 {
 	if constexpr (Env::cfg(AUD::WASAPI))
-		engine->getSound()->setOutputDeviceForce(engine->getSound()->getOutputDevice());
+		soundEngine->setOutputDeviceForce(soundEngine->getOutputDevice());
 	else
-		engine->getSound()->setOutputDevice("Default"); // NOTE: only relevant for horizon builds atm
+		soundEngine->setOutputDevice("Default"); // NOTE: only relevant for horizon builds atm
 }
 
 void OsuOptionsMenu::onAudioCompatibilityModeChange(CBaseUICheckbox *checkbox)
 {
 	onCheckboxChange(checkbox);
-	engine->getSound()->setOutputDeviceForce(engine->getSound()->getOutputDevice());
+	soundEngine->setOutputDeviceForce(soundEngine->getOutputDevice());
 	checkbox->setChecked(m_win_snd_fallback_dsound_ref->getBool(), false);
 	m_osu->getSkin()->reloadSounds();
 }
@@ -3226,7 +3226,7 @@ void OsuOptionsMenu::onKeyBindingButtonPressed(CBaseUIButton *button)
 
 void OsuOptionsMenu::onKeyUnbindButtonPressed(CBaseUIButton *button)
 {
-	engine->getSound()->play(m_osu->getSkin()->getCheckOff());
+	soundEngine->play(m_osu->getSkin()->getCheckOff());
 
 	for (int i=0; i<m_elements.size(); i++)
 	{
@@ -4173,8 +4173,8 @@ void OsuOptionsMenu::save()
 
 	// hardcoded (!)
 	out << "monitor " << env->getMonitor() << "\n";
-	if (engine->getSound()->getOutputDevice() != "Default")
-		out << "snd_output_device " << engine->getSound()->getOutputDevice().toUtf8() << "\n";
+	if (soundEngine->getOutputDevice() != "Default")
+		out << "snd_output_device " << soundEngine->getOutputDevice().toUtf8() << "\n";
 	if (m_fullscreenCheckbox != NULL && !m_fullscreenCheckbox->isChecked())
 		out << "windowed " << engine->getScreenWidth() << "x" << engine->getScreenHeight() << "\n";
 

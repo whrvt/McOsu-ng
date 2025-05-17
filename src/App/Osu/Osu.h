@@ -246,8 +246,8 @@ private:
 	void onConfineCursorFullscreenChange(UString oldValue, UString newValue);
 	void onConfineCursorNeverChange(UString oldValue, UString newValue);
 
-	void onKey1Change(bool pressed, bool mouse);
-	void onKey2Change(bool pressed, bool mouse);
+	void onKey1Change(bool pressed, bool mouseButton);
+	void onKey2Change(bool pressed, bool mouseButton);
 
 	void onModMafhamChange(UString oldValue, UString newValue);
 	void onModFPoSuChange(UString oldValue, UString newValue);

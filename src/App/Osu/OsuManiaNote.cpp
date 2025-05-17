@@ -167,7 +167,7 @@ void OsuManiaNote::draw(Graphics *g)
 		{
 			g->pushTransform();
 			g->translate(xPos + columnWidth + 10, yPos);
-			g->drawString(engine->getResourceManager()->getFont("FONT_DEFAULT"), UString::format("m_iDelta = %ld, m_iObjectDuration = %ld, compare = %ld", m_iDelta, m_iObjectDuration, m_iObjectDuration + (long)OsuGameRulesManiagetHitWindow50(m_beatmap)));
+			g->drawString(resourceManager->getFont("FONT_DEFAULT"), UString::format("m_iDelta = %ld, m_iObjectDuration = %ld, compare = %ld", m_iDelta, m_iObjectDuration, m_iObjectDuration + (long)OsuGameRulesManiagetHitWindow50(m_beatmap)));
 			g->popTransform();
 		}
 		*/

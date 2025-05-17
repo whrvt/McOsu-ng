@@ -32,7 +32,7 @@ CBaseUIWindow::CBaseUIWindow(float xPos, float yPos, float xSize, float ySize, U
 
 	// titlebar
 	m_bDrawTitleBarLine = true;
-	m_titleFont = engine->getResourceManager()->loadFont("weblysleekuisb.ttf", "FONT_WINDOW_TITLE", 13.0f, true, env->getDPI());
+	m_titleFont = resourceManager->loadFont("weblysleekuisb.ttf", "FONT_WINDOW_TITLE", 13.0f, true, env->getDPI());
 	m_iTitleBarHeight = m_titleFont->getHeight() + 12*dpiScale;
 	if (m_iTitleBarHeight < titleBarButtonSize)
 		m_iTitleBarHeight = titleBarButtonSize + 4*dpiScale;
@@ -79,7 +79,7 @@ CBaseUIWindow::CBaseUIWindow(float xPos, float yPos, float xSize, float ySize, U
 	m_bRoundedRectangle = false;
 
 	// test features
-	//m_rt = engine->getResourceManager()->createRenderTarget(m_vPos.x, m_vPos.y, m_vSize.x+1, m_vSize.y+1);
+	//m_rt = resourceManager->createRenderTarget(m_vPos.x, m_vPos.y, m_vSize.x+1, m_vSize.y+1);
 	//float shadowRadius = ui_window_shadow_radius.getInt();
 	///m_shadow = new CBaseUIBoxShadow(0xff000000, shadowRadius, m_vPos.x-shadowRadius, m_vPos.y-shadowRadius, m_vSize.x+shadowRadius*2, m_vSize.y+shadowRadius*2+4, "windowshadow");
 
@@ -247,7 +247,7 @@ void CBaseUIWindow::update()
 
 	// moving
 	if (m_bMoving)
-		setPos(m_vLastPos + (engine->getMouse()->getPos() - m_vMousePosBackup));
+		setPos(m_vLastPos + (mouse->getPos() - m_vMousePosBackup));
 
 	// resizing
 	if (m_bResizing)
@@ -255,45 +255,45 @@ void CBaseUIWindow::update()
 		switch (m_iResizeType)
 		{
 		case 1:
-			setPos(std::clamp<float>(m_vLastPos.x + (engine->getMouse()->getPos().x - m_vMousePosBackup.x), -m_vSize.x, m_vLastPos.x + m_vLastSize.x - m_vResizeLimit.x),
-				   std::clamp<float>(m_vLastPos.y + (engine->getMouse()->getPos().y - m_vMousePosBackup.y), -m_vSize.y, m_vLastPos.y + m_vLastSize.y - m_vResizeLimit.y));
-			setSize(std::clamp<float>(m_vLastSize.x + (m_vMousePosBackup.x - engine->getMouse()->getPos().x), m_vResizeLimit.x, engine->getScreenWidth()),
-					std::clamp<float>(m_vLastSize.y + (m_vMousePosBackup.y - engine->getMouse()->getPos().y), m_vResizeLimit.y, engine->getScreenHeight()));
+			setPos(std::clamp<float>(m_vLastPos.x + (mouse->getPos().x - m_vMousePosBackup.x), -m_vSize.x, m_vLastPos.x + m_vLastSize.x - m_vResizeLimit.x),
+				   std::clamp<float>(m_vLastPos.y + (mouse->getPos().y - m_vMousePosBackup.y), -m_vSize.y, m_vLastPos.y + m_vLastSize.y - m_vResizeLimit.y));
+			setSize(std::clamp<float>(m_vLastSize.x + (m_vMousePosBackup.x - mouse->getPos().x), m_vResizeLimit.x, engine->getScreenWidth()),
+					std::clamp<float>(m_vLastSize.y + (m_vMousePosBackup.y - mouse->getPos().y), m_vResizeLimit.y, engine->getScreenHeight()));
 			break;
 
 		case 2:
-			setPosX(std::clamp<float>(m_vLastPos.x + (engine->getMouse()->getPos().x - m_vMousePosBackup.x), -m_vSize.x, m_vLastPos.x + m_vLastSize.x - m_vResizeLimit.x));
-			setSizeX(std::clamp<float>(m_vLastSize.x + (m_vMousePosBackup.x - engine->getMouse()->getPos().x), m_vResizeLimit.x, engine->getScreenWidth()));
+			setPosX(std::clamp<float>(m_vLastPos.x + (mouse->getPos().x - m_vMousePosBackup.x), -m_vSize.x, m_vLastPos.x + m_vLastSize.x - m_vResizeLimit.x));
+			setSizeX(std::clamp<float>(m_vLastSize.x + (m_vMousePosBackup.x - mouse->getPos().x), m_vResizeLimit.x, engine->getScreenWidth()));
 			break;
 
 		case 3:
-			setPosX(std::clamp<float>(m_vLastPos.x + (engine->getMouse()->getPos().x - m_vMousePosBackup.x), -m_vSize.x, m_vLastPos.x + m_vLastSize.x - m_vResizeLimit.x));
-			setSizeX(std::clamp<float>(m_vLastSize.x + (m_vMousePosBackup.x - engine->getMouse()->getPos().x), m_vResizeLimit.x, engine->getScreenWidth()));
-			setSizeY(std::clamp<float>(m_vLastSize.y + (engine->getMouse()->getPos().y - m_vMousePosBackup.y), m_vResizeLimit.y, engine->getScreenHeight()));
+			setPosX(std::clamp<float>(m_vLastPos.x + (mouse->getPos().x - m_vMousePosBackup.x), -m_vSize.x, m_vLastPos.x + m_vLastSize.x - m_vResizeLimit.x));
+			setSizeX(std::clamp<float>(m_vLastSize.x + (m_vMousePosBackup.x - mouse->getPos().x), m_vResizeLimit.x, engine->getScreenWidth()));
+			setSizeY(std::clamp<float>(m_vLastSize.y + (mouse->getPos().y - m_vMousePosBackup.y), m_vResizeLimit.y, engine->getScreenHeight()));
 			break;
 
 		case 4:
-			setSizeY(std::clamp<float>(m_vLastSize.y + (engine->getMouse()->getPos().y - m_vMousePosBackup.y), m_vResizeLimit.y, engine->getScreenHeight()));
+			setSizeY(std::clamp<float>(m_vLastSize.y + (mouse->getPos().y - m_vMousePosBackup.y), m_vResizeLimit.y, engine->getScreenHeight()));
 			break;
 
 		case 5:
-			setSize(std::clamp<float>(m_vLastSize.x + (engine->getMouse()->getPos().x - m_vMousePosBackup.x), m_vResizeLimit.x, engine->getScreenWidth()),
-					std::clamp<float>(m_vLastSize.y + (engine->getMouse()->getPos().y - m_vMousePosBackup.y), m_vResizeLimit.y, engine->getScreenHeight()));
+			setSize(std::clamp<float>(m_vLastSize.x + (mouse->getPos().x - m_vMousePosBackup.x), m_vResizeLimit.x, engine->getScreenWidth()),
+					std::clamp<float>(m_vLastSize.y + (mouse->getPos().y - m_vMousePosBackup.y), m_vResizeLimit.y, engine->getScreenHeight()));
 			break;
 
 		case 6:
-			setSizeX(std::clamp<float>(m_vLastSize.x + (engine->getMouse()->getPos().x - m_vMousePosBackup.x), m_vResizeLimit.x, engine->getScreenWidth()));
+			setSizeX(std::clamp<float>(m_vLastSize.x + (mouse->getPos().x - m_vMousePosBackup.x), m_vResizeLimit.x, engine->getScreenWidth()));
 			break;
 
 		case 7:
-			setPosY(std::clamp<float>(m_vLastPos.y + (engine->getMouse()->getPos().y - m_vMousePosBackup.y), -m_vSize.y, m_vLastPos.y + m_vLastSize.y - m_vResizeLimit.y));
-			setSizeY(std::clamp<float>(m_vLastSize.y + (m_vMousePosBackup.y - engine->getMouse()->getPos().y), m_vResizeLimit.y, engine->getScreenHeight()));
-			setSizeX(std::clamp<float>(m_vLastSize.x + (engine->getMouse()->getPos().x - m_vMousePosBackup.x), m_vResizeLimit.x, engine->getScreenWidth()));
+			setPosY(std::clamp<float>(m_vLastPos.y + (mouse->getPos().y - m_vMousePosBackup.y), -m_vSize.y, m_vLastPos.y + m_vLastSize.y - m_vResizeLimit.y));
+			setSizeY(std::clamp<float>(m_vLastSize.y + (m_vMousePosBackup.y - mouse->getPos().y), m_vResizeLimit.y, engine->getScreenHeight()));
+			setSizeX(std::clamp<float>(m_vLastSize.x + (mouse->getPos().x - m_vMousePosBackup.x), m_vResizeLimit.x, engine->getScreenWidth()));
 			break;
 
 		case 8:
-			setPosY(std::clamp<float>(m_vLastPos.y + (engine->getMouse()->getPos().y - m_vMousePosBackup.y), -m_vSize.y, m_vLastPos.y + m_vLastSize.y - m_vResizeLimit.y));
-			setSizeY(std::clamp<float>(m_vLastSize.y + (m_vMousePosBackup.y - engine->getMouse()->getPos().y), m_vResizeLimit.y, engine->getScreenHeight()));
+			setPosY(std::clamp<float>(m_vLastPos.y + (mouse->getPos().y - m_vMousePosBackup.y), -m_vSize.y, m_vLastPos.y + m_vLastSize.y - m_vResizeLimit.y));
+			setSizeY(std::clamp<float>(m_vLastSize.y + (m_vMousePosBackup.y - mouse->getPos().y), m_vResizeLimit.y, engine->getScreenHeight()));
 			break;
 		}
 	}
@@ -326,7 +326,7 @@ CBaseUIWindow *CBaseUIWindow::setTitle(UString text)
 
 void CBaseUIWindow::updateWindowLogic()
 {
-	if (!engine->getMouse()->isLeftDown())
+	if (!mouse->isLeftDown())
 	{
 		m_bMoving = false;
 		m_bResizing = false;
@@ -335,7 +335,7 @@ void CBaseUIWindow::updateWindowLogic()
 	// handle resize & move cursor
 	if (!m_titleBarContainer->isBusy() && !m_container->isBusy() && !m_bResizing && !m_bMoving)
 	{
-		if (!engine->getMouse()->isLeftDown())
+		if (!mouse->isLeftDown())
 			udpateResizeAndMoveLogic(false);
 	}
 }
@@ -346,7 +346,7 @@ void CBaseUIWindow::udpateResizeAndMoveLogic(bool captureMouse)
 
 	// backup
 	m_vLastSize = m_vSize;
-	m_vMousePosBackup = engine->getMouse()->getPos();
+	m_vMousePosBackup = mouse->getPos();
 	m_vLastPos = m_vPos;
 
 	if (m_bResizeable)
@@ -369,56 +369,56 @@ void CBaseUIWindow::udpateResizeAndMoveLogic(bool captureMouse)
 			if (captureMouse)
 				m_iResizeType = 1;
 
-			engine->getMouse()->setCursorType(CURSORTYPE::CURSOR_SIZE_VH);
+			mouse->setCursorType(CURSORTYPE::CURSOR_SIZE_VH);
 		}
 		else if (resizeBottomLeft.contains(m_vMousePosBackup))
 		{
 			if (captureMouse)
 				m_iResizeType = 3;
 
-			engine->getMouse()->setCursorType(CURSORTYPE::CURSOR_SIZE_HV);
+			mouse->setCursorType(CURSORTYPE::CURSOR_SIZE_HV);
 		}
 		else if (resizeBottomRight.contains(m_vMousePosBackup))
 		{
 			if (captureMouse)
 				m_iResizeType = 5;
 
-			engine->getMouse()->setCursorType(CURSORTYPE::CURSOR_SIZE_VH);
+			mouse->setCursorType(CURSORTYPE::CURSOR_SIZE_VH);
 		}
 		else if (resizeTopRight.contains(m_vMousePosBackup))
 		{
 			if (captureMouse)
 				m_iResizeType = 7;
 
-			engine->getMouse()->setCursorType(CURSORTYPE::CURSOR_SIZE_HV);
+			mouse->setCursorType(CURSORTYPE::CURSOR_SIZE_HV);
 		}
 		else if (resizeLeft.contains(m_vMousePosBackup))
 		{
 			if (captureMouse)
 				m_iResizeType = 2;
 
-			engine->getMouse()->setCursorType(CURSORTYPE::CURSOR_SIZE_H);
+			mouse->setCursorType(CURSORTYPE::CURSOR_SIZE_H);
 		}
 		else if (resizeRight.contains(m_vMousePosBackup))
 		{
 			if (captureMouse)
 				m_iResizeType = 6;
 
-			engine->getMouse()->setCursorType(CURSORTYPE::CURSOR_SIZE_H);
+			mouse->setCursorType(CURSORTYPE::CURSOR_SIZE_H);
 		}
 		else if (resizeBottom.contains(m_vMousePosBackup))
 		{
 			if (captureMouse)
 				m_iResizeType = 4;
 
-			engine->getMouse()->setCursorType(CURSORTYPE::CURSOR_SIZE_V);
+			mouse->setCursorType(CURSORTYPE::CURSOR_SIZE_V);
 		}
 		else if (resizeTop.contains(m_vMousePosBackup))
 		{
 			if (captureMouse)
 				m_iResizeType = 8;
 
-			engine->getMouse()->setCursorType(CURSORTYPE::CURSOR_SIZE_V);
+			mouse->setCursorType(CURSORTYPE::CURSOR_SIZE_V);
 		}
 	}
 

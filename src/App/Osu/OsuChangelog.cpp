@@ -965,7 +965,7 @@ void OsuChangelog::update()
 
 	// HACKHACK:
 	if (m_osu->getHUD()->isVolumeOverlayBusy() || m_osu->getOptionsMenu()->isMouseInside())
-		engine->getMouse()->resetWheelDelta();
+		mouse->resetWheelDelta();
 
 	m_container->update();
 
@@ -1021,7 +1021,7 @@ void OsuChangelog::updateLayout()
 
 void OsuChangelog::onBack()
 {
-	engine->getSound()->play(m_osu->getSkin()->getMenuClick());
+	soundEngine->play(m_osu->getSkin()->getMenuClick());
 
 	m_osu->toggleChangelog();
 }

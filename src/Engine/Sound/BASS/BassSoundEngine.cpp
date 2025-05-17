@@ -97,7 +97,7 @@ void _WIN_SND_WASAPI_BUFFER_SIZE_CHANGE(UString oldValue, UString newValue)
 	const int newValueMS = std::round(newValue.toFloat() * 1000.0f);
 
 	if (oldValueMS != newValueMS)
-		engine->getSound()->setOutputDeviceForce(engine->getSound()->getOutputDevice()); // force restart
+		soundEngine->setOutputDeviceForce(soundEngine->getOutputDevice()); // force restart
 }
 
 void _WIN_SND_WASAPI_PERIOD_SIZE_CHANGE(UString oldValue, UString newValue)
@@ -106,7 +106,7 @@ void _WIN_SND_WASAPI_PERIOD_SIZE_CHANGE(UString oldValue, UString newValue)
 	const int newValueMS = std::round(newValue.toFloat() * 1000.0f);
 
 	if (oldValueMS != newValueMS)
-		engine->getSound()->setOutputDeviceForce(engine->getSound()->getOutputDevice()); // force restart
+		soundEngine->setOutputDeviceForce(soundEngine->getOutputDevice()); // force restart
 }
 
 void _WIN_SND_WASAPI_EXCLUSIVE_CHANGE(UString oldValue, UString newValue)
@@ -115,7 +115,7 @@ void _WIN_SND_WASAPI_EXCLUSIVE_CHANGE(UString oldValue, UString newValue)
 	const bool newValueBool = newValue.toInt();
 
 	if (oldValueBool != newValueBool)
-		engine->getSound()->setOutputDeviceForce(engine->getSound()->getOutputDevice()); // force restart
+		soundEngine->setOutputDeviceForce(soundEngine->getOutputDevice()); // force restart
 }
 #endif
 

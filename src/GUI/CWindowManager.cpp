@@ -45,13 +45,13 @@ void CWindowManager::draw(Graphics *g)
 		text.append(m_windows[i]->getName());
 		g->pushTransform();
 			g->translate(20, i*40+350);
-			g->drawString(engine->getResourceManager()->getFont("FONT_DEFAULT"), text);
+			g->drawString(resourceManager->getFont("FONT_DEFAULT"), text);
 		g->popTransform();
 	}
 
 	g->pushTransform();
 	g->translate(20, 500);
-	g->drawString(engine->getResourceManager()->getFont("FONT_DEFAULT"), UString::format("currentEnabled = %i, lastEnabled = %i, topIndex = %i", m_iCurrentEnabledWindow, m_iLastEnabledWindow, getTopMouseWindowIndex()));
+	g->drawString(resourceManager->getFont("FONT_DEFAULT"), UString::format("currentEnabled = %i, lastEnabled = %i, topIndex = %i", m_iCurrentEnabledWindow, m_iLastEnabledWindow, getTopMouseWindowIndex()));
 	g->popTransform();
 	*/
 }

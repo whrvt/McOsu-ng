@@ -16,7 +16,7 @@ OsuUISearchOverlay::OsuUISearchOverlay(Osu *osu, float xPos, float yPos, float x
 {
 	m_osu = osu;
 
-	m_font = engine->getResourceManager()->getFont("FONT_DEFAULT");
+	m_font = resourceManager->getFont("FONT_DEFAULT");
 
 	m_iOffsetRight = 0;
 	m_bDrawNumResults = true;

@@ -42,7 +42,7 @@ void OsuEditor::update()
 
 void OsuEditor::onBack()
 {
-	engine->getSound()->play(m_osu->getSkin()->getMenuClick());
+	soundEngine->play(m_osu->getSkin()->getMenuClick());
 
 	m_osu->toggleEditor();
 }

@@ -60,7 +60,7 @@ void OsuUIPauseMenuButton::onMouseInside()
 	CBaseUIButton::onMouseInside();
 
 	if (engine->hasFocus())
-		engine->getSound()->play(m_osu->getSkin()->getMenuClick());
+		soundEngine->play(m_osu->getSkin()->getMenuClick());
 
 	const float animationDuration = 0.09f;
 	anim->moveLinear(&m_vScale.x, m_vBaseScale.x * m_fScaleMultiplier, animationDuration, true);

@@ -59,10 +59,10 @@ public:
 
 	// callbacks called by the Osu class (osu!standard)
 	void skipEmptySection();
-	void keyPressed1(bool mouse);
-	void keyPressed2(bool mouse);
-	void keyReleased1(bool mouse);
-	void keyReleased2(bool mouse);
+	void keyPressed1(bool mouseButton);
+	void keyPressed2(bool mouseButton);
+	void keyReleased1(bool mouseButton);
+	void keyReleased2(bool mouseButton);
 
 	// songbrowser & player logic
 	void select(); // loads the music of the currently selected diff and starts playing from the previewTime (e.g. clicking on a beatmap)

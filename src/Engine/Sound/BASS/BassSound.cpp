@@ -31,7 +31,7 @@ void CALLBACK failRestartCallback(HSYNC, DWORD, DWORD, void *data)
 	//delete static_cast<BassSound*>(data); // no change with/without this for segfault
 	// debugLog("Attempting to restart...\n");
 	// Timing::sleep(5000000); // wait 5 seconds for the driver to come back up.
-	// engine->getSound()->restart();
+	// soundEngine->restart();
 }
 
 BassSound::BassSound(UString filepath, bool stream, bool threeD, bool loop, bool prescan) : Sound(filepath, stream, threeD, loop, prescan)

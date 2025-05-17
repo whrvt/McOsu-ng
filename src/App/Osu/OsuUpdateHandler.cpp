@@ -183,7 +183,7 @@ void OsuUpdateHandler::_requestUpdate()
 	m_releases.clear();
 	std::vector<GITHUB_RELEASE_BUILD> asyncReleases;
 
-	UString gitReleases = engine->getNetworkHandler()->httpGet(GITHUB_API_RELEASE_URL);
+	UString gitReleases = networkHandler->httpGet(GITHUB_API_RELEASE_URL);
 
 	//	[array
 	//		{object
@@ -300,7 +300,7 @@ bool OsuUpdateHandler::_downloadUpdate(UString url)
 	// setting the status in every error check return is retarded
 
 	// download
-	std::string data = engine->getNetworkHandler()->httpDownload(url);
+	std::string data = networkHandler->httpDownload(url);
 	if (data.length() < 2)
 	{
 		debugLog("ERROR: downloaded file is too small (%i)!\n", data.length());

@@ -45,6 +45,8 @@
 
 #include "DirectX11Interface.h"
 
+extern std::atomic<float> osu_slider_border_feather;
+
 #define MCOSU_VERSION_TEXT "Version"
 #define MCOSU_BANNER_TEXT ""
 UString OsuMainMenu::MCOSU_MAIN_BUTTON_TEXT = UString(PACKAGE_NAME);
@@ -186,7 +188,7 @@ public:
 		g->setColor(m_frameColor);
 		if (m_bMouseInside && m_bEnabled)
 		{
-			if (!m_bActive && !engine->getMouse()->isLeftDown())
+			if (!m_bActive && !mouse->isLeftDown())
 				drawHoverRect(g, 3);
 			else if (m_bActive)
 				drawHoverRect(g, 3);
@@ -214,7 +216,7 @@ ConVar osu_main_menu_use_slider_text("osu_main_menu_use_slider_text", true, FCVA
 ConVar osu_main_menu_slider_text_alpha("osu_main_menu_slider_text_alpha", 1.0f, FCVAR_NONE);
 ConVar osu_main_menu_slider_text_scale("osu_main_menu_slider_text_scale", 1.0f, FCVAR_NONE);
 ConVar osu_main_menu_slider_text_scissor("osu_main_menu_slider_text_scissor", true, FCVAR_NONE);
-ConVar osu_main_menu_slider_text_feather("osu_main_menu_slider_text_feather", 0.04f, FCVAR_NONE);
+std::atomic<float> osu_main_menu_slider_text_feather = 0.04f;
 ConVar osu_main_menu_slider_text_offset_x("osu_main_menu_slider_text_offset_x", 15.0f, FCVAR_NONE);
 ConVar osu_main_menu_slider_text_offset_y("osu_main_menu_slider_text_offset_y", 0.0f, FCVAR_NONE);
 ConVar osu_main_menu_shuffle("osu_main_menu_shuffle", false, FCVAR_NONE);
@@ -233,7 +235,6 @@ ConVar *OsuMainMenu::m_osu_universal_offset_hardcoded_ref = NULL;
 ConVar *OsuMainMenu::m_osu_old_beatmap_offset_ref = NULL;
 ConVar *OsuMainMenu::m_win_snd_fallback_dsound_ref = NULL;
 ConVar *OsuMainMenu::m_osu_universal_offset_hardcoded_fallback_dsound_ref = NULL;
-ConVar *OsuMainMenu::m_osu_slider_border_feather_ref = NULL;
 ConVar *OsuMainMenu::m_osu_mod_random_ref = NULL;
 ConVar *OsuMainMenu::m_osu_songbrowser_background_fade_in_duration_ref = NULL;
 
@@ -281,8 +282,6 @@ OsuMainMenu::OsuMainMenu(Osu *osu) : OsuScreen(osu)
 		m_win_snd_fallback_dsound_ref = convar->getConVarByName("win_snd_fallback_dsound");
 	if (m_osu_universal_offset_hardcoded_fallback_dsound_ref == NULL)
 		m_osu_universal_offset_hardcoded_fallback_dsound_ref = convar->getConVarByName("osu_universal_offset_hardcoded_fallback_dsound");
-	if (m_osu_slider_border_feather_ref == NULL)
-		m_osu_slider_border_feather_ref = convar->getConVarByName("osu_slider_border_feather");
 	if (m_osu_mod_random_ref == NULL)
 		m_osu_mod_random_ref = convar->getConVarByName("osu_mod_random");
 	if (m_osu_songbrowser_background_fade_in_duration_ref == NULL)
@@ -291,7 +290,7 @@ OsuMainMenu::OsuMainMenu(Osu *osu) : OsuScreen(osu)
 	osu_toggle_preview_music.setCallback( fastdelegate::MakeDelegate(this, &OsuMainMenu::onPausePressed) );
 
 	// engine settings
-	engine->getMouse()->addListener(this);
+	mouse->addListener(this);
 
 	m_fSizeAddAnim = 0.0f;
 	m_fCenterOffsetAnim = 0.0f;
@@ -684,8 +683,8 @@ void OsuMainMenu::draw(Graphics *g)
 		const float from = 0.0f;
 		const float to = m_fStartupAnim2;
 
-		const float prevSliderBorderFeatherBackup = m_osu_slider_border_feather_ref->getFloat();
-		m_osu_slider_border_feather_ref->setValue(osu_main_menu_slider_text_feather.getFloat()); // heuristic to avoid aliasing
+		const float prevSliderBorderFeatherBackup = osu_slider_border_feather.load(std::memory_order::acquire);
+		osu_slider_border_feather.store(osu_main_menu_slider_text_feather.load(std::memory_order::acquire), std::memory_order::release); // heuristic to avoid aliasing
 		{
 			const size_t numHitObjects = m_mainMenuSliderTextBeatmapHitObjects.size();
 			for (size_t i=0; i<numHitObjects; i++)
@@ -705,7 +704,7 @@ void OsuMainMenu::draw(Graphics *g)
 				}
 			}
 		}
-		m_osu_slider_border_feather_ref->setValue(prevSliderBorderFeatherBackup);
+		osu_slider_border_feather.store(prevSliderBorderFeatherBackup, std::memory_order::release);
 	}
 
 	// draw main button
@@ -749,7 +748,7 @@ void OsuMainMenu::draw(Graphics *g)
 		g->translate3DScene(friendTranslationX, friendTranslationY, 0);
 		g->rotate3DScene(m_fMainMenuAnim1*360.0f, m_fMainMenuAnim2*360.0f, m_fMainMenuAnim3*360.0f + friendRotation);
 
-		//g->rotate3DScene(engine->getMouse()->getPos().y, engine->getMouse()->getPos().x, 0);
+		//g->rotate3DScene(mouse->getPos().y, mouse->getPos().x, 0);
 
 		/*
 		g->offset3DScene(0, 0, 300.0f);
@@ -1257,7 +1256,7 @@ void OsuMainMenu::update()
 
 	if (m_bInMainMenuRandomAnim && m_iMainMenuRandomAnimType == 1 && anim->isAnimating(&m_fMainMenuAnim))
 	{
-		Vector2 mouseDelta = (m_mainButton->getPos() + m_mainButton->getSize()/2.0f) - engine->getMouse()->getPos();
+		Vector2 mouseDelta = (m_mainButton->getPos() + m_mainButton->getSize()/2.0f) - mouse->getPos();
 		mouseDelta.x = std::clamp<float>(mouseDelta.x, -engine->getScreenSize().x/2, engine->getScreenSize().x/2);
 		mouseDelta.y = std::clamp<float>(mouseDelta.y, -engine->getScreenSize().y/2, engine->getScreenSize().y/2);
 		mouseDelta.x /= engine->getScreenSize().x;
@@ -1282,7 +1281,7 @@ void OsuMainMenu::update()
 		if (!m_bMainMenuAnimFriendScheduled)
 			m_fMainMenuAnimFriendPercent = 0.0f;
 
-		Vector2 mouseDelta = (m_mainButton->getPos() + m_mainButton->getSize()/2.0f) - engine->getMouse()->getPos();
+		Vector2 mouseDelta = (m_mainButton->getPos() + m_mainButton->getSize()/2.0f) - mouse->getPos();
 		mouseDelta.x = std::clamp<float>(mouseDelta.x, -engine->getScreenSize().x/2, engine->getScreenSize().x/2);
 		mouseDelta.y = std::clamp<float>(mouseDelta.y, -engine->getScreenSize().y/2, engine->getScreenSize().y/2);
 		mouseDelta.x /= engine->getScreenSize().x;
@@ -1405,7 +1404,7 @@ void OsuMainMenu::onMiddleChange(bool down)
 	// debug anims
 	if (down && !anim->isAnimating(&m_fMainMenuAnim) && !m_bMenuElementsVisible)
 	{
-		if (engine->getKeyboard()->isShiftDown())
+		if (keyboard->isShiftDown())
 		{
 			m_bMainMenuAnimFriend = true;
 			m_bMainMenuAnimFriendScheduled = true;
@@ -1628,7 +1627,7 @@ OsuMainMenuButton *OsuMainMenu::addMainMenuButton(UString text)
 
 void OsuMainMenu::onMainMenuButtonPressed()
 {
-	engine->getSound()->play(m_osu->getSkin()->getMenuHit());
+	soundEngine->play(m_osu->getSkin()->getMenuHit());
 
 	// if the menu is already visible, this counts as pressing the play button
 	if (m_bMenuElementsVisible)
@@ -1642,7 +1641,7 @@ void OsuMainMenu::onMainMenuButtonPressed()
 	{
 		m_bInMainMenuRandomAnim = false;
 
-		Vector2 mouseDelta = (m_mainButton->getPos() + m_mainButton->getSize()/2.0f) - engine->getMouse()->getPos();
+		Vector2 mouseDelta = (m_mainButton->getPos() + m_mainButton->getSize()/2.0f) - mouse->getPos();
 		mouseDelta.x = std::clamp<float>(mouseDelta.x, -m_mainButton->getSize().x/2, m_mainButton->getSize().x/2);
 		mouseDelta.y = std::clamp<float>(mouseDelta.y, -m_mainButton->getSize().y/2, m_mainButton->getSize().y/2);
 		mouseDelta.x /= m_mainButton->getSize().x;
@@ -1810,6 +1809,6 @@ void OsuMainMenuButton::onMouseDownInside()
 {
 	if (m_mainMenu->m_mainButton->isMouseInside()) return;
 
-	engine->getSound()->play(m_mainMenu->getOsu()->getSkin()->getMenuHit());
+	soundEngine->play(m_mainMenu->getOsu()->getSkin()->getMenuHit());
 	CBaseUIButton::onMouseDownInside();
 }

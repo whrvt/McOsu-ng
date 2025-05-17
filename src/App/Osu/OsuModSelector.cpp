@@ -129,7 +129,7 @@ private:
 	virtual void onPressed()
 	{
 		CBaseUICheckbox::onPressed();
-		engine->getSound()->play(isChecked() ? m_osu->getSkin()->getCheckOn() : m_osu->getSkin()->getCheckOff());
+		soundEngine->play(isChecked() ? m_osu->getSkin()->getCheckOn() : m_osu->getSkin()->getCheckOff());
 
 		if (isChecked())
 		{
@@ -524,7 +524,7 @@ void OsuModSelector::update()
 				}
 				m_osu->getTooltipOverlay()->end();
 
-				if (engine->getKeyboard()->isAltDown())
+				if (keyboard->isAltDown())
 					m_bShowOverrideSliderALTHint = false;
 			}
 		}
@@ -546,7 +546,7 @@ void OsuModSelector::update()
 		}
 	}
 	McRect experimentalTrigger = McRect(0, 0, m_bExperimentalVisible ? m_experimentalContainer->getSize().x : m_osu->getScreenWidth()*0.05f, m_osu->getScreenHeight());
-	if (experimentalTrigger.contains(engine->getMouse()->getPos()))
+	if (experimentalTrigger.contains(mouse->getPos()))
 	{
 		if (!m_bExperimentalVisible)
 		{
@@ -1165,7 +1165,7 @@ void OsuModSelector::onOverrideSliderChange(CBaseUISlider *slider)
 			const float rawSliderValue = slider->getFloat();
 
 			// alt key allows rounding to only 1 decimal digit
-			if (!engine->getKeyboard()->isAltDown())
+			if (!keyboard->isAltDown())
 				sliderValue = std::round(sliderValue * 10.0f) / 10.0f;
 			else
 				sliderValue = std::round(sliderValue * 100.0f) / 100.0f;
@@ -1355,7 +1355,7 @@ UString OsuModSelector::getOverrideSliderLabelText(OsuModSelector::OVERRIDE_SLID
 
 			// compensate and round
 			convarValue = OsuGameRules::getApproachRateForSpeedMultiplier(m_osu->getSelectedBeatmap(), speedMultiplierLive);
-			if (!engine->getKeyboard()->isAltDown() && !forceDisplayTwoDecimalDigits)
+			if (!keyboard->isAltDown() && !forceDisplayTwoDecimalDigits)
 				convarValue = std::round(convarValue * 10.0f) / 10.0f;
 			else
 				convarValue = std::round(convarValue * 100.0f) / 100.0f;
@@ -1366,7 +1366,7 @@ UString OsuModSelector::getOverrideSliderLabelText(OsuModSelector::OVERRIDE_SLID
 
 			// compensate and round
 			convarValue = OsuGameRules::getOverallDifficultyForSpeedMultiplier(m_osu->getSelectedBeatmap(), speedMultiplierLive);
-			if (!engine->getKeyboard()->isAltDown() && !forceDisplayTwoDecimalDigits)
+			if (!keyboard->isAltDown() && !forceDisplayTwoDecimalDigits)
 				convarValue = std::round(convarValue * 10.0f) / 10.0f;
 			else
 				convarValue = std::round(convarValue * 100.0f) / 100.0f;

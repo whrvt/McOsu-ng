@@ -124,7 +124,7 @@ void CBaseUISlider::update()
 	CBaseUIElement::update();
 	if (!m_bVisible) return;
 
-	Vector2 mousepos = engine->getMouse()->getPos();
+	Vector2 mousepos = mouse->getPos();
 
 	// handle moving
 	if (m_bActive)
@@ -167,7 +167,7 @@ void CBaseUISlider::update()
 		// handle mouse wheel
 		if (m_bMouseInside && m_bAllowMouseWheel)
 		{
-			int wheelDelta = engine->getMouse()->getWheelDeltaVertical();
+			int wheelDelta = mouse->getWheelDeltaVertical();
 			if (wheelDelta != 0)
 			{
 				const int multiplier = std::max(1, std::abs(wheelDelta) / 120);
@@ -348,8 +348,8 @@ void CBaseUISlider::onMouseDownInside()
 {
 	m_fPrevValue = m_fCurValue;
 
-	if (McRect(m_vPos.x+m_vBlockPos.x,m_vPos.y+m_vBlockPos.y,m_vBlockSize.x,m_vBlockSize.y).contains(engine->getMouse()->getPos()))
-		m_vGrabBackup = engine->getMouse()->getPos()-m_vBlockPos;
+	if (McRect(m_vPos.x+m_vBlockPos.x,m_vPos.y+m_vBlockPos.y,m_vBlockSize.x,m_vBlockSize.y).contains(mouse->getPos()))
+		m_vGrabBackup = mouse->getPos()-m_vBlockPos;
 	else
 		m_vGrabBackup = m_vPos + m_vBlockSize/2;
 

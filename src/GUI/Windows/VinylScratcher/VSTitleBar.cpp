@@ -209,7 +209,7 @@ void VSTitleBar::update()
 	if (m_title2->isActive() && m_bActive)
 	{
 		m_bIsSeeking = true;
-		const float percent = std::clamp<float>((engine->getMouse()->getPos().x + 1 - m_vPos.x) / m_title->getSize().x, 0.0f, 1.0f);
+		const float percent = std::clamp<float>((mouse->getPos().x + 1 - m_vPos.x) / m_title->getSize().x, 0.0f, 1.0f);
 		vs_percent.setValue(percent);
 	}
 	else
@@ -218,7 +218,7 @@ void VSTitleBar::update()
 		if (m_bIsSeeking)
 		{
 			m_bIsSeeking = false;
-			if (m_seekCallback != NULL && !engine->getMouse()->isRightDown())
+			if (m_seekCallback != NULL && !mouse->isRightDown())
 				m_seekCallback();
 		}
 	}

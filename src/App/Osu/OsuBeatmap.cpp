@@ -306,10 +306,10 @@ void OsuBeatmap::drawDebug(Graphics *g)
 {
 	if (osu_debug_draw_timingpoints.getBool())
 	{
-		McFont *debugFont = engine->getResourceManager()->getFont("FONT_DEFAULT");
+		McFont *debugFont = resourceManager->getFont("FONT_DEFAULT");
 		g->setColor(0xffffffff);
 		g->pushTransform();
-		g->translate(5, debugFont->getHeight() + 5 - engine->getMouse()->getPos().y);
+		g->translate(5, debugFont->getHeight() + 5 - mouse->getPos().y);
 		{
 			for (const OsuDatabaseBeatmap::TIMINGPOINT &t : m_selectedDifficulty2->getTimingpoints())
 			{
@@ -432,7 +432,7 @@ void OsuBeatmap::update()
 			m_bIsPaused = false;
 
 			if (!isEarlyNoteContinue)
-				engine->getSound()->play(m_music);
+				soundEngine->play(m_music);
 
 			m_bIsPlaying = true; // usually this should be checked with the result of the above play() call, but since we are continuing we can assume that everything works
 
@@ -494,7 +494,7 @@ void OsuBeatmap::update()
 					m_bIsWaiting = false;
 					m_bIsPlaying = true;
 
-					engine->getSound()->play(m_music);
+					soundEngine->play(m_music);
 					m_music->setPosition(0.0);
 					m_music->setVolume(m_osu_volume_music_ref->getFloat());
 
@@ -1044,9 +1044,9 @@ void OsuBeatmap::update()
 				if (!wasSeekFrame)
 				{
 					if (passing)
-						engine->getSound()->play(m_osu->getSkin()->getSectionPassSound());
+						soundEngine->play(m_osu->getSkin()->getSectionPassSound());
 					else
-						engine->getSound()->play(m_osu->getSkin()->getSectionFailSound());
+						soundEngine->play(m_osu->getSkin()->getSectionFailSound());
 				}
 			}
 		}
@@ -1143,7 +1143,7 @@ void OsuBeatmap::update()
 			{
 				if (m_music->isPlaying() || !m_osu->getPauseMenu()->isVisible())
 				{
-					engine->getSound()->pause(m_music);
+					soundEngine->pause(m_music);
 					m_bIsPaused = true;
 
 					m_osu->getPauseMenu()->setVisible(true);
@@ -1158,7 +1158,7 @@ void OsuBeatmap::update()
 
 void OsuBeatmap::onKeyDown(KeyboardEvent &e)
 {
-	if (e == KEY_O && engine->getKeyboard()->isControlDown())
+	if (e == KEY_O && keyboard->isControlDown())
 	{
 		m_osu->toggleOptionsMenu();
 		e.consume();
@@ -1198,10 +1198,10 @@ void OsuBeatmap::skipEmptySection()
 	else
 		m_music->setPositionMS(std::max(m_iNextHitObjectTime - (long)(offset * offsetMultiplier), (long)0));
 
-	engine->getSound()->play(m_osu->getSkin()->getMenuHit());
+	soundEngine->play(m_osu->getSkin()->getMenuHit());
 }
 
-void OsuBeatmap::keyPressed1(bool mouse)
+void OsuBeatmap::keyPressed1(bool mouseButton)
 {
 	if (m_bContinueScheduled)
 	{
@@ -1217,15 +1217,15 @@ void OsuBeatmap::keyPressed1(bool mouse)
 	{
 		if (m_iCurrentHitObjectIndex > m_iAllowAnyNextKeyForFullAlternateUntilHitObjectIndex)
 		{
-			engine->getSound()->play(getSkin()->getCombobreak());
+			soundEngine->play(getSkin()->getCombobreak());
 			return;
 		}
 	}
 
 	// key overlay & counter
-	m_osu->getHUD()->animateInputoverlay(mouse ? 3 : 1, true);
+	m_osu->getHUD()->animateInputoverlay(mouseButton ? 3 : 1, true);
 	if (!m_bInBreak && !m_bIsInSkippableSection && m_bIsPlaying && !m_bFailed)
-		m_osu->getScore()->addKeyCount(mouse ? 3 : 1);
+		m_osu->getScore()->addKeyCount(mouseButton ? 3 : 1);
 
 	m_bPrevKeyWasKey1 = true;
 	m_bClick1Held = true;
@@ -1241,7 +1241,7 @@ void OsuBeatmap::keyPressed1(bool mouse)
 		m_clicks.push_back(click);
 }
 
-void OsuBeatmap::keyPressed2(bool mouse)
+void OsuBeatmap::keyPressed2(bool mouseButton)
 {
 	if (m_bContinueScheduled)
 	{
@@ -1257,15 +1257,15 @@ void OsuBeatmap::keyPressed2(bool mouse)
 	{
 		if (m_iCurrentHitObjectIndex > m_iAllowAnyNextKeyForFullAlternateUntilHitObjectIndex)
 		{
-			engine->getSound()->play(getSkin()->getCombobreak());
+			soundEngine->play(getSkin()->getCombobreak());
 			return;
 		}
 	}
 
 	// key overlay & counter
-	m_osu->getHUD()->animateInputoverlay(mouse ? 4 : 2, true);
+	m_osu->getHUD()->animateInputoverlay(mouseButton ? 4 : 2, true);
 	if (!m_bInBreak && !m_bIsInSkippableSection && m_bIsPlaying && !m_bFailed)
-		m_osu->getScore()->addKeyCount(mouse ? 4 : 2);
+		m_osu->getScore()->addKeyCount(mouseButton ? 4 : 2);
 
 	m_bPrevKeyWasKey1 = false;
 	m_bClick2Held = true;
@@ -1281,7 +1281,7 @@ void OsuBeatmap::keyPressed2(bool mouse)
 		m_clicks.push_back(click);
 }
 
-void OsuBeatmap::keyReleased1(bool mouse)
+void OsuBeatmap::keyReleased1(bool mouseButton)
 {
 	if (m_osu->isInVRMode() && !m_osu_vr_draw_desktop_playfield_ref->getBool()) return;
 
@@ -1292,7 +1292,7 @@ void OsuBeatmap::keyReleased1(bool mouse)
 	m_bClick1Held = false;
 }
 
-void OsuBeatmap::keyReleased2(bool mouse)
+void OsuBeatmap::keyReleased2(bool mouseButton)
 {
 	if (m_osu->isInVRMode() && !m_osu_vr_draw_desktop_playfield_ref->getBool()) return;
 
@@ -1467,7 +1467,7 @@ bool OsuBeatmap::play()
 
 void OsuBeatmap::restart(bool quick)
 {
-	engine->getSound()->stop(getSkin()->getFailsound());
+	soundEngine->stop(getSkin()->getFailsound());
 
 	if (!m_bIsWaiting)
 	{
@@ -1502,7 +1502,7 @@ void OsuBeatmap::actualRestart()
 
 	// pause temporarily if playing
 	if (m_music->isPlaying())
-		engine->getSound()->pause(m_music);
+		soundEngine->pause(m_music);
 
 	// reset/restore frequency (from potential fail before)
 	m_music->setFrequency(0);
@@ -1558,7 +1558,7 @@ void OsuBeatmap::pause(bool quitIfWaiting)
 				stop(false);
 			else
 			{
-				engine->getSound()->pause(m_music);
+				soundEngine->pause(m_music);
 				m_bIsPlaying = false;
 				m_bIsPaused = true;
 			}
@@ -1569,7 +1569,7 @@ void OsuBeatmap::pause(bool quitIfWaiting)
 		if (m_osu->getModAuto() || m_osu->getModAutopilot() || m_bIsInSkippableSection || forceContinueWithoutSchedule) // under certain conditions, immediately continue the beatmap without waiting for the user to click
 		{
 			if (!m_bIsWaiting) // only force play() if we were not early waiting
-				engine->getSound()->play(m_music);
+				soundEngine->play(m_music);
 
 			m_bIsPlaying = true;
 			m_bIsPaused = false;
@@ -1606,9 +1606,9 @@ void OsuBeatmap::pausePreviewMusic(bool toggle)
 	if (m_music != NULL)
 	{
 		if (m_music->isPlaying())
-			engine->getSound()->pause(m_music);
+			soundEngine->pause(m_music);
 		else if (toggle)
-			engine->getSound()->play(m_music);
+			soundEngine->play(m_music);
 	}
 }
 
@@ -1625,7 +1625,7 @@ void OsuBeatmap::stop(bool quit)
 	if (m_selectedDifficulty2 == NULL) return;
 
 	if (getSkin()->getFailsound()->isPlaying())
-		engine->getSound()->stop(getSkin()->getFailsound());
+		soundEngine->stop(getSkin()->getFailsound());
 
 	m_currentHitObject = NULL;
 
@@ -1648,7 +1648,7 @@ void OsuBeatmap::fail()
 
 	if (!m_osu->isInMultiplayer() && osu_drain_kill.getBool())
 	{
-		engine->getSound()->play(getSkin()->getFailsound());
+		soundEngine->play(getSkin()->getFailsound());
 
 		m_bFailed = true;
 		m_fFailAnim = 1.0f;
@@ -1684,7 +1684,7 @@ void OsuBeatmap::cancelFailing()
 		m_music->setFrequency(0.0f);
 
 	if (getSkin()->getFailsound()->isPlaying())
-		engine->getSound()->stop(getSkin()->getFailsound());
+		soundEngine->stop(getSkin()->getFailsound());
 }
 
 void OsuBeatmap::setVolume(float volume)
@@ -1728,7 +1728,7 @@ void OsuBeatmap::seekPercent(double percent)
 		m_bIsPlaying = true;
 		m_bIsRestartScheduledQuick = false;
 
-		engine->getSound()->play(m_music);
+		soundEngine->play(m_music);
 
 		onPlayStart();
 	}
@@ -1768,7 +1768,7 @@ void OsuBeatmap::seekMS(unsigned long ms)
 	if (m_bIsWaiting)
 	{
 		m_bIsWaiting = false;
-		engine->getSound()->play(m_music);
+		soundEngine->play(m_music);
 	}
 }
 
@@ -2234,7 +2234,7 @@ bool OsuBeatmap::canUpdate()
 
 	if (m_osu->getInstanceID() > 1)
 	{
-		m_music = engine->getResourceManager()->getSound("OSU_BEATMAP_MUSIC");
+		m_music = resourceManager->getSound("OSU_BEATMAP_MUSIC");
 		if (m_music == NULL)
 			return false;
 	}
@@ -2251,9 +2251,9 @@ void OsuBeatmap::handlePreviewPlay()
 		if (m_music->getPosition() > 0.95f)
 			m_iContinueMusicPos = 0;
 
-		engine->getSound()->stop(m_music);
+		soundEngine->stop(m_music);
 
-		if (engine->getSound()->play(m_music))
+		if (soundEngine->play(m_music))
 		{
 			if (m_music->getFrequency() < m_fMusicFrequencyBackup) // player has died, reset frequency
 				m_music->setFrequency(m_fMusicFrequencyBackup);
@@ -2278,7 +2278,7 @@ void OsuBeatmap::loadMusic(bool stream, bool prescan)
 {
 	if (m_osu->getInstanceID() > 1)
 	{
-		m_music = engine->getResourceManager()->getSound("OSU_BEATMAP_MUSIC");
+		m_music = resourceManager->getSound("OSU_BEATMAP_MUSIC");
 		return;
 	}
 
@@ -2292,9 +2292,9 @@ void OsuBeatmap::loadMusic(bool stream, bool prescan)
 
 		// if it's not a stream then we are loading the entire song into memory for playing
 		if (!stream)
-			engine->getResourceManager()->requestNextLoadAsync();
+			resourceManager->requestNextLoadAsync();
 
-		m_music = engine->getResourceManager()->loadSoundAbs(m_selectedDifficulty2->getFullSoundFilePath(), "OSU_BEATMAP_MUSIC", stream, false, false, m_bForceStreamPlayback && prescan); // m_bForceStreamPlayback = prescan necessary! otherwise big mp3s will go out of sync
+		m_music = resourceManager->loadSoundAbs(m_selectedDifficulty2->getFullSoundFilePath(), "OSU_BEATMAP_MUSIC", stream, false, false, m_bForceStreamPlayback && prescan); // m_bForceStreamPlayback = prescan necessary! otherwise big mp3s will go out of sync
 		m_music->setVolume(m_osu_volume_music_ref->getFloat());
 		m_fMusicFrequencyBackup = m_music->getFrequency();
 	}
@@ -2304,8 +2304,8 @@ void OsuBeatmap::unloadMusicInt()
 {
 	if (m_osu->getInstanceID() < 2)
 	{
-		engine->getSound()->stop(m_music);
-		engine->getResourceManager()->destroyResource(m_music);
+		soundEngine->stop(m_music);
+		resourceManager->destroyResource(m_music);
 	}
 
 	m_music = NULL;
@@ -2356,7 +2356,7 @@ void OsuBeatmap::playMissSound()
 	if ((m_bIsFirstMissSound && m_osu->getScore()->getCombo() > 0) || m_osu->getScore()->getCombo() > osu_combobreak_sound_combo.getInt())
 	{
 		m_bIsFirstMissSound = false;
-		engine->getSound()->play(getSkin()->getCombobreak());
+		soundEngine->play(getSkin()->getCombobreak());
 	}
 }
 

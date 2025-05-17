@@ -27,7 +27,7 @@ void OpenGL3VertexArrayObject::init()
 {
 	if (m_vertices.size() < 2) return;
 
-	OpenGL3Interface *g = (OpenGL3Interface*)engine->getGraphics();
+	OpenGL3Interface *g = (OpenGL3Interface*)graphics;
 
 	// backup vao
 	int vaoBackup = 0;

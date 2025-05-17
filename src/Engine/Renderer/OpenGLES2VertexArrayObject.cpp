@@ -81,7 +81,7 @@ void OpenGLES2VertexArrayObject::draw()
 	if (start > end || std::abs(end-start) == 0)
 		return;
 
-	OpenGLES2Interface *g = (OpenGLES2Interface*)engine->getGraphics();
+	OpenGLES2Interface *g = (OpenGLES2Interface*)graphics;
 
 	// bind
 	{

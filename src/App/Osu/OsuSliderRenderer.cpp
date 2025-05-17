@@ -46,7 +46,7 @@ ConVar osu_slider_debug_wireframe("osu_slider_debug_wireframe", false, FCVAR_NON
 ConVar osu_slider_alpha_multiplier("osu_slider_alpha_multiplier", 1.0f, FCVAR_NONE);
 ConVar osu_slider_body_alpha_multiplier("osu_slider_body_alpha_multiplier", 1.0f, FCVAR_NONE);
 ConVar osu_slider_body_color_saturation("osu_slider_body_color_saturation", 1.0f, FCVAR_NONE);
-ConVar osu_slider_border_feather("osu_slider_border_feather", 0.0f, FCVAR_NONE);
+std::atomic<float> osu_slider_border_feather = 0.0f;
 ConVar osu_slider_border_size_multiplier("osu_slider_border_size_multiplier", 1.0f, FCVAR_NONE);
 ConVar osu_slider_border_tint_combo_color("osu_slider_border_tint_combo_color", false, FCVAR_NONE);
 ConVar osu_slider_osu_next_style("osu_slider_osu_next_style", false, FCVAR_NONE);
@@ -58,8 +58,8 @@ ConVar osu_slider_legacy_use_baked_vao("osu_slider_legacy_use_baked_vao", false,
 
 VertexArrayObject *OsuSliderRenderer::generateVAO(Osu *osu, const std::vector<Vector2> &points, float hitcircleDiameter, Vector3 translation, bool skipOOBPoints)
 {
-	engine->getResourceManager()->requestNextLoadUnmanaged();
-	VertexArrayObject *vao = engine->getResourceManager()->createVertexArrayObject();
+	resourceManager->requestNextLoadUnmanaged();
+	VertexArrayObject *vao = resourceManager->createVertexArrayObject();
 
 	checkUpdateVars(osu, hitcircleDiameter);
 
@@ -115,7 +115,7 @@ VertexArrayObject *OsuSliderRenderer::generateVAO(Osu *osu, const std::vector<Ve
 	}
 
 	if (vao->getNumVertices() > 0)
-		engine->getResourceManager()->loadResource(vao);
+		resourceManager->loadResource(vao);
 	else
 		debugLog("ERROR: Zero triangles!\n");
 
@@ -227,7 +227,7 @@ void OsuSliderRenderer::draw(Graphics *g, Osu *osu, const std::vector<Vector2> &
 				BLEND_SHADER->setUniform1f("bodyAlphaMultiplier", osu_slider_body_alpha_multiplier.getFloat());
 				BLEND_SHADER->setUniform1f("bodyColorSaturation", osu_slider_body_color_saturation.getFloat());
 				BLEND_SHADER->setUniform1f("borderSizeMultiplier", osu_slider_border_size_multiplier.getFloat());
-				BLEND_SHADER->setUniform1f("borderFeather", osu_slider_border_feather.getFloat());
+				BLEND_SHADER->setUniform1f("borderFeather", osu_slider_border_feather.load(std::memory_order::acquire));
 				BLEND_SHADER->setUniform3f("colBorder", Rf(dimmedBorderColor), Gf(dimmedBorderColor), Bf(dimmedBorderColor));
 				BLEND_SHADER->setUniform3f("colBody", Rf(dimmedBodyColor), Gf(dimmedBodyColor), Bf(dimmedBodyColor));
 			}
@@ -377,7 +377,7 @@ void OsuSliderRenderer::draw(Graphics *g, Osu *osu, VertexArrayObject *vao, cons
 				BLEND_SHADER->setUniform1f("bodyAlphaMultiplier", osu_slider_body_alpha_multiplier.getFloat());
 				BLEND_SHADER->setUniform1f("bodyColorSaturation", osu_slider_body_color_saturation.getFloat());
 				BLEND_SHADER->setUniform1f("borderSizeMultiplier", osu_slider_border_size_multiplier.getFloat());
-				BLEND_SHADER->setUniform1f("borderFeather", osu_slider_border_feather.getFloat());
+				BLEND_SHADER->setUniform1f("borderFeather", osu_slider_border_feather.load(std::memory_order::acquire));
 				BLEND_SHADER->setUniform3f("colBorder", Rf(dimmedBorderColor), Gf(dimmedBorderColor), Bf(dimmedBorderColor));
 				BLEND_SHADER->setUniform3f("colBody", Rf(dimmedBodyColor), Gf(dimmedBodyColor), Bf(dimmedBodyColor));
 			}
@@ -734,9 +734,9 @@ void OsuSliderRenderer::checkUpdateVars(Osu *osu, float hitcircleDiameter)
 	if (BLEND_SHADER == NULL) // only do this once
 	{
 		// build shaders
-		BLEND_SHADER = engine->getResourceManager()->loadShader2("slider.mcshader", "slider");
+		BLEND_SHADER = resourceManager->loadShader2("slider.mcshader", "slider");
 		if (osu != NULL && osu->isInVRMode())
-			BLEND_SHADER_VR = engine->getResourceManager()->loadShader("sliderVR.vsh", "sliderVR.fsh", "sliderVR");
+			BLEND_SHADER_VR = resourceManager->loadShader("sliderVR.vsh", "sliderVR.fsh", "sliderVR");
 	}
 
 	const int subdivisions = osu_slider_body_unit_circle_subdivisions.getInt();
@@ -787,7 +787,7 @@ void OsuSliderRenderer::checkUpdateVars(Osu *osu, float hitcircleDiameter)
 	if (UNIT_CIRCLE_VAO == NULL)
 		UNIT_CIRCLE_VAO = new VertexArrayObject(Graphics::PRIMITIVE::PRIMITIVE_TRIANGLE_FAN);
 	if (UNIT_CIRCLE_VAO_BAKED == NULL)
-		UNIT_CIRCLE_VAO_BAKED = engine->getResourceManager()->createVertexArrayObject(Graphics::PRIMITIVE::PRIMITIVE_TRIANGLE_FAN);
+		UNIT_CIRCLE_VAO_BAKED = resourceManager->createVertexArrayObject(Graphics::PRIMITIVE::PRIMITIVE_TRIANGLE_FAN);
 	if (UNIT_CIRCLE_VAO_TRIANGLES == NULL)
 		UNIT_CIRCLE_VAO_TRIANGLES = new VertexArrayObject(Graphics::PRIMITIVE::PRIMITIVE_TRIANGLES);
 
@@ -814,7 +814,7 @@ void OsuSliderRenderer::checkUpdateVars(Osu *osu, float hitcircleDiameter)
 			UNIT_CIRCLE_VAO_BAKED->addTexcoord(vertexTexcoord);
 		}
 
-		engine->getResourceManager()->loadResource(UNIT_CIRCLE_VAO_BAKED);
+		resourceManager->loadResource(UNIT_CIRCLE_VAO_BAKED);
 
 		// pure triangles (needed for VertexArrayObject, because we can't merge multiple triangle fan meshes into one VertexArrayObject)
 		UNIT_CIRCLE_VAO_TRIANGLES->clear();

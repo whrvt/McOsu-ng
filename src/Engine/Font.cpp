@@ -173,8 +173,8 @@ void McFont::init()
 
 	// calculate optimal atlas size and create texture atlas
 	const size_t atlasSize = calculateOptimalAtlasSize(glyphRects, ATLAS_OCCUPANCY_TARGET);
-	engine->getResourceManager()->requestNextLoadUnmanaged();
-	m_textureAtlas = engine->getResourceManager()->createTextureAtlas(atlasSize, atlasSize);
+	resourceManager->requestNextLoadUnmanaged();
+	m_textureAtlas = resourceManager->createTextureAtlas(atlasSize, atlasSize);
 
 	// pack glyphs into atlas
 	if (!glyphRects.empty() && !packGlyphRects(glyphRects, atlasSize, atlasSize))
@@ -238,7 +238,7 @@ void McFont::init()
 	}
 
 	// finalize atlas texture
-	engine->getResourceManager()->loadResource(m_textureAtlas);
+	resourceManager->loadResource(m_textureAtlas);
 	m_textureAtlas->getAtlasImage()->setFilterMode(m_bAntialiasing ? Graphics::FILTER_MODE::FILTER_MODE_LINEAR : Graphics::FILTER_MODE::FILTER_MODE_NONE);
 
 	// precalculate average/max ASCII glyph height

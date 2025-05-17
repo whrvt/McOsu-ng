@@ -87,7 +87,7 @@ public:
 	};
 
 public:
-	Engine(Environment *environment, const char *args = NULL);
+	Engine(const char *args = NULL);
 	~Engine();
 
 	// app
@@ -139,17 +139,24 @@ public:
 	// engine specifics
 	void blackout() {m_bBlackout = true;}
 
-	// interfaces
-	inline App *getApp() const {return m_app;}
-	inline Graphics *getGraphics() const {return m_graphics;}
-	inline SoundEngine *getSound() const {return m_sound;}
-	inline ResourceManager *getResourceManager() const {return m_resourceManager;}
-	inline Environment *getEnvironment() const {return m_environment;}
-	inline NetworkHandler *getNetworkHandler() const {return m_networkHandler;}
+private:
+	// singleton interface/instance decls
+    static std::unique_ptr<Mouse> s_mouseInstance;
+    static std::unique_ptr<Keyboard> s_keyboardInstance;
+    static std::unique_ptr<App> s_appInstance;
+    static std::unique_ptr<Graphics> s_graphicsInstance;
+    static std::unique_ptr<SoundEngine> s_soundEngineInstance;
+    static std::unique_ptr<ResourceManager> s_resourceManagerInstance;
+    static std::unique_ptr<NetworkHandler> s_networkHandlerInstance;
+    static std::unique_ptr<OpenVRInterface> s_openVRInstance;
+    static std::unique_ptr<VulkanInterface> s_vulkanInstance;
+    static std::unique_ptr<ContextMenu> s_contextMenuInstance;
+    static std::unique_ptr<AnimationHandler> s_animationHandlerInstance;
+    static std::unique_ptr<SteamworksInterface> s_steamInstance;
+    static std::unique_ptr<DiscordInterface> s_discordInstance;
 
+public:
 	// input devices
-	inline Mouse *getMouse() const {return m_mouse;}
-	inline Keyboard *getKeyboard() const {return m_keyboard;}
 	inline const std::vector<Mouse*> &getMice() const {return m_mice;}
 	inline const std::vector<Keyboard*> &getKeyboards() const {return m_keyboards;}
 
@@ -179,23 +186,7 @@ public:
 	inline CBaseUIContainer *getGUI() const {return m_guiContainer;}
 
 private:
-	// interfaces
-	App *m_app;
-	Graphics *m_graphics;
-	SoundEngine *m_sound;
-	OpenVRInterface *m_openVR;
-	VulkanInterface *m_vulkan;
-	ContextMenu *m_contextMenu;
-	Environment *m_environment;
-	NetworkHandler *m_networkHandler;
-	ResourceManager *m_resourceManager;
-	AnimationHandler *m_animationHandler;
-	SteamworksInterface *m_steam;
-	DiscordInterface *m_discord;
-
 	// input devices
-	Mouse *m_mouse;
-	Keyboard *m_keyboard;
 	std::vector<Mouse*> m_mice;
 	std::vector<Keyboard*> m_keyboards;
 	std::vector<InputDevice*> m_inputDevices;
@@ -230,6 +221,20 @@ private:
 	// math
 	McMath *m_math;
 };
+
+extern Mouse* mouse;
+extern Keyboard* keyboard;
+extern App* app;
+extern Graphics* graphics;
+extern SoundEngine* soundEngine;
+extern ResourceManager* resourceManager;
+extern NetworkHandler* networkHandler;
+extern OpenVRInterface* openVR;
+extern VulkanInterface* vulkan;
+extern ContextMenu* contextMenu;
+extern AnimationHandler* animationHandler;
+extern SteamworksInterface* steam;
+extern DiscordInterface* discord;
 
 extern Engine *engine;
 

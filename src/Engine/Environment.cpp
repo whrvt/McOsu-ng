@@ -49,8 +49,11 @@ ConVar _monitor_("monitor", 0, FCVAR_NONE, "monitor/display device to switch to,
 
 ConVar *Environment::debug_env = &_debug_env;
 
+Environment *env = nullptr;
+
 Environment::Environment()
 {
+	env = this;
 	m_window = nullptr;
 
 	m_bRunning = true;
@@ -665,7 +668,7 @@ void Environment::setCursorVisible(bool visible)
 			setCursorPosition(getMousePos().nudge(getWindowSize() / 2.0f, 1.0f)); // nudge it outwards
 		}
 		else                                                                                        // snap the OS cursor to virtual cursor position
-			setCursorPosition(m_engine->getMouse()->getRealPos().nudge(getWindowSize() / 2.0f, 1.0f)); // nudge it outwards
+			setCursorPosition(mouse->getRealPos().nudge(getWindowSize() / 2.0f, 1.0f)); // nudge it outwards
 		SDL_ShowCursor();
 	}
 	else
@@ -727,7 +730,7 @@ void Environment::setRawInput(bool on)
 {
 	if (on)
 	{
-		setCursorPosition(m_engine->getMouse()->getRealPos()); // when enabling, we need to make sure we start from the virtual cursor position
+		setCursorPosition(mouse->getRealPos()); // when enabling, we need to make sure we start from the virtual cursor position
 		if (m_bCursorClipped)
 		{
 			const SDL_Rect clipRect{.x = static_cast<int>(m_cursorClip.getX()),

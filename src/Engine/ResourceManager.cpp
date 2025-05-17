@@ -337,7 +337,7 @@ Image *ResourceManager::loadImage(UString filepath, UString resourceName, bool m
 
 	// create instance and load it
 	filepath.insert(0, PATH_DEFAULT_IMAGES);
-	Image *img = engine->getGraphics()->createImage(filepath, mipmapped, keepInSystemMemory);
+	Image *img = graphics->createImage(filepath, mipmapped, keepInSystemMemory);
 	img->setName(resourceName);
 
 	loadResource(img, true);
@@ -348,7 +348,7 @@ Image *ResourceManager::loadImage(UString filepath, UString resourceName, bool m
 Image *ResourceManager::loadImageUnnamed(UString filepath, bool mipmapped, bool keepInSystemMemory)
 {
 	filepath.insert(0, PATH_DEFAULT_IMAGES);
-	Image *img = engine->getGraphics()->createImage(filepath, mipmapped, keepInSystemMemory);
+	Image *img = graphics->createImage(filepath, mipmapped, keepInSystemMemory);
 
 	loadResource(img, true);
 
@@ -366,7 +366,7 @@ Image *ResourceManager::loadImageAbs(UString absoluteFilepath, UString resourceN
 	}
 
 	// create instance and load it
-	Image *img = engine->getGraphics()->createImage(absoluteFilepath, mipmapped, keepInSystemMemory);
+	Image *img = graphics->createImage(absoluteFilepath, mipmapped, keepInSystemMemory);
 	img->setName(resourceName);
 
 	loadResource(img, true);
@@ -376,7 +376,7 @@ Image *ResourceManager::loadImageAbs(UString absoluteFilepath, UString resourceN
 
 Image *ResourceManager::loadImageAbsUnnamed(UString absoluteFilepath, bool mipmapped, bool keepInSystemMemory)
 {
-	Image *img = engine->getGraphics()->createImage(absoluteFilepath, mipmapped, keepInSystemMemory);
+	Image *img = graphics->createImage(absoluteFilepath, mipmapped, keepInSystemMemory);
 
 	loadResource(img, true);
 
@@ -391,7 +391,7 @@ Image *ResourceManager::createImage(unsigned int width, unsigned int height, boo
 		return NULL;
 	}
 
-	Image *img = engine->getGraphics()->createImage(width, height, mipmapped, keepInSystemMemory);
+	Image *img = graphics->createImage(width, height, mipmapped, keepInSystemMemory);
 
 	loadResource(img, false);
 
@@ -490,7 +490,7 @@ Shader *ResourceManager::loadShader(UString vertexShaderFilePath, UString fragme
 	// create instance and load it
 	vertexShaderFilePath.insert(0, PATH_DEFAULT_SHADERS);
 	fragmentShaderFilePath.insert(0, PATH_DEFAULT_SHADERS);
-	Shader *shader = engine->getGraphics()->createShaderFromFile(vertexShaderFilePath, fragmentShaderFilePath);
+	Shader *shader = graphics->createShaderFromFile(vertexShaderFilePath, fragmentShaderFilePath);
 	shader->setName(resourceName);
 
 	loadResource(shader, true);
@@ -502,7 +502,7 @@ Shader *ResourceManager::loadShader(UString vertexShaderFilePath, UString fragme
 {
 	vertexShaderFilePath.insert(0, PATH_DEFAULT_SHADERS);
 	fragmentShaderFilePath.insert(0, PATH_DEFAULT_SHADERS);
-	Shader *shader = engine->getGraphics()->createShaderFromFile(vertexShaderFilePath, fragmentShaderFilePath);
+	Shader *shader = graphics->createShaderFromFile(vertexShaderFilePath, fragmentShaderFilePath);
 
 	loadResource(shader, true);
 
@@ -520,7 +520,7 @@ Shader *ResourceManager::createShader(UString vertexShader, UString fragmentShad
 	}
 
 	// create instance and load it
-	Shader *shader = engine->getGraphics()->createShaderFromSource(vertexShader, fragmentShader);
+	Shader *shader = graphics->createShaderFromSource(vertexShader, fragmentShader);
 	shader->setName(resourceName);
 
 	loadResource(shader, true);
@@ -530,7 +530,7 @@ Shader *ResourceManager::createShader(UString vertexShader, UString fragmentShad
 
 Shader *ResourceManager::createShader(UString vertexShader, UString fragmentShader)
 {
-	Shader *shader = engine->getGraphics()->createShaderFromSource(vertexShader, fragmentShader);
+	Shader *shader = graphics->createShaderFromSource(vertexShader, fragmentShader);
 
 	loadResource(shader, true);
 
@@ -549,7 +549,7 @@ Shader *ResourceManager::loadShader2(UString shaderFilePath, UString resourceNam
 
 	// create instance and load it
 	shaderFilePath.insert(0, PATH_DEFAULT_SHADERS);
-	Shader *shader = engine->getGraphics()->createShaderFromFile(shaderFilePath);
+	Shader *shader = graphics->createShaderFromFile(shaderFilePath);
 	shader->setName(resourceName);
 
 	loadResource(shader, true);
@@ -560,7 +560,7 @@ Shader *ResourceManager::loadShader2(UString shaderFilePath, UString resourceNam
 Shader *ResourceManager::loadShader2(UString shaderFilePath)
 {
 	shaderFilePath.insert(0, PATH_DEFAULT_SHADERS);
-	Shader *shader = engine->getGraphics()->createShaderFromFile(shaderFilePath);
+	Shader *shader = graphics->createShaderFromFile(shaderFilePath);
 
 	loadResource(shader, true);
 
@@ -578,7 +578,7 @@ Shader *ResourceManager::createShader2(UString shaderSource, UString resourceNam
 	}
 
 	// create instance and load it
-	Shader *shader = engine->getGraphics()->createShaderFromSource(shaderSource);
+	Shader *shader = graphics->createShaderFromSource(shaderSource);
 	shader->setName(resourceName);
 
 	loadResource(shader, true);
@@ -588,7 +588,7 @@ Shader *ResourceManager::createShader2(UString shaderSource, UString resourceNam
 
 Shader *ResourceManager::createShader2(UString shaderSource)
 {
-	Shader *shader = engine->getGraphics()->createShaderFromSource(shaderSource);
+	Shader *shader = graphics->createShaderFromSource(shaderSource);
 
 	loadResource(shader, true);
 
@@ -597,7 +597,7 @@ Shader *ResourceManager::createShader2(UString shaderSource)
 
 RenderTarget *ResourceManager::createRenderTarget(int x, int y, int width, int height, Graphics::MULTISAMPLE_TYPE multiSampleType)
 {
-	RenderTarget *rt = engine->getGraphics()->createRenderTarget(x, y, width, height, multiSampleType);
+	RenderTarget *rt = graphics->createRenderTarget(x, y, width, height, multiSampleType);
 	rt->setName(UString::format("_RT_%ix%i", width, height));
 
 	loadResource(rt, true);
@@ -622,7 +622,7 @@ TextureAtlas *ResourceManager::createTextureAtlas(int width, int height)
 
 VertexArrayObject *ResourceManager::createVertexArrayObject(Graphics::PRIMITIVE primitive, Graphics::USAGE_TYPE usage, bool keepInSystemMemory)
 {
-	VertexArrayObject *vao = engine->getGraphics()->createVertexArrayObject(primitive, usage, keepInSystemMemory);
+	VertexArrayObject *vao = graphics->createVertexArrayObject(primitive, usage, keepInSystemMemory);
 
 	loadResource(vao, false);
 

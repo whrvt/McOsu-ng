@@ -77,7 +77,7 @@ void OsuUISongBrowserCollectionButton::onSelected(bool wasSelected, bool autoSel
 
 void OsuUISongBrowserCollectionButton::onRightMouseUpInside()
 {
-	triggerContextMenu(engine->getMouse()->getPos());
+	triggerContextMenu(mouse->getPos());
 }
 
 void OsuUISongBrowserCollectionButton::triggerContextMenu(Vector2 pos)
@@ -187,7 +187,7 @@ void OsuUISongBrowserCollectionButton::onContextMenu(UString text, int id)
 	{
 		if (!isLegacyCollection)
 		{
-			if (engine->getKeyboard()->isShiftDown())
+			if (keyboard->isShiftDown())
 				onDeleteCollectionConfirmed(text, id);
 			else
 			{

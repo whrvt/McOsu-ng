@@ -372,7 +372,7 @@ void DirectX11Shader::destroy()
 
 void DirectX11Shader::enable()
 {
-	DirectX11Interface *dx11 = (DirectX11Interface*)engine->getGraphics();
+	DirectX11Interface *dx11 = (DirectX11Interface*)graphics;
 	if (!m_bReady || dx11->getActiveShader() == this) return;
 
 	// backup
@@ -397,7 +397,7 @@ void DirectX11Shader::enable()
 
 void DirectX11Shader::disable()
 {
-	DirectX11Interface *dx11 = (DirectX11Interface*)engine->getGraphics();
+	DirectX11Interface *dx11 = (DirectX11Interface*)graphics;
 	if (!m_bReady || dx11->getActiveShader() != this) return;
 
 	// restore
@@ -531,7 +531,7 @@ void DirectX11Shader::onJustBeforeDraw()
 	// lazy update uniforms
 	if (!m_bConstantBuffersUpToDate)
 	{
-		DirectX11Interface *dx11 = (DirectX11Interface*)engine->getGraphics();
+		DirectX11Interface *dx11 = (DirectX11Interface*)graphics;
 
 		for (size_t i=0; i<m_constantBuffers.size(); i++)
 		{
@@ -622,7 +622,7 @@ bool DirectX11Shader::compile(UString vertexShader, UString fragmentShader)
 {
 	if (vertexShader.length() < 1 || fragmentShader.length() < 1) return false;
 
-	DirectX11Interface *dx11 = (DirectX11Interface*)engine->getGraphics();
+	DirectX11Interface *dx11 = (DirectX11Interface*)graphics;
 
 	const char *vsProfile = (dx11->getDevice()->GetFeatureLevel() >= D3D_FEATURE_LEVEL::D3D_FEATURE_LEVEL_11_0 ? "vs_5_0" : "vs_4_0");
 	const char *psProfile = (dx11->getDevice()->GetFeatureLevel() >= D3D_FEATURE_LEVEL::D3D_FEATURE_LEVEL_11_0 ? "ps_5_0" : "ps_4_0");

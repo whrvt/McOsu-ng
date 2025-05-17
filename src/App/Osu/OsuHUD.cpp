@@ -260,20 +260,20 @@ OsuHUD::OsuHUD(Osu *osu) : OsuScreen(osu)
 	osu_hud_volume_size_multiplier.setCallback( fastdelegate::MakeDelegate(this, &OsuHUD::onVolumeOverlaySizeChange) );
 
 	// resources
-	m_tempFont = engine->getResourceManager()->getFont("FONT_DEFAULT");
-	m_cursorTrailShader = engine->getResourceManager()->loadShader2("cursortrail.mcshader", "cursortrail");
+	m_tempFont = resourceManager->getFont("FONT_DEFAULT");
+	m_cursorTrailShader = resourceManager->loadShader2("cursortrail.mcshader", "cursortrail");
 	m_cursorTrail.reserve(osu_cursor_trail_max_size.getInt()*2);
 
 	m_cursorTrailShaderVR = NULL;
 	if (m_osu->isInVRMode())
 	{
-		m_cursorTrailShaderVR = engine->getResourceManager()->loadShader("cursortrailVR.vsh", "cursortrailVR.fsh", "cursortrailVR");
+		m_cursorTrailShaderVR = resourceManager->loadShader("cursortrailVR.vsh", "cursortrailVR.fsh", "cursortrailVR");
 		m_cursorTrailVR1.reserve(osu_cursor_trail_max_size.getInt()*2);
 		m_cursorTrailVR2.reserve(osu_cursor_trail_max_size.getInt()*2);
 		m_cursorTrailSpectator1.reserve(osu_cursor_trail_max_size.getInt()*2);
 		m_cursorTrailSpectator2.reserve(osu_cursor_trail_max_size.getInt()*2);
 	}
-	m_cursorTrailVAO = engine->getResourceManager()->createVertexArrayObject(Graphics::PRIMITIVE::PRIMITIVE_QUADS, Graphics::USAGE_TYPE::USAGE_DYNAMIC);
+	m_cursorTrailVAO = resourceManager->createVertexArrayObject(Graphics::PRIMITIVE::PRIMITIVE_QUADS, Graphics::USAGE_TYPE::USAGE_DYNAMIC);
 
 	m_fCurFps = 60.0f;
 	m_fCurFpsSmooth = 60.0f;
@@ -1242,7 +1242,7 @@ void OsuHUD::drawPlayfieldBorder(Graphics *g, Vector2 playfieldCenter, Vector2 p
 void OsuHUD::drawLoadingSmall(Graphics *g)
 {
 	/*
-	McFont *font = engine->getResourceManager()->getFont("FONT_DEFAULT");
+	McFont *font = resourceManager->getFont("FONT_DEFAULT");
 	UString loadingText = "Loading ...";
 	float stringWidth = font->getStringWidth(loadingText);
 
@@ -1950,7 +1950,7 @@ void OsuHUD::drawScoreBoardMP(Graphics *g)
 		scoreEntry.missingBeatmap = (*m_osu->getMultiplayer()->getPlayers())[i].missingBeatmap;
 		scoreEntry.downloadingBeatmap = (*m_osu->getMultiplayer()->getPlayers())[i].downloadingBeatmap;
 		scoreEntry.dead = (*m_osu->getMultiplayer()->getPlayers())[i].dead;
-		scoreEntry.highlight = ((*m_osu->getMultiplayer()->getPlayers())[i].id == engine->getNetworkHandler()->getLocalClientID());
+		scoreEntry.highlight = ((*m_osu->getMultiplayer()->getPlayers())[i].id == networkHandler->getLocalClientID());
 
 		scoreEntries.push_back(std::move(scoreEntry));
 	}
@@ -2836,7 +2836,7 @@ void OsuHUD::drawScrubbingTimeline(Graphics *g, unsigned long beatmapTime, unsig
 {
 	const float dpiScale = Osu::getUIScale(m_osu);
 
-	const Vector2 cursorPos = engine->getMouse()->getPos();
+	const Vector2 cursorPos = mouse->getPos();
 
 	const Color grey = 0xffbbbbbb;
 	const Color greyTransparent = 0xbbbbbbbb;

@@ -286,9 +286,9 @@ void OsuSlider::draw(Graphics *g)
 			{
 				g->translate(debugPos.x, debugPos.y);
 				g->setColor(0xffff0000);
-				//g->drawString(engine->getResourceManager()->getFont("FONT_DEFAULT"), UString::format("%i, %i", m_cType, m_points.size()));
-				//g->drawString(engine->getResourceManager()->getFont("FONT_DEFAULT"), UString::format("%i", (int)sliderRepeatStartCircleFinished));
-				g->drawString(engine->getResourceManager()->getFont("FONT_DEFAULT"), UString::format("%li", m_iTime));
+				//g->drawString(resourceManager->getFont("FONT_DEFAULT"), UString::format("%i, %i", m_cType, m_points.size()));
+				//g->drawString(resourceManager->getFont("FONT_DEFAULT"), UString::format("%i", (int)sliderRepeatStartCircleFinished));
+				g->drawString(resourceManager->getFont("FONT_DEFAULT"), UString::format("%li", m_iTime));
 			}
 			g->popTransform();
 			*/
@@ -447,7 +447,7 @@ void OsuSlider::draw(Graphics *g)
 		g->setColor(0xffffffff);
 		g->pushTransform();
 		g->translate(screenPos.x, screenPos.y + 50);
-		g->drawString(engine->getResourceManager()->getFont("FONT_DEFAULT"), UString::format("%f", m_fSliderSnakePercent));
+		g->drawString(resourceManager->getFont("FONT_DEFAULT"), UString::format("%f", m_fSliderSnakePercent));
 		g->popTransform();
 	}
 	*/

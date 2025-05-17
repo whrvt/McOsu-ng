@@ -63,9 +63,9 @@ VisualProfiler::VisualProfiler() : CBaseUIElement(0, 0, 0, 0, "")
 
 	setProfile(&g_profCurrentProfile); // by default we look at the standard full engine-wide profile
 
-	m_font = engine->getResourceManager()->getFont("FONT_DEFAULT");
-	m_fontConsole = engine->getResourceManager()->getFont("FONT_CONSOLE");
-	m_lineVao = engine->getResourceManager()->createVertexArrayObject(Graphics::PRIMITIVE::PRIMITIVE_LINES, Graphics::USAGE_TYPE::USAGE_DYNAMIC, true);
+	m_font = resourceManager->getFont("FONT_DEFAULT");
+	m_fontConsole = resourceManager->getFont("FONT_CONSOLE");
+	m_lineVao = resourceManager->createVertexArrayObject(Graphics::PRIMITIVE::PRIMITIVE_LINES, Graphics::USAGE_TYPE::USAGE_DYNAMIC, true);
 
 	m_bScheduledForceRebuildLineVao = false;
 	m_bRequiresAltShiftKeysToFreeze = false;
@@ -127,12 +127,12 @@ void VisualProfiler::draw(Graphics *g)
 					addTextLine(UString::format("ConVars: %zu", convar->getConVarArray().size()), textFont, m_textLines);
 					addTextLine(UString::format("Monitor: [%i] of %zu", env->getMonitor(), env->getMonitors().size()), textFont, m_textLines);
 					addTextLine(UString::format("Env Mouse Pos: %i x %i", (int)envMousePos.x, (int)envMousePos.y), textFont, m_textLines);
-					addTextLine(UString::format("Sound Device: %s", engine->getSound()->getOutputDevice().toUtf8()), textFont, m_textLines);
-					addTextLine(UString::format("Sound Volume: %f", engine->getSound()->getVolume()), textFont, m_textLines);
-					addTextLine(UString::format("RM Threads: %zu", engine->getResourceManager()->getNumThreads()), textFont, m_textLines);
-					addTextLine(UString::format("RM LoadingWork: %zu", engine->getResourceManager()->getNumLoadingWork()), textFont, m_textLines);
-					addTextLine(UString::format("RM LoadingWorkAD: %zu", engine->getResourceManager()->getNumLoadingWorkAsyncDestroy()), textFont, m_textLines);
-					addTextLine(UString::format("RM Named Resources: %zu", engine->getResourceManager()->getResources().size()), textFont, m_textLines);
+					addTextLine(UString::format("Sound Device: %s", soundEngine->getOutputDevice().toUtf8()), textFont, m_textLines);
+					addTextLine(UString::format("Sound Volume: %f", soundEngine->getVolume()), textFont, m_textLines);
+					addTextLine(UString::format("RM Threads: %zu", resourceManager->getNumThreads()), textFont, m_textLines);
+					addTextLine(UString::format("RM LoadingWork: %zu", resourceManager->getNumLoadingWork()), textFont, m_textLines);
+					addTextLine(UString::format("RM LoadingWorkAD: %zu", resourceManager->getNumLoadingWorkAsyncDestroy()), textFont, m_textLines);
+					addTextLine(UString::format("RM Named Resources: %zu", resourceManager->getResources().size()), textFont, m_textLines);
 					addTextLine(UString::format("Animations: %zu", anim->getNumActiveAnimations()), textFont, m_textLines);
 					addTextLine(UString::format("Frame: %lu", engine->getFrameCount()), textFont, m_textLines);
 					addTextLine(UString::format("Time: %f", time), textFont, m_textLines);
@@ -302,7 +302,7 @@ void VisualProfiler::draw(Graphics *g)
 		const int margin = vprof_graph_margin.getFloat() * env->getDPIScale();
 
 		const int xPos = engine->getScreenWidth() - width - margin;
-		const int yPos = engine->getScreenHeight() - height - margin + (engine->getMouse()->isMiddleDown() ? engine->getMouse()->getPos().y - engine->getScreenHeight() : 0);
+		const int yPos = engine->getScreenHeight() - height - margin + (mouse->isMiddleDown() ? mouse->getPos().y - engine->getScreenHeight() : 0);
 
 		// draw background
 		g->setColor(0xaa000000);
@@ -329,7 +329,7 @@ void VisualProfiler::draw(Graphics *g)
 		g->popTransform();
 
 		// draw labels
-		if (engine->getKeyboard()->isControlDown())
+		if (keyboard->isControlDown())
 		{
 			const int margin = 3 * env->getDPIScale();
 
@@ -409,7 +409,7 @@ void VisualProfiler::update()
 	CBaseUIElement::update();
 	if (!m_vprof_ref->getBool() || !m_bVisible) return;
 
-	const bool isFrozen = (engine->getKeyboard()->isShiftDown() && (!m_bRequiresAltShiftKeysToFreeze || engine->getKeyboard()->isAltDown()));
+	const bool isFrozen = (keyboard->isShiftDown() && (!m_bRequiresAltShiftKeysToFreeze || keyboard->isAltDown()));
 
 	if (debug_vprof.getBool() || vprof_spike.getBool())
 	{
@@ -557,7 +557,7 @@ void VisualProfiler::update()
 			}
 
 			// and bake
-			engine->getResourceManager()->loadResource(m_lineVao);
+			resourceManager->loadResource(m_lineVao);
 		}
 
 		// regular line update
@@ -601,7 +601,7 @@ void VisualProfiler::update()
 				}
 
 				// re-bake
-				engine->getResourceManager()->loadResource(m_lineVao);
+				resourceManager->loadResource(m_lineVao);
 
 				m_iCurLinePos++;
 			}

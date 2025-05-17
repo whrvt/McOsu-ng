@@ -266,9 +266,9 @@ void OpenGLRenderTarget::enable()
 
 	// set new viewport
 	int newViewX = -m_vPos.x;
-	int newViewY = (m_vPos.y - engine->getGraphics()->getResolution().y) + m_vSize.y;
-	int newViewWidth = engine->getGraphics()->getResolution().x;
-	int newViewHeight = engine->getGraphics()->getResolution().y;
+	int newViewY = (m_vPos.y - graphics->getResolution().y) + m_vSize.y;
+	int newViewWidth = graphics->getResolution().x;
+	int newViewHeight = graphics->getResolution().y;
 
 	glViewport(newViewX, newViewY, newViewWidth, newViewHeight);
 
@@ -296,7 +296,7 @@ void OpenGLRenderTarget::disable()
 	if (isMultiSampled())
 	{
 		// HACKHACK: force disable antialiasing
-		engine->getGraphics()->setAntialiasing(false);
+		graphics->setAntialiasing(false);
 
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, m_iFrameBuffer);
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_iResolveFrameBuffer);
@@ -365,7 +365,7 @@ void OpenGLRenderTarget::blitResolveFrameBufferIntoFrameBuffer(OpenGLRenderTarge
 	if (isMultiSampled())
 	{
 		// HACKHACK: force disable antialiasing
-		engine->getGraphics()->setAntialiasing(false);
+		graphics->setAntialiasing(false);
 
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, m_iResolveFrameBuffer);
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, rt->getFrameBuffer());
@@ -384,7 +384,7 @@ void OpenGLRenderTarget::blitFrameBufferIntoFrameBuffer(OpenGLRenderTarget *rt)
 #if (defined(MCENGINE_FEATURE_OPENGL) || defined(MCENGINE_FEATURE_GLES32)) && !defined(MCENGINE_PLATFORM_WASM)
 
 	// HACKHACK: force disable antialiasing
-	engine->getGraphics()->setAntialiasing(false);
+	graphics->setAntialiasing(false);
 
 	glBindFramebuffer(GL_READ_FRAMEBUFFER, m_iFrameBuffer);
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, rt->getFrameBuffer());

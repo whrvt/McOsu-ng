@@ -190,7 +190,7 @@ void OpenGLES32VertexArrayObject::draw()
 	if (start > end || std::abs(end - start) == 0)
 		return;
 
-	OpenGLES32Interface *g = (OpenGLES32Interface *)engine->getGraphics();
+	OpenGLES32Interface *g = (OpenGLES32Interface *)graphics;
 
 	// configure shader state for our vertex attributes
 	if (m_iNumColors > 0)

@@ -300,7 +300,7 @@ void OsuUISongBrowserSongButton::onSelected(bool wasSelected, bool autoSelectBot
 
 void OsuUISongBrowserSongButton::onRightMouseUpInside()
 {
-	triggerContextMenu(engine->getMouse()->getPos());
+	triggerContextMenu(mouse->getPos());
 }
 
 void OsuUISongBrowserSongButton::triggerContextMenu(Vector2 pos)

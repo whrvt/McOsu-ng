@@ -88,5 +88,5 @@ void OsuVRUIImageButton::onCursorOutside()
 
 void OsuVRUIImageButton::updateImageResource()
 {
-	m_image = engine->getResourceManager()->getImage(m_sImageResourceName);
+	m_image = resourceManager->getImage(m_sImageResourceName);
 }

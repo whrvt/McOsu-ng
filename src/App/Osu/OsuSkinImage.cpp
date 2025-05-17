@@ -139,9 +139,9 @@ bool OsuSkinImage::loadImage(UString skinElementName, bool ignoreDefaultSkin)
 			IMAGE image;
 
 			if (OsuSkin::m_osu_skin_async->getBool())
-				engine->getResourceManager()->requestNextLoadAsync();
+				resourceManager->requestNextLoadAsync();
 
-			image.img = engine->getResourceManager()->loadImageAbsUnnamed(filepath1, m_osu_skin_mipmaps_ref->getBool());
+			image.img = resourceManager->loadImageAbsUnnamed(filepath1, m_osu_skin_mipmaps_ref->getBool());
 			image.scale = 2.0f;
 
 			m_images.push_back(image);
@@ -166,9 +166,9 @@ bool OsuSkinImage::loadImage(UString skinElementName, bool ignoreDefaultSkin)
 		IMAGE image;
 
 		if (OsuSkin::m_osu_skin_async->getBool())
-			engine->getResourceManager()->requestNextLoadAsync();
+			resourceManager->requestNextLoadAsync();
 
-		image.img = engine->getResourceManager()->loadImageAbsUnnamed(filepath2, m_osu_skin_mipmaps_ref->getBool());
+		image.img = resourceManager->loadImageAbsUnnamed(filepath2, m_osu_skin_mipmaps_ref->getBool());
 		image.scale = 1.0f;
 
 		m_images.push_back(image);
@@ -198,9 +198,9 @@ bool OsuSkinImage::loadImage(UString skinElementName, bool ignoreDefaultSkin)
 			IMAGE image;
 
 			if (OsuSkin::m_osu_skin_async->getBool())
-				engine->getResourceManager()->requestNextLoadAsync();
+				resourceManager->requestNextLoadAsync();
 
-			image.img = engine->getResourceManager()->loadImageAbsUnnamed(defaultFilePath1, m_osu_skin_mipmaps_ref->getBool());
+			image.img = resourceManager->loadImageAbsUnnamed(defaultFilePath1, m_osu_skin_mipmaps_ref->getBool());
 			image.scale = 2.0f;
 
 			m_images.push_back(image);
@@ -223,9 +223,9 @@ bool OsuSkinImage::loadImage(UString skinElementName, bool ignoreDefaultSkin)
 		IMAGE image;
 
 		if (OsuSkin::m_osu_skin_async->getBool())
-			engine->getResourceManager()->requestNextLoadAsync();
+			resourceManager->requestNextLoadAsync();
 
-		image.img = engine->getResourceManager()->loadImageAbsUnnamed(defaultFilePath2, m_osu_skin_mipmaps_ref->getBool());
+		image.img = resourceManager->loadImageAbsUnnamed(defaultFilePath2, m_osu_skin_mipmaps_ref->getBool());
 		image.scale = 1.0f;
 
 		m_images.push_back(image);
@@ -249,7 +249,7 @@ OsuSkinImage::~OsuSkinImage()
 	for (int i=0; i<m_images.size(); i++)
 	{
 		if (m_images[i].img != m_skin->getMissingTexture())
-			engine->getResourceManager()->destroyResource(m_images[i].img);
+			resourceManager->destroyResource(m_images[i].img);
 	}
 	m_images.clear();
 
@@ -451,7 +451,7 @@ bool OsuSkinImage::isReady()
 
 	for (int i=0; i<m_images.size(); i++)
 	{
-		if (engine->getResourceManager()->isLoadingResource(m_images[i].img))
+		if (resourceManager->isLoadingResource(m_images[i].img))
 			return false;
 	}
 

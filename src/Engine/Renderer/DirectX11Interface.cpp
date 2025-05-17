@@ -403,7 +403,7 @@ void DirectX11Interface::beginScene()
 	if (vprof != NULL && vprof->isEnabled())
 	{
 		int numActiveShaders = 1;
-		for (const Resource *resource : engine->getResourceManager()->getResources())
+		for (const Resource *resource : resourceManager->getResources())
 		{
 			const DirectX11Shader *dx11Shader = dynamic_cast<const DirectX11Shader*>(resource);
 			if (dx11Shader != NULL)
@@ -417,7 +417,7 @@ void DirectX11Interface::beginScene()
 		vprof->addInfoBladeEngineTextLine(UString::format("Draw Calls: %i", numDrawCallsPrevFrame));
 		vprof->addInfoBladeEngineTextLine(UString::format("Active Shaders: %i", numActiveShaders));
 		vprof->addInfoBladeEngineTextLine(UString::format("shader[%i]: shaderTexturedGeneric: %ic", shaderCounter++, (int)m_shaderTexturedGeneric->getStatsNumConstantBufferUploadsPerFrame()));
-		for (const Resource *resource : engine->getResourceManager()->getResources())
+		for (const Resource *resource : resourceManager->getResources())
 		{
 			const DirectX11Shader *dx11Shader = dynamic_cast<const DirectX11Shader*>(resource);
 			if (dx11Shader != NULL)

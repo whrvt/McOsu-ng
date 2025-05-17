@@ -99,7 +99,7 @@ void Mouse::drawDebug(Graphics *g)
 	g->setColor(0xffffffff);
 	g->drawRect(pos.x - rectSize.x / 2.0f, pos.y - rectSize.y / 2.0f, rectSize.x, rectSize.y);
 
-	McFont *posFont = engine->getResourceManager()->getFont("FONT_DEFAULT");
+	McFont *posFont = resourceManager->getFont("FONT_DEFAULT");
 	UString posString = UString::format("[%i, %i]", (int)pos.x, (int)pos.y);
 	float stringWidth = posFont->getStringWidth(posString);
 	float stringHeight = posFont->getHeight();

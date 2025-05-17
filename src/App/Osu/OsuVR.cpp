@@ -154,14 +154,14 @@ OsuVR::OsuVR(Osu *osu)
 	// load/execute VR stuff only in VR builds
 	if (openvr->isReady())
 	{
-		engine->getResourceManager()->loadImage("ic_keyboard_white_48dp.png", "OSU_VR_UI_ICON_KEYBOARD");
-		engine->getResourceManager()->loadImage("ic_replay_white_48dp.png", "OSU_VR_UI_ICON_RESET");
-		engine->getResourceManager()->loadImage("ic_lock_outline_white_48dp.png", "OSU_VR_UI_ICON_LOCK_LOCKED");
-		engine->getResourceManager()->loadImage("ic_lock_open_white_48dp.png", "OSU_VR_UI_ICON_LOCK_UNLOCKED");
-		engine->getResourceManager()->loadImage("ic_add_white_48dp.png", "OSU_VR_UI_ICON_PLUS");
-		engine->getResourceManager()->loadImage("ic_remove_white_48dp.png", "OSU_VR_UI_ICON_MINUS");
+		resourceManager->loadImage("ic_keyboard_white_48dp.png", "OSU_VR_UI_ICON_KEYBOARD");
+		resourceManager->loadImage("ic_replay_white_48dp.png", "OSU_VR_UI_ICON_RESET");
+		resourceManager->loadImage("ic_lock_outline_white_48dp.png", "OSU_VR_UI_ICON_LOCK_LOCKED");
+		resourceManager->loadImage("ic_lock_open_white_48dp.png", "OSU_VR_UI_ICON_LOCK_UNLOCKED");
+		resourceManager->loadImage("ic_add_white_48dp.png", "OSU_VR_UI_ICON_PLUS");
+		resourceManager->loadImage("ic_remove_white_48dp.png", "OSU_VR_UI_ICON_MINUS");
 
-		m_shaderGenericTextured = engine->getResourceManager()->createShader(
+		m_shaderGenericTextured = resourceManager->createShader(
 
 				// vertex Shader
 				"#version 110\n"
@@ -184,7 +184,7 @@ OsuVR::OsuVR(Osu *osu)
 				"}\n"
 		);
 
-		m_shaderTexturedLegacyGeneric = engine->getResourceManager()->createShader(
+		m_shaderTexturedLegacyGeneric = resourceManager->createShader(
 
 				// vertex Shader
 				"#version 110\n"
@@ -207,10 +207,10 @@ OsuVR::OsuVR(Osu *osu)
 				"   gl_FragColor = texture2D(mytexture, texCoords) * gl_Color;\n"
 				"}\n"
 		);
-		/////m_shaderTexturedLegacyGeneric = engine->getResourceManager()->loadShader("texturedLegacyGeneric.vsh", "texturedLegacyGeneric.fsh");
-		///m_shaderTexturedLegacyGeneric = engine->getResourceManager()->loadShader2("texturedLegacyGeneric.mcshader");
+		/////m_shaderTexturedLegacyGeneric = resourceManager->loadShader("texturedLegacyGeneric.vsh", "texturedLegacyGeneric.fsh");
+		///m_shaderTexturedLegacyGeneric = resourceManager->loadShader2("texturedLegacyGeneric.mcshader");
 
-		m_shaderGenericUntextured = engine->getResourceManager()->createShader(
+		m_shaderGenericUntextured = resourceManager->createShader(
 
 				// vertex Shader
 				"#version 110\n"
@@ -229,7 +229,7 @@ OsuVR::OsuVR(Osu *osu)
 				"}\n"
 		);
 
-		m_shaderUntexturedLegacyGeneric = engine->getResourceManager()->createShader(
+		m_shaderUntexturedLegacyGeneric = resourceManager->createShader(
 
 				// vertex Shader
 				"#version 110\n"
@@ -549,14 +549,14 @@ void OsuVR::update()
 				m_bScreenIntersection = true;
 
 				// force new mouse pos
-				engine->getMouse()->onPosChange(newMousePos);
+				mouse->onPosChange(newMousePos);
 			}
 			else
 			{
 				// TODO: shitty override, but it works well enough for now => see Osu.cpp
 				// if the laser has left the virtual screen, and the engine has focus, then move the cursor out of the window (so it doesn't jump back to the actual mouse pos)
 				if (m_bScreenIntersection && engine->hasFocus() && env->isCursorInWindow())
-					engine->getMouse()->setPos(engine->getScreenSize() + Vector2(50,50));
+					mouse->setPos(engine->getScreenSize() + Vector2(50,50));
 
 				m_bDrawLaser = false;
 				m_bScreenIntersection = false;
@@ -1078,7 +1078,7 @@ void OsuVR::onLayoutLockClicked()
 void OsuVR::onKeyboardButtonClicked()
 {
 	openvr->getController()->triggerHapticPulse(2500);
-	engine->getSound()->play(m_osu->getSkin()->getCheckOn());
+	soundEngine->play(m_osu->getSkin()->getCheckOn());
 
 	openvr->showKeyboard();
 }
@@ -1086,7 +1086,7 @@ void OsuVR::onKeyboardButtonClicked()
 void OsuVR::onOffsetUpClicked()
 {
 	openvr->getController()->triggerHapticPulse(2500);
-	engine->getSound()->play(m_osu->getSkin()->getCheckOn());
+	soundEngine->play(m_osu->getSkin()->getCheckOn());
 
 	engine->onKeyboardKeyDown(OsuKeyBindings::INCREASE_LOCAL_OFFSET.getVal<KEYCODE>());
 	engine->onKeyboardKeyUp(OsuKeyBindings::INCREASE_LOCAL_OFFSET.getVal<KEYCODE>());
@@ -1095,7 +1095,7 @@ void OsuVR::onOffsetUpClicked()
 void OsuVR::onOffsetDownClicked()
 {
 	openvr->getController()->triggerHapticPulse(2500);
-	engine->getSound()->play(m_osu->getSkin()->getCheckOff());
+	soundEngine->play(m_osu->getSkin()->getCheckOff());
 
 	engine->onKeyboardKeyDown(OsuKeyBindings::DECREASE_LOCAL_OFFSET.getVal<KEYCODE>());
 	engine->onKeyboardKeyUp(OsuKeyBindings::DECREASE_LOCAL_OFFSET.getVal<KEYCODE>());

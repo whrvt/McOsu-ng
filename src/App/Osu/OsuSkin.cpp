@@ -78,7 +78,7 @@ OsuSkin::OsuSkin(Osu *osu, UString name, UString filepath, bool isDefaultSkin, b
 		m_osu_mod_fposu_ref = convar->getConVarByName("osu_mod_fposu");
 
 	if (m_missingTexture == NULL)
-		m_missingTexture = engine->getResourceManager()->getImage("MISSING_TEXTURE");
+		m_missingTexture = resourceManager->getImage("MISSING_TEXTURE");
 
 	if (m_osu->isInVRMode())
 		OSUSKIN_DEFAULT_SKIN_PATH = "defaultvr/";
@@ -327,7 +327,7 @@ OsuSkin::~OsuSkin()
 	for (int i=0; i<m_resources.size(); i++)
 	{
 		if (m_resources[i] != (Resource*)m_missingTexture)
-			engine->getResourceManager()->destroyResource(m_resources[i]);
+			resourceManager->destroyResource(m_resources[i]);
 	}
 	m_resources.clear();
 
@@ -369,10 +369,10 @@ void OsuSkin::onJustBeforeReady()
 	// prevent invalid image sizes from breaking the songbrowser UI layout
 	{
 		if (m_songSelectTop->getWidth() < 3 || m_songSelectTop->getHeight() < 3)
-			m_songSelectTop = engine->getResourceManager()->getImage("OSU_SKIN_SONGSELECT_TOP_DEFAULT");
+			m_songSelectTop = resourceManager->getImage("OSU_SKIN_SONGSELECT_TOP_DEFAULT");
 
 		if (m_songSelectBottom->getHeight() < 3 || m_songSelectBottom->getHeight() < 3)
-			m_songSelectBottom = engine->getResourceManager()->getImage("OSU_SKIN_SONGSELECT_BOTTOM_DEFAULT");
+			m_songSelectBottom = resourceManager->getImage("OSU_SKIN_SONGSELECT_BOTTOM_DEFAULT");
 	}
 }
 
@@ -382,7 +382,7 @@ bool OsuSkin::isReady()
 
 	for (int i=0; i<m_resources.size(); i++)
 	{
-		if (engine->getResourceManager()->isLoadingResource(m_resources[i]))
+		if (resourceManager->isLoadingResource(m_resources[i]))
 			return false;
 	}
 
@@ -485,7 +485,7 @@ void OsuSkin::load()
 		checkLoadImage(&m_cursorRipple, "cursor-ripple", "OSU_SKIN_CURSORRIPPLE");
 
 		// special case: if fallback to default cursor, do load cursorMiddle
-		if (m_cursor == engine->getResourceManager()->getImage("OSU_SKIN_CURSOR_DEFAULT"))
+		if (m_cursor == resourceManager->getImage("OSU_SKIN_CURSOR_DEFAULT"))
 			checkLoadImage(&m_cursorMiddle, "cursormiddle", "OSU_SKIN_CURSORMIDDLE");
 	}
 
@@ -960,28 +960,28 @@ void OsuSkin::load()
 	// HACKHACK: all of the <>2 loads are temporary fixes until I fix the checkLoadImage() function logic
 
 	// custom
-	Image *defaultCursor = engine->getResourceManager()->getImage("OSU_SKIN_CURSOR_DEFAULT");
+	Image *defaultCursor = resourceManager->getImage("OSU_SKIN_CURSOR_DEFAULT");
 	Image *defaultCursor2 = m_cursor;
 	if (defaultCursor != NULL)
 		m_defaultCursor = defaultCursor;
 	else if (defaultCursor2 != NULL)
 		m_defaultCursor = defaultCursor2;
 
-	Image *defaultButtonLeft = engine->getResourceManager()->getImage("OSU_SKIN_BUTTON_LEFT_DEFAULT");
+	Image *defaultButtonLeft = resourceManager->getImage("OSU_SKIN_BUTTON_LEFT_DEFAULT");
 	Image *defaultButtonLeft2 = m_buttonLeft;
 	if (defaultButtonLeft != NULL)
 		m_defaultButtonLeft = defaultButtonLeft;
 	else if (defaultButtonLeft2 != NULL)
 		m_defaultButtonLeft = defaultButtonLeft2;
 
-	Image *defaultButtonMiddle = engine->getResourceManager()->getImage("OSU_SKIN_BUTTON_MIDDLE_DEFAULT");
+	Image *defaultButtonMiddle = resourceManager->getImage("OSU_SKIN_BUTTON_MIDDLE_DEFAULT");
 	Image *defaultButtonMiddle2 = m_buttonMiddle;
 	if (defaultButtonMiddle != NULL)
 		m_defaultButtonMiddle = defaultButtonMiddle;
 	else if (defaultButtonMiddle2 != NULL)
 		m_defaultButtonMiddle = defaultButtonMiddle2;
 
-	Image *defaultButtonRight = engine->getResourceManager()->getImage("OSU_SKIN_BUTTON_RIGHT_DEFAULT");
+	Image *defaultButtonRight = resourceManager->getImage("OSU_SKIN_BUTTON_RIGHT_DEFAULT");
 	Image *defaultButtonRight2 = m_buttonRight;
 	if (defaultButtonRight != NULL)
 		m_defaultButtonRight = defaultButtonRight;
@@ -1002,9 +1002,9 @@ void OsuSkin::load()
 	// HACKHACK: speed up initial game startup time by async loading the skin (if osu_skin_async 1 in underride)
 	if (m_osu->getSkin() == NULL && osu_skin_async.getBool())
 	{
-		while (engine->getResourceManager()->isLoading())
+		while (resourceManager->isLoading())
 		{
-			engine->getResourceManager()->update();
+			resourceManager->update();
 			Timing::sleep(0);
 		}
 	}
@@ -1342,34 +1342,34 @@ void OsuSkin::playHitCircleSound(int sampleType, float pan)
 	switch (actualSampleSet)
 	{
 	case 3:
-		engine->getSound()->play(m_drumHitNormal, pan);
+		soundEngine->play(m_drumHitNormal, pan);
 
 		if (sampleType & OSU_BITMASK_HITWHISTLE)
-			engine->getSound()->play(m_drumHitWhistle, pan);
+			soundEngine->play(m_drumHitWhistle, pan);
 		if (sampleType & OSU_BITMASK_HITFINISH)
-			engine->getSound()->play(m_drumHitFinish, pan);
+			soundEngine->play(m_drumHitFinish, pan);
 		if (sampleType & OSU_BITMASK_HITCLAP)
-			engine->getSound()->play(m_drumHitClap, pan);
+			soundEngine->play(m_drumHitClap, pan);
 		break;
 	case 2:
-		engine->getSound()->play(m_softHitNormal, pan);
+		soundEngine->play(m_softHitNormal, pan);
 
 		if (sampleType & OSU_BITMASK_HITWHISTLE)
-			engine->getSound()->play(m_softHitWhistle, pan);
+			soundEngine->play(m_softHitWhistle, pan);
 		if (sampleType & OSU_BITMASK_HITFINISH)
-			engine->getSound()->play(m_softHitFinish, pan);
+			soundEngine->play(m_softHitFinish, pan);
 		if (sampleType & OSU_BITMASK_HITCLAP)
-			engine->getSound()->play(m_softHitClap, pan);
+			soundEngine->play(m_softHitClap, pan);
 		break;
 	default:
-		engine->getSound()->play(m_normalHitNormal, pan);
+		soundEngine->play(m_normalHitNormal, pan);
 
 		if (sampleType & OSU_BITMASK_HITWHISTLE)
-			engine->getSound()->play(m_normalHitWhistle, pan);
+			soundEngine->play(m_normalHitWhistle, pan);
 		if (sampleType & OSU_BITMASK_HITFINISH)
-			engine->getSound()->play(m_normalHitFinish, pan);
+			soundEngine->play(m_normalHitFinish, pan);
 		if (sampleType & OSU_BITMASK_HITCLAP)
-			engine->getSound()->play(m_normalHitClap, pan);
+			soundEngine->play(m_normalHitClap, pan);
 		break;
 	}
 }
@@ -1386,13 +1386,13 @@ void OsuSkin::playSliderTickSound(float pan)
 	switch (m_iSampleSet)
 	{
 	case 3:
-		engine->getSound()->play(m_drumSliderTick, pan);
+		soundEngine->play(m_drumSliderTick, pan);
 		break;
 	case 2:
-		engine->getSound()->play(m_softSliderTick, pan);
+		soundEngine->play(m_softSliderTick, pan);
 		break;
 	default:
-		engine->getSound()->play(m_normalSliderTick, pan);
+		soundEngine->play(m_normalSliderTick, pan);
 		break;
 	}
 }
@@ -1410,34 +1410,34 @@ void OsuSkin::playSliderSlideSound(float pan)
 	{
 	case 3:
 		if (m_softSliderSlide->isPlaying())
-			engine->getSound()->stop(m_softSliderSlide);
+			soundEngine->stop(m_softSliderSlide);
 		if (m_normalSliderSlide->isPlaying())
-			engine->getSound()->stop(m_normalSliderSlide);
+			soundEngine->stop(m_normalSliderSlide);
 
 		if (!m_drumSliderSlide->isPlaying())
-			engine->getSound()->play(m_drumSliderSlide, pan);
+			soundEngine->play(m_drumSliderSlide, pan);
 		else
 			m_drumSliderSlide->setPan(pan);
 		break;
 	case 2:
 		if (m_drumSliderSlide->isPlaying())
-			engine->getSound()->stop(m_drumSliderSlide);
+			soundEngine->stop(m_drumSliderSlide);
 		if (m_normalSliderSlide->isPlaying())
-			engine->getSound()->stop(m_normalSliderSlide);
+			soundEngine->stop(m_normalSliderSlide);
 
 		if (!m_softSliderSlide->isPlaying())
-			engine->getSound()->play(m_softSliderSlide, pan);
+			soundEngine->play(m_softSliderSlide, pan);
 		else
 			m_softSliderSlide->setPan(pan);
 		break;
 	default:
 		if (m_softSliderSlide->isPlaying())
-			engine->getSound()->stop(m_softSliderSlide);
+			soundEngine->stop(m_softSliderSlide);
 		if (m_drumSliderSlide->isPlaying())
-			engine->getSound()->stop(m_drumSliderSlide);
+			soundEngine->stop(m_drumSliderSlide);
 
 		if (!m_normalSliderSlide->isPlaying())
-			engine->getSound()->play(m_normalSliderSlide, pan);
+			soundEngine->play(m_normalSliderSlide, pan);
 		else
 			m_normalSliderSlide->setPan(pan);
 		break;
@@ -1449,30 +1449,30 @@ void OsuSkin::playSpinnerSpinSound()
 	if ((m_osu->getInstanceID() > 0 && m_osu->getInstanceID() != osu2_sound_source_id.getInt())) return;
 
 	if (!m_spinnerSpinSound->isPlaying())
-		engine->getSound()->play(m_spinnerSpinSound);
+		soundEngine->play(m_spinnerSpinSound);
 }
 
 void OsuSkin::playSpinnerBonusSound()
 {
 	if (m_iSampleVolume <= 0 || (m_osu->getInstanceID() > 0 && m_osu->getInstanceID() != osu2_sound_source_id.getInt())) return;
 
-	engine->getSound()->play(m_spinnerBonus);
+	soundEngine->play(m_spinnerBonus);
 }
 
 void OsuSkin::stopSliderSlideSound(int sampleSet)
 {
 	if ((sampleSet == -2 || sampleSet == 3) && m_drumSliderSlide->isPlaying())
-		engine->getSound()->stop(m_drumSliderSlide);
+		soundEngine->stop(m_drumSliderSlide);
 	if ((sampleSet == -2 || sampleSet == 2) && m_softSliderSlide->isPlaying())
-		engine->getSound()->stop(m_softSliderSlide);
+		soundEngine->stop(m_softSliderSlide);
 	if ((sampleSet == -2 || sampleSet == 1 || sampleSet == 0) && m_normalSliderSlide->isPlaying())
-		engine->getSound()->stop(m_normalSliderSlide);
+		soundEngine->stop(m_normalSliderSlide);
 }
 
 void OsuSkin::stopSpinnerSpinSound()
 {
 	if (m_spinnerSpinSound->isPlaying())
-		engine->getSound()->stop(m_spinnerSpinSound);
+		soundEngine->stop(m_spinnerSpinSound);
 }
 
 void OsuSkin::randomizeFilePath()
@@ -1538,9 +1538,9 @@ void OsuSkin::checkLoadImage(Image **addressOfPointer, UString skinElementName, 
 				defaultResourceName.append("_DEFAULT"); // so we don't load the default skin twice
 
 				if (osu_skin_async.getBool())
-					engine->getResourceManager()->requestNextLoadAsync();
+					resourceManager->requestNextLoadAsync();
 
-				*addressOfPointer = engine->getResourceManager()->loadImageAbs(defaultFilePath1, defaultResourceName, osu_skin_mipmaps.getBool() || forceLoadMipmaps);
+				*addressOfPointer = resourceManager->loadImageAbs(defaultFilePath1, defaultResourceName, osu_skin_mipmaps.getBool() || forceLoadMipmaps);
 				///m_resources.push_back(*addressOfPointer); // DEBUG: also reload default skin
 			}
 			else // fallback to @1x
@@ -1551,9 +1551,9 @@ void OsuSkin::checkLoadImage(Image **addressOfPointer, UString skinElementName, 
 					defaultResourceName.append("_DEFAULT"); // so we don't load the default skin twice
 
 					if (osu_skin_async.getBool())
-						engine->getResourceManager()->requestNextLoadAsync();
+						resourceManager->requestNextLoadAsync();
 
-					*addressOfPointer = engine->getResourceManager()->loadImageAbs(defaultFilePath2, defaultResourceName, osu_skin_mipmaps.getBool() || forceLoadMipmaps);
+					*addressOfPointer = resourceManager->loadImageAbs(defaultFilePath2, defaultResourceName, osu_skin_mipmaps.getBool() || forceLoadMipmaps);
 					///m_resources.push_back(*addressOfPointer); // DEBUG: also reload default skin
 				}
 			}
@@ -1564,9 +1564,9 @@ void OsuSkin::checkLoadImage(Image **addressOfPointer, UString skinElementName, 
 		if (existsFilepath1 && !forceUseDefaultSkin)
 		{
 			if (osu_skin_async.getBool())
-				engine->getResourceManager()->requestNextLoadAsync();
+				resourceManager->requestNextLoadAsync();
 
-			*addressOfPointer = engine->getResourceManager()->loadImageAbs(filepath1, "", osu_skin_mipmaps.getBool() || forceLoadMipmaps);
+			*addressOfPointer = resourceManager->loadImageAbs(filepath1, "", osu_skin_mipmaps.getBool() || forceLoadMipmaps);
 			m_resources.push_back(*addressOfPointer);
 
 			// export
@@ -1603,9 +1603,9 @@ void OsuSkin::checkLoadImage(Image **addressOfPointer, UString skinElementName, 
 			defaultResourceName.append("_DEFAULT"); // so we don't load the default skin twice
 
 			if (osu_skin_async.getBool())
-				engine->getResourceManager()->requestNextLoadAsync();
+				resourceManager->requestNextLoadAsync();
 
-			*addressOfPointer = engine->getResourceManager()->loadImageAbs(defaultFilePath2, defaultResourceName, osu_skin_mipmaps.getBool() || forceLoadMipmaps);
+			*addressOfPointer = resourceManager->loadImageAbs(defaultFilePath2, defaultResourceName, osu_skin_mipmaps.getBool() || forceLoadMipmaps);
 			///m_resources.push_back(*addressOfPointer); // DEBUG: also reload default skin
 		}
 	}
@@ -1615,9 +1615,9 @@ void OsuSkin::checkLoadImage(Image **addressOfPointer, UString skinElementName, 
 	if (existsFilepath2 && !forceUseDefaultSkin)
 	{
 		if (osu_skin_async.getBool())
-			engine->getResourceManager()->requestNextLoadAsync();
+			resourceManager->requestNextLoadAsync();
 
-		*addressOfPointer = engine->getResourceManager()->loadImageAbs(filepath2, "", osu_skin_mipmaps.getBool() || forceLoadMipmaps);
+		*addressOfPointer = resourceManager->loadImageAbs(filepath2, "", osu_skin_mipmaps.getBool() || forceLoadMipmaps);
 		m_resources.push_back(*addressOfPointer);
 	}
 
@@ -1680,23 +1680,23 @@ void OsuSkin::checkLoadSound(Sound **addressOfPointer, UString skinElementName, 
 	if (env->fileExists(defaultpath1))
 	{
 		if (osu_skin_async.getBool())
-			engine->getResourceManager()->requestNextLoadAsync();
+			resourceManager->requestNextLoadAsync();
 
-		*addressOfPointer = engine->getResourceManager()->loadSoundAbs(defaultpath1, defaultResourceName, false, false, loop);
+		*addressOfPointer = resourceManager->loadSoundAbs(defaultpath1, defaultResourceName, false, false, loop);
 	}
 	else if (env->fileExists(defaultpath2))
 	{
 		if (osu_skin_async.getBool())
-			engine->getResourceManager()->requestNextLoadAsync();
+			resourceManager->requestNextLoadAsync();
 
-		*addressOfPointer = engine->getResourceManager()->loadSoundAbs(defaultpath2, defaultResourceName, false, false, loop);
+		*addressOfPointer = resourceManager->loadSoundAbs(defaultpath2, defaultResourceName, false, false, loop);
 	}
 	else if (env->fileExists(defaultpath3))
 	{
 		if (osu_skin_async.getBool())
-			engine->getResourceManager()->requestNextLoadAsync();
+			resourceManager->requestNextLoadAsync();
 
-		*addressOfPointer = engine->getResourceManager()->loadSoundAbs(defaultpath3, defaultResourceName, false, false, loop);
+		*addressOfPointer = resourceManager->loadSoundAbs(defaultpath3, defaultResourceName, false, false, loop);
 	}
 
 	// load user skin
@@ -1721,25 +1721,25 @@ void OsuSkin::checkLoadSound(Sound **addressOfPointer, UString skinElementName, 
 		if (env->fileExists(filepath1))
 		{
 			if (osu_skin_async.getBool())
-				engine->getResourceManager()->requestNextLoadAsync();
+				resourceManager->requestNextLoadAsync();
 
-			*addressOfPointer = engine->getResourceManager()->loadSoundAbs(filepath1, "", false, false, loop);
+			*addressOfPointer = resourceManager->loadSoundAbs(filepath1, "", false, false, loop);
 			isDefaultSkin = false;
 		}
 		else if (env->fileExists(filepath2))
 		{
 			if (osu_skin_async.getBool())
-				engine->getResourceManager()->requestNextLoadAsync();
+				resourceManager->requestNextLoadAsync();
 
-			*addressOfPointer = engine->getResourceManager()->loadSoundAbs(filepath2, "", false, false, loop);
+			*addressOfPointer = resourceManager->loadSoundAbs(filepath2, "", false, false, loop);
 			isDefaultSkin = false;
 		}
 		else if (env->fileExists(filepath3))
 		{
 			if (osu_skin_async.getBool())
-				engine->getResourceManager()->requestNextLoadAsync();
+				resourceManager->requestNextLoadAsync();
 
-			*addressOfPointer = engine->getResourceManager()->loadSoundAbs(filepath3, "", false, false, loop);
+			*addressOfPointer = resourceManager->loadSoundAbs(filepath3, "", false, false, loop);
 			isDefaultSkin = false;
 		}
 	}

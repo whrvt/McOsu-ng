@@ -146,7 +146,7 @@ void OsuUISongBrowserButton::update()
 
 	// HACKHACK: this should really be part of the UI base
 	// right click detection
-	if (engine->getMouse()->isRightDown())
+	if (mouse->isRightDown())
 	{
 		if (!m_bRightClickCheck)
 		{
@@ -268,7 +268,7 @@ void OsuUISongBrowserButton::resetAnimations()
 
 void OsuUISongBrowserButton::onClicked()
 {
-	engine->getSound()->play(m_osu->getSkin()->getMenuClick());
+	soundEngine->play(m_osu->getSkin()->getMenuClick());
 
 	CBaseUIButton::onClicked();
 
@@ -283,7 +283,7 @@ void OsuUISongBrowserButton::onMouseInside()
 	if (engine->getTime() > lastHoverSoundTime + 0.05f) // to avoid earraep
 	{
 		if (engine->hasFocus())
-			engine->getSound()->play(m_osu->getSkin()->getMenuClick());
+			soundEngine->play(m_osu->getSkin()->getMenuClick());
 
 		lastHoverSoundTime = engine->getTime();
 	}

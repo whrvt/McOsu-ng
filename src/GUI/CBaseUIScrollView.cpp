@@ -124,7 +124,7 @@ void CBaseUIScrollView::draw(Graphics *g)
 			if (m_bVerticalScrolling && m_vScrollSize.y > m_vSize.y)
 			{
 				g->setColor(m_scrollbarColor);
-				if (((m_bScrollbarScrolling && m_bScrollbarIsVerticalScrolling) || m_verticalScrollbar.contains(engine->getMouse()->getPos())) && !m_bScrolling)
+				if (((m_bScrollbarScrolling && m_bScrollbarIsVerticalScrolling) || m_verticalScrollbar.contains(mouse->getPos())) && !m_bScrolling)
 					g->setAlpha(1.0f);
 
 				g->fillRect(m_verticalScrollbar.getX(), m_verticalScrollbar.getY(), m_verticalScrollbar.getWidth(), m_verticalScrollbar.getHeight());
@@ -135,7 +135,7 @@ void CBaseUIScrollView::draw(Graphics *g)
 			if (m_bHorizontalScrolling && m_vScrollSize.x > m_vSize.x)
 			{
 				g->setColor(m_scrollbarColor);
-				if (((m_bScrollbarScrolling && !m_bScrollbarIsVerticalScrolling) || m_horizontalScrollbar.contains(engine->getMouse()->getPos())) && !m_bScrolling)
+				if (((m_bScrollbarScrolling && !m_bScrollbarIsVerticalScrolling) || m_horizontalScrollbar.contains(mouse->getPos())) && !m_bScrolling)
 					g->setAlpha(1.0f);
 
 				g->fillRect(m_horizontalScrollbar.getX(), m_horizontalScrollbar.getY(), m_horizontalScrollbar.getWidth(), m_horizontalScrollbar.getHeight());
@@ -160,13 +160,13 @@ void CBaseUIScrollView::update()
 
 	if (m_bBusy)
 	{
-		const Vector2 deltaToAdd = (engine->getMouse()->getPos() - m_vMouseBackup2);
+		const Vector2 deltaToAdd = (mouse->getPos() - m_vMouseBackup2);
 		//debugLog("+ (%f, %f)\n", deltaToAdd.x, deltaToAdd.y);
 
 		anim->moveQuadOut(&m_vKineticAverage.x, deltaToAdd.x, ui_scrollview_kinetic_approach_time.getFloat(), true);
 		anim->moveQuadOut(&m_vKineticAverage.y, deltaToAdd.y, ui_scrollview_kinetic_approach_time.getFloat(), true);
 
-		m_vMouseBackup2 = engine->getMouse()->getPos();
+		m_vMouseBackup2 = mouse->getPos();
 	}
 
 	// scrolling logic
@@ -175,39 +175,39 @@ void CBaseUIScrollView::update()
 		if (!m_bScrollResistanceCheck)
 		{
 			m_bScrollResistanceCheck = true;
-			m_vMouseBackup3 = engine->getMouse()->getPos();
+			m_vMouseBackup3 = mouse->getPos();
 		}
 
 		// get pull strength
-		int diff = std::abs(engine->getMouse()->getPos().x - m_vMouseBackup3.x);
-		if (std::abs(engine->getMouse()->getPos().y - m_vMouseBackup3.y) > diff)
-			diff = std::abs(engine->getMouse()->getPos().y - m_vMouseBackup3.y);
+		int diff = std::abs(mouse->getPos().x - m_vMouseBackup3.x);
+		if (std::abs(mouse->getPos().y - m_vMouseBackup3.y) > diff)
+			diff = std::abs(mouse->getPos().y - m_vMouseBackup3.y);
 
 		// if we are above our resistance, try to steal the focus and enable scrolling for us
 		if (m_container->isActive() && diff > m_iScrollResistance && !m_container->isBusy())
 			m_container->stealFocus();
 
 		// handle scrollbar scrolling start
-		if (m_verticalScrollbar.contains(engine->getMouse()->getPos()) && !m_bScrollbarScrolling && !m_bScrolling)
+		if (m_verticalScrollbar.contains(mouse->getPos()) && !m_bScrollbarScrolling && !m_bScrolling)
 		{
 			// NOTE: scrollbar dragging always force steals focus
 			if (!wasContainerBusyBeforeUpdate)
 			{
 				m_container->stealFocus();
 
-				m_vMouseBackup.y = engine->getMouse()->getPos().y - m_verticalScrollbar.getMaxY();
+				m_vMouseBackup.y = mouse->getPos().y - m_verticalScrollbar.getMaxY();
 				m_bScrollbarScrolling = true;
 				m_bScrollbarIsVerticalScrolling = true;
 			}
 		}
-		else if (m_horizontalScrollbar.contains(engine->getMouse()->getPos()) && !m_bScrollbarScrolling && !m_bScrolling)
+		else if (m_horizontalScrollbar.contains(mouse->getPos()) && !m_bScrollbarScrolling && !m_bScrolling)
 		{
 			// NOTE: scrollbar dragging always force steals focus
 			if (!wasContainerBusyBeforeUpdate)
 			{
 				m_container->stealFocus();
 
-				m_vMouseBackup.x = engine->getMouse()->getPos().x - m_horizontalScrollbar.getMaxX();
+				m_vMouseBackup.x = mouse->getPos().x - m_horizontalScrollbar.getMaxX();
 				m_bScrollbarScrolling = true;
 				m_bScrollbarIsVerticalScrolling = false;
 			}
@@ -219,8 +219,8 @@ void CBaseUIScrollView::update()
 				// if we have successfully stolen the focus or the container is no longer busy, start scrolling
 				m_bScrollbarIsVerticalScrolling = false;
 
-				m_vMouseBackup = engine->getMouse()->getPos();
-				m_vScrollPosBackup = m_vScrollPos + (engine->getMouse()->getPos() - m_vMouseBackup3);
+				m_vMouseBackup = mouse->getPos();
+				m_vScrollPosBackup = m_vScrollPos + (mouse->getPos() - m_vMouseBackup3);
 				m_bScrolling = true;
 				m_bAutoScrollingX = false;
 				m_bAutoScrollingY = false;
@@ -252,21 +252,21 @@ void CBaseUIScrollView::update()
 		m_bScrollResistanceCheck = false;
 
 	// handle mouse wheel scrolling
-	if (!engine->getKeyboard()->isAltDown() && m_bMouseInside && m_bEnabled)
+	if (!keyboard->isAltDown() && m_bMouseInside && m_bEnabled)
 	{
-		if (engine->getMouse()->getWheelDeltaVertical() != 0)
-			scrollY(engine->getMouse()->getWheelDeltaVertical() * m_fScrollMouseWheelMultiplier * ui_scrollview_mousewheel_multiplier.getFloat());
-		if (engine->getMouse()->getWheelDeltaHorizontal() != 0)
-			scrollX(-engine->getMouse()->getWheelDeltaHorizontal() * m_fScrollMouseWheelMultiplier * ui_scrollview_mousewheel_multiplier.getFloat());
+		if (mouse->getWheelDeltaVertical() != 0)
+			scrollY(mouse->getWheelDeltaVertical() * m_fScrollMouseWheelMultiplier * ui_scrollview_mousewheel_multiplier.getFloat());
+		if (mouse->getWheelDeltaHorizontal() != 0)
+			scrollX(-mouse->getWheelDeltaHorizontal() * m_fScrollMouseWheelMultiplier * ui_scrollview_mousewheel_multiplier.getFloat());
 	}
 
 	// handle drag scrolling and rubber banding
 	if (m_bScrolling && m_bActive)
 	{
 		if (m_bVerticalScrolling)
-			m_vScrollPos.y = m_vScrollPosBackup.y + (engine->getMouse()->getPos().y - m_vMouseBackup.y);
+			m_vScrollPos.y = m_vScrollPosBackup.y + (mouse->getPos().y - m_vMouseBackup.y);
 		if (m_bHorizontalScrolling)
-			m_vScrollPos.x = m_vScrollPosBackup.x + (engine->getMouse()->getPos().x - m_vMouseBackup.x);
+			m_vScrollPos.x = m_vScrollPosBackup.x + (mouse->getPos().x - m_vMouseBackup.x);
 
 		m_container->setPos(m_vPos + m_vScrollPos);
 	}
@@ -319,12 +319,12 @@ void CBaseUIScrollView::update()
 		m_vVelocity.x = m_vVelocity.y = 0;
 		if (m_bScrollbarIsVerticalScrolling)
 		{
-			const float percent = std::clamp<float>((engine->getMouse()->getPos().y - m_vPos.y - m_verticalScrollbar.getWidth() - m_verticalScrollbar.getHeight() - m_vMouseBackup.y - 1) / (m_vSize.y - 2*m_verticalScrollbar.getWidth()), 0.0f, 1.0f);
+			const float percent = std::clamp<float>((mouse->getPos().y - m_vPos.y - m_verticalScrollbar.getWidth() - m_verticalScrollbar.getHeight() - m_vMouseBackup.y - 1) / (m_vSize.y - 2*m_verticalScrollbar.getWidth()), 0.0f, 1.0f);
 			scrollToYInt(-m_vScrollSize.y*percent, true, false);
 		}
 		else
 		{
-			const float percent = std::clamp<float>((engine->getMouse()->getPos().x - m_vPos.x - m_horizontalScrollbar.getHeight() - m_horizontalScrollbar.getWidth() - m_vMouseBackup.x - 1) / (m_vSize.x - 2*m_horizontalScrollbar.getHeight()), 0.0f, 1.0f);
+			const float percent = std::clamp<float>((mouse->getPos().x - m_vPos.x - m_horizontalScrollbar.getHeight() - m_horizontalScrollbar.getWidth() - m_vMouseBackup.x - 1) / (m_vSize.x - 2*m_horizontalScrollbar.getHeight()), 0.0f, 1.0f);
 			scrollToXInt(-m_vScrollSize.x*percent, true, false);
 		}
 	}
@@ -645,7 +645,7 @@ void CBaseUIScrollView::onMouseDownInside()
 {
 	m_bBusy = true;
 
-	m_vMouseBackup2 = engine->getMouse()->getPos(); // to avoid spastic movement at scroll start
+	m_vMouseBackup2 = mouse->getPos(); // to avoid spastic movement at scroll start
 }
 
 void CBaseUIScrollView::onMouseUpInside()
@@ -702,7 +702,7 @@ void CBaseUIScrollView::onMoved()
 {
 	m_container->setPos(m_vPos + m_vScrollPos);
 
-	m_vMouseBackup2 = engine->getMouse()->getPos(); // to avoid spastic movement after we are moved
+	m_vMouseBackup2 = mouse->getPos(); // to avoid spastic movement after we are moved
 
 	updateScrollbars();
 }

@@ -469,8 +469,8 @@ void OsuDatabase::load()
 
 	OsuDatabaseLoader *loader = new OsuDatabaseLoader(this); // (deletes itself after finishing)
 
-	engine->getResourceManager()->requestNextLoadAsync();
-	engine->getResourceManager()->loadResource(loader);
+	resourceManager->requestNextLoadAsync();
+	resourceManager->loadResource(loader);
 }
 
 void OsuDatabase::cancel()

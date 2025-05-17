@@ -113,6 +113,6 @@ void OsuVRUIImageCheckbox::onCursorOutside()
 
 void OsuVRUIImageCheckbox::updateImageResource()
 {
-	m_imageChecked = engine->getResourceManager()->getImage(m_sImageResourceNameChecked);
-	m_imageUnchecked = engine->getResourceManager()->getImage(m_sImageResourceNameUnchecked);
+	m_imageChecked = resourceManager->getImage(m_sImageResourceNameChecked);
+	m_imageUnchecked = resourceManager->getImage(m_sImageResourceNameUnchecked);
 }

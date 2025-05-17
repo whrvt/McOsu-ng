@@ -83,8 +83,8 @@ void Osu2::draw(Graphics *g)
 		Vector2 offset;
 		if (instanceID > 0)
 		{
-			float emptySpaceX = engine->getGraphics()->getResolution().x - 2*resolution.x;
-			float emptySpaceY = engine->getGraphics()->getResolution().y - 2*resolution.y;
+			float emptySpaceX = graphics->getResolution().x - 2*resolution.x;
+			float emptySpaceY = graphics->getResolution().y - 2*resolution.y;
 
 			switch (instanceID)
 			{
@@ -94,15 +94,15 @@ void Osu2::draw(Graphics *g)
 				break;
 			case 2:
 				offset.x = emptySpaceX/4;
-				offset.y = emptySpaceY/4 + engine->getGraphics()->getResolution().y/2;
+				offset.y = emptySpaceY/4 + graphics->getResolution().y/2;
 				break;
 			case 3:
-				offset.x = emptySpaceX/4 + engine->getGraphics()->getResolution().x/2;
+				offset.x = emptySpaceX/4 + graphics->getResolution().x/2;
 				offset.y = emptySpaceY/4;
 				break;
 			case 4:
-				offset.x = emptySpaceX/4 + engine->getGraphics()->getResolution().x/2;
-				offset.y = emptySpaceY/4 + engine->getGraphics()->getResolution().y/2;
+				offset.x = emptySpaceX/4 + graphics->getResolution().x/2;
+				offset.y = emptySpaceY/4 + graphics->getResolution().y/2;
 				break;
 			}
 		}
@@ -111,18 +111,18 @@ void Osu2::draw(Graphics *g)
 		Vector2 prevPosWithoutOffset;
 		//if (instanceID == 1)
 		{
-			prevOffset = engine->getMouse()->getOffset();
-			prevPosWithoutOffset = engine->getMouse()->getPos() - prevOffset;
-			engine->getMouse()->setOffset(-offset);
-			engine->getMouse()->onPosChange(prevPosWithoutOffset);
+			prevOffset = mouse->getOffset();
+			prevPosWithoutOffset = mouse->getPos() - prevOffset;
+			mouse->setOffset(-offset);
+			mouse->onPosChange(prevPosWithoutOffset);
 		}
 
 		m_instances[i]->draw(g);
 
 		//if (instanceID == 1)
 		{
-			engine->getMouse()->setOffset(prevOffset);
-			engine->getMouse()->onPosChange(prevPosWithoutOffset);
+			mouse->setOffset(prevOffset);
+			mouse->onPosChange(prevPosWithoutOffset);
 		}
 	}
 }
@@ -139,8 +139,8 @@ void Osu2::update()
 		Vector2 offset;
 		if (instanceID > 0)
 		{
-			float emptySpaceX = engine->getGraphics()->getResolution().x - 2*resolution.x;
-			float emptySpaceY = engine->getGraphics()->getResolution().y - 2*resolution.y;
+			float emptySpaceX = graphics->getResolution().x - 2*resolution.x;
+			float emptySpaceY = graphics->getResolution().y - 2*resolution.y;
 
 			switch (instanceID)
 			{
@@ -150,15 +150,15 @@ void Osu2::update()
 				break;
 			case 2:
 				offset.x = emptySpaceX/4;
-				offset.y = emptySpaceY/4 + engine->getGraphics()->getResolution().y/2;
+				offset.y = emptySpaceY/4 + graphics->getResolution().y/2;
 				break;
 			case 3:
-				offset.x = emptySpaceX/4 + engine->getGraphics()->getResolution().x/2;
+				offset.x = emptySpaceX/4 + graphics->getResolution().x/2;
 				offset.y = emptySpaceY/4;
 				break;
 			case 4:
-				offset.x = emptySpaceX/4 + engine->getGraphics()->getResolution().x/2;
-				offset.y = emptySpaceY/4 + engine->getGraphics()->getResolution().y/2;
+				offset.x = emptySpaceX/4 + graphics->getResolution().x/2;
+				offset.y = emptySpaceY/4 + graphics->getResolution().y/2;
 				break;
 			}
 		}
@@ -167,18 +167,18 @@ void Osu2::update()
 		Vector2 prevPosWithoutOffset;
 		//if (instanceID == 1)
 		{
-			prevOffset = engine->getMouse()->getOffset();
-			prevPosWithoutOffset = engine->getMouse()->getPos() - prevOffset;
-			engine->getMouse()->setOffset(-offset);
-			engine->getMouse()->onPosChange(prevPosWithoutOffset);
+			prevOffset = mouse->getOffset();
+			prevPosWithoutOffset = mouse->getPos() - prevOffset;
+			mouse->setOffset(-offset);
+			mouse->onPosChange(prevPosWithoutOffset);
 		}
 
 		m_instances[i]->update();
 
 		//if (instanceID == 1)
 		{
-			engine->getMouse()->setOffset(prevOffset);
-			engine->getMouse()->onPosChange(prevPosWithoutOffset);
+			mouse->setOffset(prevOffset);
+			mouse->onPosChange(prevPosWithoutOffset);
 		}
 	}
 
@@ -218,7 +218,7 @@ void Osu2::update()
 	// beatmap start/stop sync
 	if (m_osu->getSongBrowser()->hasSelectedAndIsPlaying() != m_bPrevPlayingState)
 	{
-		if (engine->getResourceManager()->getSound("OSU_BEATMAP_MUSIC") != NULL)
+		if (resourceManager->getSound("OSU_BEATMAP_MUSIC") != NULL)
 		{
 			m_bPrevPlayingState = m_osu->getSongBrowser()->hasSelectedAndIsPlaying();
 

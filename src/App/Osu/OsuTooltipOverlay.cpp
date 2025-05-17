@@ -33,7 +33,7 @@ void OsuTooltipOverlay::draw(Graphics *g)
 	{
 		const float dpiScale = Osu::getUIScale(m_osu);
 
-		McFont *font = engine->getResourceManager()->getFont("FONT_DEFAULT");
+		McFont *font = resourceManager->getFont("FONT_DEFAULT");
 
 		const Vector2 offset = Vector2(10, 10) * dpiScale;
 		const int margin = 5 * dpiScale;
@@ -49,7 +49,7 @@ void OsuTooltipOverlay::draw(Graphics *g)
 		}
 		const int height = font->getHeight()*m_lines.size() + lineSpacing*(m_lines.size()-1) + 3 * dpiScale;
 
-		Vector2 cursorPos = engine->getMouse()->getPos();
+		Vector2 cursorPos = mouse->getPos();
 
 		// clamp to right edge
 		if (cursorPos.x + width + offset.x + 2*margin > m_osu->getScreenWidth())
