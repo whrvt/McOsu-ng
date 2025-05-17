@@ -50,8 +50,8 @@ private:
 	Timer *m_deltaTimer;
 
 	// iteration rate control methods
-	inline void foregrounded() { SDL_SetHint(SDL_HINT_MAIN_CALLBACK_RATE, m_sFpsMax.toUtf8()); }
-	inline void backgrounded() { SDL_SetHint(SDL_HINT_MAIN_CALLBACK_RATE, m_sFpsMaxBG.toUtf8()); }
+	inline void foregrounded() { if constexpr (!Env::cfg(OS::WASM)) SDL_SetHint(SDL_HINT_MAIN_CALLBACK_RATE, m_sFpsMax.toUtf8()); }
+	inline void backgrounded() { if constexpr (!Env::cfg(OS::WASM)) SDL_SetHint(SDL_HINT_MAIN_CALLBACK_RATE, m_sFpsMaxBG.toUtf8()); }
 	UString m_sFpsMax;
 	UString m_sFpsMaxBG;
 
@@ -197,6 +197,7 @@ SDL_AppResult SDLMain::initialize(int argc, char *argv[])
 	m_deltaTimer = new Timer();
 
 	// get the screen refresh rate, and set fps_max to that as default
+	if constexpr (!Env::cfg(OS::WASM))
 	{
 		const SDL_DisplayID display = SDL_GetDisplayForWindow(m_window);
 		const SDL_DisplayMode *currentDisplayMode = SDL_GetCurrentDisplayMode(display);
@@ -411,6 +412,15 @@ bool SDLMain::createWindow(int width, int height)
 	SDL_SetHintWithPriority(SDL_HINT_TOUCH_MOUSE_EVENTS, "0", SDL_HINT_OVERRIDE);
 	SDL_SetHintWithPriority(SDL_HINT_MOUSE_EMULATE_WARP_WITH_RELATIVE, "0", SDL_HINT_OVERRIDE);
 
+	// setup some common app metadata
+	SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_NAME_STRING, PACKAGE_NAME);
+	SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_VERSION_STRING, PACKAGE_VERSION);
+	SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_IDENTIFIER_STRING, "com.mcengine." PACKAGE_NAME);
+	SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_CREATOR_STRING, PACKAGE_BUGREPORT);
+	SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_COPYRIGHT_STRING, "MIT");
+	SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_URL_STRING, PACKAGE_URL);
+	SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_TYPE_STRING, "game");
+
 	// create window
 	m_window = SDL_CreateWindowWithProperties(props);
 	SDL_DestroyProperties(props);
@@ -499,7 +509,7 @@ void SDLMain::setupLogging()
 			    catStr = "???";
 			    break;
 		    }
-		    fprintf(stderr, "SDL[%s]: %s\n", catStr, message);
+		    printf("SDL[%s]: %s\n", catStr, message);
 	    },
 	    nullptr);
 }

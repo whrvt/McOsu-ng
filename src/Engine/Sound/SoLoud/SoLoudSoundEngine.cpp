@@ -25,7 +25,7 @@ extern ConVar debug_snd;
 
 // SoLoud-specific ConVars
 ConVar snd_soloud_buffer("snd_soloud_buffer", SoLoud::Soloud::AUTO, FCVAR_NONE, "SoLoud audio device buffer size");
-ConVar snd_soloud_backend("snd_soloud_backend", SoLoud::Soloud::MINIAUDIO, FCVAR_NONE, "SoLoud backend (0=auto, 1=SDL2, 2=MiniAudio, 3=WASAPI, etc.)");
+ConVar snd_soloud_backend("snd_soloud_backend", Env::cfg(OS::WASM) ? SoLoud::Soloud::SDL3 : SoLoud::Soloud::MINIAUDIO, FCVAR_NONE, "SoLoud backend (0=auto, 3=SDL3, 14=MiniAudio)");
 
 SoLoudSoundEngine::SoLoudSoundEngine() : SoundEngine()
 {
@@ -90,18 +90,15 @@ bool SoLoudSoundEngine::play(Sound *snd, float pan, float pitch)
 	if (!m_bReady || snd == NULL || !snd->isReady())
 		return false;
 
-	SoLoudSound *soloudSound = snd->getSound();
-	if (!soloudSound)
-		return false;
-
-	if (soloudSound->m_handle != 0 && SL::getPause(soloudSound->m_handle))
+	auto handle = snd->getHandle();
+	if (handle != 0 && SL::getPause(handle))
 	{
 		// just unpause if paused
-		SL::setPause(soloudSound->m_handle, false);
+		SL::setPause(handle, false);
 		return true;
 	}
 
-	return playSound(soloudSound, pan, pitch);
+	return playSound(snd->getSound(), pan, pitch);
 }
 
 bool SoLoudSoundEngine::playSound(SoLoudSound *soloudSound, float pan, float pitch, bool is3d, Vector3 *pos)
@@ -147,8 +144,10 @@ bool SoLoudSoundEngine::playSound(SoLoudSound *soloudSound, float pan, float pit
 		handle = playSoundWithFilter(soloudSound, pan, soloudSound->m_fVolume);
 		if (handle)
 			SL::setProtectVoice(handle, true); // protect the music channel (don't let it get interrupted when many sounds play back at once)
-		                                       // NOTE: this doesn't seem to work properly, not sure why... need to set setMaxActiveVoiceCount as a workaround,
-		                                       // otherwise stuff like buzzsliders can cause glitches in music playback
+			                                   // NOTE: this doesn't seem to work properly, not sure why... need to setMaxActiveVoiceCount higher than the default 16
+			                                   // as a workaround, otherwise rapidly overlapping samples like from buzzsliders can cause glitches in music playback
+			                                   // TODO: a better workaround would be to manually prevent samples from playing if
+			                                   // it would lead to getMaxActiveVoiceCount() <= getActiveVoiceCount()
 	}
 	else
 	{
@@ -368,14 +367,8 @@ void SoLoudSoundEngine::updateOutputDevices(bool handleOutputDeviceChanges, bool
 	// SoLoud doesn't provide direct device enumeration
 	if (printInfo)
 	{
-		constexpr const char *const backendNames[] = {"Auto", "SDL1",   "SDL2",      "PortAudio", "WinMM",         "XAudio2",   "WASAPI",  "ALSA",       "JACK",
-		                                              "OSS",  "OpenAL", "CoreAudio", "OpenSL ES", "Vita Homebrew", "miniaudio", "Nosound", "Nulldriver", "Unknown"};
 		debugLog("SoundEngine: Device 0 = \"Default\", enabled = 1, default = 1\n");
-
-		auto backend = snd_soloud_backend.getVal<SoLoud::Soloud::BACKENDS>();
-		if (backend < 0 || backend > SoLoud::Soloud::BACKEND_MAX)
-			backend = snd_soloud_backend.getDefaultVal<SoLoud::Soloud::BACKENDS>();
-		debugLog("SoundEngine: Using SoLoud backend: %s\n", backendNames[backend]);
+		debugLog("SoundEngine: Using SoLoud backend: %s\n", SL::getBackendString());
 	}
 }
 
@@ -395,20 +388,26 @@ bool SoLoudSoundEngine::initializeOutputDevice(int id, bool force)
 	// basic flags
 	unsigned int flags = SoLoud::Soloud::CLIP_ROUNDOFF;
 
-	unsigned int backend = snd_soloud_backend.getInt();
-	if (backend < 0 || backend >= SoLoud::Soloud::BACKEND_MAX)
-		backend = SoLoud::Soloud::MINIAUDIO;
+	auto backend = snd_soloud_backend.getVal<SoLoud::Soloud::BACKENDS>();
+	if (backend < 0 || backend > SoLoud::Soloud::BACKEND_MAX)
+		backend = snd_soloud_backend.getDefaultVal<SoLoud::Soloud::BACKENDS>();
 
-	unsigned int sampleRate = snd_freq.getInt();
+	unsigned int sampleRate = snd_freq.getVal<unsigned int>();
 	if (sampleRate <= 0)
 		sampleRate = SoLoud::Soloud::AUTO;
 
-	unsigned int bufferSize = snd_soloud_buffer.getInt();
+	unsigned int bufferSize = snd_soloud_buffer.getVal<unsigned int>();
 	if (bufferSize < 0)
 		bufferSize = SoLoud::Soloud::AUTO;
 
 	// use stereo output
 	const unsigned int channels = 2;
+
+	// setup some SDL hints in case the SDL backend is used
+	if (snd_soloud_buffer.getVal() != snd_soloud_buffer.getDefaultVal())
+		SDL_SetHintWithPriority(SDL_HINT_AUDIO_DEVICE_SAMPLE_FRAMES, std::format("%u", snd_soloud_buffer.getVal<unsigned int>()).c_str(), SDL_HINT_OVERRIDE);
+	SDL_SetHintWithPriority(SDL_HINT_AUDIO_DEVICE_STREAM_NAME, PACKAGE_NAME, SDL_HINT_OVERRIDE);
+	SDL_SetHintWithPriority(SDL_HINT_AUDIO_DEVICE_STREAM_ROLE, "game", SDL_HINT_OVERRIDE);
 
 	// initialize SoLoud through the manager
 	SoLoud::result result = SL::init(flags, backend, sampleRate, bufferSize, channels);
@@ -425,7 +424,7 @@ bool SoLoudSoundEngine::initializeOutputDevice(int id, bool force)
 		debugLog("SoundEngine WARNING: failed to setMaxActiveVoiceCount (%i)\n", result);
 
 	// set current device name (bogus)
-	for (auto & m_outputDevice : m_outputDevices)
+	for (auto &m_outputDevice : m_outputDevices)
 	{
 		if (m_outputDevice.id == id)
 		{
@@ -434,8 +433,9 @@ bool SoLoudSoundEngine::initializeOutputDevice(int id, bool force)
 		}
 	}
 
-	debugLog("SoundEngine: Initialized SoLoud with output device = \"%s\" flags: 0x%x, backend: %u, sampleRate: %u, bufferSize: %u, channels: %u, maxActiveVoiceCount: %u\n",
-	         m_sCurrentOutputDevice.toUtf8(), flags, backend, sampleRate, bufferSize, channels, SL::getMaxActiveVoiceCount());
+	debugLog("SoundEngine: Initialized SoLoud with output device = \"%s\" flags: 0x%x, backend: %s, sampleRate: %u, bufferSize: %u, channels: %u, maxActiveVoiceCount: %u\n",
+	         m_sCurrentOutputDevice.toUtf8(), flags, SL::getBackendString(), SL::getBackendSamplerate(), SL::getBackendBuffersize(), SL::getBackendChannels(),
+	         SL::getMaxActiveVoiceCount());
 
 	m_bReady = true;
 

@@ -89,25 +89,29 @@ void SoLoudSound::initAsync()
 	}
 
 	// load file into memory first to handle unicode paths properly (windows shenanigans)
-	McFile file(m_sFilePath);
-	if (!file.canRead())
-	{
-		debugLog("Sound Error: Cannot open file %s\n", m_sFilePath.toUtf8());
-		return;
-	}
+	McFile file(Env::cfg(OS::WINDOWS) ? m_sFilePath : "");
+	const char *fileData;
+	size_t fileSize;
 
-	size_t fileSize = file.getFileSize();
-	if (fileSize == 0)
+	if constexpr (Env::cfg(OS::WINDOWS))
 	{
-		debugLog("Sound Error: File is empty %s\n", m_sFilePath.toUtf8());
-		return;
-	}
-
-	const char *fileData = file.readFile();
-	if (!fileData)
-	{
-		debugLog("Sound Error: Failed to read file data %s\n", m_sFilePath.toUtf8());
-		return;
+		if (!file.canRead())
+		{
+			debugLog("Sound Error: Cannot open file %s\n", m_sFilePath.toUtf8());
+			return;
+		}
+		fileSize = file.getFileSize();
+		if (fileSize == 0)
+		{
+			debugLog("Sound Error: File is empty %s\n", m_sFilePath.toUtf8());
+			return;
+		}
+		fileData = file.readFile();
+		if (!fileData)
+		{
+			debugLog("Sound Error: Failed to read file data %s\n", m_sFilePath.toUtf8());
+			return;
+		}
 	}
 
 	// create the appropriate audio source based on streaming flag
@@ -117,9 +121,11 @@ void SoLoudSound::initAsync()
 		// use WavStream for streaming audio (music, etc.)
 		auto *wavStream = new SoLoud::WavStream();
 
-		// use loadToMem for streaming to handle unicode paths
-		// this loads the file into memory but still streams during playback
-		result = wavStream->loadMem(reinterpret_cast<const unsigned char *>(fileData), fileSize, true, false);
+		// use loadToMem for streaming to handle unicode paths on windows
+		if constexpr (Env::cfg(OS::WINDOWS))
+			result = wavStream->loadMem(reinterpret_cast<const unsigned char *>(fileData), fileSize, true, false);
+		else
+			result = wavStream->load(m_sFilePath.toUtf8());
 
 		if (result == SoLoud::SO_NO_ERROR)
 		{
@@ -131,7 +137,7 @@ void SoLoudSound::initAsync()
 		else
 		{
 			delete wavStream;
-			debugLog("Sound Error: SoLoud::WavStream::loadMem() error %i on file %s\n", result, m_sFilePath.toUtf8());
+			debugLog("Sound Error: SoLoud::WavStream::load() error %i on file %s\n", result, m_sFilePath.toUtf8());
 			return;
 		}
 	}
@@ -139,7 +145,11 @@ void SoLoudSound::initAsync()
 	{
 		// use Wav for non-streaming audio (hit sounds, effects, etc.)
 		auto *wav = new SoLoud::Wav();
-		result = wav->loadMem(reinterpret_cast<const unsigned char *>(fileData), fileSize, true, false);
+
+		if constexpr (Env::cfg(OS::WINDOWS))
+			result = wav->loadMem(reinterpret_cast<const unsigned char *>(fileData), fileSize, true, false);
+		else
+			result = wav->load(m_sFilePath.toUtf8());
 
 		if (result == SoLoud::SO_NO_ERROR)
 		{
@@ -151,7 +161,7 @@ void SoLoudSound::initAsync()
 		else
 		{
 			delete wav;
-			debugLog("Sound Error: SoLoud::Wav::loadMem() error %i on file %s\n", result, m_sFilePath.toUtf8());
+			debugLog("Sound Error: SoLoud::Wav::load() error %i on file %s\n", result, m_sFilePath.toUtf8());
 			return;
 		}
 	}

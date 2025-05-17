@@ -22,21 +22,30 @@ ConVar file_size_max("file_size_max", 1024, FCVAR_NONE, "maximum filesize sanity
 ConVar *McFile::debug = &debug_file;
 ConVar *McFile::size_max = &file_size_max;
 
-McFile::McFile(UString filePath, TYPE type) : m_filePath(filePath), m_type(type), m_ready(false), m_fileSize(0)
+McFile::McFile(UString filePath, TYPE type) : m_filePath(filePath), m_type(type), m_ready(false), m_fileSize(0), m_bExists(false)
 {
 	if (filePath.isEmpty())
 		return;
 
 	auto path = ::path(m_filePath.plat_str());
-	if (type == TYPE::READ)
+	if (type == TYPE::CHECK || type == TYPE::READ)
 	{
 		// case-insensitive lookup if exact match fails
 		if (!tryFindCaseInsensitive(m_filePath))
 		{
-			debugLog("File Error: Path %s does not exist\n", filePath.toUtf8());
+			if (debug_file.getBool()) // let the caller print that if it wants to
+				debugLog("File Error: Path %s does not exist\n", filePath.toUtf8());
 			return;
 		}
+	}
 
+	m_bExists = true;
+
+	if (type == TYPE::CHECK) // don't do anything else
+		return;
+
+	if (type == TYPE::READ)
+	{
 		auto path = std::filesystem::path(m_filePath.plat_str());
 		if (!std::filesystem::is_regular_file(path))
 		{
@@ -117,12 +126,12 @@ McFile::McFile(UString filePath, TYPE type) : m_filePath(filePath), m_type(type)
 
 bool McFile::canRead() const
 {
-	return m_ready && m_ifstream && m_ifstream->good() && m_type == TYPE::READ;
+	return m_bExists && m_ready && m_ifstream && m_ifstream->good() && m_type == TYPE::READ;
 }
 
 bool McFile::canWrite() const
 {
-	return m_ready && m_ofstream && m_ofstream->good() && m_type == TYPE::WRITE;
+	return m_bExists && m_ready && m_ofstream && m_ofstream->good() && m_type == TYPE::WRITE;
 }
 
 void McFile::write(const char *buffer, size_t size)

@@ -32,8 +32,12 @@ public:
 	{
 		return m_engine->init(aFlags, aBackend, aSamplerate, aBufferSize, aChannels);
 	}
-
 	static inline void deinit() { m_engine->deinit(); }
+	static inline const char *getBackendString() { return m_engine->getBackendString(); }
+	static inline unsigned int getBackendID() { return m_engine->getBackendId(); }
+	static inline unsigned int getBackendSamplerate() { return m_engine->getBackendSamplerate(); }
+	static inline unsigned int getBackendChannels() { return m_engine->getBackendChannels(); }
+	static inline unsigned int getBackendBuffersize() { return m_engine->getBackendBufferSize(); }
 	static inline unsigned int play(SoLoud::AudioSource &aSound, float aVolume = -1.0f) { return m_engine->play(aSound, aVolume); }
 	static inline unsigned int play3d(SoLoud::AudioSource &aSound, float aPosX, float aPosY, float aPosZ, float aVelX = 0.0f, float aVelY = 0.0f, float aVelZ = 0.0f,
 	                                  float aVolume = -1.0f)

@@ -82,7 +82,7 @@ void OpenGLRenderTarget::init()
 
 	// fill depth buffer
 	constexpr auto DEPTH_COMPONENT = Env::cfg(REND::GL) ? GL_DEPTH_COMPONENT : GL_DEPTH_COMPONENT24; // GL ES needs this manually specified to avoid artifacts
-#if defined(MCENGINE_FEATURE_OPENGL) || defined(MCENGINE_FEATURE_GLES32)
+#if (defined(MCENGINE_FEATURE_OPENGL) || defined(MCENGINE_FEATURE_GLES32)) && !defined(MCENGINE_PLATFORM_WASM)
 
 	if (isMultiSampled())
 		glRenderbufferStorageMultisample(GL_RENDERBUFFER, numMultiSamples, DEPTH_COMPONENT, (int)m_vSize.x, (int)m_vSize.y);
@@ -100,7 +100,7 @@ void OpenGLRenderTarget::init()
 	// create texture
 	glGenTextures(1, &m_iRenderTexture);
 
-#if defined(MCENGINE_FEATURE_OPENGL) || defined(MCENGINE_FEATURE_GLES32)
+#if (defined(MCENGINE_FEATURE_OPENGL) || defined(MCENGINE_FEATURE_GLES32)) && !defined(MCENGINE_PLATFORM_WASM)
 
 	glBindTexture(isMultiSampled() ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D, m_iRenderTexture);
 
@@ -117,7 +117,7 @@ void OpenGLRenderTarget::init()
 	}
 
 	// fill texture
-#if defined(MCENGINE_FEATURE_OPENGL) || defined(MCENGINE_FEATURE_GLES32)
+#if (defined(MCENGINE_FEATURE_OPENGL) || defined(MCENGINE_FEATURE_GLES32)) && !defined(MCENGINE_PLATFORM_WASM)
 
 	if (isMultiSampled())
 	{
@@ -151,7 +151,7 @@ void OpenGLRenderTarget::init()
 #endif
 
 	// set render texture as color attachment0 on the framebuffer
-#if defined(MCENGINE_FEATURE_OPENGL) || defined(MCENGINE_FEATURE_GLES32)
+#if (defined(MCENGINE_FEATURE_OPENGL) || defined(MCENGINE_FEATURE_GLES32)) && !defined(MCENGINE_PLATFORM_WASM)
 
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, isMultiSampled() ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D, m_iRenderTexture, 0);
 
@@ -162,7 +162,7 @@ void OpenGLRenderTarget::init()
 #endif
 
 	// if multisampled, create resolve framebuffer/texture
-#if defined(MCENGINE_FEATURE_OPENGL) || defined(MCENGINE_FEATURE_GLES32)
+#if (defined(MCENGINE_FEATURE_OPENGL) || defined(MCENGINE_FEATURE_GLES32)) && !defined(MCENGINE_PLATFORM_WASM)
 
 	if (isMultiSampled())
 	{
@@ -286,7 +286,7 @@ void OpenGLRenderTarget::disable()
 		return;
 
 	// if multisampled, blit content for multisampling into resolve texture
-#if defined(MCENGINE_FEATURE_OPENGL) || defined(MCENGINE_FEATURE_GLES32)
+#if (defined(MCENGINE_FEATURE_OPENGL) || defined(MCENGINE_FEATURE_GLES32)) && !defined(MCENGINE_PLATFORM_WASM)
 
 	if (isMultiSampled())
 	{
@@ -355,7 +355,7 @@ void OpenGLRenderTarget::unbind()
 
 void OpenGLRenderTarget::blitResolveFrameBufferIntoFrameBuffer(OpenGLRenderTarget *rt)
 {
-#if defined(MCENGINE_FEATURE_OPENGL) || defined(MCENGINE_FEATURE_GLES32)
+#if (defined(MCENGINE_FEATURE_OPENGL) || defined(MCENGINE_FEATURE_GLES32)) && !defined(MCENGINE_PLATFORM_WASM)
 
 	if (isMultiSampled())
 	{
@@ -376,7 +376,7 @@ void OpenGLRenderTarget::blitResolveFrameBufferIntoFrameBuffer(OpenGLRenderTarge
 
 void OpenGLRenderTarget::blitFrameBufferIntoFrameBuffer(OpenGLRenderTarget *rt)
 {
-#if defined(MCENGINE_FEATURE_OPENGL) || defined(MCENGINE_FEATURE_GLES32)
+#if (defined(MCENGINE_FEATURE_OPENGL) || defined(MCENGINE_FEATURE_GLES32)) && !defined(MCENGINE_PLATFORM_WASM)
 
 	// HACKHACK: force disable antialiasing
 	engine->getGraphics()->setAntialiasing(false);

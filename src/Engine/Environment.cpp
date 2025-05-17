@@ -183,12 +183,14 @@ UString Environment::getUsername()
 	const char *user = getenv("USER");
 	if (user != nullptr)
 		m_sUsername = {user};
+#ifndef MCENGINE_PLATFORM_WASM
 	else
 	{
 		struct passwd *pwd = getpwuid(getuid());
 		if (pwd != nullptr)
 			m_sUsername = {pwd->pw_name};
 	}
+#endif
 #endif
 	// fallback
 	if (m_sUsername.isEmpty())
