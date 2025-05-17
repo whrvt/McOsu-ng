@@ -51,7 +51,7 @@ public:
 private:
 	void updateOutputDevices(bool handleOutputDeviceChanges, bool printInfo) override;
 	bool initializeOutputDevice(int id = -1, bool force = false) override;
-	
+
 	SL* m_slManager;
 };
 

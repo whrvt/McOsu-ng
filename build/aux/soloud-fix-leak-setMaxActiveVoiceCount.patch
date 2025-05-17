@@ -1,0 +1,37 @@
+From 02876611f5727bb2e57b90d8e0992ff0a024df12 Mon Sep 17 00:00:00 2001
+From: William Horvath <william@horvath.blog>
+Date: Sat, 17 May 2025 05:56:36 -0700
+Subject: [PATCH] fix leaking mResampleData from setMaxActiveVoiceCount
+
+---
+ src/core/soloud.cpp | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
+
+diff --git a/src/core/soloud.cpp b/src/core/soloud.cpp
+index 96ecda1..c883a21 100644
+--- a/src/core/soloud.cpp
++++ b/src/core/soloud.cpp
+@@ -185,8 +185,6 @@ namespace SoLoud
+ 		for (i = 0; i < mVoiceGroupCount; i++)
+ 			delete[] mVoiceGroup[i];
+ 		delete[] mVoiceGroup;
+-		delete[] mResampleData;
+-		delete[] mResampleDataOwner;
+ 	}
+ 
+ 	void Soloud::deinit()
+@@ -202,6 +200,11 @@ namespace SoLoud
+ 		if (mAudioThreadMutex)
+ 			Thread::destroyMutex(mAudioThreadMutex);
+ 		mAudioThreadMutex = NULL;
++
++		delete[] mResampleData;
++		mResampleData = NULL;
++		delete[] mResampleDataOwner;
++		mResampleDataOwner = NULL;
+ 	}
+ 
+ 	result Soloud::init(unsigned int aFlags, unsigned int aBackend, unsigned int aSamplerate, unsigned int aBufferSize, unsigned int aChannels)
+-- 
+2.49.0
+

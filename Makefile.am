@@ -177,6 +177,7 @@ $(DEPS_PREFIX)/SoLoud.built: $(DEPS_CACHE)/SoLoud.source $(DEPS_PREFIX)/SDL3.bui
 	patch -Np1<$(abs_top_srcdir)/build/aux/soloud-miniaudio-latest.patch && \
 	patch -Np1<$(abs_top_srcdir)/build/aux/soloud-miniaudio-settings.patch && \
 	patch -Np1<$(abs_top_srcdir)/build/aux/soloud-add-sdl3-static-option.patch && \
+	patch -Np1<$(abs_top_srcdir)/build/aux/soloud-fix-leak-setMaxActiveVoiceCount.patch && \
 	$(SED) -i -e 's|#define VOICE_COUNT 1024|#define VOICE_COUNT 4095|g' \
 			-e 's|#define SOLOUD_DEFAULT_RESAMPLER.*|#define SOLOUD_DEFAULT_RESAMPLER SoLoud::Soloud::RESAMPLER_CATMULLROM|g' include/soloud.h # raise max # concurrent voices from 1024 default to 4095 (hard limit)
 	cd $(DEPS_PREFIX)/SoLoud/build && \

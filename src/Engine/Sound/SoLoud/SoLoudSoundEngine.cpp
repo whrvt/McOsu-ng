@@ -30,6 +30,7 @@ ConVar snd_soloud_backend("snd_soloud_backend", Env::cfg(OS::WASM) ? "SDL3" : "M
 SoLoudSoundEngine::SoLoudSoundEngine() : SoundEngine()
 {
 	m_slManager = new SL();
+
 	m_iCurrentOutputDevice = -1;
 	m_sCurrentOutputDevice = "Default";
 
@@ -368,7 +369,7 @@ void SoLoudSoundEngine::updateOutputDevices(bool handleOutputDeviceChanges, bool
 	if (printInfo)
 	{
 		debugLog("SoundEngine: Device 0 = \"Default\", enabled = 1, default = 1\n");
-		debugLog("SoundEngine: Using SoLoud backend: %s\n", SL::getBackendString());
+		debugLog("SoundEngine: Using SoLoud backend: %s\n", snd_soloud_backend.getString().toUtf8());
 	}
 }
 
@@ -425,9 +426,12 @@ bool SoLoudSoundEngine::initializeOutputDevice(int id, bool force)
 		return false;
 	}
 
-	result = SL::setMaxActiveVoiceCount(255);
-	if (result != SoLoud::SO_NO_ERROR)
-		debugLog("SoundEngine WARNING: failed to setMaxActiveVoiceCount (%i)\n", result);
+	if (SL::getMaxActiveVoiceCount() != 255)
+	{
+		SoLoud::result res = SL::setMaxActiveVoiceCount(255);
+		if (res != SoLoud::SO_NO_ERROR)
+			debugLog("SoundEngine WARNING: failed to setMaxActiveVoiceCount (%i)\n", res);
+	}
 
 	// set current device name (bogus)
 	for (auto &m_outputDevice : m_outputDevices)

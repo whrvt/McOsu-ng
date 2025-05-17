@@ -25,6 +25,7 @@ private:
 
 public:
 	SL();
+	~SL() {m_engine.reset();}
 
 	// convenience methods that just forward to SoLoud
 	static inline SoLoud::result init(unsigned int aFlags = SoLoud::Soloud::CLIP_ROUNDOFF, unsigned int aBackend = SoLoud::Soloud::AUTO,

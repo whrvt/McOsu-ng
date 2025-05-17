@@ -100,6 +100,9 @@ void SDL_AppQuit(void *appstate, SDL_AppResult result)
 	auto *fmain = static_cast<SDLMain *>(appstate);
 	fmain->shutdown(result);
 	SAFE_DELETE(fmain);
+
+	if constexpr (!Env::cfg(FEAT::MAINCB))
+		std::exit(0);
 }
 
 // (event queue processing) serialized with SDL_AppIterate
