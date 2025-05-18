@@ -181,6 +181,8 @@ ConVar fps_max("fps_max", 420.0f, FCVAR_NONE, "framerate limiter, foreground");
 ConVar fps_max_background("fps_max_background", 30.0f, FCVAR_NONE, "framerate limiter, background");
 ConVar fps_unlimited("fps_unlimited", false, FCVAR_NONE);
 
+ConVar fps_yield("fps_yield", true, FCVAR_NONE, "always release rest of timeslice at the end of each frame (call scheduler via sleep(0))");
+
 // engine convars
 extern ConVar _fullscreen_;
 extern ConVar _windowed_;
@@ -350,7 +352,7 @@ SDL_AppResult SDLMain::handleEvent(SDL_Event *event)
 			break;
 
 		default:
-			debugLog("DEBUG: unhandled window event %i\n", event->window.type);
+			debugLog("DEBUG: unhandled SDL window event %i\n", event->window.type);
 			break;
 		}
 		break;
@@ -423,10 +425,10 @@ SDL_AppResult SDLMain::iterate()
 	if constexpr (!Env::cfg(FEAT::MAINCB)) // main callbacks use SDL iteration rate to limit fps
 	{
 		VPROF_BUDGET("FPSLimiter", VPROF_BUDGETGROUP_SLEEP);
+		bool shouldYield = fps_yield.getBool();
 
 		// if minimized or unfocused, use BG fps, otherwise use fps_max (if 0 it's unlimited)
 		const int targetFPS = m_bMinimized || !m_bHasFocus ? m_iFpsMaxBG : m_iFpsMax;
-
 		if (targetFPS > 0)
 		{
 			const uint64_t frameTimeNS = SDL_NS_PER_SECOND / static_cast<uint64_t>(targetFPS);
@@ -436,7 +438,8 @@ SDL_AppResult SDLMain::iterate()
 			if (m_iNextFrameTime > now)
 			{
 				const uint64_t sleepTime = m_iNextFrameTime - now;
-				SDL_DelayPrecise(sleepTime);
+				Timing::sleepNS(sleepTime);
+				shouldYield = false;
 			}
 			else
 			{
@@ -446,6 +449,8 @@ SDL_AppResult SDLMain::iterate()
 			// set time for next frame
 			m_iNextFrameTime += frameTimeNS;
 		}
+		if (shouldYield)
+			Timing::sleep(0);
 	}
 
 	return SDL_APP_CONTINUE;

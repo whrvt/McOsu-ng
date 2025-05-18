@@ -51,6 +51,7 @@ private:
 
 namespace Timing {
 	static inline void sleep(unsigned int us) {!!us ? SDL_DelayPrecise(static_cast<uint64_t>(us) * 1000) : SDL_Delay(0);}
+	static inline void sleepNS(uint64_t ns) {!!ns ? SDL_DelayPrecise(ns) : SDL_Delay(0);}
 	// seconds as a double
 	template <typename T = double>
 		requires (std::is_same_v<T, double> || std::convertible_to<T, double>)
