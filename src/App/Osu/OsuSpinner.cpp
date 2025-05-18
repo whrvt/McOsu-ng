@@ -39,7 +39,7 @@ OsuSpinner::OsuSpinner(int x, int y, long time, int sampleType, bool isEndOfComb
 	int maxVel = 48;
 	int minTime = 2000;
 	int maxTime = 5000;
-	m_iMaxStoredDeltaAngles = clamp<int>((int)( (endTime - time - minTime) * (maxVel - minVel) / (maxTime - minTime) + minVel ), minVel, maxVel);
+	m_iMaxStoredDeltaAngles = std::clamp<int>((int)( (endTime - time - minTime) * (maxVel - minVel) / (maxTime - minTime) + minVel ), minVel, maxVel);
 	m_storedDeltaAngles = new float[m_iMaxStoredDeltaAngles];
 	for (int i=0; i<m_iMaxStoredDeltaAngles; i++)
 	{
@@ -85,13 +85,13 @@ void OsuSpinner::draw(Graphics *g)
 	OsuSkin *skin = m_beatmap->getSkin();
 	Vector2 center = m_beatmap->osuCoords2Pixels(m_vRawPos);
 
-	const float alphaMultiplier = clamp<float>((deltaEnd < 0 ? 1.0f - ((float)std::abs(deltaEnd) / (float)fadeOutTimeMS) : 1.0f), 0.0f, 1.0f); // only used for fade out anim atm
+	const float alphaMultiplier = std::clamp<float>((deltaEnd < 0 ? 1.0f - ((float)std::abs(deltaEnd) / (float)fadeOutTimeMS) : 1.0f), 0.0f, 1.0f); // only used for fade out anim atm
 
 	const float globalScale = 1.0f; // adjustments
 	const float globalBaseSkinSize = 667; // the width of spinner-bottom.png in the default skin
 	const float globalBaseSize = m_beatmap->getPlayfieldSize().y/* + m_beatmap->getHitcircleDiameter()/2*/;
 
-	const float clampedRatio = clamp<float>(m_fRatio, 0.0f, 1.0f);
+	const float clampedRatio = std::clamp<float>(m_fRatio, 0.0f, 1.0f);
 	float finishScaleRatio = clampedRatio;
 	finishScaleRatio = -finishScaleRatio * (finishScaleRatio - 2);
 	const float finishScale = 0.80f + finishScaleRatio*0.20f; // the spinner grows until reaching 100% during spinning, depending on how many spins are left
@@ -187,7 +187,7 @@ void OsuSpinner::draw(Graphics *g)
 		{
 			const float spinnerMiddleImageScale = globalBaseSize / (globalBaseSkinSize * (skin->isSpinnerMiddle2x() ? 2.0f : 1.0f));
 
-			g->setColor(COLOR(255, 255, (int)(255*m_fPercent), (int)(255*m_fPercent)));
+			g->setColor(rgb(255, (int)(255*m_fPercent), (int)(255*m_fPercent)));
 			g->setAlpha(m_fAlphaWithoutHidden * alphaMultiplier);
 			g->pushTransform();
 			{
@@ -251,7 +251,7 @@ void OsuSpinner::draw(Graphics *g)
 	// draw RPM
 	if (m_iDelta < 0)
 	{
-		McFont *rpmFont = engine->getResourceManager()->getFont("FONT_DEFAULT");
+		McFont *rpmFont = resourceManager->getFont("FONT_DEFAULT");
 		const float stringWidth = rpmFont->getStringWidth("RPM: 477");
 		g->setColor(0xffffffff);
 		g->setAlpha(m_fAlphaWithoutHidden * m_fAlphaWithoutHidden * m_fAlphaWithoutHidden * alphaMultiplier);
@@ -269,7 +269,7 @@ void OsuSpinner::drawVR(Graphics *g, Matrix4 &mvp, OsuVR *vr)
 	///if (m_bVisible)
 	{
 		float clampedApproachScalePercent = m_fApproachScale - 1.0f; // goes from <m_osu_approach_scale_multiplier_ref> to 0
-		clampedApproachScalePercent = clamp<float>(clampedApproachScalePercent / m_osu_approach_scale_multiplier_ref->getFloat(), 0.0f, 1.0f); // goes from 1 to 0
+		clampedApproachScalePercent = std::clamp<float>(clampedApproachScalePercent / m_osu_approach_scale_multiplier_ref->getFloat(), 0.0f, 1.0f); // goes from 1 to 0
 
 		Matrix4 translation;
 		translation.translate(0, 0, -clampedApproachScalePercent*vr->getApproachDistance());
@@ -317,7 +317,7 @@ void OsuSpinner::update(long curPos)
 
 		// scale percent calculation
 		long delta = (long)m_iTime - (long)curPos;
-		m_fPercent = 1.0f - clamp<float>((float)delta / -(float)(m_iObjectDuration), 0.0f, 1.0f);
+		m_fPercent = 1.0f - std::clamp<float>((float)delta / -(float)(m_iObjectDuration), 0.0f, 1.0f);
 
 		// handle auto, mouse spinning movement
 		float angleDiff = 0;
@@ -325,7 +325,7 @@ void OsuSpinner::update(long curPos)
 			angleDiff = engine->getFrameTime() * 1000.0f * AUTO_MULTIPLIER * m_beatmap->getOsu()->getSpeedMultiplier();
 		else // user spin
 		{
-			Vector2 mouseDelta = engine->getMouse()->getPos() - m_beatmap->osuCoords2Pixels(m_vRawPos);
+			Vector2 mouseDelta = mouse->getPos() - m_beatmap->osuCoords2Pixels(m_vRawPos);
 			const float currentMouseAngle = (float)std::atan2(mouseDelta.y, mouseDelta.x);
 			angleDiff = (currentMouseAngle - m_fLastMouseAngle);
 
@@ -377,7 +377,7 @@ void OsuSpinner::update(long curPos)
 				{
 					deltaAngle = m_fDeltaAngleOverflow * DELTA_UPDATE_TIME / m_fDeltaOverflow;
 					m_fDeltaAngleOverflow -= deltaAngle;
-					//deltaAngle = clamp<float>(deltaAngle, -MAX_ANG_DIFF, MAX_ANG_DIFF);
+					//deltaAngle = std::clamp<float>(deltaAngle, -MAX_ANG_DIFF, MAX_ANG_DIFF);
 				}
 
 				m_fDeltaOverflow -= DELTA_UPDATE_TIME;
@@ -388,7 +388,7 @@ void OsuSpinner::update(long curPos)
 				m_iDeltaAngleIndex %= m_iMaxStoredDeltaAngles;
 
 				float rotationAngle = m_fSumDeltaAngle / m_iMaxStoredDeltaAngles;
-				//rotationAngle = clamp<float>(rotationAngle, -MAX_ANG_DIFF, MAX_ANG_DIFF);
+				//rotationAngle = std::clamp<float>(rotationAngle, -MAX_ANG_DIFF, MAX_ANG_DIFF);
 				float rotationPerSec = rotationAngle * (1000.0f / DELTA_UPDATE_TIME) / (2.0f*PI);
 
 				///m_fRPM = std::abs(rotationPerSec*60.0f);
@@ -493,10 +493,10 @@ void OsuSpinner::onHit()
 
 void OsuSpinner::rotate(float rad)
 {
-	m_fDrawRot += rad2deg(rad);
+	m_fDrawRot += glm::degrees(rad);
 
 	rad = std::abs(rad);
-	const float newRotations = m_fRotations + rad2deg(rad);
+	const float newRotations = m_fRotations + glm::degrees(rad);
 
 	// added one whole rotation
 	if (std::floor(newRotations/360.0f) > m_fRotations/360.0f)
@@ -522,7 +522,7 @@ void OsuSpinner::rotate(float rad)
 	{
 		m_beatmap->getSkin()->playSpinnerSpinSound();
 
-		const float frequency = 20000.0f + (int)(clamp<float>(m_fRatio, 0.0f, 2.5f)*40000.0f);
+		const float frequency = 20000.0f + (int)(std::clamp<float>(m_fRatio, 0.0f, 2.5f)*40000.0f);
 		m_beatmap->getSkin()->getSpinnerSpinSound()->setFrequency(frequency);
 	}
 

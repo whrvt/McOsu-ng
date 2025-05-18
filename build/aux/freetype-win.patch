@@ -1,0 +1,15 @@
+diff --git a/builds/windows/ftsystem.c b/builds/windows/ftsystem.c
+index 477cad71..a5d571b2 100644
+--- a/builds/windows/ftsystem.c
++++ b/builds/windows/ftsystem.c
+@@ -295,8 +295,8 @@
+ #endif  /* _WIN32_WCE */
+ 
+   /* support for really old Windows */
+-#if defined( _WIN32_WCE ) || defined ( _WIN32_WINDOWS ) || \
+-    !defined( _WIN32_WINNT ) || _WIN32_WINNT <= 0x0400
++#if 0 && (defined( _WIN32_WCE ) || defined ( _WIN32_WINDOWS ) || \
++    !defined( _WIN32_WINNT ) || _WIN32_WINNT <= 0x0400)
+ 
+   FT_LOCAL_DEF( BOOL )
+   GetFileSizeEx( HANDLE          hFile,

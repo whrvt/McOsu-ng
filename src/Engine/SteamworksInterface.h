@@ -122,8 +122,6 @@ public:
 	[[maybe_unused]] constexpr auto getUsername(){}
 };
 
-[[gnu::unused]] static SteamworksInterface *steam = new SteamworksInterface(); // stfu mingw-gcc
-
 #endif
 
 #endif

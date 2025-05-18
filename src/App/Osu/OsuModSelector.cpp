@@ -129,7 +129,7 @@ private:
 	virtual void onPressed()
 	{
 		CBaseUICheckbox::onPressed();
-		engine->getSound()->play(isChecked() ? m_osu->getSkin()->getCheckOn() : m_osu->getSkin()->getCheckOff());
+		soundEngine->play(isChecked() ? m_osu->getSkin()->getCheckOn() : m_osu->getSkin()->getCheckOff());
 
 		if (isChecked())
 		{
@@ -215,7 +215,6 @@ OsuModSelector::OsuModSelector(Osu *osu) : OsuScreen(osu)
 	m_ARLock = overrideAR.lock;
 	m_ODLock = overrideOD.lock;
 
-	if constexpr (!Env::cfg(OS::HORIZON))
 	{
 		OVERRIDE_SLIDER overrideSpeed = addOverrideSlider("Speed/BPM Multiplier", "x", convar->getConVarByName("osu_speed_override"), 0.0f, 2.5f);
 
@@ -236,8 +235,7 @@ OsuModSelector::OsuModSelector(Osu *osu) : OsuScreen(osu)
 	addExperimentalCheckbox("AR Wobble", "Approach rate oscillates between -1 and +1.", convar->getConVarByName("osu_mod_arwobble"));
 	addExperimentalCheckbox("Approach Different", "Customize the approach circle animation.\nSee osu_mod_approach_different_style.\nSee osu_mod_approach_different_initial_size.", convar->getConVarByName("osu_mod_approach_different"));
 
-	if constexpr (!Env::cfg(OS::HORIZON))
-		addExperimentalCheckbox("Timewarp", "Speed increases from 100% to 150% over the course of the beatmap.", convar->getConVarByName("osu_mod_timewarp"));
+	addExperimentalCheckbox("Timewarp", "Speed increases from 100% to 150% over the course of the beatmap.", convar->getConVarByName("osu_mod_timewarp"));
 
 	addExperimentalCheckbox("AR Timewarp", "Approach rate decreases from 100% to 50% over the course of the beatmap.", convar->getConVarByName("osu_mod_artimewarp"));
 	addExperimentalCheckbox("Minimize", "Circle size decreases from 100% to 50% over the course of the beatmap.", convar->getConVarByName("osu_mod_minimize"));
@@ -303,12 +301,6 @@ void OsuModSelector::updateButtons(bool initial)
 	m_modButtonAuto = setModButtonOnGrid(3, 2, 0, initial && m_osu->getModAuto(), "auto", "Watch a perfect automated play through the song.", [this]() -> OsuSkinImage *{return m_osu->getSkin()->getSelectionModAutoplay();});
 	setModButtonOnGrid(4, 2, 0, initial && m_osu->getModTarget(), "practicetarget", "Accuracy is based on the distance to the center of all hitobjects.\n300s still require at least being in the hit window of a 100 in addition to the rule above.", [this]() -> OsuSkinImage *{return m_osu->getSkin()->getSelectionModTarget();});
 	m_modButtonScoreV2 = setModButtonOnGrid(5, 2, 0, initial && m_osu->getModScorev2(), "v2", "Try the future scoring system.\n** UNRANKED **", [this]() -> OsuSkinImage *{return m_osu->getSkin()->getSelectionModScorev2();});
-
-	if constexpr (Env::cfg(OS::HORIZON))
-	{
-		getModButtonOnGrid(2, 1)->setAvailable(false);
-		getModButtonOnGrid(2, 0)->setAvailable(false);
-	}
 }
 
 void OsuModSelector::updateScoreMultiplierLabelText()
@@ -317,11 +309,11 @@ void OsuModSelector::updateScoreMultiplierLabelText()
 
 	const int alpha = 200;
 	if (scoreMultiplier > 1.0f)
-		m_scoreMultiplierLabel->setTextColor(COLOR(alpha, 173, 255, 47));
+		m_scoreMultiplierLabel->setTextColor(argb(alpha, 173, 255, 47));
 	else if (scoreMultiplier == 1.0f)
-		m_scoreMultiplierLabel->setTextColor(COLOR(alpha, 255, 255, 255));
+		m_scoreMultiplierLabel->setTextColor(argb(alpha, 255, 255, 255));
 	else
-		m_scoreMultiplierLabel->setTextColor(COLOR(alpha, 255, 69, 00));
+		m_scoreMultiplierLabel->setTextColor(argb(alpha, 255, 69, 00));
 
 	m_scoreMultiplierLabel->setText(UString::format("Score Multiplier: %.2fX", scoreMultiplier));
 }
@@ -532,7 +524,7 @@ void OsuModSelector::update()
 				}
 				m_osu->getTooltipOverlay()->end();
 
-				if (engine->getKeyboard()->isAltDown())
+				if (keyboard->isAltDown())
 					m_bShowOverrideSliderALTHint = false;
 			}
 		}
@@ -554,7 +546,7 @@ void OsuModSelector::update()
 		}
 	}
 	McRect experimentalTrigger = McRect(0, 0, m_bExperimentalVisible ? m_experimentalContainer->getSize().x : m_osu->getScreenWidth()*0.05f, m_osu->getScreenHeight());
-	if (experimentalTrigger.contains(engine->getMouse()->getPos()))
+	if (experimentalTrigger.contains(mouse->getPos()))
 	{
 		if (!m_bExperimentalVisible)
 		{
@@ -1173,7 +1165,7 @@ void OsuModSelector::onOverrideSliderChange(CBaseUISlider *slider)
 			const float rawSliderValue = slider->getFloat();
 
 			// alt key allows rounding to only 1 decimal digit
-			if (!engine->getKeyboard()->isAltDown())
+			if (!keyboard->isAltDown())
 				sliderValue = std::round(sliderValue * 10.0f) / 10.0f;
 			else
 				sliderValue = std::round(sliderValue * 100.0f) / 100.0f;
@@ -1354,7 +1346,7 @@ UString OsuModSelector::getOverrideSliderLabelText(OsuModSelector::OVERRIDE_SLID
 		float beatmapValue = 1.0f;
 		if (s.label->getName().find("CS") != -1)
 		{
-			beatmapValue = clamp<float>(m_osu->getSelectedBeatmap()->getSelectedDifficulty2()->getCS()*m_osu->getCSDifficultyMultiplier(), 0.0f, 10.0f);
+			beatmapValue = std::clamp<float>(m_osu->getSelectedBeatmap()->getSelectedDifficulty2()->getCS()*m_osu->getCSDifficultyMultiplier(), 0.0f, 10.0f);
 			convarValue = m_osu->getSelectedBeatmap()->getCS();
 		}
 		else if (s.label->getName().find("AR") != -1)
@@ -1363,7 +1355,7 @@ UString OsuModSelector::getOverrideSliderLabelText(OsuModSelector::OVERRIDE_SLID
 
 			// compensate and round
 			convarValue = OsuGameRules::getApproachRateForSpeedMultiplier(m_osu->getSelectedBeatmap(), speedMultiplierLive);
-			if (!engine->getKeyboard()->isAltDown() && !forceDisplayTwoDecimalDigits)
+			if (!keyboard->isAltDown() && !forceDisplayTwoDecimalDigits)
 				convarValue = std::round(convarValue * 10.0f) / 10.0f;
 			else
 				convarValue = std::round(convarValue * 100.0f) / 100.0f;
@@ -1374,14 +1366,14 @@ UString OsuModSelector::getOverrideSliderLabelText(OsuModSelector::OVERRIDE_SLID
 
 			// compensate and round
 			convarValue = OsuGameRules::getOverallDifficultyForSpeedMultiplier(m_osu->getSelectedBeatmap(), speedMultiplierLive);
-			if (!engine->getKeyboard()->isAltDown() && !forceDisplayTwoDecimalDigits)
+			if (!keyboard->isAltDown() && !forceDisplayTwoDecimalDigits)
 				convarValue = std::round(convarValue * 10.0f) / 10.0f;
 			else
 				convarValue = std::round(convarValue * 100.0f) / 100.0f;
 		}
 		else if (s.label->getName().find("HP") != -1)
 		{
-			beatmapValue = clamp<float>(m_osu->getSelectedBeatmap()->getSelectedDifficulty2()->getHP()*m_osu->getDifficultyMultiplier(), 0.0f, 10.0f);
+			beatmapValue = std::clamp<float>(m_osu->getSelectedBeatmap()->getSelectedDifficulty2()->getHP()*m_osu->getDifficultyMultiplier(), 0.0f, 10.0f);
 			convarValue = m_osu->getSelectedBeatmap()->getHP();
 		}
 		else if (s.desc->getText().find("Speed") != -1)

@@ -202,10 +202,10 @@ OsuBeatmapStandard::~OsuBeatmapStandard()
 {
 	m_starCacheLoader->kill();
 
-	if (engine->getResourceManager()->isLoadingResource(m_starCacheLoader))
+	if (resourceManager->isLoadingResource(m_starCacheLoader))
 		while (!m_starCacheLoader->isAsyncReady()) {;}
 
-	engine->getResourceManager()->destroyResource(m_starCacheLoader);
+	resourceManager->destroyResource(m_starCacheLoader);
 }
 
 void OsuBeatmapStandard::draw(Graphics *g)
@@ -598,7 +598,7 @@ void OsuBeatmapStandard::drawFollowPoints(Graphics *g)
 
 				// draw
 				float alpha = 1.0f;
-				float followAnimPercent = clamp<float>((float)(curPos - fadeInTime) / (float)followPointPrevFadeTime, 0.0f, 1.0f);
+				float followAnimPercent = std::clamp<float>((float)(curPos - fadeInTime) / (float)followPointPrevFadeTime, 0.0f, 1.0f);
 				followAnimPercent = -followAnimPercent*(followAnimPercent - 2.0f); // quad out
 
 				// NOTE: only internal osu default skin uses scale + move transforms here, it is impossible to achieve this effect with user skins
@@ -631,7 +631,7 @@ void OsuBeatmapStandard::drawFollowPoints(Graphics *g)
 				g->setAlpha(alpha);
 				g->pushTransform();
 				{
-					g->rotate(rad2deg(std::atan2(yDiff, xDiff)));
+					g->rotate(glm::degrees(std::atan2(yDiff, xDiff)));
 
 					skin->getFollowPoint2()->setAnimationTimeOffset(fadeInTime);
 
@@ -870,7 +870,7 @@ void OsuBeatmapStandard::update()
 		if (Osu::debug->getBool() && m_iPreLoadingIndex == 0)
 			debugLog("OsuBeatmapStandard: Preloading slider vertexbuffers ...\n");
 
-		double startTime = engine->getTimeReal();
+		double startTime = Timing::getTimeReal();
 		double delta = 0.0;
 		while (delta < 0.010 && m_bIsPreLoading) // hardcoded VR deadline of 10 ms (11 but sanity), will temporarily bring us down to 45 fps on average (better than freezing). works fine for desktop gameplay too
 		{
@@ -888,7 +888,7 @@ void OsuBeatmapStandard::update()
 			}
 
 			m_iPreLoadingIndex++;
-			delta = engine->getTimeReal() - startTime;
+			delta = Timing::getTimeReal() - startTime;
 		}
 	}
 
@@ -1086,7 +1086,7 @@ Vector2 OsuBeatmapStandard::osuCoords2Pixels(Vector2 coords) const
 	if (osu_mod_wobble2.getBool())
 	{
 		const float speedMultiplierCompensation = 1.0f / getSpeedMultiplier();
-		Vector2 centerDelta = coords - Vector2(OsuGameRules::OSU_COORD_WIDTH, OsuGameRules::OSU_COORD_HEIGHT)/2;
+		Vector2 centerDelta = coords - Vector2(OsuGameRules::OSU_COORD_WIDTH, OsuGameRules::OSU_COORD_HEIGHT)/2.0f;
 		coords.x += centerDelta.x*0.25f*std::sin((m_iCurMusicPos/1000.0f)*5*speedMultiplierCompensation*osu_mod_wobble_frequency.getFloat())*osu_mod_wobble_strength.getFloat();
 		coords.y += centerDelta.y*0.25f*std::sin((m_iCurMusicPos/1000.0f)*3*speedMultiplierCompensation*osu_mod_wobble_frequency.getFloat())*osu_mod_wobble_strength.getFloat();
 	}
@@ -1129,8 +1129,8 @@ Vector2 OsuBeatmapStandard::osuCoords2Pixels(Vector2 coords) const
 	// if wobble, clamp coordinates
 	if (osu_mod_wobble.getBool() || osu_mod_wobble2.getBool())
 	{
-		coords.x = clamp<float>(coords.x, 0.0f, OsuGameRules::OSU_COORD_WIDTH);
-		coords.y = clamp<float>(coords.y, 0.0f, OsuGameRules::OSU_COORD_HEIGHT);
+		coords.x = std::clamp<float>(coords.x, 0.0f, OsuGameRules::OSU_COORD_WIDTH);
+		coords.y = std::clamp<float>(coords.y, 0.0f, OsuGameRules::OSU_COORD_HEIGHT);
 	}
 
 	if (m_bFailed)
@@ -1164,8 +1164,8 @@ Vector2 OsuBeatmapStandard::osuCoords2Pixels(Vector2 coords) const
 			coords.y /= (float)OsuGameRules::OSU_COORD_HEIGHT / 2.0f;
 
 			// clamp (for sqrt) and transform
-			coords.x = clamp<float>(coords.x, -1.0f, 1.0f);
-			coords.y = clamp<float>(coords.y, -1.0f, 1.0f);
+			coords.x = std::clamp<float>(coords.x, -1.0f, 1.0f);
+			coords.y = std::clamp<float>(coords.y, -1.0f, 1.0f);
 			coords = mapNormalizedCoordsOntoUnitCircle(coords);
 
 			// and scale back up
@@ -1226,7 +1226,7 @@ Vector2 OsuBeatmapStandard::osuCoords2VRPixels(Vector2 coords) const
 	if (osu_mod_wobble2.getBool())
 	{
 		const float speedMultiplierCompensation = 1.0f / getSpeedMultiplier();
-		Vector2 centerDelta = coords - Vector2(OsuGameRules::OSU_COORD_WIDTH, OsuGameRules::OSU_COORD_HEIGHT)/2;
+		Vector2 centerDelta = coords - Vector2(OsuGameRules::OSU_COORD_WIDTH, OsuGameRules::OSU_COORD_HEIGHT)/2.0f;
 		coords.x += centerDelta.x*0.25f*std::sin((m_iCurMusicPos/1000.0f)*5*speedMultiplierCompensation*osu_mod_wobble_frequency.getFloat())*osu_mod_wobble_strength.getFloat();
 		coords.y += centerDelta.y*0.25f*std::sin((m_iCurMusicPos/1000.0f)*3*speedMultiplierCompensation*osu_mod_wobble_frequency.getFloat())*osu_mod_wobble_strength.getFloat();
 	}
@@ -1252,8 +1252,8 @@ Vector2 OsuBeatmapStandard::osuCoords2VRPixels(Vector2 coords) const
 	// if wobble, clamp coordinates
 	if (osu_mod_wobble.getBool() || osu_mod_wobble2.getBool())
 	{
-		coords.x = clamp<float>(coords.x, 0.0f, OsuGameRules::OSU_COORD_WIDTH);
-		coords.y = clamp<float>(coords.y, 0.0f, OsuGameRules::OSU_COORD_HEIGHT);
+		coords.x = std::clamp<float>(coords.x, 0.0f, OsuGameRules::OSU_COORD_WIDTH);
+		coords.y = std::clamp<float>(coords.y, 0.0f, OsuGameRules::OSU_COORD_HEIGHT);
 	}
 
 	if (m_bFailed)
@@ -1287,8 +1287,8 @@ Vector2 OsuBeatmapStandard::osuCoords2VRPixels(Vector2 coords) const
 		coords.y /= (float)OsuGameRules::OSU_COORD_HEIGHT / 2.0f;
 
 		// clamp (for sqrt) and transform
-		coords.x = clamp<float>(coords.x, -1.0f, 1.0f);
-		coords.y = clamp<float>(coords.y, -1.0f, 1.0f);
+		coords.x = std::clamp<float>(coords.x, -1.0f, 1.0f);
+		coords.y = std::clamp<float>(coords.y, -1.0f, 1.0f);
 		coords = mapNormalizedCoordsOntoUnitCircle(coords);
 
 		// and scale back up
@@ -1324,7 +1324,7 @@ Vector3 OsuBeatmapStandard::osuCoordsTo3D(Vector2 coords, const OsuHitObject *hi
 	if (osu_mod_wobble2.getBool())
 	{
 		const float speedMultiplierCompensation = 1.0f / getSpeedMultiplier();
-		Vector2 centerDelta = coords - Vector2(OsuGameRules::OSU_COORD_WIDTH, OsuGameRules::OSU_COORD_HEIGHT)/2;
+		Vector2 centerDelta = coords - Vector2(OsuGameRules::OSU_COORD_WIDTH, OsuGameRules::OSU_COORD_HEIGHT)/2.0f;
 		coords.x += centerDelta.x*0.25f*std::sin((m_iCurMusicPos/1000.0f)*5*speedMultiplierCompensation*osu_mod_wobble_frequency.getFloat())*osu_mod_wobble_strength.getFloat();
 		coords.y += centerDelta.y*0.25f*std::sin((m_iCurMusicPos/1000.0f)*3*speedMultiplierCompensation*osu_mod_wobble_frequency.getFloat())*osu_mod_wobble_strength.getFloat();
 	}
@@ -1350,8 +1350,8 @@ Vector3 OsuBeatmapStandard::osuCoordsTo3D(Vector2 coords, const OsuHitObject *hi
 	// if wobble, clamp coordinates
 	if (osu_mod_wobble.getBool() || osu_mod_wobble2.getBool())
 	{
-		coords.x = clamp<float>(coords.x, 0.0f, OsuGameRules::OSU_COORD_WIDTH);
-		coords.y = clamp<float>(coords.y, 0.0f, OsuGameRules::OSU_COORD_HEIGHT);
+		coords.x = std::clamp<float>(coords.x, 0.0f, OsuGameRules::OSU_COORD_WIDTH);
+		coords.y = std::clamp<float>(coords.y, 0.0f, OsuGameRules::OSU_COORD_HEIGHT);
 	}
 
 	if (m_bFailed)
@@ -1385,8 +1385,8 @@ Vector3 OsuBeatmapStandard::osuCoordsTo3D(Vector2 coords, const OsuHitObject *hi
 		coords.y /= (float)OsuGameRules::OSU_COORD_HEIGHT / 2.0f;
 
 		// clamp (for sqrt) and transform
-		coords.x = clamp<float>(coords.x, -1.0f, 1.0f);
-		coords.y = clamp<float>(coords.y, -1.0f, 1.0f);
+		coords.x = std::clamp<float>(coords.x, -1.0f, 1.0f);
+		coords.y = std::clamp<float>(coords.y, -1.0f, 1.0f);
 		coords = mapNormalizedCoordsOntoUnitCircle(coords);
 
 		// and scale back up
@@ -1425,7 +1425,7 @@ Vector3 OsuBeatmapStandard::osuCoordsTo3D(Vector2 coords, const OsuHitObject *hi
 
 			const float stopOvershootPercent = 0.5f;
 
-			float depthMultiplierClamped = clamp<float>(depthMultiplier, -1.0f, stopOvershootPercent); // -1 0 stopOvershootPercent
+			float depthMultiplierClamped = std::clamp<float>(depthMultiplier, -1.0f, stopOvershootPercent); // -1 0 stopOvershootPercent
 			depthMultiplierClamped = (depthMultiplierClamped + 1.0f) / (1.0f); // 0 1+stopOvershootPercent
 
 			if (depthMultiplierClamped < 1.0f)
@@ -1439,7 +1439,7 @@ Vector3 OsuBeatmapStandard::osuCoordsTo3D(Vector2 coords, const OsuHitObject *hi
 				//depthMultiplierClamped = 1.0f - (1.0f - (depthMultiplierClamped - 1.0f)) * (1.0f - (depthMultiplierClamped - 1.0f));
 			}
 
-			coords3d.z += lerp(spawnDistance, overshootDistance, depthMultiplierClamped);
+			coords3d.z += std::lerp(spawnDistance, overshootDistance, depthMultiplierClamped);
 		}
 	}
 	*/
@@ -1527,8 +1527,8 @@ Vector2 OsuBeatmapStandard::osuCoords2LegacyPixels(Vector2 coords) const
 		coords.y /= (float)OsuGameRules::OSU_COORD_HEIGHT / 2.0f;
 
 		// clamp (for sqrt) and transform
-		coords.x = clamp<float>(coords.x, -1.0f, 1.0f);
-		coords.y = clamp<float>(coords.y, -1.0f, 1.0f);
+		coords.x = std::clamp<float>(coords.x, -1.0f, 1.0f);
+		coords.y = std::clamp<float>(coords.y, -1.0f, 1.0f);
 		coords = mapNormalizedCoordsOntoUnitCircle(coords);
 
 		// and scale back up
@@ -1556,7 +1556,7 @@ Vector2 OsuBeatmapStandard::getCursorPos() const
 		return m_vAutoCursorPos;
 	else
 	{
-		Vector2 pos = engine->getMouse()->getPos();
+		Vector2 pos = mouse->getPos();
 		if (osu_mod_shirone.getBool() && m_osu->getScore()->getCombo() > 0) // <3
 			return pos + Vector2(std::sin((m_iCurMusicPos/20.0f)*1.15f)*((float)m_osu->getScore()->getCombo()/osu_mod_shirone_combo.getFloat()), std::cos((m_iCurMusicPos/20.0f)*1.3f)*((float)m_osu->getScore()->getCombo()/osu_mod_shirone_combo.getFloat()));
 		else
@@ -1566,7 +1566,7 @@ Vector2 OsuBeatmapStandard::getCursorPos() const
 
 Vector2 OsuBeatmapStandard::getFirstPersonCursorDelta() const
 {
-	return m_vPlayfieldCenter - (m_osu->getModAuto() || m_osu->getModAutopilot() ? m_vAutoCursorPos : engine->getMouse()->getPos());
+	return m_vPlayfieldCenter - (m_osu->getModAuto() || m_osu->getModAutopilot() ? m_vAutoCursorPos : mouse->getPos());
 }
 
 float OsuBeatmapStandard::getHitcircleDiameter() const
@@ -1777,7 +1777,7 @@ void OsuBeatmapStandard::onPaused(bool first)
 
 	if (first)
 	{
-		m_vContinueCursorPoint = engine->getMouse()->getPos();
+		m_vContinueCursorPoint = mouse->getPos();
 
 		if (OsuGameRules::osu_mod_fps.getBool())
 			m_vContinueCursorPoint = OsuGameRules::getPlayfieldCenter(m_osu);
@@ -1974,13 +1974,13 @@ void OsuBeatmapStandard::updateAutoCursorPos()
 		else
 			percent = (float)((long)curMusicPos - prevTime) / (float)(nextTime - prevTime);
 
-		percent = clamp<float>(percent, 0.0f, 1.0f);
+		percent = std::clamp<float>(percent, 0.0f, 1.0f);
 
 		// scaled distance (not osucoords)
 		float distance = (nextPos-prevPos).length();
 		if (distance > m_fHitcircleDiameter*1.05f) // snap only if not in a stream (heuristic)
 		{
-			int numIterations = clamp<int>(m_osu->getModAutopilot() ? osu_autopilot_snapping_strength.getInt() : osu_auto_snapping_strength.getInt(), 0, 42);
+			int numIterations = std::clamp<int>(m_osu->getModAutopilot() ? osu_autopilot_snapping_strength.getInt() : osu_auto_snapping_strength.getInt(), 0, 42);
 			for (int i=0; i<numIterations; i++)
 			{
 				percent = (-percent)*(percent-2.0f);
@@ -2515,7 +2515,7 @@ void OsuBeatmapStandard::computeDrainRate()
 
 			// This effectively works like a binary search - each iteration the search space moves closer to the target, but may exceed it.
 			adjustment *= 2;
-			result += 1.0 / adjustment * signbit(lowestHealth - targetMinimumHealth);
+			result += 1.0 / adjustment * std::signbit(lowestHealth - targetMinimumHealth);
 		}
 
 		m_fDrainRate = result * 1000.0; // from ms to seconds
@@ -2532,13 +2532,13 @@ void OsuBeatmapStandard::updateStarCache()
 
 		// kill any running loader, so we get to a clean state
 		stopStarCacheLoader();
-		engine->getResourceManager()->destroyResource(m_starCacheLoader);
+		resourceManager->destroyResource(m_starCacheLoader);
 
 		// create new loader
 		m_starCacheLoader = new OsuBackgroundStarCacheLoader(this);
 		m_starCacheLoader->revive(); // activate it
-		engine->getResourceManager()->requestNextLoadAsync();
-		engine->getResourceManager()->loadResource(m_starCacheLoader);
+		resourceManager->requestNextLoadAsync();
+		resourceManager->loadResource(m_starCacheLoader);
 	}
 }
 
@@ -2547,10 +2547,10 @@ void OsuBeatmapStandard::stopStarCacheLoader()
 	if (!m_starCacheLoader->isDead())
 	{
 		m_starCacheLoader->kill();
-		double startTime = engine->getTimeReal();
+		double startTime = Timing::getTimeReal();
 		while (!m_starCacheLoader->isAsyncReady()) // stall main thread until it's killed (this should be very quick, around max 1 ms, as the kill flag is checked in every iteration)
 		{
-			if (engine->getTimeReal() - startTime > 2)
+			if (Timing::getTimeReal() - startTime > 2)
 			{
 				debugLog("WARNING: Ignoring stuck StarCacheLoader thread!\n");
 				break;

@@ -21,6 +21,7 @@
  */
 #define MCENGINE_FEATURE_OPENGL
 
+
 /*
  * OpenGL graphics (Mobile, ES/EGL, Nintendo Switch)
  */
@@ -30,6 +31,11 @@
  * OpenGLES 3.2 graphics (Desktop, WebGL)
  */
 //#define MCENGINE_FEATURE_GLES32
+
+/*
+ * OpenGL 3.0 graphics (WIP, not usable)
+ */
+//#define MCENGINE_FEATURE_GL3
 
 /*
  * Software-only graphics renderer (Windows only) (untested)
@@ -57,16 +63,6 @@
 //#define MCENGINE_FEATURE_BASS_WASAPI
 
 /*
- * XInput gamepads
- */
-//#define MCENGINE_FEATURE_GAMEPAD
-
-/*
- * OpenCL
- */
-//#define MCENGINE_FEATURE_OPENCL
-
-/*
  * Vulkan
  */
 //#define MCENGINE_FEATURE_VULKAN
@@ -75,11 +71,6 @@
  * OpenVR
  */
 //#define MCENGINE_FEATURE_OPENVR
-
-/*
- * SDL3 main + Environment (defined in config.h)
- */
-//#define MCENGINE_FEATURE_SDL
 
 /*
  * SDL3 mixer (audio) (defined in config.h)
@@ -101,9 +92,9 @@
  */
 #define MCENGINE_FEATURE_PROFILING
 
-/* misc, untested */
-//#define MCENGINE_SDL_JOYSTICK
-//#define MCENGINE_SDL_JOYSTICK_MOUSE
-//#define MCENGINE_SDL_TOUCHSUPPORT
+/*
+ * If, for some reason, you want SDL main callbacks on desktop (it's forced on WASM)
+ */
+//#define MCENGINE_FEATURE_MAINCALLBACKS
 
 #endif

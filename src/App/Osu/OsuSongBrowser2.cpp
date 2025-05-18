@@ -13,7 +13,7 @@
 #include "ResourceManager.h"
 #include "Keyboard.h"
 #include "Mouse.h"
-#include "Timer.h"
+#include "Timing.h"
 #include "SoundEngine.h"
 #include "AnimationHandler.h"
 #include "VertexArrayObject.h"
@@ -510,7 +510,7 @@ OsuSongBrowser2::OsuSongBrowser2(Osu *osu) : OsuScreenBackable(osu)
 		m_difficultiesButton->setClickCallback( fastdelegate::MakeDelegate(this, &OsuSongBrowser2::onGroupTabButtonClicked) );
 		m_noGroupingButton = addTopBarRightTabButton("No Grouping");
 		m_noGroupingButton->setClickCallback( fastdelegate::MakeDelegate(this, &OsuSongBrowser2::onGroupTabButtonClicked) );
-		m_noGroupingButton->setTextBrightColor(COLOR(255, 0, 255, 0));
+		m_noGroupingButton->setTextBrightColor(rgb(0, 255, 0));
 	}
 
 	addTopBarRightSortButton("")->setVisible(false); // NOTE: align with last tab (1)
@@ -564,7 +564,7 @@ OsuSongBrowser2::OsuSongBrowser2(Osu *osu) : OsuScreenBackable(osu)
 	m_scoreBrowser->setClipping(false);
 	m_scoreBrowser->setHorizontalScrolling(false);
 	m_scoreBrowser->setScrollbarSizeMultiplier(0.25f);
-	m_scoreBrowser->setScrollResistance((m_osu->isInVRMode() || Env::cfg(OS::HORIZON)) ? convar->getConVarByName("ui_scrollview_resistance")->getInt() : 15); // a bit shitty this check + convar, but works well enough
+	m_scoreBrowser->setScrollResistance((m_osu->isInVRMode()) ? convar->getConVarByName("ui_scrollview_resistance")->getInt() : 15); // a bit shitty this check + convar, but works well enough
 	m_scoreBrowserNoRecordsYetElement = new OsuUISongBrowserNoRecordsSetElement(m_osu, "No records set!");
 	m_scoreBrowser->getContainer()->addBaseUIElement(m_scoreBrowserNoRecordsYetElement);
 
@@ -573,7 +573,7 @@ OsuSongBrowser2::OsuSongBrowser2(Osu *osu) : OsuScreenBackable(osu)
 	m_songBrowser->setDrawBackground(false);
 	m_songBrowser->setDrawFrame(false);
 	m_songBrowser->setHorizontalScrolling(false);
-	m_songBrowser->setScrollResistance((m_osu->isInVRMode() || Env::cfg(OS::HORIZON)) ? convar->getConVarByName("ui_scrollview_resistance")->getInt() : 15); // a bit shitty this check + convar, but works well enough
+	m_songBrowser->setScrollResistance((m_osu->isInVRMode()) ? convar->getConVarByName("ui_scrollview_resistance")->getInt() : 15); // a bit shitty this check + convar, but works well enough
 
 	// beatmap database
 	m_db = new OsuDatabase(m_osu);
@@ -615,9 +615,9 @@ OsuSongBrowser2::~OsuSongBrowser2()
 	checkHandleKillDynamicStarCalculator(false);
 	checkHandleKillBackgroundSearchMatcher();
 
-	engine->getResourceManager()->destroyResource(m_backgroundStarCalculator);
-	engine->getResourceManager()->destroyResource(m_dynamicStarCalculator);
-	engine->getResourceManager()->destroyResource(m_backgroundSearchMatcher);
+	resourceManager->destroyResource(m_backgroundStarCalculator);
+	resourceManager->destroyResource(m_dynamicStarCalculator);
+	resourceManager->destroyResource(m_backgroundSearchMatcher);
 
 	m_songBrowser->getContainer()->empty();
 
@@ -689,7 +689,7 @@ void OsuSongBrowser2::draw(Graphics *g)
 	g->fillRect(0, 0, m_osu->getScreenWidth(), m_osu->getScreenHeight());
 	/*
 	g->setColor(0xffffffff);
-	g->setAlpha(clamp<float>(engine->getMouse()->getPos().x / 400.0f, 0.0f, 1.0f));
+	g->setAlpha(std::clamp<float>(mouse->getPos().x / 400.0f, 0.0f, 1.0f));
 	g->fillRect(0, 0, m_osu->getScreenWidth(), m_osu->getScreenHeight());
 	*/
 
@@ -726,7 +726,7 @@ void OsuSongBrowser2::draw(Graphics *g)
 				m_fBackgroundFadeInTime = engine->getTime();
 			else if (m_fBackgroundFadeInTime > 0.0f && engine->getTime() > m_fBackgroundFadeInTime)
 			{
-				alpha = clamp<float>((engine->getTime() - m_fBackgroundFadeInTime)/osu_songbrowser_background_fade_in_duration.getFloat(), 0.0f, 1.0f);
+				alpha = std::clamp<float>((engine->getTime() - m_fBackgroundFadeInTime)/osu_songbrowser_background_fade_in_duration.getFloat(), 0.0f, 1.0f);
 				alpha = 1.0f - (1.0f - alpha)*(1.0f - alpha);
 			}
 		}
@@ -817,10 +817,10 @@ void OsuSongBrowser2::draw(Graphics *g)
 
 				McRect graphRect(0, m_bottombar->getPos().y - strainHeightMultiplier, graphWidth, strainHeightMultiplier);
 
-				const float alpha = (graphRect.contains(engine->getMouse()->getPos()) ? 1.0f : m_osu_hud_scrubbing_timeline_strains_alpha_ref->getFloat());
+				const float alpha = (graphRect.contains(mouse->getPos()) ? 1.0f : m_osu_hud_scrubbing_timeline_strains_alpha_ref->getFloat());
 
-				const Color aimStrainColor = COLORf(alpha, m_osu_hud_scrubbing_timeline_strains_aim_color_r_ref->getInt() / 255.0f, m_osu_hud_scrubbing_timeline_strains_aim_color_g_ref->getInt() / 255.0f, m_osu_hud_scrubbing_timeline_strains_aim_color_b_ref->getInt() / 255.0f);
-				const Color speedStrainColor = COLORf(alpha, m_osu_hud_scrubbing_timeline_strains_speed_color_r_ref->getInt() / 255.0f, m_osu_hud_scrubbing_timeline_strains_speed_color_g_ref->getInt() / 255.0f, m_osu_hud_scrubbing_timeline_strains_speed_color_b_ref->getInt() / 255.0f);
+				const Color aimStrainColor = argb(alpha, m_osu_hud_scrubbing_timeline_strains_aim_color_r_ref->getInt() / 255.0f, m_osu_hud_scrubbing_timeline_strains_aim_color_g_ref->getInt() / 255.0f, m_osu_hud_scrubbing_timeline_strains_aim_color_b_ref->getInt() / 255.0f);
+				const Color speedStrainColor = argb(alpha, m_osu_hud_scrubbing_timeline_strains_speed_color_r_ref->getInt() / 255.0f, m_osu_hud_scrubbing_timeline_strains_speed_color_g_ref->getInt() / 255.0f, m_osu_hud_scrubbing_timeline_strains_speed_color_b_ref->getInt() / 255.0f);
 
 				g->setDepthBuffer(true);
 				for (int i=0; i<aimStrains.size(); i++)
@@ -833,16 +833,16 @@ void OsuSongBrowser2::draw(Graphics *g)
 					const double speedStrainHeight = speedStrain * strainHeightMultiplier;
 					//const double strainHeight = strain * strainHeightMultiplier;
 
-					if (!engine->getKeyboard()->isShiftDown())
+					if (!keyboard->isShiftDown())
 					{
 						g->setColor(aimStrainColor);
 						g->fillRect(i*strainWidth, m_bottombar->getPos().y - aimStrainHeight, std::max(1.0f, std::round(strainWidth + 0.5f)), aimStrainHeight);
 					}
 
-					if (!engine->getKeyboard()->isControlDown())
+					if (!keyboard->isControlDown())
 					{
 						g->setColor(speedStrainColor);
-						g->fillRect(i*strainWidth, m_bottombar->getPos().y - (engine->getKeyboard()->isShiftDown() ? 0 : aimStrainHeight) - speedStrainHeight, std::max(1.0f, std::round(strainWidth + 0.5f)), speedStrainHeight + 1);
+						g->fillRect(i*strainWidth, m_bottombar->getPos().y - (keyboard->isShiftDown() ? 0 : aimStrainHeight) - speedStrainHeight, std::max(1.0f, std::round(strainWidth + 0.5f)), speedStrainHeight + 1);
 					}
 				}
 				g->setDepthBuffer(false);
@@ -946,7 +946,7 @@ void OsuSongBrowser2::draw(Graphics *g)
 	{
 		UString busyMessage = "Calculating stars (";
 		busyMessage.append(UString::format("%i/%i) ...", m_iBackgroundStarCalculationIndex, m_beatmaps.size()));
-		McFont *font = engine->getResourceManager()->getFont("FONT_DEFAULT");
+		McFont *font = resourceManager->getFont("FONT_DEFAULT");
 
 		g->setColor(0xff333333);
 		g->pushTransform();
@@ -962,7 +962,7 @@ void OsuSongBrowser2::draw(Graphics *g)
 	if (true)
 	{
 		UString topRanksInfoMessage = "<<< Top Ranks";
-		McFont *font = engine->getResourceManager()->getFont("FONT_DEFAULT");
+		McFont *font = resourceManager->getFont("FONT_DEFAULT");
 		g->setColor(0xff444444);
 		g->pushTransform();
 		{
@@ -1004,7 +1004,7 @@ void OsuSongBrowser2::draw(Graphics *g)
 	if (m_fPulseAnimation > 0.0f)
 	{
 		Color topColor = 0x00ffffff;
-		Color bottomColor = COLOR((int)(25*m_fPulseAnimation), 255, 255, 255);
+		Color bottomColor = argb((int)(25*m_fPulseAnimation), 255, 255, 255);
 
 		g->fillGradient(0, 0, m_osu->getScreenWidth(), m_osu->getScreenHeight(), topColor, topColor, bottomColor, bottomColor);
 	}
@@ -1030,7 +1030,7 @@ void OsuSongBrowser2::draw(Graphics *g)
 	g->setColor(0xffffffff);
 	g->pushTransform();
 		g->translate(m_osu->getScreenWidth()/6, m_osu->getScreenHeight()/3);
-		g->drawString(m_osu->getSongBrowserFont(), UString::format("res %i", engine->getResourceManager()->getNumResources()));
+		g->drawString(m_osu->getSongBrowserFont(), UString::format("res %i", resourceManager->getNumResources()));
 		g->translate(0, m_osu->getSongBrowserFont()->getHeight()*2);
 		int numVisibleSongButtons = 0;
 		std::vector<CBaseUIElement*> *elements = m_songBrowser->getContainer()->getAllBaseUIElementsPointer();
@@ -1080,7 +1080,7 @@ void OsuSongBrowser2::update()
 	}
 
 	// HACKHACK: workaround for very wide back button skin images overlapping bottombar button hitboxes
-	const bool isMouseInsideValidBackButtonHitbox = (engine->getMouse()->getPos().x < m_osu->getSkin()->getMenuBack2()->getSizeBase().x);
+	const bool isMouseInsideValidBackButtonHitbox = (mouse->getPos().x < m_osu->getSkin()->getMenuBack2()->getSizeBase().x);
 	if (m_bottombar->isMouseInside() && !isMouseInsideValidBackButtonHitbox)
 		OsuScreenBackable::stealFocus();
 
@@ -1103,7 +1103,7 @@ void OsuSongBrowser2::update()
 
 	// HACKHACK: mouse wheel handling order
 	if (m_osu->getHUD()->isVolumeOverlayBusy() || m_osu->getOptionsMenu()->isMouseInside())
-		engine->getMouse()->resetWheelDelta();
+		mouse->resetWheelDelta();
 
 	// update and focus handling
 	m_contextMenu->update();
@@ -1148,7 +1148,7 @@ void OsuSongBrowser2::update()
 
 	// handle right click absolute scrolling
 	{
-		if (engine->getMouse()->isRightDown() && !m_contextMenu->isMouseInside())
+		if (mouse->isRightDown() && !m_contextMenu->isMouseInside())
 		{
 			if (!m_bSongBrowserRightClickScrollCheck)
 			{
@@ -1180,7 +1180,7 @@ void OsuSongBrowser2::update()
 		}
 
 		if (m_bSongBrowserRightClickScrolling)
-			m_songBrowser->scrollToY(-((engine->getMouse()->getPos().y - 2 - m_songBrowser->getPos().y)/m_songBrowser->getSize().y)*m_songBrowser->getScrollSize().y);
+			m_songBrowser->scrollToY(-((mouse->getPos().y - 2 - m_songBrowser->getPos().y)/m_songBrowser->getSize().y)*m_songBrowser->getScrollSize().y);
 	}
 
 	// handle async random beatmap selection
@@ -1196,8 +1196,9 @@ void OsuSongBrowser2::update()
 	}
 
 	// if cursor is to the left edge of the screen, force center currently selected beatmap/diff
-	// but only if the context menu is currently not visible (since we don't want move things while e.g. managing collections etc.)
-	if (engine->getMouse()->getPos().x < m_osu->getScreenWidth()*0.1f && !m_contextMenu->isVisible())
+	// but only if the context menu/options menu is currently not visible (since we don't want move things while e.g. managing collections etc.)
+	static uint8_t cooldown = 0; // this is so slow, it halves fps when the mouse is on the left side of the screen
+	if (!cooldown++ && !m_contextMenu->isVisible() && !m_osu->getOptionsMenu()->isVisible() && mouse->getPos().x < m_osu->getScreenWidth()*0.1f)
 		scrollToSelectedSongButton();
 
 	// handle searching
@@ -1304,8 +1305,8 @@ void OsuSongBrowser2::update()
 							m_backgroundStarCalculator->setBeatmapDifficulty(diffToCalc, AR, CS, OD, speedMultiplier, false, false, false);
 							m_backgroundStarCalcTempParent = (diffs.size() > 0 ? beatmap : NULL);
 
-							engine->getResourceManager()->requestNextLoadAsync();
-							engine->getResourceManager()->loadResource(m_backgroundStarCalculator);
+							resourceManager->requestNextLoadAsync();
+							resourceManager->loadResource(m_backgroundStarCalculator);
 						}
 					}
 				}
@@ -1317,7 +1318,7 @@ void OsuSongBrowser2::update()
 				if (m_iBackgroundStarCalculationIndex >= m_beatmaps.size())
 					m_iBackgroundStarCalculationIndex = 0;
 
-				m_iBackgroundStarCalculationIndex = clamp<int>(m_iBackgroundStarCalculationIndex, 0, m_beatmaps.size());
+				m_iBackgroundStarCalculationIndex = std::clamp<int>(m_iBackgroundStarCalculationIndex, 0, m_beatmaps.size());
 			}
 		}
 	}
@@ -1351,7 +1352,7 @@ void OsuSongBrowser2::onKeyDown(KeyboardEvent &key)
 			key.consume();
 			if (m_sSearchString.length() > 0)
 			{
-				if (engine->getKeyboard()->isControlDown())
+				if (keyboard->isControlDown())
 				{
 					// delete everything from the current caret position to the left, until after the first non-space character (but including it)
 					bool foundNonSpaceChar = false;
@@ -1391,7 +1392,7 @@ void OsuSongBrowser2::onKeyDown(KeyboardEvent &key)
 	// paste clipboard support
 	if (key == KEY_V)
 	{
-		if (engine->getKeyboard()->isControlDown())
+		if (keyboard->isControlDown())
 		{
 			const UString clipstring = env->getClipBoardText();
 			if (clipstring.length() > 0)
@@ -1429,7 +1430,7 @@ void OsuSongBrowser2::onKeyDown(KeyboardEvent &key)
 		refreshBeatmaps();
 
 	// selection move
-	if (!engine->getKeyboard()->isAltDown() && key == KEY_DOWN)
+	if (!keyboard->isAltDown() && key == KEY_DOWN)
 	{
 		const std::vector<CBaseUIElement*> &elements = m_songBrowser->getContainer()->getElements();
 
@@ -1463,7 +1464,7 @@ void OsuSongBrowser2::onKeyDown(KeyboardEvent &key)
 		}
 	}
 
-	if (!engine->getKeyboard()->isAltDown() && key == KEY_UP)
+	if (!keyboard->isAltDown() && key == KEY_UP)
 	{
 		const std::vector<CBaseUIElement*> &elements = m_songBrowser->getContainer()->getElements();
 
@@ -1509,7 +1510,7 @@ void OsuSongBrowser2::onKeyDown(KeyboardEvent &key)
 	{
 		m_bLeft = true;
 
-		const bool jumpToNextGroup = engine->getKeyboard()->isShiftDown();
+		const bool jumpToNextGroup = keyboard->isShiftDown();
 
 		const std::vector<CBaseUIElement*> &elements = m_songBrowser->getContainer()->getElements();
 
@@ -1554,7 +1555,7 @@ void OsuSongBrowser2::onKeyDown(KeyboardEvent &key)
 	{
 		m_bRight = true;
 
-		const bool jumpToNextGroup = engine->getKeyboard()->isShiftDown();
+		const bool jumpToNextGroup = keyboard->isShiftDown();
 
 		const std::vector<CBaseUIElement*> &elements = m_songBrowser->getContainer()->getElements();
 
@@ -1593,7 +1594,7 @@ void OsuSongBrowser2::onKeyDown(KeyboardEvent &key)
 
 	// group open/close
 	// NOTE: only closing works atm (no "focus" state on buttons yet)
-	if (key == KEY_ENTER && engine->getKeyboard()->isShiftDown())
+	if (key == KEY_ENTER && keyboard->isShiftDown())
 	{
 		const std::vector<CBaseUIElement*> &elements = m_songBrowser->getContainer()->getElements();
 
@@ -1615,11 +1616,11 @@ void OsuSongBrowser2::onKeyDown(KeyboardEvent &key)
 	}
 
 	// selection select
-	if (key == KEY_ENTER && !engine->getKeyboard()->isShiftDown())
+	if (key == KEY_ENTER && !keyboard->isShiftDown())
 		playSelectedDifficulty();
 
 	// toggle auto
-	if (key == KEY_A && engine->getKeyboard()->isControlDown())
+	if (key == KEY_A && keyboard->isControlDown())
 		m_osu->getModSelector()->toggleAuto();
 
 	key.consume();
@@ -1652,7 +1653,7 @@ void OsuSongBrowser2::onChar(KeyboardEvent &e)
 	m_contextMenu->onChar(e);
 	if (e.isConsumed()) return;
 
-	if (e.getCharCode() < 32 || !m_bVisible || m_bBeatmapRefreshScheduled || (engine->getKeyboard()->isControlDown() && !engine->getKeyboard()->isAltDown())) return;
+	if (e.getCharCode() < 32 || !m_bVisible || m_bBeatmapRefreshScheduled || (keyboard->isControlDown() && !keyboard->isAltDown())) return;
 	if (m_bF1Pressed || m_bF2Pressed || m_bF3Pressed) return;
 
 	// handle searching
@@ -1694,8 +1695,8 @@ void OsuSongBrowser2::setVisible(bool visible)
 		onUserButtonChange(m_name_ref->getString(), -1);
 
 		// HACKHACK: workaround for BaseUI framework deficiency (missing mouse events. if a mouse button is being held, and then suddenly a BaseUIElement gets put under it and set visible, and then the mouse button is released, that "incorrectly" fires onMouseUpInside/onClicked/etc.)
-		engine->getMouse()->onLeftChange(false);
-		engine->getMouse()->onRightChange(false);
+		mouse->onLeftChange(false);
+		mouse->onRightChange(false);
 	}
 	else
 		m_contextMenu->setVisible2(false);
@@ -1710,7 +1711,7 @@ void OsuSongBrowser2::onPlayEnd(bool quit)
 	{
 		rebuildScoreButtons();
 
-		OsuUISongBrowserSongDifficultyButton *selectedSongDiffButton = dynamic_cast<OsuUISongBrowserSongDifficultyButton*>(findCurrentlySelectedSongButton());
+		auto *selectedSongDiffButton = dynamic_cast<OsuUISongBrowserSongDifficultyButton*>(findCurrentlySelectedSongButton());
 		if (selectedSongDiffButton != NULL)
 			selectedSongDiffButton->updateGrade();
 	}
@@ -1729,9 +1730,9 @@ void OsuSongBrowser2::onSelectionChange(OsuUISongBrowserButton *button, bool reb
 	// keep track and update all selection states
 	// I'm still not happy with this, but at least all state update logic is localized in this function instead of spread across all buttons
 
-	OsuUISongBrowserSongButton *songButtonPointer = dynamic_cast<OsuUISongBrowserSongButton*>(button);
-	OsuUISongBrowserSongDifficultyButton *songDiffButtonPointer = dynamic_cast<OsuUISongBrowserSongDifficultyButton*>(button);
-	OsuUISongBrowserCollectionButton *collectionButtonPointer = dynamic_cast<OsuUISongBrowserCollectionButton*>(button);
+	auto *songButtonPointer = dynamic_cast<OsuUISongBrowserSongButton*>(button);
+	auto *songDiffButtonPointer = dynamic_cast<OsuUISongBrowserSongDifficultyButton*>(button);
+	auto *collectionButtonPointer = dynamic_cast<OsuUISongBrowserCollectionButton*>(button);
 
 	///debugLog("onSelectionChange(%i, %i, %i)\n", (int)(songButtonPointer != NULL), (int)(songDiffButtonPointer != NULL), (int)(collectionButtonPointer != NULL));
 
@@ -1839,7 +1840,7 @@ void OsuSongBrowser2::onDifficultySelected(OsuDatabaseBeatmap *diff2, bool play,
 		if (!clientPlayStateChangeRequestBeatmapSent)
 		{
 			// CTRL + click = auto
-			if (!m_osu->isInMultiplayer() && engine->getKeyboard()->isControlDown())
+			if (!m_osu->isInMultiplayer() && keyboard->isControlDown())
 				m_osu->getModSelector()->enableAuto();
 
 			m_osu->onBeforePlayStart();
@@ -2060,7 +2061,7 @@ void OsuSongBrowser2::addBeatmap(OsuDatabaseBeatmap *beatmap)
 		{
 			for (size_t i=0; i<tempChildrenForGroups.size(); i++)
 			{
-				const int index = clamp<int>((int)tempChildrenForGroups[i]->getDatabaseBeatmap()->getStarsNomod(), 0, 11);
+				const int index = std::clamp<int>((int)tempChildrenForGroups[i]->getDatabaseBeatmap()->getStarsNomod(), 0, 11);
 				m_difficultyCollectionButtons[index]->getChildren().push_back(tempChildrenForGroups[i]);
 			}
 		}
@@ -2187,7 +2188,7 @@ void OsuSongBrowser2::readdBeatmap(OsuDatabaseBeatmap *diff2)
 			// HACKHACK: partial code duplication, see addBeatmap()
 			if (m_difficultyCollectionButtons.size() == 12)
 			{
-				const int index = clamp<int>((int)diff2->getStarsNomod(), 0, 11);
+				const int index = std::clamp<int>((int)diff2->getStarsNomod(), 0, 11);
 				m_difficultyCollectionButtons[index]->getChildren().push_back(difficultyGroupButton);
 			}
 		}
@@ -2272,13 +2273,14 @@ void OsuSongBrowser2::scrollToSongButton(OsuUISongBrowserButton *songButton, boo
 	m_songBrowser->scrollToY(-songButton->getRelPos().y + (alignOnTop ? (0) : (m_songBrowser->getSize().y/2 - songButton->getSize().y/2)));
 }
 
+// this is really slow
 OsuUISongBrowserButton *OsuSongBrowser2::findCurrentlySelectedSongButton() const
 {
 	OsuUISongBrowserButton *selectedButton = NULL;
 	const std::vector<CBaseUIElement*> &elements = m_songBrowser->getContainer()->getElements();
 	for (size_t i=0; i<elements.size(); i++)
 	{
-		OsuUISongBrowserButton *button = dynamic_cast<OsuUISongBrowserButton*>(elements[i]);
+		auto *button = dynamic_cast<OsuUISongBrowserButton*>(elements[i]);
 		if (button != NULL && button->isSelected()) // NOTE: fall through multiple selected buttons (e.g. collections)
 			selectedButton = button;
 	}
@@ -2287,7 +2289,7 @@ OsuUISongBrowserButton *OsuSongBrowser2::findCurrentlySelectedSongButton() const
 
 void OsuSongBrowser2::scrollToSelectedSongButton()
 {
-	auto selectedButton = findCurrentlySelectedSongButton();
+	auto *selectedButton = findCurrentlySelectedSongButton();
 	scrollToSongButton(selectedButton);
 }
 
@@ -2803,7 +2805,7 @@ void OsuSongBrowser2::updateLayout()
 
 	const int topbarRightTabButtonMargin = 10 * dpiScale;
 	const int topbarRightTabButtonHeight = 30 * dpiScale;
-	const int topbarRightTabButtonWidth = clamp<float>((float)(m_topbarRight->getSize().x - 2*topbarRightTabButtonMargin) / (float)m_topbarRightTabButtons.size(), 0.0f, 200.0f * dpiScale);
+	const int topbarRightTabButtonWidth = std::clamp<float>((float)(m_topbarRight->getSize().x - 2*topbarRightTabButtonMargin) / (float)m_topbarRightTabButtons.size(), 0.0f, 200.0f * dpiScale);
 	for (int i=0; i<m_topbarRightTabButtons.size(); i++)
 	{
 		m_topbarRightTabButtons[i]->onResized(); // HACKHACK: framework bug (should update string metrics on setSize())
@@ -2820,7 +2822,7 @@ void OsuSongBrowser2::updateLayout()
 
 	const int topbarRightSortButtonMargin = 10 * dpiScale;
 	const int topbarRightSortButtonHeight = 30 * dpiScale;
-	const int topbarRightSortButtonWidth = clamp<float>((float)(m_topbarRight->getSize().x - 2*topbarRightSortButtonMargin) / (float)m_topbarRightSortButtons.size(), 0.0f, 200.0f * dpiScale);
+	const int topbarRightSortButtonWidth = std::clamp<float>((float)(m_topbarRight->getSize().x - 2*topbarRightSortButtonMargin) / (float)m_topbarRightSortButtons.size(), 0.0f, 200.0f * dpiScale);
 	for (int i=0; i<m_topbarRightSortButtons.size(); i++)
 	{
 		m_topbarRightSortButtons[i]->setSize(topbarRightSortButtonWidth, topbarRightSortButtonHeight);
@@ -2902,7 +2904,7 @@ void OsuSongBrowser2::updateLayout()
 
 void OsuSongBrowser2::onBack()
 {
-	engine->getSound()->play(m_osu->getSkin()->getMenuClick());
+	soundEngine->play(m_osu->getSkin()->getMenuClick());
 	m_osu->toggleSongBrowser();
 }
 
@@ -3015,10 +3017,10 @@ void OsuSongBrowser2::checkHandleKillBackgroundStarCalculator()
 	{
 		m_backgroundStarCalculator->kill();
 
-		const double startTime = engine->getTimeReal();
+		const double startTime = Timing::getTimeReal();
 		while (!m_backgroundStarCalculator->isAsyncReady())
 		{
-			if (engine->getTimeReal() - startTime > 2)
+			if (Timing::getTimeReal() - startTime > 2)
 			{
 				debugLog("WARNING: Ignoring stuck BackgroundStarCalculator thread!\n");
 				break;
@@ -3035,12 +3037,12 @@ bool OsuSongBrowser2::checkHandleKillDynamicStarCalculator(bool timeout)
 
 		if (!timeout)
 		{
-			const double startTime = engine->getTimeReal();
+			const double startTime = Timing::getTimeReal();
 			while (!m_dynamicStarCalculator->isAsyncReady())
 			{
-				env->sleep(1);
+				Timing::sleep(1);
 
-				if (engine->getTimeReal() - startTime > 20.0)
+				if (Timing::getTimeReal() - startTime > 20.0)
 				{
 					debugLog("WARNING: Ignoring stuck DynamicStarCalculator thread!\n");
 					break;
@@ -3051,7 +3053,7 @@ bool OsuSongBrowser2::checkHandleKillDynamicStarCalculator(bool timeout)
 		return m_dynamicStarCalculator->isAsyncReady();
 	}
 	else
-		return (!engine->getResourceManager()->isLoadingResource(m_dynamicStarCalculator) || m_dynamicStarCalculator->isAsyncReady());
+		return (!resourceManager->isLoadingResource(m_dynamicStarCalculator) || m_dynamicStarCalculator->isAsyncReady());
 }
 
 void OsuSongBrowser2::checkHandleKillBackgroundSearchMatcher()
@@ -3060,10 +3062,10 @@ void OsuSongBrowser2::checkHandleKillBackgroundSearchMatcher()
 	{
 		m_backgroundSearchMatcher->kill();
 
-		const double startTime = engine->getTimeReal();
+		const double startTime = Timing::getTimeReal();
 		while (!m_backgroundSearchMatcher->isAsyncReady())
 		{
-			if (engine->getTimeReal() - startTime > 2)
+			if (Timing::getTimeReal() - startTime > 2)
 			{
 				debugLog("WARNING: Ignoring stuck SearchMatcher thread!\n");
 				break;
@@ -3321,8 +3323,8 @@ void OsuSongBrowser2::onSearchUpdate()
 			m_backgroundSearchMatcher->release();
 			m_backgroundSearchMatcher->setSongButtonsAndSearchString(m_songButtons, m_sSearchString, osu_songbrowser_search_hardcoded_filter.getString());
 
-			engine->getResourceManager()->requestNextLoadAsync();
-			engine->getResourceManager()->loadResource(m_backgroundSearchMatcher);
+			resourceManager->requestNextLoadAsync();
+			resourceManager->loadResource(m_backgroundSearchMatcher);
 		}
 		else
 			rebuildSongButtonsAndVisibleSongButtonsWithSearchMatchSupport(true);
@@ -3578,8 +3580,8 @@ void OsuSongBrowser2::onGroupChange(UString text, int id)
 	}
 	if (grouping == NULL) return;
 
-	const Color highlightColor = COLOR(255, 0, 255, 0);
-	const Color defaultColor = COLOR(255, 255, 255, 255);
+	const Color highlightColor = rgb(0, 255, 0);
+	const Color defaultColor = rgb(255, 255, 255);
 
 	// update group combobox button text
 	m_groupButton->setText(grouping->name);
@@ -3944,7 +3946,7 @@ void OsuSongBrowser2::onAfterSortingOrGroupChangeUpdateInt(bool autoScroll)
 
 void OsuSongBrowser2::onSelectionMode()
 {
-	engine->getSound()->play(m_osu->getSkin()->getMenuClick());
+	soundEngine->play(m_osu->getSkin()->getMenuClick());
 
 	m_contextMenu->setPos(m_bottombarNavButtons[0]->getPos());
 	m_contextMenu->setRelPos(m_bottombarNavButtons[0]->getRelPos());
@@ -3980,13 +3982,13 @@ void OsuSongBrowser2::onSelectionMode()
 
 void OsuSongBrowser2::onSelectionMods()
 {
-	engine->getSound()->play(m_osu->getSkin()->getMenuClick());
+	soundEngine->play(m_osu->getSkin()->getMenuClick());
 	m_osu->toggleModSelection(m_bF1Pressed);
 }
 
 void OsuSongBrowser2::onSelectionRandom()
 {
-	engine->getSound()->play(m_osu->getSkin()->getMenuClick());
+	soundEngine->play(m_osu->getSkin()->getMenuClick());
 	if (m_bShiftPressed)
 		m_bPreviousRandomBeatmapScheduled = true;
 	else
@@ -3995,7 +3997,7 @@ void OsuSongBrowser2::onSelectionRandom()
 
 void OsuSongBrowser2::onSelectionOptions()
 {
-	engine->getSound()->play(m_osu->getSkin()->getMenuClick());
+	soundEngine->play(m_osu->getSkin()->getMenuClick());
 
 	OsuUISongBrowserButton *currentlySelectedSongButton = findCurrentlySelectedSongButton();
 	if (currentlySelectedSongButton != NULL)
@@ -4053,7 +4055,7 @@ void OsuSongBrowser2::onModeChange2(UString text, int id)
 
 void OsuSongBrowser2::onUserButtonClicked()
 {
-	engine->getSound()->play(m_osu->getSkin()->getMenuClick());
+	soundEngine->play(m_osu->getSkin()->getMenuClick());
 
 	std::vector<UString> names = m_db->getPlayerNamesWithScoresForUserSwitcher();
 	if (names.size() > 0)
@@ -4366,8 +4368,8 @@ void OsuSongBrowser2::recalculateStarsForSelectedBeatmap(bool force)
 
 		m_dynamicStarCalculator->setBeatmapDifficulty(m_selectedBeatmap->getSelectedDifficulty2(), AR, CS, OD, speedMultiplier, relax, autopilot, touchdevice);
 
-		engine->getResourceManager()->requestNextLoadAsync();
-		engine->getResourceManager()->loadResource(m_dynamicStarCalculator);
+		resourceManager->requestNextLoadAsync();
+		resourceManager->loadResource(m_dynamicStarCalculator);
 	}
 	else
 	{

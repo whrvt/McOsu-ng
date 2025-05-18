@@ -11,7 +11,7 @@
 
 #include "cbase.h"
 
-#ifdef MCENGINE_FEATURE_OPENGL
+#ifdef MCENGINE_FEATURE_GL3
 
 #include "OpenGLSync.h"
 
@@ -83,11 +83,6 @@ public:
 
 	// renderer info
 	virtual Vector2 getResolution() const {return m_vResolution;}
-	virtual UString getVendor();
-	virtual UString getModel();
-	virtual UString getVersion();
-	virtual int getVRAMTotal();
-	virtual int getVRAMRemaining();
 
 	// callbacks
 	virtual void onResolutionChange(Vector2 newResolution);
@@ -145,7 +140,7 @@ private:
 };
 
 #else
-class OpenGL3Interface : public Graphics{};
+class OpenGL3Interface{};
 #endif
 
 #endif

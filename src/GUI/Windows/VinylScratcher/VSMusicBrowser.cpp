@@ -269,7 +269,7 @@ public:
 			if (!engine->hasFocus())
 				alpha = 0.75f;
 
-			g->setColor(COLOR((int)(alpha*50.0f), 0,196,223));
+			g->setColor(argb((int)(alpha*50.0f), 0,196,223));
 			g->fillRect(m_vPos.x, m_vPos.y - 1, m_vSize.x, m_vSize.y + 2);
 		}
 
@@ -344,9 +344,9 @@ VSMusicBrowser::VSMusicBrowser(int x, int y, int xSize, int ySize, McFont *font)
 {
 	m_font = font;
 
-	m_defaultTextColor = COLOR(215, 55, 55, 55);
-	m_playingTextBrightColor = COLOR(255, 0, 196, 223);
-	m_playingTextDarkColor = COLOR(150, 0, 80, 130);
+	m_defaultTextColor = argb(215, 55, 55, 55);
+	m_playingTextBrightColor = rgb(0, 196, 223);
+	m_playingTextDarkColor = argb(150, 0, 80, 130);
 
 	m_mainContainer = new CBaseUIScrollView(x, y, xSize, ySize, "");
 	m_mainContainer->setDrawBackground(false);
@@ -496,7 +496,7 @@ void VSMusicBrowser::updateFolder(UString baseFolder, size_t fromDepth)
 		const float dpiScale = env->getDPIScale();
 		const int border = 20 * dpiScale;
 		const int height = 28 * dpiScale;
-		const Color frameColor = COLOR(255, 150, 150, 150);
+		const Color frameColor = rgb(150, 150, 150);
 
 		col.view = new VSMusicBrowserColumnScrollView(xPos, -1, 100, m_vSize.y, "");
 		col.view->setScrollMouseWheelMultiplier((1/3.5f)*0.5f);
@@ -619,7 +619,7 @@ void VSMusicBrowser::updateDrives()
 	const float dpiScale = env->getDPIScale();
 	const int border = 20 * dpiScale;
 	const int height = 28 * dpiScale;
-	const Color frameColor = COLOR(255, 150, 150, 150);
+	const Color frameColor = rgb(150, 150, 150);
 
 	float maxWidthCounter = 1;
 

@@ -152,16 +152,16 @@ GaussianBlur::GaussianBlur(int x, int y, int width, int height, int kernelSize, 
 	m_fRadius = radius;
 
 	m_kernel = new GaussianBlurKernel(kernelSize, radius, width, height);
-	m_rt = engine->getResourceManager()->createRenderTarget(x, y, width, height);
-	m_rt2 = engine->getResourceManager()->createRenderTarget(x, y, width, height);
-	m_blurShader = engine->getResourceManager()->loadShader("blur.vsh", "blur.fsh", "gblur");
+	m_rt = resourceManager->createRenderTarget(x, y, width, height);
+	m_rt2 = resourceManager->createRenderTarget(x, y, width, height);
+	m_blurShader = resourceManager->loadShader("blur.vsh", "blur.fsh", "gblur");
 }
 
 GaussianBlur::~GaussianBlur()
 {
-	engine->getResourceManager()->destroyResource(m_rt);
+	resourceManager->destroyResource(m_rt);
 	m_rt = NULL;
-	engine->getResourceManager()->destroyResource(m_rt2);
+	resourceManager->destroyResource(m_rt2);
 	m_rt2 = NULL;
 	SAFE_DELETE(m_kernel);
 }

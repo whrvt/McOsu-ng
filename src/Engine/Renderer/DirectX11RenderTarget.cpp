@@ -39,7 +39,7 @@ void DirectX11RenderTarget::init()
 
 	HRESULT hr;
 
-	DirectX11Interface *g = ((DirectX11Interface*)engine->getGraphics());
+	DirectX11Interface *g = ((DirectX11Interface*)graphics);
 	if (m_interfaceOverrideHack != NULL)
 		g = m_interfaceOverrideHack;
 
@@ -243,7 +243,7 @@ void DirectX11RenderTarget::enable()
 {
 	if (!m_bReady) return;
 
-	DirectX11Interface *dx11 = (DirectX11Interface*)engine->getGraphics();
+	DirectX11Interface *dx11 = (DirectX11Interface*)graphics;
 
 	// backup
 	// HACKHACK: slow af
@@ -256,9 +256,9 @@ void DirectX11RenderTarget::enable()
 	// clear
 	Color clearColor = m_clearColor;
 	if (debug_rt->getBool())
-		clearColor = COLORf(0.5f, 0.0f, 0.5f, 0.0f);
+		clearColor = argb(0.5f, 0.0f, 0.5f, 0.0f);
 
-	float fClearColor[4] = {COLOR_GET_Rf(clearColor), COLOR_GET_Gf(clearColor), COLOR_GET_Bf(clearColor), COLOR_GET_Af(clearColor)};
+	float fClearColor[4] = {Rf(clearColor), Gf(clearColor), Bf(clearColor), Af(clearColor)};
 
 	if (m_bClearColorOnDraw)
 		dx11->getDeviceContext()->ClearRenderTargetView(m_renderTargetView, fClearColor);
@@ -274,7 +274,7 @@ void DirectX11RenderTarget::disable()
 	// restore
 	// HACKHACK: slow af
 	{
-		((DirectX11Interface*)engine->getGraphics())->getDeviceContext()->OMSetRenderTargets(1, &m_prevRenderTargetView, m_prevDepthStencilView);
+		((DirectX11Interface*)graphics)->getDeviceContext()->OMSetRenderTargets(1, &m_prevRenderTargetView, m_prevDepthStencilView);
 
 		// refcount
 		{
@@ -297,7 +297,7 @@ void DirectX11RenderTarget::bind(unsigned int textureUnit)
 {
 	if (!m_bReady) return;
 
-	DirectX11Interface *dx11 = (DirectX11Interface*)engine->getGraphics();
+	DirectX11Interface *dx11 = (DirectX11Interface*)graphics;
 
 	m_iTextureUnitBackup = textureUnit;
 
@@ -319,7 +319,7 @@ void DirectX11RenderTarget::unbind()
 	// restore
 	// HACKHACK: slow af
 	{
-		((DirectX11Interface*)engine->getGraphics())->getDeviceContext()->PSSetShaderResources(m_iTextureUnitBackup, 1, &m_prevShaderResourceView);
+		((DirectX11Interface*)graphics)->getDeviceContext()->PSSetShaderResources(m_iTextureUnitBackup, 1, &m_prevShaderResourceView);
 
 		// refcount
 		{

@@ -287,7 +287,7 @@ bool Image::loadRawImage()
 
 		for (int y=0; y<m_iHeight; y++)
 		{
-			if (COLOR_GET_Ai(getPixel(x, y)) > 0)
+			if (Ai(getPixel(x, y)) > 0)
 			{
 				foundNonTransparentPixel = true;
 				break;
@@ -346,7 +346,7 @@ Color Image::getPixel(int x, int y) const
 		a = r;
 	}
 
-	return COLOR(a, r, g, b);
+	return argb(a, r, g, b);
 }
 
 void Image::setPixel(int x, int y, Color color)
@@ -356,13 +356,13 @@ void Image::setPixel(int x, int y, Color color)
 
 	if (m_rawImage.size() < 1 || x < 0 || y < 0 || indexEnd < 0 || indexEnd > m_rawImage.size()) return;
 
-	m_rawImage[indexBegin + 0] = COLOR_GET_Ri(color);
+	m_rawImage[indexBegin + 0] = Ri(color);
 	if (m_iNumChannels > 1)
-		m_rawImage[indexBegin + 1] = COLOR_GET_Gi(color);
+		m_rawImage[indexBegin + 1] = Gi(color);
 	if (m_iNumChannels > 2)
-		m_rawImage[indexBegin + 2] = COLOR_GET_Bi(color);
+		m_rawImage[indexBegin + 2] = Bi(color);
 	if (m_iNumChannels > 3)
-		m_rawImage[indexBegin + 3] = COLOR_GET_Ai(color);
+		m_rawImage[indexBegin + 3] = Ai(color);
 }
 
 void Image::setPixels(const char *data, size_t size, TYPE type)

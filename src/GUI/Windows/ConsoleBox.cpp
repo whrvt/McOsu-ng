@@ -118,8 +118,8 @@ ConsoleBox::ConsoleBox() : CBaseUIElement(0, 0, 0, 0, "")
 {
 	const float dpiScale = env->getDPIScale();
 
-	McFont *font = engine->getResourceManager()->getFont("FONT_DEFAULT");
-	m_logFont = engine->getResourceManager()->getFont("FONT_CONSOLE");
+	McFont *font = resourceManager->getFont("FONT_DEFAULT");
+	m_logFont = resourceManager->getFont("FONT_CONSOLE");
 
 	m_textbox = new ConsoleBoxTextbox(5 * dpiScale, engine->getScreenHeight(), engine->getScreenWidth() - 10 * dpiScale, 26, "consoleboxtextbox");
 	{
@@ -140,8 +140,8 @@ ConsoleBox::ConsoleBox() : CBaseUIElement(0, 0, 0, 0, "")
 	m_suggestion = new CBaseUIScrollView(5 * dpiScale, engine->getScreenHeight(), engine->getScreenWidth() - 10 * dpiScale, 90 * dpiScale, "consoleboxsuggestion");
 	{
 		m_suggestion->setDrawBackground(true);
-		m_suggestion->setBackgroundColor(COLOR(255, 0, 0, 0));
-		m_suggestion->setFrameColor(COLOR(255, 255, 255, 255));
+		m_suggestion->setBackgroundColor(rgb(0, 0, 0));
+		m_suggestion->setFrameColor(rgb(255, 255, 255));
 		m_suggestion->setHorizontalScrolling(false);
 		m_suggestion->setVerticalScrolling(true);
 		m_suggestion->setVisible(false);
@@ -178,8 +178,8 @@ void ConsoleBox::draw(Graphics *g)
 
 	g->pushTransform();
 	{
-		if (engine->getMouse()->isMiddleDown())
-			g->translate(0, engine->getMouse()->getPos().y - engine->getScreenHeight());
+		if (mouse->isMiddleDown())
+			g->translate(0, mouse->getPos().y - engine->getScreenHeight());
 
 		if (console_overlay.getBool() || m_textbox->isVisible())
 			drawLogOverlay(g);
@@ -259,7 +259,7 @@ void ConsoleBox::update()
 {
 	CBaseUIElement::update();
 
-	const bool mleft = engine->getMouse()->isLeftDown();
+	const bool mleft = mouse->isLeftDown();
 
 	if (mleft && m_textbox->isMouseInside() && m_textbox->isVisible())
 		m_textbox->setActive(true);
@@ -380,7 +380,7 @@ void ConsoleBox::onSuggestionClicked(CBaseUIButton *suggestion)
 void ConsoleBox::onKeyDown(KeyboardEvent &e)
 {
 	// toggle visibility
-	if ((e == KEY_F1 && (m_textbox->isActive() && m_textbox->isVisible() && !m_bConsoleAnimateOut ? true : engine->getKeyboard()->isShiftDown())) || (m_textbox->isActive() && m_textbox->isVisible() && !m_bConsoleAnimateOut && e == KEY_ESCAPE))
+	if ((e == KEY_F1 && (m_textbox->isActive() && m_textbox->isVisible() && !m_bConsoleAnimateOut ? true : keyboard->isShiftDown())) || (m_textbox->isActive() && m_textbox->isVisible() && !m_bConsoleAnimateOut && e == KEY_ESCAPE))
 		toggle(e);
 
 	if (m_bConsoleAnimateOut) return;
@@ -393,7 +393,7 @@ void ConsoleBox::onKeyDown(KeyboardEvent &e)
 	{
 		// handle suggestion up/down buttons
 
-		if (e == KEY_DOWN || (e == KEY_TAB && !engine->getKeyboard()->isShiftDown()))
+		if (e == KEY_DOWN || (e == KEY_TAB && !keyboard->isShiftDown()))
 		{
 			if (m_iSelectedSuggestion < 1)
 				m_iSelectedSuggestion = m_iSuggestionCount - 1;
@@ -427,7 +427,7 @@ void ConsoleBox::onKeyDown(KeyboardEvent &e)
 
 			e.consume();
 		}
-		else if (e == KEY_UP || (e == KEY_TAB && engine->getKeyboard()->isShiftDown()))
+		else if (e == KEY_UP || (e == KEY_TAB && keyboard->isShiftDown()))
 		{
 			if (m_iSelectedSuggestion > m_iSuggestionCount-2)
 				m_iSelectedSuggestion = 0;
@@ -621,7 +621,7 @@ void ConsoleBox::addSuggestion(const UString &text, const UString &helpText, con
 
 	// update suggestion size
 	const int gap = 10 * dpiScale;
-	m_fSuggestionY = clamp<float>(buttonheight * vsize, 0, buttonheight * 4) + (engine->getScreenHeight() - m_textbox->getPos().y) + gap;
+	m_fSuggestionY = std::clamp<float>(buttonheight * vsize, 0, buttonheight * 4) + (engine->getScreenHeight() - m_textbox->getPos().y) + gap;
 
 	if (buttonheight * vsize > buttonheight * 4)
 	{

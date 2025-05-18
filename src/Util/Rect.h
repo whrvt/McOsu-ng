@@ -27,6 +27,7 @@ public:
 
 	inline Vector2 getPos() const {return Vector2(m_fMinX, m_fMinY);}
 	inline Vector2 getSize() const {return Vector2(m_fMaxX - m_fMinX, m_fMaxY - m_fMinY);}
+	inline Vector2 getCenter() const {return Vector2(((m_fMaxX - m_fMinX)/2)+m_fMinX, ((m_fMaxY - m_fMinY)/2)+m_fMinY);}
 
 	inline float getX() const {return m_fMinX;}
 	inline float getY() const {return m_fMinY;}

@@ -59,10 +59,10 @@ public:
 
 	// callbacks called by the Osu class (osu!standard)
 	void skipEmptySection();
-	void keyPressed1(bool mouse);
-	void keyPressed2(bool mouse);
-	void keyReleased1(bool mouse);
-	void keyReleased2(bool mouse);
+	void keyPressed1(bool mouseButton);
+	void keyPressed2(bool mouseButton);
+	void keyReleased1(bool mouseButton);
+	void keyReleased2(bool mouseButton);
 
 	// songbrowser & player logic
 	void select(); // loads the music of the currently selected diff and starts playing from the previewTime (e.g. clicking on a beatmap)
@@ -110,13 +110,13 @@ public:
 	inline int getNumSpinnersForCurrentTime() const {return m_iCurrentNumSpinners;}
 	inline int getMaxPossibleCombo() const {return m_iMaxPossibleCombo;}
 	inline unsigned long long getScoreV2ComboPortionMaximum() const {return m_iScoreV2ComboPortionMaximum;}
-	inline double getAimStarsForUpToHitObjectIndex(int upToHitObjectIndex) const {return (m_aimStarsForNumHitObjects.size() > 0 && upToHitObjectIndex > -1 ? m_aimStarsForNumHitObjects[clamp<int>(upToHitObjectIndex, 0, m_aimStarsForNumHitObjects.size()-1)] : 0);}
-	inline double getAimSliderFactorForUpToHitObjectIndex(int upToHitObjectIndex) const {return (m_aimSliderFactorForNumHitObjects.size() > 0 && upToHitObjectIndex > -1 ? m_aimSliderFactorForNumHitObjects[clamp<int>(upToHitObjectIndex, 0, m_aimSliderFactorForNumHitObjects.size()-1)] : 0);}
-	inline double getAimDifficultSlidersForUpToHitObjectIndex(int upToHitObjectIndex) const {return (m_aimDifficultSlidersForNumHitObjects.size() > 0 && upToHitObjectIndex > -1 ? m_aimDifficultSlidersForNumHitObjects[clamp<int>(upToHitObjectIndex, 0, m_aimDifficultSlidersForNumHitObjects.size()-1)] : 0);}
-	inline double getAimDifficultStrainsForUpToHitObjectIndex(int upToHitObjectIndex) const {return (m_aimDifficultStrainsForNumHitObjects.size() > 0 && upToHitObjectIndex > -1 ? m_aimDifficultStrainsForNumHitObjects[clamp<int>(upToHitObjectIndex, 0, m_aimDifficultStrainsForNumHitObjects.size()-1)] : 0);}
-	inline double getSpeedStarsForUpToHitObjectIndex(int upToHitObjectIndex) const {return (m_speedStarsForNumHitObjects.size() > 0 && upToHitObjectIndex > -1 ? m_speedStarsForNumHitObjects[clamp<int>(upToHitObjectIndex, 0, m_speedStarsForNumHitObjects.size()-1)] : 0);}
-	inline double getSpeedNotesForUpToHitObjectIndex(int upToHitObjectIndex) const {return (m_speedNotesForNumHitObjects.size() > 0 && upToHitObjectIndex > -1 ? m_speedNotesForNumHitObjects[clamp<int>(upToHitObjectIndex, 0, m_speedNotesForNumHitObjects.size()-1)] : 0);}
-	inline double getSpeedDifficultStrainsForUpToHitObjectIndex(int upToHitObjectIndex) const {return (m_speedDifficultStrainsForNumHitObjects.size() > 0 && upToHitObjectIndex > -1 ? m_speedDifficultStrainsForNumHitObjects[clamp<int>(upToHitObjectIndex, 0, m_speedDifficultStrainsForNumHitObjects.size()-1)] : 0);}
+	inline double getAimStarsForUpToHitObjectIndex(int upToHitObjectIndex) const {return (m_aimStarsForNumHitObjects.size() > 0 && upToHitObjectIndex > -1 ? m_aimStarsForNumHitObjects[std::clamp<int>(upToHitObjectIndex, 0, m_aimStarsForNumHitObjects.size()-1)] : 0);}
+	inline double getAimSliderFactorForUpToHitObjectIndex(int upToHitObjectIndex) const {return (m_aimSliderFactorForNumHitObjects.size() > 0 && upToHitObjectIndex > -1 ? m_aimSliderFactorForNumHitObjects[std::clamp<int>(upToHitObjectIndex, 0, m_aimSliderFactorForNumHitObjects.size()-1)] : 0);}
+	inline double getAimDifficultSlidersForUpToHitObjectIndex(int upToHitObjectIndex) const {return (m_aimDifficultSlidersForNumHitObjects.size() > 0 && upToHitObjectIndex > -1 ? m_aimDifficultSlidersForNumHitObjects[std::clamp<int>(upToHitObjectIndex, 0, m_aimDifficultSlidersForNumHitObjects.size()-1)] : 0);}
+	inline double getAimDifficultStrainsForUpToHitObjectIndex(int upToHitObjectIndex) const {return (m_aimDifficultStrainsForNumHitObjects.size() > 0 && upToHitObjectIndex > -1 ? m_aimDifficultStrainsForNumHitObjects[std::clamp<int>(upToHitObjectIndex, 0, m_aimDifficultStrainsForNumHitObjects.size()-1)] : 0);}
+	inline double getSpeedStarsForUpToHitObjectIndex(int upToHitObjectIndex) const {return (m_speedStarsForNumHitObjects.size() > 0 && upToHitObjectIndex > -1 ? m_speedStarsForNumHitObjects[std::clamp<int>(upToHitObjectIndex, 0, m_speedStarsForNumHitObjects.size()-1)] : 0);}
+	inline double getSpeedNotesForUpToHitObjectIndex(int upToHitObjectIndex) const {return (m_speedNotesForNumHitObjects.size() > 0 && upToHitObjectIndex > -1 ? m_speedNotesForNumHitObjects[std::clamp<int>(upToHitObjectIndex, 0, m_speedNotesForNumHitObjects.size()-1)] : 0);}
+	inline double getSpeedDifficultStrainsForUpToHitObjectIndex(int upToHitObjectIndex) const {return (m_speedDifficultStrainsForNumHitObjects.size() > 0 && upToHitObjectIndex > -1 ? m_speedDifficultStrainsForNumHitObjects[std::clamp<int>(upToHitObjectIndex, 0, m_speedDifficultStrainsForNumHitObjects.size()-1)] : 0);}
 	inline const std::vector<double> &getAimStrains() const {return m_aimStrains;}
 	inline const std::vector<double> &getSpeedStrains() const {return m_speedStrains;}
 
@@ -245,8 +245,8 @@ protected:
 	float m_fShouldFlashSectionFail;
 	bool m_bContinueScheduled;
 	unsigned long m_iContinueMusicPos;
-	float m_fWaitTime;
-	float m_fPrevUnpauseTime;
+	double m_fWaitTime;
+	double m_fPrevUnpauseTime;
 
 	// database
 	OsuDatabaseBeatmap *m_selectedDifficulty2;
@@ -262,7 +262,7 @@ protected:
 	double m_fLastRealTimeForInterpolationDelta;
 	int m_iResourceLoadUpdateDelayHack;
 	bool m_bForceStreamPlayback;
-	float m_fAfterMusicIsFinishedVirtualAudioTimeStart;
+	double m_fAfterMusicIsFinishedVirtualAudioTimeStart;
 	bool m_bIsFirstMissSound;
 
 	// health

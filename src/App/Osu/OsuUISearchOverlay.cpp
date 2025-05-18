@@ -16,7 +16,7 @@ OsuUISearchOverlay::OsuUISearchOverlay(Osu *osu, float xPos, float yPos, float x
 {
 	m_osu = osu;
 
-	m_font = engine->getResourceManager()->getFont("FONT_DEFAULT");
+	m_font = resourceManager->getFont("FONT_DEFAULT");
 
 	m_iOffsetRight = 0;
 	m_bDrawNumResults = true;
@@ -79,7 +79,7 @@ void OsuUISearchOverlay::draw(Graphics *g)
 		const float height = lineHeight * numLines;
 		const int offsetTextWidthWithOverflow = offsetTextWidthWithoutOverflow + textOverflowXOffset;
 
-		g->setColor(COLOR(m_sSearchString.length() > 0 ? 100 : 30, 0, 0, 0));
+		g->setColor(argb(m_sSearchString.length() > 0 ? 100 : 30, 0, 0, 0));
 		g->fillRect(m_vPos.x + m_vSize.x - offsetTextWidthWithOverflow, m_vPos.y, offsetTextWidthWithOverflow, height);
 	}
 

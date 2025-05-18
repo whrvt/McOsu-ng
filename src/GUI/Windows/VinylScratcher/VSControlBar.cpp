@@ -33,12 +33,12 @@ public:
 	{
 		if (!m_bVisible) return;
 
-		const Color top = COLOR(255, 244, 244, 244);
-		const Color bottom = COLOR(255, 221, 221, 221);
+		const Color top = rgb(244, 244, 244);
+		const Color bottom = rgb(221, 221, 221);
 
 		g->fillGradient(m_vPos.x + 1, m_vPos.y + 1, m_vSize.x - 1, m_vSize.y, top, top, bottom, bottom);
 
-		g->setColor(COLOR(255, 204, 204, 204));
+		g->setColor(rgb(204, 204, 204));
 		g->drawRect(m_vPos.x, m_vPos.y, m_vSize.x, m_vSize.y);
 
 		drawText(g);
@@ -62,7 +62,7 @@ protected:
 					if (m_textDarkColor != 0)
 						g->setColor(m_textDarkColor);
 					else
-						g->setColor(COLOR_INVERT(m_textColor));
+						g->setColor(Colors::invert(m_textColor));
 
 					g->drawString(m_font, m_sText);
 				}
@@ -100,19 +100,19 @@ public:
 					Vector2(m_vPos.x+std::round(m_vBlockPos.x)+1 + m_vBlockSize.x-1, m_vPos.y+std::round(m_vBlockPos.y)+1),
 					Vector2(m_vPos.x+std::round(m_vBlockPos.x)+1 + m_vBlockSize.x-1, m_vPos.y+std::round(m_vBlockPos.y)+1 + m_vBlockSize.y/2),
 					Vector2(m_vPos.x+std::round(m_vBlockPos.x)+1,  m_vPos.y+std::round(m_vBlockPos.y)+1 + m_vBlockSize.y/2),
-					COLOR(255, 205, 218, 243),
-					COLOR(255, 205, 218, 243),
-					COLOR(255, 141, 188, 238),
-					COLOR(255, 141, 188, 238));
+					rgb(205, 218, 243),
+					rgb(205, 218, 243),
+					rgb(141, 188, 238),
+					rgb(141, 188, 238));
 
 		g->drawQuad(Vector2(m_vPos.x+std::round(m_vBlockPos.x)+1, m_vPos.y+std::round(m_vBlockPos.y)+1+std::round(m_vBlockSize.y/2.0f)),
 					Vector2(m_vPos.x+std::round(m_vBlockPos.x)+1 + m_vBlockSize.x-1, m_vPos.y+std::round(m_vBlockPos.y)+1+std::round(m_vBlockSize.y/2.0f)),
 					Vector2(m_vPos.x+std::round(m_vBlockPos.x)+1 + m_vBlockSize.x-1, m_vPos.y+std::round(m_vBlockPos.y)+1+std::round(m_vBlockSize.y/2.0f) + m_vBlockSize.y-(std::round(m_vBlockSize.y/2.0f))),
 					Vector2(m_vPos.x+std::round(m_vBlockPos.x)+1, m_vPos.y+std::round(m_vBlockPos.y)+1+std::round(m_vBlockSize.y/2.0f) + m_vBlockSize.y-(std::round(m_vBlockSize.y/2.0f))),
-					COLOR(255, 105, 173, 243),
-					COLOR(255, 105, 173, 243),
-					COLOR(255, 185, 253, 254),
-					COLOR(255, 185, 253, 254));
+					rgb(105, 173, 243),
+					rgb(105, 173, 243),
+					rgb(185, 253, 254),
+					rgb(185, 253, 254));
 	}
 };
 
@@ -126,12 +126,12 @@ public:
 	{
 		if (!m_bVisible) return;
 
-		const Color top = (m_bChecked ? COLOR(255, 178, 237, 171) : COLOR(255, 244, 244, 244));
-		const Color bottom = (m_bChecked ? COLOR(255, 117, 211, 114) : COLOR(255, 221, 221, 221));
+		const Color top = (m_bChecked ? rgb(178, 237, 171) : rgb(244, 244, 244));
+		const Color bottom = (m_bChecked ? rgb(117, 211, 114) : rgb(221, 221, 221));
 
 		g->fillGradient(m_vPos.x + 1, m_vPos.y + 1, m_vSize.x - 1, m_vSize.y, top, top, bottom, bottom);
 
-		g->setColor(COLOR(255, 204, 204, 204));
+		g->setColor(rgb(204, 204, 204));
 		g->drawRect(m_vPos.x, m_vPos.y, m_vSize.x, m_vSize.y);
 
 		drawText(g);
@@ -146,7 +146,7 @@ VSControlBar::VSControlBar(int x, int y, int xSize, int ySize, McFont *font) : C
 
 	const float dpiScale = env->getDPIScale();
 	const int height = 22 * dpiScale;
-	const Color textColor = COLOR(215, 55, 55, 55);
+	const Color textColor = argb(215, 55, 55, 55);
 
 	m_container = new CBaseUIContainer(0, 0, engine->getScreenWidth(), engine->getScreenHeight(), "");
 
@@ -168,7 +168,7 @@ VSControlBar::VSControlBar(int x, int y, int xSize, int ySize, McFont *font) : C
 	m_volume = new VSControlBarSlider(0, 0, m_prev->getRelPos().x, height*2, "");
 	m_volume->setOrientation(true);
 	m_volume->setDrawBackground(false);
-	m_volume->setFrameColor(COLOR(255, 204, 204, 204));
+	m_volume->setFrameColor(rgb(204, 204, 204));
 	m_volume->setBackgroundColor(0xffffffff);
 	m_volume->setBounds(0.0f, 1.0f);
 	m_volume->setInitialValue(vs_volume.getFloat());
@@ -215,8 +215,8 @@ void VSControlBar::draw(Graphics *g)
 
 	// draw background gradient
 	{
-		const Color top = COLOR(255, 244, 244, 244);
-		const Color bottom = COLOR(255, 221, 221, 221);
+		const Color top = rgb(244, 244, 244);
+		const Color bottom = rgb(221, 221, 221);
 
 		g->fillGradient(m_vPos.x, m_vPos.y, m_vSize.x, m_vSize.y, top, top, bottom, bottom);
 	}

@@ -52,15 +52,15 @@ OsuMultiplayer::OsuMultiplayer(Osu *osu)
 		m_cl_cmdrate = convar->getConVarByName("cl_cmdrate", false);
 
 	// engine callbacks
-	engine->getNetworkHandler()->setOnClientReceiveServerPacketListener( fastdelegate::MakeDelegate(this, &OsuMultiplayer::onClientReceive) );
-	engine->getNetworkHandler()->setOnServerReceiveClientPacketListener( fastdelegate::MakeDelegate(this, &OsuMultiplayer::onServerReceive) );
+	networkHandler->setOnClientReceiveServerPacketListener( fastdelegate::MakeDelegate(this, &OsuMultiplayer::onClientReceive) );
+	networkHandler->setOnServerReceiveClientPacketListener( fastdelegate::MakeDelegate(this, &OsuMultiplayer::onServerReceive) );
 
-	engine->getNetworkHandler()->setOnClientConnectedToServerListener( fastdelegate::MakeDelegate(this, &OsuMultiplayer::onClientConnectedToServer) );
-	engine->getNetworkHandler()->setOnClientDisconnectedFromServerListener( fastdelegate::MakeDelegate(this, &OsuMultiplayer::onClientDisconnectedFromServer) );
+	networkHandler->setOnClientConnectedToServerListener( fastdelegate::MakeDelegate(this, &OsuMultiplayer::onClientConnectedToServer) );
+	networkHandler->setOnClientDisconnectedFromServerListener( fastdelegate::MakeDelegate(this, &OsuMultiplayer::onClientDisconnectedFromServer) );
 
-	engine->getNetworkHandler()->setOnServerClientChangeListener( fastdelegate::MakeDelegate(this, &OsuMultiplayer::onServerClientChange) );
-	engine->getNetworkHandler()->setOnLocalServerStartedListener( fastdelegate::MakeDelegate(this, &OsuMultiplayer::onLocalServerStarted) );
-	engine->getNetworkHandler()->setOnLocalServerStoppedListener( fastdelegate::MakeDelegate(this, &OsuMultiplayer::onLocalServerStopped) );
+	networkHandler->setOnServerClientChangeListener( fastdelegate::MakeDelegate(this, &OsuMultiplayer::onServerClientChange) );
+	networkHandler->setOnLocalServerStartedListener( fastdelegate::MakeDelegate(this, &OsuMultiplayer::onLocalServerStarted) );
+	networkHandler->setOnLocalServerStoppedListener( fastdelegate::MakeDelegate(this, &OsuMultiplayer::onLocalServerStopped) );
 
 	// convar callbacks
 	osu_mp_broadcastcommand.setCallback( fastdelegate::MakeDelegate(this, &OsuMultiplayer::onBroadcastCommand) );
@@ -177,9 +177,9 @@ void OsuMultiplayer::update()
 				memcpy(wrappedPacket.data() + wrapperSize + size, buffer + alreadyUploadedDataBytes, pp.numDataBytes);
 
 				if (m_uploads[i].id == 0)
-					engine->getNetworkHandler()->servercast(wrappedPacket.data(), pp.numDataBytes + size + wrapperSize, true);
+					networkHandler->servercast(wrappedPacket.data(), pp.numDataBytes + size + wrapperSize, true);
 				else
-					engine->getNetworkHandler()->clientcast(wrappedPacket.data(), pp.numDataBytes + size + wrapperSize, m_uploads[i].id, true);
+					networkHandler->clientcast(wrappedPacket.data(), pp.numDataBytes + size + wrapperSize, m_uploads[i].id, true);
 
 				// update counter (2)
 				switch (fileType)
@@ -240,8 +240,8 @@ void OsuMultiplayer::update()
 		PLAYER_INPUT_PACKET input;
 		input.time = m_osu->getSongBrowser()->hasSelectedAndIsPlaying() ? m_osu->getSelectedBeatmap()->getCurMusicPosWithOffsets() : 0;
 		// TODO: convert to resolution independent (osu?) coordinates
-		input.cursorPosX = (short)engine->getMouse()->getPos().x;
-		input.cursorPosY = (short)engine->getMouse()->getPos().y;
+		input.cursorPosX = (short)mouse->getPos().x;
+		input.cursorPosY = (short)mouse->getPos().y;
 		input.keys = 0; // TODO:
 		m_playerInputBuffer.push_back(input);
 
@@ -611,9 +611,9 @@ bool OsuMultiplayer::onClientReceiveInt(uint32_t id, void *data, uint32_t size, 
 						memcpy((void*)(((char*)&wrappedPacket) + wrapperSize), &pp, size);
 
 						if (uploadState.id != 0)
-							engine->getNetworkHandler()->clientcast(wrappedPacket, size + wrapperSize, uploadState.id, true);
+							networkHandler->clientcast(wrappedPacket, size + wrapperSize, uploadState.id, true);
 						else
-							engine->getNetworkHandler()->servercast(wrappedPacket, size + wrapperSize, true);
+							networkHandler->servercast(wrappedPacket, size + wrapperSize, true);
 					}
 
 					// remember sent serial for uploader
@@ -838,7 +838,7 @@ void OsuMultiplayer::onServerClientChange(uint32_t id, UString name, bool connec
 	PLAYER_CHANGE_PACKET pp;
 	pp.id = id;
 	pp.connected = connected;
-	pp.size = clamp<int>(name.length(), 0, 254);
+	pp.size = std::clamp<int>(name.length(), 0, 254);
 	for (int i=0; std::cmp_less(i,pp.size); i++)
 	{
 		pp.name[i] = name[i];
@@ -862,7 +862,7 @@ void OsuMultiplayer::onServerClientChange(uint32_t id, UString name, bool connec
 			{
 				m_serverPlayers.erase(m_serverPlayers.begin() + i);
 
-				engine->getNetworkHandler()->broadcast(wrappedPacket, size + wrapperSize, true);
+				networkHandler->broadcast(wrappedPacket, size + wrapperSize, true);
 			}
 			break;
 		}
@@ -870,7 +870,7 @@ void OsuMultiplayer::onServerClientChange(uint32_t id, UString name, bool connec
 
 	if (!exists)
 	{
-		engine->getNetworkHandler()->broadcast(wrappedPacket, size + wrapperSize, true);
+		networkHandler->broadcast(wrappedPacket, size + wrapperSize, true);
 
 		// send playerlist to new client (before adding to m_serverPlayers)
 		if (m_serverPlayers.size() > 0)
@@ -879,14 +879,14 @@ void OsuMultiplayer::onServerClientChange(uint32_t id, UString name, bool connec
 			{
 				pp.id = m_serverPlayers[i].id;
 				pp.connected = true;
-				pp.size = clamp<int>(m_serverPlayers[i].name.length(), 0, 254);
+				pp.size = std::clamp<int>(m_serverPlayers[i].name.length(), 0, 254);
 				for (int n=0; std::cmp_less(n,pp.size); n++)
 				{
 					pp.name[n] = m_serverPlayers[i].name[n];
 				}
 				memcpy((void*)(((char*)&wrappedPacket) + wrapperSize), &pp, size);
 
-				engine->getNetworkHandler()->clientcast(wrappedPacket, size + wrapperSize, id, true);
+				networkHandler->clientcast(wrappedPacket, size + wrapperSize, id, true);
 			}
 		}
 
@@ -934,7 +934,7 @@ void OsuMultiplayer::onLocalServerStopped()
 
 void OsuMultiplayer::onClientCmd()
 {
-	if (!engine->getNetworkHandler()->isClient() || m_playerInputBuffer.size() < 1) return;
+	if (!networkHandler->isClient() || m_playerInputBuffer.size() < 1) return;
 
 	size_t size = sizeof(PLAYER_INPUT_PACKET) * m_playerInputBuffer.size();
 
@@ -945,15 +945,15 @@ void OsuMultiplayer::onClientCmd()
 	memcpy(wrappedPacket.data(), &wrap, wrapperSize);
 	memcpy(wrappedPacket.data() + wrapperSize, &m_playerInputBuffer[0], size);
 
-	engine->getNetworkHandler()->servercast(wrappedPacket.data(), size + wrapperSize, false);
+	networkHandler->servercast(wrappedPacket.data(), size + wrapperSize, false);
 }
 
 void OsuMultiplayer::onClientStatusUpdate(bool missingBeatmap, bool waiting, bool downloadingBeatmap)
 {
-	if (!engine->getNetworkHandler()->isClient()) return;
+	if (!networkHandler->isClient()) return;
 
 	PLAYER_STATE_PACKET pp;
-	pp.id = engine->getNetworkHandler()->getLocalClientID();
+	pp.id = networkHandler->getLocalClientID();
 	pp.missingBeatmap = missingBeatmap;
 	pp.downloadingBeatmap = downloadingBeatmap;
 	pp.waiting = (waiting && !missingBeatmap); // only wait if we actually have the beatmap
@@ -968,15 +968,15 @@ void OsuMultiplayer::onClientStatusUpdate(bool missingBeatmap, bool waiting, boo
 	if (!isServer())
 		onClientReceive(pp.id, wrappedPacket, size + wrapperSize);
 
-	engine->getNetworkHandler()->broadcast(wrappedPacket, size + wrapperSize, true);
+	networkHandler->broadcast(wrappedPacket, size + wrapperSize, true);
 }
 
 void OsuMultiplayer::onClientScoreChange(int combo, float accuracy, unsigned long long score, bool dead, bool reliable)
 {
-	if (!engine->getNetworkHandler()->isClient()) return;
+	if (!networkHandler->isClient()) return;
 
 	SCORE_PACKET pp;
-	pp.id = engine->getNetworkHandler()->getLocalClientID();
+	pp.id = networkHandler->getLocalClientID();
 	pp.combo = combo;
 	pp.accuracy = accuracy;
 	pp.score = score;
@@ -992,12 +992,12 @@ void OsuMultiplayer::onClientScoreChange(int combo, float accuracy, unsigned lon
 	if (!isServer())
 		onClientReceive(pp.id, wrappedPacket, size + wrapperSize);
 
-	engine->getNetworkHandler()->broadcast(wrappedPacket, size + wrapperSize, reliable);
+	networkHandler->broadcast(wrappedPacket, size + wrapperSize, reliable);
 }
 
 bool OsuMultiplayer::onClientPlayStateChangeRequestBeatmap(OsuDatabaseBeatmap *beatmap)
 {
-	if (!engine->getNetworkHandler()->isClient() || isServer()) return false;
+	if (!networkHandler->isClient() || isServer()) return false;
 
 	const bool isBeatmapAndDiffValid = (beatmap != NULL);
 
@@ -1023,7 +1023,7 @@ bool OsuMultiplayer::onClientPlayStateChangeRequestBeatmap(OsuDatabaseBeatmap *b
 	memcpy(&wrappedPacket, &wrap, wrapperSize);
 	memcpy((void*)(((char*)&wrappedPacket) + wrapperSize), &pp, size);
 
-	engine->getNetworkHandler()->broadcast(wrappedPacket, size + wrapperSize, true);
+	networkHandler->broadcast(wrappedPacket, size + wrapperSize, true);
 
 	onClientStatusUpdate(false);
 
@@ -1034,7 +1034,7 @@ bool OsuMultiplayer::onClientPlayStateChangeRequestBeatmap(OsuDatabaseBeatmap *b
 
 void OsuMultiplayer::onClientBeatmapDownloadRequest()
 {
-	if (!engine->getNetworkHandler()->isClient()) return;
+	if (!networkHandler->isClient()) return;
 
 	BEATMAP_DOWNLOAD_REQUEST_PACKET pp;
 	pp.dummy = 0;
@@ -1049,12 +1049,12 @@ void OsuMultiplayer::onClientBeatmapDownloadRequest()
 	if (!isServer())
 	{
 		// client asks server for download
-		engine->getNetworkHandler()->servercast(wrappedPacket, size + wrapperSize, true);
+		networkHandler->servercast(wrappedPacket, size + wrapperSize, true);
 	}
 	else
 	{
 		// server asks client for download (client which requested the beatmap select we don't have)
-		engine->getNetworkHandler()->clientcast(wrappedPacket, size + wrapperSize, m_iLastClientBeatmapSelectID, true);
+		networkHandler->clientcast(wrappedPacket, size + wrapperSize, m_iLastClientBeatmapSelectID, true);
 	}
 }
 
@@ -1167,7 +1167,7 @@ void OsuMultiplayer::onServerPlayStateChange(OsuMultiplayer::STATE state, unsign
 	memcpy(&wrappedPacket, &wrap, wrapperSize);
 	memcpy((void*)(((char*)&wrappedPacket) + wrapperSize), &pp, size);
 
-	engine->getNetworkHandler()->broadcast(wrappedPacket, size + wrapperSize, true);
+	networkHandler->broadcast(wrappedPacket, size + wrapperSize, true);
 
 	if (isBeatmapAndDiffValid)
 		onClientStatusUpdate(false);
@@ -1205,19 +1205,19 @@ void OsuMultiplayer::setBeatmap(std::string md5hash)
 
 bool OsuMultiplayer::isServer()
 {
-	return engine->getNetworkHandler()->isServer();
+	return networkHandler->isServer();
 }
 
 bool OsuMultiplayer::isInMultiplayer()
 {
-	return engine->getNetworkHandler()->isClient() || engine->getNetworkHandler()->isServer();
+	return networkHandler->isClient() || networkHandler->isServer();
 }
 
 bool OsuMultiplayer::isMissingBeatmap()
 {
 	for (size_t i=0; i<m_clientPlayers.size(); i++)
 	{
-		if (m_clientPlayers[i].id == engine->getNetworkHandler()->getLocalClientID())
+		if (m_clientPlayers[i].id == networkHandler->getLocalClientID())
 			return m_clientPlayers[i].missingBeatmap;
 	}
 	return false;
@@ -1237,7 +1237,7 @@ bool OsuMultiplayer::isWaitingForClient()
 {
 	for (int i=0; i<m_clientPlayers.size(); i++)
 	{
-		if (m_clientPlayers[i].id == engine->getNetworkHandler()->getLocalClientID())
+		if (m_clientPlayers[i].id == networkHandler->getLocalClientID())
 			return (m_clientPlayers[i].waiting || m_clientPlayers[i].downloadingBeatmap);
 	}
 	return false;
@@ -1274,7 +1274,7 @@ void OsuMultiplayer::onClientCommandInt(UString string, bool executeLocallyToo)
 	//debugLog("length = %i", string.length());
 
 	CONVAR_PACKET pp;
-	pp.len = clamp<int>(string.length(), 0, 2047);
+	pp.len = std::clamp<int>(string.length(), 0, 2047);
 	for (int i=0; std::cmp_less(i,pp.len); i++)
 	{
 		pp.str[i] = string[i];
@@ -1288,7 +1288,7 @@ void OsuMultiplayer::onClientCommandInt(UString string, bool executeLocallyToo)
 	memcpy(&wrappedPacket, &wrap, wrapperSize);
 	memcpy((void*)(((char*)&wrappedPacket) + wrapperSize), &pp, size);
 
-	engine->getNetworkHandler()->broadcast(wrappedPacket, size + wrapperSize, true);
+	networkHandler->broadcast(wrappedPacket, size + wrapperSize, true);
 }
 
 void OsuMultiplayer::onMPForceClientBeatmapDownload()

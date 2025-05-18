@@ -120,7 +120,7 @@ void OsuUISongBrowserSongButton::drawBeatmapBackgroundThumbnail(Graphics *g, Ima
 			m_fThumbnailFadeInTime = engine->getTime();
 		else if (m_fThumbnailFadeInTime > 0.0f && engine->getTime() > m_fThumbnailFadeInTime)
 		{
-			alpha = clamp<float>((engine->getTime() - m_fThumbnailFadeInTime)/osu_songbrowser_thumbnail_fade_in_duration.getFloat(), 0.0f, 1.0f);
+			alpha = std::clamp<float>((engine->getTime() - m_fThumbnailFadeInTime)/osu_songbrowser_thumbnail_fade_in_duration.getFloat(), 0.0f, 1.0f);
 			alpha = 1.0f - (1.0f - alpha)*(1.0f - alpha);
 		}
 	}
@@ -300,7 +300,7 @@ void OsuUISongBrowserSongButton::onSelected(bool wasSelected, bool autoSelectBot
 
 void OsuUISongBrowserSongButton::onRightMouseUpInside()
 {
-	triggerContextMenu(engine->getMouse()->getPos());
+	triggerContextMenu(mouse->getPos());
 }
 
 void OsuUISongBrowserSongButton::triggerContextMenu(Vector2 pos)
@@ -633,7 +633,7 @@ void OsuUISongBrowserSongButton::onAddToCollectionConfirmed(UString text, int id
 			spacer->setTextColor(0xff888888);
 			spacer->setTextDarkColor(0xff000000);
 
-			label = m_contextMenu->addButton(Env::cfg(OS::HORIZON) ? "(Click HERE to confirm)" : "(Press ENTER to confirm.)", id);
+			label = m_contextMenu->addButton("(Press ENTER to confirm.)", id);
 			label->setTextLeft(false);
 			label->setTextColor(0xff555555);
 			label->setTextDarkColor(0xff000000);

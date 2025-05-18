@@ -420,7 +420,7 @@ void OsuRankingScreen::update()
 
 	// HACKHACK:
 	if (m_osu->getOptionsMenu()->isMouseInside())
-		engine->getMouse()->resetWheelDelta();
+		mouse->resetWheelDelta();
 
 	// update and focus handling
 	m_container->update();
@@ -432,7 +432,7 @@ void OsuRankingScreen::update()
 		m_container->stealFocus();
 
 	// tooltip (pp + accuracy + unstable rate)
-	if (!m_osu->getOptionsMenu()->isMouseInside() && !m_bIsLegacyScore && engine->getMouse()->getPos().x < m_osu->getScreenWidth() * 0.5f)
+	if (!m_osu->getOptionsMenu()->isMouseInside() && !m_bIsLegacyScore && mouse->getPos().x < m_osu->getScreenWidth() * 0.5f)
 	{
 		m_osu->getTooltipOverlay()->begin();
 		{
@@ -458,7 +458,7 @@ void OsuRankingScreen::update()
 	}
 
 	// frustration multiplier
-	Vector2 cursorDelta = getPPPosCenterRaw() - engine->getMouse()->getPos();
+	Vector2 cursorDelta = getPPPosCenterRaw() - mouse->getPos();
 	Vector2 norm;
 	const float dist = 150.0f;
 	if (cursorDelta.length() > dist)
@@ -479,7 +479,7 @@ void OsuRankingScreen::update()
 	// button transparency
 	const float transparencyStart = m_container->getPos().y + m_container->getSize().y;
 	const float transparencyEnd = m_container->getPos().y + m_container->getSize().y + m_rankingIndex->getSize().y/2;
-	const float alpha = clamp<float>((m_rankingIndex->getPos().y + (transparencyEnd - transparencyStart) - transparencyStart)/(transparencyEnd - transparencyStart), 0.0f, 1.0f);
+	const float alpha = std::clamp<float>((m_rankingIndex->getPos().y + (transparencyEnd - transparencyStart) - transparencyStart)/(transparencyEnd - transparencyStart), 0.0f, 1.0f);
 	anim->moveLinear(&m_fRankingScrollDownInfoButtonAlphaAnim, alpha, 0.075*m_fRankingScrollDownInfoButtonAlphaAnim, true);
 	m_rankingScrollDownInfoButton->setAlpha(m_fRankingScrollDownInfoButtonAlphaAnim);
 }
@@ -678,11 +678,11 @@ void OsuRankingScreen::updateLayout()
 
 void OsuRankingScreen::onBack()
 {
-	engine->getSound()->play(m_osu->getSkin()->getMenuClick());
+	soundEngine->play(m_osu->getSkin()->getMenuClick());
 
 	// stop applause sound
 	if (m_osu->getSkin()->getApplause() != NULL && m_osu->getSkin()->getApplause()->isPlaying())
-		engine->getSound()->stop(m_osu->getSkin()->getApplause());
+		soundEngine->stop(m_osu->getSkin()->getApplause());
 
 	m_osu->toggleRankingScreen();
 }

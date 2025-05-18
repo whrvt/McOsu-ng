@@ -24,7 +24,7 @@ void DirectX11VertexArrayObject::init()
 {
 	if (!m_bAsyncReady || m_vertices.size() < 2) return;
 
-	const DirectX11Interface *dx11 = dynamic_cast<DirectX11Interface*>(engine->getGraphics());
+	const DirectX11Interface *dx11 = dynamic_cast<DirectX11Interface*>(graphics);
 
 	if (m_bReady)
 	{
@@ -102,7 +102,7 @@ void DirectX11VertexArrayObject::init()
 
 		for (size_t i=0; i<m_colors.size(); i++)
 		{
-			const Vector4 color = Vector4(COLOR_GET_Rf(m_colors[i]), COLOR_GET_Gf(m_colors[i]), COLOR_GET_Bf(m_colors[i]), COLOR_GET_Af(m_colors[i]));
+			const Vector4 color = Vector4(Rf(m_colors[i]), Gf(m_colors[i]), Bf(m_colors[i]), Af(m_colors[i]));
 			colors.push_back(color);
 			finalColors.push_back(color);
 		}
@@ -134,9 +134,9 @@ void DirectX11VertexArrayObject::init()
 
 					if (colors.size() > 0)
 					{
-						finalColors.push_back(colors[clamp<int>(i + 0, 0, maxColorIndex)]);
-						finalColors.push_back(colors[clamp<int>(i + 1, 0, maxColorIndex)]);
-						finalColors.push_back(colors[clamp<int>(i + 2, 0, maxColorIndex)]);
+						finalColors.push_back(colors[std::clamp<int>(i + 0, 0, maxColorIndex)]);
+						finalColors.push_back(colors[std::clamp<int>(i + 1, 0, maxColorIndex)]);
+						finalColors.push_back(colors[std::clamp<int>(i + 2, 0, maxColorIndex)]);
 					}
 
 					finalVertices.push_back(m_vertices[i + 0]);
@@ -152,9 +152,9 @@ void DirectX11VertexArrayObject::init()
 
 					if (colors.size() > 0)
 					{
-						finalColors.push_back(colors[clamp<int>(i + 0, 0, maxColorIndex)]);
-						finalColors.push_back(colors[clamp<int>(i + 2, 0, maxColorIndex)]);
-						finalColors.push_back(colors[clamp<int>(i + 3, 0, maxColorIndex)]);
+						finalColors.push_back(colors[std::clamp<int>(i + 0, 0, maxColorIndex)]);
+						finalColors.push_back(colors[std::clamp<int>(i + 2, 0, maxColorIndex)]);
+						finalColors.push_back(colors[std::clamp<int>(i + 3, 0, maxColorIndex)]);
 					}
 				}
 			}
@@ -187,9 +187,9 @@ void DirectX11VertexArrayObject::init()
 
 					if (colors.size() > 0)
 					{
-						finalColors.push_back(colors[clamp<int>(0, 0, maxColorIndex)]);
-						finalColors.push_back(colors[clamp<int>(i, 0, maxColorIndex)]);
-						finalColors.push_back(colors[clamp<int>(i - 1, 0, maxColorIndex)]);
+						finalColors.push_back(colors[std::clamp<int>(0, 0, maxColorIndex)]);
+						finalColors.push_back(colors[std::clamp<int>(i, 0, maxColorIndex)]);
+						finalColors.push_back(colors[std::clamp<int>(i - 1, 0, maxColorIndex)]);
 					}
 				}
 			}
@@ -211,7 +211,7 @@ void DirectX11VertexArrayObject::init()
 				m_convertedVertices[i].pos.z = finalVertices[i].z;
 
 				if (hasColors)
-					m_convertedVertices[i].col = finalColors[clamp<size_t>(i, 0, maxColorIndex)];
+					m_convertedVertices[i].col = finalColors[std::clamp<size_t>(i, 0, maxColorIndex)];
 				else
 				{
 					m_convertedVertices[i].col.x = 1.0f;
@@ -318,12 +318,12 @@ void DirectX11VertexArrayObject::draw()
 		return;
 	}
 
-	const int start = clamp<int>(m_iDrawRangeFromIndex > -1 ? m_iDrawRangeFromIndex : nearestMultipleUp((int)(m_iNumVertices*m_fDrawPercentFromPercent), m_iDrawPercentNearestMultiple), 0, m_iNumVertices);
-	const int end = clamp<int>(m_iDrawRangeToIndex > -1 ? m_iDrawRangeToIndex : nearestMultipleDown((int)(m_iNumVertices*m_fDrawPercentToPercent), m_iDrawPercentNearestMultiple), 0, m_iNumVertices);
+	const int start = std::clamp<int>(m_iDrawRangeFromIndex > -1 ? m_iDrawRangeFromIndex : nearestMultipleUp((int)(m_iNumVertices*m_fDrawPercentFromPercent), m_iDrawPercentNearestMultiple), 0, m_iNumVertices);
+	const int end = std::clamp<int>(m_iDrawRangeToIndex > -1 ? m_iDrawRangeToIndex : nearestMultipleDown((int)(m_iNumVertices*m_fDrawPercentToPercent), m_iDrawPercentNearestMultiple), 0, m_iNumVertices);
 
 	if (start > end || std::abs(end - start) == 0) return;
 
-	const DirectX11Interface *dx11 = dynamic_cast<DirectX11Interface*>(engine->getGraphics());
+	const DirectX11Interface *dx11 = dynamic_cast<DirectX11Interface*>(graphics);
 
 	// draw it
 	{

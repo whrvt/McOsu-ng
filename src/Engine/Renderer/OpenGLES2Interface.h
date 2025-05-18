@@ -75,8 +75,6 @@ public:
 
 	// renderer info
 	virtual Vector2 getResolution() const {return m_vResolution;}
-	virtual int getVRAMTotal();
-	virtual int getVRAMRemaining();
 
 	// callbacks
 	virtual void onResolutionChange(Vector2 newResolution);
@@ -138,7 +136,7 @@ private:
 };
 
 #else
-class OpenGLES2Interface : public NullGraphicsInterface{};
+class OpenGLES2Interface{};
 #endif
 
 #endif

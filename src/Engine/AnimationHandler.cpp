@@ -42,7 +42,7 @@ void AnimationHandler::update()
 		}
 
 		// calculate percentage
-		float percent = clamp<float>((engine->getTime() - animation.m_fStartTime) / (animation.m_fDuration), 0.0f, 1.0f);
+		float percent = std::clamp<float>((engine->getTime() - animation.m_fStartTime) / (animation.m_fDuration), 0.0f, 1.0f);
 
 		if (debug_anim.getBool())
 			debugLog("animation #%i, percent = %f\n", i, percent);
@@ -65,7 +65,7 @@ void AnimationHandler::update()
 		switch (animation.m_animType)
 		{
 		case ANIMATION_TYPE::MOVE_SMOOTH_END:
-			percent = clamp<float>(1.0f - std::pow(1.0f - percent, animation.m_fFactor), 0.0f, 1.0f);
+			percent = std::clamp<float>(1.0f - std::pow(1.0f - percent, animation.m_fFactor), 0.0f, 1.0f);
 			if ((int)(percent*(animation.m_fTarget - animation.m_fStartValue) + animation.m_fStartValue) == (int)animation.m_fTarget)
 				percent = 1.0f;
 			break;

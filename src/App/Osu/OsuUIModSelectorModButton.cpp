@@ -167,7 +167,7 @@ void OsuUIModSelectorModButton::setOn(bool on)
 			anim->moveLinear(&m_vScale.y, m_vBaseScale.y * m_fEnabledScaleMultiplier, animationDuration, true);
 		}
 
-		engine->getSound()->play(m_osu->getSkin()->getCheckOn());
+		soundEngine->play(m_osu->getSkin()->getCheckOn());
 	}
 	else
 	{
@@ -176,7 +176,7 @@ void OsuUIModSelectorModButton::setOn(bool on)
 		anim->moveLinear(&m_vScale.y, m_vBaseScale.y, animationDuration, true);
 
 		if (prevState && !m_bOn) // only play sound on specific change
-			engine->getSound()->play(m_osu->getSkin()->getCheckOff());
+			soundEngine->play(m_osu->getSkin()->getCheckOff());
 	}
 }
 

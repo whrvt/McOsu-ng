@@ -48,7 +48,7 @@ void CBaseUIElement::update()
 {
 	// check if mouse is inside element
 	McRect temp = McRect(m_vPos.x+1, m_vPos.y+1, m_vSize.x-1, m_vSize.y-1);
-	if (temp.contains(engine->getMouse()->getPos()))
+	if (temp.contains(mouse->getPos()))
 	{
 		if (!m_bMouseInside)
 		{
@@ -69,7 +69,7 @@ void CBaseUIElement::update()
 
 	if (!m_bVisible || !m_bEnabled) return;
 
-	if (engine->getMouse()->isLeftDown())
+	if (mouse->isLeftDown())
 	{
 		m_bMouseUpCheck = true;
 

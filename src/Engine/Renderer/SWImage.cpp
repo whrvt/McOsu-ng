@@ -50,12 +50,12 @@ void SWImage::destroy()
 
 void SWImage::bind(unsigned int textureUnit)
 {
-	((SWGraphicsInterface*)engine->getGraphics())->bindTexture(this, textureUnit);
+	((SWGraphicsInterface*)graphics)->bindTexture(this, textureUnit);
 }
 
 void SWImage::unbind()
 {
-	((SWGraphicsInterface*)engine->getGraphics())->bindTexture(NULL, m_iTextureUnitBackup);
+	((SWGraphicsInterface*)graphics)->bindTexture(NULL, m_iTextureUnitBackup);
 }
 
 void SWImage::setFilterMode(Graphics::FILTER_MODE filterMode)

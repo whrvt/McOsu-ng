@@ -327,7 +327,7 @@ OsuUserStatsScreen::~OsuUserStatsScreen()
 	if (m_backgroundPPRecalculator != NULL)
 	{
 		m_backgroundPPRecalculator->interruptLoad();
-		engine->getResourceManager()->destroyResource(m_backgroundPPRecalculator);
+		resourceManager->destroyResource(m_backgroundPPRecalculator);
 		m_backgroundPPRecalculator = NULL;
 	}
 
@@ -459,7 +459,7 @@ void OsuUserStatsScreen::onBack()
 	}
 	else
 	{
-		engine->getSound()->play(m_osu->getSkin()->getMenuClick());
+		soundEngine->play(m_osu->getSkin()->getMenuClick());
 		m_osu->toggleSongBrowser();
 	}
 }
@@ -508,7 +508,7 @@ void OsuUserStatsScreen::rebuildScoreButtons(UString playerName)
 
 void OsuUserStatsScreen::onUserClicked(CBaseUIButton *button)
 {
-	engine->getSound()->play(m_osu->getSkin()->getMenuClick());
+	soundEngine->play(m_osu->getSkin()->getMenuClick());
 
 	// NOTE: code duplication (see OsuSongbrowser2.cpp)
 	std::vector<UString> names = m_osu->getSongBrowser()->getDatabase()->getPlayerNamesWithScoresForUserSwitcher();
@@ -661,7 +661,7 @@ void OsuUserStatsScreen::onRecalculatePP(bool importLegacyScores)
 	if (m_backgroundPPRecalculator != NULL)
 	{
 		m_backgroundPPRecalculator->interruptLoad();
-		engine->getResourceManager()->destroyResource(m_backgroundPPRecalculator);
+		resourceManager->destroyResource(m_backgroundPPRecalculator);
 		m_backgroundPPRecalculator = NULL;
 	}
 
@@ -670,8 +670,8 @@ void OsuUserStatsScreen::onRecalculatePP(bool importLegacyScores)
 	// NOTE: force disable all runtime mods (including all experimental mods!), as they directly influence global OsuGameRules which are used during pp calculation
 	m_osu->getModSelector()->resetMods();
 
-	engine->getResourceManager()->requestNextLoadAsync();
-	engine->getResourceManager()->loadResource(m_backgroundPPRecalculator);
+	resourceManager->requestNextLoadAsync();
+	resourceManager->loadResource(m_backgroundPPRecalculator);
 }
 
 void OsuUserStatsScreen::onCopyAllScoresClicked()
@@ -916,7 +916,7 @@ void OsuUserStatsScreen::updateLayout()
 	m_ppVersionInfoLabel->setSizeToContent(1, 10);
 	{
 		const Vector2 center = m_userButton->getPos() + Vector2(0, m_userButton->getSize().y/2) - Vector2((m_userButton->getPos().x - m_scores->getPos().x)/2, 0);
-		const Vector2 topLeft = center - m_ppVersionInfoLabel->getSize()/2;
+		const Vector2 topLeft = center - m_ppVersionInfoLabel->getSize()/2.0f;
 		const float overflow = (center.x + m_ppVersionInfoLabel->getSize().x/2) - m_userButton->getPos().x;
 
 		m_ppVersionInfoLabel->setPos((int)(topLeft.x - std::max(overflow, 0.0f)), (int)(topLeft.y));

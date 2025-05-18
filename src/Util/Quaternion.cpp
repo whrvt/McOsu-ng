@@ -30,7 +30,7 @@ void Quaternion::normalize()
 
 void Quaternion::fromAxis(const Vector3 &axis, float angleDeg)
 {
-	angleDeg = deg2rad(angleDeg);
+	angleDeg = glm::radians(angleDeg);
 
 	float sinAngle;
 	angleDeg *= 0.5f;

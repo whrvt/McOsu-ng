@@ -63,9 +63,9 @@ VisualProfiler::VisualProfiler() : CBaseUIElement(0, 0, 0, 0, "")
 
 	setProfile(&g_profCurrentProfile); // by default we look at the standard full engine-wide profile
 
-	m_font = engine->getResourceManager()->getFont("FONT_DEFAULT");
-	m_fontConsole = engine->getResourceManager()->getFont("FONT_CONSOLE");
-	m_lineVao = engine->getResourceManager()->createVertexArrayObject(Graphics::PRIMITIVE::PRIMITIVE_LINES, Graphics::USAGE_TYPE::USAGE_DYNAMIC, true);
+	m_font = resourceManager->getFont("FONT_DEFAULT");
+	m_fontConsole = resourceManager->getFont("FONT_CONSOLE");
+	m_lineVao = resourceManager->createVertexArrayObject(Graphics::PRIMITIVE::PRIMITIVE_LINES, Graphics::USAGE_TYPE::USAGE_DYNAMIC, true);
 
 	m_bScheduledForceRebuildLineVao = false;
 	m_bRequiresAltShiftKeysToFreeze = false;
@@ -93,7 +93,7 @@ void VisualProfiler::draw(Graphics *g)
 			case INFO_BLADE_DISPLAY_MODE::INFO_BLADE_DISPLAY_MODE_GPU_INFO:
 				{
 					const int vramTotalMB = g->getVRAMTotal() / 1024;
-					const int vramRemainingMB = g->getVRAMRemaining() / 1024;
+					const int vramAvailableMB = g->getVRAMRemaining() / 1024;
 
 					UString vendor = g->getVendor();
 					UString model = g->getModel();
@@ -110,7 +110,7 @@ void VisualProfiler::draw(Graphics *g)
 					addTextLine(UString::format("Env DPI Scale: %f", env->getDPIScale()), textFont, m_textLines);
 					addTextLine(UString::format("Env DPI: %i", (int)env->getDPI()), textFont, m_textLines);
 					//addTextLine(UString::format("Renderer: %s", typeid(g).name()), textFont, m_textLines); // TODO: add g->getName() or something
-					addTextLine(UString::format("VRAM: %i MB / %i MB", vramRemainingMB, vramTotalMB), textFont, m_textLines);
+					addTextLine(UString::format("VRAM: %i MB avail. / %i MB tot.", vramAvailableMB, vramTotalMB), textFont, m_textLines);
 				}
 				break;
 
@@ -127,12 +127,12 @@ void VisualProfiler::draw(Graphics *g)
 					addTextLine(UString::format("ConVars: %zu", convar->getConVarArray().size()), textFont, m_textLines);
 					addTextLine(UString::format("Monitor: [%i] of %zu", env->getMonitor(), env->getMonitors().size()), textFont, m_textLines);
 					addTextLine(UString::format("Env Mouse Pos: %i x %i", (int)envMousePos.x, (int)envMousePos.y), textFont, m_textLines);
-					addTextLine(UString::format("Sound Device: %s", engine->getSound()->getOutputDevice().toUtf8()), textFont, m_textLines);
-					addTextLine(UString::format("Sound Volume: %f", engine->getSound()->getVolume()), textFont, m_textLines);
-					addTextLine(UString::format("RM Threads: %zu", engine->getResourceManager()->getNumThreads()), textFont, m_textLines);
-					addTextLine(UString::format("RM LoadingWork: %zu", engine->getResourceManager()->getNumLoadingWork()), textFont, m_textLines);
-					addTextLine(UString::format("RM LoadingWorkAD: %zu", engine->getResourceManager()->getNumLoadingWorkAsyncDestroy()), textFont, m_textLines);
-					addTextLine(UString::format("RM Named Resources: %zu", engine->getResourceManager()->getResources().size()), textFont, m_textLines);
+					addTextLine(UString::format("Sound Device: %s", soundEngine->getOutputDevice().toUtf8()), textFont, m_textLines);
+					addTextLine(UString::format("Sound Volume: %f", soundEngine->getVolume()), textFont, m_textLines);
+					addTextLine(UString::format("RM Threads: %zu", resourceManager->getNumThreads()), textFont, m_textLines);
+					addTextLine(UString::format("RM LoadingWork: %zu", resourceManager->getNumLoadingWork()), textFont, m_textLines);
+					addTextLine(UString::format("RM LoadingWorkAD: %zu", resourceManager->getNumLoadingWorkAsyncDestroy()), textFont, m_textLines);
+					addTextLine(UString::format("RM Named Resources: %zu", resourceManager->getResources().size()), textFont, m_textLines);
 					addTextLine(UString::format("Animations: %zu", anim->getNumActiveAnimations()), textFont, m_textLines);
 					addTextLine(UString::format("Frame: %lu", engine->getFrameCount()), textFont, m_textLines);
 					addTextLine(UString::format("Time: %f", time), textFont, m_textLines);
@@ -302,7 +302,7 @@ void VisualProfiler::draw(Graphics *g)
 		const int margin = vprof_graph_margin.getFloat() * env->getDPIScale();
 
 		const int xPos = engine->getScreenWidth() - width - margin;
-		const int yPos = engine->getScreenHeight() - height - margin + (engine->getMouse()->isMiddleDown() ? engine->getMouse()->getPos().y - engine->getScreenHeight() : 0);
+		const int yPos = engine->getScreenHeight() - height - margin + (mouse->isMiddleDown() ? mouse->getPos().y - engine->getScreenHeight() : 0);
 
 		// draw background
 		g->setColor(0xaa000000);
@@ -329,7 +329,7 @@ void VisualProfiler::draw(Graphics *g)
 		g->popTransform();
 
 		// draw labels
-		if (engine->getKeyboard()->isControlDown())
+		if (keyboard->isControlDown())
 		{
 			const int margin = 3 * env->getDPIScale();
 
@@ -409,7 +409,7 @@ void VisualProfiler::update()
 	CBaseUIElement::update();
 	if (!m_vprof_ref->getBool() || !m_bVisible) return;
 
-	const bool isFrozen = (engine->getKeyboard()->isShiftDown() && (!m_bRequiresAltShiftKeysToFreeze || engine->getKeyboard()->isAltDown()));
+	const bool isFrozen = (keyboard->isShiftDown() && (!m_bRequiresAltShiftKeysToFreeze || keyboard->isAltDown()));
 
 	if (debug_vprof.getBool() || vprof_spike.getBool())
 	{
@@ -544,7 +544,7 @@ void VisualProfiler::update()
 			{
 				for (int g=0; g<numGroups; g++)
 				{
-					const Color color = COLOR((unsigned char)(m_fPrevVaoAlpha * 255.0f), COLOR_GET_Ri(m_groups[g].color), COLOR_GET_Gi(m_groups[g].color), COLOR_GET_Bi(m_groups[g].color));
+					const Color color = argb((unsigned char)(m_fPrevVaoAlpha * 255.0f), Ri(m_groups[g].color), Gi(m_groups[g].color), Bi(m_groups[g].color));
 
 					//m_lineVao->addVertex(x, -(((float)graphHeight)/(float)numGroups)*g, 0);
 					m_lineVao->addVertex(x, 0, 0);
@@ -557,7 +557,7 @@ void VisualProfiler::update()
 			}
 
 			// and bake
-			engine->getResourceManager()->loadResource(m_lineVao);
+			resourceManager->loadResource(m_lineVao);
 		}
 
 		// regular line update
@@ -571,7 +571,7 @@ void VisualProfiler::update()
 				// if enabled, calculate and draw overhead
 				// the overhead is the time spent between not having any profiler node active/alive, and should always be <= 0
 				// it is usually slightly negative (in the order of 10 microseconds, includes rounding errors and timer inaccuracies)
-				// if the overhead ever gets positive then either there are no nodes covering all paths below VPROF_MAIN(), or there is a serious problem with measuring time via engine->getTimeReal()
+				// if the overhead ever gets positive then either there are no nodes covering all paths below VPROF_MAIN(), or there is a serious problem with measuring time via Timing::getTimeReal()
 				double profilingOverheadTime = 0.0;
 				if (vprof_graph_draw_overhead.getBool())
 				{
@@ -601,7 +601,7 @@ void VisualProfiler::update()
 				}
 
 				// re-bake
-				engine->getResourceManager()->loadResource(m_lineVao);
+				resourceManager->loadResource(m_lineVao);
 
 				m_iCurLinePos++;
 			}

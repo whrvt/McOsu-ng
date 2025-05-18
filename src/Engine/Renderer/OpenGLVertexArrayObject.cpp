@@ -14,7 +14,7 @@
 
 #include "OpenGLHeaders.h"
 
-ConVar r_opengl_legacy_vao_use_vertex_array("r_opengl_legacy_vao_use_vertex_array", false, FCVAR_CHEAT, "dramatically reduces per-vao draw calls, but completely breaks legacy ffp draw calls (vertices work, but texcoords/normals/etc. are NOT in gl_MultiTexCoord0 -> requiring a shader with attributes)");
+ConVar r_opengl_legacy_vao_use_vertex_array("r_opengl_legacy_vao_use_vertex_array", Env::cfg(REND::GLES2 | REND::GLES32) ? true : false, FCVAR_NONE, "dramatically reduces per-vao draw calls, but completely breaks legacy ffp draw calls (vertices work, but texcoords/normals/etc. are NOT in gl_MultiTexCoord0 -> requiring a shader with attributes)");
 
 OpenGLVertexArrayObject::OpenGLVertexArrayObject(Graphics::PRIMITIVE primitive, Graphics::USAGE_TYPE usage, bool keepInSystemMemory) : VertexArrayObject(primitive, usage, keepInSystemMemory)
 {
@@ -243,8 +243,8 @@ void OpenGLVertexArrayObject::draw()
 		return;
 	}
 
-	const int start = clamp<int>(m_iDrawRangeFromIndex > -1 ? m_iDrawRangeFromIndex : nearestMultipleUp((int)(m_iNumVertices*m_fDrawPercentFromPercent), m_iDrawPercentNearestMultiple), 0, m_iNumVertices);
-	const int end = clamp<int>(m_iDrawRangeToIndex > -1 ? m_iDrawRangeToIndex : nearestMultipleDown((int)(m_iNumVertices*m_fDrawPercentToPercent), m_iDrawPercentNearestMultiple), 0, m_iNumVertices);
+	const int start = std::clamp<int>(m_iDrawRangeFromIndex > -1 ? m_iDrawRangeFromIndex : nearestMultipleUp((int)(m_iNumVertices*m_fDrawPercentFromPercent), m_iDrawPercentNearestMultiple), 0, m_iNumVertices);
+	const int end = std::clamp<int>(m_iDrawRangeToIndex > -1 ? m_iDrawRangeToIndex : nearestMultipleDown((int)(m_iNumVertices*m_fDrawPercentToPercent), m_iDrawPercentNearestMultiple), 0, m_iNumVertices);
 
 	if (start > end || std::abs(end - start) == 0) return;
 

@@ -57,7 +57,7 @@ ConVar osu_options_slider_preview_use_legacy_renderer("osu_options_slider_previe
 
 void _osuOptionsSliderQualityWrapper(UString oldValue, UString newValue)
 {
-	float value = lerp(1.0f, 2.5f, 1.0f - newValue.toFloat());
+	float value = std::lerp(1.0f, 2.5f, 1.0f - newValue.toFloat());
 	convar->getConVarByName("osu_slider_curve_points_separation")->setValue(value);
 };
 ConVar osu_options_slider_quality("osu_options_slider_quality", 0.0f, FCVAR_NONE, _osuOptionsSliderQualityWrapper);
@@ -84,8 +84,8 @@ public:
 
 		if (m_iMode == 0)
 		{
-			float approachScale = clamp<float>(1.0f + 1.5f - fmod(engine->getTime()*3, 3.0f), 0.0f, 2.5f);
-			float approachAlpha = clamp<float>(fmod(engine->getTime()*3, 3.0f)/1.5f, 0.0f, 1.0f);
+			float approachScale = std::clamp<float>(1.0f + 1.5f - fmod(engine->getTime()*3, 3.0f), 0.0f, 2.5f);
+			float approachAlpha = std::clamp<float>(fmod(engine->getTime()*3, 3.0f)/1.5f, 0.0f, 1.0f);
 			approachAlpha = -approachAlpha*(approachAlpha-2.0f);
 			approachAlpha = -approachAlpha*(approachAlpha-2.0f);
 			float approachCircleAlpha = approachAlpha;
@@ -163,8 +163,8 @@ public:
 		const float numberScale = (hitcircleDiameter / (160.0f * (m_osu->getSkin()->isDefault12x() ? 2.0f : 1.0f))) * 1 * convar->getConVarByName("osu_number_scale_multiplier")->getFloat();
 		const float overlapScale = (hitcircleDiameter / (160.0f)) * 1 * convar->getConVarByName("osu_number_scale_multiplier")->getFloat();
 
-		const float approachScale = clamp<float>(1.0f + 1.5f - fmod(engine->getTime()*3, 3.0f), 0.0f, 2.5f);
-		float approachAlpha = clamp<float>(fmod(engine->getTime()*3, 3.0f)/1.5f, 0.0f, 1.0f);
+		const float approachScale = std::clamp<float>(1.0f + 1.5f - fmod(engine->getTime()*3, 3.0f), 0.0f, 2.5f);
+		float approachAlpha = std::clamp<float>(fmod(engine->getTime()*3, 3.0f)/1.5f, 0.0f, 1.0f);
 
 		approachAlpha = -approachAlpha*(approachAlpha-2.0f);
 		approachAlpha = -approachAlpha*(approachAlpha-2.0f);
@@ -226,7 +226,7 @@ public:
 
 							if (m_vao != NULL)
 							{
-								engine->getResourceManager()->destroyResource(m_vao);
+								resourceManager->destroyResource(m_vao);
 								m_vao = NULL;
 							}
 
@@ -388,8 +388,8 @@ public:
 
 		const int fullColorBlockSize = 4 * Osu::getUIScale(m_osu);
 
-		Color left = COLOR((int)(255*m_fAnim), 255, 233, 50);
-		Color middle = COLOR((int)(255*m_fAnim), 255, 211, 50);
+		Color left = argb((int)(255*m_fAnim), 255, 233, 50);
+		Color middle = argb((int)(255*m_fAnim), 255, 211, 50);
 		Color right = 0x00000000;
 
 		g->fillGradient(m_vPos.x, m_vPos.y, m_vSize.x*1.25f, m_vSize.y, middle, right, middle, right);
@@ -508,6 +508,8 @@ OsuOptionsMenu::OsuOptionsMenu(Osu *osu) : OsuScreenBackable(osu)
 	m_bWASAPIBufferChangeScheduled = false;
 	m_bWASAPIPeriodChangeScheduled = false;
 
+	m_bIsOsuFolderDialogOpen = false;
+
 	m_iNumResetAllKeyBindingsPressed = 0;
 	m_iNumResetEverythingPressed = 0;
 
@@ -572,21 +574,25 @@ OsuOptionsMenu::OsuOptionsMenu(Osu *osu) : OsuScreenBackable(osu)
 	manuallyManageBeatmapsButton->setClickCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onManuallyManageBeatmapsClicked) );
 	manuallyManageBeatmapsButton->setColor(0xff10667b);
 
-	addSubSection("osu!folder");
+	addSubSection("osu! folder");
 	addLabel("1) If you have an existing osu!stable installation:")->setTextColor(0xff666666);
 	addLabel("2) osu!stable > Options > \"Open osu! folder\"")->setTextColor(0xff666666);
 	addLabel("3) Copy & Paste the full path into the textbox:")->setTextColor(0xff666666);
 	addLabel("");
 	m_osuFolderTextbox = addTextbox(convar->getConVarByName("osu_folder")->getString(), convar->getConVarByName("osu_folder"));
+
+	addLabel("... or ...")->setCenterText(true);
+	OsuUIButton *browseForOsuFolderButton = addButton("Browse to your osu! folder");
+	browseForOsuFolderButton->setClickCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onBrowseOsuFolderClicked) );
+	browseForOsuFolderButton->setColor(0xff999999);
+
 	addLabel("");
 	addLabel("osu!lazer databases are not supported.")->setTextColor(0xff770000);
 	//addSpacer();
 	addLabel("");
 	addCheckbox("Use osu!stable osu!.db database (read-only)", "If you have an existing osu!stable installation,\nthen this will massively speed up songbrowser beatmap loading.", convar->getConVarByName("osu_database_enabled"));
-	if constexpr (!Env::cfg(OS::HORIZON))
-		addCheckbox("Load osu!stable collection.db (read-only)", "If you have an existing osu!stable installation,\nalso load and display your created collections from there.", convar->getConVarByName("osu_collections_legacy_enabled"));
-	if constexpr (!Env::cfg(OS::HORIZON))
-		addCheckbox("Load osu!stable scores.db (read-only)", "If you have an existing osu!stable installation,\nalso load and display your achieved scores from there.", convar->getConVarByName("osu_scores_legacy_enabled"));
+	addCheckbox("Load osu!stable collection.db (read-only)", "If you have an existing osu!stable installation,\nalso load and display your created collections from there.", convar->getConVarByName("osu_collections_legacy_enabled"));
+	addCheckbox("Load osu!stable scores.db (read-only)", "If you have an existing osu!stable installation,\nalso load and display your achieved scores from there.", convar->getConVarByName("osu_scores_legacy_enabled"));
 
 	addSubSection("Player (Name)");
 	m_nameTextbox = addTextbox(convar->getConVarByName("name")->getString(), convar->getConVarByName("name"));
@@ -611,8 +617,7 @@ OsuOptionsMenu::OsuOptionsMenu(Osu *osu) : OsuScreenBackable(osu)
 	addSubSection("Renderer");
 	addCheckbox("VSync", "If enabled: plz enjoy input lag.", convar->getConVarByName("vsync"));
 
-	if constexpr (Env::cfg(OS::WINDOWS))
-		addCheckbox("High Priority (!)", "WARNING: Only enable this if nothing else works!\nSets the process priority to High.\nMay fix microstuttering and other weird problems.\nTry to fix your broken computer/OS/drivers first!", convar->getConVarByName("win_processpriority"));
+	addCheckbox("High Priority", "Sets the process priority to High.\nMay fix microstuttering and other weird problems.\nTry to fix your broken computer/OS/drivers first!", convar->getConVarByName("processpriority"));
 
 	addCheckbox("Show FPS Counter", convar->getConVarByName("osu_draw_fps"));
 
@@ -624,7 +629,6 @@ OsuOptionsMenu::OsuOptionsMenu(Osu *osu) : OsuScreenBackable(osu)
 		addLabel("Raise for higher fps, decrease for lower latency")->setTextColor(0xff666666);
 	}
 
-	if constexpr (!Env::cfg(OS::HORIZON))
 	{
 		addSpacer();
 
@@ -665,7 +669,6 @@ OsuOptionsMenu::OsuOptionsMenu(Osu *osu) : OsuScreenBackable(osu)
 	addCheckbox("Snaking in sliders", "\"Growing\" sliders.\nSliders gradually snake out from their starting point while fading in.\nHas no impact on performance whatsoever.", convar->getConVarByName("osu_snaking_sliders"));
 	addCheckbox("Snaking out sliders", "\"Shrinking\" sliders.\nSliders will shrink with the sliderball while sliding.\nCan improve performance a tiny bit, since there will be less to draw overall.", convar->getConVarByName("osu_slider_shrink"));
 	addSpacer();
-	if constexpr (!Env::cfg(OS::HORIZON))
 	{
 		addCheckbox("Legacy Slider Renderer (!)", "WARNING: Only try enabling this on shitty old computers!\nMay or may not improve fps while few sliders are visible.\nGuaranteed lower fps while many sliders are visible!", convar->getConVarByName("osu_force_legacy_slider_renderer"));
 		addCheckbox("Higher Quality Sliders (!)", "Disable this if your fps drop too low while sliders are visible.", convar->getConVarByName("osu_options_high_quality_sliders"))->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onHighQualitySlidersCheckboxChange) );
@@ -755,13 +758,12 @@ OsuOptionsMenu::OsuOptionsMenu(Osu *osu) : OsuScreenBackable(osu)
 	CBaseUIElement *sectionAudio = addSection("Audio");
 
 	addSubSection("Devices");
-	if constexpr (!Env::cfg(OS::HORIZON))
 	{
 		OPTIONS_ELEMENT outputDeviceSelect = addButton("Select Output Device", "Default", true);
 		((CBaseUIButton*)outputDeviceSelect.elements[0])->setClickCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onOutputDeviceSelect) );
 		outputDeviceSelect.resetButton->setClickCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onOutputDeviceResetClicked) );
 
-		if constexpr (Env::cfg(OS::WINDOWS, !AUD::WASAPI))
+		if constexpr (Env::cfg(OS::WINDOWS, AUD::BASS, !AUD::WASAPI))
 		{
 			CBaseUICheckbox *audioCompatibilityModeCheckbox = addCheckbox("Audio compatibility mode (!)", "Use legacy audio engine (higher latency but more compatible)\nWARNING: May cause hitsound delays and stuttering!", m_win_snd_fallback_dsound_ref);
 			audioCompatibilityModeCheckbox->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onAudioCompatibilityModeChange) );
@@ -775,8 +777,6 @@ OsuOptionsMenu::OsuOptionsMenu(Osu *osu) : OsuScreenBackable(osu)
 		m_outputDeviceSelectButton = outputDeviceSelect.elements[0];
 		m_outputDeviceLabel = (CBaseUILabel*)outputDeviceSelect.elements[1];
 	}
-	else
-		addButton("Restart SoundEngine (fix crackling)")->setClickCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onOutputDeviceRestart) );
 
 	if constexpr (Env::cfg(AUD::WASAPI))
 	{
@@ -824,11 +824,8 @@ OsuOptionsMenu::OsuOptionsMenu(Osu *osu) : OsuScreenBackable(osu)
 	offsetSlider->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onSliderChangeIntMS) );
 	offsetSlider->setKeyDelta(1);
 
-	if constexpr (!Env::cfg(OS::HORIZON))
-	{
-		addSubSection("Songbrowser");
-		addCheckbox("Apply speed/pitch mods while browsing", "Whether to always apply all mods, or keep the preview music normal.", convar->getConVarByName("osu_beatmap_preview_mods_live"));
-	}
+	addSubSection("Songbrowser");
+	addCheckbox("Apply speed/pitch mods while browsing", "Whether to always apply all mods, or keep the preview music normal.", convar->getConVarByName("osu_beatmap_preview_mods_live"));
 
 	//**************************************************************************************************************************//
 
@@ -902,61 +899,21 @@ OsuOptionsMenu::OsuOptionsMenu(Osu *osu) : OsuScreenBackable(osu)
 	CBaseUIElement *sectionInput = addSection("Input");
 
 	addSubSection("Mouse", "scroll");
-	if constexpr ((Env::cfg(OS::WINDOWS | OS::MACOS | OS::HORIZON)) || (Env::cfg(BACKEND::SDL, OS::LINUX)))
-	{
-		addSlider("Sensitivity:", (Env::cfg(OS::HORIZON) ? 1.0f : 0.1f), 6.0f, convar->getConVarByName("mouse_sensitivity"))->setKeyDelta(0.01f);
 
-		if constexpr (Env::cfg(OS::HORIZON, FEAT::JOY_MOU))
-			addSlider("Joystick S.:", 0.1f, 6.0f, convar->getConVarByName("sdl_joystick_mouse_sensitivity"))->setKeyDelta(0.01f);
+	addSlider("Sensitivity:", 0.1f, 6.0f, convar->getConVarByName("mouse_sensitivity"))->setKeyDelta(0.01f);
 
-		if constexpr (Env::cfg(OS::MACOS))
-		{
-			addLabel("");
-			addLabel("WARNING: Set Sensitivity to 1 for tablets!")->setTextColor(0xffff0000);
-			addLabel("");
-		}
-	}
-	if constexpr (Env::cfg(OS::WINDOWS | OS::LINUX))
-	{
-		addCheckbox("Raw Input", convar->getConVarByName("mouse_raw_input"));
-		if constexpr (Env::cfg(OS::WINDOWS))
-		{
-			ConVar *win_mouse_raw_input_buffer_ref = convar->getConVarByName("win_mouse_raw_input_buffer", false);
-			if (win_mouse_raw_input_buffer_ref != NULL)
-				addCheckbox("[Beta] RawInputBuffer", "Improves performance problems caused by insane mouse usb polling rates above 1000 Hz.\nOnly relevant if \"Raw Input\" is enabled, or if in FPoSu mode (with disabled \"Tablet/Absolute Mode\").", win_mouse_raw_input_buffer_ref);
-		}
-		addCheckbox("Map Absolute Raw Input to Window", convar->getConVarByName("mouse_raw_input_absolute_to_window"))->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onRawInputToAbsoluteWindowChange) );
-	}
-	if constexpr (Env::cfg(!BACKEND::SDL, OS::LINUX))
-	{
-		addLabel("Use system settings to change the mouse sensitivity.")->setTextColor(0xff555555);
-		addLabel("");
-		addLabel("Use xinput or xsetwacom to change the tablet area.")->setTextColor(0xff555555);
-		addLabel("");
-	}
-	if constexpr (!Env::cfg(OS::HORIZON))
-	{
-		addCheckbox("Confine Cursor (Windowed)", convar->getConVarByName("osu_confine_cursor_windowed"));
-		addCheckbox("Confine Cursor (Fullscreen)", convar->getConVarByName("osu_confine_cursor_fullscreen"));
-		addCheckbox("Confine Cursor (NEVER)", "Don't try to confine the cursor, even in gameplay.\n(Workaround for relative tablet motion quirks with Xwayland)", convar->getConVarByName("osu_confine_cursor_never"));
-		addCheckbox("Disable Mouse Wheel in Play Mode", convar->getConVarByName("osu_disable_mousewheel"));
-	}
+	addCheckbox("Raw Input", convar->getConVarByName("mouse_raw_input"));
+	addCheckbox("Map Absolute Raw Input to Window", convar->getConVarByName("mouse_raw_input_absolute_to_window"))->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onRawInputToAbsoluteWindowChange) );
+	addCheckbox("Confine Cursor (Windowed)", convar->getConVarByName("osu_confine_cursor_windowed"));
+	addCheckbox("Confine Cursor (Fullscreen)", convar->getConVarByName("osu_confine_cursor_fullscreen"));
+	addCheckbox("Confine Cursor (NEVER)", "Don't try to confine the cursor, even in gameplay.\n(Workaround for relative tablet motion quirks with Xwayland)", convar->getConVarByName("osu_confine_cursor_never"));
+
+	addCheckbox("Disable Mouse Wheel in Play Mode", convar->getConVarByName("osu_disable_mousewheel"));
 	addCheckbox("Disable Mouse Buttons in Play Mode", convar->getConVarByName("osu_disable_mousebuttons"));
 	addCheckbox("Cursor ripples", "The cursor will ripple outwards on clicking.", convar->getConVarByName("osu_draw_cursor_ripples"));
 
-	if constexpr (Env::cfg(!BACKEND::SDL, OS::WINDOWS))
-	{
-		addSubSection("Tablet");
-		addCheckbox("OS TabletPC Support (!)", "WARNING: Windows 10 may break raw mouse input if this is enabled!\nWARNING: Do not enable this with a mouse (will break right click)!\nEnable this if your tablet clicks aren't handled correctly.", convar->getConVarByName("win_realtimestylus"));
-		addCheckbox("Windows Ink Workaround", "Enable this if your tablet cursor is stuck in a tiny area on the top left of the screen.\nIf this doesn't fix it, use \"Ignore Sensitivity & Raw Input\" below.", convar->getConVarByName("win_ink_workaround"));
-		addCheckbox("Ignore Sensitivity & Raw Input", "Only use this if nothing else works.\nIf this is enabled, then the in-game sensitivity slider will no longer work for tablets!\n(You can then instead use your tablet configuration software to change the tablet area.)", convar->getConVarByName("tablet_sensitivity_ignore"));
-	}
-	if constexpr (Env::cfg(BACKEND::SDL, (FEAT::JOY_MOU | FEAT::JOY)))
-	{
-		addSubSection("Gamepad");
-		addSlider("Stick Sens.:", 0.1f, 6.0f, convar->getConVarByName("sdl_joystick_mouse_sensitivity"))->setKeyDelta(0.01f);
-		addSlider("Stick Deadzone:", 0.0f, 0.95f, convar->getConVarByName("sdl_joystick0_deadzone"))->setKeyDelta(0.01f)->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onSliderChangePercent) );
-	}
+	addSubSection("Tablet");
+	addCheckbox("Ignore Sensitivity & Raw Input", "Only use this if nothing else works.\nIf this is enabled, then the in-game sensitivity slider will no longer work for tablets!\n(You can then instead use your tablet configuration software to change the tablet area.)", convar->getConVarByName("tablet_sensitivity_ignore"));
 
 	addSpacer();
 	const UString keyboardSectionTags = "keyboard keys key bindings binds keybinds keybindings";
@@ -1198,38 +1155,34 @@ OsuOptionsMenu::OsuOptionsMenu(Osu *osu) : OsuScreenBackable(osu)
 	spheresAASlider->setKeyDelta(2.0f);
 	spheresAASlider->setAnimated(false);
 #endif
-	if constexpr (Env::cfg(OS::WINDOWS))
-	{
-		addSubSection("FPoSu - Mouse");
-		OsuUIButton *cm360CalculatorLinkButton = addButton("https://www.mouse-sensitivity.com/");
-		cm360CalculatorLinkButton->setClickCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onCM360CalculatorLinkClicked) );
-		cm360CalculatorLinkButton->setColor(0xff10667b);
-		addLabel("");
-		m_dpiTextbox = addTextbox(convar->getConVarByName("fposu_mouse_dpi")->getString(), "DPI:", convar->getConVarByName("fposu_mouse_dpi"));
-		m_cm360Textbox = addTextbox(convar->getConVarByName("fposu_mouse_cm_360")->getString(), "cm per 360:", convar->getConVarByName("fposu_mouse_cm_360"));
-		addLabel("");
-		addCheckbox("Invert Vertical", convar->getConVarByName("fposu_invert_vertical"));
-		addCheckbox("Invert Horizontal", convar->getConVarByName("fposu_invert_horizontal"));
-		addCheckbox("Tablet/Absolute Mode (!)", "WARNING: Do NOT enable this if you are using a mouse!\nIf this is enabled, then DPI and cm per 360 will be ignored!", convar->getConVarByName("fposu_absolute_mode"));
-	}
-	else if constexpr (Env::cfg(OS::LINUX))
+
+	addSubSection("FPoSu - Mouse");
+	OsuUIButton *cm360CalculatorLinkButton = addButton("https://www.mouse-sensitivity.com/");
+	cm360CalculatorLinkButton->setClickCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onCM360CalculatorLinkClicked) );
+	cm360CalculatorLinkButton->setColor(0xff10667b);
+	addLabel("");
+	m_dpiTextbox = addTextbox(convar->getConVarByName("fposu_mouse_dpi")->getString(), "DPI:", convar->getConVarByName("fposu_mouse_dpi"));
+	m_cm360Textbox = addTextbox(convar->getConVarByName("fposu_mouse_cm_360")->getString(), "cm per 360:", convar->getConVarByName("fposu_mouse_cm_360"));
+	addLabel("");
+	addCheckbox("Invert Vertical", convar->getConVarByName("fposu_invert_vertical"));
+	addCheckbox("Invert Horizontal", convar->getConVarByName("fposu_invert_horizontal"));
+	addCheckbox("Tablet/Absolute Mode (!)", "WARNING: Do NOT enable this if you are using a mouse!\nIf this is enabled, then DPI and cm per 360 will be ignored!", convar->getConVarByName("fposu_absolute_mode"));
+	if constexpr (Env::cfg(OS::LINUX))
 	{
 #ifdef MCOSU_FPOSU_4D_MODE_FINISHED
 		addSubSection("[Beta] FPoSu 4D Mode - Mouse");
-		addSlider("Sensitivity:", (Env::cfg(OS::HORIZON) ? 1.0f : 0.1f), 6.0f, convar->getConVarByName("mouse_sensitivity"))->setKeyDelta(0.01f);
+		addSlider("Sensitivity:", 0.1f, 6.0f, convar->getConVarByName("mouse_sensitivity"))->setKeyDelta(0.01f);
 #endif
 	}
 
 	//**************************************************************************************************************************//
 
 	CBaseUIElement *sectionOnline = NULL;
-	if constexpr (!Env::cfg(OS::HORIZON))
-	{
-		sectionOnline = addSection("Online");
 
-		addSubSection("Integration");
-		addCheckbox("Rich Presence (Discord + Steam)", "Shows your current game state in your friends' friendslists.\ne.g.: Playing Gavin G - Reach Out [Cherry Blossom's Insane]", convar->getConVarByName("osu_rich_presence"));
-	}
+	sectionOnline = addSection("Online");
+
+	addSubSection("Integration");
+	addCheckbox("Rich Presence (Discord + Steam)", "Shows your current game state in your friends' friendslists.\ne.g.: Playing Gavin G - Reach Out [Cherry Blossom's Insane]", convar->getConVarByName("osu_rich_presence"));
 
 	//**************************************************************************************************************************//
 
@@ -1306,13 +1259,13 @@ void OsuOptionsMenu::draw(Graphics *g)
 	{
 		if (!isPlayingBeatmap)
 		{
-			const float brightness = clamp<float>(m_backgroundBrightnessSlider->getFloat(), 0.0f, 1.0f);
-			const short red = clamp<float>(brightness * m_osu_background_color_r_ref->getFloat(), 0.0f, 255.0f);
-			const short green = clamp<float>(brightness * m_osu_background_color_g_ref->getFloat(), 0.0f, 255.0f);
-			const short blue = clamp<float>(brightness * m_osu_background_color_b_ref->getFloat(), 0.0f, 255.0f);
+			const float brightness = std::clamp<float>(m_backgroundBrightnessSlider->getFloat(), 0.0f, 1.0f);
+			const short red = std::clamp<float>(brightness * m_osu_background_color_r_ref->getFloat(), 0.0f, 255.0f);
+			const short green = std::clamp<float>(brightness * m_osu_background_color_g_ref->getFloat(), 0.0f, 255.0f);
+			const short blue = std::clamp<float>(brightness * m_osu_background_color_b_ref->getFloat(), 0.0f, 255.0f);
 			if (brightness > 0.0f)
 			{
-				g->setColor(COLOR(255, red, green, blue));
+				g->setColor(rgb(red, green, blue));
 				g->fillRect(0, 0, m_osu->getScreenWidth(), m_osu->getScreenHeight());
 			}
 		}
@@ -1322,8 +1275,8 @@ void OsuOptionsMenu::draw(Graphics *g)
 	{
 		if (!isPlayingBeatmap)
 		{
-			const short dim = clamp<float>(m_backgroundDimSlider->getFloat(), 0.0f, 1.0f)*255.0f;
-			g->setColor(COLOR(dim, 0, 0, 0));
+			const short dim = std::clamp<float>(m_backgroundDimSlider->getFloat(), 0.0f, 1.0f)*255.0f;
+			g->setColor(argb(dim, 0, 0, 0));
 			g->fillRect(0, 0, m_osu->getScreenWidth(), m_osu->getScreenHeight());
 		}
 	}
@@ -1355,7 +1308,7 @@ void OsuOptionsMenu::draw(Graphics *g)
 		OsuScreenBackable::draw(g);
 
 	if (m_cursorSizeSlider->getFloat() < 0.15f)
-		engine->getMouse()->drawDebug(g);
+		mouse->drawDebug(g);
 
 	/*
 	if (m_sliderQualitySlider->isActive())
@@ -1416,7 +1369,7 @@ void OsuOptionsMenu::draw(Graphics *g)
 			g->rotate3DScene(0, -(1.0f - m_fAnimation)*90, 0);
 			g->translate3DScene(-(1.0f - m_fAnimation)*m_options->getSize().x*1.25f, 0, -(1.0f - m_fAnimation)*700);
 
-			m_osu->getSliderFrameBuffer()->setColor(COLORf(m_fAnimation, 1.0f, 1.0f, 1.0f));
+			m_osu->getSliderFrameBuffer()->setColor(argb(m_fAnimation, 1.0f, 1.0f, 1.0f));
 			m_osu->getSliderFrameBuffer()->draw(g, 0, 0);
 		}
 		g->pop3DScene();
@@ -1474,8 +1427,8 @@ void OsuOptionsMenu::update()
 	// flash osu!folder textbox red if incorrect
 	if (m_fOsuFolderTextboxInvalidAnim > engine->getTime())
 	{
-		char redness = std::abs(std::sin((m_fOsuFolderTextboxInvalidAnim - engine->getTime())*3))*128;
-		m_osuFolderTextbox->setBackgroundColor(COLOR(255, redness, 0, 0));
+		Channel redness = std::abs(std::sin((m_fOsuFolderTextboxInvalidAnim - engine->getTime())*3))*128;
+		m_osuFolderTextbox->setBackgroundColor(rgb(redness, 0, 0));
 	}
 	else
 		m_osuFolderTextbox->setBackgroundColor(0xff000000);
@@ -1627,7 +1580,7 @@ void OsuOptionsMenu::onKeyDown(KeyboardEvent &e)
 		case KEY_BACKSPACE:
 			if (m_sSearchString.length() > 0)
 			{
-				if (engine->getKeyboard()->isControlDown())
+				if (keyboard->isControlDown())
 				{
 					// delete everything from the current caret position to the left, until after the first non-space character (but including it)
 					bool foundNonSpaceChar = false;
@@ -1664,7 +1617,7 @@ void OsuOptionsMenu::onKeyDown(KeyboardEvent &e)
 	// paste clipboard support
 	if (e == KEY_V)
 	{
-		if (engine->getKeyboard()->isControlDown())
+		if (keyboard->isControlDown())
 		{
 			const UString clipstring = env->getClipBoardText();
 			if (clipstring.length() > 0)
@@ -1694,7 +1647,7 @@ void OsuOptionsMenu::onChar(KeyboardEvent &e)
 	if (e.isConsumed()) return;
 
 	// handle searching
-	if (e.getCharCode() < 32 || !m_bVisible || (engine->getKeyboard()->isControlDown() && !engine->getKeyboard()->isAltDown()) || m_fSearchOnCharKeybindHackTime > engine->getTime())
+	if (e.getCharCode() < 32 || !m_bVisible || (keyboard->isControlDown() && !keyboard->isAltDown()) || m_fSearchOnCharKeybindHackTime > engine->getTime())
 		return;
 
 	KEYCODE charCode = e.getCharCode();
@@ -1908,7 +1861,7 @@ void OsuOptionsMenu::updateLayout()
 	updateHPDrainSelectLabel();
 
 	if (m_outputDeviceLabel != NULL)
-		m_outputDeviceLabel->setText(engine->getSound()->getOutputDevice());
+		m_outputDeviceLabel->setText(soundEngine->getOutputDevice());
 
 	onOutputDeviceResetUpdate();
 	onNotelockSelectResetUpdate();
@@ -2326,7 +2279,7 @@ void OsuOptionsMenu::onBack()
 {
 	m_osu->getNotificationOverlay()->stopWaitingForKey();
 
-	engine->getSound()->play(m_osu->getSkin()->getMenuClick());
+	soundEngine->play(m_osu->getSkin()->getMenuClick());
 	save();
 
 	if (m_bFullscreen)
@@ -2434,14 +2387,14 @@ void OsuOptionsMenu::updateNotelockSelectLabel()
 {
 	if (m_notelockSelectLabel == NULL) return;
 
-	m_notelockSelectLabel->setText(m_notelockTypes[clamp<int>(m_osu_notelock_type_ref->getInt(), 0, m_notelockTypes.size() - 1)]);
+	m_notelockSelectLabel->setText(m_notelockTypes[std::clamp<int>(m_osu_notelock_type_ref->getInt(), 0, m_notelockTypes.size() - 1)]);
 }
 
 void OsuOptionsMenu::updateHPDrainSelectLabel()
 {
 	if (m_hpDrainSelectLabel == NULL) return;
 
-	m_hpDrainSelectLabel->setText(m_drainTypes[clamp<int>(m_osu_drain_type_ref->getInt(), 0, m_drainTypes.size() - 1)]);
+	m_hpDrainSelectLabel->setText(m_drainTypes[std::clamp<int>(m_osu_drain_type_ref->getInt(), 0, m_drainTypes.size() - 1)]);
 }
 
 void OsuOptionsMenu::onFullscreenChange(CBaseUICheckbox *checkbox)
@@ -2737,39 +2690,39 @@ void OsuOptionsMenu::onResolutionSelect()
 
 	// 4:3
 	resolutions.emplace_back(800, 600);
-    resolutions.emplace_back(1024, 768);
-    resolutions.emplace_back(1152, 864);
-    resolutions.emplace_back(1280, 960);
-    resolutions.emplace_back(1280, 1024);
-    resolutions.emplace_back(1600, 1200);
-    resolutions.emplace_back(1920, 1440);
-    resolutions.emplace_back(2560, 1920);
+	resolutions.emplace_back(1024, 768);
+	resolutions.emplace_back(1152, 864);
+	resolutions.emplace_back(1280, 960);
+	resolutions.emplace_back(1280, 1024);
+	resolutions.emplace_back(1600, 1200);
+	resolutions.emplace_back(1920, 1440);
+	resolutions.emplace_back(2560, 1920);
 
-    // 16:9 and 16:10
-    resolutions.emplace_back(1024, 600);
-    resolutions.emplace_back(1280, 720);
-    resolutions.emplace_back(1280, 768);
-    resolutions.emplace_back(1280, 800);
-    resolutions.emplace_back(1360, 768);
-    resolutions.emplace_back(1366, 768);
-    resolutions.emplace_back(1440, 900);
-    resolutions.emplace_back(1600, 900);
-    resolutions.emplace_back(1600, 1024);
-    resolutions.emplace_back(1680, 1050);
-    resolutions.emplace_back(1920, 1080);
-    resolutions.emplace_back(1920, 1200);
-    resolutions.emplace_back(2560, 1440);
-    resolutions.emplace_back(2560, 1600);
-    resolutions.emplace_back(3840, 2160);
-    resolutions.emplace_back(5120, 2880);
-    resolutions.emplace_back(7680, 4320);
+	// 16:9 and 16:10
+	resolutions.emplace_back(1024, 600);
+	resolutions.emplace_back(1280, 720);
+	resolutions.emplace_back(1280, 768);
+	resolutions.emplace_back(1280, 800);
+	resolutions.emplace_back(1360, 768);
+	resolutions.emplace_back(1366, 768);
+	resolutions.emplace_back(1440, 900);
+	resolutions.emplace_back(1600, 900);
+	resolutions.emplace_back(1600, 1024);
+	resolutions.emplace_back(1680, 1050);
+	resolutions.emplace_back(1920, 1080);
+	resolutions.emplace_back(1920, 1200);
+	resolutions.emplace_back(2560, 1440);
+	resolutions.emplace_back(2560, 1600);
+	resolutions.emplace_back(3840, 2160);
+	resolutions.emplace_back(5120, 2880);
+	resolutions.emplace_back(7680, 4320);
 
-    // wtf
-    resolutions.emplace_back(4096, 2160);
+	// wtf
+	resolutions.emplace_back(4096, 2160);
 
-    // get custom resolutions
-    std::vector<Vector2> customResolutions;
-    std::ifstream customres("cfg/customres.cfg");
+	// get custom resolutions
+	std::vector<Vector2> customResolutions;
+	std::ifstream customres("cfg/customres.cfg");
 	std::string curLine;
 	while (std::getline(customres, curLine))
 	{
@@ -2832,16 +2785,16 @@ void OsuOptionsMenu::onResolutionSelect2(UString resolution, int id)
 
 void OsuOptionsMenu::onOutputDeviceSelect()
 {
-	std::vector<UString> outputDevices = engine->getSound()->getOutputDevices();
+	std::vector<UString> outputDevices = soundEngine->getOutputDevices();
 
-    // build context menu
+	// build context menu
 	m_contextMenu->setPos(m_outputDeviceSelectButton->getPos());
 	m_contextMenu->setRelPos(m_outputDeviceSelectButton->getRelPos());
 	m_contextMenu->begin();
 	for (int i=0; i<outputDevices.size(); i++)
 	{
 		CBaseUIButton *button = m_contextMenu->addButton(outputDevices[i]);
-		if (outputDevices[i] == engine->getSound()->getOutputDevice())
+		if (outputDevices[i] == soundEngine->getOutputDevice())
 			button->setTextBrightColor(0xff00ff00);
 	}
 	m_contextMenu->end(false, false);
@@ -2854,8 +2807,8 @@ void OsuOptionsMenu::onOutputDeviceSelect2(UString outputDeviceName, int id)
 	if (!m_osu->isInPlayMode() && m_osu->getSelectedBeatmap() != NULL && m_osu->getSelectedBeatmap()->getMusic() != NULL)
 		prevMusicPositionMS = m_osu->getSelectedBeatmap()->getMusic()->getPositionMS();
 
-	engine->getSound()->setOutputDevice(outputDeviceName);
-	m_outputDeviceLabel->setText(engine->getSound()->getOutputDevice());
+	soundEngine->setOutputDevice(outputDeviceName);
+	m_outputDeviceLabel->setText(soundEngine->getOutputDevice());
 	m_osu->getSkin()->reloadSounds();
 
 	// and update reset button as usual
@@ -2872,71 +2825,79 @@ void OsuOptionsMenu::onOutputDeviceSelect2(UString outputDeviceName, int id)
 
 void OsuOptionsMenu::onOutputDeviceResetClicked()
 {
-	if (engine->getSound()->getOutputDevices().size() > 0)
-		onOutputDeviceSelect2(engine->getSound()->getOutputDevices()[0]);
+	if (soundEngine->getOutputDevices().size() > 0)
+		onOutputDeviceSelect2(soundEngine->getOutputDevices()[0]);
 }
 
 void OsuOptionsMenu::onOutputDeviceResetUpdate()
 {
 	if (m_outputDeviceResetButton != NULL)
-		m_outputDeviceResetButton->setEnabled(engine->getSound()->getOutputDevices().size() > 0 && engine->getSound()->getOutputDevice() != engine->getSound()->getOutputDevices()[0]);
+		m_outputDeviceResetButton->setEnabled(soundEngine->getOutputDevices().size() > 0 && soundEngine->getOutputDevice() != soundEngine->getOutputDevices()[0]);
 }
 
 void OsuOptionsMenu::onOutputDeviceRestart()
 {
 	if constexpr (Env::cfg(AUD::WASAPI))
-		engine->getSound()->setOutputDeviceForce(engine->getSound()->getOutputDevice());
+		soundEngine->setOutputDeviceForce(soundEngine->getOutputDevice());
 	else
-		engine->getSound()->setOutputDevice("Default"); // NOTE: only relevant for horizon builds atm
+		soundEngine->setOutputDevice("Default"); // NOTE: only relevant for horizon builds atm
 }
 
 void OsuOptionsMenu::onAudioCompatibilityModeChange(CBaseUICheckbox *checkbox)
 {
 	onCheckboxChange(checkbox);
-	engine->getSound()->setOutputDeviceForce(engine->getSound()->getOutputDevice());
+	soundEngine->setOutputDeviceForce(soundEngine->getOutputDevice());
 	checkbox->setChecked(m_win_snd_fallback_dsound_ref->getBool(), false);
 	m_osu->getSkin()->reloadSounds();
 }
 
 void OsuOptionsMenu::onDownloadOsuClicked()
 {
-	if constexpr (Env::cfg(OS::HORIZON))
-	{
-		m_osu->getNotificationOverlay()->addNotification("Go to https://osu.ppy.sh/home/download", 0xffffffff, false, 0.75f);
-		return;
-	}
-
 	m_osu->getNotificationOverlay()->addNotification("Opening browser, please wait ...", 0xffffffff, false, 0.75f);
 	env->openURLInDefaultBrowser("https://osu.ppy.sh/home/download");
 }
 
 void OsuOptionsMenu::onManuallyManageBeatmapsClicked()
 {
-	if constexpr (Env::cfg(OS::HORIZON))
-	{
-		m_osu->getNotificationOverlay()->addNotification("Google \"How to use McOsu without osu!\"", 0xffffffff, false, 0.75f);
-		return;
-	}
-
 	m_osu->getNotificationOverlay()->addNotification("Opening browser, please wait ...", 0xffffffff, false, 0.75f);
 	env->openURLInDefaultBrowser("https://steamcommunity.com/sharedfiles/filedetails/?id=880768265");
 }
 
+void OsuOptionsMenu::onBrowseOsuFolderClicked()
+{
+	if (!m_bIsOsuFolderDialogOpen)
+	{
+		m_bIsOsuFolderDialogOpen = true;
+		m_osu->getNotificationOverlay()->addNotification("Opening file browser ...", 0xffffffff, false, 0.75f);
+
+		env->openFolderWindow(
+			[this](const std::vector<UString>& paths) {
+				m_bIsOsuFolderDialogOpen = false;
+				if (paths.empty()) {
+					m_osu->getNotificationOverlay()->addNotification("No folder selected.", 0xff770000, false, 1.0f);
+					return;
+				}
+
+				// use the first selected path
+				UString newPath = paths[0];
+				convar->getConVarByName("osu_folder")->setValue(newPath);
+				m_osuFolderTextbox->setText(newPath);
+				updateOsuFolder();
+			},
+			convar->getConVarByName("osu_folder")->getString()
+		);
+	}
+}
+
 void OsuOptionsMenu::onCM360CalculatorLinkClicked()
 {
-	if constexpr (Env::cfg(OS::HORIZON))
-	{
-		m_osu->getNotificationOverlay()->addNotification("Go to https://www.mouse-sensitivity.com/", 0xffffffff, false, 0.75f);
-		return;
-	}
-
 	m_osu->getNotificationOverlay()->addNotification("Opening browser, please wait ...", 0xffffffff, false, 0.75f);
 	env->openURLInDefaultBrowser("https://www.mouse-sensitivity.com/");
 }
 
 void OsuOptionsMenu::onNotelockSelect()
 {
-    // build context menu
+	// build context menu
 	m_contextMenu->setPos(m_notelockSelectButton->getPos());
 	m_contextMenu->setRelPos(m_notelockSelectButton->getRelPos());
 	m_contextMenu->begin(m_notelockSelectButton->getSize().x);
@@ -2975,7 +2936,7 @@ void OsuOptionsMenu::onNotelockSelectResetUpdate()
 
 void OsuOptionsMenu::onHPDrainSelect()
 {
-    // build context menu
+	// build context menu
 	m_contextMenu->setPos(m_hpDrainSelectButton->getPos());
 	m_contextMenu->setRelPos(m_hpDrainSelectButton->getRelPos());
 	m_contextMenu->begin(m_hpDrainSelectButton->getSize().x);
@@ -3265,7 +3226,7 @@ void OsuOptionsMenu::onKeyBindingButtonPressed(CBaseUIButton *button)
 
 void OsuOptionsMenu::onKeyUnbindButtonPressed(CBaseUIButton *button)
 {
-	engine->getSound()->play(m_osu->getSkin()->getCheckOff());
+	soundEngine->play(m_osu->getSkin()->getCheckOff());
 
 	for (int i=0; i<m_elements.size(); i++)
 	{
@@ -3708,10 +3669,10 @@ void OsuOptionsMenu::onResetEverythingClicked(CBaseUIButton *button)
 
 void OsuOptionsMenu::addSpacer(unsigned num)
 {
-    OPTIONS_ELEMENT e;
-    e.type = 0;
-    e.cvar = NULL;
-    m_elements.insert(m_elements.end(), num, e);
+	OPTIONS_ELEMENT e;
+	e.type = 0;
+	e.cvar = NULL;
+	m_elements.insert(m_elements.end(), num, e);
 }
 
 CBaseUILabel *OsuOptionsMenu::addSection(UString text)
@@ -4212,8 +4173,8 @@ void OsuOptionsMenu::save()
 
 	// hardcoded (!)
 	out << "monitor " << env->getMonitor() << "\n";
-	if (engine->getSound()->getOutputDevice() != "Default")
-		out << "snd_output_device " << engine->getSound()->getOutputDevice().toUtf8() << "\n";
+	if (soundEngine->getOutputDevice() != "Default")
+		out << "snd_output_device " << soundEngine->getOutputDevice().toUtf8() << "\n";
 	if (m_fullscreenCheckbox != NULL && !m_fullscreenCheckbox->isChecked())
 		out << "windowed " << engine->getScreenWidth() << "x" << engine->getScreenHeight() << "\n";
 

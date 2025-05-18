@@ -25,7 +25,7 @@ void CBaseUIImageButton::draw(Graphics *g)
 	if (!m_bVisible) return;
 
 	// draw image
-	Image *image = engine->getResourceManager()->getImage(m_sImageResourceName);
+	Image *image = resourceManager->getImage(m_sImageResourceName);
 	if (image != NULL)
 	{
 		g->setColor(0xffffffff);
@@ -50,7 +50,7 @@ CBaseUIImageButton *CBaseUIImageButton::setImageResourceName(UString imageResour
 {
 	m_sImageResourceName = imageResourceName;
 
-	Image *image = engine->getResourceManager()->getImage(m_sImageResourceName);
+	Image *image = resourceManager->getImage(m_sImageResourceName);
 	if (image != NULL)
 		setSize(Vector2(image->getWidth(), image->getHeight()));
 
@@ -61,7 +61,7 @@ void CBaseUIImageButton::onResized()
 {
 	CBaseUIButton::onResized();
 
-	Image *image = engine->getResourceManager()->getImage(m_sImageResourceName);
+	Image *image = resourceManager->getImage(m_sImageResourceName);
 	if (m_bScaleToFit && image != NULL)
 	{
 		if (!m_bKeepAspectRatio)

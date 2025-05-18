@@ -11,10 +11,10 @@
 
 #include "EngineFeatures.h"
 
-#include "NullGraphicsInterface.h"
 #ifdef MCENGINE_FEATURE_GLES32
 
 #include "OpenGLSync.h"
+#include "NullGraphicsInterface.h"
 
 class OpenGLES32Shader;
 
@@ -41,14 +41,17 @@ public:
 	void drawLine(Vector2 pos1, Vector2 pos2) override;
 	void drawRect(int x, int y, int width, int height) override;
 	void drawRect(int x, int y, int width, int height, Color top, Color right, Color bottom, Color left) override;
-
 	// TODO
+	// void drawPixels(int x, int y, int width, int height, Graphics::DRAWPIXELS_TYPE type, const void *pixels) override {;}
+	// void drawPixel(int x, int y) override {;}
+	// void fillRoundedRect(int x, int y, int width, int height, int radius) override {;}
 
 	void fillRect(int x, int y, int width, int height) override;
 	void fillGradient(int x, int y, int width, int height, Color topLeftColor, Color topRightColor, Color bottomLeftColor, Color bottomRightColor) override;
 
 	void drawQuad(int x, int y, int width, int height) override;
-	void drawQuad(Vector2 topLeft, Vector2 topRight, Vector2 bottomRight, Vector2 bottomLeft, Color topLeftColor, Color topRightColor, Color bottomRightColor, Color bottomLeftColor) override;
+	void drawQuad(Vector2 topLeft, Vector2 topRight, Vector2 bottomRight, Vector2 bottomLeft, Color topLeftColor, Color topRightColor, Color bottomRightColor,
+	              Color bottomLeftColor) override;
 
 	// 2d resource drawing
 	void drawImage(Image *image) override;
@@ -83,12 +86,7 @@ public:
 	std::vector<unsigned char> getScreenshot() override;
 
 	// renderer info
-	[[nodiscard]] Vector2 getResolution() const override {return m_vResolution;}
-	UString getVendor() override;
-	UString getModel() override;
-	UString getVersion() override;
-	int getVRAMTotal() override;
-	int getVRAMRemaining() override;
+	[[nodiscard]] Vector2 getResolution() const override { return m_vResolution; }
 
 	// callbacks
 	void onResolutionChange(Vector2 newResolution) override;
@@ -97,8 +95,8 @@ public:
 	Image *createImage(UString filePath, bool mipmapped, bool keepInSystemMemory) override;
 	Image *createImage(int width, int height, bool mipmapped, bool keepInSystemMemory) override;
 	RenderTarget *createRenderTarget(int x, int y, int width, int height, Graphics::MULTISAMPLE_TYPE multiSampleType) override;
-	Shader *createShaderFromFile(UString vertexShaderFilePath, UString fragmentShaderFilePath) override;	// DEPRECATED
-	Shader *createShaderFromSource(UString vertexShader, UString fragmentShader) override;				// DEPRECATED
+	Shader *createShaderFromFile(UString vertexShaderFilePath, UString fragmentShaderFilePath) override; // DEPRECATED
+	Shader *createShaderFromSource(UString vertexShader, UString fragmentShader) override;               // DEPRECATED
 	Shader *createShaderFromFile(UString shaderFilePath) override;
 	Shader *createShaderFromSource(UString shaderSource) override;
 	VertexArrayObject *createVertexArrayObject(Graphics::PRIMITIVE primitive, Graphics::USAGE_TYPE usage, bool keepInSystemMemory) override;
@@ -106,15 +104,15 @@ public:
 	// matrices & transforms
 	void forceUpdateTransform();
 
-	[[nodiscard]] inline int getShaderGenericAttribPosition() const {return m_iShaderTexturedGenericAttribPosition;}
-	[[nodiscard]] inline int getShaderGenericAttribUV() const {return m_iShaderTexturedGenericAttribUV;}
-	[[nodiscard]] inline int getShaderGenericAttribCol() const {return m_iShaderTexturedGenericAttribCol;}
+	[[nodiscard]] inline int getShaderGenericAttribPosition() const { return m_iShaderTexturedGenericAttribPosition; }
+	[[nodiscard]] inline int getShaderGenericAttribUV() const { return m_iShaderTexturedGenericAttribUV; }
+	[[nodiscard]] inline int getShaderGenericAttribCol() const { return m_iShaderTexturedGenericAttribCol; }
 
-	[[nodiscard]] inline int getVBOVertices() const {return m_iVBOVertices;}
-	[[nodiscard]] inline int getVBOTexcoords() const {return m_iVBOTexcoords;}
-	[[nodiscard]] inline int getVBOTexcolors() const {return m_iVBOTexcolors;}
+	[[nodiscard]] inline int getVBOVertices() const { return m_iVBOVertices; }
+	[[nodiscard]] inline int getVBOTexcoords() const { return m_iVBOTexcoords; }
+	[[nodiscard]] inline int getVBOTexcolors() const { return m_iVBOTexcolors; }
 
-	[[nodiscard]] inline Matrix4 getMVP() const {return m_MP;}
+	[[nodiscard]] inline Matrix4 getMVP() const { return m_MP; }
 
 protected:
 	void init() override;
@@ -126,9 +124,9 @@ private:
 	static int primitiveToOpenGL(Graphics::PRIMITIVE primitive);
 	static int compareFuncToOpenGL(Graphics::COMPARE_FUNC compareFunc);
 
-    void registerShader(OpenGLES32Shader* shader);
-    void unregisterShader(OpenGLES32Shader* shader);
-    void updateAllShaderTransforms();
+	void registerShader(OpenGLES32Shader *shader);
+	void unregisterShader(OpenGLES32Shader *shader);
+	void updateAllShaderTransforms();
 
 	// renderer
 	bool m_bInScene;
@@ -138,7 +136,7 @@ private:
 	Matrix4 m_MP;
 
 	OpenGLES32Shader *m_shaderTexturedGeneric;
-	std::vector<OpenGLES32Shader*> m_registeredShaders;
+	std::vector<OpenGLES32Shader *> m_registeredShaders;
 	int m_iShaderTexturedGenericPrevType;
 	int m_iShaderTexturedGenericAttribPosition;
 	int m_iShaderTexturedGenericAttribUV;
@@ -159,7 +157,8 @@ private:
 };
 
 #else
-class OpenGLES32Interface : public NullGraphicsInterface{};
+class OpenGLES32Interface
+{};
 #endif
 
 #endif

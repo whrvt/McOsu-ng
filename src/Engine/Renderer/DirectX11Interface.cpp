@@ -403,7 +403,7 @@ void DirectX11Interface::beginScene()
 	if (vprof != NULL && vprof->isEnabled())
 	{
 		int numActiveShaders = 1;
-		for (const Resource *resource : engine->getResourceManager()->getResources())
+		for (const Resource *resource : resourceManager->getResources())
 		{
 			const DirectX11Shader *dx11Shader = dynamic_cast<const DirectX11Shader*>(resource);
 			if (dx11Shader != NULL)
@@ -417,7 +417,7 @@ void DirectX11Interface::beginScene()
 		vprof->addInfoBladeEngineTextLine(UString::format("Draw Calls: %i", numDrawCallsPrevFrame));
 		vprof->addInfoBladeEngineTextLine(UString::format("Active Shaders: %i", numActiveShaders));
 		vprof->addInfoBladeEngineTextLine(UString::format("shader[%i]: shaderTexturedGeneric: %ic", shaderCounter++, (int)m_shaderTexturedGeneric->getStatsNumConstantBufferUploadsPerFrame()));
-		for (const Resource *resource : engine->getResourceManager()->getResources())
+		for (const Resource *resource : resourceManager->getResources())
 		{
 			const DirectX11Shader *dx11Shader = dynamic_cast<const DirectX11Shader*>(resource);
 			if (dx11Shader != NULL)
@@ -485,7 +485,7 @@ void DirectX11Interface::setColor(Color color)
 	if (m_color == color) return;
 
 	m_color = color;
-	m_shaderTexturedGeneric->setUniform4f("col", COLOR_GET_Af(m_color), COLOR_GET_Rf(m_color), COLOR_GET_Gf(m_color), COLOR_GET_Bf(m_color));
+	m_shaderTexturedGeneric->setUniform4f("col", Af(m_color), Rf(m_color), Gf(m_color), Bf(m_color));
 }
 
 void DirectX11Interface::setAlpha(float alpha)
@@ -511,7 +511,7 @@ void DirectX11Interface::drawPixel(int x, int y)
 			v.pos.y = y;
 			v.pos.z = 0.0f;
 
-			v.col = Vector4(COLOR_GET_Rf(m_color), COLOR_GET_Gf(m_color), COLOR_GET_Bf(m_color), COLOR_GET_Af(m_color));
+			v.col = Vector4(Rf(m_color), Gf(m_color), Bf(m_color), Af(m_color));
 
 			v.tex.x = 0.0f;
 			v.tex.y = 0.0f;
@@ -810,7 +810,7 @@ void DirectX11Interface::drawVAO(VertexArrayObject *vao)
 
 	for (size_t i=0; i<vcolors.size(); i++)
 	{
-		const Vector4 color = Vector4(COLOR_GET_Rf(vcolors[i]), COLOR_GET_Gf(vcolors[i]), COLOR_GET_Bf(vcolors[i]), COLOR_GET_Af(vcolors[i]));
+		const Vector4 color = Vector4(Rf(vcolors[i]), Gf(vcolors[i]), Bf(vcolors[i]), Af(vcolors[i]));
 		colors.push_back(color);
 		finalColors.push_back(color);
 	}
@@ -844,9 +844,9 @@ void DirectX11Interface::drawVAO(VertexArrayObject *vao)
 
 				if (colors.size() > 0)
 				{
-					finalColors.push_back(colors[clamp<size_t>(i + 0, 0, maxColorIndex)]);
-					finalColors.push_back(colors[clamp<size_t>(i + 1, 0, maxColorIndex)]);
-					finalColors.push_back(colors[clamp<size_t>(i + 2, 0, maxColorIndex)]);
+					finalColors.push_back(colors[std::clamp<size_t>(i + 0, 0, maxColorIndex)]);
+					finalColors.push_back(colors[std::clamp<size_t>(i + 1, 0, maxColorIndex)]);
+					finalColors.push_back(colors[std::clamp<size_t>(i + 2, 0, maxColorIndex)]);
 				}
 
 				finalVertices.push_back(vertices[i + 0]);
@@ -862,9 +862,9 @@ void DirectX11Interface::drawVAO(VertexArrayObject *vao)
 
 				if (colors.size() > 0)
 				{
-					finalColors.push_back(colors[clamp<size_t>(i + 0, 0, maxColorIndex)]);
-					finalColors.push_back(colors[clamp<size_t>(i + 2, 0, maxColorIndex)]);
-					finalColors.push_back(colors[clamp<size_t>(i + 3, 0, maxColorIndex)]);
+					finalColors.push_back(colors[std::clamp<size_t>(i + 0, 0, maxColorIndex)]);
+					finalColors.push_back(colors[std::clamp<size_t>(i + 2, 0, maxColorIndex)]);
+					finalColors.push_back(colors[std::clamp<size_t>(i + 3, 0, maxColorIndex)]);
 				}
 			}
 		}
@@ -897,9 +897,9 @@ void DirectX11Interface::drawVAO(VertexArrayObject *vao)
 
 				if (colors.size() > 0)
 				{
-					finalColors.push_back(colors[clamp<size_t>(0, 0, maxColorIndex)]);
-					finalColors.push_back(colors[clamp<size_t>(i, 0, maxColorIndex)]);
-					finalColors.push_back(colors[clamp<size_t>(i - 1, 0, maxColorIndex)]);
+					finalColors.push_back(colors[std::clamp<size_t>(0, 0, maxColorIndex)]);
+					finalColors.push_back(colors[std::clamp<size_t>(i, 0, maxColorIndex)]);
+					finalColors.push_back(colors[std::clamp<size_t>(i - 1, 0, maxColorIndex)]);
 				}
 			}
 		}
@@ -914,20 +914,20 @@ void DirectX11Interface::drawVAO(VertexArrayObject *vao)
 		const size_t maxColorIndex = (hasColors ? finalColors.size() - 1 : 0);
 		const size_t maxTexcoords0Index = (hasTexcoords0 ? finalTexcoords[0].size() - 1 : 0);
 
-		const Vector4 color = Vector4(COLOR_GET_Rf(m_color), COLOR_GET_Gf(m_color), COLOR_GET_Bf(m_color), COLOR_GET_Af(m_color));
+		const Vector4 color = Vector4(Rf(m_color), Gf(m_color), Bf(m_color), Af(m_color));
 
 		for (size_t i=0; i<finalVertices.size(); i++)
 		{
 			m_vertices[i].pos = finalVertices[i];
 
 			if (hasColors)
-				m_vertices[i].col = finalColors[clamp<size_t>(i, 0, maxColorIndex)];
+				m_vertices[i].col = finalColors[std::clamp<size_t>(i, 0, maxColorIndex)];
 			else
 				m_vertices[i].col = color;
 
 			// TODO: multitexturing
 			if (hasTexcoords0)
-				m_vertices[i].tex = finalTexcoords[0][clamp<size_t>(i, 0, maxTexcoords0Index)];
+				m_vertices[i].tex = finalTexcoords[0][std::clamp<size_t>(i, 0, maxTexcoords0Index)];
 		}
 	}
 

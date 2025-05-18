@@ -11,7 +11,7 @@
 #include "Engine.h"
 #include "Environment.h"
 #include "Thread.h"
-#include "Timer.h"
+#include "Timing.h"
 
 #ifdef MCENGINE_FEATURE_MULTITHREADING
 
@@ -66,20 +66,10 @@ ResourceManager::ResourceManager()
 	m_iNumResourceInitPerFrameLimit = 1;
 
 	m_loadingWork.reserve(32);
-	int threads = default_numthreads;
-	// OS specific engine settings/overrides
-	if constexpr (Env::cfg(OS::HORIZON))
-	{
-		rm_numthreads.setValue(1.0f);
-		rm_numthreads.setDefaultFloat(1.0f);
-	}
-	// TODO: itd be nice to have a way to consistently determine whether the environment has a certain feature implemented or not
-	else
-	{
-		threads = clamp(env->getLogicalCPUCount(), 1, 32); // sanity
-		if (threads > default_numthreads)
-			rm_numthreads.setValue(threads);
-	}
+	
+	int threads = std::clamp(env->getLogicalCPUCount(), default_numthreads, 32); // sanity
+	if (threads > default_numthreads)
+		rm_numthreads.setValue(threads);
 
 	// create loader threads
 #ifdef MCENGINE_FEATURE_MULTITHREADING
@@ -115,19 +105,19 @@ ResourceManager::~ResourceManager()
 	// let all loader threads exit
 #ifdef MCENGINE_FEATURE_MULTITHREADING
 
-	for (size_t i = 0; i < m_threads.size(); i++)
+	for (auto & m_thread : m_threads)
 	{
-		m_threads[i]->running = false;
+		m_thread->running = false;
 	}
 
 	// notify all threads to check their running state
 	notifyWorkerThreads();
 
 	// wait for threads to stop
-	for (size_t i = 0; i < m_threads.size(); i++)
+	for (auto & m_thread : m_threads)
 	{
-		delete m_threads[i]->thread;
-		delete m_threads[i];
+		delete m_thread->thread;
+		delete m_thread;
 	}
 
 	m_threads.clear();
@@ -135,9 +125,9 @@ ResourceManager::~ResourceManager()
 #endif
 
 	// cleanup leftovers (can only do that after loader threads have exited) (2)
-	for (size_t i = 0; i < m_loadingWorkAsyncDestroy.size(); i++)
+	for (auto & i : m_loadingWorkAsyncDestroy)
 	{
-		delete m_loadingWorkAsyncDestroy[i];
+		delete i;
 	}
 	m_loadingWorkAsyncDestroy.clear();
 }
@@ -209,9 +199,9 @@ void ResourceManager::update()
 #ifdef MCENGINE_FEATURE_MULTITHREADING
 			std::lock_guard<std::mutex> workLock(g_resourceManagerLoadingWorkMutex);
 #endif
-			for (size_t w = 0; w < m_loadingWork.size(); w++)
+			for (auto & w : m_loadingWork)
 			{
-				if (m_loadingWork[w].resource.atomic.load() == m_loadingWorkAsyncDestroy[i])
+				if (w.resource.atomic.load() == m_loadingWorkAsyncDestroy[i])
 				{
 					if (debug_rm->getBool())
 						debugLog("Resource Manager: Waiting for async destroy of #%zu ...\n", i);
@@ -243,13 +233,13 @@ void ResourceManager::update()
 void ResourceManager::notifyWorkerThreads()
 {
 #ifdef MCENGINE_FEATURE_MULTITHREADING
-	for (size_t i = 0; i < m_threads.size(); i++)
+	for (auto & m_thread : m_threads)
 	{
 		{
-			std::lock_guard<std::mutex> lock(m_threads[i]->workMutex);
+			std::lock_guard<std::mutex> lock(m_thread->workMutex);
 			// no need to set hasWork here, that's handled when adding work
 		}
-		m_threads[i]->workCondition.notify_one();
+		m_thread->workCondition.notify_one();
 	}
 #endif
 }
@@ -292,9 +282,9 @@ void ResourceManager::destroyResource(Resource *rs)
 	}
 
 	// handle async destroy
-	for (size_t w = 0; w < m_loadingWork.size(); w++)
+	for (auto & w : m_loadingWork)
 	{
-		if (m_loadingWork[w].resource.atomic.load() == rs)
+		if (w.resource.atomic.load() == rs)
 		{
 			if (debug_rm->getBool())
 				debugLog("Resource Manager: Scheduled async destroy of %s\n", rs->getName().toUtf8());
@@ -319,9 +309,9 @@ void ResourceManager::destroyResource(Resource *rs)
 
 void ResourceManager::reloadResources()
 {
-	for (size_t i = 0; i < m_vResources.size(); i++)
+	for (auto & m_vResource : m_vResources)
 	{
-		m_vResources[i]->reload();
+		m_vResource->reload();
 	}
 }
 
@@ -347,7 +337,7 @@ Image *ResourceManager::loadImage(UString filepath, UString resourceName, bool m
 
 	// create instance and load it
 	filepath.insert(0, PATH_DEFAULT_IMAGES);
-	Image *img = engine->getGraphics()->createImage(filepath, mipmapped, keepInSystemMemory);
+	Image *img = graphics->createImage(filepath, mipmapped, keepInSystemMemory);
 	img->setName(resourceName);
 
 	loadResource(img, true);
@@ -358,7 +348,7 @@ Image *ResourceManager::loadImage(UString filepath, UString resourceName, bool m
 Image *ResourceManager::loadImageUnnamed(UString filepath, bool mipmapped, bool keepInSystemMemory)
 {
 	filepath.insert(0, PATH_DEFAULT_IMAGES);
-	Image *img = engine->getGraphics()->createImage(filepath, mipmapped, keepInSystemMemory);
+	Image *img = graphics->createImage(filepath, mipmapped, keepInSystemMemory);
 
 	loadResource(img, true);
 
@@ -376,7 +366,7 @@ Image *ResourceManager::loadImageAbs(UString absoluteFilepath, UString resourceN
 	}
 
 	// create instance and load it
-	Image *img = engine->getGraphics()->createImage(absoluteFilepath, mipmapped, keepInSystemMemory);
+	Image *img = graphics->createImage(absoluteFilepath, mipmapped, keepInSystemMemory);
 	img->setName(resourceName);
 
 	loadResource(img, true);
@@ -386,7 +376,7 @@ Image *ResourceManager::loadImageAbs(UString absoluteFilepath, UString resourceN
 
 Image *ResourceManager::loadImageAbsUnnamed(UString absoluteFilepath, bool mipmapped, bool keepInSystemMemory)
 {
-	Image *img = engine->getGraphics()->createImage(absoluteFilepath, mipmapped, keepInSystemMemory);
+	Image *img = graphics->createImage(absoluteFilepath, mipmapped, keepInSystemMemory);
 
 	loadResource(img, true);
 
@@ -401,7 +391,7 @@ Image *ResourceManager::createImage(unsigned int width, unsigned int height, boo
 		return NULL;
 	}
 
-	Image *img = engine->getGraphics()->createImage(width, height, mipmapped, keepInSystemMemory);
+	Image *img = graphics->createImage(width, height, mipmapped, keepInSystemMemory);
 
 	loadResource(img, false);
 
@@ -500,7 +490,7 @@ Shader *ResourceManager::loadShader(UString vertexShaderFilePath, UString fragme
 	// create instance and load it
 	vertexShaderFilePath.insert(0, PATH_DEFAULT_SHADERS);
 	fragmentShaderFilePath.insert(0, PATH_DEFAULT_SHADERS);
-	Shader *shader = engine->getGraphics()->createShaderFromFile(vertexShaderFilePath, fragmentShaderFilePath);
+	Shader *shader = graphics->createShaderFromFile(vertexShaderFilePath, fragmentShaderFilePath);
 	shader->setName(resourceName);
 
 	loadResource(shader, true);
@@ -512,7 +502,7 @@ Shader *ResourceManager::loadShader(UString vertexShaderFilePath, UString fragme
 {
 	vertexShaderFilePath.insert(0, PATH_DEFAULT_SHADERS);
 	fragmentShaderFilePath.insert(0, PATH_DEFAULT_SHADERS);
-	Shader *shader = engine->getGraphics()->createShaderFromFile(vertexShaderFilePath, fragmentShaderFilePath);
+	Shader *shader = graphics->createShaderFromFile(vertexShaderFilePath, fragmentShaderFilePath);
 
 	loadResource(shader, true);
 
@@ -530,7 +520,7 @@ Shader *ResourceManager::createShader(UString vertexShader, UString fragmentShad
 	}
 
 	// create instance and load it
-	Shader *shader = engine->getGraphics()->createShaderFromSource(vertexShader, fragmentShader);
+	Shader *shader = graphics->createShaderFromSource(vertexShader, fragmentShader);
 	shader->setName(resourceName);
 
 	loadResource(shader, true);
@@ -540,7 +530,7 @@ Shader *ResourceManager::createShader(UString vertexShader, UString fragmentShad
 
 Shader *ResourceManager::createShader(UString vertexShader, UString fragmentShader)
 {
-	Shader *shader = engine->getGraphics()->createShaderFromSource(vertexShader, fragmentShader);
+	Shader *shader = graphics->createShaderFromSource(vertexShader, fragmentShader);
 
 	loadResource(shader, true);
 
@@ -559,7 +549,7 @@ Shader *ResourceManager::loadShader2(UString shaderFilePath, UString resourceNam
 
 	// create instance and load it
 	shaderFilePath.insert(0, PATH_DEFAULT_SHADERS);
-	Shader *shader = engine->getGraphics()->createShaderFromFile(shaderFilePath);
+	Shader *shader = graphics->createShaderFromFile(shaderFilePath);
 	shader->setName(resourceName);
 
 	loadResource(shader, true);
@@ -570,7 +560,7 @@ Shader *ResourceManager::loadShader2(UString shaderFilePath, UString resourceNam
 Shader *ResourceManager::loadShader2(UString shaderFilePath)
 {
 	shaderFilePath.insert(0, PATH_DEFAULT_SHADERS);
-	Shader *shader = engine->getGraphics()->createShaderFromFile(shaderFilePath);
+	Shader *shader = graphics->createShaderFromFile(shaderFilePath);
 
 	loadResource(shader, true);
 
@@ -588,7 +578,7 @@ Shader *ResourceManager::createShader2(UString shaderSource, UString resourceNam
 	}
 
 	// create instance and load it
-	Shader *shader = engine->getGraphics()->createShaderFromSource(shaderSource);
+	Shader *shader = graphics->createShaderFromSource(shaderSource);
 	shader->setName(resourceName);
 
 	loadResource(shader, true);
@@ -598,7 +588,7 @@ Shader *ResourceManager::createShader2(UString shaderSource, UString resourceNam
 
 Shader *ResourceManager::createShader2(UString shaderSource)
 {
-	Shader *shader = engine->getGraphics()->createShaderFromSource(shaderSource);
+	Shader *shader = graphics->createShaderFromSource(shaderSource);
 
 	loadResource(shader, true);
 
@@ -607,7 +597,7 @@ Shader *ResourceManager::createShader2(UString shaderSource)
 
 RenderTarget *ResourceManager::createRenderTarget(int x, int y, int width, int height, Graphics::MULTISAMPLE_TYPE multiSampleType)
 {
-	RenderTarget *rt = engine->getGraphics()->createRenderTarget(x, y, width, height, multiSampleType);
+	RenderTarget *rt = graphics->createRenderTarget(x, y, width, height, multiSampleType);
 	rt->setName(UString::format("_RT_%ix%i", width, height));
 
 	loadResource(rt, true);
@@ -632,7 +622,7 @@ TextureAtlas *ResourceManager::createTextureAtlas(int width, int height)
 
 VertexArrayObject *ResourceManager::createVertexArrayObject(Graphics::PRIMITIVE primitive, Graphics::USAGE_TYPE usage, bool keepInSystemMemory)
 {
-	VertexArrayObject *vao = engine->getGraphics()->createVertexArrayObject(primitive, usage, keepInSystemMemory);
+	VertexArrayObject *vao = graphics->createVertexArrayObject(primitive, usage, keepInSystemMemory);
 
 	loadResource(vao, false);
 
@@ -641,10 +631,10 @@ VertexArrayObject *ResourceManager::createVertexArrayObject(Graphics::PRIMITIVE 
 
 Image *ResourceManager::getImage(UString resourceName) const
 {
-	for (size_t i = 0; i < m_vResources.size(); i++)
+	for (auto m_vResource : m_vResources)
 	{
-		if (m_vResources[i]->getName() == resourceName)
-			return dynamic_cast<Image *>(m_vResources[i]);
+		if (m_vResource->getName() == resourceName)
+			return dynamic_cast<Image *>(m_vResource);
 	}
 
 	doesntExistWarning(resourceName);
@@ -653,10 +643,10 @@ Image *ResourceManager::getImage(UString resourceName) const
 
 McFont *ResourceManager::getFont(UString resourceName) const
 {
-	for (size_t i = 0; i < m_vResources.size(); i++)
+	for (auto m_vResource : m_vResources)
 	{
-		if (m_vResources[i]->getName() == resourceName)
-			return dynamic_cast<McFont *>(m_vResources[i]);
+		if (m_vResource->getName() == resourceName)
+			return dynamic_cast<McFont *>(m_vResource);
 	}
 
 	doesntExistWarning(resourceName);
@@ -665,10 +655,10 @@ McFont *ResourceManager::getFont(UString resourceName) const
 
 Sound *ResourceManager::getSound(UString resourceName) const
 {
-	for (size_t i = 0; i < m_vResources.size(); i++)
+	for (auto m_vResource : m_vResources)
 	{
-		if (m_vResources[i]->getName() == resourceName)
-			return dynamic_cast<Sound *>(m_vResources[i]);
+		if (m_vResource->getName() == resourceName)
+			return dynamic_cast<Sound *>(m_vResource);
 	}
 
 	doesntExistWarning(resourceName);
@@ -677,10 +667,10 @@ Sound *ResourceManager::getSound(UString resourceName) const
 
 Shader *ResourceManager::getShader(UString resourceName) const
 {
-	for (size_t i = 0; i < m_vResources.size(); i++)
+	for (auto m_vResource : m_vResources)
 	{
-		if (m_vResources[i]->getName() == resourceName)
-			return dynamic_cast<Shader *>(m_vResources[i]);
+		if (m_vResource->getName() == resourceName)
+			return dynamic_cast<Shader *>(m_vResource);
 	}
 
 	doesntExistWarning(resourceName);
@@ -694,9 +684,9 @@ bool ResourceManager::isLoading() const
 
 bool ResourceManager::isLoadingResource(Resource *rs) const
 {
-	for (size_t i = 0; i < m_loadingWork.size(); i++)
+	for (const auto & i : m_loadingWork)
 	{
-		if (m_loadingWork[i].resource.atomic.load() == rs)
+		if (i.resource.atomic.load() == rs)
 			return true;
 	}
 
@@ -750,9 +740,9 @@ void ResourceManager::loadResource(Resource *res, bool load)
 
 			// count work for this thread
 			int numLoadingWorkForThreadIndex = 0;
-			for (size_t i = 0; i < m_loadingWork.size(); i++)
+			for (auto & i : m_loadingWork)
 			{
-				if (m_loadingWork[i].threadIndex.atomic.load() == threadIndex)
+				if (i.threadIndex.atomic.load() == threadIndex)
 					numLoadingWorkForThreadIndex++;
 			}
 
@@ -796,9 +786,9 @@ void ResourceManager::doesntExistWarning(UString resourceName) const
 
 Resource *ResourceManager::checkIfExistsAndHandle(UString resourceName)
 {
-	for (size_t i = 0; i < m_vResources.size(); i++)
+	for (auto & m_vResource : m_vResources)
 	{
-		if (m_vResources[i]->getName() == resourceName)
+		if (m_vResource->getName() == resourceName)
 		{
 			if (rm_warnings.getBool())
 				debugLog("RESOURCE MANAGER: Resource \"%s\" already loaded!\n", resourceName.toUtf8());
@@ -806,7 +796,7 @@ Resource *ResourceManager::checkIfExistsAndHandle(UString resourceName)
 			// handle flags (reset them)
 			resetFlags();
 
-			return m_vResources[i];
+			return m_vResource;
 		}
 	}
 
@@ -846,11 +836,11 @@ static void *_resourceLoaderThread(void *data)
 		{
 			std::lock_guard<std::mutex> lock(g_resourceManagerLoadingWorkMutex);
 
-			for (size_t i = 0; i < self->loadingWork->size(); i++)
+			for (auto & i : *self->loadingWork)
 			{
-				if ((*self->loadingWork)[i].threadIndex.atomic.load() == threadIndex && !(*self->loadingWork)[i].done.atomic.load())
+				if (i.threadIndex.atomic.load() == threadIndex && !i.done.atomic.load())
 				{
-					resourceToLoad = (*self->loadingWork)[i].resource.atomic.load();
+					resourceToLoad = i.resource.atomic.load();
 					break;
 				}
 			}
@@ -861,7 +851,7 @@ static void *_resourceLoaderThread(void *data)
 		{
 			// debug pause
 			if (rm_debug_async_delay.getFloat() > 0.0f)
-				env->sleep(rm_debug_async_delay.getFloat() * 1000 * 1000);
+				Timing::sleep(rm_debug_async_delay.getFloat() * 1000 * 1000);
 
 			// asynchronous initAsync() (do the actual work)
 			resourceToLoad->loadAsync();
@@ -870,11 +860,11 @@ static void *_resourceLoaderThread(void *data)
 			{
 				std::lock_guard<std::mutex> lock(g_resourceManagerLoadingWorkMutex);
 
-				for (size_t i = 0; i < self->loadingWork->size(); i++)
+				for (auto & i : *self->loadingWork)
 				{
-					if ((*self->loadingWork)[i].threadIndex.atomic.load() == threadIndex && (*self->loadingWork)[i].resource.atomic.load() == resourceToLoad)
+					if (i.threadIndex.atomic.load() == threadIndex && i.resource.atomic.load() == resourceToLoad)
 					{
-						(*self->loadingWork)[i].done = ResourceManager::MobileAtomicBool(true);
+						i.done = ResourceManager::MobileAtomicBool(true);
 						break;
 					}
 				}

@@ -198,7 +198,7 @@ void OsuUISongBrowserScoreButton::draw(Graphics *g)
 
 	// score | pp | weighted 95% (pp)
 	const float scoreScale = 0.5f;
-	McFont *scoreFont = (m_vSize.y < 50 ? engine->getResourceManager()->getFont("FONT_DEFAULT") : usernameFont); // HACKHACK: switch font for very low resolutions
+	McFont *scoreFont = (m_vSize.y < 50 ? resourceManager->getFont("FONT_DEFAULT") : usernameFont); // HACKHACK: switch font for very low resolutions
 	g->pushTransform();
 	{
 		const float height = m_vSize.y*0.5f;
@@ -395,7 +395,7 @@ void OsuUISongBrowserScoreButton::update()
 
 	// HACKHACK: this should really be part of the UI base
 	// right click detection
-	if (engine->getMouse()->isRightDown())
+	if (mouse->isRightDown())
 	{
 		if (!m_bRightClickCheck)
 		{
@@ -508,7 +508,7 @@ void OsuUISongBrowserScoreButton::updateElapsedTimeString()
 
 void OsuUISongBrowserScoreButton::onClicked()
 {
-	engine->getSound()->play(m_osu->getSkin()->getMenuHit());
+	soundEngine->play(m_osu->getSkin()->getMenuHit());
 	CBaseUIButton::onClicked();
 }
 
@@ -542,7 +542,7 @@ void OsuUISongBrowserScoreButton::onFocusStolen()
 
 void OsuUISongBrowserScoreButton::onRightMouseUpInside()
 {
-	const Vector2 pos = engine->getMouse()->getPos();
+	const Vector2 pos = mouse->getPos();
 
 	if (m_contextMenu != NULL)
 	{
@@ -576,7 +576,7 @@ void OsuUISongBrowserScoreButton::onContextMenu(UString text, int id)
 		onUseModsClicked();
 	if (id == 2)
 	{
-		if (engine->getKeyboard()->isShiftDown())
+		if (keyboard->isShiftDown())
 			onDeleteScoreConfirmed(text, 1);
 		else
 			onDeleteScoreClicked();
@@ -702,7 +702,7 @@ void OsuUISongBrowserScoreButton::onUseModsClicked()
 		}
 	}
 
-	engine->getSound()->play(nomod ? m_osu->getSkin()->getCheckOff() : m_osu->getSkin()->getCheckOn());
+	soundEngine->play(nomod ? m_osu->getSkin()->getCheckOff() : m_osu->getSkin()->getCheckOn());
 }
 
 void OsuUISongBrowserScoreButton::onDeleteScoreClicked()

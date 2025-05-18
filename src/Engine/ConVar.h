@@ -95,20 +95,22 @@ public:
 	void execInt(float args);
 
 	// get
-	[[nodiscard]] constexpr float getDefaultFloat() const {return m_fDefaultValue.load();}
+	template <typename T = int>
+	[[nodiscard]] constexpr auto getDefaultVal() const {return static_cast<T>(m_fDefaultValue.load());}
+	[[nodiscard]] constexpr float getDefaultFloat() const {return getDefaultVal<float>();}
 	[[nodiscard]] constexpr const UString &getDefaultString() const {return m_sDefaultValue;}
 
 	[[nodiscard]] constexpr bool isFlagSet(int flag) const {return (bool)(m_iFlags & flag);}
 
 	template <typename T = int>
-	[[nodiscard]] constexpr auto getVal(bool cheat = false) const {return static_cast<T>((!cheat || ConVars::sv_cheats.getRaw()) ? m_fValue.load() : m_fDefaultValue.load());}
+	[[nodiscard]] constexpr auto getVal(bool cheat = false) const {return static_cast<T>((!cheat || !!static_cast<int>(ConVars::sv_cheats.getRaw())) ? m_fValue.load() : m_fDefaultValue.load());}
 
 	[[nodiscard]] constexpr int getInt() const	   	{return getVal<int>(isFlagSet(FCVAR_CHEAT));}
 	[[nodiscard]] constexpr bool getBool() const	{return getVal<bool>(isFlagSet(FCVAR_CHEAT));}
 	[[nodiscard]] constexpr float getFloat() const	{return	getVal<float>(isFlagSet(FCVAR_CHEAT));}
 
 	[[nodiscard]]
-	constexpr const UString &getString() const		 {return (isFlagSet(FCVAR_CHEAT) && !ConVars::sv_cheats.getRaw() ? m_sDefaultValue : m_sValue);}
+	constexpr const UString &getString() const		 {return (isFlagSet(FCVAR_CHEAT) && !static_cast<int>(ConVars::sv_cheats.getRaw()) ? m_sDefaultValue : m_sValue);}
 
 	[[nodiscard]] constexpr const UString &getHelpstring() const {return m_sHelpString;}
 	[[nodiscard]] constexpr const UString &getName() const {return m_sName;}
@@ -126,7 +128,7 @@ public:
 		requires (std::is_same_v<T, float> || std::convertible_to<T, float>)
 	constexpr void setValue(T value)
 	{
-		if (isFlagSet(FCVAR_HARDCODED) || (isFlagSet(FCVAR_CHEAT) && !ConVars::sv_cheats.getRaw())) return;
+		if (isFlagSet(FCVAR_HARDCODED) || (isFlagSet(FCVAR_CHEAT) && !static_cast<int>(ConVars::sv_cheats.getRaw()))) return;
 		setValueInt(value); // setValueInt(ernal)...
 	}
 

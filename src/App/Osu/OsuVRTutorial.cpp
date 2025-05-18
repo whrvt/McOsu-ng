@@ -34,8 +34,8 @@ OsuVRTutorial::OsuVRTutorial(Osu *osu) : OsuScreenBackable(osu)
 	// load/execute VR stuff only in VR builds
 	if (m_osu->isInVRMode())
 	{
-		engine->getResourceManager()->loadImage("mcosuvr_controls_1.png", "OSU_VR_CONTROLS_TUTORIAL_1");
-		engine->getResourceManager()->loadImage("mcosuvr_controls_2.png", "OSU_VR_CONTROLS_TUTORIAL_2");
+		resourceManager->loadImage("mcosuvr_controls_1.png", "OSU_VR_CONTROLS_TUTORIAL_1");
+		resourceManager->loadImage("mcosuvr_controls_2.png", "OSU_VR_CONTROLS_TUTORIAL_2");
 	}
 
 	m_tutorialImage1 = new CBaseUIImage("OSU_VR_CONTROLS_TUTORIAL_1", 0, 0, 0, 0, "");
@@ -114,7 +114,7 @@ void OsuVRTutorial::updateLayout()
 
 void OsuVRTutorial::onBack()
 {
-	engine->getSound()->play(m_osu->getSkin()->getMenuClick());
+	soundEngine->play(m_osu->getSkin()->getMenuClick());
 
 	m_osu->toggleVRTutorial();
 }

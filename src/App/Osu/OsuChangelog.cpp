@@ -35,8 +35,19 @@ OsuChangelog::OsuChangelog(Osu *osu) : OsuScreenBackable(osu)
 
 	std::vector<CHANGELOG> changelogs;
 
+	CHANGELOG alpha3400;
+	alpha3400.title = UString::format(PACKAGE_VERSION " (Build Date: %s, %s)", __DATE__, __TIME__); // (10.05.2025 - ?)
+	alpha3400.changes.emplace_back("- First " PACKAGE_NAME " test version bump");
+	alpha3400.changes.emplace_back("- Added osu! folder browse button to options menu");
+	alpha3400.changes.emplace_back("- Added \"snd_buffer\" ConVar to set BASS buffer size");
+	alpha3400.changes.emplace_back("- Added the cross-platform SoLoud audio backend in preparation for a WASM release");
+	alpha3400.changes.emplace_back("  - (TODO: try to implement MP3_OLDGAPS support to better BASS offsets)");
+	alpha3400.changes.emplace_back("- Many internal optimizations");
+	alpha3400.changes.emplace_back("- For more information see " PACKAGE_URL);
+	changelogs.push_back(alpha3400);
+
 	CHANGELOG alpha317;
-	alpha317.title = UString::format(PACKAGE_VERSION " (Build Date: %s, %s)", __DATE__, __TIME__); // (09.01.2022 - ?)
+	alpha317.title = "33 - 33.11 (09.01.2022 - 10.05.2025)";
 	alpha317.changes.emplace_back("- For more info on the star/pp changes in this update see https://osu.ppy.sh/home/news/2025-03-06-performance-points-star-rating-updates");
 	alpha317.changes.emplace_back("- Updated star + pp algorithms to match current lazer implementation aka 20250306 (19) (thanks to @Khangaroo!)");
 	alpha317.changes.emplace_back("- Added \"Sort by Unstable Rate (Mc)\" to score sorting options");
@@ -412,7 +423,7 @@ OsuChangelog::OsuChangelog(Osu *osu) : OsuScreenBackable(osu)
 	alpha312.changes.emplace_back("- Added ConVars (1): osu_mod_random_circle/slider/spinner_offset_x/y_percent, osu_mod_hd_circle_fadein/fadeout_start/end_percent");
 	alpha312.changes.emplace_back("- Added ConVars (2): osu_play_hitsound_on_click_while_playing, osu_alt_f4_quits_even_while_playing");
 	alpha312.changes.emplace_back("- Added ConVars (3): osu_skin_random, osu_skin_random_elements, osu_slider_body_unit_circle_subdivisions");
-	alpha312.changes.emplace_back("- Windows: Ignore Windows key while playing (osu_win_disable_windows_key_while_playing)");
+	alpha312.changes.emplace_back("- Windows: Ignore Windows key while playing (osu_disable_windows_key_while_playing)");
 	alpha312.changes.emplace_back("- Made skip button only skip if click started inside");
 	alpha312.changes.emplace_back("- Made mod \"Jigsaw\" allow clicks during breaks and before first hitobject");
 	alpha312.changes.emplace_back("- Made experimental mod \"Full Alternate\" allow any key for first hitobjects, and after break, and during/after spinners");
@@ -954,7 +965,7 @@ void OsuChangelog::update()
 
 	// HACKHACK:
 	if (m_osu->getHUD()->isVolumeOverlayBusy() || m_osu->getOptionsMenu()->isMouseInside())
-		engine->getMouse()->resetWheelDelta();
+		mouse->resetWheelDelta();
 
 	m_container->update();
 
@@ -1010,7 +1021,7 @@ void OsuChangelog::updateLayout()
 
 void OsuChangelog::onBack()
 {
-	engine->getSound()->play(m_osu->getSkin()->getMenuClick());
+	soundEngine->play(m_osu->getSkin()->getMenuClick());
 
 	m_osu->toggleChangelog();
 }

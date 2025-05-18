@@ -78,7 +78,7 @@ void OsuPauseMenu::draw(Graphics *g)
 		// draw dim
 		if (osu_pause_dim_background.getBool())
 		{
-			g->setColor(COLORf(m_fDimAnim * osu_pause_dim_alpha.getFloat(), 0.078f, 0.078f, 0.078f));
+			g->setColor(argb(m_fDimAnim * osu_pause_dim_alpha.getFloat(), 0.078f, 0.078f, 0.078f));
 			g->fillRect(0, 0, m_osu->getScreenWidth(), m_osu->getScreenHeight());
 		}
 
@@ -96,7 +96,7 @@ void OsuPauseMenu::draw(Graphics *g)
 				const float scale = Osu::getImageScaleToFillResolution(image, m_osu->getScreenSize());
 				const Vector2 centerTrans = (m_osu->getScreenSize() / 2);
 
-				g->setColor(COLORf(m_fDimAnim, 1.0f, 1.0f, 1.0f));
+				g->setColor(argb(m_fDimAnim, 1.0f, 1.0f, 1.0f));
 				g->pushTransform();
 				{
 					g->scale(scale, scale);
@@ -117,7 +117,7 @@ void OsuPauseMenu::draw(Graphics *g)
 		// draw selection arrows
 		if (m_selectedButton != NULL)
 		{
-			const Color arrowColor = COLOR(255, 0, 114, 255);
+			const Color arrowColor = rgb(0, 114, 255);
 			float animation = fmod((float)(engine->getTime()-m_fWarningArrowsAnimStartTime)*3.2f, 2.0f);
 			if (animation > 1.0f)
 				animation = 2.0f - animation;
@@ -160,16 +160,6 @@ void OsuPauseMenu::update()
 
 	if (anim->isAnimating(&m_fWarningArrowsAnimX))
 		m_fWarningArrowsAnimStartTime = engine->getTime();
-
-	// HACKHACK: handle joystick mouse select, inject enter keydown
-	if constexpr (Env::cfg(OS::HORIZON))
-	{
-		if (engine->getMouse()->isLeftDown())
-		{
-			KeyboardEvent e(KEY_ENTER);
-			onKeyDown(e);
-		}
-	}
 }
 
 void OsuPauseMenu::onContinueClicked()
@@ -177,7 +167,7 @@ void OsuPauseMenu::onContinueClicked()
 	if (!m_bContinueEnabled) return;
 	if (anim->isAnimating(&m_fDimAnim)) return;
 
-	engine->getSound()->play(m_osu->getSkin()->getMenuHit());
+	soundEngine->play(m_osu->getSkin()->getMenuHit());
 
 	if (m_osu->getSelectedBeatmap() != NULL)
 		m_osu->getSelectedBeatmap()->pause();
@@ -189,7 +179,7 @@ void OsuPauseMenu::onRetryClicked()
 {
 	if (anim->isAnimating(&m_fDimAnim)) return;
 
-	engine->getSound()->play(m_osu->getSkin()->getMenuHit());
+	soundEngine->play(m_osu->getSkin()->getMenuHit());
 
 	if (m_osu->getSelectedBeatmap() != NULL)
 		m_osu->getSelectedBeatmap()->restart();
@@ -201,7 +191,7 @@ void OsuPauseMenu::onBackClicked()
 {
 	if (anim->isAnimating(&m_fDimAnim)) return;
 
-	engine->getSound()->play(m_osu->getSkin()->getMenuHit());
+	soundEngine->play(m_osu->getSkin()->getMenuHit());
 
 	if (m_osu->getSelectedBeatmap() != NULL)
 		m_osu->getSelectedBeatmap()->stop();
@@ -228,7 +218,7 @@ void OsuPauseMenu::onSelectionChange()
 
 		anim->moveQuadOut(&m_fWarningArrowsAnimY, m_selectedButton->getPos().y, 0.1f);
 
-		engine->getSound()->play(m_osu->getSkin()->getMenuClick());
+		soundEngine->play(m_osu->getSkin()->getMenuClick());
 	}
 }
 
@@ -267,7 +257,7 @@ void OsuPauseMenu::onKeyDown(KeyboardEvent &e)
 	// handle arrow keys selection
 	if (m_buttons.size() > 0)
 	{
-		if (!engine->getKeyboard()->isAltDown() && e == KEY_DOWN)
+		if (!keyboard->isAltDown() && e == KEY_DOWN)
 		{
 			OsuUIPauseMenuButton *nextSelectedButton = m_buttons[0];
 
@@ -300,7 +290,7 @@ void OsuPauseMenu::onKeyDown(KeyboardEvent &e)
 			onSelectionChange();
 		}
 
-		if (!engine->getKeyboard()->isAltDown() && e == KEY_UP)
+		if (!keyboard->isAltDown() && e == KEY_UP)
 		{
 			OsuUIPauseMenuButton *nextSelectedButton = m_buttons[m_buttons.size()-1];
 

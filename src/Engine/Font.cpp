@@ -26,11 +26,15 @@ static constexpr size_t MIN_ATLAS_SIZE = 256;
 static constexpr size_t MAX_ATLAS_SIZE = 4096;
 static constexpr wchar_t UNKNOWN_CHAR = '?'; // ASCII '?'
 
+static constexpr auto VERTS_PER_VAO = Env::cfg(REND::GLES2 | REND::GLES32) ? 6 : 4;
+
 ConVar r_drawstring_max_string_length("r_drawstring_max_string_length", 65536, FCVAR_CHEAT, "maximum number of characters per call, sanity/memory buffer limit");
 ConVar r_debug_drawstring_unbind("r_debug_drawstring_unbind", false, FCVAR_NONE);
 ConVar r_debug_font_atlas_padding("r_debug_font_atlas_padding", 1, FCVAR_NONE, "padding between glyphs in the atlas to prevent bleeding");
 
-McFont::McFont(UString filepath, int fontSize, bool antialiasing, int fontDPI) : Resource(filepath), m_vao(Graphics::PRIMITIVE::PRIMITIVE_TRIANGLES, Graphics::USAGE_TYPE::USAGE_DYNAMIC)
+McFont::McFont(UString filepath, int fontSize, bool antialiasing, int fontDPI)
+    : Resource(filepath),
+      m_vao((Env::cfg(REND::GLES2 | REND::GLES32) ? Graphics::PRIMITIVE::PRIMITIVE_TRIANGLES : Graphics::PRIMITIVE::PRIMITIVE_QUADS), Graphics::USAGE_TYPE::USAGE_DYNAMIC)
 {
 	std::vector<wchar_t> characters;
 	characters.reserve(224); // reserve space for basic ASCII + extended chars
@@ -41,7 +45,9 @@ McFont::McFont(UString filepath, int fontSize, bool antialiasing, int fontDPI) :
 	constructor(characters, fontSize, antialiasing, fontDPI);
 }
 
-McFont::McFont(UString filepath, std::vector<wchar_t> characters, int fontSize, bool antialiasing, int fontDPI) : Resource(filepath), m_vao(Graphics::PRIMITIVE::PRIMITIVE_TRIANGLES, Graphics::USAGE_TYPE::USAGE_DYNAMIC)
+McFont::McFont(UString filepath, std::vector<wchar_t> characters, int fontSize, bool antialiasing, int fontDPI)
+    : Resource(filepath),
+      m_vao((Env::cfg(REND::GLES2 | REND::GLES32) ? Graphics::PRIMITIVE::PRIMITIVE_TRIANGLES : Graphics::PRIMITIVE::PRIMITIVE_QUADS), Graphics::USAGE_TYPE::USAGE_DYNAMIC)
 {
 	constructor(characters, fontSize, antialiasing, fontDPI);
 }
@@ -167,8 +173,8 @@ void McFont::init()
 
 	// calculate optimal atlas size and create texture atlas
 	const size_t atlasSize = calculateOptimalAtlasSize(glyphRects, ATLAS_OCCUPANCY_TARGET);
-	engine->getResourceManager()->requestNextLoadUnmanaged();
-	m_textureAtlas = engine->getResourceManager()->createTextureAtlas(atlasSize, atlasSize);
+	resourceManager->requestNextLoadUnmanaged();
+	m_textureAtlas = resourceManager->createTextureAtlas(atlasSize, atlasSize);
 
 	// pack glyphs into atlas
 	if (!glyphRects.empty() && !packGlyphRects(glyphRects, atlasSize, atlasSize))
@@ -232,7 +238,7 @@ void McFont::init()
 	}
 
 	// finalize atlas texture
-	engine->getResourceManager()->loadResource(m_textureAtlas);
+	resourceManager->loadResource(m_textureAtlas);
 	m_textureAtlas->getAtlasImage()->setFilterMode(m_bAntialiasing ? Graphics::FILTER_MODE::FILTER_MODE_LINEAR : Graphics::FILTER_MODE::FILTER_MODE_NONE);
 
 	// precalculate average/max ASCII glyph height
@@ -276,25 +282,39 @@ void McFont::buildGlyphGeometry(const GLYPH_METRICS &gm, const Vector3 &basePos,
 
 	const size_t idx = vertexCount;
 
-	// first triangle (bottom-left, top-left, top-right)
-	m_vertices[idx] = bottomLeft;
-	m_vertices[idx + 1] = topLeft;
-	m_vertices[idx + 2] = topRight;
+	if constexpr (Env::cfg(REND::GLES2 | REND::GLES32))
+	{
+		// first triangle (bottom-left, top-left, top-right)
+		m_vertices[idx] = bottomLeft;
+		m_vertices[idx + 1] = topLeft;
+		m_vertices[idx + 2] = topRight;
 
-	m_texcoords[idx] = texBottomLeft;
-	m_texcoords[idx + 1] = texTopLeft;
-	m_texcoords[idx + 2] = texTopRight;
+		m_texcoords[idx] = texBottomLeft;
+		m_texcoords[idx + 1] = texTopLeft;
+		m_texcoords[idx + 2] = texTopRight;
 
-	// second triangle (bottom-left, top-right, bottom-right)
-	m_vertices[idx + 3] = bottomLeft;
-	m_vertices[idx + 4] = topRight;
-	m_vertices[idx + 5] = bottomRight;
+		// second triangle (bottom-left, top-right, bottom-right)
+		m_vertices[idx + 3] = bottomLeft;
+		m_vertices[idx + 4] = topRight;
+		m_vertices[idx + 5] = bottomRight;
 
-	m_texcoords[idx + 3] = texBottomLeft;
-	m_texcoords[idx + 4] = texTopRight;
-	m_texcoords[idx + 5] = texBottomRight;
+		m_texcoords[idx + 3] = texBottomLeft;
+		m_texcoords[idx + 4] = texTopRight;
+		m_texcoords[idx + 5] = texBottomRight;
+	}
+	else
+	{
+		m_vertices[idx] = bottomLeft;      // bottom-left
+		m_vertices[idx + 1] = topLeft;     // top-left
+		m_vertices[idx + 2] = topRight;    // top-right
+		m_vertices[idx + 3] = bottomRight; // bottom-right
 
-	vertexCount += 6;
+		m_texcoords[idx] = texBottomLeft;
+		m_texcoords[idx + 1] = texTopLeft;
+		m_texcoords[idx + 2] = texTopRight;
+		m_texcoords[idx + 3] = texBottomRight;
+	}
+	vertexCount += VERTS_PER_VAO;
 }
 
 void McFont::buildStringGeometry(const UString &text, size_t &vertexCount)
@@ -305,7 +325,7 @@ void McFont::buildStringGeometry(const UString &text, size_t &vertexCount)
 	}
 
 	float advanceX = 0.0f;
-	const size_t maxGlyphs = std::min(text.length(), (int)(m_vertices.size() - vertexCount) / 6);
+	const size_t maxGlyphs = std::min(text.length(), (int)(m_vertices.size() - vertexCount) / VERTS_PER_VAO);
 
 	for (size_t i = 0; i < maxGlyphs; i++)
 	{
@@ -326,7 +346,7 @@ void McFont::drawString(Graphics *g, const UString &text)
 
 	m_vao.empty();
 
-	const size_t totalVerts = text.length() * 6;
+	const size_t totalVerts = text.length() * VERTS_PER_VAO;
 	m_vertices.resize(totalVerts);
 	m_texcoords.resize(totalVerts);
 
@@ -358,7 +378,7 @@ void McFont::beginBatch()
 void McFont::addToBatch(const UString &text, const Vector3 &pos, Color color)
 {
 	size_t verts;
-	if (!m_batchActive || (verts = text.length() * 6) == 0)
+	if (!m_batchActive || (verts = text.length() * VERTS_PER_VAO) == 0)
 		return;
 	m_batchQueue.totalVerts += verts;
 	m_batchQueue.entryList.push_back({text, pos, color});
@@ -390,8 +410,6 @@ void McFont::flushBatch(Graphics *g)
 			m_vao.addColor(entry.color);
 		}
 	}
-
-	m_textureAtlas->getAtlasImage()->setFilterMode(m_bAntialiasing ? Graphics::FILTER_MODE::FILTER_MODE_LINEAR : Graphics::FILTER_MODE::FILTER_MODE_NONE);
 
 	m_textureAtlas->getAtlasImage()->bind();
 

@@ -19,7 +19,6 @@ ConVar mouse_raw_input("mouse_raw_input", false, FCVAR_NONE);
 ConVar mouse_raw_input_absolute_to_window("mouse_raw_input_absolute_to_window", false, FCVAR_NONE);
 ConVar mouse_fakelag("mouse_fakelag", 0.000f, FCVAR_NONE, "delay all mouse movement by this many seconds (e.g. 0.1 = 100 ms delay)");
 ConVar tablet_sensitivity_ignore("tablet_sensitivity_ignore", false, FCVAR_NONE);
-ConVar win_ink_workaround("win_ink_workaround", false, FCVAR_NONE);
 
 Mouse::Mouse() : InputDevice()
 {
@@ -30,12 +29,14 @@ Mouse::Mouse() : InputDevice()
 	m_iWheelDeltaVerticalActual = 0;
 	m_iWheelDeltaHorizontalActual = 0;
 
-	m_bSetPosWasCalledLastFrame = false;
+	m_bLastFrameHadMotion = false;
 	m_bAbsolute = false;
 	m_bVirtualDesktop = false;
 
 	m_vOffset = Vector2(0, 0);
 	m_vScale = Vector2(1, 1);
+	m_vDelta.zero();
+	m_vRawDelta.zero();
 	m_vActualPos = m_vPosWithoutOffset = m_vPos = env->getMousePos();
 
 	m_vFakeLagPos = m_vPos;
@@ -98,7 +99,7 @@ void Mouse::drawDebug(Graphics *g)
 	g->setColor(0xffffffff);
 	g->drawRect(pos.x - rectSize.x / 2.0f, pos.y - rectSize.y / 2.0f, rectSize.x, rectSize.y);
 
-	McFont *posFont = engine->getResourceManager()->getFont("FONT_DEFAULT");
+	McFont *posFont = resourceManager->getFont("FONT_DEFAULT");
 	UString posString = UString::format("[%i, %i]", (int)pos.x, (int)pos.y);
 	float stringWidth = posFont->getStringWidth(posString);
 	float stringHeight = posFont->getHeight();
@@ -113,59 +114,84 @@ void Mouse::drawDebug(Graphics *g)
 
 void Mouse::update()
 {
-	m_vDelta.zero();
-
 	resetWheelDelta();
 
-	Vector2 envPos = env->getMousePos();
-
-	// if setPos was called last frame, the mouse was already moved
-	if (!m_bSetPosWasCalledLastFrame)
+	// if onMotion wasn't called last frame, there is no motion delta
+	if (!m_bLastFrameHadMotion)
 	{
-		Vector2 nextPos = envPos;
-
-		// apply sensitivity if enabled AND not in raw input mode
-		// (since raw input already has sensitivity applied, by the SDL transform callback in SDLEnvironment.cpp)
-		// TODO: fix non-rawinput sensitivity <1 having the cursor clipped sooner than when it reaches the bounds of the screen
-		bool applyMouseSensitivity = (mouse_sensitivity.getFloat() != 1.0f) && !mouse_raw_input.getBool();
-		if (applyMouseSensitivity && !tablet_sensitivity_ignore.getBool())
+		m_vDelta.zero();
+		m_vRawDelta.zero();
+	}
+	else
+	{
+		// center the OS cursor if it's close to the screen edges, for non-raw input with sensitivity <1.0
+		// the reason for trying hard to avoid env->setMousePos is because setting the OS cursor position can take a long time
+		// so we try to use the virtual cursor position as much as possible and only update the OS cursor when it's going to go somewhere we don't want
+		if (!m_bAbsolute)
 		{
-			// apply sensitivity around screen center as the pivot point
-			Vector2 center = Vector2(engine->getScreenSize().x / 2, engine->getScreenSize().y / 2);
-			nextPos = center + ((nextPos - center) * mouse_sensitivity.getFloat());
+			const bool clipped = env->isCursorClipped();
+			const McRect clipRect = clipped ? env->getCursorClip() : McRect{{0,0}, engine->getScreenSize()};
+			const Vector2 center = clipRect.getCenter();
+			const Vector2 realPosNudgedOut = env->getMousePos().nudge(center, 10.0f);
+			if (!clipRect.contains(realPosNudgedOut))
+			{
+				if (clipped)
+					env->setMousePos(center);
+				else if (!env->isCursorVisible()) // FIXME: this is crazy. for windowed mode, need to "pop out" the OS cursor
+					env->setMousePos(m_vPosWithoutOffset.nudge(center, 0.1f));
+			}
 		}
 
-		// calculate delta
-		// the clip rect is also handled by SDL (setCursorClip), no need to clamp it again here
-		m_vDelta = nextPos - m_vPosWithoutOffset;
-
-		// update internal position state
-		onPosChange(nextPos);
+		onPosChange(m_vPosWithoutOffset);
 	}
 
-	m_bSetPosWasCalledLastFrame = false;
+	m_bLastFrameHadMotion = false;
 
 	if (unlikely(mouse_fakelag.getBool()))
 		updateFakelagBuffer();
 }
 
-void Mouse::onMotion(float x, float y, float xRel, float yRel, bool isRawInput)
+void Mouse::onMotion(float x, float y, float xRel, float yRel, bool preTransformed)
 {
-	if (isRawInput)
-	{
-		// the transform is now applied by SDL before we get the values
-		// so we can use xRel and yRel directly without applying sensitivity
-		Vector2 nextPos = m_vPosWithoutOffset + Vector2(xRel, yRel);
+	Vector2 newRel{xRel, yRel}, newAbs{x, y};
+	auto sens = mouse_sensitivity.getFloat();
 
-		m_bAbsolute = false;
-		onPosChange(nextPos);
-	}
-	else
+	m_bAbsolute = true; // assume we don't have to lock the cursor
+
+	const bool osCursorVisible = (env->isCursorVisible() || !env->isCursorInWindow() || !engine->hasFocus());
+
+ 	// rawinput has sensitivity pre-applied
+	// this entire block may be skipped if: (preTransformed || (sens == 1 && !clipped))
+	if (!preTransformed && !osCursorVisible)
 	{
-		// Handle absolute mode as before
-		m_bAbsolute = true;
-		onPosChange(Vector2(x, y));
+		// need to apply sensitivity
+		if (!almostEqual(sens, 1.0f))
+		{
+			// need to lock the OS cursor to the center of the screen if rawinput is disabled, otherwise it can exit the screen rect before the virtual cursor does
+			// don't do it here because we don't want the event loop to make more external calls than necessary,
+			// just set a flag to do it on the engine update loop
+			if (sens < 0.995f)
+				m_bAbsolute = false;
+			newRel *= sens;
+			if (newRel.length() > 50.0f) // don't allow obviously bogus values
+				newRel.zero();
+			newAbs = m_vPosWithoutOffset + newRel;
+		}
+		if (env->isCursorClipped())
+		{
+			const McRect clipRect = env->getCursorClip();
+
+			// clamp the final position to the clip rect
+			newAbs.x = std::clamp<float>(newAbs.x, clipRect.getMinX(), clipRect.getMaxX());
+			newAbs.y = std::clamp<float>(newAbs.y, clipRect.getMinY(), clipRect.getMaxY());
+		}
 	}
+
+	m_vRawDelta = newRel / sens; // rawdelta doesn't include sensitivity or clipping
+	m_vDelta = newAbs - m_vPosWithoutOffset;
+	m_vPosWithoutOffset = newAbs;
+
+	m_bLastFrameHadMotion = true;
 }
 
 void Mouse::resetWheelDelta()
@@ -277,7 +303,7 @@ void Mouse::onButtonChange(int button, bool down)
 
 void Mouse::setPos(Vector2 newPos)
 {
-	m_bSetPosWasCalledLastFrame = true;
+	m_bLastFrameHadMotion = true;
 
 	setPosXY(newPos.x, newPos.y);
 	env->setMousePos(newPos.x, newPos.y);
@@ -292,6 +318,11 @@ void Mouse::setOffset(Vector2 offset)
 	Vector2 posAdjustment = m_vOffset - oldOffset;
 	m_vPos += posAdjustment;
 	m_vActualPos += posAdjustment;
+}
+
+CURSORTYPE Mouse::getCursorType()
+{
+	return env->getCursor();
 }
 
 void Mouse::setCursorType(CURSORTYPE cursorType)

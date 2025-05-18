@@ -52,7 +52,7 @@ void OsuUISongBrowserUserButton::draw(Graphics *g)
 
 	// draw background
 	const float backgroundBrightness = m_fHoverAnim * 0.175f;
-	g->setColor(COLORf(1.0f, backgroundBrightness, backgroundBrightness, backgroundBrightness));
+	g->setColor(argb(1.0f, backgroundBrightness, backgroundBrightness, backgroundBrightness));
 	g->fillRect(m_vPos.x+1, m_vPos.y+1, m_vSize.x-1, m_vSize.y-1);
 
 	const float iconBorder = m_vSize.y*0.03f;
@@ -60,7 +60,7 @@ void OsuUISongBrowserUserButton::draw(Graphics *g)
 	const float iconWidth = iconHeight;
 
 	// draw user icon background
-	g->setColor(COLORf(1.0f, 0.1f, 0.1f, 0.1f));
+	g->setColor(argb(1.0f, 0.1f, 0.1f, 0.1f));
 	g->fillRect(m_vPos.x + iconBorder + 1, m_vPos.y + iconBorder + 1, iconWidth, iconHeight);
 
 	// draw user icon
@@ -180,7 +180,7 @@ void OsuUISongBrowserUserButton::draw(Graphics *g)
 			const float barWidth = (int)((m_vSize.x - 2*barBorder)*0.55f);
 			g->setColor(0xffaaaaaa);
 			g->drawRect(m_vPos.x + m_vSize.x - barWidth - barBorder - 1, m_vPos.y + m_vSize.y - barHeight - barBorder, barWidth, barHeight);
-			g->fillRect(m_vPos.x + m_vSize.x - barWidth - barBorder - 1, m_vPos.y + m_vSize.y - barHeight - barBorder, barWidth*clamp<float>(m_fPercentToNextLevel, 0.0f, 1.0f), barHeight);
+			g->fillRect(m_vPos.x + m_vSize.x - barWidth - barBorder - 1, m_vPos.y + m_vSize.y - barHeight - barBorder, barWidth*std::clamp<float>(m_fPercentToNextLevel, 0.0f, 1.0f), barHeight);
 		}
 
 		// draw pp increase/decrease delta
@@ -204,7 +204,7 @@ void OsuUISongBrowserUserButton::draw(Graphics *g)
 			const Vector2 textPos = Vector2(pos.x, pos.y + deltaFont->getHeight()*scale);
 
 			// background (to ensure readability even with stupid long usernames)
-			g->setColor(COLORf(1.0f, backgroundBrightness, backgroundBrightness, backgroundBrightness)); // NOTE: this must match the general background rect color in order to merge seamlessly
+			g->setColor(argb(1.0f, backgroundBrightness, backgroundBrightness, backgroundBrightness)); // NOTE: this must match the general background rect color in order to merge seamlessly
 			g->setAlpha(1.0f - (1.0f - m_fPPDeltaAnim)*(1.0f - m_fPPDeltaAnim));
 			g->fillRect(pos.x, pos.y, backgroundSize.x, backgroundSize.y);
 

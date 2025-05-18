@@ -14,13 +14,10 @@
 
 ConVar _debug_vulkan("debug_vulkan", false, FCVAR_NONE);
 
-VulkanInterface *vulkan = NULL;
-
 ConVar *VulkanInterface::debug_vulkan = &_debug_vulkan;
 
 VulkanInterface::VulkanInterface()
 {
-	vulkan = this;
 	m_bReady = false;
 	m_iQueueFamilyIndex = 0;
 

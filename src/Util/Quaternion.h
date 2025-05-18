@@ -26,9 +26,9 @@ public:
 	void fromAxis(const Vector3 &axis, float angleDeg);
 	void fromEuler(float yawDeg, float pitchDeg, float rollDeg);
 
-	inline float getYaw() const {return rad2deg(std::atan2(2.0f*(y*z + w*x), w*w - x*x - y*y + z*z));}
-	inline float getPitch() const {return rad2deg(std::asin(-2.0f*(x*z - w*y)));}
-	inline float getRoll() const {return rad2deg(std::atan2(2.0f*(x*y + w*z), w*w + x*x - y*y - z*z));}
+	inline float getYaw() const {return glm::degrees(std::atan2(2.0f*(y*z + w*x), w*w - x*x - y*y + z*z));}
+	inline float getPitch() const {return glm::degrees(std::asin(-2.0f*(x*z - w*y)));}
+	inline float getRoll() const {return glm::degrees(std::atan2(2.0f*(x*y + w*z), w*w + x*x - y*y - z*z));}
 
 	inline Quaternion getConjugate() const {return Quaternion(-x, -y, -z, w);}
 	Matrix4 getMatrix() const;

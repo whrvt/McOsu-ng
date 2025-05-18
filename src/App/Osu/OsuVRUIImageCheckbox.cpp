@@ -33,7 +33,7 @@ void OsuVRUIImageCheckbox::drawVR(Graphics *g, Matrix4 &mvp)
 	// icon mesh
 	VertexArrayObject vao(Graphics::PRIMITIVE::PRIMITIVE_QUADS);
 
-	const Color color = m_bIsCursorInside ? COLORf(1.0f, 0.4f + 0.6f*m_fAnimation, 0.4f + 0.6f*m_fAnimation, 0.4f + 0.6f*m_fAnimation) : COLORf(1.0f, 0.4f, 0.4f, 0.4f);
+	const Color color = m_bIsCursorInside ? argb(1.0f, 0.4f + 0.6f*m_fAnimation, 0.4f + 0.6f*m_fAnimation, 0.4f + 0.6f*m_fAnimation) : argb(1.0f, 0.4f, 0.4f, 0.4f);
 
 	const float animationDistance = m_fAnimation * 0.02f;
 
@@ -113,6 +113,6 @@ void OsuVRUIImageCheckbox::onCursorOutside()
 
 void OsuVRUIImageCheckbox::updateImageResource()
 {
-	m_imageChecked = engine->getResourceManager()->getImage(m_sImageResourceNameChecked);
-	m_imageUnchecked = engine->getResourceManager()->getImage(m_sImageResourceNameUnchecked);
+	m_imageChecked = resourceManager->getImage(m_sImageResourceNameChecked);
+	m_imageUnchecked = resourceManager->getImage(m_sImageResourceNameUnchecked);
 }

@@ -27,7 +27,8 @@ public:
 	enum class TYPE : uint8_t
 	{
 		READ,
-		WRITE
+		WRITE,
+		CHECK
 	};
 
 public:
@@ -44,6 +45,8 @@ public:
 	const char *readFile(); // WARNING: this is NOT a null-terminated string! DO NOT USE THIS with UString/std::string!
 
 	size_t getFileSize() const;
+	[[nodiscard]] inline UString getPath() const { return m_filePath; }
+	[[nodiscard]] inline bool exists() const { return m_bExists; }
 
 private:
 	// fallback for case-insensitive file finding (i.e. Skin.ini vs skin.ini)
@@ -52,6 +55,7 @@ private:
 	UString m_filePath;
 	TYPE m_type;
 	bool m_ready;
+	bool m_bExists;
 	size_t m_fileSize;
 
 	// file streams

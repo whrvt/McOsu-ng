@@ -19,8 +19,6 @@
 #include "ConVar.h"
 #include "File.h"
 
-#include "HorizonSDLEnvironment.h"
-
 #include "Osu.h"
 #include "OsuSkin.h"
 #include "OsuSkinImage.h"
@@ -46,6 +44,8 @@
 #include "CBaseUIButton.h"
 
 #include "DirectX11Interface.h"
+
+extern std::atomic<float> osu_slider_border_feather;
 
 #define MCOSU_VERSION_TEXT "Version"
 #define MCOSU_BANNER_TEXT ""
@@ -188,7 +188,7 @@ public:
 		g->setColor(m_frameColor);
 		if (m_bMouseInside && m_bEnabled)
 		{
-			if (!m_bActive && !engine->getMouse()->isLeftDown())
+			if (!m_bActive && !mouse->isLeftDown())
 				drawHoverRect(g, 3);
 			else if (m_bActive)
 				drawHoverRect(g, 3);
@@ -216,7 +216,7 @@ ConVar osu_main_menu_use_slider_text("osu_main_menu_use_slider_text", true, FCVA
 ConVar osu_main_menu_slider_text_alpha("osu_main_menu_slider_text_alpha", 1.0f, FCVAR_NONE);
 ConVar osu_main_menu_slider_text_scale("osu_main_menu_slider_text_scale", 1.0f, FCVAR_NONE);
 ConVar osu_main_menu_slider_text_scissor("osu_main_menu_slider_text_scissor", true, FCVAR_NONE);
-ConVar osu_main_menu_slider_text_feather("osu_main_menu_slider_text_feather", 0.04f, FCVAR_NONE);
+std::atomic<float> osu_main_menu_slider_text_feather = 0.04f;
 ConVar osu_main_menu_slider_text_offset_x("osu_main_menu_slider_text_offset_x", 15.0f, FCVAR_NONE);
 ConVar osu_main_menu_slider_text_offset_y("osu_main_menu_slider_text_offset_y", 0.0f, FCVAR_NONE);
 ConVar osu_main_menu_shuffle("osu_main_menu_shuffle", false, FCVAR_NONE);
@@ -235,7 +235,6 @@ ConVar *OsuMainMenu::m_osu_universal_offset_hardcoded_ref = NULL;
 ConVar *OsuMainMenu::m_osu_old_beatmap_offset_ref = NULL;
 ConVar *OsuMainMenu::m_win_snd_fallback_dsound_ref = NULL;
 ConVar *OsuMainMenu::m_osu_universal_offset_hardcoded_fallback_dsound_ref = NULL;
-ConVar *OsuMainMenu::m_osu_slider_border_feather_ref = NULL;
 ConVar *OsuMainMenu::m_osu_mod_random_ref = NULL;
 ConVar *OsuMainMenu::m_osu_songbrowser_background_fade_in_duration_ref = NULL;
 
@@ -268,8 +267,6 @@ void OsuMainMenu::openSteamWorkshopInDefaultBrowser(bool launchInSteam)
 
 OsuMainMenu::OsuMainMenu(Osu *osu) : OsuScreen(osu)
 {
-	if constexpr (Env::cfg(OS::HORIZON))
-		MCOSU_MAIN_BUTTON_TEXT.append(" NX");
 	if (m_osu->isInVRMode())
 		MCOSU_MAIN_BUTTON_TEXT.append(" VR");
 	if (m_osu->isInVRMode())
@@ -285,8 +282,6 @@ OsuMainMenu::OsuMainMenu(Osu *osu) : OsuScreen(osu)
 		m_win_snd_fallback_dsound_ref = convar->getConVarByName("win_snd_fallback_dsound");
 	if (m_osu_universal_offset_hardcoded_fallback_dsound_ref == NULL)
 		m_osu_universal_offset_hardcoded_fallback_dsound_ref = convar->getConVarByName("osu_universal_offset_hardcoded_fallback_dsound");
-	if (m_osu_slider_border_feather_ref == NULL)
-		m_osu_slider_border_feather_ref = convar->getConVarByName("osu_slider_border_feather");
 	if (m_osu_mod_random_ref == NULL)
 		m_osu_mod_random_ref = convar->getConVarByName("osu_mod_random");
 	if (m_osu_songbrowser_background_fade_in_duration_ref == NULL)
@@ -295,7 +290,7 @@ OsuMainMenu::OsuMainMenu(Osu *osu) : OsuScreen(osu)
 	osu_toggle_preview_music.setCallback( fastdelegate::MakeDelegate(this, &OsuMainMenu::onPausePressed) );
 
 	// engine settings
-	engine->getMouse()->addListener(this);
+	mouse->addListener(this);
 
 	m_fSizeAddAnim = 0.0f;
 	m_fCenterOffsetAnim = 0.0f;
@@ -526,7 +521,7 @@ void OsuMainMenu::draw(Graphics *g)
 					m_fBackgroundFadeInTime = engine->getTime();
 				else if (m_fBackgroundFadeInTime > 0.0f && engine->getTime() > m_fBackgroundFadeInTime)
 				{
-					alpha = clamp<float>((engine->getTime() - m_fBackgroundFadeInTime)/m_osu_songbrowser_background_fade_in_duration_ref->getFloat(), 0.0f, 1.0f);
+					alpha = std::clamp<float>((engine->getTime() - m_fBackgroundFadeInTime)/m_osu_songbrowser_background_fade_in_duration_ref->getFloat(), 0.0f, 1.0f);
 					alpha = 1.0f - (1.0f - alpha)*(1.0f - alpha);
 				}
 			}
@@ -557,7 +552,7 @@ void OsuMainMenu::draw(Graphics *g)
 
 		m_iMainMenuAnimBeatCounter = (curMusicPos - t.offset - (long)(std::max((long)t.beatLengthBase, (long)1)*0.5f)) / std::max((long)t.beatLengthBase, (long)1);
 		pulse = (float)((curMusicPos - t.offset) % std::max((long)t.beatLengthBase, (long)1)) / t.beatLengthBase; // modulo must be >= 1
-		pulse = clamp<float>(pulse, -1.0f, 1.0f);
+		pulse = std::clamp<float>(pulse, -1.0f, 1.0f);
 		if (pulse < 0.0f)
 			pulse = 1.0f - std::abs(pulse);
 	}
@@ -574,19 +569,12 @@ void OsuMainMenu::draw(Graphics *g)
 
 	bool drawBanner = true;
 
-#ifdef __SWITCH__
-
-	drawBanner = ((HorizonSDLEnvironment*)env)->getMemAvailableMB() < 1024;
-
-#endif
-
 	if (drawBanner)
 	{
 		UString bannerText = MCOSU_BANNER_TEXT;
 
 		if constexpr (Env::cfg(REND::DX11))
-			if (dynamic_cast<DirectX11Interface*>(engine->getGraphics()) != NULL)
-				bannerText = "-- DirectX11 Test - Unoptimized renderer (no batching etc.) - VR is not supported - Please report feedback on Discord/Steam Forums --";
+			bannerText = "-- DirectX11 Test - Unoptimized renderer (no batching etc.) - VR is not supported - Please report feedback on Discord/Steam Forums --";
 
 		if constexpr (Env::cfg(AUD::WASAPI))
 			bannerText = UString::format(convar->getConVarByName("win_snd_wasapi_exclusive")->getBool() ?
@@ -695,8 +683,8 @@ void OsuMainMenu::draw(Graphics *g)
 		const float from = 0.0f;
 		const float to = m_fStartupAnim2;
 
-		const float prevSliderBorderFeatherBackup = m_osu_slider_border_feather_ref->getFloat();
-		m_osu_slider_border_feather_ref->setValue(osu_main_menu_slider_text_feather.getFloat()); // heuristic to avoid aliasing
+		const float prevSliderBorderFeatherBackup = osu_slider_border_feather.load(std::memory_order::acquire);
+		osu_slider_border_feather.store(osu_main_menu_slider_text_feather.load(std::memory_order::acquire), std::memory_order::release); // heuristic to avoid aliasing
 		{
 			const size_t numHitObjects = m_mainMenuSliderTextBeatmapHitObjects.size();
 			for (size_t i=0; i<numHitObjects; i++)
@@ -716,7 +704,7 @@ void OsuMainMenu::draw(Graphics *g)
 				}
 			}
 		}
-		m_osu_slider_border_feather_ref->setValue(prevSliderBorderFeatherBackup);
+		osu_slider_border_feather.store(prevSliderBorderFeatherBackup, std::memory_order::release);
 	}
 
 	// draw main button
@@ -744,7 +732,7 @@ void OsuMainMenu::draw(Graphics *g)
 
 			customPulse = 1.0f - customPulse;
 
-			const float anim = lerp((1.0f - customPulse)*(1.0f - customPulse), (1.0f - customPulse), 0.25f);
+			const float anim = std::lerp((1.0f - customPulse)*(1.0f - customPulse), (1.0f - customPulse), 0.25f);
 			const float anim2 = anim * (m_iMainMenuAnimBeatCounter % 2 == 1 ? 1.0f : -1.0f);
 			const float anim3 = anim;
 
@@ -760,7 +748,7 @@ void OsuMainMenu::draw(Graphics *g)
 		g->translate3DScene(friendTranslationX, friendTranslationY, 0);
 		g->rotate3DScene(m_fMainMenuAnim1*360.0f, m_fMainMenuAnim2*360.0f, m_fMainMenuAnim3*360.0f + friendRotation);
 
-		//g->rotate3DScene(engine->getMouse()->getPos().y, engine->getMouse()->getPos().x, 0);
+		//g->rotate3DScene(mouse->getPos().y, mouse->getPos().x, 0);
 
 		/*
 		g->offset3DScene(0, 0, 300.0f);
@@ -768,8 +756,8 @@ void OsuMainMenu::draw(Graphics *g)
 		*/
 	}
 
-	const Color cubeColor = COLORf(1.0f, lerp(0.0f, 0.5f, m_fMainMenuAnimFriendPercent), lerp(0.0f, 0.768f, m_fMainMenuAnimFriendPercent), lerp(0.0f, 0.965f, m_fMainMenuAnimFriendPercent));
-	const Color cubeBorderColor = COLORf(1.0f, lerp(1.0f, 0.5f, m_fMainMenuAnimFriendPercent), lerp(1.0f, 0.768f, m_fMainMenuAnimFriendPercent), lerp(1.0f, 0.965f, m_fMainMenuAnimFriendPercent));
+	const Color cubeColor = argb(1.0f, std::lerp(0.0f, 0.5f, m_fMainMenuAnimFriendPercent), std::lerp(0.0f, 0.768f, m_fMainMenuAnimFriendPercent), std::lerp(0.0f, 0.965f, m_fMainMenuAnimFriendPercent));
+	const Color cubeBorderColor = argb(1.0f, std::lerp(1.0f, 0.5f, m_fMainMenuAnimFriendPercent), std::lerp(1.0f, 0.768f, m_fMainMenuAnimFriendPercent), std::lerp(1.0f, 0.965f, m_fMainMenuAnimFriendPercent));
 
 	if (osu_draw_main_menu_button.getBool())
 	{
@@ -990,7 +978,7 @@ void OsuMainMenu::draw(Graphics *g)
 			const float animLeftMultiplier = (m_iMainMenuAnimBeatCounter % 2 == 0 ? 1.0f : 0.1f);
 			const float animRightMultiplier = (m_iMainMenuAnimBeatCounter % 2 == 1 ? 1.0f : 0.1f);
 
-			const float animMoveUp = lerp((1.0f - customPulse)*(1.0f - customPulse), (1.0f - customPulse), 0.35f) * m_fMainMenuAnimFriendPercent;
+			const float animMoveUp = std::lerp((1.0f - customPulse)*(1.0f - customPulse), (1.0f - customPulse), 0.35f) * m_fMainMenuAnimFriendPercent;
 
 			const float animLeftMoveUp = animMoveUp * animLeftMultiplier;
 			const float animRightMoveUp = animMoveUp * animRightMultiplier;
@@ -1043,7 +1031,7 @@ void OsuMainMenu::draw(Graphics *g)
 
 			const bool doScissor = osu_main_menu_slider_text_scissor.getBool();
 
-			m_osu->getSliderFrameBuffer()->setColor(COLORf(alpha*osu_main_menu_slider_text_alpha.getFloat(), 1.0f, 1.0f, 1.0f));
+			m_osu->getSliderFrameBuffer()->setColor(argb(alpha*osu_main_menu_slider_text_alpha.getFloat(), 1.0f, 1.0f, 1.0f));
 			m_osu->getSliderFrameBuffer()->drawRect(g, (doScissor ? mainButtonRect.getX() : 0) + inset, (doScissor ? mainButtonRect.getY() : 0) + inset, (doScissor ? mainButtonRect.getWidth() : m_osu->getScreenWidth()) - 2*inset, (doScissor ? mainButtonRect.getHeight() : m_osu->getScreenHeight()) - 2*inset);
 		}
 	}
@@ -1054,7 +1042,7 @@ void OsuMainMenu::draw(Graphics *g)
 		float invertedPulse = 1.0f - pulse;
 
 		if (haveTimingpoints)
-			g->setColor(COLORf(1.0f, 0.10f + 0.15f*invertedPulse, 0.10f + 0.15f*invertedPulse, 0.10f + 0.15f*invertedPulse));
+			g->setColor(argb(1.0f, 0.10f + 0.15f*invertedPulse, 0.10f + 0.15f*invertedPulse, 0.10f + 0.15f*invertedPulse));
 		else
 			g->setColor(0xff444444);
 
@@ -1191,7 +1179,7 @@ void OsuMainMenu::draw(Graphics *g)
 	if (m_fShutdownScheduledTime != 0.0f)
 	{
 		g->setColor(0xff000000);
-		g->setAlpha(1.0f - clamp<float>((m_fShutdownScheduledTime - engine->getTime()) / 0.3f, 0.0f, 1.0f));
+		g->setAlpha(1.0f - std::clamp<float>((m_fShutdownScheduledTime - engine->getTime()) / 0.3f, 0.0f, 1.0f));
 		g->fillRect(0, 0, m_osu->getScreenWidth(), m_osu->getScreenHeight());
 	}
 	*/
@@ -1268,13 +1256,13 @@ void OsuMainMenu::update()
 
 	if (m_bInMainMenuRandomAnim && m_iMainMenuRandomAnimType == 1 && anim->isAnimating(&m_fMainMenuAnim))
 	{
-		Vector2 mouseDelta = (m_mainButton->getPos() + m_mainButton->getSize()/2) - engine->getMouse()->getPos();
-		mouseDelta.x = clamp<float>(mouseDelta.x, -engine->getScreenSize().x/2, engine->getScreenSize().x/2);
-		mouseDelta.y = clamp<float>(mouseDelta.y, -engine->getScreenSize().y/2, engine->getScreenSize().y/2);
+		Vector2 mouseDelta = (m_mainButton->getPos() + m_mainButton->getSize()/2.0f) - mouse->getPos();
+		mouseDelta.x = std::clamp<float>(mouseDelta.x, -engine->getScreenSize().x/2, engine->getScreenSize().x/2);
+		mouseDelta.y = std::clamp<float>(mouseDelta.y, -engine->getScreenSize().y/2, engine->getScreenSize().y/2);
 		mouseDelta.x /= engine->getScreenSize().x;
 		mouseDelta.y /= engine->getScreenSize().y;
 
-		const float decay = clamp<float>((1.0f - m_fMainMenuAnim - 0.075f) / 0.025f, 0.0f, 1.0f);
+		const float decay = std::clamp<float>((1.0f - m_fMainMenuAnim - 0.075f) / 0.025f, 0.0f, 1.0f);
 
 		const Vector2 pushAngle = Vector2(mouseDelta.y, -mouseDelta.x) * Vector2(0.15f, 0.15f) * decay;
 
@@ -1286,16 +1274,16 @@ void OsuMainMenu::update()
 	}
 
 	{
-		m_fMainMenuAnimFriendPercent = 1.0f - clamp<float>((m_fMainMenuAnimDuration > 0.0f ? (m_fMainMenuAnimTime - engine->getTime()) / m_fMainMenuAnimDuration : 0.0f), 0.0f, 1.0f);
-		m_fMainMenuAnimFriendPercent = clamp<float>((m_fMainMenuAnimFriendPercent - 0.5f)/0.5f, 0.0f, 1.0f);
+		m_fMainMenuAnimFriendPercent = 1.0f - std::clamp<float>((m_fMainMenuAnimDuration > 0.0f ? (m_fMainMenuAnimTime - engine->getTime()) / m_fMainMenuAnimDuration : 0.0f), 0.0f, 1.0f);
+		m_fMainMenuAnimFriendPercent = std::clamp<float>((m_fMainMenuAnimFriendPercent - 0.5f)/0.5f, 0.0f, 1.0f);
 		if (m_bMainMenuAnimFriend)
 			m_fMainMenuAnimFriendPercent = 1.0f;
 		if (!m_bMainMenuAnimFriendScheduled)
 			m_fMainMenuAnimFriendPercent = 0.0f;
 
-		Vector2 mouseDelta = (m_mainButton->getPos() + m_mainButton->getSize()/2) - engine->getMouse()->getPos();
-		mouseDelta.x = clamp<float>(mouseDelta.x, -engine->getScreenSize().x/2, engine->getScreenSize().x/2);
-		mouseDelta.y = clamp<float>(mouseDelta.y, -engine->getScreenSize().y/2, engine->getScreenSize().y/2);
+		Vector2 mouseDelta = (m_mainButton->getPos() + m_mainButton->getSize()/2.0f) - mouse->getPos();
+		mouseDelta.x = std::clamp<float>(mouseDelta.x, -engine->getScreenSize().x/2, engine->getScreenSize().x/2);
+		mouseDelta.y = std::clamp<float>(mouseDelta.y, -engine->getScreenSize().y/2, engine->getScreenSize().y/2);
 		mouseDelta.x /= engine->getScreenSize().x;
 		mouseDelta.y /= engine->getScreenSize().y;
 
@@ -1416,7 +1404,7 @@ void OsuMainMenu::onMiddleChange(bool down)
 	// debug anims
 	if (down && !anim->isAnimating(&m_fMainMenuAnim) && !m_bMenuElementsVisible)
 	{
-		if (engine->getKeyboard()->isShiftDown())
+		if (keyboard->isShiftDown())
 		{
 			m_bMainMenuAnimFriend = true;
 			m_bMainMenuAnimFriendScheduled = true;
@@ -1456,8 +1444,8 @@ void OsuMainMenu::setVisible(bool visible)
 	if (visible && m_bStartupAnim)
 	{
 		m_bStartupAnim = false;
-		anim->moveQuadOut(&m_fStartupAnim, 1.0f, osu_main_menu_startup_anim_duration.getFloat(), (float)engine->getTimeReal());
-		anim->moveQuartOut(&m_fStartupAnim2, 1.0f, osu_main_menu_startup_anim_duration.getFloat()*6.0f, (float)engine->getTimeReal() + osu_main_menu_startup_anim_duration.getFloat()*0.5f);
+		anim->moveQuadOut(&m_fStartupAnim, 1.0f, osu_main_menu_startup_anim_duration.getFloat(), Timing::getTimeReal<float>());
+		anim->moveQuartOut(&m_fStartupAnim2, 1.0f, osu_main_menu_startup_anim_duration.getFloat()*6.0f, Timing::getTimeReal<float>() + osu_main_menu_startup_anim_duration.getFloat()*0.5f);
 	}
 }
 
@@ -1507,9 +1495,9 @@ void OsuMainMenu::updateLayout()
 		m_menuElements[i]->onResized(); // HACKHACK: framework, setSize() does not update string metrics
 		m_menuElements[i]->setRelPos(m_mainButton->getRelPos().x + m_mainButton->getSize().x*offsetPercent - menuElementExtraWidth*offsetPercent + menuElementExtraWidth*(1.0f - offsetPercent), curY);
 		m_menuElements[i]->setSize(m_mainButton->getSize().x + menuElementExtraWidth*offsetPercent - 2.0f*menuElementExtraWidth*(1.0f - offsetPercent), menuElementHeight);
-		m_menuElements[i]->setTextColor(COLORf(offsetPercent, 1.0f, 1.0f, 1.0f));
-		m_menuElements[i]->setFrameColor(COLORf(offsetPercent, 1.0f, 1.0f, 1.0f));
-		m_menuElements[i]->setBackgroundColor(COLORf(offsetPercent, 0.0f, 0.0f, 0.0f));
+		m_menuElements[i]->setTextColor(argb(offsetPercent, 1.0f, 1.0f, 1.0f));
+		m_menuElements[i]->setFrameColor(argb(offsetPercent, 1.0f, 1.0f, 1.0f));
+		m_menuElements[i]->setBackgroundColor(argb(offsetPercent, 0.0f, 0.0f, 0.0f));
 	}
 
 	m_container->setSize(m_osu->getScreenSize() + Vector2(1,1));
@@ -1639,7 +1627,7 @@ OsuMainMenuButton *OsuMainMenu::addMainMenuButton(UString text)
 
 void OsuMainMenu::onMainMenuButtonPressed()
 {
-	engine->getSound()->play(m_osu->getSkin()->getMenuHit());
+	soundEngine->play(m_osu->getSkin()->getMenuHit());
 
 	// if the menu is already visible, this counts as pressing the play button
 	if (m_bMenuElementsVisible)
@@ -1653,9 +1641,9 @@ void OsuMainMenu::onMainMenuButtonPressed()
 	{
 		m_bInMainMenuRandomAnim = false;
 
-		Vector2 mouseDelta = (m_mainButton->getPos() + m_mainButton->getSize()/2) - engine->getMouse()->getPos();
-		mouseDelta.x = clamp<float>(mouseDelta.x, -m_mainButton->getSize().x/2, m_mainButton->getSize().x/2);
-		mouseDelta.y = clamp<float>(mouseDelta.y, -m_mainButton->getSize().y/2, m_mainButton->getSize().y/2);
+		Vector2 mouseDelta = (m_mainButton->getPos() + m_mainButton->getSize()/2.0f) - mouse->getPos();
+		mouseDelta.x = std::clamp<float>(mouseDelta.x, -m_mainButton->getSize().x/2, m_mainButton->getSize().x/2);
+		mouseDelta.y = std::clamp<float>(mouseDelta.y, -m_mainButton->getSize().y/2, m_mainButton->getSize().y/2);
 		mouseDelta.x /= m_mainButton->getSize().x;
 		mouseDelta.y /= m_mainButton->getSize().y;
 
@@ -1755,12 +1743,6 @@ void OsuMainMenu::onGithubPressed()
 {
 	if (m_osu->getInstanceID() > 1) return;
 
-	if constexpr (Env::cfg(OS::HORIZON))
-	{
-		m_osu->getNotificationOverlay()->addNotification("Go to " PACKAGE_URL, 0xffffffff, false, 0.75f);
-		return;
-	}
-
 	m_osu->getNotificationOverlay()->addNotification("Opening browser, please wait ...", 0xffffffff, false, 0.75f);
 	env->openURLInDefaultBrowser(PACKAGE_URL);
 }
@@ -1827,6 +1809,6 @@ void OsuMainMenuButton::onMouseDownInside()
 {
 	if (m_mainMenu->m_mainButton->isMouseInside()) return;
 
-	engine->getSound()->play(m_mainMenu->getOsu()->getSkin()->getMenuHit());
+	soundEngine->play(m_mainMenu->getOsu()->getSkin()->getMenuHit());
 	CBaseUIButton::onMouseDownInside();
 }

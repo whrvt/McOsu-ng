@@ -25,10 +25,6 @@
 #include "OsuModFPoSu.h"
 
 #include "OpenGLHeaders.h"
-#include "OpenGLLegacyInterface.h"
-#include "OpenGL3Interface.h"
-#include "OpenGLES2Interface.h"
-#include "OpenGLES32Interface.h"
 
 ConVar osu_bug_flicker_log("osu_bug_flicker_log", false, FCVAR_NONE);
 
@@ -54,7 +50,7 @@ void OsuCircle::drawApproachCircle(Graphics *g, OsuBeatmapStandard *beatmap, Vec
 	rainbowColorCounter = colorCounter;
 
 	Color comboColor = beatmap->getSkin()->getComboColorForCounter(colorCounter, colorOffset);
-	comboColor = COLOR(255, (int)(COLOR_GET_Ri(comboColor)*colorRGBMultiplier*osu_circle_color_saturation.getFloat()), (int)(COLOR_GET_Gi(comboColor)*colorRGBMultiplier*osu_circle_color_saturation.getFloat()), (int)(COLOR_GET_Bi(comboColor)*colorRGBMultiplier*osu_circle_color_saturation.getFloat()));
+	comboColor = rgb((int)(Ri(comboColor)*colorRGBMultiplier*osu_circle_color_saturation.getFloat()), (int)(Gi(comboColor)*colorRGBMultiplier*osu_circle_color_saturation.getFloat()), (int)(Bi(comboColor)*colorRGBMultiplier*osu_circle_color_saturation.getFloat()));
 
 	drawApproachCircle(g, beatmap->getSkin(), beatmap->osuCoords2Pixels(rawPos), comboColor, beatmap->getHitcircleDiameter(), approachScale, alpha, beatmap->getOsu()->getModHD(), overrideHDApproachCircle);
 }
@@ -65,7 +61,7 @@ void OsuCircle::draw3DApproachCircle(Graphics *g, OsuBeatmapStandard *beatmap, c
 	rainbowColorCounter = colorCounter;
 
 	Color comboColor = beatmap->getSkin()->getComboColorForCounter(colorCounter, colorOffset);
-	comboColor = COLOR(255, (int)(COLOR_GET_Ri(comboColor)*colorRGBMultiplier*osu_circle_color_saturation.getFloat()), (int)(COLOR_GET_Gi(comboColor)*colorRGBMultiplier*osu_circle_color_saturation.getFloat()), (int)(COLOR_GET_Bi(comboColor)*colorRGBMultiplier*osu_circle_color_saturation.getFloat()));
+	comboColor = rgb((int)(Ri(comboColor)*colorRGBMultiplier*osu_circle_color_saturation.getFloat()), (int)(Gi(comboColor)*colorRGBMultiplier*osu_circle_color_saturation.getFloat()), (int)(Bi(comboColor)*colorRGBMultiplier*osu_circle_color_saturation.getFloat()));
 
 	draw3DApproachCircle(g, beatmap->getOsu()->getFPoSu(), baseScale, beatmap->getSkin(), beatmap->osuCoordsTo3D(rawPos, hitObject), comboColor, beatmap->getRawHitcircleDiameter(), approachScale, alpha, beatmap->getOsu()->getModHD(), overrideHDApproachCircle);
 }
@@ -88,7 +84,7 @@ void OsuCircle::drawCircle(Graphics *g, OsuSkin *skin, Vector2 pos, float hitcir
 	rainbowColorCounter = colorCounter;
 
 	Color comboColor = skin->getComboColorForCounter(colorCounter, colorOffset);
-	comboColor = COLOR(255, (int)(COLOR_GET_Ri(comboColor)*colorRGBMultiplier*osu_circle_color_saturation.getFloat()), (int)(COLOR_GET_Gi(comboColor)*colorRGBMultiplier*osu_circle_color_saturation.getFloat()), (int)(COLOR_GET_Bi(comboColor)*colorRGBMultiplier*osu_circle_color_saturation.getFloat()));
+	comboColor = rgb((int)(Ri(comboColor)*colorRGBMultiplier*osu_circle_color_saturation.getFloat()), (int)(Gi(comboColor)*colorRGBMultiplier*osu_circle_color_saturation.getFloat()), (int)(Bi(comboColor)*colorRGBMultiplier*osu_circle_color_saturation.getFloat()));
 
 	// approach circle
 	///drawApproachCircle(g, skin, pos, comboColor, hitcircleDiameter, approachScale, alpha, modHD, overrideHDApproachCircle); // they are now drawn separately in draw2()
@@ -119,7 +115,7 @@ void OsuCircle::draw3DCircle(Graphics *g, OsuModFPoSu *fposu, const Matrix4 &bas
 	rainbowColorCounter = colorCounter;
 
 	Color comboColor = skin->getComboColorForCounter(colorCounter, colorOffset);
-	comboColor = COLOR(255, (int)(COLOR_GET_Ri(comboColor)*colorRGBMultiplier*osu_circle_color_saturation.getFloat()), (int)(COLOR_GET_Gi(comboColor)*colorRGBMultiplier*osu_circle_color_saturation.getFloat()), (int)(COLOR_GET_Bi(comboColor)*colorRGBMultiplier*osu_circle_color_saturation.getFloat()));
+	comboColor = rgb((int)(Ri(comboColor)*colorRGBMultiplier*osu_circle_color_saturation.getFloat()), (int)(Gi(comboColor)*colorRGBMultiplier*osu_circle_color_saturation.getFloat()), (int)(Bi(comboColor)*colorRGBMultiplier*osu_circle_color_saturation.getFloat()));
 
 	// approach circle
 	///draw3DApproachCircle(g, fposu, baseScale, skin, pos, comboColor, rawHitcircleDiameter, approachScale, alpha, modHD, overrideHDApproachCircle); // they are now drawn separately in draw3D2()
@@ -178,7 +174,7 @@ void OsuCircle::drawSliderStartCircle(Graphics *g, OsuSkin *skin, Vector2 pos, f
 	rainbowColorCounter = colorCounter;
 
 	Color comboColor = skin->getComboColorForCounter(colorCounter, colorOffset);
-	comboColor = COLOR(255, (int)(COLOR_GET_Ri(comboColor)*colorRGBMultiplier*osu_circle_color_saturation.getFloat()), (int)(COLOR_GET_Gi(comboColor)*colorRGBMultiplier*osu_circle_color_saturation.getFloat()), (int)(COLOR_GET_Bi(comboColor)*colorRGBMultiplier*osu_circle_color_saturation.getFloat()));
+	comboColor = rgb((int)(Ri(comboColor)*colorRGBMultiplier*osu_circle_color_saturation.getFloat()), (int)(Gi(comboColor)*colorRGBMultiplier*osu_circle_color_saturation.getFloat()), (int)(Bi(comboColor)*colorRGBMultiplier*osu_circle_color_saturation.getFloat()));
 
 	// approach circle
 	///drawApproachCircle(g, skin, pos, comboColor, beatmap->getHitcircleDiameter(), approachScale, alpha, beatmap->getOsu()->getModHD(), overrideHDApproachCircle); // they are now drawn separately in draw2()
@@ -222,7 +218,7 @@ void OsuCircle::draw3DSliderStartCircle(Graphics *g, OsuModFPoSu *fposu, const M
 	rainbowColorCounter = colorCounter;
 
 	Color comboColor = skin->getComboColorForCounter(colorCounter, colorOffset);
-	comboColor = COLOR(255, (int)(COLOR_GET_Ri(comboColor)*colorRGBMultiplier*osu_circle_color_saturation.getFloat()), (int)(COLOR_GET_Gi(comboColor)*colorRGBMultiplier*osu_circle_color_saturation.getFloat()), (int)(COLOR_GET_Bi(comboColor)*colorRGBMultiplier*osu_circle_color_saturation.getFloat()));
+	comboColor = rgb((int)(Ri(comboColor)*colorRGBMultiplier*osu_circle_color_saturation.getFloat()), (int)(Gi(comboColor)*colorRGBMultiplier*osu_circle_color_saturation.getFloat()), (int)(Bi(comboColor)*colorRGBMultiplier*osu_circle_color_saturation.getFloat()));
 
 	// approach circle
 	///drawApproachCircle(g, skin, pos, comboColor, beatmap->getHitcircleDiameter(), approachScale, alpha, beatmap->getOsu()->getModHD(), overrideHDApproachCircle); // they are now drawn separately in draw3D2()
@@ -274,7 +270,7 @@ void OsuCircle::drawSliderEndCircle(Graphics *g, OsuSkin *skin, Vector2 pos, flo
 	rainbowColorCounter = colorCounter;
 
 	Color comboColor = skin->getComboColorForCounter(colorCounter, colorOffset);
-	comboColor = COLOR(255, (int)(COLOR_GET_Ri(comboColor)*colorRGBMultiplier*osu_circle_color_saturation.getFloat()), (int)(COLOR_GET_Gi(comboColor)*colorRGBMultiplier*osu_circle_color_saturation.getFloat()), (int)(COLOR_GET_Bi(comboColor)*colorRGBMultiplier*osu_circle_color_saturation.getFloat()));
+	comboColor = rgb((int)(Ri(comboColor)*colorRGBMultiplier*osu_circle_color_saturation.getFloat()), (int)(Gi(comboColor)*colorRGBMultiplier*osu_circle_color_saturation.getFloat()), (int)(Bi(comboColor)*colorRGBMultiplier*osu_circle_color_saturation.getFloat()));
 
 	// circle
 	const float circleImageScale = hitcircleDiameter / (128.0f * (skin->isSliderEndCircle2x() ? 2.0f : 1.0f));
@@ -304,7 +300,7 @@ void OsuCircle::draw3DSliderEndCircle(Graphics *g, OsuModFPoSu *fposu, const Mat
 	rainbowColorCounter = colorCounter;
 
 	Color comboColor = skin->getComboColorForCounter(colorCounter, colorOffset);
-	comboColor = COLOR(255, (int)(COLOR_GET_Ri(comboColor)*colorRGBMultiplier*osu_circle_color_saturation.getFloat()), (int)(COLOR_GET_Gi(comboColor)*colorRGBMultiplier*osu_circle_color_saturation.getFloat()), (int)(COLOR_GET_Bi(comboColor)*colorRGBMultiplier*osu_circle_color_saturation.getFloat()));
+	comboColor = rgb((int)(Ri(comboColor)*colorRGBMultiplier*osu_circle_color_saturation.getFloat()), (int)(Gi(comboColor)*colorRGBMultiplier*osu_circle_color_saturation.getFloat()), (int)(Bi(comboColor)*colorRGBMultiplier*osu_circle_color_saturation.getFloat()));
 
 	// circle
 	draw3DHitCircle(g, fposu, skin, baseScale, skin->getSliderEndCircle(), pos, comboColor, alpha);
@@ -329,11 +325,11 @@ void OsuCircle::drawApproachCircle(Graphics *g, OsuSkin *skin, Vector2 pos, Colo
 				float frequency = 0.3f;
 				float time = engine->getTime()*20;
 
-				char red1	= std::sin(frequency*time + 0 + rainbowNumber*rainbowColorCounter) * 127 + 128;
-				char green1	= std::sin(frequency*time + 2 + rainbowNumber*rainbowColorCounter) * 127 + 128;
-				char blue1	= std::sin(frequency*time + 4 + rainbowNumber*rainbowColorCounter) * 127 + 128;
+				const Channel red1	 = std::sin(frequency*time + 0 + rainbowNumber*rainbowColorCounter) * 127 + 128;
+				const Channel green1 = std::sin(frequency*time + 2 + rainbowNumber*rainbowColorCounter) * 127 + 128;
+				const Channel blue1	 = std::sin(frequency*time + 4 + rainbowNumber*rainbowColorCounter) * 127 + 128;
 
-				g->setColor(COLOR(255, red1, green1, blue1));
+				g->setColor(rgb(red1, green1, blue1));
 			}
 
 			g->setAlpha(alpha*osu_approach_circle_alpha_multiplier.getFloat());
@@ -364,11 +360,11 @@ void OsuCircle::draw3DApproachCircle(Graphics *g, OsuModFPoSu *fposu, const Matr
 				float frequency = 0.3f;
 				float time = engine->getTime()*20;
 
-				char red1	= std::sin(frequency*time + 0 + rainbowNumber*rainbowColorCounter) * 127 + 128;
-				char green1	= std::sin(frequency*time + 2 + rainbowNumber*rainbowColorCounter) * 127 + 128;
-				char blue1	= std::sin(frequency*time + 4 + rainbowNumber*rainbowColorCounter) * 127 + 128;
+				const Channel red1	 = std::sin(frequency*time + 0 + rainbowNumber*rainbowColorCounter) * 127 + 128;
+				const Channel green1 = std::sin(frequency*time + 2 + rainbowNumber*rainbowColorCounter) * 127 + 128;
+				const Channel blue1	 = std::sin(frequency*time + 4 + rainbowNumber*rainbowColorCounter) * 127 + 128;
 
-				g->setColor(COLOR(255, red1, green1, blue1));
+				g->setColor(rgb(red1, green1, blue1));
 			}
 
 			g->setAlpha(alpha*osu_approach_circle_alpha_multiplier.getFloat());
@@ -403,7 +399,7 @@ void OsuCircle::draw3DApproachCircle(Graphics *g, OsuModFPoSu *fposu, const Matr
 
 void OsuCircle::drawHitCircleOverlay(Graphics *g, OsuSkinImage *hitCircleOverlayImage, Vector2 pos, float circleOverlayImageScale, float alpha, float colorRGBMultiplier)
 {
-	g->setColor(COLORf(1.0f, colorRGBMultiplier, colorRGBMultiplier, colorRGBMultiplier));
+	g->setColor(argb(1.0f, colorRGBMultiplier, colorRGBMultiplier, colorRGBMultiplier));
 	g->setAlpha(alpha);
 	hitCircleOverlayImage->drawRaw(g, pos, circleOverlayImageScale);
 }
@@ -412,7 +408,7 @@ void OsuCircle::draw3DHitCircleOverlay(Graphics *g, OsuModFPoSu *fposu, const Ma
 {
 	if (m_fposu_3d_spheres_ref->getBool()) return;
 
-	g->setColor(COLORf(1.0f, colorRGBMultiplier, colorRGBMultiplier, colorRGBMultiplier));
+	g->setColor(argb(1.0f, colorRGBMultiplier, colorRGBMultiplier, colorRGBMultiplier));
 	g->setAlpha(alpha);
 	g->pushTransform();
 	{
@@ -449,11 +445,11 @@ void OsuCircle::drawHitCircle(Graphics *g, Image *hitCircleImage, Vector2 pos, C
 		float frequency = 0.3f;
 		float time = engine->getTime()*20;
 
-		char red1	= std::sin(frequency*time + 0 + rainbowNumber*rainbowNumber*rainbowColorCounter) * 127 + 128;
-		char green1	= std::sin(frequency*time + 2 + rainbowNumber*rainbowNumber*rainbowColorCounter) * 127 + 128;
-		char blue1	= std::sin(frequency*time + 4 + rainbowNumber*rainbowNumber*rainbowColorCounter) * 127 + 128;
+		const Channel red1	 = std::sin(frequency*time + 0 + rainbowNumber*rainbowNumber*rainbowColorCounter) * 127 + 128;
+		const Channel green1 = std::sin(frequency*time + 2 + rainbowNumber*rainbowNumber*rainbowColorCounter) * 127 + 128;
+		const Channel blue1	 = std::sin(frequency*time + 4 + rainbowNumber*rainbowNumber*rainbowColorCounter) * 127 + 128;
 
-		g->setColor(COLOR(255, red1, green1, blue1));
+		g->setColor(rgb(red1, green1, blue1));
 	}
 
 	g->setAlpha(alpha);
@@ -476,11 +472,11 @@ void OsuCircle::draw3DHitCircle(Graphics *g, OsuModFPoSu *fposu, OsuSkin *skin, 
 		float frequency = 0.3f;
 		float time = engine->getTime()*20;
 
-		char red1	= std::sin(frequency*time + 0 + rainbowNumber*rainbowNumber*rainbowColorCounter) * 127 + 128;
-		char green1	= std::sin(frequency*time + 2 + rainbowNumber*rainbowNumber*rainbowColorCounter) * 127 + 128;
-		char blue1	= std::sin(frequency*time + 4 + rainbowNumber*rainbowNumber*rainbowColorCounter) * 127 + 128;
+		const Channel red1	 = std::sin(frequency*time + 0 + rainbowNumber*rainbowNumber*rainbowColorCounter) * 127 + 128;
+		const Channel green1 = std::sin(frequency*time + 2 + rainbowNumber*rainbowNumber*rainbowColorCounter) * 127 + 128;
+		const Channel blue1	 = std::sin(frequency*time + 4 + rainbowNumber*rainbowNumber*rainbowColorCounter) * 127 + 128;
 
-		g->setColor(COLOR(255, red1, green1, blue1));
+		g->setColor(rgb(red1, green1, blue1));
 	}
 
 	g->setAlpha(alpha);
@@ -505,8 +501,8 @@ void OsuCircle::draw3DHitCircle(Graphics *g, OsuModFPoSu *fposu, OsuSkin *skin, 
 			modelMatrixInverseTransposed.invert();
 			modelMatrixInverseTransposed.transpose();
 
-#if defined(MCENGINE_FEATURE_OPENGL) || defined (MCENGINE_FEATURE_GLES2) || defined(MCENGINE_FEATURE_GLES32)
-			if constexpr (Env::cfg(REND::GL | REND::GLES2 | REND::GLES32))
+#if defined(MCENGINE_FEATURE_OPENGL) || defined (MCENGINE_FEATURE_GLES2) || defined(MCENGINE_FEATURE_GLES32) || defined(MCENGINE_FEATURE_GL3)
+			if constexpr (Env::cfg(REND::GL | REND::GLES2 | REND::GLES32 | REND::GL3))
 				glBlendEquation(GL_MAX); // HACKHACK: OpenGL hardcoded
 #endif
 
@@ -519,8 +515,8 @@ void OsuCircle::draw3DHitCircle(Graphics *g, OsuModFPoSu *fposu, OsuSkin *skin, 
 			}
 			fposu->getHitcircleShader()->disable();
 
-#if defined(MCENGINE_FEATURE_OPENGL) || defined (MCENGINE_FEATURE_GLES2) || defined(MCENGINE_FEATURE_GLES32)
-			if constexpr (Env::cfg(REND::GL | REND::GLES2 | REND::GLES32))
+#if defined(MCENGINE_FEATURE_OPENGL) || defined (MCENGINE_FEATURE_GLES2) || defined(MCENGINE_FEATURE_GLES32) || defined(MCENGINE_FEATURE_GL3)
+			if constexpr (Env::cfg(REND::GL | REND::GLES2 | REND::GLES32 | REND::GL3))
 				glBlendEquation(GL_FUNC_ADD); // HACKHACK: OpenGL hardcoded
 #endif
 		}
@@ -598,18 +594,18 @@ void OsuCircle::drawHitCircleNumber(Graphics *g, OsuSkin *skin, float numberScal
 	digits.push_back(number);
 
 	// set color
-	//g->setColor(COLORf(1.0f, colorRGBMultiplier, colorRGBMultiplier, colorRGBMultiplier)); // see https://github.com/ppy/osu/issues/24506
+	//g->setColor(argb(1.0f, colorRGBMultiplier, colorRGBMultiplier, colorRGBMultiplier)); // see https://github.com/ppy/osu/issues/24506
 	g->setColor(0xffffffff);
 	if (osu_circle_number_rainbow.getBool())
 	{
 		float frequency = 0.3f;
 		float time = engine->getTime()*20;
 
-		char red1	= std::sin(frequency*time + 0 + rainbowNumber*rainbowNumber*rainbowNumber*rainbowColorCounter) * 127 + 128;
-		char green1	= std::sin(frequency*time + 2 + rainbowNumber*rainbowNumber*rainbowNumber*rainbowColorCounter) * 127 + 128;
-		char blue1	= std::sin(frequency*time + 4 + rainbowNumber*rainbowNumber*rainbowNumber*rainbowColorCounter) * 127 + 128;
+		const Channel red1	 = std::sin(frequency*time + 0 + rainbowNumber*rainbowNumber*rainbowNumber*rainbowColorCounter) * 127 + 128;
+		const Channel green1 = std::sin(frequency*time + 2 + rainbowNumber*rainbowNumber*rainbowNumber*rainbowColorCounter) * 127 + 128;
+		const Channel blue1	 = std::sin(frequency*time + 4 + rainbowNumber*rainbowNumber*rainbowNumber*rainbowColorCounter) * 127 + 128;
 
-		g->setColor(COLOR(255, red1, green1, blue1));
+		g->setColor(rgb(red1, green1, blue1));
 	}
 	g->setAlpha(numberAlpha);
 
@@ -790,7 +786,7 @@ void OsuCircle::drawVR(Graphics *g, Matrix4 &mvp, OsuVR *vr)
 	///if (m_bVisible)
 	{
 		float clampedApproachScalePercent = m_fApproachScale - 1.0f; // goes from <m_osu_approach_scale_multiplier_ref> to 0
-		clampedApproachScalePercent = clamp<float>(clampedApproachScalePercent / m_osu_approach_scale_multiplier_ref->getFloat(), 0.0f, 1.0f); // goes from 1 to 0
+		clampedApproachScalePercent = std::clamp<float>(clampedApproachScalePercent / m_osu_approach_scale_multiplier_ref->getFloat(), 0.0f, 1.0f); // goes from 1 to 0
 
 		Matrix4 translation;
 		translation.translate(0, 0, -clampedApproachScalePercent*vr->getApproachDistance());
@@ -815,7 +811,7 @@ void OsuCircle::drawVR2(Graphics *g, Matrix4 &mvp, OsuVR *vr)
 	///if (m_bVisible)
 	{
 		float clampedApproachScalePercent = m_fApproachScale - 1.0f; // goes from <m_osu_approach_scale_multiplier_ref> to 0
-		clampedApproachScalePercent = clamp<float>(clampedApproachScalePercent / m_osu_approach_scale_multiplier_ref->getFloat(), 0.0f, 1.0f); // goes from 1 to 0
+		clampedApproachScalePercent = std::clamp<float>(clampedApproachScalePercent / m_osu_approach_scale_multiplier_ref->getFloat(), 0.0f, 1.0f); // goes from 1 to 0
 
 		if (m_osu_vr_approach_circles_on_playfield->getBool())
 			clampedApproachScalePercent = 0.0f;
@@ -938,7 +934,7 @@ void OsuCircle::update(long curPos)
 						if (result != OsuScore::HIT::HIT_NULL)
 						{
 							const float targetDelta = cursorDelta / (m_beatmap->getHitcircleDiameter()/2.0f);
-							const float targetAngle = rad2deg(atan2(m_beatmap->getCursorPos().y - pos.y, m_beatmap->getCursorPos().x - pos.x));
+							const float targetAngle = glm::degrees(atan2(m_beatmap->getCursorPos().y - pos.y, m_beatmap->getCursorPos().x - pos.x));
 
 							if (m_beatmap->getOsu()->isInVRMode())
 							{
@@ -1016,7 +1012,7 @@ void OsuCircle::onClickEvent(std::vector<OsuBeatmap::CLICK> &clicks)
 		if (result != OsuScore::HIT::HIT_NULL)
 		{
 			const float targetDelta = cursorDelta / (m_beatmap->getHitcircleDiameter()/2.0f);
-			const float targetAngle = rad2deg(atan2(cursorPos.y - pos.y, cursorPos.x - pos.x));
+			const float targetAngle = glm::degrees(atan2(cursorPos.y - pos.y, cursorPos.x - pos.x));
 
 			clicks.erase(clicks.begin());
 			onHit(result, delta, targetDelta, targetAngle);

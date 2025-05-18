@@ -27,7 +27,7 @@ CBaseUITextbox::CBaseUITextbox(float xPos, float yPos, float xSize, float ySize,
 {
 	setKeepActive(true);
 
-	m_font = engine->getResourceManager()->getFont("FONT_DEFAULT");
+	m_font = resourceManager->getFont("FONT_DEFAULT");
 
 	m_textColor = m_frameColor = m_caretColor = 0xffffffff;
 	m_backgroundColor = 0xff000000;
@@ -135,16 +135,16 @@ void CBaseUITextbox::update()
 	CBaseUIElement::update();
 	if (!m_bVisible) return;
 
-	const Vector2 mousepos = engine->getMouse()->getPos();
-	const bool mleft = engine->getMouse()->isLeftDown();
-	const bool mright = engine->getMouse()->isRightDown();
+	const Vector2 mousepos = mouse->getPos();
+	const bool mleft = mouse->isLeftDown();
+	const bool mright = mouse->isRightDown();
 
 	// HACKHACK: should do this with the proper events! this will only work properly though if we can event.consume() charDown's
 	if (!m_bEnabled && m_bActive && mleft && !m_bMouseInside)
 		m_bActive = false;
 
 	if ((m_bMouseInside || (m_bBusy && (mleft || mright))) && (m_bActive || (!mleft && !mright)) && m_bEnabled)
-		engine->getMouse()->setCursorType(CURSORTYPE::CURSOR_TEXT);
+		mouse->setCursorType(CURSORTYPE::CURSOR_TEXT);
 
 	// update caret blinking
 	{
@@ -208,7 +208,7 @@ void CBaseUITextbox::update()
 					const int scrollspeed = mouseX < 0 ? std::abs(mouseX)/2 + 1 : 3;
 
 					// TODO: animations which don't suck for usability
-					m_fTextScrollAddX = clamp<int>(m_fTextScrollAddX + scrollspeed, 0, m_fTextWidth - m_vSize.x + ui_textbox_text_offset_x.getInt()*2);
+					m_fTextScrollAddX = std::clamp<int>(m_fTextScrollAddX + scrollspeed, 0, m_fTextWidth - m_vSize.x + ui_textbox_text_offset_x.getInt()*2);
 					///animation->moveSmoothEnd(&m_fTextScrollAddX, clampi(m_fTextScrollAddX+scrollspeed, 0, m_fTextWidth-m_vSize.x+ui_textbox_text_offset_x.getInt()*2), 1);
 				}
 
@@ -217,7 +217,7 @@ void CBaseUITextbox::update()
 					const int scrollspeed = mouseX > m_vSize.x ? std::abs(mouseX - m_vSize.x)/2 + 1 : 1;
 
 					// TODO: animations which don't suck for usability
-					m_fTextScrollAddX = clamp<int>(m_fTextScrollAddX - scrollspeed, 0, m_fTextWidth - m_vSize.x + ui_textbox_text_offset_x.getInt()*2);
+					m_fTextScrollAddX = std::clamp<int>(m_fTextScrollAddX - scrollspeed, 0, m_fTextWidth - m_vSize.x + ui_textbox_text_offset_x.getInt()*2);
 					///animation->moveSmoothEnd(&m_fTextScrollAddX, clampi(m_fTextScrollAddX-scrollspeed, 0, m_fTextWidth-m_vSize.x+ui_textbox_text_offset_x.getInt()*2), 1);
 				}
 			}
@@ -267,7 +267,7 @@ void CBaseUITextbox::update()
 	{
 		m_bContextMouse = false;
 		/*
-		engine->getMouse()->setCursorType(CURSORTYPE::CURSOR_NORMAL);
+		mouse->setCursorType(CURSORTYPE::CURSOR_NORMAL);
 		cmenu->begin();
 		{
 			cmenu->addItem("Clear", 5);
@@ -353,7 +353,7 @@ void CBaseUITextbox::onKeyDown(KeyboardEvent &e)
 				handleDeleteSelectedText();
 			else if (m_iCaretPosition-1 >= 0)
 			{
-				if (engine->getKeyboard()->isControlDown())
+				if (keyboard->isControlDown())
 				{
 					// delete everything from the current caret position to the left, until after the first non-space character (but including it)
 					bool foundNonSpaceChar = false;
@@ -392,9 +392,9 @@ void CBaseUITextbox::onKeyDown(KeyboardEvent &e)
 			deselectText();
 
 			if (!hadSelectedText)
-				m_iCaretPosition = clamp<int>(m_iCaretPosition - 1, 0, m_sText.length());
+				m_iCaretPosition = std::clamp<int>(m_iCaretPosition - 1, 0, m_sText.length());
 			else
-				m_iCaretPosition = clamp<int>(prevSelectPos, 0, m_sText.length());
+				m_iCaretPosition = std::clamp<int>(prevSelectPos, 0, m_sText.length());
 
 			tickCaret();
 			handleCaretKeyboardMove();
@@ -410,9 +410,9 @@ void CBaseUITextbox::onKeyDown(KeyboardEvent &e)
 			deselectText();
 
 			if (!hadSelectedText)
-				m_iCaretPosition = clamp<int>(m_iCaretPosition + 1, 0, m_sText.length());
+				m_iCaretPosition = std::clamp<int>(m_iCaretPosition + 1, 0, m_sText.length());
 			else
-				m_iCaretPosition = clamp<int>(prevSelectPos, 0, m_sText.length());
+				m_iCaretPosition = std::clamp<int>(prevSelectPos, 0, m_sText.length());
 
 			tickCaret();
 			handleCaretKeyboardMove();
@@ -421,17 +421,17 @@ void CBaseUITextbox::onKeyDown(KeyboardEvent &e)
 		break;
 
 	case KEY_C:
-		if (engine->getKeyboard()->isControlDown())
+		if (keyboard->isControlDown())
 			env->setClipBoardText(getSelectedText());
 		break;
 
 	case KEY_V:
-		if (engine->getKeyboard()->isControlDown())
+		if (keyboard->isControlDown())
 			insertTextFromClipboard();
 		break;
 
 	case KEY_A:
-		if (engine->getKeyboard()->isControlDown())
+		if (keyboard->isControlDown())
 		{
 			// HACKHACK: make proper setSelectedText() function
 			m_iSelectStart = 0;
@@ -445,7 +445,7 @@ void CBaseUITextbox::onKeyDown(KeyboardEvent &e)
 		break;
 
 	case KEY_X:
-		if (engine->getKeyboard()->isControlDown() && hasSelectedText())
+		if (keyboard->isControlDown() && hasSelectedText())
 		{
 			env->setClipBoardText(getSelectedText());
 			handleDeleteSelectedText();
@@ -478,7 +478,7 @@ void CBaseUITextbox::onChar(KeyboardEvent &e)
 
 	// ignore any control characters, we only want text
 	// funny story: Windows 10 still has this bug even today, where when editing the name of any shortcut/folder on the desktop, hitting CTRL + BACKSPACE will insert an invalid character
-	if (e.getCharCode() < 32 || (engine->getKeyboard()->isControlDown() && !engine->getKeyboard()->isAltDown())) return;
+	if (e.getCharCode() < 32 || (keyboard->isControlDown() && !keyboard->isAltDown())) return;
 
 	// delete any potentially selected text
 	handleDeleteSelectedText();
@@ -554,7 +554,7 @@ CBaseUITextbox *CBaseUITextbox::setFont(McFont *font)
 CBaseUITextbox *CBaseUITextbox::setText(UString text)
 {
 	m_sText = text;
-	m_iCaretPosition = clamp<int>(m_iCaretPosition, 0, text.length());
+	m_iCaretPosition = std::clamp<int>(m_iCaretPosition, 0, text.length());
 
 	// handle text justification
 	m_fTextWidth = m_font->getStringWidth(m_sText);

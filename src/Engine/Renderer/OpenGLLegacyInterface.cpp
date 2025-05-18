@@ -7,12 +7,11 @@
 
 #include "OpenGLLegacyInterface.h"
 
-
 #ifdef MCENGINE_FEATURE_OPENGL
 
-#include "Engine.h"
-#include "ConVar.h"
 #include "Camera.h"
+#include "ConVar.h"
+#include "Engine.h"
 
 #include "Font.h"
 #include "OpenGLImage.h"
@@ -21,21 +20,11 @@
 #include "OpenGLVertexArrayObject.h"
 
 #include "OpenGLHeaders.h"
+#include "OpenGLStateCache.h"
 
 #include <utility>
 
-#define GPU_MEMORY_INFO_DEDICATED_VIDMEM_NVX          0x9047
-#define GPU_MEMORY_INFO_TOTAL_AVAILABLE_MEMORY_NVX    0x9048
-#define GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX  0x9049
-#define GPU_MEMORY_INFO_EVICTION_COUNT_NVX            0x904A
-#define GPU_MEMORY_INFO_EVICTED_MEMORY_NVX            0x904B
-
-#define VBO_FREE_MEMORY_ATI                     0x87FB
-#define TEXTURE_FREE_MEMORY_ATI                 0x87FC
-#define RENDERBUFFER_FREE_MEMORY_ATI            0x87FD
-
 ConVar r_image_unbind_after_drawimage("r_image_unbind_after_drawimage", true, FCVAR_NONE);
-ConVar debug_opengl("debug_opengl", false, FCVAR_NONE);
 
 OpenGLLegacyInterface::OpenGLLegacyInterface() : Graphics()
 {
@@ -58,9 +47,12 @@ void OpenGLLegacyInterface::init()
 	const GLubyte *version = glGetString(GL_VERSION);
 	debugLog("OpenGL: OpenGL Version %s\n", version);
 
+#if !(defined(WINVER) && WINVER <= 0x0600) // allow skipping this error for funny winxp builds with ~gl2.1
 	// check GL version again
 	if (!glewIsSupported("GL_VERSION_3_0") && !glewIsSupported("GLEW_VERSION_3_0"))
-		engine->showMessageWarning("OpenGL Warning", UString::format("Your GPU does not support OpenGL version 3.0!\nThe engine will try to continue, but probably crash.\nOpenGL version = %s", version));
+		engine->showMessageWarning(
+		    "OpenGL Warning", UString::format("Your GPU does not support OpenGL version 3.0!\nThe engine will try to continue, but probably crash.\nOpenGL version = %s", version));
+#endif
 
 	// enable
 	glEnable(GL_TEXTURE_2D);
@@ -85,8 +77,8 @@ void OpenGLLegacyInterface::init()
 	// culling
 	glFrontFace(GL_CCW);
 
-	// wireframe mode
-	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	// initialize the state cache
+	OpenGLStateCache::getInstance().initialize();
 }
 
 OpenGLLegacyInterface::~OpenGLLegacyInterface()
@@ -110,8 +102,8 @@ void OpenGLLegacyInterface::beginScene()
 	updateTransform();
 
 	// set clear color and clear
-	//glClearColor(1, 1, 1, 1);
-	//glClearColor(0.9568f, 0.9686f, 0.9882f, 1);
+	// glClearColor(1, 1, 1, 1);
+	// glClearColor(0.9568f, 0.9686f, 0.9882f, 1);
 	glClearColor(0, 0, 0, 0.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
@@ -142,21 +134,18 @@ void OpenGLLegacyInterface::clearDepthBuffer()
 
 void OpenGLLegacyInterface::setColor(Color color)
 {
-	if (color == m_color) return;
+	if (color == m_color)
+		return;
 
 	m_color = color;
-	//glColor4f(((unsigned char)(m_color >> 16))  / 255.0f, ((unsigned char)(m_color >> 8)) / 255.0f, ((unsigned char)(m_color >> 0)) / 255.0f, ((unsigned char)(m_color >> 24)) / 255.0f);
-	glColor4ub((unsigned char)(m_color >> 16), (unsigned char)(m_color >> 8), (unsigned char)(m_color >> 0), (unsigned char)(m_color >> 24));
+	// glColor4f(((unsigned char)(m_color >> 16))  / 255.0f, ((unsigned char)(m_color >> 8)) / 255.0f, ((unsigned char)(m_color >> 0)) / 255.0f, ((unsigned char)(m_color >> 24)) /
+	// 255.0f);
+	glColor4ub(Ri(m_color), Gi(m_color), Bi(m_color), Ai(m_color));
 }
 
 void OpenGLLegacyInterface::setAlpha(float alpha)
 {
-	Color tempColor = m_color;
-
-	tempColor &= 0x00ffffff;
-	tempColor |= ((int)(255.0f * alpha)) << 24;
-
-	setColor(tempColor);
+	setColor(rgba(Rf(m_color), Gf(m_color), Bf(m_color), alpha));
 }
 
 void OpenGLLegacyInterface::drawPixels(int x, int y, int width, int height, Graphics::DRAWPIXELS_TYPE type, const void *pixels)
@@ -278,30 +267,30 @@ void OpenGLLegacyInterface::fillRoundedRect(int x, int y, int width, int height,
 	glBegin(GL_POLYGON);
 	{
 		// top left
-		for (i=PI; i<=(1.5*PI); i+=factor)
+		for (i = PI; i <= (1.5 * PI); i += factor)
 		{
-			glVertex2d(radius* std::cos(i) + xOffset, radius * std::sin(i) + yOffset);
+			glVertex2d(radius * std::cos(i) + xOffset, radius * std::sin(i) + yOffset);
 		}
 
 		// top right
 		xOffset = x + width - radius;
-		for (i=(1.5*PI); i<=(2*PI); i+=factor)
+		for (i = (1.5 * PI); i <= (2 * PI); i += factor)
 		{
-			glVertex2d(radius* std::cos(i) + xOffset, radius * std::sin(i) + yOffset);
+			glVertex2d(radius * std::cos(i) + xOffset, radius * std::sin(i) + yOffset);
 		}
 
 		// bottom right
 		yOffset = y + height - radius;
-		for (i=0; i<=(0.5*PI); i+=factor)
+		for (i = 0; i <= (0.5 * PI); i += factor)
 		{
-			glVertex2d(radius* std::cos(i) + xOffset, radius * std::sin(i) + yOffset);
+			glVertex2d(radius * std::cos(i) + xOffset, radius * std::sin(i) + yOffset);
 		}
 
 		// bottom left
 		xOffset = x + radius;
-		for (i=(0.5*PI); i<=PI; i+=factor)
+		for (i = (0.5 * PI); i <= PI; i += factor)
 		{
-			glVertex2d(radius* std::cos(i) + xOffset, radius * std::sin(i) + yOffset);
+			glVertex2d(radius * std::cos(i) + xOffset, radius * std::sin(i) + yOffset);
 		}
 	}
 	glEnd();
@@ -351,7 +340,8 @@ void OpenGLLegacyInterface::drawQuad(int x, int y, int width, int height)
 	glEnd();
 }
 
-void OpenGLLegacyInterface::drawQuad(Vector2 topLeft, Vector2 topRight, Vector2 bottomRight, Vector2 bottomLeft, Color topLeftColor, Color topRightColor, Color bottomRightColor, Color bottomLeftColor)
+void OpenGLLegacyInterface::drawQuad(Vector2 topLeft, Vector2 topRight, Vector2 bottomRight, Vector2 bottomLeft, Color topLeftColor, Color topRightColor, Color bottomRightColor,
+                                     Color bottomLeftColor)
 {
 	updateTransform();
 
@@ -383,15 +373,16 @@ void OpenGLLegacyInterface::drawImage(Image *image)
 		debugLog("WARNING: Tried to draw image with NULL texture!\n");
 		return;
 	}
-	if (!image->isReady()) return;
+	if (!image->isReady())
+		return;
 
 	updateTransform();
 
 	const float width = image->getWidth();
 	const float height = image->getHeight();
 
-	const float x = -width/2;
-	const float y = -height/2;
+	const float x = -width / 2;
+	const float y = -height / 2;
 
 	image->bind();
 	{
@@ -423,7 +414,8 @@ void OpenGLLegacyInterface::drawImage(Image *image)
 
 void OpenGLLegacyInterface::drawString(McFont *font, UString text)
 {
-	if (font == NULL || text.length() < 1 || !font->isReady()) return;
+	if (font == NULL || text.length() < 1 || !font->isReady())
+		return;
 
 	updateTransform();
 
@@ -440,7 +432,8 @@ void OpenGLLegacyInterface::drawString(McFont *font, UString text)
 
 void OpenGLLegacyInterface::drawVAO(VertexArrayObject *vao)
 {
-	if (vao == NULL) return;
+	if (vao == NULL)
+		return;
 
 	updateTransform();
 
@@ -451,7 +444,7 @@ void OpenGLLegacyInterface::drawVAO(VertexArrayObject *vao)
 	// if baked, then we can directly draw the buffer
 	if (vao->isReady())
 	{
-		((OpenGLVertexArrayObject*)vao)->draw();
+		((OpenGLVertexArrayObject *)vao)->draw();
 		return;
 	}
 
@@ -461,12 +454,12 @@ void OpenGLLegacyInterface::drawVAO(VertexArrayObject *vao)
 	const std::vector<Color> &colors = vao->getColors();
 
 	glBegin(primitiveToOpenGL(vao->getPrimitive()));
-	for (size_t i=0; i<vertices.size(); i++)
+	for (size_t i = 0; i < vertices.size(); i++)
 	{
 		if (i < colors.size())
 			setColor(colors[i]);
 
-		for (size_t t=0; t<texcoords.size(); t++)
+		for (size_t t = 0; t < texcoords.size(); t++)
 		{
 			if (i < texcoords[t].size())
 				glMultiTexCoord2f(GL_TEXTURE0 + t, texcoords[t][i].x, texcoords[t][i].y);
@@ -482,19 +475,22 @@ void OpenGLLegacyInterface::drawVAO(VertexArrayObject *vao)
 
 void OpenGLLegacyInterface::setClipRect(McRect clipRect)
 {
-	if (r_debug_disable_cliprect->getBool()) return;
-	//if (m_bIs3DScene) return; // HACKHACK:TODO:
+	if (r_debug_disable_cliprect->getBool())
+		return;
+	// if (m_bIs3DScene) return; // HACKHACK:TODO:
 
 	// HACKHACK: compensate for viewport changes caused by RenderTargets!
 	int viewport[4];
 	glGetIntegerv(GL_VIEWPORT, viewport);
 
-	//debugLog("viewport = %i, %i, %i, %i\n", viewport[0], viewport[1], viewport[2], viewport[3]);
+	// debugLog("viewport = %i, %i, %i, %i\n", viewport[0], viewport[1], viewport[2], viewport[3]);
 
 	glEnable(GL_SCISSOR_TEST);
-	glScissor((int)clipRect.getX()+viewport[0], viewport[3]-((int)clipRect.getY()-viewport[1]-1+(int)clipRect.getHeight()), (int)clipRect.getWidth(), (int)clipRect.getHeight());
+	glScissor((int)clipRect.getX() + viewport[0], viewport[3] - ((int)clipRect.getY() - viewport[1] - 1 + (int)clipRect.getHeight()), (int)clipRect.getWidth(),
+	          (int)clipRect.getHeight());
 
-	//debugLog("scissor = %i, %i, %i, %i\n", (int)clipRect.getX()+viewport[0], viewport[3]-((int)clipRect.getY()-viewport[1]-1+(int)clipRect.getHeight()), (int)clipRect.getWidth(), (int)clipRect.getHeight());
+	// debugLog("scissor = %i, %i, %i, %i\n", (int)clipRect.getX()+viewport[0], viewport[3]-((int)clipRect.getY()-viewport[1]-1+(int)clipRect.getHeight()),
+	// (int)clipRect.getWidth(), (int)clipRect.getHeight());
 }
 
 void OpenGLLegacyInterface::pushClipRect(McRect clipRect)
@@ -525,16 +521,16 @@ void OpenGLLegacyInterface::pushStencil()
 	glEnable(GL_STENCIL_TEST);
 
 	// set mask
-	glColorMask( GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE );
-	glStencilFunc( GL_ALWAYS, 1, 1 );
-	glStencilOp( GL_REPLACE, GL_REPLACE, GL_REPLACE );
+	glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+	glStencilFunc(GL_ALWAYS, 1, 1);
+	glStencilOp(GL_REPLACE, GL_REPLACE, GL_REPLACE);
 }
 
 void OpenGLLegacyInterface::fillStencil(bool inside)
 {
-	glColorMask( GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE );
-	glStencilFunc( GL_NOTEQUAL, inside ? 0 : 1, 1 );
-	glStencilOp( GL_KEEP, GL_KEEP, GL_KEEP );
+	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+	glStencilFunc(GL_NOTEQUAL, inside ? 0 : 1, 1);
+	glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
 }
 
 void OpenGLLegacyInterface::popStencil()
@@ -644,14 +640,14 @@ std::vector<unsigned char> OpenGLLegacyInterface::getScreenshot()
 		return result;
 	}
 
-	unsigned int numElements = width*height*3;
+	unsigned int numElements = width * height * 3;
 
 	// take screenshot
 	unsigned char *pixels = new unsigned char[numElements];
 	glFinish();
-	for (int y=0; std::cmp_less(y,height); y++) // flip it while reading
+	for (int y = 0; std::cmp_less(y, height); y++) // flip it while reading
 	{
-		glReadPixels(0, (height - (y + 1)), width, 1, GL_RGB, GL_UNSIGNED_BYTE, &(pixels[y*width*3]));
+		glReadPixels(0, (height - (y + 1)), width, 1, GL_RGB, GL_UNSIGNED_BYTE, &(pixels[y * width * 3]));
 	}
 
 	// copy to vector
@@ -662,73 +658,14 @@ std::vector<unsigned char> OpenGLLegacyInterface::getScreenshot()
 	return result;
 }
 
-UString OpenGLLegacyInterface::getVendor()
-{
-	const GLubyte *vendor = glGetString(GL_VENDOR);
-	return reinterpret_cast<const char*>(vendor);
-}
-
-UString OpenGLLegacyInterface::getModel()
-{
-	const GLubyte *model = glGetString(GL_RENDERER);
-	return reinterpret_cast<const char*>(model);
-}
-
-UString OpenGLLegacyInterface::getVersion()
-{
-	const GLubyte *version = glGetString(GL_VERSION);
-	return reinterpret_cast<const char*>(version);
-}
-
-int OpenGLLegacyInterface::getVRAMTotal()
-{
-	int nvidiaMemory[4];
-	int atiMemory[4];
-	
-	for (int i=0; i<4; i++)
-	{
-		nvidiaMemory[i] = -1;
-		atiMemory[i] = -1;
-	}
-
-	glGetIntegerv(GPU_MEMORY_INFO_TOTAL_AVAILABLE_MEMORY_NVX, nvidiaMemory);
-	glGetIntegerv(TEXTURE_FREE_MEMORY_ATI, atiMemory);
-
-	//glGetError(); // clear error state
-
-	if (nvidiaMemory[0] < 1)
-		return atiMemory[0];
-	else
-		return nvidiaMemory[0];
-}
-
-int OpenGLLegacyInterface::getVRAMRemaining()
-{
-	int nvidiaMemory[4];
-	int atiMemory[4];
-	
-	for (int i=0; i<4; i++)
-	{
-		nvidiaMemory[i] = -1;
-		atiMemory[i] = -1;
-	}
-
-	glGetIntegerv(GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX, nvidiaMemory);
-	glGetIntegerv(TEXTURE_FREE_MEMORY_ATI, atiMemory);
-
-	//glGetError(); // clear error state
-
-	if (nvidiaMemory[0] < 1)
-		return atiMemory[0];
-	else
-		return nvidiaMemory[0];
-}
-
 void OpenGLLegacyInterface::onResolutionChange(Vector2 newResolution)
 {
 	// rebuild viewport
 	m_vResolution = newResolution;
 	glViewport(0, 0, m_vResolution.x, m_vResolution.y);
+
+	// update state cache with the new viewport
+	OpenGLStateCache::getInstance().setCurrentViewport(0, 0, m_vResolution.x, m_vResolution.y);
 
 	// special case: custom rendertarget resolution rendering, update active projection matrix immediately
 	if (m_bInScene)
@@ -835,9 +772,7 @@ int OpenGLLegacyInterface::compareFuncToOpenGL(Graphics::COMPARE_FUNC compareFun
 
 void OpenGLLegacyInterface::handleGLErrors()
 {
-	// int error = glGetError();
-	// if (error != 0)
-	// 	debugLog("OpenGL Error: %i on frame %i\n",error,engine->getFrameCount());
+	// no
 }
 
 #endif

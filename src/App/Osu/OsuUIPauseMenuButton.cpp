@@ -33,7 +33,7 @@ void OsuUIPauseMenuButton::draw(Graphics *g)
 	Image *image = getImageFunc();
 	if (image != NULL)
 	{
-		g->setColor(COLORf(m_fAlpha, 1.0f, 1.0f, 1.0f));
+		g->setColor(argb(m_fAlpha, 1.0f, 1.0f, 1.0f));
 		g->pushTransform();
 		{
 			// scale
@@ -60,7 +60,7 @@ void OsuUIPauseMenuButton::onMouseInside()
 	CBaseUIButton::onMouseInside();
 
 	if (engine->hasFocus())
-		engine->getSound()->play(m_osu->getSkin()->getMenuClick());
+		soundEngine->play(m_osu->getSkin()->getMenuClick());
 
 	const float animationDuration = 0.09f;
 	anim->moveLinear(&m_vScale.x, m_vBaseScale.x * m_fScaleMultiplier, animationDuration, true);

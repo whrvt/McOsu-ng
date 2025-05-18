@@ -77,7 +77,7 @@ void OsuUISongBrowserCollectionButton::onSelected(bool wasSelected, bool autoSel
 
 void OsuUISongBrowserCollectionButton::onRightMouseUpInside()
 {
-	triggerContextMenu(engine->getMouse()->getPos());
+	triggerContextMenu(mouse->getPos());
 }
 
 void OsuUISongBrowserCollectionButton::triggerContextMenu(Vector2 pos)
@@ -170,7 +170,7 @@ void OsuUISongBrowserCollectionButton::onContextMenu(UString text, int id)
 				spacer->setTextColor(0xff888888);
 				spacer->setTextDarkColor(0xff000000);
 
-				label = m_contextMenu->addButton(Env::cfg(OS::HORIZON) ? "(Click HERE to confirm)" : "(Press ENTER to confirm.)", id);
+				label = m_contextMenu->addButton("(Press ENTER to confirm.)", id);
 				label->setTextLeft(false);
 				label->setTextColor(0xff555555);
 				label->setTextDarkColor(0xff000000);
@@ -187,7 +187,7 @@ void OsuUISongBrowserCollectionButton::onContextMenu(UString text, int id)
 	{
 		if (!isLegacyCollection)
 		{
-			if (engine->getKeyboard()->isShiftDown())
+			if (keyboard->isShiftDown())
 				onDeleteCollectionConfirmed(text, id);
 			else
 			{
@@ -265,10 +265,10 @@ UString OsuUISongBrowserCollectionButton::buildTitleString()
 
 Color OsuUISongBrowserCollectionButton::getActiveBackgroundColor() const
 {
-	return COLOR(clamp<int>(osu_songbrowser_button_collection_active_color_a.getInt(), 0, 255), clamp<int>(osu_songbrowser_button_collection_active_color_r.getInt(), 0, 255), clamp<int>(osu_songbrowser_button_collection_active_color_g.getInt(), 0, 255), clamp<int>(osu_songbrowser_button_collection_active_color_b.getInt(), 0, 255));
+	return argb(std::clamp<int>(osu_songbrowser_button_collection_active_color_a.getInt(), 0, 255), std::clamp<int>(osu_songbrowser_button_collection_active_color_r.getInt(), 0, 255), std::clamp<int>(osu_songbrowser_button_collection_active_color_g.getInt(), 0, 255), std::clamp<int>(osu_songbrowser_button_collection_active_color_b.getInt(), 0, 255));
 }
 
 Color OsuUISongBrowserCollectionButton::getInactiveBackgroundColor() const
 {
-	return COLOR(clamp<int>(osu_songbrowser_button_collection_inactive_color_a.getInt(), 0, 255), clamp<int>(osu_songbrowser_button_collection_inactive_color_r.getInt(), 0, 255), clamp<int>(osu_songbrowser_button_collection_inactive_color_g.getInt(), 0, 255), clamp<int>(osu_songbrowser_button_collection_inactive_color_b.getInt(), 0, 255));
+	return argb(std::clamp<int>(osu_songbrowser_button_collection_inactive_color_a.getInt(), 0, 255), std::clamp<int>(osu_songbrowser_button_collection_inactive_color_r.getInt(), 0, 255), std::clamp<int>(osu_songbrowser_button_collection_inactive_color_g.getInt(), 0, 255), std::clamp<int>(osu_songbrowser_button_collection_inactive_color_b.getInt(), 0, 255));
 }

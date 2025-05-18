@@ -18,16 +18,9 @@
 #include "OpenGLRenderTarget.h"
 #include "OpenGLES2Shader.h"
 #include "OpenGLES2VertexArrayObject.h"
+#include "OpenGLStateCache.h"
 
 #include "OpenGLHeaders.h"
-
-#define GPU_MEMORY_INFO_DEDICATED_VIDMEM_NVX			0x9047
-#define GPU_MEMORY_INFO_TOTAL_AVAILABLE_MEMORY_NVX		0x9048
-#define GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX	0x9049
-
-#define VBO_FREE_MEMORY_ATI								0x87FB
-#define TEXTURE_FREE_MEMORY_ATI							0x87FC
-#define RENDERBUFFER_FREE_MEMORY_ATI					0x87FD
 
 OpenGLES2Interface::OpenGLES2Interface() : NullGraphicsInterface()
 {
@@ -142,6 +135,9 @@ void OpenGLES2Interface::init()
 	glVertexAttribPointer(m_iShaderTexturedGenericAttribCol, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (GLvoid*)0);
 	glBufferData(GL_ARRAY_BUFFER, 16384*sizeof(Vector4), NULL, GL_STREAM_DRAW);
 	glEnableVertexAttribArray(m_iShaderTexturedGenericAttribCol);
+
+	// initialize the state cache (TODO: use it, like legacy interface does)
+	OpenGLStateCache::getInstance().initialize();
 }
 
 void OpenGLES2Interface::beginScene()
@@ -411,7 +407,7 @@ void OpenGLES2Interface::drawVAO(VertexArrayObject *vao)
 
 	for (size_t i=0; i<vcolors.size(); i++)
 	{
-		Vector4 color = Vector4(COLOR_GET_Rf(vcolors[i]), COLOR_GET_Gf(vcolors[i]), COLOR_GET_Bf(vcolors[i]), COLOR_GET_Af(vcolors[i]));
+		Vector4 color = Vector4(Rf(vcolors[i]), Gf(vcolors[i]), Bf(vcolors[i]), Af(vcolors[i]));
 		colors.push_back(color);
 		finalColors.push_back(color);
 	}
@@ -445,9 +441,9 @@ void OpenGLES2Interface::drawVAO(VertexArrayObject *vao)
 
 				if (colors.size() > 0)
 				{
-					finalColors.push_back(colors[clamp<int>(i + 0, 0, maxColorIndex)]);
-					finalColors.push_back(colors[clamp<int>(i + 1, 0, maxColorIndex)]);
-					finalColors.push_back(colors[clamp<int>(i + 2, 0, maxColorIndex)]);
+					finalColors.push_back(colors[std::clamp<int>(i + 0, 0, maxColorIndex)]);
+					finalColors.push_back(colors[std::clamp<int>(i + 1, 0, maxColorIndex)]);
+					finalColors.push_back(colors[std::clamp<int>(i + 2, 0, maxColorIndex)]);
 				}
 
 				finalVertices.push_back(vertices[i + 0]);
@@ -463,9 +459,9 @@ void OpenGLES2Interface::drawVAO(VertexArrayObject *vao)
 
 				if (colors.size() > 0)
 				{
-					finalColors.push_back(colors[clamp<int>(i + 0, 0, maxColorIndex)]);
-					finalColors.push_back(colors[clamp<int>(i + 2, 0, maxColorIndex)]);
-					finalColors.push_back(colors[clamp<int>(i + 3, 0, maxColorIndex)]);
+					finalColors.push_back(colors[std::clamp<int>(i + 0, 0, maxColorIndex)]);
+					finalColors.push_back(colors[std::clamp<int>(i + 2, 0, maxColorIndex)]);
+					finalColors.push_back(colors[std::clamp<int>(i + 3, 0, maxColorIndex)]);
 				}
 			}
 		}
@@ -631,50 +627,6 @@ void OpenGLES2Interface::setCulling(bool culling)
 void OpenGLES2Interface::setWireframe(bool enabled)
 {
 	// only GL_FILL is supported
-}
-
-int OpenGLES2Interface::getVRAMTotal()
-{
-	int nvidiaMemory[4];
-	int atiMemory[4];
-	
-	for (int i=0; i<4; i++)
-	{
-		nvidiaMemory[i] = -1;
-		atiMemory[i] = -1;
-	}
-
-	glGetIntegerv(GPU_MEMORY_INFO_TOTAL_AVAILABLE_MEMORY_NVX, nvidiaMemory);
-	glGetIntegerv(TEXTURE_FREE_MEMORY_ATI, atiMemory);
-
-	//glGetError(); // clear error state
-
-	if (nvidiaMemory[0] < 1)
-		return atiMemory[0];
-	else
-		return nvidiaMemory[0];
-}
-
-int OpenGLES2Interface::getVRAMRemaining()
-{
-	int nvidiaMemory[4];
-	int atiMemory[4];
-	
-	for (int i=0; i<4; i++)
-	{
-		nvidiaMemory[i] = -1;
-		atiMemory[i] = -1;
-	}
-
-	glGetIntegerv(GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX, nvidiaMemory);
-	glGetIntegerv(TEXTURE_FREE_MEMORY_ATI, atiMemory);
-
-	//glGetError(); // clear error state
-
-	if (nvidiaMemory[0] < 1)
-		return atiMemory[0];
-	else
-		return nvidiaMemory[0];
 }
 
 void OpenGLES2Interface::onResolutionChange(Vector2 newResolution)

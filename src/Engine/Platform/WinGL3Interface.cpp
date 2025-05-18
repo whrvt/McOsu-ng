@@ -9,10 +9,9 @@
 
 #include "WinGL3Interface.h"
 
-#ifdef MCENGINE_FEATURE_OPENGL
+#ifdef MCENGINE_FEATURE_GL3
 
 #include "Engine.h"
-#include "WinEnvironment.h"
 
 #include "OpenGLHeaders.h"
 
@@ -131,10 +130,10 @@ void WinGL3Interface::setVSync(bool vsync)
 
 bool WinGL3Interface::checkGLHardwareAcceleration()
 {
-	HDC hdc = GetDC(((WinEnvironment*)env)->getHwnd());
+	HDC hdc = GetDC(env->getHwnd());
 	PIXELFORMATDESCRIPTOR pfd = getPixelFormatDescriptor();
 	int pixelFormat = ChoosePixelFormat(hdc, &pfd);
-	ReleaseDC(((WinEnvironment*)env)->getHwnd(), hdc);
+	ReleaseDC(env->getHwnd(), hdc);
 	return pixelFormat;
 }
 

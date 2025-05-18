@@ -11,10 +11,12 @@
 
 #include "Engine.h"
 #include "OpenGLES32Interface.h"
+#include "OpenGLStateCache.h"
 
 #include "OpenGLHeaders.h"
 
-OpenGLES32VertexArrayObject::OpenGLES32VertexArrayObject(Graphics::PRIMITIVE primitive, Graphics::USAGE_TYPE usage, bool keepInSystemMemory) : VertexArrayObject(primitive, usage, keepInSystemMemory)
+OpenGLES32VertexArrayObject::OpenGLES32VertexArrayObject(Graphics::PRIMITIVE primitive, Graphics::USAGE_TYPE usage, bool keepInSystemMemory)
+    : VertexArrayObject(primitive, usage, keepInSystemMemory)
 {
 	m_iVertexBuffer = 0;
 	m_iTexcoordBuffer = 0;
@@ -179,13 +181,16 @@ void OpenGLES32VertexArrayObject::draw()
 		return;
 	}
 
-	const int start = clamp<int>(m_iDrawRangeFromIndex > -1 ? m_iDrawRangeFromIndex : nearestMultipleUp((int)(m_iNumVertices * m_fDrawPercentFromPercent), m_iDrawPercentNearestMultiple), 0, m_iNumVertices);
-	const int end = clamp<int>(m_iDrawRangeToIndex > -1 ? m_iDrawRangeToIndex : nearestMultipleDown((int)(m_iNumVertices * m_fDrawPercentToPercent), m_iDrawPercentNearestMultiple), 0, m_iNumVertices);
+	const int start =
+	    std::clamp<int>(m_iDrawRangeFromIndex > -1 ? m_iDrawRangeFromIndex : nearestMultipleUp((int)(m_iNumVertices * m_fDrawPercentFromPercent), m_iDrawPercentNearestMultiple), 0,
+	                    m_iNumVertices);
+	const int end = std::clamp<int>(
+	    m_iDrawRangeToIndex > -1 ? m_iDrawRangeToIndex : nearestMultipleDown((int)(m_iNumVertices * m_fDrawPercentToPercent), m_iDrawPercentNearestMultiple), 0, m_iNumVertices);
 
 	if (start > end || std::abs(end - start) == 0)
 		return;
 
-	OpenGLES32Interface *g = (OpenGLES32Interface *)engine->getGraphics();
+	OpenGLES32Interface *g = (OpenGLES32Interface *)graphics;
 
 	// configure shader state for our vertex attributes
 	if (m_iNumColors > 0)

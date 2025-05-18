@@ -11,7 +11,7 @@
 
 #include "cbase.h"
 
-#if defined(MCENGINE_FEATURE_MULTITHREADING) && !defined(__SWITCH__)
+#if defined(MCENGINE_FEATURE_MULTITHREADING)
 
 #include "Thread.h"
 
@@ -57,7 +57,7 @@ private:
 	bool _downloadUpdate(UString url);
 	void _installUpdate(UString zipFilePath);
 
-#if defined(MCENGINE_FEATURE_MULTITHREADING) && !defined(__SWITCH__)
+#if defined(MCENGINE_FEATURE_MULTITHREADING)
 
 	McThread *m_updateThread;
 	bool m_bThreadDone;

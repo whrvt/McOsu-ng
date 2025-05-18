@@ -17,8 +17,8 @@ TextureAtlas::TextureAtlas(int width, int height) : Resource()
 
 	m_iPadding = 1;
 
-	engine->getResourceManager()->requestNextLoadUnmanaged();
-	m_atlasImage = engine->getResourceManager()->createImage(m_iWidth, m_iHeight);
+	resourceManager->requestNextLoadUnmanaged();
+	m_atlasImage = resourceManager->createImage(m_iWidth, m_iHeight);
 
 	m_iCurX = m_iPadding;
 	m_iCurY = m_iPadding;
@@ -27,7 +27,7 @@ TextureAtlas::TextureAtlas(int width, int height) : Resource()
 
 void TextureAtlas::init()
 {
-	engine->getResourceManager()->loadResource(m_atlasImage);
+	resourceManager->loadResource(m_atlasImage);
 
 	m_bReady = true;
 }
@@ -101,7 +101,7 @@ Vector2 TextureAtlas::put(int width, int height, bool flipHorizontal, bool flipV
 			{
 				const int x = 0;
 				int actualX = (flipHorizontal ? width - x - 1 : x);
-				int actualY = clamp<int>((flipVertical ? height - y - 1 : y), 0, height-1);
+				int actualY = std::clamp<int>((flipVertical ? height - y - 1 : y), 0, height-1);
 
 				m_atlasImage->setPixel(m_iCurX + x - 1, m_iCurY + y, pixels[actualY*width + actualX]);
 			}
@@ -110,7 +110,7 @@ Vector2 TextureAtlas::put(int width, int height, bool flipHorizontal, bool flipV
 			{
 				const int x = width - 1;
 				int actualX = (flipHorizontal ? width - x - 1 : x);
-				int actualY = clamp<int>((flipVertical ? height - y - 1 : y), 0, height-1);
+				int actualY = std::clamp<int>((flipVertical ? height - y - 1 : y), 0, height-1);
 
 				m_atlasImage->setPixel(m_iCurX + x + 1, m_iCurY + y, pixels[actualY*width + actualX]);
 			}
@@ -118,7 +118,7 @@ Vector2 TextureAtlas::put(int width, int height, bool flipHorizontal, bool flipV
 			for (int x=-1; x<width+1; x++)
 			{
 				const int y = 0;
-				int actualX = clamp<int>((flipHorizontal ? width - x - 1 : x), 0, width-1);
+				int actualX = std::clamp<int>((flipHorizontal ? width - x - 1 : x), 0, width-1);
 				int actualY = (flipVertical ? height - y - 1 : y);
 
 				m_atlasImage->setPixel(m_iCurX + x, m_iCurY + y - 1, pixels[actualY*width + actualX]);
@@ -127,7 +127,7 @@ Vector2 TextureAtlas::put(int width, int height, bool flipHorizontal, bool flipV
 			for (int x=-1; x<width+1; x++)
 			{
 				const int y = height - 1;
-				int actualX = clamp<int>((flipHorizontal ? width - x - 1 : x), 0, width-1);
+				int actualX = std::clamp<int>((flipHorizontal ? width - x - 1 : x), 0, width-1);
 				int actualY = (flipVertical ? height - y - 1 : y);
 
 				m_atlasImage->setPixel(m_iCurX + x, m_iCurY + y + 1, pixels[actualY*width + actualX]);

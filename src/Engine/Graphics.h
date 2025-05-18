@@ -25,9 +25,7 @@ class McFont;
 class Shader;
 class RenderTarget;
 class VertexArrayObject;
-
-typedef uint32_t Color;
-
+using Color = uint32_t;
 class Graphics
 {
 public:

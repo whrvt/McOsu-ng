@@ -26,10 +26,6 @@
 #include "OsuModSelector.h"
 
 #include "OpenGLHeaders.h"
-#include "OpenGLLegacyInterface.h"
-#include "OpenGL3Interface.h"
-#include "OpenGLES2Interface.h"
-#include "OpenGLES32Interface.h"
 
 #include <sstream>
 
@@ -133,11 +129,11 @@ OsuModFPoSu::OsuModFPoSu(Osu *osu)
 	m_fZoomFOVAnimPercent = 0.0f;
 
 	m_fEdgeDistance = 0.0f;
-	m_bCrosshairIntersectsScreen = false;
+	m_bCrosshairIntersectsScreen = true;
 
 	// load resources
-	m_vao = engine->getResourceManager()->createVertexArrayObject();
-	m_vaoCube = engine->getResourceManager()->createVertexArrayObject();
+	m_vao = resourceManager->createVertexArrayObject();
+	m_vaoCube = resourceManager->createVertexArrayObject();
 
 	m_uvPlaneModel = NULL;
 	m_skyboxModel = NULL;
@@ -166,9 +162,9 @@ void OsuModFPoSu::draw(Graphics *g)
 {
 	if (!osu_mod_fposu.getBool()) return;
 
-	const float fov = lerp(fposu_fov.getFloat(), fposu_zoom_fov.getFloat(), m_fZoomFOVAnimPercent);
-	Matrix4 projectionMatrix = fposu_vertical_fov.getBool() ? Camera::buildMatrixPerspectiveFovVertical(deg2rad(fov), ((float)m_osu->getScreenWidth()/(float)m_osu->getScreenHeight()), 0.05f, 1000.0f)
-															: Camera::buildMatrixPerspectiveFovHorizontal(deg2rad(fov), ((float)m_osu->getScreenHeight() / (float)m_osu->getScreenWidth()), 0.05f, 1000.0f);
+	const float fov = std::lerp(fposu_fov.getFloat(), fposu_zoom_fov.getFloat(), m_fZoomFOVAnimPercent);
+	Matrix4 projectionMatrix = fposu_vertical_fov.getBool() ? Camera::buildMatrixPerspectiveFovVertical(glm::radians(fov), ((float)m_osu->getScreenWidth()/(float)m_osu->getScreenHeight()), 0.05f, 1000.0f)
+															: Camera::buildMatrixPerspectiveFovHorizontal(glm::radians(fov), ((float)m_osu->getScreenHeight() / (float)m_osu->getScreenWidth()), 0.05f, 1000.0f);
 	Matrix4 viewMatrix = Camera::buildMatrixLookAt(m_camera->getPos(), m_camera->getPos() + m_camera->getViewDirection(), m_camera->getViewUp());
 
 	// HACKHACK: there is currently no way to directly modify the viewport origin, so the only option for rendering non-2d stuff with correct offsets (i.e. top left) is by rendering into a rendertarget
@@ -250,7 +246,7 @@ void OsuModFPoSu::draw(Graphics *g)
 							{
 								m_osu->getSkin()->getBackgroundCube()->bind();
 								{
-									g->setColor(COLOR(255, clamp<int>(fposu_cube_tint_r.getInt(), 0, 255), clamp<int>(fposu_cube_tint_g.getInt(), 0, 255), clamp<int>(fposu_cube_tint_b.getInt(), 0, 255)));
+									g->setColor(rgb(std::clamp<int>(fposu_cube_tint_r.getInt(), 0, 255), std::clamp<int>(fposu_cube_tint_g.getInt(), 0, 255), std::clamp<int>(fposu_cube_tint_b.getInt(), 0, 255)));
 									g->drawVAO(m_vaoCube);
 								}
 								m_osu->getSkin()->getBackgroundCube()->unbind();
@@ -269,13 +265,9 @@ void OsuModFPoSu::draw(Graphics *g)
 
 						if constexpr (Env::cfg(REND::DX11))
 						{
-							DirectX11Interface *dx11 = dynamic_cast<DirectX11Interface*>(engine->getGraphics());
-							if (dx11 != NULL)
-							{
-								// NOTE: convert from OpenGL coordinate system
-								static Matrix4 zflip = Matrix4().scale(1, 1, -1);
-								worldMatrix = worldMatrix * zflip;
-							}
+							// NOTE: convert from OpenGL coordinate system
+							static Matrix4 zflip = Matrix4().scale(1, 1, -1);
+							worldMatrix = worldMatrix * zflip;
 						}
 
 						g->setWorldMatrixMul(worldMatrix);
@@ -370,8 +362,8 @@ void OsuModFPoSu::draw(Graphics *g)
 
 							g->setBlending(true);
 							{
-#if defined(MCENGINE_FEATURE_OPENGL) || defined (MCENGINE_FEATURE_GLES2) || defined(MCENGINE_FEATURE_GLES32)
-								if constexpr (Env::cfg(REND::GL | REND::GLES2 | REND::GLES32))
+#if defined(MCENGINE_FEATURE_OPENGL) || defined (MCENGINE_FEATURE_GLES2) || defined(MCENGINE_FEATURE_GLES32) || defined(MCENGINE_FEATURE_GL3)
+								if constexpr (Env::cfg(REND::GL | REND::GLES2 | REND::GLES32 | REND::GL3))
 								{
 									// HACKHACK: OpenGL hardcoded
 									glBlendFunc(GL_ONE_MINUS_DST_ALPHA, GL_DST_ALPHA);
@@ -432,14 +424,14 @@ void OsuModFPoSu::draw(Graphics *g)
 								{
 									m_osu->getSkin()->getBackgroundCube()->bind();
 									{
-										g->setColor(COLOR(255, clamp<int>(fposu_cube_tint_r.getInt(), 0, 255), clamp<int>(fposu_cube_tint_g.getInt(), 0, 255), clamp<int>(fposu_cube_tint_b.getInt(), 0, 255)));
+										g->setColor(rgb(std::clamp<int>(fposu_cube_tint_r.getInt(), 0, 255), std::clamp<int>(fposu_cube_tint_g.getInt(), 0, 255), std::clamp<int>(fposu_cube_tint_b.getInt(), 0, 255)));
 										g->drawVAO(m_vaoCube);
 									}
 									m_osu->getSkin()->getBackgroundCube()->unbind();
 								}
 
-#if defined(MCENGINE_FEATURE_OPENGL) || defined (MCENGINE_FEATURE_GLES2) || defined(MCENGINE_FEATURE_GLES32)
-								if constexpr (Env::cfg(REND::GL | REND::GLES2 | REND::GLES32))
+#if defined(MCENGINE_FEATURE_OPENGL) || defined (MCENGINE_FEATURE_GLES2) || defined(MCENGINE_FEATURE_GLES32) || defined(MCENGINE_FEATURE_GL3)
+								if constexpr (Env::cfg(REND::GL | REND::GLES2 | REND::GLES32 | REND::GL3))
 								{
 									// HACKHACK: OpenGL hardcoded
 									glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -537,12 +529,12 @@ void OsuModFPoSu::update()
 	const bool isAutoCursor = (m_osu->getModAuto() || m_osu->getModAutopilot());
 
 	m_bCrosshairIntersectsScreen = true;
-	if (Env::cfg(OS::WINDOWS) && !fposu_3d.getBool() && !fposu_absolute_mode.getBool() && !isAutoCursor) // HACKHACK: windows only for now (raw input support)
+	if (!fposu_3d.getBool() && !fposu_absolute_mode.getBool() && !isAutoCursor)
 	{
 		// regular mouse position mode
 
 		// calculate mouse delta
-		Vector2 rawDelta = engine->getMouse()->getDelta() / m_mouse_sensitivity_ref->getFloat(); // HACKHACK: undo engine mouse sensitivity multiplier
+		Vector2 rawDelta = mouse->getRawDelta();
 
 		// apply fposu mouse sensitivity multiplier
 		const double countsPerCm = (double)fposu_mouse_dpi.getInt() / 2.54;
@@ -568,14 +560,15 @@ void OsuModFPoSu::update()
 
 		if (!osCursorVisible)
 		{
-			// special case: force to center of screen if no intersection
-			if (newMousePos.x == 0.0f && newMousePos.y == 0.0f)
+			if (newMousePos.x != 0.0f || newMousePos.y != 0.0f)
 			{
-				m_bCrosshairIntersectsScreen = false;
-				newMousePos = m_osu->getScreenSize() / 2;
+				setMousePosCompensated(newMousePos);
 			}
-
-			setMousePosCompensated(newMousePos);
+			else
+			{
+				// special case: don't move the cursor if there's no intersection, the OS cursor isn't visible, and the cursor is to be confined to the window
+				m_bCrosshairIntersectsScreen = false;
+			}
 		}
 	}
 	else if (!fposu_3d.getBool())
@@ -585,7 +578,7 @@ void OsuModFPoSu::update()
 		m_bCrosshairIntersectsScreen = true;
 
 		// auto support, because it looks pretty cool
-		Vector2 mousePos = engine->getMouse()->getPos();
+		Vector2 mousePos = mouse->getPos();
 		if (isAutoCursor && m_osu->isInPlayMode() && m_osu->getSelectedBeatmap() != NULL)
 		{
 			OsuBeatmapStandard *beatmapStd = dynamic_cast<OsuBeatmapStandard*>(m_osu->getSelectedBeatmap());
@@ -602,19 +595,14 @@ void OsuModFPoSu::update()
 		// calculate mouse delta
 		Vector2 delta;
 		{
-			if constexpr (Env::cfg(OS::WINDOWS))
-			{
-				delta = (engine->getMouse()->getDelta() / m_mouse_sensitivity_ref->getFloat()); // HACKHACK: undo engine mouse sensitivity multiplier
+			delta = (mouse->getRawDelta());
 
-				// apply fposu mouse sensitivity multiplier
-				const double countsPerCm = (double)fposu_mouse_dpi.getInt() / 2.54;
-				const double cmPer360 = fposu_mouse_cm_360.getFloat();
-				const double countsPer360 = cmPer360 * countsPerCm;
-				const double multiplier = 360.0 / countsPer360;
-				delta *= multiplier;
-			}
-			else
-				delta = engine->getMouse()->getDelta() * m_mouse_sensitivity_ref->getFloat();
+			// apply fposu mouse sensitivity multiplier
+			const double countsPerCm = (double)fposu_mouse_dpi.getInt() / 2.54;
+			const double cmPer360 = fposu_mouse_cm_360.getFloat();
+			const double countsPer360 = cmPer360 * countsPerCm;
+			const double multiplier = 360.0 / countsPer360;
+			delta *= multiplier;
 
 			// apply zoom_sensitivity_ratio if zoomed
 			if (m_bZoomed && fposu_zoom_sensitivity_ratio.getFloat() > 0.0f)
@@ -636,7 +624,7 @@ void OsuModFPoSu::update()
 				if (!osCursorVisible)
 				{
 					if (!m_osu->getSelectedBeatmap()->isPaused() && !m_osu->getOptionsMenu()->isVisible() && !m_osu->getModSelector()->isVisible())
-						setMousePosCompensated(engine->getScreenSize()/2);
+						setMousePosCompensated(engine->getScreenSize()/2.0f);
 				}
 			}
 			else
@@ -652,7 +640,7 @@ void OsuModFPoSu::update()
 
 void OsuModFPoSu::noclipMove()
 {
-	const float noclipSpeed = fposu_noclipspeed.getFloat() * (engine->getKeyboard()->isShiftDown() ? 3.0f : 1.0f) * (engine->getKeyboard()->isControlDown() ? 0.2f : 1);
+	const float noclipSpeed = fposu_noclipspeed.getFloat() * (keyboard->isShiftDown() ? 3.0f : 1.0f) * (keyboard->isControlDown() ? 0.2f : 1);
 	const float noclipAccelerate = fposu_noclipaccelerate.getFloat();
 	const float friction = fposu_noclipfriction.getFloat();
 
@@ -798,10 +786,10 @@ void OsuModFPoSu::handleZoomedChange()
 void OsuModFPoSu::setMousePosCompensated(Vector2 newMousePos)
 {
 	// NOTE: letterboxing uses Mouse::setOffset() to offset the virtual engine cursor coordinate system, so we have to respect that when setting a new (absolute) position
-	newMousePos -= engine->getMouse()->getOffset();
+	newMousePos -= mouse->getOffset();
 
-	engine->getMouse()->onPosChange(newMousePos);
-	env->setMousePos(newMousePos.x, newMousePos.y);
+	mouse->onPosChange(newMousePos);
+	//env->setMousePos(newMousePos.x, newMousePos.y);
 }
 
 Vector2 OsuModFPoSu::intersectRayMesh(Vector3 pos, Vector3 dir)
@@ -874,8 +862,8 @@ Vector2 OsuModFPoSu::intersectRayMesh(Vector3 pos, Vector3 dir)
 Vector3 OsuModFPoSu::calculateUnProjectedVector(Vector2 pos)
 {
 	// calculate 3d position of 2d cursor on screen mesh
-	const float cursorXPercent = clamp<float>(pos.x / (float)m_osu->getScreenWidth(), 0.0f, 1.0f);
-	const float cursorYPercent = clamp<float>(pos.y / (float)m_osu->getScreenHeight(), 0.0f, 1.0f);
+	const float cursorXPercent = std::clamp<float>(pos.x / (float)m_osu->getScreenWidth(), 0.0f, 1.0f);
+	const float cursorYPercent = std::clamp<float>(pos.y / (float)m_osu->getScreenHeight(), 0.0f, 1.0f);
 
 	std::list<VertexPair>::iterator begin = m_meshList.begin();
 	std::list<VertexPair>::iterator next = ++m_meshList.begin();
@@ -925,12 +913,8 @@ void OsuModFPoSu::makePlayfield()
 
 	if constexpr (Env::cfg(REND::DX11))
 	{
-		DirectX11Interface *dx11 = dynamic_cast<DirectX11Interface *>(engine->getGraphics());
-		if (dx11 != NULL)
-		{
-			topTC = 0.0f;
-			bottomTC = 1.0f;
-		}
+		topTC = 0.0f;
+		bottomTC = 1.0f;
 	}
 
 	const float dist = -fposu_distance.getFloat();
@@ -1072,7 +1056,7 @@ f 2/1 4/4 3/2
 void OsuModFPoSu::handleLazyLoad3DShaders()
 {
 	if (m_hitcircleShader == NULL)
-		m_hitcircleShader = engine->getResourceManager()->loadShader2("hitcircle3D.mcshader", "hitcircle3D");
+		m_hitcircleShader = resourceManager->loadShader2("hitcircle3D.mcshader", "hitcircle3D");
 }
 
 void OsuModFPoSu::onCurvedChange(UString oldValue, UString newValue)
@@ -1100,9 +1084,9 @@ float OsuModFPoSu::subdivide(std::list<VertexPair> &meshList, const std::list<Ve
 {
 	const Vector3 a = Vector3((*begin).a.x, 0.0f, (*begin).a.z);
 	const Vector3 b = Vector3((*end).a.x, 0.0f, (*end).a.z);
-	Vector3 middlePoint = Vector3(lerp(a.x, b.x, 0.5f),
-								  lerp(a.y, b.y, 0.5f),
-								  lerp(a.z, b.z, 0.5f));
+	Vector3 middlePoint = Vector3(std::lerp(a.x, b.x, 0.5f),
+								  std::lerp(a.y, b.y, 0.5f),
+								  std::lerp(a.z, b.z, 0.5f));
 
 	if (fposu_curved.getBool())
 		middlePoint.setLength(edgeDistance);
@@ -1113,7 +1097,7 @@ float OsuModFPoSu::subdivide(std::list<VertexPair> &meshList, const std::list<Ve
 	top.y = (*begin).a.y;
 	bottom.y = (*begin).b.y;
 
-	const float tc = lerp((*begin).textureCoordinate, (*end).textureCoordinate, 0.5f);
+	const float tc = std::lerp((*begin).textureCoordinate, (*end).textureCoordinate, 0.5f);
 
 	VertexPair newVP = VertexPair(top, bottom, tc);
 	const std::list<VertexPair>::iterator newPos = meshList.insert(end, newVP);
@@ -1148,7 +1132,7 @@ OsuModFPoSu3DModel::OsuModFPoSu3DModel(const UString &objFilePathOrContents, Ima
 {
 	m_texture = texture;
 
-	m_vao = engine->getResourceManager()->createVertexArrayObject(Graphics::PRIMITIVE::PRIMITIVE_TRIANGLES);
+	m_vao = resourceManager->createVertexArrayObject(Graphics::PRIMITIVE::PRIMITIVE_TRIANGLES);
 
 	// load
 	{
@@ -1221,7 +1205,7 @@ OsuModFPoSu3DModel::OsuModFPoSu3DModel(const UString &objFilePathOrContents, Ima
 					if (sscanf(line.c_str(), "v %f %f %f %f %f %f ", &vertex.x, &vertex.y, &vertex.z, &rgb.x, &rgb.y, &rgb.z) == 6)
 					{
 						rawVertices.push_back(vertex);
-						rawColors.push_back(COLORf(1.0f, rgb.x, rgb.y, rgb.z));
+						rawColors.push_back(argb(1.0f, rgb.x, rgb.y, rgb.z));
 					}
 					else if (sscanf(line.c_str(), "v %f %f %f ", &vertex.x, &vertex.y, &vertex.z) == 3)
 						rawVertices.push_back(vertex);
@@ -1308,14 +1292,14 @@ OsuModFPoSu3DModel::OsuModFPoSu3DModel(const UString &objFilePathOrContents, Ima
 
 			// bake it for performance
 			if (hasAtLeastOneTriangle)
-				engine->getResourceManager()->loadResource(m_vao);
+				resourceManager->loadResource(m_vao);
 		}
 	}
 }
 
 OsuModFPoSu3DModel::~OsuModFPoSu3DModel()
 {
-	engine->getResourceManager()->destroyResource(m_vao);
+	resourceManager->destroyResource(m_vao);
 }
 
 void OsuModFPoSu3DModel::draw3D(Graphics *g)

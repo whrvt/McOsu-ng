@@ -23,14 +23,14 @@ OsuUIVolumeSlider::OsuUIVolumeSlider(Osu *osu, float xPos, float yPos, float xSi
 	m_bWentMouseInside = false;
 	m_fSelectionAnim = 0.0f;
 
-	m_font = engine->getResourceManager()->getFont("FONT_DEFAULT");
+	m_font = resourceManager->getFont("FONT_DEFAULT");
 
-	engine->getResourceManager()->loadImage("ic_volume_mute_white_48dp.png",	"OSU_UI_VOLUME_SLIDER_BLOCK_0");
-	engine->getResourceManager()->loadImage("ic_volume_up_white_48dp.png",		"OSU_UI_VOLUME_SLIDER_BLOCK_1");
-	engine->getResourceManager()->loadImage("ic_music_off_48dp.png",			"OSU_UI_VOLUME_SLIDER_MUSIC_0");
-	engine->getResourceManager()->loadImage("ic_music_48dp.png",				"OSU_UI_VOLUME_SLIDER_MUSIC_1");
-	engine->getResourceManager()->loadImage("ic_effects_off_48dp.png",			"OSU_UI_VOLUME_SLIDER_EFFECTS_0");
-	engine->getResourceManager()->loadImage("ic_effects_48dp.png",				"OSU_UI_VOLUME_SLIDER_EFFECTS_1");
+	resourceManager->loadImage("ic_volume_mute_white_48dp.png",	"OSU_UI_VOLUME_SLIDER_BLOCK_0");
+	resourceManager->loadImage("ic_volume_up_white_48dp.png",		"OSU_UI_VOLUME_SLIDER_BLOCK_1");
+	resourceManager->loadImage("ic_music_off_48dp.png",			"OSU_UI_VOLUME_SLIDER_MUSIC_0");
+	resourceManager->loadImage("ic_music_48dp.png",				"OSU_UI_VOLUME_SLIDER_MUSIC_1");
+	resourceManager->loadImage("ic_effects_off_48dp.png",			"OSU_UI_VOLUME_SLIDER_EFFECTS_0");
+	resourceManager->loadImage("ic_effects_48dp.png",				"OSU_UI_VOLUME_SLIDER_EFFECTS_1");
 
 	setFrameColor(0xff7f7f7f);
 }
@@ -40,9 +40,9 @@ void OsuUIVolumeSlider::drawBlock(Graphics *g)
 	// draw icon
 	Image *img = NULL;
 	if (getFloat() < 0.01f)
-		img = engine->getResourceManager()->getImage(m_type == TYPE::MASTER ? "OSU_UI_VOLUME_SLIDER_BLOCK_0" : (m_type == TYPE::MUSIC ? "OSU_UI_VOLUME_SLIDER_MUSIC_0" : "OSU_UI_VOLUME_SLIDER_EFFECTS_0"));
+		img = resourceManager->getImage(m_type == TYPE::MASTER ? "OSU_UI_VOLUME_SLIDER_BLOCK_0" : (m_type == TYPE::MUSIC ? "OSU_UI_VOLUME_SLIDER_MUSIC_0" : "OSU_UI_VOLUME_SLIDER_EFFECTS_0"));
 	else
-		img = engine->getResourceManager()->getImage(m_type == TYPE::MASTER ? "OSU_UI_VOLUME_SLIDER_BLOCK_1" : (m_type == TYPE::MUSIC ? "OSU_UI_VOLUME_SLIDER_MUSIC_1" : "OSU_UI_VOLUME_SLIDER_EFFECTS_1"));
+		img = resourceManager->getImage(m_type == TYPE::MASTER ? "OSU_UI_VOLUME_SLIDER_BLOCK_1" : (m_type == TYPE::MUSIC ? "OSU_UI_VOLUME_SLIDER_MUSIC_1" : "OSU_UI_VOLUME_SLIDER_EFFECTS_1"));
 
 	g->pushTransform();
 	{

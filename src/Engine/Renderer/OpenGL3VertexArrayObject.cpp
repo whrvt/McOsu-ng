@@ -7,7 +7,7 @@
 
 #include "OpenGL3VertexArrayObject.h"
 
-#ifdef MCENGINE_FEATURE_OPENGL
+#ifdef MCENGINE_FEATURE_GL3
 
 #include "Engine.h"
 #include "OpenGL3Interface.h"
@@ -27,7 +27,7 @@ void OpenGL3VertexArrayObject::init()
 {
 	if (m_vertices.size() < 2) return;
 
-	OpenGL3Interface *g = (OpenGL3Interface*)engine->getGraphics();
+	OpenGL3Interface *g = (OpenGL3Interface*)graphics;
 
 	// backup vao
 	int vaoBackup = 0;
@@ -98,8 +98,8 @@ void OpenGL3VertexArrayObject::draw()
 		return;
 	}
 
-	int start = clamp<int>(nearestMultipleUp((int)(m_iNumVertices*m_fDrawPercentFromPercent), m_iDrawPercentNearestMultiple), 0, m_iNumVertices); // HACKHACK: osu sliders
-	int end = clamp<int>(nearestMultipleDown((int)(m_iNumVertices*m_fDrawPercentToPercent), m_iDrawPercentNearestMultiple), 0, m_iNumVertices); // HACKHACK: osu sliders
+	int start = std::clamp<int>(nearestMultipleUp((int)(m_iNumVertices*m_fDrawPercentFromPercent), m_iDrawPercentNearestMultiple), 0, m_iNumVertices); // HACKHACK: osu sliders
+	int end = std::clamp<int>(nearestMultipleDown((int)(m_iNumVertices*m_fDrawPercentToPercent), m_iDrawPercentNearestMultiple), 0, m_iNumVertices); // HACKHACK: osu sliders
 
 	if (start > end || std::abs(end-start) == 0)
 		return;

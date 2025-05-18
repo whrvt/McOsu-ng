@@ -36,7 +36,7 @@ int OsuUISongBrowserButton::marginPixelsY = 9;
 float OsuUISongBrowserButton::lastHoverSoundTime = 0;
 int OsuUISongBrowserButton::sortHackCounter = 0;
 
-// Color OsuUISongBrowserButton::inactiveDifficultyBackgroundColor = COLOR(255, 0, 150, 236); // blue
+// Color OsuUISongBrowserButton::inactiveDifficultyBackgroundColor = rgb(0, 150, 236); // blue
 
 OsuUISongBrowserButton::OsuUISongBrowserButton(Osu *osu, OsuSongBrowser2 *songBrowser, CBaseUIScrollView *view, OsuUIContextMenu *contextMenu, float xPos, float yPos, float xSize, float ySize, UString name) : CBaseUIButton(xPos, yPos, xSize, ySize, name, "")
 {
@@ -146,7 +146,7 @@ void OsuUISongBrowserButton::update()
 
 	// HACKHACK: this should really be part of the UI base
 	// right click detection
-	if (engine->getMouse()->isRightDown())
+	if (mouse->isRightDown())
 	{
 		if (!m_bRightClickCheck)
 		{
@@ -183,10 +183,10 @@ void OsuUISongBrowserButton::updateLayoutEx()
 
 	if (m_bVisible) // lag prevention (animationHandler overflow)
 	{
-		const float centerOffsetAnimationTarget = 1.0f - clamp<float>(std::abs((m_vPos.y+(m_vSize.y/2)-m_view->getPos().y-m_view->getSize().y/2)/(m_view->getSize().y/2)), 0.0f, 1.0f);
+		const float centerOffsetAnimationTarget = 1.0f - std::clamp<float>(std::abs((m_vPos.y+(m_vSize.y/2)-m_view->getPos().y-m_view->getSize().y/2)/(m_view->getSize().y/2)), 0.0f, 1.0f);
 		anim->moveQuadOut(&m_fCenterOffsetAnimation, centerOffsetAnimationTarget, 0.5f, true);
 
-		float centerOffsetVelocityAnimationTarget = clamp<float>((std::abs(m_view->getVelocity().y))/3500.0f, 0.0f, 1.0f);
+		float centerOffsetVelocityAnimationTarget = std::clamp<float>((std::abs(m_view->getVelocity().y))/3500.0f, 0.0f, 1.0f);
 
 		if (m_songBrowser->isRightClickScrolling())
 			centerOffsetVelocityAnimationTarget = 0.0f;
@@ -213,7 +213,7 @@ void OsuUISongBrowserButton::updateLayoutEx()
 	}
 
 	float offsetX = minOffset - m_view->getSize().x*(percentCenterOffsetAnimation*m_fCenterOffsetAnimation*(1.0f - m_fCenterOffsetVelocityAnimation) + percentHoverOffsetAnimation*m_fHoverOffsetAnimation - percentVelocityOffsetAnimation*m_fCenterOffsetVelocityAnimation + m_fOffsetPercent);
-	offsetX = clamp<float>(offsetX, 0.0f, m_view->getSize().x - getActualSize().x*0.15f); // WARNING: hardcoded to match 0.85f above for buttonWidthCompensation
+	offsetX = std::clamp<float>(offsetX, 0.0f, m_view->getSize().x - getActualSize().x*0.15f); // WARNING: hardcoded to match 0.85f above for buttonWidthCompensation
 
 	setRelPosX(offsetX);
 	setRelPosY(m_fTargetRelPosY + getSize().y*0.125f*m_fHoverMoveAwayAnimation);
@@ -231,7 +231,7 @@ OsuUISongBrowserButton *OsuUISongBrowserButton::setVisible(bool visible)
 		m_fCenterOffsetAnimation = 1.0f;
 		m_fHoverOffsetAnimation = 0.0f;
 
-		float centerOffsetVelocityAnimationTarget = clamp<float>((std::abs(m_view->getVelocity().y)) / 3500.0f, 0.0f, 1.0f);
+		float centerOffsetVelocityAnimationTarget = std::clamp<float>((std::abs(m_view->getVelocity().y)) / 3500.0f, 0.0f, 1.0f);
 
 		if (m_songBrowser->isRightClickScrolling())
 			centerOffsetVelocityAnimationTarget = 0.0f;
@@ -268,7 +268,7 @@ void OsuUISongBrowserButton::resetAnimations()
 
 void OsuUISongBrowserButton::onClicked()
 {
-	engine->getSound()->play(m_osu->getSkin()->getMenuClick());
+	soundEngine->play(m_osu->getSkin()->getMenuClick());
 
 	CBaseUIButton::onClicked();
 
@@ -283,7 +283,7 @@ void OsuUISongBrowserButton::onMouseInside()
 	if (engine->getTime() > lastHoverSoundTime + 0.05f) // to avoid earraep
 	{
 		if (engine->hasFocus())
-			engine->getSound()->play(m_osu->getSkin()->getMenuClick());
+			soundEngine->play(m_osu->getSkin()->getMenuClick());
 
 		lastHoverSoundTime = engine->getTime();
 	}
@@ -387,10 +387,10 @@ void OsuUISongBrowserButton::setMoveAwayState(OsuUISongBrowserButton::MOVE_AWAY_
 
 Color OsuUISongBrowserButton::getActiveBackgroundColor() const
 {
-	return COLOR(clamp<int>(osu_songbrowser_button_active_color_a.getInt(), 0, 255), clamp<int>(osu_songbrowser_button_active_color_r.getInt(), 0, 255), clamp<int>(osu_songbrowser_button_active_color_g.getInt(), 0, 255), clamp<int>(osu_songbrowser_button_active_color_b.getInt(), 0, 255));
+	return argb(std::clamp<int>(osu_songbrowser_button_active_color_a.getInt(), 0, 255), std::clamp<int>(osu_songbrowser_button_active_color_r.getInt(), 0, 255), std::clamp<int>(osu_songbrowser_button_active_color_g.getInt(), 0, 255), std::clamp<int>(osu_songbrowser_button_active_color_b.getInt(), 0, 255));
 }
 
 Color OsuUISongBrowserButton::getInactiveBackgroundColor() const
 {
-	return COLOR(clamp<int>(osu_songbrowser_button_inactive_color_a.getInt(), 0, 255), clamp<int>(osu_songbrowser_button_inactive_color_r.getInt(), 0, 255), clamp<int>(osu_songbrowser_button_inactive_color_g.getInt(), 0, 255), clamp<int>(osu_songbrowser_button_inactive_color_b.getInt(), 0, 255));
+	return argb(std::clamp<int>(osu_songbrowser_button_inactive_color_a.getInt(), 0, 255), std::clamp<int>(osu_songbrowser_button_inactive_color_r.getInt(), 0, 255), std::clamp<int>(osu_songbrowser_button_inactive_color_g.getInt(), 0, 255), std::clamp<int>(osu_songbrowser_button_inactive_color_b.getInt(), 0, 255));
 }

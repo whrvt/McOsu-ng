@@ -12,12 +12,8 @@
 #define DISCORD_APPID "0"
 #define DISCORD_STEAMWORKS_APPID "0"
 
-DiscordInterface *discord = NULL;
-
 DiscordInterface::DiscordInterface()
 {
-	discord = this;
-
 	m_bReady = false;
 
 	if (engine->getArgs().length() > 0 && engine->getArgs().find("nodiscord") != -1) return;

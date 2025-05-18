@@ -57,7 +57,7 @@ CBaseUITextField *CBaseUITextField::append(UString text)
 
 CBaseUITextField::TextObject::TextObject(float xPos, float yPos, float xSize, float ySize, UString text) : CBaseUIElement(xPos,yPos,xSize,ySize,"")
 {
-	m_font = engine->getResourceManager()->getFont("FONT_DEFAULT");
+	m_font = resourceManager->getFont("FONT_DEFAULT");
 
 	// colors
 	m_textColor = 0xffffffff;

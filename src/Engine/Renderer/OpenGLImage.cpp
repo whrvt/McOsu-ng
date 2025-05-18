@@ -7,7 +7,7 @@
 
 #include "OpenGLImage.h"
 
-#if defined(MCENGINE_FEATURE_OPENGL) || defined (MCENGINE_FEATURE_GLES2) || defined(MCENGINE_FEATURE_GLES32)
+#if defined(MCENGINE_FEATURE_OPENGL) || defined (MCENGINE_FEATURE_GLES2) || defined(MCENGINE_FEATURE_GLES32) || defined(MCENGINE_FEATURE_GL3)
 
 #include "ResourceManager.h"
 #include "Environment.h"
@@ -38,31 +38,14 @@ void OpenGLImage::init()
 	{
 		// DEPRECATED LEGACY (1)
 		glEnable(GL_TEXTURE_2D);
-		// glGetError(); // clear gl error state
 
 		// create texture and bind
 		glGenTextures(1, &m_GLTexture);
 		glBindTexture(GL_TEXTURE_2D, m_GLTexture);
 
-		// DEPRECATED LEGACY (2)
-		// glEnable(GL_TEXTURE_2D);
-		// glGetError(); // clear gl error state
-
 		// set texture filtering mode (mipmapping is disabled by default)
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, m_bMipmapped ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-#ifdef MCENGINE_FEATURE_OPENGL
-
-		// TODO: wtf, why is this even here? causes texture atlas uv cracks/bleeding on point sampled meshes
-		/*
-		GLfloat maxAnisotropy;
-		glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &maxAnisotropy);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, maxAnisotropy);
-		glGetError(); // clear gl error state (env LIBGL_ALWAYS_SOFTWARE=1 and mesa would break textures otherwise)
-		*/
-
-#endif
 
 		// texture wrapping, defaults to clamp
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -88,21 +71,13 @@ void OpenGLImage::init()
 		glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, m_iWidth, m_iHeight, 0, format, GL_UNSIGNED_BYTE, &m_rawImage[0]);
 		if (m_bMipmapped)
 		{
-			// // DEPRECATED LEGACY (1) (ignore mipmap generation errors)
-			// GLerror = (GLerror == 0 ? glGetError() : GLerror);
-
 			glGenerateMipmap(GL_TEXTURE_2D);
-
-			// // DEPRECATED LEGACY (2)
-			// glGetError(); // clear gl error state
 		}
 
 		if (m_type == Image::TYPE::TYPE_JPG && prevUnpackAlignment != jpgUnpackAlignment)
 			glPixelStorei(GL_UNPACK_ALIGNMENT, prevUnpackAlignment);
 	}
 
-	// check for errors
-	//GLerror = (GLerror == 0 ? glGetError() : GLerror);
 	if (m_rawImage.empty())
 	{
 		auto GLerror = glGetError();
@@ -160,10 +135,8 @@ void OpenGLImage::bind(unsigned int textureUnit)
 	// set texture
 	glBindTexture(GL_TEXTURE_2D, m_GLTexture);
 
-	// needed for legacy support (OpenGLLegacyInterface)
-	// DEPRECATED LEGACY
+	// DEPRECATED LEGACY (2)
 	glEnable(GL_TEXTURE_2D);
-	//glGetError(); // clear gl error state
 }
 
 void OpenGLImage::unbind()
@@ -229,9 +202,7 @@ void OpenGLImage::setWrapMode(Graphics::WRAP_MODE wrapMode)
 
 void OpenGLImage::handleGLErrors()
 {
-	// int GLerror = glGetError();
-	// if (GLerror != 0)
-	// 	debugLog("OpenGL Image Error: %i on file %s!\n", GLerror, m_sFilePath.toUtf8());
+	// no
 }
 
 #endif

@@ -1,6 +1,6 @@
 //================ Copyright (c) 2015, PG, All rights reserved. =================//
 //
-// Purpose:		a collection of all necessary OpenGL header files
+// Purpose:		a collection of all necessary OpenGL header files (and related)
 //
 // $NoKeywords: $glh
 //===============================================================================//
@@ -28,6 +28,10 @@
 
 #endif
 
+#ifdef __EMSCRIPTEN__
+#include <GL/glew.h>
+#endif
+
 #ifdef __linux__
 
 #define GLEW_STATIC
@@ -48,11 +52,46 @@
 
 #endif
 
-#ifdef __SWITCH__
+#define GPU_MEMORY_INFO_DEDICATED_VIDMEM_NVX			0x9047
+#define GPU_MEMORY_INFO_TOTAL_AVAILABLE_MEMORY_NVX		0x9048
+#define GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX	0x9049
 
-#include <EGL/egl.h>
-#include <GLES2/gl2.h>
+#define VBO_FREE_MEMORY_ATI								0x87FB
+#define TEXTURE_FREE_MEMORY_ATI							0x87FC
+#define RENDERBUFFER_FREE_MEMORY_ATI					0x87FD
 
+#ifdef MCENGINE_FEATURE_OPENGL
+	#include "OpenGLLegacyInterface.h"
+	#include "OpenGLVertexArrayObject.h"
+	#include "OpenGLShader.h"
+
+	using BackendGLInterface = OpenGLLegacyInterface;
+	using BackendGLVAO = OpenGLVertexArrayObject;
+	using BackendGLShader = OpenGLShader;
+#elif defined(MCENGINE_FEATURE_GLES2)
+	#include "OpenGLES2Interface.h"
+	#include "OpenGLES2VertexArrayObject.h"
+	#include "OpenGLES2Shader.h"
+
+	using BackendGLInterface = OpenGLES2Interface;
+	using BackendGLVAO = OpenGLES2VertexArrayObject;
+	using BackendGLShader = OpenGLES2Shader;
+#elif defined(MCENGINE_FEATURE_GLES32)
+	#include "OpenGLES32Interface.h"
+	#include "OpenGLES32VertexArrayObject.h"
+	#include "OpenGLES32Shader.h"
+
+	using BackendGLInterface = OpenGLES32Interface;
+	using BackendGLVAO = OpenGLES32VertexArrayObject;
+	using BackendGLShader = OpenGLES32Shader;
+#elif defined(MCENGINE_FEATURE_GL3)
+	#include "OpenGL3Interface.h"
+	#include "OpenGL3VertexArrayObject.h"
+	#include "OpenGLShader.h"
+
+	using BackendGLInterface = OpenGL3Interface;
+	using BackendGLVAO = OpenGL3VertexArrayObject;
+	using BackendGLShader = OpenGLShader;
 #endif
 
 #endif

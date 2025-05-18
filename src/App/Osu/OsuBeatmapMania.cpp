@@ -136,20 +136,20 @@ void OsuBeatmapMania::update()
 	m_vPlayfieldCenter.y = m_vPlayfieldSize.y / 2.0f;
 
 	// handle mouse 3d rotation
-	if (engine->getKeyboard()->isControlDown())
+	if (keyboard->isControlDown())
 	{
-		Vector2 delta = engine->getMouse()->getPos() - m_vMouseBackup;
-		m_vMouseBackup = engine->getMouse()->getPos();
+		Vector2 delta = mouse->getPos() - m_vMouseBackup;
+		m_vMouseBackup = mouse->getPos();
 
 		if (!anim->isAnimating(&m_vRotation.x) && !anim->isAnimating(&m_vRotation.y) && !anim->isAnimating(&m_fZoom))
 		{
-			if (engine->getMouse()->isLeftDown())
+			if (mouse->isLeftDown())
 				m_vRotation += delta*0.5f;
-			if (engine->getMouse()->isMiddleDown())
+			if (mouse->isMiddleDown())
 				m_fZoom += delta.y*0.5f;
 		}
 	}
-	if (engine->getMouse()->isRightDown() && !anim->isAnimating(&m_vRotation.x) && !anim->isAnimating(&m_vRotation.y) && !anim->isAnimating(&m_fZoom) && (m_vRotation.x != 0.0f || m_vRotation.y != 0.0f || m_fZoom != 0.0f))
+	if (mouse->isRightDown() && !anim->isAnimating(&m_vRotation.x) && !anim->isAnimating(&m_vRotation.y) && !anim->isAnimating(&m_fZoom) && (m_vRotation.x != 0.0f || m_vRotation.y != 0.0f || m_fZoom != 0.0f))
 	{
 		anim->moveQuadInOut(&m_vRotation.x, 0.0f, 1.0f, 0.0f, true);
 		anim->moveQuadInOut(&m_vRotation.y, 0.0f, 1.0f, 0.0f, true);

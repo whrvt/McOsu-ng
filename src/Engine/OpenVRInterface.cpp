@@ -191,7 +191,7 @@ OpenVRInterface::OpenVRInterface()
 	// initialize shared stuff which is the same across all VR runtimes, but which shouldn't/doesn't have to be initialized on non-vr builds
 
 	// TEMP:
-	//engine->getResourceManager()->loadImage("osu_blue.png", "vrhead", true);
+	//resourceManager->loadImage("osu_blue.png", "vrhead", true);
 
 	// convar callbacks
 	vr_ss.setCallback(fastdelegate::MakeDelegate(this, &OpenVRInterface::onSSChange));
@@ -240,8 +240,7 @@ OpenVRInterface::OpenVRInterface()
 		return;
 
 	if constexpr (Env::cfg(REND::DX11))
-		if (dynamic_cast<DirectX11Interface*>(engine->getGraphics()) != NULL)
-			return;
+		return;
 
 	// check if openvr runtime is installed
 	if (!vr::VR_IsRuntimeInstalled())
@@ -322,7 +321,7 @@ OpenVRInterface::OpenVRInterface()
 	windowTitle.append(m_sTrackingSystemName);
 	windowTitle.append(" ");
 	windowTitle.append(UString::format("%s", m_strDisplay.c_str()));
-	engine->getEnvironment()->setWindowTitle(windowTitle);
+	env->setWindowTitle(windowTitle);
 
 	if (m_sTrackingSystemName == "null") // autodetect SteamVR null driver when debugging
 	{
@@ -336,7 +335,7 @@ OpenVRInterface::OpenVRInterface()
 	loadFakeCamera();
 
 	// listen to keyboard events for debug + spectator cam movement
-	engine->getKeyboard()->addListener(this);
+	keyboard->addListener(this);
 
 	// engine setting overrides
 	convar->getConVarByName("fps_unlimited")->setValue(1.0f); // VR applications shouldn't depend on being in the foreground (e.g. SteamVR status window is in foreground)
@@ -487,12 +486,12 @@ bool OpenVRInterface::initRenderTargets()
 	else if (vr_aa.getInt() > 0)
 		multisampleType = Graphics::MULTISAMPLE_TYPE::MULTISAMPLE_2X;
 
-	Color clearColor = COLORf(0.0f, vr_background_brightness.getFloat(), vr_background_brightness.getFloat(), vr_background_brightness.getFloat() + (vr_background_brightness.getFloat() > 0.0f ? 0.03f : 0.0f));
+	Color clearColor = argb(0.0f, vr_background_brightness.getFloat(), vr_background_brightness.getFloat(), vr_background_brightness.getFloat() + (vr_background_brightness.getFloat() > 0.0f ? 0.03f : 0.0f));
 
 	// both eyes
 	if (m_leftEye == NULL)
 	{
-		m_leftEye = engine->getResourceManager()->createRenderTarget(finalRenderTargetWidth, finalRenderTargetHeight, multisampleType);
+		m_leftEye = resourceManager->createRenderTarget(finalRenderTargetWidth, finalRenderTargetHeight, multisampleType);
 		m_leftEye->setClearColorOnDraw(true);
 		m_leftEye->setClearDepthOnDraw(true);
 		m_leftEye->setClearColor(clearColor);
@@ -502,7 +501,7 @@ bool OpenVRInterface::initRenderTargets()
 
 	if (m_rightEye == NULL)
 	{
-		m_rightEye = engine->getResourceManager()->createRenderTarget(finalRenderTargetWidth, finalRenderTargetHeight, multisampleType);
+		m_rightEye = resourceManager->createRenderTarget(finalRenderTargetWidth, finalRenderTargetHeight, multisampleType);
 		m_rightEye->setClearColorOnDraw(true);
 		m_rightEye->setClearDepthOnDraw(true);
 		m_rightEye->setClearColor(clearColor);
@@ -512,14 +511,14 @@ bool OpenVRInterface::initRenderTargets()
 
 	// compositor temporary (for dynamic ss)
 	if (m_compositorEye1 == NULL)
-		m_compositorEye1 = engine->getResourceManager()->createRenderTarget(finalCompositorRenderTargetWidth, finalCompositorRenderTargetHeight);
+		m_compositorEye1 = resourceManager->createRenderTarget(finalCompositorRenderTargetWidth, finalCompositorRenderTargetHeight);
 	else if (m_bSteamVRBugWorkaroundCompositorSSChangeAllowed)
 		m_compositorEye1->rebuild(finalCompositorRenderTargetWidth, finalCompositorRenderTargetHeight);
 
 	if (vr_compositor_submit_double.getBool())
 	{
 		if (m_compositorEye2 == NULL)
-			m_compositorEye2 = engine->getResourceManager()->createRenderTarget(finalCompositorRenderTargetWidth, finalCompositorRenderTargetHeight);
+			m_compositorEye2 = resourceManager->createRenderTarget(finalCompositorRenderTargetWidth, finalCompositorRenderTargetHeight);
 		else if (m_bSteamVRBugWorkaroundCompositorSSChangeAllowed)
 			m_compositorEye2->rebuild(finalCompositorRenderTargetWidth, finalCompositorRenderTargetHeight);
 	}
@@ -527,7 +526,7 @@ bool OpenVRInterface::initRenderTargets()
 	// engine overlay
 	if (m_debugOverlay == NULL)
 	{
-		m_debugOverlay = engine->getResourceManager()->createRenderTarget(engine->getScreenWidth(), engine->getScreenHeight());
+		m_debugOverlay = resourceManager->createRenderTarget(engine->getScreenWidth(), engine->getScreenHeight());
 		m_debugOverlay->setClearColorOnDraw(true);
 	}
 
@@ -536,7 +535,7 @@ bool OpenVRInterface::initRenderTargets()
 
 bool OpenVRInterface::initShaders()
 {
-	m_genericTexturedShader = engine->getResourceManager()->createShader(
+	m_genericTexturedShader = resourceManager->createShader(
 
 			// vertex Shader
 			"#version 110\n"
@@ -558,7 +557,7 @@ bool OpenVRInterface::initShaders()
 			"}\n"
 	);
 
-	m_genericUntexturedShader = engine->getResourceManager()->createShader(
+	m_genericUntexturedShader = resourceManager->createShader(
 
 			// vertex Shader
 			"#version 110\n"
@@ -577,7 +576,7 @@ bool OpenVRInterface::initShaders()
 			"}\n"
 	);
 
-	m_controllerAxisShader = engine->getResourceManager()->createShader(
+	m_controllerAxisShader = resourceManager->createShader(
 
 			// vertex shader
 			"#version 410\n"
@@ -601,7 +600,7 @@ bool OpenVRInterface::initShaders()
 			"}\n"
 	);
 
-	m_renderModelShader = engine->getResourceManager()->createShader(
+	m_renderModelShader = resourceManager->createShader(
 
 			// vertex shader
 			"#version 410\n"
@@ -860,7 +859,7 @@ void OpenVRInterface::renderScene(Graphics *g,  Matrix4 &matCurrentEye, Matrix4 
 			if (trackedDeviceClass == vr::TrackedDeviceClass_Controller)
 			{
 				m_renderModelShader->setUniform1f("brightness", (trackedDeviceClass == vr::TrackedDeviceClass_Controller ? vr_controller_model_brightness_multiplier.getFloat() : 1.0f));
-				m_renderModelShader->setUniform3f("colorOverride", COLOR_GET_Rf(m_controllerColorOverride), COLOR_GET_Gf(m_controllerColorOverride), COLOR_GET_Bf(m_controllerColorOverride));
+				m_renderModelShader->setUniform3f("colorOverride", Rf(m_controllerColorOverride), Gf(m_controllerColorOverride), Bf(m_controllerColorOverride));
 			}
 			else
 			{
@@ -991,7 +990,7 @@ void OpenVRInterface::renderScene(Graphics *g,  Matrix4 &matCurrentEye, Matrix4 
 			Matrix4 vrheadmatrix = m_matCurrentMVP * headMatrix.invert();
 			m_genericTexturedShader->setUniformMatrix4fv("matrix", vrheadmatrix);
 
-			Image *vrHeadImage = engine->getResourceManager()->getImage("vrhead");
+			Image *vrHeadImage = resourceManager->getImage("vrhead");
 			vrHeadImage->bind();
 
 			VertexArrayObject ovao(Graphics::PRIMITIVE::PRIMITIVE_QUADS);
@@ -1241,13 +1240,13 @@ void OpenVRInterface::update()
 		// rotation
 		if (m_bCaptureMouse)
 		{
-			Vector2 rawDelta = engine->getMouse()->getDelta();
+			Vector2 rawDelta = mouse->getDelta();
 			if (rawDelta.x != 0.0f || rawDelta.y != 0.0f)
 			{
 				m_fakeCamera->rotateX(rawDelta.y*vr_mousespeed.getFloat());
 				m_fakeCamera->rotateY(-rawDelta.x*vr_mousespeed.getFloat());
 			}
-			engine->getMouse()->setPos(engine->getScreenSize() - Vector2(2, 2)); // HACKHACK: works ok-ish for now
+			mouse->setPos(engine->getScreenSize() - Vector2(2, 2)); // HACKHACK: works ok-ish for now
 		}
 
 		// translation
@@ -1275,7 +1274,7 @@ void OpenVRInterface::update()
 		// fake controller
 		if (vr_fake_controller_movement.getBool())
 		{
-			m_controller->updateDebug(engine->getMouse()->isLeftDown() ? 1.0f : 0.0f);
+			m_controller->updateDebug(mouse->isLeftDown() ? 1.0f : 0.0f);
 			m_controller->updateMatrixPoseDebug(-m_fakeCamera->getPos(), -m_fakeCamera->getViewDirection(), m_fakeCamera->getViewUp(), -m_fakeCamera->getViewRight());
 		}
 
@@ -1307,7 +1306,7 @@ void OpenVRInterface::onKeyDown(KeyboardEvent &e)
 	}
 
 	// toggle fake camera on ALT + C
-	if (e == KEY_C && engine->getKeyboard()->isAltDown())
+	if (e == KEY_C && keyboard->isAltDown())
 		toggleFakeCameraMouseCapture();
 
 	// always release fake camera mouse capture on ESC
@@ -1857,7 +1856,7 @@ void OpenVRInterface::onBackgroundBrightnessChange(UString oldValue, UString new
 {
 	if (!m_bReady) return;
 
-	Color clearColor = COLORf(0.0f, vr_background_brightness.getFloat(), vr_background_brightness.getFloat(), vr_background_brightness.getFloat() + (vr_background_brightness.getFloat() > 0.0f ? 0.03f : 0.0f));
+	Color clearColor = argb(0.0f, vr_background_brightness.getFloat(), vr_background_brightness.getFloat(), vr_background_brightness.getFloat() + (vr_background_brightness.getFloat() > 0.0f ? 0.03f : 0.0f));
 
 	m_leftEye->setClearColor(clearColor);
 	m_rightEye->setClearColor(clearColor);
@@ -1900,14 +1899,14 @@ void OpenVRInterface::toggleFakeCameraMouseCapture()
 	m_bCaptureMouse = !m_bCaptureMouse;
 	if (m_bCaptureMouse)
 	{
-		engine->getMouse()->setCursorVisible(false);
-		engine->getEnvironment()->setCursorClip(true, McRect());
+		mouse->setCursorVisible(false);
+		env->setCursorClip(true, McRect());
 	}
 	else
 	{
-		engine->getEnvironment()->setCursorClip(false, McRect());
-		engine->getMouse()->setCursorVisible(true);
-		engine->getMouse()->setPos(engine->getScreenSize()/2);
+		env->setCursorClip(false, McRect());
+		mouse->setCursorVisible(true);
+		mouse->setPos(engine->getScreenSize()/2.0f);
 
 		saveFakeCamera();
 	}

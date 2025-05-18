@@ -14,7 +14,7 @@
 #if defined(MCENGINE_FEATURE_OPENGL) || defined(MCENGINE_FEATURE_GLES32)
 #include <deque>
 
-#include "OpenGLHeaders.h"
+typedef struct __GLsync *GLsync;
 
 class OpenGLSync
 {

@@ -75,13 +75,13 @@ void OpenGLES2VertexArrayObject::draw()
 		return;
 	}
 
-	const int start = clamp<int>(nearestMultipleUp((int)(m_iNumVertices*m_fDrawPercentFromPercent), m_iDrawPercentNearestMultiple), 0, m_iNumVertices); // HACKHACK: osu sliders
-	const int end = clamp<int>(nearestMultipleDown((int)(m_iNumVertices*m_fDrawPercentToPercent), m_iDrawPercentNearestMultiple), 0, m_iNumVertices); // HACKHACK: osu sliders
+	const int start = std::clamp<int>(nearestMultipleUp((int)(m_iNumVertices*m_fDrawPercentFromPercent), m_iDrawPercentNearestMultiple), 0, m_iNumVertices); // HACKHACK: osu sliders
+	const int end = std::clamp<int>(nearestMultipleDown((int)(m_iNumVertices*m_fDrawPercentToPercent), m_iDrawPercentNearestMultiple), 0, m_iNumVertices); // HACKHACK: osu sliders
 
 	if (start > end || std::abs(end-start) == 0)
 		return;
 
-	OpenGLES2Interface *g = (OpenGLES2Interface*)engine->getGraphics();
+	OpenGLES2Interface *g = (OpenGLES2Interface*)graphics;
 
 	// bind
 	{

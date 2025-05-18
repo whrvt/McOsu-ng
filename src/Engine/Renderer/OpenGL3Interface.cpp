@@ -7,7 +7,7 @@
 
 #include "OpenGL3Interface.h"
 
-#ifdef MCENGINE_FEATURE_OPENGL
+#ifdef MCENGINE_FEATURE_GL3
 
 #include "Engine.h"
 #include "ConVar.h"
@@ -18,16 +18,9 @@
 #include "OpenGLRenderTarget.h"
 #include "OpenGLShader.h"
 #include "OpenGL3VertexArrayObject.h"
+#include "OpenGLStateCache.h"
 
 #include "OpenGLHeaders.h"
-
-#define GPU_MEMORY_INFO_DEDICATED_VIDMEM_NVX			0x9047
-#define GPU_MEMORY_INFO_TOTAL_AVAILABLE_MEMORY_NVX		0x9048
-#define GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX	0x9049
-
-#define VBO_FREE_MEMORY_ATI								0x87FB
-#define TEXTURE_FREE_MEMORY_ATI							0x87FC
-#define RENDERBUFFER_FREE_MEMORY_ATI					0x87FD
 
 OpenGL3Interface::OpenGL3Interface() : Graphics()
 {
@@ -86,52 +79,55 @@ void OpenGL3Interface::init()
 
 	//setWireframe(true);
 
-	UString texturedGenericV =	"#version 130\n"
-								"\n"
-								"in vec3 position;\n"
-								"in vec2 uv;\n"
-								"in vec4 vcolor;\n"
-								"out vec2 texcoords;\n"
-								"out vec4 texcolor;\n"
-								"\n"
-								"uniform int type;\n"
-								"uniform mat4 mvp;\n"
-								"\n"
-								"void main() {\n"
-								"	gl_Position =  mvp * vec4(position, 1.0);\n"
-								"	if (type == 1)\n"
-								"	{\n"
-								"		texcoords = uv;\n"
-								"	}\n"
-								"	else if (type == 2)\n"
-								"	{\n"
-								"		texcolor = vcolor;"
-								"	}\n"
-								"}\n"
-								"\n";
+	static constexpr auto texturedGenericV =
+R"(
+#version 130
 
-	UString texturedGenericP =	"#version 130\n"
-								"\n"
-								"out vec4 color;\n"
-								"in vec2 texcoords;\n"
-								"in vec4 texcolor;\n"
-								"\n"
-								"uniform int type;\n"
-								"uniform vec4 col;\n"
-								"uniform sampler2D tex;\n"
-								"\n"
-								"void main() {\n"
-								"	color = col;\n"
-								"	if (type == 1)\n"
-								"	{\n"
-								"		color = texture(tex, texcoords) * col;\n"
-								"	}\n"
-								"	else if (type == 2)\n"
-								"	{\n"
-								"		color = texcolor;"
-								"	}\n"
-								"}\n"
-								"\n";
+in vec3 position;
+in vec2 uv;
+in vec4 vcolor;
+out vec2 texcoords;
+out vec4 texcolor;
+
+uniform int type;
+uniform mat4 mvp;
+
+void main() {
+	gl_Position =  mvp * vec4(position, 1.0);
+	if (type == 1)
+	{
+		texcoords = uv;
+	}
+	else if (type == 2)
+	{
+		texcolor = vcolor;
+	}
+}
+)";
+
+	static constexpr auto texturedGenericP =
+R"(#version 130
+
+out vec4 color;
+in vec2 texcoords;
+in vec4 texcolor;
+
+uniform int type;
+uniform vec4 col;
+uniform sampler2D tex;
+
+void main() {
+	color = col;
+	if (type == 1)
+	{
+		color = texture(tex, texcoords) * col;
+	}
+	else if (type == 2)
+	{
+		color = texcolor;
+	}
+}
+)";
 	m_shaderTexturedGeneric = (OpenGLShader*)createShaderFromSource(texturedGenericV, texturedGenericP);
 	m_shaderTexturedGeneric->load();
 
@@ -161,6 +157,9 @@ void OpenGL3Interface::init()
 	glVertexAttribPointer(m_iShaderTexturedGenericAttribCol, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (GLvoid*)0);
 	glBufferData(GL_ARRAY_BUFFER, 512*sizeof(Vector4), NULL, GL_STREAM_DRAW);
 	glEnableVertexAttribArray(m_iShaderTexturedGenericAttribCol);
+
+	// initialize the state cache (TODO: use it, like legacy interface does)
+	OpenGLStateCache::getInstance().initialize();
 }
 
 void OpenGL3Interface::beginScene()
@@ -481,7 +480,7 @@ void OpenGL3Interface::drawVAO(VertexArrayObject *vao)
 
 	for (size_t i=0; i<vcolors.size(); i++)
 	{
-		Vector4 color = Vector4(COLOR_GET_Rf(vcolors[i]), COLOR_GET_Gf(vcolors[i]), COLOR_GET_Bf(vcolors[i]), COLOR_GET_Af(vcolors[i]));
+		Vector4 color = Vector4(Rf(vcolors[i]), Gf(vcolors[i]), Bf(vcolors[i]), Af(vcolors[i]));
 		colors.push_back(color);
 		finalColors.push_back(color);
 	}
@@ -515,9 +514,9 @@ void OpenGL3Interface::drawVAO(VertexArrayObject *vao)
 
 				if (colors.size() > 0)
 				{
-					finalColors.push_back(colors[clamp<int>(i + 0, 0, maxColorIndex)]);
-					finalColors.push_back(colors[clamp<int>(i + 1, 0, maxColorIndex)]);
-					finalColors.push_back(colors[clamp<int>(i + 2, 0, maxColorIndex)]);
+					finalColors.push_back(colors[std::clamp<int>(i + 0, 0, maxColorIndex)]);
+					finalColors.push_back(colors[std::clamp<int>(i + 1, 0, maxColorIndex)]);
+					finalColors.push_back(colors[std::clamp<int>(i + 2, 0, maxColorIndex)]);
 				}
 
 				finalVertices.push_back(vertices[i + 0]);
@@ -533,9 +532,9 @@ void OpenGL3Interface::drawVAO(VertexArrayObject *vao)
 
 				if (colors.size() > 0)
 				{
-					finalColors.push_back(colors[clamp<int>(i + 0, 0, maxColorIndex)]);
-					finalColors.push_back(colors[clamp<int>(i + 2, 0, maxColorIndex)]);
-					finalColors.push_back(colors[clamp<int>(i + 3, 0, maxColorIndex)]);
+					finalColors.push_back(colors[std::clamp<int>(i + 0, 0, maxColorIndex)]);
+					finalColors.push_back(colors[std::clamp<int>(i + 2, 0, maxColorIndex)]);
+					finalColors.push_back(colors[std::clamp<int>(i + 3, 0, maxColorIndex)]);
 				}
 			}
 		}
@@ -747,68 +746,6 @@ std::vector<unsigned char> OpenGL3Interface::getScreenshot()
 	// TODO
 	std::vector<unsigned char> temp;
 	return temp;
-}
-
-UString OpenGL3Interface::getVendor()
-{
-	// TODO
-	return UString("TODO");
-}
-
-UString OpenGL3Interface::getModel()
-{
-	// TODO
-	return UString("TODO");
-}
-
-UString OpenGL3Interface::getVersion()
-{
-	// TODO
-	return UString("-1");
-}
-
-int OpenGL3Interface::getVRAMTotal()
-{
-	int nvidiaMemory[4];
-	int atiMemory[4];
-	
-	for (int i=0; i<4; i++)
-	{
-		nvidiaMemory[i] = -1;
-		atiMemory[i] = -1;
-	}
-
-	glGetIntegerv(GPU_MEMORY_INFO_TOTAL_AVAILABLE_MEMORY_NVX, nvidiaMemory);
-	glGetIntegerv(TEXTURE_FREE_MEMORY_ATI, atiMemory);
-
-	//glGetError(); // clear error state
-
-	if (nvidiaMemory[0] < 1)
-		return atiMemory[0];
-	else
-		return nvidiaMemory[0];
-}
-
-int OpenGL3Interface::getVRAMRemaining()
-{
-	int nvidiaMemory[4];
-	int atiMemory[4];
-	
-	for (int i=0; i<4; i++)
-	{
-		nvidiaMemory[i] = -1;
-		atiMemory[i] = -1;
-	}
-
-	glGetIntegerv(GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX, nvidiaMemory);
-	glGetIntegerv(TEXTURE_FREE_MEMORY_ATI, atiMemory);
-
-	//glGetError(); // clear error state
-
-	if (nvidiaMemory[0] < 1)
-		return atiMemory[0];
-	else
-		return nvidiaMemory[0];
 }
 
 void OpenGL3Interface::onResolutionChange(Vector2 newResolution)
