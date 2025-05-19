@@ -8,21 +8,15 @@
 #include "Resource.h"
 #include "Engine.h"
 #include "Environment.h"
-#include "File.h"
 
 Resource::Resource(UString filepath)
 {
-	McFile checkFile(filepath, McFile::TYPE::CHECK);
-	if (checkFile.exists()) // does a case-insensitive check on non-windows platforms, different from env->fileExists
+	m_sFilePath = filepath;
+	if (!env->fileExists(m_sFilePath)) // modifies the input string if found
 	{
-		m_sFilePath = checkFile.getPath();
-	}
-	else
-	{
-		m_sFilePath = filepath;
 		UString errorMessage = "File does not exist: ";
-		errorMessage.append(filepath);
-		debugLog("Resource Warning: File %s does not exist!\n", filepath.toUtf8());
+		errorMessage.append(m_sFilePath);
+		debugLog("Resource Warning: File %s does not exist!\n", m_sFilePath.toUtf8());
 	}
 
 	m_bReady = false;

@@ -36,8 +36,8 @@ jobs:
         uses: actions/cache@v4
         with:
           path: |
-            ./build/deps
-            ./build/cache
+            ./build/build/deps
+            ./build/build/cache
           key: deps-linux-${{ matrix.arch }}-${{ hashFiles('Makefile.in') }}
           restore-keys: |
             deps-linux-${{ matrix.arch }}-

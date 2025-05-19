@@ -32,6 +32,7 @@ Mouse::Mouse() : InputDevice()
 	m_bLastFrameHadMotion = false;
 	m_bAbsolute = false;
 	m_bVirtualDesktop = false;
+	m_bIsRawInput = false;
 
 	m_vOffset = Vector2(0, 0);
 	m_vScale = Vector2(1, 1);
@@ -40,6 +41,10 @@ Mouse::Mouse() : InputDevice()
 	m_vActualPos = m_vPosWithoutOffset = m_vPos = env->getMousePos();
 
 	m_vFakeLagPos = m_vPos;
+
+	m_fSensitivity = 1.0f;
+	mouse_raw_input.setCallback(fastdelegate::MakeDelegate(this, &Mouse::onRawInputChanged));
+	mouse_sensitivity.setCallback(fastdelegate::MakeDelegate(this, &Mouse::onSensitivityChanged));
 }
 
 void Mouse::draw(Graphics *g)
@@ -154,7 +159,7 @@ void Mouse::update()
 void Mouse::onMotion(float x, float y, float xRel, float yRel, bool preTransformed)
 {
 	Vector2 newRel{xRel, yRel}, newAbs{x, y};
-	auto sens = mouse_sensitivity.getFloat();
+	auto sens = m_fSensitivity;
 
 	m_bAbsolute = true; // assume we don't have to lock the cursor
 
@@ -364,4 +369,15 @@ void Mouse::removeListener(MouseListener *mouseListener)
 			i--;
 		}
 	}
+}
+
+void Mouse::onRawInputChanged(float newval)
+{
+	m_bIsRawInput = !!static_cast<int>(newval);
+	env->notifyWantRawInput(m_bIsRawInput); // request environment to change the real OS cursor state (may or may not take effect immediately)
+}
+
+void Mouse::onSensitivityChanged(float newSens)
+{
+	m_fSensitivity = newSens;
 }

@@ -27,8 +27,16 @@ public:
 	enum class TYPE : uint8_t
 	{
 		READ,
-		WRITE,
-		CHECK
+		WRITE
+	};
+
+	enum class FILETYPE : uint8_t
+	{
+		NONE,
+		FILE,
+		FOLDER,
+		MAYBE_INSENSITIVE,
+		OTHER
 	};
 
 public:
@@ -46,16 +54,15 @@ public:
 
 	size_t getFileSize() const;
 	[[nodiscard]] inline UString getPath() const { return m_filePath; }
-	[[nodiscard]] inline bool exists() const { return m_bExists; }
-
+	[[nodiscard]] static McFile::FILETYPE existsCaseInsensitive(UString &filePath); // modifies the input string with the actual found (case-insensitive-past-last-slash) path!
+	[[nodiscard]] static McFile::FILETYPE exists(const UString &filePath);
 private:
-	// fallback for case-insensitive file finding (i.e. Skin.ini vs skin.ini)
-	bool tryFindCaseInsensitive(UString& filePath);
+	[[nodiscard]] static McFile::FILETYPE existsCaseInsensitive(UString &filePath, std::filesystem::path &path); // modifies the input string with the actual found (case-insensitive-past-last-slash) path!
+	[[nodiscard]] static McFile::FILETYPE exists(const UString &filePath, const std::filesystem::path &path);
 
 	UString m_filePath;
 	TYPE m_type;
 	bool m_ready;
-	bool m_bExists;
 	size_t m_fileSize;
 
 	// file streams

@@ -63,6 +63,7 @@ public:
 
 	inline Vector2 getOffset() const { return m_vOffset; }
 	inline Vector2 getScale() const { return m_vScale; }
+	inline float getSensitivity() const { return m_fSensitivity; }
 
 	// button state accessors
 	inline bool isLeftDown() const { return m_bMouseButtonDown[BUTTON_LEFT]; }
@@ -80,9 +81,14 @@ public:
 	bool isInAbsoluteMode() const { return m_bAbsolute; }
 	void setAbsoluteMode(bool absolute) { m_bAbsolute = absolute; }
 
+	bool isRawInput() const { return m_bIsRawInput; } // "desired" rawinput state, NOT actual OS raw input state!
 private:
 	void setPosXY(float x, float y);
 	void updateFakelagBuffer();
+
+	// callbacks
+	void onSensitivityChanged(float newSens);
+	void onRawInputChanged(float newVal);
 
 	// button mapping constants for internal array indexing
 	enum ButtonIndex
@@ -107,6 +113,8 @@ private:
 	bool m_bLastFrameHadMotion; // whether setPos was called in the previous frame
 	bool m_bAbsolute;                 // whether using absolute input (tablets)
 	bool m_bVirtualDesktop;           // whether using virtual desktop coordinates
+	bool m_bIsRawInput;			// whether raw input is active
+	float m_fSensitivity;
 
 	// button state (using our internal button index)
 	std::array<bool, BUTTON_COUNT> m_bMouseButtonDown;

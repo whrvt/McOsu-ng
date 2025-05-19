@@ -48,8 +48,11 @@ public:
 	[[nodiscard]] UString getLocalDataPath();
 
 	// file IO
-	[[nodiscard]] bool fileExists(UString filename) const;
-	[[nodiscard]] bool directoryExists(UString directoryName) const;
+	[[nodiscard]] static bool fileExists(UString &filename); // passthroughs to McFile
+	[[nodiscard]] static bool directoryExists(UString &directoryName);
+	[[nodiscard]] static bool fileExists(const UString &filename);
+	[[nodiscard]] static bool directoryExists(const UString &directoryName);
+
 	[[nodiscard]] bool createDirectory(UString directoryName) const;
 	bool renameFile(UString oldFileName, UString newFileName);
 	bool deleteFile(UString filePath);
@@ -91,9 +94,8 @@ public:
 	[[nodiscard]] Vector2 getWindowPos() const;
 	[[nodiscard]] Vector2 getWindowSize() const;
 	[[nodiscard]] int getMonitor() const;
-	[[nodiscard]] inline std::vector<McRect> getMonitors() const { return m_vMonitors; }
+	[[nodiscard]] std::map<unsigned int, McRect> getMonitors();
 	[[nodiscard]] Vector2 getNativeScreenSize() const;
-	[[nodiscard]] McRect getVirtualScreenRect() const;
 	[[nodiscard]] McRect getDesktopRect() const;
 	[[nodiscard]] McRect getWindowRect() const;
 	[[nodiscard]] bool isFullscreenWindowedBorderless() const { return m_bFullscreenWindowedBorderless; }
@@ -112,26 +114,26 @@ public:
 	void setCursor(CURSORTYPE cur);
 	void setCursorVisible(bool visible);
 	void setCursorClip(bool clip, McRect rect);
+	void notifyWantRawInput(bool raw); // enable/disable OS-level rawinput
 	inline void setMousePos(Vector2 pos)
 	{
 		m_vLastAbsMousePos = pos;
-		setCursorPosition();
+		setOSMousePos();
 	}
 	inline void setMousePos(float x, float y)
 	{
 		m_vLastAbsMousePos.x = x;
 		m_vLastAbsMousePos.y = y;
-		setCursorPosition();
+		setOSMousePos();
 	}
 
 	// keyboard
 	UString keyCodeToString(KEYCODE keyCode);
 	void listenToTextInput(bool listen);
 
+	// debug
+	[[nodiscard]] inline bool envDebug() const { return m_bEnvDebug; }
 protected:
-	inline void setCursorPosition() const { SDL_WarpMouseInWindow(m_window, m_vLastAbsMousePos.x, m_vLastAbsMousePos.y); }
-	inline void setCursorPosition(Vector2 pos) const { SDL_WarpMouseInWindow(m_window, pos.x, pos.y); }
-
 	Engine *m_engine;
 
 	SDL_Window *m_window;
@@ -142,6 +144,9 @@ protected:
 	bool m_bMinimized; // for fps_max_background
 	bool m_bHasFocus;  // for fps_max_background
 
+	inline void setOSMousePos() const { SDL_WarpMouseInWindow(m_window, m_vLastAbsMousePos.x, m_vLastAbsMousePos.y); }
+	inline void setOSMousePos(Vector2 pos) const { SDL_WarpMouseInWindow(m_window, pos.x, pos.y); }
+
 	// the absolute/relative mouse position from the most recent iteration of the event loop
 	// relative only useful if raw input is enabled, value is undefined/garbage otherwise
 	Vector2 m_vLastAbsMousePos;
@@ -149,16 +154,12 @@ protected:
 
 private:
 	// logging
-	[[nodiscard]] inline bool sdlDebug() const { return m_sdlDebug; }
-	inline bool sdlDebug(bool enable)
+	inline bool envDebug(bool enable)
 	{
-		m_sdlDebug = enable;
-		return m_sdlDebug;
+		m_bEnvDebug = enable;
+		return m_bEnvDebug;
 	}
-	static ConVar *debug_env;
 	void onLogLevelChange(float newval);
-
-	bool m_bIsRawInput;
 
 	// cache
 	UString m_sUsername;
@@ -167,17 +168,18 @@ private:
 	HWND m_hwnd;
 
 	// logging
-	bool m_sdlDebug;
+	bool m_bEnvDebug;
 
 	// monitors
-	std::vector<McRect> m_vMonitors;
+	void initMonitors(bool force = false);
+	std::map<unsigned int, McRect> m_mMonitors;
 
 	// window
 	bool m_bResizable;
 	bool m_bFullscreen;
 	bool m_bFullscreenWindowedBorderless;
-	inline void onFullscreenWindowBorderlessChange(UString oldValue, UString newValue) { setFullscreenWindowedBorderless(newValue.toFloat() > 0.0f); }
-	inline void onMonitorChange(UString oldValue, UString newValue) { setMonitor(newValue.toInt()); }
+	inline void onFullscreenWindowBorderlessChange(float newValue) { setFullscreenWindowedBorderless(!!static_cast<int>(newValue)); }
+	inline void onMonitorChange(float newValue) { setMonitor(static_cast<int>(newValue)); }
 
 	// mouse
 	bool m_bIsCursorInsideWindow;
@@ -187,14 +189,12 @@ private:
 	CURSORTYPE m_cursorType;
 	std::map<CURSORTYPE, SDL_Cursor *> m_mCursorIcons;
 
-	void onRawInputChange(float newval);
-	void setRawInput(bool on);
-
 	// clipboard
-	const char *m_sPrevClipboardTextSDL;
+	UString m_sCurrClipboardText;
 
 	// misc
 	inline void onProcessPriorityChange(float newValue) { SDL_SetCurrentThreadPriority(!!static_cast<int>(newValue) ? SDL_THREAD_PRIORITY_HIGH : SDL_THREAD_PRIORITY_NORMAL); }
+	void initCursors();
 
 private:
 	// SDL dialog callbacks/helpers

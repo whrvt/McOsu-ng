@@ -47,13 +47,14 @@
 
 extern std::atomic<float> osu_slider_border_feather;
 
-#define MCOSU_VERSION_TEXT "Version"
-#define MCOSU_BANNER_TEXT ""
+static constexpr auto MCOSU_VERSION_TEXT = "Version";
+static constexpr auto MCOSU_BANNER_TEXT = "";
+
 UString OsuMainMenu::MCOSU_MAIN_BUTTON_TEXT = UString(PACKAGE_NAME);
 UString OsuMainMenu::MCOSU_MAIN_BUTTON_SUBTEXT = UString("Practice Client");
-#define MCOSU_MAIN_BUTTON_BACK_TEXT "by McKay + spectator"
 
-#define MCOSU_NEWVERSION_NOTIFICATION_TRIGGER_FILE "version.txt"
+static constexpr auto MCOSU_MAIN_BUTTON_BACK_TEXT = "by McKay + spectator";
+static constexpr auto MCOSU_NEWVERSION_NOTIFICATION_TRIGGER_FILE = "version.txt";
 
 static constexpr auto s_sliderTextBeatmap =
 R"(osu file format v14

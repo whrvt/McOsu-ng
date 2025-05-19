@@ -352,7 +352,8 @@ SDL_AppResult SDLMain::handleEvent(SDL_Event *event)
 			break;
 
 		default:
-			debugLog("DEBUG: unhandled SDL window event %i\n", event->window.type);
+			if (envDebug())
+				debugLog("DEBUG: unhandled SDL window event %i\n", event->window.type);
 			break;
 		}
 		break;

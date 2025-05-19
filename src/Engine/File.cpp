@@ -12,9 +12,7 @@
 #include <filesystem>
 #include <utility>
 
-using std::filesystem::exists;
-using std::filesystem::is_regular_file;
-using std::filesystem::path;
+namespace fs = std::filesystem;
 
 ConVar debug_file("debug_file", false, FCVAR_NONE);
 ConVar file_size_max("file_size_max", 1024, FCVAR_NONE, "maximum filesize sanity limit in MB, all files bigger than this are not allowed to load");
@@ -22,34 +20,105 @@ ConVar file_size_max("file_size_max", 1024, FCVAR_NONE, "maximum filesize sanity
 ConVar *McFile::debug = &debug_file;
 ConVar *McFile::size_max = &file_size_max;
 
-McFile::McFile(UString filePath, TYPE type) : m_filePath(filePath), m_type(type), m_ready(false), m_fileSize(0), m_bExists(false)
+// modifies the input string with the actual found (case-insensitive-past-last-slash) path!
+McFile::FILETYPE McFile::existsCaseInsensitive(UString &filePath)
 {
-	if (filePath.isEmpty())
-		return;
+	auto fsPath = fs::path(filePath.plat_str());
+	return existsCaseInsensitive(filePath, fsPath);
+}
 
-	auto path = ::path(m_filePath.plat_str());
-	if (type == TYPE::CHECK || type == TYPE::READ)
+McFile::FILETYPE McFile::exists(const UString &filePath)
+{
+	const auto fsPath = fs::path(filePath.plat_str());
+	return exists(filePath, fsPath);
+}
+
+// internal use versions of the above, to prevent re-creating new fs::paths constantly
+McFile::FILETYPE McFile::existsCaseInsensitive(UString &filePath, fs::path &path)
+{
+	auto retType = McFile::exists(filePath, path);
+
+	if (retType == McFile::FILETYPE::NONE)
+		return McFile::FILETYPE::NONE;
+	else if (!(retType == McFile::FILETYPE::MAYBE_INSENSITIVE))
+		return retType; // direct match
+
+	if constexpr (Env::cfg(OS::WINDOWS)) // no point in continuing, windows is already case insensitive
+		return McFile::FILETYPE::NONE;
+
+	auto parentPath = path.parent_path();
+	auto filename = path.filename().string();
+
+	// don't try scanning all the way back to the root directory lol, that would be horrendous
+	if (!fs::exists(parentPath) || !fs::is_directory(parentPath))
+		return McFile::FILETYPE::NONE;
+
+	UString targetFilename(filename.c_str());
+
+	// now compare all of the directory entries case-insensitively to try finding it
+	for (const auto &entry : fs::directory_iterator(parentPath))
 	{
-		// case-insensitive lookup if exact match fails
-		if (!tryFindCaseInsensitive(m_filePath))
+		if (!entry.is_regular_file() && !entry.is_directory())
+			continue;
+
+		UString entryFilename(entry.path().filename().string().c_str());
+
+		if (entryFilename.equalsIgnoreCase(targetFilename))
 		{
-			if (debug_file.getBool()) // let the caller print that if it wants to
-				debugLog("File Error: Path %s does not exist\n", filePath.toUtf8());
-			return;
+			if (fs::is_regular_file(entry))
+				retType = McFile::FILETYPE::FILE;
+			else if (fs::is_directory(entry))
+				retType = McFile::FILETYPE::FOLDER;
+			else
+				retType = McFile::FILETYPE::OTHER;
+
+			filePath = UString(parentPath.string().c_str());
+			if (!filePath.endsWith('/') && !filePath.endsWith('\\'))
+				filePath.append('/');
+			filePath.append(entryFilename);
+
+			if (McFile::debug->getBool())
+				debugLog("File: Case-insensitive match found for %s -> %s\n", path.string().c_str(), filePath.toUtf8());
 		}
 	}
 
-	m_bExists = true;
+	if (retType == McFile::FILETYPE::MAYBE_INSENSITIVE)
+		return McFile::FILETYPE::NONE; // wasn't found event insensitively
 
-	if (type == TYPE::CHECK) // don't do anything else
-		return;
+	path = fs::path(filePath.plat_str()); // update filesystem path representation with found path
 
+	return retType;
+}
+
+McFile::FILETYPE McFile::exists(const UString &filePath, const fs::path &path)
+{
+	if (filePath.isEmpty())
+		return McFile::FILETYPE::NONE;
+
+	if (fs::exists(path))
+	{
+		if (fs::is_regular_file(path))
+			return McFile::FILETYPE::FILE;
+		else if (fs::is_directory(path))
+			return McFile::FILETYPE::FOLDER;
+		else
+			return McFile::FILETYPE::OTHER;
+	}
+
+	return McFile::FILETYPE::MAYBE_INSENSITIVE;
+}
+
+McFile::McFile(UString filePath, TYPE type) : m_filePath(filePath), m_type(type), m_ready(false), m_fileSize(0)
+{
 	if (type == TYPE::READ)
 	{
-		auto path = std::filesystem::path(m_filePath.plat_str());
-		if (!std::filesystem::is_regular_file(path))
+		auto path = fs::path(m_filePath.plat_str());
+		auto fileType = McFile::FILETYPE::NONE;
+
+		if ((fileType = existsCaseInsensitive(m_filePath, path)) != McFile::FILETYPE::FILE)
 		{
-			debugLog("File Error: %s is not a regular file\n", m_filePath.toUtf8());
+			if (McFile::debug->getBool()) // let the caller print that if it wants to
+				debugLog("File Error: Path %s %s\n", filePath.toUtf8(), fileType == McFile::FILETYPE::NONE ? "doesn't exist" : "is not a file");
 			return;
 		}
 
@@ -65,7 +134,7 @@ McFile::McFile(UString filePath, TYPE type) : m_filePath(filePath), m_type(type)
 		}
 
 		// get file size
-		m_fileSize = std::filesystem::file_size(path);
+		m_fileSize = fs::file_size(path);
 
 		// validate file size
 		if (!m_fileSize) // empty
@@ -94,11 +163,12 @@ McFile::McFile(UString filePath, TYPE type) : m_filePath(filePath), m_type(type)
 	}
 	else // WRITE
 	{
+		auto path = fs::path(m_filePath.plat_str());
 		// only try to create parent directories if there is a parent path
 		if (!path.parent_path().empty())
 		{
 			std::error_code ec;
-			std::filesystem::create_directories(path.parent_path(), ec);
+			fs::create_directories(path.parent_path(), ec);
 			if (ec)
 			{
 				debugLog("File Error: Couldn't create parent directories for %s (error: %s)\n", filePath.toUtf8(), ec.message().c_str());
@@ -126,12 +196,12 @@ McFile::McFile(UString filePath, TYPE type) : m_filePath(filePath), m_type(type)
 
 bool McFile::canRead() const
 {
-	return m_bExists && m_ready && m_ifstream && m_ifstream->good() && m_type == TYPE::READ;
+	return m_ready && m_ifstream && m_ifstream->good() && m_type == TYPE::READ;
 }
 
 bool McFile::canWrite() const
 {
-	return m_bExists && m_ready && m_ofstream && m_ofstream->good() && m_type == TYPE::WRITE;
+	return m_ready && m_ofstream && m_ofstream->good() && m_type == TYPE::WRITE;
 }
 
 void McFile::write(const char *buffer, size_t size)
@@ -197,47 +267,4 @@ const char *McFile::readFile()
 size_t McFile::getFileSize() const
 {
 	return m_fileSize;
-}
-
-bool McFile::tryFindCaseInsensitive(UString &filePath)
-{
-	auto path = std::filesystem::path(filePath.plat_str()); // direct match
-	if (std::filesystem::exists(path))
-		return true;
-
-	if constexpr (Env::cfg(OS::WINDOWS)) // no point in continuing, windows is already case insensitive
-		return false;
-
-	auto parentPath = path.parent_path();
-	auto filename = path.filename().string();
-
-	// don't try scanning all the way back to the root directory lol, that would be horrendous
-	if (!std::filesystem::exists(parentPath) || !std::filesystem::is_directory(parentPath))
-		return false;
-
-	UString targetFilename(filename.c_str());
-
-	// now compare all of the directory entries case-insensitively to try finding it
-	for (const auto &entry : std::filesystem::directory_iterator(parentPath))
-	{
-		if (!entry.is_regular_file())
-			continue;
-
-		UString entryFilename(entry.path().filename().string().c_str());
-
-		if (entryFilename.equalsIgnoreCase(targetFilename))
-		{
-			filePath = UString(parentPath.string().c_str());
-			if (!filePath.endsWith('/') && !filePath.endsWith('\\'))
-				filePath.append('/');
-			filePath.append(entryFilename);
-
-			if (McFile::debug->getBool())
-				debugLog("File: Case-insensitive match found for %s -> %s\n", path.string().c_str(), filePath.toUtf8());
-
-			return true;
-		}
-	}
-
-	return false;
 }

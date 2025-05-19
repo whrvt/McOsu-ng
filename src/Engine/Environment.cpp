@@ -13,6 +13,8 @@
 #include "NullContextMenu.h"
 #include "SDLGLInterface.h"
 
+#include "File.h"
+
 #if defined(MCENGINE_PLATFORM_WINDOWS)
 #include <lmcons.h>
 #include <windows.h>
@@ -29,12 +31,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
-
-// extern convars
-extern ConVar mouse_sensitivity;
-extern ConVar mouse_raw_input;
-
-extern ConVar _processpriority;
+#include <utility>
 
 // declarations
 static inline std::vector<UString> enumerateDirectory(const char *pathToEnum, SDL_PathType type);
@@ -42,12 +39,10 @@ static inline void winSortInPlace(std::vector<UString> &toSort);
 static void sensTransformFunc(void *userdata, Uint64 timestamp, SDL_Window *window, SDL_MouseID mouseID, float *x, float *y);
 
 // definitions
-ConVar debug_sdl("debug_sdl", false, FCVAR_NONE);
-ConVar _debug_env("debug_env", false, FCVAR_NONE);
+ConVar debug_env("debug_env", false, FCVAR_NONE);
 ConVar _fullscreen_windowed_borderless_("fullscreen_windowed_borderless", false, FCVAR_NONE);
 ConVar _monitor_("monitor", 0, FCVAR_NONE, "monitor/display device to switch to, 0 = primary monitor");
-
-ConVar *Environment::debug_env = &_debug_env;
+ConVar _processpriority("processpriority", 0, FCVAR_NONE, "sets the main process priority (0 = normal, 1 = high)");
 
 Environment *env = nullptr;
 
@@ -63,8 +58,7 @@ Environment::Environment()
 	m_bHasFocus = true;   // for fps_max_background
 	m_bFullscreenWindowedBorderless = false;
 
-	m_bIsRawInput = false;
-	m_bCursorVisible = false;
+	m_bEnvDebug = false;
 
 	m_bResizable = false;
 	m_bFullscreen = false;
@@ -79,38 +73,18 @@ Environment::Environment()
 	m_bCursorClipped = false;
 	m_cursorType = CURSORTYPE::CURSOR_NORMAL;
 
+	// lazy init
+	m_mCursorIcons = {};
+
 	m_vLastAbsMousePos = Vector2{};
 	m_vLastRelMousePos = Vector2{};
 
-	// create sdl system cursor map
-	m_mCursorIcons = {
-	    {CURSORTYPE::CURSOR_NORMAL, SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_DEFAULT)},      {CURSORTYPE::CURSOR_WAIT, SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_WAIT)},
-	    {CURSORTYPE::CURSOR_SIZE_H, SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_EW_RESIZE)},    {CURSORTYPE::CURSOR_SIZE_V, SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_NS_RESIZE)},
-	    {CURSORTYPE::CURSOR_SIZE_HV, SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_NESW_RESIZE)}, {CURSORTYPE::CURSOR_SIZE_VH, SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_NWSE_RESIZE)},
-	    {CURSORTYPE::CURSOR_TEXT, SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_TEXT)},
-	};
-
-#ifdef MCENGINE_SDL_TOUCHSUPPORT
-	m_bWasLastMouseInputTouch = false;
-#endif
-
-	m_sPrevClipboardTextSDL = NULL;
-
-	// TODO: init monitors
-	if (m_vMonitors.size() < 1)
-	{
-		/// debugLog("WARNING: No monitors found! Adding default monitor ...\n");
-
-		const Vector2 windowSize = getWindowSize();
-		m_vMonitors.emplace_back(0, 0, windowSize.x, windowSize.y);
-	}
+	m_sCurrClipboardText = {};
+	// lazy init
+	m_mMonitors = {};
 
 	// setup callbacks
-	m_sdlDebug = !!debug_sdl.getInt();
-	if (m_sdlDebug)
-		onLogLevelChange(1.0f);
-	debug_sdl.setCallback(fastdelegate::MakeDelegate(this, &Environment::onLogLevelChange));
-	mouse_raw_input.setCallback(fastdelegate::MakeDelegate(this, &Environment::onRawInputChange));
+	debug_env.setCallback(fastdelegate::MakeDelegate(this, &Environment::onLogLevelChange));
 	_fullscreen_windowed_borderless_.setCallback(fastdelegate::MakeDelegate(this, &Environment::onFullscreenWindowBorderlessChange));
 	_monitor_.setCallback(fastdelegate::MakeDelegate(this, &Environment::onMonitorChange));
 	_processpriority.setCallback(fastdelegate::MakeDelegate(this, &Environment::onProcessPriorityChange));
@@ -241,22 +215,26 @@ UString Environment::getLocalDataPath()
 	return m_sProgDataPath;
 }
 
-bool Environment::fileExists(UString filename) const
+// modifies the input filename! (checks case insensitively past the last slash)
+bool Environment::fileExists(UString &filename)
 {
-	SDL_PathInfo info;
-	if (SDL_GetPathInfo(filename.toUtf8(), &info))
-		return info.type == SDL_PATHTYPE_FILE;
-
-	return false;
+	return McFile::existsCaseInsensitive(filename) == McFile::FILETYPE::FILE;
 }
 
-bool Environment::directoryExists(UString directoryName) const
+// modifies the input directoryName! (checks case insensitively past the last slash)
+bool Environment::directoryExists(UString &directoryName)
 {
-	SDL_PathInfo info;
-	if (SDL_GetPathInfo(directoryName.toUtf8(), &info))
-		return info.type == SDL_PATHTYPE_DIRECTORY;
+	return McFile::existsCaseInsensitive(directoryName) == McFile::FILETYPE::FOLDER;
+}
 
-	return false;
+bool Environment::fileExists(const UString &filename)
+{
+	return McFile::exists(filename) == McFile::FILETYPE::FILE;
+}
+
+bool Environment::directoryExists(const UString &directoryName)
+{
+	return McFile::exists(directoryName) == McFile::FILETYPE::FOLDER;
 }
 
 bool Environment::createDirectory(UString directoryName) const
@@ -366,16 +344,18 @@ UString Environment::getFileNameFromFilePath(UString filepath) const
 
 UString Environment::getClipBoardText()
 {
-	if (m_sPrevClipboardTextSDL != NULL)
-		SDL_free((void *)m_sPrevClipboardTextSDL);
+	char *newClip = SDL_GetClipboardText();
+	if (newClip)
+		m_sCurrClipboardText = newClip;
 
-	m_sPrevClipboardTextSDL = SDL_GetClipboardText();
+	SDL_free(newClip);
 
-	return (m_sPrevClipboardTextSDL != NULL ? UString(m_sPrevClipboardTextSDL) : UString(""));
+	return m_sCurrClipboardText;
 }
 
 void Environment::setClipBoardText(UString text)
 {
+	m_sCurrClipboardText = text;
 	SDL_SetClipboardText(text.toUtf8());
 }
 
@@ -500,14 +480,14 @@ void Environment::enableFullscreen()
 		return;
 	if ((m_bFullscreen = SDL_SetWindowFullscreen(m_window, true))) // NOTE: "fake" fullscreen since we don't want a videomode change
 		return;
-	// if (m_sdlDebug) debugLog("%s %s\n", __PRETTY_FUNCTION__, SDL_GetError());
+	// if (m_envDebug) debugLog("%s %s\n", __PRETTY_FUNCTION__, SDL_GetError());
 }
 
 void Environment::disableFullscreen()
 {
 	if (!(m_bFullscreen = !SDL_SetWindowFullscreen(m_window, false)))
 		return;
-	// if (m_sdlDebug) debugLog("%s %s\n", __PRETTY_FUNCTION__, SDL_GetError());
+	// if (m_envDebug) debugLog("%s %s\n", __PRETTY_FUNCTION__, SDL_GetError());
 }
 
 void Environment::setFullscreenWindowedBorderless(bool fullscreenWindowedBorderless)
@@ -544,8 +524,37 @@ void Environment::setWindowResizable(bool resizable)
 
 void Environment::setMonitor(int monitor)
 {
-	// TODO:
-	center();
+	if (monitor == 0 || monitor == getMonitor())
+		return center();
+
+	bool success = false;
+
+	if (!m_mMonitors.contains(monitor)) // try force reinit to check for new monitors
+		initMonitors(true);
+	if (m_mMonitors.contains(monitor))
+	{
+		// SDL: "If the window is in an exclusive fullscreen or maximized state, this request has no effect."
+		if (m_bFullscreen || m_bFullscreenWindowedBorderless)
+		{
+			disableFullscreen();
+			SDL_SyncWindow(m_window);
+			success = SDL_SetWindowPosition(m_window, SDL_WINDOWPOS_CENTERED_DISPLAY(monitor), SDL_WINDOWPOS_CENTERED_DISPLAY(monitor));
+			SDL_SyncWindow(m_window);
+			enableFullscreen();
+		}
+		else
+			success = SDL_SetWindowPosition(m_window, SDL_WINDOWPOS_CENTERED_DISPLAY(monitor), SDL_WINDOWPOS_CENTERED_DISPLAY(monitor));
+
+		if (!success)
+			debugLog("WARNING: failed to setMonitor(%d), centering instead. SDL error: %s\n", monitor, SDL_GetError());
+		else if (!(success = (monitor == getMonitor())))
+			debugLog("WARNING: setMonitor(%d) didn't actually change the monitor, centering instead.\n", monitor);
+	}
+	else
+		debugLog("WARNING: tried to setMonitor(%d) to invalid monitor, centering instead\n", monitor);
+
+	if (!success)
+		center();
 }
 
 HWND Environment::getHwnd() const
@@ -555,11 +564,11 @@ HWND Environment::getHwnd() const
 	hwnd = (HWND)SDL_GetPointerProperty(SDL_GetWindowProperties(m_window), SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
 	if (!hwnd)
 		debugLog("(Windows) hwnd is null! SDL: %s\n", SDL_GetError());
-#elif defined(__MACOS__)
-#error "no macos support currently"
+#elif defined(__APPLE__)
 	NSWindow *nswindow = (__bridge NSWindow *)SDL_GetPointerProperty(SDL_GetWindowProperties(m_window), SDL_PROP_WINDOW_COCOA_WINDOW_POINTER, NULL);
 	if (nswindow)
 	{
+		#warning "getHwnd() TODO"
 	}
 #elif defined(MCENGINE_PLATFORM_LINUX)
 	if (SDL_strcmp(SDL_GetCurrentVideoDriver(), "x11") == 0)
@@ -601,22 +610,23 @@ Vector2 Environment::getWindowSize() const
 	return {static_cast<float>(width), static_cast<float>(height)};
 }
 
+std::map<unsigned int, McRect> Environment::getMonitors()
+{
+	if (m_mMonitors.size() < 1) // lazy init
+		initMonitors();
+	return m_mMonitors;
+}
+
 int Environment::getMonitor() const
 {
 	const int display = static_cast<int>(SDL_GetDisplayForWindow(m_window));
-	return display - 1 < 0 ? 0 : display - 1; // HACK: 0 means invalid display in SDL, decrement by 1 for engine/app
+	return display == 0 ? -1 : display; // 0 == invalid, according to SDL
 }
 
 Vector2 Environment::getNativeScreenSize() const
 {
 	SDL_DisplayID di = SDL_GetDisplayForWindow(m_window);
 	return {static_cast<float>(SDL_GetDesktopDisplayMode(di)->w), static_cast<float>(SDL_GetDesktopDisplayMode(di)->h)};
-}
-
-McRect Environment::getVirtualScreenRect() const
-{
-	// TODO:
-	return {0, 0, 1, 1};
 }
 
 McRect Environment::getDesktopRect() const
@@ -638,11 +648,38 @@ int Environment::getDPI() const
 
 void Environment::setCursor(CURSORTYPE cur)
 {
+	if (m_mCursorIcons.empty())
+		initCursors();
 	if (m_cursorType != cur)
 	{
 		m_cursorType = cur;
 		SDL_SetCursor(m_mCursorIcons.at(m_cursorType)); // does not make visible if the cursor isn't visible
 	}
+}
+
+void Environment::notifyWantRawInput(bool raw)
+{
+	if (raw)
+	{
+		setOSMousePos(mouse->getRealPos()); // when enabling, we need to make sure we start from the virtual cursor position
+		if (m_bCursorClipped)
+		{
+			const SDL_Rect clipRect{.x = static_cast<int>(m_cursorClip.getX()),
+			                        .y = static_cast<int>(m_cursorClip.getY()),
+			                        .w = static_cast<int>(m_cursorClip.getWidth()),
+			                        .h = static_cast<int>(m_cursorClip.getHeight())};
+			SDL_SetWindowMouseRect(m_window, &clipRect);
+		}
+	}
+	else
+	{
+		// let the mouse handler clip the cursor as it sees fit
+		// this is because SDL has no equivalent of sensTransformFunc for non-relative mouse mode
+		SDL_SetWindowMouseRect(m_window, NULL);
+	}
+
+	SDL_SetRelativeMouseTransform(raw ? sensTransformFunc : nullptr, nullptr);
+	SDL_SetWindowRelativeMouseMode(m_window, raw);
 }
 
 void Environment::setCursorVisible(bool visible)
@@ -652,21 +689,21 @@ void Environment::setCursorVisible(bool visible)
 	{
 		// disable rawinput (allow regular mouse movement)
 		// TODO: consolidate all this BS transition logic into some onPointerEnter/onPointerLeave handler
-		if (m_bIsRawInput)
+		if (mouse->isRawInput())
 		{
-			setRawInput(false);
-			setCursorPosition(getMousePos().nudge(getWindowSize() / 2.0f, 1.0f)); // nudge it outwards
+			notifyWantRawInput(false);
+			setOSMousePos(getMousePos().nudge(getWindowSize() / 2.0f, 1.0f)); // nudge it outwards
 		}
 		else                                                                                        // snap the OS cursor to virtual cursor position
-			setCursorPosition(mouse->getRealPos().nudge(getWindowSize() / 2.0f, 1.0f)); // nudge it outwards
+			setOSMousePos(mouse->getRealPos().nudge(getWindowSize() / 2.0f, 1.0f)); // nudge it outwards
 		SDL_ShowCursor();
 	}
 	else
 	{
 		setCursor(CURSORTYPE::CURSOR_NORMAL);
 		SDL_HideCursor();
-		if (m_bIsRawInput) // re-enable rawinput
-			setRawInput(true);
+		if (mouse->isRawInput()) // re-enable rawinput
+			notifyWantRawInput(true);
 	}
 }
 
@@ -675,7 +712,7 @@ void Environment::setCursorClip(bool clip, McRect rect)
 	m_cursorClip = rect;
 	if (clip)
 	{
-		if (m_bIsRawInput)
+		if (mouse->isRawInput())
 		{
 			const SDL_Rect clipRect{static_cast<int>(rect.getX()), static_cast<int>(rect.getY()), static_cast<int>(rect.getWidth()), static_cast<int>(rect.getHeight())};
 			SDL_SetWindowMouseRect(m_window, &clipRect);
@@ -716,35 +753,37 @@ void Environment::listenToTextInput(bool listen)
 //	internal helpers/callbacks  //
 //******************************//
 
-void Environment::setRawInput(bool on)
+void Environment::initCursors()
 {
-	if (on)
-	{
-		setCursorPosition(mouse->getRealPos()); // when enabling, we need to make sure we start from the virtual cursor position
-		if (m_bCursorClipped)
-		{
-			const SDL_Rect clipRect{.x = static_cast<int>(m_cursorClip.getX()),
-			                        .y = static_cast<int>(m_cursorClip.getY()),
-			                        .w = static_cast<int>(m_cursorClip.getWidth()),
-			                        .h = static_cast<int>(m_cursorClip.getHeight())};
-			SDL_SetWindowMouseRect(m_window, &clipRect);
-		}
-	}
-	else
-	{
-		// let the mouse handler clip the cursor as it sees fit
-		// this is because SDL has no equivalent of sensTransformFunc for non-relative mouse mode
-		SDL_SetWindowMouseRect(m_window, NULL);
-	}
-
-	SDL_SetRelativeMouseTransform(on ? sensTransformFunc : nullptr, nullptr);
-	SDL_SetWindowRelativeMouseMode(m_window, on);
+	m_mCursorIcons = {
+	    {CURSORTYPE::CURSOR_NORMAL, SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_DEFAULT)},      {CURSORTYPE::CURSOR_WAIT, SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_WAIT)},
+	    {CURSORTYPE::CURSOR_SIZE_H, SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_EW_RESIZE)},    {CURSORTYPE::CURSOR_SIZE_V, SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_NS_RESIZE)},
+	    {CURSORTYPE::CURSOR_SIZE_HV, SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_NESW_RESIZE)}, {CURSORTYPE::CURSOR_SIZE_VH, SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_NWSE_RESIZE)},
+	    {CURSORTYPE::CURSOR_TEXT, SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_TEXT)},
+	};
 }
 
-void Environment::onRawInputChange(float newval)
+void Environment::initMonitors(bool force)
 {
-	m_bIsRawInput = !!static_cast<int>(newval);
-	setRawInput(m_bIsRawInput);
+	if (!force && !m_mMonitors.empty())
+		return;
+	else if (force) // refresh
+		m_mMonitors.clear();
+
+	int count = -1;
+	const SDL_DisplayID* displays = SDL_GetDisplays(&count);
+
+	for (int i = 0; i < count; i++)
+	{
+		const SDL_DisplayID di = displays[i];
+		m_mMonitors.try_emplace(di, McRect{0, 0, static_cast<float>(SDL_GetDesktopDisplayMode(di)->w), static_cast<float>(SDL_GetDesktopDisplayMode(di)->h)});
+	}
+	if (count < 1)
+	{
+		debugLog("WARNING: No monitors found! Adding default monitor ...\n");
+		const Vector2 windowSize = getWindowSize();
+		m_mMonitors.try_emplace(1, McRect{0, 0, windowSize.x, windowSize.y});
+	}
 }
 
 void Environment::onLogLevelChange(float newval)
@@ -752,19 +791,19 @@ void Environment::onLogLevelChange(float newval)
 	const bool enable = !!static_cast<int>(newval);
 	if (enable)
 	{
-		sdlDebug(true);
+		envDebug(true);
 		SDL_SetLogPriorities(SDL_LOG_PRIORITY_TRACE);
 	}
 	else
 	{
-		sdlDebug(false);
+		envDebug(false);
 		SDL_ResetLogPriorities();
 	}
 }
 
 static void sensTransformFunc(void *, Uint64, SDL_Window *, SDL_MouseID, float *x, float *y)
 {
-	float sensitivity = mouse_sensitivity.getFloat();
+	const float sensitivity = mouse->getSensitivity();
 	*x *= sensitivity;
 	*y *= sensitivity;
 }
