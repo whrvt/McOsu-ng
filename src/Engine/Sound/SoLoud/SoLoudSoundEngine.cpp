@@ -24,7 +24,9 @@ extern ConVar debug_snd;
 
 // SoLoud-specific ConVars
 ConVar snd_soloud_buffer("snd_soloud_buffer", SoLoud::Soloud::AUTO, FCVAR_NONE, "SoLoud audio device buffer size");
-ConVar snd_soloud_backend("snd_soloud_backend", Env::cfg(OS::WASM) ? "SDL3" : "MiniAudio", FCVAR_NONE, R"(SoLoud backend, "MiniAudio" or "SDL3" (MiniAudio is default on desktop))");
+ConVar snd_soloud_backend("snd_soloud_backend", Env::cfg(OS::WASM) ? "SDL3" : "MiniAudio", FCVAR_NONE,
+                          R"(SoLoud backend, "MiniAudio" or "SDL3" (MiniAudio is default on desktop))");
+ConVar snd_sanity_simultaneous_limit("snd_sanity_simultaneous_limit", 255, FCVAR_NONE, "The maximum number of overlayable sounds that are allowed to be active at once");
 
 std::unique_ptr<SoLoud::Soloud> SoLoudSoundEngine::s_SLInstance = nullptr;
 SoLoud::Soloud *soloud = nullptr;
@@ -36,6 +38,8 @@ SoLoudSoundEngine::SoLoudSoundEngine() : SoundEngine()
 		s_SLInstance = std::make_unique<SoLoud::Soloud>();
 		soloud = s_SLInstance.get();
 	}
+
+	m_iMaxActiveVoices = std::clamp<int>(snd_sanity_simultaneous_limit.getInt(), 64, 255); // TODO: lower this minimum
 
 	m_iCurrentOutputDevice = -1;
 	m_sCurrentOutputDevice = "Default";
@@ -59,6 +63,7 @@ SoLoudSoundEngine::SoLoudSoundEngine() : SoundEngine()
 	snd_restart.setCallback(fastdelegate::MakeDelegate(this, &SoLoudSoundEngine::restart));
 	snd_output_device.setCallback(fastdelegate::MakeDelegate(this, &SoLoudSoundEngine::setOutputDevice));
 	snd_soloud_backend.setCallback(fastdelegate::MakeDelegate(this, &SoLoudSoundEngine::restart));
+	snd_sanity_simultaneous_limit.setCallback(fastdelegate::MakeDelegate(this, &SoLoudSoundEngine::onMaxActiveChange));
 }
 
 SoLoudSoundEngine::~SoLoudSoundEngine()
@@ -134,8 +139,8 @@ bool SoLoudSoundEngine::playSound(SoLoudSound *soloudSound, float pan, float pit
 
 	if (debug_snd.getBool())
 	{
-		debugLog("SoLoudSoundEngine: Playing %s (stream=%d, 3d=%d) with speed=%f, pitch=%f\n", soloudSound->m_sFilePath.toUtf8(), soloudSound->m_bStream ? 1 : 0, is3d ? 1 : 0,
-		         soloudSound->m_speed, pitch);
+		debugLog("SoLoudSoundEngine: Playing %s (stream=%d, 3d=%d) with speed=%f, pitch=%f\n", soloudSound->m_sFilePath.toUtf8(), soloudSound->m_bStream ? 1 : 0,
+		         is3d ? 1 : 0, soloudSound->m_speed, pitch);
 	}
 
 	// play the sound with appropriate method
@@ -151,11 +156,12 @@ bool SoLoudSoundEngine::playSound(SoLoudSound *soloudSound, float pan, float pit
 		// streaming audio (music) - always use SoundTouch filter
 		handle = playSoundWithFilter(soloudSound, pan, soloudSound->m_fVolume);
 		if (handle)
-			soloud->setProtectVoice(handle, true); // protect the music channel (don't let it get interrupted when many sounds play back at once)
-			                                   // NOTE: this doesn't seem to work properly, not sure why... need to setMaxActiveVoiceCount higher than the default 16
-			                                   // as a workaround, otherwise rapidly overlapping samples like from buzzsliders can cause glitches in music playback
-			                                   // TODO: a better workaround would be to manually prevent samples from playing if
-			                                   // it would lead to getMaxActiveVoiceCount() <= getActiveVoiceCount()
+			soloud->setProtectVoice(handle,
+			                        true); // protect the music channel (don't let it get interrupted when many sounds play back at once)
+			                               // NOTE: this doesn't seem to work properly, not sure why... need to setMaxActiveVoiceCount higher than the default 16
+			                               // as a workaround, otherwise rapidly overlapping samples like from buzzsliders can cause glitches in music playback
+			                               // TODO: a better workaround would be to manually prevent samples from playing if
+			                               // it would lead to getMaxActiveVoiceCount() <= getActiveVoiceCount()
 	}
 	else
 	{
@@ -188,6 +194,9 @@ bool SoLoudSoundEngine::playSound(SoLoudSound *soloudSound, float pan, float pit
 		float actualFreq = soloud->getSamplerate(handle);
 		if (actualFreq > 0)
 			soloudSound->m_frequency = actualFreq;
+
+		if (soloudSound->m_bStream)
+			setVolumeGradual(handle, soloud->getVolume(handle)); // fade it in if it's a stream (to avoid clicks/pops)
 
 		soloud->setPause(handle, false); // now, finally unpause
 
@@ -340,6 +349,19 @@ void SoLoudSoundEngine::setVolume(float volume)
 	soloud->setGlobalVolume(m_fVolume);
 }
 
+void SoLoudSoundEngine::setVolumeGradual(unsigned int handle, float targetVol, float fadeTimeMs)
+{
+	if (!m_bReady || handle == 0 || !soloud->isValidVoiceHandle(handle))
+		return;
+
+	soloud->setVolume(handle, 0.0f);
+
+	if (debug_snd.getBool())
+		debugLog("fading in to %.2f\n", targetVol);
+
+	soloud->fadeVolume(handle, targetVol, fadeTimeMs / 1000.0f);
+}
+
 void SoLoudSoundEngine::set3dPosition(Vector3 headPos, Vector3 viewDir, Vector3 viewUp)
 {
 	if (!m_bReady)
@@ -432,12 +454,7 @@ bool SoLoudSoundEngine::initializeOutputDevice(int id, bool)
 		return false;
 	}
 
-	if (soloud->getMaxActiveVoiceCount() != 255)
-	{
-		SoLoud::result res = soloud->setMaxActiveVoiceCount(255);
-		if (res != SoLoud::SO_NO_ERROR)
-			debugLog("SoundEngine WARNING: failed to setMaxActiveVoiceCount (%i)\n", res);
-	}
+	onMaxActiveChange(snd_sanity_simultaneous_limit.getFloat());
 
 	// set current device name (bogus)
 	for (auto &m_outputDevice : m_outputDevices)
@@ -449,9 +466,10 @@ bool SoLoudSoundEngine::initializeOutputDevice(int id, bool)
 		}
 	}
 
-	debugLog("SoundEngine: Initialized SoLoud with output device = \"%s\" flags: 0x%x, backend: %s, sampleRate: %u, bufferSize: %u, channels: %u, maxActiveVoiceCount: %u\n",
-	         m_sCurrentOutputDevice.toUtf8(), flags, soloud->getBackendString(), soloud->getBackendSamplerate(), soloud->getBackendBufferSize(), soloud->getBackendChannels(),
-	         soloud->getMaxActiveVoiceCount());
+	debugLog("SoundEngine: Initialized SoLoud with output device = \"%s\" flags: 0x%x, backend: %s, sampleRate: %u, bufferSize: %u, channels: %u, "
+	         "maxActiveVoiceCount: %u\n",
+	         m_sCurrentOutputDevice.toUtf8(), flags, soloud->getBackendString(), soloud->getBackendSamplerate(), soloud->getBackendBufferSize(),
+	         soloud->getBackendChannels(), m_iMaxActiveVoices);
 
 	m_bReady = true;
 
@@ -459,6 +477,18 @@ bool SoLoudSoundEngine::initializeOutputDevice(int id, bool)
 	setVolume(m_fVolume);
 
 	return true;
+}
+
+void SoLoudSoundEngine::onMaxActiveChange(float newMax)
+{
+	const auto desired = std::clamp<int>(static_cast<int>(newMax), 64, 255);
+	if (soloud->getMaxActiveVoiceCount() != desired)
+	{
+		SoLoud::result res = soloud->setMaxActiveVoiceCount(desired);
+		if (res != SoLoud::SO_NO_ERROR)
+			debugLog("SoundEngine WARNING: failed to setMaxActiveVoiceCount (%i)\n", res);
+	}
+	m_iMaxActiveVoices = static_cast<int>(soloud->getMaxActiveVoiceCount());
 }
 
 #endif // MCENGINE_FEATURE_SOLOUD

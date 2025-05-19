@@ -49,8 +49,12 @@ public:
 	[[nodiscard]] const SoundEngineType *getSndEngine() const override { return this; }
 
 private:
+	void setVolumeGradual(unsigned int handle, float targetVol, float fadeTimeMs = 10.0f);
 	void updateOutputDevices(bool handleOutputDeviceChanges, bool printInfo) override;
 	bool initializeOutputDevice(int id = -1, bool force = false) override;
+
+	int m_iMaxActiveVoices;	
+	void onMaxActiveChange(float newMax);
 };
 
 extern SoLoud::Soloud *soloud;

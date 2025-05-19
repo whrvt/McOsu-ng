@@ -180,6 +180,7 @@ $(DEPS_PREFIX)/SoLoud.built: $(DEPS_CACHE)/SoLoud.source $(DEPS_PREFIX)/SDL3.bui
 	patch -Np1<$(abs_top_srcdir)/build/aux/soloud-fix-leak-setMaxActiveVoiceCount.patch && \
 	patch -Np1<$(abs_top_srcdir)/build/aux/soloud-bump-dr_libs.patch && \
 	patch -Np1<$(abs_top_srcdir)/build/aux/soloud-fastseek.patch && \
+	patch -Np1<$(abs_top_srcdir)/build/aux/soloud-null-getAudio.patch && \
 	$(SED) -i -e 's|#define VOICE_COUNT 1024|#define VOICE_COUNT 4095|g' \
 			-e 's|#define SOLOUD_DEFAULT_RESAMPLER.*|#define SOLOUD_DEFAULT_RESAMPLER SoLoud::Soloud::RESAMPLER_CATMULLROM|g' include/soloud.h # raise max # concurrent voices from 1024 default to 4095 (hard limit)
 	cd $(DEPS_PREFIX)/SoLoud/build && \
@@ -223,7 +224,6 @@ endif
 	test -f $(DEPS_PREFIX)/lib/libsoloud_static_x$(if $(filter x86_64,$(host_cpu)),64,$(if $(findstring linux,$(host_os)),32,86))$(if $(ENABLE_DEBUG),_d,).a
 	touch $@
 
-# TODO: build openmp static, soundtouch benefits from it a retarded amount
 $(DEPS_PREFIX)/SoundTouch.built: $(DEPS_CACHE)/SoundTouch.source
 	rm -rf $(DEPS_PREFIX)/SoundTouch
 	$(MKDIR_P) $(DEPS_PREFIX) $(DEPS_PREFIX)/include $(DEPS_PREFIX)/lib/pkgconfig $(DEPS_PREFIX)/SoundTouch/build

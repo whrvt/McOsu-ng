@@ -5298,6 +5298,7 @@ $(DEPS_CACHE)/SoundTouch.source:
 @USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	patch -Np1<$(abs_top_srcdir)/build/aux/soloud-fix-leak-setMaxActiveVoiceCount.patch && \
 @USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	patch -Np1<$(abs_top_srcdir)/build/aux/soloud-bump-dr_libs.patch && \
 @USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	patch -Np1<$(abs_top_srcdir)/build/aux/soloud-fastseek.patch && \
+@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	patch -Np1<$(abs_top_srcdir)/build/aux/soloud-null-getAudio.patch && \
 @USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	$(SED) -i -e 's|#define VOICE_COUNT 1024|#define VOICE_COUNT 4095|g' \
 @USE_BASS_FALSE@@USE_SDLMIXER_FALSE@			-e 's|#define SOLOUD_DEFAULT_RESAMPLER.*|#define SOLOUD_DEFAULT_RESAMPLER SoLoud::Soloud::RESAMPLER_CATMULLROM|g' include/soloud.h # raise max # concurrent voices from 1024 default to 4095 (hard limit)
 @USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	cd $(DEPS_PREFIX)/SoLoud/build && \
@@ -5338,30 +5339,21 @@ $(DEPS_CACHE)/SoundTouch.source:
 @USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	test -f $(DEPS_PREFIX)/lib/libsoloud_static_x$(if $(filter x86_64,$(host_cpu)),64,$(if $(findstring linux,$(host_os)),32,86))$(if $(ENABLE_DEBUG),_d,).a
 @USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	touch $@
 
-# TODO: build openmp static, soundtouch benefits from it a retarded amount
 @USE_BASS_FALSE@@USE_SDLMIXER_FALSE@$(DEPS_PREFIX)/SoundTouch.built: $(DEPS_CACHE)/SoundTouch.source
 @USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	rm -rf $(DEPS_PREFIX)/SoundTouch
 @USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	$(MKDIR_P) $(DEPS_PREFIX) $(DEPS_PREFIX)/include $(DEPS_PREFIX)/lib/pkgconfig $(DEPS_PREFIX)/SoundTouch/build
 @USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	$(TAR) xf $(DEPS_CACHE)/SoundTouch-$(SOUNDTOUCH_VERSION).tar.gz -C $(DEPS_PREFIX)/SoundTouch --strip-components=1 && \
 @USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	cd $(DEPS_PREFIX)/SoundTouch && \
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	PKG_CONFIG="$(PKG_CONFIG)" LDFLAGS="$(LDFLAGS)" \
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	cmake -S . -B build -G Ninja \
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@		-D CMAKE_BUILD_TYPE="$(if $(ENABLE_DEBUG),Debug,Release)" \
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@		-D CMAKE_INSTALL_PREFIX="$(DEPS_PREFIX)" \
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@		-D CMAKE_SYSTEM_NAME="$(CMAKE_SYSTEM_NAME)" \
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@		-D CMAKE_SYSTEM_PROCESSOR="$(host_cpu)" \
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@		-D CMAKE_C_COMPILER="$(CC)" \
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@		-D CMAKE_C_FLAGS="$(CFLAGS)" \
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@		-D CMAKE_CXX_COMPILER="$(CXX)" \
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@		-D CMAKE_CXX_FLAGS="$(CXXFLAGS)" \
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@		$(CMAKERCOPT) \
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@		-D SOUNDSTRETCH=OFF \
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@		-D SOUNDTOUCH_DLL=OFF \
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@		-D OPENMP="$(if $(SDL3_STATIC),OFF,ON)" \
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@		-D BUILD_SHARED_LIBS="$(if $(SDL3_STATIC),OFF,ON)" && \
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	cmake --build build && \
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	cmake --install build
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	rm -rf $(DEPS_PREFIX)/lib/*SoundTouch$(if $(SDL3_STATIC),$(DLLEXT),.a)*
+@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	$(SED) -i -e 's|source/SoundStretch/Makefile||g' -e 's|.*AC_DISABLE_STATIC.*||g' -e 's|.*AC_DISABLE_SHARED.*|AC_DISABLE_SHARED|g' configure.ac && \
+@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	$(SED) -i -e 's|SUBDIRS=SoundTouch.*|SUBDIRS=SoundTouch|g' source/Makefile.am && \
+@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	autoreconf -fiv && \
+@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	PKG_CONFIG="$(PKG_CONFIG)" \
+@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	./configure lt_cv_prog_gnu_ld=yes --with-gnu-ld --disable-shared --enable-static --host=$(host_alias) --build=$(build) --prefix="$(DEPS_PREFIX)" \
+@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@			CC="$(CC)" RANLIB="$(RANLIB)" AR="$(AR)" CXX="$(CXX)" LD="$(if $(findstring linux,$(host_os)),$(CC),$(LD))" \
+@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@			CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS)" && \
+@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	$(MAKE) && \
+@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	$(MAKE) install
+@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	rm -rf $(DEPS_PREFIX)/lib/*SoundTouch*$(DLLEXT) # no shared
 @USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	$(PKG_CONFIG) --env-only --exists --print-errors soundtouch
 @USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	touch $@
 
@@ -5607,7 +5599,6 @@ install-libs:
 @BUILD_MIMALLOC_TRUE@@WIN_PLATFORM_TRUE@	@cp -P "$(DEPS_PREFIX)/bin/mimalloc"{,-redirect$(if $(filter x86_64,$(host_cpu)),,32)}".dll" "$(DESTDIR)$(bindir)/$(LIBDEST)"
 @WINSHARED_DLLS_NEEDED_TRUE@@WIN_PLATFORM_TRUE@	@cp -P $(WINSHARED_DLLS) "$(DESTDIR)$(bindir)/$(LIBDEST)"
 @USE_BASS_FALSE@@USE_SDLMIXER_TRUE@	$(if $(SDL3_STATIC),,@cp -P "$(SDL3_MIXER_PREFIX)/lib"/{*$(LIBPREFIX)SDL3_mixer*$(DLLEXT)*,*$(LIBPREFIX)mpg123*$(DLLEXT)*,*$(LIBPREFIX)xmp*$(DLLEXT)*,*$(LIBPREFIX)wavpack*$(DLLEXT)*,*$(LIBPREFIX)opus*$(DLLEXT)*,*$(LIBPREFIX)ogg*$(DLLEXT)*} "$(DESTDIR)$(bindir)/$(LIBDEST)")
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	$(if $(SDL3_STATIC),,@cp -P "$(SOLOUD_PREFIX)/lib"/*$(LIBPREFIX)SoundTouch*$(DLLEXT)* "$(DESTDIR)$(bindir)/$(LIBDEST)")
 @USE_BASS_TRUE@	$(INSTALL) -m 755 $(srcdir)/$(BUNDLED_BASS_DIR)/lib/$(SYSNAME)/$(host_cpu)/$(LIBPREFIX)bass$(DLLEXT) "$(DESTDIR)$(bindir)/$(LIBDEST)"
 @USE_BASS_TRUE@	$(INSTALL) -m 755 $(srcdir)/$(BUNDLED_BASS_FX_DIR)/lib/$(SYSNAME)/$(host_cpu)/$(LIBPREFIX)bass_fx$(DLLEXT) "$(DESTDIR)$(bindir)/$(LIBDEST)"
 @BUILD_SDL3_TRUE@	$(if $(SDL3_STATIC),,@`find $(SDL3_PREFIX) '(' -iname '*SDL3*'$(DLLEXT) -o -iname '*SDL3*''.so.*' ')' -exec cp -P '{''}' "$(DESTDIR)$(bindir)/$(LIBDEST)" ';'`)

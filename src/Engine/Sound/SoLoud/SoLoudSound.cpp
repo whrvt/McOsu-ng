@@ -132,6 +132,7 @@ void SoLoudSound::initAsync()
 			m_frequency = 44100.0f; // default, will be updated when played
 
 			m_audioSource->setSingleInstance(true); // only play one music track at a time
+			m_audioSource->setInaudibleBehavior(true, false); // keep ticking the sound if it goes to 0 volume, and don't kill it
 		}
 		else
 		{
@@ -156,6 +157,7 @@ void SoLoudSound::initAsync()
 			m_frequency = 44100.0f;
 
 			m_audioSource->setSingleInstance(false); // allow non-music tracks to overlap by default
+			m_audioSource->setInaudibleBehavior(true, true); // keep ticking the sound if it goes to 0 volume, but do kill it if necessary
 		}
 		else
 		{

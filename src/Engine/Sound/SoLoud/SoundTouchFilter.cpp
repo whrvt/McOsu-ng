@@ -241,6 +241,9 @@ bool SoundTouchFilterInstance::isOggSource() const
 
 unsigned int SoundTouchFilterInstance::getAudio(float *aBuffer, unsigned int aSamplesToRead, unsigned int aBufferSize)
 {
+	if (aBuffer == nullptr || mParent->mSoloud == nullptr)
+		return 0;
+
 	mProcessingCounter++;
 
 	bool logThisCall = ST_DEBUG_ENABLED && (mProcessingCounter == 1 || mProcessingCounter % 100 == 0);
