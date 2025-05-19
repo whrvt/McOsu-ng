@@ -84,7 +84,7 @@ void SoLoudSoundEngine::update()
 	float checkInterval = snd_change_check_interval.getFloat();
 	if (checkInterval > 0.0f)
 	{
-		auto currentTime = Timing::getTimeReal<float>();
+		auto currentTime = engine->getTime();
 		if (currentTime - m_fPrevOutputDeviceChangeCheckTime > checkInterval)
 		{
 			m_fPrevOutputDeviceChangeCheckTime = currentTime;
@@ -118,7 +118,7 @@ bool SoLoudSoundEngine::playSound(SoLoudSound *soloudSound, float pan, float pit
 	pitch = std::clamp<float>(pitch, 0.0f, 2.0f);
 
 	// check if we should allow playing this frame (for overlayable sounds)
-	const bool allowPlayFrame = !soloudSound->isOverlayable() || !snd_restrict_play_frame.getBool() || Timing::getTimeReal() > soloudSound->getLastPlayTime();
+	const bool allowPlayFrame = !soloudSound->isOverlayable() || !snd_restrict_play_frame.getBool() || engine->getTime() > soloudSound->getLastPlayTime();
 	if (!allowPlayFrame)
 		return false;
 
@@ -182,12 +182,14 @@ bool SoLoudSoundEngine::playSound(SoLoudSound *soloudSound, float pan, float pit
 
 		// store the handle and mark playback time
 		soloudSound->m_handle = handle;
-		soloudSound->setLastPlayTime(Timing::getTimeReal());
+		soloudSound->setLastPlayTime(engine->getTime());
 
 		// get the actual sample rate for the file from SoLoud
 		float actualFreq = soloud->getSamplerate(handle);
 		if (actualFreq > 0)
 			soloudSound->m_frequency = actualFreq;
+
+		soloud->setPause(handle, false); // now, finally unpause
 
 		return true;
 	}
@@ -211,11 +213,10 @@ unsigned int SoLoudSoundEngine::playSoundWithFilter(SoLoudSound *soloudSound, fl
 	soloudSound->updateFilterParameters();
 
 	// play through the filter
-	unsigned int handle = soloud->play(*filter, volume);
+	unsigned int handle = soloud->play(*filter, volume, pan, true /* paused */);
 
 	if (handle != 0)
 	{
-		soloud->setPan(handle, pan);
 		if (debug_snd.getBool())
 			debugLog("SoLoudSoundEngine: Playing through SoundTouch filter with speed=%f, pitch=%f\n", soloudSound->m_speed, soloudSound->m_pitch);
 	}
@@ -229,12 +230,10 @@ unsigned int SoLoudSoundEngine::playDirectSound(SoLoudSound *soloudSound, float 
 		return 0;
 
 	// play directly
-	unsigned int handle = soloud->play(*soloudSound->m_audioSource, volume);
+	unsigned int handle = soloud->play(*soloudSound->m_audioSource, volume, pan, true /* paused */);
 
 	if (handle != 0)
 	{
-		soloud->setPan(handle, pan);
-
 		// set relative play speed (affects both pitch and speed)
 		if (pitch != 1.0f)
 			soloud->setRelativePlaySpeed(handle, pitch);
@@ -248,7 +247,7 @@ unsigned int SoLoudSoundEngine::play3dSound(SoLoudSound *soloudSound, Vector3 po
 	if (!soloudSound || !soloudSound->m_audioSource)
 		return 0;
 
-	unsigned int handle = soloud->play3d(*soloudSound->m_audioSource, pos.x, pos.y, pos.z, 0, 0, 0, volume);
+	unsigned int handle = soloud->play3d(*soloudSound->m_audioSource, pos.x, pos.y, pos.z, 0, 0, 0, volume, true /* paused */);
 
 	return handle;
 }
@@ -370,7 +369,7 @@ std::vector<UString> SoLoudSoundEngine::getOutputDevices()
 	return outputDevices;
 }
 
-void SoLoudSoundEngine::updateOutputDevices(bool handleOutputDeviceChanges, bool printInfo)
+void SoLoudSoundEngine::updateOutputDevices(bool, bool printInfo)
 {
 	// SoLoud doesn't provide direct device enumeration
 	if (printInfo)
@@ -380,7 +379,7 @@ void SoLoudSoundEngine::updateOutputDevices(bool handleOutputDeviceChanges, bool
 	}
 }
 
-bool SoLoudSoundEngine::initializeOutputDevice(int id, bool force)
+bool SoLoudSoundEngine::initializeOutputDevice(int id, bool)
 {
 	debugLog("SoundEngine: initializeOutputDevice(%i) ...\n", id);
 

@@ -11,6 +11,8 @@
 
 #ifdef MCENGINE_FEATURE_SOLOUD
 
+#include "SoLoudSoundEngine.h"
+
 #include "ConVar.h"
 #include "Engine.h"
 
