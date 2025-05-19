@@ -236,7 +236,7 @@ OpenVRInterface::OpenVRInterface()
 	memset(m_rDevClassChar, 0, sizeof(m_rDevClassChar));
 
 	///return;
-	if (engine->getArgs().length() > 0 && engine->getArgs().find("novr") != -1)
+	if (env->getLaunchArgs().contains("-novr"))
 		return;
 
 	if constexpr (Env::cfg(REND::DX11))

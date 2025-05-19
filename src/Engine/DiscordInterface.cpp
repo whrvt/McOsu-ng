@@ -16,7 +16,7 @@ DiscordInterface::DiscordInterface()
 {
 	m_bReady = false;
 
-	if (engine->getArgs().length() > 0 && engine->getArgs().find("nodiscord") != -1) return;
+	if (env->getLaunchArgs().contains("-nodiscord")) return;
 
 #ifdef MCENGINE_FEATURE_DISCORD
 

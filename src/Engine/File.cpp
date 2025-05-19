@@ -8,7 +8,6 @@
 #include "File.h"
 #include "ConVar.h"
 #include "Engine.h"
-#include <algorithm>
 #include <filesystem>
 #include <utility>
 
@@ -50,7 +49,9 @@ McFile::FILETYPE McFile::existsCaseInsensitive(UString &filePath, fs::path &path
 	auto filename = path.filename().string();
 
 	// don't try scanning all the way back to the root directory lol, that would be horrendous
-	if (!fs::exists(parentPath) || !fs::is_directory(parentPath))
+	std::error_code ec;
+	auto parentStatus = fs::status(parentPath, ec);
+	if (ec || parentStatus.type() != fs::file_type::directory)
 		return McFile::FILETYPE::NONE;
 
 	UString targetFilename(filename.c_str());
@@ -65,9 +66,9 @@ McFile::FILETYPE McFile::existsCaseInsensitive(UString &filePath, fs::path &path
 
 		if (entryFilename.equalsIgnoreCase(targetFilename))
 		{
-			if (fs::is_regular_file(entry))
+			if (entry.is_regular_file())
 				retType = McFile::FILETYPE::FILE;
-			else if (fs::is_directory(entry))
+			else if (entry.is_directory())
 				retType = McFile::FILETYPE::FOLDER;
 			else
 				retType = McFile::FILETYPE::OTHER;
@@ -95,11 +96,21 @@ McFile::FILETYPE McFile::exists(const UString &filePath, const fs::path &path)
 	if (filePath.isEmpty())
 		return McFile::FILETYPE::NONE;
 
-	if (fs::exists(path))
+	std::error_code ec;
+	auto status = fs::status(path, ec);
+
+	if (ec)
 	{
-		if (fs::is_regular_file(path))
+		if (McFile::debug->getBool())
+			debugLog("File Error: Status check failed for %s with error: %s\n", filePath.toUtf8(), ec.message().c_str());
+		return McFile::FILETYPE::NONE;
+	}
+
+	if (status.type() != fs::file_type::not_found)
+	{
+		if (status.type() == fs::file_type::regular)
 			return McFile::FILETYPE::FILE;
-		else if (fs::is_directory(path))
+		else if (status.type() == fs::file_type::directory)
 			return McFile::FILETYPE::FOLDER;
 		else
 			return McFile::FILETYPE::OTHER;

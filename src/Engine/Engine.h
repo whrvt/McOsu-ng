@@ -87,7 +87,7 @@ public:
 	};
 
 public:
-	Engine(const char *args = NULL);
+	Engine();
 	~Engine();
 
 	// app
@@ -173,8 +173,6 @@ public:
 	inline double getFrameTime() const {return m_dFrameTime;}
 	inline unsigned long getFrameCount() const {return m_iFrameCount;}
 
-	UString getArgs() const {return m_sArgs;}
-
 	inline bool hasFocus() const {return m_bHasFocus;}
 	inline bool isDrawing() const {return m_bDrawing;}
 	inline bool isMinimized() const {return m_bIsMinimized;}
@@ -214,8 +212,8 @@ private:
 	static Console *m_console;
 
 	// custom
-	UString m_sArgs;
 	bool m_bBlackout;
+	bool m_bIsRestarting;
 	bool m_bDrawing;
 
 	// math

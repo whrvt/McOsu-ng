@@ -633,7 +633,14 @@ UString ConVarHandler::flagsToString(int flags)
 	return string;
 }
 
-
+void ConVarHandler::resetAllConVarCallbacks()
+{
+	const std::vector<ConVar*> &convars = getConVarArray();
+	for (size_t i = 0; i < convars.size(); i++)
+	{
+		convars[i]->resetCallbacks();
+	}
+}
 
 //*****************************//
 //	ConVarHandler ConCommands  //

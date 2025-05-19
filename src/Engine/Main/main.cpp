@@ -45,7 +45,7 @@ public:
 	SDLMain(int argc, char *argv[]);
 	~SDLMain();
 
-	SDL_AppResult initialize(int argc, char *argv[]);
+	SDL_AppResult initialize();
 	SDL_AppResult iterate();
 	SDL_AppResult handleEvent(SDL_Event *event);
 	void shutdown() { Environment::shutdown(); }
@@ -81,7 +81,7 @@ private:
 	void fps_max_background_callback(UString oldVal, UString newVal);
 	void fps_unlimited_callback(UString oldVal, UString newVal);
 
-	void parseArgs();
+	void doEarlyCmdlineOverrides();
 };
 
 //*********************************//
@@ -130,7 +130,7 @@ MAIN_FUNC /* int argc, char *argv[] */
 	auto *fmain = new SDLMain(argc, argv);
 
 #if !(defined(MCENGINE_PLATFORM_WASM) || defined(MCENGINE_FEATURE_MAINCALLBACKS))
-	if (fmain->initialize(argc, argv) == SDL_APP_FAILURE)
+	if (fmain->initialize() == SDL_APP_FAILURE)
 		SDL_AppQuit(fmain, SDL_APP_FAILURE);
 
 	constexpr int SIZE_EVENTS = 64;
@@ -161,7 +161,7 @@ MAIN_FUNC /* int argc, char *argv[] */
 	return 0;
 #else
 	*appstate = fmain;
-	return fmain->initialize(argc, argv);
+	return fmain->initialize();
 #endif // SDL_MAIN_USE_CALLBACKS
 }
 
@@ -188,7 +188,7 @@ extern ConVar _fullscreen_;
 extern ConVar _windowed_;
 extern ConVar _fullscreen_windowed_borderless_;
 
-SDLMain::SDLMain(int, char *[]) : Environment()
+SDLMain::SDLMain(int argc, char *argv[]) : Environment(argc, argv)
 {
 	m_context = nullptr;
 	m_deltaTimer = nullptr;
@@ -211,12 +211,12 @@ SDLMain::~SDLMain()
 	if (m_context && (Env::cfg((REND::GL | REND::GLES2 | REND::GLES32 | REND::GL3), !REND::DX11)))
 		SDL_GL_DestroyContext(m_context);
 
-	// engine is deleted by parent (Environment) destructor
+	SAFE_DELETE(m_engine);
 }
 
-SDL_AppResult SDLMain::initialize(int argc, char *argv[])
+SDL_AppResult SDLMain::initialize()
 {
-	parseArgs();
+	doEarlyCmdlineOverrides();
 	setupLogging();
 
 	// create window with props
@@ -236,8 +236,8 @@ SDL_AppResult SDLMain::initialize(int argc, char *argv[])
 		m_vLastAbsMousePos.y = y;
 	}
 
-	// initialize engine
-	m_engine = new Engine(argc > 1 ? argv[1] : "");
+	// initialize engine, now that all the setup is done
+	m_engine = Environment::initEngine();
 
 	// make window visible
 	SDL_ShowWindow(m_window);
@@ -289,12 +289,12 @@ SDL_AppResult SDLMain::handleEvent(SDL_Event *event)
 		if (m_bRunning)
 		{
 			m_bRunning = false;
-			m_engine->onShutdown();
+			m_engine->shutdown();
+			if constexpr (Env::cfg(FEAT::MAINCB))
+				return SDL_APP_SUCCESS;
+			else
+				SDL_AppQuit(this, SDL_APP_SUCCESS);
 		}
-		if constexpr (Env::cfg(FEAT::MAINCB))
-			return SDL_APP_SUCCESS;
-		else
-			SDL_AppQuit(this, SDL_APP_SUCCESS);
 
 	// window events
 	case SDL_EVENT_WINDOW_FIRST ... SDL_EVENT_WINDOW_LAST:
@@ -304,12 +304,12 @@ SDL_AppResult SDLMain::handleEvent(SDL_Event *event)
 			if (m_bRunning)
 			{
 				m_bRunning = false;
-				m_engine->onShutdown();
+				m_engine->shutdown();
+				if constexpr (Env::cfg(FEAT::MAINCB))
+					return SDL_APP_SUCCESS;
+				else
+					SDL_AppQuit(this, SDL_APP_SUCCESS);
 			}
-			if constexpr (Env::cfg(FEAT::MAINCB))
-				return SDL_APP_SUCCESS;
-			else
-				SDL_AppQuit(this, SDL_APP_SUCCESS);
 
 		case SDL_EVENT_WINDOW_FOCUS_GAINED:
 			m_bHasFocus = true;
@@ -383,9 +383,11 @@ SDL_AppResult SDLMain::handleEvent(SDL_Event *event)
 
 	case SDL_EVENT_MOUSE_WHEEL:
 		if (event->wheel.x != 0)
-			m_engine->onMouseWheelHorizontal(event->wheel.x > 0 ? 120 * std::abs(static_cast<int>(event->wheel.x)) : -120 * std::abs(static_cast<int>(event->wheel.x)));
+			m_engine->onMouseWheelHorizontal(event->wheel.x > 0 ? 120 * std::abs(static_cast<int>(event->wheel.x))
+			                                                    : -120 * std::abs(static_cast<int>(event->wheel.x)));
 		if (event->wheel.y != 0)
-			m_engine->onMouseWheelVertical(event->wheel.y > 0 ? 120 * std::abs(static_cast<int>(event->wheel.y)) : -120 * std::abs(static_cast<int>(event->wheel.y)));
+			m_engine->onMouseWheelVertical(event->wheel.y > 0 ? 120 * std::abs(static_cast<int>(event->wheel.y))
+			                                                  : -120 * std::abs(static_cast<int>(event->wheel.y)));
 		break;
 
 	case SDL_EVENT_MOUSE_MOTION:
@@ -464,7 +466,8 @@ bool SDLMain::createWindow(int width, int height)
 	{
 		SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK,
-		                    Env::cfg(REND::GL) ? SDL_GL_CONTEXT_PROFILE_COMPATIBILITY : (Env::cfg(REND::GL3) ? SDL_GL_CONTEXT_PROFILE_CORE : SDL_GL_CONTEXT_PROFILE_ES));
+		                    Env::cfg(REND::GL) ? SDL_GL_CONTEXT_PROFILE_COMPATIBILITY
+		                                       : (Env::cfg(REND::GL3) ? SDL_GL_CONTEXT_PROFILE_CORE : SDL_GL_CONTEXT_PROFILE_ES));
 		if constexpr (!Env::cfg(REND::GL | REND::GL3))
 		{
 			SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, Env::cfg(REND::GLES2) ? 2 : 3);
@@ -605,12 +608,11 @@ void SDLMain::setupLogging()
 	    nullptr);
 }
 
-void SDLMain::parseArgs()
+void SDLMain::doEarlyCmdlineOverrides()
 {
 #if defined(MCENGINE_PLATFORM_WINDOWS) || (defined(_WIN32) && !defined(__linux__))
-	UString cmdline = GetCommandLine();
 	// disable IME text input if -noime
-	if (cmdline.findIgnoreCase("-noime"))
+	if (m_mArgMap.contains("-noime"))
 	{
 		typedef BOOL(WINAPI * pfnImmDisableIME)(DWORD);
 		HMODULE hImm32 = LoadLibrary(TEXT("imm32.dll"));
@@ -623,7 +625,7 @@ void SDLMain::parseArgs()
 		}
 	}
 	// enable DPI awareness if not -nodpi
-	if (!cmdline.findIgnoreCase("-nodpi"))
+	if (!m_mArgMap.contains("-noime"))
 	{
 		typedef WINBOOL(WINAPI * PSPDA)(void);
 		auto pSetProcessDPIAware = (PSPDA)GetProcAddress(GetModuleHandle(TEXT("user32.dll")), "SetProcessDPIAware");
@@ -631,6 +633,7 @@ void SDLMain::parseArgs()
 			pSetProcessDPIAware();
 	}
 #else
+	// nothing yet
 	return;
 #endif
 }

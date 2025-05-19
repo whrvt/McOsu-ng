@@ -141,6 +141,14 @@ public:
 
 	void setHelpString(UString helpString);
 
+	// for restart support
+	void resetCallbacks()
+	{
+		m_callbackfunc = NULL;
+		m_callbackfuncargs = NULL;
+		m_callbackfuncfloat = NULL;
+		m_changecallback = NULL;
+	}
 private:
 	void init(int flags);
 	void init(UString &name, int flags);
@@ -199,6 +207,8 @@ public:
 
 	ConVar *getConVarByName(UString name, bool warnIfNotFound = true) const;
 	std::vector<ConVar*> getConVarByLetter(UString letters) const;
+
+	void resetAllConVarCallbacks();
 };
 
 extern ConVarHandler *convar;

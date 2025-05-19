@@ -107,7 +107,7 @@ SteamworksInterface::SteamworksInterface()
 
 	m_pendingItemUpdateHandle = 0;
 
-	if (engine->getArgs().length() > 0 && engine->getArgs().find("nosteam") != -1) return;
+	if (env->getLaunchArgs().contains("-nosteam")) return;
 
 	m_pendingItemUpdateHandle = k_UGCUpdateHandleInvalid;
 

@@ -12,6 +12,7 @@
 #include "BaseEnvironment.h" // for Env::cfg (consteval)
 #include <algorithm>
 #include <string>
+#include <string_view>
 #include <vector>
 
 class UString
@@ -19,11 +20,13 @@ class UString
 public:
 	static UString format(const char *utf8format, ...);
 
+	[[nodiscard]] static UString join(const std::vector<UString> &vec, const UString &delim = " ");
 public:
 	UString();
 	UString(const wchar_t *str);
 	UString(const char *utf8);
 	UString(const char *utf8, int length);
+	UString(std::string_view utf8);
 	UString(const UString &ustr);
 	UString(UString &&ustr) noexcept;
 	~UString();
@@ -170,6 +173,8 @@ public:
 	[[nodiscard]] bool equalsIgnoreCase(const UString &ustr) const;
 	[[nodiscard]] bool lessThanIgnoreCase(const UString &ustr) const;
 
+	friend struct std::hash<UString>;
+
 private:
 	int fromUtf8(const char *utf8, int length = -1);
 	void updateUtf8();
@@ -181,5 +186,14 @@ private:
 	int m_lengthUtf8;
 	bool m_isAsciiOnly;
 };
+
+namespace std
+{
+template <>
+struct hash<UString>
+{
+	size_t operator()(const UString &str) const noexcept { return hash<std::wstring>()(str.m_unicode); }
+};
+} // namespace std
 
 #endif

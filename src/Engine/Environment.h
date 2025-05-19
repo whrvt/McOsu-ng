@@ -24,7 +24,7 @@ class Engine;
 class Environment
 {
 public:
-	Environment();
+	Environment(int argc, char *argv[]);
 	~Environment();
 
 	void update();
@@ -39,6 +39,10 @@ public:
 	[[nodiscard]] inline bool isRunning() const { return m_bRunning; }
 	[[nodiscard]] UString getExecutablePath() const;
 	void openURLInDefaultBrowser(UString url) const;
+
+	[[nodiscard]] inline const std::unordered_map<UString, std::optional<UString>> &getLaunchArgs() const { return m_mArgMap; }
+	[[nodiscard]] inline const std::vector<UString> &getCommandLine() const { return m_vCmdLine; }
+
 	// returns at least 1
 	[[nodiscard]] inline int getLogicalCPUCount() const { return SDL_GetNumLogicalCPUCores(); }
 
@@ -134,6 +138,9 @@ public:
 	// debug
 	[[nodiscard]] inline bool envDebug() const { return m_bEnvDebug; }
 protected:
+	std::unordered_map<UString, std::optional<UString>> m_mArgMap;
+	std::vector<UString> m_vCmdLine;
+	Engine *initEngine();
 	Engine *m_engine;
 
 	SDL_Window *m_window;

@@ -46,9 +46,39 @@ ConVar _processpriority("processpriority", 0, FCVAR_NONE, "sets the main process
 
 Environment *env = nullptr;
 
-Environment::Environment()
+Environment::Environment(int argc, char *argv[])
 {
 	env = this;
+
+	// parse args
+	m_mArgMap = [&]() {
+		// example usages:
+		// args.contains("-file")
+		// auto filename = args["-file"].value_or("default.txt");
+		// if (args["-output"].has_value())
+		// 	auto outfile = args["-output"].value();
+		std::unordered_map<UString, std::optional<UString>> args;
+		for (int i = 1; i < argc; ++i)
+		{
+			std::string_view arg = argv[i];
+			if (arg.starts_with('-'))
+				if (i + 1 < argc && !(argv[i + 1][0] == '-'))
+				{
+					args[UString(arg)] = argv[i + 1];
+					++i;
+				}
+				else
+					args[UString(arg)] = std::nullopt;
+			else
+				args[UString(arg)] = std::nullopt;
+		}
+		return args;
+	}();
+
+	// simple vector representation of the whole cmdline including the program name (as the first element)
+	m_vCmdLine = std::vector<UString>(argv, argv + argc);
+
+	m_engine = nullptr; // will be initialized by the mainloop once setup is complete
 	m_window = nullptr;
 
 	m_bRunning = true;
@@ -92,11 +122,16 @@ Environment::Environment()
 
 Environment::~Environment()
 {
-	SAFE_DELETE(m_engine);
 	for (auto cur : m_mCursorIcons)
 	{
 		SDL_DestroyCursor(cur.second);
 	}
+}
+
+// called by mainloop when initialization is ready
+Engine *Environment::initEngine()
+{
+	return new Engine();
 }
 
 // well this doesn't do much atm... called at the end of engine->onUpdate
@@ -124,9 +159,11 @@ void Environment::shutdown()
 	SDL_PushEvent(&event);
 }
 
+// TODO
 void Environment::restart()
 {
-	// TODO (probably the environment should never be restarted, just the engine (somehow))
+	// SAFE_DELETE(m_engine);
+	// m_engine = new Engine();
 	shutdown();
 }
 
@@ -568,7 +605,7 @@ HWND Environment::getHwnd() const
 	NSWindow *nswindow = (__bridge NSWindow *)SDL_GetPointerProperty(SDL_GetWindowProperties(m_window), SDL_PROP_WINDOW_COCOA_WINDOW_POINTER, NULL);
 	if (nswindow)
 	{
-		#warning "getHwnd() TODO"
+#warning "getHwnd() TODO"
 	}
 #elif defined(MCENGINE_PLATFORM_LINUX)
 	if (SDL_strcmp(SDL_GetCurrentVideoDriver(), "x11") == 0)
@@ -631,7 +668,10 @@ Vector2 Environment::getNativeScreenSize() const
 
 McRect Environment::getDesktopRect() const
 {
-	return {{0, 0}, getNativeScreenSize()};
+	return {
+	    {0, 0},
+        getNativeScreenSize()
+    };
 }
 
 McRect Environment::getWindowRect() const
@@ -694,7 +734,7 @@ void Environment::setCursorVisible(bool visible)
 			notifyWantRawInput(false);
 			setOSMousePos(getMousePos().nudge(getWindowSize() / 2.0f, 1.0f)); // nudge it outwards
 		}
-		else                                                                                        // snap the OS cursor to virtual cursor position
+		else                                                                        // snap the OS cursor to virtual cursor position
 			setOSMousePos(mouse->getRealPos().nudge(getWindowSize() / 2.0f, 1.0f)); // nudge it outwards
 		SDL_ShowCursor();
 	}
@@ -714,7 +754,10 @@ void Environment::setCursorClip(bool clip, McRect rect)
 	{
 		if (mouse->isRawInput())
 		{
-			const SDL_Rect clipRect{static_cast<int>(rect.getX()), static_cast<int>(rect.getY()), static_cast<int>(rect.getWidth()), static_cast<int>(rect.getHeight())};
+			const SDL_Rect clipRect{.x = static_cast<int>(rect.getX()),
+			                        .y = static_cast<int>(rect.getY()),
+			                        .w = static_cast<int>(rect.getWidth()),
+			                        .h = static_cast<int>(rect.getHeight())};
 			SDL_SetWindowMouseRect(m_window, &clipRect);
 		}
 		SDL_SetWindowMouseGrab(m_window, true);
@@ -756,10 +799,13 @@ void Environment::listenToTextInput(bool listen)
 void Environment::initCursors()
 {
 	m_mCursorIcons = {
-	    {CURSORTYPE::CURSOR_NORMAL, SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_DEFAULT)},      {CURSORTYPE::CURSOR_WAIT, SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_WAIT)},
-	    {CURSORTYPE::CURSOR_SIZE_H, SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_EW_RESIZE)},    {CURSORTYPE::CURSOR_SIZE_V, SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_NS_RESIZE)},
-	    {CURSORTYPE::CURSOR_SIZE_HV, SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_NESW_RESIZE)}, {CURSORTYPE::CURSOR_SIZE_VH, SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_NWSE_RESIZE)},
-	    {CURSORTYPE::CURSOR_TEXT, SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_TEXT)},
+	    {CURSORTYPE::CURSOR_NORMAL,  SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_DEFAULT)    },
+	    {CURSORTYPE::CURSOR_WAIT,    SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_WAIT)       },
+	    {CURSORTYPE::CURSOR_SIZE_H,  SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_EW_RESIZE)  },
+	    {CURSORTYPE::CURSOR_SIZE_V,  SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_NS_RESIZE)  },
+	    {CURSORTYPE::CURSOR_SIZE_HV, SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_NESW_RESIZE)},
+	    {CURSORTYPE::CURSOR_SIZE_VH, SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_NWSE_RESIZE)},
+	    {CURSORTYPE::CURSOR_TEXT,    SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_TEXT)       },
 	};
 }
 
@@ -771,7 +817,7 @@ void Environment::initMonitors(bool force)
 		m_mMonitors.clear();
 
 	int count = -1;
-	const SDL_DisplayID* displays = SDL_GetDisplays(&count);
+	const SDL_DisplayID *displays = SDL_GetDisplays(&count);
 
 	for (int i = 0; i < count; i++)
 	{

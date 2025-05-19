@@ -10,6 +10,7 @@
 #include <cstring>
 #include <cwchar>
 #include <cwctype>
+#include <numeric>
 #include <utility>
 
 #define USTRING_MASK_1BYTE 0x80  /* 1000 0000 */
@@ -57,10 +58,19 @@ UString::UString(const char *utf8, int length) : m_length(0), m_lengthUtf8(lengt
 	}
 }
 
+UString::UString(std::string_view utf8) : m_length(0), m_lengthUtf8(static_cast<int>(utf8.length())), m_isAsciiOnly(true)
+{
+	if (!utf8.empty())
+	{
+		fromUtf8(utf8.data(), static_cast<int>(utf8.length()));
+	}
+}
+
 UString::UString(const UString &ustr) = default;
 
 UString::UString(UString &&ustr) noexcept
-    : m_unicode(std::move(ustr.m_unicode)), m_utf8(std::move(ustr.m_utf8)), m_length(ustr.m_length), m_lengthUtf8(ustr.m_lengthUtf8), m_isAsciiOnly(ustr.m_isAsciiOnly)
+    : m_unicode(std::move(ustr.m_unicode)), m_utf8(std::move(ustr.m_utf8)), m_length(ustr.m_length), m_lengthUtf8(ustr.m_lengthUtf8),
+      m_isAsciiOnly(ustr.m_isAsciiOnly)
 {
 	// reset moved-from object
 	ustr.m_length = 0;
@@ -123,6 +133,14 @@ UString UString::format(const char *utf8format, ...)
 	}
 
 	std::unreachable();
+}
+
+UString UString::join(const std::vector<UString> &vec, const UString &delim)
+{
+	if (vec.empty())
+		return "";
+
+	return std::accumulate(std::next(vec.begin()), vec.end(), vec[0], [&delim](const UString &a, const UString &b) { return a + delim + b; });
 }
 
 bool UString::isWhitespaceOnly() const

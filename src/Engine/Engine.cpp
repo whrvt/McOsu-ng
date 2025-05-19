@@ -92,10 +92,9 @@ Engine *engine = NULL;
 Console *Engine::m_console = NULL;
 ConsoleBox *Engine::m_consoleBox = NULL;
 
-Engine::Engine(const char *args)
+Engine::Engine()
 {
 	engine = this;
-	m_sArgs = UString(args);
 
 	m_guiContainer = nullptr;
 	m_visualProfiler = nullptr;
@@ -107,7 +106,7 @@ Engine::Engine(const char *args)
 	// print debug information
 	debugLog("-= Engine Startup =-\n");
 	_version();
-	debugLog("Engine: args = %s\n", m_sArgs.toUtf8());
+	debugLog("cmdline: %s\n", UString::join(env->getCommandLine()).toUtf8());
 
 	// timing
 	m_timer = new Timer(false);
@@ -130,6 +129,7 @@ Engine::Engine(const char *args)
 
 	// custom
 	m_bDrawing = false;
+	m_bIsRestarting = false;
 
 	// math (its own singleton)
 	m_math = new McMath();
@@ -271,7 +271,16 @@ Engine::~Engine()
 	debugLog("Engine: Freeing math...\n");
 	SAFE_DELETE(m_math);
 
-	debugLog("Engine: Goodbye.");
+	if (m_bIsRestarting)
+	{
+		debugLog("Engine: Resetting ConVar callbacks...\n");
+		convar->resetAllConVarCallbacks();
+		debugLog("Engine: Restarting...\n");
+	}
+	else
+	{
+		debugLog("Engine: Goodbye.");
+	}
 
 	engine = NULL;
 }
@@ -577,7 +586,6 @@ void Engine::onShutdown()
 		return;
 
 	m_bBlackout = true;
-	env->shutdown();
 }
 
 void Engine::onMouseMotion(float x, float y, float xRel, float yRel, bool isRawInput)
@@ -682,11 +690,13 @@ void Engine::onKeyboardChar(KEYCODE charCode)
 void Engine::shutdown()
 {
 	onShutdown();
+	env->shutdown();
 }
 
 void Engine::restart()
 {
 	onShutdown();
+	m_bIsRestarting = true;
 	env->restart();
 }
 

@@ -2,7 +2,7 @@ Language: C
 BasedOnStyle: Microsoft
 UseTab: ForIndentation
 IndentWidth: 4
-ColumnLimit: 180
+ColumnLimit: 165
 AllowShortFunctionsOnASingleLine: Inline
 IndentAccessModifiers: false
 AccessModifierOffset: -4
@@ -16,12 +16,14 @@ Language: Cpp
 BasedOnStyle: Microsoft
 UseTab: ForIndentation
 IndentWidth: 4
-ColumnLimit: 180
+ColumnLimit: 165
 AllowShortFunctionsOnASingleLine: Inline
 IndentAccessModifiers: false
 AccessModifierOffset: -4
 AllowShortBlocksOnASingleLine: Empty
 AllowShortIfStatementsOnASingleLine: Never
+AlignArrayOfStructures: Left
+ExperimentalAutoDetectBinPacking: true
 BreakBeforeConceptDeclarations: Always
 BreakTemplateDeclarations: Yes
 BreakBeforeBraces: Custom
