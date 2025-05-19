@@ -134,7 +134,6 @@ McOsu_ng_SOURCES = \
 	src/Engine/Sound/BASS/BassSoundEngine.cpp \
 	src/Engine/Sound/SDL_mixer/SDLSound.cpp \
 	src/Engine/Sound/SDL_mixer/SDLSoundEngine.cpp \
-	src/Engine/Sound/SoLoud/SoLoudManager.cpp \
 	src/Engine/Sound/SoLoud/SoLoudSound.cpp \
 	src/Engine/Sound/SoLoud/SoLoudSoundEngine.cpp \
 	src/Engine/Sound/SoLoud/SoundTouchFilter.cpp \

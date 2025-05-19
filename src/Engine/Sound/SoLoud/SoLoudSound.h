@@ -18,7 +18,6 @@
 #include <soloud/soloud_wavstream.h>
 
 #include "Engine.h"
-#include "SoLoudManager.h"
 #include "SoundTouchFilter.h"
 
 class SoLoudSound : public Sound

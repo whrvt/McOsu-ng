@@ -6,7 +6,6 @@
 //================================================================================//
 
 #include "SoLoudSoundEngine.h"
-#include "SoLoudManager.h"
 #include "SoLoudSound.h"
 
 #ifdef MCENGINE_FEATURE_SOLOUD
@@ -27,9 +26,16 @@ extern ConVar debug_snd;
 ConVar snd_soloud_buffer("snd_soloud_buffer", SoLoud::Soloud::AUTO, FCVAR_NONE, "SoLoud audio device buffer size");
 ConVar snd_soloud_backend("snd_soloud_backend", Env::cfg(OS::WASM) ? "SDL3" : "MiniAudio", FCVAR_NONE, R"(SoLoud backend, "MiniAudio" or "SDL3" (MiniAudio is default on desktop))");
 
+std::unique_ptr<SoLoud::Soloud> SoLoudSoundEngine::s_SLInstance = nullptr;
+SoLoud::Soloud *soloud = nullptr;
+
 SoLoudSoundEngine::SoLoudSoundEngine() : SoundEngine()
 {
-	m_slManager = new SL();
+	if (!s_SLInstance)
+	{
+		s_SLInstance = std::make_unique<SoLoud::Soloud>();
+		soloud = s_SLInstance.get();
+	}
 
 	m_iCurrentOutputDevice = -1;
 	m_sCurrentOutputDevice = "Default";
@@ -58,8 +64,9 @@ SoLoudSoundEngine::SoLoudSoundEngine() : SoundEngine()
 SoLoudSoundEngine::~SoLoudSoundEngine()
 {
 	if (m_bReady)
-		SL::deinit();
-	SAFE_DELETE(m_slManager);
+		soloud->deinit();
+	s_SLInstance.reset();
+	soloud = nullptr;
 }
 
 void SoLoudSoundEngine::restart()
@@ -92,10 +99,10 @@ bool SoLoudSoundEngine::play(Sound *snd, float pan, float pitch)
 		return false;
 
 	auto handle = snd->getHandle();
-	if (handle != 0 && SL::getPause(handle))
+	if (handle != 0 && soloud->getPause(handle))
 	{
 		// just unpause if paused
-		SL::setPause(handle, false);
+		soloud->setPause(handle, false);
 		return true;
 	}
 
@@ -120,8 +127,8 @@ bool SoLoudSoundEngine::playSound(SoLoudSound *soloudSound, float pan, float pit
 	// if the sound is already playing and not overlayable, stop it
 	if (soloudSound->m_handle != 0 && !soloudSound->isOverlayable())
 	{
-		restorePos = SL::getStreamPosition(soloudSound->m_handle);
-		SL::stop(soloudSound->m_handle);
+		restorePos = soloud->getStreamPosition(soloudSound->m_handle);
+		soloud->stop(soloudSound->m_handle);
 		soloudSound->m_handle = 0;
 	}
 
@@ -144,7 +151,7 @@ bool SoLoudSoundEngine::playSound(SoLoudSound *soloudSound, float pan, float pit
 		// streaming audio (music) - always use SoundTouch filter
 		handle = playSoundWithFilter(soloudSound, pan, soloudSound->m_fVolume);
 		if (handle)
-			SL::setProtectVoice(handle, true); // protect the music channel (don't let it get interrupted when many sounds play back at once)
+			soloud->setProtectVoice(handle, true); // protect the music channel (don't let it get interrupted when many sounds play back at once)
 			                                   // NOTE: this doesn't seem to work properly, not sure why... need to setMaxActiveVoiceCount higher than the default 16
 			                                   // as a workaround, otherwise rapidly overlapping samples like from buzzsliders can cause glitches in music playback
 			                                   // TODO: a better workaround would be to manually prevent samples from playing if
@@ -171,14 +178,14 @@ bool SoLoudSoundEngine::playSound(SoLoudSound *soloudSound, float pan, float pit
 	if (handle != 0)
 	{
 		if (restorePos != 0.0)
-			SL::seek(handle, restorePos); // restore the position to where we were pre-pause
+			soloud->seek(handle, restorePos); // restore the position to where we were pre-pause
 
 		// store the handle and mark playback time
 		soloudSound->m_handle = handle;
 		soloudSound->setLastPlayTime(Timing::getTimeReal());
 
 		// get the actual sample rate for the file from SoLoud
-		float actualFreq = SL::getSamplerate(handle);
+		float actualFreq = soloud->getSamplerate(handle);
 		if (actualFreq > 0)
 			soloudSound->m_frequency = actualFreq;
 
@@ -204,11 +211,11 @@ unsigned int SoLoudSoundEngine::playSoundWithFilter(SoLoudSound *soloudSound, fl
 	soloudSound->updateFilterParameters();
 
 	// play through the filter
-	unsigned int handle = SL::play(*filter, volume);
+	unsigned int handle = soloud->play(*filter, volume);
 
 	if (handle != 0)
 	{
-		SL::setPan(handle, pan);
+		soloud->setPan(handle, pan);
 		if (debug_snd.getBool())
 			debugLog("SoLoudSoundEngine: Playing through SoundTouch filter with speed=%f, pitch=%f\n", soloudSound->m_speed, soloudSound->m_pitch);
 	}
@@ -222,15 +229,15 @@ unsigned int SoLoudSoundEngine::playDirectSound(SoLoudSound *soloudSound, float 
 		return 0;
 
 	// play directly
-	unsigned int handle = SL::play(*soloudSound->m_audioSource, volume);
+	unsigned int handle = soloud->play(*soloudSound->m_audioSource, volume);
 
 	if (handle != 0)
 	{
-		SL::setPan(handle, pan);
+		soloud->setPan(handle, pan);
 
 		// set relative play speed (affects both pitch and speed)
 		if (pitch != 1.0f)
-			SL::setRelativePlaySpeed(handle, pitch);
+			soloud->setRelativePlaySpeed(handle, pitch);
 	}
 
 	return handle;
@@ -241,7 +248,7 @@ unsigned int SoLoudSoundEngine::play3dSound(SoLoudSound *soloudSound, Vector3 po
 	if (!soloudSound || !soloudSound->m_audioSource)
 		return 0;
 
-	unsigned int handle = SL::play3d(*soloudSound->m_audioSource, pos.x, pos.y, pos.z, 0, 0, 0, volume);
+	unsigned int handle = soloud->play3d(*soloudSound->m_audioSource, pos.x, pos.y, pos.z, 0, 0, 0, volume);
 
 	return handle;
 }
@@ -267,7 +274,7 @@ void SoLoudSoundEngine::pause(Sound *snd)
 	if (!soloudSound || soloudSound->m_handle == 0)
 		return;
 
-	SL::setPause(soloudSound->m_handle, true);
+	soloud->setPause(soloudSound->m_handle, true);
 	soloudSound->setLastPlayTime(0.0);
 }
 
@@ -280,7 +287,7 @@ void SoLoudSoundEngine::stop(Sound *snd)
 	if (!soloudSound || soloudSound->m_handle == 0)
 		return;
 
-	SL::stop(soloudSound->m_handle);
+	soloud->stop(soloudSound->m_handle);
 	soloudSound->m_handle = 0;
 	soloudSound->setPosition(0.0);
 	soloudSound->setLastPlayTime(0.0);
@@ -331,7 +338,7 @@ void SoLoudSoundEngine::setVolume(float volume)
 		return;
 
 	m_fVolume = std::clamp<float>(volume, 0.0f, 1.0f);
-	SL::setGlobalVolume(m_fVolume);
+	soloud->setGlobalVolume(m_fVolume);
 }
 
 void SoLoudSoundEngine::set3dPosition(Vector3 headPos, Vector3 viewDir, Vector3 viewUp)
@@ -340,14 +347,14 @@ void SoLoudSoundEngine::set3dPosition(Vector3 headPos, Vector3 viewDir, Vector3 
 		return;
 
 	// set listener position
-	SL::set3dListenerPosition(headPos.x, headPos.y, headPos.z);
+	soloud->set3dListenerPosition(headPos.x, headPos.y, headPos.z);
 
 	// set listener orientation (at and up vectors)
 	Vector3 at = headPos + viewDir; // "at" point = position + direction
-	SL::set3dListenerAt(at.x, at.y, at.z);
-	SL::set3dListenerUp(viewUp.x, viewUp.y, viewUp.z);
+	soloud->set3dListenerAt(at.x, at.y, at.z);
+	soloud->set3dListenerUp(viewUp.x, viewUp.y, viewUp.z);
 
-	SL::update3dAudio();
+	soloud->update3dAudio();
 }
 
 std::vector<UString> SoLoudSoundEngine::getOutputDevices()
@@ -382,7 +389,7 @@ bool SoLoudSoundEngine::initializeOutputDevice(int id, bool force)
 	// cleanup potential previous device
 	if (m_bReady)
 	{
-		SL::deinit();
+		soloud->deinit();
 		m_bReady = false;
 	}
 
@@ -417,7 +424,7 @@ bool SoLoudSoundEngine::initializeOutputDevice(int id, bool force)
 	SDL_SetHintWithPriority(SDL_HINT_AUDIO_DEVICE_STREAM_ROLE, "game", SDL_HINT_OVERRIDE);
 
 	// initialize SoLoud through the manager
-	SoLoud::result result = SL::init(flags, backend, sampleRate, bufferSize, channels);
+	SoLoud::result result = soloud->init(flags, backend, sampleRate, bufferSize, channels);
 
 	if (result != SoLoud::SO_NO_ERROR)
 	{
@@ -426,9 +433,9 @@ bool SoLoudSoundEngine::initializeOutputDevice(int id, bool force)
 		return false;
 	}
 
-	if (SL::getMaxActiveVoiceCount() != 255)
+	if (soloud->getMaxActiveVoiceCount() != 255)
 	{
-		SoLoud::result res = SL::setMaxActiveVoiceCount(255);
+		SoLoud::result res = soloud->setMaxActiveVoiceCount(255);
 		if (res != SoLoud::SO_NO_ERROR)
 			debugLog("SoundEngine WARNING: failed to setMaxActiveVoiceCount (%i)\n", res);
 	}
@@ -444,8 +451,8 @@ bool SoLoudSoundEngine::initializeOutputDevice(int id, bool force)
 	}
 
 	debugLog("SoundEngine: Initialized SoLoud with output device = \"%s\" flags: 0x%x, backend: %s, sampleRate: %u, bufferSize: %u, channels: %u, maxActiveVoiceCount: %u\n",
-	         m_sCurrentOutputDevice.toUtf8(), flags, SL::getBackendString(), SL::getBackendSamplerate(), SL::getBackendBuffersize(), SL::getBackendChannels(),
-	         SL::getMaxActiveVoiceCount());
+	         m_sCurrentOutputDevice.toUtf8(), flags, soloud->getBackendString(), soloud->getBackendSamplerate(), soloud->getBackendBufferSize(), soloud->getBackendChannels(),
+	         soloud->getMaxActiveVoiceCount());
 
 	m_bReady = true;
 

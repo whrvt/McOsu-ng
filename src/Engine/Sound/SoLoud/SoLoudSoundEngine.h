@@ -14,12 +14,12 @@
 
 #include <soloud/soloud.h>
 
-#include "SoLoudManager.h"
-
 class SoLoudSound;
 
 class SoLoudSoundEngine : public SoundEngine
 {
+private:
+	static std::unique_ptr<SoLoud::Soloud> s_SLInstance;
 public:
 	SoLoudSoundEngine();
 	~SoLoudSoundEngine() override;
@@ -51,9 +51,9 @@ public:
 private:
 	void updateOutputDevices(bool handleOutputDeviceChanges, bool printInfo) override;
 	bool initializeOutputDevice(int id = -1, bool force = false) override;
-
-	SL* m_slManager;
 };
+
+extern SoLoud::Soloud *soloud;
 
 #else
 class SoLoudSoundEngine : public SoundEngine

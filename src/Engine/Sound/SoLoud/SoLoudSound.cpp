@@ -9,7 +9,6 @@
 
 #ifdef MCENGINE_FEATURE_SOLOUD
 
-#include "SoLoudManager.h"
 #include "SoLoudSoundEngine.h"
 
 #include "ConVar.h"
@@ -216,7 +215,7 @@ void SoLoudSound::destroy()
 	// stop the sound if it's playing
 	if (m_handle != 0)
 	{
-		SL::stop(m_handle);
+		soloud->stop(m_handle);
 		m_handle = 0;
 	}
 
@@ -271,7 +270,7 @@ void SoLoudSound::setPosition(double percent)
 		         static_cast<unsigned long>(streamLengthInSeconds * 1000));
 
 	// seek
-	SL::seek(m_handle, positionInSeconds);
+	soloud->seek(m_handle, positionInSeconds);
 }
 
 void SoLoudSound::setPositionMS(unsigned long ms, bool internal)
@@ -294,7 +293,7 @@ void SoLoudSound::setPositionMS(unsigned long ms, bool internal)
 		debugLog("seeking to %lums (length: %lums)\n", ms, streamLengthMS);
 
 	// seek
-	SL::seek(m_handle, positionInSeconds);
+	soloud->seek(m_handle, positionInSeconds);
 }
 
 void SoLoudSound::setVolume(float volume)
@@ -306,7 +305,7 @@ void SoLoudSound::setVolume(float volume)
 
 	// apply to active voice if not overlayable
 	if (!m_bIsOverlayable)
-		SL::setVolume(m_handle, m_fVolume);
+		soloud->setVolume(m_handle, m_fVolume);
 }
 
 void SoLoudSound::setSpeed(float speed)
@@ -395,7 +394,7 @@ void SoLoudSound::setPan(float pan)
 	pan = std::clamp<float>(pan, -1.0f, 1.0f);
 
 	// apply to the active voice
-	SL::setPan(m_handle, pan);
+	soloud->setPan(m_handle, pan);
 }
 
 void SoLoudSound::setLoop(bool loop)
@@ -413,7 +412,7 @@ void SoLoudSound::setLoop(bool loop)
 
 	// apply to the active voice
 	if (m_handle != 0)
-		SL::setLooping(m_handle, loop);
+		soloud->setLooping(m_handle, loop);
 }
 
 void SoLoudSound::setOverlayable(bool overlayable)
@@ -428,7 +427,7 @@ float SoLoudSound::getPosition()
 	if (!m_bReady || !m_audioSource || !m_handle)
 		return 0.0f;
 
-	double streamPositionInSeconds = SL::getStreamPosition(m_handle);
+	double streamPositionInSeconds = soloud->getStreamPosition(m_handle);
 
 	double streamLengthInSeconds = 0.0;
 	if (m_bStream && asWavStream())
@@ -448,7 +447,7 @@ unsigned long SoLoudSound::getPositionMS()
 	if (!m_bReady || !m_audioSource || !m_handle)
 		return 0;
 
-	double streamPositionInSeconds = SL::getStreamPosition(m_handle);
+	double streamPositionInSeconds = soloud->getStreamPosition(m_handle);
 
 	const double currentTime = Timing::getTimeReal();
 	const double streamPositionMS = streamPositionInSeconds * 1000.0;
@@ -579,7 +578,7 @@ float SoLoudSound::getFrequency()
 	// get sample rate from active voice
 	if (m_handle != 0)
 	{
-		float currentFreq = SL::getSamplerate(m_handle);
+		float currentFreq = soloud->getSamplerate(m_handle);
 		if (currentFreq > 0)
 			m_frequency = currentFreq;
 	}
@@ -593,7 +592,7 @@ bool SoLoudSound::isPlaying()
 		return false;
 
 	// a sound is playing if the handle is valid and the sound isn't paused
-	return SL::isValidVoiceHandle(m_handle) && !SL::getPause(m_handle);
+	return soloud->isValidVoiceHandle(m_handle) && !soloud->getPause(m_handle);
 }
 
 bool SoLoudSound::isFinished()
@@ -605,7 +604,7 @@ bool SoLoudSound::isFinished()
 		return true;
 
 	// a sound is finished if the handle is no longer valid
-	return !SL::isValidVoiceHandle(m_handle);
+	return !soloud->isValidVoiceHandle(m_handle);
 }
 
 void SoLoudSound::rebuild(UString newFilePath)
