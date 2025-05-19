@@ -4,17 +4,28 @@ on:
     branches:
       - master
       - dev2
+  workflow_dispatch:
+
+
 jobs:
+  matrix-prep:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - id: set-matrix
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" || "${{ github.ref }}" == "refs/heads/master" ]]; then
+            echo "matrix={\"arch\":[\"x64\",\"x32\"],\"include\":[{\"arch\":\"x64\",\"host\":\"x86_64-pc-linux-gnu\"},{\"arch\":\"x32\",\"host\":\"i686-pc-linux-gnu\"}]}" >> $GITHUB_OUTPUT
+          else
+            echo "matrix={\"arch\":[\"x64\"],\"include\":[{\"arch\":\"x64\",\"host\":\"x86_64-pc-linux-gnu\"}]}" >> $GITHUB_OUTPUT
+          fi
+
   build:
+    needs: matrix-prep
     runs-on: ubuntu-latest
     strategy:
-      matrix:
-        arch: [x64, x32]
-        include:
-          - arch: x64
-            host: x86_64-pc-linux-gnu
-          - arch: x32
-            host: i686-pc-linux-gnu
+      matrix: ${{ fromJson(needs.matrix-prep.outputs.matrix) }}
     defaults:
       run:
         working-directory: .
@@ -31,16 +42,6 @@ jobs:
         run: |
           mkdir -p "$(pwd)"/build
           mkdir -p "$(pwd)"/.ccache
-
-      - name: Cache dependencies
-        uses: actions/cache@v4
-        with:
-          path: |
-            ./build/build/deps
-            ./build/build/cache
-          key: deps-linux-${{ matrix.arch }}-${{ hashFiles('Makefile.in') }}
-          restore-keys: |
-            deps-linux-${{ matrix.arch }}-
 
       - name: ccache
         uses: actions/cache@v4
