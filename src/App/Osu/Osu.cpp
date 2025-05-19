@@ -138,11 +138,13 @@ ConVar *Osu::ui_scale = &osu_ui_scale;
 Vector2 Osu::g_vInternalResolution;
 Vector2 Osu::osuBaseResolution = Vector2(640.0f, 480.0f);
 
-Osu::Osu(Osu2 *osu2, int instanceID)
+Osu *osu = nullptr;
+
+Osu::Osu(int instanceID)
 {
+	osu = this;
 	srand(time(NULL));
 
-	m_osu2 = osu2;
 	m_iInstanceID = instanceID;
 
 	// convar refs
@@ -391,8 +393,8 @@ Osu::Osu(Osu2 *osu2, int instanceID)
 	m_frameBuffer2 = resourceManager->createRenderTarget(0, 0, 64, 64);
 
 	// load a few select subsystems very early
-	m_notificationOverlay = new OsuNotificationOverlay(this);
-	m_score = new OsuScore(this);
+	m_notificationOverlay = new OsuNotificationOverlay();
+	m_score = new OsuScore();
 	m_updateHandler = new OsuUpdateHandler();
 
 	// exec the main config file (this must be right here!)
@@ -408,7 +410,7 @@ Osu::Osu(Osu2 *osu2, int instanceID)
 
 	// load global resources
 	const int baseDPI = 96;
-	const int newDPI = Osu::getUIScale(this) * baseDPI;
+	const int newDPI = Osu::getUIScale() * baseDPI;
 
 	McFont *defaultFont = resourceManager->loadFont("weblysleekuisb.ttf", "FONT_DEFAULT", 15, true, newDPI);
 	m_titleFont = resourceManager->loadFont("SourceSansPro-Semibold.otf", "FONT_OSU_TITLE", 60, true, newDPI);
@@ -454,24 +456,24 @@ Osu::Osu(Osu2 *osu2, int instanceID)
 	}
 
 	// load subsystems, add them to the screens array
-	m_tooltipOverlay = new OsuTooltipOverlay(this);
-	m_vr = new OsuVR(this);
-	m_multiplayer = new OsuMultiplayer(this);
-	m_mainMenu = new OsuMainMenu(this);
-	m_optionsMenu = new OsuOptionsMenu(this);
-	m_songBrowser2 = new OsuSongBrowser2(this);
+	m_tooltipOverlay = new OsuTooltipOverlay();
+	m_vr = new OsuVR();
+	m_multiplayer = new OsuMultiplayer();
+	m_mainMenu = new OsuMainMenu();
+	m_optionsMenu = new OsuOptionsMenu();
+	m_songBrowser2 = new OsuSongBrowser2();
 	m_backgroundImageHandler = new OsuBackgroundImageHandler();
-	m_modSelector = new OsuModSelector(this);
-	m_rankingScreen = new OsuRankingScreen(this);
-	m_userStatsScreen = new OsuUserStatsScreen(this);
-	m_pauseMenu = new OsuPauseMenu(this);
-	m_hud = new OsuHUD(this);
-	m_vrTutorial = new OsuVRTutorial(this);
-	m_changelog = new OsuChangelog(this);
-	m_editor = new OsuEditor(this);
+	m_modSelector = new OsuModSelector();
+	m_rankingScreen = new OsuRankingScreen();
+	m_userStatsScreen = new OsuUserStatsScreen();
+	m_pauseMenu = new OsuPauseMenu();
+	m_hud = new OsuHUD();
+	m_vrTutorial = new OsuVRTutorial();
+	m_changelog = new OsuChangelog();
+	m_editor = new OsuEditor();
 	if constexpr (Env::cfg(FEAT::STEAM))
-		m_steamWorkshop = new OsuSteamWorkshop(this);
-	m_fposu = new OsuModFPoSu(this);
+		m_steamWorkshop = new OsuSteamWorkshop();
+	m_fposu = new OsuModFPoSu();
 
 	// the order in this vector will define in which order events are handled/consumed
 	m_screens.push_back(m_notificationOverlay);
@@ -552,6 +554,7 @@ Osu::~Osu()
 		SAFE_DELETE(m_steamWorkshop);
 	SAFE_DELETE(m_fposu);
 
+	SAFE_DELETE(m_updateHandler);
 	SAFE_DELETE(m_score);
 	SAFE_DELETE(m_vr);
 	SAFE_DELETE(m_multiplayer);
@@ -625,7 +628,7 @@ void Osu::draw(Graphics *g)
 
 		// draw auto cursor
 		if (isAuto && allowDrawCursor && !isFPoSu && beatmapStd != NULL && !beatmapStd->isLoading())
-			m_hud->drawCursor(g, m_osu_mod_fps_ref->getBool() ? OsuGameRules::getPlayfieldCenter(this) : beatmapStd->getCursorPos(), osu_mod_fadingcursor.getBool() ? fadingCursorAlpha : 1.0f);
+			m_hud->drawCursor(g, m_osu_mod_fps_ref->getBool() ? OsuGameRules::getPlayfieldCenter() : beatmapStd->getCursorPos(), osu_mod_fadingcursor.getBool() ? fadingCursorAlpha : 1.0f);
 
 		m_pauseMenu->draw(g);
 		m_modSelector->draw(g);
@@ -737,8 +740,8 @@ void Osu::draw(Graphics *g)
 		Vector2 offset = Vector2(graphics->getResolution().x/2 - g_vInternalResolution.x/2, graphics->getResolution().y/2 - g_vInternalResolution.y/2);
 		if (m_iInstanceID > 0)
 		{
-			const int numHorizontalInstances = 2 + (m_osu2->getNumInstances() > 4 ? 1 : 0);
-			const int numVerticalInstances = 1 + (m_osu2->getNumInstances() > 2 ? 1 : 0) + (m_osu2->getNumInstances() > 8 ? 1 : 0);
+			const int numHorizontalInstances = 2 + (osu2->getNumInstances() > 4 ? 1 : 0);
+			const int numVerticalInstances = 1 + (osu2->getNumInstances() > 2 ? 1 : 0) + (osu2->getNumInstances() > 8 ? 1 : 0);
 
 			float emptySpaceX = graphics->getResolution().x - numHorizontalInstances*g_vInternalResolution.x;
 			float emptySpaceY = graphics->getResolution().y - numVerticalInstances*g_vInternalResolution.y;
@@ -1905,14 +1908,14 @@ void Osu::onPlayStart()
 	updateConfineCursor();
 	updateWindowsKeyDisable();
 
-	OsuRichPresence::onPlayStart(this);
+	OsuRichPresence::onPlayStart();
 }
 
 void Osu::onPlayEnd(bool quit)
 {
 	debugLog("\n");
 
-	OsuRichPresence::onPlayEnd(this, quit);
+	OsuRichPresence::onPlayEnd(quit);
 
 	m_snd_change_check_interval_ref->setValue(m_snd_change_check_interval_ref->getDefaultFloat());
 
@@ -2110,7 +2113,7 @@ void Osu::onResolutionChanged(Vector2 newResolution)
 
 	if (engine->isMinimized()) return; // ignore if minimized
 
-	const float prevUIScale = getUIScale(this);
+	const float prevUIScale = getUIScale();
 
 	if (m_iInstanceID < 1)
 	{
@@ -2142,7 +2145,7 @@ void Osu::onResolutionChanged(Vector2 newResolution)
 	}
 
 	// update dpi specific engine globals
-	m_ui_scrollview_scrollbarwidth_ref->setValue(15.0f * Osu::getUIScale(this)); // not happy with this as a convar
+	m_ui_scrollview_scrollbarwidth_ref->setValue(15.0f * Osu::getUIScale()); // not happy with this as a convar
 
 	// interfaces
 	for (int i=0; i<m_screens.size(); i++)
@@ -2169,7 +2172,7 @@ void Osu::onResolutionChanged(Vector2 newResolution)
 	};
 
 	// a bit hacky, but detect resolution-specific-dpi-scaling changes and force a font and layout reload after a 1 frame delay (1/2)
-	if (!LossyComparisonToFixExcessFPUPrecisionBugBecauseFuckYou::equalEpsilon(getUIScale(this), prevUIScale))
+	if (!LossyComparisonToFixExcessFPUPrecisionBugBecauseFuckYou::equalEpsilon(getUIScale(), prevUIScale))
 		m_bFireDelayedFontReloadAndResolutionChangeToFixDesyncedUIScaleScheduled = true;
 }
 
@@ -2224,7 +2227,7 @@ void Osu::rebuildRenderTargets()
 void Osu::reloadFonts()
 {
 	const int baseDPI = 96;
-	const int newDPI = Osu::getUIScale(this) * baseDPI;
+	const int newDPI = Osu::getUIScale() * baseDPI;
 
 	for (McFont *font : m_fonts)
 	{
@@ -2285,7 +2288,7 @@ void Osu::onInternalResolutionChanged(UString oldValue, UString args)
 {
 	if (args.length() < 7) return;
 
-	const float prevUIScale = getUIScale(this);
+	const float prevUIScale = getUIScale();
 
 	std::vector<UString> resolution = args.split("x");
 	if (resolution.size() != 2)
@@ -2321,7 +2324,7 @@ void Osu::onInternalResolutionChanged(UString oldValue, UString args)
 	}
 
 	// a bit hacky, but detect resolution-specific-dpi-scaling changes and force a font and layout reload after a 1 frame delay (2/2)
-	if (getUIScale(this) != prevUIScale)
+	if (getUIScale() != prevUIScale)
 		m_bFireDelayedFontReloadAndResolutionChangeToFixDesyncedUIScaleScheduled = true;
 }
 
@@ -2449,7 +2452,7 @@ void Osu::onSkinChange(UString oldValue, UString newValue)
 			newValue = osu_skin_workshop_title.getString();
 		}
 	}
-	m_skinScheduledToLoad = new OsuSkin(this, newValue, skinFolder, (newValue == "default" || newValue == "defaultvr"), isWorkshopSkin);
+	m_skinScheduledToLoad = new OsuSkin(newValue, skinFolder, (newValue == "default" || newValue == "defaultvr"), isWorkshopSkin);
 
 	// initial load
 	if (m_skin == NULL)
@@ -2717,7 +2720,7 @@ float Osu::getImageScaleToFillResolution(Image *img, Vector2 resolution)
 	return getImageScaleToFillResolution(Vector2(img->getWidth(), img->getHeight()), resolution);
 }
 
-float Osu::getImageScale(Osu *osu, Vector2 size, float osuSize)
+float Osu::getImageScale(Vector2 size, float osuSize)
 {
 	int swidth = osu->getScreenWidth();
 	int sheight = osu->getScreenHeight();
@@ -2736,12 +2739,12 @@ float Osu::getImageScale(Osu *osu, Vector2 size, float osuSize)
 	return xDiameter/size.x > yDiameter/size.y ? xDiameter/size.x : yDiameter/size.y;
 }
 
-float Osu::getImageScale(Osu *osu, Image *img, float osuSize)
+float Osu::getImageScale(Image *img, float osuSize)
 {
-	return getImageScale(osu, Vector2(img->getWidth(), img->getHeight()), osuSize);
+	return getImageScale(Vector2(img->getWidth(), img->getHeight()), osuSize);
 }
 
-float Osu::getUIScale(Osu *osu, float osuResolutionRatio)
+float Osu::getUIScale(float osuResolutionRatio)
 {
 	int swidth = osu->getScreenWidth();
 	int sheight = osu->getScreenHeight();
@@ -2760,7 +2763,7 @@ float Osu::getUIScale(Osu *osu, float osuResolutionRatio)
 	return xDiameter > yDiameter ? xDiameter : yDiameter;
 }
 
-float Osu::getUIScale(Osu *osu)
+float Osu::getUIScale()
 {
 	if (isInVRMode())
 		return 1.0f;

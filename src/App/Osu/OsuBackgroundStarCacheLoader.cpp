@@ -54,14 +54,14 @@ void OsuBackgroundStarCacheLoader::initAsync()
 		m_beatmap->m_speedDifficultStrainsForNumHitObjects.clear();
 
 		const UString &osuFilePath = diff2->getFilePath();
-		const Osu::GAMEMODE gameMode = m_beatmap->getOsu()->getGamemode();
+		const Osu::GAMEMODE gameMode = osu->getGamemode();
 		const float AR = m_beatmap->getAR();
 		const float CS = m_beatmap->getCS();
 		const float OD = m_beatmap->getOD();
-		const float speedMultiplier = m_beatmap->getOsu()->getSpeedMultiplier(); // NOTE: not beatmap->getSpeedMultiplier()!
-		const bool relax = m_beatmap->getOsu()->getModRelax();
-		const bool autopilot = m_beatmap->getOsu()->getModAutopilot();
-		const bool touchDevice = m_beatmap->getOsu()->getModTD();
+		const float speedMultiplier = osu->getSpeedMultiplier(); // NOTE: not beatmap->getSpeedMultiplier()!
+		const bool relax = osu->getModRelax();
+		const bool autopilot = osu->getModAutopilot();
+		const bool touchDevice = osu->getModTD();
 
 		OsuDatabaseBeatmap::LOAD_DIFFOBJ_RESULT diffres = OsuDatabaseBeatmap::loadDifficultyHitObjects(osuFilePath, gameMode, AR, CS, speedMultiplier, false, m_bDead);
 

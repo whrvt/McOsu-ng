@@ -33,7 +33,7 @@ class ConVar;
 class OsuModSelector : public OsuScreen
 {
 public:
-	OsuModSelector(Osu *osu);
+	OsuModSelector();
 	virtual ~OsuModSelector();
 
 	virtual void draw(Graphics *g);

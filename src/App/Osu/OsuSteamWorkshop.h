@@ -45,7 +45,7 @@ public:
 	};
 
 public:
-	OsuSteamWorkshop(Osu *osu);
+	OsuSteamWorkshop();
 	~OsuSteamWorkshop();
 
 	void refresh(bool async, bool alsoLoadDetailsWhichTakeVeryLongToLoad = true);
@@ -62,7 +62,6 @@ private:
 	void onUpload();
 	void handleUploadError(UString errorMessage);
 
-	Osu *m_osu;
 	OsuSteamWorkshopLoader *m_loader;
 	OsuSteamWorkshopUploader *m_uploader;
 

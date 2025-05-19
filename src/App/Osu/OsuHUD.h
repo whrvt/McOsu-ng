@@ -29,7 +29,7 @@ class CBaseUIContainer;
 class OsuHUD : public OsuScreen
 {
 public:
-	OsuHUD(Osu *osu);
+	OsuHUD();
 	virtual ~OsuHUD();
 
 	virtual void draw(Graphics *g);

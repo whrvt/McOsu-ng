@@ -180,7 +180,7 @@ public:
 	};
 
 public:
-	OsuDatabase(Osu *osu);
+	OsuDatabase();
 	~OsuDatabase();
 
 	void update();
@@ -254,7 +254,6 @@ private:
 	void onScoresRename(UString args);
 	void onScoresExport();
 
-	Osu *m_osu;
 	Timer *m_importTimer;
 	bool m_bIsFirstLoad;	// only load differences after first raw load
 	bool m_bFoundChanges;	// for total refresh detection of raw loading

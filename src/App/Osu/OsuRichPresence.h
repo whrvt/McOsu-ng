@@ -18,10 +18,10 @@ class Osu;
 class OsuRichPresence
 {
 public:
-	static void onMainMenu(Osu *osu);
-	static void onSongBrowser(Osu *osu);
-	static void onPlayStart(Osu *osu);
-	static void onPlayEnd(Osu *osu, bool quit);
+	static void onMainMenu();
+	static void onSongBrowser();
+	static void onPlayStart();
+	static void onPlayEnd(bool quit);
 
 	static void onRichPresenceChange(UString oldValue, UString newValue);
 
@@ -32,7 +32,7 @@ private:
 
 	static ConVar *m_name_ref;
 
-	static void setStatus(Osu *osu, UString status, bool force = false);
+	static void setStatus(UString status, bool force = false);
 
 	static void onRichPresenceEnable();
 	static void onRichPresenceDisable();

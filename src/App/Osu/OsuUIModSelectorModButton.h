@@ -18,7 +18,7 @@ class OsuModSelector;
 class OsuUIModSelectorModButton : public CBaseUIButton
 {
 public:
-	OsuUIModSelectorModButton(Osu *osu, OsuModSelector* osuModSelector, float xPos, float yPos, float xSize, float ySize, UString name);
+	OsuUIModSelectorModButton(OsuModSelector* osuModSelector, float xPos, float yPos, float xSize, float ySize, UString name);
 
 	virtual void draw(Graphics *g);
 	virtual void update();
@@ -42,7 +42,6 @@ private:
 	void setOn(bool on);
 	void setState(int state, bool updateModConVar = true);
 
-	Osu *m_osu;
 	OsuModSelector *m_osuModSelector;
 
 	bool m_bAvailable;

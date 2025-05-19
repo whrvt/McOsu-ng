@@ -342,7 +342,7 @@ private:
 ConVar *OsuDatabase::m_name_ref = NULL;
 ConVar *OsuDatabase::m_osu_songbrowser_scores_sortingtype_ref = NULL;
 
-OsuDatabase::OsuDatabase(Osu *osu)
+OsuDatabase::OsuDatabase()
 {
 	// convar refs
 	if (m_name_ref == NULL)
@@ -362,7 +362,7 @@ OsuDatabase::OsuDatabase(Osu *osu)
 	m_fLoadingProgress = 0.0f;
 	m_bInterruptLoad = false;
 
-	m_osu = osu;
+	
 	m_iVersion = 0;
 	m_iFolderCount = 0;
 
@@ -1249,9 +1249,9 @@ void OsuDatabase::scheduleLoadRaw()
 
 		m_bFoundChanges = m_iNumBeatmapsToLoad > 0;
 		if (m_bFoundChanges)
-			m_osu->getNotificationOverlay()->addNotification(UString::format(m_iNumBeatmapsToLoad == 1 ? "Adding %i new beatmap." : "Adding %i new beatmaps.", m_iNumBeatmapsToLoad), 0xff00ff00);
+			osu->getNotificationOverlay()->addNotification(UString::format(m_iNumBeatmapsToLoad == 1 ? "Adding %i new beatmap." : "Adding %i new beatmaps.", m_iNumBeatmapsToLoad), 0xff00ff00);
 		else
-			m_osu->getNotificationOverlay()->addNotification(UString::format("No new beatmaps detected.", m_iNumBeatmapsToLoad), 0xff00ff00);
+			osu->getNotificationOverlay()->addNotification(UString::format("No new beatmaps detected.", m_iNumBeatmapsToLoad), 0xff00ff00);
 	}
 
 	debugLog("Database: Building beatmap database ...\n");
@@ -1323,7 +1323,7 @@ void OsuDatabase::loadDB(OsuFile *db, bool &fallbackToRawLoad)
 	if (m_iVersion < 20140609)
 	{
 		debugLog("Database: Version is below 20140609, not supported.\n");
-		m_osu->getNotificationOverlay()->addNotification("osu!.db version too old, update osu! and try again!", 0xffff0000);
+		osu->getNotificationOverlay()->addNotification("osu!.db version too old, update osu! and try again!", 0xffff0000);
 		m_fLoadingProgress = 1.0f;
 		return;
 	}
@@ -1331,7 +1331,7 @@ void OsuDatabase::loadDB(OsuFile *db, bool &fallbackToRawLoad)
 	if (m_iVersion < 20170222)
 	{
 		debugLog("Database: Version is quite old, below 20170222 ...\n");
-		m_osu->getNotificationOverlay()->addNotification("osu!.db version too old, update osu! and try again!", 0xffff0000);
+		osu->getNotificationOverlay()->addNotification("osu!.db version too old, update osu! and try again!", 0xffff0000);
 		m_fLoadingProgress = 1.0f;
 		return;
 	}
@@ -1340,14 +1340,14 @@ void OsuDatabase::loadDB(OsuFile *db, bool &fallbackToRawLoad)
 	{
 		if (m_iVersion < 20190207) // xexxar angles star recalc
 		{
-			m_osu->getNotificationOverlay()->addNotification("osu!.db version is old,  let osu! update when convenient.", 0xffffff00, false, 3.0f);
+			osu->getNotificationOverlay()->addNotification("osu!.db version is old,  let osu! update when convenient.", 0xffffff00, false, 3.0f);
 		}
 	}
 
 	// hard cap upper db version
 	if (m_iVersion > osu_database_version.getInt() && !osu_database_ignore_version.getBool())
 	{
-		m_osu->getNotificationOverlay()->addNotification(UString::format("osu!.db version unknown (%i),  using fallback loader.", m_iVersion), 0xffffff00, false, 5.0f);
+		osu->getNotificationOverlay()->addNotification(UString::format("osu!.db version unknown (%i),  using fallback loader.", m_iVersion), 0xffffff00, false, 5.0f);
 
 		fallbackToRawLoad = true;
 		m_fLoadingProgress = 0.0f;
@@ -1550,9 +1550,9 @@ void OsuDatabase::loadDB(OsuFile *db, bool &fallbackToRawLoad)
 			continue;
 
 		// fill diff with data
-		if ((mode == 0 && m_osu->getGamemode() == Osu::GAMEMODE::STD) || (mode == 0x03 && m_osu->getGamemode() == Osu::GAMEMODE::MANIA)) // gamemode filter
+		if ((mode == 0 && osu->getGamemode() == Osu::GAMEMODE::STD) || (mode == 0x03 && osu->getGamemode() == Osu::GAMEMODE::MANIA)) // gamemode filter
 		{
-			OsuDatabaseBeatmap *diff2 = new OsuDatabaseBeatmap(m_osu, fullFilePath, beatmapPath);
+			OsuDatabaseBeatmap *diff2 = new OsuDatabaseBeatmap(fullFilePath, beatmapPath);
 			{
 				diff2->m_sTitle = songTitle;
 				diff2->m_sAudioFileName = audioFileName;
@@ -1797,7 +1797,7 @@ void OsuDatabase::loadDB(OsuFile *db, bool &fallbackToRawLoad)
 		{
 			if (beatmapSet.setID > 0)
 			{
-				OsuDatabaseBeatmap *bm = new OsuDatabaseBeatmap(m_osu, beatmapSet.diffs2);
+				OsuDatabaseBeatmap *bm = new OsuDatabaseBeatmap(beatmapSet.diffs2);
 
 				m_databaseBeatmaps.push_back(bm);
 
@@ -1863,7 +1863,7 @@ void OsuDatabase::loadDB(OsuFile *db, bool &fallbackToRawLoad)
 						std::vector<OsuDatabaseBeatmap*> diffs2;
 						diffs2.push_back(beatmapSet.diffs2[b]);
 
-						OsuDatabaseBeatmap *bm = new OsuDatabaseBeatmap(m_osu, diffs2);
+						OsuDatabaseBeatmap *bm = new OsuDatabaseBeatmap(diffs2);
 
 						m_databaseBeatmaps.push_back(bm);
 
@@ -2051,7 +2051,7 @@ void OsuDatabase::loadScores()
 		const int backupLessThanVersion = 20210103;
 		const int backupMoreThanVersion = 20210105;
 
-		const UString scoresFilePath = (m_osu->isInVRMode() ? "scoresvr.db" : "scores.db");
+		const UString scoresFilePath = (osu->isInVRMode() ? "scoresvr.db" : "scores.db");
 		{
 			OsuFile db(scoresFilePath, false);
 			if (db.isReady())
@@ -2393,7 +2393,7 @@ void OsuDatabase::saveScores()
 	{
 		debugLog("Osu: Saving scores ...\n");
 
-		OsuFile db((m_osu->isInVRMode() ? "scoresvr.db" : "scores.db"), true);
+		OsuFile db((osu->isInVRMode() ? "scoresvr.db" : "scores.db"), true);
 		if (db.isReady())
 		{
 			const double startTime = Timing::getTimeReal();
@@ -2718,7 +2718,7 @@ void OsuDatabase::loadCollections(UString collectionFilePath, bool isLegacy, con
 			}
 		}
 		else
-			m_osu->getNotificationOverlay()->addNotification(UString::format("collection.db version unknown (%i),  skipping loading.", version), 0xffffff00, false, 5.0f);
+			osu->getNotificationOverlay()->addNotification(UString::format("collection.db version unknown (%i),  skipping loading.", version), 0xffffff00, false, 5.0f);
 
 		if (Osu::debug->getBool())
 		{
@@ -2867,7 +2867,7 @@ OsuDatabaseBeatmap *OsuDatabase::loadRawBeatmap(UString beatmapPath)
 			// load diffs
 			if (ext == "osu")
 			{
-				OsuDatabaseBeatmap *diff2 = new OsuDatabaseBeatmap(m_osu, fullFilePath, beatmapPath);
+				OsuDatabaseBeatmap *diff2 = new OsuDatabaseBeatmap(fullFilePath, beatmapPath);
 
 				// try to load it. if successful save it, else cleanup and continue to the next osu file
 				if (!OsuDatabaseBeatmap::loadMetadata(diff2))
@@ -2901,7 +2901,7 @@ OsuDatabaseBeatmap *OsuDatabase::loadRawBeatmap(UString beatmapPath)
 	{
 		if (diffs2.size() > 0)
 		{
-			beatmap = new OsuDatabaseBeatmap(m_osu, diffs2);
+			beatmap = new OsuDatabaseBeatmap(diffs2);
 
 			// and add entries in our hashmaps
 			for (auto diff2 : diffs2)
@@ -2922,7 +2922,7 @@ void OsuDatabase::onScoresRename(UString args)
 {
 	if (args.length() < 2)
 	{
-		m_osu->getNotificationOverlay()->addNotification(UString::format("Usage: %s MyNewName", osu_scores_rename.getName().toUtf8()));
+		osu->getNotificationOverlay()->addNotification(UString::format("Usage: %s MyNewName", osu_scores_rename.getName().toUtf8()));
 		return;
 	}
 
@@ -2946,10 +2946,10 @@ void OsuDatabase::onScoresRename(UString args)
 	}
 
 	if (numRenamedScores < 1)
-		m_osu->getNotificationOverlay()->addNotification("No (pp) scores for active user.");
+		osu->getNotificationOverlay()->addNotification("No (pp) scores for active user.");
 	else
 	{
-		m_osu->getNotificationOverlay()->addNotification(UString::format("Renamed %i scores.", numRenamedScores));
+		osu->getNotificationOverlay()->addNotification(UString::format("Renamed %i scores.", numRenamedScores));
 
 		m_bDidScoresChangeForSave = true;
 		m_bDidScoresChangeForStats = true;

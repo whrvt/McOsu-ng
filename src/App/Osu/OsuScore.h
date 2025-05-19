@@ -61,7 +61,7 @@ public:
 	static GRADE calculateGrade(int num300s, int num100s, int num50s, int numMisses, bool modHidden, bool modFlashlight);
 
 public:
-	OsuScore(Osu *osu);
+	OsuScore();
 
 	void reset(); // only OsuBeatmap may call this function!
 
@@ -128,8 +128,6 @@ private:
 	static ConVar *m_osu_drain_type_ref;
 
 	void onScoreChange();
-
-	Osu *m_osu;
 
 	std::vector<HIT> m_hitresults;
 	std::vector<int> m_hitdeltas;

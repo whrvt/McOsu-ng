@@ -17,7 +17,7 @@ class Osu;
 class OsuScreen : public KeyboardListener
 {
 public:
-	OsuScreen(Osu *osu);
+	OsuScreen();
 	virtual ~OsuScreen() {;}
 
 	virtual void draw(Graphics *g) {;}
@@ -35,8 +35,6 @@ public:
 
 protected:
 	bool m_bVisible;
-
-	Osu *m_osu;
 };
 
 #endif

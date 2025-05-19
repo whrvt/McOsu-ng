@@ -25,7 +25,7 @@ class OsuVRUIImageCheckbox;
 class OsuVR
 {
 public:
-	OsuVR(Osu *osu);
+	OsuVR();
 	~OsuVR();
 
 	void drawVR(Graphics *g, Matrix4 &mvp, RenderTarget *screen);
@@ -81,8 +81,6 @@ private:
 	void onOffsetDownClicked();
 	void onVolumeSliderChange(OsuVRUISlider *slider);
 	void onScrubbingSliderChange(OsuVRUISlider *slider);
-
-	Osu *m_osu;
 
 	ConVar *m_osu_draw_cursor_trail_ref;
 	ConVar *m_osu_volume_master_ref;

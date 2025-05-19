@@ -24,7 +24,7 @@ public:
 class OsuNotificationOverlay : public OsuScreen
 {
 public:
-	OsuNotificationOverlay(Osu *osu);
+	OsuNotificationOverlay();
 	virtual ~OsuNotificationOverlay() {;}
 
 	virtual void draw(Graphics *g);

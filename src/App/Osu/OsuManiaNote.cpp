@@ -54,7 +54,7 @@ void OsuManiaNote::draw(Graphics *g)
 
 	const float columnWidth = m_beatmap->getPlayfieldSize().x / m_beatmap->getNumColumns();
 
-	const double invSpeedMultiplier = 1.0f / m_beatmap->getOsu()->getSpeedMultiplier();
+	const double invSpeedMultiplier = 1.0f / osu->getSpeedMultiplier();
 	int height = osu_mania_note_height.getInt();
 	int xPos = m_beatmap->getPlayfieldCenter().x - m_beatmap->getPlayfieldSize().x/2 + m_iColumn*(int)(columnWidth);
 	float yPos = -m_iDelta*(double)osu_mania_speed.getFloat()*invSpeedMultiplier + (m_beatmap->getPlayfieldCenter().y + m_beatmap->getPlayfieldSize().y/2) - height + 2;
@@ -181,7 +181,7 @@ void OsuManiaNote::update(long curPos)
 	// if we have not been clicked yet, check if we are in the timeframe of a miss, also handle auto
 	if (!m_bStartFinished || !m_bFinished)
 	{
-		if (m_beatmap->getOsu()->getModAuto())
+		if (osu->getModAuto())
 		{
 			if (curPos >= m_iTime + (!m_bStartFinished ? 0 : m_iObjectDuration))
 				onHit(OsuScore::HIT::HIT_300, 0, !m_bStartFinished);

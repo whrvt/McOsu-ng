@@ -24,9 +24,9 @@
 class OsuSteamWorkshopLoader : public Resource
 {
 public:
-	OsuSteamWorkshopLoader(Osu *osu) : Resource()
+	OsuSteamWorkshopLoader() : Resource()
 	{
-		m_osu = osu;
+		
 
 		m_bLoadDetails = true;
 	}
@@ -40,7 +40,7 @@ protected:
 	{
 		if (m_bReady) return;
 
-		m_osu->getSteamWorkshop()->m_subscribedItems = m_subscribedItems;
+		osu->getSteamWorkshop()->m_subscribedItems = m_subscribedItems;
 
 		m_bReady = true;
 	}
@@ -114,8 +114,6 @@ protected:
 	}
 
 private:
-	Osu *m_osu;
-
 	std::vector<OsuSteamWorkshop::SUBSCRIBED_ITEM> m_subscribedItems;
 	bool m_bLoadDetails;
 };
@@ -125,9 +123,9 @@ private:
 class OsuSteamWorkshopUploader : public Resource
 {
 public:
-	OsuSteamWorkshopUploader(Osu *osu)
+	OsuSteamWorkshopUploader()
 	{
-		m_osu = osu;
+		
 
 		m_bPrepared = false;
 
@@ -151,9 +149,9 @@ protected:
 		if (!m_bPrepared || m_bReady) return;
 
 		if (m_sErrorMessage.length() < 1)
-			m_osu->getNotificationOverlay()->addNotification("Done.", 0xff00ff00);
+			osu->getNotificationOverlay()->addNotification("Done.", 0xff00ff00);
 		else
-			m_osu->getSteamWorkshop()->handleUploadError(m_sErrorMessage);
+			osu->getSteamWorkshop()->handleUploadError(m_sErrorMessage);
 
 		m_bReady = true;
 	}
@@ -244,8 +242,6 @@ protected:
 	}
 
 private:
-	Osu *m_osu;
-
 	bool m_bPrepared;
 	UString m_sErrorMessage;
 
@@ -260,12 +256,12 @@ private:
 
 ConVar osu_workshop_upload_skin("osu_workshop_upload_skin");
 
-OsuSteamWorkshop::OsuSteamWorkshop(Osu *osu)
+OsuSteamWorkshop::OsuSteamWorkshop()
 {
-	m_osu = osu;
+	
 
-	m_loader = new OsuSteamWorkshopLoader(osu);
-	m_uploader = new OsuSteamWorkshopUploader(osu);
+	m_loader = new OsuSteamWorkshopLoader();
+	m_uploader = new OsuSteamWorkshopUploader();
 
 	// convar refs
 	m_osu_skin_ref = convar->getConVarByName("osu_skin");
@@ -332,7 +328,7 @@ bool OsuSteamWorkshop::isUploading() const
 
 void OsuSteamWorkshop::onUpload()
 {
-	if (m_osu->getSkin() == NULL) return;
+	if (osu->getSkin() == NULL) return;
 
 	if (resourceManager->isLoadingResource(m_uploader))
 	{
@@ -346,19 +342,19 @@ void OsuSteamWorkshop::onUpload()
 		return;
 	}
 
-	if (!m_osu->getSkin()->isReady())
+	if (!osu->getSkin()->isReady())
 	{
 		handleUploadError("Skin is not fully loaded yet.");
 		return;
 	}
 
-	if (m_osu_skin_is_from_workshop_ref->getBool() || m_osu->getSkin()->isWorkshopSkin())
+	if (m_osu_skin_is_from_workshop_ref->getBool() || osu->getSkin()->isWorkshopSkin())
 	{
 		handleUploadError("Skin must be a local skin.");
 		return;
 	}
 
-	if (m_osu->getSkin()->isDefaultSkin())
+	if (osu->getSkin()->isDefaultSkin())
 	{
 		handleUploadError("Skin must not be the default skin.");
 		return;
@@ -366,7 +362,7 @@ void OsuSteamWorkshop::onUpload()
 
 	// name and path
 	const UString skinName = m_osu_skin_ref->getString();
-	const UString skinPath = m_osu->getSkin()->getFilePath();
+	const UString skinPath = osu->getSkin()->getFilePath();
 
 	debugLog("skinName = \"%s\", skinFolder = \"%s\"\n", m_osu_skin_ref->getString().toUtf8(), skinPath.toUtf8());
 
@@ -465,12 +461,12 @@ void OsuSteamWorkshop::onUpload()
 	resourceManager->requestNextLoadAsync();
 	resourceManager->loadResource(m_uploader);
 
-	m_osu->getNotificationOverlay()->addNotification((itemId == 0 ? "Uploading ...                                   " : "Updating ...                                 "), 0xffffffff, false, 60.0f);
+	osu->getNotificationOverlay()->addNotification((itemId == 0 ? "Uploading ...                                   " : "Updating ...                                 "), 0xffffffff, false, 60.0f);
 }
 
 void OsuSteamWorkshop::handleUploadError(UString errorMessage)
 {
 	debugLog("OsuSteamWorkshop Error: %s\n", errorMessage.toUtf8());
-	m_osu->getNotificationOverlay()->addNotification(UString::format("Error: %s", errorMessage.toUtf8()), 0xffff0000, false, 3.0f);
+	osu->getNotificationOverlay()->addNotification(UString::format("Error: %s", errorMessage.toUtf8()), 0xffff0000, false, 3.0f);
 }
 #endif

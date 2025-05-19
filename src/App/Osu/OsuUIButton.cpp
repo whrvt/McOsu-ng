@@ -14,9 +14,9 @@
 #include "OsuSkin.h"
 #include "OsuTooltipOverlay.h"
 
-OsuUIButton::OsuUIButton(Osu *osu, float xPos, float yPos, float xSize, float ySize, UString name, UString text) : CBaseUIButton(xPos, yPos, xSize, ySize, name, text)
+OsuUIButton::OsuUIButton(float xPos, float yPos, float xSize, float ySize, UString name, UString text) : CBaseUIButton(xPos, yPos, xSize, ySize, name, text)
 {
-	m_osu = osu;
+	
 
 	m_bDefaultSkin = false;
 	m_color = 0xffffffff;
@@ -32,14 +32,14 @@ void OsuUIButton::draw(Graphics *g)
 {
 	if (!m_bVisible) return;
 
-	Image *buttonLeft = m_bDefaultSkin ? m_osu->getSkin()->getDefaultButtonLeft() : m_osu->getSkin()->getButtonLeft();
-	Image *buttonMiddle = m_bDefaultSkin ? m_osu->getSkin()->getDefaultButtonMiddle() : m_osu->getSkin()->getButtonMiddle();
-	Image *buttonRight = m_bDefaultSkin ? m_osu->getSkin()->getDefaultButtonRight() : m_osu->getSkin()->getButtonRight();
+	Image *buttonLeft = m_bDefaultSkin ? osu->getSkin()->getDefaultButtonLeft() : osu->getSkin()->getButtonLeft();
+	Image *buttonMiddle = m_bDefaultSkin ? osu->getSkin()->getDefaultButtonMiddle() : osu->getSkin()->getButtonMiddle();
+	Image *buttonRight = m_bDefaultSkin ? osu->getSkin()->getDefaultButtonRight() : osu->getSkin()->getButtonRight();
 
-	float leftScale = m_osu->getImageScaleToFitResolution(buttonLeft, m_vSize);
+	float leftScale = osu->getImageScaleToFitResolution(buttonLeft, m_vSize);
 	float leftWidth = buttonLeft->getWidth()*leftScale;
 
-	float rightScale = m_osu->getImageScaleToFitResolution(buttonRight, m_vSize);
+	float rightScale = osu->getImageScaleToFitResolution(buttonRight, m_vSize);
 	float rightWidth = buttonRight->getWidth()*rightScale;
 
 	float middleWidth = m_vSize.x - leftWidth - rightWidth;
@@ -77,14 +77,14 @@ void OsuUIButton::update()
 
 	if (isMouseInside() && m_tooltipTextLines.size() > 0 && !m_bFocusStolenDelay)
 	{
-		m_osu->getTooltipOverlay()->begin();
+		osu->getTooltipOverlay()->begin();
 		{
 			for (int i=0; i<m_tooltipTextLines.size(); i++)
 			{
-				m_osu->getTooltipOverlay()->addLine(m_tooltipTextLines[i]);
+				osu->getTooltipOverlay()->addLine(m_tooltipTextLines[i]);
 			}
 		}
-		m_osu->getTooltipOverlay()->end();
+		osu->getTooltipOverlay()->end();
 	}
 
 	m_bFocusStolenDelay = false;

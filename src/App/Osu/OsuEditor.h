@@ -14,7 +14,7 @@
 class OsuEditor : public OsuScreenBackable
 {
 public:
-	OsuEditor(Osu *osu);
+	OsuEditor();
 	virtual ~OsuEditor();
 
 	virtual void draw(Graphics *g);

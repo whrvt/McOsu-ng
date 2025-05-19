@@ -18,7 +18,7 @@ class Image;
 class OsuUIPauseMenuButton : public CBaseUIButton
 {
 public:
-	OsuUIPauseMenuButton(Osu *osu, std::function<Image*()> getImageFunc, float xPos, float yPos, float xSize, float ySize, UString name);
+	OsuUIPauseMenuButton(std::function<Image*()> getImageFunc, float xPos, float yPos, float xSize, float ySize, UString name);
 
 	virtual void draw(Graphics *g);
 
@@ -31,8 +31,6 @@ public:
 	Image *getImage() {return getImageFunc != NULL ? getImageFunc() : NULL;}
 
 private:
-	Osu *m_osu;
-
 	Vector2 m_vScale;
 	Vector2 m_vBaseScale;
 	float m_fScaleMultiplier;

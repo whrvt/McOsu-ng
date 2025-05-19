@@ -10,9 +10,9 @@
 #include "Osu.h"
 #include "OsuTooltipOverlay.h"
 
-OsuUIUserStatsScreenLabel::OsuUIUserStatsScreenLabel(Osu *osu, float xPos, float yPos, float xSize, float ySize, UString name, UString text) : CBaseUILabel()
+OsuUIUserStatsScreenLabel::OsuUIUserStatsScreenLabel(float xPos, float yPos, float xSize, float ySize, UString name, UString text) : CBaseUILabel()
 {
-	m_osu = osu;
+	
 }
 
 void OsuUIUserStatsScreenLabel::update()
@@ -34,15 +34,15 @@ void OsuUIUserStatsScreenLabel::update()
 
 		if (!isEmpty)
 		{
-			m_osu->getTooltipOverlay()->begin();
+			osu->getTooltipOverlay()->begin();
 			{
 				for (size_t i=0; i<m_tooltipTextLines.size(); i++)
 				{
 					if (m_tooltipTextLines[i].length() > 0)
-						m_osu->getTooltipOverlay()->addLine(m_tooltipTextLines[i]);
+						osu->getTooltipOverlay()->addLine(m_tooltipTextLines[i]);
 				}
 			}
-			m_osu->getTooltipOverlay()->end();
+			osu->getTooltipOverlay()->end();
 		}
 	}
 }

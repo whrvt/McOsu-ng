@@ -21,25 +21,28 @@
 // TODO: generalize mouse offset hack for draw/update into some function
 // TODO: forward input to instance which currently contains the mouse cursor, instead of always 1 (rect.contains())
 // TODO: playing the same map again breaks in all slaves except master, containing no hitobjects, wtf is happening there (probably due to missing deselects)?
-// TODO: all instances need custom m_osu->setScore() object which is managed by Osu2, the main spectator client will only be in server mode (and not connect to itself as a client)
+// TODO: all instances need custom osu->setScore() object which is managed by Osu2, the main spectator client will only be in server mode (and not connect to itself as a client)
 // TODO: sync cursor positions to music position, group cursor packets and send at cl_cmdrate
 // TODO: sample cursor at fixed interval, force sample at every key delta. (except if everything is event based, then force would not be necessary)
 // TODO: server currently doesn't keep track of game state (it only forwards e.g. score packets to all other clients)
 
+Osu2 *osu2 = nullptr;
+
 Osu2::Osu2()
 {
+	osu2 = this;
 	const int numSlaves = 3;
 	for (int i=2; i<2+numSlaves; i++)
 	{
-		Osu *slaveInstance = new Osu(this, i);
+		Osu *slaveInstance = new Osu(i);
 		m_slaves.push_back(slaveInstance);
 	}
 
 	// instantiate master last to steal all convar callbacks
-	m_osu = new Osu(this, 1);
+	new Osu(1); // sets osu = this
 
 	// collect all instances
-	m_instances.push_back(m_osu);
+	m_instances.push_back(osu);
 	for (int i=0; i<m_slaves.size(); i++)
 	{
 		m_instances.push_back(m_slaves[i]);
@@ -69,7 +72,7 @@ Osu2::~Osu2()
 	}
 	m_slaves.clear();
 
-	SAFE_DELETE(m_osu);
+	SAFE_DELETE(osu);
 }
 
 void Osu2::draw(Graphics *g)
@@ -183,16 +186,16 @@ void Osu2::update()
 	}
 
 	// beatmap select sync
-	if ((m_osu->getSelectedBeatmap() != NULL && m_osu->getSelectedBeatmap()->getSelectedDifficulty2() != m_prevBeatmapDifficulty))
+	if ((osu->getSelectedBeatmap() != NULL && osu->getSelectedBeatmap()->getSelectedDifficulty2() != m_prevBeatmapDifficulty))
 	{
-		m_prevBeatmapDifficulty = m_osu->getSelectedBeatmap() != NULL ? m_osu->getSelectedBeatmap()->getSelectedDifficulty2() : NULL;
+		m_prevBeatmapDifficulty = osu->getSelectedBeatmap() != NULL ? osu->getSelectedBeatmap()->getSelectedDifficulty2() : NULL;
 
 		for (int i=0; i<m_slaves.size(); i++)
 		{
 			m_slaves[i]->getMultiplayer()->setBeatmap(m_prevBeatmapDifficulty);
 		}
 
-		m_osu->getMultiplayer()->setBeatmap(m_prevBeatmapDifficulty);
+		osu->getMultiplayer()->setBeatmap(m_prevBeatmapDifficulty);
 	}
 
 	// db load sync
@@ -216,11 +219,11 @@ void Osu2::update()
 	}
 
 	// beatmap start/stop sync
-	if (m_osu->getSongBrowser()->hasSelectedAndIsPlaying() != m_bPrevPlayingState)
+	if (osu->getSongBrowser()->hasSelectedAndIsPlaying() != m_bPrevPlayingState)
 	{
 		if (resourceManager->getSound("OSU_BEATMAP_MUSIC") != NULL)
 		{
-			m_bPrevPlayingState = m_osu->getSongBrowser()->hasSelectedAndIsPlaying();
+			m_bPrevPlayingState = osu->getSongBrowser()->hasSelectedAndIsPlaying();
 
 			for (int i=0; i<m_slaves.size(); i++)
 			{
@@ -235,22 +238,22 @@ void Osu2::update()
 
 void Osu2::onKeyDown(KeyboardEvent &key)
 {
-	m_osu->onKeyDown(key);
+	osu->onKeyDown(key);
 }
 
 void Osu2::onKeyUp(KeyboardEvent &key)
 {
-	m_osu->onKeyUp(key);
+	osu->onKeyUp(key);
 }
 
 void Osu2::onChar(KeyboardEvent &charCode)
 {
-	m_osu->onChar(charCode);
+	osu->onChar(charCode);
 }
 
 void Osu2::onResolutionChanged(Vector2 newResolution)
 {
-	m_osu->onResolutionChanged(newResolution);
+	osu->onResolutionChanged(newResolution);
 
 	for (int i=0; i<m_slaves.size(); i++)
 	{
@@ -260,27 +263,27 @@ void Osu2::onResolutionChanged(Vector2 newResolution)
 
 void Osu2::onFocusGained()
 {
-	m_osu->onFocusGained();
+	osu->onFocusGained();
 }
 
 void Osu2::onFocusLost()
 {
-	m_osu->onFocusLost();
+	osu->onFocusLost();
 }
 
 void Osu2::onMinimized()
 {
-	m_osu->onMinimized();
+	osu->onMinimized();
 }
 
 void Osu2::onRestored()
 {
-	m_osu->onRestored();
+	osu->onRestored();
 }
 
 bool Osu2::onShutdown()
 {
-	return m_osu->onShutdown();
+	return osu->onShutdown();
 }
 
 void Osu2::onSkinChange(UString oldValue, UString newValue)
@@ -290,5 +293,5 @@ void Osu2::onSkinChange(UString oldValue, UString newValue)
 		m_slaves[i]->setSkin(newValue);
 	}
 
-	m_osu->setSkin(newValue);
+	osu->setSkin(newValue);
 }

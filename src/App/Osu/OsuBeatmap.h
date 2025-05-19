@@ -37,7 +37,7 @@ public:
 	};
 
 public:
-	OsuBeatmap(Osu *osu);
+	OsuBeatmap();
 	virtual ~OsuBeatmap();
 
 	virtual void draw(Graphics *g);
@@ -121,7 +121,6 @@ public:
 	inline const std::vector<double> &getSpeedStrains() const {return m_speedStrains;}
 
 	// used by OsuHitObject children and OsuModSelector
-	inline Osu *getOsu() const {return m_osu;}
 	OsuSkin *getSkin() const; // maybe use this for beatmap skins, maybe
 	inline int getRandomSeed() const {return m_iRandomSeed;}
 
@@ -229,8 +228,6 @@ protected:
 	void playMissSound();
 
 	unsigned long getMusicPositionMSInterpolated();
-
-	Osu *m_osu;
 
 	// beatmap state
 	bool m_bIsPlaying;

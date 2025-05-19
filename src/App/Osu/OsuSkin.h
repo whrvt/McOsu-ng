@@ -28,7 +28,7 @@ public:
 	static ConVar *m_osu_skin_hd;
 
 public:
-	OsuSkin(Osu *osu, UString name, UString filepath, bool isDefaultSkin = false, bool isWorkshopSkin = false);
+	OsuSkin(UString name, UString filepath, bool isDefaultSkin = false, bool isWorkshopSkin = false);
 	virtual ~OsuSkin();
 
 	void update();
@@ -59,7 +59,6 @@ public:
 	// drawable helpers
 	inline UString getName() {return m_sName;}
 	inline UString getFilePath() {return m_sFilePath;}
-	inline Osu *getOsu() {return m_osu;}
 
 	// raw
 	inline Image *getMissingTexture() {return m_missingTexture;}
@@ -364,7 +363,6 @@ private:
 	void onIgnoreBeatmapSampleVolumeChange(UString oldValue, UString newValue);
 	void onExport(UString folderName);
 
-	Osu *m_osu;
 	bool m_bReady;
 	bool m_bReadyOnce;
 	bool m_bIsDefaultSkin;

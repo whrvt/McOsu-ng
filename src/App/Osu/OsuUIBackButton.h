@@ -16,7 +16,7 @@ class Osu;
 class OsuUIBackButton : public CBaseUIButton
 {
 public:
-	OsuUIBackButton(Osu *osu, float xPos, float yPos, float xSize, float ySize, UString name);
+	OsuUIBackButton(float xPos, float yPos, float xSize, float ySize, UString name);
 
 	virtual void draw(Graphics *g);
 	virtual void update();
@@ -29,7 +29,6 @@ public:
 	void resetAnimation();
 
 private:
-	Osu *m_osu;
 	float m_fAnimation;
 	float m_fImageScale;
 };

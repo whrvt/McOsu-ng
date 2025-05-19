@@ -16,9 +16,9 @@
 
 #include "OsuUIBackButton.h"
 
-OsuScreenBackable::OsuScreenBackable(Osu *osu) : OsuScreen(osu)
+OsuScreenBackable::OsuScreenBackable() : OsuScreen()
 {
-	m_backButton = new OsuUIBackButton(m_osu, -1, 0, 0, 0, "");
+	m_backButton = new OsuUIBackButton(-1, 0, 0, 0, "");
 	m_backButton->setClickCallback( fastdelegate::MakeDelegate(this, &OsuScreenBackable::onBack) );
 
 	updateLayout();
@@ -76,7 +76,7 @@ void OsuScreenBackable::stealFocus()
 void OsuScreenBackable::updateLayout()
 {
 	m_backButton->updateLayout();
-	m_backButton->setPosY(m_osu->getScreenHeight() - m_backButton->getSize().y);
+	m_backButton->setPosY(osu->getScreenHeight() - m_backButton->getSize().y);
 }
 
 void OsuScreenBackable::onResolutionChange(Vector2 newResolution)

@@ -111,7 +111,7 @@ public:
 public:
 	friend class OsuSongBrowserBackgroundSearchMatcher;
 
-	OsuSongBrowser2(Osu *osu);
+	OsuSongBrowser2();
 	virtual ~OsuSongBrowser2();
 
 	virtual void draw(Graphics *g);
@@ -284,7 +284,6 @@ private:
 
 	ConVar *m_osu_mod_fposu_ref;
 
-	Osu *m_osu;
 	std::mt19937 m_rngalg;
 	GROUP m_group;
 	std::vector<GROUPING> m_groupings;

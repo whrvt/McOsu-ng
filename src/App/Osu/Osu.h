@@ -61,10 +61,10 @@ public:
 	static float getImageScaleToFitResolution(Vector2 size, Vector2 resolution);
 	static float getImageScaleToFillResolution(Vector2 size, Vector2 resolution);
 	static float getImageScaleToFillResolution(Image *img, Vector2 resolution);
-	static float getImageScale(Osu *osu, Vector2 size, float osuSize);
-	static float getImageScale(Osu *osu, Image *img, float osuSize);
-	static float getUIScale(Osu *osu, float osuResolutionRatio);
-	static float getUIScale(Osu *osu); // NOTE: includes premultiplied dpi scale!
+	static float getImageScale(Vector2 size, float osuSize);
+	static float getImageScale(Image *img, float osuSize);
+	static float getUIScale(float osuResolutionRatio);
+	static float getUIScale(); // NOTE: includes premultiplied dpi scale!
 
 	static bool findIgnoreCase(const std::string &haystack, const std::string &needle);
 
@@ -75,7 +75,7 @@ public:
 	};
 
 public:
-	Osu(Osu2 *osu2 = NULL, int instanceID = 0);
+	Osu(int instanceID = 0);
 	virtual ~Osu();
 
 	virtual void draw(Graphics *g);
@@ -286,7 +286,6 @@ private:
 	ConVar *m_osu_vr_draw_desktop_playfield_ref;
 
 	// interfaces
-	Osu2 *m_osu2;
 	OsuVR *m_vr;
 	OsuMultiplayer *m_multiplayer;
 	OsuMainMenu *m_mainMenu;
@@ -405,5 +404,7 @@ private:
 	float m_fVolumeInactiveToActiveAnim;
 	bool m_bFireDelayedFontReloadAndResolutionChangeToFixDesyncedUIScaleScheduled;
 };
+
+extern Osu *osu;
 
 #endif

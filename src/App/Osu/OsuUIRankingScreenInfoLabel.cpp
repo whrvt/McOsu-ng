@@ -16,10 +16,10 @@
 
 #include <chrono>
 
-OsuUIRankingScreenInfoLabel::OsuUIRankingScreenInfoLabel(Osu *osu, float xPos, float yPos, float xSize, float ySize, UString name) : CBaseUIElement(xPos, yPos, xSize, ySize, name)
+OsuUIRankingScreenInfoLabel::OsuUIRankingScreenInfoLabel(float xPos, float yPos, float xSize, float ySize, UString name) : CBaseUIElement(xPos, yPos, xSize, ySize, name)
 {
-	m_osu = osu;
-	m_font = m_osu->getSubTitleFont();
+	
+	m_font = osu->getSubTitleFont();
 
 	m_iMargin = 10;
 

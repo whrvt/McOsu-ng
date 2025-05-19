@@ -65,9 +65,9 @@ ConVar osu_vr_ui_offset("osu_vr_ui_offset", 0.1f, FCVAR_NONE);
 
 const char *OsuVR::OSUVR_CONFIG_FILE_NAME = "osuvrplayarea";
 
-OsuVR::OsuVR(Osu *osu)
+OsuVR::OsuVR()
 {
-	m_osu = osu;
+	
 
 	// convar refs
 	m_osu_draw_cursor_trail_ref = convar->getConVarByName("osu_draw_cursor_trail");
@@ -376,8 +376,8 @@ void OsuVR::drawVR(Graphics *g, Matrix4 &mvp, RenderTarget *screen)
 	}
 
 	// draw controller laser
-	const bool drawLaserInGame = m_osu->isInPlayMode() && osu_vr_draw_laser_game.getBool();
-	const bool drawLaserInMenu = m_osu->isNotInPlayModeOrPaused() && osu_vr_draw_laser_menu.getBool();
+	const bool drawLaserInGame = osu->isInPlayMode() && osu_vr_draw_laser_game.getBool();
+	const bool drawLaserInMenu = osu->isNotInPlayModeOrPaused() && osu_vr_draw_laser_menu.getBool();
 	if (m_bDrawLaser && openvr->hasInputFocus() && (drawLaserInGame || drawLaserInMenu))
 	{
 		m_shaderGenericUntextured->enable();
@@ -430,7 +430,7 @@ void OsuVR::drawVRHUD(Graphics *g, Matrix4 &mvp, OsuHUD *hud)
 	Matrix4 scale;
 	scale.scale(getDrawScale()*osu_vr_hud_scale.getFloat(), -getDrawScale()*osu_vr_hud_scale.getFloat(), getDrawScale()*osu_vr_hud_scale.getFloat());
 	Matrix4 translation;
-	translation.translate(-(m_osu->getScreenWidth()/2.0f)*getDrawScale()*osu_vr_hud_scale.getFloat(), (m_osu->getScreenHeight()/2.0f)*getDrawScale()*osu_vr_hud_scale.getFloat(), -osu_vr_hud_distance.getFloat());
+	translation.translate(-(osu->getScreenWidth()/2.0f)*getDrawScale()*osu_vr_hud_scale.getFloat(), (osu->getScreenHeight()/2.0f)*getDrawScale()*osu_vr_hud_scale.getFloat(), -osu_vr_hud_distance.getFloat());
 	Matrix4 finalMVP = mvp * m_playfieldMatrix * translation * scale;
 
 	hud->drawVR(g, finalMVP, this);
@@ -441,7 +441,7 @@ void OsuVR::drawVRHUDDummy(Graphics *g, Matrix4 &mvp, OsuHUD *hud)
 	Matrix4 scale;
 	scale.scale(getDrawScale()*osu_vr_hud_scale.getFloat(), -getDrawScale()*osu_vr_hud_scale.getFloat(), getDrawScale()*osu_vr_hud_scale.getFloat());
 	Matrix4 translation;
-	translation.translate(-(m_osu->getScreenWidth()/2.0f)*getDrawScale()*osu_vr_hud_scale.getFloat(), (m_osu->getScreenHeight()/2.0f)*getDrawScale()*osu_vr_hud_scale.getFloat(), -osu_vr_hud_distance.getFloat());
+	translation.translate(-(osu->getScreenWidth()/2.0f)*getDrawScale()*osu_vr_hud_scale.getFloat(), (osu->getScreenHeight()/2.0f)*getDrawScale()*osu_vr_hud_scale.getFloat(), -osu_vr_hud_distance.getFloat());
 	Matrix4 finalMVP = mvp * m_playfieldMatrix * translation * scale;
 
 	hud->drawVRDummy(g, finalMVP, this);
@@ -459,13 +459,13 @@ void OsuVR::drawVRPlayfieldDummy(Graphics *g, Matrix4 &mvp)
 		m_shaderUntexturedLegacyGeneric->setUniformMatrix4fv("matrix", finalMVP);
 
 		g->setColor(0xffffffff);
-		m_osu->getHUD()->drawPlayfieldBorder(g, Vector2(0,0), Vector2(OsuGameRules::OSU_COORD_WIDTH, OsuGameRules::OSU_COORD_HEIGHT), 80.0f);
+		osu->getHUD()->drawPlayfieldBorder(g, Vector2(0,0), Vector2(OsuGameRules::OSU_COORD_WIDTH, OsuGameRules::OSU_COORD_HEIGHT), 80.0f);
 
 		// back wall (hitobject spawnpoint)
 		g->setColor(0xff00ff00);
 		g->pushTransform();
 			g->translate(0, 0, -getApproachDistance());
-			m_osu->getHUD()->drawPlayfieldBorder(g, Vector2(0,0), Vector2(OsuGameRules::OSU_COORD_WIDTH, OsuGameRules::OSU_COORD_HEIGHT), 80.0f, 250.0f);
+			osu->getHUD()->drawPlayfieldBorder(g, Vector2(0,0), Vector2(OsuGameRules::OSU_COORD_WIDTH, OsuGameRules::OSU_COORD_HEIGHT), 80.0f, 250.0f);
 		g->popTransform();
 	}
 	m_shaderUntexturedLegacyGeneric->disable();
@@ -482,9 +482,9 @@ void OsuVR::drawVRPlayfieldDummy(Graphics *g, Matrix4 &mvp)
 
 		g->pushTransform();
 			UString distanceString = UString::format(osu_vr_approach_distance.getFloat() == 1.0f ? "%.1f meter" : "%.1f meters", osu_vr_approach_distance.getFloat());
-			g->translate(-m_osu->getTitleFont()->getStringWidth(distanceString)/2.0f, -m_osu->getTitleFont()->getHeight()*2.5f, -getApproachDistance()/textScaleMultiplier + 2.0f); // + 2.0f to avoid z-fighting with back playfieldborder
+			g->translate(-osu->getTitleFont()->getStringWidth(distanceString)/2.0f, -osu->getTitleFont()->getHeight()*2.5f, -getApproachDistance()/textScaleMultiplier + 2.0f); // + 2.0f to avoid z-fighting with back playfieldborder
 			g->setColor(0xffffffff);
-			g->drawString(m_osu->getTitleFont(), distanceString);
+			g->drawString(osu->getTitleFont(), distanceString);
 		g->popTransform();
 	}
 	m_shaderTexturedLegacyGeneric->disable();
@@ -502,9 +502,9 @@ void OsuVR::drawVRCursors(Graphics *g, Matrix4 &mvp)
 		g->pushTransform();
 		{
 			g->translate(0, 0, 0.8f); // to avoid z-fighting with the border and sliders (slider = 0.5, extra 0.3 for good measure, but can't go above 0.999f!)
-			m_osu->getHUD()->drawCursorVR1(g, mvp, m_vPlayfieldCursorPos1, osu_vr_cursor_alpha.getFloat());
+			osu->getHUD()->drawCursorVR1(g, mvp, m_vPlayfieldCursorPos1, osu_vr_cursor_alpha.getFloat());
 			g->translate(0, 0, 0.9f); // to avoid z-fighting with the first cursor
-			m_osu->getHUD()->drawCursorVR2(g, mvp, m_vPlayfieldCursorPos2, osu_vr_cursor_alpha.getFloat());
+			osu->getHUD()->drawCursorVR2(g, mvp, m_vPlayfieldCursorPos2, osu_vr_cursor_alpha.getFloat());
 		}
 		g->popTransform();
 	}
@@ -682,7 +682,7 @@ void OsuVR::update()
 		}
 	}
 
-	if (m_osu->isNotInPlayModeOrPaused() && !osu_vr_layout_lock.getBool()) // only allow moving while not actively playing
+	if (osu->isNotInPlayModeOrPaused() && !osu_vr_layout_lock.getBool()) // only allow moving while not actively playing
 	{
 		// move virtual screen while grip button is pressed on right controller, anchor at controller
 		if (rightController->isButtonPressed(OpenVRController::BUTTON::BUTTON_GRIP))
@@ -778,7 +778,7 @@ void OsuVR::update()
 	}
 
 	// handle scaling (pinching/zooming/whatever)
-	if (m_osu->isNotInPlayModeOrPaused() && !osu_vr_layout_lock.getBool()) // only allow scaling while not actively playing
+	if (osu->isNotInPlayModeOrPaused() && !osu_vr_layout_lock.getBool()) // only allow scaling while not actively playing
 	{
 		if (openvr->getLeftController()->getTrigger() > 0.95f && openvr->getRightController()->getTrigger() > 0.95f)
 		{
@@ -911,19 +911,19 @@ void OsuVR::update()
 		m_bDrawLaser = false;
 
 	// handle UI element visibility depending on game state
-	m_keyboardButton->setVisible(!m_osu->isInPlayMode());
-	m_matrixResetButton->setVisible(!m_osu->isInPlayMode() && !m_lockLayoutCheckbox->isChecked());
-	m_lockLayoutCheckbox->setVisible(!m_osu->isInPlayMode());
-	m_offsetDownButton->setVisible(m_osu->isInPlayMode());
-	m_offsetUpButton->setVisible(m_osu->isInPlayMode());
-	m_scrubbingSlider->setVisible(m_osu->isInPlayMode());
+	m_keyboardButton->setVisible(!osu->isInPlayMode());
+	m_matrixResetButton->setVisible(!osu->isInPlayMode() && !m_lockLayoutCheckbox->isChecked());
+	m_lockLayoutCheckbox->setVisible(!osu->isInPlayMode());
+	m_offsetDownButton->setVisible(osu->isInPlayMode());
+	m_offsetUpButton->setVisible(osu->isInPlayMode());
+	m_scrubbingSlider->setVisible(osu->isInPlayMode());
 
 	// force update to current volume
 	m_volumeSlider->setValue(m_osu_volume_master_ref->getFloat(), true);
 
 	// force update to current songPos
-	if (m_osu->isInPlayMode() && m_osu->getSelectedBeatmap() != NULL)
-		m_scrubbingSlider->setValue(m_osu->getSelectedBeatmap()->getPercentFinishedPlayable(), true);
+	if (osu->isInPlayMode() && osu->getSelectedBeatmap() != NULL)
+		m_scrubbingSlider->setValue(osu->getSelectedBeatmap()->getPercentFinishedPlayable(), true);
 }
 
 float OsuVR::intersectRayPlane(Vector3 rayOrigin, Vector3 rayDir, Vector3 planeOrigin, Vector3 planeNormal)
@@ -984,8 +984,8 @@ void OsuVR::save()
 	std::ofstream out(userVRConfigFile.toUtf8());
 	if (!out.good())
 	{
-		if (m_osu != NULL)
-			m_osu->getNotificationOverlay()->addNotification("Error: Couldn't save VR config file", 0xffff0000);
+		
+			osu->getNotificationOverlay()->addNotification("Error: Couldn't save VR config file", 0xffff0000);
 		return;
 	}
 
@@ -1078,7 +1078,7 @@ void OsuVR::onLayoutLockClicked()
 void OsuVR::onKeyboardButtonClicked()
 {
 	openvr->getController()->triggerHapticPulse(2500);
-	soundEngine->play(m_osu->getSkin()->getCheckOn());
+	soundEngine->play(osu->getSkin()->getCheckOn());
 
 	openvr->showKeyboard();
 }
@@ -1086,7 +1086,7 @@ void OsuVR::onKeyboardButtonClicked()
 void OsuVR::onOffsetUpClicked()
 {
 	openvr->getController()->triggerHapticPulse(2500);
-	soundEngine->play(m_osu->getSkin()->getCheckOn());
+	soundEngine->play(osu->getSkin()->getCheckOn());
 
 	engine->onKeyboardKeyDown(OsuKeyBindings::INCREASE_LOCAL_OFFSET.getVal<KEYCODE>());
 	engine->onKeyboardKeyUp(OsuKeyBindings::INCREASE_LOCAL_OFFSET.getVal<KEYCODE>());
@@ -1095,7 +1095,7 @@ void OsuVR::onOffsetUpClicked()
 void OsuVR::onOffsetDownClicked()
 {
 	openvr->getController()->triggerHapticPulse(2500);
-	soundEngine->play(m_osu->getSkin()->getCheckOff());
+	soundEngine->play(osu->getSkin()->getCheckOff());
 
 	engine->onKeyboardKeyDown(OsuKeyBindings::DECREASE_LOCAL_OFFSET.getVal<KEYCODE>());
 	engine->onKeyboardKeyUp(OsuKeyBindings::DECREASE_LOCAL_OFFSET.getVal<KEYCODE>());
@@ -1104,11 +1104,11 @@ void OsuVR::onOffsetDownClicked()
 void OsuVR::onVolumeSliderChange(OsuVRUISlider *slider)
 {
 	m_osu_volume_master_ref->setValue(slider->getFloat());
-	m_osu->getHUD()->animateVolumeChange();
+	osu->getHUD()->animateVolumeChange();
 }
 
 void OsuVR::onScrubbingSliderChange(OsuVRUISlider *slider)
 {
-	if (m_osu->isInPlayMode() && m_osu->getSelectedBeatmap() != NULL)
-		m_osu->getSelectedBeatmap()->seekPercentPlayable(slider->getFloat());
+	if (osu->isInPlayMode() && osu->getSelectedBeatmap() != NULL)
+		osu->getSelectedBeatmap()->seekPercentPlayable(slider->getFloat());
 }

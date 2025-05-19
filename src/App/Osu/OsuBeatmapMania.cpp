@@ -26,7 +26,7 @@ ConVar osu_mania_playfield_height_percent("osu_mania_playfield_height_percent", 
 ConVar osu_mania_playfield_offset_x_percent("osu_mania_playfield_offset_x_percent", 0.44f, FCVAR_NONE);
 ConVar osu_mania_k_override("osu_mania_k_override", -1, FCVAR_NONE);
 
-OsuBeatmapMania::OsuBeatmapMania(Osu *osu) : OsuBeatmap(osu)
+OsuBeatmapMania::OsuBeatmapMania() : OsuBeatmap()
 {
 	for (int i=0; i<128; i++)
 	{
@@ -34,7 +34,7 @@ OsuBeatmapMania::OsuBeatmapMania(Osu *osu) : OsuBeatmap(osu)
 	}
 
 	m_fZoom = 0.0f;
-	m_osu = osu;
+	
 }
 
 void OsuBeatmapMania::draw(Graphics *g)
@@ -58,18 +58,18 @@ void OsuBeatmapMania::draw(Graphics *g)
 			g->setColor(0xffffffff);
 
 			// left
-			g->drawLine(m_vPlayfieldCenter.x - m_vPlayfieldSize.x/2, -1, m_vPlayfieldCenter.x - m_vPlayfieldSize.x/2, m_osu->getScreenHeight() + 2);
+			g->drawLine(m_vPlayfieldCenter.x - m_vPlayfieldSize.x/2, -1, m_vPlayfieldCenter.x - m_vPlayfieldSize.x/2, osu->getScreenHeight() + 2);
 
 			// HACKHACK: hardcoded 10k offset
 			const int tenkadd = getNumColumns() == 10 ? 1 : 0;
 
 			// right
-			g->drawLine((int)(m_vPlayfieldCenter.x - m_vPlayfieldSize.x/2) + ((int)(columnWidth))*(getNumColumns()+tenkadd), -1, (int)(m_vPlayfieldCenter.x - m_vPlayfieldSize.x/2) + ((int)(columnWidth))*(getNumColumns()+tenkadd), m_osu->getScreenHeight() + 2);
+			g->drawLine((int)(m_vPlayfieldCenter.x - m_vPlayfieldSize.x/2) + ((int)(columnWidth))*(getNumColumns()+tenkadd), -1, (int)(m_vPlayfieldCenter.x - m_vPlayfieldSize.x/2) + ((int)(columnWidth))*(getNumColumns()+tenkadd), osu->getScreenHeight() + 2);
 
 			if (getNumColumns() == 10)
 			{
-				g->drawLine((int)(m_vPlayfieldCenter.x - m_vPlayfieldSize.x/2) + ((int)(columnWidth))*(5), -1, (int)(m_vPlayfieldCenter.x - m_vPlayfieldSize.x/2) + ((int)(columnWidth))*(5), m_osu->getScreenHeight() + 2);
-				g->drawLine((int)(m_vPlayfieldCenter.x - m_vPlayfieldSize.x/2) + ((int)(columnWidth))*(6), -1, (int)(m_vPlayfieldCenter.x - m_vPlayfieldSize.x/2) + ((int)(columnWidth))*(6), m_osu->getScreenHeight() + 2);
+				g->drawLine((int)(m_vPlayfieldCenter.x - m_vPlayfieldSize.x/2) + ((int)(columnWidth))*(5), -1, (int)(m_vPlayfieldCenter.x - m_vPlayfieldSize.x/2) + ((int)(columnWidth))*(5), osu->getScreenHeight() + 2);
+				g->drawLine((int)(m_vPlayfieldCenter.x - m_vPlayfieldSize.x/2) + ((int)(columnWidth))*(6), -1, (int)(m_vPlayfieldCenter.x - m_vPlayfieldSize.x/2) + ((int)(columnWidth))*(6), osu->getScreenHeight() + 2);
 			}
 		}
 
@@ -101,11 +101,11 @@ void OsuBeatmapMania::draw(Graphics *g)
 		}
 
 		// draw hidden stage overlay
-		if (m_osu->getModHD())
+		if (osu->getModHD())
 		{
 			const Color topColor = 0xff000000;
 			const Color bottomColor = 0x00000000;
-			float heightAnimPercent = (float)std::min(/*400*/2*160, 160 + m_osu->getScore()->getCombo() / 2) / (float)(3*160);
+			float heightAnimPercent = (float)std::min(/*400*/2*160, 160 + osu->getScore()->getCombo() / 2) / (float)(3*160);
 			int heightStartOffset = m_vPlayfieldSize.y*heightAnimPercent;
 			g->setColor(0xff000000);
 			g->fillRect(m_vPlayfieldCenter.x - m_vPlayfieldSize.x/2 - 1, m_vPlayfieldCenter.y - m_vPlayfieldSize.y/2, m_vPlayfieldSize.x + 2, heightStartOffset + 2);
@@ -130,9 +130,9 @@ void OsuBeatmapMania::update()
 	if (isLoading()) return; // only continue if we have loaded everything
 
 	// update playfield metrics
-	m_vPlayfieldSize.x = m_osu->getScreenSize().x * osu_mania_playfield_width_percent.getFloat();
-	m_vPlayfieldSize.y = m_osu->getScreenSize().y * osu_mania_playfield_height_percent.getFloat();
-	m_vPlayfieldCenter.x = m_osu->getScreenSize().x * osu_mania_playfield_offset_x_percent.getFloat();
+	m_vPlayfieldSize.x = osu->getScreenSize().x * osu_mania_playfield_width_percent.getFloat();
+	m_vPlayfieldSize.y = osu->getScreenSize().y * osu_mania_playfield_height_percent.getFloat();
+	m_vPlayfieldCenter.x = osu->getScreenSize().x * osu_mania_playfield_offset_x_percent.getFloat();
 	m_vPlayfieldCenter.y = m_vPlayfieldSize.y / 2.0f;
 
 	// handle mouse 3d rotation
@@ -161,8 +161,8 @@ void OsuBeatmapMania::onModUpdate()
 {
 	if (m_music != NULL)
 	{
-		m_music->setSpeed(m_osu->getSpeedMultiplier());
-		m_music->setPitch(m_osu->getPitchMultiplier());
+		m_music->setSpeed(osu->getSpeedMultiplier());
+		m_music->setPitch(osu->getPitchMultiplier());
 	}
 }
 
@@ -222,7 +222,7 @@ int OsuBeatmapMania::getColumnForKey(int numColumns, KeyboardEvent &key)
 	{
 		for (int i=0; i<numColumns; i++)
 		{
-			if (key == (m_osu->getBindings()->getMania()->begin())[numColumns - 1][i]->getVal<KEYCODE>())
+			if (key == (osu->getBindings()->getMania()->begin())[numColumns - 1][i]->getVal<KEYCODE>())
 				return i;
 		}
 	}

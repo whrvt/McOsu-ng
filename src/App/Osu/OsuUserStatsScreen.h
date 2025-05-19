@@ -26,7 +26,7 @@ class OsuUserStatsScreenBackgroundPPRecalculator;
 class OsuUserStatsScreen : public OsuScreenBackable
 {
 public:
-	OsuUserStatsScreen(Osu *osu);
+	OsuUserStatsScreen();
 	virtual ~OsuUserStatsScreen();
 
 	virtual void draw(Graphics *g);

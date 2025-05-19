@@ -32,21 +32,21 @@ const UString OsuRichPresence::KEY_STEAM_STATUS = "status";
 const UString OsuRichPresence::KEY_DISCORD_STATUS = "state";
 const UString OsuRichPresence::KEY_DISCORD_DETAILS = "details";
 
-void OsuRichPresence::onMainMenu(Osu *osu)
+void OsuRichPresence::onMainMenu()
 {
-	setStatus(osu, "Main Menu");
+	setStatus("Main Menu");
 }
 
-void OsuRichPresence::onSongBrowser(Osu *osu)
+void OsuRichPresence::onSongBrowser()
 {
-	setStatus(osu, "Song Selection");
+	setStatus("Song Selection");
 
 	// also update window title
 	if (osu_rich_presence_dynamic_windowtitle.getBool())
 		env->setWindowTitle(PACKAGE_NAME);
 }
 
-void OsuRichPresence::onPlayStart(Osu *osu)
+void OsuRichPresence::onPlayStart()
 {
 	UString playingInfo /*= "Playing "*/;
 	playingInfo.append(osu->getSelectedBeatmap()->getSelectedDifficulty2()->getArtist());
@@ -56,7 +56,7 @@ void OsuRichPresence::onPlayStart(Osu *osu)
 	playingInfo.append(osu->getSelectedBeatmap()->getSelectedDifficulty2()->getDifficultyName());
 	playingInfo.append("]");
 
-	setStatus(osu, playingInfo);
+	setStatus(playingInfo);
 
 	// also update window title
 	if (osu_rich_presence_dynamic_windowtitle.getBool())
@@ -67,7 +67,7 @@ void OsuRichPresence::onPlayStart(Osu *osu)
 	}
 }
 
-void OsuRichPresence::onPlayEnd(Osu *osu, bool quit)
+void OsuRichPresence::onPlayEnd(bool quit)
 {
 	if (!quit && osu_rich_presence_show_recentplaystats.getBool())
 	{
@@ -97,12 +97,12 @@ void OsuRichPresence::onPlayEnd(Osu *osu, bool quit)
 			// stars
 			scoreInfo.append(UString::format(" %.2f*", osu->getScore()->getStarsTomTotal()));
 
-			setStatus(osu, scoreInfo);
+			setStatus(scoreInfo);
 		}
 	}
 }
 
-void OsuRichPresence::setStatus(Osu *osu, UString status, bool force)
+void OsuRichPresence::setStatus(UString status, bool force)
 {
 	if (!osu_rich_presence.getBool() && !force) return;
 
@@ -117,7 +117,7 @@ void OsuRichPresence::setStatus(Osu *osu, UString status, bool force)
 	discord->setRichPresence("smallImageText", osu_rich_presence_discord_show_totalpp.getBool() ? "Total weighted pp only work after the database has been loaded!" : "", true);
 	discord->setRichPresence(KEY_DISCORD_DETAILS, status);
 
-	if (osu != NULL)
+	if (osu != NULL && osu->getSongBrowser() != NULL)
 	{
 		if (osu_rich_presence_discord_show_totalpp.getBool())
 		{
@@ -135,18 +135,21 @@ void OsuRichPresence::setStatus(Osu *osu, UString status, bool force)
 
 void OsuRichPresence::onRichPresenceChange(UString oldValue, UString newValue)
 {
-	if (!osu_rich_presence.getBool())
-		onRichPresenceDisable();
-	else
-		onRichPresenceEnable();
+	if (osu)
+	{
+		if (!osu_rich_presence.getBool())
+			onRichPresenceDisable();
+		else
+			onRichPresenceEnable();
+	}
 }
 
 void OsuRichPresence::onRichPresenceEnable()
 {
-	setStatus(NULL, "...");
+	setStatus("...");
 }
 
 void OsuRichPresence::onRichPresenceDisable()
 {
-	setStatus(NULL, "", true);
+	setStatus("", true);
 }

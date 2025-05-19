@@ -16,7 +16,7 @@ class Osu;
 class OsuUIButton : public CBaseUIButton
 {
 public:
-	OsuUIButton(Osu *osu, float xPos, float yPos, float xSize, float ySize, UString name, UString text);
+	OsuUIButton(float xPos, float yPos, float xSize, float ySize, UString name, UString text);
 
 	virtual void draw(Graphics *g);
 	virtual void update();
@@ -35,8 +35,6 @@ public:
 private:
 	virtual void onClicked();
 	virtual void onFocusStolen();
-
-	Osu *m_osu;
 
 	bool m_bDefaultSkin;
 	Color m_color;

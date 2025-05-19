@@ -33,7 +33,7 @@ ConVar osu_songbrowser_thumbnail_fade_in_duration("osu_songbrowser_thumbnail_fad
 
 float OsuUISongBrowserSongButton::thumbnailYRatio = 1.333333f;
 
-OsuUISongBrowserSongButton::OsuUISongBrowserSongButton(Osu *osu, OsuSongBrowser2 *songBrowser, CBaseUIScrollView *view, OsuUIContextMenu *contextMenu, float xPos, float yPos, float xSize, float ySize, UString name, OsuDatabaseBeatmap *databaseBeatmap) : OsuUISongBrowserButton(osu, songBrowser, view, contextMenu, xPos, yPos, xSize, ySize, name)
+OsuUISongBrowserSongButton::OsuUISongBrowserSongButton(OsuSongBrowser2 *songBrowser, CBaseUIScrollView *view, OsuUIContextMenu *contextMenu, float xPos, float yPos, float xSize, float ySize, UString name, OsuDatabaseBeatmap *databaseBeatmap) : OsuUISongBrowserButton(songBrowser, view, contextMenu, xPos, yPos, xSize, ySize, name)
 {
 	m_databaseBeatmap = databaseBeatmap;
 	m_representativeDatabaseBeatmap = NULL;
@@ -68,7 +68,7 @@ OsuUISongBrowserSongButton::OsuUISongBrowserSongButton(Osu *osu, OsuSongBrowser2
 		// and add them
 		for (int i=0; i<difficulties.size(); i++)
 		{
-			OsuUISongBrowserSongButton *songButton = new OsuUISongBrowserSongDifficultyButton(m_osu, m_songBrowser, m_view, m_contextMenu, 0, 0, 0, 0, "", difficulties[i], this);
+			OsuUISongBrowserSongButton *songButton = new OsuUISongBrowserSongDifficultyButton(m_songBrowser, m_view, m_contextMenu, 0, 0, 0, 0, "", difficulties[i], this);
 
 			m_children.push_back(songButton);
 		}
@@ -93,7 +93,7 @@ void OsuUISongBrowserSongButton::draw(Graphics *g)
 
 	// draw background image
 	if (m_representativeDatabaseBeatmap != NULL)
-		drawBeatmapBackgroundThumbnail(g, m_osu->getBackgroundImageHandler()->getLoadBackgroundImage(m_representativeDatabaseBeatmap));
+		drawBeatmapBackgroundThumbnail(g, osu->getBackgroundImageHandler()->getLoadBackgroundImage(m_representativeDatabaseBeatmap));
 
 	drawTitle(g);
 	drawSubTitle(g);
@@ -111,7 +111,7 @@ void OsuUISongBrowserSongButton::update()
 
 void OsuUISongBrowserSongButton::drawBeatmapBackgroundThumbnail(Graphics *g, Image *image)
 {
-	if (!osu_draw_songbrowser_thumbnails.getBool() || m_osu->getSkin()->getVersion() < 2.2f) return;
+	if (!osu_draw_songbrowser_thumbnails.getBool() || osu->getSkin()->getVersion() < 2.2f) return;
 
 	float alpha = 1.0f;
 	if (osu_songbrowser_thumbnail_fade_in_duration.getFloat() > 0.0f)
@@ -170,7 +170,7 @@ void OsuUISongBrowserSongButton::drawGrade(Graphics *g)
 	const Vector2 pos = getActualPos();
 	const Vector2 size = getActualSize();
 
-	OsuSkinImage *grade = OsuUISongBrowserScoreButton::getGradeImage(m_osu, m_grade);
+	OsuSkinImage *grade = OsuUISongBrowserScoreButton::getGradeImage(m_grade);
 	g->pushTransform();
 	{
 		const float scale = calculateGradeScale();
@@ -188,7 +188,7 @@ void OsuUISongBrowserSongButton::drawTitle(Graphics *g, float deselectedAlpha, b
 	const Vector2 size = getActualSize();
 
 	const float titleScale = (size.y*m_fTitleScale) / m_font->getHeight();
-	g->setColor((m_bSelected || forceSelectedStyle) ? m_osu->getSkin()->getSongSelectActiveText() : m_osu->getSkin()->getSongSelectInactiveText());
+	g->setColor((m_bSelected || forceSelectedStyle) ? osu->getSkin()->getSongSelectActiveText() : osu->getSkin()->getSongSelectInactiveText());
 	if (!(m_bSelected || forceSelectedStyle))
 		g->setAlpha(deselectedAlpha);
 
@@ -212,7 +212,7 @@ void OsuUISongBrowserSongButton::drawSubTitle(Graphics *g, float deselectedAlpha
 
 	const float titleScale = (size.y*m_fTitleScale) / m_font->getHeight();
 	const float subTitleScale = (size.y*m_fSubTitleScale) / m_font->getHeight();
-	g->setColor((m_bSelected || forceSelectedStyle) ? m_osu->getSkin()->getSongSelectActiveText() : m_osu->getSkin()->getSongSelectInactiveText());
+	g->setColor((m_bSelected || forceSelectedStyle) ? osu->getSkin()->getSongSelectActiveText() : osu->getSkin()->getSongSelectInactiveText());
 	if (!(m_bSelected || forceSelectedStyle))
 		g->setAlpha(deselectedAlpha);
 
@@ -255,7 +255,7 @@ void OsuUISongBrowserSongButton::updateLayoutEx()
 	if (m_bHasGrade)
 		m_fTextOffset += calculateGradeWidth();
 
-	if (m_osu->getSkin()->getVersion() < 2.2f)
+	if (osu->getSkin()->getVersion() < 2.2f)
 	{
 		m_fTextOffset += size.x*0.02f*2.0f;
 		if (m_bHasGrade)
@@ -316,12 +316,12 @@ void OsuUISongBrowserSongButton::triggerContextMenu(Vector2 pos)
 
 			m_contextMenu->addButton("[+Set]   Add to Collection", 2);
 
-			if (m_osu->getSongBrowser()->getGroupingMode() == OsuSongBrowser2::GROUP::GROUP_COLLECTIONS)
+			if (osu->getSongBrowser()->getGroupingMode() == OsuSongBrowser2::GROUP::GROUP_COLLECTIONS)
 			{
 				// get the collection name for this diff/set
 				UString collectionName;
 				{
-					const std::vector<OsuUISongBrowserCollectionButton*> &collectionButtons = m_osu->getSongBrowser()->getCollectionButtons();
+					const std::vector<OsuUISongBrowserCollectionButton*> &collectionButtons = osu->getSongBrowser()->getCollectionButtons();
 					for (size_t i=0; i<collectionButtons.size(); i++)
 					{
 						if (collectionButtons[i]->isSelected())
@@ -336,7 +336,7 @@ void OsuUISongBrowserSongButton::triggerContextMenu(Vector2 pos)
 				// the entry could be either a set button, or an independent diff button
 				bool isLegacyEntry = false;
 				{
-					const std::vector<OsuDatabase::Collection> &collections = m_osu->getSongBrowser()->getDatabase()->getCollections();
+					const std::vector<OsuDatabase::Collection> &collections = osu->getSongBrowser()->getDatabase()->getCollections();
 					for (size_t i=0; i<collections.size(); i++)
 					{
 						if (collections[i].name == collectionName)
@@ -420,7 +420,7 @@ void OsuUISongBrowserSongButton::onContextMenu(UString text, int id)
 	{
 		m_contextMenu->begin(0, true);
 		{
-			const std::vector<OsuDatabase::Collection> &collections = m_osu->getSongBrowser()->getDatabase()->getCollections();
+			const std::vector<OsuDatabase::Collection> &collections = osu->getSongBrowser()->getDatabase()->getCollections();
 
 			m_contextMenu->addButton("[+]   Create new Collection?", -id*2);
 
@@ -536,7 +536,7 @@ void OsuUISongBrowserSongButton::onContextMenu(UString text, int id)
 		// get the collection name for this diff/set
 		UString collectionName;
 		{
-			const std::vector<OsuUISongBrowserCollectionButton*> &collectionButtons = m_osu->getSongBrowser()->getCollectionButtons();
+			const std::vector<OsuUISongBrowserCollectionButton*> &collectionButtons = osu->getSongBrowser()->getCollectionButtons();
 			for (size_t i=0; i<collectionButtons.size(); i++)
 			{
 				if (collectionButtons[i]->isSelected())
@@ -551,7 +551,7 @@ void OsuUISongBrowserSongButton::onContextMenu(UString text, int id)
 		// the entry could be either a set button, or an independent diff button
 		bool isLegacyEntry = false;
 		{
-			const std::vector<OsuDatabase::Collection> &collections = m_osu->getSongBrowser()->getDatabase()->getCollections();
+			const std::vector<OsuDatabase::Collection> &collections = osu->getSongBrowser()->getDatabase()->getCollections();
 			for (size_t i=0; i<collections.size(); i++)
 			{
 				if (collections[i].name == collectionName)
@@ -600,12 +600,12 @@ void OsuUISongBrowserSongButton::onContextMenu(UString text, int id)
 		if (isLegacyEntry)
 		{
 			if (id == 3)
-				m_osu->getNotificationOverlay()->addNotification("Can't remove collection entry loaded from osu!", 0xffffff00);
+				osu->getNotificationOverlay()->addNotification("Can't remove collection entry loaded from osu!", 0xffffff00);
 			else if (id == 4)
-				m_osu->getNotificationOverlay()->addNotification("Can't remove collection set loaded from osu!", 0xffffff00);
+				osu->getNotificationOverlay()->addNotification("Can't remove collection set loaded from osu!", 0xffffff00);
 		}
 		else
-			m_osu->getSongBrowser()->onSongButtonContextMenu(this, text, id);
+			osu->getSongBrowser()->onSongButtonContextMenu(this, text, id);
 	}
 }
 
@@ -646,7 +646,7 @@ void OsuUISongBrowserSongButton::onAddToCollectionConfirmed(UString text, int id
 	else
 	{
 		// just forward it
-		m_osu->getSongBrowser()->onSongButtonContextMenu(this, text, id);
+		osu->getSongBrowser()->onSongButtonContextMenu(this, text, id);
 	}
 }
 
@@ -655,7 +655,7 @@ void OsuUISongBrowserSongButton::onCreateNewCollectionConfirmed(UString text, in
 	if (id == -2 || id == -4)
 	{
 		// just forward it
-		m_osu->getSongBrowser()->onSongButtonContextMenu(this, text, id);
+		osu->getSongBrowser()->onSongButtonContextMenu(this, text, id);
 	}
 }
 
@@ -663,14 +663,14 @@ float OsuUISongBrowserSongButton::calculateGradeScale()
 {
 	const Vector2 size = getActualSize();
 
-	OsuSkinImage *grade = OsuUISongBrowserScoreButton::getGradeImage(m_osu, m_grade);
+	OsuSkinImage *grade = OsuUISongBrowserScoreButton::getGradeImage(m_grade);
 
 	return Osu::getImageScaleToFitResolution(grade->getSizeBaseRaw(), Vector2(size.x, size.y*m_fGradeScale));
 }
 
 float OsuUISongBrowserSongButton::calculateGradeWidth()
 {
-	OsuSkinImage *grade = OsuUISongBrowserScoreButton::getGradeImage(m_osu, m_grade);
+	OsuSkinImage *grade = OsuUISongBrowserScoreButton::getGradeImage(m_grade);
 
 	return grade->getSizeBaseRaw().x * calculateGradeScale();
 }

@@ -20,7 +20,7 @@ class OsuDatabaseBeatmap;
 class OsuUIRankingScreenInfoLabel : public CBaseUIElement
 {
 public:
-	OsuUIRankingScreenInfoLabel(Osu *osu, float xPos, float yPos, float xSize, float ySize, UString name);
+	OsuUIRankingScreenInfoLabel(float xPos, float yPos, float xSize, float ySize, UString name);
 
 	void draw(Graphics *g);
 
@@ -41,7 +41,6 @@ private:
 	UString buildSubTitleString();
 	UString buildPlayerString();
 
-	Osu *m_osu;
 	McFont *m_font;
 
 	int m_iMargin;

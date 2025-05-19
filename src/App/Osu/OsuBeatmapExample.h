@@ -14,7 +14,7 @@
 class OsuBeatmapExample : public OsuBeatmap
 {
 public:
-	OsuBeatmapExample(Osu *osu);
+	OsuBeatmapExample();
 
 	virtual void draw(Graphics *g);
 	virtual void drawVR(Graphics *g, Matrix4 &mvp, OsuVR *vr);

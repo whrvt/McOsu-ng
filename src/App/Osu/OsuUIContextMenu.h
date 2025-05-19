@@ -27,7 +27,7 @@ public:
 	static void clampToRightScreenEdge(OsuUIContextMenu *menu);
 
 public:
-	OsuUIContextMenu(Osu *osu, float xPos = 0, float yPos = 0, float xSize = 0, float ySize = 0, UString name = "", CBaseUIScrollView *parent = NULL);
+	OsuUIContextMenu(float xPos = 0, float yPos = 0, float xSize = 0, float ySize = 0, UString name = "", CBaseUIScrollView *parent = NULL);
 	virtual ~OsuUIContextMenu();
 
 	virtual void draw(Graphics *g);
@@ -59,8 +59,6 @@ private:
 	void onClick(CBaseUIButton *button);
 	void onHitEnter(OsuUIContextMenuTextbox *textbox);
 
-	Osu *m_osu;
-
 	CBaseUIScrollView *m_container;
 	CBaseUIScrollView *m_parent;
 
@@ -84,7 +82,7 @@ private:
 class OsuUIContextMenuButton : public CBaseUIButton
 {
 public:
-	OsuUIContextMenuButton(Osu *osu, float xPos, float yPos, float xSize, float ySize, UString name, UString text, int id);
+	OsuUIContextMenuButton(float xPos, float yPos, float xSize, float ySize, UString name, UString text, int id);
 	virtual ~OsuUIContextMenuButton() {;}
 
 	virtual void update();
@@ -94,8 +92,6 @@ public:
 	void setTooltipText(UString text);
 
 private:
-	Osu *m_osu;
-
 	int m_iID;
 
 	std::vector<UString> m_tooltipTextLines;

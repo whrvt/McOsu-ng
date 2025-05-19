@@ -10,7 +10,7 @@
 #include "Engine.h"
 #include "ResourceManager.h"
 
-OsuBeatmapExample::OsuBeatmapExample(Osu *osu) : OsuBeatmap(osu)
+OsuBeatmapExample::OsuBeatmapExample() : OsuBeatmap()
 {
 	m_bFakeExtraLoading = true;
 	m_fFakeExtraLoadingTime = 0.0f;

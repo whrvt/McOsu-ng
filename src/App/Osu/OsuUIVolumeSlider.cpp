@@ -13,9 +13,9 @@
 
 #include "Osu.h"
 
-OsuUIVolumeSlider::OsuUIVolumeSlider(Osu *osu, float xPos, float yPos, float xSize, float ySize, UString name) : CBaseUISlider(xPos, yPos, xSize, ySize, name)
+OsuUIVolumeSlider::OsuUIVolumeSlider(float xPos, float yPos, float xSize, float ySize, UString name) : CBaseUISlider(xPos, yPos, xSize, ySize, name)
 {
-	m_osu = osu;
+	
 
 	m_type = TYPE::MASTER;
 	m_bSelected = false;

@@ -65,7 +65,7 @@ public:
 	};
 
 public:
-	OsuMultiplayer(Osu *osu);
+	OsuMultiplayer();
 	~OsuMultiplayer();
 
 	void update();
@@ -257,7 +257,6 @@ private:
 #pragma pack()
 
 private:
-	Osu *m_osu;
 	std::vector<PLAYER> m_serverPlayers;
 	std::vector<PLAYER> m_clientPlayers;
 

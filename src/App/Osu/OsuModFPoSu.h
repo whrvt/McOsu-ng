@@ -32,7 +32,7 @@ private:
 	static constexpr const int SUBDIVISIONS = 4;
 
 public:
-	OsuModFPoSu(Osu *osu);
+	OsuModFPoSu();
 	~OsuModFPoSu();
 
 	void draw(Graphics *g);
@@ -85,8 +85,6 @@ private:
 	static Vector3 normalFromTriangle(Vector3 p1, Vector3 p2, Vector3 p3);
 
 private:
-	Osu *m_osu;
-
 	ConVar *m_mouse_sensitivity_ref;
 	ConVar *m_osu_draw_beatmap_background_image_ref;
 	ConVar *m_osu_background_alpha_ref;

@@ -43,7 +43,6 @@ public:
 private:
 	void onSkinChange(UString oldValue, UString newValue);
 
-	Osu *m_osu;
 	std::vector<Osu*> m_slaves;
 	std::vector<Osu*> m_instances;
 
@@ -53,5 +52,7 @@ private:
 	// hack
 	bool m_bPrevPlayingState;
 };
+
+extern Osu2 *osu2;
 
 #endif

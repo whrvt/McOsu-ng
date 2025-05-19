@@ -17,7 +17,7 @@ class Osu;
 class OsuScreenBackable : public OsuScreen
 {
 public:
-	OsuScreenBackable(Osu *osu);
+	OsuScreenBackable();
 	virtual ~OsuScreenBackable();
 
 	virtual void draw(Graphics *g);

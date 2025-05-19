@@ -16,7 +16,7 @@ class ConVar;
 class OsuUISongBrowserSongDifficultyButton : public OsuUISongBrowserSongButton
 {
 public:
-	OsuUISongBrowserSongDifficultyButton(Osu *osu, OsuSongBrowser2 *songBrowser, CBaseUIScrollView *view, OsuUIContextMenu *contextMenu, float xPos, float yPos, float xSize, float ySize, UString name, OsuDatabaseBeatmap *diff2, OsuUISongBrowserSongButton *parentSongButton);
+	OsuUISongBrowserSongDifficultyButton(OsuSongBrowser2 *songBrowser, CBaseUIScrollView *view, OsuUIContextMenu *contextMenu, float xPos, float yPos, float xSize, float ySize, UString name, OsuDatabaseBeatmap *diff2, OsuUISongBrowserSongButton *parentSongButton);
 	virtual ~OsuUISongBrowserSongDifficultyButton();
 
 	virtual void draw(Graphics *g);

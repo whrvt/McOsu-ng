@@ -26,7 +26,7 @@ public:
 	};
 
 public:
-	OsuUIVolumeSlider(Osu *osu, float xPos, float yPos, float xSize, float ySize, UString name);
+	OsuUIVolumeSlider(float xPos, float yPos, float xSize, float ySize, UString name);
 
 	void setType(TYPE type) {m_type = type;}
 	void setSelected(bool selected);
@@ -42,7 +42,6 @@ private:
 
 	virtual void onMouseInside();
 
-	Osu *m_osu;
 	TYPE m_type;
 	bool m_bSelected;
 

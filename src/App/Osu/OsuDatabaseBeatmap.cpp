@@ -66,9 +66,9 @@ ConVar *OsuDatabaseBeatmap::m_osu_stars_stacking_ref = NULL;
 ConVar *OsuDatabaseBeatmap::m_osu_debug_pp_ref = NULL;
 ConVar *OsuDatabaseBeatmap::m_osu_slider_end_inside_check_offset_ref = NULL;
 
-OsuDatabaseBeatmap::OsuDatabaseBeatmap(Osu *osu, UString filePath, UString folder, bool filePathIsInMemoryBeatmap)
+OsuDatabaseBeatmap::OsuDatabaseBeatmap(UString filePath, UString folder, bool filePathIsInMemoryBeatmap)
 {
-	m_osu = osu;
+	
 
 	m_sFilePath = filePath;
 	m_bFilePathIsInMemoryBeatmap = filePathIsInMemoryBeatmap;
@@ -137,7 +137,7 @@ OsuDatabaseBeatmap::OsuDatabaseBeatmap(Osu *osu, UString filePath, UString folde
 	m_iOnlineOffset = 0;
 }
 
-OsuDatabaseBeatmap::OsuDatabaseBeatmap(Osu *osu, std::vector<OsuDatabaseBeatmap*> &difficulties) : OsuDatabaseBeatmap(osu, "", "")
+OsuDatabaseBeatmap::OsuDatabaseBeatmap(std::vector<OsuDatabaseBeatmap*> &difficulties) : OsuDatabaseBeatmap("", "")
 {
 	setDifficulties(difficulties);
 }
@@ -1256,7 +1256,7 @@ bool OsuDatabaseBeatmap::loadMetadata(OsuDatabaseBeatmap *databaseBeatmap)
 	}
 
 	// gamemode filter
-	if ((databaseBeatmap->m_iGameMode != 0 && databaseBeatmap->m_osu->getGamemode() == Osu::GAMEMODE::STD) || (databaseBeatmap->m_iGameMode != 0x03 && databaseBeatmap->m_osu->getGamemode() == Osu::GAMEMODE::MANIA))
+	if ((databaseBeatmap->m_iGameMode != 0 && osu->getGamemode() == Osu::GAMEMODE::STD) || (databaseBeatmap->m_iGameMode != 0x03 && osu->getGamemode() == Osu::GAMEMODE::MANIA))
 		return false; // nothing more to do here
 
 	// general sanity checks
@@ -1444,7 +1444,7 @@ OsuDatabaseBeatmap::LOAD_GAMEPLAY_RESULT OsuDatabaseBeatmap::loadGameplay(OsuDat
 	}
 
 	// load primitives, put in temporary container
-	PRIMITIVE_CONTAINER c = loadPrimitiveObjects(databaseBeatmap->m_sFilePath, databaseBeatmap->m_osu->getGamemode(), databaseBeatmap->m_bFilePathIsInMemoryBeatmap);
+	PRIMITIVE_CONTAINER c = loadPrimitiveObjects(databaseBeatmap->m_sFilePath, osu->getGamemode(), databaseBeatmap->m_bFilePathIsInMemoryBeatmap);
 	if (c.errorCode != 0)
 	{
 		result.errorCode = c.errorCode;
@@ -1613,10 +1613,10 @@ OsuDatabaseBeatmap::LOAD_GAMEPLAY_RESULT OsuDatabaseBeatmap::loadGameplay(OsuDat
 				const float AR = beatmap->getAR();
 				const float CS = beatmap->getCS();
 				const float OD = beatmap->getOD();
-				const float speedMultiplier = databaseBeatmap->m_osu->getSpeedMultiplier(); // NOTE: not this->getSpeedMultiplier()!
-				const bool relax = databaseBeatmap->m_osu->getModRelax();
-				const bool autopilot = databaseBeatmap->m_osu->getModAutopilot();
-				const bool touchDevice = databaseBeatmap->m_osu->getModTD();
+				const float speedMultiplier = osu->getSpeedMultiplier(); // NOTE: not this->getSpeedMultiplier()!
+				const bool relax = osu->getModRelax();
+				const bool autopilot = osu->getModAutopilot();
+				const bool touchDevice = osu->getModTD();
 
 				LOAD_DIFFOBJ_RESULT diffres = OsuDatabaseBeatmap::loadDifficultyHitObjects(osuFilePath, gameMode, AR, CS, speedMultiplier);
 
@@ -1628,7 +1628,7 @@ OsuDatabaseBeatmap::LOAD_GAMEPLAY_RESULT OsuDatabaseBeatmap::loadGameplay(OsuDat
 				double speedNotes = 0.0;
 				double speedDifficultStrains = 0.0;
 				double stars = OsuDifficultyCalculator::calculateStarDiffForHitObjects(diffres.diffobjects, CS, OD, speedMultiplier, relax, autopilot, touchDevice, &aim, &aimSliderFactor, &aimDifficultSliders, &aimDifficultStrains, &speed, &speedNotes, &speedDifficultStrains);
-				double pp = OsuDifficultyCalculator::calculatePPv2(beatmap->getOsu(), beatmap, aim, aimSliderFactor, aimDifficultSliders, aimDifficultStrains, speed, speedNotes, speedDifficultStrains, databaseBeatmap->m_iNumObjects, databaseBeatmap->m_iNumCircles, databaseBeatmap->m_iNumSliders, databaseBeatmap->m_iNumSpinners, maxPossibleCombo);
+				double pp = OsuDifficultyCalculator::calculatePPv2(beatmap, aim, aimSliderFactor, aimDifficultSliders, aimDifficultStrains, speed, speedNotes, speedDifficultStrains, databaseBeatmap->m_iNumObjects, databaseBeatmap->m_iNumCircles, databaseBeatmap->m_iNumSliders, databaseBeatmap->m_iNumSpinners, maxPossibleCombo);
 
 				engine->showMessageInfo("PP", UString::format("pp = %f, stars = %f, aimstars = %f, speedstars = %f, %i circles, %i sliders, %i spinners, %i hitobjects, maxcombo = %i", pp, stars, aim, speed, databaseBeatmap->m_iNumCircles, databaseBeatmap->m_iNumSliders, databaseBeatmap->m_iNumSpinners, databaseBeatmap->m_iNumObjects, maxPossibleCombo));
 			}
@@ -2038,8 +2038,8 @@ void OsuDatabaseBeatmapStarCalculator::init()
 {
 	// NOTE: this accesses runtime mods, so must be run sync (not async)
 	// technically the getSelectedBeatmap() call here is a bit unsafe, since the beatmap could have changed already between async and sync, but in that case we recalculate immediately after anyways
-	if (!m_bDead.load() && m_iErrorCode == 0 && m_diff2->m_osu->getSelectedBeatmap() != NULL)
-		m_pp = OsuDifficultyCalculator::calculatePPv2(m_diff2->m_osu, m_diff2->m_osu->getSelectedBeatmap(), m_aimStars.load(), m_aimSliderFactor.load(), m_aimDifficultSliders.load(), m_aimDifficultStrains.load(), m_speedStars.load(), m_speedNotes.load(), m_speedDifficultStrains.load(), m_iNumObjects.load(), m_iNumCircles.load(), m_iNumSliders.load(), m_iNumSpinners.load(), m_iMaxPossibleCombo);
+	if (!m_bDead.load() && m_iErrorCode == 0 && osu->getSelectedBeatmap() != NULL)
+		m_pp = OsuDifficultyCalculator::calculatePPv2(osu->getSelectedBeatmap(), m_aimStars.load(), m_aimSliderFactor.load(), m_aimDifficultSliders.load(), m_aimDifficultStrains.load(), m_speedStars.load(), m_speedNotes.load(), m_speedDifficultStrains.load(), m_iNumObjects.load(), m_iNumCircles.load(), m_iNumSliders.load(), m_iNumSpinners.load(), m_iMaxPossibleCombo);
 
 	m_bReady = true;
 }

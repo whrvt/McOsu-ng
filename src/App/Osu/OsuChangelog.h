@@ -19,7 +19,7 @@ class CBaseUILabel;
 class OsuChangelog : public OsuScreenBackable
 {
 public:
-	OsuChangelog(Osu *osu);
+	OsuChangelog();
 	virtual ~OsuChangelog();
 
 	virtual void draw(Graphics *g);

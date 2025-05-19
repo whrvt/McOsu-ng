@@ -35,14 +35,14 @@ public:
 	static UString MCOSU_MAIN_BUTTON_TEXT;
 	static UString MCOSU_MAIN_BUTTON_SUBTEXT;
 
-	[[maybe_unused]] static void openSteamWorkshopInGameOverlay(Osu *osu, bool launchInSteamIfOverlayDisabled = false);
+	[[maybe_unused]] static void openSteamWorkshopInGameOverlay(bool launchInSteamIfOverlayDisabled = false);
 	[[maybe_unused]] static void openSteamWorkshopInDefaultBrowser(bool launchInSteam = false);
 
 public:
 	friend class OsuMainMenuMainButton;
 	friend class OsuMainMenuButton;
 
-	OsuMainMenu(Osu *osu);
+	OsuMainMenu();
 	virtual ~OsuMainMenu();
 
 	virtual void draw(Graphics *g);
@@ -62,8 +62,6 @@ public:
 	virtual void setVisible(bool visible);
 
 	void setStartupAnim(bool startupAnim) {m_bStartupAnim = startupAnim; m_fStartupAnim = m_fStartupAnim2 = (m_bStartupAnim ? 0.0f : 1.0f);}
-
-	inline Osu* getOsu() const {return m_osu;}
 
 private:
 	static ConVar *m_osu_universal_offset_ref;

@@ -69,13 +69,13 @@ const char *OsuOptionsMenu::OSU_CONFIG_FILE_NAME = ""; // set dynamically below 
 class OsuOptionsMenuSkinPreviewElement : public CBaseUIElement
 {
 public:
-	OsuOptionsMenuSkinPreviewElement(Osu *osu, float xPos, float yPos, float xSize, float ySize, UString name) : CBaseUIElement(xPos, yPos, xSize, ySize, name) {m_osu = osu; m_iMode = 0;}
+	OsuOptionsMenuSkinPreviewElement(float xPos, float yPos, float xSize, float ySize, UString name) : CBaseUIElement(xPos, yPos, xSize, ySize, name) {m_iMode = 0;}
 
 	virtual void draw(Graphics *g)
 	{
 		if (!m_bVisible) return;
 
-		OsuSkin *skin = m_osu->getSkin();
+		OsuSkin *skin = osu->getSkin();
 
 		float hitcircleDiameter = m_vSize.y*0.5f;
 		float numberScale = (hitcircleDiameter / (160.0f * (skin->isDefault12x() ? 2.0f : 1.0f))) * 1 * convar->getConVarByName("osu_number_scale_multiplier")->getFloat();
@@ -96,11 +96,11 @@ public:
 			const int colorOffset = 0;
 			const float colorRGBMultiplier = 1.0f;
 
-			OsuCircle::drawCircle(g, m_osu->getSkin(), m_vPos + Vector2(0, m_vSize.y/2) + Vector2(m_vSize.x*(1.0f/5.0f), 0.0f), hitcircleDiameter, numberScale, overlapScale, number, colorCounter, colorOffset, colorRGBMultiplier, approachScale, approachAlpha, approachAlpha, true, false);
-			OsuCircle::drawHitResult(g, m_osu->getSkin(), hitcircleDiameter, hitcircleDiameter, m_vPos + Vector2(0, m_vSize.y/2) + Vector2(m_vSize.x*(2.0f/5.0f), 0.0f), OsuScore::HIT::HIT_100, 0.45f, 0.33f);
-			OsuCircle::drawHitResult(g, m_osu->getSkin(), hitcircleDiameter, hitcircleDiameter, m_vPos + Vector2(0, m_vSize.y/2) + Vector2(m_vSize.x*(3.0f/5.0f), 0.0f), OsuScore::HIT::HIT_50, 0.45f, 0.66f);
-			OsuCircle::drawHitResult(g, m_osu->getSkin(), hitcircleDiameter, hitcircleDiameter, m_vPos + Vector2(0, m_vSize.y/2) + Vector2(m_vSize.x*(4.0f/5.0f), 0.0f), OsuScore::HIT::HIT_MISS, 0.45f, 1.0f);
-			OsuCircle::drawApproachCircle(g, m_osu->getSkin(), m_vPos + Vector2(0, m_vSize.y/2) + Vector2(m_vSize.x*(1.0f/5.0f), 0.0f), m_osu->getSkin()->getComboColorForCounter(colorCounter, colorOffset), hitcircleDiameter, approachScale, approachCircleAlpha, false, false);
+			OsuCircle::drawCircle(g, osu->getSkin(), m_vPos + Vector2(0, m_vSize.y/2) + Vector2(m_vSize.x*(1.0f/5.0f), 0.0f), hitcircleDiameter, numberScale, overlapScale, number, colorCounter, colorOffset, colorRGBMultiplier, approachScale, approachAlpha, approachAlpha, true, false);
+			OsuCircle::drawHitResult(g, osu->getSkin(), hitcircleDiameter, hitcircleDiameter, m_vPos + Vector2(0, m_vSize.y/2) + Vector2(m_vSize.x*(2.0f/5.0f), 0.0f), OsuScore::HIT::HIT_100, 0.45f, 0.33f);
+			OsuCircle::drawHitResult(g, osu->getSkin(), hitcircleDiameter, hitcircleDiameter, m_vPos + Vector2(0, m_vSize.y/2) + Vector2(m_vSize.x*(3.0f/5.0f), 0.0f), OsuScore::HIT::HIT_50, 0.45f, 0.66f);
+			OsuCircle::drawHitResult(g, osu->getSkin(), hitcircleDiameter, hitcircleDiameter, m_vPos + Vector2(0, m_vSize.y/2) + Vector2(m_vSize.x*(4.0f/5.0f), 0.0f), OsuScore::HIT::HIT_MISS, 0.45f, 1.0f);
+			OsuCircle::drawApproachCircle(g, osu->getSkin(), m_vPos + Vector2(0, m_vSize.y/2) + Vector2(m_vSize.x*(1.0f/5.0f), 0.0f), osu->getSkin()->getComboColorForCounter(colorCounter, colorOffset), hitcircleDiameter, approachScale, approachCircleAlpha, false, false);
 		}
 		else if (m_iMode == 1)
 		{
@@ -120,7 +120,7 @@ public:
 				g->pushTransform();
 				g->scale(scoreScale, scoreScale);
 				g->translate(pos.x - skin->getScore0()->getWidth()*scoreScale, pos.y);
-				m_osu->getHUD()->drawScoreNumber(g, i-1, 1.0f);
+				osu->getHUD()->drawScoreNumber(g, i-1, 1.0f);
 				g->popTransform();
 			}
 		}
@@ -133,16 +133,15 @@ public:
 	}
 
 private:
-	Osu *m_osu;
 	int m_iMode;
 };
 
 class OsuOptionsMenuSliderPreviewElement : public CBaseUIElement
 {
 public:
-	OsuOptionsMenuSliderPreviewElement(Osu *osu, float xPos, float yPos, float xSize, float ySize, UString name) : CBaseUIElement(xPos, yPos, xSize, ySize, name)
+	OsuOptionsMenuSliderPreviewElement(float xPos, float yPos, float xSize, float ySize, UString name) : CBaseUIElement(xPos, yPos, xSize, ySize, name)
 	{
-		m_osu = osu;
+		
 		m_bDrawSliderHack = true;
 		m_fPrevLength = 0.0f;
 		m_vao = NULL;
@@ -160,7 +159,7 @@ public:
 		*/
 
 		const float hitcircleDiameter = m_vSize.y*0.5f;
-		const float numberScale = (hitcircleDiameter / (160.0f * (m_osu->getSkin()->isDefault12x() ? 2.0f : 1.0f))) * 1 * convar->getConVarByName("osu_number_scale_multiplier")->getFloat();
+		const float numberScale = (hitcircleDiameter / (160.0f * (osu->getSkin()->isDefault12x() ? 2.0f : 1.0f))) * 1 * convar->getConVarByName("osu_number_scale_multiplier")->getFloat();
 		const float overlapScale = (hitcircleDiameter / (160.0f)) * 1 * convar->getConVarByName("osu_number_scale_multiplier")->getFloat();
 
 		const float approachScale = std::clamp<float>(1.0f + 1.5f - fmod(engine->getTime()*3, 3.0f), 0.0f, 2.5f);
@@ -204,8 +203,8 @@ public:
 				const int colorOffset = 0;
 				const float colorRGBMultiplier = 1.0f;
 
-				OsuCircle::drawCircle(g, m_osu->getSkin(), points[numPoints/2] + (!useLegacyRenderer ? m_vPos : Vector2(0, 0)), hitcircleDiameter, numberScale, overlapScale, number, colorCounter, colorOffset, colorRGBMultiplier, approachScale, approachAlpha, approachAlpha, true, false);
-				OsuCircle::drawApproachCircle(g, m_osu->getSkin(), points[numPoints/2] + (!useLegacyRenderer ? m_vPos : Vector2(0, 0)), m_osu->getSkin()->getComboColorForCounter(420, 0), hitcircleDiameter, approachScale, approachCircleAlpha, false, false);
+				OsuCircle::drawCircle(g, osu->getSkin(), points[numPoints/2] + (!useLegacyRenderer ? m_vPos : Vector2(0, 0)), hitcircleDiameter, numberScale, overlapScale, number, colorCounter, colorOffset, colorRGBMultiplier, approachScale, approachAlpha, approachAlpha, true, false);
+				OsuCircle::drawApproachCircle(g, osu->getSkin(), points[numPoints/2] + (!useLegacyRenderer ? m_vPos : Vector2(0, 0)), osu->getSkin()->getComboColorForCounter(420, 0), hitcircleDiameter, approachScale, approachCircleAlpha, false, false);
 			}
 
 			// draw slider body
@@ -214,7 +213,7 @@ public:
 				if (m_bDrawSliderHack)
 				{
 					if (useLegacyRenderer)
-						OsuSliderRenderer::draw(g, m_osu, points, emptyVector, hitcircleDiameter, 0, 1, m_osu->getSkin()->getComboColorForCounter(420, 0));
+						OsuSliderRenderer::draw(g, osu, points, emptyVector, hitcircleDiameter, 0, 1, osu->getSkin()->getComboColorForCounter(420, 0));
 					else
 					{
 						// (lazy generate vao)
@@ -231,9 +230,9 @@ public:
 							}
 
 							if (m_vao == NULL)
-								m_vao = OsuSliderRenderer::generateVAO(m_osu, points, hitcircleDiameter, Vector3(0, 0, 0), false);
+								m_vao = OsuSliderRenderer::generateVAO(points, hitcircleDiameter, Vector3(0, 0, 0), false);
 						}
-						OsuSliderRenderer::draw(g, m_osu, m_vao, emptyVector, m_vPos, 1, hitcircleDiameter, 0, 1, m_osu->getSkin()->getComboColorForCounter(420, 0));
+						OsuSliderRenderer::draw(g, osu, m_vao, emptyVector, m_vPos, 1, hitcircleDiameter, 0, 1, osu->getSkin()->getComboColorForCounter(420, 0));
 					}
 				}
 			}
@@ -245,8 +244,8 @@ public:
 				const int colorOffset = 0;
 				const float colorRGBMultiplier = 1.0f;
 
-				OsuCircle::drawSliderStartCircle(g, m_osu->getSkin(), points[0] + (!useLegacyRenderer ? m_vPos : Vector2(0, 0)), hitcircleDiameter, numberScale, overlapScale, number, colorCounter, colorOffset, colorRGBMultiplier);
-				OsuCircle::drawSliderEndCircle(g, m_osu->getSkin(), points[points.size()-1] + (!useLegacyRenderer ? m_vPos : Vector2(0, 0)), hitcircleDiameter, numberScale, overlapScale, number, colorCounter, colorOffset, colorRGBMultiplier, 1.0f, 1.0f, 0.0f, false, false);
+				OsuCircle::drawSliderStartCircle(g, osu->getSkin(), points[0] + (!useLegacyRenderer ? m_vPos : Vector2(0, 0)), hitcircleDiameter, numberScale, overlapScale, number, colorCounter, colorOffset, colorRGBMultiplier);
+				OsuCircle::drawSliderEndCircle(g, osu->getSkin(), points[points.size()-1] + (!useLegacyRenderer ? m_vPos : Vector2(0, 0)), hitcircleDiameter, numberScale, overlapScale, number, colorCounter, colorOffset, colorRGBMultiplier, 1.0f, 1.0f, 0.0f, false, false);
 			}
 		}
 	}
@@ -254,7 +253,6 @@ public:
 	void setDrawSliderHack(bool drawSliderHack) {m_bDrawSliderHack = drawSliderHack;}
 
 private:
-	Osu *m_osu;
 	bool m_bDrawSliderHack;
 	VertexArrayObject *m_vao;
 	float m_fPrevLength;
@@ -318,7 +316,7 @@ private:
 class OsuOptionsMenuKeyBindButton : public OsuUIButton
 {
 public:
-	OsuOptionsMenuKeyBindButton(Osu *osu, float xPos, float yPos, float xSize, float ySize, UString name, UString text) : OsuUIButton(osu, xPos, yPos, xSize, ySize, name, text)
+	OsuOptionsMenuKeyBindButton(float xPos, float yPos, float xSize, float ySize, UString name, UString text) : OsuUIButton(xPos, yPos, xSize, ySize, name, text)
 	{
 		m_bDisallowLeftMouseClickBinding = false;
 	}
@@ -371,9 +369,9 @@ private:
 class OsuOptionsMenuResetButton : public CBaseUIButton
 {
 public:
-	OsuOptionsMenuResetButton(Osu *osu, float xPos, float yPos, float xSize, float ySize, UString name, UString text) : CBaseUIButton(xPos, yPos, xSize, ySize, name, text)
+	OsuOptionsMenuResetButton(float xPos, float yPos, float xSize, float ySize, UString name, UString text) : CBaseUIButton(xPos, yPos, xSize, ySize, name, text)
 	{
-		m_osu = osu;
+		
 		m_fAnim = 1.0f;
 	}
 
@@ -386,7 +384,7 @@ public:
 	{
 		if (!m_bVisible || m_fAnim <= 0.0f) return;
 
-		const int fullColorBlockSize = 4 * Osu::getUIScale(m_osu);
+		const int fullColorBlockSize = 4 * Osu::getUIScale();
 
 		Color left = argb((int)(255*m_fAnim), 255, 233, 50);
 		Color middle = argb((int)(255*m_fAnim), 255, 211, 50);
@@ -403,11 +401,11 @@ public:
 
 		if (isMouseInside())
 		{
-			m_osu->getTooltipOverlay()->begin();
+			osu->getTooltipOverlay()->begin();
 			{
-				m_osu->getTooltipOverlay()->addLine("Reset");
+				osu->getTooltipOverlay()->addLine("Reset");
 			}
-			m_osu->getTooltipOverlay()->end();
+			osu->getTooltipOverlay()->end();
 		}
 	}
 
@@ -424,15 +422,14 @@ private:
 		anim->moveQuadOut(&m_fAnim, 0.0f, m_fAnim*0.15f, true);
 	}
 
-	Osu *m_osu;
 	float m_fAnim;
 };
 
 
 
-OsuOptionsMenu::OsuOptionsMenu(Osu *osu) : OsuScreenBackable(osu)
+OsuOptionsMenu::OsuOptionsMenu() : OsuScreenBackable()
 {
-	m_osu = osu;
+	
 
 	m_bFullscreen = false;
 	m_fAnimation = 0.0f;
@@ -462,12 +459,12 @@ OsuOptionsMenu::OsuOptionsMenu(Osu *osu) : OsuScreenBackable(osu)
 	osu_options_high_quality_sliders.setCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onHighQualitySlidersConVarChange) );
 	osu_mania_keylayout_wizard.setCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onKeyBindingManiaPressedInt) );
 
-	if (m_osu->isInVRMode())
+	if (osu->isInVRMode())
 		OSU_CONFIG_FILE_NAME = "osuvr";
 	else
 		OSU_CONFIG_FILE_NAME = "osu";
 
-	m_osu->getNotificationOverlay()->addKeyListener(this);
+	osu->getNotificationOverlay()->addKeyListener(this);
 
 	m_waitingKey = NULL;
 	m_vrRenderTargetResolutionLabel = NULL;
@@ -547,9 +544,9 @@ OsuOptionsMenu::OsuOptionsMenu(Osu *osu) : OsuScreenBackable(osu)
 	m_categories->setScrollResistance(30); // since all categories are always visible anyway
 	m_container->addBaseUIElement(m_categories);
 
-	m_contextMenu = new OsuUIContextMenu(m_osu, 50, 50, 150, 0, "", m_options);
+	m_contextMenu = new OsuUIContextMenu(50, 50, 150, 0, "", m_options);
 
-	m_search = new OsuUISearchOverlay(m_osu, 0, 0, 0, 0, "");
+	m_search = new OsuUISearchOverlay(0, 0, 0, 0, "");
 	m_search->setOffsetRight(20);
 	m_container->addBaseUIElement(m_search);
 
@@ -632,7 +629,7 @@ OsuOptionsMenu::OsuOptionsMenu(Osu *osu) : OsuScreenBackable(osu)
 	{
 		addSpacer();
 
-		if (!m_osu->isInVRMode())
+		if (!osu->isInVRMode())
 			addCheckbox("Unlimited FPS", convar->getConVarByName("fps_unlimited"));
 
 		CBaseUISlider *fpsSlider = addSlider("FPS Limiter:", 60.0f, 1000.0f, convar->getConVarByName("fps_max"), -1.0f, true);
@@ -640,7 +637,7 @@ OsuOptionsMenu::OsuOptionsMenu(Osu *osu) : OsuScreenBackable(osu)
 		fpsSlider->setKeyDelta(1);
 
 		addSubSection("Layout");
-		OPTIONS_ELEMENT resolutionSelect = addButton("Select Resolution", UString::format("%ix%i", m_osu->getScreenWidth(), m_osu->getScreenHeight()));
+		OPTIONS_ELEMENT resolutionSelect = addButton("Select Resolution", UString::format("%ix%i", osu->getScreenWidth(), osu->getScreenHeight()));
 		((CBaseUIButton*)resolutionSelect.elements[0])->setClickCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onResolutionSelect) );
 		m_resolutionLabel = (CBaseUILabel*)resolutionSelect.elements[1];
 		m_resolutionSelectButton = resolutionSelect.elements[0];
@@ -653,7 +650,7 @@ OsuOptionsMenu::OsuOptionsMenu(Osu *osu) : OsuScreenBackable(osu)
 		m_letterboxingOffsetYSlider = addSlider("Vertical position", -1.0f, 1.0f, convar->getConVarByName("osu_letterboxing_offset_y"), 170)->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onSliderChangeLetterboxingOffset) )->setKeyDelta(0.01f)->setAnimated(false);
 	}
 
-	if (!m_osu->isInVRMode())
+	if (!osu->isInVRMode())
 	{
 		addSubSection("UI Scaling");
 		addCheckbox("DPI Scaling", UString::format("Automatically scale to the DPI of your display: %i DPI.\nScale factor = %i / 96 = %.2gx", env->getDPI(), env->getDPI(), env->getDPIScale()), convar->getConVarByName("osu_ui_scale_to_dpi"))->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onDPIScalingChange) );
@@ -679,7 +676,7 @@ OsuOptionsMenu::OsuOptionsMenu(Osu *osu) : OsuScreenBackable(osu)
 	//**************************************************************************************************************************//
 
 	CBaseUIElement *sectionVR = NULL;
-	if (m_osu->isInVRMode())
+	if (osu->isInVRMode())
 	{
 		sectionVR = addSection("Virtual Reality");
 
@@ -1209,7 +1206,7 @@ OsuOptionsMenu::OsuOptionsMenu(Osu *osu) : OsuScreenBackable(osu)
 	addCategory(sectionGeneral, OsuIcons::GEAR);
 	addCategory(sectionGraphics, OsuIcons::DESKTOP);
 
-	if (m_osu->isInVRMode())
+	if (osu->isInVRMode())
 		addCategory(sectionVR, OsuIcons::EYE);
 
 	addCategory(sectionAudio, OsuIcons::VOLUME_UP);
@@ -1246,12 +1243,12 @@ void OsuOptionsMenu::draw(Graphics *g)
 
 	if (isAnimating)
 	{
-		m_osu->getSliderFrameBuffer()->enable();
+		osu->getSliderFrameBuffer()->enable();
 
 		g->setBlendMode(Graphics::BLEND_MODE::BLEND_MODE_PREMUL_ALPHA);
 	}
 
-	const bool isPlayingBeatmap = m_osu->isInPlayMode();
+	const bool isPlayingBeatmap = osu->isInPlayMode();
 
 	// interactive sliders
 
@@ -1266,7 +1263,7 @@ void OsuOptionsMenu::draw(Graphics *g)
 			if (brightness > 0.0f)
 			{
 				g->setColor(rgb(red, green, blue));
-				g->fillRect(0, 0, m_osu->getScreenWidth(), m_osu->getScreenHeight());
+				g->fillRect(0, 0, osu->getScreenWidth(), osu->getScreenHeight());
 			}
 		}
 	}
@@ -1277,7 +1274,7 @@ void OsuOptionsMenu::draw(Graphics *g)
 		{
 			const short dim = std::clamp<float>(m_backgroundDimSlider->getFloat(), 0.0f, 1.0f)*255.0f;
 			g->setColor(argb(dim, 0, 0, 0));
-			g->fillRect(0, 0, m_osu->getScreenWidth(), m_osu->getScreenHeight());
+			g->fillRect(0, 0, osu->getScreenWidth(), osu->getScreenHeight());
 		}
 	}
 
@@ -1298,11 +1295,11 @@ void OsuOptionsMenu::draw(Graphics *g)
 		|| m_statisticsOverlayYOffsetSlider->isActive())
 	{
 		if (!isPlayingBeatmap)
-			m_osu->getHUD()->drawDummy(g);
+			osu->getHUD()->drawDummy(g);
 	}
 	else if (m_playfieldBorderSizeSlider->isActive())
 	{
-		m_osu->getHUD()->drawPlayfieldBorder(g, OsuGameRules::getPlayfieldCenter(m_osu), OsuGameRules::getPlayfieldSize(m_osu), 100);
+		osu->getHUD()->drawPlayfieldBorder(g, OsuGameRules::getPlayfieldCenter(), OsuGameRules::getPlayfieldSize(), 100);
 	}
 	else
 		OsuScreenBackable::draw(g);
@@ -1314,8 +1311,8 @@ void OsuOptionsMenu::draw(Graphics *g)
 	if (m_sliderQualitySlider->isActive())
 	{
 		Vector2 startPos = Vector2(50, 50);
-		Vector2 size = Vector2((int)(m_osu->getUIScale(m_osu, 250.0f)), (int)(m_osu->getUIScale(m_osu, 250.0f)));
-		const float hitcircleDiameter = m_osu->getUIScale(m_osu, 75.0f);
+		Vector2 size = Vector2((int)(osu->getUIScale(250.0f)), (int)(osu->getUIScale(250.0f)));
+		const float hitcircleDiameter = osu->getUIScale(75.0f);
 		const float length = size.x - hitcircleDiameter;
 		const float pointDist = m_osu_slider_curve_points_separation->getFloat()*2;
 		const int numPoints = length / pointDist;
@@ -1348,9 +1345,9 @@ void OsuOptionsMenu::draw(Graphics *g)
 		g->setColor(0xff000000);
 		g->fillRect(startPos.x + size.x/2 - 1, startPos.y, size.x/2, size.y);
 
-		OsuSliderRenderer::draw(g, m_osu, pointsEyeLeft, hitcircleDiameter);
-		OsuSliderRenderer::draw(g, m_osu, pointsEyeRight, hitcircleDiameter);
-		OsuSliderRenderer::draw(g, m_osu, pointsMouth, hitcircleDiameter);
+		OsuSliderRenderer::draw(g, osu, pointsEyeLeft, hitcircleDiameter);
+		OsuSliderRenderer::draw(g, osu, pointsEyeRight, hitcircleDiameter);
+		OsuSliderRenderer::draw(g, osu, pointsMouth, hitcircleDiameter);
 	}
 	*/
 
@@ -1362,15 +1359,15 @@ void OsuOptionsMenu::draw(Graphics *g)
 
 		g->setBlendMode(Graphics::BLEND_MODE::BLEND_MODE_ALPHA);
 
-		m_osu->getSliderFrameBuffer()->disable();
+		osu->getSliderFrameBuffer()->disable();
 
 		g->push3DScene(McRect(0, 0, m_options->getSize().x, m_options->getSize().y));
 		{
 			g->rotate3DScene(0, -(1.0f - m_fAnimation)*90, 0);
 			g->translate3DScene(-(1.0f - m_fAnimation)*m_options->getSize().x*1.25f, 0, -(1.0f - m_fAnimation)*700);
 
-			m_osu->getSliderFrameBuffer()->setColor(argb(m_fAnimation, 1.0f, 1.0f, 1.0f));
-			m_osu->getSliderFrameBuffer()->draw(g, 0, 0);
+			osu->getSliderFrameBuffer()->setColor(argb(m_fAnimation, 1.0f, 1.0f, 1.0f));
+			osu->getSliderFrameBuffer()->draw(g, 0, 0);
 		}
 		g->pop3DScene();
 	}
@@ -1386,7 +1383,7 @@ void OsuOptionsMenu::update()
 	{
 		if (m_bWorkshopSkinSelectScheduled)
 		{
-			if (m_osu->getSteamWorkshop()->isReady())
+			if (osu->getSteamWorkshop()->isReady())
 			{
 				m_bWorkshopSkinSelectScheduled = false;
 
@@ -1401,10 +1398,10 @@ void OsuOptionsMenu::update()
 	if (m_bDPIScalingScrollToSliderScheduled)
 	{
 		m_bDPIScalingScrollToSliderScheduled = false;
-		m_options->scrollToElement(m_uiScaleSlider, 0, 200 * Osu::getUIScale(m_osu));
+		m_options->scrollToElement(m_uiScaleSlider, 0, 200 * Osu::getUIScale());
 	}
 
-	if (m_osu->getHUD()->isVolumeOverlayBusy() || m_backButton->isActive())
+	if (osu->getHUD()->isVolumeOverlayBusy() || m_backButton->isActive())
 		m_container->stealFocus();
 
 	m_container->update();
@@ -1440,14 +1437,14 @@ void OsuOptionsMenu::update()
 		{
 			m_fVibrationStrengthExampleTimer = engine->getTime() + 0.65f;
 
-			openvr->getController()->triggerHapticPulse(m_osu->getVR()->getHapticPulseStrength());
+			openvr->getController()->triggerHapticPulse(osu->getVR()->getHapticPulseStrength());
 		}
 	}
 	if (m_vrSliderVibrationStrengthSlider != NULL && m_vrSliderVibrationStrengthSlider->isActive())
-		openvr->getController()->triggerHapticPulse(m_osu->getVR()->getSliderHapticPulseStrength());
+		openvr->getController()->triggerHapticPulse(osu->getVR()->getSliderHapticPulseStrength());
 
 	// hack to avoid entering search text while binding keys
-	if (m_osu->getNotificationOverlay()->isVisible() && m_osu->getNotificationOverlay()->isWaitingForKey())
+	if (osu->getNotificationOverlay()->isVisible() && osu->getNotificationOverlay()->isWaitingForKey())
 		m_fSearchOnCharKeybindHackTime = engine->getTime() + 0.1f;
 
 	// highlight active category depending on scroll position
@@ -1491,7 +1488,7 @@ void OsuOptionsMenu::update()
 	if (m_bUIScaleScrollToSliderScheduled)
 	{
 		m_bUIScaleScrollToSliderScheduled = false;
-		m_options->scrollToElement(m_uiScaleSlider, 0, 200 * Osu::getUIScale(m_osu));
+		m_options->scrollToElement(m_uiScaleSlider, 0, 200 * Osu::getUIScale());
 	}
 
 	// delayed UI scale change
@@ -1501,11 +1498,11 @@ void OsuOptionsMenu::update()
 		{
 			m_bUIScaleChangeScheduled = false;
 
-			const float oldUIScale = Osu::getUIScale(m_osu);
+			const float oldUIScale = Osu::getUIScale();
 
 			m_osu_ui_scale_ref->setValue(m_uiScaleSlider->getFloat());
 
-			const float newUIScale = Osu::getUIScale(m_osu);
+			const float newUIScale = Osu::getUIScale();
 
 			// and update reset buttons as usual
 			onResetUpdate(m_uiScaleResetButton);
@@ -1685,7 +1682,7 @@ void OsuOptionsMenu::onKey(KeyboardEvent &e)
 		if (e.getKeyCode() != (KEYCODE)0) // if not the first call
 		{
 			if (m_iManiaK > -1 && m_iManiaK < 10 && m_iManiaKey > -1 && m_iManiaKey <= m_iManiaK)
-				(m_osu->getBindings()->getMania()->begin())[m_iManiaK][m_iManiaKey]->setValue(e.getKeyCode());
+				(osu->getBindings()->getMania()->begin())[m_iManiaK][m_iManiaKey]->setValue(e.getKeyCode());
 
 			// go to next key
 			m_iManiaKey++;
@@ -1714,7 +1711,7 @@ void OsuOptionsMenu::onKey(KeyboardEvent &e)
 
 				curKey++;
 			}
-			m_osu->getNotificationOverlay()->addNotification(notificationText, 0xffffffff, true);
+			osu->getNotificationOverlay()->addNotification(notificationText, 0xffffffff, true);
 		}
 	}
 }
@@ -1740,7 +1737,7 @@ void OsuOptionsMenu::setVisibleInt(bool visible, bool fromOnBack)
 		// save even if not closed via onBack(), e.g. if closed via setVisible(false) from outside
 		if (!visible && !fromOnBack)
 		{
-			m_osu->getNotificationOverlay()->stopWaitingForKey();
+			osu->getNotificationOverlay()->stopWaitingForKey();
 			save();
 		}
 	}
@@ -1758,7 +1755,7 @@ void OsuOptionsMenu::setVisibleInt(bool visible, bool fromOnBack)
 	}
 
 	// usability: auto scroll to fposu settings if opening options while in fposu gamemode
-	if (visible && m_osu->isInPlayMode() && m_osu_mod_fposu_ref->getBool() && !m_fposuCategoryButton->isActiveCategory())
+	if (visible && osu->isInPlayMode() && m_osu_mod_fposu_ref->getBool() && !m_fposuCategoryButton->isActiveCategory())
 		onCategoryClicked(m_fposuCategoryButton);
 
 	// reset reset counters
@@ -1873,28 +1870,28 @@ void OsuOptionsMenu::updateLayout()
 
 	OsuScreenBackable::updateLayout();
 
-	const float dpiScale = Osu::getUIScale(m_osu);
+	const float dpiScale = Osu::getUIScale();
 
-	m_container->setSize(m_osu->getScreenSize());
+	m_container->setSize(osu->getScreenSize());
 
 	// options panel
 	const float optionsScreenWidthPercent = 0.5f;
 	const float categoriesOptionsPercent = 0.135f;
 
-	int optionsWidth = (int)(m_osu->getScreenWidth()*optionsScreenWidthPercent);
+	int optionsWidth = (int)(osu->getScreenWidth()*optionsScreenWidthPercent);
 	if (!m_bFullscreen)
 		optionsWidth = std::min((int)(725.0f*(1.0f - categoriesOptionsPercent)), optionsWidth) * dpiScale;
 
 	const int categoriesWidth = optionsWidth*categoriesOptionsPercent;
 
-	m_options->setRelPosX((!m_bFullscreen ? -1 : m_osu->getScreenWidth()/2 - (optionsWidth + categoriesWidth)/2) + categoriesWidth);
-	m_options->setSize(optionsWidth, m_osu->getScreenHeight()+1);
+	m_options->setRelPosX((!m_bFullscreen ? -1 : osu->getScreenWidth()/2 - (optionsWidth + categoriesWidth)/2) + categoriesWidth);
+	m_options->setSize(optionsWidth, osu->getScreenHeight()+1);
 
 	m_search->setRelPos(m_options->getRelPos());
 	m_search->setSize(m_options->getSize());
 
 	m_categories->setRelPosX(m_options->getRelPos().x - categoriesWidth);
-	m_categories->setSize(categoriesWidth, m_osu->getScreenHeight() + 1);
+	m_categories->setSize(categoriesWidth, osu->getScreenHeight() + 1);
 
 	// reset
 	m_options->getContainer()->empty();
@@ -2277,13 +2274,13 @@ void OsuOptionsMenu::updateLayout()
 
 void OsuOptionsMenu::onBack()
 {
-	m_osu->getNotificationOverlay()->stopWaitingForKey();
+	osu->getNotificationOverlay()->stopWaitingForKey();
 
-	soundEngine->play(m_osu->getSkin()->getMenuClick());
+	soundEngine->play(osu->getSkin()->getMenuClick());
 	save();
 
 	if (m_bFullscreen)
-		m_osu->toggleOptionsMenu();
+		osu->toggleOptionsMenu();
 	else
 		setVisibleInt(false, true);
 }
@@ -2362,7 +2359,7 @@ void OsuOptionsMenu::updateFposuCMper360()
 
 void OsuOptionsMenu::updateVRRenderTargetResolutionLabel()
 {
-	if (m_vrRenderTargetResolutionLabel == NULL || !openvr->isReady() || !m_osu->isInVRMode()) return;
+	if (m_vrRenderTargetResolutionLabel == NULL || !openvr->isReady() || !osu->isInVRMode()) return;
 
 	Vector2 vrRenderTargetResolution = openvr->getRenderTargetResolution();
 	m_vrRenderTargetResolutionLabel->setText(UString::format(m_vrRenderTargetResolutionLabel->getName().toUtf8(), (int)vrRenderTargetResolution.x, (int)vrRenderTargetResolution.y));
@@ -2449,14 +2446,14 @@ void OsuOptionsMenu::onDPIScalingChange(CBaseUICheckbox *checkbox)
 		{
 			if (m_elements[i].elements[e] == checkbox)
 			{
-				const float prevUIScale = Osu::getUIScale(m_osu);
+				const float prevUIScale = Osu::getUIScale();
 
 				if (m_elements[i].cvar != NULL)
 					m_elements[i].cvar->setValue(checkbox->isChecked());
 
 				onResetUpdate(m_elements[i].resetButton);
 
-				if (Osu::getUIScale(m_osu) != prevUIScale)
+				if (Osu::getUIScale() != prevUIScale)
 					m_bDPIScalingScrollToSliderScheduled = true;
 
 				break;
@@ -2479,7 +2476,7 @@ void OsuOptionsMenu::onRawInputToAbsoluteWindowChange(CBaseUICheckbox *checkbox)
 				onResetUpdate(m_elements[i].resetButton);
 
 				// special case: this requires a virtual mouse offset update, but since it is an engine convar we can't use callbacks
-				m_osu->updateMouseSettings();
+				osu->updateMouseSettings();
 
 				break;
 			}
@@ -2491,7 +2488,7 @@ void OsuOptionsMenu::onSkinSelect()
 {
 	updateOsuFolder();
 
-	if (m_osu->isSkinLoading()) return;
+	if (osu->isSkinLoading()) return;
 
 
 	UString skinFolder = convar->getConVarByName("osu_folder")->getString();
@@ -2545,7 +2542,7 @@ void OsuOptionsMenu::onSkinSelect()
 	}
 	else
 	{
-		m_osu->getNotificationOverlay()->addNotification("Error: Couldn't find any skins", 0xffff0000);
+		osu->getNotificationOverlay()->addNotification("Error: Couldn't find any skins", 0xffff0000);
 		m_options->scrollToTop();
 		m_fOsuFolderTextboxInvalidAnim = engine->getTime() + 3.0f;
 	}
@@ -2556,10 +2553,10 @@ void OsuOptionsMenu::onSkinSelect2(UString skinName, int id)
 	if constexpr (Env::cfg(FEAT::STEAM))
 		m_osu_skin_is_from_workshop_ref->setValue(0.0f);
 
-	if (m_osu->getInstanceID() < 1)
+	if (osu->getInstanceID() < 1)
 		m_osu_skin_ref->setValue(skinName);
 	else
-		m_osu->setSkin(skinName);
+		osu->setSkin(skinName);
 
 	updateSkinNameLabel();
 }
@@ -2570,7 +2567,7 @@ void OsuOptionsMenu::onSkinSelectWorkshop()
 	{
 		if (m_skinSelectWorkshopButton == NULL) return;
 
-		if (m_osu->getSteamWorkshop()->isReady() && m_osu->getSteamWorkshop()->areDetailsLoaded())
+		if (osu->getSteamWorkshop()->isReady() && osu->getSteamWorkshop()->areDetailsLoaded())
 		{
 			onSkinSelectWorkshop3();
 			return;
@@ -2584,7 +2581,7 @@ void OsuOptionsMenu::onSkinSelectWorkshop2()
 {
 	if constexpr (Env::cfg(FEAT::STEAM))
 	{
-		m_osu->getSteamWorkshop()->refresh(true);
+		osu->getSteamWorkshop()->refresh(true);
 		m_bWorkshopSkinSelectScheduled = true;
 
 		m_contextMenu->setPos(m_skinSelectWorkshopButton->getPos());
@@ -2608,7 +2605,7 @@ void OsuOptionsMenu::onSkinSelectWorkshop3()
 			m_contextMenu->addButton(">>> Refresh <<<", -2)->setTextLeft(false);
 			m_contextMenu->addButton("", -4)->setEnabled(false);
 
-			const std::vector<OsuSteamWorkshop::SUBSCRIBED_ITEM> &subscribedItems = m_osu->getSteamWorkshop()->getSubscribedItems();
+			const std::vector<OsuSteamWorkshop::SUBSCRIBED_ITEM> &subscribedItems = osu->getSteamWorkshop()->getSubscribedItems();
 			if (subscribedItems.size() > 0)
 			{
 				for (int i=0; i<subscribedItems.size(); i++)
@@ -2638,11 +2635,11 @@ void OsuOptionsMenu::onSkinSelectWorkshop4(UString skinName, int id)
 		}
 		else if (id == -3) // "(Empty. Click for Workshop!)"
 		{
-			OsuMainMenu::openSteamWorkshopInGameOverlay(m_osu, true);
+			OsuMainMenu::openSteamWorkshopInGameOverlay(true);
 			return;
 		}
 
-		const std::vector<OsuSteamWorkshop::SUBSCRIBED_ITEM> &subscribedItems = m_osu->getSteamWorkshop()->getSubscribedItems();
+		const std::vector<OsuSteamWorkshop::SUBSCRIBED_ITEM> &subscribedItems = osu->getSteamWorkshop()->getSubscribedItems();
 		if (id >= 0 && id < subscribedItems.size())
 		{
 			const OsuSteamWorkshop::SUBSCRIBED_ITEM &subscribedItem = subscribedItems[id];
@@ -2653,22 +2650,22 @@ void OsuOptionsMenu::onSkinSelectWorkshop4(UString skinName, int id)
 				m_osu_skin_workshop_title_ref->setValue(subscribedItem.title);
 				m_osu_skin_workshop_id_ref->setValue(UString::format("%llu", subscribedItem.id));
 
-				if (m_osu->getInstanceID() < 1)
+				if (osu->getInstanceID() < 1)
 					m_osu_skin_ref->setValue(subscribedItem.installInfo);
 				else
-					m_osu->setSkin(subscribedItem.installInfo);
+					osu->setSkin(subscribedItem.installInfo);
 
 				updateSkinNameLabel();
 			}
 			else
-				m_osu->getNotificationOverlay()->addNotification("Error: Workshop skin does not exist!", 0xffff0000);
+				osu->getNotificationOverlay()->addNotification("Error: Workshop skin does not exist!", 0xffff0000);
 		}
 	}
 }
 
 void OsuOptionsMenu::onSkinReload()
 {
-	m_osu->reloadSkin();
+	osu->reloadSkin();
 }
 
 void OsuOptionsMenu::onSkinRandom()
@@ -2678,7 +2675,7 @@ void OsuOptionsMenu::onSkinRandom()
 	if (!isRandomSkinEnabled)
 		m_osu_skin_random_ref->setValue(1.0f);
 
-	m_osu->reloadSkin();
+	osu->reloadSkin();
 
 	if (!isRandomSkinEnabled)
 		m_osu_skin_random_ref->setValue(0.0f);
@@ -2804,22 +2801,22 @@ void OsuOptionsMenu::onOutputDeviceSelect()
 void OsuOptionsMenu::onOutputDeviceSelect2(UString outputDeviceName, int id)
 {
 	unsigned long prevMusicPositionMS = 0;
-	if (!m_osu->isInPlayMode() && m_osu->getSelectedBeatmap() != NULL && m_osu->getSelectedBeatmap()->getMusic() != NULL)
-		prevMusicPositionMS = m_osu->getSelectedBeatmap()->getMusic()->getPositionMS();
+	if (!osu->isInPlayMode() && osu->getSelectedBeatmap() != NULL && osu->getSelectedBeatmap()->getMusic() != NULL)
+		prevMusicPositionMS = osu->getSelectedBeatmap()->getMusic()->getPositionMS();
 
 	soundEngine->setOutputDevice(outputDeviceName);
 	m_outputDeviceLabel->setText(soundEngine->getOutputDevice());
-	m_osu->getSkin()->reloadSounds();
+	osu->getSkin()->reloadSounds();
 
 	// and update reset button as usual
 	onOutputDeviceResetUpdate();
 
 	// start playing music again after audio device changed
-	if (!m_osu->isInPlayMode() && m_osu->getSelectedBeatmap() != NULL && m_osu->getSelectedBeatmap()->getMusic() != NULL)
+	if (!osu->isInPlayMode() && osu->getSelectedBeatmap() != NULL && osu->getSelectedBeatmap()->getMusic() != NULL)
 	{
-		m_osu->getSelectedBeatmap()->unloadMusic();
-		m_osu->getSelectedBeatmap()->select(); // (triggers preview music play)
-		m_osu->getSelectedBeatmap()->getMusic()->setPositionMS(prevMusicPositionMS);
+		osu->getSelectedBeatmap()->unloadMusic();
+		osu->getSelectedBeatmap()->select(); // (triggers preview music play)
+		osu->getSelectedBeatmap()->getMusic()->setPositionMS(prevMusicPositionMS);
 	}
 }
 
@@ -2848,18 +2845,18 @@ void OsuOptionsMenu::onAudioCompatibilityModeChange(CBaseUICheckbox *checkbox)
 	onCheckboxChange(checkbox);
 	soundEngine->setOutputDeviceForce(soundEngine->getOutputDevice());
 	checkbox->setChecked(m_win_snd_fallback_dsound_ref->getBool(), false);
-	m_osu->getSkin()->reloadSounds();
+	osu->getSkin()->reloadSounds();
 }
 
 void OsuOptionsMenu::onDownloadOsuClicked()
 {
-	m_osu->getNotificationOverlay()->addNotification("Opening browser, please wait ...", 0xffffffff, false, 0.75f);
+	osu->getNotificationOverlay()->addNotification("Opening browser, please wait ...", 0xffffffff, false, 0.75f);
 	env->openURLInDefaultBrowser("https://osu.ppy.sh/home/download");
 }
 
 void OsuOptionsMenu::onManuallyManageBeatmapsClicked()
 {
-	m_osu->getNotificationOverlay()->addNotification("Opening browser, please wait ...", 0xffffffff, false, 0.75f);
+	osu->getNotificationOverlay()->addNotification("Opening browser, please wait ...", 0xffffffff, false, 0.75f);
 	env->openURLInDefaultBrowser("https://steamcommunity.com/sharedfiles/filedetails/?id=880768265");
 }
 
@@ -2868,13 +2865,13 @@ void OsuOptionsMenu::onBrowseOsuFolderClicked()
 	if (!m_bIsOsuFolderDialogOpen)
 	{
 		m_bIsOsuFolderDialogOpen = true;
-		m_osu->getNotificationOverlay()->addNotification("Opening file browser ...", 0xffffffff, false, 0.75f);
+		osu->getNotificationOverlay()->addNotification("Opening file browser ...", 0xffffffff, false, 0.75f);
 
 		env->openFolderWindow(
 			[this](const std::vector<UString>& paths) {
 				m_bIsOsuFolderDialogOpen = false;
 				if (paths.empty()) {
-					m_osu->getNotificationOverlay()->addNotification("No folder selected.", 0xff770000, false, 1.0f);
+					osu->getNotificationOverlay()->addNotification("No folder selected.", 0xff770000, false, 1.0f);
 					return;
 				}
 
@@ -2891,7 +2888,7 @@ void OsuOptionsMenu::onBrowseOsuFolderClicked()
 
 void OsuOptionsMenu::onCM360CalculatorLinkClicked()
 {
-	m_osu->getNotificationOverlay()->addNotification("Opening browser, please wait ...", 0xffffffff, false, 0.75f);
+	osu->getNotificationOverlay()->addNotification("Opening browser, please wait ...", 0xffffffff, false, 0.75f);
 	env->openURLInDefaultBrowser("https://www.mouse-sensitivity.com/");
 }
 
@@ -3215,8 +3212,8 @@ void OsuOptionsMenu::onKeyBindingButtonPressed(CBaseUIButton *button)
 					notificationText.append(":");
 
 					const bool waitForKey = true;
-					m_osu->getNotificationOverlay()->addNotification(notificationText, 0xffffffff, waitForKey);
-					m_osu->getNotificationOverlay()->setDisallowWaitForKeyLeftClick(!(dynamic_cast<OsuOptionsMenuKeyBindButton*>(button)->isLeftMouseClickBindingAllowed()));
+					osu->getNotificationOverlay()->addNotification(notificationText, 0xffffffff, waitForKey);
+					osu->getNotificationOverlay()->setDisallowWaitForKeyLeftClick(!(dynamic_cast<OsuOptionsMenuKeyBindButton*>(button)->isLeftMouseClickBindingAllowed()));
 				}
 				break;
 			}
@@ -3226,7 +3223,7 @@ void OsuOptionsMenu::onKeyBindingButtonPressed(CBaseUIButton *button)
 
 void OsuOptionsMenu::onKeyUnbindButtonPressed(CBaseUIButton *button)
 {
-	soundEngine->play(m_osu->getSkin()->getCheckOff());
+	soundEngine->play(osu->getSkin()->getCheckOff());
 
 	for (int i=0; i<m_elements.size(); i++)
 	{
@@ -3255,19 +3252,19 @@ void OsuOptionsMenu::onKeyBindingsResetAllPressed(CBaseUIButton *button)
 	{
 		m_iNumResetAllKeyBindingsPressed = 0;
 
-		for (ConVar *bind : *(m_osu->getBindings()->get()))
+		for (ConVar *bind : *(osu->getBindings()->get()))
 		{
 			bind->setValue(bind->getDefaultFloat());
 		}
 
-		m_osu->getNotificationOverlay()->addNotification("All key bindings have been reset.", 0xff00ff00);
+		osu->getNotificationOverlay()->addNotification("All key bindings have been reset.", 0xff00ff00);
 	}
 	else
 	{
 		if (remainingUntilReset > 1)
-			m_osu->getNotificationOverlay()->addNotification(UString::format("Press %i more times to confirm.", remainingUntilReset));
+			osu->getNotificationOverlay()->addNotification(UString::format("Press %i more times to confirm.", remainingUntilReset));
 		else
-			m_osu->getNotificationOverlay()->addNotification(UString::format("Press %i more time to confirm!", remainingUntilReset), 0xffffff00);
+			osu->getNotificationOverlay()->addNotification(UString::format("Press %i more time to confirm!", remainingUntilReset), 0xffffff00);
 	}
 }
 
@@ -3500,7 +3497,7 @@ void OsuOptionsMenu::onWASAPIPeriodChange(CBaseUISlider *slider)
 
 void OsuOptionsMenu::onUseSkinsSoundSamplesChange(UString oldValue, UString newValue)
 {
-	m_osu->reloadSkin();
+	osu->reloadSkin();
 }
 
 void OsuOptionsMenu::onHighQualitySlidersCheckboxChange(CBaseUICheckbox *checkbox)
@@ -3567,7 +3564,7 @@ void OsuOptionsMenu::onCategoryClicked(CBaseUIButton *button)
 	// scroll to category
 	OsuOptionsMenuCategoryButton *categoryButton = dynamic_cast<OsuOptionsMenuCategoryButton*>(button);
 	if (categoryButton != NULL)
-		m_options->scrollToElement(categoryButton->getSection(), 0, 100 * Osu::getUIScale(m_osu));
+		m_options->scrollToElement(categoryButton->getSection(), 0, 100 * Osu::getUIScale());
 }
 
 void OsuOptionsMenu::onResetUpdate(CBaseUIButton *button)
@@ -3651,19 +3648,19 @@ void OsuOptionsMenu::onResetEverythingClicked(CBaseUIButton *button)
 		}
 
 		// and then all key bindings (since these don't use the yellow reset button system)
-		for (ConVar *bind : *(m_osu->getBindings()->get()))
+		for (ConVar *bind : *(osu->getBindings()->get()))
 		{
 			bind->setValue(bind->getDefaultFloat());
 		}
 
-		m_osu->getNotificationOverlay()->addNotification("All settings have been reset.", 0xff00ff00);
+		osu->getNotificationOverlay()->addNotification("All settings have been reset.", 0xff00ff00);
 	}
 	else
 	{
 		if (remainingUntilReset > 1)
-			m_osu->getNotificationOverlay()->addNotification(UString::format("Press %i more times to confirm.", remainingUntilReset));
+			osu->getNotificationOverlay()->addNotification(UString::format("Press %i more times to confirm.", remainingUntilReset));
 		else
-			m_osu->getNotificationOverlay()->addNotification(UString::format("Press %i more time to confirm!", remainingUntilReset), 0xffffff00);
+			osu->getNotificationOverlay()->addNotification(UString::format("Press %i more time to confirm!", remainingUntilReset), 0xffffff00);
 	}
 }
 
@@ -3679,7 +3676,7 @@ CBaseUILabel *OsuOptionsMenu::addSection(UString text)
 {
 	CBaseUILabel *label = new CBaseUILabel(0, 0, m_options->getSize().x, 25, text, text);
 	//label->setTextColor(0xff58dafe);
-	label->setFont(m_osu->getTitleFont());
+	label->setFont(osu->getTitleFont());
 	label->setSizeToContent(0, 0);
 	label->setTextJustification(CBaseUILabel::TEXT_JUSTIFICATION_RIGHT);
 	label->setDrawFrame(false);
@@ -3698,7 +3695,7 @@ CBaseUILabel *OsuOptionsMenu::addSection(UString text)
 CBaseUILabel *OsuOptionsMenu::addSubSection(UString text, UString searchTags)
 {
 	CBaseUILabel *label = new CBaseUILabel(0, 0, m_options->getSize().x, 25, text, text);
-	label->setFont(m_osu->getSubTitleFont());
+	label->setFont(osu->getSubTitleFont());
 	label->setSizeToContent(0, 0);
 	label->setDrawFrame(false);
 	label->setDrawBackground(false);
@@ -3733,7 +3730,7 @@ CBaseUILabel *OsuOptionsMenu::addLabel(UString text)
 
 OsuUIButton *OsuOptionsMenu::addButton(UString text)
 {
-	OsuUIButton *button = new OsuUIButton(m_osu, 0, 0, m_options->getSize().x, 50, text, text);
+	OsuUIButton *button = new OsuUIButton(0, 0, m_options->getSize().x, 50, text, text);
 	button->setColor(0xff0e94b5);
 	button->setUseDefaultSkin();
 	m_options->getContainer()->addBaseUIElement(button);
@@ -3748,7 +3745,7 @@ OsuUIButton *OsuOptionsMenu::addButton(UString text)
 
 OsuOptionsMenu::OPTIONS_ELEMENT OsuOptionsMenu::addButton(UString text, UString labelText, bool withResetButton)
 {
-	OsuUIButton *button = new OsuUIButton(m_osu, 0, 0, m_options->getSize().x, 50, text, text);
+	OsuUIButton *button = new OsuUIButton(0, 0, m_options->getSize().x, 50, text, text);
 	button->setColor(0xff0e94b5);
 	button->setUseDefaultSkin();
 	m_options->getContainer()->addBaseUIElement(button);
@@ -3761,7 +3758,7 @@ OsuOptionsMenu::OPTIONS_ELEMENT OsuOptionsMenu::addButton(UString text, UString 
 	OPTIONS_ELEMENT e;
 	if (withResetButton)
 	{
-		e.resetButton = new OsuOptionsMenuResetButton(m_osu, 0, 0, 35, 50, "", "");
+		e.resetButton = new OsuOptionsMenuResetButton(0, 0, 35, 50, "", "");
 	}
 	e.elements.push_back(button);
 	e.elements.push_back(label);
@@ -3773,12 +3770,12 @@ OsuOptionsMenu::OPTIONS_ELEMENT OsuOptionsMenu::addButton(UString text, UString 
 
 OsuOptionsMenu::OPTIONS_ELEMENT OsuOptionsMenu::addButtonButton(UString text1, UString text2)
 {
-	OsuUIButton *button = new OsuUIButton(m_osu, 0, 0, m_options->getSize().x, 50, text1, text1);
+	OsuUIButton *button = new OsuUIButton(0, 0, m_options->getSize().x, 50, text1, text1);
 	button->setColor(0xff0e94b5);
 	button->setUseDefaultSkin();
 	m_options->getContainer()->addBaseUIElement(button);
 
-	OsuUIButton *button2 = new OsuUIButton(m_osu, 0, 0, m_options->getSize().x, 50, text2, text2);
+	OsuUIButton *button2 = new OsuUIButton(0, 0, m_options->getSize().x, 50, text2, text2);
 	button2->setColor(0xff0e94b5);
 	button2->setUseDefaultSkin();
 	m_options->getContainer()->addBaseUIElement(button2);
@@ -3794,12 +3791,12 @@ OsuOptionsMenu::OPTIONS_ELEMENT OsuOptionsMenu::addButtonButton(UString text1, U
 
 OsuOptionsMenu::OPTIONS_ELEMENT OsuOptionsMenu::addButtonButtonLabel(UString text1, UString text2, UString labelText, bool withResetButton)
 {
-	OsuUIButton *button = new OsuUIButton(m_osu, 0, 0, m_options->getSize().x, 50, text1, text1);
+	OsuUIButton *button = new OsuUIButton(0, 0, m_options->getSize().x, 50, text1, text1);
 	button->setColor(0xff0e94b5);
 	button->setUseDefaultSkin();
 	m_options->getContainer()->addBaseUIElement(button);
 
-	OsuUIButton *button2 = new OsuUIButton(m_osu, 0, 0, m_options->getSize().x, 50, text2, text2);
+	OsuUIButton *button2 = new OsuUIButton(0, 0, m_options->getSize().x, 50, text2, text2);
 	button2->setColor(0xff0e94b5);
 	button2->setUseDefaultSkin();
 	m_options->getContainer()->addBaseUIElement(button2);
@@ -3812,7 +3809,7 @@ OsuOptionsMenu::OPTIONS_ELEMENT OsuOptionsMenu::addButtonButtonLabel(UString tex
 	OPTIONS_ELEMENT e;
 	if (withResetButton)
 	{
-		e.resetButton = new OsuOptionsMenuResetButton(m_osu, 0, 0, 35, 50, "", "");
+		e.resetButton = new OsuOptionsMenuResetButton(0, 0, 35, 50, "", "");
 	}
 	e.elements.push_back(button);
 	e.elements.push_back(button2);
@@ -3826,15 +3823,15 @@ OsuOptionsMenu::OPTIONS_ELEMENT OsuOptionsMenu::addButtonButtonLabel(UString tex
 OsuOptionsMenuKeyBindButton *OsuOptionsMenu::addKeyBindButton(UString text, ConVar *cvar)
 {
 	///UString unbindIconString; unbindIconString.insert(0, OsuIcons::UNDO);
-	OsuUIButton *unbindButton = new OsuUIButton(m_osu, 0, 0, m_options->getSize().x, 50, text, "");
+	OsuUIButton *unbindButton = new OsuUIButton(0, 0, m_options->getSize().x, 50, text, "");
 	unbindButton->setTooltipText("Unbind");
 	unbindButton->setColor(0x77ff0000);
 	unbindButton->setUseDefaultSkin();
 	unbindButton->setClickCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onKeyUnbindButtonPressed) );
-	///unbindButton->setFont(m_osu->getFontIcons());
+	///unbindButton->setFont(osu->getFontIcons());
 	m_options->getContainer()->addBaseUIElement(unbindButton);
 
-	OsuOptionsMenuKeyBindButton *bindButton = new OsuOptionsMenuKeyBindButton(m_osu, 0, 0, m_options->getSize().x, 50, text, text);
+	OsuOptionsMenuKeyBindButton *bindButton = new OsuOptionsMenuKeyBindButton(0, 0, m_options->getSize().x, 50, text, text);
 	bindButton->setColor(0xff0e94b5);
 	bindButton->setUseDefaultSkin();
 	bindButton->setClickCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onKeyBindingButtonPressed) );
@@ -3863,7 +3860,7 @@ CBaseUICheckbox *OsuOptionsMenu::addCheckbox(UString text, ConVar *cvar)
 
 CBaseUICheckbox *OsuOptionsMenu::addCheckbox(UString text, UString tooltipText, ConVar *cvar)
 {
-	OsuUICheckbox *checkbox = new OsuUICheckbox(m_osu, 0, 0, m_options->getSize().x, 50, text, text);
+	OsuUICheckbox *checkbox = new OsuUICheckbox(0, 0, m_options->getSize().x, 50, text, text);
 	checkbox->setDrawFrame(false);
 	checkbox->setDrawBackground(false);
 
@@ -3881,7 +3878,7 @@ CBaseUICheckbox *OsuOptionsMenu::addCheckbox(UString text, UString tooltipText, 
 	OPTIONS_ELEMENT e;
 	if (cvar != NULL)
 	{
-		e.resetButton = new OsuOptionsMenuResetButton(m_osu, 0, 0, 35, 50, "", "");
+		e.resetButton = new OsuOptionsMenuResetButton(0, 0, 35, 50, "", "");
 		e.resetButton->setClickCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onResetClicked) );
 	}
 	e.elements.push_back(checkbox);
@@ -3894,7 +3891,7 @@ CBaseUICheckbox *OsuOptionsMenu::addCheckbox(UString text, UString tooltipText, 
 
 OsuUISlider *OsuOptionsMenu::addSlider(UString text, float min, float max, ConVar *cvar, float label1Width, bool allowOverscale, bool allowUnderscale)
 {
-	OsuUISlider *slider = new OsuUISlider(m_osu, 0, 0, 100, 50, text);
+	OsuUISlider *slider = new OsuUISlider(0, 0, 100, 50, text);
 	slider->setAllowMouseWheel(false);
 	slider->setBounds(min, max);
 	slider->setLiveUpdate(true);
@@ -3924,7 +3921,7 @@ OsuUISlider *OsuOptionsMenu::addSlider(UString text, float min, float max, ConVa
 	OPTIONS_ELEMENT e;
 	if (cvar != NULL)
 	{
-		e.resetButton = new OsuOptionsMenuResetButton(m_osu, 0, 0, 35, 50, "", "");
+		e.resetButton = new OsuOptionsMenuResetButton(0, 0, 35, 50, "", "");
 		e.resetButton->setClickCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onResetClicked) );
 	}
 	e.elements.push_back(label1);
@@ -3980,7 +3977,7 @@ CBaseUITextbox *OsuOptionsMenu::addTextbox(UString text, UString labelText, ConV
 
 CBaseUIElement *OsuOptionsMenu::addSkinPreview()
 {
-	CBaseUIElement *skinPreview = new OsuOptionsMenuSkinPreviewElement(m_osu, 0, 0, 0, 200, "skincirclenumberhitresultpreview");
+	CBaseUIElement *skinPreview = new OsuOptionsMenuSkinPreviewElement(0, 0, 0, 200, "skincirclenumberhitresultpreview");
 	m_options->getContainer()->addBaseUIElement(skinPreview);
 
 	OPTIONS_ELEMENT e;
@@ -3994,7 +3991,7 @@ CBaseUIElement *OsuOptionsMenu::addSkinPreview()
 
 CBaseUIElement *OsuOptionsMenu::addSliderPreview()
 {
-	CBaseUIElement *sliderPreview = new OsuOptionsMenuSliderPreviewElement(m_osu, 0, 0, 0, 200, "skinsliderpreview");
+	CBaseUIElement *sliderPreview = new OsuOptionsMenuSliderPreviewElement(0, 0, 0, 200, "skinsliderpreview");
 	m_options->getContainer()->addBaseUIElement(sliderPreview);
 
 	OPTIONS_ELEMENT e;
@@ -4010,7 +4007,7 @@ OsuOptionsMenuCategoryButton *OsuOptionsMenu::addCategory(CBaseUIElement *sectio
 {
 	UString iconString; iconString.insert(0, icon);
 	OsuOptionsMenuCategoryButton *button = new OsuOptionsMenuCategoryButton(section, 0, 0, 50, 50, "", iconString);
-	button->setFont(m_osu->getFontIcons());
+	button->setFont(osu->getFontIcons());
 	button->setDrawBackground(false);
 	button->setDrawFrame(false);
 	button->setClickCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onCategoryClicked) );
@@ -4048,7 +4045,7 @@ void OsuOptionsMenu::save()
 	manualConVars.push_back(convar->getConVarByName("osu_songbrowser_scores_sortingtype"));
 	manualConVars.push_back(m_osu_notelock_type_ref);
 	manualConVars.push_back(m_osu_drain_type_ref);
-	if (m_osu->isInVRMode())
+	if (osu->isInVRMode())
 		manualConVars.push_back(convar->getConVarByName("osu_vr_layout_lock"));
 
 	removeConCommands.push_back(convar->getConVarByName("monitor"));
@@ -4206,8 +4203,8 @@ void OsuOptionsMenu::openAndScrollToSkinSection()
 {
 	const bool wasVisible = isVisible();
 	if (!wasVisible)
-		m_osu->toggleOptionsMenu();
+		osu->toggleOptionsMenu();
 
 	if (!m_skinSelectLocalButton->isVisible() || !wasVisible)
-		m_options->scrollToElement(m_skinSection, 0, 100 * Osu::getUIScale(m_osu));
+		m_options->scrollToElement(m_skinSection, 0, 100 * Osu::getUIScale());
 }

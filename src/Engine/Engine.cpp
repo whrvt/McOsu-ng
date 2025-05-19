@@ -947,13 +947,6 @@ void _version(void)
 	debugLog("McEngine v4 - Build Date: %s, %s\n", __DATE__, __TIME__);
 }
 
-void _debugCorporeal(UString oldValue, UString args)
-{
-	bool corporeal = !(args.toFloat() > 0.0f);
-	debugLog("setting it to %i\n", (int)corporeal);
-	env->setWindowGhostCorporeal(corporeal);
-}
-
 void _errortest(void)
 {
 	engine->showMessageError("Error Test", "This is an error message, fullscreen mode should be disabled and you should be able to read this");
@@ -982,7 +975,6 @@ ConVar _resizable_toggle_("resizable_toggle", FCVAR_NONE, _toggleresizable);
 ConVar _focus_("focus", FCVAR_NONE, _focus);
 ConVar _center_("center", FCVAR_NONE, _center);
 ConVar _version_("version", FCVAR_NONE, _version);
-ConVar _corporeal_("debug_ghost", FCVAR_NONE, false, _debugCorporeal);
 ConVar _errortest_("errortest", FCVAR_NONE, _errortest);
 ConVar _crash_("crash", FCVAR_NONE, _crash);
 ConVar _dpiinfo_("dpiinfo", FCVAR_NONE, _dpiinfo);

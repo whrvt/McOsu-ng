@@ -106,9 +106,9 @@ ConVar fposu_mod_3d_depthwobble("fposu_mod_3d_depthwobble", false, MCOSU_FPOSU_4
 constexpr const float OsuModFPoSu::SIZEDIV3D;
 constexpr const int OsuModFPoSu::SUBDIVISIONS;
 
-OsuModFPoSu::OsuModFPoSu(Osu *osu)
+OsuModFPoSu::OsuModFPoSu()
 {
-	m_osu = osu;
+	
 
 	// convar refs
 	m_mouse_sensitivity_ref = convar->getConVarByName("mouse_sensitivity");
@@ -156,6 +156,7 @@ OsuModFPoSu::~OsuModFPoSu()
 	anim->deleteExistingAnimation(&m_fZoomFOVAnimPercent);
 
 	SAFE_DELETE(m_uvPlaneModel);
+	SAFE_DELETE(m_camera);
 }
 
 void OsuModFPoSu::draw(Graphics *g)
@@ -163,17 +164,17 @@ void OsuModFPoSu::draw(Graphics *g)
 	if (!osu_mod_fposu.getBool()) return;
 
 	const float fov = std::lerp(fposu_fov.getFloat(), fposu_zoom_fov.getFloat(), m_fZoomFOVAnimPercent);
-	Matrix4 projectionMatrix = fposu_vertical_fov.getBool() ? Camera::buildMatrixPerspectiveFovVertical(glm::radians(fov), ((float)m_osu->getScreenWidth()/(float)m_osu->getScreenHeight()), 0.05f, 1000.0f)
-															: Camera::buildMatrixPerspectiveFovHorizontal(glm::radians(fov), ((float)m_osu->getScreenHeight() / (float)m_osu->getScreenWidth()), 0.05f, 1000.0f);
+	Matrix4 projectionMatrix = fposu_vertical_fov.getBool() ? Camera::buildMatrixPerspectiveFovVertical(glm::radians(fov), ((float)osu->getScreenWidth()/(float)osu->getScreenHeight()), 0.05f, 1000.0f)
+															: Camera::buildMatrixPerspectiveFovHorizontal(glm::radians(fov), ((float)osu->getScreenHeight() / (float)osu->getScreenWidth()), 0.05f, 1000.0f);
 	Matrix4 viewMatrix = Camera::buildMatrixLookAt(m_camera->getPos(), m_camera->getPos() + m_camera->getViewDirection(), m_camera->getViewUp());
 
 	// HACKHACK: there is currently no way to directly modify the viewport origin, so the only option for rendering non-2d stuff with correct offsets (i.e. top left) is by rendering into a rendertarget
 	// HACKHACK: abusing sliderFrameBuffer
 
-	m_osu->getSliderFrameBuffer()->enable();
+	osu->getSliderFrameBuffer()->enable();
 	{
 		const Vector2 resolutionBackup = g->getResolution();
-		g->onResolutionChange(m_osu->getSliderFrameBuffer()->getSize()); // set renderer resolution to game resolution (to correctly support letterboxing etc.)
+		g->onResolutionChange(osu->getSliderFrameBuffer()->getSize()); // set renderer resolution to game resolution (to correctly support letterboxing etc.)
 		{
 			g->clearDepthBuffer();
 			g->pushTransform();
@@ -234,22 +235,22 @@ void OsuModFPoSu::draw(Graphics *g)
 									g->setWorldMatrixMul(modelMatrix);
 
 									g->setColor(0xffffffff);
-									m_osu->getSkin()->getSkybox()->bind();
+									osu->getSkin()->getSkybox()->bind();
 									{
 										m_skyboxModel->draw3D(g);
 									}
-									m_osu->getSkin()->getSkybox()->unbind();
+									osu->getSkin()->getSkybox()->unbind();
 								}
 								g->popTransform();
 							}
 							else if (fposu_cube.getBool())
 							{
-								m_osu->getSkin()->getBackgroundCube()->bind();
+								osu->getSkin()->getBackgroundCube()->bind();
 								{
 									g->setColor(rgb(std::clamp<int>(fposu_cube_tint_r.getInt(), 0, 255), std::clamp<int>(fposu_cube_tint_g.getInt(), 0, 255), std::clamp<int>(fposu_cube_tint_b.getInt(), 0, 255)));
 									g->drawVAO(m_vaoCube);
 								}
-								m_osu->getSkin()->getBackgroundCube()->unbind();
+								osu->getSkin()->getBackgroundCube()->unbind();
 							}
 						}
 						g->setDepthBuffer(false);
@@ -272,12 +273,12 @@ void OsuModFPoSu::draw(Graphics *g)
 
 						g->setWorldMatrixMul(worldMatrix);
 						{
-							m_osu->getPlayfieldBuffer()->bind();
+							osu->getPlayfieldBuffer()->bind();
 							{
 								g->setColor(0xffffffff);
 								g->drawVAO(m_vao);
 							}
-							m_osu->getPlayfieldBuffer()->unbind();
+							osu->getPlayfieldBuffer()->unbind();
 						}
 
 						if (isTransparent)
@@ -285,7 +286,7 @@ void OsuModFPoSu::draw(Graphics *g)
 
 						// (no setBlending(false), since we are already at the end)
 					}
-					else if (m_osu->isInPlayMode() && m_osu->getSelectedBeatmap() != NULL) // sanity
+					else if (osu->isInPlayMode() && osu->getSelectedBeatmap() != NULL) // sanity
 					{
 						// real 3d render path (fposu_3d)
 
@@ -321,7 +322,7 @@ void OsuModFPoSu::draw(Graphics *g)
 							g->setBlending(true);
 							g->setCulling(true);
 							{
-								m_osu->getSelectedBeatmap()->draw3D(g);
+								osu->getSelectedBeatmap()->draw3D(g);
 							}
 							g->setCulling(false);
 							g->setBlending(false);
@@ -381,18 +382,18 @@ void OsuModFPoSu::draw(Graphics *g)
 											translate.translate(0, 0, -(fposu_3d_beatmap_background_image_distance_multiplier.getFloat() - 1.0f)*fposu_distance.getFloat());
 
 											Matrix4 scale;
-											scale.scale(1.0f, (m_osu->getPlayfieldBuffer()->getHeight() / m_osu->getPlayfieldBuffer()->getWidth())*m_fCircumLength, 1.0f);
+											scale.scale(1.0f, (osu->getPlayfieldBuffer()->getHeight() / osu->getPlayfieldBuffer()->getWidth())*m_fCircumLength, 1.0f);
 
 											modelMatrix = translate * scale;
 										}
 										g->setWorldMatrixMul(modelMatrix);
 
 										g->setColor(0xffffffff);
-										m_osu->getPlayfieldBuffer()->bind();
+										osu->getPlayfieldBuffer()->bind();
 										{
 											g->drawVAO(m_vao);
 										}
-										m_osu->getPlayfieldBuffer()->unbind();
+										osu->getPlayfieldBuffer()->unbind();
 									}
 									g->popTransform();
 								}
@@ -412,22 +413,22 @@ void OsuModFPoSu::draw(Graphics *g)
 										g->setWorldMatrixMul(modelMatrix);
 
 										g->setColor(0xffffffff);
-										m_osu->getSkin()->getSkybox()->bind();
+										osu->getSkin()->getSkybox()->bind();
 										{
 											m_skyboxModel->draw3D(g);
 										}
-										m_osu->getSkin()->getSkybox()->unbind();
+										osu->getSkin()->getSkybox()->unbind();
 									}
 									g->popTransform();
 								}
 								else if (fposu_cube.getBool())
 								{
-									m_osu->getSkin()->getBackgroundCube()->bind();
+									osu->getSkin()->getBackgroundCube()->bind();
 									{
 										g->setColor(rgb(std::clamp<int>(fposu_cube_tint_r.getInt(), 0, 255), std::clamp<int>(fposu_cube_tint_g.getInt(), 0, 255), std::clamp<int>(fposu_cube_tint_b.getInt(), 0, 255)));
 										g->drawVAO(m_vaoCube);
 									}
-									m_osu->getSkin()->getBackgroundCube()->unbind();
+									osu->getSkin()->getBackgroundCube()->unbind();
 								}
 
 #if defined(MCENGINE_FEATURE_OPENGL) || defined (MCENGINE_FEATURE_GLES2) || defined(MCENGINE_FEATURE_GLES32) || defined(MCENGINE_FEATURE_GL3)
@@ -448,8 +449,8 @@ void OsuModFPoSu::draw(Graphics *g)
 							g->setBlending(true);
 							g->setCulling(true);
 							{
-								m_osu->getSelectedBeatmap()->draw3D(g);
-								m_osu->getSelectedBeatmap()->draw3D2(g);
+								osu->getSelectedBeatmap()->draw3D(g);
+								osu->getSelectedBeatmap()->draw3D2(g);
 							}
 							g->setCulling(false);
 							// (no setBlending(false), since we are already at the end)
@@ -459,7 +460,7 @@ void OsuModFPoSu::draw(Graphics *g)
 							g->setBlending(true);
 							g->setCulling(true);
 							{
-								m_osu->getSelectedBeatmap()->draw3D2(g);
+								osu->getSelectedBeatmap()->draw3D2(g);
 							}
 							g->setCulling(false);
 							// (no setBlending(false), since we are already at the end)
@@ -475,12 +476,12 @@ void OsuModFPoSu::draw(Graphics *g)
 		}
 		g->onResolutionChange(resolutionBackup);
 	}
-	m_osu->getSliderFrameBuffer()->disable();
+	osu->getSliderFrameBuffer()->disable();
 
 	// finally, draw that to the screen
 	g->setBlending(false);
 	{
-		m_osu->getSliderFrameBuffer()->draw(g, 0, 0);
+		osu->getSliderFrameBuffer()->draw(g, 0, 0);
 	}
 	g->setBlending(true);
 }
@@ -494,7 +495,7 @@ void OsuModFPoSu::update()
 
 	m_modelMatrix = Matrix4();
 	{
-		m_modelMatrix.scale(1.0f, (m_osu->getPlayfieldBuffer()->getHeight() / m_osu->getPlayfieldBuffer()->getWidth())*(m_fCircumLength), 1.0f);
+		m_modelMatrix.scale(1.0f, (osu->getPlayfieldBuffer()->getHeight() / osu->getPlayfieldBuffer()->getWidth())*(m_fCircumLength), 1.0f);
 
 		// rotate around center
 		{
@@ -511,11 +512,11 @@ void OsuModFPoSu::update()
 
 		if (fposu_mod_strafing.getBool())
 		{
-			if (m_osu->isInPlayMode() && m_osu->getSelectedBeatmap() != NULL)
+			if (osu->isInPlayMode() && osu->getSelectedBeatmap() != NULL)
 			{
-				const long curMusicPos = m_osu->getSelectedBeatmap()->getCurMusicPos();
+				const long curMusicPos = osu->getSelectedBeatmap()->getCurMusicPos();
 
-				const float speedMultiplierCompensation = 1.0f / m_osu->getSelectedBeatmap()->getSpeedMultiplier();
+				const float speedMultiplierCompensation = 1.0f / osu->getSelectedBeatmap()->getSpeedMultiplier();
 
 				const float x = std::sin((curMusicPos/1000.0f)*5*speedMultiplierCompensation*fposu_mod_strafing_frequency_x.getFloat())*fposu_mod_strafing_strength_x.getFloat();
 				const float y = std::sin((curMusicPos/1000.0f)*5*speedMultiplierCompensation*fposu_mod_strafing_frequency_y.getFloat())*fposu_mod_strafing_strength_y.getFloat();
@@ -526,7 +527,7 @@ void OsuModFPoSu::update()
 		}
 	}
 
-	const bool isAutoCursor = (m_osu->getModAuto() || m_osu->getModAutopilot());
+	const bool isAutoCursor = (osu->getModAuto() || osu->getModAutopilot());
 
 	m_bCrosshairIntersectsScreen = true;
 	if (!fposu_3d.getBool() && !fposu_absolute_mode.getBool() && !isAutoCursor)
@@ -579,9 +580,9 @@ void OsuModFPoSu::update()
 
 		// auto support, because it looks pretty cool
 		Vector2 mousePos = mouse->getPos();
-		if (isAutoCursor && m_osu->isInPlayMode() && m_osu->getSelectedBeatmap() != NULL)
+		if (isAutoCursor && osu->isInPlayMode() && osu->getSelectedBeatmap() != NULL)
 		{
-			OsuBeatmapStandard *beatmapStd = dynamic_cast<OsuBeatmapStandard*>(m_osu->getSelectedBeatmap());
+			OsuBeatmapStandard *beatmapStd = dynamic_cast<OsuBeatmapStandard*>(osu->getSelectedBeatmap());
 			if (beatmapStd != NULL && !beatmapStd->isPaused())
 				mousePos = beatmapStd->getCursorPos();
 		}
@@ -615,7 +616,7 @@ void OsuModFPoSu::update()
 		if (delta.y != 0.0f)
 			m_camera->rotateX(delta.y * (fposu_invert_vertical.getBool() ? 1.0f : -1.0f));
 
-		if (m_osu->isInPlayMode() && m_osu->getSelectedBeatmap() != NULL)
+		if (osu->isInPlayMode() && osu->getSelectedBeatmap() != NULL)
 		{
 			if (!isAutoCursor)
 			{
@@ -623,14 +624,14 @@ void OsuModFPoSu::update()
 
 				if (!osCursorVisible)
 				{
-					if (!m_osu->getSelectedBeatmap()->isPaused() && !m_osu->getOptionsMenu()->isVisible() && !m_osu->getModSelector()->isVisible())
+					if (!osu->getSelectedBeatmap()->isPaused() && !osu->getOptionsMenu()->isVisible() && !osu->getModSelector()->isVisible())
 						setMousePosCompensated(engine->getScreenSize()/2.0f);
 				}
 			}
 			else
 			{
 				// 3d auto support
-				OsuBeatmapStandard *beatmapStd = dynamic_cast<OsuBeatmapStandard*>(m_osu->getSelectedBeatmap());
+				OsuBeatmapStandard *beatmapStd = dynamic_cast<OsuBeatmapStandard*>(osu->getSelectedBeatmap());
 				if (beatmapStd != NULL && !beatmapStd->isPaused())
 					m_camera->lookAt(beatmapStd->osuCoordsToRaw3D(beatmapStd->pixels2OsuCoords(beatmapStd->getCursorPos())));
 			}
@@ -840,10 +841,10 @@ Vector2 OsuModFPoSu::intersectRayMesh(Vector3 pos, Vector3 dir)
 						const float downLength = (Down - TopLeft).length();
 						const float x = u / (rightLength * rightLength);
 						const float y = v / (downLength * downLength);
-						const float distancePerFace = (float)m_osu->getScreenWidth() / std::pow(2.0f, (float)SUBDIVISIONS);
+						const float distancePerFace = (float)osu->getScreenWidth() / std::pow(2.0f, (float)SUBDIVISIONS);
 						const float distanceInFace = distancePerFace * x;
 
-						const Vector2 newMousePos = Vector2((distancePerFace * face) + distanceInFace, y * m_osu->getScreenHeight());
+						const Vector2 newMousePos = Vector2((distancePerFace * face) + distanceInFace, y * osu->getScreenHeight());
 
 						return newMousePos;
 					}
@@ -862,8 +863,8 @@ Vector2 OsuModFPoSu::intersectRayMesh(Vector3 pos, Vector3 dir)
 Vector3 OsuModFPoSu::calculateUnProjectedVector(Vector2 pos)
 {
 	// calculate 3d position of 2d cursor on screen mesh
-	const float cursorXPercent = std::clamp<float>(pos.x / (float)m_osu->getScreenWidth(), 0.0f, 1.0f);
-	const float cursorYPercent = std::clamp<float>(pos.y / (float)m_osu->getScreenHeight(), 0.0f, 1.0f);
+	const float cursorXPercent = std::clamp<float>(pos.x / (float)osu->getScreenWidth(), 0.0f, 1.0f);
+	const float cursorYPercent = std::clamp<float>(pos.y / (float)osu->getScreenHeight(), 0.0f, 1.0f);
 
 	std::list<VertexPair>::iterator begin = m_meshList.begin();
 	std::list<VertexPair>::iterator next = ++m_meshList.begin();

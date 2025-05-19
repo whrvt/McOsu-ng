@@ -60,9 +60,9 @@ ConVar *OsuSkin::m_osu_skin_hd = &osu_skin_hd;
 ConVar *OsuSkin::m_osu_skin_ref = NULL;
 ConVar *OsuSkin::m_osu_mod_fposu_ref = NULL;
 
-OsuSkin::OsuSkin(Osu *osu, UString name, UString filepath, bool isDefaultSkin, bool isWorkshopSkin)
+OsuSkin::OsuSkin(UString name, UString filepath, bool isDefaultSkin, bool isWorkshopSkin)
 {
-	m_osu = osu;
+	
 	m_sName = name;
 	m_sFilePath = filepath;
 	m_bIsDefaultSkin = isDefaultSkin;
@@ -80,7 +80,7 @@ OsuSkin::OsuSkin(Osu *osu, UString name, UString filepath, bool isDefaultSkin, b
 	if (m_missingTexture == NULL)
 		m_missingTexture = resourceManager->getImage("MISSING_TEXTURE");
 
-	if (m_osu->isInVRMode())
+	if (osu->isInVRMode())
 		OSUSKIN_DEFAULT_SKIN_PATH = "defaultvr/";
 	else
 		OSUSKIN_DEFAULT_SKIN_PATH = "default/";
@@ -354,10 +354,10 @@ void OsuSkin::update()
 	}
 
 	// shitty check to not animate while paused with hitobjects in background
-	if (m_osu->isInPlayMode() && m_osu->getSelectedBeatmap() != NULL && !m_osu->getSelectedBeatmap()->isPlaying() && !osu_skin_animation_force.getBool()) return;
+	if (osu->isInPlayMode() && osu->getSelectedBeatmap() != NULL && !osu->getSelectedBeatmap()->isPlaying() && !osu_skin_animation_force.getBool()) return;
 
-	const bool useEngineTimeForAnimations = !m_osu->isInPlayMode();
-	const long curMusicPos = m_osu->getSelectedBeatmap() != NULL ? m_osu->getSelectedBeatmap()->getCurMusicPosWithOffsets() : 0;
+	const bool useEngineTimeForAnimations = !osu->isInPlayMode();
+	const long curMusicPos = osu->getSelectedBeatmap() != NULL ? osu->getSelectedBeatmap()->getCurMusicPosWithOffsets() : 0;
 	for (int i=0; i<m_images.size(); i++)
 	{
 		m_images[i]->update(useEngineTimeForAnimations, curMusicPos);
@@ -418,12 +418,12 @@ void OsuSkin::load()
 			{
 				if (steam->isReady())
 				{
-					if (!m_osu->getSteamWorkshop()->isReady())
-						m_osu->getSteamWorkshop()->refresh(false, false);
+					if (!osu->getSteamWorkshop()->isReady())
+						osu->getSteamWorkshop()->refresh(false, false);
 
-					if (m_osu->getSteamWorkshop()->isReady())
+					if (osu->getSteamWorkshop()->isReady())
 					{
-						const std::vector<OsuSteamWorkshop::SUBSCRIBED_ITEM> &subscribedItems = m_osu->getSteamWorkshop()->getSubscribedItems();
+						const std::vector<OsuSteamWorkshop::SUBSCRIBED_ITEM> &subscribedItems = osu->getSteamWorkshop()->getSubscribedItems();
 
 						for (int i=0; i<subscribedItems.size(); i++)
 						{
@@ -994,13 +994,13 @@ void OsuSkin::load()
 
 	// delayed error notifications due to resource loading potentially blocking engine time
 	if (!parseSkinIni1Status && parseSkinIni2Status && m_osu_skin_ref->getString() != "default" && m_osu_skin_ref->getString() != "defaultvr")
-		m_osu->getNotificationOverlay()->addNotification("Error: Couldn't load skin.ini!", 0xffff0000);
+		osu->getNotificationOverlay()->addNotification("Error: Couldn't load skin.ini!", 0xffff0000);
 	else if (!parseSkinIni2Status)
-		m_osu->getNotificationOverlay()->addNotification("Error: Couldn't load DEFAULT skin.ini!!!", 0xffff0000);
+		osu->getNotificationOverlay()->addNotification("Error: Couldn't load DEFAULT skin.ini!!!", 0xffff0000);
 
 	// TODO: is this crashing some users?
 	// HACKHACK: speed up initial game startup time by async loading the skin (if osu_skin_async 1 in underride)
-	if (m_osu->getSkin() == NULL && osu_skin_async.getBool())
+	if (osu->getSkin() == NULL && osu_skin_async.getBool())
 	{
 		while (resourceManager->isLoading())
 		{
@@ -1212,7 +1212,7 @@ void OsuSkin::onExport(UString folderName)
 {
 	if (folderName.length() < 1)
 	{
-		m_osu->getNotificationOverlay()->addNotification("Usage: osu_skin_export MyExportedSkinName", 0xffffffff, false, 3.0f);
+		osu->getNotificationOverlay()->addNotification("Usage: osu_skin_export MyExportedSkinName", 0xffffffff, false, 3.0f);
 		return;
 	}
 
@@ -1223,19 +1223,19 @@ void OsuSkin::onExport(UString folderName)
 
 	if (env->directoryExists(exportFolder))
 	{
-		m_osu->getNotificationOverlay()->addNotification("Error: Folder already exists. Use a different name.", 0xffffff00, false, 3.0f);
+		osu->getNotificationOverlay()->addNotification("Error: Folder already exists. Use a different name.", 0xffffff00, false, 3.0f);
 		return;
 	}
 
 	if (!env->createDirectory(exportFolder))
 	{
-		m_osu->getNotificationOverlay()->addNotification(UString::format("Error: Couldn't create folder.", exportFolder.toUtf8()), 0xffff0000, false, 3.0f);
+		osu->getNotificationOverlay()->addNotification(UString::format("Error: Couldn't create folder.", exportFolder.toUtf8()), 0xffff0000, false, 3.0f);
 		return;
 	}
 
 	if (!env->directoryExists(exportFolder))
 	{
-		m_osu->getNotificationOverlay()->addNotification(UString::format("Error: Folder does not exist.", exportFolder.toUtf8()), 0xffff0000, false, 3.0f);
+		osu->getNotificationOverlay()->addNotification(UString::format("Error: Folder does not exist.", exportFolder.toUtf8()), 0xffff0000, false, 3.0f);
 		return;
 	}
 
@@ -1281,7 +1281,7 @@ void OsuSkin::onExport(UString folderName)
 	}
 
 	debugLog("Done.\n");
-	m_osu->getNotificationOverlay()->addNotification("Done.", 0xff00ff00, false, 2.0f);
+	osu->getNotificationOverlay()->addNotification("Done.", 0xff00ff00, false, 2.0f);
 }
 
 void OsuSkin::setSampleSet(int sampleSet)
@@ -1328,7 +1328,7 @@ void OsuSkin::setBeatmapComboColors(std::vector<Color> colors)
 
 void OsuSkin::playHitCircleSound(int sampleType, float pan)
 {
-	if (m_iSampleVolume <= 0 || (m_osu->getInstanceID() > 0 && m_osu->getInstanceID() != osu2_sound_source_id.getInt())) return;
+	if (m_iSampleVolume <= 0 || (osu->getInstanceID() > 0 && osu->getInstanceID() != osu2_sound_source_id.getInt())) return;
 
 	if (!osu_sound_panning.getBool() || (m_osu_mod_fposu_ref->getBool() && !osu_mod_fposu_sound_panning.getBool()) || (OsuGameRules::osu_mod_fps.getBool() && !osu_mod_fps_sound_panning.getBool()))
 		pan = 0.0f;
@@ -1376,7 +1376,7 @@ void OsuSkin::playHitCircleSound(int sampleType, float pan)
 
 void OsuSkin::playSliderTickSound(float pan)
 {
-	if (m_iSampleVolume <= 0 || (m_osu->getInstanceID() > 0 && m_osu->getInstanceID() != osu2_sound_source_id.getInt())) return;
+	if (m_iSampleVolume <= 0 || (osu->getInstanceID() > 0 && osu->getInstanceID() != osu2_sound_source_id.getInt())) return;
 
 	if (!osu_sound_panning.getBool() || (m_osu_mod_fposu_ref->getBool() && !osu_mod_fposu_sound_panning.getBool()) || (OsuGameRules::osu_mod_fps.getBool() && !osu_mod_fps_sound_panning.getBool()))
 		pan = 0.0f;
@@ -1399,7 +1399,7 @@ void OsuSkin::playSliderTickSound(float pan)
 
 void OsuSkin::playSliderSlideSound(float pan)
 {
-	if ((m_osu->getInstanceID() > 0 && m_osu->getInstanceID() != osu2_sound_source_id.getInt())) return;
+	if ((osu->getInstanceID() > 0 && osu->getInstanceID() != osu2_sound_source_id.getInt())) return;
 
 	if (!osu_sound_panning.getBool() || (m_osu_mod_fposu_ref->getBool() && !osu_mod_fposu_sound_panning.getBool()) || (OsuGameRules::osu_mod_fps.getBool() && !osu_mod_fps_sound_panning.getBool()))
 		pan = 0.0f;
@@ -1446,7 +1446,7 @@ void OsuSkin::playSliderSlideSound(float pan)
 
 void OsuSkin::playSpinnerSpinSound()
 {
-	if ((m_osu->getInstanceID() > 0 && m_osu->getInstanceID() != osu2_sound_source_id.getInt())) return;
+	if ((osu->getInstanceID() > 0 && osu->getInstanceID() != osu2_sound_source_id.getInt())) return;
 
 	if (!m_spinnerSpinSound->isPlaying())
 		soundEngine->play(m_spinnerSpinSound);
@@ -1454,7 +1454,7 @@ void OsuSkin::playSpinnerSpinSound()
 
 void OsuSkin::playSpinnerBonusSound()
 {
-	if (m_iSampleVolume <= 0 || (m_osu->getInstanceID() > 0 && m_osu->getInstanceID() != osu2_sound_source_id.getInt())) return;
+	if (m_iSampleVolume <= 0 || (osu->getInstanceID() > 0 && osu->getInstanceID() != osu2_sound_source_id.getInt())) return;
 
 	soundEngine->play(m_spinnerBonus);
 }

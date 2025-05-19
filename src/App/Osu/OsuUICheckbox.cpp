@@ -12,9 +12,9 @@
 #include "Osu.h"
 #include "OsuTooltipOverlay.h"
 
-OsuUICheckbox::OsuUICheckbox(Osu *osu, float xPos, float yPos, float xSize, float ySize, UString name, UString text) : CBaseUICheckbox(xPos, yPos, xSize, ySize, name, text)
+OsuUICheckbox::OsuUICheckbox(float xPos, float yPos, float xSize, float ySize, UString name, UString text) : CBaseUICheckbox(xPos, yPos, xSize, ySize, name, text)
 {
-	m_osu = osu;
+	
 
 	m_bFocusStolenDelay = false;
 }
@@ -26,14 +26,14 @@ void OsuUICheckbox::update()
 
 	if (isMouseInside() && m_tooltipTextLines.size() > 0 && !m_bFocusStolenDelay)
 	{
-		m_osu->getTooltipOverlay()->begin();
+		osu->getTooltipOverlay()->begin();
 		{
 			for (int i=0; i<m_tooltipTextLines.size(); i++)
 			{
-				m_osu->getTooltipOverlay()->addLine(m_tooltipTextLines[i]);
+				osu->getTooltipOverlay()->addLine(m_tooltipTextLines[i]);
 			}
 		}
-		m_osu->getTooltipOverlay()->end();
+		osu->getTooltipOverlay()->end();
 	}
 
 	m_bFocusStolenDelay = false;

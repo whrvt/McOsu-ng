@@ -18,9 +18,9 @@
 #include "OsuModSelector.h"
 #include "OsuTooltipOverlay.h"
 
-OsuUIModSelectorModButton::OsuUIModSelectorModButton(Osu *osu, OsuModSelector *osuModSelector, float xPos, float yPos, float xSize, float ySize, UString name) : CBaseUIButton(xPos, yPos, xSize, ySize, name, "")
+OsuUIModSelectorModButton::OsuUIModSelectorModButton(OsuModSelector *osuModSelector, float xPos, float yPos, float xSize, float ySize, UString name) : CBaseUIButton(xPos, yPos, xSize, ySize, name, "")
 {
-	m_osu = osu;
+	
 	m_osuModSelector = osuModSelector;
 	m_iState = 0;
 	m_vScale = m_vBaseScale = Vector2(1, 1);
@@ -78,12 +78,12 @@ void OsuUIModSelectorModButton::update()
 	// handle tooltips
 	if (isMouseInside() && m_bAvailable && m_states.size() > 0 && !m_bFocusStolenDelay)
 	{
-		m_osu->getTooltipOverlay()->begin();
+		osu->getTooltipOverlay()->begin();
 		for (int i=0; i<m_states[m_iState].tooltipTextLines.size(); i++)
 		{
-			m_osu->getTooltipOverlay()->addLine(m_states[m_iState].tooltipTextLines[i]);
+			osu->getTooltipOverlay()->addLine(m_states[m_iState].tooltipTextLines[i]);
 		}
-		m_osu->getTooltipOverlay()->end();
+		osu->getTooltipOverlay()->end();
 	}
 
 	m_bFocusStolenDelay = false;
@@ -167,7 +167,7 @@ void OsuUIModSelectorModButton::setOn(bool on)
 			anim->moveLinear(&m_vScale.y, m_vBaseScale.y * m_fEnabledScaleMultiplier, animationDuration, true);
 		}
 
-		soundEngine->play(m_osu->getSkin()->getCheckOn());
+		soundEngine->play(osu->getSkin()->getCheckOn());
 	}
 	else
 	{
@@ -176,7 +176,7 @@ void OsuUIModSelectorModButton::setOn(bool on)
 		anim->moveLinear(&m_vScale.y, m_vBaseScale.y, animationDuration, true);
 
 		if (prevState && !m_bOn) // only play sound on specific change
-			soundEngine->play(m_osu->getSkin()->getCheckOff());
+			soundEngine->play(osu->getSkin()->getCheckOff());
 	}
 }
 

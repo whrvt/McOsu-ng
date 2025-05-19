@@ -17,7 +17,7 @@
 
 ConVar osu_notification_duration("osu_notification_duration", 1.25f, FCVAR_NONE);
 
-OsuNotificationOverlay::OsuNotificationOverlay(Osu *osu) : OsuScreen(osu)
+OsuNotificationOverlay::OsuNotificationOverlay() : OsuScreen()
 {
 	m_bWaitForKey = false;
 	m_bWaitForKeyDisallowsLeftClick = false;
@@ -33,7 +33,7 @@ void OsuNotificationOverlay::draw(Graphics *g)
 	{
 		g->setColor(0x22ffffff);
 		g->setAlpha((m_notification1.backgroundAnim/0.5f)*0.13f);
-		g->fillRect(0, 0, m_osu->getScreenWidth(), m_osu->getScreenHeight());
+		g->fillRect(0, 0, osu->getScreenWidth(), osu->getScreenHeight());
 	}
 
 	drawNotificationBackground(g, m_notification2);
@@ -44,7 +44,7 @@ void OsuNotificationOverlay::draw(Graphics *g)
 
 void OsuNotificationOverlay::drawNotificationText(Graphics *g, OsuNotificationOverlay::NOTIFICATION &n)
 {
-	McFont *font = m_osu->getSubTitleFont();
+	McFont *font = osu->getSubTitleFont();
 	int height = font->getHeight()*2;
 	int stringWidth = font->getStringWidth(n.text);
 
@@ -52,7 +52,7 @@ void OsuNotificationOverlay::drawNotificationText(Graphics *g, OsuNotificationOv
 	{
 		g->setColor(0xff000000);
 		g->setAlpha(n.alpha);
-		g->translate((int)(m_osu->getScreenWidth()/2 - stringWidth/2 + 1), (int)(m_osu->getScreenHeight()/2 + font->getHeight()/2 + n.fallAnim*height*0.15f + 1));
+		g->translate((int)(osu->getScreenWidth()/2 - stringWidth/2 + 1), (int)(osu->getScreenHeight()/2 + font->getHeight()/2 + n.fallAnim*height*0.15f + 1));
 		g->drawString(font, n.text);
 
 		g->setColor(n.textColor);
@@ -65,12 +65,12 @@ void OsuNotificationOverlay::drawNotificationText(Graphics *g, OsuNotificationOv
 
 void OsuNotificationOverlay::drawNotificationBackground(Graphics *g, OsuNotificationOverlay::NOTIFICATION &n)
 {
-	McFont *font = m_osu->getSubTitleFont();
+	McFont *font = osu->getSubTitleFont();
 	int height = font->getHeight()*2*n.backgroundAnim;
 
 	g->setColor(0xff000000);
 	g->setAlpha(n.alpha*0.75f);
-	g->fillRect(0, m_osu->getScreenHeight()/2 - height/2, m_osu->getScreenWidth(), height);
+	g->fillRect(0, osu->getScreenHeight()/2 - height/2, osu->getScreenWidth(), height);
 }
 
 void OsuNotificationOverlay::onKeyDown(KeyboardEvent &e)

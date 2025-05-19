@@ -14,9 +14,9 @@
 #include "Osu.h"
 #include "OsuSkin.h"
 
-OsuUIPauseMenuButton::OsuUIPauseMenuButton(Osu *osu, std::function<Image*()> getImageFunc, float xPos, float yPos, float xSize, float ySize, UString name) : CBaseUIButton(xPos, yPos, xSize, ySize, name)
+OsuUIPauseMenuButton::OsuUIPauseMenuButton(std::function<Image*()> getImageFunc, float xPos, float yPos, float xSize, float ySize, UString name) : CBaseUIButton(xPos, yPos, xSize, ySize, name)
 {
-	m_osu = osu;
+	
 	this->getImageFunc = getImageFunc;
 
 	m_vScale = Vector2(1, 1);
@@ -60,7 +60,7 @@ void OsuUIPauseMenuButton::onMouseInside()
 	CBaseUIButton::onMouseInside();
 
 	if (engine->hasFocus())
-		soundEngine->play(m_osu->getSkin()->getMenuClick());
+		soundEngine->play(osu->getSkin()->getMenuClick());
 
 	const float animationDuration = 0.09f;
 	anim->moveLinear(&m_vScale.x, m_vBaseScale.x * m_fScaleMultiplier, animationDuration, true);

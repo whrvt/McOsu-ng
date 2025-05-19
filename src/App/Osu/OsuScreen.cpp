@@ -13,9 +13,9 @@
 #include "Osu.h"
 #include "OsuOptionsMenu.h"
 
-OsuScreen::OsuScreen(Osu *osu)
+OsuScreen::OsuScreen()
 {
-	m_osu = osu;
+	
 
 	m_bVisible = false;
 }
@@ -27,7 +27,7 @@ void OsuScreen::onKeyDown(KeyboardEvent &e)
 	// global hotkey
 	if (e == KEY_O && keyboard->isControlDown())
 	{
-		m_osu->toggleOptionsMenu();
+		osu->toggleOptionsMenu();
 		e.consume();
 	}
 }

@@ -19,7 +19,7 @@ class OsuUIPauseMenuButton;
 class OsuPauseMenu : public OsuScreen
 {
 public:
-	OsuPauseMenu(Osu *osu);
+	OsuPauseMenu();
 	virtual ~OsuPauseMenu();
 
 	virtual void draw(Graphics *g);

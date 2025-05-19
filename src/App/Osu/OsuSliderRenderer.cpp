@@ -56,12 +56,12 @@ ConVar osu_slider_use_gradient_image("osu_slider_use_gradient_image", false, FCV
 ConVar osu_slider_body_unit_circle_subdivisions("osu_slider_body_unit_circle_subdivisions", 42, FCVAR_NONE);
 ConVar osu_slider_legacy_use_baked_vao("osu_slider_legacy_use_baked_vao", false, FCVAR_NONE, "use baked cone mesh instead of raw mesh for legacy slider renderer (disabled by default because usually slower on very old gpus even though it should not be)");
 
-VertexArrayObject *OsuSliderRenderer::generateVAO(Osu *osu, const std::vector<Vector2> &points, float hitcircleDiameter, Vector3 translation, bool skipOOBPoints)
+VertexArrayObject *OsuSliderRenderer::generateVAO(const std::vector<Vector2> &points, float hitcircleDiameter, Vector3 translation, bool skipOOBPoints)
 {
 	resourceManager->requestNextLoadUnmanaged();
 	VertexArrayObject *vao = resourceManager->createVertexArrayObject();
 
-	checkUpdateVars(osu, hitcircleDiameter);
+	checkUpdateVars(hitcircleDiameter);
 
 	const Vector3 xOffset = Vector3(hitcircleDiameter, 0, 0);
 	const Vector3 yOffset = Vector3(0, hitcircleDiameter, 0);
@@ -126,7 +126,7 @@ void OsuSliderRenderer::draw(Graphics *g, Osu *osu, const std::vector<Vector2> &
 {
 	if (osu_slider_alpha_multiplier.getFloat() <= 0.0f || alpha <= 0.0f) return;
 
-	checkUpdateVars(osu, hitcircleDiameter);
+	checkUpdateVars(hitcircleDiameter);
 
 	const int drawFromIndex = std::clamp<int>((int)std::round(points.size() * from), 0, points.size());
 	const int drawUpToIndex = std::clamp<int>((int)std::round(points.size() * to), 0, points.size());
@@ -267,7 +267,7 @@ void OsuSliderRenderer::draw(Graphics *g, Osu *osu, VertexArrayObject *vao, cons
 {
 	if ((osu_slider_alpha_multiplier.getFloat() <= 0.0f && doDrawSliderFrameBufferToScreen) || (alpha <= 0.0f && doDrawSliderFrameBufferToScreen) || vao == NULL) return;
 
-	checkUpdateVars(osu, hitcircleDiameter);
+	checkUpdateVars(hitcircleDiameter);
 
 	if (osu_slider_debug_draw_square_vao.getBool())
 	{
@@ -433,7 +433,7 @@ void OsuSliderRenderer::drawVR(Graphics *g, Osu *osu, OsuVR *vr, Matrix4 &mvp, f
 {
 	if (osu_slider_alpha_multiplier.getFloat() <= 0.0f || alpha <= 0.0f) return;
 
-	checkUpdateVars(osu, hitcircleDiameter);
+	checkUpdateVars(hitcircleDiameter);
 
 	const int drawFromIndex = std::clamp<int>((int)std::round(points.size() * from), 0, points.size());
 	const int drawUpToIndex = std::clamp<int>((int)std::round(points.size() * to), 0, points.size());
@@ -526,7 +526,7 @@ void OsuSliderRenderer::drawVR(Graphics *g, Osu *osu, OsuVR *vr, Matrix4 &mvp, f
 {
 	if (osu_slider_alpha_multiplier.getFloat() <= 0.0f || alpha <= 0.0f || vao1 == NULL || vao2 == NULL) return;
 
-	checkUpdateVars(osu, hitcircleDiameter);
+	checkUpdateVars(hitcircleDiameter);
 
 	// draw entire slider into framebuffer
 	g->setDepthBuffer(true);
@@ -719,7 +719,7 @@ void OsuSliderRenderer::drawFillSliderBodyPeppyVR2(Graphics *g, OsuVR *vr, Matri
 	}
 }
 
-void OsuSliderRenderer::checkUpdateVars(Osu *osu, float hitcircleDiameter)
+void OsuSliderRenderer::checkUpdateVars(float hitcircleDiameter)
 {
 	// static globals
 

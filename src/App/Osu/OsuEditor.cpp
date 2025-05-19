@@ -15,7 +15,7 @@
 #include "Osu.h"
 #include "OsuSkin.h"
 
-OsuEditor::OsuEditor(Osu *osu) : OsuScreenBackable(osu)
+OsuEditor::OsuEditor() : OsuScreenBackable()
 {
 
 }
@@ -42,9 +42,9 @@ void OsuEditor::update()
 
 void OsuEditor::onBack()
 {
-	soundEngine->play(m_osu->getSkin()->getMenuClick());
+	soundEngine->play(osu->getSkin()->getMenuClick());
 
-	m_osu->toggleEditor();
+	osu->toggleEditor();
 }
 
 void OsuEditor::onResolutionChange(Vector2 newResolution)

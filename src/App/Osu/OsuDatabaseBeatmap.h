@@ -111,8 +111,8 @@ public:
 
 
 public:
-	OsuDatabaseBeatmap(Osu *osu, UString filePath, UString folder, bool filePathIsInMemoryBeatmap = false);
-	OsuDatabaseBeatmap(Osu *osu, std::vector<OsuDatabaseBeatmap*> &difficulties);
+	OsuDatabaseBeatmap(UString filePath, UString folder, bool filePathIsInMemoryBeatmap = false);
+	OsuDatabaseBeatmap(std::vector<OsuDatabaseBeatmap*> &difficulties);
 	~OsuDatabaseBeatmap();
 
 
@@ -140,10 +140,6 @@ public:
 
 
 	void updateSetHeuristics();
-
-
-
-	inline Osu *getOsu() const {return m_osu;}
 
 	inline UString getFolder() const {return m_sFolder;}
 	inline UString getFilePath() const {return m_sFilePath;}
@@ -379,10 +375,6 @@ private:
 	static PRIMITIVE_CONTAINER loadPrimitiveObjects(const UString &osuFilePath, Osu::GAMEMODE gameMode, bool filePathIsInMemoryBeatmap, const std::atomic<bool> &dead);
 	static CALCULATE_SLIDER_TIMES_CLICKS_TICKS_RESULT calculateSliderTimesClicksTicks(int beatmapVersion, std::vector<SLIDER> &sliders, std::vector<TIMINGPOINT> &timingpoints, float sliderMultiplier, float sliderTickRate);
 	static CALCULATE_SLIDER_TIMES_CLICKS_TICKS_RESULT calculateSliderTimesClicksTicks(int beatmapVersion, std::vector<SLIDER> &sliders, std::vector<TIMINGPOINT> &timingpoints, float sliderMultiplier, float sliderTickRate, const std::atomic<bool> &dead);
-
-
-
-	Osu *m_osu;
 
 	UString m_sFolder;		// path to folder containing .osu file (e.g. "/path/to/beatmapfolder/")
 	UString m_sFilePath;	// path to .osu file (e.g. "/path/to/beatmapfolder/beatmap.osu")

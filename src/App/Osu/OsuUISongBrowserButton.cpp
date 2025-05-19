@@ -38,15 +38,15 @@ int OsuUISongBrowserButton::sortHackCounter = 0;
 
 // Color OsuUISongBrowserButton::inactiveDifficultyBackgroundColor = rgb(0, 150, 236); // blue
 
-OsuUISongBrowserButton::OsuUISongBrowserButton(Osu *osu, OsuSongBrowser2 *songBrowser, CBaseUIScrollView *view, OsuUIContextMenu *contextMenu, float xPos, float yPos, float xSize, float ySize, UString name) : CBaseUIButton(xPos, yPos, xSize, ySize, name, "")
+OsuUISongBrowserButton::OsuUISongBrowserButton(OsuSongBrowser2 *songBrowser, CBaseUIScrollView *view, OsuUIContextMenu *contextMenu, float xPos, float yPos, float xSize, float ySize, UString name) : CBaseUIButton(xPos, yPos, xSize, ySize, name, "")
 {
-	m_osu = osu;
+	
 	m_view = view;
 	m_songBrowser = songBrowser;
 	m_contextMenu = contextMenu;
 
-	m_font = m_osu->getSongBrowserFont();
-	m_fontBold = m_osu->getSongBrowserFontBold();
+	m_font = osu->getSongBrowserFont();
+	m_fontBold = osu->getSongBrowserFontBold();
 
 	m_bVisible = false;
 	m_bSelected = false;
@@ -120,7 +120,7 @@ void OsuUISongBrowserButton::drawMenuButtonBackground(Graphics *g)
 	{
 		g->scale(m_fScale, m_fScale);
 		g->translate(m_vPos.x + m_vSize.x/2, m_vPos.y + m_vSize.y/2);
-		g->drawImage(m_osu->getSkin()->getMenuButtonBackground());
+		g->drawImage(osu->getSkin()->getMenuButtonBackground());
 	}
 	g->popTransform();
 }
@@ -174,11 +174,11 @@ void OsuUISongBrowserButton::updateLayoutEx()
 {
 	const float uiScale = Osu::ui_scale->getFloat();
 
-	Image *menuButtonBackground = m_osu->getSkin()->getMenuButtonBackground();
+	Image *menuButtonBackground = osu->getSkin()->getMenuButtonBackground();
 	{
-		const Vector2 minimumSize = Vector2(699.0f, 103.0f)*(m_osu->getSkin()->isMenuButtonBackground2x() ? 2.0f : 1.0f);
+		const Vector2 minimumSize = Vector2(699.0f, 103.0f)*(osu->getSkin()->isMenuButtonBackground2x() ? 2.0f : 1.0f);
 		const float minimumScale = Osu::getImageScaleToFitResolution(menuButtonBackground, minimumSize);
-		m_fScale = Osu::getImageScale(m_osu, menuButtonBackground->getSize()*minimumScale, 64.0f) * uiScale;
+		m_fScale = Osu::getImageScale(menuButtonBackground->getSize()*minimumScale, 64.0f) * uiScale;
 	}
 
 	if (m_bVisible) // lag prevention (animationHandler overflow)
@@ -268,7 +268,7 @@ void OsuUISongBrowserButton::resetAnimations()
 
 void OsuUISongBrowserButton::onClicked()
 {
-	soundEngine->play(m_osu->getSkin()->getMenuClick());
+	soundEngine->play(osu->getSkin()->getMenuClick());
 
 	CBaseUIButton::onClicked();
 
@@ -283,7 +283,7 @@ void OsuUISongBrowserButton::onMouseInside()
 	if (engine->getTime() > lastHoverSoundTime + 0.05f) // to avoid earraep
 	{
 		if (engine->hasFocus())
-			soundEngine->play(m_osu->getSkin()->getMenuClick());
+			soundEngine->play(osu->getSkin()->getMenuClick());
 
 		lastHoverSoundTime = engine->getTime();
 	}
@@ -338,9 +338,9 @@ void OsuUISongBrowserButton::setTargetRelPosY(float targetRelPosY)
 
 Vector2 OsuUISongBrowserButton::getActualOffset() const
 {
-	const float hd2xMultiplier = m_osu->getSkin()->isMenuButtonBackground2x() ? 2.0f : 1.0f;
-	//const float correctedMarginPixelsX = (2*marginPixelsX + m_beatmap->getOsu()->getSkin()->getMenuButtonBackground()->getWidth()/hd2xMultiplier - 699)/2.0f;
-	const float correctedMarginPixelsY = (2*marginPixelsY + m_osu->getSkin()->getMenuButtonBackground()->getHeight()/hd2xMultiplier - 103.0f)/2.0f;
+	const float hd2xMultiplier = osu->getSkin()->isMenuButtonBackground2x() ? 2.0f : 1.0f;
+	//const float correctedMarginPixelsX = (2*marginPixelsX + osu->getSkin()->getMenuButtonBackground()->getWidth()/hd2xMultiplier - 699)/2.0f;
+	const float correctedMarginPixelsY = (2*marginPixelsY + osu->getSkin()->getMenuButtonBackground()->getHeight()/hd2xMultiplier - 103.0f)/2.0f;
 	return Vector2((int)(marginPixelsX * m_fScale * hd2xMultiplier), (int)(correctedMarginPixelsY * m_fScale * hd2xMultiplier));
 }
 

@@ -542,11 +542,6 @@ void Environment::setWindowResizable(bool resizable)
 	m_bResizable = resizable;
 }
 
-void Environment::setWindowGhostCorporeal(bool corporeal)
-{
-	// TODO (wtf is this?)
-}
-
 void Environment::setMonitor(int monitor)
 {
 	// TODO:
@@ -639,11 +634,6 @@ int Environment::getDPI() const
 	float dpi = SDL_GetWindowDisplayScale(m_window) * 96;
 
 	return std::clamp<int>((int)dpi, 96, 96 * 2); // sanity clamp
-}
-
-Vector2 Environment::getMousePos() const
-{
-	return m_vLastAbsMousePos;
 }
 
 void Environment::setCursor(CURSORTYPE cur)

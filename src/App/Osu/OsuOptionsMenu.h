@@ -38,7 +38,7 @@ class ConVar;
 class OsuOptionsMenu : public OsuScreenBackable, public OsuNotificationOverlayKeyListener
 {
 public:
-	OsuOptionsMenu(Osu *osu);
+	OsuOptionsMenu();
 	virtual ~OsuOptionsMenu();
 
 	virtual void draw(Graphics *g);
@@ -208,7 +208,6 @@ private:
 	OsuOptionsMenuCategoryButton *addCategory(CBaseUIElement *section, wchar_t icon);
 
 	// vars
-	Osu *m_osu;
 	CBaseUIContainer *m_container;
 	CBaseUIScrollView *m_categories;
 	CBaseUIScrollView *m_options;

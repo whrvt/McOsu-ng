@@ -13,9 +13,9 @@
 #include "Osu.h"
 #include "OsuSkin.h"
 
-OsuUISlider::OsuUISlider(Osu *osu, float xPos, float yPos, float xSize, float ySize, UString name) : CBaseUISlider(xPos, yPos, xSize, ySize, name)
+OsuUISlider::OsuUISlider(float xPos, float yPos, float xSize, float ySize, UString name) : CBaseUISlider(xPos, yPos, xSize, ySize, name)
 {
-	m_osu = osu;
+	
 	setBlockSize(20, 20);
 }
 
@@ -23,7 +23,7 @@ void OsuUISlider::draw(Graphics *g)
 {
 	if (!m_bVisible) return;
 
-	Image *img = m_osu->getSkin()->getCircleEmpty();
+	Image *img = osu->getSkin()->getCircleEmpty();
 	if (img == NULL)
 	{
 		CBaseUISlider::draw(g);
@@ -53,7 +53,7 @@ void OsuUISlider::draw(Graphics *g)
 	{
 		g->scale(scale.x, scale.y);
 		g->translate(blockCenter.x, blockCenter.y + 1);
-		g->drawImage(m_osu->getSkin()->getCircleEmpty());
+		g->drawImage(osu->getSkin()->getCircleEmpty());
 	}
 	g->popTransform();
 }

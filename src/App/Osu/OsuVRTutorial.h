@@ -18,7 +18,7 @@ class CBaseUIImage;
 class OsuVRTutorial : public OsuScreenBackable
 {
 public:
-	OsuVRTutorial(Osu *osu);
+	OsuVRTutorial();
 	virtual ~OsuVRTutorial();
 
 	virtual void draw(Graphics *g);

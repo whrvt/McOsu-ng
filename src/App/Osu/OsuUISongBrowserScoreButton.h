@@ -22,7 +22,7 @@ class OsuUIContextMenu;
 class OsuUISongBrowserScoreButton : public CBaseUIButton
 {
 public:
-	static OsuSkinImage *getGradeImage(Osu *osu, OsuScore::GRADE grade);
+	static OsuSkinImage *getGradeImage(OsuScore::GRADE grade);
 	static UString getModsStringForDisplay(int mods);
 	static UString getModsStringForConVar(int mods);
 
@@ -33,7 +33,7 @@ public:
 	};
 
 public:
-	OsuUISongBrowserScoreButton(Osu *osu, OsuUIContextMenu *contextMenu, float xPos, float yPos, float xSize, float ySize, UString name, STYLE style = STYLE::SCORE_BROWSER);
+	OsuUISongBrowserScoreButton(OsuUIContextMenu *contextMenu, float xPos, float yPos, float xSize, float ySize, UString name, STYLE style = STYLE::SCORE_BROWSER);
 	virtual ~OsuUISongBrowserScoreButton();
 
 	void draw(Graphics *g);
@@ -82,7 +82,6 @@ private:
 
 	bool isContextMenuVisible();
 
-	Osu *m_osu;
 	OsuUIContextMenu *m_contextMenu;
 	STYLE m_style;
 	float m_fIndexNumberAnim;

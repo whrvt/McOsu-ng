@@ -91,7 +91,7 @@ void OsuHitObject::drawHitResult(Graphics *g, OsuBeatmapStandard *beatmap, Vecto
 
 void OsuHitObject::draw3DHitResult(Graphics *g, OsuBeatmapStandard *beatmap, Vector2 rawPos, OsuScore::HIT result, float animPercentInv, float hitDeltaRangePercent)
 {
-	draw3DHitResult(g, beatmap->getOsu()->getFPoSu(), beatmap->getSkin(), beatmap->getHitcircleDiameter(), beatmap->getRawHitcircleDiameter(), rawPos, result, animPercentInv, hitDeltaRangePercent);
+	draw3DHitResult(g, osu->getFPoSu(), beatmap->getSkin(), beatmap->getHitcircleDiameter(), beatmap->getRawHitcircleDiameter(), rawPos, result, animPercentInv, hitDeltaRangePercent);
 }
 
 void OsuHitObject::drawHitResult(Graphics *g, OsuSkin *skin, float hitcircleDiameter, float rawHitcircleDiameter, Vector2 rawPos, OsuScore::HIT result, float animPercentInv, float hitDeltaRangePercent)
@@ -336,7 +336,7 @@ void OsuHitObject::draw3D2(Graphics *g)
 void OsuHitObject::drawHitResultAnim(Graphics *g, const HITRESULTANIM &hitresultanim)
 {
 	if ((hitresultanim.time - osu_hitresult_duration.getFloat()) < engine->getTime() // NOTE: this is written like that on purpose, don't change it ("future" results can be scheduled with it, e.g. for slider end)
-		&& (hitresultanim.time + osu_hitresult_duration_max.getFloat()*(1.0f / m_beatmap->getOsu()->getSpeedMultiplier())) > engine->getTime())
+		&& (hitresultanim.time + osu_hitresult_duration_max.getFloat()*(1.0f / osu->getSpeedMultiplier())) > engine->getTime())
 	{
 		OsuBeatmapStandard *beatmapStd = dynamic_cast<OsuBeatmapStandard*>(m_beatmap);
 		const OsuBeatmapMania *beatmapMania = dynamic_cast<OsuBeatmapMania*>(m_beatmap);
@@ -360,7 +360,7 @@ void OsuHitObject::drawHitResultAnim(Graphics *g, const HITRESULTANIM &hitresult
 			skin->getHit300k()->setAnimationTimeOffset(skinAnimationTimeStartOffset);
 			skin->getHit300k()->setAnimationFrameClampUp();
 
-			const float animPercentInv = 1.0f - (((engine->getTime() - hitresultanim.time) * m_beatmap->getOsu()->getSpeedMultiplier()) / osu_hitresult_duration.getFloat());
+			const float animPercentInv = 1.0f - (((engine->getTime() - hitresultanim.time) * osu->getSpeedMultiplier()) / osu_hitresult_duration.getFloat());
 
 			if (beatmapStd != NULL)
 				drawHitResult(g, beatmapStd, beatmapStd->osuCoords2Pixels(hitresultanim.rawPos), hitresultanim.result, animPercentInv, std::clamp<float>((float)hitresultanim.delta / OsuGameRules::getHitWindow50(beatmapStd), -1.0f, 1.0f));
@@ -373,7 +373,7 @@ void OsuHitObject::drawHitResultAnim(Graphics *g, const HITRESULTANIM &hitresult
 void OsuHitObject::draw3DHitResultAnim(Graphics *g, const HITRESULTANIM &hitresultanim)
 {
 	if ((hitresultanim.time - osu_hitresult_duration.getFloat()) < engine->getTime() // NOTE: this is written like that on purpose, don't change it ("future" results can be scheduled with it, e.g. for slider end)
-		&& (hitresultanim.time + osu_hitresult_duration_max.getFloat()*(1.0f / m_beatmap->getOsu()->getSpeedMultiplier())) > engine->getTime())
+		&& (hitresultanim.time + osu_hitresult_duration_max.getFloat()*(1.0f / osu->getSpeedMultiplier())) > engine->getTime())
 	{
 		OsuBeatmapStandard *beatmapStd = dynamic_cast<OsuBeatmapStandard*>(m_beatmap);
 
@@ -396,7 +396,7 @@ void OsuHitObject::draw3DHitResultAnim(Graphics *g, const HITRESULTANIM &hitresu
 			skin->getHit300k()->setAnimationTimeOffset(skinAnimationTimeStartOffset);
 			skin->getHit300k()->setAnimationFrameClampUp();
 
-			const float animPercentInv = 1.0f - (((engine->getTime() - hitresultanim.time) * m_beatmap->getOsu()->getSpeedMultiplier()) / osu_hitresult_duration.getFloat());
+			const float animPercentInv = 1.0f - (((engine->getTime() - hitresultanim.time) * osu->getSpeedMultiplier()) / osu_hitresult_duration.getFloat());
 
 			if (beatmapStd != NULL)
 				draw3DHitResult(g, beatmapStd, hitresultanim.rawPos, hitresultanim.result, animPercentInv, std::clamp<float>((float)hitresultanim.delta / OsuGameRules::getHitWindow50(beatmapStd), -1.0f, 1.0f));
@@ -482,7 +482,7 @@ void OsuHitObject::update(long curPos)
 		m_fAlpha = std::clamp<float>(1.0f - ((float)(fadeInEnd - curPos) / (float)(fadeInEnd - fadeInStart)), 0.0f, 1.0f);
 		m_fAlphaWithoutHidden = m_fAlpha;
 
-		if (m_beatmap->getOsu()->getModHD())
+		if (osu->getModHD())
 		{
 			// hidden hitobject body fadein
 			const long hiddenFadeInStart = m_iTime - (long)(m_iApproachTime * osu_mod_hd_circle_fadein_start_percent.getFloat());
@@ -521,7 +521,7 @@ void OsuHitObject::update(long curPos)
 
 void OsuHitObject::addHitResult(OsuScore::HIT result, long delta, bool isEndOfCombo, Vector2 posRaw, float targetDelta, float targetAngle, bool ignoreOnHitErrorBar, bool ignoreCombo, bool ignoreHealth, bool addObjectDurationToSkinAnimationTimeStartOffset)
 {
-	if (m_beatmap->getOsu()->getModTarget() && result != OsuScore::HIT::HIT_MISS && targetDelta >= 0.0f)
+	if (osu->getModTarget() && result != OsuScore::HIT::HIT_MISS && targetDelta >= 0.0f)
 	{
 		if (targetDelta < osu_mod_target_300_percent.getFloat() && (result == OsuScore::HIT::HIT_300 || result == OsuScore::HIT::HIT_100))
 			result = OsuScore::HIT::HIT_300;
@@ -532,7 +532,7 @@ void OsuHitObject::addHitResult(OsuScore::HIT result, long delta, bool isEndOfCo
 		else
 			result = OsuScore::HIT::HIT_MISS;
 
-		m_beatmap->getOsu()->getHUD()->addTarget(targetDelta, targetAngle);
+		osu->getHUD()->addTarget(targetDelta, targetAngle);
 	}
 
 	const OsuScore::HIT returnedHit = m_beatmap->addHitResult(this, result, delta, isEndOfCombo, ignoreOnHitErrorBar, false, ignoreCombo, false, ignoreHealth);
@@ -547,7 +547,7 @@ void OsuHitObject::addHitResult(OsuScore::HIT result, long delta, bool isEndOfCo
 	}
 
 	// currently a maximum of 2 simultaneous results are supported (for drawing, per hitobject)
-	if (engine->getTime() > m_hitresultanim1.time + osu_hitresult_duration_max.getFloat()*(1.0f / m_beatmap->getOsu()->getSpeedMultiplier()))
+	if (engine->getTime() > m_hitresultanim1.time + osu_hitresult_duration_max.getFloat()*(1.0f / osu->getSpeedMultiplier()))
 		m_hitresultanim1 = hitresultanim;
 	else
 		m_hitresultanim2 = hitresultanim;

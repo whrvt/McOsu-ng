@@ -21,7 +21,7 @@ class CBaseUIScrollView;
 class OsuUISongBrowserButton : public CBaseUIButton
 {
 public:
-	OsuUISongBrowserButton(Osu *osu, OsuSongBrowser2 *songBrowser, CBaseUIScrollView *view, OsuUIContextMenu *contextMenu, float xPos, float yPos, float xSize, float ySize, UString name);
+	OsuUISongBrowserButton(OsuSongBrowser2 *songBrowser, CBaseUIScrollView *view, OsuUIContextMenu *contextMenu, float xPos, float yPos, float xSize, float ySize, UString name);
 	virtual ~OsuUISongBrowserButton();
 	void deleteAnimations();
 
@@ -63,7 +63,6 @@ protected:
 	virtual void onSelected(bool wasSelected, bool autoSelectBottomMostChild, bool wasParentSelected) {;}
 	virtual void onRightMouseUpInside() {;}
 
-	Osu *m_osu;
 	CBaseUIScrollView *m_view;
 	OsuSongBrowser2 *m_songBrowser;
 	OsuUIContextMenu *m_contextMenu;

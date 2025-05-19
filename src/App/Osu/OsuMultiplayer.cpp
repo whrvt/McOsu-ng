@@ -44,9 +44,9 @@ ConVar osu_mp_request_beatmap_download("osu_mp_request_beatmap_download");
 unsigned long long OsuMultiplayer::sortHackCounter = 0;
 ConVar *OsuMultiplayer::m_cl_cmdrate = NULL;
 
-OsuMultiplayer::OsuMultiplayer(Osu *osu)
+OsuMultiplayer::OsuMultiplayer()
 {
-	m_osu = osu;
+	
 
 	if (m_cl_cmdrate == NULL)
 		m_cl_cmdrate = convar->getConVarByName("cl_cmdrate", false);
@@ -106,7 +106,7 @@ void OsuMultiplayer::update()
 	if (m_bMPSelectBeatmapScheduled)
 	{
 		// wait for songbrowser db load
-		if (m_osu->getSongBrowser()->getDatabase()->isFinished())
+		if (osu->getSongBrowser()->getDatabase()->isFinished())
 		{
 			setBeatmap(m_sMPSelectBeatmapScheduledMD5Hash);
 			m_bMPSelectBeatmapScheduled = false; // NOTE: resetting flag below to avoid endless loops
@@ -238,7 +238,7 @@ void OsuMultiplayer::update()
 		// TODO: only generate input cmd in fixed time steps, not for every frame
 
 		PLAYER_INPUT_PACKET input;
-		input.time = m_osu->getSongBrowser()->hasSelectedAndIsPlaying() ? m_osu->getSelectedBeatmap()->getCurMusicPosWithOffsets() : 0;
+		input.time = osu->getSongBrowser()->hasSelectedAndIsPlaying() ? osu->getSelectedBeatmap()->getCurMusicPosWithOffsets() : 0;
 		// TODO: convert to resolution independent (osu?) coordinates
 		input.cursorPosX = (short)mouse->getPos().x;
 		input.cursorPosY = (short)mouse->getPos().y;
@@ -387,7 +387,7 @@ bool OsuMultiplayer::onClientReceiveInt(uint32_t id, void *data, uint32_t size, 
 				if (pp->state == SELECT)
 				{
 					bool found = false;
-					const std::vector<OsuDatabaseBeatmap*> &beatmaps = m_osu->getSongBrowser()->getDatabase()->getDatabaseBeatmaps();
+					const std::vector<OsuDatabaseBeatmap*> &beatmaps = osu->getSongBrowser()->getDatabase()->getDatabaseBeatmaps();
 					for (int i=0; i<beatmaps.size(); i++)
 					{
 						OsuDatabaseBeatmap *beatmap = beatmaps[i];
@@ -408,7 +408,7 @@ bool OsuMultiplayer::onClientReceiveInt(uint32_t id, void *data, uint32_t size, 
 							if (uuidMatches)
 							{
 								found = true;
-								m_osu->getSongBrowser()->selectBeatmapMP(diff);
+								osu->getSongBrowser()->selectBeatmapMP(diff);
 								break;
 							}
 						}
@@ -423,33 +423,33 @@ bool OsuMultiplayer::onClientReceiveInt(uint32_t id, void *data, uint32_t size, 
 
 						if (beatmaps.size() < 1)
 						{
-							if (m_osu->getMainMenu()->isVisible() && !m_bMPSelectBeatmapScheduled)
+							if (osu->getMainMenu()->isVisible() && !m_bMPSelectBeatmapScheduled)
 							{
 								m_bMPSelectBeatmapScheduled = true;
 
-								m_osu->toggleSongBrowser();
+								osu->toggleSongBrowser();
 							}
 							else
-								m_osu->getNotificationOverlay()->addNotification("Database not yet loaded ...", 0xffffff00);
+								osu->getNotificationOverlay()->addNotification("Database not yet loaded ...", 0xffffff00);
 						}
 						else
-							m_osu->getNotificationOverlay()->addNotification((pp->beatmapId > 0 ? "Missing beatmap! -> ^^^ Click top left [Web] ^^^" : "Missing Beatmap!"), 0xffff0000);
+							osu->getNotificationOverlay()->addNotification((pp->beatmapId > 0 ? "Missing beatmap! -> ^^^ Click top left [Web] ^^^" : "Missing Beatmap!"), 0xffff0000);
 
-						m_osu->getSongBrowser()->getInfoLabel()->setFromMissingBeatmap(pp->beatmapId);
+						osu->getSongBrowser()->getInfoLabel()->setFromMissingBeatmap(pp->beatmapId);
 					}
 
 					// send status update to everyone
 					onClientStatusUpdate(!found);
 				}
-				else if (m_osu->getSelectedBeatmap() != NULL)
+				else if (osu->getSelectedBeatmap() != NULL)
 				{
 					if (pp->state == START)
 					{
-						if (m_osu->isInPlayMode())
-							m_osu->getSelectedBeatmap()->stop(true);
+						if (osu->isInPlayMode())
+							osu->getSelectedBeatmap()->stop(true);
 
 						// only start if we actually have the correct beatmap
-						OsuDatabaseBeatmap *diff2 = m_osu->getSelectedBeatmap()->getSelectedDifficulty2();
+						OsuDatabaseBeatmap *diff2 = osu->getSelectedBeatmap()->getSelectedDifficulty2();
 						if (diff2 != NULL)
 						{
 							bool uuidMatches = (diff2->getMD5Hash().length() > 0);
@@ -463,23 +463,23 @@ bool OsuMultiplayer::onClientReceiveInt(uint32_t id, void *data, uint32_t size, 
 							}
 
 							if (uuidMatches)
-								m_osu->getSongBrowser()->onDifficultySelectedMP(m_osu->getSelectedBeatmap()->getSelectedDifficulty2(), true);
+								osu->getSongBrowser()->onDifficultySelectedMP(osu->getSelectedBeatmap()->getSelectedDifficulty2(), true);
 						}
 					}
-					else if (m_osu->isInPlayMode())
+					else if (osu->isInPlayMode())
 					{
 						if (pp->state == SEEK)
-							m_osu->getSelectedBeatmap()->seekMS(pp->seekMS);
+							osu->getSelectedBeatmap()->seekMS(pp->seekMS);
 						else if (pp->state == SKIP)
-							m_osu->getSelectedBeatmap()->skipEmptySection();
+							osu->getSelectedBeatmap()->skipEmptySection();
 						else if (pp->state == PAUSE)
-							m_osu->getSelectedBeatmap()->pause(false);
+							osu->getSelectedBeatmap()->pause(false);
 						else if (pp->state == UNPAUSE)
-							m_osu->getSelectedBeatmap()->pause(false);
+							osu->getSelectedBeatmap()->pause(false);
 						else if (pp->state == RESTART)
-							m_osu->getSelectedBeatmap()->restart(pp->quickRestart);
+							osu->getSelectedBeatmap()->restart(pp->quickRestart);
 						else if (pp->state == STOP)
-							m_osu->getSelectedBeatmap()->stop();
+							osu->getSelectedBeatmap()->stop();
 					}
 				}
 			}
@@ -555,10 +555,10 @@ bool OsuMultiplayer::onClientReceiveInt(uint32_t id, void *data, uint32_t size, 
 			// execute
 			///BEATMAP_DOWNLOAD_REQUEST_PACKET *pp = (struct BEATMAP_DOWNLOAD_REQUEST_PACKET*)unwrappedPacket;
 
-			if (m_osu->getSongBrowser()->getSelectedBeatmap() != NULL && m_osu->getSongBrowser()->getSelectedBeatmap()->getSelectedDifficulty2() != NULL)
+			if (osu->getSongBrowser()->getSelectedBeatmap() != NULL && osu->getSongBrowser()->getSelectedBeatmap()->getSelectedDifficulty2() != NULL)
 			{
 				// TODO: add support for requesting a specific beatmap download, and not just whatever the peer currently has selected
-				OsuDatabaseBeatmap *diff = m_osu->getSongBrowser()->getSelectedBeatmap()->getSelectedDifficulty2();
+				OsuDatabaseBeatmap *diff = osu->getSongBrowser()->getSelectedBeatmap()->getSelectedDifficulty2();
 
 				// HACKHACK: TODO: TEMP, force load background image (so local downloaded /tmp/ beatmaps are at least complete, even if background image loader is not finished yet)
 				// TODO: handle loadMetadata() failure here (what if it returns false)!
@@ -747,7 +747,7 @@ bool OsuMultiplayer::onServerReceive(uint32_t id, void *data, uint32_t size)
 		{
 			// execute
 			GAME_STATE_PACKET *pp = (struct GAME_STATE_PACKET*)unwrappedPacket;
-			if (pp->state == SELECT && !m_osu->isInPlayMode() && osu_mp_allow_client_beatmap_select.getBool())
+			if (pp->state == SELECT && !osu->isInPlayMode() && osu_mp_allow_client_beatmap_select.getBool())
 			{
 				m_iLastClientBeatmapSelectID = id;
 				return onClientReceiveInt(id, data, size, true);
@@ -808,15 +808,15 @@ bool OsuMultiplayer::onServerReceive(uint32_t id, void *data, uint32_t size)
 
 void OsuMultiplayer::onClientConnectedToServer()
 {
-	m_osu->getNotificationOverlay()->addNotification("Connected.", 0xff00ff00);
+	osu->getNotificationOverlay()->addNotification("Connected.", 0xff00ff00);
 
 	// force send current score state to server (e.g. if the server died, or client connection died, this can recover a match result)
-	onClientScoreChange(m_osu->getScore()->getComboMax(), m_osu->getScore()->getAccuracy(), m_osu->getScore()->getScore(), m_osu->getScore()->isDead(), true);
+	onClientScoreChange(osu->getScore()->getComboMax(), osu->getScore()->getAccuracy(), osu->getScore()->getScore(), osu->getScore()->isDead(), true);
 }
 
 void OsuMultiplayer::onClientDisconnectedFromServer()
 {
-	m_osu->getNotificationOverlay()->addNotification("Disconnected.", 0xffff0000);
+	osu->getNotificationOverlay()->addNotification("Disconnected.", 0xffff0000);
 
 	m_clientPlayers.clear();
 
@@ -921,13 +921,13 @@ void OsuMultiplayer::onServerClientChange(uint32_t id, UString name, bool connec
 void OsuMultiplayer::onLocalServerStarted()
 {
 	debugLog("\n");
-	m_osu->getNotificationOverlay()->addNotification("Server started.", 0xff00ff00);
+	osu->getNotificationOverlay()->addNotification("Server started.", 0xff00ff00);
 }
 
 void OsuMultiplayer::onLocalServerStopped()
 {
 	debugLog("\n");
-	m_osu->getNotificationOverlay()->addNotification("Server stopped.", 0xffcccccc);
+	osu->getNotificationOverlay()->addNotification("Server stopped.", 0xffcccccc);
 
 	m_serverPlayers.clear();
 }
@@ -1027,7 +1027,7 @@ bool OsuMultiplayer::onClientPlayStateChangeRequestBeatmap(OsuDatabaseBeatmap *b
 
 	onClientStatusUpdate(false);
 
-	m_osu->getNotificationOverlay()->addNotification("Request sent.", 0xff00ff00, false, 0.25f);
+	osu->getNotificationOverlay()->addNotification("Request sent.", 0xff00ff00, false, 0.25f);
 
 	return true;
 }
@@ -1096,7 +1096,7 @@ void OsuMultiplayer::onServerModUpdate()
 		simpleModConVars.emplace_back("osu_speed_override");
 
 		// experimental mods
-		std::vector<ConVar*> experimentalMods = m_osu->getExperimentalMods();
+		std::vector<ConVar*> experimentalMods = osu->getExperimentalMods();
 		for (int i=0; i<experimentalMods.size(); i++)
 		{
 			simpleModConVars.push_back(experimentalMods[i]->getName());
@@ -1364,14 +1364,14 @@ void OsuMultiplayer::onBeatmapDownloadFinished(const BeatmapDownloadState &dl)
 	}
 
 	// and load the beatmap
-	OsuDatabaseBeatmap *beatmap = m_osu->getSongBrowser()->getDatabase()->addBeatmap(beatmapFolderPath);
+	OsuDatabaseBeatmap *beatmap = osu->getSongBrowser()->getDatabase()->addBeatmap(beatmapFolderPath);
 	if (beatmap != NULL)
 	{
-		m_osu->getSongBrowser()->addBeatmap(beatmap);
-		m_osu->getSongBrowser()->updateSongButtonSorting();
+		osu->getSongBrowser()->addBeatmap(beatmap);
+		osu->getSongBrowser()->updateSongButtonSorting();
 		if (beatmap->getDifficulties().size() > 0) // NOTE: always assume only 1 diff exists for now
 		{
-			m_osu->getSongBrowser()->selectBeatmapMP(beatmap->getDifficulties()[0]);
+			osu->getSongBrowser()->selectBeatmapMP(beatmap->getDifficulties()[0]);
 
 			// and update our state if we have the correct beatmap now
 			if (beatmap->getDifficulties()[0]->getMD5Hash() == m_sMPSelectBeatmapScheduledMD5Hash)

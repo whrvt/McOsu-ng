@@ -20,9 +20,9 @@
 
 
 
-OsuUIContextMenuButton::OsuUIContextMenuButton(Osu *osu, float xPos, float yPos, float xSize, float ySize, UString name, UString text, int id) : CBaseUIButton(xPos, yPos, xSize, ySize, name, text)
+OsuUIContextMenuButton::OsuUIContextMenuButton(float xPos, float yPos, float xSize, float ySize, UString name, UString text, int id) : CBaseUIButton(xPos, yPos, xSize, ySize, name, text)
 {
-	m_osu = osu;
+	
 	m_iID = id;
 }
 
@@ -33,14 +33,14 @@ void OsuUIContextMenuButton::update()
 
 	if (isMouseInside() && m_tooltipTextLines.size() > 0)
 	{
-		m_osu->getTooltipOverlay()->begin();
+		osu->getTooltipOverlay()->begin();
 		{
 			for (int i=0; i<m_tooltipTextLines.size(); i++)
 			{
-				m_osu->getTooltipOverlay()->addLine(m_tooltipTextLines[i]);
+				osu->getTooltipOverlay()->addLine(m_tooltipTextLines[i]);
 			}
 		}
-		m_osu->getTooltipOverlay()->end();
+		osu->getTooltipOverlay()->end();
 	}
 }
 
@@ -58,9 +58,9 @@ OsuUIContextMenuTextbox::OsuUIContextMenuTextbox(float xPos, float yPos, float x
 
 
 
-OsuUIContextMenu::OsuUIContextMenu(Osu *osu, float xPos, float yPos, float xSize, float ySize, UString name, CBaseUIScrollView *parent) : CBaseUIElement(xPos, yPos, xSize, ySize, name)
+OsuUIContextMenu::OsuUIContextMenu(float xPos, float yPos, float xSize, float ySize, UString name, CBaseUIScrollView *parent) : CBaseUIElement(xPos, yPos, xSize, ySize, name)
 {
-	m_osu = osu;
+	
 	m_parent = parent;
 
 	m_container = new CBaseUIScrollView(xPos, yPos, xSize, ySize, name);
@@ -214,16 +214,16 @@ void OsuUIContextMenu::begin(int minWidth, bool bigStyle)
 
 OsuUIContextMenuButton *OsuUIContextMenu::addButton(UString text, int id)
 {
-	const int buttonHeight = 30 * Osu::getUIScale(m_osu) * (m_bBigStyle ? 1.27f : 1.0f);
-	const int margin = 9 * Osu::getUIScale(m_osu);
+	const int buttonHeight = 30 * Osu::getUIScale() * (m_bBigStyle ? 1.27f : 1.0f);
+	const int margin = 9 * Osu::getUIScale();
 
-	OsuUIContextMenuButton *button = new OsuUIContextMenuButton(m_osu, margin, m_iYCounter + margin, 0, buttonHeight, text, text, id);
+	OsuUIContextMenuButton *button = new OsuUIContextMenuButton(margin, m_iYCounter + margin, 0, buttonHeight, text, text, id);
 	{
 		if (m_bBigStyle)
-			button->setFont(m_osu->getSubTitleFont());
+			button->setFont(osu->getSubTitleFont());
 
 		button->setClickCallback( fastdelegate::MakeDelegate(this, &OsuUIContextMenu::onClick) );
-		button->setWidthToContent(3 * Osu::getUIScale(m_osu));
+		button->setWidthToContent(3 * Osu::getUIScale());
 		button->setTextLeft(true);
 		button->setDrawFrame(false);
 		button->setDrawBackground(false);
@@ -244,15 +244,15 @@ OsuUIContextMenuButton *OsuUIContextMenu::addButton(UString text, int id)
 
 OsuUIContextMenuTextbox *OsuUIContextMenu::addTextbox(UString text, int id)
 {
-	const int buttonHeight = 30 * Osu::getUIScale(m_osu) * (m_bBigStyle ? 1.27f : 1.0f);
-	const int margin = 9 * Osu::getUIScale(m_osu);
+	const int buttonHeight = 30 * Osu::getUIScale() * (m_bBigStyle ? 1.27f : 1.0f);
+	const int margin = 9 * Osu::getUIScale();
 
 	OsuUIContextMenuTextbox *textbox = new OsuUIContextMenuTextbox(margin, m_iYCounter + margin, 0, buttonHeight, text, id);
 	{
 		textbox->setText(text);
 
 		if (m_bBigStyle)
-			textbox->setFont(m_osu->getSubTitleFont());
+			textbox->setFont(osu->getSubTitleFont());
 
 		textbox->setActive(true);
 	}
@@ -272,7 +272,7 @@ void OsuUIContextMenu::end(bool invertAnimation, bool clampUnderflowAndOverflowA
 	m_bInvertAnimation = invertAnimation;
 	m_bClampUnderflowAndOverflowAndEnableScrollingIfNecessary = clampUnderflowAndOverflowAndEnableScrollingIfNecessary;
 
-	const int margin = 9 * Osu::getUIScale(m_osu);
+	const int margin = 9 * Osu::getUIScale();
 
 	const std::vector<CBaseUIElement*> &elements = m_container->getContainer()->getElements();
 	for (size_t i=0; i<elements.size(); i++)
@@ -297,9 +297,9 @@ void OsuUIContextMenu::end(bool invertAnimation, bool clampUnderflowAndOverflowA
 				m_container->setVerticalScrolling(true);
 			}
 
-			if (m_vPos.y + m_vSize.y > m_osu->getScreenHeight())
+			if (m_vPos.y + m_vSize.y > osu->getScreenHeight())
 			{
-				const float overflow = std::abs(m_vPos.y + m_vSize.y - m_osu->getScreenHeight());
+				const float overflow = std::abs(m_vPos.y + m_vSize.y - osu->getScreenHeight());
 
 				setSizeY(m_vSize.y - overflow - 1);
 
@@ -372,9 +372,9 @@ void OsuUIContextMenu::onHitEnter(OsuUIContextMenuTextbox *textbox)
 
 void OsuUIContextMenu::clampToBottomScreenEdge(OsuUIContextMenu *menu)
 {
-	if (menu->getRelPos().y + menu->getSize().y > menu->m_osu->getScreenHeight())
+	if (menu->getRelPos().y + menu->getSize().y > osu->getScreenHeight())
 	{
-		int newRelPosY = menu->m_osu->getScreenHeight() - menu->getSize().y - 1;
+		int newRelPosY = osu->getScreenHeight() - menu->getSize().y - 1;
 		menu->setRelPosY(newRelPosY);
 		menu->setPosY(newRelPosY);
 	}
@@ -382,9 +382,9 @@ void OsuUIContextMenu::clampToBottomScreenEdge(OsuUIContextMenu *menu)
 
 void OsuUIContextMenu::clampToRightScreenEdge(OsuUIContextMenu *menu)
 {
-	if (menu->getRelPos().x + menu->getSize().x > menu->m_osu->getScreenWidth())
+	if (menu->getRelPos().x + menu->getSize().x > osu->getScreenWidth())
 	{
-		const int newRelPosX = menu->m_osu->getScreenWidth() - menu->getSize().x - 1;
+		const int newRelPosX = osu->getScreenWidth() - menu->getSize().x - 1;
 		menu->setRelPosX(newRelPosX);
 		menu->setPosX(newRelPosX);
 	}

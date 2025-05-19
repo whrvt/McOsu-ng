@@ -14,7 +14,7 @@
 class OsuBeatmapMania : public OsuBeatmap
 {
 public:
-	OsuBeatmapMania(Osu *osu);
+	OsuBeatmapMania();
 
 	virtual void draw(Graphics *g);
 	virtual void update();
@@ -42,8 +42,6 @@ private:
 	Vector2 m_vRotation;
 	Vector2 m_vMouseBackup;
 	float m_fZoom;
-
-	Osu *m_osu;
 };
 
 #endif

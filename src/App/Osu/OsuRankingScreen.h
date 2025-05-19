@@ -34,7 +34,7 @@ class ConVar;
 class OsuRankingScreen : public OsuScreenBackable
 {
 public:
-	OsuRankingScreen(Osu *osu);
+	OsuRankingScreen();
 	virtual ~OsuRankingScreen();
 
 	virtual void draw(Graphics *g);

@@ -20,7 +20,7 @@
 #include "Osu.h"
 #include "OsuSkin.h"
 
-OsuVRTutorial::OsuVRTutorial(Osu *osu) : OsuScreenBackable(osu)
+OsuVRTutorial::OsuVRTutorial() : OsuScreenBackable()
 {
 	m_container = new CBaseUIContainer(-1, -1, 0, 0, "");
 	m_scrollView = new CBaseUIScrollView(-1, -1, 0, 0, "");
@@ -32,7 +32,7 @@ OsuVRTutorial::OsuVRTutorial(Osu *osu) : OsuScreenBackable(osu)
 	m_container->addBaseUIElement(m_scrollView);
 
 	// load/execute VR stuff only in VR builds
-	if (m_osu->isInVRMode())
+	if (osu->isInVRMode())
 	{
 		resourceManager->loadImage("mcosuvr_controls_1.png", "OSU_VR_CONTROLS_TUTORIAL_1");
 		resourceManager->loadImage("mcosuvr_controls_2.png", "OSU_VR_CONTROLS_TUTORIAL_2");
@@ -94,17 +94,17 @@ void OsuVRTutorial::updateLayout()
 {
 	OsuScreenBackable::updateLayout();
 
-	m_container->setSize(m_osu->getScreenSize() + Vector2(2,2));
-	m_scrollView->setSize(m_osu->getScreenSize() + Vector2(2,2));
+	m_container->setSize(osu->getScreenSize() + Vector2(2,2));
+	m_scrollView->setSize(osu->getScreenSize() + Vector2(2,2));
 
 	// TODO: this scaling shit should be part of CBaseUIImage, clean up sometime
 	Vector2 imageSize = m_tutorialImage1->getImage() != NULL ? m_tutorialImage1->getImage()->getSize() : Vector2(1,1);
-	float scale = (m_osu->getScreenWidth()+1) / imageSize.x;
+	float scale = (osu->getScreenWidth()+1) / imageSize.x;
 	m_tutorialImage1->setScale(scale, scale);
 	m_tutorialImage1->setSize(imageSize*scale);
 
 	imageSize = m_tutorialImage2->getImage() != NULL ? m_tutorialImage2->getImage()->getSize() : Vector2(1,1);
-	scale = (m_osu->getScreenWidth()+1) / imageSize.x;
+	scale = (osu->getScreenWidth()+1) / imageSize.x;
 	m_tutorialImage2->setRelPosY(m_tutorialImage1->getSize().y - 2);
 	m_tutorialImage2->setScale(scale, scale);
 	m_tutorialImage2->setSize(imageSize*scale);
@@ -114,7 +114,7 @@ void OsuVRTutorial::updateLayout()
 
 void OsuVRTutorial::onBack()
 {
-	soundEngine->play(m_osu->getSkin()->getMenuClick());
+	soundEngine->play(osu->getSkin()->getMenuClick());
 
-	m_osu->toggleVRTutorial();
+	osu->toggleVRTutorial();
 }

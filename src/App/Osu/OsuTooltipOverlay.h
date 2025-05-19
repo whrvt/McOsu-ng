@@ -16,7 +16,7 @@ class Osu;
 class OsuTooltipOverlay : public OsuScreen
 {
 public:
-	OsuTooltipOverlay(Osu *osu);
+	OsuTooltipOverlay();
 	virtual ~OsuTooltipOverlay();
 
 	virtual void draw(Graphics *g);

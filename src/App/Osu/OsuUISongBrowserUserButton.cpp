@@ -27,9 +27,9 @@ ConVar osu_user_draw_accuracy("osu_user_draw_accuracy", true, FCVAR_NONE);
 ConVar osu_user_draw_level("osu_user_draw_level", true, FCVAR_NONE);
 ConVar osu_user_draw_level_bar("osu_user_draw_level_bar", true, FCVAR_NONE);
 
-OsuUISongBrowserUserButton::OsuUISongBrowserUserButton(Osu *osu) : CBaseUIButton()
+OsuUISongBrowserUserButton::OsuUISongBrowserUserButton() : CBaseUIButton()
 {
-	m_osu = osu;
+	
 
 	m_osu_scores_enabled_ref = convar->getConVarByName("osu_scores_enabled");
 
@@ -65,7 +65,7 @@ void OsuUISongBrowserUserButton::draw(Graphics *g)
 
 	// draw user icon
 	/*
-	McFont *iconFont = m_osu->getFontIcons();
+	McFont *iconFont = osu->getFontIcons();
 	g->setColor(0xffffffff);
 	g->pushTransform();
 	{
@@ -85,16 +85,16 @@ void OsuUISongBrowserUserButton::draw(Graphics *g)
 	g->pushClipRect(McRect(m_vPos.x + iconBorder + 1, m_vPos.y + iconBorder + 2, iconWidth, iconHeight));
 	g->pushTransform();
 	{
-		const float scale = Osu::getImageScaleToFillResolution(m_osu->getSkin()->getUserIcon(), Vector2(iconWidth, iconHeight));
+		const float scale = Osu::getImageScaleToFillResolution(osu->getSkin()->getUserIcon(), Vector2(iconWidth, iconHeight));
 		g->scale(scale, scale);
 		g->translate(m_vPos.x + iconBorder + iconWidth/2 + 1, m_vPos.y + iconBorder + iconHeight/2 + 1);
-		g->drawImage(m_osu->getSkin()->getUserIcon());
+		g->drawImage(osu->getSkin()->getUserIcon());
 	}
 	g->popTransform();
 	g->popClipRect();
 
 	// draw username
-	McFont *usernameFont = m_osu->getSongBrowserFont();
+	McFont *usernameFont = osu->getSongBrowserFont();
 	const float usernameScale = 0.5f;
 	float usernamePaddingLeft = 0.0f;
 	g->pushClipRect(McRect(m_vPos.x + iconBorder, m_vPos.y + iconBorder, m_vSize.x - 2*iconBorder, iconHeight));
@@ -120,7 +120,7 @@ void OsuUISongBrowserUserButton::draw(Graphics *g)
 	if (m_osu_scores_enabled_ref->getBool())
 	{
 		// draw performance (pp), and accuracy
-		McFont *performanceFont = m_osu->getSubTitleFont();
+		McFont *performanceFont = osu->getSubTitleFont();
 		const float performanceScale = 0.3f;
 		g->pushTransform();
 		{
@@ -151,7 +151,7 @@ void OsuUISongBrowserUserButton::draw(Graphics *g)
 		g->popTransform();
 
 		// draw level
-		McFont *scoreFont = m_osu->getSubTitleFont();
+		McFont *scoreFont = osu->getSubTitleFont();
 		const float scoreScale = 0.3f;
 		g->pushTransform();
 		{
@@ -236,18 +236,18 @@ void OsuUISongBrowserUserButton::update()
 
 	if (isMouseInside() && m_vTooltipLines.size() > 0)
 	{
-		m_osu->getTooltipOverlay()->begin();
+		osu->getTooltipOverlay()->begin();
 		for (int i=0; i<m_vTooltipLines.size(); i++)
 		{
-			m_osu->getTooltipOverlay()->addLine(m_vTooltipLines[i]);
+			osu->getTooltipOverlay()->addLine(m_vTooltipLines[i]);
 		}
-		m_osu->getTooltipOverlay()->end();
+		osu->getTooltipOverlay()->end();
 	}
 }
 
 void OsuUISongBrowserUserButton::updateUserStats()
 {
-	OsuDatabase::PlayerStats stats = m_osu->getSongBrowser()->getDatabase()->calculatePlayerStats(m_sText);
+	OsuDatabase::PlayerStats stats = osu->getSongBrowser()->getDatabase()->calculatePlayerStats(m_sText);
 
 	const bool changedPP = (m_fPP != stats.pp);
 	const bool changed = (changedPP || m_fAcc != stats.accuracy || m_iLevel != stats.level || m_fPercentToNextLevel != stats.percentToNextLevel);

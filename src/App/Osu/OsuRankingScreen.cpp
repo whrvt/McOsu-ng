@@ -175,7 +175,7 @@ private:
 
 
 
-OsuRankingScreen::OsuRankingScreen(Osu *osu) : OsuScreenBackable(osu)
+OsuRankingScreen::OsuRankingScreen() : OsuScreenBackable()
 {
 	m_osu_scores_enabled = convar->getConVarByName("osu_scores_enabled");
 
@@ -188,20 +188,20 @@ OsuRankingScreen::OsuRankingScreen(Osu *osu) : OsuScreenBackable(osu)
 	m_rankings->setDrawScrollbars(true);
 	m_container->addBaseUIElement(m_rankings);
 
-	m_songInfo = new OsuUIRankingScreenInfoLabel(m_osu, 5, 5, 0, 0, "");
+	m_songInfo = new OsuUIRankingScreenInfoLabel(5, 5, 0, 0, "");
 	m_container->addBaseUIElement(m_songInfo);
 
-	m_rankingTitle = new CBaseUIImage(m_osu->getSkin()->getRankingTitle()->getName(), 0, 0, 0, 0, "");
+	m_rankingTitle = new CBaseUIImage(osu->getSkin()->getRankingTitle()->getName(), 0, 0, 0, 0, "");
 	m_rankingTitle->setDrawBackground(false);
 	m_rankingTitle->setDrawFrame(false);
 	m_container->addBaseUIElement(m_rankingTitle);
 
-	m_rankingPanel = new OsuUIRankingScreenRankingPanel(osu);
+	m_rankingPanel = new OsuUIRankingScreenRankingPanel();
 	m_rankingPanel->setDrawBackground(false);
 	m_rankingPanel->setDrawFrame(false);
 	m_rankings->getContainer()->addBaseUIElement(m_rankingPanel);
 
-	m_rankingGrade = new CBaseUIImage(m_osu->getSkin()->getRankingA()->getName(), 0, 0, 0, 0, "");
+	m_rankingGrade = new CBaseUIImage(osu->getSkin()->getRankingA()->getName(), 0, 0, 0, 0, "");
 	m_rankingGrade->setDrawBackground(false);
 	m_rankingGrade->setDrawFrame(false);
 	m_rankings->getContainer()->addBaseUIElement(m_rankingGrade);
@@ -212,12 +212,12 @@ OsuRankingScreen::OsuRankingScreen(Osu *osu) : OsuScreenBackable(osu)
 	m_rankingIndex = new OsuRankingScreenIndexLabel();
 	m_rankingIndex->setDrawFrame(false);
 	m_rankingIndex->setCenterText(true);
-	m_rankingIndex->setFont(m_osu->getSongBrowserFont());
+	m_rankingIndex->setFont(osu->getSongBrowserFont());
 	m_rankingIndex->setTextColor(0xffffcb21);
 	m_rankings->getContainer()->addBaseUIElement(m_rankingIndex);
 
 	m_rankingScrollDownInfoButton = new OsuRankingScreenScrollDownInfoButton();
-	m_rankingScrollDownInfoButton->setFont(m_osu->getFontIcons());
+	m_rankingScrollDownInfoButton->setFont(osu->getFontIcons());
 	m_rankingScrollDownInfoButton->setClickCallback( fastdelegate::MakeDelegate(this, &OsuRankingScreen::onScrollDownClicked) );
 	UString iconString;
 	iconString.insert(0, OsuIcons::ARROW_DOWN);
@@ -280,53 +280,53 @@ void OsuRankingScreen::draw(Graphics *g)
 
 	// draw background image
 	if (osu_draw_rankingscreen_background_image.getBool())
-		OsuSongBrowser2::drawSelectedBeatmapBackgroundImage(g, m_osu);
+		OsuSongBrowser2::drawSelectedBeatmapBackgroundImage(g, osu);
 
 	m_rankings->draw(g);
 
 	// draw active mods
-	const Vector2 modPosStart = Vector2(m_rankings->getSize().x - m_osu->getUIScale(m_osu, 20), m_rankings->getScrollPosY() + m_osu->getUIScale(m_osu, 260));
+	const Vector2 modPosStart = Vector2(m_rankings->getSize().x - osu->getUIScale(20), m_rankings->getScrollPosY() + osu->getUIScale(260));
 	Vector2 modPos = modPosStart;
 	Vector2 modPosMax;
 	if (m_bModTD)
-		drawModImage(g, m_osu->getSkin()->getSelectionModTD(), modPos, modPosMax);
+		drawModImage(g, osu->getSkin()->getSelectionModTD(), modPos, modPosMax);
 	if (m_bModSS)
-		drawModImage(g, m_osu->getSkin()->getSelectionModPerfect(), modPos, modPosMax);
+		drawModImage(g, osu->getSkin()->getSelectionModPerfect(), modPos, modPosMax);
 	else if (m_bModSD)
-		drawModImage(g, m_osu->getSkin()->getSelectionModSuddenDeath(), modPos, modPosMax);
+		drawModImage(g, osu->getSkin()->getSelectionModSuddenDeath(), modPos, modPosMax);
 	if (m_bModEZ)
-		drawModImage(g, m_osu->getSkin()->getSelectionModEasy(), modPos, modPosMax);
+		drawModImage(g, osu->getSkin()->getSelectionModEasy(), modPos, modPosMax);
 	if (m_bModHD)
-		drawModImage(g, m_osu->getSkin()->getSelectionModHidden(), modPos, modPosMax);
+		drawModImage(g, osu->getSkin()->getSelectionModHidden(), modPos, modPosMax);
 	if (m_bModHR)
-		drawModImage(g, m_osu->getSkin()->getSelectionModHardRock(), modPos, modPosMax);
+		drawModImage(g, osu->getSkin()->getSelectionModHardRock(), modPos, modPosMax);
 	if (m_bModNC)
-		drawModImage(g, m_osu->getSkin()->getSelectionModNightCore(), modPos, modPosMax);
+		drawModImage(g, osu->getSkin()->getSelectionModNightCore(), modPos, modPosMax);
 	else if (m_bModDT)
-		drawModImage(g, m_osu->getSkin()->getSelectionModDoubleTime(), modPos, modPosMax);
+		drawModImage(g, osu->getSkin()->getSelectionModDoubleTime(), modPos, modPosMax);
 	if (m_bModNM)
-		drawModImage(g, m_osu->getSkin()->getSelectionModNightmare(), modPos, modPosMax);
+		drawModImage(g, osu->getSkin()->getSelectionModNightmare(), modPos, modPosMax);
 	if (m_bModScorev2)
-		drawModImage(g, m_osu->getSkin()->getSelectionModScorev2(), modPos, modPosMax);
+		drawModImage(g, osu->getSkin()->getSelectionModScorev2(), modPos, modPosMax);
 	if (m_bModTarget)
-		drawModImage(g, m_osu->getSkin()->getSelectionModTarget(), modPos, modPosMax);
+		drawModImage(g, osu->getSkin()->getSelectionModTarget(), modPos, modPosMax);
 	if (m_bModSpunout)
-		drawModImage(g, m_osu->getSkin()->getSelectionModSpunOut(), modPos, modPosMax);
+		drawModImage(g, osu->getSkin()->getSelectionModSpunOut(), modPos, modPosMax);
 	if (m_bModRelax)
-		drawModImage(g, m_osu->getSkin()->getSelectionModRelax(), modPos, modPosMax);
+		drawModImage(g, osu->getSkin()->getSelectionModRelax(), modPos, modPosMax);
 	if (m_bModNF)
-		drawModImage(g, m_osu->getSkin()->getSelectionModNoFail(), modPos, modPosMax);
+		drawModImage(g, osu->getSkin()->getSelectionModNoFail(), modPos, modPosMax);
 	if (m_bModHT)
-		drawModImage(g, m_osu->getSkin()->getSelectionModHalfTime(), modPos, modPosMax);
+		drawModImage(g, osu->getSkin()->getSelectionModHalfTime(), modPos, modPosMax);
 	if (m_bModAutopilot)
-		drawModImage(g, m_osu->getSkin()->getSelectionModAutopilot(), modPos, modPosMax);
+		drawModImage(g, osu->getSkin()->getSelectionModAutopilot(), modPos, modPosMax);
 	if (m_bModAuto)
-		drawModImage(g, m_osu->getSkin()->getSelectionModAutoplay(), modPos, modPosMax);
+		drawModImage(g, osu->getSkin()->getSelectionModAutoplay(), modPos, modPosMax);
 
 	// draw experimental mods
 	if (m_enabledExperimentalMods.size() > 0)
 	{
-		McFont *experimentalModFont = m_osu->getSubTitleFont();
+		McFont *experimentalModFont = osu->getSubTitleFont();
 		const UString prefix = "+ ";
 
 		float maxStringWidth = 0.0f;
@@ -342,7 +342,7 @@ void OsuRankingScreen::draw(Graphics *g)
 		const int backgroundMargin = 6;
 		const float heightMultiplier = 1.25f;
 		const int experimentalModHeight = (experimentalModFont->getHeight() * heightMultiplier);
-		const Vector2 experimentalModPos = Vector2(modPosStart.x - maxStringWidth - backgroundMargin, std::max(modPosStart.y, modPosMax.y) + m_osu->getUIScale(m_osu, 10) + experimentalModFont->getHeight()*heightMultiplier);
+		const Vector2 experimentalModPos = Vector2(modPosStart.x - maxStringWidth - backgroundMargin, std::max(modPosStart.y, modPosMax.y) + osu->getUIScale(10) + experimentalModFont->getHeight()*heightMultiplier);
 		const int backgroundWidth = maxStringWidth + 2*backgroundMargin;
 		const int backgroundHeight = experimentalModHeight*m_enabledExperimentalMods.size() + 2*backgroundMargin;
 
@@ -381,10 +381,10 @@ void OsuRankingScreen::draw(Graphics *g)
 		{
 			g->translate((int)ppPos.x + 2, (int)ppPos.y + 2);
 			g->setColor(0xff000000);
-			g->drawString(m_osu->getTitleFont(), ppString);
+			g->drawString(osu->getTitleFont(), ppString);
 			g->translate(-2, -2);
 			g->setColor(0xffffffff);
-			g->drawString(m_osu->getTitleFont(), ppString);
+			g->drawString(osu->getTitleFont(), ppString);
 		}
 		g->popTransform();
 	}
@@ -394,7 +394,7 @@ void OsuRankingScreen::draw(Graphics *g)
 
 	// draw top black bar
 	g->setColor(0xff000000);
-	g->fillRect(0, 0, m_osu->getScreenWidth(), m_rankingTitle->getSize().y*osu_rankingscreen_topbar_height_percent.getFloat());
+	g->fillRect(0, 0, osu->getScreenWidth(), m_rankingTitle->getSize().y*osu_rankingscreen_topbar_height_percent.getFloat());
 
 	m_rankingTitle->draw(g);
 	m_songInfo->draw(g);
@@ -407,7 +407,7 @@ void OsuRankingScreen::drawModImage(Graphics *g, OsuSkinImage *image, Vector2 &p
 	g->setColor(0xffffffff);
 	image->draw(g, Vector2(pos.x - image->getSize().x/2.0f, pos.y));
 
-	pos.x -= m_osu->getUIScale(m_osu, 20);
+	pos.x -= osu->getUIScale(20);
 
 	if (pos.y + image->getSize().y/2 > max.y)
 		max.y = pos.y + image->getSize().y/2;
@@ -419,42 +419,42 @@ void OsuRankingScreen::update()
 	if (!m_bVisible) return;
 
 	// HACKHACK:
-	if (m_osu->getOptionsMenu()->isMouseInside())
+	if (osu->getOptionsMenu()->isMouseInside())
 		mouse->resetWheelDelta();
 
 	// update and focus handling
 	m_container->update();
 
-	if (m_osu->getOptionsMenu()->isMouseInside())
+	if (osu->getOptionsMenu()->isMouseInside())
 		stealFocus();
 
-	if (m_osu->getOptionsMenu()->isBusy() || m_backButton->isActive())
+	if (osu->getOptionsMenu()->isBusy() || m_backButton->isActive())
 		m_container->stealFocus();
 
 	// tooltip (pp + accuracy + unstable rate)
-	if (!m_osu->getOptionsMenu()->isMouseInside() && !m_bIsLegacyScore && mouse->getPos().x < m_osu->getScreenWidth() * 0.5f)
+	if (!osu->getOptionsMenu()->isMouseInside() && !m_bIsLegacyScore && mouse->getPos().x < osu->getScreenWidth() * 0.5f)
 	{
-		m_osu->getTooltipOverlay()->begin();
+		osu->getTooltipOverlay()->begin();
 		{
-			m_osu->getTooltipOverlay()->addLine(UString::format("%.2fpp", m_fPPv2));
-			m_osu->getTooltipOverlay()->addLine("Difficulty:");
-			m_osu->getTooltipOverlay()->addLine(UString::format("Stars: %.2f (%.2f aim, %.2f speed)", m_fStarsTomTotal, m_fStarsTomAim, m_fStarsTomSpeed));
-			m_osu->getTooltipOverlay()->addLine(UString::format("Speed: %.3gx", m_fSpeedMultiplier));
-			m_osu->getTooltipOverlay()->addLine(UString::format("CS:%.4g AR:%.4g OD:%.4g HP:%.4g", m_fCS, m_fAR, m_fOD, m_fHP));
+			osu->getTooltipOverlay()->addLine(UString::format("%.2fpp", m_fPPv2));
+			osu->getTooltipOverlay()->addLine("Difficulty:");
+			osu->getTooltipOverlay()->addLine(UString::format("Stars: %.2f (%.2f aim, %.2f speed)", m_fStarsTomTotal, m_fStarsTomAim, m_fStarsTomSpeed));
+			osu->getTooltipOverlay()->addLine(UString::format("Speed: %.3gx", m_fSpeedMultiplier));
+			osu->getTooltipOverlay()->addLine(UString::format("CS:%.4g AR:%.4g OD:%.4g HP:%.4g", m_fCS, m_fAR, m_fOD, m_fHP));
 
 			if (m_sMods.length() > 0)
-				m_osu->getTooltipOverlay()->addLine(m_sMods);
+				osu->getTooltipOverlay()->addLine(m_sMods);
 
 			if (!m_bIsImportedLegacyScore)
 			{
-				m_osu->getTooltipOverlay()->addLine("Accuracy:");
-				m_osu->getTooltipOverlay()->addLine(UString::format("Error: %.2fms - %.2fms avg", m_fHitErrorAvgMin, m_fHitErrorAvgMax));
-				m_osu->getTooltipOverlay()->addLine(UString::format("Unstable Rate: %.2f", m_fUnstableRate));
+				osu->getTooltipOverlay()->addLine("Accuracy:");
+				osu->getTooltipOverlay()->addLine(UString::format("Error: %.2fms - %.2fms avg", m_fHitErrorAvgMin, m_fHitErrorAvgMax));
+				osu->getTooltipOverlay()->addLine(UString::format("Unstable Rate: %.2f", m_fUnstableRate));
 			}
 			else
-				m_osu->getTooltipOverlay()->addLine("This score was imported from osu!");
+				osu->getTooltipOverlay()->addLine("This score was imported from osu!");
 		}
-		m_osu->getTooltipOverlay()->end();
+		osu->getTooltipOverlay()->end();
 	}
 
 	// frustration multiplier
@@ -520,26 +520,26 @@ void OsuRankingScreen::setScore(OsuScore *score)
 	else
 		m_sMods = "";
 
-	m_bModSS = m_osu->getModSS();
-	m_bModSD = m_osu->getModSD();
-	m_bModEZ = m_osu->getModEZ();
-	m_bModHD = m_osu->getModHD();
-	m_bModHR = m_osu->getModHR();
-	m_bModNC = m_osu->getModNC();
-	m_bModDT = m_osu->getModDT();
-	m_bModNM = m_osu->getModNM();
-	m_bModScorev2 = m_osu->getModScorev2();
-	m_bModTarget = m_osu->getModTarget();
-	m_bModSpunout = m_osu->getModSpunout();
-	m_bModRelax = m_osu->getModRelax();
-	m_bModNF = m_osu->getModNF();
-	m_bModHT = m_osu->getModHT();
-	m_bModAutopilot = m_osu->getModAutopilot();
-	m_bModAuto = m_osu->getModAuto();
-	m_bModTD = m_osu->getModTD();
+	m_bModSS = osu->getModSS();
+	m_bModSD = osu->getModSD();
+	m_bModEZ = osu->getModEZ();
+	m_bModHD = osu->getModHD();
+	m_bModHR = osu->getModHR();
+	m_bModNC = osu->getModNC();
+	m_bModDT = osu->getModDT();
+	m_bModNM = osu->getModNM();
+	m_bModScorev2 = osu->getModScorev2();
+	m_bModTarget = osu->getModTarget();
+	m_bModSpunout = osu->getModSpunout();
+	m_bModRelax = osu->getModRelax();
+	m_bModNF = osu->getModNF();
+	m_bModHT = osu->getModHT();
+	m_bModAutopilot = osu->getModAutopilot();
+	m_bModAuto = osu->getModAuto();
+	m_bModTD = osu->getModTD();
 
 	m_enabledExperimentalMods.clear();
-	std::vector<ConVar*> allExperimentalMods = m_osu->getExperimentalMods();
+	std::vector<ConVar*> allExperimentalMods = osu->getExperimentalMods();
 	for (int i=0; i<allExperimentalMods.size(); i++)
 	{
 		if (allExperimentalMods[i]->getBool())
@@ -627,7 +627,7 @@ void OsuRankingScreen::setBeatmapInfo(OsuBeatmap *beatmap, OsuDatabaseBeatmap *d
 	m_songInfo->setPlayer(m_bIsUnranked ? "McOsu" : convar->getConVarByName("name")->getString());
 
 	// round all here to 2 decimal places
-	m_fSpeedMultiplier = std::round(m_osu->getSpeedMultiplier() * 100.0f) / 100.0f;
+	m_fSpeedMultiplier = std::round(osu->getSpeedMultiplier() * 100.0f) / 100.0f;
 	m_fCS = std::round(beatmap->getCS() * 100.0f) / 100.0f;
 	m_fAR = std::round(OsuGameRules::getApproachRateForSpeedMultiplier(beatmap) * 100.0f) / 100.0f;
 	m_fOD = std::round(OsuGameRules::getOverallDifficultyForSpeedMultiplier(beatmap) * 100.0f) / 100.0f;
@@ -640,30 +640,30 @@ void OsuRankingScreen::updateLayout()
 
 	const float uiScale = Osu::ui_scale->getFloat();
 
-	m_container->setSize(m_osu->getScreenSize());
+	m_container->setSize(osu->getScreenSize());
 
-	m_rankingTitle->setImage(m_osu->getSkin()->getRankingTitle());
-	m_rankingTitle->setScale(Osu::getImageScale(m_osu, m_rankingTitle->getImage(), 75.0f) * uiScale, Osu::getImageScale(m_osu, m_rankingTitle->getImage(), 75.0f) * uiScale);
+	m_rankingTitle->setImage(osu->getSkin()->getRankingTitle());
+	m_rankingTitle->setScale(Osu::getImageScale(m_rankingTitle->getImage(), 75.0f) * uiScale, Osu::getImageScale(m_rankingTitle->getImage(), 75.0f) * uiScale);
 	m_rankingTitle->setSize(m_rankingTitle->getImage()->getWidth()*m_rankingTitle->getScale().x, m_rankingTitle->getImage()->getHeight()*m_rankingTitle->getScale().y);
-	m_rankingTitle->setRelPos(m_container->getSize().x - m_rankingTitle->getSize().x - m_osu->getUIScale(m_osu, 20.0f), 0);
+	m_rankingTitle->setRelPos(m_container->getSize().x - m_rankingTitle->getSize().x - osu->getUIScale(20.0f), 0);
 
-	m_songInfo->setSize(m_osu->getScreenWidth(), std::max(m_songInfo->getMinimumHeight(), m_rankingTitle->getSize().y*osu_rankingscreen_topbar_height_percent.getFloat()));
+	m_songInfo->setSize(osu->getScreenWidth(), std::max(m_songInfo->getMinimumHeight(), m_rankingTitle->getSize().y*osu_rankingscreen_topbar_height_percent.getFloat()));
 
-	m_rankings->setSize(m_osu->getScreenSize().x + 2, m_osu->getScreenSize().y - m_songInfo->getSize().y + 3);
+	m_rankings->setSize(osu->getScreenSize().x + 2, osu->getScreenSize().y - m_songInfo->getSize().y + 3);
 	m_rankings->setRelPosY(m_songInfo->getSize().y - 1);
 	m_container->update_pos();
 
 	// NOTE: no uiScale for rankingPanel and rankingGrade, doesn't really work due to legacy layout expectations
-	const Vector2 hardcodedOsuRankingPanelImageSize = Vector2(622, 505) * (m_osu->getSkin()->isRankingPanel2x() ? 2.0f : 1.0f);
-	m_rankingPanel->setImage(m_osu->getSkin()->getRankingPanel());
-	m_rankingPanel->setScale(Osu::getImageScale(m_osu, hardcodedOsuRankingPanelImageSize, 317.0f), Osu::getImageScale(m_osu, hardcodedOsuRankingPanelImageSize, 317.0f));
+	const Vector2 hardcodedOsuRankingPanelImageSize = Vector2(622, 505) * (osu->getSkin()->isRankingPanel2x() ? 2.0f : 1.0f);
+	m_rankingPanel->setImage(osu->getSkin()->getRankingPanel());
+	m_rankingPanel->setScale(Osu::getImageScale(hardcodedOsuRankingPanelImageSize, 317.0f), Osu::getImageScale(hardcodedOsuRankingPanelImageSize, 317.0f));
 	m_rankingPanel->setSize(std::max(hardcodedOsuRankingPanelImageSize.x*m_rankingPanel->getScale().x, m_rankingPanel->getImage()->getWidth()*m_rankingPanel->getScale().x), std::max(hardcodedOsuRankingPanelImageSize.y*m_rankingPanel->getScale().y, m_rankingPanel->getImage()->getHeight()*m_rankingPanel->getScale().y));
 
-	m_rankingIndex->setSize(m_rankings->getSize().x + 2, m_osu->getScreenHeight()*0.07f * uiScale);
+	m_rankingIndex->setSize(m_rankings->getSize().x + 2, osu->getScreenHeight()*0.07f * uiScale);
 	m_rankingIndex->setBackgroundColor(0xff745e13);
 	m_rankingIndex->setRelPosY(m_rankings->getSize().y + 1);
 
-	m_rankingBottom->setSize(m_rankings->getSize().x + 2, m_osu->getScreenHeight()*0.2f);
+	m_rankingBottom->setSize(m_rankings->getSize().x + 2, osu->getScreenHeight()*0.2f);
 	m_rankingBottom->setRelPosY(m_rankingIndex->getRelPos().y + m_rankingIndex->getSize().y);
 
 	m_rankingScrollDownInfoButton->setSize(m_container->getSize().x*0.2f * uiScale, m_container->getSize().y*0.1f * uiScale);
@@ -678,13 +678,13 @@ void OsuRankingScreen::updateLayout()
 
 void OsuRankingScreen::onBack()
 {
-	soundEngine->play(m_osu->getSkin()->getMenuClick());
+	soundEngine->play(osu->getSkin()->getMenuClick());
 
 	// stop applause sound
-	if (m_osu->getSkin()->getApplause() != NULL && m_osu->getSkin()->getApplause()->isPlaying())
-		soundEngine->stop(m_osu->getSkin()->getApplause());
+	if (osu->getSkin()->getApplause() != NULL && osu->getSkin()->getApplause()->isPlaying())
+		soundEngine->stop(osu->getSkin()->getApplause());
 
-	m_osu->toggleRankingScreen();
+	osu->toggleRankingScreen();
 }
 
 void OsuRankingScreen::onScrollDownClicked()
@@ -700,47 +700,47 @@ void OsuRankingScreen::setGrade(OsuScore::GRADE grade)
 	switch (grade)
 	{
 	case OsuScore::GRADE::GRADE_XH:
-		hardcodedOsuRankingGradeImageSize *= (m_osu->getSkin()->isRankingXH2x() ? 2.0f : 1.0f);
-		m_rankingGrade->setImage(m_osu->getSkin()->getRankingXH());
+		hardcodedOsuRankingGradeImageSize *= (osu->getSkin()->isRankingXH2x() ? 2.0f : 1.0f);
+		m_rankingGrade->setImage(osu->getSkin()->getRankingXH());
 		break;
 	case OsuScore::GRADE::GRADE_SH:
-		hardcodedOsuRankingGradeImageSize *= (m_osu->getSkin()->isRankingSH2x() ? 2.0f : 1.0f);
-		m_rankingGrade->setImage(m_osu->getSkin()->getRankingSH());
+		hardcodedOsuRankingGradeImageSize *= (osu->getSkin()->isRankingSH2x() ? 2.0f : 1.0f);
+		m_rankingGrade->setImage(osu->getSkin()->getRankingSH());
 		break;
 	case OsuScore::GRADE::GRADE_X:
-		hardcodedOsuRankingGradeImageSize *= (m_osu->getSkin()->isRankingX2x() ? 2.0f : 1.0f);
-		m_rankingGrade->setImage(m_osu->getSkin()->getRankingX());
+		hardcodedOsuRankingGradeImageSize *= (osu->getSkin()->isRankingX2x() ? 2.0f : 1.0f);
+		m_rankingGrade->setImage(osu->getSkin()->getRankingX());
 		break;
 	case OsuScore::GRADE::GRADE_S:
-		hardcodedOsuRankingGradeImageSize *= (m_osu->getSkin()->isRankingS2x() ? 2.0f : 1.0f);
-		m_rankingGrade->setImage(m_osu->getSkin()->getRankingS());
+		hardcodedOsuRankingGradeImageSize *= (osu->getSkin()->isRankingS2x() ? 2.0f : 1.0f);
+		m_rankingGrade->setImage(osu->getSkin()->getRankingS());
 		break;
 	case OsuScore::GRADE::GRADE_A:
-		hardcodedOsuRankingGradeImageSize *= (m_osu->getSkin()->isRankingA2x() ? 2.0f : 1.0f);
-		m_rankingGrade->setImage(m_osu->getSkin()->getRankingA());
+		hardcodedOsuRankingGradeImageSize *= (osu->getSkin()->isRankingA2x() ? 2.0f : 1.0f);
+		m_rankingGrade->setImage(osu->getSkin()->getRankingA());
 		break;
 	case OsuScore::GRADE::GRADE_B:
-		hardcodedOsuRankingGradeImageSize *= (m_osu->getSkin()->isRankingB2x() ? 2.0f : 1.0f);
-		m_rankingGrade->setImage(m_osu->getSkin()->getRankingB());
+		hardcodedOsuRankingGradeImageSize *= (osu->getSkin()->isRankingB2x() ? 2.0f : 1.0f);
+		m_rankingGrade->setImage(osu->getSkin()->getRankingB());
 		break;
 	case OsuScore::GRADE::GRADE_C:
-		hardcodedOsuRankingGradeImageSize *= (m_osu->getSkin()->isRankingC2x() ? 2.0f : 1.0f);
-		m_rankingGrade->setImage(m_osu->getSkin()->getRankingC());
+		hardcodedOsuRankingGradeImageSize *= (osu->getSkin()->isRankingC2x() ? 2.0f : 1.0f);
+		m_rankingGrade->setImage(osu->getSkin()->getRankingC());
 		break;
 	default:
-		hardcodedOsuRankingGradeImageSize *= (m_osu->getSkin()->isRankingD2x() ? 2.0f : 1.0f);
-		m_rankingGrade->setImage(m_osu->getSkin()->getRankingD());
+		hardcodedOsuRankingGradeImageSize *= (osu->getSkin()->isRankingD2x() ? 2.0f : 1.0f);
+		m_rankingGrade->setImage(osu->getSkin()->getRankingD());
 		break;
 	}
 
 	const float uiScale = /*Osu::ui_scale->getFloat()*/1.0f; // NOTE: no uiScale for rankingPanel and rankingGrade, doesn't really work due to legacy layout expectations
 
-	const float rankingGradeImageScale = Osu::getImageScale(m_osu, hardcodedOsuRankingGradeImageSize, 230.0f) * uiScale;
+	const float rankingGradeImageScale = Osu::getImageScale(hardcodedOsuRankingGradeImageSize, 230.0f) * uiScale;
 	m_rankingGrade->setScale(rankingGradeImageScale, rankingGradeImageScale);
 	m_rankingGrade->setSize(m_rankingGrade->getImage()->getWidth()*m_rankingGrade->getScale().x, m_rankingGrade->getImage()->getHeight()*m_rankingGrade->getScale().y);
 	m_rankingGrade->setRelPos(
-		m_rankings->getSize().x - m_osu->getUIScale(m_osu, 120) - m_rankingGrade->getImage()->getWidth()*m_rankingGrade->getScale().x/2.0f,
-		-m_rankings->getRelPos().y + m_osu->getUIScale(m_osu, m_osu->getSkin()->getVersion() > 1.0f ? 200 : 170) - m_rankingGrade->getImage()->getHeight()*m_rankingGrade->getScale().x/2.0f
+		m_rankings->getSize().x - osu->getUIScale(120) - m_rankingGrade->getImage()->getWidth()*m_rankingGrade->getScale().x/2.0f,
+		-m_rankings->getRelPos().y + osu->getUIScale(osu->getSkin()->getVersion() > 1.0f ? 200 : 170) - m_rankingGrade->getImage()->getHeight()*m_rankingGrade->getScale().x/2.0f
 	);
 }
 
@@ -772,11 +772,11 @@ UString OsuRankingScreen::getPPString()
 Vector2 OsuRankingScreen::getPPPosRaw()
 {
 	const UString ppString = getPPString();
-	float ppStringWidth = m_osu->getTitleFont()->getStringWidth(ppString);
-	return Vector2(m_rankingGrade->getPos().x, 0) + Vector2(m_rankingGrade->getSize().x/2 - ppStringWidth/2, m_rankings->getScrollPosY() + m_osu->getUIScale(m_osu, 400) + m_osu->getTitleFont()->getHeight()/2);
+	float ppStringWidth = osu->getTitleFont()->getStringWidth(ppString);
+	return Vector2(m_rankingGrade->getPos().x, 0) + Vector2(m_rankingGrade->getSize().x/2 - ppStringWidth/2, m_rankings->getScrollPosY() + osu->getUIScale(400) + osu->getTitleFont()->getHeight()/2);
 }
 
 Vector2 OsuRankingScreen::getPPPosCenterRaw()
 {
-	return Vector2(m_rankingGrade->getPos().x, 0) + Vector2(m_rankingGrade->getSize().x/2, m_rankings->getScrollPosY() + m_osu->getUIScale(m_osu, 400) + m_osu->getTitleFont()->getHeight()/2);
+	return Vector2(m_rankingGrade->getPos().x, 0) + Vector2(m_rankingGrade->getSize().x/2, m_rankings->getScrollPosY() + osu->getUIScale(400) + osu->getTitleFont()->getHeight()/2);
 }

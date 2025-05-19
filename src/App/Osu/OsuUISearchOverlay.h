@@ -16,7 +16,7 @@ class Osu;
 class OsuUISearchOverlay : public CBaseUIElement
 {
 public:
-	OsuUISearchOverlay(Osu *osu, float xPos, float yPos, float xSize, float ySize, UString name);
+	OsuUISearchOverlay(float xPos, float yPos, float xSize, float ySize, UString name);
 
 	virtual void draw(Graphics *g);
 
@@ -29,7 +29,6 @@ public:
 	void setSearching(bool searching) {m_bSearching = searching;}
 
 private:
-	Osu *m_osu;
 
 	McFont *m_font;
 

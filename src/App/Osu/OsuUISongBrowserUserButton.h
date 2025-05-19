@@ -18,7 +18,7 @@ class Osu;
 class OsuUISongBrowserUserButton : public CBaseUIButton
 {
 public:
-	OsuUISongBrowserUserButton(Osu *osu);
+	OsuUISongBrowserUserButton();
 
 	virtual void draw(Graphics *g);
 	virtual void update();
@@ -32,8 +32,6 @@ private:
 	virtual void onMouseOutside();
 
 	ConVar *m_osu_scores_enabled_ref;
-
-	Osu *m_osu;
 
 	float m_fPP;
 	float m_fAcc;

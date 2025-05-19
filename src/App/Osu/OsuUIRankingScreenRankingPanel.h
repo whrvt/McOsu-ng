@@ -20,7 +20,7 @@ class OsuSkinImage;
 class OsuUIRankingScreenRankingPanel : public CBaseUIImage
 {
 public:
-	OsuUIRankingScreenRankingPanel(Osu *osu);
+	OsuUIRankingScreenRankingPanel();
 
 	virtual void draw(Graphics *g);
 
@@ -30,8 +30,6 @@ public:
 private:
 	void drawHitImage(Graphics *g, OsuSkinImage *img, float scale, Vector2 pos);
 	void drawNumHits(Graphics *g, int numHits, float scale, Vector2 pos);
-
-	Osu *m_osu;
 
 	unsigned long long m_iScore;
 	int m_iNum300s;

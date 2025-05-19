@@ -16,7 +16,7 @@ class OsuBackgroundStarCacheLoader;
 class OsuBeatmapStandard : public OsuBeatmap
 {
 public:
-	OsuBeatmapStandard(Osu *osu);
+	OsuBeatmapStandard();
 	virtual ~OsuBeatmapStandard();
 
 	virtual void draw(Graphics *g);

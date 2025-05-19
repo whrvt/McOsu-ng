@@ -31,7 +31,7 @@ ConVar osu_songbrowser_button_collection_inactive_color_r("osu_songbrowser_butto
 ConVar osu_songbrowser_button_collection_inactive_color_g("osu_songbrowser_button_collection_inactive_color_g", 50, FCVAR_NONE);
 ConVar osu_songbrowser_button_collection_inactive_color_b("osu_songbrowser_button_collection_inactive_color_b", 143, FCVAR_NONE);
 
-OsuUISongBrowserCollectionButton::OsuUISongBrowserCollectionButton(Osu *osu, OsuSongBrowser2 *songBrowser, CBaseUIScrollView *view, OsuUIContextMenu *contextMenu, float xPos, float yPos, float xSize, float ySize, UString name, UString collectionName, std::vector<OsuUISongBrowserButton*> children) : OsuUISongBrowserButton(osu, songBrowser, view, contextMenu, xPos, yPos, xSize, ySize, name)
+OsuUISongBrowserCollectionButton::OsuUISongBrowserCollectionButton(OsuSongBrowser2 *songBrowser, CBaseUIScrollView *view, OsuUIContextMenu *contextMenu, float xPos, float yPos, float xSize, float ySize, UString name, UString collectionName, std::vector<OsuUISongBrowserButton*> children) : OsuUISongBrowserButton(songBrowser, view, contextMenu, xPos, yPos, xSize, ySize, name)
 {
 	m_sCollectionName = collectionName;
 	m_children = children;
@@ -47,7 +47,7 @@ void OsuUISongBrowserCollectionButton::draw(Graphics *g)
 	OsuUISongBrowserButton::draw(g);
 	if (!m_bVisible) return;
 
-	OsuSkin *skin = m_osu->getSkin();
+	OsuSkin *skin = osu->getSkin();
 
 	// scaling
 	const Vector2 pos = getActualPos();
@@ -82,11 +82,11 @@ void OsuUISongBrowserCollectionButton::onRightMouseUpInside()
 
 void OsuUISongBrowserCollectionButton::triggerContextMenu(Vector2 pos)
 {
-	if (m_osu->getSongBrowser()->getGroupingMode() != OsuSongBrowser2::GROUP::GROUP_COLLECTIONS) return;
+	if (osu->getSongBrowser()->getGroupingMode() != OsuSongBrowser2::GROUP::GROUP_COLLECTIONS) return;
 
 	bool isLegacyCollection = false;
 	{
-		const std::vector<OsuDatabase::Collection> &collections = m_osu->getSongBrowser()->getDatabase()->getCollections();
+		const std::vector<OsuDatabase::Collection> &collections = osu->getSongBrowser()->getDatabase()->getCollections();
 		for (size_t i=0; i<collections.size(); i++)
 		{
 			if (collections[i].name == m_sCollectionName)
@@ -134,7 +134,7 @@ void OsuUISongBrowserCollectionButton::onContextMenu(UString text, int id)
 {
 	bool isLegacyCollection = false;
 	{
-		const std::vector<OsuDatabase::Collection> &collections = m_osu->getSongBrowser()->getDatabase()->getCollections();
+		const std::vector<OsuDatabase::Collection> &collections = osu->getSongBrowser()->getDatabase()->getCollections();
 		for (size_t i=0; i<collections.size(); i++)
 		{
 			if (collections[i].name == m_sCollectionName)
@@ -181,7 +181,7 @@ void OsuUISongBrowserCollectionButton::onContextMenu(UString text, int id)
 			OsuUIContextMenu::clampToBottomScreenEdge(m_contextMenu);
 		}
 		else
-			m_osu->getNotificationOverlay()->addNotification("Can't rename collections loaded from osu!", 0xffffff00);
+			osu->getNotificationOverlay()->addNotification("Can't rename collections loaded from osu!", 0xffffff00);
 	}
 	else if (id == 2)
 	{
@@ -209,7 +209,7 @@ void OsuUISongBrowserCollectionButton::onContextMenu(UString text, int id)
 			}
 		}
 		else
-			m_osu->getNotificationOverlay()->addNotification("Can't delete collections loaded from osu!", 0xffffff00);
+			osu->getNotificationOverlay()->addNotification("Can't delete collections loaded from osu!", 0xffffff00);
 	}
 }
 
@@ -217,12 +217,12 @@ void OsuUISongBrowserCollectionButton::onRenameCollectionConfirmed(UString text,
 {
 	if (text.length() > 0)
 	{
-		if (m_osu->getSongBrowser()->getDatabase()->renameCollection(m_sCollectionName, text))
+		if (osu->getSongBrowser()->getDatabase()->renameCollection(m_sCollectionName, text))
 		{
 			m_sCollectionName = text;
 
 			// (trigger re-sorting of collection buttons)
-			m_osu->getSongBrowser()->onCollectionButtonContextMenu(this, m_sCollectionName, 3);
+			osu->getSongBrowser()->onCollectionButtonContextMenu(this, m_sCollectionName, 3);
 		}
 	}
 }
@@ -232,7 +232,7 @@ void OsuUISongBrowserCollectionButton::onDeleteCollectionConfirmed(UString text,
 	if (id != 2) return;
 
 	// just forward it
-	m_osu->getSongBrowser()->onCollectionButtonContextMenu(this, m_sCollectionName, id);
+	osu->getSongBrowser()->onCollectionButtonContextMenu(this, m_sCollectionName, id);
 }
 
 UString OsuUISongBrowserCollectionButton::buildTitleString()

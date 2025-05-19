@@ -22,7 +22,7 @@
 #include "OsuOptionsMenu.h"
 #include "OsuHUD.h"
 
-OsuChangelog::OsuChangelog(Osu *osu) : OsuScreenBackable(osu)
+OsuChangelog::OsuChangelog() : OsuScreenBackable()
 {
 	m_container = new CBaseUIContainer(-1, -1, 0, 0, "");
 	m_scrollView = new CBaseUIScrollView(-1, -1, 0, 0, "");
@@ -964,12 +964,12 @@ void OsuChangelog::update()
 	if (!m_bVisible) return;
 
 	// HACKHACK:
-	if (m_osu->getHUD()->isVolumeOverlayBusy() || m_osu->getOptionsMenu()->isMouseInside())
+	if (osu->getHUD()->isVolumeOverlayBusy() || osu->getOptionsMenu()->isMouseInside())
 		mouse->resetWheelDelta();
 
 	m_container->update();
 
-	if (m_osu->getHUD()->isVolumeOverlayBusy() || m_osu->getOptionsMenu()->isMouseInside())
+	if (osu->getHUD()->isVolumeOverlayBusy() || osu->getOptionsMenu()->isMouseInside())
 	{
 		stealFocus();
 		m_container->stealFocus();
@@ -988,10 +988,10 @@ void OsuChangelog::updateLayout()
 {
 	OsuScreenBackable::updateLayout();
 
-	const float dpiScale = Osu::getUIScale(m_osu);
+	const float dpiScale = Osu::getUIScale();
 
-	m_container->setSize(m_osu->getScreenSize() + Vector2(2, 2));
-	m_scrollView->setSize(m_osu->getScreenSize() + Vector2(2, 2));
+	m_container->setSize(osu->getScreenSize() + Vector2(2, 2));
+	m_scrollView->setSize(osu->getScreenSize() + Vector2(2, 2));
 
 	float yCounter = 0;
 	for (const CHANGELOG_UI &changelog : m_changelogs)
@@ -1021,9 +1021,9 @@ void OsuChangelog::updateLayout()
 
 void OsuChangelog::onBack()
 {
-	soundEngine->play(m_osu->getSkin()->getMenuClick());
+	soundEngine->play(osu->getSkin()->getMenuClick());
 
-	m_osu->toggleChangelog();
+	osu->toggleChangelog();
 }
 
 void OsuChangelog::onChangeClicked(CBaseUIButton *button)
@@ -1039,7 +1039,7 @@ void OsuChangelog::onChangeClicked(CBaseUIButton *button)
 
 		debugLog("url = %s\n", url.toUtf8());
 
-		m_osu->getNotificationOverlay()->addNotification("Opening browser, please wait ...", 0xffffffff, false, 0.75f);
+		osu->getNotificationOverlay()->addNotification("Opening browser, please wait ...", 0xffffffff, false, 0.75f);
 		env->openURLInDefaultBrowser(url);
 	}
 }

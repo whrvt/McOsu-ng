@@ -85,7 +85,6 @@ public:
 	void setWindowPos(int x, int y);
 	void setWindowSize(int width, int height);
 	void setWindowResizable(bool resizable);
-	void setWindowGhostCorporeal(bool corporeal);
 	void setFullscreenWindowedBorderless(bool fullscreenWindowedBorderless);
 	void setMonitor(int monitor);
 	[[nodiscard]] HWND getHwnd() const;
@@ -107,7 +106,7 @@ public:
 	[[nodiscard]] inline bool isCursorInWindow() const { return m_bIsCursorInsideWindow; }
 	[[nodiscard]] inline bool isCursorVisible() const { return m_bCursorVisible; }
 	[[nodiscard]] inline bool isCursorClipped() const { return m_bCursorClipped; }
-	[[nodiscard]] Vector2 getMousePos() const;
+	[[nodiscard]] Vector2 getMousePos() const { return m_vLastAbsMousePos; }
 	[[nodiscard]] inline McRect getCursorClip() const { return m_cursorClip; }
 	[[nodiscard]] inline CURSORTYPE getCursor() const { return m_cursorType; }
 	void setCursor(CURSORTYPE cur);

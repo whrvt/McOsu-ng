@@ -18,7 +18,7 @@ class OsuDatabaseBeatmap;
 class OsuUISongBrowserSongButton : public OsuUISongBrowserButton
 {
 public:
-	OsuUISongBrowserSongButton(Osu *osu, OsuSongBrowser2 *songBrowser, CBaseUIScrollView *view, OsuUIContextMenu *contextMenu, float xPos, float yPos, float xSize, float ySize, UString name, OsuDatabaseBeatmap *databaseBeatmap);
+	OsuUISongBrowserSongButton(OsuSongBrowser2 *songBrowser, CBaseUIScrollView *view, OsuUIContextMenu *contextMenu, float xPos, float yPos, float xSize, float ySize, UString name, OsuDatabaseBeatmap *databaseBeatmap);
 	virtual ~OsuUISongBrowserSongButton();
 
 	virtual void draw(Graphics *g);
