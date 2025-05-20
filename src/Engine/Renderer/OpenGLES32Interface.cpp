@@ -80,78 +80,73 @@ void OpenGLES32Interface::init()
 
 	// setWireframe(true);
 
-	static constexpr auto texturedGenericV =
-	    R"(
-#version 320 es
+	// TODO: move these out to a .mcshader (or something) and load like the other OpenGL interface
+	constexpr auto texturedGenericV = R"(#version 100
 
-layout(location = 0) in vec3 position;
-layout(location = 1) in vec2 uv;
-layout(location = 2) in vec4 vcolor;
-layout(location = 3) in vec3 normal;
+attribute vec3 position;
+attribute vec2 uv;
+attribute vec4 vcolor;
+attribute vec3 normal;
 
-out vec2 texcoords;
-out vec4 texcolor;
-out vec3 texnormal;
+varying vec2 texcoords;
+varying vec4 texcolor;
+varying vec3 texnormal;
 
 uniform float type;  // 0=no texture, 1=texture, 2=texture+color, 3=texture+normal
 uniform mat4 mvp;
 uniform mat3 normalMatrix;
 
 void main() {
-    texcoords = uv;
-    texcolor = vcolor;
-    texnormal = normal;
+	texcoords = uv;
+	texcolor = vcolor;
+	texnormal = normal;
 
-    // apply normal matrix if we're using normals
-    if (type >= 3.0) {
-        texnormal = normalMatrix * normal;
-    }
+	// apply normal matrix if we're using normals
+	if (type >= 3.0) {
+		texnormal = normalMatrix * normal;
+	}
 
-    gl_Position = mvp * vec4(position, 1.0);
+	gl_Position = mvp * vec4(position, 1.0);
 }
 )";
 
-	static constexpr auto texturedGenericP =
-	    R"(
-#version 320 es
+	constexpr auto texturedGenericP = R"(#version 100
 precision highp float;
 
-in vec2 texcoords;
-in vec4 texcolor;
-in vec3 texnormal;
+varying vec2 texcoords;
+varying vec4 texcolor;
+varying vec3 texnormal;
 
 uniform float type;  // 0=no texture, 1=texture, 2=texture+color, 3=texture+normal
 uniform vec4 col;
 uniform sampler2D tex;
 uniform vec3 lightDir;  // normalized direction to light source
 
-out vec4 fragColor;
-
 void main() {
-    // base color calculation
-    vec4 baseColor;
+	// base color calculation
+	vec4 baseColor;
 
-    if (type < 0.5) { // no texture
-        baseColor = col;
-    } else if (type < 1.5) { // texture with uniform color
-        baseColor = texture(tex, texcoords) * col;
-    } else if (type < 2.5) { // vertex color only
-        baseColor = texcolor;
-    } else if (type < 3.5) { // normal mapping
-        baseColor = mix(col, mix(texture(tex, texcoords) * col, texcolor, clamp(type - 1.0, 0.0, 1.0)), clamp(type, 0.0, 1.0));
+	if (type < 0.5) { // no texture
+		baseColor = col;
+	} else if (type < 1.5) { // texture with uniform color
+		baseColor = texture2D(tex, texcoords) * col;
+	} else if (type < 2.5) { // vertex color only
+		baseColor = texcolor;
+	} else if (type < 3.5) { // normal mapping
+		baseColor = mix(col, mix(texture2D(tex, texcoords) * col, texcolor, clamp(type - 1.0, 0.0, 1.0)), clamp(type, 0.0, 1.0));
 
-        // lighting effects for normal mapping
-        if (length(texnormal) > 0.01) {
-            vec3 N = normalize(texnormal);
-            float diffuse = max(dot(N, lightDir), 0.3); // ambient component
-            baseColor.rgb *= diffuse;
-        }
-    } else {
-        // texture with vertex color (for text rendering)
-        baseColor = texture(tex, texcoords) * texcolor;
-    }
+		// lighting effects for normal mapping
+		if (length(texnormal) > 0.01) {
+			vec3 N = normalize(texnormal);
+			float diffuse = max(dot(N, lightDir), 0.3); // ambient component
+			baseColor.rgb *= diffuse;
+		}
+	} else {
+		// texture with vertex color (for text rendering)
+		baseColor = texture2D(tex, texcoords) * texcolor;
+	}
 
-    fragColor = baseColor;
+	gl_FragColor = baseColor;
 }
 )";
 	m_shaderTexturedGeneric = (OpenGLES32Shader *)createShaderFromSource(texturedGenericV, texturedGenericP);
@@ -539,7 +534,8 @@ void OpenGLES32Interface::drawVAO(VertexArrayObject *vao)
 	if (finalVertices.size() > 0)
 	{
 		glBindBuffer(GL_ARRAY_BUFFER, m_iVBOVertices);
-		glBufferData(GL_ARRAY_BUFFER, 16384 * sizeof(Vector3), NULL, GL_STREAM_DRAW); // orphan the buffer
+		if (!Env::cfg(OS::WASM))
+			glBufferData(GL_ARRAY_BUFFER, 16384 * sizeof(Vector3), NULL, GL_STREAM_DRAW); // orphan the buffer
 		glBufferSubData(GL_ARRAY_BUFFER, 0, finalVertices.size() * sizeof(Vector3), &(finalVertices[0]));
 	}
 
@@ -547,7 +543,8 @@ void OpenGLES32Interface::drawVAO(VertexArrayObject *vao)
 	if (finalTexcoords.size() > 0 && finalTexcoords[0].size() > 0)
 	{
 		glBindBuffer(GL_ARRAY_BUFFER, m_iVBOTexcoords);
-		glBufferData(GL_ARRAY_BUFFER, 16384 * sizeof(Vector2), NULL, GL_STREAM_DRAW); // orphan the buffer
+		if (!Env::cfg(OS::WASM))
+			glBufferData(GL_ARRAY_BUFFER, 16384 * sizeof(Vector2), NULL, GL_STREAM_DRAW); // orphan the buffer
 		glBufferSubData(GL_ARRAY_BUFFER, 0, finalTexcoords[0].size() * sizeof(Vector2), &(finalTexcoords[0][0]));
 	}
 
@@ -555,7 +552,8 @@ void OpenGLES32Interface::drawVAO(VertexArrayObject *vao)
 	if (finalColors.size() > 0)
 	{
 		glBindBuffer(GL_ARRAY_BUFFER, m_iVBOTexcolors);
-		glBufferData(GL_ARRAY_BUFFER, 16384 * sizeof(Vector4), NULL, GL_STREAM_DRAW); // orphan the buffer
+		if (!Env::cfg(OS::WASM))
+			glBufferData(GL_ARRAY_BUFFER, 16384 * sizeof(Vector4), NULL, GL_STREAM_DRAW); // orphan the buffer
 		glBufferSubData(GL_ARRAY_BUFFER, 0, finalColors.size() * sizeof(Color), &(finalColors[0]));
 	}
 

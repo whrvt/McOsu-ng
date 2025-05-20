@@ -26,7 +26,7 @@ extern ConVar debug_snd;
 ConVar snd_soloud_buffer("snd_soloud_buffer", SoLoud::Soloud::AUTO, FCVAR_NONE, "SoLoud audio device buffer size");
 ConVar snd_soloud_backend("snd_soloud_backend", Env::cfg(OS::WASM) ? "SDL3" : "MiniAudio", FCVAR_NONE,
                           R"(SoLoud backend, "MiniAudio" or "SDL3" (MiniAudio is default on desktop))");
-ConVar snd_sanity_simultaneous_limit("snd_sanity_simultaneous_limit", 255, FCVAR_NONE, "The maximum number of overlayable sounds that are allowed to be active at once");
+ConVar snd_sanity_simultaneous_limit("snd_sanity_simultaneous_limit", 128, FCVAR_NONE, "The maximum number of overlayable sounds that are allowed to be active at once");
 
 std::unique_ptr<SoLoud::Soloud> SoLoudSoundEngine::s_SLInstance = nullptr;
 SoLoud::Soloud *soloud = nullptr;

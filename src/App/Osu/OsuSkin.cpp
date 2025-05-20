@@ -31,7 +31,7 @@
 ConVar osu2_sound_source_id("osu2_sound_source_id", 1, FCVAR_NONE, "which instance/player/client should play hitsounds (e.g. master top left is always 1)");
 
 ConVar osu_volume_effects("osu_volume_effects", 1.0f, FCVAR_NONE);
-ConVar osu_skin_async("osu_skin_async", true, FCVAR_NONE, "load in background without blocking");
+ConVar osu_skin_async("osu_skin_async", Env::cfg(OS::WASM) ? false : true, FCVAR_NONE, "load in background without blocking");
 ConVar osu_skin_hd("osu_skin_hd", true, FCVAR_NONE, "load and use @2x versions of skin images, if available");
 ConVar osu_skin_mipmaps("osu_skin_mipmaps", false, FCVAR_NONE, "generate mipmaps for every skin image (only useful on lower game resolutions, requires more vram)");
 ConVar osu_skin_color_index_add("osu_skin_color_index_add", 0, FCVAR_NONE);

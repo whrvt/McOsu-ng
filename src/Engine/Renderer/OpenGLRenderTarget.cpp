@@ -341,7 +341,8 @@ void OpenGLRenderTarget::bind(unsigned int textureUnit)
 
 	// needed for legacy support (OpenGLLegacyInterface)
 	// DEPRECATED LEGACY
-	glEnable(GL_TEXTURE_2D);
+	if (Env::cfg(REND::GL))
+		glEnable(GL_TEXTURE_2D);
 }
 
 void OpenGLRenderTarget::unbind()

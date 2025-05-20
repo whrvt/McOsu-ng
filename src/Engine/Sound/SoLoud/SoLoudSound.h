@@ -40,8 +40,8 @@ public:
 	void setOverlayable(bool overlayable) override;
 
 	SOUNDHANDLE getHandle() override;
-	constexpr SoundType *getSound() override { return this; }
-	[[nodiscard]] constexpr const SoundType *getSound() const override { return this; }
+	SoundType *getSound() override { return this; }
+	[[nodiscard]] const SoundType *getSound() const override { return this; }
 	float getPosition() override;
 	unsigned long getPositionMS() override;
 	unsigned long getLengthMS() override;

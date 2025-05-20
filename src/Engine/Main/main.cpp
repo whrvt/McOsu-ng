@@ -5,6 +5,8 @@
 // $NoKeywords: $sdlcallbacks $main
 //===============================================================================//
 
+#include "BaseEnvironment.h"
+
 // platform-specific headers
 #if defined(MCENGINE_PLATFORM_WINDOWS) || (defined(_WIN32) && !defined(__linux__))
 // #define MCENGINE_WINDOWS_REALTIMESTYLUS_SUPPORT

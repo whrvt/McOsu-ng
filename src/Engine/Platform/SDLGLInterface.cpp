@@ -41,9 +41,7 @@ void SDLGLInterface::endScene()
 
 void SDLGLInterface::setVSync(bool vsync)
 {
-	if constexpr (Env::cfg(OS::WASM))
-		SDL_GL_SetSwapInterval(1);
-	else
+	if constexpr (!Env::cfg(OS::WASM))
 		SDL_GL_SetSwapInterval(vsync ? 1 : 0);
 }
 
@@ -70,11 +68,11 @@ UString SDLGLInterface::getVersion()
 
 int SDLGLInterface::getVRAMTotal()
 {
-	static std::array<GLint, 4> totalMem{-1, -1, -1, -1};
+	static GLint totalMem[4]{-1, -1, -1, -1};
 
 	if (totalMem[0] == -1)
 	{
-		glGetIntegerv(GPU_MEMORY_INFO_TOTAL_AVAILABLE_MEMORY_NVX, totalMem.begin());
+		glGetIntegerv(GPU_MEMORY_INFO_TOTAL_AVAILABLE_MEMORY_NVX, totalMem);
 		if (!(totalMem[0] > 0 && glGetError() != GL_INVALID_ENUM))
 			totalMem[0] = 0;
 	}
@@ -83,15 +81,15 @@ int SDLGLInterface::getVRAMTotal()
 
 int SDLGLInterface::getVRAMRemaining()
 {
-	std::array<GLint, 4> nvidiaMemory{-1, -1, -1, -1};
-	std::array<GLint, 4> atiMemory{-1, -1, -1, -1};
+	GLint nvidiaMemory[4]{-1, -1, -1, -1};
+	GLint atiMemory[4]{-1, -1, -1, -1};
 
-	glGetIntegerv(GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX, nvidiaMemory.begin());
+	glGetIntegerv(GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX, nvidiaMemory);
 
 	if (nvidiaMemory[0] > 0)
 		return nvidiaMemory[0];
 
-	glGetIntegerv(TEXTURE_FREE_MEMORY_ATI, atiMemory.begin());
+	glGetIntegerv(TEXTURE_FREE_MEMORY_ATI, atiMemory);
 	return atiMemory[0];
 }
 
