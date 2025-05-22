@@ -22,7 +22,8 @@
 
 #include "OpenGLHeaders.h"
 
-ConVar r_gles_orphan_buffers("r_gles_orphan_buffers", Env::cfg(OS::WASM) ? false : true, FCVAR_NONE, "reduce cpu/gpu synchronization by freeing buffer objects before modifying them");
+ConVar r_gles_orphan_buffers("r_gles_orphan_buffers", Env::cfg(OS::WASM) ? false : true, FCVAR_NONE,
+                             "reduce cpu/gpu synchronization by freeing buffer objects before modifying them");
 
 OpenGLES32Interface::OpenGLES32Interface() : NullGraphicsInterface()
 {
@@ -328,8 +329,8 @@ void OpenGLES32Interface::drawQuad(int x, int y, int width, int height)
 	drawVAO(&vao);
 }
 
-void OpenGLES32Interface::drawQuad(Vector2 topLeft, Vector2 topRight, Vector2 bottomRight, Vector2 bottomLeft, Color topLeftColor, Color topRightColor, Color bottomRightColor,
-                                   Color bottomLeftColor)
+void OpenGLES32Interface::drawQuad(Vector2 topLeft, Vector2 topRight, Vector2 bottomRight, Vector2 bottomLeft, Color topLeftColor, Color topRightColor,
+                                   Color bottomRightColor, Color bottomLeftColor)
 {
 	updateTransform();
 
@@ -679,6 +680,7 @@ void OpenGLES32Interface::setClipping(bool enabled)
 		glDisable(GL_SCISSOR_TEST);
 }
 
+#ifndef MCENGINE_PLATFORM_WASM
 void OpenGLES32Interface::setAlphaTesting(bool enabled)
 {
 	if (enabled)
@@ -689,10 +691,18 @@ void OpenGLES32Interface::setAlphaTesting(bool enabled)
 
 void OpenGLES32Interface::setAlphaTestFunc(COMPARE_FUNC alphaFunc, float ref)
 {
-#ifndef MCENGINE_PLATFORM_WASM
 	glAlphaFunc(compareFuncToOpenGL(alphaFunc), ref);
-#endif
 }
+
+void OpenGLES32Interface::setAntialiasing(bool aa)
+{
+	m_bAntiAliasing = aa;
+	if (aa)
+		glEnable(GL_MULTISAMPLE);
+	else
+		glDisable(GL_MULTISAMPLE);
+}
+#endif
 
 void OpenGLES32Interface::setBlending(bool enabled)
 {
@@ -735,15 +745,6 @@ void OpenGLES32Interface::setCulling(bool culling)
 		glEnable(GL_CULL_FACE);
 	else
 		glDisable(GL_CULL_FACE);
-}
-
-void OpenGLES32Interface::setAntialiasing(bool aa)
-{
-	m_bAntiAliasing = aa;
-	if (aa)
-		glEnable(GL_MULTISAMPLE);
-	else
-		glDisable(GL_MULTISAMPLE);
 }
 
 void OpenGLES32Interface::setWireframe(bool _)

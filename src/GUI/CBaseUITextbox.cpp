@@ -320,8 +320,16 @@ void CBaseUITextbox::onKeyDown(KeyboardEvent &e)
 
 	e.consume();
 
+	if constexpr (Env::cfg(OS::WASM)) // add alias for escape that doesn't un-fullscreen the browser window
+		if (e.getKeyCode() == KEY_TILDE)
+			m_bActive = false;
+
 	switch (e.getKeyCode())
 	{
+	case KEY_ESCAPE:
+		m_bActive = false;
+		break;
+
 	case KEY_DELETE:
 		if (m_sText.length() > 0)
 		{
@@ -340,10 +348,6 @@ void CBaseUITextbox::onKeyDown(KeyboardEvent &e)
 
 	case KEY_RETURN:
 		m_bHitenter = true;
-		break;
-
-	case KEY_ESCAPE:
-		m_bActive = false;
 		break;
 
 	case KEY_BACKSPACE:

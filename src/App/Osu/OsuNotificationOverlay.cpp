@@ -78,7 +78,7 @@ void OsuNotificationOverlay::onKeyDown(KeyboardEvent &e)
 	if (!isVisible()) return;
 
 	// escape always stops waiting for a key
-	if (e.getKeyCode() == KEY_ESCAPE)
+	if (e.getKeyCode() == KEY_ESCAPE || e.getKeyCode() == OsuKeyBindings::GAME_PAUSE.getVal<KEYCODE>())
 	{
 		if (m_bWaitForKey)
 			e.consume();

@@ -7956,6 +7956,7 @@ fi
 
 fi
     # MCOSU_CXXFLAGS="$MCOSU_CXXFLAGS -fno-rtti" # TODO: remove needless dynamic_casts everywhere
+    MCOSU_CXXFLAGS="$MCOSU_CXXFLAGS -fno-exceptions" # disables std::thread constructor exception handling
     MCOSU_LDFLAGS="$MCOSU_LDFLAGS -Wl,-s,--gc-sections" # strip and GC unless debug
  ;;
 esac

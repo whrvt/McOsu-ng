@@ -380,7 +380,7 @@ void ConsoleBox::onSuggestionClicked(CBaseUIButton *suggestion)
 void ConsoleBox::onKeyDown(KeyboardEvent &e)
 {
 	// toggle visibility
-	if ((e == KEY_F1 && (m_textbox->isActive() && m_textbox->isVisible() && !m_bConsoleAnimateOut ? true : keyboard->isShiftDown())) || (m_textbox->isActive() && m_textbox->isVisible() && !m_bConsoleAnimateOut && e == KEY_ESCAPE))
+	if ((e == KEY_F1 && (m_textbox->isActive() && m_textbox->isVisible() && !m_bConsoleAnimateOut ? true : keyboard->isShiftDown())) || (m_textbox->isActive() && m_textbox->isVisible() && !m_bConsoleAnimateOut && (e == KEY_ESCAPE || (Env::cfg(OS::WASM) && e == KEY_TILDE))))
 		toggle(e);
 
 	if (m_bConsoleAnimateOut) return;

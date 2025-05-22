@@ -13,8 +13,8 @@
 
 #ifdef MCENGINE_FEATURE_GLES32
 
-#include "OpenGLSync.h"
 #include "NullGraphicsInterface.h"
+#include "OpenGLSync.h"
 
 class OpenGLES32Shader;
 
@@ -71,14 +71,16 @@ public:
 	void popStencil() override;
 
 	// renderer settings
-	void setClipping(bool enabled) override;
+#ifndef MCENGINE_PLATFORM_WASM // not compatible with WebGL
 	void setAlphaTesting(bool enabled) override;
 	void setAlphaTestFunc(COMPARE_FUNC alphaFunc, float ref) override;
+	void setAntialiasing(bool aa) override;
+#endif
+	void setClipping(bool enabled) override;
 	void setBlending(bool enabled) override;
 	void setBlendMode(BLEND_MODE blendMode) override;
 	void setDepthBuffer(bool enabled) override;
 	void setCulling(bool culling) override;
-	void setAntialiasing(bool aa) override;
 	void setWireframe(bool _) override;
 
 	// renderer actions

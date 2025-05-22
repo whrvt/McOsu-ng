@@ -1397,7 +1397,7 @@ void OsuMainMenu::onKeyDown(KeyboardEvent &e)
 		if (e == KEY_E || e == KEY_X)
 			onExitButtonPressed();
 
-		if (e == KEY_ESCAPE)
+		if (e == KEY_ESCAPE || e == OsuKeyBindings::GAME_PAUSE.getVal<KEYCODE>())
 			setMenuElementsVisible(false);
 	}
 }
@@ -1700,9 +1700,16 @@ void OsuMainMenu::onOptionsButtonPressed()
 
 void OsuMainMenu::onExitButtonPressed()
 {
-	m_fShutdownScheduledTime = engine->getTime() + 0.3f;
-	m_bWasCleanShutdown = true;
-	setMenuElementsVisible(false);
+	if constexpr (!Env::cfg(OS::WASM))
+	{
+		m_fShutdownScheduledTime = engine->getTime() + 0.3f;
+		m_bWasCleanShutdown = true;
+		setMenuElementsVisible(false);
+	}
+	else
+	{
+		osu->getNotificationOverlay()->addNotification("You can't do that here!", 0xffff0000, false, 2.0f);
+	}
 }
 
 void OsuMainMenu::onPausePressed()

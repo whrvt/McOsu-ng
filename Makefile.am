@@ -165,7 +165,7 @@ $(DEPS_PREFIX)/SoLoud.built:
 $(DEPS_PREFIX)/SoundTouch.built:
 	$(MKDIR_P) $(DEPS_PREFIX) && touch $@
 else
-AUDIO_CFLAGS = -I$(DEPS_PREFIX)/include $(shell $(PKG_CONFIG) --cflags soundtouch)
+AUDIO_CFLAGS = -I$(DEPS_PREFIX)/include $(shell $(PKG_CONFIG) --cflags soundtouch) $(if $(ENABLE_DEBUG),,-DST_NO_EXCEPTION_HANDLING)
 # the dynamic soloud lib is busted somehow
 AUDIO_LIBS = -L$(DEPS_PREFIX)/lib -lsoloud_static_x$(if $(filter x86_64,$(host_cpu)),64,$(if $(findstring linux,$(host_os)),32,86))$(if $(ENABLE_DEBUG),_d,) $(shell $(PKG_CONFIG) --libs soundtouch)
 $(DEPS_PREFIX)/SoLoud.built: $(DEPS_CACHE)/SoLoud.source $(DEPS_PREFIX)/SDL3.built
@@ -236,9 +236,9 @@ $(DEPS_PREFIX)/SoundTouch.built: $(DEPS_CACHE)/SoundTouch.source
 		-D CMAKE_SYSTEM_NAME="$(CMAKE_SYSTEM_NAME)" \
 		-D CMAKE_SYSTEM_PROCESSOR="$(host_cpu)" \
 		-D CMAKE_C_COMPILER="$(CC)" \
-		-D CMAKE_C_FLAGS="$(CFLAGS)" \
+		-D CMAKE_C_FLAGS="$(CFLAGS) $(if $(ENABLE_DEBUG),,-DST_NO_EXCEPTION_HANDLING)" \
 		-D CMAKE_CXX_COMPILER="$(CXX)" \
-		-D CMAKE_CXX_FLAGS="$(CXXFLAGS)" \
+		-D CMAKE_CXX_FLAGS="$(CXXFLAGS) $(if $(ENABLE_DEBUG),,-DST_NO_EXCEPTION_HANDLING)" \
 		$(CMAKERCOPT) \
 		-D SOUNDSTRETCH=OFF \
 		-D SOUNDTOUCH_DLL=OFF \
@@ -505,7 +505,17 @@ McOsu_ng_LDFLAGS := \
 
 compile_commands.json: mostlyclean-compile
 	@$(BEAR) --version || { echo bear is unavailable to generate a compile_commands.json, install bear && exit 1; }
-	$(BEAR) --append -- $(MAKE) $(AM_MAKEFLAGS) $(McOsu_ng_OBJECTS) $(McOsu_ng_DEPENDENCIES) $(EXTRA_McOsu_ng_DEPENDENCIES)
+	@(echo '{'; \
+	  echo '"compilation": {'; \
+	  echo '"compilers_to_recognize": ['; \
+	  echo '{'; \
+	  echo '"executable": "emc++"'; \
+	  echo '}'; \
+	  echo ']'; \
+	  echo '}'; \
+	  echo '}' ) > bear.cfg
+	$(BEAR) --config bear.cfg --append -- $(MAKE) $(AM_MAKEFLAGS) $(McOsu_ng_OBJECTS) $(McOsu_ng_DEPENDENCIES) $(EXTRA_McOsu_ng_DEPENDENCIES) && \
+	rm -f bear.cfg
 
 $(abs_top_srcdir)/.clangd: compile_commands.json
 	@if [ -f $@ ]; then \

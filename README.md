@@ -17,7 +17,7 @@ Required system dependencies:
 
 A list of dependencies which can either come from the system, or be built from source (e.g. `./configure --disable-system-deps`, or if missing on host):
 
-`SDL3 GLEW freetype2 libjpeg zlib`
+`SDL3 freetype2 libjpeg zlib`
 
 Ubuntu example (SDL3 is currently missing from Ubuntu repositories, so it will be built from source):
 
@@ -25,7 +25,7 @@ Ubuntu example (SDL3 is currently missing from Ubuntu repositories, so it will b
 
 Arch example:
 
-`sudo pacman -S base-devel libx11 libxi glu glew libjpeg-turbo libglvnd freetype2 sdl3 zlib`
+`sudo pacman -S base-devel libx11 libxi glu libjpeg-turbo libglvnd freetype2 sdl3 zlib`
 
 Multiple build configurations at once are also supported, which is the recommended setup if you want to do any development yourself. For example: `mkdir debug && cd debug && ../configure --enable-debug --disable-system-deps --enable-static && make -j$(nproc) install`.
 

@@ -9,7 +9,14 @@
 #ifndef OPENGLHEADERS_H
 #define OPENGLHEADERS_H
 
+#ifndef __EMSCRIPTEN__
 #include "glad/glad.h"
+#else
+#include <GLES3/gl3.h>
+#include <GLES3/gl31.h>
+#include <GLES3/gl32.h>
+#include <GLES3/gl3platform.h>
+#endif
 
 #define GPU_MEMORY_INFO_DEDICATED_VIDMEM_NVX			0x9047
 #define GPU_MEMORY_INFO_TOTAL_AVAILABLE_MEMORY_NVX		0x9048

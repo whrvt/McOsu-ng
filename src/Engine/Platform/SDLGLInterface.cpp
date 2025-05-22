@@ -19,18 +19,19 @@ ConVar debug_opengl("debug_opengl", false, FCVAR_NONE);
 SDLGLInterface::SDLGLInterface(SDL_Window *window) : BackendGLInterface()
 {
 	// resolve GL functions
-    if (!gladLoadGL()) {
-		debugLog("gladLoadGL() error\n");
-		engine->showMessageErrorFatal("OpenGL Error", "Couldn't gladLoadGL()!\nThe engine will exit now.");
-		engine->shutdown();
-        return;
-    }
-	else
+#ifndef MCENGINE_PLATFORM_WASM
 	{
+		if (!gladLoadGL())
+		{
+			debugLog("gladLoadGL() error\n");
+			engine->showMessageErrorFatal("OpenGL Error", "Couldn't gladLoadGL()!\nThe engine will exit now.");
+			engine->shutdown();
+			return;
+		}
 		debugLog("gladLoadGL() version: %d.%d, EGL: %s\n", GLVersion.major, GLVersion.minor, !!SDL_EGL_GetCurrentDisplay() ? "true" : "false");
-		debugLog("GL_VERSION string: %s\n", glGetString(GL_VERSION));
 	}
-
+#endif
+	debugLog("GL_VERSION string: %s\n", glGetString(GL_VERSION));
 	m_window = window;
 }
 
@@ -51,22 +52,25 @@ void SDLGLInterface::setVSync(bool vsync)
 
 UString SDLGLInterface::getVendor()
 {
-	static const GLubyte *vendor = nullptr; 
-	if (!vendor) vendor = glGetString(GL_VENDOR);
+	static const GLubyte *vendor = nullptr;
+	if (!vendor)
+		vendor = glGetString(GL_VENDOR);
 	return reinterpret_cast<const char *>(vendor);
 }
 
 UString SDLGLInterface::getModel()
 {
 	static const GLubyte *model = nullptr;
-	if (!model) model = glGetString(GL_RENDERER);
+	if (!model)
+		model = glGetString(GL_RENDERER);
 	return reinterpret_cast<const char *>(model);
 }
 
 UString SDLGLInterface::getVersion()
 {
 	static const GLubyte *version = nullptr;
-	if (!version) version = glGetString(GL_VERSION);
+	if (!version)
+		version = glGetString(GL_VERSION);
 	return reinterpret_cast<const char *>(version);
 }
 

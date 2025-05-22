@@ -1501,7 +1501,7 @@ void Osu::onKeyDown(KeyboardEvent &key)
 		if (isInPlayMode())
 		{
 			// toggle pause menu
-			if ((key == OsuKeyBindings::GAME_PAUSE.getVal<KEYCODE>() || key == KEY_ESCAPE) && !m_bEscape)
+			if ((key == OsuKeyBindings::GAME_PAUSE.getVal<KEYCODE>()) && !m_bEscape)
 			{
 				if (!isInMultiplayer() || m_multiplayer->isServer() || m_iMultiplayerClientNumEscPresses > 1)
 				{

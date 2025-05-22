@@ -16,20 +16,27 @@
 class StdThread : public BaseThread
 {
 public:
+#ifdef __EXCEPTIONS
 	StdThread(McThread::START_ROUTINE start_routine, void *arg) : BaseThread()
+#else
+	StdThread(McThread::START_ROUTINE start_routine, void *arg) noexcept : BaseThread()
+#endif
 	{
 		m_bReady = false;
-
+#ifdef __EXCEPTIONS
 		try
 		{
+#endif
 			m_thread = std::thread(start_routine, arg);
 			m_bReady = true;
+#ifdef __EXCEPTIONS
 		}
 		catch (const std::system_error& e)
 		{
 			if (McThread::debug->getBool())
 				debugLog("StdThread Error: std::thread constructor exception: %s\n", e.what());
 		}
+#endif
 	}
 
 	~StdThread() override

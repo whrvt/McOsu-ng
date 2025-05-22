@@ -397,6 +397,7 @@ AS_IF([test "x$enable_debug" = "xyes"], [
         ])
     ])
     # MCOSU_CXXFLAGS="$MCOSU_CXXFLAGS -fno-rtti" # TODO: remove needless dynamic_casts everywhere
+    MCOSU_CXXFLAGS="$MCOSU_CXXFLAGS -fno-exceptions" # disables std::thread constructor exception handling
     MCOSU_LDFLAGS="$MCOSU_LDFLAGS -Wl,-s,--gc-sections" # strip and GC unless debug
 ])
 
@@ -435,8 +436,8 @@ AC_SUBST([bindir], [$bindir-$host_cpu])
 
 AS_IF([test "$SYSNAME" = "linux"], [
     PKG_CHECK_AUTO([X11], [x11], [have_x11=yes], [have_x11=no])
-    PKG_CHECK_AUTO([XI], [xi], [have_xi=yes], [have_xi=no])  # required for noSDL (TODO: ./configure --disable-sdl)
-    PKG_CHECK_AUTO([EGL], [egl], [have_egl=yes], [have_egl=no])  # FIXME: transitive GLEW dep
+    PKG_CHECK_AUTO([XI], [xi], [have_xi=yes], [have_xi=no])
+    PKG_CHECK_AUTO([EGL], [egl], [have_egl=yes], [have_egl=no])
 ], [
     AC_SUBST([EGL_CFLAGS], [""])
     AC_SUBST([EGL_LIBS], [""])
