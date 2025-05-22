@@ -20,11 +20,7 @@
 #include "Mouse.h"
 #include "File.h"
 
-#include "CBaseUIContainer.h"
-#include "CBaseUIScrollView.h"
-#include "CBaseUILabel.h"
-#include "CBaseUICheckbox.h"
-#include "CBaseUITextbox.h"
+#include "OsuUIElement.h"
 
 #include "Osu.h"
 #include "OsuVR.h"
@@ -66,12 +62,12 @@ const char *OsuOptionsMenu::OSU_CONFIG_FILE_NAME = ""; // set dynamically below 
 
 
 
-class OsuOptionsMenuSkinPreviewElement : public CBaseUIElement
+class OsuOptionsMenuSkinPreviewElement final : public OsuUIElement
 {
 public:
-	OsuOptionsMenuSkinPreviewElement(float xPos, float yPos, float xSize, float ySize, UString name) : CBaseUIElement(xPos, yPos, xSize, ySize, name) {m_iMode = 0;}
+	OsuOptionsMenuSkinPreviewElement(float xPos, float yPos, float xSize, float ySize, UString name) : OsuUIElement(xPos, yPos, xSize, ySize, name) {m_iMode = 0;}
 
-	virtual void draw(Graphics *g)
+	void draw(Graphics *g) override
 	{
 		if (!m_bVisible) return;
 
@@ -126,20 +122,21 @@ public:
 		}
 	}
 
-	virtual void onMouseUpInside()
+	void onMouseUpInside() override
 	{
 		m_iMode++;
 		m_iMode = m_iMode % 3;
 	}
-
+	// inspection
+	CBASE_UI_TYPE(OsuOptionsMenuSkinPreviewElement, OPTIONSSKINPREVIEW, OsuUIElement)
 private:
 	int m_iMode;
 };
 
-class OsuOptionsMenuSliderPreviewElement : public CBaseUIElement
+class OsuOptionsMenuSliderPreviewElement final : public OsuUIElement
 {
 public:
-	OsuOptionsMenuSliderPreviewElement(float xPos, float yPos, float xSize, float ySize, UString name) : CBaseUIElement(xPos, yPos, xSize, ySize, name)
+	OsuOptionsMenuSliderPreviewElement(float xPos, float yPos, float xSize, float ySize, UString name) : OsuUIElement(xPos, yPos, xSize, ySize, name)
 	{
 		
 		m_bDrawSliderHack = true;
@@ -149,7 +146,7 @@ public:
 		m_osu_force_legacy_slider_renderer_ref = convar->getConVarByName("osu_force_legacy_slider_renderer");
 	}
 
-	virtual void draw(Graphics *g)
+	void draw(Graphics *g) override
 	{
 		if (!m_bVisible) return;
 
@@ -251,7 +248,8 @@ public:
 	}
 
 	void setDrawSliderHack(bool drawSliderHack) {m_bDrawSliderHack = drawSliderHack;}
-
+	// inspection
+	CBASE_UI_TYPE(OsuOptionsMenuSliderPreviewElement, OPTIONSSLIDERPREVIEW, OsuUIElement)
 private:
 	bool m_bDrawSliderHack;
 	VertexArrayObject *m_vao;
@@ -271,7 +269,7 @@ public:
 		m_textColorUnbound = 0xffbb0000;
 	}
 
-	virtual void update()
+	void update() override
 	{
 		CBaseUILabel::update();
 		if (!m_bVisible) return;
@@ -300,7 +298,7 @@ public:
 	void setTextColorUnbound(Color textColorUnbound) {m_textColorUnbound = textColorUnbound;}
 
 private:
-	virtual void onMouseUpInside()
+	void onMouseUpInside() override
 	{
 		CBaseUILabel::onMouseUpInside();
 		m_bindButton->click();
@@ -323,8 +321,10 @@ public:
 
 	void setDisallowLeftMouseClickBinding(bool disallowLeftMouseClickBinding) {m_bDisallowLeftMouseClickBinding = disallowLeftMouseClickBinding;}
 
-	inline bool isLeftMouseClickBindingAllowed() const {return !m_bDisallowLeftMouseClickBinding;}
+	[[nodiscard]] inline bool isLeftMouseClickBindingAllowed() const {return !m_bDisallowLeftMouseClickBinding;}
 
+	// inspection
+	CBASE_UI_TYPE(OsuOptionsMenuKeyBindButton, OsuUIElement::OPTIONSMENUKEYBINDBUTTON, OsuUIButton)
 private:
 	bool m_bDisallowLeftMouseClickBinding;
 };
@@ -338,7 +338,7 @@ public:
 		m_bActiveCategory = false;
 	}
 
-	virtual void drawText(Graphics *g)
+	void drawText(Graphics *g) override
 	{
 		if (m_font != NULL && m_sText.length() > 0)
 		{
@@ -358,9 +358,11 @@ public:
 
 	void setActiveCategory(bool activeCategory) {m_bActiveCategory = activeCategory;}
 
-	inline CBaseUIElement *getSection() const {return m_section;}
-	inline bool isActiveCategory() const {return m_bActiveCategory;}
+	[[nodiscard]] inline CBaseUIElement *getSection() const {return m_section;}
+	[[nodiscard]] inline bool isActiveCategory() const {return m_bActiveCategory;}
 
+	// inspection
+	CBASE_UI_TYPE(OsuOptionsMenuCategoryButton, OsuUIElement::OPTIONSMENUCATEGORYBUTTON, CBaseUIButton)
 private:
 	CBaseUIElement *m_section;
 	bool m_bActiveCategory;
@@ -371,16 +373,15 @@ class OsuOptionsMenuResetButton : public CBaseUIButton
 public:
 	OsuOptionsMenuResetButton(float xPos, float yPos, float xSize, float ySize, UString name, UString text) : CBaseUIButton(xPos, yPos, xSize, ySize, name, text)
 	{
-		
 		m_fAnim = 1.0f;
 	}
 
-	virtual ~OsuOptionsMenuResetButton()
+	~OsuOptionsMenuResetButton() override
 	{
 		anim->deleteExistingAnimation(&m_fAnim);
 	}
 
-	virtual void draw(Graphics *g)
+	void draw(Graphics *g) override
 	{
 		if (!m_bVisible || m_fAnim <= 0.0f) return;
 
@@ -394,7 +395,7 @@ public:
 		g->fillGradient(m_vPos.x, m_vPos.y, fullColorBlockSize, m_vSize.y, left, middle, left, middle);
 	}
 
-	virtual void update()
+	void update() override
 	{
 		CBaseUIButton::update();
 		if (!m_bVisible || !m_bEnabled) return;
@@ -410,13 +411,13 @@ public:
 	}
 
 private:
-	virtual void onEnabled()
+	void onEnabled() override
 	{
 		CBaseUIButton::onEnabled();
 		anim->moveQuadOut(&m_fAnim, 1.0f, (1.0f - m_fAnim)*0.15f, true);
 	}
 
-	virtual void onDisabled()
+	void onDisabled() override
 	{
 		CBaseUIButton::onDisabled();
 		anim->moveQuadOut(&m_fAnim, 0.0f, m_fAnim*0.15f, true);
@@ -1799,7 +1800,7 @@ void OsuOptionsMenu::updateLayout()
 			{
 				for (int e=0; e<m_elements[i].elements.size(); e++)
 				{
-					CBaseUICheckbox *checkboxPointer = dynamic_cast<CBaseUICheckbox*>(m_elements[i].elements[e]);
+					auto *checkboxPointer = m_elements[i].elements[e]->as<CBaseUICheckbox>();
 					if (checkboxPointer != NULL)
 						checkboxPointer->setChecked(m_elements[i].cvar->getBool());
 				}
@@ -1810,7 +1811,7 @@ void OsuOptionsMenu::updateLayout()
 			{
 				if (m_elements[i].elements.size() == 3)
 				{
-					CBaseUISlider *sliderPointer = dynamic_cast<CBaseUISlider*>(m_elements[i].elements[1]);
+					auto *sliderPointer = m_elements[i].elements[1]->as<CBaseUISlider>();
 					if (sliderPointer != NULL)
 					{
 						// allow users to overscale certain values via the console
@@ -1832,13 +1833,13 @@ void OsuOptionsMenu::updateLayout()
 			{
 				if (m_elements[i].elements.size() == 1)
 				{
-					CBaseUITextbox *textboxPointer = dynamic_cast<CBaseUITextbox*>(m_elements[i].elements[0]);
+					auto *textboxPointer = m_elements[i].elements[0]->as<CBaseUITextbox>();
 					if (textboxPointer != NULL)
 						textboxPointer->setText(m_elements[i].cvar->getString());
 				}
 				else if (m_elements[i].elements.size() == 2)
 				{
-					CBaseUITextbox *textboxPointer = dynamic_cast<CBaseUITextbox*>(m_elements[i].elements[1]);
+					auto *textboxPointer = m_elements[i].elements[1]->as<CBaseUITextbox>();
 					if (textboxPointer != NULL)
 						textboxPointer->setText(m_elements[i].cvar->getString());
 				}
@@ -2075,20 +2076,20 @@ void OsuOptionsMenu::updateLayout()
 			CBaseUIElement *e = m_elements[i].elements[0];
 
 			int sideMarginAdd = 0;
-			CBaseUILabel *labelPointer = dynamic_cast<CBaseUILabel*>(e);
-			if (labelPointer != NULL)
+			CBaseUILabel *labelPointer = NULL;
+			if ((labelPointer = e->as<CBaseUILabel>()))
 			{
 				labelPointer->onResized(); // HACKHACK: framework, setSize*() does not update string metrics
 				labelPointer->setSizeToContent(0, 0);
 				sideMarginAdd += elementTextStartOffset;
 			}
 
-			CBaseUIButton *buttonPointer = dynamic_cast<CBaseUIButton*>(e);
-			if (buttonPointer != NULL)
+			CBaseUIButton *buttonPointer = NULL;
+			if ((buttonPointer = e->as<CBaseUIButton>()))
 				buttonPointer->onResized(); // HACKHACK: framework, setSize*() does not update string metrics
 
-			CBaseUICheckbox *checkboxPointer = dynamic_cast<CBaseUICheckbox*>(e);
-			if (checkboxPointer != NULL)
+			CBaseUICheckbox *checkboxPointer = NULL;
+			if ((checkboxPointer = e->as<CBaseUICheckbox>()))
 			{
 				checkboxPointer->onResized(); // HACKHACK: framework, setWidth*() does not update string metrics
 				checkboxPointer->setWidthToContent(0);
@@ -2113,17 +2114,16 @@ void OsuOptionsMenu::updateLayout()
 			int spacing = 15 * dpiScale;
 
 			int sideMarginAdd = 0;
-			CBaseUILabel *labelPointer = dynamic_cast<CBaseUILabel*>(e1);
-			if (labelPointer != NULL)
+			CBaseUILabel *labelPointer = NULL;
+			if ((labelPointer = e1->as<CBaseUILabel>()))
 				sideMarginAdd += elementTextStartOffset;
 
-			CBaseUIButton *buttonPointer = dynamic_cast<CBaseUIButton*>(e1);
-			if (buttonPointer != NULL)
+			CBaseUIButton *buttonPointer = NULL;
+			if ((buttonPointer = e1->as<CBaseUIButton>()))
 				buttonPointer->onResized(); // HACKHACK: framework, setSize*() does not update string metrics
 
-			// button-button spacing
-			CBaseUIButton *buttonPointer2 = dynamic_cast<CBaseUIButton*>(e2);
-			if (buttonPointer != NULL && buttonPointer2 != NULL)
+			CBaseUIButton *buttonPointer2 = NULL;
+			if (buttonPointer && (buttonPointer2 = e2->as<CBaseUIButton>()))
 				spacing *= 0.35f;
 
 			if (isKeyBindButton)
@@ -2168,12 +2168,12 @@ void OsuOptionsMenu::updateLayout()
 
 				const int buttonSize = elementWidth / 3 - 2*buttonButtonLabelOffset;
 
-				CBaseUIButton *button1Pointer = dynamic_cast<CBaseUIButton*>(e1);
-				if (button1Pointer != NULL)
+				CBaseUIButton *button1Pointer = NULL;
+				if ((button1Pointer = e1->as<CBaseUIButton>()))
 					button1Pointer->onResized(); // HACKHACK: framework, setSize*() does not update string metrics
 
-				CBaseUIButton *button2Pointer = dynamic_cast<CBaseUIButton*>(e2);
-				if (button2Pointer != NULL)
+				CBaseUIButton *button2Pointer = NULL;
+				if ((button2Pointer = e2->as<CBaseUIButton>()))
 					button2Pointer->onResized(); // HACKHACK: framework, setSize*() does not update string metrics
 
 				e1->setSizeX(buttonSize);
@@ -2189,8 +2189,8 @@ void OsuOptionsMenu::updateLayout()
 				const int labelSliderLabelOffset = 15 * dpiScale;
 
 				// this is a big mess, because some elements rely on fixed initial widths from default strings, combined with variable font dpi on startup, will clean up whenever
-				CBaseUILabel *label1Pointer = dynamic_cast<CBaseUILabel*>(e1);
-				if (label1Pointer != NULL)
+				CBaseUILabel *label1Pointer = NULL;
+				if ((label1Pointer = e1->as<CBaseUILabel>()))
 				{
 					label1Pointer->onResized(); // HACKHACK: framework, setSize*() does not update string metrics
 					if (m_elements[i].label1Width > 0.0f)
@@ -2199,12 +2199,12 @@ void OsuOptionsMenu::updateLayout()
 						label1Pointer->setSizeX(label1Pointer->getRelSize().x * (96.0f / m_elements[i].relSizeDPI) * dpiScale);
 				}
 
-				CBaseUISlider *sliderPointer = dynamic_cast<CBaseUISlider*>(e2);
-				if (sliderPointer != NULL)
+				CBaseUISlider *sliderPointer = NULL;
+				if ((sliderPointer = e2->as<CBaseUISlider>()))
 					sliderPointer->setBlockSize(20 * dpiScale, 20 * dpiScale);
 
-				CBaseUILabel *label2Pointer = dynamic_cast<CBaseUILabel*>(e3);
-				if (label2Pointer != NULL)
+				CBaseUILabel *label2Pointer = NULL;
+				if ((label2Pointer = e3->as<CBaseUILabel>()))
 				{
 					label2Pointer->onResized(); // HACKHACK: framework, setSize*() does not update string metrics
 					label2Pointer->setSizeX(label2Pointer->getRelSize().x * (96.0f / m_elements[i].relSizeDPI) * dpiScale);
@@ -3002,7 +3002,7 @@ void OsuOptionsMenu::onSliderChange(CBaseUISlider *slider)
 
 				if (m_elements[i].elements.size() == 3)
 				{
-					CBaseUILabel *labelPointer = dynamic_cast<CBaseUILabel*>(m_elements[i].elements[2]);
+					auto *labelPointer = m_elements[i].elements[2]->as<CBaseUILabel>();
 					labelPointer->setText(m_elements[i].cvar->getString());
 				}
 
@@ -3027,7 +3027,7 @@ void OsuOptionsMenu::onSliderChangeOneDecimalPlace(CBaseUISlider *slider)
 
 				if (m_elements[i].elements.size() == 3)
 				{
-					CBaseUILabel *labelPointer = dynamic_cast<CBaseUILabel*>(m_elements[i].elements[2]);
+					auto *labelPointer = m_elements[i].elements[2]->as<CBaseUILabel>();
 					labelPointer->setText(m_elements[i].cvar->getString());
 				}
 
@@ -3052,7 +3052,7 @@ void OsuOptionsMenu::onSliderChangeTwoDecimalPlaces(CBaseUISlider *slider)
 
 				if (m_elements[i].elements.size() == 3)
 				{
-					CBaseUILabel *labelPointer = dynamic_cast<CBaseUILabel*>(m_elements[i].elements[2]);
+					auto *labelPointer = m_elements[i].elements[2]->as<CBaseUILabel>();
 					labelPointer->setText(m_elements[i].cvar->getString());
 				}
 
@@ -3077,7 +3077,7 @@ void OsuOptionsMenu::onSliderChangeOneDecimalPlaceMeters(CBaseUISlider *slider)
 
 				if (m_elements[i].elements.size() == 3)
 				{
-					CBaseUILabel *labelPointer = dynamic_cast<CBaseUILabel*>(m_elements[i].elements[2]);
+					auto *labelPointer = m_elements[i].elements[2]->as<CBaseUILabel>();
 					labelPointer->setText(UString::format("%.1f m", m_elements[i].cvar->getFloat()));
 				}
 
@@ -3102,7 +3102,7 @@ void OsuOptionsMenu::onSliderChangeInt(CBaseUISlider *slider)
 
 				if (m_elements[i].elements.size() == 3)
 				{
-					CBaseUILabel *labelPointer = dynamic_cast<CBaseUILabel*>(m_elements[i].elements[2]);
+					auto *labelPointer = m_elements[i].elements[2]->as<CBaseUILabel>();
 					labelPointer->setText(m_elements[i].cvar->getString());
 				}
 
@@ -3127,7 +3127,7 @@ void OsuOptionsMenu::onSliderChangeIntMS(CBaseUISlider *slider)
 
 				if (m_elements[i].elements.size() == 3)
 				{
-					CBaseUILabel *labelPointer = dynamic_cast<CBaseUILabel*>(m_elements[i].elements[2]);
+					auto *labelPointer = m_elements[i].elements[2]->as<CBaseUILabel>();
 					UString text = m_elements[i].cvar->getString();
 					text.append(" ms");
 					labelPointer->setText(text);
@@ -3154,7 +3154,7 @@ void OsuOptionsMenu::onSliderChangeFloatMS(CBaseUISlider *slider)
 
 				if (m_elements[i].elements.size() == 3)
 				{
-					CBaseUILabel *labelPointer = dynamic_cast<CBaseUILabel*>(m_elements[i].elements[2]);
+					auto *labelPointer = m_elements[i].elements[2]->as<CBaseUILabel>();
 					UString text = UString::format("%i", (int)std::round(m_elements[i].cvar->getFloat()*1000.0f));
 					text.append(" ms");
 					labelPointer->setText(text);
@@ -3183,7 +3183,7 @@ void OsuOptionsMenu::onSliderChangePercent(CBaseUISlider *slider)
 				{
 					int percent = std::round(m_elements[i].cvar->getFloat()*100.0f);
 
-					CBaseUILabel *labelPointer = dynamic_cast<CBaseUILabel*>(m_elements[i].elements[2]);
+					auto *labelPointer = m_elements[i].elements[2]->as<CBaseUILabel>();
 					labelPointer->setText(UString::format("%i%%", percent));
 				}
 
@@ -3213,7 +3213,8 @@ void OsuOptionsMenu::onKeyBindingButtonPressed(CBaseUIButton *button)
 
 					const bool waitForKey = true;
 					osu->getNotificationOverlay()->addNotification(notificationText, 0xffffffff, waitForKey);
-					osu->getNotificationOverlay()->setDisallowWaitForKeyLeftClick(!(dynamic_cast<OsuOptionsMenuKeyBindButton*>(button)->isLeftMouseClickBindingAllowed()));
+					if (button->isType<OsuOptionsMenuKeyBindButton>())
+						osu->getNotificationOverlay()->setDisallowWaitForKeyLeftClick(!static_cast<OsuOptionsMenuKeyBindButton*>(button)->isLeftMouseClickBindingAllowed());
 				}
 				break;
 			}
@@ -3296,7 +3297,7 @@ void OsuOptionsMenu::onSliderChangeVRSuperSampling(CBaseUISlider *slider)
 
 				if (m_elements[i].elements.size() == 3)
 				{
-					CBaseUILabel *labelPointer = dynamic_cast<CBaseUILabel*>(m_elements[i].elements[2]);
+					auto *labelPointer = m_elements[i].elements[2]->as<CBaseUILabel>();
 					UString labelText = m_elements[i].cvar->getString();
 					labelText.append("x");
 					labelPointer->setText(labelText);
@@ -3341,7 +3342,7 @@ void OsuOptionsMenu::onSliderChangeVRAntiAliasing(CBaseUISlider *slider)
 
 				if (m_elements[i].elements.size() == 3)
 				{
-					CBaseUILabel *labelPointer = dynamic_cast<CBaseUILabel*>(m_elements[i].elements[2]);
+					auto *labelPointer = m_elements[i].elements[2]->as<CBaseUILabel>();
 					labelPointer->setText(UString::format("%ix", aa));
 				}
 
@@ -3368,7 +3369,7 @@ void OsuOptionsMenu::onSliderChangeSliderQuality(CBaseUISlider *slider)
 
 				if (m_elements[i].elements.size() == 3)
 				{
-					CBaseUILabel *labelPointer = dynamic_cast<CBaseUILabel*>(m_elements[i].elements[2]);
+					auto *labelPointer = m_elements[i].elements[2]->as<CBaseUILabel>();
 
 					int percent = std::round((slider->getPercent()) * 100.0f);
 					UString text = UString::format(percent > 49 ? "%i !" : "%i", percent);
@@ -3399,7 +3400,7 @@ void OsuOptionsMenu::onSliderChangeLetterboxingOffset(CBaseUISlider *slider)
 				{
 					const int percent = std::round(newValue*100.0f);
 
-					CBaseUILabel *labelPointer = dynamic_cast<CBaseUILabel*>(m_elements[i].elements[2]);
+					auto *labelPointer = m_elements[i].elements[2]->as<CBaseUILabel>();
 					labelPointer->setText(UString::format("%i%%", percent));
 				}
 
@@ -3429,7 +3430,7 @@ void OsuOptionsMenu::onSliderChangeUIScale(CBaseUISlider *slider)
 				{
 					const int percent = std::round(newValue*100.0f);
 
-					CBaseUILabel *labelPointer = dynamic_cast<CBaseUILabel*>(m_elements[i].elements[2]);
+					auto *labelPointer = m_elements[i].elements[2]->as<CBaseUILabel>();
 					labelPointer->setText(UString::format("%i%%", percent));
 				}
 
@@ -3455,7 +3456,7 @@ void OsuOptionsMenu::onWASAPIBufferChange(CBaseUISlider *slider)
 			{
 				if (m_elements[i].elements.size() == 3)
 				{
-					CBaseUILabel *labelPointer = dynamic_cast<CBaseUILabel*>(m_elements[i].elements[2]);
+					auto *labelPointer = m_elements[i].elements[2]->as<CBaseUILabel>();
 					UString text = UString::format("%i", (int)std::round(slider->getFloat()*1000.0f));
 					text.append(" ms");
 					labelPointer->setText(text);
@@ -3481,7 +3482,7 @@ void OsuOptionsMenu::onWASAPIPeriodChange(CBaseUISlider *slider)
 			{
 				if (m_elements[i].elements.size() == 3)
 				{
-					CBaseUILabel *labelPointer = dynamic_cast<CBaseUILabel*>(m_elements[i].elements[2]);
+					auto *labelPointer = m_elements[i].elements[2]->as<CBaseUILabel>();
 					UString text = UString::format("%i", (int)std::round(slider->getFloat()*1000.0f));
 					text.append(" ms");
 					labelPointer->setText(text);
@@ -3532,8 +3533,8 @@ void OsuOptionsMenu::onHighQualitySlidersConVarChange(UString oldValue, UString 
 			{
 				m_elements[i].elements[e]->setEnabled(enabled);
 
-				OsuUISlider *sliderPointer = dynamic_cast<OsuUISlider*>(m_elements[i].elements[e]);
-				CBaseUILabel *labelPointer = dynamic_cast<CBaseUILabel*>(m_elements[i].elements[e]);
+				auto *sliderPointer = m_elements[i].elements[e]->as<OsuUISlider>();
+				auto *labelPointer = m_elements[i].elements[e]->as<CBaseUILabel>();
 
 				if (sliderPointer != NULL)
 					sliderPointer->setFrameColor(enabled ? 0xffffffff : 0xff000000);
@@ -3562,7 +3563,7 @@ void OsuOptionsMenu::onCategoryClicked(CBaseUIButton *button)
 	scheduleSearchUpdate();
 
 	// scroll to category
-	OsuOptionsMenuCategoryButton *categoryButton = dynamic_cast<OsuOptionsMenuCategoryButton*>(button);
+	const auto *categoryButton = button->as<const OsuOptionsMenuCategoryButton>();
 	if (categoryButton != NULL)
 		m_options->scrollToElement(categoryButton->getSection(), 0, 100 * Osu::getUIScale());
 }
@@ -3603,7 +3604,7 @@ void OsuOptionsMenu::onResetClicked(CBaseUIButton *button)
 			case 6: // checkbox
 				for (int e=0; e<m_elements[i].elements.size(); e++)
 				{
-					CBaseUICheckbox *checkboxPointer = dynamic_cast<CBaseUICheckbox*>(m_elements[i].elements[e]);
+					auto *checkboxPointer = m_elements[i].elements[e]->as<CBaseUICheckbox>();
 					if (checkboxPointer != NULL)
 						checkboxPointer->setChecked((bool)m_elements[i].cvar->getDefaultFloat());
 				}
@@ -3611,7 +3612,7 @@ void OsuOptionsMenu::onResetClicked(CBaseUIButton *button)
 			case 7: // slider
 				if (m_elements[i].elements.size() == 3)
 				{
-					CBaseUISlider *sliderPointer = dynamic_cast<CBaseUISlider*>(m_elements[i].elements[1]);
+					auto *sliderPointer = m_elements[i].elements[1]->as<CBaseUISlider>();
 					if (sliderPointer != NULL)
 					{
 						sliderPointer->setValue(m_elements[i].cvar->getDefaultFloat(), false);

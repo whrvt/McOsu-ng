@@ -37,7 +37,7 @@ ConVar *VisualProfiler::m_vprof_ref = NULL;
 
 VisualProfiler *vprof = NULL;
 
-VisualProfiler::VisualProfiler() : CBaseUIElement(0, 0, 0, 0, "")
+VisualProfiler::VisualProfiler() : WindowUIElement(0, 0, 0, 0, "")
 {
 	vprof = this;
 

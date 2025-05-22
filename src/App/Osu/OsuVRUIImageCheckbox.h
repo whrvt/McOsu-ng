@@ -16,18 +16,18 @@ class OsuVRUIImageCheckbox : public OsuVRUIButton
 public:
 	OsuVRUIImageCheckbox(OsuVR *vr, float x, float y, float width, float height, UString imageResourceNameChecked, UString imageResourceNameUnchecked);
 
-	virtual void drawVR(Graphics *g, Matrix4 &mvp);
-	virtual void update(Vector2 cursorPos);
+	void drawVR(Graphics *g, Matrix4 &mvp) override;
+	void update(Vector2 cursorPos) override;
 
 	void setChecked(bool checked) {m_bChecked = checked;}
 
-	inline bool isChecked() const {return m_bChecked;}
+	[[nodiscard]] inline bool isChecked() const {return m_bChecked;}
 
 private:
-	virtual void onClicked();
+	void onClicked() override;
 
-	virtual void onCursorInside();
-	virtual void onCursorOutside();
+	void onCursorInside() override;
+	void onCursorOutside() override;
 
 	void updateImageResource();
 

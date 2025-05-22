@@ -17,11 +17,11 @@ class CBaseUIButton : public CBaseUIElement
 {
 public:
 	CBaseUIButton(float xPos = 0, float yPos = 0, float xSize = 0, float ySize = 0, UString name = "", UString text = "");
-	virtual ~CBaseUIButton() {;}
+	~CBaseUIButton() override {;}
 
 	ELEMENT_BODY(CBaseUIButton);
 
-	virtual void draw(Graphics *g);
+	void draw(Graphics *g) override;
 
 	void click() {onClicked();}
 
@@ -49,18 +49,20 @@ public:
 	CBaseUIButton *setWidthToContent(int horizontalBorderSize = 1) {setSizeX(m_fStringWidth+2*horizontalBorderSize); return this;}
 
 	// get
-	inline Color getFrameColor() const {return m_frameColor;}
-	inline Color getBackgroundColor() const {return m_backgroundColor;}
-	inline Color getTextColor() const {return m_textColor;}
-	inline UString getText() const {return m_sText;}
-	inline McFont *getFont() const {return m_font;}
-	inline ButtonClickCallback getClickCallback() const {return m_clickCallback;}
-	inline bool isTextLeft() const {return m_bTextLeft;}
+	[[nodiscard]] inline Color getFrameColor() const {return m_frameColor;}
+	[[nodiscard]] inline Color getBackgroundColor() const {return m_backgroundColor;}
+	[[nodiscard]] inline Color getTextColor() const {return m_textColor;}
+	[[nodiscard]] inline UString getText() const {return m_sText;}
+	[[nodiscard]] inline McFont *getFont() const {return m_font;}
+	[[nodiscard]] inline ButtonClickCallback getClickCallback() const {return m_clickCallback;}
+	[[nodiscard]] inline bool isTextLeft() const {return m_bTextLeft;}
 
 	// events
-	virtual void onMouseUpInside();
-	virtual void onResized() {updateStringMetrics();}
+	void onMouseUpInside() override;
+	void onResized() override {updateStringMetrics();}
 
+	// inspection
+	CBASE_UI_TYPE(CBaseUIButton, BUTTON, CBaseUIElement)
 protected:
 	virtual void onClicked();
 

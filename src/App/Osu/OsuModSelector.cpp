@@ -325,7 +325,7 @@ void OsuModSelector::updateExperimentalButtons(bool initial)
 			ConVar *cvar = m_experimentalMods[i].cvar;
 			if (cvar != NULL)
 			{
-				CBaseUICheckbox *checkboxPointer = dynamic_cast<CBaseUICheckbox*>(m_experimentalMods[i].element);
+				auto *checkboxPointer = m_experimentalMods[i].element->as<CBaseUICheckbox>();
 				if (checkboxPointer != NULL)
 				{
 					if (cvar->getBool() != checkboxPointer->isChecked())
@@ -536,7 +536,7 @@ void OsuModSelector::update()
 	bool experimentalModEnabled = false;
 	for (int i=0; i<m_experimentalMods.size(); i++)
 	{
-		CBaseUICheckbox *checkboxPointer = dynamic_cast<CBaseUICheckbox*>(m_experimentalMods[i].element);
+		const auto *checkboxPointer = m_experimentalMods[i].element->as<const CBaseUICheckbox>();
 		if (checkboxPointer != NULL && checkboxPointer->isChecked())
 		{
 			experimentalModEnabled = true;
@@ -684,7 +684,7 @@ void OsuModSelector::setVisible(bool visible)
 		bool experimentalModEnabled = false;
 		for (int i=0; i<m_experimentalMods.size(); i++)
 		{
-			CBaseUICheckbox *checkboxPointer = dynamic_cast<CBaseUICheckbox*>(m_experimentalMods[i].element);
+			const auto *checkboxPointer = m_experimentalMods[i].element->as<const CBaseUICheckbox>();
 			if (checkboxPointer != NULL && checkboxPointer->isChecked())
 			{
 				experimentalModEnabled = true;
@@ -923,16 +923,16 @@ void OsuModSelector::updateExperimentalLayout()
 
 		// custom
 		{
-			CBaseUICheckbox *checkboxPointer = dynamic_cast<CBaseUICheckbox*>(e);
-			if (checkboxPointer != NULL)
+			if (e->isType<CBaseUICheckbox>())
 			{
+				auto *checkboxPointer = static_cast<CBaseUICheckbox*>(e);
 				checkboxPointer->onResized();
 				checkboxPointer->setWidthToContent(0);
 			}
 
-			CBaseUILabel *labelPointer = dynamic_cast<CBaseUILabel*>(e);
-			if (labelPointer != NULL)
+			if (e->isType<CBaseUILabel>())
 			{
+				auto *labelPointer = static_cast<CBaseUILabel*>(e);
 				labelPointer->onResized();
 				labelPointer->setWidthToContent(0);
 			}
@@ -1134,7 +1134,7 @@ void OsuModSelector::resetMods()
 	for (int i=0; i<m_experimentalMods.size(); i++)
 	{
 		ConVar *cvar = m_experimentalMods[i].cvar;
-		CBaseUICheckbox *checkboxPointer = dynamic_cast<CBaseUICheckbox*>(m_experimentalMods[i].element);
+		auto *checkboxPointer = m_experimentalMods[i].element->as<CBaseUICheckbox>();
 		if (checkboxPointer != NULL)
 		{
 			// HACKHACK: we update both just in case because if the mod selector was not yet visible after a convar change (e.g. because of "Use mods") then the checkbox has not yet updated its internal state

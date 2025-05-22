@@ -446,7 +446,7 @@ void OsuUISongBrowserSongButton::onContextMenu(UString text, int id)
 								// edge case: allow adding the set of this diff if it does not represent the entire set (and the set is not yet added completely)
 								if (id == 2)
 								{
-									const OsuUISongBrowserSongDifficultyButton *diffButtonPointer = dynamic_cast<OsuUISongBrowserSongDifficultyButton*>(this);
+									const auto *diffButtonPointer = this->as<const OsuUISongBrowserSongDifficultyButton>();
 									if (diffButtonPointer != NULL && diffButtonPointer->getParentSongButton() != NULL && diffButtonPointer->getParentSongButton()->getDatabaseBeatmap() != NULL)
 									{
 										const OsuDatabaseBeatmap *setContainer = diffButtonPointer->getParentSongButton()->getDatabaseBeatmap();
@@ -684,9 +684,9 @@ void OsuUISongBrowserSongButton::updateRepresentativeDatabaseBeatmap()
 		// use the bottom child (hardest diff, assuming default sorting, and respecting the current search matches)
 		for (int i=m_children.size()-1; i>=0; i--)
 		{
-			if (m_children[i]->isSearchMatch()) // NOTE: if no search is active, then all search matches return true by default
+			if (m_children[i]->isSearchMatch() && m_children[i]->as<OsuUISongBrowserSongButton>()) // NOTE: if no search is active, then all search matches return true by default
 			{
-				m_representativeDatabaseBeatmap = dynamic_cast<OsuUISongBrowserSongButton*>(m_children[i])->getDatabaseBeatmap();
+				m_representativeDatabaseBeatmap = static_cast<const OsuUISongBrowserSongButton*>(m_children[i])->getDatabaseBeatmap();
 				break;
 			}
 		}

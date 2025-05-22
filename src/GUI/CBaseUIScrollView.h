@@ -19,18 +19,18 @@ class CBaseUIScrollView : public CBaseUIElement
 {
 public:
 	CBaseUIScrollView(float xPos=0, float yPos=0, float xSize=0, float ySize=0, UString name="");
-	virtual ~CBaseUIScrollView();
+	~CBaseUIScrollView() override;
 
 	void clear();
 
 	ELEMENT_BODY(CBaseUIScrollView)
 
-	virtual void draw(Graphics *g);
-	virtual void update();
+	void draw(Graphics *g) override;
+	void update() override;
 
-	virtual void onKeyUp(KeyboardEvent &e);
-	virtual void onKeyDown(KeyboardEvent &e);
-	virtual void onChar(KeyboardEvent &e);
+	void onKeyUp(KeyboardEvent &e) override;
+	void onKeyDown(KeyboardEvent &e) override;
+	void onChar(KeyboardEvent &e) override;
 
 	// scrolling
 	void scrollY(int delta, bool animated = true);
@@ -67,28 +67,30 @@ public:
 	void setScrollbarSizeMultiplier(float scrollbarSizeMultiplier) {m_fScrollbarSizeMultiplier = scrollbarSizeMultiplier;}
 
 	// get
-	inline CBaseUIContainer *getContainer() const {return m_container;}
-	inline float getScrollPosY() const {return m_vScrollPos.y;}
-	inline float getScrollPosX() const {return m_vScrollPos.x;}
-	inline Vector2 getScrollSize() const {return m_vScrollSize;}
-	inline Vector2 getVelocity() const {return (m_vScrollPos - m_vVelocity);}
+	[[nodiscard]] inline CBaseUIContainer *getContainer() const {return m_container;}
+	[[nodiscard]] inline float getScrollPosY() const {return m_vScrollPos.y;}
+	[[nodiscard]] inline float getScrollPosX() const {return m_vScrollPos.x;}
+	[[nodiscard]] inline Vector2 getScrollSize() const {return m_vScrollSize;}
+	[[nodiscard]] inline Vector2 getVelocity() const {return (m_vScrollPos - m_vVelocity);}
 
-	inline bool isScrolling() const {return m_bScrolling;}
-	bool isBusy();
+	[[nodiscard]] inline bool isScrolling() const {return m_bScrolling;}
+	bool isBusy() override;
 
 	// events
-	void onResized();
-	void onMouseDownOutside();
-	void onMouseDownInside();
-	void onMouseUpInside();
-	void onMouseUpOutside();
+	void onResized() override;
+	void onMouseDownOutside() override;
+	void onMouseDownInside() override;
+	void onMouseUpInside() override;
+	void onMouseUpOutside() override;
 
-	void onFocusStolen();
-	void onEnabled();
-	void onDisabled();
+	void onFocusStolen() override;
+	void onEnabled() override;
+	void onDisabled() override;
 
+	// inspection
+	CBASE_UI_TYPE(CBaseUIScrollView, SCROLLVIEW, CBaseUIElement)
 protected:
-	virtual void onMoved();
+	void onMoved() override;
 
 private:
 	void updateClipping();

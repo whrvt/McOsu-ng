@@ -340,7 +340,7 @@ private:
 
 
 
-VSMusicBrowser::VSMusicBrowser(int x, int y, int xSize, int ySize, McFont *font) : CBaseUIElement(x, y, xSize, ySize, "")
+VSMusicBrowser::VSMusicBrowser(int x, int y, int xSize, int ySize, McFont *font) : WindowUIElement(x, y, xSize, ySize, "")
 {
 	m_font = font;
 
@@ -377,7 +377,7 @@ void VSMusicBrowser::update()
 
 void VSMusicBrowser::onButtonClicked(CBaseUIButton *button)
 {
-	VSMusicBrowserButton *btn = dynamic_cast<VSMusicBrowserButton*>(button);
+	auto *btn = button->as<VSMusicBrowserButton>();
 	if (btn == NULL) return; // sanity
 
 	// set flags / next song

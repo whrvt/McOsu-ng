@@ -16,18 +16,20 @@ class OsuUISongBrowserCollectionButton : public OsuUISongBrowserButton
 public:
 	OsuUISongBrowserCollectionButton(OsuSongBrowser2 *songBrowser, CBaseUIScrollView *view, OsuUIContextMenu *contextMenu, float xPos, float yPos, float xSize, float ySize, UString name, UString collectionName, std::vector<OsuUISongBrowserButton*> children);
 
-	virtual void draw(Graphics *g);
+	void draw(Graphics *g) override;
 
 	void triggerContextMenu(Vector2 pos);
 
-	virtual Color getActiveBackgroundColor() const;
-	virtual Color getInactiveBackgroundColor() const;
+	[[nodiscard]] Color getActiveBackgroundColor() const override;
+	[[nodiscard]] Color getInactiveBackgroundColor() const override;
 
-	const UString &getCollectionName() const {return m_sCollectionName;}
+	[[nodiscard]] const UString &getCollectionName() const {return m_sCollectionName;}
 
+	// inspection
+	CBASE_UI_TYPE(OsuUISongBrowserCollectionButton, OsuUIElement::UISONGBROWSERCOLLECTIONBUTTON, OsuUISongBrowserButton)
 private:
-	virtual void onSelected(bool wasSelected, bool autoSelectBottomMostChild, bool wasParentSelected);
-	virtual void onRightMouseUpInside();
+	void onSelected(bool wasSelected, bool autoSelectBottomMostChild, bool wasParentSelected) override;
+	void onRightMouseUpInside() override;
 
 	void onContextMenu(UString text, int id = -1);
 	void onRenameCollectionConfirmed(UString text, int id = -1);

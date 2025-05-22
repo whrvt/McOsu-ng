@@ -17,15 +17,15 @@ class CBaseUITextbox : public CBaseUIElement
 {
 public:
 	CBaseUITextbox(float xPos = 0.0f, float yPos = 0.0f, float xSize = 0.0f, float ySize = 0.0f, UString name = "");
-	virtual ~CBaseUITextbox() {;}
+	~CBaseUITextbox() override {;}
 
 	ELEMENT_BODY(CBaseUITextbox)
 
-	virtual void draw(Graphics *g);
-	virtual void update();
+	void draw(Graphics *g) override;
+	void update() override;
 
-	virtual void onChar(KeyboardEvent &e);
-	virtual void onKeyDown(KeyboardEvent &e);
+	void onChar(KeyboardEvent &e) override;
+	void onKeyDown(KeyboardEvent &e) override;
 
 	inline const UString getText() const {return m_sText;}
 	inline UString &getTextRef() {return m_sText;} // DEPRECATED
@@ -51,18 +51,20 @@ public:
 	void setCursorPosRight();
 
 	bool hitEnter();
-	bool hasSelectedText() const;
+	[[nodiscard]] bool hasSelectedText() const;
 	void clear();
 
+	// inspection
+	CBASE_UI_TYPE(CBaseUITextbox, TEXTBOX, CBaseUIElement)
 protected:
 	virtual void drawText(Graphics *g);
 
 	// events
-	virtual void onMouseDownInside();
-	virtual void onMouseDownOutside();
-	virtual void onMouseUpInside();
-	virtual void onMouseUpOutside();
-	virtual void onResized();
+	void onMouseDownInside() override;
+	void onMouseDownOutside() override;
+	void onMouseUpInside() override;
+	void onMouseUpOutside() override;
+	void onResized() override;
 
 	void tickCaret();
 	void handleCaretKeyboardMove();

@@ -17,24 +17,25 @@ class OsuUISongBrowserSongDifficultyButton : public OsuUISongBrowserSongButton
 {
 public:
 	OsuUISongBrowserSongDifficultyButton(OsuSongBrowser2 *songBrowser, CBaseUIScrollView *view, OsuUIContextMenu *contextMenu, float xPos, float yPos, float xSize, float ySize, UString name, OsuDatabaseBeatmap *diff2, OsuUISongBrowserSongButton *parentSongButton);
-	virtual ~OsuUISongBrowserSongDifficultyButton();
+	~OsuUISongBrowserSongDifficultyButton() override;
 
-	virtual void draw(Graphics *g);
-	virtual void update();
+	void draw(Graphics *g) override;
+	void update() override;
 
-	virtual void updateGrade();
+	void updateGrade() override;
 
-	virtual Color getInactiveBackgroundColor() const;
+	[[nodiscard]] Color getInactiveBackgroundColor() const override;
 
-	inline OsuUISongBrowserSongButton *getParentSongButton() const {return m_parentSongButton;}
+	[[nodiscard]] inline OsuUISongBrowserSongButton *getParentSongButton() const {return m_parentSongButton;}
 
-	bool isIndependentDiffButton() const;
+	[[nodiscard]] bool isIndependentDiffButton() const;
 
+	CBASE_UI_TYPE(OsuUISongBrowserSongDifficultyButton, OsuUIElement::UISONGBROWSERDIFFICULTYBUTTON, OsuUISongBrowserSongButton)
 private:
 	static ConVar *m_osu_scores_enabled;
 	static ConVar *m_osu_songbrowser_dynamic_star_recalc_ref;
 
-	virtual void onSelected(bool wasSelected, bool autoSelectBottomMostChild, bool wasParentSelected);
+	void onSelected(bool wasSelected, bool autoSelectBottomMostChild, bool wasParentSelected) override;
 
 	UString buildDiffString() {return m_sDiff;}
 

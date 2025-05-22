@@ -12,7 +12,7 @@
 
 #include "Osu.h"
 
-OsuUISearchOverlay::OsuUISearchOverlay(float xPos, float yPos, float xSize, float ySize, UString name) : CBaseUIElement(xPos, yPos, xSize, ySize, name)
+OsuUISearchOverlay::OsuUISearchOverlay(float xPos, float yPos, float xSize, float ySize, UString name) : OsuUIElement(xPos, yPos, xSize, ySize, name)
 {
 	
 

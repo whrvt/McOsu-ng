@@ -58,7 +58,7 @@ OsuUIContextMenuTextbox::OsuUIContextMenuTextbox(float xPos, float yPos, float x
 
 
 
-OsuUIContextMenu::OsuUIContextMenu(float xPos, float yPos, float xSize, float ySize, UString name, CBaseUIScrollView *parent) : CBaseUIElement(xPos, yPos, xSize, ySize, name)
+OsuUIContextMenu::OsuUIContextMenu(float xPos, float yPos, float xSize, float ySize, UString name, CBaseUIScrollView *parent) : OsuUIElement(xPos, yPos, xSize, ySize, name)
 {
 	
 	m_parent = parent;

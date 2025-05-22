@@ -9,8 +9,7 @@
 #ifndef OSUUICONTEXTMENU_H
 #define OSUUICONTEXTMENU_H
 
-#include "CBaseUIButton.h"
-#include "CBaseUITextbox.h"
+#include "OsuUIElement.h"
 
 class CBaseUIContainer;
 class CBaseUIScrollView;
@@ -20,7 +19,7 @@ class Osu;
 class OsuUIContextMenuButton;
 class OsuUIContextMenuTextbox;
 
-class OsuUIContextMenu : public CBaseUIElement
+class OsuUIContextMenu final : public OsuUIElement
 {
 public:
 	static void clampToBottomScreenEdge(OsuUIContextMenu *menu);
@@ -28,14 +27,14 @@ public:
 
 public:
 	OsuUIContextMenu(float xPos = 0, float yPos = 0, float xSize = 0, float ySize = 0, UString name = "", CBaseUIScrollView *parent = NULL);
-	virtual ~OsuUIContextMenu();
+	~OsuUIContextMenu() override;
 
-	virtual void draw(Graphics *g);
-	virtual void update();
+	void draw(Graphics *g) override;
+	void update() override;
 
-	virtual void onKeyUp(KeyboardEvent &e);
-	virtual void onKeyDown(KeyboardEvent &e);
-	virtual void onChar(KeyboardEvent &e);
+	void onKeyUp(KeyboardEvent &e) override;
+	void onKeyDown(KeyboardEvent &e) override;
+	void onChar(KeyboardEvent &e) override;
 
 	typedef fastdelegate::FastDelegate2<UString, int> ButtonClickCallback;
 	void setClickCallback(ButtonClickCallback clickCallback) {m_clickCallback = clickCallback;}
@@ -48,13 +47,15 @@ public:
 
 	void setVisible2(bool visible2);
 
-	virtual bool isVisible() {return m_bVisible && m_bVisible2;}
+	bool isVisible() override {return m_bVisible && m_bVisible2;}
 
+	// inspection
+	CBASE_UI_TYPE(OsuUIContextMenu, UICONTEXTMENU, OsuUIElement)
 private:
-	virtual void onResized();
-	virtual void onMoved();
-	virtual void onMouseDownOutside();
-	virtual void onFocusStolen();
+	void onResized() override;
+	void onMoved() override;
+	void onMouseDownOutside() override;
+	void onFocusStolen() override;
 
 	void onClick(CBaseUIButton *button);
 	void onHitEnter(OsuUIContextMenuTextbox *textbox);

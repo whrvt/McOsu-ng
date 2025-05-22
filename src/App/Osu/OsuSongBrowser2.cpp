@@ -1439,7 +1439,7 @@ void OsuSongBrowser2::onKeyDown(KeyboardEvent &key)
 		int selectedIndex = -1;
 		for (int i=0; i<elements.size(); i++)
 		{
-			OsuUISongBrowserButton *button = dynamic_cast<OsuUISongBrowserButton*>(elements[i]);
+			const auto *button = elements[i]->as<const OsuUISongBrowserButton>();
 			if (button != NULL && button->isSelected())
 				selectedIndex = i;
 		}
@@ -1448,8 +1448,8 @@ void OsuSongBrowser2::onKeyDown(KeyboardEvent &key)
 		if (selectedIndex > -1 && selectedIndex+1 < elements.size())
 		{
 			int nextSelectionIndex = selectedIndex+1;
-			OsuUISongBrowserButton *nextButton = dynamic_cast<OsuUISongBrowserButton*>(elements[nextSelectionIndex]);
-			OsuUISongBrowserSongButton *songButton = dynamic_cast<OsuUISongBrowserSongButton*>(elements[nextSelectionIndex]);
+			auto *nextButton = elements[nextSelectionIndex]->as<OsuUISongBrowserButton>();
+			const auto *songButton = elements[nextSelectionIndex]->as<const OsuUISongBrowserSongButton>();
 			if (nextButton != NULL)
 			{
 				nextButton->select(true, false);
@@ -1473,7 +1473,7 @@ void OsuSongBrowser2::onKeyDown(KeyboardEvent &key)
 		int selectedIndex = -1;
 		for (int i=0; i<elements.size(); i++)
 		{
-			OsuUISongBrowserButton *button = dynamic_cast<OsuUISongBrowserButton*>(elements[i]);
+			const auto *button = elements[i]->as<const OsuUISongBrowserButton>();
 			if (button != NULL && button->isSelected())
 				selectedIndex = i;
 		}
@@ -1482,8 +1482,8 @@ void OsuSongBrowser2::onKeyDown(KeyboardEvent &key)
 		if (selectedIndex > -1 && selectedIndex-1 > -1)
 		{
 			int nextSelectionIndex = selectedIndex-1;
-			OsuUISongBrowserButton *nextButton = dynamic_cast<OsuUISongBrowserButton*>(elements[nextSelectionIndex]);
-			bool isCollectionButton = dynamic_cast<OsuUISongBrowserCollectionButton*>(elements[nextSelectionIndex]);
+			auto *nextButton = elements[nextSelectionIndex]->as<OsuUISongBrowserButton>();
+			bool isCollectionButton = elements[nextSelectionIndex]->as<OsuUISongBrowserCollectionButton>();
 
 			if (nextButton != NULL)
 			{
@@ -1493,7 +1493,7 @@ void OsuSongBrowser2::onKeyDown(KeyboardEvent &key)
 				if (isCollectionButton && nextSelectionIndex-1 > -1)
 				{
 					nextSelectionIndex = nextSelectionIndex-1;
-					OsuUISongBrowserCollectionButton *nextCollectionButton = dynamic_cast<OsuUISongBrowserCollectionButton*>(elements[nextSelectionIndex]);
+					auto *nextCollectionButton = elements[nextSelectionIndex]->as<OsuUISongBrowserCollectionButton>();
 					if (nextCollectionButton != NULL)
 					{
 						nextCollectionButton->select();
@@ -1518,10 +1518,10 @@ void OsuSongBrowser2::onKeyDown(KeyboardEvent &key)
 		bool foundSelected = false;
 		for (int i=elements.size()-1; i>=0; i--)
 		{
-			const OsuUISongBrowserSongDifficultyButton *diffButtonPointer = dynamic_cast<OsuUISongBrowserSongDifficultyButton*>(elements[i]);
-			const OsuUISongBrowserCollectionButton *collectionButtonPointer = dynamic_cast<OsuUISongBrowserCollectionButton*>(elements[i]);
+			const OsuUISongBrowserSongDifficultyButton *diffButtonPointer = elements[i]->as<OsuUISongBrowserSongDifficultyButton>();
+			const OsuUISongBrowserCollectionButton *collectionButtonPointer = elements[i]->as<OsuUISongBrowserCollectionButton>();
 
-			OsuUISongBrowserButton *button = dynamic_cast<OsuUISongBrowserButton*>(elements[i]);
+			auto *button = elements[i]->as<OsuUISongBrowserButton>();
 			const bool isSongDifficultyButtonAndNotIndependent = (diffButtonPointer != NULL && !diffButtonPointer->isIndependentDiffButton());
 
 			if (foundSelected && button != NULL && !button->isSelected() && !isSongDifficultyButtonAndNotIndependent && (!jumpToNextGroup || collectionButtonPointer != NULL))
@@ -1533,7 +1533,7 @@ void OsuSongBrowser2::onKeyDown(KeyboardEvent &key)
 					if (!jumpToNextGroup || collectionButtonPointer == NULL)
 					{
 						// automatically open collection below and go to bottom child
-						OsuUISongBrowserCollectionButton *collectionButton = dynamic_cast<OsuUISongBrowserCollectionButton*>(elements[i]);
+						const auto *collectionButton = elements[i]->as<const OsuUISongBrowserCollectionButton>();
 						if (collectionButton != NULL)
 						{
 							std::vector<OsuUISongBrowserButton*> children = collectionButton->getChildren();
@@ -1564,7 +1564,7 @@ void OsuSongBrowser2::onKeyDown(KeyboardEvent &key)
 		int selectedIndex = -1;
 		for (size_t i=0; i<elements.size(); i++)
 		{
-			OsuUISongBrowserButton *button = dynamic_cast<OsuUISongBrowserButton*>(elements[i]);
+			const auto *button = elements[i]->as<const OsuUISongBrowserButton>();
 			if (button != NULL && button->isSelected())
 				selectedIndex = i;
 		}
@@ -1573,10 +1573,10 @@ void OsuSongBrowser2::onKeyDown(KeyboardEvent &key)
 		{
 			for (size_t i=selectedIndex; i<elements.size(); i++)
 			{
-				const OsuUISongBrowserSongDifficultyButton *diffButtonPointer = dynamic_cast<OsuUISongBrowserSongDifficultyButton*>(elements[i]);
-				const OsuUISongBrowserCollectionButton *collectionButtonPointer = dynamic_cast<OsuUISongBrowserCollectionButton*>(elements[i]);
+				const auto *diffButtonPointer = elements[i]->as<const OsuUISongBrowserSongDifficultyButton>();
+				const auto *collectionButtonPointer = elements[i]->as<const OsuUISongBrowserCollectionButton>();
 
-				OsuUISongBrowserButton *button = dynamic_cast<OsuUISongBrowserButton*>(elements[i]);
+				auto *button = elements[i]->as<OsuUISongBrowserButton>();
 				const bool isSongDifficultyButtonAndNotIndependent = (diffButtonPointer != NULL && !diffButtonPointer->isIndependentDiffButton());
 
 				if (button != NULL && !button->isSelected() && !isSongDifficultyButtonAndNotIndependent && (!jumpToNextGroup || collectionButtonPointer != NULL))
@@ -1601,9 +1601,9 @@ void OsuSongBrowser2::onKeyDown(KeyboardEvent &key)
 
 		for (int i=0; i<elements.size(); i++)
 		{
-			const OsuUISongBrowserCollectionButton *collectionButtonPointer = dynamic_cast<OsuUISongBrowserCollectionButton*>(elements[i]);
+			const OsuUISongBrowserCollectionButton *collectionButtonPointer = elements[i]->as<OsuUISongBrowserCollectionButton>();
 
-			OsuUISongBrowserButton *button = dynamic_cast<OsuUISongBrowserButton*>(elements[i]);
+			auto *button = elements[i]->as<OsuUISongBrowserButton>();
 
 			if (collectionButtonPointer != NULL && button != NULL && button->isSelected())
 			{
@@ -1712,7 +1712,7 @@ void OsuSongBrowser2::onPlayEnd(bool quit)
 	{
 		rebuildScoreButtons();
 
-		auto *selectedSongDiffButton = dynamic_cast<OsuUISongBrowserSongDifficultyButton*>(findCurrentlySelectedSongButton());
+		auto *selectedSongDiffButton = findCurrentlySelectedSongButton()->as<OsuUISongBrowserSongDifficultyButton>();
 		if (selectedSongDiffButton != NULL)
 			selectedSongDiffButton->updateGrade();
 	}
@@ -1731,9 +1731,9 @@ void OsuSongBrowser2::onSelectionChange(OsuUISongBrowserButton *button, bool reb
 	// keep track and update all selection states
 	// I'm still not happy with this, but at least all state update logic is localized in this function instead of spread across all buttons
 
-	auto *songButtonPointer = dynamic_cast<OsuUISongBrowserSongButton*>(button);
-	auto *songDiffButtonPointer = dynamic_cast<OsuUISongBrowserSongDifficultyButton*>(button);
-	auto *collectionButtonPointer = dynamic_cast<OsuUISongBrowserCollectionButton*>(button);
+	auto *songButtonPointer = button->as<OsuUISongBrowserSongButton>();
+	auto *songDiffButtonPointer = button->as<OsuUISongBrowserSongDifficultyButton>();
+	auto *collectionButtonPointer = button->as<OsuUISongBrowserCollectionButton>();
 
 	///debugLog("onSelectionChange(%i, %i, %i)\n", (int)(songButtonPointer != NULL), (int)(songDiffButtonPointer != NULL), (int)(collectionButtonPointer != NULL));
 
@@ -1801,15 +1801,13 @@ void OsuSongBrowser2::onDifficultySelected(OsuDatabaseBeatmap *diff2, bool play,
 		m_selectedBeatmap->deselect();
 
 	// create/recreate/cache runtime beatmap object depending on gamemode
-	if (osu->getGamemode() == Osu::GAMEMODE::STD && dynamic_cast<OsuBeatmapStandard*>(m_selectedBeatmap) == NULL)
+	if (!m_selectedBeatmap)
 	{
-		SAFE_DELETE(m_selectedBeatmap);
-		m_selectedBeatmap = new OsuBeatmapStandard();
-	}
-	else if (osu->getGamemode() == Osu::GAMEMODE::MANIA && dynamic_cast<OsuBeatmapMania*>(m_selectedBeatmap) == NULL)
-	{
-		SAFE_DELETE(m_selectedBeatmap);
-		m_selectedBeatmap = new OsuBeatmapMania();
+		auto gamemode = osu->getGamemode();
+		if (gamemode == Osu::GAMEMODE::STD)
+			m_selectedBeatmap = new OsuBeatmapStandard();
+		else
+			m_selectedBeatmap = new OsuBeatmapMania();
 	}
 
 	// remember it
@@ -2282,7 +2280,7 @@ OsuUISongBrowserButton *OsuSongBrowser2::findCurrentlySelectedSongButton() const
 		return NULL;
 	for (size_t i = elements.size() - 1; i-- > 0;) // NOTE: iterate backwards to fall through multiple selected buttons (e.g. collections)
 	{
-		auto *button = dynamic_cast<OsuUISongBrowserButton*>(elements[i]);
+		auto *button = elements[i]->as<OsuUISongBrowserButton>();
 		if (button != NULL && button->isSelected())
 			return button;
 	}
@@ -2384,14 +2382,14 @@ void OsuSongBrowser2::updateSongButtonLayout()
 	bool inOpenCollection = false;
 	for (size_t i=0; i<elements.size(); i++)
 	{
-		OsuUISongBrowserButton *songButton = dynamic_cast<OsuUISongBrowserButton*>(elements[i]);
+		auto *songButton = elements[i]->as<OsuUISongBrowserButton>();
 
 		if (songButton != NULL)
 		{
-			const OsuUISongBrowserSongDifficultyButton *diffButtonPointer = dynamic_cast<OsuUISongBrowserSongDifficultyButton*>(songButton);
+			const auto *diffButtonPointer = songButton->as<OsuUISongBrowserSongDifficultyButton>();
 
 			// depending on the object type, layout differently
-			const bool isCollectionButton = dynamic_cast<OsuUISongBrowserCollectionButton*>(songButton) != NULL;
+			const bool isCollectionButton = !!songButton->as<OsuUISongBrowserCollectionButton>();
 			const bool isDiffButton = diffButtonPointer != NULL;
 			const bool isIndependentDiffButton = isDiffButton && diffButtonPointer->isIndependentDiffButton();
 
@@ -3527,12 +3525,12 @@ void OsuSongBrowser2::onSortScoresChange(UString text, int id)
 		{
 			if (m_visibleSongButtons[i]->getDatabaseBeatmap() == m_selectedBeatmap->getSelectedDifficulty2())
 			{
-				OsuUISongBrowserSongButton *songButtonPointer = dynamic_cast<OsuUISongBrowserSongButton*>(m_visibleSongButtons[i]);
+				auto *songButtonPointer = m_visibleSongButtons[i]->as<OsuUISongBrowserSongButton>();
 				if (songButtonPointer != NULL)
 				{
 					for (OsuUISongBrowserButton *diffButton : songButtonPointer->getChildren())
 					{
-						OsuUISongBrowserSongButton *diffButtonPointer = dynamic_cast<OsuUISongBrowserSongButton*>(diffButton);
+						auto *diffButtonPointer = diffButton->as<OsuUISongBrowserSongButton>();
 						if (diffButtonPointer != NULL)
 							diffButtonPointer->updateGrade();
 					}
@@ -3928,7 +3926,7 @@ void OsuSongBrowser2::onAfterSortingOrGroupChangeUpdateInt(bool autoScroll)
 	bool isAnythingSelected = false;
 	for (size_t i=0; i<elements.size(); i++)
 	{
-		const OsuUISongBrowserButton *button = dynamic_cast<OsuUISongBrowserButton*>(elements[i]);
+		const OsuUISongBrowserButton *button = elements[i]->as<OsuUISongBrowserButton>();
 		if (button != NULL && button->isSelected())
 		{
 			isAnythingSelected = true;
@@ -4007,8 +4005,8 @@ void OsuSongBrowser2::onSelectionOptions()
 
 		const Vector2 heuristicSongButtonPositionAfterSmoothScrollFinishes = (m_songBrowser->getPos() + m_songBrowser->getSize()/2);
 
-		OsuUISongBrowserSongButton *songButtonPointer = dynamic_cast<OsuUISongBrowserSongButton*>(currentlySelectedSongButton);
-		OsuUISongBrowserCollectionButton *collectionButtonPointer = dynamic_cast<OsuUISongBrowserCollectionButton*>(currentlySelectedSongButton);
+		auto *songButtonPointer = currentlySelectedSongButton->as<OsuUISongBrowserSongButton>();
+		auto *collectionButtonPointer = currentlySelectedSongButton->as<OsuUISongBrowserCollectionButton>();
 		if (songButtonPointer != NULL)
 			songButtonPointer->triggerContextMenu(heuristicSongButtonPositionAfterSmoothScrollFinishes);
 		else if (collectionButtonPointer != NULL)
@@ -4395,8 +4393,8 @@ void OsuSongBrowser2::selectRandomBeatmap(bool playMusicFromPreviewPoint)
 	std::vector<OsuUISongBrowserSongButton*> songButtons;
 	for (size_t i=0; i<elements.size(); i++)
 	{
-		OsuUISongBrowserSongButton *songButtonPointer = dynamic_cast<OsuUISongBrowserSongButton*>(elements[i]);
-		OsuUISongBrowserSongDifficultyButton *songDifficultyButtonPointer = dynamic_cast<OsuUISongBrowserSongDifficultyButton*>(elements[i]);
+		auto *songButtonPointer = elements[i]->as<OsuUISongBrowserSongButton>();
+		auto *songDifficultyButtonPointer = elements[i]->as<OsuUISongBrowserSongDifficultyButton>();
 
 		if (songButtonPointer != NULL && (songDifficultyButtonPointer == NULL || songDifficultyButtonPointer->isIndependentDiffButton())) // only allow songbuttons or independent diffs
 			songButtons.push_back(songButtonPointer);
@@ -4410,7 +4408,7 @@ void OsuSongBrowser2::selectRandomBeatmap(bool playMusicFromPreviewPoint)
 
 	std::uniform_int_distribution<size_t> rng(0, songButtons.size() - 1);
 	size_t randomIndex = rng(m_rngalg);
-	OsuUISongBrowserSongButton *songButton = dynamic_cast<OsuUISongBrowserSongButton*>(songButtons[randomIndex]);
+	auto *songButton = songButtons[randomIndex]->as<OsuUISongBrowserSongButton>();
 	selectSongButton(songButton);
 }
 
@@ -4427,8 +4425,7 @@ void OsuSongBrowser2::selectPreviousRandomBeatmap()
 		std::vector<OsuUISongBrowserSongButton*> songButtons;
 		for (size_t i=0; i<elements.size(); i++)
 		{
-			OsuUISongBrowserSongButton *songButtonPointer = dynamic_cast<OsuUISongBrowserSongButton*>(elements[i]);
-
+			auto *songButtonPointer = elements[i]->as<OsuUISongBrowserSongButton>();
 			if (songButtonPointer != NULL) // allow ALL songbuttons
 				songButtons.push_back(songButtonPointer);
 		}
@@ -4473,7 +4470,7 @@ void OsuSongBrowser2::playSelectedDifficulty()
 	const std::vector<CBaseUIElement*> &elements = m_songBrowser->getContainer()->getElements();
 	for (size_t i=0; i<elements.size(); i++)
 	{
-		OsuUISongBrowserSongDifficultyButton *songDifficultyButton = dynamic_cast<OsuUISongBrowserSongDifficultyButton*>(elements[i]);
+		auto *songDifficultyButton = elements[i]->as<OsuUISongBrowserSongDifficultyButton>();
 		if (songDifficultyButton != NULL && songDifficultyButton->isSelected())
 		{
 			songDifficultyButton->select();

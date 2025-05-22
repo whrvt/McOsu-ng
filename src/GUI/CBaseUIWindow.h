@@ -21,17 +21,17 @@ class CBaseUIWindow : public CBaseUIElement
 {
 public:
 	CBaseUIWindow(float xPos=0, float yPos=0, float xSize=0, float ySize=0, UString name="");
-	~CBaseUIWindow();
+	~CBaseUIWindow() override;
 
 	ELEMENT_BODY(CBaseUIWindow)
 
-	virtual void draw(Graphics *g);
-	virtual void drawCustomContent(Graphics *g) {;}
-	virtual void update();
+	void draw(Graphics *g) override;
+	virtual void drawCustomContent(Graphics *) {;}
+	void update() override;
 
-	virtual void onKeyDown(KeyboardEvent &e);
-	virtual void onKeyUp(KeyboardEvent &e);
-	virtual void onChar(KeyboardEvent &e);
+	void onKeyDown(KeyboardEvent &e) override;
+	void onKeyUp(KeyboardEvent &e) override;
+	void onChar(KeyboardEvent &e) override;
 
 	// actions
 	void close();
@@ -61,26 +61,29 @@ public:
 	CBaseUIWindow *setTitleColor(Color titleColor) {m_titleColor = titleColor; return this;}
 
 	// get
-	virtual bool isBusy();
-	virtual bool isActive();
-	inline bool isMoving() const {return m_bMoving;}
-	inline bool isResizing() const {return m_bResizing;}
-	inline CBaseUIContainer *getContainer() const {return m_container;}
-	inline CBaseUIContainer *getTitleBarContainer() const {return m_titleBarContainer;}
+	bool isBusy() override;
+	bool isActive() override;
+	[[nodiscard]] inline bool isMoving() const {return m_bMoving;}
+	[[nodiscard]] inline bool isResizing() const {return m_bResizing;}
+	[[nodiscard]] inline CBaseUIContainer *getContainer() const {return m_container;}
+	[[nodiscard]] inline CBaseUIContainer *getTitleBarContainer() const {return m_titleBarContainer;}
 	inline int getTitleBarHeight() {return m_iTitleBarHeight;}
 
 	// events
-	virtual void onMouseDownInside();
-	virtual void onMouseUpInside();
-	virtual void onMouseUpOutside();
+	void onMouseDownInside() override;
+	void onMouseUpInside() override;
+	void onMouseUpOutside() override;
 
-	virtual void onMoved();
-	virtual void onResized();
+	void onMoved() override;
+	void onResized() override;
 
 	virtual void onResolutionChange(Vector2 newResolution);
 
-	virtual void onEnabled();
-	virtual void onDisabled();
+	void onEnabled() override;
+	void onDisabled() override;
+
+	// inspection
+	CBASE_UI_TYPE(CBaseUIWindow, WINDOW, CBaseUIElement)
 
 protected:
 	void updateTitleBarMetrics();

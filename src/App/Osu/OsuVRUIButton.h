@@ -16,8 +16,8 @@ class OsuVRUIButton : public OsuVRUIElement
 public:
 	OsuVRUIButton(OsuVR *vr, float x, float y, float width, float height);
 
-	virtual void drawVR(Graphics *g, Matrix4 &mvp);
-	virtual void update(Vector2 cursorPos);
+	void drawVR(Graphics *g, Matrix4 &mvp) override;
+	void update(Vector2 cursorPos) override;
 
 	typedef fastdelegate::FastDelegate0<> ButtonClickVoidCallback;
 	void setClickCallback(ButtonClickVoidCallback clickCallback) {m_clickVoidCallback = clickCallback;}

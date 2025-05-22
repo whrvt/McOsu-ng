@@ -11,13 +11,13 @@
 
 #define CONTAINER_BODY(T) ELEMENT_BODY(T)\
 	\
-	virtual T *addElement(CBaseUIElement *element, bool back=false) {CBaseUIContainerBase::addElement(element, back); return this;} \
-	virtual T *addElement(std::shared_ptr<CBaseUIElement> element, bool back=false) {CBaseUIContainerBase::addElement(element, back); return this;} \
-	virtual T *insertElement(CBaseUIElement *element, CBaseUIElement *index, bool back=false) {CBaseUIContainerBase::insertElement(element, index, back); return this;} \
-	virtual T *insertElement(std::shared_ptr<CBaseUIElement> element, CBaseUIElement *index, bool back=false) {CBaseUIContainerBase::insertElement(element, index, back); return this;} \
-	virtual T *insertElement(CBaseUIElement *element, std::shared_ptr<CBaseUIElement> index, bool back=false) {CBaseUIContainerBase::insertElement(element, index, back); return this;} \
-	virtual T *insertElement(std::shared_ptr<CBaseUIElement> element, std::shared_ptr<CBaseUIElement> index, bool back=false) {CBaseUIContainerBase::insertElement(element, index, back); return this;} \
-	virtual T *setClipping(bool clipping) {CBaseUIContainerBase::setClipping(clipping); return this;}
+	T *addElement(CBaseUIElement *element, bool back=false) override {CBaseUIContainerBase::addElement(element, back); return this;} \
+	T *addElement(std::shared_ptr<CBaseUIElement> element, bool back=false) override {CBaseUIContainerBase::addElement(element, back); return this;} \
+	T *insertElement(CBaseUIElement *element, CBaseUIElement *index, bool back=false) override {CBaseUIContainerBase::insertElement(element, index, back); return this;} \
+	T *insertElement(std::shared_ptr<CBaseUIElement> element, CBaseUIElement *index, bool back=false) override {CBaseUIContainerBase::insertElement(element, index, back); return this;} \
+	T *insertElement(CBaseUIElement *element, std::shared_ptr<CBaseUIElement> index, bool back=false) override {CBaseUIContainerBase::insertElement(element, index, back); return this;} \
+	T *insertElement(std::shared_ptr<CBaseUIElement> element, std::shared_ptr<CBaseUIElement> index, bool back=false) override {CBaseUIContainerBase::insertElement(element, index, back); return this;} \
+	T *setClipping(bool clipping) override {CBaseUIContainerBase::setClipping(clipping); return this;}
 
 #include "CBaseUIElement.h"
 #include "cbase.h"
@@ -27,7 +27,7 @@ class CBaseUIContainerBase : public CBaseUIElement
 public:
 
 	CBaseUIContainerBase(UString name="");
-	virtual ~CBaseUIContainerBase();
+	~CBaseUIContainerBase() override;
 
 	ELEMENT_BODY(CBaseUIContainerBase);
 
@@ -49,18 +49,20 @@ public:
 	inline std::vector<std::shared_ptr<CBaseUIElement>> getAllElementsShared(){return m_vElements;}
 	inline std::vector<std::shared_ptr<CBaseUIElement>> *getAllElementsReference(){return &m_vElements;}
 
-	virtual void draw(Graphics *g);
-	virtual void drawDebug(Graphics *g, Color color=rgb(255,0,0)) {;}
-	virtual void update();
+	void draw(Graphics *g) override;
+	void drawDebug(Graphics *, Color) {;}
+	void update() override;
 
 	virtual void empty();
-
+	// inspection
+	CBASE_UI_TYPE(CBaseUIContainerBase, CONTAINERBASE, CBaseUIElement)
 protected:
 	// events
 	virtual void updateElement(CBaseUIElement *element) {;}
 
 	bool m_bClipping;
 	std::vector<std::shared_ptr<CBaseUIElement>> m_vElements;
+
 };
 
 #endif /* GUI_CBASEUICONTAINERBASE_H_ */

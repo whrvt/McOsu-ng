@@ -9,7 +9,7 @@
 #ifndef OSUUIRANKINGSCREENINFOLABEL_H
 #define OSUUIRANKINGSCREENINFOLABEL_H
 
-#include "CBaseUIElement.h"
+#include "OsuUIElement.h"
 
 class McFont;
 
@@ -17,12 +17,12 @@ class Osu;
 class OsuBeatmap;
 class OsuDatabaseBeatmap;
 
-class OsuUIRankingScreenInfoLabel : public CBaseUIElement
+class OsuUIRankingScreenInfoLabel final : public OsuUIElement
 {
 public:
 	OsuUIRankingScreenInfoLabel(float xPos, float yPos, float xSize, float ySize, UString name);
 
-	void draw(Graphics *g);
+	void draw(Graphics *g) override;
 
 	void setFromBeatmap(OsuBeatmap *beatmap, OsuDatabaseBeatmap *diff2);
 
@@ -36,7 +36,10 @@ public:
 	float getMinimumWidth();
 	float getMinimumHeight();
 
+	// inspection
+	CBASE_UI_TYPE(OsuUIRankingScreenInfoLabel, RANKINGSCREENINFOLABEL, OsuUIElement)
 private:
+
 	UString buildTitleString();
 	UString buildSubTitleString();
 	UString buildPlayerString();

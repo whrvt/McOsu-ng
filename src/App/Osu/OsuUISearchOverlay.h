@@ -9,16 +9,16 @@
 #ifndef OSUUISEARCHOVERLAY_H
 #define OSUUISEARCHOVERLAY_H
 
-#include "CBaseUIElement.h"
+#include "OsuUIElement.h"
 
 class Osu;
 
-class OsuUISearchOverlay : public CBaseUIElement
+class OsuUISearchOverlay final : public OsuUIElement
 {
 public:
 	OsuUISearchOverlay(float xPos, float yPos, float xSize, float ySize, UString name);
 
-	virtual void draw(Graphics *g);
+	void draw(Graphics *g) override;
 
 	void setDrawNumResults(bool drawNumResults) {m_bDrawNumResults = drawNumResults;}
 	void setOffsetRight(int offsetRight) {m_iOffsetRight = offsetRight;}
@@ -28,6 +28,8 @@ public:
 
 	void setSearching(bool searching) {m_bSearching = searching;}
 
+	// inspection
+	CBASE_UI_TYPE(OsuUISearchOverlay, SEARCHOVERLAY, OsuUIElement)
 private:
 
 	McFont *m_font;

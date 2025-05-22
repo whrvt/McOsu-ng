@@ -9,7 +9,7 @@
 #ifndef OSUUISONGBROWSERBUTTON_H
 #define OSUUISONGBROWSERBUTTON_H
 
-#include "CBaseUIButton.h"
+#include "OsuUIElement.h"
 
 class Osu;
 class OsuDatabaseBeatmap;
@@ -22,15 +22,15 @@ class OsuUISongBrowserButton : public CBaseUIButton
 {
 public:
 	OsuUISongBrowserButton(OsuSongBrowser2 *songBrowser, CBaseUIScrollView *view, OsuUIContextMenu *contextMenu, float xPos, float yPos, float xSize, float ySize, UString name);
-	virtual ~OsuUISongBrowserButton();
+	~OsuUISongBrowserButton() override;
 	void deleteAnimations();
 
-	virtual void draw(Graphics *g);
-	virtual void update();
+	void draw(Graphics *g) override;
+	void update() override;
 
 	virtual void updateLayoutEx();
 
-	OsuUISongBrowserButton *setVisible(bool visible);
+	OsuUISongBrowserButton *setVisible(bool visible) override;
 
 	void select(bool fireCallbacks = true, bool autoSelectBottomMostChild = true, bool wasParentSelected = true);
 	void deselect();
@@ -43,19 +43,23 @@ public:
 	void setHideIfSelected(bool hideIfSelected) {m_bHideIfSelected = hideIfSelected;}
 	void setIsSearchMatch(bool isSearchMatch) {m_bIsSearchMatch = isSearchMatch;}
 
-	Vector2 getActualOffset() const;
-	inline Vector2 getActualSize() const {return m_vSize - 2*getActualOffset();}
-	inline Vector2 getActualPos() const {return m_vPos + getActualOffset();}
-	inline std::vector<OsuUISongBrowserButton*> &getChildren() {return m_children;}
-	inline int getSortHack() const {return m_iSortHack;}
+	[[nodiscard]] Vector2 getActualOffset() const;
+	[[nodiscard]] inline Vector2 getActualSize() const {return m_vSize - 2*getActualOffset();}
+	[[nodiscard]] inline Vector2 getActualPos() const {return m_vPos + getActualOffset();}
+	[[nodiscard]] inline std::vector<OsuUISongBrowserButton*> &getChildren() {return m_children;}
+	[[nodiscard]] inline const std::vector<OsuUISongBrowserButton*> &getChildren() const {return m_children;}
+	[[nodiscard]] inline int getSortHack() const {return m_iSortHack;}
 
-	virtual OsuDatabaseBeatmap *getDatabaseBeatmap() const {return NULL;}
-	virtual Color getActiveBackgroundColor() const;
-	virtual Color getInactiveBackgroundColor() const;
+	[[nodiscard]] virtual OsuDatabaseBeatmap *getDatabaseBeatmap() const {return NULL;}
+	[[nodiscard]] virtual Color getActiveBackgroundColor() const;
+	[[nodiscard]] virtual Color getInactiveBackgroundColor() const;
 
-	inline bool isSelected() const {return m_bSelected;}
-	inline bool isHiddenIfSelected() const {return m_bHideIfSelected;}
-	inline bool isSearchMatch() const {return m_bIsSearchMatch.load();}
+	[[nodiscard]] inline bool isSelected() const {return m_bSelected;}
+	[[nodiscard]] inline bool isHiddenIfSelected() const {return m_bHideIfSelected;}
+	[[nodiscard]] inline bool isSearchMatch() const {return m_bIsSearchMatch.load();}
+
+	// inspection
+	CBASE_UI_TYPE(OsuUISongBrowserButton, OsuUIElement::UISONGBROWSERBUTTON, CBaseUIButton)
 
 protected:
 	void drawMenuButtonBackground(Graphics *g);
@@ -87,9 +91,9 @@ private:
 		MOVE_DOWN
 	};
 
-	virtual void onClicked();
-	virtual void onMouseInside();
-	virtual void onMouseOutside();
+	void onClicked() override;
+	void onMouseInside() override;
+	void onMouseOutside() override;
 
 	void setMoveAwayState(MOVE_AWAY_STATE moveAwayState, bool animate = true);
 

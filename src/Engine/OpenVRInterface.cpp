@@ -681,10 +681,10 @@ void OpenVRInterface::draw(Graphics *g)
 	{
 		// push to hmd
 		// only OpenGL is supported atm
-		OpenGLRenderTarget *glLeftEye = dynamic_cast<OpenGLRenderTarget*>(m_leftEye);
-		OpenGLRenderTarget *glRightEye = dynamic_cast<OpenGLRenderTarget*>(m_rightEye);
-		OpenGLRenderTarget *glCompositorEye1 = dynamic_cast<OpenGLRenderTarget*>(m_compositorEye1);
-		OpenGLRenderTarget *glCompositorEye2 = m_compositorEye2 != NULL ? dynamic_cast<OpenGLRenderTarget*>(m_compositorEye2) : NULL;
+		auto *glLeftEye = static_cast<OpenGLRenderTarget*>(m_leftEye);
+		auto *glRightEye = static_cast<OpenGLRenderTarget*>(m_rightEye);
+		auto *glCompositorEye1 = static_cast<OpenGLRenderTarget*>(m_compositorEye1);
+		auto *glCompositorEye2 = m_compositorEye2 != NULL ? static_cast<OpenGLRenderTarget*>(m_compositorEye2) : NULL;
 		if (glLeftEye != NULL && glRightEye != NULL && glCompositorEye1 != NULL)
 		{
 			// there are no words for how angry I am having to do supersampling like this >:(

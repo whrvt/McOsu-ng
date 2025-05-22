@@ -7,10 +7,6 @@
 
 #include <cstdio>
 
-#ifdef MCENGINE_FEATURE_MULTITHREADING
-#include <mutex>
-#endif
-
 #include "AnimationHandler.h"
 #include "ConVar.h"
 #include "ContextMenu.h"

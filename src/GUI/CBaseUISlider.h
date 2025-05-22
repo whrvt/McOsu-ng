@@ -18,14 +18,14 @@ class CBaseUISlider : public CBaseUIElement
 {
 public:
 	CBaseUISlider(float xPos=0, float yPos=0, float xSize=0, float ySize=0, UString name="");
-	virtual ~CBaseUISlider(){;}
+	~CBaseUISlider() override {;}
 
 	ELEMENT_BODY(CBaseUISlider)
 
-	virtual void draw(Graphics *g);
-	virtual void update();
+	void draw(Graphics *g) override;
+	void update() override;
 
-	virtual void onKeyDown(KeyboardEvent &e);
+	void onKeyDown(KeyboardEvent &e) override;
 
 	void fireChangeCallback();
 
@@ -61,12 +61,14 @@ public:
 	// TODO: DEPRECATED, don't use this function anymore, use setChangeCallback() instead
 	bool hasChanged();
 
-	virtual void onFocusStolen();
-	virtual void onMouseUpInside();
-	virtual void onMouseUpOutside();
-	virtual void onMouseDownInside();
-	virtual void onResized();
+	void onFocusStolen() override;
+	void onMouseUpInside() override;
+	void onMouseUpOutside() override;
+	void onMouseDownInside() override;
+	void onResized() override;
 
+	// inspection
+	CBASE_UI_TYPE(CBaseUISlider, SLIDER, CBaseUIElement)
 protected:
 	virtual void drawBlock(Graphics *g);
 

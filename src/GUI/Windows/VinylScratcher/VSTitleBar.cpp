@@ -68,7 +68,7 @@ public:
 
 
 
-VSTitleBar::VSTitleBar(int x, int y, int xSize, McFont *font) : CBaseUIElement(x, y, xSize, 44 * env->getDPIScale(), "")
+VSTitleBar::VSTitleBar(int x, int y, int xSize, McFont *font) : WindowUIElement(x, y, xSize, 44 * env->getDPIScale(), "")
 {
 	m_font = font;
 

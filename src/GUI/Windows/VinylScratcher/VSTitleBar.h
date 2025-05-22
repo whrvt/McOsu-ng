@@ -9,34 +9,36 @@
 #ifndef VSTITLEBAR_H
 #define VSTITLEBAR_H
 
-#include "CBaseUIElement.h"
+#include "WindowUIElement.h"
 
 class McFont;
 
 class CBaseUIContainer;
 class CBaseUIButton;
 
-class VSTitleBar : public CBaseUIElement
+class VSTitleBar : public WindowUIElement
 {
 public:
 	typedef fastdelegate::FastDelegate0<> SeekCallback;
 
 public:
 	VSTitleBar(int x, int y, int xSize, McFont *font);
-	virtual ~VSTitleBar();
+	~VSTitleBar() override;
 
-	virtual void draw(Graphics *g);
-	virtual void update();
+	void draw(Graphics *g) override;
+	void update() override;
 
 	void setSeekCallback(SeekCallback callback) {m_seekCallback = callback;}
 	void setTitle(UString title, bool reverse = false);
 
-	inline bool isSeeking() const {return m_bIsSeeking;}
+	[[nodiscard]] inline bool isSeeking() const {return m_bIsSeeking;}
 
+	// inspection
+	CBASE_UI_TYPE(VSTitleBar, VSTITLEBAR, WindowUIElement)
 protected:
-	virtual void onResized();
-	virtual void onMoved();
-	virtual void onFocusStolen();
+	void onResized() override;
+	void onMoved() override;
+	void onFocusStolen() override;
 
 private:
 	void drawTitle1(Graphics *g);

@@ -9,7 +9,7 @@
 #ifndef OSUBUTTON_H
 #define OSUBUTTON_H
 
-#include "CBaseUIButton.h"
+#include "OsuUIElement.h"
 
 class Osu;
 
@@ -18,8 +18,8 @@ class OsuUIButton : public CBaseUIButton
 public:
 	OsuUIButton(float xPos, float yPos, float xSize, float ySize, UString name, UString text);
 
-	virtual void draw(Graphics *g);
-	virtual void update();
+	void draw(Graphics *g) override;
+	void update() override;
 
 	void setColor(Color color) {m_color = color; m_backupColor = color;}
 	void setUseDefaultSkin() {m_bDefaultSkin = true;}
@@ -27,14 +27,16 @@ public:
 
 	void setTooltipText(UString text);
 
-	virtual void onMouseInside();
-	virtual void onMouseOutside();
+	void onMouseInside() override;
+	void onMouseOutside() override;
 
 	void animateClickColor();
 
+	// inspection
+	CBASE_UI_TYPE(OsuUIButton, OsuUIElement::OSUUIBUTTON, CBaseUIButton)
 private:
-	virtual void onClicked();
-	virtual void onFocusStolen();
+	void onClicked() override;
+	void onFocusStolen() override;
 
 	bool m_bDefaultSkin;
 	Color m_color;

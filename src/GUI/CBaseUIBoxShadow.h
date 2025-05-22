@@ -22,11 +22,11 @@ class CBaseUIBoxShadow : public CBaseUIElement
 {
 public:
 	CBaseUIBoxShadow(Color color=argb(0, 0, 0, 0), float radius=0, float xPos=0, float yPos=0, float xSize=0, float ySize=0, UString name="");
-	virtual ~CBaseUIBoxShadow();
+	~CBaseUIBoxShadow() override;
 
 	ELEMENT_BODY(CBaseUIBoxShadow)
 
-	virtual void draw(Graphics *g);
+	void draw(Graphics *g) override;
 	void renderOffscreen(Graphics *g);
 
 	void forceRedraw() {m_bNeedsRedraw = true;}
@@ -35,10 +35,12 @@ public:
 	CBaseUIBoxShadow *setColor(Color color);
 	CBaseUIBoxShadow *setShadowColor(Color color);
 
-	inline float getRadius() const {return m_fRadius;}
+	[[nodiscard]] float getRadius() const {return m_fRadius;}
 
-	virtual void onResized();
+	void onResized() override;
 
+	// inspection
+	CBASE_UI_TYPE(CBaseUIBoxShadow, BOXSHADOW, CBaseUIElement)
 private:
 	void render(Graphics *g);
 
@@ -67,8 +69,8 @@ public:
 
 	void setSize(Vector2 size);
 
-	inline const Vector2 getPos() const {return m_vPos;}
-	inline const Vector2 getSize() const {return m_vSize;}
+	[[nodiscard]] inline const Vector2 getPos() const {return m_vPos;}
+	[[nodiscard]] inline const Vector2 getSize() const {return m_vSize;}
 
 private:
 	Vector2 m_vPos;

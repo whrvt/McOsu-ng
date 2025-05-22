@@ -23,7 +23,7 @@ class CBaseUIContainerHorizontalBox : public CBaseUIContainerBase
 {
 public:
 	CBaseUIContainerHorizontalBox(float posX=0, float posY=0, float sizeX=0, float sizeY=0, UString name="");
-	virtual ~CBaseUIContainerHorizontalBox();
+	~CBaseUIContainerHorizontalBox() override;
 
 	CONTAINER_BODY(CBaseUIContainerHorizontalBox)
 
@@ -37,12 +37,14 @@ public:
 	CBaseUIContainerHorizontalBox *setMargin(float margin) {m_vMargin.x = m_vMargin.y = margin; return this;}
 	CBaseUIContainerHorizontalBox *setWidthOverride(bool widthOverride) {m_bWidthOverride = widthOverride; return this;}
 
+	// inspection
+	CBASE_UI_TYPE(CBaseUIContainerHorizontalBox, CONTAINERHBOX, CBaseUIContainerBase)
 protected:
 	// events
-	virtual void updateLayout();
-	virtual void updateElement(CBaseUIElement *element);
-	virtual void onMoved();
-	virtual void onResized();
+	void updateLayout() override;
+	void updateElement(CBaseUIElement *element) override;
+	void onMoved() override;
+	void onResized() override;
 
 	// container options
 	bool m_bWidthOverride;

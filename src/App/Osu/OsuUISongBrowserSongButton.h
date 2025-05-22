@@ -19,23 +19,26 @@ class OsuUISongBrowserSongButton : public OsuUISongBrowserButton
 {
 public:
 	OsuUISongBrowserSongButton(OsuSongBrowser2 *songBrowser, CBaseUIScrollView *view, OsuUIContextMenu *contextMenu, float xPos, float yPos, float xSize, float ySize, UString name, OsuDatabaseBeatmap *databaseBeatmap);
-	virtual ~OsuUISongBrowserSongButton();
+	~OsuUISongBrowserSongButton() override;
 
-	virtual void draw(Graphics *g);
-	virtual void update();
+	void draw(Graphics *g) override;
+	void update() override;
 
 	void triggerContextMenu(Vector2 pos);
 
 	void sortChildren();
 
-	virtual void updateLayoutEx();
+	void updateLayoutEx() override;
 	virtual void updateGrade() {;}
 
-	virtual OsuDatabaseBeatmap *getDatabaseBeatmap() const {return m_databaseBeatmap;}
+	[[nodiscard]] OsuDatabaseBeatmap *getDatabaseBeatmap() const override {return m_databaseBeatmap;}
+
+	// inspection
+	CBASE_UI_TYPE(OsuUISongBrowserSongButton, OsuUIElement::UISONGBROWSERSONGBUTTON, OsuUISongBrowserButton)
 
 protected:
-	virtual void onSelected(bool wasSelected, bool autoSelectBottomMostChild, bool wasParentSelected);
-	virtual void onRightMouseUpInside();
+	void onSelected(bool wasSelected, bool autoSelectBottomMostChild, bool wasParentSelected) override;
+	void onRightMouseUpInside() override;
 
 	void onContextMenu(UString text, int id = -1);
 	void onAddToCollectionConfirmed(UString text, int id = -1);

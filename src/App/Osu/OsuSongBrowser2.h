@@ -112,18 +112,18 @@ public:
 	friend class OsuSongBrowserBackgroundSearchMatcher;
 
 	OsuSongBrowser2();
-	virtual ~OsuSongBrowser2();
+	~OsuSongBrowser2() override;
 
-	virtual void draw(Graphics *g);
-	virtual void update();
+	void draw(Graphics *g) override;
+	void update() override;
 
-	virtual void onKeyDown(KeyboardEvent &e);
-	virtual void onKeyUp(KeyboardEvent &e);
-	virtual void onChar(KeyboardEvent &e);
+	void onKeyDown(KeyboardEvent &e) override;
+	void onKeyUp(KeyboardEvent &e) override;
+	void onChar(KeyboardEvent &e) override;
 
-	virtual void onResolutionChange(Vector2 newResolution);
+	void onResolutionChange(Vector2 newResolution) override;
 
-	virtual void setVisible(bool visible);
+	void setVisible(bool visible) override;
 
 	void onPlayEnd(bool quit = true); // called when a beatmap is finished playing (or the player quit)
 
@@ -154,20 +154,20 @@ public:
 	void updateSongButtonLayout();
 	void updateSongButtonSorting();
 
-	OsuUISongBrowserButton *findCurrentlySelectedSongButton() const;
-	inline const std::vector<OsuUISongBrowserCollectionButton*> &getCollectionButtons() const {return m_collectionButtons;}
+	[[nodiscard]] OsuUISongBrowserButton *findCurrentlySelectedSongButton() const;
+	[[nodiscard]] inline const std::vector<OsuUISongBrowserCollectionButton*> &getCollectionButtons() const {return m_collectionButtons;}
 
-	inline bool hasSelectedAndIsPlaying() const {return m_bHasSelectedAndIsPlaying;}
-	inline bool isInSearch() const {return m_bInSearch;}
-	inline bool isRightClickScrolling() const {return m_bSongBrowserRightClickScrolling;}
+	[[nodiscard]] inline bool hasSelectedAndIsPlaying() const {return m_bHasSelectedAndIsPlaying;}
+	[[nodiscard]] inline bool isInSearch() const {return m_bInSearch;}
+	[[nodiscard]] inline bool isRightClickScrolling() const {return m_bSongBrowserRightClickScrolling;}
 
-	inline OsuDatabase *getDatabase() const {return m_db;}
-	inline OsuBeatmap *getSelectedBeatmap() const {return m_selectedBeatmap;}
-	inline const OsuDatabaseBeatmapStarCalculator *getDynamicStarCalculator() const {return m_dynamicStarCalculator;}
+	[[nodiscard]] inline OsuDatabase *getDatabase() const {return m_db;}
+	[[nodiscard]] inline OsuBeatmap *getSelectedBeatmap() const {return m_selectedBeatmap;}
+	[[nodiscard]] inline const OsuDatabaseBeatmapStarCalculator *getDynamicStarCalculator() const {return m_dynamicStarCalculator;}
 
-	inline OsuUISongBrowserInfoLabel *getInfoLabel() {return m_songInfo;}
+	[[nodiscard]] inline OsuUISongBrowserInfoLabel *getInfoLabel() {return m_songInfo;}
 
-	inline GROUP getGroupingMode() const {return m_group;}
+	[[nodiscard]] inline GROUP getGroupingMode() const {return m_group;}
 
 private:
 	enum class SORT : uint8_t
@@ -200,8 +200,8 @@ private:
 	static bool searchMatcher(const OsuDatabaseBeatmap *databaseBeatmap, const std::vector<UString> &searchStringTokens);
 	static bool findSubstringInDifficulty(const OsuDatabaseBeatmap *diff, const UString &searchString);
 
-	virtual void updateLayout();
-	virtual void onBack();
+	void updateLayout() override;
+	void onBack() override;
 
 	void updateScoreBrowserLayout();
 

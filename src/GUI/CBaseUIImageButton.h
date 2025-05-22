@@ -15,13 +15,13 @@ class CBaseUIImageButton : public CBaseUIButton
 {
 public:
 	CBaseUIImageButton(UString imageResourceName="", float xPos=0, float yPos=0, float xSize=0, float ySize=0, UString name="");
-	virtual ~CBaseUIImageButton() {;}
+	~CBaseUIImageButton() override {;}
 
 	ELEMENT_BODY(CBaseUIImageButton)
 
-	virtual void draw(Graphics *g);
+	void draw(Graphics *g) override;
 
-	virtual void onResized();
+	void onResized() override;
 
 	CBaseUIImageButton *setImageResourceName(UString imageResourceName);
 	CBaseUIImageButton *setRotationDeg(float deg) {m_fRot = deg; return this;}
@@ -29,9 +29,11 @@ public:
 	CBaseUIImageButton *setScaleToFit(bool scaleToFit) {m_bScaleToFit = scaleToFit; return this;}
 	CBaseUIImageButton *setKeepAspectRatio(bool keepAspectRatio) {m_bKeepAspectRatio = keepAspectRatio; return this;}
 
-	inline UString getImageResourceName() const {return m_sImageResourceName;}
-	inline Vector2 getScale() const {return m_vScale;}
+	[[nodiscard]] inline UString getImageResourceName() const {return m_sImageResourceName;}
+	[[nodiscard]] inline Vector2 getScale() const {return m_vScale;}
 
+	// inspection
+	CBASE_UI_TYPE(CBaseUIImageButton, IMAGEBUTTON, CBaseUIButton)
 protected:
 	UString m_sImageResourceName;
 

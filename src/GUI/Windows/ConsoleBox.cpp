@@ -114,7 +114,7 @@ private:
 	UString m_sHelpText;
 };
 
-ConsoleBox::ConsoleBox() : CBaseUIElement(0, 0, 0, 0, "")
+ConsoleBox::ConsoleBox() : WindowUIElement(0, 0, 0, 0, "")
 {
 	const float dpiScale = env->getDPIScale();
 

@@ -41,7 +41,7 @@ private:
 };
 
 #else
-class SWShader final : public Shader{};
+class SWShader : public Shader{};
 #endif
 
 #endif

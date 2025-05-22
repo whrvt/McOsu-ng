@@ -9,7 +9,7 @@
 #ifndef VSMUSICBROWSER_H
 #define VSMUSICBROWSER_H
 
-#include "CBaseUIElement.h"
+#include "WindowUIElement.h"
 
 class McFont;
 
@@ -18,17 +18,17 @@ class CBaseUIButton;
 
 class VSMusicBrowserButton;
 
-class VSMusicBrowser : public CBaseUIElement
+class VSMusicBrowser : public WindowUIElement
 {
 public:
 	typedef fastdelegate::FastDelegate2<UString, bool> FileClickedCallback;
 
 public:
 	VSMusicBrowser(int x, int y, int xSize, int ySize, McFont *font);
-	virtual ~VSMusicBrowser();
+	~VSMusicBrowser() override;
 
-	virtual void draw(Graphics *g);
-	virtual void update();
+	void draw(Graphics *g) override;
+	void update() override;
 
 	void fireNextSong(bool previous);
 
@@ -36,12 +36,14 @@ public:
 
 	void setFileClickedCallback(FileClickedCallback callback) {m_fileClickedCallback = callback;}
 
+	// inspection
+	CBASE_UI_TYPE(VSMusicBrowser, VSMUSICBROWSER, WindowUIElement)
 protected:
-	virtual void onMoved();
-	virtual void onResized();
-	virtual void onDisabled();
-	virtual void onEnabled();
-	virtual void onFocusStolen();
+	void onMoved() override;
+	void onResized() override;
+	void onDisabled() override;
+	void onEnabled() override;
+	void onFocusStolen() override;
 
 private:
 	struct COLUMN

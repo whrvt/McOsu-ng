@@ -31,7 +31,7 @@ void CBaseUIContainerBox::updateLayout()
 
 void CBaseUIContainerBox::updateElement(CBaseUIElement *element)
 {
-	if (dynamic_cast<CBaseUIContainerBase *> (element) != NULL)
+	if (element && element->as<CBaseUIContainerBase>())
 	{
 		updateLayout();
 		return;

@@ -9,7 +9,7 @@
 #ifndef VISUALPROFILER_H
 #define VISUALPROFILER_H
 
-#include "CBaseUIElement.h"
+#include "WindowUIElement.h"
 
 class ConVar;
 class ProfilerNode;
@@ -18,14 +18,14 @@ class ProfilerProfile;
 class McFont;
 class VertexArrayObject;
 
-class VisualProfiler : public CBaseUIElement
+class VisualProfiler : public WindowUIElement
 {
 public:
 	VisualProfiler();
-	virtual ~VisualProfiler();
+	~VisualProfiler() override;
 
-	virtual void draw(Graphics *g);
-	virtual void update();
+	void draw(Graphics *g) override;
+	void update() override;
 
 	void incrementInfoBladeDisplayMode();
 	void decrementInfoBladeDisplayMode();
@@ -36,8 +36,10 @@ public:
 	void setProfile(ProfilerProfile *profile);
 	void setRequiresAltShiftKeysToFreeze(bool requiresAltShiftKeysToFreeze) {m_bRequiresAltShiftKeysToFreeze = requiresAltShiftKeysToFreeze;}
 
-	virtual bool isEnabled();
+	bool isEnabled() override;
 
+	// inspection
+	CBASE_UI_TYPE(VisualProfiler, VISUALPROFILER, WindowUIElement)
 private:
 	enum INFO_BLADE_DISPLAY_MODE
 	{

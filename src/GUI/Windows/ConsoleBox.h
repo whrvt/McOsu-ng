@@ -9,7 +9,7 @@
 #ifndef CONSOLEBOX_H
 #define CONSOLEBOX_H
 
-#include "CBaseUIElement.h"
+#include "WindowUIElement.h"
 
 #ifdef MCENGINE_FEATURE_MULTITHREADING
 
@@ -24,18 +24,18 @@ class CBaseUIBoxShadow;
 
 class ConsoleBoxTextbox;
 
-class ConsoleBox : public CBaseUIElement
+class ConsoleBox : public WindowUIElement
 {
 public:
 	ConsoleBox();
 	virtual ~ConsoleBox();
 
-	void draw(Graphics *g);
+	void draw(Graphics *g) override;
 	void drawLogOverlay(Graphics *g);
-	void update();
+	void update() override;
 
-	void onKeyDown(KeyboardEvent &e);
-	void onChar(KeyboardEvent &e);
+	void onKeyDown(KeyboardEvent &e) override;
+	void onChar(KeyboardEvent &e) override;
 
 	void onResolutionChange(Vector2 newResolution);
 
@@ -48,12 +48,14 @@ public:
 	void setRequireShiftToActivate(bool requireShiftToActivate) {m_bRequireShiftToActivate = requireShiftToActivate;}
 
 	// get
-	bool isBusy();
-	bool isActive();
+	bool isBusy() override;
+	bool isActive() override;
 
 	// ILLEGAL:
-	inline ConsoleBoxTextbox *getTextbox() const {return m_textbox;}
+	[[nodiscard]] inline ConsoleBoxTextbox *getTextbox() const {return m_textbox;}
 
+	// inspection
+	CBASE_UI_TYPE(ConsoleBox, CONSOLEBOX, WindowUIElement)
 private:
 	struct LOG_ENTRY
 	{

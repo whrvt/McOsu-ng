@@ -34,10 +34,10 @@ public:
 
 public:
 	OsuUISongBrowserScoreButton(OsuUIContextMenu *contextMenu, float xPos, float yPos, float xSize, float ySize, UString name, STYLE style = STYLE::SCORE_BROWSER);
-	virtual ~OsuUISongBrowserScoreButton();
+	~OsuUISongBrowserScoreButton() override;
 
-	void draw(Graphics *g);
-	void update();
+	void draw(Graphics *g) override;
+	void update() override;
 
 	void highlight();
 	void resetHighlight();
@@ -45,13 +45,13 @@ public:
 	void setScore(const OsuDatabase::Score &score, const OsuDatabaseBeatmap *diff2 = NULL, int index = 1, UString titleString = "", float weight = 1.0f);
 	void setIndex(int index) {m_iScoreIndexNumber = index;}
 
-	inline OsuDatabase::Score getScore() const {return m_score;}
-	inline uint64_t getScoreUnixTimestamp() const {return m_score.unixTimestamp;}
-	inline unsigned long long getScoreScore() const {return m_score.score;}
-	inline float getScorePP() const {return m_score.pp;}
+	[[nodiscard]] inline OsuDatabase::Score getScore() const {return m_score;}
+	[[nodiscard]] inline uint64_t getScoreUnixTimestamp() const {return m_score.unixTimestamp;}
+	[[nodiscard]] inline unsigned long long getScoreScore() const {return m_score.score;}
+	[[nodiscard]] inline float getScorePP() const {return m_score.pp;}
 
-	inline UString getDateTime() const {return m_sScoreDateTime;}
-	inline int getIndex() const {return m_iScoreIndexNumber;}
+	[[nodiscard]] inline UString getDateTime() const {return m_sScoreDateTime;}
+	[[nodiscard]] inline int getIndex() const {return m_iScoreIndexNumber;}
 
 private:
 	static ConVar *m_osu_scores_sort_by_pp_ref;
@@ -67,12 +67,12 @@ private:
 
 	void updateElapsedTimeString();
 
-	virtual void onClicked();
+	void onClicked() override;
 
-	virtual void onMouseInside();
-	virtual void onMouseOutside();
+	void onMouseInside() override;
+	void onMouseOutside() override;
 
-	virtual void onFocusStolen();
+	void onFocusStolen() override;
 
 	void onRightMouseUpInside();
 	void onContextMenu(UString text, int id = -1);

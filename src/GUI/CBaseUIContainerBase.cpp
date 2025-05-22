@@ -193,12 +193,10 @@ CBaseUIElement *CBaseUIContainerBase::getElementByName(UString name, bool search
 	{
 		if (m_vElements[i]->getName() == name)
 			return m_vElements[i].get();
-
-
 		else if (searchNestedContainers)
 		{
-			CBaseUIContainerBase *container = dynamic_cast<CBaseUIContainerBase *>(m_vElements[i].get());
-			if (container != nullptr)
+			CBaseUIContainerBase *container = nullptr;
+			if (m_vElements[i].get() != nullptr && (container = m_vElements[i].get()->as<CBaseUIContainerBase>()))
 				return container->getElementByName(name, true);
 		}
 	}
@@ -213,12 +211,10 @@ std::shared_ptr<CBaseUIElement> CBaseUIContainerBase::getElementSharedByName(USt
 	{
 		if (m_vElements[i]->getName() == name)
 			return m_vElements[i];
-
-
 		else if (searchNestedContainers)
 		{
-			CBaseUIContainerBase *container = dynamic_cast<CBaseUIContainerBase *>(m_vElements[i].get());
-			if (container != nullptr)
+			CBaseUIContainerBase *container = nullptr;
+			if (m_vElements[i].get() != nullptr && (container = m_vElements[i].get()->as<CBaseUIContainerBase>()))
 				return container->getElementSharedByName(name, true);
 		}
 	}

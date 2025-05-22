@@ -396,7 +396,7 @@ AS_IF([test "x$enable_debug" = "xyes"], [
             CFLAGS="$CFLAGS -fipa-pta"
         ])
     ])
-    # MCOSU_CXXFLAGS="$MCOSU_CXXFLAGS -fno-rtti" # TODO: remove needless dynamic_casts everywhere
+    CXXFLAGS="$CXXFLAGS -fno-rtti" # disallow dynamic_cast
     MCOSU_CXXFLAGS="$MCOSU_CXXFLAGS -fno-exceptions" # disables std::thread constructor exception handling
     MCOSU_LDFLAGS="$MCOSU_LDFLAGS -Wl,-s,--gc-sections" # strip and GC unless debug
 ])

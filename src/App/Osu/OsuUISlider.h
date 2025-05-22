@@ -9,6 +9,8 @@
 #ifndef OSUUISLIDER_H
 #define OSUUISLIDER_H
 
+#include "OsuUIElement.h"
+
 #include "CBaseUISlider.h"
 
 class Osu;
@@ -18,7 +20,10 @@ class OsuUISlider : public CBaseUISlider
 public:
 	OsuUISlider(float xPos, float yPos, float xSize, float ySize, UString name);
 
-	virtual void draw(Graphics *g);
+	void draw(Graphics *g) override;
+
+	// inspection
+	CBASE_UI_TYPE(OsuUISlider, OsuUIElement::OSUUISLIDER, CBaseUISlider)
 };
 
 #endif

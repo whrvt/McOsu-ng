@@ -16,7 +16,7 @@
 
 #include <chrono>
 
-OsuUIRankingScreenInfoLabel::OsuUIRankingScreenInfoLabel(float xPos, float yPos, float xSize, float ySize, UString name) : CBaseUIElement(xPos, yPos, xSize, ySize, name)
+OsuUIRankingScreenInfoLabel::OsuUIRankingScreenInfoLabel(float xPos, float yPos, float xSize, float ySize, UString name) : OsuUIElement(xPos, yPos, xSize, ySize, name)
 {
 	
 	m_font = osu->getSubTitleFont();

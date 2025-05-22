@@ -15,11 +15,11 @@ class CBaseUIImage : public CBaseUIElement
 {
 public:
 	CBaseUIImage(UString imageResourceName="", float xPos=0, float yPos=0, float xSize=0, float ySize=0, UString name="");
-	virtual ~CBaseUIImage(){;}
+	~CBaseUIImage() override {;}
 
 	ELEMENT_BODY(CBaseUIImage)
 
-	virtual void draw(Graphics *g);
+	void draw(Graphics *g) override;
 
 	void setImage(Image *img);
 
@@ -36,11 +36,14 @@ public:
 	CBaseUIImage *setScale(Vector2 scale){m_vScale.x = scale.x; m_vScale.y = scale.y; return this;}
 	CBaseUIImage *setScaleToFit(bool scaleToFit) {m_bScaleToFit = scaleToFit; return this;}
 
-	inline float getRotationDeg() const {return m_fRot;}
-	inline Vector2 getScale() const {return m_vScale;}
-	inline Image *getImage() const {return m_image;}
+	[[nodiscard]] inline float getRotationDeg() const {return m_fRot;}
+	[[nodiscard]] inline Vector2 getScale() const {return m_vScale;}
+	[[nodiscard]] inline Image *getImage() const {return m_image;}
 
+	// inspection
+	CBASE_UI_TYPE(CBaseUIImage, IMAGE, CBaseUIElement)
 private:
+
 	Image *m_image;
 
 	Color m_frameColor;

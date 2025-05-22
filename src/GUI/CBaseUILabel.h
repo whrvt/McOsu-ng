@@ -23,12 +23,12 @@ public:
 
 public:
 	CBaseUILabel(float xPos=0, float yPos=0, float xSize=0, float ySize=0, UString name="", UString text="");
-	virtual ~CBaseUILabel() {;}
+	~CBaseUILabel() override {;}
 
 	ELEMENT_BODY(CBaseUILabel)
 
-	virtual void draw(Graphics *g);
-	virtual void update();
+	void draw(Graphics *g) override;
+	void update() override;
 
 	// set
 	CBaseUILabel *setDrawFrame(bool drawFrame) {m_bDrawFrame = drawFrame; return this;}
@@ -49,14 +49,16 @@ public:
 	void setCenterText(bool centerText) {m_bCenterText = centerText;}
 
 	// get
-	inline Color getFrameColor() const {return m_frameColor;}
-	inline Color getBackgroundColor() const {return m_backgroundColor;}
-	inline Color getTextColor() const {return m_textColor;}
-	inline McFont *getFont() const {return m_font;}
-	inline UString getText() const {return m_sText;}
+	[[nodiscard]] inline Color getFrameColor() const {return m_frameColor;}
+	[[nodiscard]] inline Color getBackgroundColor() const {return m_backgroundColor;}
+	[[nodiscard]] inline Color getTextColor() const {return m_textColor;}
+	[[nodiscard]] inline McFont *getFont() const {return m_font;}
+	[[nodiscard]] inline UString getText() const {return m_sText;}
 
-	virtual void onResized() { updateStringMetrics(); }
+	void onResized() override { updateStringMetrics(); }
 
+	// inspection
+	CBASE_UI_TYPE(CBaseUILabel, LABEL, CBaseUIElement)
 protected:
 	virtual void drawText(Graphics *g);
 

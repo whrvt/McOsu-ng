@@ -23,19 +23,21 @@ class CBaseUICanvas : public CBaseUIContainerBase
 {
 public:
 	CBaseUICanvas(float xPos=0, float yPos=0, float xSize=0, float ySize=0, UString name="");
-	virtual ~CBaseUICanvas();
+	~CBaseUICanvas() override;
 
 	CONTAINER_BODY(CBaseUICanvas)
 
 	// main
 	virtual void drawDebug(Graphics *g, Color color=rgb(255,0,0));
 
+	// inspection
+	CBASE_UI_TYPE(CBaseUICanvas, CANVAS, CBaseUIContainerBase)
 protected:
 	// events
-	virtual void onMoved();
-	virtual void onResized();
-	virtual void updateLayout();
-	virtual void updateElement(CBaseUIElement *element);
+	void onMoved() override;
+	void onResized() override;
+	void updateLayout() override;
+	void updateElement(CBaseUIElement *element) override;
 };
 
 #endif /* GUI_WINDOWS_CBASEUICANVAS_H_ */

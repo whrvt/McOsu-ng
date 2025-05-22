@@ -296,7 +296,7 @@ void OsuUISongBrowserButton::onMouseInside()
 	bool foundCenter = false;
 	for (size_t i=0; i<elements.size(); i++)
 	{
-		OsuUISongBrowserButton *b = dynamic_cast<OsuUISongBrowserButton*>(elements[i]);
+		auto *b = elements[i]->as<OsuUISongBrowserButton>();
 		if (b != NULL) // sanity
 		{
 			if (b == this)
@@ -323,7 +323,7 @@ void OsuUISongBrowserButton::onMouseOutside()
 		const std::vector<CBaseUIElement*> &elements = m_view->getContainer()->getElements();
 		for (size_t i=0; i<elements.size(); i++)
 		{
-			OsuUISongBrowserButton *b = dynamic_cast<OsuUISongBrowserButton*>(elements[i]);
+			auto *b = elements[i]->as<OsuUISongBrowserButton>();
 			if (b != NULL) // sanity check
 				b->setMoveAwayState(MOVE_AWAY_STATE::MOVE_CENTER);
 		}

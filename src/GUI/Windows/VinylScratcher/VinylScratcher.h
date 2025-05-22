@@ -9,7 +9,7 @@
 #ifndef VINYLSCRATCHER_H
 #define VINYLSCRATCHER_H
 
-#include "CBaseUIWindow.h"
+#include "WindowUIElement.h"
 
 class Sound;
 class ConVar;
@@ -27,14 +27,16 @@ public:
 
 public:
 	VinylScratcher();
-	virtual ~VinylScratcher() {;}
+	~VinylScratcher() override {;}
 
-	virtual void update();
+	void update() override;
 
-	virtual void onKeyDown(KeyboardEvent &e);
+	void onKeyDown(KeyboardEvent &e) override;
 
+	// inspection
+	CBASE_UI_TYPE(VinylScratcher, WindowUIElement::VINYLSCRATCHERWINDOW, CBaseUIWindow)
 protected:
-	virtual void onResized();
+	void onResized() override;
 
 private:
 	void onFinished();

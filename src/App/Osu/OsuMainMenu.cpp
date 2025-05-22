@@ -95,14 +95,14 @@ class OsuMainMenuMainButton : public CBaseUIButton
 public:
 	OsuMainMenuMainButton(OsuMainMenu *mainMenu, float xPos, float yPos, float xSize, float ySize, UString name, UString text);
 
-	virtual void draw(Graphics *g);
+	void draw(Graphics *g) override;
 
-	void onMouseInside();
-	void onMouseOutside();
-	void onMouseDownInside();
+	void onMouseInside() override;
+	void onMouseOutside() override;
+	void onMouseDownInside() override;
 
 private:
-	virtual void onClicked();
+	void onClicked() override;
 
 	OsuMainMenu *m_mainMenu;
 };
@@ -112,7 +112,7 @@ class OsuMainMenuButton : public CBaseUIButton
 public:
 	OsuMainMenuButton(OsuMainMenu *mainMenu, float xPos, float yPos, float xSize, float ySize, UString name, UString text);
 
-	void onMouseDownInside();
+	void onMouseDownInside() override;
 
 private:
 	OsuMainMenu *m_mainMenu;
@@ -126,7 +126,7 @@ public:
 		m_bIsPaused = true;
 	}
 
-	virtual void draw(Graphics *g)
+	void draw(Graphics *g) override
 	{
 		int third = m_vSize.x/3;
 
