@@ -13,7 +13,7 @@
 
 #ifdef MCENGINE_FEATURE_GLES32
 
-class OpenGLES32Shader : public Shader
+class OpenGLES32Shader final : public Shader
 {
 public:
 	OpenGLES32Shader(UString shader, bool source);

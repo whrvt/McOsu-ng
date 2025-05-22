@@ -13,7 +13,7 @@
 
 #ifdef MCENGINE_FEATURE_OPENGL
 
-class OpenGLShader : public Shader
+class OpenGLShader final : public Shader
 {
 public:
 	OpenGLShader(UString shader, bool source);

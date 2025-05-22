@@ -17,7 +17,7 @@
 
 class SDLSound;
 
-class SDLSoundEngine : public SoundEngine
+class SDLSoundEngine final : public SoundEngine
 {
 public:
 	SDLSoundEngine();

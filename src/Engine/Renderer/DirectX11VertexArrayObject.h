@@ -15,7 +15,7 @@
 
 #include "DirectX11Interface.h"
 
-class DirectX11VertexArrayObject : public VertexArrayObject
+class DirectX11VertexArrayObject final : public VertexArrayObject
 {
 public:
 	DirectX11VertexArrayObject(Graphics::PRIMITIVE primitive = Graphics::PRIMITIVE::PRIMITIVE_TRIANGLES, Graphics::USAGE_TYPE usage = Graphics::USAGE_TYPE::USAGE_STATIC, bool keepInSystemMemory = false);

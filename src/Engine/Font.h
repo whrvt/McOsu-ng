@@ -17,7 +17,7 @@
 class TextureAtlas;
 class VertexArrayObject;
 
-class McFont : public Resource
+class McFont final : public Resource
 {
 public:
 	McFont(UString filepath, int fontSize = 16, bool antialiasing = true, int fontDPI = 96);

@@ -13,7 +13,7 @@
 
 class Image;
 
-class TextureAtlas : public Resource
+class TextureAtlas final : public Resource
 {
 public:
 	TextureAtlas(int width = 512, int height = 512);
@@ -29,10 +29,10 @@ public:
 	[[nodiscard]] inline Image *getAtlasImage() const {return m_atlasImage;}
 
 	// type inspection
-	[[nodiscard]] Type getResType() const override { return TEXTUREATLAS; }
+	[[nodiscard]] Type getResType() const final { return TEXTUREATLAS; }
 
-	TextureAtlas *asTextureAtlas() override { return this; }
-	[[nodiscard]] const TextureAtlas *asTextureAtlas() const override { return this; }
+	TextureAtlas *asTextureAtlas() final { return this; }
+	[[nodiscard]] const TextureAtlas *asTextureAtlas() const final { return this; }
 
 private:
 	void init() override;

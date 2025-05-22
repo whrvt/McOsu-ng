@@ -20,7 +20,7 @@
 #include "Engine.h"
 #include "SoundTouchFilter.h"
 
-class SoLoudSound : public Sound
+class SoLoudSound final : public Sound
 {
 	friend class SoLoudSoundEngine;
 

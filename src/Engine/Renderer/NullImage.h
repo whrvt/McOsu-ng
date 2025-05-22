@@ -11,7 +11,7 @@
 
 #include "Image.h"
 
-class NullImage : public Image
+class NullImage final : public Image
 {
 public:
 	NullImage(UString filePath, bool mipmapped = false, bool keepInSystemMemory = false) : Image(filePath, mipmapped, keepInSystemMemory) {;}

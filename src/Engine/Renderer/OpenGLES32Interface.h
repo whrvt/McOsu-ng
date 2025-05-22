@@ -18,7 +18,7 @@
 
 class OpenGLES32Shader;
 
-class OpenGLES32Interface : public NullGraphicsInterface
+class OpenGLES32Interface : public Graphics
 {
 public:
 	friend class OpenGLES32Shader;
@@ -26,82 +26,82 @@ public:
 	~OpenGLES32Interface() override;
 
 	// scene
-	void beginScene() override;
+	void beginScene() final;
 	void endScene() override;
 
 	// depth buffer
-	void clearDepthBuffer() override;
+	void clearDepthBuffer() final;
 
 	// color
-	void setColor(Color color) override;
-	void setAlpha(float alpha) override;
+	void setColor(Color color) final;
+	void setAlpha(float alpha) final;
 
 	// 2d primitive drawing
-	void drawLine(int x1, int y1, int x2, int y2) override;
-	void drawLine(Vector2 pos1, Vector2 pos2) override;
-	void drawRect(int x, int y, int width, int height) override;
-	void drawRect(int x, int y, int width, int height, Color top, Color right, Color bottom, Color left) override;
+	void drawLine(int x1, int y1, int x2, int y2) final;
+	void drawLine(Vector2 pos1, Vector2 pos2) final;
+	void drawRect(int x, int y, int width, int height) final;
+	void drawRect(int x, int y, int width, int height, Color top, Color right, Color bottom, Color left) final;
 	// TODO
-	// void drawPixels(int x, int y, int width, int height, Graphics::DRAWPIXELS_TYPE type, const void *pixels) override {;}
-	// void drawPixel(int x, int y) override {;}
-	// void fillRoundedRect(int x, int y, int width, int height, int radius) override {;}
+	void drawPixels(int x, int y, int width, int height, Graphics::DRAWPIXELS_TYPE type, const void *pixels) final {;}
+	void drawPixel(int x, int y) final {;}
+	void fillRoundedRect(int x, int y, int width, int height, int radius) final {;}
 
-	void fillRect(int x, int y, int width, int height) override;
-	void fillGradient(int x, int y, int width, int height, Color topLeftColor, Color topRightColor, Color bottomLeftColor, Color bottomRightColor) override;
+	void fillRect(int x, int y, int width, int height) final;
+	void fillGradient(int x, int y, int width, int height, Color topLeftColor, Color topRightColor, Color bottomLeftColor, Color bottomRightColor) final;
 
-	void drawQuad(int x, int y, int width, int height) override;
+	void drawQuad(int x, int y, int width, int height) final;
 	void drawQuad(Vector2 topLeft, Vector2 topRight, Vector2 bottomRight, Vector2 bottomLeft, Color topLeftColor, Color topRightColor, Color bottomRightColor,
-	              Color bottomLeftColor) override;
+	              Color bottomLeftColor) final;
 
 	// 2d resource drawing
-	void drawImage(Image *image) override;
-	void drawString(McFont *font, UString text) override;
+	void drawImage(Image *image) final;
+	void drawString(McFont *font, UString text) final;
 
 	// 3d type drawing
-	void drawVAO(VertexArrayObject *vao) override;
+	void drawVAO(VertexArrayObject *vao) final;
 
 	// DEPRECATED: 2d clipping
-	void setClipRect(McRect clipRect) override;
-	void pushClipRect(McRect clipRect) override;
-	void popClipRect() override;
+	void setClipRect(McRect clipRect) final;
+	void pushClipRect(McRect clipRect) final;
+	void popClipRect() final;
 
 	// stencil
-	void pushStencil() override;
-	void fillStencil(bool inside) override;
-	void popStencil() override;
+	void pushStencil() final;
+	void fillStencil(bool inside) final;
+	void popStencil() final;
 
 	// renderer settings
 #ifndef MCENGINE_PLATFORM_WASM // not compatible with WebGL
-	void setAlphaTesting(bool enabled) override;
-	void setAlphaTestFunc(COMPARE_FUNC alphaFunc, float ref) override;
-	void setAntialiasing(bool aa) override;
+	void setAlphaTesting(bool enabled) final;
+	void setAlphaTestFunc(COMPARE_FUNC alphaFunc, float ref) final;
+	void setAntialiasing(bool aa) final;
 #endif
-	void setClipping(bool enabled) override;
-	void setBlending(bool enabled) override;
-	void setBlendMode(BLEND_MODE blendMode) override;
-	void setDepthBuffer(bool enabled) override;
-	void setCulling(bool culling) override;
-	void setWireframe(bool _) override;
+	void setClipping(bool enabled) final;
+	void setBlending(bool enabled) final;
+	void setBlendMode(BLEND_MODE blendMode) final;
+	void setDepthBuffer(bool enabled) final;
+	void setCulling(bool culling) final;
+	void setWireframe(bool _) final;
 
 	// renderer actions
-	void flush() override;
-	std::vector<unsigned char> getScreenshot() override;
+	void flush() final;
+	std::vector<unsigned char> getScreenshot() final;
 
 	// renderer info
-	[[nodiscard]] Vector2 getResolution() const override { return m_vResolution; }
+	[[nodiscard]] Vector2 getResolution() const final { return m_vResolution; }
 
 	// callbacks
-	void onResolutionChange(Vector2 newResolution) override;
+	void onResolutionChange(Vector2 newResolution) final;
 
 	// factory
-	Image *createImage(UString filePath, bool mipmapped, bool keepInSystemMemory) override;
-	Image *createImage(int width, int height, bool mipmapped, bool keepInSystemMemory) override;
-	RenderTarget *createRenderTarget(int x, int y, int width, int height, Graphics::MULTISAMPLE_TYPE multiSampleType) override;
-	Shader *createShaderFromFile(UString vertexShaderFilePath, UString fragmentShaderFilePath) override; // DEPRECATED
-	Shader *createShaderFromSource(UString vertexShader, UString fragmentShader) override;               // DEPRECATED
-	Shader *createShaderFromFile(UString shaderFilePath) override;
-	Shader *createShaderFromSource(UString shaderSource) override;
-	VertexArrayObject *createVertexArrayObject(Graphics::PRIMITIVE primitive, Graphics::USAGE_TYPE usage, bool keepInSystemMemory) override;
+	Image *createImage(UString filePath, bool mipmapped, bool keepInSystemMemory) final;
+	Image *createImage(int width, int height, bool mipmapped, bool keepInSystemMemory) final;
+	RenderTarget *createRenderTarget(int x, int y, int width, int height, Graphics::MULTISAMPLE_TYPE multiSampleType) final;
+	Shader *createShaderFromFile(UString vertexShaderFilePath, UString fragmentShaderFilePath) final; // DEPRECATED
+	Shader *createShaderFromSource(UString vertexShader, UString fragmentShader) final;               // DEPRECATED
+	Shader *createShaderFromFile(UString shaderFilePath) final;
+	Shader *createShaderFromSource(UString shaderSource) final;
+	VertexArrayObject *createVertexArrayObject(Graphics::PRIMITIVE primitive, Graphics::USAGE_TYPE usage, bool keepInSystemMemory) final;
 
 	// matrices & transforms
 	void forceUpdateTransform();

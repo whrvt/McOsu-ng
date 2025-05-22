@@ -55,10 +55,10 @@ public:
 	[[nodiscard]] inline bool hasTexcoords() const {return m_bHasTexcoords;}
 
 	// type inspection
-	[[nodiscard]] Type getResType() const override { return VAO; }
+	[[nodiscard]] Type getResType() const final { return VAO; }
 
-	VertexArrayObject *asVAO() override { return this; }
-	[[nodiscard]] const VertexArrayObject *asVAO() const override { return this; }
+	VertexArrayObject *asVAO() final { return this; }
+	[[nodiscard]] const VertexArrayObject *asVAO() const final { return this; }
 
 protected:
 	static int nearestMultipleUp(int number, int multiple);

@@ -13,7 +13,7 @@
 
 class OsuBeatmap;
 
-class OsuBackgroundStarCacheLoader : public Resource
+class OsuBackgroundStarCacheLoader final : public Resource
 {
 public:
 	OsuBackgroundStarCacheLoader(OsuBeatmap *beatmap);

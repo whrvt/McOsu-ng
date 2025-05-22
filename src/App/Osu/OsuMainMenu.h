@@ -50,9 +50,7 @@ public:
 
 	virtual void onKeyDown(KeyboardEvent &e);
 
-	virtual void onLeftChange(bool down){;}
-	virtual void onMiddleChange(bool down);
-	virtual void onRightChange(bool down){;}
+	virtual void onButtonChange(MouseButton::Index button, bool down);
 
 	virtual void onWheelVertical(int delta){;}
 	virtual void onWheelHorizontal(int delta){;}

@@ -15,7 +15,7 @@
 
 #include "d3d11.h"
 
-class DirectX11Shader : public Shader
+class DirectX11Shader final : public Shader
 {
 public:
 	DirectX11Shader(UString shader, bool source);

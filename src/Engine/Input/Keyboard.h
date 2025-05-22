@@ -14,24 +14,24 @@
 #include "KeyboardEvent.h"
 #include "KeyboardListener.h"
 
-class Keyboard : public InputDevice
+class Keyboard final : public InputDevice
 {
 public:
 	Keyboard();
-	virtual ~Keyboard() {;}
+	~Keyboard() override {;}
 
 	void addListener(KeyboardListener *keyboardListener, bool insertOnTop = false);
 	void removeListener(KeyboardListener *keyboardListener);
 	void reset();
 
-	virtual void onKeyDown(KEYCODE keyCode);
-	virtual void onKeyUp(KEYCODE keyCode);
-	virtual void onChar(KEYCODE charCode);
+	void onKeyDown(KEYCODE keyCode);
+	void onKeyUp(KEYCODE keyCode);
+	void onChar(KEYCODE charCode);
 
-	inline bool isControlDown() const {return m_bControlDown;}
-	inline bool isAltDown() const {return m_bAltDown;}
-	inline bool isShiftDown() const {return m_bShiftDown;}
-	inline bool isSuperDown() const {return m_bSuperDown;}
+	[[nodiscard]] inline bool isControlDown() const {return m_bControlDown;}
+	[[nodiscard]] inline bool isAltDown() const {return m_bAltDown;}
+	[[nodiscard]] inline bool isShiftDown() const {return m_bShiftDown;}
+	[[nodiscard]] inline bool isSuperDown() const {return m_bSuperDown;}
 
 private:
 	bool m_bControlDown;

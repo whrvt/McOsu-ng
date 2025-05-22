@@ -13,68 +13,68 @@
 
 class OsuBackgroundStarCacheLoader;
 
-class OsuBeatmapStandard : public OsuBeatmap
+class OsuBeatmapStandard final : public OsuBeatmap
 {
 public:
 	OsuBeatmapStandard();
-	virtual ~OsuBeatmapStandard();
+	~OsuBeatmapStandard() override;
 
-	virtual void draw(Graphics *g);
-	virtual void drawInt(Graphics *g);
-	virtual void drawVR(Graphics *g, Matrix4 &mvp, OsuVR *vr);
-	virtual void draw3D(Graphics *g);
-	virtual void draw3D2(Graphics *g);
-	virtual void update();
+	void draw(Graphics *g) override;
+	void drawInt(Graphics *g) override;
+	void drawVR(Graphics *g, Matrix4 &mvp, OsuVR *vr) override;
+	void draw3D(Graphics *g) override;
+	void draw3D2(Graphics *g) override;
+	void update() override;
 
-	virtual void onModUpdate() {onModUpdate(true, true);}
+	void onModUpdate() override {onModUpdate(true, true);}
 	void onModUpdate(bool rebuildSliderVertexBuffers = true, bool recomputeDrainRate = true); // this seems very dangerous compiler-wise, but it works
-	virtual bool isLoading() const;
+	[[nodiscard]] bool isLoading() const override;
 
-	[[nodiscard]] virtual Type getType() const { return STANDARD; }
+	[[nodiscard]] Type getType() const override { return STANDARD; }
 
-	virtual OsuBeatmapStandard* asStd() { return this; }
-	[[nodiscard]] const virtual OsuBeatmapStandard* asStd() const { return this; }
+	OsuBeatmapStandard* asStd() override { return this; }
+	[[nodiscard]] const OsuBeatmapStandard* asStd() const override { return this; }
 
-	Vector2 pixels2OsuCoords(Vector2 pixelCoords) const; // only used for positional audio atm
-	Vector2 osuCoords2Pixels(Vector2 coords) const; // hitobjects should use this one (includes lots of special behaviour)
-	Vector2 osuCoords2RawPixels(Vector2 coords) const; // raw transform from osu!pixels to absolute screen pixels (without any mods whatsoever)
-	Vector2 osuCoords2VRPixels(Vector2 coords) const; // this gets called by osuCoords2Pixels() during a VR draw(), for easier backwards compatibility
-	Vector3 osuCoordsTo3D(Vector2 coords, const OsuHitObject *hitObject) const;
-	Vector3 osuCoordsToRaw3D(Vector2 coords) const; // (without any mods whatsoever)
-	Vector2 osuCoords2LegacyPixels(Vector2 coords) const; // only applies vanilla osu mods and static mods to the coordinates (used for generating the static slider mesh) centered at (0, 0, 0)
+	[[nodiscard]] Vector2 pixels2OsuCoords(Vector2 pixelCoords) const; // only used for positional audio atm
+	[[nodiscard]] Vector2 osuCoords2Pixels(Vector2 coords) const; // hitobjects should use this one (includes lots of special behaviour)
+	[[nodiscard]] Vector2 osuCoords2RawPixels(Vector2 coords) const; // raw transform from osu!pixels to absolute screen pixels (without any mods whatsoever)
+	[[nodiscard]] Vector2 osuCoords2VRPixels(Vector2 coords) const; // this gets called by osuCoords2Pixels() during a VR draw(), for easier backwards compatibility
+	[[nodiscard]] Vector3 osuCoordsTo3D(Vector2 coords, const OsuHitObject *hitObject) const;
+	[[nodiscard]] Vector3 osuCoordsToRaw3D(Vector2 coords) const; // (without any mods whatsoever)
+	[[nodiscard]] Vector2 osuCoords2LegacyPixels(Vector2 coords) const; // only applies vanilla osu mods and static mods to the coordinates (used for generating the static slider mesh) centered at (0, 0, 0)
 
 	// cursor
-	Vector2 getCursorPos() const;
-	Vector2 getFirstPersonCursorDelta() const;
-	inline Vector2 getContinueCursorPoint() const {return m_vContinueCursorPoint;}
+	[[nodiscard]] Vector2 getCursorPos() const;
+	[[nodiscard]] Vector2 getFirstPersonCursorDelta() const;
+	[[nodiscard]] inline Vector2 getContinueCursorPoint() const {return m_vContinueCursorPoint;}
 
 	// playfield
-	inline Vector2 getPlayfieldSize() const {return m_vPlayfieldSize;}
-	inline Vector2 getPlayfieldCenter() const {return m_vPlayfieldCenter;}
-	inline float getPlayfieldRotation() const {return m_fPlayfieldRotation;}
+	[[nodiscard]] inline Vector2 getPlayfieldSize() const {return m_vPlayfieldSize;}
+	[[nodiscard]] inline Vector2 getPlayfieldCenter() const {return m_vPlayfieldCenter;}
+	[[nodiscard]] inline float getPlayfieldRotation() const {return m_fPlayfieldRotation;}
 
 	// hitobjects
-	float getHitcircleDiameter() const; // in actual scaled pixels to the current resolution
-	inline float getRawHitcircleDiameter() const {return m_fRawHitcircleDiameter;} // in osu!pixels
-	inline float getHitcircleXMultiplier() const {return m_fXMultiplier;} // multiply osu!pixels with this to get screen pixels
-	inline float getNumberScale() const {return m_fNumberScale;}
-	inline float getHitcircleOverlapScale() const {return m_fHitcircleOverlapScale;}
-	inline float getSliderFollowCircleDiameter() const {return m_fSliderFollowCircleDiameter;}
-	inline float getRawSliderFollowCircleDiameter() const {return m_fRawSliderFollowCircleDiameter;}
-	inline bool isInMafhamRenderChunk() const {return m_bInMafhamRenderChunk;}
+	[[nodiscard]] float getHitcircleDiameter() const; // in actual scaled pixels to the current resolution
+	[[nodiscard]] inline float getRawHitcircleDiameter() const {return m_fRawHitcircleDiameter;} // in osu!pixels
+	[[nodiscard]] inline float getHitcircleXMultiplier() const {return m_fXMultiplier;} // multiply osu!pixels with this to get screen pixels
+	[[nodiscard]] inline float getNumberScale() const {return m_fNumberScale;}
+	[[nodiscard]] inline float getHitcircleOverlapScale() const {return m_fHitcircleOverlapScale;}
+	[[nodiscard]] inline float getSliderFollowCircleDiameter() const {return m_fSliderFollowCircleDiameter;}
+	[[nodiscard]] inline float getRawSliderFollowCircleDiameter() const {return m_fRawSliderFollowCircleDiameter;}
+	[[nodiscard]] inline bool isInMafhamRenderChunk() const {return m_bInMafhamRenderChunk;}
 
 	// score
-	inline int getNumHitObjects() const {return m_hitobjects.size();}
-	inline float getAimStars() const {return m_fAimStars;}
-	inline float getAimSliderFactor() const {return m_fAimSliderFactor;}
-	inline float getAimDifficultSliders() const {return m_fAimDifficultSliders;}
-	inline float getAimDifficultStrains() const {return m_fAimDifficultStrains;}
-	inline float getSpeedStars() const {return m_fSpeedStars;}
-	inline float getSpeedNotes() const {return m_fSpeedNotes;}
-	inline float getSpeedDifficultStrains() const {return m_fSpeedDifficultStrains;}
+	[[nodiscard]] inline int getNumHitObjects() const {return m_hitobjects.size();}
+	[[nodiscard]] inline float getAimStars() const {return m_fAimStars;}
+	[[nodiscard]] inline float getAimSliderFactor() const {return m_fAimSliderFactor;}
+	[[nodiscard]] inline float getAimDifficultSliders() const {return m_fAimDifficultSliders;}
+	[[nodiscard]] inline float getAimDifficultStrains() const {return m_fAimDifficultStrains;}
+	[[nodiscard]] inline float getSpeedStars() const {return m_fSpeedStars;}
+	[[nodiscard]] inline float getSpeedNotes() const {return m_fSpeedNotes;}
+	[[nodiscard]] inline float getSpeedDifficultStrains() const {return m_fSpeedDifficultStrains;}
 
 	// hud
-	inline bool isSpinnerActive() const {return m_bIsSpinnerActive;}
+	[[nodiscard]] inline bool isSpinnerActive() const {return m_bIsSpinnerActive;}
 
 private:
 	static ConVar *m_osu_draw_statistics_pp_ref;
@@ -95,7 +95,7 @@ private:
 
 	static inline Vector2 mapNormalizedCoordsOntoUnitCircle(const Vector2 &in)
 	{
-		return Vector2(in.x * std::sqrt(1.0f - in.y * in.y / 2.0f), in.y * std::sqrt(1.0f - in.x * in.x / 2.0f));
+		return {in.x * std::sqrt(1.0f - in.y * in.y / 2.0f), in.y * std::sqrt(1.0f - in.x * in.x / 2.0f)};
 	}
 
 	static float quadLerp3f(float left, float center, float right, float percent)
@@ -114,14 +114,14 @@ private:
 		}
 	}
 
-	virtual void onBeforeLoad();
-	virtual void onLoad();
-	virtual void onPlayStart();
-	virtual void onBeforeStop(bool quit);
-	virtual void onStop(bool quit);
-	virtual void onPaused(bool first);
-	virtual void onUnpaused();
-	virtual void onRestart(bool quick);
+	void onBeforeLoad() override;
+	void onLoad() override;
+	void onPlayStart() override;
+	void onBeforeStop(bool quit) override;
+	void onStop(bool quit) override;
+	void onPaused(bool first) override;
+	void onUnpaused() override;
+	void onRestart(bool quick) override;
 
 	void drawFollowPoints(Graphics *g);
 	void drawHitObjects(Graphics *g);
@@ -136,8 +136,8 @@ private:
 
 	void updateStarCache();
 	void stopStarCacheLoader();
-	bool isLoadingStarCache() const;
-	bool isLoadingInt() const;
+	[[nodiscard]] bool isLoadingStarCache() const;
+	[[nodiscard]] bool isLoadingInt() const;
 
 	// beatmap
 	bool m_bIsSpinnerActive;

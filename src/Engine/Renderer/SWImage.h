@@ -13,7 +13,7 @@
 
 #ifdef MCENGINE_FEATURE_SOFTRENDERER
 
-class SWImage : public Image
+class SWImage final : public Image
 {
 public:
 	SWImage(UString filepath, bool mipmapped = false, bool keepInSystemMemory = false);

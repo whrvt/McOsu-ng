@@ -11,31 +11,31 @@
 
 #include "OsuBeatmap.h"
 
-class OsuBeatmapExample : public OsuBeatmap
+class OsuBeatmapExample final : public OsuBeatmap
 {
 public:
 	OsuBeatmapExample();
 
-	virtual void draw(Graphics *g);
-	virtual void drawVR(Graphics *g, Matrix4 &mvp, OsuVR *vr);
-	virtual void draw3D(Graphics *g);
-	virtual void update();
+	void draw(Graphics *g) override;
+	void drawVR(Graphics *g, Matrix4 &mvp, OsuVR *vr) override;
+	void draw3D(Graphics *g) override;
+	void update() override;
 
-	virtual void onModUpdate();
-	virtual bool isLoading() const;
+	void onModUpdate() override;
+	[[nodiscard]] bool isLoading() const override;
 
-	[[nodiscard]] virtual Type getType() const { return EXAMPLE; }
+	[[nodiscard]] Type getType() const override { return EXAMPLE; }
 
-	virtual OsuBeatmapExample* asExample() { return this; }
-	[[nodiscard]] const virtual OsuBeatmapExample* asExample() const { return this; }
+	OsuBeatmapExample* asExample() override { return this; }
+	[[nodiscard]] const OsuBeatmapExample* asExample() const override { return this;  }
 
 private:
-	virtual void onBeforeLoad();
-	virtual void onLoad();
-	virtual void onPlayStart();
-	virtual void onBeforeStop(bool quit);
-	virtual void onStop(bool quit);
-	virtual void onPaused(bool first);
+	void onBeforeLoad() override;
+	void onLoad() override;
+	void onPlayStart() override;
+	void onBeforeStop(bool quit) override;
+	void onStop(bool quit) override;
+	void onPaused(bool first) override;
 
 	bool m_bFakeExtraLoading;
 	float m_fFakeExtraLoadingTime;

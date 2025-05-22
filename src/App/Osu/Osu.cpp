@@ -1656,35 +1656,43 @@ void Osu::onChar(KeyboardEvent &e)
 	}
 }
 
-void Osu::onLeftChange(bool down)
+void Osu::onButtonChange(MouseButton::Index button, bool down)
 {
-	if (isInPlayMode() && !getSelectedBeatmap()->isPaused() && osu_disable_mousebuttons.getBool()) return;
+	if ((button != BUTTON_LEFT && button != BUTTON_RIGHT) || (isInPlayMode() && !getSelectedBeatmap()->isPaused() && osu_disable_mousebuttons.getBool()))
+		return;
 
-	if (!m_bMouseKey1Down && down)
+	switch (button)
 	{
-		m_bMouseKey1Down = true;
-		onKey1Change(true, true);
+	case BUTTON_LEFT:
+	{
+		if (!m_bMouseKey1Down && down)
+		{
+			m_bMouseKey1Down = true;
+			onKey1Change(true, true);
+		}
+		else if (m_bMouseKey1Down)
+		{
+			m_bMouseKey1Down = false;
+			onKey1Change(false, true);
+		}
+		break;
 	}
-	else if (m_bMouseKey1Down)
+	case BUTTON_RIGHT:
 	{
-		m_bMouseKey1Down = false;
-		onKey1Change(false, true);
+		if (!m_bMouseKey2Down && down)
+		{
+			m_bMouseKey2Down = true;
+			onKey2Change(true, true);
+		}
+		else if (m_bMouseKey2Down)
+		{
+			m_bMouseKey2Down = false;
+			onKey2Change(false, true);
+		}
+		break;
 	}
-}
-
-void Osu::onRightChange(bool down)
-{
-	if (isInPlayMode() && !getSelectedBeatmap()->isPaused() && osu_disable_mousebuttons.getBool()) return;
-
-	if (!m_bMouseKey2Down && down)
-	{
-		m_bMouseKey2Down = true;
-		onKey2Change(true, true);
-	}
-	else if (m_bMouseKey2Down)
-	{
-		m_bMouseKey2Down = false;
-		onKey2Change(false, true);
+	default:
+		break;
 	}
 }
 

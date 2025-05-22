@@ -55,10 +55,10 @@ public:
 	[[nodiscard]] inline bool isMultiSampled() const {return m_multiSampleType != Graphics::MULTISAMPLE_TYPE::MULTISAMPLE_0X;}
 
 	// type inspection
-	[[nodiscard]] Type getResType() const override { return RENDERTARGET; }
+	[[nodiscard]] Type getResType() const final { return RENDERTARGET; }
 
-	RenderTarget *asRenderTarget() override { return this; }
-	[[nodiscard]] const RenderTarget *asRenderTarget() const override { return this; }
+	RenderTarget *asRenderTarget() final { return this; }
+	[[nodiscard]] const RenderTarget *asRenderTarget() const final { return this; }
 protected:
 	void init() override = 0;
 	void initAsync() override = 0;

@@ -13,7 +13,7 @@
 
 #ifdef MCENGINE_FEATURE_SOFTRENDERER
 
-class SWRenderTarget : public RenderTarget
+class SWRenderTarget final : public RenderTarget
 {
 public:
 	SWRenderTarget(int x, int y, int width, int height, Graphics::MULTISAMPLE_TYPE multiSampleType = Graphics::MULTISAMPLE_TYPE::MULTISAMPLE_0X);

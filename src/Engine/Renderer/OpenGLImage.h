@@ -13,7 +13,7 @@
 
 #if defined(MCENGINE_FEATURE_OPENGL) || defined (MCENGINE_FEATURE_GLES2) || defined(MCENGINE_FEATURE_GLES32) || defined(MCENGINE_FEATURE_GL3)
 
-class OpenGLImage : public Image
+class OpenGLImage final : public Image
 {
 public:
 	OpenGLImage(UString filepath, bool mipmapped = false, bool keepInSystemMemory = false);

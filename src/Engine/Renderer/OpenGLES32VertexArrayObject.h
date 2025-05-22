@@ -13,7 +13,7 @@
 
 #ifdef MCENGINE_FEATURE_GLES32
 
-class OpenGLES32VertexArrayObject : public VertexArrayObject
+class OpenGLES32VertexArrayObject final : public VertexArrayObject
 {
 public:
 	friend class OpenGLES32Interface;

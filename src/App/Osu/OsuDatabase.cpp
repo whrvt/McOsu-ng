@@ -64,7 +64,7 @@ ConVar osu_user_switcher_include_legacy_scores_for_names("osu_user_switcher_incl
 
 
 
-struct SortScoreByScore : public OsuDatabase::SCORE_SORTING_COMPARATOR
+struct SortScoreByScore final : public OsuDatabase::SCORE_SORTING_COMPARATOR
 {
 	virtual ~SortScoreByScore() {;}
 	bool operator() (OsuDatabase::Score const &a, OsuDatabase::Score const &b) const
@@ -88,7 +88,7 @@ struct SortScoreByScore : public OsuDatabase::SCORE_SORTING_COMPARATOR
 	}
 };
 
-struct SortScoreByCombo : public OsuDatabase::SCORE_SORTING_COMPARATOR
+struct SortScoreByCombo final : public OsuDatabase::SCORE_SORTING_COMPARATOR
 {
 	virtual ~SortScoreByCombo() {;}
 	bool operator() (OsuDatabase::Score const &a, OsuDatabase::Score const &b) const
@@ -119,7 +119,7 @@ struct SortScoreByCombo : public OsuDatabase::SCORE_SORTING_COMPARATOR
 	}
 };
 
-struct SortScoreByDate : public OsuDatabase::SCORE_SORTING_COMPARATOR
+struct SortScoreByDate final : public OsuDatabase::SCORE_SORTING_COMPARATOR
 {
 	virtual ~SortScoreByDate() {;}
 	bool operator() (OsuDatabase::Score const &a, OsuDatabase::Score const &b) const
@@ -136,7 +136,7 @@ struct SortScoreByDate : public OsuDatabase::SCORE_SORTING_COMPARATOR
 	}
 };
 
-struct SortScoreByMisses : public OsuDatabase::SCORE_SORTING_COMPARATOR
+struct SortScoreByMisses final : public OsuDatabase::SCORE_SORTING_COMPARATOR
 {
 	virtual ~SortScoreByMisses() {;}
 	bool operator() (OsuDatabase::Score const &a, OsuDatabase::Score const &b) const
@@ -167,7 +167,7 @@ struct SortScoreByMisses : public OsuDatabase::SCORE_SORTING_COMPARATOR
 	}
 };
 
-struct SortScoreByAccuracy : public OsuDatabase::SCORE_SORTING_COMPARATOR
+struct SortScoreByAccuracy final : public OsuDatabase::SCORE_SORTING_COMPARATOR
 {
 	virtual ~SortScoreByAccuracy() {;}
 	bool operator() (OsuDatabase::Score const &a, OsuDatabase::Score const &b) const
@@ -198,7 +198,7 @@ struct SortScoreByAccuracy : public OsuDatabase::SCORE_SORTING_COMPARATOR
 	}
 };
 
-struct SortScoreByPP : public OsuDatabase::SCORE_SORTING_COMPARATOR
+struct SortScoreByPP final : public OsuDatabase::SCORE_SORTING_COMPARATOR
 {
 	virtual ~SortScoreByPP() {;}
 	bool operator() (OsuDatabase::Score const &a, OsuDatabase::Score const &b) const
@@ -223,7 +223,7 @@ struct SortScoreByPP : public OsuDatabase::SCORE_SORTING_COMPARATOR
 	}
 };
 
-struct SortScoreByUnstableRate : public OsuDatabase::SCORE_SORTING_COMPARATOR
+struct SortScoreByUnstableRate final : public OsuDatabase::SCORE_SORTING_COMPARATOR
 {
 	virtual ~SortScoreByUnstableRate() {;}
 	bool operator() (OsuDatabase::Score const &a, OsuDatabase::Score const &b) const
@@ -258,7 +258,7 @@ struct SortCollectionByName
 
 
 
-class OsuDatabaseLoader : public Resource
+class OsuDatabaseLoader final : public Resource
 {
 public:
 	OsuDatabaseLoader(OsuDatabase *db) : Resource()

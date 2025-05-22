@@ -47,7 +47,8 @@ class Image;
 class McFont;
 class RenderTarget;
 
-class Osu : public App, public MouseListener
+
+class Osu final : public App, public MouseListener
 {
 public:
 	static ConVar *version;
@@ -76,30 +77,28 @@ public:
 
 public:
 	Osu(int instanceID = 0);
-	virtual ~Osu();
+	~Osu() override;
 
-	virtual void draw(Graphics *g);
+	void draw(Graphics *g) override;
 	void drawVR(Graphics *g);
-	virtual void update();
+	void update() override;
 
-	virtual void onKeyDown(KeyboardEvent &e);
-	virtual void onKeyUp(KeyboardEvent &e);
-	virtual void onChar(KeyboardEvent &e);
+	void onKeyDown(KeyboardEvent &e) override;
+	void onKeyUp(KeyboardEvent &e) override;
+	void onChar(KeyboardEvent &e) override;
 
-	void onLeftChange(bool down);
-	void onMiddleChange(bool down){;}
-	void onRightChange(bool down);
+	void onButtonChange(MouseButton::Index button, bool down) override;
 
-	void onWheelVertical(int delta){;}
-	void onWheelHorizontal(int delta){;}
+	void onWheelVertical(int) override {;}
+	void onWheelHorizontal(int) override {;}
 
-	virtual void onResolutionChanged(Vector2 newResolution);
-	virtual void onDPIChanged();
+	void onResolutionChanged(Vector2 newResolution) override;
+	void onDPIChanged() override;
 
-	virtual void onFocusGained();
-	virtual void onFocusLost();
-	virtual void onMinimized();
-	virtual bool onShutdown();
+	void onFocusGained() override;
+	void onFocusLost() override;
+	void onMinimized() override;
+	bool onShutdown() override;
 
 	void onBeforePlayStart();			// called just before OsuBeatmap->play()
 	void onPlayStart();					// called when a beatmap has successfully started playing
@@ -124,12 +123,12 @@ public:
 
 	void setGamemode(GAMEMODE gamemode) {m_gamemode = gamemode;}
 
-	inline int getInstanceID() const {return m_iInstanceID;}
-	inline GAMEMODE getGamemode() const {return m_gamemode;}
+	[[nodiscard]] inline int getInstanceID() const {return m_iInstanceID;}
+	[[nodiscard]] inline GAMEMODE getGamemode() const {return m_gamemode;}
 
-	inline Vector2 getScreenSize() const {return g_vInternalResolution;}
-	inline int getScreenWidth() const {return (int)g_vInternalResolution.x;}
-	inline int getScreenHeight() const {return (int)g_vInternalResolution.y;}
+	[[nodiscard]] inline Vector2 getScreenSize() const {return g_vInternalResolution;}
+	[[nodiscard]] inline int getScreenWidth() const {return (int)g_vInternalResolution.x;}
+	[[nodiscard]] inline int getScreenHeight() const {return (int)g_vInternalResolution.y;}
 
 	OsuBeatmap *getSelectedBeatmap();
 
@@ -170,26 +169,26 @@ public:
 	float getSpeedMultiplier();		// with override
 	float getPitchMultiplier();
 
-	inline bool getModAuto() const {return m_bModAuto;}
-	inline bool getModAutopilot() const {return m_bModAutopilot;}
-	inline bool getModRelax() const {return m_bModRelax;}
-	inline bool getModSpunout() const {return m_bModSpunout;}
-	inline bool getModTarget() const {return m_bModTarget;}
-	inline bool getModScorev2() const {return m_bModScorev2;}
-	inline bool getModDT() const {return m_bModDT;}
-	inline bool getModNC() const {return m_bModNC;}
-	inline bool getModNF() const {return m_bModNF;}
-	inline bool getModHT() const {return m_bModHT;}
-	inline bool getModDC() const {return m_bModDC;}
-	inline bool getModHD() const {return m_bModHD;}
-	inline bool getModHR() const {return m_bModHR;}
-	inline bool getModEZ() const {return m_bModEZ;}
-	inline bool getModSD() const {return m_bModSD;}
-	inline bool getModSS() const {return m_bModSS;}
-	inline bool getModNM() const {return m_bModNM;}
-	inline bool getModTD() const {return m_bModTD;}
+	[[nodiscard]] inline bool getModAuto() const {return m_bModAuto;}
+	[[nodiscard]] inline bool getModAutopilot() const {return m_bModAutopilot;}
+	[[nodiscard]] inline bool getModRelax() const {return m_bModRelax;}
+	[[nodiscard]] inline bool getModSpunout() const {return m_bModSpunout;}
+	[[nodiscard]] inline bool getModTarget() const {return m_bModTarget;}
+	[[nodiscard]] inline bool getModScorev2() const {return m_bModScorev2;}
+	[[nodiscard]] inline bool getModDT() const {return m_bModDT;}
+	[[nodiscard]] inline bool getModNC() const {return m_bModNC;}
+	[[nodiscard]] inline bool getModNF() const {return m_bModNF;}
+	[[nodiscard]] inline bool getModHT() const {return m_bModHT;}
+	[[nodiscard]] inline bool getModDC() const {return m_bModDC;}
+	[[nodiscard]] inline bool getModHD() const {return m_bModHD;}
+	[[nodiscard]] inline bool getModHR() const {return m_bModHR;}
+	[[nodiscard]] inline bool getModEZ() const {return m_bModEZ;}
+	[[nodiscard]] inline bool getModSD() const {return m_bModSD;}
+	[[nodiscard]] inline bool getModSS() const {return m_bModSS;}
+	[[nodiscard]] inline bool getModNM() const {return m_bModNM;}
+	[[nodiscard]] inline bool getModTD() const {return m_bModTD;}
 
-	inline std::vector<ConVar*> getExperimentalMods() const {return m_experimentalMods;}
+	[[nodiscard]] inline std::vector<ConVar*> getExperimentalMods() const {return m_experimentalMods;}
 
 	bool isInPlayMode();
 	bool isNotInPlayModeOrPaused();
@@ -217,7 +216,7 @@ public:
 private:
 	static Vector2 g_vInternalResolution;
 
-	void updateModsForConVarTemplate(UString oldValue, UString newValue) {updateMods();}
+	void updateModsForConVarTemplate(UString, UString) {updateMods();}
 	void onVolumeChange(int multiplier);
 	void onAudioOutputDeviceChange();
 

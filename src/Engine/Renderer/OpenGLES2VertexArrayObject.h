@@ -13,7 +13,7 @@
 
 #ifdef MCENGINE_FEATURE_GLES2
 
-class OpenGLES2VertexArrayObject : public VertexArrayObject
+class OpenGLES2VertexArrayObject final : public VertexArrayObject
 {
 public:
 	OpenGLES2VertexArrayObject(Graphics::PRIMITIVE primitive = Graphics::PRIMITIVE::PRIMITIVE_TRIANGLES, Graphics::USAGE_TYPE usage = Graphics::USAGE_TYPE::USAGE_STATIC, bool keepInSystemMemory = false);

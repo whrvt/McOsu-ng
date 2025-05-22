@@ -14,7 +14,7 @@
 class OsuModFPoSu;
 class OsuSkinImage;
 
-class OsuCircle : public OsuHitObject
+class OsuCircle final : public OsuHitObject
 {
 public:
 	// main

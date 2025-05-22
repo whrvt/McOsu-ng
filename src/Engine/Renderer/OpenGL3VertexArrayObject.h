@@ -13,7 +13,7 @@
 
 #ifdef MCENGINE_FEATURE_GL3
 
-class OpenGL3VertexArrayObject : public VertexArrayObject
+class OpenGL3VertexArrayObject final : public VertexArrayObject
 {
 public:
 	OpenGL3VertexArrayObject(Graphics::PRIMITIVE primitive = Graphics::PRIMITIVE::PRIMITIVE_TRIANGLES, Graphics::USAGE_TYPE usage = Graphics::USAGE_TYPE::USAGE_STATIC, bool keepInSystemMemory = false);

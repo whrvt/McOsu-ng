@@ -1402,24 +1402,21 @@ void OsuMainMenu::onKeyDown(KeyboardEvent &e)
 	}
 }
 
-void OsuMainMenu::onMiddleChange(bool down)
+void OsuMainMenu::onButtonChange(MouseButton::Index button, bool down)
 {
-	if (!m_bVisible) return;
+	if (!m_bVisible || button != BUTTON_MIDDLE || !(down && !anim->isAnimating(&m_fMainMenuAnim) && !m_bMenuElementsVisible))
+		return;
 
-	// debug anims
-	if (down && !anim->isAnimating(&m_fMainMenuAnim) && !m_bMenuElementsVisible)
+	if (keyboard->isShiftDown())
 	{
-		if (keyboard->isShiftDown())
-		{
-			m_bMainMenuAnimFriend = true;
-			m_bMainMenuAnimFriendScheduled = true;
-			m_bMainMenuAnimFadeToFriendForNextAnim = true;
-		}
-
-		animMainButton();
-		m_fMainMenuAnimDuration = 15.0f;
-		m_fMainMenuAnimTime = engine->getTime() + m_fMainMenuAnimDuration;
+		m_bMainMenuAnimFriend = true;
+		m_bMainMenuAnimFriendScheduled = true;
+		m_bMainMenuAnimFadeToFriendForNextAnim = true;
 	}
+
+	animMainButton();
+	m_fMainMenuAnimDuration = 15.0f;
+	m_fMainMenuAnimTime = engine->getTime() + m_fMainMenuAnimDuration;
 }
 
 void OsuMainMenu::onResolutionChange(Vector2 newResolution)

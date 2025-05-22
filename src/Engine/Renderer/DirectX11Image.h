@@ -17,7 +17,7 @@
 
 class DirectX11Interface;
 
-class DirectX11Image : public Image
+class DirectX11Image final : public Image
 {
 public:
 	DirectX11Image(UString filepath, bool mipmapped = false, bool keepInSystemMemory = false);

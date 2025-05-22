@@ -26,7 +26,7 @@ class OsuUIVolumeSlider;
 
 class CBaseUIContainer;
 
-class OsuHUD : public OsuScreen
+class OsuHUD final : public OsuScreen
 {
 public:
 	OsuHUD();

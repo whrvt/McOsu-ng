@@ -11,7 +11,7 @@
 
 #include "OsuHitObject.h"
 
-class OsuSpinner : public OsuHitObject
+class OsuSpinner final : public OsuHitObject
 {
 public:
 	OsuSpinner(int x, int y, long time, int sampleType, bool isEndOfCombo, long endTime, OsuBeatmapStandard *beatmap);

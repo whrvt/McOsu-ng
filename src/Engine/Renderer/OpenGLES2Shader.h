@@ -13,7 +13,7 @@
 
 #ifdef MCENGINE_FEATURE_GLES2
 
-class OpenGLES2Shader : public Shader
+class OpenGLES2Shader final : public Shader
 {
 public:
 	OpenGLES2Shader(UString shader, bool source);

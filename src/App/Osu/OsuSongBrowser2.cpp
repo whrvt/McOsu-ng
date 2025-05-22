@@ -92,7 +92,7 @@ void _osu_songbrowser_search_hardcoded_filter(UString oldValue, UString newValue
 
 
 
-class OsuSongBrowserBackgroundSearchMatcher : public Resource
+class OsuSongBrowserBackgroundSearchMatcher final : public Resource
 {
 public:
 	OsuSongBrowserBackgroundSearchMatcher() : Resource()
@@ -1696,8 +1696,8 @@ void OsuSongBrowser2::setVisible(bool visible)
 		onUserButtonChange(m_name_ref->getString(), -1);
 
 		// HACKHACK: workaround for BaseUI framework deficiency (missing mouse events. if a mouse button is being held, and then suddenly a BaseUIElement gets put under it and set visible, and then the mouse button is released, that "incorrectly" fires onMouseUpInside/onClicked/etc.)
-		mouse->onLeftChange(false);
-		mouse->onRightChange(false);
+		mouse->onButtonChange(BUTTON_LEFT, false);
+		mouse->onButtonChange(BUTTON_RIGHT, false);
 	}
 	else
 		m_contextMenu->setVisible2(false);

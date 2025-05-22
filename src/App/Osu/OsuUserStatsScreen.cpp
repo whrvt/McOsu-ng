@@ -69,7 +69,7 @@ public:
 	}
 };
 
-class OsuUserStatsScreenBackgroundPPRecalculator : public Resource
+class OsuUserStatsScreenBackgroundPPRecalculator final : public Resource
 {
 public:
 	OsuUserStatsScreenBackgroundPPRecalculator(UString userName, bool importLegacyScores) : Resource()

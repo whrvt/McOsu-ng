@@ -13,7 +13,7 @@
 
 #ifdef MCENGINE_FEATURE_SOFTRENDERER
 
-class SWShader : public Shader
+class SWShader final : public Shader
 {
 public:
 	SWShader(UString shader, bool source);
@@ -41,7 +41,7 @@ private:
 };
 
 #else
-class SWShader : public Shader{};
+class SWShader final : public Shader{};
 #endif
 
 #endif

@@ -49,6 +49,13 @@
 
 // UTIL
 
+constexpr void runtime_assert(bool cond, const char *reason)
+{
+	if (cond) return;
+	std::fprintf(stderr, "%s\n", reason);
+	std::abort();
+}
+
 #define SAFE_DELETE(p) { if(p) { delete (p); (p) = NULL; } }
 
 constexpr const auto PI = std::numbers::pi;

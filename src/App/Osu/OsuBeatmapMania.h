@@ -11,33 +11,33 @@
 
 #include "OsuBeatmap.h"
 
-class OsuBeatmapMania : public OsuBeatmap
+class OsuBeatmapMania final : public OsuBeatmap
 {
 public:
 	OsuBeatmapMania();
 
-	virtual void draw(Graphics *g);
-	virtual void update();
+	void draw(Graphics *g) override;
+	void update() override;
 
-	virtual void onModUpdate();
+	void onModUpdate() override;
 
-	virtual void onKeyDown(KeyboardEvent &key);
-	virtual void onKeyUp(KeyboardEvent &key);
+	void onKeyDown(KeyboardEvent &key) override;
+	void onKeyUp(KeyboardEvent &key) override;
 
-	[[nodiscard]] virtual Type getType() const { return MANIA; }
+	[[nodiscard]] Type getType() const override{ return MANIA; }
 
-	virtual OsuBeatmapMania* asMania() { return this; }
-	[[nodiscard]] const virtual OsuBeatmapMania* asMania() const { return this; }
+	OsuBeatmapMania* asMania() override { return this; }
+	[[nodiscard]] const OsuBeatmapMania* asMania() const override { return this; }
 
-	inline Vector2 getPlayfieldSize() const {return m_vPlayfieldSize;}
-	inline Vector2 getPlayfieldCenter() const {return m_vPlayfieldCenter;}
+	[[nodiscard]] inline Vector2 getPlayfieldSize() const {return m_vPlayfieldSize;}
+	[[nodiscard]] inline Vector2 getPlayfieldCenter() const {return m_vPlayfieldCenter;}
 
-	int getNumColumns() const;
+	[[nodiscard]] int getNumColumns() const;
 
 private:
 	int getColumnForKey(int numColumns, KeyboardEvent &key);
 
-	virtual void onPlayStart();
+	void onPlayStart() override;
 
 	Vector2 m_vPlayfieldSize;
 	Vector2 m_vPlayfieldCenter;

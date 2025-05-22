@@ -13,30 +13,30 @@
 
 #if defined(MCENGINE_FEATURE_OPENGL) || defined (MCENGINE_FEATURE_GLES2) || defined(MCENGINE_FEATURE_GLES32) || defined(MCENGINE_FEATURE_GL3)
 
-class OpenGLRenderTarget : public RenderTarget
+class OpenGLRenderTarget final : public RenderTarget
 {
 public:
 	OpenGLRenderTarget(int x, int y, int width, int height, Graphics::MULTISAMPLE_TYPE multiSampleType = Graphics::MULTISAMPLE_TYPE::MULTISAMPLE_0X);
-	virtual ~OpenGLRenderTarget() {destroy();}
+	~OpenGLRenderTarget() override {destroy();}
 
-	virtual void enable();
-	virtual void disable();
+	void enable() override;
+	void disable() override;
 
-	virtual void bind(unsigned int textureUnit = 0);
-	virtual void unbind();
+	void bind(unsigned int textureUnit = 0) override;
+	void unbind() override;
 
 	// ILLEGAL:
 	void blitResolveFrameBufferIntoFrameBuffer(OpenGLRenderTarget *rt);
 	void blitFrameBufferIntoFrameBuffer(OpenGLRenderTarget *rt);
-	inline unsigned int getFrameBuffer() const {return m_iFrameBuffer;}
-	inline unsigned int getRenderTexture() const {return m_iRenderTexture;}
-	inline unsigned int getResolveFrameBuffer() const {return m_iResolveFrameBuffer;}
-	inline unsigned int getResolveTexture() const {return m_iResolveTexture;}
+	[[nodiscard]] inline unsigned int getFrameBuffer() const {return m_iFrameBuffer;}
+	[[nodiscard]] inline unsigned int getRenderTexture() const {return m_iRenderTexture;}
+	[[nodiscard]] inline unsigned int getResolveFrameBuffer() const {return m_iResolveFrameBuffer;}
+	[[nodiscard]] inline unsigned int getResolveTexture() const {return m_iResolveTexture;}
 
 private:
-	virtual void init();
-	virtual void initAsync();
-	virtual void destroy();
+	void init() override;
+	void initAsync() override;
+	void destroy() override;
 
 	unsigned int m_iFrameBuffer;
 	unsigned int m_iRenderTexture;

@@ -11,7 +11,7 @@
 
 #include "RenderTarget.h"
 
-class NullRenderTarget : public RenderTarget
+class NullRenderTarget final : public RenderTarget
 {
 public:
 	NullRenderTarget(int x, int y, int width, int height, Graphics::MULTISAMPLE_TYPE multiSampleType) : RenderTarget(x, y, width, height, multiSampleType) {;}

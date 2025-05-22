@@ -59,10 +59,10 @@ public:
 	virtual void rebuild(UString newFilePath) = 0;
 
 	// type inspection
-	[[nodiscard]] Type getResType() const override { return SOUND; }
+	[[nodiscard]] Type getResType() const final { return SOUND; }
 
-	Sound *asSound() override { return this; }
-	[[nodiscard]] const Sound *asSound() const override { return this; }
+	Sound *asSound() final { return this; }
+	[[nodiscard]] const Sound *asSound() const final { return this; }
 protected:
 	void init() override = 0;
 	void initAsync() override = 0;

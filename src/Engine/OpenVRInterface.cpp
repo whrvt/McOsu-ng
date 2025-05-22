@@ -1196,7 +1196,7 @@ void OpenVRInterface::update()
 				debugLog("OpenVR::VREvent_KeyboardClosed got %i chars\n", numChars);
 				for (uint32_t i=0; i<numChars; i++)
 				{
-					engine->onKeyboardChar(keyboardText[i]);
+					keyboard->onChar(keyboardText[i]);
 				}
 			}
 			break;

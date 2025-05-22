@@ -272,7 +272,7 @@ void Mouse::onWheelHorizontal(int delta)
 	}
 }
 
-void Mouse::onButtonChange(int button, bool down)
+void Mouse::onButtonChange(MouseButton::Index button, bool down)
 {
 	if (button < 1 || button >= BUTTON_COUNT)
 		return;
@@ -283,26 +283,9 @@ void Mouse::onButtonChange(int button, bool down)
 	m_bMouseButtonDown[button] = down;
 
 	// notify listeners
-	for (size_t i = 0; i < m_listeners.size(); i++)
+	for (auto & m_listener : m_listeners)
 	{
-		switch (button)
-		{
-		case BUTTON_LEFT:
-			m_listeners[i]->onLeftChange(down);
-			break;
-		case BUTTON_MIDDLE:
-			m_listeners[i]->onMiddleChange(down);
-			break;
-		case BUTTON_RIGHT:
-			m_listeners[i]->onRightChange(down);
-			break;
-		case BUTTON_X1:
-			m_listeners[i]->onButton4Change(down);
-			break;
-		case BUTTON_X2:
-			m_listeners[i]->onButton5Change(down);
-			break;
-		}
+		m_listener->onButtonChange(button, down);
 	}
 }
 

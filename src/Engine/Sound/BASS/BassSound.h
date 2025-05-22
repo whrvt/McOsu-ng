@@ -15,7 +15,7 @@
 
 class BassSoundEngine;
 
-class BassSound : public Sound
+class BassSound final : public Sound
 {
 	friend class BassSoundEngine;
 

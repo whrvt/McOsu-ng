@@ -25,7 +25,7 @@
 ConVar r_gles_orphan_buffers("r_gles_orphan_buffers", Env::cfg(OS::WASM) ? false : true, FCVAR_NONE,
                              "reduce cpu/gpu synchronization by freeing buffer objects before modifying them");
 
-OpenGLES32Interface::OpenGLES32Interface() : NullGraphicsInterface()
+OpenGLES32Interface::OpenGLES32Interface() : Graphics()
 {
 	// renderer
 	m_bInScene = false;

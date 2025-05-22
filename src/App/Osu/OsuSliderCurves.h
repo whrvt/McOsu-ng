@@ -99,7 +99,7 @@ private:
 
 
 
-class OsuSliderCurveTypeBezier2 : public OsuSliderCurveType
+class OsuSliderCurveTypeBezier2 final : public OsuSliderCurveType
 {
 public:
 	OsuSliderCurveTypeBezier2(const std::vector<Vector2> &points);
@@ -110,7 +110,7 @@ public:
 
 
 
-class OsuSliderCurveTypeCentripetalCatmullRom : public OsuSliderCurveType
+class OsuSliderCurveTypeCentripetalCatmullRom final : public OsuSliderCurveType
 {
 public:
 	OsuSliderCurveTypeCentripetalCatmullRom(const std::vector<Vector2> &points);
@@ -147,7 +147,7 @@ private:
 
 
 
-class OsuSliderCurveLinearBezier : public OsuSliderCurveEqualDistanceMulti
+class OsuSliderCurveLinearBezier final : public OsuSliderCurveEqualDistanceMulti
 {
 public:
 	OsuSliderCurveLinearBezier(std::vector<Vector2> controlPoints, float pixelLength, bool line, float curvePointsSeparation);
@@ -156,7 +156,7 @@ public:
 
 
 
-class OsuSliderCurveCatmull : public OsuSliderCurveEqualDistanceMulti
+class OsuSliderCurveCatmull final : public OsuSliderCurveEqualDistanceMulti
 {
 public:
 	OsuSliderCurveCatmull(std::vector<Vector2> controlPoints, float pixelLength, float curvePointsSeparation);
@@ -165,7 +165,7 @@ public:
 
 
 
-class OsuSliderCurveCircumscribedCircle : public OsuSliderCurve
+class OsuSliderCurveCircumscribedCircle final : public OsuSliderCurve
 {
 public:
 	OsuSliderCurveCircumscribedCircle(std::vector<Vector2> controlPoints, float pixelLength, float curvePointsSeparation);

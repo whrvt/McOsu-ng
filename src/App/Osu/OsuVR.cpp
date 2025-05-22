@@ -821,7 +821,7 @@ void OsuVR::update()
 		if (m_bClickCheck)
 		{
 			m_bClickCheck = false;
-			engine->onMouseLeftChange(true);
+			mouse->onButtonChange(BUTTON_LEFT, true);
 
 			if (m_bScreenIntersection)
 				m_bClickHeldStartedInScreen = true;
@@ -832,7 +832,7 @@ void OsuVR::update()
 		if (!m_bClickCheck)
 		{
 			m_bClickCheck = true;
-			engine->onMouseLeftChange(false);
+			mouse->onButtonChange(BUTTON_LEFT, false);
 
 			m_bClickHeldStartedInScreen = false;
 		}
@@ -852,7 +852,7 @@ void OsuVR::update()
 		if (!m_bMenuCheck)
 		{
 			m_bMenuCheck = true;
-			engine->onKeyboardKeyUp(KEY_ESCAPE);
+			keyboard->onKeyUp(KEY_ESCAPE);
 		}
 	}
 
@@ -1089,7 +1089,7 @@ void OsuVR::onOffsetUpClicked()
 	soundEngine->play(osu->getSkin()->getCheckOn());
 
 	engine->onKeyboardKeyDown(OsuKeyBindings::INCREASE_LOCAL_OFFSET.getVal<KEYCODE>());
-	engine->onKeyboardKeyUp(OsuKeyBindings::INCREASE_LOCAL_OFFSET.getVal<KEYCODE>());
+	keyboard->onKeyUp(OsuKeyBindings::INCREASE_LOCAL_OFFSET.getVal<KEYCODE>());
 }
 
 void OsuVR::onOffsetDownClicked()
@@ -1098,7 +1098,7 @@ void OsuVR::onOffsetDownClicked()
 	soundEngine->play(osu->getSkin()->getCheckOff());
 
 	engine->onKeyboardKeyDown(OsuKeyBindings::DECREASE_LOCAL_OFFSET.getVal<KEYCODE>());
-	engine->onKeyboardKeyUp(OsuKeyBindings::DECREASE_LOCAL_OFFSET.getVal<KEYCODE>());
+	keyboard->onKeyUp(OsuKeyBindings::DECREASE_LOCAL_OFFSET.getVal<KEYCODE>());
 }
 
 void OsuVR::onVolumeSliderChange(OsuVRUISlider *slider)

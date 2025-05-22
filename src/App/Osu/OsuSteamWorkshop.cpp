@@ -21,7 +21,7 @@
 
 
 
-class OsuSteamWorkshopLoader : public Resource
+class OsuSteamWorkshopLoader final : public Resource
 {
 public:
 	OsuSteamWorkshopLoader() : Resource()
@@ -120,7 +120,7 @@ private:
 
 
 
-class OsuSteamWorkshopUploader : public Resource
+class OsuSteamWorkshopUploader final : public Resource
 {
 public:
 	OsuSteamWorkshopUploader()

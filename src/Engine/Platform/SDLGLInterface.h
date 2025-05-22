@@ -16,7 +16,7 @@
 #include "OpenGLHeaders.h"
 
 typedef struct SDL_Window SDL_Window;
-class SDLGLInterface : public BackendGLInterface
+class SDLGLInterface final : public BackendGLInterface
 {
 public:
 	SDLGLInterface(SDL_Window *window);

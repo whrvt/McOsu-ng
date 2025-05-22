@@ -17,7 +17,7 @@
 
 class DirectX11Interface;
 
-class DirectX11RenderTarget : public RenderTarget
+class DirectX11RenderTarget final : public RenderTarget
 {
 public:
 	DirectX11RenderTarget(int x, int y, int width, int height, Graphics::MULTISAMPLE_TYPE multiSampleType = Graphics::MULTISAMPLE_TYPE::MULTISAMPLE_0X);

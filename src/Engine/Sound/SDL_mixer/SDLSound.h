@@ -18,7 +18,7 @@
 
 class SDLSoundEngine;
 
-class SDLSound : public Sound
+class SDLSound final : public Sound
 {
 	friend class SDLSoundEngine;
 

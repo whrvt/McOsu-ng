@@ -15,7 +15,7 @@ class OsuSliderCurve;
 
 class VertexArrayObject;
 
-class OsuSlider : public OsuHitObject
+class OsuSlider final : public OsuHitObject
 {
 public:
 	struct SLIDERCLICK

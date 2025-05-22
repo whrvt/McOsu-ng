@@ -15,15 +15,16 @@
 
 #include <array>
 
-class Mouse : public InputDevice
+class Mouse final : public InputDevice
 {
 public:
 	Mouse();
-	virtual ~Mouse() { ; }
+	~Mouse() override { ; }
 
-	virtual void draw(Graphics *g);
+	void draw(Graphics *g) override;
+	void update() override;
+
 	void drawDebug(Graphics *g);
-	virtual void update();
 
 	// event handling
 	void addListener(MouseListener *mouseListener, bool insertOnTop = false);
@@ -34,14 +35,7 @@ public:
 	void onMotion(float x, float y, float xRel, float yRel, bool preTransformed);
 	void onWheelVertical(int delta);
 	void onWheelHorizontal(int delta);
-	void onButtonChange(int button, bool down);
-
-	// button-specific handlers for compatibility with existing code
-	void onLeftChange(bool leftDown) { onButtonChange(BUTTON_LEFT, leftDown); }
-	void onMiddleChange(bool middleDown) { onButtonChange(BUTTON_MIDDLE, middleDown); }
-	void onRightChange(bool rightDown) { onButtonChange(BUTTON_RIGHT, rightDown); }
-	void onButton4Change(bool button4down) { onButtonChange(BUTTON_X1, button4down); }
-	void onButton5Change(bool button5down) { onButtonChange(BUTTON_X2, button5down); }
+	void onButtonChange(MouseButton::Index button, bool down);
 
 	// position/coordinate handling
 	void setPos(Vector2 pos);
@@ -55,33 +49,33 @@ public:
 	bool isCursorVisible();
 
 	// state getters
-	inline Vector2 getPos() const { return m_vPos; }
-	inline Vector2 getRealPos() const { return m_vPosWithoutOffset; }
-	inline Vector2 getActualPos() const { return m_vActualPos; }
-	inline Vector2 getDelta() const { return m_vDelta; }
-	inline Vector2 getRawDelta() const { return m_vRawDelta; }
+	[[nodiscard]] inline Vector2 getPos() const { return m_vPos; }
+	[[nodiscard]] inline Vector2 getRealPos() const { return m_vPosWithoutOffset; }
+	[[nodiscard]] inline Vector2 getActualPos() const { return m_vActualPos; }
+	[[nodiscard]] inline Vector2 getDelta() const { return m_vDelta; }
+	[[nodiscard]] inline Vector2 getRawDelta() const { return m_vRawDelta; }
 
-	inline Vector2 getOffset() const { return m_vOffset; }
-	inline Vector2 getScale() const { return m_vScale; }
-	inline float getSensitivity() const { return m_fSensitivity; }
+	[[nodiscard]] inline Vector2 getOffset() const { return m_vOffset; }
+	[[nodiscard]] inline Vector2 getScale() const { return m_vScale; }
+	[[nodiscard]] inline float getSensitivity() const { return m_fSensitivity; }
 
 	// button state accessors
-	inline bool isLeftDown() const { return m_bMouseButtonDown[BUTTON_LEFT]; }
-	inline bool isMiddleDown() const { return m_bMouseButtonDown[BUTTON_MIDDLE]; }
-	inline bool isRightDown() const { return m_bMouseButtonDown[BUTTON_RIGHT]; }
-	inline bool isButton4Down() const { return m_bMouseButtonDown[BUTTON_X1]; }
-	inline bool isButton5Down() const { return m_bMouseButtonDown[BUTTON_X2]; }
+	[[nodiscard]] inline bool isLeftDown() const { return m_bMouseButtonDown[BUTTON_LEFT]; }
+	[[nodiscard]] inline bool isMiddleDown() const { return m_bMouseButtonDown[BUTTON_MIDDLE]; }
+	[[nodiscard]] inline bool isRightDown() const { return m_bMouseButtonDown[BUTTON_RIGHT]; }
+	[[nodiscard]] inline bool isButton4Down() const { return m_bMouseButtonDown[BUTTON_X1]; }
+	[[nodiscard]] inline bool isButton5Down() const { return m_bMouseButtonDown[BUTTON_X2]; }
 
-	inline int getWheelDeltaVertical() const { return m_iWheelDeltaVertical; }
-	inline int getWheelDeltaHorizontal() const { return m_iWheelDeltaHorizontal; }
+	[[nodiscard]] inline int getWheelDeltaVertical() const { return m_iWheelDeltaVertical; }
+	[[nodiscard]] inline int getWheelDeltaHorizontal() const { return m_iWheelDeltaHorizontal; }
 
 	void resetWheelDelta();
 
 	// input mode control
-	bool isInAbsoluteMode() const { return m_bAbsolute; }
-	void setAbsoluteMode(bool absolute) { m_bAbsolute = absolute; }
+	[[nodiscard]] inline bool isInAbsoluteMode() const { return m_bAbsolute; }
+	inline void setAbsoluteMode(bool absolute) { m_bAbsolute = absolute; }
 
-	bool isRawInput() const { return m_bIsRawInput; } // "desired" rawinput state, NOT actual OS raw input state!
+	[[nodiscard]] inline bool isRawInput() const { return m_bIsRawInput; } // "desired" rawinput state, NOT actual OS raw input state!
 private:
 	void setPosXY(float x, float y);
 	void updateFakelagBuffer();
@@ -89,18 +83,6 @@ private:
 	// callbacks
 	void onSensitivityChanged(float newSens);
 	void onRawInputChanged(float newVal);
-
-	// button mapping constants for internal array indexing
-	enum ButtonIndex
-	{
-		BUTTON_NONE = 0,
-		BUTTON_LEFT = 1,
-		BUTTON_MIDDLE = 2,
-		BUTTON_RIGHT = 3,
-		BUTTON_X1 = 4,
-		BUTTON_X2 = 5,
-		BUTTON_COUNT = 6 // size of our button array
-	};
 
 	// position state
 	Vector2 m_vPos;              // position with offset applied

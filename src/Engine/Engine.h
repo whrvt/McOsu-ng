@@ -12,6 +12,7 @@
 #include "cbase.h"
 #include "Timing.h"
 #include "McMath.h"
+#include "MouseListener.h"
 
 #include <type_traits>
 #include <source_location>
@@ -108,20 +109,15 @@ public:
 	void onShutdown();
 
 	// primary mouse messages
-	void onMouseMotion(float x, float y, float xRel, float yRel, bool isRawInput);
-	void onMouseButtonChange(int button, bool down);
-	void onMouseWheelVertical(int delta);
-	void onMouseWheelHorizontal(int delta);
-	void onMouseLeftChange(bool mouseLeftDown);
-	void onMouseMiddleChange(bool mouseMiddleDown);
-	void onMouseRightChange(bool mouseRightDown);
-	void onMouseButton4Change(bool mouse4down);
-	void onMouseButton5Change(bool mouse5down);
+	// void onMouseMotion(float x, float y, float xRel, float yRel, bool isRawInput);
+	// void onMouseButtonChange(MouseButton::Index button, bool down);
+	// void onMouseWheelVertical(int delta);
+	// void onMouseWheelHorizontal(int delta);
 
 	// primary keyboard messages
-	void onKeyboardKeyDown(KEYCODE keyCode);
-	void onKeyboardKeyUp(KEYCODE keyCode);
-	void onKeyboardChar(KEYCODE charCode);
+	void onKeyboardKeyDown(KEYCODE keyCode); // NOTE: hardcoded engine overrides
+	// void onKeyboardKeyUp(KEYCODE keyCode);
+	// void onKeyboardChar(KEYCODE charCode);
 
 	// convenience functions (passthroughs)
 	void shutdown();

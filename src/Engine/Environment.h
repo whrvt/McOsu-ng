@@ -34,7 +34,7 @@ public:
 	ContextMenu *createContextMenu();
 
 	// system
-	void shutdown();
+	virtual void shutdown();
 	void restart();
 	[[nodiscard]] inline bool isRunning() const { return m_bRunning; }
 	[[nodiscard]] UString getExecutablePath() const;

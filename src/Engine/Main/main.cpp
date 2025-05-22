@@ -36,12 +36,14 @@
 #include <SDL3/SDL_main.h>
 
 #include "Engine.h"
+#include "Mouse.h"
+#include "Keyboard.h"
 #include "Environment.h"
 #include "Profiler.h"
 #include "Timing.h"
 
 // thin environment subclass to provide SDL callbacks with direct access to members
-class SDLMain : public Environment
+class SDLMain final : public Environment
 {
 public:
 	SDLMain(int argc, char *argv[]);
@@ -50,7 +52,7 @@ public:
 	SDL_AppResult initialize();
 	SDL_AppResult iterate();
 	SDL_AppResult handleEvent(SDL_Event *event);
-	void shutdown() { Environment::shutdown(); }
+	void shutdown() override { Environment::shutdown(); }
 	void shutdown(SDL_AppResult result);
 
 private:
@@ -241,12 +243,14 @@ SDL_AppResult SDLMain::initialize()
 	// initialize engine, now that all the setup is done
 	m_engine = Environment::initEngine();
 
+	// if we got to this point, all relevant subsystems (input handling, graphics interface, etc.) have been initialized
+
 	// make window visible
 	SDL_ShowWindow(m_window);
 	SDL_RaiseWindow(m_window);
 
 	// load app
-	m_engine->loadApp();
+	engine->loadApp();
 
 	// start engine frame timer
 	m_deltaTimer = new Timer();
@@ -291,7 +295,7 @@ SDL_AppResult SDLMain::handleEvent(SDL_Event *event)
 		if (m_bRunning)
 		{
 			m_bRunning = false;
-			m_engine->shutdown();
+			engine->shutdown();
 			if constexpr (Env::cfg(FEAT::MAINCB))
 				return SDL_APP_SUCCESS;
 			else
@@ -306,7 +310,7 @@ SDL_AppResult SDLMain::handleEvent(SDL_Event *event)
 			if (m_bRunning)
 			{
 				m_bRunning = false;
-				m_engine->shutdown();
+				engine->shutdown();
 				if constexpr (Env::cfg(FEAT::MAINCB))
 					return SDL_APP_SUCCESS;
 				else
@@ -315,41 +319,41 @@ SDL_AppResult SDLMain::handleEvent(SDL_Event *event)
 
 		case SDL_EVENT_WINDOW_FOCUS_GAINED:
 			m_bHasFocus = true;
-			m_engine->onFocusGained();
+			engine->onFocusGained();
 			setFgFPS();
 			break;
 
 		case SDL_EVENT_WINDOW_FOCUS_LOST:
 			m_bHasFocus = false;
-			m_engine->onFocusLost();
+			engine->onFocusLost();
 			setBgFPS();
 			break;
 
 		case SDL_EVENT_WINDOW_MAXIMIZED:
 			m_bMinimized = false;
 			m_bHasFocus = true;
-			m_engine->onMaximized();
+			engine->onMaximized();
 			setFgFPS();
 			break;
 
 		case SDL_EVENT_WINDOW_MINIMIZED:
 			m_bMinimized = true;
 			m_bHasFocus = false;
-			m_engine->onMinimized();
+			engine->onMinimized();
 			setBgFPS();
 			break;
 
 		case SDL_EVENT_WINDOW_RESTORED:
 			m_bMinimized = false;
 			m_bHasFocus = true;
-			m_engine->onRestored();
+			engine->onRestored();
 			setFgFPS();
 			break;
 
 		case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
 		case SDL_EVENT_WINDOW_RESIZED:
 			m_bHasFocus = true;
-			m_engine->requestResolutionChange(Vector2(static_cast<float>(event->window.data1), static_cast<float>(event->window.data2)));
+			engine->requestResolutionChange(Vector2(static_cast<float>(event->window.data1), static_cast<float>(event->window.data2)));
 			setFgFPS();
 			break;
 
@@ -362,33 +366,33 @@ SDL_AppResult SDLMain::handleEvent(SDL_Event *event)
 
 	// keyboard events
 	case SDL_EVENT_KEY_DOWN:
-		m_engine->onKeyboardKeyDown(event->key.scancode);
+		engine->onKeyboardKeyDown(event->key.scancode); // NOTE: hardcoded engine overrides
 		break;
 
 	case SDL_EVENT_KEY_UP:
-		m_engine->onKeyboardKeyUp(event->key.scancode);
+		keyboard->onKeyUp(event->key.scancode);
 		break;
 
 	case SDL_EVENT_TEXT_INPUT:
 		for (const auto &key : UString(event->text.text))
-			m_engine->onKeyboardChar(key);
+			keyboard->onChar(key);
 		break;
 
 	// mouse events
 	case SDL_EVENT_MOUSE_BUTTON_DOWN:
-		m_engine->onMouseButtonChange(event->button.button, true);
+		mouse->onButtonChange(static_cast<MouseButton::Index>(event->button.button), true); // C++ needs me to cast an unsigned char to an unsigned char
 		break;
 
 	case SDL_EVENT_MOUSE_BUTTON_UP:
-		m_engine->onMouseButtonChange(event->button.button, false);
+		mouse->onButtonChange(static_cast<MouseButton::Index>(event->button.button), false);
 		break;
 
 	case SDL_EVENT_MOUSE_WHEEL:
 		if (event->wheel.x != 0)
-			m_engine->onMouseWheelHorizontal(event->wheel.x > 0 ? 120 * std::abs(static_cast<int>(event->wheel.x))
+			mouse->onWheelHorizontal(event->wheel.x > 0 ? 120 * std::abs(static_cast<int>(event->wheel.x))
 			                                                    : -120 * std::abs(static_cast<int>(event->wheel.x)));
 		if (event->wheel.y != 0)
-			m_engine->onMouseWheelVertical(event->wheel.y > 0 ? 120 * std::abs(static_cast<int>(event->wheel.y))
+			mouse->onWheelVertical(event->wheel.y > 0 ? 120 * std::abs(static_cast<int>(event->wheel.y))
 			                                                  : -120 * std::abs(static_cast<int>(event->wheel.y)));
 		break;
 
@@ -398,7 +402,7 @@ SDL_AppResult SDLMain::handleEvent(SDL_Event *event)
 		m_vLastRelMousePos.y = event->motion.yrel;
 		m_vLastAbsMousePos.x = event->motion.x;
 		m_vLastAbsMousePos.y = event->motion.y;
-		m_engine->onMouseMotion(event->motion.x, event->motion.y, event->motion.xrel, event->motion.yrel, event->motion.which != 0);
+		mouse->onMotion(event->motion.x, event->motion.y, event->motion.xrel, event->motion.yrel, event->motion.which != 0);
 		break;
 
 	default:
@@ -416,14 +420,14 @@ SDL_AppResult SDLMain::iterate()
 	// update
 	{
 		m_deltaTimer->update();
-		m_engine->setFrameTime(m_deltaTimer->getDelta());
-		m_engine->onUpdate();
+		engine->setFrameTime(m_deltaTimer->getDelta());
+		engine->onUpdate();
 	}
 
 	// draw
 	{
 		m_bDrawing = true;
-		m_engine->onPaint();
+		engine->onPaint();
 		m_bDrawing = false;
 	}
 

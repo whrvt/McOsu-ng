@@ -13,7 +13,7 @@
 
 class OsuBeatmapMania;
 
-class OsuManiaNote : public OsuHitObject
+class OsuManiaNote final : public OsuHitObject
 {
 public:
 	OsuManiaNote(int column, long sliderTime, long time, int sampleType, int comboNumber, int colorCounter, OsuBeatmapMania *beatmap);

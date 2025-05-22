@@ -37,10 +37,10 @@ public:
 	virtual void setUniformMatrix4fv(UString name, float *v) = 0;
 
 	// type inspection
-	[[nodiscard]] Type getResType() const override { return SHADER; }
+	[[nodiscard]] Type getResType() const final { return SHADER; }
 
-	Shader *asShader() override { return this; }
-	[[nodiscard]] const Shader *asShader() const override { return this; }
+	Shader *asShader() final { return this; }
+	[[nodiscard]] const Shader *asShader() const final { return this; }
 protected:
 	void init() override = 0;
 	void initAsync() override = 0;

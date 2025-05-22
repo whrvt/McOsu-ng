@@ -15,30 +15,30 @@
 class OsuBeatmap;
 class OsuDatabaseBeatmap;
 
-class Osu2 : public App
+class Osu2 final : public App
 {
 public:
 	Osu2();
-	virtual ~Osu2();
+	~Osu2() override;
 
-	virtual void draw(Graphics *g);
-	virtual void update();
+	void draw(Graphics *g) override;
+	void update() override;
 
-	virtual void onKeyDown(KeyboardEvent &key);
-	virtual void onKeyUp(KeyboardEvent &key);
-	virtual void onChar(KeyboardEvent &charCode);
+	void onKeyDown(KeyboardEvent &key) override;
+	void onKeyUp(KeyboardEvent &key) override;
+	void onChar(KeyboardEvent &charCode) override;
 
-	virtual void onResolutionChanged(Vector2 newResolution);
+	void onResolutionChanged(Vector2 newResolution) override;
 
-	virtual void onFocusGained();
-	virtual void onFocusLost();
+	void onFocusGained() override;
+	void onFocusLost() override;
 
-	virtual void onMinimized();
-	virtual void onRestored();
+	void onMinimized() override;
+	void onRestored() override;
 
-	virtual bool onShutdown();
+	bool onShutdown() override;
 
-	inline int getNumInstances() const {return m_instances.size();}
+	[[nodiscard]] inline int getNumInstances() const {return m_instances.size();}
 
 private:
 	void onSkinChange(UString oldValue, UString newValue);

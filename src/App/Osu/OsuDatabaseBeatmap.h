@@ -408,7 +408,7 @@ private:
 
 
 
-class OsuDatabaseBeatmapBackgroundImagePathLoader : public Resource
+class OsuDatabaseBeatmapBackgroundImagePathLoader final : public Resource
 {
 public:
 	OsuDatabaseBeatmapBackgroundImagePathLoader(const UString &filePath);
@@ -427,7 +427,7 @@ private:
 
 
 
-class OsuDatabaseBeatmapStarCalculator : public Resource
+class OsuDatabaseBeatmapStarCalculator final : public Resource
 {
 public:
 	OsuDatabaseBeatmapStarCalculator();

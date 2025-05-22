@@ -49,10 +49,10 @@ public:
 	[[nodiscard]] inline bool hasAlphaChannel() const {return m_bHasAlphaChannel;}
 
 	// type inspection
-	[[nodiscard]] Type getResType() const override { return IMAGE; }
+	[[nodiscard]] Type getResType() const final { return IMAGE; }
 
-	Image *asImage() override { return this; }
-	[[nodiscard]] const Image *asImage() const override { return this; }
+	Image *asImage() final { return this; }
+	[[nodiscard]] const Image *asImage() const final { return this; }
 
 protected:
 	void init() override = 0;

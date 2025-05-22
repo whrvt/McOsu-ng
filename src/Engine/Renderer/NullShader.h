@@ -11,7 +11,7 @@
 
 #include "Shader.h"
 
-class NullShader : public Shader
+class NullShader final : public Shader
 {
 public:
 	NullShader(UString shader, bool source) {;}

@@ -16,7 +16,7 @@
 
 class SoLoudSound;
 
-class SoLoudSoundEngine : public SoundEngine
+class SoLoudSoundEngine final : public SoundEngine
 {
 private:
 	static std::unique_ptr<SoLoud::Soloud> s_SLInstance;

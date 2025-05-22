@@ -15,7 +15,7 @@
 class BassSound;
 class SoundEngineThread;
 
-class BassSoundEngine : public SoundEngine
+class BassSoundEngine final : public SoundEngine
 {
 public:
 	BassSoundEngine();

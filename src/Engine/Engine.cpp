@@ -135,58 +135,72 @@ Engine::Engine()
 	m_math = new McMath();
 
 	// initialize all engine subsystems (the order does matter!)
+	// add assertions that each subsystem is initialized, so that the constructor (Environment) can
+	// safely dereference the global object refs
 	debugLog("\nEngine: Initializing subsystems ...\n");
 	{
 		// input devices
 		s_mouseInstance = std::make_unique<Mouse>();
 		mouse = s_mouseInstance.get();
+		runtime_assert(mouse, "Mouse failed to initialize!");
 		m_inputDevices.push_back(mouse);
 		m_mice.push_back(mouse);
 
 		s_keyboardInstance = std::make_unique<Keyboard>();
 		keyboard = s_keyboardInstance.get();
+		runtime_assert(keyboard, "Keyboard failed to initialize!");
 		m_inputDevices.push_back(keyboard);
 		m_keyboards.push_back(keyboard);
 
 		// init platform specific interfaces
 		s_vulkanInstance = std::make_unique<VulkanInterface>();
 		vulkan = s_vulkanInstance.get(); // needs to be created before Graphics
+		runtime_assert(vulkan, "Vulkan failed to initialize!");
 
 		// create graphics through environment
 		graphics = env->createRenderer();
 		{
 			graphics->init(); // needs init() separation due to potential graphics access
 		}
+		runtime_assert(graphics, "Graphics failed to initialize!");
 		s_graphicsInstance.reset(graphics);
 
 		contextMenu = env->createContextMenu();
+		runtime_assert(contextMenu, "Context menu failed to initialize!");
 		s_contextMenuInstance.reset(contextMenu);
 
 		// make unique_ptrs for the rest
 		s_resourceManagerInstance = std::make_unique<ResourceManager>();
 		resourceManager = s_resourceManagerInstance.get();
+		runtime_assert(resourceManager, "Resource manager menu failed to initialize!");
 
 		s_soundEngineInstance.reset(SoundEngine::createSoundEngine());
 		soundEngine = s_soundEngineInstance.get();
+		runtime_assert(soundEngine, "Sound engine failed to initialize!");
 
 		s_animationHandlerInstance = std::make_unique<AnimationHandler>();
 		animationHandler = s_animationHandlerInstance.get();
+		runtime_assert(animationHandler, "Animation handler failed to initialize!");
 
-		s_openVRInstance = std::make_unique<OpenVRInterface>();
+		s_openVRInstance = std::make_unique<OpenVRInterface>(); // TODO: allow disabling
 		openVR = s_openVRInstance.get();
+		runtime_assert(openVR, "OpenVR failed to initialize!");
 
 		s_networkHandlerInstance = std::make_unique<NetworkHandler>();
 		networkHandler = s_networkHandlerInstance.get();
+		runtime_assert(networkHandler, "Network handler failed to initialize!");
 
 		if constexpr (Env::cfg(FEAT::STEAM))
 		{
 			s_steamInstance = std::make_unique<SteamworksInterface>();
 			steam = s_steamInstance.get();
+			runtime_assert(steam, "Steam integration failed to initialize!");
 		}
 
-		s_discordInstance = std::make_unique<DiscordInterface>();
+		s_discordInstance = std::make_unique<DiscordInterface>(); // TODO: allow disabling
 		discord = s_discordInstance.get();
-
+		runtime_assert(discord, "Discord integration failed to initialize!");
+	
 		// default launch overrides
 		graphics->setVSync(false);
 
@@ -330,10 +344,9 @@ void Engine::loadApp()
 
 		s_appInstance = std::make_unique<Osu>();
 		app = s_appInstance.get();
-
+		runtime_assert(app, "App failed to initialize!");
 		// start listening to the default keyboard input
-		if (app != nullptr)
-			keyboard->addListener(app);
+		keyboard->addListener(app);
 	}
 	debugLog("Engine: Loading app done.\n\n");
 }
@@ -588,50 +601,37 @@ void Engine::onShutdown()
 	m_bBlackout = true;
 }
 
-void Engine::onMouseMotion(float x, float y, float xRel, float yRel, bool isRawInput)
-{
-	mouse->onMotion(x, y, xRel, yRel, isRawInput);
-}
+// can re-add these as overrides to interpose between the environment if necessary, like for onKeyboardKeyDown
+// otherwise, it's fine for environment to call into Mouse directly
+// void Engine::onMouseMotion(float x, float y, float xRel, float yRel, bool isRawInput)
+// {
+// 	mouse->onMotion(x, y, xRel, yRel, isRawInput);
+// }
 
-void Engine::onMouseWheelVertical(int delta)
-{
-	mouse->onWheelVertical(delta);
-}
+// void Engine::onMouseWheelVertical(int delta)
+// {
+// 	mouse->onWheelVertical(delta);
+// }
 
-void Engine::onMouseWheelHorizontal(int delta)
-{
-	mouse->onWheelHorizontal(delta);
-}
+// void Engine::onMouseWheelHorizontal(int delta)
+// {
+// 	mouse->onWheelHorizontal(delta);
+// }
 
-void Engine::onMouseButtonChange(int button, bool down)
-{
-	mouse->onButtonChange(button, down);
-}
+// void Engine::onMouseButtonChange(MouseButton::Index button, bool down)
+// {
+// 	mouse->onButtonChange(button, down);
+// }
 
-void Engine::onMouseLeftChange(bool mouseLeftDown)
-{
-	mouse->onLeftChange(mouseLeftDown);
-}
+// void Engine::onKeyboardKeyUp(KEYCODE keyCode)
+// {
+// 	keyboard->onKeyUp(keyCode);
+// }
 
-void Engine::onMouseMiddleChange(bool mouseMiddleDown)
-{
-	mouse->onMiddleChange(mouseMiddleDown);
-}
-
-void Engine::onMouseRightChange(bool mouseRightDown)
-{
-	mouse->onRightChange(mouseRightDown);
-}
-
-void Engine::onMouseButton4Change(bool mouse4down)
-{
-	mouse->onButton4Change(mouse4down);
-}
-
-void Engine::onMouseButton5Change(bool mouse5down)
-{
-	mouse->onButton5Change(mouse5down);
-}
+// void Engine::onKeyboardChar(KEYCODE charCode)
+// {
+// 	keyboard->onChar(charCode);
+// }
 
 void Engine::onKeyboardKeyDown(KEYCODE keyCode)
 {
@@ -675,16 +675,6 @@ void Engine::onKeyboardKeyDown(KEYCODE keyCode)
 	}
 
 	keyboard->onKeyDown(keyCode);
-}
-
-void Engine::onKeyboardKeyUp(KEYCODE keyCode)
-{
-	keyboard->onKeyUp(keyCode);
-}
-
-void Engine::onKeyboardChar(KEYCODE charCode)
-{
-	keyboard->onChar(charCode);
 }
 
 void Engine::shutdown()
