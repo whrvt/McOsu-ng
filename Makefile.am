@@ -264,50 +264,6 @@ $(DEPS_PREFIX)/SoundTouch.built:
 	$(MKDIR_P) $(DEPS_PREFIX) && touch $@
 endif
 
-$(DEPS_CACHE)/GLEW-$(GLEW_VERSION).source:
-	$(MKDIR_P) $(DEPS_CACHE)
-	$(WGET) -qO $(DEPS_CACHE)/glew-$(GLEW_VERSION).tgz "https://github.com/nigels-com/glew/releases/download/glew-$(GLEW_VERSION)/glew-$(GLEW_VERSION).tgz" && \
-	touch $@
-
-if BUILD_GLEW
-GLEW_CFLAGS += $(shell $(PKG_CONFIG) --cflags glew)
-GLEW_LIBS += $(shell $(PKG_CONFIG) --libs glew)
-$(DEPS_PREFIX)/GLEW.built: $(DEPS_CACHE)/GLEW-$(GLEW_VERSION).source
-	rm -rf $(DEPS_PREFIX)/GLEW
-	$(MKDIR_P) $(DEPS_PREFIX)/GLEW $(DEPS_PREFIX)/lib/pkgconfig $(DEPS_PREFIX)/lib64/pkgconfig
-	$(TAR) xf $(DEPS_CACHE)/glew-$(GLEW_VERSION).tgz -C $(DEPS_PREFIX)/GLEW --strip-components=1 && \
-	cd $(DEPS_PREFIX)/GLEW && \
-	$(if $(findstring linux,$(host_os)),cd $(DEPS_PREFIX)/GLEW && patch -Np1<$(abs_top_srcdir)/build/aux/glew-install.patch && patch -Np1<$(abs_top_srcdir)/build/aux/egl+glx.patch && ,) \
-		$(SED) -i -e 's|/usr/lib[^/64]|/usr/lib32/|' -e 's|lib64|lib/|' -e 's|-Wl,-soname|-soname|' config/Makefile.linux && \
-		$(if $(SDL3_STATIC),$(SED) -i -e 's|glew.lib: .*|glew.lib: glew.lib.static|' -e 's|install.lib:|install.libSHIT:|' -e 's|.*development files.*|install.lib: glew.lib|' Makefile,true) && \
-  		$(SED) -i '/^.PHONY: .*\.pc$$/d' Makefile && \
-		$(MAKE) SYSTEM=$(if $(findstring linux,$(host_os)),linux-egl M_ARCH=$(host_cpu),linux-mingw$(if $(filter x86_64,$(host_cpu)),64,32)) GLEW_DEST="$(DEPS_PREFIX)" \
-		STRIP= CC="$(CC) -Wno-cast-function-type -Wno-strict-prototypes $(CPPFLAGS)" CXX="$(CXX)" LD="$(if $(LLVMMINGW),$(CC),$(LD))" \
-		$(if $(SDL3_STATIC),glew.lib.static,glew.lib.shared)
-	cd $(DEPS_PREFIX)/GLEW && \
-		$(MAKE) SYSTEM=$(if $(findstring linux,$(host_os)),linux-egl M_ARCH=$(host_cpu),linux-mingw$(if $(filter x86_64,$(host_cpu)),64,32)) GLEW_DEST="$(DEPS_PREFIX)" \
-		STRIP= CC="$(CC) -Wno-cast-function-type -Wno-strict-prototypes $(CPPFLAGS)" CXX="$(CXX)" LD="$(LD) $(if $(findstring linux,$(host_os)),$(if $(filter x86_64,$(host_cpu)),,-melf_i386),)" \
-		install
-	$(MKDIR_P) "$(DEPS_PREFIX)/lib/pkgconfig"
-	( echo 'prefix=$(DEPS_PREFIX)'; \
-	  echo 'exec_prefix=$${prefix}'; \
-	  echo 'libdir=$${exec_prefix}/lib'; \
-	  echo 'includedir=$${prefix}/include'; \
-	  echo ''; \
-	  echo 'Name: glew'; \
-	  echo 'Description: The OpenGL Extension Wrangler library'; \
-	  echo 'Version: $(GLEW_VERSION)'; \
-	  echo 'Cflags: -I$${includedir}'; \
-	  echo 'Libs: -L$${libdir} $(if $(findstring linux,$(host_os)),-lGLEW -lEGL -lGL,-lopengl32 -lglew32 -lglu32)'; \
-	  $(if $(findstring linux,$(host_os)),echo 'Requires: glu',) ) > "$(DEPS_PREFIX)/lib/pkgconfig/glew.pc"
-	rm -rf $(DEPS_PREFIX)/lib/*GLEW$(if $(SDL3_STATIC),$(DLLEXT),.a)*
-	$(PKG_CONFIG) --exists --print-errors glew
-	touch $@
-else
-$(DEPS_PREFIX)/GLEW.built:
-	$(MKDIR_P) $(DEPS_PREFIX) && touch $@
-endif
-
 $(DEPS_CACHE)/libjpeg-$(LIBJPEG_VERSION).source:
 	$(MKDIR_P) $(DEPS_CACHE)
 	$(WGET) -qO $(DEPS_CACHE)/libjpeg-$(LIBJPEG_VERSION).tar.gz "https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/$(LIBJPEG_VERSION)/libjpeg-turbo-$(LIBJPEG_VERSION).tar.gz" && \
@@ -497,7 +453,7 @@ $(DEPS_PREFIX)/FREETYPE2.built:
 	$(MKDIR_P) $(DEPS_PREFIX) && touch $@
 endif
 
-BUILT_SOURCES := $(DEPS_PREFIX)/mimalloc.built $(DEPS_PREFIX)/SDL3.built $(DEPS_PREFIX)/SDL3_mixer.built $(DEPS_PREFIX)/GLEW.built $(DEPS_PREFIX)/libjpeg.built \
+BUILT_SOURCES := $(DEPS_PREFIX)/mimalloc.built $(DEPS_PREFIX)/SDL3.built $(DEPS_PREFIX)/SDL3_mixer.built $(DEPS_PREFIX)/libjpeg.built \
 	$(DEPS_PREFIX)/libpng.built $(DEPS_PREFIX)/bzip2.built $(DEPS_PREFIX)/zlib.built $(DEPS_PREFIX)/FREETYPE2.built $(DEPS_PREFIX)/glm.built $(DEPS_PREFIX)/SoLoud.built $(DEPS_PREFIX)/SoundTouch.built
 
 # making sure deps are built before main compile (continued)
@@ -512,13 +468,14 @@ McOsu_ng_CXXFLAGS := \
 	$(CXXFLAGS_EXTRA) \
 	$(MCOSU_CXXFLAGS) \
 	$(MCOSU_NG_INCLUDE_FLAGS) \
+	$(GLAD_CFLAGS) \
 	$(SDL3_CFLAGS) \
 	$(AUDIO_CFLAGS) \
 	$(X11_CFLAGS) \
 	$(XI_CFLAGS) \
 	$(GL_CFLAGS) \
 	$(GLU_CFLAGS) \
-	$(GLEW_CFLAGS) \
+	$(EGL_CFLAGS) \
 	$(FREETYPE2_CFLAGS) \
 	$(LIBPNG_CFLAGS) \
 	$(BZIP2_CFLAGS) \
@@ -537,7 +494,7 @@ McOsu_ng_LDFLAGS := \
 	$(XI_LIBS) \
 	$(GL_LIBS) \
 	$(GLU_LIBS) \
-	$(GLEW_LIBS) \
+	$(EGL_LIBS) \
 	$(FREETYPE2_LIBS) \
 	$(LIBPNG_LIBS) \
 	$(BZIP2_LIBS) \
@@ -546,9 +503,9 @@ McOsu_ng_LDFLAGS := \
 	$(MCOSU_LDFLAGS) \
 	$(LDFLAGS_EXTRA)
 
-compile_commands.json: clean
+compile_commands.json: mostlyclean-compile
 	@$(BEAR) --version || { echo bear is unavailable to generate a compile_commands.json, install bear && exit 1; }
-	$(BEAR) --append -- $(MAKE) $(AM_MAKEFLAGS) all-am
+	$(BEAR) --append -- $(MAKE) $(AM_MAKEFLAGS) $(McOsu_ng_OBJECTS) $(McOsu_ng_DEPENDENCIES) $(EXTRA_McOsu_ng_DEPENDENCIES)
 
 $(abs_top_srcdir)/.clangd: compile_commands.json
 	@if [ -f $@ ]; then \
@@ -560,14 +517,13 @@ $(abs_top_srcdir)/.clangd: compile_commands.json
 		fi; \
 	else \
 		echo "CompileFlags:" > $@; \
-		echo "    BuiltinHeaders: QueryDriver" >> $@; \
 		echo "    CompilationDatabase: $(shell realpath --relative-to=$(abs_top_srcdir) $(CURDIR))" >> $@; \
 		echo "" >> $@; \
 		echo "InlayHints:" >> $@; \
 		echo "    Enabled: No" >> $@; \
 	fi
 
-compile-commands: $(McOsu_ng_OBJECTS) $(abs_top_srcdir)/.clangd
+compile-commands: $(abs_top_srcdir)/.clangd
 
 # windows' loader has no concept of rpaths
 LIBDEST :=
@@ -607,9 +563,6 @@ else
 endif
 if BUILD_SDL3
 	$(if $(SDL3_STATIC),,@`find $(SDL3_PREFIX) '(' -iname '*SDL3*'$(DLLEXT) -o -iname '*SDL3*''.so.*' ')' -exec cp -P '{''}' "$(DESTDIR)$(bindir)/$(LIBDEST)" ';'`)
-endif
-if BUILD_GLEW
-	$(if $(SDL3_STATIC),,@`find $(GLEW_PREFIX) '(' -iname '*glew*'$(DLLEXT) -o -iname '*glew*''.so.*' ')' -exec cp -P '{''}' "$(DESTDIR)$(bindir)/$(LIBDEST)" ';'`)
 endif
 if BUILD_LIBJPEG
 	$(if $(SDL3_STATIC),,@`find $(LIBJPEG_PREFIX) '(' -iname '*libjpeg-*'$(DLLEXT) -o -iname '*libjpeg*''.so.*' ')' -exec cp -P '{''}' "$(DESTDIR)$(bindir)/$(LIBDEST)" ';'`)

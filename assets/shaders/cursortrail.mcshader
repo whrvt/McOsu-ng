@@ -91,7 +91,6 @@ void main()
 }
 
 ###OpenGLES32Interface::VertexShader#############################################################################################
-
 #version 100
 
 attribute vec3 position;
@@ -112,7 +111,6 @@ void main()
 }
 
 ###OpenGLES32Interface::FragmentShader###########################################################################################
-
 #version 100
 precision highp float;
 

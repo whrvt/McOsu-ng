@@ -647,6 +647,7 @@ ac_subst_vars='am__EXEEXT_FALSE
 am__EXEEXT_TRUE
 LTLIBOBJS
 LIBOBJS
+GLAD_CFLAGS
 BUNDLED_BASS_FX_DIR
 BUNDLED_BASS_DIR
 BUNDLED_LIBS_DIR
@@ -679,8 +680,6 @@ BUILD_LIBPNG_FALSE
 BUILD_LIBPNG_TRUE
 BUILD_LIBJPEG_FALSE
 BUILD_LIBJPEG_TRUE
-BUILD_GLEW_FALSE
-BUILD_GLEW_TRUE
 BUILD_SDL3_FALSE
 BUILD_SDL3_TRUE
 GLM_CFLAGS
@@ -697,8 +696,6 @@ LIBPNG_VERSION
 LIBJPEG_PREFIX
 LIBJPEG_VERSION
 NASM
-GLEW_PREFIX
-GLEW_VERSION
 SDL3_STATIC
 SDL3_PREFIX
 SDL3_VERSION
@@ -712,8 +709,6 @@ LIBPNG_LIBS
 LIBPNG_CFLAGS
 LIBJPEG_LIBS
 LIBJPEG_CFLAGS
-GLEW_LIBS
-GLEW_CFLAGS
 SDL3_LIBS
 SDL3_CFLAGS
 MIMALLOC_PREFIX
@@ -924,8 +919,6 @@ GLU_CFLAGS
 GLU_LIBS
 SDL3_CFLAGS
 SDL3_LIBS
-GLEW_CFLAGS
-GLEW_LIBS
 LIBJPEG_CFLAGS
 LIBJPEG_LIBS
 LIBPNG_CFLAGS
@@ -1618,8 +1611,6 @@ Some influential environment variables:
   GLU_LIBS    linker flags for GLU, overriding pkg-config
   SDL3_CFLAGS C compiler flags for SDL3, overriding pkg-config
   SDL3_LIBS   linker flags for SDL3, overriding pkg-config
-  GLEW_CFLAGS C compiler flags for GLEW, overriding pkg-config
-  GLEW_LIBS   linker flags for GLEW, overriding pkg-config
   LIBJPEG_CFLAGS
               C compiler flags for LIBJPEG, overriding pkg-config
   LIBJPEG_LIBS
@@ -8725,6 +8716,14 @@ esac
 fi
   # FIXME: transitive GLEW dep
 
+else case e in #(
+  e)
+    EGL_CFLAGS=""
+
+    EGL_LIBS=""
+
+ ;;
+esac
 fi
 
 
@@ -9033,9 +9032,7 @@ fi
 
 
 SDL3_MIN_VERSION=3.4.0 # needs SDL_SetRelativeMouseTransform, not in any current (3.2.x) releases
-SDL3_BUILD_VERSION=514d96de07c3b1b8603ee4701229bb055a1dd2e3 # git
-GLEW_MIN_VERSION=2.2.0
-GLEW_BUILD_VERSION=2.2.0
+SDL3_BUILD_VERSION=c08b1049d3064af32b876432e766d473f61442e2 # git
 FREETYPE2_MIN_VERSION=2.10.0
 FREETYPE2_BUILD_VERSION=2.13.3
 LIBJPEG_MIN_VERSION=3.0.0
@@ -9217,158 +9214,6 @@ else
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
         have_sdl3=yes
-fi ;;
-esac
-fi
-
-
-    if test "x$enable_static" = "xyes"
-then :
-  _save_PKG_CONFIG=$PKG_CONFIG
-PKG_CONFIG="$PKG_CONFIG --static"
-
-pkg_failed=no
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for glew >= $GLEW_MIN_VERSION" >&5
-printf %s "checking for glew >= $GLEW_MIN_VERSION... " >&6; }
-
-if test -n "$GLEW_CFLAGS"; then
-    pkg_cv_GLEW_CFLAGS="$GLEW_CFLAGS"
- elif test -n "$PKG_CONFIG"; then
-    if test -n "$PKG_CONFIG" && \
-    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"glew >= \$GLEW_MIN_VERSION\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "glew >= $GLEW_MIN_VERSION") 2>&5
-  ac_status=$?
-  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }; then
-  pkg_cv_GLEW_CFLAGS=`$PKG_CONFIG --cflags "glew >= $GLEW_MIN_VERSION" 2>/dev/null`
-		      test "x$?" != "x0" && pkg_failed=yes
-else
-  pkg_failed=yes
-fi
- else
-    pkg_failed=untried
-fi
-if test -n "$GLEW_LIBS"; then
-    pkg_cv_GLEW_LIBS="$GLEW_LIBS"
- elif test -n "$PKG_CONFIG"; then
-    if test -n "$PKG_CONFIG" && \
-    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"glew >= \$GLEW_MIN_VERSION\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "glew >= $GLEW_MIN_VERSION") 2>&5
-  ac_status=$?
-  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }; then
-  pkg_cv_GLEW_LIBS=`$PKG_CONFIG --libs "glew >= $GLEW_MIN_VERSION" 2>/dev/null`
-		      test "x$?" != "x0" && pkg_failed=yes
-else
-  pkg_failed=yes
-fi
- else
-    pkg_failed=untried
-fi
-
-
-
-if test $pkg_failed = yes; then
-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
-printf "%s\n" "no" >&6; }
-
-if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
-        _pkg_short_errors_supported=yes
-else
-        _pkg_short_errors_supported=no
-fi
-        if test $_pkg_short_errors_supported = yes; then
-                GLEW_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "glew >= $GLEW_MIN_VERSION" 2>&1`
-        else
-                GLEW_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "glew >= $GLEW_MIN_VERSION" 2>&1`
-        fi
-        # Put the nasty error message in config.log where it belongs
-        echo "$GLEW_PKG_ERRORS" >&5
-
-        have_glew=no
-elif test $pkg_failed = untried; then
-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
-printf "%s\n" "no" >&6; }
-        have_glew=no
-else
-        GLEW_CFLAGS=$pkg_cv_GLEW_CFLAGS
-        GLEW_LIBS=$pkg_cv_GLEW_LIBS
-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-printf "%s\n" "yes" >&6; }
-        have_glew=yes
-fi
-PKG_CONFIG=$_save_PKG_CONFIG
-else case e in #(
-  e)
-pkg_failed=no
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for glew >= $GLEW_MIN_VERSION" >&5
-printf %s "checking for glew >= $GLEW_MIN_VERSION... " >&6; }
-
-if test -n "$GLEW_CFLAGS"; then
-    pkg_cv_GLEW_CFLAGS="$GLEW_CFLAGS"
- elif test -n "$PKG_CONFIG"; then
-    if test -n "$PKG_CONFIG" && \
-    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"glew >= \$GLEW_MIN_VERSION\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "glew >= $GLEW_MIN_VERSION") 2>&5
-  ac_status=$?
-  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }; then
-  pkg_cv_GLEW_CFLAGS=`$PKG_CONFIG --cflags "glew >= $GLEW_MIN_VERSION" 2>/dev/null`
-		      test "x$?" != "x0" && pkg_failed=yes
-else
-  pkg_failed=yes
-fi
- else
-    pkg_failed=untried
-fi
-if test -n "$GLEW_LIBS"; then
-    pkg_cv_GLEW_LIBS="$GLEW_LIBS"
- elif test -n "$PKG_CONFIG"; then
-    if test -n "$PKG_CONFIG" && \
-    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"glew >= \$GLEW_MIN_VERSION\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "glew >= $GLEW_MIN_VERSION") 2>&5
-  ac_status=$?
-  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }; then
-  pkg_cv_GLEW_LIBS=`$PKG_CONFIG --libs "glew >= $GLEW_MIN_VERSION" 2>/dev/null`
-		      test "x$?" != "x0" && pkg_failed=yes
-else
-  pkg_failed=yes
-fi
- else
-    pkg_failed=untried
-fi
-
-
-
-if test $pkg_failed = yes; then
-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
-printf "%s\n" "no" >&6; }
-
-if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
-        _pkg_short_errors_supported=yes
-else
-        _pkg_short_errors_supported=no
-fi
-        if test $_pkg_short_errors_supported = yes; then
-                GLEW_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "glew >= $GLEW_MIN_VERSION" 2>&1`
-        else
-                GLEW_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "glew >= $GLEW_MIN_VERSION" 2>&1`
-        fi
-        # Put the nasty error message in config.log where it belongs
-        echo "$GLEW_PKG_ERRORS" >&5
-
-        have_glew=no
-elif test $pkg_failed = untried; then
-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
-printf "%s\n" "no" >&6; }
-        have_glew=no
-else
-        GLEW_CFLAGS=$pkg_cv_GLEW_CFLAGS
-        GLEW_LIBS=$pkg_cv_GLEW_LIBS
-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-printf "%s\n" "yes" >&6; }
-        have_glew=yes
 fi ;;
 esac
 fi
@@ -10165,15 +10010,6 @@ fi
 
 
 
-if test "x$have_glew" != "xyes"
-then :
-  have_glew="build from source"
-fi
-GLEW_VERSION=$GLEW_BUILD_VERSION
-GLEW_PREFIX="${DEPS_PREFIX}"
-
-
-
 if test "x$have_libjpeg" != "xyes"
 then :
 
@@ -10287,14 +10123,6 @@ GLM_CFLAGS=""
 else
   BUILD_SDL3_TRUE='#'
   BUILD_SDL3_FALSE=
-fi
-
- if test "x$have_glew" != "xyes"; then
-  BUILD_GLEW_TRUE=
-  BUILD_GLEW_FALSE='#'
-else
-  BUILD_GLEW_TRUE='#'
-  BUILD_GLEW_FALSE=
 fi
 
  if test "x$have_libjpeg" != "xyes"; then
@@ -10490,6 +10318,10 @@ fi
 
 
 
+
+
+# the source file is also added through autogen.sh to Makefile.sources
+GLAD_CFLAGS="-I\$(srcdir)/\$(BUNDLED_LIBS_DIR)/glad -I\$(srcdir)/\$(BUNDLED_LIBS_DIR)/glad/glad"
 
 
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for default config in $srcdir/$ASSETS_DIR/cfg" >&5
@@ -10732,10 +10564,6 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${BUILD_SDL3_TRUE}" && test -z "${BUILD_SDL3_FALSE}"; then
   as_fn_error $? "conditional \"BUILD_SDL3\" was never defined.
-Usually this means the macro was only invoked conditionally." "$LINENO" 5
-fi
-if test -z "${BUILD_GLEW_TRUE}" && test -z "${BUILD_GLEW_FALSE}"; then
-  as_fn_error $? "conditional \"BUILD_GLEW\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${BUILD_LIBJPEG_TRUE}" && test -z "${BUILD_LIBJPEG_FALSE}"; then
@@ -12142,7 +11970,6 @@ Dependencies:
     libGLU              ${have_glu-no}
     libEGL              ${have_egl-no}
     sdl3:               ${have_sdl3-build from source}
-    GLEW:               ${have_glew-build from source}
     libjpeg:            ${have_libjpeg-build from source}
     libpng:             ${have_libpng-build from source}
     bzip2:              ${have_bzip2-build from source}
@@ -12178,7 +12005,6 @@ Dependencies:
     libGLU              ${have_glu-no}
     libEGL              ${have_egl-no}
     sdl3:               ${have_sdl3-build from source}
-    GLEW:               ${have_glew-build from source}
     libjpeg:            ${have_libjpeg-build from source}
     libpng:             ${have_libpng-build from source}
     bzip2:              ${have_bzip2-build from source}

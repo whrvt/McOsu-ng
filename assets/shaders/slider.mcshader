@@ -276,13 +276,12 @@ void main()
 }
 
 ###OpenGLES32Interface::VertexShader#############################################################################################
+#version 100
 
-#version 320 es
+attribute vec3 position;
+attribute vec2 uv;
 
-layout(location = 0) in vec3 position;
-layout(location = 1) in vec2 uv;
-
-out vec2 tex_coord;
+varying vec2 tex_coord;
 
 uniform mat4 mvp;
 
@@ -293,8 +292,7 @@ void main()
 }
 
 ###OpenGLES32Interface::FragmentShader###########################################################################################
-
-#version 320 es
+#version 100
 precision highp float;
 
 uniform sampler2D tex;
@@ -306,8 +304,7 @@ uniform float borderFeather;
 uniform vec3 colBorder;
 uniform vec3 colBody;
 
-in vec2 tex_coord;
-out vec4 fragColor;
+varying vec2 tex_coord;
 
 const float defaultTransitionSize = 0.011;
 const float defaultBorderSize = 0.11;
@@ -389,8 +386,8 @@ void main()
 		float delta = ((tex_coord.x - size) / (1.0-size));
 		out_color = mix(outerBodyColor, innerBodyColor, delta);
 	}
-
-	fragColor = out_color;
+	// linear variant (unused?)
+	gl_FragColor = out_color;
 }
 
 ###DirectX11Interface::VertexShader#############################################################################################

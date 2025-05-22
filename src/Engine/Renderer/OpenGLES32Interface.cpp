@@ -22,6 +22,8 @@
 
 #include "OpenGLHeaders.h"
 
+ConVar r_gles_orphan_buffers("r_gles_orphan_buffers", Env::cfg(OS::WASM) ? false : true, FCVAR_NONE, "reduce cpu/gpu synchronization by freeing buffer objects before modifying them");
+
 OpenGLES32Interface::OpenGLES32Interface() : NullGraphicsInterface()
 {
 	// renderer
@@ -530,11 +532,13 @@ void OpenGLES32Interface::drawVAO(VertexArrayObject *vao)
 		}
 	}
 
+	const bool orphanBuffers = r_gles_orphan_buffers.getBool();
+
 	// upload vertices to gpu
 	if (finalVertices.size() > 0)
 	{
 		glBindBuffer(GL_ARRAY_BUFFER, m_iVBOVertices);
-		if (!Env::cfg(OS::WASM))
+		if (orphanBuffers)
 			glBufferData(GL_ARRAY_BUFFER, 16384 * sizeof(Vector3), NULL, GL_STREAM_DRAW); // orphan the buffer
 		glBufferSubData(GL_ARRAY_BUFFER, 0, finalVertices.size() * sizeof(Vector3), &(finalVertices[0]));
 	}
@@ -543,7 +547,7 @@ void OpenGLES32Interface::drawVAO(VertexArrayObject *vao)
 	if (finalTexcoords.size() > 0 && finalTexcoords[0].size() > 0)
 	{
 		glBindBuffer(GL_ARRAY_BUFFER, m_iVBOTexcoords);
-		if (!Env::cfg(OS::WASM))
+		if (orphanBuffers)
 			glBufferData(GL_ARRAY_BUFFER, 16384 * sizeof(Vector2), NULL, GL_STREAM_DRAW); // orphan the buffer
 		glBufferSubData(GL_ARRAY_BUFFER, 0, finalTexcoords[0].size() * sizeof(Vector2), &(finalTexcoords[0][0]));
 	}
@@ -552,7 +556,7 @@ void OpenGLES32Interface::drawVAO(VertexArrayObject *vao)
 	if (finalColors.size() > 0)
 	{
 		glBindBuffer(GL_ARRAY_BUFFER, m_iVBOTexcolors);
-		if (!Env::cfg(OS::WASM))
+		if (orphanBuffers)
 			glBufferData(GL_ARRAY_BUFFER, 16384 * sizeof(Vector4), NULL, GL_STREAM_DRAW); // orphan the buffer
 		glBufferSubData(GL_ARRAY_BUFFER, 0, finalColors.size() * sizeof(Color), &(finalColors[0]));
 	}

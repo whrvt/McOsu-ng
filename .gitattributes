@@ -13,3 +13,21 @@ build/aux/install-sh generated
 build/aux/missing generated
 build/aux/config.guess generated
 build/aux/config.sub generated
+
+libraries/glad/glad/KHR/khrplatform.h generated
+libraries/glad/glad/glad.cpp generated
+libraries/glad/glad/glad.h generated
+libraries/bassfx/lib/windows/i686/bass_fx.dll generated
+libraries/bassfx/lib/windows/i686/bass_fx.lib generated
+libraries/bassfx/lib/windows/x86_64/bass_fx.dll generated
+libraries/bassfx/lib/linux/i686/libbass_fx.so generated
+libraries/bassfx/lib/linux/x86_64/libbass_fx.so generated
+libraries/bassfx/include/bass_fx.h generated
+libraries/bass/lib/windows/i686/bass.dll generated
+libraries/bass/lib/windows/i686/bass.lib generated
+libraries/bass/lib/windows/x86_64/bass.dll generated
+libraries/bass/lib/linux/i686/libbass.so generated
+libraries/bass/lib/linux/x86_64/libbass.so generated
+libraries/bass/include/bass.h generated
+
+

@@ -19,14 +19,18 @@ ConVar debug_opengl("debug_opengl", false, FCVAR_NONE);
 SDLGLInterface::SDLGLInterface(SDL_Window *window) : BackendGLInterface()
 {
 	// resolve GL functions
-	glewExperimental = true;
-	GLenum err = glewInit();
-	if (GLEW_OK != err)
-	{
-		debugLog("glewInit() Error: %s\n", glewGetErrorString(err));
-		engine->showMessageErrorFatal("OpenGL Error", "Couldn't glewInit()!\nThe engine will exit now.");
+    if (!gladLoadGL()) {
+		debugLog("gladLoadGL() error\n");
+		engine->showMessageErrorFatal("OpenGL Error", "Couldn't gladLoadGL()!\nThe engine will exit now.");
 		engine->shutdown();
+        return;
+    }
+	else
+	{
+		debugLog("gladLoadGL() version: %d.%d, EGL: %s\n", GLVersion.major, GLVersion.minor, !!SDL_EGL_GetCurrentDisplay() ? "true" : "false");
+		debugLog("GL_VERSION string: %s\n", glGetString(GL_VERSION));
 	}
+
 	m_window = window;
 }
 

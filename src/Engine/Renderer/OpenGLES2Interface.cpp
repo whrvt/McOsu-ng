@@ -55,10 +55,6 @@ OpenGLES2Interface::~OpenGLES2Interface()
 
 void OpenGLES2Interface::init()
 {
-	// check GL version
-	const GLubyte *version = glGetString(GL_VERSION);
-	debugLog("OpenGL: OpenGL Version %s\n", version);
-
 	// enable
 	glEnable(GL_BLEND);
 

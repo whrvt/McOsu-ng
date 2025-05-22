@@ -43,17 +43,6 @@ OpenGLLegacyInterface::OpenGLLegacyInterface() : Graphics()
 
 void OpenGLLegacyInterface::init()
 {
-	// check GL version
-	const GLubyte *version = glGetString(GL_VERSION);
-	debugLog("OpenGL: OpenGL Version %s\n", version);
-
-#if !(defined(WINVER) && WINVER <= 0x0600) // allow skipping this error for funny winxp builds with ~gl2.1
-	// check GL version again
-	if (!glewIsSupported("GL_VERSION_3_0") && !glewIsSupported("GLEW_VERSION_3_0"))
-		engine->showMessageWarning(
-		    "OpenGL Warning", UString::format("Your GPU does not support OpenGL version 3.0!\nThe engine will try to continue, but probably crash.\nOpenGL version = %s", version));
-#endif
-
 	// enable
 	glEnable(GL_TEXTURE_2D);
 	glEnable(GL_BLEND);

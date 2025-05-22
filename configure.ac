@@ -27,7 +27,7 @@ AC_SUBST([MAKEFLAGS])
 
 # no-define needed to avoid setting e.g. VERSION which conflicts with McEngine stuff
 # dist-xz for `make dist` tarball target
-AM_INIT_AUTOMAKE([1.16 foreign subdir-objects no-define dist-xz parallel-tests])
+AM_INIT_AUTOMAKE([foreign subdir-objects no-define dist-xz parallel-tests])
 AM_SILENT_RULES([yes])
 
 AC_PROG_INSTALL
@@ -437,15 +437,16 @@ AS_IF([test "$SYSNAME" = "linux"], [
     PKG_CHECK_AUTO([X11], [x11], [have_x11=yes], [have_x11=no])
     PKG_CHECK_AUTO([XI], [xi], [have_xi=yes], [have_xi=no])  # required for noSDL (TODO: ./configure --disable-sdl)
     PKG_CHECK_AUTO([EGL], [egl], [have_egl=yes], [have_egl=no])  # FIXME: transitive GLEW dep
+], [
+    AC_SUBST([EGL_CFLAGS], [""])
+    AC_SUBST([EGL_LIBS], [""])
 ])
 
 PKG_CHECK_AUTO([GL], [gl], [have_gl=yes], [have_gl=no])
 PKG_CHECK_AUTO([GLU], [glu], [have_glu=yes], [have_glu=no])
 
 SDL3_MIN_VERSION=3.4.0 # needs SDL_SetRelativeMouseTransform, not in any current (3.2.x) releases
-SDL3_BUILD_VERSION=514d96de07c3b1b8603ee4701229bb055a1dd2e3 # git
-GLEW_MIN_VERSION=2.2.0
-GLEW_BUILD_VERSION=2.2.0
+SDL3_BUILD_VERSION=c08b1049d3064af32b876432e766d473f61442e2 # git
 FREETYPE2_MIN_VERSION=2.10.0
 FREETYPE2_BUILD_VERSION=2.13.3
 LIBJPEG_MIN_VERSION=3.0.0
@@ -470,7 +471,6 @@ AC_SUBST([MIMALLOC_PREFIX],[$DEPS_PREFIX])
 # TODO: add all deps and transitive deps (fun!)
 AS_IF([test "x$enable_system_deps" != "xno"], [
     PKG_CHECK_AUTO([SDL3], [sdl3 >= $SDL3_MIN_VERSION], [have_sdl3=yes], [have_sdl3=no])
-    PKG_CHECK_AUTO([GLEW], [glew >= $GLEW_MIN_VERSION], [have_glew=yes], [have_glew=no])
     PKG_CHECK_AUTO([LIBJPEG], [libjpeg >= $LIBJPEG_MIN_VERSION], [have_libjpeg=yes], [have_libjpeg=no])
     PKG_CHECK_AUTO([LIBPNG], [libpng >= $LIBPNG_MIN_VERSION], [have_libpng=yes], [have_libpng=no])
     PKG_CHECK_AUTO([ZLIB], [zlib >= $ZLIB_MIN_VERSION], [have_zlib=yes], [have_zlib=no])
@@ -488,12 +488,6 @@ AS_IF([test "x$enable_static" = "xyes"], [
 AC_SUBST([SDL3_VERSION])
 AC_SUBST([SDL3_PREFIX])
 AC_SUBST([SDL3_STATIC])
-
-AS_IF([test "x$have_glew" != "xyes"], [have_glew="build from source"])
-GLEW_VERSION=$GLEW_BUILD_VERSION
-GLEW_PREFIX="${DEPS_PREFIX}"
-AC_SUBST([GLEW_VERSION])
-AC_SUBST([GLEW_PREFIX])
 
 AS_IF([test "x$have_libjpeg" != "xyes"], [
     have_libjpeg="build from source"
@@ -535,7 +529,6 @@ AC_SUBST([GLM_PREFIX],[$DEPS_PREFIX])
 AC_SUBST([GLM_CFLAGS], [""])
 
 AM_CONDITIONAL([BUILD_SDL3], [test "x$have_sdl3" != "xyes"])
-AM_CONDITIONAL([BUILD_GLEW], [test "x$have_glew" != "xyes"])
 AM_CONDITIONAL([BUILD_LIBJPEG], [test "x$have_libjpeg" != "xyes"])
 AM_CONDITIONAL([BUILD_LIBPNG], [test "x$have_libpng" != "xyes"])
 AM_CONDITIONAL([BUILD_BZIP2], [test "x$have_bzip2" != "xyes"])
@@ -602,6 +595,9 @@ AC_SUBST([BASS_CFLAGS])
 AC_SUBST([BUNDLED_LIBS_DIR])
 AC_SUBST([BUNDLED_BASS_DIR])
 AC_SUBST([BUNDLED_BASS_FX_DIR])
+
+# the source file is also added through autogen.sh to Makefile.sources
+AC_SUBST([GLAD_CFLAGS], ["-I\$(srcdir)/\$(BUNDLED_LIBS_DIR)/glad -I\$(srcdir)/\$(BUNDLED_LIBS_DIR)/glad/glad"])
 
 AC_MSG_CHECKING([for default config in $srcdir/$ASSETS_DIR/cfg])
 AS_IF([test -f "$srcdir/$ASSETS_DIR/cfg/override.cfg"], [
@@ -676,7 +672,6 @@ Dependencies:
     libGLU              ${have_glu-no}
     libEGL              ${have_egl-no}
     sdl3:               ${have_sdl3-build from source}
-    GLEW:               ${have_glew-build from source}
     libjpeg:            ${have_libjpeg-build from source}
     libpng:             ${have_libpng-build from source}
     bzip2:              ${have_bzip2-build from source}

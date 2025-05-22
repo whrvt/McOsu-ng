@@ -37,7 +37,7 @@ void OpenGLImage::init()
 	if (m_GLTexture == 0)
 	{
 		// DEPRECATED LEGACY (1)
-		if (Env::cfg(REND::GL))
+		if constexpr (Env::cfg(REND::GL))
 			glEnable(GL_TEXTURE_2D);
 
 		// create texture and bind
@@ -137,7 +137,7 @@ void OpenGLImage::bind(unsigned int textureUnit)
 	glBindTexture(GL_TEXTURE_2D, m_GLTexture);
 
 	// DEPRECATED LEGACY (2)
-	if (Env::cfg(REND::GL))
+	if constexpr (Env::cfg(REND::GL))
 		glEnable(GL_TEXTURE_2D);
 }
 

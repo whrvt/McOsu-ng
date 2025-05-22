@@ -55,14 +55,6 @@ OpenGL3Interface::~OpenGL3Interface()
 
 void OpenGL3Interface::init()
 {
-	// check GL version
-	const GLubyte *version = glGetString(GL_VERSION);
-	debugLog("OpenGL: OpenGL Version %s\n",version);
-
-	// check GL version again
-	if (!glewIsSupported("GL_VERSION_3_0"))
-		engine->showMessageWarning("OpenGL Warning", "Your GPU does not support OpenGL version 3.0!\nThe engine will try to continue, but probably crash.");
-
 	// enable
 	glEnable(GL_BLEND);
 
