@@ -43,6 +43,12 @@ public:
 	// debug
 	void drawTextureAtlas(Graphics *g);
 
+	// type inspection
+	[[nodiscard]] Type getResType() const override { return FONT; }
+
+ 	McFont *asFont() override { return this; }
+	[[nodiscard]] const McFont *asFont() const override { return this; }
+
 protected:
 	void constructor(std::vector<wchar_t> characters, int fontSize, bool antialiasing, int fontDPI);
 	void init() override;

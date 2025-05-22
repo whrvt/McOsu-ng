@@ -82,16 +82,16 @@ public:
 		m_iNumScoresRecalculated = 0;
 	}
 
-	inline int getNumScoresToRecalculate() const {return m_iNumScoresToRecalculate.load();}
-	inline int getNumScoresRecalculated() const {return m_iNumScoresRecalculated.load();}
-
+	[[nodiscard]] inline int getNumScoresToRecalculate() const {return m_iNumScoresToRecalculate.load();}
+	[[nodiscard]] inline int getNumScoresRecalculated() const {return m_iNumScoresRecalculated.load();}
+	[[nodiscard]] Type getResType() const override { return APPDEFINED; } // TODO: handle this better?
 private:
-	virtual void init()
+	void init() override
 	{
 		m_bReady = true;
 	}
 
-	virtual void initAsync()
+	void initAsync() override
 	{
 		std::unordered_map<std::string, std::vector<OsuDatabase::Score>> *scores = osu->getSongBrowser()->getDatabase()->getScores();
 
@@ -266,7 +266,7 @@ private:
 		m_bAsyncReady = true;
 	}
 
-	virtual void destroy() {;}
+	void destroy() override {;}
 
 	UString m_sUserName;
 	bool m_bImportLegacyScores;

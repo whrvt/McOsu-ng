@@ -22,12 +22,13 @@ public:
 	void kill() {m_bDead = true; m_iProgress = 0;}
 	void revive() {m_bDead = false; m_iProgress = 0;}
 
-	inline int getProgress() const {return m_iProgress.load();}
+	[[nodiscard]] inline int getProgress() const {return m_iProgress.load();}
 
+	[[nodiscard]] Type getResType() const override { return APPDEFINED; } // TODO: handle this better?
 protected:
-	virtual void init();
-	virtual void initAsync();
-	virtual void destroy() {;}
+	void init() override;
+	void initAsync() override;
+	void destroy() override {;}
 
 private:
 	OsuBeatmap *m_beatmap;

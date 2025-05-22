@@ -20,7 +20,7 @@ public:
 
 public:
 	RenderTarget(int x, int y, int width, int height, Graphics::MULTISAMPLE_TYPE multiSampleType = Graphics::MULTISAMPLE_TYPE::MULTISAMPLE_0X);
-	virtual ~RenderTarget() {;}
+	~RenderTarget() override {;}
 
 	virtual void draw(Graphics *g, int x, int y);
 	virtual void draw(Graphics *g, int x, int y, int width, int height);
@@ -46,18 +46,23 @@ public:
 	void setClearDepthOnDraw(bool clearDepthOnDraw) {m_bClearDepthOnDraw = clearDepthOnDraw;}
 
 	// get
-	float getWidth() const {return m_vSize.x;}
-	float getHeight() const {return m_vSize.y;}
-	inline Vector2 getSize() const {return m_vSize;}
-	inline Vector2 getPos() const {return m_vPos;}
-	inline Graphics::MULTISAMPLE_TYPE getMultiSampleType() const {return m_multiSampleType;}
+	[[nodiscard]] float getWidth() const {return m_vSize.x;}
+	[[nodiscard]] float getHeight() const {return m_vSize.y;}
+	[[nodiscard]] inline Vector2 getSize() const {return m_vSize;}
+	[[nodiscard]] inline Vector2 getPos() const {return m_vPos;}
+	[[nodiscard]] inline Graphics::MULTISAMPLE_TYPE getMultiSampleType() const {return m_multiSampleType;}
 
-	inline bool isMultiSampled() const {return m_multiSampleType != Graphics::MULTISAMPLE_TYPE::MULTISAMPLE_0X;}
+	[[nodiscard]] inline bool isMultiSampled() const {return m_multiSampleType != Graphics::MULTISAMPLE_TYPE::MULTISAMPLE_0X;}
 
+	// type inspection
+	[[nodiscard]] Type getResType() const override { return RENDERTARGET; }
+
+	RenderTarget *asRenderTarget() override { return this; }
+	[[nodiscard]] const RenderTarget *asRenderTarget() const override { return this; }
 protected:
-	virtual void init() = 0;
-	virtual void initAsync() = 0;
-	virtual void destroy() = 0;
+	void init() override = 0;
+	void initAsync() override = 0;
+	void destroy() override = 0;
 
 	bool m_bClearColorOnDraw;
 	bool m_bClearDepthOnDraw;

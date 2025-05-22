@@ -15,7 +15,7 @@ class VertexArrayObject : public Resource
 {
 public:
 	VertexArrayObject(Graphics::PRIMITIVE primitive = Graphics::PRIMITIVE::PRIMITIVE_TRIANGLES, Graphics::USAGE_TYPE usage = Graphics::USAGE_TYPE::USAGE_STATIC, bool keepInSystemMemory = false);
-	virtual ~VertexArrayObject() {;}
+	~VertexArrayObject() override {;}
 
 	// TODO: fix the naming schema. clear = empty = just empty the containers, but not necessarily release memory
 	void clear();
@@ -43,24 +43,30 @@ public:
 	void setDrawRange(int fromIndex, int toIndex);
 	void setDrawPercent(float fromPercent = 0.0f, float toPercent = 1.0f, int nearestMultiple = 0); // DEPRECATED
 
-	inline Graphics::PRIMITIVE getPrimitive() const {return m_primitive;}
-	inline Graphics::USAGE_TYPE getUsage() const {return m_usage;}
+	[[nodiscard]] inline Graphics::PRIMITIVE getPrimitive() const {return m_primitive;}
+	[[nodiscard]] inline Graphics::USAGE_TYPE getUsage() const {return m_usage;}
 
-	const std::vector<Vector3> &getVertices() const {return m_vertices;}
-	const std::vector<std::vector<Vector2>> &getTexcoords() const {return m_texcoords;}
-	const std::vector<Vector3> &getNormals() const {return m_normals;}
-	const std::vector<Color> &getColors() const {return m_colors;}
+	[[nodiscard]] inline const std::vector<Vector3> &getVertices() const {return m_vertices;}
+	[[nodiscard]] inline const std::vector<std::vector<Vector2>> &getTexcoords() const {return m_texcoords;}
+	[[nodiscard]] inline const std::vector<Vector3> &getNormals() const {return m_normals;}
+	[[nodiscard]] inline const std::vector<Color> &getColors() const {return m_colors;}
 
-	inline unsigned int getNumVertices() const {return m_iNumVertices;}
-	inline bool hasTexcoords() const {return m_bHasTexcoords;}
+	[[nodiscard]] inline unsigned int getNumVertices() const {return m_iNumVertices;}
+	[[nodiscard]] inline bool hasTexcoords() const {return m_bHasTexcoords;}
+
+	// type inspection
+	[[nodiscard]] Type getResType() const override { return VAO; }
+
+	VertexArrayObject *asVAO() override { return this; }
+	[[nodiscard]] const VertexArrayObject *asVAO() const override { return this; }
 
 protected:
 	static int nearestMultipleUp(int number, int multiple);
 	static int nearestMultipleDown(int number, int multiple);
 
-	virtual void init();
-	virtual void initAsync();
-	virtual void destroy();
+	void init() override;
+	void initAsync() override;
+	void destroy() override;
 
 	void updateTexcoordArraySize(unsigned int textureUnit);
 

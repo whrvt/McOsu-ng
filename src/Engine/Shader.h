@@ -20,7 +20,7 @@ public:
 
 public:
 	Shader() : Resource() {;}
-	virtual ~Shader() {;}
+	~Shader() override {;}
 
 	virtual void enable() = 0;
 	virtual void disable() = 0;
@@ -36,10 +36,15 @@ public:
 	virtual void setUniformMatrix4fv(UString name, Matrix4 &matrix) = 0;
 	virtual void setUniformMatrix4fv(UString name, float *v) = 0;
 
+	// type inspection
+	[[nodiscard]] Type getResType() const override { return SHADER; }
+
+	Shader *asShader() override { return this; }
+	[[nodiscard]] const Shader *asShader() const override { return this; }
 protected:
-	virtual void init() = 0;
-	virtual void initAsync() = 0;
-	virtual void destroy() = 0;
+	void init() override = 0;
+	void initAsync() override = 0;
+	void destroy() override = 0;
 
 protected:
 	struct SHADER_PARSE_RESULT

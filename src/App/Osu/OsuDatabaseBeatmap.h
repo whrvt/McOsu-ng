@@ -413,12 +413,12 @@ class OsuDatabaseBeatmapBackgroundImagePathLoader : public Resource
 public:
 	OsuDatabaseBeatmapBackgroundImagePathLoader(const UString &filePath);
 
-	inline const UString &getLoadedBackgroundImageFileName() const {return m_sLoadedBackgroundImageFileName;}
-
+	[[nodiscard]] inline const UString &getLoadedBackgroundImageFileName() const {return m_sLoadedBackgroundImageFileName;}
+	[[nodiscard]] Type getResType() const override { return APPDEFINED; } // TODO: handle this better?
 private:
-	virtual void init();
-	virtual void initAsync();
-	virtual void destroy() {;}
+	void init() override;
+	void initAsync() override;
+	void destroy() override {;}
 
 	UString m_sFilePath;
 
@@ -432,32 +432,34 @@ class OsuDatabaseBeatmapStarCalculator : public Resource
 public:
 	OsuDatabaseBeatmapStarCalculator();
 
-	bool isDead() const {return m_bDead.load();}
+	[[nodiscard]] bool isDead() const {return m_bDead.load();}
 	void kill() {m_bDead = true;}
 	void revive() {m_bDead = false;}
 
 	void setBeatmapDifficulty(OsuDatabaseBeatmap *diff2, float AR, float CS, float OD, float speedMultiplier, bool relax, bool autopilot, bool touchDevice);
 
-	inline OsuDatabaseBeatmap *getBeatmapDifficulty() const {return m_diff2;}
+	[[nodiscard]] inline OsuDatabaseBeatmap *getBeatmapDifficulty() const {return m_diff2;}
 
-	inline double getTotalStars() const {return m_totalStars.load();}
-	inline double getAimStars() const {return m_aimStars.load();}
-	inline double getSpeedStars() const {return m_speedStars.load();}
-	inline double getPPv2() const {return m_pp.load();} // NOTE: pp with currently active mods (runtime mods)
+	[[nodiscard]] inline double getTotalStars() const {return m_totalStars.load();}
+	[[nodiscard]] inline double getAimStars() const {return m_aimStars.load();}
+	[[nodiscard]] inline double getSpeedStars() const {return m_speedStars.load();}
+	[[nodiscard]] inline double getPPv2() const {return m_pp.load();} // NOTE: pp with currently active mods (runtime mods)
 
-	inline long getLengthMS() const {return m_iLengthMS.load();}
+	[[nodiscard]] inline long getLengthMS() const {return m_iLengthMS.load();}
 
-	inline const std::vector<double> &getAimStrains() const {return m_aimStrains;}
-	inline const std::vector<double> &getSpeedStrains() const {return m_speedStrains;}
+	[[nodiscard]] inline const std::vector<double> &getAimStrains() const {return m_aimStrains;}
+	[[nodiscard]] inline const std::vector<double> &getSpeedStrains() const {return m_speedStrains;}
 
-	inline const int getNumObjects() const {return m_iNumObjects.load();}
-	inline const int getNumCircles() const {return m_iNumCircles.load();}
-	inline const int getNumSpinners() const {return m_iNumSpinners.load();}
+	[[nodiscard]] inline int getNumObjects() const {return m_iNumObjects.load();}
+	[[nodiscard]] inline int getNumCircles() const {return m_iNumCircles.load();}
+	[[nodiscard]] inline int getNumSpinners() const {return m_iNumSpinners.load();}
+
+	[[nodiscard]] Type getResType() const override { return APPDEFINED; } // TODO: handle this better?
 
 private:
-	virtual void init();
-	virtual void initAsync();
-	virtual void destroy() {;}
+	void init() override;
+	void initAsync() override;
+	void destroy() override {;}
 
 	std::atomic<bool> m_bDead;
 

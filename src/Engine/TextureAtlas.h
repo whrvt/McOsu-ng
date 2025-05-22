@@ -17,21 +17,27 @@ class TextureAtlas : public Resource
 {
 public:
 	TextureAtlas(int width = 512, int height = 512);
-	virtual ~TextureAtlas() {destroy();}
+	~TextureAtlas() override {destroy();}
 
 	Vector2 put(int width, int height, Color *pixels) {return put(width, height, false, false, pixels);}
 	Vector2 put(int width, int height, bool flipHorizontal, bool flipVertical, Color *pixels);
 
 	void setPadding(int padding) {m_iPadding = padding;}
 
-	inline int getWidth() const {return m_iWidth;}
-	inline int getHeight() const {return m_iHeight;}
-	inline Image *getAtlasImage() const {return m_atlasImage;}
+	[[nodiscard]] inline int getWidth() const {return m_iWidth;}
+	[[nodiscard]] inline int getHeight() const {return m_iHeight;}
+	[[nodiscard]] inline Image *getAtlasImage() const {return m_atlasImage;}
+
+	// type inspection
+	[[nodiscard]] Type getResType() const override { return TEXTUREATLAS; }
+
+	TextureAtlas *asTextureAtlas() override { return this; }
+	[[nodiscard]] const TextureAtlas *asTextureAtlas() const override { return this; }
 
 private:
-	virtual void init();
-	virtual void initAsync();
-	virtual void destroy();
+	void init() override;
+	void initAsync() override;
+	void destroy() override;
 
 	int m_iPadding;
 

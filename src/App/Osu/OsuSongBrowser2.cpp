@@ -100,7 +100,7 @@ public:
 		m_bDead = true; // NOTE: start dead! need to revive() before use
 	}
 
-	bool isDead() const {return m_bDead.load();}
+	[[nodiscard]] bool isDead() const {return m_bDead.load();}
 	void kill() {m_bDead = true;}
 	void revive() {m_bDead = false;}
 
@@ -117,14 +117,14 @@ public:
 		m_sSearchString.append(searchString);
 		m_sHardcodedSearchString = hardcodedSearchString;
 	}
-
+	[[nodiscard]] Type getResType() const override { return APPDEFINED; } // TODO: handle this better?
 protected:
-	virtual void init()
+	void init() override
 	{
 		m_bReady = true;
 	}
 
-	virtual void initAsync()
+	void initAsync() override
 	{
 		if (m_bDead.load())
 		{
@@ -155,7 +155,7 @@ protected:
 		m_bAsyncReady = true;
 	}
 
-	virtual void destroy() {;}
+	void destroy() override {;}
 
 private:
 	std::atomic<bool> m_bDead;

@@ -26,32 +26,38 @@ public:
 public:
 	Image(UString filepath, bool mipmapped = false, bool keepInSystemMemory = false);
 	Image(int width, int height, bool mipmapped = false, bool keepInSystemMemory = false);
-	virtual ~Image() {;}
+	~Image() override {;} 
 
 	virtual void bind(unsigned int textureUnit = 0) = 0;
 	virtual void unbind() = 0;
 
-	virtual void setFilterMode(Graphics::FILTER_MODE filterMode);
-	virtual void setWrapMode(Graphics::WRAP_MODE wrapMode);
+	void setFilterMode(Graphics::FILTER_MODE filterMode);
+	void setWrapMode(Graphics::WRAP_MODE wrapMode);
 
 	void setPixel(int x, int y, Color color);
 	void setPixels(const char *data, size_t size, TYPE type);
 	void setPixels(const std::vector<unsigned char> &pixels);
 
-	Color getPixel(int x, int y) const;
+	[[nodiscard]] Color getPixel(int x, int y) const;
 
-	inline Image::TYPE getType() const {return m_type;}
-	inline int getNumChannels() const {return m_iNumChannels;}
-	inline int getWidth() const {return m_iWidth;}
-	inline int getHeight() const {return m_iHeight;}
-	inline Vector2 getSize() const {return Vector2(m_iWidth, m_iHeight);}
+	[[nodiscard]] inline Image::TYPE getType() const {return m_type;}
+	[[nodiscard]] inline int getNumChannels() const {return m_iNumChannels;}
+	[[nodiscard]] inline int getWidth() const {return m_iWidth;}
+	[[nodiscard]] inline int getHeight() const {return m_iHeight;}
+	[[nodiscard]] inline Vector2 getSize() const {return {m_iWidth, m_iHeight};}
 
-	inline bool hasAlphaChannel() const {return m_bHasAlphaChannel;}
+	[[nodiscard]] inline bool hasAlphaChannel() const {return m_bHasAlphaChannel;}
+
+	// type inspection
+	[[nodiscard]] Type getResType() const override { return IMAGE; }
+
+	Image *asImage() override { return this; }
+	[[nodiscard]] const Image *asImage() const override { return this; }
 
 protected:
-	virtual void init() = 0;
-	virtual void initAsync() = 0;
-	virtual void destroy() = 0;
+	void init() override = 0;
+	void initAsync() override = 0;
+	void destroy() override = 0;
 
 	bool loadRawImage();
 

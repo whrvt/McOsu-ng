@@ -270,9 +270,9 @@ public:
 		m_bAsyncReady = false;
 		m_bReady = false;
 	};
-
+	[[nodiscard]] Type getResType() const override { return APPDEFINED; } // TODO: handle this better?
 protected:
-	virtual void init()
+	void init() override
 	{
 		// legacy loading, if db is not found or by convar
 		if (m_bNeedRawLoad)
@@ -296,7 +296,7 @@ protected:
 		delete this; // commit sudoku
 	}
 
-	virtual void initAsync()
+	void initAsync() override
 	{
 		debugLog("\n");
 
@@ -327,7 +327,7 @@ protected:
 		m_bAsyncReady = true;
 	}
 
-	virtual void destroy() {;}
+	void destroy() override {;}
 
 private:
 	OsuDatabase *m_db;

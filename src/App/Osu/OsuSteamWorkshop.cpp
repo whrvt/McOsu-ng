@@ -33,10 +33,10 @@ public:
 
 	void setLoadDetails(bool loadDetails) {m_bLoadDetails = loadDetails;}
 
-	bool getLoadDetails() const {return m_bLoadDetails;}
-
+	[[nodiscard]] bool getLoadDetails() const {return m_bLoadDetails;}
+	[[nodiscard]] Type getResType() const override { return APPDEFINED; } // TODO: handle this better?
 protected:
-	virtual void init()
+	void init() override
 	{
 		if (m_bReady) return;
 
@@ -45,7 +45,7 @@ protected:
 		m_bReady = true;
 	}
 
-	virtual void initAsync()
+	void initAsync() override
 	{
 		if (m_bAsyncReady) return;
 
@@ -108,7 +108,7 @@ protected:
 		m_bAsyncReady = true;
 	}
 
-	virtual void destroy()
+	void destroy() override
 	{
 		m_subscribedItems.clear();
 	}
@@ -142,9 +142,9 @@ public:
 
 		m_bPrepared = true;
 	}
-
+	[[nodiscard]] Type getResType() const override { return APPDEFINED; } // TODO: handle this better?
 protected:
-	virtual void init()
+	void init() override
 	{
 		if (!m_bPrepared || m_bReady) return;
 
@@ -156,7 +156,7 @@ protected:
 		m_bReady = true;
 	}
 
-	virtual void initAsync()
+	void initAsync() override
 	{
 		if (!m_bPrepared || m_bAsyncReady) return;
 
@@ -235,7 +235,7 @@ protected:
 		m_bAsyncReady = true;
 	}
 
-	virtual void destroy()
+	void destroy() override
 	{
 		m_bPrepared = false;
 		m_sErrorMessage.clear();

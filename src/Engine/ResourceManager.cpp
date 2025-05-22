@@ -332,7 +332,7 @@ Image *ResourceManager::loadImage(UString filepath, UString resourceName, bool m
 	{
 		Resource *temp = checkIfExistsAndHandle(resourceName);
 		if (temp != NULL)
-			return dynamic_cast<Image *>(temp);
+			return temp->asImage();
 	}
 
 	// create instance and load it
@@ -362,7 +362,7 @@ Image *ResourceManager::loadImageAbs(UString absoluteFilepath, UString resourceN
 	{
 		Resource *temp = checkIfExistsAndHandle(resourceName);
 		if (temp != NULL)
-			return dynamic_cast<Image *>(temp);
+			return temp->asImage();
 	}
 
 	// create instance and load it
@@ -405,7 +405,7 @@ McFont *ResourceManager::loadFont(UString filepath, UString resourceName, int fo
 	{
 		Resource *temp = checkIfExistsAndHandle(resourceName);
 		if (temp != NULL)
-			return dynamic_cast<McFont *>(temp);
+			return temp->asFont();
 	}
 
 	// create instance and load it
@@ -425,7 +425,7 @@ McFont *ResourceManager::loadFont(UString filepath, UString resourceName, std::v
 	{
 		Resource *temp = checkIfExistsAndHandle(resourceName);
 		if (temp != NULL)
-			return dynamic_cast<McFont *>(temp);
+			return temp->asFont();
 	}
 
 	// create instance and load it
@@ -445,7 +445,7 @@ Sound *ResourceManager::loadSound(UString filepath, UString resourceName, bool s
 	{
 		Resource *temp = checkIfExistsAndHandle(resourceName);
 		if (temp != NULL)
-			return dynamic_cast<Sound *>(temp);
+			return temp->asSound();
 	}
 
 	// create instance and load it
@@ -465,7 +465,7 @@ Sound *ResourceManager::loadSoundAbs(UString filepath, UString resourceName, boo
 	{
 		Resource *temp = checkIfExistsAndHandle(resourceName);
 		if (temp != NULL)
-			return dynamic_cast<Sound *>(temp);
+			return temp->asSound();
 	}
 
 	// create instance and load it
@@ -484,7 +484,7 @@ Shader *ResourceManager::loadShader(UString vertexShaderFilePath, UString fragme
 	{
 		Resource *temp = checkIfExistsAndHandle(resourceName);
 		if (temp != NULL)
-			return dynamic_cast<Shader *>(temp);
+			return temp->asShader();
 	}
 
 	// create instance and load it
@@ -516,7 +516,7 @@ Shader *ResourceManager::createShader(UString vertexShader, UString fragmentShad
 	{
 		Resource *temp = checkIfExistsAndHandle(resourceName);
 		if (temp != NULL)
-			return dynamic_cast<Shader *>(temp);
+			return temp->asShader();
 	}
 
 	// create instance and load it
@@ -544,7 +544,7 @@ Shader *ResourceManager::loadShader2(UString shaderFilePath, UString resourceNam
 	{
 		Resource *temp = checkIfExistsAndHandle(resourceName);
 		if (temp != NULL)
-			return dynamic_cast<Shader *>(temp);
+			return temp->asShader();
 	}
 
 	// create instance and load it
@@ -574,7 +574,7 @@ Shader *ResourceManager::createShader2(UString shaderSource, UString resourceNam
 	{
 		Resource *temp = checkIfExistsAndHandle(resourceName);
 		if (temp != NULL)
-			return dynamic_cast<Shader *>(temp);
+			return temp->asShader();
 	}
 
 	// create instance and load it
@@ -634,7 +634,7 @@ Image *ResourceManager::getImage(UString resourceName) const
 	for (auto m_vResource : m_vResources)
 	{
 		if (m_vResource->getName() == resourceName)
-			return dynamic_cast<Image *>(m_vResource);
+			return m_vResource->asImage();
 	}
 
 	doesntExistWarning(resourceName);
@@ -646,7 +646,7 @@ McFont *ResourceManager::getFont(UString resourceName) const
 	for (auto m_vResource : m_vResources)
 	{
 		if (m_vResource->getName() == resourceName)
-			return dynamic_cast<McFont *>(m_vResource);
+			return m_vResource->asFont();
 	}
 
 	doesntExistWarning(resourceName);
@@ -658,7 +658,7 @@ Sound *ResourceManager::getSound(UString resourceName) const
 	for (auto m_vResource : m_vResources)
 	{
 		if (m_vResource->getName() == resourceName)
-			return dynamic_cast<Sound *>(m_vResource);
+			return m_vResource->asSound();
 	}
 
 	doesntExistWarning(resourceName);
@@ -670,7 +670,7 @@ Shader *ResourceManager::getShader(UString resourceName) const
 	for (auto m_vResource : m_vResources)
 	{
 		if (m_vResource->getName() == resourceName)
-			return dynamic_cast<Shader *>(m_vResource);
+			return m_vResource->asShader();
 	}
 
 	doesntExistWarning(resourceName);
