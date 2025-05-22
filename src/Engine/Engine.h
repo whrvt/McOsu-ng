@@ -12,7 +12,7 @@
 #include "cbase.h"
 #include "Timing.h"
 #include "McMath.h"
-#include "MouseListener.h"
+#include "KeyboardListener.h"
 
 #include <type_traits>
 #include <source_location>
@@ -43,7 +43,7 @@ class VisualProfiler;
 class ConsoleBox;
 class Console;
 
-class Engine
+class Engine final : public KeyboardListener
 {
 public:
 	static void debugLog_(const char *fmt, va_list args);
@@ -108,16 +108,10 @@ public:
 	void onDPIChange();
 	void onShutdown();
 
-	// primary mouse messages
-	// void onMouseMotion(float x, float y, float xRel, float yRel, bool isRawInput);
-	// void onMouseButtonChange(MouseButton::Index button, bool down);
-	// void onMouseWheelVertical(int delta);
-	// void onMouseWheelHorizontal(int delta);
-
-	// primary keyboard messages
-	void onKeyboardKeyDown(KEYCODE keyCode); // NOTE: hardcoded engine overrides
-	// void onKeyboardKeyUp(KEYCODE keyCode);
-	// void onKeyboardChar(KEYCODE charCode);
+	// hardcoded engine hotkeys
+	void onKeyDown(KeyboardEvent &e) override;
+	void onKeyUp(KeyboardEvent &) override {;}
+	void onChar(KeyboardEvent &) override {;}
 
 	// convenience functions (passthroughs)
 	void shutdown();

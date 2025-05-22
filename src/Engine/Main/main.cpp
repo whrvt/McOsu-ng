@@ -366,7 +366,7 @@ SDL_AppResult SDLMain::handleEvent(SDL_Event *event)
 
 	// keyboard events
 	case SDL_EVENT_KEY_DOWN:
-		engine->onKeyboardKeyDown(event->key.scancode); // NOTE: hardcoded engine overrides
+		keyboard->onKeyDown(event->key.scancode); // NOTE: hardcoded engine overrides
 		break;
 
 	case SDL_EVENT_KEY_UP:

@@ -332,8 +332,9 @@ void Engine::loadApp()
 		m_guiContainer->addBaseUIElement(m_visualProfiler);
 		m_guiContainer->addBaseUIElement(m_consoleBox);
 
-		// (engine gui comes first)
+		// (engine hardcoded hotkeys come first, then engine gui)
 		keyboard->addListener(m_guiContainer, true);
+		keyboard->addListener(this, true);
 	}
 
 	debugLog("\nEngine: Loading app ...\n");
@@ -377,9 +378,9 @@ void Engine::onPaint()
 				m_guiContainer->draw(graphics);
 
 			// debug input devices
-			for (size_t i = 0; i < m_inputDevices.size(); i++)
+			for (auto & m_inputDevice : m_inputDevices)
 			{
-				m_inputDevices[i]->draw(graphics);
+				m_inputDevice->draw(graphics);
 			}
 
 			if (epilepsy.getBool())
@@ -504,9 +505,9 @@ void Engine::onFocusLost()
 	if (debug_engine.getBool())
 		debugLog("Engine: lost focus\n");
 
-	for (size_t i = 0; i < m_keyboards.size(); i++)
+	for (auto & m_keyboard : m_keyboards)
 	{
-		m_keyboards[i]->reset();
+		m_keyboard->reset();
 	}
 
 	if (app != NULL)
@@ -601,80 +602,49 @@ void Engine::onShutdown()
 	m_bBlackout = true;
 }
 
-// can re-add these as overrides to interpose between the environment if necessary, like for onKeyboardKeyDown
-// otherwise, it's fine for environment to call into Mouse directly
-// void Engine::onMouseMotion(float x, float y, float xRel, float yRel, bool isRawInput)
-// {
-// 	mouse->onMotion(x, y, xRel, yRel, isRawInput);
-// }
-
-// void Engine::onMouseWheelVertical(int delta)
-// {
-// 	mouse->onWheelVertical(delta);
-// }
-
-// void Engine::onMouseWheelHorizontal(int delta)
-// {
-// 	mouse->onWheelHorizontal(delta);
-// }
-
-// void Engine::onMouseButtonChange(MouseButton::Index button, bool down)
-// {
-// 	mouse->onButtonChange(button, down);
-// }
-
-// void Engine::onKeyboardKeyUp(KEYCODE keyCode)
-// {
-// 	keyboard->onKeyUp(keyCode);
-// }
-
-// void Engine::onKeyboardChar(KEYCODE charCode)
-// {
-// 	keyboard->onChar(charCode);
-// }
-
-void Engine::onKeyboardKeyDown(KEYCODE keyCode)
+// hardcoded engine hotkeys
+void Engine::onKeyDown(KeyboardEvent &e)
 {
-	// hardcoded engine hotkeys
+	auto keyCode = e.getKeyCode();
+	// handle ALT+F4 quit
+	if (keyboard->isAltDown() && keyCode == KEY_F4)
 	{
-		// handle ALT+F4 quit
-		if (keyboard->isAltDown() && keyCode == KEY_F4)
-		{
-			shutdown();
-			return;
-		}
-
-		// handle ALT+ENTER fullscreen toggle
-		if (keyboard->isAltDown() && keyCode == KEY_ENTER)
-		{
-			toggleFullscreen();
-			return;
-		}
-
-		// handle CTRL+F11 profiler toggle
-		if (keyboard->isControlDown() && keyCode == KEY_F11)
-		{
-			ConVar *vprof = convar->getConVarByName("vprof");
-			vprof->setValue(vprof->getBool() ? 0.0f : 1.0f);
-			return;
-		}
-
-		// handle profiler display mode change
-		if (keyboard->isControlDown() && keyCode == KEY_TAB)
-		{
-			const ConVar *vprof = convar->getConVarByName("vprof");
-			if (vprof->getBool())
-			{
-				if (keyboard->isShiftDown())
-					m_visualProfiler->decrementInfoBladeDisplayMode();
-				else
-					m_visualProfiler->incrementInfoBladeDisplayMode();
-				return;
-			}
-		}
+		shutdown();
+		e.consume();
+		return;
 	}
 
-	keyboard->onKeyDown(keyCode);
+	// handle ALT+ENTER fullscreen toggle
+	if (keyboard->isAltDown() && keyCode == KEY_ENTER)
+	{
+		toggleFullscreen();
+		e.consume();
+		return;
+	}
+
+	// handle CTRL+F11 profiler toggle
+	if (keyboard->isControlDown() && keyCode == KEY_F11)
+	{
+		ConVar *vprof = convar->getConVarByName("vprof");
+		vprof->setValue(vprof->getBool() ? 0.0f : 1.0f);
+		e.consume();
+		return;
+	}
+
+	// handle profiler display mode change
+	if (keyboard->isControlDown() && keyCode == KEY_TAB)
+	{
+		const ConVar *vprof = convar->getConVarByName("vprof");
+		if (vprof->getBool())
+		{
+			if (keyboard->isShiftDown())
+				m_visualProfiler->decrementInfoBladeDisplayMode();
+			else
+				m_visualProfiler->incrementInfoBladeDisplayMode();
+			e.consume();
+			return;
+		}
+	}
 }
 
 void Engine::shutdown()

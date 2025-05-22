@@ -844,7 +844,7 @@ void OsuVR::update()
 		if (m_bMenuCheck)
 		{
 			m_bMenuCheck = false;
-			engine->onKeyboardKeyDown(KEY_ESCAPE);
+			keyboard->onKeyDown(KEY_ESCAPE);
 		}
 	}
 	else
@@ -1088,7 +1088,7 @@ void OsuVR::onOffsetUpClicked()
 	openvr->getController()->triggerHapticPulse(2500);
 	soundEngine->play(osu->getSkin()->getCheckOn());
 
-	engine->onKeyboardKeyDown(OsuKeyBindings::INCREASE_LOCAL_OFFSET.getVal<KEYCODE>());
+	keyboard->onKeyDown(OsuKeyBindings::INCREASE_LOCAL_OFFSET.getVal<KEYCODE>());
 	keyboard->onKeyUp(OsuKeyBindings::INCREASE_LOCAL_OFFSET.getVal<KEYCODE>());
 }
 
@@ -1097,7 +1097,7 @@ void OsuVR::onOffsetDownClicked()
 	openvr->getController()->triggerHapticPulse(2500);
 	soundEngine->play(osu->getSkin()->getCheckOff());
 
-	engine->onKeyboardKeyDown(OsuKeyBindings::DECREASE_LOCAL_OFFSET.getVal<KEYCODE>());
+	keyboard->onKeyDown(OsuKeyBindings::DECREASE_LOCAL_OFFSET.getVal<KEYCODE>());
 	keyboard->onKeyUp(OsuKeyBindings::DECREASE_LOCAL_OFFSET.getVal<KEYCODE>());
 }
 
