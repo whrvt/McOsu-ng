@@ -2243,7 +2243,7 @@ void OsuSongBrowser2::readdBeatmap(OsuDatabaseBeatmap *diff2)
 	}
 }
 
-void OsuSongBrowser2::requestNextScrollToSongButtonJumpFix(OsuUISongBrowserSongDifficultyButton *diffButton)
+void OsuSongBrowser2::requestNextScrollToSongButtonJumpFix(const OsuUISongBrowserSongDifficultyButton *diffButton)
 {
 	if (diffButton == NULL) return;
 
@@ -2252,7 +2252,7 @@ void OsuSongBrowser2::requestNextScrollToSongButtonJumpFix(OsuUISongBrowserSongD
 	m_fNextScrollToSongButtonJumpFixOldScrollSizeY = m_songBrowser->getScrollSize().y;
 }
 
-void OsuSongBrowser2::scrollToSongButton(OsuUISongBrowserButton *songButton, bool alignOnTop)
+void OsuSongBrowser2::scrollToSongButton(const OsuUISongBrowserButton *songButton, bool alignOnTop)
 {
 	if (songButton == NULL) return;
 
@@ -2277,21 +2277,21 @@ void OsuSongBrowser2::scrollToSongButton(OsuUISongBrowserButton *songButton, boo
 // this is really slow
 OsuUISongBrowserButton *OsuSongBrowser2::findCurrentlySelectedSongButton() const
 {
-	OsuUISongBrowserButton *selectedButton = NULL;
 	const std::vector<CBaseUIElement*> &elements = m_songBrowser->getContainer()->getElements();
-	for (size_t i=0; i<elements.size(); i++)
+	if (elements.empty())
+		return NULL;
+	for (size_t i = elements.size() - 1; i-- > 0;) // NOTE: iterate backwards to fall through multiple selected buttons (e.g. collections)
 	{
 		auto *button = dynamic_cast<OsuUISongBrowserButton*>(elements[i]);
-		if (button != NULL && button->isSelected()) // NOTE: fall through multiple selected buttons (e.g. collections)
-			selectedButton = button;
+		if (button != NULL && button->isSelected())
+			return button;
 	}
-	return selectedButton;
+	return NULL;
 }
 
 void OsuSongBrowser2::scrollToSelectedSongButton()
 {
-	auto *selectedButton = findCurrentlySelectedSongButton();
-	scrollToSongButton(selectedButton);
+	scrollToSongButton(findCurrentlySelectedSongButton());
 }
 
 void OsuSongBrowser2::rebuildSongButtons()

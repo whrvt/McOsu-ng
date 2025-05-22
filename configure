@@ -8563,7 +8563,7 @@ printf "%s\n" "yes" >&6; }
 fi ;;
 esac
 fi
-  # required for noSDL (TODO: ./configure --disable-sdl)
+
 
     if test "x$enable_static" = "xyes"
 then :
@@ -8715,7 +8715,7 @@ printf "%s\n" "yes" >&6; }
 fi ;;
 esac
 fi
-  # FIXME: transitive GLEW dep
+
 
 else case e in #(
   e)

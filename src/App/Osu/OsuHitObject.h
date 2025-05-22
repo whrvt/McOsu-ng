@@ -24,10 +24,10 @@ class OsuManiaNote;
 class OsuHitObject
 {
 public:
-	static void drawHitResult(Graphics *g, OsuBeatmapStandard *beatmap, Vector2 rawPos, OsuScore::HIT result, float animPercentInv, float hitDeltaRangePercent);
-	static void draw3DHitResult(Graphics *g, OsuBeatmapStandard *beatmap, Vector2 rawPos, OsuScore::HIT result, float animPercentInv, float hitDeltaRangePercent);
-	static void drawHitResult(Graphics *g, OsuSkin *skin, float hitcircleDiameter, float rawHitcircleDiameter, Vector2 rawPos, OsuScore::HIT result, float animPercentInv, float hitDeltaRangePercent);
-	static void draw3DHitResult(Graphics *g, OsuModFPoSu *fposu, OsuSkin *skin, float hitcircleDiameter, float rawHitcircleDiameter, Vector2 rawPos, OsuScore::HIT result, float animPercentInv, float hitDeltaRangePercent);
+	static void drawHitResult(Graphics *g, const OsuBeatmapStandard *beatmap, Vector2 rawPos, OsuScore::HIT result, float animPercentInv, float hitDeltaRangePercent);
+	static void draw3DHitResult(Graphics *g, const OsuBeatmapStandard *beatmap, Vector2 rawPos, OsuScore::HIT result, float animPercentInv, float hitDeltaRangePercent);
+	static void drawHitResult(Graphics *g, const OsuSkin *skin, float hitcircleDiameter, float rawHitcircleDiameter, Vector2 rawPos, OsuScore::HIT result, float animPercentInv, float hitDeltaRangePercent);
+	static void draw3DHitResult(Graphics *g, const OsuModFPoSu *fposu, const OsuSkin *skin, float hitcircleDiameter, float rawHitcircleDiameter, Vector2 rawPos, OsuScore::HIT result, float animPercentInv, float hitDeltaRangePercent);
 
 	static ConVar *m_osu_approach_scale_multiplier_ref;
 	static ConVar *m_osu_timingpoints_force;

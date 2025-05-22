@@ -982,7 +982,7 @@ comma := ,# bruh
 @BUILD_MIMALLOC_FALSE@MIMALLOC_LIBS := 
 @BUILD_MIMALLOC_TRUE@@WIN_PLATFORM_FALSE@MIMALLOC_LIBS = $(DEPS_PREFIX)/lib/mimalloc$(if $(ENABLE_ASAN),-asan-debug,$(if $(ENABLE_DEBUG),-debug,)).o
 @BUILD_MIMALLOC_TRUE@@WIN_PLATFORM_TRUE@MIMALLOC_LIBS = -L$(DEPS_PREFIX)/lib -Wl,--whole-archive -l:libmimalloc.dll.a -Wl,--no-whole-archive -L$(DEPS_PREFIX)/bin -lmimalloc -lmimalloc-redirect$(if $(filter x86_64,$(host_cpu)),,32)
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@AUDIO_CFLAGS = -I$(DEPS_PREFIX)/include $(shell $(PKG_CONFIG) --cflags soundtouch)
+@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@AUDIO_CFLAGS = -I$(DEPS_PREFIX)/include $(shell $(PKG_CONFIG) --cflags soundtouch) $(if $(ENABLE_DEBUG),,-DST_NO_EXCEPTION_HANDLING)
 @USE_BASS_FALSE@@USE_SDLMIXER_TRUE@AUDIO_CFLAGS = $(shell $(PKG_CONFIG) --cflags sdl3-mixer)
 @USE_BASS_TRUE@AUDIO_CFLAGS := $(BASS_CFLAGS)
 # the dynamic soloud lib is busted somehow
@@ -5379,9 +5379,9 @@ $(DEPS_CACHE)/SoundTouch.source:
 @USE_BASS_FALSE@@USE_SDLMIXER_FALSE@		-D CMAKE_SYSTEM_NAME="$(CMAKE_SYSTEM_NAME)" \
 @USE_BASS_FALSE@@USE_SDLMIXER_FALSE@		-D CMAKE_SYSTEM_PROCESSOR="$(host_cpu)" \
 @USE_BASS_FALSE@@USE_SDLMIXER_FALSE@		-D CMAKE_C_COMPILER="$(CC)" \
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@		-D CMAKE_C_FLAGS="$(CFLAGS)" \
+@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@		-D CMAKE_C_FLAGS="$(CFLAGS) $(if $(ENABLE_DEBUG),,-DST_NO_EXCEPTION_HANDLING)" \
 @USE_BASS_FALSE@@USE_SDLMIXER_FALSE@		-D CMAKE_CXX_COMPILER="$(CXX)" \
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@		-D CMAKE_CXX_FLAGS="$(CXXFLAGS)" \
+@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@		-D CMAKE_CXX_FLAGS="$(CXXFLAGS) $(if $(ENABLE_DEBUG),,-DST_NO_EXCEPTION_HANDLING)" \
 @USE_BASS_FALSE@@USE_SDLMIXER_FALSE@		$(CMAKERCOPT) \
 @USE_BASS_FALSE@@USE_SDLMIXER_FALSE@		-D SOUNDSTRETCH=OFF \
 @USE_BASS_FALSE@@USE_SDLMIXER_FALSE@		-D SOUNDTOUCH_DLL=OFF \
@@ -5561,7 +5561,17 @@ $(McOsu_ng_OBJECTS): src/config.h $(BUILT_SOURCES)
 
 compile_commands.json: mostlyclean-compile
 	@$(BEAR) --version || { echo bear is unavailable to generate a compile_commands.json, install bear && exit 1; }
-	$(BEAR) --append -- $(MAKE) $(AM_MAKEFLAGS) $(McOsu_ng_OBJECTS) $(McOsu_ng_DEPENDENCIES) $(EXTRA_McOsu_ng_DEPENDENCIES)
+	@(echo '{'; \
+	  echo '"compilation": {'; \
+	  echo '"compilers_to_recognize": ['; \
+	  echo '{'; \
+	  echo '"executable": "emc++"'; \
+	  echo '}'; \
+	  echo ']'; \
+	  echo '}'; \
+	  echo '}' ) > bear.cfg
+	$(BEAR) --config bear.cfg --append -- $(MAKE) $(AM_MAKEFLAGS) $(McOsu_ng_OBJECTS) $(McOsu_ng_DEPENDENCIES) $(EXTRA_McOsu_ng_DEPENDENCIES) && \
+	rm -f bear.cfg
 
 $(abs_top_srcdir)/.clangd: compile_commands.json
 	@if [ -f $@ ]; then \

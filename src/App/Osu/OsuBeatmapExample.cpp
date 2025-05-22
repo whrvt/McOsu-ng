@@ -80,7 +80,7 @@ void OsuBeatmapExample::onModUpdate()
 	debugLog("\n");
 }
 
-bool OsuBeatmapExample::isLoading()
+bool OsuBeatmapExample::isLoading() const
 {
 	return OsuBeatmap::isLoading() || m_bFakeExtraLoading;
 }

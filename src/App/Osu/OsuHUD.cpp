@@ -342,8 +342,8 @@ void OsuHUD::draw(Graphics *g)
 	OsuBeatmap *beatmap = osu->getSelectedBeatmap();
 	if (beatmap == NULL) return; // sanity check
 
-	OsuBeatmapStandard *beatmapStd = dynamic_cast<OsuBeatmapStandard*>(beatmap);
-	OsuBeatmapMania *beatmapMania = dynamic_cast<OsuBeatmapMania*>(beatmap);
+	const auto *beatmapStd = beatmap->asStd();
+	const auto *beatmapMania = beatmap->asMania();
 
 	if (osu_draw_hud.getBool())
 	{
@@ -695,7 +695,7 @@ void OsuHUD::drawDummy(Graphics *g)
 
 void OsuHUD::drawVR(Graphics *g, Matrix4 &mvp, OsuVR *vr)
 {
-	OsuBeatmapStandard *beatmap = dynamic_cast<OsuBeatmapStandard*>(osu->getSelectedBeatmap());
+	const auto *beatmap = osu->getSelectedBeatmap()->asStd();
 	if (beatmap == NULL) return; // sanity check
 
 	vr->getShaderTexturedLegacyGeneric()->enable();

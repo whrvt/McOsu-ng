@@ -145,8 +145,8 @@ public:
 	void addBeatmap(OsuDatabaseBeatmap *beatmap);
 	void readdBeatmap(OsuDatabaseBeatmap *diff2);
 
-	void requestNextScrollToSongButtonJumpFix(OsuUISongBrowserSongDifficultyButton *diffButton);
-	void scrollToSongButton(OsuUISongBrowserButton *songButton, bool alignOnTop = false);
+	void requestNextScrollToSongButtonJumpFix(const OsuUISongBrowserSongDifficultyButton *diffButton);
+	void scrollToSongButton(const OsuUISongBrowserButton *songButton, bool alignOnTop = false);
 	void scrollToSelectedSongButton();
 	void rebuildSongButtons();
 	void recreateCollectionsButtons();

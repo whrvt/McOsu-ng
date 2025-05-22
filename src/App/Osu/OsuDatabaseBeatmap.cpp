@@ -1489,8 +1489,8 @@ OsuDatabaseBeatmap::LOAD_GAMEPLAY_RESULT OsuDatabaseBeatmap::loadGameplay(OsuDat
 	}
 
 	// build hitobjects from the primitive data we loaded from the osu file
-	OsuBeatmapStandard *beatmapStandard = dynamic_cast<OsuBeatmapStandard*>(beatmap);
-	OsuBeatmapMania *beatmapMania = dynamic_cast<OsuBeatmapMania*>(beatmap);
+	auto *beatmapStandard = beatmap->asStd();
+	auto *beatmapMania = beatmap->asMania();
 	{
 		struct Helper
 		{

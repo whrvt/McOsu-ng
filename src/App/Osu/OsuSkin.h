@@ -34,7 +34,7 @@ public:
 	void update();
 
 	bool isReady();
-	inline bool isWorkshopSkin() const {return m_bIsWorkshopSkin;}
+	[[nodiscard]] inline bool isWorkshopSkin() const {return m_bIsWorkshopSkin;}
 
 	void load();
 	void loadBeatmapOverride(UString filepath);
@@ -57,285 +57,285 @@ public:
 	void randomizeFilePath();
 
 	// drawable helpers
-	inline UString getName() {return m_sName;}
-	inline UString getFilePath() {return m_sFilePath;}
+	[[nodiscard]] inline UString getName() const {return m_sName;}
+	[[nodiscard]] inline UString getFilePath() const {return m_sFilePath;}
 
 	// raw
-	inline Image *getMissingTexture() {return m_missingTexture;}
+	[[nodiscard]] inline Image *getMissingTexture() const {return m_missingTexture;}
 
-	inline Image *getHitCircle() {return m_hitCircle;}
-	inline OsuSkinImage *getHitCircleOverlay2() {return m_hitCircleOverlay2;}
-	inline Image *getApproachCircle() {return m_approachCircle;}
-	inline Image *getReverseArrow() {return m_reverseArrow;}
-	inline OsuSkinImage *getFollowPoint2() {return m_followPoint2;}
+	[[nodiscard]] inline Image *getHitCircle() const {return m_hitCircle;}
+	[[nodiscard]] inline OsuSkinImage *getHitCircleOverlay2() const {return m_hitCircleOverlay2;}
+	[[nodiscard]] inline Image *getApproachCircle() const {return m_approachCircle;}
+	[[nodiscard]] inline Image *getReverseArrow() const {return m_reverseArrow;}
+	[[nodiscard]] inline OsuSkinImage *getFollowPoint2() const {return m_followPoint2;}
 
-	inline Image *getDefault0() {return m_default0;}
-	inline Image *getDefault1() {return m_default1;}
-	inline Image *getDefault2() {return m_default2;}
-	inline Image *getDefault3() {return m_default3;}
-	inline Image *getDefault4() {return m_default4;}
-	inline Image *getDefault5() {return m_default5;}
-	inline Image *getDefault6() {return m_default6;}
-	inline Image *getDefault7() {return m_default7;}
-	inline Image *getDefault8() {return m_default8;}
-	inline Image *getDefault9() {return m_default9;}
+	[[nodiscard]] inline Image *getDefault0() const {return m_default0;}
+	[[nodiscard]] inline Image *getDefault1() const {return m_default1;}
+	[[nodiscard]] inline Image *getDefault2() const {return m_default2;}
+	[[nodiscard]] inline Image *getDefault3() const {return m_default3;}
+	[[nodiscard]] inline Image *getDefault4() const {return m_default4;}
+	[[nodiscard]] inline Image *getDefault5() const {return m_default5;}
+	[[nodiscard]] inline Image *getDefault6() const {return m_default6;}
+	[[nodiscard]] inline Image *getDefault7() const {return m_default7;}
+	[[nodiscard]] inline Image *getDefault8() const {return m_default8;}
+	[[nodiscard]] inline Image *getDefault9() const {return m_default9;}
 
-	inline Image *getScore0() {return m_score0;}
-	inline Image *getScore1() {return m_score1;}
-	inline Image *getScore2() {return m_score2;}
-	inline Image *getScore3() {return m_score3;}
-	inline Image *getScore4() {return m_score4;}
-	inline Image *getScore5() {return m_score5;}
-	inline Image *getScore6() {return m_score6;}
-	inline Image *getScore7() {return m_score7;}
-	inline Image *getScore8() {return m_score8;}
-	inline Image *getScore9() {return m_score9;}
-	inline Image *getScoreX() {return m_scoreX;}
-	inline Image *getScorePercent() {return m_scorePercent;}
-	inline Image *getScoreDot() {return m_scoreDot;}
+	[[nodiscard]] inline Image *getScore0() const {return m_score0;}
+	[[nodiscard]] inline Image *getScore1() const {return m_score1;}
+	[[nodiscard]] inline Image *getScore2() const {return m_score2;}
+	[[nodiscard]] inline Image *getScore3() const {return m_score3;}
+	[[nodiscard]] inline Image *getScore4() const {return m_score4;}
+	[[nodiscard]] inline Image *getScore5() const {return m_score5;}
+	[[nodiscard]] inline Image *getScore6() const {return m_score6;}
+	[[nodiscard]] inline Image *getScore7() const {return m_score7;}
+	[[nodiscard]] inline Image *getScore8() const {return m_score8;}
+	[[nodiscard]] inline Image *getScore9() const {return m_score9;}
+	[[nodiscard]] inline Image *getScoreX() const {return m_scoreX;}
+	[[nodiscard]] inline Image *getScorePercent() const {return m_scorePercent;}
+	[[nodiscard]] inline Image *getScoreDot() const {return m_scoreDot;}
 
-	inline Image *getCombo0() {return m_combo0;}
-	inline Image *getCombo1() {return m_combo1;}
-	inline Image *getCombo2() {return m_combo2;}
-	inline Image *getCombo3() {return m_combo3;}
-	inline Image *getCombo4() {return m_combo4;}
-	inline Image *getCombo5() {return m_combo5;}
-	inline Image *getCombo6() {return m_combo6;}
-	inline Image *getCombo7() {return m_combo7;}
-	inline Image *getCombo8() {return m_combo8;}
-	inline Image *getCombo9() {return m_combo9;}
-	inline Image *getComboX() {return m_comboX;}
+	[[nodiscard]] inline Image *getCombo0() const {return m_combo0;}
+	[[nodiscard]] inline Image *getCombo1() const {return m_combo1;}
+	[[nodiscard]] inline Image *getCombo2() const {return m_combo2;}
+	[[nodiscard]] inline Image *getCombo3() const {return m_combo3;}
+	[[nodiscard]] inline Image *getCombo4() const {return m_combo4;}
+	[[nodiscard]] inline Image *getCombo5() const {return m_combo5;}
+	[[nodiscard]] inline Image *getCombo6() const {return m_combo6;}
+	[[nodiscard]] inline Image *getCombo7() const {return m_combo7;}
+	[[nodiscard]] inline Image *getCombo8() const {return m_combo8;}
+	[[nodiscard]] inline Image *getCombo9() const {return m_combo9;}
+	[[nodiscard]] inline Image *getComboX() const {return m_comboX;}
 
-	inline OsuSkinImage *getPlaySkip() {return m_playSkip;}
-	inline Image *getPlayWarningArrow() {return m_playWarningArrow;}
-	inline OsuSkinImage *getPlayWarningArrow2() {return m_playWarningArrow2;}
-	inline Image *getCircularmetre() {return m_circularmetre;}
-	inline OsuSkinImage *getScorebarBg() {return m_scorebarBg;}
-	inline OsuSkinImage *getScorebarColour() {return m_scorebarColour;}
-	inline OsuSkinImage *getScorebarMarker() {return m_scorebarMarker;}
-	inline OsuSkinImage *getScorebarKi() {return m_scorebarKi;}
-	inline OsuSkinImage *getScorebarKiDanger() {return m_scorebarKiDanger;}
-	inline OsuSkinImage *getScorebarKiDanger2() {return m_scorebarKiDanger2;}
-	inline OsuSkinImage *getSectionPassImage() {return m_sectionPassImage;}
-	inline OsuSkinImage *getSectionFailImage() {return m_sectionFailImage;}
-	inline OsuSkinImage *getInputoverlayBackground() {return m_inputoverlayBackground;}
-	inline OsuSkinImage *getInputoverlayKey() {return m_inputoverlayKey;}
+	[[nodiscard]] inline OsuSkinImage *getPlaySkip() const {return m_playSkip;}
+	[[nodiscard]] inline Image *getPlayWarningArrow() const {return m_playWarningArrow;}
+	[[nodiscard]] inline OsuSkinImage *getPlayWarningArrow2() const {return m_playWarningArrow2;}
+	[[nodiscard]] inline Image *getCircularmetre() const {return m_circularmetre;}
+	[[nodiscard]] inline OsuSkinImage *getScorebarBg() const {return m_scorebarBg;}
+	[[nodiscard]] inline OsuSkinImage *getScorebarColour() const {return m_scorebarColour;}
+	[[nodiscard]] inline OsuSkinImage *getScorebarMarker() const {return m_scorebarMarker;}
+	[[nodiscard]] inline OsuSkinImage *getScorebarKi() const {return m_scorebarKi;}
+	[[nodiscard]] inline OsuSkinImage *getScorebarKiDanger() const {return m_scorebarKiDanger;}
+	[[nodiscard]] inline OsuSkinImage *getScorebarKiDanger2() const {return m_scorebarKiDanger2;}
+	[[nodiscard]] inline OsuSkinImage *getSectionPassImage() const {return m_sectionPassImage;}
+	[[nodiscard]] inline OsuSkinImage *getSectionFailImage() const {return m_sectionFailImage;}
+	[[nodiscard]] inline OsuSkinImage *getInputoverlayBackground() const {return m_inputoverlayBackground;}
+	[[nodiscard]] inline OsuSkinImage *getInputoverlayKey() const {return m_inputoverlayKey;}
 
-	inline OsuSkinImage *getHit0() {return m_hit0;}
-	inline OsuSkinImage *getHit50() {return m_hit50;}
-	inline OsuSkinImage *getHit50g() {return m_hit50g;}
-	inline OsuSkinImage *getHit50k() {return m_hit50k;}
-	inline OsuSkinImage *getHit100() {return m_hit100;}
-	inline OsuSkinImage *getHit100g() {return m_hit100g;}
-	inline OsuSkinImage *getHit100k() {return m_hit100k;}
-	inline OsuSkinImage *getHit300() {return m_hit300;}
-	inline OsuSkinImage *getHit300g() {return m_hit300g;}
-	inline OsuSkinImage *getHit300k() {return m_hit300k;}
+	[[nodiscard]] inline OsuSkinImage *getHit0() const {return m_hit0;}
+	[[nodiscard]] inline OsuSkinImage *getHit50() const {return m_hit50;}
+	[[nodiscard]] inline OsuSkinImage *getHit50g() const {return m_hit50g;}
+	[[nodiscard]] inline OsuSkinImage *getHit50k() const {return m_hit50k;}
+	[[nodiscard]] inline OsuSkinImage *getHit100() const {return m_hit100;}
+	[[nodiscard]] inline OsuSkinImage *getHit100g() const {return m_hit100g;}
+	[[nodiscard]] inline OsuSkinImage *getHit100k() const {return m_hit100k;}
+	[[nodiscard]] inline OsuSkinImage *getHit300() const {return m_hit300;}
+	[[nodiscard]] inline OsuSkinImage *getHit300g() const {return m_hit300g;}
+	[[nodiscard]] inline OsuSkinImage *getHit300k() const {return m_hit300k;}
 
-	inline Image *getParticle50() {return m_particle50;}
-	inline Image *getParticle100() {return m_particle100;}
-	inline Image *getParticle300() {return m_particle300;}
+	[[nodiscard]] inline Image *getParticle50() const {return m_particle50;}
+	[[nodiscard]] inline Image *getParticle100() const {return m_particle100;}
+	[[nodiscard]] inline Image *getParticle300() const {return m_particle300;}
 
-	inline Image *getSliderGradient() {return m_sliderGradient;}
-	inline OsuSkinImage *getSliderb() {return m_sliderb;}
-	inline OsuSkinImage *getSliderFollowCircle2() {return m_sliderFollowCircle2;}
-	inline Image *getSliderScorePoint() {return m_sliderScorePoint;}
-	inline Image *getSliderStartCircle() {return m_sliderStartCircle;}
-	inline OsuSkinImage *getSliderStartCircle2() {return m_sliderStartCircle2;}
-	inline Image *getSliderStartCircleOverlay() {return m_sliderStartCircleOverlay;}
-	inline OsuSkinImage *getSliderStartCircleOverlay2() {return m_sliderStartCircleOverlay2;}
-	inline Image *getSliderEndCircle() {return m_sliderEndCircle;}
-	inline OsuSkinImage *getSliderEndCircle2() {return m_sliderEndCircle2;}
-	inline Image *getSliderEndCircleOverlay() {return m_sliderEndCircleOverlay;}
-	inline OsuSkinImage *getSliderEndCircleOverlay2() {return m_sliderEndCircleOverlay2;}
+	[[nodiscard]] inline Image *getSliderGradient() const {return m_sliderGradient;}
+	[[nodiscard]] inline OsuSkinImage *getSliderb() const {return m_sliderb;}
+	[[nodiscard]] inline OsuSkinImage *getSliderFollowCircle2() const {return m_sliderFollowCircle2;}
+	[[nodiscard]] inline Image *getSliderScorePoint() const {return m_sliderScorePoint;}
+	[[nodiscard]] inline Image *getSliderStartCircle() const {return m_sliderStartCircle;}
+	[[nodiscard]] inline OsuSkinImage *getSliderStartCircle2() const {return m_sliderStartCircle2;}
+	[[nodiscard]] inline Image *getSliderStartCircleOverlay() const {return m_sliderStartCircleOverlay;}
+	[[nodiscard]] inline OsuSkinImage *getSliderStartCircleOverlay2() const {return m_sliderStartCircleOverlay2;}
+	[[nodiscard]] inline Image *getSliderEndCircle() const {return m_sliderEndCircle;}
+	[[nodiscard]] inline OsuSkinImage *getSliderEndCircle2() const {return m_sliderEndCircle2;}
+	[[nodiscard]] inline Image *getSliderEndCircleOverlay() const {return m_sliderEndCircleOverlay;}
+	[[nodiscard]] inline OsuSkinImage *getSliderEndCircleOverlay2() const {return m_sliderEndCircleOverlay2;}
 
-	inline Image *getSpinnerBackground() {return m_spinnerBackground;}
-	inline Image *getSpinnerCircle() {return m_spinnerCircle;}
-	inline Image *getSpinnerApproachCircle() {return m_spinnerApproachCircle;}
-	inline Image *getSpinnerBottom() {return m_spinnerBottom;}
-	inline Image *getSpinnerMiddle() {return m_spinnerMiddle;}
-	inline Image *getSpinnerMiddle2() {return m_spinnerMiddle2;}
-	inline Image *getSpinnerTop() {return m_spinnerTop;}
-	inline Image *getSpinnerSpin() {return m_spinnerSpin;}
-	inline Image *getSpinnerClear() {return m_spinnerClear;}
+	[[nodiscard]] inline Image *getSpinnerBackground() const {return m_spinnerBackground;}
+	[[nodiscard]] inline Image *getSpinnerCircle() const {return m_spinnerCircle;}
+	[[nodiscard]] inline Image *getSpinnerApproachCircle() const {return m_spinnerApproachCircle;}
+	[[nodiscard]] inline Image *getSpinnerBottom() const {return m_spinnerBottom;}
+	[[nodiscard]] inline Image *getSpinnerMiddle() const {return m_spinnerMiddle;}
+	[[nodiscard]] inline Image *getSpinnerMiddle2() const {return m_spinnerMiddle2;}
+	[[nodiscard]] inline Image *getSpinnerTop() const {return m_spinnerTop;}
+	[[nodiscard]] inline Image *getSpinnerSpin() const {return m_spinnerSpin;}
+	[[nodiscard]] inline Image *getSpinnerClear() const {return m_spinnerClear;}
 
-	inline Image *getDefaultCursor() {return m_defaultCursor;}
-	inline Image *getCursor() {return m_cursor;}
-	inline Image *getCursorMiddle() {return m_cursorMiddle;}
-	inline Image *getCursorTrail() {return m_cursorTrail;}
-	inline Image *getCursorRipple() {return m_cursorRipple;}
+	[[nodiscard]] inline Image *getDefaultCursor() const {return m_defaultCursor;}
+	[[nodiscard]] inline Image *getCursor() const {return m_cursor;}
+	[[nodiscard]] inline Image *getCursorMiddle() const {return m_cursorMiddle;}
+	[[nodiscard]] inline Image *getCursorTrail() const {return m_cursorTrail;}
+	[[nodiscard]] inline Image *getCursorRipple() const {return m_cursorRipple;}
 
-	inline OsuSkinImage *getSelectionModEasy() {return m_selectionModEasy;}
-	inline OsuSkinImage *getSelectionModNoFail() {return m_selectionModNoFail;}
-	inline OsuSkinImage *getSelectionModHalfTime() {return m_selectionModHalfTime;}
-	inline OsuSkinImage *getSelectionModDayCore() {return m_selectionModDayCore;}
-	inline OsuSkinImage *getSelectionModHardRock() {return m_selectionModHardRock;}
-	inline OsuSkinImage *getSelectionModSuddenDeath() {return m_selectionModSuddenDeath;}
-	inline OsuSkinImage *getSelectionModPerfect() {return m_selectionModPerfect;}
-	inline OsuSkinImage *getSelectionModDoubleTime() {return m_selectionModDoubleTime;}
-	inline OsuSkinImage *getSelectionModNightCore() {return m_selectionModNightCore;}
-	inline OsuSkinImage *getSelectionModHidden() {return m_selectionModHidden;}
-	inline OsuSkinImage *getSelectionModFlashlight() {return m_selectionModFlashlight;}
-	inline OsuSkinImage *getSelectionModRelax() {return m_selectionModRelax;}
-	inline OsuSkinImage *getSelectionModAutopilot() {return m_selectionModAutopilot;}
-	inline OsuSkinImage *getSelectionModSpunOut() {return m_selectionModSpunOut;}
-	inline OsuSkinImage *getSelectionModAutoplay() {return m_selectionModAutoplay;}
-	inline OsuSkinImage *getSelectionModNightmare() {return m_selectionModNightmare;}
-	inline OsuSkinImage *getSelectionModTarget() {return m_selectionModTarget;}
-	inline OsuSkinImage *getSelectionModScorev2() {return m_selectionModScorev2;}
-	inline OsuSkinImage *getSelectionModTD() {return m_selectionModTD;}
+	[[nodiscard]] inline OsuSkinImage *getSelectionModEasy() const {return m_selectionModEasy;}
+	[[nodiscard]] inline OsuSkinImage *getSelectionModNoFail() const {return m_selectionModNoFail;}
+	[[nodiscard]] inline OsuSkinImage *getSelectionModHalfTime() const {return m_selectionModHalfTime;}
+	[[nodiscard]] inline OsuSkinImage *getSelectionModDayCore() const {return m_selectionModDayCore;}
+	[[nodiscard]] inline OsuSkinImage *getSelectionModHardRock() const {return m_selectionModHardRock;}
+	[[nodiscard]] inline OsuSkinImage *getSelectionModSuddenDeath() const {return m_selectionModSuddenDeath;}
+	[[nodiscard]] inline OsuSkinImage *getSelectionModPerfect() const {return m_selectionModPerfect;}
+	[[nodiscard]] inline OsuSkinImage *getSelectionModDoubleTime() const {return m_selectionModDoubleTime;}
+	[[nodiscard]] inline OsuSkinImage *getSelectionModNightCore() const {return m_selectionModNightCore;}
+	[[nodiscard]] inline OsuSkinImage *getSelectionModHidden() const {return m_selectionModHidden;}
+	[[nodiscard]] inline OsuSkinImage *getSelectionModFlashlight() const {return m_selectionModFlashlight;}
+	[[nodiscard]] inline OsuSkinImage *getSelectionModRelax() const {return m_selectionModRelax;}
+	[[nodiscard]] inline OsuSkinImage *getSelectionModAutopilot() const {return m_selectionModAutopilot;}
+	[[nodiscard]] inline OsuSkinImage *getSelectionModSpunOut() const {return m_selectionModSpunOut;}
+	[[nodiscard]] inline OsuSkinImage *getSelectionModAutoplay() const {return m_selectionModAutoplay;}
+	[[nodiscard]] inline OsuSkinImage *getSelectionModNightmare() const {return m_selectionModNightmare;}
+	[[nodiscard]] inline OsuSkinImage *getSelectionModTarget() const {return m_selectionModTarget;}
+	[[nodiscard]] inline OsuSkinImage *getSelectionModScorev2() const {return m_selectionModScorev2;}
+	[[nodiscard]] inline OsuSkinImage *getSelectionModTD() const {return m_selectionModTD;}
 
-	inline Image *getPauseContinue() {return m_pauseContinue;}
-	inline Image *getPauseRetry() {return m_pauseRetry;}
-	inline Image *getPauseBack() {return m_pauseBack;}
-	inline Image *getPauseOverlay() {return m_pauseOverlay;}
-	inline Image *getFailBackground() {return m_failBackground;}
-	inline Image *getUnpause() {return m_unpause;}
+	[[nodiscard]] inline Image *getPauseContinue() const {return m_pauseContinue;}
+	[[nodiscard]] inline Image *getPauseRetry() const {return m_pauseRetry;}
+	[[nodiscard]] inline Image *getPauseBack() const {return m_pauseBack;}
+	[[nodiscard]] inline Image *getPauseOverlay() const {return m_pauseOverlay;}
+	[[nodiscard]] inline Image *getFailBackground() const {return m_failBackground;}
+	[[nodiscard]] inline Image *getUnpause() const {return m_unpause;}
 
-	inline Image *getButtonLeft() {return m_buttonLeft;}
-	inline Image *getButtonMiddle() {return m_buttonMiddle;}
-	inline Image *getButtonRight() {return m_buttonRight;}
-	inline Image *getDefaultButtonLeft() {return m_defaultButtonLeft;}
-	inline Image *getDefaultButtonMiddle() {return m_defaultButtonMiddle;}
-	inline Image *getDefaultButtonRight() {return m_defaultButtonRight;}
-	inline OsuSkinImage *getMenuBack2() {return m_menuBack;}
-	inline OsuSkinImage *getSelectionMode() {return m_selectionMode;}
-	inline OsuSkinImage *getSelectionModeOver() {return m_selectionModeOver;}
-	inline OsuSkinImage *getSelectionMods() {return m_selectionMods;}
-	inline OsuSkinImage *getSelectionModsOver() {return m_selectionModsOver;}
-	inline OsuSkinImage *getSelectionRandom() {return m_selectionRandom;}
-	inline OsuSkinImage *getSelectionRandomOver() {return m_selectionRandomOver;}
-	inline OsuSkinImage *getSelectionOptions() {return m_selectionOptions;}
-	inline OsuSkinImage *getSelectionOptionsOver() {return m_selectionOptionsOver;}
+	[[nodiscard]] inline Image *getButtonLeft() const {return m_buttonLeft;}
+	[[nodiscard]] inline Image *getButtonMiddle() const {return m_buttonMiddle;}
+	[[nodiscard]] inline Image *getButtonRight() const {return m_buttonRight;}
+	[[nodiscard]] inline Image *getDefaultButtonLeft() const {return m_defaultButtonLeft;}
+	[[nodiscard]] inline Image *getDefaultButtonMiddle() const {return m_defaultButtonMiddle;}
+	[[nodiscard]] inline Image *getDefaultButtonRight() const {return m_defaultButtonRight;}
+	[[nodiscard]] inline OsuSkinImage *getMenuBack2() const {return m_menuBack;}
+	[[nodiscard]] inline OsuSkinImage *getSelectionMode() const {return m_selectionMode;}
+	[[nodiscard]] inline OsuSkinImage *getSelectionModeOver() const {return m_selectionModeOver;}
+	[[nodiscard]] inline OsuSkinImage *getSelectionMods() const {return m_selectionMods;}
+	[[nodiscard]] inline OsuSkinImage *getSelectionModsOver() const {return m_selectionModsOver;}
+	[[nodiscard]] inline OsuSkinImage *getSelectionRandom() const {return m_selectionRandom;}
+	[[nodiscard]] inline OsuSkinImage *getSelectionRandomOver() const {return m_selectionRandomOver;}
+	[[nodiscard]] inline OsuSkinImage *getSelectionOptions() const {return m_selectionOptions;}
+	[[nodiscard]] inline OsuSkinImage *getSelectionOptionsOver() const {return m_selectionOptionsOver;}
 
-	inline Image *getSongSelectTop() {return m_songSelectTop;}
-	inline Image *getSongSelectBottom() {return m_songSelectBottom;}
-	inline Image *getMenuButtonBackground() {return m_menuButtonBackground;}
-	inline OsuSkinImage *getMenuButtonBackground2() {return m_menuButtonBackground2;}
-	inline Image *getStar() {return m_star;}
-	inline Image *getRankingPanel() {return m_rankingPanel;}
-	inline Image *getRankingGraph() {return m_rankingGraph;}
-	inline Image *getRankingTitle() {return m_rankingTitle;}
-	inline Image *getRankingMaxCombo() {return m_rankingMaxCombo;}
-	inline Image *getRankingAccuracy() {return m_rankingAccuracy;}
-	inline Image *getRankingA() {return m_rankingA;}
-	inline Image *getRankingB() {return m_rankingB;}
-	inline Image *getRankingC() {return m_rankingC;}
-	inline Image *getRankingD() {return m_rankingD;}
-	inline Image *getRankingS() {return m_rankingS;}
-	inline Image *getRankingSH() {return m_rankingSH;}
-	inline Image *getRankingX() {return m_rankingX;}
-	inline Image *getRankingXH() {return m_rankingXH;}
-	inline OsuSkinImage *getRankingAsmall() {return m_rankingAsmall;}
-	inline OsuSkinImage *getRankingBsmall() {return m_rankingBsmall;}
-	inline OsuSkinImage *getRankingCsmall() {return m_rankingCsmall;}
-	inline OsuSkinImage *getRankingDsmall() {return m_rankingDsmall;}
-	inline OsuSkinImage *getRankingSsmall() {return m_rankingSsmall;}
-	inline OsuSkinImage *getRankingSHsmall() {return m_rankingSHsmall;}
-	inline OsuSkinImage *getRankingXsmall() {return m_rankingXsmall;}
-	inline OsuSkinImage *getRankingXHsmall() {return m_rankingXHsmall;}
-	inline OsuSkinImage *getRankingPerfect() {return m_rankingPerfect;}
+	[[nodiscard]] inline Image *getSongSelectTop() const {return m_songSelectTop;}
+	[[nodiscard]] inline Image *getSongSelectBottom() const {return m_songSelectBottom;}
+	[[nodiscard]] inline Image *getMenuButtonBackground() const {return m_menuButtonBackground;}
+	[[nodiscard]] inline OsuSkinImage *getMenuButtonBackground2() const {return m_menuButtonBackground2;}
+	[[nodiscard]] inline Image *getStar() const {return m_star;}
+	[[nodiscard]] inline Image *getRankingPanel() const {return m_rankingPanel;}
+	[[nodiscard]] inline Image *getRankingGraph() const {return m_rankingGraph;}
+	[[nodiscard]] inline Image *getRankingTitle() const {return m_rankingTitle;}
+	[[nodiscard]] inline Image *getRankingMaxCombo() const {return m_rankingMaxCombo;}
+	[[nodiscard]] inline Image *getRankingAccuracy() const {return m_rankingAccuracy;}
+	[[nodiscard]] inline Image *getRankingA() const {return m_rankingA;}
+	[[nodiscard]] inline Image *getRankingB() const {return m_rankingB;}
+	[[nodiscard]] inline Image *getRankingC() const {return m_rankingC;}
+	[[nodiscard]] inline Image *getRankingD() const {return m_rankingD;}
+	[[nodiscard]] inline Image *getRankingS() const {return m_rankingS;}
+	[[nodiscard]] inline Image *getRankingSH() const {return m_rankingSH;}
+	[[nodiscard]] inline Image *getRankingX() const {return m_rankingX;}
+	[[nodiscard]] inline Image *getRankingXH() const {return m_rankingXH;}
+	[[nodiscard]] inline OsuSkinImage *getRankingAsmall() const {return m_rankingAsmall;}
+	[[nodiscard]] inline OsuSkinImage *getRankingBsmall() const {return m_rankingBsmall;}
+	[[nodiscard]] inline OsuSkinImage *getRankingCsmall() const {return m_rankingCsmall;}
+	[[nodiscard]] inline OsuSkinImage *getRankingDsmall() const {return m_rankingDsmall;}
+	[[nodiscard]] inline OsuSkinImage *getRankingSsmall() const {return m_rankingSsmall;}
+	[[nodiscard]] inline OsuSkinImage *getRankingSHsmall() const {return m_rankingSHsmall;}
+	[[nodiscard]] inline OsuSkinImage *getRankingXsmall() const {return m_rankingXsmall;}
+	[[nodiscard]] inline OsuSkinImage *getRankingXHsmall() const {return m_rankingXHsmall;}
+	[[nodiscard]] inline OsuSkinImage *getRankingPerfect() const {return m_rankingPerfect;}
 
-	inline Image *getBeatmapImportSpinner() {return m_beatmapImportSpinner;}
-	inline Image *getLoadingSpinner() {return m_loadingSpinner;}
-	inline Image *getCircleEmpty() {return m_circleEmpty;}
-	inline Image *getCircleFull() {return m_circleFull;}
-	inline Image *getSeekTriangle() {return m_seekTriangle;}
-	inline Image *getUserIcon() {return m_userIcon;}
-	inline Image *getBackgroundCube() {return m_backgroundCube;}
-	inline Image *getMenuBackground() {return m_menuBackground;}
-	inline Image *getSkybox() {return m_skybox;}
+	[[nodiscard]] inline Image *getBeatmapImportSpinner() const {return m_beatmapImportSpinner;}
+	[[nodiscard]] inline Image *getLoadingSpinner() const {return m_loadingSpinner;}
+	[[nodiscard]] inline Image *getCircleEmpty() const {return m_circleEmpty;}
+	[[nodiscard]] inline Image *getCircleFull() const {return m_circleFull;}
+	[[nodiscard]] inline Image *getSeekTriangle() const {return m_seekTriangle;}
+	[[nodiscard]] inline Image *getUserIcon() const {return m_userIcon;}
+	[[nodiscard]] inline Image *getBackgroundCube() const {return m_backgroundCube;}
+	[[nodiscard]] inline Image *getMenuBackground() const {return m_menuBackground;}
+	[[nodiscard]] inline Image *getSkybox() const {return m_skybox;}
 
-	inline Sound *getSpinnerBonus() {return m_spinnerBonus;}
-	inline Sound *getSpinnerSpinSound() {return m_spinnerSpinSound;}
+	[[nodiscard]] inline Sound *getSpinnerBonus() const {return m_spinnerBonus;}
+	[[nodiscard]] inline Sound *getSpinnerSpinSound() const {return m_spinnerSpinSound;}
 
-	inline Sound *getCombobreak() {return m_combobreak;}
-	inline Sound *getFailsound() {return m_failsound;}
-	inline Sound *getApplause() {return m_applause;}
-	inline Sound *getMenuHit() {return m_menuHit;}
-	inline Sound *getMenuClick() {return m_menuClick;}
-	inline Sound *getCheckOn() {return m_checkOn;}
-	inline Sound *getCheckOff() {return m_checkOff;}
-	inline Sound *getShutter() {return m_shutter;}
-	inline Sound *getSectionPassSound() {return m_sectionPassSound;}
-	inline Sound *getSectionFailSound() {return m_sectionFailSound;}
+	[[nodiscard]] inline Sound *getCombobreak() const {return m_combobreak;}
+	[[nodiscard]] inline Sound *getFailsound() const {return m_failsound;}
+	[[nodiscard]] inline Sound *getApplause() const {return m_applause;}
+	[[nodiscard]] inline Sound *getMenuHit() const {return m_menuHit;}
+	[[nodiscard]] inline Sound *getMenuClick() const {return m_menuClick;}
+	[[nodiscard]] inline Sound *getCheckOn() const {return m_checkOn;}
+	[[nodiscard]] inline Sound *getCheckOff() const {return m_checkOff;}
+	[[nodiscard]] inline Sound *getShutter() const {return m_shutter;}
+	[[nodiscard]] inline Sound *getSectionPassSound() const {return m_sectionPassSound;}
+	[[nodiscard]] inline Sound *getSectionFailSound() const {return m_sectionFailSound;}
 
-	inline bool isCursor2x() {return m_bCursor2x;}
-	inline bool isCursorTrail2x() {return m_bCursorTrail2x;}
-	inline bool isCursorRipple2x() {return m_bCursorRipple2x;}
-	inline bool isApproachCircle2x() {return m_bApproachCircle2x;}
-	inline bool isReverseArrow2x() {return m_bReverseArrow2x;}
-	inline bool isHitCircle2x() {return m_bHitCircle2x;}
-	inline bool isDefault02x() {return m_bIsDefault02x;}
-	inline bool isDefault12x() {return m_bIsDefault12x;}
-	inline bool isScore02x() {return m_bIsScore02x;}
-	inline bool isCombo02x() {return m_bIsCombo02x;}
-	inline bool isSpinnerApproachCircle2x() {return m_bSpinnerApproachCircle2x;}
-	inline bool isSpinnerBottom2x() {return m_bSpinnerBottom2x;}
-	inline bool isSpinnerCircle2x() {return m_bSpinnerCircle2x;}
-	inline bool isSpinnerTop2x() {return m_bSpinnerTop2x;}
-	inline bool isSpinnerMiddle2x() {return m_bSpinnerMiddle2x;}
-	inline bool isSpinnerMiddle22x() {return m_bSpinnerMiddle22x;}
-	inline bool isSliderScorePoint2x() {return m_bSliderScorePoint2x;}
-	inline bool isSliderStartCircle2x() {return m_bSliderStartCircle2x;}
-	inline bool isSliderEndCircle2x() {return m_bSliderEndCircle2x;}
+	[[nodiscard]] inline bool isCursor2x() const {return m_bCursor2x;}
+	[[nodiscard]] inline bool isCursorTrail2x() const {return m_bCursorTrail2x;}
+	[[nodiscard]] inline bool isCursorRipple2x() const {return m_bCursorRipple2x;}
+	[[nodiscard]] inline bool isApproachCircle2x() const {return m_bApproachCircle2x;}
+	[[nodiscard]] inline bool isReverseArrow2x() const {return m_bReverseArrow2x;}
+	[[nodiscard]] inline bool isHitCircle2x() const {return m_bHitCircle2x;}
+	[[nodiscard]] inline bool isDefault02x() const {return m_bIsDefault02x;}
+	[[nodiscard]] inline bool isDefault12x() const {return m_bIsDefault12x;}
+	[[nodiscard]] inline bool isScore02x() const {return m_bIsScore02x;}
+	[[nodiscard]] inline bool isCombo02x() const {return m_bIsCombo02x;}
+	[[nodiscard]] inline bool isSpinnerApproachCircle2x() const {return m_bSpinnerApproachCircle2x;}
+	[[nodiscard]] inline bool isSpinnerBottom2x() const {return m_bSpinnerBottom2x;}
+	[[nodiscard]] inline bool isSpinnerCircle2x() const {return m_bSpinnerCircle2x;}
+	[[nodiscard]] inline bool isSpinnerTop2x() const {return m_bSpinnerTop2x;}
+	[[nodiscard]] inline bool isSpinnerMiddle2x() const {return m_bSpinnerMiddle2x;}
+	[[nodiscard]] inline bool isSpinnerMiddle22x() const {return m_bSpinnerMiddle22x;}
+	[[nodiscard]] inline bool isSliderScorePoint2x() const {return m_bSliderScorePoint2x;}
+	[[nodiscard]] inline bool isSliderStartCircle2x() const {return m_bSliderStartCircle2x;}
+	[[nodiscard]] inline bool isSliderEndCircle2x() const {return m_bSliderEndCircle2x;}
 
-	inline bool isCircularmetre2x() {return m_bCircularmetre2x;}
+	[[nodiscard]] inline bool isCircularmetre2x() const {return m_bCircularmetre2x;}
 
-	inline bool isPauseContinue2x() {return m_bPauseContinue2x;}
+	[[nodiscard]] inline bool isPauseContinue2x() const {return m_bPauseContinue2x;}
 
-	inline bool isMenuButtonBackground2x() {return m_bMenuButtonBackground2x;}
-	inline bool isStar2x() {return m_bStar2x;}
-	inline bool isRankingPanel2x() {return m_bRankingPanel2x;}
-	inline bool isRankingMaxCombo2x() {return m_bRankingMaxCombo2x;}
-	inline bool isRankingAccuracy2x() {return m_bRankingAccuracy2x;}
-	inline bool isRankingA2x() {return m_bRankingA2x;}
-	inline bool isRankingB2x() {return m_bRankingB2x;}
-	inline bool isRankingC2x() {return m_bRankingC2x;}
-	inline bool isRankingD2x() {return m_bRankingD2x;}
-	inline bool isRankingS2x() {return m_bRankingS2x;}
-	inline bool isRankingSH2x() {return m_bRankingSH2x;}
-	inline bool isRankingX2x() {return m_bRankingX2x;}
-	inline bool isRankingXH2x() {return m_bRankingXH2x;}
+	[[nodiscard]] inline bool isMenuButtonBackground2x() const {return m_bMenuButtonBackground2x;}
+	[[nodiscard]] inline bool isStar2x() const {return m_bStar2x;}
+	[[nodiscard]] inline bool isRankingPanel2x() const {return m_bRankingPanel2x;}
+	[[nodiscard]] inline bool isRankingMaxCombo2x() const {return m_bRankingMaxCombo2x;}
+	[[nodiscard]] inline bool isRankingAccuracy2x() const {return m_bRankingAccuracy2x;}
+	[[nodiscard]] inline bool isRankingA2x() const {return m_bRankingA2x;}
+	[[nodiscard]] inline bool isRankingB2x() const {return m_bRankingB2x;}
+	[[nodiscard]] inline bool isRankingC2x() const {return m_bRankingC2x;}
+	[[nodiscard]] inline bool isRankingD2x() const {return m_bRankingD2x;}
+	[[nodiscard]] inline bool isRankingS2x() const {return m_bRankingS2x;}
+	[[nodiscard]] inline bool isRankingSH2x() const {return m_bRankingSH2x;}
+	[[nodiscard]] inline bool isRankingX2x() const {return m_bRankingX2x;}
+	[[nodiscard]] inline bool isRankingXH2x() const {return m_bRankingXH2x;}
 
 	// skin.ini
-	inline float getVersion() {return m_fVersion;}
-	inline float getAnimationFramerate() {return m_fAnimationFramerate;}
+	[[nodiscard]] inline float getVersion() const {return m_fVersion;}
+	[[nodiscard]] inline float getAnimationFramerate() const {return m_fAnimationFramerate;}
 	Color getComboColorForCounter(int i, int offset);
 	void setBeatmapComboColors(std::vector<Color> colors);
-	inline Color getSpinnerApproachCircleColor() {return m_spinnerApproachCircleColor;}
-	inline Color getSliderBorderColor() {return m_sliderBorderColor;}
-	inline Color getSliderTrackOverride() {return m_sliderTrackOverride;}
-	inline Color getSliderBallColor() {return m_sliderBallColor;}
+	[[nodiscard]] inline Color getSpinnerApproachCircleColor() const {return m_spinnerApproachCircleColor;}
+	[[nodiscard]] inline Color getSliderBorderColor() const {return m_sliderBorderColor;}
+	[[nodiscard]] inline Color getSliderTrackOverride() const {return m_sliderTrackOverride;}
+	[[nodiscard]] inline Color getSliderBallColor() const {return m_sliderBallColor;}
 
-	inline Color getSongSelectActiveText() {return m_songSelectActiveText;}
-	inline Color getSongSelectInactiveText() {return m_songSelectInactiveText;}
+	[[nodiscard]] inline Color getSongSelectActiveText() const {return m_songSelectActiveText;}
+	[[nodiscard]] inline Color getSongSelectInactiveText() const {return m_songSelectInactiveText;}
 
-	inline Color getInputOverlayText() {return m_inputOverlayText;}
+	[[nodiscard]] inline Color getInputOverlayText() const {return m_inputOverlayText;}
 
-	inline bool getCursorCenter() {return m_bCursorCenter;}
-	inline bool getCursorRotate() {return m_bCursorRotate;}
-	inline bool getCursorExpand() {return m_bCursorExpand;}
+	[[nodiscard]] inline bool getCursorCenter() const {return m_bCursorCenter;}
+	[[nodiscard]] inline bool getCursorRotate() const {return m_bCursorRotate;}
+	[[nodiscard]] inline bool getCursorExpand() const {return m_bCursorExpand;}
 
-	inline bool getSliderBallFlip() {return m_bSliderBallFlip;}
-	inline bool getAllowSliderBallTint() {return m_bAllowSliderBallTint;}
-	inline int getSliderStyle() {return m_iSliderStyle;}
-	inline bool getHitCircleOverlayAboveNumber() {return m_bHitCircleOverlayAboveNumber;}
-	inline bool isSliderTrackOverridden() {return m_bSliderTrackOverride;}
+	[[nodiscard]] inline bool getSliderBallFlip() const {return m_bSliderBallFlip;}
+	[[nodiscard]] inline bool getAllowSliderBallTint() const {return m_bAllowSliderBallTint;}
+	[[nodiscard]] inline int getSliderStyle() const {return m_iSliderStyle;}
+	[[nodiscard]] inline bool getHitCircleOverlayAboveNumber() const {return m_bHitCircleOverlayAboveNumber;}
+	[[nodiscard]] inline bool isSliderTrackOverridden() const {return m_bSliderTrackOverride;}
 
-	inline UString getComboPrefix() {return m_sComboPrefix;}
-	inline int getComboOverlap() {return m_iComboOverlap;}
+	[[nodiscard]] inline UString getComboPrefix() const {return m_sComboPrefix;}
+	[[nodiscard]] inline int getComboOverlap() const {return m_iComboOverlap;}
 
-	inline UString getScorePrefix() {return m_sScorePrefix;}
-	inline int getScoreOverlap() {return m_iScoreOverlap;}
+	[[nodiscard]] inline UString getScorePrefix() const {return m_sScorePrefix;}
+	[[nodiscard]] inline int getScoreOverlap() const {return m_iScoreOverlap;}
 
-	inline UString getHitCirclePrefix() {return m_sHitCirclePrefix;}
-	inline int getHitCircleOverlap() {return m_iHitCircleOverlap;}
+	[[nodiscard]] inline UString getHitCirclePrefix() const {return m_sHitCirclePrefix;}
+	[[nodiscard]] inline int getHitCircleOverlap() const {return m_iHitCircleOverlap;}
 
 	// custom
-	inline bool useSmoothCursorTrail() const {return m_cursorMiddle != m_missingTexture;}
-	inline bool isDefaultSkin() const {return m_bIsDefaultSkin;}
-	inline int getSampleSet() const {return m_iSampleSet;}
+	[[nodiscard]] inline bool useSmoothCursorTrail() const {return m_cursorMiddle != m_missingTexture;}
+	[[nodiscard]] inline bool isDefaultSkin() const {return m_bIsDefaultSkin;}
+	[[nodiscard]] inline int getSampleSet() const {return m_iSampleSet;}
 
 private:
 	static ConVar *m_osu_skin_ref;

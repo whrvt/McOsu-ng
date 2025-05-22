@@ -302,7 +302,7 @@ void OsuScore::addHitResult(OsuBeatmap *beatmap, OsuHitObject *hitObject, HIT hi
 	// recalculate pp
 	if (m_osu_draw_statistics_pp_ref->getBool()) // sanity + performance
 	{
-		OsuBeatmapStandard *standardPointer = dynamic_cast<OsuBeatmapStandard*>(beatmap);
+		const auto *standardPointer = beatmap->asStd();
 		if (standardPointer != NULL && beatmap->getSelectedDifficulty2() != NULL)
 		{
 			double aimStars = standardPointer->getAimStars();

@@ -28,7 +28,12 @@ public:
 
 	virtual void onModUpdate() {onModUpdate(true, true);}
 	void onModUpdate(bool rebuildSliderVertexBuffers = true, bool recomputeDrainRate = true); // this seems very dangerous compiler-wise, but it works
-	virtual bool isLoading();
+	virtual bool isLoading() const;
+
+	[[nodiscard]] virtual Type getType() const { return STANDARD; }
+
+	virtual OsuBeatmapStandard* asStd() { return this; }
+	[[nodiscard]] const virtual OsuBeatmapStandard* asStd() const { return this; }
 
 	Vector2 pixels2OsuCoords(Vector2 pixelCoords) const; // only used for positional audio atm
 	Vector2 osuCoords2Pixels(Vector2 coords) const; // hitobjects should use this one (includes lots of special behaviour)
@@ -131,8 +136,8 @@ private:
 
 	void updateStarCache();
 	void stopStarCacheLoader();
-	bool isLoadingStarCache();
-	bool isLoadingInt();
+	bool isLoadingStarCache() const;
+	bool isLoadingInt() const;
 
 	// beatmap
 	bool m_bIsSpinnerActive;

@@ -27,6 +27,10 @@ class OsuDatabaseBeatmap;
 class OsuBackgroundStarCacheLoader;
 class OsuBackgroundStarCalcHandler;
 
+class OsuBeatmapStandard;
+class OsuBeatmapMania;
+class OsuBeatmapExample;
+
 class OsuBeatmap
 {
 public:
@@ -35,6 +39,7 @@ public:
 		long musicPos;
 		int maniaColumn;
 	};
+	enum Type : uint8_t { STANDARD, MANIA, EXAMPLE };
 
 public:
 	OsuBeatmap();
@@ -53,7 +58,7 @@ public:
 	virtual void onKeyUp(KeyboardEvent &e);
 
 	virtual void onModUpdate() {;}	// this should make all the necessary internal updates to hitobjects when legacy osu mods or static mods change live (but also on start)
-	virtual bool isLoading();		// allows subclasses to delay the playing start, e.g. to load something
+	virtual bool isLoading() const;		// allows subclasses to delay the playing start, e.g. to load something
 
 	virtual long getPVS();			// Potentially Visible Set gate time size, for optimizing draw() and update() when iterating over all hitobjects
 
@@ -158,6 +163,15 @@ public:
 	inline bool isKey1Down() const {return m_bClick1Held;}
 	inline bool isKey2Down() const {return m_bClick2Held;}
 	inline bool isLastKeyDownKey1() const {return m_bPrevKeyWasKey1;}
+
+	[[nodiscard]] virtual Type getType() const = 0;
+
+	virtual OsuBeatmapStandard* asStd() { return nullptr; }
+	virtual OsuBeatmapMania* asMania() { return nullptr; }
+	virtual OsuBeatmapExample* asExample() { return nullptr; }
+	[[nodiscard]] const virtual OsuBeatmapStandard* asStd() const { return nullptr; }
+	[[nodiscard]] const virtual OsuBeatmapMania* asMania() const { return nullptr; }
+	[[nodiscard]] const virtual OsuBeatmapExample* asExample() const { return nullptr; }
 
 	UString getTitle() const;
 	UString getArtist() const;

@@ -181,19 +181,19 @@ public:
 	{
 		return mapDifficultyRangeInv(approachTime * (1.0f / speedMultiplier), getRawMinApproachTime(), getRawMidApproachTime(), getRawMaxApproachTime());
 	}
-	static float getApproachRateForSpeedMultiplier(OsuBeatmap *beatmap, float speedMultiplier)
+	static float getApproachRateForSpeedMultiplier(const OsuBeatmap *beatmap, float speedMultiplier)
 	{
 		return mapDifficultyRangeInv((float)getApproachTime(beatmap) * (1.0f / speedMultiplier), getMinApproachTime(), getMidApproachTime(), getMaxApproachTime());
 	}
-	static float getApproachRateForSpeedMultiplier(OsuBeatmap *beatmap) // respect all mods and overrides
+	static float getApproachRateForSpeedMultiplier(const OsuBeatmap *beatmap) // respect all mods and overrides
 	{
 		return getApproachRateForSpeedMultiplier(beatmap, osu->getSpeedMultiplier());
 	}
-	static float getRawApproachRateForSpeedMultiplier(OsuBeatmap *beatmap) // ignore AR override
+	static float getRawApproachRateForSpeedMultiplier(const OsuBeatmap *beatmap) // ignore AR override
 	{
 		return mapDifficultyRangeInv((float)getRawApproachTime(beatmap) * (1.0f / osu->getSpeedMultiplier()), getMinApproachTime(), getMidApproachTime(), getMaxApproachTime());
 	}
-	static float getConstantApproachRateForSpeedMultiplier(OsuBeatmap *beatmap) // ignore AR override, keep AR consistent through speed changes
+	static float getConstantApproachRateForSpeedMultiplier(const OsuBeatmap *beatmap) // ignore AR override, keep AR consistent through speed changes
 	{
 		return mapDifficultyRangeInv((float)getRawApproachTime(beatmap) * osu->getSpeedMultiplier(), getMinApproachTime(), getMidApproachTime(), getMaxApproachTime());
 	}
@@ -207,19 +207,19 @@ public:
 	{
 		return mapDifficultyRangeInv(hitWindow300 * (1.0f / speedMultiplier), getMinHitWindow300(), getMidHitWindow300(), getMaxHitWindow300());
 	}
-	static float getOverallDifficultyForSpeedMultiplier(OsuBeatmap *beatmap, float speedMultiplier) // respect all mods and overrides
+	static float getOverallDifficultyForSpeedMultiplier(const OsuBeatmap *beatmap, float speedMultiplier) // respect all mods and overrides
 	{
 		return mapDifficultyRangeInv((float)getHitWindow300(beatmap) * (1.0f / speedMultiplier), getMinHitWindow300(), getMidHitWindow300(), getMaxHitWindow300());
 	}
-	static float getOverallDifficultyForSpeedMultiplier(OsuBeatmap *beatmap) // respect all mods and overrides
+	static float getOverallDifficultyForSpeedMultiplier(const OsuBeatmap *beatmap) // respect all mods and overrides
 	{
 		return getOverallDifficultyForSpeedMultiplier(beatmap, osu->getSpeedMultiplier());
 	}
-	static float getRawOverallDifficultyForSpeedMultiplier(OsuBeatmap *beatmap) // ignore OD override
+	static float getRawOverallDifficultyForSpeedMultiplier(const OsuBeatmap *beatmap) // ignore OD override
 	{
 		return mapDifficultyRangeInv((float)getRawHitWindow300(beatmap) * (1.0f / osu->getSpeedMultiplier()), getMinHitWindow300(), getMidHitWindow300(), getMaxHitWindow300());
 	}
-	static float getConstantOverallDifficultyForSpeedMultiplier(OsuBeatmap *beatmap) // ignore OD override, keep OD consistent through speed changes
+	static float getConstantOverallDifficultyForSpeedMultiplier(const OsuBeatmap *beatmap) // ignore OD override, keep OD consistent through speed changes
 	{
 		return mapDifficultyRangeInv((float)getRawHitWindow300(beatmap) * osu->getSpeedMultiplier(), getMinHitWindow300(), getMidHitWindow300(), getMaxHitWindow300());
 	}
@@ -232,11 +232,11 @@ public:
 	{
 		return mapDifficultyRange(AR, getRawMinApproachTime(), getRawMidApproachTime(), getRawMaxApproachTime());
 	}
-	static float getApproachTime(OsuBeatmap *beatmap)
+	static float getApproachTime(const OsuBeatmap *beatmap)
 	{
 		return osu_mod_mafham.getBool() ? beatmap->getLength()*2 : mapDifficultyRange(beatmap->getAR(), getMinApproachTime(), getMidApproachTime(), getMaxApproachTime());
 	}
-	static float getRawApproachTime(OsuBeatmap *beatmap) // ignore AR override
+	static float getRawApproachTime(const OsuBeatmap *beatmap) // ignore AR override
 	{
 		return osu_mod_mafham.getBool() ? beatmap->getLength()*2 : mapDifficultyRange(beatmap->getRawAR(), getMinApproachTime(), getMidApproachTime(), getMaxApproachTime());
 	}
@@ -244,7 +244,7 @@ public:
 	{
 		return mapDifficultyRange(osu_stacking_ar_override.getFloat() < 0.0f ? AR : osu_stacking_ar_override.getFloat(), getMinApproachTime(), getMidApproachTime(), getMaxApproachTime());
 	}
-	static float getApproachTimeForStacking(OsuBeatmap *beatmap)
+	static float getApproachTimeForStacking(const OsuBeatmap *beatmap)
 	{
 		return mapDifficultyRange(osu_stacking_ar_override.getFloat() < 0.0f ? beatmap->getAR() : osu_stacking_ar_override.getFloat(), getMinApproachTime(), getMidApproachTime(), getMaxApproachTime());
 	}
@@ -253,11 +253,11 @@ public:
 	{
 		return mapDifficultyRange(OD, getMinHitWindow300(), getMidHitWindow300(), getMaxHitWindow300());
 	}
-	static float getHitWindow300(OsuBeatmap *beatmap)
+	static float getHitWindow300(const OsuBeatmap *beatmap)
 	{
 		return mapDifficultyRange(beatmap->getOD(), getMinHitWindow300(), getMidHitWindow300(), getMaxHitWindow300());
 	}
-	static float getRawHitWindow300(OsuBeatmap *beatmap) // ignore OD override
+	static float getRawHitWindow300(const OsuBeatmap *beatmap) // ignore OD override
 	{
 		return mapDifficultyRange(beatmap->getRawOD(), getMinHitWindow300(), getMidHitWindow300(), getMaxHitWindow300());
 	}
@@ -266,7 +266,7 @@ public:
 	{
 		return mapDifficultyRange(OD, getMinHitWindow100(), getMidHitWindow100(), getMaxHitWindow100());
 	}
-	static float getHitWindow100(OsuBeatmap *beatmap)
+	static float getHitWindow100(const OsuBeatmap *beatmap)
 	{
 		return mapDifficultyRange(beatmap->getOD(), getMinHitWindow100(), getMidHitWindow100(), getMaxHitWindow100());
 	}
@@ -275,31 +275,30 @@ public:
 	{
 		return mapDifficultyRange(OD, getMinHitWindow50(), getMidHitWindow50(), getMaxHitWindow50());
 	}
-	static float getHitWindow50(OsuBeatmap *beatmap)
+	static float getHitWindow50(const OsuBeatmap *beatmap)
 	{
 		return mapDifficultyRange(beatmap->getOD(), getMinHitWindow50(), getMidHitWindow50(), getMaxHitWindow50());
 	}
-
-	static inline float getHitWindowMiss(OsuBeatmap *beatmap)
+	static inline float getHitWindowMiss(const OsuBeatmap *beatmap)
 	{
 		return osu_hitwindow_miss.getFloat(); // opsu is using this here: (500.0f - (beatmap->getOD() * 10.0f)), while osu is just using 400 absolute ms hardcoded, not sure why
 	}
 
-	static float getSpinnerSpinsPerSecond(OsuBeatmap *beatmap) // raw spins required per second
+	static float getSpinnerSpinsPerSecond(const OsuBeatmap *beatmap) // raw spins required per second
 	{
 		return mapDifficultyRange(beatmap->getOD(), 3.0f, 5.0f, 7.5f);
 	}
-	static float getSpinnerRotationsForSpeedMultiplier(OsuBeatmap *beatmap, long spinnerDuration, float speedMultiplier)
+	static float getSpinnerRotationsForSpeedMultiplier(const OsuBeatmap *beatmap, long spinnerDuration, float speedMultiplier)
 	{
 		///return (int)((float)spinnerDuration / 1000.0f * getSpinnerSpinsPerSecond(beatmap)); // actual
 		return (int)((((float)spinnerDuration / 1000.0f * getSpinnerSpinsPerSecond(beatmap)) * 0.5f) * (std::min(1.0f / speedMultiplier, 1.0f))); // Mc
 	}
-	static float getSpinnerRotationsForSpeedMultiplier(OsuBeatmap *beatmap, long spinnerDuration) // spinner length compensated rotations // respect all mods and overrides
+	static float getSpinnerRotationsForSpeedMultiplier(const OsuBeatmap *beatmap, long spinnerDuration) // spinner length compensated rotations // respect all mods and overrides
 	{
 		return getSpinnerRotationsForSpeedMultiplier(beatmap, spinnerDuration, osu->getSpeedMultiplier());
 	}
 
-	static OsuScore::HIT getHitResult(long delta, OsuBeatmap *beatmap)
+	static OsuScore::HIT getHitResult(long delta, const OsuBeatmap *beatmap)
 	{
 		if (osu_mod_halfwindow.getBool() && delta > 0 && delta <= (long)getHitWindowMiss(beatmap))
 		{
@@ -381,7 +380,7 @@ public:
 		return getPlayfieldSize().x / OSU_COORD_WIDTH; // scales osu!pixels to the actual playfield size
 	}
 
-	static float getHitCircleDiameter(OsuBeatmap *beatmap)
+	static float getHitCircleDiameter(const OsuBeatmap *beatmap)
 	{
 		return getRawHitCircleDiameter(beatmap->getCS()) * getHitCircleXMultiplier();
 	}

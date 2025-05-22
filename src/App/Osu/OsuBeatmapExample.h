@@ -22,7 +22,12 @@ public:
 	virtual void update();
 
 	virtual void onModUpdate();
-	virtual bool isLoading();
+	virtual bool isLoading() const;
+
+	[[nodiscard]] virtual Type getType() const { return EXAMPLE; }
+
+	virtual OsuBeatmapExample* asExample() { return this; }
+	[[nodiscard]] const virtual OsuBeatmapExample* asExample() const { return this; }
 
 private:
 	virtual void onBeforeLoad();

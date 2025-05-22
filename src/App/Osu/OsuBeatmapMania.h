@@ -24,6 +24,11 @@ public:
 	virtual void onKeyDown(KeyboardEvent &key);
 	virtual void onKeyUp(KeyboardEvent &key);
 
+	[[nodiscard]] virtual Type getType() const { return MANIA; }
+
+	virtual OsuBeatmapMania* asMania() { return this; }
+	[[nodiscard]] const virtual OsuBeatmapMania* asMania() const { return this; }
+
 	inline Vector2 getPlayfieldSize() const {return m_vPlayfieldSize;}
 	inline Vector2 getPlayfieldCenter() const {return m_vPlayfieldCenter;}
 

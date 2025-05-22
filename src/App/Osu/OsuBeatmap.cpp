@@ -44,17 +44,32 @@
 #include <cctype>
 #include <algorithm>
 
+static constexpr float unioffset = 
+	(Env::cfg(AUD::WASAPI)	? -25.0f  :
+	 Env::cfg(AUD::BASS)	?  15.0f  : // see https://github.com/ppy/osu/blob/6d8c457c81e40cf438c69a1e6c5f02347333dfc0/osu.Game/Beatmaps/FramedBeatmapClock.cs#L68
+	 Env::cfg(AUD::SDL)		? -110.0f :
+	 Env::cfg(AUD::SOLOUD)	? -25.0f  : 0.0f) +
+	(Env::cfg(OS::WASM)		? -100.0f : 0);
+
+// BASS: starting with bass 2020 2.4.15.2 which has all offset problems fixed, this is the non-dsound backend compensation
+// NOTE: this depends on BASS_CONFIG_UPDATEPERIOD/BASS_CONFIG_DEV_BUFFER
+
+// WASAPI: since we use the newer bass/fx dlls for wasapi builds anyway (which have different time handling)
+
+// SDL_mixer: it really needs that much
+
+// SoLoud: im not sure yet
+
+// And WASM... well, it needs work.
+
+ConVar osu_universal_offset_hardcoded("osu_universal_offset_hardcoded", unioffset, FCVAR_NONE);
+
 ConVar osu_pvs("osu_pvs", true, FCVAR_NONE, "optimizes all loops over all hitobjects by clamping the range to the Potentially Visible Set");
 ConVar osu_draw_hitobjects("osu_draw_hitobjects", true, FCVAR_NONE);
 ConVar osu_draw_beatmap_background_image("osu_draw_beatmap_background_image", true, FCVAR_NONE);
 ConVar osu_vr_draw_desktop_playfield("osu_vr_draw_desktop_playfield", true, FCVAR_NONE);
 
 ConVar osu_universal_offset("osu_universal_offset", 0.0f, FCVAR_NONE);
-ConVar osu_universal_offset_hardcoded("osu_universal_offset_hardcoded",
-										Env::cfg(AUD::WASAPI) ? -25.0f  :
-										Env::cfg(AUD::BASS)	  ?  15.0f  : // see https://github.com/ppy/osu/blob/6d8c457c81e40cf438c69a1e6c5f02347333dfc0/osu.Game/Beatmaps/FramedBeatmapClock.cs#L68
-										Env::cfg(AUD::SDL)	  ? -110.0f :
-										Env::cfg(AUD::SOLOUD) ? -25.0f  : 0.0f, FCVAR_NONE);
 ConVar osu_universal_offset_hardcoded_fallback_dsound("osu_universal_offset_hardcoded_fallback_dsound", -15.0f, FCVAR_NONE);
 ConVar osu_old_beatmap_offset("osu_old_beatmap_offset", 24.0f, FCVAR_NONE, "offset in ms which is added to beatmap versions < 5 (default value is hardcoded 24 ms in stable)");
 ConVar osu_timingpoints_offset("osu_timingpoints_offset", 5.0f, FCVAR_NONE, "Offset in ms which is added before determining the active timingpoint for the sample type and sample volume (hitsounds) of the current frame");
@@ -1094,8 +1109,7 @@ void OsuBeatmap::update()
 
 						if (drainType == 2) // osu!stable
 						{
-							OsuBeatmapStandard *standardPointer = dynamic_cast<OsuBeatmapStandard*>(this);
-							if (standardPointer != NULL && standardPointer->isSpinnerActive())
+							if (this->getType() == OsuBeatmap::Type::STANDARD && this->asStd()->isSpinnerActive())
 								spinnerDrainNerf = (double)osu_drain_stable_spinner_nerf.getFloat();
 						}
 
@@ -2197,7 +2211,7 @@ void OsuBeatmap::updateTimingPoints(long curPos)
 	osu->getSkin()->setSampleVolume(std::clamp<float>(t.volume / 100.0f, 0.0f, 1.0f));
 }
 
-bool OsuBeatmap::isLoading()
+bool OsuBeatmap::isLoading() const
 {
 	return (!m_music->isAsyncReady());
 }

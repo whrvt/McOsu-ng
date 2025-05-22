@@ -84,17 +84,17 @@ ConVar *OsuHitObject::m_fposu_3d_approachcircles_look_at_player_ref = NULL;
 
 unsigned long long OsuHitObject::sortHackCounter = 0;
 
-void OsuHitObject::drawHitResult(Graphics *g, OsuBeatmapStandard *beatmap, Vector2 rawPos, OsuScore::HIT result, float animPercentInv, float hitDeltaRangePercent)
+void OsuHitObject::drawHitResult(Graphics *g, const OsuBeatmapStandard *beatmap, Vector2 rawPos, OsuScore::HIT result, float animPercentInv, float hitDeltaRangePercent)
 {
 	drawHitResult(g, beatmap->getSkin(), beatmap->getHitcircleDiameter(), beatmap->getRawHitcircleDiameter(), rawPos, result, animPercentInv, hitDeltaRangePercent);
 }
 
-void OsuHitObject::draw3DHitResult(Graphics *g, OsuBeatmapStandard *beatmap, Vector2 rawPos, OsuScore::HIT result, float animPercentInv, float hitDeltaRangePercent)
+void OsuHitObject::draw3DHitResult(Graphics *g, const OsuBeatmapStandard *beatmap, Vector2 rawPos, OsuScore::HIT result, float animPercentInv, float hitDeltaRangePercent)
 {
 	draw3DHitResult(g, osu->getFPoSu(), beatmap->getSkin(), beatmap->getHitcircleDiameter(), beatmap->getRawHitcircleDiameter(), rawPos, result, animPercentInv, hitDeltaRangePercent);
 }
 
-void OsuHitObject::drawHitResult(Graphics *g, OsuSkin *skin, float hitcircleDiameter, float rawHitcircleDiameter, Vector2 rawPos, OsuScore::HIT result, float animPercentInv, float hitDeltaRangePercent)
+void OsuHitObject::drawHitResult(Graphics *g, const OsuSkin *skin, float hitcircleDiameter, float rawHitcircleDiameter, Vector2 rawPos, OsuScore::HIT result, float animPercentInv, float hitDeltaRangePercent)
 {
 	if (animPercentInv <= 0.0f) return;
 
@@ -266,7 +266,7 @@ void OsuHitObject::drawHitResult(Graphics *g, OsuSkin *skin, float hitcircleDiam
 	g->popTransform();
 }
 
-void OsuHitObject::draw3DHitResult(Graphics *g, OsuModFPoSu *fposu, OsuSkin *skin, float hitcircleDiameter, float rawHitcircleDiameter, Vector2 rawPos, OsuScore::HIT result, float animPercentInv, float hitDeltaRangePercent)
+void OsuHitObject::draw3DHitResult(Graphics *g, const OsuModFPoSu *fposu, const OsuSkin *skin, float hitcircleDiameter, float rawHitcircleDiameter, Vector2 rawPos, OsuScore::HIT result, float animPercentInv, float hitDeltaRangePercent)
 {
 	// TODO: implement above
 }
@@ -338,8 +338,8 @@ void OsuHitObject::drawHitResultAnim(Graphics *g, const HITRESULTANIM &hitresult
 	if ((hitresultanim.time - osu_hitresult_duration.getFloat()) < engine->getTime() // NOTE: this is written like that on purpose, don't change it ("future" results can be scheduled with it, e.g. for slider end)
 		&& (hitresultanim.time + osu_hitresult_duration_max.getFloat()*(1.0f / osu->getSpeedMultiplier())) > engine->getTime())
 	{
-		OsuBeatmapStandard *beatmapStd = dynamic_cast<OsuBeatmapStandard*>(m_beatmap);
-		const OsuBeatmapMania *beatmapMania = dynamic_cast<OsuBeatmapMania*>(m_beatmap);
+		const auto *beatmapStd = m_beatmap->asStd();
+		const auto *beatmapMania = m_beatmap->asMania();
 
 		OsuSkin *skin = m_beatmap->getSkin();
 		{
@@ -375,7 +375,7 @@ void OsuHitObject::draw3DHitResultAnim(Graphics *g, const HITRESULTANIM &hitresu
 	if ((hitresultanim.time - osu_hitresult_duration.getFloat()) < engine->getTime() // NOTE: this is written like that on purpose, don't change it ("future" results can be scheduled with it, e.g. for slider end)
 		&& (hitresultanim.time + osu_hitresult_duration_max.getFloat()*(1.0f / osu->getSpeedMultiplier())) > engine->getTime())
 	{
-		OsuBeatmapStandard *beatmapStd = dynamic_cast<OsuBeatmapStandard*>(m_beatmap);
+		const auto *beatmapStd = m_beatmap->asStd();
 
 		OsuSkin *skin = m_beatmap->getSkin();
 		{

@@ -582,7 +582,7 @@ void OsuModFPoSu::update()
 		Vector2 mousePos = mouse->getPos();
 		if (isAutoCursor && osu->isInPlayMode() && osu->getSelectedBeatmap() != NULL)
 		{
-			OsuBeatmapStandard *beatmapStd = dynamic_cast<OsuBeatmapStandard*>(osu->getSelectedBeatmap());
+			const auto *beatmapStd = osu->getSelectedBeatmap()->asStd();
 			if (beatmapStd != NULL && !beatmapStd->isPaused())
 				mousePos = beatmapStd->getCursorPos();
 		}
@@ -631,7 +631,7 @@ void OsuModFPoSu::update()
 			else
 			{
 				// 3d auto support
-				OsuBeatmapStandard *beatmapStd = dynamic_cast<OsuBeatmapStandard*>(osu->getSelectedBeatmap());
+				const auto *beatmapStd = osu->getSelectedBeatmap()->asStd();
 				if (beatmapStd != NULL && !beatmapStd->isPaused())
 					m_camera->lookAt(beatmapStd->osuCoordsToRaw3D(beatmapStd->pixels2OsuCoords(beatmapStd->getCursorPos())));
 			}

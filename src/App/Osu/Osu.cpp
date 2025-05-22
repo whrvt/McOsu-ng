@@ -232,21 +232,6 @@ Osu::Osu(int instanceID)
 		steam->setRichPresence("status", "...");
 	}
 
-	constexpr float unioffset = Env::cfg(AUD::WASAPI) ? -25.0f  :
-								Env::cfg(AUD::BASS)	  ?  15.0f  : // see https://github.com/ppy/osu/blob/6d8c457c81e40cf438c69a1e6c5f02347333dfc0/osu.Game/Beatmaps/FramedBeatmapClock.cs#L68
-								Env::cfg(AUD::SDL)	  ? -110.0f :
-								Env::cfg(AUD::SOLOUD) ? -25.0f  : 0.0f;
-
-	// BASS: starting with bass 2020 2.4.15.2 which has all offset problems fixed, this is the non-dsound backend compensation
-	// NOTE: this depends on BASS_CONFIG_UPDATEPERIOD/BASS_CONFIG_DEV_BUFFER
-
-	// WASAPI: since we use the newer bass/fx dlls for wasapi builds anyway (which have different time handling)
-
-	// SDL_mixer: it really needs that much
-
-	// SoLoud: im not sure yet
-	convar->getConVarByName("osu_universal_offset_hardcoded")->setValue(unioffset);
-
 	// VR specific settings
 	if (isInVRMode())
 	{
@@ -624,7 +609,7 @@ void Osu::draw(Graphics *g)
 		if (m_pauseMenu->isVisible() || getSelectedBeatmap()->isContinueScheduled())
 			fadingCursorAlpha = 1.0f;
 
-		OsuBeatmapStandard *beatmapStd = dynamic_cast<OsuBeatmapStandard*>(getSelectedBeatmap());
+		const auto *beatmapStd = getSelectedBeatmap()->asStd();
 
 		// draw auto cursor
 		if (isAuto && allowDrawCursor && !isFPoSu && beatmapStd != NULL && !beatmapStd->isLoading())

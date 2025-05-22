@@ -1039,7 +1039,7 @@ void OsuBeatmapStandard::onModUpdate(bool rebuildSliderVertexBuffers, bool recom
 	}
 }
 
-bool OsuBeatmapStandard::isLoading()
+bool OsuBeatmapStandard::isLoading() const
 {
 	return (isLoadingInt() || (osu->isInMultiplayer() && osu->getMultiplayer()->isWaitingForPlayers()));
 }
@@ -2561,12 +2561,12 @@ void OsuBeatmapStandard::stopStarCacheLoader()
 	}
 }
 
-bool OsuBeatmapStandard::isLoadingStarCache()
+bool OsuBeatmapStandard::isLoadingStarCache() const
 {
 	return ((m_osu_draw_statistics_pp_ref->getBool() || m_osu_draw_statistics_livestars_ref->getBool()) && !m_starCacheLoader->isReady());
 }
 
-bool OsuBeatmapStandard::isLoadingInt()
+bool OsuBeatmapStandard::isLoadingInt() const
 {
 	return (OsuBeatmap::isLoading() || m_bIsPreLoading || isLoadingStarCache());
 }
