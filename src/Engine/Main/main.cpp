@@ -45,6 +45,7 @@
 // thin environment subclass to provide SDL callbacks with direct access to members
 class SDLMain final : public Environment
 {
+	friend class Environment;
 public:
 	SDLMain(int argc, char *argv[]);
 	~SDLMain();
@@ -79,6 +80,7 @@ private:
 	bool createWindow(int width, int height);
 	void setupOpenGL();
 	void configureEvents();
+	float queryDisplayHz();
 
 	// callback handlers
 	void fps_max_callback(UString oldVal, UString newVal);
@@ -191,6 +193,7 @@ ConVar fps_yield("fps_yield", true, FCVAR_NONE, "always release rest of timeslic
 extern ConVar _fullscreen_;
 extern ConVar _windowed_;
 extern ConVar _fullscreen_windowed_borderless_;
+extern ConVar _monitor_;
 
 SDLMain::SDLMain(int argc, char *argv[]) : Environment(argc, argv)
 {
@@ -240,6 +243,9 @@ SDL_AppResult SDLMain::initialize()
 		m_vLastAbsMousePos.y = y;
 	}
 
+	// initialize with the display refresh rate of the current monitor
+	m_fDisplayHzSecs = 1.0f / (m_fDisplayHz = queryDisplayHz());
+
 	// initialize engine, now that all the setup is done
 	m_engine = Environment::initEngine();
 
@@ -254,28 +260,6 @@ SDL_AppResult SDLMain::initialize()
 
 	// start engine frame timer
 	m_deltaTimer = new Timer();
-
-	// get the screen refresh rate, and set fps_max to that as default
-	if constexpr (!Env::cfg(OS::WASM)) // not in WASM
-	{
-		const SDL_DisplayID display = SDL_GetDisplayForWindow(m_window);
-		const SDL_DisplayMode *currentDisplayMode = SDL_GetCurrentDisplayMode(display);
-
-		if (currentDisplayMode && currentDisplayMode->refresh_rate > 0)
-		{
-			auto fourxhz = currentDisplayMode->refresh_rate * 4;
-			if (fps_max.getFloat() == fps_max.getDefaultFloat())
-			{
-				debugLog("Display %d refresh rate is %f Hz, setting default fps_max to %f.\n", display, currentDisplayMode->refresh_rate, fourxhz);
-				fps_max.setValue(fourxhz);
-				fps_max.setDefaultFloat(fourxhz);
-			}
-		}
-		else
-		{
-			debugLog("Couldn't SDL_GetCurrentDisplayMode(SDL display: %d): %s\n", display, SDL_GetError());
-		}
-	}
 
 	// SDL3 stops listening to text input globally when window is created
 	SDL_StartTextInput(m_window);
@@ -353,8 +337,16 @@ SDL_AppResult SDLMain::handleEvent(SDL_Event *event)
 		case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
 		case SDL_EVENT_WINDOW_RESIZED:
 			m_bHasFocus = true;
+			m_fDisplayHzSecs = 1.0f / (m_fDisplayHz = queryDisplayHz());
 			engine->requestResolutionChange(Vector2(static_cast<float>(event->window.data1), static_cast<float>(event->window.data2)));
 			setFgFPS();
+			break;
+
+		case SDL_EVENT_WINDOW_DISPLAY_CHANGED:
+			_monitor_.setValue<int>(event->window.data1);
+		case SDL_EVENT_WINDOW_DISPLAY_SCALE_CHANGED: // TODO?
+			engine->requestResolutionChange(getWindowSize());
+			m_fDisplayHzSecs = 1.0f / (m_fDisplayHz = queryDisplayHz());
 			break;
 
 		default:
@@ -520,7 +512,7 @@ bool SDLMain::createWindow(int width, int height)
 	SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_VERSION_STRING, PACKAGE_VERSION);
 	SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_IDENTIFIER_STRING, std::format("com.mcengine.{}", lowerPackageName).c_str());
 	SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_CREATOR_STRING, PACKAGE_BUGREPORT);
-	SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_COPYRIGHT_STRING, "MIT");
+	SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_COPYRIGHT_STRING, "MIT/GPL3"); // mcosu is gpl3, mcengine is mit
 	SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_URL_STRING, PACKAGE_URL);
 	SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_TYPE_STRING, "game");
 
@@ -575,6 +567,36 @@ void SDLMain::configureEvents()
 	SDL_SetEventEnabled(SDL_EVENT_FINGER_UP, false);
 	SDL_SetEventEnabled(SDL_EVENT_FINGER_MOTION, false);
 	SDL_SetEventEnabled(SDL_EVENT_FINGER_CANCELED, false);
+}
+
+float SDLMain::queryDisplayHz()
+{
+	// get the screen refresh rate, and set fps_max to that as default
+	if constexpr (!Env::cfg(OS::WASM)) // not in WASM
+	{
+		const SDL_DisplayID display = SDL_GetDisplayForWindow(m_window);
+		const SDL_DisplayMode *currentDisplayMode = SDL_GetCurrentDisplayMode(display);
+
+		if (currentDisplayMode && currentDisplayMode->refresh_rate > 0)
+		{
+			if (!almostEqual(m_fDisplayHz, currentDisplayMode->refresh_rate))
+				debugLog("Got refresh rate %.3f Hz for display %d.\n", currentDisplayMode->refresh_rate, display);
+			auto fourxhz = currentDisplayMode->refresh_rate * 4;
+			if (fps_max.getFloat() == fps_max.getDefaultFloat())
+			{
+				fps_max.setValue(fourxhz);
+				fps_max.setDefaultFloat(fourxhz);
+			}
+			return std::clamp<float>(currentDisplayMode->refresh_rate, 60.0f, 500.0f);
+		}
+		else
+		{
+			static int once;
+			if (!once++)
+				debugLog("Couldn't SDL_GetCurrentDisplayMode(SDL display: %d): %s\n", display, SDL_GetError());
+		}
+	}
+	return std::clamp<float>(fps_max.getFloat(), 60.0f, 500.0f);
 }
 
 void SDLMain::setupLogging()

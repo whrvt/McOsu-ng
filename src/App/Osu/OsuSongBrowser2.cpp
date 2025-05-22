@@ -167,7 +167,7 @@ private:
 
 
 
-class OsuUISongBrowserNoRecordsSetElement : public CBaseUILabel
+class OsuUISongBrowserNoRecordsSetElement final : public CBaseUILabel
 {
 public:
 	OsuUISongBrowserNoRecordsSetElement(UString text) : CBaseUILabel(0, 0, 0, 0, "", text)
@@ -176,7 +176,7 @@ public:
 		m_sIconString.insert(0, OsuIcons::TROPHY);
 	}
 
-	virtual void drawText(Graphics *g)
+	void drawText(Graphics *g) override
 	{
 		// draw icon
 		const float iconScale = 0.6f;
@@ -1107,13 +1107,15 @@ void OsuSongBrowser2::update()
 		mouse->resetWheelDelta();
 
 	// update and focus handling
-	m_contextMenu->update();
-	m_songBrowser->update();
-	m_songBrowser->getContainer()->update_pos(); // necessary due to constant animations
-	m_bottombar->update();
-	m_scoreBrowser->update();
-	m_topbarLeft->update();
-	m_topbarRight->update();
+	{
+		m_contextMenu->update();
+		m_songBrowser->update();
+		m_songBrowser->getContainer()->update_pos(); // necessary due to constant animations
+		m_bottombar->update();
+		m_scoreBrowser->update();
+		m_topbarLeft->update();
+		m_topbarRight->update();
+	}
 
 	if (m_contextMenu->isMouseInside() || osu->getHUD()->isVolumeOverlayBusy() || (m_backButton->isMouseInside() && isMouseInsideValidBackButtonHitbox))
 	{

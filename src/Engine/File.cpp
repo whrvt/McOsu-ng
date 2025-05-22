@@ -245,7 +245,7 @@ UString McFile::readLine()
 
 UString McFile::readString()
 {
-	const int size = getFileSize();
+	const int size = static_cast<int>(getFileSize());
 	if (size < 1)
 		return "";
 

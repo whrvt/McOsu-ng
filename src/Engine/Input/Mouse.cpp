@@ -256,9 +256,9 @@ void Mouse::onWheelVertical(int delta)
 {
 	m_iWheelDeltaVerticalActual += delta;
 
-	for (size_t i = 0; i < m_listeners.size(); i++)
+	for (auto & m_listener : m_listeners)
 	{
-		m_listeners[i]->onWheelVertical(delta);
+		m_listener->onWheelVertical(delta);
 	}
 }
 
@@ -266,9 +266,9 @@ void Mouse::onWheelHorizontal(int delta)
 {
 	m_iWheelDeltaHorizontalActual += delta;
 
-	for (size_t i = 0; i < m_listeners.size(); i++)
+	for (auto & m_listener : m_listeners)
 	{
-		m_listeners[i]->onWheelHorizontal(delta);
+		m_listener->onWheelHorizontal(delta);
 	}
 }
 

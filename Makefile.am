@@ -165,7 +165,7 @@ $(DEPS_PREFIX)/SoLoud.built:
 $(DEPS_PREFIX)/SoundTouch.built:
 	$(MKDIR_P) $(DEPS_PREFIX) && touch $@
 else
-AUDIO_CFLAGS = -I$(DEPS_PREFIX)/include $(shell $(PKG_CONFIG) --cflags soundtouch) $(if $(ENABLE_DEBUG),,-DST_NO_EXCEPTION_HANDLING)
+AUDIO_CFLAGS = $(shell $(PKG_CONFIG) --cflags soundtouch) $(if $(ENABLE_DEBUG),,-DST_NO_EXCEPTION_HANDLING)
 # the dynamic soloud lib is busted somehow
 AUDIO_LIBS = -L$(DEPS_PREFIX)/lib -lsoloud_static_x$(if $(filter x86_64,$(host_cpu)),64,$(if $(findstring linux,$(host_os)),32,86))$(if $(ENABLE_DEBUG),_d,) $(shell $(PKG_CONFIG) --libs soundtouch)
 $(DEPS_PREFIX)/SoLoud.built: $(DEPS_CACHE)/SoLoud.source $(DEPS_PREFIX)/SDL3.built
@@ -425,6 +425,50 @@ $(DEPS_PREFIX)/zlib.built:
 	$(MKDIR_P) $(DEPS_PREFIX) && touch $@
 endif
 
+$(DEPS_CACHE)/FMT-$(FMT_VERSION).source:
+	$(MKDIR_P) $(DEPS_CACHE)
+	$(WGET) -qO $(DEPS_CACHE)/fmt-$(FMT_VERSION).tar.gz "https://github.com/fmtlib/fmt/archive/refs/tags/$(FMT_VERSION).tar.gz" && \
+	touch $@
+
+if BUILD_FMT
+FMT_CFLAGS += $(shell $(PKG_CONFIG) --cflags fmt)
+FMT_LIBS += $(shell $(PKG_CONFIG) --libs fmt)
+$(DEPS_PREFIX)/FMT.built: $(DEPS_CACHE)/FMT-$(FMT_VERSION).source
+	rm -rf $(DEPS_PREFIX)/FMT
+	$(MKDIR_P) $(DEPS_PREFIX)/FMT/build $(DEPS_PREFIX)/lib/pkgconfig
+	$(TAR) xf $(DEPS_CACHE)/fmt-$(FMT_VERSION).tar.gz -C $(DEPS_PREFIX)/FMT --strip-components=1 && \
+	cd $(DEPS_PREFIX)/FMT && \
+	PKG_CONFIG="$(PKG_CONFIG)" LDFLAGS="$(LDFLAGS) $(if $(findstring yes,$(CLANG)),,-fno-lto)" \
+	cmake -S . -B build -G Ninja \
+		-DCMAKE_BUILD_TYPE="$(if $(ENABLE_DEBUG),Debug,Release)" \
+		-DCMAKE_INSTALL_PREFIX="$(DEPS_PREFIX)" \
+		-DCMAKE_SYSTEM_NAME="$(CMAKE_SYSTEM_NAME)" \
+		-DCMAKE_SYSTEM_PROCESSOR="$(host_cpu)" \
+		-DCMAKE_CXX_COMPILER="$(CXX)" \
+		-DCMAKE_CXX_FLAGS="$(CXXFLAGS) $(if $(findstring yes,$(CLANG)),,-fno-lto)" \
+		$(CMAKERCOPT) \
+		-DFMT_PEDANTIC=OFF \
+		-DFMT_WERROR=OFF \
+		-DFMT_DOC=OFF \
+		-DFMT_INSTALL=ON \
+		-DFMT_TEST=OFF \
+		-DFMT_FUZZ=OFF \
+		-DFMT_CUDA_TEST=OFF \
+		-DFMT_OS=ON \
+		-DFMT_MODULE=OFF \
+		-DFMT_SYSTEM_HEADERS=OFF \
+		-DFMT_UNICODE=ON \
+		-DBUILD_SHARED_LIBS="$(if $(SDL3_STATIC),OFF,ON)" && \
+	cmake --build build && \
+	cmake --install build
+	PKG_CONFIG="$(PKG_CONFIG)" \
+		$(PKG_CONFIG) --exists --print-errors fmt
+	touch $@
+else
+$(DEPS_PREFIX)/FMT.built:
+	$(MKDIR_P) $(DEPS_PREFIX) && touch $@
+endif
+
 $(DEPS_CACHE)/FREETYPE2-$(FREETYPE2_VERSION).source:
 	$(MKDIR_P) $(DEPS_CACHE)
 	$(WGET) -qO $(DEPS_CACHE)/freetype-$(FREETYPE2_VERSION).tar.gz "https://download.savannah.gnu.org/releases/freetype/freetype-$(FREETYPE2_VERSION).tar.gz" && \
@@ -453,7 +497,7 @@ $(DEPS_PREFIX)/FREETYPE2.built:
 	$(MKDIR_P) $(DEPS_PREFIX) && touch $@
 endif
 
-BUILT_SOURCES := $(DEPS_PREFIX)/mimalloc.built $(DEPS_PREFIX)/SDL3.built $(DEPS_PREFIX)/SDL3_mixer.built $(DEPS_PREFIX)/libjpeg.built \
+BUILT_SOURCES := $(DEPS_PREFIX)/mimalloc.built $(DEPS_PREFIX)/SDL3.built $(DEPS_PREFIX)/SDL3_mixer.built $(DEPS_PREFIX)/libjpeg.built $(DEPS_PREFIX)/FMT.built \
 	$(DEPS_PREFIX)/libpng.built $(DEPS_PREFIX)/bzip2.built $(DEPS_PREFIX)/zlib.built $(DEPS_PREFIX)/FREETYPE2.built $(DEPS_PREFIX)/glm.built $(DEPS_PREFIX)/SoLoud.built $(DEPS_PREFIX)/SoundTouch.built
 
 # making sure deps are built before main compile (continued)
@@ -465,6 +509,7 @@ MCOSU_NG_INCLUDE_FLAGS := $(shell find $(srcdir)/src -not -path '*/.*' -type d -
 McOsu_ng_CPPFLAGS := $(MCOSU_CPPFLAGS)
 
 McOsu_ng_CXXFLAGS := \
+	-I$(DEPS_PREFIX)/include \
 	$(CXXFLAGS_EXTRA) \
 	$(MCOSU_CXXFLAGS) \
 	$(MCOSU_NG_INCLUDE_FLAGS) \
@@ -477,6 +522,7 @@ McOsu_ng_CXXFLAGS := \
 	$(GLU_CFLAGS) \
 	$(EGL_CFLAGS) \
 	$(FREETYPE2_CFLAGS) \
+	$(FMT_CFLAGS) \
 	$(LIBPNG_CFLAGS) \
 	$(BZIP2_CFLAGS) \
 	$(LIBJPEG_CFLAGS) \
@@ -496,6 +542,7 @@ McOsu_ng_LDFLAGS := \
 	$(GLU_LIBS) \
 	$(EGL_LIBS) \
 	$(FREETYPE2_LIBS) \
+	$(FMT_LIBS) \
 	$(LIBPNG_LIBS) \
 	$(BZIP2_LIBS) \
 	$(LIBJPEG_LIBS) \
@@ -588,6 +635,9 @@ if BUILD_ZLIB
 endif
 if BUILD_FREETYPE2
 	$(if $(SDL3_STATIC),,@`find $(FREETYPE2_PREFIX) '(' -iname '*freetype*'$(DLLEXT) -o -iname '*freetype*''.so.*' ')' -exec cp -P '{''}' "$(DESTDIR)$(bindir)/$(LIBDEST)" ';'`)
+endif
+if BUILD_FMT
+	$(if $(SDL3_STATIC),,@`find $(FMT_PREFIX) '(' -iname '*fmt*'$(DLLEXT) -o -iname '*fmt*''.so.*' ')' -exec cp -P '{''}' "$(DESTDIR)$(bindir)/$(LIBDEST)" ';'`)
 endif
 
 # install hooks

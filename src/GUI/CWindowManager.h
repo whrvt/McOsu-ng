@@ -18,14 +18,14 @@ class CWindowManager : public KeyboardListener
 {
 public:
 	CWindowManager();
-	~CWindowManager();
+	~CWindowManager() override;
 
 	void draw(Graphics *g);
 	void update();
 
-	void onKeyDown(KeyboardEvent &e);
-	void onKeyUp(KeyboardEvent &e);
-	void onChar(KeyboardEvent &e);
+	void onKeyDown(KeyboardEvent &e) override;
+	void onKeyUp(KeyboardEvent &e) override;
+	void onChar(KeyboardEvent &e) override;
 
 	void onResolutionChange(Vector2 newResolution);
 

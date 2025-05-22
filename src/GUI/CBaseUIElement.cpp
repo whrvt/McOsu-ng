@@ -46,6 +46,8 @@ CBaseUIElement::CBaseUIElement(float xPos, float yPos, float xSize, float ySize,
 
 void CBaseUIElement::update()
 {
+	if (!m_bVisible || !m_bEnabled) return;
+
 	// check if mouse is inside element
 	McRect temp = McRect(m_vPos.x+1, m_vPos.y+1, m_vSize.x-1, m_vSize.y-1);
 	if (temp.contains(mouse->getPos()))
@@ -66,8 +68,6 @@ void CBaseUIElement::update()
 				onMouseOutside();
 		}
 	}
-
-	if (!m_bVisible || !m_bEnabled) return;
 
 	if (mouse->isLeftDown())
 	{

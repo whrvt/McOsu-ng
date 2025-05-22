@@ -99,12 +99,10 @@ private:
 		size_t numScoresToRecalculate = 0;
 		for (const auto &kv : *scores)
 		{
-			for (size_t i=0; i<kv.second.size(); i++)
+			for (const auto & score : kv.second)
 			{
-				const OsuDatabase::Score &score = kv.second[i];
-
 				if ((!score.isLegacyScore || m_bImportLegacyScores) && score.playerName == m_sUserName)
-					numScoresToRecalculate++;
+				numScoresToRecalculate++;
 			}
 		}
 		m_iNumScoresToRecalculate = numScoresToRecalculate;
@@ -114,10 +112,8 @@ private:
 		// actually recalculate them
 		for (auto &kv : *scores)
 		{
-			for (size_t i=0; i<kv.second.size(); i++)
+			for (auto & score : kv.second)
 			{
-				OsuDatabase::Score &score = kv.second[i];
-
 				if ((!score.isLegacyScore || m_bImportLegacyScores) && score.playerName == m_sUserName)
 				{
 					if (m_bInterrupted.load())
@@ -131,9 +127,9 @@ private:
 						const std::vector<OsuDatabase::Score> &otherScores = (*scores)[score.md5hash];
 
 						bool isScoreAlreadyImported = false;
-						for (size_t s=0; s<otherScores.size(); s++)
+						for (const auto & otherScore : otherScores)
 						{
-							if (score.isLegacyScoreEqualToImportedLegacyScore(otherScores[s]))
+							if (score.isLegacyScoreEqualToImportedLegacyScore(otherScore))
 							{
 								isScoreAlreadyImported = true;
 								break;
@@ -201,13 +197,13 @@ private:
 						// calculate a few values fresh from the beatmap data necessary for pp calculation
 						numHitObjects = diffres.diffobjects.size();
 
-						for (size_t h=0; h<diffres.diffobjects.size(); h++)
+						for (auto & diffobject : diffres.diffobjects)
 						{
-							if (diffres.diffobjects[h].type == OsuDifficultyHitObject::TYPE::CIRCLE)
+							if (diffobject.type == OsuDifficultyHitObject::TYPE::CIRCLE)
 								numCircles++;
-							if (diffres.diffobjects[h].type == OsuDifficultyHitObject::TYPE::SLIDER)
+							if (diffobject.type == OsuDifficultyHitObject::TYPE::SLIDER)
 								numSliders++;
-							if (diffres.diffobjects[h].type == OsuDifficultyHitObject::TYPE::SPINNER)
+							if (diffobject.type == OsuDifficultyHitObject::TYPE::SPINNER)
 								numSpinners++;
 						}
 
@@ -717,14 +713,9 @@ void OsuUserStatsScreen::onCopyAllScoresUserSelected(UString text, int id)
 	m_contextMenu->setRelPos(m_menuButton->getPos() + Vector2(0, m_menuButton->getSize().y));
 	m_contextMenu->begin();
 	{
-		{
-			UString reallyText = "Really copy all scores from \"";
-			reallyText.append(m_sCopyAllScoresFromUser);
-			reallyText.append("\" into \"");
-			reallyText.append(m_name_ref->getString());
-			reallyText.append("\"?");
-			m_contextMenu->addButton(reallyText)->setEnabled(false);
-		}
+		m_contextMenu->addButton(
+				UString::format(R"(Really copy all scores from "%s" into "%s"?)", m_sCopyAllScoresFromUser.toUtf8(), m_name_ref->getString().toUtf8())
+			)->setEnabled(false);
 		CBaseUIButton *spacer = m_contextMenu->addButton("---");
 		spacer->setTextLeft(false);
 		spacer->setEnabled(false);

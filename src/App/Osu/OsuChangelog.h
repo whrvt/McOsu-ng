@@ -20,16 +20,16 @@ class OsuChangelog : public OsuScreenBackable
 {
 public:
 	OsuChangelog();
-	virtual ~OsuChangelog();
+	~OsuChangelog() override;
 
-	virtual void draw(Graphics *g);
-	virtual void update();
+	void draw(Graphics *g) override;
+	void update() override;
 
-	virtual void setVisible(bool visible);
+	void setVisible(bool visible) override;
 
 private:
-	virtual void updateLayout();
-	virtual void onBack();
+	void updateLayout() override;
+	void onBack() override;
 
 	void onChangeClicked(CBaseUIButton *button);
 

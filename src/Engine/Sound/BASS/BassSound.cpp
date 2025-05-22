@@ -291,7 +291,7 @@ void BassSound::setPosition(double percent)
 
 	const BOOL res = BASS_ChannelSetPosition(handle, (QWORD)((double)(length)*percent), BASS_POS_BYTE);
 	if (!res && debug_snd.getBool())
-		debugLog("position %f BASS_ChannelSetPosition() error %i on file %s\n", percent, BASS_ErrorGetCode(), m_sFilePath.toUtf8());
+		debugLog("position %f BASS_ChannelSetPosition() error %i on file %s (handle: %p)\n", percent, BASS_ErrorGetCode(), m_sFilePath.toUtf8(), handle);
 }
 
 void BassSound::setPositionMS(unsigned long ms, bool internal)

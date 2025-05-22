@@ -11,7 +11,7 @@
 
 #include "OsuUISongBrowserButton.h"
 
-class OsuUISongBrowserCollectionButton : public OsuUISongBrowserButton
+class OsuUISongBrowserCollectionButton final : public OsuUISongBrowserButton
 {
 public:
 	OsuUISongBrowserCollectionButton(OsuSongBrowser2 *songBrowser, CBaseUIScrollView *view, OsuUIContextMenu *contextMenu, float xPos, float yPos, float xSize, float ySize, UString name, UString collectionName, std::vector<OsuUISongBrowserButton*> children);

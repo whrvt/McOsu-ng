@@ -54,6 +54,7 @@ ConVar debug_engine("debug_engine", false, FCVAR_NONE);
 ConVar minimize_on_focus_lost_if_fullscreen("minimize_on_focus_lost_if_fullscreen", true, FCVAR_NONE);
 ConVar minimize_on_focus_lost_if_borderless_windowed_fullscreen("minimize_on_focus_lost_if_borderless_windowed_fullscreen", false, FCVAR_NONE);
 ConVar _disable_windows_key("disable_windows_key", false, FCVAR_NONE, "set to 0/1 to disable/enable the Windows/Super key");
+ConVar engine_throttle("engine_throttle", true, FCVAR_NONE, "limit select engine component updates to refresh rate (non-gameplay-related)");
 
 std::unique_ptr<Mouse> Engine::s_mouseInstance = nullptr;
 std::unique_ptr<Keyboard> Engine::s_keyboardInstance = nullptr;
@@ -109,7 +110,10 @@ Engine::Engine()
 	m_dTime = 0;
 	m_dRunTime = 0;
 	m_iFrameCount = 0;
-	m_dFrameTime = 0.016f;
+	m_dFrameTime = 0.016;
+	m_fFrameThrottleTime = 0.0f;
+
+	engine_throttle.setCallback(fastdelegate::MakeDelegate(this, &Engine::onEngineThrottleChanged));
 
 	// window
 	m_bBlackout = false;
@@ -196,7 +200,7 @@ Engine::Engine()
 		s_discordInstance = std::make_unique<DiscordInterface>(); // TODO: allow disabling
 		discord = s_discordInstance.get();
 		runtime_assert(discord, "Discord integration failed to initialize!");
-	
+
 		// default launch overrides
 		graphics->setVSync(false);
 
@@ -374,7 +378,7 @@ void Engine::onPaint()
 				m_guiContainer->draw(graphics);
 
 			// debug input devices
-			for (auto & m_inputDevice : m_inputDevices)
+			for (auto &m_inputDevice : m_inputDevices)
 			{
 				m_inputDevice->draw(graphics);
 			}
@@ -410,6 +414,8 @@ void Engine::onUpdate()
 		m_dRunTime = m_timer->getElapsedTime();
 		m_dFrameTime *= (double)host_timescale.getFloat();
 		m_dTime += m_dFrameTime;
+		if (engine_throttle.getBool() && ((m_fFrameThrottleTime += static_cast<float>(m_dFrameTime)) > env->getDisplayRefreshTime()))
+			m_fFrameThrottleTime = 0.0f;
 	}
 
 	// handle pending queued resolution changes
@@ -501,7 +507,7 @@ void Engine::onFocusLost()
 	if (debug_engine.getBool())
 		debugLog("Engine: lost focus\n");
 
-	for (auto & m_keyboard : m_keyboards)
+	for (auto &m_keyboard : m_keyboards)
 	{
 		m_keyboard->reset();
 	}
@@ -553,7 +559,8 @@ void Engine::onRestored()
 
 void Engine::onResolutionChange(Vector2 newResolution)
 {
-	debugLog(0xff00ff00, "Engine: onResolutionChange() (%i, %i) -> (%i, %i)\n", (int)m_vScreenSize.x, (int)m_vScreenSize.y, (int)newResolution.x, (int)newResolution.y);
+	debugLog(
+	    0xff00ff00, "Engine: onResolutionChange() (%i, %i) -> (%i, %i)\n", (int)m_vScreenSize.x, (int)m_vScreenSize.y, (int)newResolution.x, (int)newResolution.y);
 
 	// NOTE: Windows [Show Desktop] button in the superbar causes (0,0)
 	if (newResolution.x < 2 || newResolution.y < 2)
@@ -734,9 +741,10 @@ void Engine::debugLog_(const char *fmt, va_list args)
 
 	// write to engine console
 	{
-		char *buffer = new char[numChars + 1];     // +1 for null termination later
-		vsnprintf(buffer, numChars + 1, fmt, ap2); // "The generated string has a length of at most n-1, leaving space for the additional terminating null character."
-		buffer[numChars] = '\0';                   // null terminate
+		char *buffer = new char[numChars + 1]; // +1 for null termination later
+		vsnprintf(
+		    buffer, numChars + 1, fmt, ap2); // "The generated string has a length of at most n-1, leaving space for the additional terminating null character."
+		buffer[numChars] = '\0';             // null terminate
 
 		UString actualBuffer = UString(buffer);
 		delete[] buffer;
@@ -768,9 +776,10 @@ void Engine::debugLog_(Color color, const char *fmt, va_list args)
 
 	// write to engine console
 	{
-		char *buffer = new char[numChars + 1];     // +1 for null termination later
-		vsnprintf(buffer, numChars + 1, fmt, ap2); // "The generated string has a length of at most n-1, leaving space for the additional terminating null character."
-		buffer[numChars] = '\0';                   // null terminate
+		char *buffer = new char[numChars + 1]; // +1 for null termination later
+		vsnprintf(
+		    buffer, numChars + 1, fmt, ap2); // "The generated string has a length of at most n-1, leaving space for the additional terminating null character."
+		buffer[numChars] = '\0';             // null terminate
 
 		UString actualBuffer = UString(buffer);
 		delete[] buffer;
@@ -815,6 +824,13 @@ void Engine::debugLog_(Color color, const char *fmt, ...)
 //**********************//
 //	Engine ConCommands	//
 //**********************//
+
+void Engine::onEngineThrottleChanged(float newVal)
+{
+	const bool enable = !!static_cast<int>(newVal);
+	if (!enable)
+		m_fFrameThrottleTime = 0.0f;
+}
 
 void _exit(void)
 {

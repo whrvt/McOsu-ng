@@ -103,10 +103,12 @@ bin_PROGRAMS = McOsu-ng$(EXEEXT)
 @BUILD_BZIP2_TRUE@am__append_9 = $(shell $(PKG_CONFIG) --libs bzip2)
 @BUILD_ZLIB_TRUE@am__append_10 = $(shell $(PKG_CONFIG) --cflags zlib)
 @BUILD_ZLIB_TRUE@am__append_11 = $(shell $(PKG_CONFIG) --libs zlib)
-@BUILD_FREETYPE2_TRUE@am__append_12 = $(shell $(PKG_CONFIG) --cflags freetype2)
-@BUILD_FREETYPE2_TRUE@am__append_13 = $(shell $(PKG_CONFIG) --libs freetype2)
-@WIN_PLATFORM_FALSE@am__append_14 = lib/
-@USE_BASS_TRUE@am__append_15 = \
+@BUILD_FMT_TRUE@am__append_12 = $(shell $(PKG_CONFIG) --cflags fmt)
+@BUILD_FMT_TRUE@am__append_13 = $(shell $(PKG_CONFIG) --libs fmt)
+@BUILD_FREETYPE2_TRUE@am__append_14 = $(shell $(PKG_CONFIG) --cflags freetype2)
+@BUILD_FREETYPE2_TRUE@am__append_15 = $(shell $(PKG_CONFIG) --libs freetype2)
+@WIN_PLATFORM_FALSE@am__append_16 = lib/
+@USE_BASS_TRUE@am__append_17 = \
 @USE_BASS_TRUE@	$(BUNDLED_BASS_DIR)/include \
 @USE_BASS_TRUE@	$(BUNDLED_BASS_FX_DIR)/include \
 @USE_BASS_TRUE@	$(BUNDLED_BASS_DIR)/lib/$(SYSNAME)/$(host_cpu)/$(LIBPREFIX)bass$(DLLEXT) \
@@ -600,6 +602,7 @@ CC = @CC@
 CCACHE = @CCACHE@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
+CLANG = @CLANG@
 CMAKE = @CMAKE@
 CMAKERCOPT = @CMAKERCOPT@
 CMAKE_SYSTEM_NAME = @CMAKE_SYSTEM_NAME@
@@ -626,8 +629,12 @@ ENABLE_ASAN = @ENABLE_ASAN@
 ENABLE_DEBUG = @ENABLE_DEBUG@
 ETAGS = @ETAGS@
 EXEEXT = @EXEEXT@
-FREETYPE2_CFLAGS = @FREETYPE2_CFLAGS@ $(am__append_12)
-FREETYPE2_LIBS = @FREETYPE2_LIBS@ $(am__append_13)
+FMT_CFLAGS = @FMT_CFLAGS@ $(am__append_12)
+FMT_LIBS = @FMT_LIBS@ $(am__append_13)
+FMT_PREFIX = @FMT_PREFIX@
+FMT_VERSION = @FMT_VERSION@
+FREETYPE2_CFLAGS = @FREETYPE2_CFLAGS@ $(am__append_14)
+FREETYPE2_LIBS = @FREETYPE2_LIBS@ $(am__append_15)
 FREETYPE2_PREFIX = @FREETYPE2_PREFIX@
 FREETYPE2_VERSION = @FREETYPE2_VERSION@
 GENIE = @GENIE@
@@ -982,14 +989,14 @@ comma := ,# bruh
 @BUILD_MIMALLOC_FALSE@MIMALLOC_LIBS := 
 @BUILD_MIMALLOC_TRUE@@WIN_PLATFORM_FALSE@MIMALLOC_LIBS = $(DEPS_PREFIX)/lib/mimalloc$(if $(ENABLE_ASAN),-asan-debug,$(if $(ENABLE_DEBUG),-debug,)).o
 @BUILD_MIMALLOC_TRUE@@WIN_PLATFORM_TRUE@MIMALLOC_LIBS = -L$(DEPS_PREFIX)/lib -Wl,--whole-archive -l:libmimalloc.dll.a -Wl,--no-whole-archive -L$(DEPS_PREFIX)/bin -lmimalloc -lmimalloc-redirect$(if $(filter x86_64,$(host_cpu)),,32)
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@AUDIO_CFLAGS = -I$(DEPS_PREFIX)/include $(shell $(PKG_CONFIG) --cflags soundtouch) $(if $(ENABLE_DEBUG),,-DST_NO_EXCEPTION_HANDLING)
+@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@AUDIO_CFLAGS = $(shell $(PKG_CONFIG) --cflags soundtouch) $(if $(ENABLE_DEBUG),,-DST_NO_EXCEPTION_HANDLING)
 @USE_BASS_FALSE@@USE_SDLMIXER_TRUE@AUDIO_CFLAGS = $(shell $(PKG_CONFIG) --cflags sdl3-mixer)
 @USE_BASS_TRUE@AUDIO_CFLAGS := $(BASS_CFLAGS)
 # the dynamic soloud lib is busted somehow
 @USE_BASS_FALSE@@USE_SDLMIXER_FALSE@AUDIO_LIBS = -L$(DEPS_PREFIX)/lib -lsoloud_static_x$(if $(filter x86_64,$(host_cpu)),64,$(if $(findstring linux,$(host_os)),32,86))$(if $(ENABLE_DEBUG),_d,) $(shell $(PKG_CONFIG) --libs soundtouch)
 @USE_BASS_FALSE@@USE_SDLMIXER_TRUE@AUDIO_LIBS = $(shell $(PKG_CONFIG) --libs sdl3-mixer)
 @USE_BASS_TRUE@AUDIO_LIBS := 
-BUILT_SOURCES := $(DEPS_PREFIX)/mimalloc.built $(DEPS_PREFIX)/SDL3.built $(DEPS_PREFIX)/SDL3_mixer.built $(DEPS_PREFIX)/libjpeg.built \
+BUILT_SOURCES := $(DEPS_PREFIX)/mimalloc.built $(DEPS_PREFIX)/SDL3.built $(DEPS_PREFIX)/SDL3_mixer.built $(DEPS_PREFIX)/libjpeg.built $(DEPS_PREFIX)/FMT.built \
 	$(DEPS_PREFIX)/libpng.built $(DEPS_PREFIX)/bzip2.built $(DEPS_PREFIX)/zlib.built $(DEPS_PREFIX)/FREETYPE2.built $(DEPS_PREFIX)/glm.built $(DEPS_PREFIX)/SoLoud.built $(DEPS_PREFIX)/SoundTouch.built
 
 
@@ -997,6 +1004,7 @@ BUILT_SOURCES := $(DEPS_PREFIX)/mimalloc.built $(DEPS_PREFIX)/SDL3.built $(DEPS_
 MCOSU_NG_INCLUDE_FLAGS := $(shell find $(srcdir)/src -not -path '*/.*' -type d -printf "-I%p ")
 McOsu_ng_CPPFLAGS := $(MCOSU_CPPFLAGS)
 McOsu_ng_CXXFLAGS := \
+	-I$(DEPS_PREFIX)/include \
 	$(CXXFLAGS_EXTRA) \
 	$(MCOSU_CXXFLAGS) \
 	$(MCOSU_NG_INCLUDE_FLAGS) \
@@ -1009,6 +1017,7 @@ McOsu_ng_CXXFLAGS := \
 	$(GLU_CFLAGS) \
 	$(EGL_CFLAGS) \
 	$(FREETYPE2_CFLAGS) \
+	$(FMT_CFLAGS) \
 	$(LIBPNG_CFLAGS) \
 	$(BZIP2_CFLAGS) \
 	$(LIBJPEG_CFLAGS) \
@@ -1029,6 +1038,7 @@ McOsu_ng_LDFLAGS := \
 	$(GLU_LIBS) \
 	$(EGL_LIBS) \
 	$(FREETYPE2_LIBS) \
+	$(FMT_LIBS) \
 	$(LIBPNG_LIBS) \
 	$(BZIP2_LIBS) \
 	$(LIBJPEG_LIBS) \
@@ -1038,12 +1048,12 @@ McOsu_ng_LDFLAGS := \
 
 
 # windows' loader has no concept of rpaths
-LIBDEST := $(am__append_14)
+LIBDEST := $(am__append_16)
 
 # TODO: distribution package files
 EXTRA_DIST := $(ASSETS_DIR)/models $(ASSETS_DIR)/shaders \
 	$(ASSETS_DIR)/fonts $(ASSETS_DIR)/cfg autogen.sh \
-	$(am__append_15)
+	$(am__append_17)
 MAINTAINERCLEANFILES = $(top_srcdir)/src/Makefile.sources
 all: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) all-am
@@ -5534,6 +5544,44 @@ $(DEPS_CACHE)/zlib-$(ZLIB_VERSION).source:
 @BUILD_ZLIB_FALSE@$(DEPS_PREFIX)/zlib.built:
 @BUILD_ZLIB_FALSE@	$(MKDIR_P) $(DEPS_PREFIX) && touch $@
 
+$(DEPS_CACHE)/FMT-$(FMT_VERSION).source:
+	$(MKDIR_P) $(DEPS_CACHE)
+	$(WGET) -qO $(DEPS_CACHE)/fmt-$(FMT_VERSION).tar.gz "https://github.com/fmtlib/fmt/archive/refs/tags/$(FMT_VERSION).tar.gz" && \
+	touch $@
+@BUILD_FMT_TRUE@$(DEPS_PREFIX)/FMT.built: $(DEPS_CACHE)/FMT-$(FMT_VERSION).source
+@BUILD_FMT_TRUE@	rm -rf $(DEPS_PREFIX)/FMT
+@BUILD_FMT_TRUE@	$(MKDIR_P) $(DEPS_PREFIX)/FMT/build $(DEPS_PREFIX)/lib/pkgconfig
+@BUILD_FMT_TRUE@	$(TAR) xf $(DEPS_CACHE)/fmt-$(FMT_VERSION).tar.gz -C $(DEPS_PREFIX)/FMT --strip-components=1 && \
+@BUILD_FMT_TRUE@	cd $(DEPS_PREFIX)/FMT && \
+@BUILD_FMT_TRUE@	PKG_CONFIG="$(PKG_CONFIG)" LDFLAGS="$(LDFLAGS) $(if $(findstring yes,$(CLANG)),,-fno-lto)" \
+@BUILD_FMT_TRUE@	cmake -S . -B build -G Ninja \
+@BUILD_FMT_TRUE@		-DCMAKE_BUILD_TYPE="$(if $(ENABLE_DEBUG),Debug,Release)" \
+@BUILD_FMT_TRUE@		-DCMAKE_INSTALL_PREFIX="$(DEPS_PREFIX)" \
+@BUILD_FMT_TRUE@		-DCMAKE_SYSTEM_NAME="$(CMAKE_SYSTEM_NAME)" \
+@BUILD_FMT_TRUE@		-DCMAKE_SYSTEM_PROCESSOR="$(host_cpu)" \
+@BUILD_FMT_TRUE@		-DCMAKE_CXX_COMPILER="$(CXX)" \
+@BUILD_FMT_TRUE@		-DCMAKE_CXX_FLAGS="$(CXXFLAGS) $(if $(findstring yes,$(CLANG)),,-fno-lto)" \
+@BUILD_FMT_TRUE@		$(CMAKERCOPT) \
+@BUILD_FMT_TRUE@		-DFMT_PEDANTIC=OFF \
+@BUILD_FMT_TRUE@		-DFMT_WERROR=OFF \
+@BUILD_FMT_TRUE@		-DFMT_DOC=OFF \
+@BUILD_FMT_TRUE@		-DFMT_INSTALL=ON \
+@BUILD_FMT_TRUE@		-DFMT_TEST=OFF \
+@BUILD_FMT_TRUE@		-DFMT_FUZZ=OFF \
+@BUILD_FMT_TRUE@		-DFMT_CUDA_TEST=OFF \
+@BUILD_FMT_TRUE@		-DFMT_OS=ON \
+@BUILD_FMT_TRUE@		-DFMT_MODULE=OFF \
+@BUILD_FMT_TRUE@		-DFMT_SYSTEM_HEADERS=OFF \
+@BUILD_FMT_TRUE@		-DFMT_UNICODE=ON \
+@BUILD_FMT_TRUE@		-DBUILD_SHARED_LIBS="$(if $(SDL3_STATIC),OFF,ON)" && \
+@BUILD_FMT_TRUE@	cmake --build build && \
+@BUILD_FMT_TRUE@	cmake --install build
+@BUILD_FMT_TRUE@	PKG_CONFIG="$(PKG_CONFIG)" \
+@BUILD_FMT_TRUE@		$(PKG_CONFIG) --exists --print-errors fmt
+@BUILD_FMT_TRUE@	touch $@
+@BUILD_FMT_FALSE@$(DEPS_PREFIX)/FMT.built:
+@BUILD_FMT_FALSE@	$(MKDIR_P) $(DEPS_PREFIX) && touch $@
+
 $(DEPS_CACHE)/FREETYPE2-$(FREETYPE2_VERSION).source:
 	$(MKDIR_P) $(DEPS_CACHE)
 	$(WGET) -qO $(DEPS_CACHE)/freetype-$(FREETYPE2_VERSION).tar.gz "https://download.savannah.gnu.org/releases/freetype/freetype-$(FREETYPE2_VERSION).tar.gz" && \
@@ -5615,6 +5663,7 @@ install-libs:
 @BUILD_BZIP2_TRUE@	$(if $(SDL3_STATIC),,@`find $(BZIP2_PREFIX) '(' -iname '*bz2*'$(DLLEXT) -o -iname '*bz2*''.so.*' ')' -exec cp -P '{''}' "$(DESTDIR)$(bindir)/$(LIBDEST)" ';'`)
 @BUILD_ZLIB_TRUE@	$(if $(SDL3_STATIC),,@`find $(ZLIB_PREFIX) '(' -iname '*libz-*'$(DLLEXT) -o -iname '*libz*''.so.*' ')' -exec cp -P '{''}' "$(DESTDIR)$(bindir)/$(LIBDEST)" ';'`)
 @BUILD_FREETYPE2_TRUE@	$(if $(SDL3_STATIC),,@`find $(FREETYPE2_PREFIX) '(' -iname '*freetype*'$(DLLEXT) -o -iname '*freetype*''.so.*' ')' -exec cp -P '{''}' "$(DESTDIR)$(bindir)/$(LIBDEST)" ';'`)
+@BUILD_FMT_TRUE@	$(if $(SDL3_STATIC),,@`find $(FMT_PREFIX) '(' -iname '*fmt*'$(DLLEXT) -o -iname '*fmt*''.so.*' ')' -exec cp -P '{''}' "$(DESTDIR)$(bindir)/$(LIBDEST)" ';'`)
 
 # install hooks
 install-exec-hook: install-libs

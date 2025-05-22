@@ -43,21 +43,21 @@ public:
 	friend class OsuMainMenuButton;
 
 	OsuMainMenu();
-	virtual ~OsuMainMenu();
+	~OsuMainMenu() override;
 
-	virtual void draw(Graphics *g);
-	virtual void update();
+	void draw(Graphics *g) override;
+	void update() override;
 
-	virtual void onKeyDown(KeyboardEvent &e);
+	void onKeyDown(KeyboardEvent &e) override;
 
-	virtual void onButtonChange(MouseButton::Index button, bool down);
+	void onButtonChange(MouseButton::Index button, bool down) override;
 
-	virtual void onWheelVertical(int delta){;}
-	virtual void onWheelHorizontal(int delta){;}
+	void onWheelVertical(int delta) override {;}
+	void onWheelHorizontal(int delta) override {;}
 
-	virtual void onResolutionChange(Vector2 newResolution);
+	void onResolutionChange(Vector2 newResolution) override;
 
-	virtual void setVisible(bool visible);
+	void setVisible(bool visible) override;
 
 	void setStartupAnim(bool startupAnim) {m_bStartupAnim = startupAnim; m_fStartupAnim = m_fStartupAnim2 = (m_bStartupAnim ? 0.0f : 1.0f);}
 

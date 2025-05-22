@@ -23,6 +23,7 @@ class UString;
 class Engine;
 class Environment
 {
+	friend class SDLMain;
 public:
 	Environment(int argc, char *argv[]);
 	~Environment();
@@ -94,6 +95,8 @@ public:
 	void setWindowResizable(bool resizable);
 	void setFullscreenWindowedBorderless(bool fullscreenWindowedBorderless);
 	void setMonitor(int monitor);
+	[[nodiscard]] inline float getDisplayRefreshRate() const { return m_fDisplayHz; }
+	[[nodiscard]] inline float getDisplayRefreshTime() const { return m_fDisplayHzSecs; }
 	[[nodiscard]] HWND getHwnd() const;
 	[[nodiscard]] Vector2 getWindowPos() const;
 	[[nodiscard]] Vector2 getWindowSize() const;
@@ -137,7 +140,8 @@ public:
 
 	// debug
 	[[nodiscard]] inline bool envDebug() const { return m_bEnvDebug; }
-protected:
+
+private:
 	std::unordered_map<UString, std::optional<UString>> m_mArgMap;
 	std::vector<UString> m_vCmdLine;
 	Engine *initEngine();
@@ -159,15 +163,6 @@ protected:
 	Vector2 m_vLastAbsMousePos;
 	Vector2 m_vLastRelMousePos;
 
-private:
-	// logging
-	inline bool envDebug(bool enable)
-	{
-		m_bEnvDebug = enable;
-		return m_bEnvDebug;
-	}
-	void onLogLevelChange(float newval);
-
 	// cache
 	UString m_sUsername;
 	UString m_sProgDataPath;
@@ -175,18 +170,26 @@ private:
 	HWND m_hwnd;
 
 	// logging
+	inline bool envDebug(bool enable)
+	{
+		m_bEnvDebug = enable;
+		return m_bEnvDebug;
+	}
+	void onLogLevelChange(float newval);
 	bool m_bEnvDebug;
 
 	// monitors
 	void initMonitors(bool force = false);
 	std::map<unsigned int, McRect> m_mMonitors;
+	float m_fDisplayHz;
+	float m_fDisplayHzSecs;
 
 	// window
 	bool m_bResizable;
 	bool m_bFullscreen;
 	bool m_bFullscreenWindowedBorderless;
 	inline void onFullscreenWindowBorderlessChange(float newValue) { setFullscreenWindowedBorderless(!!static_cast<int>(newValue)); }
-	inline void onMonitorChange(float newValue) { setMonitor(static_cast<int>(newValue)); }
+	inline void onMonitorChange(float oldValue, float newValue) { if (oldValue != newValue) setMonitor(static_cast<int>(newValue)); }
 
 	// mouse
 	bool m_bIsCursorInsideWindow;
@@ -200,7 +203,10 @@ private:
 	UString m_sCurrClipboardText;
 
 	// misc
-	inline void onProcessPriorityChange(float newValue) { SDL_SetCurrentThreadPriority(!!static_cast<int>(newValue) ? SDL_THREAD_PRIORITY_HIGH : SDL_THREAD_PRIORITY_NORMAL); }
+	inline void onProcessPriorityChange(float newValue)
+	{
+		SDL_SetCurrentThreadPriority(!!static_cast<int>(newValue) ? SDL_THREAD_PRIORITY_HIGH : SDL_THREAD_PRIORITY_NORMAL);
+	}
 	void initCursors();
 
 private:

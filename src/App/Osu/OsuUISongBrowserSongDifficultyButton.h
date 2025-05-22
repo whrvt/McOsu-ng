@@ -13,7 +13,7 @@
 
 class ConVar;
 
-class OsuUISongBrowserSongDifficultyButton : public OsuUISongBrowserSongButton
+class OsuUISongBrowserSongDifficultyButton final : public OsuUISongBrowserSongButton
 {
 public:
 	OsuUISongBrowserSongDifficultyButton(OsuSongBrowser2 *songBrowser, CBaseUIScrollView *view, OsuUIContextMenu *contextMenu, float xPos, float yPos, float xSize, float ySize, UString name, OsuDatabaseBeatmap *diff2, OsuUISongBrowserSongButton *parentSongButton);

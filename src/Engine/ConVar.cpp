@@ -102,6 +102,7 @@ void ConVar::init(int flags)
 	m_callbackfuncargs = NULL;
 	m_callbackfuncfloat = NULL;
 	m_changecallback = NULL;
+	m_changecallbackfloat = NULL;
 
 	m_fValue = 0.0f;
 	m_fDefaultValue = 0.0f;
@@ -209,6 +210,34 @@ void ConVar::init(UString &name, UString defaultValue, int flags, UString helpSt
 	m_changecallback = callback;
 }
 
+void ConVar::init(UString &name, float defaultValue, int flags, UString helpString, ConVarChangeCallbackFloat callback)
+{
+	init(flags);
+
+	m_type = CONVAR_TYPE::CONVAR_TYPE_FLOAT;
+	m_sName = name;
+	setDefaultFloatInt(defaultValue);
+	{
+		setValueInt(defaultValue);
+	}
+	m_sHelpString = helpString;
+	m_changecallbackfloat = callback;
+}
+
+void ConVar::init(UString &name, UString defaultValue, int flags, UString helpString, ConVarChangeCallbackFloat callback)
+{
+	init(flags);
+
+	m_type = CONVAR_TYPE::CONVAR_TYPE_STRING;
+	m_sName = name;
+	setDefaultStringInt(defaultValue);
+	{
+		setValueInt(defaultValue);
+	}
+	m_sHelpString = helpString;
+	m_changecallbackfloat = callback;
+}
+
 ConVar::ConVar(UString name)
 {
 	init(name, FCVAR_NONE);
@@ -253,7 +282,7 @@ ConVar::ConVar(UString name, int flags, const char *helpString, ConVarCallbackFl
 
 ConVar::ConVar(UString name, float fDefaultValue, int flags)
 {
-	init(name, fDefaultValue, flags, UString(""), NULL);
+	init(name, fDefaultValue, flags, UString(""), (ConVarChangeCallback)NULL);
 	_addConVar(this);
 }
 
@@ -263,9 +292,15 @@ ConVar::ConVar(UString name, float fDefaultValue, int flags, ConVarChangeCallbac
 	_addConVar(this);
 }
 
+ConVar::ConVar(UString name, float fDefaultValue, int flags, ConVarChangeCallbackFloat callback)
+{
+	init(name, fDefaultValue, flags, UString(""), callback);
+	_addConVar(this);
+}
+
 ConVar::ConVar(UString name, float fDefaultValue, int flags, const char *helpString)
 {
-	init(name, fDefaultValue, flags, UString(helpString), NULL);
+	init(name, fDefaultValue, flags, UString(helpString), (ConVarChangeCallback)NULL);
 	_addConVar(this);
 }
 
@@ -275,9 +310,15 @@ ConVar::ConVar(UString name, float fDefaultValue, int flags, const char *helpStr
 	_addConVar(this);
 }
 
+ConVar::ConVar(UString name, float fDefaultValue, int flags, const char *helpString, ConVarChangeCallbackFloat callback)
+{
+	init(name, fDefaultValue, flags, UString(helpString), callback);
+	_addConVar(this);
+}
+
 ConVar::ConVar(UString name, int iDefaultValue, int flags)
 {
-	init(name, (float)iDefaultValue, flags, "", NULL);
+	init(name, (float)iDefaultValue, flags, "", (ConVarChangeCallback)NULL);
 	{
 		m_type = CONVAR_TYPE::CONVAR_TYPE_INT;
 	}
@@ -293,9 +334,18 @@ ConVar::ConVar(UString name, int iDefaultValue, int flags, ConVarChangeCallback 
 	_addConVar(this);
 }
 
+ConVar::ConVar(UString name, int iDefaultValue, int flags, ConVarChangeCallbackFloat callback)
+{
+	init(name, (float)iDefaultValue, flags, "", callback);
+	{
+		m_type = CONVAR_TYPE::CONVAR_TYPE_INT;
+	}
+	_addConVar(this);
+}
+
 ConVar::ConVar(UString name, int iDefaultValue, int flags, const char *helpString)
 {
-	init(name, (float)iDefaultValue, flags, UString(helpString), NULL);
+	init(name, (float)iDefaultValue, flags, UString(helpString), (ConVarChangeCallback)NULL);
 	{
 		m_type = CONVAR_TYPE::CONVAR_TYPE_INT;
 	}
@@ -311,9 +361,18 @@ ConVar::ConVar(UString name, int iDefaultValue, int flags, const char *helpStrin
 	_addConVar(this);
 }
 
+ConVar::ConVar(UString name, int iDefaultValue, int flags, const char *helpString, ConVarChangeCallbackFloat callback)
+{
+	init(name, (float)iDefaultValue, flags, UString(helpString), callback);
+	{
+		m_type = CONVAR_TYPE::CONVAR_TYPE_INT;
+	}
+	_addConVar(this);
+}
+
 ConVar::ConVar(UString name, bool bDefaultValue, int flags)
 {
-	init(name, bDefaultValue ? 1.0f : 0.0f, flags, "", NULL);
+	init(name, bDefaultValue ? 1.0f : 0.0f, flags, "", (ConVarChangeCallback)NULL);
 	{
 		m_type = CONVAR_TYPE::CONVAR_TYPE_BOOL;
 	}
@@ -329,9 +388,18 @@ ConVar::ConVar(UString name, bool bDefaultValue, int flags, ConVarChangeCallback
 	_addConVar(this);
 }
 
+ConVar::ConVar(UString name, bool bDefaultValue, int flags, ConVarChangeCallbackFloat callback)
+{
+	init(name, bDefaultValue ? 1.0f : 0.0f, flags, "", callback);
+	{
+		m_type = CONVAR_TYPE::CONVAR_TYPE_BOOL;
+	}
+	_addConVar(this);
+}
+
 ConVar::ConVar(UString name, bool bDefaultValue, int flags, const char *helpString)
 {
-	init(name, bDefaultValue ? 1.0f : 0.0f, flags, UString(helpString), NULL);
+	init(name, bDefaultValue ? 1.0f : 0.0f, flags, UString(helpString), (ConVarChangeCallback)NULL);
 	{
 		m_type = CONVAR_TYPE::CONVAR_TYPE_BOOL;
 	}
@@ -347,19 +415,34 @@ ConVar::ConVar(UString name, bool bDefaultValue, int flags, const char *helpStri
 	_addConVar(this);
 }
 
+ConVar::ConVar(UString name, bool bDefaultValue, int flags, const char *helpString, ConVarChangeCallbackFloat callback)
+{
+	init(name, bDefaultValue ? 1.0f : 0.0f, flags, UString(helpString), callback);
+	{
+		m_type = CONVAR_TYPE::CONVAR_TYPE_BOOL;
+	}
+	_addConVar(this);
+}
+
 ConVar::ConVar(UString name, const char *sDefaultValue, int flags)
 {
-	init(name, UString(sDefaultValue), flags, UString(""), NULL);
+	init(name, UString(sDefaultValue), flags, UString(""), (ConVarChangeCallback)NULL);
 	_addConVar(this);
 }
 
 ConVar::ConVar(UString name, const char *sDefaultValue, int flags, const char *helpString)
 {
-	init(name, UString(sDefaultValue), flags, UString(helpString), NULL);
+	init(name, UString(sDefaultValue), flags, UString(helpString), (ConVarChangeCallback)NULL);
 	_addConVar(this);
 }
 
 ConVar::ConVar(UString name, const char *sDefaultValue, int flags, ConVarChangeCallback callback)
+{
+	init(name, UString(sDefaultValue), flags, UString(""), callback);
+	_addConVar(this);
+}
+
+ConVar::ConVar(UString name, const char *sDefaultValue, int flags, ConVarChangeCallbackFloat callback)
 {
 	init(name, UString(sDefaultValue), flags, UString(""), callback);
 	_addConVar(this);
@@ -371,9 +454,15 @@ ConVar::ConVar(UString name, const char *sDefaultValue, int flags, const char *h
 	_addConVar(this);
 }
 
+ConVar::ConVar(UString name, const char *sDefaultValue, int flags, const char *helpString, ConVarChangeCallbackFloat callback)
+{
+	init(name, UString(sDefaultValue), flags, UString(helpString), callback);
+	_addConVar(this);
+}
+
 void ConVar::exec()
 {
-	if (isFlagSet(FCVAR_CHEAT) && !ConVars::sv_cheats.getRaw()) return;
+	if (isFlagSet(FCVAR_CHEAT) && !(ConVars::sv_cheats.getRaw() > 0)) return;
 
 	if (m_callbackfunc != NULL)
 		m_callbackfunc();
@@ -381,7 +470,7 @@ void ConVar::exec()
 
 void ConVar::execArgs(UString args)
 {
-	if (isFlagSet(FCVAR_CHEAT) && !ConVars::sv_cheats.getRaw()) return;
+	if (isFlagSet(FCVAR_CHEAT) && !(ConVars::sv_cheats.getRaw() > 0)) return;
 
 	if (m_callbackfuncargs != NULL)
 		m_callbackfuncargs(args);
@@ -389,7 +478,7 @@ void ConVar::execArgs(UString args)
 
 void ConVar::execInt(float args)
 {
-	if (isFlagSet(FCVAR_CHEAT) && !ConVars::sv_cheats.getRaw()) return;
+	if (isFlagSet(FCVAR_CHEAT) && !(ConVars::sv_cheats.getRaw() > 0)) return;
 
 	if (m_callbackfuncfloat != NULL)
 		m_callbackfuncfloat(args);
@@ -443,6 +532,10 @@ void ConVar::setValueInt(float value)
 		if (m_changecallback != NULL)
 			m_changecallback(UString::format("%g", oldValue), newStringValue);
 
+		// possible float change callback
+		if (m_changecallbackfloat != NULL)
+			m_changecallbackfloat(oldValue, m_fValue);
+
 		// possible arg callback
 		execArgs(newStringValue);
 		execInt(static_cast<float>(m_fValue));
@@ -451,7 +544,7 @@ void ConVar::setValueInt(float value)
 
 void ConVar::setValue(UString sValue)
 {
-	if (isFlagSet(FCVAR_HARDCODED) || (isFlagSet(FCVAR_CHEAT) && !ConVars::sv_cheats.getRaw())) return;
+	if (isFlagSet(FCVAR_HARDCODED) || (isFlagSet(FCVAR_CHEAT) && !(ConVars::sv_cheats.getRaw() > 0))) return;
 
 	setValueInt(sValue);
 }
@@ -460,6 +553,7 @@ void ConVar::setValueInt(UString sValue)
 {
 	// backup previous value
 	const UString oldValue = m_sValue;
+	const float oldFloat = m_fValue.load();
 
 	// then set the new value
 	{
@@ -478,9 +572,13 @@ void ConVar::setValueInt(UString sValue)
 		if (m_changecallback != NULL)
 			m_changecallback(oldValue, sValue);
 
+		// possible float change callback
+		if (m_changecallbackfloat != NULL)
+			m_changecallbackfloat(oldFloat, m_fValue);
+
 		// possible arg callback
 		execArgs(sValue);
-		execInt(static_cast<float>(m_fValue));
+		execInt(m_fValue);
 	}
 }
 
@@ -502,6 +600,11 @@ void ConVar::setCallback(NativeConVarCallbackArgs callback)
 void ConVar::setCallback(NativeConVarChangeCallback callback)
 {
 	m_changecallback = callback;
+}
+
+void ConVar::setCallback(NativeConVarChangeCallbackFloat callback)
+{
+	m_changecallbackfloat = callback;
 }
 
 void ConVar::setHelpString(UString helpString)
@@ -534,7 +637,7 @@ const std::vector<ConVar*> &ConVarHandler::getConVarArray() const
 	return _getGlobalConVarArray();
 }
 
-int ConVarHandler::getNumConVars() const
+size_t ConVarHandler::getNumConVars() const
 {
 	return _getGlobalConVarArray().size();
 }

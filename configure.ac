@@ -107,6 +107,8 @@ AC_ARG_ENABLE([native],
     AS_HELP_STRING([--enable-native], [Compile for -march=native (default: yes)]))
 AC_ARG_ENABLE([debug],
     AS_HELP_STRING([--enable-debug], [Enable debug build (default: no)]))
+AC_ARG_ENABLE([strip],
+    AS_HELP_STRING([--enable-strip], [Strip the final binary (default: no for debug, yes otherwise)]))
 AC_ARG_ENABLE([asan],
     AS_HELP_STRING([--enable-asan], [Enable ASan/UBSan (turns debug on as well) (default: no)]))
 AC_ARG_ENABLE([clang],
@@ -173,6 +175,8 @@ AS_IF([test "x$enable_clang" = "xyes"], [
     CXXFLAGS="$CXXFLAGS -Qunused-arguments -fuse-ld=lld"
     CFLAGS="$CFLAGS -Qunused-arguments -fuse-ld=lld"
     LDFLAGS="$LDFLAGS -fuse-ld=lld"
+    CLANG=yes
+    AC_SUBST([CLANG])
 ],[
     CC=gcc
     CXX=g++
@@ -383,6 +387,7 @@ AS_IF([test "x$enable_debug" = "xyes"], [
     ENABLE_DEBUG=$enable_debug
     MCOSU_CPPFLAGS="$MCOSU_CPPFLAGS -D_DEBUG"
     AC_SUBST([ENABLE_DEBUG])
+    AS_IF([test "x$enable_strip" != "xyes"], [enable_strip=no]) # disable stripping unless its explicitly requested for debug (why tho?)
 ], [
     AS_IF([test "x$enable_optimization" != "xno"], [
         CPPFLAGS="$CPPFLAGS -DNDEBUG -D_NDEBUG"
@@ -398,7 +403,10 @@ AS_IF([test "x$enable_debug" = "xyes"], [
     ])
     CXXFLAGS="$CXXFLAGS -fno-rtti" # disallow dynamic_cast
     MCOSU_CXXFLAGS="$MCOSU_CXXFLAGS -fno-exceptions" # disables std::thread constructor exception handling
-    MCOSU_LDFLAGS="$MCOSU_LDFLAGS -Wl,-s,--gc-sections" # strip and GC unless debug
+])
+
+AS_IF([test "x$enable_strip" != "xno"], [
+    MCOSU_LDFLAGS="$MCOSU_LDFLAGS -Wl,-s,--gc-sections" # strip and GC
 ])
 
 AS_IF([test "x$enable_lto" != "xno"], [
@@ -407,18 +415,30 @@ AS_IF([test "x$enable_lto" != "xno"], [
             CXXFLAGS="$CXXFLAGS -flto=thin -fno-fat-lto-objects -fwhole-program-vtables"
             CFLAGS="$CFLAGS -flto=thin -fno-fat-lto-objects -fwhole-program-vtables"
             LDFLAGS="$LDFLAGS -flto=thin -fno-fat-lto-objects -fwhole-program-vtables"
+            mkdir -p $PWD/.ltocache-clang
+            AX_CHECK_LINK_FLAG([-Wl,--thinlto-cache-dir=$PWD/.ltocache-clang], [
+                CXXFLAGS="$CXXFLAGS -Wl,--thinlto-cache-dir=$PWD/.ltocache-clang"
+                CFLAGS="$CFLAGS -Wl,--thinlto-cache-dir=$PWD/.ltocache-clang"
+                LDFLAGS="$LDFLAGS -Wl,--thinlto-cache-dir=$PWD/.ltocache-clang"
+            ])
         ])], [
         # gcc
         AX_CHECK_LINK_FLAG([-flto=auto -ffat-lto-objects -fuse-linker-plugin -fdevirtualize-at-ltrans], [
             CXXFLAGS="$CXXFLAGS -flto=auto -ffat-lto-objects -fuse-linker-plugin -fdevirtualize-at-ltrans"
             CFLAGS="$CFLAGS -flto=auto -ffat-lto-objects -fuse-linker-plugin -fdevirtualize-at-ltrans"
             LDFLAGS="$LDFLAGS -flto=auto -ffat-lto-objects -fuse-linker-plugin -fdevirtualize-at-ltrans"
+            mkdir -p $PWD/.ltocache-gcc
+            AX_CHECK_LINK_FLAG([-flto-incremental=$PWD/.ltocache-gcc], [
+                CXXFLAGS="$CXXFLAGS -flto-incremental=$PWD/.ltocache-gcc"
+                CFLAGS="$CFLAGS -flto-incremental=$PWD/.ltocache-gcc"
+                LDFLAGS="$LDFLAGS -flto-incremental=$PWD/.ltocache-gcc"
+            ])
         ])
     ])
 ])
 
 MCOSU_CPPFLAGS="$MCOSU_CPPFLAGS -DGLM_ENABLE_EXPERIMENTAL"
-MCOSU_CXXFLAGS="$MCOSU_CXXFLAGS -Wall -Wno-sign-compare -Werror=deprecated-declarations -pthread"
+MCOSU_CXXFLAGS="$MCOSU_CXXFLAGS -Wall -Wno-sign-compare -Wdeprecated-declarations -pthread"
 MCOSU_LDFLAGS="$MCOSU_LDFLAGS -pthread"
 AC_SUBST([MCOSU_CPPFLAGS])
 AC_SUBST([MCOSU_CXXFLAGS])
@@ -458,6 +478,8 @@ ZLIB_MIN_VERSION=1.3
 ZLIB_BUILD_VERSION=2.2.4 # zlib-ng
 BZIP2_MIN_VERSION=1.0.8
 BZIP2_BUILD_VERSION=1.0.8
+FMT_MIN_VERSION=11.0.0
+FMT_BUILD_VERSION=11.2.0
 
 # always build these from source if we want to use them
 AC_SUBST([SOLOUD_VERSION], [e82fd32c1f62183922f08c14c814a02b58db1873])
@@ -477,6 +499,7 @@ AS_IF([test "x$enable_system_deps" != "xno"], [
     PKG_CHECK_AUTO([ZLIB], [zlib >= $ZLIB_MIN_VERSION], [have_zlib=yes], [have_zlib=no])
     PKG_CHECK_AUTO([BZIP2], [bzip2 >= $BZIP2_MIN_VERSION], [have_bzip2=yes], [have_bzip2=no])
     PKG_CHECK_AUTO([FREETYPE2], [freetype2 >= $FREETYPE2_MIN_VERSION], [have_freetype2=yes], [have_freetype2=no])
+    PKG_CHECK_AUTO([FMT], [fmt >= $FMT_MIN_VERSION], [have_fmt=yes], [have_fmt=no])
     AC_CHECK_HEADERS([glm/vec3.hpp], [have_glm=yes], [have_glm=no])
 ])
 
@@ -524,6 +547,12 @@ FREETYPE2_PREFIX="${DEPS_PREFIX}"
 AC_SUBST([FREETYPE2_VERSION])
 AC_SUBST([FREETYPE2_PREFIX])
 
+AS_IF([test "x$have_fmt" != "xyes"], [have_fmt="build from source"])
+FMT_VERSION=$FMT_BUILD_VERSION
+FMT_PREFIX="${DEPS_PREFIX}"
+AC_SUBST([FMT_VERSION])
+AC_SUBST([FMT_PREFIX])
+
 AS_IF([test "x$have_glm" != "xyes"], [have_glm="build from source"])
 AC_SUBST([GLM_VERSION], [1.0.1])
 AC_SUBST([GLM_PREFIX],[$DEPS_PREFIX])
@@ -535,6 +564,7 @@ AM_CONDITIONAL([BUILD_LIBPNG], [test "x$have_libpng" != "xyes"])
 AM_CONDITIONAL([BUILD_BZIP2], [test "x$have_bzip2" != "xyes"])
 AM_CONDITIONAL([BUILD_ZLIB], [test "x$have_zlib" != "xyes"])
 AM_CONDITIONAL([BUILD_FREETYPE2], [test "x$have_freetype2" != "xyes"])
+AM_CONDITIONAL([BUILD_FMT], [test "x$have_fmt" != "xyes"])
 AM_CONDITIONAL([BUILD_GLM], [test "x$have_glm" != "xyes"])
 AM_CONDITIONAL([BUILD_MIMALLOC], [test "x$enable_debug" != "xyes" &&
                                 { { test "$SYSNAME" = "windows" && test "x$with_mimalloc" = "xyes" ; } ||
@@ -651,6 +681,7 @@ McOsu-ng build configuration:
     Install prefix:     ${prefix}
     Preprocessor flags: ${CPPFLAGS}
     ccache:             ${CCACHE-no}
+    clang:              ${CLANG-no}
     C++ compiler:       ${CXX}
     C++ flags:          ${CXXFLAGS}
     C compiler:         ${CC}
@@ -665,6 +696,7 @@ McOsu-ng build configuration:
     Native build:       ${enable_native-yes}
     System deps:        ${enable_system_deps-yes}
     Static linking:     ${enable_static-no}
+    Stripped build:     ${enable_strip-yes}
 
 Dependencies:
     libX11              ${have_x11-no}
@@ -678,5 +710,6 @@ Dependencies:
     bzip2:              ${have_bzip2-build from source}
     zlib:               ${have_zlib-build from source}
     freetype2:          ${have_freetype2-build from source}
+    fmt:                ${have_fmt-build from source}
     glm (math)          ${have_glm-build from source}
 ])

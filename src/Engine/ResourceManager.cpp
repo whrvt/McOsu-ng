@@ -76,7 +76,7 @@ ResourceManager::ResourceManager()
 
 	for (int i = 0; i < threads; i++)
 	{
-		ResourceManagerLoaderThread *loaderThread = new ResourceManagerLoaderThread();
+		auto *loaderThread = new ResourceManagerLoaderThread();
 
 		loaderThread->hasWork = false;
 		loaderThread->threadIndex = i;
@@ -165,9 +165,9 @@ void ResourceManager::update()
 #ifdef MCENGINE_FEATURE_MULTITHREADING
 			// check if the thread has any remaining work
 			int numLoadingWorkForThreadIndex = 0;
-			for (size_t w = 0; w < m_loadingWork.size(); w++)
+			for (auto & w : m_loadingWork)
 			{
-				if (m_loadingWork[w].threadIndex.atomic.load() == threadIndex)
+				if (w.threadIndex.atomic.load() == threadIndex)
 					numLoadingWorkForThreadIndex++;
 			}
 
@@ -410,7 +410,7 @@ McFont *ResourceManager::loadFont(UString filepath, UString resourceName, int fo
 
 	// create instance and load it
 	filepath.insert(0, PATH_DEFAULT_FONTS);
-	McFont *fnt = new McFont(filepath, fontSize, antialiasing, fontDPI);
+	auto *fnt = new McFont(filepath, fontSize, antialiasing, fontDPI);
 	fnt->setName(resourceName);
 
 	loadResource(fnt, true);
@@ -430,7 +430,7 @@ McFont *ResourceManager::loadFont(UString filepath, UString resourceName, std::v
 
 	// create instance and load it
 	filepath.insert(0, PATH_DEFAULT_FONTS);
-	McFont *fnt = new McFont(filepath, characters, fontSize, antialiasing, fontDPI);
+	auto *fnt = new McFont(filepath, characters, fontSize, antialiasing, fontDPI);
 	fnt->setName(resourceName);
 
 	loadResource(fnt, true);
@@ -612,7 +612,7 @@ RenderTarget *ResourceManager::createRenderTarget(int width, int height, Graphic
 
 TextureAtlas *ResourceManager::createTextureAtlas(int width, int height)
 {
-	TextureAtlas *ta = new TextureAtlas(width, height);
+	auto *ta = new TextureAtlas(width, height);
 	ta->setName(UString::format("_TA_%ix%i", width, height));
 
 	loadResource(ta, false);
@@ -815,7 +815,7 @@ void ResourceManager::resetFlags()
 
 static void *_resourceLoaderThread(void *data)
 {
-	ResourceManagerLoaderThread *self = (ResourceManagerLoaderThread *)data;
+	auto *self = static_cast<ResourceManagerLoaderThread*>(data);
 	const size_t threadIndex = self->threadIndex.load();
 
 	while (self->running.load())
