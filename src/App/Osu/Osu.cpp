@@ -423,6 +423,7 @@ Osu::Osu(int instanceID)
 
 	if (defaultFont->getDPI() != newDPI)
 	{
+		debugLog("default dpi %.2f newDPI %.2f\n", defaultFont->getDPI(), newDPI);
 		m_bFontReloadScheduled = true;
 		m_bFireResolutionChangedScheduled = true;
 	}

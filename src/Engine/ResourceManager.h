@@ -18,6 +18,7 @@
 #include "VertexArrayObject.h"
 
 #include <condition_variable>
+#include <unordered_map>
 
 class ConVar;
 
@@ -127,6 +128,15 @@ public:
 	Sound *getSound(UString resourceName) const;
 	Shader *getShader(UString resourceName) const;
 
+	// new methods for getting all resources of a type
+	[[nodiscard]] inline const std::vector<Image *> &getImages() const { return m_vImages; }
+	[[nodiscard]] inline const std::vector<McFont *> &getFonts() const { return m_vFonts; }
+	[[nodiscard]] inline const std::vector<Sound *> &getSounds() const { return m_vSounds; }
+	[[nodiscard]] inline const std::vector<Shader *> &getShaders() const { return m_vShaders; }
+	[[nodiscard]] inline const std::vector<RenderTarget *> &getRenderTargets() const { return m_vRenderTargets; }
+	[[nodiscard]] inline const std::vector<TextureAtlas *> &getTextureAtlases() const { return m_vTextureAtlases; }
+	[[nodiscard]] inline const std::vector<VertexArrayObject *> &getVertexArrayObjects() const { return m_vVertexArrayObjects; }
+
 	[[nodiscard]] inline const std::vector<Resource *> &getResources() const { return m_vResources; }
 	[[nodiscard]] inline size_t getNumThreads() const { return m_threads.size(); }
 	[[nodiscard]] inline size_t getNumLoadingWork() const { return m_loadingWork.size(); }
@@ -145,8 +155,27 @@ private:
 
 	void resetFlags();
 
+	void addManagedResource(Resource *res);
+	void removeManagedResource(Resource *res, int managedResourceIndex);
+
+	// helper methods for managing typed resource vectors
+	void addResourceToTypedVector(Resource *res);
+	void removeResourceFromTypedVector(Resource *res);
+
 	// content
 	std::vector<Resource *> m_vResources;
+
+	// fast name lookup
+	std::unordered_map<UString, Resource *> m_nameToResourceMap;
+
+	// typed resource vectors for fast type-specific access
+	std::vector<Image *> m_vImages;
+	std::vector<McFont *> m_vFonts;
+	std::vector<Sound *> m_vSounds;
+	std::vector<Shader *> m_vShaders;
+	std::vector<RenderTarget *> m_vRenderTargets;
+	std::vector<TextureAtlas *> m_vTextureAtlases;
+	std::vector<VertexArrayObject *> m_vVertexArrayObjects;
 
 	// flags
 	bool m_bNextLoadAsync;

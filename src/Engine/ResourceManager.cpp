@@ -13,6 +13,8 @@
 #include "Thread.h"
 #include "Timing.h"
 
+#include <algorithm>
+
 #ifdef MCENGINE_FEATURE_MULTITHREADING
 
 #include <mutex>
@@ -66,7 +68,16 @@ ResourceManager::ResourceManager()
 	m_iNumResourceInitPerFrameLimit = 1;
 
 	m_loadingWork.reserve(32);
-	
+
+	// reserve space for typed vectors
+	m_vImages.reserve(64);
+	m_vFonts.reserve(16);
+	m_vSounds.reserve(64);
+	m_vShaders.reserve(32);
+	m_vRenderTargets.reserve(8);
+	m_vTextureAtlases.reserve(8);
+	m_vVertexArrayObjects.reserve(32);
+
 	int threads = std::clamp(env->getLogicalCPUCount(), default_numthreads, 32); // sanity
 	if (threads > default_numthreads)
 		rm_numthreads.setValue(threads);
@@ -105,7 +116,7 @@ ResourceManager::~ResourceManager()
 	// let all loader threads exit
 #ifdef MCENGINE_FEATURE_MULTITHREADING
 
-	for (auto & m_thread : m_threads)
+	for (auto &m_thread : m_threads)
 	{
 		m_thread->running = false;
 	}
@@ -114,7 +125,7 @@ ResourceManager::~ResourceManager()
 	notifyWorkerThreads();
 
 	// wait for threads to stop
-	for (auto & m_thread : m_threads)
+	for (auto &m_thread : m_threads)
 	{
 		delete m_thread->thread;
 		delete m_thread;
@@ -125,7 +136,7 @@ ResourceManager::~ResourceManager()
 #endif
 
 	// cleanup leftovers (can only do that after loader threads have exited) (2)
-	for (auto & i : m_loadingWorkAsyncDestroy)
+	for (auto &i : m_loadingWorkAsyncDestroy)
 	{
 		delete i;
 	}
@@ -165,7 +176,7 @@ void ResourceManager::update()
 #ifdef MCENGINE_FEATURE_MULTITHREADING
 			// check if the thread has any remaining work
 			int numLoadingWorkForThreadIndex = 0;
-			for (auto & w : m_loadingWork)
+			for (auto &w : m_loadingWork)
 			{
 				if (w.threadIndex.atomic.load() == threadIndex)
 					numLoadingWorkForThreadIndex++;
@@ -181,6 +192,7 @@ void ResourceManager::update()
 
 			// finish (synchronous init())
 			rs->load();
+
 			numResourceInitCounter++;
 
 			if (m_iNumResourceInitPerFrameLimit > 0 && numResourceInitCounter >= m_iNumResourceInitPerFrameLimit)
@@ -199,7 +211,7 @@ void ResourceManager::update()
 #ifdef MCENGINE_FEATURE_MULTITHREADING
 			std::lock_guard<std::mutex> workLock(g_resourceManagerLoadingWorkMutex);
 #endif
-			for (auto & w : m_loadingWork)
+			for (auto &w : m_loadingWork)
 			{
 				if (w.resource.atomic.load() == m_loadingWorkAsyncDestroy[i])
 				{
@@ -233,7 +245,7 @@ void ResourceManager::update()
 void ResourceManager::notifyWorkerThreads()
 {
 #ifdef MCENGINE_FEATURE_MULTITHREADING
-	for (auto & m_thread : m_threads)
+	for (auto &m_thread : m_threads)
 	{
 		{
 			std::lock_guard<std::mutex> lock(m_thread->workMutex);
@@ -251,6 +263,14 @@ void ResourceManager::destroyResources()
 		destroyResource(m_vResources[0]);
 	}
 	m_vResources.clear();
+	m_nameToResourceMap.clear();
+	m_vImages.clear();
+	m_vFonts.clear();
+	m_vSounds.clear();
+	m_vShaders.clear();
+	m_vRenderTargets.clear();
+	m_vTextureAtlases.clear();
+	m_vVertexArrayObjects.clear();
 }
 
 void ResourceManager::destroyResource(Resource *rs)
@@ -282,7 +302,7 @@ void ResourceManager::destroyResource(Resource *rs)
 	}
 
 	// handle async destroy
-	for (auto & w : m_loadingWork)
+	for (auto &w : m_loadingWork)
 	{
 		if (w.resource.atomic.load() == rs)
 		{
@@ -294,22 +314,22 @@ void ResourceManager::destroyResource(Resource *rs)
 
 			m_loadingWorkAsyncDestroy.push_back(rs);
 			if (isManagedResource)
-				m_vResources.erase(m_vResources.begin() + managedResourceIndex);
+				removeManagedResource(rs, managedResourceIndex);
 
 			return; // we're done here
 		}
 	}
 
 	// standard destroy
-	SAFE_DELETE(rs);
-
 	if (isManagedResource)
-		m_vResources.erase(m_vResources.begin() + managedResourceIndex);
+		removeManagedResource(rs, managedResourceIndex);
+
+	SAFE_DELETE(rs);
 }
 
 void ResourceManager::reloadResources()
 {
-	for (auto & m_vResource : m_vResources)
+	for (auto &m_vResource : m_vResources)
 	{
 		m_vResource->reload();
 	}
@@ -631,11 +651,9 @@ VertexArrayObject *ResourceManager::createVertexArrayObject(Graphics::PRIMITIVE 
 
 Image *ResourceManager::getImage(UString resourceName) const
 {
-	for (auto m_vResource : m_vResources)
-	{
-		if (m_vResource->getName() == resourceName)
-			return m_vResource->asImage();
-	}
+	auto it = m_nameToResourceMap.find(resourceName);
+	if (it != m_nameToResourceMap.end())
+		return it->second->asImage();
 
 	doesntExistWarning(resourceName);
 	return NULL;
@@ -643,11 +661,9 @@ Image *ResourceManager::getImage(UString resourceName) const
 
 McFont *ResourceManager::getFont(UString resourceName) const
 {
-	for (auto m_vResource : m_vResources)
-	{
-		if (m_vResource->getName() == resourceName)
-			return m_vResource->asFont();
-	}
+	auto it = m_nameToResourceMap.find(resourceName);
+	if (it != m_nameToResourceMap.end())
+		return it->second->asFont();
 
 	doesntExistWarning(resourceName);
 	return NULL;
@@ -655,11 +671,9 @@ McFont *ResourceManager::getFont(UString resourceName) const
 
 Sound *ResourceManager::getSound(UString resourceName) const
 {
-	for (auto m_vResource : m_vResources)
-	{
-		if (m_vResource->getName() == resourceName)
-			return m_vResource->asSound();
-	}
+	auto it = m_nameToResourceMap.find(resourceName);
+	if (it != m_nameToResourceMap.end())
+		return it->second->asSound();
 
 	doesntExistWarning(resourceName);
 	return NULL;
@@ -667,11 +681,9 @@ Sound *ResourceManager::getSound(UString resourceName) const
 
 Shader *ResourceManager::getShader(UString resourceName) const
 {
-	for (auto m_vResource : m_vResources)
-	{
-		if (m_vResource->getName() == resourceName)
-			return m_vResource->asShader();
-	}
+	auto it = m_nameToResourceMap.find(resourceName);
+	if (it != m_nameToResourceMap.end())
+		return it->second->asShader();
 
 	doesntExistWarning(resourceName);
 	return NULL;
@@ -684,7 +696,7 @@ bool ResourceManager::isLoading() const
 
 bool ResourceManager::isLoadingResource(Resource *rs) const
 {
-	for (const auto & i : m_loadingWork)
+	for (const auto &i : m_loadingWork)
 	{
 		if (i.resource.atomic.load() == rs)
 			return true;
@@ -696,8 +708,9 @@ bool ResourceManager::isLoadingResource(Resource *rs) const
 void ResourceManager::loadResource(Resource *res, bool load)
 {
 	// handle flags
-	if (m_nextLoadUnmanagedStack.size() < 1 || !m_nextLoadUnmanagedStack.top())
-		m_vResources.push_back(res); // add managed resource
+	const bool isManaged = (m_nextLoadUnmanagedStack.size() < 1 || !m_nextLoadUnmanagedStack.top());
+	if (isManaged)
+		addManagedResource(res);
 
 	const bool isNextLoadAsync = m_bNextLoadAsync;
 
@@ -715,8 +728,7 @@ void ResourceManager::loadResource(Resource *res, bool load)
 	}
 	else
 	{
-#if defined(MCENGINE_FEATURE_MULTITHREADING)
-
+#ifdef MCENGINE_FEATURE_MULTITHREADING
 		if (rm_numthreads.getInt() > 0)
 		{
 			std::lock_guard<std::mutex> lock(g_resourceManagerMutex);
@@ -740,7 +752,7 @@ void ResourceManager::loadResource(Resource *res, bool load)
 
 			// count work for this thread
 			int numLoadingWorkForThreadIndex = 0;
-			for (auto & i : m_loadingWork)
+			for (auto &i : m_loadingWork)
 			{
 				if (i.threadIndex.atomic.load() == threadIndex)
 					numLoadingWorkForThreadIndex++;
@@ -757,19 +769,12 @@ void ResourceManager::loadResource(Resource *res, bool load)
 			}
 		}
 		else
+#endif
 		{
 			// load normally (threading disabled)
 			res->loadAsync();
 			res->load();
 		}
-
-#else
-
-		// load normally (on platforms which don't support multithreading)
-		res->loadAsync();
-		res->load();
-
-#endif
 	}
 }
 
@@ -786,18 +791,16 @@ void ResourceManager::doesntExistWarning(UString resourceName) const
 
 Resource *ResourceManager::checkIfExistsAndHandle(UString resourceName)
 {
-	for (auto & m_vResource : m_vResources)
+	auto it = m_nameToResourceMap.find(resourceName);
+	if (it != m_nameToResourceMap.end())
 	{
-		if (m_vResource->getName() == resourceName)
-		{
-			if (rm_warnings.getBool())
-				debugLog("RESOURCE MANAGER: Resource \"%s\" already loaded!\n", resourceName.toUtf8());
+		if (rm_warnings.getBool())
+			debugLog("RESOURCE MANAGER: Resource \"%s\" already loaded!\n", resourceName.toUtf8());
 
-			// handle flags (reset them)
-			resetFlags();
+		// handle flags (reset them)
+		resetFlags();
 
-			return m_vResource;
-		}
+		return it->second;
 	}
 
 	return NULL;
@@ -811,11 +814,126 @@ void ResourceManager::resetFlags()
 	m_bNextLoadAsync = false;
 }
 
+// add a managed resource to the main resources vector + the name map and typed vectors
+void ResourceManager::addManagedResource(Resource *res)
+{
+	if (!res)
+		return;
+
+	m_vResources.push_back(res);
+
+	if (res->getName().length() > 0)
+		m_nameToResourceMap[res->getName()] = res;
+	addResourceToTypedVector(res);
+}
+
+// remove a managed resource from the main resources vector + the name map and typed vectors
+void ResourceManager::removeManagedResource(Resource *res, int managedResourceIndex)
+{
+	if (!res)
+		return;
+
+	m_vResources.erase(m_vResources.begin() + managedResourceIndex);
+
+	if (res->getName().length() > 0)
+		m_nameToResourceMap.erase(res->getName());
+	removeResourceFromTypedVector(res);
+}
+
+void ResourceManager::addResourceToTypedVector(Resource *res)
+{
+	if (!res)
+		return;
+
+	switch (res->getResType())
+	{
+	case Resource::Type::IMAGE:
+		m_vImages.push_back(res->asImage());
+		break;
+	case Resource::Type::FONT:
+		m_vFonts.push_back(res->asFont());
+		break;
+	case Resource::Type::SOUND:
+		m_vSounds.push_back(res->asSound());
+		break;
+	case Resource::Type::SHADER:
+		m_vShaders.push_back(res->asShader());
+		break;
+	case Resource::Type::RENDERTARGET:
+		m_vRenderTargets.push_back(res->asRenderTarget());
+		break;
+	case Resource::Type::TEXTUREATLAS:
+		m_vTextureAtlases.push_back(res->asTextureAtlas());
+		break;
+	case Resource::Type::VAO:
+		m_vVertexArrayObjects.push_back(res->asVAO());
+		break;
+	case Resource::Type::APPDEFINED:
+		// TODO: app-defined types aren't added to specific vectors
+		break;
+	}
+}
+
+void ResourceManager::removeResourceFromTypedVector(Resource *res)
+{
+	if (!res)
+		return;
+
+	switch (res->getResType())
+	{
+	case Resource::Type::IMAGE: {
+		auto it = std::ranges::find(m_vImages, res);
+		if (it != m_vImages.end())
+			m_vImages.erase(it);
+	}
+	break;
+	case Resource::Type::FONT: {
+		auto it = std::ranges::find(m_vFonts, res);
+		if (it != m_vFonts.end())
+			m_vFonts.erase(it);
+	}
+	break;
+	case Resource::Type::SOUND: {
+		auto it = std::ranges::find(m_vSounds, res);
+		if (it != m_vSounds.end())
+			m_vSounds.erase(it);
+	}
+	break;
+	case Resource::Type::SHADER: {
+		auto it = std::ranges::find(m_vShaders, res);
+		if (it != m_vShaders.end())
+			m_vShaders.erase(it);
+	}
+	break;
+	case Resource::Type::RENDERTARGET: {
+		auto it = std::ranges::find(m_vRenderTargets, res);
+		if (it != m_vRenderTargets.end())
+			m_vRenderTargets.erase(it);
+	}
+	break;
+	case Resource::Type::TEXTUREATLAS: {
+		auto it = std::ranges::find(m_vTextureAtlases, res);
+		if (it != m_vTextureAtlases.end())
+			m_vTextureAtlases.erase(it);
+	}
+	break;
+	case Resource::Type::VAO: {
+		auto it = std::ranges::find(m_vVertexArrayObjects, res);
+		if (it != m_vVertexArrayObjects.end())
+			m_vVertexArrayObjects.erase(it);
+	}
+	break;
+	case Resource::Type::APPDEFINED:
+		// TODO: app-defined types aren't added to specific vectors
+		break;
+	}
+}
+
 #ifdef MCENGINE_FEATURE_MULTITHREADING
 
 static void *_resourceLoaderThread(void *data)
 {
-	auto *self = static_cast<ResourceManagerLoaderThread*>(data);
+	auto *self = static_cast<ResourceManagerLoaderThread *>(data);
 	const size_t threadIndex = self->threadIndex.load();
 
 	while (self->running.load())
@@ -836,7 +954,7 @@ static void *_resourceLoaderThread(void *data)
 		{
 			std::lock_guard<std::mutex> lock(g_resourceManagerLoadingWorkMutex);
 
-			for (auto & i : *self->loadingWork)
+			for (auto &i : *self->loadingWork)
 			{
 				if (i.threadIndex.atomic.load() == threadIndex && !i.done.atomic.load())
 				{
@@ -860,7 +978,7 @@ static void *_resourceLoaderThread(void *data)
 			{
 				std::lock_guard<std::mutex> lock(g_resourceManagerLoadingWorkMutex);
 
-				for (auto & i : *self->loadingWork)
+				for (auto &i : *self->loadingWork)
 				{
 					if (i.threadIndex.atomic.load() == threadIndex && i.resource.atomic.load() == resourceToLoad)
 					{

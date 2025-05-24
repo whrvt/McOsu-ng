@@ -12269,7 +12269,7 @@ McOsu-ng build configuration:
     Native build:       ${enable_native-yes}
     System deps:        ${enable_system_deps-yes}
     Static linking:     ${enable_static-no}
-    Stripped build:     ${enable_strip-}
+    Stripped build:     ${enable_strip-yes}
 
 Dependencies:
     libX11              ${have_x11-no}
@@ -12307,7 +12307,7 @@ McOsu-ng build configuration:
     Native build:       ${enable_native-yes}
     System deps:        ${enable_system_deps-yes}
     Static linking:     ${enable_static-no}
-    Stripped build:     ${enable_strip-}
+    Stripped build:     ${enable_strip-yes}
 
 Dependencies:
     libX11              ${have_x11-no}
