@@ -15,7 +15,6 @@
 #include "cbase.h"
 
 #include <source_location>
-#include <type_traits>
 
 #ifdef _DEBUG
 #define debugLog(...) Engine::ContextLogger::log(std::source_location::current(), __VA_ARGS__)
@@ -74,7 +73,7 @@ public:
 		static std::string formatWithContext(const std::source_location func, const char *fmt)
 		{
 			std::ostringstream contextPrefix;
-			contextPrefix << "[" << func.file_name() << ":" << func.line() << ":" << func.column() << "] " << "[" << func.function_name() << "]: ";
+			contextPrefix << "[" << Environment::getFileNameFromFilePath(func.file_name()).toUtf8() << ":" << func.line() << ":" << func.column() << "] " << "[" << func.function_name() << "]: ";
 			return contextPrefix.str() + fmt;
 		}
 		template <typename... Args>

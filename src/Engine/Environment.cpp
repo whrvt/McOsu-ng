@@ -277,7 +277,7 @@ bool Environment::directoryExists(const UString &directoryName)
 	return McFile::exists(directoryName) == McFile::FILETYPE::FOLDER;
 }
 
-bool Environment::createDirectory(UString directoryName) const
+bool Environment::createDirectory(UString directoryName)
 {
 	return SDL_CreateDirectory(directoryName.toUtf8());
 }
@@ -292,12 +292,12 @@ bool Environment::deleteFile(UString filePath)
 	return std::remove(filePath.toUtf8()) == 0; // TODO: maybe use SDL for this?
 }
 
-std::vector<UString> Environment::getFilesInFolder(UString folder) const
+std::vector<UString> Environment::getFilesInFolder(UString folder)
 {
 	return enumerateDirectory(folder.toUtf8(), SDL_PATHTYPE_FILE);
 }
 
-std::vector<UString> Environment::getFoldersInFolder(UString folder) const
+std::vector<UString> Environment::getFoldersInFolder(UString folder)
 {
 	// TODO: if this turns out to be too slow for folders with a lot of subfolders, split out the sorting
 	// currently only the skinlist really uses it, shouldn't have more than 5000 skins in it for normal human beings
@@ -308,7 +308,7 @@ std::vector<UString> Environment::getFoldersInFolder(UString folder) const
 }
 
 // sadly, sdl doesn't give a way to do this
-std::vector<UString> Environment::getLogicalDrives() const
+std::vector<UString> Environment::getLogicalDrives()
 {
 	std::vector<UString> drives{};
 
@@ -345,41 +345,23 @@ std::vector<UString> Environment::getLogicalDrives() const
 	return drives;
 }
 
-UString Environment::getFolderFromFilePath(UString filepath) const
+UString Environment::getFileNameFromFilePath(UString filepath)
 {
-	if (filepath.length() < 1)
-		return filepath;
-
-	size_t lastSlash = filepath.findLast("/");
-	if (lastSlash != std::string::npos)
-		return filepath.substr(0, lastSlash + 1);
-
-	lastSlash = filepath.findLast("\\");
-	if (lastSlash != std::string::npos)
-		return filepath.substr(0, lastSlash + 1);
-
-	return filepath;
+	return getThingFromPathHelper(filepath, false);
 }
 
-UString Environment::getFileExtensionFromFilePath(UString filepath, bool includeDot) const
+UString Environment::getFolderFromFilePath(UString filepath)
+{
+	return getThingFromPathHelper(filepath, true);
+}
+
+UString Environment::getFileExtensionFromFilePath(UString filepath, bool includeDot)
 {
 	const int idx = filepath.findLast(".");
 	if (idx != -1)
 		return filepath.substr(idx + 1);
 	else
 		return UString("");
-}
-
-UString Environment::getFileNameFromFilePath(UString filepath) const
-{
-	if (filepath.length() < 1)
-		return filepath;
-
-	const size_t lastSlashIndex = filepath.findLast("/");
-	if (lastSlashIndex != std::string::npos)
-		return filepath.substr(lastSlashIndex + 1);
-
-	return filepath;
 }
 
 UString Environment::getClipBoardText()
@@ -848,6 +830,25 @@ void Environment::onLogLevelChange(float newval)
 		envDebug(false);
 		SDL_ResetLogPriorities();
 	}
+}
+
+UString Environment::getThingFromPathHelper(UString &path, bool folder)
+{
+	if (path.length() < 1)
+		return path;
+
+	int lastSlash = path.findLast("/");
+	if (lastSlash == -1)
+		lastSlash = path.findLast("\\");
+	if (lastSlash == -1)
+		return path;
+
+	if (folder)
+		path = path.substr(0, lastSlash + 1);
+	else
+		path = path.substr(lastSlash + 1);
+
+	return path;
 }
 
 static void sensTransformFunc(void *, Uint64, SDL_Window *, SDL_MouseID, float *x, float *y)

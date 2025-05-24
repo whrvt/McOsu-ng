@@ -170,8 +170,8 @@ int UString::findLast(const UString &str, int start) const
 	if (start < 0 || str.m_length == 0 || start > m_length - str.m_length)
 		return -1;
 
-	size_t pos = m_unicode.rfind(str.m_unicode, start + str.m_length - 1);
-	if (pos != std::wstring::npos && pos >= static_cast<size_t>(start))
+	size_t pos = m_unicode.rfind(str.m_unicode);
+	if (pos != std::wstring::npos && std::cmp_greater_equal(pos, start))
 		return static_cast<int>(pos);
 
 	return -1;

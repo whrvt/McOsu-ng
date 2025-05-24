@@ -53,7 +53,6 @@ public:
 	SDL_AppResult initialize();
 	SDL_AppResult iterate();
 	SDL_AppResult handleEvent(SDL_Event *event);
-	void shutdown() override { Environment::shutdown(); }
 	void shutdown(SDL_AppResult result);
 
 private:
@@ -675,7 +674,7 @@ void SDLMain::shutdown(SDL_AppResult result)
 		return;
 	else if (m_window)
 		SDL_StopTextInput(m_window);
-	shutdown(); // engine will be deleted by parent destructor
+	Environment::shutdown(); // engine will be deleted by parent destructor
 }
 
 // convar change callbacks, to set app iteration rate

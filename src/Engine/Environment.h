@@ -35,7 +35,7 @@ public:
 	ContextMenu *createContextMenu();
 
 	// system
-	virtual void shutdown();
+	void shutdown();
 	void restart();
 	[[nodiscard]] inline bool isRunning() const { return m_bRunning; }
 	[[nodiscard]] UString getExecutablePath() const;
@@ -58,15 +58,15 @@ public:
 	[[nodiscard]] static bool fileExists(const UString &filename);
 	[[nodiscard]] static bool directoryExists(const UString &directoryName);
 
-	[[nodiscard]] bool createDirectory(UString directoryName) const;
-	bool renameFile(UString oldFileName, UString newFileName);
-	bool deleteFile(UString filePath);
-	[[nodiscard]] std::vector<UString> getFilesInFolder(UString folder) const;
-	[[nodiscard]] std::vector<UString> getFoldersInFolder(UString folder) const;
-	[[nodiscard]] std::vector<UString> getLogicalDrives() const;
-	[[nodiscard]] UString getFolderFromFilePath(UString filepath) const;
-	[[nodiscard]] UString getFileExtensionFromFilePath(UString filepath, bool includeDot = false) const;
-	[[nodiscard]] UString getFileNameFromFilePath(UString filePath) const;
+	[[nodiscard]] static bool createDirectory(UString directoryName);
+	static bool renameFile(UString oldFileName, UString newFileName);
+	static bool deleteFile(UString filePath);
+	[[nodiscard]] static std::vector<UString> getFilesInFolder(UString folder);
+	[[nodiscard]] static std::vector<UString> getFoldersInFolder(UString folder);
+	[[nodiscard]] static std::vector<UString> getLogicalDrives();
+	[[nodiscard]] static UString getFolderFromFilePath(UString filepath);
+	[[nodiscard]] static UString getFileExtensionFromFilePath(UString filepath, bool includeDot = false);
+	[[nodiscard]] static UString getFileNameFromFilePath(UString filePath);
 
 	// clipboard
 	[[nodiscard]] UString getClipBoardText();
@@ -210,12 +210,13 @@ private:
 	void initCursors();
 
 private:
-	// SDL dialog callbacks/helpers
+	// static callbacks/helpers
 	struct FileDialogCallbackData
 	{
 		FileDialogCallback callback;
 	};
 	static void sdlFileDialogCallback(void *userdata, const char *const *filelist, int filter);
+	static UString getThingFromPathHelper(UString &path, bool folder);
 };
 
 extern Environment *env;
