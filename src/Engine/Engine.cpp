@@ -124,6 +124,7 @@ Engine::Engine()
 	m_bResolutionChange = false;
 	m_vScreenSize = env->getWindowSize();
 	m_vNewScreenSize = m_vScreenSize;
+	m_screenRect = {{0, 0}, m_vScreenSize};
 
 	debugLog("Engine: ScreenSize = (%ix%i)\n", (int)m_vScreenSize.x, (int)m_vScreenSize.y);
 
@@ -580,6 +581,8 @@ void Engine::onResolutionChange(Vector2 newResolution)
 
 	// update everything
 	m_vScreenSize = newResolution;
+	m_screenRect = {{0, 0}, newResolution};
+
 	if (graphics != NULL)
 		graphics->onResolutionChange(newResolution);
 	if (openVR != NULL)

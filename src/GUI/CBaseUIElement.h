@@ -139,6 +139,7 @@ public:
 
 	virtual bool isActive() {return m_bActive || isBusy();}
 	virtual bool isVisible() {return m_bVisible;}
+	bool isVisibleOnScreen(); // x,y within engine rectangle
 	virtual bool isEnabled() {return m_bEnabled;}
 	virtual bool isBusy() {return m_bBusy && isVisible();}
 	virtual bool isDrawnManually() {return m_bDrawManually;}

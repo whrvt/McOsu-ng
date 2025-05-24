@@ -147,14 +147,15 @@ private:
 
 public:
 	// input devices
-	[[nodiscard]] inline const std::vector<Mouse *> &getMice() const { return m_mice; }
-	[[nodiscard]] inline const std::vector<Keyboard *> &getKeyboards() const { return m_keyboards; }
+	[[nodiscard]] constexpr const std::vector<Mouse *> &getMice() const { return m_mice; }
+	[[nodiscard]] constexpr const std::vector<Keyboard *> &getKeyboards() const { return m_keyboards; }
 
 	// screen
 	void requestResolutionChange(Vector2 newResolution);
-	[[nodiscard]] inline Vector2 getScreenSize() const { return m_vScreenSize; }
+	[[nodiscard]] constexpr const Vector2 &getScreenSize() const { return m_vScreenSize; }
 	[[nodiscard]] inline int getScreenWidth() const { return (int)m_vScreenSize.x; }
 	[[nodiscard]] inline int getScreenHeight() const { return (int)m_vScreenSize.y; }
+	[[nodiscard]] constexpr const McRect &getScreenRect() const { return m_screenRect; }
 
 	// timing
 	void setFrameTime(double delta);
@@ -193,6 +194,7 @@ private:
 	// primary screen
 	Vector2 m_vScreenSize;
 	Vector2 m_vNewScreenSize;
+	McRect m_screenRect;
 	bool m_bResolutionChange;
 
 	// window

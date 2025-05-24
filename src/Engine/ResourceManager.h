@@ -129,15 +129,15 @@ public:
 	Shader *getShader(UString resourceName) const;
 
 	// new methods for getting all resources of a type
-	[[nodiscard]] inline const std::vector<Image *> &getImages() const { return m_vImages; }
-	[[nodiscard]] inline const std::vector<McFont *> &getFonts() const { return m_vFonts; }
-	[[nodiscard]] inline const std::vector<Sound *> &getSounds() const { return m_vSounds; }
-	[[nodiscard]] inline const std::vector<Shader *> &getShaders() const { return m_vShaders; }
-	[[nodiscard]] inline const std::vector<RenderTarget *> &getRenderTargets() const { return m_vRenderTargets; }
-	[[nodiscard]] inline const std::vector<TextureAtlas *> &getTextureAtlases() const { return m_vTextureAtlases; }
-	[[nodiscard]] inline const std::vector<VertexArrayObject *> &getVertexArrayObjects() const { return m_vVertexArrayObjects; }
+	[[nodiscard]] constexpr const std::vector<Image *> &getImages() const { return m_vImages; }
+	[[nodiscard]] constexpr const std::vector<McFont *> &getFonts() const { return m_vFonts; }
+	[[nodiscard]] constexpr const std::vector<Sound *> &getSounds() const { return m_vSounds; }
+	[[nodiscard]] constexpr const std::vector<Shader *> &getShaders() const { return m_vShaders; }
+	[[nodiscard]] constexpr const std::vector<RenderTarget *> &getRenderTargets() const { return m_vRenderTargets; }
+	[[nodiscard]] constexpr const std::vector<TextureAtlas *> &getTextureAtlases() const { return m_vTextureAtlases; }
+	[[nodiscard]] constexpr const std::vector<VertexArrayObject *> &getVertexArrayObjects() const { return m_vVertexArrayObjects; }
 
-	[[nodiscard]] inline const std::vector<Resource *> &getResources() const { return m_vResources; }
+	[[nodiscard]] constexpr const std::vector<Resource *> &getResources() const { return m_vResources; }
 	[[nodiscard]] inline size_t getNumThreads() const { return m_threads.size(); }
 	[[nodiscard]] inline size_t getNumLoadingWork() const { return m_loadingWork.size(); }
 	[[nodiscard]] inline size_t getNumLoadingWorkAsyncDestroy() const { return m_loadingWorkAsyncDestroy.size(); }

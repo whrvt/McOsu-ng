@@ -44,6 +44,11 @@ CBaseUIElement::CBaseUIElement(float xPos, float yPos, float xSize, float ySize,
 	m_bMouseUpCheck = false;
 }
 
+bool CBaseUIElement::isVisibleOnScreen()
+{
+	return isVisible() && engine->getScreenRect().contains({m_vPos.x + 1, m_vPos.y + 1});
+}
+
 void CBaseUIElement::update()
 {
 	if (!m_bVisible || !m_bEnabled) return;
@@ -55,8 +60,7 @@ void CBaseUIElement::update()
 		if (!m_bMouseInside)
 		{
 			m_bMouseInside = true;
-			if (m_bVisible && m_bEnabled)
-				onMouseInside();
+			onMouseInside();
 		}
 	}
 	else
@@ -64,8 +68,7 @@ void CBaseUIElement::update()
 		if (m_bMouseInside)
 		{
 			m_bMouseInside = false;
-			if (m_bVisible && m_bEnabled)
-				onMouseOutside();
+			onMouseOutside();
 		}
 	}
 
