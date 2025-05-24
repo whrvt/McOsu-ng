@@ -18,7 +18,6 @@
 
 #include <map>
 
-class ContextMenu;
 class UString;
 class Engine;
 class Environment
@@ -32,7 +31,6 @@ public:
 
 	// engine/factory
 	Graphics *createRenderer();
-	ContextMenu *createContextMenu();
 
 	// system
 	void shutdown();

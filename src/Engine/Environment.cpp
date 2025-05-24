@@ -10,7 +10,6 @@
 #include "Engine.h"
 #include "Mouse.h"
 
-#include "NullContextMenu.h"
 #include "SDLGLInterface.h"
 
 #include "File.h"
@@ -148,11 +147,6 @@ void Environment::update()
 Graphics *Environment::createRenderer()
 {
 	return new SDLGLInterface(m_window);
-}
-
-ContextMenu *Environment::createContextMenu() // DEPRECATED
-{
-	return new NullContextMenu();
 }
 
 void Environment::shutdown()

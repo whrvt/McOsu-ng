@@ -475,7 +475,6 @@ bool SDLMain::createWindow(int width, int height)
 
 	constexpr auto windowFlags = SDL_WINDOW_HIDDEN | SDL_WINDOW_INPUT_FOCUS | SDL_WINDOW_MOUSE_FOCUS |
 	                             ((Env::cfg((REND::GL | REND::GLES2 | REND::GLES32 | REND::GL3), !REND::DX11)) ? SDL_WINDOW_OPENGL
-	                              : (Env::cfg(REND::VK, !REND::DX11))                                          ? SDL_WINDOW_VULKAN
 	                                                                                                           : 0UL);
 
 	SDL_PropertiesID props = SDL_CreateProperties();

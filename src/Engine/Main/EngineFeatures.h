@@ -38,11 +38,6 @@
 //#define MCENGINE_FEATURE_GL3
 
 /*
- * Software-only graphics renderer (Windows only) (untested)
- */
-//#define MCENGINE_FEATURE_SOFTRENDERER
-
-/*
  * DirectX 11 graphics
  */
 //#define MCENGINE_FEATURE_DIRECTX11
@@ -61,11 +56,6 @@
  * BASS WASAPI sound (Windows only)
  */
 //#define MCENGINE_FEATURE_BASS_WASAPI
-
-/*
- * Vulkan
- */
-//#define MCENGINE_FEATURE_VULKAN
 
 /*
  * OpenVR

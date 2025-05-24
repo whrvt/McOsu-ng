@@ -9,7 +9,6 @@
 
 #include "AnimationHandler.h"
 #include "ConVar.h"
-#include "ContextMenu.h"
 #include "DiscordInterface.h"
 #include "Keyboard.h"
 #include "Mouse.h"
@@ -20,7 +19,6 @@
 #include "SoundEngine.h"
 #include "SteamworksInterface.h"
 #include "Timing.h"
-#include "VulkanInterface.h"
 
 #include "CBaseUIContainer.h"
 
@@ -62,8 +60,6 @@ std::unique_ptr<SoundEngine> Engine::s_soundEngineInstance = nullptr;
 std::unique_ptr<ResourceManager> Engine::s_resourceManagerInstance = nullptr;
 std::unique_ptr<NetworkHandler> Engine::s_networkHandlerInstance = nullptr;
 std::unique_ptr<OpenVRInterface> Engine::s_openVRInstance = nullptr;
-std::unique_ptr<VulkanInterface> Engine::s_vulkanInstance = nullptr;
-std::unique_ptr<ContextMenu> Engine::s_contextMenuInstance = nullptr;
 std::unique_ptr<AnimationHandler> Engine::s_animationHandlerInstance = nullptr;
 std::unique_ptr<SteamworksInterface> Engine::s_steamInstance = nullptr;
 std::unique_ptr<DiscordInterface> Engine::s_discordInstance = nullptr;
@@ -76,8 +72,6 @@ SoundEngine *soundEngine = nullptr;
 ResourceManager *resourceManager = nullptr;
 NetworkHandler *networkHandler = nullptr;
 OpenVRInterface *openVR = nullptr;
-VulkanInterface *vulkan = nullptr;
-ContextMenu *contextMenu = nullptr;
 AnimationHandler *animationHandler = nullptr;
 SteamworksInterface *steam = nullptr;
 DiscordInterface *discord = nullptr;
@@ -154,11 +148,6 @@ Engine::Engine()
 		m_inputDevices.push_back(keyboard);
 		m_keyboards.push_back(keyboard);
 
-		// init platform specific interfaces
-		s_vulkanInstance = std::make_unique<VulkanInterface>();
-		vulkan = s_vulkanInstance.get(); // needs to be created before Graphics
-		runtime_assert(vulkan, "Vulkan failed to initialize!");
-
 		// create graphics through environment
 		graphics = env->createRenderer();
 		{
@@ -166,10 +155,6 @@ Engine::Engine()
 		}
 		runtime_assert(graphics, "Graphics failed to initialize!");
 		s_graphicsInstance.reset(graphics);
-
-		contextMenu = env->createContextMenu();
-		runtime_assert(contextMenu, "Context menu failed to initialize!");
-		s_contextMenuInstance.reset(contextMenu);
 
 		// make unique_ptrs for the rest
 		s_resourceManagerInstance = std::make_unique<ResourceManager>();
@@ -239,9 +224,6 @@ Engine::~Engine()
 	debugLog("Engine: Freeing Sound...\n");
 	s_soundEngineInstance.reset();
 
-	debugLog("Engine: Freeing context menu...\n");
-	s_contextMenuInstance.reset();
-
 	debugLog("Engine: Freeing animation handler...\n");
 	s_animationHandlerInstance.reset();
 
@@ -280,9 +262,6 @@ Engine::~Engine()
 
 	debugLog("Engine: Freeing graphics...\n");
 	s_graphicsInstance.reset();
-
-	debugLog("Engine: Freeing Vulkan...\n");
-	s_vulkanInstance.reset();
 
 	debugLog("Engine: Freeing math...\n");
 	SAFE_DELETE(m_math);

@@ -77,7 +77,6 @@ McOsu_ng_SOURCES = \
 	src/Engine/AnimationHandler.cpp \
 	src/Engine/Camera.cpp \
 	src/Engine/ConVar.cpp \
-	src/Engine/ContextMenu.cpp \
 	src/Engine/DiscordInterface.cpp \
 	src/Engine/Engine.cpp \
 	src/Engine/Environment.cpp \
@@ -92,10 +91,7 @@ McOsu_ng_SOURCES = \
 	src/Engine/Main/main.cpp \
 	src/Engine/NetworkHandler.cpp \
 	src/Engine/OpenVRInterface.cpp \
-	src/Engine/Platform/NullContextMenu.cpp \
 	src/Engine/Platform/SDLGLInterface.cpp \
-	src/Engine/Platform/WinGL3Interface.cpp \
-	src/Engine/Platform/WinSWGraphicsInterface.cpp \
 	src/Engine/Profiler.cpp \
 	src/Engine/RenderTarget.cpp \
 	src/Engine/Renderer/DirectX11Image.cpp \
@@ -122,11 +118,6 @@ McOsu_ng_SOURCES = \
 	src/Engine/Renderer/OpenGLStateCache.cpp \
 	src/Engine/Renderer/OpenGLSync.cpp \
 	src/Engine/Renderer/OpenGLVertexArrayObject.cpp \
-	src/Engine/Renderer/SWGraphicsInterface.cpp \
-	src/Engine/Renderer/SWImage.cpp \
-	src/Engine/Renderer/SWRenderTarget.cpp \
-	src/Engine/Renderer/SWShader.cpp \
-	src/Engine/Renderer/VulkanGraphicsInterface.cpp \
 	src/Engine/Resource.cpp \
 	src/Engine/ResourceManager.cpp \
 	src/Engine/Shader.cpp \
@@ -144,7 +135,6 @@ McOsu_ng_SOURCES = \
 	src/Engine/TextureAtlas.cpp \
 	src/Engine/Thread.cpp \
 	src/Engine/VertexArrayObject.cpp \
-	src/Engine/VulkanInterface.cpp \
 	src/GUI/CBaseUIBoxShadow.cpp \
 	src/GUI/CBaseUIButton.cpp \
 	src/GUI/CBaseUICanvas.cpp \
