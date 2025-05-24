@@ -326,7 +326,7 @@ void OsuSpinner::update(long curPos)
 		else // user spin
 		{
 			Vector2 mouseDelta = mouse->getPos() - m_beatmap->osuCoords2Pixels(m_vRawPos);
-			const float currentMouseAngle = (float)std::atan2(mouseDelta.y, mouseDelta.x);
+			const float currentMouseAngle = (float)glm::atan2(mouseDelta.y, mouseDelta.x);
 			angleDiff = (currentMouseAngle - m_fLastMouseAngle);
 
 			if (osu->isInVRMode())
@@ -334,8 +334,8 @@ void OsuSpinner::update(long curPos)
 				Vector2 vrCursorDelta1 = osu->getVR()->getCursorPos1() - m_beatmap->osuCoords2VRPixels(m_vRawPos);
 				Vector2 vrCursorDelta2 = osu->getVR()->getCursorPos2() - m_beatmap->osuCoords2VRPixels(m_vRawPos);
 
-				const float currentVRCursorAngle1 = (float)std::atan2(vrCursorDelta1.x, vrCursorDelta1.y);
-				const float currentVRCursorAngle2 = (float)std::atan2(vrCursorDelta2.x, vrCursorDelta2.y);
+				const float currentVRCursorAngle1 = (float)glm::atan2(vrCursorDelta1.x, vrCursorDelta1.y);
+				const float currentVRCursorAngle2 = (float)glm::atan2(vrCursorDelta2.x, vrCursorDelta2.y);
 
 				angleDiff -= (currentVRCursorAngle1 - m_fLastVRCursorAngle1);
 				angleDiff -= (currentVRCursorAngle2 - m_fLastVRCursorAngle2);
@@ -409,7 +409,7 @@ void OsuSpinner::update(long curPos)
 
 
 			m_fRatio = m_fRotations / (m_fRotationsNeeded*360.0f);
-			///debugLog("ratio = %f, rotations = %f, rotationsneeded = %f, sumdeltaangle = %f, maxStoredDeltaAngles = %i\n", m_fRatio, m_fRotations/360.0f, m_fRotationsNeeded/360.0f, m_fSumDeltaAngle, m_iMaxStoredDeltaAngles);
+			///debugLog("ratio = {:f}, rotations = {:f}, rotationsneeded = {:f}, sumdeltaangle = {:f}, maxStoredDeltaAngles = {}\n", m_fRatio, m_fRotations/360.0f, m_fRotationsNeeded/360.0f, m_fSumDeltaAngle, m_iMaxStoredDeltaAngles);
 		}
 	}
 }
@@ -459,7 +459,7 @@ void OsuSpinner::onReset(long curPos)
 
 void OsuSpinner::onHit()
 {
-	///debugLog("ratio = %f\n", m_fRatio);
+	///debugLog("ratio = {:f}\n", m_fRatio);
 	//m_bDrawRPM = false;
 
 	// calculate hit result

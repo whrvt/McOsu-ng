@@ -107,7 +107,7 @@ private:
 		}
 		m_iNumScoresToRecalculate = numScoresToRecalculate;
 
-		debugLog("PPRecalc will recalculate %i scores ...\n", (int)numScoresToRecalculate);
+		debugLog("PPRecalc will recalculate {} scores ...\n", (int)numScoresToRecalculate);
 
 		// actually recalculate them
 		for (auto &kv : *scores)
@@ -145,7 +145,7 @@ private:
 					if (diff2 == NULL)
 					{
 						if (Osu::debug->getBool())
-							debugLog("PPRecalc couldn't find %s\n", score.md5hash.c_str());
+							debugLog("PPRecalc couldn't find {:s}\n", score.md5hash.c_str());
 
 						continue;
 					}
@@ -171,7 +171,7 @@ private:
 					if (diffres.diffobjects.size() < 1)
 					{
 						if (Osu::debug->getBool())
-							debugLog("PPRecalc couldn't load %s\n", osuFilePath.toUtf8());
+							debugLog("PPRecalc couldn't load {:s}\n", osuFilePath.toUtf8());
 
 						continue;
 					}
@@ -249,8 +249,8 @@ private:
 
 					if (Osu::debug->getBool())
 					{
-						debugLog("[%s] original = %f, new = %f, delta = %f\n", score.md5hash.c_str(), oldPP, score.pp, (score.pp - oldPP));
-						debugLog("at %i/%i\n", m_iNumScoresRecalculated.load(), m_iNumScoresToRecalculate.load());
+						debugLog("[{:s}] original = {:f}, new = {:f}, delta = {:f}\n", score.md5hash.c_str(), oldPP, score.pp, (score.pp - oldPP));
+						debugLog("at {}/{}\n", m_iNumScoresRecalculated.load(), m_iNumScoresToRecalculate.load());
 					}
 				}
 			}
@@ -418,7 +418,7 @@ void OsuUserStatsScreen::setVisible(bool visible)
 			bool foundOldScores;
 			for (size_t i=0; i<scores.size(); i++)
 			{
-				//debugLog("version = %i\n", scores[i]->version);
+				//debugLog("version = {}\n", scores[i]->version);
 				if (scores[i]->version < OsuScore::VERSION)
 				{
 					foundOldScores = true;
@@ -738,7 +738,7 @@ void OsuUserStatsScreen::onCopyAllScoresConfirmed(UString text, int id)
 
 	if (playerNameToCopyInto.length() < 1 || m_sCopyAllScoresFromUser == playerNameToCopyInto) return;
 
-	debugLog("Copying all scores from \"%s\" into \"%s\"\n", m_sCopyAllScoresFromUser.toUtf8(), playerNameToCopyInto.toUtf8());
+	debugLog("Copying all scores from \"{:s}\" into \"{:s}\"\n", m_sCopyAllScoresFromUser.toUtf8(), playerNameToCopyInto.toUtf8());
 
 	std::unordered_map<std::string, std::vector<OsuDatabase::Score>> *scores = osu->getSongBrowser()->getDatabase()->getScores();
 
@@ -788,7 +788,7 @@ void OsuUserStatsScreen::onCopyAllScoresConfirmed(UString text, int id)
 		if (tempScoresToCopy.size() > 0)
 		{
 			if (Osu::debug->getBool())
-				debugLog("Copying %i for %s\n", (int)tempScoresToCopy.size(), kv.first.c_str());
+				debugLog("Copying {} for {:s}\n", (int)tempScoresToCopy.size(), kv.first.c_str());
 
 			for (size_t i=0; i<tempScoresToCopy.size(); i++)
 			{
@@ -838,7 +838,7 @@ void OsuUserStatsScreen::onDeleteAllScoresConfirmed(UString text, int id)
 
 	const UString &playerName = m_name_ref->getString();
 
-	debugLog("Deleting all scores for \"%s\"\n", playerName.toUtf8());
+	debugLog("Deleting all scores for \"{:s}\"\n", playerName.toUtf8());
 
 	std::unordered_map<std::string, std::vector<OsuDatabase::Score>> *scores = osu->getSongBrowser()->getDatabase()->getScores();
 

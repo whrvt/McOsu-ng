@@ -46,7 +46,7 @@ void SDLSound::init()
 void SDLSound::initAsync()
 {
 	if (ResourceManager::debug_rm->getBool())
-		debugLog("Resource Manager: Loading %s\n", m_sFilePath.toUtf8());
+		debugLog("Resource Manager: Loading {:s}\n", m_sFilePath.toUtf8());
 
 	// HACKHACK: workaround for malformed WAV files
 	{
@@ -60,7 +60,7 @@ void SDLSound::initAsync()
 				McFile wavFile(m_sFilePath);
 				if (wavFile.getFileSize() < (size_t)minWavFileSize)
 				{
-					debugLog("Sound: Ignoring malformed/corrupt WAV file (%i) %s\n", (int)wavFile.getFileSize(), m_sFilePath.toUtf8());
+					debugLog("Sound: Ignoring malformed/corrupt WAV file ({}) {:s}\n", (int)wavFile.getFileSize(), m_sFilePath.toUtf8());
 					return;
 				}
 			}
@@ -73,7 +73,7 @@ void SDLSound::initAsync()
 		m_mixChunkOrMixMusic = Mix_LoadWAV(m_sFilePath.toUtf8());
 
 	if (m_mixChunkOrMixMusic == NULL)
-		debugLog(m_bStream ? "Sound Error: Mix_LoadMUS() error %s on file %s\n" : "Sound Error: Mix_LoadWAV() error %s on file %s\n", SDL_GetError(),
+		debugLog(m_bStream ? "Sound Error: Mix_LoadMUS() error {:s} on file {:s}\n" : "Sound Error: Mix_LoadWAV() error {:s} on file {:s}\n", SDL_GetError(),
 		         m_sFilePath.toUtf8());
 
 	m_bAsyncReady = (m_mixChunkOrMixMusic != NULL);
@@ -115,7 +115,7 @@ void SDLSound::setPosition(double percent)
 
 			const double targetPositionS = length * percent;
 			if (!Mix_SetMusicPosition(targetPositionS) && targetPositionS > 0.1)
-				debugLog("Mix_SetMusicPosition(%.2f) failed! SDL Error: %s\n", targetPositionS, SDL_GetError());
+				debugLog("Mix_SetMusicPosition({:.2f}) failed! SDL Error: {:s}\n", targetPositionS, SDL_GetError());
 
 			const double targetPositionMS = targetPositionS * 1000.0;
 
@@ -134,7 +134,7 @@ void SDLSound::setPosition(double percent)
 				positionMS -= std::signbit(deltaMS) * 1000.0;
 
 				if (!Mix_SetMusicPosition(positionMS / 1000.0) && (positionMS / 1000.0) > 0.1)
-					debugLog("Mix_SetMusicPosition(%.2f) failed! SDL Error: %s\n", positionMS / 1000.0, SDL_GetError());
+					debugLog("Mix_SetMusicPosition({:.2f}) failed! SDL Error: {:s}\n", positionMS / 1000.0, SDL_GetError());
 
 				// update our internal state after each position adjustment
 				m_fLastRawSDLPosition = positionMS;
@@ -151,7 +151,7 @@ void SDLSound::setPosition(double percent)
 		else if (almostEqual(percent, 0.0))
 			Mix_RewindMusic();
 		else if (length < 0.5)
-			debugLog("Mix_MusicDuration failed! length: %.2f\n", length);
+			debugLog("Mix_MusicDuration failed! length: {:.2f}\n", length);
 	}
 }
 
@@ -165,7 +165,7 @@ void SDLSound::setPositionMS(unsigned long ms, bool internal)
 		Mix_RewindMusic();
 
 		if (!Mix_SetMusicPosition((double)ms / 1000.0) && (double)ms / 1000.0 > 0.1)
-			debugLog("Mix_SetMusicPosition(%.2f) failed! SDL Error: %s\n", (double)ms / 1000.0, SDL_GetError());
+			debugLog("Mix_SetMusicPosition({:.2f}) failed! SDL Error: {:s}\n", (double)ms / 1000.0, SDL_GetError());
 
 		// reset interpolation state
 		m_fLastRawSDLPosition = ms;
@@ -183,7 +183,7 @@ void SDLSound::setPositionMS(unsigned long ms, bool internal)
 			positionMS -= std::signbit(deltaMS) * 1000.0;
 
 			if (!Mix_SetMusicPosition(positionMS / 1000.0) && (positionMS / 1000.0) > 0.1)
-				debugLog("Mix_SetMusicPosition(%.2f) failed! SDL Error: %s\n", positionMS / 1000.0, SDL_GetError());
+				debugLog("Mix_SetMusicPosition({:.2f}) failed! SDL Error: {:s}\n", positionMS / 1000.0, SDL_GetError());
 
 			// update our internal state after each position adjustment
 			m_fLastRawSDLPosition = positionMS;
@@ -288,14 +288,14 @@ float SDLSound::getPosition()
 			{
 				static int once = 0;
 				if (!once++)
-					debugLog("unsupported codec for Mix_GetMusicPosition! (returned %.2f)\n", position);
+					debugLog("unsupported codec for Mix_GetMusicPosition! (returned {:.2f})\n", position);
 			}
 		}
 		else if (length < -0.5)
 		{
 			static int once = 0;
 			if (!once++)
-				debugLog("Mix_MusicDuration failed! (returned %.2f)\n", length);
+				debugLog("Mix_MusicDuration failed! (returned {:.2f})\n", length);
 		}
 	}
 
@@ -356,7 +356,7 @@ unsigned long SDLSound::getPositionMS()
 		{
 			static int once = 0;
 			if (!once++)
-				debugLog("unsupported codec for Mix_GetMusicPosition! (returned %.2f)\n", rawPosition);
+				debugLog("unsupported codec for Mix_GetMusicPosition! (returned {:.2f})\n", rawPosition);
 		}
 	}
 
@@ -377,7 +377,7 @@ unsigned long SDLSound::getLengthMS()
 		{
 			static int once = 0;
 			if (!once++)
-				debugLog("Mix_MusicDuration failed! (returned %.2f)\n", length);
+				debugLog("Mix_MusicDuration failed! (returned {:.2f})\n", length);
 		}
 	}
 

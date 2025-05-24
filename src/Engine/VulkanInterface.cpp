@@ -66,10 +66,10 @@ VulkanInterface::VulkanInterface()
 	vkEnumerateInstanceLayerProperties(&layerCount, NULL);
 	std::vector<VkLayerProperties> availableLayers(layerCount);
 	vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
-	debugLog("Vulkan: Found %i available layers:\n", layerCount);
+	debugLog("Vulkan: Found {} available layers:\n", layerCount);
 	for (size_t i=0; i<availableLayers.size(); i++)
 	{
-		debugLog("Vulkan: Layer %i = %s v%i (%s)\n", i, availableLayers[i].description, availableLayers[i].implementationVersion, availableLayers[i].layerName);
+		debugLog("Vulkan: Layer {} = {:s} v{} ({:s})\n", i, availableLayers[i].description, availableLayers[i].implementationVersion, availableLayers[i].layerName);
 	}
 
 	// TODO: implement & handle debug layers and callbacks
@@ -120,7 +120,7 @@ VulkanInterface::VulkanInterface()
 		return;
 	}
 
-	debugLog("Vulkan: Found %i compatible device(s)\n", numDevices);
+	debugLog("Vulkan: Found {} compatible device(s)\n", numDevices);
 	std::vector<VkPhysicalDevice> devices(numDevices);
 	res = vkEnumeratePhysicalDevices(m_instance, &numDevices, &devices[0]);
 	if (res != VK_SUCCESS)
@@ -135,10 +135,10 @@ VulkanInterface::VulkanInterface()
 	{
 		memset(&deviceProperties, 0, sizeof(deviceProperties));
 		vkGetPhysicalDeviceProperties(devices[i], &deviceProperties);
-		debugLog("Vulkan Device #%i: Driver Version: %d\n", i, deviceProperties.driverVersion);
-		debugLog("Vulkan Device #%i: Device Name:    %s\n", i, deviceProperties.deviceName);
-		debugLog("Vulkan Device #%i: Device Type:    %d\n", i, deviceProperties.deviceType);
-		debugLog("Vulkan Device #%i: API Version:    %d.%d.%d\n", i,
+		debugLog("Vulkan Device #{}: Driver Version: {:d}\n", i, deviceProperties.driverVersion);
+		debugLog("Vulkan Device #{}: Device Name:    {:s}\n", i, deviceProperties.deviceName);
+		debugLog("Vulkan Device #{}: Device Type:    {:d}\n", i, deviceProperties.deviceType);
+		debugLog("Vulkan Device #{}: API Version:    {:d}.{:d}.{:d}\n", i,
 			(uint32_t)deviceProperties.apiVersion >> 22,
 			((uint32_t)deviceProperties.apiVersion >> 12) & 0x3ff,
 			(uint32_t)deviceProperties.apiVersion & 0xfff);
@@ -146,7 +146,7 @@ VulkanInterface::VulkanInterface()
 
 	// and select a device
 	int selectedDevice = 0;
-	debugLog("Vulkan: Selecting device #%i.\n", selectedDevice);
+	debugLog("Vulkan: Selecting device #{}.\n", selectedDevice);
 	m_physicalDevice = devices[0];
 
 	// get queue family properties
@@ -158,7 +158,7 @@ VulkanInterface::VulkanInterface()
 		engine->showMessageError("Vulkan Error", UString::format("vkGetPhysicalDeviceQueueFamilyProperties() returned %i queueFamilyProperties", queueFamilyPropertyCount));
 		return;
 	}
-	debugLog("Vulkan: %i available queue family properties\n", queueFamilyPropertyCount);
+	debugLog("Vulkan: {} available queue family properties\n", queueFamilyPropertyCount);
 	queueFamilyProperties.resize(queueFamilyPropertyCount);
 	vkGetPhysicalDeviceQueueFamilyProperties(m_physicalDevice, &queueFamilyPropertyCount, queueFamilyProperties.data());
 
@@ -178,7 +178,7 @@ VulkanInterface::VulkanInterface()
 		{
 			if (queueFamilyProperties[i].queueFlags & VK_QUEUE_GRAPHICS_BIT)
 			{
-				debugLog("Vulkan: Selecting queue %i.\n", i);
+				debugLog("Vulkan: Selecting queue {}.\n", i);
 				m_iQueueFamilyIndex = i;
 				deviceQueueCreateInfo.queueFamilyIndex = i;
 				break;

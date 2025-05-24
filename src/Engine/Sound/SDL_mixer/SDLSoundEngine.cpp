@@ -124,7 +124,7 @@ bool SDLSoundEngine::play(Sound *snd, float pan, float pitch)
 		const bool ret = (channel > -1);
 
 		if (!ret)
-			debugLog(sdlSound->isStream() ? "couldn't Mix_PlayMusic(), error on %s!\n" : "couldn't Mix_PlayChannel(), error on %s!\n",
+			debugLog(sdlSound->isStream() ? "couldn't Mix_PlayMusic(), error on {:s}!\n" : "couldn't Mix_PlayChannel(), error on {:s}!\n",
 			         sdlSound->getFilePath().toUtf8());
 		else
 		{
@@ -231,7 +231,7 @@ bool SDLSoundEngine::initializeOutputDevice(int id, bool force)
 	const int freq = snd_freq.getInt();
 	const int channels = 16;
 
-	debugLog("setting SDL audio chunk size to %s\n", chunkSizeHint);
+	debugLog("setting SDL audio chunk size to {:s}\n", chunkSizeHint);
 	SDL_SetHint(SDL_HINT_AUDIO_DEVICE_SAMPLE_FRAMES, chunkSizeHint);
 
 	const SDL_AudioSpec spec = {.format = MIX_DEFAULT_FORMAT, .channels = MIX_DEFAULT_CHANNELS, .freq = freq};
@@ -239,13 +239,13 @@ bool SDLSoundEngine::initializeOutputDevice(int id, bool force)
 	if (!Mix_OpenAudio(0, &spec))
 	{
 		const char *error = SDL_GetError();
-		debugLog("SoundEngine: Couldn't Mix_OpenAudio(): %s\n", error);
+		debugLog("SoundEngine: Couldn't Mix_OpenAudio(): {:s}\n", error);
 		engine->showMessageError("Sound Error", UString::format("Couldn't Mix_OpenAudio(): %s", error));
 		return false;
 	}
 
 	const int numAllocatedChannels = Mix_AllocateChannels(channels);
-	debugLog("SoundEngine: Allocated %i channels\n", numAllocatedChannels);
+	debugLog("SoundEngine: Allocated {} channels\n", numAllocatedChannels);
 
 	// tag all channels to allow overriding in play()
 	Mix_GroupChannels(0, numAllocatedChannels - 1, 1);

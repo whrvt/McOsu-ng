@@ -62,7 +62,7 @@ void DiscordInterface::onReady(const DiscordUser *request)
 
 void DiscordInterface::onError(int errorCode, const char *message)
 {
-	debugLog("DISCORD: Error, %i, %s\n", errorCode, message);
+	debugLog("DISCORD: Error, {}, {:s}\n", errorCode, message);
 }
 
 void DiscordInterface::onDisconnected(int errorCode, const char *message)

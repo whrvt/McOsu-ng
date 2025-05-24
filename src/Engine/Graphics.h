@@ -16,6 +16,7 @@
 #include "Matrices.h"
 #include "Vectors.h"
 #include "Rect.h"
+#include "Color.h"
 
 class ConVar;
 class UString;
@@ -25,7 +26,6 @@ class McFont;
 class Shader;
 class RenderTarget;
 class VertexArrayObject;
-using Color = uint32_t;
 class Graphics
 {
 public:

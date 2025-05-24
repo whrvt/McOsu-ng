@@ -177,5 +177,4 @@ McOsu_ng_SOURCES = \
 	src/Util/Quaternion.cpp \
 	src/Util/Rect.cpp \
 	src/Util/UString.cpp \
-	src/Util/lodepng.cpp \
 $(NULL)

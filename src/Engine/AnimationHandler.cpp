@@ -45,7 +45,7 @@ void AnimationHandler::update()
 		float percent = std::clamp<float>((engine->getTime() - animation.m_fStartTime) / (animation.m_fDuration), 0.0f, 1.0f);
 
 		if (debug_anim.getBool())
-			debugLog("animation #%i, percent = %f\n", i, percent);
+			debugLog("animation #{}, percent = {:f}\n", i, percent);
 
 		// check if finished
 		if (percent >= 1.0f)
@@ -53,7 +53,7 @@ void AnimationHandler::update()
 			*animation.m_fBase = animation.m_fTarget;
 
 			if (debug_anim.getBool())
-				debugLog("removing animation #%i, dtime = %f\n", i, engine->getTime() - animation.m_fStartTime);
+				debugLog("removing animation #{}, dtime = {:f}\n", i, engine->getTime() - animation.m_fStartTime);
 
 			m_vAnimations.erase(m_vAnimations.begin() + i);
 			i--;
@@ -114,7 +114,7 @@ void AnimationHandler::update()
 	}
 
 	if (m_vAnimations.size() > 512)
-		debugLog("WARNING: AnimationHandler has %i animations!\n", m_vAnimations.size());
+		debugLog("WARNING: AnimationHandler has {} animations!\n", m_vAnimations.size());
 
 	//printf("AnimStackSize = %i\n", m_vAnimations.size());
 }

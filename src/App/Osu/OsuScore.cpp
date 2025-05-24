@@ -205,7 +205,7 @@ void OsuScore::addHitResult(OsuBeatmap *beatmap, OsuHitObject *hitObject, HIT hi
 		if (totalNumHits > 0)
 			m_iScoreV2 = (unsigned long long)(((double)m_iScoreV2ComboPortion / (double)beatmap->getScoreV2ComboPortionMaximum() * 700000.0 + std::pow((double)m_fAccuracy, 10.0) * ((double)totalNumHits / maximumAccurateHits) * 300000.0 + (double)m_iBonusPoints) * (double)osu->getScoreMultiplier());
 
-		///debugLog("%i / %i, combo = %ix\n", (int)m_iScoreV2ComboPortion, (int)beatmap->getSelectedDifficulty()->getScoreV2ComboPortionMaximum(), m_iCombo);
+		///debugLog("{} / {}, combo = {}x\n", (int)m_iScoreV2ComboPortion, (int)beatmap->getSelectedDifficulty()->getScoreV2ComboPortionMaximum(), m_iCombo);
 	}
 
 	// recalculate grade
@@ -348,7 +348,7 @@ void OsuScore::addHitResult(OsuBeatmap *beatmap, OsuHitObject *hitObject, HIT hi
 				m_fPPv2 = OsuDifficultyCalculator::calculatePPv2(beatmap, aimStars, aimSliderFactor, aimDifficultSliders, aimDifficultStrains, speedStars, speedNotes, speedDifficultStrains, -1, numCircles, numSliders, numSpinners, maxPossibleCombo, m_iComboMax, m_iNumMisses, m_iNum300s, m_iNum100s, m_iNum50s);
 
 				if (osu_debug_pp.getBool())
-					debugLog("pp = %f, aimstars = %f, aimsliderfactor = %f, speedstars = %f, speednotes = %f, curindex = %i, maxPossibleCombo = %i, numCircles = %i, numSliders = %i, numSpinners = %i\n", m_fPPv2, aimStars, aimSliderFactor, speedStars, speedNotes, curHitobjectIndex, maxPossibleCombo, numCircles, numSliders, numSpinners);
+					debugLog("pp = {:f}, aimstars = {:f}, aimsliderfactor = {:f}, speedstars = {:f}, speednotes = {:f}, curindex = {}, maxPossibleCombo = {}, numCircles = {}, numSliders = {}, numSpinners = {}\n", m_fPPv2, aimStars, aimSliderFactor, speedStars, speedNotes, curHitobjectIndex, maxPossibleCombo, numCircles, numSliders, numSpinners);
 			}
 		}
 		else

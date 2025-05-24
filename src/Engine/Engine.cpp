@@ -30,8 +30,6 @@
 
 #include "Engine.h"
 
-#include <utility>
-
 //********************//
 //	Include App here  //
 //********************//
@@ -45,7 +43,7 @@ void _host_timescale_(UString oldValue, UString newValue)
 {
 	if (newValue.toFloat() < 0.01f)
 	{
-		debugLog(0xffff4444, UString::format("Value must be >= 0.01!\n").toUtf8());
+		debugLog(0xffff4444, "Value must be >= 0.01!\n");
 		host_timescale.setValue(1.0f);
 	}
 }
@@ -103,7 +101,7 @@ Engine::Engine()
 	// print debug information
 	debugLog("-= Engine Startup =-\n");
 	_version();
-	debugLog("cmdline: %s\n", UString::join(env->getCommandLine()).toUtf8());
+	debugLog("cmdline: {:s}\n", UString::join(env->getCommandLine()).toUtf8());
 
 	// timing
 	m_timer = new Timer(false);
@@ -124,9 +122,12 @@ Engine::Engine()
 	m_bResolutionChange = false;
 	m_vScreenSize = env->getWindowSize();
 	m_vNewScreenSize = m_vScreenSize;
-	m_screenRect = {{0, 0}, m_vScreenSize};
+	m_screenRect = {
+	    {0, 0},
+        m_vScreenSize
+    };
 
-	debugLog("Engine: ScreenSize = (%ix%i)\n", (int)m_vScreenSize.x, (int)m_vScreenSize.y);
+	debugLog("Engine: ScreenSize = ({}x{})\n", (int)m_vScreenSize.x, (int)m_vScreenSize.y);
 
 	// custom
 	m_bDrawing = false;
@@ -425,7 +426,7 @@ void Engine::onUpdate()
 		m_bResolutionChange = false;
 
 		if (debug_engine.getBool())
-			debugLog("Engine: executing pending queued resolution change to (%i, %i)\n", (int)m_vNewScreenSize.x, (int)m_vNewScreenSize.y);
+			debugLog("Engine: executing pending queued resolution change to ({}, {})\n", (int)m_vNewScreenSize.x, (int)m_vNewScreenSize.y);
 
 		onResolutionChange(m_vNewScreenSize);
 	}
@@ -561,7 +562,7 @@ void Engine::onRestored()
 void Engine::onResolutionChange(Vector2 newResolution)
 {
 	debugLog(
-	    0xff00ff00, "Engine: onResolutionChange() (%i, %i) -> (%i, %i)\n", (int)m_vScreenSize.x, (int)m_vScreenSize.y, (int)newResolution.x, (int)newResolution.y);
+	    0xff00ff00, "Engine: onResolutionChange() ({}, {}) -> ({}, {})\n", (int)m_vScreenSize.x, (int)m_vScreenSize.y, (int)newResolution.x, (int)newResolution.y);
 
 	// NOTE: Windows [Show Desktop] button in the superbar causes (0,0)
 	if (newResolution.x < 2 || newResolution.y < 2)
@@ -581,7 +582,10 @@ void Engine::onResolutionChange(Vector2 newResolution)
 
 	// update everything
 	m_vScreenSize = newResolution;
-	m_screenRect = {{0, 0}, newResolution};
+	m_screenRect = {
+	    {0, 0},
+        newResolution
+    };
 
 	if (graphics != NULL)
 		graphics->onResolutionChange(newResolution);
@@ -593,7 +597,7 @@ void Engine::onResolutionChange(Vector2 newResolution)
 
 void Engine::onDPIChange()
 {
-	debugLog(0xff00ff00, "Engine: DPI changed to %i\n", env->getDPI());
+	debugLog(0xff00ff00, "Engine: DPI changed to {}\n", env->getDPI());
 
 	if (app != NULL)
 		app->onDPIChanged();
@@ -691,25 +695,25 @@ void Engine::disableFullscreen()
 
 void Engine::showMessageInfo(UString title, UString message)
 {
-	debugLog("INFO: [%s] | %s\n", title.toUtf8(), message.toUtf8());
+	debugLog("INFO: [{:s}] | {:s}\n", title.toUtf8(), message.toUtf8());
 	env->showMessageInfo(title, message);
 }
 
 void Engine::showMessageWarning(UString title, UString message)
 {
-	debugLog("WARNING: [%s] | %s\n", title.toUtf8(), message.toUtf8());
+	debugLog("WARNING: [{:s}] | {:s}\n", title.toUtf8(), message.toUtf8());
 	env->showMessageWarning(title, message);
 }
 
 void Engine::showMessageError(UString title, UString message)
 {
-	debugLog("ERROR: [%s] | %s\n", title.toUtf8(), message.toUtf8());
+	debugLog("ERROR: [{:s}] | {:s}\n", title.toUtf8(), message.toUtf8());
 	env->showMessageError(title, message);
 }
 
 void Engine::showMessageErrorFatal(UString title, UString message)
 {
-	debugLog("FATAL ERROR: [%s] | %s\n", title.toUtf8(), message.toUtf8());
+	debugLog("FATAL ERROR: [{:s}] | {:s}\n", title.toUtf8(), message.toUtf8());
 	env->showMessageErrorFatal(title, message);
 }
 
@@ -717,7 +721,7 @@ void Engine::requestResolutionChange(Vector2 newResolution)
 {
 	// FIXME: sdl2->sdl3 broke this check on non-fullscreen startup
 	// if (newResolution == m_vNewScreenSize) return;
-	// debugLog("newRes (%i,%i) m_vNewScreenSize (%i,%i)\n", (int)newResolution.x, (int)newResolution.y, (int)m_vNewScreenSize.x, (int)m_vNewScreenSize.y);
+	// debugLog("newRes ({},{}) m_vNewScreenSize ({},{})\n", (int)newResolution.x, (int)newResolution.y, (int)m_vNewScreenSize.x, (int)m_vNewScreenSize.y);
 	m_vNewScreenSize = newResolution;
 	m_bResolutionChange = true;
 }
@@ -728,100 +732,23 @@ void Engine::setFrameTime(double delta)
 	m_dFrameTime = std::clamp<double>(delta, 0.0001, 1.0);
 }
 
-void Engine::debugLog_(const char *fmt, va_list args)
+void Engine::logToConsole(std::optional<Color> color, UString msg)
 {
-	if (fmt == NULL)
-		return;
-
-	va_list ap2;
-	va_copy(ap2, args);
-
-	// write to console
-	int numChars = vprintf(fmt, args);
-
-	if (numChars < 1 || numChars > 65534)
-		goto cleanup;
-
-	// write to engine console
+	if (m_consoleBox != nullptr)
 	{
-		char *buffer = new char[numChars + 1]; // +1 for null termination later
-		vsnprintf(
-		    buffer, numChars + 1, fmt, ap2); // "The generated string has a length of at most n-1, leaving space for the additional terminating null character."
-		buffer[numChars] = '\0';             // null terminate
-
-		UString actualBuffer = UString(buffer);
-		delete[] buffer;
-
-		// WARNING: these calls here are not threadsafe by default
-		if (m_consoleBox != NULL)
-			m_consoleBox->log(actualBuffer);
-		if (m_console != NULL)
-			m_console->log(actualBuffer);
+		if (color.has_value())
+			m_consoleBox->log(msg, color.value());
+		else
+			m_consoleBox->log(msg);
 	}
 
-cleanup:
-	va_end(ap2);
-}
-
-void Engine::debugLog_(Color color, const char *fmt, va_list args)
-{
-	if (fmt == NULL)
-		return;
-
-	va_list ap2;
-	va_copy(ap2, args);
-
-	// write to console
-	int numChars = vprintf(fmt, args);
-
-	if (numChars < 1 || numChars > 65534)
-		goto cleanup;
-
-	// write to engine console
+	if (m_console != nullptr)
 	{
-		char *buffer = new char[numChars + 1]; // +1 for null termination later
-		vsnprintf(
-		    buffer, numChars + 1, fmt, ap2); // "The generated string has a length of at most n-1, leaving space for the additional terminating null character."
-		buffer[numChars] = '\0';             // null terminate
-
-		UString actualBuffer = UString(buffer);
-		delete[] buffer;
-
-		// WARNING: these calls here are not threadsafe by default
-		if (m_consoleBox != NULL)
-			m_consoleBox->log(actualBuffer, color);
-		if (m_console != NULL)
-			m_console->log(actualBuffer, color);
+		if (color.has_value())
+			m_console->log(msg, color.value());
+		else
+			m_console->log(msg);
 	}
-
-cleanup:
-	va_end(ap2);
-}
-
-void Engine::debugLog_(const char *fmt, ...)
-{
-	if (fmt == NULL)
-		return;
-
-	va_list ap;
-	va_start(ap, fmt);
-
-	Engine::debugLog_(fmt, ap);
-
-	va_end(ap);
-}
-
-void Engine::debugLog_(Color color, const char *fmt, ...)
-{
-	if (fmt == NULL)
-		return;
-
-	va_list ap;
-	va_start(ap, fmt);
-
-	Engine::debugLog_(color, fmt, ap);
-
-	va_end(ap);
 }
 
 //**********************//
@@ -848,7 +775,7 @@ void _restart(void)
 void _printsize(void)
 {
 	Vector2 s = engine->getScreenSize();
-	debugLog("Engine: screenSize = (%f, %f)\n", s.x, s.y);
+	debugLog("Engine: screenSize = ({:f}, {:f})\n", s.x, s.y);
 }
 
 void _fullscreen(void)
@@ -928,7 +855,7 @@ void _center(void)
 
 void _version(void)
 {
-	debugLog("McEngine v4 - Build Date: %s, %s\n", __DATE__, __TIME__);
+	debugLog("McEngine v4 - Build Date: {:s}, {:s}\n", __DATE__, __TIME__);
 }
 
 void _errortest(void)
@@ -943,7 +870,7 @@ void _crash(void)
 
 void _dpiinfo(void)
 {
-	debugLog("env->getDPI() = %i, env->getDPIScale() = %f\n", env->getDPI(), env->getDPIScale());
+	debugLog("env->getDPI() = {}, env->getDPIScale() = {:f}\n", env->getDPI(), env->getDPIScale());
 }
 
 ConVar _exit_("exit", FCVAR_NONE, _exit);

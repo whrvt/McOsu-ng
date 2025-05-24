@@ -79,7 +79,7 @@ CBaseUIContainerBase *CBaseUIContainerBase::insertElement(CBaseUIElement *elemen
 		}
 	}
 
-	debugLog("Warning: %s::insertSlot() couldn't find index: %s\n", getName().toUtf8(), index->getName().toUtf8());
+	debugLog("Warning: {:s}::insertSlot() couldn't find index: {:s}\n", getName().toUtf8(), index->getName().toUtf8());
 
 	return this;
 }
@@ -150,7 +150,7 @@ CBaseUIContainerBase *CBaseUIContainerBase::insertElement(std::shared_ptr<CBaseU
 		}
 	}
 
-	debugLog("Warning: %s::insertSlot() couldn't find index: %s\n", getName().toUtf8(), index.get()->getName().toUtf8());
+	debugLog("Warning: {:s}::insertSlot() couldn't find index: {:s}\n", getName().toUtf8(), index.get()->getName().toUtf8());
 
 	return this;
 }
@@ -201,7 +201,7 @@ CBaseUIElement *CBaseUIContainerBase::getElementByName(UString name, bool search
 		}
 	}
 
-	debugLog("Error: \"%s\" does not exist!!!\n", name.toUtf8());
+	debugLog("Error: \"{:s}\" does not exist!!!\n", name.toUtf8());
 	return nullptr;
 }
 
@@ -219,7 +219,7 @@ std::shared_ptr<CBaseUIElement> CBaseUIContainerBase::getElementSharedByName(USt
 		}
 	}
 
-	debugLog("Error: \"%s\" does not exist!!!\n", name.toUtf8());
+	debugLog("Error: \"{:s}\" does not exist!!!\n", name.toUtf8());
 	return nullptr;
 }
 

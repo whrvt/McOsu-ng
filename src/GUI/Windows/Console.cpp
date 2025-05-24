@@ -151,7 +151,7 @@ void Console::processCommand(UString command)
 	ConVar *var = convar->getConVarByName(commandName, false);
 	if (var == NULL)
 	{
-		debugLog("Unknown command: %s\n", commandName.toUtf8());
+		debugLog("Unknown command: {:s}\n", commandName.toUtf8());
 		return;
 	}
 
@@ -204,7 +204,7 @@ void Console::processCommand(UString command)
 		}
 
 		if (logMessage.length() > 0 && doLog)
-			debugLog("%s\n", logMessage.toUtf8());
+			debugLog("{:s}\n", logMessage.toUtf8());
 	}
 }
 
@@ -219,7 +219,7 @@ void Console::execConfigFile(UString filename)
 	std::ifstream inFile(filename.toUtf8());
 	if (!inFile.good())
 	{
-		debugLog("error, file \"%s\" not found!\n", filename.toUtf8());
+		debugLog("error, file \"{:s}\" not found!\n", filename.toUtf8());
 		return;
 	}
 
@@ -339,7 +339,7 @@ void _echo(UString args)
 	if (args.length() > 0)
 	{
 		args.append("\n");
-		debugLog("%s", args.toUtf8());
+		debugLog("{:s}", args.toUtf8());
 	}
 }
 
@@ -348,13 +348,13 @@ void _fizzbuzz(void)
 	for (int i=1; i<101; i++)
 	{
 		if (i % 3 == 0 && i % 5 == 0)
-			debugLog("%i fizzbuzz\n",i);
+			debugLog("{} fizzbuzz\n",i);
 		else if (i % 3 == 0)
-			debugLog("%i fizz\n",i);
+			debugLog("{} fizz\n",i);
 		else if (i % 5 == 0)
-			debugLog("%i buzz\n",i);
+			debugLog("{} buzz\n",i);
 		else
-			debugLog("%i\n",i);
+			debugLog("{}\n",i);
 	}
 }
 

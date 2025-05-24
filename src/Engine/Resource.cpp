@@ -16,7 +16,7 @@ Resource::Resource(UString filepath)
 	{
 		UString errorMessage = "File does not exist: ";
 		errorMessage.append(m_sFilePath);
-		debugLog("Resource Warning: File %s does not exist!\n", m_sFilePath.toUtf8());
+		debugLog("Resource Warning: File {:s} does not exist!\n", m_sFilePath.toUtf8());
 	}
 
 	m_bReady = false;

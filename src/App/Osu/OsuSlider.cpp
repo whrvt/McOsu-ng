@@ -228,7 +228,7 @@ void OsuSlider::draw(Graphics *g)
 
 		// draw slider ticks
 		Color tickColor = 0xffffffff;
-		tickColor = rgb((int)(Ri(tickColor)*m_fHittableDimRGBColorMultiplierPercent), (int)(Gi(tickColor)*m_fHittableDimRGBColorMultiplierPercent), (int)(Bi(tickColor)*m_fHittableDimRGBColorMultiplierPercent));
+		tickColor = rgb((int)(tickColor.r*m_fHittableDimRGBColorMultiplierPercent), (int)(tickColor.g*m_fHittableDimRGBColorMultiplierPercent), (int)(tickColor.b*m_fHittableDimRGBColorMultiplierPercent));
 		const float tickImageScale = (m_beatmap->getHitcircleDiameter() / (16.0f * (skin->isSliderScorePoint2x() ? 2.0f : 1.0f)))*0.125f;
 		for (int t=0; t<m_ticks.size(); t++)
 		{
@@ -299,10 +299,10 @@ void OsuSlider::draw(Graphics *g)
 				// if the combo color is nearly white, blacken the reverse arrow
 				Color comboColor = skin->getComboColorForCounter(m_iColorCounter, m_iColorOffset);
 				Color reverseArrowColor = 0xffffffff;
-				if ((Rf(comboColor) + Gf(comboColor) + Bf(comboColor))/3.0f > osu_slider_reverse_arrow_black_threshold.getFloat())
+				if ((comboColor.Rf() + comboColor.Gf() + comboColor.Bf())/3.0f > osu_slider_reverse_arrow_black_threshold.getFloat())
 					reverseArrowColor = 0xff000000;
 
-				reverseArrowColor = rgb((int)(Ri(reverseArrowColor)*m_fHittableDimRGBColorMultiplierPercent), (int)(Gi(reverseArrowColor)*m_fHittableDimRGBColorMultiplierPercent), (int)(Bi(reverseArrowColor)*m_fHittableDimRGBColorMultiplierPercent));
+				reverseArrowColor = rgb((int)(reverseArrowColor.r*m_fHittableDimRGBColorMultiplierPercent), (int)(reverseArrowColor.g*m_fHittableDimRGBColorMultiplierPercent), (int)(reverseArrowColor.b*m_fHittableDimRGBColorMultiplierPercent));
 
 				float div = 0.30f;
 				float pulse = (div - fmod(std::abs(m_beatmap->getCurMusicPos())/1000.0f, div))/div;
@@ -556,11 +556,11 @@ void OsuSlider::draw2(Graphics *g, bool drawApproachCircle, bool drawOnlyApproac
 			Vector2 point = m_beatmap->osuCoords2Pixels(m_vCurPointRaw);
 			Vector2 c1 = m_beatmap->osuCoords2Pixels(m_curve->pointAt(m_fSlidePercent + 0.01f <= 1.0f ? m_fSlidePercent : m_fSlidePercent - 0.01f));
 			Vector2 c2 = m_beatmap->osuCoords2Pixels(m_curve->pointAt(m_fSlidePercent + 0.01f <= 1.0f ? m_fSlidePercent + 0.01f : m_fSlidePercent));
-			float ballAngle = glm::degrees( atan2(c2.y - c1.y, c2.x - c1.x) );
+			float ballAngle = glm::degrees( glm::atan2(c2.y - c1.y, c2.x - c1.x) );
 			if (skin->getSliderBallFlip())
 				ballAngle += (m_iCurRepeat % 2 == 0) ? 0 : 180;
 
-			g->setColor(skin->getAllowSliderBallTint() ? (osu_slider_ball_tint_combo_color.getBool() ? skin->getComboColorForCounter(m_iColorCounter, m_iColorOffset) : skin->getSliderBallColor()) : 0xffffffff);
+			g->setColor(skin->getAllowSliderBallTint() ? (osu_slider_ball_tint_combo_color.getBool() ? skin->getComboColorForCounter(m_iColorCounter, m_iColorOffset) : skin->getSliderBallColor()) : rgb(255, 255, 255));
 			g->pushTransform();
 			{
 				g->rotate(ballAngle);
@@ -664,7 +664,7 @@ void OsuSlider::drawVR(Graphics *g, Matrix4 &mvp, OsuVR *vr)
 				// if the combo color is nearly white, blacken the reverse arrow
 				Color comboColor = skin->getComboColorForCounter(m_iColorCounter, m_iColorOffset);
 				Color reverseArrowColor = 0xffffffff;
-				if ((Rf(comboColor) + Gf(comboColor) + Bf(comboColor))/3.0f > osu_slider_reverse_arrow_black_threshold.getFloat())
+				if ((comboColor.Rf() + comboColor.Gf() + comboColor.Bf())/3.0f > osu_slider_reverse_arrow_black_threshold.getFloat())
 					reverseArrowColor = 0xff000000;
 
 				float div = 0.30f;
@@ -862,7 +862,7 @@ void OsuSlider::draw3D(Graphics *g)
 
 		// draw slider ticks
 		Color tickColor = 0xffffffff;
-		tickColor = rgb((int)(Ri(tickColor)*m_fHittableDimRGBColorMultiplierPercent), (int)(Gi(tickColor)*m_fHittableDimRGBColorMultiplierPercent), (int)(Bi(tickColor)*m_fHittableDimRGBColorMultiplierPercent));
+		tickColor = rgb((int)(tickColor.r*m_fHittableDimRGBColorMultiplierPercent), (int)(tickColor.g*m_fHittableDimRGBColorMultiplierPercent), (int)(tickColor.b*m_fHittableDimRGBColorMultiplierPercent));
 		for (int t=0; t<m_ticks.size(); t++)
 		{
 			if (m_ticks[t].finished || m_ticks[t].percent > sliderSnake)
@@ -935,10 +935,10 @@ void OsuSlider::draw3D(Graphics *g)
 				// if the combo color is nearly white, blacken the reverse arrow
 				Color comboColor = skin->getComboColorForCounter(m_iColorCounter, m_iColorOffset);
 				Color reverseArrowColor = 0xffffffff;
-				if ((Rf(comboColor) + Gf(comboColor) + Bf(comboColor))/3.0f > osu_slider_reverse_arrow_black_threshold.getFloat())
+				if ((comboColor.Rf() + comboColor.Gf() + comboColor.Bf())/3.0f > osu_slider_reverse_arrow_black_threshold.getFloat())
 					reverseArrowColor = 0xff000000;
 
-				reverseArrowColor = rgb((int)(Ri(reverseArrowColor)*m_fHittableDimRGBColorMultiplierPercent), (int)(Gi(reverseArrowColor)*m_fHittableDimRGBColorMultiplierPercent), (int)(Bi(reverseArrowColor)*m_fHittableDimRGBColorMultiplierPercent));
+				reverseArrowColor = rgb((int)(reverseArrowColor.r*m_fHittableDimRGBColorMultiplierPercent), (int)(reverseArrowColor.g*m_fHittableDimRGBColorMultiplierPercent), (int)(reverseArrowColor.b*m_fHittableDimRGBColorMultiplierPercent));
 
 				float div = 0.30f;
 				float pulse = (div - fmod(std::abs(m_beatmap->getCurMusicPos())/1000.0f, div))/div;
@@ -1214,14 +1214,14 @@ void OsuSlider::draw3D2(Graphics *g)
 			Vector3 point = m_beatmap->osuCoordsTo3D(m_vCurPointRaw, this);
 			Vector2 c1 = m_beatmap->osuCoords2Pixels(m_curve->pointAt(m_fSlidePercent + 0.01f <= 1.0f ? m_fSlidePercent : m_fSlidePercent - 0.01f));
 			Vector2 c2 = m_beatmap->osuCoords2Pixels(m_curve->pointAt(m_fSlidePercent + 0.01f <= 1.0f ? m_fSlidePercent + 0.01f : m_fSlidePercent));
-			float ballAngle = glm::degrees( atan2(c2.y - c1.y, c2.x - c1.x) );
+			float ballAngle = glm::degrees( glm::atan2(c2.y - c1.y, c2.x - c1.x) );
 			if (skin->getSliderBallFlip())
 				ballAngle += (m_iCurRepeat % 2 == 0) ? 0 : 180;
 
 			Matrix4 rotate;
 			rotate.rotateZ(-ballAngle);
 
-			g->setColor(skin->getAllowSliderBallTint() ? (osu_slider_ball_tint_combo_color.getBool() ? skin->getComboColorForCounter(m_iColorCounter, m_iColorOffset) : skin->getSliderBallColor()) : 0xffffffff);
+			g->setColor(skin->getAllowSliderBallTint() ? osu_slider_ball_tint_combo_color.getBool() ? skin->getComboColorForCounter(m_iColorCounter, m_iColorOffset) : skin->getSliderBallColor() : rgb(255, 255, 255));
 			g->pushTransform();
 			{
 				skin->getSliderb()->setAnimationTimeOffset(m_iTime);
@@ -1357,7 +1357,7 @@ void OsuSlider::drawBodyVR(Graphics *g, OsuVR *vr, Matrix4 &mvp, float alpha, fl
 	// HACKHACK: code duplication aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 
 	Color comboColor = m_beatmap->getSkin()->getComboColorForCounter(m_iColorCounter, m_iColorOffset);
-	comboColor = rgb((int)(Ri(comboColor)*m_fHittableDimRGBColorMultiplierPercent), (int)(Gi(comboColor)*m_fHittableDimRGBColorMultiplierPercent), (int)(Bi(comboColor)*m_fHittableDimRGBColorMultiplierPercent));
+	comboColor = rgb((int)(comboColor.r*m_fHittableDimRGBColorMultiplierPercent), (int)(comboColor.g*m_fHittableDimRGBColorMultiplierPercent), (int)(comboColor.b*m_fHittableDimRGBColorMultiplierPercent));
 
 	// smooth begin/end while snaking/shrinking
 	std::vector<Vector2> alwaysPoints;
@@ -1568,7 +1568,7 @@ void OsuSlider::update(long curPos)
 						if (result != OsuScore::HIT::HIT_NULL)
 						{
 							const float targetDelta = cursorDelta / (m_beatmap->getHitcircleDiameter()/2.0f);
-							const float targetAngle = glm::degrees(atan2(m_beatmap->getCursorPos().y - pos.y, m_beatmap->getCursorPos().x - pos.x));
+							const float targetAngle = glm::degrees(glm::atan2(m_beatmap->getCursorPos().y - pos.y, m_beatmap->getCursorPos().x - pos.x));
 
 							if (osu->isInVRMode())
 							{
@@ -1756,7 +1756,7 @@ void OsuSlider::update(long curPos)
 					else
 						m_endResult = OsuScore::HIT::HIT_MISS;
 
-					//debugLog("percent = %f\n", percent);
+					//debugLog("percent = {:f}\n", percent);
 
 					if (!m_bHeldTillEnd && osu_slider_end_miss_breaks_combo.getBool())
 						onSliderBreak();
@@ -1941,7 +1941,7 @@ void OsuSlider::onClickEvent(std::vector<OsuBeatmap::CLICK> &clicks)
 			if (result != OsuScore::HIT::HIT_NULL)
 			{
 				const float targetDelta = cursorDelta / (m_beatmap->getHitcircleDiameter()/2.0f);
-				const float targetAngle = glm::degrees(atan2(cursorPos.y - pos.y, cursorPos.x - pos.x));
+				const float targetAngle = glm::degrees(glm::atan2(cursorPos.y - pos.y, cursorPos.x - pos.x));
 
 				clicks.erase(clicks.begin());
 				m_startResult = result;
@@ -1957,7 +1957,7 @@ void OsuSlider::onHit(OsuScore::HIT result, long delta, bool startOrEnd, float t
 
 	// start + end of a slider add +30 points, if successful
 
-	//debugLog("startOrEnd = %i,    m_iCurRepeat = %i\n", (int)startOrEnd, m_iCurRepeat);
+	//debugLog("startOrEnd = {},    m_iCurRepeat = {}\n", (int)startOrEnd, m_iCurRepeat);
 
 	// sound and hit animation and also sliderbreak combo drop
 	{

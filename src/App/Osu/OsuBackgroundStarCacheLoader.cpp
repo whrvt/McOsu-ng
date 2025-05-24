@@ -123,10 +123,10 @@ void OsuBackgroundStarCacheLoader::initAsync()
 			 || deltaOldSpeedStars > 0.00001f
 			 || deltaOldSpeedNotes > 0.00001f)
 			{
-				debugLog("deltaOldAimStars = %f\n", deltaOldAimStars);
-				debugLog("deltaOldAimSliderFactor = %f\n", deltaOldAimSliderFactor);
-				debugLog("deltaOldSpeedStars = %f\n", deltaOldSpeedStars);
-				debugLog("deltaOldSpeedNotes = %f\n", deltaOldSpeedNotes);
+				debugLog("deltaOldAimStars = {:f}\n", deltaOldAimStars);
+				debugLog("deltaOldAimSliderFactor = {:f}\n", deltaOldAimSliderFactor);
+				debugLog("deltaOldSpeedStars = {:f}\n", deltaOldSpeedStars);
+				debugLog("deltaOldSpeedNotes = {:f}\n", deltaOldSpeedNotes);
 			}
 			*/
 
@@ -155,7 +155,7 @@ void OsuBackgroundStarCacheLoader::initAsync()
 		}
 		calcStrainsTimer.update();
 		if (osu_debug_background_star_cache_loader.getBool())
-			debugLog("OsuBackgroundStarCacheLoader: Took %f sec total = %f sec (diffobjects) + %f sec (strains)\n", cacheObjectsTimer.getElapsedTime() + calcStrainsTimer.getElapsedTime(), cacheObjectsTimer.getElapsedTime(), calcStrainsTimer.getElapsedTime());
+			debugLog("OsuBackgroundStarCacheLoader: Took {:f} sec total = {:f} sec (diffobjects) + {:f} sec (strains)\n", cacheObjectsTimer.getElapsedTime() + calcStrainsTimer.getElapsedTime(), cacheObjectsTimer.getElapsedTime(), calcStrainsTimer.getElapsedTime());
 	}
 
 	m_bAsyncReady = true;

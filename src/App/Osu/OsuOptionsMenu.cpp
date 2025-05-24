@@ -2501,11 +2501,11 @@ void OsuOptionsMenu::onSkinSelect()
 	/*
 	std::vector<UString> skinFolders;
 	std::vector<uint64_t> subscribedItems = steam->getWorkshopSubscribedItems();
-	debugLog("subscribed to %i items\n", subscribedItems.size());
+	debugLog("subscribed to {} items\n", subscribedItems.size());
 	for (int i=0; i<subscribedItems.size(); i++)
 	{
 		SteamworksInterface::WorkshopItemDetails details = steam->getWorkshopItemDetails(subscribedItems[i]);
-		debugLog("item[%i] = %llu, installInfo = %s, title = %s, desc = %s\n", i, subscribedItems[i], steam->getWorkshopItemInstallInfo(subscribedItems[i]).toUtf8(), details.title.toUtf8(), details.description.toUtf8());
+		debugLog("item[{}] = {}, installInfo = {:s}, title = {:s}, desc = {:s}\n", i, subscribedItems[i], steam->getWorkshopItemInstallInfo(subscribedItems[i]).toUtf8(), details.title.toUtf8(), details.description.toUtf8());
 		skinFolders.push_back(details.title);
 	}
 	*/
@@ -2643,7 +2643,7 @@ void OsuOptionsMenu::onSkinSelectWorkshop4(UString skinName, int id)
 		if (id >= 0 && id < subscribedItems.size())
 		{
 			const OsuSteamWorkshop::SUBSCRIBED_ITEM &subscribedItem = subscribedItems[id];
-			debugLog("installInfo = %s\n", subscribedItem.installInfo.toUtf8());
+			debugLog("installInfo = {:s}\n", subscribedItem.installInfo.toUtf8());
 			if (env->directoryExists(subscribedItem.installInfo))
 			{
 				m_osu_skin_is_from_workshop_ref->setValue(1.0f);
@@ -4022,7 +4022,7 @@ void OsuOptionsMenu::save()
 {
 	if (!osu_options_save_on_back.getBool())
 	{
-		debugLog("DEACTIVATED SAVE!!!! @ %f\n", engine->getTime());
+		debugLog("DEACTIVATED SAVE!!!! @ {:f}\n", engine->getTime());
 		return;
 	}
 
@@ -4106,7 +4106,7 @@ void OsuOptionsMenu::save()
 							break;
 						}
 						//else
-						//	debugLog("ignoring match %s with %s\n", m_elements[i].cvar->getName().toUtf8(), line.c_str());
+						//	debugLog("ignoring match {:s} with {:s}\n", m_elements[i].cvar->getName().toUtf8(), line.c_str());
 					}
 				}
 

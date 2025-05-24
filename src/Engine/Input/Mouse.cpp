@@ -278,7 +278,7 @@ void Mouse::onButtonChange(MouseButton::Index button, bool down)
 		return;
 
 	if (debug_mouse_clicks.getBool())
-		debugLog("Mouse::onButtonChange(%i, %i)\n", button, (int)down);
+		debugLog("Mouse::onButtonChange({}, {})\n", (int)button, (int)down);
 
 	m_bMouseButtonDown[button] = down;
 

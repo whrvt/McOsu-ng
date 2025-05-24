@@ -156,7 +156,7 @@ void ResourceManager::update()
 		if (m_loadingWork[i].done.atomic.load())
 		{
 			if (debug_rm->getBool())
-				debugLog("Resource Manager: Worker thread #%i finished.\n", i);
+				debugLog("Resource Manager: Worker thread #{} finished.\n", i);
 
 			// get resource and thread index before modifying the vector
 			Resource *rs = m_loadingWork[i].resource.atomic.load();
@@ -216,7 +216,7 @@ void ResourceManager::update()
 				if (w.resource.atomic.load() == m_loadingWorkAsyncDestroy[i])
 				{
 					if (debug_rm->getBool())
-						debugLog("Resource Manager: Waiting for async destroy of #%zu ...\n", i);
+						debugLog("Resource Manager: Waiting for async destroy of #{} ...\n", i);
 
 					canBeDestroyed = false;
 					break;
@@ -236,7 +236,7 @@ void ResourceManager::update()
 	for (Resource *rs : resourcesReadyForDestroy)
 	{
 		if (debug_rm->getBool())
-			debugLog("Resource Manager: Async destroy of resource %s\n", rs->getName().toUtf8());
+			debugLog("Resource Manager: Async destroy of resource {:s}\n", rs->getName().toUtf8());
 
 		delete rs; // implicitly calls release() through the Resource destructor
 	}
@@ -283,7 +283,7 @@ void ResourceManager::destroyResource(Resource *rs)
 	}
 
 	if (debug_rm->getBool())
-		debugLog("ResourceManager: Destroying %s\n", rs->getName().toUtf8());
+		debugLog("ResourceManager: Destroying {:s}\n", rs->getName().toUtf8());
 
 #ifdef MCENGINE_FEATURE_MULTITHREADING
 	std::lock_guard<std::mutex> lock(g_resourceManagerMutex);
@@ -307,7 +307,7 @@ void ResourceManager::destroyResource(Resource *rs)
 		if (w.resource.atomic.load() == rs)
 		{
 			if (debug_rm->getBool())
-				debugLog("Resource Manager: Scheduled async destroy of %s\n", rs->getName().toUtf8());
+				debugLog("Resource Manager: Scheduled async destroy of {:s}\n", rs->getName().toUtf8());
 
 			if (rm_interrupt_on_destroy.getBool())
 				rs->interruptLoad();
@@ -795,7 +795,7 @@ Resource *ResourceManager::checkIfExistsAndHandle(UString resourceName)
 	if (it != m_nameToResourceMap.end())
 	{
 		if (rm_warnings.getBool())
-			debugLog("RESOURCE MANAGER: Resource \"%s\" already loaded!\n", resourceName.toUtf8());
+			debugLog("RESOURCE MANAGER: Resource \"{:s}\" already loaded!\n", resourceName.toUtf8());
 
 		// handle flags (reset them)
 		resetFlags();

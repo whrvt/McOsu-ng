@@ -20,7 +20,7 @@ class SDLGLInterface final : public BackendGLInterface
 {
 public:
 	SDLGLInterface(SDL_Window *window);
-	~SDLGLInterface() override;
+	~SDLGLInterface() override {;}
 
 	// scene
 	void endScene() override;

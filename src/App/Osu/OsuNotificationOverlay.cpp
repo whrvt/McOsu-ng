@@ -103,7 +103,7 @@ void OsuNotificationOverlay::onKeyDown(KeyboardEvent &e)
 		{
 			stopWaitingForKey(true);
 
-			debugLog("keyCode = %lu\n", e.getKeyCode());
+			debugLog("keyCode = {}\n", e.getKeyCode());
 
 			if (m_keyListener != NULL)
 				m_keyListener->onKey(e);

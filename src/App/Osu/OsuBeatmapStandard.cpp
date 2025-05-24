@@ -631,7 +631,7 @@ void OsuBeatmapStandard::drawFollowPoints(Graphics *g)
 				g->setAlpha(alpha);
 				g->pushTransform();
 				{
-					g->rotate(glm::degrees(std::atan2(yDiff, xDiff)));
+					g->rotate(glm::degrees(glm::atan2(yDiff, xDiff)));
 
 					skin->getFollowPoint2()->setAnimationTimeOffset(fadeInTime);
 
@@ -939,7 +939,7 @@ void OsuBeatmapStandard::update()
 void OsuBeatmapStandard::onModUpdate(bool rebuildSliderVertexBuffers, bool recomputeDrainRate)
 {
 	if (Osu::debug->getBool())
-		debugLog("@ %f\n", engine->getTime());
+		debugLog("@ {:f}\n", engine->getTime());
 
 	osu->getMultiplayer()->onServerModUpdate();
 
@@ -1671,7 +1671,7 @@ void OsuBeatmapStandard::onBeforeStop(bool quit)
 		const bool isZero = (osu->getScore()->getScore() < 1);
 		const bool isUnranked = (osu->getModAuto() || (osu->getModAutopilot() && osu->getModRelax())) || osu->getScore()->isUnranked();
 
-		//debugLog("isComplete = %i, isZero = %i, isUnranked = %i\n", (int)isComplete, (int)isZero, (int)isUnranked);
+		//debugLog("isComplete = {}, isZero = {}, isUnranked = {}\n", (int)isComplete, (int)isZero, (int)isUnranked);
 
 		int scoreIndex = -1;
 		if (isComplete && !isZero && !isUnranked && !osu->getScore()->hasDied())
@@ -2042,7 +2042,7 @@ void OsuBeatmapStandard::updateSliderVertexBuffers()
 	m_fPrevPlayfieldStretchX = osu_playfield_stretch_x.getFloat(); // same here
 	m_fPrevPlayfieldStretchY = osu_playfield_stretch_y.getFloat(); // same here
 
-	debugLog(" for %i hitobjects ...\n", m_hitobjects.size());
+	debugLog(" for {} hitobjects ...\n", m_hitobjects.size());
 
 	for (int i=0; i<m_hitobjects.size(); i++)
 	{

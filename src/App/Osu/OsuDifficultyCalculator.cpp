@@ -503,7 +503,7 @@ double OsuDifficultyCalculator::calculateStarDiffForHitObjectsInt(std::vector<Di
 						const double dot = v1.dot(v2);
 						const double det = (v1.x * v2.y) - (v1.y * v2.x);
 
-						cur.angle = std::fabs(std::atan2(det, dot));
+						cur.angle = std::fabs(glm::atan2(det, dot));
 					}
 				}
 			}

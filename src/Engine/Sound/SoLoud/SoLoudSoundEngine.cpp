@@ -139,7 +139,7 @@ bool SoLoudSoundEngine::playSound(SoLoudSound *soloudSound, float pan, float pit
 
 	if (debug_snd.getBool())
 	{
-		debugLog("SoLoudSoundEngine: Playing %s (stream=%d, 3d=%d) with speed=%f, pitch=%f\n", soloudSound->m_sFilePath.toUtf8(), soloudSound->m_bStream ? 1 : 0,
+		debugLog("SoLoudSoundEngine: Playing {:s} (stream={:d}, 3d={:d}) with speed={:f}, pitch={:f}\n", soloudSound->m_sFilePath.toUtf8(), soloudSound->m_bStream ? 1 : 0,
 		         is3d ? 1 : 0, soloudSound->m_speed, pitch);
 	}
 
@@ -204,7 +204,7 @@ bool SoLoudSoundEngine::playSound(SoLoudSound *soloudSound, float pan, float pit
 	}
 
 	if (debug_snd.getBool())
-		debugLog("SoLoudSoundEngine: Failed to play sound %s\n", soloudSound->m_sFilePath.toUtf8());
+		debugLog("SoLoudSoundEngine: Failed to play sound {:s}\n", soloudSound->m_sFilePath.toUtf8());
 
 	return false;
 }
@@ -227,7 +227,7 @@ unsigned int SoLoudSoundEngine::playSoundWithFilter(SoLoudSound *soloudSound, fl
 	if (handle != 0)
 	{
 		if (debug_snd.getBool())
-			debugLog("SoLoudSoundEngine: Playing through SoundTouch filter with speed=%f, pitch=%f\n", soloudSound->m_speed, soloudSound->m_pitch);
+			debugLog("SoLoudSoundEngine: Playing through SoundTouch filter with speed={:f}, pitch={:f}\n", soloudSound->m_speed, soloudSound->m_pitch);
 	}
 
 	return handle;
@@ -315,13 +315,13 @@ void SoLoudSoundEngine::setOutputDevice(UString outputDeviceName)
 					initializeOutputDevice(previousOutputDevice);
 			}
 			else
-				debugLog("\"%s\" already is the current device.\n", outputDeviceName.toUtf8());
+				debugLog("\"{:s}\" already is the current device.\n", outputDeviceName.toUtf8());
 
 			return;
 		}
 	}
 
-	debugLog("couldn't find output device \"%s\"!\n", outputDeviceName.toUtf8());
+	debugLog("couldn't find output device \"{:s}\"!\n", outputDeviceName.toUtf8());
 }
 
 void SoLoudSoundEngine::setOutputDeviceForce(UString outputDeviceName)
@@ -337,7 +337,7 @@ void SoLoudSoundEngine::setOutputDeviceForce(UString outputDeviceName)
 		}
 	}
 
-	debugLog("couldn't find output device \"%s\"!\n", outputDeviceName.toUtf8());
+	debugLog("couldn't find output device \"{:s}\"!\n", outputDeviceName.toUtf8());
 }
 
 void SoLoudSoundEngine::setVolume(float volume)
@@ -357,7 +357,7 @@ void SoLoudSoundEngine::setVolumeGradual(unsigned int handle, float targetVol, f
 	soloud->setVolume(handle, 0.0f);
 
 	if (debug_snd.getBool())
-		debugLog("fading in to %.2f\n", targetVol);
+		debugLog("fading in to {:.2f}\n", targetVol);
 
 	soloud->fadeVolume(handle, targetVol, fadeTimeMs / 1000.0f);
 }
@@ -397,13 +397,13 @@ void SoLoudSoundEngine::updateOutputDevices(bool, bool printInfo)
 	if (printInfo)
 	{
 		debugLog("SoundEngine: Device 0 = \"Default\", enabled = 1, default = 1\n");
-		debugLog("SoundEngine: Using SoLoud backend: %s\n", snd_soloud_backend.getString().toUtf8());
+		debugLog("SoundEngine: Using SoLoud backend: {:s}\n", snd_soloud_backend.getString().toUtf8());
 	}
 }
 
 bool SoLoudSoundEngine::initializeOutputDevice(int id, bool)
 {
-	debugLog("SoundEngine: initializeOutputDevice(%i) ...\n", id);
+	debugLog("SoundEngine: initializeOutputDevice({}) ...\n", id);
 
 	m_iCurrentOutputDevice = id;
 
@@ -466,8 +466,8 @@ bool SoLoudSoundEngine::initializeOutputDevice(int id, bool)
 		}
 	}
 
-	debugLog("SoundEngine: Initialized SoLoud with output device = \"%s\" flags: 0x%x, backend: %s, sampleRate: %u, bufferSize: %u, channels: %u, "
-	         "maxActiveVoiceCount: %u\n",
+	debugLog("SoundEngine: Initialized SoLoud with output device = \"{:s}\" flags: 0x{:x}, backend: {:s}, sampleRate: {}, bufferSize: {}, channels: {}}, "
+	         "maxActiveVoiceCount: {}\n",
 	         m_sCurrentOutputDevice.toUtf8(), flags, soloud->getBackendString(), soloud->getBackendSamplerate(), soloud->getBackendBufferSize(),
 	         soloud->getBackendChannels(), m_iMaxActiveVoices);
 
@@ -486,7 +486,7 @@ void SoLoudSoundEngine::onMaxActiveChange(float newMax)
 	{
 		SoLoud::result res = soloud->setMaxActiveVoiceCount(desired);
 		if (res != SoLoud::SO_NO_ERROR)
-			debugLog("SoundEngine WARNING: failed to setMaxActiveVoiceCount (%i)\n", res);
+			debugLog("SoundEngine WARNING: failed to setMaxActiveVoiceCount ({})\n", res);
 	}
 	m_iMaxActiveVoices = static_cast<int>(soloud->getMaxActiveVoiceCount());
 }

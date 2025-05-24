@@ -74,7 +74,7 @@ bool SteamworksInterfaceWaitAPICallBlocking(SteamAPICall_t apiCall, void *pCallb
 	{
 		const ESteamAPICallFailure reason = SteamUtils()->GetAPICallFailureReason(apiCall);
 		const UString stringReason = SteamworksInterfaceAPICallFailureToString(reason);
-		debugLog("STEAM: API call error %i (1) (%s)!\n", reason, stringReason.toUtf8());
+		debugLog("STEAM: API call error {} (1) ({:s})!\n", reason, stringReason.toUtf8());
 	}
 
 	if (debug_steam.getBool())
@@ -88,7 +88,7 @@ bool SteamworksInterfaceWaitAPICallBlocking(SteamAPICall_t apiCall, void *pCallb
 			{
 				const ESteamAPICallFailure reason = SteamUtils()->GetAPICallFailureReason(apiCall);
 				const UString stringReason = SteamworksInterfaceAPICallFailureToString(reason);
-				debugLog("STEAM: API call error %i (2) (%s)!\n", reason, stringReason.toUtf8());
+				debugLog("STEAM: API call error {} (2) ({:s})!\n", reason, stringReason.toUtf8());
 			}
 
 			return true;
@@ -130,7 +130,7 @@ SteamworksInterface::SteamworksInterface()
 
 	m_bReady = true;
 
-	debugLog("STEAM: Logged in as \"%s\"\n", SteamFriends()->GetPersonaName());
+	debugLog("STEAM: Logged in as \"{:s}\"\n", SteamFriends()->GetPersonaName());
 }
 
 SteamworksInterface::~SteamworksInterface()
@@ -163,7 +163,7 @@ uint64_t SteamworksInterface::createWorkshopItem()
 	if (res.m_eResult != EResult::k_EResultOK)
 	{
 		handleLastError(res.m_eResult);
-		debugLog("STEAM: CreateItem() error %i (%s)!\n", res.m_eResult, m_sLastError.toUtf8());
+		debugLog("STEAM: CreateItem() error {} ({:s})!\n", res.m_eResult, m_sLastError.toUtf8());
 		return k_PublishedFileIdInvalid;
 	}
 
@@ -274,7 +274,7 @@ bool SteamworksInterface::popWorkshopItemUpdate(UString changeNote)
 	if (res.m_eResult != EResult::k_EResultOK)
 	{
 		handleLastError(res.m_eResult);
-		debugLog("STEAM: SubmitItemUpdate() error %i (%s)!\n", res.m_eResult, m_sLastError.toUtf8());
+		debugLog("STEAM: SubmitItemUpdate() error {} ({:s})!\n", res.m_eResult, m_sLastError.toUtf8());
 		return false;
 	}
 
@@ -302,7 +302,7 @@ std::vector<uint64_t> SteamworksInterface::getWorkshopSubscribedItems()
 
 		if (numPopulatedSubscribedItems != numSubscribedItems)
 		{
-			debugLog("STEAM: GetSubscribedItems() warning, only got %u/%u!\n", numPopulatedSubscribedItems, numSubscribedItems);
+			debugLog("STEAM: GetSubscribedItems() warning, only got {}/{}!\n", numPopulatedSubscribedItems, numSubscribedItems);
 			subscribedItems.resize(numPopulatedSubscribedItems);
 		}
 	}
@@ -317,7 +317,7 @@ bool SteamworksInterface::isWorkshopSubscribedItemInstalled(uint64_t publishedFi
 	const uint32_t itemState = SteamUGC()->GetItemState(publishedFileId);
 
 	if (debug_steam.getBool())
-		debugLog("STEAM: SteamUGC()->GetItemState( %llu ) = %i\n", publishedFileId, itemState);
+		debugLog("STEAM: SteamUGC()->GetItemState( {} ) = {}\n", publishedFileId, itemState);
 
 	return ((itemState & EItemState::k_EItemStateSubscribed) && (itemState & EItemState::k_EItemStateInstalled));
 }
@@ -329,7 +329,7 @@ bool SteamworksInterface::isWorkshopSubscribedItemDownloading(uint64_t published
 	const uint32_t itemState = SteamUGC()->GetItemState(publishedFileId);
 
 	if (debug_steam.getBool())
-		debugLog("STEAM: SteamUGC()->GetItemState( %llu ) = %i\n", publishedFileId, itemState);
+		debugLog("STEAM: SteamUGC()->GetItemState( {} ) = {}\n", publishedFileId, itemState);
 
 	return ((itemState & EItemState::k_EItemStateDownloading) || (itemState & EItemState::k_EItemStateDownloadPending));
 }
@@ -392,7 +392,7 @@ std::vector<SteamworksInterface::WorkshopItemDetails> SteamworksInterface::getWo
 				if (res.m_eResult != EResult::k_EResultOK)
 				{
 					handleLastError(res.m_eResult);
-					debugLog("STEAM: SendQueryUGCRequest() error %i (%s)!\n", res.m_eResult, m_sLastError.toUtf8());
+					debugLog("STEAM: SendQueryUGCRequest() error {} ({:s})!\n", res.m_eResult, m_sLastError.toUtf8());
 					SteamUGC()->ReleaseQueryUGCRequest(handle);
 					return results;
 				}
@@ -433,7 +433,7 @@ std::vector<SteamworksInterface::WorkshopItemDetails> SteamworksInterface::getWo
 					}
 					else
 					{
-						debugLog("STEAM: GetQueryUGCResult() error (%u)!\n", r);
+						debugLog("STEAM: GetQueryUGCResult() error ({})!\n", r);
 						break;
 					}
 				}

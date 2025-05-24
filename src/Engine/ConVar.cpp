@@ -45,7 +45,7 @@ static void _addConVar(ConVar *c)
 	}
 	else
 	{
-		debugLog("FATAL: Duplicate ConVar name (\"%s\")\n", c->getName().toUtf8());
+		debugLog("FATAL: Duplicate ConVar name (\"{:s}\")\n", c->getName().toUtf8());
 		std::exit(100);
 	}
 }
@@ -650,11 +650,8 @@ ConVar *ConVarHandler::getConVarByName(UString name, bool warnIfNotFound) const
 
 	if (warnIfNotFound)
 	{
-		UString errormsg = UString("ENGINE: ConVar \"");
-		errormsg.append(name);
-		errormsg.append("\" does not exist...\n");
-		debugLog(errormsg.toUtf8());
-		engine->showMessageWarning("Engine Error", errormsg);
+		debugLog(R"(ENGINE: ConVar "{}" does not exist...)""\n", name.toUtf8());
+		engine->showMessageWarning("Engine Error", UString::format(R"(ENGINE: ConVar "%s" does not exist...)""\n", name.toUtf8()));
 	}
 
 	if (!warnIfNotFound)
@@ -787,7 +784,7 @@ static void _find(UString args)
 		UString thelog = "No commands found containing \"";
 		thelog.append(args);
 		thelog.append("\".\n");
-		debugLog("%s", thelog.toUtf8());
+		debugLog("{:s}", thelog.toUtf8());
 		return;
 	}
 
@@ -796,13 +793,13 @@ static void _find(UString args)
 		UString thelog = "[ find : ";
 		thelog.append(args);
 		thelog.append(" ]\n");
-		debugLog("%s", thelog.toUtf8());
+		debugLog("{:s}", thelog.toUtf8());
 
 		for (size_t i=0; i<matchingConVars.size(); i++)
 		{
 			UString tstring = matchingConVars[i]->getName();
 			tstring.append("\n");
-			debugLog("%s", tstring.toUtf8());
+			debugLog("{:s}", tstring.toUtf8());
 		}
 	}
 	debugLog("----------------------------------------------\n");
@@ -826,7 +823,7 @@ static void _help(UString args)
 		UString thelog = "ConVar \"";
 		thelog.append(args);
 		thelog.append("\" does not exist.\n");
-		debugLog("%s", thelog.toUtf8());
+		debugLog("{:s}", thelog.toUtf8());
 		return;
 	}
 
@@ -847,7 +844,7 @@ static void _help(UString args)
 		UString thelog = "ConVar \"";
 		thelog.append(match->getName());
 		thelog.append("\" does not have a helpstring.\n");
-		debugLog("%s", thelog.toUtf8());
+		debugLog("{:s}", thelog.toUtf8());
 		return;
 	}
 
@@ -865,7 +862,7 @@ static void _help(UString args)
 		thelog.append(" - ");
 		thelog.append(match->getHelpstring());
 	}
-	debugLog("%s", thelog.toUtf8());
+	debugLog("{:s}", thelog.toUtf8());
 }
 
 static void _listcommands(void)
@@ -908,7 +905,7 @@ static void _listcommands(void)
 
 				tstring.append("\n");
 			}
-			debugLog("%s", tstring.toUtf8());
+			debugLog("{:s}", tstring.toUtf8());
 		}
 	}
 	debugLog("----------------------------------------------\n");

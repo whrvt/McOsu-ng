@@ -116,7 +116,7 @@ void OsuBackgroundImageHandler::update(bool allowEviction)
 	m_bFrozen = false;
 
 	// DEBUG:
-	//debugLog("m_cache.size() = %i\n", (int)m_cache.size());
+	//debugLog("m_cache.size() = {}\n", (int)m_cache.size());
 }
 
 void OsuBackgroundImageHandler::handleLoadPathForEntry(ENTRY &entry)

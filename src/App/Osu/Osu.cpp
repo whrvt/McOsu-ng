@@ -423,7 +423,7 @@ Osu::Osu(int instanceID)
 
 	if (defaultFont->getDPI() != newDPI)
 	{
-		debugLog("default dpi %.2f newDPI %.2f\n", defaultFont->getDPI(), newDPI);
+		debugLog("default dpi {} newDPI {}\n", defaultFont->getDPI(), newDPI);
 		m_bFontReloadScheduled = true;
 		m_bFireResolutionChangedScheduled = true;
 	}
@@ -532,7 +532,7 @@ Osu::~Osu()
 
 	for (int i=0; i<m_screens.size(); i++)
 	{
-		debugLog("%i\n", i);
+		debugLog("{}\n", i);
 		SAFE_DELETE(m_screens[i]);
 	}
 
@@ -2103,7 +2103,7 @@ bool Osu::shouldFallBackToLegacySliderRenderer()
 
 void Osu::onResolutionChanged(Vector2 newResolution)
 {
-	debugLog("minimized = %i\n", (int)newResolution.x, (int)newResolution.y, (int)engine->isMinimized());
+	debugLog("res ({}, {}), minimized = {}\n", (int)newResolution.x, (int)newResolution.y, (int)engine->isMinimized());
 
 	if (engine->isMinimized()) return; // ignore if minimized
 
@@ -2131,7 +2131,7 @@ void Osu::onResolutionChanged(Vector2 newResolution)
 			bool windowsBorderlessHackCondition = (Env::cfg(OS::WINDOWS) && env->isFullscreen() && env->isFullscreenWindowedBorderless() && (int)g_vInternalResolution.y == (int)env->getNativeScreenSize().y); // HACKHACK
 			if (((int)g_vInternalResolution.x == engine->getScreenWidth() && (int)g_vInternalResolution.y == engine->getScreenHeight()) || !env->isFullscreen() || windowsBorderlessHackCondition)
 			{
-				debugLog("Internal resolution == Engine resolution || !Fullscreen, disabling resampler (%i, %i)\n", (int)(g_vInternalResolution == engine->getScreenSize()), (int)(!env->isFullscreen()));
+				debugLog("Internal resolution == Engine resolution || !Fullscreen, disabling resampler ({}, {})\n", (int)(g_vInternalResolution == engine->getScreenSize()), (int)(!env->isFullscreen()));
 				osu_resolution_enabled.setValue(0.0f);
 				g_vInternalResolution = engine->getScreenSize();
 			}
@@ -2179,7 +2179,7 @@ void Osu::onDPIChanged()
 
 void Osu::rebuildRenderTargets()
 {
-	debugLog("Osu(%i) %fx%f\n", m_iInstanceID, g_vInternalResolution.x, g_vInternalResolution.y);
+	debugLog("Osu({}) {}x{}\n", m_iInstanceID, g_vInternalResolution.x, g_vInternalResolution.y);
 
 	m_backBuffer->rebuild(0, 0, g_vInternalResolution.x, g_vInternalResolution.y);
 
@@ -2256,7 +2256,7 @@ void Osu::updateMouseSettings()
 	mouse->setScale(scale);
 
 	if (debug->getBool())
-		debugLog("offset %.2f,%.2f scale %.2f,%.2f\n", offset.x, offset.y, scale.x, scale.y);
+		debugLog("offset {:.2f},{:.2f} scale {:.2f},{:.2f}\n", offset.x, offset.y, scale.x, scale.y);
 }
 
 void Osu::updateWindowsKeyDisable()
@@ -2270,7 +2270,7 @@ void Osu::updateWindowsKeyDisable()
 	env->listenToTextInput(!isPlayerPlaying);
 
 	if (debug->getBool())
-		debugLog("isPlayerPlaying %u\n", isPlayerPlaying);
+		debugLog("isPlayerPlaying {}\n", isPlayerPlaying);
 }
 
 void Osu::fireResolutionChanged()

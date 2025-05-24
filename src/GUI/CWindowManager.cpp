@@ -85,7 +85,7 @@ void CWindowManager::update()
 			if (m_iLastEnabledWindow < m_windows.size())
 			{
 				m_windows[m_iLastEnabledWindow]->setEnabled(true);
-				//debugLog("enabled %s @%f\n", m_windows[m_iLastEnabledWindow]->getName().toUtf8(), engine->getTime());
+				//debugLog("enabled {:s} @{:f}\n", m_windows[m_iLastEnabledWindow]->getName().toUtf8(), engine->getTime());
 				for (size_t i=0; i<m_windows.size(); i++)
 				{
 					if (std::cmp_not_equal(i , m_iLastEnabledWindow))
@@ -109,7 +109,7 @@ void CWindowManager::update()
 		// switch top window to m_windows[0], all others get pushed down
 		if (topSwitch && newTop != 0)
 		{
-			//debugLog("top switch @%f\n", engine->getTime());
+			//debugLog("top switch @{:f}\n", engine->getTime());
 			if (m_windows.size() > 1)
 			{
 				CBaseUIWindow *newTopWindow = m_windows[newTop];

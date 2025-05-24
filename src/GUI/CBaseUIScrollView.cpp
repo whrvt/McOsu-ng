@@ -161,7 +161,7 @@ void CBaseUIScrollView::update()
 	if (m_bBusy)
 	{
 		const Vector2 deltaToAdd = (mouse->getPos() - m_vMouseBackup2);
-		//debugLog("+ (%f, %f)\n", deltaToAdd.x, deltaToAdd.y);
+		//debugLog("+ ({:f}, {:f})\n", deltaToAdd.x, deltaToAdd.y);
 
 		anim->moveQuadOut(&m_vKineticAverage.x, deltaToAdd.x, ui_scrollview_kinetic_approach_time.getFloat(), true);
 		anim->moveQuadOut(&m_vKineticAverage.y, deltaToAdd.y, ui_scrollview_kinetic_approach_time.getFloat(), true);
@@ -244,7 +244,7 @@ void CBaseUIScrollView::update()
 		if (!m_bScrollbarScrolling)
 			m_vVelocity = ui_scrollview_kinetic_energy_multiplier.getFloat() * delta * (engine->getFrameTime() != 0.0 ? 1.0/engine->getFrameTime() : 60.0)/60.0 + m_vScrollPos;
 
-		//debugLog("kinetic = (%f, %f), velocity = (%f, %f), frametime = %f\n", delta.x, delta.y, m_vVelocity.x, m_vVelocity.y, engine->getFrameTime());
+		//debugLog("kinetic = ({:f}, {:f}), velocity = ({:f}, {:f}), frametime = {:f}\n", delta.x, delta.y, m_vVelocity.x, m_vVelocity.y, engine->getFrameTime());
 
 		m_bScrollbarScrolling = false;
 	}

@@ -459,7 +459,7 @@ void DirectX11Interface::endScene()
 				D3D11_MESSAGE *message = (D3D11_MESSAGE*)malloc(message_size + 1);
 				memset((void*)message, '\0', message_size + 1);
 				if (SUCCEEDED(debugInfoQueue->GetMessage(i, message, &message_size)))
-					debugLog("DirectX11Debug: %s\n", message->pDescription);
+					debugLog("DirectX11Debug: {:s}\n", message->pDescription);
 				else
 					debugLog("DirectX Error: Couldn't debugInfoQueue->GetMessage()\n");
 
@@ -485,7 +485,7 @@ void DirectX11Interface::setColor(Color color)
 	if (m_color == color) return;
 
 	m_color = color;
-	m_shaderTexturedGeneric->setUniform4f("col", Af(m_color), Rf(m_color), Gf(m_color), Bf(m_color));
+	m_shaderTexturedGeneric->setUniform4f("col", m_color.Af(), m_color.Rf(), m_color.Gf(), m_color.Bf());
 }
 
 void DirectX11Interface::setAlpha(float alpha)
@@ -511,7 +511,7 @@ void DirectX11Interface::drawPixel(int x, int y)
 			v.pos.y = y;
 			v.pos.z = 0.0f;
 
-			v.col = Vector4(Rf(m_color), Gf(m_color), Bf(m_color), Af(m_color));
+			v.col = Vector4(m_color.Rf(), m_color.Gf(), m_color.Bf(), m_color.Af());
 
 			v.tex.x = 0.0f;
 			v.tex.y = 0.0f;
@@ -810,7 +810,7 @@ void DirectX11Interface::drawVAO(VertexArrayObject *vao)
 
 	for (size_t i=0; i<vcolors.size(); i++)
 	{
-		const Vector4 color = Vector4(Rf(vcolors[i]), Gf(vcolors[i]), Bf(vcolors[i]), Af(vcolors[i]));
+		const Vector4 color = Vector4(vcolors[i].Rf(), vcolors[i].Gf(), vcolors[i].Bf(), vcolors[i].Af());
 		colors.push_back(color);
 		finalColors.push_back(color);
 	}
@@ -914,7 +914,7 @@ void DirectX11Interface::drawVAO(VertexArrayObject *vao)
 		const size_t maxColorIndex = (hasColors ? finalColors.size() - 1 : 0);
 		const size_t maxTexcoords0Index = (hasTexcoords0 ? finalTexcoords[0].size() - 1 : 0);
 
-		const Vector4 color = Vector4(Rf(m_color), Gf(m_color), Bf(m_color), Af(m_color));
+		const Vector4 color = Vector4(m_color.Rf(), m_color.Gf(), m_color.Bf(), m_color.Af());
 
 		for (size_t i=0; i<finalVertices.size(); i++)
 		{
@@ -1361,14 +1361,14 @@ void DirectX11Interface::onResolutionChange(Vector2 newResolution)
 		// NOTE: DXGI_FORMAT_UNKNOWN preserves the existing format
 		hr = m_swapChain->ResizeBuffers(0, (m_bIsFullscreen && !m_bIsFullscreenBorderlessWindowed ? 0 : (UINT)newResolution.x), (m_bIsFullscreen && !m_bIsFullscreenBorderlessWindowed ? 0 : (UINT)newResolution.y), DXGI_FORMAT::DXGI_FORMAT_UNKNOWN, /*DXGI_SWAP_CHAIN_FLAG::DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH*/0);
 		if (FAILED(hr))
-			debugLog("FATAL ERROR: couldn't ResizeBuffers(%ld, %x, %x)!!!\n", hr, hr, MAKE_DXGI_HRESULT(hr));
+			debugLog("FATAL ERROR: couldn't ResizeBuffers({}, {:x}, {:x})!!!\n", hr, hr, MAKE_DXGI_HRESULT(hr));
 
 		// get new (automatically generated) backbuffer
 		ID3D11Texture2D *backBuffer;
 		hr = m_swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&backBuffer);
 		if (FAILED(hr))
 		{
-			debugLog("FATAL ERROR: couldn't GetBuffer(%ld, %x, %x)!!!\n", hr, hr, MAKE_DXGI_HRESULT(hr));
+			debugLog("FATAL ERROR: couldn't GetBuffer({}, {:x}, {:x})!!!\n", hr, hr, MAKE_DXGI_HRESULT(hr));
 			return;
 		}
 
@@ -1387,7 +1387,7 @@ void DirectX11Interface::onResolutionChange(Vector2 newResolution)
 		backBuffer->Release(); // (release temp buffer)
 		if (FAILED(hr))
 		{
-			debugLog("FATAL ERROR: couldn't CreateRenderTargetView(%ld, %x, %x)!!!\n", hr, hr, MAKE_DXGI_HRESULT(hr));
+			debugLog("FATAL ERROR: couldn't CreateRenderTargetView({}, {:x}, {:x})!!!\n", hr, hr, MAKE_DXGI_HRESULT(hr));
 			m_frameBuffer = NULL;
 			return;
 		}
@@ -1412,7 +1412,7 @@ void DirectX11Interface::onResolutionChange(Vector2 newResolution)
 			hr = m_device->CreateTexture2D(&depthStencilTextureDesc, NULL, &m_frameBufferDepthStencilTexture);
 			if (FAILED(hr))
 			{
-				debugLog("FATAL ERROR: couldn't CreateTexture2D(%ld, %x, %x)!!!\n", hr, hr, MAKE_DXGI_HRESULT(hr));
+				debugLog("FATAL ERROR: couldn't CreateTexture2D({}, {:x}, {:x})!!!\n", hr, hr, MAKE_DXGI_HRESULT(hr));
 				m_frameBufferDepthStencilTexture = NULL;
 			}
 			else
@@ -1428,7 +1428,7 @@ void DirectX11Interface::onResolutionChange(Vector2 newResolution)
 				hr = m_device->CreateDepthStencilView(m_frameBufferDepthStencilTexture, &depthStencilViewDesc, &m_frameBufferDepthStencilView);
 				if (FAILED(hr))
 				{
-					debugLog("FATAL ERROR: couldn't CreateDepthStencilView(%ld, %x, %x)!!!\n", hr, hr, MAKE_DXGI_HRESULT(hr));
+					debugLog("FATAL ERROR: couldn't CreateDepthStencilView({}, {:x}, {:x})!!!\n", hr, hr, MAKE_DXGI_HRESULT(hr));
 					m_frameBufferDepthStencilView = NULL;
 				}
 			}

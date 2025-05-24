@@ -51,7 +51,7 @@ public:
 		m_bVisible2 = false;
 	}
 
-	virtual void draw(Graphics *g)
+	void draw(Graphics *g) override
 	{
 		if (!m_bVisible || !m_bVisible2) return;
 
@@ -78,9 +78,9 @@ public:
 		g->popTransform();
 	}
 
-	void setVisible2(bool visible2) {m_bVisible2 = visible2;}
+	inline void setVisible2(bool visible2) {m_bVisible2 = visible2;}
 
-	inline bool isVisible2() const {return m_bVisible2;}
+	[[nodiscard]] inline bool isVisible2() const {return m_bVisible2;}
 
 private:
 	bool m_bVisible2;
@@ -94,7 +94,7 @@ public:
 		m_bVisible2 = false;
 	}
 
-	virtual void draw(Graphics *g)
+	void draw(Graphics *g) override
 	{
 		if (!m_bVisible || !m_bVisible2) return;
 
@@ -104,9 +104,9 @@ public:
 		g->fillGradient(m_vPos.x, m_vPos.y, m_vSize.x, m_vSize.y, topColor, topColor, bottomColor, bottomColor);
 	}
 
-	void setVisible2(bool visible2) {m_bVisible2 = visible2;}
+	inline void setVisible2(bool visible2) {m_bVisible2 = visible2;}
 
-	inline bool isVisible2() const {return m_bVisible2;}
+	[[nodiscard]] bool isVisible2() const {return m_bVisible2;}
 
 private:
 	bool m_bVisible2;
@@ -121,7 +121,7 @@ public:
 		m_fAlpha = 1.0f;
 	}
 
-	virtual void draw(Graphics *g)
+	void draw(Graphics *g) override
 	{
 		if (!m_bVisible || !m_bVisible2) return;
 
@@ -158,12 +158,12 @@ public:
 
 	void setAlpha(float alpha) {m_fAlpha = alpha;}
 
-	void setVisible2(bool visible2) {m_bVisible2 = visible2;}
+	inline void setVisible2(bool visible2) {m_bVisible2 = visible2;}
 
-	inline bool isVisible2() const {return m_bVisible2;}
+	[[nodiscard]] inline bool isVisible2() const {return m_bVisible2;}
 
 private:
-	virtual void onMouseDownInside()
+	void onMouseDownInside() override
 	{
 		CBaseUIButton::onMouseDownInside();
 		onClicked();

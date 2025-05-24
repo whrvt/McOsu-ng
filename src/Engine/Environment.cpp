@@ -16,6 +16,7 @@
 #include "File.h"
 
 #if defined(MCENGINE_PLATFORM_WINDOWS)
+#include <io.h>
 #include <lmcons.h>
 #include <windows.h>
 #elif defined(__APPLE__) || defined(MCENGINE_PLATFORM_LINUX)
@@ -33,11 +34,6 @@
 #include <cstddef>
 #include <utility>
 
-// declarations
-static inline std::vector<UString> enumerateDirectory(const char *pathToEnum, SDL_PathType type);
-static inline void winSortInPlace(std::vector<UString> &toSort);
-static void sensTransformFunc(void *userdata, Uint64 timestamp, SDL_Window *window, SDL_MouseID mouseID, float *x, float *y);
-
 // definitions
 ConVar debug_env("debug_env", false, FCVAR_NONE);
 ConVar _fullscreen_windowed_borderless_("fullscreen_windowed_borderless", false, FCVAR_NONE);
@@ -45,6 +41,8 @@ ConVar _monitor_("monitor", 0, FCVAR_NONE, "monitor/display device to switch to,
 ConVar _processpriority("processpriority", 0, FCVAR_NONE, "sets the main process priority (0 = normal, 1 = high)");
 
 Environment *env = nullptr;
+
+bool Environment::s_bIsATTY = false;
 
 Environment::Environment(int argc, char *argv[])
 {
@@ -77,6 +75,8 @@ Environment::Environment(int argc, char *argv[])
 
 	// simple vector representation of the whole cmdline including the program name (as the first element)
 	m_vCmdLine = std::vector<UString>(argv, argv + argc);
+
+	s_bIsATTY = isatty_impl(stdout);
 
 	m_engine = nullptr; // will be initialized by the mainloop once setup is complete
 	m_window = nullptr;
@@ -182,7 +182,7 @@ UString Environment::getExecutablePath() const
 void Environment::openURLInDefaultBrowser(UString url) const
 {
 	if (!SDL_OpenURL(url.toUtf8()))
-		debugLog("Failed to open URL: %s\n", SDL_GetError());
+		debugLog("Failed to open URL: {:s}\n", SDL_GetError());
 }
 
 UString Environment::getUsername()
@@ -502,14 +502,14 @@ void Environment::enableFullscreen()
 		return;
 	if ((m_bFullscreen = SDL_SetWindowFullscreen(m_window, true))) // NOTE: "fake" fullscreen since we don't want a videomode change
 		return;
-	// if (m_envDebug) debugLog("%s %s\n", __PRETTY_FUNCTION__, SDL_GetError());
+	// if (m_envDebug) debugLog("{:s} {:s}\n", __PRETTY_FUNCTION__, SDL_GetError());
 }
 
 void Environment::disableFullscreen()
 {
 	if (!(m_bFullscreen = !SDL_SetWindowFullscreen(m_window, false)))
 		return;
-	// if (m_envDebug) debugLog("%s %s\n", __PRETTY_FUNCTION__, SDL_GetError());
+	// if (m_envDebug) debugLog("{:s} {:s}\n", __PRETTY_FUNCTION__, SDL_GetError());
 }
 
 void Environment::setFullscreenWindowedBorderless(bool fullscreenWindowedBorderless)
@@ -568,12 +568,12 @@ void Environment::setMonitor(int monitor)
 			success = SDL_SetWindowPosition(m_window, SDL_WINDOWPOS_CENTERED_DISPLAY(monitor), SDL_WINDOWPOS_CENTERED_DISPLAY(monitor));
 
 		if (!success)
-			debugLog("WARNING: failed to setMonitor(%d), centering instead. SDL error: %s\n", monitor, SDL_GetError());
+			debugLog("WARNING: failed to setMonitor({:d}), centering instead. SDL error: {:s}\n", monitor, SDL_GetError());
 		else if (!(success = (monitor == getMonitor())))
-			debugLog("WARNING: setMonitor(%d) didn't actually change the monitor, centering instead.\n", monitor);
+			debugLog("WARNING: setMonitor({:d}) didn't actually change the monitor, centering instead.\n", monitor);
 	}
 	else
-		debugLog("WARNING: tried to setMonitor(%d) to invalid monitor, centering instead\n", monitor);
+		debugLog("WARNING: tried to setMonitor({:d}) to invalid monitor, centering instead\n", monitor);
 
 	if (!success)
 		center();
@@ -585,7 +585,7 @@ HWND Environment::getHwnd() const
 #if defined(MCENGINE_PLATFORM_WINDOWS)
 	hwnd = (HWND)SDL_GetPointerProperty(SDL_GetWindowProperties(m_window), SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
 	if (!hwnd)
-		debugLog("(Windows) hwnd is null! SDL: %s\n", SDL_GetError());
+		debugLog("(Windows) hwnd is null! SDL: {:s}\n", SDL_GetError());
 #elif defined(__APPLE__)
 	NSWindow *nswindow = (__bridge NSWindow *)SDL_GetPointerProperty(SDL_GetWindowProperties(m_window), SDL_PROP_WINDOW_COCOA_WINDOW_POINTER, NULL);
 	if (nswindow)
@@ -600,7 +600,7 @@ HWND Environment::getHwnd() const
 		if (xdisplay && xwindow)
 			hwnd = (HWND)xwindow;
 		else
-			debugLog("(X11) no display/no surface! SDL: %s\n", SDL_GetError());
+			debugLog("(X11) no display/no surface! SDL: {:s}\n", SDL_GetError());
 	}
 	else if (SDL_strcmp(SDL_GetCurrentVideoDriver(), "wayland") == 0)
 	{
@@ -609,7 +609,7 @@ HWND Environment::getHwnd() const
 		if (display && surface)
 			hwnd = (HWND)surface;
 		else
-			debugLog("(Wayland) no display/no surface! SDL: %s\n", SDL_GetError());
+			debugLog("(Wayland) no display/no surface! SDL: {:s}\n", SDL_GetError());
 	}
 #endif
 
@@ -680,6 +680,13 @@ void Environment::setCursor(CURSORTYPE cur)
 		m_cursorType = cur;
 		SDL_SetCursor(m_mCursorIcons.at(m_cursorType)); // does not make visible if the cursor isn't visible
 	}
+}
+
+static void sensTransformFunc(void *, Uint64, SDL_Window *, SDL_MouseID, float *x, float *y)
+{
+	const float sensitivity = mouse->getSensitivity();
+	*x *= sensitivity;
+	*y *= sensitivity;
 }
 
 void Environment::notifyWantRawInput(bool raw)
@@ -851,15 +858,8 @@ UString Environment::getThingFromPathHelper(UString &path, bool folder)
 	return path;
 }
 
-static void sensTransformFunc(void *, Uint64, SDL_Window *, SDL_MouseID, float *x, float *y)
-{
-	const float sensitivity = mouse->getSensitivity();
-	*x *= sensitivity;
-	*y *= sensitivity;
-}
-
 // for getting files in folder/ folders in folder
-static inline std::vector<UString> enumerateDirectory(const char *pathToEnum, SDL_PathType type)
+std::vector<UString> Environment::enumerateDirectory(const char *pathToEnum, SDL_PathType type)
 {
 	struct EnumContext
 	{
@@ -890,13 +890,13 @@ static inline std::vector<UString> enumerateDirectory(const char *pathToEnum, SD
 	EnumContext context{.dirName = path, .contents = &contents, .type = type};
 
 	if (!SDL_EnumerateDirectory(path.toUtf8(), enumCallback, &context))
-		debugLog("Failed to enumerate directory: %s\n", SDL_GetError());
+		debugLog("Failed to enumerate directory: {:s}\n", SDL_GetError());
 
 	return contents;
 }
 
 // return a more naturally windows-like sorted order for folders, useful for e.g. osu! skin list dropdown order
-static inline void winSortInPlace(std::vector<UString> &toSort)
+void Environment::winSortInPlace(std::vector<UString> &toSort)
 {
 	auto naturalCompare = [](const UString &a, const UString &b) -> bool {
 		const char *aStr = a.toUtf8();
@@ -955,4 +955,16 @@ static inline void winSortInPlace(std::vector<UString> &toSort)
 		return *aStr == 0 && *bStr != 0;
 	};
 	std::ranges::sort(toSort, naturalCompare);
+}
+
+// to know whether we should be printing colours etc. to the terminal
+bool Environment::isatty_impl(std::FILE *file)
+{
+#if defined(_WIN32) || defined(_WIN64)
+	return ::_isatty(_fileno(file)) != 0;
+#elif !defined(MCENGINE_PLATFORM_WASM)
+	return ::isatty(fileno(file)) != 0;
+#else
+	return false;
+#endif
 }

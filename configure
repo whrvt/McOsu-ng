@@ -7322,7 +7322,7 @@ then :
 
 else case e in #(
   e)
-    if test "$host_cpu" = "i686"
+    if test -n "$ubercompat"
 then :
 
         CXXFLAGS="$CXXFLAGS -march=pentium4 -mtune=generic"
@@ -10566,10 +10566,6 @@ ASSETS_DIR=assets
 BUNDLED_LIBS_DIR=libraries
 BUNDLED_BASS_DIR=$BUNDLED_LIBS_DIR/bass
 BUNDLED_BASS_FX_DIR=$BUNDLED_LIBS_DIR/bassfx
-
-
-printf "%s\n" "#define MCENGINE_FEATURE_SDL 1" >>confdefs.h
-
 
 # sanity check
 if test "x$with_sdlmixer" != "xyes" && test "x$with_soloud" != "xyes"

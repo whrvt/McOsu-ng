@@ -53,7 +53,7 @@ WinGL3Interface::WinGL3Interface(HWND hwnd) : OpenGL3Interface()
 	// get pixel format
 	PIXELFORMATDESCRIPTOR pfd = getPixelFormatDescriptor();
 	int pixelFormat = ChoosePixelFormat(m_hdc, &pfd);
-	debugLog("OpenGL: PixelFormat = %i\n", pixelFormat);
+	debugLog("OpenGL: PixelFormat = {}\n", pixelFormat);
 
 	if (pixelFormat == 0)
 	{
@@ -63,7 +63,7 @@ WinGL3Interface::WinGL3Interface(HWND hwnd) : OpenGL3Interface()
 
 	// set pixel format
 	BOOL result = SetPixelFormat(m_hdc, pixelFormat, &pfd);
-	debugLog("OpenGL: SetPixelFormat() = %i\n", result);
+	debugLog("OpenGL: SetPixelFormat() = {}\n", result);
 
 	if (result == FALSE)
 	{

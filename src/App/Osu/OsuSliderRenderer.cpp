@@ -228,8 +228,8 @@ void OsuSliderRenderer::draw(Graphics *g, Osu *osu, const std::vector<Vector2> &
 				BLEND_SHADER->setUniform1f("bodyColorSaturation", osu_slider_body_color_saturation.getFloat());
 				BLEND_SHADER->setUniform1f("borderSizeMultiplier", osu_slider_border_size_multiplier.getFloat());
 				BLEND_SHADER->setUniform1f("borderFeather", osu_slider_border_feather.load(std::memory_order::acquire));
-				BLEND_SHADER->setUniform3f("colBorder", Rf(dimmedBorderColor), Gf(dimmedBorderColor), Bf(dimmedBorderColor));
-				BLEND_SHADER->setUniform3f("colBody", Rf(dimmedBodyColor), Gf(dimmedBodyColor), Bf(dimmedBodyColor));
+				BLEND_SHADER->setUniform3f("colBorder", dimmedBorderColor.Rf(), dimmedBorderColor.Gf(), dimmedBorderColor.Bf());
+				BLEND_SHADER->setUniform3f("colBody", dimmedBodyColor.Rf(), dimmedBodyColor.Gf(), dimmedBodyColor.Bf());
 			}
 
 			g->setColor(argb(1.0f, colorRGBMultiplier, colorRGBMultiplier, colorRGBMultiplier)); // this only affects the gradient image if used (meaning shaders either don't work or are disabled on purpose)
@@ -378,8 +378,8 @@ void OsuSliderRenderer::draw(Graphics *g, Osu *osu, VertexArrayObject *vao, cons
 				BLEND_SHADER->setUniform1f("bodyColorSaturation", osu_slider_body_color_saturation.getFloat());
 				BLEND_SHADER->setUniform1f("borderSizeMultiplier", osu_slider_border_size_multiplier.getFloat());
 				BLEND_SHADER->setUniform1f("borderFeather", osu_slider_border_feather.load(std::memory_order::acquire));
-				BLEND_SHADER->setUniform3f("colBorder", Rf(dimmedBorderColor), Gf(dimmedBorderColor), Bf(dimmedBorderColor));
-				BLEND_SHADER->setUniform3f("colBody", Rf(dimmedBodyColor), Gf(dimmedBodyColor), Bf(dimmedBodyColor));
+				BLEND_SHADER->setUniform3f("colBorder", dimmedBorderColor.Rf(), dimmedBorderColor.Gf(), dimmedBorderColor.Bf());
+				BLEND_SHADER->setUniform3f("colBody", dimmedBodyColor.Rf(), dimmedBodyColor.Gf(), dimmedBodyColor.Bf());
 			}
 
 			g->setColor(argb(1.0f, colorRGBMultiplier, colorRGBMultiplier, colorRGBMultiplier)); // this only affects the gradient image if used (meaning shaders either don't work or are disabled on purpose)
@@ -478,8 +478,8 @@ void OsuSliderRenderer::drawVR(Graphics *g, Osu *osu, OsuVR *vr, Matrix4 &mvp, f
 			BLEND_SHADER_VR->setUniform1f("bodyAlphaMultiplier", osu_slider_body_alpha_multiplier.getFloat());
 			BLEND_SHADER_VR->setUniform1f("bodyColorSaturation", osu_slider_body_color_saturation.getFloat());
 			BLEND_SHADER_VR->setUniform1f("borderSizeMultiplier", osu_slider_border_size_multiplier.getFloat());
-			BLEND_SHADER_VR->setUniform3f("colBorder", Rf(dimmedBorderColor), Gf(dimmedBorderColor), Bf(dimmedBorderColor));
-			BLEND_SHADER_VR->setUniform3f("colBody", Rf(dimmedBodyColor), Gf(dimmedBodyColor), Bf(dimmedBodyColor));
+			BLEND_SHADER_VR->setUniform3f("colBorder", dimmedBorderColor.Rf(), dimmedBorderColor.Gf(), dimmedBorderColor.Bf());
+			BLEND_SHADER_VR->setUniform3f("colBody", dimmedBodyColor.Rf(), dimmedBodyColor.Gf(), dimmedBodyColor.Bf());
 		}
 
 		g->setColor(0xffffffff);
@@ -568,8 +568,8 @@ void OsuSliderRenderer::drawVR(Graphics *g, Osu *osu, OsuVR *vr, Matrix4 &mvp, f
 			BLEND_SHADER_VR->setUniform1f("bodyAlphaMultiplier", osu_slider_body_alpha_multiplier.getFloat());
 			BLEND_SHADER_VR->setUniform1f("bodyColorSaturation", osu_slider_body_color_saturation.getFloat());
 			BLEND_SHADER_VR->setUniform1f("borderSizeMultiplier", osu_slider_border_size_multiplier.getFloat());
-			BLEND_SHADER_VR->setUniform3f("colBorder", Rf(dimmedBorderColor), Gf(dimmedBorderColor), Bf(dimmedBorderColor));
-			BLEND_SHADER_VR->setUniform3f("colBody", Rf(dimmedBodyColor), Gf(dimmedBodyColor), Bf(dimmedBodyColor));
+			BLEND_SHADER_VR->setUniform3f("colBorder", dimmedBorderColor.Rf(), dimmedBorderColor.Gf(), dimmedBorderColor.Bf());
+			BLEND_SHADER_VR->setUniform3f("colBody", dimmedBodyColor.Rf(), dimmedBodyColor.Gf(), dimmedBodyColor.Bf());
 		}
 
 		g->setColor(0xffffffff);

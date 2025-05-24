@@ -91,7 +91,7 @@ void DirectX11Shader::init()
 			const std::vector<UString> tokens = desc.split("::");
 
 			if (debug_shaders->getBool())
-				debugLog("descs[%i] = %s\n", (int)i, desc.toUtf8());
+				debugLog("descs[{}] = {:s}\n", (int)i, desc.toUtf8());
 
 			if (tokens.size() > 4)
 			{
@@ -101,7 +101,7 @@ void DirectX11Shader::init()
 				{
 					for (size_t t=0; t<tokens.size(); t++)
 					{
-						debugLog("descs[%i][%i] = %s\n", (int)i, (int)t, tokens[t].toUtf8());
+						debugLog("descs[{}][{}] = {:s}\n", (int)i, (int)t, tokens[t].toUtf8());
 					}
 				}
 
@@ -284,7 +284,7 @@ void DirectX11Shader::init()
 							bindDesc.floats.resize(bindDesc.floats.size() + (bindDescLine.variableBytes / sizeof(float)));
 
 							if (debug_shaders->getBool())
-								debugLog("bindDesc[%s].floats.size() = %i\n", bindDescLine.name.toUtf8(), (int)bindDesc.floats.size());
+								debugLog("bindDesc[{:s}].floats.size() = {}\n", bindDescLine.name.toUtf8(), (int)bindDesc.floats.size());
 						}
 						break;
 					}
@@ -319,12 +319,12 @@ void DirectX11Shader::init()
 			{
 				for (size_t i=0; i<m_inputDescs.size(); i++)
 				{
-					debugLog("m_inputDescs[%i] = \"%s\", has %i line(s)\n", (int)i, m_inputDescs[i].type.toUtf8(), (int)m_inputDescs[i].lines.size());
+					debugLog("m_inputDescs[{}] = \"{:s}\", has {} line(s)\n", (int)i, m_inputDescs[i].type.toUtf8(), (int)m_inputDescs[i].lines.size());
 				}
 
 				for (size_t i=0; i<m_bindDescs.size(); i++)
 				{
-					debugLog("m_bindDescs[%i] = \"%s\", has %i lines(s)\n", (int)i, m_bindDescs[i].name.toUtf8(), (int)m_bindDescs[i].lines.size());
+					debugLog("m_bindDescs[{}] = \"{:s}\", has {} lines(s)\n", (int)i, m_bindDescs[i].name.toUtf8(), (int)m_bindDescs[i].lines.size());
 				}
 			}
 		}
@@ -611,7 +611,7 @@ const DirectX11Shader::CACHE_ENTRY DirectX11Shader::getAndCacheUniformLocation(c
 				return newCacheEntry;
 			}
 			else if (debug_shaders->getBool())
-				debugLog("DirectX11Shader Warning: Can't find uniform %s\n", name.toUtf8());
+				debugLog("DirectX11Shader Warning: Can't find uniform {:s}\n", name.toUtf8());
 		}
 	}
 
@@ -662,14 +662,14 @@ bool DirectX11Shader::compile(UString vertexShader, UString fragmentShader)
 	{
 		if (vsError != NULL)
 		{
-			debugLog("DirectX11Shader Vertex Shader Error: \n%s\n", (const char*)vsError->GetBufferPointer());
+			debugLog("DirectX11Shader Vertex Shader Error: \n{:s}\n", (const char*)vsError->GetBufferPointer());
 			vsError->Release();
 			debugLog("\n");
 		}
 
 		if (psError != NULL)
 		{
-			debugLog("DirectX11Shader Pixel Shader Error: \n%s\n", (const char*)psError->GetBufferPointer());
+			debugLog("DirectX11Shader Pixel Shader Error: \n{:s}\n", (const char*)psError->GetBufferPointer());
 			psError->Release();
 			debugLog("\n");
 		}
@@ -680,11 +680,11 @@ bool DirectX11Shader::compile(UString vertexShader, UString fragmentShader)
 	}
 
 	// encapsulate
-	debugLog("DirectX11Shader: CreateVertexShader(%i) ...\n", vs->GetBufferSize());
+	debugLog("DirectX11Shader: CreateVertexShader({}) ...\n", vs->GetBufferSize());
 	hr1 = dx11->getDevice()->CreateVertexShader(vs->GetBufferPointer(), vs->GetBufferSize(), NULL, &m_vs);
 	// NOTE: vs is not released here, since it's still needed for the input layout (1/2)
 
-	debugLog("DirectX11Shader: CreatePixelShader(%i) ...\n", ps->GetBufferSize());
+	debugLog("DirectX11Shader: CreatePixelShader({}) ...\n", ps->GetBufferSize());
 	hr2 = dx11->getDevice()->CreatePixelShader(ps->GetBufferPointer(), ps->GetBufferSize(), NULL, &m_ps);
 	ps->Release();
 
@@ -713,7 +713,7 @@ bool DirectX11Shader::compile(UString vertexShader, UString fragmentShader)
 				element.InstanceDataStepRate = 0;
 
 				if (debug_shaders->getBool())
-					debugLog("%s, %i, %i, %i, %i, %i, %i\n", element.SemanticName, (int)element.SemanticIndex, (int)element.Format, (int)element.InputSlot, (int)element.AlignedByteOffset, (int)element.InputSlotClass, (int)element.InstanceDataStepRate);
+					debugLog("{:s}, {}, {}, {}, {}, {}, {}\n", element.SemanticName, (int)element.SemanticIndex, (int)element.Format, (int)element.InputSlot, (int)element.AlignedByteOffset, (int)element.InputSlotClass, (int)element.InstanceDataStepRate);
 			}
 			elements.push_back(element);
 

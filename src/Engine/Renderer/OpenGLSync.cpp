@@ -63,7 +63,7 @@ void OpenGLSync::end()
 			m_frameSyncQueue.push_back(syncPoint);
 
 			if (r_sync_debug.getBool())
-				debugLog("Created sync object for frame %d (frames in flight: %d/%d)\n", syncPoint.frameNumber, m_frameSyncQueue.size(), m_iMaxFramesInFlight);
+				debugLog("Created sync object for frame {:d} (frames in flight: {:d}/{:d})\n", syncPoint.frameNumber, m_frameSyncQueue.size(), m_iMaxFramesInFlight);
 		}
 	}
 }
@@ -89,7 +89,7 @@ void OpenGLSync::manageFrameSyncQueue(bool forceWait)
 	if (signaled == GL_SIGNALED)
 	{
 		if (debug)
-			debugLog("Frame %d already completed (no wait needed)\n", oldestSync.frameNumber);
+			debugLog("Frame {:d} already completed (no wait needed)\n", oldestSync.frameNumber);
 
 		deleteSyncObject(oldestSync.syncObject);
 		m_frameSyncQueue.pop_front();
@@ -106,7 +106,7 @@ void OpenGLSync::manageFrameSyncQueue(bool forceWait)
 			if (signaled == GL_SIGNALED)
 			{
 				if (debug)
-					debugLog("Frame %d also completed\n", nextSync.frameNumber);
+					debugLog("Frame {:d} also completed\n", nextSync.frameNumber);
 
 				deleteSyncObject(nextSync.syncObject);
 				m_frameSyncQueue.pop_front();
@@ -121,7 +121,7 @@ void OpenGLSync::manageFrameSyncQueue(bool forceWait)
 	else if (needToWait)
 	{
 		if (debug)
-			debugLog("Waiting for frame %d to complete (frames in flight: %d/%d)\n", oldestSync.frameNumber, m_frameSyncQueue.size(), m_iMaxFramesInFlight);
+			debugLog("Waiting for frame {:d} to complete (frames in flight: {:d}/{:d})\n", oldestSync.frameNumber, m_frameSyncQueue.size(), m_iMaxFramesInFlight);
 
 		SYNC_RESULT result = waitForSyncObject(oldestSync.syncObject, r_sync_timeout.getInt());
 
@@ -130,19 +130,19 @@ void OpenGLSync::manageFrameSyncQueue(bool forceWait)
 			switch (result)
 			{
 			case SYNC_OBJECT_NOT_READY:
-				debugLog("Frame %d sync object was not ready\n", oldestSync.frameNumber);
+				debugLog("Frame {:d} sync object was not ready\n", oldestSync.frameNumber);
 				break;
 			case SYNC_ALREADY_SIGNALED:
-				debugLog("Frame %d sync object was already signaled\n", oldestSync.frameNumber);
+				debugLog("Frame {:d} sync object was already signaled\n", oldestSync.frameNumber);
 				break;
 			case SYNC_GPU_COMPLETED:
-				debugLog("Frame %d sync object was just completed\n", oldestSync.frameNumber);
+				debugLog("Frame {:d} sync object was just completed\n", oldestSync.frameNumber);
 				break;
 			case SYNC_TIMEOUT_EXPIRED:
-				debugLog("Frame %d sync object timed out after %d microseconds\n", oldestSync.frameNumber, r_sync_timeout.getInt());
+				debugLog("Frame {:d} sync object timed out after {:d} microseconds\n", oldestSync.frameNumber, r_sync_timeout.getInt());
 				break;
 			case SYNC_WAIT_FAILED:
-				debugLog("Frame %d sync wait failed\n", oldestSync.frameNumber);
+				debugLog("Frame {:d} sync wait failed\n", oldestSync.frameNumber);
 				break;
 			}
 		}
@@ -165,7 +165,7 @@ void OpenGLSync::manageFrameSyncQueue(bool forceWait)
 				if (signaled == GL_SIGNALED)
 				{
 					if (debug)
-						debugLog("Frame %d also completed\n", nextSync.frameNumber);
+						debugLog("Frame {:d} also completed\n", nextSync.frameNumber);
 
 					deleteSyncObject(nextSync.syncObject);
 					m_frameSyncQueue.pop_front();
@@ -226,7 +226,7 @@ void OpenGLSync::setMaxFramesInFlight(int maxFrames)
 	if (m_bEnabled && m_frameSyncQueue.size() > m_iMaxFramesInFlight)
 	{
 		if (r_sync_debug.getBool())
-			debugLog("Max frames reduced to %d, waiting for excess frames\n", m_iMaxFramesInFlight);
+			debugLog("Max frames reduced to {:d}, waiting for excess frames\n", m_iMaxFramesInFlight);
 		// wait
 		manageFrameSyncQueue(true);
 	}

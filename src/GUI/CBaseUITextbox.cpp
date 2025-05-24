@@ -296,14 +296,14 @@ void CBaseUITextbox::update()
 			break;
 
 		case 3: // copy
-			//envDebugLog("selected copy text: %s\n",getSelectedText().toUtf8());
+			//envDebugLog("selected copy text: {:s}\n",getSelectedText().toUtf8());
 			env->setClipBoardText(getSelectedText());
 			break;
 
 		case 2: // cut
 			env->setClipBoardText(getSelectedText());
 			handleDeleteSelectedText();
-			//envDebugLog("selected cut text: %s\n",getSelectedText().toUtf8());
+			//envDebugLog("selected cut text: {:s}\n",getSelectedText().toUtf8());
 			break;
 
 		case 1: // delete
@@ -640,10 +640,10 @@ void CBaseUITextbox::insertTextFromClipboard()
 	const UString clipstring = env->getClipBoardText();
 
 	/*
-	debugLog("got clip string: %s\n", clipstring.toUtf8());
+	debugLog("got clip string: {:s}\n", clipstring.toUtf8());
 	for (int i=0; i<clipstring.length(); i++)
 	{
-		debugLog("char #%i = %i\n", i, clipstring[i]);
+		debugLog("char #{} = {}\n", i, clipstring[i]);
 	}
 	*/
 

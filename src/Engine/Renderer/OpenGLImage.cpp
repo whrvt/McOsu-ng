@@ -82,7 +82,7 @@ void OpenGLImage::init()
 	if (m_rawImage.empty())
 	{
 		auto GLerror = glGetError();
-		debugLog("OpenGL Image Error: %i on file %s!\n", GLerror, m_sFilePath.toUtf8());
+		debugLog("OpenGL Image Error: {} on file {:s}!\n", GLerror, m_sFilePath.toUtf8());
 		engine->showMessageError("Image Error", UString::format("OpenGL Image error %i on file %s", GLerror, m_sFilePath.toUtf8()));
 		return;
 	}
@@ -107,7 +107,7 @@ void OpenGLImage::initAsync()
 	if (!m_bCreatedImage)
 	{
 		if (ResourceManager::debug_rm->getBool())
-			debugLog("Resource Manager: Loading %s\n", m_sFilePath.toUtf8());
+			debugLog("Resource Manager: Loading {:s}\n", m_sFilePath.toUtf8());
 
 		m_bAsyncReady = loadRawImage();
 	}

@@ -101,5 +101,6 @@ template <typename T>
 // EXTERNAL INCLUDES
 
 #include <glm/trigonometric.hpp> // for glm::radians/glm::degrees
+#include <glm/gtx/compatibility.hpp> // for glm::atan2
 
 #endif

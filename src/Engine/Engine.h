@@ -13,14 +13,9 @@
 #include "McMath.h"
 #include "Timing.h"
 #include "cbase.h"
+#include "fmt/color.h"
 
 #include <source_location>
-
-#ifdef _DEBUG
-#define debugLog(...) Engine::ContextLogger::log(std::source_location::current(), __VA_ARGS__)
-#else
-#define debugLog(...) Engine::ContextLogger::log(__FUNCTION__, __VA_ARGS__)
-#endif
 
 class App;
 class Mouse;
@@ -42,53 +37,17 @@ class VisualProfiler;
 class ConsoleBox;
 class Console;
 
+#ifdef _DEBUG
+#define debugLog(...) Engine::ContextLogger::log(std::source_location::current(), __VA_ARGS__)
+#else
+#define debugLog(...) Engine::ContextLogger::log(__FUNCTION__, __VA_ARGS__)
+#endif
+
 class Engine final : public KeyboardListener
 {
 public:
-	static void debugLog_(const char *fmt, va_list args);
-	static void debugLog_(Color color, const char *fmt, va_list args);
-	static void debugLog_(const char *fmt, ...);
-	static void debugLog_(Color color, const char *fmt, ...);
-
-	// this is messy, but it's a way to add context without changing the public debugLog interface
-	class ContextLogger
-	{
-	public:
-		template <class T, typename... Args>
-		static void log(T function, const char *fmt, Args... args)
-		{
-			std::string newFormat = formatWithContext(function, fmt);
-			Engine::debugLog_(newFormat.c_str(), args...);
-		}
-
-		template <class T, typename... Args>
-		static void log(T function, Color color, const char *fmt, Args... args)
-		{
-			std::string newFormat = formatWithContext(function, fmt);
-			Engine::debugLog_(color, newFormat.c_str(), args...);
-		}
-
-	private:
-		template <typename... Args>
-		static std::string formatWithContext(const std::source_location func, const char *fmt)
-		{
-			std::ostringstream contextPrefix;
-			contextPrefix << "[" << Environment::getFileNameFromFilePath(func.file_name()).toUtf8() << ":" << func.line() << ":" << func.column() << "] " << "[" << func.function_name() << "]: ";
-			return contextPrefix.str() + fmt;
-		}
-		template <typename... Args>
-		static std::string formatWithContext(const char *func, const char *fmt)
-		{
-			std::ostringstream contextPrefix;
-			contextPrefix << "[" << func << "] ";
-
-			return contextPrefix.str() + fmt;
-		}
-	};
-
-public:
 	Engine();
-	~Engine();
+	~Engine() override;
 
 	// app
 	void loadApp();
@@ -162,7 +121,7 @@ public:
 	[[nodiscard]] inline double getTimeRunning() const { return m_dRunTime; }
 	[[nodiscard]] inline double getFrameTime() const { return m_dFrameTime; }
 	[[nodiscard]] inline unsigned long getFrameCount() const { return m_iFrameCount; }
-	[[nodiscard]] inline bool vsyncFrame() const {return m_fFrameThrottleTime > 0;}
+	[[nodiscard]] inline bool vsyncFrame() const { return m_fFrameThrottleTime > 0; }
 
 	// vars
 	[[nodiscard]] inline bool hasFocus() const { return m_bHasFocus; }
@@ -213,6 +172,64 @@ private:
 
 	// math
 	McMath *m_math;
+
+public:
+	// logging stuff (should use the debugLog interface)
+	class ContextLogger
+	{
+	public:
+		// debug build shows full source location
+		template <typename... Args>
+		static void log(const std::source_location &loc, fmt::format_string<Args...> fmt, Args &&...args)
+		{
+			auto contextPrefix =
+			    fmt::format("[{}:{}:{}] [{}]: ", Environment::getFileNameFromFilePath(loc.file_name()).toUtf8(), loc.line(), loc.column(), loc.function_name());
+
+			auto message = fmt::format(fmt, std::forward<Args>(args)...);
+			Engine::logImpl(contextPrefix + message);
+		}
+
+		template <typename... Args>
+		static void log(const std::source_location &loc, Color color, fmt::format_string<Args...> fmt, Args &&...args)
+		{
+			auto contextPrefix =
+			    fmt::format("[{}:{}:{}] [{}]: ", Environment::getFileNameFromFilePath(loc.file_name()).toUtf8(), loc.line(), loc.column(), loc.function_name());
+
+			auto message = fmt::format(fmt, std::forward<Args>(args)...);
+			Engine::logImpl(contextPrefix + message, color);
+		}
+
+		// release build only shows function name
+		template <typename... Args>
+		static void log(const char *func, fmt::format_string<Args...> fmt, Args &&...args)
+		{
+			auto contextPrefix = fmt::format("[{}] ", func);
+			auto message = fmt::format(fmt, std::forward<Args>(args)...);
+			Engine::logImpl(contextPrefix + message);
+		}
+
+		template <typename... Args>
+		static void log(const char *func, Color color, fmt::format_string<Args...> fmt, Args &&...args)
+		{
+			auto contextPrefix = fmt::format("[{}] ", func);
+			auto message = fmt::format(fmt, std::forward<Args>(args)...);
+			Engine::logImpl(contextPrefix + message, color);
+		}
+	};
+
+private:
+	// logging stuff (implementation)
+	static void logToConsole(std::optional<Color> color, UString message);
+
+	static void logImpl(const std::string &message, Color color = rgb(255, 255, 255))
+	{
+		if (color == rgb(255, 255, 255) || !Environment::isatty())
+			fmt::print("{}", message);
+		else
+			fmt::print(fmt::fg(fmt::rgb(color.r, color.g, color.b)), "{}", message);
+
+		logToConsole(color, UString(message));
+	}
 };
 
 extern Mouse *mouse;

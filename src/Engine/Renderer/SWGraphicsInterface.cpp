@@ -110,10 +110,10 @@ void SWGraphicsInterface::drawPixel(int x, int y)
 	PIXEL sdstPixel = m_backBuffer[index];
 	Color srcPixel = argb(ssrcPixel.a, ssrcPixel.r, ssrcPixel.g, ssrcPixel.b);
 	Color dstPixel = argb(sdstPixel.a, sdstPixel.r, sdstPixel.g, sdstPixel.b);
-	Color finalColor = argb((Af(srcPixel)*Af(srcPixel) + Af(dstPixel)*(1.0f - Af(srcPixel))),
-							  (Rf(srcPixel)*Af(srcPixel) + Rf(dstPixel)*(1.0f - Af(srcPixel))),
-							  (Gf(srcPixel)*Af(srcPixel) + Gf(dstPixel)*(1.0f - Af(srcPixel))),
-							  (Bf(srcPixel)*Af(srcPixel) + Bf(dstPixel)*(1.0f - Af(srcPixel))));
+	Color finalColor = argb((srcPixel.Af()*srcPixel.Af() + dstPixel.Af()*(1.0f - srcPixel.Af())),
+							  (srcPixel.Rf()*srcPixel.Af() + dstPixel.Rf()*(1.0f - srcPixel.Af())),
+							  (srcPixel.Gf()*srcPixel.Af() + dstPixel.Gf()*(1.0f - srcPixel.Af())),
+							  (srcPixel.Bf()*srcPixel.Af() + dstPixel.Bf()*(1.0f - srcPixel.Af())));
 
 	m_backBuffer[index] = getColorPixel(finalColor);
 }
@@ -372,12 +372,12 @@ void SWGraphicsInterface::setClipRect(McRect clipRect)
 	int viewport[4];
 	glGetIntegerv(GL_VIEWPORT, viewport);
 
-	//debugLog("viewport = %i, %i, %i, %i\n", viewport[0], viewport[1], viewport[2], viewport[3]);
+	//debugLog("viewport = {}, {}, {}, {}\n", viewport[0], viewport[1], viewport[2], viewport[3]);
 
 	glEnable(GL_SCISSOR_TEST);
 	glScissor((int)clipRect.getX()+viewport[0], viewport[3]-((int)clipRect.getY()-viewport[1]-1+(int)clipRect.getHeight()), (int)clipRect.getWidth(), (int)clipRect.getHeight());
 
-	//debugLog("scissor = %i, %i, %i, %i\n", (int)clipRect.getX()+viewport[0], viewport[3]-((int)clipRect.getY()-viewport[1]-1+(int)clipRect.getHeight()), (int)clipRect.getWidth(), (int)clipRect.getHeight());
+	//debugLog("scissor = {}, {}, {}, {}\n", (int)clipRect.getX()+viewport[0], viewport[3]-((int)clipRect.getY()-viewport[1]-1+(int)clipRect.getHeight()), (int)clipRect.getWidth(), (int)clipRect.getHeight());
 	*/
 }
 
@@ -596,10 +596,10 @@ void SWGraphicsInterface::onTransformUpdate(Matrix4 &projectionMatrix, Matrix4 &
 SWGraphicsInterface::PIXEL SWGraphicsInterface::getColorPixel(const Color &color)
 {
 	PIXEL p;
-	p.r = (unsigned char)Ri(color);
-	p.g = (unsigned char)Gi(color);
-	p.b = (unsigned char)Bi(color);
-	p.a = (unsigned char)Ai(color);
+	p.r = (unsigned char)color.r;
+	p.g = (unsigned char)color.g;
+	p.b = (unsigned char)color.b;
+	p.a = (unsigned char)color.a;
 	return p;
 }
 

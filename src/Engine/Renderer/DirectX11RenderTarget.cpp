@@ -35,7 +35,7 @@ DirectX11RenderTarget::DirectX11RenderTarget(int x, int y, int width, int height
 
 void DirectX11RenderTarget::init()
 {
-	debugLog("Building RenderTarget (%ix%i) ...\n", (int)m_vSize.x, (int)m_vSize.y);
+	debugLog("Building RenderTarget ({}x{}) ...\n", (int)m_vSize.x, (int)m_vSize.y);
 
 	HRESULT hr;
 
@@ -258,7 +258,7 @@ void DirectX11RenderTarget::enable()
 	if (debug_rt->getBool())
 		clearColor = argb(0.5f, 0.0f, 0.5f, 0.0f);
 
-	float fClearColor[4] = {Rf(clearColor), Gf(clearColor), Bf(clearColor), Af(clearColor)};
+	float fClearColor[4] = {clearColor.Rf(), clearColor.Gf(), clearColor.Bf(), clearColor.Af()};
 
 	if (m_bClearColorOnDraw)
 		dx11->getDeviceContext()->ClearRenderTargetView(m_renderTargetView, fClearColor);

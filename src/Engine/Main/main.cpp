@@ -350,7 +350,7 @@ SDL_AppResult SDLMain::handleEvent(SDL_Event *event)
 
 		default:
 			if (envDebug())
-				debugLog("DEBUG: unhandled SDL window event %i\n", event->window.type);
+				debugLog("DEBUG: unhandled SDL window event {}\n", static_cast<int>(event->window.type));
 			break;
 		}
 		break;
@@ -521,7 +521,7 @@ bool SDLMain::createWindow(int width, int height)
 
 	if (m_window == NULL)
 	{
-		debugLog("Couldn't SDL_CreateWindow(): %s\n", SDL_GetError());
+		debugLog("Couldn't SDL_CreateWindow(): {:s}\n", SDL_GetError());
 		return false;
 	}
 
@@ -579,7 +579,7 @@ float SDLMain::queryDisplayHz()
 		if (currentDisplayMode && currentDisplayMode->refresh_rate > 0)
 		{
 			if (!almostEqual(m_fDisplayHz, currentDisplayMode->refresh_rate))
-				debugLog("Got refresh rate %.3f Hz for display %d.\n", currentDisplayMode->refresh_rate, display);
+				debugLog("Got refresh rate {:.3f} Hz for display {:d}.\n", currentDisplayMode->refresh_rate, display);
 			auto fourxhz = currentDisplayMode->refresh_rate * 4;
 			if (fps_max.getFloat() == fps_max.getDefaultFloat())
 			{
@@ -592,7 +592,7 @@ float SDLMain::queryDisplayHz()
 		{
 			static int once;
 			if (!once++)
-				debugLog("Couldn't SDL_GetCurrentDisplayMode(SDL display: %d): %s\n", display, SDL_GetError());
+				debugLog("Couldn't SDL_GetCurrentDisplayMode(SDL display: {:d}): {:s}\n", display, SDL_GetError());
 		}
 	}
 	return std::clamp<float>(fps_max.getFloat(), 60.0f, 500.0f);

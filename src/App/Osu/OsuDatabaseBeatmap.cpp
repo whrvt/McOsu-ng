@@ -406,7 +406,7 @@ OsuDatabaseBeatmap::PRIMITIVE_CONTAINER OsuDatabaseBeatmap::loadPrimitiveObjects
 							std::vector<UString> tokens = UString(curLineChar).split(",");
 							if (tokens.size() < 8)
 							{
-								debugLog("Invalid slider in beatmap: %s\n\ncurLine = %s\n", osuFilePath.toUtf8(), curLineChar);
+								debugLog("Invalid slider in beatmap: {:s}\n\ncurLine = {:s}\n", osuFilePath.toUtf8(), curLineChar);
 								continue;
 								//engine->showMessageError("Error", UString::format("Invalid slider in beatmap: %s\n\ncurLine = %s", m_sFilePath.toUtf8(), curLine));
 								//return false;
@@ -415,7 +415,7 @@ OsuDatabaseBeatmap::PRIMITIVE_CONTAINER OsuDatabaseBeatmap::loadPrimitiveObjects
 							std::vector<UString> sliderTokens = tokens[5].split("|");
 							if (sliderTokens.size() < 1) // partially allow bullshit sliders (no controlpoints!), e.g. https://osu.ppy.sh/beatmapsets/791900#osu/1676490
 							{
-								debugLog("Invalid slider tokens: %s\n\nIn beatmap: %s\n", curLineChar, osuFilePath.toUtf8());
+								debugLog("Invalid slider tokens: {:s}\n\nIn beatmap: {:s}\n", curLineChar, osuFilePath.toUtf8());
 								continue;
 								//engine->showMessageError("Error", UString::format("Invalid slider tokens: %s\n\nIn beatmap: %s", curLineChar, m_sFilePath.toUtf8()));
 								//return false;
@@ -431,7 +431,7 @@ OsuDatabaseBeatmap::PRIMITIVE_CONTAINER OsuDatabaseBeatmap::loadPrimitiveObjects
 								// not a very elegant check, but it does the job
 								if (sliderXY.size() != 2 || sliderXY[0].find("E") != -1 || sliderXY[0].find("e") != -1 || sliderXY[1].find("E") != -1 || sliderXY[1].find("e") != -1)
 								{
-									debugLog("Invalid slider positions: %s\n\nIn Beatmap: %s\n", curLineChar, osuFilePath.toUtf8());
+									debugLog("Invalid slider positions: {:s}\n\nIn Beatmap: {:s}\n", curLineChar, osuFilePath.toUtf8());
 									continue;
 									//engine->showMessageError("Error", UString::format("Invalid slider positions: %s\n\nIn beatmap: %s", curLine, m_sFilePath.toUtf8()));
 									//return false;
@@ -482,7 +482,7 @@ OsuDatabaseBeatmap::PRIMITIVE_CONTAINER OsuDatabaseBeatmap::loadPrimitiveObjects
 							auto tokens = UString(curLineChar).split<float>(",");
 							if (tokens.size() < 6)
 							{
-								debugLog("Invalid spinner in beatmap: %s\n\ncurLine = %s\n", osuFilePath.toUtf8(), curLineChar);
+								debugLog("Invalid spinner in beatmap: {:s}\n\ncurLine = {:s}\n", osuFilePath.toUtf8(), curLineChar);
 								continue;
 								//engine->showMessageError("Error", UString::format("Invalid spinner in beatmap: %s\n\ncurLine = %s", m_sFilePath.toUtf8(), curLine));
 								//return false;
@@ -505,14 +505,14 @@ OsuDatabaseBeatmap::PRIMITIVE_CONTAINER OsuDatabaseBeatmap::loadPrimitiveObjects
 
 							if (tokens.size() < 6)
 							{
-								debugLog("Invalid hold note in beatmap: %s\n\ncurLine = %s\n", osuFilePath.toUtf8(), curLineChar);
+								debugLog("Invalid hold note in beatmap: {:s}\n\ncurLine = {:s}\n", osuFilePath.toUtf8(), curLineChar);
 								continue;
 							}
 
 							std::vector<UString> holdNoteTokens = tokens[5].split(":");
 							if (holdNoteTokens.size() < 1)
 							{
-								debugLog("Invalid hold note in beatmap: %s\n\ncurLine = %s\n", osuFilePath.toUtf8(), curLineChar);
+								debugLog("Invalid hold note in beatmap: {:s}\n\ncurLine = {:s}\n", osuFilePath.toUtf8(), curLineChar);
 								continue;
 							}
 
@@ -1013,7 +1013,7 @@ bool OsuDatabaseBeatmap::loadMetadata(OsuDatabaseBeatmap *databaseBeatmap)
 	databaseBeatmap->m_timingpoints = std::vector<TIMINGPOINT>();
 
 	if (Osu::debug->getBool())
-		debugLog("%s\n", databaseBeatmap->m_sFilePath.toUtf8());
+		debugLog("{:s}\n", databaseBeatmap->m_sFilePath.toUtf8());
 
 	// generate MD5 hash (loads entire file, very slow)
 	databaseBeatmap->m_sMD5Hash.clear();
@@ -1048,7 +1048,7 @@ bool OsuDatabaseBeatmap::loadMetadata(OsuDatabaseBeatmap *databaseBeatmap)
 		McFile file(!databaseBeatmap->m_bFilePathIsInMemoryBeatmap ? databaseBeatmap->m_sFilePath : "");
 		if (!file.canRead() && !databaseBeatmap->m_bFilePathIsInMemoryBeatmap)
 		{
-			debugLog("Osu Error: Couldn't read file %s\n", databaseBeatmap->m_sFilePath.toUtf8());
+			debugLog("Osu Error: Couldn't read file {:s}\n", databaseBeatmap->m_sFilePath.toUtf8());
 			return false;
 		}
 
@@ -1098,7 +1098,7 @@ bool OsuDatabaseBeatmap::loadMetadata(OsuDatabaseBeatmap *databaseBeatmap)
 						{
 							if (databaseBeatmap->m_iVersion > osu_beatmap_version.getInt())
 							{
-								debugLog("Ignoring unknown/invalid beatmap version %i\n", databaseBeatmap->m_iVersion);
+								debugLog("Ignoring unknown/invalid beatmap version {}\n", databaseBeatmap->m_iVersion);
 								return false;
 							}
 						}
@@ -1765,7 +1765,7 @@ OsuDatabaseBeatmap::LOAD_GAMEPLAY_RESULT OsuDatabaseBeatmap::loadGameplay(OsuDat
 		}
 	}
 
-	debugLog("loaded %i hitobjects\n", result.hitobjects.size());
+	debugLog("loaded {} hitobjects\n", result.hitobjects.size());
 
 	return result;
 }
@@ -1914,7 +1914,7 @@ OsuDatabaseBeatmap::TIMING_INFO OsuDatabaseBeatmap::getTimingInfoForTimeAndTimin
 		if (t->offset > (long)positionMS)
 			break;
 
-		//debugLog("timingpoint %i msperbeat = %f\n", i, t->msPerBeat);
+		//debugLog("timingpoint {} msperbeat = {:f}\n", i, t->msPerBeat);
 
 		if (t->msPerBeat >= 0) // NOT inherited
 		{

@@ -161,7 +161,7 @@ void OsuMultiplayer::update()
 
 			if (!finished)
 			{
-				//debugLog("sending chunk fileType = %i, fileSize = %i, alreadyUploaded = %i, numDataBytes = %i\n", (int)fileType, (int)fileSize, (int)alreadyUploadedDataBytes, (int)pp.numDataBytes);
+				//debugLog("sending chunk fileType = {}, fileSize = {}, alreadyUploaded = {}, numDataBytes = {}\n", (int)fileType, (int)fileSize, (int)alreadyUploadedDataBytes, (int)pp.numDataBytes);
 
 				if (buffer == NULL)
 				{
@@ -209,7 +209,7 @@ void OsuMultiplayer::update()
 			m_uploads.erase(m_uploads.begin() + i);
 			i--;
 
-			debugLog("remaining uploads: %i\n", (int)m_uploads.size());
+			debugLog("remaining uploads: {}\n", (int)m_uploads.size());
 
 			continue;
 		}
@@ -225,7 +225,7 @@ void OsuMultiplayer::update()
 			m_downloads.erase(m_downloads.begin() + i);
 			i--;
 
-			debugLog("remaining downloads: %i\n", (int)m_downloads.size());
+			debugLog("remaining downloads: {}\n", (int)m_downloads.size());
 
 			continue;
 		}
@@ -260,7 +260,7 @@ void OsuMultiplayer::update()
 		// TODO: always keep most recent full packet to be able to jump around
 		for (int i=0; i<m_serverPlayers.size(); i++)
 		{
-			debugLog("inputBuffer size = %i\n", m_serverPlayers[i].inputBuffer.size());
+			debugLog("inputBuffer size = {}\n", m_serverPlayers[i].inputBuffer.size());
 			if (m_serverPlayers[i].inputBuffer.size() > 2048)
 			{
 				const int overflow = m_serverPlayers[i].inputBuffer.size() - 2048;
@@ -308,7 +308,7 @@ bool OsuMultiplayer::onClientReceiveInt(uint32_t id, void *data, uint32_t size, 
 					{
 						m_clientPlayers.erase(m_clientPlayers.begin() + i);
 
-						debugLog("Player %i left the game.\n", pp->id);
+						debugLog("Player {} left the game.\n", pp->id);
 					}
 					else // player update
 					{
@@ -341,7 +341,7 @@ bool OsuMultiplayer::onClientReceiveInt(uint32_t id, void *data, uint32_t size, 
 
 				m_clientPlayers.push_back(ply);
 
-				debugLog("Player %i joined the game.\n", pp->id);
+				debugLog("Player {} joined the game.\n", pp->id);
 			}
 		}
 		return true;
@@ -672,7 +672,7 @@ bool OsuMultiplayer::onClientReceiveInt(uint32_t id, void *data, uint32_t size, 
 				}
 				downloadState.backgroundFileName = UString((const wchar_t*)pp->backgroundFileName);
 
-				debugLog("Started downloading %i %s %s %s\n", (int)downloadState.serial, downloadState.osuFileMD5Hash.toUtf8(), downloadState.musicFileName.toUtf8(), downloadState.backgroundFileName.toUtf8());
+				debugLog("Started downloading {} {:s} {:s} {:s}\n", (int)downloadState.serial, downloadState.osuFileMD5Hash.toUtf8(), downloadState.musicFileName.toUtf8(), downloadState.backgroundFileName.toUtf8());
 			}
 			m_downloads.push_back(downloadState);
 
@@ -687,7 +687,7 @@ bool OsuMultiplayer::onClientReceiveInt(uint32_t id, void *data, uint32_t size, 
 			// execute
 			BEATMAP_DOWNLOAD_CHUNK_PACKET *pp = (struct BEATMAP_DOWNLOAD_CHUNK_PACKET*)unwrappedPacket;
 
-			//debugLog("received BEATMAP_DOWNLOAD_CHUNK_TYPE (serial = %i, fileType = %i)\n", (int)pp->serial, (int)pp->fileType);
+			//debugLog("received BEATMAP_DOWNLOAD_CHUNK_TYPE (serial = {}, fileType = {})\n", (int)pp->serial, (int)pp->fileType);
 
 			if (unwrappedSize - sizeof(BEATMAP_DOWNLOAD_CHUNK_PACKET) >= pp->numDataBytes)
 			{
@@ -833,7 +833,7 @@ void OsuMultiplayer::onClientDisconnectedFromServer()
 
 void OsuMultiplayer::onServerClientChange(uint32_t id, UString name, bool connected)
 {
-	debugLog("onServerClientChange(%i, %s, %i)\n", id, name.toUtf8(), (int)connected);
+	debugLog("onServerClientChange({}, {:s}, {})\n", id, name.toUtf8(), (int)connected);
 
 	PLAYER_CHANGE_PACKET pp;
 	pp.id = id;
@@ -1145,7 +1145,7 @@ void OsuMultiplayer::onServerPlayStateChange(OsuMultiplayer::STATE state, unsign
 	const bool isBeatmapAndDiffValid = (beatmap != NULL);
 
 	// server
-	debugLog("OsuMultiplayer::onServerPlayStateChange(%i)\n", (int)state);
+	debugLog("OsuMultiplayer::onServerPlayStateChange({})\n", (int)state);
 
 	GAME_STATE_PACKET pp;
 	pp.state = state;
@@ -1271,7 +1271,7 @@ void OsuMultiplayer::onClientCommandInt(UString string, bool executeLocallyToo)
 		Console::processCommand(string);
 
 	// WARNING: hardcoded max length (2048)
-	//debugLog("length = %i", string.length());
+	//debugLog("length = {}", string.length());
 
 	CONVAR_PACKET pp;
 	pp.len = std::clamp<int>(string.length(), 0, 2047);

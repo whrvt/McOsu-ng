@@ -306,8 +306,7 @@ am_McOsu_ng_OBJECTS = libraries/glad/glad/McOsu_ng-glad.$(OBJEXT) \
 	src/Util/McOsu_ng-McMath.$(OBJEXT) \
 	src/Util/McOsu_ng-Quaternion.$(OBJEXT) \
 	src/Util/McOsu_ng-Rect.$(OBJEXT) \
-	src/Util/McOsu_ng-UString.$(OBJEXT) \
-	src/Util/McOsu_ng-lodepng.$(OBJEXT)
+	src/Util/McOsu_ng-UString.$(OBJEXT)
 McOsu_ng_OBJECTS = $(am_McOsu_ng_OBJECTS)
 McOsu_ng_LDADD = $(LDADD)
 McOsu_ng_LINK = $(CXXLD) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) \
@@ -503,8 +502,7 @@ am__depfiles_remade = libraries/glad/glad/$(DEPDIR)/McOsu_ng-glad.Po \
 	src/Util/$(DEPDIR)/McOsu_ng-McMath.Po \
 	src/Util/$(DEPDIR)/McOsu_ng-Quaternion.Po \
 	src/Util/$(DEPDIR)/McOsu_ng-Rect.Po \
-	src/Util/$(DEPDIR)/McOsu_ng-UString.Po \
-	src/Util/$(DEPDIR)/McOsu_ng-lodepng.Po
+	src/Util/$(DEPDIR)/McOsu_ng-UString.Po
 am__mv = mv -f
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -966,7 +964,6 @@ McOsu_ng_SOURCES = \
 	src/Util/Quaternion.cpp \
 	src/Util/Rect.cpp \
 	src/Util/UString.cpp \
-	src/Util/lodepng.cpp \
 $(NULL)
 
 
@@ -1721,8 +1718,6 @@ src/Util/McOsu_ng-Rect.$(OBJEXT): src/Util/$(am__dirstamp) \
 	src/Util/$(DEPDIR)/$(am__dirstamp)
 src/Util/McOsu_ng-UString.$(OBJEXT): src/Util/$(am__dirstamp) \
 	src/Util/$(DEPDIR)/$(am__dirstamp)
-src/Util/McOsu_ng-lodepng.$(OBJEXT): src/Util/$(am__dirstamp) \
-	src/Util/$(DEPDIR)/$(am__dirstamp)
 
 McOsu-ng$(EXEEXT): $(McOsu_ng_OBJECTS) $(McOsu_ng_DEPENDENCIES) $(EXTRA_McOsu_ng_DEPENDENCIES) 
 	@rm -f McOsu-ng$(EXEEXT)
@@ -1926,7 +1921,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/Util/$(DEPDIR)/McOsu_ng-Quaternion.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Util/$(DEPDIR)/McOsu_ng-Rect.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Util/$(DEPDIR)/McOsu_ng-UString.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@src/Util/$(DEPDIR)/McOsu_ng-lodepng.Po@am__quote@ # am--include-marker
 
 $(am__depfiles_remade):
 	@$(MKDIR_P) $(@D)
@@ -4428,20 +4422,6 @@ src/Util/McOsu_ng-UString.obj: src/Util/UString.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Util/McOsu_ng-UString.obj `if test -f 'src/Util/UString.cpp'; then $(CYGPATH_W) 'src/Util/UString.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Util/UString.cpp'; fi`
 
-src/Util/McOsu_ng-lodepng.o: src/Util/lodepng.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Util/McOsu_ng-lodepng.o -MD -MP -MF src/Util/$(DEPDIR)/McOsu_ng-lodepng.Tpo -c -o src/Util/McOsu_ng-lodepng.o `test -f 'src/Util/lodepng.cpp' || echo '$(srcdir)/'`src/Util/lodepng.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Util/$(DEPDIR)/McOsu_ng-lodepng.Tpo src/Util/$(DEPDIR)/McOsu_ng-lodepng.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Util/lodepng.cpp' object='src/Util/McOsu_ng-lodepng.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Util/McOsu_ng-lodepng.o `test -f 'src/Util/lodepng.cpp' || echo '$(srcdir)/'`src/Util/lodepng.cpp
-
-src/Util/McOsu_ng-lodepng.obj: src/Util/lodepng.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Util/McOsu_ng-lodepng.obj -MD -MP -MF src/Util/$(DEPDIR)/McOsu_ng-lodepng.Tpo -c -o src/Util/McOsu_ng-lodepng.obj `if test -f 'src/Util/lodepng.cpp'; then $(CYGPATH_W) 'src/Util/lodepng.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Util/lodepng.cpp'; fi`
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Util/$(DEPDIR)/McOsu_ng-lodepng.Tpo src/Util/$(DEPDIR)/McOsu_ng-lodepng.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Util/lodepng.cpp' object='src/Util/McOsu_ng-lodepng.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Util/McOsu_ng-lodepng.obj `if test -f 'src/Util/lodepng.cpp'; then $(CYGPATH_W) 'src/Util/lodepng.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Util/lodepng.cpp'; fi`
-
 ID: $(am__tagged_files)
 	$(am__define_uniq_tagged_files); mkid -fID $$unique
 tags: tags-am
@@ -4930,7 +4910,6 @@ distclean: distclean-am
 	-rm -f src/Util/$(DEPDIR)/McOsu_ng-Quaternion.Po
 	-rm -f src/Util/$(DEPDIR)/McOsu_ng-Rect.Po
 	-rm -f src/Util/$(DEPDIR)/McOsu_ng-UString.Po
-	-rm -f src/Util/$(DEPDIR)/McOsu_ng-lodepng.Po
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-hdr distclean-local distclean-tags
@@ -5156,7 +5135,6 @@ maintainer-clean: maintainer-clean-am
 	-rm -f src/Util/$(DEPDIR)/McOsu_ng-Quaternion.Po
 	-rm -f src/Util/$(DEPDIR)/McOsu_ng-Rect.Po
 	-rm -f src/Util/$(DEPDIR)/McOsu_ng-UString.Po
-	-rm -f src/Util/$(DEPDIR)/McOsu_ng-lodepng.Po
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic \
 	maintainer-clean-local

@@ -102,7 +102,7 @@ void DirectX11VertexArrayObject::init()
 
 		for (size_t i=0; i<m_colors.size(); i++)
 		{
-			const Vector4 color = Vector4(Rf(m_colors[i]), Gf(m_colors[i]), Bf(m_colors[i]), Af(m_colors[i]));
+			const Vector4 color = Vector4(m_colors[i].Rf(), m_colors[i].Gf(), m_colors[i].Bf(), m_colors[i].Af());
 			colors.push_back(color);
 			finalColors.push_back(color);
 		}
@@ -247,7 +247,7 @@ void DirectX11VertexArrayObject::init()
 		}
 		if (FAILED(dx11->getDevice()->CreateBuffer(&bufferDesc, (bufferDesc.Usage == D3D11_USAGE::D3D11_USAGE_IMMUTABLE ? &dataForImmutable : NULL), &m_vertexBuffer))) // NOTE: immutable is uploaded to gpu right here
 		{
-			debugLog("DirectX Error: Couldn't CreateBuffer(%i)\n", (int)m_convertedVertices.size());
+			debugLog("DirectX Error: Couldn't CreateBuffer({})\n", (int)m_convertedVertices.size());
 			return;
 		}
 	}
@@ -277,7 +277,7 @@ void DirectX11VertexArrayObject::init()
 		}
 		else
 		{
-			debugLog("DirectX Error: Couldn't Map(%i) vertexbuffer\n", (int)m_convertedVertices.size());
+			debugLog("DirectX Error: Couldn't Map({}) vertexbuffer\n", (int)m_convertedVertices.size());
 			return;
 		}
 	}

@@ -1,4 +1,4 @@
-//================ Copyright (c) 2012, PG, All rights reserved. =================//
+//========== Copyright (c) 2012, PG & 2025, WH, All rights reserved. ============//
 //
 // Purpose:		image wrapper
 //
@@ -6,52 +6,231 @@
 //===============================================================================//
 
 #include "Image.h"
-#include "ResourceManager.h"
-#include "Environment.h"
 #include "Engine.h"
+#include "Environment.h"
 #include "File.h"
 
-#include "lodepng.h"
 #include "jpeglib.h"
+#include <png.h>
 
 #include <csetjmp>
+#include <cstddef>
+#include <cstring>
 
 struct jpegErrorManager
 {
-    // "public" fields
-    struct jpeg_error_mgr pub;
+	// "public" fields
+	struct jpeg_error_mgr pub;
 
-    // for returning to the caller
-    jmp_buf setjmp_buffer;
+	// for returning to the caller
+	jmp_buf setjmp_buffer;
 };
 
 void jpegErrorExit(j_common_ptr cinfo)
 {
 	char jpegLastErrorMsg[JMSG_LENGTH_MAX];
 
-	jpegErrorManager *err = (jpegErrorManager*)cinfo->err;
+	auto *err = (jpegErrorManager*)cinfo->err;
 
 	(*(cinfo->err->format_message))(cinfo, jpegLastErrorMsg);
 	jpegLastErrorMsg[JMSG_LENGTH_MAX - 1] = '\0';
 
-	debugLog("JPEG Error: %s", jpegLastErrorMsg);
+	debugLog("JPEG Error: {:s}", jpegLastErrorMsg);
 
 	longjmp(err->setjmp_buffer, 1);
 }
 
-void Image::saveToImage(unsigned char *data, unsigned int width, unsigned int height, UString filepath)
+struct pngErrorManager
 {
-	debugLog("Saving image to %s ...\n", filepath.toUtf8());
+	jmp_buf setjmp_buffer;
+};
 
-	const unsigned error = lodepng::encode(filepath.toUtf8(), data, width, height, LodePNGColorType::LCT_RGB, 8);
-	if (error)
+void pngErrorExit(png_structp png_ptr, png_const_charp error_msg)
+{
+	debugLog("PNG Error: {:s}", error_msg);
+	auto *err = static_cast<pngErrorManager *>(png_get_error_ptr(png_ptr));
+	longjmp(err->setjmp_buffer, 1);
+}
+
+void pngWarning(png_structp, png_const_charp warning_msg)
+{
+	debugLog("PNG Warning: {:s}", warning_msg);
+}
+
+struct pngMemoryReader
+{
+	const unsigned char *data;
+	size_t size;
+	size_t offset;
+};
+
+void pngReadFromMemory(png_structp png_ptr, png_bytep outBytes, png_size_t byteCountToRead)
+{
+	auto *reader = static_cast<pngMemoryReader *>(png_get_io_ptr(png_ptr));
+
+	if (reader->offset + byteCountToRead > reader->size)
 	{
-		debugLog("PNG error %i on file %s", error, filepath.toUtf8());
-		UString errorMessage = UString::format("PNG error %i on file ", error);
-		errorMessage.append(filepath);
-		engine->showMessageError(errorMessage, lodepng_error_text(error));
+		png_error(png_ptr, "Read past end of data");
 		return;
 	}
+
+	memcpy(outBytes, reader->data + reader->offset, byteCountToRead);
+	reader->offset += byteCountToRead;
+}
+
+bool Image::decodePNGFromMemory(const unsigned char *data, size_t size, std::vector<unsigned char> &outData, int &outWidth, int &outHeight, int &outChannels)
+{
+	png_structp png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+	if (!png_ptr)
+	{
+		debugLog("Image Error: png_create_read_struct failed\n");
+		return false;
+	}
+
+	png_infop info_ptr = png_create_info_struct(png_ptr);
+	if (!info_ptr)
+	{
+		png_destroy_read_struct(&png_ptr, NULL, NULL);
+		debugLog("Image Error: png_create_info_struct failed\n");
+		return false;
+	}
+
+	pngErrorManager err;
+	png_set_error_fn(png_ptr, &err, pngErrorExit, pngWarning);
+
+	if (setjmp(err.setjmp_buffer))
+	{
+		png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
+		return false;
+	}
+
+	// Set up memory reading
+	pngMemoryReader reader;
+	reader.data = data;
+	reader.size = size;
+	reader.offset = 0;
+	png_set_read_fn(png_ptr, &reader, pngReadFromMemory);
+
+	png_read_info(png_ptr, info_ptr);
+
+	outWidth = static_cast<int>(png_get_image_width(png_ptr, info_ptr));
+	outHeight = static_cast<int>(png_get_image_height(png_ptr, info_ptr));
+	png_byte color_type = png_get_color_type(png_ptr, info_ptr);
+	png_byte bit_depth = png_get_bit_depth(png_ptr, info_ptr);
+
+	// convert to RGBA if needed
+	if (bit_depth == 16)
+		png_set_strip_16(png_ptr);
+
+	if (color_type == PNG_COLOR_TYPE_PALETTE)
+		png_set_palette_to_rgb(png_ptr);
+
+	if (color_type == PNG_COLOR_TYPE_GRAY && bit_depth < 8)
+		png_set_expand_gray_1_2_4_to_8(png_ptr);
+
+	if (png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS))
+		png_set_tRNS_to_alpha(png_ptr);
+
+	// these color types don't have alpha channel, so fill it with 0xff
+	if (color_type == PNG_COLOR_TYPE_RGB || color_type == PNG_COLOR_TYPE_GRAY || color_type == PNG_COLOR_TYPE_PALETTE)
+		png_set_filler(png_ptr, 0xFF, PNG_FILLER_AFTER);
+
+	if (color_type == PNG_COLOR_TYPE_GRAY || color_type == PNG_COLOR_TYPE_GRAY_ALPHA)
+		png_set_gray_to_rgb(png_ptr);
+
+	png_read_update_info(png_ptr, info_ptr);
+
+	// after transformations, we should always have RGBA
+	outChannels = 4;
+
+	if (outWidth > 8192 || outHeight > 8192)
+	{
+		png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
+		debugLog("Image Error: PNG image size is too big ({} x {})\n", outWidth, outHeight);
+		return false;
+	}
+
+	// allocate memory for the image
+	outData.resize(static_cast<long>(outWidth * outHeight) * outChannels);
+
+	// read it
+	auto *row_pointers = new png_bytep[outHeight];
+	for (int y = 0; y < outHeight; y++)
+	{
+		row_pointers[y] = &outData[static_cast<long>(y * outWidth * outChannels)];
+	}
+
+	png_read_image(png_ptr, row_pointers);
+	delete[] row_pointers;
+
+	png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
+	return true;
+}
+
+void Image::saveToImage(unsigned char *data, unsigned int width, unsigned int height, UString filepath)
+{
+	debugLog("Saving image to {:s} ...\n", filepath.toUtf8());
+
+	FILE *fp = fopen(filepath.toUtf8(), "wb");
+	if (!fp)
+	{
+		debugLog("PNG error: Could not open file {:s} for writing\n", filepath.toUtf8());
+		engine->showMessageError("PNG Error", "Could not open file for writing");
+		return;
+	}
+
+	png_structp png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+	if (!png_ptr)
+	{
+		fclose(fp);
+		debugLog("PNG error: png_create_write_struct failed\n");
+		engine->showMessageError("PNG Error", "png_create_write_struct failed");
+		return;
+	}
+
+	png_infop info_ptr = png_create_info_struct(png_ptr);
+	if (!info_ptr)
+	{
+		png_destroy_write_struct(&png_ptr, NULL);
+		fclose(fp);
+		debugLog("PNG error: png_create_info_struct failed\n");
+		engine->showMessageError("PNG Error", "png_create_info_struct failed");
+		return;
+	}
+
+	if (setjmp(png_jmpbuf(png_ptr)))
+	{
+		png_destroy_write_struct(&png_ptr, &info_ptr);
+		fclose(fp);
+		debugLog("PNG error during write\n");
+		engine->showMessageError("PNG Error", "Error during PNG write");
+		return;
+	}
+
+	png_init_io(png_ptr, fp);
+
+	// write header (8 bit colour depth, RGB)
+	png_set_IHDR(png_ptr, info_ptr, width, height, 8, PNG_COLOR_TYPE_RGB, PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
+
+	png_write_info(png_ptr, info_ptr);
+
+	// write image data
+	auto row = new png_byte[3L * width];
+	for (unsigned int y = 0; y < height; y++)
+	{
+		for (unsigned int x = 0; x < width; x++)
+		{
+			row[x * 3 + 0] = data[(y * width + x) * 3 + 0];
+			row[x * 3 + 1] = data[(y * width + x) * 3 + 1];
+			row[x * 3 + 2] = data[(y * width + x) * 3 + 2];
+		}
+		png_write_row(png_ptr, row);
+	}
+	delete[] row;
+
+	png_write_end(png_ptr, NULL);
+	png_destroy_write_struct(&png_ptr, &info_ptr);
+	fclose(fp);
 }
 
 Image::Image(UString filepath, bool mipmapped, bool keepInSystemMemory) : Resource(filepath)
@@ -86,8 +265,8 @@ Image::Image(int width, int height, bool mipmapped, bool keepInSystemMemory) : R
 	m_bCreatedImage = true;
 
 	// reserve and fill with pink pixels
-	m_rawImage.resize(m_iWidth * m_iHeight * m_iNumChannels);
-	for (int i=0; i<m_iWidth*m_iHeight; i++)
+	m_rawImage.resize(static_cast<long>(m_iWidth * m_iHeight * m_iNumChannels));
+	for (int i = 0; i < m_iWidth * m_iHeight; i++)
 	{
 		m_rawImage.push_back(255);
 		m_rawImage.push_back(0);
@@ -109,7 +288,7 @@ bool Image::loadRawImage()
 
 		if (!env->fileExists(m_sFilePath))
 		{
-			debugLog("Image Error: Couldn't find file %s\n", m_sFilePath.toUtf8());
+			debugLog("Image Error: Couldn't find file {:s}\n", m_sFilePath.toUtf8());
 			return false;
 		}
 
@@ -120,12 +299,12 @@ bool Image::loadRawImage()
 		McFile file(m_sFilePath);
 		if (!file.canRead())
 		{
-			debugLog("Image Error: Couldn't canRead() file %s\n", m_sFilePath.toUtf8());
+			debugLog("Image Error: Couldn't canRead() file {:s}\n", m_sFilePath.toUtf8());
 			return false;
 		}
 		if (file.getFileSize() < 4)
 		{
-			debugLog("Image Error: FileSize is < 4 in file %s\n", m_sFilePath.toUtf8());
+			debugLog("Image Error: FileSize is < 4 in file {:s}\n", m_sFilePath.toUtf8());
 			return false;
 		}
 
@@ -135,7 +314,7 @@ bool Image::loadRawImage()
 		const char *data = file.readFile();
 		if (data == NULL)
 		{
-			debugLog("Image Error: Couldn't readFile() file %s\n", m_sFilePath.toUtf8());
+			debugLog("Image Error: Couldn't readFile() file {:s}\n", m_sFilePath.toUtf8());
 			return false;
 		}
 
@@ -150,7 +329,7 @@ bool Image::loadRawImage()
 
 			unsigned char buf[numBytes];
 
-			for (int i=0; i<numBytes; i++)
+			for (int i = 0; i < numBytes; i++)
 			{
 				buf[i] = (unsigned char)data[i];
 			}
@@ -177,12 +356,12 @@ bool Image::loadRawImage()
 			err.pub.error_exit = jpegErrorExit;
 			if (setjmp(err.setjmp_buffer))
 			{
-			    jpeg_destroy_decompress(&cinfo);
-			    debugLog("Image Error: JPEG error (see above) in file %s\n", m_sFilePath.toUtf8());
-			    return false;
+				jpeg_destroy_decompress(&cinfo);
+				debugLog("Image Error: JPEG error (see above) in file {:s}\n", m_sFilePath.toUtf8());
+				return false;
 			}
 
-			jpeg_mem_src(&cinfo, (unsigned char*)data, file.getFileSize());
+			jpeg_mem_src(&cinfo, (unsigned char *)data, file.getFileSize());
 #ifdef __APPLE__
 			const int headerRes = jpeg_read_header(&cinfo, boolean::TRUE); // HACKHACK: wtf is this boolean enum here suddenly required?
 #else
@@ -191,12 +370,12 @@ bool Image::loadRawImage()
 			if (headerRes != JPEG_HEADER_OK)
 			{
 				jpeg_destroy_decompress(&cinfo);
-				debugLog("Image Error: JPEG read_header() error %i in file %s\n", headerRes, m_sFilePath.toUtf8());
+				debugLog("Image Error: JPEG read_header() error {} in file {:s}\n", headerRes, m_sFilePath.toUtf8());
 				return false;
 			}
 
-			m_iWidth = cinfo.image_width;
-			m_iHeight = cinfo.image_height;
+			m_iWidth = static_cast<int>(cinfo.image_width);
+			m_iHeight = static_cast<int>(cinfo.image_height);
 			m_iNumChannels = cinfo.num_components;
 
 			// NOTE: color spaces which require color profiles are not supported (e.g. J_COLOR_SPACE::JCS_YCCK)
@@ -207,17 +386,17 @@ bool Image::loadRawImage()
 			if (m_iWidth > 8192 || m_iHeight > 8192)
 			{
 				jpeg_destroy_decompress(&cinfo);
-				debugLog("Image Error: JPEG image size is too big (%i x %i) in file %s\n", m_iWidth, m_iHeight, m_sFilePath.toUtf8());
+				debugLog("Image Error: JPEG image size is too big ({} x {}) in file {:s}\n", m_iWidth, m_iHeight, m_sFilePath.toUtf8());
 				return false;
 			}
 
 			// preallocate
-			m_rawImage.resize(m_iWidth * m_iHeight * m_iNumChannels);
+			m_rawImage.resize(static_cast<long>(m_iWidth * m_iHeight * m_iNumChannels));
 
 			// extract each scanline of the image
 			jpeg_start_decompress(&cinfo);
 			JSAMPROW j;
-			for (int y=0; y<m_iHeight; y++)
+			for (int y = 0; y < m_iHeight; y++)
 			{
 				if (m_bInterrupted) // cancellation point
 				{
@@ -225,7 +404,7 @@ bool Image::loadRawImage()
 					return false;
 				}
 
-				j = (&m_rawImage[0] + (y * m_iWidth * m_iNumChannels));
+				j = (&m_rawImage[0] + (static_cast<ptrdiff_t>(y * m_iWidth * m_iNumChannels)));
 				jpeg_read_scanlines(&cinfo, &j, 1);
 			}
 
@@ -236,23 +415,18 @@ bool Image::loadRawImage()
 		{
 			m_type = Image::TYPE::TYPE_PNG;
 
-			unsigned int width = 0; // yes, these are here on purpose
-			unsigned int height = 0;
-
-			const unsigned error = lodepng::decode(m_rawImage, width, height, (const unsigned char*)data, file.getFileSize());
-
-			m_iWidth = width;
-			m_iHeight = height;
-
-			if (error)
+			// decode png using libpng
+			if (!decodePNGFromMemory((const unsigned char *)data, file.getFileSize(), m_rawImage, m_iWidth, m_iHeight, m_iNumChannels))
 			{
-				debugLog("Image Error: PNG error %i (%s) in file %s\n", error, lodepng_error_text(error), m_sFilePath.toUtf8());
+				debugLog("Image Error: PNG decoding failed in file {:s}\n", m_sFilePath.toUtf8());
 				return false;
 			}
+
+			m_bHasAlphaChannel = true;
 		}
 		else
 		{
-			debugLog("Image Error: Neither PNG nor JPEG in file %s\n", m_sFilePath.toUtf8());
+			debugLog("Image Error: Neither PNG nor JPEG in file {:s}\n", m_sFilePath.toUtf8());
 			return false;
 		}
 	}
@@ -263,31 +437,33 @@ bool Image::loadRawImage()
 	// error checking
 
 	// size sanity check
-	if (m_rawImage.size() < (m_iWidth * m_iHeight * m_iNumChannels))
+	if (m_rawImage.size() < static_cast<long>(m_iWidth * m_iHeight * m_iNumChannels))
 	{
-		debugLog("Image Error: Loaded image has only %lu/%i bytes in file %s\n", (unsigned long)m_rawImage.size(), m_iWidth * m_iHeight * m_iNumChannels, m_sFilePath.toUtf8());
-		//engine->showMessageError("Image Error", UString::format("Loaded image has only %i/%i bytes in file %s", m_rawImage.size(), m_iWidth*m_iHeight*m_iNumChannels, m_sFilePath.toUtf8()));
+		debugLog("Image Error: Loaded image has only {}/{} bytes in file {:s}\n", (unsigned long)m_rawImage.size(), m_iWidth * m_iHeight * m_iNumChannels,
+		         m_sFilePath.toUtf8());
+		// engine->showMessageError("Image Error", UString::format("Loaded image has only %i/%i bytes in file %s", m_rawImage.size(),
+		// m_iWidth*m_iHeight*m_iNumChannels, m_sFilePath.toUtf8()));
 		return false;
 	}
 
 	// supported channels sanity check
 	if (m_iNumChannels != 4 && m_iNumChannels != 3 && m_iNumChannels != 1)
 	{
-		debugLog("Image Error: Unsupported number of color channels (%i) in file %s", m_iNumChannels, m_sFilePath.toUtf8());
-		//engine->showMessageError("Image Error", UString::format("Unsupported number of color channels (%i) in file %s", m_iNumChannels, m_sFilePath.toUtf8()));
+		debugLog("Image Error: Unsupported number of color channels ({}) in file {:s}", m_iNumChannels, m_sFilePath.toUtf8());
+		// engine->showMessageError("Image Error", UString::format("Unsupported number of color channels (%i) in file %s", m_iNumChannels, m_sFilePath.toUtf8()));
 		return false;
 	}
 
 	// optimization: ignore completely transparent images (don't render)
 	bool foundNonTransparentPixel = false;
-	for (int x=0; x<m_iWidth; x++)
+	for (int x = 0; x < m_iWidth; x++)
 	{
 		if (m_bInterrupted) // cancellation point
 			return false;
 
-		for (int y=0; y<m_iHeight; y++)
+		for (int y = 0; y < m_iHeight; y++)
 		{
-			if (Ai(getPixel(x, y)) > 0)
+			if (getPixel(x, y).a > 0)
 			{
 				foundNonTransparentPixel = true;
 				break;
@@ -299,7 +475,7 @@ bool Image::loadRawImage()
 	}
 	if (!foundNonTransparentPixel)
 	{
-		debugLog("Image: Ignoring empty transparent image %s\n", m_sFilePath.toUtf8());
+		debugLog("Image: Ignoring empty transparent image {:s}\n", m_sFilePath.toUtf8());
 		return false;
 	}
 
@@ -321,7 +497,8 @@ Color Image::getPixel(int x, int y) const
 	const int indexBegin = m_iNumChannels * y * m_iWidth + m_iNumChannels * x;
 	const int indexEnd = m_iNumChannels * y * m_iWidth + m_iNumChannels * x + m_iNumChannels;
 
-	if (m_rawImage.size() < 1 || x < 0 || y < 0 || indexEnd < 0 || indexEnd > m_rawImage.size()) return 0xffffff00;
+	if (m_rawImage.size() < 1 || x < 0 || y < 0 || indexEnd < 0 || indexEnd > m_rawImage.size())
+		return 0xffffff00;
 
 	unsigned char r = 255;
 	unsigned char g = 255;
@@ -354,38 +531,33 @@ void Image::setPixel(int x, int y, Color color)
 	const int indexBegin = m_iNumChannels * y * m_iWidth + m_iNumChannels * x;
 	const int indexEnd = m_iNumChannels * y * m_iWidth + m_iNumChannels * x + m_iNumChannels;
 
-	if (m_rawImage.size() < 1 || x < 0 || y < 0 || indexEnd < 0 || indexEnd > m_rawImage.size()) return;
+	if (m_rawImage.size() < 1 || x < 0 || y < 0 || indexEnd < 0 || indexEnd > m_rawImage.size())
+		return;
 
-	m_rawImage[indexBegin + 0] = Ri(color);
+	m_rawImage[indexBegin + 0] = color.r;
 	if (m_iNumChannels > 1)
-		m_rawImage[indexBegin + 1] = Gi(color);
+		m_rawImage[indexBegin + 1] = color.g;
 	if (m_iNumChannels > 2)
-		m_rawImage[indexBegin + 2] = Bi(color);
+		m_rawImage[indexBegin + 2] = color.b;
 	if (m_iNumChannels > 3)
-		m_rawImage[indexBegin + 3] = Ai(color);
+		m_rawImage[indexBegin + 3] = color.a;
 }
 
 void Image::setPixels(const char *data, size_t size, TYPE type)
 {
-	if (data == NULL) return;
+	if (data == NULL)
+		return;
 
 	// TODO: implement remaining types
 	switch (type)
 	{
-	case TYPE::TYPE_PNG:
+	case TYPE::TYPE_PNG: {
+		if (!decodePNGFromMemory((const unsigned char *)data, size, m_rawImage, m_iWidth, m_iHeight, m_iNumChannels))
 		{
-			unsigned int width = 0; // yes, these are here on purpose
-			unsigned int height = 0;
-
-			const unsigned error = lodepng::decode(m_rawImage, width, height, (const unsigned char*)data, size);
-
-			m_iWidth = width;
-			m_iHeight = height;
-
-			if (error)
-				debugLog("Image Error: PNG error %i (%s) in file %s\n", error, lodepng_error_text(error), m_sFilePath.toUtf8());
+			debugLog("Image Error: PNG decoding failed in setPixels\n");
 		}
-		break;
+	}
+	break;
 
 	default:
 		debugLog("Image Error: Format not yet implemented\n");
@@ -395,7 +567,7 @@ void Image::setPixels(const char *data, size_t size, TYPE type)
 
 void Image::setPixels(const std::vector<unsigned char> &pixels)
 {
-	if (pixels.size() < (m_iWidth * m_iHeight * m_iNumChannels))
+	if (pixels.size() < static_cast<long>(m_iWidth * m_iHeight * m_iNumChannels))
 	{
 		debugLog("Image Error: setPixels() supplied array is too small!\n");
 		return;

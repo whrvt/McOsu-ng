@@ -28,14 +28,12 @@ SDLGLInterface::SDLGLInterface(SDL_Window *window) : BackendGLInterface()
 			engine->shutdown();
 			return;
 		}
-		debugLog("gladLoadGL() version: %d.%d, EGL: %s\n", GLVersion.major, GLVersion.minor, !!SDL_EGL_GetCurrentDisplay() ? "true" : "false");
+		debugLog("gladLoadGL() version: {:d}.{:d}, EGL: {:s}\n", GLVersion.major, GLVersion.minor, !!SDL_EGL_GetCurrentDisplay() ? "true" : "false");
 	}
 #endif
-	debugLog("GL_VERSION string: %s\n", glGetString(GL_VERSION));
+	debugLog("GL_VERSION string: {}\n", reinterpret_cast<const char *>(glGetString(GL_VERSION)));
 	m_window = window;
 }
-
-SDLGLInterface::~SDLGLInterface() {}
 
 void SDLGLInterface::endScene()
 {

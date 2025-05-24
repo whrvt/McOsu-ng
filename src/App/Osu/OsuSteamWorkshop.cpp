@@ -51,7 +51,7 @@ protected:
 
 		const std::vector<uint64_t> subscribedItems = steam->getWorkshopSubscribedItems();
 
-		debugLog("OsuSteamWorkshop: Subscribed to %i item(s)\n", subscribedItems.size());
+		debugLog("OsuSteamWorkshop: Subscribed to {} item(s)\n", subscribedItems.size());
 
 		const std::vector<SteamworksInterface::WorkshopItemDetails> details = (m_bLoadDetails ? steam->getWorkshopItemDetails(subscribedItems) : std::vector<SteamworksInterface::WorkshopItemDetails>());
 
@@ -62,7 +62,7 @@ protected:
 
 			if (!installed && !downloading)
 			{
-				debugLog("OsuSteamWorkshop: Item %llu not yet ready, skipping\n", subscribedItems[i]);
+				debugLog("OsuSteamWorkshop: Item {} not yet ready, skipping\n", subscribedItems[i]);
 				continue;
 			}
 
@@ -92,7 +92,7 @@ protected:
 
 					if (item.installInfo.length() < 1)
 					{
-						debugLog("OsuSteamWorkshop: Invalid item %llu (installInfo = %s)\n", subscribedItems[i], item.installInfo.toUtf8());
+						debugLog("OsuSteamWorkshop: Invalid item {} (installInfo = {:s})\n", subscribedItems[i], item.installInfo.toUtf8());
 						continue;
 					}
 				}
@@ -100,7 +100,7 @@ protected:
 				m_subscribedItems.push_back(item);
 			}
 			//else
-			//	debugLog("OsuSteamWorkshop: Invalid item %llu (title = %s)\n", subscribedItems[i], details.title.toUtf8());
+			//	debugLog("OsuSteamWorkshop: Invalid item {} (title = {:s})\n", subscribedItems[i], details.title.toUtf8());
 		}
 
 		debugLog("OsuSteamWorkshop: Done\n");
@@ -180,7 +180,7 @@ protected:
 				McFile steamworkshopitemidtxt(m_sWorkshopItemIdFilePath, McFile::TYPE::WRITE);
 
 				if (!steamworkshopitemidtxt.canWrite())
-					debugLog("OsuSteamWorkshop Error: Can't write \"%s\"!!!\n", m_sWorkshopItemIdFilePath.toUtf8());
+					debugLog("OsuSteamWorkshop Error: Can't write \"{:s}\"!!!\n", m_sWorkshopItemIdFilePath.toUtf8());
 
 				steamworkshopitemidtxt.write(publishedFileIdString.toUtf8(), publishedFileIdString.lengthUtf8());
 			}
@@ -364,7 +364,7 @@ void OsuSteamWorkshop::onUpload()
 	const UString skinName = m_osu_skin_ref->getString();
 	const UString skinPath = osu->getSkin()->getFilePath();
 
-	debugLog("skinName = \"%s\", skinFolder = \"%s\"\n", m_osu_skin_ref->getString().toUtf8(), skinPath.toUtf8());
+	debugLog("skinName = \"{:s}\", skinFolder = \"{:s}\"\n", m_osu_skin_ref->getString().toUtf8(), skinPath.toUtf8());
 
 	if (skinName.length() < 1)
 	{
@@ -393,7 +393,7 @@ void OsuSteamWorkshop::onUpload()
 	{
 		McFile tempFileForSizeCheck(thumbnailFilePath);
 
-		debugLog("filesize = %lu\n", tempFileForSizeCheck.getFileSize());
+		debugLog("filesize = {}\n", tempFileForSizeCheck.getFileSize());
 
 		if (!tempFileForSizeCheck.canRead() || tempFileForSizeCheck.getFileSize() < 4)
 		{
@@ -439,7 +439,7 @@ void OsuSteamWorkshop::onUpload()
 			const UString existingItemIdString = itemIdFile.readLine();
 			itemId = (uint64_t)existingItemIdString.toUnsignedLongLong();
 
-			debugLog("itemId = %llu\n", itemId);
+			debugLog("itemId = {}\n", itemId);
 
 			if (itemId < 1)
 			{
@@ -466,7 +466,7 @@ void OsuSteamWorkshop::onUpload()
 
 void OsuSteamWorkshop::handleUploadError(UString errorMessage)
 {
-	debugLog("OsuSteamWorkshop Error: %s\n", errorMessage.toUtf8());
+	debugLog("OsuSteamWorkshop Error: {:s}\n", errorMessage.toUtf8());
 	osu->getNotificationOverlay()->addNotification(UString::format("Error: %s", errorMessage.toUtf8()), 0xffff0000, false, 3.0f);
 }
 #endif

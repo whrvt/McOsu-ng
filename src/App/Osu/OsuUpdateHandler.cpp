@@ -158,7 +158,7 @@ void OsuUpdateHandler::checkForUpdates()
 	}
 
 	if (m_iNumRetries > 0)
-		debugLog("retry %i ...\n", m_iNumRetries);
+		debugLog("retry {} ...\n", m_iNumRetries);
 
 #endif
 }
@@ -282,10 +282,10 @@ void OsuUpdateHandler::_requestUpdate()
 
 	m_releases = asyncReleases;
 
-	debugLog("OsuUpdateChecker: Found %i releases.\n", m_releases.size());
+	debugLog("OsuUpdateChecker: Found {} releases.\n", m_releases.size());
 	for (int i=0; i<m_releases.size(); i++)
 	{
-		debugLog("OsuUpdateChecker: Release #%i: version = %g, downloadURL = %s\n", i, m_releases[i].version, m_releases[i].downloadURL.toUtf8());
+		debugLog("OsuUpdateChecker: Release #{}: version = {:g}, downloadURL = {:s}\n", i, m_releases[i].version, m_releases[i].downloadURL.toUtf8());
 	}
 
 	if (!isUpdateAvailable())
@@ -294,7 +294,7 @@ void OsuUpdateHandler::_requestUpdate()
 
 bool OsuUpdateHandler::_downloadUpdate(UString url)
 {
-	debugLog("%s\n", url.toUtf8());
+	debugLog("{:s}\n", url.toUtf8());
 	m_status = STATUS::STATUS_DOWNLOADING_UPDATE;
 
 	// setting the status in every error check return is retarded
@@ -303,13 +303,13 @@ bool OsuUpdateHandler::_downloadUpdate(UString url)
 	std::string data = networkHandler->httpDownload(url);
 	if (data.length() < 2)
 	{
-		debugLog("ERROR: downloaded file is too small (%i)!\n", data.length());
+		debugLog("ERROR: downloaded file is too small ({})!\n", data.length());
 		m_status = STATUS::STATUS_ERROR;
 		return false;
 	}
 
 	// write to disk
-	debugLog("OsuUpdateHandler: Downloaded file has %i length, writing ...\n", data.length());
+	debugLog("OsuUpdateHandler: Downloaded file has {} length, writing ...\n", data.length());
 	std::ofstream file(TEMP_UPDATE_DOWNLOAD_FILEPATH, std::ios::out | std::ios::binary);
 	if (file.good())
 	{
@@ -329,14 +329,14 @@ bool OsuUpdateHandler::_downloadUpdate(UString url)
 
 void OsuUpdateHandler::_installUpdate(UString zipFilePath)
 {
-	debugLog("%s\n", zipFilePath.toUtf8());
+	debugLog("{:s}\n", zipFilePath.toUtf8());
 	m_status = STATUS::STATUS_INSTALLING_UPDATE;
 
 	// setting the status in every error check return is retarded
 /*
 	if (!env->fileExists(zipFilePath))
 	{
-		debugLog("OsuUpdateHandler::installUpdate() error, \"%s\" does not exist!\n", zipFilePath.toUtf8());
+		debugLog("OsuUpdateHandler::installUpdate() error, \"{:s}\" does not exist!\n", zipFilePath.toUtf8());
 		m_status = STATUS::STATUS_ERROR;
 		return;
 	}
@@ -364,7 +364,7 @@ void OsuUpdateHandler::_installUpdate(UString zipFilePath)
 	mz_uint numFiles = mz_zip_reader_get_num_files(&zip_archive);
 	if (numFiles <= 0)
 	{
-		debugLog("OsuUpdateHandler::installUpdate() error, %u files!\n", numFiles);
+		debugLog("OsuUpdateHandler::installUpdate() error, {} files!\n", numFiles);
 		m_status = STATUS::STATUS_ERROR;
 		return;
 	}
@@ -388,7 +388,7 @@ void OsuUpdateHandler::_installUpdate(UString zipFilePath)
 		mz_zip_archive_file_stat file_stat;
 		if (!mz_zip_reader_file_stat(&zip_archive, i, &file_stat))
 		{
-			debugLog("OsuUpdateHandler::installUpdate() warning, couldn't mz_zip_reader_file_stat() index %i!\n", i);
+			debugLog("OsuUpdateHandler::installUpdate() warning, couldn't mz_zip_reader_file_stat() index {}!\n", i);
 			continue;
 		}
 
@@ -397,7 +397,7 @@ void OsuUpdateHandler::_installUpdate(UString zipFilePath)
 		else
 			files.push_back(UString(file_stat.m_filename));
 
-		debugLog("OsuUpdateHandler: Filename: \"%s\", isDir: %i, uncompressed size: %u, compressed size: %u\n", file_stat.m_filename, (int)mz_zip_reader_is_file_a_directory(&zip_archive, i), (unsigned int)file_stat.m_uncomp_size, (unsigned int)file_stat.m_comp_size);
+		debugLog("OsuUpdateHandler: Filename: \"{:s}\", isDir: {}, uncompressed size: {}, compressed size: {}\n", file_stat.m_filename, (int)mz_zip_reader_is_file_a_directory(&zip_archive, i), (unsigned int)file_stat.m_uncomp_size, (unsigned int)file_stat.m_comp_size);
 	}
 
 	// repair/create missing/new dirs
@@ -412,7 +412,7 @@ void OsuUpdateHandler::_installUpdate(UString zipFilePath)
 
 			if (!env->directoryExists(newDir))
 			{
-				debugLog("OsuUpdateHandler: Creating directory %s\n", newDir.toUtf8());
+				debugLog("OsuUpdateHandler: Creating directory {:s}\n", newDir.toUtf8());
 				env->createDirectory(newDir);
 			}
 		}
@@ -435,7 +435,7 @@ void OsuUpdateHandler::_installUpdate(UString zipFilePath)
 		// ignore cfg directory (don't want to overwrite user settings), except if it doesn't exist
 		if (files[i].find(cfgDir) != -1 && cfgDirExists)
 		{
-			debugLog("OsuUpdateHandler: Ignoring file \"%s\"\n", files[i].toUtf8());
+			debugLog("OsuUpdateHandler: Ignoring file \"{:s}\"\n", files[i].toUtf8());
 			continue;
 		}
 
@@ -444,11 +444,11 @@ void OsuUpdateHandler::_installUpdate(UString zipFilePath)
 		if (mainDirectoryOffset == 0 && files[i].length() - mainDirectoryOffset > 0 && mainDirectoryOffset + mainDirectory.length() < files[i].length())
 		{
 			UString outFilePath = files[i].substr(mainDirectoryOffset + mainDirectory.length());
-			debugLog("OsuUpdateHandler: Writing %s\n", outFilePath.toUtf8());
+			debugLog("OsuUpdateHandler: Writing {:s}\n", outFilePath.toUtf8());
 			mz_zip_reader_extract_file_to_file(&zip_archive, files[i].toUtf8(), outFilePath.toUtf8(), 0);
 		}
 		else if (mainDirectoryOffset != 0)
-			debugLog("OsuUpdateHandler::installUpdate() warning, ignoring file \"%s\" because it's not in the main dir!\n", files[i].toUtf8());
+			debugLog("OsuUpdateHandler::installUpdate() warning, ignoring file \"{:s}\" because it's not in the main dir!\n", files[i].toUtf8());
 	}
 
 	mz_zip_reader_end(&zip_archive);

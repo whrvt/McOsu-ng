@@ -1295,7 +1295,7 @@ void OsuSongBrowser2::update()
 						m_backgroundStarCalculator->revive();
 
 						if (osu_debug_background_star_calc.getBool())
-							debugLog("diffToCalc = %s\n", diffToCalc->getFilePath().toUtf8());
+							debugLog("diffToCalc = {:s}\n", diffToCalc->getFilePath().toUtf8());
 
 						// start new calc (nomod stars)
 						{
@@ -1737,7 +1737,7 @@ void OsuSongBrowser2::onSelectionChange(OsuUISongBrowserButton *button, bool reb
 	auto *songDiffButtonPointer = button->as<OsuUISongBrowserSongDifficultyButton>();
 	auto *collectionButtonPointer = button->as<OsuUISongBrowserCollectionButton>();
 
-	///debugLog("onSelectionChange(%i, %i, %i)\n", (int)(songButtonPointer != NULL), (int)(songDiffButtonPointer != NULL), (int)(collectionButtonPointer != NULL));
+	///debugLog("onSelectionChange({}, {}, {})\n", (int)(songButtonPointer != NULL), (int)(songDiffButtonPointer != NULL), (int)(collectionButtonPointer != NULL));
 
 	if (songDiffButtonPointer != NULL)
 	{
@@ -2515,7 +2515,7 @@ bool OsuSongBrowser2::searchMatcher(const OsuDatabaseBeatmap *databaseBeatmap, c
 
 		for (size_t i=0; i<searchStringTokens.size(); i++)
 		{
-			//debugLog("token[%i] = %s\n", i, tokens[i].toUtf8());
+			//debugLog("token[{}] = {:s}\n", i, tokens[i].toUtf8());
 			// determine token type, interpret expression
 			bool expression = false;
 			for (size_t o=0; o<operators.size(); o++)
@@ -2523,7 +2523,7 @@ bool OsuSongBrowser2::searchMatcher(const OsuDatabaseBeatmap *databaseBeatmap, c
 				if (searchStringTokens[i].find(operators[o].first) != -1)
 				{
 					// split expression into left and right parts (only accept singular expressions, things like "0<bpm<1" will not work with this)
-					//debugLog("splitting by string %s\n", operators[o].first.toUtf8());
+					//debugLog("splitting by string {:s}\n", operators[o].first.toUtf8());
 					std::vector<UString> values = searchStringTokens[i].split(operators[o].first);
 					if (values.size() == 2 && values[0].length() > 0 && values[1].length() > 0)
 					{
@@ -2619,7 +2619,7 @@ bool OsuSongBrowser2::searchMatcher(const OsuDatabaseBeatmap *databaseBeatmap, c
 									break;
 								}
 
-								//debugLog("comparing %f %s %f (operatorId = %i) = %i\n", compareValue, operators[o].first.toUtf8(), rvalue, (int)operators[o].second, (int)matches);
+								//debugLog("comparing {:f} {:s} {:f} (operatorId = {}) = {}\n", compareValue, operators[o].first.toUtf8(), rvalue, (int)operators[o].second, (int)matches);
 
 								if (!matches) // if a single expression doesn't match, then the whole diff doesn't match
 									expressionsMatch = false;
@@ -3148,7 +3148,7 @@ void OsuSongBrowser2::onDatabaseLoadingFinished()
 {
 	m_beatmaps = std::vector<OsuDatabaseBeatmap*>(m_db->getDatabaseBeatmaps()); // having a copy of the vector in here is actually completely unnecessary
 
-	debugLog("%i beatmaps.\n", m_beatmaps.size());
+	debugLog("{} beatmaps.\n", m_beatmaps.size());
 
 	// initialize all collection (grouped) buttons
 	{
@@ -4127,7 +4127,7 @@ void OsuSongBrowser2::onScoreContextMenu(OsuUISongBrowserScoreButton *scoreButto
 
 void OsuSongBrowser2::onSongButtonContextMenu(OsuUISongBrowserSongButton *songButton, UString text, int id)
 {
-	//debugLog("OsuSongBrowser2::onSongButtonContextMenu(%p, %s, %i)\n", songButton, text.toUtf8(), id);
+	//debugLog("OsuSongBrowser2::onSongButtonContextMenu({:p}, {:s}, {})\n", songButton, text.toUtf8(), id);
 
 	struct CollectionManagementHelper
 	{

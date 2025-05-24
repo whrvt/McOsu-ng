@@ -34,7 +34,7 @@ public:
 		catch (const std::system_error& e)
 		{
 			if (McThread::debug->getBool())
-				debugLog("StdThread Error: std::thread constructor exception: %s\n", e.what());
+				debugLog("StdThread Error: std::thread constructor exception: {:s}\n", e.what());
 		}
 #endif
 	}

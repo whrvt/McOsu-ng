@@ -65,7 +65,7 @@ void OpenGLES32Interface::init()
 {
 	// check GL version
 	const GLubyte *version = glGetString(GL_VERSION);
-	debugLog("OpenGLES: OpenGL Version %s\n", version);
+	debugLog("OpenGLES: OpenGL Version {:s}\n", version);
 
 	// enable
 	glEnable(GL_BLEND);
@@ -241,13 +241,13 @@ void OpenGLES32Interface::setColor(Color color)
 	if (m_shaderTexturedGeneric->isActive())
 	{
 		m_color = color;
-		m_shaderTexturedGeneric->setUniform4f("col", Rf(color), Gf(color), Bf(color), Af(color)); // float components of color
+		m_shaderTexturedGeneric->setUniform4f("col", color.Rf(), color.Gf(), color.Bf(), color.Af()); // float components of color
 	}
 }
 
 void OpenGLES32Interface::setAlpha(float alpha)
 {
-	setColor(rgba(Rf(m_color), Gf(m_color), Bf(m_color), alpha));
+	setColor(rgba(m_color.Rf(), m_color.Gf(), m_color.Bf(), alpha));
 }
 
 void OpenGLES32Interface::drawLine(int x1, int y1, int x2, int y2)
@@ -614,13 +614,13 @@ void OpenGLES32Interface::setClipRect(McRect clipRect)
 	int viewport[4];
 	glGetIntegerv(GL_VIEWPORT, viewport);
 
-	// debugLog("viewport = %i, %i, %i, %i\n", viewport[0], viewport[1], viewport[2], viewport[3]);
+	// debugLog("viewport = {}, {}, {}, {}\n", viewport[0], viewport[1], viewport[2], viewport[3]);
 
 	glEnable(GL_SCISSOR_TEST);
 	glScissor((int)clipRect.getX() + viewport[0], viewport[3] - ((int)clipRect.getY() - viewport[1] - 1 + (int)clipRect.getHeight()), (int)clipRect.getWidth(),
 	          (int)clipRect.getHeight());
 
-	// debugLog("scissor = %i, %i, %i, %i\n", (int)clipRect.getX()+viewport[0], viewport[3]-((int)clipRect.getY()-viewport[1]-1+(int)clipRect.getHeight()),
+	// debugLog("scissor = {}, {}, {}, {}\n", (int)clipRect.getX()+viewport[0], viewport[3]-((int)clipRect.getY()-viewport[1]-1+(int)clipRect.getHeight()),
 	// (int)clipRect.getWidth(), (int)clipRect.getHeight());
 }
 
@@ -907,7 +907,7 @@ void OpenGLES32Interface::handleGLErrors()
 {
 	// int error = glGetError();
 	// if (error != 0)
-	// 	debugLog("OpenGL Error: %i on frame %i\n", error, engine->getFrameCount());
+	// 	debugLog("OpenGL Error: {} on frame {}\n", error, engine->getFrameCount());
 }
 
 int OpenGLES32Interface::primitiveToOpenGL(Graphics::PRIMITIVE primitive)

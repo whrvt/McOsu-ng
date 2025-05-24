@@ -472,7 +472,7 @@ void OpenGL3Interface::drawVAO(VertexArrayObject *vao)
 
 	for (size_t i=0; i<vcolors.size(); i++)
 	{
-		Vector4 color = Vector4(Rf(vcolors[i]), Gf(vcolors[i]), Bf(vcolors[i]), Af(vcolors[i]));
+		Vector4 color = Vector4(vcolors[i].Rf(), vcolors[i].Gf(), vcolors[i].Bf(), vcolors[i].Af());
 		colors.push_back(color);
 		finalColors.push_back(color);
 	}
@@ -592,12 +592,12 @@ void OpenGL3Interface::setClipRect(McRect clipRect)
 	int viewport[4];
 	glGetIntegerv(GL_VIEWPORT, viewport);
 
-	//debugLog("viewport = %i, %i, %i, %i\n", viewport[0], viewport[1], viewport[2], viewport[3]);
+	//debugLog("viewport = {}, {}, {}, {}\n", viewport[0], viewport[1], viewport[2], viewport[3]);
 
 	glEnable(GL_SCISSOR_TEST);
 	glScissor((int)clipRect.getX()+viewport[0], viewport[3]-((int)clipRect.getY()-viewport[1]-1+(int)clipRect.getHeight()), (int)clipRect.getWidth(), (int)clipRect.getHeight());
 
-	//debugLog("scissor = %i, %i, %i, %i\n", (int)clipRect.getX()+viewport[0], viewport[3]-((int)clipRect.getY()-viewport[1]-1+(int)clipRect.getHeight()), (int)clipRect.getWidth(), (int)clipRect.getHeight());
+	//debugLog("scissor = {}, {}, {}, {}\n", (int)clipRect.getX()+viewport[0], viewport[3]-((int)clipRect.getY()-viewport[1]-1+(int)clipRect.getHeight()), (int)clipRect.getWidth(), (int)clipRect.getHeight());
 }
 
 void OpenGL3Interface::pushClipRect(McRect clipRect)
@@ -807,7 +807,7 @@ void OpenGL3Interface::handleGLErrors()
 {
 	// int error = glGetError();
 	// if (error != 0)
-	// 	debugLog("OpenGL Error: %i on frame %i\n",error,engine->getFrameCount());
+	// 	debugLog("OpenGL Error: {} on frame {}\n",error,engine->getFrameCount());
 }
 
 int OpenGL3Interface::primitiveToOpenGL(Graphics::PRIMITIVE primitive)

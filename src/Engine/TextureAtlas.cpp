@@ -49,7 +49,7 @@ Vector2 TextureAtlas::put(int width, int height, bool flipHorizontal, bool flipV
 
 	if (width > (m_iWidth - m_iPadding*2) || height > (m_iHeight - m_iCurY - m_iPadding))
 	{
-		debugLog("TextureAtlas::put( %i, %i ) WARNING: Out of bounds / impossible fit!\n", width, height);
+		debugLog("TextureAtlas::put( {}, {} ) WARNING: Out of bounds / impossible fit!\n", width, height);
 		return Vector2();
 	}
 	if (m_atlasImage == NULL)
@@ -75,7 +75,7 @@ Vector2 TextureAtlas::put(int width, int height, bool flipHorizontal, bool flipV
 
 	if (m_iCurY + height + m_iPadding > m_iHeight)
 	{
-		debugLog("TextureAtlas::put( %i, %i ) WARNING: Out of bounds / impossible fit!\n", width, height);
+		debugLog("TextureAtlas::put( {}, {} ) WARNING: Out of bounds / impossible fit!\n", width, height);
 		return Vector2();
 	}
 

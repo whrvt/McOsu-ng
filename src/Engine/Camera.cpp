@@ -80,13 +80,13 @@ Matrix4 Camera::buildMatrixPerspectiveFovVerticalDXLH(float fovRad, float aspect
 
 Matrix4 Camera::buildMatrixPerspectiveFovHorizontal(float fovRad, float aspectRatioHeightToWidth, float zn, float zf)
 {
-	float verticalFov = 2.0f * std::atan(std::tan(fovRad * 0.5f) * aspectRatioHeightToWidth);
+	float verticalFov = 2.0f * glm::atan(glm::tan(fovRad * 0.5f) * aspectRatioHeightToWidth);
 	return buildMatrixPerspectiveFovVertical(verticalFov, 1.0f / aspectRatioHeightToWidth, zn, zf);
 }
 
 Matrix4 Camera::buildMatrixPerspectiveFovHorizontalDXLH(float fovRad, float aspectRatioHeightToWidth, float zn, float zf)
 {
-	float verticalFov = 2.0f * std::atan(std::tan(fovRad * 0.5f) * aspectRatioHeightToWidth);
+	float verticalFov = 2.0f * glm::atan(glm::tan(fovRad * 0.5f) * aspectRatioHeightToWidth);
 	return buildMatrixPerspectiveFovVerticalDXLH(verticalFov, 1.0f / aspectRatioHeightToWidth, zn, zf);
 }
 

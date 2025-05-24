@@ -15,6 +15,8 @@
 #include <freetype/ftglyph.h>
 #include <freetype/ftoutln.h>
 #include <freetype/fttrigon.h>
+#include <freetype/ftbitmap.h>
+
 #include <ft2build.h>
 
 #include <algorithm>
@@ -84,7 +86,7 @@ void McFont::constructor(std::vector<wchar_t> characters, int fontSize, bool ant
 
 void McFont::init()
 {
-	debugLog("Resource Manager: Loading %s\n", m_sFilePath.toUtf8());
+	debugLog("Resource Manager: Loading {:s}\n", m_sFilePath.toUtf8());
 
 	FT_Library library;
 	if (FT_Init_FreeType(&library))
@@ -131,14 +133,14 @@ void McFont::init()
 	{
 		if (FT_Load_Glyph(face, FT_Get_Char_Index(face, ch), m_bAntialiasing ? FT_LOAD_TARGET_NORMAL : FT_LOAD_TARGET_MONO))
 		{
-			debugLog("Font Error: Failed to load glyph for character %d\n", (int)ch);
+			debugLog("Font Error: Failed to load glyph for character {:d}\n", (int)ch);
 			continue;
 		}
 
 		FT_Glyph glyph;
 		if (FT_Get_Glyph(face->glyph, &glyph))
 		{
-			debugLog("Font Error: Failed to get glyph for character %d\n", (int)ch);
+			debugLog("Font Error: Failed to get glyph for character {:d}\n", (int)ch);
 			continue;
 		}
 

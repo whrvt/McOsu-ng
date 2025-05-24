@@ -37,7 +37,7 @@ OpenGLRenderTarget::OpenGLRenderTarget(int x, int y, int width, int height, Grap
 
 void OpenGLRenderTarget::init()
 {
-	debugLog("Building RenderTarget (%ix%i) ...\n", (int)m_vSize.x, (int)m_vSize.y);
+	debugLog("Building RenderTarget ({}x{}) ...\n", (int)m_vSize.x, (int)m_vSize.y);
 
 	m_iFrameBuffer = 0;
 	m_iRenderTexture = 0;
@@ -279,7 +279,7 @@ void OpenGLRenderTarget::enable()
 	if (debug_rt->getBool())
 		glClearColor(0.0f, 0.5f, 0.0f, 0.5f);
 	else
-		glClearColor(Rf(m_clearColor), Gf(m_clearColor), Bf(m_clearColor), Af(m_clearColor));
+		glClearColor(m_clearColor.Rf(), m_clearColor.Gf(), m_clearColor.Bf(), m_clearColor.Af());
 
 	if (m_bClearColorOnDraw || m_bClearDepthOnDraw)
 		glClear((m_bClearColorOnDraw ? GL_COLOR_BUFFER_BIT : 0) | (m_bClearDepthOnDraw ? GL_DEPTH_BUFFER_BIT : 0));

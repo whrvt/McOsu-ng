@@ -69,7 +69,7 @@ void BassSound::init()
 		msg.append(", file = ");
 		msg.append(m_sFilePath);
 		msg.append("\n");
-		debugLog(0xffdd3333, "%s", msg.toUtf8());
+		debugLog(0xffdd3333, "{:s}", msg.toUtf8());
 	}
 	else
 		m_bReady = true;
@@ -83,7 +83,7 @@ BassSound::~BassSound()
 void BassSound::initAsync()
 {
 	if (ResourceManager::debug_rm->getBool())
-		debugLog("Resource Manager: Loading %s\n", m_sFilePath.toUtf8());
+		debugLog("Resource Manager: Loading {:s}\n", m_sFilePath.toUtf8());
 
 	// HACKHACK: workaround for BASS crashes on malformed WAV files
 	{
@@ -98,7 +98,7 @@ void BassSound::initAsync()
 				if (wavFile.getFileSize() < (size_t)minWavFileSize)
 				{
 					if (debug_snd.getBool())
-						debugLog("Sound: Ignoring malformed/corrupt WAV file (%i) %s\n", (int)wavFile.getFileSize(), m_sFilePath.toUtf8());
+						debugLog("Sound: Ignoring malformed/corrupt WAV file ({}) {:s}\n", (int)wavFile.getFileSize(), m_sFilePath.toUtf8());
 					return;
 				}
 			}
@@ -144,7 +144,7 @@ void BassSound::initAsync()
 				}
 			}
 			else
-				debugLog("Sound Error: Couldn't file.canRead() on file %s\n", m_sFilePath.toUtf8());
+				debugLog("Sound Error: Couldn't file.canRead() on file {:s}\n", m_sFilePath.toUtf8());
 		}
 		else
 		{
@@ -158,7 +158,7 @@ void BassSound::initAsync()
 		{
 			auto code = BASS_ErrorGetCode();
 			if (debug_snd.getBool() || (code != BASS_ERROR_NOTAUDIO && code != BASS_ERROR_EMPTY))
-				debugLog("Sound Error: BASS_SampleLoad() error %i on file %s\n", code, m_sFilePath.toUtf8());
+				debugLog("Sound Error: BASS_SampleLoad() error {} on file {:s}\n", code, m_sFilePath.toUtf8());
 		}
 	}
 	m_bAsyncReady = true;
@@ -191,7 +191,7 @@ BassSound::SOUNDHANDLE BassSound::getHandle()
 			                                   BASS_SAMPLE_FLOAT | BASS_STREAM_DECODE | BASS_UNICODE | (m_bIsLooped ? BASS_SAMPLE_LOOP : 0));
 
 			if (m_HCHANNEL == 0)
-				debugLog("BASS_StreamCreateFile() error %i\n", BASS_ErrorGetCode());
+				debugLog("BASS_StreamCreateFile() error {}\n", BASS_ErrorGetCode());
 			else
 			{
 				BASS_ChannelSetAttribute(m_HCHANNEL, BASS_ATTRIB_VOL, m_fVolume);
@@ -216,7 +216,7 @@ BassSound::SOUNDHANDLE BassSound::getHandle()
 			msg.append(", file = ");
 			msg.append(m_sFilePath);
 			msg.append("\n");
-			debugLog(0xffdd3333, "%s", msg.toUtf8());
+			debugLog(0xffdd3333, "{:s}", msg.toUtf8());
 		}
 		else
 			BASS_ChannelSetAttribute(m_HCHANNEL, BASS_ATTRIB_VOL, m_fVolume);
@@ -291,7 +291,7 @@ void BassSound::setPosition(double percent)
 
 	const BOOL res = BASS_ChannelSetPosition(handle, (QWORD)((double)(length)*percent), BASS_POS_BYTE);
 	if (!res && debug_snd.getBool())
-		debugLog("position %f BASS_ChannelSetPosition() error %i on file %s (handle: %p)\n", percent, BASS_ErrorGetCode(), m_sFilePath.toUtf8(), handle);
+		debugLog("position {:f} BASS_ChannelSetPosition() error {} on file {:s} (handle: {})\n", percent, BASS_ErrorGetCode(), m_sFilePath.toUtf8(), handle);
 }
 
 void BassSound::setPositionMS(unsigned long ms, bool internal)
@@ -311,7 +311,7 @@ void BassSound::setPositionMS(unsigned long ms, bool internal)
 
 	const BOOL res = BASS_ChannelSetPosition(handle, position, BASS_POS_BYTE);
 	if (!res && !internal && debug_snd.getBool())
-		debugLog("ms %lu BASS_ChannelSetPosition() error %i on file %s\n", ms, BASS_ErrorGetCode(), m_sFilePath.toUtf8());
+		debugLog("ms {} BASS_ChannelSetPosition() error {} on file {:s}\n", ms, BASS_ErrorGetCode(), m_sFilePath.toUtf8());
 }
 
 void BassSound::setVolume(float volume)

@@ -489,7 +489,7 @@ void OsuHUD::draw(Graphics *g)
 				bk2.startPercent = (float)(bk.startTime) / (float)(endTimePlayableMS);
 				bk2.endPercent = (float)(bk.endTime) / (float)(endTimePlayableMS);
 
-				//debugLog("%i: s = %f, e = %f\n", i, bk2.startPercent, bk2.endPercent);
+				//debugLog("{}: s = {:f}, e = {:f}\n", i, bk2.startPercent, bk2.endPercent);
 
 				breaks.push_back(bk2);
 			}
@@ -2409,8 +2409,8 @@ void OsuHUD::drawHitErrorBarInt(Graphics *g, float hitWindow300, float hitWindow
 			if (m_hiterrors[i].misaim)
 				missHeightMultiplier = osu_hud_hiterrorbar_entry_misaim_height_multiplier.getFloat();
 
-			//Color leftColor = argb((int)((255/2) * alphaEntry * fade), Ri(barColor), Gi(barColor), Bi(barColor));
-			//Color centerColor = argb((int)(Ai(barColor) * alphaEntry * fade), Ri(barColor), Gi(barColor), Bi(barColor));
+			//Color leftColor = argb((int)((255/2) * alphaEntry * fade), barColor.r, barColor.g, barColor.b);
+			//Color centerColor = argb((int)(barColor.a * alphaEntry * fade), barColor.r, barColor.g, barColor.b);
 			//Color rightColor = leftColor;
 
 			g->fillRect(center.x - (entryWidth/2.0f) + percent*(size.x/2.0f), center.y - (entryHeight*missHeightMultiplier)/2.0f, entryWidth, (entryHeight*missHeightMultiplier));
@@ -2790,7 +2790,7 @@ void OsuHUD::drawTargetHeatmap(Graphics *g, float hitcircleDiameter)
 		{
 			const float factor300 = (m_osu_mod_target_300_percent_ref->getFloat() + overlap - delta) / (2.0f*overlap);
 			const float factor100 = 1.0f - factor300;
-			color = argb(1.0f, Rf(color300)*factor300 + Rf(color100)*factor100, Gf(color300)*factor300 + Gf(color100)*factor100, Bf(color300)*factor300 + Bf(color100)*factor100);
+			color = argb(1.0f, color300.Rf()*factor300 + color100.Rf()*factor100, color300.Gf()*factor300 + color100.Gf()*factor100, color300.Bf()*factor300 + color100.Bf()*factor100);
 		}
 		else if (delta < m_osu_mod_target_100_percent_ref->getFloat()-overlap)
 			color = color100;
@@ -2798,7 +2798,7 @@ void OsuHUD::drawTargetHeatmap(Graphics *g, float hitcircleDiameter)
 		{
 			const float factor100 = (m_osu_mod_target_100_percent_ref->getFloat() + overlap - delta) / (2.0f*overlap);
 			const float factor50 = 1.0f - factor100;
-			color = argb(1.0f, Rf(color100)*factor100 + Rf(color50)*factor50, Gf(color100)*factor100 + Gf(color50)*factor50, Bf(color100)*factor100 + Bf(color50)*factor50);
+			color = argb(1.0f, color100.Rf()*factor100 + color50.Rf()*factor50, color100.Gf()*factor100 + color50.Gf()*factor50, color100.Bf()*factor100 + color50.Bf()*factor50);
 		}
 		else if (delta < m_osu_mod_target_50_percent_ref->getFloat())
 			color = color50;
@@ -3153,9 +3153,9 @@ void OsuHUD::drawInputOverlay(Graphics *g, int numK1, int numK2, int numM1, int 
 			// key
 			const Vector2 pos = Vector2(xStart - (15.0f*oScale)*scale + 1, yStart + (19.0f*oScale + i*29.5f*oScale)*scale);
 			g->setColor(argb(1.0f,
-					(1.0f - animColor)*Rf(colorIdle) + animColor*Rf(color),
-					(1.0f - animColor)*Gf(colorIdle) + animColor*Gf(color),
-					(1.0f - animColor)*Bf(colorIdle) + animColor*Bf(color)));
+					(1.0f - animColor)*colorIdle.Rf() + animColor*color.Rf(),
+					(1.0f - animColor)*colorIdle.Gf() + animColor*color.Gf(),
+					(1.0f - animColor)*colorIdle.Bf() + animColor*color.Bf()));
 			inputoverlayKey->draw(g, pos, scale*animScale);
 
 			// text

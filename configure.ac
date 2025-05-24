@@ -326,7 +326,7 @@ AS_IF([test "x$enable_native" != "xno"], [
     CXXFLAGS="$CXXFLAGS -march=native -mtune=native"
     CFLAGS="$CFLAGS -march=native -mtune=native"
 ],[
-    AS_IF([test "$host_cpu" = "i686"], [
+    AS_IF([test -n "$ubercompat"], [
         CXXFLAGS="$CXXFLAGS -march=pentium4 -mtune=generic"
         CFLAGS="$CFLAGS -march=pentium4 -mtune=generic"
     ], [
@@ -599,8 +599,6 @@ AC_SUBST([ASSETS_DIR])
 BUNDLED_LIBS_DIR=libraries
 BUNDLED_BASS_DIR=$BUNDLED_LIBS_DIR/bass
 BUNDLED_BASS_FX_DIR=$BUNDLED_LIBS_DIR/bassfx
-
-AC_DEFINE([MCENGINE_FEATURE_SDL], [1], [Define if the SDL environment McEngine backend is desired.])
 
 # sanity check
 AS_IF([test "x$with_sdlmixer" != "xyes" && test "x$with_soloud" != "xyes"], [

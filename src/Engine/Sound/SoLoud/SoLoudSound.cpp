@@ -43,7 +43,7 @@ void SoLoudSound::init()
 		msg.append(", file = ");
 		msg.append(m_sFilePath);
 		msg.append("\n");
-		debugLog(0xffdd3333, "%s", msg.toUtf8());
+		debugLog(0xffdd3333, "{:s}", msg.toUtf8());
 	}
 	else
 		m_bReady = true;
@@ -57,7 +57,7 @@ SoLoudSound::~SoLoudSound()
 void SoLoudSound::initAsync()
 {
 	if (ResourceManager::debug_rm->getBool())
-		debugLog("Resource Manager: Loading %s\n", m_sFilePath.toUtf8());
+		debugLog("Resource Manager: Loading {:s}\n", m_sFilePath.toUtf8());
 
 	// check for corrupt WAV files (same as BASS impl.)
 	const int minWavFileSize = snd_wav_file_min_size.getInt();
@@ -70,7 +70,7 @@ void SoLoudSound::initAsync()
 			McFile wavFile(m_sFilePath);
 			if (wavFile.getFileSize() < (size_t)minWavFileSize)
 			{
-				debugLog("Sound: Ignoring malformed/corrupt WAV file (%i) %s\n", (int)wavFile.getFileSize(), m_sFilePath.toUtf8());
+				debugLog("Sound: Ignoring malformed/corrupt WAV file ({}) {:s}\n", (int)wavFile.getFileSize(), m_sFilePath.toUtf8());
 				return;
 			}
 		}
@@ -96,19 +96,19 @@ void SoLoudSound::initAsync()
 	{
 		if (!file.canRead())
 		{
-			debugLog("Sound Error: Cannot open file %s\n", m_sFilePath.toUtf8());
+			debugLog("Sound Error: Cannot open file {:s}\n", m_sFilePath.toUtf8());
 			return;
 		}
 		fileSize = file.getFileSize();
 		if (fileSize == 0)
 		{
-			debugLog("Sound Error: File is empty %s\n", m_sFilePath.toUtf8());
+			debugLog("Sound Error: File is empty {:s}\n", m_sFilePath.toUtf8());
 			return;
 		}
 		fileData = file.readFile();
 		if (!fileData)
 		{
-			debugLog("Sound Error: Failed to read file data %s\n", m_sFilePath.toUtf8());
+			debugLog("Sound Error: Failed to read file data {:s}\n", m_sFilePath.toUtf8());
 			return;
 		}
 	}
@@ -137,7 +137,7 @@ void SoLoudSound::initAsync()
 		else
 		{
 			delete wavStream;
-			debugLog("Sound Error: SoLoud::WavStream::load() error %i on file %s\n", result, m_sFilePath.toUtf8());
+			debugLog("Sound Error: SoLoud::WavStream::load() error {} on file {:s}\n", result, m_sFilePath.toUtf8());
 			return;
 		}
 	}
@@ -162,7 +162,7 @@ void SoLoudSound::initAsync()
 		else
 		{
 			delete wav;
-			debugLog("Sound Error: SoLoud::Wav::load() error %i on file %s\n", result, m_sFilePath.toUtf8());
+			debugLog("Sound Error: SoLoud::Wav::load() error {} on file {:s}\n", result, m_sFilePath.toUtf8());
 			return;
 		}
 	}
@@ -190,12 +190,12 @@ void SoLoudSound::initAsync()
 			m_filter->setPitchFactor(m_pitch);
 
 			if (debug_snd.getBool())
-				debugLog("SoLoudSound: Created SoundTouch filter for %s with speed=%f, pitch=%f, looping=%s\n", m_sFilePath.toUtf8(), m_speed, m_pitch,
+				debugLog("SoLoudSound: Created SoundTouch filter for {:s} with speed={:f}, pitch={:f}, looping={:s}\n", m_sFilePath.toUtf8(), m_speed, m_pitch,
 				         m_bIsLooped ? "true" : "false");
 		}
 		else
 		{
-			debugLog("Sound Error: Failed to create SoundTouch filter for %s\n", m_sFilePath.toUtf8());
+			debugLog("Sound Error: Failed to create SoundTouch filter for {:s}\n", m_sFilePath.toUtf8());
 		}
 	}
 
@@ -268,7 +268,7 @@ void SoLoudSound::setPosition(double percent)
 	m_fSoLoudPositionRate = 1000.0 * getSpeed();
 
 	if (debug_snd.getBool())
-		debugLog("seeking to %.2f percent (position: %lums, length: %lums)\n", percent, static_cast<unsigned long>(positionInSeconds * 1000),
+		debugLog("seeking to {:.2f} percent (position: {}ms, length: {}ms)\n", percent, static_cast<unsigned long>(positionInSeconds * 1000),
 		         static_cast<unsigned long>(streamLengthInSeconds * 1000));
 
 	// seek
@@ -292,7 +292,7 @@ void SoLoudSound::setPositionMS(unsigned long ms, bool internal)
 	m_fSoLoudPositionRate = 1000.0 * getSpeed();
 
 	if (debug_snd.getBool())
-		debugLog("seeking to %lums (length: %lums)\n", ms, streamLengthMS);
+		debugLog("seeking to {}ms (length: {}ms)\n", ms, streamLengthMS);
 
 	// seek
 	soloud->seek(m_handle, positionInSeconds);
@@ -328,13 +328,13 @@ void SoLoudSound::setSpeed(float speed)
 			updateFilterParameters();
 
 			if (debug_snd.getBool())
-				debugLog("SoLoudSound: Speed change %s: %f->%f (stream, filter updated live)\n", m_sFilePath.toUtf8(), previousSpeed, m_speed);
+				debugLog("SoLoudSound: Speed change {:s}: {:f}->{:f} (stream, filter updated live)\n", m_sFilePath.toUtf8(), previousSpeed, m_speed);
 		}
 		// for non-streaming audio, no restart needed - speed/pitch is applied during playback
 		else if (!m_bStream)
 		{
 			if (debug_snd.getBool())
-				debugLog("SoLoudSound: Speed change %s: %f->%f (non-stream, will be applied on next play)\n", m_sFilePath.toUtf8(), previousSpeed, m_speed);
+				debugLog("SoLoudSound: Speed change {:s}: {:f}->{:f} (non-stream, will be applied on next play)\n", m_sFilePath.toUtf8(), previousSpeed, m_speed);
 		}
 	}
 
@@ -359,13 +359,13 @@ void SoLoudSound::setPitch(float pitch)
 			updateFilterParameters();
 
 			if (debug_snd.getBool())
-				debugLog("SoLoudSound: Pitch change %s: %f->%f (stream, filter updated live)\n", m_sFilePath.toUtf8(), previousPitch, m_pitch);
+				debugLog("SoLoudSound: Pitch change {:s}: {:f}->{:f} (stream, filter updated live)\n", m_sFilePath.toUtf8(), previousPitch, m_pitch);
 		}
 		// for non-streaming audio, no restart needed - speed/pitch is applied during playback
 		else if (!m_bStream)
 		{
 			if (debug_snd.getBool())
-				debugLog("SoLoudSound: Pitch change %s: %f->%f (non-stream, will be applied on next play)\n", m_sFilePath.toUtf8(), previousPitch, m_pitch);
+				debugLog("SoLoudSound: Pitch change {:s}: {:f}->{:f} (non-stream, will be applied on next play)\n", m_sFilePath.toUtf8(), previousPitch, m_pitch);
 		}
 	}
 }
@@ -405,7 +405,7 @@ void SoLoudSound::setLoop(bool loop)
 		return;
 
 	if (debug_snd.getBool())
-		debugLog("setLoop %u and m_filter %s\n", loop, m_filter ? "exists" : "does not exist");
+		debugLog("setLoop {} and m_filter {:s}\n", loop, m_filter ? "exists" : "does not exist");
 
 	m_bIsLooped = loop;
 

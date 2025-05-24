@@ -12,7 +12,7 @@
 #include "Resource.h"
 #include "VertexArrayObject.h"
 
-#include <freetype/ftbitmap.h>
+typedef struct FT_Bitmap_ FT_Bitmap;
 
 class TextureAtlas;
 class VertexArrayObject;

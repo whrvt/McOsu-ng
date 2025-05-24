@@ -989,8 +989,8 @@ void OsuSkin::load()
 		m_defaultButtonRight = defaultButtonRight2;
 
 	// print some debug info
-	debugLog("OsuSkin: Version %f\n", m_fVersion);
-	debugLog("OsuSkin: HitCircleOverlap = %i\n", m_iHitCircleOverlap);
+	debugLog("OsuSkin: Version {:f}\n", m_fVersion);
+	debugLog("OsuSkin: HitCircleOverlap = {}\n", m_iHitCircleOverlap);
 
 	// delayed error notifications due to resource loading potentially blocking engine time
 	if (!parseSkinIni1Status && parseSkinIni2Status && m_osu_skin_ref->getString() != "default" && m_osu_skin_ref->getString() != "defaultvr")
@@ -1012,7 +1012,7 @@ void OsuSkin::load()
 
 void OsuSkin::loadBeatmapOverride(UString filepath)
 {
-	//debugLog("OsuSkin::loadBeatmapOverride( %s )\n", filepath.toUtf8());
+	//debugLog("OsuSkin::loadBeatmapOverride( {:s} )\n", filepath.toUtf8());
 	// TODO: beatmap skin support
 }
 
@@ -1029,7 +1029,7 @@ bool OsuSkin::parseSkinINI(UString filepath)
 	McFile file(filepath);
 	if (!file.canRead())
 	{
-		debugLog("OsuSkin Error: Couldn't load %s\n", filepath.toUtf8());
+		debugLog("OsuSkin Error: Couldn't load {:s}\n", filepath.toUtf8());
 		return false;
 	}
 
@@ -1269,7 +1269,7 @@ void OsuSkin::onExport(UString folderName)
 		UString outputFilePath = exportFolder;
 		outputFilePath.append(fileToCopy.fileNameWithExtension);
 
-		debugLog("Copying \"%s\" to \"%s\"\n", fileToCopy.filePath.toUtf8(), outputFilePath.toUtf8());
+		debugLog("Copying \"{:s}\" to \"{:s}\"\n", fileToCopy.filePath.toUtf8(), outputFilePath.toUtf8());
 
 		McFile inputFile(fileToCopy.filePath, McFile::TYPE::READ);
 		McFile outputFile(outputFilePath, McFile::TYPE::WRITE);
@@ -1277,7 +1277,7 @@ void OsuSkin::onExport(UString folderName)
 		if (inputFile.canRead() && outputFile.canWrite())
 			outputFile.write(inputFile.readFile(), inputFile.getFileSize());
 		else
-			debugLog("Error: Couldn't copy %s\n", fileToCopy.filePath.toUtf8());
+			debugLog("Error: Couldn't copy {:s}\n", fileToCopy.filePath.toUtf8());
 	}
 
 	debugLog("Done.\n");
@@ -1288,7 +1288,7 @@ void OsuSkin::setSampleSet(int sampleSet)
 {
 	if (m_iSampleSet == sampleSet) return;
 
-	///debugLog("sample set = %i\n", sampleSet);
+	///debugLog("sample set = {}\n", sampleSet);
 	m_iSampleSet = sampleSet;
 }
 
@@ -1301,7 +1301,7 @@ void OsuSkin::setSampleVolume(float volume, bool force)
 	if (!force && m_iSampleVolume == (int)(newSampleVolume * 100.0f)) return;
 
 	m_iSampleVolume = (int)(newSampleVolume * 100.0f);
-	///debugLog("sample volume = %f\n", sampleVolume);
+	///debugLog("sample volume = {:f}\n", sampleVolume);
 	for (int i=0; i<m_soundSamples.size(); i++)
 	{
 		m_soundSamples[i].sound->setVolume(newSampleVolume * m_soundSamples[i].hardcodedVolumeMultiplier);
@@ -1571,20 +1571,19 @@ void OsuSkin::checkLoadImage(Image **addressOfPointer, UString skinElementName, 
 
 			// export
 			{
-				if (existsFilepath1)
-					m_filepathsForExport.push_back(filepath1);
+				m_filepathsForExport.push_back(filepath1);
 
 				if (existsFilepath2)
 					m_filepathsForExport.push_back(filepath2);
 
-				if (!existsFilepath1 && !existsFilepath2)
-				{
-					if (existsDefaultFilePath1)
-						m_filepathsForExport.push_back(defaultFilePath1);
+				// if (!existsFilepath1 && !existsFilepath2) // huh?
+				// {
+				// 	if (existsDefaultFilePath1)
+				// 		m_filepathsForExport.push_back(defaultFilePath1);
 
-					if (existsDefaultFilePath2)
-						m_filepathsForExport.push_back(defaultFilePath2);
-				}
+				// 	if (existsDefaultFilePath2)
+				// 		m_filepathsForExport.push_back(defaultFilePath2);
+				// }
 			}
 
 			return; // nothing more to do here
@@ -1770,7 +1769,7 @@ void OsuSkin::checkLoadSound(Sound **addressOfPointer, UString skinElementName, 
 		m_filepathsForExport.push_back((*addressOfPointer)->getFilePath());
 	}
 	else
-		debugLog("OsuSkin Warning: NULL sound %s!\n", skinElementName.toUtf8());
+		debugLog("OsuSkin Warning: NULL sound {:s}!\n", skinElementName.toUtf8());
 }
 
 bool OsuSkin::compareFilenameWithSkinElementName(UString filename, UString skinElementName)

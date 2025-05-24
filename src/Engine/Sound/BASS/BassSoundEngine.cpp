@@ -142,7 +142,7 @@ BassSoundEngine::BassSoundEngine() : SoundEngine()
 
 	// lib version check
 	m_iBASSVersion = BASS_GetVersion();
-	debugLog("SoundEngine: BASS version = 0x%08x\n", m_iBASSVersion);
+	debugLog("SoundEngine: BASS version = 0x{:08x}\n", m_iBASSVersion);
 	if (HIWORD(m_iBASSVersion) != BASSVERSION)
 	{
 		engine->showMessageErrorFatal("Fatal Sound Error", "An incorrect version of the BASS library file was loaded!");
@@ -271,7 +271,7 @@ bool BassSoundEngine::play(Sound *snd, float pan, float pitch)
 		if (BASS_Mixer_ChannelGetMixer(handle) == 0)
 		{
 			if (!BASS_Mixer_StreamAddChannel(g_wasapiOutputMixer, handle, (!bassSound->isStream() ? BASS_STREAM_AUTOFREE : 0) | BASS_MIXER_DOWNMIX | BASS_MIXER_NORAMPIN))
-				debugLog("BASS_Mixer_StreamAddChannel() failed (%i)!", BASS_ErrorGetCode());
+				debugLog("BASS_Mixer_StreamAddChannel() failed ({})!", BASS_ErrorGetCode());
 		}
 	}
 
@@ -280,7 +280,7 @@ bool BassSoundEngine::play(Sound *snd, float pan, float pitch)
 		const bool ret = BASS_ChannelPlay(handle, TRUE);
 
 		if (!ret)
-			debugLog("couldn't BASS_ChannelPlay(), errorcode %i\n", BASS_ErrorGetCode());
+			debugLog("couldn't BASS_ChannelPlay(), errorcode {}\n", BASS_ErrorGetCode());
 
 		return ret;
 	}
@@ -334,7 +334,7 @@ bool BassSoundEngine::play(Sound *snd, float pan, float pitch)
 			ret = BASS_ChannelPlay(handle, FALSE);
 			auto code = BASS_ErrorGetCode();
 			if (!ret)
-				debugLog("couldn't BASS_ChannelPlay(), errorcode %i\n", code);
+				debugLog("couldn't BASS_ChannelPlay(), errorcode {}\n", code);
 			if (code == BASS_ERROR_START)
 			{
 				debugLog("Attempting to reinitialize...\n");
@@ -345,7 +345,7 @@ bool BassSoundEngine::play(Sound *snd, float pan, float pitch)
 #else
 		ret = BASS_ChannelPlay(handle, FALSE);
 		if (!ret)
-			debugLog("couldn't BASS_ChannelPlay(), errorcode %i\n", BASS_ErrorGetCode());
+			debugLog("couldn't BASS_ChannelPlay(), errorcode {}\n", BASS_ErrorGetCode());
 #endif
 
 		if (ret)
@@ -374,13 +374,13 @@ bool BassSoundEngine::play3d(Sound *snd, Vector3 pos)
 		{
 			BASS_3DVECTOR bassPos = BASS_3DVECTOR(pos.x, pos.y, pos.z);
 			if (!BASS_ChannelSet3DPosition(handle, &bassPos, NULL, NULL))
-				debugLog("couldn't BASS_ChannelSet3DPosition(), errorcode %i\n", BASS_ErrorGetCode());
+				debugLog("couldn't BASS_ChannelSet3DPosition(), errorcode {}\n", BASS_ErrorGetCode());
 			else
 				BASS_Apply3D(); // apply the changes
 
 			bool ret = BASS_ChannelPlay(handle, FALSE);
 			if (!ret)
-				debugLog("couldn't BASS_ChannelPlay(), errorcode %i\n", BASS_ErrorGetCode());
+				debugLog("couldn't BASS_ChannelPlay(), errorcode {}\n", BASS_ErrorGetCode());
 			else
 				bassSound->setLastPlayTime(engine->getTime());
 
@@ -420,7 +420,7 @@ void BassSoundEngine::pause(Sound *snd)
 	{
 		if (!BASS_ChannelPause(handle))
 		{
-			debugLog("couldn't BASS_ChannelPause(), errorcode %i\n", BASS_ErrorGetCode());
+			debugLog("couldn't BASS_ChannelPause(), errorcode {}\n", BASS_ErrorGetCode());
 		}
 	}
 #else
@@ -471,13 +471,13 @@ void BassSoundEngine::setOutputDevice(UString outputDeviceName)
 					initializeOutputDevice(previousOutputDevice); // if something went wrong, automatically switch back to the previous device
 			}
 			else
-				debugLog("\"%s\" already is the current device.\n", outputDeviceName.toUtf8());
+				debugLog("\"{:s}\" already is the current device.\n", outputDeviceName.toUtf8());
 
 			return;
 		}
 	}
 
-	debugLog(" couldn't find output device \"%s\"!\n", outputDeviceName.toUtf8());
+	debugLog(" couldn't find output device \"{:s}\"!\n", outputDeviceName.toUtf8());
 }
 
 void BassSoundEngine::setOutputDeviceForce(UString outputDeviceName)
@@ -493,7 +493,7 @@ void BassSoundEngine::setOutputDeviceForce(UString outputDeviceName)
 		}
 	}
 
-	debugLog("couldn't find output device \"%s\"!\n", outputDeviceName.toUtf8());
+	debugLog("couldn't find output device \"{:s}\"!\n", outputDeviceName.toUtf8());
 }
 
 void BassSoundEngine::setVolume(float volume)
@@ -524,7 +524,7 @@ void BassSoundEngine::set3dPosition(Vector3 headPos, Vector3 viewDir, Vector3 vi
 	BASS_3DVECTOR bassViewUp = BASS_3DVECTOR(viewUp.x, viewUp.y, viewUp.z);
 
 	if (!BASS_Set3DPosition(&bassHeadPos, NULL, &bassViewDir, &bassViewUp))
-		debugLog("couldn't BASS_Set3DPosition(), errorcode %i\n", BASS_ErrorGetCode());
+		debugLog("couldn't BASS_Set3DPosition(), errorcode {}\n", BASS_ErrorGetCode());
 	else
 		BASS_Apply3D(); // apply the changes
 }
@@ -533,10 +533,10 @@ void BassSoundEngine::onFreqChanged(UString oldValue, UString newValue)
 {
 	if (oldValue == newValue)
 	{
-		debugLog("SoundEngine: frequency unchanged (%s).\n", newValue.toUtf8());
+		debugLog("SoundEngine: frequency unchanged ({:s}).\n", newValue.toUtf8());
 		return;
 	}
-	debugLog("SoundEngine: frequency changed (%s)->(%s).\n", oldValue.toUtf8(), newValue.toUtf8());
+	debugLog("SoundEngine: frequency changed ({:s})->({:s}).\n", oldValue.toUtf8(), newValue.toUtf8());
 
 	restart();
 }
@@ -581,7 +581,7 @@ void BassSoundEngine::updateOutputDevices(bool handleOutputDeviceChanges, bool p
 
 		if (printInfo)
 		{
-			debugLog("SoundEngine: Device %i = \"%s\", enabled = %i, default = %i\n", numDevices, deviceInfo.name, (int)isEnabled, (int)isDefault);
+			debugLog("SoundEngine: Device {} = \"{:s}\", enabled = {}, default = {}\n", numDevices, deviceInfo.name, (int)isEnabled, (int)isDefault);
 			numDevices++;
 		}
 
@@ -667,10 +667,10 @@ bool BassSoundEngine::initializeOutputDevice(int id, bool force)
 
 	if (!needsReinit)
 	{
-		debugLog("SoundEngine: initializeOutputDevice( %i ) already init.\n");
+		debugLog("SoundEngine: initializeOutputDevice( {} ) already init.\n", id);
 		return true;
 	}
-	debugLog("SoundEngine: initializeOutputDevice( %i, fallback = %i ) ...\n", id, (int)win_snd_fallback_dsound.getBool());
+	debugLog("SoundEngine: initializeOutputDevice( {}, fallback = {} ) ...\n", id, (int)win_snd_fallback_dsound.getBool());
 
 	m_iCurrentOutputDevice = id;
 
@@ -716,7 +716,7 @@ bool BassSoundEngine::initializeOutputDevice(int id, bool force)
 			// try again with dsound fallback, once
 			if (!win_snd_fallback_dsound.getBool())
 			{
-				debugLog("Sound Error: BASS_Init() failed (%i)!\n", BASS_ErrorGetCode());
+				debugLog("Sound Error: BASS_Init() failed ({})!\n", BASS_ErrorGetCode());
 				debugLog("Trying to fall back to DirectSound ...\n");
 
 				win_snd_fallback_dsound.setValue(1.0f);
@@ -740,7 +740,7 @@ bool BassSoundEngine::initializeOutputDevice(int id, bool force)
 	const float bufferSize = std::round(win_snd_wasapi_buffer_size.getFloat() * 1000.0f) / 1000.0f;   // in seconds
 	const float updatePeriod = std::round(win_snd_wasapi_period_size.getFloat() * 1000.0f) / 1000.0f; // in seconds
 
-	debugLog("WASAPI Exclusive Mode = %i, bufferSize = %f, updatePeriod = %f\n", (int)win_snd_wasapi_exclusive.getBool(), bufferSize, updatePeriod);
+	debugLog("WASAPI Exclusive Mode = {}, bufferSize = {:f}, updatePeriod = {:f}\n", (int)win_snd_wasapi_exclusive.getBool(), bufferSize, updatePeriod);
 	ret = BASS_WASAPI_Init(id, 0, 0, (win_snd_wasapi_exclusive.getBool() ? BASS_WASAPI_EXCLUSIVE : 0), bufferSize, updatePeriod, OutputWasapiProc, NULL);
 
 	if (!ret)
@@ -787,7 +787,7 @@ bool BassSoundEngine::initializeOutputDevice(int id, bool force)
 			break;
 		}
 	}
-	debugLog("SoundEngine: Output Device = \"%s\"\n", m_sCurrentOutputDevice.toUtf8());
+	debugLog("SoundEngine: Output Device = \"{:s}\"\n", m_sCurrentOutputDevice.toUtf8());
 
 	return true;
 }
@@ -818,7 +818,7 @@ void *_soundEngineThread(void *data)
 			for (size_t i = 0; i < channelPlayWork.size(); i++)
 			{
 				if (!BASS_ChannelPlay(channelPlayWork[i].handle, FALSE))
-					debugLog("couldn't BASS_ChannelPlay(), errorcode %i\n", BASS_ErrorGetCode());
+					debugLog("couldn't BASS_ChannelPlay(), errorcode {}\n", BASS_ErrorGetCode());
 			}
 			channelPlayWork.clear();
 		}

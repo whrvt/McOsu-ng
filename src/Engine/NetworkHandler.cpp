@@ -201,7 +201,7 @@ std::string NetworkHandler::httpDownload(UString url, long timeout, long connect
 		if (res != CURLE_OK)
 		{
 			curlWriteBuffer = std::stringstream();
-			debugLog("ERROR: code %i!\n", (int)res);
+			debugLog("ERROR: code {}!\n", (int)res);
 		}
 
 		curl_easy_cleanup(curl);
@@ -280,7 +280,7 @@ void NetworkHandler::connect(UString address)
 	m_fClientConnectPendingTime = engine->getTime() + connect_duration.getFloat();
 
 	m_sServerAddress = address;
-	debugLog("CLIENT: Trying to connect to \"%ls\" ... (%.1f seconds(s) timeout)\n", address.length() == 0 ? L"localhost" : address.wc_str(), connect_duration.getFloat());
+	debugLog("CLIENT: Trying to connect to \"{}\" ... ({:.1f} seconds(s) timeout)\n", address.length() == 0 ? L"localhost" : address.wc_str(), connect_duration.getFloat());
 
 #endif
 }
@@ -302,7 +302,7 @@ void NetworkHandler::disconnect()
 	m_bClientDisconnectPending = true;
 	m_fClientDisconnectPendingTime = engine->getTime() + disconnect_duration.getFloat();
 
-	debugLog("CLIENT: Trying to gently disconnect... (%.1f second(s) timeout)\n", disconnect_duration.getFloat());
+	debugLog("CLIENT: Trying to gently disconnect... ({:.1f} second(s) timeout)\n", disconnect_duration.getFloat());
 
 #endif
 }
@@ -318,7 +318,7 @@ void NetworkHandler::host()
 	if (isServer())
 		hostStop();
 
-	debugLog("SERVER: Starting local server on port %i...\n", host_port.getInt());
+	debugLog("SERVER: Starting local server on port {}.\n", host_port.getInt());
 
 	ENetAddress address;
 	address.host = ENET_HOST_ANY;
@@ -379,17 +379,17 @@ void NetworkHandler::status()
 	if (isServer())
 	{
 		debugLog("\n");
-		debugLog("version: %i\n", MC_PROTOCOL_VERSION);
+		debugLog("version: {}\n", MC_PROTOCOL_VERSION);
 
 		debugLog("hostname: <TODO>\n");
 
 		char host_attr[255];
 		enet_address_get_host_ip(&m_server->receivedAddress, host_attr, 255);
 
-		debugLog("udp/ip: %s:%i\n", host_attr, host_port.getInt());
+		debugLog("udp/ip: {:s}:{}\n", host_attr, host_port.getInt());
 		for (size_t c=0; c<m_vConnectedClients.size(); c++)
 		{
-			debugLog("# %ls %i", m_vConnectedClients[c].name.wc_str(), m_vConnectedClients[c].peer->roundTripTime);
+			debugLog("# {} {}", m_vConnectedClients[c].name.wc_str(), m_vConnectedClients[c].peer->roundTripTime);
 		}
 		debugLog("\n");
 		return;
@@ -399,11 +399,11 @@ void NetworkHandler::status()
 	if (isClient())
 	{
 		debugLog("\n");
-		debugLog("version: %i\n", MC_PROTOCOL_VERSION);
+		debugLog("version: {}\n", MC_PROTOCOL_VERSION);
 
 		debugLog("hostname: <TODO>\n");
-		debugLog("udp/ip: %ls:%i\n", m_sServerAddress.length() == 0 ? L"localhost" : m_sServerAddress.wc_str(), host_port.getInt());
-		debugLog("ping: %i\n", m_clientPeer->roundTripTime);
+		debugLog("udp/ip: {}:{}\n", m_sServerAddress.length() == 0 ? L"localhost" : m_sServerAddress.wc_str(), host_port.getInt());
+		debugLog("ping: {}\n", m_clientPeer->roundTripTime);
 		debugLog("\n");
 	}
 	else
@@ -450,7 +450,7 @@ void NetworkHandler::update()
 				// standard timeout (force remove)
 				if ((m_server->serviceTime - m_vConnectedClients[c].peer->lastReceiveTime) > MC_PROTOCOL_TIMEOUT)
 				{
-					debugLog("SERVER: %s timed out.\n", m_vConnectedClients[c].name.toUtf8());
+					debugLog("SERVER: {:s} timed out.\n", m_vConnectedClients[c].name.toUtf8());
 
 					// notify local connection listener
 					if (m_serverClientChangeListener != NULL)
@@ -467,7 +467,7 @@ void NetworkHandler::update()
 				// kicked players (allow a 1 second grace period for the client to disconnect)
 				if (m_vConnectedClients[c].kickTime != 0.0f && engine->getTime() > m_vConnectedClients[c].kickTime + 1.0f)
 				{
-					debugLog("SERVER: %s kicked.\n", m_vConnectedClients[c].name.toUtf8());
+					debugLog("SERVER: {:s} kicked.\n", m_vConnectedClients[c].name.toUtf8());
 					enet_peer_disconnect(m_vConnectedClients[c].peer, 0);
 
 					m_vConnectedClients[c].kickTime = 0.0f;
@@ -477,7 +477,7 @@ void NetworkHandler::update()
 				// kicked players (if the client did not disconnect after the grace period, kill him)
 				if (m_vConnectedClients[c].kickKillTime != 0.0f && engine->getTime() > m_vConnectedClients[c].kickKillTime + 1.0f)
 				{
-					debugLog("SERVER: %s forcefully disconnected.\n", m_vConnectedClients[c].name.toUtf8());
+					debugLog("SERVER: {:s} forcefully disconnected.\n", m_vConnectedClients[c].name.toUtf8());
 
 					// TODO: this call was not here originally, check if it causes redundant/odd behaviour
 					// notify local connection listener
@@ -505,9 +505,9 @@ void NetworkHandler::update()
 	{
 		m_fDebugNetworkTime = engine->getTime() + 0.5f;
 		if (isClient())
-			debugLog("client time = %u\n", enet_time_get());
+			debugLog("client time = {}\n", enet_time_get());
 		else if (isServer())
-			debugLog("server time = %u\n", enet_time_get());
+			debugLog("server time = {}\n", enet_time_get());
 	}
 
 #endif
@@ -533,7 +533,7 @@ void NetworkHandler::onClientEvent(ENetEvent e)
 	{
 	case ENET_EVENT_TYPE_RECEIVE:
 		if (debug_network.getBool())
-			debugLog("CLIENT: A packet of length %u was received from %s on channel %u.\n", e.packet->dataLength, e.peer->data, e.channelID);
+			debugLog("CLIENT: A packet of length {} was received from {:s} on channel {}.\n", e.packet->dataLength, e.peer->data, e.channelID);
 
 		if (e.packet->data != NULL)
 		{
@@ -545,7 +545,7 @@ void NetworkHandler::onClientEvent(ENetEvent e)
 					SERVER_INFO_PACKET *sp = (SERVER_INFO_PACKET*)e.packet->data;
 					m_iLocalClientID = sp->id;
 
-					debugLog("CLIENT: Received server info (%i)\n", sp->id);
+					debugLog("CLIENT: Received server info ({})\n", sp->id);
 
 					// notify extension packet listener
 					bool valid = true;
@@ -594,7 +594,7 @@ void NetworkHandler::onClientEvent(ENetEvent e)
 				break;
 
 			default:
-				debugLog("CLIENT: Received unknown packet of type %i, WTF!\n", *((PACKET_TYPE*)e.packet->data));
+				debugLog("CLIENT: Received unknown packet of type {}, WTF!\n", *((PACKET_TYPE*)e.packet->data));
 				break;
 			}
 		}
@@ -635,7 +635,7 @@ void NetworkHandler::onServerEvent(ENetEvent e)
 	{
 	case ENET_EVENT_TYPE_CONNECT:
 		{
-			debugLog("SERVER: A new client connected from %x:%u.\n", e.peer->address.host, e.peer->address.port);
+			debugLog("SERVER: A new client connected from {:x}:{}.\n", e.peer->address.host, e.peer->address.port);
 
 			// store peer info
 			e.peer->data = NULL; // TODO!
@@ -656,7 +656,7 @@ void NetworkHandler::onServerEvent(ENetEvent e)
 
 	case ENET_EVENT_TYPE_RECEIVE:
 		if (debug_network.getBool())
-			debugLog("SERVER: A packet of length %u was received from %s on channel %u.\n", e.packet->dataLength, e.peer->data, e.channelID);
+			debugLog("SERVER: A packet of length {} was received from {:s} on channel {}.\n", e.packet->dataLength, e.peer->data, e.channelID);
 
 		// switch on the different packet types
 		if (e.packet->data != NULL)
@@ -679,7 +679,7 @@ void NetworkHandler::onServerEvent(ENetEvent e)
 						// if the client is not running the same version
 						if (cp->version != MC_PROTOCOL_VERSION)
 						{
-							debugLog("SERVER: User is trying to connect using version %i, but the server is running version %i.\n", cp->version, MC_PROTOCOL_VERSION);
+							debugLog("SERVER: User is trying to connect using version {}, but the server is running version {}.\n", cp->version, MC_PROTOCOL_VERSION);
 							singlecastChatMessage("CONSOLE", UString::format("Version mismatch: Server is running version %i, but you are running version %i!", MC_PROTOCOL_VERSION, cp->version), m_server, e.peer);
 							pp->kickTime = engine->getTime(); // initiate a graceful kick
 						}
@@ -818,7 +818,7 @@ void NetworkHandler::onServerEvent(ENetEvent e)
 				break;
 
 			default:
-				debugLog("SERVER: Received unknown packet of type %i, WTF!\n", *((PACKET_TYPE*)e.packet->data));
+				debugLog("SERVER: Received unknown packet of type {}, WTF!\n", *((PACKET_TYPE*)e.packet->data));
 				break;
 			}
 		}
@@ -831,7 +831,7 @@ void NetworkHandler::onServerEvent(ENetEvent e)
 		CLIENT_PEER *pp = getClientPeerByPeer(e.peer);
 		if (pp != NULL)
 		{
-			debugLog("SERVER: %s disconnected.\n", pp->name.toUtf8());
+			debugLog("SERVER: {:s} disconnected.\n", pp->name.toUtf8());
 
 			// notify local connection listener
 			if (m_serverClientChangeListener != NULL)
@@ -924,7 +924,7 @@ void NetworkHandler::clientDisconnect()
 #ifdef MCENGINE_FEATURE_NETWORKING
 
 	if (m_bClientConnectPending)
-		debugLog(0xffff0000, "CLIENT: Couldn't connect, server \"%ls\" doesn't respond.\n", m_sServerAddress.length() == 0 ? L"localhost" : m_sServerAddress.wc_str());
+		debugLog(0xffff0000, "CLIENT: Couldn't connect, server \"{}\" doesn't respond.\n", m_sServerAddress.length() == 0 ? L"localhost" : m_sServerAddress.wc_str());
 
 	// notify listener
 	if (isClient() && m_clientDisconnectedFromServerListener != NULL)
@@ -945,7 +945,7 @@ void NetworkHandler::clientDisconnect()
 
 void NetworkHandler::sendServerInfo(uint32_t assignedID, ENetHost *host, ENetPeer *destination)
 {
-	debugLog("SERVER: Sending server info (%i)...\n", assignedID);
+	debugLog("SERVER: Sending server info ({})...\n", assignedID);
 
 	// build packet
 	size_t size = 0;
@@ -1144,7 +1144,7 @@ void NetworkHandler::clientcast(void *data, uint32_t size, uint32_t id, bool rel
 	CLIENT_PEER *pp = getClientPeerById(id);
 	if (pp == NULL)
 	{
-		debugLog("SERVER: Tried to clientcast(void *, %i, %i, %i) to non-existing CLIENT_PEER!\n", size, id, (int)reliable);
+		debugLog("SERVER: Tried to clientcast(void *, {}, {}, {}) to non-existing CLIENT_PEER!\n", size, id, (int)reliable);
 		return;
 	}
 
@@ -1251,7 +1251,7 @@ void NetworkHandler::kick(UString username)
 	UString msg = "SERVER: Couldn't find user \"";
 	msg.append(username);
 	msg.append("\"\n");
-	debugLog("%s", msg.toUtf8());
+	debugLog("{:s}", msg.toUtf8());
 
 #endif
 }
@@ -1262,7 +1262,7 @@ void NetworkHandler::chatLog(UString username, UString message)
 	chatlog.append(": ");
 	chatlog.append(message);
 	chatlog.append("\n");
-	debugLog("%s", chatlog.toUtf8());
+	debugLog("{:s}", chatlog.toUtf8());
 }
 
 #ifdef MCENGINE_FEATURE_NETWORKING
@@ -1334,7 +1334,7 @@ bool NetworkHandler::isServer() const
 void _httpget(UString args)
 {
 	UString response = networkHandler->httpGet(args);
-	debugLog("response = %s", response.toUtf8());
+	debugLog("response = {:s}", response.toUtf8());
 }
 ConVar _httpget_("httpget", _httpget);
 */

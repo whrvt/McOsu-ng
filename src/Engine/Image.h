@@ -1,4 +1,4 @@
-//================ Copyright (c) 2012, PG, All rights reserved. =================//
+//========== Copyright (c) 2012, PG & 2025, WH, All rights reserved. ============//
 //
 // Purpose:		image wrapper
 //
@@ -26,7 +26,7 @@ public:
 public:
 	Image(UString filepath, bool mipmapped = false, bool keepInSystemMemory = false);
 	Image(int width, int height, bool mipmapped = false, bool keepInSystemMemory = false);
-	~Image() override {;} 
+	~Image() override { ; }
 
 	virtual void bind(unsigned int textureUnit = 0) = 0;
 	virtual void unbind() = 0;
@@ -40,13 +40,13 @@ public:
 
 	[[nodiscard]] Color getPixel(int x, int y) const;
 
-	[[nodiscard]] inline Image::TYPE getType() const {return m_type;}
-	[[nodiscard]] inline int getNumChannels() const {return m_iNumChannels;}
-	[[nodiscard]] inline int getWidth() const {return m_iWidth;}
-	[[nodiscard]] inline int getHeight() const {return m_iHeight;}
-	[[nodiscard]] inline Vector2 getSize() const {return {m_iWidth, m_iHeight};}
+	[[nodiscard]] inline Image::TYPE getType() const { return m_type; }
+	[[nodiscard]] inline int getNumChannels() const { return m_iNumChannels; }
+	[[nodiscard]] inline int getWidth() const { return m_iWidth; }
+	[[nodiscard]] inline int getHeight() const { return m_iHeight; }
+	[[nodiscard]] inline Vector2 getSize() const { return {m_iWidth, m_iHeight}; }
 
-	[[nodiscard]] inline bool hasAlphaChannel() const {return m_bHasAlphaChannel;}
+	[[nodiscard]] inline bool hasAlphaChannel() const { return m_bHasAlphaChannel; }
 
 	// type inspection
 	[[nodiscard]] Type getResType() const final { return IMAGE; }
@@ -75,6 +75,9 @@ protected:
 	bool m_bKeepInSystemMemory;
 
 	std::vector<unsigned char> m_rawImage;
+
+private:
+	static bool decodePNGFromMemory(const unsigned char *data, size_t size, std::vector<unsigned char> &outData, int &outWidth, int &outHeight, int &outChannels);
 };
 
 #endif

@@ -313,7 +313,7 @@ OpenVRInterface::OpenVRInterface()
 	m_strDisplay = "No Display";
 	m_sTrackingSystemName = UString::format("%s", getTrackedDeviceString(m_pHMD, vr::k_unTrackedDeviceIndex_Hmd, vr::Prop_TrackingSystemName_String).c_str());
 	m_strDisplay = getTrackedDeviceString(m_pHMD, vr::k_unTrackedDeviceIndex_Hmd, vr::Prop_SerialNumber_String);
-	debugLog("OpenVR: driver = %s, display = %s\n", m_sTrackingSystemName.toUtf8(), m_strDisplay.c_str());
+	debugLog("OpenVR: driver = {:s}, display = {:s}\n", m_sTrackingSystemName.toUtf8(), m_strDisplay.c_str());
 
 	// debugging
 	//convar->getConVarByName("debug_shaders")->setValue(1.0f);
@@ -473,8 +473,8 @@ bool OpenVRInterface::initRenderTargets()
 		}
 	}
 
-	debugLog("OpenVR: Recommended RenderTarget size = (%i, %i) x %g, final Engine RenderTarget size = (%i, %i)\n", recommendedRenderTargetWidth, recommendedRenderTargetHeight, vr_ss.getFloat(), finalRenderTargetWidth, finalRenderTargetHeight);
-	debugLog("OpenVR: Compositor RenderTarget size = (%i, %i) x %g, final Compositor RenderTarget size = (%i, %i)\n", recommendedRenderTargetWidth, recommendedRenderTargetHeight, m_fCompositorSSMultiplier, finalCompositorRenderTargetWidth, finalCompositorRenderTargetHeight);
+	debugLog("OpenVR: Recommended RenderTarget size = ({}, {}) x {:g}, final Engine RenderTarget size = ({}, {})\n", recommendedRenderTargetWidth, recommendedRenderTargetHeight, vr_ss.getFloat(), finalRenderTargetWidth, finalRenderTargetHeight);
+	debugLog("OpenVR: Compositor RenderTarget size = ({}, {}) x {:g}, final Compositor RenderTarget size = ({}, {})\n", recommendedRenderTargetWidth, recommendedRenderTargetHeight, m_fCompositorSSMultiplier, finalCompositorRenderTargetWidth, finalCompositorRenderTargetHeight);
 
 	Graphics::MULTISAMPLE_TYPE multisampleType = Graphics::MULTISAMPLE_TYPE::MULTISAMPLE_0X;
 	if (vr_aa.getInt() > 8)
@@ -714,7 +714,7 @@ void OpenVRInterface::draw(Graphics *g)
 			vr::EVRCompositorError res = vr::VRCompositor()->Submit(vr::Eye_Left, &leftEyeTexture);
 
 			if (res != vr::EVRCompositorError::VRCompositorError_None)
-				debugLog("OpenVR Error: Compositor::Submit(Eye_Left) error %i!!!\n", (int)res);
+				debugLog("OpenVR Error: Compositor::Submit(Eye_Left) error {}!!!\n", (int)res);
 
 #endif
 
@@ -734,7 +734,7 @@ void OpenVRInterface::draw(Graphics *g)
 			res = vr::VRCompositor()->Submit(vr::Eye_Right, &rightEyeTexture);
 
 			if (res != vr::EVRCompositorError::VRCompositorError_None)
-				debugLog("OpenVR Error: Compositor::Submit(Eye_Right) error %i!!!\n", (int)res);
+				debugLog("OpenVR Error: Compositor::Submit(Eye_Right) error {}!!!\n", (int)res);
 
 			// from the OpenVR documentation:
 			// "If [Submit] called from an OpenGL app, consider adding a glFlush after submitting both frames to signal the driver to start processing, otherwise it may wait until the command buffer fills up, causing the app to miss frames"
@@ -859,7 +859,7 @@ void OpenVRInterface::renderScene(Graphics *g,  Matrix4 &matCurrentEye, Matrix4 
 			if (trackedDeviceClass == vr::TrackedDeviceClass_Controller)
 			{
 				m_renderModelShader->setUniform1f("brightness", (trackedDeviceClass == vr::TrackedDeviceClass_Controller ? vr_controller_model_brightness_multiplier.getFloat() : 1.0f));
-				m_renderModelShader->setUniform3f("colorOverride", Rf(m_controllerColorOverride), Gf(m_controllerColorOverride), Bf(m_controllerColorOverride));
+				m_renderModelShader->setUniform3f("colorOverride", m_controllerColorOverride.Rf(), m_controllerColorOverride.Gf(), m_controllerColorOverride.Bf());
 			}
 			else
 			{
@@ -918,7 +918,7 @@ void OpenVRInterface::renderScene(Graphics *g,  Matrix4 &matCurrentEye, Matrix4 
 			//{
 			//	char componentName[512];
 			//	vr::VRRenderModels()->GetComponentName(vr_debug_rendermodel_name.getString().toUtf8(), i, componentName, 512);
-			//	debugLog("#%i = %s\n", i, componentName);
+			//	debugLog("#{} = {:s}\n", i, componentName);
 			//}
 			vr::VRControllerState_t controllerState;
 			vr::RenderModel_ControllerMode_State_t renderModelControllerModeState;
@@ -960,7 +960,7 @@ void OpenVRInterface::renderScene(Graphics *g,  Matrix4 &matCurrentEye, Matrix4 
 	{
 		char name[512];
 		vr::VRRenderModels()->GetRenderModelName(i, name, 512);
-		debugLog("#%i = %s\n", i, name);
+		debugLog("#{} = {:s}\n", i, name);
 	}
 	*/
 
@@ -1168,17 +1168,17 @@ void OpenVRInterface::update()
 		case vr::VREvent_TrackedDeviceActivated:
 			{
 				updateRenderModelForTrackedDevice(event.trackedDeviceIndex);
-				debugLog("OpenVR: Device %u attached. Setting up render model.\n", event.trackedDeviceIndex);
+				debugLog("OpenVR: Device {} attached. Setting up render model.\n", event.trackedDeviceIndex);
 			}
 			break;
 		case vr::VREvent_TrackedDeviceDeactivated:
-			debugLog("OpenVR: Device %u detached.\n", event.trackedDeviceIndex);
+			debugLog("OpenVR: Device {} detached.\n", event.trackedDeviceIndex);
 			break;
 		case vr::VREvent_TrackedDeviceUpdated:
-			debugLog("OpenVR: Device %u updated.\n", event.trackedDeviceIndex);
+			debugLog("OpenVR: Device {} updated.\n", event.trackedDeviceIndex);
 			break;
 		case vr::VREvent_KeyboardCharInput:
-			debugLog("OpenVR::VREvent_KeyboardCharInput: %i, %i, %i, %i, %i, %i, %i, %i, userValue = %lu\n", (int)event.data.keyboard.cNewInput[0],
+			debugLog("OpenVR::VREvent_KeyboardCharInput: {}, {}, {}, {}, {}, {}, {}, {}, userValue = {}\n", (int)event.data.keyboard.cNewInput[0],
 					(int)event.data.keyboard.cNewInput[1],
 					(int)event.data.keyboard.cNewInput[2],
 					(int)event.data.keyboard.cNewInput[3],
@@ -1193,7 +1193,7 @@ void OpenVRInterface::update()
 			{
 				char keyboardText[256];
 				uint32_t numChars = vr::VROverlay()->GetKeyboardText(keyboardText, 256);
-				debugLog("OpenVR::VREvent_KeyboardClosed got %i chars\n", numChars);
+				debugLog("OpenVR::VREvent_KeyboardClosed got {} chars\n", numChars);
 				for (uint32_t i=0; i<numChars; i++)
 				{
 					keyboard->onChar(keyboardText[i]);
@@ -1361,7 +1361,7 @@ void OpenVRInterface::showKeyboardEx(UString description, UString text)
 	vr::EVROverlayError res = vr::VROverlay()->ShowKeyboard(vr::EGamepadTextInputMode::k_EGamepadTextInputModeNormal, vr::EGamepadTextInputLineMode::k_EGamepadTextInputLineModeSingleLine, description.toUtf8(), 256, text.toUtf8(), false, 0);
 
 	if (res != vr::EVROverlayError::VROverlayError_None)
-		debugLog("OpenVR Error: VROverlay::ShowKeyboard() error %i!!!\n", (int)res);
+		debugLog("OpenVR Error: VROverlay::ShowKeyboard() error {}!!!\n", (int)res);
 	else
 		m_bIsKeyboardVisible = true;
 
@@ -1560,13 +1560,13 @@ void OpenVRInterface::updateRenderModelForTrackedDevice(vr::TrackedDeviceIndex_t
 		if (!pRenderModel)
 		{
 			std::string sTrackingSystemName = getTrackedDeviceString(m_pHMD, unTrackedDeviceIndex, vr::Prop_TrackingSystemName_String);
-			debugLog("OpenVR: Unable to load render model for tracked device %d (%s.%s)", unTrackedDeviceIndex, sTrackingSystemName.c_str(), sRenderModelName.c_str());
+			debugLog("OpenVR: Unable to load render model for tracked device {:d} ({:s}.{:s})", unTrackedDeviceIndex, sTrackingSystemName.c_str(), sRenderModelName.c_str());
 		}
 		else
 			m_rTrackedDeviceToRenderModel[unTrackedDeviceIndex] = pRenderModel;
 	}
 	else
-		debugLog("OpenVR: WARNING! findOrLoadRenderModel( %s ) would have been called!\n", sRenderModelName.c_str());
+		debugLog("OpenVR: WARNING! findOrLoadRenderModel( {:s} ) would have been called!\n", sRenderModelName.c_str());
 }
 
 CGLRenderModel *OpenVRInterface::findOrLoadRenderModel(const char *pchRenderModelName)
@@ -1574,7 +1574,7 @@ CGLRenderModel *OpenVRInterface::findOrLoadRenderModel(const char *pchRenderMode
 	if (pchRenderModelName == NULL)
 		debugLog("OpenVRInterface::findOrLoadRenderModel( NULL )!!!\n");
 
-	///debugLog("OpenVRInterface::findOrLoadRenderModel( %s )\n", pchRenderModelName);
+	///debugLog("OpenVRInterface::findOrLoadRenderModel( {:s} )\n", pchRenderModelName);
 
 	CGLRenderModel *pRenderModel = NULL;
 	for (std::vector<CGLRenderModel*>::iterator i = m_vecRenderModels.begin(); i != m_vecRenderModels.end(); i++)
@@ -1601,7 +1601,7 @@ CGLRenderModel *OpenVRInterface::findOrLoadRenderModel(const char *pchRenderMode
 
 		if (error != vr::VRRenderModelError_None)
 		{
-			debugLog("OpenVR: Unable to load render model %s - %s\n", pchRenderModelName, vr::VRRenderModels()->GetRenderModelErrorNameFromEnum(error));
+			debugLog("OpenVR: Unable to load render model {:s} - {:s}\n", pchRenderModelName, vr::VRRenderModels()->GetRenderModelErrorNameFromEnum(error));
 			return NULL; // move on to the next tracked device
 		}
 
@@ -1616,7 +1616,7 @@ CGLRenderModel *OpenVRInterface::findOrLoadRenderModel(const char *pchRenderMode
 
 		if (error != vr::VRRenderModelError_None)
 		{
-			debugLog("OpenVR: Unable to load render texture id:%d for render model %s\n", pModel->diffuseTextureId, pchRenderModelName);
+			debugLog("OpenVR: Unable to load render texture id:{:d} for render model {:s}\n", pModel->diffuseTextureId, pchRenderModelName);
 			vr::VRRenderModels()->FreeRenderModel(pModel);
 			return NULL; // move on to the next tracked device
 		}
@@ -1625,7 +1625,7 @@ CGLRenderModel *OpenVRInterface::findOrLoadRenderModel(const char *pchRenderMode
 		pRenderModel = new CGLRenderModel(pchRenderModelName);
 		if (!pRenderModel->init(*pModel, *pTexture))
 		{
-			debugLog("OpenVR: Unable to create GL model from render model %s\n", pchRenderModelName);
+			debugLog("OpenVR: Unable to create GL model from render model {:s}\n", pchRenderModelName);
 			SAFE_DELETE(pRenderModel);
 		}
 		else
@@ -1738,7 +1738,7 @@ bool OpenVRInterface::updateMatrixPoses()
 
 	if (res != vr::VRCompositorError_None)
 	{
-		debugLog("OpenVR Error: Compositor::WaitGetPoses() error %i!!!\n", res);
+		debugLog("OpenVR Error: Compositor::WaitGetPoses() error {}!!!\n", res);
 
 		if (vr_bug_workaround_triggerhapticpulse.getBool())
 		{

@@ -92,7 +92,7 @@ template <typename T> T loadFunction(SDL_SharedObject *lib, const char *funcName
 {
 	T func = reinterpret_cast<T>(SDL_LoadFunction(lib, funcName));
 	if (!func)
-		debugLog("BassLoader: Failed to load function %s: %s\n", funcName, SDL_GetError());
+		debugLog("BassLoader: Failed to load function {:s}: {:s}\n", funcName, SDL_GetError());
 	return func;
 }
 
@@ -111,13 +111,13 @@ bool init()
 		}
 		if (static_cast<uint64_t>(BASS_GetVersion()) >= static_cast<uint64_t>(BASSVERSION_REAL))
 			break;
-		debugLog("BassLoader: version mismatch for %s (expected %x, got %x)\n", path.c_str(), BASSVERSION_REAL, BASS_GetVersion());
+		debugLog("BassLoader: version mismatch for {:s} (expected {:x}, got {:x})\n", path.c_str(), BASSVERSION_REAL, BASS_GetVersion());
 		s_bassLib = nullptr;
 		BASS_GetVersion = nullptr;
 	}
 	if (!s_bassLib)
 	{
-		debugLog("BassLoader: Failed to load BASS library: %s\n", SDL_GetError());
+		debugLog("BassLoader: Failed to load BASS library: {:s}\n", SDL_GetError());
 		return false;
 	}
 
@@ -170,13 +170,13 @@ bool init()
 		}
 		if (static_cast<uint64_t>(BASS_FX_GetVersion()) >= static_cast<uint64_t>(BASSFXVERSION_REAL))
 			break;
-		debugLog("BassLoader: version mismatch for %s (expected %x, got %x)\n", path.c_str(), BASSFXVERSION_REAL, BASS_FX_GetVersion());
+		debugLog("BassLoader: version mismatch for {:s} (expected {:x}, got {:x})\n", path.c_str(), BASSFXVERSION_REAL, BASS_FX_GetVersion());
 		s_bassFxLib = nullptr;
 		BASS_FX_GetVersion = nullptr;
 	}
 	if (!s_bassFxLib)
 	{
-		debugLog("BassLoader: Failed to load BASS_FX library: %s\n", SDL_GetError());
+		debugLog("BassLoader: Failed to load BASS_FX library: {:s}\n", SDL_GetError());
 		return false;
 	}
 
@@ -194,7 +194,7 @@ bool init()
 	// BASSWASAPI
 	if (!(s_bassWasapiLib = SDL_LoadObject(BASS_WASAPI_LIB_NAME)) && !(s_bassWasapiLib = SDL_LoadObject(std::format("lib/{}", BASS_WASAPI_LIB_NAME).c_str())))
 	{
-		debugLog("BassLoader: Failed to load BASSWASAPI library: %s\n", SDL_GetError());
+		debugLog("BassLoader: Failed to load BASSWASAPI library: {:s}\n", SDL_GetError());
 		// TODO: graceful failure here?
 		cleanup();
 		return false;
@@ -211,7 +211,7 @@ bool init()
 	// BASSMIX
 	if (!(s_bassMixLib = SDL_LoadObject(BASS_MIX_LIB_NAME)) && !(s_bassMixLib = SDL_LoadObject(std::format("lib/{}", BASS_MIX_LIB_NAME).c_str())))
 	{
-		debugLog("BassLoader: Failed to load BASSMIX library: %s\n", SDL_GetError());
+		debugLog("BassLoader: Failed to load BASSMIX library: {:s}\n", SDL_GetError());
 		// TODO: graceful failure here?
 		cleanup();
 		return false;

@@ -682,7 +682,7 @@ void OsuUISongBrowserScoreButton::onUseModsClicked()
 					nomod = false;
 				}
 				else
-					debugLog("couldn't find \"%s\"\n", experimentalMods[i].toUtf8());
+					debugLog("couldn't find \"{:s}\"\n", experimentalMods[i].toUtf8());
 			}
 		}
 

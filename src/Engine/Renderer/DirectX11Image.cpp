@@ -83,7 +83,7 @@ void DirectX11Image::init()
 			hr = dx11->getDevice()->CreateTexture2D(&textureDesc, (!m_bMipmapped && m_rawImage.size() >= m_iWidth * m_iHeight * m_iNumChannels ? &initData : NULL), &m_texture);
 			if (FAILED(hr) || m_texture == NULL)
 			{
-				debugLog("DirectX Image Error: Couldn't CreateTexture2D(%ld, %x, %x) on file %s!\n", hr, hr, MAKE_DXGI_HRESULT(hr), m_sFilePath.toUtf8());
+				debugLog("DirectX Image Error: Couldn't CreateTexture2D({}, {:x}, {:x}) on file {:s}!\n", hr, hr, MAKE_DXGI_HRESULT(hr), m_sFilePath.toUtf8());
 				engine->showMessageError("Image Error", UString::format("DirectX Image error, couldn't CreateTexture2D(%ld, %x, %x) on file %s", hr, hr, MAKE_DXGI_HRESULT(hr), m_sFilePath.toUtf8()));
 				return;
 			}
@@ -116,7 +116,7 @@ void DirectX11Image::init()
 			m_texture->Release();
 			m_texture = NULL;
 
-			debugLog("DirectX Image Error: Couldn't CreateShaderResourceView(%ld, %x, %x) on file %s!\n", hr, hr, MAKE_DXGI_HRESULT(hr), m_sFilePath.toUtf8());
+			debugLog("DirectX Image Error: Couldn't CreateShaderResourceView({}, {:x}, {:x}) on file {:s}!\n", hr, hr, MAKE_DXGI_HRESULT(hr), m_sFilePath.toUtf8());
 			engine->showMessageError("Image Error", UString::format("DirectX Image error, couldn't CreateShaderResourceView(%ld, %x, %x) on file %s", hr, hr, MAKE_DXGI_HRESULT(hr), m_sFilePath.toUtf8()));
 
 			return;
@@ -171,7 +171,7 @@ void DirectX11Image::init()
 		createOrUpdateSampler();
 		if (m_samplerState == NULL)
 		{
-			debugLog("DirectX Image Error: Couldn't CreateSamplerState() on file %s!\n");
+			debugLog("DirectX Image Error: Couldn't CreateSamplerState() on file {:s}!\n");
 			engine->showMessageError("Image Error", UString::format("Couldn't CreateSamplerState() on file %s!", m_sFilePath.toUtf8()));
 			return;
 		}
@@ -185,7 +185,7 @@ void DirectX11Image::initAsync()
 	if (!m_bCreatedImage)
 	{
 		if (ResourceManager::debug_rm->getBool())
-			debugLog("Resource Manager: Loading %s\n", m_sFilePath.toUtf8());
+			debugLog("Resource Manager: Loading {:s}\n", m_sFilePath.toUtf8());
 
 		m_bAsyncReady = loadRawImage();
 

@@ -380,7 +380,7 @@ void OsuSliderCurveEqualDistanceMulti::init(const std::vector<OsuSliderCurveType
 		{
 			c2 = m_curvePoints[cnt++];
 		}
-		m_fStartAngle = (float)(std::atan2(c2.y - c1.y, c2.x - c1.x) * 180 / PI);
+		m_fStartAngle = (float)(glm::atan2(c2.y - c1.y, c2.x - c1.x) * 180 / PI);
 	}
 
 	if (m_curvePoints.size() > 1)
@@ -394,7 +394,7 @@ void OsuSliderCurveEqualDistanceMulti::init(const std::vector<OsuSliderCurveType
 			{
 				c2 = m_curvePoints[cnt--];
 			}
-			m_fEndAngle = (float)(std::atan2(c2.y - c1.y, c2.x - c1.x) * 180 / PI);
+			m_fEndAngle = (float)(glm::atan2(c2.y - c1.y, c2.x - c1.x) * 180 / PI);
 		}
 	}
 
@@ -421,7 +421,7 @@ Vector2 OsuSliderCurveEqualDistanceMulti::pointAt(float t)
 			return m_curvePoints[m_iNCurve];
 		else
 		{
-			debugLog("Error: Illegal index %i!!!\n", m_iNCurve);
+			debugLog("Error: Illegal index {}!!!\n", m_iNCurve);
 			return Vector2(0, 0);
 		}
 	}
@@ -429,7 +429,7 @@ Vector2 OsuSliderCurveEqualDistanceMulti::pointAt(float t)
 	{
 		if (index < 0 || index + 1 >= m_curvePoints.size())
 		{
-			debugLog("Error: Illegal index %i!!!\n", index);
+			debugLog("Error: Illegal index {}!!!\n", index);
 			return Vector2(0, 0);
 		}
 
@@ -454,7 +454,7 @@ Vector2 OsuSliderCurveEqualDistanceMulti::originalPointAt(float t)
 			return m_originalCurvePoints[m_iNCurve];
 		else
 		{
-			debugLog("Error: Illegal index %i!!!\n", m_iNCurve);
+			debugLog("Error: Illegal index {}!!!\n", m_iNCurve);
 			return Vector2(0, 0);
 		}
 	}
@@ -462,7 +462,7 @@ Vector2 OsuSliderCurveEqualDistanceMulti::originalPointAt(float t)
 	{
 		if (index < 0 || index + 1 >= m_originalCurvePoints.size())
 		{
-			debugLog("Error: Illegal index %i!!!\n", index);
+			debugLog("Error: Illegal index {}!!!\n", index);
 			return Vector2(0, 0);
 		}
 
@@ -615,9 +615,9 @@ OsuSliderCurveCircumscribedCircle::OsuSliderCurveCircumscribedCircle(std::vector
 	Vector2 midAngPoint   = mid - m_vCircleCenter;
 	Vector2 endAngPoint   = end - m_vCircleCenter;
 
-	m_fCalculationStartAngle = (float)std::atan2(startAngPoint.y, startAngPoint.x);
-	const float midAng		 = (float)std::atan2(midAngPoint.y, midAngPoint.x);
-	m_fCalculationEndAngle	 = (float)std::atan2(endAngPoint.y, endAngPoint.x);
+	m_fCalculationStartAngle = (float)glm::atan2(startAngPoint.y, startAngPoint.x);
+	const float midAng		 = (float)glm::atan2(midAngPoint.y, midAngPoint.x);
+	m_fCalculationEndAngle	 = (float)glm::atan2(endAngPoint.y, endAngPoint.x);
 
 	// find the angles that pass through midAng
 	if (!isIn(m_fCalculationStartAngle, midAng, m_fCalculationEndAngle))
@@ -632,7 +632,7 @@ OsuSliderCurveCircumscribedCircle::OsuSliderCurveCircumscribedCircle(std::vector
 			m_fCalculationEndAngle -= 2*PI;
 		else
 		{
-			debugLog("OsuSliderCurveCircumscribedCircle() Error: Cannot find angles between midAng (%.3f %.3f %.3f)\n", m_fCalculationStartAngle, midAng, m_fCalculationEndAngle);
+			debugLog("OsuSliderCurveCircumscribedCircle() Error: Cannot find angles between midAng ({:.3f} {:.3f} {:.3f})\n", m_fCalculationStartAngle, midAng, m_fCalculationEndAngle);
 			return;
 		}
 	}

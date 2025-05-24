@@ -1244,7 +1244,7 @@ void OsuBeatmap::keyPressed1(bool mouseButton)
 	m_bPrevKeyWasKey1 = true;
 	m_bClick1Held = true;
 
-	//debugLog("async music pos = %lu, curMusicPos = %lu, curMusicPosWithOffsets = %lu\n", m_music->getPositionMS(), m_iCurMusicPos, m_iCurMusicPosWithOffsets);
+	//debugLog("async music pos = {}, curMusicPos = {}, curMusicPosWithOffsets = {}\n", m_music->getPositionMS(), m_iCurMusicPos, m_iCurMusicPosWithOffsets);
 	//long curMusicPos = getMusicPositionMSInterpolated(); // this would only be useful if we also played hitsounds async! combined with checking which musicPos is bigger
 
 	CLICK click;
@@ -1284,7 +1284,7 @@ void OsuBeatmap::keyPressed2(bool mouseButton)
 	m_bPrevKeyWasKey1 = false;
 	m_bClick2Held = true;
 
-	//debugLog("async music pos = %lu, curMusicPos = %lu, curMusicPosWithOffsets = %lu\n", m_music->getPositionMS(), m_iCurMusicPos, m_iCurMusicPosWithOffsets);
+	//debugLog("async music pos = {}, curMusicPos = {}, curMusicPosWithOffsets = {}\n", m_music->getPositionMS(), m_iCurMusicPos, m_iCurMusicPosWithOffsets);
 	//long curMusicPos = getMusicPositionMSInterpolated(); // this would only be useful if we also played hitsounds async! combined with checking which musicPos is bigger
 
 	CLICK click;
@@ -1371,7 +1371,7 @@ bool OsuBeatmap::play()
 			case 1:
 				{
 					UString errorMessage = "Error: Couldn't load beatmap metadata :(";
-					debugLog("Osu Error: Couldn't load beatmap metadata %s\n", m_selectedDifficulty2->getFilePath().toUtf8());
+					debugLog("Osu Error: Couldn't load beatmap metadata {:s}\n", m_selectedDifficulty2->getFilePath().toUtf8());
 
 					osu->getNotificationOverlay()->addNotification(errorMessage, 0xffff0000);
 				}
@@ -1380,7 +1380,7 @@ bool OsuBeatmap::play()
 			case 2:
 				{
 					UString errorMessage = "Error: Couldn't load beatmap file :(";
-					debugLog("Osu Error: Couldn't load beatmap file %s\n", m_selectedDifficulty2->getFilePath().toUtf8());
+					debugLog("Osu Error: Couldn't load beatmap file {:s}\n", m_selectedDifficulty2->getFilePath().toUtf8());
 
 					osu->getNotificationOverlay()->addNotification(errorMessage, 0xffff0000);
 				}
@@ -1389,7 +1389,7 @@ bool OsuBeatmap::play()
 			case 3:
 				{
 					UString errorMessage = "Error: No timingpoints in beatmap :(";
-					debugLog("Osu Error: No timingpoints in beatmap %s\n", m_selectedDifficulty2->getFilePath().toUtf8());
+					debugLog("Osu Error: No timingpoints in beatmap {:s}\n", m_selectedDifficulty2->getFilePath().toUtf8());
 
 					osu->getNotificationOverlay()->addNotification(errorMessage, 0xffff0000);
 				}
@@ -1398,7 +1398,7 @@ bool OsuBeatmap::play()
 			case 4:
 				{
 					UString errorMessage = "Error: No hitobjects in beatmap :(";
-					debugLog("Osu Error: No hitobjects in beatmap %s\n", m_selectedDifficulty2->getFilePath().toUtf8());
+					debugLog("Osu Error: No hitobjects in beatmap {:s}\n", m_selectedDifficulty2->getFilePath().toUtf8());
 
 					osu->getNotificationOverlay()->addNotification(errorMessage, 0xffff0000);
 				}
@@ -1407,7 +1407,7 @@ bool OsuBeatmap::play()
 			case 5:
 				{
 					UString errorMessage = "Error: Too many hitobjects in beatmap :(";
-					debugLog("Osu Error: Too many hitobjects in beatmap %s\n", m_selectedDifficulty2->getFilePath().toUtf8());
+					debugLog("Osu Error: Too many hitobjects in beatmap {:s}\n", m_selectedDifficulty2->getFilePath().toUtf8());
 
 					osu->getNotificationOverlay()->addNotification(errorMessage, 0xffff0000);
 				}
@@ -1852,7 +1852,7 @@ float OsuBeatmap::getSpeedMultiplier() const
 	if (m_music != NULL)
 	{
 		const float speedRet = std::max(m_music->getSpeed(), 0.05f);
-		//debugLog("music speed: %.2f\n", speedRet);
+		//debugLog("music speed: {:.2f}\n", speedRet);
 		return speedRet;
 	}
 	else
@@ -2204,7 +2204,7 @@ void OsuBeatmap::updateTimingPoints(long curPos)
 {
 	if (curPos < 0) return; // aspire pls >:(
 
-	///debugLog("updateTimingPoints( %ld )\n", curPos);
+	///debugLog("updateTimingPoints( {} )\n", curPos);
 
 	const OsuDatabaseBeatmap::TIMING_INFO t = m_selectedDifficulty2->getTimingInfoForTime(curPos + (long)osu_timingpoints_offset.getInt());
 	osu->getSkin()->setSampleSet(t.sampleType); // normal/soft/drum is stored in the sample type! the sample set number is for custom sets
@@ -2390,7 +2390,7 @@ unsigned long OsuBeatmap::getMusicPositionMSInterpolated()
 		double newInterpolatedPos = m_fInterpolatedMusicPos + interpolationDelta;
 		double delta = newInterpolatedPos - curPos;
 
-		// debugLog("speed = %.2f positionMS = %.2f delta = %.2f, interpolationDeltaLimit = %.2f\n", speed, curPos, delta, interpolationDeltaLimit);
+		// debugLog("speed = {:.2f} positionMS = {:.2f} delta = {:.2f}, interpolationDeltaLimit = {:.2f}\n", speed, curPos, delta, interpolationDeltaLimit);
 
 		// approach and recalculate delta
 		newInterpolatedPos -= delta / 8.0;
@@ -2430,9 +2430,9 @@ unsigned long OsuBeatmap::getMusicPositionMSInterpolated()
 
 	m_fLastRealTimeForInterpolationDelta = realTime; // this is more accurate than engine->getFrameTime() for the delta calculation, since it correctly handles all possible delays inbetween
 
-	// debugLog("returning %lu \n", returnPos);
-	// debugLog("delta = %lu\n", (long)returnPos - m_iCurMusicPos);
-	// debugLog("raw delta = %ld\n", (long)returnPos - (long)curPos);
+	// debugLog("returning {} \n", returnPos);
+	// debugLog("delta = {}\n", (long)returnPos - m_iCurMusicPos);
+	// debugLog("raw delta = {}\n", (long)returnPos - (long)curPos);
 
 	return returnPos;
 }

@@ -57,6 +57,7 @@ public:
 	[[nodiscard]] static bool directoryExists(UString &directoryName);
 	[[nodiscard]] static bool fileExists(const UString &filename);
 	[[nodiscard]] static bool directoryExists(const UString &directoryName);
+	[[nodiscard]] static bool isatty() { return s_bIsATTY; } // is stdout a terminal
 
 	[[nodiscard]] static bool createDirectory(UString directoryName);
 	static bool renameFile(UString oldFileName, UString newFileName);
@@ -177,6 +178,7 @@ private:
 	}
 	void onLogLevelChange(float newval);
 	bool m_bEnvDebug;
+	static bool s_bIsATTY;
 
 	// monitors
 	void initMonitors(bool force = false);
@@ -216,7 +218,13 @@ private:
 		FileDialogCallback callback;
 	};
 	static void sdlFileDialogCallback(void *userdata, const char *const *filelist, int filter);
-	static UString getThingFromPathHelper(UString &path, bool folder);
+
+	static bool isatty_impl(std::FILE *file);
+
+	static std::vector<UString> enumerateDirectory(const char *pathToEnum, SDL_PathType type); // code sharing for getFilesInFolder/getFoldersInFolder
+	static UString getThingFromPathHelper(UString &path, bool folder); // code sharing for getFolderFromFilePath/getFileNameFromFilePath
+
+	static void winSortInPlace(std::vector<UString> &toSort); // for sorting a list kinda in the order windows' explorer would
 };
 
 extern Environment *env;

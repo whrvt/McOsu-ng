@@ -129,12 +129,12 @@ void OpenGLLegacyInterface::setColor(Color color)
 	m_color = color;
 	// glColor4f(((unsigned char)(m_color >> 16))  / 255.0f, ((unsigned char)(m_color >> 8)) / 255.0f, ((unsigned char)(m_color >> 0)) / 255.0f, ((unsigned char)(m_color >> 24)) /
 	// 255.0f);
-	glColor4ub(Ri(m_color), Gi(m_color), Bi(m_color), Ai(m_color));
+	glColor4ub(m_color.r, m_color.g, m_color.b, m_color.a);
 }
 
 void OpenGLLegacyInterface::setAlpha(float alpha)
 {
-	setColor(rgba(Rf(m_color), Gf(m_color), Bf(m_color), alpha));
+	setColor(rgba(m_color.Rf(), m_color.Gf(), m_color.Bf(), alpha));
 }
 
 void OpenGLLegacyInterface::drawPixels(int x, int y, int width, int height, Graphics::DRAWPIXELS_TYPE type, const void *pixels)
@@ -472,13 +472,13 @@ void OpenGLLegacyInterface::setClipRect(McRect clipRect)
 	int viewport[4];
 	glGetIntegerv(GL_VIEWPORT, viewport);
 
-	// debugLog("viewport = %i, %i, %i, %i\n", viewport[0], viewport[1], viewport[2], viewport[3]);
+	// debugLog("viewport = {}, {}, {}, {}\n", viewport[0], viewport[1], viewport[2], viewport[3]);
 
 	glEnable(GL_SCISSOR_TEST);
 	glScissor((int)clipRect.getX() + viewport[0], viewport[3] - ((int)clipRect.getY() - viewport[1] - 1 + (int)clipRect.getHeight()), (int)clipRect.getWidth(),
 	          (int)clipRect.getHeight());
 
-	// debugLog("scissor = %i, %i, %i, %i\n", (int)clipRect.getX()+viewport[0], viewport[3]-((int)clipRect.getY()-viewport[1]-1+(int)clipRect.getHeight()),
+	// debugLog("scissor = {}, {}, {}, {}\n", (int)clipRect.getX()+viewport[0], viewport[3]-((int)clipRect.getY()-viewport[1]-1+(int)clipRect.getHeight()),
 	// (int)clipRect.getWidth(), (int)clipRect.getHeight());
 }
 

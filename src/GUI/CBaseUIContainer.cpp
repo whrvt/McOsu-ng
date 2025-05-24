@@ -157,7 +157,7 @@ CBaseUIElement *CBaseUIContainer::getBaseUIElement(UString name)
 		if (m_vElements[i]->getName() == name)
 			return m_vElements[i];
 	}
-	debugLog("CBaseUIContainer ERROR: GetBaseUIElement() \"%s\" does not exist!!!\n",name.toUtf8());
+	debugLog("CBaseUIContainer ERROR: GetBaseUIElement() \"{:s}\" does not exist!!!\n",name.toUtf8());
 	return NULL;
 }
 

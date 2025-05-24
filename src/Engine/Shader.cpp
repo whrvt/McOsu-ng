@@ -25,7 +25,7 @@ Shader::SHADER_PARSE_RESULT Shader::parseShaderFromFileOrString(UString graphics
 	SHADER_PARSE_RESULT result;
 	{
 		if (!source)
-			debugLog("Shader: Loading %s %s ...\n", graphicsInterfaceAndShaderTypePrefix.toUtf8(), shaderSourceOrFilePath.toUtf8());
+			debugLog("Shader: Loading {:s} {:s} ...\n", graphicsInterfaceAndShaderTypePrefix.toUtf8(), shaderSourceOrFilePath.toUtf8());
 
 		McFile file(!source ? shaderSourceOrFilePath : "");
 		if (!source && !file.canRead())

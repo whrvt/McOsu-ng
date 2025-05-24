@@ -51,5 +51,5 @@ void OsuEditor::onResolutionChange(Vector2 newResolution)
 {
 	OsuScreenBackable::onResolutionChange(newResolution);
 
-	debugLog("OsuEditor::onResolutionChange(%i, %i)\n", (int)newResolution.x, (int)newResolution.y);
+	debugLog("OsuEditor::onResolutionChange({}, {})\n", (int)newResolution.x, (int)newResolution.y);
 }
