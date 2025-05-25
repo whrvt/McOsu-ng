@@ -11,11 +11,8 @@
 
 #include <algorithm>
 #include <cstdint>
-#include <stdbit.h>
 
-#if defined(__STDC_ENDIAN_NATIVE__) // C23
-#define IS_LITTLE_ENDIAN (__STDC_ENDIAN_NATIVE__ == __STDC_ENDIAN_LITTLE__)
-#elif defined(__BYTE_ORDER__) && defined(__ORDER_LITTLE_ENDIAN__) && defined(__ORDER_BIG_ENDIAN__)
+#if defined(__BYTE_ORDER__) && defined(__ORDER_LITTLE_ENDIAN__) && defined(__ORDER_BIG_ENDIAN__)
 #define IS_LITTLE_ENDIAN (__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__)
 #elif defined(__LITTLE_ENDIAN__) || defined(__ARMEL__) || defined(__THUMBEL__) || defined(__AARCH64EL__) || defined(_MIPSEL) || defined(__MIPSEL) ||                \
     defined(__MIPSEL__) || defined(__i386) || defined(__i386__) || defined(__x86_64) || defined(__x86_64__) || defined(_M_IX86) || defined(_M_X64) ||               \
