@@ -560,7 +560,7 @@ void ResourceManager::setResourceName(Resource *res, UString name)
 	if (!res || name.length() < 1)
 	{
 		if (debug_rm->getBool())
-			debugLog("ResourceManager: invalid attempt to set name {:s} on resource {:#x}!\n", name.toUtf8(), reinterpret_cast<unsigned long>(res));
+			debugLog("ResourceManager: invalid attempt to set name {:s} on resource {:p}!\n", name.toUtf8(), static_cast<void*>(res));
 		return;
 	}
 	res->setName(name);
