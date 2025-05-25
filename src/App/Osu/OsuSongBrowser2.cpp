@@ -563,7 +563,7 @@ OsuSongBrowser2::OsuSongBrowser2() : OsuScreenBackable()
 	m_scoreBrowser->setClipping(false);
 	m_scoreBrowser->setHorizontalScrolling(false);
 	m_scoreBrowser->setScrollbarSizeMultiplier(0.25f);
-	m_scoreBrowser->setScrollResistance((osu->isInVRMode()) ? convar->getConVarByName("ui_scrollview_resistance")->getInt() : 15); // a bit shitty this check + convar, but works well enough
+	m_scoreBrowser->setScrollResistance(15);
 	m_scoreBrowserNoRecordsYetElement = new OsuUISongBrowserNoRecordsSetElement("No records set!");
 	m_scoreBrowser->getContainer()->addBaseUIElement(m_scoreBrowserNoRecordsYetElement);
 
@@ -572,7 +572,7 @@ OsuSongBrowser2::OsuSongBrowser2() : OsuScreenBackable()
 	m_songBrowser->setDrawBackground(false);
 	m_songBrowser->setDrawFrame(false);
 	m_songBrowser->setHorizontalScrolling(false);
-	m_songBrowser->setScrollResistance((osu->isInVRMode()) ? convar->getConVarByName("ui_scrollview_resistance")->getInt() : 15); // a bit shitty this check + convar, but works well enough
+	m_songBrowser->setScrollResistance(15);
 
 	// beatmap database
 	m_db = new OsuDatabase();

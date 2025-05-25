@@ -96,10 +96,9 @@ public:
 
 public:
 	friend class Engine;
-	friend class OpenVRInterface;
 
 	Graphics();
-	virtual ~Graphics() {}
+	virtual ~Graphics() {;}
 
 	// scene
 	virtual void beginScene() = 0;

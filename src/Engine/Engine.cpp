@@ -13,7 +13,6 @@
 #include "Keyboard.h"
 #include "Mouse.h"
 #include "NetworkHandler.h"
-#include "OpenVRInterface.h"
 #include "Profiler.h"
 #include "ResourceManager.h"
 #include "SoundEngine.h"
@@ -59,7 +58,6 @@ std::unique_ptr<Graphics> Engine::s_graphicsInstance = nullptr;
 std::unique_ptr<SoundEngine> Engine::s_soundEngineInstance = nullptr;
 std::unique_ptr<ResourceManager> Engine::s_resourceManagerInstance = nullptr;
 std::unique_ptr<NetworkHandler> Engine::s_networkHandlerInstance = nullptr;
-std::unique_ptr<OpenVRInterface> Engine::s_openVRInstance = nullptr;
 std::unique_ptr<AnimationHandler> Engine::s_animationHandlerInstance = nullptr;
 std::unique_ptr<SteamworksInterface> Engine::s_steamInstance = nullptr;
 std::unique_ptr<DiscordInterface> Engine::s_discordInstance = nullptr;
@@ -71,7 +69,6 @@ Graphics *graphics = nullptr;
 SoundEngine *soundEngine = nullptr;
 ResourceManager *resourceManager = nullptr;
 NetworkHandler *networkHandler = nullptr;
-OpenVRInterface *openVR = nullptr;
 AnimationHandler *animationHandler = nullptr;
 SteamworksInterface *steam = nullptr;
 DiscordInterface *discord = nullptr;
@@ -169,10 +166,6 @@ Engine::Engine()
 		animationHandler = s_animationHandlerInstance.get();
 		runtime_assert(animationHandler, "Animation handler failed to initialize!");
 
-		s_openVRInstance = std::make_unique<OpenVRInterface>(); // TODO: allow disabling
-		openVR = s_openVRInstance.get();
-		runtime_assert(openVR, "OpenVR failed to initialize!");
-
 		s_networkHandlerInstance = std::make_unique<NetworkHandler>();
 		networkHandler = s_networkHandlerInstance.get();
 		runtime_assert(networkHandler, "Network handler failed to initialize!");
@@ -217,9 +210,6 @@ Engine::~Engine()
 
 	debugLog("Engine: Freeing resource manager...\n");
 	s_resourceManagerInstance.reset();
-
-	debugLog("Engine: Freeing OpenVR...\n");
-	s_openVRInstance.reset();
 
 	debugLog("Engine: Freeing Sound...\n");
 	s_soundEngineInstance.reset();
@@ -417,8 +407,6 @@ void Engine::onUpdate()
 			m_inputDevice->update();
 		}
 
-		openVR->update(); // (this also handles its input devices)
-
 		{
 			VPROF_BUDGET("AnimationHandler::update", VPROF_BUDGETGROUP_UPDATE);
 			animationHandler->update();
@@ -568,8 +556,6 @@ void Engine::onResolutionChange(Vector2 newResolution)
 
 	if (graphics != NULL)
 		graphics->onResolutionChange(newResolution);
-	if (openVR != NULL)
-		openVR->onResolutionChange(newResolution);
 	if (app != NULL)
 		app->onResolutionChanged(newResolution);
 }

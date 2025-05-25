@@ -18,7 +18,6 @@
 #include "ConVar.h"
 
 #include "Osu.h"
-#include "OsuVR.h"
 #include "OsuMultiplayer.h"
 #include "OsuHUD.h"
 #include "OsuSkin.h"
@@ -67,7 +66,6 @@ ConVar osu_universal_offset_hardcoded("osu_universal_offset_hardcoded", unioffse
 ConVar osu_pvs("osu_pvs", true, FCVAR_NONE, "optimizes all loops over all hitobjects by clamping the range to the Potentially Visible Set");
 ConVar osu_draw_hitobjects("osu_draw_hitobjects", true, FCVAR_NONE);
 ConVar osu_draw_beatmap_background_image("osu_draw_beatmap_background_image", true, FCVAR_NONE);
-ConVar osu_vr_draw_desktop_playfield("osu_vr_draw_desktop_playfield", true, FCVAR_NONE);
 
 ConVar osu_universal_offset("osu_universal_offset", 0.0f, FCVAR_NONE);
 ConVar osu_universal_offset_hardcoded_fallback_dsound("osu_universal_offset_hardcoded_fallback_dsound", -15.0f, FCVAR_NONE);
@@ -130,11 +128,10 @@ ConVar osu_notelock_stable_tolerance2b("osu_notelock_stable_tolerance2b", 3, FCV
 ConVar osu_mod_suddendeath_restart("osu_mod_suddendeath_restart", false, FCVAR_NONE, "osu! has this set to false (i.e. you fail after missing). if set to true, then behave like SS/PF, instantly restarting the map");
 ConVar osu_unpause_continue_delay("osu_unpause_continue_delay", 0.15f, FCVAR_NONE, "when unpausing, wait for this many seconds before allowing \"click to continue\" to be actually clicked (to avoid instantly triggering accidentally)");
 
-ConVar osu_drain_type("osu_drain_type", 2, FCVAR_NONE, "which hp drain algorithm to use (0 = None, 1 = VR, 2 = osu!stable, 3 = osu!lazer 2020, 4 = osu!lazer 2018)");
+ConVar osu_drain_type("osu_drain_type", 1, FCVAR_NONE, "which hp drain algorithm to use (0 = None, 1 = osu!stable, 2 = osu!lazer 2020, 3 = osu!lazer 2018)");
 ConVar osu_drain_kill("osu_drain_kill", true, FCVAR_NONE, "whether to kill the player upon failing");
 ConVar osu_drain_kill_notification_duration("osu_drain_kill_notification_duration", 1.0f, FCVAR_NONE, "how long to display the \"You have failed, but you can keep playing!\" notification (0 = disabled)");
 
-ConVar osu_drain_vr_duration("osu_drain_vr_duration", 0.35f, FCVAR_NONE);
 ConVar osu_drain_stable_passive_fail("osu_drain_stable_passive_fail", false, FCVAR_NONE, "whether to fail the player instantly if health = 0, or only once a negative judgement occurs");
 ConVar osu_drain_stable_break_before("osu_drain_stable_break_before", false, FCVAR_NONE, "drain after last hitobject before a break actually starts");
 ConVar osu_drain_stable_break_before_old("osu_drain_stable_break_before_old", true, FCVAR_NONE, "for beatmap versions < 8, drain after last hitobject before a break actually starts");
@@ -154,7 +151,6 @@ ConVar *OsuBeatmap::m_win_snd_fallback_dsound_ref = NULL;
 
 ConVar *OsuBeatmap::m_osu_pvs = &osu_pvs;
 ConVar *OsuBeatmap::m_osu_draw_hitobjects_ref = &osu_draw_hitobjects;
-ConVar *OsuBeatmap::m_osu_vr_draw_desktop_playfield_ref = &osu_vr_draw_desktop_playfield;
 ConVar *OsuBeatmap::m_osu_followpoints_prevfadetime_ref = &osu_followpoints_prevfadetime;
 ConVar *OsuBeatmap::m_osu_universal_offset_ref = &osu_universal_offset;
 ConVar *OsuBeatmap::m_osu_early_note_time_ref = &osu_early_note_time;
@@ -294,13 +290,6 @@ void OsuBeatmap::drawInt(Graphics *g)
 	// draw loading circle
 	if (isLoading())
 		osu->getHUD()->drawLoadingSmall(g);
-}
-
-void OsuBeatmap::drawVR(Graphics *g, Matrix4 &mvp, OsuVR *vr)
-{
-	if (!canDraw()) return;
-
-	// empty atm
 }
 
 void OsuBeatmap::draw3D(Graphics *g)
@@ -1073,7 +1062,7 @@ void OsuBeatmap::update()
 		const int drainType = osu_drain_type.getInt();
 
 		// handle constant drain
-		if (drainType == 2 || drainType == 3) // osu!stable + osu!lazer 2020
+		if (drainType == 1) // osu!stable + osu!lazer 2020
 		{
 			if (m_fDrainRate > 0.0)
 			{
@@ -1125,15 +1114,11 @@ void OsuBeatmap::update()
 
 			switch (drainType)
 			{
-			case 1: // VR
-				hasFailed = m_fHealth2 < 0.001f;
-				break;
-
-			case 2: // osu!stable
+			case 1: // osu!stable
 				hasFailed = (m_fHealth < 0.001) && osu_drain_stable_passive_fail.getBool();
 				break;
 
-			case 3: // osu!lazer 2020
+			case 2: // osu!lazer 2020
 				hasFailed = (m_fHealth < 0.001) && osu_drain_lazer_passive_fail.getBool();
 				break;
 
@@ -1225,8 +1210,6 @@ void OsuBeatmap::keyPressed1(bool mouseButton)
 		m_bClickedContinue = !osu->getModSelector()->isMouseInside();
 	}
 
-	if (osu->isInVRMode() && !m_osu_vr_draw_desktop_playfield_ref->getBool()) return;
-
 	if (osu_mod_fullalternate.getBool() && m_bPrevKeyWasKey1)
 	{
 		if (m_iCurrentHitObjectIndex > m_iAllowAnyNextKeyForFullAlternateUntilHitObjectIndex)
@@ -1265,8 +1248,6 @@ void OsuBeatmap::keyPressed2(bool mouseButton)
 		m_bClickedContinue = !osu->getModSelector()->isMouseInside();
 	}
 
-	if (osu->isInVRMode() && !m_osu_vr_draw_desktop_playfield_ref->getBool()) return;
-
 	if (osu_mod_fullalternate.getBool() && !m_bPrevKeyWasKey1)
 	{
 		if (m_iCurrentHitObjectIndex > m_iAllowAnyNextKeyForFullAlternateUntilHitObjectIndex)
@@ -1297,8 +1278,6 @@ void OsuBeatmap::keyPressed2(bool mouseButton)
 
 void OsuBeatmap::keyReleased1(bool mouseButton)
 {
-	if (osu->isInVRMode() && !m_osu_vr_draw_desktop_playfield_ref->getBool()) return;
-
 	// key overlay
 	osu->getHUD()->animateInputoverlay(1, false);
 	osu->getHUD()->animateInputoverlay(3, false);
@@ -1308,8 +1287,6 @@ void OsuBeatmap::keyReleased1(bool mouseButton)
 
 void OsuBeatmap::keyReleased2(bool mouseButton)
 {
-	if (osu->isInVRMode() && !m_osu_vr_draw_desktop_playfield_ref->getBool()) return;
-
 	// key overlay
 	osu->getHUD()->animateInputoverlay(2, false);
 	osu->getHUD()->animateInputoverlay(4, false);
@@ -1600,10 +1577,6 @@ void OsuBeatmap::pause(bool quitIfWaiting)
 		m_fPrevUnpauseTime = engine->getTime();
 		onUnpaused();
 	}
-
-	// don't kill VR players while paused
-	if (m_osu_drain_type_ref->getInt() == 1)
-		anim->deleteExistingAnimation(&m_fHealth2);
 
 	// if we have failed, and the user early exits to the pause menu, stop the failing animation
 	if (m_bFailed)
@@ -1957,7 +1930,7 @@ float OsuBeatmap::getOD() const
 
 bool OsuBeatmap::isClickHeld() const
 {
-	 return m_bClick1Held || m_bClick2Held || (osu->isInVRMode() && (!osu->getVR()->isVirtualCursorOnScreen() || !m_osu_vr_draw_desktop_playfield_ref->getBool())); // a bit shit, but whatever
+	 return m_bClick1Held || m_bClick2Held;
 }
 
 UString OsuBeatmap::getTitle() const
@@ -2149,20 +2122,7 @@ void OsuBeatmap::addHealth(double percent, bool isFromHitResult)
 
 	const int drainType = osu_drain_type.getInt();
 
-	switch (drainType)
-	{
-	case 1: // VR
-		{
-			const float targetHealth = std::clamp<float>(m_fHealth2 + percent, -0.1f, 1.0f);
-			m_fHealth = targetHealth;
-			anim->moveQuadOut(&m_fHealth2, targetHealth, osu_drain_vr_duration.getFloat(), true);
-		}
-		break;
-
-	default:
-		m_fHealth = std::clamp<double>(m_fHealth + percent, 0.0, 1.0);
-		break;
-	}
+	m_fHealth = std::clamp<double>(m_fHealth + percent, 0.0, 1.0);
 
 	// handle generic fail state (2)
 	const bool isDead = m_fHealth < 0.001;
@@ -2182,17 +2142,17 @@ void OsuBeatmap::addHealth(double percent, bool isFromHitResult)
 		{
 			switch (drainType)
 			{
-			case 2: // osu!stable
+			case 1: // osu!stable
 				if (!osu_drain_stable_passive_fail.getBool())
 					fail();
 				break;
 
-			case 3: // osu!lazer 2020
+			case 2: // osu!lazer 2020
 				if (!osu_drain_lazer_passive_fail.getBool())
 					fail();
 				break;
 
-			case 4: // osu!lazer 2018
+			case 3: // osu!lazer 2018
 				fail();
 				break;
 			}
@@ -2371,7 +2331,7 @@ void OsuBeatmap::playMissSound()
 
 unsigned long OsuBeatmap::getMusicPositionMSInterpolated()
 {
-	if (!osu_interpolate_music_pos.getBool() || (m_bFailed && osu->isInVRMode()) || isLoading())
+	if (!osu_interpolate_music_pos.getBool() || isLoading())
 		return m_music->getPositionMS();
 	// TODO: fix snapping at beginning for maps with instant start
 

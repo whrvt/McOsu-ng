@@ -268,11 +268,6 @@ void OsuMainMenu::openSteamWorkshopInDefaultBrowser(bool launchInSteam)
 
 OsuMainMenu::OsuMainMenu() : OsuScreen()
 {
-	if (osu->isInVRMode())
-		MCOSU_MAIN_BUTTON_TEXT.append(" VR");
-	if (osu->isInVRMode())
-		MCOSU_MAIN_BUTTON_SUBTEXT.clear();
-
 	if (m_osu_universal_offset_ref == NULL)
 		m_osu_universal_offset_ref = convar->getConVarByName("osu_universal_offset");
 	if (m_osu_universal_offset_hardcoded_ref == NULL)
@@ -374,7 +369,7 @@ OsuMainMenu::OsuMainMenu() : OsuScreen()
 
 	addMainMenuButton("Play")->setClickCallback( fastdelegate::MakeDelegate(this, &OsuMainMenu::onPlayButtonPressed) );
 	//addMainMenuButton("Edit")->setClickCallback( fastdelegate::MakeDelegate(this, &OsuMainMenu::onEditButtonPressed) );
-	addMainMenuButton((osu->isInVRMode() ? "Options" : "Options (CTRL + O)"))->setClickCallback( fastdelegate::MakeDelegate(this, &OsuMainMenu::onOptionsButtonPressed) );
+	addMainMenuButton("Options (CTRL + O)")->setClickCallback( fastdelegate::MakeDelegate(this, &OsuMainMenu::onOptionsButtonPressed) );
 	addMainMenuButton("Exit")->setClickCallback( fastdelegate::MakeDelegate(this, &OsuMainMenu::onExitButtonPressed) );
 
 	m_pauseButton = new OsuMainMenuPauseButton(0, 0, 0, 0, "", "");
@@ -579,7 +574,7 @@ void OsuMainMenu::draw(Graphics *g)
 		UString bannerText = MCOSU_BANNER_TEXT;
 
 		if constexpr (Env::cfg(REND::DX11))
-			bannerText = "-- DirectX11 Test - Unoptimized renderer (no batching etc.) - VR is not supported - Please report feedback on Discord/Steam Forums --";
+			bannerText = "-- DirectX11 Test - Unoptimized renderer (no batching etc.) - Please report feedback on Discord/Steam Forums --";
 
 		if constexpr (Env::cfg(AUD::WASAPI))
 			bannerText = UString::format(convar->getConVarByName("win_snd_wasapi_exclusive")->getBool() ?

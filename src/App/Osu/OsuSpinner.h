@@ -18,7 +18,6 @@ public:
 	~OsuSpinner() override;
 
 	void draw(Graphics *g) override;
-	void drawVR(Graphics *g, Matrix4 &mvp, OsuVR *vr) override;
 	void draw3D(Graphics *g) override;
 	void update(long curPos) override;
 
@@ -63,8 +62,6 @@ private:
 	float m_fRPM;
 
 	float m_fLastMouseAngle;
-	float m_fLastVRCursorAngle1;
-	float m_fLastVRCursorAngle2;
 	float m_fRatio;
 };
 

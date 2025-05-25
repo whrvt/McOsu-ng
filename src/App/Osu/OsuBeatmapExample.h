@@ -17,7 +17,6 @@ public:
 	OsuBeatmapExample();
 
 	void draw(Graphics *g) override;
-	void drawVR(Graphics *g, Matrix4 &mvp, OsuVR *vr) override;
 	void draw3D(Graphics *g) override;
 	void update() override;
 

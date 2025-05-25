@@ -53,11 +53,6 @@
 //#define MCENGINE_FEATURE_BASS_WASAPI
 
 /*
- * OpenVR
- */
-//#define MCENGINE_FEATURE_OPENVR
-
-/*
  * SDL3 mixer (audio) (defined in config.h)
  */
 //#define MCENGINE_FEATURE_SDL_MIXER

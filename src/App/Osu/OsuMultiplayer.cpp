@@ -1106,14 +1106,6 @@ void OsuMultiplayer::onServerModUpdate()
 		simpleModConVars.emplace_back("osu_drain_type");
 		simpleModConVars.emplace_back("osu_drain_kill");
 
-		simpleModConVars.emplace_back("osu_drain_vr_duration");
-		simpleModConVars.emplace_back("osu_drain_vr_multiplier");
-		simpleModConVars.emplace_back("osu_drain_vr_300");
-		simpleModConVars.emplace_back("osu_drain_vr_100");
-		simpleModConVars.emplace_back("osu_drain_vr_50");
-		simpleModConVars.emplace_back("osu_drain_vr_miss");
-		simpleModConVars.emplace_back("osu_drain_vr_sliderbreak");
-
 		simpleModConVars.emplace_back("osu_drain_stable_hpbar_maximum");
 
 		simpleModConVars.emplace_back("osu_drain_lazer_multiplier");

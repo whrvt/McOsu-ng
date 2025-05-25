@@ -447,8 +447,6 @@ OsuUpdateHandler::STREAM OsuUpdateHandler::stringToStream(UString streamString)
 	STREAM stream = STREAM::STREAM_NULL;
 	if (streamString.find("desktop") != -1)
 		stream = STREAM::STREAM_DESKTOP;
-	else if (streamString.find("vr") != -1)
-		stream = STREAM::STREAM_VR;
 
 	return stream;
 }

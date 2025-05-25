@@ -48,7 +48,7 @@ ConVar osu_database_stars_cache_enabled("osu_database_stars_cache_enabled", fals
 ConVar osu_scores_enabled("osu_scores_enabled", true, FCVAR_NONE);
 ConVar osu_scores_legacy_enabled("osu_scores_legacy_enabled", true, FCVAR_NONE, "load osu!'s scores.db");
 ConVar osu_scores_custom_enabled("osu_scores_custom_enabled", true, FCVAR_NONE, "load custom scores.db");
-ConVar osu_scores_custom_version("osu_scores_custom_version", 20210110, FCVAR_NONE, "maximum supported custom scores.db/scoresvr.db version");
+ConVar osu_scores_custom_version("osu_scores_custom_version", 20210110, FCVAR_NONE, "maximum supported custom scores.db version");
 ConVar osu_scores_save_immediately("osu_scores_save_immediately", true, FCVAR_NONE, "write scores.db as soon as a new score is added");
 ConVar osu_scores_sort_by_pp("osu_scores_sort_by_pp", true, FCVAR_NONE, "display pp in score browser instead of score");
 ConVar osu_scores_bonus_pp("osu_scores_bonus_pp", true, FCVAR_NONE, "whether to add bonus pp to total (real) pp or not");
@@ -2051,7 +2051,7 @@ void OsuDatabase::loadScores()
 		const int backupLessThanVersion = 20210103;
 		const int backupMoreThanVersion = 20210105;
 
-		const UString scoresFilePath = (osu->isInVRMode() ? "scoresvr.db" : "scores.db");
+		const UString scoresFilePath = "scores.db";
 		{
 			OsuFile db(scoresFilePath, false);
 			if (db.isReady())
@@ -2393,7 +2393,7 @@ void OsuDatabase::saveScores()
 	{
 		debugLog("Osu: Saving scores ...\n");
 
-		OsuFile db((osu->isInVRMode() ? "scoresvr.db" : "scores.db"), true);
+		OsuFile db("scores.db", true);
 		if (db.isReady())
 		{
 			const double startTime = Timing::getTimeReal();

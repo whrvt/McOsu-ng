@@ -67,8 +67,6 @@ public:
 	bool isBusy();
 	[[maybe_unused]] inline bool isWorkshopLoading() const {return m_bWorkshopSkinSelectScheduled;}
 
-	bool shouldDrawVRDummyHUD();
-
 private:
 	static const char *OSU_CONFIG_FILE_NAME;
 
@@ -111,7 +109,6 @@ private:
 	void updateName();
 	void updateFposuDPI();
 	void updateFposuCMper360();
-	void updateVRRenderTargetResolutionLabel();
 	void updateSkinNameLabel();
 	void updateNotelockSelectLabel();
 	void updateHPDrainSelectLabel();
@@ -165,8 +162,6 @@ private:
 	void onKeyBindingsResetAllPressed(CBaseUIButton *button);
 	void onKeyBindingManiaPressedInt();
 	void onKeyBindingManiaPressed(CBaseUIButton *button);
-	void onSliderChangeVRSuperSampling(CBaseUISlider *slider);
-	void onSliderChangeVRAntiAliasing(CBaseUISlider *slider);
 	void onSliderChangeSliderQuality(CBaseUISlider *slider);
 	void onSliderChangeLetterboxingOffset(CBaseUISlider *slider);
 	void onSliderChangeUIScale(CBaseUISlider *slider);
@@ -255,12 +250,6 @@ private:
 	CBaseUISlider *m_wasapiPeriodSizeSlider;
 	OsuOptionsMenuResetButton *m_wasapiBufferSizeResetButton;
 	OsuOptionsMenuResetButton *m_wasapiPeriodSizeResetButton;
-	CBaseUILabel *m_vrRenderTargetResolutionLabel;
-	CBaseUISlider *m_vrApproachDistanceSlider;
-	CBaseUISlider *m_vrVibrationStrengthSlider;
-	CBaseUISlider *m_vrSliderVibrationStrengthSlider;
-	CBaseUISlider *m_vrHudDistanceSlider;
-	CBaseUISlider *m_vrHudScaleSlider;
 	CBaseUISlider *m_sliderQualitySlider;
 	CBaseUISlider *m_letterboxingOffsetXSlider;
 	CBaseUISlider *m_letterboxingOffsetYSlider;

@@ -35,8 +35,6 @@ public:
 	void draw(Graphics *g) override;
 	void draw2(Graphics *g) override;
 	void draw2(Graphics *g, bool drawApproachCircle, bool drawOnlyApproachCircle);
-	void drawVR(Graphics *g, Matrix4 &mvp, OsuVR *vr) override;
-	void drawVR2(Graphics *g, Matrix4 &mvp, OsuVR *vr) override;
 	void draw3D(Graphics *g) override;
 	void draw3D2(Graphics *g) override;
 	void update(long curPos) override;
@@ -86,7 +84,6 @@ private:
 	void drawEndCircle(Graphics *g, float alpha, float sliderSnake = 1.0f);
 	void draw3DEndCircle(Graphics *g, const Matrix4 &baseScale, float alpha, float sliderSnake = 1.0f);
 	void drawBody(Graphics *g, float alpha, float from, float to);
-	void drawBodyVR(Graphics *g, OsuVR *vr, Matrix4 &mvp, float alpha, float from, float to);
 
 	void updateAnimations(long curPos);
 
@@ -157,10 +154,7 @@ private:
 
 	float m_fSliderBreakRapeTime;
 
-	bool m_bOnHitVRLeftControllerHapticFeedback;
-
 	VertexArrayObject *m_vao;
-	VertexArrayObject *m_vaoVR2;
 };
 
 #endif

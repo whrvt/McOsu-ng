@@ -31,13 +31,7 @@ public:
 
 	static ConVar *m_osu_approach_scale_multiplier_ref;
 	static ConVar *m_osu_timingpoints_force;
-	static ConVar *m_osu_vr_approach_type;
-	static ConVar *m_osu_vr_draw_approach_circles;
-	static ConVar *m_osu_vr_approach_circles_on_playfield;
-	static ConVar *m_osu_vr_approach_circles_on_top;
 	static ConVar *m_osu_relax_offset_ref;
-
-	static ConVar *m_osu_vr_draw_desktop_playfield;
 
 	static ConVar *m_osu_mod_mafham_ref;
 
@@ -53,8 +47,6 @@ public:
 
 	virtual void draw(Graphics *g) {;}
 	virtual void draw2(Graphics *g);
-	virtual void drawVR(Graphics *g, Matrix4 &mvp, OsuVR *vr) {;}
-	virtual void drawVR2(Graphics *g, Matrix4 &mvp, OsuVR *vr) {;}
 	virtual void draw3D(Graphics *g) {;}
 	virtual void draw3D2(Graphics *g);
 	virtual void update(long curPos);

@@ -50,8 +50,6 @@ public:
 
 	void draw(Graphics *g) override;
 	void draw2(Graphics *g) override;
-	void drawVR(Graphics *g, Matrix4 &mvp, OsuVR *vr) override;
-	void drawVR2(Graphics *g, Matrix4 &mvp, OsuVR *vr) override;
 	void draw3D(Graphics *g) override;
 	void draw3D2(Graphics *g) override;
 	void update(long curPos) override;
@@ -86,8 +84,6 @@ private:
 	bool m_bWaiting;
 	float m_fHitAnimation;
 	float m_fShakeAnimation;
-
-	bool m_bOnHitVRLeftControllerHapticFeedback;
 };
 
 #endif

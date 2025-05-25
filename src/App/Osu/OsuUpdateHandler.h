@@ -63,8 +63,7 @@ private:
 	enum class STREAM : uint8_t
 	{
 		STREAM_NULL,
-		STREAM_DESKTOP,
-		STREAM_VR
+		STREAM_DESKTOP
 	};
 
 	STREAM stringToStream(UString streamString);

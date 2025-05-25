@@ -11,13 +11,10 @@
 #include "ResourceManager.h"
 #include "AnimationHandler.h"
 #include "SoundEngine.h"
-#include "OpenVRInterface.h"
-#include "OpenVRController.h"
 #include "Camera.h"
 #include "ConVar.h"
 
 #include "Osu.h"
-#include "OsuVR.h"
 #include "OsuSkin.h"
 #include "OsuSkinImage.h"
 #include "OsuGameRules.h"
@@ -679,8 +676,6 @@ OsuCircle::OsuCircle(int x, int y, long time, int sampleType, int comboNumber, b
 	m_bWaiting = false;
 	m_fHitAnimation = 0.0f;
 	m_fShakeAnimation = 0.0f;
-
-	m_bOnHitVRLeftControllerHapticFeedback = false;
 }
 
 OsuCircle::~OsuCircle()
@@ -772,51 +767,6 @@ void OsuCircle::draw2(Graphics *g)
 	drawApproachCircle(g, m_beatmap, m_vRawPos, m_iComboNumber, m_iColorCounter, m_iColorOffset, m_fHittableDimRGBColorMultiplierPercent, m_bWaiting && !hd ? 1.0f : m_fApproachScale, m_bWaiting && !hd ? 1.0f : m_fAlphaForApproachCircle, m_bOverrideHDApproachCircle);
 }
 
-void OsuCircle::drawVR(Graphics *g, Matrix4 &mvp, OsuVR *vr)
-{
-	// TODO: performance! if nothing of the circle is visible, then we don't have to calculate anything
-	///if (m_bVisible)
-	{
-		float clampedApproachScalePercent = m_fApproachScale - 1.0f; // goes from <m_osu_approach_scale_multiplier_ref> to 0
-		clampedApproachScalePercent = std::clamp<float>(clampedApproachScalePercent / m_osu_approach_scale_multiplier_ref->getFloat(), 0.0f, 1.0f); // goes from 1 to 0
-
-		Matrix4 translation;
-		translation.translate(0, 0, -clampedApproachScalePercent*vr->getApproachDistance());
-		Matrix4 finalMVP = mvp * translation;
-
-		vr->getShaderTexturedLegacyGeneric()->setUniformMatrix4fv("matrix", finalMVP);
-		draw(g);
-
-		if (m_osu_vr_draw_approach_circles->getBool() && !m_osu_vr_approach_circles_on_top->getBool())
-		{
-			if (m_osu_vr_approach_circles_on_playfield->getBool())
-				vr->getShaderTexturedLegacyGeneric()->setUniformMatrix4fv("matrix", mvp);
-
-			draw2(g);
-		}
-	}
-}
-
-void OsuCircle::drawVR2(Graphics *g, Matrix4 &mvp, OsuVR *vr)
-{
-	// TODO: performance! if nothing of the circle is visible, then we don't have to calculate anything
-	///if (m_bVisible)
-	{
-		float clampedApproachScalePercent = m_fApproachScale - 1.0f; // goes from <m_osu_approach_scale_multiplier_ref> to 0
-		clampedApproachScalePercent = std::clamp<float>(clampedApproachScalePercent / m_osu_approach_scale_multiplier_ref->getFloat(), 0.0f, 1.0f); // goes from 1 to 0
-
-		if (m_osu_vr_approach_circles_on_playfield->getBool())
-			clampedApproachScalePercent = 0.0f;
-
-		Matrix4 translation;
-		translation.translate(0, 0, -clampedApproachScalePercent*vr->getApproachDistance());
-		Matrix4 finalMVP = mvp * translation;
-
-		vr->getShaderTexturedLegacyGeneric()->setUniformMatrix4fv("matrix", finalMVP);
-		draw2(g);
-	}
-}
-
 void OsuCircle::draw3D(Graphics *g)
 {
 	OsuHitObject::draw3D(g);
@@ -900,26 +850,14 @@ void OsuCircle::update(long curPos)
 		{
 			const long delta = curPos - m_iTime;
 
-			if (osu->getModRelax() || osu->isInVRMode())
+			if (osu->getModRelax())
 			{
 				if (curPos >= m_iTime + (long)m_osu_relax_offset_ref->getInt() && !m_beatmap->isPaused() && !m_beatmap->isContinueScheduled())
 				{
 					const Vector2 pos = m_beatmap->osuCoords2Pixels(m_vRawPos);
 					const float cursorDelta = (m_beatmap->getCursorPos() - pos).length();
 
-					float vrCursor1Delta = 0.0f;
-					float vrCursor2Delta = 0.0f;
-					bool vrCursor1Inside = false;
-					bool vrCursor2Inside = false;
-					if (osu->isInVRMode())
-					{
-						vrCursor1Delta = (osu->getVR()->getCursorPos1() - m_beatmap->osuCoords2VRPixels(m_vRawPos)).length();
-						vrCursor2Delta = (osu->getVR()->getCursorPos2() - m_beatmap->osuCoords2VRPixels(m_vRawPos)).length();
-						vrCursor1Inside = vrCursor1Delta < ((m_beatmap->getRawHitcircleDiameter()/2.0f) * osu->getVR()->getCircleHitboxScale());
-						vrCursor2Inside = vrCursor2Delta < ((m_beatmap->getRawHitcircleDiameter()/2.0f) * osu->getVR()->getCircleHitboxScale());
-					}
-
-					if ((cursorDelta < m_beatmap->getHitcircleDiameter()/2.0f && osu->getModRelax()) || (vrCursor1Inside || vrCursor2Inside))
+					if ((cursorDelta < m_beatmap->getHitcircleDiameter()/2.0f && osu->getModRelax()))
 					{
 						OsuScore::HIT result = OsuGameRules::getHitResult(delta, m_beatmap);
 
@@ -927,24 +865,6 @@ void OsuCircle::update(long curPos)
 						{
 							const float targetDelta = cursorDelta / (m_beatmap->getHitcircleDiameter()/2.0f);
 							const float targetAngle = glm::degrees(glm::atan2(m_beatmap->getCursorPos().y - pos.y, m_beatmap->getCursorPos().x - pos.x));
-
-							if (osu->isInVRMode())
-							{
-								// distance to circle
-								if (vrCursor1Delta < vrCursor2Delta)
-									m_bOnHitVRLeftControllerHapticFeedback = true;
-								else
-									m_bOnHitVRLeftControllerHapticFeedback = false;
-
-								// distance to playfield, if both cursors were valid (overrides distance to circle for haptic feedback)
-								if (vrCursor1Inside && vrCursor2Inside)
-								{
-									if (osu->getVR()->getCursorDist1() < osu->getVR()->getCursorDist2())
-										m_bOnHitVRLeftControllerHapticFeedback = true;
-									else
-										m_bOnHitVRLeftControllerHapticFeedback = false;
-								}
-							}
 
 							onHit(result, delta, targetDelta, targetAngle);
 						}
@@ -1026,14 +946,6 @@ void OsuCircle::onHit(OsuScore::HIT result, long delta, float targetDelta, float
 
 		m_fHitAnimation = 0.001f; // quickfix for 1 frame missing images
 		anim->moveQuadOut(&m_fHitAnimation, 1.0f, OsuGameRules::getFadeOutTime(m_beatmap), true);
-
-		if (osu->isInVRMode())
-		{
-			if (m_bOnHitVRLeftControllerHapticFeedback)
-				openvr->getLeftController()->triggerHapticPulse(osu->getVR()->getHapticPulseStrength());
-			else
-				openvr->getRightController()->triggerHapticPulse(osu->getVR()->getHapticPulseStrength());
-		}
 	}
 
 	// add it, and we are finished

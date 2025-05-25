@@ -197,13 +197,6 @@ am_McOsu_ng_OBJECTS = libraries/glad/glad/McOsu_ng-glad.$(OBJEXT) \
 	src/App/Osu/McOsu_ng-OsuUIVolumeSlider.$(OBJEXT) \
 	src/App/Osu/McOsu_ng-OsuUpdateHandler.$(OBJEXT) \
 	src/App/Osu/McOsu_ng-OsuUserStatsScreen.$(OBJEXT) \
-	src/App/Osu/McOsu_ng-OsuVR.$(OBJEXT) \
-	src/App/Osu/McOsu_ng-OsuVRTutorial.$(OBJEXT) \
-	src/App/Osu/McOsu_ng-OsuVRUIButton.$(OBJEXT) \
-	src/App/Osu/McOsu_ng-OsuVRUIElement.$(OBJEXT) \
-	src/App/Osu/McOsu_ng-OsuVRUIImageButton.$(OBJEXT) \
-	src/App/Osu/McOsu_ng-OsuVRUIImageCheckbox.$(OBJEXT) \
-	src/App/Osu/McOsu_ng-OsuVRUISlider.$(OBJEXT) \
 	src/Engine/McOsu_ng-AnimationHandler.$(OBJEXT) \
 	src/Engine/McOsu_ng-Camera.$(OBJEXT) \
 	src/Engine/McOsu_ng-ConVar.$(OBJEXT) \
@@ -217,10 +210,8 @@ am_McOsu_ng_OBJECTS = libraries/glad/glad/McOsu_ng-glad.$(OBJEXT) \
 	src/Engine/Input/McOsu_ng-Keyboard.$(OBJEXT) \
 	src/Engine/Input/McOsu_ng-KeyboardEvent.$(OBJEXT) \
 	src/Engine/Input/McOsu_ng-Mouse.$(OBJEXT) \
-	src/Engine/Input/McOsu_ng-OpenVRController.$(OBJEXT) \
 	src/Engine/Main/McOsu_ng-main.$(OBJEXT) \
 	src/Engine/McOsu_ng-NetworkHandler.$(OBJEXT) \
-	src/Engine/McOsu_ng-OpenVRInterface.$(OBJEXT) \
 	src/Engine/Platform/McOsu_ng-SDLGLInterface.$(OBJEXT) \
 	src/Engine/McOsu_ng-Profiler.$(OBJEXT) \
 	src/Engine/McOsu_ng-RenderTarget.$(OBJEXT) \
@@ -383,13 +374,6 @@ am__depfiles_remade = libraries/glad/glad/$(DEPDIR)/McOsu_ng-glad.Po \
 	src/App/Osu/$(DEPDIR)/McOsu_ng-OsuUIVolumeSlider.Po \
 	src/App/Osu/$(DEPDIR)/McOsu_ng-OsuUpdateHandler.Po \
 	src/App/Osu/$(DEPDIR)/McOsu_ng-OsuUserStatsScreen.Po \
-	src/App/Osu/$(DEPDIR)/McOsu_ng-OsuVR.Po \
-	src/App/Osu/$(DEPDIR)/McOsu_ng-OsuVRTutorial.Po \
-	src/App/Osu/$(DEPDIR)/McOsu_ng-OsuVRUIButton.Po \
-	src/App/Osu/$(DEPDIR)/McOsu_ng-OsuVRUIElement.Po \
-	src/App/Osu/$(DEPDIR)/McOsu_ng-OsuVRUIImageButton.Po \
-	src/App/Osu/$(DEPDIR)/McOsu_ng-OsuVRUIImageCheckbox.Po \
-	src/App/Osu/$(DEPDIR)/McOsu_ng-OsuVRUISlider.Po \
 	src/Engine/$(DEPDIR)/McOsu_ng-AnimationHandler.Po \
 	src/Engine/$(DEPDIR)/McOsu_ng-Camera.Po \
 	src/Engine/$(DEPDIR)/McOsu_ng-ConVar.Po \
@@ -401,7 +385,6 @@ am__depfiles_remade = libraries/glad/glad/$(DEPDIR)/McOsu_ng-glad.Po \
 	src/Engine/$(DEPDIR)/McOsu_ng-Graphics.Po \
 	src/Engine/$(DEPDIR)/McOsu_ng-Image.Po \
 	src/Engine/$(DEPDIR)/McOsu_ng-NetworkHandler.Po \
-	src/Engine/$(DEPDIR)/McOsu_ng-OpenVRInterface.Po \
 	src/Engine/$(DEPDIR)/McOsu_ng-Profiler.Po \
 	src/Engine/$(DEPDIR)/McOsu_ng-RenderTarget.Po \
 	src/Engine/$(DEPDIR)/McOsu_ng-Resource.Po \
@@ -414,7 +397,6 @@ am__depfiles_remade = libraries/glad/glad/$(DEPDIR)/McOsu_ng-glad.Po \
 	src/Engine/Input/$(DEPDIR)/McOsu_ng-Keyboard.Po \
 	src/Engine/Input/$(DEPDIR)/McOsu_ng-KeyboardEvent.Po \
 	src/Engine/Input/$(DEPDIR)/McOsu_ng-Mouse.Po \
-	src/Engine/Input/$(DEPDIR)/McOsu_ng-OpenVRController.Po \
 	src/Engine/Main/$(DEPDIR)/McOsu_ng-main.Po \
 	src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLGLInterface.Po \
 	src/Engine/Renderer/$(DEPDIR)/McOsu_ng-DirectX11Image.Po \
@@ -834,13 +816,6 @@ McOsu_ng_SOURCES = \
 	src/App/Osu/OsuUIVolumeSlider.cpp \
 	src/App/Osu/OsuUpdateHandler.cpp \
 	src/App/Osu/OsuUserStatsScreen.cpp \
-	src/App/Osu/OsuVR.cpp \
-	src/App/Osu/OsuVRTutorial.cpp \
-	src/App/Osu/OsuVRUIButton.cpp \
-	src/App/Osu/OsuVRUIElement.cpp \
-	src/App/Osu/OsuVRUIImageButton.cpp \
-	src/App/Osu/OsuVRUIImageCheckbox.cpp \
-	src/App/Osu/OsuVRUISlider.cpp \
 	src/Engine/AnimationHandler.cpp \
 	src/Engine/Camera.cpp \
 	src/Engine/ConVar.cpp \
@@ -854,10 +829,8 @@ McOsu_ng_SOURCES = \
 	src/Engine/Input/Keyboard.cpp \
 	src/Engine/Input/KeyboardEvent.cpp \
 	src/Engine/Input/Mouse.cpp \
-	src/Engine/Input/OpenVRController.cpp \
 	src/Engine/Main/main.cpp \
 	src/Engine/NetworkHandler.cpp \
-	src/Engine/OpenVRInterface.cpp \
 	src/Engine/Platform/SDLGLInterface.cpp \
 	src/Engine/Profiler.cpp \
 	src/Engine/RenderTarget.cpp \
@@ -1319,26 +1292,6 @@ src/App/Osu/McOsu_ng-OsuUpdateHandler.$(OBJEXT):  \
 src/App/Osu/McOsu_ng-OsuUserStatsScreen.$(OBJEXT):  \
 	src/App/Osu/$(am__dirstamp) \
 	src/App/Osu/$(DEPDIR)/$(am__dirstamp)
-src/App/Osu/McOsu_ng-OsuVR.$(OBJEXT): src/App/Osu/$(am__dirstamp) \
-	src/App/Osu/$(DEPDIR)/$(am__dirstamp)
-src/App/Osu/McOsu_ng-OsuVRTutorial.$(OBJEXT):  \
-	src/App/Osu/$(am__dirstamp) \
-	src/App/Osu/$(DEPDIR)/$(am__dirstamp)
-src/App/Osu/McOsu_ng-OsuVRUIButton.$(OBJEXT):  \
-	src/App/Osu/$(am__dirstamp) \
-	src/App/Osu/$(DEPDIR)/$(am__dirstamp)
-src/App/Osu/McOsu_ng-OsuVRUIElement.$(OBJEXT):  \
-	src/App/Osu/$(am__dirstamp) \
-	src/App/Osu/$(DEPDIR)/$(am__dirstamp)
-src/App/Osu/McOsu_ng-OsuVRUIImageButton.$(OBJEXT):  \
-	src/App/Osu/$(am__dirstamp) \
-	src/App/Osu/$(DEPDIR)/$(am__dirstamp)
-src/App/Osu/McOsu_ng-OsuVRUIImageCheckbox.$(OBJEXT):  \
-	src/App/Osu/$(am__dirstamp) \
-	src/App/Osu/$(DEPDIR)/$(am__dirstamp)
-src/App/Osu/McOsu_ng-OsuVRUISlider.$(OBJEXT):  \
-	src/App/Osu/$(am__dirstamp) \
-	src/App/Osu/$(DEPDIR)/$(am__dirstamp)
 src/Engine/$(am__dirstamp):
 	@$(MKDIR_P) src/Engine
 	@: >>src/Engine/$(am__dirstamp)
@@ -1382,9 +1335,6 @@ src/Engine/Input/McOsu_ng-KeyboardEvent.$(OBJEXT):  \
 src/Engine/Input/McOsu_ng-Mouse.$(OBJEXT):  \
 	src/Engine/Input/$(am__dirstamp) \
 	src/Engine/Input/$(DEPDIR)/$(am__dirstamp)
-src/Engine/Input/McOsu_ng-OpenVRController.$(OBJEXT):  \
-	src/Engine/Input/$(am__dirstamp) \
-	src/Engine/Input/$(DEPDIR)/$(am__dirstamp)
 src/Engine/Main/$(am__dirstamp):
 	@$(MKDIR_P) src/Engine/Main
 	@: >>src/Engine/Main/$(am__dirstamp)
@@ -1395,9 +1345,6 @@ src/Engine/Main/McOsu_ng-main.$(OBJEXT):  \
 	src/Engine/Main/$(am__dirstamp) \
 	src/Engine/Main/$(DEPDIR)/$(am__dirstamp)
 src/Engine/McOsu_ng-NetworkHandler.$(OBJEXT):  \
-	src/Engine/$(am__dirstamp) \
-	src/Engine/$(DEPDIR)/$(am__dirstamp)
-src/Engine/McOsu_ng-OpenVRInterface.$(OBJEXT):  \
 	src/Engine/$(am__dirstamp) \
 	src/Engine/$(DEPDIR)/$(am__dirstamp)
 src/Engine/Platform/$(am__dirstamp):
@@ -1752,13 +1699,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/App/Osu/$(DEPDIR)/McOsu_ng-OsuUIVolumeSlider.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/App/Osu/$(DEPDIR)/McOsu_ng-OsuUpdateHandler.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/App/Osu/$(DEPDIR)/McOsu_ng-OsuUserStatsScreen.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@src/App/Osu/$(DEPDIR)/McOsu_ng-OsuVR.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@src/App/Osu/$(DEPDIR)/McOsu_ng-OsuVRTutorial.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@src/App/Osu/$(DEPDIR)/McOsu_ng-OsuVRUIButton.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@src/App/Osu/$(DEPDIR)/McOsu_ng-OsuVRUIElement.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@src/App/Osu/$(DEPDIR)/McOsu_ng-OsuVRUIImageButton.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@src/App/Osu/$(DEPDIR)/McOsu_ng-OsuVRUIImageCheckbox.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@src/App/Osu/$(DEPDIR)/McOsu_ng-OsuVRUISlider.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/$(DEPDIR)/McOsu_ng-AnimationHandler.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/$(DEPDIR)/McOsu_ng-Camera.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/$(DEPDIR)/McOsu_ng-ConVar.Po@am__quote@ # am--include-marker
@@ -1770,7 +1710,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/$(DEPDIR)/McOsu_ng-Graphics.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/$(DEPDIR)/McOsu_ng-Image.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/$(DEPDIR)/McOsu_ng-NetworkHandler.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@src/Engine/$(DEPDIR)/McOsu_ng-OpenVRInterface.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/$(DEPDIR)/McOsu_ng-Profiler.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/$(DEPDIR)/McOsu_ng-RenderTarget.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/$(DEPDIR)/McOsu_ng-Resource.Po@am__quote@ # am--include-marker
@@ -1783,7 +1722,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Input/$(DEPDIR)/McOsu_ng-Keyboard.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Input/$(DEPDIR)/McOsu_ng-KeyboardEvent.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Input/$(DEPDIR)/McOsu_ng-Mouse.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Input/$(DEPDIR)/McOsu_ng-OpenVRController.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Main/$(DEPDIR)/McOsu_ng-main.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLGLInterface.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Renderer/$(DEPDIR)/McOsu_ng-DirectX11Image.Po@am__quote@ # am--include-marker
@@ -2813,104 +2751,6 @@ src/App/Osu/McOsu_ng-OsuUserStatsScreen.obj: src/App/Osu/OsuUserStatsScreen.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/App/Osu/McOsu_ng-OsuUserStatsScreen.obj `if test -f 'src/App/Osu/OsuUserStatsScreen.cpp'; then $(CYGPATH_W) 'src/App/Osu/OsuUserStatsScreen.cpp'; else $(CYGPATH_W) '$(srcdir)/src/App/Osu/OsuUserStatsScreen.cpp'; fi`
 
-src/App/Osu/McOsu_ng-OsuVR.o: src/App/Osu/OsuVR.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/App/Osu/McOsu_ng-OsuVR.o -MD -MP -MF src/App/Osu/$(DEPDIR)/McOsu_ng-OsuVR.Tpo -c -o src/App/Osu/McOsu_ng-OsuVR.o `test -f 'src/App/Osu/OsuVR.cpp' || echo '$(srcdir)/'`src/App/Osu/OsuVR.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/App/Osu/$(DEPDIR)/McOsu_ng-OsuVR.Tpo src/App/Osu/$(DEPDIR)/McOsu_ng-OsuVR.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/App/Osu/OsuVR.cpp' object='src/App/Osu/McOsu_ng-OsuVR.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/App/Osu/McOsu_ng-OsuVR.o `test -f 'src/App/Osu/OsuVR.cpp' || echo '$(srcdir)/'`src/App/Osu/OsuVR.cpp
-
-src/App/Osu/McOsu_ng-OsuVR.obj: src/App/Osu/OsuVR.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/App/Osu/McOsu_ng-OsuVR.obj -MD -MP -MF src/App/Osu/$(DEPDIR)/McOsu_ng-OsuVR.Tpo -c -o src/App/Osu/McOsu_ng-OsuVR.obj `if test -f 'src/App/Osu/OsuVR.cpp'; then $(CYGPATH_W) 'src/App/Osu/OsuVR.cpp'; else $(CYGPATH_W) '$(srcdir)/src/App/Osu/OsuVR.cpp'; fi`
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/App/Osu/$(DEPDIR)/McOsu_ng-OsuVR.Tpo src/App/Osu/$(DEPDIR)/McOsu_ng-OsuVR.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/App/Osu/OsuVR.cpp' object='src/App/Osu/McOsu_ng-OsuVR.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/App/Osu/McOsu_ng-OsuVR.obj `if test -f 'src/App/Osu/OsuVR.cpp'; then $(CYGPATH_W) 'src/App/Osu/OsuVR.cpp'; else $(CYGPATH_W) '$(srcdir)/src/App/Osu/OsuVR.cpp'; fi`
-
-src/App/Osu/McOsu_ng-OsuVRTutorial.o: src/App/Osu/OsuVRTutorial.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/App/Osu/McOsu_ng-OsuVRTutorial.o -MD -MP -MF src/App/Osu/$(DEPDIR)/McOsu_ng-OsuVRTutorial.Tpo -c -o src/App/Osu/McOsu_ng-OsuVRTutorial.o `test -f 'src/App/Osu/OsuVRTutorial.cpp' || echo '$(srcdir)/'`src/App/Osu/OsuVRTutorial.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/App/Osu/$(DEPDIR)/McOsu_ng-OsuVRTutorial.Tpo src/App/Osu/$(DEPDIR)/McOsu_ng-OsuVRTutorial.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/App/Osu/OsuVRTutorial.cpp' object='src/App/Osu/McOsu_ng-OsuVRTutorial.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/App/Osu/McOsu_ng-OsuVRTutorial.o `test -f 'src/App/Osu/OsuVRTutorial.cpp' || echo '$(srcdir)/'`src/App/Osu/OsuVRTutorial.cpp
-
-src/App/Osu/McOsu_ng-OsuVRTutorial.obj: src/App/Osu/OsuVRTutorial.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/App/Osu/McOsu_ng-OsuVRTutorial.obj -MD -MP -MF src/App/Osu/$(DEPDIR)/McOsu_ng-OsuVRTutorial.Tpo -c -o src/App/Osu/McOsu_ng-OsuVRTutorial.obj `if test -f 'src/App/Osu/OsuVRTutorial.cpp'; then $(CYGPATH_W) 'src/App/Osu/OsuVRTutorial.cpp'; else $(CYGPATH_W) '$(srcdir)/src/App/Osu/OsuVRTutorial.cpp'; fi`
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/App/Osu/$(DEPDIR)/McOsu_ng-OsuVRTutorial.Tpo src/App/Osu/$(DEPDIR)/McOsu_ng-OsuVRTutorial.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/App/Osu/OsuVRTutorial.cpp' object='src/App/Osu/McOsu_ng-OsuVRTutorial.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/App/Osu/McOsu_ng-OsuVRTutorial.obj `if test -f 'src/App/Osu/OsuVRTutorial.cpp'; then $(CYGPATH_W) 'src/App/Osu/OsuVRTutorial.cpp'; else $(CYGPATH_W) '$(srcdir)/src/App/Osu/OsuVRTutorial.cpp'; fi`
-
-src/App/Osu/McOsu_ng-OsuVRUIButton.o: src/App/Osu/OsuVRUIButton.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/App/Osu/McOsu_ng-OsuVRUIButton.o -MD -MP -MF src/App/Osu/$(DEPDIR)/McOsu_ng-OsuVRUIButton.Tpo -c -o src/App/Osu/McOsu_ng-OsuVRUIButton.o `test -f 'src/App/Osu/OsuVRUIButton.cpp' || echo '$(srcdir)/'`src/App/Osu/OsuVRUIButton.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/App/Osu/$(DEPDIR)/McOsu_ng-OsuVRUIButton.Tpo src/App/Osu/$(DEPDIR)/McOsu_ng-OsuVRUIButton.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/App/Osu/OsuVRUIButton.cpp' object='src/App/Osu/McOsu_ng-OsuVRUIButton.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/App/Osu/McOsu_ng-OsuVRUIButton.o `test -f 'src/App/Osu/OsuVRUIButton.cpp' || echo '$(srcdir)/'`src/App/Osu/OsuVRUIButton.cpp
-
-src/App/Osu/McOsu_ng-OsuVRUIButton.obj: src/App/Osu/OsuVRUIButton.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/App/Osu/McOsu_ng-OsuVRUIButton.obj -MD -MP -MF src/App/Osu/$(DEPDIR)/McOsu_ng-OsuVRUIButton.Tpo -c -o src/App/Osu/McOsu_ng-OsuVRUIButton.obj `if test -f 'src/App/Osu/OsuVRUIButton.cpp'; then $(CYGPATH_W) 'src/App/Osu/OsuVRUIButton.cpp'; else $(CYGPATH_W) '$(srcdir)/src/App/Osu/OsuVRUIButton.cpp'; fi`
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/App/Osu/$(DEPDIR)/McOsu_ng-OsuVRUIButton.Tpo src/App/Osu/$(DEPDIR)/McOsu_ng-OsuVRUIButton.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/App/Osu/OsuVRUIButton.cpp' object='src/App/Osu/McOsu_ng-OsuVRUIButton.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/App/Osu/McOsu_ng-OsuVRUIButton.obj `if test -f 'src/App/Osu/OsuVRUIButton.cpp'; then $(CYGPATH_W) 'src/App/Osu/OsuVRUIButton.cpp'; else $(CYGPATH_W) '$(srcdir)/src/App/Osu/OsuVRUIButton.cpp'; fi`
-
-src/App/Osu/McOsu_ng-OsuVRUIElement.o: src/App/Osu/OsuVRUIElement.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/App/Osu/McOsu_ng-OsuVRUIElement.o -MD -MP -MF src/App/Osu/$(DEPDIR)/McOsu_ng-OsuVRUIElement.Tpo -c -o src/App/Osu/McOsu_ng-OsuVRUIElement.o `test -f 'src/App/Osu/OsuVRUIElement.cpp' || echo '$(srcdir)/'`src/App/Osu/OsuVRUIElement.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/App/Osu/$(DEPDIR)/McOsu_ng-OsuVRUIElement.Tpo src/App/Osu/$(DEPDIR)/McOsu_ng-OsuVRUIElement.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/App/Osu/OsuVRUIElement.cpp' object='src/App/Osu/McOsu_ng-OsuVRUIElement.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/App/Osu/McOsu_ng-OsuVRUIElement.o `test -f 'src/App/Osu/OsuVRUIElement.cpp' || echo '$(srcdir)/'`src/App/Osu/OsuVRUIElement.cpp
-
-src/App/Osu/McOsu_ng-OsuVRUIElement.obj: src/App/Osu/OsuVRUIElement.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/App/Osu/McOsu_ng-OsuVRUIElement.obj -MD -MP -MF src/App/Osu/$(DEPDIR)/McOsu_ng-OsuVRUIElement.Tpo -c -o src/App/Osu/McOsu_ng-OsuVRUIElement.obj `if test -f 'src/App/Osu/OsuVRUIElement.cpp'; then $(CYGPATH_W) 'src/App/Osu/OsuVRUIElement.cpp'; else $(CYGPATH_W) '$(srcdir)/src/App/Osu/OsuVRUIElement.cpp'; fi`
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/App/Osu/$(DEPDIR)/McOsu_ng-OsuVRUIElement.Tpo src/App/Osu/$(DEPDIR)/McOsu_ng-OsuVRUIElement.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/App/Osu/OsuVRUIElement.cpp' object='src/App/Osu/McOsu_ng-OsuVRUIElement.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/App/Osu/McOsu_ng-OsuVRUIElement.obj `if test -f 'src/App/Osu/OsuVRUIElement.cpp'; then $(CYGPATH_W) 'src/App/Osu/OsuVRUIElement.cpp'; else $(CYGPATH_W) '$(srcdir)/src/App/Osu/OsuVRUIElement.cpp'; fi`
-
-src/App/Osu/McOsu_ng-OsuVRUIImageButton.o: src/App/Osu/OsuVRUIImageButton.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/App/Osu/McOsu_ng-OsuVRUIImageButton.o -MD -MP -MF src/App/Osu/$(DEPDIR)/McOsu_ng-OsuVRUIImageButton.Tpo -c -o src/App/Osu/McOsu_ng-OsuVRUIImageButton.o `test -f 'src/App/Osu/OsuVRUIImageButton.cpp' || echo '$(srcdir)/'`src/App/Osu/OsuVRUIImageButton.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/App/Osu/$(DEPDIR)/McOsu_ng-OsuVRUIImageButton.Tpo src/App/Osu/$(DEPDIR)/McOsu_ng-OsuVRUIImageButton.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/App/Osu/OsuVRUIImageButton.cpp' object='src/App/Osu/McOsu_ng-OsuVRUIImageButton.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/App/Osu/McOsu_ng-OsuVRUIImageButton.o `test -f 'src/App/Osu/OsuVRUIImageButton.cpp' || echo '$(srcdir)/'`src/App/Osu/OsuVRUIImageButton.cpp
-
-src/App/Osu/McOsu_ng-OsuVRUIImageButton.obj: src/App/Osu/OsuVRUIImageButton.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/App/Osu/McOsu_ng-OsuVRUIImageButton.obj -MD -MP -MF src/App/Osu/$(DEPDIR)/McOsu_ng-OsuVRUIImageButton.Tpo -c -o src/App/Osu/McOsu_ng-OsuVRUIImageButton.obj `if test -f 'src/App/Osu/OsuVRUIImageButton.cpp'; then $(CYGPATH_W) 'src/App/Osu/OsuVRUIImageButton.cpp'; else $(CYGPATH_W) '$(srcdir)/src/App/Osu/OsuVRUIImageButton.cpp'; fi`
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/App/Osu/$(DEPDIR)/McOsu_ng-OsuVRUIImageButton.Tpo src/App/Osu/$(DEPDIR)/McOsu_ng-OsuVRUIImageButton.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/App/Osu/OsuVRUIImageButton.cpp' object='src/App/Osu/McOsu_ng-OsuVRUIImageButton.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/App/Osu/McOsu_ng-OsuVRUIImageButton.obj `if test -f 'src/App/Osu/OsuVRUIImageButton.cpp'; then $(CYGPATH_W) 'src/App/Osu/OsuVRUIImageButton.cpp'; else $(CYGPATH_W) '$(srcdir)/src/App/Osu/OsuVRUIImageButton.cpp'; fi`
-
-src/App/Osu/McOsu_ng-OsuVRUIImageCheckbox.o: src/App/Osu/OsuVRUIImageCheckbox.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/App/Osu/McOsu_ng-OsuVRUIImageCheckbox.o -MD -MP -MF src/App/Osu/$(DEPDIR)/McOsu_ng-OsuVRUIImageCheckbox.Tpo -c -o src/App/Osu/McOsu_ng-OsuVRUIImageCheckbox.o `test -f 'src/App/Osu/OsuVRUIImageCheckbox.cpp' || echo '$(srcdir)/'`src/App/Osu/OsuVRUIImageCheckbox.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/App/Osu/$(DEPDIR)/McOsu_ng-OsuVRUIImageCheckbox.Tpo src/App/Osu/$(DEPDIR)/McOsu_ng-OsuVRUIImageCheckbox.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/App/Osu/OsuVRUIImageCheckbox.cpp' object='src/App/Osu/McOsu_ng-OsuVRUIImageCheckbox.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/App/Osu/McOsu_ng-OsuVRUIImageCheckbox.o `test -f 'src/App/Osu/OsuVRUIImageCheckbox.cpp' || echo '$(srcdir)/'`src/App/Osu/OsuVRUIImageCheckbox.cpp
-
-src/App/Osu/McOsu_ng-OsuVRUIImageCheckbox.obj: src/App/Osu/OsuVRUIImageCheckbox.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/App/Osu/McOsu_ng-OsuVRUIImageCheckbox.obj -MD -MP -MF src/App/Osu/$(DEPDIR)/McOsu_ng-OsuVRUIImageCheckbox.Tpo -c -o src/App/Osu/McOsu_ng-OsuVRUIImageCheckbox.obj `if test -f 'src/App/Osu/OsuVRUIImageCheckbox.cpp'; then $(CYGPATH_W) 'src/App/Osu/OsuVRUIImageCheckbox.cpp'; else $(CYGPATH_W) '$(srcdir)/src/App/Osu/OsuVRUIImageCheckbox.cpp'; fi`
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/App/Osu/$(DEPDIR)/McOsu_ng-OsuVRUIImageCheckbox.Tpo src/App/Osu/$(DEPDIR)/McOsu_ng-OsuVRUIImageCheckbox.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/App/Osu/OsuVRUIImageCheckbox.cpp' object='src/App/Osu/McOsu_ng-OsuVRUIImageCheckbox.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/App/Osu/McOsu_ng-OsuVRUIImageCheckbox.obj `if test -f 'src/App/Osu/OsuVRUIImageCheckbox.cpp'; then $(CYGPATH_W) 'src/App/Osu/OsuVRUIImageCheckbox.cpp'; else $(CYGPATH_W) '$(srcdir)/src/App/Osu/OsuVRUIImageCheckbox.cpp'; fi`
-
-src/App/Osu/McOsu_ng-OsuVRUISlider.o: src/App/Osu/OsuVRUISlider.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/App/Osu/McOsu_ng-OsuVRUISlider.o -MD -MP -MF src/App/Osu/$(DEPDIR)/McOsu_ng-OsuVRUISlider.Tpo -c -o src/App/Osu/McOsu_ng-OsuVRUISlider.o `test -f 'src/App/Osu/OsuVRUISlider.cpp' || echo '$(srcdir)/'`src/App/Osu/OsuVRUISlider.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/App/Osu/$(DEPDIR)/McOsu_ng-OsuVRUISlider.Tpo src/App/Osu/$(DEPDIR)/McOsu_ng-OsuVRUISlider.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/App/Osu/OsuVRUISlider.cpp' object='src/App/Osu/McOsu_ng-OsuVRUISlider.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/App/Osu/McOsu_ng-OsuVRUISlider.o `test -f 'src/App/Osu/OsuVRUISlider.cpp' || echo '$(srcdir)/'`src/App/Osu/OsuVRUISlider.cpp
-
-src/App/Osu/McOsu_ng-OsuVRUISlider.obj: src/App/Osu/OsuVRUISlider.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/App/Osu/McOsu_ng-OsuVRUISlider.obj -MD -MP -MF src/App/Osu/$(DEPDIR)/McOsu_ng-OsuVRUISlider.Tpo -c -o src/App/Osu/McOsu_ng-OsuVRUISlider.obj `if test -f 'src/App/Osu/OsuVRUISlider.cpp'; then $(CYGPATH_W) 'src/App/Osu/OsuVRUISlider.cpp'; else $(CYGPATH_W) '$(srcdir)/src/App/Osu/OsuVRUISlider.cpp'; fi`
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/App/Osu/$(DEPDIR)/McOsu_ng-OsuVRUISlider.Tpo src/App/Osu/$(DEPDIR)/McOsu_ng-OsuVRUISlider.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/App/Osu/OsuVRUISlider.cpp' object='src/App/Osu/McOsu_ng-OsuVRUISlider.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/App/Osu/McOsu_ng-OsuVRUISlider.obj `if test -f 'src/App/Osu/OsuVRUISlider.cpp'; then $(CYGPATH_W) 'src/App/Osu/OsuVRUISlider.cpp'; else $(CYGPATH_W) '$(srcdir)/src/App/Osu/OsuVRUISlider.cpp'; fi`
-
 src/Engine/McOsu_ng-AnimationHandler.o: src/Engine/AnimationHandler.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/McOsu_ng-AnimationHandler.o -MD -MP -MF src/Engine/$(DEPDIR)/McOsu_ng-AnimationHandler.Tpo -c -o src/Engine/McOsu_ng-AnimationHandler.o `test -f 'src/Engine/AnimationHandler.cpp' || echo '$(srcdir)/'`src/Engine/AnimationHandler.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/$(DEPDIR)/McOsu_ng-AnimationHandler.Tpo src/Engine/$(DEPDIR)/McOsu_ng-AnimationHandler.Po
@@ -3093,20 +2933,6 @@ src/Engine/Input/McOsu_ng-Mouse.obj: src/Engine/Input/Mouse.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Input/McOsu_ng-Mouse.obj `if test -f 'src/Engine/Input/Mouse.cpp'; then $(CYGPATH_W) 'src/Engine/Input/Mouse.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Input/Mouse.cpp'; fi`
 
-src/Engine/Input/McOsu_ng-OpenVRController.o: src/Engine/Input/OpenVRController.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Input/McOsu_ng-OpenVRController.o -MD -MP -MF src/Engine/Input/$(DEPDIR)/McOsu_ng-OpenVRController.Tpo -c -o src/Engine/Input/McOsu_ng-OpenVRController.o `test -f 'src/Engine/Input/OpenVRController.cpp' || echo '$(srcdir)/'`src/Engine/Input/OpenVRController.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Input/$(DEPDIR)/McOsu_ng-OpenVRController.Tpo src/Engine/Input/$(DEPDIR)/McOsu_ng-OpenVRController.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Input/OpenVRController.cpp' object='src/Engine/Input/McOsu_ng-OpenVRController.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Input/McOsu_ng-OpenVRController.o `test -f 'src/Engine/Input/OpenVRController.cpp' || echo '$(srcdir)/'`src/Engine/Input/OpenVRController.cpp
-
-src/Engine/Input/McOsu_ng-OpenVRController.obj: src/Engine/Input/OpenVRController.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Input/McOsu_ng-OpenVRController.obj -MD -MP -MF src/Engine/Input/$(DEPDIR)/McOsu_ng-OpenVRController.Tpo -c -o src/Engine/Input/McOsu_ng-OpenVRController.obj `if test -f 'src/Engine/Input/OpenVRController.cpp'; then $(CYGPATH_W) 'src/Engine/Input/OpenVRController.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Input/OpenVRController.cpp'; fi`
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Input/$(DEPDIR)/McOsu_ng-OpenVRController.Tpo src/Engine/Input/$(DEPDIR)/McOsu_ng-OpenVRController.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Input/OpenVRController.cpp' object='src/Engine/Input/McOsu_ng-OpenVRController.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Input/McOsu_ng-OpenVRController.obj `if test -f 'src/Engine/Input/OpenVRController.cpp'; then $(CYGPATH_W) 'src/Engine/Input/OpenVRController.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Input/OpenVRController.cpp'; fi`
-
 src/Engine/Main/McOsu_ng-main.o: src/Engine/Main/main.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Main/McOsu_ng-main.o -MD -MP -MF src/Engine/Main/$(DEPDIR)/McOsu_ng-main.Tpo -c -o src/Engine/Main/McOsu_ng-main.o `test -f 'src/Engine/Main/main.cpp' || echo '$(srcdir)/'`src/Engine/Main/main.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Main/$(DEPDIR)/McOsu_ng-main.Tpo src/Engine/Main/$(DEPDIR)/McOsu_ng-main.Po
@@ -3134,20 +2960,6 @@ src/Engine/McOsu_ng-NetworkHandler.obj: src/Engine/NetworkHandler.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/NetworkHandler.cpp' object='src/Engine/McOsu_ng-NetworkHandler.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/McOsu_ng-NetworkHandler.obj `if test -f 'src/Engine/NetworkHandler.cpp'; then $(CYGPATH_W) 'src/Engine/NetworkHandler.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/NetworkHandler.cpp'; fi`
-
-src/Engine/McOsu_ng-OpenVRInterface.o: src/Engine/OpenVRInterface.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/McOsu_ng-OpenVRInterface.o -MD -MP -MF src/Engine/$(DEPDIR)/McOsu_ng-OpenVRInterface.Tpo -c -o src/Engine/McOsu_ng-OpenVRInterface.o `test -f 'src/Engine/OpenVRInterface.cpp' || echo '$(srcdir)/'`src/Engine/OpenVRInterface.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/$(DEPDIR)/McOsu_ng-OpenVRInterface.Tpo src/Engine/$(DEPDIR)/McOsu_ng-OpenVRInterface.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/OpenVRInterface.cpp' object='src/Engine/McOsu_ng-OpenVRInterface.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/McOsu_ng-OpenVRInterface.o `test -f 'src/Engine/OpenVRInterface.cpp' || echo '$(srcdir)/'`src/Engine/OpenVRInterface.cpp
-
-src/Engine/McOsu_ng-OpenVRInterface.obj: src/Engine/OpenVRInterface.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/McOsu_ng-OpenVRInterface.obj -MD -MP -MF src/Engine/$(DEPDIR)/McOsu_ng-OpenVRInterface.Tpo -c -o src/Engine/McOsu_ng-OpenVRInterface.obj `if test -f 'src/Engine/OpenVRInterface.cpp'; then $(CYGPATH_W) 'src/Engine/OpenVRInterface.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/OpenVRInterface.cpp'; fi`
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/$(DEPDIR)/McOsu_ng-OpenVRInterface.Tpo src/Engine/$(DEPDIR)/McOsu_ng-OpenVRInterface.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/OpenVRInterface.cpp' object='src/Engine/McOsu_ng-OpenVRInterface.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/McOsu_ng-OpenVRInterface.obj `if test -f 'src/Engine/OpenVRInterface.cpp'; then $(CYGPATH_W) 'src/Engine/OpenVRInterface.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/OpenVRInterface.cpp'; fi`
 
 src/Engine/Platform/McOsu_ng-SDLGLInterface.o: src/Engine/Platform/SDLGLInterface.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Platform/McOsu_ng-SDLGLInterface.o -MD -MP -MF src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLGLInterface.Tpo -c -o src/Engine/Platform/McOsu_ng-SDLGLInterface.o `test -f 'src/Engine/Platform/SDLGLInterface.cpp' || echo '$(srcdir)/'`src/Engine/Platform/SDLGLInterface.cpp
@@ -4591,13 +4403,6 @@ distclean: distclean-am
 	-rm -f src/App/Osu/$(DEPDIR)/McOsu_ng-OsuUIVolumeSlider.Po
 	-rm -f src/App/Osu/$(DEPDIR)/McOsu_ng-OsuUpdateHandler.Po
 	-rm -f src/App/Osu/$(DEPDIR)/McOsu_ng-OsuUserStatsScreen.Po
-	-rm -f src/App/Osu/$(DEPDIR)/McOsu_ng-OsuVR.Po
-	-rm -f src/App/Osu/$(DEPDIR)/McOsu_ng-OsuVRTutorial.Po
-	-rm -f src/App/Osu/$(DEPDIR)/McOsu_ng-OsuVRUIButton.Po
-	-rm -f src/App/Osu/$(DEPDIR)/McOsu_ng-OsuVRUIElement.Po
-	-rm -f src/App/Osu/$(DEPDIR)/McOsu_ng-OsuVRUIImageButton.Po
-	-rm -f src/App/Osu/$(DEPDIR)/McOsu_ng-OsuVRUIImageCheckbox.Po
-	-rm -f src/App/Osu/$(DEPDIR)/McOsu_ng-OsuVRUISlider.Po
 	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-AnimationHandler.Po
 	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-Camera.Po
 	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-ConVar.Po
@@ -4609,7 +4414,6 @@ distclean: distclean-am
 	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-Graphics.Po
 	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-Image.Po
 	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-NetworkHandler.Po
-	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-OpenVRInterface.Po
 	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-Profiler.Po
 	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-RenderTarget.Po
 	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-Resource.Po
@@ -4622,7 +4426,6 @@ distclean: distclean-am
 	-rm -f src/Engine/Input/$(DEPDIR)/McOsu_ng-Keyboard.Po
 	-rm -f src/Engine/Input/$(DEPDIR)/McOsu_ng-KeyboardEvent.Po
 	-rm -f src/Engine/Input/$(DEPDIR)/McOsu_ng-Mouse.Po
-	-rm -f src/Engine/Input/$(DEPDIR)/McOsu_ng-OpenVRController.Po
 	-rm -f src/Engine/Main/$(DEPDIR)/McOsu_ng-main.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLGLInterface.Po
 	-rm -f src/Engine/Renderer/$(DEPDIR)/McOsu_ng-DirectX11Image.Po
@@ -4806,13 +4609,6 @@ maintainer-clean: maintainer-clean-am
 	-rm -f src/App/Osu/$(DEPDIR)/McOsu_ng-OsuUIVolumeSlider.Po
 	-rm -f src/App/Osu/$(DEPDIR)/McOsu_ng-OsuUpdateHandler.Po
 	-rm -f src/App/Osu/$(DEPDIR)/McOsu_ng-OsuUserStatsScreen.Po
-	-rm -f src/App/Osu/$(DEPDIR)/McOsu_ng-OsuVR.Po
-	-rm -f src/App/Osu/$(DEPDIR)/McOsu_ng-OsuVRTutorial.Po
-	-rm -f src/App/Osu/$(DEPDIR)/McOsu_ng-OsuVRUIButton.Po
-	-rm -f src/App/Osu/$(DEPDIR)/McOsu_ng-OsuVRUIElement.Po
-	-rm -f src/App/Osu/$(DEPDIR)/McOsu_ng-OsuVRUIImageButton.Po
-	-rm -f src/App/Osu/$(DEPDIR)/McOsu_ng-OsuVRUIImageCheckbox.Po
-	-rm -f src/App/Osu/$(DEPDIR)/McOsu_ng-OsuVRUISlider.Po
 	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-AnimationHandler.Po
 	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-Camera.Po
 	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-ConVar.Po
@@ -4824,7 +4620,6 @@ maintainer-clean: maintainer-clean-am
 	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-Graphics.Po
 	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-Image.Po
 	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-NetworkHandler.Po
-	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-OpenVRInterface.Po
 	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-Profiler.Po
 	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-RenderTarget.Po
 	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-Resource.Po
@@ -4837,7 +4632,6 @@ maintainer-clean: maintainer-clean-am
 	-rm -f src/Engine/Input/$(DEPDIR)/McOsu_ng-Keyboard.Po
 	-rm -f src/Engine/Input/$(DEPDIR)/McOsu_ng-KeyboardEvent.Po
 	-rm -f src/Engine/Input/$(DEPDIR)/McOsu_ng-Mouse.Po
-	-rm -f src/Engine/Input/$(DEPDIR)/McOsu_ng-OpenVRController.Po
 	-rm -f src/Engine/Main/$(DEPDIR)/McOsu_ng-main.Po
 	-rm -f src/Engine/Platform/$(DEPDIR)/McOsu_ng-SDLGLInterface.Po
 	-rm -f src/Engine/Renderer/$(DEPDIR)/McOsu_ng-DirectX11Image.Po

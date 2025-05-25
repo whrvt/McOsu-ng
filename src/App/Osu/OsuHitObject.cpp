@@ -42,10 +42,6 @@ ConVar osu_hitresult_delta_colorize_late_g("osu_hitresult_delta_colorize_late_g"
 ConVar osu_hitresult_delta_colorize_late_b("osu_hitresult_delta_colorize_late_b", 255, FCVAR_NONE, "from 0 to 255");
 
 ConVar osu_approach_scale_multiplier("osu_approach_scale_multiplier", 3.0f, FCVAR_NONE);
-ConVar osu_vr_approach_type("osu_vr_approach_type", 0, FCVAR_NONE, "0 = linear (default), 1 = quadratic");
-ConVar osu_vr_draw_approach_circles("osu_vr_draw_approach_circles", false, FCVAR_NONE);
-ConVar osu_vr_approach_circles_on_playfield("osu_vr_approach_circles_on_playfield", false, FCVAR_NONE);
-ConVar osu_vr_approach_circles_on_top("osu_vr_approach_circles_on_top", false, FCVAR_NONE);
 
 ConVar osu_timingpoints_force("osu_timingpoints_force", true, FCVAR_NONE, "Forces the correct sample type and volume to be used, by getting the active timingpoint through iteration EVERY TIME a hitsound is played (performance!)");
 
@@ -68,13 +64,7 @@ ConVar osu_relax_offset("osu_relax_offset", 0, FCVAR_NONE, "osu!relax always hit
 
 ConVar *OsuHitObject::m_osu_approach_scale_multiplier_ref = &osu_approach_scale_multiplier;
 ConVar *OsuHitObject::m_osu_timingpoints_force = &osu_timingpoints_force;
-ConVar *OsuHitObject::m_osu_vr_approach_type = &osu_vr_approach_type;
-ConVar *OsuHitObject::m_osu_vr_draw_approach_circles = &osu_vr_draw_approach_circles;
-ConVar *OsuHitObject::m_osu_vr_approach_circles_on_playfield = &osu_vr_approach_circles_on_playfield;
-ConVar *OsuHitObject::m_osu_vr_approach_circles_on_top = &osu_vr_approach_circles_on_top;
 ConVar *OsuHitObject::m_osu_relax_offset_ref = &osu_relax_offset;
-
-ConVar *OsuHitObject::m_osu_vr_draw_desktop_playfield = NULL;
 
 ConVar *OsuHitObject::m_osu_mod_mafham_ref = NULL;
 
@@ -283,8 +273,6 @@ OsuHitObject::OsuHitObject(long time, int sampleType, int comboNumber, bool isEn
 	m_iColorOffset = colorOffset;
 	m_beatmap = beatmap;
 
-	if (m_osu_vr_draw_desktop_playfield == NULL)
-		m_osu_vr_draw_desktop_playfield = convar->getConVarByName("osu_vr_draw_desktop_playfield");
 	if (m_osu_mod_mafham_ref == NULL)
 		m_osu_mod_mafham_ref = convar->getConVarByName("osu_mod_mafham");
 	if (m_fposu_3d_spheres_ref == NULL)

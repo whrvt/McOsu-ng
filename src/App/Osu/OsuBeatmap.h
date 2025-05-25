@@ -18,7 +18,6 @@ class Sound;
 class ConVar;
 
 class Osu;
-class OsuVR;
 class OsuSkin;
 class OsuHitObject;
 
@@ -47,7 +46,6 @@ public:
 
 	virtual void draw(Graphics *g);
 	virtual void drawInt(Graphics *g);
-	virtual void drawVR(Graphics *g, Matrix4 &mvp, OsuVR *vr);
 	virtual void draw3D(Graphics *g);
 	virtual void draw3D2(Graphics *g);
 	void drawDebug(Graphics *g);
@@ -197,7 +195,6 @@ protected:
 
 	static ConVar *m_osu_pvs;
 	static ConVar *m_osu_draw_hitobjects_ref;
-	static ConVar *m_osu_vr_draw_desktop_playfield_ref;
 	static ConVar *m_osu_followpoints_prevfadetime_ref;
 	static ConVar *m_osu_universal_offset_ref;
 	static ConVar *m_osu_early_note_time_ref;

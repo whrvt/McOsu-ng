@@ -18,7 +18,6 @@
 class CWindowManager;
 
 class Osu2;
-class OsuVR;
 class OsuMultiplayer;
 class OsuMainMenu;
 class OsuPauseMenu;
@@ -37,7 +36,6 @@ class OsuScreen;
 class OsuScore;
 class OsuSkin;
 class OsuHUD;
-class OsuVRTutorial;
 class OsuChangelog;
 class OsuEditor;
 class OsuModFPoSu;
@@ -80,7 +78,6 @@ public:
 	~Osu() override;
 
 	void draw(Graphics *g) override;
-	void drawVR(Graphics *g);
 	void update() override;
 
 	void onKeyDown(KeyboardEvent &e) override;
@@ -109,7 +106,6 @@ public:
 	void toggleOptionsMenu();
 	void toggleRankingScreen();
 	void toggleUserStatsScreen();
-	void toggleVRTutorial();
 	void toggleChangelog();
 	void toggleEditor();
 
@@ -132,7 +128,6 @@ public:
 
 	OsuBeatmap *getSelectedBeatmap();
 
-	[[nodiscard]] inline OsuVR* getVR() const {return m_vr;}
 	[[nodiscard]] inline OsuMultiplayer* getMultiplayer() const {return m_multiplayer;}
 	[[nodiscard]] inline OsuOptionsMenu* getOptionsMenu() const {return m_optionsMenu;}
 	[[nodiscard]] inline OsuSongBrowser2* getSongBrowser() const {return m_songBrowser2;}
@@ -193,13 +188,7 @@ public:
 
 	bool isInPlayMode();
 	bool isNotInPlayModeOrPaused();
-#ifdef MCENGINE_FEATURE_OPENVR
-	static bool isInVRMode();
-	inline bool isInVRDraw() const {return m_bIsInVRDraw;}
-#else
-	static inline constexpr bool isInVRDraw() {return false;}
-	static inline constexpr bool isInVRMode() {return false;}
-#endif
+
 	bool isInMultiplayer();
 	inline bool isSkinLoading() const {return m_bSkinLoadScheduled;}
 
@@ -283,10 +272,8 @@ private:
 	ConVar *m_ui_scrollview_scrollbarwidth_ref;
 	ConVar *m_mouse_raw_input_absolute_to_window_ref;
 	ConVar *m_disable_windows_key_ref;
-	ConVar *m_osu_vr_draw_desktop_playfield_ref;
 
 	// interfaces
-	OsuVR *m_vr;
 	OsuMultiplayer *m_multiplayer;
 	OsuMainMenu *m_mainMenu;
 	OsuOptionsMenu *m_optionsMenu;
@@ -301,7 +288,6 @@ private:
 	OsuTooltipOverlay *m_tooltipOverlay;
 	OsuNotificationOverlay *m_notificationOverlay;
 	OsuScore *m_score;
-	OsuVRTutorial *m_vrTutorial;
 	OsuChangelog *m_changelog;
 	OsuEditor *m_editor;
 	OsuUpdateHandler *m_updateHandler;
@@ -370,7 +356,6 @@ private:
 	bool m_bOptionsMenuFullscreen;
 	bool m_bToggleRankingScreenScheduled;
 	bool m_bToggleUserStatsScreenScheduled;
-	bool m_bToggleVRTutorialScheduled;
 	bool m_bToggleChangelogScheduled;
 	bool m_bToggleEditorScheduled;
 
@@ -392,7 +377,6 @@ private:
 	GAMEMODE m_gamemode;
 	bool m_bScheduleEndlessModNextBeatmap;
 	int m_iMultiplayerClientNumEscPresses;
-	bool m_bIsInVRDraw;
 	int m_iInstanceID;
 	bool m_bWasBossKeyPaused;
 	bool m_bSkinLoadScheduled;
