@@ -220,6 +220,12 @@ static constexpr auto OPTIMAL_UNROLL = 4;
 #define MC_UNROLL_VECTOR MC_VEC_UNR_cnt(OPTIMAL_UNROLL)
 #define MC_UNROLL MC_UNR_cnt(OPTIMAL_UNROLL)
 
+#ifdef _OPENMP
+#define ACCUMULATE(op, var) MC_DO_PRAGMA(omp simd reduction(op:var)) // use openmp if available, otherwise unroll
+#else
+#define ACCUMULATE(op, var) MC_UNR_cnt(OPTIMAL_UNROLL)
+#endif
+
 #else
 
 #define likely(x) (x)
@@ -233,6 +239,7 @@ static constexpr auto OPTIMAL_UNROLL = 4;
 #define MC_UNROLL
 #define NULL_PUSH
 #define NULL_POP
+#define ACCUMULATE(op, var)
 #endif // defined(__GNUC__) || defined(__clang__)
 
 #if !(defined(MCENGINE_PLATFORM_WINDOWS) || defined(_WIN32) || defined(_WIN64) || defined(__WIN32__) || defined(__CYGWIN__) || defined(__CYGWIN32__) || defined(__TOS_WIN__) || defined(__WINDOWS__))

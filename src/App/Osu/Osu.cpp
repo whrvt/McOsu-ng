@@ -1240,20 +1240,10 @@ void Osu::onKeyDown(KeyboardEvent &key)
 			switch (static_cast<KEYCODE>(key))
 			{
 			case KEY_R: {
-				Shader *sliderShader = resourceManager->getShader("slider");
-				Shader *sliderShaderVR = resourceManager->getShader("sliderVR");
-				Shader *cursorTrailShader = resourceManager->getShader("cursortrail");
-				Shader *hitcircle3DShader = resourceManager->getShader("hitcircle3D");
-
-				if (sliderShader != NULL)
-					sliderShader->reload();
-				if (sliderShaderVR != NULL)
-					sliderShaderVR->reload();
-				if (cursorTrailShader != NULL)
-					cursorTrailShader->reload();
-				if (hitcircle3DShader != NULL)
-					hitcircle3DShader->reload();
-
+				resourceManager->reloadResource(resourceManager->getShader("slider"));
+				resourceManager->reloadResource(resourceManager->getShader("sliderVR"));
+				resourceManager->reloadResource(resourceManager->getShader("cursortrail"));
+				resourceManager->reloadResource(resourceManager->getShader("hitcircle3D"));
 				break;
 			}
 			case KEY_S: {
@@ -1472,12 +1462,12 @@ void Osu::onKeyDown(KeyboardEvent &key)
 	}
 
 	// forward to all subsystem, if not already consumed
-	for (int i=0; i<m_screens.size(); i++)
+	for (auto & m_screen : m_screens)
 	{
 		if (key.isConsumed())
 			break;
 
-		m_screens[i]->onKeyDown(key);
+		m_screen->onKeyDown(key);
 	}
 
 	// special handling, after subsystems, if still not consumed
@@ -1617,12 +1607,12 @@ void Osu::onKeyUp(KeyboardEvent &key)
 	}
 
 	// forward to all subsystems, if not consumed
-	for (int i=0; i<m_screens.size(); i++)
+	for (auto & m_screen : m_screens)
 	{
 		if (key.isConsumed())
 			break;
 
-		m_screens[i]->onKeyUp(key);
+		m_screen->onKeyUp(key);
 	}
 
 	// misc hotkeys release
@@ -1648,12 +1638,12 @@ void Osu::onKeyUp(KeyboardEvent &key)
 
 void Osu::onChar(KeyboardEvent &e)
 {
-	for (int i=0; i<m_screens.size(); i++)
+	for (auto & m_screen : m_screens)
 	{
 		if (e.isConsumed())
 			break;
 
-		m_screens[i]->onChar(e);
+		m_screen->onChar(e);
 	}
 }
 
@@ -1767,7 +1757,7 @@ void Osu::onAudioOutputDeviceChange()
 {
 	if (getSelectedBeatmap() != NULL && getSelectedBeatmap()->getMusic() != NULL)
 	{
-		getSelectedBeatmap()->getMusic()->reload();
+		resourceManager->reloadResource(getSelectedBeatmap()->getMusic());
 		getSelectedBeatmap()->select();
 	}
 
@@ -2228,7 +2218,7 @@ void Osu::reloadFonts()
 		if (font->getDPI() != newDPI)
 		{
 			font->setDPI(newDPI);
-			font->reload();
+			resourceManager->reloadResource(font);
 		}
 	}
 }

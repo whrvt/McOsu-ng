@@ -1291,6 +1291,7 @@ double OsuDifficultyCalculator::DiffObject::calculate_difficulty(const Skills::S
 				}
 				else
 				{
+					ACCUMULATE(+,tempSum)
 					for (size_t i=0; i<dobjectCount; i++)
 					{
 						tempSum += 1.0 / (1.0 + McMath::fastExp(-((dobjects[i].get_strain(type) / maxObjectStrain * 12.0) - 6.0)));
@@ -1343,6 +1344,7 @@ double OsuDifficultyCalculator::DiffObject::calculate_difficulty(const Skills::S
 					{
 						if (incremental)
 						{
+							ACCUMULATE(+,tempSum)
 							for (size_t i = 0; i < incremental->slider_strains.size(); i++)
 							{
 								tempSum += 1.0 / (1.0 + McMath::fastExp(-((incremental->slider_strains[i] / maxSliderStrain * 12.0) - 6.0)));
@@ -1352,6 +1354,7 @@ double OsuDifficultyCalculator::DiffObject::calculate_difficulty(const Skills::S
 						}
 						else
 						{
+							ACCUMULATE(+,tempSum)
 							for (size_t i = 0; i < dobjectCount; i++)
 							{
 								double sliderStrain = dobjects[i].get_slider_aim_strain();
@@ -1459,7 +1462,7 @@ double OsuDifficultyCalculator::DiffObject::calculate_difficulty(const Skills::S
 				}
 				else
 				{
-					MC_UNROLL
+					ACCUMULATE(+,tempSum) // this speeds up because maybe marathon by 75% (0.20 seconds -> 0.12 seconds) if openmp is enabled (only with clang, though, gcc is already ~0.11 seconds)
 					for (size_t i=0; i<dobjectCount; i++)
 					{
 						tempSum += McMath::fastSigmoid(dobjects[i].get_strain(type) / consistentTopStrain - 0.88);

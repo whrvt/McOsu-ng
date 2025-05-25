@@ -48,9 +48,7 @@ private:
 	friend class BassSound;
 	uint32_t m_iBASSVersion;
 
-#ifdef MCENGINE_FEATURE_MULTITHREADING
 	SoundEngineThread *m_thread;
-#endif
 };
 
 #else

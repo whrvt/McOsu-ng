@@ -11,11 +11,7 @@
 
 #include "cbase.h"
 
-#if defined(MCENGINE_FEATURE_MULTITHREADING)
-
 #include "Thread.h"
-
-#endif
 
 class OsuUpdateHandler
 {
@@ -57,12 +53,9 @@ private:
 	bool _downloadUpdate(UString url);
 	void _installUpdate(UString zipFilePath);
 
-#if defined(MCENGINE_FEATURE_MULTITHREADING)
 
 	McThread *m_updateThread;
 	bool m_bThreadDone;
-
-#endif
 
 	bool _m_bKYS;
 

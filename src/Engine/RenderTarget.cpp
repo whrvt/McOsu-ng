@@ -10,6 +10,7 @@
 #include "ConVar.h"
 
 #include "VertexArrayObject.h"
+#include "ResourceManager.h"
 
 ConVar _debug_rt("debug_rt", false, FCVAR_CHEAT, "draws all rendertargets with a translucent green background");
 

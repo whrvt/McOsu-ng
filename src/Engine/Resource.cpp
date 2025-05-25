@@ -44,7 +44,7 @@ void Resource::loadAsync()
 void Resource::reload()
 {
 	release();
-	loadAsync(); // TODO: this should also be reloaded asynchronously if it was initially loaded so, maybe
+	loadAsync();
 	load();
 }
 

@@ -20,8 +20,6 @@
 
 ConVar *OsuUpdateHandler::m_osu_release_stream_ref = NULL;
 
-#if defined(MCENGINE_FEATURE_MULTITHREADING)
-
 void *OsuUpdateHandler::run(void *data)
 {
 	// not using semaphores/mutexes here because it's not critical
@@ -79,14 +77,11 @@ void *OsuUpdateHandler::run(void *data)
 	return NULL;
 }
 
-#endif
 
 OsuUpdateHandler::OsuUpdateHandler()
 {
-#if defined(MCENGINE_FEATURE_MULTITHREADING)
 	m_updateThread = NULL;
 	m_bThreadDone = false;
-#endif
 
 	m_status = Osu::autoUpdater ? STATUS::STATUS_CHECKING_FOR_UPDATE : STATUS::STATUS_UP_TO_DATE;
 	m_iNumRetries = 0;
@@ -99,7 +94,6 @@ OsuUpdateHandler::OsuUpdateHandler()
 
 OsuUpdateHandler::~OsuUpdateHandler()
 {
-#if defined(MCENGINE_FEATURE_MULTITHREADING)
 	if (m_updateThread != NULL && !m_bThreadDone)
 		engine->showMessageErrorFatal("Fatal Error", "OsuUpdateHandler was destroyed while the update thread is still running!!!");
 
@@ -108,36 +102,29 @@ OsuUpdateHandler::~OsuUpdateHandler()
 		delete m_updateThread;
 		m_updateThread = NULL;
 	}
-#endif
 }
 
 void OsuUpdateHandler::stop()
 {
-#if defined(MCENGINE_FEATURE_MULTITHREADING)
 	if (m_updateThread != NULL)
 	{
 		_m_bKYS = true;
 		// don't delete the thread here, let it exit naturally
 	}
-#endif
 }
 
 void OsuUpdateHandler::wait()
 {
-#if defined(MCENGINE_FEATURE_MULTITHREADING)
 	if (m_updateThread != NULL)
 	{
 		delete m_updateThread; // McThread dtor joins the thread
 		m_updateThread = NULL;
 		m_bThreadDone = false;
 	}
-#endif
 }
 
 void OsuUpdateHandler::checkForUpdates()
 {
-#if defined(MCENGINE_FEATURE_MULTITHREADING)
-
 	// clean up previous thread if it's marked as done
 	if (m_updateThread != NULL && m_bThreadDone)
 	{
@@ -159,8 +146,6 @@ void OsuUpdateHandler::checkForUpdates()
 
 	if (m_iNumRetries > 0)
 		debugLog("retry {} ...\n", m_iNumRetries);
-
-#endif
 }
 
 bool OsuUpdateHandler::isUpdateAvailable()

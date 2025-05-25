@@ -18,9 +18,7 @@
 #include "CBaseUIButton.h"
 #include "CBaseUILabel.h"
 
-#ifdef MCENGINE_FEATURE_MULTITHREADING
 #include <mutex>
-#endif
 
 #include <utility>
 
@@ -33,11 +31,7 @@ ConVar _clear("clear");
 
 std::vector<UString> Console::g_commandQueue;
 
-#ifdef MCENGINE_FEATURE_MULTITHREADING
-
 std::mutex g_consoleLogMutex;
-
-#endif
 
 Console::Console() : CBaseUIWindow(350, 100, 620, 550, "Console")
 {
@@ -267,11 +261,7 @@ void Console::update()
 
 void Console::log(UString text, Color textColor)
 {
-#ifdef MCENGINE_FEATURE_MULTITHREADING
-
 	std::lock_guard<std::mutex> lk(g_consoleLogMutex);
-
-#endif
 
 	if (text.length() < 1) return;
 

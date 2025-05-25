@@ -997,17 +997,6 @@ void OsuSkin::load()
 		osu->getNotificationOverlay()->addNotification("Error: Couldn't load skin.ini!", 0xffff0000);
 	else if (!parseSkinIni2Status)
 		osu->getNotificationOverlay()->addNotification("Error: Couldn't load DEFAULT skin.ini!!!", 0xffff0000);
-
-	// TODO: is this crashing some users?
-	// HACKHACK: speed up initial game startup time by async loading the skin (if osu_skin_async 1 in underride)
-	if (osu->getSkin() == NULL && osu_skin_async.getBool())
-	{
-		while (resourceManager->isLoading())
-		{
-			resourceManager->update();
-			Timing::sleep(0);
-		}
-	}
 }
 
 void OsuSkin::loadBeatmapOverride(UString filepath)
@@ -1018,10 +1007,15 @@ void OsuSkin::loadBeatmapOverride(UString filepath)
 
 void OsuSkin::reloadSounds()
 {
-	for (int i=0; i<m_sounds.size(); i++)
+	std::vector<Resource*> soundResources;
+	soundResources.reserve(m_sounds.size());
+
+	for (auto & m_sound : m_sounds)
 	{
-		m_sounds[i]->reload();
+		soundResources.push_back(m_sound);
 	}
+
+	resourceManager->reloadResources(soundResources, osu_skin_async.getBool());
 }
 
 bool OsuSkin::parseSkinINI(UString filepath)
@@ -1745,7 +1739,7 @@ void OsuSkin::checkLoadSound(Sound **addressOfPointer, UString skinElementName, 
 
 	// force reload default skin sound anyway if the custom skin does not include it (e.g. audio device change)
 	if (isDefaultSkin && *addressOfPointer != NULL)
-		(*addressOfPointer)->reload();
+		resourceManager->reloadResource(*addressOfPointer, osu_skin_async.getBool());
 
 	if ((*addressOfPointer) != NULL)
 	{

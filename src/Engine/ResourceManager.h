@@ -17,7 +17,9 @@
 #include "TextureAtlas.h"
 #include "VertexArrayObject.h"
 
+#include <atomic>
 #include <condition_variable>
+#include <queue>
 #include <unordered_map>
 
 class ConVar;
@@ -34,8 +36,11 @@ public:
 	static constexpr auto PATH_DEFAULT_SOUNDS = "sounds/";
 	static constexpr auto PATH_DEFAULT_SHADERS = "shaders/";
 
+// async loading methods
+// TODO: move the actual resource loading to a separate file, it's getting messy in here
 public:
-	template <typename T> struct MobileAtomic
+	template <typename T>
+	struct MobileAtomic
 	{
 		std::atomic<T> atomic;
 
@@ -58,10 +63,47 @@ public:
 
 	struct LOADING_WORK
 	{
-		MobileAtomicResource resource;
-		MobileAtomicSizeT threadIndex;
-		MobileAtomicBool done;
+		Resource *resource;
+		size_t workId;
+		std::atomic<bool> asyncDone{false};
+		std::atomic<bool> syncDone{false};
 	};
+
+	// work queue methods
+	LOADING_WORK *getNextWork();
+	void markWorkAsyncComplete(LOADING_WORK *work);
+
+	// work notification
+	std::condition_variable m_workAvailable;
+	std::mutex m_workAvailableMutex;
+
+	[[nodiscard]] inline size_t getNumThreads() const { return m_threads.size(); }
+	[[nodiscard]] size_t getNumLoadingWork() const;
+	[[nodiscard]] inline size_t getNumLoadingWorkAsyncDestroy() const { return m_loadingWorkAsyncDestroy.size(); }
+
+	// flags
+	bool m_bNextLoadAsync;
+	std::stack<bool> m_nextLoadUnmanagedStack;
+	size_t m_iNumResourceInitPerFrameLimit;
+
+	// async work queue threads
+	std::vector<ResourceManagerLoaderThread *> m_threads;
+
+	// separate queues for different stages of loading
+	std::queue<LOADING_WORK *> m_pendingWork;       // work waiting to be picked up
+	std::queue<LOADING_WORK *> m_asyncCompleteWork; // work that completed async phase
+	std::vector<LOADING_WORK *> m_allWork;          // all work items for cleanup
+
+	// fine-grained locks for the above
+	mutable std::mutex m_pendingWorkMutex;
+	mutable std::mutex m_asyncCompleteWorkMutex;
+	mutable std::mutex m_allWorkMutex;
+
+	std::atomic<size_t> m_workIdCounter{0};
+
+	// async destroy queue
+	std::vector<Resource *> m_loadingWorkAsyncDestroy;
+	std::mutex m_asyncDestroyMutex;
 
 public:
 	ResourceManager();
@@ -78,7 +120,10 @@ public:
 	}
 	void destroyResource(Resource *rs);
 	void destroyResources();
-	void reloadResources();
+
+	// async reload
+	void reloadResource(Resource *rs, bool async = false);
+	void reloadResources(const std::vector<Resource *> &resources, bool async = false);
 
 	void requestNextLoadAsync();
 	void requestNextLoadUnmanaged();
@@ -111,8 +156,7 @@ public:
 	Shader *createShader2(UString shaderSource);
 
 	// rendertargets
-	RenderTarget *createRenderTarget(int x, int y, int width, int height,
-	                                 Graphics::MULTISAMPLE_TYPE multiSampleType = Graphics::MULTISAMPLE_TYPE::MULTISAMPLE_0X);
+	RenderTarget *createRenderTarget(int x, int y, int width, int height, Graphics::MULTISAMPLE_TYPE multiSampleType = Graphics::MULTISAMPLE_TYPE::MULTISAMPLE_0X);
 	RenderTarget *createRenderTarget(int width, int height, Graphics::MULTISAMPLE_TYPE multiSampleType = Graphics::MULTISAMPLE_TYPE::MULTISAMPLE_0X);
 
 	// texture atlas
@@ -128,7 +172,7 @@ public:
 	Sound *getSound(UString resourceName) const;
 	Shader *getShader(UString resourceName) const;
 
-	// new methods for getting all resources of a type
+	// methods for getting all resources of a type
 	[[nodiscard]] constexpr const std::vector<Image *> &getImages() const { return m_vImages; }
 	[[nodiscard]] constexpr const std::vector<McFont *> &getFonts() const { return m_vFonts; }
 	[[nodiscard]] constexpr const std::vector<Sound *> &getSounds() const { return m_vSounds; }
@@ -138,15 +182,9 @@ public:
 	[[nodiscard]] constexpr const std::vector<VertexArrayObject *> &getVertexArrayObjects() const { return m_vVertexArrayObjects; }
 
 	[[nodiscard]] constexpr const std::vector<Resource *> &getResources() const { return m_vResources; }
-	[[nodiscard]] inline size_t getNumThreads() const { return m_threads.size(); }
-	[[nodiscard]] inline size_t getNumLoadingWork() const { return m_loadingWork.size(); }
-	[[nodiscard]] inline size_t getNumLoadingWorkAsyncDestroy() const { return m_loadingWorkAsyncDestroy.size(); }
 
 	bool isLoading() const;
 	bool isLoadingResource(Resource *rs) const;
-
-	// notify worker threads of new work
-	void notifyWorkerThreads();
 
 private:
 	void loadResource(Resource *res, bool load);
@@ -176,20 +214,6 @@ private:
 	std::vector<RenderTarget *> m_vRenderTargets;
 	std::vector<TextureAtlas *> m_vTextureAtlases;
 	std::vector<VertexArrayObject *> m_vVertexArrayObjects;
-
-	// flags
-	bool m_bNextLoadAsync;
-	std::stack<bool> m_nextLoadUnmanagedStack;
-	size_t m_iNumResourceInitPerFrameLimit;
-
-	// async
-	std::vector<ResourceManagerLoaderThread *> m_threads;
-	std::vector<LOADING_WORK> m_loadingWork;
-	std::vector<Resource *> m_loadingWorkAsyncDestroy;
-
-	// condition variable for worker thread signaling
-	std::condition_variable m_workCondition;
-	std::mutex m_workMutex;
 };
 
 #endif

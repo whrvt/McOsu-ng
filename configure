@@ -894,6 +894,7 @@ enable_debug
 enable_strip
 enable_asan
 enable_clang
+enable_omp
 enable_lto
 enable_system_deps
 enable_static
@@ -1581,6 +1582,8 @@ Optional Features:
   --enable-asan           Enable ASan/UBSan (turns debug on as well) (default:
                           no)
   --enable-clang          Use clang/clang++ instead of gcc/g++ (default: no)
+  --enable-omp            Use and link with OpenMP for faster parallel
+                          processing (default: no)
   --enable-lto            Enable Link Time Optimization (default: auto, use if
                           functional)
   --disable-system-deps   Always build dependencies from source (default: no)
@@ -5896,6 +5899,12 @@ then :
   enableval=$enable_clang;
 fi
 
+# Check whether --enable-omp was given.
+if test ${enable_omp+y}
+then :
+  enableval=$enable_omp;
+fi
+
 # Check whether --enable-lto was given.
 if test ${enable_lto+y}
 then :
@@ -7919,6 +7928,8 @@ fi
 if test "x$enable_asan" = "xyes"
 then :
 
+    # CXXFLAGS="$CXXFLAGS -fsanitize=undefined,thread"
+    # CFLAGS="$CFLAGS -fsanitize=undefined,thread"
     CXXFLAGS="$CXXFLAGS -fsanitize=address,undefined"
     CFLAGS="$CFLAGS -fsanitize=address,undefined"
     if test -z "$LLVMMINGW"
@@ -7985,6 +7996,19 @@ fi
     MCOSU_CXXFLAGS="$MCOSU_CXXFLAGS -fno-exceptions" # disables std::thread constructor exception handling
  ;;
 esac
+fi
+
+if test "x$enable_omp" = "xyes"
+then :
+
+    if test "x$enable_clang" = "xyes"
+then :
+
+        MCOSU_CXXFLAGS="$MCOSU_CXXFLAGS -fopenmp-optimistic-collapse"
+
+fi
+    MCOSU_CXXFLAGS="$MCOSU_CXXFLAGS -fopenmp"
+
 fi
 
 if test "x$enable_strip" != "xno"
@@ -9163,7 +9187,7 @@ fi
 
 
 SDL3_MIN_VERSION=3.4.0 # needs SDL_SetRelativeMouseTransform, not in any current (3.2.x) releases
-SDL3_BUILD_VERSION=c08b1049d3064af32b876432e766d473f61442e2 # git
+SDL3_BUILD_VERSION=b70919ecd9696198755c2fa326c54f52dc9f355b # git
 FREETYPE2_MIN_VERSION=2.10.0
 FREETYPE2_BUILD_VERSION=2.13.3
 LIBJPEG_MIN_VERSION=3.0.0
@@ -12260,6 +12284,7 @@ McOsu-ng build configuration:
     SDL_mixer:          ${with_sdlmixer-no}
     SoLoud:             ${with_soloud-no}
     LTO:                ${enable_lto-auto}
+    OpenMP:             ${enable_omp-no}
     Debug build:        ${enable_debug-no}
     ASan build:         ${enable_asan-no}
     Native build:       ${enable_native-yes}
@@ -12298,6 +12323,7 @@ McOsu-ng build configuration:
     SDL_mixer:          ${with_sdlmixer-no}
     SoLoud:             ${with_soloud-no}
     LTO:                ${enable_lto-auto}
+    OpenMP:             ${enable_omp-no}
     Debug build:        ${enable_debug-no}
     ASan build:         ${enable_asan-no}
     Native build:       ${enable_native-yes}

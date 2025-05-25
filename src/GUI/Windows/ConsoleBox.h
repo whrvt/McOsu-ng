@@ -11,11 +11,7 @@
 
 #include "WindowUIElement.h"
 
-#ifdef MCENGINE_FEATURE_MULTITHREADING
-
 #include <mutex>
-
-#endif
 
 class CBaseUITextbox;
 class CBaseUIButton;
@@ -103,11 +99,7 @@ private:
 	std::vector<UString> m_commandHistory;
 	int m_iSelectedHistory;
 
-#ifdef MCENGINE_FEATURE_MULTITHREADING
-
 	std::mutex m_logMutex;
-
-#endif
 
 };
 

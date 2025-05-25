@@ -10,17 +10,13 @@
 
 #ifdef MCENGINE_FEATURE_BASS
 
-#ifdef MCENGINE_FEATURE_MULTITHREADING
-#include <mutex>
-#endif
-
 #include "BassLoader.h"
-
 #include "ConVar.h"
 #include "Engine.h"
 #include "Environment.h"
 #include "Thread.h"
 
+#include <mutex>
 extern ConVar snd_output_device;
 extern ConVar snd_restart;
 extern ConVar snd_freq;
@@ -59,19 +55,15 @@ public:
 	};
 
 public:
-#ifdef MCENGINE_FEATURE_MULTITHREADING
 	// self
 	McThread *thread;
 	std::mutex workingMutex; // work vector lock
 	std::atomic<bool> running;
 
 	std::vector<CHANNEL_PLAY_WORK> channelPlayWork;
-#endif
 };
 
-#ifdef MCENGINE_FEATURE_MULTITHREADING
 void *_soundEngineThread(void *data);
-#endif
 
 #ifdef MCENGINE_FEATURE_BASS_WASAPI
 BassSound::SOUNDHANDLE g_wasapiOutputMixer = 0;
@@ -124,14 +116,12 @@ BassSoundEngine::BassSoundEngine() : SoundEngine()
 	// Initialize member variables
 	m_iBASSVersion = 0;
 
-#ifdef MCENGINE_FEATURE_MULTITHREADING
 	m_thread = NULL;
 	/* spec: unused, not sure why?
 	m_thread = new SoundEngineThread();
 	m_thread->running = true;
 	m_thread->thread = new Thread(_soundEngineThread, (void*)m_thread);
 	*/
-#endif
 
 	if (!BassLoader::init())
 	{
@@ -191,25 +181,21 @@ BassSoundEngine::BassSoundEngine() : SoundEngine()
 BassSoundEngine::~BassSoundEngine()
 {
 	// let the thread exit and wait for it to stop
-#ifdef MCENGINE_FEATURE_MULTITHREADING
 	if (m_thread != NULL)
 	{
 		m_thread->running = false;
 		SAFE_DELETE(m_thread->thread);
 		SAFE_DELETE(m_thread);
 	}
-#endif
 
 	// Free BASS resources
 	if (m_bReady)
 	{
 		BASS_Free();
 
-#ifdef MCENGINE_FEATURE_BASS_WASAPI
 		// NOTE: commented because for some reason this now crashes in dllunload on Windows 10? this cleanup is irrelevant anyway since it only happens on
 		// shutdown
 		// BASS_WASAPI_Free();
-#endif
 	}
 
 	BassLoader::cleanup();
@@ -311,7 +297,6 @@ bool BassSoundEngine::play(Sound *snd, float pan, float pitch)
 
 		bool ret = false;
 
-#ifdef MCENGINE_FEATURE_MULTITHREADING
 		/*
 		if (snd_async.getBool() && m_thread != NULL)
 		{
@@ -342,11 +327,6 @@ bool BassSoundEngine::play(Sound *snd, float pan, float pitch)
 				ret = m_bReady;
 			}
 		}
-#else
-		ret = BASS_ChannelPlay(handle, FALSE);
-		if (!ret)
-			debugLog("couldn't BASS_ChannelPlay(), errorcode {}\n", BASS_ErrorGetCode());
-#endif
 
 		if (ret)
 			bassSound->setLastPlayTime(engine->getTime());
@@ -792,7 +772,6 @@ bool BassSoundEngine::initializeOutputDevice(int id, bool force)
 	return true;
 }
 
-#ifdef MCENGINE_FEATURE_MULTITHREADING
 void *_soundEngineThread(void *data)
 {
 	SoundEngineThread *self = (SoundEngineThread *)data;
@@ -828,6 +807,5 @@ void *_soundEngineThread(void *data)
 
 	return NULL;
 }
-#endif
 
 #endif // MCENGINE_FEATURE_BASS

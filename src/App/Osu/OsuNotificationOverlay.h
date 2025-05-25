@@ -25,13 +25,13 @@ class OsuNotificationOverlay : public OsuScreen
 {
 public:
 	OsuNotificationOverlay();
-	virtual ~OsuNotificationOverlay() {;}
+	~OsuNotificationOverlay() override {;}
 
-	virtual void draw(Graphics *g);
+	void draw(Graphics *g) override;
 
-	virtual void onKeyDown(KeyboardEvent &e);
-	virtual void onKeyUp(KeyboardEvent &e);
-	virtual void onChar(KeyboardEvent &e);
+	void onKeyDown(KeyboardEvent &e) override;
+	void onKeyUp(KeyboardEvent &e) override;
+	void onChar(KeyboardEvent &e) override;
 
 	void addNotification(UString text, Color textColor = 0xffffffff, bool waitForKey = false, float duration = -1.0f);
 	void setDisallowWaitForKeyLeftClick(bool disallowWaitForKeyLeftClick) {m_bWaitForKeyDisallowsLeftClick = disallowWaitForKeyLeftClick;}

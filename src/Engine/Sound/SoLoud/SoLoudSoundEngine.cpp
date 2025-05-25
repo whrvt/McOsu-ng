@@ -6,9 +6,9 @@
 //================================================================================//
 
 #include "SoLoudSoundEngine.h"
-#include "SoLoudSound.h"
 
 #ifdef MCENGINE_FEATURE_SOLOUD
+#include "SoLoudSound.h"
 
 #include "ConVar.h"
 #include "Engine.h"
@@ -440,7 +440,7 @@ bool SoLoudSoundEngine::initializeOutputDevice(int id, bool)
 
 	// setup some SDL hints in case the SDL backend is used
 	if (snd_soloud_buffer.getVal() != snd_soloud_buffer.getDefaultVal())
-		SDL_SetHintWithPriority(SDL_HINT_AUDIO_DEVICE_SAMPLE_FRAMES, std::format("%u", snd_soloud_buffer.getVal<unsigned int>()).c_str(), SDL_HINT_OVERRIDE);
+		SDL_SetHintWithPriority(SDL_HINT_AUDIO_DEVICE_SAMPLE_FRAMES, fmt::format("{}", snd_soloud_buffer.getVal<unsigned int>()).c_str(), SDL_HINT_OVERRIDE);
 	SDL_SetHintWithPriority(SDL_HINT_AUDIO_DEVICE_STREAM_NAME, PACKAGE_NAME, SDL_HINT_OVERRIDE);
 	SDL_SetHintWithPriority(SDL_HINT_AUDIO_DEVICE_STREAM_ROLE, "game", SDL_HINT_OVERRIDE);
 
@@ -466,7 +466,7 @@ bool SoLoudSoundEngine::initializeOutputDevice(int id, bool)
 		}
 	}
 
-	debugLog("SoundEngine: Initialized SoLoud with output device = \"{:s}\" flags: 0x{:x}, backend: {:s}, sampleRate: {}, bufferSize: {}, channels: {}}, "
+	debugLog("SoundEngine: Initialized SoLoud with output device = \"{:s}\" flags: 0x{:x}, backend: {:s}, sampleRate: {}, bufferSize: {}, channels: {}, "
 	         "maxActiveVoiceCount: {}\n",
 	         m_sCurrentOutputDevice.toUtf8(), flags, soloud->getBackendString(), soloud->getBackendSamplerate(), soloud->getBackendBufferSize(),
 	         soloud->getBackendChannels(), m_iMaxActiveVoices);

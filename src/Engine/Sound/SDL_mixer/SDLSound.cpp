@@ -427,7 +427,7 @@ bool SDLSound::isFinished()
 void SDLSound::rebuild(UString newFilePath)
 {
 	m_sFilePath = newFilePath;
-	reload();
+	resourceManager->reloadResource(this, !m_bStream);
 }
 
 #endif // defined(MCENGINE_FEATURE_SDL_MIXER)

@@ -206,12 +206,7 @@ void ConsoleBox::draw(Graphics *g)
 
 void ConsoleBox::drawLogOverlay(Graphics *g)
 {
-
-#ifdef MCENGINE_FEATURE_MULTITHREADING
-
 	std::lock_guard<std::mutex> logGuard(m_logMutex);
-
-#endif
 
 	const float dpiScale = getDPIScale();
 
@@ -692,12 +687,7 @@ void ConsoleBox::toggle(KeyboardEvent &e)
 
 void ConsoleBox::log(UString text, Color textColor)
 {
-
-#ifdef MCENGINE_FEATURE_MULTITHREADING
-
 	std::lock_guard<std::mutex> logGuard(m_logMutex);
-
-#endif
 
 	// remove illegal chars
 	{

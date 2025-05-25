@@ -295,16 +295,6 @@ McFile::McFile(UString filePath, TYPE type) : m_filePath(filePath), m_type(type)
 	m_ready = true;
 }
 
-bool McFile::canRead() const
-{
-	return m_ready && m_ifstream && m_ifstream->good() && m_type == TYPE::READ;
-}
-
-bool McFile::canWrite() const
-{
-	return m_ready && m_ofstream && m_ofstream->good() && m_type == TYPE::WRITE;
-}
-
 void McFile::write(const char *buffer, size_t size)
 {
 	if (!canWrite())
@@ -363,9 +353,4 @@ const char *McFile::readFile()
 		return m_fullBuffer.data();
 
 	return nullptr;
-}
-
-size_t McFile::getFileSize() const
-{
-	return m_fileSize;
 }

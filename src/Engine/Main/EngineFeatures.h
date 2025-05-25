@@ -12,11 +12,6 @@
 #include "config.h"
 
 /*
- * std::thread/std::mutex support
- */
-#define MCENGINE_FEATURE_MULTITHREADING
-
-/*
  * OpenGL graphics (Desktop, legacy + modern)
  */
 #define MCENGINE_FEATURE_OPENGL

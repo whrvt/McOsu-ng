@@ -82,7 +82,7 @@ public:
 		unsigned long long sortHack;
 		std::string md5hash;
 
-		bool isLegacyScoreEqualToImportedLegacyScore(const OsuDatabase::Score &importedLegacyScore) const
+		[[nodiscard]] bool isLegacyScoreEqualToImportedLegacyScore(const OsuDatabase::Score &importedLegacyScore) const
 		{
 			if (!isLegacyScore) return false;
 			if (!importedLegacyScore.isImportedLegacyScore) return false;
@@ -110,7 +110,7 @@ public:
 				 && isNumMissesEqual);
 		}
 
-		bool isScoreEqualToCopiedScoreIgnoringPlayerName(const OsuDatabase::Score &copiedScore) const
+		[[nodiscard]] bool isScoreEqualToCopiedScoreIgnoringPlayerName(const OsuDatabase::Score &copiedScore) const
 		{
 			const bool isScoreValueEqual = (score == copiedScore.score);
 			const bool isTimestampEqual = (unixTimestamp == copiedScore.unixTimestamp);

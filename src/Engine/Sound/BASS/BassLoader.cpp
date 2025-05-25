@@ -102,7 +102,7 @@ bool init()
 	cleanup();
 
 	// make sure we load the right version
-	for (auto path : {std::string(BASS_LIB_NAME), std::format("lib{}{}", Env::cfg(OS::WINDOWS) ? "\\" : "/", BASS_LIB_NAME)})
+	for (auto path : {std::string(BASS_LIB_NAME), fmt::format("lib{}{}", Env::cfg(OS::WINDOWS) ? "\\" : "/", BASS_LIB_NAME)})
 	{
 		if (!(s_bassLib = SDL_LoadObject(path.c_str())) || !(BASS_GetVersion = loadFunction<BASS_GetVersion_t>(s_bassLib, "BASS_GetVersion")))
 		{
@@ -161,7 +161,7 @@ bool init()
 
 	// BASS_FX
 	// make sure we load the right version
-	for (auto path : {std::string(BASS_FX_LIB_NAME), std::format("lib{}{}", Env::cfg(OS::WINDOWS) ? "\\" : "/", BASS_FX_LIB_NAME)})
+	for (auto path : {std::string(BASS_FX_LIB_NAME), fmt::format("lib{}{}", Env::cfg(OS::WINDOWS) ? "\\" : "/", BASS_FX_LIB_NAME)})
 	{
 		if (!(s_bassFxLib = SDL_LoadObject(path.c_str())) || !(BASS_FX_GetVersion = loadFunction<BASS_FX_GetVersion_t>(s_bassFxLib, "BASS_FX_GetVersion")))
 		{
@@ -192,7 +192,7 @@ bool init()
 
 #ifdef MCENGINE_FEATURE_BASS_WASAPI
 	// BASSWASAPI
-	if (!(s_bassWasapiLib = SDL_LoadObject(BASS_WASAPI_LIB_NAME)) && !(s_bassWasapiLib = SDL_LoadObject(std::format("lib/{}", BASS_WASAPI_LIB_NAME).c_str())))
+	if (!(s_bassWasapiLib = SDL_LoadObject(BASS_WASAPI_LIB_NAME)) && !(s_bassWasapiLib = SDL_LoadObject(fmt::format("lib/{}", BASS_WASAPI_LIB_NAME).c_str())))
 	{
 		debugLog("BassLoader: Failed to load BASSWASAPI library: {:s}\n", SDL_GetError());
 		// TODO: graceful failure here?
@@ -209,7 +209,7 @@ bool init()
 	BASS_WASAPI_GetDeviceInfo = loadFunction<BASS_WASAPI_GetDeviceInfo_t>(s_bassWasapiLib, "BASS_WASAPI_GetDeviceInfo");
 
 	// BASSMIX
-	if (!(s_bassMixLib = SDL_LoadObject(BASS_MIX_LIB_NAME)) && !(s_bassMixLib = SDL_LoadObject(std::format("lib/{}", BASS_MIX_LIB_NAME).c_str())))
+	if (!(s_bassMixLib = SDL_LoadObject(BASS_MIX_LIB_NAME)) && !(s_bassMixLib = SDL_LoadObject(fmt::format("lib/{}", BASS_MIX_LIB_NAME).c_str())))
 	{
 		debugLog("BassLoader: Failed to load BASSMIX library: {:s}\n", SDL_GetError());
 		// TODO: graceful failure here?

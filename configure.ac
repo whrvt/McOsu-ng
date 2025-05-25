@@ -113,6 +113,8 @@ AC_ARG_ENABLE([asan],
     AS_HELP_STRING([--enable-asan], [Enable ASan/UBSan (turns debug on as well) (default: no)]))
 AC_ARG_ENABLE([clang],
     AS_HELP_STRING([--enable-clang], [Use clang/clang++ instead of gcc/g++ (default: no)]))
+AC_ARG_ENABLE([omp],
+    AS_HELP_STRING([--enable-omp], [Use and link with OpenMP for faster parallel processing (default: no)]))
 AC_ARG_ENABLE([lto],
     AS_HELP_STRING([--enable-lto], [Enable Link Time Optimization (default: auto, use if functional)]))
 AC_ARG_ENABLE([system-deps],
@@ -365,6 +367,8 @@ AC_CHECK_PROG([BEAR], [bear], [bear])
 AC_SUBST([BEAR])
 
 AS_IF([test "x$enable_asan" = "xyes"], [
+    # CXXFLAGS="$CXXFLAGS -fsanitize=undefined,thread"
+    # CFLAGS="$CFLAGS -fsanitize=undefined,thread"
     CXXFLAGS="$CXXFLAGS -fsanitize=address,undefined"
     CFLAGS="$CFLAGS -fsanitize=address,undefined"
     AS_IF([test -z "$LLVMMINGW"],[
@@ -403,6 +407,13 @@ AS_IF([test "x$enable_debug" = "xyes"], [
     ])
     CXXFLAGS="$CXXFLAGS -fno-rtti" # disallow dynamic_cast
     MCOSU_CXXFLAGS="$MCOSU_CXXFLAGS -fno-exceptions" # disables std::thread constructor exception handling
+])
+
+AS_IF([test "x$enable_omp" = "xyes"], [
+    AS_IF([test "x$enable_clang" = "xyes"], [
+        MCOSU_CXXFLAGS="$MCOSU_CXXFLAGS -fopenmp-optimistic-collapse"
+    ])
+    MCOSU_CXXFLAGS="$MCOSU_CXXFLAGS -fopenmp"
 ])
 
 AS_IF([test "x$enable_strip" != "xno"], [
@@ -467,7 +478,7 @@ PKG_CHECK_AUTO([GL], [gl], [have_gl=yes], [have_gl=no])
 PKG_CHECK_AUTO([GLU], [glu], [have_glu=yes], [have_glu=no])
 
 SDL3_MIN_VERSION=3.4.0 # needs SDL_SetRelativeMouseTransform, not in any current (3.2.x) releases
-SDL3_BUILD_VERSION=c08b1049d3064af32b876432e766d473f61442e2 # git
+SDL3_BUILD_VERSION=b70919ecd9696198755c2fa326c54f52dc9f355b # git
 FREETYPE2_MIN_VERSION=2.10.0
 FREETYPE2_BUILD_VERSION=2.13.3
 LIBJPEG_MIN_VERSION=3.0.0
@@ -689,6 +700,7 @@ McOsu-ng build configuration:
     SDL_mixer:          ${with_sdlmixer-no}
     SoLoud:             ${with_soloud-no}
     LTO:                ${enable_lto-auto}
+    OpenMP:             ${enable_omp-no}
     Debug build:        ${enable_debug-no}
     ASan build:         ${enable_asan-no}
     Native build:       ${enable_native-yes}

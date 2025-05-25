@@ -45,8 +45,8 @@ public:
 	McFile(UString filePath, TYPE type = TYPE::READ);
 	~McFile() = default;
 
-	bool canRead() const;
-	bool canWrite() const;
+	[[nodiscard]] constexpr bool canRead() const { return m_ready &&m_ifstream && m_ifstream->good() && m_type == TYPE::READ; }
+	[[nodiscard]] constexpr bool canWrite() const { return m_ready &&m_ofstream && m_ofstream->good() && m_type == TYPE::WRITE; }
 
 	void write(const char *buffer, size_t size);
 
@@ -54,7 +54,7 @@ public:
 	UString readString();
 	const char *readFile(); // WARNING: this is NOT a null-terminated string! DO NOT USE THIS with UString/std::string!
 
-	size_t getFileSize() const;
+	[[nodiscard]] constexpr size_t getFileSize() const { return m_fileSize; }
 	[[nodiscard]] inline UString getPath() const { return m_filePath; }
 	[[nodiscard]] static McFile::FILETYPE existsCaseInsensitive(
 	    UString &filePath); // modifies the input string with the actual found (case-insensitive-past-last-slash) path!
