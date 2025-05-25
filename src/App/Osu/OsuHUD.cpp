@@ -260,7 +260,7 @@ OsuHUD::OsuHUD() : OsuScreen()
 
 	// resources
 	m_tempFont = resourceManager->getFont("FONT_DEFAULT");
-	m_cursorTrailShader = resourceManager->loadShader2("cursortrail.mcshader", "cursortrail");
+	m_cursorTrailShader = resourceManager->loadShader("cursortrail.mcshader", "cursortrail");
 	m_cursorTrail.reserve(osu_cursor_trail_max_size.getInt()*2);
 
 	m_cursorTrailVAO = resourceManager->createVertexArrayObject(Graphics::PRIMITIVE::PRIMITIVE_QUADS, Graphics::USAGE_TYPE::USAGE_DYNAMIC);

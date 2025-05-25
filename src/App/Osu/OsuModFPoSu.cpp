@@ -1057,7 +1057,7 @@ f 2/1 4/4 3/2
 void OsuModFPoSu::handleLazyLoad3DShaders()
 {
 	if (m_hitcircleShader == NULL)
-		m_hitcircleShader = resourceManager->loadShader2("hitcircle3D.mcshader", "hitcircle3D");
+		m_hitcircleShader = resourceManager->loadShader("hitcircle3D.mcshader", "hitcircle3D");
 }
 
 void OsuModFPoSu::onCurvedChange(UString oldValue, UString newValue)

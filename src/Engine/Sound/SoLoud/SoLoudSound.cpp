@@ -612,7 +612,7 @@ bool SoLoudSound::isFinished()
 void SoLoudSound::rebuild(UString newFilePath)
 {
 	m_sFilePath = newFilePath;
-	resourceManager->reloadResource(this, !m_bStream);
+	resourceManager->reloadResource(this);
 }
 
 #endif // MCENGINE_FEATURE_SOLOUD

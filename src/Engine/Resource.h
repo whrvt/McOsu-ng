@@ -17,6 +17,7 @@ class McFont;
 
 class Resource
 {
+friend class ResourceManager;
 public:
 	enum Type : uint8_t
 	{
@@ -42,17 +43,67 @@ public:
 
 	void interruptLoad();
 
-	void setName(UString name) { m_sName = name; }
-
 	[[nodiscard]] inline UString getName() const { return m_sName; }
 	[[nodiscard]] inline UString getFilePath() const { return m_sFilePath; }
 
 	[[nodiscard]] inline bool isReady() const { return m_bReady.load(); }
 	[[nodiscard]] inline bool isAsyncReady() const { return m_bAsyncReady.load(); }
 
+protected:
+	virtual void init() = 0;
+	virtual void initAsync() = 0;
+	virtual void destroy() = 0;
+
+	UString m_sFilePath;
+	UString m_sName;
+
+	std::atomic<bool> m_bReady;
+	std::atomic<bool> m_bAsyncReady;
+	std::atomic<bool> m_bInterrupted;
+
+public:
 	// type inspection
 	[[nodiscard]] virtual Type getResType() const = 0;
 
+	template <typename T = Resource>
+	T *as()
+	{
+		if constexpr (std::is_same_v<T, Resource>)
+			return this;
+		else if constexpr (std::is_same_v<T, Image>)
+			return this->asImage();
+		else if constexpr (std::is_same_v<T, McFont>)
+			return this->asFont();
+		else if constexpr (std::is_same_v<T, RenderTarget>)
+			return this->asRenderTarget();
+		else if constexpr (std::is_same_v<T, TextureAtlas>)
+			return this->asTextureAtlas();
+		else if constexpr (std::is_same_v<T, Shader>)
+			return this->asShader();
+		else if constexpr (std::is_same_v<T, VertexArrayObject>)
+			return this->asVAO();
+		else if constexpr (std::is_same_v<T, Sound>)
+			return this->asSound();
+		else if constexpr (std::is_same_v<T, const Resource>)
+			return static_cast<const Resource*>(this);
+		else if constexpr (std::is_same_v<T, const Image>)
+			return static_cast<const Image*>(this->asImage());
+		else if constexpr (std::is_same_v<T, const McFont>)
+			return static_cast<const McFont*>(this->asFont());
+		else if constexpr (std::is_same_v<T, const RenderTarget>)
+			return static_cast<const RenderTarget*>(this->asRenderTarget());
+		else if constexpr (std::is_same_v<T, const TextureAtlas>)
+			return static_cast<const TextureAtlas*>(this->asTextureAtlas());
+		else if constexpr (std::is_same_v<T, const Shader>)
+			return static_cast<const Shader*>(this->asShader());
+		else if constexpr (std::is_same_v<T, const VertexArrayObject>)
+			return static_cast<const VertexArrayObject*>(this->asVAO());
+		else if constexpr (std::is_same_v<T, const Sound>)
+			return static_cast<const Sound*>(this->asSound());
+		else
+			static_assert(Env::always_false_v<T>, "unsupported type for resource");
+		return nullptr;
+	}
 	virtual Image *asImage() { return nullptr; }
 	virtual McFont *asFont() { return nullptr; }
 	virtual RenderTarget *asRenderTarget() { return nullptr; }
@@ -67,18 +118,8 @@ public:
 	[[nodiscard]] const virtual TextureAtlas *asTextureAtlas() const { return nullptr; }
 	[[nodiscard]] const virtual VertexArrayObject *asVAO() const { return nullptr; }
 	[[nodiscard]] const virtual Sound *asSound() const { return nullptr; }
-
-protected:
-	virtual void init() = 0;
-	virtual void initAsync() = 0;
-	virtual void destroy() = 0;
-
-	UString m_sFilePath;
-	UString m_sName;
-
-	std::atomic<bool> m_bReady;
-	std::atomic<bool> m_bAsyncReady;
-	std::atomic<bool> m_bInterrupted;
+private:
+	void setName(UString name) { m_sName = name; }
 };
 
 #endif

@@ -9,7 +9,7 @@
 #ifndef THREAD_H
 #define THREAD_H
 
-#include "ConVar.h"
+#include "Engine.h"
 #include <thread>
 
 class McThread final

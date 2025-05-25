@@ -492,7 +492,7 @@ void OsuSliderRenderer::checkUpdateVars(float hitcircleDiameter)
 	if (BLEND_SHADER == NULL) // only do this once
 	{
 		// build shaders
-		BLEND_SHADER = resourceManager->loadShader2("slider.mcshader", "slider");
+		BLEND_SHADER = resourceManager->loadShader("slider.mcshader", "slider");
 	}
 
 	const int subdivisions = osu_slider_body_unit_circle_subdivisions.getInt();

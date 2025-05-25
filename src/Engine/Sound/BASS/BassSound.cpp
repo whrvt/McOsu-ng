@@ -526,7 +526,7 @@ bool BassSound::isFinished()
 void BassSound::rebuild(UString newFilePath)
 {
 	m_sFilePath = newFilePath;
-	resourceManager->reloadResource(this, !m_bStream);
+	resourceManager->reloadResource(this);
 }
 
 #endif // MCENGINE_FEATURE_BASS

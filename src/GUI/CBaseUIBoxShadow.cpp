@@ -154,7 +154,7 @@ GaussianBlur::GaussianBlur(int x, int y, int width, int height, int kernelSize, 
 	m_kernel = new GaussianBlurKernel(kernelSize, radius, width, height);
 	m_rt = resourceManager->createRenderTarget(x, y, width, height);
 	m_rt2 = resourceManager->createRenderTarget(x, y, width, height);
-	m_blurShader = resourceManager->loadShader("blur.vsh", "blur.fsh", "gblur");
+	//m_blurShader = resourceManager->loadShader("blur.vsh", "blur.fsh", "gblur"); // wut? where are these?
 }
 
 GaussianBlur::~GaussianBlur()

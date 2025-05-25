@@ -283,7 +283,7 @@ void Engine::loadApp()
 	// load other default resources and things which are not strictly necessary
 	{
 		Image *missingTexture = resourceManager->createImage(512, 512);
-		missingTexture->setName("MISSING_TEXTURE");
+		resourceManager->setResourceName(missingTexture, "MISSING_TEXTURE");
 		for (int x = 0; x < 512; x++)
 		{
 			for (int y = 0; y < 512; y++)

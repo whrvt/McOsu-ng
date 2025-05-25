@@ -36,8 +36,8 @@ public:
 	static constexpr auto PATH_DEFAULT_SOUNDS = "sounds/";
 	static constexpr auto PATH_DEFAULT_SHADERS = "shaders/";
 
-// async loading methods
-// TODO: move the actual resource loading to a separate file, it's getting messy in here
+	// async loading methods
+	// TODO: move the actual resource loading to a separate file, it's getting messy in here
 public:
 	template <typename T>
 	struct MobileAtomic
@@ -111,8 +111,6 @@ public:
 
 	void update();
 
-	void setNumResourceInitPerFrameLimit(size_t numResourceInitPerFrameLimit) { m_iNumResourceInitPerFrameLimit = numResourceInitPerFrameLimit; }
-
 	void loadResource(Resource *rs)
 	{
 		requestNextLoadUnmanaged();
@@ -127,6 +125,9 @@ public:
 
 	void requestNextLoadAsync();
 	void requestNextLoadUnmanaged();
+
+	// can't allow directly setting resource names, otherwise the map will go out of sync
+	void setResourceName(Resource *res, UString name);
 
 	// images
 	Image *loadImage(UString filepath, UString resourceName, bool mipmapped = false, bool keepInSystemMemory = false);
@@ -143,17 +144,11 @@ public:
 	Sound *loadSound(UString filepath, UString resourceName, bool stream = false, bool threeD = false, bool loop = false, bool prescan = false);
 	Sound *loadSoundAbs(UString filepath, UString resourceName, bool stream = false, bool threeD = false, bool loop = false, bool prescan = false);
 
-	// shaders (DEPRECATED)
-	Shader *loadShader(UString vertexShaderFilePath, UString fragmentShaderFilePath, UString resourceName); // DEPRECATED
-	Shader *loadShader(UString vertexShaderFilePath, UString fragmentShaderFilePath);                       // DEPRECATED
-	Shader *createShader(UString vertexShader, UString fragmentShader, UString resourceName);               // DEPRECATED
-	Shader *createShader(UString vertexShader, UString fragmentShader);                                     // DEPRECATED
-
 	// shaders
-	Shader *loadShader2(UString shaderFilePath, UString resourceName);
-	Shader *loadShader2(UString shaderFilePath);
-	Shader *createShader2(UString shaderSource, UString resourceName);
-	Shader *createShader2(UString shaderSource);
+	Shader *loadShader(UString shaderFilePath, UString resourceName);
+	Shader *loadShader(UString shaderFilePath);
+	Shader *createShader(UString shaderSource, UString resourceName);
+	Shader *createShader(UString shaderSource);
 
 	// rendertargets
 	RenderTarget *createRenderTarget(int x, int y, int width, int height, Graphics::MULTISAMPLE_TYPE multiSampleType = Graphics::MULTISAMPLE_TYPE::MULTISAMPLE_0X);
@@ -167,10 +162,10 @@ public:
 	                                           Graphics::USAGE_TYPE usage = Graphics::USAGE_TYPE::USAGE_STATIC, bool keepInSystemMemory = false);
 
 	// resource access by name
-	Image *getImage(UString resourceName) const;
-	McFont *getFont(UString resourceName) const;
-	Sound *getSound(UString resourceName) const;
-	Shader *getShader(UString resourceName) const;
+	Image *getImage(UString resourceName) const { return tryGet<Image>(resourceName); }
+	McFont *getFont(UString resourceName) const { return tryGet<McFont>(resourceName); }
+	Sound *getSound(UString resourceName) const { return tryGet<Sound>(resourceName); }
+	Shader *getShader(UString resourceName) const { return tryGet<Shader>(resourceName); }
 
 	// methods for getting all resources of a type
 	[[nodiscard]] constexpr const std::vector<Image *> &getImages() const { return m_vImages; }
@@ -187,9 +182,35 @@ public:
 	bool isLoadingResource(Resource *rs) const;
 
 private:
-	void loadResource(Resource *res, bool load);
+	template <typename T>
+	[[nodiscard]] T *tryGet(UString &resourceName) const
+	{
+		if (resourceName.length() < 1)
+			return nullptr;
+		auto it = m_nameToResourceMap.find(resourceName);
+		if (it != m_nameToResourceMap.end())
+			return it->second->as<T>();
+		doesntExistWarning(resourceName);
+		return nullptr;
+	}
+	template <typename T>
+	[[nodiscard]] T *checkIfExistsAndHandle(UString &resourceName)
+	{
+		if (resourceName.length() < 1)
+			return nullptr;
+		auto it = m_nameToResourceMap.find(resourceName);
+		if (it == m_nameToResourceMap.end())
+			return nullptr;
+		alreadyLoadedWarning(resourceName);
+		// handle flags (reset them)
+		resetFlags();
+		return it->second->as<T>();
+	}
+
 	void doesntExistWarning(UString resourceName) const;
-	Resource *checkIfExistsAndHandle(UString resourceName);
+	void alreadyLoadedWarning(UString resourceName) const;
+
+	void loadResource(Resource *res, bool load);
 
 	void resetFlags();
 

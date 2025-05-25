@@ -38,7 +38,6 @@ public:
 
 ConVar rm_numthreads("rm_numthreads", default_numthreads, FCVAR_NONE,
                      "how many parallel resource loader threads are spawned once on startup (!), and subsequently used during runtime");
-ConVar rm_warnings("rm_warnings", false, FCVAR_NONE);
 ConVar rm_debug_async_delay("rm_debug_async_delay", 0.0f, FCVAR_CHEAT);
 ConVar rm_interrupt_on_destroy("rm_interrupt_on_destroy", true, FCVAR_CHEAT);
 ConVar debug_rm_("debug_rm", false, FCVAR_NONE);
@@ -62,7 +61,7 @@ ResourceManager::ResourceManager()
 	if (threads > default_numthreads)
 		rm_numthreads.setValue(threads);
 
-	m_iNumResourceInitPerFrameLimit = threads * 2l;
+	m_iNumResourceInitPerFrameLimit = threads;
 
 	// create loader threads
 	for (int i = 0; i < threads; i++)
@@ -125,6 +124,10 @@ ResourceManager::~ResourceManager()
 	}
 	m_loadingWorkAsyncDestroy.clear();
 }
+
+//==================================
+// async/threading stuff below here
+//==================================
 
 void ResourceManager::update()
 {
@@ -238,7 +241,6 @@ void ResourceManager::destroyResources()
 		destroyResource(m_vResources[0]);
 	}
 	m_vResources.clear();
-	m_nameToResourceMap.clear();
 	m_vImages.clear();
 	m_vFonts.clear();
 	m_vSounds.clear();
@@ -246,14 +248,15 @@ void ResourceManager::destroyResources()
 	m_vRenderTargets.clear();
 	m_vTextureAtlases.clear();
 	m_vVertexArrayObjects.clear();
+	m_nameToResourceMap.clear();
 }
 
 void ResourceManager::destroyResource(Resource *rs)
 {
 	if (rs == NULL)
 	{
-		if (rm_warnings.getBool())
-			debugLog("RESOURCE MANAGER Warning: destroyResource(NULL)!\n");
+		if (debug_rm->getBool())
+			debugLog("ResourceManager Warning: destroyResource(NULL)!\n");
 		return;
 	}
 
@@ -310,359 +313,6 @@ void ResourceManager::destroyResource(Resource *rs)
 	SAFE_DELETE(rs);
 }
 
-void ResourceManager::requestNextLoadAsync()
-{
-	m_bNextLoadAsync = true;
-}
-
-void ResourceManager::requestNextLoadUnmanaged()
-{
-	m_nextLoadUnmanagedStack.push(true);
-}
-
-Image *ResourceManager::loadImage(UString filepath, UString resourceName, bool mipmapped, bool keepInSystemMemory)
-{
-	// check if it already exists
-	if (resourceName.length() > 0)
-	{
-		Resource *temp = checkIfExistsAndHandle(resourceName);
-		if (temp != NULL)
-			return temp->asImage();
-	}
-
-	// create instance and load it
-	filepath.insert(0, PATH_DEFAULT_IMAGES);
-	Image *img = graphics->createImage(filepath, mipmapped, keepInSystemMemory);
-	img->setName(resourceName);
-
-	loadResource(img, true);
-
-	return img;
-}
-
-Image *ResourceManager::loadImageUnnamed(UString filepath, bool mipmapped, bool keepInSystemMemory)
-{
-	filepath.insert(0, PATH_DEFAULT_IMAGES);
-	Image *img = graphics->createImage(filepath, mipmapped, keepInSystemMemory);
-
-	loadResource(img, true);
-
-	return img;
-}
-
-Image *ResourceManager::loadImageAbs(UString absoluteFilepath, UString resourceName, bool mipmapped, bool keepInSystemMemory)
-{
-	// check if it already exists
-	if (resourceName.length() > 0)
-	{
-		Resource *temp = checkIfExistsAndHandle(resourceName);
-		if (temp != NULL)
-			return temp->asImage();
-	}
-
-	// create instance and load it
-	Image *img = graphics->createImage(absoluteFilepath, mipmapped, keepInSystemMemory);
-	img->setName(resourceName);
-
-	loadResource(img, true);
-
-	return img;
-}
-
-Image *ResourceManager::loadImageAbsUnnamed(UString absoluteFilepath, bool mipmapped, bool keepInSystemMemory)
-{
-	Image *img = graphics->createImage(absoluteFilepath, mipmapped, keepInSystemMemory);
-
-	loadResource(img, true);
-
-	return img;
-}
-
-Image *ResourceManager::createImage(unsigned int width, unsigned int height, bool mipmapped, bool keepInSystemMemory)
-{
-	if (width > 8192 || height > 8192)
-	{
-		engine->showMessageError("Resource Manager Error", UString::format("Invalid parameters in createImage(%i, %i, %i)!\n", width, height, (int)mipmapped));
-		return NULL;
-	}
-
-	Image *img = graphics->createImage(width, height, mipmapped, keepInSystemMemory);
-
-	loadResource(img, false);
-
-	return img;
-}
-
-McFont *ResourceManager::loadFont(UString filepath, UString resourceName, int fontSize, bool antialiasing, int fontDPI)
-{
-	// check if it already exists
-	if (resourceName.length() > 0)
-	{
-		Resource *temp = checkIfExistsAndHandle(resourceName);
-		if (temp != NULL)
-			return temp->asFont();
-	}
-
-	// create instance and load it
-	filepath.insert(0, PATH_DEFAULT_FONTS);
-	auto *fnt = new McFont(filepath, fontSize, antialiasing, fontDPI);
-	fnt->setName(resourceName);
-
-	loadResource(fnt, true);
-
-	return fnt;
-}
-
-McFont *ResourceManager::loadFont(UString filepath, UString resourceName, std::vector<wchar_t> characters, int fontSize, bool antialiasing, int fontDPI)
-{
-	// check if it already exists
-	if (resourceName.length() > 0)
-	{
-		Resource *temp = checkIfExistsAndHandle(resourceName);
-		if (temp != NULL)
-			return temp->asFont();
-	}
-
-	// create instance and load it
-	filepath.insert(0, PATH_DEFAULT_FONTS);
-	auto *fnt = new McFont(filepath, characters, fontSize, antialiasing, fontDPI);
-	fnt->setName(resourceName);
-
-	loadResource(fnt, true);
-
-	return fnt;
-}
-
-Sound *ResourceManager::loadSound(UString filepath, UString resourceName, bool stream, bool threeD, bool loop, bool prescan)
-{
-	// check if it already exists
-	if (resourceName.length() > 0)
-	{
-		Resource *temp = checkIfExistsAndHandle(resourceName);
-		if (temp != NULL)
-			return temp->asSound();
-	}
-
-	// create instance and load it
-	filepath.insert(0, PATH_DEFAULT_SOUNDS);
-	Sound *snd = Sound::createSound(filepath, stream, threeD, loop, prescan);
-	snd->setName(resourceName);
-
-	loadResource(snd, true);
-
-	return snd;
-}
-
-Sound *ResourceManager::loadSoundAbs(UString filepath, UString resourceName, bool stream, bool threeD, bool loop, bool prescan)
-{
-	// check if it already exists
-	if (resourceName.length() > 0)
-	{
-		Resource *temp = checkIfExistsAndHandle(resourceName);
-		if (temp != NULL)
-			return temp->asSound();
-	}
-
-	// create instance and load it
-	Sound *snd = Sound::createSound(filepath, stream, threeD, loop, prescan);
-	snd->setName(resourceName);
-
-	loadResource(snd, true);
-
-	return snd;
-}
-
-Shader *ResourceManager::loadShader(UString vertexShaderFilePath, UString fragmentShaderFilePath, UString resourceName)
-{
-	// check if it already exists
-	if (resourceName.length() > 0)
-	{
-		Resource *temp = checkIfExistsAndHandle(resourceName);
-		if (temp != NULL)
-			return temp->asShader();
-	}
-
-	// create instance and load it
-	vertexShaderFilePath.insert(0, PATH_DEFAULT_SHADERS);
-	fragmentShaderFilePath.insert(0, PATH_DEFAULT_SHADERS);
-	Shader *shader = graphics->createShaderFromFile(vertexShaderFilePath, fragmentShaderFilePath);
-	shader->setName(resourceName);
-
-	loadResource(shader, true);
-
-	return shader;
-}
-
-Shader *ResourceManager::loadShader(UString vertexShaderFilePath, UString fragmentShaderFilePath)
-{
-	vertexShaderFilePath.insert(0, PATH_DEFAULT_SHADERS);
-	fragmentShaderFilePath.insert(0, PATH_DEFAULT_SHADERS);
-	Shader *shader = graphics->createShaderFromFile(vertexShaderFilePath, fragmentShaderFilePath);
-
-	loadResource(shader, true);
-
-	return shader;
-}
-
-Shader *ResourceManager::createShader(UString vertexShader, UString fragmentShader, UString resourceName)
-{
-	// check if it already exists
-	if (resourceName.length() > 0)
-	{
-		Resource *temp = checkIfExistsAndHandle(resourceName);
-		if (temp != NULL)
-			return temp->asShader();
-	}
-
-	// create instance and load it
-	Shader *shader = graphics->createShaderFromSource(vertexShader, fragmentShader);
-	shader->setName(resourceName);
-
-	loadResource(shader, true);
-
-	return shader;
-}
-
-Shader *ResourceManager::createShader(UString vertexShader, UString fragmentShader)
-{
-	Shader *shader = graphics->createShaderFromSource(vertexShader, fragmentShader);
-
-	loadResource(shader, true);
-
-	return shader;
-}
-
-Shader *ResourceManager::loadShader2(UString shaderFilePath, UString resourceName)
-{
-	// check if it already exists
-	if (resourceName.length() > 0)
-	{
-		Resource *temp = checkIfExistsAndHandle(resourceName);
-		if (temp != NULL)
-			return temp->asShader();
-	}
-
-	// create instance and load it
-	shaderFilePath.insert(0, PATH_DEFAULT_SHADERS);
-	Shader *shader = graphics->createShaderFromFile(shaderFilePath);
-	shader->setName(resourceName);
-
-	loadResource(shader, true);
-
-	return shader;
-}
-
-Shader *ResourceManager::loadShader2(UString shaderFilePath)
-{
-	shaderFilePath.insert(0, PATH_DEFAULT_SHADERS);
-	Shader *shader = graphics->createShaderFromFile(shaderFilePath);
-
-	loadResource(shader, true);
-
-	return shader;
-}
-
-Shader *ResourceManager::createShader2(UString shaderSource, UString resourceName)
-{
-	// check if it already exists
-	if (resourceName.length() > 0)
-	{
-		Resource *temp = checkIfExistsAndHandle(resourceName);
-		if (temp != NULL)
-			return temp->asShader();
-	}
-
-	// create instance and load it
-	Shader *shader = graphics->createShaderFromSource(shaderSource);
-	shader->setName(resourceName);
-
-	loadResource(shader, true);
-
-	return shader;
-}
-
-Shader *ResourceManager::createShader2(UString shaderSource)
-{
-	Shader *shader = graphics->createShaderFromSource(shaderSource);
-
-	loadResource(shader, true);
-
-	return shader;
-}
-
-RenderTarget *ResourceManager::createRenderTarget(int x, int y, int width, int height, Graphics::MULTISAMPLE_TYPE multiSampleType)
-{
-	RenderTarget *rt = graphics->createRenderTarget(x, y, width, height, multiSampleType);
-	rt->setName(UString::format("_RT_%ix%i", width, height));
-
-	loadResource(rt, true);
-
-	return rt;
-}
-
-RenderTarget *ResourceManager::createRenderTarget(int width, int height, Graphics::MULTISAMPLE_TYPE multiSampleType)
-{
-	return createRenderTarget(0, 0, width, height, multiSampleType);
-}
-
-TextureAtlas *ResourceManager::createTextureAtlas(int width, int height)
-{
-	auto *ta = new TextureAtlas(width, height);
-	ta->setName(UString::format("_TA_%ix%i", width, height));
-
-	loadResource(ta, false);
-
-	return ta;
-}
-
-VertexArrayObject *ResourceManager::createVertexArrayObject(Graphics::PRIMITIVE primitive, Graphics::USAGE_TYPE usage, bool keepInSystemMemory)
-{
-	VertexArrayObject *vao = graphics->createVertexArrayObject(primitive, usage, keepInSystemMemory);
-
-	loadResource(vao, false);
-
-	return vao;
-}
-
-Image *ResourceManager::getImage(UString resourceName) const
-{
-	auto it = m_nameToResourceMap.find(resourceName);
-	if (it != m_nameToResourceMap.end())
-		return it->second->asImage();
-
-	doesntExistWarning(resourceName);
-	return NULL;
-}
-
-McFont *ResourceManager::getFont(UString resourceName) const
-{
-	auto it = m_nameToResourceMap.find(resourceName);
-	if (it != m_nameToResourceMap.end())
-		return it->second->asFont();
-
-	doesntExistWarning(resourceName);
-	return NULL;
-}
-
-Sound *ResourceManager::getSound(UString resourceName) const
-{
-	auto it = m_nameToResourceMap.find(resourceName);
-	if (it != m_nameToResourceMap.end())
-		return it->second->asSound();
-
-	doesntExistWarning(resourceName);
-	return NULL;
-}
-
-Shader *ResourceManager::getShader(UString resourceName) const
-{
-	auto it = m_nameToResourceMap.find(resourceName);
-	if (it != m_nameToResourceMap.end())
-		return it->second->asShader();
-
-	doesntExistWarning(resourceName);
-	return NULL;
-}
 
 void ResourceManager::loadResource(Resource *res, bool load)
 {
@@ -719,12 +369,62 @@ void ResourceManager::loadResource(Resource *res, bool load)
 	}
 }
 
+bool ResourceManager::isLoading() const
+{
+	return getNumLoadingWork() > 0;
+}
+
+bool ResourceManager::isLoadingResource(Resource *rs) const
+{
+	std::lock_guard<std::mutex> lock(m_allWorkMutex);
+	for (auto work : m_allWork)
+	{
+		if (work->resource == rs)
+			return true;
+	}
+
+	return false;
+}
+
+ResourceManager::LOADING_WORK *ResourceManager::getNextWork()
+{
+	std::lock_guard<std::mutex> lock(m_pendingWorkMutex);
+	if (m_pendingWork.empty())
+		return nullptr;
+
+	LOADING_WORK *work = m_pendingWork.front();
+	m_pendingWork.pop();
+	return work;
+}
+
+void ResourceManager::markWorkAsyncComplete(LOADING_WORK *work)
+{
+	std::lock_guard<std::mutex> lock(m_asyncCompleteWorkMutex);
+	m_asyncCompleteWork.push(work);
+}
+
+size_t ResourceManager::getNumLoadingWork() const
+{
+	std::lock_guard<std::mutex> lock(m_allWorkMutex);
+	return m_allWork.size();
+}
+
+void ResourceManager::requestNextLoadAsync()
+{
+	m_bNextLoadAsync = true;
+}
+
+void ResourceManager::requestNextLoadUnmanaged()
+{
+	m_nextLoadUnmanagedStack.push(true);
+}
+
 void ResourceManager::reloadResource(Resource *rs, bool async)
 {
 	if (rs == NULL)
 	{
-		if (rm_warnings.getBool())
-			debugLog("RESOURCE MANAGER Warning: reloadResource(NULL)!\n");
+		if (debug_rm->getBool())
+			debugLog("ResourceManager Warning: reloadResource(NULL)!\n");
 		return;
 	}
 
@@ -736,8 +436,8 @@ void ResourceManager::reloadResources(const std::vector<Resource *> &resources, 
 {
 	if (resources.empty())
 	{
-		if (rm_warnings.getBool())
-			debugLog("RESOURCE MANAGER Warning: reloadResources with an empty resources vector!\n");
+		if (debug_rm->getBool())
+			debugLog("ResourceManager Warning: reloadResources with an empty resources vector!\n");
 		return;
 	}
 
@@ -798,32 +498,86 @@ void ResourceManager::reloadResources(const std::vector<Resource *> &resources, 
 	}
 }
 
-void ResourceManager::doesntExistWarning(UString resourceName) const
+//==================================
+// LOADER THREAD
+//==================================
+static void *_resourceLoaderThread(void *data)
 {
-	if (rm_warnings.getBool())
+	auto *self = static_cast<ResourceManagerLoaderThread *>(data);
+	ResourceManager *manager = self->resourceManager;
+	const size_t threadIndex = self->threadIndex;
+
+	while (self->running.load())
 	{
-		UString errormsg = "Resource \"";
-		errormsg.append(resourceName);
-		errormsg.append("\" does not exist!");
-		engine->showMessageWarning("RESOURCE MANAGER: ", errormsg);
+		// try to get work
+		ResourceManager::LOADING_WORK *work = manager->getNextWork();
+
+		// if no work available, wait for notification
+		if (!work)
+		{
+			std::unique_lock<std::mutex> lock(manager->m_workAvailableMutex);
+			manager->m_workAvailable.wait_for(lock, std::chrono::milliseconds(50), [&]() { return !self->running.load() || manager->getNumLoadingWork() > 0; });
+
+			// check if we should exit
+			if (!self->running.load())
+				break;
+
+			continue;
+		}
+
+		// we have work, process it
+		Resource *resource = work->resource;
+
+		if (ResourceManager::debug_rm->getBool())
+			debugLog("Resource Manager: Thread #{} loading {:s}\n", threadIndex, resource->getName().toUtf8());
+
+		// debug pause
+		if (rm_debug_async_delay.getFloat() > 0.0f)
+			Timing::sleep(rm_debug_async_delay.getFloat() * 1000 * 1000);
+
+		// async load
+		resource->loadAsync();
+
+		// mark as async complete
+		work->asyncDone = true;
+		manager->markWorkAsyncComplete(work);
+
+		if (ResourceManager::debug_rm->getBool())
+			debugLog("Resource Manager: Thread #{} finished async loading {:s}\n", threadIndex, resource->getName().toUtf8());
 	}
+
+	return nullptr;
+}
+//==================================
+// LOADER THREAD ENDS
+//==================================
+
+//=====================================================
+// other non-async-specific loading helpers below here
+//=====================================================
+void ResourceManager::setResourceName(Resource *res, UString name)
+{
+	if (!res || name.length() < 1)
+	{
+		if (debug_rm->getBool())
+			debugLog("ResourceManager: invalid attempt to set name {:s} on resource {:#x}!\n", name.toUtf8(), reinterpret_cast<unsigned long>(res));
+		return;
+	}
+	res->setName(name);
+	m_nameToResourceMap.try_emplace(name, res); // this is why setResourceName has to exist, just a passthrough to add it to the map
+	return;
 }
 
-Resource *ResourceManager::checkIfExistsAndHandle(UString resourceName)
+void ResourceManager::doesntExistWarning(UString resourceName) const
 {
-	auto it = m_nameToResourceMap.find(resourceName);
-	if (it != m_nameToResourceMap.end())
-	{
-		if (rm_warnings.getBool())
-			debugLog("RESOURCE MANAGER: Resource \"{:s}\" already loaded!\n", resourceName.toUtf8());
+	if (debug_rm->getBool())
+		debugLog(R"(ResourceManager: Resource "{:s}" does not exist!)""\n", resourceName.toUtf8());
+}
 
-		// handle flags (reset them)
-		resetFlags();
-
-		return it->second;
-	}
-
-	return NULL;
+void ResourceManager::alreadyLoadedWarning(UString resourceName) const
+{
+	if (debug_rm->getBool())
+		debugLog(R"(ResourceManager: Resource "{:s}" already loaded!)""\n", resourceName.toUtf8());
 }
 
 void ResourceManager::resetFlags()
@@ -832,6 +586,218 @@ void ResourceManager::resetFlags()
 		m_nextLoadUnmanagedStack.pop();
 
 	m_bNextLoadAsync = false;
+}
+
+Image *ResourceManager::loadImage(UString filepath, UString resourceName, bool mipmapped, bool keepInSystemMemory)
+{
+	auto res = checkIfExistsAndHandle<Image>(resourceName);
+	if (res != nullptr)
+		return res;
+
+	// create instance and load it
+	filepath.insert(0, ResourceManager::PATH_DEFAULT_IMAGES);
+	Image *img = graphics->createImage(filepath, mipmapped, keepInSystemMemory);
+	img->setName(resourceName);
+
+	loadResource(img, true);
+
+	return img;
+}
+
+Image *ResourceManager::loadImageUnnamed(UString filepath, bool mipmapped, bool keepInSystemMemory)
+{
+	filepath.insert(0, ResourceManager::PATH_DEFAULT_IMAGES);
+	Image *img = graphics->createImage(filepath, mipmapped, keepInSystemMemory);
+
+	loadResource(img, true);
+
+	return img;
+}
+
+Image *ResourceManager::loadImageAbs(UString absoluteFilepath, UString resourceName, bool mipmapped, bool keepInSystemMemory)
+{
+	auto res = checkIfExistsAndHandle<Image>(resourceName);
+	if (res != nullptr)
+		return res;
+
+	// create instance and load it
+	Image *img = graphics->createImage(absoluteFilepath, mipmapped, keepInSystemMemory);
+	img->setName(resourceName);
+
+	loadResource(img, true);
+
+	return img;
+}
+
+Image *ResourceManager::loadImageAbsUnnamed(UString absoluteFilepath, bool mipmapped, bool keepInSystemMemory)
+{
+	Image *img = graphics->createImage(absoluteFilepath, mipmapped, keepInSystemMemory);
+
+	loadResource(img, true);
+
+	return img;
+}
+
+Image *ResourceManager::createImage(unsigned int width, unsigned int height, bool mipmapped, bool keepInSystemMemory)
+{
+	if (width > 8192 || height > 8192)
+	{
+		engine->showMessageError("Resource Manager Error", UString::format("Invalid parameters in createImage(%i, %i, %i)!\n", width, height, (int)mipmapped));
+		return NULL;
+	}
+
+	Image *img = graphics->createImage(width, height, mipmapped, keepInSystemMemory);
+
+	loadResource(img, false);
+
+	return img;
+}
+
+McFont *ResourceManager::loadFont(UString filepath, UString resourceName, int fontSize, bool antialiasing, int fontDPI)
+{
+	auto res = checkIfExistsAndHandle<McFont>(resourceName);
+	if (res != nullptr)
+		return res;
+
+	// create instance and load it
+	filepath.insert(0, ResourceManager::PATH_DEFAULT_FONTS);
+	auto *fnt = new McFont(filepath, fontSize, antialiasing, fontDPI);
+	fnt->setName(resourceName);
+
+	loadResource(fnt, true);
+
+	return fnt;
+}
+
+McFont *ResourceManager::loadFont(UString filepath, UString resourceName, std::vector<wchar_t> characters, int fontSize, bool antialiasing, int fontDPI)
+{
+	auto res = checkIfExistsAndHandle<McFont>(resourceName);
+	if (res != nullptr)
+		return res;
+
+	// create instance and load it
+	filepath.insert(0, ResourceManager::PATH_DEFAULT_FONTS);
+	auto *fnt = new McFont(filepath, characters, fontSize, antialiasing, fontDPI);
+	fnt->setName(resourceName);
+
+	loadResource(fnt, true);
+
+	return fnt;
+}
+
+Sound *ResourceManager::loadSound(UString filepath, UString resourceName, bool stream, bool threeD, bool loop, bool prescan)
+{
+	auto res = checkIfExistsAndHandle<Sound>(resourceName);
+	if (res != nullptr)
+		return res;
+
+	// create instance and load it
+	filepath.insert(0, ResourceManager::PATH_DEFAULT_SOUNDS);
+	Sound *snd = Sound::createSound(filepath, stream, threeD, loop, prescan);
+	snd->setName(resourceName);
+
+	loadResource(snd, true);
+
+	return snd;
+}
+
+Sound *ResourceManager::loadSoundAbs(UString filepath, UString resourceName, bool stream, bool threeD, bool loop, bool prescan)
+{
+	auto res = checkIfExistsAndHandle<Sound>(resourceName);
+	if (res != nullptr)
+		return res;
+
+	// create instance and load it
+	Sound *snd = Sound::createSound(filepath, stream, threeD, loop, prescan);
+	snd->setName(resourceName);
+
+	loadResource(snd, true);
+
+	return snd;
+}
+
+Shader *ResourceManager::loadShader(UString shaderFilePath, UString resourceName)
+{
+	auto res = checkIfExistsAndHandle<Shader>(resourceName);
+	if (res != nullptr)
+		return res;
+
+	// create instance and load it
+	shaderFilePath.insert(0, ResourceManager::PATH_DEFAULT_SHADERS);
+	Shader *shader = graphics->createShaderFromFile(shaderFilePath);
+	shader->setName(resourceName);
+
+	loadResource(shader, true);
+
+	return shader;
+}
+
+Shader *ResourceManager::loadShader(UString shaderFilePath)
+{
+	shaderFilePath.insert(0, ResourceManager::PATH_DEFAULT_SHADERS);
+	Shader *shader = graphics->createShaderFromFile(shaderFilePath);
+
+	loadResource(shader, true);
+
+	return shader;
+}
+
+Shader *ResourceManager::createShader(UString shaderSource, UString resourceName)
+{
+	auto res = checkIfExistsAndHandle<Shader>(resourceName);
+	if (res != nullptr)
+		return res;
+
+	// create instance and load it
+	Shader *shader = graphics->createShaderFromSource(shaderSource);
+	shader->setName(resourceName);
+
+	loadResource(shader, true);
+
+	return shader;
+}
+
+Shader *ResourceManager::createShader(UString shaderSource)
+{
+	Shader *shader = graphics->createShaderFromSource(shaderSource);
+
+	loadResource(shader, true);
+
+	return shader;
+}
+
+RenderTarget *ResourceManager::createRenderTarget(int x, int y, int width, int height, Graphics::MULTISAMPLE_TYPE multiSampleType)
+{
+	RenderTarget *rt = graphics->createRenderTarget(x, y, width, height, multiSampleType);
+	rt->setName(UString::format("_RT_%ix%i", width, height));
+
+	loadResource(rt, true);
+
+	return rt;
+}
+
+RenderTarget *ResourceManager::createRenderTarget(int width, int height, Graphics::MULTISAMPLE_TYPE multiSampleType)
+{
+	return createRenderTarget(0, 0, width, height, multiSampleType);
+}
+
+TextureAtlas *ResourceManager::createTextureAtlas(int width, int height)
+{
+	auto *ta = new TextureAtlas(width, height);
+	ta->setName(UString::format("_TA_%ix%i", width, height));
+
+	loadResource(ta, false);
+
+	return ta;
+}
+
+VertexArrayObject *ResourceManager::createVertexArrayObject(Graphics::PRIMITIVE primitive, Graphics::USAGE_TYPE usage, bool keepInSystemMemory)
+{
+	VertexArrayObject *vao = graphics->createVertexArrayObject(primitive, usage, keepInSystemMemory);
+
+	loadResource(vao, false);
+
+	return vao;
 }
 
 // add a managed resource to the main resources vector + the name map and typed vectors
@@ -843,7 +809,7 @@ void ResourceManager::addManagedResource(Resource *res)
 	m_vResources.push_back(res);
 
 	if (res->getName().length() > 0)
-		m_nameToResourceMap[res->getName()] = res;
+		m_nameToResourceMap.try_emplace(res->getName(), res);
 	addResourceToTypedVector(res);
 }
 
@@ -947,94 +913,4 @@ void ResourceManager::removeResourceFromTypedVector(Resource *res)
 		// TODO: app-defined types aren't added to specific vectors
 		break;
 	}
-}
-
-// main async stuff below (TO BE MOVED)
-
-bool ResourceManager::isLoading() const
-{
-	return getNumLoadingWork() > 0;
-}
-
-bool ResourceManager::isLoadingResource(Resource *rs) const
-{
-	std::lock_guard<std::mutex> lock(m_allWorkMutex);
-	for (auto work : m_allWork)
-	{
-		if (work->resource == rs)
-			return true;
-	}
-
-	return false;
-}
-
-ResourceManager::LOADING_WORK *ResourceManager::getNextWork()
-{
-	std::lock_guard<std::mutex> lock(m_pendingWorkMutex);
-	if (m_pendingWork.empty())
-		return nullptr;
-
-	LOADING_WORK *work = m_pendingWork.front();
-	m_pendingWork.pop();
-	return work;
-}
-
-void ResourceManager::markWorkAsyncComplete(LOADING_WORK *work)
-{
-	std::lock_guard<std::mutex> lock(m_asyncCompleteWorkMutex);
-	m_asyncCompleteWork.push(work);
-}
-
-size_t ResourceManager::getNumLoadingWork() const
-{
-	std::lock_guard<std::mutex> lock(m_allWorkMutex);
-	return m_allWork.size();
-}
-
-static void *_resourceLoaderThread(void *data)
-{
-	auto *self = static_cast<ResourceManagerLoaderThread *>(data);
-	ResourceManager *manager = self->resourceManager;
-	const size_t threadIndex = self->threadIndex;
-
-	while (self->running.load())
-	{
-		// try to get work
-		ResourceManager::LOADING_WORK *work = manager->getNextWork();
-
-		// if no work available, wait for notification
-		if (!work)
-		{
-			std::unique_lock<std::mutex> lock(manager->m_workAvailableMutex);
-			manager->m_workAvailable.wait_for(lock, std::chrono::milliseconds(50), [&]() { return !self->running.load() || manager->getNumLoadingWork() > 0; });
-
-			// check if we should exit
-			if (!self->running.load())
-				break;
-
-			continue;
-		}
-
-		// we have work, process it
-		Resource *resource = work->resource;
-
-		if (ResourceManager::debug_rm->getBool())
-			debugLog("Resource Manager: Thread #{} loading {:s}\n", threadIndex, resource->getName().toUtf8());
-
-		// debug pause
-		if (rm_debug_async_delay.getFloat() > 0.0f)
-			Timing::sleep(rm_debug_async_delay.getFloat() * 1000 * 1000);
-
-		// async load
-		resource->loadAsync();
-
-		// mark as async complete
-		work->asyncDone = true;
-		manager->markWorkAsyncComplete(work);
-
-		if (ResourceManager::debug_rm->getBool())
-			debugLog("Resource Manager: Thread #{} finished async loading {:s}\n", threadIndex, resource->getName().toUtf8());
-	}
-
-	return nullptr;
 }
