@@ -1,4 +1,4 @@
-//================ Copyright (c) 2020, PG, All rights reserved. =================//
+//================ Copyright (c) 2025, WH, All rights reserved. =================//
 //
 // Purpose:		thread wrapper
 //
@@ -9,17 +9,10 @@
 #ifndef THREAD_H
 #define THREAD_H
 
-class ConVar;
+#include "ConVar.h"
+#include <thread>
 
-class BaseThread
-{
-public:
-	virtual ~BaseThread() {;}
-
-	[[nodiscard]] virtual bool isReady() const = 0;
-};
-
-class McThread
+class McThread final
 {
 public:
 	static ConVar *debug;
@@ -27,13 +20,44 @@ public:
 	typedef void *(*START_ROUTINE)(void*);
 
 public:
-	McThread(START_ROUTINE start_routine, void *arg);
-	~McThread() {if (m_baseThread) { delete (m_baseThread); (m_baseThread) = nullptr; }}
+#ifdef __EXCEPTIONS
+	McThread(START_ROUTINE start_routine, void *arg)
+#else
+	McThread(START_ROUTINE start_routine, void *arg) noexcept
+#endif
+	{
+		m_bReady = false;
+#ifdef __EXCEPTIONS
+		try
+		{
+#endif
+			m_thread = std::thread(start_routine, arg);
+			m_bReady = true;
+#ifdef __EXCEPTIONS
+		}
+		catch (const std::system_error& e)
+		{
+			if (McThread::debug->getBool())
+				debugLog("McThread Error: std::thread constructor exception: {:s}\n", e.what());
+		}
+#endif
+	}
 
-	[[nodiscard]] inline bool isReady() const {return m_baseThread != nullptr && m_baseThread->isReady();};
+	~McThread()
+	{
+		if (!m_bReady) return;
+
+		m_bReady = false;
+
+		if (m_thread.joinable())
+			m_thread.join();
+	}
+
+	[[nodiscard]] inline bool isReady() const {return m_bReady;}
 
 private:
-	BaseThread *m_baseThread;
+	std::thread m_thread;
+	bool m_bReady;
 };
 
 #endif
