@@ -1062,7 +1062,7 @@ void OsuBeatmap::update()
 		const int drainType = osu_drain_type.getInt();
 
 		// handle constant drain
-		if (drainType == 1) // osu!stable + osu!lazer 2020
+		if (drainType == 1 || drainType == 2) // osu!stable + osu!lazer 2020
 		{
 			if (m_fDrainRate > 0.0)
 			{
@@ -1074,12 +1074,12 @@ void OsuBeatmap::update()
 					bool drainAfterLastHitobjectBeforeBreakStart = false;
 					bool drainBeforeFirstHitobjectAfterBreakEnd = false;
 
-					if (drainType == 2) // osu!stable
+					if (drainType == 1) // osu!stable
 					{
 						drainAfterLastHitobjectBeforeBreakStart = (m_selectedDifficulty2->getVersion() < 8 ? osu_drain_stable_break_before_old.getBool() : osu_drain_stable_break_before.getBool());
 						drainBeforeFirstHitobjectAfterBreakEnd = osu_drain_stable_break_after.getBool();
 					}
-					else if (drainType == 3) // osu!lazer 2020
+					else if (drainType == 2) // osu!lazer 2020
 					{
 						drainAfterLastHitobjectBeforeBreakStart = osu_drain_lazer_break_before.getBool();
 						drainBeforeFirstHitobjectAfterBreakEnd = osu_drain_lazer_break_after.getBool();
@@ -1096,7 +1096,7 @@ void OsuBeatmap::update()
 						// special case: spinner nerf
 						double spinnerDrainNerf = 1.0;
 
-						if (drainType == 2) // osu!stable
+						if (drainType == 1) // osu!stable
 						{
 							if (this->getType() == OsuBeatmap::Type::STANDARD && this->asStd()->isSpinnerActive())
 								spinnerDrainNerf = (double)osu_drain_stable_spinner_nerf.getFloat();
