@@ -4502,6 +4502,7 @@ void OsuSongBrowser2::recreateCollectionsButtons()
 	// build lookup maps for faster collection creation
 	std::unordered_map<OsuDatabaseBeatmap *, OsuUISongBrowserButton *> beatmapToSongButton;
 	std::unordered_map<OsuDatabaseBeatmap *, std::vector<OsuUISongBrowserButton *>> beatmapToDiffButtons;
+	std::unordered_map<OsuUISongBrowserButton *, OsuUISongBrowserButton *> diffButtonToSongButton;
 
 	// populate lookup maps
 	for (auto songButton : m_songButtons)
@@ -4525,6 +4526,9 @@ void OsuSongBrowser2::recreateCollectionsButtons()
 				if (beatmapToSongButton.find(childDbBeatmap) == beatmapToSongButton.end())
 					beatmapToSongButton[childDbBeatmap] = songButton;
 			}
+
+			// map diff button to its parent song button
+			diffButtonToSongButton[c] = songButton;
 		}
 	}
 
@@ -4561,8 +4565,9 @@ void OsuSongBrowser2::recreateCollectionsButtons()
 						{
 							for (OsuUISongBrowserButton *diffButton : diffButtonsIt->second)
 							{
-								// only add diff buttons that belong to the matching song button
-								if (std::ranges::find(diffChildren, diffButton) != diffChildren.end())
+								// lookup the hash
+								auto parentSongButtonIt = diffButtonToSongButton.find(diffButton);
+								if (parentSongButtonIt != diffButtonToSongButton.end() && parentSongButtonIt->second == matchingSongButton)
 									matchingDiffs.push_back(diffButton);
 							}
 						}
@@ -4588,8 +4593,8 @@ void OsuSongBrowser2::recreateCollectionsButtons()
 				children.insert(children.end(), matchingDiffs.begin(), matchingDiffs.end());
 		}
 
-		auto *collectionButton = new OsuUISongBrowserCollectionButton(this, m_songBrowser, m_contextMenu, 250, 250 + m_beatmaps.size() * 50, 200, 50, "",
-		                                                              collection.name, children);
+		auto *collectionButton =
+		    new OsuUISongBrowserCollectionButton(this, m_songBrowser, m_contextMenu, 250, 250 + m_beatmaps.size() * 50, 200, 50, "", collection.name, children);
 		m_collectionButtons.push_back(collectionButton);
 	}
 }
