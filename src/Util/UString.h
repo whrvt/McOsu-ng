@@ -70,7 +70,13 @@ public:
 		else
 			return m_utf8.c_str();
 	}
-
+	[[nodiscard]] constexpr auto plat_view() const noexcept
+	{
+		if constexpr (Env::cfg(OS::WINDOWS))
+			return m_unicode;
+		else
+			return m_utf8;
+	}
 	// state queries
 	[[nodiscard]] constexpr bool isAsciiOnly() const noexcept { return m_isAsciiOnly; }
 	[[nodiscard]] bool isWhitespaceOnly() const noexcept;

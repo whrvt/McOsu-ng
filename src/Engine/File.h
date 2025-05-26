@@ -10,15 +10,14 @@
 #define FILE_H
 
 #include "cbase.h"
-#include <chrono>
 #include <filesystem>
 #include <fstream>
 #include <memory>
-#include <mutex>
-#include <unordered_map>
 #include <vector>
 
 class ConVar;
+
+class DirectoryCache;
 
 class McFile
 {
@@ -45,8 +44,8 @@ public:
 	McFile(UString filePath, TYPE type = TYPE::READ);
 	~McFile() = default;
 
-	[[nodiscard]] constexpr bool canRead() const { return m_ready &&m_ifstream && m_ifstream->good() && m_type == TYPE::READ; }
-	[[nodiscard]] constexpr bool canWrite() const { return m_ready &&m_ofstream && m_ofstream->good() && m_type == TYPE::WRITE; }
+	[[nodiscard]] constexpr bool canRead() const { return m_ready && m_ifstream && m_ifstream->good() && m_type == TYPE::READ; }
+	[[nodiscard]] constexpr bool canWrite() const { return m_ready && m_ofstream && m_ofstream->good() && m_type == TYPE::WRITE; }
 
 	void write(const char *buffer, size_t size);
 
@@ -56,51 +55,12 @@ public:
 
 	[[nodiscard]] constexpr size_t getFileSize() const { return m_fileSize; }
 	[[nodiscard]] inline UString getPath() const { return m_filePath; }
-	[[nodiscard]] static McFile::FILETYPE existsCaseInsensitive(
-	    UString &filePath); // modifies the input string with the actual found (case-insensitive-past-last-slash) path!
+
+	// public path resolution methods
+	[[nodiscard]] static McFile::FILETYPE existsCaseInsensitive(UString &filePath); // modifies the input path with the actual found path
 	[[nodiscard]] static McFile::FILETYPE exists(const UString &filePath);
 
-	// Cache management
-	static void clearDirectoryCache();
-	static void clearDirectoryCache(const UString &directoryPath);
-
 private:
-	// for non-windows file/folder finding directory caching
-	struct CaseInsensitiveHash
-	{
-		size_t operator()(const UString &str) const
-		{
-			size_t hash = 0;
-			for (wchar_t c : str.unicodeView())
-			{
-				hash = hash * 31 + std::towlower(c);
-			}
-			return hash;
-		}
-	};
-
-	// Case-insensitive string comparator
-	struct CaseInsensitiveEqual
-	{
-		bool operator()(const UString &lhs, const UString &rhs) const { return lhs.equalsIgnoreCase(rhs); }
-	};
-
-	// Directory cache entry
-	struct DirectoryCacheEntry
-	{
-		std::unordered_map<UString, std::pair<UString, FILETYPE>, CaseInsensitiveHash, CaseInsensitiveEqual> files;
-		std::chrono::steady_clock::time_point lastAccess;
-		std::filesystem::file_time_type lastModified;
-	};
-
-	[[nodiscard]] static McFile::FILETYPE existsCaseInsensitive(
-	    UString &filePath, std::filesystem::path &path); // modifies the input string with the actual found (case-insensitive-past-last-slash) path!
-	[[nodiscard]] static McFile::FILETYPE exists(const UString &filePath, const std::filesystem::path &path);
-
-	// Directory cache methods
-	static DirectoryCacheEntry *getOrCreateDirectoryCache(const std::filesystem::path &dirPath);
-	static void evictOldCacheEntries();
-
 	UString m_filePath;
 	TYPE m_type;
 	bool m_ready;
@@ -113,9 +73,16 @@ private:
 	// buffer for full file reading
 	std::vector<char> m_fullBuffer;
 
-	// Directory cache for case-insensitive lookups
-	static std::unordered_map<UString, DirectoryCacheEntry> s_directoryCache;
-	static std::mutex s_directoryCacheMutex;
+	// private implementation helpers
+	bool openForReading();
+	bool openForWriting();
+
+	// internal path resolution helpers
+	[[nodiscard]] static McFile::FILETYPE existsCaseInsensitive(UString &filePath, std::filesystem::path &path);
+	[[nodiscard]] static McFile::FILETYPE exists(const UString &filePath, const std::filesystem::path &path);
+
+	// directory cache
+	static std::unique_ptr<DirectoryCache> s_directoryCache;
 };
 
 #endif

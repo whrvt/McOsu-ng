@@ -8,195 +8,178 @@
 #include "File.h"
 #include "ConVar.h"
 #include "Engine.h"
+#include <algorithm>
+#include <chrono>
 #include <filesystem>
+#include <mutex>
+#include <unordered_map>
 #include <utility>
+#include <vector>
 
 namespace fs = std::filesystem;
 
 ConVar debug_file("debug_file", false, FCVAR_NONE);
 ConVar file_size_max("file_size_max", 1024, FCVAR_NONE, "maximum filesize sanity limit in MB, all files bigger than this are not allowed to load");
-ConVar file_directory_cache_max_size("file_directory_cache_max_size", 100, FCVAR_NONE);
 
 ConVar *McFile::debug = &debug_file;
 ConVar *McFile::size_max = &file_size_max;
 
-// static member initialization
-// TODO: move this into ResourceManager, it makes more sense that way
-std::unordered_map<UString, McFile::DirectoryCacheEntry> McFile::s_directoryCache;
-std::mutex McFile::s_directoryCacheMutex;
-
-// cache management methods
-void McFile::clearDirectoryCache()
+//------------------------------------------------------------------------------
+// encapsulation of directory caching logic
+//------------------------------------------------------------------------------
+class DirectoryCache final
 {
-	std::lock_guard<std::mutex> lock(s_directoryCacheMutex);
-	s_directoryCache.clear();
-}
+public:
+	DirectoryCache() = default;
 
-void McFile::clearDirectoryCache(const UString &directoryPath)
-{
-	std::lock_guard<std::mutex> lock(s_directoryCacheMutex);
-	s_directoryCache.erase(directoryPath);
-}
-
-// create a fast lookup cache for directory entries so we don't re-scan the same directory over and over again to
-// to find a case-insensitively-matched file from a given directory
-McFile::DirectoryCacheEntry *McFile::getOrCreateDirectoryCache(const fs::path &dirPath)
-{
-	std::lock_guard<std::mutex> lock(s_directoryCacheMutex);
-
-	// evict old entries if we're at capacity
-	if (s_directoryCache.size() >= file_directory_cache_max_size.getInt())
-		evictOldCacheEntries();
-
-	UString dirKey(dirPath.string());
-	auto it = s_directoryCache.find(dirKey);
-
-	// check if cache exists and is still valid
-	if (it != s_directoryCache.end())
+	// case-insensitive string utilities
+	struct CaseInsensitiveHash
 	{
-		auto now = std::chrono::steady_clock::now();
-		auto age = std::chrono::duration_cast<std::chrono::seconds>(now - it->second.lastAccess);
-
-		// check if cache is too old or directory has been modified
-		std::error_code ec;
-		auto currentModTime = fs::last_write_time(dirPath, ec);
-
-		if (age > static_cast<std::chrono::seconds>(300) || (!ec && currentModTime != it->second.lastModified))
+		size_t operator()(const UString &str) const
 		{
-			// cache is stale, remove it
-			s_directoryCache.erase(it);
+			size_t hash = 0;
+			for (auto &c : str.plat_view())
+			{
+				if constexpr (Env::cfg(OS::WINDOWS))
+					hash = hash * 31 + std::towlower(c);
+				else
+					hash = hash * 31 + std::tolower(c);
+			}
+			return hash;
 		}
-		else
+	};
+
+	struct CaseInsensitiveEqual
+	{
+		bool operator()(const UString &lhs, const UString &rhs) const { return lhs.equalsIgnoreCase(rhs); }
+	};
+
+	// directory entry type
+	struct DirectoryEntry
+	{
+		std::unordered_map<UString, std::pair<UString, McFile::FILETYPE>, CaseInsensitiveHash, CaseInsensitiveEqual> files;
+		std::chrono::steady_clock::time_point lastAccess;
+		fs::file_time_type lastModified;
+	};
+
+	// look up a file with case-insensitive matching
+	std::pair<UString, McFile::FILETYPE> lookup(const fs::path &dirPath, const UString &filename)
+	{
+		std::lock_guard<std::mutex> lock(m_mutex);
+
+		UString dirKey(dirPath.string());
+		auto it = m_cache.find(dirKey);
+
+		DirectoryEntry *entry = nullptr;
+
+		// check if cache exists and is still valid
+		if (it != m_cache.end())
 		{
-			// update last access time
-			it->second.lastAccess = now;
-			return &it->second;
+			// check if directory has been modified
+			std::error_code ec;
+			auto currentModTime = fs::last_write_time(dirPath, ec);
+
+			if (!ec && currentModTime != it->second.lastModified)
+				m_cache.erase(it); // cache is stale, remove it
+			else
+				entry = &it->second;
 		}
-	}
 
-	// build new cache entry
-	DirectoryCacheEntry newEntry;
-	newEntry.lastAccess = std::chrono::steady_clock::now();
-
-	std::error_code ec;
-	newEntry.lastModified = fs::last_write_time(dirPath, ec);
-
-	// scan directory and populate cache
-	for (const auto &entry : fs::directory_iterator(dirPath, ec))
-	{
-		if (ec)
-			break;
-
-		UString filename(entry.path().filename().string());
-		FILETYPE type = FILETYPE::OTHER;
-
-		if (entry.is_regular_file())
-			type = FILETYPE::FILE;
-		else if (entry.is_directory())
-			type = FILETYPE::FOLDER;
-
-		// store both the actual filename and its type
-		newEntry.files[filename] = {filename, type};
-	}
-
-	// insert into cache and return pointer
-	auto [insertIt, inserted] = s_directoryCache.emplace(dirKey, std::move(newEntry));
-	return inserted ? &insertIt->second : nullptr;
-}
-
-void McFile::evictOldCacheEntries()
-{
-	// LRU evict
-	if (s_directoryCache.empty())
-		return;
-
-	auto oldest = s_directoryCache.begin();
-	auto oldestTime = oldest->second.lastAccess;
-
-	for (auto it = s_directoryCache.begin(); it != s_directoryCache.end(); ++it)
-	{
-		if (it->second.lastAccess < oldestTime)
+		// create new entry if needed
+		if (!entry)
 		{
-			oldest = it;
-			oldestTime = it->second.lastAccess;
+			// evict old entries if we're at capacity
+			if (m_cache.size() >= DIR_CACHE_MAX_ENTRIES)
+				evictOldEntries();
+
+			// build new cache entry
+			DirectoryEntry newEntry;
+			newEntry.lastAccess = std::chrono::steady_clock::now();
+
+			std::error_code ec;
+			newEntry.lastModified = fs::last_write_time(dirPath, ec);
+
+			// scan directory and populate cache
+			for (const auto &dirEntry : fs::directory_iterator(dirPath, ec))
+			{
+				if (ec)
+					break;
+
+				UString filename(dirEntry.path().filename().string());
+				McFile::FILETYPE type = McFile::FILETYPE::OTHER;
+
+				if (dirEntry.is_regular_file())
+					type = McFile::FILETYPE::FILE;
+				else if (dirEntry.is_directory())
+					type = McFile::FILETYPE::FOLDER;
+
+				// store both the actual filename and its type
+				newEntry.files[filename] = {filename, type};
+			}
+
+			// insert into cache
+			auto [insertIt, inserted] = m_cache.emplace(dirKey, std::move(newEntry));
+			entry = inserted ? &insertIt->second : nullptr;
 		}
+
+		if (!entry)
+			return {{}, McFile::FILETYPE::NONE};
+
+		// update last access time
+		entry->lastAccess = std::chrono::steady_clock::now();
+
+		// find the case-insensitive match
+		auto fileIt = entry->files.find(filename);
+		if (fileIt != entry->files.end())
+			return fileIt->second;
+
+		return {{}, McFile::FILETYPE::NONE};
 	}
 
-	s_directoryCache.erase(oldest);
-}
+private:
+	static constexpr size_t DIR_CACHE_MAX_ENTRIES = 100;
+	static constexpr size_t DIR_CACHE_EVICT_COUNT = DIR_CACHE_MAX_ENTRIES / 4;
 
-// internal use versions of the above, to prevent re-creating new fs::paths constantly
-McFile::FILETYPE McFile::existsCaseInsensitive(UString &filePath, fs::path &path)
-{
-	auto retType = McFile::exists(filePath, path);
-
-	if (retType == McFile::FILETYPE::NONE)
-		return McFile::FILETYPE::NONE;
-	else if (!(retType == McFile::FILETYPE::MAYBE_INSENSITIVE))
-		return retType; // direct match
-
-	if constexpr (Env::cfg(OS::WINDOWS)) // no point in continuing, windows is already case insensitive
-		return McFile::FILETYPE::NONE;
-
-	auto parentPath = path.parent_path();
-	auto filename = path.filename().string();
-
-	// don't try scanning all the way back to the root directory lol, that would be horrendous
-	std::error_code ec;
-	auto parentStatus = fs::status(parentPath, ec);
-	if (ec || parentStatus.type() != fs::file_type::directory)
-		return McFile::FILETYPE::NONE;
-
-	UString targetFilename(filename);
-
-	// try to use cached directory listing first
-	auto cacheEntry = getOrCreateDirectoryCache(parentPath);
-	if (cacheEntry)
+	// evict least recently used entries when cache is full
+	void evictOldEntries()
 	{
-		// fast case-insensitive lookup in the hash map
-		auto it = cacheEntry->files.find(targetFilename);
-		if (it != cacheEntry->files.end())
+		const size_t entriesToRemove = std::min(DIR_CACHE_EVICT_COUNT, m_cache.size());
+
+		if (entriesToRemove == m_cache.size())
 		{
-			retType = it->second.second;
-
-			filePath = UString(parentPath.string());
-			if (!filePath.endsWith('/') && !filePath.endsWith('\\'))
-				filePath.append('/');
-			filePath.append(it->second.first); // use the actual filename from cache
-
-			if (McFile::debug->getBool())
-				debugLog("File: Case-insensitive match found (cached) for {:s} -> {:s}\n", path.string().c_str(), filePath.toUtf8());
-
-			path = fs::path(filePath.plat_str());
-			return retType;
+			m_cache.clear();
+			return;
 		}
+
+		// collect entries with their access times
+		std::vector<std::pair<std::chrono::steady_clock::time_point, decltype(m_cache)::iterator>> entries;
+		entries.reserve(m_cache.size());
+
+		for (auto it = m_cache.begin(); it != m_cache.end(); ++it)
+			entries.emplace_back(it->second.lastAccess, it);
+
+		// sort by access time (oldest first)
+		std::ranges::sort(entries, [](const auto &a, const auto &b) { return a.first < b.first; });
+
+		// remove the oldest entries
+		for (size_t i = 0; i < entriesToRemove; ++i)
+			m_cache.erase(entries[i].second);
 	}
 
-	// not found in cache means it doesn't exist
-	return McFile::FILETYPE::NONE;
-}
+	// cache storage
+	std::unordered_map<UString, DirectoryEntry> m_cache;
 
-McFile::FILETYPE McFile::exists(const UString &filePath, const fs::path &path)
-{
-	if (filePath.isEmpty())
-		return McFile::FILETYPE::NONE;
+	// thread safety
+	std::mutex m_mutex;
+};
 
-	auto status = fs::status(path);
+// init static directory cache
+std::unique_ptr<DirectoryCache> McFile::s_directoryCache = std::make_unique<DirectoryCache>();
 
-	if (status.type() != fs::file_type::not_found)
-	{
-		if (status.type() == fs::file_type::regular)
-			return McFile::FILETYPE::FILE;
-		else if (status.type() == fs::file_type::directory)
-			return McFile::FILETYPE::FOLDER;
-		else
-			return McFile::FILETYPE::OTHER;
-	}
-
-	return McFile::FILETYPE::MAYBE_INSENSITIVE; // keep searching
-}
-
-// modifies the input string with the actual found (case-insensitive-past-last-slash) path!
+//------------------------------------------------------------------------------
+// path resolution methods
+//------------------------------------------------------------------------------
+// public
 McFile::FILETYPE McFile::existsCaseInsensitive(UString &filePath)
 {
 	auto fsPath = fs::path(filePath.plat_str());
@@ -209,90 +192,169 @@ McFile::FILETYPE McFile::exists(const UString &filePath)
 	return exists(filePath, fsPath);
 }
 
+// private (cache the fs::path)
+McFile::FILETYPE McFile::existsCaseInsensitive(UString &filePath, fs::path &path)
+{
+	auto retType = McFile::exists(filePath, path);
+
+	if (retType == McFile::FILETYPE::NONE)
+		return McFile::FILETYPE::NONE;
+	else if (!(retType == McFile::FILETYPE::MAYBE_INSENSITIVE))
+		return retType; // direct match
+
+	// no point in continuing, windows is already case insensitive
+	if constexpr (Env::cfg(OS::WINDOWS))
+		return McFile::FILETYPE::NONE;
+
+	auto parentPath = path.parent_path();
+
+	// verify parent directory exists
+	std::error_code ec;
+	auto parentStatus = fs::status(parentPath, ec);
+	if (ec || parentStatus.type() != fs::file_type::directory)
+		return McFile::FILETYPE::NONE;
+
+	// try case-insensitive lookup using cache
+	auto [resolvedName, fileType] = s_directoryCache->lookup(parentPath, {path.filename().string()}); // takes the bare filename
+
+	if (fileType == McFile::FILETYPE::NONE)
+		return McFile::FILETYPE::NONE; // no match, even case-insensitively
+
+	UString resolvedPath(parentPath.string());
+	if (!resolvedPath.endsWith('/') && !resolvedPath.endsWith('\\'))
+		resolvedPath.append('/');
+	resolvedPath.append(resolvedName);
+
+	if (McFile::debug->getBool())
+		debugLog("File: Case-insensitive match found for {:s} -> {:s}\n", path.string(), resolvedPath);
+
+	// now update the given paths with the actual found path
+	filePath = resolvedPath;
+	path = fs::path(filePath.plat_str());
+	return fileType;
+}
+
+McFile::FILETYPE McFile::exists(const UString &filePath, const fs::path &path)
+{
+	if (filePath.isEmpty())
+		return McFile::FILETYPE::NONE;
+
+	std::error_code ec;
+	auto status = fs::status(path, ec);
+
+	if (ec || status.type() == fs::file_type::not_found)
+		return McFile::FILETYPE::MAYBE_INSENSITIVE; // path not found, try case-insensitive lookup
+
+	if (status.type() == fs::file_type::regular)
+		return McFile::FILETYPE::FILE;
+	else if (status.type() == fs::file_type::directory)
+		return McFile::FILETYPE::FOLDER;
+	else
+		return McFile::FILETYPE::OTHER;
+}
+
+//------------------------------------------------------------------------------
+// McFile implementation
+//------------------------------------------------------------------------------
 McFile::McFile(UString filePath, TYPE type) : m_filePath(filePath), m_type(type), m_ready(false), m_fileSize(0)
 {
 	if (type == TYPE::READ)
 	{
-		auto path = fs::path(m_filePath.plat_str());
-		auto fileType = McFile::FILETYPE::NONE;
-
-		if ((fileType = existsCaseInsensitive(m_filePath, path)) != McFile::FILETYPE::FILE)
-		{
-			if (McFile::debug->getBool()) // let the caller print that if it wants to
-				debugLog("File Error: Path {:s} {:s}\n", filePath.toUtf8(), fileType == McFile::FILETYPE::NONE ? "doesn't exist" : "is not a file");
+		if (!openForReading())
 			return;
-		}
-
-		// create and open input file stream
-		m_ifstream = std::make_unique<std::ifstream>();
-		m_ifstream->open(path, std::ios::in | std::ios::binary);
-
-		// check if file opened successfully
-		if (!m_ifstream->good())
-		{
-			debugLog("File Error: Couldn't open file {:s}\n", filePath.toUtf8());
-			return;
-		}
-
-		// get file size
-		m_fileSize = fs::file_size(path);
-
-		// validate file size
-		if (!m_fileSize) // empty
-			return;
-		else if (m_fileSize < 0)
-		{
-			debugLog("File Error: FileSize is < 0\n");
-			return;
-		}
-		else if (std::cmp_greater(m_fileSize, 1024 * 1024 * McFile::size_max->getInt())) // size sanity check
-		{
-			debugLog("File Error: FileSize of {:s} is > {} MB!!!\n", filePath.toUtf8(), McFile::size_max->getInt());
-			return;
-		}
-
-		// check if it's a directory with an additional sanity check
-		std::string tempLine;
-		std::getline(*m_ifstream, tempLine);
-		if (!m_ifstream->good() && m_fileSize < 1)
-		{
-			debugLog("File Error: File {:s} is a directory.\n", filePath.toUtf8());
-			return;
-		}
-		m_ifstream->clear();
-		m_ifstream->seekg(0, std::ios::beg);
 	}
-	else // WRITE
+	else if (type == TYPE::WRITE)
 	{
-		auto path = fs::path(m_filePath.plat_str());
-		// only try to create parent directories if there is a parent path
-		if (!path.parent_path().empty())
-		{
-			std::error_code ec;
-			fs::create_directories(path.parent_path(), ec);
-			if (ec)
-			{
-				debugLog("File Error: Couldn't create parent directories for {:s} (error: {:s})\n", filePath.toUtf8(), ec.message().c_str());
-				// continue anyway - the file open might still succeed if the directory exists
-			}
-		}
-
-		// create and open output file stream
-		m_ofstream = std::make_unique<std::ofstream>();
-		m_ofstream->open(path, std::ios::out | std::ios::trunc | std::ios::binary);
-
-		// check if file opened successfully
-		if (!m_ofstream->good())
-		{
-			debugLog("File Error: Couldn't open file {:s} for writing\n", filePath.toUtf8());
+		if (!openForWriting())
 			return;
-		}
 	}
 
 	if (McFile::debug->getBool())
-		debugLog("File: Opening {:s}\n", filePath.toUtf8());
+		debugLog("File: Opening {:s}\n", filePath);
 
 	m_ready = true;
+}
+
+bool McFile::openForReading()
+{
+	// resolve the file path (handles case-insensitive matching)
+	fs::path path(m_filePath.plat_str());
+	auto fileType = existsCaseInsensitive(m_filePath, path);
+
+	if (fileType != McFile::FILETYPE::FILE)
+	{
+		if (McFile::debug->getBool())
+			debugLog("File Error: Path {:s} {:s}\n", m_filePath, fileType == McFile::FILETYPE::NONE ? "doesn't exist" : "is not a file");
+		return false;
+	}
+
+	// create and open input file stream
+	m_ifstream = std::make_unique<std::ifstream>();
+	m_ifstream->open(path, std::ios::in | std::ios::binary);
+
+	// check if file opened successfully
+	if (!m_ifstream || !m_ifstream->good())
+	{
+		debugLog("File Error: Couldn't open file {:s}\n", m_filePath);
+		return false;
+	}
+
+	// get file size
+	std::error_code ec;
+	m_fileSize = fs::file_size(path, ec);
+
+	if (ec)
+	{
+		debugLog("File Error: Couldn't get file size for {:s}\n", m_filePath);
+		return false;
+	}
+
+	// validate file size
+	if (m_fileSize == 0) // empty file is valid
+		return true;
+	else if (m_fileSize < 0)
+	{
+		debugLog("File Error: FileSize is < 0\n");
+		return false;
+	}
+	else if (std::cmp_greater(m_fileSize, 1024 * 1024 * McFile::size_max->getInt())) // size sanity check
+	{
+		debugLog("File Error: FileSize of {:s} is > {} MB!!!\n", m_filePath, McFile::size_max->getInt());
+		return false;
+	}
+
+	return true;
+}
+
+bool McFile::openForWriting()
+{
+	// get filesystem path
+	fs::path path(m_filePath.plat_str());
+
+	// create parent directories if needed
+	if (!path.parent_path().empty())
+	{
+		std::error_code ec;
+		fs::create_directories(path.parent_path(), ec);
+		if (ec)
+		{
+			debugLog("File Error: Couldn't create parent directories for {:s} (error: {:s})\n", m_filePath, ec.message());
+			// continue anyway, the file open might still succeed if the directory exists
+		}
+	}
+
+	// create and open output file stream
+	m_ofstream = std::make_unique<std::ofstream>();
+	m_ofstream->open(path, std::ios::out | std::ios::trunc | std::ios::binary);
+
+	// check if file opened successfully
+	if (!m_ofstream->good())
+	{
+		debugLog("File Error: Couldn't open file {:s} for writing\n", m_filePath);
+		return false;
+	}
+
+	return true;
 }
 
 void McFile::write(const char *buffer, size_t size)
@@ -315,9 +377,7 @@ UString McFile::readLine()
 		if (!line.empty() && line.back() == '\r')
 			line.pop_back();
 
-		UString result(line.c_str());
-
-		return result;
+		return {line};
 	}
 
 	return "";
@@ -335,7 +395,7 @@ UString McFile::readString()
 const char *McFile::readFile()
 {
 	if (McFile::debug->getBool())
-		debugLog("File::readFile() on {:s}\n", m_filePath.toUtf8());
+		debugLog("File::readFile() on {:s}\n", m_filePath);
 
 	// return cached buffer if already read
 	if (!m_fullBuffer.empty())
