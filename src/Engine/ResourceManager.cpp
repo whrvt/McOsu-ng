@@ -74,7 +74,7 @@ static void *_resourceLoaderThread(void *data, std::stop_token stopToken)
 			std::stop_callback stopCallback(stopToken, [&]() { manager->m_workAvailable.notify_all(); });
 
 			// wait with timeout
-			auto waitTime = isCore ? 100ms : manager->m_threadIdleTimeout + self->idleTimeoutOffset;
+			auto waitTime = isCore ? std::chrono::system_clock::duration::max() : manager->m_threadIdleTimeout + self->idleTimeoutOffset;
 
 			// if the wait times out, non-core threads will terminate (if the below conditions hold)
 			bool workAvailable = manager->m_workAvailable.wait_for(
