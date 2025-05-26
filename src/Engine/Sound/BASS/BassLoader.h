@@ -25,190 +25,177 @@ typedef unsigned __int64 QWORD;
 #endif
 
 // shove BASS declarations into their own namespace
-namespace Bass_EXTERN
+namespace bass_EXTERN
 {
 extern "C"
 {
 #define NOBASSOVERLOADS
 #include <bass.h>
 #include <bass_fx.h>
+#include <bassmix.h>
+#ifdef MCENGINE_PLATFORM_WINDOWS
+#include <bassasio.h>
+#include <basswasapi.h>
+#endif
+}
+}; // namespace bass_EXTERN
 
 #ifndef BASS_CONFIG_MP3_OLDGAPS
 #define BASS_CONFIG_MP3_OLDGAPS 68
 #define BASS_CONFIG_DEV_TIMEOUT 70 // https://github.com/ppy/osu-framework/blob/eed788fd166540f7e219e1e48a36d0bf64f07cc4/osu.Framework/Audio/AudioManager.cs#L419
 #endif
 
-#ifdef MCENGINE_FEATURE_BASS_WASAPI
-#include <bassmix.h>
-#include <basswasapi.h>
-#endif
-
 #ifdef MCENGINE_PLATFORM_WINDOWS
 #define BASSVERSION_REAL 0x2041129
 #define BASSFXVERSION_REAL 0x2040c0e
+#define BASSMIXVERSION_REAL 0x2040c04
+#define BASSASIOVERSION_REAL 0x1040208
+#define BASSWASAPIVERSION_REAL 0x2040403
 #elif defined(MCENGINE_PLATFORM_LINUX)
 #define BASSVERSION_REAL 0x2041118 // FIXME: how tf am i supposed to get this ahead of time?
 #define BASSFXVERSION_REAL 0x2040c0f
+#define BASSMIXVERSION_REAL 0x2040c04
 #else
-#error "bass unsupported for MacOS currently"
+#error "unsupported platform for BASS"
 #endif
-
-}
-}; // namespace Bass_EXTERN
 
 namespace BassLoader
 {
 // imported enums/defines
-using QWORD = Bass_EXTERN::QWORD;
+using QWORD = bass_EXTERN::QWORD;
 #ifdef MCENGINE_PLATFORM_WINDOWS
 using DWORD = DWORD;
 using WORD = WORD;
 using BYTE = BYTE;
 using BOOL = BOOL;
 #else
-using DWORD = Bass_EXTERN::DWORD;
-using WORD = Bass_EXTERN::WORD;
-using BYTE = Bass_EXTERN::BYTE;
-using BOOL = Bass_EXTERN::BOOL;
+using DWORD = bass_EXTERN::DWORD;
+using WORD = bass_EXTERN::WORD;
+using BYTE = bass_EXTERN::BYTE;
+using BOOL = bass_EXTERN::BOOL;
 #endif
 
-using HSYNC = Bass_EXTERN::HSYNC;
-using HSTREAM = Bass_EXTERN::HSTREAM;
-using HCHANNEL = Bass_EXTERN::HCHANNEL;
-using HSAMPLE = Bass_EXTERN::HSAMPLE;
-using BASS_DEVICEINFO = Bass_EXTERN::BASS_DEVICEINFO;
-using BASS_INFO = Bass_EXTERN::BASS_INFO;
-using BASS_3DVECTOR = Bass_EXTERN::BASS_3DVECTOR;
-
-#ifdef MCENGINE_FEATURE_BASS_WASAPI
-using BASS_WASAPI_INFO = Bass_EXTERN::BASS_WASAPI_INFO;
-using BASS_WASAPI_DEVICEINFO = Bass_EXTERN::BASS_WASAPI_DEVICEINFO;
-#endif
+using HSYNC = bass_EXTERN::HSYNC;
+using HSTREAM = bass_EXTERN::HSTREAM;
+using HCHANNEL = bass_EXTERN::HCHANNEL;
+using HSAMPLE = bass_EXTERN::HSAMPLE;
+using BASS_DEVICEINFO = bass_EXTERN::BASS_DEVICEINFO;
+using BASS_INFO = bass_EXTERN::BASS_INFO;
+using BASS_3DVECTOR = bass_EXTERN::BASS_3DVECTOR;
 
 // bassfx enums
-using Bass_EXTERN::BASS_ATTRIB_TEMPO_OPTION_AA_FILTER_LENGTH;
-using Bass_EXTERN::BASS_ATTRIB_TEMPO_OPTION_OVERLAP_MS;
-using Bass_EXTERN::BASS_ATTRIB_TEMPO_OPTION_PREVENT_CLICK;
-using Bass_EXTERN::BASS_ATTRIB_TEMPO_OPTION_SEEKWINDOW_MS;
-using Bass_EXTERN::BASS_ATTRIB_TEMPO_OPTION_SEQUENCE_MS;
-using Bass_EXTERN::BASS_ATTRIB_TEMPO_OPTION_USE_AA_FILTER;
-using Bass_EXTERN::BASS_ATTRIB_TEMPO_OPTION_USE_QUICKALGO;
+using bass_EXTERN::BASS_ATTRIB_TEMPO_OPTION_AA_FILTER_LENGTH;
+using bass_EXTERN::BASS_ATTRIB_TEMPO_OPTION_OVERLAP_MS;
+using bass_EXTERN::BASS_ATTRIB_TEMPO_OPTION_PREVENT_CLICK;
+using bass_EXTERN::BASS_ATTRIB_TEMPO_OPTION_SEEKWINDOW_MS;
+using bass_EXTERN::BASS_ATTRIB_TEMPO_OPTION_SEQUENCE_MS;
+using bass_EXTERN::BASS_ATTRIB_TEMPO_OPTION_USE_AA_FILTER;
+using bass_EXTERN::BASS_ATTRIB_TEMPO_OPTION_USE_QUICKALGO;
 
-using Bass_EXTERN::BASS_ATTRIB_TEMPO;
-using Bass_EXTERN::BASS_ATTRIB_TEMPO_FREQ;
-using Bass_EXTERN::BASS_ATTRIB_TEMPO_PITCH;
+using bass_EXTERN::BASS_ATTRIB_TEMPO;
+using bass_EXTERN::BASS_ATTRIB_TEMPO_FREQ;
+using bass_EXTERN::BASS_ATTRIB_TEMPO_PITCH;
 
-// definitions
-using BASS_GetVersion_t = decltype(&Bass_EXTERN::BASS_GetVersion);
-using BASS_SetConfig_t = decltype(&Bass_EXTERN::BASS_SetConfig);
-using BASS_GetConfig_t = decltype(&Bass_EXTERN::BASS_GetConfig);
-using BASS_Init_t = decltype(&Bass_EXTERN::BASS_Init);
-using BASS_Start_t = decltype(&Bass_EXTERN::BASS_Start);
-using BASS_Free_t = decltype(&Bass_EXTERN::BASS_Free);
-using BASS_GetDeviceInfo_t = decltype(&Bass_EXTERN::BASS_GetDeviceInfo);
-using BASS_ErrorGetCode_t = decltype(&Bass_EXTERN::BASS_ErrorGetCode);
-using BASS_StreamCreateFile_t = decltype(&Bass_EXTERN::BASS_StreamCreateFile);
-using BASS_SampleLoad_t = decltype(&Bass_EXTERN::BASS_SampleLoad);
-using BASS_SampleFree_t = decltype(&Bass_EXTERN::BASS_SampleFree);
-using BASS_SampleGetChannel_t = decltype(&Bass_EXTERN::BASS_SampleGetChannel);
-using BASS_ChannelPlay_t = decltype(&Bass_EXTERN::BASS_ChannelPlay);
-using BASS_ChannelPause_t = decltype(&Bass_EXTERN::BASS_ChannelPause);
-using BASS_ChannelStop_t = decltype(&Bass_EXTERN::BASS_ChannelStop);
-using BASS_ChannelSetSync_t = decltype(&Bass_EXTERN::BASS_ChannelSetSync);
-using BASS_ChannelRemoveSync_t = decltype(&Bass_EXTERN::BASS_ChannelRemoveSync);
-using BASS_ChannelSetAttribute_t = decltype(&Bass_EXTERN::BASS_ChannelSetAttribute);
-using BASS_ChannelGetAttribute_t = decltype(&Bass_EXTERN::BASS_ChannelGetAttribute);
-using BASS_ChannelSetPosition_t = decltype(&Bass_EXTERN::BASS_ChannelSetPosition);
-using BASS_ChannelGetPosition_t = decltype(&Bass_EXTERN::BASS_ChannelGetPosition);
-using BASS_ChannelGetLength_t = decltype(&Bass_EXTERN::BASS_ChannelGetLength);
-using BASS_ChannelFlags_t = decltype(&Bass_EXTERN::BASS_ChannelFlags);
-using BASS_ChannelIsActive_t = decltype(&Bass_EXTERN::BASS_ChannelIsActive);
-using BASS_ChannelBytes2Seconds_t = decltype(&Bass_EXTERN::BASS_ChannelBytes2Seconds);
-using BASS_ChannelSeconds2Bytes_t = decltype(&Bass_EXTERN::BASS_ChannelSeconds2Bytes);
-using BASS_ChannelSet3DPosition_t = decltype(&Bass_EXTERN::BASS_ChannelSet3DPosition);
-using BASS_Set3DPosition_t = decltype(&Bass_EXTERN::BASS_Set3DPosition);
-using BASS_Apply3D_t = decltype(&Bass_EXTERN::BASS_Apply3D);
-using BASS_StreamFree_t = decltype(&Bass_EXTERN::BASS_StreamFree);
+#ifdef MCENGINE_PLATFORM_WINDOWS
+using BASS_ASIO_INFO = bass_EXTERN::BASS_ASIO_INFO;
+using BASS_ASIO_DEVICEINFO = bass_EXTERN::BASS_ASIO_DEVICEINFO;
 
-// BASS_FX
-using BASS_FX_GetVersion_t = decltype(&Bass_EXTERN::BASS_FX_GetVersion);
-using BASS_FX_TempoCreate_t = decltype(&Bass_EXTERN::BASS_FX_TempoCreate);
-
-#ifdef MCENGINE_FEATURE_BASS_WASAPI
-// BASSWASAPI
-using BASS_WASAPI_Init_t = decltype(&Bass_EXTERN::BASS_WASAPI_Init);
-using BASS_WASAPI_Free_t = decltype(&Bass_EXTERN::BASS_WASAPI_Free);
-using BASS_WASAPI_Start_t = decltype(&Bass_EXTERN::BASS_WASAPI_Start);
-using BASS_WASAPI_Stop_t = decltype(&Bass_EXTERN::BASS_WASAPI_Stop);
-using BASS_WASAPI_SetVolume_t = decltype(&Bass_EXTERN::BASS_WASAPI_SetVolume);
-using BASS_WASAPI_GetInfo_t = decltype(&Bass_EXTERN::BASS_WASAPI_GetInfo);
-using BASS_WASAPI_GetDeviceInfo_t = decltype(&Bass_EXTERN::BASS_WASAPI_GetDeviceInfo);
-
-// BASSMIX
-using BASS_Mixer_StreamCreate_t = decltype(&Bass_EXTERN::BASS_Mixer_StreamCreate);
-using BASS_Mixer_StreamAddChannel_t = decltype(&Bass_EXTERN::BASS_Mixer_StreamAddChannel);
-using BASS_Mixer_ChannelGetMixer_t = decltype(&Bass_EXTERN::BASS_Mixer_ChannelGetMixer);
-using BASS_Mixer_ChannelRemove_t = decltype(&Bass_EXTERN::BASS_Mixer_ChannelRemove);
+using BASS_WASAPI_INFO = bass_EXTERN::BASS_WASAPI_INFO;
+using BASS_WASAPI_DEVICEINFO = bass_EXTERN::BASS_WASAPI_DEVICEINFO;
+using WASAPIPROC = bass_EXTERN::WASAPIPROC;
 #endif
 
-// declarations
-extern BASS_GetVersion_t BASS_GetVersion;
-extern BASS_SetConfig_t BASS_SetConfig;
-extern BASS_GetConfig_t BASS_GetConfig;
-extern BASS_Init_t BASS_Init;
-extern BASS_Start_t BASS_Start;
-extern BASS_Free_t BASS_Free;
-extern BASS_GetDeviceInfo_t BASS_GetDeviceInfo;
-extern BASS_ErrorGetCode_t BASS_ErrorGetCode;
-extern BASS_StreamCreateFile_t BASS_StreamCreateFile;
-extern BASS_SampleLoad_t BASS_SampleLoad;
-extern BASS_SampleFree_t BASS_SampleFree;
-extern BASS_SampleGetChannel_t BASS_SampleGetChannel;
-extern BASS_ChannelPlay_t BASS_ChannelPlay;
-extern BASS_ChannelPause_t BASS_ChannelPause;
-extern BASS_ChannelStop_t BASS_ChannelStop;
-extern BASS_ChannelSetSync_t BASS_ChannelSetSync;
-extern BASS_ChannelRemoveSync_t BASS_ChannelRemoveSync;
-extern BASS_ChannelSetAttribute_t BASS_ChannelSetAttribute;
-extern BASS_ChannelGetAttribute_t BASS_ChannelGetAttribute;
-extern BASS_ChannelSetPosition_t BASS_ChannelSetPosition;
-extern BASS_ChannelGetPosition_t BASS_ChannelGetPosition;
-extern BASS_ChannelGetLength_t BASS_ChannelGetLength;
-extern BASS_ChannelFlags_t BASS_ChannelFlags;
-extern BASS_ChannelIsActive_t BASS_ChannelIsActive;
-extern BASS_ChannelBytes2Seconds_t BASS_ChannelBytes2Seconds;
-extern BASS_ChannelSeconds2Bytes_t BASS_ChannelSeconds2Bytes;
-extern BASS_ChannelSet3DPosition_t BASS_ChannelSet3DPosition;
-extern BASS_Set3DPosition_t BASS_Set3DPosition;
-extern BASS_Apply3D_t BASS_Apply3D;
-extern BASS_StreamFree_t BASS_StreamFree;
+// define all BASS functions we'll need from the libs
+#define BASS_CORE_FUNCTIONS(X) \
+	X(BASS_GetVersion) \
+	X(BASS_SetConfig) \
+	X(BASS_GetConfig) \
+	X(BASS_Init) \
+	X(BASS_Start) \
+	X(BASS_Free) \
+	X(BASS_GetDeviceInfo) \
+	X(BASS_SetDevice) \
+	X(BASS_ErrorGetCode) \
+	X(BASS_StreamCreateFile) \
+	X(BASS_SampleLoad) \
+	X(BASS_SampleFree) \
+	X(BASS_SampleStop) \
+	X(BASS_SampleGetChannel) \
+	X(BASS_ChannelPlay) \
+	X(BASS_ChannelPause) \
+	X(BASS_ChannelFree) \
+	X(BASS_ChannelStop) \
+	X(BASS_ChannelSetSync) \
+	X(BASS_ChannelRemoveSync) \
+	X(BASS_ChannelSetAttribute) \
+	X(BASS_ChannelGetAttribute) \
+	X(BASS_ChannelSetPosition) \
+	X(BASS_ChannelGetPosition) \
+	X(BASS_ChannelGetLength) \
+	X(BASS_ChannelFlags) \
+	X(BASS_ChannelIsActive) \
+	X(BASS_ChannelBytes2Seconds) \
+	X(BASS_ChannelSeconds2Bytes) \
+	X(BASS_ChannelSet3DPosition) \
+	X(BASS_Set3DPosition) \
+	X(BASS_Apply3D) \
+	X(BASS_StreamFree)
 
-// BASS_FX
-extern BASS_FX_GetVersion_t BASS_FX_GetVersion;
-extern BASS_FX_TempoCreate_t BASS_FX_TempoCreate;
+#define BASS_FX_FUNCTIONS(X) \
+	X(BASS_FX_GetVersion) \
+	X(BASS_FX_TempoCreate)
 
-#ifdef MCENGINE_FEATURE_BASS_WASAPI
-// BASSWASAPI
-extern BASS_WASAPI_Init_t BASS_WASAPI_Init;
-extern BASS_WASAPI_Free_t BASS_WASAPI_Free;
-extern BASS_WASAPI_Start_t BASS_WASAPI_Start;
-extern BASS_WASAPI_Stop_t BASS_WASAPI_Stop;
-extern BASS_WASAPI_SetVolume_t BASS_WASAPI_SetVolume;
-extern BASS_WASAPI_GetInfo_t BASS_WASAPI_GetInfo;
-extern BASS_WASAPI_GetDeviceInfo_t BASS_WASAPI_GetDeviceInfo;
+#define BASS_MIX_FUNCTIONS(X) \
+	X(BASS_Mixer_GetVersion) \
+	X(BASS_Mixer_ChannelGetMixer) \
+	X(BASS_Mixer_ChannelRemove) \
+	X(BASS_Mixer_ChannelGetPosition) \
+	X(BASS_Mixer_ChannelSetPosition) \
+	X(BASS_Mixer_StreamCreate) \
+	X(BASS_Mixer_StreamAddChannel)
 
-// BASSMIX
-extern BASS_Mixer_StreamCreate_t BASS_Mixer_StreamCreate;
-extern BASS_Mixer_StreamAddChannel_t BASS_Mixer_StreamAddChannel;
-extern BASS_Mixer_ChannelGetMixer_t BASS_Mixer_ChannelGetMixer;
-extern BASS_Mixer_ChannelRemove_t BASS_Mixer_ChannelRemove;
+#ifdef MCENGINE_PLATFORM_WINDOWS
+#define BASS_ASIO_FUNCTIONS(X) \
+	X(BASS_ASIO_GetVersion) \
+	X(BASS_ASIO_Init) \
+	X(BASS_ASIO_ControlPanel) \
+	X(BASS_ASIO_GetInfo) \
+	X(BASS_ASIO_GetRate) \
+	X(BASS_ASIO_GetDeviceInfo) \
+	X(BASS_ASIO_ChannelEnableBASS) \
+	X(BASS_ASIO_Start) \
+	X(BASS_ASIO_GetLatency) \
+	X(BASS_ASIO_Free) \
+	X(BASS_ASIO_ChannelSetVolume)
+
+#define BASS_WASAPI_FUNCTIONS(X) \
+	X(BASS_WASAPI_GetVersion) \
+	X(BASS_WASAPI_GetDeviceInfo) \
+	X(BASS_WASAPI_Init) \
+	X(BASS_WASAPI_Start) \
+	X(BASS_WASAPI_Free) \
+	X(BASS_WASAPI_SetVolume)
 #endif
 
-// open the libraries and populate the function pointers
-bool init();
-// close the libraries (BassSoundEngine destructor)
-void cleanup();
+// generate the type definitions and declarations
+#define DECLARE_BASS_FUNCTION(name) \
+	using name##_t = decltype(&bass_EXTERN::name); \
+	extern name##_t name;
+// clang-format off
+    BASS_CORE_FUNCTIONS(DECLARE_BASS_FUNCTION)
+	BASS_FX_FUNCTIONS(DECLARE_BASS_FUNCTION)
+	BASS_MIX_FUNCTIONS(DECLARE_BASS_FUNCTION)
 
+#ifdef MCENGINE_PLATFORM_WINDOWS
+	BASS_ASIO_FUNCTIONS(DECLARE_BASS_FUNCTION)
+	BASS_WASAPI_FUNCTIONS(DECLARE_BASS_FUNCTION)
+#endif
+
+    // open the libraries and populate the function pointers
+    bool init();
+	// close the libraries (BassSoundEngine destructor)
+	void cleanup();
+//clang-format on
 }; // namespace BassLoader
 
 using namespace BassLoader;

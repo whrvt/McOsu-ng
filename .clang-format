@@ -11,6 +11,7 @@ AllowShortIfStatementsOnASingleLine: Never
 BraceWrapping:
   SplitEmptyRecord: false
   SplitEmptyNamespace: false
+AlignEscapedNewlines: DontAlign
 ---
 Language: Cpp
 BasedOnStyle: Microsoft
@@ -30,4 +31,4 @@ BreakBeforeBraces: Custom
 BraceWrapping:
   SplitEmptyRecord: false
   SplitEmptyNamespace: false
-
+AlignEscapedNewlines: DontAlign

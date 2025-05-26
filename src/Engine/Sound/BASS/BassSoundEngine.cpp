@@ -14,9 +14,10 @@
 #include "ConVar.h"
 #include "Engine.h"
 #include "Environment.h"
-#include "Thread.h"
 
-#include <mutex>
+//#include "Thread.h"
+
+//#include <mutex>
 
 extern ConVar snd_output_device;
 extern ConVar snd_restart;

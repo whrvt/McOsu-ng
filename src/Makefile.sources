@@ -114,7 +114,9 @@ McOsu_ng_SOURCES = \
 	src/Engine/Shader.cpp \
 	src/Engine/Sound/BASS/BassLoader.cpp \
 	src/Engine/Sound/BASS/BassSound.cpp \
+	src/Engine/Sound/BASS/BassSound2.cpp \
 	src/Engine/Sound/BASS/BassSoundEngine.cpp \
+	src/Engine/Sound/BASS/BassSoundEngine2.cpp \
 	src/Engine/Sound/SDL_mixer/SDLSound.cpp \
 	src/Engine/Sound/SDL_mixer/SDLSoundEngine.cpp \
 	src/Engine/Sound/SoLoud/SoLoudSound.cpp \

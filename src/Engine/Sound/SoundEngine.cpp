@@ -5,13 +5,14 @@
 // $NoKeywords: $snd
 //===============================================================================//
 
-#include "ConVar.h"
-#include "Engine.h"
-
-#include "SoundEngine.h"
 #include "BassSoundEngine.h"
+#include "BassSoundEngine2.h"
 #include "SDLSoundEngine.h"
 #include "SoLoudSoundEngine.h"
+#include "SoundEngine.h"
+
+#include "ConVar.h"
+#include "Engine.h"
 
 // this shouldn't be here, but McKay hardcoded it in places where it breaks if it doesnt exist...
 ConVar win_snd_fallback_dsound("win_snd_fallback_dsound", false, FCVAR_NONE, "use DirectSound instead of WASAPI");

@@ -18,16 +18,24 @@ libraries/glad/glad/KHR/khrplatform.h generated
 libraries/glad/glad/glad.cpp generated
 libraries/glad/glad/glad.h generated
 libraries/bassfx/lib/windows/i686/bass_fx.dll generated
-libraries/bassfx/lib/windows/i686/bass_fx.lib generated
 libraries/bassfx/lib/windows/x86_64/bass_fx.dll generated
 libraries/bassfx/lib/linux/i686/libbass_fx.so generated
 libraries/bassfx/lib/linux/x86_64/libbass_fx.so generated
 libraries/bassfx/include/bass_fx.h generated
+libraries/bassasio/lib/windows/i686/bassasio.dll generated
+libraries/bassasio/lib/windows/x86_64/bassasio.dll generated
+libraries/bassasio/include/bassasio.h generated
+libraries/basswasapi/lib/windows/i686/basswasapi.dll generated
+libraries/basswasapi/lib/windows/x86_64/basswasapi.dll generated
+libraries/basswasapi/include/basswasapi.h generated
+libraries/bassmix/lib/windows/i686/bassmix.dll generated
+libraries/bassmix/lib/windows/x86_64/bassmix.dll generated
+libraries/bassmix/lib/linux/i686/libbassmix.so generated
+libraries/bassmix/lib/linux/x86_64/libbassmix.so generated
+libraries/bassmix/include/bassmix.h generated
 libraries/bass/lib/windows/i686/bass.dll generated
-libraries/bass/lib/windows/i686/bass.lib generated
 libraries/bass/lib/windows/x86_64/bass.dll generated
 libraries/bass/lib/linux/i686/libbass.so generated
 libraries/bass/lib/linux/x86_64/libbass.so generated
 libraries/bass/include/bass.h generated
-
 

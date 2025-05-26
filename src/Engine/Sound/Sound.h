@@ -50,11 +50,11 @@ public:
 	virtual bool isPlaying() = 0;
 	virtual bool isFinished() = 0;
 
-	[[nodiscard]] inline double getLastPlayTime() const { return m_fLastPlayTime; }
-	[[nodiscard]] inline bool isStream() const { return m_bStream; }
-	[[nodiscard]] inline bool is3d() const { return m_bIs3d; }
-	[[nodiscard]] inline bool isLooped() const { return m_bIsLooped; }
-	[[nodiscard]] inline bool isOverlayable() const { return m_bIsOverlayable; }
+	[[nodiscard]] virtual double getLastPlayTime() const { return m_fLastPlayTime; }
+	[[nodiscard]] virtual bool isStream() const { return m_bStream; }
+	[[nodiscard]] virtual bool is3d() const { return m_bIs3d; }
+	[[nodiscard]] virtual bool isLooped() const { return m_bIsLooped; }
+	[[nodiscard]] virtual bool isOverlayable() const { return m_bIsOverlayable; }
 
 	virtual void rebuild(UString newFilePath) = 0;
 

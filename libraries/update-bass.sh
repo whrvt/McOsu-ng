@@ -2,6 +2,10 @@
 
 # https://github.com/ppy/osu-framework/blob/eed788fd166540f7e219e1e48a36d0bf64f07cc4/osu.Framework.NativeLibs/update-bass.sh
 
+mkdir -p {bass,bassfx,bassmix,basswasapi,bassasio}/include
+mkdir -p {bass,bassfx,bassmix}/lib/{windows,linux}/{x86_64,i686}
+mkdir -p {basswasapi,bassasio}/lib/windows/{x86_64,i686}
+
 # bass
 curl -Lso bass.zip https://www.un4seen.com/stuff/bass.zip
 unzip -qjo bass.zip bass.dll -d bass/lib/windows/i686
@@ -22,21 +26,28 @@ curl -Lso bass_fx-linux.zip https://www.un4seen.com/stuff/bass_fx-linux.zip
 unzip -qjo bass_fx-linux.zip x86/libbass_fx.so -d bassfx/lib/linux/i686
 unzip -qjo bass_fx-linux.zip x86_64/libbass_fx.so -d bassfx/lib/linux/x86_64
 
-# curl -Lso bass_fx-osx.zip https://www.un4seen.com/stuff/bass_fx-osx.zip
-# unzip -qjo bass_fx-osx.zip libbass_fx.dylib -d runtimes/osx/native/
+# bassmix
+curl -Lso bassmix24.zip https://www.un4seen.com/stuff/bassmix.zip
+unzip -qjo bassmix24.zip bassmix.dll -d bassmix/lib/windows/i686
+unzip -qjo bassmix24.zip x64/bassmix.dll -d bassmix/lib/windows/x86_64
+unzip -qjo bassmix24.zip bassmix.h -d bassmix/include/
 
-# CURRENTLY UNUSED
-# # bassmix
-# curl -Lso bassmix24.zip https://www.un4seen.com/stuff/bassmix.zip
-# unzip -qjo bassmix24.zip x64/bassmix.dll -d runtimes/win-x64/native/
-# unzip -qjo bassmix24.zip bassmix.dll -d runtimes/win-x86/native/
+curl -Lso bassmix24-linux.zip https://www.un4seen.com/stuff/bassmix-linux.zip
+unzip -qjo bassmix24-linux.zip x86/libbassmix.so -d bassmix/lib/linux/i686
+unzip -qjo bassmix24-linux.zip x86_64/libbassmix.so -d bassmix/lib/linux/x86_64
 
-# curl -Lso bassmix24-linux.zip https://www.un4seen.com/stuff/bassmix-linux.zip
-# unzip -qjo bassmix24-linux.zip x86/libbassmix.so -d bassmix/lib/linux/i686
-# unzip -qjo bassmix24-linux.zip x86_64/libbassmix.so -d bassmix/lib/linux/x86_64
+# basswasapi (windows)
+curl -Lso basswasapi24.zip https://www.un4seen.com/stuff/basswasapi.zip
+curl -Lso basswasapi24-header.zip https://www.un4seen.com/files/basswasapi24.zip # the header isnt in the stuff version
+unzip -qjo basswasapi24.zip basswasapi.dll -d basswasapi/lib/windows/i686
+unzip -qjo basswasapi24.zip x64/basswasapi.dll -d basswasapi/lib/windows/x86_64
+unzip -qjo basswasapi24-header.zip c/basswasapi.h -d basswasapi/include/
 
-# curl -Lso bassmix24-osx.zip https://www.un4seen.com/stuff/bassmix-osx.zip
-# unzip -qjo bassmix24-osx.zip libbassmix.dylib -d runtimes/osx/native/
+# bassasio (windows)
+curl -Lso bassasio24.zip https://www.un4seen.com/stuff/bassasio.zip
+unzip -qjo bassasio24.zip bassasio.dll -d bassasio/lib/windows/i686
+unzip -qjo bassasio24.zip x64/bassasio.dll -d bassasio/lib/windows/x86_64
+unzip -qjo bassasio24.zip bassasio.h -d bassasio/include/
 
 # clean up
 rm bass*.zip

@@ -9,6 +9,7 @@
 #include "ConVar.h"
 
 #include "BassSound.h"
+#include "BassSound2.h"
 #include "SDLSound.h"
 #include "SoLoudSound.h"
 

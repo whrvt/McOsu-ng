@@ -648,6 +648,9 @@ am__EXEEXT_TRUE
 LTLIBOBJS
 LIBOBJS
 GLAD_CFLAGS
+BUNDLED_BASS_WASAPI_DIR
+BUNDLED_BASS_ASIO_DIR
+BUNDLED_BASS_MIX_DIR
 BUNDLED_BASS_FX_DIR
 BUNDLED_BASS_DIR
 BUNDLED_LIBS_DIR
@@ -9206,7 +9209,7 @@ fi
 
 
 SDL3_MIN_VERSION=3.4.0 # needs SDL_SetRelativeMouseTransform, not in any current (3.2.x) releases
-SDL3_BUILD_VERSION=b70919ecd9696198755c2fa326c54f52dc9f355b # git
+SDL3_BUILD_VERSION=b7082e7e1819017c04fc92fbc309c841579cb86c # git
 FREETYPE2_MIN_VERSION=2.10.0
 FREETYPE2_BUILD_VERSION=2.13.3
 LIBJPEG_MIN_VERSION=3.0.0
@@ -10609,6 +10612,9 @@ ASSETS_DIR=assets
 BUNDLED_LIBS_DIR=libraries
 BUNDLED_BASS_DIR=$BUNDLED_LIBS_DIR/bass
 BUNDLED_BASS_FX_DIR=$BUNDLED_LIBS_DIR/bassfx
+BUNDLED_BASS_MIX_DIR=$BUNDLED_LIBS_DIR/bassmix
+BUNDLED_BASS_ASIO_DIR=$BUNDLED_LIBS_DIR/bassasio
+BUNDLED_BASS_WASAPI_DIR=$BUNDLED_LIBS_DIR/basswasapi
 
 # sanity check
 if test "x$with_sdlmixer" != "xyes" && test "x$with_soloud" != "xyes"
@@ -10628,7 +10634,34 @@ else case e in #(
   e) as_fn_error $? "Required bundled library ${LIBPREFIX}bass_fx$DLLEXT not found" "$LINENO" 5 ;;
 esac
 fi
-    BASS_CFLAGS="-I\$(srcdir)/\$(BUNDLED_BASS_DIR)/include -I\$(srcdir)/\$(BUNDLED_BASS_FX_DIR)/include"
+    if test -f "$srcdir/$BUNDLED_BASS_MIX_DIR/lib/$SYSNAME/$host_cpu/${LIBPREFIX}bassmix$DLLEXT"
+then :
+
+else case e in #(
+  e) as_fn_error $? "Required bundled library ${LIBPREFIX}bassmix$DLLEXT not found" "$LINENO" 5 ;;
+esac
+fi
+    BASS_CFLAGS="-I\$(srcdir)/\$(BUNDLED_BASS_DIR)/include -I\$(srcdir)/\$(BUNDLED_BASS_FX_DIR)/include -I\$(srcdir)/\$(BUNDLED_BASS_MIX_DIR)/include"
+    if test "$SYSNAME" = "windows"
+then :
+
+        if test -f "$srcdir/$BUNDLED_BASS_ASIO_DIR/lib/$SYSNAME/$host_cpu/${LIBPREFIX}bassasio$DLLEXT"
+then :
+
+else case e in #(
+  e) as_fn_error $? "Required bundled library ${LIBPREFIX}bassasio$DLLEXT not found" "$LINENO" 5 ;;
+esac
+fi
+        if test -f "$srcdir/$BUNDLED_BASS_WASAPI_DIR/lib/$SYSNAME/$host_cpu/${LIBPREFIX}basswasapi$DLLEXT"
+then :
+
+else case e in #(
+  e) as_fn_error $? "Required bundled library ${LIBPREFIX}basswasapi$DLLEXT not found" "$LINENO" 5 ;;
+esac
+fi
+        BASS_CFLAGS="$BASS_CFLAGS -I\$(srcdir)/\$(BUNDLED_BASS_ASIO_DIR)/include -I\$(srcdir)/\$(BUNDLED_BASS_WASAPI_DIR)/include"
+
+fi
 
 printf "%s\n" "#define MCENGINE_FEATURE_BASS 1" >>confdefs.h
 
@@ -10655,6 +10688,9 @@ fi
  ;;
 esac
 fi
+
+
+
 
 
 

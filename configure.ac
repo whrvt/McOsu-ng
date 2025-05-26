@@ -484,7 +484,7 @@ PKG_CHECK_AUTO([GL], [gl], [have_gl=yes], [have_gl=no])
 PKG_CHECK_AUTO([GLU], [glu], [have_glu=yes], [have_glu=no])
 
 SDL3_MIN_VERSION=3.4.0 # needs SDL_SetRelativeMouseTransform, not in any current (3.2.x) releases
-SDL3_BUILD_VERSION=b70919ecd9696198755c2fa326c54f52dc9f355b # git
+SDL3_BUILD_VERSION=b7082e7e1819017c04fc92fbc309c841579cb86c # git
 FREETYPE2_MIN_VERSION=2.10.0
 FREETYPE2_BUILD_VERSION=2.13.3
 LIBJPEG_MIN_VERSION=3.0.0
@@ -616,6 +616,9 @@ AC_SUBST([ASSETS_DIR])
 BUNDLED_LIBS_DIR=libraries
 BUNDLED_BASS_DIR=$BUNDLED_LIBS_DIR/bass
 BUNDLED_BASS_FX_DIR=$BUNDLED_LIBS_DIR/bassfx
+BUNDLED_BASS_MIX_DIR=$BUNDLED_LIBS_DIR/bassmix
+BUNDLED_BASS_ASIO_DIR=$BUNDLED_LIBS_DIR/bassasio
+BUNDLED_BASS_WASAPI_DIR=$BUNDLED_LIBS_DIR/basswasapi
 
 # sanity check
 AS_IF([test "x$with_sdlmixer" != "xyes" && test "x$with_soloud" != "xyes"], [
@@ -625,7 +628,19 @@ AS_IF([test "x$with_sdlmixer" != "xyes" && test "x$with_soloud" != "xyes"], [
     AS_IF([test -f "$srcdir/$BUNDLED_BASS_FX_DIR/lib/$SYSNAME/$host_cpu/${LIBPREFIX}bass_fx$DLLEXT"],
         [],
         [AC_MSG_ERROR([Required bundled library ${LIBPREFIX}bass_fx$DLLEXT not found])])
-    BASS_CFLAGS="-I\$(srcdir)/\$(BUNDLED_BASS_DIR)/include -I\$(srcdir)/\$(BUNDLED_BASS_FX_DIR)/include"
+    AS_IF([test -f "$srcdir/$BUNDLED_BASS_MIX_DIR/lib/$SYSNAME/$host_cpu/${LIBPREFIX}bassmix$DLLEXT"],
+        [],
+        [AC_MSG_ERROR([Required bundled library ${LIBPREFIX}bassmix$DLLEXT not found])])
+    BASS_CFLAGS="-I\$(srcdir)/\$(BUNDLED_BASS_DIR)/include -I\$(srcdir)/\$(BUNDLED_BASS_FX_DIR)/include -I\$(srcdir)/\$(BUNDLED_BASS_MIX_DIR)/include"
+    AS_IF([test "$SYSNAME" = "windows"],[
+        AS_IF([test -f "$srcdir/$BUNDLED_BASS_ASIO_DIR/lib/$SYSNAME/$host_cpu/${LIBPREFIX}bassasio$DLLEXT"],
+            [],
+            [AC_MSG_ERROR([Required bundled library ${LIBPREFIX}bassasio$DLLEXT not found])])
+        AS_IF([test -f "$srcdir/$BUNDLED_BASS_WASAPI_DIR/lib/$SYSNAME/$host_cpu/${LIBPREFIX}basswasapi$DLLEXT"],
+            [],
+            [AC_MSG_ERROR([Required bundled library ${LIBPREFIX}basswasapi$DLLEXT not found])])
+        BASS_CFLAGS="$BASS_CFLAGS -I\$(srcdir)/\$(BUNDLED_BASS_ASIO_DIR)/include -I\$(srcdir)/\$(BUNDLED_BASS_WASAPI_DIR)/include"
+    ])
     AC_DEFINE([MCENGINE_FEATURE_BASS], [1], [Define if the BASS audio backend is desired.])
 ], [
     BASS_CFLAGS=""
@@ -641,6 +656,9 @@ AC_SUBST([BASS_CFLAGS])
 AC_SUBST([BUNDLED_LIBS_DIR])
 AC_SUBST([BUNDLED_BASS_DIR])
 AC_SUBST([BUNDLED_BASS_FX_DIR])
+AC_SUBST([BUNDLED_BASS_MIX_DIR])
+AC_SUBST([BUNDLED_BASS_ASIO_DIR])
+AC_SUBST([BUNDLED_BASS_WASAPI_DIR])
 
 # the source file is also added through autogen.sh to Makefile.sources
 AC_SUBST([GLAD_CFLAGS], ["-I\$(srcdir)/\$(BUNDLED_LIBS_DIR)/glad -I\$(srcdir)/\$(BUNDLED_LIBS_DIR)/glad/glad"])
