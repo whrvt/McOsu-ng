@@ -1231,6 +1231,7 @@ void OsuSongBrowser2::update()
 		}
 	}
 
+	// TODO: fix this shit, it shouldn't have to be destroyed and recreated constantly
 	// handle background star calculation (2)
 	// this goes through all loaded beatmaps and checks if stars + length have to be calculated and set (e.g. if without osu!.db database)
 	if (m_beatmaps.size() > 0 && osu_songbrowser_background_star_calculation.getBool())
@@ -1270,17 +1271,15 @@ void OsuSongBrowser2::update()
 				OsuDatabaseBeatmap *diffToCalc = NULL;
 				if (diffs.size() > 0)
 				{
-					for (size_t d=0; d<diffs.size(); d++)
+					for (auto diff : diffs)
 					{
-						if (diffs[d]->getStarsNomod() <= 0.0f)
+						if (diff->getStarsNomod() <= 0.0f)
 						{
-							diffToCalc = diffs[d];
+							diffToCalc = diff;
 							break;
 						}
 					}
 				}
-				else if (diffToCalc->getStarsNomod() <= 0.0f)
-					diffToCalc = beatmap;
 
 				if (diffToCalc != NULL)
 				{

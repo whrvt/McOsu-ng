@@ -208,7 +208,7 @@ void OsuSliderCurveEqualDistanceMulti::init(const std::vector<OsuSliderCurveType
 {
 	if (curvesList.size() < 1)
 	{
-		debugLog("Error: curvesList.size() == 0!!!\n");
+		debugLog("OsuSliderCurveEqualDistanceMulti::init: Error: curvesList.size() == 0!!!\n");
 		return;
 	}
 
@@ -222,7 +222,7 @@ void OsuSliderCurveEqualDistanceMulti::init(const std::vector<OsuSliderCurveType
 	{
 		if (curCurve->getCurvePoints().size() < 1)
 		{
-			debugLog("Error: curCurve->getCurvePoints().size() == 0!!!\n");
+			debugLog("OsuSliderCurveEqualDistanceMulti::init: Error: curCurve->getCurvePoints().size() == 0!!!\n");
 
 			// cleanup
 			for (size_t i=0; i<curvesList.size(); i++)
@@ -318,9 +318,10 @@ void OsuSliderCurveEqualDistanceMulti::init(const std::vector<OsuSliderCurveType
 		m_curvePointSegments.push_back(curCurvePoints);
 
 	// sanity check
+	// spec: FIXME: at least one of my maps triggers this (in upstream mcosu too), try to fix
 	if (m_curvePoints.size() == 0)
 	{
-		debugLog("Error: m_curvePoints.size() == 0!!!\n");
+		debugLog("OsuSliderCurveEqualDistanceMulti::init: Error: m_curvePoints.size() == 0!!!\n");
 
 		// cleanup
 		for (size_t i=0; i<curvesList.size(); i++)

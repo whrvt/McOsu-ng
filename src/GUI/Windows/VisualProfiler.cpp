@@ -129,7 +129,7 @@ void VisualProfiler::draw(Graphics *g)
 					addTextLine(UString::format("Env Mouse Pos: %i x %i", (int)envMousePos.x, (int)envMousePos.y), textFont, m_textLines);
 					addTextLine(UString::format("Sound Device: %s", soundEngine->getOutputDevice().toUtf8()), textFont, m_textLines);
 					addTextLine(UString::format("Sound Volume: %f", soundEngine->getVolume()), textFont, m_textLines);
-					addTextLine(UString::format("RM Threads: %zu", resourceManager->getNumThreads()), textFont, m_textLines);
+					addTextLine(UString::format("RM Threads: %zu", resourceManager->getNumActiveThreads()), textFont, m_textLines);
 					addTextLine(UString::format("RM LoadingWork: %zu", resourceManager->getNumLoadingWork()), textFont, m_textLines);
 					addTextLine(UString::format("RM LoadingWorkAD: %zu", resourceManager->getNumLoadingWorkAsyncDestroy()), textFont, m_textLines);
 					addTextLine(UString::format("RM Named Resources: %zu", resourceManager->getResources().size()), textFont, m_textLines);

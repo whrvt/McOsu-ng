@@ -26,6 +26,7 @@
 #include "VisualProfiler.h"
 
 #include "Engine.h"
+#include "McMath.h"
 
 //********************//
 //	Include App here  //

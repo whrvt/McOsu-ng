@@ -10,7 +10,6 @@
 #define ENGINE_H
 
 #include "KeyboardListener.h"
-#include "McMath.h"
 #include "Timing.h"
 #include "cbase.h"
 #include "fmt/color.h"
@@ -33,6 +32,7 @@ class CBaseUIContainer;
 class VisualProfiler;
 class ConsoleBox;
 class Console;
+class McMath;
 
 #ifdef _DEBUG
 #define debugLog(...) Engine::ContextLogger::log(std::source_location::current(), __VA_ARGS__)

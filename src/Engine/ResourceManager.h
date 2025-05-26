@@ -1,4 +1,4 @@
-//================ Copyright (c) 2015, PG, All rights reserved. =================//
+//========== Copyright (c) 2015, PG & 2025, WH, All rights reserved. ============//
 //
 // Purpose:		resource manager
 //
@@ -21,12 +21,13 @@
 #include <condition_variable>
 #include <queue>
 #include <unordered_map>
+#include <chrono>
 
 class ConVar;
 
 class ResourceManagerLoaderThread;
 
-class ResourceManager
+class ResourceManager final
 {
 public:
 	static ConVar *debug_rm;
@@ -39,28 +40,6 @@ public:
 	// async loading methods
 	// TODO: move the actual resource loading to a separate file, it's getting messy in here
 public:
-	template <typename T>
-	struct MobileAtomic
-	{
-		std::atomic<T> atomic;
-
-		MobileAtomic() : atomic(T()) {}
-
-		explicit MobileAtomic(T const &v) : atomic(v) {}
-		explicit MobileAtomic(std::atomic<T> const &a) : atomic(a.load()) {}
-
-		MobileAtomic(MobileAtomic const &other) : atomic(other.atomic.load()) {}
-
-		MobileAtomic &operator=(MobileAtomic const &other)
-		{
-			atomic.store(other.atomic.load());
-			return *this;
-		}
-	};
-	typedef MobileAtomic<bool> MobileAtomicBool;
-	typedef MobileAtomic<size_t> MobileAtomicSizeT;
-	typedef MobileAtomic<Resource *> MobileAtomicResource;
-
 	struct LOADING_WORK
 	{
 		Resource *resource;
@@ -77,7 +56,7 @@ public:
 	std::condition_variable m_workAvailable;
 	std::mutex m_workAvailableMutex;
 
-	[[nodiscard]] inline size_t getNumThreads() const { return m_threads.size(); }
+	[[nodiscard]] size_t getNumActiveThreads() const;
 	[[nodiscard]] size_t getNumLoadingWork() const;
 	[[nodiscard]] inline size_t getNumLoadingWorkAsyncDestroy() const { return m_loadingWorkAsyncDestroy.size(); }
 
@@ -86,8 +65,22 @@ public:
 	std::stack<bool> m_nextLoadUnmanagedStack;
 	size_t m_iNumResourceInitPerFrameLimit;
 
+	// thread pool management
+	void ensureThreadAvailable();
+	void cleanupIdleThreads();
+
 	// async work queue threads
 	std::vector<ResourceManagerLoaderThread *> m_threads;
+	mutable std::mutex m_threadsMutex;
+	
+	// thread pool configuration
+	size_t m_minThreads;
+	size_t m_maxThreads;
+	std::chrono::seconds m_threadIdleTimeout{10}; // threads terminate after 10 seconds idle
+	
+	// thread lifecycle tracking
+	std::atomic<size_t> m_activeThreadCount{0};
+	std::atomic<size_t> m_totalThreadsCreated{0};
 
 	// separate queues for different stages of loading
 	std::queue<LOADING_WORK *> m_pendingWork;       // work waiting to be picked up
@@ -104,6 +97,9 @@ public:
 	// async destroy queue
 	std::vector<Resource *> m_loadingWorkAsyncDestroy;
 	std::mutex m_asyncDestroyMutex;
+
+	// shutdown flag
+	std::atomic<bool> m_bShuttingDown{false};
 
 public:
 	ResourceManager();

@@ -1,4 +1,4 @@
-//================ Copyright (c) 2015, PG, All rights reserved. =================//
+//========== Copyright (c) 2015, PG & 2025, WH, All rights reserved. ============//
 //
 // Purpose:		resource manager
 //
@@ -18,35 +18,133 @@
 
 static constexpr int default_numthreads = 3;
 
-static void *_resourceLoaderThread(void *data);
-
-class ResourceManagerLoaderThread
-{
-public:
-	// self
-	McThread *thread{};
-
-	// synchronization
-	std::atomic<bool> running{true};
-
-	// parent reference
-	ResourceManager *resourceManager{};
-	size_t threadIndex{};
-
-	ResourceManagerLoaderThread() = default;
-};
-
-ConVar rm_numthreads("rm_numthreads", default_numthreads, FCVAR_NONE,
-                     "how many parallel resource loader threads are spawned once on startup (!), and subsequently used during runtime");
+ConVar rm_numthreads("rm_numthreads", default_numthreads, FCVAR_NONE, "maximum number of parallel resource loader threads");
+ConVar rm_min_threads("rm_min_threads", 1, FCVAR_NONE, "minimum number of threads to keep alive (default: 1)");
+ConVar rm_thread_idle_timeout("rm_thread_idle_timeout", 5.0f, FCVAR_NONE, "seconds before an idle thread terminates itself (default: 5)");
 ConVar rm_debug_async_delay("rm_debug_async_delay", 0.0f, FCVAR_CHEAT);
 ConVar rm_interrupt_on_destroy("rm_interrupt_on_destroy", true, FCVAR_CHEAT);
 ConVar debug_rm_("debug_rm", false, FCVAR_NONE);
 
 ConVar *ResourceManager::debug_rm = &debug_rm_;
 
+//==================================
+// LOADER THREAD
+//==================================
+class ResourceManagerLoaderThread final
+{
+public:
+	// self
+	McThread *thread{};
+
+	// parent reference
+	ResourceManager *resourceManager{};
+	size_t threadIndex{};
+	bool isCore{}; // true if this is a core thread that shouldn't terminate
+	std::chrono::steady_clock::time_point lastWorkTime{};
+	std::chrono::milliseconds idleTimeoutOffset{0}; // randomize destroy timeout to avoid a wave of threads being destroyed at once
+
+	ResourceManagerLoaderThread() = default;
+};
+
+static void *_resourceLoaderThread(void *data, std::stop_token stopToken)
+{
+	auto *self = static_cast<ResourceManagerLoaderThread *>(data);
+	ResourceManager *manager = self->resourceManager;
+	const size_t threadIndex = self->threadIndex;
+	const bool isCore = self->isCore;
+
+	// update last work time to now
+	self->lastWorkTime = std::chrono::steady_clock::now();
+
+	// increment active thread count
+	manager->m_activeThreadCount.fetch_add(1);
+
+	if (ResourceManager::debug_rm->getBool())
+		debugLog("Resource Manager: Thread #{} started (core: {})\n", threadIndex, isCore);
+
+	while (!stopToken.stop_requested() && !manager->m_bShuttingDown.load())
+	{
+		// try to get work
+		ResourceManager::LOADING_WORK *work = manager->getNextWork();
+
+		// if no work available, wait for notification with timeout
+		if (!work)
+		{
+			std::unique_lock<std::mutex> lock(manager->m_workAvailableMutex);
+
+			// use stop_callback to wake up the condition variable when stop is requested
+			std::stop_callback stopCallback(stopToken, [&]() { manager->m_workAvailable.notify_all(); });
+
+			// wait with timeout
+			auto waitTime = isCore ? std::chrono::milliseconds(100) : manager->m_threadIdleTimeout + self->idleTimeoutOffset;
+
+			// if the wait times out, non-core threads will terminate
+			bool workAvailable = manager->m_workAvailable.wait_for(
+			    lock, waitTime, [&]() { return stopToken.stop_requested() || manager->m_bShuttingDown.load() || manager->getNumLoadingWork() > 0; });
+
+			// if we timed out and we're not a core thread, exit the thread
+			if (!workAvailable && !isCore)
+			{
+				if (ResourceManager::debug_rm->getBool())
+					debugLog("Resource Manager: Thread #{} terminating due to idle timeout\n", threadIndex);
+
+				// request stop to signal that this thread should be cleaned up
+				self->thread->requestStop();
+				break;
+			}
+
+			// check if we should exit due to shutdown or stop request
+			if (stopToken.stop_requested() || manager->m_bShuttingDown.load())
+				break;
+
+			continue;
+		}
+
+		// we have work, update last work time
+		self->lastWorkTime = std::chrono::steady_clock::now();
+
+		// process work
+		Resource *resource = work->resource;
+
+		if (ResourceManager::debug_rm->getBool())
+			debugLog("Resource Manager: Thread #{} loading {:s}\n", threadIndex, resource->getName().toUtf8());
+
+		// debug pause
+		if (rm_debug_async_delay.getFloat() > 0.0f)
+			Timing::sleep(rm_debug_async_delay.getFloat() * 1000 * 1000);
+
+		// async load
+		resource->loadAsync();
+
+		// mark as async complete
+		work->asyncDone = true;
+		manager->markWorkAsyncComplete(work);
+
+		if (ResourceManager::debug_rm->getBool())
+			debugLog("Resource Manager: Thread #{} finished async loading {:s}\n", threadIndex, resource->getName().toUtf8());
+	}
+
+	// decrement active thread count
+	manager->m_activeThreadCount.fetch_sub(1);
+
+	if (ResourceManager::debug_rm->getBool())
+		debugLog("Resource Manager: Thread #{} exiting\n", threadIndex);
+
+	return nullptr;
+}
+//==================================
+// LOADER THREAD ENDS
+//==================================
+
+static size_t scalebtwn(double v, double a, double b, double x, double y)
+{
+	return static_cast<size_t>(std::round(std::lerp(x, y, (v - a) / (b - a))));
+}
+
 ResourceManager::ResourceManager()
 {
 	m_bNextLoadAsync = false;
+	m_bShuttingDown = false;
 
 	// reserve space for typed vectors
 	m_vImages.reserve(64);
@@ -57,55 +155,78 @@ ResourceManager::ResourceManager()
 	m_vTextureAtlases.reserve(8);
 	m_vVertexArrayObjects.reserve(32);
 
-	int threads = std::clamp(env->getLogicalCPUCount(), default_numthreads, 32); // sanity
-	if (threads > default_numthreads)
-		rm_numthreads.setValue(threads);
+	// configure thread pool
+	m_maxThreads = std::clamp(env->getLogicalCPUCount(), default_numthreads, 32);
+	if (m_maxThreads > default_numthreads)
+		rm_numthreads.setValue(m_maxThreads);
 
-	m_iNumResourceInitPerFrameLimit = threads;
+	m_minThreads = std::max(1, rm_min_threads.getInt());
+	m_threadIdleTimeout = std::chrono::seconds(rm_thread_idle_timeout.getInt());
 
-	// create loader threads
-	for (int i = 0; i < threads; i++)
+	// reduce per-frame lag by only allowing up to 4 resources to be finalized per frame
+	// TODO: make this depend on whether we're in an interactivity-critical section, like gameplay
+	//		 for stuff like engine startup, we could load a lot more at once without negatively impacting the experience
+	m_iNumResourceInitPerFrameLimit = scalebtwn(m_maxThreads, default_numthreads, 32, 1, 4);
+
+	// create initial core threads
+	for (size_t i = 0; i < m_minThreads; i++)
 	{
 		auto *loaderThread = new ResourceManagerLoaderThread();
 
-		loaderThread->running = true;
-		loaderThread->threadIndex = i;
+		loaderThread->threadIndex = m_totalThreadsCreated.fetch_add(1);
 		loaderThread->resourceManager = this;
+		loaderThread->isCore = true;
+		{
+			using namespace std::chrono_literals;
+			loaderThread->idleTimeoutOffset = 0ms;
+		};
 
 		loaderThread->thread = new McThread(_resourceLoaderThread, (void *)loaderThread);
 		if (!loaderThread->thread->isReady())
 		{
-			engine->showMessageError("ResourceManager Error", "Couldn't create thread!");
+			engine->showMessageError("ResourceManager Error", "Couldn't create core thread!");
 			SAFE_DELETE(loaderThread->thread);
 			SAFE_DELETE(loaderThread);
 		}
 		else
+		{
+			std::lock_guard<std::mutex> lock(m_threadsMutex);
 			m_threads.push_back(loaderThread);
+		}
 	}
 }
 
 ResourceManager::~ResourceManager()
 {
+	// signal shutdown
+	m_bShuttingDown = true;
+
 	// release all not-currently-being-loaded resources (1)
 	destroyResources();
 
-	// let all loader threads exit
-	for (auto &thread : m_threads)
+	// request all threads to stop
 	{
-		thread->running = false;
+		std::lock_guard<std::mutex> lock(m_threadsMutex);
+		for (auto &thread : m_threads)
+		{
+			if (thread->thread)
+				thread->thread->requestStop();
+		}
 	}
 
 	// wake up all threads so they can exit
 	m_workAvailable.notify_all();
 
-	// wait for threads to stop
-	for (auto &thread : m_threads)
+	// wait for threads to stop and clean them up
 	{
-		delete thread->thread;
-		delete thread;
+		std::lock_guard<std::mutex> lock(m_threadsMutex);
+		for (auto &thread : m_threads)
+		{
+			delete thread->thread;
+			delete thread;
+		}
+		m_threads.clear();
 	}
-
-	m_threads.clear();
 
 	// cleanup all work items
 	{
@@ -131,6 +252,9 @@ ResourceManager::~ResourceManager()
 
 void ResourceManager::update()
 {
+	// cleanup any threads that have exited
+	cleanupIdleThreads();
+
 	// process completed async work
 	std::vector<LOADING_WORK *> completedWork;
 
@@ -181,7 +305,7 @@ void ResourceManager::update()
 	// cleanup fully completed work
 	{
 		std::lock_guard<std::mutex> lock(m_allWorkMutex);
-		m_allWork.erase(std::remove_if(m_allWork.begin(), m_allWork.end(), // this formatting is messed up
+		m_allWork.erase(std::remove_if(m_allWork.begin(), m_allWork.end(),
 		                               [](LOADING_WORK *work) {
 			                               if (work->syncDone.load())
 			                               {
@@ -232,6 +356,104 @@ void ResourceManager::update()
 
 		delete rs; // implicitly calls release() through the Resource destructor
 	}
+}
+
+void ResourceManager::ensureThreadAvailable()
+{
+	// quick check without lock first
+	size_t activeThreads = m_activeThreadCount.load();
+	size_t pendingWorkCount = 0;
+
+	{
+		std::lock_guard<std::mutex> lock(m_pendingWorkMutex);
+		pendingWorkCount = m_pendingWork.size();
+	}
+
+	// if we have more pending work than active threads and haven't hit the max
+	if (pendingWorkCount > activeThreads && activeThreads < m_maxThreads)
+	{
+		std::lock_guard<std::mutex> lock(m_threadsMutex);
+
+		// double-check under lock
+		if (m_threads.size() < m_maxThreads)
+		{
+			auto *loaderThread = new ResourceManagerLoaderThread();
+
+			loaderThread->threadIndex = m_totalThreadsCreated.fetch_add(1);
+			loaderThread->resourceManager = this;
+			loaderThread->isCore = false; // non-core thread can timeout
+
+			int randomMS = static_cast<int>((1.0f + ((static_cast<float>(std::rand() % 10)) / 10.0f)) * 1000.0f);
+			loaderThread->idleTimeoutOffset = std::chrono::milliseconds(randomMS);
+
+			loaderThread->thread = new McThread(_resourceLoaderThread, (void *)loaderThread);
+			if (!loaderThread->thread->isReady())
+			{
+				if (debug_rm->getBool())
+					debugLog("ResourceManager Warning: Couldn't create dynamic thread!\n");
+				SAFE_DELETE(loaderThread->thread);
+				SAFE_DELETE(loaderThread);
+			}
+			else
+			{
+				m_threads.push_back(loaderThread);
+				if (debug_rm->getBool())
+					debugLog("Resource Manager: Created dynamic thread #{} (total: {})\n", loaderThread->threadIndex, m_threads.size());
+			}
+		}
+	}
+}
+
+void ResourceManager::cleanupIdleThreads()
+{
+	// only core threads exist, nothing to clean up
+	// don't need to take a lock (since we'd just clean up on the next update if the info was out-of-date)
+	if (m_threads.size() <= m_minThreads)
+		return;
+
+	std::vector<ResourceManagerLoaderThread *> threadsToDelete;
+	{
+		std::lock_guard<std::mutex> lock(m_threadsMutex);
+
+		// double-check under lock
+		if (m_threads.size() <= m_minThreads)
+			return;
+
+		// find threads that have exited
+		for (auto it = m_threads.begin(); it != m_threads.end();)
+		{
+			auto *thread = *it;
+
+			// check if thread has stopped (either by request or self-termination)
+			if (thread->thread && thread->thread->isStopRequested())
+			{
+				// don't remove core threads unless we're shutting down
+				if (!thread->isCore || m_bShuttingDown.load())
+				{
+					threadsToDelete.push_back(thread);
+					it = m_threads.erase(it);
+					continue;
+				}
+			}
+
+			++it;
+		}
+	}
+
+	// delete threads outside of lock
+	for (auto *thread : threadsToDelete)
+	{
+		if (debug_rm->getBool())
+			debugLog("Resource Manager: Cleaning up thread #{}\n", thread->threadIndex);
+
+		delete thread->thread;
+		delete thread;
+	}
+}
+
+size_t ResourceManager::getNumActiveThreads() const
+{
+	return m_activeThreadCount.load();
 }
 
 void ResourceManager::destroyResources()
@@ -313,7 +535,6 @@ void ResourceManager::destroyResource(Resource *rs)
 	SAFE_DELETE(rs);
 }
 
-
 void ResourceManager::loadResource(Resource *res, bool load)
 {
 	// handle flags
@@ -337,35 +558,29 @@ void ResourceManager::loadResource(Resource *res, bool load)
 	}
 	else
 	{
-		if (rm_numthreads.getInt() > 0)
+		// create a work item for the resource
+		auto *work = new LOADING_WORK();
+		work->resource = res;
+		work->workId = m_workIdCounter++;
+		work->asyncDone = false;
+		work->syncDone = false;
+
+		// add it to the work queues
 		{
-			// create a work item for the resource
-			auto *work = new LOADING_WORK();
-			work->resource = res;
-			work->workId = m_workIdCounter++;
-			work->asyncDone = false;
-			work->syncDone = false;
-
-			// add it to the work queues
-			{
-				std::lock_guard<std::mutex> lock(m_allWorkMutex);
-				m_allWork.push_back(work);
-			}
-
-			{
-				std::lock_guard<std::mutex> lock(m_pendingWorkMutex);
-				m_pendingWork.push(work);
-			}
-
-			// notify worker threads of available work
-			m_workAvailable.notify_one();
+			std::lock_guard<std::mutex> lock(m_allWorkMutex);
+			m_allWork.push_back(work);
 		}
-		else
+
 		{
-			// load normally (threading disabled)
-			res->loadAsync();
-			res->load();
+			std::lock_guard<std::mutex> lock(m_pendingWorkMutex);
+			m_pendingWork.push(work);
 		}
+
+		// ensure we have a thread available to process the work
+		ensureThreadAvailable();
+
+		// notify worker threads of available work
+		m_workAvailable.notify_one();
 	}
 }
 
@@ -407,6 +622,14 @@ size_t ResourceManager::getNumLoadingWork() const
 {
 	std::lock_guard<std::mutex> lock(m_allWorkMutex);
 	return m_allWork.size();
+}
+
+void ResourceManager::resetFlags()
+{
+	if (m_nextLoadUnmanagedStack.size() > 0)
+		m_nextLoadUnmanagedStack.pop();
+
+	m_bNextLoadAsync = false;
 }
 
 void ResourceManager::requestNextLoadAsync()
@@ -498,60 +721,6 @@ void ResourceManager::reloadResources(const std::vector<Resource *> &resources, 
 	}
 }
 
-//==================================
-// LOADER THREAD
-//==================================
-static void *_resourceLoaderThread(void *data)
-{
-	auto *self = static_cast<ResourceManagerLoaderThread *>(data);
-	ResourceManager *manager = self->resourceManager;
-	const size_t threadIndex = self->threadIndex;
-
-	while (self->running.load())
-	{
-		// try to get work
-		ResourceManager::LOADING_WORK *work = manager->getNextWork();
-
-		// if no work available, wait for notification
-		if (!work)
-		{
-			std::unique_lock<std::mutex> lock(manager->m_workAvailableMutex);
-			manager->m_workAvailable.wait_for(lock, std::chrono::milliseconds(50), [&]() { return !self->running.load() || manager->getNumLoadingWork() > 0; });
-
-			// check if we should exit
-			if (!self->running.load())
-				break;
-
-			continue;
-		}
-
-		// we have work, process it
-		Resource *resource = work->resource;
-
-		if (ResourceManager::debug_rm->getBool())
-			debugLog("Resource Manager: Thread #{} loading {:s}\n", threadIndex, resource->getName().toUtf8());
-
-		// debug pause
-		if (rm_debug_async_delay.getFloat() > 0.0f)
-			Timing::sleep(rm_debug_async_delay.getFloat() * 1000 * 1000);
-
-		// async load
-		resource->loadAsync();
-
-		// mark as async complete
-		work->asyncDone = true;
-		manager->markWorkAsyncComplete(work);
-
-		if (ResourceManager::debug_rm->getBool())
-			debugLog("Resource Manager: Thread #{} finished async loading {:s}\n", threadIndex, resource->getName().toUtf8());
-	}
-
-	return nullptr;
-}
-//==================================
-// LOADER THREAD ENDS
-//==================================
-
 //=====================================================
 // other non-async-specific loading helpers below here
 //=====================================================
@@ -560,7 +729,7 @@ void ResourceManager::setResourceName(Resource *res, UString name)
 	if (!res || name.length() < 1)
 	{
 		if (debug_rm->getBool())
-			debugLog("ResourceManager: invalid attempt to set name {:s} on resource {:p}!\n", name.toUtf8(), static_cast<void*>(res));
+			debugLog("ResourceManager: invalid attempt to set name {:s} on resource {:p}!\n", name.toUtf8(), static_cast<void *>(res));
 		return;
 	}
 	res->setName(name);
@@ -571,21 +740,17 @@ void ResourceManager::setResourceName(Resource *res, UString name)
 void ResourceManager::doesntExistWarning(UString resourceName) const
 {
 	if (debug_rm->getBool())
-		debugLog(R"(ResourceManager: Resource "{:s}" does not exist!)""\n", resourceName.toUtf8());
+		debugLog(R"(ResourceManager: Resource "{:s}" does not exist!)"
+		         "\n",
+		         resourceName.toUtf8());
 }
 
 void ResourceManager::alreadyLoadedWarning(UString resourceName) const
 {
 	if (debug_rm->getBool())
-		debugLog(R"(ResourceManager: Resource "{:s}" already loaded!)""\n", resourceName.toUtf8());
-}
-
-void ResourceManager::resetFlags()
-{
-	if (m_nextLoadUnmanagedStack.size() > 0)
-		m_nextLoadUnmanagedStack.pop();
-
-	m_bNextLoadAsync = false;
+		debugLog(R"(ResourceManager: Resource "{:s}" already loaded!)"
+		         "\n",
+		         resourceName.toUtf8());
 }
 
 Image *ResourceManager::loadImage(UString filepath, UString resourceName, bool mipmapped, bool keepInSystemMemory)
