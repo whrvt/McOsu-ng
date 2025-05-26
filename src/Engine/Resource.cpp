@@ -12,16 +12,18 @@
 Resource::Resource(UString filepath)
 {
 	m_sFilePath = filepath;
+	m_bFileFound = true;
 	if (!env->fileExists(m_sFilePath)) // modifies the input string if found
 	{
-		UString errorMessage = "File does not exist: ";
-		errorMessage.append(m_sFilePath);
 		debugLog("Resource Warning: File {:s} does not exist!\n", m_sFilePath.toUtf8());
+		m_bFileFound = false;
 	}
 
 	m_bReady = false;
 	m_bAsyncReady = false;
 	m_bInterrupted = false;
+	// give it a dummy name for unnamed resources, mainly for debugging purposes
+	m_sName = UString::fmt("{:p}:postinit=n:found={}:{:s}", static_cast<const void*>(this), m_bFileFound, m_sFilePath);
 }
 
 Resource::Resource()

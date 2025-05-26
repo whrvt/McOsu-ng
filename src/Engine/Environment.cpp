@@ -261,6 +261,7 @@ bool Environment::directoryExists(UString &directoryName)
 	return McFile::existsCaseInsensitive(directoryName) == McFile::FILETYPE::FOLDER;
 }
 
+// same as the above, but for string literals (so we can't check insensitively and modify the input)
 bool Environment::fileExists(const UString &filename)
 {
 	return McFile::exists(filename) == McFile::FILETYPE::FILE;

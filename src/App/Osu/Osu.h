@@ -79,6 +79,7 @@ public:
 
 	void draw(Graphics *g) override;
 	void update() override;
+	bool isInCriticalInteractiveSession() override { return !isNotInPlayModeOrPaused();} // i.e. is in play mode and not paused
 
 	void onKeyDown(KeyboardEvent &e) override;
 	void onKeyUp(KeyboardEvent &e) override;

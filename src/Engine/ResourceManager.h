@@ -16,15 +16,17 @@
 #include "Sound.h"
 #include "TextureAtlas.h"
 #include "VertexArrayObject.h"
+#include "Engine.h"
 
 #include <atomic>
+#include <chrono>
 #include <condition_variable>
 #include <queue>
 #include <unordered_map>
-#include <chrono>
 
 class ConVar;
-
+class Sound;
+class TextureAtlas;
 class ResourceManagerLoaderThread;
 
 class ResourceManager final
@@ -63,7 +65,6 @@ public:
 	// flags
 	bool m_bNextLoadAsync;
 	std::stack<bool> m_nextLoadUnmanagedStack;
-	size_t m_iNumResourceInitPerFrameLimit;
 
 	// thread pool management
 	void ensureThreadAvailable();
@@ -72,12 +73,11 @@ public:
 	// async work queue threads
 	std::vector<ResourceManagerLoaderThread *> m_threads;
 	mutable std::mutex m_threadsMutex;
-	
+
 	// thread pool configuration
-	size_t m_minThreads;
 	size_t m_maxThreads;
-	std::chrono::seconds m_threadIdleTimeout{10}; // threads terminate after 10 seconds idle
-	
+	std::chrono::seconds m_threadIdleTimeout{5}; // threads terminate after 10 seconds idle
+
 	// thread lifecycle tracking
 	std::atomic<size_t> m_activeThreadCount{0};
 	std::atomic<size_t> m_totalThreadsCreated{0};
@@ -100,6 +100,10 @@ public:
 
 	// shutdown flag
 	std::atomic<bool> m_bShuttingDown{false};
+
+	// "low latency" mode, i.e. gameplay, updated once in the update loop
+	// not critical to be correct 100% of the time, doesn't need to be atomic
+	bool m_bLowLatency{false};
 
 public:
 	ResourceManager();
@@ -181,30 +185,33 @@ private:
 	template <typename T>
 	[[nodiscard]] T *tryGet(UString &resourceName) const
 	{
-		if (resourceName.length() < 1)
+		if (resourceName.isEmpty())
 			return nullptr;
 		auto it = m_nameToResourceMap.find(resourceName);
 		if (it != m_nameToResourceMap.end())
 			return it->second->as<T>();
-		doesntExistWarning(resourceName);
+		if (debug_rm->getBool())
+			debugLog(R"(ResourceManager WARNING: Resource "{:s}" does not exist!)"
+			         "\n",
+			         resourceName.toUtf8());
 		return nullptr;
 	}
 	template <typename T>
 	[[nodiscard]] T *checkIfExistsAndHandle(UString &resourceName)
 	{
-		if (resourceName.length() < 1)
+		if (resourceName.isEmpty())
 			return nullptr;
 		auto it = m_nameToResourceMap.find(resourceName);
 		if (it == m_nameToResourceMap.end())
 			return nullptr;
-		alreadyLoadedWarning(resourceName);
+		if (debug_rm->getBool())
+			debugLog(R"(ResourceManager NOTICE: Resource "{:s}" already loaded.)"
+			         "\n",
+			         resourceName.toUtf8());
 		// handle flags (reset them)
 		resetFlags();
 		return it->second->as<T>();
 	}
-
-	void doesntExistWarning(UString resourceName) const;
-	void alreadyLoadedWarning(UString resourceName) const;
 
 	void loadResource(Resource *res, bool load);
 

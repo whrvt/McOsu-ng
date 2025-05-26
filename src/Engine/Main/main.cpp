@@ -98,13 +98,15 @@ void SDL_AppQuit(void *appstate, SDL_AppResult result)
 {
 	if (result == SDL_APP_FAILURE)
 	{
-		fprintf(stderr, "Force exiting now, a fatal error occurred. (SDL error: %s)\n", SDL_GetError());
+		fprintf(stderr, "[main]: Force exiting now, a fatal error occurred. (SDL error: %s)\n", SDL_GetError());
 		std::abort();
 	}
 
 	auto *fmain = static_cast<SDLMain *>(appstate);
 	fmain->shutdown(result);
 	SAFE_DELETE(fmain);
+
+	printf("[main]: Shutdown success.\n");
 
 	if constexpr (!Env::cfg(FEAT::MAINCB))
 		std::exit(0);

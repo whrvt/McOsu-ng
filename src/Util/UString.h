@@ -9,8 +9,6 @@
 #ifndef USTRING_H
 #define USTRING_H
 
-#include "fmt/printf.h"
-
 #include "BaseEnvironment.h" // for Env::cfg (consteval)
 #include <algorithm>
 #include <cstring>
@@ -20,11 +18,17 @@
 #include <string_view>
 #include <vector>
 
+#include "fmt/format.h"
+#include "fmt/printf.h"
+
 class UString
 {
 public:
 	template <typename... Args>
 	[[nodiscard]] static UString format(std::string_view fmt, Args &&...args) noexcept;
+
+	template <typename... Args>
+	[[nodiscard]] static UString fmt(fmt::format_string<Args...> fmt, Args &&...args) noexcept;
 
 	template <typename Range>
 	    requires std::ranges::range<Range> && std::convertible_to<std::ranges::range_value_t<Range>, UString>
@@ -61,8 +65,10 @@ public:
 	// basically just for autodetecting windows' wchar_t preference (paths)
 	[[nodiscard]] constexpr auto plat_str() const noexcept
 	{
-		if constexpr (Env::cfg(OS::WINDOWS)) return m_unicode.c_str();
-		else return m_utf8.c_str();
+		if constexpr (Env::cfg(OS::WINDOWS))
+			return m_unicode.c_str();
+		else
+			return m_utf8.c_str();
 	}
 
 	// state queries
@@ -243,10 +249,31 @@ struct hash<UString>
 };
 } // namespace std
 
+// for printf-style formatting (legacy McEngine style, should convert over to UString::fmt because it's nicer)
 template <typename... Args>
 UString UString::format(std::string_view fmt, Args &&...args) noexcept
 {
 	return UString(fmt::sprintf(fmt, std::forward<Args>(args)...));
+}
+
+// need a specialization for fmt, so that UStrings can be passed directly without needing .toUtf8() (for UString::fmt)
+namespace fmt
+{
+template <>
+struct formatter<UString> : formatter<string_view>
+{
+	template <typename FormatContext>
+	auto format(const UString &str, FormatContext &ctx) const
+	{
+		return formatter<string_view>::format(str.utf8View(), ctx);
+	}
+};
+} // namespace fmt
+
+template <typename... Args>
+UString UString::fmt(fmt::format_string<Args...> fmt, Args &&...args) noexcept
+{
+	return UString(fmt::format(fmt, std::forward<Args>(args)...));
 }
 
 template <typename Range>

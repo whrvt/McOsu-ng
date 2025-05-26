@@ -265,7 +265,7 @@ Engine::~Engine()
 	}
 	else
 	{
-		debugLog("Engine: Goodbye.");
+		debugLog("Engine: Goodbye.\n");
 	}
 
 	engine = NULL;
@@ -632,7 +632,7 @@ void Engine::shutdown()
 void Engine::restart()
 {
 	onShutdown();
-	m_bIsRestarting = true;
+	// m_bIsRestarting = true; // TODO
 	env->restart();
 }
 

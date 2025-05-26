@@ -8,20 +8,19 @@
 #include "ResourceManager.h"
 
 #include "ConVar.h"
-#include "Engine.h"
 #include "Environment.h"
 #include "Thread.h"
 #include "Timing.h"
+#include "App.h" // for isInCriticalInteractiveSession() (gameplay detection)
 
 #include <algorithm>
 #include <mutex>
 
-static constexpr int default_numthreads = 3;
+using namespace std::chrono_literals;
 
-ConVar rm_numthreads("rm_numthreads", default_numthreads, FCVAR_NONE, "maximum number of parallel resource loader threads");
-ConVar rm_min_threads("rm_min_threads", 1, FCVAR_NONE, "minimum number of threads to keep alive (default: 1)");
-ConVar rm_thread_idle_timeout("rm_thread_idle_timeout", 5.0f, FCVAR_NONE, "seconds before an idle thread terminates itself (default: 5)");
-ConVar rm_debug_async_delay("rm_debug_async_delay", 0.0f, FCVAR_CHEAT);
+static constexpr int MIN_NUM_THREADS = 1; // always keep 1 alive
+static constexpr auto THREAD_IDLE_TIMEOUT = 5s; // how long to keep a non-core thread alive waiting for work before destroying it
+
 ConVar rm_interrupt_on_destroy("rm_interrupt_on_destroy", true, FCVAR_CHEAT);
 ConVar debug_rm_("debug_rm", false, FCVAR_NONE);
 
@@ -76,14 +75,14 @@ static void *_resourceLoaderThread(void *data, std::stop_token stopToken)
 			std::stop_callback stopCallback(stopToken, [&]() { manager->m_workAvailable.notify_all(); });
 
 			// wait with timeout
-			auto waitTime = isCore ? std::chrono::milliseconds(100) : manager->m_threadIdleTimeout + self->idleTimeoutOffset;
+			auto waitTime = isCore ? 100ms : manager->m_threadIdleTimeout + self->idleTimeoutOffset;
 
-			// if the wait times out, non-core threads will terminate
+			// if the wait times out, non-core threads will terminate (if the below conditions hold)
 			bool workAvailable = manager->m_workAvailable.wait_for(
 			    lock, waitTime, [&]() { return stopToken.stop_requested() || manager->m_bShuttingDown.load() || manager->getNumLoadingWork() > 0; });
 
-			// if we timed out and we're not a core thread, exit the thread
-			if (!workAvailable && !isCore)
+			// if we timed out, and we're not a core thread, and the app isn't in a critical section, exit and request destruction of the thread
+			if (!workAvailable && !isCore && !manager->m_bLowLatency)
 			{
 				if (ResourceManager::debug_rm->getBool())
 					debugLog("Resource Manager: Thread #{} terminating due to idle timeout\n", threadIndex);
@@ -109,10 +108,6 @@ static void *_resourceLoaderThread(void *data, std::stop_token stopToken)
 		if (ResourceManager::debug_rm->getBool())
 			debugLog("Resource Manager: Thread #{} loading {:s}\n", threadIndex, resource->getName().toUtf8());
 
-		// debug pause
-		if (rm_debug_async_delay.getFloat() > 0.0f)
-			Timing::sleep(rm_debug_async_delay.getFloat() * 1000 * 1000);
-
 		// async load
 		resource->loadAsync();
 
@@ -136,11 +131,6 @@ static void *_resourceLoaderThread(void *data, std::stop_token stopToken)
 // LOADER THREAD ENDS
 //==================================
 
-static size_t scalebtwn(double v, double a, double b, double x, double y)
-{
-	return static_cast<size_t>(std::round(std::lerp(x, y, (v - a) / (b - a))));
-}
-
 ResourceManager::ResourceManager()
 {
 	m_bNextLoadAsync = false;
@@ -156,30 +146,19 @@ ResourceManager::ResourceManager()
 	m_vVertexArrayObjects.reserve(32);
 
 	// configure thread pool
-	m_maxThreads = std::clamp(env->getLogicalCPUCount(), default_numthreads, 32);
-	if (m_maxThreads > default_numthreads)
-		rm_numthreads.setValue(m_maxThreads);
+	m_maxThreads = std::clamp(env->getLogicalCPUCount(), MIN_NUM_THREADS, 32);
 
-	m_minThreads = std::max(1, rm_min_threads.getInt());
-	m_threadIdleTimeout = std::chrono::seconds(rm_thread_idle_timeout.getInt());
-
-	// reduce per-frame lag by only allowing up to 4 resources to be finalized per frame
-	// TODO: make this depend on whether we're in an interactivity-critical section, like gameplay
-	//		 for stuff like engine startup, we could load a lot more at once without negatively impacting the experience
-	m_iNumResourceInitPerFrameLimit = scalebtwn(m_maxThreads, default_numthreads, 32, 1, 4);
+	m_threadIdleTimeout = THREAD_IDLE_TIMEOUT;
 
 	// create initial core threads
-	for (size_t i = 0; i < m_minThreads; i++)
+	for (size_t i = 0; i < MIN_NUM_THREADS; i++)
 	{
 		auto *loaderThread = new ResourceManagerLoaderThread();
 
 		loaderThread->threadIndex = m_totalThreadsCreated.fetch_add(1);
 		loaderThread->resourceManager = this;
 		loaderThread->isCore = true;
-		{
-			using namespace std::chrono_literals;
-			loaderThread->idleTimeoutOffset = 0ms;
-		};
+		loaderThread->idleTimeoutOffset = 0ms;
 
 		loaderThread->thread = new McThread(_resourceLoaderThread, (void *)loaderThread);
 		if (!loaderThread->thread->isReady())
@@ -252,26 +231,37 @@ ResourceManager::~ResourceManager()
 
 void ResourceManager::update()
 {
-	// cleanup any threads that have exited
-	cleanupIdleThreads();
+	// cleanup (delete) any non-core threads that have requested destruction due to being idle, and when not in a critical interactive session
+	// TODO: duplicated logic between the thread itself and the main thread,
+	//		 should consolidate to one or the other
+	if (!(m_bLowLatency = app->isInCriticalInteractiveSession()))
+		cleanupIdleThreads();
+
+	// only allow set number of work items to finish per frame (avoid stutters)
+	const size_t amountToProcess = m_bLowLatency ? 1 : m_maxThreads;
 
 	// process completed async work
 	std::vector<LOADING_WORK *> completedWork;
 
-	// grab all completed work at once to minimize lock time
+	// grab amountToProcess # completed work at once to minimize lock time
 	{
 		std::lock_guard<std::mutex> lock(m_asyncCompleteWorkMutex);
-		while (!m_asyncCompleteWork.empty())
+		size_t numPopped = 0;
+		while (numPopped < amountToProcess && !m_asyncCompleteWork.empty())
 		{
 			completedWork.push_back(m_asyncCompleteWork.front());
 			m_asyncCompleteWork.pop();
+			numPopped++;
 		}
 	}
 
 	// process completed work (synchronous init)
 	size_t numProcessed = 0;
+
 	for (auto work : completedWork)
 	{
+		if (numProcessed >= amountToProcess)
+			break;
 		if (!work->syncDone.load() && work->asyncDone.load())
 		{
 			Resource *rs = work->resource;
@@ -284,21 +274,16 @@ void ResourceManager::update()
 			work->syncDone = true;
 
 			numProcessed++;
+		}
+	}
 
-			// only allow set number of work items to finish per frame (avoid stutters)
-			if (m_iNumResourceInitPerFrameLimit > 0 && numProcessed >= m_iNumResourceInitPerFrameLimit)
-			{
-				// put remaining work back in the queue
-				if (numProcessed < completedWork.size())
-				{
-					std::lock_guard<std::mutex> lock(m_asyncCompleteWorkMutex);
-					for (size_t i = numProcessed; i < completedWork.size(); i++)
-					{
-						m_asyncCompleteWork.push(completedWork[i]);
-					}
-				}
-				break;
-			}
+	// put remaining work back in the queue for the next update
+	if (numProcessed < completedWork.size())
+	{
+		std::lock_guard<std::mutex> lock(m_asyncCompleteWorkMutex);
+		for (size_t i = numProcessed; i < completedWork.size(); i++)
+		{
+			m_asyncCompleteWork.push(completedWork[i]);
 		}
 	}
 
@@ -383,8 +368,9 @@ void ResourceManager::ensureThreadAvailable()
 			loaderThread->resourceManager = this;
 			loaderThread->isCore = false; // non-core thread can timeout
 
-			int randomMS = static_cast<int>((1.0f + ((static_cast<float>(std::rand() % 10)) / 10.0f)) * 1000.0f);
-			loaderThread->idleTimeoutOffset = std::chrono::milliseconds(randomMS);
+			// don't allow a wave of loader threads to exit at once
+			const auto randomAdditionalMS = std::chrono::milliseconds((static_cast<long>(1.0f + ((static_cast<float>(std::rand() % 10)) / 10.0f)) * 1000L));
+			loaderThread->idleTimeoutOffset = randomAdditionalMS;
 
 			loaderThread->thread = new McThread(_resourceLoaderThread, (void *)loaderThread);
 			if (!loaderThread->thread->isReady())
@@ -408,7 +394,7 @@ void ResourceManager::cleanupIdleThreads()
 {
 	// only core threads exist, nothing to clean up
 	// don't need to take a lock (since we'd just clean up on the next update if the info was out-of-date)
-	if (m_threads.size() <= m_minThreads)
+	if (m_threads.size() <= MIN_NUM_THREADS)
 		return;
 
 	std::vector<ResourceManagerLoaderThread *> threadsToDelete;
@@ -416,7 +402,7 @@ void ResourceManager::cleanupIdleThreads()
 		std::lock_guard<std::mutex> lock(m_threadsMutex);
 
 		// double-check under lock
-		if (m_threads.size() <= m_minThreads)
+		if (m_threads.size() <= MIN_NUM_THREADS)
 			return;
 
 		// find threads that have exited
@@ -511,6 +497,7 @@ void ResourceManager::destroyResource(Resource *rs)
 		}
 	}
 
+	// FIXME(?): we never get here in practice, but maybe that's a good thing
 	if (isBeingLoaded)
 	{
 		if (debug_rm->getBool())
@@ -726,31 +713,29 @@ void ResourceManager::reloadResources(const std::vector<Resource *> &resources, 
 //=====================================================
 void ResourceManager::setResourceName(Resource *res, UString name)
 {
-	if (!res || name.length() < 1)
+	if (!res)
 	{
 		if (debug_rm->getBool())
-			debugLog("ResourceManager: invalid attempt to set name {:s} on resource {:p}!\n", name.toUtf8(), static_cast<void *>(res));
+			debugLog("ResourceManager: attempted to set name {:s} on NULL resource!\n", name);
 		return;
 	}
+
+	UString currentName = res->getName();
+	if (!currentName.isEmpty() && currentName == name)
+		return; // it's already the same name, nothing to do
+
+	if (name.isEmpty()) // add a default name (mostly for debugging, see Resource constructor)
+		name = UString::fmt("{:p}:postinit=y:found={}:{:s}", static_cast<const void*>(res), res->m_bFileFound, res->getFilePath());
+
 	res->setName(name);
-	m_nameToResourceMap.try_emplace(name, res); // this is why setResourceName has to exist, just a passthrough to add it to the map
+	// add the new name to the resource map (if it's a managed resource)
+	// TODO: this is slightly incorrect. this function could be called before the resource is loaded BY ResourceManager,
+	//		 OR at any point in time from external callers. if its being called externally, the nextLoadUnmanagedStack is irrelevant.
+	//		 since being in the name-to-resource map alone when it "shouldn't be" shouldn't cause any real issues,
+	//		 i don't think it's worth putting any more effort (or lazily duplicating code) to prevent that?
+	if (m_nextLoadUnmanagedStack.size() < 1 || !m_nextLoadUnmanagedStack.top())
+		m_nameToResourceMap.try_emplace(name, res); // its okay if we have multiple named references to the resource
 	return;
-}
-
-void ResourceManager::doesntExistWarning(UString resourceName) const
-{
-	if (debug_rm->getBool())
-		debugLog(R"(ResourceManager: Resource "{:s}" does not exist!)"
-		         "\n",
-		         resourceName.toUtf8());
-}
-
-void ResourceManager::alreadyLoadedWarning(UString resourceName) const
-{
-	if (debug_rm->getBool())
-		debugLog(R"(ResourceManager: Resource "{:s}" already loaded!)"
-		         "\n",
-		         resourceName.toUtf8());
 }
 
 Image *ResourceManager::loadImage(UString filepath, UString resourceName, bool mipmapped, bool keepInSystemMemory)
@@ -762,7 +747,7 @@ Image *ResourceManager::loadImage(UString filepath, UString resourceName, bool m
 	// create instance and load it
 	filepath.insert(0, ResourceManager::PATH_DEFAULT_IMAGES);
 	Image *img = graphics->createImage(filepath, mipmapped, keepInSystemMemory);
-	img->setName(resourceName);
+	setResourceName(img, resourceName);
 
 	loadResource(img, true);
 
@@ -787,7 +772,7 @@ Image *ResourceManager::loadImageAbs(UString absoluteFilepath, UString resourceN
 
 	// create instance and load it
 	Image *img = graphics->createImage(absoluteFilepath, mipmapped, keepInSystemMemory);
-	img->setName(resourceName);
+	setResourceName(img, resourceName);
 
 	loadResource(img, true);
 
@@ -827,7 +812,7 @@ McFont *ResourceManager::loadFont(UString filepath, UString resourceName, int fo
 	// create instance and load it
 	filepath.insert(0, ResourceManager::PATH_DEFAULT_FONTS);
 	auto *fnt = new McFont(filepath, fontSize, antialiasing, fontDPI);
-	fnt->setName(resourceName);
+	setResourceName(fnt, resourceName);
 
 	loadResource(fnt, true);
 
@@ -843,7 +828,7 @@ McFont *ResourceManager::loadFont(UString filepath, UString resourceName, std::v
 	// create instance and load it
 	filepath.insert(0, ResourceManager::PATH_DEFAULT_FONTS);
 	auto *fnt = new McFont(filepath, characters, fontSize, antialiasing, fontDPI);
-	fnt->setName(resourceName);
+	setResourceName(fnt, resourceName);
 
 	loadResource(fnt, true);
 
@@ -859,7 +844,7 @@ Sound *ResourceManager::loadSound(UString filepath, UString resourceName, bool s
 	// create instance and load it
 	filepath.insert(0, ResourceManager::PATH_DEFAULT_SOUNDS);
 	Sound *snd = Sound::createSound(filepath, stream, threeD, loop, prescan);
-	snd->setName(resourceName);
+	setResourceName(snd, resourceName);
 
 	loadResource(snd, true);
 
@@ -874,7 +859,7 @@ Sound *ResourceManager::loadSoundAbs(UString filepath, UString resourceName, boo
 
 	// create instance and load it
 	Sound *snd = Sound::createSound(filepath, stream, threeD, loop, prescan);
-	snd->setName(resourceName);
+	setResourceName(snd, resourceName);
 
 	loadResource(snd, true);
 
@@ -890,7 +875,7 @@ Shader *ResourceManager::loadShader(UString shaderFilePath, UString resourceName
 	// create instance and load it
 	shaderFilePath.insert(0, ResourceManager::PATH_DEFAULT_SHADERS);
 	Shader *shader = graphics->createShaderFromFile(shaderFilePath);
-	shader->setName(resourceName);
+	setResourceName(shader, resourceName);
 
 	loadResource(shader, true);
 
@@ -915,7 +900,7 @@ Shader *ResourceManager::createShader(UString shaderSource, UString resourceName
 
 	// create instance and load it
 	Shader *shader = graphics->createShaderFromSource(shaderSource);
-	shader->setName(resourceName);
+	setResourceName(shader, resourceName);
 
 	loadResource(shader, true);
 
@@ -934,7 +919,7 @@ Shader *ResourceManager::createShader(UString shaderSource)
 RenderTarget *ResourceManager::createRenderTarget(int x, int y, int width, int height, Graphics::MULTISAMPLE_TYPE multiSampleType)
 {
 	RenderTarget *rt = graphics->createRenderTarget(x, y, width, height, multiSampleType);
-	rt->setName(UString::format("_RT_%ix%i", width, height));
+	setResourceName(rt, UString::format("_RT_%ix%i", width, height));
 
 	loadResource(rt, true);
 
@@ -949,7 +934,7 @@ RenderTarget *ResourceManager::createRenderTarget(int width, int height, Graphic
 TextureAtlas *ResourceManager::createTextureAtlas(int width, int height)
 {
 	auto *ta = new TextureAtlas(width, height);
-	ta->setName(UString::format("_TA_%ix%i", width, height));
+	setResourceName(ta, UString::format("_TA_%ix%i", width, height));
 
 	loadResource(ta, false);
 

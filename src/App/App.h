@@ -22,6 +22,7 @@ public:
 
 	virtual void draw(Graphics *g) {;}
 	virtual void update() {;}
+	virtual bool isInCriticalInteractiveSession() { return false; }
 
 	virtual void onKeyDown(KeyboardEvent &e) {;}
 	virtual void onKeyUp(KeyboardEvent &e) {;}

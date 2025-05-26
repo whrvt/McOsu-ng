@@ -177,7 +177,7 @@ public:
 		static void log(const std::source_location &loc, fmt::format_string<Args...> fmt, Args &&...args)
 		{
 			auto contextPrefix =
-			    fmt::format("[{}:{}:{}] [{}]: ", Environment::getFileNameFromFilePath(loc.file_name()).toUtf8(), loc.line(), loc.column(), loc.function_name());
+			    fmt::format("[{}:{}:{}] [{}]: ", Environment::getFileNameFromFilePath(loc.file_name()), loc.line(), loc.column(), loc.function_name());
 
 			auto message = fmt::format(fmt, std::forward<Args>(args)...);
 			Engine::logImpl(contextPrefix + message);
@@ -187,7 +187,7 @@ public:
 		static void log(const std::source_location &loc, Color color, fmt::format_string<Args...> fmt, Args &&...args)
 		{
 			auto contextPrefix =
-			    fmt::format("[{}:{}:{}] [{}]: ", Environment::getFileNameFromFilePath(loc.file_name()).toUtf8(), loc.line(), loc.column(), loc.function_name());
+			    fmt::format("[{}:{}:{}] [{}]: ", Environment::getFileNameFromFilePath(loc.file_name()), loc.line(), loc.column(), loc.function_name());
 
 			auto message = fmt::format(fmt, std::forward<Args>(args)...);
 			Engine::logImpl(contextPrefix + message, color);

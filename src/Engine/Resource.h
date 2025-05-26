@@ -119,7 +119,8 @@ public:
 	[[nodiscard]] const virtual VertexArrayObject *asVAO() const { return nullptr; }
 	[[nodiscard]] const virtual Sound *asSound() const { return nullptr; }
 private:
-	void setName(UString name) { m_sName = name; }
+	inline void setName(UString name) { m_sName = name; }
+	bool m_bFileFound;
 };
 
 #endif
