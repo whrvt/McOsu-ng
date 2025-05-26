@@ -893,6 +893,7 @@ enable_native
 enable_debug
 enable_strip
 enable_asan
+enable_tsan
 enable_clang
 enable_omp
 enable_lto
@@ -1580,6 +1581,8 @@ Optional Features:
   --enable-strip          Strip the final binary (default: no for debug, yes
                           otherwise)
   --enable-asan           Enable ASan/UBSan (turns debug on as well) (default:
+                          no)
+  --enable-tsan           Enable TSan/UBSan (turns debug on as well) (default:
                           no)
   --enable-clang          Use clang/clang++ instead of gcc/g++ (default: no)
   --enable-omp            Use and link with OpenMP for faster parallel
@@ -5893,6 +5896,12 @@ then :
   enableval=$enable_asan;
 fi
 
+# Check whether --enable-tsan was given.
+if test ${enable_tsan+y}
+then :
+  enableval=$enable_tsan;
+fi
+
 # Check whether --enable-clang was given.
 if test ${enable_clang+y}
 then :
@@ -7925,13 +7934,23 @@ fi
 
 
 
-if test "x$enable_asan" = "xyes"
+if test "x$enable_asan" = "xyes" || test "x$enable_tsan" = "xyes"
 then :
 
-    # CXXFLAGS="$CXXFLAGS -fsanitize=undefined,thread"
-    # CFLAGS="$CFLAGS -fsanitize=undefined,thread"
-    CXXFLAGS="$CXXFLAGS -fsanitize=address,undefined"
-    CFLAGS="$CFLAGS -fsanitize=address,undefined"
+    if test "x$enable_asan" = "xyes"
+then :
+
+        CXXFLAGS="$CXXFLAGS -fsanitize=address,undefined"
+        CFLAGS="$CFLAGS -fsanitize=address,undefined"
+
+else case e in #(
+  e)
+        CXXFLAGS="$CXXFLAGS -fsanitize=undefined,thread"
+        CFLAGS="$CFLAGS -fsanitize=undefined,thread"
+     ;;
+esac
+fi
+
     if test -z "$LLVMMINGW"
 then :
 
@@ -12287,6 +12306,7 @@ McOsu-ng build configuration:
     OpenMP:             ${enable_omp-no}
     Debug build:        ${enable_debug-no}
     ASan build:         ${enable_asan-no}
+    TSan build:         ${enable_tsan-no}
     Native build:       ${enable_native-yes}
     System deps:        ${enable_system_deps-yes}
     Static linking:     ${enable_static-no}
@@ -12326,6 +12346,7 @@ McOsu-ng build configuration:
     OpenMP:             ${enable_omp-no}
     Debug build:        ${enable_debug-no}
     ASan build:         ${enable_asan-no}
+    TSan build:         ${enable_tsan-no}
     Native build:       ${enable_native-yes}
     System deps:        ${enable_system_deps-yes}
     Static linking:     ${enable_static-no}

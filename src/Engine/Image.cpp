@@ -12,10 +12,12 @@
 
 #include "jpeglib.h"
 #include <png.h>
+#include <zlib.h>
 
 #include <csetjmp>
 #include <cstddef>
 #include <cstring>
+#include <mutex>
 
 struct jpegErrorManager
 {
@@ -30,7 +32,7 @@ void jpegErrorExit(j_common_ptr cinfo)
 {
 	char jpegLastErrorMsg[JMSG_LENGTH_MAX];
 
-	auto *err = (jpegErrorManager*)cinfo->err;
+	auto *err = (jpegErrorManager *)cinfo->err;
 
 	(*(cinfo->err->format_message))(cinfo, jpegLastErrorMsg);
 	jpegLastErrorMsg[JMSG_LENGTH_MAX - 1] = '\0';
@@ -38,6 +40,34 @@ void jpegErrorExit(j_common_ptr cinfo)
 	debugLog("JPEG Error: {:s}", jpegLastErrorMsg);
 
 	longjmp(err->setjmp_buffer, 1);
+}
+
+// this is complete bullshit and a bug in zlib-ng (probably, less likely libpng)
+// need to prevent zlib from lazy-initializing the crc tables, otherwise data race galore
+// literally causes insane lags/issues in completely unrelated places for async loading
+static std::mutex zlib_init_mutex;
+static std::atomic<bool> zlib_initialized{false};
+
+static void garbage_zlib()
+{
+	if (zlib_initialized.load(std::memory_order_acquire))
+		return;
+	std::lock_guard<std::mutex> lock(zlib_init_mutex);
+	if (zlib_initialized.load(std::memory_order_relaxed))
+		return;
+	uLong dummy_crc = crc32(0L, Z_NULL, 0);
+	const char test_data[] = "shit";
+	dummy_crc = crc32(dummy_crc, reinterpret_cast<const Bytef *>(test_data), 4);
+	z_stream strm;
+	strm.zalloc = Z_NULL;
+	strm.zfree = Z_NULL;
+	strm.opaque = Z_NULL;
+	strm.avail_in = 0;
+	strm.next_in = Z_NULL;
+	if (inflateInit(&strm) == Z_OK)
+		inflateEnd(&strm);
+	(void)dummy_crc;
+	zlib_initialized.store(true, std::memory_order_release);
 }
 
 struct pngErrorManager
@@ -80,6 +110,7 @@ void pngReadFromMemory(png_structp png_ptr, png_bytep outBytes, png_size_t byteC
 
 bool Image::decodePNGFromMemory(const unsigned char *data, size_t size, std::vector<unsigned char> &outData, int &outWidth, int &outHeight, int &outChannels)
 {
+	garbage_zlib();
 	png_structp png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
 	if (!png_ptr)
 	{
@@ -169,6 +200,7 @@ bool Image::decodePNGFromMemory(const unsigned char *data, size_t size, std::vec
 
 void Image::saveToImage(unsigned char *data, unsigned int width, unsigned int height, UString filepath)
 {
+	garbage_zlib();
 	debugLog("Saving image to {:s} ...\n", filepath.toUtf8());
 
 	FILE *fp = fopen(filepath.toUtf8(), "wb");

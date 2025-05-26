@@ -111,6 +111,8 @@ AC_ARG_ENABLE([strip],
     AS_HELP_STRING([--enable-strip], [Strip the final binary (default: no for debug, yes otherwise)]))
 AC_ARG_ENABLE([asan],
     AS_HELP_STRING([--enable-asan], [Enable ASan/UBSan (turns debug on as well) (default: no)]))
+AC_ARG_ENABLE([tsan],
+    AS_HELP_STRING([--enable-tsan], [Enable TSan/UBSan (turns debug on as well) (default: no)]))
 AC_ARG_ENABLE([clang],
     AS_HELP_STRING([--enable-clang], [Use clang/clang++ instead of gcc/g++ (default: no)]))
 AC_ARG_ENABLE([omp],
@@ -366,11 +368,15 @@ AS_IF([test "$host_os" = "linux-gnu"],[
 AC_CHECK_PROG([BEAR], [bear], [bear])
 AC_SUBST([BEAR])
 
-AS_IF([test "x$enable_asan" = "xyes"], [
-    # CXXFLAGS="$CXXFLAGS -fsanitize=undefined,thread"
-    # CFLAGS="$CFLAGS -fsanitize=undefined,thread"
-    CXXFLAGS="$CXXFLAGS -fsanitize=address,undefined"
-    CFLAGS="$CFLAGS -fsanitize=address,undefined"
+AS_IF([test "x$enable_asan" = "xyes" || test "x$enable_tsan" = "xyes"], [
+    AS_IF([test "x$enable_asan" = "xyes"], [
+        CXXFLAGS="$CXXFLAGS -fsanitize=address,undefined"
+        CFLAGS="$CFLAGS -fsanitize=address,undefined"
+    ], [
+        CXXFLAGS="$CXXFLAGS -fsanitize=undefined,thread"
+        CFLAGS="$CFLAGS -fsanitize=undefined,thread"
+    ])
+
     AS_IF([test -z "$LLVMMINGW"],[
         LDFLAGS="$LDFLAGS -static-libasan" CFLAGS="$CFLAGS -static-libasan" CXXFLAGS="$CXXFLAGS -static-libasan"
     ])
@@ -703,6 +709,7 @@ McOsu-ng build configuration:
     OpenMP:             ${enable_omp-no}
     Debug build:        ${enable_debug-no}
     ASan build:         ${enable_asan-no}
+    TSan build:         ${enable_tsan-no}
     Native build:       ${enable_native-yes}
     System deps:        ${enable_system_deps-yes}
     Static linking:     ${enable_static-no}

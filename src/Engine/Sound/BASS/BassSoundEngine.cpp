@@ -17,6 +17,7 @@
 #include "Thread.h"
 
 #include <mutex>
+
 extern ConVar snd_output_device;
 extern ConVar snd_restart;
 extern ConVar snd_freq;
@@ -45,25 +46,25 @@ ConVar win_snd_wasapi_shared_volume_affects_device("win_snd_wasapi_shared_volume
                                                    "if in shared mode, whether to affect device volume globally or use separate session volume (default)");
 #endif
 
-class SoundEngineThread
-{
-public:
-	struct CHANNEL_PLAY_WORK
-	{
-		BassSound *sound;
-		BassSound::SOUNDHANDLE handle;
-	};
+// class SoundEngineThread
+// {
+// public:
+// 	struct CHANNEL_PLAY_WORK
+// 	{
+// 		BassSound *sound;
+// 		BassSound::SOUNDHANDLE handle;
+// 	};
 
-public:
-	// self
-	McThread *thread;
-	std::mutex workingMutex; // work vector lock
-	std::atomic<bool> running;
+// public:
+// 	// self
+// 	McThread *thread;
+// 	std::mutex workingMutex; // work vector lock
+// 	std::atomic<bool> running;
 
-	std::vector<CHANNEL_PLAY_WORK> channelPlayWork;
-};
+// 	std::vector<CHANNEL_PLAY_WORK> channelPlayWork;
+// };
 
-void *_soundEngineThread(void *data);
+// void *_soundEngineThread(void *data);
 
 #ifdef MCENGINE_FEATURE_BASS_WASAPI
 BassSound::SOUNDHANDLE g_wasapiOutputMixer = 0;
@@ -116,7 +117,6 @@ BassSoundEngine::BassSoundEngine() : SoundEngine()
 	// Initialize member variables
 	m_iBASSVersion = 0;
 
-	m_thread = NULL;
 	/* spec: unused, not sure why?
 	m_thread = new SoundEngineThread();
 	m_thread->running = true;
@@ -181,12 +181,12 @@ BassSoundEngine::BassSoundEngine() : SoundEngine()
 BassSoundEngine::~BassSoundEngine()
 {
 	// let the thread exit and wait for it to stop
-	if (m_thread != NULL)
-	{
-		m_thread->running = false;
-		SAFE_DELETE(m_thread->thread);
-		SAFE_DELETE(m_thread);
-	}
+	// if (m_thread != NULL)
+	// {
+	// 	m_thread->running = false;
+	// 	SAFE_DELETE(m_thread->thread);
+	// 	SAFE_DELETE(m_thread);
+	// }
 
 	// Free BASS resources
 	if (m_bReady)
@@ -651,18 +651,19 @@ bool BassSoundEngine::initializeOutputDevice(int id, bool force)
 		return true;
 	}
 	debugLog("SoundEngine: initializeOutputDevice( {}, fallback = {} ) ...\n", id, (int)win_snd_fallback_dsound.getBool());
+	// cleanup potential previous device
+	const bool canReinitInsteadOfFreeInit = (m_iCurrentOutputDevice == id) && m_iCurrentOutputDevice != -1 && id != -1;
+	if (!canReinitInsteadOfFreeInit)
+		BASS_Free();
 
 	m_iCurrentOutputDevice = id;
-
-	// cleanup potential previous device
-	BASS_Free();
 
 #ifdef MCENGINE_FEATURE_BASS_WASAPI
 	BASS_WASAPI_Free();
 #endif
 
 	// dynamic runtime flags
-	unsigned int runtimeFlags = 0;
+	unsigned int runtimeFlags = canReinitInsteadOfFreeInit ? BASS_DEVICE_REINIT : 0;
 
 #ifdef MCENGINE_FEATURE_BASS_WASAPI
 	runtimeFlags = BASS_DEVICE_NOSPEAKER;
@@ -686,8 +687,9 @@ bool BassSoundEngine::initializeOutputDevice(int id, bool force)
 #else
 	ret = BASS_Init(id, freq, flags, 0, NULL);
 #endif
-
-	if (!ret)
+	if (!ret && BASS_ErrorGetCode() == BASS_ERROR_ALREADY)
+		debugLog("SoundEngine: BASS was already initialized for device {}.\n", id);
+	else if (!ret)
 	{
 		m_bReady = false;
 
@@ -772,40 +774,40 @@ bool BassSoundEngine::initializeOutputDevice(int id, bool force)
 	return true;
 }
 
-void *_soundEngineThread(void *data)
-{
-	SoundEngineThread *self = (SoundEngineThread *)data;
+// void *_soundEngineThread(void *data)
+// {
+// 	SoundEngineThread *self = (SoundEngineThread *)data;
 
-	std::vector<SoundEngineThread::CHANNEL_PLAY_WORK> channelPlayWork;
+// 	std::vector<SoundEngineThread::CHANNEL_PLAY_WORK> channelPlayWork;
 
-	while (self->running.load())
-	{
-		// quickly check if there is work to do (this can potentially cause engine lag!)
-		self->workingMutex.lock();
-		{
-			for (size_t i = 0; i < self->channelPlayWork.size(); i++)
-			{
-				channelPlayWork.push_back(self->channelPlayWork[i]);
-			}
-			self->channelPlayWork.clear();
-		}
-		self->workingMutex.unlock();
+// 	while (self->running.load())
+// 	{
+// 		// quickly check if there is work to do (this can potentially cause engine lag!)
+// 		self->workingMutex.lock();
+// 		{
+// 			for (size_t i = 0; i < self->channelPlayWork.size(); i++)
+// 			{
+// 				channelPlayWork.push_back(self->channelPlayWork[i]);
+// 			}
+// 			self->channelPlayWork.clear();
+// 		}
+// 		self->workingMutex.unlock();
 
-		// if we have work
-		if (channelPlayWork.size() > 0)
-		{
-			for (size_t i = 0; i < channelPlayWork.size(); i++)
-			{
-				if (!BASS_ChannelPlay(channelPlayWork[i].handle, FALSE))
-					debugLog("couldn't BASS_ChannelPlay(), errorcode {}\n", BASS_ErrorGetCode());
-			}
-			channelPlayWork.clear();
-		}
-		else
-			Timing::sleep(1000); // 1000 Hz idle
-	}
+// 		// if we have work
+// 		if (channelPlayWork.size() > 0)
+// 		{
+// 			for (size_t i = 0; i < channelPlayWork.size(); i++)
+// 			{
+// 				if (!BASS_ChannelPlay(channelPlayWork[i].handle, FALSE))
+// 					debugLog("couldn't BASS_ChannelPlay(), errorcode {}\n", BASS_ErrorGetCode());
+// 			}
+// 			channelPlayWork.clear();
+// 		}
+// 		else
+// 			Timing::sleep(1000); // 1000 Hz idle
+// 	}
 
-	return NULL;
-}
+// 	return NULL;
+// }
 
 #endif // MCENGINE_FEATURE_BASS

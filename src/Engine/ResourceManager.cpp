@@ -10,7 +10,6 @@
 #include "ConVar.h"
 #include "Environment.h"
 #include "Thread.h"
-#include "Timing.h"
 #include "App.h" // for isInCriticalInteractiveSession() (gameplay detection)
 
 #include <algorithm>
@@ -18,7 +17,7 @@
 
 using namespace std::chrono_literals;
 
-static constexpr int MIN_NUM_THREADS = 1; // always keep 1 alive
+static constexpr int MIN_NUM_THREADS = 1;       // always keep 1 alive
 static constexpr auto THREAD_IDLE_TIMEOUT = 5s; // how long to keep a non-core thread alive waiting for work before destroying it
 
 ConVar rm_interrupt_on_destroy("rm_interrupt_on_destroy", true, FCVAR_CHEAT);
@@ -725,7 +724,7 @@ void ResourceManager::setResourceName(Resource *res, UString name)
 		return; // it's already the same name, nothing to do
 
 	if (name.isEmpty()) // add a default name (mostly for debugging, see Resource constructor)
-		name = UString::fmt("{:p}:postinit=y:found={}:{:s}", static_cast<const void*>(res), res->m_bFileFound, res->getFilePath());
+		name = UString::fmt("{:p}:postinit=y:found={}:{:s}", static_cast<const void *>(res), res->m_bFileFound, res->getFilePath());
 
 	res->setName(name);
 	// add the new name to the resource map (if it's a managed resource)

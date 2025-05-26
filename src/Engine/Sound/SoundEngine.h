@@ -40,11 +40,12 @@ public:
 
 	virtual std::vector<UString> getOutputDevices() = 0;
 
-	inline const UString &getOutputDevice() const { return m_sCurrentOutputDevice; }
-	inline float getVolume() const { return m_fVolume; }
+	[[nodiscard]] inline const UString &getOutputDevice() const { return m_sCurrentOutputDevice; }
+	[[nodiscard]] inline float getVolume() const { return m_fVolume; }
 
 	virtual SoundEngineType* getSndEngine() = 0;
 	[[nodiscard]] virtual const SoundEngineType* getSndEngine() const = 0;
+	[[nodiscard]] virtual bool isReady() { return m_bReady; }
 
 protected:
 	struct OUTPUT_DEVICE

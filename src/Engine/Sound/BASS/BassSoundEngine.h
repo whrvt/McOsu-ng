@@ -13,7 +13,7 @@
 #ifdef MCENGINE_FEATURE_BASS
 
 class BassSound;
-class SoundEngineThread;
+//class SoundEngineThread;
 
 class BassSoundEngine final : public SoundEngine
 {
@@ -48,7 +48,7 @@ private:
 	friend class BassSound;
 	uint32_t m_iBASSVersion;
 
-	SoundEngineThread *m_thread;
+	//SoundEngineThread *m_thread;
 };
 
 #else
