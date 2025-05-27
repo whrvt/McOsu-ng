@@ -129,7 +129,7 @@ void OpenGLLegacyInterface::setColor(Color color)
 	m_color = color;
 	// glColor4f(((unsigned char)(m_color >> 16))  / 255.0f, ((unsigned char)(m_color >> 8)) / 255.0f, ((unsigned char)(m_color >> 0)) / 255.0f, ((unsigned char)(m_color >> 24)) /
 	// 255.0f);
-	glColor4ub(m_color.r, m_color.g, m_color.b, m_color.a);
+	glColor4ub(m_color.R(), m_color.G(), m_color.B(), m_color.A());
 }
 
 void OpenGLLegacyInterface::setAlpha(float alpha)

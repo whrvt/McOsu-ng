@@ -495,7 +495,7 @@ bool Image::loadRawImage()
 
 		for (int y = 0; y < m_iHeight; y++)
 		{
-			if (getPixel(x, y).a > 0)
+			if (getPixel(x, y).A() > 0)
 			{
 				foundNonTransparentPixel = true;
 				break;
@@ -566,13 +566,13 @@ void Image::setPixel(int x, int y, Color color)
 	if (m_rawImage.size() < 1 || x < 0 || y < 0 || indexEnd < 0 || indexEnd > m_rawImage.size())
 		return;
 
-	m_rawImage[indexBegin + 0] = color.r;
+	m_rawImage[indexBegin + 0] = color.R();
 	if (m_iNumChannels > 1)
-		m_rawImage[indexBegin + 1] = color.g;
+		m_rawImage[indexBegin + 1] = color.G();
 	if (m_iNumChannels > 2)
-		m_rawImage[indexBegin + 2] = color.b;
+		m_rawImage[indexBegin + 2] = color.B();
 	if (m_iNumChannels > 3)
-		m_rawImage[indexBegin + 3] = color.a;
+		m_rawImage[indexBegin + 3] = color.A();
 }
 
 void Image::setPixels(const char *data, size_t size, TYPE type)

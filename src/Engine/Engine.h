@@ -220,7 +220,7 @@ private:
 		if (color == rgb(255, 255, 255) || !Environment::isatty())
 			fmt::print("{}", message);
 		else
-			fmt::print(fmt::fg(fmt::rgb(color.r, color.g, color.b)), "{}", message);
+			fmt::print(fmt::fg(fmt::rgb(color.R(), color.G(), color.B())), "{}", message);
 
 		logToConsole(color, UString(message));
 	}

@@ -2168,8 +2168,8 @@ void OsuHUD::drawHitErrorBarInt(Graphics *g, float hitWindow300, float hitWindow
 			if (m_hiterrors[i].misaim)
 				missHeightMultiplier = osu_hud_hiterrorbar_entry_misaim_height_multiplier.getFloat();
 
-			//Color leftColor = argb((int)((255/2) * alphaEntry * fade), barColor.r, barColor.g, barColor.b);
-			//Color centerColor = argb((int)(barColor.a * alphaEntry * fade), barColor.r, barColor.g, barColor.b);
+			//Color leftColor = argb((int)((255/2) * alphaEntry * fade), barColor.R(), barColor.G(), barColor.B());
+			//Color centerColor = argb((int)(barColor.a * alphaEntry * fade), barColor.R(), barColor.G(), barColor.B());
 			//Color rightColor = leftColor;
 
 			g->fillRect(center.x - (entryWidth/2.0f) + percent*(size.x/2.0f), center.y - (entryHeight*missHeightMultiplier)/2.0f, entryWidth, (entryHeight*missHeightMultiplier));
