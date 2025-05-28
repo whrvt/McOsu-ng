@@ -1674,8 +1674,6 @@ void OsuMainMenu::onPlayButtonPressed()
 	m_bMainMenuAnimFadeToFriendForNextAnim = false;
 	m_bMainMenuAnimFriendScheduled = false;
 
-	if (osu->getInstanceID() > 1) return;
-
 	osu->toggleSongBrowser();
 }
 
@@ -1706,8 +1704,6 @@ void OsuMainMenu::onExitButtonPressed()
 
 void OsuMainMenu::onPausePressed()
 {
-	if (osu->getInstanceID() > 1) return;
-
 	osu_main_menu_shuffle.setValue(0.0f);
 
 	if (osu->getSelectedBeatmap() != NULL)
@@ -1716,8 +1712,6 @@ void OsuMainMenu::onPausePressed()
 
 void OsuMainMenu::onUpdatePressed()
 {
-	if (osu->getInstanceID() > 1) return;
-
 	if (osu->getUpdateHandler()->getStatus() == OsuUpdateHandler::STATUS::STATUS_SUCCESS_INSTALLATION)
 		engine->restart();
 	else if (osu->getUpdateHandler()->getStatus() == OsuUpdateHandler::STATUS::STATUS_ERROR)
@@ -1728,8 +1722,6 @@ void OsuMainMenu::onSteamWorkshopPressed()
 {
 	if constexpr (Env::cfg(FEAT::STEAM))
 	{
-		if (osu->getInstanceID() > 1) return;
-
 		if (!steam->isReady())
 		{
 			osu->getNotificationOverlay()->addNotification("Error: Steam is not running.", 0xffff0000, false, 5.0f);
@@ -1745,16 +1737,12 @@ void OsuMainMenu::onSteamWorkshopPressed()
 
 void OsuMainMenu::onGithubPressed()
 {
-	if (osu->getInstanceID() > 1) return;
-
 	osu->getNotificationOverlay()->addNotification("Opening browser, please wait ...", 0xffffffff, false, 0.75f);
 	env->openURLInDefaultBrowser(PACKAGE_URL);
 }
 
 void OsuMainMenu::onVersionPressed()
 {
-	if (osu->getInstanceID() > 1) return;
-
 	m_bDrawVersionNotificationArrow = false;
 	writeVersionFile();
 	osu->toggleChangelog();

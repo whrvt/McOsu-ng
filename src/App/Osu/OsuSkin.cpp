@@ -28,8 +28,6 @@
 #define OSU_BITMASK_HITFINISH 0x4
 #define OSU_BITMASK_HITCLAP 0x8
 
-ConVar osu2_sound_source_id("osu2_sound_source_id", 1, FCVAR_NONE, "which instance/player/client should play hitsounds (e.g. master top left is always 1)");
-
 ConVar osu_volume_effects("osu_volume_effects", 1.0f, FCVAR_NONE);
 ConVar osu_skin_async("osu_skin_async", Env::cfg(OS::WASM) ? false : true, FCVAR_NONE, "load in background without blocking");
 ConVar osu_skin_hd("osu_skin_hd", true, FCVAR_NONE, "load and use @2x versions of skin images, if available");
@@ -1319,7 +1317,7 @@ void OsuSkin::setBeatmapComboColors(std::vector<Color> colors)
 
 void OsuSkin::playHitCircleSound(int sampleType, float pan)
 {
-	if (m_iSampleVolume <= 0 || (osu->getInstanceID() > 0 && osu->getInstanceID() != osu2_sound_source_id.getInt())) return;
+	if (m_iSampleVolume <= 0) return;
 
 	if (!osu_sound_panning.getBool() || (m_osu_mod_fposu_ref->getBool() && !osu_mod_fposu_sound_panning.getBool()) || (OsuGameRules::osu_mod_fps.getBool() && !osu_mod_fps_sound_panning.getBool()))
 		pan = 0.0f;
@@ -1367,7 +1365,7 @@ void OsuSkin::playHitCircleSound(int sampleType, float pan)
 
 void OsuSkin::playSliderTickSound(float pan)
 {
-	if (m_iSampleVolume <= 0 || (osu->getInstanceID() > 0 && osu->getInstanceID() != osu2_sound_source_id.getInt())) return;
+	if (m_iSampleVolume <= 0) return;
 
 	if (!osu_sound_panning.getBool() || (m_osu_mod_fposu_ref->getBool() && !osu_mod_fposu_sound_panning.getBool()) || (OsuGameRules::osu_mod_fps.getBool() && !osu_mod_fps_sound_panning.getBool()))
 		pan = 0.0f;
@@ -1390,8 +1388,6 @@ void OsuSkin::playSliderTickSound(float pan)
 
 void OsuSkin::playSliderSlideSound(float pan)
 {
-	if ((osu->getInstanceID() > 0 && osu->getInstanceID() != osu2_sound_source_id.getInt())) return;
-
 	if (!osu_sound_panning.getBool() || (m_osu_mod_fposu_ref->getBool() && !osu_mod_fposu_sound_panning.getBool()) || (OsuGameRules::osu_mod_fps.getBool() && !osu_mod_fps_sound_panning.getBool()))
 		pan = 0.0f;
 	else
@@ -1437,15 +1433,13 @@ void OsuSkin::playSliderSlideSound(float pan)
 
 void OsuSkin::playSpinnerSpinSound()
 {
-	if ((osu->getInstanceID() > 0 && osu->getInstanceID() != osu2_sound_source_id.getInt())) return;
-
 	if (!m_spinnerSpinSound->isPlaying())
 		soundEngine->play(m_spinnerSpinSound);
 }
 
 void OsuSkin::playSpinnerBonusSound()
 {
-	if (m_iSampleVolume <= 0 || (osu->getInstanceID() > 0 && osu->getInstanceID() != osu2_sound_source_id.getInt())) return;
+	if (m_iSampleVolume <= 0) return;
 
 	soundEngine->play(m_spinnerBonus);
 }

@@ -2,7 +2,6 @@
 McOsu_ng_SOURCES = \
 	libraries/glad/glad/glad.cpp \
 	src/App/Osu/Osu.cpp \
-	src/App/Osu/Osu2.cpp \
 	src/App/Osu/OsuBackgroundImageHandler.cpp \
 	src/App/Osu/OsuBackgroundStarCacheLoader.cpp \
 	src/App/Osu/OsuBeatmap.cpp \

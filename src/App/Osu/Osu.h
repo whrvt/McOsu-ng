@@ -17,7 +17,6 @@
 
 class CWindowManager;
 
-class Osu2;
 class OsuMultiplayer;
 class OsuMainMenu;
 class OsuPauseMenu;
@@ -74,7 +73,7 @@ public:
 	};
 
 public:
-	Osu(int instanceID = 0);
+	Osu();
 	~Osu() override;
 
 	void draw(Graphics *g) override;
@@ -120,7 +119,6 @@ public:
 
 	void setGamemode(GAMEMODE gamemode) {m_gamemode = gamemode;}
 
-	[[nodiscard]] inline int getInstanceID() const {return m_iInstanceID;}
 	[[nodiscard]] inline GAMEMODE getGamemode() const {return m_gamemode;}
 
 	[[nodiscard]] constexpr const Vector2 &getScreenSize() const {return g_vInternalResolution;}
@@ -378,7 +376,6 @@ private:
 	GAMEMODE m_gamemode;
 	bool m_bScheduleEndlessModNextBeatmap;
 	int m_iMultiplayerClientNumEscPresses;
-	int m_iInstanceID;
 	bool m_bWasBossKeyPaused;
 	bool m_bSkinLoadScheduled;
 	bool m_bSkinLoadWasReload;

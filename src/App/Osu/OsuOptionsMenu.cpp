@@ -2422,10 +2422,7 @@ void OsuOptionsMenu::onSkinSelect2(UString skinName, int id)
 	if constexpr (Env::cfg(FEAT::STEAM))
 		m_osu_skin_is_from_workshop_ref->setValue(0.0f);
 
-	if (osu->getInstanceID() < 1)
-		m_osu_skin_ref->setValue(skinName);
-	else
-		osu->setSkin(skinName);
+	m_osu_skin_ref->setValue(skinName);
 
 	updateSkinNameLabel();
 }
@@ -2519,10 +2516,7 @@ void OsuOptionsMenu::onSkinSelectWorkshop4(UString skinName, int id)
 				m_osu_skin_workshop_title_ref->setValue(subscribedItem.title);
 				m_osu_skin_workshop_id_ref->setValue(UString::format("%llu", subscribedItem.id));
 
-				if (osu->getInstanceID() < 1)
-					m_osu_skin_ref->setValue(subscribedItem.installInfo);
-				else
-					osu->setSkin(subscribedItem.installInfo);
+				m_osu_skin_ref->setValue(subscribedItem.installInfo);
 
 				updateSkinNameLabel();
 			}

@@ -2201,13 +2201,6 @@ bool OsuBeatmap::canUpdate()
 	if (!m_bIsPlaying && !m_bIsPaused && !m_bContinueScheduled)
 		return false;
 
-	if (osu->getInstanceID() > 1)
-	{
-		m_music = resourceManager->getSound("OSU_BEATMAP_MUSIC");
-		if (m_music == NULL)
-			return false;
-	}
-
 	return true;
 }
 
@@ -2245,12 +2238,6 @@ void OsuBeatmap::handlePreviewPlay()
 
 void OsuBeatmap::loadMusic(bool stream, bool prescan)
 {
-	if (osu->getInstanceID() > 1)
-	{
-		m_music = resourceManager->getSound("OSU_BEATMAP_MUSIC");
-		return;
-	}
-
 	stream = stream || m_bForceStreamPlayback;
 	m_iResourceLoadUpdateDelayHack = 0;
 
@@ -2271,11 +2258,8 @@ void OsuBeatmap::loadMusic(bool stream, bool prescan)
 
 void OsuBeatmap::unloadMusicInt()
 {
-	if (osu->getInstanceID() < 2)
-	{
-		soundEngine->stop(m_music);
-		resourceManager->destroyResource(m_music);
-	}
+	soundEngine->stop(m_music);
+	resourceManager->destroyResource(m_music);
 
 	m_music = NULL;
 }

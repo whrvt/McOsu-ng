@@ -132,7 +132,6 @@ PROGRAMS = $(bin_PROGRAMS)
 am__dirstamp = $(am__leading_dot)dirstamp
 am_McOsu_ng_OBJECTS = libraries/glad/glad/McOsu_ng-glad.$(OBJEXT) \
 	src/App/Osu/McOsu_ng-Osu.$(OBJEXT) \
-	src/App/Osu/McOsu_ng-Osu2.$(OBJEXT) \
 	src/App/Osu/McOsu_ng-OsuBackgroundImageHandler.$(OBJEXT) \
 	src/App/Osu/McOsu_ng-OsuBackgroundStarCacheLoader.$(OBJEXT) \
 	src/App/Osu/McOsu_ng-OsuBeatmap.$(OBJEXT) \
@@ -311,7 +310,6 @@ depcomp = $(SHELL) $(top_srcdir)/build/aux/depcomp
 am__maybe_remake_depfiles = depfiles
 am__depfiles_remade = libraries/glad/glad/$(DEPDIR)/McOsu_ng-glad.Po \
 	src/App/Osu/$(DEPDIR)/McOsu_ng-Osu.Po \
-	src/App/Osu/$(DEPDIR)/McOsu_ng-Osu2.Po \
 	src/App/Osu/$(DEPDIR)/McOsu_ng-OsuBackgroundImageHandler.Po \
 	src/App/Osu/$(DEPDIR)/McOsu_ng-OsuBackgroundStarCacheLoader.Po \
 	src/App/Osu/$(DEPDIR)/McOsu_ng-OsuBeatmap.Po \
@@ -758,7 +756,6 @@ top_srcdir = @top_srcdir@
 McOsu_ng_SOURCES = \
 	libraries/glad/glad/glad.cpp \
 	src/App/Osu/Osu.cpp \
-	src/App/Osu/Osu2.cpp \
 	src/App/Osu/OsuBackgroundImageHandler.cpp \
 	src/App/Osu/OsuBackgroundStarCacheLoader.cpp \
 	src/App/Osu/OsuBeatmap.cpp \
@@ -1116,8 +1113,6 @@ src/App/Osu/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) src/App/Osu/$(DEPDIR)
 	@: >>src/App/Osu/$(DEPDIR)/$(am__dirstamp)
 src/App/Osu/McOsu_ng-Osu.$(OBJEXT): src/App/Osu/$(am__dirstamp) \
-	src/App/Osu/$(DEPDIR)/$(am__dirstamp)
-src/App/Osu/McOsu_ng-Osu2.$(OBJEXT): src/App/Osu/$(am__dirstamp) \
 	src/App/Osu/$(DEPDIR)/$(am__dirstamp)
 src/App/Osu/McOsu_ng-OsuBackgroundImageHandler.$(OBJEXT):  \
 	src/App/Osu/$(am__dirstamp) \
@@ -1649,7 +1644,6 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@libraries/glad/glad/$(DEPDIR)/McOsu_ng-glad.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/App/Osu/$(DEPDIR)/McOsu_ng-Osu.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@src/App/Osu/$(DEPDIR)/McOsu_ng-Osu2.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/App/Osu/$(DEPDIR)/McOsu_ng-OsuBackgroundImageHandler.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/App/Osu/$(DEPDIR)/McOsu_ng-OsuBackgroundStarCacheLoader.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/App/Osu/$(DEPDIR)/McOsu_ng-OsuBeatmap.Po@am__quote@ # am--include-marker
@@ -1857,20 +1851,6 @@ src/App/Osu/McOsu_ng-Osu.obj: src/App/Osu/Osu.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/App/Osu/Osu.cpp' object='src/App/Osu/McOsu_ng-Osu.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/App/Osu/McOsu_ng-Osu.obj `if test -f 'src/App/Osu/Osu.cpp'; then $(CYGPATH_W) 'src/App/Osu/Osu.cpp'; else $(CYGPATH_W) '$(srcdir)/src/App/Osu/Osu.cpp'; fi`
-
-src/App/Osu/McOsu_ng-Osu2.o: src/App/Osu/Osu2.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/App/Osu/McOsu_ng-Osu2.o -MD -MP -MF src/App/Osu/$(DEPDIR)/McOsu_ng-Osu2.Tpo -c -o src/App/Osu/McOsu_ng-Osu2.o `test -f 'src/App/Osu/Osu2.cpp' || echo '$(srcdir)/'`src/App/Osu/Osu2.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/App/Osu/$(DEPDIR)/McOsu_ng-Osu2.Tpo src/App/Osu/$(DEPDIR)/McOsu_ng-Osu2.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/App/Osu/Osu2.cpp' object='src/App/Osu/McOsu_ng-Osu2.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/App/Osu/McOsu_ng-Osu2.o `test -f 'src/App/Osu/Osu2.cpp' || echo '$(srcdir)/'`src/App/Osu/Osu2.cpp
-
-src/App/Osu/McOsu_ng-Osu2.obj: src/App/Osu/Osu2.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/App/Osu/McOsu_ng-Osu2.obj -MD -MP -MF src/App/Osu/$(DEPDIR)/McOsu_ng-Osu2.Tpo -c -o src/App/Osu/McOsu_ng-Osu2.obj `if test -f 'src/App/Osu/Osu2.cpp'; then $(CYGPATH_W) 'src/App/Osu/Osu2.cpp'; else $(CYGPATH_W) '$(srcdir)/src/App/Osu/Osu2.cpp'; fi`
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/App/Osu/$(DEPDIR)/McOsu_ng-Osu2.Tpo src/App/Osu/$(DEPDIR)/McOsu_ng-Osu2.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/App/Osu/Osu2.cpp' object='src/App/Osu/McOsu_ng-Osu2.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/App/Osu/McOsu_ng-Osu2.obj `if test -f 'src/App/Osu/Osu2.cpp'; then $(CYGPATH_W) 'src/App/Osu/Osu2.cpp'; else $(CYGPATH_W) '$(srcdir)/src/App/Osu/Osu2.cpp'; fi`
 
 src/App/Osu/McOsu_ng-OsuBackgroundImageHandler.o: src/App/Osu/OsuBackgroundImageHandler.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/App/Osu/McOsu_ng-OsuBackgroundImageHandler.o -MD -MP -MF src/App/Osu/$(DEPDIR)/McOsu_ng-OsuBackgroundImageHandler.Tpo -c -o src/App/Osu/McOsu_ng-OsuBackgroundImageHandler.o `test -f 'src/App/Osu/OsuBackgroundImageHandler.cpp' || echo '$(srcdir)/'`src/App/Osu/OsuBackgroundImageHandler.cpp
@@ -4383,7 +4363,6 @@ distclean: distclean-am
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
 	-rm -f libraries/glad/glad/$(DEPDIR)/McOsu_ng-glad.Po
 	-rm -f src/App/Osu/$(DEPDIR)/McOsu_ng-Osu.Po
-	-rm -f src/App/Osu/$(DEPDIR)/McOsu_ng-Osu2.Po
 	-rm -f src/App/Osu/$(DEPDIR)/McOsu_ng-OsuBackgroundImageHandler.Po
 	-rm -f src/App/Osu/$(DEPDIR)/McOsu_ng-OsuBackgroundStarCacheLoader.Po
 	-rm -f src/App/Osu/$(DEPDIR)/McOsu_ng-OsuBeatmap.Po
@@ -4591,7 +4570,6 @@ maintainer-clean: maintainer-clean-am
 	-rm -rf $(top_srcdir)/autom4te.cache
 	-rm -f libraries/glad/glad/$(DEPDIR)/McOsu_ng-glad.Po
 	-rm -f src/App/Osu/$(DEPDIR)/McOsu_ng-Osu.Po
-	-rm -f src/App/Osu/$(DEPDIR)/McOsu_ng-Osu2.Po
 	-rm -f src/App/Osu/$(DEPDIR)/McOsu_ng-OsuBackgroundImageHandler.Po
 	-rm -f src/App/Osu/$(DEPDIR)/McOsu_ng-OsuBackgroundStarCacheLoader.Po
 	-rm -f src/App/Osu/$(DEPDIR)/McOsu_ng-OsuBeatmap.Po
