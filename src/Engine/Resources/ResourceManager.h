@@ -9,6 +9,7 @@
 #ifndef RESOURCEMANAGER_H
 #define RESOURCEMANAGER_H
 
+#include "Engine.h"
 #include "Font.h"
 #include "Image.h"
 #include "RenderTarget.h"
@@ -16,19 +17,15 @@
 #include "Sound.h"
 #include "TextureAtlas.h"
 #include "VertexArrayObject.h"
-#include "Engine.h"
 
-#include <atomic>
-#include <chrono>
-#include <condition_variable>
-#include <queue>
+
+#include <stack>
 #include <unordered_map>
 
 class ConVar;
 class Sound;
 class TextureAtlas;
-class ResourceManagerLoaderThread;
-
+class AsyncResourceLoader;
 class ResourceManager final
 {
 public:
@@ -38,74 +35,6 @@ public:
 	static constexpr auto PATH_DEFAULT_FONTS = "fonts/";
 	static constexpr auto PATH_DEFAULT_SOUNDS = "sounds/";
 	static constexpr auto PATH_DEFAULT_SHADERS = "shaders/";
-
-	// async loading methods
-	// TODO: move the actual resource loading to a separate file, it's getting messy in here
-public:
-	struct LOADING_WORK
-	{
-		Resource *resource;
-		size_t workId;
-		std::atomic<bool> asyncDone{false};
-		std::atomic<bool> syncDone{false};
-	};
-
-	// work queue methods
-	LOADING_WORK *getNextWork();
-	void markWorkAsyncComplete(LOADING_WORK *work);
-
-	// work notification
-	std::condition_variable m_workAvailable;
-	std::mutex m_workAvailableMutex;
-
-	[[nodiscard]] size_t getNumActiveThreads() const;
-	[[nodiscard]] size_t getNumLoadingWork() const;
-	[[nodiscard]] inline size_t getNumLoadingWorkAsyncDestroy() const { return m_loadingWorkAsyncDestroy.size(); }
-
-	// flags
-	bool m_bNextLoadAsync;
-	std::stack<bool> m_nextLoadUnmanagedStack;
-
-	// thread pool management
-	void ensureThreadAvailable();
-	void cleanupIdleThreads();
-
-	// async work queue threads
-	std::vector<ResourceManagerLoaderThread *> m_threads;
-	mutable std::mutex m_threadsMutex;
-
-	// thread pool configuration
-	size_t m_maxThreads;
-	std::chrono::seconds m_threadIdleTimeout{5}; // threads terminate after 10 seconds idle
-
-	// thread lifecycle tracking
-	std::atomic<size_t> m_activeThreadCount{0};
-	std::atomic<size_t> m_totalThreadsCreated{0};
-
-	// separate queues for different stages of loading
-	std::queue<LOADING_WORK *> m_pendingWork;       // work waiting to be picked up
-	std::queue<LOADING_WORK *> m_asyncCompleteWork; // work that completed async phase
-	std::vector<LOADING_WORK *> m_allWork;          // all work items for cleanup
-
-	// fine-grained locks for the above
-	mutable std::mutex m_pendingWorkMutex;
-	mutable std::mutex m_asyncCompleteWorkMutex;
-	mutable std::mutex m_allWorkMutex;
-
-	std::atomic<size_t> m_pendingWorkCount{0}; // lock-free pending check for idle loops
-
-	std::atomic<size_t> m_workIdCounter{0};
-
-	// async destroy queue
-	std::vector<Resource *> m_loadingWorkAsyncDestroy;
-	std::mutex m_asyncDestroyMutex;
-
-	// shutdown flag
-	std::atomic<bool> m_bShuttingDown{false};
-
-	// "low latency" mode, i.e. gameplay, updated once in the update loop
-	// not critical to be correct 100% of the time, doesn't need to be atomic
-	bool m_bLowLatency{false};
 
 public:
 	ResourceManager();
@@ -180,8 +109,11 @@ public:
 
 	[[nodiscard]] constexpr const std::vector<Resource *> &getResources() const { return m_vResources; }
 
-	bool isLoading() const;
+	[[nodiscard]] bool isLoading() const;
 	bool isLoadingResource(Resource *rs) const;
+	[[nodiscard]] size_t getNumLoadingWork() const;
+	[[nodiscard]] size_t getNumActiveThreads() const;
+	[[nodiscard]] size_t getNumLoadingWorkAsyncDestroy() const;
 
 private:
 	template <typename T>
@@ -195,7 +127,7 @@ private:
 		if (debug_rm->getBool())
 			debugLog(R"(ResourceManager WARNING: Resource "{:s}" does not exist!)"
 			         "\n",
-			         resourceName.toUtf8());
+			         resourceName);
 		return nullptr;
 	}
 	template <typename T>
@@ -209,14 +141,13 @@ private:
 		if (debug_rm->getBool())
 			debugLog(R"(ResourceManager NOTICE: Resource "{:s}" already loaded.)"
 			         "\n",
-			         resourceName.toUtf8());
+			         resourceName);
 		// handle flags (reset them)
 		resetFlags();
 		return it->second->as<T>();
 	}
 
 	void loadResource(Resource *res, bool load);
-
 	void resetFlags();
 
 	void addManagedResource(Resource *res);
@@ -225,6 +156,13 @@ private:
 	// helper methods for managing typed resource vectors
 	void addResourceToTypedVector(Resource *res);
 	void removeResourceFromTypedVector(Resource *res);
+
+	// async loading system
+	AsyncResourceLoader *m_asyncLoader;
+
+	// flags
+	bool m_bNextLoadAsync;
+	std::stack<bool> m_nextLoadUnmanagedStack;
 
 	// content
 	std::vector<Resource *> m_vResources;

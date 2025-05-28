@@ -108,8 +108,9 @@ McOsu_ng_SOURCES = \
 	src/Engine/Renderer/OpenGLStateCache.cpp \
 	src/Engine/Renderer/OpenGLSync.cpp \
 	src/Engine/Renderer/OpenGLVertexArrayObject.cpp \
-	src/Engine/Resource.cpp \
-	src/Engine/ResourceManager.cpp \
+	src/Engine/Resources/AsyncResourceLoader.cpp \
+	src/Engine/Resources/Resource.cpp \
+	src/Engine/Resources/ResourceManager.cpp \
 	src/Engine/Shader.cpp \
 	src/Engine/Sound/BASS/BassManager.cpp \
 	src/Engine/Sound/BASS/BassSound.cpp \

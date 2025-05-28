@@ -11,6 +11,7 @@
 
 #include "WindowUIElement.h"
 
+#include <atomic>
 #include <mutex>
 
 class CBaseUITextbox;
@@ -41,14 +42,14 @@ public:
 	void log(UString text, Color textColor = 0xffffffff);
 
 	// set
-	void setRequireShiftToActivate(bool requireShiftToActivate) {m_bRequireShiftToActivate = requireShiftToActivate;}
+	void setRequireShiftToActivate(bool requireShiftToActivate) { m_bRequireShiftToActivate = requireShiftToActivate; }
 
 	// get
 	bool isBusy() override;
 	bool isActive() override;
 
 	// ILLEGAL:
-	[[nodiscard]] inline ConsoleBoxTextbox *getTextbox() const {return m_textbox;}
+	[[nodiscard]] inline ConsoleBoxTextbox *getTextbox() const { return m_textbox; }
 
 	// inspection
 	CBASE_UI_TYPE(ConsoleBox, CONSOLEBOX, WindowUIElement)
@@ -72,12 +73,15 @@ private:
 
 	float getDPIScale();
 
+	// handle pending animation operations from logging thread
+	void processPendingLogAnimations();
+
 	int m_iSuggestionCount;
 	int m_iSelectedSuggestion; // for up/down buttons
 
 	ConsoleBoxTextbox *m_textbox;
 	CBaseUIScrollView *m_suggestion;
-	std::vector<CBaseUIButton*> m_vSuggestionButtons;
+	std::vector<CBaseUIButton *> m_vSuggestionButtons;
 	float m_fSuggestionY;
 
 	bool m_bRequireShiftToActivate;
@@ -101,6 +105,9 @@ private:
 
 	std::mutex m_logMutex;
 
+	// thread-safe log animation state
+	std::atomic<bool> m_bLogAnimationResetPending;
+	std::atomic<float> m_fPendingLogTime;
 };
 
 #endif

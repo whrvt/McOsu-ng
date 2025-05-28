@@ -630,9 +630,6 @@ bool BassSoundEngine::playChannelWithAttributes(BassSound *bassSound, SOUNDHANDL
 	pan = std::clamp<float>(pan, -1.0f, 1.0f);
 	pitch = std::clamp<float>(pitch, 0.0f, 2.0f);
 
-	bool success = true;
-	bool justStartedPlaying = false;
-
 #ifdef MCENGINE_FEATURE_BASS_WASAPI
 	BASS_ChannelSetAttribute(handle, BASS_ATTRIB_PAN, pan);
 
@@ -643,10 +640,10 @@ bool BassSoundEngine::playChannelWithAttributes(BassSound *bassSound, SOUNDHANDL
 	}
 	else
 	{
-		BASS_ChannelSetAttribute(handle, BASS_ATTRIB_NORAMP, 1.0f);
+		BASS_ChannelSetAttribute(handle, BASS_ATTRIB_NORAMP, 1.0f); // see https://github.com/ppy/osu-framework/pull/3146
 	}
 
-	// force add to output mixer
+	// HACKHACK: force add to output mixer
 	if (BASS_Mixer_ChannelGetMixer(handle) == 0)
 	{
 		if (!BASS_Mixer_StreamAddChannel(g_wasapiOutputMixer, handle,
@@ -658,10 +655,15 @@ bool BassSoundEngine::playChannelWithAttributes(BassSound *bassSound, SOUNDHANDL
 
 	if (BASS_ChannelIsActive(handle) != BASS_ACTIVE_PLAYING)
 	{
-		justStartedPlaying = (success = BASS_ChannelPlay(handle, TRUE));
-		if (!success)
+		const bool ret = BASS_ChannelPlay(handle, TRUE);
+		if (!ret)
 			BassManager::printBassError(fmt::format("BASS_ChannelPlay({}, TRUE)", handle), BASS_ErrorGetCode());
+		return ret;
 	}
+
+	bassSound->setLastPlayTime(engine->getTime());
+
+	return true;
 #else
 	if (BASS_ChannelIsActive(handle) != BASS_ACTIVE_PLAYING)
 	{
@@ -683,26 +685,31 @@ bool BassSoundEngine::playChannelWithAttributes(BassSound *bassSound, SOUNDHANDL
 		}
 		else
 		{
-			BASS_ChannelSetAttribute(handle, BASS_ATTRIB_NORAMP, 1.0f);
+			BASS_ChannelSetAttribute(handle, BASS_ATTRIB_NORAMP, 1.0f); // see https://github.com/ppy/osu-framework/pull/3146
 		}
 
-		justStartedPlaying = (success = BASS_ChannelPlay(handle, TRUE));
-		auto code = BASS_ErrorGetCode();
-		if (!success)
-			BassManager::printBassError(fmt::format("BASS_ChannelPlay({}, TRUE)", handle), code);
-		if (code == BASS_ERROR_START)
+		bool ret = false;
 		{
-			debugLog("Attempting to reinitialize the audio device...\n");
-			restart();
-			justStartedPlaying = (success = m_bReady && BASS_ChannelPlay(handle, FALSE));
+			ret = BASS_ChannelPlay(handle, FALSE);
+			auto code = BASS_ErrorGetCode();
+			if (!ret)
+				BassManager::printBassError(fmt::format("BASS_ChannelPlay({}, TRUE)", handle), code);
+			if (code == BASS_ERROR_START)
+			{
+				debugLog("Attempting to reinitialize the audio device...\n");
+				restart();
+				ret = m_bReady;
+			}
 		}
+
+		if (ret)
+			bassSound->setLastPlayTime(engine->getTime());
+
+		return ret;
 	}
 #endif
 
-	if (justStartedPlaying)
-		bassSound->setLastPlayTime(engine->getTime());
-
-	return success;
+	return false;
 }
 
 #endif // MCENGINE_FEATURE_BASS

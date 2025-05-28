@@ -9,21 +9,21 @@
 
 #include <utility>
 
+#include "AnimationHandler.h"
+#include "ConVar.h"
 #include "Engine.h"
 #include "Environment.h"
-#include "ResourceManager.h"
-#include "AnimationHandler.h"
 #include "Keyboard.h"
 #include "Mouse.h"
-#include "ConVar.h"
+#include "ResourceManager.h"
 
 #include "Console.h"
 
-#include "CBaseUITextbox.h"
 #include "CBaseUIBoxShadow.h"
-#include "CBaseUIScrollView.h"
-#include "CBaseUIContainer.h"
 #include "CBaseUIButton.h"
+#include "CBaseUIContainer.h"
+#include "CBaseUIScrollView.h"
+#include "CBaseUITextbox.h"
 
 ConVar showconsolebox("showconsolebox");
 
@@ -38,11 +38,9 @@ ConVar console_overlay_scale("console_overlay_scale", 1.0f, FCVAR_NONE, "log tex
 class ConsoleBoxTextbox : public CBaseUITextbox
 {
 public:
-	ConsoleBoxTextbox(float xPos, float yPos, float xSize, float ySize, UString name) : CBaseUITextbox(xPos, yPos, xSize, ySize, name)
-	{
-	}
+	ConsoleBoxTextbox(float xPos, float yPos, float xSize, float ySize, UString name) : CBaseUITextbox(xPos, yPos, xSize, ySize, name) {}
 
-	void setSuggestion(UString suggestion) {m_sSuggestion = suggestion;}
+	void setSuggestion(UString suggestion) { m_sSuggestion = suggestion; }
 
 protected:
 	virtual void drawText(Graphics *g)
@@ -71,7 +69,8 @@ private:
 class ConsoleBoxSuggestionButton : public CBaseUIButton
 {
 public:
-	ConsoleBoxSuggestionButton(float xPos, float yPos, float xSize, float ySize, UString name, UString text, UString helpText, ConsoleBox *consoleBox) : CBaseUIButton(xPos, yPos, xSize, ySize, name, text)
+	ConsoleBoxSuggestionButton(float xPos, float yPos, float xSize, float ySize, UString name, UString text, UString helpText, ConsoleBox *consoleBox)
+	    : CBaseUIButton(xPos, yPos, xSize, ySize, name, text)
 	{
 		m_sHelpText = helpText;
 		m_consoleBox = consoleBox;
@@ -80,26 +79,31 @@ public:
 protected:
 	virtual void drawText(Graphics *g)
 	{
-		if (m_font == NULL || m_sText.length() < 1) return;
+		if (m_font == NULL || m_sText.length() < 1)
+			return;
 
 		if (consolebox_draw_helptext.getBool())
 		{
 			if (m_sHelpText.length() > 0)
 			{
 				const UString helpTextSeparator = "-";
-				const int helpTextOffset = std::round(2.0f * m_font->getStringWidth(helpTextSeparator) * ((float)m_font->getDPI() / 96.0f)); // NOTE: abusing font dpi
+				const int helpTextOffset =
+				    std::round(2.0f * m_font->getStringWidth(helpTextSeparator) * ((float)m_font->getDPI() / 96.0f)); // NOTE: abusing font dpi
 				const int helpTextSeparatorStringWidth = std::max(1, (int)m_font->getStringWidth(helpTextSeparator));
 				const int helpTextStringWidth = std::max(1, (int)m_font->getStringWidth(m_sHelpText));
 
 				g->pushTransform();
 				{
-					const float scale = std::min(1.0f, (std::max(1.0f, m_consoleBox->getTextbox()->getSize().x - m_fStringWidth - helpTextOffset*1.5f - helpTextSeparatorStringWidth*1.5f)) / (float)helpTextStringWidth);
+					const float scale = std::min(1.0f, (std::max(1.0f, m_consoleBox->getTextbox()->getSize().x - m_fStringWidth - helpTextOffset * 1.5f -
+					                                                       helpTextSeparatorStringWidth * 1.5f)) /
+					                                       (float)helpTextStringWidth);
 
 					g->scale(scale, scale);
-					g->translate((int)(m_vPos.x + m_fStringWidth + helpTextOffset*scale/2 + helpTextSeparatorStringWidth*scale), (int)(m_vPos.y + m_vSize.y/2.0f + m_fStringHeight/2.0f - m_font->getHeight()*(1.0f - scale)/2.0f));
+					g->translate((int)(m_vPos.x + m_fStringWidth + helpTextOffset * scale / 2 + helpTextSeparatorStringWidth * scale),
+					             (int)(m_vPos.y + m_vSize.y / 2.0f + m_fStringHeight / 2.0f - m_font->getHeight() * (1.0f - scale) / 2.0f));
 					g->setColor(0xff444444);
 					g->drawString(m_font, helpTextSeparator);
-					g->translate(helpTextOffset*scale, 0);
+					g->translate(helpTextOffset * scale, 0);
 					g->drawString(m_font, m_sHelpText);
 				}
 				g->popTransform();
@@ -157,10 +161,14 @@ ConsoleBox::ConsoleBox() : WindowUIElement(0, 0, 0, 0, "")
 
 	m_fLogYPos = 0.0f;
 
+	// initialize thread-safe log animation state
+	m_bLogAnimationResetPending.store(false);
+	m_fPendingLogTime.store(0.0f);
+
 	clearSuggestions();
 
 	// convar callbacks
-	showconsolebox.setCallback( fastdelegate::MakeDelegate(this, &ConsoleBox::show) );
+	showconsolebox.setCallback(fastdelegate::MakeDelegate(this, &ConsoleBox::show));
 }
 
 ConsoleBox::~ConsoleBox()
@@ -188,8 +196,8 @@ void ConsoleBox::draw(Graphics *g)
 		{
 			g->push3DScene(McRect(m_textbox->getPos().x, m_textbox->getPos().y, m_textbox->getSize().x, m_textbox->getSize().y));
 			{
-				g->rotate3DScene(((m_fConsoleAnimation/getAnimTargetY())*130 - 130), 0, 0);
-				g->translate3DScene(0, 0, ((m_fConsoleAnimation/getAnimTargetY())*500 - 500));
+				g->rotate3DScene(((m_fConsoleAnimation / getAnimTargetY()) * 130 - 130), 0, 0);
+				g->translate3DScene(0, 0, ((m_fConsoleAnimation / getAnimTargetY()) * 500 - 500));
 				m_textbox->draw(g);
 				m_suggestion->draw(g);
 			}
@@ -215,7 +223,7 @@ void ConsoleBox::drawLogOverlay(Graphics *g)
 	const int shadowOffset = 1 * logScale;
 
 	g->setColor(0xff000000);
-	const float alpha = 1.0f - (m_fLogYPos / (m_logFont->getHeight()*(console_overlay_lines.getInt()+1)));
+	const float alpha = 1.0f - (m_fLogYPos / (m_logFont->getHeight() * (console_overlay_lines.getInt() + 1)));
 	if (m_fLogYPos != 0.0f)
 		g->setAlpha(alpha);
 
@@ -223,7 +231,7 @@ void ConsoleBox::drawLogOverlay(Graphics *g)
 	{
 		g->scale(logScale, logScale);
 		g->translate(2 * logScale + shadowOffset, -m_fLogYPos + shadowOffset);
-		for (size_t i=0; i<m_log.size(); i++)
+		for (size_t i = 0; i < m_log.size(); i++)
 		{
 			g->translate(0, (int)((m_logFont->getHeight() + (i == 0 ? 0 : 2) + 1) * logScale));
 			g->drawString(m_logFont, m_log[i].text);
@@ -239,7 +247,7 @@ void ConsoleBox::drawLogOverlay(Graphics *g)
 	{
 		g->scale(logScale, logScale);
 		g->translate(2 * logScale, -m_fLogYPos);
-		for (size_t i=0; i<m_log.size(); i++)
+		for (size_t i = 0; i < m_log.size(); i++)
 		{
 			g->translate(0, (int)((m_logFont->getHeight() + (i == 0 ? 0 : 2) + 1) * logScale));
 			g->setColor(m_log[i].textColor);
@@ -253,6 +261,9 @@ void ConsoleBox::drawLogOverlay(Graphics *g)
 void ConsoleBox::update()
 {
 	CBaseUIElement::update();
+
+	// handle pending animation operations from logging threads
+	processPendingLogAnimations();
 
 	const bool mleft = mouse->isLeftDown();
 
@@ -281,7 +292,7 @@ void ConsoleBox::update()
 
 	if (m_bConsoleAnimateIn)
 	{
-		if (m_fConsoleAnimation < getAnimTargetY() && std::round((m_fConsoleAnimation/getAnimTargetY())*500) < 500.0f)
+		if (m_fConsoleAnimation < getAnimTargetY() && std::round((m_fConsoleAnimation / getAnimTargetY()) * 500) < 500.0f)
 			m_textbox->setPosY(engine->getScreenHeight() - m_fConsoleAnimation);
 		else
 		{
@@ -295,7 +306,7 @@ void ConsoleBox::update()
 
 	if (m_bConsoleAnimateOut)
 	{
-		if (m_fConsoleAnimation > 0.0f && std::round((m_fConsoleAnimation/getAnimTargetY())*500) > 0.0f)
+		if (m_fConsoleAnimation > 0.0f && std::round((m_fConsoleAnimation / getAnimTargetY()) * 500) > 0.0f)
 			m_textbox->setPosY(engine->getScreenHeight() - m_fConsoleAnimation);
 		else
 		{
@@ -351,10 +362,25 @@ void ConsoleBox::update()
 	if (engine->getTime() > m_fLogTime)
 	{
 		if (!anim->isAnimating(&m_fLogYPos) && m_fLogYPos == 0.0f)
-			anim->moveQuadInOut(&m_fLogYPos, m_logFont->getHeight()*(console_overlay_lines.getFloat()+1), 0.5f);
+			anim->moveQuadInOut(&m_fLogYPos, m_logFont->getHeight() * (console_overlay_lines.getFloat() + 1), 0.5f);
 
-		if (m_fLogYPos == m_logFont->getHeight()*(console_overlay_lines.getInt()+1))
+		if (m_fLogYPos == m_logFont->getHeight() * (console_overlay_lines.getInt() + 1))
+		{
+			std::lock_guard<std::mutex> logGuard(m_logMutex);
 			m_log.clear();
+		}
+	}
+}
+
+void ConsoleBox::processPendingLogAnimations()
+{
+	// check if we have pending animation reset from logging thread
+	if (m_bLogAnimationResetPending.exchange(false))
+	{
+		// execute animation operations on main thread only
+		anim->deleteExistingAnimation(&m_fLogYPos);
+		m_fLogYPos = 0;
+		m_fLogTime = m_fPendingLogTime.load();
 	}
 }
 
@@ -375,10 +401,12 @@ void ConsoleBox::onSuggestionClicked(CBaseUIButton *suggestion)
 void ConsoleBox::onKeyDown(KeyboardEvent &e)
 {
 	// toggle visibility
-	if ((e == KEY_F1 && (m_textbox->isActive() && m_textbox->isVisible() && !m_bConsoleAnimateOut ? true : keyboard->isShiftDown())) || (m_textbox->isActive() && m_textbox->isVisible() && !m_bConsoleAnimateOut && (e == KEY_ESCAPE || (Env::cfg(OS::WASM) && e == KEY_TILDE))))
+	if ((e == KEY_F1 && (m_textbox->isActive() && m_textbox->isVisible() && !m_bConsoleAnimateOut ? true : keyboard->isShiftDown())) ||
+	    (m_textbox->isActive() && m_textbox->isVisible() && !m_bConsoleAnimateOut && (e == KEY_ESCAPE || (Env::cfg(OS::WASM) && e == KEY_TILDE))))
 		toggle(e);
 
-	if (m_bConsoleAnimateOut) return;
+	if (m_bConsoleAnimateOut)
+		return;
 
 	// textbox
 	m_textbox->onKeyDown(e);
@@ -408,9 +436,9 @@ void ConsoleBox::onKeyDown(KeyboardEvent &e)
 				m_textbox->setCursorPosRight();
 				m_suggestion->scrollToElement(m_vSuggestionButtons[m_iSelectedSuggestion]);
 
-				for (size_t i=0; i<m_vSuggestionButtons.size(); i++)
+				for (size_t i = 0; i < m_vSuggestionButtons.size(); i++)
 				{
-					if (std::cmp_equal(i , m_iSelectedSuggestion))
+					if (std::cmp_equal(i, m_iSelectedSuggestion))
 					{
 						m_vSuggestionButtons[i]->setTextColor(0xff00ff00);
 						m_vSuggestionButtons[i]->setTextDarkColor(0xff000000);
@@ -424,7 +452,7 @@ void ConsoleBox::onKeyDown(KeyboardEvent &e)
 		}
 		else if (e == KEY_UP || (e == KEY_TAB && keyboard->isShiftDown()))
 		{
-			if (m_iSelectedSuggestion > m_iSuggestionCount-2)
+			if (m_iSelectedSuggestion > m_iSuggestionCount - 2)
 				m_iSelectedSuggestion = 0;
 			else
 				m_iSelectedSuggestion++;
@@ -442,9 +470,9 @@ void ConsoleBox::onKeyDown(KeyboardEvent &e)
 				m_textbox->setCursorPosRight();
 				m_suggestion->scrollToElement(m_vSuggestionButtons[m_iSelectedSuggestion]);
 
-				for (size_t i=0; i<m_vSuggestionButtons.size(); i++)
+				for (size_t i = 0; i < m_vSuggestionButtons.size(); i++)
 				{
-					if (std::cmp_equal(i , m_iSelectedSuggestion))
+					if (std::cmp_equal(i, m_iSelectedSuggestion))
 					{
 						m_vSuggestionButtons[i]->setTextColor(0xff00ff00);
 						m_vSuggestionButtons[i]->setTextDarkColor(0xff000000);
@@ -463,7 +491,7 @@ void ConsoleBox::onKeyDown(KeyboardEvent &e)
 
 		if (e == KEY_DOWN)
 		{
-			if (m_iSelectedHistory > m_commandHistory.size()-2)
+			if (m_iSelectedHistory > m_commandHistory.size() - 2)
 				m_iSelectedHistory = 0;
 			else
 				m_iSelectedHistory++;
@@ -500,8 +528,10 @@ void ConsoleBox::onKeyDown(KeyboardEvent &e)
 
 void ConsoleBox::onChar(KeyboardEvent &e)
 {
-	if (m_bConsoleAnimateOut && !m_bConsoleAnimateIn) return;
-	if (e == KEY_TAB) return;
+	if (m_bConsoleAnimateOut && !m_bConsoleAnimateIn)
+		return;
+	if (e == KEY_TAB)
+		return;
 
 	m_textbox->onChar(e);
 
@@ -510,8 +540,8 @@ void ConsoleBox::onChar(KeyboardEvent &e)
 		// rebuild suggestion list
 		clearSuggestions();
 
-		std::vector<ConVar*> suggestions = convar->getConVarByLetter(m_textbox->getText());
-		for (size_t i=0; i<suggestions.size(); i++)
+		std::vector<ConVar *> suggestions = convar->getConVarByLetter(m_textbox->getText());
+		for (size_t i = 0; i < suggestions.size(); i++)
 		{
 			UString suggestionText = suggestions[i]->getName();
 
@@ -521,22 +551,22 @@ void ConsoleBox::onChar(KeyboardEvent &e)
 				{
 				case ConVar::CONVAR_TYPE::CONVAR_TYPE_BOOL:
 					suggestionText.append(UString::format(" %i", (int)suggestions[i]->getBool()));
-					//suggestionText.append(UString::format(" ( def. \"%i\" )", (int)(suggestions[i]->getDefaultFloat() > 0)));
+					// suggestionText.append(UString::format(" ( def. \"%i\" )", (int)(suggestions[i]->getDefaultFloat() > 0)));
 					break;
 				case ConVar::CONVAR_TYPE::CONVAR_TYPE_INT:
 					suggestionText.append(UString::format(" %i", suggestions[i]->getInt()));
-					//suggestionText.append(UString::format(" ( def. \"%i\" )", (int)suggestions[i]->getDefaultFloat()));
+					// suggestionText.append(UString::format(" ( def. \"%i\" )", (int)suggestions[i]->getDefaultFloat()));
 					break;
 				case ConVar::CONVAR_TYPE::CONVAR_TYPE_FLOAT:
 					suggestionText.append(UString::format(" %g", suggestions[i]->getFloat()));
-					//suggestionText.append(UString::format(" ( def. \"%g\" )", suggestions[i]->getDefaultFloat()));
+					// suggestionText.append(UString::format(" ( def. \"%g\" )", suggestions[i]->getDefaultFloat()));
 					break;
 				case ConVar::CONVAR_TYPE::CONVAR_TYPE_STRING:
 					suggestionText.append(" ");
 					suggestionText.append(suggestions[i]->getString());
-					//suggestionText.append(" ( def. \"");
-					//suggestionText.append(suggestions[i]->getDefaultString());
-					//suggestionText.append("\" )");
+					// suggestionText.append(" ( def. \"");
+					// suggestionText.append(suggestions[i]->getDefaultString());
+					// suggestionText.append("\" )");
 					break;
 				}
 			}
@@ -604,11 +634,11 @@ void ConsoleBox::addSuggestion(const UString &text, const UString &helpText, con
 	const int addheight = (17 + 8) * dpiScale;
 
 	// create button and add it
-	CBaseUIButton *button = new ConsoleBoxSuggestionButton(3 * dpiScale, (vsize - 1)*buttonheight + 2 * dpiScale, 100, addheight, command, text, helpText, this);
+	CBaseUIButton *button = new ConsoleBoxSuggestionButton(3 * dpiScale, (vsize - 1) * buttonheight + 2 * dpiScale, 100, addheight, command, text, helpText, this);
 	{
 		button->setDrawFrame(false);
 		button->setSizeX(button->getFont()->getStringWidth(text));
-		button->setClickCallback( fastdelegate::MakeDelegate(this, &ConsoleBox::onSuggestionClicked) );
+		button->setClickCallback(fastdelegate::MakeDelegate(this, &ConsoleBox::onSuggestionClicked));
 		button->setDrawBackground(false);
 	}
 	m_suggestion->getContainer()->addBaseUIElement(button);
@@ -638,7 +668,7 @@ void ConsoleBox::clearSuggestions()
 {
 	m_iSuggestionCount = 0;
 	m_suggestion->getContainer()->clear();
-	m_vSuggestionButtons = std::vector<CBaseUIButton*>();
+	m_vSuggestionButtons = std::vector<CBaseUIButton *>();
 	m_suggestion->setVisible(false);
 }
 
@@ -656,7 +686,7 @@ void ConsoleBox::toggle(KeyboardEvent &e)
 	if (m_textbox->isVisible() && !m_bConsoleAnimateIn && !m_bSuggestionAnimateIn)
 	{
 		m_bConsoleAnimateOut = true;
-		anim->moveSmoothEnd(&m_fConsoleAnimation, 0, 2.0f*0.8f);
+		anim->moveSmoothEnd(&m_fConsoleAnimation, 0, 2.0f * 0.8f);
 
 		if (m_suggestion->getContainer()->getElements().size() > 0)
 			m_bSuggestionAnimateOut = true;
@@ -670,7 +700,7 @@ void ConsoleBox::toggle(KeyboardEvent &e)
 		m_textbox->setBusy(true);
 		m_bConsoleAnimateIn = true;
 
-		anim->moveSmoothEnd(&m_fConsoleAnimation, getAnimTargetY(), 1.5f*0.6f);
+		anim->moveSmoothEnd(&m_fConsoleAnimation, getAnimTargetY(), 1.5f * 0.6f);
 
 		if (m_suggestion->getContainer()->getElements().size() > 0)
 		{
@@ -714,10 +744,11 @@ void ConsoleBox::log(UString text, Color textColor)
 		m_log.erase(m_log.begin());
 	}
 
-	anim->deleteExistingAnimation(&m_fLogYPos);
-	m_fLogYPos = 0;
-
-	m_fLogTime = engine->getTime() + 8.0f;
+	// defer animation operations to main thread to avoid data races
+	// set atomic flags that will be processed in update() on main thread
+	// also, don't use engine->getTime, because that's not thread-safe either
+	m_fPendingLogTime.store(Timing::getTimeReal<float>() + 8.0f);
+	m_bLogAnimationResetPending.store(true);
 }
 
 float ConsoleBox::getAnimTargetY()
