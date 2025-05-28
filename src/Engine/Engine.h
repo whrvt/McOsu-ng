@@ -115,8 +115,11 @@ public:
 	[[nodiscard]] inline double getTime() const { return m_dTime; }
 	[[nodiscard]] inline double getTimeRunning() const { return m_dRunTime; }
 	[[nodiscard]] inline double getFrameTime() const { return m_dFrameTime; }
-	[[nodiscard]] inline unsigned long getFrameCount() const { return m_iFrameCount; }
-	[[nodiscard]] inline bool vsyncFrame() const { return m_fFrameThrottleTime > 0; }
+	[[nodiscard]] inline uint64_t getFrameCount() const { return m_iFrameCount; }
+	// clang-format off
+	// NOTE: if engine_throttle cvar is off, this will always return true
+	[[nodiscard]] inline bool throttledShouldRun(unsigned int howManyVsyncFramesToWaitBetweenExecutions) { return (m_fVsyncFrameCounterTime == 0.0f) && !(m_iVsyncFrameCount % howManyVsyncFramesToWaitBetweenExecutions);}
+	// clang-format on
 
 	// vars
 	[[nodiscard]] inline bool hasFocus() const { return m_bHasFocus; }
@@ -139,9 +142,10 @@ private:
 	Timer *m_timer;
 	double m_dTime;
 	double m_dRunTime;
-	unsigned long m_iFrameCount;
+	uint64_t m_iFrameCount;
+	uint8_t m_iVsyncFrameCount; // this will wrap quickly, and that's fine, it should be used as a dividend in a modular expression anyways
+	float m_fVsyncFrameCounterTime;
 	double m_dFrameTime;
-	float m_fFrameThrottleTime;
 	void onEngineThrottleChanged(float newVal);
 
 	// primary screen

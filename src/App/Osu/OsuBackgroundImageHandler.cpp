@@ -68,7 +68,7 @@ void OsuBackgroundImageHandler::update(bool allowEviction)
 			else
 			{
 				entry.evictionTime = engine->getTime() + osu_background_image_eviction_delay_seconds.getFloat();
-				entry.evictionTimeFrameCount = engine->getFrameCount() + (unsigned long)std::max(0, osu_background_image_eviction_delay_frames.getInt());
+				entry.evictionTimeFrameCount = engine->getFrameCount() + (uint64_t)std::max(0, osu_background_image_eviction_delay_frames.getInt());
 			}
 		}
 		else if (wasUsedLastFrame)
@@ -147,7 +147,7 @@ Image *OsuBackgroundImageHandler::getLoadBackgroundImage(const OsuDatabaseBeatma
 
 	const float newLoadingTime = engine->getTime() + osu_background_image_loading_delay.getFloat();
 	const float newEvictionTime = engine->getTime() + osu_background_image_eviction_delay_seconds.getFloat();
-	const unsigned long newEvictionTimeFrameCount = engine->getFrameCount() + (unsigned long)std::max(0, osu_background_image_eviction_delay_frames.getInt());
+	const uint64_t newEvictionTimeFrameCount = engine->getFrameCount() + (uint64_t)std::max(0, osu_background_image_eviction_delay_frames.getInt());
 
 	// 1) if the path or image is already loaded, return image ref immediately (which may still be NULL) and keep track of when it was last requested
 	for (size_t i=0; i<m_cache.size(); i++)

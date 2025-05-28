@@ -87,7 +87,7 @@ Environment::Environment(int argc, char *argv[])
 	m_bHasFocus = true;   // for fps_max_background
 	m_bFullscreenWindowedBorderless = false;
 
-	m_fDisplayHz = 420.0f;
+	m_fDisplayHz = 360.0f;
 	m_fDisplayHzSecs = 1.0f / m_fDisplayHz;
 
 	m_bEnvDebug = false;

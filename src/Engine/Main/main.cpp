@@ -82,9 +82,9 @@ private:
 	float queryDisplayHz();
 
 	// callback handlers
-	void fps_max_callback(UString oldVal, UString newVal);
-	void fps_max_background_callback(UString oldVal, UString newVal);
-	void fps_unlimited_callback(UString oldVal, UString newVal);
+	void fps_max_callback(float newVal);
+	void fps_max_background_callback(float newVal);
+	void fps_unlimited_callback(float newVal);
 
 	void doEarlyCmdlineOverrides();
 };
@@ -184,7 +184,7 @@ static constexpr auto WINDOW_WIDTH_MIN = 100;
 static constexpr auto WINDOW_HEIGHT_MIN = 100;
 
 // convars
-ConVar fps_max("fps_max", 420.0f, FCVAR_NONE, "framerate limiter, foreground");
+ConVar fps_max("fps_max", 360.0f, FCVAR_NONE, "framerate limiter, foreground");
 ConVar fps_max_background("fps_max_background", 30.0f, FCVAR_NONE, "framerate limiter, background");
 ConVar fps_unlimited("fps_unlimited", false, FCVAR_NONE);
 
@@ -201,7 +201,7 @@ SDLMain::SDLMain(int argc, char *argv[]) : Environment(argc, argv)
 	m_context = nullptr;
 	m_deltaTimer = nullptr;
 
-	m_iFpsMax = 420;
+	m_iFpsMax = 360;
 	m_iFpsMaxBG = 30;
 
 	// setup callbacks
@@ -575,19 +575,21 @@ float SDLMain::queryDisplayHz()
 	if constexpr (!Env::cfg(OS::WASM)) // not in WASM
 	{
 		const SDL_DisplayID display = SDL_GetDisplayForWindow(m_window);
-		const SDL_DisplayMode *currentDisplayMode = SDL_GetCurrentDisplayMode(display);
+		const SDL_DisplayMode *currentDisplayMode = display ? SDL_GetCurrentDisplayMode(display) : nullptr;
 
 		if (currentDisplayMode && currentDisplayMode->refresh_rate > 0)
 		{
 			if (!almostEqual(m_fDisplayHz, currentDisplayMode->refresh_rate))
 				debugLog("Got refresh rate {:.3f} Hz for display {:d}.\n", currentDisplayMode->refresh_rate, display);
-			auto fourxhz = currentDisplayMode->refresh_rate * 4;
+			const auto refreshRateSanityClamped = std::clamp<float>(currentDisplayMode->refresh_rate, 60.0f, 540.0f); 
+			const auto fourxhz = refreshRateSanityClamped * 4.0f;
+			// also set fps_max to 4x the refresh rate if it's the default
 			if (fps_max.getFloat() == fps_max.getDefaultFloat())
 			{
 				fps_max.setValue(fourxhz);
 				fps_max.setDefaultFloat(fourxhz);
 			}
-			return std::clamp<float>(currentDisplayMode->refresh_rate, 60.0f, 500.0f);
+			return refreshRateSanityClamped;
 		}
 		else
 		{
@@ -596,7 +598,8 @@ float SDLMain::queryDisplayHz()
 				debugLog("Couldn't SDL_GetCurrentDisplayMode(SDL display: {:d}): {:s}\n", display, SDL_GetError());
 		}
 	}
-	return std::clamp<float>(fps_max.getFloat(), 60.0f, 500.0f);
+	// in wasm or if we couldn't get the refresh rate just return a sane value to use for "vsync"-related calculations
+	return std::clamp<float>(fps_max.getFloat(), 60.0f, 360.0f);
 }
 
 void SDLMain::setupLogging()
@@ -679,27 +682,27 @@ void SDLMain::shutdown(SDL_AppResult result)
 }
 
 // convar change callbacks, to set app iteration rate
-void SDLMain::fps_max_callback(UString, UString newVal)
+void SDLMain::fps_max_callback(float newVal)
 {
-	int newFps = newVal.toInt();
+	int newFps = static_cast<int>(newVal);
 	if ((newFps == 0 || newFps > 30) && !fps_unlimited.getBool())
 		m_iFpsMax = newFps;
 	if (m_bHasFocus)
 		setFgFPS();
 }
 
-void SDLMain::fps_max_background_callback(UString, UString newVal)
+void SDLMain::fps_max_background_callback(float newVal)
 {
-	int newFps = newVal.toInt();
+	int newFps = static_cast<int>(newVal);
 	if (newFps >= 0)
 		m_iFpsMaxBG = newFps;
 	if (!m_bHasFocus)
 		setBgFPS();
 }
 
-void SDLMain::fps_unlimited_callback(UString, UString newVal)
+void SDLMain::fps_unlimited_callback(float newVal)
 {
-	if (newVal.toBool())
+	if (newVal > 0.0f)
 		m_iFpsMax = 0;
 	else
 		m_iFpsMax = fps_max.getInt();

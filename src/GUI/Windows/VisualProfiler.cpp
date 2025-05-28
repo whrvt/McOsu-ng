@@ -124,20 +124,20 @@ void VisualProfiler::draw(Graphics *g)
 					const double dilation = (timeRunning - time);
 					const Vector2 envMousePos = env->getMousePos();
 
-					addTextLine(UString::format("ConVars: %zu", convar->getConVarArray().size()), textFont, m_textLines);
-					addTextLine(UString::format("Monitor: [%i] of %zu", env->getMonitor(), env->getMonitors().size()), textFont, m_textLines);
-					addTextLine(UString::format("Env Mouse Pos: %i x %i", (int)envMousePos.x, (int)envMousePos.y), textFont, m_textLines);
-					addTextLine(UString::format("Sound Device: %s", soundEngine->getOutputDevice().toUtf8()), textFont, m_textLines);
-					addTextLine(UString::format("Sound Volume: %f", soundEngine->getVolume()), textFont, m_textLines);
-					addTextLine(UString::format("RM Threads: %zu", resourceManager->getNumActiveThreads()), textFont, m_textLines);
-					addTextLine(UString::format("RM LoadingWork: %zu", resourceManager->getNumLoadingWork()), textFont, m_textLines);
-					addTextLine(UString::format("RM LoadingWorkAD: %zu", resourceManager->getNumLoadingWorkAsyncDestroy()), textFont, m_textLines);
-					addTextLine(UString::format("RM Named Resources: %zu", resourceManager->getResources().size()), textFont, m_textLines);
-					addTextLine(UString::format("Animations: %zu", anim->getNumActiveAnimations()), textFont, m_textLines);
-					addTextLine(UString::format("Frame: %lu", engine->getFrameCount()), textFont, m_textLines);
-					addTextLine(UString::format("Time: %f", time), textFont, m_textLines);
-					addTextLine(UString::format("Realtime: %f", timeRunning), textFont, m_textLines);
-					addTextLine(UString::format("Time Dilation: %f", dilation), textFont, m_textLines);
+					addTextLine(UString::fmt("ConVars: {}", convar->getConVarArray().size()), textFont, m_textLines);
+					addTextLine(UString::fmt("Monitor: [{}] of {}", env->getMonitor(), env->getMonitors().size()), textFont, m_textLines);
+					addTextLine(UString::fmt("Env Mouse Pos: {} x {}", (int)envMousePos.x, (int)envMousePos.y), textFont, m_textLines);
+					addTextLine(UString::fmt("Sound Device: {:s}", soundEngine->getOutputDevice()), textFont, m_textLines);
+					addTextLine(UString::fmt("Sound Volume: {:.4f}", soundEngine->getVolume()), textFont, m_textLines);
+					addTextLine(UString::fmt("RM Threads: {}", resourceManager->getNumActiveThreads()), textFont, m_textLines);
+					addTextLine(UString::fmt("RM LoadingWork: {}", resourceManager->getNumLoadingWork()), textFont, m_textLines);
+					addTextLine(UString::fmt("RM LoadingWorkAD: {}", resourceManager->getNumLoadingWorkAsyncDestroy()), textFont, m_textLines);
+					addTextLine(UString::fmt("RM Named Resources: {}", resourceManager->getResources().size()), textFont, m_textLines);
+					addTextLine(UString::fmt("Animations: {}", anim->getNumActiveAnimations()), textFont, m_textLines);
+					addTextLine(UString::fmt("Frame: {}", engine->getFrameCount()), textFont, m_textLines);
+					addTextLine(UString::fmt("Time: {:.4f}", time), textFont, m_textLines);
+					addTextLine(UString::fmt("Realtime: {:.4f}", timeRunning), textFont, m_textLines);
+					addTextLine(UString::fmt("Time Dilation: {:.4f}", dilation), textFont, m_textLines);
 
 					for (size_t i=0; i<m_engineTextLines.size(); i++)
 					{

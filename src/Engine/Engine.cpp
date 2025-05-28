@@ -44,7 +44,7 @@ ConVar debug_engine("debug_engine", false, FCVAR_NONE);
 ConVar minimize_on_focus_lost_if_fullscreen("minimize_on_focus_lost_if_fullscreen", true, FCVAR_NONE);
 ConVar minimize_on_focus_lost_if_borderless_windowed_fullscreen("minimize_on_focus_lost_if_borderless_windowed_fullscreen", false, FCVAR_NONE);
 ConVar _disable_windows_key("disable_windows_key", false, FCVAR_NONE, "set to 0/1 to disable/enable the Windows/Super key");
-ConVar engine_throttle("engine_throttle", true, FCVAR_NONE, "limit select engine component updates to refresh rate (non-gameplay-related)");
+ConVar engine_throttle("engine_throttle", true, FCVAR_NONE, "limit some engine component updates to improve performance (non-gameplay-related, only turn this off if you like lower performance for no reason)");
 
 std::unique_ptr<Mouse> Engine::s_mouseInstance = nullptr;
 std::unique_ptr<Keyboard> Engine::s_keyboardInstance = nullptr;
@@ -94,8 +94,9 @@ Engine::Engine()
 	m_dTime = 0;
 	m_dRunTime = 0;
 	m_iFrameCount = 0;
+	m_iVsyncFrameCount = 0;
+	m_fVsyncFrameCounterTime = 0.0f;
 	m_dFrameTime = 0.016;
-	m_fFrameThrottleTime = 0.0f;
 
 	engine_throttle.setCallback(fastdelegate::MakeDelegate(this, &Engine::onEngineThrottleChanged));
 
@@ -380,8 +381,15 @@ void Engine::onUpdate()
 		m_dRunTime = m_timer->getElapsedTime();
 		m_dFrameTime *= (double)host_timescale.getFloat();
 		m_dTime += m_dFrameTime;
-		if (engine_throttle.getBool() && ((m_fFrameThrottleTime += static_cast<float>(m_dFrameTime)) > env->getDisplayRefreshTime()))
-			m_fFrameThrottleTime = 0.0f;
+		if (engine_throttle.getBool())
+		{
+			// it's more like a crude estimate but it gets the job done for use as a throttle
+			if ((m_fVsyncFrameCounterTime += static_cast<float>(m_dFrameTime)) > env->getDisplayRefreshTime())
+			{
+				m_fVsyncFrameCounterTime = 0.0f;
+				++m_iVsyncFrameCount;
+			}
+		}
 	}
 
 	// handle pending queued resolution changes
@@ -719,7 +727,10 @@ void Engine::onEngineThrottleChanged(float newVal)
 {
 	const bool enable = !!static_cast<int>(newVal);
 	if (!enable)
-		m_fFrameThrottleTime = 0.0f;
+	{
+		m_fVsyncFrameCounterTime = 0.0f;
+		m_iVsyncFrameCount = 0;
+	}
 }
 
 void _exit(void)

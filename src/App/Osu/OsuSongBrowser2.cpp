@@ -1200,8 +1200,8 @@ void OsuSongBrowser2::update()
 
 	// if cursor is to the left edge of the screen, force center currently selected beatmap/diff
 	// but only if the context menu/options menu is currently not visible (since we don't want move things while e.g. managing collections etc.)
-	static uint8_t cooldown = 0; // this is so slow, it halves fps when the mouse is on the left side of the screen
-	if (!cooldown++ && !m_contextMenu->isVisible() && !osu->getOptionsMenu()->isVisible() && mouse->getPos().x < osu->getScreenWidth()*0.1f)
+	// NOTE: this is so slow, it halves fps when the mouse is on the left side of the screen (so throttle it to only happen once every 10 vsync frames)
+	if (engine->throttledShouldRun(10) && !m_contextMenu->isVisible() && !osu->getOptionsMenu()->isVisible() && mouse->getPos().x < osu->getScreenWidth()*0.1f)
 		scrollToSelectedSongButton();
 
 	// handle searching
