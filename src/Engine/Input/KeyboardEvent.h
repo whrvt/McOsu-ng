@@ -9,7 +9,8 @@
 #ifndef KEYBOARDEVENT_H
 #define KEYBOARDEVENT_H
 
-using KEYCODE = unsigned long;
+#include <cstdint>
+using KEYCODE = uint_fast16_t;
 
 class KeyboardEvent
 {
@@ -18,9 +19,9 @@ public:
 
 	void consume();
 
-	inline bool isConsumed() const {return m_bConsumed;}
-	inline KEYCODE getKeyCode() const {return m_keyCode;}
-	inline KEYCODE getCharCode() const {return m_keyCode;}
+	[[nodiscard]] inline bool isConsumed() const {return m_bConsumed;}
+	[[nodiscard]] inline KEYCODE getKeyCode() const {return m_keyCode;}
+	[[nodiscard]] inline KEYCODE getCharCode() const {return m_keyCode;}
 
 	inline bool operator == (const KEYCODE &rhs) const {return m_keyCode == rhs;}
 	inline bool operator != (const KEYCODE &rhs) const {return m_keyCode != rhs;}

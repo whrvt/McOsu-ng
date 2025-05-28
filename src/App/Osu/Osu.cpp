@@ -1471,7 +1471,7 @@ void Osu::onKeyUp(KeyboardEvent &key)
 		m_bF1 = false;
 	if (key == OsuKeyBindings::GAME_PAUSE.getVal<KEYCODE>() || key == KEY_ESCAPE)
 		m_bEscape = false;
-	if (key == KEY_SHIFT)
+	if (key == KEY_LSHIFT || key == KEY_RSHIFT)
 		m_bUIToggleCheck = false;
 	if (key == OsuKeyBindings::TOGGLE_SCOREBOARD.getVal<KEYCODE>())
 	{

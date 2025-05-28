@@ -49,7 +49,6 @@ ConVar osu_ignore_beatmap_sample_volume("osu_ignore_beatmap_sample_volume", fals
 ConVar osu_export_skin("osu_export_skin");
 ConVar osu_skin_export("osu_skin_export");
 
-const char *OsuSkin::OSUSKIN_DEFAULT_SKIN_PATH = ""; // set dynamically below in the constructor
 Image *OsuSkin::m_missingTexture = NULL;
 
 ConVar *OsuSkin::m_osu_skin_async = &osu_skin_async;
@@ -77,8 +76,6 @@ OsuSkin::OsuSkin(UString name, UString filepath, bool isDefaultSkin, bool isWork
 
 	if (m_missingTexture == NULL)
 		m_missingTexture = resourceManager->getImage("MISSING_TEXTURE");
-
-	OSUSKIN_DEFAULT_SKIN_PATH = "default/";
 
 	// vars
 	m_hitCircle = m_missingTexture;
@@ -439,19 +436,16 @@ void OsuSkin::load()
 			{
 				UString skinFolder = convar->getConVarByName("osu_folder")->getString();
 				skinFolder.append(convar->getConVarByName("osu_folder_sub_skins")->getString());
-				std::vector<UString> skinFolders = env->getFoldersInFolder(skinFolder);
+				std::vector<UString> skinFolders = env->getFoldersInFolder(skinFolder); // won't return "." or ".."
 
-				for (int i=0; i<skinFolders.size(); i++)
+				for (const auto & i : skinFolders)
 				{
-					if (skinFolders[i] == "." || skinFolders[i] == "..") // is this universal in every file system? too lazy to check. should probably fix this in the engine and not here
-						continue;
-
 					UString randomSkinFolder = skinFolder;
-					randomSkinFolder.append(skinFolders[i]);
+					randomSkinFolder.append(i);
 					randomSkinFolder.append("/");
 
 					filepathsForRandomSkin.push_back(randomSkinFolder);
-					skinNames.push_back(skinFolders[i]);
+					skinNames.push_back(i);
 				}
 			}
 

@@ -22,7 +22,7 @@ class OsuSkinImage;
 class OsuSkin
 {
 public:
-	static const char *OSUSKIN_DEFAULT_SKIN_PATH;
+	static constexpr const char *OSUSKIN_DEFAULT_SKIN_PATH = "default/";
 
 	static ConVar *m_osu_skin_async;
 	static ConVar *m_osu_skin_hd;

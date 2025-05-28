@@ -55,25 +55,29 @@ void Keyboard::onKeyDown(KEYCODE keyCode)
 {
 	switch (keyCode)
 	{
-	case KEY_CONTROL:
+	case KEY_LCONTROL:
+	case KEY_RCONTROL:
 		m_bControlDown = true;
 		break;
-	case KEY_ALT:
+	case KEY_LALT:
+	case KEY_RALT:
 		m_bAltDown = true;
 		break;
-	case KEY_SHIFT:
+	case KEY_LSHIFT:
+	case KEY_RSHIFT:
 		m_bShiftDown = true;
 		break;
-	case KEY_SUPER:
+	case KEY_LSUPER:
+	case KEY_RSUPER:
 		m_bSuperDown = true;
 		break;
 	}
 
 	KeyboardEvent e(keyCode);
 
-	for (size_t i=0; i<m_listeners.size(); i++)
+	for (auto & m_listener : m_listeners)
 	{
-		m_listeners[i]->onKeyDown(e);
+		m_listener->onKeyDown(e);
 		if (e.isConsumed())
 			break;
 	}
@@ -83,25 +87,29 @@ void Keyboard::onKeyUp(KEYCODE keyCode)
 {
 	switch (keyCode)
 	{
-	case KEY_CONTROL:
+	case KEY_LCONTROL:
+	case KEY_RCONTROL:
 		m_bControlDown = false;
 		break;
-	case KEY_ALT:
+	case KEY_LALT:
+	case KEY_RALT:
 		m_bAltDown = false;
 		break;
-	case KEY_SHIFT:
+	case KEY_LSHIFT:
+	case KEY_RSHIFT:
 		m_bShiftDown = false;
 		break;
-	case KEY_SUPER:
+	case KEY_LSUPER:
+	case KEY_RSUPER:
 		m_bSuperDown = false;
 		break;
 	}
 
 	KeyboardEvent e(keyCode);
 
-	for (size_t i=0; i<m_listeners.size(); i++)
+	for (auto & m_listener : m_listeners)
 	{
-		m_listeners[i]->onKeyUp(e);
+		m_listener->onKeyUp(e);
 		if (e.isConsumed())
 			break;
 	}
@@ -111,9 +119,9 @@ void Keyboard::onChar(KEYCODE charCode)
 {
 	KeyboardEvent e(charCode);
 
-	for (size_t i=0; i<m_listeners.size(); i++)
+	for (auto & m_listener : m_listeners)
 	{
-		m_listeners[i]->onChar(e);
+		m_listener->onChar(e);
 		if (e.isConsumed())
 			break;
 	}

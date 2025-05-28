@@ -1405,7 +1405,7 @@ void OsuSongBrowser2::onKeyDown(KeyboardEvent &key)
 		}
 	}
 
-	if (key == KEY_SHIFT)
+	if (key == KEY_LSHIFT || key == KEY_RSHIFT)
 		m_bShiftPressed = true;
 
 	// function hotkeys
@@ -1634,7 +1634,7 @@ void OsuSongBrowser2::onKeyUp(KeyboardEvent &key)
 	m_contextMenu->onKeyUp(key);
 	if (key.isConsumed()) return;
 
-	if (key == KEY_SHIFT)
+	if (key == KEY_LSHIFT || key == KEY_RSHIFT)
 		m_bShiftPressed = false;
 	if (key == KEY_LEFT)
 		m_bLeft = false;
