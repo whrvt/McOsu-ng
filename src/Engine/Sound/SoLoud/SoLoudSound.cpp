@@ -19,7 +19,7 @@
 extern ConVar debug_snd;
 extern ConVar snd_speed_compensate_pitch;
 extern ConVar snd_play_interp_ratio;
-extern ConVar snd_wav_file_min_size;
+extern ConVar snd_file_min_size;
 
 SoLoudSound::SoLoudSound(UString filepath, bool stream, bool threeD, bool loop, bool prescan)
     : Sound(filepath, stream, threeD, loop, prescan), m_handle(0), m_speed(1.0f), m_pitch(1.0f), m_frequency(44100.0f), m_audioSource(nullptr), m_filter(nullptr),
@@ -29,7 +29,7 @@ SoLoudSound::SoLoudSound(UString filepath, bool stream, bool threeD, bool loop, 
 
 void SoLoudSound::init()
 {
-	if (m_sFilePath.length() < 2 || !(m_bAsyncReady.load()))
+	if (m_bIgnored || m_sFilePath.length() < 2 || !(m_bAsyncReady.load()))
 		return;
 
 	// re-set some values to their defaults (only necessary because of the existence of rebuild())
@@ -37,13 +37,7 @@ void SoLoudSound::init()
 
 	if (!m_audioSource)
 	{
-		UString msg = "Couldn't load sound \"";
-		msg.append(m_sFilePath);
-		msg.append(UString::format("\", stream = %i", (int)m_bStream));
-		msg.append(", file = ");
-		msg.append(m_sFilePath);
-		msg.append("\n");
-		debugLog(0xffdd3333, "{:s}", msg.toUtf8());
+		debugLog(0xffdd3333, "Couldn't load sound \"{}\", stream = {}, file = {}\n", m_sFilePath, (int)m_bStream, m_sFilePath);
 	}
 	else
 		m_bReady = true;
@@ -56,25 +50,9 @@ SoLoudSound::~SoLoudSound()
 
 void SoLoudSound::initAsync()
 {
-	if (ResourceManager::debug_rm->getBool())
-		debugLog("Resource Manager: Loading {:s}\n", m_sFilePath.toUtf8());
-
-	// check for corrupt WAV files (same as BASS impl.)
-	const int minWavFileSize = snd_wav_file_min_size.getInt();
-	if (minWavFileSize > 0)
-	{
-		UString fileExtensionLowerCase = env->getFileExtensionFromFilePath(m_sFilePath);
-		fileExtensionLowerCase.lowerCase();
-		if (fileExtensionLowerCase == "wav")
-		{
-			McFile wavFile(m_sFilePath);
-			if (wavFile.getFileSize() < (size_t)minWavFileSize)
-			{
-				debugLog("Sound: Ignoring malformed/corrupt WAV file ({}) {:s}\n", (int)wavFile.getFileSize(), m_sFilePath.toUtf8());
-				return;
-			}
-		}
-	}
+	Sound::initAsync();
+	if (m_bIgnored)
+		return;
 
 	// clean up any previous instance
 	if (m_audioSource)

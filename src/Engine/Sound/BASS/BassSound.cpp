@@ -23,7 +23,7 @@ extern ConVar debug_snd;
 extern ConVar snd_speed_compensate_pitch;
 extern ConVar snd_play_interp_duration;
 extern ConVar snd_play_interp_ratio;
-extern ConVar snd_wav_file_min_size;
+extern ConVar snd_file_min_size;
 
 BassSound::BassSound(UString filepath, bool stream, bool threeD, bool loop, bool prescan) : Sound(filepath, stream, threeD, loop, prescan)
 {
@@ -50,7 +50,7 @@ BassSound::~BassSound()
 
 void BassSound::init()
 {
-	if (m_sFilePath.length() < 2 || !(m_bAsyncReady.load()))
+	if (m_bIgnored || m_sFilePath.length() < 2 || !(m_bAsyncReady.load()))
 		return;
 
 	// reset values to defaults (needed for rebuild())
@@ -58,38 +58,17 @@ void BassSound::init()
 
 	// error checking
 	if (m_HSTREAM == 0 && m_iWasapiSampleBufferSize < 1)
-	{
 		debugLog(0xffdd3333, "Couldn't load sound \"{}\", stream = {}, errorcode = {:d}, file = {}\n", m_sFilePath, (int)m_bStream, BASS_ErrorGetCode(),
 		         m_sFilePath);
-	}
 	else
-	{
 		m_bReady = true;
-	}
 }
 
 void BassSound::initAsync()
 {
-	if (ResourceManager::debug_rm->getBool())
-		debugLog("Resource Manager: Loading {:s}\n", m_sFilePath);
-
-	// hACKHACK: workaround for BASS crashes on malformed WAV files
-	const int minWavFileSize = snd_wav_file_min_size.getInt();
-	if (minWavFileSize > 0)
-	{
-		UString fileExtensionLowerCase = env->getFileExtensionFromFilePath(m_sFilePath);
-		fileExtensionLowerCase.lowerCase();
-		if (fileExtensionLowerCase == "wav")
-		{
-			McFile wavFile(m_sFilePath);
-			if (wavFile.getFileSize() < (size_t)minWavFileSize)
-			{
-				if (debug_snd.getBool())
-					debugLog("Sound: Ignoring malformed/corrupt WAV file ({}) {:s}\n", (int)wavFile.getFileSize(), m_sFilePath);
-				return;
-			}
-		}
-	}
+	Sound::initAsync();
+	if (m_bIgnored)
+		return;
 
 	// create the sound
 	constexpr DWORD unicodeFlag = Env::cfg(OS::WINDOWS) ? BASS_UNICODE : 0;
@@ -146,8 +125,13 @@ void BassSound::initAsync()
 		if (m_HSTREAM == 0)
 		{
 			auto code = BASS_ErrorGetCode();
-			if (code && (debug_snd.getBool() || (code != BASS_ERROR_NOTAUDIO && code != BASS_ERROR_EMPTY)))
-				debugLog("Sound Error: BASS_SampleLoad() error {} on file {:s}\n", code, m_sFilePath);
+			if (code)
+			{
+				if (code == BASS_ERROR_NOTAUDIO || code == BASS_ERROR_EMPTY)
+					m_bIgnored = true;
+				else if (debug_snd.getBool())
+					debugLog("Sound Error: BASS_SampleLoad() error {} on file {:s}\n", code, m_sFilePath);
+			}
 		}
 	}
 	m_bAsyncReady = true;

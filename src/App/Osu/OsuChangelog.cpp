@@ -184,7 +184,7 @@ OsuChangelog::OsuChangelog() : OsuScreenBackable()
 	alpha317.changes.emplace_back("- Added hint text for experimental mods in mod selection screen");
 	alpha317.changes.emplace_back("- Added ConVars (1): osu_mod_fposu_sound_panning, osu_mod_fps_sound_panning, osu_stacking_leniency_override");
 	alpha317.changes.emplace_back("- Added ConVars (2): fposu_mod_strafing_strength_x/y/z, fposu_mod_strafing_frequency_x/y/z");
-	alpha317.changes.emplace_back("- Added ConVars (3): snd_updateperiod, snd_dev_period, snd_dev_buffer, snd_wav_file_min_size");
+	alpha317.changes.emplace_back("- Added ConVars (3): snd_updateperiod, snd_dev_period, snd_dev_buffer, snd_file_min_size");
 	alpha317.changes.emplace_back("- Added ConVars (4): osu_ignore_beatmap_combo_numbers, osu_number_max");
 	alpha317.changes.emplace_back("- Added ConVars (5): osu_scores_export, osu_auto_and_relax_block_user_input");
 	alpha317.changes.emplace_back("- Updated songbrowser search to be async (avoids freezing the entire game when searching through 100k+ beatmaps)\n");

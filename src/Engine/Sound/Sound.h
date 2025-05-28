@@ -73,19 +73,12 @@ protected:
 	bool m_bPrescan;
 	bool m_bIsOverlayable;
 
+	bool m_bIgnored;
+
 	float m_fVolume;
 	double m_fLastPlayTime;
+private:
+	static bool isValidAudioFile(const UString& filePath, const UString &fileExt);
 };
-
-// convenience conversion macro to get the sound handle, extra args are any extra conditions to check for besides general state validity
-// just minor boilerplate reduction
-#define GETHANDLE(...) \
-	[&]() -> std::pair<SoundType *, SOUNDHANDLE> { \
-		SOUNDHANDLE retHandle = 0; \
-		SoundType *retSound = nullptr; \
-		if (m_bReady && snd && snd->isReady() __VA_OPT__(&&(__VA_ARGS__)) && (retSound = snd->getSound())) \
-			retHandle = retSound->getHandle(); \
-		return {retSound, retHandle}; \
-	}()
 
 #endif

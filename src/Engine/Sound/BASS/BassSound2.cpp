@@ -18,7 +18,7 @@ extern ConVar debug_snd;
 extern ConVar snd_speed_compensate_pitch;
 extern ConVar snd_play_interp_duration;
 extern ConVar snd_play_interp_ratio;
-extern ConVar snd_wav_file_min_size;
+extern ConVar snd_file_min_size;
 extern ConVar snd_freq;
 
 ConVar snd_async_buffer("snd_async_buffer", 65536, FCVAR_NONE, "BASS_CONFIG_ASYNCFILE_BUFFER length in bytes. Set to 0 to disable.");
@@ -80,7 +80,7 @@ HCHANNEL BassSound2::getChannel()
 
 void BassSound2::init()
 {
-	if (m_sFilePath.length() < 2 || !(m_bAsyncReady.load()))
+	if (m_bIgnored || m_sFilePath.length() < 2 || !(m_bAsyncReady.load()))
 		return;
 
 	// HACKHACK: re-set some values to their defaults (only necessary because of the existence of rebuild())
@@ -98,27 +98,9 @@ void BassSound2::init()
 
 void BassSound2::initAsync()
 {
-	if (ResourceManager::debug_rm->getBool())
-		debugLog("Resource Manager: Loading {}\n", m_sFilePath);
-
-	// HACKHACK: workaround for BASS crashes on malformed WAV files
-	{
-		const int minWavFileSize = snd_wav_file_min_size.getInt();
-		if (minWavFileSize > 0)
-		{
-			auto fileExtensionLowerCase = UString(env->getFileExtensionFromFilePath(m_sFilePath));
-			fileExtensionLowerCase.lowerCase();
-			if (fileExtensionLowerCase == UString("wav"))
-			{
-				McFile wavFile(m_sFilePath);
-				if (wavFile.getFileSize() < (size_t)minWavFileSize)
-				{
-					debugLog("Sound: Ignoring malformed/corrupt WAV file ({}) {}\n", (int)wavFile.getFileSize(), m_sFilePath);
-					return;
-				}
-			}
-		}
-	}
+	Sound::initAsync();
+	if (m_bIgnored)
+		return;
 
 	constexpr DWORD unicodeFlag = Env::cfg(OS::WINDOWS) ? BASS_UNICODE : 0;
 

@@ -23,6 +23,7 @@ extern ConVar snd_freq;
 extern ConVar snd_restrict_play_frame;
 extern ConVar snd_change_check_interval;
 extern ConVar win_snd_fallback_dsound;
+extern ConVar debug_snd;
 
 // BASS-specific ConVars
 ConVar snd_updateperiod("snd_updateperiod", 5, FCVAR_NONE, "BASS_CONFIG_UPDATEPERIOD length in milliseconds, minimum is 5");
@@ -162,13 +163,13 @@ void BassSoundEngine::update()
 
 bool BassSoundEngine::play(Sound *snd, float pan, float pitch)
 {
-	auto [bassSound, handle] = GETHANDLE();
+	auto [bassSound, handle] = getHandle(snd);
 
 	const bool allowPlayFrame = bassSound && (!bassSound->isOverlayable() || !snd_restrict_play_frame.getBool() || engine->getTime() > bassSound->getLastPlayTime());
 
 	if (!allowPlayFrame || !handle)
 	{
-		if (!handle)
+		if (!handle && debug_snd.getBool())
 			debugLog("invalid handle to play!\n");
 		return false;
 	}
@@ -178,8 +179,8 @@ bool BassSoundEngine::play(Sound *snd, float pan, float pitch)
 
 bool BassSoundEngine::play3d(Sound *snd, Vector3 pos)
 {
-	auto [bassSound, handle] = GETHANDLE(snd->is3d());
-	if (!handle)
+	auto [bassSound, handle] = getHandle(snd, [&] { return snd->is3d(); }); // was it worth it vs a macro? need the lambda otherwise snd->is3d() is evaluated too soon
+	if (!handle && debug_snd.getBool())
 	{
 		debugLog("invalid handle to play3d!\n");
 		return false;
@@ -210,8 +211,8 @@ bool BassSoundEngine::play3d(Sound *snd, Vector3 pos)
 
 void BassSoundEngine::pause(Sound *snd)
 {
-	auto [bassSound, handle] = GETHANDLE();
-	if (!handle)
+	auto [bassSound, handle] = getHandle(snd);
+	if (!handle && debug_snd.getBool())
 	{
 		debugLog("no handle to pause!\n");
 		return;
@@ -243,8 +244,8 @@ void BassSoundEngine::pause(Sound *snd)
 
 void BassSoundEngine::stop(Sound *snd)
 {
-	auto [bassSound, handle] = GETHANDLE();
-	if (!handle)
+	auto [bassSound, handle] = getHandle(snd);
+	if (!handle && debug_snd.getBool())
 	{
 		debugLog("no handle to stop!\n");
 		return;
@@ -290,7 +291,7 @@ void BassSoundEngine::setOutputDevice(UString outputDeviceName)
 
 void BassSoundEngine::setOutputDeviceForce(UString outputDeviceName)
 {
-	for (auto & m_outputDevice : m_outputDevices)
+	for (auto &m_outputDevice : m_outputDevices)
 	{
 		if (m_outputDevice.name == outputDeviceName)
 		{
@@ -621,7 +622,7 @@ bool BassSoundEngine::initializeWasapi(int id)
 	return true;
 }
 
-bool BassSoundEngine::playChannelWithAttributes(BassSound *bassSound,SOUNDHANDLE handle, float pan, float pitch)
+bool BassSoundEngine::playChannelWithAttributes(BassSound *bassSound, SOUNDHANDLE handle, float pan, float pitch)
 {
 	pan = std::clamp<float>(pan, -1.0f, 1.0f);
 	pitch = std::clamp<float>(pitch, 0.0f, 2.0f);

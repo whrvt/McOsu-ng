@@ -113,7 +113,8 @@ void AnimationHandler::update()
 		*animation.m_fBase = animation.m_fStartValue + percent*(animation.m_fTarget - animation.m_fStartValue);
 	}
 
-	if (m_vAnimations.size() > 512)
+	// TODO: prevent this from happening
+	if (debug_anim.getBool() && (m_vAnimations.size() > 512))
 		debugLog("WARNING: AnimationHandler has {} animations!\n", m_vAnimations.size());
 
 	//printf("AnimStackSize = %i\n", m_vAnimations.size());

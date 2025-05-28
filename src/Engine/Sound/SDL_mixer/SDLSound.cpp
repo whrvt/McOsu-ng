@@ -19,7 +19,7 @@ extern ConVar debug_snd;
 extern ConVar snd_speed_compensate_pitch;
 extern ConVar snd_play_interp_duration;
 extern ConVar snd_play_interp_ratio;
-extern ConVar snd_wav_file_min_size;
+extern ConVar snd_file_min_size;
 
 SDLSound::SDLSound(UString filepath, bool stream, bool threeD, bool loop, bool prescan) : Sound(filepath, stream, threeD, loop, prescan)
 {
@@ -38,34 +38,16 @@ SDLSound::~SDLSound()
 
 void SDLSound::init()
 {
-	if (m_sFilePath.length() < 2 || !(m_bAsyncReady.load()))
+	if (m_bIgnored || m_sFilePath.length() < 2 || !(m_bAsyncReady.load()))
 		return;
 	m_bReady = m_bAsyncReady.load();
 }
 
 void SDLSound::initAsync()
 {
-	if (ResourceManager::debug_rm->getBool())
-		debugLog("Resource Manager: Loading {:s}\n", m_sFilePath.toUtf8());
-
-	// HACKHACK: workaround for malformed WAV files
-	{
-		const int minWavFileSize = snd_wav_file_min_size.getInt();
-		if (minWavFileSize > 0)
-		{
-			UString fileExtensionLowerCase = env->getFileExtensionFromFilePath(m_sFilePath);
-			fileExtensionLowerCase.lowerCase();
-			if (fileExtensionLowerCase == "wav")
-			{
-				McFile wavFile(m_sFilePath);
-				if (wavFile.getFileSize() < (size_t)minWavFileSize)
-				{
-					debugLog("Sound: Ignoring malformed/corrupt WAV file ({}) {:s}\n", (int)wavFile.getFileSize(), m_sFilePath.toUtf8());
-					return;
-				}
-			}
-		}
-	}
+	Sound::initAsync();
+	if (m_bIgnored)
+		return;
 
 	if (m_bStream)
 		m_mixChunkOrMixMusic = Mix_LoadMUS(m_sFilePath.toUtf8());

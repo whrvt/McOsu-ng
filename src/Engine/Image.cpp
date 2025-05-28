@@ -37,7 +37,7 @@ void jpegErrorExit(j_common_ptr cinfo)
 	(*(cinfo->err->format_message))(cinfo, jpegLastErrorMsg);
 	jpegLastErrorMsg[JMSG_LENGTH_MAX - 1] = '\0';
 
-	debugLog("JPEG Error: {:s}", jpegLastErrorMsg);
+	debugLog("JPEG Error: {:s}\n", jpegLastErrorMsg);
 
 	longjmp(err->setjmp_buffer, 1);
 }
@@ -77,14 +77,14 @@ struct pngErrorManager
 
 void pngErrorExit(png_structp png_ptr, png_const_charp error_msg)
 {
-	debugLog("PNG Error: {:s}", error_msg);
+	debugLog("PNG Error: {:s}\n", error_msg);
 	auto *err = static_cast<pngErrorManager *>(png_get_error_ptr(png_ptr));
 	longjmp(err->setjmp_buffer, 1);
 }
 
 void pngWarning(png_structp, png_const_charp warning_msg)
 {
-	debugLog("PNG Warning: {:s}", warning_msg);
+	debugLog("PNG Warning: {:s}\n", warning_msg);
 }
 
 struct pngMemoryReader
@@ -481,7 +481,7 @@ bool Image::loadRawImage()
 	// supported channels sanity check
 	if (m_iNumChannels != 4 && m_iNumChannels != 3 && m_iNumChannels != 1)
 	{
-		debugLog("Image Error: Unsupported number of color channels ({}) in file {:s}", m_iNumChannels, m_sFilePath.toUtf8());
+		debugLog("Image Error: Unsupported number of color channels ({}) in file {:s}\n", m_iNumChannels, m_sFilePath.toUtf8());
 		// engine->showMessageError("Image Error", UString::format("Unsupported number of color channels (%i) in file %s", m_iNumChannels, m_sFilePath.toUtf8()));
 		return false;
 	}
