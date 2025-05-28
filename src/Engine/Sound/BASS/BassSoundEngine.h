@@ -51,18 +51,6 @@ private:
 	void onFreqChanged(UString oldValue, UString newValue);
 
 	friend class BassSound;
-
-	// convenience to get the sound handle, extra args are any extra conditions to check for besides general state validity
-	// just minor boilerplate reduction
-	template <typename... Conditions>
-	std::pair<SoundType *, SOUNDHANDLE> getHandle(Sound *snd, Conditions &&...conditions)
-	{
-		SOUNDHANDLE retHandle = 0;
-		SoundType *retSound = nullptr;
-		if (m_bReady && snd && snd->isReady() && (std::forward<Conditions>(conditions)() && ...) && (retSound = snd->getSound()))
-			retHandle = retSound->getHandle();
-		return {retSound, retHandle};
-	}
 };
 
 #else

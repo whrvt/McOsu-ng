@@ -163,7 +163,7 @@ void BassSoundEngine::update()
 
 bool BassSoundEngine::play(Sound *snd, float pan, float pitch)
 {
-	auto [bassSound, handle] = getHandle(snd);
+	auto [bassSound, handle] = GETHANDLE();
 
 	const bool allowPlayFrame = bassSound && (!bassSound->isOverlayable() || !snd_restrict_play_frame.getBool() || engine->getTime() > bassSound->getLastPlayTime());
 
@@ -179,10 +179,11 @@ bool BassSoundEngine::play(Sound *snd, float pan, float pitch)
 
 bool BassSoundEngine::play3d(Sound *snd, Vector3 pos)
 {
-	auto [bassSound, handle] = getHandle(snd, [&] { return snd->is3d(); }); // was it worth it vs a macro? need the lambda otherwise snd->is3d() is evaluated too soon
-	if (!handle && debug_snd.getBool())
+	auto [bassSound, handle] = GETHANDLE(snd->is3d());
+	if (!handle)
 	{
-		debugLog("invalid handle to play3d!\n");
+		if (debug_snd.getBool())
+			debugLog("invalid handle to play3d!\n");
 		return false;
 	}
 
@@ -211,10 +212,11 @@ bool BassSoundEngine::play3d(Sound *snd, Vector3 pos)
 
 void BassSoundEngine::pause(Sound *snd)
 {
-	auto [bassSound, handle] = getHandle(snd);
-	if (!handle && debug_snd.getBool())
+	auto [bassSound, handle] = GETHANDLE();
+	if (!handle)
 	{
-		debugLog("no handle to pause!\n");
+		if (debug_snd.getBool())
+			debugLog("no handle to pause!\n");
 		return;
 	}
 
@@ -244,10 +246,11 @@ void BassSoundEngine::pause(Sound *snd)
 
 void BassSoundEngine::stop(Sound *snd)
 {
-	auto [bassSound, handle] = getHandle(snd);
-	if (!handle && debug_snd.getBool())
+	auto [bassSound, handle] = GETHANDLE();
+	if (!handle)
 	{
-		debugLog("no handle to stop!\n");
+		if (debug_snd.getBool())
+			debugLog("no handle to stop!\n");
 		return;
 	}
 
