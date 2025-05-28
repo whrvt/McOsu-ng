@@ -28,12 +28,6 @@
 #include "Engine.h"
 #include "McMath.h"
 
-//********************//
-//	Include App here  //
-//********************//
-
-#include "Osu.h"
-
 void _version(void);
 void _host_timescale_(UString oldValue, UString newValue);
 ConVar host_timescale("host_timescale", 1.0f, FCVAR_CHEAT, "Scale by which the engine measures elapsed time, affects engine->getTime()", _host_timescale_);
@@ -315,7 +309,7 @@ void Engine::loadApp()
 		//	Load App here  //
 		//*****************//
 
-		s_appInstance = std::make_unique<Osu>();
+		s_appInstance = std::make_unique<App>();
 		app = s_appInstance.get();
 		runtime_assert(app, "App failed to initialize!");
 		// start listening to the default keyboard input

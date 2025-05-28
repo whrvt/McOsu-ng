@@ -9,7 +9,8 @@
 #ifndef OSUKEYBINDINGS_H
 #define OSUKEYBINDINGS_H
 
-#include "ConVar.h"
+#include <vector>
+class ConVar;
 
 class OsuKeyBindings
 {
