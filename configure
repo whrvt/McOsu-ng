@@ -745,7 +745,6 @@ MCOSU_LDFLAGS
 MCOSU_CXXFLAGS
 MCOSU_CPPFLAGS
 ENABLE_DEBUG
-ENABLE_ASAN
 BEAR
 RANLIB
 AR
@@ -771,6 +770,7 @@ CLANG
 PKG_CONFIG_PATH_CUSTOM
 PKG_CONFIG_PATH
 PKGTYPE
+ENABLE_ASAN
 LLVMMINGW
 GENIE
 CMAKE
@@ -6033,8 +6033,8 @@ fi
     enable_system_deps=no
     disable_system_deps=yes
     MCOSU_CPPFLAGS="$MCOSU_CPPFLAGS -D_UNICODE -DUNICODE"
-    MCOSU_CXXFLAGS="$MCOSU_CXXFLAGS -D_UNICODE -DUNICODE -municode -mwindows"
-    MCOSU_LDFLAGS="$MCOSU_LDFLAGS -municode -mwindows"
+    MCOSU_CXXFLAGS="$MCOSU_CXXFLAGS -D_UNICODE -DUNICODE -municode"
+    MCOSU_LDFLAGS="$MCOSU_LDFLAGS -municode"
     if test "x$enable_clang" = "xyes"
 then :
 
@@ -6044,6 +6044,35 @@ then :
         CFLAGS="$CFLAGS --target=$host_cpu-w64-windows-gnu"
 
 fi
+
+fi
+
+if test "x$enable_asan" = "xyes" || test "x$enable_tsan" = "xyes"
+then :
+
+    if test "x$enable_asan" = "xyes"
+then :
+
+        CXXFLAGS="$CXXFLAGS -fsanitize=address,undefined"
+        CFLAGS="$CFLAGS -fsanitize=address,undefined"
+
+else case e in #(
+  e)
+        CXXFLAGS="$CXXFLAGS -fsanitize=undefined,thread"
+        CFLAGS="$CFLAGS -fsanitize=undefined,thread"
+     ;;
+esac
+fi
+
+    if test -z "$LLVMMINGW"
+then :
+
+        LDFLAGS="$LDFLAGS -static-libasan" CFLAGS="$CFLAGS -static-libasan" CXXFLAGS="$CXXFLAGS -static-libasan"
+
+fi
+    enable_debug="yes"
+    ENABLE_ASAN=$enable_asan
+
 
 fi
 
@@ -6195,12 +6224,6 @@ fi
         CPPFLAGS="$CPPFLAGS -DWINVER=0x0501 -D_WIN32_WINNT=0x0501 -D_WIN32_WINDOWS=0x0501 -D_WIN32_IE=0x0501"
         CFLAGS="$CFLAGS -m32 -DWINVER=0x0501 -D_WIN32_WINNT=0x0501 -D_WIN32_WINDOWS=0x0501 -D_WIN32_IE=0x0501 -mfpmath=sse"
         CXXFLAGS="$CXXFLAGS -m32 -DWINVER=0x0501 -D_WIN32_WINNT=0x0501 -D_WIN32_WINDOWS=0x0501 -D_WIN32_IE=0x0501 -mfpmath=sse"
-        # won't work unfortunately, https://github.com/mstorsjo/llvm-mingw/issues/44
-        # but i tried
-        if test "x$enable_clang" = "xyes"
-then :
-  LDFLAGS="$LDFLAGS -Xlinker /subsystem:windows,5.0"
-fi
         NASMOBJ=win32
 
 
@@ -6211,10 +6234,6 @@ else case e in #(
         CFLAGS="$CFLAGS -DWINVER=0x0A00 -D_WIN32_WINNT=0x0A00 -D_WIN32_WINDOWS=0x0A00 -D_WIN32_IE=0x0A00"
         CXXFLAGS="$CXXFLAGS -DWINVER=0x0A00 -D_WIN32_WINNT=0x0A00 -D_WIN32_WINDOWS=0x0A00 -D_WIN32_IE=0x0A00"
         LDFLAGS="$LDFLAGS -Wl,-Bstatic,--whole-archive -lwinpthread -Wl,--no-whole-archive,-Bdynamic"
-        if test "x$enable_clang" = "xyes"
-then :
-  LDFLAGS="$LDFLAGS -Xlinker /subsystem:windows,10.0"
-fi
         NASMOBJ=win64
 
      ;;
@@ -7937,35 +7956,6 @@ fi
 
 
 
-if test "x$enable_asan" = "xyes" || test "x$enable_tsan" = "xyes"
-then :
-
-    if test "x$enable_asan" = "xyes"
-then :
-
-        CXXFLAGS="$CXXFLAGS -fsanitize=address,undefined"
-        CFLAGS="$CFLAGS -fsanitize=address,undefined"
-
-else case e in #(
-  e)
-        CXXFLAGS="$CXXFLAGS -fsanitize=undefined,thread"
-        CFLAGS="$CFLAGS -fsanitize=undefined,thread"
-     ;;
-esac
-fi
-
-    if test -z "$LLVMMINGW"
-then :
-
-        LDFLAGS="$LDFLAGS -static-libasan" CFLAGS="$CFLAGS -static-libasan" CXXFLAGS="$CXXFLAGS -static-libasan"
-
-fi
-    enable_debug="yes"
-    ENABLE_ASAN=$enable_asan
-
-
-fi
-
 if test "x$enable_debug" = "xyes"
 then :
 
@@ -7985,6 +7975,23 @@ esac
 fi
     ENABLE_DEBUG=$enable_debug
     MCOSU_CPPFLAGS="$MCOSU_CPPFLAGS -D_DEBUG"
+    if test "$SYSNAME" = "windows"
+then :
+
+        if test "x$enable_clang" = "xyes"
+then :
+
+            LDFLAGS="$LDFLAGS -Xlinker /subsystem:console"
+
+else case e in #(
+  e)
+            MCOSU_CXXFLAGS="$MCOSU_CXXFLAGS -mconsole"
+            MCOSU_LDFLAGS="$MCOSU_LDFLAGS -mconsole"
+         ;;
+esac
+fi
+
+fi
 
     if test "x$enable_strip" != "xyes"
 then :

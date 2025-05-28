@@ -18,6 +18,8 @@
 #include "CBaseUIButton.h"
 #include "CBaseUILabel.h"
 
+#include "File.h"
+
 #include <mutex>
 
 #include <utility>
@@ -209,41 +211,39 @@ void Console::execConfigFile(UString filename)
 	if (filename.find(".cfg", (filename.length() - 4), filename.length()) == -1)
 		filename.append(".cfg");
 
-	// open it
-	std::ifstream inFile(filename.toUtf8());
-	if (!inFile.good())
+	McFile configFile(filename, McFile::TYPE::READ);
+	if (!configFile.canRead())
 	{
 		debugLog("error, file \"{:s}\" not found!\n", filename.toUtf8());
 		return;
 	}
 
-	// go through every line
-	std::string line;
+	// collect commands first (preserving original behavior)
 	std::vector<UString> cmds;
-	while (std::getline(inFile, line))
+	while (true)
 	{
-		if (line.size() > 0)
+		UString line = configFile.readLine();
+
+		// if canRead() is false after readLine(), we hit EOF
+		if (!configFile.canRead())
+			break;
+
+		// only process non-empty lines (matching original: if (line.size() > 0))
+		if (!line.isEmpty())
 		{
-			// remove CR
-			if (!line.empty() && line.back() == '\r')
-				line.pop_back();
-
-			// handle comments
-			UString cmd = UString(line.c_str());
-			const int commentIndex = cmd.find("//", 0, cmd.length());
+			// handle comments - find "//" and remove everything after
+			const int commentIndex = line.find("//");
 			if (commentIndex != -1)
-				cmd.erase(commentIndex, cmd.length() - commentIndex);
+				line.erase(commentIndex, line.length() - commentIndex);
 
-			// add command
-			cmds.push_back(cmd);
+			// add command (original adds all processed lines, even if they become empty after comment removal)
+			cmds.push_back(line);
 		}
 	}
 
 	// process the collected commands
-	for (size_t i=0; i<cmds.size(); i++)
-	{
-		processCommand(cmds[i]);
-	}
+	for (const auto &cmd : cmds)
+		processCommand(cmd);
 }
 
 void Console::update()

@@ -6,14 +6,15 @@
 //===============================================================================//
 
 #pragma once
-#ifndef BASS_LOADER_H
-#define BASS_LOADER_H
+#ifndef BASS_MANAGER_H
+#define BASS_MANAGER_H
 
 #include "EngineFeatures.h"
 
 #if defined(MCENGINE_FEATURE_BASS)
 
 #include <SDL3/SDL_loadso.h>
+#include <string>
 
 // can't be namespaced
 #ifdef MCENGINE_PLATFORM_WINDOWS
@@ -51,15 +52,15 @@ extern "C"
 #define BASSMIXVERSION_REAL 0x2040c04
 #define BASSASIOVERSION_REAL 0x1040208
 #define BASSWASAPIVERSION_REAL 0x2040403
-#elif defined(MCENGINE_PLATFORM_LINUX)
-#define BASSVERSION_REAL 0x2041118 // FIXME: how tf am i supposed to get this ahead of time?
+#else
+#define BASSVERSION_REAL 0x2041118
 #define BASSFXVERSION_REAL 0x2040c0f
 #define BASSMIXVERSION_REAL 0x2040c04
-#else
-#error "unsupported platform for BASS"
 #endif
 
-namespace BassLoader
+namespace BassManager
+{
+namespace BassFuncs
 {
 // imported enums/defines
 using QWORD = bass_EXTERN::QWORD;
@@ -177,31 +178,34 @@ using WASAPIPROC = bass_EXTERN::WASAPIPROC;
 	X(BASS_WASAPI_Start) \
 	X(BASS_WASAPI_Free) \
 	X(BASS_WASAPI_SetVolume)
+#else
+#define BASS_ASIO_FUNCTIONS(X)
+#define BASS_WASAPI_FUNCTIONS(X)
 #endif
+
+#define ALL_BASS_FUNCTIONS(X) BASS_CORE_FUNCTIONS(X) BASS_FX_FUNCTIONS(X) BASS_MIX_FUNCTIONS(X) BASS_ASIO_FUNCTIONS(X) BASS_WASAPI_FUNCTIONS(X)
 
 // generate the type definitions and declarations
 #define DECLARE_BASS_FUNCTION(name) \
 	using name##_t = decltype(&bass_EXTERN::name); \
 	extern name##_t name;
 // clang-format off
-    BASS_CORE_FUNCTIONS(DECLARE_BASS_FUNCTION)
-	BASS_FX_FUNCTIONS(DECLARE_BASS_FUNCTION)
-	BASS_MIX_FUNCTIONS(DECLARE_BASS_FUNCTION)
 
-#ifdef MCENGINE_PLATFORM_WINDOWS
-	BASS_ASIO_FUNCTIONS(DECLARE_BASS_FUNCTION)
-	BASS_WASAPI_FUNCTIONS(DECLARE_BASS_FUNCTION)
-#endif
-
+	ALL_BASS_FUNCTIONS(DECLARE_BASS_FUNCTION)
+}; 
     // open the libraries and populate the function pointers
     bool init();
 	// close the libraries (BassSoundEngine destructor)
 	void cleanup();
-//clang-format on
-}; // namespace BassLoader
 
-using namespace BassLoader;
+	std::string getFailedLibrary();
+
+	void printBassError(const std::string &context, int code);
+//clang-format on
+}; // namespace BassManager
+
+using namespace BassManager::BassFuncs;
 
 #endif
 
-#endif // BASS_LOADER_H
+#endif // BASS_MANAGER_H

@@ -68,7 +68,7 @@ public:
 	[[maybe_unused]] inline bool isWorkshopLoading() const {return m_bWorkshopSkinSelectScheduled;}
 
 private:
-	static const char *OSU_CONFIG_FILE_NAME;
+	static constexpr const char *OSU_CONFIG_FILE_NAME = "osu.cfg";
 
 	struct OPTIONS_ELEMENT
 	{

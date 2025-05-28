@@ -55,10 +55,6 @@ void _osuOptionsSliderQualityWrapper(UString oldValue, UString newValue)
 };
 ConVar osu_options_slider_quality("osu_options_slider_quality", 0.0f, FCVAR_NONE, _osuOptionsSliderQualityWrapper);
 
-const char *OsuOptionsMenu::OSU_CONFIG_FILE_NAME = ""; // set dynamically below in the constructor (how is that "const" ?)
-
-
-
 class OsuOptionsMenuSkinPreviewElement final : public OsuUIElement
 {
 public:
@@ -456,8 +452,6 @@ OsuOptionsMenu::OsuOptionsMenu() : OsuScreenBackable()
 	convar->getConVarByName("osu_skin_use_skin_hitsounds")->setCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onUseSkinsSoundSamplesChange) );
 	osu_options_high_quality_sliders.setCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onHighQualitySlidersConVarChange) );
 	osu_mania_keylayout_wizard.setCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onKeyBindingManiaPressedInt) );
-
-	OSU_CONFIG_FILE_NAME = "osu";
 
 	osu->getNotificationOverlay()->addKeyListener(this);
 
@@ -3826,14 +3820,13 @@ void OsuOptionsMenu::save()
 
 	debugLog("Osu: Saving user config file ...\n");
 
-	UString userConfigFile = "cfg/";
-	userConfigFile.append(OSU_CONFIG_FILE_NAME);
-	userConfigFile.append(".cfg");
+	UString userConfigFile = UString::fmt("cfg/{:s}", OSU_CONFIG_FILE_NAME);
 
-	// manual commands (e.g. fullscreen, windowed, osu_resolution); meaning commands which are not necessarily visible in the options menu, or which need special handling & ordering
-	std::vector<ConVar*> manualConCommands;
-	std::vector<ConVar*> manualConVars;
-	std::vector<ConVar*> removeConCommands;
+	// manual commands (e.g. fullscreen, windowed, osu_resolution); meaning commands which are not necessarily visible in the options menu, or which need special
+	// handling & ordering
+	std::vector<ConVar *> manualConCommands;
+	std::vector<ConVar *> manualConVars;
+	std::vector<ConVar *> removeConCommands;
 
 	manualConVars.push_back(convar->getConVarByName("osu_songbrowser_sortingtype"));
 	manualConVars.push_back(convar->getConVarByName("osu_songbrowser_scores_sortingtype"));
@@ -3865,130 +3858,137 @@ void OsuOptionsMenu::save()
 		}
 	}
 
-	// get user stuff in the config file
+	// read existing config file and filter lines
 	std::vector<UString> keepLines;
 	{
-		// in extra block because the File class would block the following std::ofstream from writing to it until it's destroyed
-		McFile in(userConfigFile.toUtf8());
+		McFile in(userConfigFile, McFile::TYPE::READ);
 		if (!in.canRead())
-			debugLog("Osu Error: Couldn't read user config file!\n");
+			debugLog("Osu Error: Couldn't read user config file! (tried: {:s})\n", userConfigFile);
 		else
 		{
-			while (in.canRead())
+			UString line;
+			while (!(line = in.readLine()).isEmpty())
 			{
-				UString uLine = in.readLine();
-				const char *lineChar = uLine.toUtf8();
-				std::string line(lineChar);
-
 				bool keepLine = true;
-				for (int i=0; i<m_elements.size(); i++)
+
+				// extract the convar name (first word) from the line
+				const int firstSpaceIndex = line.findChar(' ');
+				const int endOfConVarNameIndex = (firstSpaceIndex != -1 ? firstSpaceIndex : line.length());
+				const UString lineConVarName = line.substr(0, endOfConVarNameIndex);
+
+				// check against elements convars
+				for (const auto &element : m_elements)
 				{
-					if (m_elements[i].cvar != NULL && line.find(m_elements[i].cvar->getName().toUtf8()) != std::string::npos)
+					if (element.cvar != NULL && element.cvar->getName().equalsIgnoreCase(lineConVarName))
 					{
-						// we don't want to remove custom convars which start with options entry convars (e.g. osu_rich_presence and osu_rich_presence_dynamic_windowtitle)
-						// so, keep lines which only have partial matches
+						keepLine = false;
+						break;
+					}
+				}
 
-						const size_t firstSpaceIndex = line.find(" ");
-						const size_t endOfConVarNameIndex = (firstSpaceIndex != std::string::npos ? firstSpaceIndex : line.length());
-
-						if (std::string(m_elements[i].cvar->getName().toUtf8()).find(line.c_str(), 0, endOfConVarNameIndex) != std::string::npos)
+				// check against manual commands
+				if (keepLine)
+				{
+					for (const auto &cmd : manualConCommands)
+					{
+						if (cmd->getName().equalsIgnoreCase(lineConVarName))
 						{
 							keepLine = false;
 							break;
 						}
-						//else
-						//	debugLog("ignoring match {:s} with {:s}\n", m_elements[i].cvar->getName().toUtf8(), line.c_str());
 					}
 				}
 
-				for (int i=0; i<manualConCommands.size(); i++)
+				// check against manual convars
+				if (keepLine)
 				{
-					if (line.find(manualConCommands[i]->getName().toUtf8()) != std::string::npos)
+					for (const auto &var : manualConVars)
 					{
-						keepLine = false;
-						break;
+						if (var->getName().equalsIgnoreCase(lineConVarName))
+						{
+							keepLine = false;
+							break;
+						}
 					}
 				}
 
-				for (int i=0; i<manualConVars.size(); i++)
+				// check against remove commands
+				if (keepLine)
 				{
-					if (line.find(manualConVars[i]->getName().toUtf8()) != std::string::npos)
+					for (const auto &cmd : removeConCommands)
 					{
-						keepLine = false;
-						break;
+						if (cmd->getName().equalsIgnoreCase(lineConVarName))
+						{
+							keepLine = false;
+							break;
+						}
 					}
 				}
 
-				for (int i=0; i<removeConCommands.size(); i++)
-				{
-					if (line.find(removeConCommands[i]->getName().toUtf8()) != std::string::npos)
-					{
-						keepLine = false;
-						break;
-					}
-				}
-
-				if (keepLine && line.size() > 0)
-					keepLines.emplace_back(line.c_str());
+				if (keepLine)
+					keepLines.push_back(line);
 			}
 		}
 	}
 
 	// write new config file
-	// thankfully this path is relative and hardcoded, and thus not susceptible to unicode characters
-	std::ofstream out(userConfigFile.toUtf8());
-	if (!out.good())
+	McFile out(userConfigFile, McFile::TYPE::WRITE);
+	if (!out.canWrite())
 	{
 		engine->showMessageError("Osu Error", "Couldn't write user config file!");
 		return;
 	}
 
+	// helper lambda for writing lines
+	auto writeLine = [&out](const UString &line) {
+		UString lineWithNewline = line + "\n";
+		out.write(lineWithNewline.toUtf8(), lineWithNewline.lengthUtf8());
+	};
+
 	// write user stuff back
-	for (int i=0; i<keepLines.size(); i++)
-	{
-		out << keepLines[i].toUtf8() << "\n";
-	}
-	out << "\n";
+	for (const auto &line : keepLines)
+		writeLine(line);
+
+	writeLine("");
+
+	// write manual commands
+	for (const auto &cmd : manualConCommands)
+		writeLine(cmd->getName());
 
 	// write manual convars
-	for (int i=0; i<manualConCommands.size(); i++)
-	{
-		out << manualConCommands[i]->getName().toUtf8() << "\n";
-	}
-	for (int i=0; i<manualConVars.size(); i++)
-	{
-		out << manualConVars[i]->getName().toUtf8() << " " << manualConVars[i]->getString().toUtf8() <<"\n";
-	}
+	for (const auto &var : manualConVars)
+		writeLine(UString::fmt("{:s} {:s}", var->getName(), var->getString()));
 
-	// hardcoded (!)
-	out << "monitor " << env->getMonitor() << "\n";
-	if (soundEngine->getOutputDevice() != "Default")
-		out << "snd_output_device " << soundEngine->getOutputDevice().toUtf8() << "\n";
+	// hardcoded entries
+	writeLine(UString::fmt("monitor {:d}", env->getMonitor()));
+
+	if (soundEngine->getOutputDevice() != "Default" && !soundEngine->getOutputDevice().isEmpty())
+		writeLine(UString::fmt("snd_output_device {:s}", soundEngine->getOutputDevice()));
+
 	if (m_fullscreenCheckbox != NULL && !m_fullscreenCheckbox->isChecked())
-		out << "windowed " << engine->getScreenWidth() << "x" << engine->getScreenHeight() << "\n";
+		writeLine(UString::fmt("windowed {:d}x{:d}", engine->getScreenWidth(), engine->getScreenHeight()));
 
 	// write options elements convars
-	for (int i=0; i<m_elements.size(); i++)
+	for (const auto &element : m_elements)
 	{
-		if (m_elements[i].cvar != NULL)
-		{
-			out << m_elements[i].cvar->getName().toUtf8() << " " << m_elements[i].cvar->getString().toUtf8() << "\n";
-		}
+		if (element.cvar != NULL)
+			writeLine(UString::fmt("{:s} {:s}", element.cvar->getName(), element.cvar->getString()));
 	}
 
-	out << "osu_skin_mipmaps " << convar->getConVarByName("osu_skin_mipmaps")->getString().toUtf8() << "\n";
+	// write skin-related convars
+	writeLine(UString::fmt("osu_skin_mipmaps {:s}", convar->getConVarByName("osu_skin_mipmaps")->getString()));
+
 	if constexpr (Env::cfg(FEAT::STEAM))
 	{
 		if (m_osu_skin_is_from_workshop_ref->getBool())
 		{
-			out << "osu_skin_is_from_workshop " << m_osu_skin_is_from_workshop_ref->getString().toUtf8() << "\n";
-			out << "osu_skin_workshop_title " << m_osu_skin_workshop_title_ref->getString().toUtf8() << "\n";
-			out << "osu_skin_workshop_id " << m_osu_skin_workshop_id_ref->getString().toUtf8() << "\n";
+			writeLine(UString::fmt("osu_skin_is_from_workshop {:s}", m_osu_skin_is_from_workshop_ref->getString()));
+			writeLine(UString::fmt("osu_skin_workshop_title {:s}", m_osu_skin_workshop_title_ref->getString()));
+			writeLine(UString::fmt("osu_skin_workshop_id {:s}", m_osu_skin_workshop_id_ref->getString()));
 		}
 	}
-	out << "osu_skin " << m_osu_skin_ref->getString().toUtf8() << "\n";
 
-	out.close();
+	writeLine(UString::fmt("osu_skin {:s}", m_osu_skin_ref->getString()));
 }
 
 void OsuOptionsMenu::openAndScrollToSkinSection()

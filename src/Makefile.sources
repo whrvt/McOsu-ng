@@ -111,7 +111,7 @@ McOsu_ng_SOURCES = \
 	src/Engine/Resource.cpp \
 	src/Engine/ResourceManager.cpp \
 	src/Engine/Shader.cpp \
-	src/Engine/Sound/BASS/BassLoader.cpp \
+	src/Engine/Sound/BASS/BassManager.cpp \
 	src/Engine/Sound/BASS/BassSound.cpp \
 	src/Engine/Sound/BASS/BassSound2.cpp \
 	src/Engine/Sound/BASS/BassSoundEngine.cpp \

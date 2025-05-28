@@ -148,14 +148,31 @@ AS_IF([test "$host_os" = "mingw32"], [
     enable_system_deps=no
     disable_system_deps=yes
     MCOSU_CPPFLAGS="$MCOSU_CPPFLAGS -D_UNICODE -DUNICODE"
-    MCOSU_CXXFLAGS="$MCOSU_CXXFLAGS -D_UNICODE -DUNICODE -municode -mwindows"
-    MCOSU_LDFLAGS="$MCOSU_LDFLAGS -municode -mwindows"
+    MCOSU_CXXFLAGS="$MCOSU_CXXFLAGS -D_UNICODE -DUNICODE -municode"
+    MCOSU_LDFLAGS="$MCOSU_LDFLAGS -municode"
     AS_IF([test "x$enable_clang" = "xyes"], [
         LLVMMINGW=1
         AC_SUBST([LLVMMINGW])
         CXXFLAGS="$CXXFLAGS --target=$host_cpu-w64-windows-gnu"
         CFLAGS="$CFLAGS --target=$host_cpu-w64-windows-gnu"
     ])
+])
+
+AS_IF([test "x$enable_asan" = "xyes" || test "x$enable_tsan" = "xyes"], [
+    AS_IF([test "x$enable_asan" = "xyes"], [
+        CXXFLAGS="$CXXFLAGS -fsanitize=address,undefined"
+        CFLAGS="$CFLAGS -fsanitize=address,undefined"
+    ], [
+        CXXFLAGS="$CXXFLAGS -fsanitize=undefined,thread"
+        CFLAGS="$CFLAGS -fsanitize=undefined,thread"
+    ])
+
+    AS_IF([test -z "$LLVMMINGW"],[
+        LDFLAGS="$LDFLAGS -static-libasan" CFLAGS="$CFLAGS -static-libasan" CXXFLAGS="$CXXFLAGS -static-libasan"
+    ])
+    enable_debug="yes"
+    ENABLE_ASAN=$enable_asan
+    AC_SUBST([ENABLE_ASAN])
 ])
 
 AS_IF([test "x$enable_static" = "xyes"], [
@@ -267,9 +284,6 @@ __EOF__
         CPPFLAGS="$CPPFLAGS -DWINVER=0x0501 -D_WIN32_WINNT=0x0501 -D_WIN32_WINDOWS=0x0501 -D_WIN32_IE=0x0501"
         CFLAGS="$CFLAGS -m32 -DWINVER=0x0501 -D_WIN32_WINNT=0x0501 -D_WIN32_WINDOWS=0x0501 -D_WIN32_IE=0x0501 -mfpmath=sse"
         CXXFLAGS="$CXXFLAGS -m32 -DWINVER=0x0501 -D_WIN32_WINNT=0x0501 -D_WIN32_WINDOWS=0x0501 -D_WIN32_IE=0x0501 -mfpmath=sse"
-        # won't work unfortunately, https://github.com/mstorsjo/llvm-mingw/issues/44
-        # but i tried
-        AS_IF([test "x$enable_clang" = "xyes"], [LDFLAGS="$LDFLAGS -Xlinker /subsystem:windows,5.0"])
         AC_SUBST([NASMOBJ],[win32])
     ], [
         # win10
@@ -277,7 +291,6 @@ __EOF__
         CFLAGS="$CFLAGS -DWINVER=0x0A00 -D_WIN32_WINNT=0x0A00 -D_WIN32_WINDOWS=0x0A00 -D_WIN32_IE=0x0A00"
         CXXFLAGS="$CXXFLAGS -DWINVER=0x0A00 -D_WIN32_WINNT=0x0A00 -D_WIN32_WINDOWS=0x0A00 -D_WIN32_IE=0x0A00"
         LDFLAGS="$LDFLAGS -Wl,-Bstatic,--whole-archive -lwinpthread -Wl,--no-whole-archive,-Bdynamic"
-        AS_IF([test "x$enable_clang" = "xyes"], [LDFLAGS="$LDFLAGS -Xlinker /subsystem:windows,10.0"])
         AC_SUBST([NASMOBJ],[win64])
     ])
 
@@ -368,23 +381,6 @@ AS_IF([test "$host_os" = "linux-gnu"],[
 AC_CHECK_PROG([BEAR], [bear], [bear])
 AC_SUBST([BEAR])
 
-AS_IF([test "x$enable_asan" = "xyes" || test "x$enable_tsan" = "xyes"], [
-    AS_IF([test "x$enable_asan" = "xyes"], [
-        CXXFLAGS="$CXXFLAGS -fsanitize=address,undefined"
-        CFLAGS="$CFLAGS -fsanitize=address,undefined"
-    ], [
-        CXXFLAGS="$CXXFLAGS -fsanitize=undefined,thread"
-        CFLAGS="$CFLAGS -fsanitize=undefined,thread"
-    ])
-
-    AS_IF([test -z "$LLVMMINGW"],[
-        LDFLAGS="$LDFLAGS -static-libasan" CFLAGS="$CFLAGS -static-libasan" CXXFLAGS="$CXXFLAGS -static-libasan"
-    ])
-    enable_debug="yes"
-    ENABLE_ASAN=$enable_asan
-    AC_SUBST([ENABLE_ASAN])
-])
-
 AS_IF([test "x$enable_debug" = "xyes"], [
     with_mimalloc="no"
     AS_IF([test -n "$ubercompat"],[
@@ -396,6 +392,14 @@ AS_IF([test "x$enable_debug" = "xyes"], [
     ])
     ENABLE_DEBUG=$enable_debug
     MCOSU_CPPFLAGS="$MCOSU_CPPFLAGS -D_DEBUG"
+    AS_IF([test "$SYSNAME" = "windows"], [
+        AS_IF([test "x$enable_clang" = "xyes"], [
+            LDFLAGS="$LDFLAGS -Xlinker /subsystem:console"
+        ], [
+            MCOSU_CXXFLAGS="$MCOSU_CXXFLAGS -mconsole"
+            MCOSU_LDFLAGS="$MCOSU_LDFLAGS -mconsole"
+        ])
+    ])
     AC_SUBST([ENABLE_DEBUG])
     AS_IF([test "x$enable_strip" != "xyes"], [enable_strip=no]) # disable stripping unless its explicitly requested for debug (why tho?)
 ], [

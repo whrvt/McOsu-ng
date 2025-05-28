@@ -12,7 +12,7 @@
 #include "BassSound.h"
 #include "BassSoundEngine.h"
 
-#include "BassLoader.h"
+#include "BassManager.h"
 
 #include "ConVar.h"
 #include "Engine.h"
@@ -157,7 +157,7 @@ void BassSound::initAsync()
 		if (m_HSTREAM == 0)
 		{
 			auto code = BASS_ErrorGetCode();
-			if (debug_snd.getBool() || (code != BASS_ERROR_NOTAUDIO && code != BASS_ERROR_EMPTY))
+			if (code && (debug_snd.getBool() || (code != BASS_ERROR_NOTAUDIO && code != BASS_ERROR_EMPTY)))
 				debugLog("Sound Error: BASS_SampleLoad() error {} on file {:s}\n", code, m_sFilePath.toUtf8());
 		}
 	}

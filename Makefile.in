@@ -241,7 +241,7 @@ am_McOsu_ng_OBJECTS = libraries/glad/glad/McOsu_ng-glad.$(OBJEXT) \
 	src/Engine/McOsu_ng-Resource.$(OBJEXT) \
 	src/Engine/McOsu_ng-ResourceManager.$(OBJEXT) \
 	src/Engine/McOsu_ng-Shader.$(OBJEXT) \
-	src/Engine/Sound/BASS/McOsu_ng-BassLoader.$(OBJEXT) \
+	src/Engine/Sound/BASS/McOsu_ng-BassManager.$(OBJEXT) \
 	src/Engine/Sound/BASS/McOsu_ng-BassSound.$(OBJEXT) \
 	src/Engine/Sound/BASS/McOsu_ng-BassSound2.$(OBJEXT) \
 	src/Engine/Sound/BASS/McOsu_ng-BassSoundEngine.$(OBJEXT) \
@@ -425,7 +425,7 @@ am__depfiles_remade = libraries/glad/glad/$(DEPDIR)/McOsu_ng-glad.Po \
 	src/Engine/Renderer/$(DEPDIR)/McOsu_ng-OpenGLVertexArrayObject.Po \
 	src/Engine/Sound/$(DEPDIR)/McOsu_ng-Sound.Po \
 	src/Engine/Sound/$(DEPDIR)/McOsu_ng-SoundEngine.Po \
-	src/Engine/Sound/BASS/$(DEPDIR)/McOsu_ng-BassLoader.Po \
+	src/Engine/Sound/BASS/$(DEPDIR)/McOsu_ng-BassManager.Po \
 	src/Engine/Sound/BASS/$(DEPDIR)/McOsu_ng-BassSound.Po \
 	src/Engine/Sound/BASS/$(DEPDIR)/McOsu_ng-BassSound2.Po \
 	src/Engine/Sound/BASS/$(DEPDIR)/McOsu_ng-BassSoundEngine.Po \
@@ -865,7 +865,7 @@ McOsu_ng_SOURCES = \
 	src/Engine/Resource.cpp \
 	src/Engine/ResourceManager.cpp \
 	src/Engine/Shader.cpp \
-	src/Engine/Sound/BASS/BassLoader.cpp \
+	src/Engine/Sound/BASS/BassManager.cpp \
 	src/Engine/Sound/BASS/BassSound.cpp \
 	src/Engine/Sound/BASS/BassSound2.cpp \
 	src/Engine/Sound/BASS/BassSoundEngine.cpp \
@@ -1456,7 +1456,7 @@ src/Engine/Sound/BASS/$(am__dirstamp):
 src/Engine/Sound/BASS/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) src/Engine/Sound/BASS/$(DEPDIR)
 	@: >>src/Engine/Sound/BASS/$(DEPDIR)/$(am__dirstamp)
-src/Engine/Sound/BASS/McOsu_ng-BassLoader.$(OBJEXT):  \
+src/Engine/Sound/BASS/McOsu_ng-BassManager.$(OBJEXT):  \
 	src/Engine/Sound/BASS/$(am__dirstamp) \
 	src/Engine/Sound/BASS/$(DEPDIR)/$(am__dirstamp)
 src/Engine/Sound/BASS/McOsu_ng-BassSound.$(OBJEXT):  \
@@ -1759,7 +1759,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Renderer/$(DEPDIR)/McOsu_ng-OpenGLVertexArrayObject.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Sound/$(DEPDIR)/McOsu_ng-Sound.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Sound/$(DEPDIR)/McOsu_ng-SoundEngine.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Sound/BASS/$(DEPDIR)/McOsu_ng-BassLoader.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Sound/BASS/$(DEPDIR)/McOsu_ng-BassManager.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Sound/BASS/$(DEPDIR)/McOsu_ng-BassSound.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Sound/BASS/$(DEPDIR)/McOsu_ng-BassSound2.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Sound/BASS/$(DEPDIR)/McOsu_ng-BassSoundEngine.Po@am__quote@ # am--include-marker
@@ -3378,19 +3378,19 @@ src/Engine/McOsu_ng-Shader.obj: src/Engine/Shader.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/McOsu_ng-Shader.obj `if test -f 'src/Engine/Shader.cpp'; then $(CYGPATH_W) 'src/Engine/Shader.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Shader.cpp'; fi`
 
-src/Engine/Sound/BASS/McOsu_ng-BassLoader.o: src/Engine/Sound/BASS/BassLoader.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Sound/BASS/McOsu_ng-BassLoader.o -MD -MP -MF src/Engine/Sound/BASS/$(DEPDIR)/McOsu_ng-BassLoader.Tpo -c -o src/Engine/Sound/BASS/McOsu_ng-BassLoader.o `test -f 'src/Engine/Sound/BASS/BassLoader.cpp' || echo '$(srcdir)/'`src/Engine/Sound/BASS/BassLoader.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Sound/BASS/$(DEPDIR)/McOsu_ng-BassLoader.Tpo src/Engine/Sound/BASS/$(DEPDIR)/McOsu_ng-BassLoader.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Sound/BASS/BassLoader.cpp' object='src/Engine/Sound/BASS/McOsu_ng-BassLoader.o' libtool=no @AMDEPBACKSLASH@
+src/Engine/Sound/BASS/McOsu_ng-BassManager.o: src/Engine/Sound/BASS/BassManager.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Sound/BASS/McOsu_ng-BassManager.o -MD -MP -MF src/Engine/Sound/BASS/$(DEPDIR)/McOsu_ng-BassManager.Tpo -c -o src/Engine/Sound/BASS/McOsu_ng-BassManager.o `test -f 'src/Engine/Sound/BASS/BassManager.cpp' || echo '$(srcdir)/'`src/Engine/Sound/BASS/BassManager.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Sound/BASS/$(DEPDIR)/McOsu_ng-BassManager.Tpo src/Engine/Sound/BASS/$(DEPDIR)/McOsu_ng-BassManager.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Sound/BASS/BassManager.cpp' object='src/Engine/Sound/BASS/McOsu_ng-BassManager.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Sound/BASS/McOsu_ng-BassLoader.o `test -f 'src/Engine/Sound/BASS/BassLoader.cpp' || echo '$(srcdir)/'`src/Engine/Sound/BASS/BassLoader.cpp
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Sound/BASS/McOsu_ng-BassManager.o `test -f 'src/Engine/Sound/BASS/BassManager.cpp' || echo '$(srcdir)/'`src/Engine/Sound/BASS/BassManager.cpp
 
-src/Engine/Sound/BASS/McOsu_ng-BassLoader.obj: src/Engine/Sound/BASS/BassLoader.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Sound/BASS/McOsu_ng-BassLoader.obj -MD -MP -MF src/Engine/Sound/BASS/$(DEPDIR)/McOsu_ng-BassLoader.Tpo -c -o src/Engine/Sound/BASS/McOsu_ng-BassLoader.obj `if test -f 'src/Engine/Sound/BASS/BassLoader.cpp'; then $(CYGPATH_W) 'src/Engine/Sound/BASS/BassLoader.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Sound/BASS/BassLoader.cpp'; fi`
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Sound/BASS/$(DEPDIR)/McOsu_ng-BassLoader.Tpo src/Engine/Sound/BASS/$(DEPDIR)/McOsu_ng-BassLoader.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Sound/BASS/BassLoader.cpp' object='src/Engine/Sound/BASS/McOsu_ng-BassLoader.obj' libtool=no @AMDEPBACKSLASH@
+src/Engine/Sound/BASS/McOsu_ng-BassManager.obj: src/Engine/Sound/BASS/BassManager.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Sound/BASS/McOsu_ng-BassManager.obj -MD -MP -MF src/Engine/Sound/BASS/$(DEPDIR)/McOsu_ng-BassManager.Tpo -c -o src/Engine/Sound/BASS/McOsu_ng-BassManager.obj `if test -f 'src/Engine/Sound/BASS/BassManager.cpp'; then $(CYGPATH_W) 'src/Engine/Sound/BASS/BassManager.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Sound/BASS/BassManager.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Sound/BASS/$(DEPDIR)/McOsu_ng-BassManager.Tpo src/Engine/Sound/BASS/$(DEPDIR)/McOsu_ng-BassManager.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Sound/BASS/BassManager.cpp' object='src/Engine/Sound/BASS/McOsu_ng-BassManager.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Sound/BASS/McOsu_ng-BassLoader.obj `if test -f 'src/Engine/Sound/BASS/BassLoader.cpp'; then $(CYGPATH_W) 'src/Engine/Sound/BASS/BassLoader.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Sound/BASS/BassLoader.cpp'; fi`
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Sound/BASS/McOsu_ng-BassManager.obj `if test -f 'src/Engine/Sound/BASS/BassManager.cpp'; then $(CYGPATH_W) 'src/Engine/Sound/BASS/BassManager.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Sound/BASS/BassManager.cpp'; fi`
 
 src/Engine/Sound/BASS/McOsu_ng-BassSound.o: src/Engine/Sound/BASS/BassSound.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Sound/BASS/McOsu_ng-BassSound.o -MD -MP -MF src/Engine/Sound/BASS/$(DEPDIR)/McOsu_ng-BassSound.Tpo -c -o src/Engine/Sound/BASS/McOsu_ng-BassSound.o `test -f 'src/Engine/Sound/BASS/BassSound.cpp' || echo '$(srcdir)/'`src/Engine/Sound/BASS/BassSound.cpp
@@ -4478,7 +4478,7 @@ distclean: distclean-am
 	-rm -f src/Engine/Renderer/$(DEPDIR)/McOsu_ng-OpenGLVertexArrayObject.Po
 	-rm -f src/Engine/Sound/$(DEPDIR)/McOsu_ng-Sound.Po
 	-rm -f src/Engine/Sound/$(DEPDIR)/McOsu_ng-SoundEngine.Po
-	-rm -f src/Engine/Sound/BASS/$(DEPDIR)/McOsu_ng-BassLoader.Po
+	-rm -f src/Engine/Sound/BASS/$(DEPDIR)/McOsu_ng-BassManager.Po
 	-rm -f src/Engine/Sound/BASS/$(DEPDIR)/McOsu_ng-BassSound.Po
 	-rm -f src/Engine/Sound/BASS/$(DEPDIR)/McOsu_ng-BassSound2.Po
 	-rm -f src/Engine/Sound/BASS/$(DEPDIR)/McOsu_ng-BassSoundEngine.Po
@@ -4685,7 +4685,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f src/Engine/Renderer/$(DEPDIR)/McOsu_ng-OpenGLVertexArrayObject.Po
 	-rm -f src/Engine/Sound/$(DEPDIR)/McOsu_ng-Sound.Po
 	-rm -f src/Engine/Sound/$(DEPDIR)/McOsu_ng-SoundEngine.Po
-	-rm -f src/Engine/Sound/BASS/$(DEPDIR)/McOsu_ng-BassLoader.Po
+	-rm -f src/Engine/Sound/BASS/$(DEPDIR)/McOsu_ng-BassManager.Po
 	-rm -f src/Engine/Sound/BASS/$(DEPDIR)/McOsu_ng-BassSound.Po
 	-rm -f src/Engine/Sound/BASS/$(DEPDIR)/McOsu_ng-BassSound2.Po
 	-rm -f src/Engine/Sound/BASS/$(DEPDIR)/McOsu_ng-BassSoundEngine.Po
@@ -5189,7 +5189,7 @@ compile_commands.json: mostlyclean-compile
 	  echo '"compilers_to_exclude": ["$(CXX)"]'; \
 	  echo '}'; \
 	  echo '}' ) > bear.cfg
-	$(BEAR) --verbose --config bear.cfg --append -- $(MAKE) $(AM_MAKEFLAGS) $(McOsu_ng_OBJECTS) $(McOsu_ng_DEPENDENCIES) $(EXTRA_McOsu_ng_DEPENDENCIES) && \
+	$(BEAR) --config bear.cfg --append -- $(MAKE) $(AM_MAKEFLAGS) $(McOsu_ng_OBJECTS) $(McOsu_ng_DEPENDENCIES) $(EXTRA_McOsu_ng_DEPENDENCIES) && \
 	rm -f bear.cfg
 
 $(abs_top_srcdir)/.clangd: compile_commands.json

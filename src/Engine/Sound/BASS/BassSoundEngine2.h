@@ -11,7 +11,7 @@
 
 #include "SoundEngine.h"
 #if defined(MCENGINE_FEATURE_BASS) && defined(MCENGINE_NEOSU_BASS_PORT_FINISHED)
-#include "BassLoader.h"
+#include "BassManager.h"
 #include "Sound.h"
 #include <algorithm>
 
@@ -98,7 +98,6 @@ private:
 	void onFreqChanged(UString oldValue, UString newValue);
 
 	void _RESTART_SOUND_ENGINE_ON_CHANGE(UString oldValue, UString newValue);
-	void display_bass_error();
 #ifdef MCENGINE_PLATFORM_WINDOWS
 	DWORD ASIO_clamp(BASS_ASIO_INFO info, DWORD buflen);
 #endif

@@ -10,7 +10,7 @@
 #if defined(MCENGINE_FEATURE_BASS) && defined(MCENGINE_NEOSU_BASS_PORT_FINISHED)
 #include "BassSound2.h"
 
-#include "BassLoader.h"
+#include "BassManager.h"
 #include "ConVar.h"
 #include "Engine.h"
 #include "Environment.h"
@@ -132,9 +132,9 @@ bool BassSoundEngine2::hasExclusiveOutput()
 
 BassSoundEngine2::BassSoundEngine2() : SoundEngine()
 {
-	if (!BassLoader::init())
+	if (!BassManager::init())
 	{
-		engine->showMessageErrorFatal("Fatal Sound Error", "Failed to load BASS libraries!");
+		engine->showMessageErrorFatal("Fatal Sound Error", "Failed to load BASS libraries!\nContinuing, but expect a crash.");
 		engine->shutdown();
 		return;
 	}
@@ -209,7 +209,7 @@ BassSoundEngine2::~BassSoundEngine2()
 {
 	bassfree();
 
-	BassLoader::cleanup();
+	BassManager::cleanup();
 }
 
 void BassSoundEngine2::bassfree()
@@ -404,154 +404,6 @@ void BassSoundEngine2::updateOutputDevices(bool printInfo)
 		debugLog("WASAPI: Device {} = \"{}\", enabled = {}, default = {}\n", d, wasapiDeviceInfo.name, (int)isEnabled, (int)isDefault);
 	}
 #endif
-}
-
-void BassSoundEngine2::display_bass_error()
-{
-	auto code = BASS_ErrorGetCode();
-	switch (code)
-	{
-	case BASS_OK:
-		break;
-	case BASS_ERROR_MEM:
-		debugLog("BASS error: Memory error\n");
-		break;
-	case BASS_ERROR_FILEOPEN:
-		debugLog("BASS error: Can't open the file\n");
-		break;
-	case BASS_ERROR_DRIVER:
-		debugLog("BASS error: Can't find an available driver\n");
-		break;
-	case BASS_ERROR_BUFLOST:
-		debugLog("BASS error: The sample buffer was lost\n");
-		break;
-	case BASS_ERROR_HANDLE:
-		debugLog("BASS error: Invalid handle\n");
-		break;
-	case BASS_ERROR_FORMAT:
-		debugLog("BASS error: Unsupported sample format\n");
-		break;
-	case BASS_ERROR_POSITION:
-		debugLog("BASS error: Invalid position\n");
-		break;
-	case BASS_ERROR_INIT:
-		debugLog("BASS error: BASS_Init has not been successfully called\n");
-		break;
-	case BASS_ERROR_START:
-		debugLog("BASS error: BASS_Start has not been successfully called\n");
-		break;
-	case BASS_ERROR_SSL:
-		debugLog("BASS error: SSL/HTTPS support isn't available\n");
-		break;
-	case BASS_ERROR_REINIT:
-		debugLog("BASS error: Device needs to be reinitialized\n");
-		break;
-	case BASS_ERROR_ALREADY:
-		debugLog("BASS error: Already initialized\n");
-		break;
-	case BASS_ERROR_NOTAUDIO:
-		debugLog("BASS error: File does not contain audio\n");
-		break;
-	case BASS_ERROR_NOCHAN:
-		debugLog("BASS error: Can't get a free channel\n");
-		break;
-	case BASS_ERROR_ILLTYPE:
-		debugLog("BASS error: An illegal type was specified\n");
-		break;
-	case BASS_ERROR_ILLPARAM:
-		debugLog("BASS error: An illegal parameter was specified\n");
-		break;
-	case BASS_ERROR_NO3D:
-		debugLog("BASS error: No 3D support\n");
-		break;
-	case BASS_ERROR_NOEAX:
-		debugLog("BASS error: No EAX support\n");
-		break;
-	case BASS_ERROR_DEVICE:
-		debugLog("BASS error: Illegal device number\n");
-		break;
-	case BASS_ERROR_NOPLAY:
-		debugLog("BASS error: Not playing\n");
-		break;
-	case BASS_ERROR_FREQ:
-		debugLog("BASS error: Illegal sample rate\n");
-		break;
-	case BASS_ERROR_NOTFILE:
-		debugLog("BASS error: The stream is not a file stream\n");
-		break;
-	case BASS_ERROR_NOHW:
-		debugLog("BASS error: No hardware voices available\n");
-		break;
-	case BASS_ERROR_EMPTY:
-		debugLog("BASS error: The file has no sample data\n");
-		break;
-	case BASS_ERROR_NONET:
-		debugLog("BASS error: No internet connection could be opened\n");
-		break;
-	case BASS_ERROR_CREATE:
-		debugLog("BASS error: Couldn't create the file\n");
-		break;
-	case BASS_ERROR_NOFX:
-		debugLog("BASS error: Effects are not available\n");
-		break;
-	case BASS_ERROR_NOTAVAIL:
-		debugLog("BASS error: Requested data/action is not available\n");
-		break;
-	case BASS_ERROR_DECODE:
-		debugLog("BASS error: The channel is/isn't a decoding channel\n");
-		break;
-	case BASS_ERROR_DX:
-		debugLog("BASS error: A sufficient DirectX version is not installed\n");
-		break;
-	case BASS_ERROR_TIMEOUT:
-		debugLog("BASS error: Connection timeout\n");
-		break;
-	case BASS_ERROR_FILEFORM:
-		debugLog("BASS error: Unsupported file format\n");
-		break;
-	case BASS_ERROR_SPEAKER:
-		debugLog("BASS error: Unavailable speaker\n");
-		break;
-	case BASS_ERROR_VERSION:
-		debugLog("BASS error: Invalid BASS version\n");
-		break;
-	case BASS_ERROR_CODEC:
-		debugLog("BASS error: Codec is not available/supported\n");
-		break;
-	case BASS_ERROR_ENDED:
-		debugLog("BASS error: The channel/file has ended\n");
-		break;
-	case BASS_ERROR_BUSY:
-		debugLog("BASS error: The device is busy\n");
-		break;
-	case BASS_ERROR_UNSTREAMABLE:
-		debugLog("BASS error: Unstreamable file\n");
-		break;
-	case BASS_ERROR_PROTOCOL:
-		debugLog("BASS error: Unsupported protocol\n");
-		break;
-	case BASS_ERROR_DENIED:
-		debugLog("BASS error: Access Denied\n");
-		break;
-#ifdef MCENGINE_FEATURE_WINDOWS
-	case BASS_ERROR_WASAPI:
-		debugLog("WASAPI error: No WASAPI\n");
-		break;
-	case BASS_ERROR_WASAPI_BUFFER:
-		debugLog("WASAPI error: Invalid buffer size\n");
-		break;
-	case BASS_ERROR_WASAPI_CATEGORY:
-		debugLog("WASAPI error: Can't set category\n");
-		break;
-	case BASS_ERROR_WASAPI_DENIED:
-		debugLog("WASAPI error: Access denied\n");
-		break;
-#endif
-	case BASS_ERROR_UNKNOWN: // fallthrough
-	default:
-		debugLog("Unknown BASS error ({})!", code);
-		break;
-	}
 }
 
 // The BASS mixer is used for every sound driver, but it's useful to be able to

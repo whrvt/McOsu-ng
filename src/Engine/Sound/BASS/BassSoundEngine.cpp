@@ -10,7 +10,7 @@
 
 #ifdef MCENGINE_FEATURE_BASS
 
-#include "BassLoader.h"
+#include "BassManager.h"
 #include "ConVar.h"
 #include "Engine.h"
 #include "Environment.h"
@@ -95,9 +95,9 @@ void _WIN_SND_WASAPI_EXCLUSIVE_CHANGE(UString oldValue, UString newValue)
 
 BassSoundEngine::BassSoundEngine() : SoundEngine()
 {
-	if (!BassLoader::init()) // this checks the library versions as well
+	if (!BassManager::init()) // this checks the library versions as well
 	{
-		engine->showMessageErrorFatal("Fatal Sound Error", "Failed to load BASS libraries!");
+		engine->showMessageErrorFatal("Fatal Sound Error", UString::fmt("Failed to load BASS library: {:s} !", BassManager::getFailedLibrary()));
 		engine->shutdown();
 		return;
 	}
@@ -142,25 +142,16 @@ BassSoundEngine::BassSoundEngine() : SoundEngine()
 
 BassSoundEngine::~BassSoundEngine()
 {
-	// let the thread exit and wait for it to stop
-	// if (m_thread != NULL)
-	// {
-	// 	m_thread->running = false;
-	// 	SAFE_DELETE(m_thread->thread);
-	// 	SAFE_DELETE(m_thread);
-	// }
-
 	// Free BASS resources
 	if (m_bReady)
 	{
 		BASS_Free();
-
-		// NOTE: commented because for some reason this now crashes in dllunload on Windows 10? this cleanup is irrelevant anyway since it only happens on
-		// shutdown
-		// BASS_WASAPI_Free();
+#ifdef MCENGINE_FEATURE_BASS_WASAPI
+		BASS_WASAPI_Free();
+#endif
 	}
 
-	BassLoader::cleanup();
+	BassManager::cleanup();
 }
 
 void BassSoundEngine::restart()
@@ -174,16 +165,6 @@ void BassSoundEngine::restart()
 
 void BassSoundEngine::update()
 {
-	/*
-	if (snd_change_check_interval.getFloat() > 0.0f)
-	{
-	    if (engine->getTime() > m_fPrevOutputDeviceChangeCheckTime)
-	    {
-	        m_fPrevOutputDeviceChangeCheckTime = engine->getTime() + snd_change_check_interval.getFloat();
-	        updateOutputDevices(true, false); // NOTE: commented for now, since it's not yet finished anyway
-	    }
-	}
-	*/
 }
 
 bool BassSoundEngine::play(Sound *snd, float pan, float pitch)
@@ -226,14 +207,14 @@ bool BassSoundEngine::play(Sound *snd, float pan, float pitch)
 	{
 		if (!BASS_Mixer_StreamAddChannel(g_wasapiOutputMixer, handle,
 		                                 (!bassSound->isStream() ? BASS_STREAM_AUTOFREE : 0) | BASS_MIXER_DOWNMIX | BASS_MIXER_NORAMPIN))
-			debugLog("BASS_Mixer_StreamAddChannel() failed ({})!", BASS_ErrorGetCode());
+			BassManager::printBassError(fmt::format("BASS_Mixer_StreamAddChannel({}, {}, {})", g_wasapiOutputMixer, handle, (!bassSound->isStream() ? BASS_STREAM_AUTOFREE : 0) | BASS_MIXER_DOWNMIX | BASS_MIXER_NORAMPIN), BASS_ErrorGetCode());
 	}
 
 	if (BASS_ChannelIsActive(handle) != BASS_ACTIVE_PLAYING)
 	{
 		justStartedPlaying = (success = BASS_ChannelPlay(handle, TRUE));
 		if (!success)
-			debugLog("couldn't BASS_ChannelPlay(), errorcode {}\n", BASS_ErrorGetCode());
+			BassManager::printBassError(fmt::format("BASS_ChannelPlay({}, TRUE)", handle), BASS_ErrorGetCode());
 	}
 #else
 	if (BASS_ChannelIsActive(handle) != BASS_ACTIVE_PLAYING)
@@ -263,7 +244,7 @@ bool BassSoundEngine::play(Sound *snd, float pan, float pitch)
 			justStartedPlaying = (success = BASS_ChannelPlay(handle, TRUE));
 			auto code = BASS_ErrorGetCode();
 			if (!success)
-				debugLog("couldn't BASS_ChannelPlay(), errorcode {}\n", code);
+				BassManager::printBassError(fmt::format("BASS_ChannelPlay({}, TRUE)", handle), code);
 			if (code == BASS_ERROR_START)
 			{
 				debugLog("Attempting to reinitialize the audio device...\n");
@@ -293,13 +274,13 @@ bool BassSoundEngine::play3d(Sound *snd, Vector3 pos)
 		{
 			BASS_3DVECTOR bassPos = BASS_3DVECTOR(pos.x, pos.y, pos.z);
 			if (!BASS_ChannelSet3DPosition(handle, &bassPos, NULL, NULL))
-				debugLog("couldn't BASS_ChannelSet3DPosition(), errorcode {}\n", BASS_ErrorGetCode());
+				BassManager::printBassError(fmt::format("BASS_ChannelSet3DPosition({}, bassPos, NULL, NULL)", handle), BASS_ErrorGetCode());
 			else
 				BASS_Apply3D(); // apply the changes
 
 			bool ret = BASS_ChannelPlay(handle, FALSE);
 			if (!ret)
-				debugLog("couldn't BASS_ChannelPlay(), errorcode {}\n", BASS_ErrorGetCode());
+				BassManager::printBassError(fmt::format("BASS_ChannelPlay({}, FALSE)", handle), BASS_ErrorGetCode());
 			else
 				bassSound->setLastPlayTime(engine->getTime());
 
@@ -335,7 +316,7 @@ void BassSoundEngine::pause(Sound *snd)
 	}
 	else if (!BASS_ChannelPause(handle))
 	{
-		debugLog("couldn't BASS_ChannelPause(), errorcode {}\n", BASS_ErrorGetCode());
+		BassManager::printBassError(fmt::format("BASS_ChannelPause({})", handle), BASS_ErrorGetCode());
 	}
 #else
 	BASS_ChannelPause(handle);
@@ -434,7 +415,7 @@ void BassSoundEngine::set3dPosition(Vector3 headPos, Vector3 viewDir, Vector3 vi
 	BASS_3DVECTOR bassViewUp = BASS_3DVECTOR(viewUp.x, viewUp.y, viewUp.z);
 
 	if (!BASS_Set3DPosition(&bassHeadPos, NULL, &bassViewDir, &bassViewUp))
-		debugLog("couldn't BASS_Set3DPosition(), errorcode {}\n", BASS_ErrorGetCode());
+		BassManager::printBassError("BASS_Set3DPosition(...)", BASS_ErrorGetCode());
 	else
 		BASS_Apply3D(); // apply the changes
 }
@@ -628,7 +609,7 @@ bool BassSoundEngine::initializeOutputDevice(int id, bool force)
 			// try again with dsound fallback, once
 			if (!win_snd_fallback_dsound.getBool())
 			{
-				debugLog("Sound Error: BASS_Init() failed ({})!\n", BASS_ErrorGetCode());
+				BassManager::printBassError(fmt::format("BASS_Init({}, {}, {}, 0, NULL)", id, freq, flags), BASS_ErrorGetCode());
 				debugLog("Trying to fall back to DirectSound ...\n");
 
 				win_snd_fallback_dsound.setValue(1.0f);
@@ -653,9 +634,7 @@ bool BassSoundEngine::initializeOutputDevice(int id, bool force)
 	const float updatePeriod = std::round(win_snd_wasapi_period_size.getFloat() * 1000.0f) / 1000.0f; // in seconds
 
 	debugLog("WASAPI Exclusive Mode = {}, bufferSize = {:f}, updatePeriod = {:f}\n", (int)win_snd_wasapi_exclusive.getBool(), bufferSize, updatePeriod);
-	debugLog("initing\n");
 	ret = BASS_WASAPI_Init(id, 0, 0, (win_snd_wasapi_exclusive.getBool() ? BASS_WASAPI_EXCLUSIVE : 0), bufferSize, updatePeriod, OutputWasapiProc, NULL);
-	debugLog("we init\n");
 	if (!ret)
 	{
 		m_bReady = false;
@@ -663,7 +642,7 @@ bool BassSoundEngine::initializeOutputDevice(int id, bool force)
 		const int errorCode = BASS_ErrorGetCode();
 
 		if (errorCode == BASS_ERROR_WASAPI_BUFFER)
-			debugLog("Sound Error: BASS_WASAPI_Init() failed with BASS_ERROR_WASAPI_BUFFER!");
+			BassManager::printBassError(fmt::format("BASS_WASAPI_Init({}, 0, 0, {}, {}, {}, OutputWasapiProc, NULL)", id, (win_snd_wasapi_exclusive.getBool() ? BASS_WASAPI_EXCLUSIVE : 0), bufferSize, updatePeriod), errorCode);
 		else
 			engine->showMessageError("Sound Error", UString::format("BASS_WASAPI_Init() failed (%i)!", errorCode));
 
@@ -704,41 +683,5 @@ bool BassSoundEngine::initializeOutputDevice(int id, bool force)
 
 	return true;
 }
-
-// void *_soundEngineThread(void *data)
-// {
-// 	SoundEngineThread *self = (SoundEngineThread *)data;
-
-// 	std::vector<SoundEngineThread::CHANNEL_PLAY_WORK> channelPlayWork;
-
-// 	while (self->running.load())
-// 	{
-// 		// quickly check if there is work to do (this can potentially cause engine lag!)
-// 		self->workingMutex.lock();
-// 		{
-// 			for (size_t i = 0; i < self->channelPlayWork.size(); i++)
-// 			{
-// 				channelPlayWork.push_back(self->channelPlayWork[i]);
-// 			}
-// 			self->channelPlayWork.clear();
-// 		}
-// 		self->workingMutex.unlock();
-
-// 		// if we have work
-// 		if (channelPlayWork.size() > 0)
-// 		{
-// 			for (size_t i = 0; i < channelPlayWork.size(); i++)
-// 			{
-// 				if (!BASS_ChannelPlay(channelPlayWork[i].handle, FALSE))
-// 					debugLog("couldn't BASS_ChannelPlay(), errorcode {}\n", BASS_ErrorGetCode());
-// 			}
-// 			channelPlayWork.clear();
-// 		}
-// 		else
-// 			Timing::sleep(1000); // 1000 Hz idle
-// 	}
-
-// 	return NULL;
-// }
 
 #endif // MCENGINE_FEATURE_BASS
