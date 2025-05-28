@@ -92,6 +92,8 @@ public:
 	mutable std::mutex m_asyncCompleteWorkMutex;
 	mutable std::mutex m_allWorkMutex;
 
+	std::atomic<size_t> m_pendingWorkCount{0}; // lock-free pending check for idle loops
+
 	std::atomic<size_t> m_workIdCounter{0};
 
 	// async destroy queue

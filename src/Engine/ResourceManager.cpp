@@ -7,10 +7,10 @@
 
 #include "ResourceManager.h"
 
+#include "App.h" // for isInCriticalInteractiveSession() (gameplay detection)
 #include "ConVar.h"
 #include "Environment.h"
 #include "Thread.h"
-#include "App.h" // for isInCriticalInteractiveSession() (gameplay detection)
 
 #include <algorithm>
 #include <mutex>
@@ -73,27 +73,41 @@ static void *_resourceLoaderThread(void *data, std::stop_token stopToken)
 			// use stop_callback to wake up the condition variable when stop is requested
 			std::stop_callback stopCallback(stopToken, [&]() { manager->m_workAvailable.notify_all(); });
 
-			// wait with timeout
-			auto waitTime = isCore ? std::chrono::system_clock::duration::max() : manager->m_threadIdleTimeout + self->idleTimeoutOffset;
-
-			// if the wait times out, non-core threads will terminate (if the below conditions hold)
-			bool workAvailable = manager->m_workAvailable.wait_for(
-			    lock, waitTime, [&]() { return stopToken.stop_requested() || manager->m_bShuttingDown.load() || manager->getNumLoadingWork() > 0; });
-
-			// if we timed out, and we're not a core thread, and the app isn't in a critical section, exit and request destruction of the thread
-			if (!workAvailable && !isCore && !manager->m_bLowLatency)
+			// for core threads, wait indefinitely; for non-core threads, use timeout
+			if (isCore)
 			{
-				if (ResourceManager::debug_rm->getBool())
-					debugLog("Resource Manager: Thread #{} terminating due to idle timeout\n", threadIndex);
+				manager->m_workAvailable.wait(lock, [&]() {
+					return stopToken.stop_requested() || manager->m_bShuttingDown.load() || manager->m_pendingWorkCount.load() > 0; // lock-free check
+				});
 
-				// request stop to signal that this thread should be cleaned up
-				self->thread->requestStop();
-				break;
+				// check if we should exit due to shutdown or stop request
+				if (stopToken.stop_requested() || manager->m_bShuttingDown.load())
+					break;
 			}
+			else
+			{
+				// non-core threads use timeout
+				auto waitTime = manager->m_threadIdleTimeout + self->idleTimeoutOffset;
 
-			// check if we should exit due to shutdown or stop request
-			if (stopToken.stop_requested() || manager->m_bShuttingDown.load())
-				break;
+				bool workAvailable = manager->m_workAvailable.wait_for(lock, waitTime, [&]() {
+					return stopToken.stop_requested() || manager->m_bShuttingDown.load() || manager->m_pendingWorkCount.load() > 0; // lock-free check
+				});
+
+				// if we timed out, and we're not a core thread, and the app isn't in a critical section, exit and request destruction of the thread
+				if (!workAvailable && !manager->m_bLowLatency)
+				{
+					if (ResourceManager::debug_rm->getBool())
+						debugLog("Resource Manager: Thread #{} terminating due to idle timeout\n", threadIndex);
+
+					// request stop to signal that this thread should be cleaned up
+					self->thread->requestStop();
+					break;
+				}
+
+				// check if we should exit due to shutdown or stop request
+				if (stopToken.stop_requested() || manager->m_bShuttingDown.load())
+					break;
+			}
 
 			continue;
 		}
@@ -560,6 +574,7 @@ void ResourceManager::loadResource(Resource *res, bool load)
 		{
 			std::lock_guard<std::mutex> lock(m_pendingWorkMutex);
 			m_pendingWork.push(work);
+			m_pendingWorkCount.fetch_add(1);
 		}
 
 		// ensure we have a thread available to process the work
@@ -595,6 +610,7 @@ ResourceManager::LOADING_WORK *ResourceManager::getNextWork()
 
 	LOADING_WORK *work = m_pendingWork.front();
 	m_pendingWork.pop();
+	m_pendingWorkCount.fetch_sub(1); // decrement atomic counter
 	return work;
 }
 
