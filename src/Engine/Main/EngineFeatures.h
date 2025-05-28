@@ -50,9 +50,9 @@
 /*
  * BASS WASAPI sound (Windows only)
  */
-#if (defined(_WIN32) || defined(_WIN64)) && defined(MCENGINE_FEATURE_BASS)
- #define MCENGINE_FEATURE_BASS_WASAPI
-#endif
+// #if (defined(_WIN32) || defined(_WIN64)) && defined(MCENGINE_FEATURE_BASS)
+//  #define MCENGINE_FEATURE_BASS_WASAPI
+// #endif
 
 /*
  * SDL3 mixer (audio) (defined in config.h)

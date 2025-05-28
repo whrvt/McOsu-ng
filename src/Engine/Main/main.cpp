@@ -70,7 +70,7 @@ private:
 
 	// set iteration rate for callbacks
 	// clang-format off
-	inline void setFgFPS() { if constexpr (Env::cfg(FEAT::MAINCB)) SDL_SetHint(SDL_HINT_MAIN_CALLBACK_RATE, fmt::format("{}", m_iFpsMax).c_str()); else m_iNextFrameTime = SDL_GetTicksNS(); }
+	inline void setFgFPS() { if constexpr (Env::cfg(FEAT::MAINCB)) SDL_SetHint(SDL_HINT_MAIN_CALLBACK_RATE, fmt::format("{}", m_iFpsMax).c_str()); else m_iNextFrameTime = Timing::getTicksNS(); }
 	inline void setBgFPS() { if constexpr (Env::cfg(FEAT::MAINCB)) SDL_SetHint(SDL_HINT_MAIN_CALLBACK_RATE, fmt::format("{}", m_iFpsMaxBG).c_str()); }
 	// clang-format on
 
@@ -247,8 +247,15 @@ SDL_AppResult SDLMain::initialize()
 	// initialize with the display refresh rate of the current monitor
 	m_fDisplayHzSecs = 1.0f / (m_fDisplayHz = queryDisplayHz());
 
+	// init timing
+	m_deltaTimer = new Timer(false);
+
 	// initialize engine, now that all the setup is done
 	m_engine = Environment::initEngine();
+
+	// start engine frame timer
+	m_deltaTimer->start();
+	m_deltaTimer->update();
 
 	// if we got to this point, all relevant subsystems (input handling, graphics interface, etc.) have been initialized
 
@@ -259,14 +266,11 @@ SDL_AppResult SDLMain::initialize()
 	// load app
 	engine->loadApp();
 
-	// start engine frame timer
-	m_deltaTimer = new Timer();
-
 	// SDL3 stops listening to text input globally when window is created
 	SDL_StartTextInput(m_window);
 	SDL_SetWindowKeyboardGrab(m_window, false); // this allows windows key and such to work
 
-	m_iNextFrameTime = SDL_GetTicksNS(); // init fps timer
+	m_iNextFrameTime = Timing::getTicksNS(); // init fps timer
 
 	// return init success
 	return SDL_APP_CONTINUE;
@@ -427,21 +431,19 @@ SDL_AppResult SDLMain::iterate()
 	if constexpr (!Env::cfg(FEAT::MAINCB)) // main callbacks use SDL iteration rate to limit fps
 	{
 		VPROF_BUDGET("FPSLimiter", VPROF_BUDGETGROUP_SLEEP);
-		bool shouldYield = fps_yield.getBool();
 
 		// if minimized or unfocused, use BG fps, otherwise use fps_max (if 0 it's unlimited)
 		const int targetFPS = m_bMinimized || !m_bHasFocus ? m_iFpsMaxBG : m_iFpsMax;
 		if (targetFPS > 0)
 		{
-			const uint64_t frameTimeNS = SDL_NS_PER_SECOND / static_cast<uint64_t>(targetFPS);
-			const uint64_t now = SDL_GetTicksNS();
+			const uint64_t frameTimeNS = Timing::NS_PER_SECOND / static_cast<uint64_t>(targetFPS);
+			const uint64_t now = Timing::getTicksNS();
 
 			// if we're ahead of schedule, sleep until next frame
 			if (m_iNextFrameTime > now)
 			{
 				const uint64_t sleepTime = m_iNextFrameTime - now;
 				Timing::sleepNS(sleepTime);
-				shouldYield = false;
 			}
 			else
 			{
@@ -451,7 +453,7 @@ SDL_AppResult SDLMain::iterate()
 			// set time for next frame
 			m_iNextFrameTime += frameTimeNS;
 		}
-		if (shouldYield)
+		if (fps_yield.getBool())
 			Timing::sleep(0);
 	}
 
