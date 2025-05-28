@@ -94,8 +94,8 @@ target_triplet = @target@
 bin_PROGRAMS = McOsu-ng$(EXEEXT)
 @BUILD_SDL3_TRUE@am__append_1 = $(shell $(PKG_CONFIG) --cflags sdl3)
 @BUILD_SDL3_TRUE@am__append_2 = $(shell $(PKG_CONFIG) --libs sdl3)
-@BUILD_LIBJPEG_TRUE@am__append_3 = $(shell $(PKG_CONFIG) --cflags libjpeg)
-@BUILD_LIBJPEG_TRUE@am__append_4 = $(shell $(PKG_CONFIG) --libs libjpeg)
+@BUILD_LIBJPEG_TRUE@am__append_3 = $(shell $(PKG_CONFIG) --cflags libturbojpeg)
+@BUILD_LIBJPEG_TRUE@am__append_4 = $(shell $(PKG_CONFIG) --libs libturbojpeg)
 @BUILD_GLM_TRUE@am__append_5 = -I$(DEPS_PREFIX)/include
 @BUILD_LIBPNG_TRUE@am__append_6 = $(shell $(PKG_CONFIG) --cflags libpng)
 @BUILD_LIBPNG_TRUE@am__append_7 = $(shell $(PKG_CONFIG) --libs libpng)
@@ -5008,7 +5008,7 @@ $(DEPS_CACHE)/libjpeg-$(LIBJPEG_VERSION).source:
 @BUILD_LIBJPEG_TRUE@	cmake --build build && \
 @BUILD_LIBJPEG_TRUE@	cmake --install build
 @BUILD_LIBJPEG_TRUE@	PKG_CONFIG="$(PKG_CONFIG)" \
-@BUILD_LIBJPEG_TRUE@		$(PKG_CONFIG) --exists --print-errors libjpeg
+@BUILD_LIBJPEG_TRUE@		$(PKG_CONFIG) --exists --print-errors libturbojpeg
 @BUILD_LIBJPEG_TRUE@	touch $@
 @BUILD_LIBJPEG_FALSE@$(DEPS_PREFIX)/libjpeg.built:
 @BUILD_LIBJPEG_FALSE@	$(MKDIR_P) $(DEPS_PREFIX) && touch $@
@@ -5156,7 +5156,7 @@ $(DEPS_CACHE)/FREETYPE2-$(FREETYPE2_VERSION).source:
 	$(MKDIR_P) $(DEPS_CACHE)
 	$(WGET) -qO $(DEPS_CACHE)/freetype-$(FREETYPE2_VERSION).tar.gz "https://download.savannah.gnu.org/releases/freetype/freetype-$(FREETYPE2_VERSION).tar.gz" && \
 	touch $@
-@BUILD_FREETYPE2_TRUE@$(DEPS_PREFIX)/FREETYPE2.built: $(DEPS_PREFIX)/libpng.built $(DEPS_PREFIX)/bzip2.built $(DEPS_PREFIX)/zlib.built $(DEPS_CACHE)/FREETYPE2-$(FREETYPE2_VERSION).source
+@BUILD_FREETYPE2_TRUE@$(DEPS_PREFIX)/FREETYPE2.built: $(DEPS_PREFIX)/libpng.built $(DEPS_PREFIX)/libjpeg.built $(DEPS_PREFIX)/bzip2.built $(DEPS_PREFIX)/zlib.built $(DEPS_CACHE)/FREETYPE2-$(FREETYPE2_VERSION).source
 @BUILD_FREETYPE2_TRUE@	rm -rf $(DEPS_PREFIX)/FREETYPE2
 @BUILD_FREETYPE2_TRUE@	$(MKDIR_P) $(DEPS_PREFIX)/FREETYPE2/build $(DEPS_PREFIX)/lib/pkgconfig
 @BUILD_FREETYPE2_TRUE@	$(TAR) xf $(DEPS_CACHE)/freetype-$(FREETYPE2_VERSION).tar.gz -C $(DEPS_PREFIX)/FREETYPE2 --strip-components=1 && \
@@ -5233,6 +5233,7 @@ install-libs:
 @USE_BASS_TRUE@@WIN_PLATFORM_TRUE@	$(INSTALL) -m 755 $(srcdir)/$(BUNDLED_BASS_WASAPI_DIR)/lib/$(SYSNAME)/$(host_cpu)/$(LIBPREFIX)basswasapi$(DLLEXT) "$(DESTDIR)$(bindir)/$(LIBDEST)"
 @BUILD_SDL3_TRUE@	$(if $(SDL3_STATIC),,@`find $(SDL3_PREFIX) '(' -iname '*SDL3*'$(DLLEXT) -o -iname '*SDL3*''.so.*' ')' -exec cp -P '{''}' "$(DESTDIR)$(bindir)/$(LIBDEST)" ';'`)
 @BUILD_LIBJPEG_TRUE@	$(if $(SDL3_STATIC),,@`find $(LIBJPEG_PREFIX) '(' -iname '*libjpeg-*'$(DLLEXT) -o -iname '*libjpeg*''.so.*' ')' -exec cp -P '{''}' "$(DESTDIR)$(bindir)/$(LIBDEST)" ';'`)
+@BUILD_LIBJPEG_TRUE@	$(if $(SDL3_STATIC),,@`find $(LIBJPEG_PREFIX) '(' -iname '*libturbojpeg-*'$(DLLEXT) -o -iname '*libturbojpeg''.so.*' ')' -exec cp -P '{''}' "$(DESTDIR)$(bindir)/$(LIBDEST)" ';'`)
 @BUILD_LIBPNG_TRUE@	$(if $(SDL3_STATIC),,@`find $(LIBPNG_PREFIX) '(' -iname '*libpng*'$(DLLEXT) -o -iname '*libpng*''.so.*' ')' -exec cp -P '{''}' "$(DESTDIR)$(bindir)/$(LIBDEST)" ';'`)
 @BUILD_BZIP2_TRUE@	$(if $(SDL3_STATIC),,@`find $(BZIP2_PREFIX) '(' -iname '*bz2*'$(DLLEXT) -o -iname '*bz2*''.so.*' ')' -exec cp -P '{''}' "$(DESTDIR)$(bindir)/$(LIBDEST)" ';'`)
 @BUILD_ZLIB_TRUE@	$(if $(SDL3_STATIC),,@`find $(ZLIB_PREFIX) '(' -iname '*libz-*'$(DLLEXT) -o -iname '*libz*''.so.*' ')' -exec cp -P '{''}' "$(DESTDIR)$(bindir)/$(LIBDEST)" ';'`)

@@ -270,8 +270,8 @@ $(DEPS_CACHE)/libjpeg-$(LIBJPEG_VERSION).source:
 	touch $@
 
 if BUILD_LIBJPEG
-LIBJPEG_CFLAGS += $(shell $(PKG_CONFIG) --cflags libjpeg)
-LIBJPEG_LIBS += $(shell $(PKG_CONFIG) --libs libjpeg)
+LIBJPEG_CFLAGS += $(shell $(PKG_CONFIG) --cflags libturbojpeg)
+LIBJPEG_LIBS += $(shell $(PKG_CONFIG) --libs libturbojpeg)
 $(DEPS_PREFIX)/libjpeg.built: $(DEPS_CACHE)/libjpeg-$(LIBJPEG_VERSION).source
 	rm -rf $(DEPS_PREFIX)/libjpeg
 	$(MKDIR_P) $(DEPS_PREFIX)/libjpeg/build $(DEPS_PREFIX)/lib/pkgconfig
@@ -294,7 +294,7 @@ $(DEPS_PREFIX)/libjpeg.built: $(DEPS_CACHE)/libjpeg-$(LIBJPEG_VERSION).source
 	cmake --build build && \
 	cmake --install build
 	PKG_CONFIG="$(PKG_CONFIG)" \
-		$(PKG_CONFIG) --exists --print-errors libjpeg
+		$(PKG_CONFIG) --exists --print-errors libturbojpeg
 	touch $@
 else
 $(DEPS_PREFIX)/libjpeg.built:
@@ -477,7 +477,7 @@ $(DEPS_CACHE)/FREETYPE2-$(FREETYPE2_VERSION).source:
 if BUILD_FREETYPE2
 FREETYPE2_CFLAGS += $(shell $(PKG_CONFIG) --cflags freetype2)
 FREETYPE2_LIBS += $(shell $(PKG_CONFIG) --libs freetype2)
-$(DEPS_PREFIX)/FREETYPE2.built: $(DEPS_PREFIX)/libpng.built $(DEPS_PREFIX)/bzip2.built $(DEPS_PREFIX)/zlib.built $(DEPS_CACHE)/FREETYPE2-$(FREETYPE2_VERSION).source
+$(DEPS_PREFIX)/FREETYPE2.built: $(DEPS_PREFIX)/libpng.built $(DEPS_PREFIX)/libjpeg.built $(DEPS_PREFIX)/bzip2.built $(DEPS_PREFIX)/zlib.built $(DEPS_CACHE)/FREETYPE2-$(FREETYPE2_VERSION).source
 	rm -rf $(DEPS_PREFIX)/FREETYPE2
 	$(MKDIR_P) $(DEPS_PREFIX)/FREETYPE2/build $(DEPS_PREFIX)/lib/pkgconfig
 	$(TAR) xf $(DEPS_CACHE)/freetype-$(FREETYPE2_VERSION).tar.gz -C $(DEPS_PREFIX)/FREETYPE2 --strip-components=1 && \
@@ -629,6 +629,7 @@ if BUILD_SDL3
 endif
 if BUILD_LIBJPEG
 	$(if $(SDL3_STATIC),,@`find $(LIBJPEG_PREFIX) '(' -iname '*libjpeg-*'$(DLLEXT) -o -iname '*libjpeg*''.so.*' ')' -exec cp -P '{''}' "$(DESTDIR)$(bindir)/$(LIBDEST)" ';'`)
+	$(if $(SDL3_STATIC),,@`find $(LIBJPEG_PREFIX) '(' -iname '*libturbojpeg-*'$(DLLEXT) -o -iname '*libturbojpeg''.so.*' ')' -exec cp -P '{''}' "$(DESTDIR)$(bindir)/$(LIBDEST)" ';'`)
 endif
 if BUILD_LIBPNG
 	$(if $(SDL3_STATIC),,@`find $(LIBPNG_PREFIX) '(' -iname '*libpng*'$(DLLEXT) -o -iname '*libpng*''.so.*' ')' -exec cp -P '{''}' "$(DESTDIR)$(bindir)/$(LIBDEST)" ';'`)

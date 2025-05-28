@@ -515,7 +515,7 @@ AC_SUBST([MIMALLOC_PREFIX],[$DEPS_PREFIX])
 # TODO: add all deps and transitive deps (fun!)
 AS_IF([test "x$enable_system_deps" != "xno"], [
     PKG_CHECK_AUTO([SDL3], [sdl3 >= $SDL3_MIN_VERSION], [have_sdl3=yes], [have_sdl3=no])
-    PKG_CHECK_AUTO([LIBJPEG], [libjpeg >= $LIBJPEG_MIN_VERSION], [have_libjpeg=yes], [have_libjpeg=no])
+    PKG_CHECK_AUTO([LIBJPEG], [libturbojpeg >= $LIBJPEG_MIN_VERSION], [have_libjpeg=yes], [have_libjpeg=no])
     PKG_CHECK_AUTO([LIBPNG], [libpng >= $LIBPNG_MIN_VERSION], [have_libpng=yes], [have_libpng=no])
     PKG_CHECK_AUTO([ZLIB], [zlib >= $ZLIB_MIN_VERSION], [have_zlib=yes], [have_zlib=no])
     PKG_CHECK_AUTO([BZIP2], [bzip2 >= $BZIP2_MIN_VERSION], [have_bzip2=yes], [have_bzip2=no])

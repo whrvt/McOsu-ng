@@ -10,37 +10,14 @@
 #include "Environment.h"
 #include "File.h"
 
-#include "jpeglib.h"
 #include <png.h>
+#include <turbojpeg.h>
 #include <zlib.h>
 
 #include <csetjmp>
 #include <cstddef>
 #include <cstring>
 #include <mutex>
-
-struct jpegErrorManager
-{
-	// "public" fields
-	struct jpeg_error_mgr pub;
-
-	// for returning to the caller
-	jmp_buf setjmp_buffer;
-};
-
-void jpegErrorExit(j_common_ptr cinfo)
-{
-	char jpegLastErrorMsg[JMSG_LENGTH_MAX];
-
-	auto *err = (jpegErrorManager *)cinfo->err;
-
-	(*(cinfo->err->format_message))(cinfo, jpegLastErrorMsg);
-	jpegLastErrorMsg[JMSG_LENGTH_MAX - 1] = '\0';
-
-	debugLog("JPEG Error: {:s}\n", jpegLastErrorMsg);
-
-	longjmp(err->setjmp_buffer, 1);
-}
 
 // this is complete bullshit and a bug in zlib-ng (probably, less likely libpng)
 // need to prevent zlib from lazy-initializing the crc tables, otherwise data race galore
@@ -377,71 +354,57 @@ bool Image::loadRawImage()
 		{
 			m_type = Image::TYPE::TYPE_JPG;
 
-			m_bHasAlphaChannel = false;
-
 			// decode jpeg
-			jpegErrorManager err;
-			jpeg_decompress_struct cinfo;
-
-			jpeg_create_decompress(&cinfo);
-			cinfo.err = jpeg_std_error(&err.pub);
-			err.pub.error_exit = jpegErrorExit;
-			if (setjmp(err.setjmp_buffer))
+			tjhandle tjInstance = tj3Init(TJINIT_DECOMPRESS);
+			if (!tjInstance)
 			{
-				jpeg_destroy_decompress(&cinfo);
-				debugLog("Image Error: JPEG error (see above) in file {:s}\n", m_sFilePath.toUtf8());
+				debugLog("Image Error: tj3Init failed in file {:s}\n", m_sFilePath.toUtf8());
 				return false;
 			}
 
-			jpeg_mem_src(&cinfo, (unsigned char *)data, file.getFileSize());
-#ifdef __APPLE__
-			const int headerRes = jpeg_read_header(&cinfo, boolean::TRUE); // HACKHACK: wtf is this boolean enum here suddenly required?
-#else
-			const int headerRes = jpeg_read_header(&cinfo, TRUE);
-#endif
-			if (headerRes != JPEG_HEADER_OK)
+			if (tj3DecompressHeader(tjInstance, (unsigned char *)data, file.getFileSize()) < 0)
 			{
-				jpeg_destroy_decompress(&cinfo);
-				debugLog("Image Error: JPEG read_header() error {} in file {:s}\n", headerRes, m_sFilePath.toUtf8());
+				debugLog("Image Error: tj3DecompressHeader failed: {:s} in file {:s}\n", tj3GetErrorStr(tjInstance), m_sFilePath.toUtf8());
+				tj3Destroy(tjInstance);
 				return false;
 			}
 
-			m_iWidth = static_cast<int>(cinfo.image_width);
-			m_iHeight = static_cast<int>(cinfo.image_height);
-			m_iNumChannels = cinfo.num_components;
+			if (m_bInterrupted) // cancellation point
+			{
+				tj3Destroy(tjInstance);
+				return false;
+			}
 
-			// NOTE: color spaces which require color profiles are not supported (e.g. J_COLOR_SPACE::JCS_YCCK)
-
-			if (m_iNumChannels == 4)
-				m_bHasAlphaChannel = true;
+			m_iWidth = tj3Get(tjInstance, TJPARAM_JPEGWIDTH);
+			m_iHeight = tj3Get(tjInstance, TJPARAM_JPEGHEIGHT);
+			m_iNumChannels = 4; // always convert to RGBA for consistency with PNG
+			m_bHasAlphaChannel = true;
 
 			if (m_iWidth > 8192 || m_iHeight > 8192)
 			{
-				jpeg_destroy_decompress(&cinfo);
 				debugLog("Image Error: JPEG image size is too big ({} x {}) in file {:s}\n", m_iWidth, m_iHeight, m_sFilePath.toUtf8());
+				tj3Destroy(tjInstance);
+				return false;
+			}
+
+			if (m_bInterrupted) // cancellation point
+			{
+				tj3Destroy(tjInstance);
 				return false;
 			}
 
 			// preallocate
 			m_rawImage.resize(static_cast<long>(m_iWidth * m_iHeight * m_iNumChannels));
 
-			// extract each scanline of the image
-			jpeg_start_decompress(&cinfo);
-			JSAMPROW j;
-			for (int y = 0; y < m_iHeight; y++)
+			// decompress directly to RGBA
+			if (tj3Decompress8(tjInstance, (unsigned char *)data, file.getFileSize(), &m_rawImage[0], 0, TJPF_RGBA) < 0)
 			{
-				if (m_bInterrupted) // cancellation point
-				{
-					jpeg_destroy_decompress(&cinfo);
-					return false;
-				}
-
-				j = (&m_rawImage[0] + (static_cast<ptrdiff_t>(y * m_iWidth * m_iNumChannels)));
-				jpeg_read_scanlines(&cinfo, &j, 1);
+				debugLog("Image Error: tj3Decompress8 failed: {:s} in file {:s}\n", tj3GetErrorStr(tjInstance), m_sFilePath.toUtf8());
+				tj3Destroy(tjInstance);
+				return false;
 			}
 
-			jpeg_finish_decompress(&cinfo);
-			jpeg_destroy_decompress(&cinfo);
+			tj3Destroy(tjInstance);
 		}
 		else if (isPNG)
 		{
