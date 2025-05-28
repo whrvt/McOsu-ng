@@ -9,7 +9,6 @@
 
 #include "Engine.h"
 #include "ConVar.h"
-#include "VisualProfiler.h"
 
 #include <cstring>
 
@@ -124,7 +123,7 @@ void ProfilerNode::enterScope()
 {
 	if (m_iNumRecursions++ == 0)
 	{
-		m_fTime = (vprof->isVisible() ? Timing::getLiveTimeReal() : Timing::getTimeReal()); // use uncached time for higher precision if vprof is visible
+		m_fTime = Timing::getTimeReal();
 	}
 }
 
@@ -132,7 +131,7 @@ bool ProfilerNode::exitScope()
 {
 	if (--m_iNumRecursions == 0)
 	{
-		m_fTime = (vprof->isVisible() ? Timing::getLiveTimeReal() : Timing::getTimeReal()) - m_fTime;
+		m_fTime = Timing::getTimeReal() - m_fTime;
 		m_fTimeCurrentFrame = m_fTime;
 	}
 
