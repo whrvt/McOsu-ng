@@ -246,6 +246,12 @@ static constexpr auto OPTIMAL_UNROLL = 4;
 typedef void* HWND;
 #else
 #include <windef.h>
+#ifndef fileno
+#define fileno _fileno
+#endif
+#ifndef isatty
+#define isatty _isatty
+#endif
 #endif
 
 #endif

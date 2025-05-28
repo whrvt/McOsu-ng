@@ -56,7 +56,6 @@ public:
 
 private:
 	void setPositionMS_fast(unsigned int ms);
-	void setPositionMS(unsigned long ms, bool internal) override { setPositionMS(ms); }
 
 	[[nodiscard]] inline float getPan() { return m_fPan; }
 

@@ -222,11 +222,20 @@ private:
 
 	static void logImpl(const std::string &message, Color color = rgb(255, 255, 255))
 	{
-		if (color == rgb(255, 255, 255) || !Environment::isatty())
-			fmt::print("{}", message);
+		if constexpr (Env::cfg(OS::WINDOWS)) // hmm... odd bug with fmt::print (or mingw?), when the stdout isn't redirected to a file
+		{
+			if (color == rgb(255, 255, 255) || !Environment::isaTTY())
+				printf("%s", fmt::format("{}", message).c_str());
+			else
+				printf("%s", fmt::format(fmt::fg(fmt::rgb(color.R(), color.G(), color.B())), "{}", message).c_str());
+		}
 		else
-			fmt::print(fmt::fg(fmt::rgb(color.R(), color.G(), color.B())), "{}", message);
-
+		{
+			if (color == rgb(255, 255, 255) || !Environment::isaTTY())
+				fmt::print("{}", message);
+			else
+				fmt::print(fmt::fg(fmt::rgb(color.R(), color.G(), color.B())), "{}", message);
+		}
 		logToConsole(color, UString(message));
 	}
 };

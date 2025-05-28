@@ -70,4 +70,15 @@ protected:
 	float m_fVolume;
 };
 
+// convenience conversion macro to get the sound handle, extra args are any extra conditions to check for besides general state validity
+// just minor boilerplate reduction
+#define GETHANDLE(...) \
+	[&]() -> std::pair<SoundType *, SoundType::SOUNDHANDLE> { \
+		SoundType::SOUNDHANDLE retHandle = 0; \
+		SoundType *retSound = nullptr; \
+		if (m_bReady && snd && snd->isReady() __VA_OPT__(&&(__VA_ARGS__)) && (retSound = snd->getSound())) \
+			retHandle = retSound->getHandle(); \
+		return {retSound, retHandle}; \
+	}()
+
 #endif

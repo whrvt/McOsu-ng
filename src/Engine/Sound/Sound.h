@@ -16,7 +16,7 @@ class SoundEngine;
 class Sound : public Resource
 {
 public:
-	typedef unsigned long SOUNDHANDLE;
+	typedef uint32_t SOUNDHANDLE;
 
 public:
 	Sound(UString filepath, bool stream, bool threeD, bool loop, bool prescan);
@@ -27,7 +27,7 @@ public:
 
 	// Public interface
 	virtual void setPosition(double percent) = 0;
-	virtual void setPositionMS(unsigned long ms) { setPositionMS(ms, false); }
+	virtual void setPositionMS(unsigned long ms) = 0;
 	virtual void setVolume(float volume) = 0;
 	virtual void setSpeed(float speed) = 0;
 	virtual void setPitch(float pitch) = 0;
@@ -67,8 +67,6 @@ protected:
 	void init() override = 0;
 	void initAsync() override = 0;
 	void destroy() override = 0;
-
-	virtual void setPositionMS(unsigned long ms, bool internal) = 0;
 
 	bool m_bStream;
 	bool m_bIs3d;

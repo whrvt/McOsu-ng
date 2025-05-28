@@ -20,6 +20,9 @@
 
 #include "fmt/format.h"
 #include "fmt/printf.h"
+#include "fmt/compile.h"
+
+using namespace fmt::literals;
 
 class UString
 {

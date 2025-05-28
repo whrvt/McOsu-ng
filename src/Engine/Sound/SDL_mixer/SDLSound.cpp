@@ -155,7 +155,7 @@ void SDLSound::setPosition(double percent)
 	}
 }
 
-void SDLSound::setPositionMS(unsigned long ms, bool internal)
+void SDLSound::setPositionMS(unsigned long ms)
 {
 	if (!m_bReady || ms > getLengthMS())
 		return;

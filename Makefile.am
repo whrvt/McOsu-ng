@@ -558,10 +558,11 @@ compile_commands.json: mostlyclean-compile
 	  echo '{'; \
 	  echo '"executable": "emc++"'; \
 	  echo '}'; \
-	  echo ']'; \
+	  echo '],'; \
+	  echo '"compilers_to_exclude": ["$(CXX)"]'; \
 	  echo '}'; \
 	  echo '}' ) > bear.cfg
-	$(BEAR) --config bear.cfg --append -- $(MAKE) $(AM_MAKEFLAGS) $(McOsu_ng_OBJECTS) $(McOsu_ng_DEPENDENCIES) $(EXTRA_McOsu_ng_DEPENDENCIES) && \
+	$(BEAR) --verbose --config bear.cfg --append -- $(MAKE) $(AM_MAKEFLAGS) $(McOsu_ng_OBJECTS) $(McOsu_ng_DEPENDENCIES) $(EXTRA_McOsu_ng_DEPENDENCIES) && \
 	rm -f bear.cfg
 
 $(abs_top_srcdir)/.clangd: compile_commands.json

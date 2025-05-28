@@ -21,19 +21,16 @@ namespace BassLoader
 #define LSUFFIX ".so"
 #endif
 
-#define LNAME(x) (LPREFIX #x LSUFFIX)
+#define LNAME(x) LPREFIX #x LSUFFIX
 
-static SDL_SharedObject *s_bassLib = nullptr;
-static SDL_SharedObject *s_bassFxLib = nullptr;
-[[maybe_unused]] static SDL_SharedObject *s_bassMixLib = nullptr;
-[[maybe_unused]] static SDL_SharedObject *s_bassAsioLib = nullptr;
-[[maybe_unused]] static SDL_SharedObject *s_bassWasapiLib = nullptr;
+#define DEFINE_LIB(name) [[maybe_unused]] static SDL_SharedObject *s_lib##name = nullptr; \
+	[[maybe_unused]] static constexpr auto name##_libpaths = {LNAME(name), "lib/" LNAME(name)};
 
-static constexpr auto BASS_LIB_NAME = LNAME(bass);
-static constexpr auto BASS_FX_LIB_NAME = LNAME(bass_fx);
-[[maybe_unused]] static constexpr auto BASS_MIX_LIB_NAME = LNAME(bassmix);
-[[maybe_unused]] static constexpr auto BASS_ASIO_LIB_NAME = LNAME(bassasio);
-[[maybe_unused]] static constexpr auto BASS_WASAPI_LIB_NAME = LNAME(basswasapi);
+DEFINE_LIB(bass)
+DEFINE_LIB(bass_fx)
+DEFINE_LIB(bassmix)
+DEFINE_LIB(bassasio)
+DEFINE_LIB(basswasapi)
 
 // generate function pointer definitions
 #define DEFINE_BASS_FUNCTION(name) name##_t name = nullptr;
@@ -57,11 +54,17 @@ T loadFunction(SDL_SharedObject *lib, const char *funcName)
 }
 
 // macros for loading/cleaning up functions from specific libraries
-#define LOAD_BASS_FUNCTION(name) name = loadFunction<name##_t>(s_bassLib, #name);
-#define LOAD_BASS_FX_FUNCTION(name) name = loadFunction<name##_t>(s_bassFxLib, #name);
-#define LOAD_BASS_MIX_FUNCTION(name) name = loadFunction<name##_t>(s_bassMixLib, #name);
-#define LOAD_BASS_ASIO_FUNCTION(name) name = loadFunction<name##_t>(s_bassAsioLib, #name);
-#define LOAD_BASS_WASAPI_FUNCTION(name) name = loadFunction<name##_t>(s_bassWasapiLib, #name);
+#define LOAD_BASS_FUNCTION(name) name = loadFunction<name##_t>(s_libbass, #name);
+#define LOAD_BASS_FX_FUNCTION(name) name = loadFunction<name##_t>(s_libbass_fx, #name);
+#define LOAD_BASS_MIX_FUNCTION(name) name = loadFunction<name##_t>(s_libbassmix, #name);
+#define LOAD_BASS_ASIO_FUNCTION(name) name = loadFunction<name##_t>(s_libbassasio, #name);
+#define LOAD_BASS_WASAPI_FUNCTION(name) name = loadFunction<name##_t>(s_libbasswasapi, #name);
+
+#define UNLOAD_LIB(name) if (s_lib##name) \
+	{ \
+		SDL_UnloadObject(s_lib##name); \
+		s_lib##name = nullptr; \
+	}
 
 #define CLEANUP_BASS_FUNCTION(name) name = nullptr;
 
@@ -71,20 +74,20 @@ bool init()
 	cleanup();
 
 	// BASS core library loading
-	for (auto path : {std::string(BASS_LIB_NAME), fmt::format("lib{}{}", Env::cfg(OS::WINDOWS) ? "\\" : "/", BASS_LIB_NAME)})
+	for (auto path : bass_libpaths)
 	{
-		if (!(s_bassLib = SDL_LoadObject(path.c_str())) || !(BASS_GetVersion = loadFunction<BASS_GetVersion_t>(s_bassLib, "BASS_GetVersion")))
+		if (!(s_libbass = SDL_LoadObject(path)) || !(BASS_GetVersion = loadFunction<BASS_GetVersion_t>(s_libbass, "BASS_GetVersion")))
 		{
-			s_bassLib = nullptr;
+			UNLOAD_LIB(bass)
 			continue;
 		}
 		if (static_cast<uint64_t>(BASS_GetVersion()) >= static_cast<uint64_t>(BASSVERSION_REAL))
 			break;
-		debugLog("BassLoader: version mismatch for {:s} (expected {:x}, got {:x})\n", path.c_str(), BASSVERSION_REAL, BASS_GetVersion());
-		s_bassLib = nullptr;
+		debugLog("BassLoader: version too old for {:s} (expected {:x}, got {:x})\n", path, BASSVERSION_REAL, BASS_GetVersion());
+		UNLOAD_LIB(bass) // try again in the lib/ folder
 		BASS_GetVersion = nullptr;
 	}
-	if (!s_bassLib)
+	if (!s_libbass)
 	{
 		debugLog("BassLoader: Failed to load BASS library: {:s}\n", SDL_GetError());
 		return false;
@@ -102,20 +105,20 @@ bool init()
 	}
 
 	// BASS_FX library loading
-	for (auto path : {std::string(BASS_FX_LIB_NAME), fmt::format("lib{}{}", Env::cfg(OS::WINDOWS) ? "\\" : "/", BASS_FX_LIB_NAME)})
+	for (auto path : bass_fx_libpaths)
 	{
-		if (!(s_bassFxLib = SDL_LoadObject(path.c_str())) || !(BASS_FX_GetVersion = loadFunction<BASS_FX_GetVersion_t>(s_bassFxLib, "BASS_FX_GetVersion")))
+		if (!(s_libbass_fx = SDL_LoadObject(path)) || !(BASS_FX_GetVersion = loadFunction<BASS_FX_GetVersion_t>(s_libbass_fx, "BASS_FX_GetVersion")))
 		{
-			s_bassFxLib = nullptr;
+			UNLOAD_LIB(bass_fx)
 			continue;
 		}
 		if (static_cast<uint64_t>(BASS_FX_GetVersion()) >= static_cast<uint64_t>(BASSFXVERSION_REAL))
 			break;
-		debugLog("BassLoader: version mismatch for {:s} (expected {:x}, got {:x})\n", path.c_str(), BASSFXVERSION_REAL, BASS_FX_GetVersion());
-		s_bassFxLib = nullptr;
+		debugLog("BassLoader: version too old for {:s} (expected {:x}, got {:x})\n", path, BASSFXVERSION_REAL, BASS_FX_GetVersion());
+		UNLOAD_LIB(bass_fx) // try again in the lib/ folder
 		BASS_FX_GetVersion = nullptr;
 	}
-	if (!s_bassFxLib)
+	if (!s_libbass_fx)
 	{
 		debugLog("BassLoader: Failed to load BASS_FX library: {:s}\n", SDL_GetError());
 		return false;
@@ -131,22 +134,22 @@ bool init()
 		cleanup();
 		return false;
 	}
-#ifdef MCENGINE_NEOSU_BASS_PORT_FINISHED
+#if defined(MCENGINE_NEOSU_BASS_PORT_FINISHED) || (defined(MCENGINE_PLATFORM_WINDOWS) && defined(MCENGINE_FEATURE_BASS_WASAPI))
 	// BASSMIX library loading
-	for (auto path : {std::string(BASS_MIX_LIB_NAME), fmt::format("lib{}{}", Env::cfg(OS::WINDOWS) ? "\\" : "/", BASS_MIX_LIB_NAME)})
+	for (auto path : bassmix_libpaths)
 	{
-		if (!(s_bassMixLib = SDL_LoadObject(path.c_str())) || !(BASS_Mixer_GetVersion = loadFunction<BASS_Mixer_GetVersion_t>(s_bassMixLib, "BASS_Mixer_GetVersion")))
+		if (!(s_libbassmix = SDL_LoadObject(path)) || !(BASS_Mixer_GetVersion = loadFunction<BASS_Mixer_GetVersion_t>(s_libbassmix, "BASS_Mixer_GetVersion")))
 		{
-			s_bassMixLib = nullptr;
+			UNLOAD_LIB(bassmix)
 			continue;
 		}
 		if (static_cast<uint64_t>(BASS_Mixer_GetVersion()) >= static_cast<uint64_t>(BASSMIXVERSION_REAL))
 			break;
-		debugLog("BassLoader: version mismatch for {:s} (expected {:x}, got {:x})\n", path.c_str(), BASSMIXVERSION_REAL, BASS_Mixer_GetVersion());
-		s_bassMixLib = nullptr;
+		debugLog("BassLoader: version too old for {:s} (expected {:x}, got {:x})\n", path, BASSMIXVERSION_REAL, BASS_Mixer_GetVersion());
+		UNLOAD_LIB(bassmix) // try again in the lib/ folder
 		BASS_Mixer_GetVersion = nullptr;
 	}
-	if (!s_bassMixLib)
+	if (!s_libbassmix)
 	{
 		debugLog("BassLoader: Failed to load BASSMIX library: {:s}\n", SDL_GetError());
 		return false;
@@ -162,22 +165,23 @@ bool init()
 		cleanup();
 		return false;
 	}
-
-#ifdef MCENGINE_PLATFORM_WINDOWS
-	for (auto path : {std::string(BASS_ASIO_LIB_NAME), fmt::format("lib{}{}", "\\", BASS_ASIO_LIB_NAME)})
+#endif
+#if defined(MCENGINE_PLATFORM_WINDOWS)
+#ifdef MCENGINE_NEOSU_BASS_PORT_FINISHED
+	for (auto path : bassasio_libpaths)
 	{
-		if (!(s_bassAsioLib = SDL_LoadObject(path.c_str())) || !(BASS_ASIO_GetVersion = loadFunction<BASS_ASIO_GetVersion_t>(s_bassAsioLib, "BASS_ASIO_GetVersion")))
+		if (!(s_libbassasio = SDL_LoadObject(path)) || !(BASS_ASIO_GetVersion = loadFunction<BASS_ASIO_GetVersion_t>(s_libbassasio, "BASS_ASIO_GetVersion")))
 		{
-			s_bassAsioLib = nullptr;
+			UNLOAD_LIB(bassasio)
 			continue;
 		}
 		if (static_cast<uint64_t>(BASS_ASIO_GetVersion()) >= static_cast<uint64_t>(BASSASIOVERSION_REAL))
 			break;
-		debugLog("BassLoader: version mismatch for {:s} (expected {:x}, got {:x})\n", path.c_str(), BASSASIOVERSION_REAL, BASS_ASIO_GetVersion());
-		s_bassAsioLib = nullptr;
+		debugLog("BassLoader: version too old for {:s} (expected {:x}, got {:x})\n", path, BASSASIOVERSION_REAL, BASS_ASIO_GetVersion());
+		UNLOAD_LIB(bassasio) // try again in the lib/ folder
 		BASS_ASIO_GetVersion = nullptr;
 	}
-	if (!s_bassAsioLib)
+	if (!s_libbassasio)
 	{
 		debugLog("BassLoader: Failed to load BASSASIO library: {:s}\n", SDL_GetError());
 		return false;
@@ -193,21 +197,22 @@ bool init()
 		cleanup();
 		return false;
 	}
-
-	for (auto path : {std::string(BASS_WASAPI_LIB_NAME), fmt::format("lib{}{}", "\\", BASS_WASAPI_LIB_NAME)})
+#endif
+#if (defined(MCENGINE_NEOSU_BASS_PORT_FINISHED) || defined(MCENGINE_FEATURE_BASS_WASAPI))
+	for (auto path : basswasapi_libpaths)
 	{
-		if (!(s_bassWasapiLib = SDL_LoadObject(path.c_str())) || !(BASS_WASAPI_GetVersion = loadFunction<BASS_WASAPI_GetVersion_t>(s_bassWasapiLib, "BASS_WASAPI_GetVersion")))
+		if (!(s_libbasswasapi = SDL_LoadObject(path)) || !(BASS_WASAPI_GetVersion = loadFunction<BASS_WASAPI_GetVersion_t>(s_libbasswasapi, "BASS_WASAPI_GetVersion")))
 		{
-			s_bassWasapiLib = nullptr;
+			UNLOAD_LIB(basswasapi)
 			continue;
 		}
 		if (static_cast<uint64_t>(BASS_WASAPI_GetVersion()) >= static_cast<uint64_t>(BASSWASAPIVERSION_REAL))
 			break;
-		debugLog("BassLoader: version mismatch for {:s} (expected {:x}, got {:x})\n", path.c_str(), BASSWASAPIVERSION_REAL, BASS_WASAPI_GetVersion());
-		s_bassWasapiLib = nullptr;
+		debugLog("BassLoader: version too old for {:s} (expected {:x}, got {:x})\n", path, BASSWASAPIVERSION_REAL, BASS_WASAPI_GetVersion());
+		UNLOAD_LIB(basswasapi) // try again in the lib/ folder
 		BASS_WASAPI_GetVersion = nullptr;
 	}
-	if (!s_bassWasapiLib)
+	if (!s_libbasswasapi)
 	{
 		debugLog("BassLoader: Failed to load BASSWASAPI library: {:s}\n", SDL_GetError());
 		return false;
@@ -232,46 +237,32 @@ bool init()
 
 void cleanup()
 {
-
-	// unload in reverse order
-#ifdef MCENGINE_NEOSU_BASS_PORT_FINISHED
+	// unload in reverse order (ifdef hell to be removed once the neosu port is done)
 #ifdef MCENGINE_PLATFORM_WINDOWS
-	if (s_bassWasapiLib)
-	{
-		SDL_UnloadObject(s_bassWasapiLib);
-		s_bassWasapiLib = nullptr;
-	}
-	if (s_bassAsioLib)
-	{
-		SDL_UnloadObject(s_bassAsioLib);
-		s_bassAsioLib = nullptr;
-	}
+#if (defined(MCENGINE_NEOSU_BASS_PORT_FINISHED) || defined(MCENGINE_FEATURE_BASS_WASAPI))
+	UNLOAD_LIB(basswasapi)
 #endif
-	if (s_bassMixLib)
-	{
-		SDL_UnloadObject(s_bassMixLib);
-		s_bassMixLib = nullptr;
-	}
+#ifdef MCENGINE_NEOSU_BASS_PORT_FINISHED
+	UNLOAD_LIB(bassasio)
 #endif
-	if (s_bassFxLib)
-	{
-		SDL_UnloadObject(s_bassFxLib);
-		s_bassFxLib = nullptr;
-	}
-	if (s_bassLib)
-	{
-		SDL_UnloadObject(s_bassLib);
-		s_bassLib = nullptr;
-	}
+#endif
+#if defined(MCENGINE_NEOSU_BASS_PORT_FINISHED) || (defined(MCENGINE_PLATFORM_WINDOWS) && defined(MCENGINE_FEATURE_BASS_WASAPI))
+	UNLOAD_LIB(bassmix)
+#endif
+	UNLOAD_LIB(bass_fx)
+	UNLOAD_LIB(bass)
 
-	// reset all function pointers to null
+	// reset all function pointers to null (ifdef hell to be removed once the neosu port is done)
 	BASS_CORE_FUNCTIONS(CLEANUP_BASS_FUNCTION)
 	BASS_FX_FUNCTIONS(CLEANUP_BASS_FUNCTION)
-#ifdef MCENGINE_NEOSU_BASS_PORT_FINISHED
+#if defined(MCENGINE_NEOSU_BASS_PORT_FINISHED) || (defined(MCENGINE_PLATFORM_WINDOWS) && defined(MCENGINE_FEATURE_BASS_WASAPI))
 	BASS_MIX_FUNCTIONS(CLEANUP_BASS_FUNCTION)
-
+#endif
 #ifdef MCENGINE_PLATFORM_WINDOWS
+#ifdef MCENGINE_NEOSU_BASS_PORT_FINISHED
 	BASS_ASIO_FUNCTIONS(CLEANUP_BASS_FUNCTION)
+#endif
+#if (defined(MCENGINE_NEOSU_BASS_PORT_FINISHED) || defined(MCENGINE_FEATURE_BASS_WASAPI))
 	BASS_WASAPI_FUNCTIONS(CLEANUP_BASS_FUNCTION)
 #endif
 #endif

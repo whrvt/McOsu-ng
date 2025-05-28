@@ -15,9 +15,7 @@
 #include "Engine.h"
 #include "Environment.h"
 
-//#include "Thread.h"
-
-//#include <mutex>
+#include <utility>
 
 extern ConVar snd_output_device;
 extern ConVar snd_restart;
@@ -39,33 +37,15 @@ void _WIN_SND_WASAPI_EXCLUSIVE_CHANGE(UString oldValue, UString newValue);
 
 // WASAPI-specific ConVars
 ConVar win_snd_wasapi_buffer_size("win_snd_wasapi_buffer_size", 0.011f, FCVAR_NONE,
-                                  "buffer size/length in seconds (e.g. 0.011 = 11 ms), directly responsible for audio delay and crackling", _WIN_SND_WASAPI_BUFFER_SIZE_CHANGE);
-ConVar win_snd_wasapi_period_size("win_snd_wasapi_period_size", 0.0f, FCVAR_NONE, "interval between OutputWasapiProc calls in seconds (e.g. 0.016 = 16 ms) (0 = use default)",
-                                  _WIN_SND_WASAPI_PERIOD_SIZE_CHANGE);
-ConVar win_snd_wasapi_exclusive("win_snd_wasapi_exclusive", true, FCVAR_NONE, "whether to use exclusive device mode to further reduce latency", _WIN_SND_WASAPI_EXCLUSIVE_CHANGE);
+                                  "buffer size/length in seconds (e.g. 0.011 = 11 ms), directly responsible for audio delay and crackling",
+                                  _WIN_SND_WASAPI_BUFFER_SIZE_CHANGE);
+ConVar win_snd_wasapi_period_size("win_snd_wasapi_period_size", 0.0f, FCVAR_NONE,
+                                  "interval between OutputWasapiProc calls in seconds (e.g. 0.016 = 16 ms) (0 = use default)", _WIN_SND_WASAPI_PERIOD_SIZE_CHANGE);
+ConVar win_snd_wasapi_exclusive("win_snd_wasapi_exclusive", true, FCVAR_NONE, "whether to use exclusive device mode to further reduce latency",
+                                _WIN_SND_WASAPI_EXCLUSIVE_CHANGE);
 ConVar win_snd_wasapi_shared_volume_affects_device("win_snd_wasapi_shared_volume_affects_device", false, FCVAR_NONE,
                                                    "if in shared mode, whether to affect device volume globally or use separate session volume (default)");
 #endif
-
-// class SoundEngineThread
-// {
-// public:
-// 	struct CHANNEL_PLAY_WORK
-// 	{
-// 		BassSound *sound;
-// 		BassSound::SOUNDHANDLE handle;
-// 	};
-
-// public:
-// 	// self
-// 	McThread *thread;
-// 	std::mutex workingMutex; // work vector lock
-// 	std::atomic<bool> running;
-
-// 	std::vector<CHANNEL_PLAY_WORK> channelPlayWork;
-// };
-
-// void *_soundEngineThread(void *data);
 
 #ifdef MCENGINE_FEATURE_BASS_WASAPI
 BassSound::SOUNDHANDLE g_wasapiOutputMixer = 0;
@@ -74,7 +54,7 @@ DWORD CALLBACK OutputWasapiProc(void *buffer, DWORD length, void *user)
 {
 	if (g_wasapiOutputMixer != 0)
 	{
-		const int c = BASS_ChannelGetData(g_wasapiOutputMixer, buffer, length);
+		const DWORD c = BASS_ChannelGetData(g_wasapiOutputMixer, buffer, length);
 
 		if (c < 0)
 			return 0;
@@ -115,28 +95,9 @@ void _WIN_SND_WASAPI_EXCLUSIVE_CHANGE(UString oldValue, UString newValue)
 
 BassSoundEngine::BassSoundEngine() : SoundEngine()
 {
-	// Initialize member variables
-	m_iBASSVersion = 0;
-
-	/* spec: unused, not sure why?
-	m_thread = new SoundEngineThread();
-	m_thread->running = true;
-	m_thread->thread = new Thread(_soundEngineThread, (void*)m_thread);
-	*/
-
-	if (!BassLoader::init())
+	if (!BassLoader::init()) // this checks the library versions as well
 	{
 		engine->showMessageErrorFatal("Fatal Sound Error", "Failed to load BASS libraries!");
-		engine->shutdown();
-		return;
-	}
-
-	// lib version check
-	m_iBASSVersion = BASS_GetVersion();
-	debugLog("SoundEngine: BASS version = 0x{:08x}\n", m_iBASSVersion);
-	if (HIWORD(m_iBASSVersion) != BASSVERSION)
-	{
-		engine->showMessageErrorFatal("Fatal Sound Error", "An incorrect version of the BASS library file was loaded!");
 		engine->shutdown();
 		return;
 	}
@@ -227,56 +188,54 @@ void BassSoundEngine::update()
 
 bool BassSoundEngine::play(Sound *snd, float pan, float pitch)
 {
-	if (!m_bReady || snd == NULL || !snd->isReady())
-		return false;
+	auto [bassSound, handle] = GETHANDLE();
 
-	BassSound *bassSound = snd->getSound();
-	if (!bassSound)
-		return false;
-
-	pan = std::clamp<float>(pan, -1.0f, 1.0f);
-	pitch = std::clamp<float>(pitch, 0.0f, 2.0f);
-
-	const bool allowPlayFrame = !snd->isOverlayable() || !snd_restrict_play_frame.getBool() || engine->getTime() > snd->getLastPlayTime();
+	const bool allowPlayFrame = bassSound && (!bassSound->isOverlayable() || !snd_restrict_play_frame.getBool() || engine->getTime() > bassSound->getLastPlayTime());
 
 	if (!allowPlayFrame)
 		return false;
 
+	if (!handle)
+	{
+		debugLog("invalid handle to play3d!\n");
+		return false;
+	}
+
+	pan = std::clamp<float>(pan, -1.0f, 1.0f);
+	pitch = std::clamp<float>(pitch, 0.0f, 2.0f);
+
+	bool success = true;
+	bool justStartedPlaying = false;
+
 #ifdef MCENGINE_FEATURE_BASS_WASAPI
-	BassSound::SOUNDHANDLE handle = bassSound->getHandle();
+
 	BASS_ChannelSetAttribute(handle, BASS_ATTRIB_PAN, pan);
 
-	if (bassSound->isStream() && bassSound->isLooped())
-		BASS_ChannelFlags(handle, BASS_SAMPLE_LOOP, BASS_SAMPLE_LOOP);
-
-	if (!bassSound->isStream() && LOWORD(m_iBASSVersion) >= 0x0c00) // BASS_ATTRIB_NORAMP is available >= 2.4.12 - 10/3/2016
+	if (bassSound->isStream())
+	{
+		if (bassSound->isLooped())
+			BASS_ChannelFlags(handle, BASS_SAMPLE_LOOP, BASS_SAMPLE_LOOP);
+	}
+	else
+	{
 		BASS_ChannelSetAttribute(handle, BASS_ATTRIB_NORAMP, 1.0f); // see https://github.com/ppy/osu-framework/pull/3146
+	}
 
 	// HACKHACK: force add to output mixer
-	if (handle != 0)
+	if (BASS_Mixer_ChannelGetMixer(handle) == 0)
 	{
-		if (BASS_Mixer_ChannelGetMixer(handle) == 0)
-		{
-			if (!BASS_Mixer_StreamAddChannel(g_wasapiOutputMixer, handle, (!bassSound->isStream() ? BASS_STREAM_AUTOFREE : 0) | BASS_MIXER_DOWNMIX | BASS_MIXER_NORAMPIN))
-				debugLog("BASS_Mixer_StreamAddChannel() failed ({})!", BASS_ErrorGetCode());
-		}
+		if (!BASS_Mixer_StreamAddChannel(g_wasapiOutputMixer, handle,
+		                                 (!bassSound->isStream() ? BASS_STREAM_AUTOFREE : 0) | BASS_MIXER_DOWNMIX | BASS_MIXER_NORAMPIN))
+			debugLog("BASS_Mixer_StreamAddChannel() failed ({})!", BASS_ErrorGetCode());
 	}
 
 	if (BASS_ChannelIsActive(handle) != BASS_ACTIVE_PLAYING)
 	{
-		const bool ret = BASS_ChannelPlay(handle, TRUE);
-
-		if (!ret)
+		justStartedPlaying = (success = BASS_ChannelPlay(handle, TRUE));
+		if (!success)
 			debugLog("couldn't BASS_ChannelPlay(), errorcode {}\n", BASS_ErrorGetCode());
-
-		return ret;
 	}
-
-	bassSound->setLastPlayTime(engine->getTime());
-
-	return true;
 #else
-	BassSound::SOUNDHANDLE handle = bassSound->getHandle();
 	if (BASS_ChannelIsActive(handle) != BASS_ACTIVE_PLAYING)
 	{
 		BASS_ChannelSetAttribute(handle, BASS_ATTRIB_PAN, pan);
@@ -290,67 +249,46 @@ bool BassSoundEngine::play(Sound *snd, float pan, float pitch)
 			BASS_ChannelSetAttribute(handle, BASS_ATTRIB_FREQ, std::pow(2.0f, (semitonesShift / 12.0f)) * freq);
 		}
 
-		if (bassSound->isStream() && bassSound->isLooped())
-			BASS_ChannelFlags(handle, BASS_SAMPLE_LOOP, BASS_SAMPLE_LOOP);
-
-		if (!bassSound->isStream() && LOWORD(m_iBASSVersion) >= 0x0c00) // BASS_ATTRIB_NORAMP is available >= 2.4.12 - 10/3/2016
-			BASS_ChannelSetAttribute(handle, BASS_ATTRIB_NORAMP, 1.0f); // see https://github.com/ppy/osu-framework/pull/3146
-
-		bool ret = false;
-
-		/*
-		if (snd_async.getBool() && m_thread != NULL)
+		if (bassSound->isStream())
 		{
-		    ret = true;
-
-		    SoundEngineThread::CHANNEL_PLAY_WORK channelPlayWork;
-		    channelPlayWork.sound = bassSound;
-		    channelPlayWork.handle = handle;
-
-		    // add work
-		    m_thread->workingMutex.lock();
-		    {
-		        m_thread->channelPlayWork.push_back(channelPlayWork);
-		    }
-		    m_thread->workingMutex.unlock();
+			if (bassSound->isLooped())
+				BASS_ChannelFlags(handle, BASS_SAMPLE_LOOP, BASS_SAMPLE_LOOP);
 		}
 		else
-		*/
 		{
-			ret = BASS_ChannelPlay(handle, FALSE);
+			BASS_ChannelSetAttribute(handle, BASS_ATTRIB_NORAMP, 1.0f); // see https://github.com/ppy/osu-framework/pull/3146
+		}
+
+		{
+			justStartedPlaying = (success = BASS_ChannelPlay(handle, TRUE));
 			auto code = BASS_ErrorGetCode();
-			if (!ret)
+			if (!success)
 				debugLog("couldn't BASS_ChannelPlay(), errorcode {}\n", code);
 			if (code == BASS_ERROR_START)
 			{
-				debugLog("Attempting to reinitialize...\n");
+				debugLog("Attempting to reinitialize the audio device...\n");
 				restart();
-				ret = m_bReady;
+				justStartedPlaying = (success = m_bReady && BASS_ChannelPlay(handle, FALSE)); // try to play the sound again
 			}
 		}
-
-		if (ret)
-			bassSound->setLastPlayTime(engine->getTime());
-
-		return ret;
 	}
 #endif
-
-	return false;
+	if (justStartedPlaying)
+		bassSound->setLastPlayTime(engine->getTime());
+	return success;
 }
 
 bool BassSoundEngine::play3d(Sound *snd, Vector3 pos)
 {
-	if (!m_bReady || snd == NULL || !snd->isReady() || !snd->is3d())
-		return false;
-
-	BassSound *bassSound = snd->getSound();
-	if (!bassSound)
-		return false;
-
-	if (!snd_restrict_play_frame.getBool() || engine->getTime() > snd->getLastPlayTime())
+	auto [bassSound, handle] = GETHANDLE(snd->is3d());
+	if (!handle)
 	{
-		BassSound::SOUNDHANDLE handle = bassSound->getHandle();
+		debugLog("invalid handle to play3d!\n");
+		return false;
+	}
+
+	if (!snd_restrict_play_frame.getBool() || engine->getTime() > bassSound->getLastPlayTime())
+	{
 		if (BASS_ChannelIsActive(handle) != BASS_ACTIVE_PLAYING)
 		{
 			BASS_3DVECTOR bassPos = BASS_3DVECTOR(pos.x, pos.y, pos.z);
@@ -374,54 +312,45 @@ bool BassSoundEngine::play3d(Sound *snd, Vector3 pos)
 
 void BassSoundEngine::pause(Sound *snd)
 {
-	if (!m_bReady || snd == NULL || !snd->isReady())
+	auto [bassSound, handle] = GETHANDLE();
+	if (!handle)
+	{
+		debugLog("no handle to pause!\n");
 		return;
-
-	BassSound *bassSound = snd->getSound();
-	if (!bassSound)
-		return;
+	}
 
 #ifdef MCENGINE_FEATURE_BASS_WASAPI
-	BassSound::SOUNDHANDLE handle = bassSound->getHandle();
-
 	if (bassSound->isStream())
 	{
 		if (bassSound->isPlaying())
 		{
-			bassSound->setPrevPosition(bassSound->getPrevPosition());
+			bassSound->setPrevPosition(bassSound->getPositionMS());
 			BASS_Mixer_ChannelRemove(handle);
 		}
 		else
 		{
-			play(bassSound);
+			play(bassSound); // wat? i dont understand this logic
 			bassSound->setPositionMS(bassSound->getPrevPosition());
 		}
 	}
-	else
+	else if (!BASS_ChannelPause(handle))
 	{
-		if (!BASS_ChannelPause(handle))
-		{
-			debugLog("couldn't BASS_ChannelPause(), errorcode {}\n", BASS_ErrorGetCode());
-		}
+		debugLog("couldn't BASS_ChannelPause(), errorcode {}\n", BASS_ErrorGetCode());
 	}
 #else
-	BASS_ChannelPause(bassSound->getHandle());
-	{
-		bassSound->setLastPlayTime(0.0);
-	}
+	BASS_ChannelPause(handle);
+	bassSound->setLastPlayTime(0.0);
 #endif
 }
 
 void BassSoundEngine::stop(Sound *snd)
 {
-	if (!m_bReady || snd == NULL || !snd->isReady())
+	auto [bassSound, handle] = GETHANDLE();
+	if (!handle)
+	{
+		debugLog("no handle to stop!\n");
 		return;
-
-	BassSound *bassSound = snd->getSound();
-	if (!bassSound)
-		return;
-
-	BassSound::SOUNDHANDLE handle = bassSound->getHandle();
+	}
 
 #ifdef MCENGINE_FEATURE_BASS_WASAPI
 	if (BASS_Mixer_ChannelGetMixer(handle) != 0)
@@ -429,14 +358,13 @@ void BassSoundEngine::stop(Sound *snd)
 #endif
 
 	BASS_ChannelStop(handle);
-	{
-		bassSound->setPosition(0.0);
-		bassSound->setLastPlayTime(0.0);
 
-		// allow next play()/getHandle() to reallocate (because BASS_ChannelStop() will free the channel)
-		bassSound->m_HCHANNEL = 0;
-		bassSound->m_HCHANNELBACKUP = 0;
-	}
+	bassSound->setPosition(0.0);
+	bassSound->setLastPlayTime(0.0);
+
+	// allow next play()/getHandle() to reallocate (because BASS_ChannelStop() will free the channel)
+	bassSound->m_HCHANNEL = 0;
+	bassSound->m_HCHANNELBACKUP = 0;
 }
 
 void BassSoundEngine::setOutputDevice(UString outputDeviceName)
@@ -490,7 +418,8 @@ void BassSoundEngine::setVolume(float volume)
 	BASS_SetConfig(BASS_CONFIG_GVOL_MUSIC, (DWORD)(m_fVolume * 10000));
 
 #ifdef MCENGINE_FEATURE_BASS_WASAPI
-	BASS_WASAPI_SetVolume(BASS_WASAPI_CURVE_WINDOWS | (!win_snd_wasapi_exclusive.getBool() && !win_snd_wasapi_shared_volume_affects_device.getBool() ? BASS_WASAPI_VOL_SESSION : 0),
+	BASS_WASAPI_SetVolume(BASS_WASAPI_CURVE_WINDOWS |
+	                          (!win_snd_wasapi_exclusive.getBool() && !win_snd_wasapi_shared_volume_affects_device.getBool() ? BASS_WASAPI_VOL_SESSION : 0),
 	                      m_fVolume);
 #endif
 }
@@ -724,8 +653,9 @@ bool BassSoundEngine::initializeOutputDevice(int id, bool force)
 	const float updatePeriod = std::round(win_snd_wasapi_period_size.getFloat() * 1000.0f) / 1000.0f; // in seconds
 
 	debugLog("WASAPI Exclusive Mode = {}, bufferSize = {:f}, updatePeriod = {:f}\n", (int)win_snd_wasapi_exclusive.getBool(), bufferSize, updatePeriod);
+	debugLog("initing\n");
 	ret = BASS_WASAPI_Init(id, 0, 0, (win_snd_wasapi_exclusive.getBool() ? BASS_WASAPI_EXCLUSIVE : 0), bufferSize, updatePeriod, OutputWasapiProc, NULL);
-
+	debugLog("we init\n");
 	if (!ret)
 	{
 		m_bReady = false;

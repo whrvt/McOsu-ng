@@ -75,7 +75,7 @@ Environment::Environment(int argc, char *argv[])
 	// simple vector representation of the whole cmdline including the program name (as the first element)
 	m_vCmdLine = std::vector<UString>(argv, argv + argc);
 
-	s_bIsATTY = isatty_impl(stdout);
+	s_bIsATTY = ::isatty(fileno(stdout)) != 0;
 
 	m_engine = nullptr; // will be initialized by the mainloop once setup is complete
 	m_window = nullptr;
@@ -950,16 +950,4 @@ void Environment::winSortInPlace(std::vector<UString> &toSort)
 		return *aStr == 0 && *bStr != 0;
 	};
 	std::ranges::sort(toSort, naturalCompare);
-}
-
-// to know whether we should be printing colours etc. to the terminal
-bool Environment::isatty_impl(std::FILE *file)
-{
-#if defined(_WIN32) || defined(_WIN64)
-	return ::_isatty(_fileno(file)) != 0;
-#elif !defined(MCENGINE_PLATFORM_WASM)
-	return ::isatty(fileno(file)) != 0;
-#else
-	return false;
-#endif
 }

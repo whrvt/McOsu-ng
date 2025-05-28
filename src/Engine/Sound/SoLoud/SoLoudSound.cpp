@@ -275,7 +275,7 @@ void SoLoudSound::setPosition(double percent)
 	soloud->seek(m_handle, positionInSeconds);
 }
 
-void SoLoudSound::setPositionMS(unsigned long ms, bool internal)
+void SoLoudSound::setPositionMS(unsigned long ms)
 {
 	if (!m_bReady || !m_audioSource || !m_handle)
 		return;

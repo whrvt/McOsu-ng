@@ -87,7 +87,7 @@ Engine::Engine()
 	// print debug information
 	debugLog("-= Engine Startup =-\n");
 	_version();
-	debugLog("cmdline: {:s}\n", UString::join(env->getCommandLine()).toUtf8());
+	debugLog("cmdline: {:s}\n", UString::join(env->getCommandLine()));
 
 	// timing
 	m_timer = new Timer(false);

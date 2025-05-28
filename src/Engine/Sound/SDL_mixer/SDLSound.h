@@ -28,7 +28,7 @@ public:
 
 	// Sound interface implementation
 	void setPosition(double percent) override;
-	void setPositionMS(unsigned long ms, bool internal) override;
+	void setPositionMS(unsigned long ms) override;
 	void setVolume(float volume) override;
 	void setSpeed(float speed) override;
 	void setPitch(float pitch) override;

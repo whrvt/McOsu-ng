@@ -294,7 +294,7 @@ void BassSound::setPosition(double percent)
 		debugLog("position {:f} BASS_ChannelSetPosition() error {} on file {:s} (handle: {})\n", percent, BASS_ErrorGetCode(), m_sFilePath.toUtf8(), handle);
 }
 
-void BassSound::setPositionMS(unsigned long ms, bool internal)
+void BassSound::setPositionMS(unsigned long ms)
 {
 	if (!m_bReady || ms > getLengthMS())
 		return;
@@ -310,7 +310,7 @@ void BassSound::setPositionMS(unsigned long ms, bool internal)
 		m_fLastPlayTime = 0.0;
 
 	const BOOL res = BASS_ChannelSetPosition(handle, position, BASS_POS_BYTE);
-	if (!res && !internal && debug_snd.getBool())
+	if (!res && debug_snd.getBool())
 		debugLog("ms {} BASS_ChannelSetPosition() error {} on file {:s}\n", ms, BASS_ErrorGetCode(), m_sFilePath.toUtf8());
 }
 

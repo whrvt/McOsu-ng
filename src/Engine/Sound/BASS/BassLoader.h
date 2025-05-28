@@ -132,6 +132,7 @@ using WASAPIPROC = bass_EXTERN::WASAPIPROC;
 	X(BASS_ChannelSetPosition) \
 	X(BASS_ChannelGetPosition) \
 	X(BASS_ChannelGetLength) \
+	X(BASS_ChannelGetData) \
 	X(BASS_ChannelFlags) \
 	X(BASS_ChannelIsActive) \
 	X(BASS_ChannelBytes2Seconds) \
@@ -170,6 +171,7 @@ using WASAPIPROC = bass_EXTERN::WASAPIPROC;
 
 #define BASS_WASAPI_FUNCTIONS(X) \
 	X(BASS_WASAPI_GetVersion) \
+	X(BASS_WASAPI_GetInfo) \
 	X(BASS_WASAPI_GetDeviceInfo) \
 	X(BASS_WASAPI_Init) \
 	X(BASS_WASAPI_Start) \
