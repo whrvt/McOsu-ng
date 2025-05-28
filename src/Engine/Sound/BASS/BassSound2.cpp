@@ -80,7 +80,7 @@ HCHANNEL BassSound2::getChannel()
 
 void BassSound2::init()
 {
-	if (m_sFilePath.length() < 2 || !m_bAsyncReady)
+	if (m_sFilePath.length() < 2 || !(m_bAsyncReady.load()))
 		return;
 
 	// HACKHACK: re-set some values to their defaults (only necessary because of the existence of rebuild())

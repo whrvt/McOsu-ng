@@ -420,8 +420,7 @@ bool BassSoundEngine2::init_bass_mixer(OUTPUT_DEVICE_BASS device)
 		auto code = BASS_ErrorGetCode();
 		if (code != BASS_ERROR_ALREADY)
 		{
-			debugLog("BASS_Init(0) failed.\n");
-			display_bass_error();
+			BassManager::printBassError("BASS_Init(0)", BASS_ErrorGetCode());
 			return false;
 		}
 	}
@@ -430,8 +429,7 @@ bool BassSoundEngine2::init_bass_mixer(OUTPUT_DEVICE_BASS device)
 	{
 		if (!BASS_Init(device.id, freq, bass_flags | BASS_DEVICE_SOFTWARE, NULL, NULL))
 		{
-			debugLog("BASS_Init({}) errored out.\n", device.id);
-			display_bass_error();
+			BassManager::printBassError(fmt::format("BASS_Init({})\n", device.id), BASS_ErrorGetCode());
 			return false;
 		}
 	}
@@ -442,8 +440,7 @@ bool BassSoundEngine2::init_bass_mixer(OUTPUT_DEVICE_BASS device)
 	g_bassOutputMixer = BASS_Mixer_StreamCreate(freq, 2, mixer_flags);
 	if (g_bassOutputMixer == 0)
 	{
-		debugLog("BASS_Mixer_StreamCreate() failed.\n");
-		display_bass_error();
+		BassManager::printBassError("BASS_Mixer_StreamCreate()", BASS_ErrorGetCode());
 		return false;
 	}
 
@@ -533,8 +530,7 @@ bool BassSoundEngine2::initializeOutputDeviceStruct(OUTPUT_DEVICE_BASS device)
 	{
 		if (!BASS_ASIO_Init(device.id, 0))
 		{
-			debugLog("BASS_ASIO_Init() failed.\n");
-			display_bass_error();
+			BassManager::printBassError("BASS_ASIO_Init()", BASS_ErrorGetCode());
 			return false;
 		}
 
@@ -567,15 +563,13 @@ bool BassSoundEngine2::initializeOutputDeviceStruct(OUTPUT_DEVICE_BASS device)
 
 		if (!BASS_ASIO_ChannelEnableBASS(false, 0, g_bassOutputMixer, true))
 		{
-			debugLog("BASS_ASIO_ChannelEnableBASS() failed.\n");
-			display_bass_error();
+			BassManager::printBassError("BASS_ASIO_ChannelEnableBASS()", BASS_ErrorGetCode());
 			return false;
 		}
 
 		if (!BASS_ASIO_Start(bufsize, 0))
 		{
-			debugLog("BASS_ASIO_Start() failed.\n");
-			display_bass_error();
+			BassManager::printBassError("BASS_ASIO_Start()", BASS_ErrorGetCode());
 			return false;
 		}
 
@@ -621,15 +615,13 @@ bool BassSoundEngine2::initializeOutputDeviceStruct(OUTPUT_DEVICE_BASS device)
 
 		if (!BASS_WASAPI_Init(device.id, 0, 0, flags, bufferSize, updatePeriod, WASAPIPROC_BASS, (void *)g_bassOutputMixer))
 		{
-			debugLog("BASS_WASAPI_Init() failed.\n");
-			display_bass_error();
+			BassManager::printBassError("BASS_WASAPI_Init()", BASS_ErrorGetCode());
 			return false;
 		}
 
 		if (!BASS_WASAPI_Start())
 		{
-			debugLog("BASS_WASAPI_Start() failed.\n");
-			display_bass_error();
+			BassManager::printBassError("BASS_WASAPI_Start()", BASS_ErrorGetCode());
 			return false;
 		}
 

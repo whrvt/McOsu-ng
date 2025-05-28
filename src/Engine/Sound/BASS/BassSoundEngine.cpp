@@ -31,65 +31,55 @@ ConVar snd_dev_period("snd_dev_period", 5, FCVAR_NONE, "BASS_CONFIG_DEV_PERIOD l
 ConVar snd_dev_buffer("snd_dev_buffer", 10, FCVAR_NONE, "BASS_CONFIG_DEV_BUFFER length in milliseconds");
 
 #ifdef MCENGINE_FEATURE_BASS_WASAPI
-void _WIN_SND_WASAPI_BUFFER_SIZE_CHANGE(UString oldValue, UString newValue);
-void _WIN_SND_WASAPI_PERIOD_SIZE_CHANGE(UString oldValue, UString newValue);
-void _WIN_SND_WASAPI_EXCLUSIVE_CHANGE(UString oldValue, UString newValue);
-
 // WASAPI-specific ConVars
 ConVar win_snd_wasapi_buffer_size("win_snd_wasapi_buffer_size", 0.011f, FCVAR_NONE,
-                                  "buffer size/length in seconds (e.g. 0.011 = 11 ms), directly responsible for audio delay and crackling",
-                                  _WIN_SND_WASAPI_BUFFER_SIZE_CHANGE);
+                                  "buffer size/length in seconds (e.g. 0.011 = 11 ms), directly responsible for audio delay and crackling");
 ConVar win_snd_wasapi_period_size("win_snd_wasapi_period_size", 0.0f, FCVAR_NONE,
-                                  "interval between OutputWasapiProc calls in seconds (e.g. 0.016 = 16 ms) (0 = use default)", _WIN_SND_WASAPI_PERIOD_SIZE_CHANGE);
-ConVar win_snd_wasapi_exclusive("win_snd_wasapi_exclusive", true, FCVAR_NONE, "whether to use exclusive device mode to further reduce latency",
-                                _WIN_SND_WASAPI_EXCLUSIVE_CHANGE);
+                                  "interval between OutputWasapiProc calls in seconds (e.g. 0.016 = 16 ms) (0 = use default)");
+ConVar win_snd_wasapi_exclusive("win_snd_wasapi_exclusive", true, FCVAR_NONE, "whether to use exclusive device mode to further reduce latency");
 ConVar win_snd_wasapi_shared_volume_affects_device("win_snd_wasapi_shared_volume_affects_device", false, FCVAR_NONE,
                                                    "if in shared mode, whether to affect device volume globally or use separate session volume (default)");
-#endif
 
-#ifdef MCENGINE_FEATURE_BASS_WASAPI
-BassSound::SOUNDHANDLE g_wasapiOutputMixer = 0;
+SOUNDHANDLE g_wasapiOutputMixer = 0;
 
 DWORD CALLBACK OutputWasapiProc(void *buffer, DWORD length, void *user)
 {
 	if (g_wasapiOutputMixer != 0)
 	{
 		const DWORD c = BASS_ChannelGetData(g_wasapiOutputMixer, buffer, length);
-
-		if (c < 0)
-			return 0;
-
-		return c;
+		return (c < 0) ? 0 : c;
 	}
-
 	return 0;
+}
+
+// ConVar change callbacks for WASAPI settings that require restart
+void forceDeviceRestart()
+{
+	soundEngine->setOutputDeviceForce(soundEngine->getOutputDevice());
 }
 
 void _WIN_SND_WASAPI_BUFFER_SIZE_CHANGE(UString oldValue, UString newValue)
 {
 	const int oldValueMS = std::round(oldValue.toFloat() * 1000.0f);
 	const int newValueMS = std::round(newValue.toFloat() * 1000.0f);
-
 	if (oldValueMS != newValueMS)
-		soundEngine->setOutputDeviceForce(soundEngine->getOutputDevice()); // force restart
+		forceDeviceRestart();
 }
 
 void _WIN_SND_WASAPI_PERIOD_SIZE_CHANGE(UString oldValue, UString newValue)
 {
 	const int oldValueMS = std::round(oldValue.toFloat() * 1000.0f);
 	const int newValueMS = std::round(newValue.toFloat() * 1000.0f);
-
 	if (oldValueMS != newValueMS)
-		soundEngine->setOutputDeviceForce(soundEngine->getOutputDevice()); // force restart
+		forceDeviceRestart();
 }
 
 void _WIN_SND_WASAPI_EXCLUSIVE_CHANGE(UString oldValue, UString newValue)
 {
 	const bool oldValueBool = oldValue.toInt();
 	const bool newValueBool = newValue.toInt();
-
 	if (oldValueBool != newValueBool)
-		soundEngine->setOutputDeviceForce(soundEngine->getOutputDevice()); // force restart
+		forceDeviceRestart();
 }
 #endif
 
@@ -112,7 +102,6 @@ BassSoundEngine::BassSoundEngine() : SoundEngine()
 
 	BASS_SetConfig(BASS_CONFIG_UPDATEPERIOD, (Env::cfg(AUD::WASAPI) ? 0 : static_cast<DWORD>(snd_updateperiod.getDefaultFloat()))); // NOTE: only used by osu atm
 	BASS_SetConfig(BASS_CONFIG_UPDATETHREADS, (Env::cfg(AUD::WASAPI) ? 0 : 1));
-
 	BASS_SetConfig(BASS_CONFIG_VISTA_TRUEPOS, 0); // NOTE: if set to 1, increases sample playback latency +10 ms
 	BASS_SetConfig(BASS_CONFIG_DEV_TIMEOUT, 0);   // prevents playback from ever stopping due to device issues
 
@@ -131,18 +120,22 @@ BassSoundEngine::BassSoundEngine() : SoundEngine()
 
 	// add all other output devices
 	updateOutputDevices(false, true);
-
 	initializeOutputDevice(defaultOutputDevice.id);
 
 	// convar callbacks
 	snd_freq.setCallback(fastdelegate::MakeDelegate(this, &BassSoundEngine::onFreqChanged));
 	snd_restart.setCallback(fastdelegate::MakeDelegate(this, &BassSoundEngine::restart));
 	snd_output_device.setCallback(fastdelegate::MakeDelegate(this, &BassSoundEngine::setOutputDevice));
+
+#ifdef MCENGINE_FEATURE_BASS_WASAPI
+	win_snd_wasapi_buffer_size.setCallback(_WIN_SND_WASAPI_BUFFER_SIZE_CHANGE);
+	win_snd_wasapi_period_size.setCallback(_WIN_SND_WASAPI_PERIOD_SIZE_CHANGE);
+	win_snd_wasapi_exclusive.setCallback(_WIN_SND_WASAPI_EXCLUSIVE_CHANGE);
+#endif
 }
 
 BassSoundEngine::~BassSoundEngine()
 {
-	// Free BASS resources
 	if (m_bReady)
 	{
 		BASS_Free();
@@ -150,7 +143,6 @@ BassSoundEngine::~BassSoundEngine()
 		BASS_WASAPI_Free();
 #endif
 	}
-
 	BassManager::cleanup();
 }
 
@@ -165,6 +157,7 @@ void BassSoundEngine::restart()
 
 void BassSoundEngine::update()
 {
+	// unused currently
 }
 
 bool BassSoundEngine::play(Sound *snd, float pan, float pitch)
@@ -173,90 +166,14 @@ bool BassSoundEngine::play(Sound *snd, float pan, float pitch)
 
 	const bool allowPlayFrame = bassSound && (!bassSound->isOverlayable() || !snd_restrict_play_frame.getBool() || engine->getTime() > bassSound->getLastPlayTime());
 
-	if (!allowPlayFrame)
-		return false;
-
-	if (!handle)
+	if (!allowPlayFrame || !handle)
 	{
-		debugLog("invalid handle to play3d!\n");
+		if (!handle)
+			debugLog("invalid handle to play!\n");
 		return false;
 	}
 
-	pan = std::clamp<float>(pan, -1.0f, 1.0f);
-	pitch = std::clamp<float>(pitch, 0.0f, 2.0f);
-
-	bool success = true;
-	bool justStartedPlaying = false;
-
-#ifdef MCENGINE_FEATURE_BASS_WASAPI
-
-	BASS_ChannelSetAttribute(handle, BASS_ATTRIB_PAN, pan);
-
-	if (bassSound->isStream())
-	{
-		if (bassSound->isLooped())
-			BASS_ChannelFlags(handle, BASS_SAMPLE_LOOP, BASS_SAMPLE_LOOP);
-	}
-	else
-	{
-		BASS_ChannelSetAttribute(handle, BASS_ATTRIB_NORAMP, 1.0f); // see https://github.com/ppy/osu-framework/pull/3146
-	}
-
-	// HACKHACK: force add to output mixer
-	if (BASS_Mixer_ChannelGetMixer(handle) == 0)
-	{
-		if (!BASS_Mixer_StreamAddChannel(g_wasapiOutputMixer, handle,
-		                                 (!bassSound->isStream() ? BASS_STREAM_AUTOFREE : 0) | BASS_MIXER_DOWNMIX | BASS_MIXER_NORAMPIN))
-			BassManager::printBassError(fmt::format("BASS_Mixer_StreamAddChannel({}, {}, {})", g_wasapiOutputMixer, handle, (!bassSound->isStream() ? BASS_STREAM_AUTOFREE : 0) | BASS_MIXER_DOWNMIX | BASS_MIXER_NORAMPIN), BASS_ErrorGetCode());
-	}
-
-	if (BASS_ChannelIsActive(handle) != BASS_ACTIVE_PLAYING)
-	{
-		justStartedPlaying = (success = BASS_ChannelPlay(handle, TRUE));
-		if (!success)
-			BassManager::printBassError(fmt::format("BASS_ChannelPlay({}, TRUE)", handle), BASS_ErrorGetCode());
-	}
-#else
-	if (BASS_ChannelIsActive(handle) != BASS_ACTIVE_PLAYING)
-	{
-		BASS_ChannelSetAttribute(handle, BASS_ATTRIB_PAN, pan);
-
-		if (pitch != 1.0f)
-		{
-			float freq = snd_freq.getFloat();
-			BASS_ChannelGetAttribute(handle, BASS_ATTRIB_FREQ, &freq);
-
-			const float semitonesShift = std::lerp(-60.0f, 60.0f, pitch / 2.0f);
-			BASS_ChannelSetAttribute(handle, BASS_ATTRIB_FREQ, std::pow(2.0f, (semitonesShift / 12.0f)) * freq);
-		}
-
-		if (bassSound->isStream())
-		{
-			if (bassSound->isLooped())
-				BASS_ChannelFlags(handle, BASS_SAMPLE_LOOP, BASS_SAMPLE_LOOP);
-		}
-		else
-		{
-			BASS_ChannelSetAttribute(handle, BASS_ATTRIB_NORAMP, 1.0f); // see https://github.com/ppy/osu-framework/pull/3146
-		}
-
-		{
-			justStartedPlaying = (success = BASS_ChannelPlay(handle, TRUE));
-			auto code = BASS_ErrorGetCode();
-			if (!success)
-				BassManager::printBassError(fmt::format("BASS_ChannelPlay({}, TRUE)", handle), code);
-			if (code == BASS_ERROR_START)
-			{
-				debugLog("Attempting to reinitialize the audio device...\n");
-				restart();
-				justStartedPlaying = (success = m_bReady && BASS_ChannelPlay(handle, FALSE)); // try to play the sound again
-			}
-		}
-	}
-#endif
-	if (justStartedPlaying)
-		bassSound->setLastPlayTime(engine->getTime());
-	return success;
+	return playChannelWithAttributes(bassSound, handle, pan, pitch);
 }
 
 bool BassSoundEngine::play3d(Sound *snd, Vector3 pos)
@@ -273,10 +190,10 @@ bool BassSoundEngine::play3d(Sound *snd, Vector3 pos)
 		if (BASS_ChannelIsActive(handle) != BASS_ACTIVE_PLAYING)
 		{
 			BASS_3DVECTOR bassPos = BASS_3DVECTOR(pos.x, pos.y, pos.z);
-			if (!BASS_ChannelSet3DPosition(handle, &bassPos, NULL, NULL))
+			if (!BASS_ChannelSet3DPosition(handle, &bassPos, nullptr, nullptr))
 				BassManager::printBassError(fmt::format("BASS_ChannelSet3DPosition({}, bassPos, NULL, NULL)", handle), BASS_ErrorGetCode());
 			else
-				BASS_Apply3D(); // apply the changes
+				BASS_Apply3D();
 
 			bool ret = BASS_ChannelPlay(handle, FALSE);
 			if (!ret)
@@ -310,7 +227,7 @@ void BassSoundEngine::pause(Sound *snd)
 		}
 		else
 		{
-			play(bassSound); // wat? i dont understand this logic
+			play(bassSound);
 			bassSound->setPositionMS(bassSound->getPrevPosition());
 		}
 	}
@@ -343,7 +260,7 @@ void BassSoundEngine::stop(Sound *snd)
 	bassSound->setPosition(0.0);
 	bassSound->setLastPlayTime(0.0);
 
-	// allow next play()/getHandle() to reallocate (because BASS_ChannelStop() will free the channel)
+	// alow next play()/getHandle() to reallocate (BASS_ChannelStop() frees the channel)
 	bassSound->m_HCHANNEL = 0;
 	bassSound->m_HCHANNELBACKUP = 0;
 }
@@ -358,27 +275,28 @@ void BassSoundEngine::setOutputDevice(UString outputDeviceName)
 			{
 				int previousOutputDevice = m_iCurrentOutputDevice;
 				if (!initializeOutputDevice(m_outputDevices[i].id))
-					initializeOutputDevice(previousOutputDevice); // if something went wrong, automatically switch back to the previous device
+					initializeOutputDevice(previousOutputDevice);
 			}
 			else
+			{
 				debugLog("\"{:s}\" already is the current device.\n", outputDeviceName.toUtf8());
-
+			}
 			return;
 		}
 	}
 
-	debugLog(" couldn't find output device \"{:s}\"!\n", outputDeviceName.toUtf8());
+	debugLog("couldn't find output device \"{:s}\"!\n", outputDeviceName.toUtf8());
 }
 
 void BassSoundEngine::setOutputDeviceForce(UString outputDeviceName)
 {
-	for (size_t i = 0; i < m_outputDevices.size(); i++)
+	for (auto & m_outputDevice : m_outputDevices)
 	{
-		if (m_outputDevices[i].name == outputDeviceName)
+		if (m_outputDevice.name == outputDeviceName)
 		{
 			int previousOutputDevice = m_iCurrentOutputDevice;
-			if (!initializeOutputDevice(m_outputDevices[i].id, true))
-				initializeOutputDevice(previousOutputDevice, true); // if something went wrong, automatically switch back to the previous device
+			if (!initializeOutputDevice(m_outputDevice.id, true))
+				initializeOutputDevice(previousOutputDevice, true);
 			return;
 		}
 	}
@@ -393,10 +311,11 @@ void BassSoundEngine::setVolume(float volume)
 
 	m_fVolume = std::clamp<float>(volume, 0.0f, 1.0f);
 
-	// 0 (silent) - 10000 (full).
-	BASS_SetConfig(BASS_CONFIG_GVOL_SAMPLE, (DWORD)(m_fVolume * 10000));
-	BASS_SetConfig(BASS_CONFIG_GVOL_STREAM, (DWORD)(m_fVolume * 10000));
-	BASS_SetConfig(BASS_CONFIG_GVOL_MUSIC, (DWORD)(m_fVolume * 10000));
+	// set volume for all BASS channel types (0 = silent, 10000 = full)
+	const auto volumeValue = static_cast<DWORD>(m_fVolume * 10000);
+	BASS_SetConfig(BASS_CONFIG_GVOL_SAMPLE, volumeValue);
+	BASS_SetConfig(BASS_CONFIG_GVOL_STREAM, volumeValue);
+	BASS_SetConfig(BASS_CONFIG_GVOL_MUSIC, volumeValue);
 
 #ifdef MCENGINE_FEATURE_BASS_WASAPI
 	BASS_WASAPI_SetVolume(BASS_WASAPI_CURVE_WINDOWS |
@@ -414,34 +333,20 @@ void BassSoundEngine::set3dPosition(Vector3 headPos, Vector3 viewDir, Vector3 vi
 	BASS_3DVECTOR bassViewDir = BASS_3DVECTOR(viewDir.x, viewDir.y, viewDir.z);
 	BASS_3DVECTOR bassViewUp = BASS_3DVECTOR(viewUp.x, viewUp.y, viewUp.z);
 
-	if (!BASS_Set3DPosition(&bassHeadPos, NULL, &bassViewDir, &bassViewUp))
+	if (!BASS_Set3DPosition(&bassHeadPos, nullptr, &bassViewDir, &bassViewUp))
 		BassManager::printBassError("BASS_Set3DPosition(...)", BASS_ErrorGetCode());
 	else
-		BASS_Apply3D(); // apply the changes
-}
-
-void BassSoundEngine::onFreqChanged(UString oldValue, UString newValue)
-{
-	if (oldValue == newValue)
-	{
-		debugLog("SoundEngine: frequency unchanged ({:s}).\n", newValue.toUtf8());
-		return;
-	}
-	debugLog("SoundEngine: frequency changed ({:s})->({:s}).\n", oldValue.toUtf8(), newValue.toUtf8());
-
-	restart();
+		BASS_Apply3D();
 }
 
 std::vector<UString> BassSoundEngine::getOutputDevices()
 {
 	std::vector<UString> outputDevices;
-
-	for (size_t i = 0; i < m_outputDevices.size(); i++)
+	for (const auto &device : m_outputDevices)
 	{
-		if (m_outputDevices[i].enabled)
-			outputDevices.push_back(m_outputDevices[i].name);
+		if (device.enabled)
+			outputDevices.push_back(device.name);
 	}
-
 	return outputDevices;
 }
 
@@ -452,22 +357,26 @@ void BassSoundEngine::updateOutputDevices(bool handleOutputDeviceChanges, bool p
 
 #ifdef MCENGINE_FEATURE_BASS_WASAPI
 	BASS_WASAPI_DEVICEINFO deviceInfo;
-	int numDevices = 0;
-	for (int d = 0; (BASS_WASAPI_GetDeviceInfo(d, &deviceInfo) == true); d++)
-	{
-		const bool isEnabled = (deviceInfo.flags & BASS_DEVICE_ENABLED);
-		const bool isDefault = (deviceInfo.flags & BASS_DEVICE_DEFAULT);
-		const bool isInput = (deviceInfo.flags & BASS_DEVICE_INPUT);
-
-		if (isInput)
-			continue;
 #else
 	BASS_DEVICEINFO deviceInfo;
+#endif
+
 	int numDevices = 0;
-	for (int d = 0; (BASS_GetDeviceInfo(d, &deviceInfo) == true); d++)
+	for (int d = 0;
+#ifdef MCENGINE_FEATURE_BASS_WASAPI
+	     BASS_WASAPI_GetDeviceInfo(d, &deviceInfo);
+#else
+	     BASS_GetDeviceInfo(d, &deviceInfo);
+#endif
+	     d++)
 	{
 		const bool isEnabled = (deviceInfo.flags & BASS_DEVICE_ENABLED);
 		const bool isDefault = (deviceInfo.flags & BASS_DEVICE_DEFAULT);
+
+#ifdef MCENGINE_FEATURE_BASS_WASAPI
+		const bool isInput = (deviceInfo.flags & BASS_DEVICE_INPUT);
+		if (isInput)
+			continue;
 #endif
 
 		if (printInfo)
@@ -476,10 +385,9 @@ void BassSoundEngine::updateOutputDevices(bool handleOutputDeviceChanges, bool p
 			numDevices++;
 		}
 
-		if (d > 0 || allowNoSoundDevice) // the first device doesn't count ("No sound") ~ Default in array
+		if (d > 0 || allowNoSoundDevice)
 		{
 			UString originalDeviceName = deviceInfo.name;
-
 			OUTPUT_DEVICE soundDevice;
 			soundDevice.id = d;
 			soundDevice.name = originalDeviceName;
@@ -491,17 +399,14 @@ void BassSoundEngine::updateOutputDevices(bool handleOutputDeviceChanges, bool p
 			while (true)
 			{
 				bool foundDuplicateName = false;
-				for (size_t i = 0; i < m_outputDevices.size(); i++)
+				for (const auto &existingDevice : m_outputDevices)
 				{
-					if (m_outputDevices[i].name == soundDevice.name)
+					if (existingDevice.name == soundDevice.name)
 					{
 						foundDuplicateName = true;
-
 						soundDevice.name = originalDeviceName;
 						soundDevice.name.append(UString::format(" (%i)", duplicateNameCounter));
-
 						duplicateNameCounter++;
-
 						break;
 					}
 				}
@@ -527,42 +432,16 @@ bool BassSoundEngine::initializeOutputDevice(int id, bool force)
 {
 	bool needsReinit = (!m_bReady || id != m_iCurrentOutputDevice || force);
 
-	// allow users to override some defaults (but which may cause beatmap desyncs)
-	// we only want to set these if their values have been explicitly modified (to avoid sideeffects in the default case, and for my sanity)
-	{
-		if (snd_dev_buffer.getFloat() != snd_dev_buffer.getDefaultFloat())
-		{
-			BASS_SetConfig(BASS_CONFIG_DEV_BUFFER, snd_dev_buffer.getInt());
-			needsReinit = true;
-		}
-		if (snd_dev_period.getFloat() != snd_dev_period.getDefaultFloat())
-		{
-			BASS_SetConfig(BASS_CONFIG_DEV_PERIOD, snd_dev_period.getInt());
-			needsReinit = true;
-		}
-		if (snd_updateperiod.getFloat() != snd_updateperiod.getDefaultFloat())
-		{
-			const auto clamped = static_cast<DWORD>(std::clamp(snd_updateperiod.getFloat(), 5.0f, 100.0f));
-			BASS_SetConfig(BASS_CONFIG_UPDATEPERIOD, clamped);
-			snd_updateperiod.setValue(clamped);
-			needsReinit = true;
-		}
-		if (snd_buffer.getFloat() != snd_buffer.getDefaultFloat())
-		{
-			const auto clamped = static_cast<DWORD>(std::clamp(snd_buffer.getFloat(), snd_updateperiod.getFloat() + 1.0f, 5000.0f));
-			BASS_SetConfig(BASS_CONFIG_BUFFER, clamped);
-			snd_buffer.setValue(clamped);
-			needsReinit = true;
-		}
-	}
+	applyRuntimeConfigs(needsReinit);
 
 	if (!needsReinit)
 	{
 		debugLog("SoundEngine: initializeOutputDevice( {} ) already init.\n", id);
 		return true;
 	}
+
 	debugLog("SoundEngine: initializeOutputDevice( {}, fallback = {} ) ...\n", id, (int)win_snd_fallback_dsound.getBool());
-	// cleanup potential previous device
+
 	const bool canReinitInsteadOfFreeInit = (m_iCurrentOutputDevice == id) && m_iCurrentOutputDevice != -1 && id != -1;
 	if (!canReinitInsteadOfFreeInit)
 		BASS_Free();
@@ -573,7 +452,76 @@ bool BassSoundEngine::initializeOutputDevice(int id, bool force)
 	BASS_WASAPI_Free();
 #endif
 
-	// dynamic runtime flags
+	// initialize BASS
+	if (!initializeBass(id, canReinitInsteadOfFreeInit))
+		return false;
+
+#ifdef MCENGINE_FEATURE_BASS_WASAPI
+	// initialize WASAPI
+	if (!initializeWasapi(id))
+		return false;
+#endif
+
+	m_bReady = true;
+
+	// update current device name
+	for (const auto &device : m_outputDevices)
+	{
+		if (device.id == id)
+		{
+			m_sCurrentOutputDevice = device.name;
+			break;
+		}
+	}
+	debugLog("SoundEngine: Output Device = \"{:s}\"\n", m_sCurrentOutputDevice.toUtf8());
+
+	return true;
+}
+
+void BassSoundEngine::onFreqChanged(UString oldValue, UString newValue)
+{
+	if (oldValue == newValue)
+	{
+		debugLog("SoundEngine: frequency unchanged ({:s}).\n", newValue.toUtf8());
+		return;
+	}
+	debugLog("SoundEngine: frequency changed ({:s})->({:s}).\n", oldValue.toUtf8(), newValue.toUtf8());
+	restart();
+}
+
+// helper method implementations
+void BassSoundEngine::applyRuntimeConfigs(bool &needsReinit)
+{
+	// allow users to override some defaults (but which may cause beatmap desyncs)
+	// we only want to set these if their values have been explicitly modified (to avoid sideeffects in the default case, and for my sanity)
+	if (snd_dev_buffer.getFloat() != snd_dev_buffer.getDefaultFloat())
+	{
+		BASS_SetConfig(BASS_CONFIG_DEV_BUFFER, snd_dev_buffer.getInt());
+		needsReinit = true;
+	}
+	if (snd_dev_period.getFloat() != snd_dev_period.getDefaultFloat())
+	{
+		BASS_SetConfig(BASS_CONFIG_DEV_PERIOD, snd_dev_period.getInt());
+		needsReinit = true;
+	}
+	if (snd_updateperiod.getFloat() != snd_updateperiod.getDefaultFloat())
+	{
+		const auto clamped = static_cast<DWORD>(std::clamp(snd_updateperiod.getFloat(), 5.0f, 100.0f));
+		BASS_SetConfig(BASS_CONFIG_UPDATEPERIOD, clamped);
+		snd_updateperiod.setValue(clamped);
+		needsReinit = true;
+	}
+	if (snd_buffer.getFloat() != snd_buffer.getDefaultFloat())
+	{
+		const auto clamped = static_cast<DWORD>(std::clamp(snd_buffer.getFloat(), snd_updateperiod.getFloat() + 1.0f, 5000.0f));
+		BASS_SetConfig(BASS_CONFIG_BUFFER, clamped);
+		snd_buffer.setValue(clamped);
+		needsReinit = true;
+	}
+}
+
+bool BassSoundEngine::initializeBass(int id, bool canReinitInsteadOfFreeInit)
+{
 	unsigned int runtimeFlags = canReinitInsteadOfFreeInit ? BASS_DEVICE_REINIT : 0;
 
 #ifdef MCENGINE_FEATURE_BASS_WASAPI
@@ -582,24 +530,23 @@ bool BassSoundEngine::initializeOutputDevice(int id, bool force)
 	runtimeFlags = (win_snd_fallback_dsound.getBool() ? BASS_DEVICE_DSOUND : BASS_DEVICE_NOSPEAKER);
 #endif
 
-	// init
 	const int freq = snd_freq.getInt();
-	const unsigned int flags = /* BASS_DEVICE_3D | */ runtimeFlags;
-	bool ret = false;
+	const unsigned int flags = runtimeFlags;
 
 #if defined(_WIN32) || defined(_WIN64) || defined(__WIN32__) || defined(__CYGWIN__) || defined(__CYGWIN32__) || defined(__TOS_WIN__) || defined(__WINDOWS__)
 	int idForBassInit = id;
-
 #ifdef MCENGINE_FEATURE_BASS_WASAPI
 	idForBassInit = 0;
 #endif
-
-	ret = BASS_Init(idForBassInit, freq, flags, env->getHwnd(), NULL);
+	bool ret = BASS_Init(idForBassInit, freq, flags, env->getHwnd(), nullptr);
 #else
-	ret = BASS_Init(id, freq, flags, 0, NULL);
+	bool ret = BASS_Init(id, freq, flags, 0, nullptr);
 #endif
+
 	if (!ret && BASS_ErrorGetCode() == BASS_ERROR_ALREADY)
+	{
 		debugLog("SoundEngine: BASS was already initialized for device {}.\n", id);
+	}
 	else if (!ret)
 	{
 		m_bReady = false;
@@ -613,14 +560,10 @@ bool BassSoundEngine::initializeOutputDevice(int id, bool force)
 				debugLog("Trying to fall back to DirectSound ...\n");
 
 				win_snd_fallback_dsound.setValue(1.0f);
-
 				const bool didFallbackSucceed = initializeOutputDevice(id);
 
 				if (!didFallbackSucceed)
-				{
-					// we're fucked, reset and fail
 					win_snd_fallback_dsound.setValue(0.0f);
-				}
 
 				return didFallbackSucceed;
 			}
@@ -629,20 +572,27 @@ bool BassSoundEngine::initializeOutputDevice(int id, bool force)
 		return false;
 	}
 
+	return true;
+}
+
+bool BassSoundEngine::initializeWasapi(int id)
+{
 #ifdef MCENGINE_FEATURE_BASS_WASAPI
-	const float bufferSize = std::round(win_snd_wasapi_buffer_size.getFloat() * 1000.0f) / 1000.0f;   // in seconds
-	const float updatePeriod = std::round(win_snd_wasapi_period_size.getFloat() * 1000.0f) / 1000.0f; // in seconds
+	const float bufferSize = std::round(win_snd_wasapi_buffer_size.getFloat() * 1000.0f) / 1000.0f;
+	const float updatePeriod = std::round(win_snd_wasapi_period_size.getFloat() * 1000.0f) / 1000.0f;
 
 	debugLog("WASAPI Exclusive Mode = {}, bufferSize = {:f}, updatePeriod = {:f}\n", (int)win_snd_wasapi_exclusive.getBool(), bufferSize, updatePeriod);
-	ret = BASS_WASAPI_Init(id, 0, 0, (win_snd_wasapi_exclusive.getBool() ? BASS_WASAPI_EXCLUSIVE : 0), bufferSize, updatePeriod, OutputWasapiProc, NULL);
+
+	bool ret = BASS_WASAPI_Init(id, 0, 0, (win_snd_wasapi_exclusive.getBool() ? BASS_WASAPI_EXCLUSIVE : 0), bufferSize, updatePeriod, OutputWasapiProc, nullptr);
 	if (!ret)
 	{
 		m_bReady = false;
-
 		const int errorCode = BASS_ErrorGetCode();
 
 		if (errorCode == BASS_ERROR_WASAPI_BUFFER)
-			BassManager::printBassError(fmt::format("BASS_WASAPI_Init({}, 0, 0, {}, {}, {}, OutputWasapiProc, NULL)", id, (win_snd_wasapi_exclusive.getBool() ? BASS_WASAPI_EXCLUSIVE : 0), bufferSize, updatePeriod), errorCode);
+			BassManager::printBassError(fmt::format("BASS_WASAPI_Init({}, 0, 0, {}, {}, {}, OutputWasapiProc, NULL)", id,
+			                                        (win_snd_wasapi_exclusive.getBool() ? BASS_WASAPI_EXCLUSIVE : 0), bufferSize, updatePeriod),
+			                            errorCode);
 		else
 			engine->showMessageError("Sound Error", UString::format("BASS_WASAPI_Init() failed (%i)!", errorCode));
 
@@ -668,20 +618,87 @@ bool BassSoundEngine::initializeOutputDevice(int id, bool force)
 		return false;
 	}
 #endif
+	return true;
+}
 
-	m_bReady = true;
+bool BassSoundEngine::playChannelWithAttributes(BassSound *bassSound,SOUNDHANDLE handle, float pan, float pitch)
+{
+	pan = std::clamp<float>(pan, -1.0f, 1.0f);
+	pitch = std::clamp<float>(pitch, 0.0f, 2.0f);
 
-	for (size_t i = 0; i < m_outputDevices.size(); i++)
+	bool success = true;
+	bool justStartedPlaying = false;
+
+#ifdef MCENGINE_FEATURE_BASS_WASAPI
+	BASS_ChannelSetAttribute(handle, BASS_ATTRIB_PAN, pan);
+
+	if (bassSound->isStream())
 	{
-		if (m_outputDevices[i].id == id)
+		if (bassSound->isLooped())
+			BASS_ChannelFlags(handle, BASS_SAMPLE_LOOP, BASS_SAMPLE_LOOP);
+	}
+	else
+	{
+		BASS_ChannelSetAttribute(handle, BASS_ATTRIB_NORAMP, 1.0f);
+	}
+
+	// force add to output mixer
+	if (BASS_Mixer_ChannelGetMixer(handle) == 0)
+	{
+		if (!BASS_Mixer_StreamAddChannel(g_wasapiOutputMixer, handle,
+		                                 (!bassSound->isStream() ? BASS_STREAM_AUTOFREE : 0) | BASS_MIXER_DOWNMIX | BASS_MIXER_NORAMPIN))
+			BassManager::printBassError(fmt::format("BASS_Mixer_StreamAddChannel({}, {}, {})", g_wasapiOutputMixer, handle,
+			                                        (!bassSound->isStream() ? BASS_STREAM_AUTOFREE : 0) | BASS_MIXER_DOWNMIX | BASS_MIXER_NORAMPIN),
+			                            BASS_ErrorGetCode());
+	}
+
+	if (BASS_ChannelIsActive(handle) != BASS_ACTIVE_PLAYING)
+	{
+		justStartedPlaying = (success = BASS_ChannelPlay(handle, TRUE));
+		if (!success)
+			BassManager::printBassError(fmt::format("BASS_ChannelPlay({}, TRUE)", handle), BASS_ErrorGetCode());
+	}
+#else
+	if (BASS_ChannelIsActive(handle) != BASS_ACTIVE_PLAYING)
+	{
+		BASS_ChannelSetAttribute(handle, BASS_ATTRIB_PAN, pan);
+
+		if (pitch != 1.0f)
 		{
-			m_sCurrentOutputDevice = m_outputDevices[i].name;
-			break;
+			float freq = snd_freq.getFloat();
+			BASS_ChannelGetAttribute(handle, BASS_ATTRIB_FREQ, &freq);
+
+			const float semitonesShift = std::lerp(-60.0f, 60.0f, pitch / 2.0f);
+			BASS_ChannelSetAttribute(handle, BASS_ATTRIB_FREQ, std::pow(2.0f, (semitonesShift / 12.0f)) * freq);
+		}
+
+		if (bassSound->isStream())
+		{
+			if (bassSound->isLooped())
+				BASS_ChannelFlags(handle, BASS_SAMPLE_LOOP, BASS_SAMPLE_LOOP);
+		}
+		else
+		{
+			BASS_ChannelSetAttribute(handle, BASS_ATTRIB_NORAMP, 1.0f);
+		}
+
+		justStartedPlaying = (success = BASS_ChannelPlay(handle, TRUE));
+		auto code = BASS_ErrorGetCode();
+		if (!success)
+			BassManager::printBassError(fmt::format("BASS_ChannelPlay({}, TRUE)", handle), code);
+		if (code == BASS_ERROR_START)
+		{
+			debugLog("Attempting to reinitialize the audio device...\n");
+			restart();
+			justStartedPlaying = (success = m_bReady && BASS_ChannelPlay(handle, FALSE));
 		}
 	}
-	debugLog("SoundEngine: Output Device = \"{:s}\"\n", m_sCurrentOutputDevice.toUtf8());
+#endif
 
-	return true;
+	if (justStartedPlaying)
+		bassSound->setLastPlayTime(engine->getTime());
+
+	return success;
 }
 
 #endif // MCENGINE_FEATURE_BASS

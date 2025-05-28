@@ -79,7 +79,7 @@ void SDLSound::initAsync()
 	m_bAsyncReady = (m_mixChunkOrMixMusic != NULL);
 }
 
-SDLSound::SOUNDHANDLE SDLSound::getHandle()
+SOUNDHANDLE SDLSound::getHandle()
 {
 	return m_HCHANNEL;
 }

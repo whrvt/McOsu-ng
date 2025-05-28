@@ -76,7 +76,7 @@ private:
 	// SoLoud-specific members
 	SoLoud::AudioSource *m_audioSource; // base class pointer, could be either Wav or WavStream
 	SoLoud::SoundTouchFilter *m_filter; // SoundTouch filter instance
-	unsigned int m_handle;              // current voice (i.e. "Sound") handle
+	SOUNDHANDLE m_handle;              // current voice (i.e. "Sound") handle
 
 	// nightcore things (TODO: this might not be needed)
 	float m_fActualSpeedForDisabledPitchCompensation;

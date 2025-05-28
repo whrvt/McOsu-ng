@@ -11,7 +11,7 @@
 
 #include "Sound.h"
 #ifdef MCENGINE_FEATURE_BASS
-
+#include "BassManager.h"
 
 class BassSoundEngine;
 
@@ -34,8 +34,8 @@ public:
 	void setLoop(bool loop) override;
 
 	SOUNDHANDLE getHandle() override;
-	constexpr SoundType* getSound() override {return this;}
-	[[nodiscard]] constexpr const SoundType* getSound() const override {return this;}
+	constexpr SoundType *getSound() override { return this; }
+	[[nodiscard]] constexpr const SoundType *getSound() const override { return this; }
 	float getPosition() override;
 	unsigned long getPositionMS() override;
 	unsigned long getLengthMS() override;
@@ -53,19 +53,25 @@ private:
 	void initAsync() override;
 	void destroy() override;
 
-	void setPrevPosition(unsigned long prevPosition) {m_iPrevPosition = prevPosition;}
-	[[nodiscard]] inline unsigned long getPrevPosition() const {return m_iPrevPosition;}
+	// helpers
+	bool setBassAttribute(DWORD attrib, float value, const char *debugName = nullptr);
+	void updatePlayInterpolationTime(double positionSeconds);
+	void cleanupWasapiStreams();
+	SOUNDHANDLE createWasapiChannel();
 
+	void setPrevPosition(unsigned long prevPosition) { m_iPrevPosition = prevPosition; }
+	[[nodiscard]] inline unsigned long getPrevPosition() const { return m_iPrevPosition; }
+
+	// TODO: get rid of these "BACKUP" things
 	SOUNDHANDLE m_HSTREAM;
 	SOUNDHANDLE m_HSTREAMBACKUP;
 	SOUNDHANDLE m_HCHANNEL;
 	SOUNDHANDLE m_HCHANNELBACKUP;
-	SOUNDHANDLE m_HSYNC;
 
-	// bass custom
+	// BASS custom
 	float m_fActualSpeedForDisabledPitchCompensation;
 
-	// bass wasapi
+	// BASS WASAPI
 	char *m_wasapiSampleBuffer;
 	unsigned long long m_iWasapiSampleBufferSize;
 	std::vector<SOUNDHANDLE> m_danglingWasapiStreams;
@@ -73,6 +79,7 @@ private:
 };
 
 #else
-class BassSound : public Sound{};
+class BassSound : public Sound
+{};
 #endif
 #endif

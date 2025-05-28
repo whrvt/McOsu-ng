@@ -202,7 +202,7 @@ void SoLoudSound::initAsync()
 	m_bAsyncReady = true;
 }
 
-SoLoudSound::SOUNDHANDLE SoLoudSound::getHandle()
+SOUNDHANDLE SoLoudSound::getHandle()
 {
 	return m_handle;
 }

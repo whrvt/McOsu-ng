@@ -13,11 +13,10 @@
 
 class SoundEngine;
 
+typedef uint32_t SOUNDHANDLE;
+
 class Sound : public Resource
 {
-public:
-	typedef uint32_t SOUNDHANDLE;
-
 public:
 	Sound(UString filepath, bool stream, bool threeD, bool loop, bool prescan);
 	~Sound() override;
@@ -77,5 +76,16 @@ protected:
 	float m_fVolume;
 	double m_fLastPlayTime;
 };
+
+// convenience conversion macro to get the sound handle, extra args are any extra conditions to check for besides general state validity
+// just minor boilerplate reduction
+#define GETHANDLE(...) \
+	[&]() -> std::pair<SoundType *, SOUNDHANDLE> { \
+		SOUNDHANDLE retHandle = 0; \
+		SoundType *retSound = nullptr; \
+		if (m_bReady && snd && snd->isReady() __VA_OPT__(&&(__VA_ARGS__)) && (retSound = snd->getSound())) \
+			retHandle = retSound->getHandle(); \
+		return {retSound, retHandle}; \
+	}()
 
 #endif

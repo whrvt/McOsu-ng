@@ -74,7 +74,7 @@ public:
 	[[nodiscard]] inline const UString &getOutputDeviceName() const { return m_currentOutputDevice.name; }
 	[[nodiscard]] inline float getVolume() const { return m_fVolume; }
 
-	Sound::SOUNDHANDLE g_bassOutputMixer{0};
+	SOUNDHANDLE g_bassOutputMixer{0};
 
 	SoundEngineType *getSndEngine() override { return this; }
 	[[nodiscard]] const SoundEngineType *getSndEngine() const override { return this; }
