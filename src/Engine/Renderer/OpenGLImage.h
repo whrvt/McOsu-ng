@@ -18,18 +18,18 @@ class OpenGLImage final : public Image
 public:
 	OpenGLImage(UString filepath, bool mipmapped = false, bool keepInSystemMemory = false);
 	OpenGLImage(int width, int height, bool mipmapped = false, bool keepInSystemMemory = false);
-	virtual ~OpenGLImage() {destroy();}
+	~OpenGLImage() override {destroy();}
 
-	virtual void bind(unsigned int textureUnit = 0);
-	virtual void unbind();
+	void bind(unsigned int textureUnit = 0) override;
+	void unbind() override;
 
-	virtual void setFilterMode(Graphics::FILTER_MODE filterMode);
-	virtual void setWrapMode(Graphics::WRAP_MODE wrapMode);
+	void setFilterMode(Graphics::FILTER_MODE filterMode);
+	void setWrapMode(Graphics::WRAP_MODE wrapMode);
 
 private:
-	virtual void init();
-	virtual void initAsync();
-	virtual void destroy();
+	void init() override;
+	void initAsync() override;
+	void destroy() override;
 
 	void handleGLErrors();
 

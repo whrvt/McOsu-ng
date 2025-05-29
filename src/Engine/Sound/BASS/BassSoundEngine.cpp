@@ -170,7 +170,7 @@ bool BassSoundEngine::play(Sound *snd, float pan, float pitch)
 	if (!allowPlayFrame || !handle)
 	{
 		if (!handle && debug_snd.getBool())
-			debugLog("invalid handle to play!\n");
+			debugLog("invalid handle to play! last BASS error: {}\n", BASS_ErrorGetCode());
 		return false;
 	}
 
@@ -183,7 +183,7 @@ bool BassSoundEngine::play3d(Sound *snd, Vector3 pos)
 	if (!handle)
 	{
 		if (debug_snd.getBool())
-			debugLog("invalid handle to play3d!\n");
+			debugLog("invalid handle to play3d! last BASS error: {}\n", BASS_ErrorGetCode());
 		return false;
 	}
 
@@ -216,7 +216,7 @@ void BassSoundEngine::pause(Sound *snd)
 	if (!handle)
 	{
 		if (debug_snd.getBool())
-			debugLog("no handle to pause!\n");
+			debugLog("no handle to pause! last BASS error: {}\n", BASS_ErrorGetCode());
 		return;
 	}
 
@@ -250,7 +250,7 @@ void BassSoundEngine::stop(Sound *snd)
 	if (!handle)
 	{
 		if (debug_snd.getBool())
-			debugLog("no handle to stop!\n");
+			debugLog("invalid handle to stop! last BASS error: {}\n", BASS_ErrorGetCode());
 		return;
 	}
 

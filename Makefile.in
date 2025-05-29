@@ -5086,7 +5086,7 @@ $(DEPS_CACHE)/libpng-$(LIBPNG_VERSION).source:
 @BUILD_LIBPNG_TRUE@	cd $(DEPS_PREFIX)/libpng && PKG_CONFIG="$(PKG_CONFIG)" \
 @BUILD_LIBPNG_TRUE@		./configure lt_cv_prog_gnu_ld=yes --host=$(host_alias) --build=$(build) --prefix="$(DEPS_PREFIX)" \
 @BUILD_LIBPNG_TRUE@		$(if $(SDL3_STATIC),--enable-static --disable-shared,--enable-shared --disable-static) \
-@BUILD_LIBPNG_TRUE@		--disable-tools --disable-tests --with-gnu-ld \
+@BUILD_LIBPNG_TRUE@		--disable-tools --disable-tests --with-gnu-ld $(if $(DISABLE_NATIVE),,--enable-hardware-optimizations=on) \
 @BUILD_LIBPNG_TRUE@			CC="$(CC) $(shell $(PKG_CONFIG) --cflags zlib)" RANLIB="$(RANLIB)" AR="$(AR)" CXX="$(CXX)" LD="$(if $(findstring linux,$(host_os)),$(CC),$(LD))" \
 @BUILD_LIBPNG_TRUE@			CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS) $(shell $(PKG_CONFIG) --libs zlib)" && \
 @BUILD_LIBPNG_TRUE@	$(MAKE) && \

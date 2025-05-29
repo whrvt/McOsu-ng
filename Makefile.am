@@ -350,7 +350,7 @@ $(DEPS_PREFIX)/libpng.built: $(DEPS_PREFIX)/zlib.built $(DEPS_CACHE)/libpng-$(LI
 	cd $(DEPS_PREFIX)/libpng && PKG_CONFIG="$(PKG_CONFIG)" \
 		./configure lt_cv_prog_gnu_ld=yes --host=$(host_alias) --build=$(build) --prefix="$(DEPS_PREFIX)" \
 		$(if $(SDL3_STATIC),--enable-static --disable-shared,--enable-shared --disable-static) \
-		--disable-tools --disable-tests --with-gnu-ld \
+		--disable-tools --disable-tests --with-gnu-ld $(if $(DISABLE_NATIVE),,--enable-hardware-optimizations=on) \
 			CC="$(CC) $(shell $(PKG_CONFIG) --cflags zlib)" RANLIB="$(RANLIB)" AR="$(AR)" CXX="$(CXX)" LD="$(if $(findstring linux,$(host_os)),$(CC),$(LD))" \
 			CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS) $(shell $(PKG_CONFIG) --libs zlib)" && \
 	$(MAKE) && \

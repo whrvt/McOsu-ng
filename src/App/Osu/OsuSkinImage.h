@@ -63,10 +63,13 @@ private:
 	static ConVar *m_osu_skin_mipmaps_ref;
 
 	bool load(UString skinElementName, UString animationSeparator, bool ignoreDefaultSkin);
-	bool loadImage(UString skinElementName, bool ignoreDefaultSkin);
+	bool loadSingleImage(const UString& elementName, bool ignoreDefaultSkin);
 
 	float getScale();
 	float getImageScale();
+
+    [[nodiscard]] UString buildImagePath(const UString& skinPath, const UString& elementName, bool hd = false) const;
+    [[nodiscard]] UString buildDefaultImagePath(const UString& elementName, bool hd = false) const;
 
 	OsuSkin *m_skin;
 	bool m_bReady;

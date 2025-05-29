@@ -398,104 +398,81 @@ bool OsuSkin::isReady()
 
 void OsuSkin::load()
 {
-	// random skins
+	m_fileExistsCache.clear();
+
+	// random skins setup
+	filepathsForRandomSkin.clear();
+	if (m_bIsRandom || m_bIsRandomElements)
 	{
-		filepathsForRandomSkin.clear();
-		if (m_bIsRandom || m_bIsRandomElements)
+		std::vector<UString> skinNames;
+
+		if constexpr (Env::cfg(FEAT::STEAM))
 		{
-			std::vector<UString> skinNames;
-
-			// steam workshop items
-			if constexpr (Env::cfg(FEAT::STEAM))
+			if (steam->isReady() && osu->getSteamWorkshop()->isReady())
 			{
-				if (steam->isReady())
+				const auto &subscribedItems = osu->getSteamWorkshop()->getSubscribedItems();
+				for (const auto &item : subscribedItems)
 				{
-					if (!osu->getSteamWorkshop()->isReady())
-						osu->getSteamWorkshop()->refresh(false, false);
-
-					if (osu->getSteamWorkshop()->isReady())
+					UString randomSkinFolder = item.installInfo;
+					if (!randomSkinFolder.endsWith('/') && !randomSkinFolder.endsWith('\\'))
 					{
-						const std::vector<OsuSteamWorkshop::SUBSCRIBED_ITEM> &subscribedItems = osu->getSteamWorkshop()->getSubscribedItems();
-
-						for (int i=0; i<subscribedItems.size(); i++)
-						{
-							UString randomSkinFolder = subscribedItems[i].installInfo;
-
-							// ensure that the skinFolder ends with a slash
-							if (randomSkinFolder[randomSkinFolder.length()-1] != L'/' && randomSkinFolder[randomSkinFolder.length()-1] != L'\\')
-								randomSkinFolder.append("/");
-
-							filepathsForRandomSkin.push_back(randomSkinFolder);
-							skinNames.push_back(subscribedItems[i].title);
-						}
+						randomSkinFolder.append("/");
 					}
-				}
-			}
-
-			// regular skins
-			{
-				UString skinFolder = convar->getConVarByName("osu_folder")->getString();
-				skinFolder.append(convar->getConVarByName("osu_folder_sub_skins")->getString());
-				std::vector<UString> skinFolders = env->getFoldersInFolder(skinFolder); // won't return "." or ".."
-
-				for (const auto & i : skinFolders)
-				{
-					UString randomSkinFolder = skinFolder;
-					randomSkinFolder.append(i);
-					randomSkinFolder.append("/");
-
 					filepathsForRandomSkin.push_back(randomSkinFolder);
-					skinNames.push_back(i);
+					skinNames.push_back(item.title);
 				}
 			}
+		}
 
-			if (m_bIsRandom && filepathsForRandomSkin.size() > 0)
-			{
-				const int randomIndex = std::rand() % std::min(filepathsForRandomSkin.size(), skinNames.size());
+		UString skinFolder = convar->getConVarByName("osu_folder")->getString();
+		skinFolder.append(convar->getConVarByName("osu_folder_sub_skins")->getString());
+		std::vector<UString> skinFolders = env->getFoldersInFolder(skinFolder);
 
-				m_sName = skinNames[randomIndex];
-				m_sFilePath = filepathsForRandomSkin[randomIndex];
-			}
+		for (const auto &folder : skinFolders)
+		{
+			UString randomSkinFolder = skinFolder + folder + "/";
+			filepathsForRandomSkin.push_back(randomSkinFolder);
+			skinNames.push_back(folder);
+		}
+
+		if (m_bIsRandom && !filepathsForRandomSkin.empty())
+		{
+			const int randomIndex = std::rand() % std::min(filepathsForRandomSkin.size(), skinNames.size());
+			m_sName = skinNames[randomIndex];
+			m_sFilePath = filepathsForRandomSkin[randomIndex];
 		}
 	}
 
-	// spinner loading has top priority in async
+	// high priority loading
 	randomizeFilePath();
+	checkLoadImage(&m_loadingSpinner, "loading-spinner", "OSU_SKIN_LOADING_SPINNER");
+
+	randomizeFilePath();
+	checkLoadImage(&m_cursor, "cursor", "OSU_SKIN_CURSOR");
+	checkLoadImage(&m_cursorMiddle, "cursormiddle", "OSU_SKIN_CURSORMIDDLE", true);
+	checkLoadImage(&m_cursorTrail, "cursortrail", "OSU_SKIN_CURSORTRAIL");
+	checkLoadImage(&m_cursorRipple, "cursor-ripple", "OSU_SKIN_CURSORRIPPLE");
+
+	if (m_cursor == resourceManager->getImage("OSU_SKIN_CURSOR_DEFAULT"))
 	{
-		checkLoadImage(&m_loadingSpinner, "loading-spinner", "OSU_SKIN_LOADING_SPINNER");
+		checkLoadImage(&m_cursorMiddle, "cursormiddle", "OSU_SKIN_CURSORMIDDLE");
 	}
 
-	// and the cursor comes right after that
+	// skin.ini parsing
 	randomizeFilePath();
-	{
-		checkLoadImage(&m_cursor, "cursor", "OSU_SKIN_CURSOR");
-		checkLoadImage(&m_cursorMiddle, "cursormiddle", "OSU_SKIN_CURSORMIDDLE", true);
-		checkLoadImage(&m_cursorTrail, "cursortrail", "OSU_SKIN_CURSORTRAIL");
-		checkLoadImage(&m_cursorRipple, "cursor-ripple", "OSU_SKIN_CURSORRIPPLE");
+	m_sSkinIniFilePath = m_sFilePath + "skin.ini";
+	UString defaultSkinIniFilePath = UString::fmt("{}{}skin.ini", ResourceManager::PATH_DEFAULT_IMAGES, OSUSKIN_DEFAULT_SKIN_PATH);
 
-		// special case: if fallback to default cursor, do load cursorMiddle
-		if (m_cursor == resourceManager->getImage("OSU_SKIN_CURSOR_DEFAULT"))
-			checkLoadImage(&m_cursorMiddle, "cursormiddle", "OSU_SKIN_CURSORMIDDLE");
-	}
-
-	// skin ini
-	randomizeFilePath();
-	m_sSkinIniFilePath = m_sFilePath;
-	UString defaultSkinIniFilePath = ResourceManager::PATH_DEFAULT_IMAGES;
-	defaultSkinIniFilePath.append(OSUSKIN_DEFAULT_SKIN_PATH);
-	defaultSkinIniFilePath.append("skin.ini");
-	m_sSkinIniFilePath.append("skin.ini");
-	bool parseSkinIni1Status = true;
+	bool parseSkinIni1Status = parseSkinINI(m_sSkinIniFilePath);
 	bool parseSkinIni2Status = true;
-	if (!parseSkinINI(m_sSkinIniFilePath))
+	if (!parseSkinIni1Status)
 	{
-		parseSkinIni1Status = false;
 		m_sSkinIniFilePath = defaultSkinIniFilePath;
 		parseSkinIni2Status = parseSkinINI(m_sSkinIniFilePath);
 	}
 
 	// default values, if none were loaded
-	if (m_comboColors.size() == 0)
+	if (m_comboColors.empty())
 	{
 		m_comboColors.push_back(rgb(255, 192, 0));
 		m_comboColors.push_back(rgb(0, 202, 0));
@@ -503,7 +480,7 @@ void OsuSkin::load()
 		m_comboColors.push_back(rgb(242, 24, 57));
 	}
 
-	// images
+	// gameplay images
 	randomizeFilePath();
 	checkLoadImage(&m_hitCircle, "hitcircle", "OSU_SKIN_HITCIRCLE");
 	m_hitCircleOverlay2 = createOsuSkinImage("hitcircleoverlay", Vector2(128, 128), 64);
@@ -517,129 +494,59 @@ void OsuSkin::load()
 	randomizeFilePath();
 	m_followPoint2 = createOsuSkinImage("followpoint", Vector2(16, 22), 64);
 
+	// numbered elements
 	randomizeFilePath();
+	UString hitCirclePrefix = m_sHitCirclePrefix.isEmpty() ? "default" : m_sHitCirclePrefix;
+	std::initializer_list<Image **> hitCircleTargets = {&m_default0, &m_default1, &m_default2, &m_default3, &m_default4, &m_default5, &m_default6, &m_default7, &m_default8, &m_default9};
+	const std::initializer_list<UString> hitCircleElements = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};
+	const std::initializer_list<UString> hitCircleResources = {"OSU_SKIN_DEFAULT0", "OSU_SKIN_DEFAULT1", "OSU_SKIN_DEFAULT2", "OSU_SKIN_DEFAULT3", "OSU_SKIN_DEFAULT4",
+	                                      "OSU_SKIN_DEFAULT5", "OSU_SKIN_DEFAULT6", "OSU_SKIN_DEFAULT7", "OSU_SKIN_DEFAULT8", "OSU_SKIN_DEFAULT9"};
+
+	for (int i = 0; i < 10; i++)
 	{
-		UString hitCirclePrefix = m_sHitCirclePrefix.length() > 0 ? m_sHitCirclePrefix : "default";
-		UString hitCircleStringFinal = hitCirclePrefix; hitCircleStringFinal.append("-0");
-		checkLoadImage(&m_default0, hitCircleStringFinal, "OSU_SKIN_DEFAULT0");
-		if (m_default0 == m_missingTexture) checkLoadImage(&m_default0, "default-0", "OSU_SKIN_DEFAULT0"); // special cases: fallback to default skin hitcircle numbers if the defined prefix doesn't point to any valid files
-		hitCircleStringFinal = hitCirclePrefix; hitCircleStringFinal.append("-1");
-		checkLoadImage(&m_default1, hitCircleStringFinal, "OSU_SKIN_DEFAULT1");
-		if (m_default1 == m_missingTexture) checkLoadImage(&m_default1, "default-1", "OSU_SKIN_DEFAULT1");
-		hitCircleStringFinal = hitCirclePrefix; hitCircleStringFinal.append("-2");
-		checkLoadImage(&m_default2, hitCircleStringFinal, "OSU_SKIN_DEFAULT2");
-		if (m_default2 == m_missingTexture) checkLoadImage(&m_default2, "default-2", "OSU_SKIN_DEFAULT2");
-		hitCircleStringFinal = hitCirclePrefix; hitCircleStringFinal.append("-3");
-		checkLoadImage(&m_default3, hitCircleStringFinal, "OSU_SKIN_DEFAULT3");
-		if (m_default3 == m_missingTexture) checkLoadImage(&m_default3, "default-3", "OSU_SKIN_DEFAULT3");
-		hitCircleStringFinal = hitCirclePrefix; hitCircleStringFinal.append("-4");
-		checkLoadImage(&m_default4, hitCircleStringFinal, "OSU_SKIN_DEFAULT4");
-		if (m_default4 == m_missingTexture) checkLoadImage(&m_default4, "default-4", "OSU_SKIN_DEFAULT4");
-		hitCircleStringFinal = hitCirclePrefix; hitCircleStringFinal.append("-5");
-		checkLoadImage(&m_default5, hitCircleStringFinal, "OSU_SKIN_DEFAULT5");
-		if (m_default5 == m_missingTexture) checkLoadImage(&m_default5, "default-5", "OSU_SKIN_DEFAULT5");
-		hitCircleStringFinal = hitCirclePrefix; hitCircleStringFinal.append("-6");
-		checkLoadImage(&m_default6, hitCircleStringFinal, "OSU_SKIN_DEFAULT6");
-		if (m_default6 == m_missingTexture) checkLoadImage(&m_default6, "default-6", "OSU_SKIN_DEFAULT6");
-		hitCircleStringFinal = hitCirclePrefix; hitCircleStringFinal.append("-7");
-		checkLoadImage(&m_default7, hitCircleStringFinal, "OSU_SKIN_DEFAULT7");
-		if (m_default7 == m_missingTexture) checkLoadImage(&m_default7, "default-7", "OSU_SKIN_DEFAULT7");
-		hitCircleStringFinal = hitCirclePrefix; hitCircleStringFinal.append("-8");
-		checkLoadImage(&m_default8, hitCircleStringFinal, "OSU_SKIN_DEFAULT8");
-		if (m_default8 == m_missingTexture) checkLoadImage(&m_default8, "default-8", "OSU_SKIN_DEFAULT8");
-		hitCircleStringFinal = hitCirclePrefix; hitCircleStringFinal.append("-9");
-		checkLoadImage(&m_default9, hitCircleStringFinal, "OSU_SKIN_DEFAULT9");
-		if (m_default9 == m_missingTexture) checkLoadImage(&m_default9, "default-9", "OSU_SKIN_DEFAULT9");
+		UString elementName = hitCirclePrefix + "-" + hitCircleElements.begin()[i];
+		checkLoadImage(hitCircleTargets.begin()[i], elementName, hitCircleResources.begin()[i]);
+		if (*hitCircleTargets.begin()[i] == m_missingTexture)
+			checkLoadImage(hitCircleTargets.begin()[i], UString::fmt("default-{:s}", hitCircleElements.begin()[i]), hitCircleResources.begin()[i]);
 	}
 
 	randomizeFilePath();
+	UString scorePrefix = m_sScorePrefix.isEmpty() ? "score" : m_sScorePrefix;
+	std::initializer_list<Image **> scoreTargets = {&m_score0, &m_score1, &m_score2, &m_score3, &m_score4, &m_score5, &m_score6, &m_score7, &m_score8, &m_score9};
+	const std::initializer_list<UString> scoreResources = {"OSU_SKIN_SCORE0", "OSU_SKIN_SCORE1", "OSU_SKIN_SCORE2", "OSU_SKIN_SCORE3", "OSU_SKIN_SCORE4",
+	                                  "OSU_SKIN_SCORE5", "OSU_SKIN_SCORE6", "OSU_SKIN_SCORE7", "OSU_SKIN_SCORE8", "OSU_SKIN_SCORE9"};
+
+	for (int i = 0; i < 10; i++)
 	{
-		UString scorePrefix = m_sScorePrefix.length() > 0 ? m_sScorePrefix : "score";
-		UString scoreStringFinal = scorePrefix; scoreStringFinal.append("-0");
-		checkLoadImage(&m_score0, scoreStringFinal, "OSU_SKIN_SCORE0");
-		if (m_score0 == m_missingTexture) checkLoadImage(&m_score0, "score-0", "OSU_SKIN_SCORE0"); // special cases: fallback to default skin score numbers if the defined prefix doesn't point to any valid files
-		scoreStringFinal = scorePrefix; scoreStringFinal.append("-1");
-		checkLoadImage(&m_score1, scoreStringFinal, "OSU_SKIN_SCORE1");
-		if (m_score1 == m_missingTexture) checkLoadImage(&m_score1, "score-1", "OSU_SKIN_SCORE1");
-		scoreStringFinal = scorePrefix; scoreStringFinal.append("-2");
-		checkLoadImage(&m_score2, scoreStringFinal, "OSU_SKIN_SCORE2");
-		if (m_score2 == m_missingTexture) checkLoadImage(&m_score2, "score-2", "OSU_SKIN_SCORE2");
-		scoreStringFinal = scorePrefix; scoreStringFinal.append("-3");
-		checkLoadImage(&m_score3, scoreStringFinal, "OSU_SKIN_SCORE3");
-		if (m_score3 == m_missingTexture) checkLoadImage(&m_score3, "score-3", "OSU_SKIN_SCORE3");
-		scoreStringFinal = scorePrefix; scoreStringFinal.append("-4");
-		checkLoadImage(&m_score4, scoreStringFinal, "OSU_SKIN_SCORE4");
-		if (m_score4 == m_missingTexture) checkLoadImage(&m_score4, "score-4", "OSU_SKIN_SCORE4");
-		scoreStringFinal = scorePrefix; scoreStringFinal.append("-5");
-		checkLoadImage(&m_score5, scoreStringFinal, "OSU_SKIN_SCORE5");
-		if (m_score5 == m_missingTexture) checkLoadImage(&m_score5, "score-5", "OSU_SKIN_SCORE5");
-		scoreStringFinal = scorePrefix; scoreStringFinal.append("-6");
-		checkLoadImage(&m_score6, scoreStringFinal, "OSU_SKIN_SCORE6");
-		if (m_score6 == m_missingTexture) checkLoadImage(&m_score6, "score-6", "OSU_SKIN_SCORE6");
-		scoreStringFinal = scorePrefix; scoreStringFinal.append("-7");
-		checkLoadImage(&m_score7, scoreStringFinal, "OSU_SKIN_SCORE7");
-		if (m_score7 == m_missingTexture) checkLoadImage(&m_score7, "score-7", "OSU_SKIN_SCORE7");
-		scoreStringFinal = scorePrefix; scoreStringFinal.append("-8");
-		checkLoadImage(&m_score8, scoreStringFinal, "OSU_SKIN_SCORE8");
-		if (m_score8 == m_missingTexture) checkLoadImage(&m_score8, "score-8", "OSU_SKIN_SCORE8");
-		scoreStringFinal = scorePrefix; scoreStringFinal.append("-9");
-		checkLoadImage(&m_score9, scoreStringFinal, "OSU_SKIN_SCORE9");
-		if (m_score9 == m_missingTexture) checkLoadImage(&m_score9, "score-9", "OSU_SKIN_SCORE9");
-
-
-
-		scoreStringFinal = scorePrefix; scoreStringFinal.append("-x");
-		checkLoadImage(&m_scoreX, scoreStringFinal, "OSU_SKIN_SCOREX");
-		//if (m_scoreX == m_missingTexture) checkLoadImage(&m_scoreX, "score-x", "OSU_SKIN_SCOREX"); // special case: ScorePrefix'd skins don't get default fallbacks, instead missing extraneous things like the X are simply not drawn
-		scoreStringFinal = scorePrefix; scoreStringFinal.append("-percent");
-		checkLoadImage(&m_scorePercent, scoreStringFinal, "OSU_SKIN_SCOREPERCENT");
-		//if (m_scorePercent == m_missingTexture) checkLoadImage(&m_scorePercent, "score-percent", "OSU_SKIN_SCOREPERCENT"); // special case: ScorePrefix'd skins don't get default fallbacks, instead missing extraneous things like the X are simply not drawn
-		scoreStringFinal = scorePrefix; scoreStringFinal.append("-dot");
-		checkLoadImage(&m_scoreDot, scoreStringFinal, "OSU_SKIN_SCOREDOT");
-		//if (m_scoreDot == m_missingTexture) checkLoadImage(&m_scoreDot, "score-dot", "OSU_SKIN_SCOREDOT"); // special case: ScorePrefix'd skins don't get default fallbacks, instead missing extraneous things like the X are simply not drawn
+		UString elementName = scorePrefix + "-" + hitCircleElements.begin()[i];
+		checkLoadImage(scoreTargets.begin()[i], elementName, scoreResources.begin()[i]);
+		if (*scoreTargets.begin()[i] == m_missingTexture)
+			checkLoadImage(scoreTargets.begin()[i], UString::fmt("score-{:s}", hitCircleElements.begin()[i]), scoreResources.begin()[i]);
 	}
+
+	checkLoadImage(&m_scoreX, scorePrefix + "-x", "OSU_SKIN_SCOREX");
+	checkLoadImage(&m_scorePercent, scorePrefix + "-percent", "OSU_SKIN_SCOREPERCENT");
+	checkLoadImage(&m_scoreDot, scorePrefix + "-dot", "OSU_SKIN_SCOREDOT");
 
 	randomizeFilePath();
+	UString comboPrefix = m_sComboPrefix.isEmpty() ? "score" : m_sComboPrefix;
+	std::initializer_list<Image **> comboTargets = {&m_combo0, &m_combo1, &m_combo2, &m_combo3, &m_combo4, &m_combo5, &m_combo6, &m_combo7, &m_combo8, &m_combo9};
+	const std::initializer_list<UString> comboResources = {"OSU_SKIN_COMBO0", "OSU_SKIN_COMBO1", "OSU_SKIN_COMBO2", "OSU_SKIN_COMBO3", "OSU_SKIN_COMBO4",
+	                                  "OSU_SKIN_COMBO5", "OSU_SKIN_COMBO6", "OSU_SKIN_COMBO7", "OSU_SKIN_COMBO8", "OSU_SKIN_COMBO9"};
+
+	for (int i = 0; i < 10; i++)
 	{
-		UString comboPrefix = m_sComboPrefix.length() > 0 ? m_sComboPrefix : "score"; // yes, "score" is the default value for the combo prefix
-		UString comboStringFinal = comboPrefix; comboStringFinal.append("-0");
-		checkLoadImage(&m_combo0, comboStringFinal, "OSU_SKIN_COMBO0");
-		if (m_combo0 == m_missingTexture) checkLoadImage(&m_combo0, "score-0", "OSU_SKIN_COMBO0"); // special cases: fallback to default skin combo numbers if the defined prefix doesn't point to any valid files
-		comboStringFinal = comboPrefix; comboStringFinal.append("-1");
-		checkLoadImage(&m_combo1, comboStringFinal, "OSU_SKIN_COMBO1");
-		if (m_combo1 == m_missingTexture) checkLoadImage(&m_combo1, "score-1", "OSU_SKIN_COMBO1");
-		comboStringFinal = comboPrefix; comboStringFinal.append("-2");
-		checkLoadImage(&m_combo2, comboStringFinal, "OSU_SKIN_COMBO2");
-		if (m_combo2 == m_missingTexture) checkLoadImage(&m_combo2, "score-2", "OSU_SKIN_COMBO2");
-		comboStringFinal = comboPrefix; comboStringFinal.append("-3");
-		checkLoadImage(&m_combo3, comboStringFinal, "OSU_SKIN_COMBO3");
-		if (m_combo3 == m_missingTexture) checkLoadImage(&m_combo3, "score-3", "OSU_SKIN_COMBO3");
-		comboStringFinal = comboPrefix; comboStringFinal.append("-4");
-		checkLoadImage(&m_combo4, comboStringFinal, "OSU_SKIN_COMBO4");
-		if (m_combo4 == m_missingTexture) checkLoadImage(&m_combo4, "score-4", "OSU_SKIN_COMBO4");
-		comboStringFinal = comboPrefix; comboStringFinal.append("-5");
-		checkLoadImage(&m_combo5, comboStringFinal, "OSU_SKIN_COMBO5");
-		if (m_combo5 == m_missingTexture) checkLoadImage(&m_combo5, "score-5", "OSU_SKIN_COMBO5");
-		comboStringFinal = comboPrefix; comboStringFinal.append("-6");
-		checkLoadImage(&m_combo6, comboStringFinal, "OSU_SKIN_COMBO6");
-		if (m_combo6 == m_missingTexture) checkLoadImage(&m_combo6, "score-6", "OSU_SKIN_COMBO6");
-		comboStringFinal = comboPrefix; comboStringFinal.append("-7");
-		checkLoadImage(&m_combo7, comboStringFinal, "OSU_SKIN_COMBO7");
-		if (m_combo7 == m_missingTexture) checkLoadImage(&m_combo7, "score-7", "OSU_SKIN_COMBO7");
-		comboStringFinal = comboPrefix; comboStringFinal.append("-8");
-		checkLoadImage(&m_combo8, comboStringFinal, "OSU_SKIN_COMBO8");
-		if (m_combo8 == m_missingTexture) checkLoadImage(&m_combo8, "score-8", "OSU_SKIN_COMBO8");
-		comboStringFinal = comboPrefix; comboStringFinal.append("-9");
-		checkLoadImage(&m_combo9, comboStringFinal, "OSU_SKIN_COMBO9");
-		if (m_combo9 == m_missingTexture) checkLoadImage(&m_combo9, "score-9", "OSU_SKIN_COMBO9");
-
-
-
-		comboStringFinal = comboPrefix; comboStringFinal.append("-x");
-		checkLoadImage(&m_comboX, comboStringFinal, "OSU_SKIN_COMBOX");
-		//if (m_comboX == m_missingTexture) m_comboX = m_scoreX; // special case: ComboPrefix'd skins don't get default fallbacks, instead missing extraneous things like the X are simply not drawn
+		UString elementName = comboPrefix + "-" + hitCircleElements.begin()[i];
+		checkLoadImage(comboTargets.begin()[i], elementName, comboResources.begin()[i]);
+		if (*comboTargets.begin()[i] == m_missingTexture)
+		{
+			checkLoadImage(comboTargets.begin()[i], UString::fmt("score-{:s}", hitCircleElements.begin()[i]), comboResources.begin()[i]);
+		}
 	}
 
+	checkLoadImage(&m_comboX, comboPrefix + "-x", "OSU_SKIN_COMBOX");
+
+	// ui elements
 	randomizeFilePath();
 	m_playSkip = createOsuSkinImage("play-skip", Vector2(193, 147), 94);
 	randomizeFilePath();
@@ -662,6 +569,7 @@ void OsuSkin::load()
 	m_inputoverlayBackground = createOsuSkinImage("inputoverlay-background", Vector2(193, 55), 34.25f);
 	m_inputoverlayKey = createOsuSkinImage("inputoverlay-key", Vector2(43, 46), 26.75f);
 
+	// hit result animations
 	randomizeFilePath();
 	m_hit0 = createOsuSkinImage("hit0", Vector2(128, 128), 42);
 	m_hit0->setAnimationFramerate(60);
@@ -689,17 +597,18 @@ void OsuSkin::load()
 	checkLoadImage(&m_particle100, "particle100", "OSU_SKIN_PARTICLE100", true);
 	checkLoadImage(&m_particle300, "particle300", "OSU_SKIN_PARTICLE300", true);
 
+	// slider elements
 	randomizeFilePath();
 	checkLoadImage(&m_sliderGradient, "slidergradient", "OSU_SKIN_SLIDERGRADIENT");
 	randomizeFilePath();
 	m_sliderb = createOsuSkinImage("sliderb", Vector2(128, 128), 64, false, "");
-	m_sliderb->setAnimationFramerate(/*45.0f*/ 50.0f);
+	m_sliderb->setAnimationFramerate(50.0f);
 	randomizeFilePath();
 	checkLoadImage(&m_sliderScorePoint, "sliderscorepoint", "OSU_SKIN_SLIDERSCOREPOINT");
 	randomizeFilePath();
 	m_sliderFollowCircle2 = createOsuSkinImage("sliderfollowcircle", Vector2(259, 259), 64);
 	randomizeFilePath();
-	checkLoadImage(&m_sliderStartCircle, "sliderstartcircle", "OSU_SKIN_SLIDERSTARTCIRCLE", !m_bIsDefaultSkin); // !m_bIsDefaultSkin ensures that default doesn't override user, in these special cases
+	checkLoadImage(&m_sliderStartCircle, "sliderstartcircle", "OSU_SKIN_SLIDERSTARTCIRCLE", !m_bIsDefaultSkin);
 	m_sliderStartCircle2 = createOsuSkinImage("sliderstartcircle", Vector2(128, 128), 64, !m_bIsDefaultSkin);
 	checkLoadImage(&m_sliderStartCircleOverlay, "sliderstartcircleoverlay", "OSU_SKIN_SLIDERSTARTCIRCLEOVERLAY", !m_bIsDefaultSkin);
 	m_sliderStartCircleOverlay2 = createOsuSkinImage("sliderstartcircleoverlay", Vector2(128, 128), 64, !m_bIsDefaultSkin);
@@ -711,6 +620,7 @@ void OsuSkin::load()
 	m_sliderEndCircleOverlay2 = createOsuSkinImage("sliderendcircleoverlay", Vector2(128, 128), 64, !m_bIsDefaultSkin);
 	m_sliderEndCircleOverlay2->setAnimationFramerate(2);
 
+	// spinner elements
 	randomizeFilePath();
 	checkLoadImage(&m_spinnerBackground, "spinner-background", "OSU_SKIN_SPINNERBACKGROUND");
 	checkLoadImage(&m_spinnerCircle, "spinner-circle", "OSU_SKIN_SPINNERCIRCLE");
@@ -722,10 +632,7 @@ void OsuSkin::load()
 	checkLoadImage(&m_spinnerSpin, "spinner-spin", "OSU_SKIN_SPINNERSPIN");
 	checkLoadImage(&m_spinnerClear, "spinner-clear", "OSU_SKIN_SPINNERCLEAR");
 
-	{
-		// cursor loading was here, moved up to improve async usability
-	}
-
+	// mod selection
 	randomizeFilePath();
 	m_selectionModEasy = createOsuSkinImage("selection-mod-easy", Vector2(68, 66), 38);
 	m_selectionModNoFail = createOsuSkinImage("selection-mod-nofail", Vector2(68, 66), 38);
@@ -748,15 +655,21 @@ void OsuSkin::load()
 	m_selectionModTD = createOsuSkinImage("selection-mod-touchdevice", Vector2(68, 66), 38);
 	m_selectionModCinema = createOsuSkinImage("selection-mod-cinema", Vector2(68, 66), 38);
 
+	// pause menu
 	randomizeFilePath();
 	checkLoadImage(&m_pauseContinue, "pause-continue", "OSU_SKIN_PAUSE_CONTINUE");
 	checkLoadImage(&m_pauseReplay, "pause-replay", "OSU_SKIN_PAUSE_REPLAY");
 	checkLoadImage(&m_pauseRetry, "pause-retry", "OSU_SKIN_PAUSE_RETRY");
 	checkLoadImage(&m_pauseBack, "pause-back", "OSU_SKIN_PAUSE_BACK");
-	checkLoadImage(&m_pauseOverlay, "pause-overlay", "OSU_SKIN_PAUSE_OVERLAY"); if (m_pauseOverlay == m_missingTexture) checkLoadImage(&m_pauseOverlay, "pause-overlay", "OSU_SKIN_PAUSE_OVERLAY", true, "jpg");
-	checkLoadImage(&m_failBackground, "fail-background", "OSU_SKIN_FAIL_BACKGROUND"); if (m_failBackground == m_missingTexture) checkLoadImage(&m_failBackground, "fail-background", "OSU_SKIN_FAIL_BACKGROUND", true, "jpg");
+	checkLoadImage(&m_pauseOverlay, "pause-overlay", "OSU_SKIN_PAUSE_OVERLAY");
+	if (m_pauseOverlay == m_missingTexture)
+		checkLoadImage(&m_pauseOverlay, "pause-overlay", "OSU_SKIN_PAUSE_OVERLAY", true, "jpg");
+	checkLoadImage(&m_failBackground, "fail-background", "OSU_SKIN_FAIL_BACKGROUND");
+	if (m_failBackground == m_missingTexture)
+		checkLoadImage(&m_failBackground, "fail-background", "OSU_SKIN_FAIL_BACKGROUND", true, "jpg");
 	checkLoadImage(&m_unpause, "unpause", "OSU_SKIN_UNPAUSE");
 
+	// buttons and menu
 	randomizeFilePath();
 	checkLoadImage(&m_buttonLeft, "button-left", "OSU_SKIN_BUTTON_LEFT");
 	checkLoadImage(&m_buttonMiddle, "button-middle", "OSU_SKIN_BUTTON_MIDDLE");
@@ -764,7 +677,7 @@ void OsuSkin::load()
 	randomizeFilePath();
 	m_menuBack = createOsuSkinImage("menu-back", Vector2(225, 87), 54);
 	randomizeFilePath();
-	m_selectionMode = createOsuSkinImage("selection-mode", Vector2(90, 90), 38); // NOTE: should actually be Vector2(88, 90), but slightly overscale to make most skins fit better on the bottombar blue line
+	m_selectionMode = createOsuSkinImage("selection-mode", Vector2(90, 90), 38);
 	m_selectionModeOver = createOsuSkinImage("selection-mode-over", Vector2(88, 90), 38);
 	m_selectionMods = createOsuSkinImage("selection-mods", Vector2(74, 90), 38);
 	m_selectionModsOver = createOsuSkinImage("selection-mods-over", Vector2(74, 90), 38);
@@ -773,6 +686,7 @@ void OsuSkin::load()
 	m_selectionOptions = createOsuSkinImage("selection-options", Vector2(74, 90), 38);
 	m_selectionOptionsOver = createOsuSkinImage("selection-options-over", Vector2(74, 90), 38);
 
+	// song select
 	randomizeFilePath();
 	checkLoadImage(&m_songSelectTop, "songselect-top", "OSU_SKIN_SONGSELECT_TOP");
 	checkLoadImage(&m_songSelectBottom, "songselect-bottom", "OSU_SKIN_SONGSELECT_BOTTOM");
@@ -782,6 +696,7 @@ void OsuSkin::load()
 	randomizeFilePath();
 	checkLoadImage(&m_star, "star", "OSU_SKIN_STAR");
 
+	// ranking
 	randomizeFilePath();
 	checkLoadImage(&m_rankingPanel, "ranking-panel", "OSU_SKIN_RANKING_PANEL");
 	checkLoadImage(&m_rankingGraph, "ranking-graph", "OSU_SKIN_RANKING_GRAPH");
@@ -806,9 +721,9 @@ void OsuSkin::load()
 	m_rankingSHsmall = createOsuSkinImage("ranking-SH-small", Vector2(31, 38), 128);
 	m_rankingXsmall = createOsuSkinImage("ranking-X-small", Vector2(34, 40), 128);
 	m_rankingXHsmall = createOsuSkinImage("ranking-XH-small", Vector2(34, 41), 128);
-
 	m_rankingPerfect = createOsuSkinImage("ranking-perfect", Vector2(478, 150), 128);
 
+	// misc
 	randomizeFilePath();
 	checkLoadImage(&m_beatmapImportSpinner, "beatmapimport-spinner", "OSU_SKIN_BEATMAP_IMPORT_SPINNER");
 	{
@@ -827,9 +742,7 @@ void OsuSkin::load()
 	randomizeFilePath();
 	checkLoadImage(&m_skybox, "skybox", "OSU_SKIN_FPOSU_3D_SKYBOX");
 
-	// sounds
-
-	// samples
+	// load all sounds
 	checkLoadSound(&m_normalHitNormal, "normal-hitnormal", "OSU_SKIN_NORMALHITNORMAL_SND", true, true, false, 0.8f);
 	checkLoadSound(&m_normalHitWhistle, "normal-hitwhistle", "OSU_SKIN_NORMALHITWHISTLE_SND", true, true, false, 0.85f);
 	checkLoadSound(&m_normalHitFinish, "normal-hitfinish", "OSU_SKIN_NORMALHITFINISH_SND", true, true);
@@ -872,113 +785,59 @@ void OsuSkin::load()
 	checkLoadSound(&m_sectionPassSound, "sectionpass", "OSU_SKIN_SECTIONPASS_SND", true);
 	checkLoadSound(&m_sectionFailSound, "sectionfail", "OSU_SKIN_SECTIONFAIL_SND", true);
 
-	// scaling
-	// HACKHACK: this is pure cancer
-	if (m_cursor != NULL && m_cursor->getFilePath().find("@2x") != -1)
-		m_bCursor2x = true;
-	if (m_cursorTrail != NULL && m_cursorTrail->getFilePath().find("@2x") != -1)
-		m_bCursorTrail2x = true;
-	if (m_cursorRipple != NULL && m_cursorRipple->getFilePath().find("@2x") != -1)
-		m_bCursorRipple2x = true;
-	if (m_approachCircle != NULL && m_approachCircle->getFilePath().find("@2x") != -1)
-		m_bApproachCircle2x = true;
-	if (m_reverseArrow != NULL && m_reverseArrow->getFilePath().find("@2x") != -1)
-		m_bReverseArrow2x = true;
-	if (m_hitCircle != NULL && m_hitCircle->getFilePath().find("@2x") != -1)
-		m_bHitCircle2x = true;
-	if (m_default0 != NULL && m_default0->getFilePath().find("@2x") != -1)
-		m_bIsDefault02x = true;
-	if (m_default1 != NULL && m_default1->getFilePath().find("@2x") != -1)
-		m_bIsDefault12x = true;
-	if (m_score0 != NULL && m_score0->getFilePath().find("@2x") != -1)
-		m_bIsScore02x = true;
-	if (m_combo0 != NULL && m_combo0->getFilePath().find("@2x") != -1)
-		m_bIsCombo02x = true;
-	if (m_spinnerApproachCircle != NULL && m_spinnerApproachCircle->getFilePath().find("@2x") != -1)
-		m_bSpinnerApproachCircle2x = true;
-	if (m_spinnerBottom != NULL && m_spinnerBottom->getFilePath().find("@2x") != -1)
-		m_bSpinnerBottom2x = true;
-	if (m_spinnerCircle != NULL && m_spinnerCircle->getFilePath().find("@2x") != -1)
-		m_bSpinnerCircle2x = true;
-	if (m_spinnerTop != NULL && m_spinnerTop->getFilePath().find("@2x") != -1)
-		m_bSpinnerTop2x = true;
-	if (m_spinnerMiddle != NULL && m_spinnerMiddle->getFilePath().find("@2x") != -1)
-		m_bSpinnerMiddle2x = true;
-	if (m_spinnerMiddle2 != NULL && m_spinnerMiddle2->getFilePath().find("@2x") != -1)
-		m_bSpinnerMiddle22x = true;
-	if (m_sliderScorePoint != NULL && m_sliderScorePoint->getFilePath().find("@2x") != -1)
-		m_bSliderScorePoint2x = true;
-	if (m_sliderStartCircle != NULL && m_sliderStartCircle->getFilePath().find("@2x") != -1)
-		m_bSliderStartCircle2x = true;
-	if (m_sliderEndCircle != NULL && m_sliderEndCircle->getFilePath().find("@2x") != -1)
-		m_bSliderEndCircle2x = true;
+	// clang-format off
+	// detect @2x scaling
+	m_bCursor2x					= (m_cursor					&& m_cursor->getFilePath().find("@2x") != -1);
+	m_bCursorTrail2x			= (m_cursorTrail			&& m_cursorTrail->getFilePath().find("@2x") != -1);
+	m_bCursorRipple2x			= (m_cursorRipple			&& m_cursorRipple->getFilePath().find("@2x") != -1);
+	m_bApproachCircle2x			= (m_approachCircle			&& m_approachCircle->getFilePath().find("@2x") != -1);
+	m_bReverseArrow2x			= (m_reverseArrow			&& m_reverseArrow->getFilePath().find("@2x") != -1);
+	m_bHitCircle2x				= (m_hitCircle				&& m_hitCircle->getFilePath().find("@2x") != -1);
+	m_bIsDefault02x				= (m_default0				&& m_default0->getFilePath().find("@2x") != -1);
+	m_bIsDefault12x				= (m_default1				&& m_default1->getFilePath().find("@2x") != -1);
+	m_bIsScore02x				= (m_score0					&& m_score0->getFilePath().find("@2x") != -1);
+	m_bIsCombo02x				= (m_combo0					&& m_combo0->getFilePath().find("@2x") != -1);
+	m_bSpinnerApproachCircle2x	= (m_spinnerApproachCircle	&& m_spinnerApproachCircle->getFilePath().find("@2x") != -1);
+	m_bSpinnerBottom2x			= (m_spinnerBottom			&& m_spinnerBottom->getFilePath().find("@2x") != -1);
+	m_bSpinnerCircle2x			= (m_spinnerCircle			&& m_spinnerCircle->getFilePath().find("@2x") != -1);
+	m_bSpinnerTop2x				= (m_spinnerTop				&& m_spinnerTop->getFilePath().find("@2x") != -1);
+	m_bSpinnerMiddle2x			= (m_spinnerMiddle			&& m_spinnerMiddle->getFilePath().find("@2x") != -1);
+	m_bSpinnerMiddle22x			= (m_spinnerMiddle2			&& m_spinnerMiddle2->getFilePath().find("@2x") != -1);
+	m_bSliderScorePoint2x		= (m_sliderScorePoint		&& m_sliderScorePoint->getFilePath().find("@2x") != -1);
+	m_bSliderStartCircle2x		= (m_sliderStartCircle		&& m_sliderStartCircle->getFilePath().find("@2x") != -1);
+	m_bSliderEndCircle2x		= (m_sliderEndCircle		&& m_sliderEndCircle->getFilePath().find("@2x") != -1);
+	m_bCircularmetre2x			= (m_circularmetre			&& m_circularmetre->getFilePath().find("@2x") != -1);
+	m_bPauseContinue2x			= (m_pauseContinue			&& m_pauseContinue->getFilePath().find("@2x") != -1);
+	m_bMenuButtonBackground2x	= (m_menuButtonBackground	&& m_menuButtonBackground->getFilePath().find("@2x") != -1);
+	m_bStar2x					= (m_star					&& m_star->getFilePath().find("@2x") != -1);
+	m_bRankingPanel2x			= (m_rankingPanel			&& m_rankingPanel->getFilePath().find("@2x") != -1);
+	m_bRankingMaxCombo2x		= (m_rankingMaxCombo		&& m_rankingMaxCombo->getFilePath().find("@2x") != -1);
+	m_bRankingAccuracy2x		= (m_rankingAccuracy		&& m_rankingAccuracy->getFilePath().find("@2x") != -1);
+	m_bRankingA2x				= (m_rankingA				&& m_rankingA->getFilePath().find("@2x") != -1);
+	m_bRankingB2x				= (m_rankingB				&& m_rankingB->getFilePath().find("@2x") != -1);
+	m_bRankingC2x				= (m_rankingC				&& m_rankingC->getFilePath().find("@2x") != -1);
+	m_bRankingD2x				= (m_rankingD				&& m_rankingD->getFilePath().find("@2x") != -1);
+	m_bRankingS2x				= (m_rankingS				&& m_rankingS->getFilePath().find("@2x") != -1);
+	m_bRankingSH2x				= (m_rankingSH				&& m_rankingSH->getFilePath().find("@2x") != -1);
+	m_bRankingX2x				= (m_rankingX				&& m_rankingX->getFilePath().find("@2x") != -1);
+	m_bRankingXH2x				= (m_rankingXH				&& m_rankingXH->getFilePath().find("@2x") != -1);
+	// clang-format on
 
-	if (m_circularmetre != NULL && m_circularmetre->getFilePath().find("@2x") != -1)
-		m_bCircularmetre2x = true;
-
-	if (m_pauseContinue != NULL && m_pauseContinue->getFilePath().find("@2x") != -1)
-		m_bPauseContinue2x = true;
-
-	if (m_menuButtonBackground != NULL && m_menuButtonBackground->getFilePath().find("@2x") != -1)
-		m_bMenuButtonBackground2x = true;
-	if (m_star != NULL && m_star->getFilePath().find("@2x") != -1)
-		m_bStar2x = true;
-	if (m_rankingPanel != NULL && m_rankingPanel->getFilePath().find("@2x") != -1)
-		m_bRankingPanel2x = true;
-	if (m_rankingMaxCombo != NULL && m_rankingMaxCombo->getFilePath().find("@2x") != -1)
-		m_bRankingMaxCombo2x = true;
-	if (m_rankingAccuracy != NULL && m_rankingAccuracy->getFilePath().find("@2x") != -1)
-		m_bRankingAccuracy2x = true;
-	if (m_rankingA != NULL && m_rankingA->getFilePath().find("@2x") != -1)
-		m_bRankingA2x = true;
-	if (m_rankingB != NULL && m_rankingB->getFilePath().find("@2x") != -1)
-		m_bRankingB2x = true;
-	if (m_rankingC != NULL && m_rankingC->getFilePath().find("@2x") != -1)
-		m_bRankingC2x = true;
-	if (m_rankingD != NULL && m_rankingD->getFilePath().find("@2x") != -1)
-		m_bRankingD2x = true;
-	if (m_rankingS != NULL && m_rankingS->getFilePath().find("@2x") != -1)
-		m_bRankingS2x = true;
-	if (m_rankingSH != NULL && m_rankingSH->getFilePath().find("@2x") != -1)
-		m_bRankingSH2x = true;
-	if (m_rankingX != NULL && m_rankingX->getFilePath().find("@2x") != -1)
-		m_bRankingX2x = true;
-	if (m_rankingXH != NULL && m_rankingXH->getFilePath().find("@2x") != -1)
-		m_bRankingXH2x = true;
-
-	// HACKHACK: all of the <>2 loads are temporary fixes until I fix the checkLoadImage() function logic
-
-	// custom
+	// setup fallback elements
 	Image *defaultCursor = resourceManager->getImage("OSU_SKIN_CURSOR_DEFAULT");
-	Image *defaultCursor2 = m_cursor;
-	if (defaultCursor != NULL)
-		m_defaultCursor = defaultCursor;
-	else if (defaultCursor2 != NULL)
-		m_defaultCursor = defaultCursor2;
+	m_defaultCursor = defaultCursor ? defaultCursor : m_cursor;
 
 	Image *defaultButtonLeft = resourceManager->getImage("OSU_SKIN_BUTTON_LEFT_DEFAULT");
-	Image *defaultButtonLeft2 = m_buttonLeft;
-	if (defaultButtonLeft != NULL)
-		m_defaultButtonLeft = defaultButtonLeft;
-	else if (defaultButtonLeft2 != NULL)
-		m_defaultButtonLeft = defaultButtonLeft2;
+	m_defaultButtonLeft = defaultButtonLeft ? defaultButtonLeft : m_buttonLeft;
 
 	Image *defaultButtonMiddle = resourceManager->getImage("OSU_SKIN_BUTTON_MIDDLE_DEFAULT");
-	Image *defaultButtonMiddle2 = m_buttonMiddle;
-	if (defaultButtonMiddle != NULL)
-		m_defaultButtonMiddle = defaultButtonMiddle;
-	else if (defaultButtonMiddle2 != NULL)
-		m_defaultButtonMiddle = defaultButtonMiddle2;
+	m_defaultButtonMiddle = defaultButtonMiddle ? defaultButtonMiddle : m_buttonMiddle;
 
 	Image *defaultButtonRight = resourceManager->getImage("OSU_SKIN_BUTTON_RIGHT_DEFAULT");
-	Image *defaultButtonRight2 = m_buttonRight;
-	if (defaultButtonRight != NULL)
-		m_defaultButtonRight = defaultButtonRight;
-	else if (defaultButtonRight2 != NULL)
-		m_defaultButtonRight = defaultButtonRight2;
+	m_defaultButtonRight = defaultButtonRight ? defaultButtonRight : m_buttonRight;
 
 	// print some debug info
-	debugLog("OsuSkin: Version {:f}\n", m_fVersion);
+	debugLog("OsuSkin: Version {:.1f}\n", m_fVersion);
 	debugLog("OsuSkin: HitCircleOverlap = {}\n", m_iHitCircleOverlap);
 
 	// delayed error notifications due to resource loading potentially blocking engine time
@@ -1471,284 +1330,188 @@ OsuSkinImage *OsuSkin::createOsuSkinImage(UString skinElementName, Vector2 baseS
 	return skinImage;
 }
 
-void OsuSkin::checkLoadImage(Image **addressOfPointer, UString skinElementName, UString resourceName, bool ignoreDefaultSkin, UString fileExtension, bool forceLoadMipmaps, bool forceUseDefaultSkin)
+void OsuSkin::checkLoadImage(Image **addressOfPointer, UString skinElementName, UString resourceName, bool ignoreDefaultSkin, UString fileExtension,
+                    bool forceLoadMipmaps, bool forceUseDefaultSkin)
 {
-	if (*addressOfPointer != m_missingTexture) return; // we are already loaded
+	if (*addressOfPointer != m_missingTexture)
+		return;
 
-	// NOTE: only the default skin is loaded with a resource name (it must never be unloaded by other instances), and it is NOT added to the resources vector
+	const UString userHd = buildUserPath(skinElementName, fileExtension.toUtf8(), true);
+	const UString userNormal = buildUserPath(skinElementName, fileExtension.toUtf8(), false);
+	const UString defaultHd = buildDefaultPath(skinElementName, fileExtension.toUtf8(), true);
+	const UString defaultNormal = buildDefaultPath(skinElementName, fileExtension.toUtf8(), false);
 
-	UString defaultFilePath1 = ResourceManager::PATH_DEFAULT_IMAGES;
-	defaultFilePath1.append(OSUSKIN_DEFAULT_SKIN_PATH);
-	defaultFilePath1.append(skinElementName);
-	defaultFilePath1.append("@2x.");
-	defaultFilePath1.append(fileExtension);
+	const bool existsUserHd = !forceUseDefaultSkin && skinFileExists(userHd);
+	const bool existsUserNormal = !forceUseDefaultSkin && skinFileExists(userNormal);
+	const bool existsDefaultHd = skinFileExists(defaultHd);
+	const bool existsDefaultNormal = skinFileExists(defaultNormal);
 
-	UString defaultFilePath2 = ResourceManager::PATH_DEFAULT_IMAGES;
-	defaultFilePath2.append(OSUSKIN_DEFAULT_SKIN_PATH);
-	defaultFilePath2.append(skinElementName);
-	defaultFilePath2.append(".");
-	defaultFilePath2.append(fileExtension);
-
-	UString filepath1 = m_sFilePath;
-	filepath1.append(skinElementName);
-	filepath1.append("@2x.");
-	filepath1.append(fileExtension);
-
-	UString filepath2 = m_sFilePath;
-	filepath2.append(skinElementName);
-	filepath2.append(".");
-	filepath2.append(fileExtension);
-
-	const bool existsDefaultFilePath1 = env->fileExists(defaultFilePath1);
-	const bool existsDefaultFilePath2 = env->fileExists(defaultFilePath2);
-	const bool existsFilepath1 = (!forceUseDefaultSkin && env->fileExists(filepath1));
-	const bool existsFilepath2 = (!forceUseDefaultSkin && env->fileExists(filepath2));
-
-	// check if an @2x version of this image exists
+	// hd loading priority
 	if (osu_skin_hd.getBool())
 	{
-		// load default skin
-
+		// try default hd first if needed
 		if (!ignoreDefaultSkin || forceUseDefaultSkin)
 		{
-			if (existsDefaultFilePath1)
+			if (existsDefaultHd)
 			{
-				UString defaultResourceName = resourceName;
-				defaultResourceName.append("_DEFAULT"); // so we don't load the default skin twice
-
+				UString defaultResourceName = resourceName + "_DEFAULT";
 				if (osu_skin_async.getBool())
 					resourceManager->requestNextLoadAsync();
-
-				*addressOfPointer = resourceManager->loadImageAbs(defaultFilePath1, defaultResourceName, osu_skin_mipmaps.getBool() || forceLoadMipmaps);
-				///m_resources.push_back(*addressOfPointer); // DEBUG: also reload default skin
+				*addressOfPointer = resourceManager->loadImageAbs(defaultHd, defaultResourceName, osu_skin_mipmaps.getBool() || forceLoadMipmaps);
 			}
-			else // fallback to @1x
+			else if (existsDefaultNormal)
 			{
-				if (existsDefaultFilePath2)
-				{
-					UString defaultResourceName = resourceName;
-					defaultResourceName.append("_DEFAULT"); // so we don't load the default skin twice
-
-					if (osu_skin_async.getBool())
-						resourceManager->requestNextLoadAsync();
-
-					*addressOfPointer = resourceManager->loadImageAbs(defaultFilePath2, defaultResourceName, osu_skin_mipmaps.getBool() || forceLoadMipmaps);
-					///m_resources.push_back(*addressOfPointer); // DEBUG: also reload default skin
-				}
+				UString defaultResourceName = resourceName + "_DEFAULT";
+				if (osu_skin_async.getBool())
+					resourceManager->requestNextLoadAsync();
+				*addressOfPointer = resourceManager->loadImageAbs(defaultNormal, defaultResourceName, osu_skin_mipmaps.getBool() || forceLoadMipmaps);
 			}
 		}
 
-		// load user skin
-
-		if (existsFilepath1 && !forceUseDefaultSkin)
+		// try user hd
+		if (existsUserHd && !forceUseDefaultSkin)
 		{
 			if (osu_skin_async.getBool())
 				resourceManager->requestNextLoadAsync();
-
-			*addressOfPointer = resourceManager->loadImageAbs(filepath1, "", osu_skin_mipmaps.getBool() || forceLoadMipmaps);
+			*addressOfPointer = resourceManager->loadImageAbs(userHd, "", osu_skin_mipmaps.getBool() || forceLoadMipmaps);
 			m_resources.push_back(*addressOfPointer);
 
-			// export
-			{
-				m_filepathsForExport.push_back(filepath1);
-
-				if (existsFilepath2)
-					m_filepathsForExport.push_back(filepath2);
-
-				// if (!existsFilepath1 && !existsFilepath2) // huh?
-				// {
-				// 	if (existsDefaultFilePath1)
-				// 		m_filepathsForExport.push_back(defaultFilePath1);
-
-				// 	if (existsDefaultFilePath2)
-				// 		m_filepathsForExport.push_back(defaultFilePath2);
-				// }
-			}
-
-			return; // nothing more to do here
+			m_filepathsForExport.push_back(userHd);
+			if (existsUserNormal)
+				m_filepathsForExport.push_back(userNormal);
+			return;
 		}
 	}
 
-	// else load normal @1x version
-
-	// load default skin
-
+	// normal loading
 	if (!ignoreDefaultSkin || forceUseDefaultSkin)
 	{
-		if (existsDefaultFilePath2)
+		if (existsDefaultNormal)
 		{
-			UString defaultResourceName = resourceName;
-			defaultResourceName.append("_DEFAULT"); // so we don't load the default skin twice
-
+			UString defaultResourceName = resourceName + "_DEFAULT";
 			if (osu_skin_async.getBool())
 				resourceManager->requestNextLoadAsync();
-
-			*addressOfPointer = resourceManager->loadImageAbs(defaultFilePath2, defaultResourceName, osu_skin_mipmaps.getBool() || forceLoadMipmaps);
-			///m_resources.push_back(*addressOfPointer); // DEBUG: also reload default skin
+			*addressOfPointer = resourceManager->loadImageAbs(defaultNormal, defaultResourceName, osu_skin_mipmaps.getBool() || forceLoadMipmaps);
 		}
 	}
 
-	// load user skin
-
-	if (existsFilepath2 && !forceUseDefaultSkin)
+	if (existsUserNormal && !forceUseDefaultSkin)
 	{
 		if (osu_skin_async.getBool())
 			resourceManager->requestNextLoadAsync();
-
-		*addressOfPointer = resourceManager->loadImageAbs(filepath2, "", osu_skin_mipmaps.getBool() || forceLoadMipmaps);
+		*addressOfPointer = resourceManager->loadImageAbs(userNormal, "", osu_skin_mipmaps.getBool() || forceLoadMipmaps);
 		m_resources.push_back(*addressOfPointer);
 	}
 
-	// export
+	// export paths
+	if (!forceUseDefaultSkin)
 	{
-		if (!forceUseDefaultSkin)
-		{
-			if (existsFilepath1)
-				m_filepathsForExport.push_back(filepath1);
+		if (existsUserHd)
+			m_filepathsForExport.push_back(userHd);
+		if (existsUserNormal)
+			m_filepathsForExport.push_back(userNormal);
+	}
 
-			if (existsFilepath2)
-				m_filepathsForExport.push_back(filepath2);
-		}
-
-		if ((!existsFilepath1 && !existsFilepath2) || forceUseDefaultSkin)
-		{
-			if (existsDefaultFilePath1)
-				m_filepathsForExport.push_back(defaultFilePath1);
-
-			if (existsDefaultFilePath2)
-				m_filepathsForExport.push_back(defaultFilePath2);
-		}
+	if ((!existsUserHd && !existsUserNormal) || forceUseDefaultSkin)
+	{
+		if (existsDefaultHd)
+			m_filepathsForExport.push_back(defaultHd);
+		if (existsDefaultNormal)
+			m_filepathsForExport.push_back(defaultNormal);
 	}
 }
 
-void OsuSkin::checkLoadSound(Sound **addressOfPointer, UString skinElementName, UString resourceName, bool isOverlayable, bool isSample, bool loop, float hardcodedVolumeMultiplier)
+void OsuSkin::checkLoadSound(Sound **addressOfPointer, UString skinElementName, UString resourceName, bool isOverlayable, bool isSample, bool loop,
+                    float hardcodedVolumeMultiplier)
 {
-	if (*addressOfPointer != NULL) return; // we are already loaded
+	if (*addressOfPointer != nullptr)
+		return;
 
-	// NOTE: only the default skin is loaded with a resource name (it must never be unloaded by other instances), and it is NOT added to the resources vector
-
-	// random skin support
 	randomizeFilePath();
 
-	// load default skin
+	// build all possible paths
+	const UString defaultWav = buildDefaultPath(skinElementName, "wav");
+	const UString defaultMp3 = buildDefaultPath(skinElementName, "mp3");
+	const UString defaultOgg = buildDefaultPath(skinElementName, "ogg");
+	const UString userWav = buildUserPath(skinElementName, "wav");
+	const UString userMp3 = buildUserPath(skinElementName, "mp3");
+	const UString userOgg = buildUserPath(skinElementName, "ogg");
 
-	UString defaultpath1 = ResourceManager::PATH_DEFAULT_IMAGES;
-	{
-		defaultpath1.append(OSUSKIN_DEFAULT_SKIN_PATH);
-		defaultpath1.append(skinElementName);
-		defaultpath1.append(".wav");
-	}
+	UString defaultResourceName = resourceName + "_DEFAULT";
 
-	UString defaultpath2 = ResourceManager::PATH_DEFAULT_IMAGES;
-	{
-		defaultpath2.append(OSUSKIN_DEFAULT_SKIN_PATH);
-		defaultpath2.append(skinElementName);
-		defaultpath2.append(".mp3");
-	}
-
-	UString defaultpath3 = ResourceManager::PATH_DEFAULT_IMAGES;
-	{
-		defaultpath3.append(OSUSKIN_DEFAULT_SKIN_PATH);
-		defaultpath3.append(skinElementName);
-		defaultpath3.append(".ogg");
-	}
-
-	UString defaultResourceName = resourceName;
-	defaultResourceName.append("_DEFAULT");
-	if (env->fileExists(defaultpath1))
+	// load default first
+	if (skinFileExists(defaultWav))
 	{
 		if (osu_skin_async.getBool())
 			resourceManager->requestNextLoadAsync();
-
-		*addressOfPointer = resourceManager->loadSoundAbs(defaultpath1, defaultResourceName, false, false, loop);
+		*addressOfPointer = resourceManager->loadSoundAbs(defaultWav, defaultResourceName, false, false, loop);
 	}
-	else if (env->fileExists(defaultpath2))
+	else if (skinFileExists(defaultMp3))
 	{
 		if (osu_skin_async.getBool())
 			resourceManager->requestNextLoadAsync();
-
-		*addressOfPointer = resourceManager->loadSoundAbs(defaultpath2, defaultResourceName, false, false, loop);
+		*addressOfPointer = resourceManager->loadSoundAbs(defaultMp3, defaultResourceName, false, false, loop);
 	}
-	else if (env->fileExists(defaultpath3))
+	else if (skinFileExists(defaultOgg))
 	{
 		if (osu_skin_async.getBool())
 			resourceManager->requestNextLoadAsync();
-
-		*addressOfPointer = resourceManager->loadSoundAbs(defaultpath3, defaultResourceName, false, false, loop);
+		*addressOfPointer = resourceManager->loadSoundAbs(defaultOgg, defaultResourceName, false, false, loop);
 	}
 
-	// load user skin
-
+	// load user skin if appropriate
 	bool isDefaultSkin = true;
 	if (!isSample || osu_skin_use_skin_hitsounds.getBool())
 	{
-		// check if mp3 or wav exist
-		UString filepath1 = m_sFilePath;
-		filepath1.append(skinElementName);
-		filepath1.append(".wav");
-
-		UString filepath2 = m_sFilePath;
-		filepath2.append(skinElementName);
-		filepath2.append(".mp3");
-
-		UString filepath3 = m_sFilePath;
-		filepath3.append(skinElementName);
-		filepath3.append(".ogg");
-
-		// load it
-		if (env->fileExists(filepath1))
+		if (skinFileExists(userWav))
 		{
 			if (osu_skin_async.getBool())
 				resourceManager->requestNextLoadAsync();
-
-			*addressOfPointer = resourceManager->loadSoundAbs(filepath1, "", false, false, loop);
+			*addressOfPointer = resourceManager->loadSoundAbs(userWav, "", false, false, loop);
 			isDefaultSkin = false;
 		}
-		else if (env->fileExists(filepath2))
+		else if (skinFileExists(userMp3))
 		{
 			if (osu_skin_async.getBool())
 				resourceManager->requestNextLoadAsync();
-
-			*addressOfPointer = resourceManager->loadSoundAbs(filepath2, "", false, false, loop);
+			*addressOfPointer = resourceManager->loadSoundAbs(userMp3, "", false, false, loop);
 			isDefaultSkin = false;
 		}
-		else if (env->fileExists(filepath3))
+		else if (skinFileExists(userOgg))
 		{
 			if (osu_skin_async.getBool())
 				resourceManager->requestNextLoadAsync();
-
-			*addressOfPointer = resourceManager->loadSoundAbs(filepath3, "", false, false, loop);
+			*addressOfPointer = resourceManager->loadSoundAbs(userOgg, "", false, false, loop);
 			isDefaultSkin = false;
 		}
 	}
 
-	// force reload default skin sound anyway if the custom skin does not include it (e.g. audio device change)
-	if (isDefaultSkin && *addressOfPointer != NULL)
+	// reload default if needed
+	if (isDefaultSkin && *addressOfPointer != nullptr)
 		resourceManager->reloadResource(*addressOfPointer, osu_skin_async.getBool());
 
-	if ((*addressOfPointer) != NULL)
+	if (*addressOfPointer != nullptr)
 	{
 		if (isOverlayable)
 			(*addressOfPointer)->setOverlayable(true);
-
 		if (!isDefaultSkin)
 			m_resources.push_back(*addressOfPointer);
-
 		m_sounds.push_back(*addressOfPointer);
 
 		if (isSample)
 		{
 			SOUND_SAMPLE sample;
 			sample.sound = *addressOfPointer;
-			sample.hardcodedVolumeMultiplier = (hardcodedVolumeMultiplier >= 0.0f ? hardcodedVolumeMultiplier : 1.0f);
+			sample.hardcodedVolumeMultiplier = hardcodedVolumeMultiplier >= 0.0f ? hardcodedVolumeMultiplier : 1.0f;
 			m_soundSamples.push_back(sample);
 		}
 
-		// export
 		m_filepathsForExport.push_back((*addressOfPointer)->getFilePath());
 	}
 	else
-		debugLog("OsuSkin Warning: NULL sound {:s}!\n", skinElementName.toUtf8());
+	{
+		debugLog("OsuSkin Warning: NULL sound {}!\n", skinElementName);
+	}
 }
 
 bool OsuSkin::compareFilenameWithSkinElementName(UString filename, UString skinElementName)
@@ -1758,3 +1521,23 @@ bool OsuSkin::compareFilenameWithSkinElementName(UString filename, UString skinE
 	return filename.substr(0, filename.findLast(".")) == skinElementName;
 }
 
+bool OsuSkin::skinFileExists(const UString &path)
+{
+	auto it = m_fileExistsCache.find(path);
+	if (it != m_fileExistsCache.end())
+		return it->second;
+
+	bool result = env->fileExists(path);
+	m_fileExistsCache[path] = result;
+	return result;
+}
+
+UString OsuSkin::buildUserPath(const UString &element, const char *ext, bool hd) const
+{
+	return UString::fmt("{}{}{}.{}", m_sFilePath, element, hd ? "@2x" : "", ext);
+}
+
+UString OsuSkin::buildDefaultPath(const UString &element, const char *ext, bool hd) const
+{
+	return UString::fmt("{}{}{}{}.{}", ResourceManager::PATH_DEFAULT_IMAGES, OSUSKIN_DEFAULT_SKIN_PATH, element, hd ? "@2x" : "", ext);
+}

@@ -26,6 +26,8 @@ ConVar snd_file_min_size(
     "snd_file_min_size", 51, FCVAR_NONE,
     "minimum file size in bytes for WAV files to be considered valid (everything below will fail to load), this is a workaround for BASS crashes");
 
+ConVar snd_force_load_unknown("snd_force_load_unknown", false, FCVAR_NONE);
+
 Sound::Sound(UString filepath, bool stream, bool threeD, bool loop, bool prescan) : Resource(filepath)
 {
 	m_bStream = stream;
@@ -52,7 +54,7 @@ void Sound::initAsync()
 	fileExtensionLowerCase.lowerCase();
 
 	if (!m_sFilePath.isEmpty() && !fileExtensionLowerCase.isEmpty())
-		m_bIgnored = !isValidAudioFile(m_sFilePath, fileExtensionLowerCase);
+		m_bIgnored = (!isValidAudioFile(m_sFilePath, fileExtensionLowerCase) && !snd_force_load_unknown.getBool());
 	else if (debug_snd.getBool())
 		debugLog("Sound: Ignoring malformed/corrupt .{:s} file {:s}\n", fileExtensionLowerCase, m_sFilePath);
 }
