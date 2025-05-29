@@ -80,6 +80,7 @@ public:
 	using FileDialogCallback = std::function<void(const std::vector<UString> &paths)>;
 	void openFileWindow(FileDialogCallback callback, const char *filetypefilters, UString title, UString initialpath = "") const;
 	void openFolderWindow(FileDialogCallback callback, UString initialpath = "") const;
+	void openFileBrowser(UString title, UString initialpath = "") const noexcept;
 
 	// window
 	void focus();

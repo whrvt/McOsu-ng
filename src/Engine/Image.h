@@ -77,6 +77,9 @@ protected:
 	std::vector<unsigned char> m_rawImage;
 
 private:
+	[[nodiscard]] bool isCompletelyTransparent() const;
+	static bool canHaveTransparency(const unsigned char *data, size_t size);	
+
 	static bool decodePNGFromMemory(const unsigned char *data, size_t size, std::vector<unsigned char> &outData, int &outWidth, int &outHeight, int &outChannels);
 };
 

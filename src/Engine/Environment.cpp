@@ -467,6 +467,25 @@ void Environment::openFolderWindow(FileDialogCallback callback, UString initialp
 	SDL_ShowOpenFolderDialog(sdlFileDialogCallback, callbackData, m_window, initialpath.length() > 0 ? initialpath.toUtf8() : nullptr, false);
 }
 
+// just open the file manager in a certain folder, but not do anything with it
+void Environment::openFileBrowser(UString, UString initialpath) const noexcept
+{
+	if (initialpath.isEmpty())
+		initialpath = getExecutablePath(); // just open the exe directory
+	else
+	{
+		std::error_code ec;
+		auto abs_path = std::filesystem::canonical(initialpath.plat_str(), ec); // need the absolute path first
+		if (ec)
+			initialpath = UString::fmt("{}{}{}", getExecutablePath(), Env::cfg(OS::WINDOWS) ? "\\" : "/", initialpath); // fallback to a subfolder from the exe directory
+		else
+			initialpath = abs_path.c_str(); // found the full path to the file
+	}
+	UString pathToOpen = UString::fmt("file:///{}", initialpath);
+	if (!SDL_OpenURL(pathToOpen.toUtf8()))
+		debugLog("Failed to open file URI {:s}: {:s}\n", pathToOpen, SDL_GetError());
+}
+
 void Environment::focus()
 {
 	SDL_RaiseWindow(m_window);

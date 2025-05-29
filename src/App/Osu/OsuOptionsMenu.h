@@ -124,6 +124,7 @@ private:
 	[[maybe_unused]] void onSkinSelectWorkshop2();
 	[[maybe_unused]] void onSkinSelectWorkshop3();
 	[[maybe_unused]] void onSkinSelectWorkshop4(UString skinName, int id);
+	void openCurrentSkinFolder();
 	void onSkinReload();
 	void onSkinRandom();
 	void onResolutionSelect();

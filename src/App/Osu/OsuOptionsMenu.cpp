@@ -752,6 +752,9 @@ OsuOptionsMenu::OsuOptionsMenu() : OsuScreenBackable()
 
 		((CBaseUIButton*)m_skinSelectLocalButton)->setClickCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onSkinSelect) );
 
+		OsuUIButton *openCurrentSkinFolderButton = addButton("Open current skin folder");
+		openCurrentSkinFolderButton->setClickCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::openCurrentSkinFolder) );
+
 		OPTIONS_ELEMENT skinReload = addButtonButton("Reload Skin", "Random Skin");
 		((OsuUIButton*)skinReload.elements[0])->setClickCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onSkinReload) );
 		((OsuUIButton*)skinReload.elements[0])->setTooltipText("(CTRL + ALT + S)");
@@ -2518,6 +2521,15 @@ void OsuOptionsMenu::onSkinSelectWorkshop4(UString skinName, int id)
 				osu->getNotificationOverlay()->addNotification("Error: Workshop skin does not exist!", 0xffff0000);
 		}
 	}
+}
+
+void OsuOptionsMenu::openCurrentSkinFolder()
+{
+	UString skinFolderToOpen = // yikes
+	    osu->getSkin()->isDefaultSkin()
+	        ? UString::fmt("{}{}{}", ResourceManager::PATH_DEFAULT_IMAGES, Env::cfg(OS::WINDOWS) ? "\\" : "/", OsuSkin::OSUSKIN_DEFAULT_SKIN_PATH)
+	        : osu->getSkin()->getFilePath();
+	env->openFileBrowser("skin folder", skinFolderToOpen);
 }
 
 void OsuOptionsMenu::onSkinReload()
