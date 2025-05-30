@@ -166,7 +166,7 @@ unsigned char OsuFile::readByte()
 {
 	if (!m_bReady || m_readPointer >= (m_buffer + m_iFileSize)) return 0;
 
-	const unsigned char value = (unsigned char)*m_readPointer;
+	const auto value = (unsigned char)*m_readPointer;
 	m_readPointer += 1;
 
 	return value;

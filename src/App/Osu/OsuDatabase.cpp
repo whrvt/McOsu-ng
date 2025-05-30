@@ -66,8 +66,8 @@ ConVar osu_user_switcher_include_legacy_scores_for_names("osu_user_switcher_incl
 
 struct SortScoreByScore final : public OsuDatabase::SCORE_SORTING_COMPARATOR
 {
-	virtual ~SortScoreByScore() {;}
-	bool operator() (OsuDatabase::Score const &a, OsuDatabase::Score const &b) const
+	~SortScoreByScore() override {;}
+	bool operator() (OsuDatabase::Score const &a, OsuDatabase::Score const &b) const override
 	{
 		// first: score
 		unsigned long long score1 = a.score;
@@ -90,8 +90,8 @@ struct SortScoreByScore final : public OsuDatabase::SCORE_SORTING_COMPARATOR
 
 struct SortScoreByCombo final : public OsuDatabase::SCORE_SORTING_COMPARATOR
 {
-	virtual ~SortScoreByCombo() {;}
-	bool operator() (OsuDatabase::Score const &a, OsuDatabase::Score const &b) const
+	~SortScoreByCombo() override {;}
+	bool operator() (OsuDatabase::Score const &a, OsuDatabase::Score const &b) const override
 	{
 		// first: combo
 		unsigned long long score1 = a.comboMax;
@@ -121,8 +121,8 @@ struct SortScoreByCombo final : public OsuDatabase::SCORE_SORTING_COMPARATOR
 
 struct SortScoreByDate final : public OsuDatabase::SCORE_SORTING_COMPARATOR
 {
-	virtual ~SortScoreByDate() {;}
-	bool operator() (OsuDatabase::Score const &a, OsuDatabase::Score const &b) const
+	~SortScoreByDate() override {;}
+	bool operator() (OsuDatabase::Score const &a, OsuDatabase::Score const &b) const override
 	{
 		// first: time
 		unsigned long long score1 = a.unixTimestamp;
@@ -138,8 +138,8 @@ struct SortScoreByDate final : public OsuDatabase::SCORE_SORTING_COMPARATOR
 
 struct SortScoreByMisses final : public OsuDatabase::SCORE_SORTING_COMPARATOR
 {
-	virtual ~SortScoreByMisses() {;}
-	bool operator() (OsuDatabase::Score const &a, OsuDatabase::Score const &b) const
+	~SortScoreByMisses() override {;}
+	bool operator() (OsuDatabase::Score const &a, OsuDatabase::Score const &b) const override
 	{
 		// first: misses
 		unsigned long long score1 = b.numMisses; // swapped (lower numMisses is better)
@@ -169,12 +169,12 @@ struct SortScoreByMisses final : public OsuDatabase::SCORE_SORTING_COMPARATOR
 
 struct SortScoreByAccuracy final : public OsuDatabase::SCORE_SORTING_COMPARATOR
 {
-	virtual ~SortScoreByAccuracy() {;}
-	bool operator() (OsuDatabase::Score const &a, OsuDatabase::Score const &b) const
+	~SortScoreByAccuracy() override {;}
+	bool operator() (OsuDatabase::Score const &a, OsuDatabase::Score const &b) const override
 	{
 		// first: accuracy
-		unsigned long long score1 = (unsigned long long)(OsuScore::calculateAccuracy(a.num300s, a.num100s, a.num50s, a.numMisses) * 10000.0f);
-		unsigned long long score2 = (unsigned long long)(OsuScore::calculateAccuracy(b.num300s, b.num100s, b.num50s, b.numMisses) * 10000.0f);
+		auto score1 = (unsigned long long)(OsuScore::calculateAccuracy(a.num300s, a.num100s, a.num50s, a.numMisses) * 10000.0f);
+		auto score2 = (unsigned long long)(OsuScore::calculateAccuracy(b.num300s, b.num100s, b.num50s, b.numMisses) * 10000.0f);
 
 		// second: score
 		if (score1 == score2)
@@ -200,8 +200,8 @@ struct SortScoreByAccuracy final : public OsuDatabase::SCORE_SORTING_COMPARATOR
 
 struct SortScoreByPP final : public OsuDatabase::SCORE_SORTING_COMPARATOR
 {
-	virtual ~SortScoreByPP() {;}
-	bool operator() (OsuDatabase::Score const &a, OsuDatabase::Score const &b) const
+	~SortScoreByPP() override {;}
+	bool operator() (OsuDatabase::Score const &a, OsuDatabase::Score const &b) const override
 	{
 		// first: pp
 		float ppA = std::max((a.isLegacyScore ? -b.score : a.pp), 0.0f);
@@ -225,12 +225,12 @@ struct SortScoreByPP final : public OsuDatabase::SCORE_SORTING_COMPARATOR
 
 struct SortScoreByUnstableRate final : public OsuDatabase::SCORE_SORTING_COMPARATOR
 {
-	virtual ~SortScoreByUnstableRate() {;}
-	bool operator() (OsuDatabase::Score const &a, OsuDatabase::Score const &b) const
+	~SortScoreByUnstableRate() override {;}
+	bool operator() (OsuDatabase::Score const &a, OsuDatabase::Score const &b) const override
 	{
 		// first: UR (reversed, lower is better)
-		unsigned long long ur1 = (unsigned long long)(std::abs(a.isLegacyScore ? -a.sortHack : a.unstableRate) * 100000.0f);
-		unsigned long long ur2 = (unsigned long long)(std::abs(b.isLegacyScore ? -b.sortHack : b.unstableRate) * 100000.0f);
+		auto ur1 = (unsigned long long)(std::abs(a.isLegacyScore ? -a.sortHack : a.unstableRate) * 100000.0f);
+		auto ur2 = (unsigned long long)(std::abs(b.isLegacyScore ? -b.sortHack : b.unstableRate) * 100000.0f);
 
 		// strict weak ordering!
 		if (ur1 == ur2)
@@ -283,9 +283,9 @@ protected:
 			if (m_bNeedCleanup)
 			{
 				m_bNeedCleanup = false;
-				for (int i=0; i<m_toCleanup.size(); i++)
+				for (auto & i : m_toCleanup)
 				{
-					delete m_toCleanup[i];
+					delete i;
 				}
 				m_toCleanup.clear();
 			}
@@ -396,14 +396,14 @@ OsuDatabase::~OsuDatabase()
 {
 	SAFE_DELETE(m_importTimer);
 
-	for (int i=0; i<m_databaseBeatmaps.size(); i++)
+	for (auto & dbBeatmap : m_databaseBeatmaps)
 	{
-		delete m_databaseBeatmaps[i];
+		delete dbBeatmap;
 	}
 
-	for (int i=0; i<m_scoreSortingMethods.size(); i++)
+	for (auto & sortMethod : m_scoreSortingMethods)
 	{
-		delete m_scoreSortingMethods[i].comparator;
+		delete sortMethod.comparator;
 	}
 }
 
@@ -467,7 +467,7 @@ void OsuDatabase::load()
 	m_bInterruptLoad = false;
 	m_fLoadingProgress = 0.0f;
 
-	OsuDatabaseLoader *loader = new OsuDatabaseLoader(this); // (deletes itself after finishing)
+	auto *loader = new OsuDatabaseLoader(this); // (deletes itself after finishing)
 
 	resourceManager->requestNextLoadAsync();
 	resourceManager->loadResource(loader);
@@ -590,9 +590,9 @@ void OsuDatabase::sortScores(std::string beatmapMD5Hash)
 {
 	if (beatmapMD5Hash.length() != 32 || m_scores[beatmapMD5Hash].size() < 2) return;
 
-	for (auto & m_scoreSortingMethod : m_scoreSortingMethods)
+	for (auto & sortMethod : m_scoreSortingMethods)
 	{
-		if (m_osu_songbrowser_scores_sortingtype_ref->getString() == m_scoreSortingMethod.name)
+		if (m_osu_songbrowser_scores_sortingtype_ref->getString() == sortMethod.name)
 		{
 			struct COMPARATOR_WRAPPER
 			{
@@ -603,7 +603,7 @@ void OsuDatabase::sortScores(std::string beatmapMD5Hash)
 				}
 			};
 			COMPARATOR_WRAPPER comparatorWrapper;
-			comparatorWrapper.comp = m_scoreSortingMethod.comparator;
+			comparatorWrapper.comp = sortMethod.comparator;
 
 			std::sort(m_scores[beatmapMD5Hash].begin(), m_scores[beatmapMD5Hash].end(), comparatorWrapper);
 			return;
@@ -618,9 +618,9 @@ bool OsuDatabase::addCollection(UString collectionName)
 	if (collectionName.length() < 1) return false;
 
 	// don't want duplicates
-	for (auto & m_collection : m_collections)
+	for (auto & collection : m_collections)
 	{
-		if (m_collection.name == collectionName)
+		if (collection.name == collectionName)
 			return false;
 	}
 
@@ -648,20 +648,20 @@ bool OsuDatabase::renameCollection(UString oldCollectionName, UString newCollect
 	if (oldCollectionName == newCollectionName) return false;
 
 	// don't want duplicates
-	for (auto & m_collection : m_collections)
+	for (auto & collection : m_collections)
 	{
-		if (m_collection.name == newCollectionName)
+		if (collection.name == newCollectionName)
 			return false;
 	}
 
-	for (auto & m_collection : m_collections)
+	for (auto & collection : m_collections)
 	{
-		if (m_collection.name == oldCollectionName)
+		if (collection.name == oldCollectionName)
 		{
 			// can't rename loaded osu! collections
-			if (!m_collection.isLegacyCollection)
+			if (!collection.isLegacyCollection)
 			{
-				m_collection.name = newCollectionName;
+				collection.name = newCollectionName;
 
 				std::ranges::sort(m_collections, SortCollectionByName());
 
@@ -706,12 +706,12 @@ void OsuDatabase::addBeatmapToCollection(UString collectionName, std::string bea
 {
 	if (beatmapMD5Hash.length() != 32) return;
 
-	for (auto & m_collection : m_collections)
+	for (auto & collection : m_collections)
 	{
-		if (m_collection.name == collectionName)
+		if (collection.name == collectionName)
 		{
 			bool containedAlready = false;
-			for (auto & hash : m_collection.hashes)
+			for (auto & hash : collection.hashes)
 			{
 				if (hash.hash == beatmapMD5Hash)
 				{
@@ -728,7 +728,7 @@ void OsuDatabase::addBeatmapToCollection(UString collectionName, std::string bea
 
 					entry.hash = beatmapMD5Hash;
 				}
-				m_collection.hashes.push_back(entry);
+				collection.hashes.push_back(entry);
 
 				m_bDidCollectionsChangeForSave = true;
 
@@ -743,7 +743,7 @@ void OsuDatabase::addBeatmapToCollection(UString collectionName, std::string bea
 					if (beatmap != NULL && diff2 != NULL)
 					{
 						bool beatmapContainedAlready = false;
-						for (auto & b : m_collection.beatmaps)
+						for (auto & b : collection.beatmaps)
 						{
 							if (b.first == beatmap)
 							{
@@ -772,7 +772,7 @@ void OsuDatabase::addBeatmapToCollection(UString collectionName, std::string bea
 							{
 								diffs2.push_back(diff2);
 							}
-							m_collection.beatmaps.emplace_back(beatmap, diffs2);
+							collection.beatmaps.emplace_back(beatmap, diffs2);
 						}
 					}
 				}
@@ -787,19 +787,19 @@ void OsuDatabase::removeBeatmapFromCollection(UString collectionName, std::strin
 {
 	if (beatmapMD5Hash.length() != 32) return;
 
-	for (auto & m_collection : m_collections)
+	for (auto & collection : m_collections)
 	{
-		if (m_collection.name == collectionName)
+		if (collection.name == collectionName)
 		{
 			bool didRemove = false;
-			for (size_t h=0; h<m_collection.hashes.size(); h++)
+			for (size_t h=0; h<collection.hashes.size(); h++)
 			{
-				if (m_collection.hashes[h].hash == beatmapMD5Hash)
+				if (collection.hashes[h].hash == beatmapMD5Hash)
 				{
 					// can't delete loaded osu! collection entries
-					if (!m_collection.hashes[h].isLegacyEntry)
+					if (!collection.hashes[h].isLegacyEntry)
 					{
-						m_collection.hashes.erase(m_collection.hashes.begin() + h);
+						collection.hashes.erase(collection.hashes.begin() + h);
 
 						didRemove = true;
 
@@ -816,7 +816,7 @@ void OsuDatabase::removeBeatmapFromCollection(UString collectionName, std::strin
 			// also update .beatmaps for convenience (songbrowser will use that to rebuild the UI)
 			if (didRemove)
 			{
-				for (auto & beatmap : m_collection.beatmaps)
+				for (auto & beatmap : collection.beatmaps)
 				{
 					bool found = false;
 					for (size_t d=0; d<beatmap.second.size(); d++)
@@ -1228,9 +1228,9 @@ void OsuDatabase::scheduleLoadRaw()
 		for (int i=0; i<m_iNumBeatmapsToLoad; i++)
 		{
 			bool alreadyLoaded = false;
-			for (const auto & m_rawBeatmapFolder : m_rawBeatmapFolders)
+			for (const auto & rawBeatmapFolder : m_rawBeatmapFolders)
 			{
-				if (m_rawLoadBeatmapFolders[i] == m_rawBeatmapFolder)
+				if (m_rawLoadBeatmapFolders[i] == rawBeatmapFolder)
 				{
 					alreadyLoaded = true;
 					break;
@@ -1552,7 +1552,7 @@ void OsuDatabase::loadDB(OsuFile *db, bool &fallbackToRawLoad)
 		// fill diff with data
 		if ((mode == 0 && osu->getGamemode() == Osu::GAMEMODE::STD) || (mode == 0x03 && osu->getGamemode() == Osu::GAMEMODE::MANIA)) // gamemode filter
 		{
-			OsuDatabaseBeatmap *diff2 = new OsuDatabaseBeatmap(fullFilePath, beatmapPath);
+			auto *diff2 = new OsuDatabaseBeatmap(fullFilePath, beatmapPath);
 			{
 				diff2->m_sTitle = songTitle;
 				diff2->m_sAudioFileName = audioFileName;
@@ -1797,7 +1797,7 @@ void OsuDatabase::loadDB(OsuFile *db, bool &fallbackToRawLoad)
 		{
 			if (beatmapSet.setID > 0)
 			{
-				OsuDatabaseBeatmap *bm = new OsuDatabaseBeatmap(beatmapSet.diffs2);
+				auto *bm = new OsuDatabaseBeatmap(beatmapSet.diffs2);
 
 				m_databaseBeatmaps.push_back(bm);
 
@@ -1828,11 +1828,11 @@ void OsuDatabase::loadDB(OsuFile *db, bool &fallbackToRawLoad)
 		{
 			if (beatmapSet.setID < 1)
 			{
-				for (int b=0; b<beatmapSet.diffs2.size(); b++)
+				for (auto & b : beatmapSet.diffs2)
 				{
 					if (m_bInterruptLoad.load()) break; // cancellation point
 
-					OsuDatabaseBeatmap *diff2 = beatmapSet.diffs2[b];
+					OsuDatabaseBeatmap *diff2 = b;
 
 					// try finding an already existing beatmap with matching artist and title and creator (into which we could inject this lone diff)
 					bool existsAlready = false;
@@ -1861,9 +1861,9 @@ void OsuDatabase::loadDB(OsuFile *db, bool &fallbackToRawLoad)
 					if (!existsAlready)
 					{
 						std::vector<OsuDatabaseBeatmap*> diffs2;
-						diffs2.push_back(beatmapSet.diffs2[b]);
+						diffs2.push_back(b);
 
-						OsuDatabaseBeatmap *bm = new OsuDatabaseBeatmap(diffs2);
+						auto *bm = new OsuDatabaseBeatmap(diffs2);
 
 						m_databaseBeatmaps.push_back(bm);
 
@@ -2400,9 +2400,9 @@ void OsuDatabase::saveScores()
 
 			// count number of beatmaps with valid scores
 			int numBeatmaps = 0;
-			for (auto & m_score : m_scores)
+			for (auto & score : m_scores)
 			{
-				for (auto & i : m_score.second)
+				for (auto & i : score.second)
 				{
 					if (!i.isLegacyScore)
 					{
@@ -2417,10 +2417,10 @@ void OsuDatabase::saveScores()
 			db.writeInt(numBeatmaps);
 
 			// write scores for each beatmap
-			for (auto & m_score : m_scores)
+			for (auto & score : m_scores)
 			{
 				int numNonLegacyScores = 0;
-				for (auto & i : m_score.second)
+				for (auto & i : score.second)
 				{
 					if (!i.isLegacyScore)
 						numNonLegacyScores++;
@@ -2428,10 +2428,10 @@ void OsuDatabase::saveScores()
 
 				if (numNonLegacyScores > 0)
 				{
-					db.writeStdString(m_score.first);	// md5hash
+					db.writeStdString(score.first);	// md5hash
 					db.writeInt(numNonLegacyScores);// numScores
 
-					for (auto & i : m_score.second)
+					for (auto & i : score.second)
 					{
 						if (!i.isLegacyScore)
 						{
@@ -2781,14 +2781,14 @@ void OsuDatabase::saveCollections()
 			// if a collection or entry is deleted in osu!, then you would expect it to also be deleted here
 			// but, if a collection or entry is added in mcosu, then deleting the collection in osu! should only delete all osu!-side entries
 			int32_t numNonLegacyCollectionsOrCollectionsWithNonLegacyEntries = 0;
-			for (auto & m_collection : m_collections)
+			for (auto & collection : m_collections)
 			{
-				if (!m_collection.isLegacyCollection)
+				if (!collection.isLegacyCollection)
 					numNonLegacyCollectionsOrCollectionsWithNonLegacyEntries++;
 				else
 				{
 					// does this legacy collection have any non-legacy entries?
-					for (auto & hash : m_collection.hashes)
+					for (auto & hash : collection.hashes)
 					{
 						if (!hash.isLegacyEntry)
 						{
@@ -2804,11 +2804,11 @@ void OsuDatabase::saveCollections()
 
 			if (numNonLegacyCollectionsOrCollectionsWithNonLegacyEntries > 0)
 			{
-				for (auto & m_collection : m_collections)
+				for (auto & collection : m_collections)
 				{
 					bool hasNonLegacyEntries = false;
 					{
-						for (auto & hash : m_collection.hashes)
+						for (auto & hash : collection.hashes)
 						{
 							if (!hash.isLegacyEntry)
 							{
@@ -2818,19 +2818,19 @@ void OsuDatabase::saveCollections()
 						}
 					}
 
-					if (!m_collection.isLegacyCollection || hasNonLegacyEntries)
+					if (!collection.isLegacyCollection || hasNonLegacyEntries)
 					{
 						int32_t numNonLegacyEntries = 0;
-						for (auto & hash : m_collection.hashes)
+						for (auto & hash : collection.hashes)
 						{
 							if (!hash.isLegacyEntry)
 								numNonLegacyEntries++;
 						}
 
-						db.writeString(m_collection.name);
+						db.writeString(collection.name);
 						db.writeInt(numNonLegacyEntries);
 
-						for (auto & hash : m_collection.hashes)
+						for (auto & hash : collection.hashes)
 						{
 							if (!hash.isLegacyEntry)
 								db.writeStdString(hash.hash);
@@ -2867,7 +2867,7 @@ OsuDatabaseBeatmap *OsuDatabase::loadRawBeatmap(UString beatmapPath)
 			// load diffs
 			if (ext == "osu")
 			{
-				OsuDatabaseBeatmap *diff2 = new OsuDatabaseBeatmap(fullFilePath, beatmapPath);
+				auto *diff2 = new OsuDatabaseBeatmap(fullFilePath, beatmapPath);
 
 				// try to load it. if successful save it, else cleanup and continue to the next osu file
 				if (!OsuDatabaseBeatmap::loadMetadata(diff2))
@@ -2933,11 +2933,9 @@ void OsuDatabase::onScoresRename(UString args)
 	int numRenamedScores = 0;
 	for (auto &kv : m_scores)
 	{
-		for (size_t i=0; i<kv.second.size(); i++)
+		for (auto & score : kv.second)
 		{
-			Score &score = kv.second[i];
-
-			if (!score.isLegacyScore && score.playerName == playerName)
+				if (!score.isLegacyScore && score.playerName == playerName)
 			{
 				numRenamedScores++;
 				score.playerName = args;

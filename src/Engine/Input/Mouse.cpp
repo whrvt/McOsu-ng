@@ -269,9 +269,9 @@ void Mouse::onWheelVertical(int delta)
 {
 	m_iWheelDeltaVerticalActual += delta;
 
-	for (auto & m_listener : m_listeners)
+	for (auto & listener : m_listeners)
 	{
-		m_listener->onWheelVertical(delta);
+		listener->onWheelVertical(delta);
 	}
 }
 
@@ -279,9 +279,9 @@ void Mouse::onWheelHorizontal(int delta)
 {
 	m_iWheelDeltaHorizontalActual += delta;
 
-	for (auto & m_listener : m_listeners)
+	for (auto & listener : m_listeners)
 	{
-		m_listener->onWheelHorizontal(delta);
+		listener->onWheelHorizontal(delta);
 	}
 }
 
@@ -296,9 +296,9 @@ void Mouse::onButtonChange(MouseButton::Index button, bool down)
 	m_bMouseButtonDown[button] = down;
 
 	// notify listeners
-	for (auto & m_listener : m_listeners)
+	for (auto & listener : m_listeners)
 	{
-		m_listener->onButtonChange(button, down);
+		listener->onButtonChange(button, down);
 	}
 }
 

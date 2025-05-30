@@ -860,9 +860,9 @@ void OsuSkin::reloadSounds()
 	std::vector<Resource*> soundResources;
 	soundResources.reserve(m_sounds.size());
 
-	for (auto & m_sound : m_sounds)
+	for (auto & sound : m_sounds)
 	{
-		soundResources.push_back(m_sound);
+		soundResources.push_back(sound);
 	}
 
 	resourceManager->reloadResources(soundResources, osu_skin_async.getBool());

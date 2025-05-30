@@ -88,6 +88,7 @@ constexpr T timeNSToSeconds(uint64_t ns) noexcept
 }
 
 // current time (since init.) in seconds as float
+// decoupled from engine updates!
 template <typename T = double>
     requires(std::floating_point<T>)
 inline T getTimeReal() noexcept

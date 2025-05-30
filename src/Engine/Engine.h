@@ -112,9 +112,17 @@ public:
 
 	// timing
 	void setFrameTime(double delta);
-	[[nodiscard]] inline double getTime() const { return m_dTime; }
-	[[nodiscard]] inline double getTimeRunning() const { return m_dRunTime; }
-	[[nodiscard]] inline double getFrameTime() const { return m_dFrameTime; }
+
+	template <typename T = double>
+		requires(std::floating_point<T> || std::convertible_to<double, T>)
+	[[nodiscard]] constexpr T getTime() const { return static_cast<T>(m_dTime); }
+	template <typename T = double>
+		requires(std::floating_point<T> || std::convertible_to<double, T>)
+	[[nodiscard]] constexpr T getTimeRunning() const { return static_cast<T>(m_dRunTime); }
+	template <typename T = double>
+		requires(std::floating_point<T> || std::convertible_to<double, T>)
+	[[nodiscard]] constexpr T getFrameTime() const { return static_cast<T>(m_dFrameTime); }
+
 	[[nodiscard]] inline uint64_t getFrameCount() const { return m_iFrameCount; }
 	// clang-format off
 	// NOTE: if engine_throttle cvar is off, this will always return true

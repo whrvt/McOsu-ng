@@ -1313,12 +1313,12 @@ void Osu::onKeyDown(KeyboardEvent &key)
 	}
 
 	// forward to all subsystem, if not already consumed
-	for (auto & m_screen : m_screens)
+	for (auto & screen : m_screens)
 	{
 		if (key.isConsumed())
 			break;
 
-		m_screen->onKeyDown(key);
+		screen->onKeyDown(key);
 	}
 
 	// special handling, after subsystems, if still not consumed
@@ -1458,12 +1458,12 @@ void Osu::onKeyUp(KeyboardEvent &key)
 	}
 
 	// forward to all subsystems, if not consumed
-	for (auto & m_screen : m_screens)
+	for (auto & screen : m_screens)
 	{
 		if (key.isConsumed())
 			break;
 
-		m_screen->onKeyUp(key);
+		screen->onKeyUp(key);
 	}
 
 	// misc hotkeys release
@@ -1489,12 +1489,12 @@ void Osu::onKeyUp(KeyboardEvent &key)
 
 void Osu::onChar(KeyboardEvent &e)
 {
-	for (auto & m_screen : m_screens)
+	for (auto & screen : m_screens)
 	{
 		if (e.isConsumed())
 			break;
 
-		m_screen->onChar(e);
+		screen->onChar(e);
 	}
 }
 

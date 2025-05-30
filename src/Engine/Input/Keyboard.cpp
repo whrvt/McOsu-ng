@@ -75,9 +75,9 @@ void Keyboard::onKeyDown(KEYCODE keyCode)
 
 	KeyboardEvent e(keyCode);
 
-	for (auto & m_listener : m_listeners)
+	for (auto & listener : m_listeners)
 	{
-		m_listener->onKeyDown(e);
+		listener->onKeyDown(e);
 		if (e.isConsumed())
 			break;
 	}
@@ -107,9 +107,9 @@ void Keyboard::onKeyUp(KEYCODE keyCode)
 
 	KeyboardEvent e(keyCode);
 
-	for (auto & m_listener : m_listeners)
+	for (auto & listener : m_listeners)
 	{
-		m_listener->onKeyUp(e);
+		listener->onKeyUp(e);
 		if (e.isConsumed())
 			break;
 	}
@@ -119,9 +119,9 @@ void Keyboard::onChar(KEYCODE charCode)
 {
 	KeyboardEvent e(charCode);
 
-	for (auto & m_listener : m_listeners)
+	for (auto & listener : m_listeners)
 	{
-		m_listener->onChar(e);
+		listener->onChar(e);
 		if (e.isConsumed())
 			break;
 	}
