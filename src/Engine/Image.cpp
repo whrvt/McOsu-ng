@@ -289,8 +289,6 @@ Image::Image(int width, int height, bool mipmapped, bool keepInSystemMemory) : R
 
 bool Image::loadRawImage()
 {
-	bool isJPEG = false;
-	bool isPNG = false;
 	bool alreadyLoaded = m_rawImage.size() > 0;
 
 	// if it isn't a created image (created within the engine), load it from the corresponding file
@@ -335,6 +333,8 @@ bool Image::loadRawImage()
 			return false;
 
 		// determine file type by magic number (png/jpg)
+		bool isJPEG = false;
+		bool isPNG = false;
 		{
 			const int numBytes = 4;
 
@@ -452,7 +452,7 @@ bool Image::loadRawImage()
 	}
 
 	// optimization: ignore completely transparent images (don't render) (only PNGs can have them, obviously)
-	if (!alreadyLoaded && !isJPEG && canHaveTransparency(m_rawImage.data(), m_rawImage.size()) && isCompletelyTransparent())
+	if (!alreadyLoaded && (m_type == Image::TYPE::TYPE_PNG) && canHaveTransparency(m_rawImage.data(), m_rawImage.size()) && isCompletelyTransparent())
 	{
 		if (!m_bInterrupted)
 			debugLog("Image: Ignoring empty transparent image {:s}\n", m_sFilePath);

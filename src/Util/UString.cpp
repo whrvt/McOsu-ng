@@ -35,7 +35,7 @@ UString::UString(const wchar_t *str)
 	if (str && *str)
 	{
 		m_unicode = str;
-		m_length = static_cast<int>(m_unicode.length());
+		setLength(static_cast<int>(m_unicode.length()));
 		updateUtf8();
 	}
 }
@@ -62,9 +62,8 @@ void UString::clear() noexcept
 {
 	m_unicode.clear();
 	m_utf8.clear();
-	m_length = 0;
+	m_length = ASCII_FLAG; // start with ascii flag set
 	m_lengthUtf8 = 0;
-	m_isAsciiOnly = true;
 }
 
 UString UString::join(std::span<const UString> strings, std::string_view delim) noexcept
@@ -91,11 +90,12 @@ bool UString::isWhitespaceOnly() const noexcept
 
 int UString::findChar(wchar_t ch, int start, bool respectEscapeChars) const
 {
-	if (start < 0 || start >= m_length)
+	int len = length();
+	if (start < 0 || start >= len)
 		return -1;
 
 	bool escaped = false;
-	for (int i = start; i < m_length; i++)
+	for (int i = start; i < len; i++)
 	{
 		if (respectEscapeChars && !escaped && m_unicode[i] == ESCAPE_CHAR)
 		{
@@ -115,15 +115,17 @@ int UString::findChar(wchar_t ch, int start, bool respectEscapeChars) const
 
 int UString::findChar(const UString &str, int start, bool respectEscapeChars) const
 {
-	if (start < 0 || start >= m_length || str.m_length == 0)
+	int len = length();
+	int strLen = str.length();
+	if (start < 0 || start >= len || strLen == 0)
 		return -1;
 
 	std::vector<bool> charMap(0x10000, false); // lookup table, assumes 16-bit wide chars
-	for (int i = 0; i < str.m_length; i++)
+	for (int i = 0; i < strLen; i++)
 		charMap[str.m_unicode[i]] = true;
 
 	bool escaped = false;
-	for (int i = start; i < m_length; i++)
+	for (int i = start; i < len; i++)
 	{
 		if (respectEscapeChars && !escaped && m_unicode[i] == ESCAPE_CHAR)
 		{
@@ -143,7 +145,9 @@ int UString::findChar(const UString &str, int start, bool respectEscapeChars) co
 
 int UString::find(const UString &str, int start) const
 {
-	if (start < 0 || str.m_length == 0 || start > m_length - str.m_length)
+	int strLen = str.length();
+	int len = length();
+	if (start < 0 || strLen == 0 || start > len - strLen)
 		return -1;
 
 	size_t pos = m_unicode.find(str.m_unicode, start);
@@ -152,10 +156,12 @@ int UString::find(const UString &str, int start) const
 
 int UString::find(const UString &str, int start, int end) const
 {
-	if (start < 0 || end > m_length || start >= end || str.m_length == 0)
+	int strLen = str.length();
+	int len = length();
+	if (start < 0 || end > len || start >= end || strLen == 0)
 		return -1;
 
-	if (end < m_length)
+	if (end < len)
 	{
 		auto tempSubstr = m_unicode.substr(start, end - start);
 		size_t pos = tempSubstr.find(str.m_unicode);
@@ -167,7 +173,9 @@ int UString::find(const UString &str, int start, int end) const
 
 int UString::findLast(const UString &str, int start) const
 {
-	if (start < 0 || str.m_length == 0 || start > m_length - str.m_length)
+	int strLen = str.length();
+	int len = length();
+	if (start < 0 || strLen == 0 || start > len - strLen)
 		return -1;
 
 	size_t pos = m_unicode.rfind(str.m_unicode);
@@ -179,10 +187,12 @@ int UString::findLast(const UString &str, int start) const
 
 int UString::findLast(const UString &str, int start, int end) const
 {
-	if (start < 0 || end > m_length || start >= end || str.m_length == 0)
+	int strLen = str.length();
+	int len = length();
+	if (start < 0 || end > len || start >= end || strLen == 0)
 		return -1;
 
-	int lastPossibleMatch = std::min(end - str.m_length, m_length - str.m_length);
+	int lastPossibleMatch = std::min(end - strLen, len - strLen);
 	for (int i = lastPossibleMatch; i >= start; i--)
 	{
 		if (std::equal(str.m_unicode.begin(), str.m_unicode.end(), m_unicode.begin() + i))
@@ -194,7 +204,9 @@ int UString::findLast(const UString &str, int start, int end) const
 
 int UString::findIgnoreCase(const UString &str, int start) const
 {
-	if (start < 0 || str.m_length == 0 || start > m_length - str.m_length)
+	int strLen = str.length();
+	int len = length();
+	if (start < 0 || strLen == 0 || start > len - strLen)
 		return -1;
 
 	auto toLower = [](auto c) { return std::towlower(c); };
@@ -212,7 +224,9 @@ int UString::findIgnoreCase(const UString &str, int start) const
 
 int UString::findIgnoreCase(const UString &str, int start, int end) const
 {
-	if (start < 0 || end > m_length || start >= end || str.m_length == 0)
+	int strLen = str.length();
+	int len = length();
+	if (start < 0 || end > len || start >= end || strLen == 0)
 		return -1;
 
 	auto toLower = [](auto c) { return std::towlower(c); };
@@ -230,11 +244,12 @@ int UString::findIgnoreCase(const UString &str, int start, int end) const
 
 void UString::collapseEscapes()
 {
-	if (m_length == 0)
+	int len = length();
+	if (len == 0)
 		return;
 
 	std::wstring result;
-	result.reserve(m_length);
+	result.reserve(len);
 
 	bool escaped = false;
 	for (wchar_t ch : m_unicode)
@@ -251,20 +266,21 @@ void UString::collapseEscapes()
 	}
 
 	m_unicode = std::move(result);
-	m_length = static_cast<int>(m_unicode.length());
+	setLength(static_cast<int>(m_unicode.length()));
 	updateUtf8();
 }
 
 void UString::append(const UString &str)
 {
-	if (str.m_length == 0)
+	int strLen = str.length();
+	if (strLen == 0)
 		return;
 
 	m_unicode.append(str.m_unicode);
-	m_length = static_cast<int>(m_unicode.length());
+	setLength(static_cast<int>(m_unicode.length()));
 
 	// fast path for ASCII strings
-	if (m_isAsciiOnly && str.m_isAsciiOnly)
+	if (isAsciiOnly() && str.isAsciiOnly())
 	{
 		m_utf8.append(str.m_utf8);
 		m_lengthUtf8 = static_cast<int>(m_utf8.length());
@@ -278,10 +294,10 @@ void UString::append(const UString &str)
 void UString::append(wchar_t ch)
 {
 	m_unicode.push_back(ch);
-	m_length = static_cast<int>(m_unicode.length());
+	setLength(static_cast<int>(m_unicode.length()));
 
 	// fast path for ASCII character
-	if (ch < 0x80 && m_isAsciiOnly)
+	if (ch < 0x80 && isAsciiOnly())
 	{
 		m_utf8.push_back(static_cast<char>(ch));
 		m_lengthUtf8 = static_cast<int>(m_utf8.length());
@@ -294,39 +310,44 @@ void UString::append(wchar_t ch)
 
 void UString::insert(int offset, const UString &str)
 {
-	if (str.m_length == 0)
+	int strLen = str.length();
+	if (strLen == 0)
 		return;
 
-	offset = std::clamp(offset, 0, m_length);
+	int len = length();
+	offset = std::clamp(offset, 0, len);
 	m_unicode.insert(offset, str.m_unicode);
-	m_length = static_cast<int>(m_unicode.length());
+	setLength(static_cast<int>(m_unicode.length()));
 	updateUtf8();
 }
 
 void UString::insert(int offset, wchar_t ch)
 {
-	offset = std::clamp(offset, 0, m_length);
+	int len = length();
+	offset = std::clamp(offset, 0, len);
 	m_unicode.insert(offset, 1, ch);
-	m_length = static_cast<int>(m_unicode.length());
+	setLength(static_cast<int>(m_unicode.length()));
 	updateUtf8();
 }
 
 void UString::erase(int offset, int count)
 {
-	if (m_length == 0 || count == 0 || offset >= m_length)
+	int len = length();
+	if (len == 0 || count == 0 || offset >= len)
 		return;
 
-	offset = std::clamp(offset, 0, m_length);
-	count = std::clamp(count, 0, m_length - offset);
+	offset = std::clamp(offset, 0, len);
+	count = std::clamp(count, 0, len - offset);
 
 	m_unicode.erase(offset, count);
-	m_length = static_cast<int>(m_unicode.length());
+	setLength(static_cast<int>(m_unicode.length()));
 	updateUtf8();
 }
 
 UString UString::trim() const
 {
-	if (m_length == 0)
+	int len = length();
+	if (len == 0)
 		return {};
 
 	auto isWhitespace = [](wchar_t c) { return std::iswspace(c) != 0; };
@@ -348,12 +369,12 @@ UString UString::trim() const
 
 void UString::lowerCase()
 {
-	if (m_length == 0)
+	if (length() == 0)
 		return;
 
 	std::ranges::transform(m_unicode, m_unicode.begin(), [](wchar_t c) { return std::towlower(c); });
 
-	if (m_isAsciiOnly)
+	if (isAsciiOnly())
 		std::ranges::transform(m_utf8, m_utf8.begin(), [](char c) { return std::tolower(c); });
 	else
 		updateUtf8();
@@ -361,12 +382,12 @@ void UString::lowerCase()
 
 void UString::upperCase()
 {
-	if (m_length == 0)
+	if (length() == 0)
 		return;
 
 	std::ranges::transform(m_unicode, m_unicode.begin(), [](wchar_t c) { return std::towupper(c); });
 
-	if (m_isAsciiOnly)
+	if (isAsciiOnly())
 		std::ranges::transform(m_utf8, m_utf8.begin(), [](char c) { return std::toupper(c); });
 	else
 		updateUtf8();
@@ -413,9 +434,9 @@ UString UString::operator+(char ch) const
 
 bool UString::equalsIgnoreCase(const UString &ustr) const
 {
-	if (m_length != ustr.m_length)
+	if (length() != ustr.length())
 		return false;
-	if (m_length == 0 && ustr.m_length == 0)
+	if (length() == 0 && ustr.length() == 0)
 		return true;
 
 	return std::ranges::equal(m_unicode, ustr.m_unicode, [](wchar_t a, wchar_t b) { return std::towlower(a) == std::towlower(b); });
@@ -428,7 +449,7 @@ bool UString::lessThanIgnoreCase(const UString &ustr) const
 
 	while (it1 != m_unicode.end() && it2 != ustr.m_unicode.end())
 	{
-		wchar_t c1 = std::towlower(*it1); // narrowing conversion from 'wint_t' (aka 'unsigned int') to signed type 'wchar_t' is implementation-defined
+		wchar_t c1 = std::towlower(*it1);
 		wchar_t c2 = std::towlower(*it2);
 		if (c1 != c2)
 			return c1 < c2;
@@ -523,6 +544,7 @@ static inline wchar_t getCodePoint(const char *utf8, int offset, int numBytes, u
 	return wc;
 }
 
+// single-pass utf8 decoder for mixed ascii/unicode content
 int UString::fromUtf8(const char *utf8, int length)
 {
 	if (!utf8)
@@ -544,113 +566,80 @@ int UString::fromUtf8(const char *utf8, int length)
 	const char *src = &(utf8[startIndex]);
 	int remainingSize = supposedFullStringSize - startIndex;
 
-	// ASCII-only strings (common case)
-	bool isAscii = true;
-	for (int i = 0; i < remainingSize && src[i] != 0; i++)
+	// reserve space to avoid reallocations
+	m_unicode.reserve(remainingSize);
+
+	// optimized single-pass decoder with ascii fast path
+	bool asciiOnly = true;
+
+	for (int i = 0; i < remainingSize && src[i] != 0;)
 	{
-		if ((unsigned char)src[i] >= 0x80)
-		{
-			isAscii = false;
-			break;
-		}
-	}
-
-	if (isAscii)
-	{
-		// for ASCII, do a direct 1:1 mapping
-		int charCount = 0;
-		while (charCount < remainingSize && src[charCount] != 0)
-			charCount++;
-
-		// create Unicode buffer
-		m_unicode.resize(charCount);
-		m_length = charCount;
-
-		for (int i = 0; i < m_length; i++)
-			m_unicode[i] = static_cast<wchar_t>(static_cast<unsigned char>(src[i]));
-
-		// update UTF-8 representation
-		m_isAsciiOnly = true;
-		m_lengthUtf8 = m_length;
-		m_utf8.assign(src, m_lengthUtf8);
-
-		return m_length;
-	}
-
-	// optimized non-ASCII processing using std::string_view and utf8 decoding
-	std::string_view srcView(src, remainingSize);
-
-	// first pass: count characters
-	int charCount = 0;
-	for (size_t i = 0; i < srcView.size() && srcView[i] != 0;)
-	{
-		const auto b = static_cast<unsigned char>(srcView[i]);
-
-		if (b < 0x80)
-			i += 1;
-		else if ((b & USTRING_MASK_2BYTE) == USTRING_VALUE_2BYTE)
-			i += 2;
-		else if ((b & USTRING_MASK_3BYTE) == USTRING_VALUE_3BYTE)
-			i += 3;
-		else if ((b & USTRING_MASK_4BYTE) == USTRING_VALUE_4BYTE)
-			i += 4;
-		else if ((b & USTRING_MASK_5BYTE) == USTRING_VALUE_5BYTE)
-			i += 5;
-		else if ((b & USTRING_MASK_6BYTE) == USTRING_VALUE_6BYTE)
-			i += 6;
-		else
-			i += 1;
-
-		charCount++;
-	}
-
-	// second pass: decode into the buffer
-	m_unicode.resize(charCount);
-	m_length = charCount;
-
-	int destIndex = 0;
-	for (size_t i = 0; i < srcView.size() && srcView[i] != 0 && destIndex < m_length;)
-	{
-		const auto b = static_cast<unsigned char>(srcView[i]);
+		const auto b = static_cast<unsigned char>(src[i]);
 
 		if (b < 0x80)
 		{
-			m_unicode[destIndex++] = b;
+			// ascii fast path
+			m_unicode.push_back(static_cast<wchar_t>(b));
 			i += 1;
-		}
-		else if ((b & USTRING_MASK_2BYTE) == USTRING_VALUE_2BYTE && i + 1 < srcView.size())
-		{
-			m_unicode[destIndex++] = getCodePoint(srcView.data(), static_cast<int>(i), 2, static_cast<unsigned char>(~USTRING_MASK_2BYTE));
-			i += 2;
-		}
-		else if ((b & USTRING_MASK_3BYTE) == USTRING_VALUE_3BYTE && i + 2 < srcView.size())
-		{
-			m_unicode[destIndex++] = getCodePoint(srcView.data(), static_cast<int>(i), 3, static_cast<unsigned char>(~USTRING_MASK_3BYTE));
-			i += 3;
-		}
-		else if ((b & USTRING_MASK_4BYTE) == USTRING_VALUE_4BYTE && i + 3 < srcView.size())
-		{
-			m_unicode[destIndex++] = getCodePoint(srcView.data(), static_cast<int>(i), 4, static_cast<unsigned char>(~USTRING_MASK_4BYTE));
-			i += 4;
-		}
-		else if ((b & USTRING_MASK_5BYTE) == USTRING_VALUE_5BYTE && i + 4 < srcView.size())
-		{
-			m_unicode[destIndex++] = getCodePoint(srcView.data(), static_cast<int>(i), 5, static_cast<unsigned char>(~USTRING_MASK_5BYTE));
-			i += 5;
-		}
-		else if ((b & USTRING_MASK_6BYTE) == USTRING_VALUE_6BYTE && i + 5 < srcView.size())
-		{
-			m_unicode[destIndex++] = getCodePoint(srcView.data(), static_cast<int>(i), 6, static_cast<unsigned char>(~USTRING_MASK_6BYTE));
-			i += 6;
 		}
 		else
 		{
-			m_unicode[destIndex++] = '?';
-			i += 1;
+			asciiOnly = false;
+
+			// decode multi-byte sequence
+			int bytes = 0;
+			wchar_t codepoint = 0;
+
+			if ((b & USTRING_MASK_2BYTE) == USTRING_VALUE_2BYTE)
+			{
+				bytes = 2;
+				codepoint = getCodePoint(src, i, 2, static_cast<unsigned char>(~USTRING_MASK_2BYTE));
+			}
+			else if ((b & USTRING_MASK_3BYTE) == USTRING_VALUE_3BYTE)
+			{
+				bytes = 3;
+				codepoint = getCodePoint(src, i, 3, static_cast<unsigned char>(~USTRING_MASK_3BYTE));
+			}
+			else if ((b & USTRING_MASK_4BYTE) == USTRING_VALUE_4BYTE)
+			{
+				bytes = 4;
+				codepoint = getCodePoint(src, i, 4, static_cast<unsigned char>(~USTRING_MASK_4BYTE));
+			}
+			else if ((b & USTRING_MASK_5BYTE) == USTRING_VALUE_5BYTE)
+			{
+				bytes = 5;
+				codepoint = getCodePoint(src, i, 5, static_cast<unsigned char>(~USTRING_MASK_5BYTE));
+			}
+			else if ((b & USTRING_MASK_6BYTE) == USTRING_VALUE_6BYTE)
+			{
+				bytes = 6;
+				codepoint = getCodePoint(src, i, 6, static_cast<unsigned char>(~USTRING_MASK_6BYTE));
+			}
+			else
+			{
+				// invalid byte sequence
+				m_unicode.push_back(L'?');
+				i += 1;
+				continue;
+			}
+
+			// validate we have enough bytes
+			if (i + bytes <= remainingSize)
+			{
+				m_unicode.push_back(codepoint);
+				i += bytes;
+			}
+			else
+			{
+				// truncated sequence
+				m_unicode.push_back(L'?');
+				i += 1;
+			}
 		}
 	}
 
-	m_isAsciiOnly = false;
+	setLength(static_cast<int>(m_unicode.length()));
+	setAsciiFlag(asciiOnly);
 
 	// store the UTF-8 string directly if it was a valid substring
 	if (startIndex == 0 && length > 0)
@@ -658,45 +647,72 @@ int UString::fromUtf8(const char *utf8, int length)
 		m_utf8.assign(utf8, length);
 		m_lengthUtf8 = length;
 	}
+	else if (asciiOnly)
+	{
+		// for ascii-only, we can directly convert
+		m_utf8.resize(m_unicode.length());
+		for (size_t i = 0; i < m_unicode.length(); i++)
+			m_utf8[i] = static_cast<char>(m_unicode[i]);
+		m_lengthUtf8 = static_cast<int>(m_utf8.length());
+	}
 	else
 	{
 		updateUtf8();
 	}
 
-	return m_length;
+	return this->length();
 }
 
 void UString::updateUtf8()
 {
 	// check if the string is empty
-	if (m_length == 0)
+	int len = length();
+	if (len == 0)
 	{
 		m_utf8.clear();
 		m_lengthUtf8 = 0;
-		m_isAsciiOnly = true;
+		setAsciiFlag(true);
 		return;
 	}
 
-	// fast ASCII check (common case)
-	m_isAsciiOnly = true;
-	for (int i = 0; i < m_length; i++)
+	// fast ASCII check with early exit
+	bool asciiOnly = true;
+	const wchar_t *data = m_unicode.data();
+
+	// check for ascii-only strings (we can avoid a lot of future conversion if it's ascii-only)
+	int i = 0;
+	for (; i + 4 <= len; i += 4)
 	{
-		if (m_unicode[i] >= 0x80)
+		if (data[i] >= 0x80 || data[i + 1] >= 0x80 || data[i + 2] >= 0x80 || data[i + 3] >= 0x80)
 		{
-			m_isAsciiOnly = false;
+			asciiOnly = false;
 			break;
 		}
 	}
+	// remaining chars
+	if (asciiOnly)
+	{
+		for (; i < len; i++)
+		{
+			if (data[i] >= 0x80)
+			{
+				asciiOnly = false;
+				break;
+			}
+		}
+	}
+
+	setAsciiFlag(asciiOnly);
 
 	// fast path for ASCII-only strings
-	if (m_isAsciiOnly)
+	if (asciiOnly)
 	{
-		m_utf8.resize(m_length);
-		for (int i = 0; i < m_length; i++)
+		m_utf8.resize(len);
+		for (int j = 0; j < len; j++)
 		{
-			m_utf8[i] = static_cast<char>(m_unicode[i]);
+			m_utf8[j] = static_cast<char>(m_unicode[j]);
 		}
-		m_lengthUtf8 = m_length;
+		m_lengthUtf8 = len;
 		return;
 	}
 
