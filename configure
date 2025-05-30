@@ -728,16 +728,22 @@ SOUNDTOUCH_PREFIX
 SOUNDTOUCH_VERSION
 SOLOUD_PREFIX
 SOLOUD_VERSION
-GLU_LIBS
-GLU_CFLAGS
-GL_LIBS
-GL_CFLAGS
+VKD3D_LIBS
+VKD3D_CFLAGS
+D3D11_LIBS
+D3D11_CFLAGS
+DXGI_LIBS
+DXGI_CFLAGS
 EGL_LIBS
 EGL_CFLAGS
 XI_LIBS
 XI_CFLAGS
 X11_LIBS
 X11_CFLAGS
+GLU_LIBS
+GLU_CFLAGS
+GL_LIBS
+GL_CFLAGS
 PKG_CONFIG_LIBDIR
 DEPS_CACHE
 DEPS_PREFIX
@@ -769,6 +775,7 @@ NASMOBJ
 CLANG
 PKG_CONFIG_PATH_CUSTOM
 PKG_CONFIG_PATH
+STATICBUILD
 PKGTYPE
 ENABLE_ASAN
 LLVMMINGW
@@ -902,6 +909,7 @@ enable_omp
 enable_lto
 enable_system_deps
 enable_static
+with_renderer
 with_sdlmixer
 with_soloud
 with_mimalloc
@@ -920,16 +928,22 @@ CCC
 PKG_CONFIG
 PKG_CONFIG_PATH
 PKG_CONFIG_LIBDIR
+GL_CFLAGS
+GL_LIBS
+GLU_CFLAGS
+GLU_LIBS
 X11_CFLAGS
 X11_LIBS
 XI_CFLAGS
 XI_LIBS
 EGL_CFLAGS
 EGL_LIBS
-GL_CFLAGS
-GL_LIBS
-GLU_CFLAGS
-GLU_LIBS
+DXGI_CFLAGS
+DXGI_LIBS
+D3D11_CFLAGS
+D3D11_LIBS
+VKD3D_CFLAGS
+VKD3D_LIBS
 SDL3_CFLAGS
 SDL3_LIBS
 LIBJPEG_CFLAGS
@@ -1598,6 +1612,8 @@ Optional Features:
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
+  --with-renderer={opengl,opengles,dx11}
+                          The renderer backend to build with (default: opengl)
   --with-sdlmixer         Use the SDL_mixer backend for audio instead of BASS
                           (default: no)
   --with-soloud           Use the SoLoud backend for audio instead of BASS
@@ -1620,16 +1636,24 @@ Some influential environment variables:
               directories to add to pkg-config's search path
   PKG_CONFIG_LIBDIR
               path overriding pkg-config's built-in search path
+  GL_CFLAGS   C compiler flags for GL, overriding pkg-config
+  GL_LIBS     linker flags for GL, overriding pkg-config
+  GLU_CFLAGS  C compiler flags for GLU, overriding pkg-config
+  GLU_LIBS    linker flags for GLU, overriding pkg-config
   X11_CFLAGS  C compiler flags for X11, overriding pkg-config
   X11_LIBS    linker flags for X11, overriding pkg-config
   XI_CFLAGS   C compiler flags for XI, overriding pkg-config
   XI_LIBS     linker flags for XI, overriding pkg-config
   EGL_CFLAGS  C compiler flags for EGL, overriding pkg-config
   EGL_LIBS    linker flags for EGL, overriding pkg-config
-  GL_CFLAGS   C compiler flags for GL, overriding pkg-config
-  GL_LIBS     linker flags for GL, overriding pkg-config
-  GLU_CFLAGS  C compiler flags for GLU, overriding pkg-config
-  GLU_LIBS    linker flags for GLU, overriding pkg-config
+  DXGI_CFLAGS C compiler flags for DXGI, overriding pkg-config
+  DXGI_LIBS   linker flags for DXGI, overriding pkg-config
+  D3D11_CFLAGS
+              C compiler flags for D3D11, overriding pkg-config
+  D3D11_LIBS  linker flags for D3D11, overriding pkg-config
+  VKD3D_CFLAGS
+              C compiler flags for VKD3D, overriding pkg-config
+  VKD3D_LIBS  linker flags for VKD3D, overriding pkg-config
   SDL3_CFLAGS C compiler flags for SDL3, overriding pkg-config
   SDL3_LIBS   linker flags for SDL3, overriding pkg-config
   LIBJPEG_CFLAGS
@@ -5937,6 +5961,14 @@ fi
 
 
 
+# Check whether --with-renderer was given.
+if test ${with_renderer+y}
+then :
+  withval=$with_renderer;
+fi
+
+
+
 # Check whether --with-sdlmixer was given.
 if test ${with_sdlmixer+y}
 then :
@@ -6047,6 +6079,30 @@ fi
 
 fi
 
+renderer=opengl
+if test ${with_renderer+y}
+then :
+  ac_save_IFS=$IFS
+        IFS=' ,'
+        set x $with_renderer
+        IFS=$ac_save_IFS
+        shift
+        for rend
+        do
+            case $rend in
+            opengles*)
+printf "%s\n" "#define MCENGINE_FEATURE_GLES32 1" >>confdefs.h
+ renderer=opengles32 ;;
+            dx11)
+printf "%s\n" "#define MCENGINE_FEATURE_DIRECTX11 1" >>confdefs.h
+ renderer=dx11 ;;
+            *)
+printf "%s\n" "#define MCENGINE_FEATURE_OPENGL 1" >>confdefs.h
+ renderer=opengl ;;
+            esac
+        done
+fi
+
 if test "x$enable_asan" = "xyes" || test "x$enable_tsan" = "xyes"
 then :
 
@@ -6080,8 +6136,10 @@ if test "x$enable_static" = "xyes"
 then :
 
     PKGTYPE="--static"
+    STATICBUILD=yes
 
 fi
+
 
 
 ac_cv_env_PKG_CONFIG_value="$PKG_CONFIG"
@@ -7339,7 +7397,7 @@ then :
 fi
 
 COMMON_FLAGS="$COMMON_FLAGS -ffunction-sections -fdata-sections -fwrapv -fno-strict-aliasing -fno-semantic-interposition"
-CXXFLAGS="$CXXFLAGS $COMMON_FLAGS"
+CXXFLAGS="$CXXFLAGS $COMMON_FLAGS -fno-rtti -fno-exceptions"
 CFLAGS="$CFLAGS $COMMON_FLAGS"
 if test -z "$ubercompat" || test "x$enable_static" = "xyes"
 then :
@@ -7960,11 +8018,11 @@ if test "x$enable_debug" = "xyes"
 then :
 
     with_mimalloc="no"
-    if test -n "$ubercompat"
+    if test -n "$host_os" = "mingw32"
 then :
 
-        CXXFLAGS="$CXXFLAGS -gdwarf-4 -Og"
-        CFLAGS="$CFLAGS -gdwarf-4 -Og"
+        CXXFLAGS="$CXXFLAGS -g -Og"
+        CFLAGS="$CFLAGS -g -Og"
 
 else case e in #(
   e)
@@ -8016,8 +8074,6 @@ then :
 fi
 
 fi
-    CXXFLAGS="$CXXFLAGS -fno-rtti -fno-exceptions" # disallow dynamic_cast and exceptions
-
     if test "x$enable_strip" != "xno"
 then :
 
@@ -8447,7 +8503,314 @@ fi
 if test -z "$PKG_CONFIG"; then
 	as_fn_error $? "pkg-config not found" "$LINENO" 5
 fi
-if test "$SYSNAME" = "linux"
+if test "$renderer" != "dx11"
+then :
+
+
+    if test "x$enable_static" = "xyes"
+then :
+  _save_PKG_CONFIG=$PKG_CONFIG
+PKG_CONFIG="$PKG_CONFIG --static"
+
+pkg_failed=no
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for gl" >&5
+printf %s "checking for gl... " >&6; }
+
+if test -n "$GL_CFLAGS"; then
+    pkg_cv_GL_CFLAGS="$GL_CFLAGS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"gl\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "gl") 2>&5
+  ac_status=$?
+  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_GL_CFLAGS=`$PKG_CONFIG --cflags "gl" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+if test -n "$GL_LIBS"; then
+    pkg_cv_GL_LIBS="$GL_LIBS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"gl\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "gl") 2>&5
+  ac_status=$?
+  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_GL_LIBS=`$PKG_CONFIG --libs "gl" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+
+
+
+if test $pkg_failed = yes; then
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+
+if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
+        _pkg_short_errors_supported=yes
+else
+        _pkg_short_errors_supported=no
+fi
+        if test $_pkg_short_errors_supported = yes; then
+                GL_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "gl" 2>&1`
+        else
+                GL_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "gl" 2>&1`
+        fi
+        # Put the nasty error message in config.log where it belongs
+        echo "$GL_PKG_ERRORS" >&5
+
+        have_gl=no
+elif test $pkg_failed = untried; then
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+        have_gl=no
+else
+        GL_CFLAGS=$pkg_cv_GL_CFLAGS
+        GL_LIBS=$pkg_cv_GL_LIBS
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+        have_gl=yes
+fi
+PKG_CONFIG=$_save_PKG_CONFIG
+else case e in #(
+  e)
+pkg_failed=no
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for gl" >&5
+printf %s "checking for gl... " >&6; }
+
+if test -n "$GL_CFLAGS"; then
+    pkg_cv_GL_CFLAGS="$GL_CFLAGS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"gl\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "gl") 2>&5
+  ac_status=$?
+  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_GL_CFLAGS=`$PKG_CONFIG --cflags "gl" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+if test -n "$GL_LIBS"; then
+    pkg_cv_GL_LIBS="$GL_LIBS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"gl\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "gl") 2>&5
+  ac_status=$?
+  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_GL_LIBS=`$PKG_CONFIG --libs "gl" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+
+
+
+if test $pkg_failed = yes; then
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+
+if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
+        _pkg_short_errors_supported=yes
+else
+        _pkg_short_errors_supported=no
+fi
+        if test $_pkg_short_errors_supported = yes; then
+                GL_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "gl" 2>&1`
+        else
+                GL_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "gl" 2>&1`
+        fi
+        # Put the nasty error message in config.log where it belongs
+        echo "$GL_PKG_ERRORS" >&5
+
+        have_gl=no
+elif test $pkg_failed = untried; then
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+        have_gl=no
+else
+        GL_CFLAGS=$pkg_cv_GL_CFLAGS
+        GL_LIBS=$pkg_cv_GL_LIBS
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+        have_gl=yes
+fi ;;
+esac
+fi
+
+
+    if test "x$enable_static" = "xyes"
+then :
+  _save_PKG_CONFIG=$PKG_CONFIG
+PKG_CONFIG="$PKG_CONFIG --static"
+
+pkg_failed=no
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for glu" >&5
+printf %s "checking for glu... " >&6; }
+
+if test -n "$GLU_CFLAGS"; then
+    pkg_cv_GLU_CFLAGS="$GLU_CFLAGS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"glu\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "glu") 2>&5
+  ac_status=$?
+  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_GLU_CFLAGS=`$PKG_CONFIG --cflags "glu" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+if test -n "$GLU_LIBS"; then
+    pkg_cv_GLU_LIBS="$GLU_LIBS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"glu\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "glu") 2>&5
+  ac_status=$?
+  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_GLU_LIBS=`$PKG_CONFIG --libs "glu" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+
+
+
+if test $pkg_failed = yes; then
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+
+if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
+        _pkg_short_errors_supported=yes
+else
+        _pkg_short_errors_supported=no
+fi
+        if test $_pkg_short_errors_supported = yes; then
+                GLU_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "glu" 2>&1`
+        else
+                GLU_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "glu" 2>&1`
+        fi
+        # Put the nasty error message in config.log where it belongs
+        echo "$GLU_PKG_ERRORS" >&5
+
+        have_glu=no
+elif test $pkg_failed = untried; then
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+        have_glu=no
+else
+        GLU_CFLAGS=$pkg_cv_GLU_CFLAGS
+        GLU_LIBS=$pkg_cv_GLU_LIBS
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+        have_glu=yes
+fi
+PKG_CONFIG=$_save_PKG_CONFIG
+else case e in #(
+  e)
+pkg_failed=no
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for glu" >&5
+printf %s "checking for glu... " >&6; }
+
+if test -n "$GLU_CFLAGS"; then
+    pkg_cv_GLU_CFLAGS="$GLU_CFLAGS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"glu\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "glu") 2>&5
+  ac_status=$?
+  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_GLU_CFLAGS=`$PKG_CONFIG --cflags "glu" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+if test -n "$GLU_LIBS"; then
+    pkg_cv_GLU_LIBS="$GLU_LIBS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"glu\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "glu") 2>&5
+  ac_status=$?
+  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_GLU_LIBS=`$PKG_CONFIG --libs "glu" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+
+
+
+if test $pkg_failed = yes; then
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+
+if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
+        _pkg_short_errors_supported=yes
+else
+        _pkg_short_errors_supported=no
+fi
+        if test $_pkg_short_errors_supported = yes; then
+                GLU_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "glu" 2>&1`
+        else
+                GLU_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "glu" 2>&1`
+        fi
+        # Put the nasty error message in config.log where it belongs
+        echo "$GLU_PKG_ERRORS" >&5
+
+        have_glu=no
+elif test $pkg_failed = untried; then
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+        have_glu=no
+else
+        GLU_CFLAGS=$pkg_cv_GLU_CFLAGS
+        GLU_LIBS=$pkg_cv_GLU_LIBS
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+        have_glu=yes
+fi ;;
+esac
+fi
+
+    if test "$SYSNAME" = "linux"
 then :
 
 
@@ -8909,318 +9272,504 @@ fi
 
 else case e in #(
   e)
-    EGL_CFLAGS=""
+        EGL_CFLAGS=""
 
-    EGL_LIBS=""
+        EGL_LIBS=""
 
+     ;;
+esac
+fi
+
+else case e in #(
+  e)
+    if test "$SYSNAME" = "linux"
+then :
+
+
+    if test "x$enable_static" = "xyes"
+then :
+  _save_PKG_CONFIG=$PKG_CONFIG
+PKG_CONFIG="$PKG_CONFIG --static"
+
+pkg_failed=no
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for dxvk-dxgi" >&5
+printf %s "checking for dxvk-dxgi... " >&6; }
+
+if test -n "$DXGI_CFLAGS"; then
+    pkg_cv_DXGI_CFLAGS="$DXGI_CFLAGS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"dxvk-dxgi\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "dxvk-dxgi") 2>&5
+  ac_status=$?
+  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_DXGI_CFLAGS=`$PKG_CONFIG --cflags "dxvk-dxgi" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+if test -n "$DXGI_LIBS"; then
+    pkg_cv_DXGI_LIBS="$DXGI_LIBS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"dxvk-dxgi\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "dxvk-dxgi") 2>&5
+  ac_status=$?
+  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_DXGI_LIBS=`$PKG_CONFIG --libs "dxvk-dxgi" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+
+
+
+if test $pkg_failed = yes; then
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+
+if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
+        _pkg_short_errors_supported=yes
+else
+        _pkg_short_errors_supported=no
+fi
+        if test $_pkg_short_errors_supported = yes; then
+                DXGI_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "dxvk-dxgi" 2>&1`
+        else
+                DXGI_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "dxvk-dxgi" 2>&1`
+        fi
+        # Put the nasty error message in config.log where it belongs
+        echo "$DXGI_PKG_ERRORS" >&5
+
+        have_dxgi=no
+elif test $pkg_failed = untried; then
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+        have_dxgi=no
+else
+        DXGI_CFLAGS=$pkg_cv_DXGI_CFLAGS
+        DXGI_LIBS=$pkg_cv_DXGI_LIBS
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+        have_dxgi=yes
+fi
+PKG_CONFIG=$_save_PKG_CONFIG
+else case e in #(
+  e)
+pkg_failed=no
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for dxvk-dxgi" >&5
+printf %s "checking for dxvk-dxgi... " >&6; }
+
+if test -n "$DXGI_CFLAGS"; then
+    pkg_cv_DXGI_CFLAGS="$DXGI_CFLAGS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"dxvk-dxgi\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "dxvk-dxgi") 2>&5
+  ac_status=$?
+  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_DXGI_CFLAGS=`$PKG_CONFIG --cflags "dxvk-dxgi" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+if test -n "$DXGI_LIBS"; then
+    pkg_cv_DXGI_LIBS="$DXGI_LIBS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"dxvk-dxgi\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "dxvk-dxgi") 2>&5
+  ac_status=$?
+  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_DXGI_LIBS=`$PKG_CONFIG --libs "dxvk-dxgi" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+
+
+
+if test $pkg_failed = yes; then
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+
+if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
+        _pkg_short_errors_supported=yes
+else
+        _pkg_short_errors_supported=no
+fi
+        if test $_pkg_short_errors_supported = yes; then
+                DXGI_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "dxvk-dxgi" 2>&1`
+        else
+                DXGI_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "dxvk-dxgi" 2>&1`
+        fi
+        # Put the nasty error message in config.log where it belongs
+        echo "$DXGI_PKG_ERRORS" >&5
+
+        have_dxgi=no
+elif test $pkg_failed = untried; then
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+        have_dxgi=no
+else
+        DXGI_CFLAGS=$pkg_cv_DXGI_CFLAGS
+        DXGI_LIBS=$pkg_cv_DXGI_LIBS
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+        have_dxgi=yes
+fi ;;
+esac
+fi
+
+
+    if test "x$enable_static" = "xyes"
+then :
+  _save_PKG_CONFIG=$PKG_CONFIG
+PKG_CONFIG="$PKG_CONFIG --static"
+
+pkg_failed=no
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for dxvk-d3d11" >&5
+printf %s "checking for dxvk-d3d11... " >&6; }
+
+if test -n "$D3D11_CFLAGS"; then
+    pkg_cv_D3D11_CFLAGS="$D3D11_CFLAGS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"dxvk-d3d11\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "dxvk-d3d11") 2>&5
+  ac_status=$?
+  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_D3D11_CFLAGS=`$PKG_CONFIG --cflags "dxvk-d3d11" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+if test -n "$D3D11_LIBS"; then
+    pkg_cv_D3D11_LIBS="$D3D11_LIBS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"dxvk-d3d11\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "dxvk-d3d11") 2>&5
+  ac_status=$?
+  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_D3D11_LIBS=`$PKG_CONFIG --libs "dxvk-d3d11" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+
+
+
+if test $pkg_failed = yes; then
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+
+if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
+        _pkg_short_errors_supported=yes
+else
+        _pkg_short_errors_supported=no
+fi
+        if test $_pkg_short_errors_supported = yes; then
+                D3D11_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "dxvk-d3d11" 2>&1`
+        else
+                D3D11_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "dxvk-d3d11" 2>&1`
+        fi
+        # Put the nasty error message in config.log where it belongs
+        echo "$D3D11_PKG_ERRORS" >&5
+
+        have_d3d11=no
+elif test $pkg_failed = untried; then
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+        have_d3d11=no
+else
+        D3D11_CFLAGS=$pkg_cv_D3D11_CFLAGS
+        D3D11_LIBS=$pkg_cv_D3D11_LIBS
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+        have_d3d11=yes
+fi
+PKG_CONFIG=$_save_PKG_CONFIG
+else case e in #(
+  e)
+pkg_failed=no
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for dxvk-d3d11" >&5
+printf %s "checking for dxvk-d3d11... " >&6; }
+
+if test -n "$D3D11_CFLAGS"; then
+    pkg_cv_D3D11_CFLAGS="$D3D11_CFLAGS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"dxvk-d3d11\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "dxvk-d3d11") 2>&5
+  ac_status=$?
+  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_D3D11_CFLAGS=`$PKG_CONFIG --cflags "dxvk-d3d11" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+if test -n "$D3D11_LIBS"; then
+    pkg_cv_D3D11_LIBS="$D3D11_LIBS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"dxvk-d3d11\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "dxvk-d3d11") 2>&5
+  ac_status=$?
+  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_D3D11_LIBS=`$PKG_CONFIG --libs "dxvk-d3d11" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+
+
+
+if test $pkg_failed = yes; then
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+
+if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
+        _pkg_short_errors_supported=yes
+else
+        _pkg_short_errors_supported=no
+fi
+        if test $_pkg_short_errors_supported = yes; then
+                D3D11_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "dxvk-d3d11" 2>&1`
+        else
+                D3D11_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "dxvk-d3d11" 2>&1`
+        fi
+        # Put the nasty error message in config.log where it belongs
+        echo "$D3D11_PKG_ERRORS" >&5
+
+        have_d3d11=no
+elif test $pkg_failed = untried; then
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+        have_d3d11=no
+else
+        D3D11_CFLAGS=$pkg_cv_D3D11_CFLAGS
+        D3D11_LIBS=$pkg_cv_D3D11_LIBS
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+        have_d3d11=yes
+fi ;;
+esac
+fi
+
+
+    if test "x$enable_static" = "xyes"
+then :
+  _save_PKG_CONFIG=$PKG_CONFIG
+PKG_CONFIG="$PKG_CONFIG --static"
+
+pkg_failed=no
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for libvkd3d-utils" >&5
+printf %s "checking for libvkd3d-utils... " >&6; }
+
+if test -n "$VKD3D_CFLAGS"; then
+    pkg_cv_VKD3D_CFLAGS="$VKD3D_CFLAGS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libvkd3d-utils\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libvkd3d-utils") 2>&5
+  ac_status=$?
+  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_VKD3D_CFLAGS=`$PKG_CONFIG --cflags "libvkd3d-utils" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+if test -n "$VKD3D_LIBS"; then
+    pkg_cv_VKD3D_LIBS="$VKD3D_LIBS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libvkd3d-utils\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libvkd3d-utils") 2>&5
+  ac_status=$?
+  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_VKD3D_LIBS=`$PKG_CONFIG --libs "libvkd3d-utils" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+
+
+
+if test $pkg_failed = yes; then
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+
+if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
+        _pkg_short_errors_supported=yes
+else
+        _pkg_short_errors_supported=no
+fi
+        if test $_pkg_short_errors_supported = yes; then
+                VKD3D_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "libvkd3d-utils" 2>&1`
+        else
+                VKD3D_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "libvkd3d-utils" 2>&1`
+        fi
+        # Put the nasty error message in config.log where it belongs
+        echo "$VKD3D_PKG_ERRORS" >&5
+
+        have_vkd3d=no
+elif test $pkg_failed = untried; then
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+        have_vkd3d=no
+else
+        VKD3D_CFLAGS=$pkg_cv_VKD3D_CFLAGS
+        VKD3D_LIBS=$pkg_cv_VKD3D_LIBS
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+        have_vkd3d=yes
+fi
+PKG_CONFIG=$_save_PKG_CONFIG
+else case e in #(
+  e)
+pkg_failed=no
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for libvkd3d-utils" >&5
+printf %s "checking for libvkd3d-utils... " >&6; }
+
+if test -n "$VKD3D_CFLAGS"; then
+    pkg_cv_VKD3D_CFLAGS="$VKD3D_CFLAGS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libvkd3d-utils\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libvkd3d-utils") 2>&5
+  ac_status=$?
+  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_VKD3D_CFLAGS=`$PKG_CONFIG --cflags "libvkd3d-utils" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+if test -n "$VKD3D_LIBS"; then
+    pkg_cv_VKD3D_LIBS="$VKD3D_LIBS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libvkd3d-utils\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libvkd3d-utils") 2>&5
+  ac_status=$?
+  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_VKD3D_LIBS=`$PKG_CONFIG --libs "libvkd3d-utils" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+
+
+
+if test $pkg_failed = yes; then
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+
+if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
+        _pkg_short_errors_supported=yes
+else
+        _pkg_short_errors_supported=no
+fi
+        if test $_pkg_short_errors_supported = yes; then
+                VKD3D_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "libvkd3d-utils" 2>&1`
+        else
+                VKD3D_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "libvkd3d-utils" 2>&1`
+        fi
+        # Put the nasty error message in config.log where it belongs
+        echo "$VKD3D_PKG_ERRORS" >&5
+
+        have_vkd3d=no
+elif test $pkg_failed = untried; then
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+        have_vkd3d=no
+else
+        VKD3D_CFLAGS=$pkg_cv_VKD3D_CFLAGS
+        VKD3D_LIBS=$pkg_cv_VKD3D_LIBS
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+        have_vkd3d=yes
+fi ;;
+esac
+fi
+
+        if test "x$have_dxgi" != "xyes" || test "x$have_d3d11" != "xyes" || test "x$have_vkd3d" != "xyes"
+then :
+
+            as_fn_error $? "Missing dxvk-native or libvkd3d-utils libraries for D3D11 on Linux" "$LINENO" 5
+
+fi
+        FORCE_SDL_DYNAMIC=1 # dxvk double-loads the wrong library version if we statically link to sdl, so until i (if ever) build dxvk in-tree
+                            # it needs to be forced dynamic
+
+else case e in #(
+  e)
+        D3D11_CFLAGS=""
+
+        D3D11_LIBS="-ld3d11 -ld3dcompiler_47 -ldxgi"
+
+        DXGI_CFLAGS=""
+
+        DXGI_LIBS="-ldxgi"
+
+        VKD3D_CFLAGS=""
+
+        VKD3D_LIBS=""
+
+     ;;
+esac
+fi
  ;;
 esac
 fi
-
-
-    if test "x$enable_static" = "xyes"
-then :
-  _save_PKG_CONFIG=$PKG_CONFIG
-PKG_CONFIG="$PKG_CONFIG --static"
-
-pkg_failed=no
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for gl" >&5
-printf %s "checking for gl... " >&6; }
-
-if test -n "$GL_CFLAGS"; then
-    pkg_cv_GL_CFLAGS="$GL_CFLAGS"
- elif test -n "$PKG_CONFIG"; then
-    if test -n "$PKG_CONFIG" && \
-    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"gl\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "gl") 2>&5
-  ac_status=$?
-  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }; then
-  pkg_cv_GL_CFLAGS=`$PKG_CONFIG --cflags "gl" 2>/dev/null`
-		      test "x$?" != "x0" && pkg_failed=yes
-else
-  pkg_failed=yes
-fi
- else
-    pkg_failed=untried
-fi
-if test -n "$GL_LIBS"; then
-    pkg_cv_GL_LIBS="$GL_LIBS"
- elif test -n "$PKG_CONFIG"; then
-    if test -n "$PKG_CONFIG" && \
-    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"gl\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "gl") 2>&5
-  ac_status=$?
-  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }; then
-  pkg_cv_GL_LIBS=`$PKG_CONFIG --libs "gl" 2>/dev/null`
-		      test "x$?" != "x0" && pkg_failed=yes
-else
-  pkg_failed=yes
-fi
- else
-    pkg_failed=untried
-fi
-
-
-
-if test $pkg_failed = yes; then
-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
-printf "%s\n" "no" >&6; }
-
-if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
-        _pkg_short_errors_supported=yes
-else
-        _pkg_short_errors_supported=no
-fi
-        if test $_pkg_short_errors_supported = yes; then
-                GL_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "gl" 2>&1`
-        else
-                GL_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "gl" 2>&1`
-        fi
-        # Put the nasty error message in config.log where it belongs
-        echo "$GL_PKG_ERRORS" >&5
-
-        have_gl=no
-elif test $pkg_failed = untried; then
-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
-printf "%s\n" "no" >&6; }
-        have_gl=no
-else
-        GL_CFLAGS=$pkg_cv_GL_CFLAGS
-        GL_LIBS=$pkg_cv_GL_LIBS
-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-printf "%s\n" "yes" >&6; }
-        have_gl=yes
-fi
-PKG_CONFIG=$_save_PKG_CONFIG
-else case e in #(
-  e)
-pkg_failed=no
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for gl" >&5
-printf %s "checking for gl... " >&6; }
-
-if test -n "$GL_CFLAGS"; then
-    pkg_cv_GL_CFLAGS="$GL_CFLAGS"
- elif test -n "$PKG_CONFIG"; then
-    if test -n "$PKG_CONFIG" && \
-    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"gl\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "gl") 2>&5
-  ac_status=$?
-  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }; then
-  pkg_cv_GL_CFLAGS=`$PKG_CONFIG --cflags "gl" 2>/dev/null`
-		      test "x$?" != "x0" && pkg_failed=yes
-else
-  pkg_failed=yes
-fi
- else
-    pkg_failed=untried
-fi
-if test -n "$GL_LIBS"; then
-    pkg_cv_GL_LIBS="$GL_LIBS"
- elif test -n "$PKG_CONFIG"; then
-    if test -n "$PKG_CONFIG" && \
-    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"gl\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "gl") 2>&5
-  ac_status=$?
-  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }; then
-  pkg_cv_GL_LIBS=`$PKG_CONFIG --libs "gl" 2>/dev/null`
-		      test "x$?" != "x0" && pkg_failed=yes
-else
-  pkg_failed=yes
-fi
- else
-    pkg_failed=untried
-fi
-
-
-
-if test $pkg_failed = yes; then
-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
-printf "%s\n" "no" >&6; }
-
-if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
-        _pkg_short_errors_supported=yes
-else
-        _pkg_short_errors_supported=no
-fi
-        if test $_pkg_short_errors_supported = yes; then
-                GL_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "gl" 2>&1`
-        else
-                GL_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "gl" 2>&1`
-        fi
-        # Put the nasty error message in config.log where it belongs
-        echo "$GL_PKG_ERRORS" >&5
-
-        have_gl=no
-elif test $pkg_failed = untried; then
-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
-printf "%s\n" "no" >&6; }
-        have_gl=no
-else
-        GL_CFLAGS=$pkg_cv_GL_CFLAGS
-        GL_LIBS=$pkg_cv_GL_LIBS
-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-printf "%s\n" "yes" >&6; }
-        have_gl=yes
-fi ;;
-esac
-fi
-
-
-    if test "x$enable_static" = "xyes"
-then :
-  _save_PKG_CONFIG=$PKG_CONFIG
-PKG_CONFIG="$PKG_CONFIG --static"
-
-pkg_failed=no
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for glu" >&5
-printf %s "checking for glu... " >&6; }
-
-if test -n "$GLU_CFLAGS"; then
-    pkg_cv_GLU_CFLAGS="$GLU_CFLAGS"
- elif test -n "$PKG_CONFIG"; then
-    if test -n "$PKG_CONFIG" && \
-    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"glu\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "glu") 2>&5
-  ac_status=$?
-  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }; then
-  pkg_cv_GLU_CFLAGS=`$PKG_CONFIG --cflags "glu" 2>/dev/null`
-		      test "x$?" != "x0" && pkg_failed=yes
-else
-  pkg_failed=yes
-fi
- else
-    pkg_failed=untried
-fi
-if test -n "$GLU_LIBS"; then
-    pkg_cv_GLU_LIBS="$GLU_LIBS"
- elif test -n "$PKG_CONFIG"; then
-    if test -n "$PKG_CONFIG" && \
-    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"glu\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "glu") 2>&5
-  ac_status=$?
-  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }; then
-  pkg_cv_GLU_LIBS=`$PKG_CONFIG --libs "glu" 2>/dev/null`
-		      test "x$?" != "x0" && pkg_failed=yes
-else
-  pkg_failed=yes
-fi
- else
-    pkg_failed=untried
-fi
-
-
-
-if test $pkg_failed = yes; then
-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
-printf "%s\n" "no" >&6; }
-
-if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
-        _pkg_short_errors_supported=yes
-else
-        _pkg_short_errors_supported=no
-fi
-        if test $_pkg_short_errors_supported = yes; then
-                GLU_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "glu" 2>&1`
-        else
-                GLU_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "glu" 2>&1`
-        fi
-        # Put the nasty error message in config.log where it belongs
-        echo "$GLU_PKG_ERRORS" >&5
-
-        have_glu=no
-elif test $pkg_failed = untried; then
-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
-printf "%s\n" "no" >&6; }
-        have_glu=no
-else
-        GLU_CFLAGS=$pkg_cv_GLU_CFLAGS
-        GLU_LIBS=$pkg_cv_GLU_LIBS
-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-printf "%s\n" "yes" >&6; }
-        have_glu=yes
-fi
-PKG_CONFIG=$_save_PKG_CONFIG
-else case e in #(
-  e)
-pkg_failed=no
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for glu" >&5
-printf %s "checking for glu... " >&6; }
-
-if test -n "$GLU_CFLAGS"; then
-    pkg_cv_GLU_CFLAGS="$GLU_CFLAGS"
- elif test -n "$PKG_CONFIG"; then
-    if test -n "$PKG_CONFIG" && \
-    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"glu\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "glu") 2>&5
-  ac_status=$?
-  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }; then
-  pkg_cv_GLU_CFLAGS=`$PKG_CONFIG --cflags "glu" 2>/dev/null`
-		      test "x$?" != "x0" && pkg_failed=yes
-else
-  pkg_failed=yes
-fi
- else
-    pkg_failed=untried
-fi
-if test -n "$GLU_LIBS"; then
-    pkg_cv_GLU_LIBS="$GLU_LIBS"
- elif test -n "$PKG_CONFIG"; then
-    if test -n "$PKG_CONFIG" && \
-    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"glu\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "glu") 2>&5
-  ac_status=$?
-  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }; then
-  pkg_cv_GLU_LIBS=`$PKG_CONFIG --libs "glu" 2>/dev/null`
-		      test "x$?" != "x0" && pkg_failed=yes
-else
-  pkg_failed=yes
-fi
- else
-    pkg_failed=untried
-fi
-
-
-
-if test $pkg_failed = yes; then
-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
-printf "%s\n" "no" >&6; }
-
-if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
-        _pkg_short_errors_supported=yes
-else
-        _pkg_short_errors_supported=no
-fi
-        if test $_pkg_short_errors_supported = yes; then
-                GLU_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "glu" 2>&1`
-        else
-                GLU_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "glu" 2>&1`
-        fi
-        # Put the nasty error message in config.log where it belongs
-        echo "$GLU_PKG_ERRORS" >&5
-
-        have_glu=no
-elif test $pkg_failed = untried; then
-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
-printf "%s\n" "no" >&6; }
-        have_glu=no
-else
-        GLU_CFLAGS=$pkg_cv_GLU_CFLAGS
-        GLU_LIBS=$pkg_cv_GLU_LIBS
-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-printf "%s\n" "yes" >&6; }
-        have_glu=yes
-fi ;;
-esac
-fi
-
 
 SDL3_MIN_VERSION=3.4.0 # needs SDL_SetRelativeMouseTransform, not in any current (3.2.x) releases
 SDL3_BUILD_VERSION=a26e5f32e0f553379f9c15a1902d52a38953f148 # git
@@ -10345,7 +10894,7 @@ then :
 fi
 SDL3_VERSION=$SDL3_BUILD_VERSION
 SDL3_PREFIX="${DEPS_PREFIX}"
-if test "x$enable_static" = "xyes"
+if test "$STATICBUILD" = "yes" && test -z "$FORCE_SDL_DYNAMIC"
 then :
 
     SDL3_STATIC=1
@@ -10460,7 +11009,7 @@ FMT_PREFIX="${DEPS_PREFIX}"
 
 
 
-if test "x$have_glm" != "xyes"
+if test "x$have_glm" != "xyes" && test "x$renderer" != dx11
 then :
   have_glm="build from source"
 fi
@@ -10527,7 +11076,7 @@ else
   BUILD_FMT_FALSE=
 fi
 
- if test "x$have_glm" != "xyes"; then
+ if test "x$have_glm" != "xyes" && test "x$renderer" != dx11; then
   BUILD_GLM_TRUE=
   BUILD_GLM_FALSE='#'
 else
@@ -10712,7 +11261,13 @@ fi
 
 
 # the source file is also added through autogen.sh to Makefile.sources
-BUNDLED_INCLUDES="-I\$(srcdir)/\$(BUNDLED_LIBS_DIR)/include -I\$(srcdir)/\$(BUNDLED_LIBS_DIR)/include/glad"
+BUNDLED_INCLUDES="-I\$(srcdir)/\$(BUNDLED_LIBS_DIR)/include"
+if test "$renderer" != "dx11"
+then :
+
+    BUNDLED_INCLUDES="$BUNDLED_INCLUDES -I\$(srcdir)/\$(BUNDLED_LIBS_DIR)/include/glad"
+
+fi
 
 
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for default config in $srcdir/$ASSETS_DIR/cfg" >&5
@@ -12341,6 +12896,7 @@ fi
 McOsu-ng build configuration:
     Build target:       ${target}
     Install prefix:     ${prefix}
+    Renderer:           ${renderer}
     Preprocessor flags: ${CPPFLAGS}
     ccache:             ${CCACHE-no}
     clang:              ${CLANG-no}
@@ -12381,6 +12937,7 @@ printf "%s\n" "$as_me:
 McOsu-ng build configuration:
     Build target:       ${target}
     Install prefix:     ${prefix}
+    Renderer:           ${renderer}
     Preprocessor flags: ${CPPFLAGS}
     ccache:             ${CCACHE-no}
     clang:              ${CLANG-no}

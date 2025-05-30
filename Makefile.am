@@ -152,12 +152,12 @@ $(DEPS_PREFIX)/SDL3_mixer.built: $(DEPS_PREFIX)/SDL3.built $(DEPS_CACHE)/SDL3_mi
 		-D SDLMIXER_VENDORED=ON \
 		-D SDLMIXER_MP3=ON \
 		-D SDLMIXER_MP3_MPG123=ON \
-		-D BUILD_SHARED_LIBS="$(if $(SDL3_STATIC),OFF,ON)" \
-		-D SDLMIXER_DEPS_SHARED="$(if $(SDL3_STATIC),OFF,ON)" && \
+		-D BUILD_SHARED_LIBS="$(if $(STATICBUILD),OFF,ON)" \
+		-D SDLMIXER_DEPS_SHARED="$(if $(STATICBUILD),OFF,ON)" && \
 	cmake --build build && \
 	cmake --install build
 	$(SED) -i 's|Libs\.private.*|Libs.private: -lmpg123 -logg -lopus -lwavpack -lopusfile -lxmp|' $(DEPS_PREFIX)/lib/pkgconfig/sdl3-mixer.pc # wtf is this weird cmake issue?
-	rm -rf $(DEPS_PREFIX)/lib/*SDL3_mixer$(if $(SDL3_STATIC),$(DLLEXT),.a)*
+	rm -rf $(DEPS_PREFIX)/lib/*SDL3_mixer$(if $(STATICBUILD),$(DLLEXT),.a)*
 	$(PKG_CONFIG) --exists --print-errors sdl3-mixer
 	touch $@
 $(DEPS_PREFIX)/SoLoud.built:
@@ -242,11 +242,11 @@ $(DEPS_PREFIX)/SoundTouch.built: $(DEPS_CACHE)/SoundTouch.source
 		$(CMAKERCOPT) \
 		-D SOUNDSTRETCH=OFF \
 		-D SOUNDTOUCH_DLL=OFF \
-		-D OPENMP="$(if $(SDL3_STATIC),OFF,ON)" \
-		-D BUILD_SHARED_LIBS="$(if $(SDL3_STATIC),OFF,ON)" && \
+		-D OPENMP="$(if $(STATICBUILD),OFF,ON)" \
+		-D BUILD_SHARED_LIBS="$(if $(STATICBUILD),OFF,ON)" && \
 	cmake --build build && \
 	cmake --install build
-	rm -rf $(DEPS_PREFIX)/lib/*SoundTouch$(if $(SDL3_STATIC),$(DLLEXT),.a)*
+	rm -rf $(DEPS_PREFIX)/lib/*SoundTouch$(if $(STATICBUILD),$(DLLEXT),.a)*
 	$(PKG_CONFIG) --env-only --exists --print-errors soundtouch
 	touch $@
 
@@ -290,7 +290,7 @@ $(DEPS_PREFIX)/libjpeg.built: $(DEPS_CACHE)/libjpeg-$(LIBJPEG_VERSION).source
 		-DWITH_JPEG8=ON \
 		-DCMAKE_ASM_NASM_OBJECT_FORMAT=$(NASMOBJ) \
 		$(if $(filter x86_64,$(host_cpu)),-DWITH_SIMD=ON,$(if $(findstring gcc,$(CC)),-DWITH_SIMD=ON,-DWITH_SIMD=OFF)) \
-		$(if $(SDL3_STATIC),-DENABLE_STATIC=ON -DENABLE_SHARED=OFF,-DENABLE_STATIC=OFF -DENABLE_SHARED=ON) && \
+		$(if $(STATICBUILD),-DENABLE_STATIC=ON -DENABLE_SHARED=OFF,-DENABLE_STATIC=OFF -DENABLE_SHARED=ON) && \
 	cmake --build build && \
 	cmake --install build
 	PKG_CONFIG="$(PKG_CONFIG)" \
@@ -349,7 +349,7 @@ $(DEPS_PREFIX)/libpng.built: $(DEPS_PREFIX)/zlib.built $(DEPS_CACHE)/libpng-$(LI
 	$(TAR) xf $(DEPS_CACHE)/libpng-$(LIBPNG_VERSION).tar.gz -C $(DEPS_PREFIX)/libpng --strip-components=1 && \
 	cd $(DEPS_PREFIX)/libpng && PKG_CONFIG="$(PKG_CONFIG)" \
 		./configure lt_cv_prog_gnu_ld=yes --host=$(host_alias) --build=$(build) --prefix="$(DEPS_PREFIX)" \
-		$(if $(SDL3_STATIC),--enable-static --disable-shared,--enable-shared --disable-static) \
+		$(if $(STATICBUILD),--enable-static --disable-shared,--enable-shared --disable-static) \
 		--disable-tools --disable-tests --with-gnu-ld $(if $(DISABLE_NATIVE),,--enable-hardware-optimizations=on) \
 			CC="$(CC) $(shell $(PKG_CONFIG) --cflags zlib)" RANLIB="$(RANLIB)" AR="$(AR)" CXX="$(CXX)" LD="$(if $(findstring linux,$(host_os)),$(CC),$(LD))" \
 			CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS) $(shell $(PKG_CONFIG) --libs zlib)" && \
@@ -376,11 +376,11 @@ $(DEPS_PREFIX)/bzip2.built: $(DEPS_CACHE)/bzip2-$(BZIP2_VERSION).source
 	$(MKDIR_P) $(DEPS_PREFIX)/bzip2/build $(DEPS_PREFIX)/lib/pkgconfig $(DEPS_PREFIX)/include
 	$(TAR) xf $(DEPS_CACHE)/bzip2-$(BZIP2_VERSION).tar.gz -C $(DEPS_PREFIX)/bzip2 --strip-components=1 && \
 	cd $(DEPS_PREFIX)/bzip2 && \
-	$(if $(findstring linux,$(host_os)),true,$(if $(SDL3_STATIC),true,cp $(abs_top_srcdir)/build/aux/libbz2-Makefile-mingw) ./) && \
-	$(MAKE) PREFIX="$(DEPS_PREFIX)" RANLIB="$(RANLIB)" AR="$(AR)" CC="$(CC)" CXX="$(CXX)" LD="$(LD)" CFLAGS="$(CFLAGS) $(if $(SDL3_STATIC),,-fPIC)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS) $(if $(SDL3_STATIC),,-fPIC)" \
-		$(if $(SDL3_STATIC),"libbz2.a",$(if $(findstring linux,$(host_os)),-f Makefile-libbz2_so,-f libbz2-Makefile-mingw install)) && \
+	$(if $(findstring linux,$(host_os)),true,$(if $(STATICBUILD),true,cp $(abs_top_srcdir)/build/aux/libbz2-Makefile-mingw) ./) && \
+	$(MAKE) PREFIX="$(DEPS_PREFIX)" RANLIB="$(RANLIB)" AR="$(AR)" CC="$(CC)" CXX="$(CXX)" LD="$(LD)" CFLAGS="$(CFLAGS) $(if $(STATICBUILD),,-fPIC)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS) $(if $(STATICBUILD),,-fPIC)" \
+		$(if $(STATICBUILD),"libbz2.a",$(if $(findstring linux,$(host_os)),-f Makefile-libbz2_so,-f libbz2-Makefile-mingw install)) && \
 	cp -f bzlib.h $(DEPS_PREFIX)/include/ && \
-	test -f $(DEPS_PREFIX)/lib/pkgconfig/bzip2.pc || { cp -f $(if $(SDL3_STATIC),"libbz2.a",libbz2*$(DLLEXT)*) $(DEPS_PREFIX)/lib/ && \
+	test -f $(DEPS_PREFIX)/lib/pkgconfig/bzip2.pc || { cp -f $(if $(STATICBUILD),"libbz2.a",libbz2*$(DLLEXT)*) $(DEPS_PREFIX)/lib/ && \
 	$(MKDIR_P) "$(DEPS_PREFIX)/lib/pkgconfig" && \
 	( echo 'prefix=$(DEPS_PREFIX)'; \
 	  echo 'exec_prefix=$${prefix}'; \
@@ -414,7 +414,7 @@ $(DEPS_PREFIX)/zlib.built: $(DEPS_CACHE)/zlib-$(ZLIB_VERSION).source
 	$(TAR) xf $(DEPS_CACHE)/zlib-$(ZLIB_VERSION).tar.gz -C $(DEPS_PREFIX)/zlib --strip-components=1 && \
 	cd $(DEPS_PREFIX)/zlib/build && PKG_CONFIG="$(PKG_CONFIG)" \
 		$(if $(findstring linux,$(host_os)),,uname=mingw CHOST=$(host_alias)) RANLIB="$(RANLIB)" AR="$(AR)" CC="$(CC)" CXX="$(CXX)" LD="$(LD)" CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS)" \
-		../configure --zlib-compat --prefix="$(DEPS_PREFIX)" $(if $(SDL3_STATIC),--static,) && \
+		../configure --zlib-compat --prefix="$(DEPS_PREFIX)" $(if $(STATICBUILD),--static,) && \
 	$(MAKE) install && \
 	$(SED) -i 's|sharedlibdir=.*|sharedlibdir=$${libdir}|' $(DEPS_PREFIX)/lib/pkgconfig/zlib.pc && \
 	PKG_CONFIG="$(PKG_CONFIG)" \
@@ -458,7 +458,7 @@ $(DEPS_PREFIX)/FMT.built: $(DEPS_CACHE)/FMT-$(FMT_VERSION).source
 		-DFMT_MODULE=OFF \
 		-DFMT_SYSTEM_HEADERS=OFF \
 		-DFMT_UNICODE=ON \
-		-DBUILD_SHARED_LIBS="$(if $(SDL3_STATIC),OFF,ON)" && \
+		-DBUILD_SHARED_LIBS="$(if $(STATICBUILD),OFF,ON)" && \
 	cmake --build build && \
 	cmake --install build
 	PKG_CONFIG="$(PKG_CONFIG)" \
@@ -485,7 +485,7 @@ $(DEPS_PREFIX)/FREETYPE2.built: $(DEPS_PREFIX)/libpng.built $(DEPS_PREFIX)/libjp
 	patch -Np1<$(abs_top_srcdir)/build/aux/freetype-win.patch && \
 	PKG_CONFIG="$(PKG_CONFIG)" \
 		./configure lt_cv_prog_gnu_ld=yes --host=$(host_alias) --prefix="$(DEPS_PREFIX)" --with-harfbuzz=no --with-brotli=no \
-		$(if $(SDL3_STATIC),--enable-static --disable-shared,--enable-shared --disable-static) \
+		$(if $(STATICBUILD),--enable-static --disable-shared,--enable-shared --disable-static) \
 		RANLIB="$(RANLIB)" AR="$(AR)" CC="$(CC)" CXX="$(CXX)" LD="$(LD)" CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS)" && \
 	$(MAKE) && \
 	$(MAKE) install
@@ -527,7 +527,10 @@ McOsu_ng_CXXFLAGS := \
 	$(BZIP2_CFLAGS) \
 	$(LIBJPEG_CFLAGS) \
 	$(GLM_CFLAGS) \
-	$(ZLIB_CFLAGS)
+	$(ZLIB_CFLAGS) \
+	$(DXGI_CFLAGS) \
+	$(D3D11_CFLAGS) \
+	$(VKD3D_CFLAGS)
 
 # Wl,--start-group with no --end-group is a stupid hack.
 McOsu_ng_LDFLAGS := \
@@ -547,6 +550,8 @@ McOsu_ng_LDFLAGS := \
 	$(BZIP2_LIBS) \
 	$(LIBJPEG_LIBS) \
 	$(ZLIB_LIBS) \
+	$(DXGI_LIBS) \
+	$(D3D11_LIBS) \
 	$(MCOSU_LDFLAGS) \
 	$(LDFLAGS_EXTRA)
 
@@ -611,9 +616,9 @@ endif
 endif
 if !USE_BASS
 if USE_SDLMIXER
-	$(if $(SDL3_STATIC),,@cp -P "$(SDL3_MIXER_PREFIX)/lib"/{*$(LIBPREFIX)SDL3_mixer*$(DLLEXT)*,*$(LIBPREFIX)mpg123*$(DLLEXT)*,*$(LIBPREFIX)xmp*$(DLLEXT)*,*$(LIBPREFIX)wavpack*$(DLLEXT)*,*$(LIBPREFIX)opus*$(DLLEXT)*,*$(LIBPREFIX)ogg*$(DLLEXT)*} "$(DESTDIR)$(bindir)/$(LIBDEST)")
+	$(if $(STATICBUILD),,@cp -P "$(SDL3_MIXER_PREFIX)/lib"/{*$(LIBPREFIX)SDL3_mixer*$(DLLEXT)*,*$(LIBPREFIX)mpg123*$(DLLEXT)*,*$(LIBPREFIX)xmp*$(DLLEXT)*,*$(LIBPREFIX)wavpack*$(DLLEXT)*,*$(LIBPREFIX)opus*$(DLLEXT)*,*$(LIBPREFIX)ogg*$(DLLEXT)*} "$(DESTDIR)$(bindir)/$(LIBDEST)")
 else
-	$(if $(SDL3_STATIC),,@cp -P "$(SOLOUD_PREFIX)/lib"/*$(LIBPREFIX)SoundTouch*$(DLLEXT)* "$(DESTDIR)$(bindir)/$(LIBDEST)")
+	$(if $(STATICBUILD),,@cp -P "$(SOLOUD_PREFIX)/lib"/*$(LIBPREFIX)SoundTouch*$(DLLEXT)* "$(DESTDIR)$(bindir)/$(LIBDEST)")
 endif
 else
 	$(INSTALL) -m 755 $(srcdir)/$(BUNDLED_BASS_DIR)/lib/$(SYSNAME)/$(host_cpu)/$(LIBPREFIX)bass$(DLLEXT) "$(DESTDIR)$(bindir)/$(LIBDEST)"
@@ -628,23 +633,23 @@ if BUILD_SDL3
 	$(if $(SDL3_STATIC),,@`find $(SDL3_PREFIX) '(' -iname '*SDL3*'$(DLLEXT) -o -iname '*SDL3*''.so.*' ')' -exec cp -P '{''}' "$(DESTDIR)$(bindir)/$(LIBDEST)" ';'`)
 endif
 if BUILD_LIBJPEG
-	$(if $(SDL3_STATIC),,@`find $(LIBJPEG_PREFIX) '(' -iname '*libjpeg-*'$(DLLEXT) -o -iname '*libjpeg*''.so.*' ')' -exec cp -P '{''}' "$(DESTDIR)$(bindir)/$(LIBDEST)" ';'`)
-	$(if $(SDL3_STATIC),,@`find $(LIBJPEG_PREFIX) '(' -iname '*libturbojpeg-*'$(DLLEXT) -o -iname '*libturbojpeg''.so.*' ')' -exec cp -P '{''}' "$(DESTDIR)$(bindir)/$(LIBDEST)" ';'`)
+	$(if $(STATICBUILD),,@`find $(LIBJPEG_PREFIX) '(' -iname '*libjpeg-*'$(DLLEXT) -o -iname '*libjpeg*''.so.*' ')' -exec cp -P '{''}' "$(DESTDIR)$(bindir)/$(LIBDEST)" ';'`)
+	$(if $(STATICBUILD),,@`find $(LIBJPEG_PREFIX) '(' -iname '*libturbojpeg-*'$(DLLEXT) -o -iname '*libturbojpeg''.so.*' ')' -exec cp -P '{''}' "$(DESTDIR)$(bindir)/$(LIBDEST)" ';'`)
 endif
 if BUILD_LIBPNG
-	$(if $(SDL3_STATIC),,@`find $(LIBPNG_PREFIX) '(' -iname '*libpng*'$(DLLEXT) -o -iname '*libpng*''.so.*' ')' -exec cp -P '{''}' "$(DESTDIR)$(bindir)/$(LIBDEST)" ';'`)
+	$(if $(STATICBUILD),,@`find $(LIBPNG_PREFIX) '(' -iname '*libpng*'$(DLLEXT) -o -iname '*libpng*''.so.*' ')' -exec cp -P '{''}' "$(DESTDIR)$(bindir)/$(LIBDEST)" ';'`)
 endif
 if BUILD_BZIP2
-	$(if $(SDL3_STATIC),,@`find $(BZIP2_PREFIX) '(' -iname '*bz2*'$(DLLEXT) -o -iname '*bz2*''.so.*' ')' -exec cp -P '{''}' "$(DESTDIR)$(bindir)/$(LIBDEST)" ';'`)
+	$(if $(STATICBUILD),,@`find $(BZIP2_PREFIX) '(' -iname '*bz2*'$(DLLEXT) -o -iname '*bz2*''.so.*' ')' -exec cp -P '{''}' "$(DESTDIR)$(bindir)/$(LIBDEST)" ';'`)
 endif
 if BUILD_ZLIB
-	$(if $(SDL3_STATIC),,@`find $(ZLIB_PREFIX) '(' -iname '*libz-*'$(DLLEXT) -o -iname '*libz*''.so.*' ')' -exec cp -P '{''}' "$(DESTDIR)$(bindir)/$(LIBDEST)" ';'`)
+	$(if $(STATICBUILD),,@`find $(ZLIB_PREFIX) '(' -iname '*libz-*'$(DLLEXT) -o -iname '*libz*''.so.*' ')' -exec cp -P '{''}' "$(DESTDIR)$(bindir)/$(LIBDEST)" ';'`)
 endif
 if BUILD_FREETYPE2
-	$(if $(SDL3_STATIC),,@`find $(FREETYPE2_PREFIX) '(' -iname '*freetype*'$(DLLEXT) -o -iname '*freetype*''.so.*' ')' -exec cp -P '{''}' "$(DESTDIR)$(bindir)/$(LIBDEST)" ';'`)
+	$(if $(STATICBUILD),,@`find $(FREETYPE2_PREFIX) '(' -iname '*freetype*'$(DLLEXT) -o -iname '*freetype*''.so.*' ')' -exec cp -P '{''}' "$(DESTDIR)$(bindir)/$(LIBDEST)" ';'`)
 endif
 if BUILD_FMT
-	$(if $(SDL3_STATIC),,@`find $(FMT_PREFIX) '(' -iname '*fmt*'$(DLLEXT) -o -iname '*fmt*''.so.*' ')' -exec cp -P '{''}' "$(DESTDIR)$(bindir)/$(LIBDEST)" ';'`)
+	$(if $(STATICBUILD),,@`find $(FMT_PREFIX) '(' -iname '*fmt*'$(DLLEXT) -o -iname '*fmt*''.so.*' ')' -exec cp -P '{''}' "$(DESTDIR)$(bindir)/$(LIBDEST)" ';'`)
 endif
 
 # install hooks

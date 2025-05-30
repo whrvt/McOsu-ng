@@ -19,14 +19,14 @@ class DirectX11VertexArrayObject final : public VertexArrayObject
 {
 public:
 	DirectX11VertexArrayObject(Graphics::PRIMITIVE primitive = Graphics::PRIMITIVE::PRIMITIVE_TRIANGLES, Graphics::USAGE_TYPE usage = Graphics::USAGE_TYPE::USAGE_STATIC, bool keepInSystemMemory = false);
-	virtual ~DirectX11VertexArrayObject() {destroy();}
+	~DirectX11VertexArrayObject() override {destroy();}
 
 	void draw();
 
 protected:
-	virtual void init();
-	virtual void initAsync();
-	virtual void destroy();
+	void init() override;
+	void initAsync() override;
+	void destroy() override;
 
 private:
 	static int primitiveToDirectX(Graphics::PRIMITIVE primitive);

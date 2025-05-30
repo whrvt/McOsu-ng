@@ -22,13 +22,13 @@ class DirectX11Image final : public Image
 public:
 	DirectX11Image(UString filepath, bool mipmapped = false, bool keepInSystemMemory = false);
 	DirectX11Image(int width, int height, bool mipmapped = false, bool keepInSystemMemory = false);
-	virtual ~DirectX11Image() {destroy();}
+	~DirectX11Image() override {destroy();}
 
-	virtual void bind(unsigned int textureUnit = 0);
-	virtual void unbind();
+	void bind(unsigned int textureUnit = 0) override;
+	void unbind() override;
 
-	virtual void setFilterMode(Graphics::FILTER_MODE filterMode);
-	virtual void setWrapMode(Graphics::WRAP_MODE wrapMode);
+	void setFilterMode(Graphics::FILTER_MODE filterMode) override;
+	void setWrapMode(Graphics::WRAP_MODE wrapMode) override;
 
 	// ILLEGAL:
 	void setDirectX11InterfaceHack(DirectX11Interface *dxi) {m_interfaceOverrideHack = dxi;}
@@ -37,9 +37,9 @@ public:
 	ID3D11ShaderResourceView *getShaderResourceView() const {return m_shaderResourceView;}
 
 protected:
-	virtual void init();
-	virtual void initAsync();
-	virtual void destroy();
+	void init() override;
+	void initAsync() override;
+	void destroy() override;
 
 private:
 	void createOrUpdateSampler();

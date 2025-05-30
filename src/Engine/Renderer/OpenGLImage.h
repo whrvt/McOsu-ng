@@ -23,8 +23,8 @@ public:
 	void bind(unsigned int textureUnit = 0) override;
 	void unbind() override;
 
-	void setFilterMode(Graphics::FILTER_MODE filterMode);
-	void setWrapMode(Graphics::WRAP_MODE wrapMode);
+	void setFilterMode(Graphics::FILTER_MODE filterMode) override;
+	void setWrapMode(Graphics::WRAP_MODE wrapMode) override;
 
 private:
 	void init() override;

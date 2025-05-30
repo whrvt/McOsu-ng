@@ -11,6 +11,7 @@
 #include "Mouse.h"
 
 #include "SDLGLInterface.h"
+#include "DirectX11Interface.h"
 
 #include "File.h"
 
@@ -149,9 +150,13 @@ void Environment::update()
 
 Graphics *Environment::createRenderer()
 {
+#ifndef MCENGINE_FEATURE_DIRECTX11
 	// need to load stuff dynamically before the base class constructors
 	SDLGLInterface::load();
 	return new SDLGLInterface(m_window);
+#else
+	return new DirectX11Interface(Env::cfg(OS::WINDOWS) ? getHwnd() : reinterpret_cast<HWND>(m_window));
+#endif
 }
 
 void Environment::shutdown()

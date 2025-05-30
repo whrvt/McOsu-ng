@@ -21,26 +21,26 @@ class DirectX11RenderTarget final : public RenderTarget
 {
 public:
 	DirectX11RenderTarget(int x, int y, int width, int height, Graphics::MULTISAMPLE_TYPE multiSampleType = Graphics::MULTISAMPLE_TYPE::MULTISAMPLE_0X);
-	virtual ~DirectX11RenderTarget() {destroy();}
+	~DirectX11RenderTarget() override {destroy();}
 
-	virtual void draw(int x, int y);
-	virtual void draw(int x, int y, int width, int height);
-	virtual void drawRect(int x, int y, int width, int height);
+	void draw(int x, int y) override;
+	void draw(int x, int y, int width, int height) override;
+	void drawRect(int x, int y, int width, int height) override;
 
-	virtual void enable();
-	virtual void disable();
+	void enable() override;
+	void disable() override;
 
-	virtual void bind(unsigned int textureUnit = 0);
-	virtual void unbind();
+	void bind(unsigned int textureUnit = 0) override;
+	void unbind() override;
 
 	// ILLEGAL:
 	void setDirectX11InterfaceHack(DirectX11Interface *dxi) {m_interfaceOverrideHack = dxi;}
 	inline ID3D11Texture2D *getRenderTexture() const {return m_renderTexture;}
 
 private:
-	virtual void init();
-	virtual void initAsync();
-	virtual void destroy();
+	void init() override;
+	void initAsync() override;
+	void destroy() override;
 
 	ID3D11Texture2D *m_renderTexture;
 	ID3D11Texture2D *m_depthStencilTexture;

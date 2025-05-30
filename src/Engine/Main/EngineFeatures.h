@@ -12,9 +12,9 @@
 #include "config.h"
 
 /*
- * OpenGL graphics (Desktop, legacy + modern)
+ * OpenGL graphics (Desktop, legacy + modern) (defined in config.h)
  */
-#define MCENGINE_FEATURE_OPENGL
+//#define MCENGINE_FEATURE_OPENGL
 
 
 /*
@@ -23,7 +23,7 @@
 //#define MCENGINE_FEATURE_GLES2
 
 /*
- * OpenGLES 3.2 graphics (Desktop, WebGL)
+ * OpenGLES 3.2 graphics (Desktop, WebGL) (defined in config.h)
  */
 //#define MCENGINE_FEATURE_GLES32
 
@@ -33,7 +33,7 @@
 //#define MCENGINE_FEATURE_GL3
 
 /*
- * DirectX 11 graphics
+ * DirectX 11 graphics (defined in config.h)
  */
 //#define MCENGINE_FEATURE_DIRECTX11
 

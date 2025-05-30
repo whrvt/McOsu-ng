@@ -36,9 +36,9 @@
 #include <SDL3/SDL_main.h>
 
 #include "Engine.h"
-#include "Mouse.h"
-#include "Keyboard.h"
 #include "Environment.h"
+#include "Keyboard.h"
+#include "Mouse.h"
 #include "Profiler.h"
 #include "Timing.h"
 
@@ -129,6 +129,18 @@ SDL_AppResult SDL_AppIterate(void *appstate)
 // actual main/init, called once
 MAIN_FUNC /* int argc, char *argv[] */
 {
+	std::string lowerPackageName = PACKAGE_NAME;
+	std::ranges::transform(lowerPackageName, lowerPackageName.begin(), [](char c) { return std::tolower(c); });
+
+	// setup some common app metadata (SDL says these should be called as early as possible)
+	SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_NAME_STRING, PACKAGE_NAME);
+	SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_VERSION_STRING, PACKAGE_VERSION);
+	SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_IDENTIFIER_STRING, fmt::format("com.mcengine.{}", lowerPackageName).c_str());
+	SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_CREATOR_STRING, PACKAGE_BUGREPORT);
+	SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_COPYRIGHT_STRING, "MIT/GPL3"); // mcosu is gpl3, mcengine is mit
+	SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_URL_STRING, PACKAGE_URL);
+	SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_TYPE_STRING, "game");
+
 	SDL_SetHint(SDL_HINT_VIDEO_DOUBLE_BUFFER, "1");
 	if (!SDL_Init(SDL_INIT_VIDEO)) // other subsystems can be init later
 	{
@@ -186,13 +198,14 @@ static constexpr auto WINDOW_WIDTH_MIN = 100;
 static constexpr auto WINDOW_HEIGHT_MIN = 100;
 
 // convars
-namespace cv {
+namespace cv
+{
 ConVar fps_max("fps_max", 360.0f, FCVAR_NONE, "framerate limiter, foreground");
 ConVar fps_max_background("fps_max_background", 30.0f, FCVAR_NONE, "framerate limiter, background");
 ConVar fps_unlimited("fps_unlimited", false, FCVAR_NONE);
 
 ConVar fps_yield("fps_yield", true, FCVAR_NONE, "always release rest of timeslice at the end of each frame (call scheduler via sleep(0))");
-}
+} // namespace cv
 
 SDLMain::SDLMain(int argc, char *argv[]) : Environment(argc, argv)
 {
@@ -386,16 +399,14 @@ nocbinline SDL_AppResult SDLMain::handleEvent(SDL_Event *event)
 
 	case SDL_EVENT_MOUSE_WHEEL:
 		if (event->wheel.x != 0)
-			mouse->onWheelHorizontal(event->wheel.x > 0 ? 120 * std::abs(static_cast<int>(event->wheel.x))
-			                                                    : -120 * std::abs(static_cast<int>(event->wheel.x)));
+			mouse->onWheelHorizontal(event->wheel.x > 0 ? 120 * std::abs(static_cast<int>(event->wheel.x)) : -120 * std::abs(static_cast<int>(event->wheel.x)));
 		if (event->wheel.y != 0)
-			mouse->onWheelVertical(event->wheel.y > 0 ? 120 * std::abs(static_cast<int>(event->wheel.y))
-			                                                  : -120 * std::abs(static_cast<int>(event->wheel.y)));
+			mouse->onWheelVertical(event->wheel.y > 0 ? 120 * std::abs(static_cast<int>(event->wheel.y)) : -120 * std::abs(static_cast<int>(event->wheel.y)));
 		break;
 
 	case SDL_EVENT_MOUSE_MOTION:
-		//debugLog("mouse motion on frame {}\n", engine->getFrameCount());
-		// cache the position
+		// debugLog("mouse motion on frame {}\n", engine->getFrameCount());
+		//  cache the position
 		m_vLastRelMousePos.x = event->motion.xrel;
 		m_vLastRelMousePos.y = event->motion.yrel;
 		m_vLastAbsMousePos.x = event->motion.x;
@@ -480,9 +491,10 @@ bool SDLMain::createWindow(int width, int height)
 		SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 	}
 
-	constexpr auto windowFlags = SDL_WINDOW_HIDDEN | SDL_WINDOW_INPUT_FOCUS | SDL_WINDOW_MOUSE_FOCUS |
-	                             ((Env::cfg((REND::GL | REND::GLES2 | REND::GLES32 | REND::GL3), !REND::DX11)) ? SDL_WINDOW_OPENGL
-	                                                                                                           : 0UL);
+	// set vulkan for linux dxvk-native, opengl otherwise (or none for windows dx11)
+	constexpr auto windowFlags =
+	    SDL_WINDOW_HIDDEN | SDL_WINDOW_INPUT_FOCUS | SDL_WINDOW_MOUSE_FOCUS |
+	    (Env::cfg((REND::GL | REND::GLES2 | REND::GLES32 | REND::GL3)) ? SDL_WINDOW_OPENGL : (Env::cfg(OS::LINUX, REND::DX11) ? SDL_WINDOW_VULKAN : 0UL));
 
 	SDL_PropertiesID props = SDL_CreateProperties();
 	SDL_SetStringProperty(props, SDL_PROP_WINDOW_CREATE_TITLE_STRING, WINDOW_TITLE);
@@ -508,18 +520,6 @@ bool SDLMain::createWindow(int width, int height)
 	SDL_SetHintWithPriority(SDL_HINT_MOUSE_RELATIVE_MODE_CENTER, "0", SDL_HINT_OVERRIDE);
 	SDL_SetHintWithPriority(SDL_HINT_TOUCH_MOUSE_EVENTS, "0", SDL_HINT_OVERRIDE);
 	SDL_SetHintWithPriority(SDL_HINT_MOUSE_EMULATE_WARP_WITH_RELATIVE, "0", SDL_HINT_OVERRIDE);
-
-	std::string lowerPackageName = PACKAGE_NAME;
-	std::ranges::transform(lowerPackageName, lowerPackageName.begin(), [](char c) { return std::tolower(c); });
-
-	// setup some common app metadata
-	SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_NAME_STRING, PACKAGE_NAME);
-	SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_VERSION_STRING, PACKAGE_VERSION);
-	SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_IDENTIFIER_STRING, fmt::format("com.mcengine.{}", lowerPackageName).c_str());
-	SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_CREATOR_STRING, PACKAGE_BUGREPORT);
-	SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_COPYRIGHT_STRING, "MIT/GPL3"); // mcosu is gpl3, mcengine is mit
-	SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_URL_STRING, PACKAGE_URL);
-	SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_TYPE_STRING, "game");
 
 	// create window
 	m_window = SDL_CreateWindowWithProperties(props);
@@ -586,7 +586,7 @@ float SDLMain::queryDisplayHz()
 		{
 			if (!almostEqual(m_fDisplayHz, currentDisplayMode->refresh_rate))
 				debugLog("Got refresh rate {:.3f} Hz for display {:d}.\n", currentDisplayMode->refresh_rate, display);
-			const auto refreshRateSanityClamped = std::clamp<float>(currentDisplayMode->refresh_rate, 60.0f, 540.0f); 
+			const auto refreshRateSanityClamped = std::clamp<float>(currentDisplayMode->refresh_rate, 60.0f, 540.0f);
 			const auto fourxhz = refreshRateSanityClamped * 4.0f;
 			// also set fps_max to 4x the refresh rate if it's the default
 			if (cv::fps_max.getFloat() == cv::fps_max.getDefaultFloat())

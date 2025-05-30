@@ -48,9 +48,9 @@ void DirectX11Image::init()
 
 	HRESULT hr;
 
-	DirectX11Interface *dx11 = ((DirectX11Interface*)g);
+	auto *graphics = static_cast<DirectX11Interface*>(g);
 	if (m_interfaceOverrideHack != NULL)
-		dx11 = m_interfaceOverrideHack;
+		graphics = m_interfaceOverrideHack;
 
 	// create texture (with initial data)
 	D3D11_TEXTURE2D_DESC textureDesc;
@@ -80,7 +80,7 @@ void DirectX11Image::init()
 				initData.SysMemPitch = static_cast<UINT>(m_iWidth * m_iNumChannels * sizeof(unsigned char));
 				initData.SysMemSlicePitch = 0;
 			}
-			hr = dx11->getDevice()->CreateTexture2D(&textureDesc, (!m_bMipmapped && m_rawImage.size() >= m_iWidth * m_iHeight * m_iNumChannels ? &initData : NULL), &m_texture);
+			hr = graphics->getDevice()->CreateTexture2D(&textureDesc, (!m_bMipmapped && m_rawImage.size() >= m_iWidth * m_iHeight * m_iNumChannels ? &initData : NULL), &m_texture);
 			if (FAILED(hr) || m_texture == NULL)
 			{
 				debugLog("DirectX Image Error: Couldn't CreateTexture2D({}, {:x}, {:x}) on file {:s}!\n", hr, hr, MAKE_DXGI_HRESULT(hr), m_sFilePath.toUtf8());
@@ -110,7 +110,7 @@ void DirectX11Image::init()
 			shaderResourceViewDesc.Texture2D.MipLevels = (m_bMipmapped ? (UINT)(std::log2((double)std::max(m_iWidth, m_iHeight))) : 1);
 			shaderResourceViewDesc.Texture2D.MostDetailedMip = 0;
 		}
-		hr = dx11->getDevice()->CreateShaderResourceView(m_texture, &shaderResourceViewDesc, &m_shaderResourceView);
+		hr = graphics->getDevice()->CreateShaderResourceView(m_texture, &shaderResourceViewDesc, &m_shaderResourceView);
 		if (FAILED(hr) || m_shaderResourceView == NULL)
 		{
 			m_texture->Release();
@@ -124,7 +124,7 @@ void DirectX11Image::init()
 
 		// upload new/overwrite data (mipmapped) (2/2)
 		if (m_bMipmapped)
-			dx11->getDeviceContext()->UpdateSubresource(m_texture, 0, NULL, initData.pSysMem, initData.SysMemPitch, initData.SysMemPitch * (UINT)m_iHeight);
+			graphics->getDeviceContext()->UpdateSubresource(m_texture, 0, NULL, initData.pSysMem, initData.SysMemPitch, initData.SysMemPitch * (UINT)m_iHeight);
 	}
 
 	// free memory (mipmapped) (2/2)
@@ -133,7 +133,7 @@ void DirectX11Image::init()
 
 	// create mipmaps
 	if (m_bMipmapped)
-		dx11->getDeviceContext()->GenerateMips(m_shaderResourceView);
+		graphics->getDeviceContext()->GenerateMips(m_shaderResourceView);
 
 	// create sampler
 	{
@@ -171,7 +171,7 @@ void DirectX11Image::init()
 		createOrUpdateSampler();
 		if (m_samplerState == NULL)
 		{
-			debugLog("DirectX Image Error: Couldn't CreateSamplerState() on file {:s}!\n");
+			debugLog("DirectX Image Error: Couldn't CreateSamplerState() on file {:s}!\n", m_sFilePath);
 			engine->showMessageError("Image Error", UString::format("Couldn't CreateSamplerState() on file %s!", m_sFilePath.toUtf8()));
 			return;
 		}
@@ -271,14 +271,14 @@ void DirectX11Image::bind(unsigned int textureUnit)
 	// backup
 	// HACKHACK: slow af
 	{
-		((DirectX11Interface*)g)->getDeviceContext()->PSGetShaderResources(textureUnit, 1, &m_prevShaderResourceView);
+		static_cast<DirectX11Interface*>(g)->getDeviceContext()->PSGetShaderResources(textureUnit, 1, &m_prevShaderResourceView);
 	}
 
-	((DirectX11Interface*)g)->getDeviceContext()->PSSetShaderResources(textureUnit, 1, &m_shaderResourceView);
-	((DirectX11Interface*)g)->getDeviceContext()->PSSetSamplers(textureUnit, 1, &m_samplerState);
+	static_cast<DirectX11Interface*>(g)->getDeviceContext()->PSSetShaderResources(textureUnit, 1, &m_shaderResourceView);
+	static_cast<DirectX11Interface*>(g)->getDeviceContext()->PSSetSamplers(textureUnit, 1, &m_samplerState);
 
 	// HACKHACK: TEMP:
-	((DirectX11Interface*)g)->getShaderGeneric()->setUniform1f("misc", 1.0f); // enable texturing
+	static_cast<DirectX11Interface*>(g)->getShaderGeneric()->setUniform1f("misc", 1.0f); // enable texturing
 }
 
 void DirectX11Image::unbind()
@@ -288,7 +288,7 @@ void DirectX11Image::unbind()
 	// restore
 	// HACKHACK: slow af
 	{
-		((DirectX11Interface*)g)->getDeviceContext()->PSSetShaderResources(m_iTextureUnitBackup, 1, &m_prevShaderResourceView);
+		static_cast<DirectX11Interface*>(g)->getDeviceContext()->PSSetShaderResources(m_iTextureUnitBackup, 1, &m_prevShaderResourceView);
 
 		// refcount
 		{
@@ -358,7 +358,7 @@ void DirectX11Image::createOrUpdateSampler()
 		m_samplerState = NULL;
 	}
 
-	((DirectX11Interface*)g)->getDevice()->CreateSamplerState(&m_samplerDesc, &m_samplerState);
+	static_cast<DirectX11Interface*>(g)->getDevice()->CreateSamplerState(&m_samplerDesc, &m_samplerState);
 }
 
 #endif

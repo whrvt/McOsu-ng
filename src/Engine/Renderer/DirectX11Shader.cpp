@@ -12,8 +12,8 @@
 
 #ifdef MCENGINE_FEATURE_DIRECTX11
 
-#include "Engine.h"
 #include "ConVar.h"
+#include "Engine.h"
 
 #include "DirectX11Interface.h"
 
@@ -21,10 +21,9 @@
 
 #include <sstream>
 
-//#define MCENGINE_D3D11_CREATE_SHADER_DEBUG
 #define MCENGINE_D3D11_SHADER_MAX_NUM_CONSTANT_BUFFERS 9
 
-DirectX11Shader::CACHE_ENTRY DirectX11Shader::invalidCacheEntry {-1};
+DirectX11Shader::CACHE_ENTRY DirectX11Shader::invalidCacheEntry{-1};
 
 DirectX11Shader::DirectX11Shader(UString shader, bool source)
 {
@@ -40,7 +39,7 @@ DirectX11Shader::DirectX11Shader(UString shader, bool source)
 	m_prevVS = NULL;
 	m_prevPS = NULL;
 	m_prevInputLayout = NULL;
-	for (int i=0; i<MCENGINE_D3D11_SHADER_MAX_NUM_CONSTANT_BUFFERS; i++)
+	for (int i = 0; i < MCENGINE_D3D11_SHADER_MAX_NUM_CONSTANT_BUFFERS; i++)
 	{
 		m_prevConstantBuffers.push_back(NULL);
 	}
@@ -65,7 +64,7 @@ DirectX11Shader::DirectX11Shader(UString vertexShader, UString fragmentShader, b
 	m_prevVS = NULL;
 	m_prevPS = NULL;
 	m_prevInputLayout = NULL;
-	for (int i=0; i<MCENGINE_D3D11_SHADER_MAX_NUM_CONSTANT_BUFFERS; i++)
+	for (int i = 0; i < MCENGINE_D3D11_SHADER_MAX_NUM_CONSTANT_BUFFERS; i++)
 	{
 		m_prevConstantBuffers.push_back(NULL);
 	}
@@ -77,15 +76,17 @@ DirectX11Shader::DirectX11Shader(UString vertexShader, UString fragmentShader, b
 
 void DirectX11Shader::init()
 {
-	const SHADER_PARSE_RESULT parsedVertexShader = parseShaderFromFileOrString("DirectX11Interface::VertexShader", (m_sShader.length() > 0 ? m_sShader : m_sVsh), m_bSource);
-	const SHADER_PARSE_RESULT parsedPixelShader = parseShaderFromFileOrString("DirectX11Interface::PixelShader", (m_sShader.length() > 0 ? m_sShader : m_sFsh), m_bSource);
+	const SHADER_PARSE_RESULT parsedVertexShader =
+	    parseShaderFromFileOrString("DirectX11Interface::VertexShader", (m_sShader.length() > 0 ? m_sShader : m_sVsh), m_bSource);
+	const SHADER_PARSE_RESULT parsedPixelShader =
+	    parseShaderFromFileOrString("DirectX11Interface::PixelShader", (m_sShader.length() > 0 ? m_sShader : m_sFsh), m_bSource);
 
 	bool valid = (parsedVertexShader.descs.size() > 0);
 	{
 		// parse lines
 		std::vector<INPUT_DESC_LINE> inputDescLines;
 		std::vector<BIND_DESC_LINE> bindDescLines;
-		for (size_t i=0; i<parsedVertexShader.descs.size(); i++)
+		for (size_t i = 0; i < parsedVertexShader.descs.size(); i++)
 		{
 			const UString &desc = parsedVertexShader.descs[i];
 			const std::vector<UString> tokens = desc.split("::");
@@ -99,7 +100,7 @@ void DirectX11Shader::init()
 
 				if (cv::debug_shaders.getBool())
 				{
-					for (size_t t=0; t<tokens.size(); t++)
+					for (size_t t = 0; t < tokens.size(); t++)
 					{
 						debugLog("descs[{}][{}] = {:s}\n", (int)i, (int)t, tokens[t].toUtf8());
 					}
@@ -107,10 +108,10 @@ void DirectX11Shader::init()
 
 				if (descType == "D3D11_INPUT_ELEMENT_DESC")
 				{
-					const UString &inputType = tokens[1];			// e.g. VS_INPUT
-					const UString &inputDataType = tokens[2];		// e.g. POSITION or COLOR0 or TEXCOORD0 etc.
-					const UString &inputFormat = tokens[3];			// e.g. DXGI_FORMAT_R32G32B32_FLOAT or DXGI_FORMAT_R32G32B32A32_FLOAT or DXGI_FORMAT_R32G32_FLOAT etc.
-					const UString &inputClassification = tokens[4];	// e.g. D3D11_INPUT_PER_VERTEX_DATA
+					const UString &inputType = tokens[1];     // e.g. VS_INPUT
+					const UString &inputDataType = tokens[2]; // e.g. POSITION or COLOR0 or TEXCOORD0 etc.
+					const UString &inputFormat = tokens[3];   // e.g. DXGI_FORMAT_R32G32B32_FLOAT or DXGI_FORMAT_R32G32B32A32_FLOAT or DXGI_FORMAT_R32G32_FLOAT etc.
+					const UString &inputClassification = tokens[4]; // e.g. D3D11_INPUT_PER_VERTEX_DATA
 
 					INPUT_DESC_LINE inputDescLine;
 					{
@@ -118,17 +119,18 @@ void DirectX11Shader::init()
 						{
 							inputDescLine.dataType = inputDataType;
 
-							// NOTE: remove integer from end of datatype string (e.g. "COLOR0", "TEXCOORD0" etc., since this is implied by the order and only necessary in actual shader code as CreateInputLayout() would fail otherwise)
-							if (inputDescLine.dataType.find("0") == inputDescLine.dataType.length() - 1
-							 || inputDescLine.dataType.find("1") == inputDescLine.dataType.length() - 1
-							 || inputDescLine.dataType.find("2") == inputDescLine.dataType.length() - 1
-							 || inputDescLine.dataType.find("3") == inputDescLine.dataType.length() - 1
-							 || inputDescLine.dataType.find("4") == inputDescLine.dataType.length() - 1
-							 || inputDescLine.dataType.find("5") == inputDescLine.dataType.length() - 1
-							 || inputDescLine.dataType.find("6") == inputDescLine.dataType.length() - 1
-							 || inputDescLine.dataType.find("7") == inputDescLine.dataType.length() - 1
-							 || inputDescLine.dataType.find("8") == inputDescLine.dataType.length() - 1
-							 || inputDescLine.dataType.find("9") == inputDescLine.dataType.length() - 1)
+							// NOTE: remove integer from end of datatype string (e.g. "COLOR0", "TEXCOORD0" etc., since this is implied by the order and only
+							// necessary in actual shader code as CreateInputLayout() would fail otherwise)
+							if (inputDescLine.dataType.find("0") == inputDescLine.dataType.length() - 1 ||
+							    inputDescLine.dataType.find("1") == inputDescLine.dataType.length() - 1 ||
+							    inputDescLine.dataType.find("2") == inputDescLine.dataType.length() - 1 ||
+							    inputDescLine.dataType.find("3") == inputDescLine.dataType.length() - 1 ||
+							    inputDescLine.dataType.find("4") == inputDescLine.dataType.length() - 1 ||
+							    inputDescLine.dataType.find("5") == inputDescLine.dataType.length() - 1 ||
+							    inputDescLine.dataType.find("6") == inputDescLine.dataType.length() - 1 ||
+							    inputDescLine.dataType.find("7") == inputDescLine.dataType.length() - 1 ||
+							    inputDescLine.dataType.find("8") == inputDescLine.dataType.length() - 1 ||
+							    inputDescLine.dataType.find("9") == inputDescLine.dataType.length() - 1)
 							{
 								inputDescLine.dataType.erase(inputDescLine.dataType.length() - 1, 1);
 							}
@@ -137,22 +139,22 @@ void DirectX11Shader::init()
 							if (inputFormat == "DXGI_FORMAT_R32_FLOAT")
 							{
 								inputDescLine.dxgiFormat = DXGI_FORMAT::DXGI_FORMAT_R32_FLOAT;
-								inputDescLine.dxgiFormatBytes = 1*4;
+								inputDescLine.dxgiFormatBytes = 1 * 4;
 							}
 							else if (inputFormat == "DXGI_FORMAT_R32G32_FLOAT")
 							{
 								inputDescLine.dxgiFormat = DXGI_FORMAT::DXGI_FORMAT_R32G32_FLOAT;
-								inputDescLine.dxgiFormatBytes = 2*4;
+								inputDescLine.dxgiFormatBytes = 2 * 4;
 							}
 							else if (inputFormat == "DXGI_FORMAT_R32G32B32_FLOAT")
 							{
 								inputDescLine.dxgiFormat = DXGI_FORMAT::DXGI_FORMAT_R32G32B32_FLOAT;
-								inputDescLine.dxgiFormatBytes = 3*4;
+								inputDescLine.dxgiFormatBytes = 3 * 4;
 							}
 							else if (inputFormat == "DXGI_FORMAT_R32G32B32A32_FLOAT")
 							{
 								inputDescLine.dxgiFormat = DXGI_FORMAT::DXGI_FORMAT_R32G32B32A32_FLOAT;
-								inputDescLine.dxgiFormatBytes = 4*4;
+								inputDescLine.dxgiFormatBytes = 4 * 4;
 							}
 							else
 							{
@@ -167,7 +169,8 @@ void DirectX11Shader::init()
 							else
 							{
 								valid = false;
-								engine->showMessageError("DirectX11Shader Error", UString::format("Invalid/Unsupported inputClassification \"%s\"", inputClassification.toUtf8()));
+								engine->showMessageError("DirectX11Shader Error",
+								                         UString::format("Invalid/Unsupported inputClassification \"%s\"", inputClassification.toUtf8()));
 								break;
 							}
 						}
@@ -176,10 +179,10 @@ void DirectX11Shader::init()
 				}
 				else if (descType == "D3D11_BUFFER_DESC")
 				{
-					const UString &bufferBindType = tokens[1]; 			// e.g. D3D11_BIND_CONSTANT_BUFFER
-					const UString &bufferName = tokens[2];				// e.g. ModelViewProjectionConstantBuffer
-					const UString &bufferVariableName = tokens[3];		// e.g. mvp or col or misc etc.
-					const UString &bufferVariableType = tokens[4];		// e.g. float4x4 or float4 etc.
+					const UString &bufferBindType = tokens[1];     // e.g. D3D11_BIND_CONSTANT_BUFFER
+					const UString &bufferName = tokens[2];         // e.g. ModelViewProjectionConstantBuffer
+					const UString &bufferVariableName = tokens[3]; // e.g. mvp or col or misc etc.
+					const UString &bufferVariableType = tokens[4]; // e.g. float4x4 or float4 etc.
 
 					BIND_DESC_LINE bindDescLine;
 					{
@@ -190,7 +193,8 @@ void DirectX11Shader::init()
 							else
 							{
 								valid = false;
-								engine->showMessageError("DirectX11Shader Error", UString::format("Invalid/Unsupported bufferBindType \"%s\"", bufferBindType.toUtf8()));
+								engine->showMessageError("DirectX11Shader Error",
+								                         UString::format("Invalid/Unsupported bufferBindType \"%s\"", bufferBindType.toUtf8()));
 								break;
 							}
 						}
@@ -199,21 +203,22 @@ void DirectX11Shader::init()
 						{
 							bindDescLine.variableType = bufferVariableType;
 							if (bufferVariableType == "float")
-								bindDescLine.variableBytes = 1*4;
+								bindDescLine.variableBytes = 1 * 4;
 							else if (bufferVariableType == "int")
-								bindDescLine.variableBytes = 1*4;
+								bindDescLine.variableBytes = 1 * 4;
 							else if (bufferVariableType == "float2")
-								bindDescLine.variableBytes = 2*4;
+								bindDescLine.variableBytes = 2 * 4;
 							else if (bufferVariableType == "float3")
-								bindDescLine.variableBytes = 3*4;
+								bindDescLine.variableBytes = 3 * 4;
 							else if (bufferVariableType == "float4")
-								bindDescLine.variableBytes = 4*4;
+								bindDescLine.variableBytes = 4 * 4;
 							else if (bufferVariableType == "float4x4")
-								bindDescLine.variableBytes = 4*4*4;
+								bindDescLine.variableBytes = 4 * 4 * 4;
 							else
 							{
 								valid = false;
-								engine->showMessageError("DirectX11Shader Error", UString::format("Invalid/Unsupported bufferVariableType \"%s\"", bufferVariableType.toUtf8()));
+								engine->showMessageError("DirectX11Shader Error",
+								                         UString::format("Invalid/Unsupported bufferVariableType \"%s\"", bufferVariableType.toUtf8()));
 								break;
 							}
 						}
@@ -238,7 +243,7 @@ void DirectX11Shader::init()
 		// build m_inputDescs + m_bindDescs
 		{
 			// compound by INPUT_DESC_LINE::type
-			for (size_t i=0; i<inputDescLines.size(); i++)
+			for (size_t i = 0; i < inputDescLines.size(); i++)
 			{
 				const INPUT_DESC_LINE &inputDescLine = inputDescLines[i];
 
@@ -269,7 +274,7 @@ void DirectX11Shader::init()
 			}
 
 			// compound by BIND_DESC_LINE::name
-			for (size_t i=0; i<bindDescLines.size(); i++)
+			for (size_t i = 0; i < bindDescLines.size(); i++)
 			{
 				const BIND_DESC_LINE &bindDescLine = bindDescLines[i];
 
@@ -317,12 +322,12 @@ void DirectX11Shader::init()
 
 			if (cv::debug_shaders.getBool())
 			{
-				for (size_t i=0; i<m_inputDescs.size(); i++)
+				for (size_t i = 0; i < m_inputDescs.size(); i++)
 				{
 					debugLog("m_inputDescs[{}] = \"{:s}\", has {} line(s)\n", (int)i, m_inputDescs[i].type.toUtf8(), (int)m_inputDescs[i].lines.size());
 				}
 
-				for (size_t i=0; i<m_bindDescs.size(); i++)
+				for (size_t i = 0; i < m_bindDescs.size(); i++)
 				{
 					debugLog("m_bindDescs[{}] = \"{:s}\", has {} lines(s)\n", (int)i, m_bindDescs[i].name.toUtf8(), (int)m_bindDescs[i].lines.size());
 				}
@@ -372,8 +377,9 @@ void DirectX11Shader::destroy()
 
 void DirectX11Shader::enable()
 {
-	DirectX11Interface *dx11 = (DirectX11Interface*)g;
-	if (!m_bReady || dx11->getActiveShader() == this) return;
+	auto *dx11 = static_cast<DirectX11Interface *>(g);
+	if (!m_bReady || dx11->getActiveShader() == this)
+		return;
 
 	// backup
 	// HACKHACK: slow af
@@ -397,14 +403,15 @@ void DirectX11Shader::enable()
 
 void DirectX11Shader::disable()
 {
-	DirectX11Interface *dx11 = (DirectX11Interface*)g;
-	if (!m_bReady || dx11->getActiveShader() != this) return;
+	auto *dx11 = static_cast<DirectX11Interface *>(g);
+	if (!m_bReady || dx11->getActiveShader() != this)
+		return;
 
 	// restore
 	// HACKHACK: slow af
 	{
 		UINT numPrevConstantBuffers = 0;
-		for (size_t i=0; i<m_prevConstantBuffers.size(); i++)
+		for (size_t i = 0; i < m_prevConstantBuffers.size(); i++)
 		{
 			if (m_prevConstantBuffers[i] != NULL)
 				numPrevConstantBuffers++;
@@ -437,7 +444,7 @@ void DirectX11Shader::disable()
 				m_prevPS = NULL;
 			}
 
-			for (size_t i=0; i<m_prevConstantBuffers.size(); i++)
+			for (size_t i = 0; i < m_prevConstantBuffers.size(); i++)
 			{
 				if (m_prevConstantBuffers[i] != NULL)
 				{
@@ -496,7 +503,7 @@ void DirectX11Shader::setUniform4f(UString name, float x, float y, float z, floa
 
 void DirectX11Shader::setUniformMatrix4fv(UString name, Matrix4 &matrix)
 {
-	setUniformMatrix4fv(name, (float*)matrix.getTranspose());
+	setUniformMatrix4fv(name, (float *)matrix.getTranspose());
 }
 
 void DirectX11Shader::setUniformMatrix4fv(UString name, float *v)
@@ -506,7 +513,8 @@ void DirectX11Shader::setUniformMatrix4fv(UString name, float *v)
 
 void DirectX11Shader::setUniform(const UString &name, void *src, size_t numBytes)
 {
-	if (!m_bReady) return;
+	if (!m_bReady)
+		return;
 
 	const CACHE_ENTRY cacheEntry = getAndCacheUniformLocation(name);
 	if (cacheEntry.bindIndex > -1)
@@ -526,14 +534,15 @@ void DirectX11Shader::setUniform(const UString &name, void *src, size_t numBytes
 
 void DirectX11Shader::onJustBeforeDraw()
 {
-	if (!m_bReady) return;
+	if (!m_bReady)
+		return;
 
 	// lazy update uniforms
 	if (!m_bConstantBuffersUpToDate)
 	{
-		DirectX11Interface *dx11 = (DirectX11Interface*)g;
+		auto *dx11 = static_cast<DirectX11Interface *>(g);
 
-		for (size_t i=0; i<m_constantBuffers.size(); i++)
+		for (size_t i = 0; i < m_constantBuffers.size(); i++)
 		{
 			ID3D11Buffer *constantBuffer = m_constantBuffers[i];
 			BIND_DESC &bindDesc = m_bindDescs[i];
@@ -570,7 +579,8 @@ void DirectX11Shader::onJustBeforeDraw()
 
 const DirectX11Shader::CACHE_ENTRY DirectX11Shader::getAndCacheUniformLocation(const UString &name)
 {
-	if (!m_bReady) return invalidCacheEntry;
+	if (!m_bReady)
+		return invalidCacheEntry;
 
 	m_sTempStringBuffer.reserve(name.lengthUtf8());
 	m_sTempStringBuffer.assign(name.toUtf8(), name.lengthUtf8());
@@ -587,11 +597,11 @@ const DirectX11Shader::CACHE_ENTRY DirectX11Shader::getAndCacheUniformLocation(c
 			newCacheEntry.bindIndex = -1;
 			newCacheEntry.offsetBytes = -1;
 
-			for (size_t i=0; i<m_bindDescs.size(); i++)
+			for (size_t i = 0; i < m_bindDescs.size(); i++)
 			{
 				const BIND_DESC &bindDesc = m_bindDescs[i];
 				int offsetBytesCounter = 0;
-				for (size_t j=0; j<bindDesc.lines.size(); j++)
+				for (size_t j = 0; j < bindDesc.lines.size(); j++)
 				{
 					const BIND_DESC_LINE &bindDescLine = bindDesc.lines[j];
 					if (bindDescLine.variableName == name)
@@ -617,12 +627,117 @@ const DirectX11Shader::CACHE_ENTRY DirectX11Shader::getAndCacheUniformLocation(c
 
 	return invalidCacheEntry;
 }
+#ifdef MCENGINE_PLATFORM_LINUX
+
+void *DirectX11Shader::s_vkd3dHandle = nullptr;
+PFN_D3DCOMPILE_VKD3D DirectX11Shader::s_d3dCompileFunc = nullptr;
+
+bool DirectX11Shader::loadLibs()
+{
+	if (s_d3dCompileFunc != nullptr)
+		return true; // already initialized
+
+	setenv("DXVK_WSI_DRIVER", "SDL3", 1);
+
+	// try to load vkd3d-utils
+	s_vkd3dHandle = dlopen("libvkd3d-utils.so.1", RTLD_NOW | RTLD_LOCAL);
+	if (s_vkd3dHandle == nullptr)
+	{
+		debugLog("DirectX11Shader: Failed to load libvkd3d-utils.so.1: {:s}\n", dlerror());
+		return false;
+	}
+
+	// get D3DCompile function pointer
+	s_d3dCompileFunc = (PFN_D3DCOMPILE_VKD3D)dlsym(s_vkd3dHandle, "D3DCompile");
+	if (s_d3dCompileFunc == nullptr)
+	{
+		debugLog("DirectX11Shader: Failed to find D3DCompile in vkd3d-utils: {:s}\n", dlerror());
+		dlclose(s_vkd3dHandle);
+		s_vkd3dHandle = nullptr;
+		return false;
+	}
+
+	// check vkd3d version compatibility
+	const char *(*vkd3d_shader_get_version)(unsigned int *, unsigned int *);
+	vkd3d_shader_get_version = (const char *(*)(unsigned int *, unsigned int *))dlsym(s_vkd3dHandle, "vkd3d_shader_get_version");
+	if (vkd3d_shader_get_version != nullptr)
+	{
+		unsigned int major, minor;
+		vkd3d_shader_get_version(&major, &minor);
+		if (!((major > 1) || (major == 1 && minor >= 10)))
+		{
+			debugLog("DirectX11Shader: vkd3d version {}.{} is too old, need >= 1.10\n", major, minor);
+			return false;
+		}
+		debugLog("DirectX11Shader: Using vkd3d version {}.{}\n", major, minor);
+	}
+
+	return true;
+}
+
+void DirectX11Shader::cleanupLibs()
+{
+	if (s_vkd3dHandle != nullptr)
+	{
+		dlclose(s_vkd3dHandle);
+		s_vkd3dHandle = nullptr;
+	}
+	s_d3dCompileFunc = nullptr;
+}
+
+#else
+
+bool DirectX11Shader::loadLibs()
+{
+	return true;
+}
+
+void DirectX11Shader::cleanupLibs()
+{
+	;
+}
+
+#endif
+
+void *DirectX11Shader::getBlobBufferPointer(ID3DBlob *blob)
+{
+#ifdef MCENGINE_PLATFORM_LINUX
+	auto *vkdBlob = (VKD3DBlob *)blob;
+	return vkdBlob->lpVtbl->GetBufferPointer(vkdBlob);
+#else
+	return blob->GetBufferPointer();
+#endif
+}
+
+SIZE_T DirectX11Shader::getBlobBufferSize(ID3DBlob *blob)
+{
+#ifdef MCENGINE_PLATFORM_LINUX
+	auto *vkdBlob = (VKD3DBlob *)blob;
+	return vkdBlob->lpVtbl->GetBufferSize(vkdBlob);
+#else
+	return blob->GetBufferSize();
+#endif
+}
+
+void DirectX11Shader::releaseBlob(ID3DBlob *blob)
+{
+	if (blob != nullptr)
+	{
+#ifdef MCENGINE_PLATFORM_LINUX
+		auto *vkdBlob = (VKD3DBlob *)blob;
+		vkdBlob->lpVtbl->Release(vkdBlob);
+#else
+		blob->Release();
+#endif
+	}
+}
 
 bool DirectX11Shader::compile(UString vertexShader, UString fragmentShader)
 {
-	if (vertexShader.length() < 1 || fragmentShader.length() < 1) return false;
+	if (vertexShader.length() < 1 || fragmentShader.length() < 1)
+		return false;
 
-	DirectX11Interface *dx11 = (DirectX11Interface*)g;
+	auto *dx11 = static_cast<DirectX11Interface *>(g);
 
 	const char *vsProfile = (dx11->getDevice()->GetFeatureLevel() >= D3D_FEATURE_LEVEL::D3D_FEATURE_LEVEL_11_0 ? "vs_5_0" : "vs_4_0");
 	const char *psProfile = (dx11->getDevice()->GetFeatureLevel() >= D3D_FEATURE_LEVEL::D3D_FEATURE_LEVEL_11_0 ? "ps_5_0" : "ps_4_0");
@@ -631,71 +746,87 @@ bool DirectX11Shader::compile(UString vertexShader, UString fragmentShader)
 
 	UINT flags = 0;
 
-#ifdef MCENGINE_D3D11_CREATE_SHADER_DEBUG
-
-	flags |= D3DCOMPILE_DEBUG;
-
-#endif
-
 	if (cv::debug_shaders.getBool())
 		flags |= D3DCOMPILE_DEBUG;
 
-	const D3D_SHADER_MACRO defines[] =
-	{
-		"EXAMPLE_DEFINE", "1",
-		NULL, NULL // sentinel
+	// disable optimization to avoid vkd3d bugs (copied from mojoshader)
+	flags |= D3DCOMPILE_SKIP_OPTIMIZATION;
+
+	const D3D_SHADER_MACRO defines[] = {
+	    {"EXAMPLE_DEFINE", "1" },
+        {NULL,             NULL}  // sentinel
 	};
 
-	ID3D10Blob *vs = NULL;
-	ID3D10Blob *ps = NULL;
-	ID3D10Blob *vsError = NULL;
-	ID3D10Blob *psError = NULL;
+	ID3DBlob *vs = NULL;
+	ID3DBlob *ps = NULL;
+	ID3DBlob *vsError = NULL;
+	ID3DBlob *psError = NULL;
 
-	// compile
+	// convert to persistent c strings to avoid lifetime issues
+	std::string vsSource = vertexShader.toUtf8();
+	std::string psSource = fragmentShader.toUtf8();
+
+	HRESULT hr1, hr2;
+
+#ifdef MCENGINE_PLATFORM_LINUX
+	// use vkd3d function pointer with proper calling convention
+	debugLog("DirectX11Shader: (VKD3D) D3DCompile()-ing vertex shader ...\n");
+	hr1 = DirectX11Shader::s_d3dCompileFunc(vsSource.c_str(), vsSource.length(), "VS_SOURCE", defines, NULL, vsEntryPoint, vsProfile, flags, 0, &vs, &vsError);
+
+	debugLog("DirectX11Shader: (VKD3D) D3DCompile()-ing pixel shader ...\n");
+	hr2 = DirectX11Shader::s_d3dCompileFunc(psSource.c_str(), psSource.length(), "PS_SOURCE", defines, NULL, psEntryPoint, psProfile, flags, 0, &ps, &psError);
+#else
+	// use standard D3DCompile on Windows
 	debugLog("DirectX11Shader: D3DCompile()-ing vertex shader ...\n");
-	HRESULT hr1 = D3DCompile(vertexShader.toUtf8(), vertexShader.length(), "VS", defines, NULL, vsEntryPoint, vsProfile, flags, 0, &vs, &vsError);
+	hr1 = D3DCompile(vsSource.c_str(), vsSource.length(), "VS_SOURCE", defines, NULL, vsEntryPoint, vsProfile, flags, 0, &vs, &vsError);
 
 	debugLog("DirectX11Shader: D3DCompile()-ing pixel shader ...\n");
-	HRESULT hr2 = D3DCompile(fragmentShader.toUtf8(), fragmentShader.length(), "PS", defines, NULL, psEntryPoint, psProfile, flags, 0, &ps, &psError);
+	hr2 = D3DCompile(psSource.c_str(), psSource.length(), "PS_SOURCE", defines, NULL, psEntryPoint, psProfile, flags, 0, &ps, &psError);
+#endif
 
+	// check compilation results
 	if (FAILED(hr1) || FAILED(hr2) || vs == NULL || ps == NULL)
 	{
 		if (vsError != NULL)
 		{
-			debugLog("DirectX11Shader Vertex Shader Error: \n{:s}\n", (const char*)vsError->GetBufferPointer());
-			vsError->Release();
+			debugLog("DirectX11Shader Vertex Shader Error: \n{:s}\n", (const char *)getBlobBufferPointer(vsError));
+			releaseBlob(vsError);
 			debugLog("\n");
 		}
 
 		if (psError != NULL)
 		{
-			debugLog("DirectX11Shader Pixel Shader Error: \n{:s}\n", (const char*)psError->GetBufferPointer());
-			psError->Release();
+			debugLog("DirectX11Shader Pixel Shader Error: \n{:s}\n", (const char *)getBlobBufferPointer(psError));
+			releaseBlob(psError);
 			debugLog("\n");
 		}
 
-		engine->showMessageError("DirectX11Shader Error", "Couldn't D3DCompile()! Check the log for details.");
+		// clean up on failure
+		releaseBlob(vs);
+		releaseBlob(ps);
 
+		engine->showMessageError("DirectX11Shader Error", "Couldn't D3DCompile()! Check the log for details.");
 		return false;
 	}
 
-	// encapsulate
-	debugLog("DirectX11Shader: CreateVertexShader({}) ...\n", vs->GetBufferSize());
-	hr1 = dx11->getDevice()->CreateVertexShader(vs->GetBufferPointer(), vs->GetBufferSize(), NULL, &m_vs);
-	// NOTE: vs is not released here, since it's still needed for the input layout (1/2)
+	// create vertex shader
+	debugLog("DirectX11Shader: CreateVertexShader({}) ...\n", getBlobBufferSize(vs));
+	hr1 = dx11->getDevice()->CreateVertexShader(getBlobBufferPointer(vs), getBlobBufferSize(vs), NULL, &m_vs);
 
-	debugLog("DirectX11Shader: CreatePixelShader({}) ...\n", ps->GetBufferSize());
-	hr2 = dx11->getDevice()->CreatePixelShader(ps->GetBufferPointer(), ps->GetBufferSize(), NULL, &m_ps);
-	ps->Release();
+	// create pixel shader
+	debugLog("DirectX11Shader: CreatePixelShader({}) ...\n", getBlobBufferSize(ps));
+	hr2 = dx11->getDevice()->CreatePixelShader(getBlobBufferPointer(ps), getBlobBufferSize(ps), NULL, &m_ps);
+	releaseBlob(ps);
 
 	if (FAILED(hr1) || FAILED(hr2))
 	{
-		vs->Release();
+		releaseBlob(vs);
+
 		engine->showMessageError("DirectX11Shader Error", "Couldn't CreateVertexShader()/CreatePixelShader()!");
 		return false;
 	}
 
-	// create the input layout
+	// create the input layout (rest of the function remains the same)
 	std::vector<D3D11_INPUT_ELEMENT_DESC> elements;
 	{
 		const INPUT_DESC &inputDesc = m_inputDescs[0];
@@ -704,7 +835,7 @@ bool DirectX11Shader::compile(UString vertexShader, UString fragmentShader)
 		{
 			D3D11_INPUT_ELEMENT_DESC element;
 			{
-				element.SemanticName = inputDescLine.dataType.toUtf8(); // WARNING: this is only safe because the UString is directly referenced (and kept alive) from the persistent m_inputDescs vector
+				element.SemanticName = inputDescLine.dataType.toUtf8();
 				element.SemanticIndex = 0;
 				element.Format = inputDescLine.dxgiFormat;
 				element.InputSlot = 0;
@@ -713,15 +844,23 @@ bool DirectX11Shader::compile(UString vertexShader, UString fragmentShader)
 				element.InstanceDataStepRate = 0;
 
 				if (cv::debug_shaders.getBool())
-					debugLog("{:s}, {}, {}, {}, {}, {}, {}\n", element.SemanticName, (int)element.SemanticIndex, (int)element.Format, (int)element.InputSlot, (int)element.AlignedByteOffset, (int)element.InputSlotClass, (int)element.InstanceDataStepRate);
+					debugLog("{:s}, {:d}, {:d}, {:d}, {:d}, {:d}, {:d}\n",
+					         element.SemanticName,
+					         (int)element.SemanticIndex,
+					         (int)element.Format,
+					         (int)element.InputSlot,
+					         (int)element.AlignedByteOffset,
+					         (int)element.InputSlotClass,
+					         (int)element.InstanceDataStepRate);
 			}
 			elements.push_back(element);
 
 			alignedByteOffsetCounter += inputDescLine.dxgiFormatBytes;
 		}
 	}
-	hr1 = dx11->getDevice()->CreateInputLayout(&elements[0], elements.size(), vs->GetBufferPointer(), vs->GetBufferSize(), &m_inputLayout);
-	vs->Release(); // NOTE: now we can release it (2/2)
+
+	hr1 = dx11->getDevice()->CreateInputLayout(&elements[0], elements.size(), getBlobBufferPointer(vs), getBlobBufferSize(vs), &m_inputLayout);
+	releaseBlob(vs);
 
 	if (FAILED(hr1))
 	{
@@ -729,7 +868,7 @@ bool DirectX11Shader::compile(UString vertexShader, UString fragmentShader)
 		return false;
 	}
 
-	// create binds/buffers
+	// create binds/buffers (rest remains the same)
 	for (const BIND_DESC &bindDesc : m_bindDescs)
 	{
 		const UString &descType = bindDesc.lines[0].type;
@@ -745,10 +884,10 @@ bool DirectX11Shader::compile(UString vertexShader, UString fragmentShader)
 				byteWidth += bindDescLine.variableBytes;
 			}
 
-			// NOTE: "If the bind flag is D3D11_BIND_CONSTANT_BUFFER, you must set the ByteWidth value in multiples of 16, and less than or equal to D3D11_REQ_CONSTANT_BUFFER_ELEMENT_COUNT."
 			if (byteWidth % 16 != 0)
 			{
-				engine->showMessageError("DirectX11Shader Error", UString::format("Invalid byteWidth %i for \"%s\" (must be a multiple of 16)", (int)byteWidth, name.toUtf8()));
+				engine->showMessageError("DirectX11Shader Error",
+				                         UString::format("Invalid byteWidth %i for \"%s\" (must be a multiple of 16)", (int)byteWidth, name.toUtf8()));
 				return false;
 			}
 
@@ -774,7 +913,7 @@ bool DirectX11Shader::compile(UString vertexShader, UString fragmentShader)
 		else
 		{
 			engine->showMessageError("DirectX11Shader Error", UString::format("Invalid descType \"%s\"", descType.toUtf8()));
-			return false; // (unsupported desc/type)
+			return false;
 		}
 	}
 
@@ -782,4 +921,3 @@ bool DirectX11Shader::compile(UString vertexShader, UString fragmentShader)
 }
 
 #endif
-

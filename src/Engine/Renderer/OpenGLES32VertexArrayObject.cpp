@@ -190,48 +190,48 @@ void OpenGLES32VertexArrayObject::draw()
 	if (start > end || std::abs(end - start) == 0)
 		return;
 
-	OpenGLES32Interface *g = (OpenGLES32Interface *)graphics;
+	auto *gles32 = static_cast<OpenGLES32Interface *>(g);
 
 	// configure shader state for our vertex attributes
 	if (m_iNumColors > 0)
 	{
-		glEnableVertexAttribArray(g->getShaderGenericAttribCol());
+		glEnableVertexAttribArray(gles32->getShaderGenericAttribCol());
 	}
 	else
 	{
-		glDisableVertexAttribArray(g->getShaderGenericAttribCol());
+		glDisableVertexAttribArray(gles32->getShaderGenericAttribCol());
 	}
 
 	// set vertex attribute pointers
 	glBindBuffer(GL_ARRAY_BUFFER, m_iVertexBuffer);
-	glVertexAttribPointer(g->getShaderGenericAttribPosition(), 3, GL_FLOAT, GL_FALSE, 0, (GLvoid *)0);
+	glVertexAttribPointer(gles32->getShaderGenericAttribPosition(), 3, GL_FLOAT, GL_FALSE, 0, (GLvoid *)0);
 
 	if (m_iNumTexcoords > 0)
 	{
 		glBindBuffer(GL_ARRAY_BUFFER, m_iTexcoordBuffer);
-		glVertexAttribPointer(g->getShaderGenericAttribUV(), 2, GL_FLOAT, GL_FALSE, 0, (GLvoid *)0);
+		glVertexAttribPointer(gles32->getShaderGenericAttribUV(), 2, GL_FLOAT, GL_FALSE, 0, (GLvoid *)0);
 	}
 
 	if (m_iNumColors > 0)
 	{
 		glBindBuffer(GL_ARRAY_BUFFER, m_iColorBuffer);
-		glVertexAttribPointer(g->getShaderGenericAttribCol(), 4, GL_UNSIGNED_BYTE, GL_TRUE, 0, (GLvoid *)0);
+		glVertexAttribPointer(gles32->getShaderGenericAttribCol(), 4, GL_UNSIGNED_BYTE, GL_TRUE, 0, (GLvoid *)0);
 	}
 
 	// draw the geometry
 	glDrawArrays(primitiveToOpenGL(m_primitive), start, end - start);
 
 	// restore default state
-	glBindBuffer(GL_ARRAY_BUFFER, g->getVBOVertices());
-	glVertexAttribPointer(g->getShaderGenericAttribPosition(), 3, GL_FLOAT, GL_FALSE, 0, (GLvoid *)0);
+	glBindBuffer(GL_ARRAY_BUFFER, gles32->getVBOVertices());
+	glVertexAttribPointer(gles32->getShaderGenericAttribPosition(), 3, GL_FLOAT, GL_FALSE, 0, (GLvoid *)0);
 
-	glBindBuffer(GL_ARRAY_BUFFER, g->getVBOTexcoords());
-	glVertexAttribPointer(g->getShaderGenericAttribUV(), 2, GL_FLOAT, GL_FALSE, 0, (GLvoid *)0);
+	glBindBuffer(GL_ARRAY_BUFFER, gles32->getVBOTexcoords());
+	glVertexAttribPointer(gles32->getShaderGenericAttribUV(), 2, GL_FLOAT, GL_FALSE, 0, (GLvoid *)0);
 
 	// always enable color attrib as the default state
-	glBindBuffer(GL_ARRAY_BUFFER, g->getVBOTexcolors());
-	glVertexAttribPointer(g->getShaderGenericAttribCol(), 4, GL_UNSIGNED_BYTE, GL_TRUE, 0, (GLvoid *)0);
-	glEnableVertexAttribArray(g->getShaderGenericAttribCol());
+	glBindBuffer(GL_ARRAY_BUFFER, gles32->getVBOTexcolors());
+	glVertexAttribPointer(gles32->getShaderGenericAttribCol(), 4, GL_UNSIGNED_BYTE, GL_TRUE, 0, (GLvoid *)0);
+	glEnableVertexAttribArray(gles32->getShaderGenericAttribCol());
 }
 
 int OpenGLES32VertexArrayObject::primitiveToOpenGL(Graphics::PRIMITIVE primitive)

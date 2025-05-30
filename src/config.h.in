@@ -48,6 +48,15 @@
 /* Define if the BASS audio backend is desired. */
 #undef MCENGINE_FEATURE_BASS
 
+/* Defined if the DX11 backend is to be used. */
+#undef MCENGINE_FEATURE_DIRECTX11
+
+/* Defined if the OpenGL ES 3.2 backend is to be used (WASM). */
+#undef MCENGINE_FEATURE_GLES32
+
+/* Defined if the OpenGLLegacy backend is to be used. */
+#undef MCENGINE_FEATURE_OPENGL
+
 /* Define if the SDL_mixer audio backend is desired. */
 #undef MCENGINE_FEATURE_SDL_MIXER
 
