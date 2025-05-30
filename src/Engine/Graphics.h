@@ -251,4 +251,6 @@ protected:
 	Matrix4 m_3dSceneProjectionMatrix;
 };
 
+extern Graphics *g; // defined in Engine, declared here for convenience
+
 #endif

@@ -22,7 +22,7 @@ class OsuUISongBrowserInfoLabel : public CBaseUIButton
 public:
 	OsuUISongBrowserInfoLabel(float xPos, float yPos, float xSize, float ySize, UString name);
 
-	void draw(Graphics *g) override;
+	void draw() override;
 	void update() override;
 
 	void setFromBeatmap(OsuBeatmap *beatmap, OsuDatabaseBeatmap *diff2);

@@ -22,9 +22,9 @@ public:
 	RenderTarget(int x, int y, int width, int height, Graphics::MULTISAMPLE_TYPE multiSampleType = Graphics::MULTISAMPLE_TYPE::MULTISAMPLE_0X);
 	~RenderTarget() override {;}
 
-	virtual void draw(Graphics *g, int x, int y);
-	virtual void draw(Graphics *g, int x, int y, int width, int height);
-	virtual void drawRect(Graphics *g, int x, int y, int width, int height);
+	virtual void draw(int x, int y);
+	virtual void draw(int x, int y, int width, int height);
+	virtual void drawRect(int x, int y, int width, int height);
 
 	virtual void enable() = 0;
 	virtual void disable() = 0;

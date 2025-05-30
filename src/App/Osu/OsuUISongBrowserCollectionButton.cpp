@@ -42,9 +42,9 @@ OsuUISongBrowserCollectionButton::OsuUISongBrowserCollectionButton(OsuSongBrowse
 	setOffsetPercent(0.075f*0.5f);
 }
 
-void OsuUISongBrowserCollectionButton::draw(Graphics *g)
+void OsuUISongBrowserCollectionButton::draw()
 {
-	OsuUISongBrowserButton::draw(g);
+	OsuUISongBrowserButton::draw();
 	if (!m_bVisible) return;
 
 	OsuSkin *skin = osu->getSkin();

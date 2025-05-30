@@ -57,7 +57,7 @@ void OpenGLES32Shader::initAsync()
 
 void OpenGLES32Shader::destroy()
 {
-	auto *gles32 = static_cast<OpenGLES32Interface *>(graphics);
+	auto *gles32 = static_cast<OpenGLES32Interface *>(g);
 	if (gles32 != NULL)
 		gles32->unregisterShader(this);
 

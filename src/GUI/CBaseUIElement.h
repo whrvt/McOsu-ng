@@ -120,7 +120,7 @@ public:
 	ELEMENT_BODY_VIRTUAL(CBaseUIElement)
 
 	// main
-	virtual void draw(Graphics *g) = 0;
+	virtual void draw() = 0;
 	virtual void update();
 
 	// keyboard input

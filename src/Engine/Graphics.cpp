@@ -286,13 +286,13 @@ void _vsync(UString oldValue, UString newValue)
 	else
 	{
 		bool vsync = newValue.toFloat() > 0.0f;
-		graphics->setVSync(vsync);
+		g->setVSync(vsync);
 	}
 }
 
 void _mat_wireframe(UString oldValue, UString newValue)
 {
-	graphics->setWireframe(newValue.toFloat() > 0.0f);
+	g->setWireframe(newValue.toFloat() > 0.0f);
 }
 
 ConVar _mat_wireframe_("mat_wireframe", false, FCVAR_CHEAT, _mat_wireframe);

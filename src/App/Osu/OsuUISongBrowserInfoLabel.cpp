@@ -65,7 +65,7 @@ OsuUISongBrowserInfoLabel::OsuUISongBrowserInfoLabel(float xPos, float yPos, flo
 	m_iBeatmapId = -1;
 }
 
-void OsuUISongBrowserInfoLabel::draw(Graphics *g)
+void OsuUISongBrowserInfoLabel::draw()
 {
 	// debug bounding box
 	if (m_osu_debug_ref->getBool())

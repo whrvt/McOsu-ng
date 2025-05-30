@@ -764,7 +764,7 @@ void DirectX11Interface::drawString(McFont *font, UString text)
 
 	m_shaderTexturedGeneric->setUniform1f("misc", 1.0f); // enable texturing
 
-	font->drawString(this, text);
+	font->drawString(text);
 }
 
 void DirectX11Interface::drawVAO(VertexArrayObject *vao)
@@ -1198,7 +1198,7 @@ std::vector<unsigned char> DirectX11Interface::getScreenshot()
 										//unsigned char a = (unsigned char)(((unsigned char*)mappedResource.pData)[y*numRowBytes + x*numPixelBytes + 3]);
 
 										result.push_back(r);
-										result.push_back(g);
+										result.push_back();
 										result.push_back(b);
 									}
 								}

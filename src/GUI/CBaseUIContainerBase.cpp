@@ -223,7 +223,7 @@ std::shared_ptr<CBaseUIElement> CBaseUIContainerBase::getElementSharedByName(USt
 	return nullptr;
 }
 
-void CBaseUIContainerBase::draw(Graphics *g)
+void CBaseUIContainerBase::draw()
 {
 	if (!m_bVisible) return;
 
@@ -232,7 +232,7 @@ void CBaseUIContainerBase::draw(Graphics *g)
 
 	for (size_t i=0; i<m_vElements.size(); i++)
 	{
-		m_vElements[i]->draw(g);
+		m_vElements[i]->draw();
 	}
 
 	if (m_bClipping)

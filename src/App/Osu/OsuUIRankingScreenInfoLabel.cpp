@@ -34,7 +34,7 @@ OsuUIRankingScreenInfoLabel::OsuUIRankingScreenInfoLabel(float xPos, float yPos,
 	m_sDate = "?";
 }
 
-void OsuUIRankingScreenInfoLabel::draw(Graphics *g)
+void OsuUIRankingScreenInfoLabel::draw()
 {
 	// debug bounding box
 	/*

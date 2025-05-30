@@ -43,7 +43,7 @@ public:
 	void setSuggestion(UString suggestion) { m_sSuggestion = suggestion; }
 
 protected:
-	virtual void drawText(Graphics *g)
+	virtual void drawText()
 	{
 		if (consolebox_draw_preview.getBool())
 		{
@@ -59,7 +59,7 @@ protected:
 			}
 		}
 
-		CBaseUITextbox::drawText(g);
+		CBaseUITextbox::drawText();
 	}
 
 private:
@@ -77,7 +77,7 @@ public:
 	}
 
 protected:
-	virtual void drawText(Graphics *g)
+	virtual void drawText()
 	{
 		if (m_font == NULL || m_sText.length() < 1)
 			return;
@@ -110,7 +110,7 @@ protected:
 			}
 		}
 
-		CBaseUIButton::drawText(g);
+		CBaseUIButton::drawText();
 	}
 
 private:
@@ -179,7 +179,7 @@ ConsoleBox::~ConsoleBox()
 	anim->deleteExistingAnimation(&m_fLogYPos);
 }
 
-void ConsoleBox::draw(Graphics *g)
+void ConsoleBox::draw()
 {
 	// HACKHACK: legacy OpenGL fix
 	g->setAntialiasing(false);
@@ -190,7 +190,7 @@ void ConsoleBox::draw(Graphics *g)
 			g->translate(0, mouse->getPos().y - engine->getScreenHeight());
 
 		if (console_overlay.getBool() || m_textbox->isVisible())
-			drawLogOverlay(g);
+			drawLogOverlay();
 
 		if (anim->isAnimating(&m_fConsoleAnimation))
 		{
@@ -198,21 +198,21 @@ void ConsoleBox::draw(Graphics *g)
 			{
 				g->rotate3DScene(((m_fConsoleAnimation / getAnimTargetY()) * 130 - 130), 0, 0);
 				g->translate3DScene(0, 0, ((m_fConsoleAnimation / getAnimTargetY()) * 500 - 500));
-				m_textbox->draw(g);
-				m_suggestion->draw(g);
+				m_textbox->draw();
+				m_suggestion->draw();
 			}
 			g->pop3DScene();
 		}
 		else
 		{
-			m_suggestion->draw(g);
-			m_textbox->draw(g);
+			m_suggestion->draw();
+			m_textbox->draw();
 		}
 	}
 	g->popTransform();
 }
 
-void ConsoleBox::drawLogOverlay(Graphics *g)
+void ConsoleBox::drawLogOverlay()
 {
 	std::lock_guard<std::mutex> logGuard(m_logMutex);
 

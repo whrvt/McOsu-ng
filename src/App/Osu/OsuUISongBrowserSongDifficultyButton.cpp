@@ -69,9 +69,9 @@ OsuUISongBrowserSongDifficultyButton::~OsuUISongBrowserSongDifficultyButton()
 	anim->deleteExistingAnimation(&m_fOffsetPercentAnim);
 }
 
-void OsuUISongBrowserSongDifficultyButton::draw(Graphics *g)
+void OsuUISongBrowserSongDifficultyButton::draw()
 {
-	OsuUISongBrowserButton::draw(g);
+	OsuUISongBrowserButton::draw();
 	if (!m_bVisible) return;
 
 	const bool isIndependentDiff = isIndependentDiffButton();
@@ -83,13 +83,13 @@ void OsuUISongBrowserSongDifficultyButton::draw(Graphics *g)
 	const Vector2 size = getActualSize();
 
 	// draw background image
-	drawBeatmapBackgroundThumbnail(g, osu->getBackgroundImageHandler()->getLoadBackgroundImage(m_databaseBeatmap));
+	drawBeatmapBackgroundThumbnail(osu->getBackgroundImageHandler()->getLoadBackgroundImage(m_databaseBeatmap));
 
 	if (m_bHasGrade)
-		drawGrade(g);
+		drawGrade();
 
-	drawTitle(g, !isIndependentDiff ? 0.2f : 1.0f);
-	drawSubTitle(g, !isIndependentDiff ? 0.2f : 1.0f);
+	drawTitle(!isIndependentDiff ? 0.2f : 1.0f);
+	drawSubTitle(!isIndependentDiff ? 0.2f : 1.0f);
 
 	// draw diff name
 	const float titleScale = (size.y*m_fTitleScale) / m_font->getHeight();

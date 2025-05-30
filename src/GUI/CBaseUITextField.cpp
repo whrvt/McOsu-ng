@@ -24,9 +24,9 @@ CBaseUITextField::CBaseUITextField(float xPos, float yPos, float xSize, float yS
 	setScrollSizeToContent(0);
 }
 
-void CBaseUITextField::draw(Graphics *g)
+void CBaseUITextField::draw()
 {
-	CBaseUIScrollView::draw(g);
+	CBaseUIScrollView::draw();
 	if (!m_bVisible) return;
 
 	//printf("scrollsize.y = %f, size.y = %f\n", getScrollSize().y, getSize().y);
@@ -65,7 +65,7 @@ CBaseUITextField::TextObject::TextObject(float xPos, float yPos, float xSize, fl
 	setText(text);
 }
 
-void CBaseUITextField::TextObject::draw(Graphics *g)
+void CBaseUITextField::TextObject::draw()
 {
 	if (m_font == NULL || m_sText.length() == 0) return;
 

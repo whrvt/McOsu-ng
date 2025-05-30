@@ -901,7 +901,7 @@ OsuChangelog::OsuChangelog() : OsuScreenBackable()
 			public:
 				CustomCBaseUILabel(UString text) : CBaseUIButton(0, 0, 0, 0, "", text) {;}
 
-				virtual void draw(Graphics *g)
+				virtual void draw()
 				{
 					if (m_bVisible && isMouseInside())
 					{
@@ -950,13 +950,13 @@ OsuChangelog::~OsuChangelog()
 	SAFE_DELETE(m_container);
 }
 
-void OsuChangelog::draw(Graphics *g)
+void OsuChangelog::draw()
 {
 	if (!m_bVisible) return;
 
-	m_container->draw(g);
+	m_container->draw();
 
-	OsuScreenBackable::draw(g);
+	OsuScreenBackable::draw();
 }
 
 void OsuChangelog::update()
@@ -991,8 +991,8 @@ void OsuChangelog::updateLayout()
 
 	const float dpiScale = Osu::getUIScale();
 
-	m_container->setSize(osu->getScreenSize() + Vector2(2, 2));
-	m_scrollView->setSize(osu->getScreenSize() + Vector2(2, 2));
+	m_container->setSize(osu->getVirtScreenSize() + Vector2(2, 2));
+	m_scrollView->setSize(osu->getVirtScreenSize() + Vector2(2, 2));
 
 	float yCounter = 0;
 	for (const CHANGELOG_UI &changelog : m_changelogs)

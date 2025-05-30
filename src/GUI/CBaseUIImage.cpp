@@ -34,7 +34,7 @@ CBaseUIImage::CBaseUIImage(UString imageResourceName, float xPos, float yPos, fl
 	m_bDrawBackground = false;
 }
 
-void CBaseUIImage::draw(Graphics *g)
+void CBaseUIImage::draw()
 {
 	if (!m_bVisible) return;
 

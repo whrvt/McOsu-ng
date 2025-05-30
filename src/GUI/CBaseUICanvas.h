@@ -28,7 +28,7 @@ public:
 	CONTAINER_BODY(CBaseUICanvas)
 
 	// main
-	virtual void drawDebug(Graphics *g, Color color=rgb(255,0,0));
+	virtual void drawDebug(Color color=rgb(255,0,0));
 
 	// inspection
 	CBASE_UI_TYPE(CBaseUICanvas, CANVAS, CBaseUIContainerBase)

@@ -17,7 +17,7 @@ public:
 	OsuEditor();
 	virtual ~OsuEditor();
 
-	virtual void draw(Graphics *g);
+	virtual void draw();
 	virtual void update();
 
 	virtual void onResolutionChange(Vector2 newResolution);

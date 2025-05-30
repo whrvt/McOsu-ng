@@ -20,7 +20,7 @@ class OsuUIModSelectorModButton : public CBaseUIButton
 public:
 	OsuUIModSelectorModButton(OsuModSelector* osuModSelector, float xPos, float yPos, float xSize, float ySize, UString name);
 
-	virtual void draw(Graphics *g);
+	virtual void draw();
 	virtual void update();
 
 	void click() {onMouseDownInside();}

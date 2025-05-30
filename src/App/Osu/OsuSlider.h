@@ -32,11 +32,11 @@ public:
 	OsuSlider(char type, int repeat, float pixelLength, std::vector<Vector2> points, std::vector<int> hitSounds, std::vector<float> ticks, float sliderTime, float sliderTimeWithoutRepeats, long time, int sampleType, int comboNumber, bool isEndOfCombo, int colorCounter, int colorOffset, OsuBeatmapStandard *beatmap);
 	~OsuSlider() override;
 
-	void draw(Graphics *g) override;
-	void draw2(Graphics *g) override;
-	void draw2(Graphics *g, bool drawApproachCircle, bool drawOnlyApproachCircle);
-	void draw3D(Graphics *g) override;
-	void draw3D2(Graphics *g) override;
+	void draw() override;
+	void draw2() override;
+	void draw2(bool drawApproachCircle, bool drawOnlyApproachCircle);
+	void draw3D() override;
+	void draw3D2() override;
 	void update(long curPos) override;
 
 	[[nodiscard]] constexpr Type getType() const override { return SLIDER; }
@@ -79,11 +79,11 @@ private:
 	static ConVar *m_osu_auto_cursordance_ref;
 	static ConVar *m_osu_drain_type_ref;
 
-	void drawStartCircle(Graphics *g, float alpha);
-	void draw3DStartCircle(Graphics *g, const Matrix4 &baseScale, float alpha);
-	void drawEndCircle(Graphics *g, float alpha, float sliderSnake = 1.0f);
-	void draw3DEndCircle(Graphics *g, const Matrix4 &baseScale, float alpha, float sliderSnake = 1.0f);
-	void drawBody(Graphics *g, float alpha, float from, float to);
+	void drawStartCircle(float alpha);
+	void draw3DStartCircle(const Matrix4 &baseScale, float alpha);
+	void drawEndCircle(float alpha, float sliderSnake = 1.0f);
+	void draw3DEndCircle(const Matrix4 &baseScale, float alpha, float sliderSnake = 1.0f);
+	void drawBody(float alpha, float from, float to);
 
 	void updateAnimations(long curPos);
 

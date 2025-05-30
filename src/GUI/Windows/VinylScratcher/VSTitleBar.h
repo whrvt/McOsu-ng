@@ -25,7 +25,7 @@ public:
 	VSTitleBar(int x, int y, int xSize, McFont *font);
 	~VSTitleBar() override;
 
-	void draw(Graphics *g) override;
+	void draw() override;
 	void update() override;
 
 	void setSeekCallback(SeekCallback callback) {m_seekCallback = callback;}
@@ -41,8 +41,8 @@ protected:
 	void onFocusStolen() override;
 
 private:
-	void drawTitle1(Graphics *g);
-	void drawTitle2(Graphics *g);
+	void drawTitle1();
+	void drawTitle2();
 
 	SeekCallback m_seekCallback;
 

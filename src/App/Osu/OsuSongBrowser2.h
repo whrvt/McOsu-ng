@@ -45,7 +45,7 @@ class OsuSongBrowserBackgroundSearchMatcher;
 class OsuSongBrowser2 final: public OsuScreenBackable
 {
 public:
-	static void drawSelectedBeatmapBackgroundImage(Graphics *g, Osu *osu, float alpha = 1.0f);
+	static void drawSelectedBeatmapBackgroundImage(Osu *osu, float alpha = 1.0f);
 
 	struct SORTING_COMPARATOR
 	{
@@ -114,7 +114,7 @@ public:
 	OsuSongBrowser2();
 	~OsuSongBrowser2() override;
 
-	void draw(Graphics *g) override;
+	void draw() override;
 	void update() override;
 
 	void onKeyDown(KeyboardEvent &e) override;

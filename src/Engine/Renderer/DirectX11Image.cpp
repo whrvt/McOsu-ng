@@ -48,7 +48,7 @@ void DirectX11Image::init()
 
 	HRESULT hr;
 
-	DirectX11Interface *dx11 = ((DirectX11Interface*)graphics);
+	DirectX11Interface *dx11 = ((DirectX11Interface*)g);
 	if (m_interfaceOverrideHack != NULL)
 		dx11 = m_interfaceOverrideHack;
 
@@ -271,14 +271,14 @@ void DirectX11Image::bind(unsigned int textureUnit)
 	// backup
 	// HACKHACK: slow af
 	{
-		((DirectX11Interface*)graphics)->getDeviceContext()->PSGetShaderResources(textureUnit, 1, &m_prevShaderResourceView);
+		((DirectX11Interface*)g)->getDeviceContext()->PSGetShaderResources(textureUnit, 1, &m_prevShaderResourceView);
 	}
 
-	((DirectX11Interface*)graphics)->getDeviceContext()->PSSetShaderResources(textureUnit, 1, &m_shaderResourceView);
-	((DirectX11Interface*)graphics)->getDeviceContext()->PSSetSamplers(textureUnit, 1, &m_samplerState);
+	((DirectX11Interface*)g)->getDeviceContext()->PSSetShaderResources(textureUnit, 1, &m_shaderResourceView);
+	((DirectX11Interface*)g)->getDeviceContext()->PSSetSamplers(textureUnit, 1, &m_samplerState);
 
 	// HACKHACK: TEMP:
-	((DirectX11Interface*)graphics)->getShaderGeneric()->setUniform1f("misc", 1.0f); // enable texturing
+	((DirectX11Interface*)g)->getShaderGeneric()->setUniform1f("misc", 1.0f); // enable texturing
 }
 
 void DirectX11Image::unbind()
@@ -288,7 +288,7 @@ void DirectX11Image::unbind()
 	// restore
 	// HACKHACK: slow af
 	{
-		((DirectX11Interface*)graphics)->getDeviceContext()->PSSetShaderResources(m_iTextureUnitBackup, 1, &m_prevShaderResourceView);
+		((DirectX11Interface*)g)->getDeviceContext()->PSSetShaderResources(m_iTextureUnitBackup, 1, &m_prevShaderResourceView);
 
 		// refcount
 		{
@@ -358,7 +358,7 @@ void DirectX11Image::createOrUpdateSampler()
 		m_samplerState = NULL;
 	}
 
-	((DirectX11Interface*)graphics)->getDevice()->CreateSamplerState(&m_samplerDesc, &m_samplerState);
+	((DirectX11Interface*)g)->getDevice()->CreateSamplerState(&m_samplerDesc, &m_samplerState);
 }
 
 #endif

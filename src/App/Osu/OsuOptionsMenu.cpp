@@ -60,7 +60,7 @@ class OsuOptionsMenuSkinPreviewElement final : public OsuUIElement
 public:
 	OsuOptionsMenuSkinPreviewElement(float xPos, float yPos, float xSize, float ySize, UString name) : OsuUIElement(xPos, yPos, xSize, ySize, name) {m_iMode = 0;}
 
-	void draw(Graphics *g) override
+	void draw() override
 	{
 		if (!m_bVisible) return;
 
@@ -85,18 +85,18 @@ public:
 			const int colorOffset = 0;
 			const float colorRGBMultiplier = 1.0f;
 
-			OsuCircle::drawCircle(g, osu->getSkin(), m_vPos + Vector2(0, m_vSize.y/2) + Vector2(m_vSize.x*(1.0f/5.0f), 0.0f), hitcircleDiameter, numberScale, overlapScale, number, colorCounter, colorOffset, colorRGBMultiplier, approachScale, approachAlpha, approachAlpha, true, false);
-			OsuCircle::drawHitResult(g, osu->getSkin(), hitcircleDiameter, hitcircleDiameter, m_vPos + Vector2(0, m_vSize.y/2) + Vector2(m_vSize.x*(2.0f/5.0f), 0.0f), OsuScore::HIT::HIT_100, 0.45f, 0.33f);
-			OsuCircle::drawHitResult(g, osu->getSkin(), hitcircleDiameter, hitcircleDiameter, m_vPos + Vector2(0, m_vSize.y/2) + Vector2(m_vSize.x*(3.0f/5.0f), 0.0f), OsuScore::HIT::HIT_50, 0.45f, 0.66f);
-			OsuCircle::drawHitResult(g, osu->getSkin(), hitcircleDiameter, hitcircleDiameter, m_vPos + Vector2(0, m_vSize.y/2) + Vector2(m_vSize.x*(4.0f/5.0f), 0.0f), OsuScore::HIT::HIT_MISS, 0.45f, 1.0f);
-			OsuCircle::drawApproachCircle(g, osu->getSkin(), m_vPos + Vector2(0, m_vSize.y/2) + Vector2(m_vSize.x*(1.0f/5.0f), 0.0f), osu->getSkin()->getComboColorForCounter(colorCounter, colorOffset), hitcircleDiameter, approachScale, approachCircleAlpha, false, false);
+			OsuCircle::drawCircle(osu->getSkin(), m_vPos + Vector2(0, m_vSize.y/2) + Vector2(m_vSize.x*(1.0f/5.0f), 0.0f), hitcircleDiameter, numberScale, overlapScale, number, colorCounter, colorOffset, colorRGBMultiplier, approachScale, approachAlpha, approachAlpha, true, false);
+			OsuCircle::drawHitResult(osu->getSkin(), hitcircleDiameter, hitcircleDiameter, m_vPos + Vector2(0, m_vSize.y/2) + Vector2(m_vSize.x*(2.0f/5.0f), 0.0f), OsuScore::HIT::HIT_100, 0.45f, 0.33f);
+			OsuCircle::drawHitResult(osu->getSkin(), hitcircleDiameter, hitcircleDiameter, m_vPos + Vector2(0, m_vSize.y/2) + Vector2(m_vSize.x*(3.0f/5.0f), 0.0f), OsuScore::HIT::HIT_50, 0.45f, 0.66f);
+			OsuCircle::drawHitResult(osu->getSkin(), hitcircleDiameter, hitcircleDiameter, m_vPos + Vector2(0, m_vSize.y/2) + Vector2(m_vSize.x*(4.0f/5.0f), 0.0f), OsuScore::HIT::HIT_MISS, 0.45f, 1.0f);
+			OsuCircle::drawApproachCircle(osu->getSkin(), m_vPos + Vector2(0, m_vSize.y/2) + Vector2(m_vSize.x*(1.0f/5.0f), 0.0f), osu->getSkin()->getComboColorForCounter(colorCounter, colorOffset), hitcircleDiameter, approachScale, approachCircleAlpha, false, false);
 		}
 		else if (m_iMode == 1)
 		{
 			const int numNumbers = 6;
 			for (int i=1; i<numNumbers+1; i++)
 			{
-				OsuCircle::drawHitCircleNumber(g, skin, numberScale, overlapScale, m_vPos + Vector2(0, m_vSize.y/2) + Vector2(m_vSize.x*((float)i/(numNumbers+1.0f)), 0.0f), i-1, 1.0f, 1.0f);
+				OsuCircle::drawHitCircleNumber(skin, numberScale, overlapScale, m_vPos + Vector2(0, m_vSize.y/2) + Vector2(m_vSize.x*((float)i/(numNumbers+1.0f)), 0.0f), i-1, 1.0f, 1.0f);
 			}
 		}
 		else if (m_iMode == 2)
@@ -109,7 +109,7 @@ public:
 				g->pushTransform();
 				g->scale(scoreScale, scoreScale);
 				g->translate(pos.x - skin->getScore0()->getWidth()*scoreScale, pos.y);
-				osu->getHUD()->drawScoreNumber(g, i-1, 1.0f);
+				osu->getHUD()->drawScoreNumber(i-1, 1.0f);
 				g->popTransform();
 			}
 		}
@@ -139,7 +139,7 @@ public:
 		m_osu_force_legacy_slider_renderer_ref = convar->getConVarByName("osu_force_legacy_slider_renderer");
 	}
 
-	void draw(Graphics *g) override
+	void draw() override
 	{
 		if (!m_bVisible) return;
 
@@ -193,8 +193,8 @@ public:
 				const int colorOffset = 0;
 				const float colorRGBMultiplier = 1.0f;
 
-				OsuCircle::drawCircle(g, osu->getSkin(), points[numPoints/2] + (!useLegacyRenderer ? m_vPos : Vector2(0, 0)), hitcircleDiameter, numberScale, overlapScale, number, colorCounter, colorOffset, colorRGBMultiplier, approachScale, approachAlpha, approachAlpha, true, false);
-				OsuCircle::drawApproachCircle(g, osu->getSkin(), points[numPoints/2] + (!useLegacyRenderer ? m_vPos : Vector2(0, 0)), osu->getSkin()->getComboColorForCounter(420, 0), hitcircleDiameter, approachScale, approachCircleAlpha, false, false);
+				OsuCircle::drawCircle(osu->getSkin(), points[numPoints/2] + (!useLegacyRenderer ? m_vPos : Vector2(0, 0)), hitcircleDiameter, numberScale, overlapScale, number, colorCounter, colorOffset, colorRGBMultiplier, approachScale, approachAlpha, approachAlpha, true, false);
+				OsuCircle::drawApproachCircle(osu->getSkin(), points[numPoints/2] + (!useLegacyRenderer ? m_vPos : Vector2(0, 0)), osu->getSkin()->getComboColorForCounter(420, 0), hitcircleDiameter, approachScale, approachCircleAlpha, false, false);
 			}
 
 			// draw slider body
@@ -203,7 +203,7 @@ public:
 				if (m_bDrawSliderHack)
 				{
 					if (useLegacyRenderer)
-						OsuSliderRenderer::draw(g, osu, points, emptyVector, hitcircleDiameter, 0, 1, osu->getSkin()->getComboColorForCounter(420, 0));
+						OsuSliderRenderer::draw(osu, points, emptyVector, hitcircleDiameter, 0, 1, osu->getSkin()->getComboColorForCounter(420, 0));
 					else
 					{
 						// (lazy generate vao)
@@ -222,7 +222,7 @@ public:
 							if (m_vao == NULL)
 								m_vao = OsuSliderRenderer::generateVAO(points, hitcircleDiameter, Vector3(0, 0, 0), false);
 						}
-						OsuSliderRenderer::draw(g, osu, m_vao, emptyVector, m_vPos, 1, hitcircleDiameter, 0, 1, osu->getSkin()->getComboColorForCounter(420, 0));
+						OsuSliderRenderer::draw(osu, m_vao, emptyVector, m_vPos, 1, hitcircleDiameter, 0, 1, osu->getSkin()->getComboColorForCounter(420, 0));
 					}
 				}
 			}
@@ -234,8 +234,8 @@ public:
 				const int colorOffset = 0;
 				const float colorRGBMultiplier = 1.0f;
 
-				OsuCircle::drawSliderStartCircle(g, osu->getSkin(), points[0] + (!useLegacyRenderer ? m_vPos : Vector2(0, 0)), hitcircleDiameter, numberScale, overlapScale, number, colorCounter, colorOffset, colorRGBMultiplier);
-				OsuCircle::drawSliderEndCircle(g, osu->getSkin(), points[points.size()-1] + (!useLegacyRenderer ? m_vPos : Vector2(0, 0)), hitcircleDiameter, numberScale, overlapScale, number, colorCounter, colorOffset, colorRGBMultiplier, 1.0f, 1.0f, 0.0f, false, false);
+				OsuCircle::drawSliderStartCircle(osu->getSkin(), points[0] + (!useLegacyRenderer ? m_vPos : Vector2(0, 0)), hitcircleDiameter, numberScale, overlapScale, number, colorCounter, colorOffset, colorRGBMultiplier);
+				OsuCircle::drawSliderEndCircle(osu->getSkin(), points[points.size()-1] + (!useLegacyRenderer ? m_vPos : Vector2(0, 0)), hitcircleDiameter, numberScale, overlapScale, number, colorCounter, colorOffset, colorRGBMultiplier, 1.0f, 1.0f, 0.0f, false, false);
 			}
 		}
 	}
@@ -331,7 +331,7 @@ public:
 		m_bActiveCategory = false;
 	}
 
-	void drawText(Graphics *g) override
+	void drawText() override
 	{
 		if (m_font != NULL && m_sText.length() > 0)
 		{
@@ -374,7 +374,7 @@ public:
 		anim->deleteExistingAnimation(&m_fAnim);
 	}
 
-	void draw(Graphics *g) override
+	void draw() override
 	{
 		if (!m_bVisible || m_fAnim <= 0.0f) return;
 
@@ -618,7 +618,7 @@ OsuOptionsMenu::OsuOptionsMenu() : OsuScreenBackable()
 		fpsSlider->setKeyDelta(1);
 
 		addSubSection("Layout");
-		OPTIONS_ELEMENT resolutionSelect = addButton("Select Resolution", UString::format("%ix%i", osu->getScreenWidth(), osu->getScreenHeight()));
+		OPTIONS_ELEMENT resolutionSelect = addButton("Select Resolution", UString::format("%ix%i", osu->getVirtScreenWidth(), osu->getVirtScreenHeight()));
 		((CBaseUIButton*)resolutionSelect.elements[0])->setClickCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onResolutionSelect) );
 		m_resolutionLabel = (CBaseUILabel*)resolutionSelect.elements[1];
 		m_resolutionSelectButton = resolutionSelect.elements[0];
@@ -1134,7 +1134,7 @@ OsuOptionsMenu::~OsuOptionsMenu()
 	SAFE_DELETE(m_container);
 }
 
-void OsuOptionsMenu::draw(Graphics *g)
+void OsuOptionsMenu::draw()
 {
 	const bool isAnimating = anim->isAnimating(&m_fAnimation);
 	if (!m_bVisible && !isAnimating) return;
@@ -1163,7 +1163,7 @@ void OsuOptionsMenu::draw(Graphics *g)
 			if (brightness > 0.0f)
 			{
 				g->setColor(rgb(red, green, blue));
-				g->fillRect(0, 0, osu->getScreenWidth(), osu->getScreenHeight());
+				g->fillRect(0, 0, osu->getVirtScreenWidth(), osu->getVirtScreenHeight());
 			}
 		}
 	}
@@ -1174,11 +1174,11 @@ void OsuOptionsMenu::draw(Graphics *g)
 		{
 			const short dim = std::clamp<float>(m_backgroundDimSlider->getFloat(), 0.0f, 1.0f)*255.0f;
 			g->setColor(argb(dim, 0, 0, 0));
-			g->fillRect(0, 0, osu->getScreenWidth(), osu->getScreenHeight());
+			g->fillRect(0, 0, osu->getVirtScreenWidth(), osu->getVirtScreenHeight());
 		}
 	}
 
-	m_container->draw(g);
+	m_container->draw();
 
 	if (m_hudSizeSlider->isActive()
 		|| m_hudComboScaleSlider->isActive()
@@ -1195,17 +1195,17 @@ void OsuOptionsMenu::draw(Graphics *g)
 		|| m_statisticsOverlayYOffsetSlider->isActive())
 	{
 		if (!isPlayingBeatmap)
-			osu->getHUD()->drawDummy(g);
+			osu->getHUD()->drawDummy();
 	}
 	else if (m_playfieldBorderSizeSlider->isActive())
 	{
-		osu->getHUD()->drawPlayfieldBorder(g, OsuGameRules::getPlayfieldCenter(), OsuGameRules::getPlayfieldSize(), 100);
+		osu->getHUD()->drawPlayfieldBorder(OsuGameRules::getPlayfieldCenter(), OsuGameRules::getPlayfieldSize(), 100);
 	}
 	else
-		OsuScreenBackable::draw(g);
+		OsuScreenBackable::draw();
 
 	if (m_cursorSizeSlider->getFloat() < 0.15f)
-		mouse->drawDebug(g);
+		mouse->drawDebug();
 
 	/*
 	if (m_sliderQualitySlider->isActive())
@@ -1245,9 +1245,9 @@ void OsuOptionsMenu::draw(Graphics *g)
 		g->setColor(0xff000000);
 		g->fillRect(startPos.x + size.x/2 - 1, startPos.y, size.x/2, size.y);
 
-		OsuSliderRenderer::draw(g, osu, pointsEyeLeft, hitcircleDiameter);
-		OsuSliderRenderer::draw(g, osu, pointsEyeRight, hitcircleDiameter);
-		OsuSliderRenderer::draw(g, osu, pointsMouth, hitcircleDiameter);
+		OsuSliderRenderer::draw(osu, pointsEyeLeft, hitcircleDiameter);
+		OsuSliderRenderer::draw(osu, pointsEyeRight, hitcircleDiameter);
+		OsuSliderRenderer::draw(osu, pointsMouth, hitcircleDiameter);
 	}
 	*/
 
@@ -1255,7 +1255,7 @@ void OsuOptionsMenu::draw(Graphics *g)
 	{
 		// HACKHACK:
 		if (!m_bVisible)
-			m_backButton->draw(g);
+			m_backButton->draw();
 
 		g->setBlendMode(Graphics::BLEND_MODE::BLEND_MODE_ALPHA);
 
@@ -1267,7 +1267,7 @@ void OsuOptionsMenu::draw(Graphics *g)
 			g->translate3DScene(-(1.0f - m_fAnimation)*m_options->getSize().x*1.25f, 0, -(1.0f - m_fAnimation)*700);
 
 			osu->getSliderFrameBuffer()->setColor(argb(m_fAnimation, 1.0f, 1.0f, 1.0f));
-			osu->getSliderFrameBuffer()->draw(g, 0, 0);
+			osu->getSliderFrameBuffer()->draw(0, 0);
 		}
 		g->pop3DScene();
 	}
@@ -1752,26 +1752,26 @@ void OsuOptionsMenu::updateLayout()
 
 	const float dpiScale = Osu::getUIScale();
 
-	m_container->setSize(osu->getScreenSize());
+	m_container->setSize(osu->getVirtScreenSize());
 
 	// options panel
 	const float optionsScreenWidthPercent = 0.5f;
 	const float categoriesOptionsPercent = 0.135f;
 
-	int optionsWidth = (int)(osu->getScreenWidth()*optionsScreenWidthPercent);
+	int optionsWidth = (int)(osu->getVirtScreenWidth()*optionsScreenWidthPercent);
 	if (!m_bFullscreen)
 		optionsWidth = std::min((int)(725.0f*(1.0f - categoriesOptionsPercent)), optionsWidth) * dpiScale;
 
 	const int categoriesWidth = optionsWidth*categoriesOptionsPercent;
 
-	m_options->setRelPosX((!m_bFullscreen ? -1 : osu->getScreenWidth()/2 - (optionsWidth + categoriesWidth)/2) + categoriesWidth);
-	m_options->setSize(optionsWidth, osu->getScreenHeight()+1);
+	m_options->setRelPosX((!m_bFullscreen ? -1 : osu->getVirtScreenWidth()/2 - (optionsWidth + categoriesWidth)/2) + categoriesWidth);
+	m_options->setSize(optionsWidth, osu->getVirtScreenHeight()+1);
 
 	m_search->setRelPos(m_options->getRelPos());
 	m_search->setSize(m_options->getSize());
 
 	m_categories->setRelPosX(m_options->getRelPos().x - categoriesWidth);
-	m_categories->setSize(categoriesWidth, osu->getScreenHeight() + 1);
+	m_categories->setSize(categoriesWidth, osu->getVirtScreenHeight() + 1);
 
 	// reset
 	m_options->getContainer()->empty();

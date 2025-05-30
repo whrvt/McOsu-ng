@@ -20,7 +20,7 @@ class OsuUISongBrowserUserButton : public CBaseUIButton
 public:
 	OsuUISongBrowserUserButton();
 
-	virtual void draw(Graphics *g);
+	virtual void draw();
 	virtual void update();
 
 	void updateUserStats();

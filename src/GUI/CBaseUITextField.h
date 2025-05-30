@@ -21,7 +21,7 @@ public:
 
 	ELEMENT_BODY(CBaseUITextField)
 
-	void draw(Graphics *g) override;
+	void draw() override;
 
 	CBaseUITextField *setFont(McFont *font) {m_textObject->setFont(font); return this;}
 
@@ -42,7 +42,7 @@ protected:
 	public:
 		TextObject(float xPos, float yPos, float width, float height, UString text);
 
-		void draw(Graphics *g) override;
+		void draw() override;
 
 		CBaseUIElement *setText(UString text);
 		CBaseUIElement *setFont(McFont *font) {m_font = font; updateStringMetrics(); return this;}

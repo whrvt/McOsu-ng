@@ -18,7 +18,7 @@ class OsuUISelectionButton : public CBaseUIButton
 public:
 	OsuUISelectionButton(std::function<OsuSkinImage*()> getImageFunc, std::function<OsuSkinImage*()> getImageOverFunc, float xPos, float yPos, float xSize, float ySize, UString name);
 
-	void draw(Graphics *g);
+	void draw();
 
 	virtual void onMouseInside();
 	virtual void onMouseOutside();

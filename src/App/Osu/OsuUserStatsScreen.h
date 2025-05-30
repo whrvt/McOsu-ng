@@ -29,7 +29,7 @@ public:
 	OsuUserStatsScreen();
 	virtual ~OsuUserStatsScreen();
 
-	virtual void draw(Graphics *g);
+	virtual void draw();
 	virtual void update();
 
 	virtual void setVisible(bool visible);

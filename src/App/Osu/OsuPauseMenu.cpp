@@ -50,7 +50,7 @@ OsuPauseMenu::OsuPauseMenu() : OsuScreen()
 
 	m_fDimAnim = 0.0f;
 
-	m_container = new CBaseUIContainer(0, 0, osu->getScreenWidth(), osu->getScreenHeight(), "");
+	m_container = new CBaseUIContainer(0, 0, osu->getVirtScreenWidth(), osu->getVirtScreenHeight(), "");
 
 	OsuUIPauseMenuButton *continueButton = addButton([]() -> Image *{return osu->getSkin()->getPauseContinue();});
 	OsuUIPauseMenuButton *retryButton = addButton([]() -> Image *{return osu->getSkin()->getPauseRetry();});
@@ -68,7 +68,7 @@ OsuPauseMenu::~OsuPauseMenu()
 	SAFE_DELETE(m_container);
 }
 
-void OsuPauseMenu::draw(Graphics *g)
+void OsuPauseMenu::draw()
 {
 	const bool isAnimating = anim->isAnimating(&m_fDimAnim);
 	if (!m_bVisible && !isAnimating) return;
@@ -79,7 +79,7 @@ void OsuPauseMenu::draw(Graphics *g)
 		if (osu_pause_dim_background.getBool())
 		{
 			g->setColor(argb(m_fDimAnim * osu_pause_dim_alpha.getFloat(), 0.078f, 0.078f, 0.078f));
-			g->fillRect(0, 0, osu->getScreenWidth(), osu->getScreenHeight());
+			g->fillRect(0, 0, osu->getVirtScreenWidth(), osu->getVirtScreenHeight());
 		}
 
 		// draw background image
@@ -93,8 +93,8 @@ void OsuPauseMenu::draw(Graphics *g)
 
 			if (image != osu->getSkin()->getMissingTexture())
 			{
-				const float scale = Osu::getImageScaleToFillResolution(image, osu->getScreenSize());
-				const Vector2 centerTrans = (osu->getScreenSize() / 2);
+				const float scale = Osu::getImageScaleToFillResolution(image, osu->getVirtScreenSize());
+				const Vector2 centerTrans = (osu->getVirtScreenSize() / 2);
 
 				g->setColor(argb(m_fDimAnim, 1.0f, 1.0f, 1.0f));
 				g->pushTransform();
@@ -112,7 +112,7 @@ void OsuPauseMenu::draw(Graphics *g)
 		{
 			m_buttons[i]->setAlpha(1.0f - (1.0f - m_fDimAnim)*(1.0f - m_fDimAnim)*(1.0f - m_fDimAnim));
 		}
-		m_container->draw(g);
+		m_container->draw();
 
 		// draw selection arrows
 		if (m_selectedButton != NULL)
@@ -127,8 +127,8 @@ void OsuPauseMenu::draw(Graphics *g)
 
 			g->setColor(arrowColor);
 			g->setAlpha(m_fWarningArrowsAnimAlpha * m_fDimAnim);
-			osu->getHUD()->drawWarningArrow(g, Vector2(m_fWarningArrowsAnimX, m_fWarningArrowsAnimY) + Vector2(0, m_selectedButton->getSize().y/2) - Vector2(offset, 0), false, false);
-			osu->getHUD()->drawWarningArrow(g, Vector2(osu->getScreenWidth() - m_fWarningArrowsAnimX, m_fWarningArrowsAnimY) + Vector2(0, m_selectedButton->getSize().y/2) + Vector2(offset, 0), true, false);
+			osu->getHUD()->drawWarningArrow(Vector2(m_fWarningArrowsAnimX, m_fWarningArrowsAnimY) + Vector2(0, m_selectedButton->getSize().y/2) - Vector2(offset, 0), false, false);
+			osu->getHUD()->drawWarningArrow(Vector2(osu->getVirtScreenWidth() - m_fWarningArrowsAnimX, m_fWarningArrowsAnimY) + Vector2(0, m_selectedButton->getSize().y/2) + Vector2(offset, 0), true, false);
 		}
 	}
 
@@ -136,9 +136,9 @@ void OsuPauseMenu::draw(Graphics *g)
 
 	/*
 	g->setColor(0xffff0000);
-	g->drawLine(0, osu->getScreenHeight()/3.0f, osu->getScreenWidth(), osu->getScreenHeight()/3.0f);
-	g->drawLine(0, (osu->getScreenHeight()/3.0f)*2, osu->getScreenWidth(), (osu->getScreenHeight()/3.0f)*2);
-	g->drawLine(0, (osu->getScreenHeight()/3.0f)*3, osu->getScreenWidth(), (osu->getScreenHeight()/3.0f)*3);
+	g->drawLine(0, osu->getVirtScreenHeight()/3.0f, osu->getVirtScreenWidth(), osu->getVirtScreenHeight()/3.0f);
+	g->drawLine(0, (osu->getVirtScreenHeight()/3.0f)*2, osu->getVirtScreenWidth(), (osu->getVirtScreenHeight()/3.0f)*2);
+	g->drawLine(0, (osu->getVirtScreenHeight()/3.0f)*3, osu->getVirtScreenWidth(), (osu->getVirtScreenHeight()/3.0f)*3);
 	*/
 }
 
@@ -363,7 +363,7 @@ void OsuPauseMenu::scheduleVisibilityChange(bool visible)
 
 void OsuPauseMenu::updateLayout()
 {
-	const float height = (osu->getScreenHeight()/(float)m_buttons.size());
+	const float height = (osu->getVirtScreenHeight()/(float)m_buttons.size());
 	const float half = (m_buttons.size()-1)/2.0f;
 
 	float maxWidth = 0.0f;
@@ -387,7 +387,7 @@ void OsuPauseMenu::updateLayout()
 
 	for (int i=0; i<m_buttons.size(); i++)
 	{
-		Vector2 newPos = Vector2(osu->getScreenWidth()/2.0f - maxWidth/2, (i+1)*height - height/2.0f - maxHeight/2.0f);
+		Vector2 newPos = Vector2(osu->getVirtScreenWidth()/2.0f - maxWidth/2, (i+1)*height - height/2.0f - maxHeight/2.0f);
 
 		const float pinch = std::max(0.0f, (height/2.0f - maxHeight/2.0f));
 		if ((float)i < half)

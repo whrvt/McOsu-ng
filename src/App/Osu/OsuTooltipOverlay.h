@@ -19,7 +19,7 @@ public:
 	OsuTooltipOverlay();
 	virtual ~OsuTooltipOverlay();
 
-	virtual void draw(Graphics *g);
+	virtual void draw();
 	virtual void update();
 
 	void begin();

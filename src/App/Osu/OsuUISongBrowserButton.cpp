@@ -82,11 +82,11 @@ void OsuUISongBrowserButton::deleteAnimations()
 	anim->deleteExistingAnimation(&m_fHoverMoveAwayAnimation);
 }
 
-void OsuUISongBrowserButton::draw(Graphics *g)
+void OsuUISongBrowserButton::draw()
 {
 	if (!m_bVisible) return;
 
-	drawMenuButtonBackground(g);
+	drawMenuButtonBackground();
 
 	// debug inner bounding box
 	if (Osu::debug->getBool())
@@ -113,7 +113,7 @@ void OsuUISongBrowserButton::draw(Graphics *g)
 	}
 }
 
-void OsuUISongBrowserButton::drawMenuButtonBackground(Graphics *g)
+void OsuUISongBrowserButton::drawMenuButtonBackground()
 {
 	g->setColor(m_bSelected ? getActiveBackgroundColor() : getInactiveBackgroundColor());
 	g->pushTransform();

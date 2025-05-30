@@ -87,7 +87,7 @@ void CBaseUIScrollView::clear()
 	m_container->setPos(m_vPos); // TODO: wtf is this doing here
 }
 
-void CBaseUIScrollView::draw(Graphics *g)
+void CBaseUIScrollView::draw()
 {
 	if (!m_bVisible) return;
 
@@ -116,7 +116,7 @@ void CBaseUIScrollView::draw(Graphics *g)
 		g->pushClipRect(McRect(m_vPos.x + 1, m_vPos.y + 2, m_vSize.x - 1, m_vSize.y - 1));
 	}
 	{
-		m_container->draw(g);
+		m_container->draw();
 
 		if (m_bDrawScrollbars)
 		{

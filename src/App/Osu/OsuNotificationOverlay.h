@@ -27,7 +27,7 @@ public:
 	OsuNotificationOverlay();
 	~OsuNotificationOverlay() override {;}
 
-	void draw(Graphics *g) override;
+	void draw() override;
 
 	void onKeyDown(KeyboardEvent &e) override;
 	void onKeyUp(KeyboardEvent &e) override;
@@ -56,8 +56,8 @@ private:
 		float fallAnim;
 	};
 
-	void drawNotificationText(Graphics *g, NOTIFICATION &n);
-	void drawNotificationBackground(Graphics *g, NOTIFICATION &n);
+	void drawNotificationText(NOTIFICATION &n);
+	void drawNotificationBackground(NOTIFICATION &n);
 
 	NOTIFICATION m_notification1;
 	NOTIFICATION m_notification2;

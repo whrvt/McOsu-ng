@@ -38,7 +38,7 @@ CBaseUISlider::CBaseUISlider(float xPos, float yPos, float xSize, float ySize, U
 	setOrientation(xSize > ySize);
 }
 
-void CBaseUISlider::draw(Graphics *g)
+void CBaseUISlider::draw()
 {
 	if (!m_bVisible) return;
 
@@ -60,10 +60,10 @@ void CBaseUISlider::draw(Graphics *g)
 	else
 		g->drawLine(m_vPos.x + (m_vBlockSize.x-1)/2 + 1, m_vPos.y + m_vSize.y/2.0f + 1, m_vPos.x + m_vSize.x - (m_vBlockSize.x-1)/2, m_vPos.y + m_vSize.y/2.0f + 1);
 
-	drawBlock(g);
+	drawBlock();
 }
 
-void CBaseUISlider::drawBlock(Graphics *g)
+void CBaseUISlider::drawBlock()
 {
 	// draw block
 	Vector2 center = m_vPos + Vector2(m_vBlockSize.x/2 + (m_vSize.x-m_vBlockSize.x)*getPercent(), m_vSize.y/2);

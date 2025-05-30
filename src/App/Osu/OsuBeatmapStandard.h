@@ -19,10 +19,10 @@ public:
 	OsuBeatmapStandard();
 	~OsuBeatmapStandard() override;
 
-	void draw(Graphics *g) override;
-	void drawInt(Graphics *g) override;
-	void draw3D(Graphics *g) override;
-	void draw3D2(Graphics *g) override;
+	void draw() override;
+	void drawInt() override;
+	void draw3D() override;
+	void draw3D2() override;
 	void update() override;
 
 	void onModUpdate() override {onModUpdate(true, true);}
@@ -121,8 +121,8 @@ private:
 	void onUnpaused() override;
 	void onRestart(bool quick) override;
 
-	void drawFollowPoints(Graphics *g);
-	void drawHitObjects(Graphics *g);
+	void drawFollowPoints();
+	void drawHitObjects();
 
 	void updateAutoCursorPos();
 	void updatePlayfieldMetrics();

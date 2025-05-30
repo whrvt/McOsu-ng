@@ -21,10 +21,10 @@ public:
 	Mouse();
 	~Mouse() override { ; }
 
-	void draw(Graphics *g) override;
+	void draw() override;
 	void update() override;
 
-	void drawDebug(Graphics *g);
+	void drawDebug();
 
 	// event handling
 	void addListener(MouseListener *mouseListener, bool insertOnTop = false);

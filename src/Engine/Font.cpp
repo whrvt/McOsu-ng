@@ -338,7 +338,7 @@ void McFont::buildStringGeometry(const UString &text, size_t &vertexCount)
 	}
 }
 
-void McFont::drawString(Graphics *g, const UString &text)
+void McFont::drawString(const UString &text)
 {
 	if (!m_bReady)
 		return;
@@ -401,7 +401,7 @@ void McFont::addToBatch(const UString &text, const Vector3 &pos, Color color)
 	m_batchQueue.usedEntries++;
 }
 
-void McFont::flushBatch(Graphics *g)
+void McFont::flushBatch()
 {
 	if (!m_batchActive || !m_batchQueue.totalVerts)
 	{
@@ -498,7 +498,7 @@ void McFont::destroy()
 }
 
 // debug
-void McFont::drawTextureAtlas(Graphics *g)
+void McFont::drawTextureAtlas()
 {
 	if (!m_bReady || !m_textureAtlas)
 		return;

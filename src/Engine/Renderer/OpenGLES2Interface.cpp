@@ -348,7 +348,7 @@ void OpenGLES2Interface::drawString(McFont *font, UString text)
 
 	updateTransform();
 
-	font->drawString(this, text);
+	font->drawString(text);
 }
 
 void OpenGLES2Interface::drawVAO(VertexArrayObject *vao)

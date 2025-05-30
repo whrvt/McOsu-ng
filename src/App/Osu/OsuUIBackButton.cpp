@@ -22,7 +22,7 @@ OsuUIBackButton::OsuUIBackButton(float xPos, float yPos, float xSize, float ySiz
 	m_fImageScale = 1.0f;
 }
 
-void OsuUIBackButton::draw(Graphics *g)
+void OsuUIBackButton::draw()
 {
 	if (!m_bVisible) return;
 
@@ -35,7 +35,7 @@ void OsuUIBackButton::draw(Graphics *g)
 		g->scale((1.0f + m_fAnimation*scaleAnimMultiplier), (1.0f + m_fAnimation*scaleAnimMultiplier));
 		g->translate(-m_vSize.x/2, m_vSize.y/2);
 		g->setColor(0xffffffff);
-		osu->getSkin()->getMenuBack2()->draw(g, m_vPos + (osu->getSkin()->getMenuBack2()->getSize()/2)*m_fImageScale, m_fImageScale);
+		osu->getSkin()->getMenuBack2()->draw(m_vPos + (osu->getSkin()->getMenuBack2()->getSize()/2)*m_fImageScale, m_fImageScale);
 	}
 	g->popTransform();
 

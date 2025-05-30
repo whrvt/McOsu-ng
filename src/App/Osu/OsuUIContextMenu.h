@@ -29,7 +29,7 @@ public:
 	OsuUIContextMenu(float xPos = 0, float yPos = 0, float xSize = 0, float ySize = 0, UString name = "", CBaseUIScrollView *parent = NULL);
 	~OsuUIContextMenu() override;
 
-	void draw(Graphics *g) override;
+	void draw() override;
 	void update() override;
 
 	void onKeyUp(KeyboardEvent &e) override;

@@ -26,8 +26,8 @@ public:
 
 	ELEMENT_BODY(CBaseUIBoxShadow)
 
-	void draw(Graphics *g) override;
-	void renderOffscreen(Graphics *g);
+	void draw() override;
+	void renderOffscreen();
 
 	void forceRedraw() {m_bNeedsRedraw = true;}
 
@@ -42,7 +42,7 @@ public:
 	// inspection
 	CBASE_UI_TYPE(CBaseUIBoxShadow, BOXSHADOW, CBaseUIElement)
 private:
-	void render(Graphics *g);
+	void render();
 
 	bool m_bNeedsRedraw;
 	bool m_bColoredContent;
@@ -61,11 +61,11 @@ public:
 	GaussianBlur(int x, int y, int width, int height, int kernelSize, float radius);
 	~GaussianBlur();
 
-	void draw(Graphics *g, int x, int y);
+	void draw(int x, int y);
 	void setColor(Color color);
 
 	void enable();
-	void disable(Graphics *g);
+	void disable();
 
 	void setSize(Vector2 size);
 

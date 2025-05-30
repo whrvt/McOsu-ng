@@ -58,7 +58,7 @@ CBaseUITextbox::CBaseUITextbox(float xPos, float yPos, float xSize, float ySize,
 	m_iCaretPosition = 0;
 }
 
-void CBaseUITextbox::draw(Graphics *g)
+void CBaseUITextbox::draw()
 {
 	if (!m_bVisible) return;
 
@@ -102,7 +102,7 @@ void CBaseUITextbox::draw(Graphics *g)
 				g->fillRect(xpos1, m_vPos.y + 1, xpos2 - xpos1, m_vSize.y - 1);
 		}
 
-		drawText(g);
+		drawText();
 
 		// draw caret
 		if (m_bActive && m_bLine)
@@ -118,7 +118,7 @@ void CBaseUITextbox::draw(Graphics *g)
 	g->popClipRect();
 }
 
-void CBaseUITextbox::drawText(Graphics *g)
+void CBaseUITextbox::drawText()
 {
 	g->setColor(m_textColor);
 	g->pushTransform();

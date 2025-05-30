@@ -70,7 +70,7 @@ public:
 	void setTooltipText(UString tooltipText) {m_sTooltipText = tooltipText;}
 
 private:
-	virtual void drawText(Graphics *g)
+	virtual void drawText()
 	{
 		if (m_font != NULL && m_sText.length() > 0)
 		{
@@ -104,7 +104,7 @@ public:
 		m_fAnim = 1.0f;
 	}
 
-	virtual void draw(Graphics *g)
+	virtual void draw()
 	{
 		if (!m_bVisible) return;
 
@@ -153,9 +153,9 @@ OsuModSelector::OsuModSelector() : OsuScreen()
 	m_fExperimentalAnimation = 0.0f;
 	m_bScheduledHide = false;
 	m_bExperimentalVisible = false;
-	m_container = new CBaseUIContainer(0, 0, osu->getScreenWidth(), osu->getScreenHeight(), "");
-	m_overrideSliderContainer = new CBaseUIContainer(0, 0, osu->getScreenWidth(), osu->getScreenHeight(), "");
-	m_experimentalContainer = new CBaseUIScrollView(-1, 0, osu->getScreenWidth(), osu->getScreenHeight(), "");
+	m_container = new CBaseUIContainer(0, 0, osu->getVirtScreenWidth(), osu->getVirtScreenHeight(), "");
+	m_overrideSliderContainer = new CBaseUIContainer(0, 0, osu->getVirtScreenWidth(), osu->getVirtScreenHeight(), "");
+	m_experimentalContainer = new CBaseUIScrollView(-1, 0, osu->getVirtScreenWidth(), osu->getVirtScreenHeight(), "");
 	m_experimentalContainer->setHorizontalScrolling(false);
 	m_experimentalContainer->setVerticalScrolling(true);
 	m_experimentalContainer->setDrawFrame(false);
@@ -343,7 +343,7 @@ OsuModSelector::~OsuModSelector()
 	SAFE_DELETE(m_experimentalContainer);
 }
 
-void OsuModSelector::draw(Graphics *g)
+void OsuModSelector::draw()
 {
 	if (!m_bVisible && !m_bScheduledHide) return;
 
@@ -357,7 +357,7 @@ void OsuModSelector::draw(Graphics *g)
 	if (isInCompactMode())
 	{
 		// get override slider element bounds
-		Vector2 overrideSlidersStart = Vector2(osu->getScreenWidth(), 0);
+		Vector2 overrideSlidersStart = Vector2(osu->getVirtScreenWidth(), 0);
 		Vector2 overrideSlidersSize;
 		for (int i=0; i<m_overrideSliders.size(); i++)
 		{
@@ -375,8 +375,8 @@ void OsuModSelector::draw(Graphics *g)
 		overrideSlidersSize.x -= overrideSlidersStart.x;
 
 		// get mod button element bounds
-		Vector2 modGridButtonsStart = Vector2(osu->getScreenWidth(), osu->getScreenHeight());
-		Vector2 modGridButtonsSize = Vector2(0, osu->getScreenHeight());
+		Vector2 modGridButtonsStart = Vector2(osu->getVirtScreenWidth(), osu->getVirtScreenHeight());
+		Vector2 modGridButtonsSize = Vector2(0, osu->getVirtScreenHeight());
 		for (int i=0; i<m_modButtons.size(); i++)
 		{
 			CBaseUIButton *button = m_modButtons[i];
@@ -399,7 +399,7 @@ void OsuModSelector::draw(Graphics *g)
 			g->translate(0, (1.0f - m_fAnimation)*modGridButtonsSize.y);
 			g->setColor(backgroundColor);
 			g->fillRect(modGridButtonsStart.x - margin, modGridButtonsStart.y - margin, modGridButtonsSize.x + 2*margin, modGridButtonsSize.y + 2*margin);
-			m_container->draw(g);
+			m_container->draw();
 		}
 		g->popTransform();
 
@@ -409,7 +409,7 @@ void OsuModSelector::draw(Graphics *g)
 			g->translate(0, -(1.0f - m_fAnimation)*overrideSlidersSize.y);
 			g->setColor(backgroundColor);
 			g->fillRect(overrideSlidersStart.x - margin, 0, overrideSlidersSize.x + 2*margin, overrideSlidersSize.y + margin);
-			m_overrideSliderContainer->draw(g);
+			m_overrideSliderContainer->draw();
 		}
 		g->popTransform();
 	}
@@ -432,7 +432,7 @@ void OsuModSelector::draw(Graphics *g)
 			g->pushTransform();
 			{
 				g->rotate(90);
-				g->translate((int)(experimentalTextHeight/3.0f + std::max(0.0f, experimentalModsAnimationTranslation + m_experimentalContainer->getSize().x)), (int)(osu->getScreenHeight()/2 - experimentalTextWidth/2));
+				g->translate((int)(experimentalTextHeight/3.0f + std::max(0.0f, experimentalModsAnimationTranslation + m_experimentalContainer->getSize().x)), (int)(osu->getVirtScreenHeight()/2 - experimentalTextWidth/2));
 				g->setColor(0xff777777);
 				g->setAlpha(1.0f - m_fExperimentalAnimation*m_fExperimentalAnimation);
 				g->drawString(experimentalFont, experimentalText);
@@ -442,14 +442,14 @@ void OsuModSelector::draw(Graphics *g)
 			g->pushTransform();
 			{
 				g->rotate(90);
-				g->translate((int)(rectHeight + std::max(0.0f, experimentalModsAnimationTranslation + m_experimentalContainer->getSize().x)), (int)(osu->getScreenHeight()/2 - rectWidth/2));
+				g->translate((int)(rectHeight + std::max(0.0f, experimentalModsAnimationTranslation + m_experimentalContainer->getSize().x)), (int)(osu->getVirtScreenHeight()/2 - rectWidth/2));
 				g->drawRect(0, 0, rectWidth, rectHeight);
 			}
 			g->popTransform();
 		}
 
-		m_container->draw(g);
-		m_overrideSliderContainer->draw(g);
+		m_container->draw();
+		m_overrideSliderContainer->draw();
 	}
 
 	// draw experimental mods
@@ -458,7 +458,7 @@ void OsuModSelector::draw(Graphics *g)
 		g->translate(experimentalModsAnimationTranslation, 0);
 		g->setColor(backgroundColor);
 		g->fillRect(m_experimentalContainer->getPos().x - margin, m_experimentalContainer->getPos().y - margin, m_experimentalContainer->getSize().x + 2*margin*m_fExperimentalAnimation, m_experimentalContainer->getSize().y + 2*margin);
-		m_experimentalContainer->draw(g);
+		m_experimentalContainer->draw();
 	}
 	g->popTransform();
 }
@@ -543,7 +543,7 @@ void OsuModSelector::update()
 			break;
 		}
 	}
-	McRect experimentalTrigger = McRect(0, 0, m_bExperimentalVisible ? m_experimentalContainer->getSize().x : osu->getScreenWidth()*0.05f, osu->getScreenHeight());
+	McRect experimentalTrigger = McRect(0, 0, m_bExperimentalVisible ? m_experimentalContainer->getSize().x : osu->getVirtScreenWidth()*0.05f, osu->getVirtScreenHeight());
 	if (experimentalTrigger.contains(mouse->getPos()))
 	{
 		if (!m_bExperimentalVisible)
@@ -774,7 +774,7 @@ void OsuModSelector::updateLayout()
 	if (!isInCompactMode()) // normal layout
 	{
 		// mod grid buttons
-		Vector2 center = osu->getScreenSize()/2.0f;
+		Vector2 center = osu->getVirtScreenSize()/2.0f;
 		Vector2 size = osu->getSkin()->getSelectionModEasy()->getSizeBase() * uiScale;
 		Vector2 offset = Vector2(size.x*1.0f, size.y*0.25f);
 		Vector2 start = Vector2(center.x - (size.x*m_iGridWidth)/2.0f - (offset.x*(m_iGridWidth-1))/2.0f, center.y - (size.y*m_iGridHeight)/2.0f  - (offset.y*(m_iGridHeight-1))/2.0f);
@@ -799,7 +799,7 @@ void OsuModSelector::updateLayout()
 		const int overrideSliderWidth = osu->getUIScale(250.0f);
 		const int overrideSliderHeight = 25 * dpiScale;
 		const int overrideSliderOffsetY = ((start.y - m_overrideSliders.size()*overrideSliderHeight)/(m_overrideSliders.size()-1))*0.35f;
-		const Vector2 overrideSliderStart = Vector2(osu->getScreenWidth()/2 - overrideSliderWidth/2, start.y/2 - (m_overrideSliders.size()*overrideSliderHeight + (m_overrideSliders.size()-1)*overrideSliderOffsetY)/1.75f);
+		const Vector2 overrideSliderStart = Vector2(osu->getVirtScreenWidth()/2 - overrideSliderWidth/2, start.y/2 - (m_overrideSliders.size()*overrideSliderHeight + (m_overrideSliders.size()-1)*overrideSliderOffsetY)/1.75f);
 		for (int i=0; i<m_overrideSliders.size(); i++)
 		{
 			m_overrideSliders[i].desc->setSizeToContent(5 * dpiScale, 0);
@@ -826,7 +826,7 @@ void OsuModSelector::updateLayout()
 		float actionMinY = start.y + size.y*m_iGridHeight + offset.y*(m_iGridHeight - 1); // exact bottom of the mod buttons
 		Vector2 actionSize = Vector2(osu->getUIScale(448.0f) * uiScale, size.y*0.75f);
 		float actionOffsetY = actionSize.y*0.5f;
-		Vector2 actionStart = Vector2(osu->getScreenWidth()/2.0f - actionSize.x/2.0f, actionMinY + (osu->getScreenHeight() - actionMinY)/2.0f  - (actionSize.y*m_actionButtons.size() + actionOffsetY*(m_actionButtons.size()-1))/2.0f);
+		Vector2 actionStart = Vector2(osu->getVirtScreenWidth()/2.0f - actionSize.x/2.0f, actionMinY + (osu->getVirtScreenHeight() - actionMinY)/2.0f  - (actionSize.y*m_actionButtons.size() + actionOffsetY*(m_actionButtons.size()-1))/2.0f);
 		for (int i=0; i<m_actionButtons.size(); i++)
 		{
 			m_actionButtons[i]->setVisible(true);
@@ -839,17 +839,17 @@ void OsuModSelector::updateLayout()
 		const float modGridMaxY = start.y + size.y*m_iGridHeight + offset.y*(m_iGridHeight - 1); // exact bottom of the mod buttons
 		m_scoreMultiplierLabel->setVisible(true);
 		m_scoreMultiplierLabel->setSizeToContent();
-		m_scoreMultiplierLabel->setSize(Vector2(osu->getScreenWidth(), 20 * uiScale));
+		m_scoreMultiplierLabel->setSize(Vector2(osu->getVirtScreenWidth(), 20 * uiScale));
 		m_scoreMultiplierLabel->setPos(0, modGridMaxY + std::abs(actionStart.y - modGridMaxY)/2 - m_scoreMultiplierLabel->getSize().y/2);
 	}
 	else // compact in-beatmap mode
 	{
 		// mod grid buttons
-		Vector2 center = osu->getScreenSize()/2.0f;
+		Vector2 center = osu->getVirtScreenSize()/2.0f;
 		Vector2 blockSize = osu->getSkin()->getSelectionModEasy()->getSizeBase() * uiScale;
 		Vector2 offset = Vector2(blockSize.x*0.15f, blockSize.y*0.05f);
 		Vector2 size = Vector2((blockSize.x*m_iGridWidth) + (offset.x*(m_iGridWidth-1)), (blockSize.y*m_iGridHeight) + (offset.y*(m_iGridHeight-1)));
-		center.y = osu->getScreenHeight() - size.y/2 - offset.y*3.0f;
+		center.y = osu->getVirtScreenHeight() - size.y/2 - offset.y*3.0f;
 		Vector2 start = Vector2(center.x - size.x/2.0f, center.y - size.y/2.0f);
 
 		for (int x=0; x<m_iGridWidth; x++)
@@ -872,7 +872,7 @@ void OsuModSelector::updateLayout()
 		int overrideSliderWidth = osu->getUIScale(250.0f);
 		int overrideSliderHeight = 25 * dpiScale;
 		int overrideSliderOffsetY = 5 * dpiScale;
-		Vector2 overrideSliderStart = Vector2(osu->getScreenWidth()/2 - overrideSliderWidth/2, 5 * dpiScale);
+		Vector2 overrideSliderStart = Vector2(osu->getVirtScreenWidth()/2 - overrideSliderWidth/2, 5 * dpiScale);
 		for (int i=0; i<m_overrideSliders.size(); i++)
 		{
 			m_overrideSliders[i].desc->setSizeToContent(5 * dpiScale, 0);
@@ -948,8 +948,8 @@ void OsuModSelector::updateExperimentalLayout()
 	}
 
 	// laziness
-	if (osu->getScreenHeight() > yCounter)
-		yCounter = 5 * dpiScale + osu->getScreenHeight()/2.0f - yCounter/2.0f;
+	if (osu->getVirtScreenHeight() > yCounter)
+		yCounter = 5 * dpiScale + osu->getVirtScreenHeight()/2.0f - yCounter/2.0f;
 	else
 		yCounter = 5 * dpiScale;
 

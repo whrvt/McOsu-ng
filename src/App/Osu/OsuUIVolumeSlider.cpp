@@ -35,7 +35,7 @@ OsuUIVolumeSlider::OsuUIVolumeSlider(float xPos, float yPos, float xSize, float 
 	setFrameColor(0xff7f7f7f);
 }
 
-void OsuUIVolumeSlider::drawBlock(Graphics *g)
+void OsuUIVolumeSlider::drawBlock()
 {
 	// draw icon
 	Image *img = NULL;

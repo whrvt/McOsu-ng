@@ -70,9 +70,9 @@ OsuSpinner::~OsuSpinner()
 	m_storedDeltaAngles = NULL;
 }
 
-void OsuSpinner::draw(Graphics *g)
+void OsuSpinner::draw()
 {
-	OsuHitObject::draw(g);
+	OsuHitObject::draw();
 	const long fadeOutTimeMS = (long)(OsuGameRules::getFadeOutTime(m_beatmap) * 1000.0f * OsuGameRules::osu_spinner_fade_out_time_multiplier.getFloat());
 	const long deltaEnd = m_iDelta + m_iObjectDuration;
 	if ((m_bFinished || !m_bVisible) && (deltaEnd > 0 || (deltaEnd < -fadeOutTimeMS))) return;
@@ -252,14 +252,14 @@ void OsuSpinner::draw(Graphics *g)
 		g->setAlpha(m_fAlphaWithoutHidden * m_fAlphaWithoutHidden * m_fAlphaWithoutHidden * alphaMultiplier);
 		g->pushTransform();
 		{
-			g->translate((int)(osu->getScreenWidth()/2 - stringWidth/2), (int)(osu->getScreenHeight() - 5 + (5 + rpmFont->getHeight())*(1.0f - m_fAlphaWithoutHidden)));
+			g->translate((int)(osu->getVirtScreenWidth()/2 - stringWidth/2), (int)(osu->getVirtScreenHeight() - 5 + (5 + rpmFont->getHeight())*(1.0f - m_fAlphaWithoutHidden)));
 			g->drawString(rpmFont, UString::format("RPM: %i", (int)(m_fRPM + 0.4f)));
 		}
 		g->popTransform();
 	}
 }
 
-void OsuSpinner::draw3D(Graphics *g)
+void OsuSpinner::draw3D()
 {
 	// TODO: implement
 }

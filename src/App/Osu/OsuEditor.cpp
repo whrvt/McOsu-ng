@@ -24,12 +24,12 @@ OsuEditor::~OsuEditor()
 {
 }
 
-void OsuEditor::draw(Graphics *g)
+void OsuEditor::draw()
 {
 	if (!m_bVisible) return;
 
 	// draw back button on top of (after) everything else
-	OsuScreenBackable::draw(g);
+	OsuScreenBackable::draw();
 }
 
 void OsuEditor::update()

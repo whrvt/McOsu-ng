@@ -26,7 +26,7 @@ CBaseUIContainerVerticalBox::~CBaseUIContainerVerticalBox()
 
 }
 
-void CBaseUIContainerVerticalBox::drawDebug(Graphics *g, Color color)
+void CBaseUIContainerVerticalBox::drawDebug(Color color)
 {
 	if (!m_bVisible) return;
 

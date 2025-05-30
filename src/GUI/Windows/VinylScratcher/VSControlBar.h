@@ -24,7 +24,7 @@ public:
 	VSControlBar(int x, int y, int xSize, int ySize, McFont *font);
 	~VSControlBar() override;
 
-	void draw(Graphics *g) override;
+	void draw() override;
 	void update() override;
 
 	[[nodiscard]] inline CBaseUISlider *getVolumeSlider() const {return m_volume;}

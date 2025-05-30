@@ -20,7 +20,7 @@ public:
 	CWindowManager();
 	~CWindowManager() override;
 
-	void draw(Graphics *g);
+	void draw();
 	void update();
 
 	void onKeyDown(KeyboardEvent &e) override;

@@ -275,38 +275,38 @@ OsuBeatmap::~OsuBeatmap()
 	unloadObjects();
 }
 
-void OsuBeatmap::draw(Graphics *g)
+void OsuBeatmap::draw()
 {
-	drawInt(g);
+	drawInt();
 }
 
-void OsuBeatmap::drawInt(Graphics *g)
+void OsuBeatmap::drawInt()
 {
 	if (!canDraw()) return;
 
 	// draw background
-	drawBackground(g);
+	drawBackground();
 
 	// draw loading circle
 	if (isLoading())
-		osu->getHUD()->drawLoadingSmall(g);
+		osu->getHUD()->drawLoadingSmall();
 }
 
-void OsuBeatmap::draw3D(Graphics *g)
+void OsuBeatmap::draw3D()
 {
 	if (!canDraw()) return;
 
 	// empty atm
 }
 
-void OsuBeatmap::draw3D2(Graphics *g)
+void OsuBeatmap::draw3D2()
 {
 	if (!canDraw()) return;
 
 	// empty atm
 }
 
-void OsuBeatmap::drawDebug(Graphics *g)
+void OsuBeatmap::drawDebug()
 {
 	if (osu_debug_draw_timingpoints.getBool())
 	{
@@ -325,7 +325,7 @@ void OsuBeatmap::drawDebug(Graphics *g)
 	}
 }
 
-void OsuBeatmap::drawBackground(Graphics *g)
+void OsuBeatmap::drawBackground()
 {
 	if (!canDraw()) return;
 
@@ -335,8 +335,8 @@ void OsuBeatmap::drawBackground(Graphics *g)
 		Image *backgroundImage = osu->getBackgroundImageHandler()->getLoadBackgroundImage(m_selectedDifficulty2);
 		if (osu_draw_beatmap_background_image.getBool() && backgroundImage != NULL && (osu_background_dim.getFloat() < 1.0f || m_fBreakBackgroundFade > 0.0f))
 		{
-			const float scale = Osu::getImageScaleToFillResolution(backgroundImage, osu->getScreenSize());
-			const Vector2 centerTrans = (osu->getScreenSize()/2.0f);
+			const float scale = Osu::getImageScaleToFillResolution(backgroundImage, osu->getVirtScreenSize());
+			const Vector2 centerTrans = (osu->getVirtScreenSize()/2.0f);
 
 			const float backgroundFadeDimMultiplier = 1.0f - (osu_background_dim.getFloat() - 0.3f);
 			const auto dim = (1.0f - osu_background_dim.getFloat()) + m_fBreakBackgroundFade*backgroundFadeDimMultiplier;
@@ -364,12 +364,12 @@ void OsuBeatmap::drawBackground(Graphics *g)
 		const auto alpha = (1.0f - m_fBreakBackgroundFade) * (m_osu_mod_fposu_ref->getBool() ? osu_background_alpha.getFloat() : 1.0f);
 
 		g->setColor(argb(alpha, red, green, blue));
-		g->fillRect(0, 0, osu->getScreenWidth(), osu->getScreenHeight());
+		g->fillRect(0, 0, osu->getVirtScreenWidth(), osu->getVirtScreenHeight());
 	}
 
 	// draw scorebar-bg
 	if (m_osu_draw_hud_ref->getBool() && m_osu_draw_scorebarbg_ref->getBool() && (!m_osu_mod_fposu_ref->getBool() || (!m_fposu_3d_ref->getBool() && !m_fposu_draw_scorebarbg_on_top_ref->getBool()))) // NOTE: special case for FPoSu
-		osu->getHUD()->drawScorebarBg(g, m_osu_hud_scorebar_hide_during_breaks_ref->getBool() ? (1.0f - m_fBreakBackgroundFade) : 1.0f, osu->getHUD()->getScoreBarBreakAnim());
+		osu->getHUD()->drawScorebarBg(m_osu_hud_scorebar_hide_during_breaks_ref->getBool() ? (1.0f - m_fBreakBackgroundFade) : 1.0f, osu->getHUD()->getScoreBarBreakAnim());
 
 	if (Osu::debug->getBool())
 	{

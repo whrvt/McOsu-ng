@@ -47,12 +47,12 @@ Mouse::Mouse() : InputDevice()
 	mouse_sensitivity.setCallback(fastdelegate::MakeDelegate(this, &Mouse::onSensitivityChanged));
 }
 
-void Mouse::draw(Graphics *g)
+void Mouse::draw()
 {
 	if (!debug_mouse.getBool())
 		return;
 
-	drawDebug(g);
+	drawDebug();
 
 	// green rect = virtual cursor pos
 	g->setColor(0xff00ff00);
@@ -78,7 +78,7 @@ void Mouse::draw(Graphics *g)
 	g->drawRect(-scaledOffset.x, -scaledOffset.y, scaledEngineScreenSize.x, scaledEngineScreenSize.y);
 }
 
-void Mouse::drawDebug(Graphics *g)
+void Mouse::drawDebug()
 {
 	Vector2 pos = getPos();
 

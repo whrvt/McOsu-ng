@@ -40,11 +40,11 @@ CBaseUIBoxShadow::~CBaseUIBoxShadow()
 	SAFE_DELETE(m_blur);
 }
 
-void CBaseUIBoxShadow::draw(Graphics *g)
+void CBaseUIBoxShadow::draw()
 {
 	if (m_bNeedsRedraw)
 	{
-		render(g);
+		render();
 		m_bNeedsRedraw = false;
 	}
 
@@ -63,7 +63,7 @@ void CBaseUIBoxShadow::draw(Graphics *g)
 	*/
 
 	g->setColor(m_color);
-		m_blur->draw(g, m_vPos.x-m_fRadius, m_vPos.y-m_fRadius);
+		m_blur->draw(m_vPos.x-m_fRadius, m_vPos.y-m_fRadius);
 
 	/*
 	if (m_bColoredContent)
@@ -71,7 +71,7 @@ void CBaseUIBoxShadow::draw(Graphics *g)
 	*/
 }
 
-void CBaseUIBoxShadow::render(Graphics *g)
+void CBaseUIBoxShadow::render()
 {
 	/*
 	// HACKHACK: switching blend funcs
@@ -83,7 +83,7 @@ void CBaseUIBoxShadow::render(Graphics *g)
 		m_blur->enable();
 			g->setColor(m_shadowColor);
 			g->fillRect(m_fRadius+2, m_blur->getSize().y/2.0f - m_vSize.y/2.0f, m_vSize.x-4, m_vSize.y);
-		m_blur->disable(g);
+		m_blur->disable();
 	g->setClipping(true);
 
 	/*
@@ -92,11 +92,11 @@ void CBaseUIBoxShadow::render(Graphics *g)
 	*/
 }
 
-void CBaseUIBoxShadow::renderOffscreen(Graphics *g)
+void CBaseUIBoxShadow::renderOffscreen()
 {
 	if (m_bNeedsRedraw)
 	{
-		render(g);
+		render();
 		m_bNeedsRedraw = false;
 	}
 }
@@ -166,9 +166,9 @@ GaussianBlur::~GaussianBlur()
 	SAFE_DELETE(m_kernel);
 }
 
-void GaussianBlur::draw(Graphics *g, int x, int y)
+void GaussianBlur::draw(int x, int y)
 {
-	m_rt->draw(g, x, y);
+	m_rt->draw(x, y);
 
 	//g->setColor(0xffff0000);
 	//g->fillRect(x,y,m_vSize.x, m_vSize.y);
@@ -179,7 +179,7 @@ void GaussianBlur::enable()
 	m_rt->enable();
 }
 
-void GaussianBlur::disable(Graphics *g)
+void GaussianBlur::disable()
 {
 	m_rt->disable();
 
@@ -191,7 +191,7 @@ void GaussianBlur::disable(Graphics *g)
 			blur->setUniform1fv("weights", m_kernel->getKernelSize(), m_kernel->getKernel());
 			blur->setUniform1fv("offsets", m_kernel->getKernelSize(), m_kernel->getOffsetsVertical());
 			blur->setUniform1i("orientation", 1);
-			m_rt->draw(g, 0, 0);
+			m_rt->draw(0, 0);
 		blur->disable();
 	m_rt2->disable();
 
@@ -201,7 +201,7 @@ void GaussianBlur::disable(Graphics *g)
 			blur->setUniform1fv("weights", m_kernel->getKernelSize(), m_kernel->getKernel());
 			blur->setUniform1fv("offsets", m_kernel->getKernelSize(), m_kernel->getOffsetsHorizontal());
 			blur->setUniform1i("orientation", 0);
-			m_rt2->draw(g, m_vPos.x, m_vPos.y);
+			m_rt2->draw(m_vPos.x, m_vPos.y);
 		blur->disable();
 	m_rt->disable();
 }

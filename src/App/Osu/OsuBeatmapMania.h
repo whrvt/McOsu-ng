@@ -16,7 +16,7 @@ class OsuBeatmapMania final : public OsuBeatmap
 public:
 	OsuBeatmapMania();
 
-	void draw(Graphics *g) override;
+	void draw() override;
 	void update() override;
 
 	void onModUpdate() override;

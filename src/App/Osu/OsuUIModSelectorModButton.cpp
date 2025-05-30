@@ -36,7 +36,7 @@ OsuUIModSelectorModButton::OsuUIModSelectorModButton(OsuModSelector *osuModSelec
 	m_bFocusStolenDelay = false;
 }
 
-void OsuUIModSelectorModButton::draw(Graphics *g)
+void OsuUIModSelectorModButton::draw()
 {
 	if (!m_bVisible) return;
 
@@ -50,7 +50,7 @@ void OsuUIModSelectorModButton::draw(Graphics *g)
 				g->rotate(m_fRot);
 
 			g->setColor(0xffffffff);
-			getActiveImageFunc()->draw(g, m_vPos + m_vSize/2);
+			getActiveImageFunc()->draw(m_vPos + m_vSize/2);
 		}
 		g->popTransform();
 	}

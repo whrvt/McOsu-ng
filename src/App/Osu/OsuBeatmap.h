@@ -44,12 +44,12 @@ public:
 	OsuBeatmap();
 	virtual ~OsuBeatmap();
 
-	virtual void draw(Graphics *g);
-	virtual void drawInt(Graphics *g);
-	virtual void draw3D(Graphics *g);
-	virtual void draw3D2(Graphics *g);
-	void drawDebug(Graphics *g);
-	void drawBackground(Graphics *g);
+	virtual void draw();
+	virtual void drawInt();
+	virtual void draw3D();
+	virtual void draw3D2();
+	void drawDebug();
+	void drawBackground();
 	virtual void update();
 
 	virtual void onKeyDown(KeyboardEvent &e);

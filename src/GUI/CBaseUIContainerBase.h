@@ -49,8 +49,8 @@ public:
 	inline std::vector<std::shared_ptr<CBaseUIElement>> getAllElementsShared(){return m_vElements;}
 	inline std::vector<std::shared_ptr<CBaseUIElement>> *getAllElementsReference(){return &m_vElements;}
 
-	void draw(Graphics *g) override;
-	void drawDebug(Graphics *, Color) {;}
+	void draw() override;
+	void drawDebug(Color) {;}
 	void update() override;
 
 	virtual void empty();

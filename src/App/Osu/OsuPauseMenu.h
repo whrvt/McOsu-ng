@@ -22,7 +22,7 @@ public:
 	OsuPauseMenu();
 	virtual ~OsuPauseMenu();
 
-	virtual void draw(Graphics *g);
+	virtual void draw();
 	virtual void update();
 
 	virtual void onKeyDown(KeyboardEvent &e);

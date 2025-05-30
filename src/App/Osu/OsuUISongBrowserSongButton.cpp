@@ -86,17 +86,17 @@ OsuUISongBrowserSongButton::~OsuUISongBrowserSongButton()
 	}
 }
 
-void OsuUISongBrowserSongButton::draw(Graphics *g)
+void OsuUISongBrowserSongButton::draw()
 {
 	if (!m_bVisible) return;
-	OsuUISongBrowserButton::draw(g);
+	OsuUISongBrowserButton::draw();
 
 	// draw background image
 	if (m_representativeDatabaseBeatmap != NULL)
-		drawBeatmapBackgroundThumbnail(g, osu->getBackgroundImageHandler()->getLoadBackgroundImage(m_representativeDatabaseBeatmap));
+		drawBeatmapBackgroundThumbnail(osu->getBackgroundImageHandler()->getLoadBackgroundImage(m_representativeDatabaseBeatmap));
 
-	drawTitle(g);
-	drawSubTitle(g);
+	drawTitle();
+	drawSubTitle();
 }
 
 void OsuUISongBrowserSongButton::update()
@@ -109,7 +109,7 @@ void OsuUISongBrowserSongButton::update()
 	updateRepresentativeDatabaseBeatmap();
 }
 
-void OsuUISongBrowserSongButton::drawBeatmapBackgroundThumbnail(Graphics *g, Image *image)
+void OsuUISongBrowserSongButton::drawBeatmapBackgroundThumbnail(Image *image)
 {
 	if (!osu_draw_songbrowser_thumbnails.getBool() || osu->getSkin()->getVersion() < 2.2f) return;
 
@@ -164,7 +164,7 @@ void OsuUISongBrowserSongButton::drawBeatmapBackgroundThumbnail(Graphics *g, Ima
 	}
 }
 
-void OsuUISongBrowserSongButton::drawGrade(Graphics *g)
+void OsuUISongBrowserSongButton::drawGrade()
 {
 	// scaling
 	const Vector2 pos = getActualPos();
@@ -176,12 +176,12 @@ void OsuUISongBrowserSongButton::drawGrade(Graphics *g)
 		const float scale = calculateGradeScale();
 
 		g->setColor(0xffffffff);
-		grade->drawRaw(g, Vector2(pos.x + m_fGradeOffset + grade->getSizeBaseRaw().x*scale/2, pos.y + size.y/2), scale);
+		grade->drawRaw(Vector2(pos.x + m_fGradeOffset + grade->getSizeBaseRaw().x*scale/2, pos.y + size.y/2), scale);
 	}
 	g->popTransform();
 }
 
-void OsuUISongBrowserSongButton::drawTitle(Graphics *g, float deselectedAlpha, bool forceSelectedStyle)
+void OsuUISongBrowserSongButton::drawTitle(float deselectedAlpha, bool forceSelectedStyle)
 {
 	// scaling
 	const Vector2 pos = getActualPos();
@@ -204,7 +204,7 @@ void OsuUISongBrowserSongButton::drawTitle(Graphics *g, float deselectedAlpha, b
 	g->popTransform();
 }
 
-void OsuUISongBrowserSongButton::drawSubTitle(Graphics *g, float deselectedAlpha, bool forceSelectedStyle)
+void OsuUISongBrowserSongButton::drawSubTitle(float deselectedAlpha, bool forceSelectedStyle)
 {
 	// scaling
 	const Vector2 pos = getActualPos();

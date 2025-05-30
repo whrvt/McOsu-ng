@@ -193,7 +193,7 @@ OsuSlider::~OsuSlider()
 	SAFE_DELETE(m_vao);
 }
 
-void OsuSlider::draw(Graphics *g)
+void OsuSlider::draw()
 {
 	if (m_points.size() <= 0) return;
 
@@ -217,7 +217,7 @@ void OsuSlider::draw(Graphics *g)
 
 		// draw slider body
 		if (alpha > 0.0f && osu_slider_draw_body.getBool())
-			drawBody(g, alpha, sliderSnakeStart, sliderSnake);
+			drawBody(alpha, sliderSnakeStart, sliderSnake);
 
 		// draw slider ticks
 		Color tickColor = 0xffffffff;
@@ -266,11 +266,11 @@ void OsuSlider::draw(Graphics *g)
 
 			// end circle
 			if ((!m_bEndFinished && m_iRepeat % 2 != 0 && ifStrictTrackingModShouldDrawEndCircle) || (!sliderRepeatEndCircleFinished && (ifStrictTrackingModShouldDrawEndCircle || (m_iRepeat > 1 && endCircleIsAtActualSliderEnd) || (m_iRepeat > 1 && std::abs(m_iRepeat - m_iCurRepeat) > 2))))
-				drawEndCircle(g, alpha, sliderSnake);
+				drawEndCircle(alpha, sliderSnake);
 
 			// start circle
 			if (!m_bStartFinished || (!sliderRepeatStartCircleFinished && (ifStrictTrackingModShouldDrawEndCircle || (m_iRepeat > 1 && !endCircleIsAtActualSliderEnd) || (m_iRepeat > 1 && std::abs(m_iRepeat - m_iCurRepeat) > 2))) || (!m_bEndFinished && m_iRepeat % 2 == 0 && ifStrictTrackingModShouldDrawEndCircle))
-				drawStartCircle(g, alpha);
+				drawStartCircle(alpha);
 
 			// debug
 			/*
@@ -374,9 +374,9 @@ void OsuSlider::draw(Graphics *g)
 		std::vector<Vector2> alwaysPoints;
 		alwaysPoints.push_back(m_beatmap->osuCoords2Pixels(m_curve->pointAt(m_fSlidePercent)));
 		if (!osu_slider_shrink.getBool())
-			drawBody(g, 1.0f - m_fEndSliderBodyFadeAnimation, 0, 1);
+			drawBody(1.0f - m_fEndSliderBodyFadeAnimation, 0, 1);
 		else if (osu_slider_body_lazer_fadeout_style.getBool())
-			OsuSliderRenderer::draw(g, osu, emptyVector, alwaysPoints, m_beatmap->getHitcircleDiameter(), 0.0f, 0.0f, m_beatmap->getSkin()->getComboColorForCounter(m_iColorCounter, m_iColorOffset), 1.0f, 1.0f - m_fEndSliderBodyFadeAnimation, getTime());
+			OsuSliderRenderer::draw(osu, emptyVector, alwaysPoints, m_beatmap->getHitcircleDiameter(), 0.0f, 0.0f, m_beatmap->getSkin()->getComboColorForCounter(m_iColorCounter, m_iColorOffset), 1.0f, 1.0f - m_fEndSliderBodyFadeAnimation, getTime());
 	}
 
 	if (m_fStartHitAnimation > 0.0f && m_fStartHitAnimation != 1.0f && !osu->getModHD())
@@ -396,14 +396,14 @@ void OsuSlider::draw(Graphics *g)
 				m_beatmap->getSkin()->getHitCircleOverlay2()->setAnimationTimeOffset(!m_beatmap->isInMafhamRenderChunk() ? m_iTime - m_iApproachTime : m_beatmap->getCurMusicPosWithOffsets());
 				m_beatmap->getSkin()->getSliderStartCircleOverlay2()->setAnimationTimeOffset(!m_beatmap->isInMafhamRenderChunk() ? m_iTime - m_iApproachTime : m_beatmap->getCurMusicPosWithOffsets());
 
-				OsuCircle::drawSliderStartCircle(g, m_beatmap, m_curve->pointAt(0.0f), m_iComboNumber, m_iColorCounter, m_iColorOffset, 1.0f, 1.0f, alpha, alpha, drawNumber);
+				OsuCircle::drawSliderStartCircle(m_beatmap, m_curve->pointAt(0.0f), m_iComboNumber, m_iColorCounter, m_iColorOffset, 1.0f, 1.0f, alpha, alpha, drawNumber);
 			}
 			else
 			{
 				m_beatmap->getSkin()->getHitCircleOverlay2()->setAnimationTimeOffset(!m_beatmap->isInMafhamRenderChunk() ? m_iTime : m_beatmap->getCurMusicPosWithOffsets());
 				m_beatmap->getSkin()->getSliderEndCircleOverlay2()->setAnimationTimeOffset(!m_beatmap->isInMafhamRenderChunk() ? m_iTime : m_beatmap->getCurMusicPosWithOffsets());
 
-				OsuCircle::drawSliderEndCircle(g, m_beatmap, m_curve->pointAt(0.0f), m_iComboNumber, m_iColorCounter, m_iColorOffset, 1.0f, 1.0f, alpha, alpha, drawNumber);
+				OsuCircle::drawSliderEndCircle(m_beatmap, m_curve->pointAt(0.0f), m_iComboNumber, m_iColorCounter, m_iColorOffset, 1.0f, 1.0f, alpha, alpha, drawNumber);
 			}
 		}
 		g->popTransform();
@@ -423,13 +423,13 @@ void OsuSlider::draw(Graphics *g)
 				m_beatmap->getSkin()->getHitCircleOverlay2()->setAnimationTimeOffset(!m_beatmap->isInMafhamRenderChunk() ? m_iTime - m_iFadeInTime : m_beatmap->getCurMusicPosWithOffsets());
 				m_beatmap->getSkin()->getSliderEndCircleOverlay2()->setAnimationTimeOffset(!m_beatmap->isInMafhamRenderChunk() ? m_iTime - m_iFadeInTime : m_beatmap->getCurMusicPosWithOffsets());
 
-				OsuCircle::drawSliderEndCircle(g, m_beatmap, m_curve->pointAt(1.0f), m_iComboNumber, m_iColorCounter, m_iColorOffset, 1.0f, 1.0f, alpha, 0.0f, false);
+				OsuCircle::drawSliderEndCircle(m_beatmap, m_curve->pointAt(1.0f), m_iComboNumber, m_iColorCounter, m_iColorOffset, 1.0f, 1.0f, alpha, 0.0f, false);
 			}
 		}
 		g->popTransform();
 	}
 
-	OsuHitObject::draw(g);
+	OsuHitObject::draw();
 
 	// debug
 	/*
@@ -457,9 +457,9 @@ void OsuSlider::draw(Graphics *g)
 	*/
 }
 
-void OsuSlider::draw2(Graphics *g)
+void OsuSlider::draw2()
 {
-	draw2(g, true, false);
+	draw2(true, false);
 
 	// TEMP: DEBUG:
 	/*
@@ -482,9 +482,9 @@ void OsuSlider::draw2(Graphics *g)
 	*/
 }
 
-void OsuSlider::draw2(Graphics *g, bool drawApproachCircle, bool drawOnlyApproachCircle)
+void OsuSlider::draw2(bool drawApproachCircle, bool drawOnlyApproachCircle)
 {
-	OsuHitObject::draw2(g);
+	OsuHitObject::draw2();
 
 	OsuSkin *skin = m_beatmap->getSkin();
 
@@ -510,7 +510,7 @@ void OsuSlider::draw2(Graphics *g, bool drawApproachCircle, bool drawOnlyApproac
 			// start circle
 			if (!m_bStartFinished || !sliderRepeatStartCircleFinished || (!m_bEndFinished && m_iRepeat % 2 == 0))
 			{
-				OsuCircle::drawApproachCircle(g, m_beatmap, m_curve->pointAt(0.0f), m_iComboNumber, m_iColorCounter, m_iColorOffset, m_fHittableDimRGBColorMultiplierPercent, m_fApproachScale, m_fAlphaForApproachCircle, m_bOverrideHDApproachCircle);
+				OsuCircle::drawApproachCircle(m_beatmap, m_curve->pointAt(0.0f), m_iComboNumber, m_iColorCounter, m_iColorOffset, m_fHittableDimRGBColorMultiplierPercent, m_fApproachScale, m_fAlphaForApproachCircle, m_bOverrideHDApproachCircle);
 			}
 		}
 	}
@@ -535,7 +535,7 @@ void OsuSlider::draw2(Graphics *g, bool drawApproachCircle, bool drawOnlyApproac
 		g->setColor(0xffffffff);
 		g->setAlpha(m_fFollowCircleAnimationAlpha);
 		skin->getSliderFollowCircle2()->setAnimationTimeOffset(m_iTime);
-		skin->getSliderFollowCircle2()->drawRaw(g, point, (m_beatmap->getSliderFollowCircleDiameter() / skin->getSliderFollowCircle2()->getSizeBaseRaw().x)*tickAnimationScale*m_fFollowCircleAnimationScale*0.85f); // this is a bit strange, but seems to work perfectly with 0.85
+		skin->getSliderFollowCircle2()->drawRaw(point, (m_beatmap->getSliderFollowCircleDiameter() / skin->getSliderFollowCircle2()->getSizeBaseRaw().x)*tickAnimationScale*m_fFollowCircleAnimationScale*0.85f); // this is a bit strange, but seems to work perfectly with 0.85
 	}
 
 	const bool isCompletelyFinished = m_bStartFinished && m_bEndFinished && m_bFinished;
@@ -558,14 +558,14 @@ void OsuSlider::draw2(Graphics *g, bool drawApproachCircle, bool drawOnlyApproac
 			{
 				g->rotate(ballAngle);
 				skin->getSliderb()->setAnimationTimeOffset(m_iTime);
-				skin->getSliderb()->drawRaw(g, point, m_beatmap->getHitcircleDiameter() / skin->getSliderb()->getSizeBaseRaw().x);
+				skin->getSliderb()->drawRaw(point, m_beatmap->getHitcircleDiameter() / skin->getSliderb()->getSizeBaseRaw().x);
 			}
 			g->popTransform();
 		}
 	}
 }
 
-void OsuSlider::draw3D(Graphics *g)
+void OsuSlider::draw3D()
 {
 	if (m_points.size() <= 0) return;
 
@@ -594,7 +594,7 @@ void OsuSlider::draw3D(Graphics *g)
 		// TODO: draw slider body
 		/*
 		if (alpha > 0.0f && osu_slider_draw_body.getBool())
-			drawBody(g, alpha, sliderSnakeStart, sliderSnake);
+			drawBody(alpha, sliderSnakeStart, sliderSnake);
 		*/
 
 		// draw slider ticks
@@ -628,7 +628,7 @@ void OsuSlider::draw3D(Graphics *g)
 
 				skin->getSliderScorePoint()->bind();
 				{
-					osu->getFPoSu()->getUVPlaneModel()->draw3D(g);
+					osu->getFPoSu()->getUVPlaneModel()->draw3D();
 				}
 				skin->getSliderScorePoint()->unbind();
 			}
@@ -660,11 +660,11 @@ void OsuSlider::draw3D(Graphics *g)
 
 			// end circle
 			if ((!m_bEndFinished && m_iRepeat % 2 != 0 && ifStrictTrackingModShouldDrawEndCircle) || (!sliderRepeatEndCircleFinished && (ifStrictTrackingModShouldDrawEndCircle || (m_iRepeat > 1 && endCircleIsAtActualSliderEnd) || (m_iRepeat > 1 && std::abs(m_iRepeat - m_iCurRepeat) > 2))))
-				draw3DEndCircle(g, baseScale, alpha, sliderSnake);
+				draw3DEndCircle(baseScale, alpha, sliderSnake);
 
 			// start circle
 			if (!m_bStartFinished || (!sliderRepeatStartCircleFinished && (ifStrictTrackingModShouldDrawEndCircle || (m_iRepeat > 1 && !endCircleIsAtActualSliderEnd) || (m_iRepeat > 1 && std::abs(m_iRepeat - m_iCurRepeat) > 2))) || (!m_bEndFinished && m_iRepeat % 2 == 0 && ifStrictTrackingModShouldDrawEndCircle))
-				draw3DStartCircle(g, baseScale, alpha);
+				draw3DStartCircle(baseScale, alpha);
 
 			// reverse arrows
 			if (m_fReverseArrowAlpha > 0.0f)
@@ -724,7 +724,7 @@ void OsuSlider::draw3D(Graphics *g)
 
 						skin->getReverseArrow()->bind();
 						{
-							osu->getFPoSu()->getUVPlaneModel()->draw3D(g);
+							osu->getFPoSu()->getUVPlaneModel()->draw3D();
 						}
 						skin->getReverseArrow()->unbind();
 					}
@@ -771,7 +771,7 @@ void OsuSlider::draw3D(Graphics *g)
 
 						skin->getReverseArrow()->bind();
 						{
-							osu->getFPoSu()->getUVPlaneModel()->draw3D(g);
+							osu->getFPoSu()->getUVPlaneModel()->draw3D();
 						}
 						skin->getReverseArrow()->unbind();
 					}
@@ -792,9 +792,9 @@ void OsuSlider::draw3D(Graphics *g)
 			std::vector<Vector2> alwaysPoints;
 			alwaysPoints.push_back(m_beatmap->osuCoords2Pixels(m_curve->pointAt(m_fSlidePercent)));
 			if (!osu_slider_shrink.getBool())
-				drawBody(g, 1.0f - m_fEndSliderBodyFadeAnimation, 0, 1);
+				drawBody(1.0f - m_fEndSliderBodyFadeAnimation, 0, 1);
 			else if (osu_slider_body_lazer_fadeout_style.getBool())
-				OsuSliderRenderer::draw(g, osu, emptyVector, alwaysPoints, m_beatmap->getHitcircleDiameter(), 0.0f, 0.0f, m_beatmap->getSkin()->getComboColorForCounter(m_iColorCounter, m_iColorOffset), 1.0f, 1.0f - m_fEndSliderBodyFadeAnimation, getTime());
+				OsuSliderRenderer::draw(osu, emptyVector, alwaysPoints, m_beatmap->getHitcircleDiameter(), 0.0f, 0.0f, m_beatmap->getSkin()->getComboColorForCounter(m_iColorCounter, m_iColorOffset), 1.0f, 1.0f - m_fEndSliderBodyFadeAnimation, getTime());
 		}
 		*/
 
@@ -817,14 +817,14 @@ void OsuSlider::draw3D(Graphics *g)
 				m_beatmap->getSkin()->getHitCircleOverlay2()->setAnimationTimeOffset(!m_beatmap->isInMafhamRenderChunk() ? m_iTime - m_iApproachTime : m_beatmap->getCurMusicPosWithOffsets());
 				m_beatmap->getSkin()->getSliderStartCircleOverlay2()->setAnimationTimeOffset(!m_beatmap->isInMafhamRenderChunk() ? m_iTime - m_iApproachTime : m_beatmap->getCurMusicPosWithOffsets());
 
-				OsuCircle::draw3DSliderStartCircle(g, m_beatmap, this, baseScale, m_curve->pointAt(0.0f), m_iComboNumber, m_iColorCounter, m_iColorOffset, 1.0f, 1.0f, alpha, alpha, drawNumber);
+				OsuCircle::draw3DSliderStartCircle(m_beatmap, this, baseScale, m_curve->pointAt(0.0f), m_iComboNumber, m_iColorCounter, m_iColorOffset, 1.0f, 1.0f, alpha, alpha, drawNumber);
 			}
 			else
 			{
 				m_beatmap->getSkin()->getHitCircleOverlay2()->setAnimationTimeOffset(!m_beatmap->isInMafhamRenderChunk() ? m_iTime : m_beatmap->getCurMusicPosWithOffsets());
 				m_beatmap->getSkin()->getSliderEndCircleOverlay2()->setAnimationTimeOffset(!m_beatmap->isInMafhamRenderChunk() ? m_iTime : m_beatmap->getCurMusicPosWithOffsets());
 
-				OsuCircle::draw3DSliderEndCircle(g, m_beatmap, this, baseScale, m_curve->pointAt(0.0f), m_iComboNumber, m_iColorCounter, m_iColorOffset, 1.0f, 1.0f, alpha, alpha, drawNumber);
+				OsuCircle::draw3DSliderEndCircle(m_beatmap, this, baseScale, m_curve->pointAt(0.0f), m_iComboNumber, m_iColorCounter, m_iColorOffset, 1.0f, 1.0f, alpha, alpha, drawNumber);
 			}
 		}
 
@@ -843,16 +843,16 @@ void OsuSlider::draw3D(Graphics *g)
 			m_beatmap->getSkin()->getHitCircleOverlay2()->setAnimationTimeOffset(!m_beatmap->isInMafhamRenderChunk() ? m_iTime - m_iFadeInTime : m_beatmap->getCurMusicPosWithOffsets());
 			m_beatmap->getSkin()->getSliderEndCircleOverlay2()->setAnimationTimeOffset(!m_beatmap->isInMafhamRenderChunk() ? m_iTime - m_iFadeInTime : m_beatmap->getCurMusicPosWithOffsets());
 
-			OsuCircle::draw3DSliderEndCircle(g, m_beatmap, this, baseScale, m_curve->pointAt(1.0f), m_iComboNumber, m_iColorCounter, m_iColorOffset, 1.0f, 1.0f, alpha, 0.0f, false);
+			OsuCircle::draw3DSliderEndCircle(m_beatmap, this, baseScale, m_curve->pointAt(1.0f), m_iComboNumber, m_iColorCounter, m_iColorOffset, 1.0f, 1.0f, alpha, 0.0f, false);
 		}
 	}
 
-	OsuHitObject::draw3D(g);
+	OsuHitObject::draw3D();
 }
 
-void OsuSlider::draw3D2(Graphics *g)
+void OsuSlider::draw3D2()
 {
-	OsuHitObject::draw3D2(g);
+	OsuHitObject::draw3D2();
 
 	OsuSkin *skin = m_beatmap->getSkin();
 
@@ -882,7 +882,7 @@ void OsuSlider::draw3D2(Graphics *g)
 			// start circle
 			if (!m_bStartFinished || !sliderRepeatStartCircleFinished || (!m_bEndFinished && m_iRepeat % 2 == 0))
 			{
-				OsuCircle::draw3DApproachCircle(g, m_beatmap, this, baseScale, m_curve->pointAt(0.0f), m_iComboNumber, m_iColorCounter, m_iColorOffset, m_fHittableDimRGBColorMultiplierPercent, m_fApproachScale, m_fAlphaForApproachCircle, m_bOverrideHDApproachCircle);
+				OsuCircle::draw3DApproachCircle(m_beatmap, this, baseScale, m_curve->pointAt(0.0f), m_iComboNumber, m_iColorCounter, m_iColorOffset, m_fHittableDimRGBColorMultiplierPercent, m_fApproachScale, m_fAlphaForApproachCircle, m_bOverrideHDApproachCircle);
 			}
 		}
 	}
@@ -929,7 +929,7 @@ void OsuSlider::draw3D2(Graphics *g)
 
 			skin->getSliderFollowCircle2()->getImageForCurrentFrame().img->bind();
 			{
-				osu->getFPoSu()->getUVPlaneModel()->draw3D(g);
+				osu->getFPoSu()->getUVPlaneModel()->draw3D();
 			}
 			skin->getSliderFollowCircle2()->getImageForCurrentFrame().img->unbind();
 		}
@@ -980,7 +980,7 @@ void OsuSlider::draw3D2(Graphics *g)
 
 				skin->getSliderb()->getImageForCurrentFrame().img->bind();
 				{
-					osu->getFPoSu()->getUVPlaneModel()->draw3D(g);
+					osu->getFPoSu()->getUVPlaneModel()->draw3D();
 				}
 				skin->getSliderb()->getImageForCurrentFrame().img->unbind();
 			}
@@ -989,59 +989,59 @@ void OsuSlider::draw3D2(Graphics *g)
 	}
 }
 
-void OsuSlider::drawStartCircle(Graphics *g, float alpha)
+void OsuSlider::drawStartCircle(float alpha)
 {
 	if (m_bStartFinished)
 	{
 		m_beatmap->getSkin()->getHitCircleOverlay2()->setAnimationTimeOffset(!m_beatmap->isInMafhamRenderChunk() ? m_iTime : m_beatmap->getCurMusicPosWithOffsets());
 		m_beatmap->getSkin()->getSliderEndCircleOverlay2()->setAnimationTimeOffset(!m_beatmap->isInMafhamRenderChunk() ? m_iTime : m_beatmap->getCurMusicPosWithOffsets());
 
-		OsuCircle::drawSliderEndCircle(g, m_beatmap, m_curve->pointAt(0.0f), m_iComboNumber, m_iColorCounter, m_iColorOffset, m_fHittableDimRGBColorMultiplierPercent, 1.0f, m_fAlpha, 0.0f, false, false);
+		OsuCircle::drawSliderEndCircle(m_beatmap, m_curve->pointAt(0.0f), m_iComboNumber, m_iColorCounter, m_iColorOffset, m_fHittableDimRGBColorMultiplierPercent, 1.0f, m_fAlpha, 0.0f, false, false);
 	}
 	else
 	{
 		m_beatmap->getSkin()->getHitCircleOverlay2()->setAnimationTimeOffset(!m_beatmap->isInMafhamRenderChunk() ? m_iTime - m_iApproachTime : m_beatmap->getCurMusicPosWithOffsets());
 		m_beatmap->getSkin()->getSliderStartCircleOverlay2()->setAnimationTimeOffset(!m_beatmap->isInMafhamRenderChunk() ? m_iTime - m_iApproachTime : m_beatmap->getCurMusicPosWithOffsets());
 
-		OsuCircle::drawSliderStartCircle(g, m_beatmap, m_curve->pointAt(0.0f), m_iComboNumber, m_iColorCounter, m_iColorOffset, m_fHittableDimRGBColorMultiplierPercent, m_fApproachScale, m_fAlpha, m_fAlpha, !m_bHideNumberAfterFirstRepeatHit, m_bOverrideHDApproachCircle);
+		OsuCircle::drawSliderStartCircle(m_beatmap, m_curve->pointAt(0.0f), m_iComboNumber, m_iColorCounter, m_iColorOffset, m_fHittableDimRGBColorMultiplierPercent, m_fApproachScale, m_fAlpha, m_fAlpha, !m_bHideNumberAfterFirstRepeatHit, m_bOverrideHDApproachCircle);
 	}
 }
 
-void OsuSlider::draw3DStartCircle(Graphics *g, const Matrix4 &baseScale, float alpha)
+void OsuSlider::draw3DStartCircle(const Matrix4 &baseScale, float alpha)
 {
 	if (m_bStartFinished)
 	{
 		m_beatmap->getSkin()->getHitCircleOverlay2()->setAnimationTimeOffset(!m_beatmap->isInMafhamRenderChunk() ? m_iTime : m_beatmap->getCurMusicPosWithOffsets());
 		m_beatmap->getSkin()->getSliderEndCircleOverlay2()->setAnimationTimeOffset(!m_beatmap->isInMafhamRenderChunk() ? m_iTime : m_beatmap->getCurMusicPosWithOffsets());
 
-		OsuCircle::draw3DSliderEndCircle(g, m_beatmap, this, baseScale, m_curve->pointAt(0.0f), m_iComboNumber, m_iColorCounter, m_iColorOffset, m_fHittableDimRGBColorMultiplierPercent, 1.0f, m_fAlpha, 0.0f, false, false);
+		OsuCircle::draw3DSliderEndCircle(m_beatmap, this, baseScale, m_curve->pointAt(0.0f), m_iComboNumber, m_iColorCounter, m_iColorOffset, m_fHittableDimRGBColorMultiplierPercent, 1.0f, m_fAlpha, 0.0f, false, false);
 	}
 	else
 	{
 		m_beatmap->getSkin()->getHitCircleOverlay2()->setAnimationTimeOffset(!m_beatmap->isInMafhamRenderChunk() ? m_iTime - m_iApproachTime : m_beatmap->getCurMusicPosWithOffsets());
 		m_beatmap->getSkin()->getSliderStartCircleOverlay2()->setAnimationTimeOffset(!m_beatmap->isInMafhamRenderChunk() ? m_iTime - m_iApproachTime : m_beatmap->getCurMusicPosWithOffsets());
 
-		OsuCircle::draw3DSliderStartCircle(g, m_beatmap, this, baseScale, m_curve->pointAt(0.0f), m_iComboNumber, m_iColorCounter, m_iColorOffset, m_fHittableDimRGBColorMultiplierPercent, m_fApproachScale, m_fAlpha, m_fAlpha, !m_bHideNumberAfterFirstRepeatHit, m_bOverrideHDApproachCircle);
+		OsuCircle::draw3DSliderStartCircle(m_beatmap, this, baseScale, m_curve->pointAt(0.0f), m_iComboNumber, m_iColorCounter, m_iColorOffset, m_fHittableDimRGBColorMultiplierPercent, m_fApproachScale, m_fAlpha, m_fAlpha, !m_bHideNumberAfterFirstRepeatHit, m_bOverrideHDApproachCircle);
 	}
 }
 
-void OsuSlider::drawEndCircle(Graphics *g, float alpha, float sliderSnake)
+void OsuSlider::drawEndCircle(float alpha, float sliderSnake)
 {
 	m_beatmap->getSkin()->getHitCircleOverlay2()->setAnimationTimeOffset(!m_beatmap->isInMafhamRenderChunk() ? m_iTime - m_iFadeInTime : m_beatmap->getCurMusicPosWithOffsets());
 	m_beatmap->getSkin()->getSliderEndCircleOverlay2()->setAnimationTimeOffset(!m_beatmap->isInMafhamRenderChunk() ? m_iTime - m_iFadeInTime : m_beatmap->getCurMusicPosWithOffsets());
 
-	OsuCircle::drawSliderEndCircle(g, m_beatmap, m_curve->pointAt(sliderSnake), m_iComboNumber, m_iColorCounter, m_iColorOffset, m_fHittableDimRGBColorMultiplierPercent, 1.0f, m_fAlpha, 0.0f, false, false);
+	OsuCircle::drawSliderEndCircle(m_beatmap, m_curve->pointAt(sliderSnake), m_iComboNumber, m_iColorCounter, m_iColorOffset, m_fHittableDimRGBColorMultiplierPercent, 1.0f, m_fAlpha, 0.0f, false, false);
 }
 
-void OsuSlider::draw3DEndCircle(Graphics *g, const Matrix4 &baseScale, float alpha, float sliderSnake)
+void OsuSlider::draw3DEndCircle(const Matrix4 &baseScale, float alpha, float sliderSnake)
 {
 	m_beatmap->getSkin()->getHitCircleOverlay2()->setAnimationTimeOffset(!m_beatmap->isInMafhamRenderChunk() ? m_iTime - m_iFadeInTime : m_beatmap->getCurMusicPosWithOffsets());
 	m_beatmap->getSkin()->getSliderEndCircleOverlay2()->setAnimationTimeOffset(!m_beatmap->isInMafhamRenderChunk() ? m_iTime - m_iFadeInTime : m_beatmap->getCurMusicPosWithOffsets());
 
-	OsuCircle::draw3DSliderEndCircle(g, m_beatmap, this, baseScale, m_curve->pointAt(sliderSnake), m_iComboNumber, m_iColorCounter, m_iColorOffset, m_fHittableDimRGBColorMultiplierPercent, 1.0f, m_fAlpha, 0.0f, false, false);
+	OsuCircle::draw3DSliderEndCircle(m_beatmap, this, baseScale, m_curve->pointAt(sliderSnake), m_iComboNumber, m_iColorCounter, m_iColorOffset, m_fHittableDimRGBColorMultiplierPercent, 1.0f, m_fAlpha, 0.0f, false, false);
 }
 
-void OsuSlider::drawBody(Graphics *g, float alpha, float from, float to)
+void OsuSlider::drawBody(float alpha, float from, float to)
 {
 	// smooth begin/end while snaking/shrinking
 	std::vector<Vector2> alwaysPoints;
@@ -1067,10 +1067,10 @@ void OsuSlider::drawBody(Graphics *g, float alpha, float from, float to)
 		}
 
 		// peppy sliders
-		OsuSliderRenderer::draw(g, osu, screenPoints, alwaysPoints, m_beatmap->getHitcircleDiameter(), from, to, undimmedComboColor, m_fHittableDimRGBColorMultiplierPercent, alpha, getTime());
+		OsuSliderRenderer::draw(osu, screenPoints, alwaysPoints, m_beatmap->getHitcircleDiameter(), from, to, undimmedComboColor, m_fHittableDimRGBColorMultiplierPercent, alpha, getTime());
 
 		// mm sliders
-		///OsuSliderRenderer::drawMM(g, osu, screenPoints, m_beatmap->getHitcircleDiameter(), from, to, m_beatmap->getSkin()->getComboColorForCounter(m_iColorCounter, m_iColorOffset), m_fHittableDimRGBColorMultiplierPercent, alpha, getTime());
+		///OsuSliderRenderer::drawMM(osu, screenPoints, m_beatmap->getHitcircleDiameter(), from, to, m_beatmap->getSkin()->getComboColorForCounter(m_iColorCounter, m_iColorOffset), m_fHittableDimRGBColorMultiplierPercent, alpha, getTime());
 	}
 	else
 	{
@@ -1085,7 +1085,7 @@ void OsuSlider::drawBody(Graphics *g, float alpha, float from, float to)
 		if (m_osu_mod_fps_ref->getBool())
 			translation += m_beatmap->getFirstPersonCursorDelta();
 
-		OsuSliderRenderer::draw(g, osu, m_vao, alwaysPoints, translation, scale, m_beatmap->getHitcircleDiameter(), from, to, undimmedComboColor, m_fHittableDimRGBColorMultiplierPercent, alpha, getTime());
+		OsuSliderRenderer::draw(osu, m_vao, alwaysPoints, translation, scale, m_beatmap->getHitcircleDiameter(), from, to, undimmedComboColor, m_fHittableDimRGBColorMultiplierPercent, alpha, getTime());
 	}
 }
 

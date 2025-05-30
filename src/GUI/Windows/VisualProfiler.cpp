@@ -76,7 +76,7 @@ VisualProfiler::~VisualProfiler()
 	vprof = NULL;
 }
 
-void VisualProfiler::draw(Graphics *g)
+void VisualProfiler::draw()
 {
 	VPROF_BUDGET("VisualProfiler::draw", VPROF_BUDGETGROUP_DRAW);
 	if (!m_vprof_ref->getBool() || !m_bVisible) return;
@@ -109,7 +109,7 @@ void VisualProfiler::draw(Graphics *g)
 					addTextLine(UString::format("NativeRes: %i x %i", (int)env->getNativeScreenSize().x, (int)env->getNativeScreenSize().y), textFont, m_textLines);
 					addTextLine(UString::format("Env DPI Scale: %f", env->getDPIScale()), textFont, m_textLines);
 					addTextLine(UString::format("Env DPI: %i", (int)env->getDPI()), textFont, m_textLines);
-					//addTextLine(UString::format("Renderer: %s", typeid(g).name()), textFont, m_textLines); // TODO: add g->getName() or something
+					//addTextLine(UString::format("Renderer: %s", typeid().name()), textFont, m_textLines); // TODO: add g->getName() or something
 					addTextLine(UString::format("VRAM: %i MB avail. / %i MB tot.", vramAvailableMB, vramTotalMB), textFont, m_textLines);
 				}
 				break;
@@ -202,7 +202,7 @@ void VisualProfiler::draw(Graphics *g)
 					g->pushTransform();
 					{
 						g->translate(engine->getScreenWidth() - m_textLines[i].width*textScale, 0);
-						drawStringWithShadow(g, textFont, m_textLines[i].text, textColor);
+						drawStringWithShadow(textFont, m_textLines[i].text, textColor);
 					}
 					g->popTransform();
 				}
@@ -337,10 +337,10 @@ void VisualProfiler::draw(Graphics *g)
 			g->pushTransform();
 			{
 				g->translate((int)(xPos + margin), (int)(yPos + m_font->getHeight() + margin));
-				drawStringWithShadow(g, m_font, UString::format("%g ms", vprof_graph_range_max.getFloat()), 0xffffffff);
+				drawStringWithShadow(m_font, UString::format("%g ms", vprof_graph_range_max.getFloat()), 0xffffffff);
 
 				g->translate(0, (int)(height - m_font->getHeight() - 2*margin));
-				drawStringWithShadow(g, m_font, "0 ms", 0xffffffff);
+				drawStringWithShadow(m_font, "0 ms", 0xffffffff);
 			}
 			g->popTransform();
 
@@ -355,7 +355,7 @@ void VisualProfiler::draw(Graphics *g)
 				{
 					const int stringWidth = (int)(m_font->getStringWidth(m_groups[i].name));
 					g->translate(-stringWidth, 0);
-					drawStringWithShadow(g, m_font, m_groups[i].name, m_groups[i].color);
+					drawStringWithShadow(m_font, m_groups[i].name, m_groups[i].color);
 					g->translate(stringWidth, (int)(-m_font->getHeight() - padding));
 				}
 			}
@@ -375,7 +375,7 @@ void VisualProfiler::draw(Graphics *g)
 					g->pushTransform();
 					{
 						g->translate((int)(xPos + margin), (int)(yPos - 2*margin));
-						///drawStringWithShadow(g, UString::format("[%s] = %g ms", m_spike.node.node->getName(), m_spike.timeLastFrame * 1000.0), m_groups[m_spike.node.node->getGroupID()].color);
+						///drawStringWithShadow(UString::format("[%s] = %g ms", m_spike.node.node->getName(), m_spike.timeLastFrame * 1000.0), m_groups[m_spike.node.node->getGroupID()].color);
 						g->drawString(m_font, UString::format("Spike = %g ms", m_spike.timeLastFrame * 1000.0));
 					}
 					g->popTransform();
@@ -385,7 +385,7 @@ void VisualProfiler::draw(Graphics *g)
 	}
 }
 
-void VisualProfiler::drawStringWithShadow(Graphics *g, McFont *font, const UString &string, Color color)
+void VisualProfiler::drawStringWithShadow(McFont *font, const UString &string, Color color)
 {
 	if (font == NULL) return;
 

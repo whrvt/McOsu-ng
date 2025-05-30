@@ -27,8 +27,8 @@ public:
 	ConsoleBox();
 	virtual ~ConsoleBox();
 
-	void draw(Graphics *g) override;
-	void drawLogOverlay(Graphics *g);
+	void draw() override;
+	void drawLogOverlay();
 	void update() override;
 
 	void onKeyDown(KeyboardEvent &e) override;

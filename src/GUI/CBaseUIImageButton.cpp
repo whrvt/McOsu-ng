@@ -20,7 +20,7 @@ CBaseUIImageButton::CBaseUIImageButton(UString imageResourceName, float xPos, fl
 	m_bKeepAspectRatio = true;
 }
 
-void CBaseUIImageButton::draw(Graphics *g)
+void CBaseUIImageButton::draw()
 {
 	if (!m_bVisible) return;
 

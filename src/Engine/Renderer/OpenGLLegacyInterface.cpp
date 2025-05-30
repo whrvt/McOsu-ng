@@ -419,7 +419,7 @@ void OpenGLLegacyInterface::drawString(McFont *font, UString text)
 		glFlush();
 	}
 
-	font->drawString(this, text);
+	font->drawString(text);
 }
 
 void OpenGLLegacyInterface::drawVAO(VertexArrayObject *vao)

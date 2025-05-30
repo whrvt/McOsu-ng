@@ -83,7 +83,7 @@ public:
 	Osu();
 	~Osu() override;
 
-	void draw(Graphics *g);
+	void draw();
 	void update();
 	inline bool isInCriticalInteractiveSession() { return !isNotInPlayModeOrPaused();} // i.e. is in play mode and not paused
 
@@ -129,9 +129,9 @@ public:
 
 	[[nodiscard]] inline GAMEMODE getGamemode() const {return m_gamemode;}
 
-	[[nodiscard]] constexpr const Vector2 &getScreenSize() const {return g_vInternalResolution;}
-	[[nodiscard]] inline int getScreenWidth() const {return (int)g_vInternalResolution.x;}
-	[[nodiscard]] inline int getScreenHeight() const {return (int)g_vInternalResolution.y;}
+	[[nodiscard]] constexpr const Vector2 &getVirtScreenSize() const {return g_vInternalResolution;}
+	[[nodiscard]] inline int getVirtScreenWidth() const {return (int)g_vInternalResolution.x;}
+	[[nodiscard]] inline int getVirtScreenHeight() const {return (int)g_vInternalResolution.y;}
 
 	OsuBeatmap *getSelectedBeatmap();
 

@@ -396,7 +396,7 @@ void OpenGLES32Interface::drawString(McFont *font, UString text)
 
 	updateTransform();
 
-	font->drawString(this, text);
+	font->drawString(text);
 }
 
 void OpenGLES32Interface::drawVAO(VertexArrayObject *vao)

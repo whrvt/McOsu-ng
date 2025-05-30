@@ -28,8 +28,8 @@ public:
 	OsuSkinImage(OsuSkin *skin, UString skinElementName, Vector2 baseSizeForScaling2x, float osuSize, UString animationSeparator = "-", bool ignoreDefaultSkin = false);
 	virtual ~OsuSkinImage();
 
-	virtual void draw(Graphics *g, Vector2 pos, float scale = 1.0f); // for objects scaled automatically to the current resolution
-	virtual void drawRaw(Graphics *g, Vector2 pos, float scale); // for objects which scale depending on external factors (e.g. hitobjects, depending on the diameter defined by the CS)
+	virtual void draw(Vector2 pos, float scale = 1.0f); // for objects scaled automatically to the current resolution
+	virtual void drawRaw(Vector2 pos, float scale); // for objects which scale depending on external factors (e.g. hitobjects, depending on the diameter defined by the CS)
 	virtual void update(bool useEngineTimeForAnimations = true, long curMusicPos = 0);
 
 	void setAnimationFramerate(float fps) {m_fFrameDuration = 1.0f / std::clamp<float>(fps, 1.0f, 9999.0f);}

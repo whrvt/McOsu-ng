@@ -27,7 +27,7 @@ public:
 
 	ELEMENT_BODY(CBaseUILabel)
 
-	void draw(Graphics *g) override;
+	void draw() override;
 	void update() override;
 
 	// set
@@ -60,7 +60,7 @@ public:
 	// inspection
 	CBASE_UI_TYPE(CBaseUILabel, LABEL, CBaseUIElement)
 protected:
-	virtual void drawText(Graphics *g);
+	virtual void drawText();
 
 	void updateStringMetrics();
 

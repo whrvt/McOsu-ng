@@ -251,7 +251,7 @@ private:
 extern Mouse *mouse;
 extern Keyboard *keyboard;
 extern App *app;
-extern Graphics *graphics;
+extern Graphics *g;
 extern SoundEngine *soundEngine;
 extern ResourceManager *resourceManager;
 extern NetworkHandler *networkHandler;

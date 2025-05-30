@@ -25,7 +25,7 @@ OsuUIPauseMenuButton::OsuUIPauseMenuButton(std::function<Image*()> getImageFunc,
 	m_fAlpha = 1.0f;
 }
 
-void OsuUIPauseMenuButton::draw(Graphics *g)
+void OsuUIPauseMenuButton::draw()
 {
 	if (!m_bVisible) return;
 

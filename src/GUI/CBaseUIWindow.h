@@ -25,8 +25,8 @@ public:
 
 	ELEMENT_BODY(CBaseUIWindow)
 
-	void draw(Graphics *g) override;
-	virtual void drawCustomContent(Graphics *) {;}
+	void draw() override;
+	virtual void drawCustomContent() {;}
 	void update() override;
 
 	void onKeyDown(KeyboardEvent &e) override;

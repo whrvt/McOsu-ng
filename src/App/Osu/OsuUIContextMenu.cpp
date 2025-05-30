@@ -90,7 +90,7 @@ OsuUIContextMenu::~OsuUIContextMenu()
 	SAFE_DELETE(m_container);
 }
 
-void OsuUIContextMenu::draw(Graphics *g)
+void OsuUIContextMenu::draw()
 {
 	if (!m_bVisible || !m_bVisible2) return;
 
@@ -110,7 +110,7 @@ void OsuUIContextMenu::draw(Graphics *g)
 	g->setAlpha(m_fAnimation*m_fAnimation);
 	g->drawRect(m_vPos.x, m_vPos.y, m_vSize.x, m_vSize.y);
 
-	m_container->draw(g);
+	m_container->draw();
 
 	if (m_fAnimation > 0.0f && m_fAnimation < 1.0f)
 		g->pop3DScene();
@@ -297,9 +297,9 @@ void OsuUIContextMenu::end(bool invertAnimation, bool clampUnderflowAndOverflowA
 				m_container->setVerticalScrolling(true);
 			}
 
-			if (m_vPos.y + m_vSize.y > osu->getScreenHeight())
+			if (m_vPos.y + m_vSize.y > osu->getVirtScreenHeight())
 			{
-				const float overflow = std::abs(m_vPos.y + m_vSize.y - osu->getScreenHeight());
+				const float overflow = std::abs(m_vPos.y + m_vSize.y - osu->getVirtScreenHeight());
 
 				setSizeY(m_vSize.y - overflow - 1);
 
@@ -372,9 +372,9 @@ void OsuUIContextMenu::onHitEnter(OsuUIContextMenuTextbox *textbox)
 
 void OsuUIContextMenu::clampToBottomScreenEdge(OsuUIContextMenu *menu)
 {
-	if (menu->getRelPos().y + menu->getSize().y > osu->getScreenHeight())
+	if (menu->getRelPos().y + menu->getSize().y > osu->getVirtScreenHeight())
 	{
-		int newRelPosY = osu->getScreenHeight() - menu->getSize().y - 1;
+		int newRelPosY = osu->getVirtScreenHeight() - menu->getSize().y - 1;
 		menu->setRelPosY(newRelPosY);
 		menu->setPosY(newRelPosY);
 	}
@@ -382,9 +382,9 @@ void OsuUIContextMenu::clampToBottomScreenEdge(OsuUIContextMenu *menu)
 
 void OsuUIContextMenu::clampToRightScreenEdge(OsuUIContextMenu *menu)
 {
-	if (menu->getRelPos().x + menu->getSize().x > osu->getScreenWidth())
+	if (menu->getRelPos().x + menu->getSize().x > osu->getVirtScreenWidth())
 	{
-		const int newRelPosX = osu->getScreenWidth() - menu->getSize().x - 1;
+		const int newRelPosX = osu->getVirtScreenWidth() - menu->getSize().x - 1;
 		menu->setRelPosX(newRelPosX);
 		menu->setPosX(newRelPosX);
 	}

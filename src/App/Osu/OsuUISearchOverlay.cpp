@@ -26,7 +26,7 @@ OsuUISearchOverlay::OsuUISearchOverlay(float xPos, float yPos, float xSize, floa
 	m_bSearching = false;
 }
 
-void OsuUISearchOverlay::draw(Graphics *g)
+void OsuUISearchOverlay::draw()
 {
 	/*
 	g->setColor(0xaaaaaaaa);
@@ -59,8 +59,8 @@ void OsuUISearchOverlay::draw(Graphics *g)
 	int textOverflowXOffset = 0;
 	{
 		const int actualXEnd = (int)(m_vPos.x + m_vSize.x - offsetTextStringWidth*searchTextScale - (searchTextFont->getHeight()*searchTextScale)*0.5f - m_iOffsetRight) + (int)(searchTextFont->getStringWidth(searchText1)*searchTextScale) + (int)(searchStringWidth*searchTextScale);
-		if (actualXEnd > osu->getScreenWidth())
-			textOverflowXOffset = actualXEnd - osu->getScreenWidth();
+		if (actualXEnd > osu->getVirtScreenWidth())
+			textOverflowXOffset = actualXEnd - osu->getVirtScreenWidth();
 	}
 
 	// draw background

@@ -18,7 +18,7 @@ class OsuUIButton : public CBaseUIButton
 public:
 	OsuUIButton(float xPos, float yPos, float xSize, float ySize, UString name, UString text);
 
-	void draw(Graphics *g) override;
+	void draw() override;
 	void update() override;
 
 	void setColor(Color color) {m_color = color; m_backupColor = color;}

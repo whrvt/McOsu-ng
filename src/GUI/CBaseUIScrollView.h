@@ -25,7 +25,7 @@ public:
 
 	ELEMENT_BODY(CBaseUIScrollView)
 
-	void draw(Graphics *g) override;
+	void draw() override;
 	void update() override;
 
 	void onKeyUp(KeyboardEvent &e) override;

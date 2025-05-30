@@ -215,7 +215,7 @@ public:
 		anim->deleteExistingAnimation(&m_fSelectionAnim);
 	}
 
-	virtual void draw(Graphics *g)
+	virtual void draw()
 	{
 		if (!m_bVisible) return;
 
@@ -276,7 +276,7 @@ public:
 		//g->setColor(0xffff0000);
 		//g->drawRect(m_vPos.x, m_vPos.y, m_vSize.x, m_vSize.y);
 
-		drawText(g);
+		drawText();
 	}
 
 	void setSelected(bool selected)
@@ -318,7 +318,7 @@ public:
 		anim->deleteExistingAnimation(&m_fAnim);
 	}
 
-	virtual void draw(Graphics *g)
+	virtual void draw()
 	{
 		if (anim->isAnimating(&m_fAnim))
 		{
@@ -326,12 +326,12 @@ public:
 			{
 				g->offset3DScene(-m_vSize.x/2, 0, 0);
 				g->rotate3DScene(0, 100 - m_fAnim*100, 0);
-				CBaseUIScrollView::draw(g);
+				CBaseUIScrollView::draw();
 			}
 			g->pop3DScene();
 		}
 		else
-			CBaseUIScrollView::draw(g);
+			CBaseUIScrollView::draw();
 	}
 
 private:
@@ -362,9 +362,9 @@ VSMusicBrowser::~VSMusicBrowser()
 	SAFE_DELETE(m_mainContainer);
 }
 
-void VSMusicBrowser::draw(Graphics *g)
+void VSMusicBrowser::draw()
 {
-	m_mainContainer->draw(g);
+	m_mainContainer->draw();
 }
 
 void VSMusicBrowser::update()

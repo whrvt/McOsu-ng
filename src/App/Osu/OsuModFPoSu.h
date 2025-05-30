@@ -35,7 +35,7 @@ public:
 	OsuModFPoSu();
 	~OsuModFPoSu();
 
-	void draw(Graphics *g);
+	void draw();
 	void update();
 
 	void onKeyDown(KeyboardEvent &key);
@@ -126,7 +126,7 @@ public:
 	OsuModFPoSu3DModel(const UString &objFilePathOrContents, Image *texture, bool source);
 	~OsuModFPoSu3DModel();
 
-	void draw3D(Graphics *g);
+	void draw3D();
 
 private:
 	VertexArrayObject *m_vao;

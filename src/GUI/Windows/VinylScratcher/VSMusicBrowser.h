@@ -27,7 +27,7 @@ public:
 	VSMusicBrowser(int x, int y, int xSize, int ySize, McFont *font);
 	~VSMusicBrowser() override;
 
-	void draw(Graphics *g) override;
+	void draw() override;
 	void update() override;
 
 	void fireNextSong(bool previous);

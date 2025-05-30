@@ -159,13 +159,13 @@ OsuModFPoSu::~OsuModFPoSu()
 	SAFE_DELETE(m_camera);
 }
 
-void OsuModFPoSu::draw(Graphics *g)
+void OsuModFPoSu::draw()
 {
 	if (!osu_mod_fposu.getBool()) return;
 
 	const float fov = std::lerp(fposu_fov.getFloat(), fposu_zoom_fov.getFloat(), m_fZoomFOVAnimPercent);
-	Matrix4 projectionMatrix = fposu_vertical_fov.getBool() ? Camera::buildMatrixPerspectiveFovVertical(glm::radians(fov), ((float)osu->getScreenWidth()/(float)osu->getScreenHeight()), 0.05f, 1000.0f)
-															: Camera::buildMatrixPerspectiveFovHorizontal(glm::radians(fov), ((float)osu->getScreenHeight() / (float)osu->getScreenWidth()), 0.05f, 1000.0f);
+	Matrix4 projectionMatrix = fposu_vertical_fov.getBool() ? Camera::buildMatrixPerspectiveFovVertical(glm::radians(fov), ((float)osu->getVirtScreenWidth()/(float)osu->getVirtScreenHeight()), 0.05f, 1000.0f)
+															: Camera::buildMatrixPerspectiveFovHorizontal(glm::radians(fov), ((float)osu->getVirtScreenHeight() / (float)osu->getVirtScreenWidth()), 0.05f, 1000.0f);
 	Matrix4 viewMatrix = Camera::buildMatrixLookAt(m_camera->getPos(), m_camera->getPos() + m_camera->getViewDirection(), m_camera->getViewUp());
 
 	// HACKHACK: there is currently no way to directly modify the viewport origin, so the only option for rendering non-2d stuff with correct offsets (i.e. top left) is by rendering into a rendertarget
@@ -237,7 +237,7 @@ void OsuModFPoSu::draw(Graphics *g)
 									g->setColor(0xffffffff);
 									osu->getSkin()->getSkybox()->bind();
 									{
-										m_skyboxModel->draw3D(g);
+										m_skyboxModel->draw3D();
 									}
 									osu->getSkin()->getSkybox()->unbind();
 								}
@@ -322,7 +322,7 @@ void OsuModFPoSu::draw(Graphics *g)
 							g->setBlending(true);
 							g->setCulling(true);
 							{
-								osu->getSelectedBeatmap()->draw3D(g);
+								osu->getSelectedBeatmap()->draw3D();
 							}
 							g->setCulling(false);
 							g->setBlending(false);
@@ -415,7 +415,7 @@ void OsuModFPoSu::draw(Graphics *g)
 										g->setColor(0xffffffff);
 										osu->getSkin()->getSkybox()->bind();
 										{
-											m_skyboxModel->draw3D(g);
+											m_skyboxModel->draw3D();
 										}
 										osu->getSkin()->getSkybox()->unbind();
 									}
@@ -449,8 +449,8 @@ void OsuModFPoSu::draw(Graphics *g)
 							g->setBlending(true);
 							g->setCulling(true);
 							{
-								osu->getSelectedBeatmap()->draw3D(g);
-								osu->getSelectedBeatmap()->draw3D2(g);
+								osu->getSelectedBeatmap()->draw3D();
+								osu->getSelectedBeatmap()->draw3D2();
 							}
 							g->setCulling(false);
 							// (no setBlending(false), since we are already at the end)
@@ -460,7 +460,7 @@ void OsuModFPoSu::draw(Graphics *g)
 							g->setBlending(true);
 							g->setCulling(true);
 							{
-								osu->getSelectedBeatmap()->draw3D2(g);
+								osu->getSelectedBeatmap()->draw3D2();
 							}
 							g->setCulling(false);
 							// (no setBlending(false), since we are already at the end)
@@ -481,7 +481,7 @@ void OsuModFPoSu::draw(Graphics *g)
 	// finally, draw that to the screen
 	g->setBlending(false);
 	{
-		osu->getSliderFrameBuffer()->draw(g, 0, 0);
+		osu->getSliderFrameBuffer()->draw(0, 0);
 	}
 	g->setBlending(true);
 }
@@ -841,10 +841,10 @@ Vector2 OsuModFPoSu::intersectRayMesh(Vector3 pos, Vector3 dir)
 						const float downLength = (Down - TopLeft).length();
 						const float x = u / (rightLength * rightLength);
 						const float y = v / (downLength * downLength);
-						const float distancePerFace = (float)osu->getScreenWidth() / std::pow(2.0f, (float)SUBDIVISIONS);
+						const float distancePerFace = (float)osu->getVirtScreenWidth() / std::pow(2.0f, (float)SUBDIVISIONS);
 						const float distanceInFace = distancePerFace * x;
 
-						const Vector2 newMousePos = Vector2((distancePerFace * face) + distanceInFace, y * osu->getScreenHeight());
+						const Vector2 newMousePos = Vector2((distancePerFace * face) + distanceInFace, y * osu->getVirtScreenHeight());
 
 						return newMousePos;
 					}
@@ -863,8 +863,8 @@ Vector2 OsuModFPoSu::intersectRayMesh(Vector3 pos, Vector3 dir)
 Vector3 OsuModFPoSu::calculateUnProjectedVector(Vector2 pos)
 {
 	// calculate 3d position of 2d cursor on screen mesh
-	const float cursorXPercent = std::clamp<float>(pos.x / (float)osu->getScreenWidth(), 0.0f, 1.0f);
-	const float cursorYPercent = std::clamp<float>(pos.y / (float)osu->getScreenHeight(), 0.0f, 1.0f);
+	const float cursorXPercent = std::clamp<float>(pos.x / (float)osu->getVirtScreenWidth(), 0.0f, 1.0f);
+	const float cursorYPercent = std::clamp<float>(pos.y / (float)osu->getVirtScreenHeight(), 0.0f, 1.0f);
 
 	std::list<VertexPair>::iterator begin = m_meshList.begin();
 	std::list<VertexPair>::iterator next = ++m_meshList.begin();
@@ -1303,7 +1303,7 @@ OsuModFPoSu3DModel::~OsuModFPoSu3DModel()
 	resourceManager->destroyResource(m_vao);
 }
 
-void OsuModFPoSu3DModel::draw3D(Graphics *g)
+void OsuModFPoSu3DModel::draw3D()
 {
 	if (m_texture != NULL)
 		m_texture->bind();

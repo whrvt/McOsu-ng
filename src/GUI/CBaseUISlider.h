@@ -22,7 +22,7 @@ public:
 
 	ELEMENT_BODY(CBaseUISlider)
 
-	void draw(Graphics *g) override;
+	void draw() override;
 	void update() override;
 
 	void onKeyDown(KeyboardEvent &e) override;
@@ -70,7 +70,7 @@ public:
 	// inspection
 	CBASE_UI_TYPE(CBaseUISlider, SLIDER, CBaseUIElement)
 protected:
-	virtual void drawBlock(Graphics *g);
+	virtual void drawBlock();
 
 	void updateBlockPos();
 

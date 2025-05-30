@@ -31,35 +31,35 @@ public:
 	OsuHUD();
 	~OsuHUD() override;
 
-	void draw(Graphics *g) override;
+	void draw() override;
 	void update() override;
 
 	void onResolutionChange(Vector2 newResolution) override;
 
-	void drawDummy(Graphics *g);
+	void drawDummy();
 
-	void drawCursor(Graphics *g, Vector2 pos, float alphaMultiplier = 1.0f, bool secondTrail = false, bool updateAndDrawTrail = true);
-	void drawCursorTrail(Graphics *g, Vector2 pos, float alphaMultiplier = 1.0f, bool secondTrail = false); // NOTE: only use if drawCursor() with updateAndDrawTrail = false (FPoSu)
-	void drawCursorSpectator1(Graphics *g, Vector2 pos, float alphaMultiplier = 1.0f);
-	void drawCursorSpectator2(Graphics *g, Vector2 pos, float alphaMultiplier = 1.0f);
-	void drawCursorRipples(Graphics *g);
-	void drawFps(Graphics *g) {drawFps(g, m_tempFont, m_fCurFps);}
-	void drawHitErrorBar(Graphics *g, OsuBeatmapStandard *beatmapStd);
-	void drawPlayfieldBorder(Graphics *g, Vector2 playfieldCenter, Vector2 playfieldSize, float hitcircleDiameter);
-	void drawPlayfieldBorder(Graphics *g, Vector2 playfieldCenter, Vector2 playfieldSize, float hitcircleDiameter, float borderSize);
-	void drawLoadingSmall(Graphics *g);
-	void drawBeatmapImportSpinner(Graphics *g);
-	void drawVolumeChange(Graphics *g);
-	void drawScoreNumber(Graphics *g, unsigned long long number, float scale = 1.0f, bool drawLeadingZeroes = false);
-	void drawComboNumber(Graphics *g, unsigned long long number, float scale = 1.0f, bool drawLeadingZeroes = false);
-	void drawComboSimple(Graphics *g, int combo, float scale = 1.0f); // used by OsuRankingScreen
-	void drawAccuracySimple(Graphics *g, float accuracy, float scale = 1.0f); // used by OsuRankingScreen
-	void drawWarningArrow(Graphics *g, Vector2 pos, bool flipVertically, bool originLeft = true);
-	void drawScoreBoard(Graphics *g, std::string &beatmapMD5Hash, OsuScore *currentScore);
-	void drawScoreBoardMP(Graphics *g);
-	void drawScorebarBg(Graphics *g, float alpha, float breakAnim);
-	void drawSectionPass(Graphics *g, float alpha);
-	void drawSectionFail(Graphics *g, float alpha);
+	void drawCursor(Vector2 pos, float alphaMultiplier = 1.0f, bool secondTrail = false, bool updateAndDrawTrail = true);
+	void drawCursorTrail(Vector2 pos, float alphaMultiplier = 1.0f, bool secondTrail = false); // NOTE: only use if drawCursor() with updateAndDrawTrail = false (FPoSu)
+	void drawCursorSpectator1(Vector2 pos, float alphaMultiplier = 1.0f);
+	void drawCursorSpectator2(Vector2 pos, float alphaMultiplier = 1.0f);
+	void drawCursorRipples();
+	void drawFps() {drawFps(m_tempFont, m_fCurFps);}
+	void drawHitErrorBar(OsuBeatmapStandard *beatmapStd);
+	void drawPlayfieldBorder(Vector2 playfieldCenter, Vector2 playfieldSize, float hitcircleDiameter);
+	void drawPlayfieldBorder(Vector2 playfieldCenter, Vector2 playfieldSize, float hitcircleDiameter, float borderSize);
+	void drawLoadingSmall();
+	void drawBeatmapImportSpinner();
+	void drawVolumeChange();
+	void drawScoreNumber(unsigned long long number, float scale = 1.0f, bool drawLeadingZeroes = false);
+	void drawComboNumber(unsigned long long number, float scale = 1.0f, bool drawLeadingZeroes = false);
+	void drawComboSimple(int combo, float scale = 1.0f); // used by OsuRankingScreen
+	void drawAccuracySimple(float accuracy, float scale = 1.0f); // used by OsuRankingScreen
+	void drawWarningArrow(Vector2 pos, bool flipVertically, bool originLeft = true);
+	void drawScoreBoard(std::string &beatmapMD5Hash, OsuScore *currentScore);
+	void drawScoreBoardMP();
+	void drawScorebarBg(float alpha, float breakAnim);
+	void drawSectionPass(float alpha);
+	void drawSectionFail(float alpha);
 
 	void animateCombo();
 	void addHitError(long delta, bool miss = false, bool misaim = false);
@@ -87,7 +87,7 @@ public:
 	OsuUIVolumeSlider *getVolumeEffectsSlider() {return m_volumeEffects;}
 	OsuUIVolumeSlider *getVolumeMusicSlider() {return m_volumeMusic;}
 
-	void drawSkip(Graphics *g);
+	void drawSkip();
 
 	// ILLEGAL:
 	[[nodiscard]] inline float getScoreBarBreakAnim() const {return m_fScoreBarBreakAnim;}
@@ -147,27 +147,27 @@ private:
 
 	void addCursorTrailPosition(std::vector<CURSORTRAIL> &trail, Vector2 pos, bool empty = false);
 
-	void drawCursorInt(Graphics *g, Shader *trailShader, std::vector<CURSORTRAIL> &trail, Matrix4 &mvp, Vector2 pos, float alphaMultiplier = 1.0f, bool emptyTrailFrame = false, bool updateAndDrawTrail = true);
-	void drawCursorRaw(Graphics *g, Vector2 pos, float alphaMultiplier = 1.0f);
-	void drawCursorTrailInt(Graphics *g, Shader *trailShader, std::vector<CURSORTRAIL> &trail, Matrix4 &mvp, Vector2 pos, float alphaMultiplier = 1.0f, bool emptyTrailFrame = false);
-	void drawCursorTrailRaw(Graphics *g, float alpha, Vector2 pos);
-	void drawFps(Graphics *g, McFont *font, float fps);
-	void drawAccuracy(Graphics *g, float accuracy);
-	void drawCombo(Graphics *g, int combo);
-	void drawScore(Graphics *g, unsigned long long score);
-	void drawHPBar(Graphics *g, double health, float alpha, float breakAnim);
-	void drawScoreBoardInt(Graphics *g, const std::vector<SCORE_ENTRY> &scoreEntries);
+	void drawCursorInt(Shader *trailShader, std::vector<CURSORTRAIL> &trail, Matrix4 &mvp, Vector2 pos, float alphaMultiplier = 1.0f, bool emptyTrailFrame = false, bool updateAndDrawTrail = true);
+	void drawCursorRaw(Vector2 pos, float alphaMultiplier = 1.0f);
+	void drawCursorTrailInt(Shader *trailShader, std::vector<CURSORTRAIL> &trail, Matrix4 &mvp, Vector2 pos, float alphaMultiplier = 1.0f, bool emptyTrailFrame = false);
+	void drawCursorTrailRaw(float alpha, Vector2 pos);
+	void drawFps(McFont *font, float fps);
+	void drawAccuracy(float accuracy);
+	void drawCombo(int combo);
+	void drawScore(unsigned long long score);
+	void drawHPBar(double health, float alpha, float breakAnim);
+	void drawScoreBoardInt(const std::vector<SCORE_ENTRY> &scoreEntries);
 
-	void drawWarningArrows(Graphics *g, float hitcircleDiameter = 0.0f);
-	void drawContinue(Graphics *g, Vector2 cursor, float hitcircleDiameter = 0.0f);
-	void drawHitErrorBar(Graphics *g, float hitWindow300, float hitWindow100, float hitWindow50, float hitWindowMiss, int ur);
-	void drawHitErrorBarInt(Graphics *g, float hitWindow300, float hitWindow100, float hitWindow50, float hitWindowMiss);
-	void drawHitErrorBarInt2(Graphics *g, Vector2 center, int ur);
-	void drawProgressBar(Graphics *g, float percent, bool waiting);
-	void drawStatistics(Graphics *g, int misses, int sliderbreaks, int maxPossibleCombo, float liveStars, float totalStars, int bpm, float ar, float cs, float od, float hp, int nps, int nd, int ur, float pp, float ppfc, float hitWindow300, int hitdeltaMin, int hitdeltaMax);
-	void drawTargetHeatmap(Graphics *g, float hitcircleDiameter);
-	void drawScrubbingTimeline(Graphics *g, unsigned long beatmapTime, unsigned long beatmapLength, unsigned long beatmapLengthPlayable, unsigned long beatmapStartTimePlayable, float beatmapPercentFinishedPlayable, const std::vector<BREAK> &breaks);
-	void drawInputOverlay(Graphics *g, int numK1, int numK2, int numM1, int numM2);
+	void drawWarningArrows(float hitcircleDiameter = 0.0f);
+	void drawContinue(Vector2 cursor, float hitcircleDiameter = 0.0f);
+	void drawHitErrorBar(float hitWindow300, float hitWindow100, float hitWindow50, float hitWindowMiss, int ur);
+	void drawHitErrorBarInt(float hitWindow300, float hitWindow100, float hitWindow50, float hitWindowMiss);
+	void drawHitErrorBarInt2(Vector2 center, int ur);
+	void drawProgressBar(float percent, bool waiting);
+	void drawStatistics(int misses, int sliderbreaks, int maxPossibleCombo, float liveStars, float totalStars, int bpm, float ar, float cs, float od, float hp, int nps, int nd, int ur, float pp, float ppfc, float hitWindow300, int hitdeltaMin, int hitdeltaMax);
+	void drawTargetHeatmap(float hitcircleDiameter);
+	void drawScrubbingTimeline(unsigned long beatmapTime, unsigned long beatmapLength, unsigned long beatmapLengthPlayable, unsigned long beatmapStartTimePlayable, float beatmapPercentFinishedPlayable, const std::vector<BREAK> &breaks);
+	void drawInputOverlay(int numK1, int numK2, int numM1, int numM2);
 
 	float getCursorScaleFactor();
 	float getCursorTrailScaleFactor();

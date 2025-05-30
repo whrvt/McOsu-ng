@@ -22,8 +22,8 @@ public:
 	void clear();
 	void empty();
 
-	void draw_debug(Graphics *g);
-	void draw(Graphics *g) override;
+	void draw_debug();
+	void draw() override;
 	void update() override;
 
 	void onKeyUp(KeyboardEvent &e) override;

@@ -71,7 +71,7 @@ VertexArrayObject *OsuSliderRenderer::generateVAO(const std::vector<Vector2> &po
 		// fuck oob sliders
 		if (skipOOBPoints)
 		{
-			if (points[i].x < -hitcircleDiameter-OsuGameRules::OSU_COORD_WIDTH*2 || points[i].x > osu->getScreenWidth()+hitcircleDiameter+OsuGameRules::OSU_COORD_WIDTH*2 || points[i].y < -hitcircleDiameter-OsuGameRules::OSU_COORD_HEIGHT*2 || points[i].y > osu->getScreenHeight()+hitcircleDiameter+OsuGameRules::OSU_COORD_HEIGHT*2)
+			if (points[i].x < -hitcircleDiameter-OsuGameRules::OSU_COORD_WIDTH*2 || points[i].x > osu->getVirtScreenWidth()+hitcircleDiameter+OsuGameRules::OSU_COORD_WIDTH*2 || points[i].y < -hitcircleDiameter-OsuGameRules::OSU_COORD_HEIGHT*2 || points[i].y > osu->getVirtScreenHeight()+hitcircleDiameter+OsuGameRules::OSU_COORD_HEIGHT*2)
 				continue;
 		}
 
@@ -120,7 +120,7 @@ VertexArrayObject *OsuSliderRenderer::generateVAO(const std::vector<Vector2> &po
 	return vao;
 }
 
-void OsuSliderRenderer::draw(Graphics *g, Osu *osu, const std::vector<Vector2> &points, const std::vector<Vector2> &alwaysPoints, float hitcircleDiameter, float from, float to, Color undimmedColor, float colorRGBMultiplier, float alpha, long sliderTimeForRainbow)
+void OsuSliderRenderer::draw(Osu *osu, const std::vector<Vector2> &points, const std::vector<Vector2> &alwaysPoints, float hitcircleDiameter, float from, float to, Color undimmedColor, float colorRGBMultiplier, float alpha, long sliderTimeForRainbow)
 {
 	if (osu_slider_alpha_multiplier.getFloat() <= 0.0f || alpha <= 0.0f) return;
 
@@ -235,10 +235,10 @@ void OsuSliderRenderer::draw(Graphics *g, Osu *osu, const std::vector<Vector2> &
 			{
 				// draw curve mesh
 				{
-					drawFillSliderBodyPeppy(g, osu, points, (osu_slider_legacy_use_baked_vao.getBool() ? UNIT_CIRCLE_VAO_BAKED : UNIT_CIRCLE_VAO), hitcircleDiameter/2.0f, drawFromIndex, drawUpToIndex, BLEND_SHADER);
+					drawFillSliderBodyPeppy(osu, points, (osu_slider_legacy_use_baked_vao.getBool() ? UNIT_CIRCLE_VAO_BAKED : UNIT_CIRCLE_VAO), hitcircleDiameter/2.0f, drawFromIndex, drawUpToIndex, BLEND_SHADER);
 
 					if (alwaysPoints.size() > 0)
-						drawFillSliderBodyPeppy(g, osu, alwaysPoints, UNIT_CIRCLE_VAO_BAKED, hitcircleDiameter/2.0f, 0, alwaysPoints.size(), BLEND_SHADER);
+						drawFillSliderBodyPeppy(osu, alwaysPoints, UNIT_CIRCLE_VAO_BAKED, hitcircleDiameter/2.0f, 0, alwaysPoints.size(), BLEND_SHADER);
 				}
 			}
 
@@ -258,10 +258,10 @@ void OsuSliderRenderer::draw(Graphics *g, Osu *osu, const std::vector<Vector2> &
 	m_fBoundingBoxMaxY += pixelFudge;
 
 	osu->getSliderFrameBuffer()->setColor(argb(alpha*osu_slider_alpha_multiplier.getFloat(), 1.0f, 1.0f, 1.0f));
-	osu->getSliderFrameBuffer()->drawRect(g, m_fBoundingBoxMinX, m_fBoundingBoxMinY, m_fBoundingBoxMaxX - m_fBoundingBoxMinX, m_fBoundingBoxMaxY - m_fBoundingBoxMinY);
+	osu->getSliderFrameBuffer()->drawRect(m_fBoundingBoxMinX, m_fBoundingBoxMinY, m_fBoundingBoxMaxX - m_fBoundingBoxMinX, m_fBoundingBoxMaxY - m_fBoundingBoxMinY);
 }
 
-void OsuSliderRenderer::draw(Graphics *g, Osu *osu, VertexArrayObject *vao, const std::vector<Vector2> &alwaysPoints, Vector2 translation, float scale, float hitcircleDiameter, float from, float to, Color undimmedColor, float colorRGBMultiplier, float alpha, long sliderTimeForRainbow, bool doEnableRenderTarget, bool doDisableRenderTarget, bool doDrawSliderFrameBufferToScreen)
+void OsuSliderRenderer::draw(Osu *osu, VertexArrayObject *vao, const std::vector<Vector2> &alwaysPoints, Vector2 translation, float scale, float hitcircleDiameter, float from, float to, Color undimmedColor, float colorRGBMultiplier, float alpha, long sliderTimeForRainbow, bool doEnableRenderTarget, bool doDisableRenderTarget, bool doDrawSliderFrameBufferToScreen)
 {
 	if ((osu_slider_alpha_multiplier.getFloat() <= 0.0f && doDrawSliderFrameBufferToScreen) || (alpha <= 0.0f && doDrawSliderFrameBufferToScreen) || vao == NULL) return;
 
@@ -321,8 +321,8 @@ void OsuSliderRenderer::draw(Graphics *g, Osu *osu, VertexArrayObject *vao, cons
 		float scaleToApplyAfterTranslationX = 1.0f;
 		float scaleToApplyAfterTranslationY = 1.0f;
 
-		const float sclX = (32768.0f / (float)osu->getScreenWidth());
-		const float sclY = (32768.0f / (float)osu->getScreenHeight());
+		const float sclX = (32768.0f / (float)osu->getVirtScreenWidth());
+		const float sclY = (32768.0f / (float)osu->getVirtScreenHeight());
 
 		if (-tLS.x + bRS.x > sclX)
 			scaleToApplyAfterTranslationX = sclX / (-tLS.x + bRS.x);
@@ -406,7 +406,7 @@ void OsuSliderRenderer::draw(Graphics *g, Osu *osu, VertexArrayObject *vao, cons
 					g->popTransform();
 
 					if (alwaysPoints.size() > 0)
-						drawFillSliderBodyPeppy(g, osu, alwaysPoints, UNIT_CIRCLE_VAO_BAKED, hitcircleDiameter/2.0f, 0, alwaysPoints.size(), BLEND_SHADER);
+						drawFillSliderBodyPeppy(osu, alwaysPoints, UNIT_CIRCLE_VAO_BAKED, hitcircleDiameter/2.0f, 0, alwaysPoints.size(), BLEND_SHADER);
 				}
 			}
 
@@ -423,11 +423,11 @@ void OsuSliderRenderer::draw(Graphics *g, Osu *osu, VertexArrayObject *vao, cons
 	if (doDrawSliderFrameBufferToScreen)
 	{
 		osu->getSliderFrameBuffer()->setColor(argb(alpha*osu_slider_alpha_multiplier.getFloat(), 1.0f, 1.0f, 1.0f));
-		osu->getSliderFrameBuffer()->draw(g, 0, 0);
+		osu->getSliderFrameBuffer()->draw(0, 0);
 	}
 }
 
-void OsuSliderRenderer::drawFillSliderBodyPeppy(Graphics *g, Osu *osu, const std::vector<Vector2> &points, VertexArrayObject *circleMesh, float radius, int drawFromIndex, int drawUpToIndex, Shader *shader)
+void OsuSliderRenderer::drawFillSliderBodyPeppy(Osu *osu, const std::vector<Vector2> &points, VertexArrayObject *circleMesh, float radius, int drawFromIndex, int drawUpToIndex, Shader *shader)
 {
 	if (drawFromIndex < 0)
 		drawFromIndex = 0;
@@ -445,7 +445,7 @@ void OsuSliderRenderer::drawFillSliderBodyPeppy(Graphics *g, Osu *osu, const std
 			const float y = points[i].y;
 
 			// fuck oob sliders
-			if (x < -radius*2 || x > osu->getScreenWidth()+radius*2 || y < -radius*2 || y > osu->getScreenHeight()+radius*2)
+			if (x < -radius*2 || x > osu->getVirtScreenWidth()+radius*2 || y < -radius*2 || y > osu->getVirtScreenHeight()+radius*2)
 				continue;
 
 			g->translate(x-startX, y-startY, 0);

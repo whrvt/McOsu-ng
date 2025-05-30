@@ -20,7 +20,7 @@ public:
 	OsuScreenBackable();
 	~OsuScreenBackable();
 
-	void draw(Graphics *g) override;
+	void draw() override;
 	void update() override;
 
 	void onKeyDown(KeyboardEvent &e) override;

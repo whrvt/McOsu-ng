@@ -21,7 +21,7 @@ OsuUISelectionButton::OsuUISelectionButton(std::function<OsuSkinImage*()> getIma
 	m_fAnimation = 0.0f;
 }
 
-void OsuUISelectionButton::draw(Graphics *g)
+void OsuUISelectionButton::draw()
 {
 	if (!m_bVisible) return;
 
@@ -34,7 +34,7 @@ void OsuUISelectionButton::draw(Graphics *g)
 		const float scale = (m_vSize.x/imageSize.x < m_vSize.y/imageSize.y ? m_vSize.x/imageSize.x : m_vSize.y/imageSize.y);
 
 		g->setColor(0xffffffff);
-		image->drawRaw(g, Vector2(m_vPos.x + (int)(m_vSize.x/2), m_vPos.y + (int)(m_vSize.y/2)), scale);
+		image->drawRaw(Vector2(m_vPos.x + (int)(m_vSize.x/2), m_vPos.y + (int)(m_vSize.y/2)), scale);
 	}
 
 	// draw over image
@@ -50,11 +50,11 @@ void OsuUISelectionButton::draw(Graphics *g)
 			g->setColor(0xffffffff);
 			g->setAlpha(m_fAnimation);
 
-			overImage->drawRaw(g, Vector2(m_vPos.x + (int)(m_vSize.x/2), m_vPos.y + (int)(m_vSize.y/2)), scale);
+			overImage->drawRaw(Vector2(m_vPos.x + (int)(m_vSize.x/2), m_vPos.y + (int)(m_vSize.y/2)), scale);
 		}
 	}
 
-	CBaseUIButton::drawText(g);
+	CBaseUIButton::drawText();
 }
 
 void OsuUISelectionButton::onMouseInside()

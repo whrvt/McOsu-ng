@@ -27,7 +27,7 @@ OsuTooltipOverlay::~OsuTooltipOverlay()
 {
 }
 
-void OsuTooltipOverlay::draw(Graphics *g)
+void OsuTooltipOverlay::draw()
 {
 	if (m_fAnim > 0.0f)
 	{
@@ -52,12 +52,12 @@ void OsuTooltipOverlay::draw(Graphics *g)
 		Vector2 cursorPos = mouse->getPos();
 
 		// clamp to right edge
-		if (cursorPos.x + width + offset.x + 2*margin > osu->getScreenWidth())
-			cursorPos.x -= (cursorPos.x + width + offset.x + 2*margin) - osu->getScreenWidth() + 1;
+		if (cursorPos.x + width + offset.x + 2*margin > osu->getVirtScreenWidth())
+			cursorPos.x -= (cursorPos.x + width + offset.x + 2*margin) - osu->getVirtScreenWidth() + 1;
 
 		// clamp to bottom edge
-		if (cursorPos.y + height + offset.y + 2*margin > osu->getScreenHeight())
-			cursorPos.y -= (cursorPos.y + height + offset.y + 2*margin) - osu->getScreenHeight() + 1;
+		if (cursorPos.y + height + offset.y + 2*margin > osu->getVirtScreenHeight())
+			cursorPos.y -= (cursorPos.y + height + offset.y + 2*margin) - osu->getVirtScreenHeight() + 1;
 
 		// clamp to left edge
 		if (cursorPos.x < 0)

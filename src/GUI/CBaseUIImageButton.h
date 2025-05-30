@@ -19,7 +19,7 @@ public:
 
 	ELEMENT_BODY(CBaseUIImageButton)
 
-	void draw(Graphics *g) override;
+	void draw() override;
 
 	void onResized() override;
 

@@ -47,7 +47,7 @@ public:
 	{
 	}
 
-	virtual void drawText(Graphics *g)
+	virtual void drawText()
 	{
 		// HACKHACK: force update string height to non-average line height for icon
 		m_fStringHeight = m_font->getStringHeight(m_sText);
@@ -329,7 +329,7 @@ OsuUserStatsScreen::~OsuUserStatsScreen()
 	SAFE_DELETE(m_container);
 }
 
-void OsuUserStatsScreen::draw(Graphics *g)
+void OsuUserStatsScreen::draw()
 {
 	if (!m_bVisible) return;
 
@@ -344,22 +344,22 @@ void OsuUserStatsScreen::draw(Graphics *g)
 			g->setColor(0xffffffff);
 			g->pushTransform();
 			{
-				g->translate((int)(osu->getScreenWidth()/2 - osu->getSubTitleFont()->getStringWidth(loadingMessage)/2), osu->getScreenHeight() - 15);
+				g->translate((int)(osu->getVirtScreenWidth()/2 - osu->getSubTitleFont()->getStringWidth(loadingMessage)/2), osu->getVirtScreenHeight() - 15);
 				g->drawString(osu->getSubTitleFont(), loadingMessage);
 			}
 			g->popTransform();
 		}
 
-		osu->getHUD()->drawBeatmapImportSpinner(g);
+		osu->getHUD()->drawBeatmapImportSpinner();
 
-		OsuScreenBackable::draw(g);
+		OsuScreenBackable::draw();
 		return;
 	}
 
-	m_container->draw(g);
-	m_contextMenu->draw(g);
+	m_container->draw();
+	m_contextMenu->draw();
 
-	OsuScreenBackable::draw(g);
+	OsuScreenBackable::draw();
 }
 
 void OsuUserStatsScreen::update()
@@ -874,11 +874,11 @@ void OsuUserStatsScreen::updateLayout()
 
 	const float dpiScale = Osu::getUIScale();
 
-	m_container->setSize(osu->getScreenSize());
+	m_container->setSize(osu->getVirtScreenSize());
 
-	const int scoreListHeight = osu->getScreenHeight()*0.8f;
-	m_scores->setSize(osu->getScreenWidth()*0.6f, scoreListHeight);
-	m_scores->setPos(osu->getScreenWidth()/2 - m_scores->getSize().x/2, osu->getScreenHeight() - scoreListHeight);
+	const int scoreListHeight = osu->getVirtScreenHeight()*0.8f;
+	m_scores->setSize(osu->getVirtScreenWidth()*0.6f, scoreListHeight);
+	m_scores->setPos(osu->getVirtScreenWidth()/2 - m_scores->getSize().x/2, osu->getVirtScreenHeight() - scoreListHeight);
 
 	const int margin = 5 * dpiScale;
 	const int padding = 5 * dpiScale;
@@ -897,7 +897,7 @@ void OsuUserStatsScreen::updateLayout()
 
 	const int userButtonHeight = m_scores->getPos().y*0.6f;
 	m_userButton->setSize(userButtonHeight*3.5f, userButtonHeight);
-	m_userButton->setPos(osu->getScreenWidth()/2 - m_userButton->getSize().x/2, m_scores->getPos().y/2 - m_userButton->getSize().y/2);
+	m_userButton->setPos(osu->getVirtScreenWidth()/2 - m_userButton->getSize().x/2, m_scores->getPos().y/2 - m_userButton->getSize().y/2);
 
 	m_menuButton->setSize(userButtonHeight*0.9f, userButtonHeight*0.9f);
 	m_menuButton->setPos(std::max(m_userButton->getPos().x + m_userButton->getSize().x, m_userButton->getPos().x + m_userButton->getSize().x + (m_userButton->getPos().x - m_scores->getPos().x)/2 - m_menuButton->getSize().x/2), m_userButton->getPos().y + m_userButton->getSize().y/2 - m_menuButton->getSize().y/2);

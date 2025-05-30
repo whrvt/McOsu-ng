@@ -101,7 +101,7 @@ OsuUISongBrowserScoreButton::~OsuUISongBrowserScoreButton()
 	anim->deleteExistingAnimation(&m_fIndexNumberAnim);
 }
 
-void OsuUISongBrowserScoreButton::draw(Graphics *g)
+void OsuUISongBrowserScoreButton::draw()
 {
 	if (!m_bVisible) return;
 
@@ -164,7 +164,7 @@ void OsuUISongBrowserScoreButton::draw(Graphics *g)
 		gradeWidth = grade->getSizeBaseRaw().x*scale;
 
 		g->setColor(0xffffffff);
-		grade->drawRaw(g, Vector2((int)(m_vPos.x + m_vSize.x*indexNumberWidthPercent + gradeWidth/2.0f), (int)(m_vPos.y + m_vSize.y/2.0f)), scale);
+		grade->drawRaw(Vector2((int)(m_vPos.x + m_vSize.x*indexNumberWidthPercent + gradeWidth/2.0f), (int)(m_vPos.y + m_vSize.y/2.0f)), scale);
 	}
 	g->popTransform();
 

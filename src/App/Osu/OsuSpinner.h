@@ -17,8 +17,8 @@ public:
 	OsuSpinner(int x, int y, long time, int sampleType, bool isEndOfCombo, long endTime, OsuBeatmapStandard *beatmap);
 	~OsuSpinner() override;
 
-	void draw(Graphics *g) override;
-	void draw3D(Graphics *g) override;
+	void draw() override;
+	void draw3D() override;
 	void update(long curPos) override;
 
 	[[nodiscard]] constexpr Type getType() const override { return SPINNER; }

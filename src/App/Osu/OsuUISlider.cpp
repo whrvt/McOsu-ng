@@ -19,14 +19,14 @@ OsuUISlider::OsuUISlider(float xPos, float yPos, float xSize, float ySize, UStri
 	setBlockSize(20, 20);
 }
 
-void OsuUISlider::draw(Graphics *g)
+void OsuUISlider::draw()
 {
 	if (!m_bVisible) return;
 
 	Image *img = osu->getSkin()->getCircleEmpty();
 	if (img == NULL)
 	{
-		CBaseUISlider::draw(g);
+		CBaseUISlider::draw();
 		return;
 	}
 

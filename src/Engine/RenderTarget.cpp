@@ -29,7 +29,7 @@ RenderTarget::RenderTarget(int x, int y, int width, int height, Graphics::MULTIS
 	m_clearColor = 0x00000000;
 }
 
-void RenderTarget::draw(Graphics *g, int x, int y)
+void RenderTarget::draw(int x, int y)
 {
 	if (!m_bReady)
 	{
@@ -73,7 +73,7 @@ void RenderTarget::draw(Graphics *g, int x, int y)
 	unbind();
 }
 
-void RenderTarget::draw(Graphics *g, int x, int y, int width, int height)
+void RenderTarget::draw(int x, int y, int width, int height)
 {
 	if (!m_bReady)
 	{
@@ -111,7 +111,7 @@ void RenderTarget::draw(Graphics *g, int x, int y, int width, int height)
 	unbind();
 }
 
-void RenderTarget::drawRect(Graphics *g, int x, int y, int width, int height)
+void RenderTarget::drawRect(int x, int y, int width, int height)
 {
 	if (!m_bReady)
 	{

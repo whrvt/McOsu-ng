@@ -22,7 +22,7 @@ public:
 	OsuChangelog();
 	~OsuChangelog() override;
 
-	void draw(Graphics *g) override;
+	void draw() override;
 	void update() override;
 
 	void setVisible(bool visible) override;

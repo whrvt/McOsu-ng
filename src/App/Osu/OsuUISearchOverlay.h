@@ -18,7 +18,7 @@ class OsuUISearchOverlay final : public OsuUIElement
 public:
 	OsuUISearchOverlay(float xPos, float yPos, float xSize, float ySize, UString name);
 
-	void draw(Graphics *g) override;
+	void draw() override;
 
 	void setDrawNumResults(bool drawNumResults) {m_bDrawNumResults = drawNumResults;}
 	void setOffsetRight(int offsetRight) {m_iOffsetRight = offsetRight;}

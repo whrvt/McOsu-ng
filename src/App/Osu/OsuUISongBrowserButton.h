@@ -25,7 +25,7 @@ public:
 	~OsuUISongBrowserButton() override;
 	void deleteAnimations();
 
-	void draw(Graphics *g) override;
+	void draw() override;
 	void update() override;
 
 	virtual void updateLayoutEx();
@@ -62,7 +62,7 @@ public:
 	CBASE_UI_TYPE(OsuUISongBrowserButton, OsuUIElement::UISONGBROWSERBUTTON, CBaseUIButton)
 
 protected:
-	void drawMenuButtonBackground(Graphics *g);
+	void drawMenuButtonBackground();
 
 	virtual void onSelected(bool wasSelected, bool autoSelectBottomMostChild, bool wasParentSelected) {;}
 	virtual void onRightMouseUpInside() {;}

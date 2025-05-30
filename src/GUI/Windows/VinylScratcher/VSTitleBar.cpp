@@ -26,7 +26,7 @@ public:
 	VSTitleBarButton(float xPos, float yPos, float xSize, float ySize, UString name, UString text) : CBaseUIButton(xPos, yPos, xSize, ySize, name, text) {;}
 	virtual ~VSTitleBarButton() {;}
 
-	virtual void draw(Graphics *g)
+	virtual void draw()
 	{
 		if (!m_bVisible) return;
 
@@ -62,7 +62,7 @@ public:
 			g->drawLine(m_vPos.x, m_vPos.y + m_vSize.y, m_vPos.x + m_vSize.x, m_vPos.y + m_vSize.y);
 		}
 
-		drawText(g);
+		drawText();
 	}
 };
 
@@ -102,7 +102,7 @@ VSTitleBar::~VSTitleBar()
 	SAFE_DELETE(m_container);
 }
 
-void VSTitleBar::draw(Graphics *g)
+void VSTitleBar::draw()
 {
 	if (m_iFlip != 0)
 	{
@@ -113,7 +113,7 @@ void VSTitleBar::draw(Graphics *g)
 			{
 				g->offset3DScene(0, 0, m_title->getSize().y/2);
 				g->rotate3DScene(m_fRot + (m_iFlip == 1 ? 90 : -90), 0, 0);
-				drawTitle1(g);
+				drawTitle1();
 			}
 			g->pop3DScene();
 
@@ -121,7 +121,7 @@ void VSTitleBar::draw(Graphics *g)
 			{
 				g->offset3DScene(0, 0, m_title2->getSize().y/2);
 				g->rotate3DScene(m_fRot, 0, 0);
-				drawTitle2(g);
+				drawTitle2();
 			}
 			g->pop3DScene();
 		}
@@ -132,7 +132,7 @@ void VSTitleBar::draw(Graphics *g)
 				g->offset3DScene(0, 0, m_title2->getSize().y/2);
 				g->rotate3DScene(m_fRot, 0, 0);
 
-				drawTitle2(g);
+				drawTitle2();
 			}
 			g->pop3DScene();
 
@@ -141,39 +141,39 @@ void VSTitleBar::draw(Graphics *g)
 				g->offset3DScene(0, 0, m_title->getSize().y/2);
 				g->rotate3DScene(m_fRot + (m_iFlip == 1 ? 90 : -90), 0, 0);
 
-				drawTitle1(g);
+				drawTitle1();
 			}
 			g->pop3DScene();
 		}
 	}
 	else
-		drawTitle2(g);
+		drawTitle2();
 }
 
-void VSTitleBar::drawTitle1(Graphics *g)
+void VSTitleBar::drawTitle1()
 {
-	m_title->draw(g);
+	m_title->draw();
 	if (vs_percent.getFloat() > 0)
 	{
 		m_title->setTextColor(0xffffffff);
 		g->pushClipRect(McRect(m_vPos.x, m_vPos.y, vs_percent.getFloat()*m_vSize.x, m_title2->getSize().y));
 		{
-			m_title->draw(g);
+			m_title->draw();
 		}
 		g->popClipRect();
 		m_title->setTextColor(rgb(55, 55, 55));
 	}
 }
 
-void VSTitleBar::drawTitle2(Graphics *g)
+void VSTitleBar::drawTitle2()
 {
-	m_title2->draw(g);
+	m_title2->draw();
 	if (vs_percent.getFloat() > 0)
 	{
 		m_title2->setTextColor(0xffffffff);
 		g->pushClipRect(McRect(m_vPos.x, m_vPos.y, vs_percent.getFloat()*m_vSize.x, m_title2->getSize().y));
 		{
-			m_title2->draw(g);
+			m_title2->draw();
 		}
 		g->popClipRect();
 		m_title2->setTextColor(rgb(55, 55, 55));

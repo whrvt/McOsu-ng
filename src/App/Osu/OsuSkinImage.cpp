@@ -161,7 +161,7 @@ OsuSkinImage::~OsuSkinImage()
 	m_filepathsForExport.clear();
 }
 
-void OsuSkinImage::draw(Graphics *g, Vector2 pos, float scale)
+void OsuSkinImage::draw(Vector2 pos, float scale)
 {
 	if (m_images.size() < 1) return;
 
@@ -211,7 +211,7 @@ void OsuSkinImage::draw(Graphics *g, Vector2 pos, float scale)
 	g->popTransform();
 }
 
-void OsuSkinImage::drawRaw(Graphics *g, Vector2 pos, float scale)
+void OsuSkinImage::drawRaw(Vector2 pos, float scale)
 {
 	if (m_images.size() < 1) return;
 

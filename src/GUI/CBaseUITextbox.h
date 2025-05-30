@@ -21,7 +21,7 @@ public:
 
 	ELEMENT_BODY(CBaseUITextbox)
 
-	void draw(Graphics *g) override;
+	void draw() override;
 	void update() override;
 
 	void onChar(KeyboardEvent &e) override;
@@ -57,7 +57,7 @@ public:
 	// inspection
 	CBASE_UI_TYPE(CBaseUITextbox, TEXTBOX, CBaseUIElement)
 protected:
-	virtual void drawText(Graphics *g);
+	virtual void drawText();
 
 	// events
 	void onMouseDownInside() override;

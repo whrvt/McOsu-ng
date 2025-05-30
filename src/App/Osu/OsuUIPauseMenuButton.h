@@ -20,7 +20,7 @@ class OsuUIPauseMenuButton : public CBaseUIButton
 public:
 	OsuUIPauseMenuButton(std::function<Image*()> getImageFunc, float xPos, float yPos, float xSize, float ySize, UString name);
 
-	virtual void draw(Graphics *g);
+	virtual void draw();
 
 	virtual void onMouseInside();
 	virtual void onMouseOutside();

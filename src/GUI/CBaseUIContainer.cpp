@@ -161,7 +161,7 @@ CBaseUIElement *CBaseUIContainer::getBaseUIElement(UString name)
 	return NULL;
 }
 
-void CBaseUIContainer::draw(Graphics *g)
+void CBaseUIContainer::draw()
 {
 	if (!m_bVisible) return;
 
@@ -169,11 +169,11 @@ void CBaseUIContainer::draw(Graphics *g)
 	for (size_t i=0; i<m_vElements.size(); i++)
 	{
 		if (!m_vElements[i]->isDrawnManually())
-			m_vElements[i]->draw(g);
+			m_vElements[i]->draw();
 	}
 }
 
-void CBaseUIContainer::draw_debug(Graphics *g)
+void CBaseUIContainer::draw_debug()
 {
 	g->setColor(0xffffffff);
 	g->drawLine(m_vPos.x, m_vPos.y, m_vPos.x+m_vSize.x, m_vPos.y);

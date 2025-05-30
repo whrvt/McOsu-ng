@@ -17,7 +17,7 @@ CBaseUICheckbox::CBaseUICheckbox(float xPos, float yPos, float xSize, float ySiz
 	CBaseUIButton::setClickCallback( fastdelegate::MakeDelegate(this, &CBaseUICheckbox::onPressed) );
 }
 
-void CBaseUICheckbox::draw(Graphics *g)
+void CBaseUICheckbox::draw()
 {
 	if (!m_bVisible) return;
 
@@ -41,9 +41,9 @@ void CBaseUICheckbox::draw(Graphics *g)
 	const int hoverRectOffset = std::round(3.0f * dpiScale);
 	g->setColor(m_frameColor);
 	if (m_bMouseInside && m_bEnabled)
-		drawHoverRect(g, hoverRectOffset);
+		drawHoverRect(hoverRectOffset);
 	if (m_bActive)
-		drawHoverRect(g, hoverRectOffset * 2);
+		drawHoverRect(hoverRectOffset * 2);
 
 	// draw block
 	const int innerBlockPosOffset = std::round(2.0f * dpiScale);

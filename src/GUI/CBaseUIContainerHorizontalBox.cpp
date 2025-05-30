@@ -27,7 +27,7 @@ CBaseUIContainerHorizontalBox::~CBaseUIContainerHorizontalBox()
 
 }
 
-void CBaseUIContainerHorizontalBox::drawDebug(Graphics *g, Color color)
+void CBaseUIContainerHorizontalBox::drawDebug(Color color)
 {
 	if (!m_bVisible) return;
 

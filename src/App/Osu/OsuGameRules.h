@@ -399,12 +399,12 @@ public:
 
 	static float getPlayfieldScaleFactor()
 	{
-		const int engineScreenWidth = osu->getScreenWidth();
-		const int topBorderSize = osu_playfield_border_top_percent.getFloat()*osu->getScreenHeight();
-		const int bottomBorderSize = osu_playfield_border_bottom_percent.getFloat()*osu->getScreenHeight();
-		const int engineScreenHeight = osu->getScreenHeight() - bottomBorderSize - topBorderSize;
+		const int engineScreenWidth = osu->getVirtScreenWidth();
+		const int topBorderSize = osu_playfield_border_top_percent.getFloat()*osu->getVirtScreenHeight();
+		const int bottomBorderSize = osu_playfield_border_bottom_percent.getFloat()*osu->getVirtScreenHeight();
+		const int engineScreenHeight = osu->getVirtScreenHeight() - bottomBorderSize - topBorderSize;
 
-		return osu->getScreenWidth()/(float)OSU_COORD_WIDTH > engineScreenHeight/(float)OSU_COORD_HEIGHT ? engineScreenHeight/(float)OSU_COORD_HEIGHT : engineScreenWidth/(float)OSU_COORD_WIDTH;
+		return osu->getVirtScreenWidth()/(float)OSU_COORD_WIDTH > engineScreenHeight/(float)OSU_COORD_HEIGHT ? engineScreenHeight/(float)OSU_COORD_HEIGHT : engineScreenWidth/(float)OSU_COORD_WIDTH;
 	}
 
 	static Vector2 getPlayfieldSize()
@@ -417,13 +417,13 @@ public:
 	static Vector2 getPlayfieldOffset()
 	{
 		const Vector2 playfieldSize = getPlayfieldSize();
-		const int bottomBorderSize = osu_playfield_border_bottom_percent.getFloat()*osu->getScreenHeight();
-		int playfieldYOffset = (osu->getScreenHeight()/2.0f - (playfieldSize.y/2.0f)) - bottomBorderSize;
+		const int bottomBorderSize = osu_playfield_border_bottom_percent.getFloat()*osu->getVirtScreenHeight();
+		int playfieldYOffset = (osu->getVirtScreenHeight()/2.0f - (playfieldSize.y/2.0f)) - bottomBorderSize;
 
 		if (osu_mod_fps.getBool())
 			playfieldYOffset = 0; // first person mode doesn't need any offsets, cursor/crosshair should be centered on screen
 
-		return Vector2((osu->getScreenWidth()-playfieldSize.x)/2.0f, (osu->getScreenHeight()-playfieldSize.y)/2.0f + playfieldYOffset);
+		return Vector2((osu->getVirtScreenWidth()-playfieldSize.x)/2.0f, (osu->getVirtScreenHeight()-playfieldSize.y)/2.0f + playfieldYOffset);
 	}
 
 	static Vector2 getPlayfieldCenter()

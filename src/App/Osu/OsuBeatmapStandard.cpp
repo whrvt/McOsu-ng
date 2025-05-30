@@ -206,19 +206,19 @@ OsuBeatmapStandard::~OsuBeatmapStandard()
 	resourceManager->destroyResource(m_starCacheLoader);
 }
 
-void OsuBeatmapStandard::draw(Graphics *g)
+void OsuBeatmapStandard::draw()
 {
-	OsuBeatmap::draw(g);
+	OsuBeatmap::draw();
 	if (!canDraw()) return;
 	if (isLoading()) return; // only start drawing the rest of the playfield if everything has loaded
 
 	// draw playfield border
 	if (osu_draw_playfield_border.getBool() && !OsuGameRules::osu_mod_fps.getBool())
-		osu->getHUD()->drawPlayfieldBorder(g, m_vPlayfieldCenter, m_vPlayfieldSize, m_fHitcircleDiameter);
+		osu->getHUD()->drawPlayfieldBorder(m_vPlayfieldCenter, m_vPlayfieldSize, m_fHitcircleDiameter);
 
 	// draw hiterrorbar
 	if (!m_osu_mod_fposu_ref->getBool())
-		osu->getHUD()->drawHitErrorBar(g, this);
+		osu->getHUD()->drawHitErrorBar(this);
 
 	// draw first person crosshair
 	if (OsuGameRules::osu_mod_fps.getBool())
@@ -232,18 +232,18 @@ void OsuBeatmapStandard::draw(Graphics *g)
 
 	// draw followpoints
 	if (osu_draw_followpoints.getBool() && !OsuGameRules::osu_mod_mafham.getBool())
-		drawFollowPoints(g);
+		drawFollowPoints();
 
 	// draw all hitobjects in reverse
 	if (m_osu_draw_hitobjects_ref->getBool())
-		drawHitObjects(g);
+		drawHitObjects();
 
 	if (osu_mandala.getBool())
 	{
 		for (int i=0; i<osu_mandala_num.getInt(); i++)
 		{
 			m_iMandalaIndex = i;
-			drawHitObjects(g);
+			drawHitObjects();
 		}
 	}
 
@@ -273,9 +273,9 @@ void OsuBeatmapStandard::draw(Graphics *g)
 	}
 }
 
-void OsuBeatmapStandard::drawInt(Graphics *g)
+void OsuBeatmapStandard::drawInt()
 {
-	OsuBeatmap::drawInt(g);
+	OsuBeatmap::drawInt();
 	if (!canDraw()) return;
 
 	if (isLoadingStarCache() && engine->getTime() > m_fStarCacheTime)
@@ -289,13 +289,13 @@ void OsuBeatmapStandard::drawInt(Graphics *g)
 		UString loadingMessage2 = "(To get rid of this delay, disable [Draw Statistics: pp/Stars***])";
 		g->pushTransform();
 		{
-			g->translate((int)(osu->getScreenWidth()/2 - osu->getSubTitleFont()->getStringWidth(loadingMessage)/2), osu->getScreenHeight() - osu->getSubTitleFont()->getHeight() - 25);
+			g->translate((int)(osu->getVirtScreenWidth()/2 - osu->getSubTitleFont()->getStringWidth(loadingMessage)/2), osu->getVirtScreenHeight() - osu->getSubTitleFont()->getHeight() - 25);
 			g->drawString(osu->getSubTitleFont(), loadingMessage);
 		}
 		g->popTransform();
 		g->pushTransform();
 		{
-			g->translate((int)(osu->getScreenWidth()/2 - osu->getSubTitleFont()->getStringWidth(loadingMessage2)/2), osu->getScreenHeight() - 15);
+			g->translate((int)(osu->getVirtScreenWidth()/2 - osu->getSubTitleFont()->getStringWidth(loadingMessage2)/2), osu->getVirtScreenHeight() - 15);
 			g->drawString(osu->getSubTitleFont(), loadingMessage2);
 		}
 		g->popTransform();
@@ -308,7 +308,7 @@ void OsuBeatmapStandard::drawInt(Graphics *g)
 			UString loadingMessage = "Waiting for players ...";
 			g->pushTransform();
 			{
-				g->translate((int)(osu->getScreenWidth()/2 - osu->getSubTitleFont()->getStringWidth(loadingMessage)/2), osu->getScreenHeight() - osu->getSubTitleFont()->getHeight() - 15);
+				g->translate((int)(osu->getVirtScreenWidth()/2 - osu->getSubTitleFont()->getStringWidth(loadingMessage)/2), osu->getVirtScreenHeight() - osu->getSubTitleFont()->getHeight() - 15);
 				g->drawString(osu->getSubTitleFont(), loadingMessage);
 			}
 			g->popTransform();
@@ -316,9 +316,9 @@ void OsuBeatmapStandard::drawInt(Graphics *g)
 	}
 }
 
-void OsuBeatmapStandard::draw3D(Graphics *g)
+void OsuBeatmapStandard::draw3D()
 {
-	OsuBeatmap::draw3D(g);
+	OsuBeatmap::draw3D();
 	if (!canDraw()) return;
 	if (isLoading()) return; // only start drawing the rest of the playfield if everything has loaded
 
@@ -344,7 +344,7 @@ void OsuBeatmapStandard::draw3D(Graphics *g)
 						continue;
 				}
 
-				m_hitobjectsSortedByEndTime[i]->draw3D(g);
+				m_hitobjectsSortedByEndTime[i]->draw3D();
 			}
 		}
 		else
@@ -360,15 +360,15 @@ void OsuBeatmapStandard::draw3D(Graphics *g)
 						break;
 				}
 
-				m_hitobjectsSortedByEndTime[i]->draw3D(g);
+				m_hitobjectsSortedByEndTime[i]->draw3D();
 			}
 		}
 	}
 }
 
-void OsuBeatmapStandard::draw3D2(Graphics *g)
+void OsuBeatmapStandard::draw3D2()
 {
-	OsuBeatmap::draw3D2(g);
+	OsuBeatmap::draw3D2();
 	if (!canDraw()) return;
 	if (isLoading()) return; // only start drawing the rest of the playfield if everything has loaded
 
@@ -378,7 +378,7 @@ void OsuBeatmapStandard::draw3D2(Graphics *g)
 	{
 		/*
 		if (osu_draw_followpoints.getBool() && !OsuGameRules::osu_mod_mafham.getBool())
-			drawFollowPoints(g);
+			drawFollowPoints();
 		*/
 	}
 
@@ -400,12 +400,12 @@ void OsuBeatmapStandard::draw3D2(Graphics *g)
 					break;
 			}
 
-			m_hitobjectsSortedByEndTime[i]->draw3D2(g);
+			m_hitobjectsSortedByEndTime[i]->draw3D2();
 		}
 	}
 }
 
-void OsuBeatmapStandard::drawFollowPoints(Graphics *g)
+void OsuBeatmapStandard::drawFollowPoints()
 {
 	OsuSkin *skin = osu->getSkin();
 
@@ -485,7 +485,7 @@ void OsuBeatmapStandard::drawFollowPoints(Graphics *g)
 
 				// bullshit performance optimization: only draw followpoints if within screen bounds (plus a bit of a margin)
 				// there is only one beatmap where this matters currently: https://osu.ppy.sh/b/1145513
-				if (followPos.x < -osu->getScreenWidth() || followPos.x > osu->getScreenWidth()*2 || followPos.y < -osu->getScreenHeight() || followPos.y > osu->getScreenHeight()*2)
+				if (followPos.x < -osu->getVirtScreenWidth() || followPos.x > osu->getVirtScreenWidth()*2 || followPos.y < -osu->getVirtScreenHeight() || followPos.y > osu->getVirtScreenHeight()*2)
 					continue;
 
 				// calculate trail alpha
@@ -517,7 +517,7 @@ void OsuBeatmapStandard::drawFollowPoints(Graphics *g)
 					// the followpoints are scaled by one eighth of the hitcirclediameter (not the raw diameter, but the scaled diameter)
 					const float followPointImageScale = ((m_fHitcircleDiameter / 8.0f) / skin->getFollowPoint2()->getSizeBaseRaw().x) * followPointScaleMultiplier;
 
-					skin->getFollowPoint2()->drawRaw(g, followPos, followPointImageScale*scale);
+					skin->getFollowPoint2()->drawRaw(followPos, followPointImageScale*scale);
 				}
 				g->popTransform();
 			}
@@ -532,7 +532,7 @@ void OsuBeatmapStandard::drawFollowPoints(Graphics *g)
 	}
 }
 
-void OsuBeatmapStandard::drawHitObjects(Graphics *g)
+void OsuBeatmapStandard::drawHitObjects()
 {
 	const long curPos = m_iCurMusicPosWithOffsets;
 	const long pvs = getPVS();
@@ -553,7 +553,7 @@ void OsuBeatmapStandard::drawHitObjects(Graphics *g)
 						continue;
 				}
 
-				m_hitobjectsSortedByEndTime[i]->draw(g);
+				m_hitobjectsSortedByEndTime[i]->draw();
 			}
 		}
 		else
@@ -569,7 +569,7 @@ void OsuBeatmapStandard::drawHitObjects(Graphics *g)
 						break;
 				}
 
-				m_hitobjectsSortedByEndTime[i]->draw(g);
+				m_hitobjectsSortedByEndTime[i]->draw();
 			}
 		}
 		for (int i=0; i<m_hitobjectsSortedByEndTime.size(); i++)
@@ -584,7 +584,7 @@ void OsuBeatmapStandard::drawHitObjects(Graphics *g)
 					break;
 			}
 
-			m_hitobjectsSortedByEndTime[i]->draw2(g);
+			m_hitobjectsSortedByEndTime[i]->draw2();
 		}
 	}
 	else
@@ -636,7 +636,7 @@ void OsuBeatmapStandard::drawHitObjects(Graphics *g)
 								continue;
 						}
 
-						m_hitobjectsSortedByEndTime[i]->draw(g);
+						m_hitobjectsSortedByEndTime[i]->draw();
 
 						m_iMafhamActiveRenderHitObjectIndex = i;
 					}
@@ -666,14 +666,14 @@ void OsuBeatmapStandard::drawHitObjects(Graphics *g)
 		{
 			g->setBlendMode(Graphics::BLEND_MODE::BLEND_MODE_PREMUL_COLOR);
 			{
-				m_mafhamFinishedRenderTarget->draw(g, 0, 0);
+				m_mafhamFinishedRenderTarget->draw(0, 0);
 			}
 			g->setBlendMode(Graphics::BLEND_MODE::BLEND_MODE_ALPHA);
 		}
 
 		// draw followpoints
 		if (osu_draw_followpoints.getBool())
-			drawFollowPoints(g);
+			drawFollowPoints();
 
 		// draw live hitobjects (also, code duplication yay)
 		{
@@ -691,7 +691,7 @@ void OsuBeatmapStandard::drawHitObjects(Graphics *g)
 				if (i > m_iCurrentHitObjectIndex + mafhamRenderLiveSize || (i > m_iMafhamFinishedRenderHitObjectIndex-1 && shouldDrawBuffer)) // skip non-live objects
 					continue;
 
-				m_hitobjectsSortedByEndTime[i]->draw(g);
+				m_hitobjectsSortedByEndTime[i]->draw();
 			}
 
 			for (int i=0; i<m_hitobjectsSortedByEndTime.size(); i++)
@@ -708,7 +708,7 @@ void OsuBeatmapStandard::drawHitObjects(Graphics *g)
 				if (i >= m_iCurrentHitObjectIndex + mafhamRenderLiveSize || (i >= m_iMafhamFinishedRenderHitObjectIndex-1 && shouldDrawBuffer)) // skip non-live objects
 					break;
 
-				m_hitobjectsSortedByEndTime[i]->draw2(g);
+				m_hitobjectsSortedByEndTime[i]->draw2();
 			}
 		}
 	}

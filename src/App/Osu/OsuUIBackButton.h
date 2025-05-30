@@ -18,7 +18,7 @@ class OsuUIBackButton : public CBaseUIButton
 public:
 	OsuUIBackButton(float xPos, float yPos, float xSize, float ySize, UString name);
 
-	virtual void draw(Graphics *g);
+	virtual void draw();
 	virtual void update();
 
 	virtual void onMouseInside();

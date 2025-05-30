@@ -32,9 +32,9 @@ OsuManiaNote::OsuManiaNote(int column, long sliderTime, long time, int sampleTyp
 	m_endResult = OsuScore::HIT::HIT_NULL;
 }
 
-void OsuManiaNote::draw(Graphics *g)
+void OsuManiaNote::draw()
 {
-	OsuHitObject::draw(g);
+	OsuHitObject::draw();
 
 	if (!isHoldNote())
 	{

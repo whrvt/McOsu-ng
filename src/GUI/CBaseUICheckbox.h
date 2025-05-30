@@ -19,7 +19,7 @@ public:
 
 	ELEMENT_BODY(CBaseUICheckbox)
 
-	void draw(Graphics *g) override;
+	void draw() override;
 
 	[[nodiscard]] inline float getBlockSize() const {return m_vSize.y/2;}
 	[[nodiscard]] inline float getBlockBorder() const {return m_vSize.y/4;}

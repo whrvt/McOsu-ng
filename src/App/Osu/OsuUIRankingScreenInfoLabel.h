@@ -22,7 +22,7 @@ class OsuUIRankingScreenInfoLabel final : public OsuUIElement
 public:
 	OsuUIRankingScreenInfoLabel(float xPos, float yPos, float xSize, float ySize, UString name);
 
-	void draw(Graphics *g) override;
+	void draw() override;
 
 	void setFromBeatmap(OsuBeatmap *beatmap, OsuDatabaseBeatmap *diff2);
 

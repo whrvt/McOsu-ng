@@ -18,7 +18,7 @@ class OsuManiaNote final : public OsuHitObject
 public:
 	OsuManiaNote(int column, long sliderTime, long time, int sampleType, int comboNumber, int colorCounter, OsuBeatmapMania *beatmap);
 
-	void draw(Graphics *g) override;
+	void draw() override;
 	void update(long curPos) override;
 
 	void updateStackPosition(float stackOffset) override {;}

@@ -20,7 +20,7 @@ class OsuUISlider : public CBaseUISlider
 public:
 	OsuUISlider(float xPos, float yPos, float xSize, float ySize, UString name);
 
-	void draw(Graphics *g) override;
+	void draw() override;
 
 	// inspection
 	CBASE_UI_TYPE(OsuUISlider, OsuUIElement::OSUUISLIDER, CBaseUISlider)

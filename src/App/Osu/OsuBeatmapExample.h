@@ -16,8 +16,8 @@ class OsuBeatmapExample final : public OsuBeatmap
 public:
 	OsuBeatmapExample();
 
-	void draw(Graphics *g) override;
-	void draw3D(Graphics *g) override;
+	void draw() override;
+	void draw3D() override;
 	void update() override;
 
 	void onModUpdate() override;

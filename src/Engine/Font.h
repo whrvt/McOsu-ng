@@ -24,10 +24,10 @@ public:
 	McFont(UString filepath, std::vector<wchar_t> characters, int fontSize = 16, bool antialiasing = true, int fontDPI = 96);
 	~McFont() override { destroy(); }
 
-	void drawString(Graphics *g, const UString &text);
+	void drawString(const UString &text);
 	void beginBatch();
 	void addToBatch(const UString &text, const Vector3 &pos, Color color = 0xffffffff);
-	void flushBatch(Graphics *g);
+	void flushBatch();
 
 	void setSize(int fontSize) { m_iFontSize = fontSize; }
 	void setDPI(int dpi) { m_iFontDPI = dpi; }
@@ -41,7 +41,7 @@ public:
 	float getStringHeight(UString text) const;
 
 	// debug
-	void drawTextureAtlas(Graphics *g);
+	void drawTextureAtlas();
 
 	// type inspection
 	[[nodiscard]] Type getResType() const override { return FONT; }

@@ -19,7 +19,7 @@ public:
 	OsuUISongBrowserSongDifficultyButton(OsuSongBrowser2 *songBrowser, CBaseUIScrollView *view, OsuUIContextMenu *contextMenu, float xPos, float yPos, float xSize, float ySize, UString name, OsuDatabaseBeatmap *diff2, OsuUISongBrowserSongButton *parentSongButton);
 	~OsuUISongBrowserSongDifficultyButton() override;
 
-	void draw(Graphics *g) override;
+	void draw() override;
 	void update() override;
 
 	void updateGrade() override;

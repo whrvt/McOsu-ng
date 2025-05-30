@@ -341,9 +341,9 @@ Osu::Osu()
 	// renderer
 	g_vInternalResolution = engine->getScreenSize();
 
-	m_backBuffer = resourceManager->createRenderTarget(0, 0, getScreenWidth(), getScreenHeight());
+	m_backBuffer = resourceManager->createRenderTarget(0, 0, getVirtScreenWidth(), getVirtScreenHeight());
 	m_playfieldBuffer = resourceManager->createRenderTarget(0, 0, 64, 64);
-	m_sliderFrameBuffer = resourceManager->createRenderTarget(0, 0, getScreenWidth(), getScreenHeight());
+	m_sliderFrameBuffer = resourceManager->createRenderTarget(0, 0, getVirtScreenWidth(), getVirtScreenHeight());
 	m_frameBuffer = resourceManager->createRenderTarget(0, 0, 64, 64);
 	m_frameBuffer2 = resourceManager->createRenderTarget(0, 0, 64, 64);
 
@@ -506,12 +506,12 @@ Osu::~Osu()
 	SAFE_DELETE(m_bindings);
 }
 
-void Osu::draw(Graphics *g)
+void Osu::draw()
 {
 	if (m_skin == NULL) // sanity check
 	{
 		g->setColor(0xffff0000);
-		g->fillRect(0, 0, getScreenWidth(), getScreenHeight());
+		g->fillRect(0, 0, getVirtScreenWidth(), getVirtScreenHeight());
 		return;
 	}
 
@@ -533,20 +533,20 @@ void Osu::draw(Graphics *g)
 			m_playfieldBuffer->enable();
 
 		if (!isFPoSu3d)
-			getSelectedBeatmap()->draw(g);
+			getSelectedBeatmap()->draw();
 		else
 		{
 			m_playfieldBuffer->enable();
 			{
-				getSelectedBeatmap()->drawInt(g);
+				getSelectedBeatmap()->drawInt();
 			}
 			m_playfieldBuffer->disable();
 
-			m_fposu->draw(g);
+			m_fposu->draw();
 		}
 
 		if (!isFPoSu || isFPoSu3d)
-			m_hud->draw(g);
+			m_hud->draw();
 
 		// quick retry fadeout overlay
 		if (m_fQuickRetryTime != 0.0f && m_bQuickRetryDown)
@@ -556,7 +556,7 @@ void Osu::draw(Graphics *g)
 				alphaPercent = 1.0f;
 
 			g->setColor(argb((Channel)(255*alphaPercent), 0, 0, 0));
-			g->fillRect(0, 0, getScreenWidth(), getScreenHeight());
+			g->fillRect(0, 0, getVirtScreenWidth(), getVirtScreenHeight());
 		}
 
 		// special cursor handling (fading cursor + invisible cursor mods + draw order etc.)
@@ -571,36 +571,36 @@ void Osu::draw(Graphics *g)
 
 		// draw auto cursor
 		if (isAuto && allowDrawCursor && !isFPoSu && beatmapStd != NULL && !beatmapStd->isLoading())
-			m_hud->drawCursor(g, m_osu_mod_fps_ref->getBool() ? OsuGameRules::getPlayfieldCenter() : beatmapStd->getCursorPos(), osu_mod_fadingcursor.getBool() ? fadingCursorAlpha : 1.0f);
+			m_hud->drawCursor(m_osu_mod_fps_ref->getBool() ? OsuGameRules::getPlayfieldCenter() : beatmapStd->getCursorPos(), osu_mod_fadingcursor.getBool() ? fadingCursorAlpha : 1.0f);
 
-		m_pauseMenu->draw(g);
-		m_modSelector->draw(g);
-		m_optionsMenu->draw(g);
+		m_pauseMenu->draw();
+		m_modSelector->draw();
+		m_optionsMenu->draw();
 
 		if (osu_draw_fps.getBool() && (!isFPoSu || isFPoSu3d))
-			m_hud->drawFps(g);
+			m_hud->drawFps();
 
-		m_hud->drawVolumeChange(g);
+		m_hud->drawVolumeChange();
 
-		m_windowManager->draw(g);
+		m_windowManager->draw();
 
 		if (isFPoSu && !isFPoSu3d && m_osu_draw_cursor_ripples_ref->getBool())
-			m_hud->drawCursorRipples(g);
+			m_hud->drawCursorRipples();
 
 		// draw FPoSu cursor trail
 		if (isFPoSu && !isFPoSu3d && m_fposu_draw_cursor_trail_ref->getBool())
-			m_hud->drawCursorTrail(g, beatmapStd->getCursorPos(), osu_mod_fadingcursor.getBool() ? fadingCursorAlpha : 1.0f);
+			m_hud->drawCursorTrail(beatmapStd->getCursorPos(), osu_mod_fadingcursor.getBool() ? fadingCursorAlpha : 1.0f);
 
 		if (isBufferedPlayfieldDraw)
 			m_playfieldBuffer->disable();
 
 		if (isFPoSu && !isFPoSu3d)
 		{
-			m_fposu->draw(g);
-			m_hud->draw(g);
+			m_fposu->draw();
+			m_hud->draw();
 
 			if (osu_draw_fps.getBool())
-				m_hud->drawFps(g);
+				m_hud->drawFps();
 		}
 
 		// draw player cursor
@@ -609,36 +609,36 @@ void Osu::draw(Graphics *g)
 			Vector2 cursorPos = (beatmapStd != NULL && !isAuto) ? beatmapStd->getCursorPos() : mouse->getPos();
 
 			if (isFPoSu && (!isFPoSu3d || ((isAuto && !getSelectedBeatmap()->isPaused()) || (!getSelectedBeatmap()->isPaused() && !m_optionsMenu->isVisible() && !m_modSelector->isVisible()))))
-				cursorPos = getScreenSize() / 2.0f;
+				cursorPos = getVirtScreenSize() / 2.0f;
 
 			const bool updateAndDrawTrail = !isFPoSu;
 
-			m_hud->drawCursor(g, cursorPos, (osu_mod_fadingcursor.getBool() && !isAuto) ? fadingCursorAlpha : 1.0f, isAuto, updateAndDrawTrail);
+			m_hud->drawCursor(cursorPos, (osu_mod_fadingcursor.getBool() && !isAuto) ? fadingCursorAlpha : 1.0f, isAuto, updateAndDrawTrail);
 		}
 	}
 	else // if we are not playing
 	{
 		if (m_songBrowser2 != NULL)
-			m_songBrowser2->draw(g);
+			m_songBrowser2->draw();
 
-		m_modSelector->draw(g);
-		m_mainMenu->draw(g);
-		m_changelog->draw(g);
-		m_editor->draw(g);
-		m_userStatsScreen->draw(g);
-		m_rankingScreen->draw(g);
-		m_optionsMenu->draw(g);
+		m_modSelector->draw();
+		m_mainMenu->draw();
+		m_changelog->draw();
+		m_editor->draw();
+		m_userStatsScreen->draw();
+		m_rankingScreen->draw();
+		m_optionsMenu->draw();
 
 		if (isInMultiplayer())
-			m_hud->drawScoreBoardMP(g);
+			m_hud->drawScoreBoardMP();
 
 		if (osu_draw_fps.getBool())
-			m_hud->drawFps(g);
+			m_hud->drawFps();
 
-		m_hud->drawVolumeChange(g);
+		m_hud->drawVolumeChange();
 
-		m_windowManager->draw(g);
-		m_hud->drawCursor(g, mouse->getPos());
+		m_windowManager->draw();
+		m_hud->drawCursor(mouse->getPos());
 	}
 
 	// TODO: TEMP:
@@ -648,18 +648,18 @@ void Osu::draw(Graphics *g)
 		for (int i=0; i<m_multiplayer->getServerPlayers()->size(); i++)
 		{
 			OsuMultiplayer::PLAYER *ply = &(*m_multiplayer->getServerPlayers())[i];
-			m_hud->drawCursor(g, ply->input.cursorPos, 0.5f);
+			m_hud->drawCursor(ply->input.cursorPos, 0.5f);
 		}
 	}
 	*/
 
-	m_tooltipOverlay->draw(g);
-	m_notificationOverlay->draw(g);
+	m_tooltipOverlay->draw();
+	m_notificationOverlay->draw();
 
 	// loading spinner for some async tasks
 	if ((m_bSkinLoadScheduled && m_skin != m_skinScheduledToLoad) || (Env::cfg(FEAT::STEAM) && (m_optionsMenu->isWorkshopLoading() || m_steamWorkshop->isUploading())))
 	{
-		m_hud->drawLoadingSmall(g);
+		m_hud->drawLoadingSmall();
 	}
 
 	// if we are not using the native window resolution;
@@ -668,23 +668,23 @@ void Osu::draw(Graphics *g)
 		// draw a scaled version from the buffer to the screen
 		m_backBuffer->disable();
 
-		Vector2 offset = Vector2(graphics->getResolution().x/2 - g_vInternalResolution.x/2, graphics->getResolution().y/2 - g_vInternalResolution.y/2);
+		Vector2 offset = Vector2(g->getResolution().x/2 - g_vInternalResolution.x/2, g->getResolution().y/2 - g_vInternalResolution.y/2);
 
 		g->setBlending(false);
 		{
 			if (osu_letterboxing.getBool())
-				m_backBuffer->draw(g, offset.x*(1.0f + osu_letterboxing_offset_x.getFloat()), offset.y*(1.0f + osu_letterboxing_offset_y.getFloat()), g_vInternalResolution.x, g_vInternalResolution.y);
+				m_backBuffer->draw(offset.x*(1.0f + osu_letterboxing_offset_x.getFloat()), offset.y*(1.0f + osu_letterboxing_offset_y.getFloat()), g_vInternalResolution.x, g_vInternalResolution.y);
 			else
 			{
 				if (osu_resolution_keep_aspect_ratio.getBool())
 				{
-					const float scale = getImageScaleToFitResolution(m_backBuffer->getSize(), graphics->getResolution());
+					const float scale = getImageScaleToFitResolution(m_backBuffer->getSize(), g->getResolution());
 					const float scaledWidth = m_backBuffer->getWidth()*scale;
 					const float scaledHeight = m_backBuffer->getHeight()*scale;
-					m_backBuffer->draw(g, std::max(0.0f, graphics->getResolution().x/2.0f - scaledWidth/2.0f)*(1.0f + osu_letterboxing_offset_x.getFloat()), std::max(0.0f, graphics->getResolution().y/2.0f - scaledHeight/2.0f)*(1.0f + osu_letterboxing_offset_y.getFloat()), scaledWidth, scaledHeight);
+					m_backBuffer->draw(std::max(0.0f, g->getResolution().x/2.0f - scaledWidth/2.0f)*(1.0f + osu_letterboxing_offset_x.getFloat()), std::max(0.0f, g->getResolution().y/2.0f - scaledHeight/2.0f)*(1.0f + osu_letterboxing_offset_y.getFloat()), scaledWidth, scaledHeight);
 				}
 				else
-					m_backBuffer->draw(g, 0, 0, graphics->getResolution().x, graphics->getResolution().y);
+					m_backBuffer->draw(0, 0, g->getResolution().x, g->getResolution().y);
 			}
 		}
 		g->setBlending(true);
@@ -724,7 +724,7 @@ void Osu::update()
 			{
 				m_bSeeking = true;
 				const float mousePosX = (int)mouse->getPos().x;
-				const float percent = std::clamp<float>(mousePosX / (float)getScreenWidth(), 0.0f, 1.0f);
+				const float percent = std::clamp<float>(mousePosX / (float)getVirtScreenWidth(), 0.0f, 1.0f);
 
 				if (mouse->isLeftDown())
 				{
@@ -1624,7 +1624,7 @@ void Osu::saveScreenshot()
     while (env->fileExists(UString::format("screenshots/screenshot%i.png", screenshotNumber)))
         screenshotNumber++;
 
-    std::vector<unsigned char> pixels = graphics->getScreenshot();
+    std::vector<unsigned char> pixels = g->getScreenshot();
 
 	if (pixels.empty())
 	{
@@ -1635,8 +1635,8 @@ void Osu::saveScreenshot()
 		return;
 	}
 
-    const float outerWidth = graphics->getResolution().x;
-    const float outerHeight = graphics->getResolution().y;
+    const float outerWidth = g->getResolution().x;
+    const float outerHeight = g->getResolution().y;
     const float innerWidth = m_vInternalResolution.x;
     const float innerHeight = m_vInternalResolution.y;
 
@@ -2121,13 +2121,13 @@ void Osu::onInternalResolutionChanged(UString oldValue, UString args)
 
 			// clamp requested internal resolution to current renderer resolution
 			// however, this could happen while we are transitioning into fullscreen. therefore only clamp when not in fullscreen or not in fullscreen transition
-			bool isTransitioningIntoFullscreenHack = graphics->getResolution().x < env->getNativeScreenSize().x || graphics->getResolution().y < env->getNativeScreenSize().y;
+			bool isTransitioningIntoFullscreenHack = g->getResolution().x < env->getNativeScreenSize().x || g->getResolution().y < env->getNativeScreenSize().y;
 			if (!env->isFullscreen() || !isTransitioningIntoFullscreenHack)
 			{
-				if (newInternalResolution.x > graphics->getResolution().x)
-					newInternalResolution.x = graphics->getResolution().x;
-				if (newInternalResolution.y > graphics->getResolution().y)
-					newInternalResolution.y = graphics->getResolution().y;
+				if (newInternalResolution.x > g->getResolution().x)
+					newInternalResolution.x = g->getResolution().x;
+				if (newInternalResolution.y > g->getResolution().y)
+					newInternalResolution.y = g->getResolution().y;
 			}
 
 			// enable and store, then force onResolutionChanged()
@@ -2535,8 +2535,8 @@ float Osu::getImageScaleToFillResolution(Image *img, Vector2 resolution)
 
 float Osu::getImageScale(Vector2 size, float osuSize)
 {
-	int swidth = osu->getScreenWidth();
-	int sheight = osu->getScreenHeight();
+	int swidth = osu->getVirtScreenWidth();
+	int sheight = osu->getVirtScreenHeight();
 
 	if (swidth * 3 > sheight * 4)
 		swidth = sheight * 4 / 3;
@@ -2559,8 +2559,8 @@ float Osu::getImageScale(Image *img, float osuSize)
 
 float Osu::getUIScale(float osuResolutionRatio)
 {
-	int swidth = osu->getScreenWidth();
-	int sheight = osu->getScreenHeight();
+	int swidth = osu->getVirtScreenWidth();
+	int sheight = osu->getVirtScreenHeight();
 
 	if (swidth * 3 > sheight * 4)
 		swidth = sheight * 4 / 3;
@@ -2580,7 +2580,7 @@ float Osu::getUIScale()
 {
 	if (osu != NULL)
 	{
-		if (osu->getScreenWidth() < osu_ui_scale_to_dpi_minimum_width.getInt() || osu->getScreenHeight() < osu_ui_scale_to_dpi_minimum_height.getInt())
+		if (osu->getVirtScreenWidth() < osu_ui_scale_to_dpi_minimum_width.getInt() || osu->getVirtScreenHeight() < osu_ui_scale_to_dpi_minimum_height.getInt())
 			return osu_ui_scale.getFloat();
 	}
 	else if (engine->getScreenWidth() < osu_ui_scale_to_dpi_minimum_width.getInt() || engine->getScreenHeight() < osu_ui_scale_to_dpi_minimum_height.getInt())

@@ -22,7 +22,7 @@ CBaseUICanvas::~CBaseUICanvas()
 {
 }
 
-void CBaseUICanvas::drawDebug(Graphics *g, Color color)
+void CBaseUICanvas::drawDebug(Color color)
 {
 	if (!m_bVisible) return;
 

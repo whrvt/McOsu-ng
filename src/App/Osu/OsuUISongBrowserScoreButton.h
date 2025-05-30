@@ -36,7 +36,7 @@ public:
 	OsuUISongBrowserScoreButton(OsuUIContextMenu *contextMenu, float xPos, float yPos, float xSize, float ySize, UString name, STYLE style = STYLE::SCORE_BROWSER);
 	~OsuUISongBrowserScoreButton() override;
 
-	void draw(Graphics *g) override;
+	void draw() override;
 	void update() override;
 
 	void highlight();

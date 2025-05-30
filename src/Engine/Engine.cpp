@@ -60,7 +60,7 @@ std::unique_ptr<DiscordInterface> Engine::s_discordInstance = nullptr;
 Mouse *mouse = nullptr;
 Keyboard *keyboard = nullptr;
 App *app = nullptr;
-Graphics *graphics = nullptr;
+Graphics *g = nullptr;
 SoundEngine *soundEngine = nullptr;
 ResourceManager *resourceManager = nullptr;
 NetworkHandler *networkHandler = nullptr;
@@ -142,12 +142,12 @@ Engine::Engine()
 		m_keyboards.push_back(keyboard);
 
 		// create graphics through environment
-		graphics = env->createRenderer();
+		s_graphicsInstance.reset(env->createRenderer());
+		g = s_graphicsInstance.get();
 		{
-			graphics->init(); // needs init() separation due to potential graphics access
+			g->init(); // needs init() separation due to potential graphics access
 		}
-		runtime_assert(graphics, "Graphics failed to initialize!");
-		s_graphicsInstance.reset(graphics);
+		runtime_assert(g, "Graphics failed to initialize!");
 
 		// make unique_ptrs for the rest
 		s_resourceManagerInstance = std::make_unique<ResourceManager>();
@@ -178,7 +178,7 @@ Engine::Engine()
 		runtime_assert(discord, "Discord integration failed to initialize!");
 
 		// default launch overrides
-		graphics->setVSync(false);
+		g->setVSync(false);
 
 		// engine time starts now
 		m_timer->start();
@@ -330,7 +330,7 @@ void Engine::onPaint()
 		// begin
 		{
 			VPROF_BUDGET("Graphics::beginScene", VPROF_BUDGETGROUP_DRAW);
-			graphics->beginScene();
+			g->beginScene();
 		}
 
 		// middle
@@ -338,29 +338,29 @@ void Engine::onPaint()
 			if (app != NULL)
 			{
 				VPROF_BUDGET("App::draw", VPROF_BUDGETGROUP_DRAW);
-				app->draw(graphics);
+				app->draw();
 			}
 
 			if (m_guiContainer != NULL)
-				m_guiContainer->draw(graphics);
+				m_guiContainer->draw();
 
 			// debug input devices
 			for (auto &m_inputDevice : m_inputDevices)
 			{
-				m_inputDevice->draw(graphics);
+				m_inputDevice->draw();
 			}
 
 			if (epilepsy.getBool())
 			{
-				graphics->setColor(rgb(rand() % 256, rand() % 256, rand() % 256));
-				graphics->fillRect(0, 0, engine->getScreenWidth(), engine->getScreenHeight());
+				g->setColor(rgb(rand() % 256, rand() % 256, rand() % 256));
+				g->fillRect(0, 0, engine->getScreenWidth(), engine->getScreenHeight());
 			}
 		}
 
 		// end
 		{
 			VPROF_BUDGET("Graphics::endScene", VPROF_BUDGETGROUP_DRAW_SWAPBUFFERS);
-			graphics->endScene();
+			g->endScene();
 		}
 	}
 	m_bDrawing = false;
@@ -557,8 +557,8 @@ void Engine::onResolutionChange(Vector2 newResolution)
         newResolution
     };
 
-	if (graphics != NULL)
-		graphics->onResolutionChange(newResolution);
+	if (g != NULL)
+		g->onResolutionChange(newResolution);
 	if (app != NULL)
 		app->onResolutionChanged(newResolution);
 }

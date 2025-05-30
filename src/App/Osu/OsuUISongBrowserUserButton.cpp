@@ -44,7 +44,7 @@ OsuUISongBrowserUserButton::OsuUISongBrowserUserButton() : CBaseUIButton()
 	m_fHoverAnim = 0.0f;
 }
 
-void OsuUISongBrowserUserButton::draw(Graphics *g)
+void OsuUISongBrowserUserButton::draw()
 {
 	if (!m_bVisible) return;
 

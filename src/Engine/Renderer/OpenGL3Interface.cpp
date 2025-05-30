@@ -422,7 +422,7 @@ void OpenGL3Interface::drawString(McFont *font, UString text)
 
 	updateTransform();
 
-	font->drawString(this, text);
+	font->drawString(text);
 }
 
 void OpenGL3Interface::drawVAO(VertexArrayObject *vao)

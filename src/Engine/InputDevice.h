@@ -18,7 +18,7 @@ public:
 	virtual ~InputDevice() {;}
 
 	virtual void update() {;}
-	virtual void draw(Graphics *g) {;}
+	virtual void draw() {;}
 };
 
 #endif

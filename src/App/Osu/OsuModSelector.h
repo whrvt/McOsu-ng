@@ -36,7 +36,7 @@ public:
 	OsuModSelector();
 	virtual ~OsuModSelector();
 
-	virtual void draw(Graphics *g);
+	virtual void draw();
 	virtual void update();
 
 	virtual void onKeyDown(KeyboardEvent &key);

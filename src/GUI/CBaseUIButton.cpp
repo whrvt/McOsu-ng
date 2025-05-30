@@ -29,7 +29,7 @@ CBaseUIButton::CBaseUIButton(float xPos, float yPos, float xSize, float ySize, U
 	setText(text);
 }
 
-void CBaseUIButton::draw(Graphics *g)
+void CBaseUIButton::draw()
 {
 	if (!m_bVisible || !isVisibleOnScreen()) return;
 
@@ -65,16 +65,16 @@ void CBaseUIButton::draw(Graphics *g)
 	const int hoverRectOffset = std::round(3.0f * ((float)m_font->getDPI() / 96.0f)); // NOTE: abusing font dpi
 	g->setColor(m_frameColor);
 	if (m_bMouseInside && m_bEnabled && (m_bActive || !mouse->isLeftDown()))
-		drawHoverRect(g, hoverRectOffset);
+		drawHoverRect(hoverRectOffset);
 
 	if (m_bActive && m_bEnabled)
-		drawHoverRect(g, hoverRectOffset * 2);
+		drawHoverRect(hoverRectOffset * 2);
 
 	// draw text
-	drawText(g);
+	drawText();
 }
 
-void CBaseUIButton::drawText(Graphics *g)
+void CBaseUIButton::drawText()
 {
 	if (m_font == NULL || m_sText.length() < 1 || !isVisibleOnScreen()) return;
 	//debugLog("busy {} visible {} isVisible {} x {:.2f} y {:.2f} w {:.2f} h {:.2f}\n", m_bBusy, m_bVisible, isVisible(), m_vPos.x, m_vPos.y, m_vSize.x, m_vSize.y);
@@ -112,7 +112,7 @@ void CBaseUIButton::drawText(Graphics *g)
 	g->popClipRect();
 }
 
-void CBaseUIButton::drawHoverRect(Graphics *g, int distance)
+void CBaseUIButton::drawHoverRect(int distance)
 {
 	g->drawLine(m_vPos.x, m_vPos.y - distance, m_vPos.x + m_vSize.x + 1, m_vPos.y - distance);
 	g->drawLine(m_vPos.x, m_vPos.y + m_vSize.y + distance, m_vPos.x + m_vSize.x + 1, m_vPos.y + m_vSize.y + distance);

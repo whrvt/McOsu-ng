@@ -28,7 +28,7 @@ OsuUIButton::OsuUIButton(float xPos, float yPos, float xSize, float ySize, UStri
 	m_bFocusStolenDelay = false;
 }
 
-void OsuUIButton::draw(Graphics *g)
+void OsuUIButton::draw()
 {
 	if (!m_bVisible) return;
 
@@ -67,7 +67,7 @@ void OsuUIButton::draw(Graphics *g)
 	}
 	buttonRight->unbind();
 
-	drawText(g);
+	drawText();
 }
 
 void OsuUIButton::update()

@@ -27,7 +27,7 @@ CBaseUILabel::CBaseUILabel(float xPos, float yPos, float xSize, float ySize, USt
 	m_textJustification = TEXT_JUSTIFICATION::TEXT_JUSTIFICATION_LEFT;
 }
 
-void CBaseUILabel::draw(Graphics *g)
+void CBaseUILabel::draw()
 {
 	if (!m_bVisible) return;
 
@@ -46,10 +46,10 @@ void CBaseUILabel::draw(Graphics *g)
 	}
 
 	// draw text
-	drawText(g);
+	drawText();
 }
 
-void CBaseUILabel::drawText(Graphics *g)
+void CBaseUILabel::drawText()
 {
 	if (m_font != NULL && m_sText.length() > 0)
 	{

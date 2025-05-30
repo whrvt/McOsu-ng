@@ -27,7 +27,7 @@ public:
 
 	CONTAINER_BODY(CBaseUIContainerVerticalBox)
 
-	virtual void drawDebug(Graphics *g, Color color=rgb(255,0,0));
+	virtual void drawDebug(Color color=rgb(255,0,0));
 
 	CBaseUIContainerVerticalBox *setPadding(float padding) {m_padding = padding; return this;}
 	CBaseUIContainerVerticalBox *setMargin(float marginX, float marginY) {m_vMargin.x = marginX; m_vMargin.y = marginY; return this;}

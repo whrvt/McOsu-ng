@@ -45,7 +45,7 @@ public:
 	OsuMainMenu();
 	~OsuMainMenu() override;
 
-	void draw(Graphics *g) override;
+	void draw() override;
 	void update() override;
 
 	void onKeyDown(KeyboardEvent &e) override;
@@ -70,7 +70,7 @@ private:
 	static ConVar *m_osu_mod_random_ref;
 	static ConVar *m_osu_songbrowser_background_fade_in_duration_ref;
 
-	void drawVersionInfo(Graphics *g);
+	void drawVersionInfo();
 	void updateLayout();
 
 	void animMainButton();

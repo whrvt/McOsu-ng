@@ -29,13 +29,13 @@ CWindowManager::~CWindowManager()
 	}
 }
 
-void CWindowManager::draw(Graphics *g)
+void CWindowManager::draw()
 {
 	if (!m_bVisible) return;
 
 	for (int i=m_windows.size()-1; i>=0; i--)
 	{
-		m_windows[i]->draw(g);
+		m_windows[i]->draw();
 	}
 
 	/*
