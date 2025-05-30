@@ -57,6 +57,9 @@ ConVar *OsuSkin::m_osu_skin_hd = &osu_skin_hd;
 ConVar *OsuSkin::m_osu_skin_ref = NULL;
 ConVar *OsuSkin::m_osu_mod_fposu_ref = NULL;
 
+// fully qualified filesystem path
+UString OsuSkin::DEFAULT_SKIN_PATH = Environment::getFolderFromFilePath(UString::fmt("{}{}", ResourceManager::PATH_DEFAULT_IMAGES, "default/"));
+
 OsuSkin::OsuSkin(UString name, UString filepath, bool isDefaultSkin, bool isWorkshopSkin)
 {
 	
@@ -461,13 +464,12 @@ void OsuSkin::load()
 	// skin.ini parsing
 	randomizeFilePath();
 	m_sSkinIniFilePath = m_sFilePath + "skin.ini";
-	UString defaultSkinIniFilePath = UString::fmt("{}{}skin.ini", ResourceManager::PATH_DEFAULT_IMAGES, OSUSKIN_DEFAULT_SKIN_PATH);
 
 	bool parseSkinIni1Status = parseSkinINI(m_sSkinIniFilePath);
 	bool parseSkinIni2Status = true;
 	if (!parseSkinIni1Status)
 	{
-		m_sSkinIniFilePath = defaultSkinIniFilePath;
+		m_sSkinIniFilePath = OsuSkin::DEFAULT_SKIN_PATH + "skin.ini";
 		parseSkinIni2Status = parseSkinINI(m_sSkinIniFilePath);
 	}
 
@@ -1537,7 +1539,8 @@ UString OsuSkin::buildUserPath(const UString &element, const char *ext, bool hd)
 	return UString::fmt("{}{}{}.{}", m_sFilePath, element, hd ? "@2x" : "", ext);
 }
 
+// TODO: rework this nonsense, the default paths should only be created once
 UString OsuSkin::buildDefaultPath(const UString &element, const char *ext, bool hd) const
 {
-	return UString::fmt("{}{}{}{}.{}", ResourceManager::PATH_DEFAULT_IMAGES, OSUSKIN_DEFAULT_SKIN_PATH, element, hd ? "@2x" : "", ext);
+	return UString::fmt("{}{}{}.{}", OsuSkin::DEFAULT_SKIN_PATH, element, hd ? "@2x" : "", ext);
 }

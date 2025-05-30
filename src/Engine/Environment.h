@@ -36,8 +36,8 @@ public:
 	void shutdown();
 	void restart();
 	[[nodiscard]] inline bool isRunning() const { return m_bRunning; }
-	[[nodiscard]] UString getExecutablePath() const;
-	void openURLInDefaultBrowser(UString url) const;
+	[[nodiscard]] static UString getExecutablePath();
+	static void openURLInDefaultBrowser(UString url);
 
 	[[nodiscard]] inline const std::unordered_map<UString, std::optional<UString>> &getLaunchArgs() const { return m_mArgMap; }
 	[[nodiscard]] inline const std::vector<UString> &getCommandLine() const { return m_vCmdLine; }
@@ -63,9 +63,10 @@ public:
 	[[nodiscard]] static std::vector<UString> getFilesInFolder(UString folder);
 	[[nodiscard]] static std::vector<UString> getFoldersInFolder(UString folder);
 	[[nodiscard]] static std::vector<UString> getLogicalDrives();
-	[[nodiscard]] static UString getFolderFromFilePath(UString filepath);
+	// returns an absolute (i.e. fully-qualified) filesystem path
+	[[nodiscard]] static UString getFolderFromFilePath(UString filepath) noexcept;
 	[[nodiscard]] static UString getFileExtensionFromFilePath(UString filepath, bool includeDot = false);
-	[[nodiscard]] static UString getFileNameFromFilePath(UString filePath);
+	[[nodiscard]] static UString getFileNameFromFilePath(UString filePath) noexcept;
 
 	// clipboard
 	[[nodiscard]] UString getClipBoardText();
@@ -220,7 +221,7 @@ private:
 	static void sdlFileDialogCallback(void *userdata, const char *const *filelist, int filter);
 
 	static std::vector<UString> enumerateDirectory(const char *pathToEnum, SDL_PathType type); // code sharing for getFilesInFolder/getFoldersInFolder
-	static UString getThingFromPathHelper(UString &path, bool folder); // code sharing for getFolderFromFilePath/getFileNameFromFilePath
+	static UString getThingFromPathHelper(UString path, bool folder) noexcept; // code sharing for getFolderFromFilePath/getFileNameFromFilePath
 
 	static void winSortInPlace(std::vector<UString> &toSort); // for sorting a list kinda in the order windows' explorer would
 };

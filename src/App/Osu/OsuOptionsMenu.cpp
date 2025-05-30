@@ -2527,7 +2527,7 @@ void OsuOptionsMenu::openCurrentSkinFolder()
 {
 	UString skinFolderToOpen = // yikes
 	    osu->getSkin()->isDefaultSkin()
-	        ? UString::fmt("{}{}{}", ResourceManager::PATH_DEFAULT_IMAGES, Env::cfg(OS::WINDOWS) ? "\\" : "/", OsuSkin::OSUSKIN_DEFAULT_SKIN_PATH)
+	        ? OsuSkin::DEFAULT_SKIN_PATH
 	        : osu->getSkin()->getFilePath();
 	env->openFileBrowser("skin folder", skinFolderToOpen);
 }

@@ -385,11 +385,8 @@ UString OsuSkinImage::buildImagePath(const UString& skinPath, const UString& ele
 	return UString::fmt("{}{}{}.png", skinPath, elementName, hd ? "@2x" : "");
 }
 
-UString OsuSkinImage::buildDefaultImagePath(const UString& elementName, bool hd) const
+// TODO: rework this nonsense, the default paths should only be created once
+UString OsuSkinImage::buildDefaultImagePath(const UString &elementName, bool hd) const
 {
-	return UString::fmt("{}{}{}{}.png", 
-		ResourceManager::PATH_DEFAULT_IMAGES, 
-		OsuSkin::OSUSKIN_DEFAULT_SKIN_PATH, 
-		elementName, 
-		hd ? "@2x" : "");
+	return UString::fmt("{}{}{}.png", OsuSkin::DEFAULT_SKIN_PATH, elementName, hd ? "@2x" : "");
 }

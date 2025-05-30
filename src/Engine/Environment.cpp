@@ -164,7 +164,7 @@ void Environment::restart()
 	shutdown();
 }
 
-UString Environment::getExecutablePath() const
+UString Environment::getExecutablePath()
 {
 	const char *path = SDL_GetBasePath();
 	if (!path)
@@ -173,7 +173,7 @@ UString Environment::getExecutablePath() const
 	return {path};
 }
 
-void Environment::openURLInDefaultBrowser(UString url) const
+void Environment::openURLInDefaultBrowser(UString url)
 {
 	if (!SDL_OpenURL(url.toUtf8()))
 		debugLog("Failed to open URL: {:s}\n", SDL_GetError());
@@ -340,12 +340,12 @@ std::vector<UString> Environment::getLogicalDrives()
 	return drives;
 }
 
-UString Environment::getFileNameFromFilePath(UString filepath)
+UString Environment::getFileNameFromFilePath(UString filepath) noexcept
 {
 	return getThingFromPathHelper(filepath, false);
 }
 
-UString Environment::getFolderFromFilePath(UString filepath)
+UString Environment::getFolderFromFilePath(UString filepath) noexcept
 {
 	return getThingFromPathHelper(filepath, true);
 }
@@ -470,18 +470,23 @@ void Environment::openFolderWindow(FileDialogCallback callback, UString initialp
 // just open the file manager in a certain folder, but not do anything with it
 void Environment::openFileBrowser(UString, UString initialpath) const noexcept
 {
-	if (initialpath.isEmpty())
-		initialpath = getExecutablePath(); // just open the exe directory
+	UString pathToOpen = initialpath;
+	if (pathToOpen.isEmpty())
+		pathToOpen = getExecutablePath();
+	else
+		pathToOpen = getFolderFromFilePath(pathToOpen);
+
+	// prepend with file:/// to open it as a URI
+	if constexpr (Env::cfg(OS::WINDOWS))
+		pathToOpen = UString::fmt("file:///{}", pathToOpen);
 	else
 	{
-		std::error_code ec;
-		auto abs_path = std::filesystem::canonical(initialpath.plat_str(), ec); // need the absolute path first
-		if (ec)
-			initialpath = UString::fmt("{}{}{}", getExecutablePath(), Env::cfg(OS::WINDOWS) ? "\\" : "/", initialpath); // fallback to a subfolder from the exe directory
+		if (pathToOpen[0] != '/')
+			pathToOpen = UString::fmt("file:///{}", pathToOpen);
 		else
-			initialpath = abs_path.c_str(); // found the full path to the file
+			pathToOpen = UString::fmt("file://{}", pathToOpen);
 	}
-	UString pathToOpen = UString::fmt("file:///{}", initialpath);
+
 	if (!SDL_OpenURL(pathToOpen.toUtf8()))
 		debugLog("Failed to open file URI {:s}: {:s}\n", pathToOpen, SDL_GetError());
 }
@@ -853,21 +858,53 @@ void Environment::onLogLevelChange(float newval)
 	}
 }
 
-UString Environment::getThingFromPathHelper(UString &path, bool folder)
+// folder = true means return the canonical filesystem path to the folder containing the given path
+//			if the path is already a folder, just return it directly
+// folder = false means to strip away the file path separators from the given path and return just the filename itself
+UString Environment::getThingFromPathHelper(UString path, bool folder) noexcept
 {
-	if (path.length() < 1)
+	if (path.isEmpty())
 		return path;
 
+	// find the last path separator (either / or \)
 	int lastSlash = path.findLast("/");
 	if (lastSlash == -1)
 		lastSlash = path.findLast("\\");
-	if (lastSlash == -1)
-		return path;
 
 	if (folder)
-		path = path.substr(0, lastSlash + 1);
-	else
+	{
+		// if path ends with separator, it's already a directory
+		bool endsWithSeparator = path.endsWith("/") || path.endsWith("\\");
+
+		std::error_code ec;
+		auto abs_path = std::filesystem::canonical(path.plat_str(), ec);
+
+		if (!ec) // canonical path found
+		{
+			auto status = std::filesystem::status(abs_path, ec);
+			// if it's already a directory or it doesn't have a parent path then just return it directly
+			if (ec || status.type() == std::filesystem::file_type::directory || !abs_path.has_parent_path())
+				path = abs_path.c_str();
+			// else return the parent directory for the file
+			else if (abs_path.has_parent_path() && !abs_path.parent_path().empty())
+				path = abs_path.parent_path().c_str();
+		}
+		else if (!endsWithSeparator) // canonical failed, handle manually (if it's not already a directory)
+		{
+			if (lastSlash != -1) // return parent
+				path = path.substr(0, lastSlash);
+			else // no separators found, just use ./
+				path = UString::fmt(".{}{}", Env::cfg(OS::WINDOWS) ? "\\" : "/", path);
+		}
+		// make sure whatever we got now ends with a slash
+		if (!path.endsWith("/") && !path.endsWith("\\"))
+			path = path + (Env::cfg(OS::WINDOWS) ? "\\" : "/");
+	}
+	else if (lastSlash != -1) // just return the file
+	{
 		path = path.substr(lastSlash + 1);
+	}
+	// else: no separators found, entire path is the filename
 
 	return path;
 }
