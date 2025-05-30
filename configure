@@ -647,7 +647,7 @@ ac_subst_vars='am__EXEEXT_FALSE
 am__EXEEXT_TRUE
 LTLIBOBJS
 LIBOBJS
-GLAD_CFLAGS
+BUNDLED_INCLUDES
 BUNDLED_BASS_WASAPI_DIR
 BUNDLED_BASS_ASIO_DIR
 BUNDLED_BASS_MIX_DIR
@@ -10712,7 +10712,7 @@ fi
 
 
 # the source file is also added through autogen.sh to Makefile.sources
-GLAD_CFLAGS="-I\$(srcdir)/\$(BUNDLED_LIBS_DIR)/glad -I\$(srcdir)/\$(BUNDLED_LIBS_DIR)/glad/glad"
+BUNDLED_INCLUDES="-I\$(srcdir)/\$(BUNDLED_LIBS_DIR)/include -I\$(srcdir)/\$(BUNDLED_LIBS_DIR)/include/glad"
 
 
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for default config in $srcdir/$ASSETS_DIR/cfg" >&5

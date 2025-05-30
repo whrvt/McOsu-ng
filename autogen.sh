@@ -22,7 +22,7 @@ cat > "$SOURCES_FILE" << EOF
 McOsu_ng_SOURCES = \\
 EOF
 
-find src libraries/glad -type f '(' -name "*.cpp" -o -name "*.c" ')' | LC_ALL=C sort | \
+find src libraries/include -type f '(' -name "*.cpp" -o -name "*.c" ')' | LC_ALL=C sort | \
     sed 's/$/ \\/' | \
     sed 's/^/\t/' >> "$SOURCES_FILE"
 

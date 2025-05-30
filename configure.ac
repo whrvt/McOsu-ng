@@ -669,7 +669,7 @@ AC_SUBST([BUNDLED_BASS_ASIO_DIR])
 AC_SUBST([BUNDLED_BASS_WASAPI_DIR])
 
 # the source file is also added through autogen.sh to Makefile.sources
-AC_SUBST([GLAD_CFLAGS], ["-I\$(srcdir)/\$(BUNDLED_LIBS_DIR)/glad -I\$(srcdir)/\$(BUNDLED_LIBS_DIR)/glad/glad"])
+AC_SUBST([BUNDLED_INCLUDES], ["-I\$(srcdir)/\$(BUNDLED_LIBS_DIR)/include -I\$(srcdir)/\$(BUNDLED_LIBS_DIR)/include/glad"])
 
 AC_MSG_CHECKING([for default config in $srcdir/$ASSETS_DIR/cfg])
 AS_IF([test -f "$srcdir/$ASSETS_DIR/cfg/override.cfg"], [

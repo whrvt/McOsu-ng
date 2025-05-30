@@ -14,9 +14,9 @@ build/aux/missing generated
 build/aux/config.guess generated
 build/aux/config.sub generated
 
-libraries/glad/glad/KHR/khrplatform.h generated
-libraries/glad/glad/glad.cpp generated
-libraries/glad/glad/glad.h generated
+libraries/glad/KHR/khrplatform.h generated
+libraries/glad/glad.cpp generated
+libraries/glad/glad.h generated
 libraries/bassfx/lib/windows/i686/bass_fx.dll generated
 libraries/bassfx/lib/windows/x86_64/bass_fx.dll generated
 libraries/bassfx/lib/linux/i686/libbass_fx.so generated
