@@ -108,6 +108,7 @@ private:
 	// thread-safe log animation state
 	std::atomic<bool> m_bLogAnimationResetPending;
 	std::atomic<float> m_fPendingLogTime;
+	std::atomic<bool> m_bForceLogVisible; // needed as an "ohshit" when a ton of lines are added in a single frame after the log has been hidden already
 };
 
 #endif

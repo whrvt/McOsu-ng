@@ -198,7 +198,7 @@ Osu::Osu()
 	if (userDataPath.length() > 1)
 	{
 		UString defaultOsuFolder = userDataPath;
-		defaultOsuFolder.append(Env::cfg(OS::WINDOWS) ? "\\osu!\\" : "/osu!/");
+		defaultOsuFolder.append(Env::cfg(OS::WINDOWS) ? "osu!\\" : "osu!/");
 		cv::osu::folder.setValue(defaultOsuFolder);
 	}
 

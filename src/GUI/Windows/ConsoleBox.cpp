@@ -24,7 +24,8 @@
 #include "CBaseUIContainer.h"
 #include "CBaseUIScrollView.h"
 #include "CBaseUITextbox.h"
-namespace cv {
+namespace cv
+{
 ConVar showconsolebox("showconsolebox");
 
 ConVar consolebox_animspeed("consolebox_animspeed", 12.0f, FCVAR_NONE);
@@ -34,7 +35,7 @@ ConVar consolebox_draw_helptext("consolebox_draw_helptext", true, FCVAR_NONE, "w
 ConVar console_overlay("console_overlay", true, FCVAR_NONE, "should the log overlay always be visible (or only if the console is out)");
 ConVar console_overlay_lines("console_overlay_lines", 6, FCVAR_NONE, "max number of lines of text");
 ConVar console_overlay_scale("console_overlay_scale", 1.0f, FCVAR_NONE, "log text size multiplier");
-}
+} // namespace cv
 
 class ConsoleBoxTextbox : public CBaseUITextbox
 {
@@ -165,6 +166,7 @@ ConsoleBox::ConsoleBox() : WindowUIElement(0, 0, 0, 0, "")
 	// initialize thread-safe log animation state
 	m_bLogAnimationResetPending.store(false);
 	m_fPendingLogTime.store(0.0f);
+	m_bForceLogVisible.store(false);
 
 	clearSuggestions();
 
@@ -360,7 +362,9 @@ void ConsoleBox::update()
 		m_suggestion->setVisible(true);
 
 	// handle overlay animation and timeout
-	if (engine->getTime() > m_fLogTime)
+	// theres probably a better way to do it than yet another atomic boolean, but eh
+	bool forceVisible = m_bForceLogVisible.exchange(false);
+	if (!forceVisible && engine->getTime() > m_fLogTime)
 	{
 		if (!anim->isAnimating(&m_fLogYPos) && m_fLogYPos == 0.0f)
 			anim->moveQuadInOut(&m_fLogYPos, m_logFont->getHeight() * (cv::console_overlay_lines.getFloat() + 1), 0.5f);
@@ -746,9 +750,9 @@ void ConsoleBox::log(UString text, Color textColor)
 	}
 
 	// defer animation operations to main thread to avoid data races
-	// set atomic flags that will be processed in update() on main thread
-	// also, don't use engine->getTime, because that's not thread-safe either
+	// use force visibility flag to prevent immediate timeout on same frame (this is so dumb)
 	m_fPendingLogTime.store(Timing::getTimeReal<float>() + 8.0f);
+	m_bForceLogVisible.store(true);
 	m_bLogAnimationResetPending.store(true);
 }
 
