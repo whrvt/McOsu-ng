@@ -1926,7 +1926,7 @@ void OsuSongBrowser2::refreshBeatmaps()
 	checkHandleKillDynamicStarCalculator(false);
 	checkHandleKillBackgroundSearchMatcher();
 
-	m_selectedBeatmap = NULL;
+	SAFE_DELETE(m_selectedBeatmap);
 
 	m_selectionPreviousSongButton = NULL;
 	m_selectionPreviousSongDiffButton = NULL;
@@ -2109,17 +2109,17 @@ void OsuSongBrowser2::addBeatmap(OsuDatabaseBeatmap *beatmap)
 			for (size_t i=0; i<tempChildrenForGroups.size(); i++)
 			{
 				const unsigned long lengthMS = tempChildrenForGroups[i]->getDatabaseBeatmap()->getLengthMS();
-				if (lengthMS <= 1000*60)
+				if (lengthMS <= 1000UL*60)
 					m_lengthCollectionButtons[0]->getChildren().push_back(tempChildrenForGroups[i]);
-				else if (lengthMS <= 1000*60*2)
+				else if (lengthMS <= 1000UL*60*2)
 					m_lengthCollectionButtons[1]->getChildren().push_back(tempChildrenForGroups[i]);
-				else if (lengthMS <= 1000*60*3)
+				else if (lengthMS <= 1000UL*60*3)
 					m_lengthCollectionButtons[2]->getChildren().push_back(tempChildrenForGroups[i]);
-				else if (lengthMS <= 1000*60*4)
+				else if (lengthMS <= 1000UL*60*4)
 					m_lengthCollectionButtons[3]->getChildren().push_back(tempChildrenForGroups[i]);
-				else if (lengthMS <= 1000*60*5)
+				else if (lengthMS <= 1000UL*60*5)
 					m_lengthCollectionButtons[4]->getChildren().push_back(tempChildrenForGroups[i]);
-				else if (lengthMS <= 1000*60*10)
+				else if (lengthMS <= 1000UL*60*10)
 					m_lengthCollectionButtons[5]->getChildren().push_back(tempChildrenForGroups[i]);
 				else
 					m_lengthCollectionButtons[6]->getChildren().push_back(tempChildrenForGroups[i]);
@@ -2183,7 +2183,7 @@ void OsuSongBrowser2::readdBeatmap(OsuDatabaseBeatmap *diff2)
 		}
 
 		// add to new difficulty group
-		if (difficultyGroupButton != NULL)
+		if (difficultyGroupButton != NULL && diff2 != NULL)
 		{
 			// HACKHACK: partial code duplication, see addBeatmap()
 			if (m_difficultyCollectionButtons.size() == 12)
@@ -2217,23 +2217,23 @@ void OsuSongBrowser2::readdBeatmap(OsuDatabaseBeatmap *diff2)
 		}
 
 		// add to new length group
-		if (lengthGroupButton != NULL)
+		if (lengthGroupButton != NULL && diff2 != NULL)
 		{
 			// HACKHACK: partial code duplication, see addBeatmap()
 			if (m_lengthCollectionButtons.size() == 7)
 			{
 				const unsigned long lengthMS = diff2->getLengthMS();
-				if (lengthMS <= 1000*60)
+				if (lengthMS <= 1000UL*60)
 					m_lengthCollectionButtons[0]->getChildren().push_back(lengthGroupButton);
-				else if (lengthMS <= 1000*60*2)
+				else if (lengthMS <= 1000UL*60*2)
 					m_lengthCollectionButtons[1]->getChildren().push_back(lengthGroupButton);
-				else if (lengthMS <= 1000*60*3)
+				else if (lengthMS <= 1000UL*60*3)
 					m_lengthCollectionButtons[2]->getChildren().push_back(lengthGroupButton);
-				else if (lengthMS <= 1000*60*4)
+				else if (lengthMS <= 1000UL*60*4)
 					m_lengthCollectionButtons[3]->getChildren().push_back(lengthGroupButton);
-				else if (lengthMS <= 1000*60*5)
+				else if (lengthMS <= 1000UL*60*5)
 					m_lengthCollectionButtons[4]->getChildren().push_back(lengthGroupButton);
-				else if (lengthMS <= 1000*60*10)
+				else if (lengthMS <= 1000UL*60*10)
 					m_lengthCollectionButtons[5]->getChildren().push_back(lengthGroupButton);
 				else
 					m_lengthCollectionButtons[6]->getChildren().push_back(lengthGroupButton);
@@ -2964,7 +2964,7 @@ void OsuSongBrowser2::rebuildScoreButtons()
 		const int numNewButtons = numScores - m_scoreButtonCache.size();
 		for (size_t i=0; std::cmp_less(i,numNewButtons); i++)
 		{
-			OsuUISongBrowserScoreButton *scoreButton = new OsuUISongBrowserScoreButton(m_contextMenu, 0, 0, 0, 0, "");
+			auto *scoreButton = new OsuUISongBrowserScoreButton(m_contextMenu, 0, 0, 0, 0, "");
 			scoreButton->setClickCallback( fastdelegate::MakeDelegate(this, &OsuSongBrowser2::onScoreClicked) );
 			m_scoreButtonCache.push_back(scoreButton);
 		}
@@ -3076,7 +3076,7 @@ void OsuSongBrowser2::checkHandleKillBackgroundSearchMatcher()
 
 OsuUISelectionButton *OsuSongBrowser2::addBottombarNavButton(std::function<OsuSkinImage*()> getImageFunc, std::function<OsuSkinImage*()> getImageOverFunc)
 {
-	OsuUISelectionButton *btn = new OsuUISelectionButton(getImageFunc, getImageOverFunc, 0, 0, 0, 0, "");
+	auto *btn = new OsuUISelectionButton(getImageFunc, getImageOverFunc, 0, 0, 0, 0, "");
 	m_bottombar->addBaseUIElement(btn);
 	m_bottombarNavButtons.push_back(btn);
 	return btn;
@@ -3100,7 +3100,7 @@ CBaseUIButton *OsuSongBrowser2::addTopBarRightTabButton(UString text)
 			engine->showMessageError("Error", UString::format("Invalid grouping name for tab button \"%s\"!", text.toUtf8()));
 	}
 
-	CBaseUIButton *btn = new CBaseUIButton(0, 0, 0, 0, "", text);
+	auto *btn = new CBaseUIButton(0, 0, 0, 0, "", text);
 	btn->setDrawBackground(false);
 	m_topbarRight->addBaseUIElement(btn);
 	m_topbarRightTabButtons.push_back(btn);
@@ -3109,7 +3109,7 @@ CBaseUIButton *OsuSongBrowser2::addTopBarRightTabButton(UString text)
 
 CBaseUIButton *OsuSongBrowser2::addTopBarRightGroupButton(UString text)
 {
-	CBaseUIButton *btn = new CBaseUIButton(0, 0, 0, 0, "", text);
+	auto *btn = new CBaseUIButton(0, 0, 0, 0, "", text);
 	btn->setDrawBackground(false);
 	m_topbarRight->addBaseUIElement(btn);
 	m_topbarRightGroupButtons.push_back(btn);
@@ -3118,7 +3118,7 @@ CBaseUIButton *OsuSongBrowser2::addTopBarRightGroupButton(UString text)
 
 CBaseUIButton *OsuSongBrowser2::addTopBarRightSortButton(UString text)
 {
-	CBaseUIButton *btn = new CBaseUIButton(0, 0, 0, 0, "", text);
+	auto *btn = new CBaseUIButton(0, 0, 0, 0, "", text);
 	btn->setDrawBackground(false);
 	m_topbarRight->addBaseUIElement(btn);
 	m_topbarRightSortButtons.push_back(btn);
@@ -3127,7 +3127,7 @@ CBaseUIButton *OsuSongBrowser2::addTopBarRightSortButton(UString text)
 
 CBaseUIButton *OsuSongBrowser2::addTopBarLeftTabButton(UString text)
 {
-	CBaseUIButton *btn = new CBaseUIButton(0, 0, 0, 0, "", text);
+	auto *btn = new CBaseUIButton(0, 0, 0, 0, "", text);
 	btn->setDrawBackground(false);
 	m_topbarLeft->addBaseUIElement(btn);
 	m_topbarLeftTabButtons.push_back(btn);
@@ -3136,7 +3136,7 @@ CBaseUIButton *OsuSongBrowser2::addTopBarLeftTabButton(UString text)
 
 CBaseUIButton *OsuSongBrowser2::addTopBarLeftButton(UString text)
 {
-	CBaseUIButton *btn = new CBaseUIButton(0, 0, 0, 0, "", text);
+	auto *btn = new CBaseUIButton(0, 0, 0, 0, "", text);
 	btn->setDrawBackground(false);
 	m_topbarLeft->addBaseUIElement(btn);
 	m_topbarLeftButtons.push_back(btn);
@@ -3145,7 +3145,7 @@ CBaseUIButton *OsuSongBrowser2::addTopBarLeftButton(UString text)
 
 void OsuSongBrowser2::onDatabaseLoadingFinished()
 {
-	m_beatmaps = std::vector<OsuDatabaseBeatmap*>(m_db->getDatabaseBeatmaps()); // having a copy of the vector in here is actually completely unnecessary
+	m_beatmaps = m_db->getDatabaseBeatmaps();
 
 	debugLog("{} beatmaps.\n", m_beatmaps.size());
 
@@ -3155,7 +3155,7 @@ void OsuSongBrowser2::onDatabaseLoadingFinished()
 		{
 			// 0-9
 			{
-				OsuUISongBrowserCollectionButton *b = new OsuUISongBrowserCollectionButton(this, m_songBrowser, m_contextMenu, 250, 250, 200, 50, "", "0-9", std::vector<OsuUISongBrowserButton*>());
+				auto *b = new OsuUISongBrowserCollectionButton(this, m_songBrowser, m_contextMenu, 250, 250, 200, 50, "", "0-9", std::vector<OsuUISongBrowserButton*>());
 				m_artistCollectionButtons.push_back(b);
 			}
 
@@ -3164,13 +3164,13 @@ void OsuSongBrowser2::onDatabaseLoadingFinished()
 			{
 				UString artistCollectionName = UString::format("%c", 'A' + i);
 
-				OsuUISongBrowserCollectionButton *b = new OsuUISongBrowserCollectionButton(this, m_songBrowser, m_contextMenu, 250, 250, 200, 50, "", artistCollectionName, std::vector<OsuUISongBrowserButton*>());
+				auto *b = new OsuUISongBrowserCollectionButton(this, m_songBrowser, m_contextMenu, 250, 250, 200, 50, "", artistCollectionName, std::vector<OsuUISongBrowserButton*>());
 				m_artistCollectionButtons.push_back(b);
 			}
 
 			// Other
 			{
-				OsuUISongBrowserCollectionButton *b = new OsuUISongBrowserCollectionButton(this, m_songBrowser, m_contextMenu, 250, 250, 200, 50, "", "Other", std::vector<OsuUISongBrowserButton*>());
+				auto *b = new OsuUISongBrowserCollectionButton(this, m_songBrowser, m_contextMenu, 250, 250, 200, 50, "", "Other", std::vector<OsuUISongBrowserButton*>());
 				m_artistCollectionButtons.push_back(b);
 			}
 		}
@@ -3186,13 +3186,13 @@ void OsuSongBrowser2::onDatabaseLoadingFinished()
 
 			std::vector<OsuUISongBrowserButton*> children;
 
-			OsuUISongBrowserCollectionButton *b = new OsuUISongBrowserCollectionButton(this, m_songBrowser, m_contextMenu, 250, 250, 200, 50, "", difficultyCollectionName, children);
+			auto *b = new OsuUISongBrowserCollectionButton(this, m_songBrowser, m_contextMenu, 250, 250, 200, 50, "", difficultyCollectionName, children);
 			m_difficultyCollectionButtons.push_back(b);
 		}
 
 		// bpm
 		{
-			OsuUISongBrowserCollectionButton *b = new OsuUISongBrowserCollectionButton(this, m_songBrowser, m_contextMenu, 250, 250, 200, 50, "", "Under 60 BPM", std::vector<OsuUISongBrowserButton*>());
+			auto *b = new OsuUISongBrowserCollectionButton(this, m_songBrowser, m_contextMenu, 250, 250, 200, 50, "", "Under 60 BPM", std::vector<OsuUISongBrowserButton*>());
 			m_bpmCollectionButtons.push_back(b);
 			b = new OsuUISongBrowserCollectionButton(this, m_songBrowser, m_contextMenu, 250, 250, 200, 50, "", "Under 120 BPM", std::vector<OsuUISongBrowserButton*>());
 			m_bpmCollectionButtons.push_back(b);
@@ -3210,7 +3210,7 @@ void OsuSongBrowser2::onDatabaseLoadingFinished()
 		{
 			// 0-9
 			{
-				OsuUISongBrowserCollectionButton *b = new OsuUISongBrowserCollectionButton(this, m_songBrowser, m_contextMenu, 250, 250, 200, 50, "", "0-9", std::vector<OsuUISongBrowserButton*>());
+				auto *b = new OsuUISongBrowserCollectionButton(this, m_songBrowser, m_contextMenu, 250, 250, 200, 50, "", "0-9", std::vector<OsuUISongBrowserButton*>());
 				m_creatorCollectionButtons.push_back(b);
 			}
 
@@ -3219,13 +3219,13 @@ void OsuSongBrowser2::onDatabaseLoadingFinished()
 			{
 				UString artistCollectionName = UString::format("%c", 'A' + i);
 
-				OsuUISongBrowserCollectionButton *b = new OsuUISongBrowserCollectionButton(this, m_songBrowser, m_contextMenu, 250, 250, 200, 50, "", artistCollectionName, std::vector<OsuUISongBrowserButton*>());
+				auto *b = new OsuUISongBrowserCollectionButton(this, m_songBrowser, m_contextMenu, 250, 250, 200, 50, "", artistCollectionName, std::vector<OsuUISongBrowserButton*>());
 				m_creatorCollectionButtons.push_back(b);
 			}
 
 			// Other
 			{
-				OsuUISongBrowserCollectionButton *b = new OsuUISongBrowserCollectionButton(this, m_songBrowser, m_contextMenu, 250, 250, 200, 50, "", "Other", std::vector<OsuUISongBrowserButton*>());
+				auto *b = new OsuUISongBrowserCollectionButton(this, m_songBrowser, m_contextMenu, 250, 250, 200, 50, "", "Other", std::vector<OsuUISongBrowserButton*>());
 				m_creatorCollectionButtons.push_back(b);
 			}
 		}
@@ -3237,7 +3237,7 @@ void OsuSongBrowser2::onDatabaseLoadingFinished()
 
 		// length
 		{
-			OsuUISongBrowserCollectionButton *b = new OsuUISongBrowserCollectionButton(this, m_songBrowser, m_contextMenu, 250, 250, 200, 50, "", "1 minute or less", std::vector<OsuUISongBrowserButton*>());
+			auto *b = new OsuUISongBrowserCollectionButton(this, m_songBrowser, m_contextMenu, 250, 250, 200, 50, "", "1 minute or less", std::vector<OsuUISongBrowserButton*>());
 			m_lengthCollectionButtons.push_back(b);
 			b = new OsuUISongBrowserCollectionButton(this, m_songBrowser, m_contextMenu, 250, 250, 200, 50, "", "2 minutes or less", std::vector<OsuUISongBrowserButton*>());
 			m_lengthCollectionButtons.push_back(b);
@@ -3257,7 +3257,7 @@ void OsuSongBrowser2::onDatabaseLoadingFinished()
 		{
 			// 0-9
 			{
-				OsuUISongBrowserCollectionButton *b = new OsuUISongBrowserCollectionButton(this, m_songBrowser, m_contextMenu, 250, 250, 200, 50, "", "0-9", std::vector<OsuUISongBrowserButton*>());
+				auto *b = new OsuUISongBrowserCollectionButton(this, m_songBrowser, m_contextMenu, 250, 250, 200, 50, "", "0-9", std::vector<OsuUISongBrowserButton*>());
 				m_titleCollectionButtons.push_back(b);
 			}
 
@@ -3266,22 +3266,22 @@ void OsuSongBrowser2::onDatabaseLoadingFinished()
 			{
 				UString artistCollectionName = UString::format("%c", 'A' + i);
 
-				OsuUISongBrowserCollectionButton *b = new OsuUISongBrowserCollectionButton(this, m_songBrowser, m_contextMenu, 250, 250, 200, 50, "", artistCollectionName, std::vector<OsuUISongBrowserButton*>());
+				auto *b = new OsuUISongBrowserCollectionButton(this, m_songBrowser, m_contextMenu, 250, 250, 200, 50, "", artistCollectionName, std::vector<OsuUISongBrowserButton*>());
 				m_titleCollectionButtons.push_back(b);
 			}
 
 			// Other
 			{
-				OsuUISongBrowserCollectionButton *b = new OsuUISongBrowserCollectionButton(this, m_songBrowser, m_contextMenu, 250, 250, 200, 50, "", "Other", std::vector<OsuUISongBrowserButton*>());
+				auto *b = new OsuUISongBrowserCollectionButton(this, m_songBrowser, m_contextMenu, 250, 250, 200, 50, "", "Other", std::vector<OsuUISongBrowserButton*>());
 				m_titleCollectionButtons.push_back(b);
 			}
 		}
 	}
 
 	// add all beatmaps (build buttons)
-	for (size_t i=0; i<m_beatmaps.size(); i++)
+	for (auto & m_beatmap : m_beatmaps)
 	{
-		addBeatmap(m_beatmaps[i]);
+		addBeatmap(m_beatmap);
 	}
 
 	// build collections
@@ -4101,7 +4101,7 @@ void OsuSongBrowser2::onUserButtonChange(UString text, int id)
 
 void OsuSongBrowser2::onScoreClicked(CBaseUIButton *button)
 {
-	OsuUISongBrowserScoreButton *scoreButton = (OsuUISongBrowserScoreButton*)button;
+	auto *scoreButton = (OsuUISongBrowserScoreButton*)button;
 
 	// NOTE: the order of these two calls matters (score data overwrites relevant fields, but base values are coming from the beatmap)
 	osu->getRankingScreen()->setBeatmapInfo(m_selectedBeatmap, m_selectedBeatmap->getSelectedDifficulty2());

@@ -312,7 +312,7 @@ OsuFile::TIMINGPOINT OsuFile::readTimingPoint()
 	const double bpm = readDouble();
 	const double offset = readDouble();
 	const bool timingChange = (bool)readByte();
-	return (struct TIMINGPOINT) {bpm, offset, timingChange};
+	return {.msPerBeat=bpm, .offset=offset, .timingChange=timingChange};
 }
 
 void OsuFile::readByteArray()

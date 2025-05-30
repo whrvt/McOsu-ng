@@ -199,8 +199,9 @@ OsuBeatmapStandard::~OsuBeatmapStandard()
 {
 	m_starCacheLoader->kill();
 
-	if (resourceManager->isLoadingResource(m_starCacheLoader))
-		while (!m_starCacheLoader->isAsyncReady()) {;}
+	// spec: resourceManager->destroyResource should take care of this? why do we have to manually block here
+	// if (resourceManager->isLoadingResource(m_starCacheLoader))
+	// 	while (!m_starCacheLoader->isAsyncReady()) {;}
 
 	resourceManager->destroyResource(m_starCacheLoader);
 }
