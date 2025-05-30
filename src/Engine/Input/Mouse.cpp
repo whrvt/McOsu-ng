@@ -193,6 +193,8 @@ void Mouse::onMotion(float x, float y, float xRel, float yRel, bool preTransform
 
 	// we have to accumulate all motion collected in this frame, then reset it at the start of the next frame
 	// use Mouse::update always setting m_bLastFrameHadMotion to false as a signal that the deltas need to be reset now
+	// this is because onMotion can be called multiple times in a frame, depending on how many mouse motion events were collected
+	// but Mouse::update only happens once per frame
 	if (!m_bLastFrameHadMotion)
 	{
 		m_vDelta.zero();

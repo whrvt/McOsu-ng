@@ -8006,22 +8006,37 @@ then :
         CPPFLAGS="$CPPFLAGS -DNDEBUG -D_NDEBUG"
         CXXFLAGS="${CXXFLAGS//-g -O2/} -O3 -g0" # where do those -g -O2 flags even come from...
         CFLAGS="${CFLAGS//-g -O2/} -O3 -g0"
-        if test "x$enable_clang" = "xyes"
+
+        if test "x$enable_clang" != "xyes"
 then :
 
-            CXXFLAGS="$CXXFLAGS"
-            CFLAGS="$CFLAGS"
-
-else case e in #(
-  e)
             CXXFLAGS="$CXXFLAGS -fipa-pta"
             CFLAGS="$CFLAGS -fipa-pta"
-         ;;
-esac
+
 fi
 
 fi
     CXXFLAGS="$CXXFLAGS -fno-rtti -fno-exceptions" # disallow dynamic_cast and exceptions
+
+    if test "x$enable_strip" != "xno"
+then :
+
+        MCOSU_LDFLAGS="$MCOSU_LDFLAGS -Wl,-s,--gc-sections" # strip and GC
+
+else case e in #(
+  e)
+        # if "don't strip" was explicitly requested, add some debug info to the binary
+        if test "x$enable_strip" = "xno"
+then :
+
+            CXXFLAGS="$CXXFLAGS -g"
+            CFLAGS="$CFLAGS -g"
+            MCOSU_LDFLAGS="$MCOSU_LDFLAGS -Wl,--no-gc-sections"
+
+fi
+     ;;
+esac
+fi
  ;;
 esac
 fi
@@ -8036,13 +8051,6 @@ then :
 
 fi
     MCOSU_CXXFLAGS="$MCOSU_CXXFLAGS -fopenmp"
-
-fi
-
-if test "x$enable_strip" != "xno"
-then :
-
-    MCOSU_LDFLAGS="$MCOSU_LDFLAGS -Wl,-s,--gc-sections" # strip and GC
 
 fi
 

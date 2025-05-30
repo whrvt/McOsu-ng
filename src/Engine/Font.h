@@ -46,7 +46,7 @@ public:
 	// type inspection
 	[[nodiscard]] Type getResType() const override { return FONT; }
 
- 	McFont *asFont() override { return this; }
+	McFont *asFont() override { return this; }
 	[[nodiscard]] const McFont *asFont() const override { return this; }
 
 protected:
@@ -81,6 +81,7 @@ private:
 	struct TextBatch
 	{
 		size_t totalVerts;
+		size_t usedEntries;
 		std::vector<BatchEntry> entryList;
 	};
 

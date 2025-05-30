@@ -29,7 +29,7 @@
                                // (works on desktop too, but it's not necessary)
 #else
 #define MAIN_FUNC int main(int argc, char *argv[])
-#define nocbinline static forceinline
+#define nocbinline forceinline
 #endif
 
 #include <SDL3/SDL.h>
@@ -112,17 +112,20 @@ void SDL_AppQuit(void *appstate, SDL_AppResult result)
 		std::exit(0);
 }
 
+// we can just call handleEvent and iterate directly if we're not using main callbacks
+#if defined(MCENGINE_PLATFORM_WASM) || defined(MCENGINE_FEATURE_MAINCALLBACKS)
 // (event queue processing) serialized with SDL_AppIterate
-nocbinline SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
+SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
 {
 	return static_cast<SDLMain *>(appstate)->handleEvent(event);
 }
 
 // (update tick) serialized with SDL_AppEvent
-nocbinline SDL_AppResult SDL_AppIterate(void *appstate)
+SDL_AppResult SDL_AppIterate(void *appstate)
 {
 	return static_cast<SDLMain *>(appstate)->iterate();
 }
+#endif
 
 // actual main/init, called once
 MAIN_FUNC /* int argc, char *argv[] */
@@ -137,7 +140,7 @@ MAIN_FUNC /* int argc, char *argv[] */
 	auto *fmain = new SDLMain(argc, argv);
 
 #if !(defined(MCENGINE_PLATFORM_WASM) || defined(MCENGINE_FEATURE_MAINCALLBACKS))
-	if (fmain->initialize() == SDL_APP_FAILURE)
+	if (!fmain || fmain->initialize() == SDL_APP_FAILURE)
 		SDL_AppQuit(fmain, SDL_APP_FAILURE);
 
 	constexpr int SIZE_EVENTS = 64;
@@ -156,12 +159,12 @@ MAIN_FUNC /* int argc, char *argv[] */
 			{
 				eventCount = SDL_PeepEvents(&events[0], SIZE_EVENTS, SDL_GETEVENT, SDL_EVENT_FIRST, SDL_EVENT_LAST);
 				for (int i = 0; i < eventCount; ++i)
-					SDL_AppEvent(fmain, &events[i]);
+					fmain->handleEvent(&events[i]);
 			} while (eventCount == SIZE_EVENTS);
 		}
 		{
 			// engine update + draw + fps limiter
-			SDL_AppIterate(fmain);
+			fmain->iterate();
 		}
 	}
 
@@ -276,7 +279,7 @@ SDL_AppResult SDLMain::initialize()
 	return SDL_APP_CONTINUE;
 }
 
-SDL_AppResult SDLMain::handleEvent(SDL_Event *event)
+nocbinline SDL_AppResult SDLMain::handleEvent(SDL_Event *event)
 {
 	switch (event->type)
 	{
@@ -414,7 +417,7 @@ SDL_AppResult SDLMain::handleEvent(SDL_Event *event)
 	return SDL_APP_CONTINUE;
 }
 
-SDL_AppResult SDLMain::iterate()
+nocbinline SDL_AppResult SDLMain::iterate()
 {
 	if (!m_bRunning)
 		return SDL_APP_SUCCESS;

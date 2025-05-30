@@ -12,10 +12,10 @@
 #include "ResourceManager.h"
 
 #include <freetype/freetype.h>
+#include <freetype/ftbitmap.h>
 #include <freetype/ftglyph.h>
 #include <freetype/ftoutln.h>
 #include <freetype/fttrigon.h>
-#include <freetype/ftbitmap.h>
 
 #include <ft2build.h>
 
@@ -35,8 +35,8 @@ ConVar r_debug_drawstring_unbind("r_debug_drawstring_unbind", false, FCVAR_NONE)
 ConVar r_debug_font_atlas_padding("r_debug_font_atlas_padding", 1, FCVAR_NONE, "padding between glyphs in the atlas to prevent bleeding");
 
 McFont::McFont(UString filepath, int fontSize, bool antialiasing, int fontDPI)
-    : Resource(filepath),
-      m_vao((Env::cfg(REND::GLES2 | REND::GLES32) ? Graphics::PRIMITIVE::PRIMITIVE_TRIANGLES : Graphics::PRIMITIVE::PRIMITIVE_QUADS), Graphics::USAGE_TYPE::USAGE_DYNAMIC)
+    : Resource(filepath), m_vao((Env::cfg(REND::GLES2 | REND::GLES32) ? Graphics::PRIMITIVE::PRIMITIVE_TRIANGLES : Graphics::PRIMITIVE::PRIMITIVE_QUADS),
+                                Graphics::USAGE_TYPE::USAGE_DYNAMIC)
 {
 	std::vector<wchar_t> characters;
 	characters.reserve(224); // reserve space for basic ASCII + extended chars
@@ -48,8 +48,8 @@ McFont::McFont(UString filepath, int fontSize, bool antialiasing, int fontDPI)
 }
 
 McFont::McFont(UString filepath, std::vector<wchar_t> characters, int fontSize, bool antialiasing, int fontDPI)
-    : Resource(filepath),
-      m_vao((Env::cfg(REND::GLES2 | REND::GLES32) ? Graphics::PRIMITIVE::PRIMITIVE_TRIANGLES : Graphics::PRIMITIVE::PRIMITIVE_QUADS), Graphics::USAGE_TYPE::USAGE_DYNAMIC)
+    : Resource(filepath), m_vao((Env::cfg(REND::GLES2 | REND::GLES32) ? Graphics::PRIMITIVE::PRIMITIVE_TRIANGLES : Graphics::PRIMITIVE::PRIMITIVE_QUADS),
+                                Graphics::USAGE_TYPE::USAGE_DYNAMIC)
 {
 	constructor(characters, fontSize, antialiasing, fontDPI);
 }
@@ -61,20 +61,21 @@ void McFont::constructor(std::vector<wchar_t> characters, int fontSize, bool ant
 	m_iFontDPI = fontDPI;
 	m_textureAtlas = nullptr;
 	m_fHeight = 1.0f;
+	m_batchActive = false;
+	m_batchQueue.totalVerts = 0;
+	m_batchQueue.usedEntries = 0;
 
 	// setup error glyph
-	m_errorGlyph = {
-	    .character = UNKNOWN_CHAR,
-	    .uvPixelsX = 10,
-	    .uvPixelsY = 1,
-	    .sizePixelsX = 1,
-	    .sizePixelsY = 0,
-	    .left = 0,
-	    .top = 10,
-	    .width = 10,
-	    .rows = 1,
-	    .advance_x = 0
-	};
+	m_errorGlyph = {.character = UNKNOWN_CHAR,
+	                .uvPixelsX = 10,
+	                .uvPixelsY = 1,
+	                .sizePixelsX = 1,
+	                .sizePixelsY = 0,
+	                .left = 0,
+	                .top = 10,
+	                .width = 10,
+	                .rows = 1,
+	                .advance_x = 0};
 
 	// pre-allocate space for glyphs
 	m_vGlyphs.reserve(characters.size());
@@ -374,7 +375,7 @@ void McFont::beginBatch()
 {
 	m_batchActive = true;
 	m_batchQueue.totalVerts = 0;
-	m_batchQueue.entryList.clear();
+	m_batchQueue.usedEntries = 0; // don't clear/reallocate, reuse the entries instead
 }
 
 void McFont::addToBatch(const UString &text, const Vector3 &pos, Color color)
@@ -383,7 +384,21 @@ void McFont::addToBatch(const UString &text, const Vector3 &pos, Color color)
 	if (!m_batchActive || (verts = text.length() * VERTS_PER_VAO) == 0)
 		return;
 	m_batchQueue.totalVerts += verts;
-	m_batchQueue.entryList.push_back({text, pos, color});
+
+	if (m_batchQueue.usedEntries < m_batchQueue.entryList.size())
+	{
+		// reuse existing entry
+		BatchEntry &entry = m_batchQueue.entryList[m_batchQueue.usedEntries];
+		entry.text = text;
+		entry.pos = pos;
+		entry.color = color;
+	}
+	else
+	{
+		// need to add new entry
+		m_batchQueue.entryList.push_back({text, pos, color});
+	}
+	m_batchQueue.usedEntries++;
 }
 
 void McFont::flushBatch(Graphics *g)
@@ -399,16 +414,17 @@ void McFont::flushBatch(Graphics *g)
 	m_vao.empty();
 
 	size_t currentVertex = 0;
-	for (const auto &entry : m_batchQueue.entryList)
+	for (size_t i = 0; i < m_batchQueue.usedEntries; i++)
 	{
+		const auto &entry = m_batchQueue.entryList[i];
 		const size_t stringStart = currentVertex;
 		buildStringGeometry(entry.text, currentVertex);
 
-		for (size_t i = stringStart; i < currentVertex; i++)
+		for (size_t j = stringStart; j < currentVertex; j++)
 		{
-			m_vertices[i] += entry.pos;
-			m_vao.addVertex(m_vertices[i]);
-			m_vao.addTexcoord(m_texcoords[i]);
+			m_vertices[j] += entry.pos;
+			m_vao.addVertex(m_vertices[j]);
+			m_vao.addTexcoord(m_texcoords[j]);
 			m_vao.addColor(entry.color);
 		}
 	}
@@ -517,7 +533,9 @@ bool McFont::packGlyphRects(std::vector<GlyphRect> &rects, int atlasWidth, int a
 	{
 		int x, y, width;
 	};
-	std::vector<Skyline> skylines = {{0, 0, atlasWidth}};
+	std::vector<Skyline> skylines = {
+	    {0, 0, atlasWidth}
+    };
 
 	for (auto &rect : rects)
 	{

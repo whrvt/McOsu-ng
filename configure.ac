@@ -407,15 +407,24 @@ AS_IF([test "x$enable_debug" = "xyes"], [
         CPPFLAGS="$CPPFLAGS -DNDEBUG -D_NDEBUG"
         CXXFLAGS="${CXXFLAGS//-g -O2/} -O3 -g0" # where do those -g -O2 flags even come from...
         CFLAGS="${CFLAGS//-g -O2/} -O3 -g0"
-        AS_IF([test "x$enable_clang" = "xyes"], [
-            CXXFLAGS="$CXXFLAGS"
-            CFLAGS="$CFLAGS"
-        ],[
+
+        AS_IF([test "x$enable_clang" != "xyes"], [
             CXXFLAGS="$CXXFLAGS -fipa-pta"
             CFLAGS="$CFLAGS -fipa-pta"
         ])
     ])
     CXXFLAGS="$CXXFLAGS -fno-rtti -fno-exceptions" # disallow dynamic_cast and exceptions
+
+    AS_IF([test "x$enable_strip" != "xno"], [
+        MCOSU_LDFLAGS="$MCOSU_LDFLAGS -Wl,-s,--gc-sections" # strip and GC
+    ], [
+        # if "don't strip" was explicitly requested, add some debug info to the binary
+        AS_IF([test "x$enable_strip" = "xno"], [
+            CXXFLAGS="$CXXFLAGS -g"
+            CFLAGS="$CFLAGS -g"
+            MCOSU_LDFLAGS="$MCOSU_LDFLAGS -Wl,--no-gc-sections"
+        ])
+    ])
 ])
 
 AS_IF([test "x$enable_omp" = "xyes"], [
@@ -423,10 +432,6 @@ AS_IF([test "x$enable_omp" = "xyes"], [
         MCOSU_CXXFLAGS="$MCOSU_CXXFLAGS -fopenmp-optimistic-collapse"
     ])
     MCOSU_CXXFLAGS="$MCOSU_CXXFLAGS -fopenmp"
-])
-
-AS_IF([test "x$enable_strip" != "xno"], [
-    MCOSU_LDFLAGS="$MCOSU_LDFLAGS -Wl,-s,--gc-sections" # strip and GC
 ])
 
 AS_IF([test "x$enable_lto" != "xno"], [

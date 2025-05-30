@@ -104,6 +104,7 @@ void OpenGLLegacyInterface::endScene()
 {
 	popTransform();
 
+#ifdef _DEBUG
 	checkStackLeaks();
 
 	if (m_clipRectStack.size() > 0)
@@ -111,6 +112,8 @@ void OpenGLLegacyInterface::endScene()
 		engine->showMessageErrorFatal("ClipRect Stack Leak", "Make sure all push*() have a pop*()!");
 		engine->shutdown();
 	}
+
+#endif
 
 	m_syncobj->end();
 	m_bInScene = false;
