@@ -415,8 +415,7 @@ AS_IF([test "x$enable_debug" = "xyes"], [
             CFLAGS="$CFLAGS -fipa-pta"
         ])
     ])
-    CXXFLAGS="$CXXFLAGS -fno-rtti" # disallow dynamic_cast
-    MCOSU_CXXFLAGS="$MCOSU_CXXFLAGS -fno-exceptions" # disables std::thread constructor exception handling
+    CXXFLAGS="$CXXFLAGS -fno-rtti -fno-exceptions" # disallow dynamic_cast and exceptions
 ])
 
 AS_IF([test "x$enable_omp" = "xyes"], [
@@ -488,7 +487,7 @@ PKG_CHECK_AUTO([GL], [gl], [have_gl=yes], [have_gl=no])
 PKG_CHECK_AUTO([GLU], [glu], [have_glu=yes], [have_glu=no])
 
 SDL3_MIN_VERSION=3.4.0 # needs SDL_SetRelativeMouseTransform, not in any current (3.2.x) releases
-SDL3_BUILD_VERSION=b7082e7e1819017c04fc92fbc309c841579cb86c # git
+SDL3_BUILD_VERSION=a26e5f32e0f553379f9c15a1902d52a38953f148 # git
 FREETYPE2_MIN_VERSION=2.10.0
 FREETYPE2_BUILD_VERSION=2.13.3
 LIBJPEG_MIN_VERSION=3.0.0

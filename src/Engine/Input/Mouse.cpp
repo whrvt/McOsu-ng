@@ -159,7 +159,6 @@ void Mouse::update()
 void Mouse::onMotion(float x, float y, float xRel, float yRel, bool preTransformed)
 {
 	Vector2 newRel{xRel, yRel}, newAbs{x, y};
-	auto sens = m_fSensitivity;
 
 	m_bAbsolute = true; // assume we don't have to lock the cursor
 
@@ -170,14 +169,14 @@ void Mouse::onMotion(float x, float y, float xRel, float yRel, bool preTransform
 	if (!preTransformed && !osCursorVisible)
 	{
 		// need to apply sensitivity
-		if (!almostEqual(sens, 1.0f))
+		if (!almostEqual(m_fSensitivity, 1.0f))
 		{
 			// need to lock the OS cursor to the center of the screen if rawinput is disabled, otherwise it can exit the screen rect before the virtual cursor does
 			// don't do it here because we don't want the event loop to make more external calls than necessary,
 			// just set a flag to do it on the engine update loop
-			if (sens < 0.995f)
+			if (m_fSensitivity < 0.995f)
 				m_bAbsolute = false;
-			newRel *= sens;
+			newRel *= m_fSensitivity;
 			if (newRel.length() > 50.0f) // don't allow obviously bogus values
 				newRel.zero();
 			newAbs = m_vPosWithoutOffset + newRel;
@@ -192,11 +191,23 @@ void Mouse::onMotion(float x, float y, float xRel, float yRel, bool preTransform
 		}
 	}
 
-	m_vRawDelta = newRel / sens; // rawdelta doesn't include sensitivity or clipping
-	m_vDelta = newAbs - m_vPosWithoutOffset;
+	// we have to accumulate all motion collected in this frame, then reset it at the start of the next frame
+	// use Mouse::update always setting m_bLastFrameHadMotion to false as a signal that the deltas need to be reset now
+	if (!m_bLastFrameHadMotion)
+	{
+		m_vDelta.zero();
+		m_vRawDelta.zero();
+	}
+
+	// rawdelta doesn't include sensitivity or clipping
+	m_vRawDelta += (newRel / m_fSensitivity);
+	m_vDelta += newRel;
+	// for the absolute position, we can just update it directly
 	m_vPosWithoutOffset = newAbs;
 
 	m_bLastFrameHadMotion = true;
+
+	//debugLog("frame: {} rawInput: {} m_vRawDelta: {:.2f},{:.2f} m_vDelta: {:.2f},{:.2f} m_vPosWithoutOffset: {:.2f},{:.2f}\n", engine->getFrameCount() + 1, preTransformed, m_vRawDelta.x, m_vRawDelta.y, m_vDelta.x, m_vDelta.y, m_vPosWithoutOffset.x, m_vPosWithoutOffset.y);
 }
 
 void Mouse::resetWheelDelta()

@@ -141,7 +141,7 @@ MAIN_FUNC /* int argc, char *argv[] */
 		SDL_AppQuit(fmain, SDL_APP_FAILURE);
 
 	constexpr int SIZE_EVENTS = 64;
-	std::array<SDL_Event, SIZE_EVENTS> events;
+	std::array<SDL_Event, SIZE_EVENTS> events{};
 
 	while (fmain->isRunning())
 	{
@@ -290,6 +290,7 @@ SDL_AppResult SDLMain::handleEvent(SDL_Event *event)
 			else
 				SDL_AppQuit(this, SDL_APP_SUCCESS);
 		}
+		break;
 
 	// window events
 	case SDL_EVENT_WINDOW_FIRST ... SDL_EVENT_WINDOW_LAST:
@@ -305,6 +306,7 @@ SDL_AppResult SDLMain::handleEvent(SDL_Event *event)
 				else
 					SDL_AppQuit(this, SDL_APP_SUCCESS);
 			}
+			break;
 
 		case SDL_EVENT_WINDOW_FOCUS_GAINED:
 			m_bHasFocus = true;
@@ -355,7 +357,7 @@ SDL_AppResult SDLMain::handleEvent(SDL_Event *event)
 			break;
 
 		default:
-			if (envDebug())
+			if (m_bEnvDebug)
 				debugLog("DEBUG: unhandled SDL window event {}\n", static_cast<int>(event->window.type));
 			break;
 		}
@@ -394,6 +396,7 @@ SDL_AppResult SDLMain::handleEvent(SDL_Event *event)
 		break;
 
 	case SDL_EVENT_MOUSE_MOTION:
+		//debugLog("mouse motion on frame {}\n", engine->getFrameCount());
 		// cache the position
 		m_vLastRelMousePos.x = event->motion.xrel;
 		m_vLastRelMousePos.y = event->motion.yrel;
@@ -403,6 +406,8 @@ SDL_AppResult SDLMain::handleEvent(SDL_Event *event)
 		break;
 
 	default:
+		if (m_bEnvDebug)
+			debugLog("DEBUG: unhandled SDL event {}\n", static_cast<int>(event->type));
 		break;
 	}
 
