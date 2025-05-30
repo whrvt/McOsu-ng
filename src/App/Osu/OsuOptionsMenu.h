@@ -62,10 +62,10 @@ public:
 
 	void setUsername(UString username);
 
-	inline bool isFullscreen() const {return m_bFullscreen;}
+	[[nodiscard]] inline bool isFullscreen() const {return m_bFullscreen;}
 	bool isMouseInside();
 	bool isBusy();
-	[[maybe_unused]] inline bool isWorkshopLoading() const {return m_bWorkshopSkinSelectScheduled;}
+	[[maybe_unused]] [[nodiscard]] inline bool isWorkshopLoading() const {return m_bWorkshopSkinSelectScheduled;}
 
 private:
 	static constexpr const char *OSU_CONFIG_FILE_NAME = "osu.cfg";

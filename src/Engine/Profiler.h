@@ -64,15 +64,15 @@ public:
 	void enterScope();
 	bool exitScope();
 
-	inline const char *getName() const {return m_name;}
-	inline int getGroupID() const {return m_iGroupID;}
+	[[nodiscard]] inline const char *getName() const {return m_name;}
+	[[nodiscard]] inline int getGroupID() const {return m_iGroupID;}
 
-	inline ProfilerNode *getParent() const {return m_parent;}
-	inline ProfilerNode *getChild() const {return m_child;}
-	inline ProfilerNode *getSibling() const {return m_sibling;}
+	[[nodiscard]] inline ProfilerNode *getParent() const {return m_parent;}
+	[[nodiscard]] inline ProfilerNode *getChild() const {return m_child;}
+	[[nodiscard]] inline ProfilerNode *getSibling() const {return m_sibling;}
 
-	inline double getTimeCurrentFrame() const {return m_fTimeCurrentFrame;} // NOTE: this is incomplete if retrieved within engine update(), use getTimeLastFrame() instead
-	inline double getTimeLastFrame() const {return m_fTimeLastFrame;}
+	[[nodiscard]] inline double getTimeCurrentFrame() const {return m_fTimeCurrentFrame;} // NOTE: this is incomplete if retrieved within engine update(), use getTimeLastFrame() instead
+	[[nodiscard]] inline double getTimeLastFrame() const {return m_fTimeLastFrame;}
 
 private:
 	inline void constructor(const char *name, const char *group, ProfilerNode *parent);
@@ -167,13 +167,13 @@ public:
 		}
 	}
 
-	inline bool isEnabled() const {return (m_iEnabled != 0 || m_bEnableScheduled);}
-	inline bool isAtRoot() const {return m_bAtRoot;}
+	[[nodiscard]] inline bool isEnabled() const {return (m_iEnabled != 0 || m_bEnableScheduled);}
+	[[nodiscard]] inline bool isAtRoot() const {return m_bAtRoot;}
 
-	inline int getNumGroups() const {return m_iNumGroups;}
-	inline int getNumNodes() const {return m_iNumNodes;}
+	[[nodiscard]] inline int getNumGroups() const {return m_iNumGroups;}
+	[[nodiscard]] inline int getNumNodes() const {return m_iNumNodes;}
 
-	inline const ProfilerNode *getRoot() const {return &m_root;}
+	[[nodiscard]] inline const ProfilerNode *getRoot() const {return &m_root;}
 
 	inline const char *getGroupName(int groupID)
 	{

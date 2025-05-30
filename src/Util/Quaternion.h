@@ -26,13 +26,13 @@ public:
 	void fromAxis(const Vector3 &axis, float angleDeg);
 	void fromEuler(float yawDeg, float pitchDeg, float rollDeg);
 
-	inline float getYaw() const {return glm::degrees(glm::atan2(2.0f*(y*z + w*x), w*w - x*x - y*y + z*z));}
-	inline float getPitch() const {return glm::degrees(glm::asin(-2.0f*(x*z - w*y)));}
-	inline float getRoll() const {return glm::degrees(glm::atan2(2.0f*(x*y + w*z), w*w + x*x - y*y - z*z));}
+	[[nodiscard]] inline float getYaw() const {return glm::degrees(glm::atan2(2.0f*(y*z + w*x), w*w - x*x - y*y + z*z));}
+	[[nodiscard]] inline float getPitch() const {return glm::degrees(glm::asin(-2.0f*(x*z - w*y)));}
+	[[nodiscard]] inline float getRoll() const {return glm::degrees(glm::atan2(2.0f*(x*y + w*z), w*w + x*x - y*y - z*z));}
 
-	inline Quaternion getConjugate() const {return Quaternion(-x, -y, -z, w);}
-	Matrix4 getMatrix() const;
-	Matrix3 getMatrix3() const;
+	[[nodiscard]] inline Quaternion getConjugate() const {return Quaternion(-x, -y, -z, w);}
+	[[nodiscard]] Matrix4 getMatrix() const;
+	[[nodiscard]] Matrix3 getMatrix3() const;
 
 	Quaternion operator * (const Quaternion &quat) const;
 	Vector3 operator * (const Vector3 &vec) const;

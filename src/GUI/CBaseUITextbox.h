@@ -27,9 +27,9 @@ public:
 	void onChar(KeyboardEvent &e) override;
 	void onKeyDown(KeyboardEvent &e) override;
 
-	inline const UString getText() const {return m_sText;}
+	[[nodiscard]] inline const UString getText() const {return m_sText;}
 	inline UString &getTextRef() {return m_sText;} // DEPRECATED
-	inline McFont *getFont() const {return m_font;}
+	[[nodiscard]] inline McFont *getFont() const {return m_font;}
 
 	CBaseUITextbox *setDrawFrame(bool drawFrame) {m_bDrawFrame = drawFrame; return this;}
 	CBaseUITextbox *setDrawBackground(bool drawBackground) {m_bDrawBackground = drawBackground; return this;}

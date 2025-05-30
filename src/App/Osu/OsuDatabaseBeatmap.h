@@ -141,14 +141,14 @@ public:
 
 	void updateSetHeuristics();
 
-	inline UString getFolder() const {return m_sFolder;}
-	inline UString getFilePath() const {return m_sFilePath;}
+	[[nodiscard]] inline UString getFolder() const {return m_sFolder;}
+	[[nodiscard]] inline UString getFilePath() const {return m_sFilePath;}
 
-	inline unsigned long long getSortHack() const {return m_iSortHack;}
+	[[nodiscard]] inline unsigned long long getSortHack() const {return m_iSortHack;}
 
-	inline const std::vector<OsuDatabaseBeatmap*> &getDifficulties() const {return m_difficulties;}
+	[[nodiscard]] inline const std::vector<OsuDatabaseBeatmap*> &getDifficulties() const {return m_difficulties;}
 
-	inline const std::string &getMD5Hash() const {return m_sMD5Hash;}
+	[[nodiscard]] inline const std::string &getMD5Hash() const {return m_sMD5Hash;}
 
 	TIMING_INFO getTimingInfoForTime(unsigned long positionMS);
 	static TIMING_INFO getTimingInfoForTimeAndTimingPoints(unsigned long positionMS, std::vector<TIMINGPOINT> &timingpoints);
@@ -158,64 +158,64 @@ public:
 public:
 	// raw metadata
 
-	inline int getVersion() const {return m_iVersion;}
-	inline int getGameMode() const {return m_iGameMode;}
-	inline int getID() const {return m_iID;}
-	inline int getSetID() const {return m_iSetID;}
+	[[nodiscard]] inline int getVersion() const {return m_iVersion;}
+	[[nodiscard]] inline int getGameMode() const {return m_iGameMode;}
+	[[nodiscard]] inline int getID() const {return m_iID;}
+	[[nodiscard]] inline int getSetID() const {return m_iSetID;}
 
-	inline const UString &getTitle() const {return m_sTitle;}
-	inline const UString &getArtist() const {return m_sArtist;}
-	inline const UString &getCreator() const {return m_sCreator;}
-	inline const UString &getDifficultyName() const {return m_sDifficultyName;}
-	inline const UString &getSource() const {return m_sSource;}
-	inline const UString &getTags() const {return m_sTags;}
-	inline const UString &getBackgroundImageFileName() const {return m_sBackgroundImageFileName;}
-	inline const UString &getAudioFileName() const {return m_sAudioFileName;}
+	[[nodiscard]] inline const UString &getTitle() const {return m_sTitle;}
+	[[nodiscard]] inline const UString &getArtist() const {return m_sArtist;}
+	[[nodiscard]] inline const UString &getCreator() const {return m_sCreator;}
+	[[nodiscard]] inline const UString &getDifficultyName() const {return m_sDifficultyName;}
+	[[nodiscard]] inline const UString &getSource() const {return m_sSource;}
+	[[nodiscard]] inline const UString &getTags() const {return m_sTags;}
+	[[nodiscard]] inline const UString &getBackgroundImageFileName() const {return m_sBackgroundImageFileName;}
+	[[nodiscard]] inline const UString &getAudioFileName() const {return m_sAudioFileName;}
 
-	inline unsigned long getLengthMS() const {return m_iLengthMS;}
-	inline int getPreviewTime() const {return m_iPreviewTime;}
+	[[nodiscard]] inline unsigned long getLengthMS() const {return m_iLengthMS;}
+	[[nodiscard]] inline int getPreviewTime() const {return m_iPreviewTime;}
 
-	inline float getAR() const {return m_fAR;}
-	inline float getCS() const {return m_fCS;}
-	inline float getHP() const {return m_fHP;}
-	inline float getOD() const {return m_fOD;}
+	[[nodiscard]] inline float getAR() const {return m_fAR;}
+	[[nodiscard]] inline float getCS() const {return m_fCS;}
+	[[nodiscard]] inline float getHP() const {return m_fHP;}
+	[[nodiscard]] inline float getOD() const {return m_fOD;}
 
-	inline float getStackLeniency() const {return m_fStackLeniency;}
-	inline float getSliderTickRate() const {return m_fSliderTickRate;}
-	inline float getSliderMultiplier() const {return m_fSliderMultiplier;}
+	[[nodiscard]] inline float getStackLeniency() const {return m_fStackLeniency;}
+	[[nodiscard]] inline float getSliderTickRate() const {return m_fSliderTickRate;}
+	[[nodiscard]] inline float getSliderMultiplier() const {return m_fSliderMultiplier;}
 
-	inline const std::vector<TIMINGPOINT> &getTimingpoints() const {return m_timingpoints;}
+	[[nodiscard]] inline const std::vector<TIMINGPOINT> &getTimingpoints() const {return m_timingpoints;}
 
 
 
 	// redundant data
 
-	inline const UString &getFullSoundFilePath() const {return m_sFullSoundFilePath;}
-	inline const UString &getFullBackgroundImageFilePath() const {return m_sFullBackgroundImageFilePath;}
+	[[nodiscard]] inline const UString &getFullSoundFilePath() const {return m_sFullSoundFilePath;}
+	[[nodiscard]] inline const UString &getFullBackgroundImageFilePath() const {return m_sFullBackgroundImageFilePath;}
 
 
 
 	// precomputed data
 
-	inline float getStarsNomod() const {return m_fStarsNomod;}
+	[[nodiscard]] inline float getStarsNomod() const {return m_fStarsNomod;}
 
-	inline int getMinBPM() const {return m_iMinBPM;}
-	inline int getMaxBPM() const {return m_iMaxBPM;}
-	inline int getMostCommonBPM() const {return m_iMostCommonBPM;}
+	[[nodiscard]] inline int getMinBPM() const {return m_iMinBPM;}
+	[[nodiscard]] inline int getMaxBPM() const {return m_iMaxBPM;}
+	[[nodiscard]] inline int getMostCommonBPM() const {return m_iMostCommonBPM;}
 
-	inline int getNumObjects() const {return m_iNumObjects;}
-	inline int getNumCircles() const {return m_iNumCircles;}
-	inline int getNumSliders() const {return m_iNumSliders;}
-	inline int getNumSpinners() const {return m_iNumSpinners;}
+	[[nodiscard]] inline int getNumObjects() const {return m_iNumObjects;}
+	[[nodiscard]] inline int getNumCircles() const {return m_iNumCircles;}
+	[[nodiscard]] inline int getNumSliders() const {return m_iNumSliders;}
+	[[nodiscard]] inline int getNumSpinners() const {return m_iNumSpinners;}
 
 
 
 	// custom data
 
-	inline long long getLastModificationTime() const {return m_iLastModificationTime;}
+	[[nodiscard]] inline long long getLastModificationTime() const {return m_iLastModificationTime;}
 
-	inline long getLocalOffset() const {return m_iLocalOffset;}
-	inline long getOnlineOffset() const {return m_iOnlineOffset;}
+	[[nodiscard]] inline long getLocalOffset() const {return m_iLocalOffset;}
+	[[nodiscard]] inline long getOnlineOffset() const {return m_iOnlineOffset;}
 
 
 

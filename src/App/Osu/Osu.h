@@ -197,11 +197,11 @@ public:
 	bool isNotInPlayModeOrPaused();
 
 	bool isInMultiplayer();
-	inline bool isSkinLoading() const {return m_bSkinLoadScheduled;}
+	[[nodiscard]] inline bool isSkinLoading() const {return m_bSkinLoadScheduled;}
 
-	inline bool isSkipScheduled() const {return m_bSkipScheduled;}
-	inline bool isSeeking() const {return m_bSeeking;}
-	inline float getQuickSaveTime() const {return m_fQuickSaveTime;}
+	[[nodiscard]] inline bool isSkipScheduled() const {return m_bSkipScheduled;}
+	[[nodiscard]] inline bool isSeeking() const {return m_bSeeking;}
+	[[nodiscard]] inline float getQuickSaveTime() const {return m_fQuickSaveTime;}
 
 	bool shouldFallBackToLegacySliderRenderer(); // certain mods or actions require OsuSliders to render dynamically (e.g. wobble or the CS override slider)
 

@@ -56,7 +56,7 @@ public:
 	virtual void onKeyUp(KeyboardEvent &e);
 
 	virtual void onModUpdate() {;}	// this should make all the necessary internal updates to hitobjects when legacy osu mods or static mods change live (but also on start)
-	virtual bool isLoading() const;		// allows subclasses to delay the playing start, e.g. to load something
+	[[nodiscard]] virtual bool isLoading() const;		// allows subclasses to delay the playing start, e.g. to load something
 
 	virtual long getPVS();			// Potentially Visible Set gate time size, for optimizing draw() and update() when iterating over all hitobjects
 
@@ -94,73 +94,73 @@ public:
 	void seekPercentPlayable(double percent);
 	void seekMS(unsigned long ms);
 
-	inline Sound *getMusic() const {return m_music;}
-	unsigned long getTime() const;
-	unsigned long getStartTimePlayable() const;
-	unsigned long getLength() const;
-	unsigned long getLengthPlayable() const;
-	float getPercentFinished() const;
-	float getPercentFinishedPlayable() const;
+	[[nodiscard]] inline Sound *getMusic() const {return m_music;}
+	[[nodiscard]] unsigned long getTime() const;
+	[[nodiscard]] unsigned long getStartTimePlayable() const;
+	[[nodiscard]] unsigned long getLength() const;
+	[[nodiscard]] unsigned long getLengthPlayable() const;
+	[[nodiscard]] float getPercentFinished() const;
+	[[nodiscard]] float getPercentFinishedPlayable() const;
 
 	// live statistics
-	int getMostCommonBPM() const;
-	float getSpeedMultiplier() const;
-	inline int getNPS() const {return m_iNPS;}
-	inline int getND() const {return m_iND;}
-	inline int getHitObjectIndexForCurrentTime() const {return m_iCurrentHitObjectIndex;}
-	inline int getNumCirclesForCurrentTime() const {return m_iCurrentNumCircles;}
-	inline int getNumSlidersForCurrentTime() const {return m_iCurrentNumSliders;}
-	inline int getNumSpinnersForCurrentTime() const {return m_iCurrentNumSpinners;}
-	inline int getMaxPossibleCombo() const {return m_iMaxPossibleCombo;}
-	inline unsigned long long getScoreV2ComboPortionMaximum() const {return m_iScoreV2ComboPortionMaximum;}
-	inline double getAimStarsForUpToHitObjectIndex(int upToHitObjectIndex) const {return (m_aimStarsForNumHitObjects.size() > 0 && upToHitObjectIndex > -1 ? m_aimStarsForNumHitObjects[std::clamp<int>(upToHitObjectIndex, 0, m_aimStarsForNumHitObjects.size()-1)] : 0);}
-	inline double getAimSliderFactorForUpToHitObjectIndex(int upToHitObjectIndex) const {return (m_aimSliderFactorForNumHitObjects.size() > 0 && upToHitObjectIndex > -1 ? m_aimSliderFactorForNumHitObjects[std::clamp<int>(upToHitObjectIndex, 0, m_aimSliderFactorForNumHitObjects.size()-1)] : 0);}
-	inline double getAimDifficultSlidersForUpToHitObjectIndex(int upToHitObjectIndex) const {return (m_aimDifficultSlidersForNumHitObjects.size() > 0 && upToHitObjectIndex > -1 ? m_aimDifficultSlidersForNumHitObjects[std::clamp<int>(upToHitObjectIndex, 0, m_aimDifficultSlidersForNumHitObjects.size()-1)] : 0);}
-	inline double getAimDifficultStrainsForUpToHitObjectIndex(int upToHitObjectIndex) const {return (m_aimDifficultStrainsForNumHitObjects.size() > 0 && upToHitObjectIndex > -1 ? m_aimDifficultStrainsForNumHitObjects[std::clamp<int>(upToHitObjectIndex, 0, m_aimDifficultStrainsForNumHitObjects.size()-1)] : 0);}
-	inline double getSpeedStarsForUpToHitObjectIndex(int upToHitObjectIndex) const {return (m_speedStarsForNumHitObjects.size() > 0 && upToHitObjectIndex > -1 ? m_speedStarsForNumHitObjects[std::clamp<int>(upToHitObjectIndex, 0, m_speedStarsForNumHitObjects.size()-1)] : 0);}
-	inline double getSpeedNotesForUpToHitObjectIndex(int upToHitObjectIndex) const {return (m_speedNotesForNumHitObjects.size() > 0 && upToHitObjectIndex > -1 ? m_speedNotesForNumHitObjects[std::clamp<int>(upToHitObjectIndex, 0, m_speedNotesForNumHitObjects.size()-1)] : 0);}
-	inline double getSpeedDifficultStrainsForUpToHitObjectIndex(int upToHitObjectIndex) const {return (m_speedDifficultStrainsForNumHitObjects.size() > 0 && upToHitObjectIndex > -1 ? m_speedDifficultStrainsForNumHitObjects[std::clamp<int>(upToHitObjectIndex, 0, m_speedDifficultStrainsForNumHitObjects.size()-1)] : 0);}
-	inline const std::vector<double> &getAimStrains() const {return m_aimStrains;}
-	inline const std::vector<double> &getSpeedStrains() const {return m_speedStrains;}
+	[[nodiscard]] int getMostCommonBPM() const;
+	[[nodiscard]] float getSpeedMultiplier() const;
+	[[nodiscard]] inline int getNPS() const {return m_iNPS;}
+	[[nodiscard]] inline int getND() const {return m_iND;}
+	[[nodiscard]] inline int getHitObjectIndexForCurrentTime() const {return m_iCurrentHitObjectIndex;}
+	[[nodiscard]] inline int getNumCirclesForCurrentTime() const {return m_iCurrentNumCircles;}
+	[[nodiscard]] inline int getNumSlidersForCurrentTime() const {return m_iCurrentNumSliders;}
+	[[nodiscard]] inline int getNumSpinnersForCurrentTime() const {return m_iCurrentNumSpinners;}
+	[[nodiscard]] inline int getMaxPossibleCombo() const {return m_iMaxPossibleCombo;}
+	[[nodiscard]] inline unsigned long long getScoreV2ComboPortionMaximum() const {return m_iScoreV2ComboPortionMaximum;}
+	[[nodiscard]] inline double getAimStarsForUpToHitObjectIndex(int upToHitObjectIndex) const {return (m_aimStarsForNumHitObjects.size() > 0 && upToHitObjectIndex > -1 ? m_aimStarsForNumHitObjects[std::clamp<int>(upToHitObjectIndex, 0, m_aimStarsForNumHitObjects.size()-1)] : 0);}
+	[[nodiscard]] inline double getAimSliderFactorForUpToHitObjectIndex(int upToHitObjectIndex) const {return (m_aimSliderFactorForNumHitObjects.size() > 0 && upToHitObjectIndex > -1 ? m_aimSliderFactorForNumHitObjects[std::clamp<int>(upToHitObjectIndex, 0, m_aimSliderFactorForNumHitObjects.size()-1)] : 0);}
+	[[nodiscard]] inline double getAimDifficultSlidersForUpToHitObjectIndex(int upToHitObjectIndex) const {return (m_aimDifficultSlidersForNumHitObjects.size() > 0 && upToHitObjectIndex > -1 ? m_aimDifficultSlidersForNumHitObjects[std::clamp<int>(upToHitObjectIndex, 0, m_aimDifficultSlidersForNumHitObjects.size()-1)] : 0);}
+	[[nodiscard]] inline double getAimDifficultStrainsForUpToHitObjectIndex(int upToHitObjectIndex) const {return (m_aimDifficultStrainsForNumHitObjects.size() > 0 && upToHitObjectIndex > -1 ? m_aimDifficultStrainsForNumHitObjects[std::clamp<int>(upToHitObjectIndex, 0, m_aimDifficultStrainsForNumHitObjects.size()-1)] : 0);}
+	[[nodiscard]] inline double getSpeedStarsForUpToHitObjectIndex(int upToHitObjectIndex) const {return (m_speedStarsForNumHitObjects.size() > 0 && upToHitObjectIndex > -1 ? m_speedStarsForNumHitObjects[std::clamp<int>(upToHitObjectIndex, 0, m_speedStarsForNumHitObjects.size()-1)] : 0);}
+	[[nodiscard]] inline double getSpeedNotesForUpToHitObjectIndex(int upToHitObjectIndex) const {return (m_speedNotesForNumHitObjects.size() > 0 && upToHitObjectIndex > -1 ? m_speedNotesForNumHitObjects[std::clamp<int>(upToHitObjectIndex, 0, m_speedNotesForNumHitObjects.size()-1)] : 0);}
+	[[nodiscard]] inline double getSpeedDifficultStrainsForUpToHitObjectIndex(int upToHitObjectIndex) const {return (m_speedDifficultStrainsForNumHitObjects.size() > 0 && upToHitObjectIndex > -1 ? m_speedDifficultStrainsForNumHitObjects[std::clamp<int>(upToHitObjectIndex, 0, m_speedDifficultStrainsForNumHitObjects.size()-1)] : 0);}
+	[[nodiscard]] inline const std::vector<double> &getAimStrains() const {return m_aimStrains;}
+	[[nodiscard]] inline const std::vector<double> &getSpeedStrains() const {return m_speedStrains;}
 
 	// used by OsuHitObject children and OsuModSelector
-	OsuSkin *getSkin() const; // maybe use this for beatmap skins, maybe
-	inline int getRandomSeed() const {return m_iRandomSeed;}
+	[[nodiscard]] OsuSkin *getSkin() const; // maybe use this for beatmap skins, maybe
+	[[nodiscard]] inline int getRandomSeed() const {return m_iRandomSeed;}
 
-	inline long getCurMusicPos() const {return m_iCurMusicPos;}
-	inline long getCurMusicPosWithOffsets() const {return m_iCurMusicPosWithOffsets;}
+	[[nodiscard]] inline long getCurMusicPos() const {return m_iCurMusicPos;}
+	[[nodiscard]] inline long getCurMusicPosWithOffsets() const {return m_iCurMusicPosWithOffsets;}
 
-	float getRawAR() const;
-	float getAR() const;
-	float getCS() const;
-	float getHP() const;
-	float getRawOD() const;
-	float getOD() const;
+	[[nodiscard]] float getRawAR() const;
+	[[nodiscard]] float getAR() const;
+	[[nodiscard]] float getCS() const;
+	[[nodiscard]] float getHP() const;
+	[[nodiscard]] float getRawOD() const;
+	[[nodiscard]] float getOD() const;
 
 	// health
-	inline double getHealth() const {return m_fHealth;}
-	inline bool hasFailed() const {return m_bFailed;}
-	inline double getHPMultiplierNormal() const {return m_fHpMultiplierNormal;}
-	inline double getHPMultiplierComboEnd() const {return m_fHpMultiplierComboEnd;}
+	[[nodiscard]] inline double getHealth() const {return m_fHealth;}
+	[[nodiscard]] inline bool hasFailed() const {return m_bFailed;}
+	[[nodiscard]] inline double getHPMultiplierNormal() const {return m_fHpMultiplierNormal;}
+	[[nodiscard]] inline double getHPMultiplierComboEnd() const {return m_fHpMultiplierComboEnd;}
 
 	// database (legacy)
-	inline OsuDatabaseBeatmap *getSelectedDifficulty2() const {return m_selectedDifficulty2;}
+	[[nodiscard]] inline OsuDatabaseBeatmap *getSelectedDifficulty2() const {return m_selectedDifficulty2;}
 
 	// generic state
-	inline bool isPlaying() const {return m_bIsPlaying;}
-	inline bool isPaused() const {return m_bIsPaused;}
-	inline bool isRestartScheduled() const {return m_bIsRestartScheduled;}
-	inline bool isContinueScheduled() const {return m_bContinueScheduled;}
-	inline bool isWaiting() const {return m_bIsWaiting;}
-	inline bool isInSkippableSection() const {return m_bIsInSkippableSection;}
-	inline bool isInBreak() const {return m_bInBreak;}
-	inline bool shouldFlashWarningArrows() const {return m_bShouldFlashWarningArrows;}
-	inline float shouldFlashSectionPass() const {return m_fShouldFlashSectionPass;}
-	inline float shouldFlashSectionFail() const {return m_fShouldFlashSectionFail;}
-	bool isClickHeld() const; // is any key currently being held down
-	inline bool isKey1Down() const {return m_bClick1Held;}
-	inline bool isKey2Down() const {return m_bClick2Held;}
-	inline bool isLastKeyDownKey1() const {return m_bPrevKeyWasKey1;}
+	[[nodiscard]] inline bool isPlaying() const {return m_bIsPlaying;}
+	[[nodiscard]] inline bool isPaused() const {return m_bIsPaused;}
+	[[nodiscard]] inline bool isRestartScheduled() const {return m_bIsRestartScheduled;}
+	[[nodiscard]] inline bool isContinueScheduled() const {return m_bContinueScheduled;}
+	[[nodiscard]] inline bool isWaiting() const {return m_bIsWaiting;}
+	[[nodiscard]] inline bool isInSkippableSection() const {return m_bIsInSkippableSection;}
+	[[nodiscard]] inline bool isInBreak() const {return m_bInBreak;}
+	[[nodiscard]] inline bool shouldFlashWarningArrows() const {return m_bShouldFlashWarningArrows;}
+	[[nodiscard]] inline float shouldFlashSectionPass() const {return m_fShouldFlashSectionPass;}
+	[[nodiscard]] inline float shouldFlashSectionFail() const {return m_fShouldFlashSectionFail;}
+	[[nodiscard]] bool isClickHeld() const; // is any key currently being held down
+	[[nodiscard]] inline bool isKey1Down() const {return m_bClick1Held;}
+	[[nodiscard]] inline bool isKey2Down() const {return m_bClick2Held;}
+	[[nodiscard]] inline bool isLastKeyDownKey1() const {return m_bPrevKeyWasKey1;}
 
 	[[nodiscard]] virtual Type getType() const = 0;
 
@@ -171,12 +171,12 @@ public:
 	[[nodiscard]] const virtual OsuBeatmapMania* asMania() const { return nullptr; }
 	[[nodiscard]] const virtual OsuBeatmapExample* asExample() const { return nullptr; }
 
-	UString getTitle() const;
-	UString getArtist() const;
+	[[nodiscard]] UString getTitle() const;
+	[[nodiscard]] UString getArtist() const;
 
-	inline const std::vector<OsuDatabaseBeatmap::BREAK> &getBreaks() const {return m_breaks;}
-	unsigned long getBreakDurationTotal() const;
-	OsuDatabaseBeatmap::BREAK getBreakForTimeRange(long startMS, long positionMS, long endMS) const;
+	[[nodiscard]] inline const std::vector<OsuDatabaseBeatmap::BREAK> &getBreaks() const {return m_breaks;}
+	[[nodiscard]] unsigned long getBreakDurationTotal() const;
+	[[nodiscard]] OsuDatabaseBeatmap::BREAK getBreakForTimeRange(long startMS, long positionMS, long endMS) const;
 
 	// OsuHitObject and other helper functions
 	OsuScore::HIT addHitResult(OsuHitObject *hitObject, OsuScore::HIT hit, long delta, bool isEndOfCombo = false, bool ignoreOnHitErrorBar = false, bool hitErrorBarOnly = false, bool ignoreCombo = false, bool ignoreScore = false, bool ignoreHealth = false);
@@ -186,8 +186,8 @@ public:
 	void updateTimingPoints(long curPos);
 
 	// ILLEGAL:
-	inline const std::vector<OsuHitObject*> &getHitObjectsPointer() const {return m_hitobjects;}
-	inline float getBreakBackgroundFadeAnim() const {return m_fBreakBackgroundFade;}
+	[[nodiscard]] inline const std::vector<OsuHitObject*> &getHitObjectsPointer() const {return m_hitobjects;}
+	[[nodiscard]] inline float getBreakBackgroundFadeAnim() const {return m_fBreakBackgroundFade;}
 
 protected:
 	static ConVar *m_snd_speed_compensate_pitch_ref;

@@ -292,7 +292,7 @@ public:
 	void setDirectory(bool directory) {m_bIsDirectory = directory;}
 	void setPlaying(bool playing) {m_bPlaying = playing;}
 
-	inline bool isDirectory() const {return m_bIsDirectory;}
+	[[nodiscard]] inline bool isDirectory() const {return m_bIsDirectory;}
 
 private:
 	bool m_bSelected;

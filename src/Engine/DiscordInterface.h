@@ -37,7 +37,7 @@ public:
 
 	void setRichPresence(UString key, UString value, bool pool = false);
 
-	inline bool isReady() const {return m_bReady;}
+	[[nodiscard]] inline bool isReady() const {return m_bReady;}
 
 private:
 	bool m_bReady;

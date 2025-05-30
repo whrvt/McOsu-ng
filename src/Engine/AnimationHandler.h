@@ -47,7 +47,7 @@ public:
 	float getRemainingDuration(float *base) const;
 	bool isAnimating(float *base) const;
 
-	inline size_t getNumActiveAnimations() const {return m_vAnimations.size();}
+	[[nodiscard]] inline size_t getNumActiveAnimations() const {return m_vAnimations.size();}
 
 private:
 	enum class ANIMATION_TYPE : uint8_t

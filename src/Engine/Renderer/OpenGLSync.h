@@ -38,8 +38,8 @@ private:
 	SYNC_RESULT waitForSyncObject(GLsync syncObject, uint64_t timeoutNs);     // wait for a specific sync object to be reached
 	void deleteSyncObject(GLsync syncObject);                                 // delete a sync object
 	void setMaxFramesInFlight(int maxFrames);                                // set maximum frames in flight (default: 2)
-	int getMaxFramesInFlight() const { return m_iMaxFramesInFlight; }        // get current maximum frames in flight
-	int getCurrentFramesInFlight() const { return m_frameSyncQueue.size(); } // get actual frames in flight
+	[[nodiscard]] int getMaxFramesInFlight() const { return m_iMaxFramesInFlight; }        // get current maximum frames in flight
+	[[nodiscard]] int getCurrentFramesInFlight() const { return m_frameSyncQueue.size(); } // get actual frames in flight
 	void manageFrameSyncQueue(bool forceWait = false);                       // Clean up expired sync objects and limit frames in flight
 
 	typedef struct

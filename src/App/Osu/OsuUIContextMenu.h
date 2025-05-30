@@ -88,7 +88,7 @@ public:
 
 	virtual void update();
 
-	inline int getID() const {return m_iID;}
+	[[nodiscard]] inline int getID() const {return m_iID;}
 
 	void setTooltipText(UString text);
 
@@ -104,7 +104,7 @@ public:
 	OsuUIContextMenuTextbox(float xPos, float yPos, float xSize, float ySize, UString name, int id);
 	virtual ~OsuUIContextMenuTextbox() {;}
 
-	inline int getID() const {return m_iID;}
+	[[nodiscard]] inline int getID() const {return m_iID;}
 
 private:
 	int m_iID;

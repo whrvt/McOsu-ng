@@ -106,12 +106,12 @@ public:
 	bool isWaitingForPlayers();	// are we waiting for any player
 	bool isWaitingForClient();	// is the waiting state set for the local player
 
-	inline bool isDownloadingBeatmap() const {return m_downloads.size() > 0;}
+	[[nodiscard]] inline bool isDownloadingBeatmap() const {return m_downloads.size() > 0;}
 
 	inline std::vector<PLAYER> *getPlayers() {return &m_clientPlayers;}
 	//inline std::vector<PLAYER> *getServerPlayers() {return &m_serverPlayers;}
 
-	float getDownloadBeatmapPercentage() const;
+	[[nodiscard]] float getDownloadBeatmapPercentage() const;
 
 private:
 	struct BeatmapUploadState

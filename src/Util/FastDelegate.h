@@ -602,12 +602,12 @@ public:
 		else return true;
 	}
 #else // Evil Method
-	inline bool IsEqual (const DelegateMemento &x) const{
+	[[nodiscard]] inline bool IsEqual (const DelegateMemento &x) const{
 		return m_pthis==x.m_pthis && m_pFunction==x.m_pFunction;
 	}
 #endif
 	// Provide a strict weak ordering for DelegateMementos.
-	inline bool IsLess(const DelegateMemento &right) const {
+	[[nodiscard]] inline bool IsLess(const DelegateMemento &right) const {
 		// deal with static function pointers first
 #if !defined(FASTDELEGATE_USESTATICFUNCTIONHACK)
 		if (m_pStaticFunction !=0 || right.m_pStaticFunction!=0) 
@@ -625,7 +625,7 @@ public:
 	// m_pFunction can be zero even if the delegate is not empty!
 	inline bool operator ! () const		// Is it bound to anything?
 	{ return m_pthis==0 && m_pFunction==0; }
-	inline bool empty() const		// Is it bound to anything?
+	[[nodiscard]] inline bool empty() const		// Is it bound to anything?
 	{ return m_pthis==0 && m_pFunction==0; }
 public:
 	DelegateMemento & operator = (const DelegateMemento &right)  {
@@ -710,7 +710,7 @@ public:
 	}
 #endif
 	// These functions are required for invoking the stored function
-	inline GenericClass *GetClosureThis() const { return m_pthis; }
+	[[nodiscard]] inline GenericClass *GetClosureThis() const { return m_pthis; }
 	inline GenericMemFunc GetClosureMemPtr() const { return reinterpret_cast<GenericMemFunc>(m_pFunction); }
 
 // There are a few ways of dealing with static function pointers.
@@ -934,7 +934,7 @@ public:
 		return !m_Closure.IsEqualToStaticFuncPtr(funcptr);    }
 	inline bool operator ! () const	{	// Is it bound to anything?
 			return !m_Closure; }
-	inline bool empty() const	{
+	[[nodiscard]] inline bool empty() const	{
 			return !m_Closure; }
 	void clear() { m_Closure.clear();}
 	// Conversion to and from the DelegateMemento storage class
@@ -1019,7 +1019,7 @@ public:
 		return !m_Closure.IsEqualToStaticFuncPtr(funcptr);    }
 	inline bool operator ! () const	{	// Is it bound to anything?
 			return !m_Closure; }
-	inline bool empty() const	{
+	[[nodiscard]] inline bool empty() const	{
 			return !m_Closure; }
 	void clear() { m_Closure.clear();}
 	// Conversion to and from the DelegateMemento storage class
@@ -1104,7 +1104,7 @@ public:
 		return !m_Closure.IsEqualToStaticFuncPtr(funcptr);    }
 	inline bool operator ! () const	{	// Is it bound to anything?
 			return !m_Closure; }
-	inline bool empty() const	{
+	[[nodiscard]] inline bool empty() const	{
 			return !m_Closure; }
 	void clear() { m_Closure.clear();}
 	// Conversion to and from the DelegateMemento storage class
@@ -1189,7 +1189,7 @@ public:
 		return !m_Closure.IsEqualToStaticFuncPtr(funcptr);    }
 	inline bool operator ! () const	{	// Is it bound to anything?
 			return !m_Closure; }
-	inline bool empty() const	{
+	[[nodiscard]] inline bool empty() const	{
 			return !m_Closure; }
 	void clear() { m_Closure.clear();}
 	// Conversion to and from the DelegateMemento storage class
@@ -1274,7 +1274,7 @@ public:
 		return !m_Closure.IsEqualToStaticFuncPtr(funcptr);    }
 	inline bool operator ! () const	{	// Is it bound to anything?
 			return !m_Closure; }
-	inline bool empty() const	{
+	[[nodiscard]] inline bool empty() const	{
 			return !m_Closure; }
 	void clear() { m_Closure.clear();}
 	// Conversion to and from the DelegateMemento storage class
@@ -1359,7 +1359,7 @@ public:
 		return !m_Closure.IsEqualToStaticFuncPtr(funcptr);    }
 	inline bool operator ! () const	{	// Is it bound to anything?
 			return !m_Closure; }
-	inline bool empty() const	{
+	[[nodiscard]] inline bool empty() const	{
 			return !m_Closure; }
 	void clear() { m_Closure.clear();}
 	// Conversion to and from the DelegateMemento storage class
@@ -1444,7 +1444,7 @@ public:
 		return !m_Closure.IsEqualToStaticFuncPtr(funcptr);    }
 	inline bool operator ! () const	{	// Is it bound to anything?
 			return !m_Closure; }
-	inline bool empty() const	{
+	[[nodiscard]] inline bool empty() const	{
 			return !m_Closure; }
 	void clear() { m_Closure.clear();}
 	// Conversion to and from the DelegateMemento storage class
@@ -1529,7 +1529,7 @@ public:
 		return !m_Closure.IsEqualToStaticFuncPtr(funcptr);    }
 	inline bool operator ! () const	{	// Is it bound to anything?
 			return !m_Closure; }
-	inline bool empty() const	{
+	[[nodiscard]] inline bool empty() const	{
 			return !m_Closure; }
 	void clear() { m_Closure.clear();}
 	// Conversion to and from the DelegateMemento storage class
@@ -1614,7 +1614,7 @@ public:
 		return !m_Closure.IsEqualToStaticFuncPtr(funcptr);    }
 	inline bool operator ! () const	{	// Is it bound to anything?
 			return !m_Closure; }
-	inline bool empty() const	{
+	[[nodiscard]] inline bool empty() const	{
 			return !m_Closure; }
 	void clear() { m_Closure.clear();}
 	// Conversion to and from the DelegateMemento storage class

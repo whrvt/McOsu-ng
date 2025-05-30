@@ -83,38 +83,38 @@ public:
 
 	void setNumEZRetries(int numEZRetries) {m_iNumEZRetries = numEZRetries;}
 
-	inline float getStarsTomTotal() const {return m_fStarsTomTotal;}
-	inline float getStarsTomAim() const {return m_fStarsTomAim;}
-	inline float getStarsTomSpeed() const {return m_fStarsTomSpeed;}
-	inline float getPPv2() const {return m_fPPv2;}
-	inline int getIndex() const {return m_iIndex;}
+	[[nodiscard]] inline float getStarsTomTotal() const {return m_fStarsTomTotal;}
+	[[nodiscard]] inline float getStarsTomAim() const {return m_fStarsTomAim;}
+	[[nodiscard]] inline float getStarsTomSpeed() const {return m_fStarsTomSpeed;}
+	[[nodiscard]] inline float getPPv2() const {return m_fPPv2;}
+	[[nodiscard]] inline int getIndex() const {return m_iIndex;}
 
 	unsigned long long getScore();
-	inline GRADE getGrade() const {return m_grade;}
-	inline int getCombo() const {return m_iCombo;}
-	inline int getComboMax() const {return m_iComboMax;}
-	inline int getComboFull() const {return m_iComboFull;}
-	inline int getComboEndBitmask() const {return m_iComboEndBitmask;}
-	inline float getAccuracy() const {return m_fAccuracy;}
-	inline float getUnstableRate() const {return m_fUnstableRate;}
-	inline float getHitErrorAvgMin() const {return m_fHitErrorAvgMin;}
-	inline float getHitErrorAvgMax() const {return m_fHitErrorAvgMax;}
-	inline float getHitErrorAvgCustomMin() const {return m_fHitErrorAvgCustomMin;}
-	inline float getHitErrorAvgCustomMax() const {return m_fHitErrorAvgCustomMax;}
-	inline int getNumMisses() const {return m_iNumMisses;}
-	inline int getNumSliderBreaks() const {return m_iNumSliderBreaks;}
-	inline int getNum50s() const {return m_iNum50s;}
-	inline int getNum100s() const {return m_iNum100s;}
-	inline int getNum100ks() const {return m_iNum100ks;}
-	inline int getNum300s() const {return m_iNum300s;}
-	inline int getNum300gs() const {return m_iNum300gs;}
+	[[nodiscard]] inline GRADE getGrade() const {return m_grade;}
+	[[nodiscard]] inline int getCombo() const {return m_iCombo;}
+	[[nodiscard]] inline int getComboMax() const {return m_iComboMax;}
+	[[nodiscard]] inline int getComboFull() const {return m_iComboFull;}
+	[[nodiscard]] inline int getComboEndBitmask() const {return m_iComboEndBitmask;}
+	[[nodiscard]] inline float getAccuracy() const {return m_fAccuracy;}
+	[[nodiscard]] inline float getUnstableRate() const {return m_fUnstableRate;}
+	[[nodiscard]] inline float getHitErrorAvgMin() const {return m_fHitErrorAvgMin;}
+	[[nodiscard]] inline float getHitErrorAvgMax() const {return m_fHitErrorAvgMax;}
+	[[nodiscard]] inline float getHitErrorAvgCustomMin() const {return m_fHitErrorAvgCustomMin;}
+	[[nodiscard]] inline float getHitErrorAvgCustomMax() const {return m_fHitErrorAvgCustomMax;}
+	[[nodiscard]] inline int getNumMisses() const {return m_iNumMisses;}
+	[[nodiscard]] inline int getNumSliderBreaks() const {return m_iNumSliderBreaks;}
+	[[nodiscard]] inline int getNum50s() const {return m_iNum50s;}
+	[[nodiscard]] inline int getNum100s() const {return m_iNum100s;}
+	[[nodiscard]] inline int getNum100ks() const {return m_iNum100ks;}
+	[[nodiscard]] inline int getNum300s() const {return m_iNum300s;}
+	[[nodiscard]] inline int getNum300gs() const {return m_iNum300gs;}
 
-	inline int getNumEZRetries() const {return m_iNumEZRetries;}
+	[[nodiscard]] inline int getNumEZRetries() const {return m_iNumEZRetries;}
 
-	inline bool isDead() const {return m_bDead;}
-	inline bool hasDied() const {return m_bDied;}
+	[[nodiscard]] inline bool isDead() const {return m_bDead;}
+	[[nodiscard]] inline bool hasDied() const {return m_bDied;}
 
-	inline bool isUnranked() const {return m_bIsUnranked;}
+	[[nodiscard]] inline bool isUnranked() const {return m_bIsUnranked;}
 
 	static double getHealthIncrease(OsuBeatmap *beatmap, OsuScore::HIT hit);
 	static double getHealthIncrease(OsuScore::HIT hit, double HP = 5.0f, double hpMultiplierNormal = 1.0f, double hpMultiplierComboEnd = 1.0f, double hpBarMaximumForNormalization = 200.0f);

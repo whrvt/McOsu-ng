@@ -41,13 +41,13 @@ public:
 	virtual Vector2 pointAt(float t) = 0;			// with stacking
 	virtual Vector2 originalPointAt(float t) = 0;	// without stacking
 
-	inline float getStartAngle() const {return m_fStartAngle;}
-	inline float getEndAngle() const {return m_fEndAngle;}
+	[[nodiscard]] inline float getStartAngle() const {return m_fStartAngle;}
+	[[nodiscard]] inline float getEndAngle() const {return m_fEndAngle;}
 
-	inline const std::vector<Vector2> &getPoints() const {return m_curvePoints;}
-	inline const std::vector<std::vector<Vector2>> &getPointSegments() const {return m_curvePointSegments;}
+	[[nodiscard]] inline const std::vector<Vector2> &getPoints() const {return m_curvePoints;}
+	[[nodiscard]] inline const std::vector<std::vector<Vector2>> &getPointSegments() const {return m_curvePointSegments;}
 
-	inline float getPixelLength() const {return m_fPixelLength;}
+	[[nodiscard]] inline float getPixelLength() const {return m_fPixelLength;}
 
 protected:
 	// original input values
@@ -77,10 +77,10 @@ public:
 
 	virtual Vector2 pointAt(float t) = 0;
 
-	inline const int getNumPoints() const {return m_points.size();}
+	[[nodiscard]] inline const int getNumPoints() const {return m_points.size();}
 
-	inline const std::vector<Vector2> &getCurvePoints() const {return m_points;}
-	inline const std::vector<float> &getCurveDistances() const {return m_curveDistances;}
+	[[nodiscard]] inline const std::vector<Vector2> &getCurvePoints() const {return m_points;}
+	[[nodiscard]] inline const std::vector<float> &getCurveDistances() const {return m_curveDistances;}
 
 protected:
 	// either one must be called from one of the subclasses

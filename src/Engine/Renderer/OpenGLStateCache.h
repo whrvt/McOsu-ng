@@ -20,11 +20,11 @@ public:
 
 	// program state
 	void setCurrentProgram(int program);
-	int getCurrentProgram() const;
+	[[nodiscard]] int getCurrentProgram() const;
 
 	// framebuffer state
 	void setCurrentFramebuffer(int framebuffer);
-	int getCurrentFramebuffer() const;
+	[[nodiscard]] int getCurrentFramebuffer() const;
 
 	// viewport state
 	void setCurrentViewport(int x, int y, int width, int height);

@@ -310,7 +310,7 @@ public:
 		m_mat[index][2] = v.z;
 	}
 
-	const float *get() const { return &m_mat[0][0]; }
+	[[nodiscard]] const float *get() const { return &m_mat[0][0]; }
 	[[nodiscard]] const glm::mat3& getGLM() const { return m_mat; }
     [[nodiscard]] glm::mat3& getGLM() { return m_mat; }
 	[[nodiscard]] float getDeterminant() const { return glm::determinant(m_mat); }

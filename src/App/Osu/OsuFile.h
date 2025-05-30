@@ -32,14 +32,14 @@ public:
 	OsuFile(UString filepath, bool write = false, bool writeBufferOnly = false);
 	virtual ~OsuFile();
 
-	inline size_t getFileSize() const {return m_iFileSize;}
+	[[nodiscard]] inline size_t getFileSize() const {return m_iFileSize;}
 
 	// ILLEGAL:
-	inline unsigned char *getBuffer() const {return (unsigned char*)m_buffer;}
-	inline unsigned char *getReadPointer() const {return (unsigned char*)m_readPointer;}
-	inline const std::vector<char> &getWriteBuffer() const {return m_writeBuffer;}
+	[[nodiscard]] inline unsigned char *getBuffer() const {return (unsigned char*)m_buffer;}
+	[[nodiscard]] inline unsigned char *getReadPointer() const {return (unsigned char*)m_readPointer;}
+	[[nodiscard]] inline const std::vector<char> &getWriteBuffer() const {return m_writeBuffer;}
 
-	inline bool isReady() const {return m_bReady;}
+	[[nodiscard]] inline bool isReady() const {return m_bReady;}
 
 	void write();
 

@@ -87,13 +87,13 @@ public:
 	void setOnLocalServerStoppedListener(NetworkLocalServerStoppedListener listener) {m_localServerStoppedListener = listener;}
 
 	// getters
-	int getPing() const;
+	[[nodiscard]] int getPing() const;
 
-	inline uint32_t getLocalClientID() const {return m_iLocalClientID;}
-	inline UString getServerAddress() const {return m_sServerAddress;}
+	[[nodiscard]] inline uint32_t getLocalClientID() const {return m_iLocalClientID;}
+	[[nodiscard]] inline UString getServerAddress() const {return m_sServerAddress;}
 
-	bool isClient() const;
-	bool isServer() const;
+	[[nodiscard]] bool isClient() const;
+	[[nodiscard]] bool isServer() const;
 
 private:
 

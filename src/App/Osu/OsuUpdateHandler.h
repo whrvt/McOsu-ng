@@ -38,7 +38,7 @@ public:
 
 	void checkForUpdates();
 
-	inline STATUS getStatus() const {return m_status;}
+	[[nodiscard]] inline STATUS getStatus() const {return m_status;}
 	bool isUpdateAvailable();
 
 private:

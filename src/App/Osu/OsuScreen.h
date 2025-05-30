@@ -31,7 +31,7 @@ public:
 
 	virtual void setVisible(bool visible) {m_bVisible = visible;}
 
-	inline bool isVisible() const {return m_bVisible;}
+	[[nodiscard]] inline bool isVisible() const {return m_bVisible;}
 
 protected:
 	bool m_bVisible;
