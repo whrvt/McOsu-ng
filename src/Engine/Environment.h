@@ -22,7 +22,6 @@ class UString;
 class Engine;
 class Environment
 {
-	friend class SDLMain;
 public:
 	Environment(int argc, char *argv[]);
 	~Environment();
@@ -43,7 +42,7 @@ public:
 	[[nodiscard]] inline const std::vector<UString> &getCommandLine() const { return m_vCmdLine; }
 
 	// returns at least 1
-	[[nodiscard]] inline int getLogicalCPUCount() const { return SDL_GetNumLogicalCPUCores(); }
+	[[nodiscard]] static inline int getLogicalCPUCount() { return SDL_GetNumLogicalCPUCores(); }
 
 	// user
 	[[nodiscard]] UString getUsername();
@@ -141,8 +140,7 @@ public:
 
 	// debug
 	[[nodiscard]] inline bool envDebug() const { return m_bEnvDebug; }
-
-private:
+protected:
 	std::unordered_map<UString, std::optional<UString>> m_mArgMap;
 	std::vector<UString> m_vCmdLine;
 	Engine *initEngine();
@@ -206,10 +204,6 @@ private:
 	UString m_sCurrClipboardText;
 
 	// misc
-	inline void onProcessPriorityChange(float newValue)
-	{
-		SDL_SetCurrentThreadPriority(!!static_cast<int>(newValue) ? SDL_THREAD_PRIORITY_HIGH : SDL_THREAD_PRIORITY_NORMAL);
-	}
 	void initCursors();
 
 private:

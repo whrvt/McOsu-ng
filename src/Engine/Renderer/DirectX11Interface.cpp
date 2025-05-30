@@ -95,10 +95,7 @@ DirectX11Interface::~DirectX11Interface()
 
 	if (m_deviceContext != NULL)
 		m_deviceContext->Release();
-}
 
-void DirectX11Interface::init()
-{
 	// flags
 	UINT createDeviceFlags = 0;
 	createDeviceFlags = D3D11_CREATE_DEVICE_FLAG::D3D11_CREATE_DEVICE_SINGLETHREADED;

@@ -228,7 +228,6 @@ protected:
 	static ConVar *r_debug_drawimage;
 
 protected:
-	virtual void init() = 0; // must be called after the OS implementation constructor
 	virtual void onTransformUpdate(Matrix4 &projectionMatrix, Matrix4 &worldMatrix) = 0; // called if matrices have changed and need to be (re-)applied/uploaded
 
 	void updateTransform(bool force = false);

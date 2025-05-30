@@ -102,7 +102,6 @@ public:
 	inline const int getShaderGenericAttribUV() const {return m_iShaderTexturedGenericAttribUV;}
 
 protected:
-	virtual void init();
 	virtual void onTransformUpdate(Matrix4 &projectionMatrix, Matrix4 &worldMatrix);
 
 private:

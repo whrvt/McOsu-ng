@@ -39,22 +39,7 @@ OpenGLES2Interface::OpenGLES2Interface() : NullGraphicsInterface()
 
 	// persistent vars
 	m_color = 0xffffffff;
-}
 
-OpenGLES2Interface::~OpenGLES2Interface()
-{
-	SAFE_DELETE(m_shaderTexturedGeneric);
-
-	if (m_iVBOVertices != 0)
-		glDeleteBuffers(1, &m_iVBOVertices);
-	if (m_iVBOTexcoords != 0)
-		glDeleteBuffers(1, &m_iVBOTexcoords);
-	if (m_iVBOTexcolors != 0)
-		glDeleteBuffers(1, &m_iVBOTexcolors);
-}
-
-void OpenGLES2Interface::init()
-{
 	// enable
 	glEnable(GL_BLEND);
 
@@ -134,6 +119,18 @@ void OpenGLES2Interface::init()
 
 	// initialize the state cache (TODO: use it, like legacy interface does)
 	OpenGLStateCache::getInstance().initialize();
+}
+
+OpenGLES2Interface::~OpenGLES2Interface()
+{
+	SAFE_DELETE(m_shaderTexturedGeneric);
+
+	if (m_iVBOVertices != 0)
+		glDeleteBuffers(1, &m_iVBOVertices);
+	if (m_iVBOTexcoords != 0)
+		glDeleteBuffers(1, &m_iVBOTexcoords);
+	if (m_iVBOTexcolors != 0)
+		glDeleteBuffers(1, &m_iVBOTexcolors);
 }
 
 void OpenGLES2Interface::beginScene()

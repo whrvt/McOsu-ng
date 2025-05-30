@@ -43,18 +43,7 @@ OpenGL3Interface::OpenGL3Interface() : Graphics()
 	m_color = 0xffffffff;
 
 	m_syncobj = new OpenGLSync();
-}
 
-OpenGL3Interface::~OpenGL3Interface()
-{
-	SAFE_DELETE(m_shaderTexturedGeneric);
-
-	glDeleteVertexArrays(1, &m_iVA);
-	SAFE_DELETE(m_syncobj);
-}
-
-void OpenGL3Interface::init()
-{
 	// enable
 	glEnable(GL_BLEND);
 
@@ -152,6 +141,14 @@ void main() {
 
 	// initialize the state cache (TODO: use it, like legacy interface does)
 	OpenGLStateCache::getInstance().initialize();
+}
+
+OpenGL3Interface::~OpenGL3Interface()
+{
+	SAFE_DELETE(m_shaderTexturedGeneric);
+
+	glDeleteVertexArrays(1, &m_iVA);
+	SAFE_DELETE(m_syncobj);
 }
 
 void OpenGL3Interface::beginScene()

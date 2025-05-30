@@ -39,10 +39,7 @@ OpenGLLegacyInterface::OpenGLLegacyInterface() : Graphics()
 	m_fZ = 1;
 
 	m_syncobj = new OpenGLSync();
-}
 
-void OpenGLLegacyInterface::init()
-{
 	// enable
 	glEnable(GL_TEXTURE_2D);
 	glEnable(GL_BLEND);

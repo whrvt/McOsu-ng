@@ -98,7 +98,6 @@ public:
 	VertexArrayObject *createVertexArrayObject(Graphics::PRIMITIVE primitive, Graphics::USAGE_TYPE usage, bool keepInSystemMemory) final;
 
 protected:
-	void init() final;
 	void onTransformUpdate(Matrix4 &projectionMatrix, Matrix4 &worldMatrix) final;
 
 private:

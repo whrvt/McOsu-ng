@@ -103,7 +103,6 @@ public:
 	inline Matrix4 getMVP() const {return m_MP;}
 
 protected:
-	virtual void init();
 	virtual void onTransformUpdate(Matrix4 &projectionMatrix, Matrix4 &worldMatrix);
 
 private:

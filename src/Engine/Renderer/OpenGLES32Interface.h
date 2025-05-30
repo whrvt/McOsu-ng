@@ -117,7 +117,6 @@ public:
 	[[nodiscard]] inline Matrix4 getMVP() const { return m_MP; }
 
 protected:
-	void init() override;
 	void onTransformUpdate(Matrix4 &projectionMatrix, Matrix4 &worldMatrix) override;
 
 private:

@@ -45,7 +45,6 @@
 // thin environment subclass to provide SDL callbacks with direct access to members
 class SDLMain final : public Environment
 {
-	friend class Environment;
 public:
 	SDLMain(int argc, char *argv[]);
 	~SDLMain();

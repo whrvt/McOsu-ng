@@ -55,7 +55,7 @@ SoundEngine *SoundEngine::createSoundEngine()
 #endif
 }
 
-void SoundEngine::setOnOutputDeviceChange(std::function<void()> callback)
+void SoundEngine::setOnOutputDeviceChange(AudioOutputChangedCallback callback)
 {
 	m_outputDeviceChangeCallback = callback;
 }

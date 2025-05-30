@@ -123,7 +123,6 @@ public:
 	inline DirectX11Shader *getActiveShader() const {return m_activeShader;}
 
 protected:
-	virtual void init();
 	virtual void onTransformUpdate(Matrix4 &projectionMatrix, Matrix4 &worldMatrix);
 
 private:

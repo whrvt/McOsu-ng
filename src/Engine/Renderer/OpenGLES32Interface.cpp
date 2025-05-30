@@ -45,24 +45,7 @@ OpenGLES32Interface::OpenGLES32Interface() : Graphics()
 	m_bAntiAliasing = true;
 
 	m_syncobj = new OpenGLSync();
-}
 
-OpenGLES32Interface::~OpenGLES32Interface()
-{
-	SAFE_DELETE(m_shaderTexturedGeneric);
-
-	if (m_iVBOVertices != 0)
-		glDeleteBuffers(1, &m_iVBOVertices);
-	if (m_iVBOTexcoords != 0)
-		glDeleteBuffers(1, &m_iVBOTexcoords);
-	if (m_iVBOTexcolors != 0)
-		glDeleteBuffers(1, &m_iVBOTexcolors);
-
-	SAFE_DELETE(m_syncobj);
-}
-
-void OpenGLES32Interface::init()
-{
 	// check GL version
 	const GLubyte *version = glGetString(GL_VERSION);
 	debugLog("OpenGLES: OpenGL Version {:s}\n", version);
@@ -181,6 +164,20 @@ void main() {
 
 	// initialize the state cache
 	OpenGLStateCache::getInstance().initialize();
+}
+
+OpenGLES32Interface::~OpenGLES32Interface()
+{
+	SAFE_DELETE(m_shaderTexturedGeneric);
+
+	if (m_iVBOVertices != 0)
+		glDeleteBuffers(1, &m_iVBOVertices);
+	if (m_iVBOTexcoords != 0)
+		glDeleteBuffers(1, &m_iVBOTexcoords);
+	if (m_iVBOTexcolors != 0)
+		glDeleteBuffers(1, &m_iVBOTexcolors);
+
+	SAFE_DELETE(m_syncobj);
 }
 
 void OpenGLES32Interface::beginScene()

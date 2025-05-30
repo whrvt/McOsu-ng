@@ -191,7 +191,7 @@ Osu::Osu()
 	m_experimentalMods.push_back(convar->getConVarByName("osu_mod_approach_different"));
 
 	// engine settings/overrides
-	soundEngine->setOnOutputDeviceChange([this] {onAudioOutputDeviceChange();});
+	soundEngine->setOnOutputDeviceChange(fastdelegate::MakeDelegate(this, &Osu::onAudioOutputDeviceChange));
 
 	env->setWindowTitle(PACKAGE_NAME);
 	env->setCursorVisible(false);

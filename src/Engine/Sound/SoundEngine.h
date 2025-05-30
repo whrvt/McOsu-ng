@@ -33,7 +33,8 @@ public:
 	virtual void pause(Sound *snd) = 0;
 	virtual void stop(Sound *snd) = 0;
 
-	virtual void setOnOutputDeviceChange(std::function<void()> callback);
+	typedef fastdelegate::FastDelegate0<> AudioOutputChangedCallback;
+	virtual void setOnOutputDeviceChange(AudioOutputChangedCallback callback);
 
 	virtual void setOutputDevice(UString outputDeviceName) = 0;
 	virtual void setOutputDeviceForce(UString outputDeviceName) = 0;
@@ -63,7 +64,7 @@ protected:
 
 	bool m_bReady;
 	float m_fPrevOutputDeviceChangeCheckTime;
-	std::function<void()> m_outputDeviceChangeCallback;
+	AudioOutputChangedCallback m_outputDeviceChangeCallback;
 	std::vector<OUTPUT_DEVICE> m_outputDevices;
 
 	int m_iCurrentOutputDevice;

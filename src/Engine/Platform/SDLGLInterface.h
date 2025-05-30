@@ -18,8 +18,9 @@
 typedef struct SDL_Window SDL_Window;
 class SDLGLInterface final : public BackendGLInterface
 {
+	friend class Environment;
 public:
-	SDLGLInterface(SDL_Window *window);
+	SDLGLInterface(SDL_Window *window) : BackendGLInterface(), m_window(window) {}
 	~SDLGLInterface() override {;}
 
 	// scene
@@ -36,6 +37,7 @@ public:
 	int getVRAMTotal() override;
 
 private:
+	static void load();
 	SDL_Window *m_window;
 };
 

@@ -37,7 +37,9 @@
 ConVar debug_env("debug_env", false, FCVAR_NONE);
 ConVar _fullscreen_windowed_borderless_("fullscreen_windowed_borderless", false, FCVAR_NONE);
 ConVar _monitor_("monitor", 0, FCVAR_NONE, "monitor/display device to switch to, 0 = primary monitor");
-ConVar _processpriority("processpriority", 0, FCVAR_NONE, "sets the main process priority (0 = normal, 1 = high)");
+
+ConVar _processpriority("processpriority", 0, FCVAR_NONE, "sets the main process priority (0 = normal, 1 = high)",
+	[](float, float newValue) -> void {SDL_SetCurrentThreadPriority(!!static_cast<int>(newValue) ? SDL_THREAD_PRIORITY_HIGH : SDL_THREAD_PRIORITY_NORMAL);});
 
 Environment *env = nullptr;
 
@@ -119,7 +121,6 @@ Environment::Environment(int argc, char *argv[])
 	debug_env.setCallback(fastdelegate::MakeDelegate(this, &Environment::onLogLevelChange));
 	_fullscreen_windowed_borderless_.setCallback(fastdelegate::MakeDelegate(this, &Environment::onFullscreenWindowBorderlessChange));
 	_monitor_.setCallback(fastdelegate::MakeDelegate(this, &Environment::onMonitorChange));
-	_processpriority.setCallback(fastdelegate::MakeDelegate(this, &Environment::onProcessPriorityChange));
 }
 
 Environment::~Environment()
@@ -146,6 +147,8 @@ void Environment::update()
 
 Graphics *Environment::createRenderer()
 {
+	// need to load stuff dynamically before the base class constructors
+	SDLGLInterface::load();
 	return new SDLGLInterface(m_window);
 }
 
