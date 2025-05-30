@@ -15,17 +15,16 @@
 #include "Osu.h"
 #include "OsuSkin.h"
 
-ConVar osu_skin_animation_fps_override("osu_skin_animation_fps_override", -1.0f, FCVAR_NONE);
-
-ConVar *OsuSkinImage::m_osu_skin_mipmaps_ref = NULL;
+namespace cv::osu {
+ConVar skin_animation_fps_override("osu_skin_animation_fps_override", -1.0f, FCVAR_NONE);
+}
 
 OsuSkinImage::OsuSkinImage(OsuSkin *skin, UString skinElementName, Vector2 baseSizeForScaling2x, float osuSize, UString animationSeparator, bool ignoreDefaultSkin)
     : m_skin(skin), m_vBaseSizeForScaling2x(baseSizeForScaling2x), m_fOsuSize(osuSize), m_bReady(false), m_iCurMusicPos(0), m_iFrameCounter(0),
       m_iFrameCounterUnclamped(0), m_fLastFrameTime(0.0f), m_iBeatmapAnimationTimeStartOffset(0), m_bIsMissingTexture(false), m_bIsFromDefaultSkin(false),
       m_fDrawClipWidthPercent(1.0f)
 {
-	if (m_osu_skin_mipmaps_ref == nullptr)
-		m_osu_skin_mipmaps_ref = convar->getConVarByName("osu_skin_mipmaps");
+
 
 	// attempt to load skin elements and fallback to default
 	if (!load(skinElementName, animationSeparator, true) && !ignoreDefaultSkin)
@@ -75,9 +74,9 @@ bool OsuSkinImage::loadSingleImage(const UString &elementName, bool ignoreDefaul
 	};
 
 	const std::initializer_list<LoadCandidate> candidates = {
-	    {.path = userHd,        .exists = existsUserHd && OsuSkin::m_osu_skin_hd->getBool(),                          .scale = 2.0f, .isDefault = false},
+	    {.path = userHd,        .exists = existsUserHd && cv::osu::skin_hd.getBool(),                          .scale = 2.0f, .isDefault = false},
 	    {.path = userNormal,    .exists = existsUserNormal,	                                                       .scale = 1.0f, .isDefault = false},
-	    {.path = defaultHd,     .exists = existsDefaultHd && OsuSkin::m_osu_skin_hd->getBool() && !ignoreDefaultSkin, .scale = 2.0f, .isDefault = true },
+	    {.path = defaultHd,     .exists = existsDefaultHd && cv::osu::skin_hd.getBool() && !ignoreDefaultSkin, .scale = 2.0f, .isDefault = true },
 	    {.path = defaultNormal, .exists = existsDefaultNormal && !ignoreDefaultSkin,                                  .scale = 1.0f, .isDefault = true }
     };
 
@@ -88,10 +87,10 @@ bool OsuSkinImage::loadSingleImage(const UString &elementName, bool ignoreDefaul
 
 		IMAGE image;
 
-		if (OsuSkin::m_osu_skin_async->getBool())
+		if (cv::osu::skin_async.getBool())
 			resourceManager->requestNextLoadAsync();
 
-		image.img = resourceManager->loadImageAbsUnnamed(candidate.path, m_osu_skin_mipmaps_ref->getBool());
+		image.img = resourceManager->loadImageAbsUnnamed(candidate.path, cv::osu::skin_mipmaps.getBool());
 		image.scale = candidate.scale;
 
 		m_images.push_back(image);
@@ -265,7 +264,7 @@ void OsuSkinImage::update(bool useEngineTimeForAnimations, long curMusicPos)
 
 	m_iCurMusicPos = curMusicPos;
 
-	const float frameDurationInSeconds = (osu_skin_animation_fps_override.getFloat() > 0.0f ? (1.0f / osu_skin_animation_fps_override.getFloat()) : m_fFrameDuration);
+	const float frameDurationInSeconds = (cv::osu::skin_animation_fps_override.getFloat() > 0.0f ? (1.0f / cv::osu::skin_animation_fps_override.getFloat()) : m_fFrameDuration);
 
 	if (useEngineTimeForAnimations)
 	{

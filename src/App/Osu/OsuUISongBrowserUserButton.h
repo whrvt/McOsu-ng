@@ -31,7 +31,7 @@ private:
 	virtual void onMouseInside();
 	virtual void onMouseOutside();
 
-	ConVar *m_osu_scores_enabled_ref;
+	;
 
 	float m_fPP;
 	float m_fAcc;

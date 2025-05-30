@@ -10,30 +10,28 @@
 #include <algorithm>
 
 #include "Engine.h"
+#include "File.h"
+// #define ALLOW_DEVELOPMENT_CONVARS // NOTE: comment this out on release
+namespace cv::ConVars {
+ConVar sv_cheats("sv_cheats", true, FCVAR_NONE);
+}
 
-//#define ALLOW_DEVELOPMENT_CONVARS // NOTE: comment this out on release
-
-
-
-ConVar ConVars::sv_cheats("sv_cheats", true, FCVAR_NONE);
-
-
-
-static std::vector<ConVar*> &_getGlobalConVarArray()
+static std::vector<ConVar *> &_getGlobalConVarArray()
 {
-	static std::vector<ConVar*> g_vConVars; // (singleton)
+	static std::vector<ConVar *> g_vConVars; // (singleton)
 	return g_vConVars;
 }
 
-static std::unordered_map<std::string, ConVar*> &_getGlobalConVarMap()
+static std::unordered_map<std::string, ConVar *> &_getGlobalConVarMap()
 {
-	static std::unordered_map<std::string, ConVar*> g_vConVarMap; // (singleton)
+	static std::unordered_map<std::string, ConVar *> g_vConVarMap; // (singleton)
 	return g_vConVarMap;
 }
 
 static void _addConVar(ConVar *c)
 {
-	if (c->isFlagSet(FCVAR_UNREGISTERED)) return;
+	if (c->isFlagSet(FCVAR_UNREGISTERED))
+		return;
 
 	if (_getGlobalConVarArray().size() < 1)
 		_getGlobalConVarArray().reserve(1024);
@@ -61,20 +59,20 @@ static ConVar *_getConVar(const UString &name)
 
 ConVar::~ConVar()
 {
-    if (!isFlagSet(FCVAR_UNREGISTERED))
-    {
-        std::vector<ConVar*> &conVarArray = _getGlobalConVarArray();
-        std::unordered_map<std::string, ConVar*> &conVarMap = _getGlobalConVarMap();
+	if (!isFlagSet(FCVAR_UNREGISTERED))
+	{
+		std::vector<ConVar *> &conVarArray = _getGlobalConVarArray();
+		std::unordered_map<std::string, ConVar *> &conVarMap = _getGlobalConVarMap();
 
-        auto it = std::ranges::find(conVarArray, this);
-        if (it != conVarArray.end())
-            conVarArray.erase(it);
+		auto it = std::ranges::find(conVarArray, this);
+		if (it != conVarArray.end())
+			conVarArray.erase(it);
 
-        std::string nameStr(m_sName.toUtf8(), m_sName.lengthUtf8());
-        auto mapIt = conVarMap.find(nameStr);
-        if (mapIt != conVarMap.end() && mapIt->second == this)
-            conVarMap.erase(mapIt);
-    }
+		std::string nameStr(m_sName.toUtf8(), m_sName.lengthUtf8());
+		auto mapIt = conVarMap.find(nameStr);
+		if (mapIt != conVarMap.end() && mapIt->second == this)
+			conVarMap.erase(mapIt);
+	}
 }
 
 UString ConVar::typeToString(CONVAR_TYPE type)
@@ -93,8 +91,6 @@ UString ConVar::typeToString(CONVAR_TYPE type)
 
 	return "";
 }
-
-
 
 void ConVar::init(int flags)
 {
@@ -462,7 +458,8 @@ ConVar::ConVar(UString name, const char *sDefaultValue, int flags, const char *h
 
 void ConVar::exec()
 {
-	if (isFlagSet(FCVAR_CHEAT) && !(ConVars::sv_cheats.getRaw() > 0)) return;
+	if (isFlagSet(FCVAR_CHEAT) && !(cv::ConVars::sv_cheats.getRaw() > 0))
+		return;
 
 	if (m_callbackfunc != NULL)
 		m_callbackfunc();
@@ -470,7 +467,8 @@ void ConVar::exec()
 
 void ConVar::execArgs(UString args)
 {
-	if (isFlagSet(FCVAR_CHEAT) && !(ConVars::sv_cheats.getRaw() > 0)) return;
+	if (isFlagSet(FCVAR_CHEAT) && !(cv::ConVars::sv_cheats.getRaw() > 0))
+		return;
 
 	if (m_callbackfuncargs != NULL)
 		m_callbackfuncargs(args);
@@ -478,7 +476,8 @@ void ConVar::execArgs(UString args)
 
 void ConVar::execInt(float args)
 {
-	if (isFlagSet(FCVAR_CHEAT) && !(ConVars::sv_cheats.getRaw() > 0)) return;
+	if (isFlagSet(FCVAR_CHEAT) && !(cv::ConVars::sv_cheats.getRaw() > 0))
+		return;
 
 	if (m_callbackfuncfloat != NULL)
 		m_callbackfuncfloat(args);
@@ -486,7 +485,8 @@ void ConVar::execInt(float args)
 
 void ConVar::setDefaultFloat(float defaultValue)
 {
-	if (isFlagSet(FCVAR_HARDCODED)) return;
+	if (isFlagSet(FCVAR_HARDCODED))
+		return;
 
 	setDefaultFloatInt(defaultValue);
 }
@@ -499,7 +499,8 @@ void ConVar::setDefaultFloatInt(float defaultValue)
 
 void ConVar::setDefaultString(UString defaultValue)
 {
-	if (isFlagSet(FCVAR_HARDCODED)) return;
+	if (isFlagSet(FCVAR_HARDCODED))
+		return;
 
 	setDefaultStringInt(defaultValue);
 }
@@ -544,7 +545,8 @@ void ConVar::setValueInt(float value)
 
 void ConVar::setValue(UString sValue)
 {
-	if (isFlagSet(FCVAR_HARDCODED) || (isFlagSet(FCVAR_CHEAT) && !(ConVars::sv_cheats.getRaw() > 0))) return;
+	if (isFlagSet(FCVAR_HARDCODED) || (isFlagSet(FCVAR_CHEAT) && !(cv::ConVars::sv_cheats.getRaw() > 0)))
+		return;
 
 	setValueInt(sValue);
 }
@@ -612,13 +614,13 @@ void ConVar::setHelpString(UString helpString)
 	m_sHelpString = helpString;
 }
 
-
-
 //********************************//
 //  ConVarHandler Implementation  //
 //********************************//
 
-ConVar _emptyDummyConVar("emptyDummyConVar", 42.0f, FCVAR_NONE, "this placeholder convar is returned by convar->getConVarByName() if no matching convar is found");
+namespace cv {
+ConVar emptyDummyConVar("emptyDummyConVar", 42.0f, FCVAR_NONE, "this placeholder convar is returned by convar->getConVarByName() if no matching convar is found");
+}
 
 ConVarHandler *convar = new ConVarHandler();
 
@@ -632,7 +634,7 @@ ConVarHandler::~ConVarHandler()
 	convar = NULL;
 }
 
-const std::vector<ConVar*> &ConVarHandler::getConVarArray() const
+const std::vector<ConVar *> &ConVarHandler::getConVarArray() const
 {
 	return _getGlobalConVarArray();
 }
@@ -650,56 +652,60 @@ ConVar *ConVarHandler::getConVarByName(UString name, bool warnIfNotFound) const
 
 	if (warnIfNotFound)
 	{
-		debugLog(R"(ENGINE: ConVar "{}" does not exist...)""\n", name.toUtf8());
-		engine->showMessageWarning("Engine Error", UString::format(R"(ENGINE: ConVar "%s" does not exist...)""\n", name.toUtf8()));
+		debugLog(R"(ENGINE: ConVar "{}" does not exist...)"
+		         "\n",
+		         name.toUtf8());
+		engine->showMessageWarning("Engine Error", UString::format(R"(ENGINE: ConVar "%s" does not exist...)"
+		                                                           "\n",
+		                                                           name.toUtf8()));
 	}
 
 	if (!warnIfNotFound)
 		return NULL;
 	else
-		return &_emptyDummyConVar;
+		return &cv::emptyDummyConVar;
 }
 
-std::vector<ConVar*> ConVarHandler::getConVarByLetter(UString letters) const
+std::vector<ConVar *> ConVarHandler::getConVarByLetter(UString letters) const
 {
 	std::unordered_set<std::string> matchingConVarNames;
-	std::vector<ConVar*> matchingConVars;
+	std::vector<ConVar *> matchingConVars;
 	{
 		if (letters.length() < 1)
 			return matchingConVars;
 
-		const std::vector<ConVar*> &convars = getConVarArray();
+		const std::vector<ConVar *> &convars = getConVarArray();
 
 		// first try matching exactly
-		for (size_t i=0; i<convars.size(); i++)
+		for (auto convar : convars)
 		{
-			if (convars[i]->isFlagSet(FCVAR_HIDDEN) || convars[i]->isFlagSet(FCVAR_DEVELOPMENTONLY))
+			if (convar->isFlagSet(FCVAR_HIDDEN) || convar->isFlagSet(FCVAR_DEVELOPMENTONLY))
 				continue;
 
-			if (convars[i]->getName().find(letters, 0, letters.length()) == 0)
+			if (convar->getName().find(letters, 0, letters.length()) == 0)
 			{
 				if (letters.length() > 1)
-					matchingConVarNames.insert(std::string(convars[i]->getName().toUtf8(), convars[i]->getName().lengthUtf8()));
+					matchingConVarNames.insert(std::string(convar->getName().toUtf8(), convar->getName().lengthUtf8()));
 
-				matchingConVars.push_back(convars[i]);
+				matchingConVars.push_back(convar);
 			}
 		}
 
 		// then try matching substrings
 		if (letters.length() > 1)
 		{
-			for (size_t i=0; i<convars.size(); i++)
+			for (auto convar : convars)
 			{
-				if (convars[i]->isFlagSet(FCVAR_HIDDEN) || convars[i]->isFlagSet(FCVAR_DEVELOPMENTONLY))
+				if (convar->isFlagSet(FCVAR_HIDDEN) || convar->isFlagSet(FCVAR_DEVELOPMENTONLY))
 					continue;
 
-				if (convars[i]->getName().find(letters) != -1)
+				if (convar->getName().find(letters) != -1)
 				{
-					std::string stdName(convars[i]->getName().toUtf8(), convars[i]->getName().lengthUtf8());
+					std::string stdName(convar->getName().toUtf8(), convar->getName().lengthUtf8());
 					if (matchingConVarNames.find(stdName) == matchingConVarNames.end())
 					{
 						matchingConVarNames.insert(stdName);
-						matchingConVars.push_back(convars[i]);
+						matchingConVars.push_back(convar);
 					}
 				}
 			}
@@ -735,10 +741,10 @@ UString ConVarHandler::flagsToString(int flags)
 
 void ConVarHandler::resetAllConVarCallbacks()
 {
-	const std::vector<ConVar*> &convars = getConVarArray();
-	for (size_t i = 0; i < convars.size(); i++)
+	const std::vector<ConVar *> &convars = getConVarArray();
+	for (auto convar : convars)
 	{
-		convars[i]->resetCallbacks();
+		convar->resetCallbacks();
 	}
 }
 
@@ -754,30 +760,21 @@ static void _find(UString args)
 		return;
 	}
 
-	const std::vector<ConVar*> &convars = convar->getConVarArray();
+	const std::vector<ConVar *> &convars = convar->getConVarArray();
 
-	std::vector<ConVar*> matchingConVars;
-	for (size_t i=0; i<convars.size(); i++)
+	std::vector<ConVar *> matchingConVars;
+	for (auto convar : convars)
 	{
-		if (convars[i]->isFlagSet(FCVAR_HIDDEN) || convars[i]->isFlagSet(FCVAR_DEVELOPMENTONLY))
+		if (convar->isFlagSet(FCVAR_HIDDEN) || convar->isFlagSet(FCVAR_DEVELOPMENTONLY))
 			continue;
 
-		const UString name = convars[i]->getName();
+		const UString name = convar->getName();
 		if (name.find(args, 0, name.length()) != -1)
-			matchingConVars.push_back(convars[i]);
+			matchingConVars.push_back(convar);
 	}
 
 	if (matchingConVars.size() > 0)
-	{
-		struct CONVAR_SORT_COMPARATOR
-		{
-			bool operator () (const ConVar *var1, const ConVar *var2)
-			{
-				return (var1->getName() < var2->getName());
-			}
-		};
-		std::ranges::sort(matchingConVars, CONVAR_SORT_COMPARATOR());
-	}
+		std::ranges::sort(matchingConVars, [](const ConVar *var1, const ConVar *var2) -> bool { return (var1->getName() < var2->getName()); });
 
 	if (matchingConVars.size() < 1)
 	{
@@ -795,9 +792,9 @@ static void _find(UString args)
 		thelog.append(" ]\n");
 		debugLog("{:s}", thelog.toUtf8());
 
-		for (size_t i=0; i<matchingConVars.size(); i++)
+		for (auto &matchingConVar : matchingConVars)
 		{
-			UString tstring = matchingConVars[i]->getName();
+			UString tstring = matchingConVar->getName();
 			tstring.append("\n");
 			debugLog("{:s}", tstring.toUtf8());
 		}
@@ -816,7 +813,7 @@ static void _help(UString args)
 		return;
 	}
 
-	const std::vector<ConVar*> matches = convar->getConVarByLetter(args);
+	const std::vector<ConVar *> matches = convar->getConVarByLetter(args);
 
 	if (matches.size() < 1)
 	{
@@ -829,7 +826,7 @@ static void _help(UString args)
 
 	// use closest match
 	size_t index = 0;
-	for (size_t i=0; i<matches.size(); i++)
+	for (size_t i = 0; i < matches.size(); i++)
 	{
 		if (matches[i]->getName() == args)
 		{
@@ -869,22 +866,15 @@ static void _listcommands(void)
 {
 	debugLog("----------------------------------------------\n");
 	{
-		std::vector<ConVar*> convars = convar->getConVarArray();
-		struct CONVAR_SORT_COMPARATOR
-		{
-			bool operator () (ConVar const *var1, ConVar const *var2)
-			{
-				return (var1->getName() < var2->getName());
-			}
-		};
-		std::ranges::sort(convars, CONVAR_SORT_COMPARATOR());
+		std::vector<ConVar *> convars = convar->getConVarArray();
+		std::ranges::sort(convars, [](const ConVar *var1, const ConVar *var2) -> bool { return (var1->getName() < var2->getName()); });
 
-		for (size_t i=0; i<convars.size(); i++)
+		for (auto &convar : convars)
 		{
-			if (convars[i]->isFlagSet(FCVAR_HIDDEN) || convars[i]->isFlagSet(FCVAR_DEVELOPMENTONLY))
+			if (convar->isFlagSet(FCVAR_HIDDEN) || convar->isFlagSet(FCVAR_DEVELOPMENTONLY))
 				continue;
 
-			const ConVar *var = convars[i];
+			const ConVar *var = convar;
 
 			UString tstring = var->getName();
 			{
@@ -911,6 +901,53 @@ static void _listcommands(void)
 	debugLog("----------------------------------------------\n");
 }
 
-ConVar _find_("find", FCVAR_NONE, _find);
-ConVar _help_("help", FCVAR_NONE, _help);
-ConVar _listcommands_("listcommands", FCVAR_NONE, _listcommands);
+UString ConVar::getFancyDefaultValue() const
+{
+	switch (getType())
+	{
+	case ConVar::CONVAR_TYPE::CONVAR_TYPE_BOOL:
+		return m_fDefaultValue == 0 ? "false" : "true";
+	case ConVar::CONVAR_TYPE::CONVAR_TYPE_INT:
+		return UString::fmt("{:d}", static_cast<int>(m_fDefaultValue.load()));
+	case ConVar::CONVAR_TYPE::CONVAR_TYPE_FLOAT:
+		return UString::fmt("{:.4f}", m_fDefaultValue.load());
+	case ConVar::CONVAR_TYPE::CONVAR_TYPE_STRING: {
+		return UString::fmt("\"{:s}\"", m_sDefaultValue);
+	}
+	}
+
+	return "unreachable";
+}
+
+static void _dumpcommands(void)
+{
+	std::vector<ConVar *> convars = convar->getConVarArray();
+	std::ranges::sort(convars, [](const ConVar *var1, const ConVar *var2) -> bool { return (var1->getName() < var2->getName()); });
+	{
+		McFile commands_htm("commands.htm", McFile::TYPE::WRITE);
+		if (!commands_htm.canWrite())
+		{
+			debugLog("Failed to open commands.htm for writing\n");
+			return;
+		}
+
+		for (auto var : convars)
+		{
+			if (!commands_htm.writeLine(UString::fmt("<h4>{:s}</h4>{:s}<pre>\n{{\n\t\"default\": {:s}\n\t\"runtime_allocated\": {:s}\n}}\n</pre>",
+			                                         var->getName(), var->getHelpstring(), var->getFancyDefaultValue(),
+			                                         var->isFlagSet(FCVAR_DYNAMIC) ? "true" : "false")))
+			{
+				debugLog("failed to write var: {:s}, not writing out any more commands\n", var->getName());
+				break;
+			}
+		}
+	}
+	debugLog("Commands dumped to commands.htm\n");
+}
+
+namespace cv {
+ConVar find("find", FCVAR_NONE, _find);
+ConVar help("help", FCVAR_NONE, _help);
+ConVar listcommands("listcommands", FCVAR_NONE, _listcommands);
+ConVar dumpcommands("dumpcommands", FCVAR_NONE, _dumpcommands);
+}

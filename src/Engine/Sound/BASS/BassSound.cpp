@@ -19,12 +19,6 @@
 #include "File.h"
 #include "ResourceManager.h"
 
-extern ConVar debug_snd;
-extern ConVar snd_speed_compensate_pitch;
-extern ConVar snd_play_interp_duration;
-extern ConVar snd_play_interp_ratio;
-extern ConVar snd_file_min_size;
-
 BassSound::BassSound(UString filepath, bool stream, bool threeD, bool loop, bool prescan) : Sound(filepath, stream, threeD, loop, prescan)
 {
 	m_HSTREAM = 0;
@@ -129,7 +123,7 @@ void BassSound::initAsync()
 			{
 				if (code == BASS_ERROR_NOTAUDIO || code == BASS_ERROR_EMPTY)
 					m_bIgnored = true;
-				else if (debug_snd.getBool())
+				else if (cv::debug_snd.getBool())
 					debugLog("Sound Error: BASS_SampleLoad() error {} on file {:s}\n", code, m_sFilePath);
 			}
 		}
@@ -230,7 +224,7 @@ void BassSound::setPosition(double percent)
 	updatePlayInterpolationTime(lengthInSeconds * percent);
 
 	const BOOL res = BASS_ChannelSetPosition(handle, (QWORD)((double)(length)*percent), BASS_POS_BYTE);
-	if (!res && debug_snd.getBool())
+	if (!res && cv::debug_snd.getBool())
 		debugLog("position {:f} BASS_ChannelSetPosition() error {} on file {:s} (handle: {})\n", percent, BASS_ErrorGetCode(), m_sFilePath, handle);
 }
 
@@ -245,7 +239,7 @@ void BassSound::setPositionMS(unsigned long ms)
 	updatePlayInterpolationTime((double)ms / 1000.0);
 
 	const BOOL res = BASS_ChannelSetPosition(handle, position, BASS_POS_BYTE);
-	if (!res && debug_snd.getBool())
+	if (!res && cv::debug_snd.getBool())
 		debugLog("ms {} BASS_ChannelSetPosition() error {} on file {:s}\n", ms, BASS_ErrorGetCode(), m_sFilePath);
 }
 
@@ -268,11 +262,11 @@ void BassSound::setSpeed(float speed)
 	speed = std::clamp<float>(speed, 0.05f, 50.0f);
 
 	const SOUNDHANDLE handle = getHandle();
-	float originalFreq = convar->getConVarByName("snd_freq")->getFloat();
+	float originalFreq = cv::snd_freq.getFloat();
 	BASS_ChannelGetAttribute(handle, BASS_ATTRIB_FREQ, &originalFreq);
 
-	const DWORD attrib = snd_speed_compensate_pitch.getBool() ? BASS_ATTRIB_TEMPO : BASS_ATTRIB_TEMPO_FREQ;
-	const float value = snd_speed_compensate_pitch.getBool() ? (speed - 1.0f) * 100.0f : speed * originalFreq;
+	const DWORD attrib = cv::snd_speed_compensate_pitch.getBool() ? BASS_ATTRIB_TEMPO : BASS_ATTRIB_TEMPO_FREQ;
+	const float value = cv::snd_speed_compensate_pitch.getBool() ? (speed - 1.0f) * 100.0f : speed * originalFreq;
 
 	setBassAttribute(attrib, value, "speed");
 	m_fActualSpeedForDisabledPitchCompensation = speed;
@@ -339,7 +333,7 @@ unsigned long BassSound::getPositionMS()
 	const auto positionMS = static_cast<unsigned long>(positionInSeconds * 1000.0);
 
 	// special case: freshly started channel position jitters, lerp with engine time over set duration
-	const double interpDuration = snd_play_interp_duration.getFloat();
+	const double interpDuration = cv::snd_play_interp_duration.getFloat();
 	const unsigned long interpDurationMS = interpDuration * 1000;
 	if (interpDuration > 0.0 && positionMS < interpDurationMS)
 	{
@@ -348,7 +342,7 @@ unsigned long BassSound::getPositionMS()
 		if (m_fLastPlayTime > 0.0 && delta < interpDuration && isPlaying())
 		{
 			const double lerpPercent =
-			    std::clamp<double>(((delta / interpDuration) - snd_play_interp_ratio.getFloat()) / (1.0 - snd_play_interp_ratio.getFloat()), 0.0, 1.0);
+			    std::clamp<double>(((delta / interpDuration) - cv::snd_play_interp_ratio.getFloat()) / (1.0 - cv::snd_play_interp_ratio.getFloat()), 0.0, 1.0);
 			return static_cast<unsigned long>(std::lerp(delta * 1000.0, (double)positionMS, lerpPercent));
 		}
 	}
@@ -374,7 +368,7 @@ float BassSound::getSpeed()
 		return 1.0f;
 
 	// special case: disabled pitch compensation means BASS returns 1.0x always
-	if (!snd_speed_compensate_pitch.getBool())
+	if (!cv::snd_speed_compensate_pitch.getBool())
 		return m_fActualSpeedForDisabledPitchCompensation;
 
 	const SOUNDHANDLE handle = getHandle();
@@ -398,7 +392,7 @@ float BassSound::getPitch()
 
 float BassSound::getFrequency()
 {
-	const float defaultFreq = convar->getConVarByName("snd_freq")->getFloat();
+	const float defaultFreq = cv::snd_freq.getFloat();
 	if (!m_bReady)
 		return defaultFreq;
 
@@ -445,7 +439,7 @@ bool BassSound::setBassAttribute(DWORD attrib, float value, const char *debugNam
 	const SOUNDHANDLE handle = getHandle();
 	const BOOL result = BASS_ChannelSetAttribute(handle, attrib, value);
 
-	if (!result && debug_snd.getBool() && debugName)
+	if (!result && cv::debug_snd.getBool() && debugName)
 		debugLog("BASS_ChannelSetAttribute({}) failed with error {} on file {:s}\n", debugName, BASS_ErrorGetCode(), m_sFilePath);
 
 	return result != FALSE;
@@ -453,7 +447,7 @@ bool BassSound::setBassAttribute(DWORD attrib, float value, const char *debugNam
 
 void BassSound::updatePlayInterpolationTime(double positionSeconds)
 {
-	if (positionSeconds < snd_play_interp_duration.getFloat())
+	if (positionSeconds < cv::snd_play_interp_duration.getFloat())
 		m_fLastPlayTime = engine->getTime() - positionSeconds;
 	else
 		m_fLastPlayTime = 0.0;

@@ -14,9 +14,9 @@
 #include "Keyboard.h"
 
 #include "Osu.h"
-
-ConVar osu_notification_duration("osu_notification_duration", 1.25f, FCVAR_NONE);
-
+namespace cv::osu {
+ConVar notification_duration("osu_notification_duration", 1.25f, FCVAR_NONE);
+}
 OsuNotificationOverlay::OsuNotificationOverlay() : OsuScreen()
 {
 	m_bWaitForKey = false;
@@ -78,7 +78,7 @@ void OsuNotificationOverlay::onKeyDown(KeyboardEvent &e)
 	if (!isVisible()) return;
 
 	// escape always stops waiting for a key
-	if (e.getKeyCode() == KEY_ESCAPE || e.getKeyCode() == OsuKeyBindings::GAME_PAUSE.getVal<KEYCODE>())
+	if (e.getKeyCode() == KEY_ESCAPE || e.getKeyCode() == cv::osu::keybinds::GAME_PAUSE.getVal<KEYCODE>())
 	{
 		if (m_bWaitForKey)
 			e.consume();
@@ -90,10 +90,10 @@ void OsuNotificationOverlay::onKeyDown(KeyboardEvent &e)
 	if (m_bWaitForKey)
 	{
 		/*
-		float prevDuration = osu_notification_duration.getFloat();
-		osu_notification_duration.setValue(0.85f);
+		float prevDuration = cv::osu::notification_duration.getFloat();
+		cv::osu::notification_duration.setValue(0.85f);
 		addNotification(UString::format("The new key is (ASCII Keycode): %lu", e.getKeyCode()));
-		osu_notification_duration.setValue(prevDuration); // restore convar
+		cv::osu::notification_duration.setValue(prevDuration); // restore convar
 		*/
 
 		// HACKHACK: prevent left mouse click bindings if relevant
@@ -134,7 +134,7 @@ void OsuNotificationOverlay::onChar(KeyboardEvent &e)
 
 void OsuNotificationOverlay::addNotification(UString text, Color textColor, bool waitForKey, float duration)
 {
-	const float notificationDuration = (duration < 0.0f ? osu_notification_duration.getFloat() : duration);
+	const float notificationDuration = (duration < 0.0f ? cv::osu::notification_duration.getFloat() : duration);
 
 	// swap effect
 	if (isVisible())

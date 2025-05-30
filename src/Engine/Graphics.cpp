@@ -10,23 +10,17 @@
 #include "Engine.h"
 #include "ConVar.h"
 #include "Camera.h"
-
+namespace cv {
 ConVar r_3dscene_zn("r_3dscene_zn", 5.0f, FCVAR_CHEAT);
 ConVar r_3dscene_zf("r_3dscene_zf", 5000.0f, FCVAR_CHEAT);
 
-ConVar _r_globaloffset_x("r_globaloffset_x", 0.0f, FCVAR_CHEAT);
-ConVar _r_globaloffset_y("r_globaloffset_y", 0.0f, FCVAR_CHEAT);
-ConVar _r_debug_disable_cliprect("r_debug_disable_cliprect", false, FCVAR_CHEAT);
-ConVar _r_debug_disable_3dscene("r_debug_disable_3dscene", false, FCVAR_CHEAT);
-ConVar _r_debug_flush_drawstring("r_debug_flush_drawstring", false, FCVAR_NONE);
-ConVar _r_debug_drawimage("r_debug_drawimage", false, FCVAR_CHEAT);
-
-ConVar *Graphics::r_globaloffset_x = &_r_globaloffset_x;
-ConVar *Graphics::r_globaloffset_y = &_r_globaloffset_y;
-ConVar *Graphics::r_debug_disable_cliprect = &_r_debug_disable_cliprect;
-ConVar *Graphics::r_debug_disable_3dscene = &_r_debug_disable_3dscene;
-ConVar *Graphics::r_debug_flush_drawstring = &_r_debug_flush_drawstring;
-ConVar *Graphics::r_debug_drawimage = &_r_debug_drawimage;
+ConVar r_globaloffset_x("r_globaloffset_x", 0.0f, FCVAR_CHEAT);
+ConVar r_globaloffset_y("r_globaloffset_y", 0.0f, FCVAR_CHEAT);
+ConVar r_debug_disable_cliprect("r_debug_disable_cliprect", false, FCVAR_CHEAT);
+ConVar r_debug_disable_3dscene("r_debug_disable_3dscene", false, FCVAR_CHEAT);
+ConVar r_debug_flush_drawstring("r_debug_flush_drawstring", false, FCVAR_NONE);
+ConVar r_debug_drawimage("r_debug_drawimage", false, FCVAR_CHEAT);
+}
 
 Graphics::Graphics()
 {
@@ -131,7 +125,7 @@ Matrix4 Graphics::getProjectionMatrix()
 
 void Graphics::push3DScene(McRect region)
 {
-	if (r_debug_disable_3dscene->getBool()) return;
+	if (cv::r_debug_disable_3dscene.getBool()) return;
 
 	// you can't yet stack 3d scenes!
 	if (m_3dSceneStack.top())
@@ -159,7 +153,7 @@ void Graphics::push3DScene(McRect region)
 
 	// set projection matrix
 	Matrix4 trans2 = Matrix4().translate(-1 + (region.getWidth()) / (float)engine->getScreenWidth() + (region.getX()*2) / (float)engine->getScreenWidth(), 1 - region.getHeight() / (float)engine->getScreenHeight() - (region.getY()*2) / (float)engine->getScreenHeight(), 0);
-	Matrix4 projectionMatrix = trans2 * Camera::buildMatrixPerspectiveFov(glm::radians(m_fFov),((float) engine->getScreenWidth())/((float) engine->getScreenHeight()), r_3dscene_zn.getFloat(), r_3dscene_zf.getFloat());
+	Matrix4 projectionMatrix = trans2 * Camera::buildMatrixPerspectiveFov(glm::radians(m_fFov),((float) engine->getScreenWidth())/((float) engine->getScreenHeight()), cv::r_3dscene_zn.getFloat(), cv::r_3dscene_zf.getFloat());
 	m_3dSceneProjectionMatrix = projectionMatrix;
 
 	// set world matrix
@@ -295,5 +289,7 @@ void _mat_wireframe(UString oldValue, UString newValue)
 	g->setWireframe(newValue.toFloat() > 0.0f);
 }
 
-ConVar _mat_wireframe_("mat_wireframe", false, FCVAR_CHEAT, _mat_wireframe);
-ConVar _vsync_("vsync", false, FCVAR_NONE, _vsync);
+namespace cv {
+ConVar mat_wireframe("mat_wireframe", false, FCVAR_CHEAT, _mat_wireframe);
+ConVar vsync("vsync", false, FCVAR_NONE, _vsync);
+}

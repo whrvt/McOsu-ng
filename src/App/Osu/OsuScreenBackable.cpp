@@ -48,7 +48,7 @@ void OsuScreenBackable::onKeyDown(KeyboardEvent &e)
 	OsuScreen::onKeyDown(e);
 	if (!m_bVisible || e.isConsumed()) return;
 
-	if (e == KEY_ESCAPE || e == OsuKeyBindings::GAME_PAUSE.getVal<KEYCODE>())
+	if (e == KEY_ESCAPE || e == cv::osu::keybinds::GAME_PAUSE.getVal<KEYCODE>())
 		onBack();
 
 	e.consume();

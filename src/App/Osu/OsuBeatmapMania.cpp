@@ -20,12 +20,12 @@
 #include "OsuDatabaseBeatmap.h"
 
 #include "OsuHitObject.h"
-
-ConVar osu_mania_playfield_width_percent("osu_mania_playfield_width_percent", 0.25f, FCVAR_NONE);
-ConVar osu_mania_playfield_height_percent("osu_mania_playfield_height_percent", 0.85f, FCVAR_NONE);
-ConVar osu_mania_playfield_offset_x_percent("osu_mania_playfield_offset_x_percent", 0.44f, FCVAR_NONE);
-ConVar osu_mania_k_override("osu_mania_k_override", -1, FCVAR_NONE);
-
+namespace cv::osu {
+ConVar mania_playfield_width_percent("osu_mania_playfield_width_percent", 0.25f, FCVAR_NONE);
+ConVar mania_playfield_height_percent("osu_mania_playfield_height_percent", 0.85f, FCVAR_NONE);
+ConVar mania_playfield_offset_x_percent("osu_mania_playfield_offset_x_percent", 0.44f, FCVAR_NONE);
+ConVar mania_k_override("osu_mania_k_override", -1, FCVAR_NONE);
+}
 OsuBeatmapMania::OsuBeatmapMania() : OsuBeatmap()
 {
 	for (int i=0; i<128; i++)
@@ -130,9 +130,9 @@ void OsuBeatmapMania::update()
 	if (isLoading()) return; // only continue if we have loaded everything
 
 	// update playfield metrics
-	m_vPlayfieldSize.x = osu->getVirtScreenSize().x * osu_mania_playfield_width_percent.getFloat();
-	m_vPlayfieldSize.y = osu->getVirtScreenSize().y * osu_mania_playfield_height_percent.getFloat();
-	m_vPlayfieldCenter.x = osu->getVirtScreenSize().x * osu_mania_playfield_offset_x_percent.getFloat();
+	m_vPlayfieldSize.x = osu->getVirtScreenSize().x * cv::osu::mania_playfield_width_percent.getFloat();
+	m_vPlayfieldSize.y = osu->getVirtScreenSize().y * cv::osu::mania_playfield_height_percent.getFloat();
+	m_vPlayfieldCenter.x = osu->getVirtScreenSize().x * cv::osu::mania_playfield_offset_x_percent.getFloat();
 	m_vPlayfieldCenter.y = m_vPlayfieldSize.y / 2.0f;
 
 	// handle mouse 3d rotation
@@ -211,7 +211,7 @@ void OsuBeatmapMania::onPlayStart()
 int OsuBeatmapMania::getNumColumns() const
 {
 	if (m_selectedDifficulty2 != NULL)
-		return (osu_mania_k_override.getInt() > 0 ? osu_mania_k_override.getInt() : (int)std::round(m_selectedDifficulty2->getCS()));
+		return (cv::osu::mania_k_override.getInt() > 0 ? cv::osu::mania_k_override.getInt() : (int)std::round(m_selectedDifficulty2->getCS()));
 	else
 		return 4;
 }

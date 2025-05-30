@@ -27,10 +27,11 @@
 #include "OsuHUD.h"
 
 #include "OsuUIPauseMenuButton.h"
-
-ConVar osu_pause_dim_background("osu_pause_dim_background", true, FCVAR_NONE);
-ConVar osu_pause_dim_alpha("osu_pause_dim_alpha", 0.58f, FCVAR_NONE);
-ConVar osu_pause_anim_duration("osu_pause_anim_duration", 0.15f, FCVAR_NONE);
+namespace cv::osu {
+ConVar pause_dim_background("osu_pause_dim_background", true, FCVAR_NONE);
+ConVar pause_dim_alpha("osu_pause_dim_alpha", 0.58f, FCVAR_NONE);
+ConVar pause_anim_duration("osu_pause_anim_duration", 0.15f, FCVAR_NONE);
+}
 
 OsuPauseMenu::OsuPauseMenu() : OsuScreen()
 {
@@ -76,9 +77,9 @@ void OsuPauseMenu::draw()
 	if (m_bVisible || isAnimating)
 	{
 		// draw dim
-		if (osu_pause_dim_background.getBool())
+		if (cv::osu::pause_dim_background.getBool())
 		{
-			g->setColor(argb(m_fDimAnim * osu_pause_dim_alpha.getFloat(), 0.078f, 0.078f, 0.078f));
+			g->setColor(argb(m_fDimAnim * cv::osu::pause_dim_alpha.getFloat(), 0.078f, 0.078f, 0.078f));
 			g->fillRect(0, 0, osu->getVirtScreenWidth(), osu->getVirtScreenHeight());
 		}
 
@@ -227,16 +228,16 @@ void OsuPauseMenu::onKeyDown(KeyboardEvent &e)
 	OsuScreen::onKeyDown(e); // only used for options menu
 	if (!m_bVisible || e.isConsumed()) return;
 
-	if (e == OsuKeyBindings::LEFT_CLICK.getVal<KEYCODE>() || e == OsuKeyBindings::RIGHT_CLICK.getVal<KEYCODE>()
-	 || e == OsuKeyBindings::LEFT_CLICK_2.getVal<KEYCODE>() || e == OsuKeyBindings::RIGHT_CLICK_2.getVal<KEYCODE>())
+	if (e == cv::osu::keybinds::LEFT_CLICK.getVal<KEYCODE>() || e == cv::osu::keybinds::RIGHT_CLICK.getVal<KEYCODE>()
+	 || e == cv::osu::keybinds::LEFT_CLICK_2.getVal<KEYCODE>() || e == cv::osu::keybinds::RIGHT_CLICK_2.getVal<KEYCODE>())
 	{
 		bool fireButtonClick = false;
-		if ((e == OsuKeyBindings::LEFT_CLICK.getVal<KEYCODE>() || e == OsuKeyBindings::LEFT_CLICK_2.getVal<KEYCODE>()) && !m_bClick1Down)
+		if ((e == cv::osu::keybinds::LEFT_CLICK.getVal<KEYCODE>() || e == cv::osu::keybinds::LEFT_CLICK_2.getVal<KEYCODE>()) && !m_bClick1Down)
 		{
 			m_bClick1Down = true;
 			fireButtonClick = true;
 		}
-		if ((e == OsuKeyBindings::RIGHT_CLICK.getVal<KEYCODE>() || e == OsuKeyBindings::RIGHT_CLICK_2.getVal<KEYCODE>()) && !m_bClick2Down)
+		if ((e == cv::osu::keybinds::RIGHT_CLICK.getVal<KEYCODE>() || e == cv::osu::keybinds::RIGHT_CLICK_2.getVal<KEYCODE>()) && !m_bClick2Down)
 		{
 			m_bClick2Down = true;
 			fireButtonClick = true;
@@ -328,16 +329,16 @@ void OsuPauseMenu::onKeyDown(KeyboardEvent &e)
 	}
 
 	// consume ALL events, except for a few special binds which are allowed through (e.g. for unpause or changing the local offset in Osu.cpp)
-	if (e != KEY_ESCAPE && e != OsuKeyBindings::GAME_PAUSE.getVal<KEYCODE>() && e != OsuKeyBindings::INCREASE_LOCAL_OFFSET.getVal<KEYCODE>() && e != OsuKeyBindings::DECREASE_LOCAL_OFFSET.getVal<KEYCODE>())
+	if (e != KEY_ESCAPE && e != cv::osu::keybinds::GAME_PAUSE.getVal<KEYCODE>() && e != cv::osu::keybinds::INCREASE_LOCAL_OFFSET.getVal<KEYCODE>() && e != cv::osu::keybinds::DECREASE_LOCAL_OFFSET.getVal<KEYCODE>())
 		e.consume();
 }
 
 void OsuPauseMenu::onKeyUp(KeyboardEvent &e)
 {
-	if (e == OsuKeyBindings::LEFT_CLICK.getVal<KEYCODE>() || e == OsuKeyBindings::LEFT_CLICK_2.getVal<KEYCODE>())
+	if (e == cv::osu::keybinds::LEFT_CLICK.getVal<KEYCODE>() || e == cv::osu::keybinds::LEFT_CLICK_2.getVal<KEYCODE>())
 		m_bClick1Down = false;
 
-	if (e == OsuKeyBindings::RIGHT_CLICK.getVal<KEYCODE>() || e == OsuKeyBindings::RIGHT_CLICK_2.getVal<KEYCODE>())
+	if (e == cv::osu::keybinds::RIGHT_CLICK.getVal<KEYCODE>() || e == cv::osu::keybinds::RIGHT_CLICK_2.getVal<KEYCODE>())
 		m_bClick2Down = false;
 }
 
@@ -437,7 +438,7 @@ void OsuPauseMenu::setVisible(bool visible)
 	osu->updateConfineCursor();
 	osu->updateWindowsKeyDisable();
 
-	anim->moveQuadOut(&m_fDimAnim, (m_bVisible ? 1.0f : 0.0f), osu_pause_anim_duration.getFloat() * (m_bVisible ? 1.0f - m_fDimAnim : m_fDimAnim), true);
+	anim->moveQuadOut(&m_fDimAnim, (m_bVisible ? 1.0f : 0.0f), cv::osu::pause_anim_duration.getFloat() * (m_bVisible ? 1.0f - m_fDimAnim : m_fDimAnim), true);
 }
 
 void OsuPauseMenu::setContinueEnabled(bool continueEnabled)

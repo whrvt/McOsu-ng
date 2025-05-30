@@ -13,15 +13,9 @@
 #include "Engine.h"
 #include "File.h"
 #include "ResourceManager.h"
-
-extern ConVar debug_snd;
-extern ConVar snd_speed_compensate_pitch;
-extern ConVar snd_play_interp_duration;
-extern ConVar snd_play_interp_ratio;
-extern ConVar snd_file_min_size;
-extern ConVar snd_freq;
-
+namespace cv {
 ConVar snd_async_buffer("snd_async_buffer", 65536, FCVAR_NONE, "BASS_CONFIG_ASYNCFILE_BUFFER length in bytes. Set to 0 to disable.");
+}
 
 BassSound2::BassSound2(UString filepath, bool stream, bool threeD, bool loop, bool prescan) : Sound(filepath, stream, threeD, loop, prescan)
 {
@@ -107,7 +101,7 @@ void BassSound2::initAsync()
 	if (m_bStream)
 	{
 		auto flags = BASS_STREAM_DECODE | BASS_SAMPLE_FLOAT | BASS_STREAM_PRESCAN | unicodeFlag;
-		if (snd_async_buffer.getInt() > 0)
+		if (cv::snd_async_buffer.getInt() > 0)
 			flags |= BASS_ASYNCFILE;
 
 		m_stream = BASS_StreamCreateFile(false, m_sFilePath.plat_str(), 0, 0, flags);
@@ -238,7 +232,7 @@ void BassSound2::setPositionMS(unsigned long ms)
 		{
 			if (!BASS_Mixer_ChannelSetPosition(m_stream, target_pos, BASS_POS_BYTE | BASS_POS_DECODETO | BASS_POS_MIXER_RESET))
 			{
-				if (debug_snd.getBool())
+				if (cv::debug_snd.getBool())
 				{
 					debugLog("BassSound2::setPositionMS( {} ) BASS_ChannelSetPosition() error {} on file {:s}\n", ms, BASS_ErrorGetCode(), m_sFilePath);
 				}
@@ -250,7 +244,7 @@ void BassSound2::setPositionMS(unsigned long ms)
 		{
 			if (!BASS_ChannelSetPosition(m_stream, target_pos, BASS_POS_BYTE | BASS_POS_DECODETO | BASS_POS_FLUSH))
 			{
-				if (debug_snd.getBool())
+				if (cv::debug_snd.getBool())
 				{
 					debugLog("BassSound2::setPositionMS( {} ) BASS_ChannelSetPosition() error {} on file {:s}\n", ms, BASS_ErrorGetCode(), m_sFilePath);
 				}
@@ -274,7 +268,7 @@ void BassSound2::setPositionMS(unsigned long ms)
 
 		if (!BASS_ChannelSetPosition(m_stream, target_pos, BASS_POS_BYTE | BASS_POS_DECODETO | BASS_POS_FLUSH))
 		{
-			if (debug_snd.getBool())
+			if (cv::debug_snd.getBool())
 			{
 				debugLog("BassSound2::setPositionMS( {} ) BASS_ChannelSetPosition() error {} on file {:s}\n", ms, BASS_ErrorGetCode(), m_sFilePath);
 			}
@@ -309,7 +303,7 @@ void BassSound2::setPositionMS_fast(unsigned int ms)
 	{
 		if (!BASS_Mixer_ChannelSetPosition(m_stream, target_pos, BASS_POS_BYTE | BASS_POS_MIXER_RESET))
 		{
-			if (debug_snd.getBool())
+			if (cv::debug_snd.getBool())
 			{
 				debugLog("BassSound2::setPositionMS_fast( {} ) BASS_ChannelSetPosition() error {} on file {:s}\n", ms, BASS_ErrorGetCode(), m_sFilePath);
 			}
@@ -321,7 +315,7 @@ void BassSound2::setPositionMS_fast(unsigned int ms)
 	{
 		if (!BASS_ChannelSetPosition(m_stream, target_pos, BASS_POS_BYTE | BASS_POS_FLUSH))
 		{
-			if (debug_snd.getBool())
+			if (cv::debug_snd.getBool())
 			{
 				debugLog("BassSound2::setPositionMS( {} ) BASS_ChannelSetPosition() error {} on file {:s}\n", ms, BASS_ErrorGetCode(), m_sFilePath);
 			}
@@ -354,11 +348,11 @@ void BassSound2::setSpeed(float speed)
 
 	speed = std::clamp<float>(speed, 0.05f, 50.0f);
 
-	float freq = snd_freq.getFloat();
+	float freq = cv::snd_freq.getFloat();
 	BASS_ChannelGetAttribute(m_stream, BASS_ATTRIB_FREQ, &freq);
 
-	BASS_ChannelSetAttribute(m_stream, (snd_speed_compensate_pitch.getBool() ? BASS_ATTRIB_TEMPO : BASS_ATTRIB_TEMPO_FREQ),
-	                         (snd_speed_compensate_pitch.getBool() ? (speed - 1.0f) * 100.0f : speed * freq));
+	BASS_ChannelSetAttribute(m_stream, (cv::snd_speed_compensate_pitch.getBool() ? BASS_ATTRIB_TEMPO : BASS_ATTRIB_TEMPO_FREQ),
+	                         (cv::snd_speed_compensate_pitch.getBool() ? (speed - 1.0f) * 100.0f : speed * freq));
 
 	m_fSpeed = speed;
 }
@@ -508,7 +502,7 @@ unsigned long BassSound2::getPositionMS()
 
 	// special case: a freshly started channel position jitters, lerp with engine time over a set duration to smooth
 	// things over
-	double interpDuration = snd_play_interp_duration.getFloat();
+	double interpDuration = cv::snd_play_interp_duration.getFloat();
 	if (interpDuration <= 0.0)
 		return positionMS;
 
@@ -518,7 +512,7 @@ unsigned long BassSound2::getPositionMS()
 
 	double speedMultiplier = getSpeed();
 	double delta = channel_age * speedMultiplier;
-	double interp_ratio = snd_play_interp_ratio.getFloat();
+	double interp_ratio = cv::snd_play_interp_ratio.getFloat();
 	if (delta < interpDuration)
 	{
 		delta = (engine->getTime() - m_fLastPlayTime) * speedMultiplier;
@@ -543,7 +537,7 @@ float BassSound2::getSpeed()
 
 float BassSound2::getFrequency()
 {
-	auto default_freq = snd_freq.getFloat();
+	auto default_freq = cv::snd_freq.getFloat();
 	if (!m_bReady)
 		return default_freq;
 	if (!m_bStream)

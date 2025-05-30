@@ -13,10 +13,7 @@
 
 #include "ConVar.h"
 #include "Engine.h"
-
-// this shouldn't be here, but McKay hardcoded it in places where it breaks if it doesnt exist...
-ConVar win_snd_fallback_dsound("win_snd_fallback_dsound", false, FCVAR_NONE, "use DirectSound instead of WASAPI");
-
+namespace cv {
 ConVar snd_output_device("snd_output_device", "Default", FCVAR_NONE);
 ConVar snd_restart("snd_restart");
 ConVar snd_freq("snd_freq", 44100, FCVAR_NONE, "output sampling rate in Hz");
@@ -25,12 +22,24 @@ ConVar snd_restrict_play_frame("snd_restrict_play_frame", true, FCVAR_NONE,
 ConVar snd_change_check_interval("snd_change_check_interval", 0.0f, FCVAR_NONE,
                                  "check for output device changes every this many seconds. 0 = disabled (default)");
 
+// TO BE BE REMOVED
+ConVar win_snd_fallback_dsound("win_snd_fallback_dsound", false, FCVAR_NONE, "use DirectSound instead of WASAPI");
+
+ConVar win_snd_wasapi_buffer_size("win_snd_wasapi_buffer_size", 0.011f, FCVAR_NONE,
+                                  "buffer size/length in seconds (e.g. 0.011 = 11 ms), directly responsible for audio delay and crackling");
+ConVar win_snd_wasapi_period_size("win_snd_wasapi_period_size", 0.0f, FCVAR_NONE,
+                                  "interval between OutputWasapiProc calls in seconds (e.g. 0.016 = 16 ms) (0 = use default)");
+ConVar win_snd_wasapi_exclusive("win_snd_wasapi_exclusive", true, FCVAR_NONE, "whether to use exclusive device mode to further reduce latency");
+ConVar win_snd_wasapi_shared_volume_affects_device("win_snd_wasapi_shared_volume_affects_device", false, FCVAR_NONE,
+                                                   "if in shared mode, whether to affect device volume globally or use separate session volume (default)");
+}
+
 void _volume(UString oldValue, UString newValue)
 {
 	soundEngine->setVolume(newValue.toFloat());
 }
 
-ConVar _volume_("volume", 1.0f, FCVAR_NONE, _volume);
+ConVar volume("volume", 1.0f, FCVAR_NONE, _volume);
 
 SoundEngine::SoundEngine()
 {

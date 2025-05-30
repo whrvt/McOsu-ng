@@ -26,10 +26,11 @@
 #include "OsuUISongBrowserSongDifficultyButton.h"
 #include "OsuUISongBrowserScoreButton.h"
 #include "OsuUIContextMenu.h"
-
-ConVar osu_draw_songbrowser_thumbnails("osu_draw_songbrowser_thumbnails", true, FCVAR_NONE);
-ConVar osu_songbrowser_thumbnail_delay("osu_songbrowser_thumbnail_delay", 0.1f, FCVAR_NONE);
-ConVar osu_songbrowser_thumbnail_fade_in_duration("osu_songbrowser_thumbnail_fade_in_duration", 0.1f, FCVAR_NONE);
+namespace cv::osu {
+ConVar draw_songbrowser_thumbnails("osu_draw_songbrowser_thumbnails", true, FCVAR_NONE);
+ConVar songbrowser_thumbnail_delay("osu_songbrowser_thumbnail_delay", 0.1f, FCVAR_NONE);
+ConVar songbrowser_thumbnail_fade_in_duration("osu_songbrowser_thumbnail_fade_in_duration", 0.1f, FCVAR_NONE);
+}
 
 float OsuUISongBrowserSongButton::thumbnailYRatio = 1.333333f;
 
@@ -111,16 +112,16 @@ void OsuUISongBrowserSongButton::update()
 
 void OsuUISongBrowserSongButton::drawBeatmapBackgroundThumbnail(Image *image)
 {
-	if (!osu_draw_songbrowser_thumbnails.getBool() || osu->getSkin()->getVersion() < 2.2f) return;
+	if (!cv::osu::draw_songbrowser_thumbnails.getBool() || osu->getSkin()->getVersion() < 2.2f) return;
 
 	float alpha = 1.0f;
-	if (osu_songbrowser_thumbnail_fade_in_duration.getFloat() > 0.0f)
+	if (cv::osu::songbrowser_thumbnail_fade_in_duration.getFloat() > 0.0f)
 	{
 		if (image == NULL || !image->isReady())
 			m_fThumbnailFadeInTime = engine->getTime();
 		else if (m_fThumbnailFadeInTime > 0.0f && engine->getTime() > m_fThumbnailFadeInTime)
 		{
-			alpha = std::clamp<float>((engine->getTime() - m_fThumbnailFadeInTime)/osu_songbrowser_thumbnail_fade_in_duration.getFloat(), 0.0f, 1.0f);
+			alpha = std::clamp<float>((engine->getTime() - m_fThumbnailFadeInTime)/cv::osu::songbrowser_thumbnail_fade_in_duration.getFloat(), 0.0f, 1.0f);
 			alpha = 1.0f - (1.0f - alpha)*(1.0f - alpha);
 		}
 	}
@@ -151,7 +152,7 @@ void OsuUISongBrowserSongButton::drawBeatmapBackgroundThumbnail(Image *image)
 	g->popTransform();
 
 	// debug cliprect bounding box
-	if (Osu::debug->getBool())
+	if (cv::osu::debug.getBool())
 	{
 		Vector2 clipRectPos = Vector2(clipRect.getX(), clipRect.getY()-1);
 		Vector2 clipRectSize = Vector2(clipRect.getWidth(), clipRect.getHeight());

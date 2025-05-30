@@ -10,7 +10,9 @@
 #include "Engine.h"
 #include "ConVar.h"
 
+namespace cv {
 ConVar debug_anim("debug_anim", false, FCVAR_NONE);
+}
 
 AnimationHandler *anim = NULL;
 
@@ -44,7 +46,7 @@ void AnimationHandler::update()
 		// calculate percentage
 		float percent = std::clamp<float>((engine->getTime() - animation.m_fStartTime) / (animation.m_fDuration), 0.0f, 1.0f);
 
-		if (debug_anim.getBool())
+		if (cv::debug_anim.getBool())
 			debugLog("animation #{}, percent = {:f}\n", i, percent);
 
 		// check if finished
@@ -52,7 +54,7 @@ void AnimationHandler::update()
 		{
 			*animation.m_fBase = animation.m_fTarget;
 
-			if (debug_anim.getBool())
+			if (cv::debug_anim.getBool())
 				debugLog("removing animation #{}, dtime = {:f}\n", i, engine->getTime() - animation.m_fStartTime);
 
 			m_vAnimations.erase(m_vAnimations.begin() + i);
@@ -114,7 +116,7 @@ void AnimationHandler::update()
 	}
 
 	// TODO: prevent this from happening
-	if (debug_anim.getBool() && (m_vAnimations.size() > 512))
+	if (cv::debug_anim.getBool() && (m_vAnimations.size() > 512))
 		debugLog("WARNING: AnimationHandler has {} animations!\n", m_vAnimations.size());
 
 	//printf("AnimStackSize = %i\n", m_vAnimations.size());

@@ -9,10 +9,10 @@
 #ifndef ENGINE_H
 #define ENGINE_H
 
+#include "App.h"
 #include "KeyboardListener.h"
 #include "Timing.h"
 #include "cbase.h"
-#include "App.h"
 
 #include "fmt/color.h"
 
@@ -139,6 +139,7 @@ public:
 	[[nodiscard]] inline ConsoleBox *getConsoleBox() const { return m_consoleBox; }
 	[[nodiscard]] inline Console *getConsole() const { return m_console; }
 	[[nodiscard]] inline CBaseUIContainer *getGUI() const { return m_guiContainer; }
+	static void printVersion();
 
 private:
 	// input devices
@@ -181,7 +182,6 @@ private:
 	McMath *m_math;
 
 public:
-	// logging stuff (should use the debugLog interface)
 	class ContextLogger
 	{
 	public:
@@ -223,7 +223,12 @@ public:
 			Engine::logImpl(contextPrefix + message, color);
 		}
 	};
-
+	template <typename... Args>
+	static void logRaw(fmt::format_string<Args...> fmt, Args &&...args)
+	{
+		auto message = fmt::format(fmt, std::forward<Args>(args)...);
+		Engine::logImpl(message);
+	}
 private:
 	// logging stuff (implementation)
 	static void logToConsole(std::optional<Color> color, UString message);

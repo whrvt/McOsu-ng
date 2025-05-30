@@ -379,7 +379,7 @@ void DirectX11Interface::beginScene()
 	// push main transforms
 	pushTransform();
 	setProjectionMatrix(defaultProjectionMatrix);
-	translate(r_globaloffset_x->getFloat(), r_globaloffset_y->getFloat());
+	translate(cv::r_globaloffset_x.getFloat(), cv::r_globaloffset_y.getFloat());
 
 	// and apply them
 	updateTransform();
@@ -746,7 +746,7 @@ void DirectX11Interface::drawImage(Image *image)
 	}
 	image->unbind();
 
-	if (r_debug_drawimage->getBool())
+	if (cv::r_debug_drawimage.getBool())
 	{
 		setColor(0xbbff00ff);
 		drawRect(x, y, width, height);
@@ -989,7 +989,7 @@ void DirectX11Interface::drawVAO(VertexArrayObject *vao)
 
 void DirectX11Interface::setClipRect(McRect clipRect)
 {
-	if (r_debug_disable_cliprect->getBool()) return;
+	if (cv::r_debug_disable_cliprect.getBool()) return;
 	//if (m_bIs3DScene) return; // HACKHACK: TODO:
 
 	setClipping(true);

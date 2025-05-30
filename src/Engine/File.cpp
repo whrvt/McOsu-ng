@@ -18,11 +18,10 @@
 
 namespace fs = std::filesystem;
 
+namespace cv {
 ConVar debug_file("debug_file", false, FCVAR_NONE);
 ConVar file_size_max("file_size_max", 1024, FCVAR_NONE, "maximum filesize sanity limit in MB, all files bigger than this are not allowed to load");
-
-ConVar *McFile::debug = &debug_file;
-ConVar *McFile::size_max = &file_size_max;
+}
 
 //------------------------------------------------------------------------------
 // encapsulation of directory caching logic
@@ -225,7 +224,7 @@ McFile::FILETYPE McFile::existsCaseInsensitive(UString &filePath, fs::path &path
 		resolvedPath.append('/');
 	resolvedPath.append(resolvedName);
 
-	if (McFile::debug->getBool())
+	if (cv::debug_file.getBool())
 		debugLog("File: Case-insensitive match found for {:s} -> {:s}\n", path.string(), resolvedPath);
 
 	// now update the given paths with the actual found path
@@ -269,7 +268,7 @@ McFile::McFile(UString filePath, TYPE type) : m_filePath(filePath), m_type(type)
 			return;
 	}
 
-	if (McFile::debug->getBool())
+	if (cv::debug_file.getBool())
 		debugLog("File: Opening {:s}\n", filePath);
 
 	m_ready = true;
@@ -283,7 +282,7 @@ bool McFile::openForReading()
 
 	if (fileType != McFile::FILETYPE::FILE)
 	{
-		if (McFile::debug->getBool())
+		if (cv::debug_file.getBool())
 			debugLog("File Error: Path {:s} {:s}\n", m_filePath, fileType == McFile::FILETYPE::NONE ? "doesn't exist" : "is not a file");
 		return false;
 	}
@@ -317,9 +316,9 @@ bool McFile::openForReading()
 		debugLog("File Error: FileSize is < 0\n");
 		return false;
 	}
-	else if (std::cmp_greater(m_fileSize, 1024 * 1024 * McFile::size_max->getInt())) // size sanity check
+	else if (std::cmp_greater(m_fileSize, 1024 * 1024 * cv::file_size_max.getInt())) // size sanity check
 	{
-		debugLog("File Error: FileSize of {:s} is > {} MB!!!\n", m_filePath, McFile::size_max->getInt());
+		debugLog("File Error: FileSize of {:s} is > {} MB!!!\n", m_filePath, cv::file_size_max.getInt());
 		return false;
 	}
 
@@ -365,6 +364,17 @@ void McFile::write(const char *buffer, size_t size)
 	m_ofstream->write(buffer, size);
 }
 
+bool McFile::writeLine(const UString &line, bool insertNewline) {
+	if (!canWrite())
+		return false;
+
+	std::string writeLine = line.toUtf8();
+	if (insertNewline)
+		writeLine = writeLine + "\n";
+	m_ofstream->write(writeLine.c_str(), static_cast<std::streamsize>(writeLine.length()));
+	return !m_ofstream->bad();
+}
+
 UString McFile::readLine()
 {
 	if (!canRead())
@@ -394,7 +404,7 @@ UString McFile::readString()
 
 const char *McFile::readFile()
 {
-	if (McFile::debug->getBool())
+	if (cv::debug_file.getBool())
 		debugLog("File::readFile() on {:s}\n", m_filePath);
 
 	// return cached buffer if already read

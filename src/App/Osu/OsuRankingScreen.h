@@ -61,8 +61,6 @@ private:
 	Vector2 getPPPosRaw();
 	Vector2 getPPPosCenterRaw();
 
-	ConVar *m_osu_scores_enabled;
-
 	CBaseUIContainer *m_container;
 	CBaseUIScrollView *m_rankings;
 

@@ -66,9 +66,6 @@ private:
 	OsuSteamWorkshopUploader *m_uploader;
 
 	std::vector<SUBSCRIBED_ITEM> m_subscribedItems;
-
-	ConVar *m_osu_skin_ref;
-	ConVar *m_osu_skin_is_from_workshop_ref;
 };
 
 #else

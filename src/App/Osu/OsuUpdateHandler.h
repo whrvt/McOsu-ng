@@ -46,7 +46,7 @@ private:
 	static constexpr auto GITHUB_RELEASE_DOWNLOAD_URL = "https://github.com/whrvt/" PACKAGE_NAME "/releases";
 	static constexpr auto TEMP_UPDATE_DOWNLOAD_FILEPATH = "update.zip";
 
-	static ConVar *m_osu_release_stream_ref;
+	
 
 	// async
 	void _requestUpdate();

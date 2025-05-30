@@ -23,8 +23,9 @@
 #include "OpenGLStateCache.h"
 
 #include <utility>
-
+namespace cv {
 ConVar r_image_unbind_after_drawimage("r_image_unbind_after_drawimage", true, FCVAR_NONE);
+}
 
 OpenGLLegacyInterface::OpenGLLegacyInterface() : Graphics()
 {
@@ -82,7 +83,7 @@ void OpenGLLegacyInterface::beginScene()
 	// push main transforms
 	pushTransform();
 	setProjectionMatrix(defaultProjectionMatrix);
-	translate(r_globaloffset_x->getFloat(), r_globaloffset_y->getFloat());
+	translate(cv::r_globaloffset_x.getFloat(), cv::r_globaloffset_y.getFloat());
 
 	// and apply them
 	updateTransform();
@@ -391,10 +392,10 @@ void OpenGLLegacyInterface::drawImage(Image *image)
 		}
 		glEnd();
 	}
-	if (r_image_unbind_after_drawimage.getBool())
+	if (cv::r_image_unbind_after_drawimage.getBool())
 		image->unbind();
 
-	if (r_debug_drawimage->getBool())
+	if (cv::r_debug_drawimage.getBool())
 	{
 		setColor(0xbbff00ff);
 		drawRect(x, y, width, height);
@@ -408,7 +409,7 @@ void OpenGLLegacyInterface::drawString(McFont *font, UString text)
 
 	updateTransform();
 
-	if (r_debug_flush_drawstring->getBool())
+	if (cv::r_debug_flush_drawstring.getBool())
 	{
 		glFinish();
 		glFlush();
@@ -464,7 +465,7 @@ void OpenGLLegacyInterface::drawVAO(VertexArrayObject *vao)
 
 void OpenGLLegacyInterface::setClipRect(McRect clipRect)
 {
-	if (r_debug_disable_cliprect->getBool())
+	if (cv::r_debug_disable_cliprect.getBool())
 		return;
 	// if (m_bIs3DScene) return; // HACKHACK:TODO:
 

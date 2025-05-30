@@ -220,12 +220,12 @@ public:
 	void offset3DScene(float x, float y, float z = 0);
 
 protected:
-	static ConVar *r_globaloffset_x;
-	static ConVar *r_globaloffset_y;
-	static ConVar *r_debug_disable_cliprect;
-	static ConVar *r_debug_disable_3dscene;
-	static ConVar *r_debug_flush_drawstring;
-	static ConVar *r_debug_drawimage;
+	
+	
+	
+	
+	
+	
 
 protected:
 	virtual void onTransformUpdate(Matrix4 &projectionMatrix, Matrix4 &worldMatrix) = 0; // called if matrices have changed and need to be (re-)applied/uploaded

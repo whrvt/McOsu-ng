@@ -16,11 +16,6 @@
 #include "File.h"
 #include "ResourceManager.h"
 
-extern ConVar debug_snd;
-extern ConVar snd_speed_compensate_pitch;
-extern ConVar snd_play_interp_ratio;
-extern ConVar snd_file_min_size;
-
 SoLoudSound::SoLoudSound(UString filepath, bool stream, bool threeD, bool loop, bool prescan)
     : Sound(filepath, stream, threeD, loop, prescan), m_handle(0), m_speed(1.0f), m_pitch(1.0f), m_frequency(44100.0f), m_audioSource(nullptr), m_filter(nullptr),
       m_fActualSpeedForDisabledPitchCompensation(1.0f), m_fLastRawSoLoudPosition(0.0), m_fLastSoLoudPositionTime(0.0), m_fSoLoudPositionRate(1000.0)
@@ -167,7 +162,7 @@ void SoLoudSound::initAsync()
 			m_filter->setSpeedFactor(m_speed);
 			m_filter->setPitchFactor(m_pitch);
 
-			if (debug_snd.getBool())
+			if (cv::debug_snd.getBool())
 				debugLog("SoLoudSound: Created SoundTouch filter for {:s} with speed={:f}, pitch={:f}, looping={:s}\n", m_sFilePath.toUtf8(), m_speed, m_pitch,
 				         m_bIsLooped ? "true" : "false");
 		}
@@ -245,7 +240,7 @@ void SoLoudSound::setPosition(double percent)
 	m_fLastSoLoudPositionTime = Timing::getTimeReal();
 	m_fSoLoudPositionRate = 1000.0 * getSpeed();
 
-	if (debug_snd.getBool())
+	if (cv::debug_snd.getBool())
 		debugLog("seeking to {:.2f} percent (position: {}ms, length: {}ms)\n", percent, static_cast<unsigned long>(positionInSeconds * 1000),
 		         static_cast<unsigned long>(streamLengthInSeconds * 1000));
 
@@ -269,7 +264,7 @@ void SoLoudSound::setPositionMS(unsigned long ms)
 	m_fLastSoLoudPositionTime = Timing::getTimeReal();
 	m_fSoLoudPositionRate = 1000.0 * getSpeed();
 
-	if (debug_snd.getBool())
+	if (cv::debug_snd.getBool())
 		debugLog("seeking to {}ms (length: {}ms)\n", ms, streamLengthMS);
 
 	// seek
@@ -305,13 +300,13 @@ void SoLoudSound::setSpeed(float speed)
 		{
 			updateFilterParameters();
 
-			if (debug_snd.getBool())
+			if (cv::debug_snd.getBool())
 				debugLog("SoLoudSound: Speed change {:s}: {:f}->{:f} (stream, filter updated live)\n", m_sFilePath.toUtf8(), previousSpeed, m_speed);
 		}
 		// for non-streaming audio, no restart needed - speed/pitch is applied during playback
 		else if (!m_bStream)
 		{
-			if (debug_snd.getBool())
+			if (cv::debug_snd.getBool())
 				debugLog("SoLoudSound: Speed change {:s}: {:f}->{:f} (non-stream, will be applied on next play)\n", m_sFilePath.toUtf8(), previousSpeed, m_speed);
 		}
 	}
@@ -336,13 +331,13 @@ void SoLoudSound::setPitch(float pitch)
 		{
 			updateFilterParameters();
 
-			if (debug_snd.getBool())
+			if (cv::debug_snd.getBool())
 				debugLog("SoLoudSound: Pitch change {:s}: {:f}->{:f} (stream, filter updated live)\n", m_sFilePath.toUtf8(), previousPitch, m_pitch);
 		}
 		// for non-streaming audio, no restart needed - speed/pitch is applied during playback
 		else if (!m_bStream)
 		{
-			if (debug_snd.getBool())
+			if (cv::debug_snd.getBool())
 				debugLog("SoLoudSound: Pitch change {:s}: {:f}->{:f} (non-stream, will be applied on next play)\n", m_sFilePath.toUtf8(), previousPitch, m_pitch);
 		}
 	}
@@ -382,7 +377,7 @@ void SoLoudSound::setLoop(bool loop)
 	if (!m_bReady || !m_audioSource)
 		return;
 
-	if (debug_snd.getBool())
+	if (cv::debug_snd.getBool())
 		debugLog("setLoop {} and m_filter {:s}\n", loop, m_filter ? "exists" : "does not exist");
 
 	m_bIsLooped = loop;
@@ -536,7 +531,7 @@ float SoLoudSound::getSpeed()
 	if (!m_bReady)
 		return 1.0f;
 
-	if (!snd_speed_compensate_pitch.getBool())
+	if (!cv::snd_speed_compensate_pitch.getBool())
 		return m_fActualSpeedForDisabledPitchCompensation;
 
 	return m_speed;

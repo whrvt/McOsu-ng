@@ -37,22 +37,24 @@ float OsuSliderRenderer::m_fBoundingBoxMaxX = 0.0f;
 float OsuSliderRenderer::m_fBoundingBoxMinY = std::numeric_limits<float>::max();
 float OsuSliderRenderer::m_fBoundingBoxMaxY = 0.0f;
 
-ConVar osu_slider_debug_draw("osu_slider_debug_draw", false, FCVAR_NONE, "draw hitcircle at every curve point and nothing else (no vao, no rt, no shader, nothing) (requires enabling legacy slider renderer)");
-ConVar osu_slider_debug_draw_square_vao("osu_slider_debug_draw_square_vao", false, FCVAR_NONE, "generate square vaos and nothing else (no rt, no shader) (requires disabling legacy slider renderer)");
-ConVar osu_slider_debug_wireframe("osu_slider_debug_wireframe", false, FCVAR_NONE, "unused");
-
-ConVar osu_slider_alpha_multiplier("osu_slider_alpha_multiplier", 1.0f, FCVAR_NONE);
-ConVar osu_slider_body_alpha_multiplier("osu_slider_body_alpha_multiplier", 1.0f, FCVAR_NONE);
-ConVar osu_slider_body_color_saturation("osu_slider_body_color_saturation", 1.0f, FCVAR_NONE);
 std::atomic<float> osu_slider_border_feather = 0.0f;
-ConVar osu_slider_border_size_multiplier("osu_slider_border_size_multiplier", 1.0f, FCVAR_NONE);
-ConVar osu_slider_border_tint_combo_color("osu_slider_border_tint_combo_color", false, FCVAR_NONE);
-ConVar osu_slider_osu_next_style("osu_slider_osu_next_style", false, FCVAR_NONE);
-ConVar osu_slider_rainbow("osu_slider_rainbow", false, FCVAR_NONE);
-ConVar osu_slider_use_gradient_image("osu_slider_use_gradient_image", false, FCVAR_NONE);
+namespace cv::osu {
+ConVar slider_debug_draw("osu_slider_debug_draw", false, FCVAR_NONE, "draw hitcircle at every curve point and nothing else (no vao, no rt, no shader, nothing) (requires enabling legacy slider renderer)");
+ConVar slider_debug_draw_square_vao("osu_slider_debug_draw_square_vao", false, FCVAR_NONE, "generate square vaos and nothing else (no rt, no shader) (requires disabling legacy slider renderer)");
+ConVar slider_debug_wireframe("osu_slider_debug_wireframe", false, FCVAR_NONE, "unused");
 
-ConVar osu_slider_body_unit_circle_subdivisions("osu_slider_body_unit_circle_subdivisions", 42, FCVAR_NONE);
-ConVar osu_slider_legacy_use_baked_vao("osu_slider_legacy_use_baked_vao", false, FCVAR_NONE, "use baked cone mesh instead of raw mesh for legacy slider renderer (disabled by default because usually slower on very old gpus even though it should not be)");
+ConVar slider_alpha_multiplier("osu_slider_alpha_multiplier", 1.0f, FCVAR_NONE);
+ConVar slider_body_alpha_multiplier("osu_slider_body_alpha_multiplier", 1.0f, FCVAR_NONE);
+ConVar slider_body_color_saturation("osu_slider_body_color_saturation", 1.0f, FCVAR_NONE);
+ConVar slider_border_size_multiplier("osu_slider_border_size_multiplier", 1.0f, FCVAR_NONE);
+ConVar slider_border_tint_combo_color("osu_slider_border_tint_combo_color", false, FCVAR_NONE);
+ConVar slider_osu_next_style("osu_slider_osu_next_style", false, FCVAR_NONE);
+ConVar slider_rainbow("osu_slider_rainbow", false, FCVAR_NONE);
+ConVar slider_use_gradient_image("osu_slider_use_gradient_image", false, FCVAR_NONE);
+
+ConVar slider_body_unit_circle_subdivisions("osu_slider_body_unit_circle_subdivisions", 42, FCVAR_NONE);
+ConVar slider_legacy_use_baked_vao("osu_slider_legacy_use_baked_vao", false, FCVAR_NONE, "use baked cone mesh instead of raw mesh for legacy slider renderer (disabled by default because usually slower on very old gpus even though it should not be)");
+}
 
 VertexArrayObject *OsuSliderRenderer::generateVAO(const std::vector<Vector2> &points, float hitcircleDiameter, Vector3 translation, bool skipOOBPoints)
 {
@@ -64,7 +66,7 @@ VertexArrayObject *OsuSliderRenderer::generateVAO(const std::vector<Vector2> &po
 	const Vector3 xOffset = Vector3(hitcircleDiameter, 0, 0);
 	const Vector3 yOffset = Vector3(0, hitcircleDiameter, 0);
 
-	const bool debugSquareVao = osu_slider_debug_draw_square_vao.getBool();
+	const bool debugSquareVao = cv::osu::slider_debug_draw_square_vao.getBool();
 
 	for (int i=0; i<points.size(); i++)
 	{
@@ -122,7 +124,7 @@ VertexArrayObject *OsuSliderRenderer::generateVAO(const std::vector<Vector2> &po
 
 void OsuSliderRenderer::draw(Osu *osu, const std::vector<Vector2> &points, const std::vector<Vector2> &alwaysPoints, float hitcircleDiameter, float from, float to, Color undimmedColor, float colorRGBMultiplier, float alpha, long sliderTimeForRainbow)
 {
-	if (osu_slider_alpha_multiplier.getFloat() <= 0.0f || alpha <= 0.0f) return;
+	if (cv::osu::slider_alpha_multiplier.getFloat() <= 0.0f || alpha <= 0.0f) return;
 
 	checkUpdateVars(hitcircleDiameter);
 
@@ -130,7 +132,7 @@ void OsuSliderRenderer::draw(Osu *osu, const std::vector<Vector2> &points, const
 	const int drawUpToIndex = std::clamp<int>((int)std::round(points.size() * to), 0, points.size());
 
 	// debug sliders
-	if (osu_slider_debug_draw.getBool())
+	if (cv::osu::slider_debug_draw.getBool())
 	{
 		const float circleImageScale = hitcircleDiameter / (float)osu->getSkin()->getHitCircle()->getWidth();
 		const float circleImageScaleInv = (1.0f / circleImageScale);
@@ -149,7 +151,7 @@ void OsuSliderRenderer::draw(Osu *osu, const std::vector<Vector2> &points, const
 			const Color dimmedColor = Colors::scale(undimmedColor, colorRGBMultiplier);
 
 			g->setColor(dimmedColor);
-			g->setAlpha(alpha*osu_slider_alpha_multiplier.getFloat());
+			g->setAlpha(alpha*cv::osu::slider_alpha_multiplier.getFloat());
 			osu->getSkin()->getHitCircle()->bind();
 			{
 				for (int i=drawFromIndex; i<drawUpToIndex; i++)
@@ -190,13 +192,13 @@ void OsuSliderRenderer::draw(Osu *osu, const std::vector<Vector2> &points, const
 	{
 		osu->getSliderFrameBuffer()->enable();
 		{
-			const Color undimmedBorderColor = osu_slider_border_tint_combo_color.getBool() ? undimmedColor : osu->getSkin()->getSliderBorderColor();
+			const Color undimmedBorderColor = cv::osu::slider_border_tint_combo_color.getBool() ? undimmedColor : osu->getSkin()->getSliderBorderColor();
 			const Color undimmedBodyColor = osu->getSkin()->isSliderTrackOverridden() ? osu->getSkin()->getSliderTrackOverride() : undimmedColor;
 
 			Color dimmedBorderColor;
 			Color dimmedBodyColor;
 
-			if (osu_slider_rainbow.getBool())
+			if (cv::osu::slider_rainbow.getBool())
 			{
 				float frequency = 0.3f;
 				float time = engine->getTime()*20;
@@ -218,13 +220,13 @@ void OsuSliderRenderer::draw(Osu *osu, const std::vector<Vector2> &points, const
 				dimmedBodyColor = Colors::scale(undimmedBodyColor, colorRGBMultiplier);
 			}
 
-			if (!osu_slider_use_gradient_image.getBool())
+			if (!cv::osu::slider_use_gradient_image.getBool())
 			{
 				BLEND_SHADER->enable();
-				BLEND_SHADER->setUniform1i("style", osu_slider_osu_next_style.getBool() ? 1 : 0);
-				BLEND_SHADER->setUniform1f("bodyAlphaMultiplier", osu_slider_body_alpha_multiplier.getFloat());
-				BLEND_SHADER->setUniform1f("bodyColorSaturation", osu_slider_body_color_saturation.getFloat());
-				BLEND_SHADER->setUniform1f("borderSizeMultiplier", osu_slider_border_size_multiplier.getFloat());
+				BLEND_SHADER->setUniform1i("style", cv::osu::slider_osu_next_style.getBool() ? 1 : 0);
+				BLEND_SHADER->setUniform1f("bodyAlphaMultiplier", cv::osu::slider_body_alpha_multiplier.getFloat());
+				BLEND_SHADER->setUniform1f("bodyColorSaturation", cv::osu::slider_body_color_saturation.getFloat());
+				BLEND_SHADER->setUniform1f("borderSizeMultiplier", cv::osu::slider_border_size_multiplier.getFloat());
 				BLEND_SHADER->setUniform1f("borderFeather", osu_slider_border_feather.load(std::memory_order::acquire));
 				BLEND_SHADER->setUniform3f("colBorder", dimmedBorderColor.Rf(), dimmedBorderColor.Gf(), dimmedBorderColor.Bf());
 				BLEND_SHADER->setUniform3f("colBody", dimmedBodyColor.Rf(), dimmedBodyColor.Gf(), dimmedBodyColor.Bf());
@@ -235,14 +237,14 @@ void OsuSliderRenderer::draw(Osu *osu, const std::vector<Vector2> &points, const
 			{
 				// draw curve mesh
 				{
-					drawFillSliderBodyPeppy(osu, points, (osu_slider_legacy_use_baked_vao.getBool() ? UNIT_CIRCLE_VAO_BAKED : UNIT_CIRCLE_VAO), hitcircleDiameter/2.0f, drawFromIndex, drawUpToIndex, BLEND_SHADER);
+					drawFillSliderBodyPeppy(osu, points, (cv::osu::slider_legacy_use_baked_vao.getBool() ? UNIT_CIRCLE_VAO_BAKED : UNIT_CIRCLE_VAO), hitcircleDiameter/2.0f, drawFromIndex, drawUpToIndex, BLEND_SHADER);
 
 					if (alwaysPoints.size() > 0)
 						drawFillSliderBodyPeppy(osu, alwaysPoints, UNIT_CIRCLE_VAO_BAKED, hitcircleDiameter/2.0f, 0, alwaysPoints.size(), BLEND_SHADER);
 				}
 			}
 
-			if (!osu_slider_use_gradient_image.getBool())
+			if (!cv::osu::slider_use_gradient_image.getBool())
 				BLEND_SHADER->disable();
 		}
 		osu->getSliderFrameBuffer()->disable();
@@ -257,22 +259,22 @@ void OsuSliderRenderer::draw(Osu *osu, const std::vector<Vector2> &points, const
 	m_fBoundingBoxMinY -= pixelFudge;
 	m_fBoundingBoxMaxY += pixelFudge;
 
-	osu->getSliderFrameBuffer()->setColor(argb(alpha*osu_slider_alpha_multiplier.getFloat(), 1.0f, 1.0f, 1.0f));
+	osu->getSliderFrameBuffer()->setColor(argb(alpha*cv::osu::slider_alpha_multiplier.getFloat(), 1.0f, 1.0f, 1.0f));
 	osu->getSliderFrameBuffer()->drawRect(m_fBoundingBoxMinX, m_fBoundingBoxMinY, m_fBoundingBoxMaxX - m_fBoundingBoxMinX, m_fBoundingBoxMaxY - m_fBoundingBoxMinY);
 }
 
 void OsuSliderRenderer::draw(Osu *osu, VertexArrayObject *vao, const std::vector<Vector2> &alwaysPoints, Vector2 translation, float scale, float hitcircleDiameter, float from, float to, Color undimmedColor, float colorRGBMultiplier, float alpha, long sliderTimeForRainbow, bool doEnableRenderTarget, bool doDisableRenderTarget, bool doDrawSliderFrameBufferToScreen)
 {
-	if ((osu_slider_alpha_multiplier.getFloat() <= 0.0f && doDrawSliderFrameBufferToScreen) || (alpha <= 0.0f && doDrawSliderFrameBufferToScreen) || vao == NULL) return;
+	if ((cv::osu::slider_alpha_multiplier.getFloat() <= 0.0f && doDrawSliderFrameBufferToScreen) || (alpha <= 0.0f && doDrawSliderFrameBufferToScreen) || vao == NULL) return;
 
 	checkUpdateVars(hitcircleDiameter);
 
-	if (osu_slider_debug_draw_square_vao.getBool())
+	if (cv::osu::slider_debug_draw_square_vao.getBool())
 	{
 		const Color dimmedColor = Colors::scale(undimmedColor, colorRGBMultiplier);
 
 		g->setColor(dimmedColor);
-		g->setAlpha(alpha*osu_slider_alpha_multiplier.getFloat());
+		g->setAlpha(alpha*cv::osu::slider_alpha_multiplier.getFloat());
 		osu->getSkin()->getHitCircle()->bind();
 
 		vao->setDrawPercent(from, to, 6); // HACKHACK: hardcoded magic number
@@ -340,13 +342,13 @@ void OsuSliderRenderer::draw(Osu *osu, VertexArrayObject *vao, const std::vector
 
 		// render
 		{
-			const Color undimmedBorderColor = osu_slider_border_tint_combo_color.getBool() ? undimmedColor : osu->getSkin()->getSliderBorderColor();
+			const Color undimmedBorderColor = cv::osu::slider_border_tint_combo_color.getBool() ? undimmedColor : osu->getSkin()->getSliderBorderColor();
 			const Color undimmedBodyColor = osu->getSkin()->isSliderTrackOverridden() ? osu->getSkin()->getSliderTrackOverride() : undimmedColor;
 
 			Color dimmedBorderColor;
 			Color dimmedBodyColor;
 
-			if (osu_slider_rainbow.getBool())
+			if (cv::osu::slider_rainbow.getBool())
 			{
 				float frequency = 0.3f;
 				float time = engine->getTime()*20;
@@ -368,13 +370,13 @@ void OsuSliderRenderer::draw(Osu *osu, VertexArrayObject *vao, const std::vector
 				dimmedBodyColor = Colors::scale(undimmedBodyColor, colorRGBMultiplier);
 			}
 
-			if (!osu_slider_use_gradient_image.getBool())
+			if (!cv::osu::slider_use_gradient_image.getBool())
 			{
 				BLEND_SHADER->enable();
-				BLEND_SHADER->setUniform1i("style", osu_slider_osu_next_style.getBool() ? 1 : 0);
-				BLEND_SHADER->setUniform1f("bodyAlphaMultiplier", osu_slider_body_alpha_multiplier.getFloat());
-				BLEND_SHADER->setUniform1f("bodyColorSaturation", osu_slider_body_color_saturation.getFloat());
-				BLEND_SHADER->setUniform1f("borderSizeMultiplier", osu_slider_border_size_multiplier.getFloat());
+				BLEND_SHADER->setUniform1i("style", cv::osu::slider_osu_next_style.getBool() ? 1 : 0);
+				BLEND_SHADER->setUniform1f("bodyAlphaMultiplier", cv::osu::slider_body_alpha_multiplier.getFloat());
+				BLEND_SHADER->setUniform1f("bodyColorSaturation", cv::osu::slider_body_color_saturation.getFloat());
+				BLEND_SHADER->setUniform1f("borderSizeMultiplier", cv::osu::slider_border_size_multiplier.getFloat());
 				BLEND_SHADER->setUniform1f("borderFeather", osu_slider_border_feather.load(std::memory_order::acquire));
 				BLEND_SHADER->setUniform3f("colBorder", dimmedBorderColor.Rf(), dimmedBorderColor.Gf(), dimmedBorderColor.Bf());
 				BLEND_SHADER->setUniform3f("colBody", dimmedBodyColor.Rf(), dimmedBodyColor.Gf(), dimmedBodyColor.Bf());
@@ -393,7 +395,7 @@ void OsuSliderRenderer::draw(Osu *osu, VertexArrayObject *vao, const std::vector
 						///g->scale(scaleToApplyAfterTranslationX, scaleToApplyAfterTranslationY); // aspire slider distortions
 
 						if constexpr (Env::cfg(REND::DX11 | REND::GLES2)) {
-						if (!osu_slider_use_gradient_image.getBool())
+						if (!cv::osu::slider_use_gradient_image.getBool())
 						{
 							g->forceUpdateTransform();
 							Matrix4 mvp = g->getMVP();
@@ -410,7 +412,7 @@ void OsuSliderRenderer::draw(Osu *osu, VertexArrayObject *vao, const std::vector
 				}
 			}
 
-			if (!osu_slider_use_gradient_image.getBool())
+			if (!cv::osu::slider_use_gradient_image.getBool())
 				BLEND_SHADER->disable();
 		}
 
@@ -422,7 +424,7 @@ void OsuSliderRenderer::draw(Osu *osu, VertexArrayObject *vao, const std::vector
 
 	if (doDrawSliderFrameBufferToScreen)
 	{
-		osu->getSliderFrameBuffer()->setColor(argb(alpha*osu_slider_alpha_multiplier.getFloat(), 1.0f, 1.0f, 1.0f));
+		osu->getSliderFrameBuffer()->setColor(argb(alpha*cv::osu::slider_alpha_multiplier.getFloat(), 1.0f, 1.0f, 1.0f));
 		osu->getSliderFrameBuffer()->draw(0, 0);
 	}
 }
@@ -495,7 +497,7 @@ void OsuSliderRenderer::checkUpdateVars(float hitcircleDiameter)
 		BLEND_SHADER = resourceManager->loadShader("slider.mcshader", "slider");
 	}
 
-	const int subdivisions = osu_slider_body_unit_circle_subdivisions.getInt();
+	const int subdivisions = cv::osu::slider_body_unit_circle_subdivisions.getInt();
 	if (subdivisions != UNIT_CIRCLE_SUBDIVISIONS)
 	{
 		UNIT_CIRCLE_SUBDIVISIONS = subdivisions;

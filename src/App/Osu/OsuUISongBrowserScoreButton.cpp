@@ -35,15 +35,15 @@
 
 #include <chrono>
 
-ConVar *OsuUISongBrowserScoreButton::m_osu_scores_sort_by_pp_ref = NULL;
-ConVar *OsuUISongBrowserScoreButton::m_osu_mods_ref = NULL;
-ConVar *OsuUISongBrowserScoreButton::m_osu_speed_override_ref = NULL;
-ConVar *OsuUISongBrowserScoreButton::m_osu_ar_override_ref = NULL;
-ConVar *OsuUISongBrowserScoreButton::m_osu_cs_override_ref = NULL;
-ConVar *OsuUISongBrowserScoreButton::m_osu_od_override_ref = NULL;
-ConVar *OsuUISongBrowserScoreButton::m_osu_hp_override_ref = NULL;
-ConVar *OsuUISongBrowserScoreButton::m_osu_ar_override_lock_ref = NULL;
-ConVar *OsuUISongBrowserScoreButton::m_osu_od_override_lock_ref = NULL;
+
+
+
+
+
+
+
+
+
 UString OsuUISongBrowserScoreButton::recentScoreIconString;
 
 OsuUISongBrowserScoreButton::OsuUISongBrowserScoreButton(OsuUIContextMenu *contextMenu, float xPos, float yPos, float xSize, float ySize, UString name, STYLE style) : CBaseUIButton(xPos, yPos, xSize, ySize, name, "")
@@ -52,24 +52,15 @@ OsuUISongBrowserScoreButton::OsuUISongBrowserScoreButton(OsuUIContextMenu *conte
 	m_contextMenu = contextMenu;
 	m_style = style;
 
-	if (m_osu_scores_sort_by_pp_ref == NULL)
-		m_osu_scores_sort_by_pp_ref = convar->getConVarByName("osu_scores_sort_by_pp");
-	if (m_osu_mods_ref == NULL)
-		m_osu_mods_ref = convar->getConVarByName("osu_mods");
-	if (m_osu_speed_override_ref == NULL)
-		m_osu_speed_override_ref = convar->getConVarByName("osu_speed_override");
-	if (m_osu_ar_override_ref == NULL)
-		m_osu_ar_override_ref = convar->getConVarByName("osu_ar_override");
-	if (m_osu_cs_override_ref == NULL)
-		m_osu_cs_override_ref = convar->getConVarByName("osu_cs_override");
-	if (m_osu_od_override_ref == NULL)
-		m_osu_od_override_ref = convar->getConVarByName("osu_od_override");
-	if (m_osu_hp_override_ref == NULL)
-		m_osu_hp_override_ref = convar->getConVarByName("osu_hp_override");
-	if (m_osu_ar_override_lock_ref == NULL)
-		m_osu_ar_override_lock_ref = convar->getConVarByName("osu_ar_override_lock");
-	if (m_osu_od_override_lock_ref == NULL)
-		m_osu_od_override_lock_ref = convar->getConVarByName("osu_od_override_lock");
+
+
+
+
+
+
+
+
+
 
 	if (recentScoreIconString.length() < 1)
 		recentScoreIconString.insert(0, OsuIcons::ARROW_CIRCLE_UP);
@@ -213,10 +204,10 @@ void OsuUISongBrowserScoreButton::draw()
 		g->translate(0.75f, 0.75f);
 		g->setColor(0xff000000);
 		g->setAlpha(0.75f);
-		g->drawString(scoreFont, (m_osu_scores_sort_by_pp_ref->getBool() && !m_score.isLegacyScore ? string : (m_style == STYLE::TOP_RANKS ? string : m_sScoreScore)));
+		g->drawString(scoreFont, (cv::osu::scores_sort_by_pp.getBool() && !m_score.isLegacyScore ? string : (m_style == STYLE::TOP_RANKS ? string : m_sScoreScore)));
 		g->translate(-0.75f, -0.75f);
 		g->setColor((m_style == STYLE::TOP_RANKS ? 0xffdeff87 : 0xffffffff));
-		g->drawString(scoreFont, (m_osu_scores_sort_by_pp_ref->getBool() && !m_score.isLegacyScore ? string : (m_style == STYLE::TOP_RANKS ? string : m_sScoreScore)));
+		g->drawString(scoreFont, (cv::osu::scores_sort_by_pp.getBool() && !m_score.isLegacyScore ? string : (m_style == STYLE::TOP_RANKS ? string : m_sScoreScore)));
 
 		if (m_style == STYLE::TOP_RANKS)
 		{
@@ -591,12 +582,12 @@ void OsuUISongBrowserScoreButton::onUseModsClicked()
 	bool wasARLocked = false;
 	bool wasODLocked = false;
 	{
-		wasARLocked = m_osu_ar_override_lock_ref->getBool();
-		wasODLocked = m_osu_od_override_lock_ref->getBool();
+		wasARLocked = cv::osu::ar_override_lock.getBool();
+		wasODLocked = cv::osu::od_override_lock.getBool();
 
 		osu->getModSelector()->resetMods();
 
-		m_osu_mods_ref->setValue(getModsStringForConVar(m_score.modsLegacy));
+		cv::osu::mods.setValue(getModsStringForConVar(m_score.modsLegacy));
 	}
 
 	if (m_score.isLegacyScore || m_score.isImportedLegacyScore)
@@ -637,23 +628,23 @@ void OsuUISongBrowserScoreButton::onUseModsClicked()
 			if (std::abs(legacyValues.AR - m_score.AR) >= beatmapValueComparisonEpsilon)
 			{
 				actualAR = m_score.AR;
-				m_osu_ar_override_ref->setValue(m_score.AR);
+				cv::osu::ar_override.setValue(m_score.AR);
 				nomod = false;
 			}
 			if (std::abs(legacyValues.CS - m_score.CS) >= beatmapValueComparisonEpsilon)
 			{
-				m_osu_cs_override_ref->setValue(m_score.CS);
+				cv::osu::cs_override.setValue(m_score.CS);
 				nomod = false;
 			}
 			if (std::abs(legacyValues.OD - m_score.OD) >= beatmapValueComparisonEpsilon)
 			{
 				actualOD = m_score.OD;
-				m_osu_od_override_ref->setValue(m_score.OD);
+				cv::osu::od_override.setValue(m_score.OD);
 				nomod = false;
 			}
 			if (std::abs(legacyValues.HP - m_score.HP) >= beatmapValueComparisonEpsilon)
 			{
-				m_osu_hp_override_ref->setValue(m_score.HP);
+				cv::osu::hp_override.setValue(m_score.HP);
 				nomod = false;
 			}
 		}
@@ -665,7 +656,7 @@ void OsuUISongBrowserScoreButton::onUseModsClicked()
 			if (std::abs(legacyValues.speedMultiplier - m_score.speedMultiplier) >= speedMultiplierComparisonEpsilon)
 			{
 				actualSpeedMultiplier = m_score.speedMultiplier;
-				m_osu_speed_override_ref->setValue(m_score.speedMultiplier);
+				cv::osu::speed_override.setValue(m_score.speedMultiplier);
 				nomod = false;
 			}
 		}
@@ -690,14 +681,14 @@ void OsuUISongBrowserScoreButton::onUseModsClicked()
 		{
 			if (wasARLocked)
 			{
-				m_osu_ar_override_lock_ref->setValue(1.0f);
-				m_osu_ar_override_ref->setValue(OsuGameRules::getRawApproachRateForSpeedMultiplier(OsuGameRules::getRawApproachTime(actualAR), actualSpeedMultiplier));
+				cv::osu::ar_override_lock.setValue(1.0f);
+				cv::osu::ar_override.setValue(OsuGameRules::getRawApproachRateForSpeedMultiplier(OsuGameRules::getRawApproachTime(actualAR), actualSpeedMultiplier));
 			}
 
 			if (wasODLocked)
 			{
-				m_osu_od_override_lock_ref->setValue(1.0f);
-				m_osu_od_override_ref->setValue(OsuGameRules::getRawOverallDifficultyForSpeedMultiplier(OsuGameRules::getRawHitWindow300(actualOD), actualSpeedMultiplier));
+				cv::osu::od_override_lock.setValue(1.0f);
+				cv::osu::od_override.setValue(OsuGameRules::getRawOverallDifficultyForSpeedMultiplier(OsuGameRules::getRawHitWindow300(actualOD), actualSpeedMultiplier));
 			}
 		}
 	}

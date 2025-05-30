@@ -56,7 +56,7 @@ private:
 	Sound *m_stream;
 	float m_fReverseMessageTimer;
 
-	ConVar *m_vs_percent_ref;
+	;
 };
 
 #endif

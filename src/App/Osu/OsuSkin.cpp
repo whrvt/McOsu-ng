@@ -27,35 +27,30 @@
 #define OSU_BITMASK_HITWHISTLE 0x2
 #define OSU_BITMASK_HITFINISH 0x4
 #define OSU_BITMASK_HITCLAP 0x8
+namespace cv::osu {
+ConVar volume_effects("osu_volume_effects", 1.0f, FCVAR_NONE);
+ConVar skin_async("osu_skin_async", Env::cfg(OS::WASM) ? false : true, FCVAR_NONE, "load in background without blocking");
+ConVar skin_hd("osu_skin_hd", true, FCVAR_NONE, "load and use @2x versions of skin images, if available");
+ConVar skin_mipmaps("osu_skin_mipmaps", false, FCVAR_NONE, "generate mipmaps for every skin image (only useful on lower game resolutions, requires more vram)");
+ConVar skin_color_index_add("osu_skin_color_index_add", 0, FCVAR_NONE);
+ConVar skin_animation_force("osu_skin_animation_force", false, FCVAR_NONE);
+ConVar skin_use_skin_hitsounds("osu_skin_use_skin_hitsounds", true, FCVAR_NONE, "If enabled: Use skin's sound samples. If disabled: Use default skin's sound samples. For hitsounds only.");
+ConVar skin_force_hitsound_sample_set("osu_skin_force_hitsound_sample_set", 0, FCVAR_NONE, "force a specific hitsound sample set to always be used regardless of what the beatmap says. 0 = disabled, 1 = normal, 2 = soft, 3 = drum.");
+ConVar skin_random("osu_skin_random", false, FCVAR_NONE, "select random skin from list on every skin load/reload");
+ConVar skin_random_elements("osu_skin_random_elements", false, FCVAR_NONE, "sElECt RanDOM sKIn eLemENTs FRoM ranDom SkINs");
+ConVar mod_fposu_sound_panning("osu_mod_fposu_sound_panning", false, FCVAR_NONE, "see osu_sound_panning");
+ConVar mod_fps_sound_panning("osu_mod_fps_sound_panning", false, FCVAR_NONE, "see osu_sound_panning");
+ConVar sound_panning("osu_sound_panning", true, FCVAR_NONE, "positional hitsound audio depending on the playfield position");
+ConVar sound_panning_multiplier("osu_sound_panning_multiplier", 1.0f, FCVAR_NONE, "the final panning value is multiplied with this, e.g. if you want to reduce or increase the effect strength by a percentage");
 
-ConVar osu_volume_effects("osu_volume_effects", 1.0f, FCVAR_NONE);
-ConVar osu_skin_async("osu_skin_async", Env::cfg(OS::WASM) ? false : true, FCVAR_NONE, "load in background without blocking");
-ConVar osu_skin_hd("osu_skin_hd", true, FCVAR_NONE, "load and use @2x versions of skin images, if available");
-ConVar osu_skin_mipmaps("osu_skin_mipmaps", false, FCVAR_NONE, "generate mipmaps for every skin image (only useful on lower game resolutions, requires more vram)");
-ConVar osu_skin_color_index_add("osu_skin_color_index_add", 0, FCVAR_NONE);
-ConVar osu_skin_animation_force("osu_skin_animation_force", false, FCVAR_NONE);
-ConVar osu_skin_use_skin_hitsounds("osu_skin_use_skin_hitsounds", true, FCVAR_NONE, "If enabled: Use skin's sound samples. If disabled: Use default skin's sound samples. For hitsounds only.");
-ConVar osu_skin_force_hitsound_sample_set("osu_skin_force_hitsound_sample_set", 0, FCVAR_NONE, "force a specific hitsound sample set to always be used regardless of what the beatmap says. 0 = disabled, 1 = normal, 2 = soft, 3 = drum.");
-ConVar osu_skin_random("osu_skin_random", false, FCVAR_NONE, "select random skin from list on every skin load/reload");
-ConVar osu_skin_random_elements("osu_skin_random_elements", false, FCVAR_NONE, "sElECt RanDOM sKIn eLemENTs FRoM ranDom SkINs");
-ConVar osu_mod_fposu_sound_panning("osu_mod_fposu_sound_panning", false, FCVAR_NONE, "see osu_sound_panning");
-ConVar osu_mod_fps_sound_panning("osu_mod_fps_sound_panning", false, FCVAR_NONE, "see osu_sound_panning");
-ConVar osu_sound_panning("osu_sound_panning", true, FCVAR_NONE, "positional hitsound audio depending on the playfield position");
-ConVar osu_sound_panning_multiplier("osu_sound_panning_multiplier", 1.0f, FCVAR_NONE, "the final panning value is multiplied with this, e.g. if you want to reduce or increase the effect strength by a percentage");
+ConVar ignore_beatmap_combo_colors("osu_ignore_beatmap_combo_colors", false, FCVAR_NONE);
+ConVar ignore_beatmap_sample_volume("osu_ignore_beatmap_sample_volume", false, FCVAR_NONE);
 
-ConVar osu_ignore_beatmap_combo_colors("osu_ignore_beatmap_combo_colors", false, FCVAR_NONE);
-ConVar osu_ignore_beatmap_sample_volume("osu_ignore_beatmap_sample_volume", false, FCVAR_NONE);
-
-ConVar osu_export_skin("osu_export_skin");
-ConVar osu_skin_export("osu_skin_export");
+ConVar export_skin("osu_export_skin");
+ConVar skin_export("osu_skin_export");
+}
 
 Image *OsuSkin::m_missingTexture = NULL;
-
-ConVar *OsuSkin::m_osu_skin_async = &osu_skin_async;
-ConVar *OsuSkin::m_osu_skin_hd = &osu_skin_hd;
-
-ConVar *OsuSkin::m_osu_skin_ref = NULL;
-ConVar *OsuSkin::m_osu_mod_fposu_ref = NULL;
 
 // fully qualified filesystem path
 UString OsuSkin::DEFAULT_SKIN_PATH = Environment::getFolderFromFilePath(UString::fmt("{}{}", ResourceManager::PATH_DEFAULT_IMAGES, "default/"));
@@ -72,10 +67,8 @@ OsuSkin::OsuSkin(UString name, UString filepath, bool isDefaultSkin, bool isWork
 	m_bReadyOnce = true;
 
 	// convar refs
-	if (m_osu_skin_ref == NULL)
-		m_osu_skin_ref = convar->getConVarByName("osu_skin");
-	if (m_osu_mod_fposu_ref == NULL)
-		m_osu_mod_fposu_ref = convar->getConVarByName("osu_mod_fposu");
+
+
 
 	if (m_missingTexture == NULL)
 		m_missingTexture = resourceManager->getImage("MISSING_TEXTURE");
@@ -302,19 +295,19 @@ OsuSkin::OsuSkin(UString name, UString filepath, bool isDefaultSkin, bool isWork
 
 	// custom
 	m_iSampleSet = 1;
-	m_iSampleVolume = (int)(osu_volume_effects.getFloat()*100.0f);
+	m_iSampleVolume = (int)(cv::osu::volume_effects.getFloat()*100.0f);
 
-	m_bIsRandom = osu_skin_random.getBool();
-	m_bIsRandomElements = osu_skin_random_elements.getBool();
+	m_bIsRandom = cv::osu::skin_random.getBool();
+	m_bIsRandomElements = cv::osu::skin_random_elements.getBool();
 
 	// load all files
 	load();
 
 	// convar callbacks
-	osu_volume_effects.setCallback( fastdelegate::MakeDelegate(this, &OsuSkin::onEffectVolumeChange) );
-	osu_ignore_beatmap_sample_volume.setCallback( fastdelegate::MakeDelegate(this, &OsuSkin::onIgnoreBeatmapSampleVolumeChange) );
-	osu_export_skin.setCallback( fastdelegate::MakeDelegate(this, &OsuSkin::onExport) );
-	osu_skin_export.setCallback( fastdelegate::MakeDelegate(this, &OsuSkin::onExport) );
+	cv::osu::volume_effects.setCallback( fastdelegate::MakeDelegate(this, &OsuSkin::onEffectVolumeChange) );
+	cv::osu::ignore_beatmap_sample_volume.setCallback( fastdelegate::MakeDelegate(this, &OsuSkin::onIgnoreBeatmapSampleVolumeChange) );
+	cv::osu::export_skin.setCallback( fastdelegate::MakeDelegate(this, &OsuSkin::onExport) );
+	cv::osu::skin_export.setCallback( fastdelegate::MakeDelegate(this, &OsuSkin::onExport) );
 }
 
 OsuSkin::~OsuSkin()
@@ -343,13 +336,13 @@ void OsuSkin::update()
 	if (!m_bReady && isReady())
 	{
 		// force effect volume update
-		onEffectVolumeChange("", UString::format("%f", osu_volume_effects.getFloat()));
+		onEffectVolumeChange("", UString::format("%f", cv::osu::volume_effects.getFloat()));
 
 		m_bReady = true;
 	}
 
 	// shitty check to not animate while paused with hitobjects in background
-	if (osu->isInPlayMode() && osu->getSelectedBeatmap() != NULL && !osu->getSelectedBeatmap()->isPlaying() && !osu_skin_animation_force.getBool()) return;
+	if (osu->isInPlayMode() && osu->getSelectedBeatmap() != NULL && !osu->getSelectedBeatmap()->isPlaying() && !cv::osu::skin_animation_force.getBool()) return;
 
 	const bool useEngineTimeForAnimations = !osu->isInPlayMode();
 	const long curMusicPos = osu->getSelectedBeatmap() != NULL ? osu->getSelectedBeatmap()->getCurMusicPosWithOffsets() : 0;
@@ -427,8 +420,8 @@ void OsuSkin::load()
 			}
 		}
 
-		UString skinFolder = convar->getConVarByName("osu_folder")->getString();
-		skinFolder.append(convar->getConVarByName("osu_folder_sub_skins")->getString());
+		UString skinFolder = cv::osu::folder.getString();
+		skinFolder.append(cv::osu::folder_sub_skins.getString());
 		std::vector<UString> skinFolders = env->getFoldersInFolder(skinFolder);
 
 		for (const auto &folder : skinFolders)
@@ -843,7 +836,7 @@ void OsuSkin::load()
 	debugLog("OsuSkin: HitCircleOverlap = {}\n", m_iHitCircleOverlap);
 
 	// delayed error notifications due to resource loading potentially blocking engine time
-	if (!parseSkinIni1Status && parseSkinIni2Status && m_osu_skin_ref->getString() != "default")
+	if (!parseSkinIni1Status && parseSkinIni2Status && cv::osu::skin.getString() != "default")
 		osu->getNotificationOverlay()->addNotification("Error: Couldn't load skin.ini!", 0xffff0000);
 	else if (!parseSkinIni2Status)
 		osu->getNotificationOverlay()->addNotification("Error: Couldn't load DEFAULT skin.ini!!!", 0xffff0000);
@@ -865,7 +858,7 @@ void OsuSkin::reloadSounds()
 		soundResources.push_back(sound);
 	}
 
-	resourceManager->reloadResources(soundResources, osu_skin_async.getBool());
+	resourceManager->reloadResources(soundResources, cv::osu::skin_async.getBool());
 }
 
 bool OsuSkin::parseSkinINI(UString filepath)
@@ -1060,8 +1053,8 @@ void OsuSkin::onExport(UString folderName)
 		return;
 	}
 
-	UString exportFolder = convar->getConVarByName("osu_folder")->getString();
-	exportFolder.append(convar->getConVarByName("osu_folder_sub_skins")->getString());
+	UString exportFolder = cv::osu::folder.getString();
+	exportFolder.append(cv::osu::folder_sub_skins.getString());
 	exportFolder.append(folderName);
 	exportFolder.append("/");
 
@@ -1138,9 +1131,9 @@ void OsuSkin::setSampleSet(int sampleSet)
 
 void OsuSkin::setSampleVolume(float volume, bool force)
 {
-	if (osu_ignore_beatmap_sample_volume.getBool() && (int)(osu_volume_effects.getFloat() * 100.0f) == m_iSampleVolume) return;
+	if (cv::osu::ignore_beatmap_sample_volume.getBool() && (int)(cv::osu::volume_effects.getFloat() * 100.0f) == m_iSampleVolume) return;
 
-	const float newSampleVolume = (!osu_ignore_beatmap_sample_volume.getBool() ? volume : 1.0f) * osu_volume_effects.getFloat();
+	const float newSampleVolume = (!cv::osu::ignore_beatmap_sample_volume.getBool() ? volume : 1.0f) * cv::osu::volume_effects.getFloat();
 
 	if (!force && m_iSampleVolume == (int)(newSampleVolume * 100.0f)) return;
 
@@ -1154,10 +1147,10 @@ void OsuSkin::setSampleVolume(float volume, bool force)
 
 Color OsuSkin::getComboColorForCounter(int i, int offset)
 {
-	i += osu_skin_color_index_add.getInt();
+	i += cv::osu::skin_color_index_add.getInt();
 	i = std::max(i, 0);
 
-	if (m_beatmapComboColors.size() > 0 && !osu_ignore_beatmap_combo_colors.getBool())
+	if (m_beatmapComboColors.size() > 0 && !cv::osu::ignore_beatmap_combo_colors.getBool())
 		return m_beatmapComboColors[(i + offset) % m_beatmapComboColors.size()];
 	else if (m_comboColors.size() > 0)
 		return m_comboColors[i % m_comboColors.size()];
@@ -1174,14 +1167,14 @@ void OsuSkin::playHitCircleSound(int sampleType, float pan)
 {
 	if (m_iSampleVolume <= 0) return;
 
-	if (!osu_sound_panning.getBool() || (m_osu_mod_fposu_ref->getBool() && !osu_mod_fposu_sound_panning.getBool()) || (OsuGameRules::osu_mod_fps.getBool() && !osu_mod_fps_sound_panning.getBool()))
+	if (!cv::osu::sound_panning.getBool() || (cv::osu::fposu::mod_fposu.getBool() && !cv::osu::mod_fposu_sound_panning.getBool()) || (cv::osu::stdrules::mod_fps.getBool() && !cv::osu::mod_fps_sound_panning.getBool()))
 		pan = 0.0f;
 	else
-		pan *= osu_sound_panning_multiplier.getFloat();
+		pan *= cv::osu::sound_panning_multiplier.getFloat();
 
 	int actualSampleSet = m_iSampleSet;
-	if (osu_skin_force_hitsound_sample_set.getInt() > 0)
-		actualSampleSet = osu_skin_force_hitsound_sample_set.getInt();
+	if (cv::osu::skin_force_hitsound_sample_set.getInt() > 0)
+		actualSampleSet = cv::osu::skin_force_hitsound_sample_set.getInt();
 
 	switch (actualSampleSet)
 	{
@@ -1222,10 +1215,10 @@ void OsuSkin::playSliderTickSound(float pan)
 {
 	if (m_iSampleVolume <= 0) return;
 
-	if (!osu_sound_panning.getBool() || (m_osu_mod_fposu_ref->getBool() && !osu_mod_fposu_sound_panning.getBool()) || (OsuGameRules::osu_mod_fps.getBool() && !osu_mod_fps_sound_panning.getBool()))
+	if (!cv::osu::sound_panning.getBool() || (cv::osu::fposu::mod_fposu.getBool() && !cv::osu::mod_fposu_sound_panning.getBool()) || (cv::osu::stdrules::mod_fps.getBool() && !cv::osu::mod_fps_sound_panning.getBool()))
 		pan = 0.0f;
 	else
-		pan *= osu_sound_panning_multiplier.getFloat();
+		pan *= cv::osu::sound_panning_multiplier.getFloat();
 
 	switch (m_iSampleSet)
 	{
@@ -1243,10 +1236,10 @@ void OsuSkin::playSliderTickSound(float pan)
 
 void OsuSkin::playSliderSlideSound(float pan)
 {
-	if (!osu_sound_panning.getBool() || (m_osu_mod_fposu_ref->getBool() && !osu_mod_fposu_sound_panning.getBool()) || (OsuGameRules::osu_mod_fps.getBool() && !osu_mod_fps_sound_panning.getBool()))
+	if (!cv::osu::sound_panning.getBool() || (cv::osu::fposu::mod_fposu.getBool() && !cv::osu::mod_fposu_sound_panning.getBool()) || (cv::osu::stdrules::mod_fps.getBool() && !cv::osu::mod_fps_sound_panning.getBool()))
 		pan = 0.0f;
 	else
-		pan *= osu_sound_panning_multiplier.getFloat();
+		pan *= cv::osu::sound_panning_multiplier.getFloat();
 
 	switch (m_iSampleSet)
 	{
@@ -1349,7 +1342,7 @@ void OsuSkin::checkLoadImage(Image **addressOfPointer, UString skinElementName, 
 	const bool existsDefaultNormal = skinFileExists(defaultNormal);
 
 	// hd loading priority
-	if (osu_skin_hd.getBool())
+	if (cv::osu::skin_hd.getBool())
 	{
 		// try default hd first if needed
 		if (!ignoreDefaultSkin || forceUseDefaultSkin)
@@ -1357,25 +1350,25 @@ void OsuSkin::checkLoadImage(Image **addressOfPointer, UString skinElementName, 
 			if (existsDefaultHd)
 			{
 				UString defaultResourceName = resourceName + "_DEFAULT";
-				if (osu_skin_async.getBool())
+				if (cv::osu::skin_async.getBool())
 					resourceManager->requestNextLoadAsync();
-				*addressOfPointer = resourceManager->loadImageAbs(defaultHd, defaultResourceName, osu_skin_mipmaps.getBool() || forceLoadMipmaps);
+				*addressOfPointer = resourceManager->loadImageAbs(defaultHd, defaultResourceName, cv::osu::skin_mipmaps.getBool() || forceLoadMipmaps);
 			}
 			else if (existsDefaultNormal)
 			{
 				UString defaultResourceName = resourceName + "_DEFAULT";
-				if (osu_skin_async.getBool())
+				if (cv::osu::skin_async.getBool())
 					resourceManager->requestNextLoadAsync();
-				*addressOfPointer = resourceManager->loadImageAbs(defaultNormal, defaultResourceName, osu_skin_mipmaps.getBool() || forceLoadMipmaps);
+				*addressOfPointer = resourceManager->loadImageAbs(defaultNormal, defaultResourceName, cv::osu::skin_mipmaps.getBool() || forceLoadMipmaps);
 			}
 		}
 
 		// try user hd
 		if (existsUserHd && !forceUseDefaultSkin)
 		{
-			if (osu_skin_async.getBool())
+			if (cv::osu::skin_async.getBool())
 				resourceManager->requestNextLoadAsync();
-			*addressOfPointer = resourceManager->loadImageAbs(userHd, "", osu_skin_mipmaps.getBool() || forceLoadMipmaps);
+			*addressOfPointer = resourceManager->loadImageAbs(userHd, "", cv::osu::skin_mipmaps.getBool() || forceLoadMipmaps);
 			m_resources.push_back(*addressOfPointer);
 
 			m_filepathsForExport.push_back(userHd);
@@ -1391,17 +1384,17 @@ void OsuSkin::checkLoadImage(Image **addressOfPointer, UString skinElementName, 
 		if (existsDefaultNormal)
 		{
 			UString defaultResourceName = resourceName + "_DEFAULT";
-			if (osu_skin_async.getBool())
+			if (cv::osu::skin_async.getBool())
 				resourceManager->requestNextLoadAsync();
-			*addressOfPointer = resourceManager->loadImageAbs(defaultNormal, defaultResourceName, osu_skin_mipmaps.getBool() || forceLoadMipmaps);
+			*addressOfPointer = resourceManager->loadImageAbs(defaultNormal, defaultResourceName, cv::osu::skin_mipmaps.getBool() || forceLoadMipmaps);
 		}
 	}
 
 	if (existsUserNormal && !forceUseDefaultSkin)
 	{
-		if (osu_skin_async.getBool())
+		if (cv::osu::skin_async.getBool())
 			resourceManager->requestNextLoadAsync();
-		*addressOfPointer = resourceManager->loadImageAbs(userNormal, "", osu_skin_mipmaps.getBool() || forceLoadMipmaps);
+		*addressOfPointer = resourceManager->loadImageAbs(userNormal, "", cv::osu::skin_mipmaps.getBool() || forceLoadMipmaps);
 		m_resources.push_back(*addressOfPointer);
 	}
 
@@ -1444,44 +1437,44 @@ void OsuSkin::checkLoadSound(Sound **addressOfPointer, UString skinElementName, 
 	// load default first
 	if (skinFileExists(defaultWav))
 	{
-		if (osu_skin_async.getBool())
+		if (cv::osu::skin_async.getBool())
 			resourceManager->requestNextLoadAsync();
 		*addressOfPointer = resourceManager->loadSoundAbs(defaultWav, defaultResourceName, false, false, loop);
 	}
 	else if (skinFileExists(defaultMp3))
 	{
-		if (osu_skin_async.getBool())
+		if (cv::osu::skin_async.getBool())
 			resourceManager->requestNextLoadAsync();
 		*addressOfPointer = resourceManager->loadSoundAbs(defaultMp3, defaultResourceName, false, false, loop);
 	}
 	else if (skinFileExists(defaultOgg))
 	{
-		if (osu_skin_async.getBool())
+		if (cv::osu::skin_async.getBool())
 			resourceManager->requestNextLoadAsync();
 		*addressOfPointer = resourceManager->loadSoundAbs(defaultOgg, defaultResourceName, false, false, loop);
 	}
 
 	// load user skin if appropriate
 	bool isDefaultSkin = true;
-	if (!isSample || osu_skin_use_skin_hitsounds.getBool())
+	if (!isSample || cv::osu::skin_use_skin_hitsounds.getBool())
 	{
 		if (skinFileExists(userWav))
 		{
-			if (osu_skin_async.getBool())
+			if (cv::osu::skin_async.getBool())
 				resourceManager->requestNextLoadAsync();
 			*addressOfPointer = resourceManager->loadSoundAbs(userWav, "", false, false, loop);
 			isDefaultSkin = false;
 		}
 		else if (skinFileExists(userMp3))
 		{
-			if (osu_skin_async.getBool())
+			if (cv::osu::skin_async.getBool())
 				resourceManager->requestNextLoadAsync();
 			*addressOfPointer = resourceManager->loadSoundAbs(userMp3, "", false, false, loop);
 			isDefaultSkin = false;
 		}
 		else if (skinFileExists(userOgg))
 		{
-			if (osu_skin_async.getBool())
+			if (cv::osu::skin_async.getBool())
 				resourceManager->requestNextLoadAsync();
 			*addressOfPointer = resourceManager->loadSoundAbs(userOgg, "", false, false, loop);
 			isDefaultSkin = false;
@@ -1490,7 +1483,7 @@ void OsuSkin::checkLoadSound(Sound **addressOfPointer, UString skinElementName, 
 
 	// reload default if needed
 	if (isDefaultSkin && *addressOfPointer != nullptr)
-		resourceManager->reloadResource(*addressOfPointer, osu_skin_async.getBool());
+		resourceManager->reloadResource(*addressOfPointer, cv::osu::skin_async.getBool());
 
 	if (*addressOfPointer != nullptr)
 	{

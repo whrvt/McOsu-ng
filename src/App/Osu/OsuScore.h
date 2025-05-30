@@ -124,8 +124,8 @@ public:
 	UString getModsStringForRichPresence();
 
 private:
-	static ConVar *m_osu_draw_statistics_pp_ref;
-	static ConVar *m_osu_drain_type_ref;
+	
+	
 
 	void onScoreChange();
 

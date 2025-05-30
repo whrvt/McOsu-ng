@@ -24,7 +24,7 @@
 #include "CBaseUIContainer.h"
 #include "CBaseUIScrollView.h"
 #include "CBaseUITextbox.h"
-
+namespace cv {
 ConVar showconsolebox("showconsolebox");
 
 ConVar consolebox_animspeed("consolebox_animspeed", 12.0f, FCVAR_NONE);
@@ -34,6 +34,7 @@ ConVar consolebox_draw_helptext("consolebox_draw_helptext", true, FCVAR_NONE, "w
 ConVar console_overlay("console_overlay", true, FCVAR_NONE, "should the log overlay always be visible (or only if the console is out)");
 ConVar console_overlay_lines("console_overlay_lines", 6, FCVAR_NONE, "max number of lines of text");
 ConVar console_overlay_scale("console_overlay_scale", 1.0f, FCVAR_NONE, "log text size multiplier");
+}
 
 class ConsoleBoxTextbox : public CBaseUITextbox
 {
@@ -45,7 +46,7 @@ public:
 protected:
 	virtual void drawText()
 	{
-		if (consolebox_draw_preview.getBool())
+		if (cv::consolebox_draw_preview.getBool())
 		{
 			if (m_sSuggestion.length() > 0 && m_sSuggestion.find(m_sText) == 0)
 			{
@@ -82,7 +83,7 @@ protected:
 		if (m_font == NULL || m_sText.length() < 1)
 			return;
 
-		if (consolebox_draw_helptext.getBool())
+		if (cv::consolebox_draw_helptext.getBool())
 		{
 			if (m_sHelpText.length() > 0)
 			{
@@ -168,7 +169,7 @@ ConsoleBox::ConsoleBox() : WindowUIElement(0, 0, 0, 0, "")
 	clearSuggestions();
 
 	// convar callbacks
-	showconsolebox.setCallback(fastdelegate::MakeDelegate(this, &ConsoleBox::show));
+	cv::showconsolebox.setCallback(fastdelegate::MakeDelegate(this, &ConsoleBox::show));
 }
 
 ConsoleBox::~ConsoleBox()
@@ -189,7 +190,7 @@ void ConsoleBox::draw()
 		if (mouse->isMiddleDown())
 			g->translate(0, mouse->getPos().y - engine->getScreenHeight());
 
-		if (console_overlay.getBool() || m_textbox->isVisible())
+		if (cv::console_overlay.getBool() || m_textbox->isVisible())
 			drawLogOverlay();
 
 		if (anim->isAnimating(&m_fConsoleAnimation))
@@ -218,12 +219,12 @@ void ConsoleBox::drawLogOverlay()
 
 	const float dpiScale = getDPIScale();
 
-	const float logScale = std::round(dpiScale + 0.255f) * console_overlay_scale.getFloat();
+	const float logScale = std::round(dpiScale + 0.255f) * cv::console_overlay_scale.getFloat();
 
 	const int shadowOffset = 1 * logScale;
 
 	g->setColor(0xff000000);
-	const float alpha = 1.0f - (m_fLogYPos / (m_logFont->getHeight() * (console_overlay_lines.getInt() + 1)));
+	const float alpha = 1.0f - (m_fLogYPos / (m_logFont->getHeight() * (cv::console_overlay_lines.getInt() + 1)));
 	if (m_fLogYPos != 0.0f)
 		g->setAlpha(alpha);
 
@@ -326,7 +327,7 @@ void ConsoleBox::update()
 		if (m_fSuggestionAnimation <= m_fSuggestionY)
 		{
 			m_suggestion->setPosY(engine->getScreenHeight() - (m_fSuggestionY - m_fSuggestionAnimation));
-			m_fSuggestionAnimation += consolebox_animspeed.getFloat();
+			m_fSuggestionAnimation += cv::consolebox_animspeed.getFloat();
 		}
 		else
 		{
@@ -342,7 +343,7 @@ void ConsoleBox::update()
 		if (m_fSuggestionAnimation >= 0)
 		{
 			m_suggestion->setPosY(engine->getScreenHeight() - (m_fSuggestionY - m_fSuggestionAnimation));
-			m_fSuggestionAnimation -= consolebox_animspeed.getFloat();
+			m_fSuggestionAnimation -= cv::consolebox_animspeed.getFloat();
 		}
 		else
 		{
@@ -362,9 +363,9 @@ void ConsoleBox::update()
 	if (engine->getTime() > m_fLogTime)
 	{
 		if (!anim->isAnimating(&m_fLogYPos) && m_fLogYPos == 0.0f)
-			anim->moveQuadInOut(&m_fLogYPos, m_logFont->getHeight() * (console_overlay_lines.getFloat() + 1), 0.5f);
+			anim->moveQuadInOut(&m_fLogYPos, m_logFont->getHeight() * (cv::console_overlay_lines.getFloat() + 1), 0.5f);
 
-		if (m_fLogYPos == m_logFont->getHeight() * (console_overlay_lines.getInt() + 1))
+		if (m_fLogYPos == m_logFont->getHeight() * (cv::console_overlay_lines.getInt() + 1))
 		{
 			std::lock_guard<std::mutex> logGuard(m_logMutex);
 			m_log.clear();
@@ -739,7 +740,7 @@ void ConsoleBox::log(UString text, Color textColor)
 		m_log.push_back(logEntry);
 	}
 
-	while (m_log.size() > console_overlay_lines.getInt())
+	while (m_log.size() > cv::console_overlay_lines.getInt())
 	{
 		m_log.erase(m_log.begin());
 	}

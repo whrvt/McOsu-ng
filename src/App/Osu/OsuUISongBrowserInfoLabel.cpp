@@ -29,8 +29,8 @@ OsuUISongBrowserInfoLabel::OsuUISongBrowserInfoLabel(float xPos, float yPos, flo
 	
 	m_font = osu->getSubTitleFont();
 
-	m_osu_debug_ref = convar->getConVarByName("osu_debug");
-	m_osu_songbrowser_dynamic_star_recalc_ref = convar->getConVarByName("osu_songbrowser_dynamic_star_recalc");
+
+
 
 	m_iMargin = 10;
 
@@ -68,7 +68,7 @@ OsuUISongBrowserInfoLabel::OsuUISongBrowserInfoLabel(float xPos, float yPos, flo
 void OsuUISongBrowserInfoLabel::draw()
 {
 	// debug bounding box
-	if (m_osu_debug_ref->getBool())
+	if (cv::osu::debug.getBool())
 	{
 		g->setColor(0xffff0000);
 		g->drawLine(m_vPos.x, m_vPos.y, m_vPos.x+m_vSize.x, m_vPos.y);
@@ -389,11 +389,11 @@ UString OsuUISongBrowserInfoLabel::buildDiffInfoString()
 	const bool starsAndModStarsAreEqual = (std::abs(stars - modStars) < starComparisonEpsilon);
 
 	UString finalString;
-	if (areStarsInaccurate && m_osu_songbrowser_dynamic_star_recalc_ref->getBool())
+	if (areStarsInaccurate && cv::osu::songbrowser_dynamic_star_recalc.getBool())
 		finalString = UString::format("CS:%.3g AR:%.3g OD:%.3g HP:%.3g Stars:%.3g *", CS, AR, OD, HP, stars);
-	else if (!starsAndModStarsAreEqual && m_osu_songbrowser_dynamic_star_recalc_ref->getBool())
+	else if (!starsAndModStarsAreEqual && cv::osu::songbrowser_dynamic_star_recalc.getBool())
 		finalString = UString::format("CS:%.3g AR:%.3g OD:%.3g HP:%.3g Stars:%.3g -> %.3g (%ipp)", CS, AR, OD, HP, stars, modStars, (int)(std::round(modPp)));
-	else if (m_osu_songbrowser_dynamic_star_recalc_ref->getBool())
+	else if (cv::osu::songbrowser_dynamic_star_recalc.getBool())
 		finalString = UString::format("CS:%.3g AR:%.3g OD:%.3g HP:%.3g Stars:%.3g (%ipp)", CS, AR, OD, HP, stars, (int)(std::round(modPp)));
 	else
 		finalString = UString::format("CS:%.3g AR:%.3g OD:%.3g HP:%.3g Stars:%.3g", CS, AR, OD, HP, stars);

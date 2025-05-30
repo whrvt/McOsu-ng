@@ -265,25 +265,6 @@ private:
 	void selectPreviousRandomBeatmap();
 	void playSelectedDifficulty();
 
-	ConVar *m_fps_max_ref;
-	ConVar *m_osu_scores_enabled;
-	ConVar *m_name_ref;
-
-	ConVar *m_osu_draw_scrubbing_timeline_strain_graph_ref;
-	ConVar *m_osu_hud_scrubbing_timeline_strains_height_ref;
-	ConVar *m_osu_hud_scrubbing_timeline_strains_alpha_ref;
-	ConVar *m_osu_hud_scrubbing_timeline_strains_aim_color_r_ref;
-	ConVar *m_osu_hud_scrubbing_timeline_strains_aim_color_g_ref;
-	ConVar *m_osu_hud_scrubbing_timeline_strains_aim_color_b_ref;
-	ConVar *m_osu_hud_scrubbing_timeline_strains_speed_color_r_ref;
-	ConVar *m_osu_hud_scrubbing_timeline_strains_speed_color_g_ref;
-	ConVar *m_osu_hud_scrubbing_timeline_strains_speed_color_b_ref;
-
-	ConVar *m_osu_draw_statistics_perfectpp_ref;
-	ConVar *m_osu_draw_statistics_totalstars_ref;
-
-	ConVar *m_osu_mod_fposu_ref;
-
 	std::mt19937 m_rngalg;
 	GROUP m_group;
 	std::vector<GROUPING> m_groupings;

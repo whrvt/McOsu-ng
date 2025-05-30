@@ -69,15 +69,15 @@ public:
 	[[nodiscard]] inline OsuSliderCurve *getCurve() const {return m_curve;}
 
 private:
-	static ConVar *m_osu_playfield_mirror_horizontal_ref;
-	static ConVar *m_osu_playfield_mirror_vertical_ref;
-	static ConVar *m_osu_playfield_rotation_ref;
-	static ConVar *m_osu_mod_fps_ref;
-	static ConVar *m_osu_mod_strict_tracking_ref;
-	static ConVar *m_osu_slider_border_size_multiplier_ref;
-	static ConVar *m_epilepsy_ref;
-	static ConVar *m_osu_auto_cursordance_ref;
-	static ConVar *m_osu_drain_type_ref;
+	
+	
+	
+	
+	
+	
+	
+	
+	
 
 	void drawStartCircle(float alpha);
 	void draw3DStartCircle(const Matrix4 &baseScale, float alpha);

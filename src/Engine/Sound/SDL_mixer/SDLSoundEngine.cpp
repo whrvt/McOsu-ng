@@ -16,18 +16,14 @@
 
 #include "Thread.h"
 
-extern ConVar snd_output_device;
-extern ConVar snd_restart;
-extern ConVar snd_freq;
-extern ConVar snd_restrict_play_frame;
-extern ConVar snd_change_check_interval;
-
 // SDL-specific ConVars
+namespace cv {
 ConVar snd_chunk_size("snd_chunk_size", 256, FCVAR_NONE, "used to set the SDL audio chunk size");
+}
 
 SDLSoundEngine::SDLSoundEngine() : SoundEngine()
 {
-	m_iMixChunkSize = snd_chunk_size.getInt();
+	m_iMixChunkSize = cv::snd_chunk_size.getInt();
 	m_fVolumeMixMusic = 1.0f;
 
 	// add default output device
@@ -40,7 +36,7 @@ SDLSoundEngine::SDLSoundEngine() : SoundEngine()
 	defaultOutputDevice.enabled = true;
 	defaultOutputDevice.isDefault = false; // custom -1 can never have default
 
-	snd_output_device.setValue(defaultOutputDevice.name);
+	cv::snd_output_device.setValue(defaultOutputDevice.name);
 	m_outputDevices.push_back(defaultOutputDevice);
 
 	if (!SDL_WasInit(SDL_INIT_AUDIO) && !SDL_Init(SDL_INIT_AUDIO))
@@ -53,8 +49,8 @@ SDLSoundEngine::SDLSoundEngine() : SoundEngine()
 	initializeOutputDevice(defaultOutputDevice.id);
 
 	// convar callbacks
-	snd_restart.setCallback(fastdelegate::MakeDelegate(this, &SDLSoundEngine::restart));
-	snd_output_device.setCallback(fastdelegate::MakeDelegate(this, &SDLSoundEngine::setOutputDevice));
+	cv::snd_restart.setCallback(fastdelegate::MakeDelegate(this, &SDLSoundEngine::restart));
+	cv::snd_output_device.setCallback(fastdelegate::MakeDelegate(this, &SDLSoundEngine::setOutputDevice));
 }
 
 SDLSoundEngine::~SDLSoundEngine()
@@ -91,7 +87,7 @@ bool SDLSoundEngine::play(Sound *snd, float pan, float pitch)
 	pan = std::clamp<float>(pan, -1.0f, 1.0f);
 	pitch = std::clamp<float>(pitch, 0.0f, 2.0f);
 
-	const bool allowPlayFrame = !snd->isOverlayable() || !snd_restrict_play_frame.getBool() || engine->getTime() > snd->getLastPlayTime();
+	const bool allowPlayFrame = !snd->isOverlayable() || !cv::snd_restrict_play_frame.getBool() || engine->getTime() > snd->getLastPlayTime();
 
 	if (!allowPlayFrame)
 		return false;
@@ -225,10 +221,10 @@ bool SDLSoundEngine::initializeOutputDevice(int id, bool force)
 	if (m_bReady)
 		Mix_CloseAudio();
 
-	m_iMixChunkSize = snd_chunk_size.getInt();
+	m_iMixChunkSize = cv::snd_chunk_size.getInt();
 	const char *chunkSizeHint = UString::format("%d", m_iMixChunkSize).toUtf8();
 
-	const int freq = snd_freq.getInt();
+	const int freq = cv::snd_freq.getInt();
 	const int channels = 16;
 
 	debugLog("setting SDL audio chunk size to {:s}\n", chunkSizeHint);

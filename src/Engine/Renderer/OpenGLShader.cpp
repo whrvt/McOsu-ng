@@ -130,7 +130,7 @@ void OpenGLShader::setUniform1f(UString name, float value)
 	const int id = getAndCacheUniformLocation(name);
 	if (id != -1)
 		glUniform1fARB(id, value);
-	else if (debug_shaders->getBool())
+	else if (cv::debug_shaders.getBool())
 		debugLog("OpenGLShader Warning: Can't find uniform {:s}\n", name.toUtf8());
 }
 
@@ -142,7 +142,7 @@ void OpenGLShader::setUniform1fv(UString name, int count, float *values)
 	const int id = getAndCacheUniformLocation(name);
 	if (id != -1)
 		glUniform1fvARB(id, count, values);
-	else if (debug_shaders->getBool())
+	else if (cv::debug_shaders.getBool())
 		debugLog("OpenGLShader Warning: Can't find uniform {:s}\n", name.toUtf8());
 }
 
@@ -154,7 +154,7 @@ void OpenGLShader::setUniform1i(UString name, int value)
 	const int id = getAndCacheUniformLocation(name);
 	if (id != -1)
 		glUniform1iARB(id, value);
-	else if (debug_shaders->getBool())
+	else if (cv::debug_shaders.getBool())
 		debugLog("OpenGLShader Warning: Can't find uniform {:s}\n", name.toUtf8());
 }
 
@@ -166,7 +166,7 @@ void OpenGLShader::setUniform2f(UString name, float value1, float value2)
 	const int id = getAndCacheUniformLocation(name);
 	if (id != -1)
 		glUniform2fARB(id, value1, value2);
-	else if (debug_shaders->getBool())
+	else if (cv::debug_shaders.getBool())
 		debugLog("OpenGLShader Warning: Can't find uniform {:s}\n", name.toUtf8());
 }
 
@@ -178,7 +178,7 @@ void OpenGLShader::setUniform2fv(UString name, int count, float *vectors)
 	const int id = getAndCacheUniformLocation(name);
 	if (id != -1)
 		glUniform2fv(id, count, (float *)&vectors[0]);
-	else if (debug_shaders->getBool())
+	else if (cv::debug_shaders.getBool())
 		debugLog("OpenGLShader Warning: Can't find uniform {:s}\n", name.toUtf8());
 }
 
@@ -190,7 +190,7 @@ void OpenGLShader::setUniform3f(UString name, float x, float y, float z)
 	const int id = getAndCacheUniformLocation(name);
 	if (id != -1)
 		glUniform3fARB(id, x, y, z);
-	else if (debug_shaders->getBool())
+	else if (cv::debug_shaders.getBool())
 		debugLog("OpenGLShader Warning: Can't find uniform {:s}\n", name.toUtf8());
 }
 
@@ -202,7 +202,7 @@ void OpenGLShader::setUniform3fv(UString name, int count, float *vectors)
 	const int id = getAndCacheUniformLocation(name);
 	if (id != -1)
 		glUniform3fv(id, count, (float *)&vectors[0]);
-	else if (debug_shaders->getBool())
+	else if (cv::debug_shaders.getBool())
 		debugLog("OpenGLShader Warning: Can't find uniform {:s}\n", name.toUtf8());
 }
 
@@ -214,7 +214,7 @@ void OpenGLShader::setUniform4f(UString name, float x, float y, float z, float w
 	const int id = getAndCacheUniformLocation(name);
 	if (id != -1)
 		glUniform4fARB(id, x, y, z, w);
-	else if (debug_shaders->getBool())
+	else if (cv::debug_shaders.getBool())
 		debugLog("OpenGLShader Warning: Can't find uniform {:s}\n", name.toUtf8());
 }
 
@@ -226,7 +226,7 @@ void OpenGLShader::setUniformMatrix4fv(UString name, Matrix4 &matrix)
 	const int id = getAndCacheUniformLocation(name);
 	if (id != -1)
 		glUniformMatrix4fv(id, 1, GL_FALSE, matrix.get());
-	else if (debug_shaders->getBool())
+	else if (cv::debug_shaders.getBool())
 		debugLog("OpenGLShader Warning: Can't find uniform {:s}\n", name.toUtf8());
 }
 
@@ -238,7 +238,7 @@ void OpenGLShader::setUniformMatrix4fv(UString name, float *v)
 	const int id = getAndCacheUniformLocation(name);
 	if (id != -1)
 		glUniformMatrix4fv(id, 1, GL_FALSE, v);
-	else if (debug_shaders->getBool())
+	else if (cv::debug_shaders.getBool())
 		debugLog("OpenGLShader Warning: Can't find uniform {:s}\n", name.toUtf8());
 }
 

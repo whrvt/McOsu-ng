@@ -29,7 +29,7 @@ class AsyncResourceLoader;
 class ResourceManager final
 {
 public:
-	static ConVar *debug_rm;
+	
 
 	static constexpr auto PATH_DEFAULT_IMAGES = "materials/";
 	static constexpr auto PATH_DEFAULT_FONTS = "fonts/";
@@ -124,7 +124,7 @@ private:
 		auto it = m_nameToResourceMap.find(resourceName);
 		if (it != m_nameToResourceMap.end())
 			return it->second->as<T>();
-		if (debug_rm->getBool())
+		if (cv::debug_rm.getBool())
 			debugLog(R"(ResourceManager WARNING: Resource "{:s}" does not exist!)"
 			         "\n",
 			         resourceName);
@@ -138,7 +138,7 @@ private:
 		auto it = m_nameToResourceMap.find(resourceName);
 		if (it == m_nameToResourceMap.end())
 			return nullptr;
-		if (debug_rm->getBool())
+		if (cv::debug_rm.getBool())
 			debugLog(R"(ResourceManager NOTICE: Resource "{:s}" already loaded.)"
 			         "\n",
 			         resourceName);

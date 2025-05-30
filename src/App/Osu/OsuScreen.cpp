@@ -15,8 +15,6 @@
 
 OsuScreen::OsuScreen()
 {
-	
-
 	m_bVisible = false;
 }
 

@@ -22,8 +22,8 @@ class DirectoryCache;
 class McFile
 {
 public:
-	static ConVar *debug;
-	static ConVar *size_max;
+	
+	
 
 	enum class TYPE : uint8_t
 	{
@@ -48,6 +48,7 @@ public:
 	[[nodiscard]] constexpr bool canWrite() const { return m_ready && m_ofstream && m_ofstream->good() && m_type == TYPE::WRITE; }
 
 	void write(const char *buffer, size_t size);
+	bool writeLine(const UString &line, bool insertNewline = true);
 
 	UString readLine();
 	UString readString();

@@ -20,38 +20,33 @@
 #include "OsuGameRules.h"
 #include "OsuReplay.h"
 #include "OsuHitObject.h"
+namespace cv::osu {
+ConVar hiterrorbar_misses("osu_hiterrorbar_misses", true, FCVAR_NONE);
+ConVar debug_pp("osu_debug_pp", false, FCVAR_NONE);
 
-ConVar osu_hiterrorbar_misses("osu_hiterrorbar_misses", true, FCVAR_NONE);
-ConVar osu_debug_pp("osu_debug_pp", false, FCVAR_NONE);
+ConVar hud_statistics_hitdelta_chunksize("osu_hud_statistics_hitdelta_chunksize", 30, FCVAR_NONE, "how many recent hit deltas to average (-1 = all)");
 
-ConVar osu_hud_statistics_hitdelta_chunksize("osu_hud_statistics_hitdelta_chunksize", 30, FCVAR_NONE, "how many recent hit deltas to average (-1 = all)");
+ConVar drain_stable_hpbar_maximum("osu_drain_stable_hpbar_maximum", 200.0f, FCVAR_NONE);
 
-ConVar osu_drain_stable_hpbar_maximum("osu_drain_stable_hpbar_maximum", 200.0f, FCVAR_NONE);
+ConVar drain_lazer_multiplier("osu_drain_lazer_multiplier", 0.05f, FCVAR_NONE, "DEFAULT_MAX_HEALTH_INCREASE, expressed as a percentage of full health");
+ConVar drain_lazer_300("osu_drain_lazer_300", 1.0f, FCVAR_NONE);
+ConVar drain_lazer_100("osu_drain_lazer_100", 0.5f, FCVAR_NONE);
+ConVar drain_lazer_50("osu_drain_lazer_50", -0.05f, FCVAR_NONE);
+ConVar drain_lazer_miss("osu_drain_lazer_miss", -1.0f, FCVAR_NONE);
 
-ConVar osu_drain_lazer_multiplier("osu_drain_lazer_multiplier", 0.05f, FCVAR_NONE, "DEFAULT_MAX_HEALTH_INCREASE, expressed as a percentage of full health");
-ConVar osu_drain_lazer_300("osu_drain_lazer_300", 1.0f, FCVAR_NONE);
-ConVar osu_drain_lazer_100("osu_drain_lazer_100", 0.5f, FCVAR_NONE);
-ConVar osu_drain_lazer_50("osu_drain_lazer_50", -0.05f, FCVAR_NONE);
-ConVar osu_drain_lazer_miss("osu_drain_lazer_miss", -1.0f, FCVAR_NONE);
-
-ConVar osu_drain_lazer_2018_multiplier("osu_drain_lazer_2018_multiplier", 1.0f, FCVAR_NONE);
-ConVar osu_drain_lazer_2018_300("osu_drain_lazer_2018_300", 0.01f, FCVAR_NONE);
-ConVar osu_drain_lazer_2018_100("osu_drain_lazer_2018_100", 0.01f, FCVAR_NONE);
-ConVar osu_drain_lazer_2018_50("osu_drain_lazer_2018_50", 0.01f, FCVAR_NONE);
-ConVar osu_drain_lazer_2018_miss("osu_drain_lazer_2018_miss", -0.02f, FCVAR_NONE);
-
-ConVar *OsuScore::m_osu_draw_statistics_pp_ref = NULL;
-ConVar *OsuScore::m_osu_drain_type_ref = NULL;
+ConVar drain_lazer_2018_multiplier("osu_drain_lazer_2018_multiplier", 1.0f, FCVAR_NONE);
+ConVar drain_lazer_2018_300("osu_drain_lazer_2018_300", 0.01f, FCVAR_NONE);
+ConVar drain_lazer_2018_100("osu_drain_lazer_2018_100", 0.01f, FCVAR_NONE);
+ConVar drain_lazer_2018_50("osu_drain_lazer_2018_50", 0.01f, FCVAR_NONE);
+ConVar drain_lazer_2018_miss("osu_drain_lazer_2018_miss", -0.02f, FCVAR_NONE);
+}
 
 OsuScore::OsuScore()
 {
-	
 	reset();
 
-	if (m_osu_draw_statistics_pp_ref == NULL)
-		m_osu_draw_statistics_pp_ref = convar->getConVarByName("osu_draw_statistics_pp");
-	if (m_osu_drain_type_ref == NULL)
-		m_osu_drain_type_ref = convar->getConVarByName("osu_drain_type");
+
+
 }
 
 void OsuScore::reset()
@@ -125,7 +120,7 @@ void OsuScore::addHitResult(OsuBeatmap *beatmap, OsuHitObject *hitObject, HIT hi
 	}
 	else // misses
 	{
-		if (osu_hiterrorbar_misses.getBool() && !ignoreOnHitErrorBar && delta <= (long)OsuGameRules::getHitWindow50(beatmap))
+		if (cv::osu::hiterrorbar_misses.getBool() && !ignoreOnHitErrorBar && delta <= (long)OsuGameRules::getHitWindow50(beatmap))
 			osu->getHUD()->addHitError(delta, true);
 
 		m_iCombo = 0;
@@ -228,7 +223,7 @@ void OsuScore::addHitResult(OsuBeatmap *beatmap, OsuHitObject *hitObject, HIT hi
 		int numCustomPositives = 0;
 		int numCustomNegatives = 0;
 
-		const int customStartIndex = (osu_hud_statistics_hitdelta_chunksize.getInt() < 0 ? 0 : std::max(0, (int)m_hitdeltas.size() - osu_hud_statistics_hitdelta_chunksize.getInt())) - 1;
+		const int customStartIndex = (cv::osu::hud_statistics_hitdelta_chunksize.getInt() < 0 ? 0 : std::max(0, (int)m_hitdeltas.size() - cv::osu::hud_statistics_hitdelta_chunksize.getInt())) - 1;
 
 		for (int i=0; i<m_hitdeltas.size(); i++)
 		{
@@ -293,7 +288,7 @@ void OsuScore::addHitResult(OsuBeatmap *beatmap, OsuHitObject *hitObject, HIT hi
 		m_iComboMax = m_iCombo;
 
 	// recalculate pp
-	if (m_osu_draw_statistics_pp_ref->getBool()) // sanity + performance
+	if (cv::osu::draw_statistics_pp.getBool()) // sanity + performance
 	{
 		const auto *standardPointer = beatmap->asStd();
 		if (standardPointer != NULL && beatmap->getSelectedDifficulty2() != NULL)
@@ -340,7 +335,7 @@ void OsuScore::addHitResult(OsuBeatmap *beatmap, OsuHitObject *hitObject, HIT hi
 
 				m_fPPv2 = OsuDifficultyCalculator::calculatePPv2(beatmap, aimStars, aimSliderFactor, aimDifficultSliders, aimDifficultStrains, speedStars, speedNotes, speedDifficultStrains, -1, numCircles, numSliders, numSpinners, maxPossibleCombo, m_iComboMax, m_iNumMisses, m_iNum300s, m_iNum100s, m_iNum50s);
 
-				if (osu_debug_pp.getBool())
+				if (cv::osu::debug_pp.getBool())
 					debugLog("pp = {:f}, aimstars = {:f}, aimsliderfactor = {:f}, speedstars = {:f}, speednotes = {:f}, curindex = {}, maxPossibleCombo = {}, numCircles = {}, numSliders = {}, numSpinners = {}\n", m_fPPv2, aimStars, aimSliderFactor, speedStars, speedNotes, curHitobjectIndex, maxPossibleCombo, numCircles, numSliders, numSpinners);
 			}
 		}
@@ -419,12 +414,12 @@ void OsuScore::addKeyCount(int key)
 
 double OsuScore::getHealthIncrease(OsuBeatmap *beatmap, HIT hit)
 {
-	return getHealthIncrease(hit, beatmap->getHP(), beatmap->getHPMultiplierNormal(), beatmap->getHPMultiplierComboEnd(), (double)osu_drain_stable_hpbar_maximum.getFloat());
+	return getHealthIncrease(hit, beatmap->getHP(), beatmap->getHPMultiplierNormal(), beatmap->getHPMultiplierComboEnd(), (double)cv::osu::drain_stable_hpbar_maximum.getFloat());
 }
 
 double OsuScore::getHealthIncrease(OsuScore::HIT hit, double HP, double hpMultiplierNormal, double hpMultiplierComboEnd, double hpBarMaximumForNormalization)
 {
-	const int drainType = m_osu_drain_type_ref->getInt();
+	const int drainType = cv::osu::drain_type.getInt();
 
 	if (drainType == 1) // osu!stable
 	{
@@ -478,18 +473,18 @@ double OsuScore::getHealthIncrease(OsuScore::HIT hit, double HP, double hpMultip
 		{
 		case HIT::HIT_MISS:
 		case HIT::HIT_MISS_SLIDERBREAK:
-			return osu_drain_lazer_miss.getFloat() * osu_drain_lazer_multiplier.getFloat();
+			return cv::osu::drain_lazer_miss.getFloat() * cv::osu::drain_lazer_multiplier.getFloat();
 
 		case HIT::HIT_50:
-			return osu_drain_lazer_50.getFloat() * osu_drain_lazer_multiplier.getFloat();
+			return cv::osu::drain_lazer_50.getFloat() * cv::osu::drain_lazer_multiplier.getFloat();
 
 		case HIT::HIT_100:
-			return osu_drain_lazer_100.getFloat() * osu_drain_lazer_multiplier.getFloat();
+			return cv::osu::drain_lazer_100.getFloat() * cv::osu::drain_lazer_multiplier.getFloat();
 
 		case HIT::HIT_300:
 		case HIT::HIT_SLIDER10:
 		case HIT::HIT_SLIDER30:
-			return osu_drain_lazer_300.getFloat() * osu_drain_lazer_multiplier.getFloat();
+			return cv::osu::drain_lazer_300.getFloat() * cv::osu::drain_lazer_multiplier.getFloat();
 		default:
 			break;
 		}
@@ -500,18 +495,18 @@ double OsuScore::getHealthIncrease(OsuScore::HIT hit, double HP, double hpMultip
 		{
 		case HIT::HIT_MISS:
 		case HIT::HIT_MISS_SLIDERBREAK:
-			return (HP) * osu_drain_lazer_2018_miss.getFloat() * osu_drain_lazer_2018_multiplier.getFloat();
+			return (HP) * cv::osu::drain_lazer_2018_miss.getFloat() * cv::osu::drain_lazer_2018_multiplier.getFloat();
 
 		case HIT::HIT_50:
-			return (4.0 - HP) * osu_drain_lazer_2018_50.getFloat() * osu_drain_lazer_2018_multiplier.getFloat();
+			return (4.0 - HP) * cv::osu::drain_lazer_2018_50.getFloat() * cv::osu::drain_lazer_2018_multiplier.getFloat();
 
 		case HIT::HIT_100:
-			return (8.0 - HP) * osu_drain_lazer_2018_100.getFloat() * osu_drain_lazer_2018_multiplier.getFloat();
+			return (8.0 - HP) * cv::osu::drain_lazer_2018_100.getFloat() * cv::osu::drain_lazer_2018_multiplier.getFloat();
 
 		case HIT::HIT_300:
 		case HIT::HIT_SLIDER10:
 		case HIT::HIT_SLIDER30:
-			return (10.2 - std::min(HP, 10.0)) * osu_drain_lazer_2018_300.getFloat() * osu_drain_lazer_2018_multiplier.getFloat();
+			return (10.2 - std::min(HP, 10.0)) * cv::osu::drain_lazer_2018_300.getFloat() * cv::osu::drain_lazer_2018_multiplier.getFloat();
 		default:
 			break;
 		}

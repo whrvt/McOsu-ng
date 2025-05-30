@@ -15,10 +15,10 @@
 #include "OsuSkin.h"
 #include "OsuGameRulesMania.h"
 #include "OsuBeatmapMania.h"
-
-ConVar osu_mania_note_height("osu_mania_note_height", 20.0f, FCVAR_NONE);
-ConVar osu_mania_speed("osu_mania_speed", 1.0f, FCVAR_NONE);
-
+namespace cv::osu {
+ConVar mania_note_height("osu_mania_note_height", 20.0f, FCVAR_NONE);
+ConVar mania_speed("osu_mania_speed", 1.0f, FCVAR_NONE);
+}
 OsuManiaNote::OsuManiaNote(int column, long sliderTime, long time, int sampleType, int comboNumber, int colorCounter, OsuBeatmapMania *beatmap) : OsuHitObject(time, sampleType, comboNumber, false, colorCounter, -1, beatmap)
 {
 	m_iColumn = column;
@@ -55,9 +55,9 @@ void OsuManiaNote::draw()
 	const float columnWidth = m_beatmap->getPlayfieldSize().x / m_beatmap->getNumColumns();
 
 	const double invSpeedMultiplier = 1.0f / osu->getSpeedMultiplier();
-	int height = osu_mania_note_height.getInt();
+	int height = cv::osu::mania_note_height.getInt();
 	int xPos = m_beatmap->getPlayfieldCenter().x - m_beatmap->getPlayfieldSize().x/2 + m_iColumn*(int)(columnWidth);
-	float yPos = -m_iDelta*(double)osu_mania_speed.getFloat()*invSpeedMultiplier + (m_beatmap->getPlayfieldCenter().y + m_beatmap->getPlayfieldSize().y/2) - height + 2;
+	float yPos = -m_iDelta*(double)cv::osu::mania_speed.getFloat()*invSpeedMultiplier + (m_beatmap->getPlayfieldCenter().y + m_beatmap->getPlayfieldSize().y/2) - height + 2;
 
 	// HACKHACK: hardcoded 10k offset
 	if (m_beatmap->getNumColumns() == 10 && m_iColumn > 4)
@@ -141,8 +141,8 @@ void OsuManiaNote::draw()
 		{
 			// TODO: the body shrinks until the key is accidentally released for the first time, then it stops at the current pixelLength and becomes dark
 			bool isStartResultMiss = m_startResult == OsuScore::HIT::HIT_MISS;
-			float pixelLength = (m_iObjectDuration + (m_iDelta < 0 && m_bStartFinished && !isStartResultMiss ? m_iDelta : 0))*(double)osu_mania_speed.getFloat()*invSpeedMultiplier;
-			int yPosBody = yPos + (m_iDelta < 0 && m_bStartFinished && !isStartResultMiss ? m_iDelta : 0)*(double)osu_mania_speed.getFloat()*invSpeedMultiplier;
+			float pixelLength = (m_iObjectDuration + (m_iDelta < 0 && m_bStartFinished && !isStartResultMiss ? m_iDelta : 0))*(double)cv::osu::mania_speed.getFloat()*invSpeedMultiplier;
+			int yPosBody = yPos + (m_iDelta < 0 && m_bStartFinished && !isStartResultMiss ? m_iDelta : 0)*(double)cv::osu::mania_speed.getFloat()*invSpeedMultiplier;
 
 			// body
 			if (pixelLength > 0.0f)
@@ -278,7 +278,7 @@ void OsuManiaNote::onHit(OsuScore::HIT result, long delta, bool start, bool igno
 	// sound and hit animation
 	if (result != OsuScore::HIT::HIT_MISS && (start || !isHoldNote()))
 	{
-		if (m_osu_timingpoints_force->getBool())
+		if (cv::osu::timingpoints_force.getBool())
 			m_beatmap->updateTimingPoints(start ? m_iTime : m_iTime + m_iObjectDuration);
 
 		m_beatmap->getSkin()->playHitCircleSound(m_iSampleType);

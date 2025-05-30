@@ -190,27 +190,27 @@ public:
 	[[nodiscard]] inline float getBreakBackgroundFadeAnim() const {return m_fBreakBackgroundFade;}
 
 protected:
-	static ConVar *m_snd_speed_compensate_pitch_ref;
-	static ConVar *m_win_snd_fallback_dsound_ref;
+	
+	
 
-	static ConVar *m_osu_pvs;
-	static ConVar *m_osu_draw_hitobjects_ref;
-	static ConVar *m_osu_followpoints_prevfadetime_ref;
-	static ConVar *m_osu_universal_offset_ref;
-	static ConVar *m_osu_early_note_time_ref;
-	static ConVar *m_osu_fail_time_ref;
-	static ConVar *m_osu_drain_type_ref;
+	
+	
+	
+	
+	
+	
+	
 
-	static ConVar *m_osu_draw_hud_ref;
-	static ConVar *m_osu_draw_scorebarbg_ref;
-	static ConVar *m_osu_hud_scorebar_hide_during_breaks_ref;
-	static ConVar *m_osu_drain_stable_hpbar_maximum_ref;
-	static ConVar *m_osu_volume_music_ref;
-	static ConVar *m_osu_mod_fposu_ref;
-	static ConVar *m_fposu_3d_ref;
-	static ConVar *m_fposu_draw_scorebarbg_on_top_ref;
+	
+	
+	
+	
+	
+	
+	
+	
 
-	static ConVar *m_osu_main_menu_shuffle_ref;
+	
 
 	// overridable child events
 	virtual void onBeforeLoad() {;}			 // called before hitobjects are loaded

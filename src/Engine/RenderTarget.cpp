@@ -11,10 +11,9 @@
 
 #include "VertexArrayObject.h"
 #include "ResourceManager.h"
-
-ConVar _debug_rt("debug_rt", false, FCVAR_CHEAT, "draws all rendertargets with a translucent green background");
-
-ConVar *RenderTarget::debug_rt = &_debug_rt;
+namespace cv {
+ConVar debug_rt("debug_rt", false, FCVAR_CHEAT, "draws all rendertargets with a translucent green background");
+}
 
 RenderTarget::RenderTarget(int x, int y, int width, int height, Graphics::MULTISAMPLE_TYPE multiSampleType)
 {
@@ -33,7 +32,7 @@ void RenderTarget::draw(int x, int y)
 {
 	if (!m_bReady)
 	{
-		if (_debug_rt.getBool())
+		if (cv::debug_rt.getBool())
 			debugLog("WARNING: RenderTarget is not ready!\n");
 		return;
 	}
@@ -77,7 +76,7 @@ void RenderTarget::draw(int x, int y, int width, int height)
 {
 	if (!m_bReady)
 	{
-		if (_debug_rt.getBool())
+		if (cv::debug_rt.getBool())
 			debugLog("WARNING: RenderTarget is not ready!\n");
 		return;
 	}
@@ -115,7 +114,7 @@ void RenderTarget::drawRect(int x, int y, int width, int height)
 {
 	if (!m_bReady)
 	{
-		if (_debug_rt.getBool())
+		if (cv::debug_rt.getBool())
 			debugLog("WARNING: RenderTarget is not ready!\n");
 		return;
 	}

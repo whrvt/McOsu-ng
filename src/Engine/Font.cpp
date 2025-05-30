@@ -30,9 +30,11 @@ static constexpr wchar_t UNKNOWN_CHAR = '?'; // ASCII '?'
 
 static constexpr auto VERTS_PER_VAO = Env::cfg(REND::GLES2 | REND::GLES32) ? 6 : 4;
 
+namespace cv {
 ConVar r_drawstring_max_string_length("r_drawstring_max_string_length", 65536, FCVAR_CHEAT, "maximum number of characters per call, sanity/memory buffer limit");
 ConVar r_debug_drawstring_unbind("r_debug_drawstring_unbind", false, FCVAR_NONE);
 ConVar r_debug_font_atlas_padding("r_debug_font_atlas_padding", 1, FCVAR_NONE, "padding between glyphs in the atlas to prevent bleeding");
+}
 
 McFont::McFont(UString filepath, int fontSize, bool antialiasing, int fontDPI)
     : Resource(filepath), m_vao((Env::cfg(REND::GLES2 | REND::GLES32) ? Graphics::PRIMITIVE::PRIMITIVE_TRIANGLES : Graphics::PRIMITIVE::PRIMITIVE_QUADS),
@@ -322,7 +324,7 @@ void McFont::buildGlyphGeometry(const GLYPH_METRICS &gm, const Vector3 &basePos,
 
 void McFont::buildStringGeometry(const UString &text, size_t &vertexCount)
 {
-	if (!m_bReady || text.length() == 0 || text.length() > r_drawstring_max_string_length.getInt())
+	if (!m_bReady || text.length() == 0 || text.length() > cv::r_drawstring_max_string_length.getInt())
 	{
 		return;
 	}
@@ -343,7 +345,7 @@ void McFont::drawString(const UString &text)
 	if (!m_bReady)
 		return;
 
-	const int maxNumGlyphs = r_drawstring_max_string_length.getInt();
+	const int maxNumGlyphs = cv::r_drawstring_max_string_length.getInt();
 	if (text.length() == 0 || text.length() > maxNumGlyphs)
 		return;
 
@@ -365,7 +367,7 @@ void McFont::drawString(const UString &text)
 	m_textureAtlas->getAtlasImage()->bind();
 	g->drawVAO(&m_vao);
 
-	if (r_debug_drawstring_unbind.getBool())
+	if (cv::r_debug_drawstring_unbind.getBool())
 	{
 		m_textureAtlas->getAtlasImage()->unbind();
 	}
@@ -433,7 +435,7 @@ void McFont::flushBatch()
 
 	g->drawVAO(&m_vao);
 
-	if (r_debug_drawstring_unbind.getBool())
+	if (cv::r_debug_drawstring_unbind.getBool())
 	{
 		m_textureAtlas->getAtlasImage()->unbind();
 	}
@@ -524,7 +526,7 @@ bool McFont::addGlyph(wchar_t ch)
 // helper implementation for glyph packing (skyline algorithm)
 bool McFont::packGlyphRects(std::vector<GlyphRect> &rects, int atlasWidth, int atlasHeight)
 {
-	const int padding = r_debug_font_atlas_padding.getInt();
+	const int padding = cv::r_debug_font_atlas_padding.getInt();
 
 	// sort rectangles by height
 	std::ranges::sort(rects, [](const GlyphRect &a, const GlyphRect &b) { return a.height > b.height; });
@@ -611,7 +613,7 @@ size_t McFont::calculateOptimalAtlasSize(const std::vector<GlyphRect> &glyphs, f
 	size_t totalArea = 0;
 	for (const auto &glyph : glyphs)
 	{
-		totalArea += (glyph.width + r_debug_font_atlas_padding.getInt()) * (glyph.height + r_debug_font_atlas_padding.getInt());
+		totalArea += (glyph.width + cv::r_debug_font_atlas_padding.getInt()) * (glyph.height + cv::r_debug_font_atlas_padding.getInt());
 	}
 
 	// add 20% for packing inefficiency

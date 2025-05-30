@@ -11,6 +11,7 @@
 #ifndef OSU_H
 #define OSU_H
 
+#include "OsuConVarDefs.h"
 #include "KeyboardListener.h"
 #include "MouseListener.h"
 #include "OsuKeyBindings.h"
@@ -55,9 +56,9 @@ class RenderTarget;
 class Osu final : public MouseListener, public KeyboardListener
 {
 public:
-	static ConVar *version;
-	static ConVar *debug;
-	static ConVar *ui_scale;
+	
+	
+	
 	static bool autoUpdater;
 
 	static Vector2 osuBaseResolution;
@@ -254,31 +255,6 @@ private:
 	void onLetterboxingOffsetChange(UString oldValue, UString newValue);
 
 	void onNotification(UString args);
-
-	// convar refs
-	ConVar *m_osu_folder_ref;
-	ConVar *m_osu_folder_sub_skins_ref;
-	ConVar *m_osu_draw_hud_ref;
-	ConVar *m_osu_draw_scoreboard;
-	ConVar *m_osu_draw_cursor_ripples_ref;
-	ConVar *m_osu_mod_fps_ref;
-	ConVar *m_osu_mod_wobble_ref;
-	ConVar *m_osu_mod_wobble2_ref;
-	ConVar *m_osu_mod_minimize_ref;
-	ConVar *m_osu_playfield_rotation;
-	ConVar *m_osu_playfield_stretch_x;
-	ConVar *m_osu_playfield_stretch_y;
-	ConVar *m_fposu_draw_cursor_trail_ref;
-	ConVar *m_osu_volume_effects_ref;
-	ConVar *m_osu_mod_mafham_ref;
-	ConVar *m_osu_mod_fposu_ref;
-	ConVar *m_fposu_3d_ref;
-	ConVar *m_fposu_3d_spheres_ref;
-	ConVar *m_fposu_3d_spheres_aa_ref;
-	ConVar *m_snd_change_check_interval_ref;
-	ConVar *m_ui_scrollview_scrollbarwidth_ref;
-	ConVar *m_mouse_raw_input_absolute_to_window_ref;
-	ConVar *m_disable_windows_key_ref;
 
 	// interfaces
 	OsuMultiplayer *m_multiplayer;

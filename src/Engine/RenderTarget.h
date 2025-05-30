@@ -16,7 +16,7 @@ class ConVar;
 class RenderTarget : public Resource
 {
 public:
-	static ConVar *debug_rt;
+	
 
 public:
 	RenderTarget(int x, int y, int width, int height, Graphics::MULTISAMPLE_TYPE multiSampleType = Graphics::MULTISAMPLE_TYPE::MULTISAMPLE_0X);

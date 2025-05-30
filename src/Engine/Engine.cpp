@@ -28,23 +28,104 @@
 #include "Engine.h"
 #include "McMath.h"
 
-void _version(void);
-void _host_timescale_(UString oldValue, UString newValue);
-ConVar host_timescale("host_timescale", 1.0f, FCVAR_CHEAT, "Scale by which the engine measures elapsed time, affects engine->getTime()", _host_timescale_);
-void _host_timescale_(UString oldValue, UString newValue)
+//**********************//
+//	Engine ConCommands	//
+//**********************//
+
+void _borderless(void)
 {
-	if (newValue.toFloat() < 0.01f)
+	if (cv::fullscreen_windowed_borderless.getBool())
 	{
-		debugLog(0xffff4444, "Value must be >= 0.01!\n");
-		host_timescale.setValue(1.0f);
+		cv::fullscreen_windowed_borderless.setValue(0.0f);
+		if (env->isFullscreen())
+			env->disableFullscreen();
+	}
+	else
+	{
+		cv::fullscreen_windowed_borderless.setValue(1.0f);
+		if (!env->isFullscreen())
+			env->enableFullscreen();
 	}
 }
+
+void _windowed(UString args)
+{
+	env->disableFullscreen();
+
+	if (args.length() < 7)
+		return;
+
+	std::vector<UString> resolution = args.split("x");
+	if (resolution.size() != 2)
+		debugLog("Error: Invalid parameter count for command 'windowed'! (Usage: e.g. \"windowed 1280x720\")");
+	else
+	{
+		int width = resolution[0].toFloat();
+		int height = resolution[1].toFloat();
+
+		if (width < 300 || height < 240)
+			debugLog("Error: Invalid values for resolution for command 'windowed'!");
+		else
+		{
+			env->setWindowSize(width, height);
+			env->center();
+		}
+	}
+}
+
+void Engine::printVersion()
+{
+	Engine::logRaw("[Engine] McEngine v5 - Build Date: {:s}, {:s}\n", __DATE__, __TIME__);
+}
+
+void Engine::onEngineThrottleChanged(float newVal)
+{
+	const bool enable = !!static_cast<int>(newVal);
+	if (!enable)
+	{
+		m_fVsyncFrameCounterTime = 0.0f;
+		m_iVsyncFrameCount = 0;
+	}
+}
+
+namespace cv {
+ConVar host_timescale("host_timescale", 1.0f, FCVAR_CHEAT, "Scale by which the engine measures elapsed time, affects engine->getTime()",
+	[](float, float value) -> void {
+		if (value < 0.01f)
+		{
+			Engine::logRaw("[Engine] host_timescale value must be >= 0.01!\n");
+			cv::host_timescale.setValue(1.0f);
+		}
+});
+
+ConVar engine_throttle("engine_throttle", true, FCVAR_NONE, "limit some engine component updates to improve performance (non-gameplay-related, only turn this off if you like lower performance for no reason)");
+
 ConVar epilepsy("epilepsy", false, FCVAR_NONE);
 ConVar debug_engine("debug_engine", false, FCVAR_NONE);
 ConVar minimize_on_focus_lost_if_fullscreen("minimize_on_focus_lost_if_fullscreen", true, FCVAR_NONE);
 ConVar minimize_on_focus_lost_if_borderless_windowed_fullscreen("minimize_on_focus_lost_if_borderless_windowed_fullscreen", false, FCVAR_NONE);
-ConVar _disable_windows_key("disable_windows_key", false, FCVAR_NONE, "set to 0/1 to disable/enable the Windows/Super key");
-ConVar engine_throttle("engine_throttle", true, FCVAR_NONE, "limit some engine component updates to improve performance (non-gameplay-related, only turn this off if you like lower performance for no reason)");
+ConVar disable_windows_key("disable_windows_key", false, FCVAR_NONE, "set to 0/1 to disable/enable the Windows/Super key");
+
+ConVar exit("exit", FCVAR_NONE, []() -> void {engine->shutdown();});
+ConVar shutdown("shutdown", FCVAR_NONE, []() -> void {engine->shutdown();});
+ConVar restart("restart", FCVAR_NONE, []() -> void {engine->restart();});
+ConVar printsize("printsize", FCVAR_NONE, []() -> void {Vector2 s = engine->getScreenSize(); Engine::logRaw("[Engine] screenSize = ({:f}, {:f})\n", s.x, s.y);});
+ConVar fullscreen("fullscreen", FCVAR_NONE, []() -> void {engine->toggleFullscreen();});
+ConVar borderless("borderless", FCVAR_NONE, []() -> void {_borderless();});
+ConVar windowed("windowed", FCVAR_NONE, _windowed);
+ConVar minimize("minimize", FCVAR_NONE, []() -> void {env->minimize();});
+ConVar maximize("maximize", FCVAR_NONE, []() -> void {env->maximize();});
+ConVar resizable_toggle("resizable_toggle", FCVAR_NONE, []() -> void {env->setWindowResizable(!env->isWindowResizable());});
+ConVar focus("focus", FCVAR_NONE, []() -> void {engine->focus();});
+ConVar center("center", FCVAR_NONE, []() -> void {engine->center();});
+ConVar version("version", FCVAR_NONE, []() -> void {Engine::printVersion();});
+ConVar errortest("errortest", FCVAR_NONE, []() -> void {engine->showMessageError("Error Test", "This is an error message, fullscreen mode should be disabled and you should be able to read this");});
+ConVar crash("crash", FCVAR_NONE, []() -> void {__builtin_trap();});
+ConVar dpiinfo("dpiinfo", FCVAR_NONE, []() -> void {Engine::logRaw("[Engine] DPI: {}, DPIScale: {:.4f}\n", env->getDPI(), env->getDPIScale());});
+}
+//******************//
+//	End ConCommands	//
+//******************//
 
 std::unique_ptr<Mouse> Engine::s_mouseInstance = nullptr;
 std::unique_ptr<Keyboard> Engine::s_keyboardInstance = nullptr;
@@ -86,7 +167,7 @@ Engine::Engine()
 
 	// print debug information
 	debugLog("-= Engine Startup =-\n");
-	_version();
+	printVersion();
 	debugLog("cmdline: {:s}\n", UString::join(env->getCommandLine()));
 
 	// timing
@@ -98,7 +179,7 @@ Engine::Engine()
 	m_fVsyncFrameCounterTime = 0.0f;
 	m_dFrameTime = 0.016;
 
-	engine_throttle.setCallback(fastdelegate::MakeDelegate(this, &Engine::onEngineThrottleChanged));
+	cv::engine_throttle.setCallback(fastdelegate::MakeDelegate(this, &Engine::onEngineThrottleChanged));
 
 	// window
 	m_bBlackout = false;
@@ -347,7 +428,7 @@ void Engine::onPaint()
 				m_inputDevice->draw();
 			}
 
-			if (epilepsy.getBool())
+			if (cv::epilepsy.getBool())
 			{
 				g->setColor(rgb(rand() % 256, rand() % 256, rand() % 256));
 				g->fillRect(0, 0, engine->getScreenWidth(), engine->getScreenHeight());
@@ -376,9 +457,9 @@ void Engine::onUpdate()
 	{
 		m_timer->update();
 		m_dRunTime = m_timer->getElapsedTime();
-		m_dFrameTime *= (double)host_timescale.getFloat();
+		m_dFrameTime *= (double)cv::host_timescale.getFloat();
 		m_dTime += m_dFrameTime;
-		if (engine_throttle.getBool())
+		if (cv::engine_throttle.getBool())
 		{
 			// it's more like a crude estimate but it gets the job done for use as a throttle
 			if ((m_fVsyncFrameCounterTime += static_cast<float>(m_dFrameTime)) > env->getDisplayRefreshTime())
@@ -394,7 +475,7 @@ void Engine::onUpdate()
 	{
 		m_bResolutionChange = false;
 
-		if (debug_engine.getBool())
+		if (cv::debug_engine.getBool())
 			debugLog("Engine: executing pending queued resolution change to ({}, {})\n", (int)m_vNewScreenSize.x, (int)m_vNewScreenSize.y);
 
 		onResolutionChange(m_vNewScreenSize);
@@ -462,7 +543,7 @@ void Engine::onFocusGained()
 {
 	m_bHasFocus = true;
 
-	if (debug_engine.getBool())
+	if (cv::debug_engine.getBool())
 		debugLog("Engine: got focus\n");
 
 	if (app != NULL)
@@ -473,7 +554,7 @@ void Engine::onFocusLost()
 {
 	m_bHasFocus = false;
 
-	if (debug_engine.getBool())
+	if (cv::debug_engine.getBool())
 		debugLog("Engine: lost focus\n");
 
 	for (auto &m_keyboard : m_keyboards)
@@ -487,8 +568,8 @@ void Engine::onFocusLost()
 	// auto minimize on certain conditions
 	if (env->isFullscreen() || env->isFullscreenWindowedBorderless())
 	{
-		if ((!env->isFullscreenWindowedBorderless() && minimize_on_focus_lost_if_fullscreen.getBool()) ||
-		    (env->isFullscreenWindowedBorderless() && minimize_on_focus_lost_if_borderless_windowed_fullscreen.getBool()))
+		if ((!env->isFullscreenWindowedBorderless() && cv::minimize_on_focus_lost_if_fullscreen.getBool()) ||
+		    (env->isFullscreenWindowedBorderless() && cv::minimize_on_focus_lost_if_borderless_windowed_fullscreen.getBool()))
 		{
 			env->minimize();
 		}
@@ -500,7 +581,7 @@ void Engine::onMinimized()
 	m_bIsMinimized = true;
 	m_bHasFocus = false;
 
-	if (debug_engine.getBool())
+	if (cv::debug_engine.getBool())
 		debugLog("Engine: window minimized\n");
 
 	if (app != NULL)
@@ -511,7 +592,7 @@ void Engine::onMaximized()
 {
 	m_bIsMinimized = false;
 
-	if (debug_engine.getBool())
+	if (cv::debug_engine.getBool())
 		debugLog("Engine: window maximized\n");
 }
 
@@ -519,7 +600,7 @@ void Engine::onRestored()
 {
 	m_bIsMinimized = false;
 
-	if (debug_engine.getBool())
+	if (cv::debug_engine.getBool())
 		debugLog("Engine: window restored\n");
 
 	if (app != NULL)
@@ -600,8 +681,7 @@ void Engine::onKeyDown(KeyboardEvent &e)
 	// handle CTRL+F11 profiler toggle
 	if (keyboard->isControlDown() && keyCode == KEY_F11)
 	{
-		ConVar *vprof = convar->getConVarByName("vprof");
-		vprof->setValue(vprof->getBool() ? 0.0f : 1.0f);
+		cv::vprof.setValue(cv::vprof.getBool() ? 0.0f : 1.0f);
 		e.consume();
 		return;
 	}
@@ -609,8 +689,7 @@ void Engine::onKeyDown(KeyboardEvent &e)
 	// handle profiler display mode change
 	if (keyboard->isControlDown() && keyCode == KEY_TAB)
 	{
-		const ConVar *vprof = convar->getConVarByName("vprof");
-		if (vprof->getBool())
+		if (cv::vprof.getBool())
 		{
 			if (keyboard->isShiftDown())
 				m_visualProfiler->decrementInfoBladeDisplayMode();
@@ -715,145 +794,3 @@ void Engine::logToConsole(std::optional<Color> color, UString msg)
 			m_console->log(msg);
 	}
 }
-
-//**********************//
-//	Engine ConCommands	//
-//**********************//
-
-void Engine::onEngineThrottleChanged(float newVal)
-{
-	const bool enable = !!static_cast<int>(newVal);
-	if (!enable)
-	{
-		m_fVsyncFrameCounterTime = 0.0f;
-		m_iVsyncFrameCount = 0;
-	}
-}
-
-void _exit(void)
-{
-	engine->shutdown();
-}
-
-void _restart(void)
-{
-	engine->restart();
-}
-
-void _printsize(void)
-{
-	Vector2 s = engine->getScreenSize();
-	debugLog("Engine: screenSize = ({:f}, {:f})\n", s.x, s.y);
-}
-
-void _fullscreen(void)
-{
-	engine->toggleFullscreen();
-}
-
-void _borderless(void)
-{
-	ConVar *fullscreen_windowed_borderless_ref = convar->getConVarByName("fullscreen_windowed_borderless");
-	if (fullscreen_windowed_borderless_ref != NULL)
-	{
-		if (fullscreen_windowed_borderless_ref->getBool())
-		{
-			fullscreen_windowed_borderless_ref->setValue(0.0f);
-			if (env->isFullscreen())
-				env->disableFullscreen();
-		}
-		else
-		{
-			fullscreen_windowed_borderless_ref->setValue(1.0f);
-			if (!env->isFullscreen())
-				env->enableFullscreen();
-		}
-	}
-}
-
-void _windowed(UString args)
-{
-	env->disableFullscreen();
-
-	if (args.length() < 7)
-		return;
-
-	std::vector<UString> resolution = args.split("x");
-	if (resolution.size() != 2)
-		debugLog("Error: Invalid parameter count for command 'windowed'! (Usage: e.g. \"windowed 1280x720\")");
-	else
-	{
-		int width = resolution[0].toFloat();
-		int height = resolution[1].toFloat();
-
-		if (width < 300 || height < 240)
-			debugLog("Error: Invalid values for resolution for command 'windowed'!");
-		else
-		{
-			env->setWindowSize(width, height);
-			env->center();
-		}
-	}
-}
-
-void _minimize(void)
-{
-	env->minimize();
-}
-
-void _maximize(void)
-{
-	env->maximize();
-}
-
-void _toggleresizable(void)
-{
-	env->setWindowResizable(!env->isWindowResizable());
-}
-
-void _focus(void)
-{
-	engine->focus();
-}
-
-void _center(void)
-{
-	engine->center();
-}
-
-void _version(void)
-{
-	debugLog("McEngine v4 - Build Date: {:s}, {:s}\n", __DATE__, __TIME__);
-}
-
-void _errortest(void)
-{
-	engine->showMessageError("Error Test", "This is an error message, fullscreen mode should be disabled and you should be able to read this");
-}
-
-void _crash(void)
-{
-	__builtin_trap();
-}
-
-void _dpiinfo(void)
-{
-	debugLog("env->getDPI() = {}, env->getDPIScale() = {:f}\n", env->getDPI(), env->getDPIScale());
-}
-
-ConVar _exit_("exit", FCVAR_NONE, _exit);
-ConVar _shutdown_("shutdown", FCVAR_NONE, _exit);
-ConVar _restart_("restart", FCVAR_NONE, _restart);
-ConVar _printsize_("printsize", FCVAR_NONE, _printsize);
-ConVar _fullscreen_("fullscreen", FCVAR_NONE, _fullscreen);
-ConVar _borderless_("borderless", FCVAR_NONE, _borderless);
-ConVar _windowed_("windowed", FCVAR_NONE, _windowed);
-ConVar _minimize_("minimize", FCVAR_NONE, _minimize);
-ConVar _maximize_("maximize", FCVAR_NONE, _maximize);
-ConVar _resizable_toggle_("resizable_toggle", FCVAR_NONE, _toggleresizable);
-ConVar _focus_("focus", FCVAR_NONE, _focus);
-ConVar _center_("center", FCVAR_NONE, _center);
-ConVar _version_("version", FCVAR_NONE, _version);
-ConVar _errortest_("errortest", FCVAR_NONE, _errortest);
-ConVar _crash_("crash", FCVAR_NONE, _crash);
-ConVar _dpiinfo_("dpiinfo", FCVAR_NONE, _dpiinfo);

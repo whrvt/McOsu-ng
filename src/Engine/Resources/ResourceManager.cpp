@@ -14,11 +14,10 @@
 #include "Environment.h"
 
 #include <algorithm>
-
+namespace cv {
 ConVar rm_interrupt_on_destroy("rm_interrupt_on_destroy", true, FCVAR_CHEAT);
-ConVar debug_rm_("debug_rm", false, FCVAR_NONE);
-
-ConVar *ResourceManager::debug_rm = &debug_rm_;
+ConVar debug_rm("debug_rm", false, FCVAR_NONE);
+}
 
 ResourceManager::ResourceManager()
 {
@@ -74,12 +73,12 @@ void ResourceManager::destroyResource(Resource *rs)
 {
 	if (rs == nullptr)
 	{
-		if (debug_rm->getBool())
+		if (cv::debug_rm.getBool())
 			debugLog("ResourceManager Warning: destroyResource(NULL)!\n");
 		return;
 	}
 
-	if (debug_rm->getBool())
+	if (cv::debug_rm.getBool())
 		debugLog("ResourceManager: Destroying {:s}\n", rs->getName());
 
 	bool isManagedResource = false;
@@ -97,10 +96,10 @@ void ResourceManager::destroyResource(Resource *rs)
 	// check if it's being loaded and schedule async destroy if so
 	if (m_asyncLoader->isLoadingResource(rs))
 	{
-		if (debug_rm->getBool())
+		if (cv::debug_rm.getBool())
 			debugLog("Resource Manager: Scheduled async destroy of {:s}\n", rs->getName());
 
-		if (rm_interrupt_on_destroy.getBool())
+		if (cv::rm_interrupt_on_destroy.getBool())
 			rs->interruptLoad();
 
 		m_asyncLoader->scheduleAsyncDestroy(rs);
@@ -193,7 +192,7 @@ void ResourceManager::reloadResource(Resource *rs, bool async)
 {
 	if (rs == nullptr)
 	{
-		if (debug_rm->getBool())
+		if (cv::debug_rm.getBool())
 			debugLog("ResourceManager Warning: reloadResource(NULL)!\n");
 		return;
 	}
@@ -206,7 +205,7 @@ void ResourceManager::reloadResources(const std::vector<Resource *> &resources, 
 {
 	if (resources.empty())
 	{
-		if (debug_rm->getBool())
+		if (cv::debug_rm.getBool())
 			debugLog("ResourceManager Warning: reloadResources with an empty resources vector!\n");
 		return;
 	}
@@ -228,7 +227,7 @@ void ResourceManager::setResourceName(Resource *res, UString name)
 {
 	if (!res)
 	{
-		if (debug_rm->getBool())
+		if (cv::debug_rm.getBool())
 			debugLog("ResourceManager: attempted to set name {:s} on NULL resource!\n", name);
 		return;
 	}

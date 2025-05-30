@@ -20,9 +20,9 @@
 #include "CBaseUIContainer.h"
 #include "CBaseUIButton.h"
 #include "CBaseUIScrollView.h"
-
+namespace cv {
 ConVar vs_browser_animspeed("vs_browser_animspeed", 0.15f, FCVAR_NONE);
-
+}
 
 
 struct VSMusicBrowserNaturalSortStringComparator
@@ -282,9 +282,9 @@ public:
 	void setSelected(bool selected)
 	{
 		if (selected && !m_bSelected)
-			anim->moveQuadInOut(&m_fSelectionAnim, 1.0f, vs_browser_animspeed.getFloat(), 0.0f, true);
+			anim->moveQuadInOut(&m_fSelectionAnim, 1.0f, cv::vs_browser_animspeed.getFloat(), 0.0f, true);
 		else if (!selected)
-			anim->moveQuadInOut(&m_fSelectionAnim, 0.0f, vs_browser_animspeed.getFloat(), 0.0f, true);
+			anim->moveQuadInOut(&m_fSelectionAnim, 0.0f, cv::vs_browser_animspeed.getFloat(), 0.0f, true);
 
 		m_bSelected = selected;
 	}
@@ -310,7 +310,7 @@ public:
 		m_fAnim = 0.0f;
 
 		// spawn animation
-		anim->moveQuadInOut(&m_fAnim, 1.0f, vs_browser_animspeed.getFloat(), 0.0f, true);
+		anim->moveQuadInOut(&m_fAnim, 1.0f, cv::vs_browser_animspeed.getFloat(), 0.0f, true);
 	}
 
 	virtual ~VSMusicBrowserColumnScrollView()

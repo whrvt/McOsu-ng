@@ -30,26 +30,25 @@
 #include "OsuNotificationOverlay.h"
 
 #include "OsuUISongBrowserInfoLabel.h"
-
-ConVar osu_mp_freemod("osu_mp_freemod", false, FCVAR_NONE);
-ConVar osu_mp_freemod_all("osu_mp_freemod_all", true, FCVAR_NONE, "allow everything, or only standard osu mods");
-ConVar osu_mp_win_condition_accuracy("osu_mp_win_condition_accuracy", false, FCVAR_NONE);
-ConVar osu_mp_allow_client_beatmap_select("osu_mp_sv_allow_client_beatmap_select", true, FCVAR_NONE);
-ConVar osu_mp_broadcastcommand("osu_mp_broadcastcommand");
-ConVar osu_mp_clientcastcommand("osu_mp_clientcastcommand");
-ConVar osu_mp_broadcastforceclientbeatmapdownload("osu_mp_broadcastforceclientbeatmapdownload");
-ConVar osu_mp_select_beatmap("osu_mp_select_beatmap");
-ConVar osu_mp_request_beatmap_download("osu_mp_request_beatmap_download");
+namespace cv::osu {
+ConVar mp_freemod("osu_mp_freemod", false, FCVAR_NONE);
+ConVar mp_freemod_all("osu_mp_freemod_all", true, FCVAR_NONE, "allow everything, or only standard osu mods");
+ConVar mp_win_condition_accuracy("osu_mp_win_condition_accuracy", false, FCVAR_NONE);
+ConVar mp_allow_client_beatmap_select("osu_mp_sv_allow_client_beatmap_select", true, FCVAR_NONE);
+ConVar mp_broadcastcommand("osu_mp_broadcastcommand");
+ConVar mp_clientcastcommand("osu_mp_clientcastcommand");
+ConVar mp_broadcastforceclientbeatmapdownload("osu_mp_broadcastforceclientbeatmapdownload");
+ConVar mp_select_beatmap("osu_mp_select_beatmap");
+ConVar mp_request_beatmap_download("osu_mp_request_beatmap_download");
+}
 
 unsigned long long OsuMultiplayer::sortHackCounter = 0;
-ConVar *OsuMultiplayer::m_cl_cmdrate = NULL;
 
 OsuMultiplayer::OsuMultiplayer()
 {
-	
+#ifdef MCENGINE_FEATURE_NETWORKING
 
-	if (m_cl_cmdrate == NULL)
-		m_cl_cmdrate = convar->getConVarByName("cl_cmdrate", false);
+#endif
 
 	// engine callbacks
 	networkHandler->setOnClientReceiveServerPacketListener( fastdelegate::MakeDelegate(this, &OsuMultiplayer::onClientReceive) );
@@ -63,12 +62,12 @@ OsuMultiplayer::OsuMultiplayer()
 	networkHandler->setOnLocalServerStoppedListener( fastdelegate::MakeDelegate(this, &OsuMultiplayer::onLocalServerStopped) );
 
 	// convar callbacks
-	osu_mp_broadcastcommand.setCallback( fastdelegate::MakeDelegate(this, &OsuMultiplayer::onBroadcastCommand) );
-	osu_mp_clientcastcommand.setCallback( fastdelegate::MakeDelegate(this, &OsuMultiplayer::onClientcastCommand) );
+	cv::osu::mp_broadcastcommand.setCallback( fastdelegate::MakeDelegate(this, &OsuMultiplayer::onBroadcastCommand) );
+	cv::osu::mp_clientcastcommand.setCallback( fastdelegate::MakeDelegate(this, &OsuMultiplayer::onClientcastCommand) );
 
-	osu_mp_broadcastforceclientbeatmapdownload.setCallback( fastdelegate::MakeDelegate(this, &OsuMultiplayer::onMPForceClientBeatmapDownload) );
-	osu_mp_select_beatmap.setCallback( fastdelegate::MakeDelegate(this, &OsuMultiplayer::onMPSelectBeatmap) );
-	osu_mp_request_beatmap_download.setCallback( fastdelegate::MakeDelegate(this, &OsuMultiplayer::onMPRequestBeatmapDownload) );
+	cv::osu::mp_broadcastforceclientbeatmapdownload.setCallback( fastdelegate::MakeDelegate(this, &OsuMultiplayer::onMPForceClientBeatmapDownload) );
+	cv::osu::mp_select_beatmap.setCallback( fastdelegate::MakeDelegate(this, &OsuMultiplayer::onMPSelectBeatmap) );
+	cv::osu::mp_request_beatmap_download.setCallback( fastdelegate::MakeDelegate(this, &OsuMultiplayer::onMPRequestBeatmapDownload) );
 
 	m_fNextPlayerCmd = 0.0f;
 
@@ -509,7 +508,7 @@ bool OsuMultiplayer::onClientReceiveInt(uint32_t id, void *data, uint32_t size, 
 			    bool operator() (PLAYER const &a, PLAYER const &b) const
 			    {
 			    	// strict weak ordering!
-			    	if (osu_mp_win_condition_accuracy.getBool())
+			    	if (cv::osu::mp_win_condition_accuracy.getBool())
 			    	{
 			    		if (a.accuracy == b.accuracy)
 			    		{
@@ -747,7 +746,7 @@ bool OsuMultiplayer::onServerReceive(uint32_t id, void *data, uint32_t size)
 		{
 			// execute
 			GAME_STATE_PACKET *pp = (struct GAME_STATE_PACKET*)unwrappedPacket;
-			if (pp->state == SELECT && !osu->isInPlayMode() && osu_mp_allow_client_beatmap_select.getBool())
+			if (pp->state == SELECT && !osu->isInPlayMode() && cv::osu::mp_allow_client_beatmap_select.getBool())
 			{
 				m_iLastClientBeatmapSelectID = id;
 				return onClientReceiveInt(id, data, size, true);
@@ -1066,11 +1065,11 @@ void OsuMultiplayer::onServerModUpdate()
 
 	// put all mod related convars in here
 	UString string = "";
-	if (!osu_mp_freemod.getBool())
+	if (!cv::osu::mp_freemod.getBool())
 	{
 		string = "osu_mods ";
 		{
-			UString mods = convar->getConVarByName("osu_mods")->getString();
+			UString mods = cv::osu::mods.getString();
 			if (mods.length() < 1)
 				string.append(" ;");
 			else
@@ -1085,7 +1084,7 @@ void OsuMultiplayer::onServerModUpdate()
 	simpleModConVars.emplace_back("osu_mp_win_condition_accuracy");
 
 	// mods
-	if (!osu_mp_freemod.getBool() || !osu_mp_freemod_all.getBool())
+	if (!cv::osu::mp_freemod.getBool() || !cv::osu::mp_freemod_all.getBool())
 	{
 		// overrides
 		simpleModConVars.emplace_back("osu_cs_override");
@@ -1287,7 +1286,7 @@ void OsuMultiplayer::onMPForceClientBeatmapDownload()
 {
 	if (!isServer()) return;
 
-	onClientCommandInt(osu_mp_request_beatmap_download.getName(), false);
+	onClientCommandInt(cv::osu::mp_request_beatmap_download.getName(), false);
 }
 
 void OsuMultiplayer::onMPSelectBeatmap(UString md5hash)

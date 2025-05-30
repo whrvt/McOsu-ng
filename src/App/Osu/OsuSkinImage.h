@@ -60,7 +60,7 @@ public:
 	[[nodiscard]] inline std::vector<UString> getFilepathsForExport() const {return m_filepathsForExport;}
 
 private:
-	static ConVar *m_osu_skin_mipmaps_ref;
+	
 
 	bool load(UString skinElementName, UString animationSeparator, bool ignoreDefaultSkin);
 	bool loadSingleImage(const UString& elementName, bool ignoreDefaultSkin);

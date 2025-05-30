@@ -14,8 +14,9 @@
 #include "Mouse.h"
 
 #include "Osu.h"
-
-ConVar osu_tooltip_anim_duration("osu_tooltip_anim_duration", 0.4f, FCVAR_NONE);
+namespace cv::osu {
+ConVar tooltip_anim_duration("osu_tooltip_anim_duration", 0.4f, FCVAR_NONE);
+}
 
 OsuTooltipOverlay::OsuTooltipOverlay() : OsuScreen()
 {
@@ -96,7 +97,7 @@ void OsuTooltipOverlay::update()
 	if (m_bDelayFadeout)
 		m_bDelayFadeout = false;
 	else if (m_fAnim > 0.0f)
-		anim->moveLinear(&m_fAnim, 0.0f, (m_fAnim)*osu_tooltip_anim_duration.getFloat(), true);
+		anim->moveLinear(&m_fAnim, 0.0f, (m_fAnim)*cv::osu::tooltip_anim_duration.getFloat(), true);
 }
 
 void OsuTooltipOverlay::begin()
@@ -112,5 +113,5 @@ void OsuTooltipOverlay::addLine(UString text)
 
 void OsuTooltipOverlay::end()
 {
-	anim->moveLinear(&m_fAnim, 1.0f, (1.0f-m_fAnim)*osu_tooltip_anim_duration.getFloat(), true);
+	anim->moveLinear(&m_fAnim, 1.0f, (1.0f-m_fAnim)*cv::osu::tooltip_anim_duration.getFloat(), true);
 }

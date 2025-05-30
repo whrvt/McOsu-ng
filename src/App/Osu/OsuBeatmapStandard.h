@@ -75,21 +75,21 @@ public:
 	[[nodiscard]] inline bool isSpinnerActive() const {return m_bIsSpinnerActive;}
 
 private:
-	static ConVar *m_osu_draw_statistics_pp_ref;
-	static ConVar *m_osu_draw_statistics_livestars_ref;
-	static ConVar *m_osu_mod_fullalternate_ref;
-	static ConVar *m_fposu_distance_ref;
-	static ConVar *m_fposu_curved_ref;
-	static ConVar *m_fposu_3d_curve_multiplier_ref;
-	static ConVar *m_fposu_mod_strafing_ref;
-	static ConVar *m_fposu_mod_strafing_frequency_x_ref;
-	static ConVar *m_fposu_mod_strafing_frequency_y_ref;
-	static ConVar *m_fposu_mod_strafing_frequency_z_ref;
-	static ConVar *m_fposu_mod_strafing_strength_x_ref;
-	static ConVar *m_fposu_mod_strafing_strength_y_ref;
-	static ConVar *m_fposu_mod_strafing_strength_z_ref;
-	static ConVar *m_fposu_mod_3d_depthwobble_ref;
-	static ConVar *m_osu_slider_scorev2_ref;
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 
 	static inline Vector2 mapNormalizedCoordsOntoUnitCircle(const Vector2 &in)
 	{

@@ -36,8 +36,9 @@
 #include "OsuUISongBrowserUserButton.h"
 #include "OsuUIUserStatsScreenLabel.h"
 
-ConVar osu_ui_top_ranks_max("osu_ui_top_ranks_max", 200, FCVAR_NONE, "maximum number of displayed scores, to keep the ui/scrollbar manageable");
-
+namespace cv::osu {
+ConVar ui_top_ranks_max("osu_ui_top_ranks_max", 200, FCVAR_NONE, "maximum number of displayed scores, to keep the ui/scrollbar manageable");
+}
 
 
 class OsuUserStatsScreenMenuButton : public CBaseUIButton
@@ -144,7 +145,7 @@ private:
 					OsuDatabaseBeatmap *diff2 = osu->getSongBrowser()->getDatabase()->getBeatmapDifficulty(score.md5hash);
 					if (diff2 == NULL)
 					{
-						if (Osu::debug->getBool())
+						if (cv::osu::debug.getBool())
 							debugLog("PPRecalc couldn't find {:s}\n", score.md5hash.c_str());
 
 						continue;
@@ -170,7 +171,7 @@ private:
 					OsuDatabaseBeatmap::LOAD_DIFFOBJ_RESULT diffres = OsuDatabaseBeatmap::loadDifficultyHitObjects(osuFilePath, gameMode, AR, CS, speedMultiplier);
 					if (diffres.diffobjects.size() < 1)
 					{
-						if (Osu::debug->getBool())
+						if (cv::osu::debug.getBool())
 							debugLog("PPRecalc couldn't load {:s}\n", osuFilePath.toUtf8());
 
 						continue;
@@ -247,7 +248,7 @@ private:
 
 					m_iNumScoresRecalculated++;
 
-					if (Osu::debug->getBool())
+					if (cv::osu::debug.getBool())
 					{
 						debugLog("[{:s}] original = {:f}, new = {:f}, delta = {:f}\n", score.md5hash.c_str(), oldPP, score.pp, (score.pp - oldPP));
 						debugLog("at {}/{}\n", m_iNumScoresRecalculated.load(), m_iNumScoresToRecalculate.load());
@@ -275,7 +276,7 @@ private:
 
 OsuUserStatsScreen::OsuUserStatsScreen() : OsuScreenBackable()
 {
-	m_name_ref = convar->getConVarByName("name");
+
 
 	m_container = new CBaseUIContainer();
 
@@ -376,7 +377,7 @@ void OsuUserStatsScreen::update()
 			osu->getSongBrowser()->getDatabase()->forceScoreUpdateOnNextCalculatePlayerStats();
 			osu->getSongBrowser()->getDatabase()->forceScoresSaveOnNextShutdown();
 
-			rebuildScoreButtons(m_name_ref->getString());
+			rebuildScoreButtons(cv::name.getString());
 
 			m_bRecalculatingPP = false;
 		}
@@ -406,14 +407,14 @@ void OsuUserStatsScreen::setVisible(bool visible)
 
 	if (m_bVisible)
 	{
-		rebuildScoreButtons(m_name_ref->getString());
+		rebuildScoreButtons(cv::name.getString());
 
 		// detect if any old pp scores exist, and notify the user if so
 		// TODO: the detection would have to know if we were able to recalculate, so very annoying for anyone with any deleted beatmap but score
 		/*
 		{
 			OsuDatabase *db = osu->getSongBrowser()->getDatabase();
-			const std::vector<OsuDatabase::Score*> scores = db->getPlayerPPScores(m_name_ref->getString()).ppScores;
+			const std::vector<OsuDatabase::Score*> scores = db->getPlayerPPScores(cv::name.getString()).ppScores;
 
 			bool foundOldScores;
 			for (size_t i=0; i<scores.size(); i++)
@@ -440,7 +441,7 @@ void OsuUserStatsScreen::onScoreContextMenu(OsuUISongBrowserScoreButton *scoreBu
 	// NOTE: see OsuUISongBrowserScoreButton::onContextMenu()
 
 	if (id == 2)
-		rebuildScoreButtons(m_name_ref->getString());
+		rebuildScoreButtons(cv::name.getString());
 }
 
 void OsuUserStatsScreen::onBack()
@@ -469,7 +470,7 @@ void OsuUserStatsScreen::rebuildScoreButtons(UString playerName)
 
 	OsuDatabase *db = osu->getSongBrowser()->getDatabase();
 	std::vector<OsuDatabase::Score*> scores = db->getPlayerPPScores(playerName).ppScores;
-	for (int i=scores.size()-1; i>=std::max(0, (int)scores.size() - osu_ui_top_ranks_max.getInt()); i--)
+	for (int i=scores.size()-1; i>=std::max(0, (int)scores.size() - cv::osu::ui_top_ranks_max.getInt()); i--)
 	{
 		const float weight = OsuDatabase::getWeightForIndex(scores.size()-1-i);
 
@@ -517,7 +518,7 @@ void OsuUserStatsScreen::onUserClicked(CBaseUIButton *button)
 		for (int i=0; i<names.size(); i++)
 		{
 			CBaseUIButton *button = m_contextMenu->addButton(names[i]);
-			if (names[i] == m_name_ref->getString())
+			if (names[i] == cv::name.getString())
 				button->setTextBrightColor(0xff00ff00);
 		}
 		m_contextMenu->end(false, true);
@@ -530,10 +531,10 @@ void OsuUserStatsScreen::onUserButtonChange(UString text, int id)
 {
 	if (id == 0) return;
 
-	if (text != m_name_ref->getString())
+	if (text != cv::name.getString())
 	{
-		m_name_ref->setValue(text);
-		rebuildScoreButtons(m_name_ref->getString());
+		cv::name.setValue(text);
+		rebuildScoreButtons(cv::name.getString());
 	}
 }
 
@@ -557,7 +558,7 @@ void OsuUserStatsScreen::onMenuClicked(CBaseUIButton *button)
 		spacer->setTextDarkColor(0xff000000);
 		{
 			UString importText = "Import osu! Scores of \"";
-			importText.append(m_name_ref->getString());
+			importText.append(cv::name.getString());
 			importText.append("\"");
 			m_contextMenu->addButton(importText, 2);
 		}
@@ -575,7 +576,7 @@ void OsuUserStatsScreen::onMenuClicked(CBaseUIButton *button)
 		spacer->setTextDarkColor(0xff000000);
 		{
 			UString deleteText = "Delete All Scores of \"";
-			deleteText.append(m_name_ref->getString());
+			deleteText.append(cv::name.getString());
 			deleteText.append("\"");
 			m_contextMenu->addButton(deleteText, 4);
 		}
@@ -605,7 +606,7 @@ void OsuUserStatsScreen::onRecalculatePPImportLegacyScoresClicked()
 	{
 		{
 			UString reallyText = "Really import all osu! scores of \"";
-			reallyText.append(m_name_ref->getString());
+			reallyText.append(cv::name.getString());
 			reallyText.append("\"?");
 			m_contextMenu->addButton(reallyText)->setEnabled(false);
 		}
@@ -660,7 +661,7 @@ void OsuUserStatsScreen::onRecalculatePP(bool importLegacyScores)
 		m_backgroundPPRecalculator = NULL;
 	}
 
-	m_backgroundPPRecalculator = new OsuUserStatsScreenBackgroundPPRecalculator(m_name_ref->getString(), importLegacyScores);
+	m_backgroundPPRecalculator = new OsuUserStatsScreenBackgroundPPRecalculator(cv::name.getString(), importLegacyScores);
 
 	// NOTE: force disable all runtime mods (including all experimental mods!), as they directly influence global OsuGameRules which are used during pp calculation
 	osu->getModSelector()->resetMods();
@@ -676,7 +677,7 @@ void OsuUserStatsScreen::onCopyAllScoresClicked()
 		// remove ourself
 		for (size_t i=0; i<names.size(); i++)
 		{
-			if (names[i] == m_name_ref->getString())
+			if (names[i] == cv::name.getString())
 			{
 				names.erase(names.begin() + i);
 				i--;
@@ -714,7 +715,7 @@ void OsuUserStatsScreen::onCopyAllScoresUserSelected(UString text, int id)
 	m_contextMenu->begin();
 	{
 		m_contextMenu->addButton(
-				UString::format(R"(Really copy all scores from "%s" into "%s"?)", m_sCopyAllScoresFromUser.toUtf8(), m_name_ref->getString().toUtf8())
+				UString::format(R"(Really copy all scores from "%s" into "%s"?)", m_sCopyAllScoresFromUser.toUtf8(), cv::name.getString().toUtf8())
 			)->setEnabled(false);
 		CBaseUIButton *spacer = m_contextMenu->addButton("---");
 		spacer->setTextLeft(false);
@@ -734,7 +735,7 @@ void OsuUserStatsScreen::onCopyAllScoresConfirmed(UString text, int id)
 	if (id != 1) return;
 	if (m_sCopyAllScoresFromUser.length() < 1) return;
 
-	const UString &playerNameToCopyInto = m_name_ref->getString();
+	const UString &playerNameToCopyInto = cv::name.getString();
 
 	if (playerNameToCopyInto.length() < 1 || m_sCopyAllScoresFromUser == playerNameToCopyInto) return;
 
@@ -787,7 +788,7 @@ void OsuUserStatsScreen::onCopyAllScoresConfirmed(UString text, int id)
 		// and copy them into the db
 		if (tempScoresToCopy.size() > 0)
 		{
-			if (Osu::debug->getBool())
+			if (cv::osu::debug.getBool())
 				debugLog("Copying {} for {:s}\n", (int)tempScoresToCopy.size(), kv.first.c_str());
 
 			for (size_t i=0; i<tempScoresToCopy.size(); i++)
@@ -815,7 +816,7 @@ void OsuUserStatsScreen::onDeleteAllScoresClicked()
 	{
 		{
 			UString reallyText = "Really delete all scores of \"";
-			reallyText.append(m_name_ref->getString());
+			reallyText.append(cv::name.getString());
 			reallyText.append("\"?");
 			m_contextMenu->addButton(reallyText)->setEnabled(false);
 		}
@@ -836,7 +837,7 @@ void OsuUserStatsScreen::onDeleteAllScoresConfirmed(UString text, int id)
 {
 	if (id != 1) return;
 
-	const UString &playerName = m_name_ref->getString();
+	const UString &playerName = cv::name.getString();
 
 	debugLog("Deleting all scores for \"{:s}\"\n", playerName.toUtf8());
 

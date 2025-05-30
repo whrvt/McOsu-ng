@@ -15,7 +15,7 @@
 
 #include "File.h"
 #include "ResourceManager.h"
-
+namespace cv {
 ConVar debug_snd("debug_snd", false, FCVAR_NONE);
 ConVar snd_speed_compensate_pitch("snd_speed_compensate_pitch", true, FCVAR_NONE, "automatically keep pitch constant if speed changes");
 ConVar snd_play_interp_duration("snd_play_interp_duration", 0.75f, FCVAR_NONE,
@@ -27,6 +27,7 @@ ConVar snd_file_min_size(
     "minimum file size in bytes for WAV files to be considered valid (everything below will fail to load), this is a workaround for BASS crashes");
 
 ConVar snd_force_load_unknown("snd_force_load_unknown", false, FCVAR_NONE);
+}
 
 Sound::Sound(UString filepath, bool stream, bool threeD, bool loop, bool prescan) : Resource(filepath)
 {
@@ -46,7 +47,7 @@ Sound::~Sound() = default;
 
 void Sound::initAsync()
 {
-	if (ResourceManager::debug_rm->getBool())
+	if (cv::debug_rm.getBool())
 		debugLog("Resource Manager: Loading {:s}\n", m_sFilePath);
 
 	// sanity check for malformed audio files
@@ -54,8 +55,8 @@ void Sound::initAsync()
 	fileExtensionLowerCase.lowerCase();
 
 	if (!m_sFilePath.isEmpty() && !fileExtensionLowerCase.isEmpty())
-		m_bIgnored = (!isValidAudioFile(m_sFilePath, fileExtensionLowerCase) && !snd_force_load_unknown.getBool());
-	else if (debug_snd.getBool())
+		m_bIgnored = (!isValidAudioFile(m_sFilePath, fileExtensionLowerCase) && !cv::snd_force_load_unknown.getBool());
+	else if (cv::debug_snd.getBool())
 		debugLog("Sound: Ignoring malformed/corrupt .{:s} file {:s}\n", fileExtensionLowerCase, m_sFilePath);
 }
 

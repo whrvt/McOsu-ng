@@ -90,14 +90,14 @@ void DirectX11Shader::init()
 			const UString &desc = parsedVertexShader.descs[i];
 			const std::vector<UString> tokens = desc.split("::");
 
-			if (debug_shaders->getBool())
+			if (cv::debug_shaders.getBool())
 				debugLog("descs[{}] = {:s}\n", (int)i, desc.toUtf8());
 
 			if (tokens.size() > 4)
 			{
 				const UString &descType = tokens[0];
 
-				if (debug_shaders->getBool())
+				if (cv::debug_shaders.getBool())
 				{
 					for (size_t t=0; t<tokens.size(); t++)
 					{
@@ -283,7 +283,7 @@ void DirectX11Shader::init()
 							bindDesc.lines.push_back(bindDescLine);
 							bindDesc.floats.resize(bindDesc.floats.size() + (bindDescLine.variableBytes / sizeof(float)));
 
-							if (debug_shaders->getBool())
+							if (cv::debug_shaders.getBool())
 								debugLog("bindDesc[{:s}].floats.size() = {}\n", bindDescLine.name.toUtf8(), (int)bindDesc.floats.size());
 						}
 						break;
@@ -315,7 +315,7 @@ void DirectX11Shader::init()
 				// (there could theoretically be a shader without any buffers bound, so this is not an error)
 			}
 
-			if (debug_shaders->getBool())
+			if (cv::debug_shaders.getBool())
 			{
 				for (size_t i=0; i<m_inputDescs.size(); i++)
 				{
@@ -610,7 +610,7 @@ const DirectX11Shader::CACHE_ENTRY DirectX11Shader::getAndCacheUniformLocation(c
 				m_uniformLocationCache[m_sTempStringBuffer] = newCacheEntry;
 				return newCacheEntry;
 			}
-			else if (debug_shaders->getBool())
+			else if (cv::debug_shaders.getBool())
 				debugLog("DirectX11Shader Warning: Can't find uniform {:s}\n", name.toUtf8());
 		}
 	}
@@ -637,7 +637,7 @@ bool DirectX11Shader::compile(UString vertexShader, UString fragmentShader)
 
 #endif
 
-	if (debug_shaders->getBool())
+	if (cv::debug_shaders.getBool())
 		flags |= D3DCOMPILE_DEBUG;
 
 	const D3D_SHADER_MACRO defines[] =
@@ -712,7 +712,7 @@ bool DirectX11Shader::compile(UString vertexShader, UString fragmentShader)
 				element.InputSlotClass = inputDescLine.classification;
 				element.InstanceDataStepRate = 0;
 
-				if (debug_shaders->getBool())
+				if (cv::debug_shaders.getBool())
 					debugLog("{:s}, {}, {}, {}, {}, {}, {}\n", element.SemanticName, (int)element.SemanticIndex, (int)element.Format, (int)element.InputSlot, (int)element.AlignedByteOffset, (int)element.InputSlotClass, (int)element.InstanceDataStepRate);
 			}
 			elements.push_back(element);

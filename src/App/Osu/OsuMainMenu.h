@@ -62,13 +62,13 @@ public:
 	void setStartupAnim(bool startupAnim) {m_bStartupAnim = startupAnim; m_fStartupAnim = m_fStartupAnim2 = (m_bStartupAnim ? 0.0f : 1.0f);}
 
 private:
-	static ConVar *m_osu_universal_offset_ref;
-	static ConVar *m_osu_universal_offset_hardcoded_ref;
-	static ConVar *m_osu_old_beatmap_offset_ref;
-	static ConVar *m_win_snd_fallback_dsound_ref;
-	static ConVar *m_osu_universal_offset_hardcoded_fallback_dsound_ref;
-	static ConVar *m_osu_mod_random_ref;
-	static ConVar *m_osu_songbrowser_background_fade_in_duration_ref;
+	
+	
+	
+	
+	
+	
+	
 
 	void drawVersionInfo();
 	void updateLayout();

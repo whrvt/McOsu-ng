@@ -57,7 +57,7 @@ private:
 	void onDeleteAllScoresClicked();
 	void onDeleteAllScoresConfirmed(UString text, int id);
 
-	ConVar *m_name_ref;
+	;
 
 	CBaseUIContainer *m_container;
 

@@ -18,7 +18,7 @@
 
 #include "Osu.h"
 
-ConVar *OsuUpdateHandler::m_osu_release_stream_ref = NULL;
+
 
 void *OsuUpdateHandler::run(void *data)
 {
@@ -40,7 +40,7 @@ void *OsuUpdateHandler::run(void *data)
 	{
 		// get the newest release to install
 		UString downloadUrl = "";
-		float latestVersion = Osu::version->getFloat();
+		float latestVersion = cv::osu::version.getFloat();
 		for (int i=0; i<handler->m_releases.size(); i++)
 		{
 			if (handler->m_releases[i].os == Env::getOS() && handler->m_releases[i].stream == handler->getReleaseStream() && handler->m_releases[i].version > latestVersion)
@@ -88,8 +88,7 @@ OsuUpdateHandler::OsuUpdateHandler()
 	_m_bKYS = false;
 
 	// convar refs
-	if (m_osu_release_stream_ref == NULL)
-		m_osu_release_stream_ref = convar->getConVarByName("osu_release_stream");
+
 }
 
 OsuUpdateHandler::~OsuUpdateHandler()
@@ -132,7 +131,7 @@ void OsuUpdateHandler::checkForUpdates()
 		m_updateThread = NULL;
 	}
 
-	if (!Osu::autoUpdater || Osu::debug->getBool() || m_updateThread != NULL) return;
+	if (!Osu::autoUpdater || cv::osu::debug.getBool() || m_updateThread != NULL) return;
 
 	m_bThreadDone = false;
 	m_updateThread = new McThread(OsuUpdateHandler::run, (void*)this);
@@ -152,7 +151,7 @@ bool OsuUpdateHandler::isUpdateAvailable()
 {
 	for (int i=0; i<m_releases.size(); i++)
 	{
-		if (m_releases[i].os == Env::getOS() && m_releases[i].stream == getReleaseStream() && m_releases[i].version > Osu::version->getFloat())
+		if (m_releases[i].os == Env::getOS() && m_releases[i].stream == getReleaseStream() && m_releases[i].version > cv::osu::version.getFloat())
 			return true;
 	}
 	return false;
@@ -464,5 +463,5 @@ OS OsuUpdateHandler::stringToOS(UString osString)
 
 OsuUpdateHandler::STREAM OsuUpdateHandler::getReleaseStream()
 {
-	return stringToStream(m_osu_release_stream_ref->getString());
+	return stringToStream(cv::osu::release_stream.getString());
 }

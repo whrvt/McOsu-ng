@@ -20,16 +20,17 @@
 #include "OsuNotificationOverlay.h"
 
 #include "OsuUIContextMenu.h"
+namespace cv::osu {
+ConVar songbrowser_button_collection_active_color_a("osu_songbrowser_button_collection_active_color_a", 255, FCVAR_NONE);
+ConVar songbrowser_button_collection_active_color_r("osu_songbrowser_button_collection_active_color_r", 163, FCVAR_NONE);
+ConVar songbrowser_button_collection_active_color_g("osu_songbrowser_button_collection_active_color_g", 240, FCVAR_NONE);
+ConVar songbrowser_button_collection_active_color_b("osu_songbrowser_button_collection_active_color_b", 44, FCVAR_NONE);
 
-ConVar osu_songbrowser_button_collection_active_color_a("osu_songbrowser_button_collection_active_color_a", 255, FCVAR_NONE);
-ConVar osu_songbrowser_button_collection_active_color_r("osu_songbrowser_button_collection_active_color_r", 163, FCVAR_NONE);
-ConVar osu_songbrowser_button_collection_active_color_g("osu_songbrowser_button_collection_active_color_g", 240, FCVAR_NONE);
-ConVar osu_songbrowser_button_collection_active_color_b("osu_songbrowser_button_collection_active_color_b", 44, FCVAR_NONE);
-
-ConVar osu_songbrowser_button_collection_inactive_color_a("osu_songbrowser_button_collection_inactive_color_a", 255, FCVAR_NONE);
-ConVar osu_songbrowser_button_collection_inactive_color_r("osu_songbrowser_button_collection_inactive_color_r", 35, FCVAR_NONE);
-ConVar osu_songbrowser_button_collection_inactive_color_g("osu_songbrowser_button_collection_inactive_color_g", 50, FCVAR_NONE);
-ConVar osu_songbrowser_button_collection_inactive_color_b("osu_songbrowser_button_collection_inactive_color_b", 143, FCVAR_NONE);
+ConVar songbrowser_button_collection_inactive_color_a("osu_songbrowser_button_collection_inactive_color_a", 255, FCVAR_NONE);
+ConVar songbrowser_button_collection_inactive_color_r("osu_songbrowser_button_collection_inactive_color_r", 35, FCVAR_NONE);
+ConVar songbrowser_button_collection_inactive_color_g("osu_songbrowser_button_collection_inactive_color_g", 50, FCVAR_NONE);
+ConVar songbrowser_button_collection_inactive_color_b("osu_songbrowser_button_collection_inactive_color_b", 143, FCVAR_NONE);
+}
 
 OsuUISongBrowserCollectionButton::OsuUISongBrowserCollectionButton(OsuSongBrowser2 *songBrowser, CBaseUIScrollView *view, OsuUIContextMenu *contextMenu, float xPos, float yPos, float xSize, float ySize, UString name, UString collectionName, std::vector<OsuUISongBrowserButton*> children) : OsuUISongBrowserButton(songBrowser, view, contextMenu, xPos, yPos, xSize, ySize, name)
 {
@@ -265,10 +266,10 @@ UString OsuUISongBrowserCollectionButton::buildTitleString()
 
 Color OsuUISongBrowserCollectionButton::getActiveBackgroundColor() const
 {
-	return argb(std::clamp<int>(osu_songbrowser_button_collection_active_color_a.getInt(), 0, 255), std::clamp<int>(osu_songbrowser_button_collection_active_color_r.getInt(), 0, 255), std::clamp<int>(osu_songbrowser_button_collection_active_color_g.getInt(), 0, 255), std::clamp<int>(osu_songbrowser_button_collection_active_color_b.getInt(), 0, 255));
+	return argb(std::clamp<int>(cv::osu::songbrowser_button_collection_active_color_a.getInt(), 0, 255), std::clamp<int>(cv::osu::songbrowser_button_collection_active_color_r.getInt(), 0, 255), std::clamp<int>(cv::osu::songbrowser_button_collection_active_color_g.getInt(), 0, 255), std::clamp<int>(cv::osu::songbrowser_button_collection_active_color_b.getInt(), 0, 255));
 }
 
 Color OsuUISongBrowserCollectionButton::getInactiveBackgroundColor() const
 {
-	return argb(std::clamp<int>(osu_songbrowser_button_collection_inactive_color_a.getInt(), 0, 255), std::clamp<int>(osu_songbrowser_button_collection_inactive_color_r.getInt(), 0, 255), std::clamp<int>(osu_songbrowser_button_collection_inactive_color_g.getInt(), 0, 255), std::clamp<int>(osu_songbrowser_button_collection_inactive_color_b.getInt(), 0, 255));
+	return argb(std::clamp<int>(cv::osu::songbrowser_button_collection_inactive_color_a.getInt(), 0, 255), std::clamp<int>(cv::osu::songbrowser_button_collection_inactive_color_r.getInt(), 0, 255), std::clamp<int>(cv::osu::songbrowser_button_collection_inactive_color_g.getInt(), 0, 255), std::clamp<int>(cv::osu::songbrowser_button_collection_inactive_color_b.getInt(), 0, 255));
 }

@@ -29,15 +29,15 @@ public:
 	static void drawHitResult(const OsuSkin *skin, float hitcircleDiameter, float rawHitcircleDiameter, Vector2 rawPos, OsuScore::HIT result, float animPercentInv, float hitDeltaRangePercent);
 	static void draw3DHitResult(const OsuModFPoSu *fposu, const OsuSkin *skin, float hitcircleDiameter, float rawHitcircleDiameter, Vector2 rawPos, OsuScore::HIT result, float animPercentInv, float hitDeltaRangePercent);
 
-	static ConVar *m_osu_approach_scale_multiplier_ref;
-	static ConVar *m_osu_timingpoints_force;
-	static ConVar *m_osu_relax_offset_ref;
+	
+	
+	
 
-	static ConVar *m_osu_mod_mafham_ref;
+	
 
-	static ConVar *m_fposu_3d_spheres_ref;
-	static ConVar *m_fposu_3d_hitobjects_look_at_player_ref;
-	static ConVar *m_fposu_3d_approachcircles_look_at_player_ref;
+	
+	
+	
 
 public:
 	enum Type : uint8_t { CIRCLE, SLIDER, SPINNER, NOTE };

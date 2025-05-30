@@ -149,7 +149,7 @@ private:
 
 private:
 	static unsigned long long sortHackCounter;
-	static ConVar *m_cl_cmdrate;
+	
 
 	void onClientcastCommand(UString command);
 	void onBroadcastCommand(UString command);

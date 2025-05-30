@@ -21,13 +21,13 @@
 
 #include <algorithm>
 #include <climits> // for INT_MAX
-
-ConVar osu_stars_xexxar_angles_sliders("osu_stars_xexxar_angles_sliders", true, FCVAR_NONE, "completely enables/disables the new star/pp calc algorithm");
-ConVar osu_stars_slider_curve_points_separation("osu_stars_slider_curve_points_separation", 20.0f, FCVAR_NONE, "massively reduce curve accuracy for star calculations to save memory/performance");
-ConVar osu_stars_and_pp_lazer_relax_autopilot_nerf_disabled("osu_stars_and_pp_lazer_relax_autopilot_nerf_disabled", true, FCVAR_NONE, "generally disables all nerfs for relax/autopilot in both star/pp algorithms. since mcosu has always allowed these, the default is to not nerf them.");
-ConVar osu_stars_always_recalc_live_strains("osu_stars_always_recalc_live_strains", false, FCVAR_NONE, "leave this disabled for massive performance gains for live stars/pp calc loading times (at the cost of extremely rare temporary minor accuracy loss (~0.001 stars))");
-ConVar osu_stars_ignore_clamped_sliders("osu_stars_ignore_clamped_sliders", true, FCVAR_NONE, "skips processing sliders limited by osu_slider_curve_max_length");
-
+namespace cv::osu {
+ConVar stars_xexxar_angles_sliders("osu_stars_xexxar_angles_sliders", true, FCVAR_NONE, "completely enables/disables the new star/pp calc algorithm");
+ConVar stars_slider_curve_points_separation("osu_stars_slider_curve_points_separation", 20.0f, FCVAR_NONE, "massively reduce curve accuracy for star calculations to save memory/performance");
+ConVar stars_and_pp_lazer_relax_autopilot_nerf_disabled("osu_stars_and_pp_lazer_relax_autopilot_nerf_disabled", true, FCVAR_NONE, "generally disables all nerfs for relax/autopilot in both star/pp algorithms. since mcosu has always allowed these, the default is to not nerf them.");
+ConVar stars_always_recalc_live_strains("osu_stars_always_recalc_live_strains", false, FCVAR_NONE, "leave this disabled for massive performance gains for live stars/pp calc loading times (at the cost of extremely rare temporary minor accuracy loss (~0.001 stars))");
+ConVar stars_ignore_clamped_sliders("osu_stars_ignore_clamped_sliders", true, FCVAR_NONE, "skips processing sliders limited by osu_slider_curve_max_length");
+}
 
 
 unsigned long long OsuDifficultyHitObject::sortHackCounter = 0;
@@ -61,7 +61,7 @@ OsuDifficultyHitObject::OsuDifficultyHitObject(TYPE type, Vector2 pos, long time
 	this->sortHack = sortHackCounter++;
 
 	// build slider curve, if this is a (valid) slider
-	if (this->type == TYPE::SLIDER && osu_stars_xexxar_angles_sliders.getBool() && controlPoints.size() > 1)
+	if (this->type == TYPE::SLIDER && cv::osu::stars_xexxar_angles_sliders.getBool() && controlPoints.size() > 1)
 	{
 		if (calculateSliderCurveInConstructor)
 		{
@@ -78,7 +78,7 @@ OsuDifficultyHitObject::OsuDifficultyHitObject(TYPE type, Vector2 pos, long time
 			// 14960 sliders @ pishifat - H E L L O  T H E R E (Kondou-Shinichi) [Sliders in the 69th centries].osu
 			// 5208 sliders @ MillhioreF - haitai but every hai adds another haitai in the background (Chewy-san) [Weriko Rank the dream (nerf) but loli].osu
 
-			this->curve = OsuSliderCurve::createCurve(this->osuSliderCurveType, controlPoints, this->pixelLength, osu_stars_slider_curve_points_separation.getFloat());
+			this->curve = OsuSliderCurve::createCurve(this->osuSliderCurveType, controlPoints, this->pixelLength, cv::osu::stars_slider_curve_points_separation.getFloat());
 		}
 		else
 		{
@@ -181,7 +181,7 @@ Vector2 OsuDifficultyHitObject::getOriginalRawPosAt(long pos) const
 		{
 			// delay curve creation to when it's needed (1)
 			if (curve == NULL && scheduledCurveAlloc)
-				curve = OsuSliderCurve::createCurve(osuSliderCurveType, scheduledCurveAllocControlPoints, pixelLength, osu_stars_slider_curve_points_separation.getFloat());
+				curve = OsuSliderCurve::createCurve(osuSliderCurveType, scheduledCurveAllocControlPoints, pixelLength, cv::osu::stars_slider_curve_points_separation.getFloat());
 		}
 		*/
 
@@ -234,9 +234,9 @@ float OsuDifficultyHitObject::getT(long pos, bool raw) const
 
 
 
-ConVar *OsuDifficultyCalculator::m_osu_slider_scorev2_ref = NULL;
-ConVar *OsuDifficultyCalculator::m_osu_slider_end_inside_check_offset_ref = NULL;
-ConVar *OsuDifficultyCalculator::m_osu_slider_curve_max_length_ref = NULL;
+
+
+
 
 double OsuDifficultyCalculator::calculateStarDiffForHitObjects(std::vector<OsuDifficultyHitObject> &sortedHitObjects, float CS, float OD, float speedMultiplier, bool relax, bool autopilot, bool touchDevice, double *aim, double *aimSliderFactor, double *aimDifficultSliders, double *difficultAimStrains, double *speed, double *speedNotes, double *difficultSpeedStrains, int upToObjectIndex, std::vector<double> *outAimStrains, std::vector<double> *outSpeedStrains)
 {
@@ -264,8 +264,7 @@ double OsuDifficultyCalculator::calculateStarDiffForHitObjectsInt(std::vector<Di
 		if (sortedHitObjects[0].type != OsuDifficultyHitObject::TYPE::SLIDER) return 0.0;
 	}
 
-	if (m_osu_slider_end_inside_check_offset_ref == NULL)
-		m_osu_slider_end_inside_check_offset_ref = convar->getConVarByName("osu_slider_end_inside_check_offset");
+
 
 	// global independent variables/constants
 	float circleRadiusInOsuPixels = 64.0f * OsuGameRules::getRawHitCircleScale(std::clamp<float>(CS, 0.0f, 12.142f)); // NOTE: clamped CS because McOsu allows CS > ~12.1429 (at which point the diameter becomes negative)
@@ -305,17 +304,16 @@ double OsuDifficultyCalculator::calculateStarDiffForHitObjectsInt(std::vector<Di
 			// this isn't entirely accurate to how lazer does it (as that skips loading the object entirely),
 			// but this is a good middle ground for maps that aren't completely aspire and still have relatively normal star counts on lazer
 			// see: DJ Noriken - Stargazer feat. YUC'e (PSYQUI Remix) (Hishiro Chizuru) [Starg-Azer isn't so great? Are you kidding me?]
-			if (osu_stars_ignore_clamped_sliders.getBool())
+			if (cv::osu::stars_ignore_clamped_sliders.getBool())
 			{
-				if (m_osu_slider_curve_max_length_ref == NULL)
-					m_osu_slider_curve_max_length_ref = convar->getConVarByName("osu_slider_curve_max_length");
 
-				if (slider.ho->curve->getPixelLength() >= m_osu_slider_curve_max_length_ref->getFloat()) return;
+
+				if (slider.ho->curve->getPixelLength() >= cv::osu::slider_curve_max_length.getFloat()) return;
 			}
 
 			// NOTE: although this looks like a duplicate of the end tick time, this really does have a noticeable impact on some maps due to precision issues
 			// see: Ocelot - KAEDE (Hollow Wings) [EX EX]
-			const double tailLeniency = (double)m_osu_slider_end_inside_check_offset_ref->getInt();
+			const double tailLeniency = (double)cv::osu::slider_end_inside_check_offset.getInt();
 			const double totalDuration = (double)slider.ho->spanDuration * slider.ho->repeats;
 			double trackingEndTime = (double)slider.ho->time + std::max(totalDuration - tailLeniency, totalDuration / 2.0);
 
@@ -421,9 +419,9 @@ double OsuDifficultyCalculator::calculateStarDiffForHitObjectsInt(std::vector<Di
 	// calculate angles and travel/jump distances (before calculating strains)
 	if (!isUsingCachedDiffObjects)
 	{
-		if (osu_stars_xexxar_angles_sliders.getBool())
+		if (cv::osu::stars_xexxar_angles_sliders.getBool())
 		{
-			const float starsSliderCurvePointsSeparation = osu_stars_slider_curve_points_separation.getFloat();
+			const float starsSliderCurvePointsSeparation = cv::osu::stars_slider_curve_points_separation.getFloat();
 			for (size_t i=0; i<numDiffObjects; i++)
 			{
 				if (dead.load())
@@ -511,9 +509,9 @@ double OsuDifficultyCalculator::calculateStarDiffForHitObjectsInt(std::vector<Di
 	}
 
 	// calculate strains/skills
-	if (!isUsingCachedDiffObjects || osu_stars_always_recalc_live_strains.getBool()) // NOTE: yes, this loses some extremely minor accuracy (~0.001 stars territory) for live star/pp for some rare individual upToObjectIndex due to not being recomputed for the cut set of cached diffObjects every time, but the performance gain is so insane I don't care
+	if (!isUsingCachedDiffObjects || cv::osu::stars_always_recalc_live_strains.getBool()) // NOTE: yes, this loses some extremely minor accuracy (~0.001 stars territory) for live star/pp for some rare individual upToObjectIndex due to not being recomputed for the cut set of cached diffObjects every time, but the performance gain is so insane I don't care
 	{
-		bool autopilotNerf = !osu_stars_and_pp_lazer_relax_autopilot_nerf_disabled.getBool() && autopilot;
+		bool autopilotNerf = !cv::osu::stars_and_pp_lazer_relax_autopilot_nerf_disabled.getBool() && autopilot;
 		for (size_t i=1; i<numDiffObjects; i++) // NOTE: start at 1
 		{
 			diffObjects[i].calculate_strains(diffObjects[i - 1], (i == numDiffObjects - 1) ? nullptr : &diffObjects[i + 1], hitWindow300, autopilotNerf);
@@ -521,7 +519,7 @@ double OsuDifficultyCalculator::calculateStarDiffForHitObjectsInt(std::vector<Di
 	}
 
 	// calculate final difficulty (weigh strains)
-	double aimNoSliders = osu_stars_xexxar_angles_sliders.getBool() ? DiffObject::calculate_difficulty(Skills::Skill::AIM_NO_SLIDERS, diffObjects, numDiffObjects, incremental ? &incremental[(size_t)Skills::Skill::AIM_NO_SLIDERS] : NULL) : 0.0;
+	double aimNoSliders = cv::osu::stars_xexxar_angles_sliders.getBool() ? DiffObject::calculate_difficulty(Skills::Skill::AIM_NO_SLIDERS, diffObjects, numDiffObjects, incremental ? &incremental[(size_t)Skills::Skill::AIM_NO_SLIDERS] : NULL) : 0.0;
 	*aim = DiffObject::calculate_difficulty(Skills::Skill::AIM_SLIDERS, diffObjects, numDiffObjects, incremental ? &incremental[(size_t)Skills::Skill::AIM_SLIDERS] : NULL, outAimStrains, difficultAimStrains, aimDifficultSliders);
 	*speed = DiffObject::calculate_difficulty(Skills::Skill::SPEED, diffObjects, numDiffObjects, incremental ? &incremental[(size_t)Skills::Skill::SPEED] : NULL, outSpeedStrains, difficultSpeedStrains, speedNotes);
 
@@ -531,12 +529,12 @@ double OsuDifficultyCalculator::calculateStarDiffForHitObjectsInt(std::vector<Di
 	*aim = std::sqrt(*aim) * star_scaling_factor;
 	*speed = std::sqrt(*speed) * star_scaling_factor;
 
-	*aimSliderFactor = (*aim > 0 && osu_stars_xexxar_angles_sliders.getBool()) ? aimNoSliders / *aim : 1.0;
+	*aimSliderFactor = (*aim > 0 && cv::osu::stars_xexxar_angles_sliders.getBool()) ? aimNoSliders / *aim : 1.0;
 
 	if (touchDevice)
 		*aim = std::pow(*aim, 0.8);
 
-	if (!osu_stars_and_pp_lazer_relax_autopilot_nerf_disabled.getBool())
+	if (!cv::osu::stars_and_pp_lazer_relax_autopilot_nerf_disabled.getBool())
 	{
 		if (relax)
 		{
@@ -557,14 +555,12 @@ double OsuDifficultyCalculator::calculatePPv2(OsuBeatmap *beatmap, double aim, d
 {
 	// NOTE: depends on active mods + OD + AR
 
-	if (m_osu_slider_scorev2_ref == NULL)
-		m_osu_slider_scorev2_ref = convar->getConVarByName("osu_slider_scorev2");
 
 	// get runtime mods
 	int modsLegacy = osu->getScore()->getModsLegacy();
 	{
 		// special case: manual slider accuracy has been enabled (affects pp but not score)
-		modsLegacy |= (m_osu_slider_scorev2_ref->getBool() ? OsuReplay::Mods::ScoreV2 : 0);
+		modsLegacy |= (cv::osu::slider_scorev2.getBool() ? OsuReplay::Mods::ScoreV2 : 0);
 	}
 
 	return calculatePPv2(modsLegacy, osu->getSpeedMultiplier(), beatmap->getAR(), beatmap->getOD(), aim, aimSliderFactor, aimDifficultSliders, aimDifficultStrains, speed, speedNotes, speedDifficultStrains, numHitObjects, numCircles, numSliders, numSpinners, maxPossibleCombo, combo, misses, c300, c100, c50);
@@ -640,7 +636,7 @@ double OsuDifficultyCalculator::calculatePPv2(int modsLegacy, double timescale, 
 		if ((modsLegacy & OsuReplay::Mods::SpunOut) && score.totalHits > 0)
 			multiplier *= 1.0 - std::pow((double)numSpinners / (double)score.totalHits, 0.85); // see https://github.com/ppy/osu-performance/pull/110/
 
-		if ((modsLegacy & OsuReplay::Mods::Relax) && !osu_stars_and_pp_lazer_relax_autopilot_nerf_disabled.getBool())
+		if ((modsLegacy & OsuReplay::Mods::Relax) && !cv::osu::stars_and_pp_lazer_relax_autopilot_nerf_disabled.getBool())
 		{
 			double okMultiplier = std::max(0.0, od > 0.0 ? 1.0 - std::pow(od / 13.33, 1.8) : 1.0);	// 100
 			double mehMultiplier = std::max(0.0, od > 0.0 ? 1.0 - std::pow(od / 13.33, 5.0) : 1.0);	// 50
@@ -677,7 +673,7 @@ double OsuDifficultyCalculator::calculateTotalStarsFromSkills(double aim, double
 
 double OsuDifficultyCalculator::computeAimValue(const ScoreData &score, const OsuDifficultyCalculator::Attributes &attributes, double effectiveMissCount)
 {
-	if ((score.modsLegacy & OsuReplay::Relax2) && !osu_stars_and_pp_lazer_relax_autopilot_nerf_disabled.getBool())
+	if ((score.modsLegacy & OsuReplay::Relax2) && !cv::osu::stars_and_pp_lazer_relax_autopilot_nerf_disabled.getBool())
 		return 0.0;
 
 	double aimDifficulty = attributes.AimStrain;
@@ -705,7 +701,7 @@ double OsuDifficultyCalculator::computeAimValue(const ScoreData &score, const Os
 
 	// ar bonus
 	double approachRateFactor = 0.0; // see https://github.com/ppy/osu-performance/pull/125/
-	if ((score.modsLegacy & OsuReplay::Relax) == 0 || osu_stars_and_pp_lazer_relax_autopilot_nerf_disabled.getBool())
+	if ((score.modsLegacy & OsuReplay::Relax) == 0 || cv::osu::stars_and_pp_lazer_relax_autopilot_nerf_disabled.getBool())
 	{
 		if (attributes.ApproachRate > 10.33)
 			approachRateFactor = 0.3 * (attributes.ApproachRate - 10.33); // from 0.3 to 0.4 see https://github.com/ppy/osu-performance/pull/125/ // and completely changed the logic in https://github.com/ppy/osu-performance/pull/135/
@@ -729,7 +725,7 @@ double OsuDifficultyCalculator::computeAimValue(const ScoreData &score, const Os
 
 double OsuDifficultyCalculator::computeSpeedValue(const ScoreData &score, const Attributes &attributes, double effectiveMissCount, double speedDeviation)
 {
-	if (((score.modsLegacy & OsuReplay::Relax) && !osu_stars_and_pp_lazer_relax_autopilot_nerf_disabled.getBool()) || std::isnan(speedDeviation))
+	if (((score.modsLegacy & OsuReplay::Relax) && !cv::osu::stars_and_pp_lazer_relax_autopilot_nerf_disabled.getBool()) || std::isnan(speedDeviation))
 		return 0.0;
 
 	double speedValue = std::pow(5.0 * std::max(1.0, attributes.SpeedStrain / 0.0675) - 4.0, 3.0) / 100000.0;
@@ -774,7 +770,7 @@ double OsuDifficultyCalculator::computeSpeedValue(const ScoreData &score, const 
 
 double OsuDifficultyCalculator::computeAccuracyValue(const ScoreData &score, const Attributes &attributes)
 {
-	if ((score.modsLegacy & OsuReplay::Relax) && !osu_stars_and_pp_lazer_relax_autopilot_nerf_disabled.getBool())
+	if ((score.modsLegacy & OsuReplay::Relax) && !cv::osu::stars_and_pp_lazer_relax_autopilot_nerf_disabled.getBool())
 		return 0.0;
 
 	double betterAccuracyPercentage;
@@ -1150,7 +1146,7 @@ void OsuDifficultyCalculator::DiffObject::calculate_strains(const DiffObject &pr
 {
 	calculate_strain(prev, next, hitWindow300, autopilotNerf, Skills::Skill::SPEED);
 	calculate_strain(prev, next, hitWindow300, autopilotNerf, Skills::Skill::AIM_SLIDERS);
-	if (osu_stars_xexxar_angles_sliders.getBool())
+	if (cv::osu::stars_xexxar_angles_sliders.getBool())
 		calculate_strain(prev, next, hitWindow300, autopilotNerf, Skills::Skill::AIM_NO_SLIDERS);
 }
 
@@ -1169,7 +1165,7 @@ void OsuDifficultyCalculator::DiffObject::calculate_strain(const DiffObject &pre
 		case OsuDifficultyHitObject::TYPE::SLIDER:
 		case OsuDifficultyHitObject::TYPE::CIRCLE:
 
-			if (!osu_stars_xexxar_angles_sliders.getBool())
+			if (!cv::osu::stars_xexxar_angles_sliders.getBool())
 				currentStrainOfDiffObject = spacing_weight1((norm_start - prev.norm_start).length(), dtype);
 			else
 				currentStrainOfDiffObject = spacing_weight2(dtype, prev, next, hitWindow300, autopilotNerf);
@@ -1184,7 +1180,7 @@ void OsuDifficultyCalculator::DiffObject::calculate_strain(const DiffObject &pre
 			return;
 	}
 
-	if (!osu_stars_xexxar_angles_sliders.getBool())
+	if (!cv::osu::stars_xexxar_angles_sliders.getBool())
 		currentStrainOfDiffObject /= (double)std::max(time_elapsed, (long)50); // this has been removed, see https://github.com/Francesco149/oppai-ng/commit/5a1787ec0bd91b2bf686964b154228c68a99bf73
 
 	// see Process() @ https://github.com/ppy/osu/blob/master/osu.Game/Rulesets/Difficulty/Skills/Skill.cs
@@ -1279,7 +1275,7 @@ double OsuDifficultyCalculator::DiffObject::calculate_difficulty(const Skills::S
 					maxObjectStrain = (*std::max_element(dobjects, dobjects + dobjectCount, compareDiffObjects)).get_strain(type);
 			}
 
-			if (maxObjectStrain == 0.0 || !osu_stars_xexxar_angles_sliders.getBool())
+			if (maxObjectStrain == 0.0 || !cv::osu::stars_xexxar_angles_sliders.getBool())
 				*outSkillSpecificAttrib = 0.0;
 			else
 			{
@@ -1330,7 +1326,7 @@ double OsuDifficultyCalculator::DiffObject::calculate_difficulty(const Skills::S
 						maxSliderStrain = (*std::max_element(dobjects, dobjects + dobjectCount, compareSliderObjects)).get_slider_aim_strain();
 				}
 
-				if (maxSliderStrain <= 0.0 || !osu_stars_xexxar_angles_sliders.getBool())
+				if (maxSliderStrain <= 0.0 || !cv::osu::stars_xexxar_angles_sliders.getBool())
 					*outSkillSpecificAttrib = 0.0;
 				else
 				{

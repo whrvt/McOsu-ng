@@ -253,8 +253,9 @@ private:
 };
 
 
-
-ConVar osu_workshop_upload_skin("osu_workshop_upload_skin");
+namespace cv::osu {
+ConVar workshop_upload_skin("osu_workshop_upload_skin");
+}
 
 OsuSteamWorkshop::OsuSteamWorkshop()
 {
@@ -264,11 +265,11 @@ OsuSteamWorkshop::OsuSteamWorkshop()
 	m_uploader = new OsuSteamWorkshopUploader();
 
 	// convar refs
-	m_osu_skin_ref = convar->getConVarByName("osu_skin");
-	m_osu_skin_is_from_workshop_ref = convar->getConVarByName("osu_skin_is_from_workshop");
+
+
 
 	// convar callbacks
-	osu_workshop_upload_skin.setCallback( fastdelegate::MakeDelegate(this, &OsuSteamWorkshop::onUpload) );
+	cv::osu::workshop_upload_skin.setCallback( fastdelegate::MakeDelegate(this, &OsuSteamWorkshop::onUpload) );
 }
 
 OsuSteamWorkshop::~OsuSteamWorkshop()
@@ -348,7 +349,7 @@ void OsuSteamWorkshop::onUpload()
 		return;
 	}
 
-	if (m_osu_skin_is_from_workshop_ref->getBool() || osu->getSkin()->isWorkshopSkin())
+	if (cv::osu::skin_is_from_workshop.getBool() || osu->getSkin()->isWorkshopSkin())
 	{
 		handleUploadError("Skin must be a local skin.");
 		return;
@@ -361,10 +362,10 @@ void OsuSteamWorkshop::onUpload()
 	}
 
 	// name and path
-	const UString skinName = m_osu_skin_ref->getString();
+	const UString skinName = cv::osu::skin.getString();
 	const UString skinPath = osu->getSkin()->getFilePath();
 
-	debugLog("skinName = \"{:s}\", skinFolder = \"{:s}\"\n", m_osu_skin_ref->getString().toUtf8(), skinPath.toUtf8());
+	debugLog("skinName = \"{:s}\", skinFolder = \"{:s}\"\n", cv::osu::skin.getString().toUtf8(), skinPath.toUtf8());
 
 	if (skinName.length() < 1)
 	{

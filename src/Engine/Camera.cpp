@@ -12,8 +12,10 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/euler_angles.hpp>
 
+namespace cv {
 ConVar cl_pitchup("cl_pitchup", 89.0f, FCVAR_CHEAT);
 ConVar cl_pitchdown("cl_pitchdown", 89.0f, FCVAR_CHEAT);
+}
 
 Matrix4 Camera::buildMatrixOrtho2D(float left, float right, float bottom, float top, float zn, float zf)
 {
@@ -238,10 +240,10 @@ void Camera::rotateX(float pitchDeg)
 {
 	m_fPitch += pitchDeg;
 
-	if (m_fPitch > cl_pitchup.getFloat())
-		m_fPitch = cl_pitchup.getFloat();
-	else if (m_fPitch < -cl_pitchdown.getFloat())
-		m_fPitch = -cl_pitchdown.getFloat();
+	if (m_fPitch > cv::cl_pitchup.getFloat())
+		m_fPitch = cv::cl_pitchup.getFloat();
+	else if (m_fPitch < -cv::cl_pitchdown.getFloat())
+		m_fPitch = -cv::cl_pitchdown.getFloat();
 
 	updateVectors();
 }

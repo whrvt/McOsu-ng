@@ -60,9 +60,6 @@ private:
 	UString buildDiffInfoString();
 	UString buildOffsetInfoString();
 
-	ConVar *m_osu_debug_ref;
-	ConVar *m_osu_songbrowser_dynamic_star_recalc_ref;
-
 	McFont *m_font;
 
 	int m_iMargin;

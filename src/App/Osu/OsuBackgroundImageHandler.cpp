@@ -12,13 +12,14 @@
 #include "ConVar.h"
 
 #include "OsuDatabaseBeatmap.h"
+namespace cv::osu {
+ConVar load_beatmap_background_images("osu_load_beatmap_background_images", true, FCVAR_NONE);
 
-ConVar osu_load_beatmap_background_images("osu_load_beatmap_background_images", true, FCVAR_NONE);
-
-ConVar osu_background_image_cache_size("osu_background_image_cache_size", 32, FCVAR_NONE, "how many images can stay loaded in parallel");
-ConVar osu_background_image_loading_delay("osu_background_image_loading_delay", 0.1f, FCVAR_NONE, "how many seconds to wait until loading background images for visible beatmaps starts");
-ConVar osu_background_image_eviction_delay_seconds("osu_background_image_eviction_delay_seconds", 0.05f, FCVAR_NONE, "how many seconds to keep stale background images in the cache before deleting them (if seconds && frames)");
-ConVar osu_background_image_eviction_delay_frames("osu_background_image_eviction_delay_frames", 0, FCVAR_NONE, "how many frames to keep stale background images in the cache before deleting them (if seconds && frames)");
+ConVar background_image_cache_size("osu_background_image_cache_size", 32, FCVAR_NONE, "how many images can stay loaded in parallel");
+ConVar background_image_loading_delay("osu_background_image_loading_delay", 0.1f, FCVAR_NONE, "how many seconds to wait until loading background images for visible beatmaps starts");
+ConVar background_image_eviction_delay_seconds("osu_background_image_eviction_delay_seconds", 0.05f, FCVAR_NONE, "how many seconds to keep stale background images in the cache before deleting them (if seconds && frames)");
+ConVar background_image_eviction_delay_frames("osu_background_image_eviction_delay_frames", 0, FCVAR_NONE, "how many frames to keep stale background images in the cache before deleting them (if seconds && frames)");
+}
 
 OsuBackgroundImageHandler::OsuBackgroundImageHandler()
 {
@@ -67,8 +68,8 @@ void OsuBackgroundImageHandler::update(bool allowEviction)
 			}
 			else
 			{
-				entry.evictionTime = engine->getTime() + osu_background_image_eviction_delay_seconds.getFloat();
-				entry.evictionTimeFrameCount = engine->getFrameCount() + (uint64_t)std::max(0, osu_background_image_eviction_delay_frames.getInt());
+				entry.evictionTime = engine->getTime() + cv::osu::background_image_eviction_delay_seconds.getFloat();
+				entry.evictionTimeFrameCount = engine->getFrameCount() + (uint64_t)std::max(0, cv::osu::background_image_eviction_delay_frames.getInt());
 			}
 		}
 		else if (wasUsedLastFrame)
@@ -141,13 +142,13 @@ void OsuBackgroundImageHandler::handleLoadImageForEntry(ENTRY &entry)
 
 Image *OsuBackgroundImageHandler::getLoadBackgroundImage(const OsuDatabaseBeatmap *beatmap)
 {
-	if (beatmap == NULL || !osu_load_beatmap_background_images.getBool()) return NULL;
+	if (beatmap == NULL || !cv::osu::load_beatmap_background_images.getBool()) return NULL;
 
 	// NOTE: no references to beatmap are kept anywhere (database can safely be deleted/reloaded without having to notify the OsuBackgroundImageHandler)
 
-	const float newLoadingTime = engine->getTime() + osu_background_image_loading_delay.getFloat();
-	const float newEvictionTime = engine->getTime() + osu_background_image_eviction_delay_seconds.getFloat();
-	const uint64_t newEvictionTimeFrameCount = engine->getFrameCount() + (uint64_t)std::max(0, osu_background_image_eviction_delay_frames.getInt());
+	const float newLoadingTime = engine->getTime() + cv::osu::background_image_loading_delay.getFloat();
+	const float newEvictionTime = engine->getTime() + cv::osu::background_image_eviction_delay_seconds.getFloat();
+	const uint64_t newEvictionTimeFrameCount = engine->getFrameCount() + (uint64_t)std::max(0, cv::osu::background_image_eviction_delay_frames.getInt());
 
 	// 1) if the path or image is already loaded, return image ref immediately (which may still be NULL) and keep track of when it was last requested
 	for (size_t i=0; i<m_cache.size(); i++)
@@ -176,7 +177,7 @@ Image *OsuBackgroundImageHandler::getLoadBackgroundImage(const OsuDatabaseBeatma
 	// 2) not found in cache, so create a new entry which will get handled in the next update
 	{
 		// try evicting stale not-yet-loaded-nor-started-loading entries on overflow
-		const int maxCacheEntries = osu_background_image_cache_size.getInt();
+		const int maxCacheEntries = cv::osu::background_image_cache_size.getInt();
 		{
 			if (m_cache.size() >= maxCacheEntries)
 			{

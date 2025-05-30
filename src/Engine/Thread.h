@@ -17,7 +17,7 @@
 class McThread final
 {
 public:
-	static ConVar *debug;
+	
 
 	typedef void *(*START_ROUTINE)(void *);
 	typedef void *(*START_ROUTINE_WITH_STOP_TOKEN)(void *, std::stop_token);
@@ -42,7 +42,7 @@ public:
 		}
 		catch (const std::system_error &e)
 		{
-			if (McThread::debug->getBool())
+			if (cv::debug_thread.getBool())
 				debugLog("McThread Error: std::jthread constructor exception: {:s}\n", e.what());
 		}
 #endif
@@ -66,7 +66,7 @@ public:
 		}
 		catch (const std::system_error &e)
 		{
-			if (McThread::debug->getBool())
+			if (cv::debug_thread.getBool())
 				debugLog("McThread Error: std::jthread constructor exception: {:s}\n", e.what());
 		}
 #endif
@@ -90,7 +90,7 @@ public:
 		}
 		catch (const std::system_error &e)
 		{
-			if (McThread::debug->getBool())
+			if (cv::debug_thread.getBool())
 				debugLog("McThread Error: std::jthread constructor exception: {:s}\n", e.what());
 		}
 #endif

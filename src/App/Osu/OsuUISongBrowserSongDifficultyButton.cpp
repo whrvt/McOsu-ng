@@ -21,24 +21,20 @@
 #include "OsuReplay.h"
 
 #include "OsuUISongBrowserScoreButton.h"
-
-ConVar osu_songbrowser_button_difficulty_inactive_color_a("osu_songbrowser_button_difficulty_inactive_color_a", 255, FCVAR_NONE);
-ConVar osu_songbrowser_button_difficulty_inactive_color_r("osu_songbrowser_button_difficulty_inactive_color_r", 0, FCVAR_NONE);
-ConVar osu_songbrowser_button_difficulty_inactive_color_g("osu_songbrowser_button_difficulty_inactive_color_g", 150, FCVAR_NONE);
-ConVar osu_songbrowser_button_difficulty_inactive_color_b("osu_songbrowser_button_difficulty_inactive_color_b", 236, FCVAR_NONE);
-
-ConVar *OsuUISongBrowserSongDifficultyButton::m_osu_scores_enabled = NULL;
-ConVar *OsuUISongBrowserSongDifficultyButton::m_osu_songbrowser_dynamic_star_recalc_ref = NULL;
+namespace cv::osu {
+ConVar songbrowser_button_difficulty_inactive_color_a("osu_songbrowser_button_difficulty_inactive_color_a", 255, FCVAR_NONE);
+ConVar songbrowser_button_difficulty_inactive_color_r("osu_songbrowser_button_difficulty_inactive_color_r", 0, FCVAR_NONE);
+ConVar songbrowser_button_difficulty_inactive_color_g("osu_songbrowser_button_difficulty_inactive_color_g", 150, FCVAR_NONE);
+ConVar songbrowser_button_difficulty_inactive_color_b("osu_songbrowser_button_difficulty_inactive_color_b", 236, FCVAR_NONE);
+}
 
 OsuUISongBrowserSongDifficultyButton::OsuUISongBrowserSongDifficultyButton(OsuSongBrowser2 *songBrowser, CBaseUIScrollView *view, OsuUIContextMenu *contextMenu, float xPos, float yPos, float xSize, float ySize, UString name, OsuDatabaseBeatmap *diff2, OsuUISongBrowserSongButton *parentSongButton) : OsuUISongBrowserSongButton(songBrowser, view, contextMenu, xPos, yPos, xSize, ySize, name, NULL)
 {
 	m_databaseBeatmap = diff2; // NOTE: can't use parent constructor for passing this argument, as it would otherwise try to build a full button (and not just a diff button)
 	m_parentSongButton = parentSongButton;
 
-	if (m_osu_scores_enabled == NULL)
-		m_osu_scores_enabled = convar->getConVarByName("osu_scores_enabled");
-	if (m_osu_songbrowser_dynamic_star_recalc_ref == NULL)
-		m_osu_songbrowser_dynamic_star_recalc_ref = convar->getConVarByName("osu_songbrowser_dynamic_star_recalc");
+
+
 
 	/*
 	m_sTitle = "Title";
@@ -107,7 +103,7 @@ void OsuUISongBrowserSongDifficultyButton::draw()
 	// draw stars
 	const float starsNoMod = m_databaseBeatmap->getStarsNomod(); // NOTE: this can sometimes be infinity! (e.g. broken osu!.db database)
 	const bool areStarsInaccurate = (osu->getSongBrowser()->getDynamicStarCalculator()->isDead() || !osu->getSongBrowser()->getDynamicStarCalculator()->isAsyncReady());
-	const float stars = (areStarsInaccurate || !m_osu_songbrowser_dynamic_star_recalc_ref->getBool() || !m_bSelected ? starsNoMod : osu->getSongBrowser()->getDynamicStarCalculator()->getTotalStars());
+	const float stars = (areStarsInaccurate || !cv::osu::songbrowser_dynamic_star_recalc.getBool() || !m_bSelected ? starsNoMod : osu->getSongBrowser()->getDynamicStarCalculator()->getTotalStars());
 	if (stars > 0)
 	{
 		const float starOffsetY = (size.y*0.85);
@@ -201,7 +197,7 @@ void OsuUISongBrowserSongDifficultyButton::onSelected(bool wasSelected, bool aut
 
 void OsuUISongBrowserSongDifficultyButton::updateGrade()
 {
-	if (!m_osu_scores_enabled->getBool())
+	if (!cv::osu::scores_enabled.getBool())
 	{
 		m_bHasGrade = false;
 		return;
@@ -233,5 +229,5 @@ Color OsuUISongBrowserSongDifficultyButton::getInactiveBackgroundColor() const
 	if (isIndependentDiffButton())
 		return OsuUISongBrowserSongButton::getInactiveBackgroundColor();
 	else
-		return argb(std::clamp<int>(osu_songbrowser_button_difficulty_inactive_color_a.getInt(), 0, 255), std::clamp<int>(osu_songbrowser_button_difficulty_inactive_color_r.getInt(), 0, 255), std::clamp<int>(osu_songbrowser_button_difficulty_inactive_color_g.getInt(), 0, 255), std::clamp<int>(osu_songbrowser_button_difficulty_inactive_color_b.getInt(), 0, 255));
+		return argb(std::clamp<int>(cv::osu::songbrowser_button_difficulty_inactive_color_a.getInt(), 0, 255), std::clamp<int>(cv::osu::songbrowser_button_difficulty_inactive_color_r.getInt(), 0, 255), std::clamp<int>(cv::osu::songbrowser_button_difficulty_inactive_color_g.getInt(), 0, 255), std::clamp<int>(cv::osu::songbrowser_button_difficulty_inactive_color_b.getInt(), 0, 255));
 }

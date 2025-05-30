@@ -178,24 +178,6 @@ private:
 
 	McFont *m_tempFont;
 
-	ConVar *m_name_ref;
-	ConVar *m_host_timescale_ref;
-	ConVar *m_osu_volume_master_ref;
-	ConVar *m_osu_volume_effects_ref;
-	ConVar *m_osu_volume_music_ref;
-	ConVar *m_osu_volume_change_interval_ref;
-	ConVar *m_osu_mod_target_300_percent_ref;
-	ConVar *m_osu_mod_target_100_percent_ref;
-	ConVar *m_osu_mod_target_50_percent_ref;
-	ConVar *m_osu_mod_fposu_ref;
-	ConVar *m_fposu_draw_scorebarbg_on_top_ref;
-	ConVar *m_osu_playfield_stretch_x_ref;
-	ConVar *m_osu_playfield_stretch_y_ref;
-	ConVar *m_osu_mp_win_condition_accuracy_ref;
-	ConVar *m_osu_background_dim_ref;
-	ConVar *m_osu_skip_intro_enabled_ref;
-	ConVar *m_osu_skip_breaks_enabled_ref;
-
 	// shit code
 	float m_fAccuracyXOffset;
 	float m_fAccuracyYOffset;

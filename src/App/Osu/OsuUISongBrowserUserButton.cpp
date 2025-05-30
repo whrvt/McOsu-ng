@@ -21,17 +21,18 @@
 #include "OsuDatabase.h"
 
 // NOTE: selected username is stored in m_sText
-
-ConVar osu_user_draw_pp("osu_user_draw_pp", true, FCVAR_NONE);
-ConVar osu_user_draw_accuracy("osu_user_draw_accuracy", true, FCVAR_NONE);
-ConVar osu_user_draw_level("osu_user_draw_level", true, FCVAR_NONE);
-ConVar osu_user_draw_level_bar("osu_user_draw_level_bar", true, FCVAR_NONE);
+namespace cv::osu {
+ConVar user_draw_pp("osu_user_draw_pp", true, FCVAR_NONE);
+ConVar user_draw_accuracy("osu_user_draw_accuracy", true, FCVAR_NONE);
+ConVar user_draw_level("osu_user_draw_level", true, FCVAR_NONE);
+ConVar user_draw_level_bar("osu_user_draw_level_bar", true, FCVAR_NONE);
+}
 
 OsuUISongBrowserUserButton::OsuUISongBrowserUserButton() : CBaseUIButton()
 {
 	
 
-	m_osu_scores_enabled_ref = convar->getConVarByName("osu_scores_enabled");
+
 
 	m_fPP = 0.0f;
 	m_fAcc = 0.0f;
@@ -117,7 +118,7 @@ void OsuUISongBrowserUserButton::draw()
 	g->popTransform();
 	g->popClipRect();
 
-	if (m_osu_scores_enabled_ref->getBool())
+	if (cv::osu::scores_enabled.getBool())
 	{
 		// draw performance (pp), and accuracy
 		McFont *performanceFont = osu->getSubTitleFont();
@@ -139,13 +140,13 @@ void OsuUISongBrowserUserButton::draw()
 			g->scale(scale, scale);
 			g->translate((int)(m_vPos.x + iconWidth + usernamePaddingLeft), yCounter);
 			g->setColor(0xffffffff);
-			if (osu_user_draw_pp.getBool())
+			if (cv::osu::user_draw_pp.getBool())
 				g->drawString(performanceFont, performanceString);
 
 			yCounter += performanceFont->getHeight()*scale + paddingMiddle;
 
 			g->translate(0, performanceFont->getHeight()*scale + paddingMiddle);
-			if (osu_user_draw_accuracy.getBool())
+			if (cv::osu::user_draw_accuracy.getBool())
 				g->drawString(performanceFont, accuracyString);
 		}
 		g->popTransform();
@@ -167,13 +168,13 @@ void OsuUISongBrowserUserButton::draw()
 			g->scale(scale, scale);
 			g->translate((int)(m_vPos.x + iconWidth + usernamePaddingLeft), yCounter);
 			g->setColor(0xffffffff);
-			if (osu_user_draw_level.getBool())
+			if (cv::osu::user_draw_level.getBool())
 				g->drawString(scoreFont, scoreString);
 		}
 		g->popTransform();
 
 		// draw level percentage bar (to next level)
-		if (osu_user_draw_level_bar.getBool())
+		if (cv::osu::user_draw_level_bar.getBool())
 		{
 			const float barBorder = (int)(iconBorder);
 			const float barHeight = (int)(m_vSize.y - 2*barBorder)*0.1f;

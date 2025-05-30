@@ -15,18 +15,12 @@
 #include "Engine.h"
 #include "Environment.h"
 
-extern ConVar snd_output_device;
-extern ConVar snd_restart;
-extern ConVar snd_freq;
-extern ConVar snd_restrict_play_frame;
-extern ConVar snd_change_check_interval;
-extern ConVar win_snd_fallback_dsound;
-extern ConVar debug_snd;
 
-#if __has_include("Osu.h") // :^)
-extern ConVar osu_universal_offset_hardcoded;
-#endif
+void _WIN_SND_WASAPI_BUFFER_SIZE_CHANGE(UString oldValue, UString newValue);
+void _WIN_SND_WASAPI_PERIOD_SIZE_CHANGE(UString oldValue, UString newValue);
+void _WIN_SND_WASAPI_EXCLUSIVE_CHANGE(UString oldValue, UString newValue);
 
+namespace cv {
 ConVar snd_updateperiod("snd_updateperiod", 5, FCVAR_NONE, "BASS_CONFIG_UPDATEPERIOD length in milliseconds, minimum is 5");
 ConVar snd_buffer("snd_buffer", 100, FCVAR_NONE, "BASS_CONFIG_BUFFER length in milliseconds, minimum is 1 above snd_updateperiod");
 ConVar snd_dev_period("snd_dev_period", 5, FCVAR_NONE, "BASS_CONFIG_DEV_PERIOD length in milliseconds, or if negative then in samples");
@@ -34,21 +28,12 @@ ConVar snd_dev_buffer("snd_dev_buffer", 10, FCVAR_NONE, "BASS_CONFIG_DEV_BUFFER 
 ConVar snd_ready_delay("snd_ready_delay", 0.0f, FCVAR_NONE,
                           "after a sound engine restart, wait this many seconds before marking it as ready");
 #ifdef MCENGINE_PLATFORM_WINDOWS
-void _WIN_SND_WASAPI_BUFFER_SIZE_CHANGE(UString oldValue, UString newValue);
-void _WIN_SND_WASAPI_PERIOD_SIZE_CHANGE(UString oldValue, UString newValue);
-void _WIN_SND_WASAPI_EXCLUSIVE_CHANGE(UString oldValue, UString newValue);
-
 ConVar snd_asio_buffer_size("snd_asio_buffer_size", -1, FCVAR_NONE, "buffer size in samples (usually 44100 samples per second)");
-ConVar win_snd_wasapi_buffer_size("win_snd_wasapi_buffer_size", 0.011f, FCVAR_NONE,
-                                  "buffer size/length in seconds (e.g. 0.011 = 11 ms), directly responsible for audio delay and crackling",
-                                  _WIN_SND_WASAPI_BUFFER_SIZE_CHANGE);
-ConVar win_snd_wasapi_period_size("win_snd_wasapi_period_size", 0.0f, FCVAR_NONE,
-                                  "interval between OutputWasapiProc calls in seconds (e.g. 0.016 = 16 ms) (0 = use default)", _WIN_SND_WASAPI_PERIOD_SIZE_CHANGE);
-ConVar win_snd_wasapi_exclusive("win_snd_wasapi_exclusive", true, FCVAR_NONE, "whether to use exclusive device mode to further reduce latency",
-                                _WIN_SND_WASAPI_EXCLUSIVE_CHANGE);
-ConVar win_snd_wasapi_shared_volume_affects_device("win_snd_wasapi_shared_volume_affects_device", false, FCVAR_NONE,
-                                                   "if in shared mode, whether to affect device volume globally or use separate session volume (default)");
+#endif
 
+}
+
+#ifdef MCENGINE_PLATFORM_WINDOWS
 void _WIN_SND_WASAPI_BUFFER_SIZE_CHANGE(UString oldValue, UString newValue)
 {
 	const int oldValueMS = std::round(oldValue.toFloat() * 1000.0f);
@@ -118,7 +103,7 @@ DWORD BassSoundEngine2::ASIO_clamp(BASS_ASIO_INFO info, DWORD buflen)
 
 bool BassSoundEngine2::hasExclusiveOutput()
 {
-	return isASIO() || (isWASAPI() && win_snd_wasapi_exclusive.getBool());
+	return isASIO() || (isWASAPI() && cv::win_snd_wasapi_exclusive.getBool());
 }
 
 #else
@@ -178,8 +163,8 @@ BassSoundEngine2::BassSoundEngine2() : SoundEngine()
 #endif
 
 	// apply default global settings
-	BASS_SetConfig(BASS_CONFIG_BUFFER, static_cast<DWORD>(snd_buffer.getDefaultFloat()));
-	BASS_SetConfig(BASS_CONFIG_DEV_BUFFER, static_cast<DWORD>(snd_dev_buffer.getDefaultFloat())); // NOTE: only used by new osu atm
+	BASS_SetConfig(BASS_CONFIG_BUFFER, static_cast<DWORD>(cv::snd_buffer.getDefaultFloat()));
+	BASS_SetConfig(BASS_CONFIG_DEV_BUFFER, static_cast<DWORD>(cv::snd_dev_buffer.getDefaultFloat())); // NOTE: only used by new osu atm
 	BASS_SetConfig(BASS_CONFIG_MP3_OLDGAPS,
 	               1); // NOTE: only used by osu atm (all beatmaps timed to non-iTunesSMPB + 529 sample deletion offsets on old dlls pre 2015)
 	BASS_SetConfig(BASS_CONFIG_DEV_NONSTOP,
@@ -200,9 +185,14 @@ BassSoundEngine2::BassSoundEngine2() : SoundEngine()
 
 	m_bReady = initializeOutputDeviceStruct(m_currentOutputDevice);
 
-	snd_freq.setCallback(fastdelegate::MakeDelegate(this, &BassSoundEngine2::onFreqChanged));
-	snd_restart.setCallback(fastdelegate::MakeDelegate(this, &BassSoundEngine2::restart));
-	//snd_output_device.setCallback(fastdelegate::MakeDelegate(this, &BassSoundEngine2::setOutputDeviceForce));
+	cv::snd_freq.setCallback(fastdelegate::MakeDelegate(this, &BassSoundEngine2::onFreqChanged));
+	cv::snd_restart.setCallback(fastdelegate::MakeDelegate(this, &BassSoundEngine2::restart));
+#ifdef MCENGINE_PLATFORM_WINDOWS
+	cv::win_snd_wasapi_buffer_size.setCallback(_WIN_SND_WASAPI_BUFFER_SIZE_CHANGE);
+	cv::win_snd_wasapi_period_size.setCallback(_WIN_SND_WASAPI_PERIOD_SIZE_CHANGE);
+	cv::win_snd_wasapi_exclusive.setCallback(_WIN_SND_WASAPI_EXCLUSIVE_CHANGE);
+#endif
+	//cv::snd_output_device.setCallback(fastdelegate::MakeDelegate(this, &BassSoundEngine2::setOutputDeviceForce));
 }
 
 BassSoundEngine2::~BassSoundEngine2()
@@ -238,7 +228,7 @@ void BassSoundEngine2::bassfree()
 
 BassSoundEngine2::OUTPUT_DEVICE_BASS BassSoundEngine2::getWantedDevice()
 {
-	auto wanted_name = snd_output_device.getString();
+	auto wanted_name = cv::snd_output_device.getString();
 	for (auto device : m_vOutputDevices)
 	{
 		if (device.enabled && device.name == wanted_name)
@@ -411,7 +401,7 @@ void BassSoundEngine2::updateOutputDevices(bool printInfo)
 bool BassSoundEngine2::init_bass_mixer(OUTPUT_DEVICE_BASS device)
 {
 	auto bass_flags = BASS_DEVICE_STEREO | BASS_DEVICE_FREQ | BASS_DEVICE_NOSPEAKER;
-	auto freq = snd_freq.getInt();
+	auto freq = cv::snd_freq.getInt();
 
 	// We initialize a "No sound" device for measuring loudness and mixing sounds,
 	// regardless of the device we'll use for actual output.
@@ -461,13 +451,13 @@ bool BassSoundEngine2::initializeOutputDeviceStruct(OUTPUT_DEVICE_BASS device)
 	bassfree();
 #if __has_include("Osu.h") // :^)
 	// We compensate for latency via BASS_ATTRIB_MIXER_LATENCY
-	osu_universal_offset_hardcoded.setValue(0.f);
+	cv::osu::universal_offset_hardcoded.setValue(0.f);
 #endif
 
 	// if (device.driver == OutputDriver::NONE || (device.driver == OutputDriver::BASS && device.id == 0))
 	// {
 	// 	m_currentOutputDevice = device;
-	// 	snd_output_device.setValue(m_currentOutputDevice.name);
+	// 	cv::snd_output_device.setValue(m_currentOutputDevice.name);
 	// 	debugLog("SoundEngine: Output Device = \"{}\"\n", m_currentOutputDevice.name);
 
 	// 	// if (osu && osu->optionsMenu)
@@ -487,31 +477,31 @@ bool BassSoundEngine2::initializeOutputDeviceStruct(OUTPUT_DEVICE_BASS device)
 	// we only want to set these if their values have been explicitly modified (to avoid sideeffects in the default
 	// case, and for my sanity)
 	{
-		if (snd_dev_buffer.getFloat() != snd_dev_buffer.getDefaultFloat())
+		if (cv::snd_dev_buffer.getFloat() != cv::snd_dev_buffer.getDefaultFloat())
 		{
-			BASS_SetConfig(BASS_CONFIG_DEV_BUFFER, snd_dev_buffer.getInt());
+			BASS_SetConfig(BASS_CONFIG_DEV_BUFFER, cv::snd_dev_buffer.getInt());
 		}
-		if (snd_dev_period.getFloat() != snd_dev_period.getDefaultFloat())
+		if (cv::snd_dev_period.getFloat() != cv::snd_dev_period.getDefaultFloat())
 		{
-			BASS_SetConfig(BASS_CONFIG_DEV_PERIOD, snd_dev_period.getInt());
+			BASS_SetConfig(BASS_CONFIG_DEV_PERIOD, cv::snd_dev_period.getInt());
 		}
 		if (!(device.driver == OutputDriver::BASS_ASIO || device.driver == OutputDriver::BASS_WASAPI) &&
-		    (snd_updateperiod.getFloat() != snd_updateperiod.getDefaultFloat()))
+		    (cv::snd_updateperiod.getFloat() != cv::snd_updateperiod.getDefaultFloat()))
 		{
 			// ASIO/WASAPI: let driver decide when to render playback buffer
-			const auto clamped = static_cast<DWORD>(std::clamp(snd_updateperiod.getFloat(), 5.0f, 100.0f));
+			const auto clamped = static_cast<DWORD>(std::clamp(cv::snd_updateperiod.getFloat(), 5.0f, 100.0f));
 			BASS_SetConfig(BASS_CONFIG_UPDATEPERIOD, clamped);
-			snd_updateperiod.setValue(clamped);
+			cv::snd_updateperiod.setValue(clamped);
 		}
 		else
 		{
-			BASS_SetConfig(BASS_CONFIG_UPDATEPERIOD, static_cast<DWORD>(snd_updateperiod.getDefaultFloat()));
+			BASS_SetConfig(BASS_CONFIG_UPDATEPERIOD, static_cast<DWORD>(cv::snd_updateperiod.getDefaultFloat()));
 		}
-		if (snd_buffer.getFloat() != snd_buffer.getDefaultFloat())
+		if (cv::snd_buffer.getFloat() != cv::snd_buffer.getDefaultFloat())
 		{
-			const auto clamped = static_cast<DWORD>(std::clamp(snd_buffer.getFloat(), snd_updateperiod.getFloat() + 1.0f, 5000.0f));
+			const auto clamped = static_cast<DWORD>(std::clamp(cv::snd_buffer.getFloat(), cv::snd_updateperiod.getFloat() + 1.0f, 5000.0f));
 			BASS_SetConfig(BASS_CONFIG_BUFFER, clamped);
-			snd_buffer.setValue(clamped);
+			cv::snd_buffer.setValue(clamped);
 		}
 	}
 
@@ -537,12 +527,12 @@ bool BassSoundEngine2::initializeOutputDeviceStruct(OUTPUT_DEVICE_BASS device)
 		double sample_rate = BASS_ASIO_GetRate();
 		if (sample_rate == 0.0)
 		{
-			sample_rate = snd_freq.getFloat();
+			sample_rate = cv::snd_freq.getFloat();
 			debugLog("ASIO: BASS_ASIO_GetRate() returned 0, using {} instead!\n", sample_rate);
 		}
 		else
 		{
-			snd_freq.setValue(sample_rate);
+			cv::snd_freq.setValue(sample_rate);
 		}
 		if (!init_bass_mixer(device))
 		{
@@ -551,7 +541,7 @@ bool BassSoundEngine2::initializeOutputDeviceStruct(OUTPUT_DEVICE_BASS device)
 
 		BASS_ASIO_INFO info = {{0}};
 		BASS_ASIO_GetInfo(&info);
-		auto bufsize = snd_asio_buffer_size.getInt();
+		auto bufsize = cv::snd_asio_buffer_size.getInt();
 		bufsize = ASIO_clamp(info, bufsize);
 
 		// if (osu && osu->optionsMenu)
@@ -573,7 +563,7 @@ bool BassSoundEngine2::initializeOutputDeviceStruct(OUTPUT_DEVICE_BASS device)
 			return false;
 		}
 
-		double wanted_latency = 1000.0 * snd_asio_buffer_size.getFloat() / sample_rate;
+		double wanted_latency = 1000.0 * cv::snd_asio_buffer_size.getFloat() / sample_rate;
 		double actual_latency = 1000.0 * (double)BASS_ASIO_GetLatency(false) / sample_rate;
 		BASS_ChannelSetAttribute(g_bassOutputMixer, BASS_ATTRIB_MIXER_LATENCY, actual_latency / 1000.0);
 		debugLog("ASIO: wanted {} ms, got {} ms latency. Sample rate: {} Hz\n", wanted_latency, actual_latency, sample_rate);
@@ -581,8 +571,8 @@ bool BassSoundEngine2::initializeOutputDeviceStruct(OUTPUT_DEVICE_BASS device)
 
 	if (device.driver == OutputDriver::BASS_WASAPI)
 	{
-		const float bufferSize = std::round(win_snd_wasapi_buffer_size.getFloat() * 1000.0f) / 1000.0f;   // in seconds
-		const float updatePeriod = std::round(win_snd_wasapi_period_size.getFloat() * 1000.0f) / 1000.0f; // in seconds
+		const float bufferSize = std::round(cv::win_snd_wasapi_buffer_size.getFloat() * 1000.0f) / 1000.0f;   // in seconds
+		const float updatePeriod = std::round(cv::win_snd_wasapi_period_size.getFloat() * 1000.0f) / 1000.0f; // in seconds
 
 		BASS_WASAPI_DEVICEINFO info;
 		if (!BASS_WASAPI_GetDeviceInfo(device.id, &info))
@@ -590,7 +580,7 @@ bool BassSoundEngine2::initializeOutputDeviceStruct(OUTPUT_DEVICE_BASS device)
 			debugLog("WASAPI: Failed to get device info\n");
 			return false;
 		}
-		snd_freq.setValue(info.mixfreq);
+		cv::snd_freq.setValue(info.mixfreq);
 		if (!init_bass_mixer(device))
 		{
 			return false;
@@ -605,7 +595,7 @@ bool BassSoundEngine2::initializeOutputDeviceStruct(OUTPUT_DEVICE_BASS device)
 		flags |= BASS_WASAPI_RAW;
 #endif
 
-		if (win_snd_wasapi_exclusive.getBool())
+		if (cv::win_snd_wasapi_exclusive.getBool())
 		{
 			// BASS_WASAPI_EXCLUSIVE makes neosu have exclusive output to the sound card
 			// BASS_WASAPI_AUTOFORMAT chooses the best matching sample format, BASSWASAPI doesn't resample in exclusive
@@ -625,12 +615,12 @@ bool BassSoundEngine2::initializeOutputDeviceStruct(OUTPUT_DEVICE_BASS device)
 			return false;
 		}
 
-		BASS_ChannelSetAttribute(g_bassOutputMixer, BASS_ATTRIB_MIXER_LATENCY, win_snd_wasapi_buffer_size.getFloat());
+		BASS_ChannelSetAttribute(g_bassOutputMixer, BASS_ATTRIB_MIXER_LATENCY, cv::win_snd_wasapi_buffer_size.getFloat());
 	}
 #endif
 
 	m_currentOutputDevice = device;
-	snd_output_device.setValue(m_currentOutputDevice.name);
+	cv::snd_output_device.setValue(m_currentOutputDevice.name);
 	debugLog("SoundEngine: Output Device = \"{}\"\n", m_currentOutputDevice.name.toUtf8());
 
 	// if (osu && osu->optionsMenu)
@@ -663,7 +653,7 @@ bool BassSoundEngine2::play(Sound *snd, float pan, float pitch)
 		return false;
 	}
 
-	if (bassSound->isOverlayable() && snd_restrict_play_frame.getBool())
+	if (bassSound->isOverlayable() && cv::snd_restrict_play_frame.getBool())
 	{
 		if (engine->getTime() <= bassSound->getLastPlayTime())
 		{
@@ -685,7 +675,7 @@ bool BassSoundEngine2::play(Sound *snd, float pan, float pitch)
 	BASS_ChannelSetAttribute(channel, BASS_ATTRIB_NORAMP, bassSound->isStream() ? 0 : 1);
 	if (pitch != 1.0f)
 	{
-		float freq = snd_freq.getFloat();
+		float freq = cv::snd_freq.getFloat();
 		BASS_ChannelGetAttribute(channel, BASS_ATTRIB_FREQ, &freq);
 
 		const float semitonesShift = std::lerp(-60.0f, 60.0f, pitch / 2.0f);
@@ -729,7 +719,7 @@ bool BassSoundEngine2::play(Sound *snd, float pan, float pitch)
 		bassSound->m_fLastPlayTime = bassSound->m_dChannelCreationTime;
 	}
 
-	if (debug_snd.getBool())
+	if (cv::debug_snd.getBool())
 	{
 		debugLog("Playing {:s}\n", bassSound->getFilePath());
 	}

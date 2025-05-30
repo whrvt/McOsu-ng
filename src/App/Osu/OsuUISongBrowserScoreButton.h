@@ -54,15 +54,15 @@ public:
 	[[nodiscard]] inline int getIndex() const {return m_iScoreIndexNumber;}
 
 private:
-	static ConVar *m_osu_scores_sort_by_pp_ref;
-	static ConVar *m_osu_mods_ref;
-	static ConVar *m_osu_speed_override_ref;
-	static ConVar *m_osu_ar_override_ref;
-	static ConVar *m_osu_cs_override_ref;
-	static ConVar *m_osu_od_override_ref;
-	static ConVar *m_osu_hp_override_ref;
-	static ConVar *m_osu_ar_override_lock_ref;
-	static ConVar *m_osu_od_override_lock_ref;
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	static UString recentScoreIconString;
 
 	void updateElapsedTimeString();

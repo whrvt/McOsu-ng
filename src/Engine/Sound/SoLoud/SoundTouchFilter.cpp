@@ -16,12 +16,15 @@
 #include "ConVar.h"
 #include "Engine.h"
 
-extern ConVar osu_universal_offset_hardcoded; // TODO: literally just return a position with this offset instead of messing with convars (maybe?)
+#if __has_include("Osu.h")
+namespace cv {
 ConVar snd_enable_auto_offset("snd_enable_auto_offset", true, FCVAR_NONE, "Control automatic offset calibration for SoLoud + rate change");
+}
+#endif
 
 #ifdef _DEBUG
 ConVar snd_st_debug("snd_st_debug", false, FCVAR_NONE, "Enable detailed SoundTouch filter logging");
-#define ST_DEBUG_ENABLED snd_st_debug.getBool()
+#define ST_DEBUG_ENABLED cv::snd_st_debug.getBool()
 #else
 #define ST_DEBUG_ENABLED 0
 #endif
@@ -152,9 +155,9 @@ SoundTouchFilterInstance::SoundTouchFilterInstance(SoundTouchFilter *aParent)
 
 				// pre-fill
 				primeBuffers();
-
+#if __has_include("Osu.h")
 				// estimate processing delay, somewhat following the SoundTouch header idea
-				if (snd_enable_auto_offset.getBool())
+				if (cv::snd_enable_auto_offset.getBool())
 				{
 					int initialLatencyInSamples = mSoundTouch->getSetting(SETTING_INITIAL_LATENCY);
 					int nominalInputSeq = mSoundTouch->getSetting(SETTING_NOMINAL_INPUT_SEQUENCE);
@@ -173,8 +176,9 @@ SoundTouchFilterInstance::SoundTouchFilterInstance(SoundTouchFilter *aParent)
 
 					ST_DEBUG_LOG("SoundTouch: Calculated universal offset = %.2f ms (latency: %.2f, buffer: %.2f)\n", totalOffset, latencyInMs, processingBufferDelay);
 
-					osu_universal_offset_hardcoded.setValue(osu_universal_offset_hardcoded.getDefaultFloat() + totalOffset);
+					cv::osu::universal_offset_hardcoded.setValue(cv::osu::universal_offset_hardcoded.getDefaultFloat() + totalOffset);
 				}
+#endif
 			}
 		}
 	}
@@ -182,7 +186,9 @@ SoundTouchFilterInstance::SoundTouchFilterInstance(SoundTouchFilter *aParent)
 
 SoundTouchFilterInstance::~SoundTouchFilterInstance()
 {
-	osu_universal_offset_hardcoded.setValue(osu_universal_offset_hardcoded.getDefaultFloat());
+#if __has_include("Osu.h")
+	cv::osu::universal_offset_hardcoded.setValue(cv::osu::universal_offset_hardcoded.getDefaultFloat());
+#endif
 	delete[] mOggFrameBuffer;
 	delete[] mInterleavedBuffer;
 	delete[] mBuffer;

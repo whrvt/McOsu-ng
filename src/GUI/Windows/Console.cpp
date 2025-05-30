@@ -27,9 +27,10 @@
 #define CFG_FOLDER "cfg/"
 
 #define CONSOLE_BORDER 6
-
-ConVar _console_logging("console_logging", true, FCVAR_NONE);
-ConVar _clear("clear");
+namespace cv {
+ConVar console_logging("console_logging", true, FCVAR_NONE);
+ConVar clear("clear");
+}
 
 std::vector<UString> Console::g_commandQueue;
 
@@ -38,7 +39,7 @@ std::mutex g_consoleLogMutex;
 Console::Console() : CBaseUIWindow(350, 100, 620, 550, "Console")
 {
 	// convar bindings
-	_clear.setCallback( fastdelegate::MakeDelegate(this, &Console::clear) );
+	cv::clear.setCallback( fastdelegate::MakeDelegate(this, &Console::clear) );
 
 	// resources
 	m_logFont = resourceManager->getFont("FONT_CONSOLE");
@@ -151,7 +152,7 @@ void Console::processCommand(UString command)
 		return;
 	}
 
-	if (var->isFlagSet(FCVAR_CHEAT) && !ConVars::sv_cheats.getBool())
+	if (var->isFlagSet(FCVAR_CHEAT) && !cv::ConVars::sv_cheats.getBool())
 		return;
 
 	// set new value (this handles all callbacks internally)
@@ -164,7 +165,7 @@ void Console::processCommand(UString command)
 	}
 
 	// log
-	if (_console_logging.getBool())
+	if (cv::console_logging.getBool())
 	{
 		UString logMessage;
 
@@ -347,7 +348,8 @@ void _fizzbuzz(void)
 			debugLog("{}\n",i);
 	}
 }
-
-ConVar _exec_("exec", FCVAR_NONE, _exec);
-ConVar _echo_("echo", FCVAR_NONE, _echo);
-ConVar _fizzbuzz_("fizzbuzz", FCVAR_NONE, _fizzbuzz);
+namespace cv {
+ConVar exec("exec", FCVAR_NONE, _exec);
+ConVar echo("echo", FCVAR_NONE, _echo);
+ConVar fizzbuzz("fizzbuzz", FCVAR_NONE, _fizzbuzz);
+}

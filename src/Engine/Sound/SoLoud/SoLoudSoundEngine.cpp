@@ -14,19 +14,13 @@
 #include "Engine.h"
 #include "Environment.h"
 
-extern ConVar snd_output_device;
-extern ConVar snd_restart;
-extern ConVar snd_freq;
-extern ConVar snd_restrict_play_frame;
-extern ConVar snd_change_check_interval;
-extern ConVar snd_speed_compensate_pitch;
-extern ConVar debug_snd;
-
 // SoLoud-specific ConVars
+namespace cv {
 ConVar snd_soloud_buffer("snd_soloud_buffer", SoLoud::Soloud::AUTO, FCVAR_NONE, "SoLoud audio device buffer size");
 ConVar snd_soloud_backend("snd_soloud_backend", Env::cfg(OS::WASM) ? "SDL3" : "MiniAudio", FCVAR_NONE,
                           R"(SoLoud backend, "MiniAudio" or "SDL3" (MiniAudio is default on desktop))");
 ConVar snd_sanity_simultaneous_limit("snd_sanity_simultaneous_limit", 128, FCVAR_NONE, "The maximum number of overlayable sounds that are allowed to be active at once");
+}
 
 std::unique_ptr<SoLoud::Soloud> SoLoudSoundEngine::s_SLInstance = nullptr;
 SoLoud::Soloud *soloud = nullptr;
@@ -39,7 +33,7 @@ SoLoudSoundEngine::SoLoudSoundEngine() : SoundEngine()
 		soloud = s_SLInstance.get();
 	}
 
-	m_iMaxActiveVoices = std::clamp<int>(snd_sanity_simultaneous_limit.getInt(), 64, 255); // TODO: lower this minimum
+	m_iMaxActiveVoices = std::clamp<int>(cv::snd_sanity_simultaneous_limit.getInt(), 64, 255); // TODO: lower this minimum
 
 	m_iCurrentOutputDevice = -1;
 	m_sCurrentOutputDevice = "Default";
@@ -50,7 +44,7 @@ SoLoudSoundEngine::SoLoudSoundEngine() : SoundEngine()
 	defaultOutputDevice.enabled = true;
 	defaultOutputDevice.isDefault = true;
 
-	snd_output_device.setValue(defaultOutputDevice.name);
+	cv::snd_output_device.setValue(defaultOutputDevice.name);
 	m_outputDevices.push_back(defaultOutputDevice);
 
 	// other output devices (TODO: bogus for now)
@@ -59,11 +53,11 @@ SoLoudSoundEngine::SoLoudSoundEngine() : SoundEngine()
 	initializeOutputDevice(defaultOutputDevice.id);
 
 	// convar callbacks
-	snd_freq.setCallback(fastdelegate::MakeDelegate(this, &SoLoudSoundEngine::restart));
-	snd_restart.setCallback(fastdelegate::MakeDelegate(this, &SoLoudSoundEngine::restart));
-	snd_output_device.setCallback(fastdelegate::MakeDelegate(this, &SoLoudSoundEngine::setOutputDevice));
-	snd_soloud_backend.setCallback(fastdelegate::MakeDelegate(this, &SoLoudSoundEngine::restart));
-	snd_sanity_simultaneous_limit.setCallback(fastdelegate::MakeDelegate(this, &SoLoudSoundEngine::onMaxActiveChange));
+	cv::snd_freq.setCallback(fastdelegate::MakeDelegate(this, &SoLoudSoundEngine::restart));
+	cv::snd_restart.setCallback(fastdelegate::MakeDelegate(this, &SoLoudSoundEngine::restart));
+	cv::snd_output_device.setCallback(fastdelegate::MakeDelegate(this, &SoLoudSoundEngine::setOutputDevice));
+	cv::snd_soloud_backend.setCallback(fastdelegate::MakeDelegate(this, &SoLoudSoundEngine::restart));
+	cv::snd_sanity_simultaneous_limit.setCallback(fastdelegate::MakeDelegate(this, &SoLoudSoundEngine::onMaxActiveChange));
 }
 
 SoLoudSoundEngine::~SoLoudSoundEngine()
@@ -86,7 +80,7 @@ void SoLoudSoundEngine::restart()
 void SoLoudSoundEngine::update()
 {
 	// check for device changes if interval is enabled
-	float checkInterval = snd_change_check_interval.getFloat();
+	float checkInterval = cv::snd_change_check_interval.getFloat();
 	if (checkInterval > 0.0f)
 	{
 		auto currentTime = engine->getTime();
@@ -123,7 +117,7 @@ bool SoLoudSoundEngine::playSound(SoLoudSound *soloudSound, float pan, float pit
 	pitch = std::clamp<float>(pitch, 0.0f, 2.0f);
 
 	// check if we should allow playing this frame (for overlayable sounds)
-	const bool allowPlayFrame = !soloudSound->isOverlayable() || !snd_restrict_play_frame.getBool() || engine->getTime() > soloudSound->getLastPlayTime();
+	const bool allowPlayFrame = !soloudSound->isOverlayable() || !cv::snd_restrict_play_frame.getBool() || engine->getTime() > soloudSound->getLastPlayTime();
 	if (!allowPlayFrame)
 		return false;
 
@@ -137,7 +131,7 @@ bool SoLoudSoundEngine::playSound(SoLoudSound *soloudSound, float pan, float pit
 		soloudSound->m_handle = 0;
 	}
 
-	if (debug_snd.getBool())
+	if (cv::debug_snd.getBool())
 	{
 		debugLog("SoLoudSoundEngine: Playing {:s} (stream={:d}, 3d={:d}) with speed={:f}, pitch={:f}\n", soloudSound->m_sFilePath.toUtf8(), soloudSound->m_bStream ? 1 : 0,
 		         is3d ? 1 : 0, soloudSound->m_speed, pitch);
@@ -174,7 +168,7 @@ bool SoLoudSoundEngine::playSound(SoLoudSound *soloudSound, float pan, float pit
 			finalPitch *= soloudSound->m_pitch;
 
 		// if speed compensation is disabled, apply speed as pitch
-		if (!snd_speed_compensate_pitch.getBool() && soloudSound->m_speed != 1.0f)
+		if (!cv::snd_speed_compensate_pitch.getBool() && soloudSound->m_speed != 1.0f)
 			finalPitch *= soloudSound->m_speed;
 
 		handle = playDirectSound(soloudSound, pan, finalPitch, soloudSound->m_fVolume);
@@ -203,7 +197,7 @@ bool SoLoudSoundEngine::playSound(SoLoudSound *soloudSound, float pan, float pit
 		return true;
 	}
 
-	if (debug_snd.getBool())
+	if (cv::debug_snd.getBool())
 		debugLog("SoLoudSoundEngine: Failed to play sound {:s}\n", soloudSound->m_sFilePath.toUtf8());
 
 	return false;
@@ -226,7 +220,7 @@ unsigned int SoLoudSoundEngine::playSoundWithFilter(SoLoudSound *soloudSound, fl
 
 	if (handle != 0)
 	{
-		if (debug_snd.getBool())
+		if (cv::debug_snd.getBool())
 			debugLog("SoLoudSoundEngine: Playing through SoundTouch filter with speed={:f}, pitch={:f}\n", soloudSound->m_speed, soloudSound->m_pitch);
 	}
 
@@ -356,7 +350,7 @@ void SoLoudSoundEngine::setVolumeGradual(unsigned int handle, float targetVol, f
 
 	soloud->setVolume(handle, 0.0f);
 
-	if (debug_snd.getBool())
+	if (cv::debug_snd.getBool())
 		debugLog("fading in to {:.2f}\n", targetVol);
 
 	soloud->fadeVolume(handle, targetVol, fadeTimeMs / 1000.0f);
@@ -397,7 +391,7 @@ void SoLoudSoundEngine::updateOutputDevices(bool, bool printInfo)
 	if (printInfo)
 	{
 		debugLog("SoundEngine: Device 0 = \"Default\", enabled = 1, default = 1\n");
-		debugLog("SoundEngine: Using SoLoud backend: {:s}\n", snd_soloud_backend.getString().toUtf8());
+		debugLog("SoundEngine: Using SoLoud backend: {:s}\n", cv::snd_soloud_backend.getString().toUtf8());
 	}
 }
 
@@ -418,8 +412,8 @@ bool SoLoudSoundEngine::initializeOutputDevice(int id, bool)
 	unsigned int flags = SoLoud::Soloud::CLIP_ROUNDOFF;
 
 	auto backend = Env::cfg(OS::WASM) ? SoLoud::Soloud::SDL3 : SoLoud::Soloud::MINIAUDIO;
-	auto userBackend = snd_soloud_backend.getString();
-	if ((userBackend != snd_soloud_backend.getDefaultString()))
+	auto userBackend = cv::snd_soloud_backend.getString();
+	if ((userBackend != cv::snd_soloud_backend.getDefaultString()))
 	{
 		if (userBackend.findIgnoreCase("sdl") != -1)
 			backend = SoLoud::Soloud::SDL3;
@@ -439,7 +433,7 @@ bool SoLoudSoundEngine::initializeOutputDevice(int id, bool)
 	const unsigned int channels = 2;
 
 	// setup some SDL hints in case the SDL backend is used
-	if (snd_soloud_buffer.getVal() != snd_soloud_buffer.getDefaultVal())
+	if (snd_soloud_buffer.getVal() != cv::snd_soloud_buffer.getDefaultVal())
 		SDL_SetHintWithPriority(SDL_HINT_AUDIO_DEVICE_SAMPLE_FRAMES, fmt::format("{}", snd_soloud_buffer.getVal<unsigned int>()).c_str(), SDL_HINT_OVERRIDE);
 	SDL_SetHintWithPriority(SDL_HINT_AUDIO_DEVICE_STREAM_NAME, PACKAGE_NAME, SDL_HINT_OVERRIDE);
 	SDL_SetHintWithPriority(SDL_HINT_AUDIO_DEVICE_STREAM_ROLE, "game", SDL_HINT_OVERRIDE);
@@ -454,7 +448,7 @@ bool SoLoudSoundEngine::initializeOutputDevice(int id, bool)
 		return false;
 	}
 
-	onMaxActiveChange(snd_sanity_simultaneous_limit.getFloat());
+	onMaxActiveChange(cv::snd_sanity_simultaneous_limit.getFloat());
 
 	// set current device name (bogus)
 	for (auto &m_outputDevice : m_outputDevices)

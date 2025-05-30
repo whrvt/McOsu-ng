@@ -14,7 +14,9 @@
 #include "Engine.h"
 
 // shared convars
+namespace cv {
 ConVar debug_opengl("debug_opengl", false, FCVAR_NONE);
+}
 
 void SDLGLInterface::load()
 {

@@ -106,7 +106,7 @@ void OpenGLImage::initAsync()
 
 	if (!m_bCreatedImage)
 	{
-		if (ResourceManager::debug_rm->getBool())
+		if (cv::debug_rm.getBool())
 			debugLog("Resource Manager: Loading {:s}\n", m_sFilePath.toUtf8());
 
 		m_bAsyncReady = loadRawImage();

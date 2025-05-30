@@ -36,11 +36,11 @@
 #include "OsuUIRankingScreenInfoLabel.h"
 #include "OsuUIRankingScreenRankingPanel.h"
 #include "OsuUISongBrowserScoreButton.h"
-
-ConVar osu_rankingscreen_topbar_height_percent("osu_rankingscreen_topbar_height_percent", 0.785f, FCVAR_NONE);
-ConVar osu_rankingscreen_pp("osu_rankingscreen_pp", true, FCVAR_NONE);
-ConVar osu_draw_rankingscreen_background_image("osu_draw_rankingscreen_background_image", true, FCVAR_NONE);
-
+namespace cv::osu {
+ConVar rankingscreen_topbar_height_percent("osu_rankingscreen_topbar_height_percent", 0.785f, FCVAR_NONE);
+ConVar rankingscreen_pp("osu_rankingscreen_pp", true, FCVAR_NONE);
+ConVar draw_rankingscreen_background_image("osu_draw_rankingscreen_background_image", true, FCVAR_NONE);
+}
 
 
 class OsuRankingScreenIndexLabel : public CBaseUILabel
@@ -177,7 +177,7 @@ private:
 
 OsuRankingScreen::OsuRankingScreen() : OsuScreenBackable()
 {
-	m_osu_scores_enabled = convar->getConVarByName("osu_scores_enabled");
+
 
 	m_container = new CBaseUIContainer(0, 0, 0, 0, "");
 	m_rankings = new CBaseUIScrollView(-1, 0, 0, 0, "");
@@ -279,7 +279,7 @@ void OsuRankingScreen::draw()
 	if (!m_bVisible) return;
 
 	// draw background image
-	if (osu_draw_rankingscreen_background_image.getBool())
+	if (cv::osu::draw_rankingscreen_background_image.getBool())
 		OsuSongBrowser2::drawSelectedBeatmapBackgroundImage(osu);
 
 	m_rankings->draw();
@@ -372,7 +372,7 @@ void OsuRankingScreen::draw()
 	}
 
 	// draw pp
-	if (osu_rankingscreen_pp.getBool() && !m_bIsLegacyScore)
+	if (cv::osu::rankingscreen_pp.getBool() && !m_bIsLegacyScore)
 	{
 		const UString ppString = getPPString();
 		const Vector2 ppPos = getPPPosRaw() + m_vPPCursorMagnetAnimation;
@@ -389,12 +389,12 @@ void OsuRankingScreen::draw()
 		g->popTransform();
 	}
 
-	if (m_osu_scores_enabled->getBool())
+	if (cv::osu::scores_enabled.getBool())
 		m_rankingScrollDownInfoButton->draw();
 
 	// draw top black bar
 	g->setColor(0xff000000);
-	g->fillRect(0, 0, osu->getVirtScreenWidth(), m_rankingTitle->getSize().y*osu_rankingscreen_topbar_height_percent.getFloat());
+	g->fillRect(0, 0, osu->getVirtScreenWidth(), m_rankingTitle->getSize().y*cv::osu::rankingscreen_topbar_height_percent.getFloat());
 
 	m_rankingTitle->draw();
 	m_songInfo->draw();
@@ -624,7 +624,7 @@ void OsuRankingScreen::setScore(OsuDatabase::Score score, UString dateTime)
 void OsuRankingScreen::setBeatmapInfo(OsuBeatmap *beatmap, OsuDatabaseBeatmap *diff2)
 {
 	m_songInfo->setFromBeatmap(beatmap, diff2);
-	m_songInfo->setPlayer(m_bIsUnranked ? "McOsu" : convar->getConVarByName("name")->getString());
+	m_songInfo->setPlayer(m_bIsUnranked ? "McOsu" : cv::name.getString());
 
 	// round all here to 2 decimal places
 	m_fSpeedMultiplier = std::round(osu->getSpeedMultiplier() * 100.0f) / 100.0f;
@@ -638,7 +638,7 @@ void OsuRankingScreen::updateLayout()
 {
 	OsuScreenBackable::updateLayout();
 
-	const float uiScale = Osu::ui_scale->getFloat();
+	const float uiScale = cv::osu::ui_scale.getFloat();
 
 	m_container->setSize(osu->getVirtScreenSize());
 
@@ -647,7 +647,7 @@ void OsuRankingScreen::updateLayout()
 	m_rankingTitle->setSize(m_rankingTitle->getImage()->getWidth()*m_rankingTitle->getScale().x, m_rankingTitle->getImage()->getHeight()*m_rankingTitle->getScale().y);
 	m_rankingTitle->setRelPos(m_container->getSize().x - m_rankingTitle->getSize().x - osu->getUIScale(20.0f), 0);
 
-	m_songInfo->setSize(osu->getVirtScreenWidth(), std::max(m_songInfo->getMinimumHeight(), m_rankingTitle->getSize().y*osu_rankingscreen_topbar_height_percent.getFloat()));
+	m_songInfo->setSize(osu->getVirtScreenWidth(), std::max(m_songInfo->getMinimumHeight(), m_rankingTitle->getSize().y*cv::osu::rankingscreen_topbar_height_percent.getFloat()));
 
 	m_rankings->setSize(osu->getVirtScreenSize().x + 2, osu->getVirtScreenSize().y - m_songInfo->getSize().y + 3);
 	m_rankings->setRelPosY(m_songInfo->getSize().y - 1);
@@ -733,7 +733,7 @@ void OsuRankingScreen::setGrade(OsuScore::GRADE grade)
 		break;
 	}
 
-	const float uiScale = /*Osu::ui_scale->getFloat()*/1.0f; // NOTE: no uiScale for rankingPanel and rankingGrade, doesn't really work due to legacy layout expectations
+	const float uiScale = /*cv::osu::ui_scale.getFloat()*/1.0f; // NOTE: no uiScale for rankingPanel and rankingGrade, doesn't really work due to legacy layout expectations
 
 	const float rankingGradeImageScale = Osu::getImageScale(hardcodedOsuRankingGradeImageSize, 230.0f) * uiScale;
 	m_rankingGrade->setScale(rankingGradeImageScale, rankingGradeImageScale);
@@ -746,7 +746,7 @@ void OsuRankingScreen::setGrade(OsuScore::GRADE grade)
 
 void OsuRankingScreen::setIndex(int index)
 {
-	if (!m_osu_scores_enabled->getBool())
+	if (!cv::osu::scores_enabled.getBool())
 		index = -1;
 
 	if (index > -1)

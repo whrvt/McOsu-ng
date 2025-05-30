@@ -13,12 +13,9 @@
 
 #include <concepts>
 
-class ConVars
-{
-public:
-	// shared engine-wide cross-game convars for convenience access (for convars which don't fit anywhere else)
-	static ConVar sv_cheats;
-};
+#include <cassert>
+
+#include "ConVarDefs.h"
 
 #define FCVAR_NONE				0		// the default, no flags at all
 #define FCVAR_UNREGISTERED		(1<<0)	// not added to g_vConVars list (not settable/gettable via console/help), not visible in find/listcommands results etc.
@@ -26,6 +23,9 @@ public:
 #define FCVAR_HARDCODED			(1<<2)	// if this is set then the value can't and shouldn't ever be changed
 #define FCVAR_HIDDEN			(1<<3)	// not visible in find/listcommands results etc., but is settable/gettable via console/help
 #define FCVAR_CHEAT				(1<<4)	// always return default value and ignore callbacks unless sv_cheats is enabled (default value is changeable via setDefault*())
+#define FCVAR_DYNAMIC			(1<<5)	// set for convars which are created at runtime with e.g. "new" instead of in the global scope
+
+#define MAKENEWCONVAR(name, defaultValue, ...) new ConVar((name), (defaultValue), FCVAR_DYNAMIC __VA_OPT__(,) __VA_ARGS__)
 
 class ConVar
 {
@@ -109,18 +109,19 @@ public:
 	[[nodiscard]] constexpr auto getDefaultVal() const {return static_cast<T>(m_fDefaultValue.load());}
 	[[nodiscard]] constexpr float getDefaultFloat() const {return getDefaultVal<float>();}
 	[[nodiscard]] constexpr const UString &getDefaultString() const {return m_sDefaultValue;}
+	[[nodiscard]] UString getFancyDefaultValue() const;
 
 	[[nodiscard]] constexpr bool isFlagSet(int flag) const {return (bool)(m_iFlags & flag);}
 
 	template <typename T = int>
-	[[nodiscard]] constexpr auto getVal(bool cheat = false) const {return static_cast<T>((!cheat || !!static_cast<int>(ConVars::sv_cheats.getRaw())) ? m_fValue.load() : m_fDefaultValue.load());}
+	[[nodiscard]] constexpr auto getVal(bool cheat = false) const {return static_cast<T>((!cheat || !!static_cast<int>(cv::ConVars::sv_cheats.getRaw())) ? m_fValue.load() : m_fDefaultValue.load());}
 
 	[[nodiscard]] constexpr int getInt() const	   	{return getVal<int>(isFlagSet(FCVAR_CHEAT));}
 	[[nodiscard]] constexpr bool getBool() const	{return getVal<bool>(isFlagSet(FCVAR_CHEAT));}
 	[[nodiscard]] constexpr float getFloat() const	{return	getVal<float>(isFlagSet(FCVAR_CHEAT));}
 
 	[[nodiscard]]
-	constexpr const UString &getString() const		 {return (isFlagSet(FCVAR_CHEAT) && !static_cast<int>(ConVars::sv_cheats.getRaw()) ? m_sDefaultValue : m_sValue);}
+	constexpr const UString &getString() const		 {return (isFlagSet(FCVAR_CHEAT) && !static_cast<int>(cv::ConVars::sv_cheats.getRaw()) ? m_sDefaultValue : m_sValue);}
 
 	[[nodiscard]] constexpr const UString &getHelpstring() const {return m_sHelpString;}
 	[[nodiscard]] constexpr const UString &getName() const {return m_sName;}
@@ -138,7 +139,7 @@ public:
 		requires (std::is_same_v<T, float> || std::convertible_to<T, float>)
 	constexpr void setValue(T value)
 	{
-		if (isFlagSet(FCVAR_HARDCODED) || (isFlagSet(FCVAR_CHEAT) && !static_cast<int>(ConVars::sv_cheats.getRaw()))) return;
+		if (isFlagSet(FCVAR_HARDCODED) || (isFlagSet(FCVAR_CHEAT) && !static_cast<int>(cv::ConVars::sv_cheats.getRaw()))) return;
 		setValueInt(value); // setValueInt(ernal)...
 	}
 
@@ -161,6 +162,7 @@ public:
 		m_changecallback = NULL;
 		m_changecallbackfloat = NULL;
 	}
+
 private:
 	void init(int flags);
 	void init(UString &name, int flags);

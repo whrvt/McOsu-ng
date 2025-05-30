@@ -11,7 +11,7 @@
 #include "Engine.h"
 #include "Environment.h"
 #include "ResourceManager.h"
-
+namespace cv {
 ConVar debug_mouse("debug_mouse", false, FCVAR_CHEAT);
 ConVar debug_mouse_clicks("debug_mouse_clicks", false, FCVAR_NONE);
 ConVar mouse_sensitivity("mouse_sensitivity", 1.0f, FCVAR_NONE);
@@ -19,6 +19,7 @@ ConVar mouse_raw_input("mouse_raw_input", false, FCVAR_NONE);
 ConVar mouse_raw_input_absolute_to_window("mouse_raw_input_absolute_to_window", false, FCVAR_NONE);
 ConVar mouse_fakelag("mouse_fakelag", 0.000f, FCVAR_NONE, "delay all mouse movement by this many seconds (e.g. 0.1 = 100 ms delay)");
 ConVar tablet_sensitivity_ignore("tablet_sensitivity_ignore", false, FCVAR_NONE);
+}
 
 Mouse::Mouse() : InputDevice()
 {
@@ -43,13 +44,13 @@ Mouse::Mouse() : InputDevice()
 	m_vFakeLagPos = m_vPos;
 
 	m_fSensitivity = 1.0f;
-	mouse_raw_input.setCallback(fastdelegate::MakeDelegate(this, &Mouse::onRawInputChanged));
-	mouse_sensitivity.setCallback(fastdelegate::MakeDelegate(this, &Mouse::onSensitivityChanged));
+	cv::mouse_raw_input.setCallback(fastdelegate::MakeDelegate(this, &Mouse::onRawInputChanged));
+	cv::mouse_sensitivity.setCallback(fastdelegate::MakeDelegate(this, &Mouse::onSensitivityChanged));
 }
 
 void Mouse::draw()
 {
-	if (!debug_mouse.getBool())
+	if (!cv::debug_mouse.getBool())
 		return;
 
 	drawDebug();
@@ -152,7 +153,7 @@ void Mouse::update()
 
 	m_bLastFrameHadMotion = false;
 
-	if (unlikely(mouse_fakelag.getBool()))
+	if (unlikely(cv::mouse_fakelag.getBool()))
 		updateFakelagBuffer();
 }
 
@@ -232,10 +233,10 @@ void Mouse::onPosChange(Vector2 pos)
 
 void Mouse::setPosXY(float x, float y)
 {
-	if (mouse_fakelag.getFloat() > 0.0f)
+	if (cv::mouse_fakelag.getFloat() > 0.0f)
 	{
 		FAKELAG_PACKET p;
-		p.time = engine->getTime() + mouse_fakelag.getFloat();
+		p.time = engine->getTime() + cv::mouse_fakelag.getFloat();
 		p.pos = Vector2(x, y);
 		m_fakelagBuffer.push_back(p);
 
@@ -290,7 +291,7 @@ void Mouse::onButtonChange(MouseButton::Index button, bool down)
 	if (button < 1 || button >= BUTTON_COUNT)
 		return;
 
-	if (debug_mouse_clicks.getBool())
+	if (cv::debug_mouse_clicks.getBool())
 		debugLog("Mouse::onButtonChange({}, {})\n", (int)button, (int)down);
 
 	m_bMouseButtonDown[button] = down;

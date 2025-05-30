@@ -14,9 +14,9 @@
 #include "OsuBeatmap.h"
 #include "OsuDatabaseBeatmap.h"
 #include "OsuDifficultyCalculator.h"
-
-ConVar osu_debug_background_star_cache_loader("osu_debug_background_star_cache_loader", false, FCVAR_NONE, "prints the time it took to build the cache");
-
+namespace cv::osu {
+ConVar debug_background_star_cache_loader("osu_debug_background_star_cache_loader", false, FCVAR_NONE, "prints the time it took to build the cache");
+}
 OsuBackgroundStarCacheLoader::OsuBackgroundStarCacheLoader(OsuBeatmap *beatmap) : Resource()
 {
 	m_beatmap = beatmap;
@@ -154,7 +154,7 @@ void OsuBackgroundStarCacheLoader::initAsync()
 			}
 		}
 		calcStrainsTimer.update();
-		if (osu_debug_background_star_cache_loader.getBool())
+		if (cv::osu::debug_background_star_cache_loader.getBool())
 			debugLog("OsuBackgroundStarCacheLoader: Took {:f} sec total = {:f} sec (diffobjects) + {:f} sec (strains)\n", cacheObjectsTimer.getElapsedTime() + calcStrainsTimer.getElapsedTime(), cacheObjectsTimer.getElapsedTime(), calcStrainsTimer.getElapsedTime());
 	}
 

@@ -186,17 +186,13 @@ static constexpr auto WINDOW_WIDTH_MIN = 100;
 static constexpr auto WINDOW_HEIGHT_MIN = 100;
 
 // convars
+namespace cv {
 ConVar fps_max("fps_max", 360.0f, FCVAR_NONE, "framerate limiter, foreground");
 ConVar fps_max_background("fps_max_background", 30.0f, FCVAR_NONE, "framerate limiter, background");
 ConVar fps_unlimited("fps_unlimited", false, FCVAR_NONE);
 
 ConVar fps_yield("fps_yield", true, FCVAR_NONE, "always release rest of timeslice at the end of each frame (call scheduler via sleep(0))");
-
-// engine convars
-extern ConVar _fullscreen_;
-extern ConVar _windowed_;
-extern ConVar _fullscreen_windowed_borderless_;
-extern ConVar _monitor_;
+}
 
 SDLMain::SDLMain(int argc, char *argv[]) : Environment(argc, argv)
 {
@@ -207,9 +203,9 @@ SDLMain::SDLMain(int argc, char *argv[]) : Environment(argc, argv)
 	m_iFpsMaxBG = 30;
 
 	// setup callbacks
-	fps_max.setCallback(fastdelegate::MakeDelegate(this, &SDLMain::fps_max_callback));
-	fps_max_background.setCallback(fastdelegate::MakeDelegate(this, &SDLMain::fps_max_background_callback));
-	fps_unlimited.setCallback(fastdelegate::MakeDelegate(this, &SDLMain::fps_unlimited_callback));
+	cv::fps_max.setCallback(fastdelegate::MakeDelegate(this, &SDLMain::fps_max_callback));
+	cv::fps_max_background.setCallback(fastdelegate::MakeDelegate(this, &SDLMain::fps_max_background_callback));
+	cv::fps_unlimited.setCallback(fastdelegate::MakeDelegate(this, &SDLMain::fps_unlimited_callback));
 }
 
 SDLMain::~SDLMain()
@@ -352,7 +348,7 @@ nocbinline SDL_AppResult SDLMain::handleEvent(SDL_Event *event)
 			break;
 
 		case SDL_EVENT_WINDOW_DISPLAY_CHANGED:
-			_monitor_.setValue<int>(event->window.data1);
+			cv::monitor.setValue<int>(event->window.data1);
 		case SDL_EVENT_WINDOW_DISPLAY_SCALE_CHANGED: // TODO?
 			engine->requestResolutionChange(getWindowSize());
 			m_fDisplayHzSecs = 1.0f / (m_fDisplayHz = queryDisplayHz());
@@ -460,7 +456,7 @@ nocbinline SDL_AppResult SDLMain::iterate()
 			// set time for next frame
 			m_iNextFrameTime += frameTimeNS;
 		}
-		if (fps_yield.getBool())
+		if (cv::fps_yield.getBool())
 			Timing::sleep(0);
 	}
 
@@ -498,8 +494,8 @@ bool SDLMain::createWindow(int width, int height)
 	SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_MAXIMIZED_BOOLEAN, false);
 	SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_FLAGS_NUMBER, windowFlags);
 
-	const bool shouldBeBorderless = _fullscreen_windowed_borderless_.getBool();
-	const bool shouldBeFullscreen = _fullscreen_.getBool() || !_windowed_.getBool() || shouldBeBorderless;
+	const bool shouldBeBorderless = cv::fullscreen_windowed_borderless.getBool();
+	const bool shouldBeFullscreen = cv::fullscreen.getBool() || !cv::windowed.getBool() || shouldBeBorderless;
 
 	if (shouldBeBorderless)
 		SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_BORDERLESS_BOOLEAN, true);
@@ -593,10 +589,10 @@ float SDLMain::queryDisplayHz()
 			const auto refreshRateSanityClamped = std::clamp<float>(currentDisplayMode->refresh_rate, 60.0f, 540.0f); 
 			const auto fourxhz = refreshRateSanityClamped * 4.0f;
 			// also set fps_max to 4x the refresh rate if it's the default
-			if (fps_max.getFloat() == fps_max.getDefaultFloat())
+			if (cv::fps_max.getFloat() == cv::fps_max.getDefaultFloat())
 			{
-				fps_max.setValue(fourxhz);
-				fps_max.setDefaultFloat(fourxhz);
+				cv::fps_max.setValue(fourxhz);
+				cv::fps_max.setDefaultFloat(fourxhz);
 			}
 			return refreshRateSanityClamped;
 		}
@@ -608,7 +604,7 @@ float SDLMain::queryDisplayHz()
 		}
 	}
 	// in wasm or if we couldn't get the refresh rate just return a sane value to use for "vsync"-related calculations
-	return std::clamp<float>(fps_max.getFloat(), 60.0f, 360.0f);
+	return std::clamp<float>(cv::fps_max.getFloat(), 60.0f, 360.0f);
 }
 
 void SDLMain::setupLogging()
@@ -694,7 +690,7 @@ void SDLMain::shutdown(SDL_AppResult result)
 void SDLMain::fps_max_callback(float newVal)
 {
 	int newFps = static_cast<int>(newVal);
-	if ((newFps == 0 || newFps > 30) && !fps_unlimited.getBool())
+	if ((newFps == 0 || newFps > 30) && !cv::fps_unlimited.getBool())
 		m_iFpsMax = newFps;
 	if (m_bHasFocus)
 		setFgFPS();
@@ -714,7 +710,7 @@ void SDLMain::fps_unlimited_callback(float newVal)
 	if (newVal > 0.0f)
 		m_iFpsMax = 0;
 	else
-		m_iFpsMax = fps_max.getInt();
+		m_iFpsMax = cv::fps_max.getInt();
 	if (m_bHasFocus)
 		setFgFPS();
 }

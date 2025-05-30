@@ -24,8 +24,8 @@ class OsuSkin
 public:
 	static UString DEFAULT_SKIN_PATH;
 
-	static ConVar *m_osu_skin_async;
-	static ConVar *m_osu_skin_hd;
+	
+	
 
 public:
 	OsuSkin(UString name, UString filepath, bool isDefaultSkin = false, bool isWorkshopSkin = false);
@@ -339,8 +339,8 @@ public:
 
 private:
 friend class OsuSkinImage;
-	static ConVar *m_osu_skin_ref;
-	static ConVar *m_osu_mod_fposu_ref;
+	
+	
 
 	static Image *m_missingTexture;
 

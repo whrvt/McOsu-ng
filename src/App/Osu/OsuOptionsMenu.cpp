@@ -42,18 +42,18 @@
 
 #include <iostream>
 #include <fstream>
-
-ConVar osu_options_save_on_back("osu_options_save_on_back", true, FCVAR_NONE);
-ConVar osu_options_high_quality_sliders("osu_options_high_quality_sliders", false, FCVAR_NONE);
-ConVar osu_mania_keylayout_wizard("osu_mania_keylayout_wizard");
-ConVar osu_options_slider_preview_use_legacy_renderer("osu_options_slider_preview_use_legacy_renderer", false, FCVAR_NONE, "apparently newer AMD drivers with old gpus are crashing here with the legacy renderer? was just me being lazy anyway, so now there is a vao render path as it should be");
-
 void _osuOptionsSliderQualityWrapper(UString oldValue, UString newValue)
 {
 	float value = std::lerp(1.0f, 2.5f, 1.0f - newValue.toFloat());
-	convar->getConVarByName("osu_slider_curve_points_separation")->setValue(value);
+	cv::osu::slider_curve_points_separation.setValue(value);
 };
-ConVar osu_options_slider_quality("osu_options_slider_quality", 0.0f, FCVAR_NONE, _osuOptionsSliderQualityWrapper);
+namespace cv::osu {
+ConVar options_save_on_back("osu_options_save_on_back", true, FCVAR_NONE);
+ConVar options_high_quality_sliders("osu_options_high_quality_sliders", false, FCVAR_NONE);
+ConVar mania_keylayout_wizard("osu_mania_keylayout_wizard");
+ConVar options_slider_preview_use_legacy_renderer("osu_options_slider_preview_use_legacy_renderer", false, FCVAR_NONE, "apparently newer AMD drivers with old gpus are crashing here with the legacy renderer? was just me being lazy anyway, so now there is a vao render path as it should be");
+ConVar options_slider_quality("osu_options_slider_quality", 0.0f, FCVAR_NONE, _osuOptionsSliderQualityWrapper);
+}
 
 class OsuOptionsMenuSkinPreviewElement final : public OsuUIElement
 {
@@ -67,8 +67,8 @@ public:
 		OsuSkin *skin = osu->getSkin();
 
 		float hitcircleDiameter = m_vSize.y*0.5f;
-		float numberScale = (hitcircleDiameter / (160.0f * (skin->isDefault12x() ? 2.0f : 1.0f))) * 1 * convar->getConVarByName("osu_number_scale_multiplier")->getFloat();
-		float overlapScale = (hitcircleDiameter / (160.0f)) * 1 * convar->getConVarByName("osu_number_scale_multiplier")->getFloat();
+		float numberScale = (hitcircleDiameter / (160.0f * (skin->isDefault12x() ? 2.0f : 1.0f))) * 1 * cv::osu::number_scale_multiplier.getFloat();
+		float overlapScale = (hitcircleDiameter / (160.0f)) * 1 * cv::osu::number_scale_multiplier.getFloat();
 		float scoreScale = 0.5f;
 
 		if (m_iMode == 0)
@@ -136,7 +136,7 @@ public:
 		m_fPrevLength = 0.0f;
 		m_vao = NULL;
 
-		m_osu_force_legacy_slider_renderer_ref = convar->getConVarByName("osu_force_legacy_slider_renderer");
+
 	}
 
 	void draw() override
@@ -149,8 +149,8 @@ public:
 		*/
 
 		const float hitcircleDiameter = m_vSize.y*0.5f;
-		const float numberScale = (hitcircleDiameter / (160.0f * (osu->getSkin()->isDefault12x() ? 2.0f : 1.0f))) * 1 * convar->getConVarByName("osu_number_scale_multiplier")->getFloat();
-		const float overlapScale = (hitcircleDiameter / (160.0f)) * 1 * convar->getConVarByName("osu_number_scale_multiplier")->getFloat();
+		const float numberScale = (hitcircleDiameter / (160.0f * (osu->getSkin()->isDefault12x() ? 2.0f : 1.0f))) * 1 * cv::osu::number_scale_multiplier.getFloat();
+		const float overlapScale = (hitcircleDiameter / (160.0f)) * 1 * cv::osu::number_scale_multiplier.getFloat();
 
 		const float approachScale = std::clamp<float>(1.0f + 1.5f - fmod(engine->getTime()*3, 3.0f), 0.0f, 2.5f);
 		float approachAlpha = std::clamp<float>(fmod(engine->getTime()*3, 3.0f)/1.5f, 0.0f, 1.0f);
@@ -168,7 +168,7 @@ public:
 		static std::vector<Vector2> emptyVector;
 		std::vector<Vector2> points;
 
-		const bool useLegacyRenderer = (osu_options_slider_preview_use_legacy_renderer.getBool() || m_osu_force_legacy_slider_renderer_ref->getBool());
+		const bool useLegacyRenderer = (cv::osu::options_slider_preview_use_legacy_renderer.getBool() || cv::osu::force_legacy_slider_renderer.getBool());
 
 		for (int i=0; i<numPoints; i++)
 		{
@@ -247,7 +247,7 @@ private:
 	bool m_bDrawSliderHack;
 	VertexArrayObject *m_vao;
 	float m_fPrevLength;
-	ConVar *m_osu_force_legacy_slider_renderer_ref;
+;
 };
 
 class OsuOptionsMenuKeyBindLabel : public CBaseUILabel
@@ -429,29 +429,29 @@ OsuOptionsMenu::OsuOptionsMenu() : OsuScreenBackable()
 	m_fAnimation = 0.0f;
 
 	// convar refs
-	m_osu_slider_curve_points_separation_ref = convar->getConVarByName("osu_slider_curve_points_separation");
-	m_osu_letterboxing_offset_x_ref = convar->getConVarByName("osu_letterboxing_offset_x");
-	m_osu_letterboxing_offset_y_ref = convar->getConVarByName("osu_letterboxing_offset_y");
-	m_osu_mod_fposu_ref = convar->getConVarByName("osu_mod_fposu");
-	m_osu_skin_ref = convar->getConVarByName("osu_skin");
-	m_osu_skin_is_from_workshop_ref = convar->getConVarByName("osu_skin_is_from_workshop");
-	m_osu_skin_workshop_title_ref = convar->getConVarByName("osu_skin_workshop_title");
-	m_osu_skin_workshop_id_ref = convar->getConVarByName("osu_skin_workshop_id");
-	m_osu_skin_random_ref = convar->getConVarByName("osu_skin_random");
-	m_osu_ui_scale_ref = convar->getConVarByName("osu_ui_scale");
-	m_win_snd_fallback_dsound_ref = convar->getConVarByName("win_snd_fallback_dsound");
-	m_win_snd_wasapi_buffer_size_ref = convar->getConVarByName("win_snd_wasapi_buffer_size", false);
-	m_win_snd_wasapi_period_size_ref = convar->getConVarByName("win_snd_wasapi_period_size", false);
-	m_osu_notelock_type_ref = convar->getConVarByName("osu_notelock_type");
-	m_osu_drain_type_ref = convar->getConVarByName("osu_drain_type");
-	m_osu_background_color_r_ref = convar->getConVarByName("osu_background_color_r");
-	m_osu_background_color_g_ref = convar->getConVarByName("osu_background_color_g");
-	m_osu_background_color_b_ref = convar->getConVarByName("osu_background_color_b");
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 	// convar callbacks
-	convar->getConVarByName("osu_skin_use_skin_hitsounds")->setCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onUseSkinsSoundSamplesChange) );
-	osu_options_high_quality_sliders.setCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onHighQualitySlidersConVarChange) );
-	osu_mania_keylayout_wizard.setCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onKeyBindingManiaPressedInt) );
+	cv::osu::skin_use_skin_hitsounds.setCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onUseSkinsSoundSamplesChange) );
+	cv::osu::options_high_quality_sliders.setCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onHighQualitySlidersConVarChange) );
+	cv::osu::mania_keylayout_wizard.setCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onKeyBindingManiaPressedInt) );
 
 	osu->getNotificationOverlay()->addKeyListener(this);
 
@@ -558,7 +558,7 @@ OsuOptionsMenu::OsuOptionsMenu() : OsuScreenBackable()
 	addLabel("2) osu!stable > Options > \"Open osu! folder\"")->setTextColor(0xff666666);
 	addLabel("3) Copy & Paste the full path into the textbox:")->setTextColor(0xff666666);
 	addLabel("");
-	m_osuFolderTextbox = addTextbox(convar->getConVarByName("osu_folder")->getString(), convar->getConVarByName("osu_folder"));
+	m_osuFolderTextbox = addTextbox(cv::osu::folder.getString(), &cv::osu::folder);
 
 	addLabel("... or ...")->setCenterText(true);
 	OsuUIButton *browseForOsuFolderButton = addButton("Browse to your osu! folder");
@@ -569,40 +569,40 @@ OsuOptionsMenu::OsuOptionsMenu() : OsuScreenBackable()
 	addLabel("osu!lazer databases are not supported.")->setTextColor(0xff770000);
 	//addSpacer();
 	addLabel("");
-	addCheckbox("Use osu!stable osu!.db database (read-only)", "If you have an existing osu!stable installation,\nthen this will massively speed up songbrowser beatmap loading.", convar->getConVarByName("osu_database_enabled"));
-	addCheckbox("Load osu!stable collection.db (read-only)", "If you have an existing osu!stable installation,\nalso load and display your created collections from there.", convar->getConVarByName("osu_collections_legacy_enabled"));
-	addCheckbox("Load osu!stable scores.db (read-only)", "If you have an existing osu!stable installation,\nalso load and display your achieved scores from there.", convar->getConVarByName("osu_scores_legacy_enabled"));
+	addCheckbox("Use osu!stable osu!.db database (read-only)", "If you have an existing osu!stable installation,\nthen this will massively speed up songbrowser beatmap loading.", &cv::osu::database_enabled);
+	addCheckbox("Load osu!stable collection.db (read-only)", "If you have an existing osu!stable installation,\nalso load and display your created collections from there.", &cv::osu::collections_legacy_enabled);
+	addCheckbox("Load osu!stable scores.db (read-only)", "If you have an existing osu!stable installation,\nalso load and display your achieved scores from there.", &cv::osu::scores_legacy_enabled);
 
 	addSubSection("Player (Name)");
-	m_nameTextbox = addTextbox(convar->getConVarByName("name")->getString(), convar->getConVarByName("name"));
+	m_nameTextbox = addTextbox(cv::name.getString(), &cv::name);
 	addSpacer();
-	addCheckbox("Include Relax/Autopilot for total weighted pp/acc", "NOTE: osu! does not allow this (since these mods are unranked).\nShould relax/autopilot scores be included in the weighted pp/acc calculation?", convar->getConVarByName("osu_user_include_relax_and_autopilot_for_stats"));
-	addCheckbox("Disable osu!lazer star/pp Relax/Autopilot nerfs", "Disabled: osu!lazer algorithm default. Relax/Autopilot scores are nerfed.\nEnabled: McOsu default. All Relax/Autopilot nerfs are disabled.", convar->getConVarByName("osu_stars_and_pp_lazer_relax_autopilot_nerf_disabled"));
-	addCheckbox("Show pp instead of score in scorebrowser", "Only McOsu scores and manually imported scores will show pp.\nSee Songbrowser > User Button > Top Ranks > Gear Button > \"Import osu! scores of <NAME>\".", convar->getConVarByName("osu_scores_sort_by_pp"));
-	addCheckbox("Always enable touch device pp nerf mod", "Keep touch device pp nerf mod active even when resetting all mods.", convar->getConVarByName("osu_mod_touchdevice"));
-	addCheckbox("Show osu! scores.db user names in user switcher", "Only relevant if \"Load osu! scores.db\" is enabled.\nShould the user switcher show ALL user names from ALL scores?\n(Even from ones you got in your database because you watched a replay?)", convar->getConVarByName("osu_user_switcher_include_legacy_scores_for_names"));
+	addCheckbox("Include Relax/Autopilot for total weighted pp/acc", "NOTE: osu! does not allow this (since these mods are unranked).\nShould relax/autopilot scores be included in the weighted pp/acc calculation?", &cv::osu::user_include_relax_and_autopilot_for_stats);
+	addCheckbox("Disable osu!lazer star/pp Relax/Autopilot nerfs", "Disabled: osu!lazer algorithm default. Relax/Autopilot scores are nerfed.\nEnabled: McOsu default. All Relax/Autopilot nerfs are disabled.", &cv::osu::stars_and_pp_lazer_relax_autopilot_nerf_disabled);
+	addCheckbox("Show pp instead of score in scorebrowser", "Only McOsu scores and manually imported scores will show pp.\nSee Songbrowser > User Button > Top Ranks > Gear Button > \"Import osu! scores of <NAME>\".", &cv::osu::scores_sort_by_pp);
+	addCheckbox("Always enable touch device pp nerf mod", "Keep touch device pp nerf mod active even when resetting all mods.", &cv::osu::mod_touchdevice);
+	addCheckbox("Show osu! scores.db user names in user switcher", "Only relevant if \"Load osu! scores.db\" is enabled.\nShould the user switcher show ALL user names from ALL scores?\n(Even from ones you got in your database because you watched a replay?)", &cv::osu::user_switcher_include_legacy_scores_for_names);
 
 	addSubSection("Songbrowser");
-	addCheckbox("Draw Strain Graph in Songbrowser", "Hold either SHIFT/CTRL to show only speed/aim strains.\nSpeed strain is red, aim strain is green.\n(See osu_hud_scrubbing_timeline_strains_*)", convar->getConVarByName("osu_draw_songbrowser_strain_graph"));
-	addCheckbox("Draw Strain Graph in Scrubbing Timeline", "Speed strain is red, aim strain is green.\n(See osu_hud_scrubbing_timeline_strains_*)", convar->getConVarByName("osu_draw_scrubbing_timeline_strain_graph"));
+	addCheckbox("Draw Strain Graph in Songbrowser", "Hold either SHIFT/CTRL to show only speed/aim strains.\nSpeed strain is red, aim strain is green.\n(See osu_hud_scrubbing_timeline_strains_*)", &cv::osu::draw_songbrowser_strain_graph);
+	addCheckbox("Draw Strain Graph in Scrubbing Timeline", "Speed strain is red, aim strain is green.\n(See osu_hud_scrubbing_timeline_strains_*)", &cv::osu::draw_scrubbing_timeline_strain_graph);
 
 	addSubSection("Window");
-	addCheckbox("Pause on Focus Loss", "Should the game pause when you switch to another application?", convar->getConVarByName("osu_pause_on_focus_loss"));
+	addCheckbox("Pause on Focus Loss", "Should the game pause when you switch to another application?", &cv::osu::pause_on_focus_loss);
 
 	//**************************************************************************************************************************//
 
 	CBaseUIElement *sectionGraphics = addSection("Graphics");
 
 	addSubSection("Renderer");
-	addCheckbox("VSync", "If enabled: plz enjoy input lag.", convar->getConVarByName("vsync"));
+	addCheckbox("VSync", "If enabled: plz enjoy input lag.", &cv::vsync);
 
-	addCheckbox("High Priority", "Sets the process priority to High.\nMay fix microstuttering and other weird problems.\nTry to fix your broken computer/OS/drivers first!", convar->getConVarByName("processpriority"));
+	addCheckbox("High Priority", "Sets the process priority to High.\nMay fix microstuttering and other weird problems.\nTry to fix your broken computer/OS/drivers first!", &cv::processpriority);
 
-	addCheckbox("Show FPS Counter", convar->getConVarByName("osu_draw_fps"));
+	addCheckbox("Show FPS Counter", &cv::osu::draw_fps);
 
 	if constexpr (Env::cfg(REND::GL | REND::GLES32))
 	{
-		CBaseUISlider *prerenderedFramesSlider = addSlider("Max Queued Frames", 1.0f, 3.0f, convar->getConVarByName("r_sync_max_frames"), -1.0f, true);
+		CBaseUISlider *prerenderedFramesSlider = addSlider("Max Queued Frames", 1.0f, 3.0f, &cv::r_sync_max_frames, -1.0f, true);
 		prerenderedFramesSlider->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onSliderChangeInt) );
 		prerenderedFramesSlider->setKeyDelta(1);
 		addLabel("Raise for higher fps, decrease for lower latency")->setTextColor(0xff666666);
@@ -611,9 +611,9 @@ OsuOptionsMenu::OsuOptionsMenu() : OsuScreenBackable()
 	{
 		addSpacer();
 
-		addCheckbox("Unlimited FPS", convar->getConVarByName("fps_unlimited"));
+		addCheckbox("Unlimited FPS", &cv::fps_unlimited);
 
-		CBaseUISlider *fpsSlider = addSlider("FPS Limiter:", 60.0f, 1000.0f, convar->getConVarByName("fps_max"), -1.0f, true);
+		CBaseUISlider *fpsSlider = addSlider("FPS Limiter:", 60.0f, 1000.0f, &cv::fps_max, -1.0f, true);
 		fpsSlider->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onSliderChangeInt) );
 		fpsSlider->setKeyDelta(1);
 
@@ -624,30 +624,30 @@ OsuOptionsMenu::OsuOptionsMenu() : OsuScreenBackable()
 		m_resolutionSelectButton = resolutionSelect.elements[0];
 		m_fullscreenCheckbox = addCheckbox("Fullscreen");
 		m_fullscreenCheckbox->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onFullscreenChange) );
-		addCheckbox("Borderless", "May cause extra input lag if enabled.\nDepends on your operating system version/updates.", convar->getConVarByName("fullscreen_windowed_borderless"))->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onBorderlessWindowedChange) );
-		addCheckbox("Keep Aspect Ratio", "Black borders instead of a stretched image.\nOnly relevant if fullscreen is enabled, and letterboxing is disabled.\nUse the two position sliders below to move the viewport around.", convar->getConVarByName("osu_resolution_keep_aspect_ratio"));
-		addCheckbox("Letterboxing", "Useful to get the low latency of fullscreen with a smaller game resolution.\nUse the two position sliders below to move the viewport around.", convar->getConVarByName("osu_letterboxing"));
-		m_letterboxingOffsetXSlider = addSlider("Horizontal position", -1.0f, 1.0f, convar->getConVarByName("osu_letterboxing_offset_x"), 170)->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onSliderChangeLetterboxingOffset) )->setKeyDelta(0.01f)->setAnimated(false);
-		m_letterboxingOffsetYSlider = addSlider("Vertical position", -1.0f, 1.0f, convar->getConVarByName("osu_letterboxing_offset_y"), 170)->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onSliderChangeLetterboxingOffset) )->setKeyDelta(0.01f)->setAnimated(false);
+		addCheckbox("Borderless", "May cause extra input lag if enabled.\nDepends on your operating system version/updates.", &cv::fullscreen_windowed_borderless)->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onBorderlessWindowedChange) );
+		addCheckbox("Keep Aspect Ratio", "Black borders instead of a stretched image.\nOnly relevant if fullscreen is enabled, and letterboxing is disabled.\nUse the two position sliders below to move the viewport around.", &cv::osu::resolution_keep_aspect_ratio);
+		addCheckbox("Letterboxing", "Useful to get the low latency of fullscreen with a smaller game resolution.\nUse the two position sliders below to move the viewport around.", &cv::osu::letterboxing);
+		m_letterboxingOffsetXSlider = addSlider("Horizontal position", -1.0f, 1.0f, &cv::osu::letterboxing_offset_x, 170)->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onSliderChangeLetterboxingOffset) )->setKeyDelta(0.01f)->setAnimated(false);
+		m_letterboxingOffsetYSlider = addSlider("Vertical position", -1.0f, 1.0f, &cv::osu::letterboxing_offset_y, 170)->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onSliderChangeLetterboxingOffset) )->setKeyDelta(0.01f)->setAnimated(false);
 	}
 
 	addSubSection("UI Scaling");
-	addCheckbox("DPI Scaling", UString::format("Automatically scale to the DPI of your display: %i DPI.\nScale factor = %i / 96 = %.2gx", env->getDPI(), env->getDPI(), env->getDPIScale()), convar->getConVarByName("osu_ui_scale_to_dpi"))->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onDPIScalingChange) );
-	m_uiScaleSlider = addSlider("UI Scale:", 1.0f, 1.5f, convar->getConVarByName("osu_ui_scale"));
+	addCheckbox("DPI Scaling", UString::format("Automatically scale to the DPI of your display: %i DPI.\nScale factor = %i / 96 = %.2gx", env->getDPI(), env->getDPI(), env->getDPIScale()), &cv::osu::ui_scale_to_dpi)->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onDPIScalingChange) );
+	m_uiScaleSlider = addSlider("UI Scale:", 1.0f, 1.5f, &cv::osu::ui_scale);
 	m_uiScaleSlider->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onSliderChangeUIScale) );
 	m_uiScaleSlider->setKeyDelta(0.01f);
 	m_uiScaleSlider->setAnimated(false);
 
 	addSubSection("Detail Settings");
-	addCheckbox("Mipmaps", "Reload your skin to apply! (CTRL + ALT + S)\nGenerate mipmaps for each skin element, at the cost of VRAM.\nProvides smoother visuals on lower resolutions for @2x-only skins.", convar->getConVarByName("osu_skin_mipmaps"));
+	addCheckbox("Mipmaps", "Reload your skin to apply! (CTRL + ALT + S)\nGenerate mipmaps for each skin element, at the cost of VRAM.\nProvides smoother visuals on lower resolutions for @2x-only skins.", &cv::osu::skin_mipmaps);
 	addSpacer();
-	addCheckbox("Snaking in sliders", "\"Growing\" sliders.\nSliders gradually snake out from their starting point while fading in.\nHas no impact on performance whatsoever.", convar->getConVarByName("osu_snaking_sliders"));
-	addCheckbox("Snaking out sliders", "\"Shrinking\" sliders.\nSliders will shrink with the sliderball while sliding.\nCan improve performance a tiny bit, since there will be less to draw overall.", convar->getConVarByName("osu_slider_shrink"));
+	addCheckbox("Snaking in sliders", "\"Growing\" sliders.\nSliders gradually snake out from their starting point while fading in.\nHas no impact on performance whatsoever.", &cv::osu::snaking_sliders);
+	addCheckbox("Snaking out sliders", "\"Shrinking\" sliders.\nSliders will shrink with the sliderball while sliding.\nCan improve performance a tiny bit, since there will be less to draw overall.", &cv::osu::slider_shrink);
 	addSpacer();
 	{
-		addCheckbox("Legacy Slider Renderer (!)", "WARNING: Only try enabling this on shitty old computers!\nMay or may not improve fps while few sliders are visible.\nGuaranteed lower fps while many sliders are visible!", convar->getConVarByName("osu_force_legacy_slider_renderer"));
-		addCheckbox("Higher Quality Sliders (!)", "Disable this if your fps drop too low while sliders are visible.", convar->getConVarByName("osu_options_high_quality_sliders"))->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onHighQualitySlidersCheckboxChange) );
-		m_sliderQualitySlider = addSlider("Slider Quality", 0.0f, 1.0f, convar->getConVarByName("osu_options_slider_quality"));
+		addCheckbox("Legacy Slider Renderer (!)", "WARNING: Only try enabling this on shitty old computers!\nMay or may not improve fps while few sliders are visible.\nGuaranteed lower fps while many sliders are visible!", &cv::osu::force_legacy_slider_renderer);
+		addCheckbox("Higher Quality Sliders (!)", "Disable this if your fps drop too low while sliders are visible.", &cv::osu::options_high_quality_sliders)->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onHighQualitySlidersCheckboxChange) );
+		m_sliderQualitySlider = addSlider("Slider Quality", 0.0f, 1.0f, &cv::osu::options_slider_quality);
 		m_sliderQualitySlider->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onSliderChangeSliderQuality) );
 	}
 
@@ -663,11 +663,11 @@ OsuOptionsMenu::OsuOptionsMenu() : OsuScreenBackable()
 
 		if constexpr (Env::cfg(OS::WINDOWS, AUD::BASS, !AUD::WASAPI))
 		{
-			CBaseUICheckbox *audioCompatibilityModeCheckbox = addCheckbox("Audio compatibility mode (!)", "Use legacy audio engine (higher latency but more compatible)\nWARNING: May cause hitsound delays and stuttering!", m_win_snd_fallback_dsound_ref);
+			CBaseUICheckbox *audioCompatibilityModeCheckbox = addCheckbox("Audio compatibility mode (!)", "Use legacy audio engine (higher latency but more compatible)\nWARNING: May cause hitsound delays and stuttering!", &cv::win_snd_fallback_dsound);
 			audioCompatibilityModeCheckbox->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onAudioCompatibilityModeChange) );
 
 			// HACKHACK: force manual change if user has enabled it (don't use convar callback)
-			if (m_win_snd_fallback_dsound_ref->getBool())
+			if (cv::win_snd_fallback_dsound.getBool())
 				onAudioCompatibilityModeChange(audioCompatibilityModeCheckbox);
 		}
 
@@ -679,7 +679,7 @@ OsuOptionsMenu::OsuOptionsMenu() : OsuScreenBackable()
 	if constexpr (Env::cfg(AUD::WASAPI))
 	{
 		addSubSection("WASAPI");
-		m_wasapiBufferSizeSlider = addSlider("Buffer Size:", 0.000f, 0.050f, convar->getConVarByName("win_snd_wasapi_buffer_size")); // NOTE: allow 0 for shared mode windows 10 + period
+		m_wasapiBufferSizeSlider = addSlider("Buffer Size:", 0.000f, 0.050f, &cv::win_snd_wasapi_buffer_size); // NOTE: allow 0 for shared mode windows 10 + period
 		m_wasapiBufferSizeSlider->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onWASAPIBufferChange) );
 		m_wasapiBufferSizeSlider->setKeyDelta(0.001f);
 		m_wasapiBufferSizeSlider->setAnimated(false);
@@ -687,13 +687,13 @@ OsuOptionsMenu::OsuOptionsMenu() : OsuScreenBackable()
 		addLabel("Windows 10: Start at 1 ms,")->setTextColor(0xff666666);
 		addLabel("and if crackling: increment until fixed.")->setTextColor(0xff666666);
 		addLabel("(lower is better, non-wasapi has ~40 ms minimum)")->setTextColor(0xff666666);
-		addCheckbox("Exclusive Mode", "Dramatically reduces audio latency, leave this enabled.\nExclusive Mode = No other application can use audio.", convar->getConVarByName("win_snd_wasapi_exclusive"));
+		addCheckbox("Exclusive Mode", "Dramatically reduces audio latency, leave this enabled.\nExclusive Mode = No other application can use audio.", &cv::win_snd_wasapi_exclusive);
 		//addLabel("(On Windows 10 non-exclusive mode, try buffer = 0)")->setTextColor(0xff666666);
 		//addLabel("(then, try getting the smallest possible period)")->setTextColor(0xff666666);
 		addLabel("");
 		addLabel("");
 		addLabel("WARNING: Only if you know what you are doing")->setTextColor(0xffff0000);
-		m_wasapiPeriodSizeSlider = addSlider("Period Size:", 0.0f, 0.050f, convar->getConVarByName("win_snd_wasapi_period_size"));
+		m_wasapiPeriodSizeSlider = addSlider("Period Size:", 0.0f, 0.050f, &cv::win_snd_wasapi_period_size);
 		m_wasapiPeriodSizeSlider->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onWASAPIPeriodChange) );
 		m_wasapiPeriodSizeSlider->setKeyDelta(0.001f);
 		m_wasapiPeriodSizeSlider->setAnimated(false);
@@ -704,26 +704,26 @@ OsuOptionsMenu::OsuOptionsMenu() : OsuScreenBackable()
 	}
 
 	addSubSection("Volume");
-	CBaseUISlider *masterVolumeSlider = addSlider("Master:", 0.0f, 1.0f, convar->getConVarByName("osu_volume_master"), 70.0f);
+	CBaseUISlider *masterVolumeSlider = addSlider("Master:", 0.0f, 1.0f, &cv::osu::volume_master, 70.0f);
 	masterVolumeSlider->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onSliderChangePercent) );
 	masterVolumeSlider->setKeyDelta(0.01f);
-	CBaseUISlider *inactiveVolumeSlider = addSlider("Inactive:", 0.0f, 1.0f, convar->getConVarByName("osu_volume_master_inactive"), 70.0f);
+	CBaseUISlider *inactiveVolumeSlider = addSlider("Inactive:", 0.0f, 1.0f, &cv::osu::volume_master_inactive, 70.0f);
 	inactiveVolumeSlider->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onSliderChangePercent) );
 	inactiveVolumeSlider->setKeyDelta(0.01f);
-	CBaseUISlider *musicVolumeSlider = addSlider("Music:", 0.0f, 1.0f, convar->getConVarByName("osu_volume_music"), 70.0f);
+	CBaseUISlider *musicVolumeSlider = addSlider("Music:", 0.0f, 1.0f, &cv::osu::volume_music, 70.0f);
 	musicVolumeSlider->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onSliderChangePercent) );
 	musicVolumeSlider->setKeyDelta(0.01f);
-	CBaseUISlider *effectsVolumeSlider = addSlider("Effects:", 0.0f, 1.0f, convar->getConVarByName("osu_volume_effects"), 70.0f);
+	CBaseUISlider *effectsVolumeSlider = addSlider("Effects:", 0.0f, 1.0f, &cv::osu::volume_effects, 70.0f);
 	effectsVolumeSlider->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onSliderChangePercent) );
 	effectsVolumeSlider->setKeyDelta(0.01f);
 
 	addSubSection("Offset Adjustment");
-	CBaseUISlider *offsetSlider = addSlider("Universal Offset:", -300.0f, 300.0f, convar->getConVarByName("osu_universal_offset"));
+	CBaseUISlider *offsetSlider = addSlider("Universal Offset:", -300.0f, 300.0f, &cv::osu::universal_offset);
 	offsetSlider->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onSliderChangeIntMS) );
 	offsetSlider->setKeyDelta(1);
 
 	addSubSection("Songbrowser");
-	addCheckbox("Apply speed/pitch mods while browsing", "Whether to always apply all mods, or keep the preview music normal.", convar->getConVarByName("osu_beatmap_preview_mods_live"));
+	addCheckbox("Apply speed/pitch mods while browsing", "Whether to always apply all mods, or keep the preview music normal.", &cv::osu::beatmap_preview_mods_live);
 
 	//**************************************************************************************************************************//
 
@@ -763,37 +763,37 @@ OsuOptionsMenu::OsuOptionsMenu() : OsuScreenBackable()
 		((OsuUIButton*)skinReload.elements[1])->setColor(0xff00566b);
 	}
 	addSpacer();
-	CBaseUISlider *numberScaleSlider = addSlider("Number Scale:", 0.01f, 3.0f, convar->getConVarByName("osu_number_scale_multiplier"), 135.0f);
+	CBaseUISlider *numberScaleSlider = addSlider("Number Scale:", 0.01f, 3.0f, &cv::osu::number_scale_multiplier, 135.0f);
 	numberScaleSlider->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onSliderChangePercent) );
 	numberScaleSlider->setKeyDelta(0.01f);
-	CBaseUISlider *hitResultScaleSlider = addSlider("HitResult Scale:", 0.01f, 3.0f, convar->getConVarByName("osu_hitresult_scale"), 135.0f);
+	CBaseUISlider *hitResultScaleSlider = addSlider("HitResult Scale:", 0.01f, 3.0f, &cv::osu::hitresult_scale, 135.0f);
 	hitResultScaleSlider->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onSliderChangePercent) );
 	hitResultScaleSlider->setKeyDelta(0.01f);
-	addCheckbox("Draw Numbers", convar->getConVarByName("osu_draw_numbers"));
-	addCheckbox("Draw Approach Circles", convar->getConVarByName("osu_draw_approach_circles"));
+	addCheckbox("Draw Numbers", &cv::osu::draw_numbers);
+	addCheckbox("Draw Approach Circles", &cv::osu::draw_approach_circles);
 	addSpacer();
-	addCheckbox("Ignore Beatmap Sample Volume", "Ignore beatmap timingpoint effect volumes.\nQuiet hitsounds can destroy accuracy and concentration, enabling this will fix that.", convar->getConVarByName("osu_ignore_beatmap_sample_volume"));
-	addCheckbox("Ignore Beatmap Combo Colors", convar->getConVarByName("osu_ignore_beatmap_combo_colors"));
-	addCheckbox("Use skin's sound samples", "If this is not selected, then the default skin hitsounds will be used.", convar->getConVarByName("osu_skin_use_skin_hitsounds"));
-	addCheckbox("Load HD @2x", "On very low resolutions (below 1600x900) you can disable this to get smoother visuals.", convar->getConVarByName("osu_skin_hd"));
+	addCheckbox("Ignore Beatmap Sample Volume", "Ignore beatmap timingpoint effect volumes.\nQuiet hitsounds can destroy accuracy and concentration, enabling this will fix that.", &cv::osu::ignore_beatmap_sample_volume);
+	addCheckbox("Ignore Beatmap Combo Colors", &cv::osu::ignore_beatmap_combo_colors);
+	addCheckbox("Use skin's sound samples", "If this is not selected, then the default skin hitsounds will be used.", &cv::osu::skin_use_skin_hitsounds);
+	addCheckbox("Load HD @2x", "On very low resolutions (below 1600x900) you can disable this to get smoother visuals.", &cv::osu::skin_hd);
 	addSpacer();
-	addCheckbox("Draw Cursor Trail", convar->getConVarByName("osu_draw_cursor_trail"));
-	addCheckbox("Force Smooth Cursor Trail", "Usually, the presence of the cursormiddle.png skin image enables smooth cursortrails.\nThis option allows you to force enable smooth cursortrails for all skins.", convar->getConVarByName("osu_cursor_trail_smooth_force"));
-	m_cursorSizeSlider = addSlider("Cursor Size:", 0.01f, 5.0f, convar->getConVarByName("osu_cursor_scale"), -1.0f, true);
+	addCheckbox("Draw Cursor Trail", &cv::osu::draw_cursor_trail);
+	addCheckbox("Force Smooth Cursor Trail", "Usually, the presence of the cursormiddle.png skin image enables smooth cursortrails.\nThis option allows you to force enable smooth cursortrails for all skins.", &cv::osu::cursor_trail_smooth_force);
+	m_cursorSizeSlider = addSlider("Cursor Size:", 0.01f, 5.0f, &cv::osu::cursor_scale, -1.0f, true);
 	m_cursorSizeSlider->setAnimated(false);
 	m_cursorSizeSlider->setKeyDelta(0.01f);
-	addCheckbox("Automatic Cursor Size", "Cursor size will adjust based on the CS of the current beatmap.", convar->getConVarByName("osu_automatic_cursor_size"));
+	addCheckbox("Automatic Cursor Size", "Cursor size will adjust based on the CS of the current beatmap.", &cv::osu::automatic_cursor_size);
 	addSpacer();
 	m_sliderPreviewElement = (OsuOptionsMenuSliderPreviewElement*)addSliderPreview();
-	addSlider("Slider Border Size", 0.0f, 9.0f, convar->getConVarByName("osu_slider_border_size_multiplier"))->setKeyDelta(0.01f);
-	addSlider("Slider Opacity", 0.0f, 1.0f, convar->getConVarByName("osu_slider_alpha_multiplier"), 200.0f);
-	addSlider("Slider Body Opacity", 0.0f, 1.0f, convar->getConVarByName("osu_slider_body_alpha_multiplier"), 200.0f, true);
-	addSlider("Slider Body Saturation", 0.0f, 1.0f, convar->getConVarByName("osu_slider_body_color_saturation"), 200.0f, true);
-	addCheckbox("Use slidergradient.png", "Enabling this will improve performance,\nbut also block all dynamic slider (color/border) features.", convar->getConVarByName("osu_slider_use_gradient_image"));
-	addCheckbox("Use osu!lazer Slider Style", "Only really looks good if your skin doesn't \"SliderTrackOverride\" too dark.", convar->getConVarByName("osu_slider_osu_next_style"));
-	addCheckbox("Use combo color as tint for slider ball", convar->getConVarByName("osu_slider_ball_tint_combo_color"));
-	addCheckbox("Use combo color as tint for slider border", convar->getConVarByName("osu_slider_border_tint_combo_color"));
-	addCheckbox("Draw Slider End Circle", convar->getConVarByName("osu_slider_draw_endcircle"));
+	addSlider("Slider Border Size", 0.0f, 9.0f, &cv::osu::slider_border_size_multiplier)->setKeyDelta(0.01f);
+	addSlider("Slider Opacity", 0.0f, 1.0f, &cv::osu::slider_alpha_multiplier, 200.0f);
+	addSlider("Slider Body Opacity", 0.0f, 1.0f, &cv::osu::slider_body_alpha_multiplier, 200.0f, true);
+	addSlider("Slider Body Saturation", 0.0f, 1.0f, &cv::osu::slider_body_color_saturation, 200.0f, true);
+	addCheckbox("Use slidergradient.png", "Enabling this will improve performance,\nbut also block all dynamic slider (color/border) features.", &cv::osu::slider_use_gradient_image);
+	addCheckbox("Use osu!lazer Slider Style", "Only really looks good if your skin doesn't \"SliderTrackOverride\" too dark.", &cv::osu::slider_osu_next_style);
+	addCheckbox("Use combo color as tint for slider ball", &cv::osu::slider_ball_tint_combo_color);
+	addCheckbox("Use combo color as tint for slider border", &cv::osu::slider_border_tint_combo_color);
+	addCheckbox("Draw Slider End Circle", &cv::osu::slider_draw_endcircle);
 
 	//**************************************************************************************************************************//
 
@@ -801,20 +801,20 @@ OsuOptionsMenu::OsuOptionsMenu() : OsuScreenBackable()
 
 	addSubSection("Mouse", "scroll");
 
-	addSlider("Sensitivity:", 0.1f, 6.0f, convar->getConVarByName("mouse_sensitivity"))->setKeyDelta(0.01f);
+	addSlider("Sensitivity:", 0.1f, 6.0f, &cv::mouse_sensitivity)->setKeyDelta(0.01f);
 
-	addCheckbox("Raw Input", convar->getConVarByName("mouse_raw_input"));
-	addCheckbox("Map Absolute Raw Input to Window", convar->getConVarByName("mouse_raw_input_absolute_to_window"))->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onRawInputToAbsoluteWindowChange) );
-	addCheckbox("Confine Cursor (Windowed)", convar->getConVarByName("osu_confine_cursor_windowed"));
-	addCheckbox("Confine Cursor (Fullscreen)", convar->getConVarByName("osu_confine_cursor_fullscreen"));
-	addCheckbox("Confine Cursor (NEVER)", "Don't try to confine the cursor, even in gameplay.\n(Workaround for relative tablet motion quirks with Xwayland)", convar->getConVarByName("osu_confine_cursor_never"));
+	addCheckbox("Raw Input", &cv::mouse_raw_input);
+	addCheckbox("Map Absolute Raw Input to Window", &cv::mouse_raw_input_absolute_to_window)->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onRawInputToAbsoluteWindowChange) );
+	addCheckbox("Confine Cursor (Windowed)", &cv::osu::confine_cursor_windowed);
+	addCheckbox("Confine Cursor (Fullscreen)", &cv::osu::confine_cursor_fullscreen);
+	addCheckbox("Confine Cursor (NEVER)", "Don't try to confine the cursor, even in gameplay.\n(Workaround for relative tablet motion quirks with Xwayland)", &cv::osu::confine_cursor_never);
 
-	addCheckbox("Disable Mouse Wheel in Play Mode", convar->getConVarByName("osu_disable_mousewheel"));
-	addCheckbox("Disable Mouse Buttons in Play Mode", convar->getConVarByName("osu_disable_mousebuttons"));
-	addCheckbox("Cursor ripples", "The cursor will ripple outwards on clicking.", convar->getConVarByName("osu_draw_cursor_ripples"));
+	addCheckbox("Disable Mouse Wheel in Play Mode", &cv::osu::disable_mousewheel);
+	addCheckbox("Disable Mouse Buttons in Play Mode", &cv::osu::disable_mousebuttons);
+	addCheckbox("Cursor ripples", "The cursor will ripple outwards on clicking.", &cv::osu::draw_cursor_ripples);
 
 	addSubSection("Tablet");
-	addCheckbox("Ignore Sensitivity & Raw Input", "Only use this if nothing else works.\nIf this is enabled, then the in-game sensitivity slider will no longer work for tablets!\n(You can then instead use your tablet configuration software to change the tablet area.)", convar->getConVarByName("tablet_sensitivity_ignore"));
+	addCheckbox("Ignore Sensitivity & Raw Input", "Only use this if nothing else works.\nIf this is enabled, then the in-game sensitivity slider will no longer work for tablets!\n(You can then instead use your tablet configuration software to change the tablet area.)", &cv::tablet_sensitivity_ignore);
 
 	addSpacer();
 	const UString keyboardSectionTags = "keyboard keys key bindings binds keybinds keybindings";
@@ -823,48 +823,48 @@ OsuOptionsMenu::OsuOptionsMenu() : OsuScreenBackable()
 	resetAllKeyBindingsButton->setColor(0xffff0000);
 	resetAllKeyBindingsButton->setClickCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onKeyBindingsResetAllPressed) );
 	addSubSection("Keys - osu! Standard Mode", keyboardSectionTags);
-	addKeyBindButton("Left Click", &OsuKeyBindings::LEFT_CLICK);
-	addKeyBindButton("Right Click", &OsuKeyBindings::RIGHT_CLICK);
+	addKeyBindButton("Left Click", &cv::osu::keybinds::LEFT_CLICK);
+	addKeyBindButton("Right Click", &cv::osu::keybinds::RIGHT_CLICK);
 	addSpacer();
-	addKeyBindButton("Left Click (2)", &OsuKeyBindings::LEFT_CLICK_2);
-	addKeyBindButton("Right Click (2)", &OsuKeyBindings::RIGHT_CLICK_2);
+	addKeyBindButton("Left Click (2)", &cv::osu::keybinds::LEFT_CLICK_2);
+	addKeyBindButton("Right Click (2)", &cv::osu::keybinds::RIGHT_CLICK_2);
 	addSubSection("Keys - FPoSu", keyboardSectionTags);
-	addKeyBindButton("Zoom", &OsuKeyBindings::FPOSU_ZOOM);
+	addKeyBindButton("Zoom", &cv::osu::keybinds::FPOSU_ZOOM);
 	addSubSection("Keys - In-Game", keyboardSectionTags);
-	addKeyBindButton("Game Pause", &OsuKeyBindings::GAME_PAUSE)->setDisallowLeftMouseClickBinding(true);
-	addKeyBindButton("Skip Cutscene", &OsuKeyBindings::SKIP_CUTSCENE);
-	addKeyBindButton("Toggle Scoreboard", &OsuKeyBindings::TOGGLE_SCOREBOARD);
-	addKeyBindButton("Scrubbing (+ Click Drag!)", &OsuKeyBindings::SEEK_TIME);
-	addKeyBindButton("Quick Seek -5sec <<<", &OsuKeyBindings::SEEK_TIME_BACKWARD);
-	addKeyBindButton("Quick Seek +5sec >>>", &OsuKeyBindings::SEEK_TIME_FORWARD);
-	addKeyBindButton("Increase Local Song Offset", &OsuKeyBindings::INCREASE_LOCAL_OFFSET);
-	addKeyBindButton("Decrease Local Song Offset", &OsuKeyBindings::DECREASE_LOCAL_OFFSET);
-	addKeyBindButton("Quick Retry (hold briefly)", &OsuKeyBindings::QUICK_RETRY);
-	addKeyBindButton("Quick Save", &OsuKeyBindings::QUICK_SAVE);
-	addKeyBindButton("Quick Load", &OsuKeyBindings::QUICK_LOAD);
+	addKeyBindButton("Game Pause", &cv::osu::keybinds::GAME_PAUSE)->setDisallowLeftMouseClickBinding(true);
+	addKeyBindButton("Skip Cutscene", &cv::osu::keybinds::SKIP_CUTSCENE);
+	addKeyBindButton("Toggle Scoreboard", &cv::osu::keybinds::TOGGLE_SCOREBOARD);
+	addKeyBindButton("Scrubbing (+ Click Drag!)", &cv::osu::keybinds::SEEK_TIME);
+	addKeyBindButton("Quick Seek -5sec <<<", &cv::osu::keybinds::SEEK_TIME_BACKWARD);
+	addKeyBindButton("Quick Seek +5sec >>>", &cv::osu::keybinds::SEEK_TIME_FORWARD);
+	addKeyBindButton("Increase Local Song Offset", &cv::osu::keybinds::INCREASE_LOCAL_OFFSET);
+	addKeyBindButton("Decrease Local Song Offset", &cv::osu::keybinds::DECREASE_LOCAL_OFFSET);
+	addKeyBindButton("Quick Retry (hold briefly)", &cv::osu::keybinds::QUICK_RETRY);
+	addKeyBindButton("Quick Save", &cv::osu::keybinds::QUICK_SAVE);
+	addKeyBindButton("Quick Load", &cv::osu::keybinds::QUICK_LOAD);
 	addSubSection("Keys - Universal", keyboardSectionTags);
-	addKeyBindButton("Save Screenshot", &OsuKeyBindings::SAVE_SCREENSHOT);
-	addKeyBindButton("Increase Volume", &OsuKeyBindings::INCREASE_VOLUME);
-	addKeyBindButton("Decrease Volume", &OsuKeyBindings::DECREASE_VOLUME);
-	addKeyBindButton("Disable Mouse Buttons", &OsuKeyBindings::DISABLE_MOUSE_BUTTONS);
-	addKeyBindButton("Boss Key (Minimize)", &OsuKeyBindings::BOSS_KEY);
+	addKeyBindButton("Save Screenshot", &cv::osu::keybinds::SAVE_SCREENSHOT);
+	addKeyBindButton("Increase Volume", &cv::osu::keybinds::INCREASE_VOLUME);
+	addKeyBindButton("Decrease Volume", &cv::osu::keybinds::DECREASE_VOLUME);
+	addKeyBindButton("Disable Mouse Buttons", &cv::osu::keybinds::DISABLE_MOUSE_BUTTONS);
+	addKeyBindButton("Boss Key (Minimize)", &cv::osu::keybinds::BOSS_KEY);
 	addSubSection("Keys - Song Select", keyboardSectionTags);
-	addKeyBindButton("Toggle Mod Selection Screen", &OsuKeyBindings::TOGGLE_MODSELECT)->setTooltipText("(F1 can not be unbound. This is just an additional key.)");
-	addKeyBindButton("Random Beatmap", &OsuKeyBindings::RANDOM_BEATMAP)->setTooltipText("(F2 can not be unbound. This is just an additional key.)");
+	addKeyBindButton("Toggle Mod Selection Screen", &cv::osu::keybinds::TOGGLE_MODSELECT)->setTooltipText("(F1 can not be unbound. This is just an additional key.)");
+	addKeyBindButton("Random Beatmap", &cv::osu::keybinds::RANDOM_BEATMAP)->setTooltipText("(F2 can not be unbound. This is just an additional key.)");
 	addSubSection("Keys - Mod Select", keyboardSectionTags);
-	addKeyBindButton("Easy", &OsuKeyBindings::MOD_EASY);
-	addKeyBindButton("No Fail", &OsuKeyBindings::MOD_NOFAIL);
-	addKeyBindButton("Half Time", &OsuKeyBindings::MOD_HALFTIME);
-	addKeyBindButton("Hard Rock", &OsuKeyBindings::MOD_HARDROCK);
-	addKeyBindButton("Sudden Death", &OsuKeyBindings::MOD_SUDDENDEATH);
-	addKeyBindButton("Double Time", &OsuKeyBindings::MOD_DOUBLETIME);
-	addKeyBindButton("Hidden", &OsuKeyBindings::MOD_HIDDEN);
-	addKeyBindButton("Flashlight", &OsuKeyBindings::MOD_FLASHLIGHT);
-	addKeyBindButton("Relax", &OsuKeyBindings::MOD_RELAX);
-	addKeyBindButton("Autopilot", &OsuKeyBindings::MOD_AUTOPILOT);
-	addKeyBindButton("Spunout", &OsuKeyBindings::MOD_SPUNOUT);
-	addKeyBindButton("Auto", &OsuKeyBindings::MOD_AUTO);
-	addKeyBindButton("Score V2", &OsuKeyBindings::MOD_SCOREV2);
+	addKeyBindButton("Easy", &cv::osu::keybinds::MOD_EASY);
+	addKeyBindButton("No Fail", &cv::osu::keybinds::MOD_NOFAIL);
+	addKeyBindButton("Half Time", &cv::osu::keybinds::MOD_HALFTIME);
+	addKeyBindButton("Hard Rock", &cv::osu::keybinds::MOD_HARDROCK);
+	addKeyBindButton("Sudden Death", &cv::osu::keybinds::MOD_SUDDENDEATH);
+	addKeyBindButton("Double Time", &cv::osu::keybinds::MOD_DOUBLETIME);
+	addKeyBindButton("Hidden", &cv::osu::keybinds::MOD_HIDDEN);
+	addKeyBindButton("Flashlight", &cv::osu::keybinds::MOD_FLASHLIGHT);
+	addKeyBindButton("Relax", &cv::osu::keybinds::MOD_RELAX);
+	addKeyBindButton("Autopilot", &cv::osu::keybinds::MOD_AUTOPILOT);
+	addKeyBindButton("Spunout", &cv::osu::keybinds::MOD_SPUNOUT);
+	addKeyBindButton("Auto", &cv::osu::keybinds::MOD_AUTO);
+	addKeyBindButton("Score V2", &cv::osu::keybinds::MOD_SCOREV2);
 	///addButton("osu!mania layout")->setClickCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onKeyBindingManiaPressed) );
 
 	//**************************************************************************************************************************//
@@ -872,23 +872,23 @@ OsuOptionsMenu::OsuOptionsMenu() : OsuScreenBackable()
 	CBaseUIElement *sectionGameplay = addSection("Gameplay");
 
 	addSubSection("General");
-	m_backgroundDimSlider = addSlider("Background Dim:", 0.0f, 1.0f, convar->getConVarByName("osu_background_dim"), 220.0f);
+	m_backgroundDimSlider = addSlider("Background Dim:", 0.0f, 1.0f, &cv::osu::background_dim, 220.0f);
 	m_backgroundDimSlider->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onSliderChangePercent) );
-	m_backgroundBrightnessSlider = addSlider("Background Brightness:", 0.0f, 1.0f, convar->getConVarByName("osu_background_brightness"), 220.0f);
+	m_backgroundBrightnessSlider = addSlider("Background Brightness:", 0.0f, 1.0f, &cv::osu::background_brightness, 220.0f);
 	m_backgroundBrightnessSlider->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onSliderChangePercent) );
 	addSpacer();
-	addCheckbox("Don't change dim level during breaks", "Makes the background basically impossible to see during breaks.\nNot recommended.", convar->getConVarByName("osu_background_dont_fade_during_breaks"));
-	addCheckbox("Show approach circle on first \"Hidden\" object", convar->getConVarByName("osu_show_approach_circle_on_first_hidden_object"));
-	addCheckbox("SuddenDeath restart on miss", "Skips the failing animation, and instantly restarts like SS/PF.", convar->getConVarByName("osu_mod_suddendeath_restart"));
-	addCheckbox("Show Skip Button during Intro", "Skip intro to first hitobject.", convar->getConVarByName("osu_skip_intro_enabled"));
-	addCheckbox("Show Skip Button during Breaks", "Skip breaks in the middle of beatmaps.", convar->getConVarByName("osu_skip_breaks_enabled"));
+	addCheckbox("Don't change dim level during breaks", "Makes the background basically impossible to see during breaks.\nNot recommended.", &cv::osu::background_dont_fade_during_breaks);
+	addCheckbox("Show approach circle on first \"Hidden\" object", &cv::osu::show_approach_circle_on_first_hidden_object);
+	addCheckbox("SuddenDeath restart on miss", "Skips the failing animation, and instantly restarts like SS/PF.", &cv::osu::mod_suddendeath_restart);
+	addCheckbox("Show Skip Button during Intro", "Skip intro to first hitobject.", &cv::osu::skip_intro_enabled);
+	addCheckbox("Show Skip Button during Breaks", "Skip breaks in the middle of beatmaps.", &cv::osu::skip_breaks_enabled);
 	addSpacer();
 	addSubSection("Mechanics", "health drain notelock lock block blocking noteblock");
-	addCheckbox("Kill Player upon Failing", "Enabled: Singleplayer default. You die upon failing and the beatmap stops.\nDisabled: Multiplayer default. Allows you to keep playing even after failing.", convar->getConVarByName("osu_drain_kill"));
+	addCheckbox("Kill Player upon Failing", "Enabled: Singleplayer default. You die upon failing and the beatmap stops.\nDisabled: Multiplayer default. Allows you to keep playing even after failing.", &cv::osu::drain_kill);
 	addSpacer();
 	addLabel("");
 
-	///addCheckbox("Notelock (note blocking/locking)", "NOTE: osu! has this always enabled, so leave it enabled for practicing.\n\"Protects\" you by only allowing circles to be clicked in order.", convar->getConVarByName("osu_note_blocking"));
+	///addCheckbox("Notelock (note blocking/locking)", "NOTE: osu! has this always enabled, so leave it enabled for practicing.\n\"Protects\" you by only allowing circles to be clicked in order.", &cv::osu::note_blocking);
 	OPTIONS_ELEMENT drainSelect = addButton("Select [HP Drain]", "None", true);
 	((CBaseUIButton*)drainSelect.elements[0])->setClickCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onHPDrainSelect) );
 	m_hpDrainSelectButton = drainSelect.elements[0];
@@ -917,140 +917,140 @@ OsuOptionsMenu::OsuOptionsMenu() : OsuScreenBackable()
 	addLabel("");
 	addSpacer();
 	addSubSection("Backgrounds");
-	addCheckbox("Load Background Images (!)", "NOTE: Disabling this will disable ALL beatmap images everywhere!", convar->getConVarByName("osu_load_beatmap_background_images"));
-	addCheckbox("Draw Background in Beatmap", convar->getConVarByName("osu_draw_beatmap_background_image"));
-	addCheckbox("Draw Background in SongBrowser", "NOTE: You can disable this if you always want menu-background.", convar->getConVarByName("osu_draw_songbrowser_background_image"));
-	addCheckbox("Draw Background Thumbnails in SongBrowser", convar->getConVarByName("osu_draw_songbrowser_thumbnails"));
-	addCheckbox("Draw Background in Ranking/Results Screen", convar->getConVarByName("osu_draw_rankingscreen_background_image"));
-	addCheckbox("Draw menu-background in Menu", convar->getConVarByName("osu_draw_menu_background"));
-	addCheckbox("Draw menu-background in SongBrowser", "NOTE: Only applies if \"Draw Background in SongBrowser\" is disabled.", convar->getConVarByName("osu_draw_songbrowser_menu_background_image"));
+	addCheckbox("Load Background Images (!)", "NOTE: Disabling this will disable ALL beatmap images everywhere!", &cv::osu::load_beatmap_background_images);
+	addCheckbox("Draw Background in Beatmap", &cv::osu::draw_beatmap_background_image);
+	addCheckbox("Draw Background in SongBrowser", "NOTE: You can disable this if you always want menu-background.", &cv::osu::draw_songbrowser_background_image);
+	addCheckbox("Draw Background Thumbnails in SongBrowser", &cv::osu::draw_songbrowser_thumbnails);
+	addCheckbox("Draw Background in Ranking/Results Screen", &cv::osu::draw_rankingscreen_background_image);
+	addCheckbox("Draw menu-background in Menu", &cv::osu::draw_menu_background);
+	addCheckbox("Draw menu-background in SongBrowser", "NOTE: Only applies if \"Draw Background in SongBrowser\" is disabled.", &cv::osu::draw_songbrowser_menu_background_image);
 	addSpacer();
-	//addCheckbox("Show pp on ranking screen", convar->getConVarByName("osu_rankingscreen_pp"));
+	//addCheckbox("Show pp on ranking screen", &cv::osu::rankingscreen_pp);
 
 	addSubSection("HUD");
-	addCheckbox("Draw HUD", "NOTE: You can also press SHIFT + TAB while playing to toggle this.", convar->getConVarByName("osu_draw_hud"));
-	addCheckbox("SHIFT + TAB toggles everything", "Enabled: McOsu default (toggle \"Draw HUD\")\nDisabled: osu! default (always show hiterrorbar + key overlay)", convar->getConVarByName("osu_hud_shift_tab_toggles_everything"));
+	addCheckbox("Draw HUD", "NOTE: You can also press SHIFT + TAB while playing to toggle this.", &cv::osu::draw_hud);
+	addCheckbox("SHIFT + TAB toggles everything", "Enabled: McOsu default (toggle \"Draw HUD\")\nDisabled: osu! default (always show hiterrorbar + key overlay)", &cv::osu::hud_shift_tab_toggles_everything);
 	addSpacer();
-	addCheckbox("Draw Score", convar->getConVarByName("osu_draw_score"));
-	addCheckbox("Draw Combo", convar->getConVarByName("osu_draw_combo"));
-	addCheckbox("Draw Accuracy", convar->getConVarByName("osu_draw_accuracy"));
-	addCheckbox("Draw ProgressBar", convar->getConVarByName("osu_draw_progressbar"));
-	addCheckbox("Draw HitErrorBar", convar->getConVarByName("osu_draw_hiterrorbar"));
-	addCheckbox("Draw HitErrorBar UR", "Unstable Rate", convar->getConVarByName("osu_draw_hiterrorbar_ur"));
-	addCheckbox("Draw ScoreBar", "Health/HP Bar.", convar->getConVarByName("osu_draw_scorebar"));
-	addCheckbox("Draw ScoreBar-bg", "Some skins abuse this as the playfield background image.\nIt is actually just the background image for the Health/HP Bar.", convar->getConVarByName("osu_draw_scorebarbg"));
-	addCheckbox("Draw ScoreBoard", convar->getConVarByName("osu_draw_scoreboard"));
-	addCheckbox("Draw Key Overlay", convar->getConVarByName("osu_draw_inputoverlay"));
-	addCheckbox("Draw Scrubbing Timeline", convar->getConVarByName("osu_draw_scrubbing_timeline"));
-	addCheckbox("Draw Miss Window on HitErrorBar", convar->getConVarByName("osu_hud_hiterrorbar_showmisswindow"));
+	addCheckbox("Draw Score", &cv::osu::draw_score);
+	addCheckbox("Draw Combo", &cv::osu::draw_combo);
+	addCheckbox("Draw Accuracy", &cv::osu::draw_accuracy);
+	addCheckbox("Draw ProgressBar", &cv::osu::draw_progressbar);
+	addCheckbox("Draw HitErrorBar", &cv::osu::draw_hiterrorbar);
+	addCheckbox("Draw HitErrorBar UR", "Unstable Rate", &cv::osu::draw_hiterrorbar_ur);
+	addCheckbox("Draw ScoreBar", "Health/HP Bar.", &cv::osu::draw_scorebar);
+	addCheckbox("Draw ScoreBar-bg", "Some skins abuse this as the playfield background image.\nIt is actually just the background image for the Health/HP Bar.", &cv::osu::draw_scorebarbg);
+	addCheckbox("Draw ScoreBoard", &cv::osu::draw_scoreboard);
+	addCheckbox("Draw Key Overlay", &cv::osu::draw_inputoverlay);
+	addCheckbox("Draw Scrubbing Timeline", &cv::osu::draw_scrubbing_timeline);
+	addCheckbox("Draw Miss Window on HitErrorBar", &cv::osu::hud_hiterrorbar_showmisswindow);
 	addSpacer();
-	addCheckbox("Draw Stats: pp", "Realtime pp counter.\nDynamically calculates earned pp by incrementally updating the star rating.", convar->getConVarByName("osu_draw_statistics_pp"));
-	addCheckbox("Draw Stats: pp (SS)", "Max possible total pp for active mods (full combo + perfect acc).", convar->getConVarByName("osu_draw_statistics_perfectpp"));
-	addCheckbox("Draw Stats: Misses", "Number of misses.", convar->getConVarByName("osu_draw_statistics_misses"));
-	addCheckbox("Draw Stats: SliderBreaks", "Number of slider breaks.", convar->getConVarByName("osu_draw_statistics_sliderbreaks"));
-	addCheckbox("Draw Stats: Max Possible Combo", convar->getConVarByName("osu_draw_statistics_maxpossiblecombo"));
-	addCheckbox("Draw Stats: Stars*** (Until Now)", "Incrementally updates the star rating (aka \"realtime stars\").", convar->getConVarByName("osu_draw_statistics_livestars"));
-	addCheckbox("Draw Stats: Stars* (Total)", "Total stars for active mods.", convar->getConVarByName("osu_draw_statistics_totalstars"));
-	addCheckbox("Draw Stats: BPM", convar->getConVarByName("osu_draw_statistics_bpm"));
-	addCheckbox("Draw Stats: AR", convar->getConVarByName("osu_draw_statistics_ar"));
-	addCheckbox("Draw Stats: CS", convar->getConVarByName("osu_draw_statistics_cs"));
-	addCheckbox("Draw Stats: OD", convar->getConVarByName("osu_draw_statistics_od"));
-	addCheckbox("Draw Stats: HP", convar->getConVarByName("osu_draw_statistics_hp"));
-	addCheckbox("Draw Stats: 300 hitwindow", "Timing window for hitting a 300 (e.g. +-25ms).", convar->getConVarByName("osu_draw_statistics_hitwindow300"));
-	addCheckbox("Draw Stats: Notes Per Second", "How many clicks per second are currently required.", convar->getConVarByName("osu_draw_statistics_nps"));
-	addCheckbox("Draw Stats: Note Density", "How many objects are visible at the same time.", convar->getConVarByName("osu_draw_statistics_nd"));
-	addCheckbox("Draw Stats: Unstable Rate", convar->getConVarByName("osu_draw_statistics_ur"));
-	addCheckbox("Draw Stats: Accuracy Error", "Average hit error delta (e.g. -5ms +15ms).\nSee \"osu_hud_statistics_hitdelta_chunksize 30\",\nit defines how many recent hit deltas are averaged.", convar->getConVarByName("osu_draw_statistics_hitdelta"));
+	addCheckbox("Draw Stats: pp", "Realtime pp counter.\nDynamically calculates earned pp by incrementally updating the star rating.", &cv::osu::draw_statistics_pp);
+	addCheckbox("Draw Stats: pp (SS)", "Max possible total pp for active mods (full combo + perfect acc).", &cv::osu::draw_statistics_perfectpp);
+	addCheckbox("Draw Stats: Misses", "Number of misses.", &cv::osu::draw_statistics_misses);
+	addCheckbox("Draw Stats: SliderBreaks", "Number of slider breaks.", &cv::osu::draw_statistics_sliderbreaks);
+	addCheckbox("Draw Stats: Max Possible Combo", &cv::osu::draw_statistics_maxpossiblecombo);
+	addCheckbox("Draw Stats: Stars*** (Until Now)", "Incrementally updates the star rating (aka \"realtime stars\").", &cv::osu::draw_statistics_livestars);
+	addCheckbox("Draw Stats: Stars* (Total)", "Total stars for active mods.", &cv::osu::draw_statistics_totalstars);
+	addCheckbox("Draw Stats: BPM", &cv::osu::draw_statistics_bpm);
+	addCheckbox("Draw Stats: AR", &cv::osu::draw_statistics_ar);
+	addCheckbox("Draw Stats: CS", &cv::osu::draw_statistics_cs);
+	addCheckbox("Draw Stats: OD", &cv::osu::draw_statistics_od);
+	addCheckbox("Draw Stats: HP", &cv::osu::draw_statistics_hp);
+	addCheckbox("Draw Stats: 300 hitwindow", "Timing window for hitting a 300 (e.g. +-25ms).", &cv::osu::draw_statistics_hitwindow300);
+	addCheckbox("Draw Stats: Notes Per Second", "How many clicks per second are currently required.", &cv::osu::draw_statistics_nps);
+	addCheckbox("Draw Stats: Note Density", "How many objects are visible at the same time.", &cv::osu::draw_statistics_nd);
+	addCheckbox("Draw Stats: Unstable Rate", &cv::osu::draw_statistics_ur);
+	addCheckbox("Draw Stats: Accuracy Error", "Average hit error delta (e.g. -5ms +15ms).\nSee \"osu_hud_statistics_hitdelta_chunksize 30\",\nit defines how many recent hit deltas are averaged.", &cv::osu::draw_statistics_hitdelta);
 	addSpacer();
-	m_hudSizeSlider = addSlider("HUD Scale:", 0.01f, 3.0f, convar->getConVarByName("osu_hud_scale"), 165.0f);
+	m_hudSizeSlider = addSlider("HUD Scale:", 0.01f, 3.0f, &cv::osu::hud_scale, 165.0f);
 	m_hudSizeSlider->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onSliderChangePercent) );
 	m_hudSizeSlider->setKeyDelta(0.01f);
 	addSpacer();
-	m_hudScoreScaleSlider = addSlider("Score Scale:", 0.01f, 3.0f, convar->getConVarByName("osu_hud_score_scale"), 165.0f);
+	m_hudScoreScaleSlider = addSlider("Score Scale:", 0.01f, 3.0f, &cv::osu::hud_score_scale, 165.0f);
 	m_hudScoreScaleSlider->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onSliderChangePercent) );
 	m_hudScoreScaleSlider->setKeyDelta(0.01f);
-	m_hudComboScaleSlider = addSlider("Combo Scale:", 0.01f, 3.0f, convar->getConVarByName("osu_hud_combo_scale"), 165.0f);
+	m_hudComboScaleSlider = addSlider("Combo Scale:", 0.01f, 3.0f, &cv::osu::hud_combo_scale, 165.0f);
 	m_hudComboScaleSlider->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onSliderChangePercent) );
 	m_hudComboScaleSlider->setKeyDelta(0.01f);
-	m_hudAccuracyScaleSlider = addSlider("Accuracy Scale:", 0.01f, 3.0f, convar->getConVarByName("osu_hud_accuracy_scale"), 165.0f);
+	m_hudAccuracyScaleSlider = addSlider("Accuracy Scale:", 0.01f, 3.0f, &cv::osu::hud_accuracy_scale, 165.0f);
 	m_hudAccuracyScaleSlider->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onSliderChangePercent) );
 	m_hudAccuracyScaleSlider->setKeyDelta(0.01f);
-	m_hudHiterrorbarScaleSlider = addSlider("HitErrorBar Scale:", 0.01f, 3.0f, convar->getConVarByName("osu_hud_hiterrorbar_scale"), 165.0f);
+	m_hudHiterrorbarScaleSlider = addSlider("HitErrorBar Scale:", 0.01f, 3.0f, &cv::osu::hud_hiterrorbar_scale, 165.0f);
 	m_hudHiterrorbarScaleSlider->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onSliderChangePercent) );
 	m_hudHiterrorbarScaleSlider->setKeyDelta(0.01f);
-	m_hudHiterrorbarURScaleSlider = addSlider("HitErrorBar UR Scale:", 0.01f, 3.0f, convar->getConVarByName("osu_hud_hiterrorbar_ur_scale"), 165.0f);
+	m_hudHiterrorbarURScaleSlider = addSlider("HitErrorBar UR Scale:", 0.01f, 3.0f, &cv::osu::hud_hiterrorbar_ur_scale, 165.0f);
 	m_hudHiterrorbarURScaleSlider->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onSliderChangePercent) );
 	m_hudHiterrorbarURScaleSlider->setKeyDelta(0.01f);
-	m_hudProgressbarScaleSlider = addSlider("ProgressBar Scale:", 0.01f, 3.0f, convar->getConVarByName("osu_hud_progressbar_scale"), 165.0f);
+	m_hudProgressbarScaleSlider = addSlider("ProgressBar Scale:", 0.01f, 3.0f, &cv::osu::hud_progressbar_scale, 165.0f);
 	m_hudProgressbarScaleSlider->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onSliderChangePercent) );
 	m_hudProgressbarScaleSlider->setKeyDelta(0.01f);
-	m_hudScoreBarScaleSlider = addSlider("ScoreBar Scale:", 0.01f, 3.0f, convar->getConVarByName("osu_hud_scorebar_scale"), 165.0f);
+	m_hudScoreBarScaleSlider = addSlider("ScoreBar Scale:", 0.01f, 3.0f, &cv::osu::hud_scorebar_scale, 165.0f);
 	m_hudScoreBarScaleSlider->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onSliderChangePercent) );
 	m_hudScoreBarScaleSlider->setKeyDelta(0.01f);
-	m_hudScoreBoardScaleSlider = addSlider("ScoreBoard Scale:", 0.01f, 3.0f, convar->getConVarByName("osu_hud_scoreboard_scale"), 165.0f);
+	m_hudScoreBoardScaleSlider = addSlider("ScoreBoard Scale:", 0.01f, 3.0f, &cv::osu::hud_scoreboard_scale, 165.0f);
 	m_hudScoreBoardScaleSlider->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onSliderChangePercent) );
 	m_hudScoreBoardScaleSlider->setKeyDelta(0.01f);
-	m_hudInputoverlayScaleSlider = addSlider("Key Overlay Scale:", 0.01f, 3.0f, convar->getConVarByName("osu_hud_inputoverlay_scale"), 165.0f);
+	m_hudInputoverlayScaleSlider = addSlider("Key Overlay Scale:", 0.01f, 3.0f, &cv::osu::hud_inputoverlay_scale, 165.0f);
 	m_hudInputoverlayScaleSlider->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onSliderChangePercent) );
 	m_hudInputoverlayScaleSlider->setKeyDelta(0.01f);
-	m_statisticsOverlayScaleSlider = addSlider("Statistics Scale:", 0.01f, 3.0f, convar->getConVarByName("osu_hud_statistics_scale"), 165.0f);
+	m_statisticsOverlayScaleSlider = addSlider("Statistics Scale:", 0.01f, 3.0f, &cv::osu::hud_statistics_scale, 165.0f);
 	m_statisticsOverlayScaleSlider->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onSliderChangePercent) );
 	m_statisticsOverlayScaleSlider->setKeyDelta(0.01f);
 	addSpacer();
-	m_statisticsOverlayXOffsetSlider = addSlider("Statistics X Offset:", 0.0f, 2000.0f, convar->getConVarByName("osu_hud_statistics_offset_x"), 165.0f, true);
+	m_statisticsOverlayXOffsetSlider = addSlider("Statistics X Offset:", 0.0f, 2000.0f, &cv::osu::hud_statistics_offset_x, 165.0f, true);
 	m_statisticsOverlayXOffsetSlider->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onSliderChangeInt) );
 	m_statisticsOverlayXOffsetSlider->setKeyDelta(1.0f);
-	m_statisticsOverlayYOffsetSlider = addSlider("Statistics Y Offset:", 0.0f, 1000.0f, convar->getConVarByName("osu_hud_statistics_offset_y"), 165.0f, true);
+	m_statisticsOverlayYOffsetSlider = addSlider("Statistics Y Offset:", 0.0f, 1000.0f, &cv::osu::hud_statistics_offset_y, 165.0f, true);
 	m_statisticsOverlayYOffsetSlider->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onSliderChangeInt) );
 	m_statisticsOverlayYOffsetSlider->setKeyDelta(1.0f);
 
 	addSubSection("Playfield");
-	addCheckbox("Draw FollowPoints", convar->getConVarByName("osu_draw_followpoints"));
-	addCheckbox("Draw Playfield Border", "Correct border relative to the current Circle Size.", convar->getConVarByName("osu_draw_playfield_border"));
+	addCheckbox("Draw FollowPoints", &cv::osu::draw_followpoints);
+	addCheckbox("Draw Playfield Border", "Correct border relative to the current Circle Size.", &cv::osu::draw_playfield_border);
 	addSpacer();
-	m_playfieldBorderSizeSlider = addSlider("Playfield Border Size:", 0.0f, 500.0f, convar->getConVarByName("osu_hud_playfield_border_size"));
+	m_playfieldBorderSizeSlider = addSlider("Playfield Border Size:", 0.0f, 500.0f, &cv::osu::hud_playfield_border_size);
 	m_playfieldBorderSizeSlider->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onSliderChangeInt) );
 	m_playfieldBorderSizeSlider->setKeyDelta(1.0f);
 
 	addSubSection("Hitobjects");
-	addCheckbox("Use Fast Hidden Fading Sliders (!)", "NOTE: osu! doesn't do this, so don't enable it for serious practicing.\nIf enabled: Fade out sliders with the same speed as circles.", convar->getConVarByName("osu_mod_hd_slider_fast_fade"));
-	addCheckbox("Use Score v2 Slider Accuracy", "Affects pp and accuracy calculations, but does not affect score.\nUse the score v2 mod if you want the 1000000 max score cap/calculation.", convar->getConVarByName("osu_slider_scorev2"));
+	addCheckbox("Use Fast Hidden Fading Sliders (!)", "NOTE: osu! doesn't do this, so don't enable it for serious practicing.\nIf enabled: Fade out sliders with the same speed as circles.", &cv::osu::mod_hd_slider_fast_fade);
+	addCheckbox("Use Score v2 Slider Accuracy", "Affects pp and accuracy calculations, but does not affect score.\nUse the score v2 mod if you want the 1000000 max score cap/calculation.", &cv::osu::slider_scorev2);
 
 	//**************************************************************************************************************************//
 
 	CBaseUIElement *sectionFposu = addSection("FPoSu (3D)");
 
 	addSubSection("FPoSu - General");
-	addCheckbox("FPoSu", (Env::cfg(OS::WINDOWS) ? "The real 3D FPS mod.\nPlay from a first person shooter perspective in a 3D environment.\nThis is only intended for mouse! (Enable \"Tablet/Absolute Mode\" for tablets.)" : "The real 3D FPS mod.\nPlay from a first person shooter perspective in a 3D environment.\nThis is only intended for mouse!"), convar->getConVarByName("osu_mod_fposu"));
+	addCheckbox("FPoSu", (Env::cfg(OS::WINDOWS) ? "The real 3D FPS mod.\nPlay from a first person shooter perspective in a 3D environment.\nThis is only intended for mouse! (Enable \"Tablet/Absolute Mode\" for tablets.)" : "The real 3D FPS mod.\nPlay from a first person shooter perspective in a 3D environment.\nThis is only intended for mouse!"), &cv::osu::fposu::mod_fposu);
 #ifdef MCOSU_FPOSU_4D_MODE_FINISHED
-	addCheckbox("[Beta] 4D Mode", (Env::cfg(OS::WINDOWS) ? "Actual 3D circles instead of \"just\" a flat playfield in 3D.\nNOTE: Not compatible with \"Tablet/Absolute Mode\"." : "Actual 3D circles instead of \"just\" a flat playfield in 3D."), convar->getConVarByName("fposu_3d"));
-	addCheckbox("[Beta] 4D Mode - Spheres", "Combocolored lit 3D spheres instead of flat 3D circles.\nOnly relevant if \"[Beta] 4D Mode\" is enabled.", convar->getConVarByName("fposu_3d_spheres"));
+	addCheckbox("[Beta] 4D Mode", (Env::cfg(OS::WINDOWS) ? "Actual 3D circles instead of \"just\" a flat playfield in 3D.\nNOTE: Not compatible with \"Tablet/Absolute Mode\"." : "Actual 3D circles instead of \"just\" a flat playfield in 3D."), &cv::osu::fposu::threeD);
+	addCheckbox("[Beta] 4D Mode - Spheres", "Combocolored lit 3D spheres instead of flat 3D circles.\nOnly relevant if \"[Beta] 4D Mode\" is enabled.", &cv::osu::fposu::threeD_spheres);
 #endif
 	addLabel("");
 	addLabel("NOTE: Use CTRL + O during gameplay to get here!")->setTextColor(0xff555555);
 	addLabel("");
 	addLabel("LEFT/RIGHT arrow keys to precisely adjust sliders.")->setTextColor(0xff555555);
 	addLabel("");
-	CBaseUISlider *fposuDistanceSlider = addSlider("Distance:", 0.01f, 5.0f, convar->getConVarByName("fposu_distance"), -1.0f, true);
+	CBaseUISlider *fposuDistanceSlider = addSlider("Distance:", 0.01f, 5.0f, &cv::osu::fposu::distance, -1.0f, true);
 	fposuDistanceSlider->setKeyDelta(0.01f);
-	addCheckbox("Vertical FOV", "If enabled: Vertical FOV.\nIf disabled: Horizontal FOV (default).", convar->getConVarByName("fposu_vertical_fov"));
-	CBaseUISlider *fovSlider = addSlider("FOV:", 10.0f, 160.0f, convar->getConVarByName("fposu_fov"), -1.0f, true, true);
+	addCheckbox("Vertical FOV", "If enabled: Vertical FOV.\nIf disabled: Horizontal FOV (default).", &cv::osu::fposu::vertical_fov);
+	CBaseUISlider *fovSlider = addSlider("FOV:", 10.0f, 160.0f, &cv::osu::fposu::fov, -1.0f, true, true);
 	fovSlider->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onSliderChangeTwoDecimalPlaces) );
 	fovSlider->setKeyDelta(0.01f);
-	CBaseUISlider *zoomedFovSlider = addSlider("FOV (Zoom):", 10.0f, 160.0f, convar->getConVarByName("fposu_zoom_fov"), -1.0f, true, true);
+	CBaseUISlider *zoomedFovSlider = addSlider("FOV (Zoom):", 10.0f, 160.0f, &cv::osu::fposu::zoom_fov, -1.0f, true, true);
 	zoomedFovSlider->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onSliderChangeTwoDecimalPlaces) );
 	zoomedFovSlider->setKeyDelta(0.01f);
-	addCheckbox("Zoom Key Toggle", "Enabled: Zoom key toggles zoom.\nDisabled: Zoom while zoom key is held.", convar->getConVarByName("fposu_zoom_toggle"));
+	addCheckbox("Zoom Key Toggle", "Enabled: Zoom key toggles zoom.\nDisabled: Zoom while zoom key is held.", &cv::osu::fposu::zoom_toggle);
 	addSubSection("FPoSu - Playfield");
-	addCheckbox("Curved play area", convar->getConVarByName("fposu_curved"));
-	addCheckbox("Background cube", convar->getConVarByName("fposu_cube"));
-	addCheckbox("Skybox", "NOTE: Overrides \"Background cube\".\nSee skybox_example.png for cubemap layout.", convar->getConVarByName("fposu_skybox"));
-	addSlider("Background Opacity", 0.0f, 1.0f, convar->getConVarByName("osu_background_alpha"))->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onSliderChangePercent) );
+	addCheckbox("Curved play area", &cv::osu::fposu::curved);
+	addCheckbox("Background cube", &cv::osu::fposu::cube);
+	addCheckbox("Skybox", "NOTE: Overrides \"Background cube\".\nSee skybox_example.png for cubemap layout.", &cv::osu::fposu::skybox);
+	addSlider("Background Opacity", 0.0f, 1.0f, &cv::osu::background_alpha)->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onSliderChangePercent) );
 #ifdef MCOSU_FPOSU_4D_MODE_FINISHED
-	CBaseUISlider *playfieldScaleSlider = addSlider("[Beta] 4D Mode - Scale", 0.1f, 10.0f, convar->getConVarByName("fposu_3d_playfield_scale"), 0.0f, true);
+	CBaseUISlider *playfieldScaleSlider = addSlider("[Beta] 4D Mode - Scale", 0.1f, 10.0f, &cv::osu::fposu::threeD_playfield_scale, 0.0f, true);
 	playfieldScaleSlider->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onSliderChangePercent) );
 	playfieldScaleSlider->setKeyDelta(0.01f);
-	CBaseUISlider *spheresAASlider = addSlider("[Beta] 4D Mode - Spheres - MSAA", 0.0f, 16.0f, convar->getConVarByName("fposu_3d_spheres_aa"));
+	CBaseUISlider *spheresAASlider = addSlider("[Beta] 4D Mode - Spheres - MSAA", 0.0f, 16.0f, &cv::osu::fposu::threeD_spheres_aa);
 	//spheresAASlider->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onSliderChangeVRAntiAliasing) );
 	spheresAASlider->setKeyDelta(2.0f);
 	spheresAASlider->setAnimated(false);
@@ -1061,17 +1061,17 @@ OsuOptionsMenu::OsuOptionsMenu() : OsuScreenBackable()
 	cm360CalculatorLinkButton->setClickCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onCM360CalculatorLinkClicked) );
 	cm360CalculatorLinkButton->setColor(0xff10667b);
 	addLabel("");
-	m_dpiTextbox = addTextbox(convar->getConVarByName("fposu_mouse_dpi")->getString(), "DPI:", convar->getConVarByName("fposu_mouse_dpi"));
-	m_cm360Textbox = addTextbox(convar->getConVarByName("fposu_mouse_cm_360")->getString(), "cm per 360:", convar->getConVarByName("fposu_mouse_cm_360"));
+	m_dpiTextbox = addTextbox(cv::osu::fposu::mouse_dpi.getString(), "DPI:", &cv::osu::fposu::mouse_dpi);
+	m_cm360Textbox = addTextbox(cv::osu::fposu::mouse_cm_360.getString(), "cm per 360:", &cv::osu::fposu::mouse_cm_360);
 	addLabel("");
-	addCheckbox("Invert Vertical", convar->getConVarByName("fposu_invert_vertical"));
-	addCheckbox("Invert Horizontal", convar->getConVarByName("fposu_invert_horizontal"));
-	addCheckbox("Tablet/Absolute Mode (!)", "WARNING: Do NOT enable this if you are using a mouse!\nIf this is enabled, then DPI and cm per 360 will be ignored!", convar->getConVarByName("fposu_absolute_mode"));
+	addCheckbox("Invert Vertical", &cv::osu::fposu::invert_vertical);
+	addCheckbox("Invert Horizontal", &cv::osu::fposu::invert_horizontal);
+	addCheckbox("Tablet/Absolute Mode (!)", "WARNING: Do NOT enable this if you are using a mouse!\nIf this is enabled, then DPI and cm per 360 will be ignored!", &cv::osu::fposu::absolute_mode);
 	if constexpr (Env::cfg(OS::LINUX))
 	{
 #ifdef MCOSU_FPOSU_4D_MODE_FINISHED
 		addSubSection("[Beta] FPoSu 4D Mode - Mouse");
-		addSlider("Sensitivity:", 0.1f, 6.0f, convar->getConVarByName("mouse_sensitivity"))->setKeyDelta(0.01f);
+		addSlider("Sensitivity:", 0.1f, 6.0f, &cv::mouse_sensitivity)->setKeyDelta(0.01f);
 #endif
 	}
 
@@ -1082,19 +1082,19 @@ OsuOptionsMenu::OsuOptionsMenu() : OsuScreenBackable()
 	sectionOnline = addSection("Online");
 
 	addSubSection("Integration");
-	addCheckbox("Rich Presence (Discord + Steam)", "Shows your current game state in your friends' friendslists.\ne.g.: Playing Gavin G - Reach Out [Cherry Blossom's Insane]", convar->getConVarByName("osu_rich_presence"));
+	addCheckbox("Rich Presence (Discord + Steam)", "Shows your current game state in your friends' friendslists.\ne.g.: Playing Gavin G - Reach Out [Cherry Blossom's Insane]", &cv::osu::rich_presence);
 
 	//**************************************************************************************************************************//
 
 	addSection("Bullshit");
 
 	addSubSection("Why");
-	addCheckbox("Rainbow Circles", convar->getConVarByName("osu_circle_rainbow"));
-	addCheckbox("Rainbow Sliders", convar->getConVarByName("osu_slider_rainbow"));
-	addCheckbox("Rainbow Numbers", convar->getConVarByName("osu_circle_number_rainbow"));
-	addCheckbox("SliderBreak Epilepsy", convar->getConVarByName("osu_slider_break_epilepsy"));
-	addCheckbox("Invisible Cursor", convar->getConVarByName("osu_hide_cursor_during_gameplay"));
-	addCheckbox("Draw 300s", convar->getConVarByName("osu_hitresult_draw_300s"));
+	addCheckbox("Rainbow Circles", &cv::osu::circle_rainbow);
+	addCheckbox("Rainbow Sliders", &cv::osu::slider_rainbow);
+	addCheckbox("Rainbow Numbers", &cv::osu::circle_number_rainbow);
+	addCheckbox("SliderBreak Epilepsy", &cv::osu::slider_break_epilepsy);
+	addCheckbox("Invisible Cursor", &cv::osu::hide_cursor_during_gameplay);
+	addCheckbox("Draw 300s", &cv::osu::hitresult_draw_300s);
 
 	addSection("Maintenance");
 	addSubSection("Restore");
@@ -1126,7 +1126,7 @@ OsuOptionsMenu::OsuOptionsMenu() : OsuScreenBackable()
 
 	// HACKHACK: force current value update
 	if (m_sliderQualitySlider != NULL)
-		onHighQualitySlidersConVarChange("", osu_options_high_quality_sliders.getString());
+		onHighQualitySlidersConVarChange("", cv::osu::options_high_quality_sliders.getString());
 }
 
 OsuOptionsMenu::~OsuOptionsMenu()
@@ -1157,9 +1157,9 @@ void OsuOptionsMenu::draw()
 		if (!isPlayingBeatmap)
 		{
 			const float brightness = std::clamp<float>(m_backgroundBrightnessSlider->getFloat(), 0.0f, 1.0f);
-			const short red = std::clamp<float>(brightness * m_osu_background_color_r_ref->getFloat(), 0.0f, 255.0f);
-			const short green = std::clamp<float>(brightness * m_osu_background_color_g_ref->getFloat(), 0.0f, 255.0f);
-			const short blue = std::clamp<float>(brightness * m_osu_background_color_b_ref->getFloat(), 0.0f, 255.0f);
+			const short red = std::clamp<float>(brightness * cv::osu::background_color_r.getFloat(), 0.0f, 255.0f);
+			const short green = std::clamp<float>(brightness * cv::osu::background_color_g.getFloat(), 0.0f, 255.0f);
+			const short blue = std::clamp<float>(brightness * cv::osu::background_color_b.getFloat(), 0.0f, 255.0f);
 			if (brightness > 0.0f)
 			{
 				g->setColor(rgb(red, green, blue));
@@ -1364,8 +1364,8 @@ void OsuOptionsMenu::update()
 		{
 			m_bLetterboxingOffsetUpdateScheduled = false;
 
-			m_osu_letterboxing_offset_x_ref->setValue(m_letterboxingOffsetXSlider->getFloat());
-			m_osu_letterboxing_offset_y_ref->setValue(m_letterboxingOffsetYSlider->getFloat());
+			cv::osu::letterboxing_offset_x.setValue(m_letterboxingOffsetXSlider->getFloat());
+			cv::osu::letterboxing_offset_y.setValue(m_letterboxingOffsetYSlider->getFloat());
 
 			// and update reset buttons as usual
 			onResetUpdate(m_letterboxingOffsetResetButton);
@@ -1387,7 +1387,7 @@ void OsuOptionsMenu::update()
 
 			const float oldUIScale = Osu::getUIScale();
 
-			m_osu_ui_scale_ref->setValue(m_uiScaleSlider->getFloat());
+			cv::osu::ui_scale.setValue(m_uiScaleSlider->getFloat());
 
 			const float newUIScale = Osu::getUIScale();
 
@@ -1407,7 +1407,7 @@ void OsuOptionsMenu::update()
 		{
 			m_bWASAPIBufferChangeScheduled = false;
 
-			m_win_snd_wasapi_buffer_size_ref->setValue(m_wasapiBufferSizeSlider->getFloat());
+			cv::win_snd_wasapi_buffer_size.setValue(m_wasapiBufferSizeSlider->getFloat());
 
 			// and update reset buttons as usual
 			onResetUpdate(m_wasapiBufferSizeResetButton);
@@ -1419,7 +1419,7 @@ void OsuOptionsMenu::update()
 		{
 			m_bWASAPIPeriodChangeScheduled = false;
 
-			m_win_snd_wasapi_period_size_ref->setValue(m_wasapiPeriodSizeSlider->getFloat());
+			cv::win_snd_wasapi_period_size.setValue(m_wasapiPeriodSizeSlider->getFloat());
 
 			// and update reset buttons as usual
 			onResetUpdate(m_wasapiPeriodSizeResetButton);
@@ -1444,7 +1444,7 @@ void OsuOptionsMenu::onKeyDown(KeyboardEvent &e)
 	m_container->onKeyDown(e);
 	if (e.isConsumed()) return;
 
-	if (e == KEY_ESCAPE || e == OsuKeyBindings::GAME_PAUSE.getVal<KEYCODE>())
+	if (e == KEY_ESCAPE || e == cv::osu::keybinds::GAME_PAUSE.getVal<KEYCODE>())
 	{
 		if (m_contextMenu->isVisible())
 		{
@@ -1494,7 +1494,7 @@ void OsuOptionsMenu::onKeyDown(KeyboardEvent &e)
 	}
 	else
 	{
-		if (e == KEY_ESCAPE || e == OsuKeyBindings::GAME_PAUSE.getVal<KEYCODE>())
+		if (e == KEY_ESCAPE || e == cv::osu::keybinds::GAME_PAUSE.getVal<KEYCODE>())
 			onBack();
 	}
 
@@ -1642,7 +1642,7 @@ void OsuOptionsMenu::setVisibleInt(bool visible, bool fromOnBack)
 	}
 
 	// usability: auto scroll to fposu settings if opening options while in fposu gamemode
-	if (visible && osu->isInPlayMode() && m_osu_mod_fposu_ref->getBool() && !m_fposuCategoryButton->isActiveCategory())
+	if (visible && osu->isInPlayMode() && cv::osu::fposu::mod_fposu.getBool() && !m_fposuCategoryButton->isActiveCategory())
 		onCategoryClicked(m_fposuCategoryButton);
 
 	// reset reset counters
@@ -2191,13 +2191,13 @@ void OsuOptionsMenu::updateOsuFolder()
 	}
 
 	// set convar to new folder
-	convar->getConVarByName("osu_folder")->setValue(newOsuFolder);
+	cv::osu::folder.setValue(newOsuFolder);
 }
 
 void OsuOptionsMenu::updateName()
 {
 	m_nameTextbox->stealFocus();
-	convar->getConVarByName("name")->setValue(m_nameTextbox->getText());
+	cv::name.setValue(m_nameTextbox->getText());
 }
 
 void OsuOptionsMenu::updateFposuDPI()
@@ -2215,7 +2215,7 @@ void OsuOptionsMenu::updateFposuDPI()
 		else
 			value.append(text[i]);
 	}
-	convar->getConVarByName("fposu_mouse_dpi")->setValue(value);
+	cv::osu::fposu::mouse_dpi.setValue(value);
 }
 
 void OsuOptionsMenu::updateFposuCMper360()
@@ -2233,7 +2233,7 @@ void OsuOptionsMenu::updateFposuCMper360()
 		else
 			value.append(text[i]);
 	}
-	convar->getConVarByName("fposu_mouse_cm_360")->setValue(value);
+	cv::osu::fposu::mouse_cm_360.setValue(value);
 }
 
 void OsuOptionsMenu::updateSkinNameLabel()
@@ -2241,12 +2241,12 @@ void OsuOptionsMenu::updateSkinNameLabel()
 	if (m_skinLabel == NULL) return;
 	if constexpr (Env::cfg(FEAT::STEAM))
 	{
-		m_skinLabel->setText(m_osu_skin_is_from_workshop_ref->getBool() ? m_osu_skin_workshop_title_ref->getString() : m_osu_skin_ref->getString());
-		m_skinLabel->setTextColor(m_osu_skin_is_from_workshop_ref->getBool() ? 0xff37adff : 0xffffffff);
+		m_skinLabel->setText(cv::osu::skin_is_from_workshop.getBool() ? cv::osu::skin_workshop_title.getString() : cv::osu::skin.getString());
+		m_skinLabel->setTextColor(cv::osu::skin_is_from_workshop.getBool() ? 0xff37adff : 0xffffffff);
 	}
 	else
 	{
-		m_skinLabel->setText(m_osu_skin_ref->getString());
+		m_skinLabel->setText(cv::osu::skin.getString());
 		m_skinLabel->setTextColor(0xffffffff);
 	}
 }
@@ -2255,14 +2255,14 @@ void OsuOptionsMenu::updateNotelockSelectLabel()
 {
 	if (m_notelockSelectLabel == NULL) return;
 
-	m_notelockSelectLabel->setText(m_notelockTypes[std::clamp<int>(m_osu_notelock_type_ref->getInt(), 0, m_notelockTypes.size() - 1)]);
+	m_notelockSelectLabel->setText(m_notelockTypes[std::clamp<int>(cv::osu::notelock_type.getInt(), 0, m_notelockTypes.size() - 1)]);
 }
 
 void OsuOptionsMenu::updateHPDrainSelectLabel()
 {
 	if (m_hpDrainSelectLabel == NULL) return;
 
-	m_hpDrainSelectLabel->setText(m_drainTypes[std::clamp<int>(m_osu_drain_type_ref->getInt(), 0, m_drainTypes.size() - 1)]);
+	m_hpDrainSelectLabel->setText(m_drainTypes[std::clamp<int>(cv::osu::drain_type.getInt(), 0, m_drainTypes.size() - 1)]);
 }
 
 void OsuOptionsMenu::onFullscreenChange(CBaseUICheckbox *checkbox)
@@ -2362,8 +2362,8 @@ void OsuOptionsMenu::onSkinSelect()
 	if (osu->isSkinLoading()) return;
 
 
-	UString skinFolder = convar->getConVarByName("osu_folder")->getString();
-	skinFolder.append(convar->getConVarByName("osu_folder_sub_skins")->getString());
+	UString skinFolder = cv::osu::folder.getString();
+	skinFolder.append(cv::osu::folder_sub_skins.getString());
 	std::vector<UString> skinFolders = env->getFoldersInFolder(skinFolder);
 
 
@@ -2391,7 +2391,7 @@ void OsuOptionsMenu::onSkinSelect()
 
 		const UString defaultText = "default";
 		CBaseUIButton *buttonDefault = m_contextMenu->addButton(defaultText);
-		if (defaultText == m_osu_skin_ref->getString())
+		if (defaultText == cv::osu::skin.getString())
 			buttonDefault->setTextBrightColor(0xff00ff00);
 
 		for (int i=0; i<skinFolders.size(); i++)
@@ -2400,7 +2400,7 @@ void OsuOptionsMenu::onSkinSelect()
 				continue;
 
 			CBaseUIButton *button = m_contextMenu->addButton(skinFolders[i]);
-			if (skinFolders[i] == m_osu_skin_ref->getString())
+			if (skinFolders[i] == cv::osu::skin.getString())
 				button->setTextBrightColor(0xff00ff00);
 		}
 		m_contextMenu->end(false, false);
@@ -2417,9 +2417,9 @@ void OsuOptionsMenu::onSkinSelect()
 void OsuOptionsMenu::onSkinSelect2(UString skinName, int id)
 {
 	if constexpr (Env::cfg(FEAT::STEAM))
-		m_osu_skin_is_from_workshop_ref->setValue(0.0f);
+		cv::osu::skin_is_from_workshop.setValue(0.0f);
 
-	m_osu_skin_ref->setValue(skinName);
+	cv::osu::skin.setValue(skinName);
 
 	updateSkinNameLabel();
 }
@@ -2509,11 +2509,11 @@ void OsuOptionsMenu::onSkinSelectWorkshop4(UString skinName, int id)
 			debugLog("installInfo = {:s}\n", subscribedItem.installInfo.toUtf8());
 			if (env->directoryExists(subscribedItem.installInfo))
 			{
-				m_osu_skin_is_from_workshop_ref->setValue(1.0f);
-				m_osu_skin_workshop_title_ref->setValue(subscribedItem.title);
-				m_osu_skin_workshop_id_ref->setValue(UString::format("%llu", subscribedItem.id));
+				cv::osu::skin_is_from_workshop.setValue(1.0f);
+				cv::osu::skin_workshop_title.setValue(subscribedItem.title);
+				cv::osu::skin_workshop_id.setValue(UString::format("%llu", subscribedItem.id));
 
-				m_osu_skin_ref->setValue(subscribedItem.installInfo);
+				cv::osu::skin.setValue(subscribedItem.installInfo);
 
 				updateSkinNameLabel();
 			}
@@ -2539,15 +2539,15 @@ void OsuOptionsMenu::onSkinReload()
 
 void OsuOptionsMenu::onSkinRandom()
 {
-	const bool isRandomSkinEnabled = m_osu_skin_random_ref->getBool();
+	const bool isRandomSkinEnabled = cv::osu::skin_random.getBool();
 
 	if (!isRandomSkinEnabled)
-		m_osu_skin_random_ref->setValue(1.0f);
+		cv::osu::skin_random.setValue(1.0f);
 
 	osu->reloadSkin();
 
 	if (!isRandomSkinEnabled)
-		m_osu_skin_random_ref->setValue(0.0f);
+		cv::osu::skin_random.setValue(0.0f);
 }
 
 void OsuOptionsMenu::onResolutionSelect()
@@ -2644,9 +2644,9 @@ void OsuOptionsMenu::onResolutionSelect()
 void OsuOptionsMenu::onResolutionSelect2(UString resolution, int id)
 {
 	if (env->isFullscreen())
-		convar->getConVarByName("osu_resolution")->setValue(resolution);
+		cv::osu::resolution.setValue(resolution);
 	else
-		convar->getConVarByName("windowed")->execArgs(resolution);
+		cv::windowed.execArgs(resolution);
 }
 
 void OsuOptionsMenu::onOutputDeviceSelect()
@@ -2713,7 +2713,7 @@ void OsuOptionsMenu::onAudioCompatibilityModeChange(CBaseUICheckbox *checkbox)
 {
 	onCheckboxChange(checkbox);
 	soundEngine->setOutputDeviceForce(soundEngine->getOutputDevice());
-	checkbox->setChecked(m_win_snd_fallback_dsound_ref->getBool(), false);
+	checkbox->setChecked(cv::win_snd_fallback_dsound.getBool(), false);
 	osu->getSkin()->reloadSounds();
 }
 
@@ -2746,11 +2746,11 @@ void OsuOptionsMenu::onBrowseOsuFolderClicked()
 
 				// use the first selected path
 				UString newPath = paths[0];
-				convar->getConVarByName("osu_folder")->setValue(newPath);
+				cv::osu::folder.setValue(newPath);
 				m_osuFolderTextbox->setText(newPath);
 				updateOsuFolder();
 			},
-			convar->getConVarByName("osu_folder")->getString()
+			cv::osu::folder.getString()
 		);
 	}
 }
@@ -2771,7 +2771,7 @@ void OsuOptionsMenu::onNotelockSelect()
 		for (int i=0; i<m_notelockTypes.size(); i++)
 		{
 			CBaseUIButton *button = m_contextMenu->addButton(m_notelockTypes[i], i);
-			if (i == m_osu_notelock_type_ref->getInt())
+			if (i == cv::osu::notelock_type.getInt())
 				button->setTextBrightColor(0xff00ff00);
 		}
 	}
@@ -2781,7 +2781,7 @@ void OsuOptionsMenu::onNotelockSelect()
 
 void OsuOptionsMenu::onNotelockSelect2(UString notelockType, int id)
 {
-	m_osu_notelock_type_ref->setValue(id);
+	cv::osu::notelock_type.setValue(id);
 	updateNotelockSelectLabel();
 
 	// and update the reset button as usual
@@ -2790,14 +2790,14 @@ void OsuOptionsMenu::onNotelockSelect2(UString notelockType, int id)
 
 void OsuOptionsMenu::onNotelockSelectResetClicked()
 {
-	if (m_notelockTypes.size() > 1 && (size_t)m_osu_notelock_type_ref->getDefaultFloat() < m_notelockTypes.size())
-		onNotelockSelect2(m_notelockTypes[(size_t)m_osu_notelock_type_ref->getDefaultFloat()], (int)m_osu_notelock_type_ref->getDefaultFloat());
+	if (m_notelockTypes.size() > 1 && (size_t)cv::osu::notelock_type.getDefaultFloat() < m_notelockTypes.size())
+		onNotelockSelect2(m_notelockTypes[(size_t)cv::osu::notelock_type.getDefaultFloat()], (int)cv::osu::notelock_type.getDefaultFloat());
 }
 
 void OsuOptionsMenu::onNotelockSelectResetUpdate()
 {
 	if (m_notelockSelectResetButton != NULL)
-		m_notelockSelectResetButton->setEnabled(m_osu_notelock_type_ref->getInt() != (int)m_osu_notelock_type_ref->getDefaultFloat());
+		m_notelockSelectResetButton->setEnabled(cv::osu::notelock_type.getInt() != (int)cv::osu::notelock_type.getDefaultFloat());
 }
 
 void OsuOptionsMenu::onHPDrainSelect()
@@ -2810,7 +2810,7 @@ void OsuOptionsMenu::onHPDrainSelect()
 		for (int i=0; i<m_drainTypes.size(); i++)
 		{
 			CBaseUIButton *button = m_contextMenu->addButton(m_drainTypes[i], i);
-			if (i == m_osu_drain_type_ref->getInt())
+			if (i == cv::osu::drain_type.getInt())
 				button->setTextBrightColor(0xff00ff00);
 		}
 	}
@@ -2820,7 +2820,7 @@ void OsuOptionsMenu::onHPDrainSelect()
 
 void OsuOptionsMenu::onHPDrainSelect2(UString hpDrainType, int id)
 {
-	m_osu_drain_type_ref->setValue(id);
+	cv::osu::drain_type.setValue(id);
 	updateHPDrainSelectLabel();
 
 	// and update the reset button as usual
@@ -2829,14 +2829,14 @@ void OsuOptionsMenu::onHPDrainSelect2(UString hpDrainType, int id)
 
 void OsuOptionsMenu::onHPDrainSelectResetClicked()
 {
-	if (m_drainTypes.size() > 1 && (size_t)m_osu_drain_type_ref->getDefaultFloat() < m_drainTypes.size())
-		onHPDrainSelect2(m_drainTypes[(size_t)m_osu_drain_type_ref->getDefaultFloat()], (size_t)m_osu_drain_type_ref->getDefaultFloat());
+	if (m_drainTypes.size() > 1 && (size_t)cv::osu::drain_type.getDefaultFloat() < m_drainTypes.size())
+		onHPDrainSelect2(m_drainTypes[(size_t)cv::osu::drain_type.getDefaultFloat()], (size_t)cv::osu::drain_type.getDefaultFloat());
 }
 
 void OsuOptionsMenu::onHPDrainSelectResetUpdate()
 {
 	if (m_hpDrainSelectResetButton != NULL)
-		m_hpDrainSelectResetButton->setEnabled(m_osu_drain_type_ref->getInt() != (int)m_osu_drain_type_ref->getDefaultFloat());
+		m_hpDrainSelectResetButton->setEnabled(cv::osu::drain_type.getInt() != (int)cv::osu::drain_type.getDefaultFloat());
 }
 
 void OsuOptionsMenu::onCheckboxChange(CBaseUICheckbox *checkbox)
@@ -3819,7 +3819,7 @@ OsuOptionsMenuCategoryButton *OsuOptionsMenu::addCategory(CBaseUIElement *sectio
 
 void OsuOptionsMenu::save()
 {
-	if (!osu_options_save_on_back.getBool())
+	if (!cv::osu::options_save_on_back.getBool())
 	{
 		debugLog("DEACTIVATED SAVE!!!! @ {:f}\n", engine->getTime());
 		return;
@@ -3840,33 +3840,33 @@ void OsuOptionsMenu::save()
 	std::vector<ConVar *> manualConVars;
 	std::vector<ConVar *> removeConCommands;
 
-	manualConVars.push_back(convar->getConVarByName("osu_songbrowser_sortingtype"));
-	manualConVars.push_back(convar->getConVarByName("osu_songbrowser_scores_sortingtype"));
-	manualConVars.push_back(m_osu_notelock_type_ref);
-	manualConVars.push_back(m_osu_drain_type_ref);
+	manualConVars.push_back(&cv::osu::songbrowser_sortingtype);
+	manualConVars.push_back(&cv::osu::songbrowser_scores_sortingtype);
+	manualConVars.push_back(&cv::osu::notelock_type);
+	manualConVars.push_back(&cv::osu::drain_type);
 
-	removeConCommands.push_back(convar->getConVarByName("monitor"));
-	removeConCommands.push_back(convar->getConVarByName("windowed"));
-	removeConCommands.push_back(m_osu_skin_ref);
-	removeConCommands.push_back(m_osu_skin_workshop_title_ref);
-	removeConCommands.push_back(m_osu_skin_workshop_id_ref);
-	removeConCommands.push_back(m_osu_skin_is_from_workshop_ref);
-	removeConCommands.push_back(convar->getConVarByName("snd_output_device"));
+	removeConCommands.push_back(&cv::monitor);
+	removeConCommands.push_back(&cv::windowed);
+	removeConCommands.push_back(&cv::osu::skin);
+	removeConCommands.push_back(&cv::osu::skin_workshop_title);
+	removeConCommands.push_back(&cv::osu::skin_workshop_id);
+	removeConCommands.push_back(&cv::osu::skin_is_from_workshop);
+	removeConCommands.push_back(&cv::snd_output_device);
 
 	if (m_fullscreenCheckbox != NULL)
 	{
 		if (m_fullscreenCheckbox->isChecked())
 		{
-			manualConCommands.push_back(convar->getConVarByName("fullscreen"));
-			if (convar->getConVarByName("osu_resolution_enabled")->getBool())
-				manualConVars.push_back(convar->getConVarByName("osu_resolution"));
+			manualConCommands.push_back(&cv::fullscreen);
+			if (cv::osu::resolution_enabled.getBool())
+				manualConVars.push_back(&cv::osu::resolution);
 			else
-				removeConCommands.push_back(convar->getConVarByName("osu_resolution"));
+				removeConCommands.push_back(&cv::osu::resolution);
 		}
 		else
 		{
-			removeConCommands.push_back(convar->getConVarByName("fullscreen"));
-			removeConCommands.push_back(convar->getConVarByName("osu_resolution"));
+			removeConCommands.push_back(&cv::fullscreen);
+			removeConCommands.push_back(&cv::osu::resolution);
 		}
 	}
 
@@ -3951,56 +3951,52 @@ void OsuOptionsMenu::save()
 		return;
 	}
 
-	// helper lambda for writing lines
-	auto writeLine = [&out](const UString &line) {
-		UString lineWithNewline = line + "\n";
-		out.write(lineWithNewline.toUtf8(), lineWithNewline.lengthUtf8());
-	};
-
 	// write user stuff back
 	for (const auto &line : keepLines)
-		writeLine(line);
+		out.writeLine(line);
 
-	writeLine("");
+	out.writeLine("");
 
 	// write manual commands
 	for (const auto &cmd : manualConCommands)
-		writeLine(cmd->getName());
+		out.writeLine(cmd->getName());
 
 	// write manual convars
 	for (const auto &var : manualConVars)
-		writeLine(UString::fmt("{:s} {:s}", var->getName(), var->getString()));
+		out.writeLine(UString::fmt("{:s} {:s}", var->getName(), var->getString()));
 
 	// hardcoded entries
-	writeLine(UString::fmt("monitor {:d}", env->getMonitor()));
+	out.writeLine(UString::fmt("monitor {:d}", env->getMonitor()));
 
 	if (soundEngine->getOutputDevice() != "Default" && !soundEngine->getOutputDevice().isEmpty())
-		writeLine(UString::fmt("snd_output_device {:s}", soundEngine->getOutputDevice()));
+		out.writeLine(UString::fmt("snd_output_device {:s}", soundEngine->getOutputDevice()));
 
 	if (m_fullscreenCheckbox != NULL && !m_fullscreenCheckbox->isChecked())
-		writeLine(UString::fmt("windowed {:d}x{:d}", engine->getScreenWidth(), engine->getScreenHeight()));
+		out.writeLine(UString::fmt("windowed {:d}x{:d}", engine->getScreenWidth(), engine->getScreenHeight()));
 
 	// write options elements convars
 	for (const auto &element : m_elements)
 	{
 		if (element.cvar != NULL)
-			writeLine(UString::fmt("{:s} {:s}", element.cvar->getName(), element.cvar->getString()));
+			out.writeLine(UString::fmt("{:s} {:s}", element.cvar->getName(), element.cvar->getString()));
 	}
 
 	// write skin-related convars
-	writeLine(UString::fmt("osu_skin_mipmaps {:s}", convar->getConVarByName("osu_skin_mipmaps")->getString()));
+	out.writeLine(UString::fmt("osu_skin_mipmaps {:s}", cv::osu::skin_mipmaps.getString()));
 
 	if constexpr (Env::cfg(FEAT::STEAM))
 	{
-		if (m_osu_skin_is_from_workshop_ref->getBool())
+		if (cv::osu::skin_is_from_workshop.getBool())
 		{
-			writeLine(UString::fmt("osu_skin_is_from_workshop {:s}", m_osu_skin_is_from_workshop_ref->getString()));
-			writeLine(UString::fmt("osu_skin_workshop_title {:s}", m_osu_skin_workshop_title_ref->getString()));
-			writeLine(UString::fmt("osu_skin_workshop_id {:s}", m_osu_skin_workshop_id_ref->getString()));
+			out.writeLine(UString::fmt("osu_skin_is_from_workshop {:s}", cv::osu::skin_is_from_workshop.getString()));
+			out.writeLine(UString::fmt("osu_skin_workshop_title {:s}", cv::osu::skin_workshop_title.getString()));
+			out.writeLine(UString::fmt("osu_skin_workshop_id {:s}", cv::osu::skin_workshop_id.getString()));
 		}
 	}
 
-	writeLine(UString::fmt("osu_skin {:s}", m_osu_skin_ref->getString()));
+	out.writeLine(UString::fmt("osu_skin {:s}", cv::osu::skin.getString()));
+	if (!out.canWrite())
+		debugLog("WARNING: partially written user config file {:s}.", userConfigFile);
 }
 
 void OsuOptionsMenu::openAndScrollToSkinSection()

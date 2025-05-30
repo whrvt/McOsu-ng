@@ -269,24 +269,6 @@ private:
 	OsuOptionsMenuResetButton *m_hpDrainSelectResetButton;
 
 	ConVar *m_waitingKey;
-	ConVar *m_osu_slider_curve_points_separation_ref;
-	ConVar *m_osu_letterboxing_offset_x_ref;
-	ConVar *m_osu_letterboxing_offset_y_ref;
-	ConVar *m_osu_mod_fposu_ref;
-	ConVar *m_osu_skin_ref;
-	ConVar *m_osu_skin_is_from_workshop_ref;
-	ConVar *m_osu_skin_workshop_title_ref;
-	ConVar *m_osu_skin_workshop_id_ref;
-	ConVar *m_osu_skin_random_ref;
-	ConVar *m_osu_ui_scale_ref;
-	ConVar *m_win_snd_fallback_dsound_ref;
-	ConVar *m_win_snd_wasapi_buffer_size_ref;
-	ConVar *m_win_snd_wasapi_period_size_ref;
-	ConVar *m_osu_notelock_type_ref;
-	ConVar *m_osu_drain_type_ref;
-	ConVar *m_osu_background_color_r_ref;
-	ConVar *m_osu_background_color_g_ref;
-	ConVar *m_osu_background_color_b_ref;
 
 	float m_fOsuFolderTextboxInvalidAnim;
 	float m_fVibrationStrengthExampleTimer;

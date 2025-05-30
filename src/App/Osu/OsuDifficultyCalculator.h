@@ -232,9 +232,9 @@ public:
 	static double calculateTotalStarsFromSkills(double aim, double speed);
 
 private:
-	static ConVar *m_osu_slider_scorev2_ref;
-	static ConVar *m_osu_slider_end_inside_check_offset_ref;
-	static ConVar *m_osu_slider_curve_max_length_ref;
+	
+	
+	
 
 private:
 	struct Attributes

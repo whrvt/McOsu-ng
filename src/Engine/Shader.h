@@ -16,7 +16,7 @@ class ConVar;
 class Shader : public Resource
 {
 public:
-	static ConVar *debug_shaders;
+	
 
 public:
 	Shader() : Resource() {;}

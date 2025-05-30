@@ -19,9 +19,10 @@
 #define STEAMWORKS_APPID 0
 
 SteamworksInterface *steam = NULL;
-
+namespace cv {
 ConVar debug_steam("debug_steam", false, FCVAR_NONE);
 ConVar steam_timeout("steam_timeout", 15.0f, FCVAR_NONE, "timeout in seconds for some steamworks API calls");
+}
 
 
 UString SteamworksInterfaceAPICallFailureToString(ESteamAPICallFailure reason)
@@ -47,7 +48,7 @@ bool SteamworksInterfaceWaitAPICallBlocking(SteamAPICall_t apiCall, void *pCallb
 {
 	if (cubCallback < 1 || pCallback == NULL) return false;
 
-	if (debug_steam.getBool())
+	if (cv::debug_steam.getBool())
 		debugLog("SteamworksInterfaceWaitAPICallBlocking() ...\n");
 
 	Timer t;
@@ -60,7 +61,7 @@ bool SteamworksInterfaceWaitAPICallBlocking(SteamAPICall_t apiCall, void *pCallb
 		completed = SteamUtils()->IsAPICallCompleted(apiCall, &error);
 
 		t.update();
-		timeout = (t.getElapsedTime() > steam_timeout.getFloat()) && !ignoreTimeout;
+		timeout = (t.getElapsedTime() > cv::steam_timeout.getFloat()) && !ignoreTimeout;
 	}
 	while (!completed && !timeout);
 
@@ -77,7 +78,7 @@ bool SteamworksInterfaceWaitAPICallBlocking(SteamAPICall_t apiCall, void *pCallb
 		debugLog("STEAM: API call error {} (1) ({:s})!\n", reason, stringReason.toUtf8());
 	}
 
-	if (debug_steam.getBool())
+	if (cv::debug_steam.getBool())
 		debugLog("SteamworksInterfaceWaitAPICallBlocking() done.\n");
 
 	if (completed)
@@ -316,7 +317,7 @@ bool SteamworksInterface::isWorkshopSubscribedItemInstalled(uint64_t publishedFi
 
 	const uint32_t itemState = SteamUGC()->GetItemState(publishedFileId);
 
-	if (debug_steam.getBool())
+	if (cv::debug_steam.getBool())
 		debugLog("STEAM: SteamUGC()->GetItemState( {} ) = {}\n", publishedFileId, itemState);
 
 	return ((itemState & EItemState::k_EItemStateSubscribed) && (itemState & EItemState::k_EItemStateInstalled));
@@ -328,7 +329,7 @@ bool SteamworksInterface::isWorkshopSubscribedItemDownloading(uint64_t published
 
 	const uint32_t itemState = SteamUGC()->GetItemState(publishedFileId);
 
-	if (debug_steam.getBool())
+	if (cv::debug_steam.getBool())
 		debugLog("STEAM: SteamUGC()->GetItemState( {} ) = {}\n", publishedFileId, itemState);
 
 	return ((itemState & EItemState::k_EItemStateDownloading) || (itemState & EItemState::k_EItemStateDownloadPending));

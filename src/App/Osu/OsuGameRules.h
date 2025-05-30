@@ -28,118 +28,61 @@ public:
 	}
 
 
-
 	//************************//
 	//	Hitobject Animations  //
 	//************************//
 
-	static ConVar osu_hitobject_hittable_dim;
-	static ConVar osu_hitobject_hittable_dim_start_percent;
-	static ConVar osu_hitobject_hittable_dim_duration;
-
-	static ConVar osu_hitobject_fade_in_time;
-
-	static ConVar osu_hitobject_fade_out_time;
-	static ConVar osu_hitobject_fade_out_time_speed_multiplier_min;
-
-	static ConVar osu_circle_fade_out_scale;
-
-	static ConVar osu_slider_followcircle_fadein_fade_time;
-	static ConVar osu_slider_followcircle_fadeout_fade_time;
-	static ConVar osu_slider_followcircle_fadein_scale;
-	static ConVar osu_slider_followcircle_fadein_scale_time;
-	static ConVar osu_slider_followcircle_fadeout_scale;
-	static ConVar osu_slider_followcircle_fadeout_scale_time;
-	static ConVar osu_slider_followcircle_tick_pulse_time;
-	static ConVar osu_slider_followcircle_tick_pulse_scale;
-
-	static ConVar osu_spinner_fade_out_time_multiplier;
-
 	static float getFadeOutTime(OsuBeatmap *beatmap) // this scales the fadeout duration with the current speed multiplier
 	{
-		return osu_hitobject_fade_out_time.getFloat() * (1.0f / std::max(beatmap->getSpeedMultiplier(), osu_hitobject_fade_out_time_speed_multiplier_min.getFloat()));
+		return cv::osu::stdrules::hitobject_fade_out_time.getFloat() * (1.0f / std::max(beatmap->getSpeedMultiplier(), cv::osu::stdrules::hitobject_fade_out_time_speed_multiplier_min.getFloat()));
 	}
 
-	static inline long getFadeInTime() {return (long)osu_hitobject_fade_in_time.getInt();}
-
-
-
-	//*********************//
-	//	Experimental Mods  //
-	//*********************//
-
-	static ConVar osu_mod_fps;
-	static ConVar osu_mod_no50s;
-	static ConVar osu_mod_no100s;
-	static ConVar osu_mod_ming3012;
-	static ConVar osu_mod_millhioref;
-	static ConVar osu_mod_millhioref_multiplier;
-	static ConVar osu_mod_mafham;
-	static ConVar osu_mod_mafham_render_livesize;
-	static ConVar osu_stacking_ar_override;
-	static ConVar osu_mod_halfwindow;
-	static ConVar osu_mod_halfwindow_allow_300s;
-
-
+	static inline long getFadeInTime() {return (long)cv::osu::stdrules::hitobject_fade_in_time.getInt();}
 
 	//********************//
 	//	Hitobject Timing  //
 	//********************//
 
-	static ConVar osu_approachtime_min;
-	static ConVar osu_approachtime_mid;
-	static ConVar osu_approachtime_max;
-
-	static ConVar osu_hitwindow_300_min;
-	static ConVar osu_hitwindow_300_mid;
-	static ConVar osu_hitwindow_300_max;
-	static ConVar osu_hitwindow_100_min;
-	static ConVar osu_hitwindow_100_mid;
-	static ConVar osu_hitwindow_100_max;
-	static ConVar osu_hitwindow_50_min;
-	static ConVar osu_hitwindow_50_mid;
-	static ConVar osu_hitwindow_50_max;
-	static ConVar osu_hitwindow_miss;
 
 	// ignore all mods and overrides
 	static inline float getRawMinApproachTime()
 	{
-		return osu_approachtime_min.getFloat();
+		return cv::osu::stdrules::approachtime_min.getFloat();
 	}
 	static inline float getRawMidApproachTime()
 	{
-		return osu_approachtime_mid.getFloat();
+		return cv::osu::stdrules::approachtime_mid.getFloat();
 	}
 	static inline float getRawMaxApproachTime()
 	{
-		return osu_approachtime_max.getFloat();
+		return cv::osu::stdrules::approachtime_max.getFloat();
 	}
 
 	// respect mods and overrides
 	static inline float getMinApproachTime()
 	{
-		return getRawMinApproachTime() * (osu_mod_millhioref.getBool() ? osu_mod_millhioref_multiplier.getFloat() : 1.0f);
+		return getRawMinApproachTime() * (cv::osu::stdrules::mod_millhioref.getBool() ? cv::osu::stdrules::mod_millhioref_multiplier.getFloat() : 1.0f);
 	}
 	static inline float getMidApproachTime()
 	{
-		return getRawMidApproachTime() * (osu_mod_millhioref.getBool() ? osu_mod_millhioref_multiplier.getFloat() : 1.0f);
+		return getRawMidApproachTime() * (cv::osu::stdrules::mod_millhioref.getBool() ? cv::osu::stdrules::mod_millhioref_multiplier.getFloat() : 1.0f);
 	}
 	static inline float getMaxApproachTime()
 	{
-		return getRawMaxApproachTime() * (osu_mod_millhioref.getBool() ? osu_mod_millhioref_multiplier.getFloat() : 1.0f);
+		return getRawMaxApproachTime() * (cv::osu::stdrules::mod_millhioref.getBool() ? cv::osu::stdrules::mod_millhioref_multiplier.getFloat() : 1.0f);
 	}
 
-	static inline float getMinHitWindow300() {return osu_hitwindow_300_min.getFloat();}
-	static inline float getMidHitWindow300() {return osu_hitwindow_300_mid.getFloat();}
-	static inline float getMaxHitWindow300() {return osu_hitwindow_300_max.getFloat();}
+	static inline float getMinHitWindow300() {return cv::osu::stdrules::hitwindow_300_min.getFloat();}
+	static inline float getMidHitWindow300() {return cv::osu::stdrules::hitwindow_300_mid.getFloat();}
+	static inline float getMaxHitWindow300() {return cv::osu::stdrules::hitwindow_300_max.getFloat();}
 
-	static inline float getMinHitWindow100() {return osu_hitwindow_100_min.getFloat();}
-	static inline float getMidHitWindow100() {return osu_hitwindow_100_mid.getFloat();}
-	static inline float getMaxHitWindow100() {return osu_hitwindow_100_max.getFloat();}
+	static inline float getMinHitWindow100() {return cv::osu::stdrules::hitwindow_100_min.getFloat();}
+	static inline float getMidHitWindow100() {return cv::osu::stdrules::hitwindow_100_mid.getFloat();}
+	static inline float getMaxHitWindow100() {return cv::osu::stdrules::hitwindow_100_max.getFloat();}
 
-	static inline float getMinHitWindow50() {return osu_hitwindow_50_min.getFloat();}
-	static inline float getMidHitWindow50() {return osu_hitwindow_50_mid.getFloat();}
-	static inline float getMaxHitWindow50() {return osu_hitwindow_50_max.getFloat();}
+	static inline float getMinHitWindow50() {return cv::osu::stdrules::hitwindow_50_min.getFloat();}
+	static inline float getMidHitWindow50() {return cv::osu::stdrules::hitwindow_50_mid.getFloat();}
+	static inline float getMaxHitWindow50() {return cv::osu::stdrules::hitwindow_50_max.getFloat();}
 
 	// AR 5 -> 1200 ms
 	static float mapDifficultyRange(float scaledDiff, float min, float mid, float max)
@@ -234,19 +177,19 @@ public:
 	}
 	static float getApproachTime(const OsuBeatmap *beatmap)
 	{
-		return osu_mod_mafham.getBool() ? beatmap->getLength()*2 : mapDifficultyRange(beatmap->getAR(), getMinApproachTime(), getMidApproachTime(), getMaxApproachTime());
+		return cv::osu::stdrules::mod_mafham.getBool() ? beatmap->getLength()*2 : mapDifficultyRange(beatmap->getAR(), getMinApproachTime(), getMidApproachTime(), getMaxApproachTime());
 	}
 	static float getRawApproachTime(const OsuBeatmap *beatmap) // ignore AR override
 	{
-		return osu_mod_mafham.getBool() ? beatmap->getLength()*2 : mapDifficultyRange(beatmap->getRawAR(), getMinApproachTime(), getMidApproachTime(), getMaxApproachTime());
+		return cv::osu::stdrules::mod_mafham.getBool() ? beatmap->getLength()*2 : mapDifficultyRange(beatmap->getRawAR(), getMinApproachTime(), getMidApproachTime(), getMaxApproachTime());
 	}
 	static float getApproachTimeForStacking(float AR)
 	{
-		return mapDifficultyRange(osu_stacking_ar_override.getFloat() < 0.0f ? AR : osu_stacking_ar_override.getFloat(), getMinApproachTime(), getMidApproachTime(), getMaxApproachTime());
+		return mapDifficultyRange(cv::osu::stdrules::stacking_ar_override.getFloat() < 0.0f ? AR : cv::osu::stdrules::stacking_ar_override.getFloat(), getMinApproachTime(), getMidApproachTime(), getMaxApproachTime());
 	}
 	static float getApproachTimeForStacking(const OsuBeatmap *beatmap)
 	{
-		return mapDifficultyRange(osu_stacking_ar_override.getFloat() < 0.0f ? beatmap->getAR() : osu_stacking_ar_override.getFloat(), getMinApproachTime(), getMidApproachTime(), getMaxApproachTime());
+		return mapDifficultyRange(cv::osu::stdrules::stacking_ar_override.getFloat() < 0.0f ? beatmap->getAR() : cv::osu::stdrules::stacking_ar_override.getFloat(), getMinApproachTime(), getMidApproachTime(), getMaxApproachTime());
 	}
 
 	static float getRawHitWindow300(float OD) // ignore all mods and overrides
@@ -281,7 +224,7 @@ public:
 	}
 	static inline float getHitWindowMiss(const OsuBeatmap *beatmap)
 	{
-		return osu_hitwindow_miss.getFloat(); // opsu is using this here: (500.0f - (beatmap->getOD() * 10.0f)), while osu is just using 400 absolute ms hardcoded, not sure why
+		return cv::osu::stdrules::hitwindow_miss.getFloat(); // opsu is using this here: (500.0f - (beatmap->getOD() * 10.0f)), while osu is just using 400 absolute ms hardcoded, not sure why
 	}
 
 	static float getSpinnerSpinsPerSecond(const OsuBeatmap *beatmap) // raw spins required per second
@@ -300,9 +243,9 @@ public:
 
 	static OsuScore::HIT getHitResult(long delta, const OsuBeatmap *beatmap)
 	{
-		if (osu_mod_halfwindow.getBool() && delta > 0 && delta <= (long)getHitWindowMiss(beatmap))
+		if (cv::osu::stdrules::mod_halfwindow.getBool() && delta > 0 && delta <= (long)getHitWindowMiss(beatmap))
 		{
-			if (!osu_mod_halfwindow_allow_300s.getBool())
+			if (!cv::osu::stdrules::mod_halfwindow_allow_300s.getBool())
 				return OsuScore::HIT::HIT_MISS;
 			else if (delta > (long)getHitWindow300(beatmap))
 				return OsuScore::HIT::HIT_MISS;
@@ -312,7 +255,7 @@ public:
 
 		OsuScore::HIT result = OsuScore::HIT::HIT_NULL;
 
-		if (!osu_mod_ming3012.getBool() && !osu_mod_no100s.getBool() && !osu_mod_no50s.getBool())
+		if (!cv::osu::stdrules::mod_ming3012.getBool() && !cv::osu::stdrules::mod_no100s.getBool() && !cv::osu::stdrules::mod_no50s.getBool())
 		{
 			if (delta <= (long)getHitWindow300(beatmap))
 				result = OsuScore::HIT::HIT_300;
@@ -323,7 +266,7 @@ public:
 			else if (delta <= (long)getHitWindowMiss(beatmap))
 				result = OsuScore::HIT::HIT_MISS;
 		}
-		else if (osu_mod_ming3012.getBool())
+		else if (cv::osu::stdrules::mod_ming3012.getBool())
 		{
 			if (delta <= (long)getHitWindow300(beatmap))
 				result = OsuScore::HIT::HIT_300;
@@ -332,14 +275,14 @@ public:
 			else if (delta <= (long)getHitWindowMiss(beatmap))
 				result = OsuScore::HIT::HIT_MISS;
 		}
-		else if (osu_mod_no100s.getBool())
+		else if (cv::osu::stdrules::mod_no100s.getBool())
 		{
 			if (delta <= (long)getHitWindow300(beatmap))
 				result = OsuScore::HIT::HIT_300;
 			else if (delta <= (long)getHitWindowMiss(beatmap))
 				result = OsuScore::HIT::HIT_MISS;
 		}
-		else if (osu_mod_no50s.getBool())
+		else if (cv::osu::stdrules::mod_no50s.getBool())
 		{
 			if (delta <= (long)getHitWindow300(beatmap))
 				result = OsuScore::HIT::HIT_300;
@@ -358,7 +301,7 @@ public:
 	//	Hitobject Scaling  //
 	//*********************//
 
-	static ConVar osu_slider_followcircle_size_multiplier;
+	
 
 	// "Builds of osu! up to 2013-05-04 had the gamefield being rounded down, which caused incorrect radius calculations
 	// in widescreen cases. This ratio adjusts to allow for old replays to work post-fix, which in turn increases the lenience
@@ -391,8 +334,8 @@ public:
 	//	Playfield  //
 	//*************//
 
-	static ConVar osu_playfield_border_top_percent;
-	static ConVar osu_playfield_border_bottom_percent;
+	
+	
 
 	static constexpr int OSU_COORD_WIDTH = 512;
 	static constexpr int OSU_COORD_HEIGHT = 384;
@@ -400,8 +343,8 @@ public:
 	static float getPlayfieldScaleFactor()
 	{
 		const int engineScreenWidth = osu->getVirtScreenWidth();
-		const int topBorderSize = osu_playfield_border_top_percent.getFloat()*osu->getVirtScreenHeight();
-		const int bottomBorderSize = osu_playfield_border_bottom_percent.getFloat()*osu->getVirtScreenHeight();
+		const int topBorderSize = cv::osu::stdrules::playfield_border_top_percent.getFloat()*osu->getVirtScreenHeight();
+		const int bottomBorderSize = cv::osu::stdrules::playfield_border_bottom_percent.getFloat()*osu->getVirtScreenHeight();
 		const int engineScreenHeight = osu->getVirtScreenHeight() - bottomBorderSize - topBorderSize;
 
 		return osu->getVirtScreenWidth()/(float)OSU_COORD_WIDTH > engineScreenHeight/(float)OSU_COORD_HEIGHT ? engineScreenHeight/(float)OSU_COORD_HEIGHT : engineScreenWidth/(float)OSU_COORD_WIDTH;
@@ -417,10 +360,10 @@ public:
 	static Vector2 getPlayfieldOffset()
 	{
 		const Vector2 playfieldSize = getPlayfieldSize();
-		const int bottomBorderSize = osu_playfield_border_bottom_percent.getFloat()*osu->getVirtScreenHeight();
+		const int bottomBorderSize = cv::osu::stdrules::playfield_border_bottom_percent.getFloat()*osu->getVirtScreenHeight();
 		int playfieldYOffset = (osu->getVirtScreenHeight()/2.0f - (playfieldSize.y/2.0f)) - bottomBorderSize;
 
-		if (osu_mod_fps.getBool())
+		if (cv::osu::stdrules::mod_fps.getBool())
 			playfieldYOffset = 0; // first person mode doesn't need any offsets, cursor/crosshair should be centered on screen
 
 		return Vector2((osu->getVirtScreenWidth()-playfieldSize.x)/2.0f, (osu->getVirtScreenHeight()-playfieldSize.y)/2.0f + playfieldYOffset);

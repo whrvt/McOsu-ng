@@ -12,9 +12,9 @@
 #include "File.h"
 
 #include <sstream>
-
-ConVar _debug_shaders("debug_shaders", false, FCVAR_NONE);
-ConVar *Shader::debug_shaders = &_debug_shaders;
+namespace cv {
+ConVar debug_shaders("debug_shaders", false, FCVAR_NONE);
+}
 
 Shader::SHADER_PARSE_RESULT Shader::parseShaderFromFileOrString(UString graphicsInterfaceAndShaderTypePrefix, UString shaderSourceOrFilePath, bool source)
 {

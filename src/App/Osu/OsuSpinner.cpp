@@ -18,8 +18,9 @@
 #include "OsuSkin.h"
 #include "OsuGameRules.h"
 #include "OsuBeatmapStandard.h"
-
-ConVar osu_spinner_use_ar_fadein("osu_spinner_use_ar_fadein", false, FCVAR_NONE, "whether spinners should fade in with AR (same as circles), or with hardcoded 400 ms fadein time (osu!default)");
+namespace cv::osu {
+ConVar spinner_use_ar_fadein("osu_spinner_use_ar_fadein", false, FCVAR_NONE, "whether spinners should fade in with AR (same as circles), or with hardcoded 400 ms fadein time (osu!default)");
+}
 
 OsuSpinner::OsuSpinner(int x, int y, long time, int sampleType, bool isEndOfCombo, long endTime, OsuBeatmapStandard *beatmap) : OsuHitObject(time, sampleType, -1, isEndOfCombo, -1, -1, beatmap)
 {
@@ -59,7 +60,7 @@ OsuSpinner::OsuSpinner(int x, int y, long time, int sampleType, bool isEndOfComb
 	m_bMisAim = true;
 
 	// spinners don't use AR-dependent fadein, instead they always fade in with hardcoded 400 ms (see OsuGameRules::getFadeInTime())
-	m_bUseFadeInTimeAsApproachTime = !osu_spinner_use_ar_fadein.getBool();
+	m_bUseFadeInTimeAsApproachTime = !cv::osu::spinner_use_ar_fadein.getBool();
 }
 
 OsuSpinner::~OsuSpinner()
@@ -73,7 +74,7 @@ OsuSpinner::~OsuSpinner()
 void OsuSpinner::draw()
 {
 	OsuHitObject::draw();
-	const long fadeOutTimeMS = (long)(OsuGameRules::getFadeOutTime(m_beatmap) * 1000.0f * OsuGameRules::osu_spinner_fade_out_time_multiplier.getFloat());
+	const long fadeOutTimeMS = (long)(OsuGameRules::getFadeOutTime(m_beatmap) * 1000.0f * cv::osu::stdrules::spinner_fade_out_time_multiplier.getFloat());
 	const long deltaEnd = m_iDelta + m_iObjectDuration;
 	if ((m_bFinished || !m_bVisible) && (deltaEnd > 0 || (deltaEnd < -fadeOutTimeMS))) return;
 
@@ -288,7 +289,7 @@ void OsuSpinner::update(long curPos)
 
 		m_fRotationsNeeded = OsuGameRules::getSpinnerRotationsForSpeedMultiplier(m_beatmap, m_iObjectDuration);
 
-		const float fixedRate = /*(1.0f / convar->getConVarByName("fps_max")->getFloat())*/engine->getFrameTime();
+		const float fixedRate = /*(1.0f / cv::fps_max.getFloat())*/engine->getFrameTime();
 
 		const float DELTA_UPDATE_TIME = (fixedRate * 1000.0f);
 		const float AUTO_MULTIPLIER = (1.0f / 20.0f);
@@ -427,9 +428,9 @@ void OsuSpinner::onHit()
 	OsuScore::HIT result = OsuScore::HIT::HIT_NULL;
 	if (m_fRatio >= 1.0f || osu->getModAuto())
 		result = OsuScore::HIT::HIT_300;
-	else if (m_fRatio >= 0.9f && !OsuGameRules::osu_mod_ming3012.getBool() && !OsuGameRules::osu_mod_no100s.getBool())
+	else if (m_fRatio >= 0.9f && !cv::osu::stdrules::mod_ming3012.getBool() && !cv::osu::stdrules::mod_no100s.getBool())
 		result = OsuScore::HIT::HIT_100;
-	else if (m_fRatio >= 0.75f && !OsuGameRules::osu_mod_no100s.getBool() && !OsuGameRules::osu_mod_no50s.getBool() )
+	else if (m_fRatio >= 0.75f && !cv::osu::stdrules::mod_no100s.getBool() && !cv::osu::stdrules::mod_no50s.getBool() )
 		result = OsuScore::HIT::HIT_50;
 	else
 		result = OsuScore::HIT::HIT_MISS;
@@ -437,7 +438,7 @@ void OsuSpinner::onHit()
 	// sound
 	if (result != OsuScore::HIT::HIT_MISS)
 	{
-		if (m_osu_timingpoints_force->getBool())
+		if (cv::osu::timingpoints_force.getBool())
 			m_beatmap->updateTimingPoints(m_iTime + m_iObjectDuration);
 
 		const Vector2 osuCoords = m_beatmap->pixels2OsuCoords(m_beatmap->osuCoords2Pixels(m_vRawPos));

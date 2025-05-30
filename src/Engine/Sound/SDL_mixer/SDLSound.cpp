@@ -15,12 +15,6 @@
 #include "File.h"
 #include "ResourceManager.h"
 
-extern ConVar debug_snd;
-extern ConVar snd_speed_compensate_pitch;
-extern ConVar snd_play_interp_duration;
-extern ConVar snd_play_interp_ratio;
-extern ConVar snd_file_min_size;
-
 SDLSound::SDLSound(UString filepath, bool stream, bool threeD, bool loop, bool prescan) : Sound(filepath, stream, threeD, loop, prescan)
 {
 	m_HCHANNEL = 0;
@@ -384,7 +378,7 @@ float SDLSound::getPitch()
 
 float SDLSound::getFrequency()
 {
-	const float default_freq = convar->getConVarByName("snd_freq")->getFloat();
+	const float default_freq = cv::snd_freq.getFloat();
 	if (!m_bReady)
 		return default_freq;
 

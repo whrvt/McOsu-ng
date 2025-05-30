@@ -15,9 +15,9 @@
 
 #include "CBaseUIContainer.h"
 #include "CBaseUIButton.h"
-
+namespace cv {
 ConVar vs_percent("vs_percent", 0.0f, FCVAR_NONE);
-
+}
 
 
 class VSTitleBarButton : public CBaseUIButton
@@ -40,7 +40,7 @@ public:
 
 		// blue seekbar overlay
 		{
-			const float seekBarPercent = vs_percent.getFloat();
+			const float seekBarPercent = cv::vs_percent.getFloat();
 			if (seekBarPercent > 0.0f)
 			{
 				const Color middle = rgb(0, 50, 119);
@@ -153,10 +153,10 @@ void VSTitleBar::draw()
 void VSTitleBar::drawTitle1()
 {
 	m_title->draw();
-	if (vs_percent.getFloat() > 0)
+	if (cv::vs_percent.getFloat() > 0)
 	{
 		m_title->setTextColor(0xffffffff);
-		g->pushClipRect(McRect(m_vPos.x, m_vPos.y, vs_percent.getFloat()*m_vSize.x, m_title2->getSize().y));
+		g->pushClipRect(McRect(m_vPos.x, m_vPos.y, cv::vs_percent.getFloat()*m_vSize.x, m_title2->getSize().y));
 		{
 			m_title->draw();
 		}
@@ -168,10 +168,10 @@ void VSTitleBar::drawTitle1()
 void VSTitleBar::drawTitle2()
 {
 	m_title2->draw();
-	if (vs_percent.getFloat() > 0)
+	if (cv::vs_percent.getFloat() > 0)
 	{
 		m_title2->setTextColor(0xffffffff);
-		g->pushClipRect(McRect(m_vPos.x, m_vPos.y, vs_percent.getFloat()*m_vSize.x, m_title2->getSize().y));
+		g->pushClipRect(McRect(m_vPos.x, m_vPos.y, cv::vs_percent.getFloat()*m_vSize.x, m_title2->getSize().y));
 		{
 			m_title2->draw();
 		}
@@ -210,7 +210,7 @@ void VSTitleBar::update()
 	{
 		m_bIsSeeking = true;
 		const float percent = std::clamp<float>((mouse->getPos().x + 1 - m_vPos.x) / m_title->getSize().x, 0.0f, 1.0f);
-		vs_percent.setValue(percent);
+		cv::vs_percent.setValue(percent);
 	}
 	else
 	{

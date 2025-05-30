@@ -161,7 +161,7 @@ void OpenGL3Interface::beginScene()
 	// push main transforms
 	pushTransform();
 	setProjectionMatrix(defaultProjectionMatrix);
-	translate(r_globaloffset_x->getFloat(), r_globaloffset_y->getFloat());
+	translate(cv::r_globaloffset_x.getFloat(), cv::r_globaloffset_y.getFloat());
 
 	// and apply them
 	updateTransform();
@@ -405,7 +405,7 @@ void OpenGL3Interface::drawImage(Image *image)
 	drawVAO(&vao);
 	image->unbind();
 
-	if (r_debug_drawimage->getBool())
+	if (cv::r_debug_drawimage.getBool())
 	{
 		setColor(0xbbff00ff);
 		drawRect(x, y, width, height);
@@ -582,7 +582,7 @@ void OpenGL3Interface::drawVAO(VertexArrayObject *vao)
 
 void OpenGL3Interface::setClipRect(McRect clipRect)
 {
-	if (r_debug_disable_cliprect->getBool()) return;
+	if (cv::r_debug_disable_cliprect.getBool()) return;
 	//if (m_bIs3DScene) return; // HACKHACK:TODO:
 
 	// HACKHACK: compensate for viewport changes caused by RenderTargets!

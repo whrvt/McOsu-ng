@@ -78,7 +78,7 @@ void OsuUIBackButton::onMouseOutside()
 
 void OsuUIBackButton::updateLayout()
 {
-	const float uiScale = Osu::ui_scale->getFloat();
+	const float uiScale = cv::osu::ui_scale.getFloat();
 
 	Vector2 newSize = osu->getSkin()->getMenuBack2()->getSize();
 	newSize.y = std::clamp<float>(newSize.y, 0, osu->getSkin()->getMenuBack2()->getSizeBase().y*1.5f); // clamp the height down if it exceeds 1.5x the base height

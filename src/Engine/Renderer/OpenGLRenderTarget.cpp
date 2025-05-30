@@ -16,8 +16,6 @@
 #include "OpenGLHeaders.h"
 #include "OpenGLStateCache.h"
 
-extern ConVar debug_opengl;
-
 OpenGLRenderTarget::OpenGLRenderTarget(int x, int y, int width, int height, Graphics::MULTISAMPLE_TYPE multiSampleType) : RenderTarget(x, y, width, height, multiSampleType)
 {
 	m_iFrameBuffer = 0;
@@ -202,7 +200,7 @@ void OpenGLRenderTarget::init()
 
 #endif
 
-	if (debug_opengl.getBool()) // put this behind a flag because glCheckFramebufferStatus causes unnecessary command queue syncs
+	if (cv::debug_opengl.getBool()) // put this behind a flag because glCheckFramebufferStatus causes unnecessary command queue syncs
 	{
 		// error checking
 		GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
@@ -276,7 +274,7 @@ void OpenGLRenderTarget::enable()
 	OpenGLStateCache::getInstance().setCurrentViewport(newViewX, newViewY, newViewWidth, newViewHeight);
 
 	// clear
-	if (debug_rt->getBool())
+	if (cv::debug_rt.getBool())
 		glClearColor(0.0f, 0.5f, 0.0f, 0.5f);
 	else
 		glClearColor(m_clearColor.Rf(), m_clearColor.Gf(), m_clearColor.Bf(), m_clearColor.Af());

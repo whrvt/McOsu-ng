@@ -20,33 +20,34 @@
 
 #define MC_PROTOCOL_VERSION 1
 #define MC_PROTOCOL_TIMEOUT 10000
-
-ConVar _name_("name", "McKay", FCVAR_NONE);
+namespace cv {
+ConVar name("name", "McKay", FCVAR_NONE);
 
 #ifdef MCENGINE_FEATURE_NETWORKING
 
-ConVar _connect_("connect");
+ConVar connect("connect");
 ConVar connect_duration("connect_duration", 5.0f, FCVAR_NONE, "Time in seconds to wait for a response from the server when trying to connect");
-ConVar _disconnect_("disconnect");
+ConVar disconnect("disconnect");
 ConVar disconnect_duration("disconnect_duration", 3.0f, FCVAR_NONE, "Time in seconds to wait for a gentle disconnect before dropping the connection");
 
-ConVar _host_("host");
-ConVar _stop_("stop");
+ConVar host("host");
+ConVar stop("stop");
 ConVar host_port("host_port", 7777.0f, FCVAR_NONE);
 ConVar host_max_clients("host_max_clients", 16.0f, FCVAR_NONE);
-ConVar _status_("status");
+ConVar status("status");
 
 ConVar debug_network("debug_network", false, FCVAR_NONE);
 ConVar debug_network_time("debug_network_time", false, FCVAR_NONE);
 
-ConVar _name_admin_("name_admin", "ADMIN", FCVAR_NONE);
-ConVar _say_("say");
-ConVar _kick_("kick");
+ConVar name_admin("name_admin", "ADMIN", FCVAR_NONE);
+ConVar say("say");
+ConVar kick("kick");
 
 ConVar cl_cmdrate("cl_cmdrate", 66.0f, FCVAR_NONE, "How many client update packets are sent to the server per second");
 ConVar cl_updaterate("cl_updaterate", 66.0f, FCVAR_NONE, "How many snapshots/updates/deltas are requested from the server per second");
 
 #endif
+}
 
 NetworkHandler::NetworkHandler()
 {
@@ -69,14 +70,14 @@ NetworkHandler::NetworkHandler()
 	}
 
 	// convar callbacks
-	_host_.setCallback( fastdelegate::MakeDelegate(this, &NetworkHandler::host) );
-	_stop_.setCallback( fastdelegate::MakeDelegate(this, &NetworkHandler::hostStop) );
-	_status_.setCallback( fastdelegate::MakeDelegate(this, &NetworkHandler::status) );
-	_connect_.setCallback( fastdelegate::MakeDelegate(this, &NetworkHandler::connect) );
-	_disconnect_.setCallback( fastdelegate::MakeDelegate(this, &NetworkHandler::disconnect) );
+	cv::_host_.setCallback( fastdelegate::MakeDelegate(this, &NetworkHandler::host) );
+	cv::_stop_.setCallback( fastdelegate::MakeDelegate(this, &NetworkHandler::hostStop) );
+	cv::_status_.setCallback( fastdelegate::MakeDelegate(this, &NetworkHandler::status) );
+	cv::_connect_.setCallback( fastdelegate::MakeDelegate(this, &NetworkHandler::connect) );
+	cv::_disconnect_.setCallback( fastdelegate::MakeDelegate(this, &NetworkHandler::disconnect) );
 
-	_say_.setCallback( fastdelegate::MakeDelegate(this, &NetworkHandler::say) );
-	_kick_.setCallback( fastdelegate::MakeDelegate(this, &NetworkHandler::kick) );
+	cv::_say_.setCallback( fastdelegate::MakeDelegate(this, &NetworkHandler::say) );
+	cv::_kick_.setCallback( fastdelegate::MakeDelegate(this, &NetworkHandler::kick) );
 
 	m_client = NULL;
 	m_server = NULL;
@@ -264,7 +265,7 @@ void NetworkHandler::connect(UString address)
 
 	// connect to the server
 	enet_address_set_host(&adr, address.toUtf8());
-	adr.port = host_port.getInt();
+	adr.port = cv::host_port.getInt();
 
 	// initiate connection, up to two channels (0 and 1)
 	m_clientPeer = enet_host_connect(m_client, &adr, 2, 0);
@@ -277,10 +278,10 @@ void NetworkHandler::connect(UString address)
 
 	// wait up to connect_duration seconds for the connection to succeed
 	m_bClientConnectPending = true;
-	m_fClientConnectPendingTime = engine->getTime() + connect_duration.getFloat();
+	m_fClientConnectPendingTime = engine->getTime() + cv::connect_duration.getFloat();
 
 	m_sServerAddress = address;
-	debugLog("CLIENT: Trying to connect to \"{}\" ... ({:.1f} seconds(s) timeout)\n", address.length() == 0 ? L"localhost" : address.wc_str(), connect_duration.getFloat());
+	debugLog("CLIENT: Trying to connect to \"{}\" ... ({:.1f} seconds(s) timeout)\n", address.length() == 0 ? L"localhost" : address.wc_str(), cv::connect_duration.getFloat());
 
 #endif
 }
@@ -300,9 +301,9 @@ void NetworkHandler::disconnect()
 	// start gentle disconnect
 	enet_peer_disconnect(m_clientPeer, 0);
 	m_bClientDisconnectPending = true;
-	m_fClientDisconnectPendingTime = engine->getTime() + disconnect_duration.getFloat();
+	m_fClientDisconnectPendingTime = engine->getTime() + cv::disconnect_duration.getFloat();
 
-	debugLog("CLIENT: Trying to gently disconnect... ({:.1f} second(s) timeout)\n", disconnect_duration.getFloat());
+	debugLog("CLIENT: Trying to gently disconnect... ({:.1f} second(s) timeout)\n", cv::disconnect_duration.getFloat());
 
 #endif
 }
@@ -318,14 +319,14 @@ void NetworkHandler::host()
 	if (isServer())
 		hostStop();
 
-	debugLog("SERVER: Starting local server on port {}.\n", host_port.getInt());
+	debugLog("SERVER: Starting local server on port {}.\n", cv::host_port.getInt());
 
 	ENetAddress address;
 	address.host = ENET_HOST_ANY;
-	address.port = host_port.getInt();
+	address.port = cv::host_port.getInt();
 
 	m_server = enet_host_create (&address,
-								 host_max_clients.getInt(),
+								 cv::host_max_clients.getInt(),
 								 2 /* allow up to 2 channels to be used, 0 and 1 */,
 								 0 /* unlimited downstream bandwidth */,
 								 0 /* unlimited upstream bandwidth */);
@@ -386,7 +387,7 @@ void NetworkHandler::status()
 		char host_attr[255];
 		enet_address_get_host_ip(&m_server->receivedAddress, host_attr, 255);
 
-		debugLog("udp/ip: {:s}:{}\n", host_attr, host_port.getInt());
+		debugLog("udp/ip: {:s}:{}\n", host_attr, cv::host_port.getInt());
 		for (size_t c=0; c<m_vConnectedClients.size(); c++)
 		{
 			debugLog("# {} {}", m_vConnectedClients[c].name.wc_str(), m_vConnectedClients[c].peer->roundTripTime);
@@ -402,7 +403,7 @@ void NetworkHandler::status()
 		debugLog("version: {}\n", MC_PROTOCOL_VERSION);
 
 		debugLog("hostname: <TODO>\n");
-		debugLog("udp/ip: {}:{}\n", m_sServerAddress.length() == 0 ? L"localhost" : m_sServerAddress.wc_str(), host_port.getInt());
+		debugLog("udp/ip: {}:{}\n", m_sServerAddress.length() == 0 ? L"localhost" : m_sServerAddress.wc_str(), cv::host_port.getInt());
 		debugLog("ping: {}\n", m_clientPeer->roundTripTime);
 		debugLog("\n");
 	}
@@ -501,7 +502,7 @@ void NetworkHandler::update()
 	 || (m_bClientConnectPending && engine->getTime() > m_fClientConnectPendingTime))
 		clientDisconnect();
 
-	if (debug_network_time.getBool() && engine->getTime() > m_fDebugNetworkTime)
+	if (cv::debug_network_time.getBool() && engine->getTime() > m_fDebugNetworkTime)
 	{
 		m_fDebugNetworkTime = engine->getTime() + 0.5f;
 		if (isClient())
@@ -532,7 +533,7 @@ void NetworkHandler::onClientEvent(ENetEvent e)
 	switch (e.type)
 	{
 	case ENET_EVENT_TYPE_RECEIVE:
-		if (debug_network.getBool())
+		if (cv::debug_network.getBool())
 			debugLog("CLIENT: A packet of length {} was received from {:s} on channel {}.\n", e.packet->dataLength, e.peer->data, e.channelID);
 
 		if (e.packet->data != NULL)
@@ -655,7 +656,7 @@ void NetworkHandler::onServerEvent(ENetEvent e)
 		break;
 
 	case ENET_EVENT_TYPE_RECEIVE:
-		if (debug_network.getBool())
+		if (cv::debug_network.getBool())
 			debugLog("SERVER: A packet of length {} was received from {:s} on channel {}.\n", e.packet->dataLength, e.peer->data, e.channelID);
 
 		// switch on the different packet types
@@ -868,7 +869,7 @@ void NetworkHandler::sendClientInfo()
 #ifdef MCENGINE_FEATURE_NETWORKING
 
 	debugLog("CLIENT: Sending client info...\n");
-	UString localname = _name_.getString();
+	UString localname = cv::_name_.getString();
 
 	// build packet
 	size_t size = 0;
@@ -1178,7 +1179,7 @@ void NetworkHandler::say(UString message)
 	// if we are the server owner, say will generate name_admin chat message broadcasts:
 	if (!isClient() && isServer())
 	{
-		UString localname = _name_admin_.getString();
+		UString localname = cv::_name_admin_.getString();
 
 		// send it
 		broadcastChatMessage(localname, message, m_server, NULL);
@@ -1202,7 +1203,7 @@ void NetworkHandler::say(UString message)
 		return;
 	}
 
-	UString localname = _name_.getString();
+	UString localname = cv::_name_.getString();
 
 	// send it
 	singlecastChatMessage(localname, message, m_client, m_clientPeer);
@@ -1336,5 +1337,5 @@ void _httpget(UString args)
 	UString response = networkHandler->httpGet(args);
 	debugLog("response = {:s}", response.toUtf8());
 }
-ConVar _httpget_("httpget", _httpget);
+ConVar httpget("httpget", _httpget);
 */

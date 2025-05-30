@@ -24,44 +24,44 @@
 #include <algorithm>
 #include <fstream>
 #include <utility>
-
+namespace cv::osu {
 #if defined(_WIN32) || defined(_WIN64) || defined(__WIN32__) || defined(__CYGWIN__) || defined(__CYGWIN32__) || defined(__TOS_WIN__) || defined(__WINDOWS__)
-ConVar osu_folder("osu_folder", "C:/Program Files (x86)/osu!/", FCVAR_NONE);
+ConVar folder("osu_folder", "C:/Program Files (x86)/osu!/", FCVAR_NONE);
 #elif defined __linux__
-ConVar osu_folder("osu_folder", "/home/pg/Desktop/osu!/", FCVAR_NONE);
+ConVar folder("osu_folder", "/home/pg/Desktop/osu!/", FCVAR_NONE);
 #elif defined __APPLE__
-ConVar osu_folder("osu_folder", "/osu!/", FCVAR_NONE);
+ConVar folder("osu_folder", "/osu!/", FCVAR_NONE);
 #elif defined(MCENGINE_PLATFORM_WASM)
-ConVar osu_folder("osu_folder", "osu/", FCVAR_NONE);
+ConVar folder("osu_folder", "osu/", FCVAR_NONE);
 #else
 #error "put correct default folder convar here"
 #endif
 
-ConVar osu_folder_sub_songs("osu_folder_sub_songs", "Songs/", FCVAR_NONE);
-ConVar osu_folder_sub_skins("osu_folder_sub_skins", "Skins/", FCVAR_NONE);
+ConVar folder_sub_songs("osu_folder_sub_songs", "Songs/", FCVAR_NONE);
+ConVar folder_sub_skins("osu_folder_sub_skins", "Skins/", FCVAR_NONE);
 
-ConVar osu_database_enabled("osu_database_enabled", true, FCVAR_NONE);
-ConVar osu_database_version("osu_database_version", 20191114, FCVAR_NONE, "maximum supported osu!.db version, above this will use fallback loader");
-ConVar osu_database_ignore_version_warnings("osu_database_ignore_version_warnings", false, FCVAR_NONE);
-ConVar osu_database_ignore_version("osu_database_ignore_version", false, FCVAR_NONE, "ignore upper version limit and force load the db file (may crash)");
-ConVar osu_database_stars_cache_enabled("osu_database_stars_cache_enabled", false, FCVAR_NONE);
-ConVar osu_scores_enabled("osu_scores_enabled", true, FCVAR_NONE);
-ConVar osu_scores_legacy_enabled("osu_scores_legacy_enabled", true, FCVAR_NONE, "load osu!'s scores.db");
-ConVar osu_scores_custom_enabled("osu_scores_custom_enabled", true, FCVAR_NONE, "load custom scores.db");
-ConVar osu_scores_custom_version("osu_scores_custom_version", 20210110, FCVAR_NONE, "maximum supported custom scores.db version");
-ConVar osu_scores_save_immediately("osu_scores_save_immediately", true, FCVAR_NONE, "write scores.db as soon as a new score is added");
-ConVar osu_scores_sort_by_pp("osu_scores_sort_by_pp", true, FCVAR_NONE, "display pp in score browser instead of score");
-ConVar osu_scores_bonus_pp("osu_scores_bonus_pp", true, FCVAR_NONE, "whether to add bonus pp to total (real) pp or not");
-ConVar osu_scores_rename("osu_scores_rename");
-ConVar osu_scores_export("osu_scores_export");
-ConVar osu_collections_legacy_enabled("osu_collections_legacy_enabled", true, FCVAR_NONE, "load osu!'s collection.db");
-ConVar osu_collections_custom_enabled("osu_collections_custom_enabled", true, FCVAR_NONE, "load custom collections.db");
-ConVar osu_collections_custom_version("osu_collections_custom_version", 20220110, FCVAR_NONE, "maximum supported custom collections.db version");
-ConVar osu_collections_save_immediately("osu_collections_save_immediately", true, FCVAR_NONE, "write collections.db as soon as anything is changed");
-ConVar osu_user_beatmap_pp_sanity_limit_for_stats("osu_user_beatmap_pp_sanity_limit_for_stats", 10000.0f, FCVAR_NONE, "ignore scores with a higher pp value than this for the total profile pp calc");
-ConVar osu_user_include_relax_and_autopilot_for_stats("osu_user_include_relax_and_autopilot_for_stats", false, FCVAR_NONE);
-ConVar osu_user_switcher_include_legacy_scores_for_names("osu_user_switcher_include_legacy_scores_for_names", true, FCVAR_NONE);
-
+ConVar database_enabled("osu_database_enabled", true, FCVAR_NONE);
+ConVar database_version("osu_database_version", 20191114, FCVAR_NONE, "maximum supported osu!.db version, above this will use fallback loader");
+ConVar database_ignore_version_warnings("osu_database_ignore_version_warnings", false, FCVAR_NONE);
+ConVar database_ignore_version("osu_database_ignore_version", false, FCVAR_NONE, "ignore upper version limit and force load the db file (may crash)");
+ConVar database_stars_cache_enabled("osu_database_stars_cache_enabled", false, FCVAR_NONE);
+ConVar scores_enabled("osu_scores_enabled", true, FCVAR_NONE);
+ConVar scores_legacy_enabled("osu_scores_legacy_enabled", true, FCVAR_NONE, "load osu!'s scores.db");
+ConVar scores_custom_enabled("osu_scores_custom_enabled", true, FCVAR_NONE, "load custom scores.db");
+ConVar scores_custom_version("osu_scores_custom_version", 20210110, FCVAR_NONE, "maximum supported custom scores.db version");
+ConVar scores_save_immediately("osu_scores_save_immediately", true, FCVAR_NONE, "write scores.db as soon as a new score is added");
+ConVar scores_sort_by_pp("osu_scores_sort_by_pp", true, FCVAR_NONE, "display pp in score browser instead of score");
+ConVar scores_bonus_pp("osu_scores_bonus_pp", true, FCVAR_NONE, "whether to add bonus pp to total (real) pp or not");
+ConVar scores_rename("osu_scores_rename");
+ConVar scores_export("osu_scores_export");
+ConVar collections_legacy_enabled("osu_collections_legacy_enabled", true, FCVAR_NONE, "load osu!'s collection.db");
+ConVar collections_custom_enabled("osu_collections_custom_enabled", true, FCVAR_NONE, "load custom collections.db");
+ConVar collections_custom_version("osu_collections_custom_version", 20220110, FCVAR_NONE, "maximum supported custom collections.db version");
+ConVar collections_save_immediately("osu_collections_save_immediately", true, FCVAR_NONE, "write collections.db as soon as anything is changed");
+ConVar user_beatmap_pp_sanity_limit_for_stats("osu_user_beatmap_pp_sanity_limit_for_stats", 10000.0f, FCVAR_NONE, "ignore scores with a higher pp value than this for the total profile pp calc");
+ConVar user_include_relax_and_autopilot_for_stats("osu_user_include_relax_and_autopilot_for_stats", false, FCVAR_NONE);
+ConVar user_switcher_include_legacy_scores_for_names("osu_user_switcher_include_legacy_scores_for_names", true, FCVAR_NONE);
+}
 
 
 struct SortScoreByScore final : public OsuDatabase::SCORE_SORTING_COMPARATOR
@@ -307,12 +307,12 @@ protected:
 		m_db->loadStars();
 
 		// check if osu database exists, load file completely
-		UString osuDbFilePath = osu_folder.getString();
+		UString osuDbFilePath = cv::osu::folder.getString();
 		osuDbFilePath.append("osu!.db");
 		OsuFile db = OsuFile(osuDbFilePath);
 
 		// load database
-		if (db.isReady() && osu_database_enabled.getBool())
+		if (db.isReady() && cv::osu::database_enabled.getBool())
 		{
 			m_bNeedCleanup = true;
 			m_toCleanup.swap(m_db->m_databaseBeatmaps);
@@ -339,19 +339,17 @@ private:
 
 
 
-ConVar *OsuDatabase::m_name_ref = NULL;
-ConVar *OsuDatabase::m_osu_songbrowser_scores_sortingtype_ref = NULL;
+
+
 
 OsuDatabase::OsuDatabase()
 {
 	// convar refs
-	if (m_name_ref == NULL)
-		m_name_ref = convar->getConVarByName("name");
-	if (m_osu_songbrowser_scores_sortingtype_ref == NULL)
-		m_osu_songbrowser_scores_sortingtype_ref = convar->getConVarByName("osu_songbrowser_scores_sortingtype");
 
-	osu_scores_rename.setCallback( fastdelegate::MakeDelegate(this, &OsuDatabase::onScoresRename) );
-	osu_scores_export.setCallback( fastdelegate::MakeDelegate(this, &OsuDatabase::onScoresExport) );
+
+
+	cv::osu::scores_rename.setCallback( fastdelegate::MakeDelegate(this, &OsuDatabase::onScoresRename) );
+	cv::osu::scores_export.setCallback( fastdelegate::MakeDelegate(this, &OsuDatabase::onScoresExport) );
 
 	// vars
 	m_importTimer = new Timer(false);
@@ -512,7 +510,7 @@ int OsuDatabase::addScore(std::string beatmapMD5Hash, OsuDatabase::Score score)
 	m_bDidScoresChangeForSave = true;
 	m_bDidScoresChangeForStats = true;
 
-	if (osu_scores_save_immediately.getBool())
+	if (cv::osu::scores_save_immediately.getBool())
 		saveScores();
 
 	// return sorted index
@@ -592,7 +590,7 @@ void OsuDatabase::sortScores(std::string beatmapMD5Hash)
 
 	for (auto & sortMethod : m_scoreSortingMethods)
 	{
-		if (m_osu_songbrowser_scores_sortingtype_ref->getString() == sortMethod.name)
+		if (cv::osu::songbrowser_scores_sortingtype.getString() == sortMethod.name)
 		{
 			struct COMPARATOR_WRAPPER
 			{
@@ -610,7 +608,7 @@ void OsuDatabase::sortScores(std::string beatmapMD5Hash)
 		}
 	}
 
-	debugLog("ERROR: Invalid score sortingtype \"{:s}\"\n", m_osu_songbrowser_scores_sortingtype_ref->getString().toUtf8());
+	debugLog("ERROR: Invalid score sortingtype \"{:s}\"\n", cv::osu::songbrowser_scores_sortingtype.getString().toUtf8());
 }
 
 bool OsuDatabase::addCollection(UString collectionName)
@@ -636,7 +634,7 @@ bool OsuDatabase::addCollection(UString collectionName)
 
 	m_bDidCollectionsChangeForSave = true;
 
-	if (osu_collections_save_immediately.getBool())
+	if (cv::osu::collections_save_immediately.getBool())
 		saveCollections();
 
 	return true;
@@ -667,7 +665,7 @@ bool OsuDatabase::renameCollection(UString oldCollectionName, UString newCollect
 
 				m_bDidCollectionsChangeForSave = true;
 
-				if (osu_collections_save_immediately.getBool())
+				if (cv::osu::collections_save_immediately.getBool())
 					saveCollections();
 
 				return true;
@@ -693,7 +691,7 @@ void OsuDatabase::deleteCollection(UString collectionName)
 
 				m_bDidCollectionsChangeForSave = true;
 
-				if (osu_collections_save_immediately.getBool())
+				if (cv::osu::collections_save_immediately.getBool())
 					saveCollections();
 			}
 
@@ -732,7 +730,7 @@ void OsuDatabase::addBeatmapToCollection(UString collectionName, std::string bea
 
 				m_bDidCollectionsChangeForSave = true;
 
-				if (doSaveImmediatelyIfEnabled && osu_collections_save_immediately.getBool())
+				if (doSaveImmediatelyIfEnabled && cv::osu::collections_save_immediately.getBool())
 					saveCollections();
 
 				// also update .beatmaps for convenience (songbrowser will use that to rebuild the UI)
@@ -805,7 +803,7 @@ void OsuDatabase::removeBeatmapFromCollection(UString collectionName, std::strin
 
 						m_bDidCollectionsChangeForSave = true;
 
-						if (doSaveImmediatelyIfEnabled && osu_collections_save_immediately.getBool())
+						if (doSaveImmediatelyIfEnabled && cv::osu::collections_save_immediately.getBool())
 							saveCollections();
 					}
 
@@ -862,7 +860,7 @@ std::vector<UString> OsuDatabase::getPlayerNamesWithPPScores()
 	}
 
 	// always add local user, even if there were no scores
-	tempNames.insert(std::string(m_name_ref->getString().toUtf8()));
+	tempNames.insert(std::string(cv::name.getString().toUtf8()));
 
 	std::vector<UString> names;
 	names.reserve(tempNames.size());
@@ -877,7 +875,7 @@ std::vector<UString> OsuDatabase::getPlayerNamesWithPPScores()
 
 std::vector<UString> OsuDatabase::getPlayerNamesWithScoresForUserSwitcher()
 {
-	const bool includeLegacyNames = osu_user_switcher_include_legacy_scores_for_names.getBool();
+	const bool includeLegacyNames = cv::osu::user_switcher_include_legacy_scores_for_names.getBool();
 
 	// bit of a useless double string conversion going on here, but whatever
 
@@ -893,7 +891,7 @@ std::vector<UString> OsuDatabase::getPlayerNamesWithScoresForUserSwitcher()
 	}
 
 	// always add local user, even if there were no scores
-	tempNames.insert(std::string(m_name_ref->getString().toUtf8()));
+	tempNames.insert(std::string(cv::name.getString().toUtf8()));
 
 	std::vector<UString> names;
 	names.reserve(tempNames.size());
@@ -933,7 +931,7 @@ OsuDatabase::PlayerPPScores OsuDatabase::getPlayerPPScores(UString playerName)
 	};
 
 	unsigned long long totalScore = 0;
-	const float userBeatmapPpSanityLimitForStats = osu_user_beatmap_pp_sanity_limit_for_stats.getFloat();
+	const float userBeatmapPpSanityLimitForStats = cv::osu::user_beatmap_pp_sanity_limit_for_stats.getFloat();
 	for (auto &key : keys)
 	{
 		if (m_scores[key].size() > 0)
@@ -945,7 +943,7 @@ OsuDatabase::PlayerPPScores OsuDatabase::getPlayerPPScores(UString playerName)
 			float prevPP = -1.0f;
 			for (Score &score : m_scores[key])
 			{
-				if (!score.isLegacyScore && (osu_user_include_relax_and_autopilot_for_stats.getBool() ? true : !((score.modsLegacy & OsuReplay::Mods::Relax) || (score.modsLegacy & OsuReplay::Mods::Relax2))) && score.playerName == playerName)
+				if (!score.isLegacyScore && (cv::osu::user_include_relax_and_autopilot_for_stats.getBool() ? true : !((score.modsLegacy & OsuReplay::Mods::Relax) || (score.modsLegacy & OsuReplay::Mods::Relax2))) && score.playerName == playerName)
 				{
 					const bool isSaneScore = (userBeatmapPpSanityLimitForStats <= 0.0f || score.pp <= userBeatmapPpSanityLimitForStats);
 					if (isSaneScore)
@@ -1008,7 +1006,7 @@ OsuDatabase::PlayerStats OsuDatabase::calculatePlayerStats(UString playerName)
 
 	// bonus pp
 	// https://osu.ppy.sh/wiki/en/Performance_points
-	if (osu_scores_bonus_pp.getBool())
+	if (cv::osu::scores_bonus_pp.getBool())
 		pp += getBonusPPForNumScores(ps.ppScores.size());
 
 	// normalize accuracy
@@ -1152,7 +1150,7 @@ UString OsuDatabase::parseLegacyCfgBeatmapDirectoryParameter()
 	debugLog("username = {:s}\n", env->getUsername().toUtf8());
 	if (env->getUsername().length() > 0)
 	{
-		UString osuUserConfigFilePath = osu_folder.getString();
+		UString osuUserConfigFilePath = cv::osu::folder.getString();
 		osuUserConfigFilePath.append("osu!.");
 		osuUserConfigFilePath.append(env->getUsername());
 		osuUserConfigFilePath.append(".cfg");
@@ -1174,7 +1172,7 @@ UString OsuDatabase::parseLegacyCfgBeatmapDirectoryParameter()
 				{
 					// if we have an absolute path, use it in its entirety.
 					// otherwise, append the beatmapDirectory to the songFolder (which uses the osu_folder as the starting point)
-					UString songsFolder = osu_folder.getString();
+					UString songsFolder = cv::osu::folder.getString();
 
 					if (beatmapDirectory.find(":") != -1)
 						songsFolder = beatmapDirectory;
@@ -1207,11 +1205,11 @@ UString OsuDatabase::parseLegacyCfgBeatmapDirectoryParameter()
 
 void OsuDatabase::scheduleLoadRaw()
 {
-	m_sRawBeatmapLoadOsuSongFolder = osu_folder.getString();
+	m_sRawBeatmapLoadOsuSongFolder = cv::osu::folder.getString();
 	{
 		const UString customBeatmapDirectory = parseLegacyCfgBeatmapDirectoryParameter();
 		if (customBeatmapDirectory.length() < 1)
-			m_sRawBeatmapLoadOsuSongFolder.append(osu_folder_sub_songs.getString());
+			m_sRawBeatmapLoadOsuSongFolder.append(cv::osu::folder_sub_songs.getString());
 		else
 			m_sRawBeatmapLoadOsuSongFolder = customBeatmapDirectory;
 	}
@@ -1297,11 +1295,11 @@ void OsuDatabase::loadDB(OsuFile *db, bool &fallbackToRawLoad)
 
 	// get BeatmapDirectory parameter from osu!.<OS_USERNAME>.cfg
 	// fallback to /Songs/ if it doesn't exist
-	UString songFolder = osu_folder.getString();
+	UString songFolder = cv::osu::folder.getString();
 	{
 		const UString customBeatmapDirectory = parseLegacyCfgBeatmapDirectoryParameter();
 		if (customBeatmapDirectory.length() < 1)
-			songFolder.append(osu_folder_sub_songs.getString());
+			songFolder.append(cv::osu::folder_sub_songs.getString());
 		else
 			songFolder = customBeatmapDirectory;
 	}
@@ -1336,7 +1334,7 @@ void OsuDatabase::loadDB(OsuFile *db, bool &fallbackToRawLoad)
 		return;
 	}
 
-	if (!osu_database_ignore_version_warnings.getBool())
+	if (!cv::osu::database_ignore_version_warnings.getBool())
 	{
 		if (m_iVersion < 20190207) // xexxar angles star recalc
 		{
@@ -1345,7 +1343,7 @@ void OsuDatabase::loadDB(OsuFile *db, bool &fallbackToRawLoad)
 	}
 
 	// hard cap upper db version
-	if (m_iVersion > osu_database_version.getInt() && !osu_database_ignore_version.getBool())
+	if (m_iVersion > cv::osu::database_version.getInt() && !cv::osu::database_ignore_version.getBool())
 	{
 		osu->getNotificationOverlay()->addNotification(UString::format("osu!.db version unknown (%i),  using fallback loader.", m_iVersion), 0xffffff00, false, 5.0f);
 
@@ -1370,7 +1368,7 @@ void OsuDatabase::loadDB(OsuFile *db, bool &fallbackToRawLoad)
 	{
 		if (m_bInterruptLoad.load()) break; // cancellation point
 
-		if (Osu::debug->getBool())
+		if (cv::osu::debug.getBool())
 			debugLog("Database: Reading beatmap {}/{} ...\n", (i+1), m_iNumBeatmapsToLoad);
 
 		m_fLoadingProgress = 0.24f + 0.5f*((float)(i+1)/(float)m_iNumBeatmapsToLoad);
@@ -1424,7 +1422,7 @@ void OsuDatabase::loadDB(OsuFile *db, bool &fallbackToRawLoad)
 		}
 		// NOTE: if we have our own stars cached then prefer that
 		{
-			if (osu_database_stars_cache_enabled.getBool())
+			if (cv::osu::database_stars_cache_enabled.getBool())
 				numOsuStandardStars = 0.0f; // NOTE: force don't use stable stars
 
 			const auto result = m_starsCache.find(md5hash);
@@ -1887,15 +1885,15 @@ void OsuDatabase::loadDB(OsuFile *db, bool &fallbackToRawLoad)
 	m_fLoadingProgress = 0.75f;
 
 	// load legacy collection.db
-	if (osu_collections_legacy_enabled.getBool())
+	if (cv::osu::collections_legacy_enabled.getBool())
 	{
-		UString legacyCollectionFilePath = osu_folder.getString();
+		UString legacyCollectionFilePath = cv::osu::folder.getString();
 		legacyCollectionFilePath.append("collection.db");
 		loadCollections(legacyCollectionFilePath, true, hashToDiff2, hashToBeatmap);
 	}
 
 	// load custom collections.db (after having loaded legacy!)
-	if (osu_collections_custom_enabled.getBool())
+	if (cv::osu::collections_custom_enabled.getBool())
 		loadCollections("collections.db", false, hashToDiff2, hashToBeatmap);
 
 	std::ranges::sort(m_collections, SortCollectionByName());
@@ -1906,7 +1904,7 @@ void OsuDatabase::loadDB(OsuFile *db, bool &fallbackToRawLoad)
 
 void OsuDatabase::loadStars()
 {
-	if (!osu_database_stars_cache_enabled.getBool()) return;
+	if (!cv::osu::database_stars_cache_enabled.getBool()) return;
 
 	debugLog("\n");
 
@@ -1957,7 +1955,7 @@ void OsuDatabase::loadStars()
 
 void OsuDatabase::saveStars()
 {
-	if (!osu_database_stars_cache_enabled.getBool()) return;
+	if (!cv::osu::database_stars_cache_enabled.getBool()) return;
 
 	debugLog("Osu: Saving stars ...\n");
 
@@ -2042,9 +2040,9 @@ void OsuDatabase::loadScores()
 	// load custom scores
 	// NOTE: custom scores are loaded before legacy scores (because we want to be able to skip loading legacy scores which were already previously imported at some point)
 	size_t customScoresFileSize = 0;
-	if (osu_scores_custom_enabled.getBool())
+	if (cv::osu::scores_custom_enabled.getBool())
 	{
-		const int maxSupportedCustomDbVersion = osu_scores_custom_version.getInt();
+		const int maxSupportedCustomDbVersion = cv::osu::scores_custom_version.getInt();
 		const unsigned char hackIsImportedLegacyScoreFlag = 0xA9; // TODO: remove this once all builds on steam (even previous-version) have loading version cap logic
 
 		int makeBackupType = 0;
@@ -2087,7 +2085,7 @@ void OsuDatabase::loadScores()
 							break;
 						}
 
-						if (Osu::debug->getBool())
+						if (cv::osu::debug.getBool())
 							debugLog("Beatmap[{}]: md5hash = {:s}, numScores = {}\n", b, md5hash.c_str(), numScores);
 
 						for (int s=0; s<numScores; s++)
@@ -2232,9 +2230,9 @@ void OsuDatabase::loadScores()
 	}
 
 	// load legacy osu scores
-	if (osu_scores_legacy_enabled.getBool())
+	if (cv::osu::scores_legacy_enabled.getBool())
 	{
-		UString scoresPath = osu_folder.getString();
+		UString scoresPath = cv::osu::folder.getString();
 		scoresPath.append("scores.db");
 
 		OsuFile db(scoresPath, false);
@@ -2265,7 +2263,7 @@ void OsuDatabase::loadScores()
 
 					const int numScores = db.readInt();
 
-					if (Osu::debug->getBool())
+					if (cv::osu::debug.getBool())
 						debugLog("Beatmap[{}]: md5hash = {:s}, numScores = {}\n", b, md5hash.c_str(), numScores);
 
 					for (int s=0; s<numScores; s++)
@@ -2386,7 +2384,7 @@ void OsuDatabase::saveScores()
 	if (!m_bDidScoresChangeForSave) return;
 	m_bDidScoresChangeForSave = false;
 
-	const int dbVersion = osu_scores_custom_version.getInt();
+	const int dbVersion = cv::osu::scores_custom_version.getInt();
 	const unsigned char hackIsImportedLegacyScoreFlag = 0xA9; // TODO: remove this once all builds on steam (even previous-version) have loading version cap logic
 
 	if (m_scores.size() > 0)
@@ -2558,8 +2556,8 @@ void OsuDatabase::loadCollections(UString collectionFilePath, bool isLegacy, con
 
 		debugLog("Collection: version = {}, numCollections = {}\n", version, numCollections);
 
-		const bool isLegacyAndVersionValid = (isLegacy && (version <= osu_database_version.getInt() || osu_database_ignore_version.getBool()));
-		const bool isCustomAndVersionValid = (!isLegacy && (version <= osu_collections_custom_version.getInt()));
+		const bool isLegacyAndVersionValid = (isLegacy && (version <= cv::osu::database_version.getInt() || cv::osu::database_ignore_version.getBool()));
+		const bool isCustomAndVersionValid = (!isLegacy && (version <= cv::osu::collections_custom_version.getInt()));
 
 		if (isLegacyAndVersionValid || isCustomAndVersionValid)
 		{
@@ -2572,7 +2570,7 @@ void OsuDatabase::loadCollections(UString collectionFilePath, bool isLegacy, con
 				UString name = collectionFile.readString();
 				const int numBeatmaps = collectionFile.readInt();
 
-				if (Osu::debug->getBool())
+				if (cv::osu::debug.getBool())
 					debugLog("Raw Collection #{}: name = {:s}, numBeatmaps = {}\n", i, name.toUtf8(), numBeatmaps);
 
 				Collection c;
@@ -2720,7 +2718,7 @@ void OsuDatabase::loadCollections(UString collectionFilePath, bool isLegacy, con
 		else
 			osu->getNotificationOverlay()->addNotification(UString::format("collection.db version unknown (%i),  skipping loading.", version), 0xffffff00, false, 5.0f);
 
-		if (Osu::debug->getBool())
+		if (cv::osu::debug.getBool())
 		{
 			for (int i=0; i<m_collections.size(); i++)
 			{
@@ -2739,7 +2737,7 @@ void OsuDatabase::loadCollections(UString collectionFilePath, bool isLegacy, con
 		{
 			UString backupCollectionsFilePath = collectionFilePath;
 			const int forcedBackupCounter = 4;
-			backupCollectionsFilePath.append(UString::format(".%i_%i.backup", osu_collections_custom_version.getInt(), forcedBackupCounter));
+			backupCollectionsFilePath.append(UString::format(".%i_%i.backup", cv::osu::collections_custom_version.getInt(), forcedBackupCounter));
 
 			if (!env->fileExists(backupCollectionsFilePath)) // NOTE: avoid overwriting when people switch betas
 			{
@@ -2764,7 +2762,7 @@ void OsuDatabase::saveCollections()
 	if (!m_bDidCollectionsChangeForSave) return;
 	m_bDidCollectionsChangeForSave = false;
 
-	const int32_t dbVersion = osu_collections_custom_version.getInt();
+	const int32_t dbVersion = cv::osu::collections_custom_version.getInt();
 
 	if (m_collections.size() > 0)
 	{
@@ -2850,7 +2848,7 @@ void OsuDatabase::saveCollections()
 
 OsuDatabaseBeatmap *OsuDatabase::loadRawBeatmap(UString beatmapPath)
 {
-	if (Osu::debug->getBool())
+	if (cv::osu::debug.getBool())
 		debugLog("{:s}\n", beatmapPath.toUtf8());
 
 	// try loading all diffs
@@ -2872,7 +2870,7 @@ OsuDatabaseBeatmap *OsuDatabase::loadRawBeatmap(UString beatmapPath)
 				// try to load it. if successful save it, else cleanup and continue to the next osu file
 				if (!OsuDatabaseBeatmap::loadMetadata(diff2))
 				{
-					if (Osu::debug->getBool())
+					if (cv::osu::debug.getBool())
 					{
 						debugLog("Couldn't loadMetadata(), deleting object.\n");
 						if (diff2->getGameMode() == 0)
@@ -2922,11 +2920,11 @@ void OsuDatabase::onScoresRename(UString args)
 {
 	if (args.length() < 2)
 	{
-		osu->getNotificationOverlay()->addNotification(UString::format("Usage: %s MyNewName", osu_scores_rename.getName().toUtf8()));
+		osu->getNotificationOverlay()->addNotification(UString::format("Usage: %s MyNewName", cv::osu::scores_rename.getName().toUtf8()));
 		return;
 	}
 
-	const UString playerName = m_name_ref->getString();
+	const UString playerName = cv::name.getString();
 
 	debugLog("Renaming scores \"{:s}\" to \"{:s}\"\n", playerName.toUtf8(), args.toUtf8());
 

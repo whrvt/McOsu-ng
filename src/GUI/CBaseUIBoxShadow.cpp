@@ -21,8 +21,9 @@
 // HACKHACK: renderer dependent
 #include "OpenGLHeaders.h"
 */
-
+namespace cv {
 ConVar debug_box_shadows("debug_box_shadows", false, FCVAR_NONE);
+}
 
 CBaseUIBoxShadow::CBaseUIBoxShadow(Color color, float radius, float xPos, float yPos, float xSize, float ySize, UString name) : CBaseUIElement(xPos,yPos,xSize,ySize,name)
 {
@@ -48,7 +49,7 @@ void CBaseUIBoxShadow::draw()
 		m_bNeedsRedraw = false;
 	}
 
-	if (debug_box_shadows.getBool())
+	if (cv::debug_box_shadows.getBool())
 	{
 		g->setColor(0xff00ff00);
 		g->drawRect(m_vPos.x-m_fRadius,m_vPos.y-m_fRadius, m_blur->getSize().x, m_blur->getSize().y);

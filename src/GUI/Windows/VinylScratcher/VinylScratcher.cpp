@@ -30,7 +30,7 @@ VinylScratcher::VinylScratcher() : CBaseUIWindow(220, 90, 1000, 700, "Vinyl Scra
 	const int baseDPI = 96;
 	const int newDPI = dpiScale * baseDPI;
 
-	m_vs_percent_ref = convar->getConVarByName("vs_percent");
+
 
 	McFont *font = resourceManager->getFont("FONT_DEFAULT");
 	McFont *windowTitleFont = resourceManager->loadFont("ubuntu.ttf", "FONT_VS_WINDOW_TITLE", 10.0f, true, newDPI);
@@ -93,14 +93,14 @@ void VinylScratcher::update()
 
 	// update seekbar
 	if (m_stream->isPlaying() && !m_titleBar->isSeeking())
-		m_vs_percent_ref->setValue(m_stream->getPosition());
+		cv::vs_percent.setValue(m_stream->getPosition());
 
 	// update info text
 	{
 		unsigned long lengthMS = m_stream->getLengthMS();
 		unsigned long positionMS = m_stream->getPositionMS();
 		if (m_titleBar->isSeeking())
-			positionMS = (unsigned long)((float)lengthMS * m_vs_percent_ref->getFloat());
+			positionMS = (unsigned long)((float)lengthMS * cv::vs_percent.getFloat());
 
 		m_controlBar->getInfoButton()->setText(UString::format("  %i:%02i / %i:%02i", (positionMS/1000) / 60, (positionMS/1000) % 60, (lengthMS/1000) / 60, (lengthMS/1000) % 60));
 	}
@@ -123,7 +123,7 @@ void VinylScratcher::onKeyDown(KeyboardEvent &e)
 
 void VinylScratcher::onFinished()
 {
-	if (convar->getConVarByName("vs_repeat")->getBool())
+	if (cv::vs_repeat.getBool())
 		soundEngine->play(m_stream);
 	else
 	{
@@ -137,7 +137,7 @@ void VinylScratcher::onFinished()
 	}
 
 	// update seekbar
-	m_vs_percent_ref->setValue(0.0f);
+	cv::vs_percent.setValue(0.0f);
 }
 
 void VinylScratcher::onFileClicked(UString filepath, bool reverse)
@@ -177,7 +177,7 @@ void VinylScratcher::onVolumeChanged(CBaseUISlider *slider)
 
 void VinylScratcher::onSeek()
 {
-	m_stream->setPosition(m_vs_percent_ref->getFloat());
+	m_stream->setPosition(cv::vs_percent.getFloat());
 }
 
 void VinylScratcher::onPlayClicked()

@@ -14,21 +14,22 @@
 
 static constexpr auto DEFAULT_SYNC_TIMEOUT_US = 5000000; // 5ms timeout for sync operations
 static constexpr auto DEFAULT_MAX_FRAMES_IN_FLIGHT = 2;
-
+namespace cv {
 ConVar r_sync_timeout("r_sync_timeout", DEFAULT_SYNC_TIMEOUT_US, FCVAR_NONE, "timeout in microseconds for GPU synchronization operations");
 ConVar r_sync_enabled("r_sync_enabled", true, FCVAR_NONE, "enable explicit GPU synchronization for OpenGL");
 ConVar r_sync_debug("r_sync_debug", false, FCVAR_NONE, "print debug information about sync objects");
 ConVar r_sync_max_frames("r_sync_max_frames", DEFAULT_MAX_FRAMES_IN_FLIGHT, FCVAR_NONE, "maximum pre-rendered frames allowed in rendering pipeline"); // (a la "Max Prerendered Frames")
+}
 
 OpenGLSync::OpenGLSync()
 {
 	m_iSyncFrameCount = 0;
 
-	m_iMaxFramesInFlight = r_sync_max_frames.getVal<unsigned int>();
-	r_sync_max_frames.setCallback( fastdelegate::MakeDelegate(this, &OpenGLSync::onFramecountNumChanged) );
+	m_iMaxFramesInFlight = cv::r_sync_max_frames.getVal<int>();
+	cv::r_sync_max_frames.setCallback( fastdelegate::MakeDelegate(this, &OpenGLSync::onFramecountNumChanged) );
 
-	m_bEnabled = r_sync_enabled.getBool();
-	r_sync_enabled.setCallback( fastdelegate::MakeDelegate(this, &OpenGLSync::onSyncBehaviorChanged) );
+	m_bEnabled = cv::r_sync_enabled.getBool();
+	cv::r_sync_enabled.setCallback( fastdelegate::MakeDelegate(this, &OpenGLSync::onSyncBehaviorChanged) );
 }
 
 OpenGLSync::~OpenGLSync()
@@ -62,7 +63,7 @@ void OpenGLSync::end()
 
 			m_frameSyncQueue.push_back(syncPoint);
 
-			if (r_sync_debug.getBool())
+			if (cv::r_sync_debug.getBool())
 				debugLog("Created sync object for frame {:d} (frames in flight: {:d}/{:d})\n", syncPoint.frameNumber, m_frameSyncQueue.size(), m_iMaxFramesInFlight);
 		}
 	}
@@ -73,7 +74,7 @@ void OpenGLSync::manageFrameSyncQueue(bool forceWait)
 	if (m_frameSyncQueue.empty())
 		return;
 
-	const bool debug = r_sync_debug.getBool();
+	const bool debug = cv::r_sync_debug.getBool();
 
 	// check front of queue to see if it's complete
 	bool needToWait = forceWait || (m_frameSyncQueue.size() >= m_iMaxFramesInFlight);
@@ -123,7 +124,7 @@ void OpenGLSync::manageFrameSyncQueue(bool forceWait)
 		if (debug)
 			debugLog("Waiting for frame {:d} to complete (frames in flight: {:d}/{:d})\n", oldestSync.frameNumber, m_frameSyncQueue.size(), m_iMaxFramesInFlight);
 
-		SYNC_RESULT result = waitForSyncObject(oldestSync.syncObject, r_sync_timeout.getInt());
+		SYNC_RESULT result = waitForSyncObject(oldestSync.syncObject, cv::r_sync_timeout.getInt());
 
 		if (debug)
 		{
@@ -139,7 +140,7 @@ void OpenGLSync::manageFrameSyncQueue(bool forceWait)
 				debugLog("Frame {:d} sync object was just completed\n", oldestSync.frameNumber);
 				break;
 			case SYNC_TIMEOUT_EXPIRED:
-				debugLog("Frame {:d} sync object timed out after {:d} microseconds\n", oldestSync.frameNumber, r_sync_timeout.getInt());
+				debugLog("Frame {:d} sync object timed out after {:d} microseconds\n", oldestSync.frameNumber, cv::r_sync_timeout.getInt());
 				break;
 			case SYNC_WAIT_FAILED:
 				debugLog("Frame {:d} sync wait failed\n", oldestSync.frameNumber);
@@ -225,7 +226,7 @@ void OpenGLSync::setMaxFramesInFlight(int maxFrames)
 	// may need to wait on some frames if the limit is being reduced
 	if (m_bEnabled && m_frameSyncQueue.size() > m_iMaxFramesInFlight)
 	{
-		if (r_sync_debug.getBool())
+		if (cv::r_sync_debug.getBool())
 			debugLog("Max frames reduced to {:d}, waiting for excess frames\n", m_iMaxFramesInFlight);
 		// wait
 		manageFrameSyncQueue(true);

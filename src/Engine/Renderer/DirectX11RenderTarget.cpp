@@ -255,7 +255,7 @@ void DirectX11RenderTarget::enable()
 
 	// clear
 	Color clearColor = m_clearColor;
-	if (debug_rt->getBool())
+	if (cv::debug_rt.getBool())
 		clearColor = argb(0.5f, 0.0f, 0.5f, 0.0f);
 
 	float fClearColor[4] = {clearColor.Rf(), clearColor.Gf(), clearColor.Bf(), clearColor.Af()};

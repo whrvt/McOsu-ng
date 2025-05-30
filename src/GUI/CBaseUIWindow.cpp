@@ -19,9 +19,10 @@
 #include "CBaseUIContainer.h"
 #include "CBaseUIButton.h"
 #include "CBaseUIBoxShadow.h"
-
+namespace cv {
 ConVar ui_window_animspeed("ui_window_animspeed", 0.29f, FCVAR_NONE);
 ConVar ui_window_shadow_radius("ui_window_shadow_radius", 13.0f, FCVAR_NONE);
+}
 
 CBaseUIWindow::CBaseUIWindow(float xPos, float yPos, float xSize, float ySize, UString name) : CBaseUIElement(xPos, yPos, xSize, ySize, name)
 {
@@ -80,7 +81,7 @@ CBaseUIWindow::CBaseUIWindow(float xPos, float yPos, float xSize, float ySize, U
 
 	// test features
 	//m_rt = resourceManager->createRenderTarget(m_vPos.x, m_vPos.y, m_vSize.x+1, m_vSize.y+1);
-	//float shadowRadius = ui_window_shadow_radius.getInt();
+	//float shadowRadius = cv::ui_window_shadow_radius.getInt();
 	///m_shadow = new CBaseUIBoxShadow(0xff000000, shadowRadius, m_vPos.x-shadowRadius, m_vPos.y-shadowRadius, m_vSize.x+shadowRadius*2, m_vSize.y+shadowRadius*2+4, "windowshadow");
 
 	setTitle(name);
@@ -444,7 +445,7 @@ void CBaseUIWindow::close()
 
 	m_bAnimIn = false;
 	m_fAnimation = 1.0f;
-	anim->moveQuadInOut(&m_fAnimation, 0.0f, ui_window_animspeed.getFloat());
+	anim->moveQuadInOut(&m_fAnimation, 0.0f, cv::ui_window_animspeed.getFloat());
 
 	onClosed();
 }
@@ -459,7 +460,7 @@ void CBaseUIWindow::open()
 	{
 		m_bAnimIn = true;
 		m_fAnimation = 0.001f;
-		anim->moveQuadOut(&m_fAnimation, 1.0f, ui_window_animspeed.getFloat());
+		anim->moveQuadOut(&m_fAnimation, 1.0f, cv::ui_window_animspeed.getFloat());
 	}
 	else
 		m_fAnimation = 1.0f;

@@ -58,36 +58,40 @@
 #include <algorithm>
 #include <utility>
 
-ConVar osu_gamemode("osu_gamemode", "std", FCVAR_NONE);
-
-ConVar osu_songbrowser_sortingtype("osu_songbrowser_sortingtype", "By Date Added", FCVAR_NONE);
-ConVar osu_songbrowser_scores_sortingtype("osu_songbrowser_scores_sortingtype", "Sort By Score", FCVAR_NONE);
-
-ConVar osu_songbrowser_topbar_left_percent("osu_songbrowser_topbar_left_percent", 0.93f, FCVAR_NONE);
-ConVar osu_songbrowser_topbar_left_width_percent("osu_songbrowser_topbar_left_width_percent", 0.265f, FCVAR_NONE);
-ConVar osu_songbrowser_topbar_middle_width_percent("osu_songbrowser_topbar_middle_width_percent", 0.15f, FCVAR_NONE);
-ConVar osu_songbrowser_topbar_right_height_percent("osu_songbrowser_topbar_right_height_percent", 0.5f, FCVAR_NONE);
-ConVar osu_songbrowser_topbar_right_percent("osu_songbrowser_topbar_right_percent", 0.378f, FCVAR_NONE);
-ConVar osu_songbrowser_bottombar_percent("osu_songbrowser_bottombar_percent", 0.116f, FCVAR_NONE);
-
-ConVar osu_draw_songbrowser_background_image("osu_draw_songbrowser_background_image", true, FCVAR_NONE);
-ConVar osu_draw_songbrowser_menu_background_image("osu_draw_songbrowser_menu_background_image", true, FCVAR_NONE);
-ConVar osu_draw_songbrowser_strain_graph("osu_draw_songbrowser_strain_graph", false, FCVAR_NONE);
-ConVar osu_songbrowser_scorebrowser_enabled("osu_songbrowser_scorebrowser_enabled", true, FCVAR_NONE);
-ConVar osu_songbrowser_background_fade_in_duration("osu_songbrowser_background_fade_in_duration", 0.1f, FCVAR_NONE);
-
-ConVar osu_songbrowser_search_delay("osu_songbrowser_search_delay", 0.5f, FCVAR_NONE, "delay until search update when entering text");
 void _osu_songbrowser_search_hardcoded_filter(UString oldValue, UString newValue);
-ConVar osu_songbrowser_search_hardcoded_filter("osu_songbrowser_search_hardcoded_filter", "", FCVAR_NONE, "allows forcing the specified search filter to be active all the time", _osu_songbrowser_search_hardcoded_filter);
-ConVar osu_songbrowser_background_star_calculation("osu_songbrowser_background_star_calculation", true, FCVAR_NONE, "precalculate stars for all loaded beatmaps while in songbrowser");
-ConVar osu_songbrowser_dynamic_star_recalc("osu_songbrowser_dynamic_star_recalc", true, FCVAR_NONE, "dynamically recalculate displayed star value of currently selected beatmap in songbrowser");
 
-ConVar osu_debug_background_star_calc("osu_debug_background_star_calc", false, FCVAR_NONE, "prints the name of the beatmap about to get its stars calculated (cmd/terminal window only, no in-game log!)");
+namespace cv::osu {
+ConVar gamemode("osu_gamemode", "std", FCVAR_NONE);
+
+ConVar songbrowser_sortingtype("osu_songbrowser_sortingtype", "By Date Added", FCVAR_NONE);
+ConVar songbrowser_scores_sortingtype("osu_songbrowser_scores_sortingtype", "Sort By Score", FCVAR_NONE);
+
+ConVar songbrowser_topbar_left_percent("osu_songbrowser_topbar_left_percent", 0.93f, FCVAR_NONE);
+ConVar songbrowser_topbar_left_width_percent("osu_songbrowser_topbar_left_width_percent", 0.265f, FCVAR_NONE);
+ConVar songbrowser_topbar_middle_width_percent("osu_songbrowser_topbar_middle_width_percent", 0.15f, FCVAR_NONE);
+ConVar songbrowser_topbar_right_height_percent("osu_songbrowser_topbar_right_height_percent", 0.5f, FCVAR_NONE);
+ConVar songbrowser_topbar_right_percent("osu_songbrowser_topbar_right_percent", 0.378f, FCVAR_NONE);
+ConVar songbrowser_bottombar_percent("osu_songbrowser_bottombar_percent", 0.116f, FCVAR_NONE);
+
+ConVar draw_songbrowser_background_image("osu_draw_songbrowser_background_image", true, FCVAR_NONE);
+ConVar draw_songbrowser_menu_background_image("osu_draw_songbrowser_menu_background_image", true, FCVAR_NONE);
+ConVar draw_songbrowser_strain_graph("osu_draw_songbrowser_strain_graph", false, FCVAR_NONE);
+ConVar songbrowser_scorebrowser_enabled("osu_songbrowser_scorebrowser_enabled", true, FCVAR_NONE);
+ConVar songbrowser_background_fade_in_duration("osu_songbrowser_background_fade_in_duration", 0.1f, FCVAR_NONE);
+
+ConVar songbrowser_search_delay("osu_songbrowser_search_delay", 0.5f, FCVAR_NONE, "delay until search update when entering text");
+
+ConVar songbrowser_search_hardcoded_filter("osu_songbrowser_search_hardcoded_filter", "", FCVAR_NONE, "allows forcing the specified search filter to be active all the time", _osu_songbrowser_search_hardcoded_filter);
+ConVar songbrowser_background_star_calculation("osu_songbrowser_background_star_calculation", true, FCVAR_NONE, "precalculate stars for all loaded beatmaps while in songbrowser");
+ConVar songbrowser_dynamic_star_recalc("osu_songbrowser_dynamic_star_recalc", true, FCVAR_NONE, "dynamically recalculate displayed star value of currently selected beatmap in songbrowser");
+
+ConVar debug_background_star_calc("osu_debug_background_star_calc", false, FCVAR_NONE, "prints the name of the beatmap about to get its stars calculated (cmd/terminal window only, no in-game log!)");
+}
 
 void _osu_songbrowser_search_hardcoded_filter(UString oldValue, UString newValue)
 {
 	if (newValue.length() == 1 && newValue.isWhitespaceOnly())
-		osu_songbrowser_search_hardcoded_filter.setValue("");
+		cv::osu::songbrowser_search_hardcoded_filter.setValue("");
 }
 
 
@@ -424,27 +428,27 @@ OsuSongBrowser2::OsuSongBrowser2() : OsuScreenBackable()
 	}
 
 	// convar refs
-	m_fps_max_ref = convar->getConVarByName("fps_max");
-	m_osu_scores_enabled = convar->getConVarByName("osu_scores_enabled");
-	m_name_ref = convar->getConVarByName("name");
 
-	m_osu_draw_scrubbing_timeline_strain_graph_ref = convar->getConVarByName("osu_draw_scrubbing_timeline_strain_graph");
-	m_osu_hud_scrubbing_timeline_strains_height_ref = convar->getConVarByName("osu_hud_scrubbing_timeline_strains_height");
-	m_osu_hud_scrubbing_timeline_strains_alpha_ref = convar->getConVarByName("osu_hud_scrubbing_timeline_strains_alpha");
-	m_osu_hud_scrubbing_timeline_strains_aim_color_r_ref = convar->getConVarByName("osu_hud_scrubbing_timeline_strains_aim_color_r");
-	m_osu_hud_scrubbing_timeline_strains_aim_color_g_ref = convar->getConVarByName("osu_hud_scrubbing_timeline_strains_aim_color_g");
-	m_osu_hud_scrubbing_timeline_strains_aim_color_b_ref = convar->getConVarByName("osu_hud_scrubbing_timeline_strains_aim_color_b");
-	m_osu_hud_scrubbing_timeline_strains_speed_color_r_ref = convar->getConVarByName("osu_hud_scrubbing_timeline_strains_speed_color_r");
-	m_osu_hud_scrubbing_timeline_strains_speed_color_g_ref = convar->getConVarByName("osu_hud_scrubbing_timeline_strains_speed_color_g");
-	m_osu_hud_scrubbing_timeline_strains_speed_color_b_ref = convar->getConVarByName("osu_hud_scrubbing_timeline_strains_speed_color_b");
 
-	m_osu_draw_statistics_perfectpp_ref = convar->getConVarByName("osu_draw_statistics_perfectpp");
-	m_osu_draw_statistics_totalstars_ref = convar->getConVarByName("osu_draw_statistics_totalstars");
 
-	m_osu_mod_fposu_ref = convar->getConVarByName("osu_mod_fposu");
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 	// convar callbacks
-	osu_gamemode.setCallback( fastdelegate::MakeDelegate(this, &OsuSongBrowser2::onModeChange) );
+	cv::osu::gamemode.setCallback( fastdelegate::MakeDelegate(this, &OsuSongBrowser2::onModeChange) );
 
 	// vars
 	m_bSongBrowserRightClickScrollCheck = false;
@@ -539,7 +543,7 @@ OsuSongBrowser2::OsuSongBrowser2() : OsuScreenBackable()
 	m_userButton = new OsuUISongBrowserUserButton();
 	m_userButton->addTooltipLine("Click to change [User] or view/edit [Top Ranks]");
 	m_userButton->setClickCallback( fastdelegate::MakeDelegate(this, &OsuSongBrowser2::onUserButtonClicked) );
-	m_userButton->setText(m_name_ref->getString());
+	m_userButton->setText(cv::name.getString());
 	m_bottombar->addBaseUIElement(m_userButton);
 
 	// looks like shit there, don't like it
@@ -586,7 +590,7 @@ OsuSongBrowser2::OsuSongBrowser2() : OsuScreenBackable()
 	m_search = new OsuUISearchOverlay(0, 0, 0, 0, "");
 	m_search->setOffsetRight(10);
 	m_fSearchWaitTime = 0.0f;
-	m_bInSearch = (osu_songbrowser_search_hardcoded_filter.getString().length() > 0);
+	m_bInSearch = (cv::osu::songbrowser_search_hardcoded_filter.getString().length() > 0);
 	m_searchPrevGroup = GROUP::GROUP_NO_GROUPING;
 	m_backgroundSearchMatcher = new OsuSongBrowserBackgroundSearchMatcher();
 	m_bOnAfterSortingOrGroupChangeUpdateScheduled = false;
@@ -710,10 +714,10 @@ void OsuSongBrowser2::draw()
 	}
 
 	// draw background image
-	if (osu_draw_songbrowser_background_image.getBool())
+	if (cv::osu::draw_songbrowser_background_image.getBool())
 	{
 		float alpha = 1.0f;
-		if (osu_songbrowser_background_fade_in_duration.getFloat() > 0.0f)
+		if (cv::osu::songbrowser_background_fade_in_duration.getFloat() > 0.0f)
 		{
 			// handle fadein trigger after handler is finished loading
 			const bool ready = osu->getSelectedBeatmap() != NULL
@@ -725,14 +729,14 @@ void OsuSongBrowser2::draw()
 				m_fBackgroundFadeInTime = engine->getTime<float>();
 			else if (m_fBackgroundFadeInTime > 0.0f && engine->getTime<float>() > m_fBackgroundFadeInTime)
 			{
-				alpha = std::clamp<float>((engine->getTime<float>() - m_fBackgroundFadeInTime)/osu_songbrowser_background_fade_in_duration.getFloat(), 0.0f, 1.0f);
+				alpha = std::clamp<float>((engine->getTime<float>() - m_fBackgroundFadeInTime)/cv::osu::songbrowser_background_fade_in_duration.getFloat(), 0.0f, 1.0f);
 				alpha = 1.0f - (1.0f - alpha)*(1.0f - alpha);
 			}
 		}
 
 		drawSelectedBeatmapBackgroundImage(osu, alpha);
 	}
-	else if (osu_draw_songbrowser_menu_background_image.getBool())
+	else if (cv::osu::draw_songbrowser_menu_background_image.getBool())
 	{
 		// menu-background
 		Image *backgroundImage = osu->getSkin()->getMenuBackground();
@@ -755,7 +759,7 @@ void OsuSongBrowser2::draw()
 	m_scoreBrowser->draw();
 
 	// draw strain graph of currently selected beatmap
-	if (osu_draw_songbrowser_strain_graph.getBool() && getSelectedBeatmap() != NULL && getSelectedBeatmap()->getSelectedDifficulty2() != NULL && m_dynamicStarCalculator->isAsyncReady())
+	if (cv::osu::draw_songbrowser_strain_graph.getBool() && getSelectedBeatmap() != NULL && getSelectedBeatmap()->getSelectedDifficulty2() != NULL && m_dynamicStarCalculator->isAsyncReady())
 	{
 		// this is still WIP
 
@@ -812,14 +816,14 @@ void OsuSongBrowser2::draw()
 
 				const float msPerPixel = (float)lengthMS / graphWidth;
 				const float strainWidth = strainStepMS / msPerPixel;
-				const float strainHeightMultiplier = m_osu_hud_scrubbing_timeline_strains_height_ref->getFloat() * dpiScale;
+				const float strainHeightMultiplier = cv::osu::hud_scrubbing_timeline_strains_height.getFloat() * dpiScale;
 
 				McRect graphRect(0, m_bottombar->getPos().y - strainHeightMultiplier, graphWidth, strainHeightMultiplier);
 
-				const float alpha = (graphRect.contains(mouse->getPos()) ? 1.0f : m_osu_hud_scrubbing_timeline_strains_alpha_ref->getFloat());
+				const float alpha = (graphRect.contains(mouse->getPos()) ? 1.0f : cv::osu::hud_scrubbing_timeline_strains_alpha.getFloat());
 
-				const Color aimStrainColor = argb(alpha, m_osu_hud_scrubbing_timeline_strains_aim_color_r_ref->getInt() / 255.0f, m_osu_hud_scrubbing_timeline_strains_aim_color_g_ref->getInt() / 255.0f, m_osu_hud_scrubbing_timeline_strains_aim_color_b_ref->getInt() / 255.0f);
-				const Color speedStrainColor = argb(alpha, m_osu_hud_scrubbing_timeline_strains_speed_color_r_ref->getInt() / 255.0f, m_osu_hud_scrubbing_timeline_strains_speed_color_g_ref->getInt() / 255.0f, m_osu_hud_scrubbing_timeline_strains_speed_color_b_ref->getInt() / 255.0f);
+				const Color aimStrainColor = argb(alpha, cv::osu::hud_scrubbing_timeline_strains_aim_color_r.getInt() / 255.0f, cv::osu::hud_scrubbing_timeline_strains_aim_color_g.getInt() / 255.0f, cv::osu::hud_scrubbing_timeline_strains_aim_color_b.getInt() / 255.0f);
+				const Color speedStrainColor = argb(alpha, cv::osu::hud_scrubbing_timeline_strains_speed_color_r.getInt() / 255.0f, cv::osu::hud_scrubbing_timeline_strains_speed_color_g.getInt() / 255.0f, cv::osu::hud_scrubbing_timeline_strains_speed_color_b.getInt() / 255.0f);
 
 				g->setDepthBuffer(true);
 				for (int i=0; i<aimStrains.size(); i++)
@@ -892,7 +896,7 @@ void OsuSongBrowser2::draw()
 	m_songBrowser->draw();
 
 	// draw search
-	m_search->setSearchString(m_sSearchString, osu_songbrowser_search_hardcoded_filter.getString());
+	m_search->setSearchString(m_sSearchString, cv::osu::songbrowser_search_hardcoded_filter.getString());
 	m_search->setDrawNumResults(m_bInSearch);
 	m_search->setNumFoundResults(m_visibleSongButtons.size());
 	m_search->setSearching(!m_backgroundSearchMatcher->isDead());
@@ -909,10 +913,10 @@ void OsuSongBrowser2::draw()
 	g->popTransform();
 
 	m_topbarLeft->draw();
-	if (Osu::debug->getBool())
+	if (cv::osu::debug.getBool())
 		m_topbarLeft->draw_debug();
 	m_topbarRight->draw();
-	if (Osu::debug->getBool())
+	if (cv::osu::debug.getBool())
 		m_topbarRight->draw_debug();
 
 	// draw bottom bar
@@ -937,7 +941,7 @@ void OsuSongBrowser2::draw()
 
 	OsuScreenBackable::draw();
 	m_bottombar->draw();
-	if (Osu::debug->getBool())
+	if (cv::osu::debug.getBool())
 		m_bottombar->draw_debug();
 
 	// background task busy notification
@@ -1232,7 +1236,7 @@ void OsuSongBrowser2::update()
 	// TODO: fix this shit, it shouldn't have to be destroyed and recreated constantly
 	// handle background star calculation (2)
 	// this goes through all loaded beatmaps and checks if stars + length have to be calculated and set (e.g. if without osu!.db database)
-	if (m_beatmaps.size() > 0 && osu_songbrowser_background_star_calculation.getBool())
+	if (m_beatmaps.size() > 0 && cv::osu::songbrowser_background_star_calculation.getBool())
 	{
 		for (int s=0; s<1; s++) // one beatmap per update (leave one update loop gap between beatmaps to avoid stalling background image loading)
 		{
@@ -1291,7 +1295,7 @@ void OsuSongBrowser2::update()
 					{
 						m_backgroundStarCalculator->revive();
 
-						if (osu_debug_background_star_calc.getBool())
+						if (cv::osu::debug_background_star_calc.getBool())
 							debugLog("diffToCalc = {:s}\n", diffToCalc->getFilePath().toUtf8());
 
 						// start new calc (nomod stars)
@@ -1329,7 +1333,7 @@ void OsuSongBrowser2::onKeyDown(KeyboardEvent &key)
 	OsuScreen::onKeyDown(key); // only used for options menu
 	if (!m_bVisible || key.isConsumed()) return;
 
-	if (m_bVisible && m_bBeatmapRefreshScheduled && (key == KEY_ESCAPE || key == OsuKeyBindings::GAME_PAUSE.getVal<KEYCODE>()))
+	if (m_bVisible && m_bBeatmapRefreshScheduled && (key == KEY_ESCAPE || key == cv::osu::keybinds::GAME_PAUSE.getVal<KEYCODE>()))
 	{
 		m_db->cancel();
 		key.consume();
@@ -1407,13 +1411,13 @@ void OsuSongBrowser2::onKeyDown(KeyboardEvent &key)
 		m_bShiftPressed = true;
 
 	// function hotkeys
-	if ((key == KEY_F1 || key == OsuKeyBindings::TOGGLE_MODSELECT.getVal<KEYCODE>()) && !m_bF1Pressed)
+	if ((key == KEY_F1 || key == cv::osu::keybinds::TOGGLE_MODSELECT.getVal<KEYCODE>()) && !m_bF1Pressed)
 	{
 		m_bF1Pressed = true;
 		m_bottombarNavButtons[m_bottombarNavButtons.size() > 2 ? 1 : 0]->keyboardPulse();
 		onSelectionMods();
 	}
-	if ((key == KEY_F2 || key == OsuKeyBindings::RANDOM_BEATMAP.getVal<KEYCODE>()) && !m_bF2Pressed)
+	if ((key == KEY_F2 || key == cv::osu::keybinds::RANDOM_BEATMAP.getVal<KEYCODE>()) && !m_bF2Pressed)
 	{
 		m_bF2Pressed = true;
 		m_bottombarNavButtons[m_bottombarNavButtons.size() > 2 ? 2 : 1]->keyboardPulse();
@@ -1639,9 +1643,9 @@ void OsuSongBrowser2::onKeyUp(KeyboardEvent &key)
 	if (key == KEY_RIGHT)
 		m_bRight = false;
 
-	if (key == KEY_F1 || key == OsuKeyBindings::TOGGLE_MODSELECT.getVal<KEYCODE>())
+	if (key == KEY_F1 || key == cv::osu::keybinds::TOGGLE_MODSELECT.getVal<KEYCODE>())
 		m_bF1Pressed = false;
-	if (key == KEY_F2 || key == OsuKeyBindings::RANDOM_BEATMAP.getVal<KEYCODE>())
+	if (key == KEY_F2 || key == cv::osu::keybinds::RANDOM_BEATMAP.getVal<KEYCODE>())
 		m_bF2Pressed = false;
 	if (key == KEY_F3)
 		m_bF3Pressed = false;
@@ -1692,7 +1696,7 @@ void OsuSongBrowser2::setVisible(bool visible)
 			refreshBeatmaps();
 
 		// update user name/stats
-		onUserButtonChange(m_name_ref->getString(), -1);
+		onUserButtonChange(cv::name.getString(), -1);
 
 		// HACKHACK: workaround for BaseUI framework deficiency (missing mouse events. if a mouse button is being held, and then suddenly a BaseUIElement gets put under it and set visible, and then the mouse button is released, that "incorrectly" fires onMouseUpInside/onClicked/etc.)
 		mouse->onButtonChange(BUTTON_LEFT, false);
@@ -1877,7 +1881,7 @@ void OsuSongBrowser2::selectBeatmapMP(OsuDatabaseBeatmap *diff2)
 	if (m_sSearchString.length() > 0)
 	{
 		m_sSearchString = "";
-		osu_songbrowser_search_hardcoded_filter.setValue(m_sSearchString); // safety
+		cv::osu::songbrowser_search_hardcoded_filter.setValue(m_sSearchString); // safety
 		onSearchUpdate();
 	}
 
@@ -2415,7 +2419,7 @@ void OsuSongBrowser2::updateSongButtonLayout()
 
 void OsuSongBrowser2::updateSongButtonSorting()
 {
-	onSortChange(osu_songbrowser_scores_sortingtype.getString());
+	onSortChange(cv::osu::songbrowser_scores_sortingtype.getString());
 }
 
 bool OsuSongBrowser2::searchMatcher(const OsuDatabaseBeatmap *databaseBeatmap, const std::vector<UString> &searchStringTokens)
@@ -2752,7 +2756,7 @@ void OsuSongBrowser2::updateLayout()
 {
 	OsuScreenBackable::updateLayout();
 
-	const float uiScale = Osu::ui_scale->getFloat();
+	const float uiScale = cv::osu::ui_scale.getFloat();
 	const float dpiScale = Osu::getUIScale();
 
 	const int margin = 5 * dpiScale;
@@ -2764,7 +2768,7 @@ void OsuSongBrowser2::updateLayout()
 	m_fSongSelectTopScale *= uiScale; // NOTE: any user osu_ui_scale below 1.0 will break things (because songSelectTop image)
 
 	// topbar left (NOTE: the right side of the std::max() width is commented to keep the scorebrowser width consistent, and because it's not really needed anyway)
-	m_topbarLeft->setSize(std::max(osu->getSkin()->getSongSelectTop()->getWidth()*m_fSongSelectTopScale*osu_songbrowser_topbar_left_width_percent.getFloat() + margin, /*m_songInfo->getMinimumWidth() + margin*/0.0f), std::max(osu->getSkin()->getSongSelectTop()->getHeight()*m_fSongSelectTopScale*osu_songbrowser_topbar_left_percent.getFloat(), m_songInfo->getMinimumHeight() + margin));
+	m_topbarLeft->setSize(std::max(osu->getSkin()->getSongSelectTop()->getWidth()*m_fSongSelectTopScale*cv::osu::songbrowser_topbar_left_width_percent.getFloat() + margin, /*m_songInfo->getMinimumWidth() + margin*/0.0f), std::max(osu->getSkin()->getSongSelectTop()->getHeight()*m_fSongSelectTopScale*cv::osu::songbrowser_topbar_left_percent.getFloat(), m_songInfo->getMinimumHeight() + margin));
 	m_songInfo->setRelPos(margin, margin);
 	m_songInfo->setSize(m_topbarLeft->getSize().x - margin, std::max(m_topbarLeft->getSize().y*0.75f, m_songInfo->getMinimumHeight() + margin));
 
@@ -2791,8 +2795,8 @@ void OsuSongBrowser2::updateLayout()
 	m_topbarLeft->update_pos();
 
 	// topbar right
-	m_topbarRight->setPosX(osu->getSkin()->getSongSelectTop()->getWidth()*m_fSongSelectTopScale*osu_songbrowser_topbar_right_percent.getFloat());
-	m_topbarRight->setSize(osu->getVirtScreenWidth() - m_topbarRight->getPos().x, osu->getSkin()->getSongSelectTop()->getHeight()*m_fSongSelectTopScale*osu_songbrowser_topbar_right_height_percent.getFloat());
+	m_topbarRight->setPosX(osu->getSkin()->getSongSelectTop()->getWidth()*m_fSongSelectTopScale*cv::osu::songbrowser_topbar_right_percent.getFloat());
+	m_topbarRight->setSize(osu->getVirtScreenWidth() - m_topbarRight->getPos().x, osu->getSkin()->getSongSelectTop()->getHeight()*m_fSongSelectTopScale*cv::osu::songbrowser_topbar_right_height_percent.getFloat());
 
 	const int topbarRightTabButtonMargin = 10 * dpiScale;
 	const int topbarRightTabButtonHeight = 30 * dpiScale;
@@ -2842,7 +2846,7 @@ void OsuSongBrowser2::updateLayout()
 	m_topbarRight->update_pos();
 
 	// bottombar
-	const int bottomBarHeight = osu->getVirtScreenHeight()*osu_songbrowser_bottombar_percent.getFloat() * uiScale;
+	const int bottomBarHeight = osu->getVirtScreenHeight()*cv::osu::songbrowser_bottombar_percent.getFloat() * uiScale;
 
 	m_bottombar->setPosY(osu->getVirtScreenHeight() - bottomBarHeight);
 	m_bottombar->setSize(osu->getVirtScreenWidth(), bottomBarHeight);
@@ -2903,7 +2907,7 @@ void OsuSongBrowser2::updateScoreBrowserLayout()
 {
 	const float dpiScale = Osu::getUIScale();
 
-	const bool shouldScoreBrowserBeVisible = (m_osu_scores_enabled->getBool() && osu_songbrowser_scorebrowser_enabled.getBool());
+	const bool shouldScoreBrowserBeVisible = (cv::osu::scores_enabled.getBool() && cv::osu::songbrowser_scorebrowser_enabled.getBool());
 	if (shouldScoreBrowserBeVisible != m_scoreBrowser->isVisible())
 		m_scoreBrowser->setVisible(shouldScoreBrowserBeVisible);
 
@@ -2999,7 +3003,7 @@ void OsuSongBrowser2::rebuildScoreButtons()
 
 void OsuSongBrowser2::scheduleSearchUpdate(bool immediately)
 {
-	m_fSearchWaitTime = engine->getTime<float>() + (immediately ? 0.0f : osu_songbrowser_search_delay.getFloat());
+	m_fSearchWaitTime = engine->getTime<float>() + (immediately ? 0.0f : cv::osu::songbrowser_search_delay.getFloat());
 }
 
 void OsuSongBrowser2::checkHandleKillBackgroundStarCalculator()
@@ -3278,26 +3282,26 @@ void OsuSongBrowser2::onDatabaseLoadingFinished()
 	// build collections
 	recreateCollectionsButtons();
 
-	onSortChange(osu_songbrowser_sortingtype.getString());
-	onSortScoresChange(osu_songbrowser_scores_sortingtype.getString());
+	onSortChange(cv::osu::songbrowser_sortingtype.getString());
+	onSortScoresChange(cv::osu::songbrowser_scores_sortingtype.getString());
 
 	// update rich presence (discord total pp)
 	OsuRichPresence::onSongBrowser();
 
 	// update user name/stats
-	onUserButtonChange(m_name_ref->getString(), -1);
+	onUserButtonChange(cv::name.getString(), -1);
 
-	if (osu_songbrowser_search_hardcoded_filter.getString().length() > 0)
+	if (cv::osu::songbrowser_search_hardcoded_filter.getString().length() > 0)
 		onSearchUpdate();
 }
 
 void OsuSongBrowser2::onSearchUpdate()
 {
-	const bool hasHardcodedSearchStringChanged = (m_sPrevHardcodedSearchString != osu_songbrowser_search_hardcoded_filter.getString());
+	const bool hasHardcodedSearchStringChanged = (m_sPrevHardcodedSearchString != cv::osu::songbrowser_search_hardcoded_filter.getString());
 	const bool hasSearchStringChanged = (m_sPrevSearchString != m_sSearchString);
 
 	const bool prevInSearch = m_bInSearch;
-	m_bInSearch = (m_sSearchString.length() > 0 || osu_songbrowser_search_hardcoded_filter.getString().length() > 0);
+	m_bInSearch = (m_sSearchString.length() > 0 || cv::osu::songbrowser_search_hardcoded_filter.getString().length() > 0);
 	const bool hasInSearchChanged = (prevInSearch != m_bInSearch);
 
 	if (m_bInSearch)
@@ -3312,7 +3316,7 @@ void OsuSongBrowser2::onSearchUpdate()
 
 			m_backgroundSearchMatcher->revive();
 			m_backgroundSearchMatcher->release();
-			m_backgroundSearchMatcher->setSongButtonsAndSearchString(m_songButtons, m_sSearchString, osu_songbrowser_search_hardcoded_filter.getString());
+			m_backgroundSearchMatcher->setSongButtonsAndSearchString(m_songButtons, m_sSearchString, cv::osu::songbrowser_search_hardcoded_filter.getString());
 
 			resourceManager->requestNextLoadAsync();
 			resourceManager->loadResource(m_backgroundSearchMatcher);
@@ -3358,7 +3362,7 @@ void OsuSongBrowser2::onSearchUpdate()
 	}
 
 	m_sPrevSearchString = m_sSearchString;
-	m_sPrevHardcodedSearchString = osu_songbrowser_search_hardcoded_filter.getString();
+	m_sPrevHardcodedSearchString = cv::osu::songbrowser_search_hardcoded_filter.getString();
 }
 
 void OsuSongBrowser2::rebuildSongButtonsAndVisibleSongButtonsWithSearchMatchSupport(bool scrollToTop, bool doRebuildSongButtons)
@@ -3495,7 +3499,7 @@ void OsuSongBrowser2::onSortScoresClicked(CBaseUIButton *button)
 		for (const auto & scoreSortingMethod : scoreSortingMethods)
 		{
 			CBaseUIButton *button = m_contextMenu->addButton(scoreSortingMethod.name);
-			if (scoreSortingMethod.name == osu_songbrowser_scores_sortingtype.getString())
+			if (scoreSortingMethod.name == cv::osu::songbrowser_scores_sortingtype.getString())
 				button->setTextBrightColor(0xff00ff00);
 		}
 	}
@@ -3505,7 +3509,7 @@ void OsuSongBrowser2::onSortScoresClicked(CBaseUIButton *button)
 
 void OsuSongBrowser2::onSortScoresChange(UString text, int id)
 {
-	osu_songbrowser_scores_sortingtype.setValue(text); // NOTE: remember
+	cv::osu::songbrowser_scores_sortingtype.setValue(text); // NOTE: remember
 	m_scoreSortButton->setText(text);
 	rebuildScoreButtons();
 	m_scoreBrowser->scrollToTop();
@@ -3674,7 +3678,7 @@ void OsuSongBrowser2::onSortChangeInt(UString text, bool autoScroll)
 	m_sortingMethod = sortingMethod->type;
 	m_sortButton->setText(sortingMethod->name);
 
-	osu_songbrowser_sortingtype.setValue(sortingMethod->name); // NOTE: remember persistently
+	cv::osu::songbrowser_sortingtype.setValue(sortingMethod->name); // NOTE: remember persistently
 
 	struct COMPARATOR_WRAPPER
 	{
@@ -3954,7 +3958,7 @@ void OsuSongBrowser2::onSelectionMode()
 
 		CBaseUIButton *activeButton = NULL;
 		{
-			if (m_osu_mod_fposu_ref->getBool())
+			if (cv::osu::fposu::mod_fposu.getBool())
 				activeButton = fposuButton;
 			else if (osu->getGamemode() == Osu::GAMEMODE::STD)
 				activeButton = standardButton;
@@ -4014,7 +4018,7 @@ void OsuSongBrowser2::onModeChange(UString text)
 void OsuSongBrowser2::onModeChange2(UString text, int id)
 {
 	if (id != 2 && text != "fposu")
-		m_osu_mod_fposu_ref->setValue(0.0f);
+		cv::osu::fposu::mod_fposu.setValue(0.0f);
 
 	if (id == 0 || text == "std")
 	{
@@ -4034,7 +4038,7 @@ void OsuSongBrowser2::onModeChange2(UString text, int id)
 	}
 	else if (id == 2 || text == "fposu")
 	{
-		m_osu_mod_fposu_ref->setValue(1.0f);
+		cv::osu::fposu::mod_fposu.setValue(1.0f);
 
 		if (osu->getGamemode() != Osu::GAMEMODE::STD)
 		{
@@ -4059,7 +4063,7 @@ void OsuSongBrowser2::onUserButtonClicked()
 		for (const auto & name : names)
 		{
 			CBaseUIButton *button = m_contextMenu->addButton(name);
-			if (name == m_name_ref->getString())
+			if (name == cv::name.getString())
 				button->setTextBrightColor(0xff00ff00);
 		}
 		m_contextMenu->addButton("", 0)->setEnabled(false);
@@ -4083,7 +4087,7 @@ void OsuSongBrowser2::onUserButtonChange(UString text, int id)
 		return;
 	}
 
-	m_name_ref->setValue(text);
+	cv::name.setValue(text);
 	osu->getOptionsMenu()->setUsername(text); // NOTE: force update options textbox to avoid shutdown inconsistency
 	m_userButton->setText(text);
 
@@ -4260,7 +4264,7 @@ void OsuSongBrowser2::onSongButtonContextMenu(OsuUISongBrowserSongButton *songBu
 		{
 			recreateCollectionsButtons();
 			rebuildSongButtonsAndVisibleSongButtonsWithSearchMatchSupport(false, false);	// (last false = skipping rebuildSongButtons() here)
-			onSortChangeInt(osu_songbrowser_sortingtype.getString(), false);				// (because this does the rebuildSongButtons())
+			onSortChangeInt(cv::osu::songbrowser_sortingtype.getString(), false);				// (because this does the rebuildSongButtons())
 		}
 		if (previouslySelectedCollectionName.length() > 0)
 		{
@@ -4307,7 +4311,7 @@ void OsuSongBrowser2::onCollectionButtonContextMenu(OsuUISongBrowserCollectionBu
 	{
 		// update UI
 		{
-			onSortChangeInt(osu_songbrowser_sortingtype.getString(), false);
+			onSortChangeInt(cv::osu::songbrowser_sortingtype.getString(), false);
 		}
 	}
 }
@@ -4327,11 +4331,11 @@ void OsuSongBrowser2::highlightScore(uint64_t unixTimestamp)
 
 void OsuSongBrowser2::recalculateStarsForSelectedBeatmap(bool force)
 {
-	if (!osu_songbrowser_dynamic_star_recalc.getBool()) return;
+	if (!cv::osu::songbrowser_dynamic_star_recalc.getBool()) return;
 	if (m_selectedBeatmap == NULL || m_selectedBeatmap->getSelectedDifficulty2() == NULL) return;
 
 	// HACKHACK: temporarily deactivated, see OsuSongBrowser2::update(), but only if drawing scrubbing timeline strain graph is enabled (or "Draw Stats: Stars* (Total)", or "Draw Stats: pp (SS)")
-	if (!m_osu_draw_scrubbing_timeline_strain_graph_ref->getBool() && !m_osu_draw_statistics_perfectpp_ref->getBool() && !m_osu_draw_statistics_totalstars_ref->getBool())
+	if (!cv::osu::draw_scrubbing_timeline_strain_graph.getBool() && !cv::osu::draw_statistics_perfectpp.getBool() && !cv::osu::draw_statistics_totalstars.getBool())
 	{
 		if (osu->isInPlayMode())
 		{
