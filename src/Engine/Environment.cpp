@@ -525,6 +525,7 @@ void Environment::maximize()
 	SDL_MaximizeWindow(m_window);
 }
 
+// TODO: implement exclusive fullscreen for dx11 backend
 void Environment::enableFullscreen()
 {
 	if (m_bFullscreen)

@@ -21,7 +21,11 @@
 #include "DirectX11Shader.h"
 #include "DirectX11VertexArrayObject.h"
 
-#define ARRAY_SIZE(x) (sizeof(x)/sizeof((x)[0]))
+#define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
+
+#if 1 // defined(_WINVER) && _WINVER < 0x0A00
+#define NO_FLIP 1 // FIXME: for some reason, perf is lower with FLIP_DISCARD than DISCARD
+#endif
 
 // #define MCENGINE_D3D11_CREATE_DEVICE_DEBUG
 
@@ -105,14 +109,20 @@ void DirectX11Interface::init()
 		swapChainDesc.SampleDesc.Count = 1;
 		swapChainDesc.SampleDesc.Quality = 0;
 		swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-		swapChainDesc.BufferCount = 1;
 		swapChainDesc.OutputWindow = m_hwnd;
 		swapChainDesc.Windowed = TRUE;
 		swapChainDesc.SwapEffect =
-#if defined(_WINVER) && _WINVER < 0x0A00
-			DXGI_SWAP_EFFECT::DXGI_SWAP_EFFECT_DISCARD;
+#ifdef NO_FLIP
+		    DXGI_SWAP_EFFECT::DXGI_SWAP_EFFECT_DISCARD;
 #else
-			DXGI_SWAP_EFFECT::DXGI_SWAP_EFFECT_FLIP_DISCARD;
+		    DXGI_SWAP_EFFECT::DXGI_SWAP_EFFECT_FLIP_DISCARD;
+#endif
+		// flip discard requires at least 2 buffers
+		swapChainDesc.BufferCount =
+#ifdef NO_FLIP
+			1;
+#else
+			2;
 #endif
 		swapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG::DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
 	}
@@ -390,6 +400,12 @@ DirectX11Interface::~DirectX11Interface()
 
 void DirectX11Interface::beginScene()
 {
+#ifndef NO_FLIP
+	// ensure render targets are bound (needed because onResolutionChange might skip setup during init)
+	if (m_frameBuffer != NULL)
+		m_deviceContext->OMSetRenderTargets(1, &m_frameBuffer, m_frameBufferDepthStencilView);
+#endif
+
 	Matrix4 defaultProjectionMatrix = Camera::buildMatrixOrtho2DDXLH(0, m_vResolution.x, m_vResolution.y, 0, -1.0f, 1.0f);
 
 	// push main transforms
