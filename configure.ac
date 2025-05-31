@@ -173,9 +173,12 @@ AS_VAR_SET_IF([with_renderer],
             case $rend in
             opengles*) AC_DEFINE([MCENGINE_FEATURE_GLES32], [1], [Defined if the OpenGL ES 3.2 backend is to be used (WASM).]) renderer=opengles32 ;;
             dx11) AC_DEFINE([MCENGINE_FEATURE_DIRECTX11], [1], [Defined if the DX11 backend is to be used.]) renderer=dx11 ;;
-            *) AC_DEFINE([MCENGINE_FEATURE_OPENGL], [1], [Defined if the OpenGLLegacy backend is to be used.]) renderer=opengl ;;
             esac
         done])
+
+AS_IF([test "$renderer" = "opengl"], [
+    AC_DEFINE([MCENGINE_FEATURE_OPENGL], [1], [Defined if the OpenGLLegacy backend is to be used.])
+])
 
 AS_IF([test "x$enable_asan" = "xyes" || test "x$enable_tsan" = "xyes"], [
     AS_IF([test "x$enable_asan" = "xyes"], [

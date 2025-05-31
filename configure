@@ -6096,11 +6096,17 @@ printf "%s\n" "#define MCENGINE_FEATURE_GLES32 1" >>confdefs.h
             dx11)
 printf "%s\n" "#define MCENGINE_FEATURE_DIRECTX11 1" >>confdefs.h
  renderer=dx11 ;;
-            *)
-printf "%s\n" "#define MCENGINE_FEATURE_OPENGL 1" >>confdefs.h
- renderer=opengl ;;
             esac
         done
+fi
+
+if test "$renderer" = "opengl"
+then :
+
+
+printf "%s\n" "#define MCENGINE_FEATURE_OPENGL 1" >>confdefs.h
+
+
 fi
 
 if test "x$enable_asan" = "xyes" || test "x$enable_tsan" = "xyes"
