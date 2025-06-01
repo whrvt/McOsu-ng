@@ -855,13 +855,6 @@ std::vector<UString> OsuDatabase::getPlayerNamesWithScoresForUserSwitcher()
 
 OsuDatabase::PlayerPPScores OsuDatabase::getPlayerPPScores(const UString &playerName)
 {
-	if (!m_bScoresLoaded)
-	{
-		PlayerPPScores emptyResult;
-		emptyResult.totalScore = 0;
-		return emptyResult;
-	}
-
 	std::vector<Score*> scores;
 
 	// collect all scores with pp data
