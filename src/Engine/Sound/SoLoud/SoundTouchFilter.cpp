@@ -16,10 +16,9 @@
 #include "ConVar.h"
 #include "Engine.h"
 
-#if __has_include("Osu.h")
 namespace cv {
+#if __has_include("Osu.h")
 ConVar snd_enable_auto_offset("snd_enable_auto_offset", true, FCVAR_NONE, "Control automatic offset calibration for SoLoud + rate change");
-}
 #endif
 
 #ifdef _DEBUG
@@ -28,6 +27,7 @@ ConVar snd_st_debug("snd_st_debug", false, FCVAR_NONE, "Enable detailed SoundTou
 #else
 #define ST_DEBUG_ENABLED 0
 #endif
+}
 
 #define ST_DEBUG_LOG(...)                                                                                                                                                          \
 	if (ST_DEBUG_ENABLED)                                                                                                                                                          \

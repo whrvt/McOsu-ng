@@ -460,7 +460,7 @@ void OsuUserStatsScreen::onBack()
 	}
 }
 
-void OsuUserStatsScreen::rebuildScoreButtons(UString playerName)
+void OsuUserStatsScreen::rebuildScoreButtons(const UString &playerName)
 {
 	// since this score list can grow very large, UI elements are not cached, but rebuilt completely every time
 

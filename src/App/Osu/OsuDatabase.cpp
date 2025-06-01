@@ -456,7 +456,7 @@ OsuDatabaseBeatmap *OsuDatabase::addBeatmap(UString beatmapFolderPath)
 	return beatmap;
 }
 
-int OsuDatabase::addScore(std::string beatmapMD5Hash, OsuDatabase::Score score)
+int OsuDatabase::addScore(const std::string &beatmapMD5Hash, const OsuDatabase::Score &score)
 {
 	if (beatmapMD5Hash.length() != 32)
 	{
@@ -520,7 +520,7 @@ void OsuDatabase::addScoreRaw(const std::string &beatmapMD5Hash, const OsuDataba
 	}
 }
 
-void OsuDatabase::deleteScore(std::string beatmapMD5Hash, uint64_t scoreUnixTimestamp)
+void OsuDatabase::deleteScore(const std::string &beatmapMD5Hash, uint64_t scoreUnixTimestamp)
 {
 	if (beatmapMD5Hash.length() != 32)
 	{
@@ -544,7 +544,7 @@ void OsuDatabase::deleteScore(std::string beatmapMD5Hash, uint64_t scoreUnixTime
 	}
 }
 
-void OsuDatabase::sortScores(std::string beatmapMD5Hash)
+void OsuDatabase::sortScores(const std::string &beatmapMD5Hash)
 {
 	if (beatmapMD5Hash.length() != 32 || m_scores[beatmapMD5Hash].size() < 2) return;
 
@@ -560,7 +560,7 @@ void OsuDatabase::sortScores(std::string beatmapMD5Hash)
 	debugLog("ERROR: Invalid score sortingtype \"{:s}\"\n", cv::osu::songbrowser_scores_sortingtype.getString().toUtf8());
 }
 
-bool OsuDatabase::addCollection(UString collectionName)
+bool OsuDatabase::addCollection(const UString &collectionName)
 {
 	if (collectionName.length() < 1) return false;
 
@@ -589,7 +589,7 @@ bool OsuDatabase::addCollection(UString collectionName)
 	return true;
 }
 
-bool OsuDatabase::renameCollection(UString oldCollectionName, UString newCollectionName)
+bool OsuDatabase::renameCollection(const UString &oldCollectionName, const UString &newCollectionName)
 {
 	if (newCollectionName.length() < 1) return false;
 	if (oldCollectionName == newCollectionName) return false;
@@ -627,7 +627,7 @@ bool OsuDatabase::renameCollection(UString oldCollectionName, UString newCollect
 	return false;
 }
 
-void OsuDatabase::deleteCollection(UString collectionName)
+void OsuDatabase::deleteCollection(const UString &collectionName)
 {
 	for (size_t i=0; i<m_collections.size(); i++)
 	{
@@ -649,7 +649,7 @@ void OsuDatabase::deleteCollection(UString collectionName)
 	}
 }
 
-void OsuDatabase::addBeatmapToCollection(UString collectionName, std::string beatmapMD5Hash, bool doSaveImmediatelyIfEnabled)
+void OsuDatabase::addBeatmapToCollection(const UString &collectionName, const std::string &beatmapMD5Hash, bool doSaveImmediatelyIfEnabled)
 {
 	if (beatmapMD5Hash.length() != 32) return;
 
@@ -730,7 +730,7 @@ void OsuDatabase::addBeatmapToCollection(UString collectionName, std::string bea
 	}
 }
 
-void OsuDatabase::removeBeatmapFromCollection(UString collectionName, std::string beatmapMD5Hash, bool doSaveImmediatelyIfEnabled)
+void OsuDatabase::removeBeatmapFromCollection(const UString &collectionName, const std::string &beatmapMD5Hash, bool doSaveImmediatelyIfEnabled)
 {
 	if (beatmapMD5Hash.length() != 32) return;
 
@@ -791,7 +791,7 @@ std::vector<UString> OsuDatabase::getPlayerNamesWithPPScores()
 	std::vector<std::string> keys;
 	keys.reserve(m_scores.size());
 
-	for (auto kv : m_scores)
+	for (const auto& kv : m_scores)
 	{
 		keys.push_back(kv.first);
 	}
@@ -813,7 +813,7 @@ std::vector<UString> OsuDatabase::getPlayerNamesWithPPScores()
 
 	std::vector<UString> names;
 	names.reserve(tempNames.size());
-	for (auto k : tempNames)
+	for (const auto& k : tempNames)
 	{
 		if (k.length() > 0)
 			names.emplace_back(k.c_str());
@@ -829,7 +829,7 @@ std::vector<UString> OsuDatabase::getPlayerNamesWithScoresForUserSwitcher()
 	// bit of a useless double string conversion going on here, but whatever
 
 	std::unordered_set<std::string> tempNames;
-	for (auto kv : m_scores)
+	for (const auto& kv : m_scores)
 	{
 		const std::string &key = kv.first;
 		for (Score &score : m_scores[key])
@@ -844,7 +844,7 @@ std::vector<UString> OsuDatabase::getPlayerNamesWithScoresForUserSwitcher()
 
 	std::vector<UString> names;
 	names.reserve(tempNames.size());
-	for (auto k : tempNames)
+	for (const auto& k : tempNames)
 	{
 		if (k.length() > 0)
 			names.emplace_back(k.c_str());
@@ -853,15 +853,22 @@ std::vector<UString> OsuDatabase::getPlayerNamesWithScoresForUserSwitcher()
 	return names;
 }
 
-OsuDatabase::PlayerPPScores OsuDatabase::getPlayerPPScores(UString playerName)
+OsuDatabase::PlayerPPScores OsuDatabase::getPlayerPPScores(const UString &playerName)
 {
+	if (!m_bScoresLoaded)
+	{
+		PlayerPPScores emptyResult;
+		emptyResult.totalScore = 0;
+		return emptyResult;
+	}
+
 	std::vector<Score*> scores;
 
 	// collect all scores with pp data
 	std::vector<std::string> keys;
 	keys.reserve(m_scores.size());
 
-	for (auto kv : m_scores)
+	for (const auto& kv : m_scores)
 	{
 		keys.push_back(kv.first);
 	}
@@ -924,7 +931,7 @@ OsuDatabase::PlayerPPScores OsuDatabase::getPlayerPPScores(UString playerName)
 	return ppScores;
 }
 
-OsuDatabase::PlayerStats OsuDatabase::calculatePlayerStats(UString playerName)
+OsuDatabase::PlayerStats OsuDatabase::calculatePlayerStats(const UString &playerName)
 {
 	if (!m_bDidScoresChangeForStats && playerName == m_prevPlayerStats.name) return m_prevPlayerStats;
 
@@ -2910,7 +2917,7 @@ void OsuDatabase::onScoresExport()
 
 	out << "#beatmapMD5hash,beatmapID,beatmapSetID,isImportedLegacyScore,version,unixTimestamp,playerName,num300s,num100s,num50s,numGekis,numKatus,numMisses,score,comboMax,perfect,modsLegacy,numSliderBreaks,pp,unstableRate,hitErrorAvgMin,hitErrorAvgMax,starsTomTotal,starsTomAim,starsTomSpeed,speedMultiplier,CS,AR,OD,HP,maxPossibleCombo,numHitObjects,numCircles,experimentalModsConVars\n";
 
-	for (auto beatmapScores : m_scores)
+	for (const auto& beatmapScores : m_scores)
 	{
 		bool triedGettingDatabaseBeatmapOnceForThisBeatmap = false;
 		OsuDatabaseBeatmap *beatmap = NULL;

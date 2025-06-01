@@ -857,12 +857,12 @@ void Environment::initMonitors(bool force)
 void Environment::onLogLevelChange(float newval)
 {
 	const bool enable = !!static_cast<int>(newval);
-	if (enable)
+	if (enable && !m_bEnvDebug)
 	{
 		envDebug(true);
 		SDL_SetLogPriorities(SDL_LOG_PRIORITY_TRACE);
 	}
-	else
+	else if (!enable && m_bEnvDebug)
 	{
 		envDebug(false);
 		SDL_ResetLogPriorities();

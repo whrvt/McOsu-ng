@@ -185,23 +185,23 @@ public:
 
 	OsuDatabaseBeatmap *addBeatmap(UString beatmapFolderPath);
 
-	int addScore(std::string beatmapMD5Hash, OsuDatabase::Score score);
-	void deleteScore(std::string beatmapMD5Hash, uint64_t scoreUnixTimestamp);
-	void sortScores(std::string beatmapMD5Hash);
+	int addScore(const std::string &beatmapMD5Hash, const OsuDatabase::Score &score);
+	void deleteScore(const std::string &beatmapMD5Hash, uint64_t scoreUnixTimestamp);
+	void sortScores(const std::string &beatmapMD5Hash);
 	void forceScoreUpdateOnNextCalculatePlayerStats() {m_bDidScoresChangeForStats = true;}
 	void forceScoresSaveOnNextShutdown() {m_bDidScoresChangeForSave = true;}
 
-	bool addCollection(UString collectionName);
-	bool renameCollection(UString oldCollectionName, UString newCollectionName);
-	void deleteCollection(UString collectionName);
-	void addBeatmapToCollection(UString collectionName, std::string beatmapMD5Hash, bool doSaveImmediatelyIfEnabled = true);
-	void removeBeatmapFromCollection(UString collectionName, std::string beatmapMD5Hash, bool doSaveImmediatelyIfEnabled = true);
+	bool addCollection(const UString &collectionName);
+	bool renameCollection(const UString &oldCollectionName, const UString &newCollectionName);
+	void deleteCollection(const UString &collectionName);
+	void addBeatmapToCollection(const UString &collectionName, const std::string &beatmapMD5Hash, bool doSaveImmediatelyIfEnabled = true);
+	void removeBeatmapFromCollection(const UString &collectionName, const std::string &beatmapMD5Hash, bool doSaveImmediatelyIfEnabled = true);
 	void triggerSaveCollections() {saveCollections();}
 
 	std::vector<UString> getPlayerNamesWithPPScores();
 	std::vector<UString> getPlayerNamesWithScoresForUserSwitcher();
-	PlayerPPScores getPlayerPPScores(UString playerName);
-	PlayerStats calculatePlayerStats(UString playerName);
+	PlayerPPScores getPlayerPPScores(const UString &playerName);
+	PlayerStats calculatePlayerStats(const UString &playerName);
 	static float getWeightForIndex(int i);
 	static float getBonusPPForNumScores(size_t numScores);
 	unsigned long long getRequiredScoreForLevel(int level);

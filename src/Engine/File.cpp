@@ -361,7 +361,7 @@ void McFile::write(const char *buffer, size_t size)
 	if (!canWrite())
 		return;
 
-	m_ofstream->write(buffer, size);
+	m_ofstream->write(buffer, static_cast<std::streamsize>(size));
 }
 
 bool McFile::writeLine(const UString &line, bool insertNewline) {
@@ -419,7 +419,7 @@ const char *McFile::readFile()
 
 	// read entire file
 	m_ifstream->seekg(0, std::ios::beg);
-	if (m_ifstream->read(m_fullBuffer.data(), m_fileSize))
+	if (m_ifstream->read(m_fullBuffer.data(), static_cast<std::streamsize>(m_fileSize)))
 		return m_fullBuffer.data();
 
 	return nullptr;

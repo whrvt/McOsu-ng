@@ -41,7 +41,7 @@ private:
 
 	virtual void onBack();
 
-	void rebuildScoreButtons(UString playerName);
+	void rebuildScoreButtons(const UString &playerName);
 
 	void onUserClicked(CBaseUIButton *button);
 	void onUserButtonChange(UString text, int id);

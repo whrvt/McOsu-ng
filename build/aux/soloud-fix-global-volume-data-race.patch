@@ -1,0 +1,77 @@
+From 523928c7ca18df5a43dd9b4ddaa7ca77d87260d4 Mon Sep 17 00:00:00 2001
+From: William Horvath <william@horvath.blog>
+Date: Sun, 1 Jun 2025 10:56:31 -0700
+Subject: [PATCH] soloud fix global volume data race
+
+---
+ src/core/soloud.cpp               | 7 ++++---
+ src/core/soloud_core_faderops.cpp | 2 ++
+ src/core/soloud_core_setters.cpp  | 4 +++-
+ 3 files changed, 9 insertions(+), 4 deletions(-)
+
+diff --git a/src/core/soloud.cpp b/src/core/soloud.cpp
+index c883a21..ee0301e 100644
+--- a/src/core/soloud.cpp
++++ b/src/core/soloud.cpp
+@@ -2138,6 +2138,9 @@ namespace SoLoud
+ 		mStreamTime += buffertime;
+ 		mLastClockedTime = 0;
+ 
++		lockAudioMutex_internal();
++
++		// Read and update global volume inside mutex
+ 		globalVolume[0] = mGlobalVolume;
+ 		if (mGlobalVolumeFader.mActive)
+ 		{
+@@ -2145,8 +2148,6 @@ namespace SoLoud
+ 		}
+ 		globalVolume[1] = mGlobalVolume;
+ 
+-		lockAudioMutex_internal();
+-
+ 		// Process faders. May change scratch size.
+ 		int i;
+ 		for (i = 0; i < (signed)mHighestVoice; i++)
+@@ -2214,7 +2215,7 @@ namespace SoLoud
+ 
+ 		if (mActiveVoiceDirty)
+ 			calcActiveVoices_internal();
+-	
++
+ 		mixBus_internal(mOutputScratch.mData, aSamples, aStride, mScratch.mData, 0, (float)mSamplerate, mChannels, mResampler);
+ 
+ 		for (i = 0; i < FILTERS_PER_STREAM; i++)
+diff --git a/src/core/soloud_core_faderops.cpp b/src/core/soloud_core_faderops.cpp
+index 1f68847..8a7207a 100644
+--- a/src/core/soloud_core_faderops.cpp
++++ b/src/core/soloud_core_faderops.cpp
+@@ -95,7 +95,9 @@ namespace SoLoud
+ 
+ 	void Soloud::fadeGlobalVolume(float aTo, time aTime)
+ 	{
++		lockAudioMutex_internal();
+ 		float from = getGlobalVolume();
++		unlockAudioMutex_internal();
+ 		if (aTime <= 0 || aTo == from)
+ 		{
+ 			setGlobalVolume(aTo);
+diff --git a/src/core/soloud_core_setters.cpp b/src/core/soloud_core_setters.cpp
+index 718ff8e..9af372f 100644
+--- a/src/core/soloud_core_setters.cpp
++++ b/src/core/soloud_core_setters.cpp
+@@ -41,9 +41,11 @@ namespace SoLoud
+ 
+ 	void Soloud::setGlobalVolume(float aVolume)
+ 	{
++		lockAudioMutex_internal();
+ 		mGlobalVolumeFader.mActive = 0;
+ 		mGlobalVolume = aVolume;
+-	}		
++		unlockAudioMutex_internal();
++	}
+ 
+ 	result Soloud::setRelativePlaySpeed(handle aVoiceHandle, float aSpeed)
+ 	{
+-- 
+2.49.0
+

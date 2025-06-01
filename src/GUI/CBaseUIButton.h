@@ -42,7 +42,7 @@ public:
 	CBaseUIButton *setTextBrightColor(Color textBrightColor) {m_textBrightColor = textBrightColor; return this;}
 	CBaseUIButton *setTextDarkColor(Color textDarkColor) {m_textDarkColor = textDarkColor; return this;}
 
-	CBaseUIButton *setText(UString text) {m_sText = text; updateStringMetrics(); return this;}
+	CBaseUIButton *setText(const UString &text) {m_sText = text; updateStringMetrics(); return this;}
 	CBaseUIButton *setFont(McFont *font) {m_font = font; updateStringMetrics(); return this;}
 
 	CBaseUIButton *setSizeToContent(int horizontalBorderSize = 1, int verticalBorderSize = 1) {setSize(m_fStringWidth+2*horizontalBorderSize, m_fStringHeight + 2*verticalBorderSize); return this;}

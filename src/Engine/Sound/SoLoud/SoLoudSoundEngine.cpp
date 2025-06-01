@@ -421,11 +421,11 @@ bool SoLoudSoundEngine::initializeOutputDevice(int id, bool)
 			backend = SoLoud::Soloud::MINIAUDIO;
 	}
 
-	unsigned int sampleRate = snd_freq.getVal<unsigned int>();
+	unsigned int sampleRate = cv::snd_freq.getVal<unsigned int>();
 	if (sampleRate <= 0)
 		sampleRate = SoLoud::Soloud::AUTO;
 
-	unsigned int bufferSize = snd_soloud_buffer.getVal<unsigned int>();
+	unsigned int bufferSize = cv::snd_soloud_buffer.getVal<unsigned int>();
 	if (bufferSize < 0)
 		bufferSize = SoLoud::Soloud::AUTO;
 
@@ -433,8 +433,8 @@ bool SoLoudSoundEngine::initializeOutputDevice(int id, bool)
 	const unsigned int channels = 2;
 
 	// setup some SDL hints in case the SDL backend is used
-	if (snd_soloud_buffer.getVal() != cv::snd_soloud_buffer.getDefaultVal())
-		SDL_SetHintWithPriority(SDL_HINT_AUDIO_DEVICE_SAMPLE_FRAMES, fmt::format("{}", snd_soloud_buffer.getVal<unsigned int>()).c_str(), SDL_HINT_OVERRIDE);
+	if (cv::snd_soloud_buffer.getVal() != cv::snd_soloud_buffer.getDefaultVal())
+		SDL_SetHintWithPriority(SDL_HINT_AUDIO_DEVICE_SAMPLE_FRAMES, fmt::format("{}", cv::snd_soloud_buffer.getVal<unsigned int>()).c_str(), SDL_HINT_OVERRIDE);
 	SDL_SetHintWithPriority(SDL_HINT_AUDIO_DEVICE_STREAM_NAME, PACKAGE_NAME, SDL_HINT_OVERRIDE);
 	SDL_SetHintWithPriority(SDL_HINT_AUDIO_DEVICE_STREAM_ROLE, "game", SDL_HINT_OVERRIDE);
 
