@@ -46,54 +46,8 @@ class OsuSongBrowser2 final: public OsuScreenBackable
 {
 public:
 	static void drawSelectedBeatmapBackgroundImage(Osu *osu, float alpha = 1.0f);
-
-	struct SORTING_COMPARATOR
-	{
-		virtual ~SORTING_COMPARATOR() {;}
-		virtual bool operator () (OsuUISongBrowserButton const *a, OsuUISongBrowserButton const *b) const = 0;
-	};
-
-	struct SortByArtist final : public SORTING_COMPARATOR
-	{
-		virtual ~SortByArtist() {;}
-		virtual bool operator () (OsuUISongBrowserButton const *a, OsuUISongBrowserButton const *b) const;
-	};
-
-	struct SortByBPM final : public SORTING_COMPARATOR
-	{
-		virtual ~SortByBPM() {;}
-		virtual bool operator () (OsuUISongBrowserButton const *a, OsuUISongBrowserButton const *b) const;
-	};
-
-	struct SortByCreator final : public SORTING_COMPARATOR
-	{
-		virtual ~SortByCreator() {;}
-		virtual bool operator () (OsuUISongBrowserButton const *a, OsuUISongBrowserButton const *b) const;
-	};
-
-	struct SortByDateAdded final : public SORTING_COMPARATOR
-	{
-		virtual ~SortByDateAdded() {;}
-		virtual bool operator () (OsuUISongBrowserButton const *a, OsuUISongBrowserButton const *b) const;
-	};
-
-	struct SortByDifficulty final : public SORTING_COMPARATOR
-	{
-		virtual ~SortByDifficulty() {;}
-		virtual bool operator () (OsuUISongBrowserButton const *a, OsuUISongBrowserButton const *b) const;
-	};
-
-	struct SortByLength final : public SORTING_COMPARATOR
-	{
-		virtual ~SortByLength() {;}
-		bool operator () (OsuUISongBrowserButton const *a, OsuUISongBrowserButton const *b) const;
-	};
-
-	struct SortByTitle final : public SORTING_COMPARATOR
-	{
-		virtual ~SortByTitle() {;}
-		bool operator () (OsuUISongBrowserButton const *a, OsuUISongBrowserButton const *b) const;
-	};
+	// needed by OsuUISongBrowserSongButton
+	static bool sortByDifficulty(OsuUISongBrowserButton const *a, OsuUISongBrowserButton const *b);
 
 	enum class GROUP : uint8_t
 	{
@@ -186,7 +140,7 @@ private:
 	{
 		SORT type;
 		UString name;
-		SORTING_COMPARATOR *comparator;
+		std::function<bool(OsuUISongBrowserButton const*, OsuUISongBrowserButton const*)> comparator;
 	};
 
 	struct GROUPING

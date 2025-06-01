@@ -47,10 +47,6 @@ OpenGLES32Interface::OpenGLES32Interface() : Graphics()
 
 	m_syncobj = new OpenGLSync();
 
-	// check GL version
-	const GLubyte *version = glGetString(GL_VERSION);
-	debugLog("OpenGLES: OpenGL Version {:s}\n", version);
-
 	// enable
 	glEnable(GL_BLEND);
 

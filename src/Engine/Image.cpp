@@ -125,6 +125,7 @@ bool Image::decodePNGFromMemory(const unsigned char *data, size_t size, std::vec
 	outHeight = static_cast<int>(png_get_image_height(png_ptr, info_ptr));
 	png_byte color_type = png_get_color_type(png_ptr, info_ptr);
 	png_byte bit_depth = png_get_bit_depth(png_ptr, info_ptr);
+	png_byte interlace_type = png_get_interlace_type(png_ptr, info_ptr);
 
 	// convert to RGBA if needed
 	if (bit_depth == 16)
@@ -145,6 +146,10 @@ bool Image::decodePNGFromMemory(const unsigned char *data, size_t size, std::vec
 
 	if (color_type == PNG_COLOR_TYPE_GRAY || color_type == PNG_COLOR_TYPE_GRAY_ALPHA)
 		png_set_gray_to_rgb(png_ptr);
+
+	// "Interlace handling should be turned on when using png_read_image"
+	if (interlace_type != PNG_INTERLACE_NONE)
+		png_set_interlace_handling(png_ptr);
 
 	png_read_update_info(png_ptr, info_ptr);
 

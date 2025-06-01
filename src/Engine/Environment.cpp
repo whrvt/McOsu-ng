@@ -960,7 +960,7 @@ std::vector<UString> Environment::enumerateDirectory(const char *pathToEnum, SDL
 // return a more naturally windows-like sorted order for folders, useful for e.g. osu! skin list dropdown order
 void Environment::winSortInPlace(std::vector<UString> &toSort)
 {
-	auto naturalCompare = [](const UString &a, const UString &b) -> bool {
+	constexpr auto naturalCompare = [](const UString &a, const UString &b) -> bool {
 		const char *aStr = a.toUtf8();
 		const char *bStr = b.toUtf8();
 

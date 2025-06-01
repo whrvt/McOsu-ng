@@ -46,16 +46,13 @@ public:
 		unsigned long long sortHack;
 	};
 
-	struct SliderScoringTimeComparator
+	static constexpr bool sliderScoringTimeComparator(const SLIDER_SCORING_TIME &a, const SLIDER_SCORING_TIME &b)
 	{
-		bool operator() (const SLIDER_SCORING_TIME &a, const SLIDER_SCORING_TIME &b) const
-		{
-			// strict weak ordering!
-			if (a.time == b.time)
-				return a.sortHack < b.sortHack;
-			else
-				return a.time < b.time;
-		}
+		// strict weak ordering!
+		if (a.time == b.time)
+			return a.sortHack < b.sortHack;
+		else
+			return a.time < b.time;
 	};
 
 public:

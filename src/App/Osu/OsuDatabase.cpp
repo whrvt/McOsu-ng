@@ -63,199 +63,164 @@ ConVar user_include_relax_and_autopilot_for_stats("osu_user_include_relax_and_au
 ConVar user_switcher_include_legacy_scores_for_names("osu_user_switcher_include_legacy_scores_for_names", true, FCVAR_NONE);
 }
 
+namespace {
 
-struct SortScoreByScore final : public OsuDatabase::SCORE_SORTING_COMPARATOR
+constexpr bool sortScoreByScore(OsuDatabase::Score const &a, OsuDatabase::Score const &b)
 {
-	~SortScoreByScore() override {;}
-	bool operator() (OsuDatabase::Score const &a, OsuDatabase::Score const &b) const override
+	// first: score
+	unsigned long long score1 = a.score;
+	unsigned long long score2 = b.score;
+
+	// second: time
+	if (score1 == score2)
 	{
-		// first: score
-		unsigned long long score1 = a.score;
-		unsigned long long score2 = b.score;
-
-		// second: time
-		if (score1 == score2)
-		{
-			score1 = a.unixTimestamp;
-			score2 = b.unixTimestamp;
-		}
-
-		// strict weak ordering!
-		if (score1 == score2)
-			return a.sortHack > b.sortHack;
-
-		return score1 > score2;
+		score1 = a.unixTimestamp;
+		score2 = b.unixTimestamp;
 	}
-};
 
-struct SortScoreByCombo final : public OsuDatabase::SCORE_SORTING_COMPARATOR
-{
-	~SortScoreByCombo() override {;}
-	bool operator() (OsuDatabase::Score const &a, OsuDatabase::Score const &b) const override
-	{
-		// first: combo
-		unsigned long long score1 = a.comboMax;
-		unsigned long long score2 = b.comboMax;
+	// strict weak ordering!
+	if (score1 == score2)
+		return a.sortHack > b.sortHack;
 
-		// second: score
-		if (score1 == score2)
-		{
-			score1 = a.score;
-			score2 = b.score;
-		}
-
-		// third: time
-		if (score1 == score2)
-		{
-			score1 = a.unixTimestamp;
-			score2 = b.unixTimestamp;
-		}
-
-		// strict weak ordering!
-		if (score1 == score2)
-			return a.sortHack > b.sortHack;
-
-		return score1 > score2;
+	return score1 > score2;
 	}
-};
 
-struct SortScoreByDate final : public OsuDatabase::SCORE_SORTING_COMPARATOR
+constexpr bool sortScoreByCombo(OsuDatabase::Score const &a, OsuDatabase::Score const &b)
 {
-	~SortScoreByDate() override {;}
-	bool operator() (OsuDatabase::Score const &a, OsuDatabase::Score const &b) const override
+	// first: combo
+	unsigned long long score1 = a.comboMax;
+	unsigned long long score2 = b.comboMax;
+
+	// second: score
+	if (score1 == score2)
 	{
-		// first: time
-		unsigned long long score1 = a.unixTimestamp;
-		unsigned long long score2 = b.unixTimestamp;
-
-		// strict weak ordering!
-		if (score1 == score2)
-			return a.sortHack > b.sortHack;
-
-		return score1 > score2;
+		score1 = a.score;
+		score2 = b.score;
 	}
-};
 
-struct SortScoreByMisses final : public OsuDatabase::SCORE_SORTING_COMPARATOR
-{
-	~SortScoreByMisses() override {;}
-	bool operator() (OsuDatabase::Score const &a, OsuDatabase::Score const &b) const override
+	// third: time
+	if (score1 == score2)
 	{
-		// first: misses
-		unsigned long long score1 = b.numMisses; // swapped (lower numMisses is better)
-		unsigned long long score2 = a.numMisses;
-
-		// second: score
-		if (score1 == score2)
-		{
-			score1 = a.score;
-			score2 = b.score;
-		}
-
-		// third: time
-		if (score1 == score2)
-		{
-			score1 = a.unixTimestamp;
-			score2 = b.unixTimestamp;
-		}
-
-		// strict weak ordering!
-		if (score1 == score2)
-			return a.sortHack > b.sortHack;
-
-		return score1 > score2;
+		score1 = a.unixTimestamp;
+		score2 = b.unixTimestamp;
 	}
-};
 
-struct SortScoreByAccuracy final : public OsuDatabase::SCORE_SORTING_COMPARATOR
+	// strict weak ordering!
+	if (score1 == score2)
+		return a.sortHack > b.sortHack;
+
+	return score1 > score2;
+}
+
+constexpr bool sortScoreByDate(OsuDatabase::Score const &a, OsuDatabase::Score const &b)
 {
-	~SortScoreByAccuracy() override {;}
-	bool operator() (OsuDatabase::Score const &a, OsuDatabase::Score const &b) const override
+	// first: time
+	unsigned long long score1 = a.unixTimestamp;
+	unsigned long long score2 = b.unixTimestamp;
+
+	// strict weak ordering!
+	if (score1 == score2)
+		return a.sortHack > b.sortHack;
+
+	return score1 > score2;
+}
+
+constexpr bool sortScoreByMisses(OsuDatabase::Score const &a, OsuDatabase::Score const &b)
+{
+	// first: misses
+	unsigned long long score1 = b.numMisses; // swapped (lower numMisses is better)
+	unsigned long long score2 = a.numMisses;
+
+	// second: score
+	if (score1 == score2)
 	{
-		// first: accuracy
-		auto score1 = (unsigned long long)(OsuScore::calculateAccuracy(a.num300s, a.num100s, a.num50s, a.numMisses) * 10000.0f);
-		auto score2 = (unsigned long long)(OsuScore::calculateAccuracy(b.num300s, b.num100s, b.num50s, b.numMisses) * 10000.0f);
-
-		// second: score
-		if (score1 == score2)
-		{
-			score1 = a.score;
-			score2 = b.score;
-		}
-
-		// third: time
-		if (score1 == score2)
-		{
-			score1 = a.unixTimestamp;
-			score2 = b.unixTimestamp;
-		}
-
-		// strict weak ordering!
-		if (score1 == score2)
-			return a.sortHack > b.sortHack;
-
-		return score1 > score2;
+		score1 = a.score;
+		score2 = b.score;
 	}
-};
 
-struct SortScoreByPP final : public OsuDatabase::SCORE_SORTING_COMPARATOR
-{
-	~SortScoreByPP() override {;}
-	bool operator() (OsuDatabase::Score const &a, OsuDatabase::Score const &b) const override
+	// third: time
+	if (score1 == score2)
 	{
-		// first: pp
-		float ppA = std::max((a.isLegacyScore ? -b.score : a.pp), 0.0f);
-		float ppB = std::max((b.isLegacyScore ? -a.score : b.pp), 0.0f);
+		score1 = a.unixTimestamp;
+		score2 = b.unixTimestamp;
+	}
 
-		if (ppA != ppB)
-			return ppA > ppB;
+	// strict weak ordering!
+	if (score1 == score2)
+		return a.sortHack > b.sortHack;
 
-		// second: score
-		if (a.score != b.score)
-			return a.score > b.score;
+	return score1 > score2;
+}
 
-		// third: time
-		if (a.unixTimestamp != b.unixTimestamp)
-			return a.unixTimestamp > b.unixTimestamp;
+constexpr bool sortScoreByAccuracy(OsuDatabase::Score const &a, OsuDatabase::Score const &b)
+{
+	// first: accuracy
+	auto score1 = (unsigned long long)(OsuScore::calculateAccuracy(a.num300s, a.num100s, a.num50s, a.numMisses) * 10000.0f);
+	auto score2 = (unsigned long long)(OsuScore::calculateAccuracy(b.num300s, b.num100s, b.num50s, b.numMisses) * 10000.0f);
 
-		// strict weak ordering!
+	// second: score
+	if (score1 == score2)
+	{
+		score1 = a.score;
+		score2 = b.score;
+	}
+
+	// third: time
+	if (score1 == score2)
+	{
+		score1 = a.unixTimestamp;
+		score2 = b.unixTimestamp;
+	}
+
+	// strict weak ordering!
+	if (score1 == score2)
+		return a.sortHack > b.sortHack;
+
+	return score1 > score2;
+}
+
+constexpr bool sortScoreByPP(OsuDatabase::Score const &a, OsuDatabase::Score const &b)
+{
+	// first: pp
+	float ppA = std::max((a.isLegacyScore ? -b.score : a.pp), 0.0f);
+	float ppB = std::max((b.isLegacyScore ? -a.score : b.pp), 0.0f);
+
+	if (ppA != ppB)
+		return ppA > ppB;
+
+	// second: score
+	if (a.score != b.score)
+		return a.score > b.score;
+
+	// third: time
+	if (a.unixTimestamp != b.unixTimestamp)
+		return a.unixTimestamp > b.unixTimestamp;
+
+	// strict weak ordering!
+	return a.sortHack > b.sortHack;
+}
+
+constexpr bool sortScoreByUnstableRate(OsuDatabase::Score const &a, OsuDatabase::Score const &b)
+{
+	// first: UR (reversed, lower is better)
+	auto ur1 = (unsigned long long)(std::abs(a.isLegacyScore ? -a.sortHack : a.unstableRate) * 100000.0f);
+	auto ur2 = (unsigned long long)(std::abs(b.isLegacyScore ? -b.sortHack : b.unstableRate) * 100000.0f);
+
+	// strict weak ordering!
+	if (ur1 == ur2)
+	{
 		return a.sortHack > b.sortHack;
 	}
-};
 
-struct SortScoreByUnstableRate final : public OsuDatabase::SCORE_SORTING_COMPARATOR
+	return -ur1 > -ur2;
+}
+
+constexpr bool sortCollectionByName(OsuDatabase::Collection const &a, OsuDatabase::Collection const &b)
 {
-	~SortScoreByUnstableRate() override {;}
-	bool operator() (OsuDatabase::Score const &a, OsuDatabase::Score const &b) const override
-	{
-		// first: UR (reversed, lower is better)
-		auto ur1 = (unsigned long long)(std::abs(a.isLegacyScore ? -a.sortHack : a.unstableRate) * 100000.0f);
-		auto ur2 = (unsigned long long)(std::abs(b.isLegacyScore ? -b.sortHack : b.unstableRate) * 100000.0f);
+	return a.name.lessThanIgnoreCaseStrict(b.name);
+}
 
-		// strict weak ordering!
-		if (ur1 == ur2)
-		{
-			return a.sortHack > b.sortHack;
-		}
-
-		return -ur1 > -ur2;
-	}
-};
-
-
-
-struct SortCollectionByName
-{
-	bool operator () (OsuDatabase::Collection const &a, OsuDatabase::Collection const &b)
-	{
-		// strict weak ordering!
-		if (a.name == b.name)
-			return &a < &b;
-
-		return a.name.lessThanIgnoreCase(b.name);
-	}
-};
-
+}
 
 
 class OsuDatabaseLoader final : public Resource
@@ -381,13 +346,13 @@ OsuDatabase::OsuDatabase()
 	m_prevPlayerStats.percentToNextLevel = 0.0f;
 	m_prevPlayerStats.totalScore = 0;
 
-	m_scoreSortingMethods.push_back({"Sort By Accuracy", new SortScoreByAccuracy()});
-	m_scoreSortingMethods.push_back({"Sort By Combo", new SortScoreByCombo()});
-	m_scoreSortingMethods.push_back({"Sort By Date", new SortScoreByDate()});
-	m_scoreSortingMethods.push_back({"Sort By Misses", new SortScoreByMisses()});
-	m_scoreSortingMethods.push_back({"Sort By pp (Mc)", new SortScoreByPP()});
-	m_scoreSortingMethods.push_back({"Sort By Score", new SortScoreByScore()});
-	m_scoreSortingMethods.push_back({"Sort By Unstable Rate (Mc)", new SortScoreByUnstableRate()});
+	m_scoreSortingMethods.push_back({"Sort By Accuracy", sortScoreByAccuracy});
+	m_scoreSortingMethods.push_back({"Sort By Combo", sortScoreByCombo});
+	m_scoreSortingMethods.push_back({"Sort By Date", sortScoreByDate});
+	m_scoreSortingMethods.push_back({"Sort By Misses", sortScoreByMisses});
+	m_scoreSortingMethods.push_back({"Sort By pp (Mc)", sortScoreByPP});
+	m_scoreSortingMethods.push_back({"Sort By Score", sortScoreByScore});
+	m_scoreSortingMethods.push_back({"Sort By Unstable Rate (Mc)", sortScoreByUnstableRate});
 }
 
 OsuDatabase::~OsuDatabase()
@@ -397,11 +362,6 @@ OsuDatabase::~OsuDatabase()
 	for (auto & dbBeatmap : m_databaseBeatmaps)
 	{
 		delete dbBeatmap;
-	}
-
-	for (auto & sortMethod : m_scoreSortingMethods)
-	{
-		delete sortMethod.comparator;
 	}
 }
 
@@ -445,7 +405,7 @@ void OsuDatabase::update()
 				{
 					loadCollections("collections.db", false, m_rawHashToDiff2, m_rawHashToBeatmap);
 
-					std::ranges::sort(m_collections, SortCollectionByName());
+					std::ranges::sort(m_collections, sortCollectionByName);
 				}
 
 				m_fLoadingProgress = 1.0f;
@@ -592,18 +552,7 @@ void OsuDatabase::sortScores(std::string beatmapMD5Hash)
 	{
 		if (cv::osu::songbrowser_scores_sortingtype.getString() == sortMethod.name)
 		{
-			struct COMPARATOR_WRAPPER
-			{
-				SCORE_SORTING_COMPARATOR *comp;
-				bool operator() (OsuDatabase::Score const &a, OsuDatabase::Score const &b) const
-				{
-					return comp->operator()(a, b);
-				}
-			};
-			COMPARATOR_WRAPPER comparatorWrapper;
-			comparatorWrapper.comp = sortMethod.comparator;
-
-			std::sort(m_scores[beatmapMD5Hash].begin(), m_scores[beatmapMD5Hash].end(), comparatorWrapper);
+			std::sort(m_scores[beatmapMD5Hash].begin(), m_scores[beatmapMD5Hash].end(), sortMethod.comparator);
 			return;
 		}
 	}
@@ -630,7 +579,7 @@ bool OsuDatabase::addCollection(UString collectionName)
 	}
 	m_collections.push_back(c);
 
-	std::ranges::sort(m_collections, SortCollectionByName());
+	std::ranges::sort(m_collections, sortCollectionByName);
 
 	m_bDidCollectionsChangeForSave = true;
 
@@ -661,7 +610,7 @@ bool OsuDatabase::renameCollection(UString oldCollectionName, UString newCollect
 			{
 				collection.name = newCollectionName;
 
-				std::ranges::sort(m_collections, SortCollectionByName());
+				std::ranges::sort(m_collections, sortCollectionByName);
 
 				m_bDidCollectionsChangeForSave = true;
 
@@ -917,17 +866,14 @@ OsuDatabase::PlayerPPScores OsuDatabase::getPlayerPPScores(UString playerName)
 		keys.push_back(kv.first);
 	}
 
-	struct ScoreSortComparator
+	constexpr auto scoreSortComparator = [](Score const *a, Score const *b) -> bool
 	{
-	    bool operator() (Score const *a, Score const *b) const
-	    {
-	    	// sort by pp
-	    	// strict weak ordering!
-	    	if (a->pp == b->pp)
-	    		return a->sortHack < b->sortHack;
-	    	else
-	    		return a->pp < b->pp;
-	    }
+		// sort by pp
+		// strict weak ordering!
+		if (a->pp == b->pp)
+			return a->sortHack < b->sortHack;
+		else
+			return a->pp < b->pp;
 	};
 
 	unsigned long long totalScore = 0;
@@ -969,7 +915,7 @@ OsuDatabase::PlayerPPScores OsuDatabase::getPlayerPPScores(UString playerName)
 	}
 
 	// sort by pp
-	std::ranges::sort(scores, ScoreSortComparator());
+	std::ranges::sort(scores, scoreSortComparator);
 
 	PlayerPPScores ppScores;
 	ppScores.ppScores = std::move(scores);
@@ -1697,23 +1643,20 @@ void OsuDatabase::loadDB(OsuFile *db, bool &fallbackToRawLoad)
 						}
 
 						// "Get the most common one, or 0 as a suitable default"
-						struct SortByDuration
+						constexpr auto sortByDuration = [](Tuple const &a, Tuple const &b) -> bool
 						{
-						    bool operator() (Tuple const &a, Tuple const &b) const
-						    {
-						    	// first condition: duration
-						    	// second condition: if duration is the same, higher BPM goes before lower BPM
+							// first condition: duration
+							// second condition: if duration is the same, higher BPM goes before lower BPM
 
-						    	// strict weak ordering!
-						    	if (a.duration == b.duration && a.beatLength == b.beatLength)
-						    		return a.sortHack > b.sortHack;
-						    	else if (a.duration == b.duration)
-						    		return (a.beatLength < b.beatLength);
-						    	else
-						    		return (a.duration > b.duration);
-						    }
+							// strict weak ordering!
+							if (a.duration == b.duration && a.beatLength == b.beatLength)
+								return a.sortHack > b.sortHack;
+							else if (a.duration == b.duration)
+								return (a.beatLength < b.beatLength);
+							else
+								return (a.duration > b.duration);
 						};
-						std::ranges::sort(aggregations, SortByDuration());
+						std::ranges::sort(aggregations, sortByDuration);
 
 						float mostCommonBPM = aggregations[0].beatLength;
 						{
@@ -1896,7 +1839,7 @@ void OsuDatabase::loadDB(OsuFile *db, bool &fallbackToRawLoad)
 	if (cv::osu::collections_custom_enabled.getBool())
 		loadCollections("collections.db", false, hashToDiff2, hashToBeatmap);
 
-	std::ranges::sort(m_collections, SortCollectionByName());
+	std::ranges::sort(m_collections, sortCollectionByName);
 
 	// signal that we are done
 	m_fLoadingProgress = 1.0f;

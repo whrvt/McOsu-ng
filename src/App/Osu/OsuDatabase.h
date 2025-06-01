@@ -167,16 +167,10 @@ public:
 		unsigned long long totalScore;
 	};
 
-	struct SCORE_SORTING_COMPARATOR
-	{
-		virtual ~SCORE_SORTING_COMPARATOR() {;}
-		virtual bool operator() (OsuDatabase::Score const &a, OsuDatabase::Score const &b) const = 0;
-	};
-
 	struct SCORE_SORTING_METHOD
 	{
 		UString name;
-		SCORE_SORTING_COMPARATOR *comparator;
+		std::function<bool(OsuDatabase::Score const &, OsuDatabase::Score const &)> comparator;
 	};
 
 public:

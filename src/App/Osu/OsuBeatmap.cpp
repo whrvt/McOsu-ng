@@ -1375,18 +1375,15 @@ bool OsuBeatmap::play()
 	m_hitobjectsSortedByEndTime = m_hitobjects;
 
 	// sort hitobjects by endtime
-	struct HitObjectSortComparator
+	constexpr auto hitObjectSortComparator = [](OsuHitObject const *a, OsuHitObject const *b) -> bool
 	{
-		bool operator() (OsuHitObject const *a, OsuHitObject const *b) const
-		{
-			// strict weak ordering!
-			if ((a->getTime() + a->getDuration()) == (b->getTime() + b->getDuration()))
-				return a->getSortHack() < b->getSortHack();
-			else
-				return (a->getTime() + a->getDuration()) < (b->getTime() + b->getDuration());
-		}
+		// strict weak ordering!
+		if ((a->getTime() + a->getDuration()) == (b->getTime() + b->getDuration()))
+			return a->getSortHack() < b->getSortHack();
+		else
+			return (a->getTime() + a->getDuration()) < (b->getTime() + b->getDuration());
 	};
-	std::ranges::sort(m_hitobjectsSortedByEndTime, HitObjectSortComparator());
+	std::ranges::sort(m_hitobjectsSortedByEndTime, hitObjectSortComparator);
 
 	onLoad();
 

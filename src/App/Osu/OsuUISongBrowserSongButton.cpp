@@ -240,7 +240,7 @@ void OsuUISongBrowserSongButton::drawSubTitle(float deselectedAlpha, bool forceS
 
 void OsuUISongBrowserSongButton::sortChildren()
 {
-	std::ranges::sort(m_children, OsuSongBrowser2::SortByDifficulty());
+	std::ranges::sort(m_children, OsuSongBrowser2::sortByDifficulty);
 }
 
 void OsuUISongBrowserSongButton::updateLayoutEx()

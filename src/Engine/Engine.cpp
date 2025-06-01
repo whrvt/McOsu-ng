@@ -118,7 +118,7 @@ ConVar maximize("maximize", FCVAR_NONE, []() -> void {env->maximize();});
 ConVar resizable_toggle("resizable_toggle", FCVAR_NONE, []() -> void {env->setWindowResizable(!env->isWindowResizable());});
 ConVar focus("focus", FCVAR_NONE, []() -> void {engine->focus();});
 ConVar center("center", FCVAR_NONE, []() -> void {engine->center();});
-ConVar version("version", FCVAR_NONE, []() -> void {Engine::printVersion();});
+ConVar version("version", FCVAR_NONE, Engine::printVersion);
 ConVar errortest("errortest", FCVAR_NONE, []() -> void {engine->showMessageError("Error Test", "This is an error message, fullscreen mode should be disabled and you should be able to read this");});
 ConVar crash("crash", FCVAR_NONE, []() -> void {__builtin_trap();});
 ConVar dpiinfo("dpiinfo", FCVAR_NONE, []() -> void {Engine::logRaw("[Engine] DPI: {}, DPIScale: {:.4f}\n", env->getDPI(), env->getDPIScale());});

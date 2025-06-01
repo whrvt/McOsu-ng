@@ -59,6 +59,20 @@ ConVar beatmap_max_num_hitobjects("osu_beatmap_max_num_hitobjects", 40000, FCVAR
 ConVar beatmap_max_num_slider_scoringtimes("osu_beatmap_max_num_slider_scoringtimes", 32768, FCVAR_NONE, "maximum number of slider score increase events allowed per slider (prevent crashing on deliberate game-breaking beatmaps)");
 }
 
+namespace {
+constexpr bool timingPointSortComparator(OsuDatabaseBeatmap::TIMINGPOINT const &a, OsuDatabaseBeatmap::TIMINGPOINT const &b)
+{
+	// first condition: offset
+	// second condition: if offset is the same, non-inherited timingpoints go before inherited timingpoints
+
+	// strict weak ordering!
+	if (a.offset == b.offset && ((a.msPerBeat >= 0 && b.msPerBeat < 0) == (b.msPerBeat >= 0 && a.msPerBeat < 0)))
+		return a.sortHack < b.sortHack;
+	else
+		return (a.offset < b.offset) || (a.offset == b.offset && a.msPerBeat >= 0 && b.msPerBeat < 0);
+}
+}
+
 unsigned long long OsuDatabaseBeatmap::sortHackCounter = 0;
 
 OsuDatabaseBeatmap::OsuDatabaseBeatmap(UString filePath, UString folder, bool filePathIsInMemoryBeatmap)
@@ -273,38 +287,38 @@ OsuDatabaseBeatmap::PRIMITIVE_CONTAINER OsuDatabaseBeatmap::loadPrimitiveObjects
 						if (sscanf(curLineChar, " %lf , %f , %i , %i , %i , %i , %i , %i", &tpOffset, &tpMSPerBeat, &tpMeter, &tpSampleType, &tpSampleSet, &tpVolume, &tpTimingChange, &tpKiai) == 8
 							|| sscanf(curLineChar, " %lf , %f , %i , %i , %i , %i , %i", &tpOffset, &tpMSPerBeat, &tpMeter, &tpSampleType, &tpSampleSet, &tpVolume, &tpTimingChange) == 7)
 						{
-							TIMINGPOINT t;
+							TIMINGPOINT t
 							{
-								t.offset = (long)std::round(tpOffset);
-								t.msPerBeat = tpMSPerBeat;
+								.offset = (long)std::round(tpOffset),
+								.msPerBeat = tpMSPerBeat,
 
-								t.sampleType = tpSampleType;
-								t.sampleSet = tpSampleSet;
-								t.volume = tpVolume;
+								.sampleType = tpSampleType,
+								.sampleSet = tpSampleSet,
+								.volume = tpVolume,
 
-								t.timingChange = tpTimingChange == 1;
-								t.kiai = tpKiai > 0;
+								.timingChange = tpTimingChange == 1,
+								.kiai = tpKiai > 0,
 
-								t.sortHack = timingPointSortHack++;
-							}
+								.sortHack = timingPointSortHack++
+							};
 							c.timingpoints.push_back(t);
 						}
 						else if (sscanf(curLineChar, " %lf , %f", &tpOffset, &tpMSPerBeat) == 2)
 						{
-							TIMINGPOINT t;
+							TIMINGPOINT t
 							{
-								t.offset = (long)std::round(tpOffset);
-								t.msPerBeat = tpMSPerBeat;
+								.offset = (long)std::round(tpOffset),
+								.msPerBeat = tpMSPerBeat,
 
-								t.sampleType = 0;
-								t.sampleSet = 0;
-								t.volume = 100;
+								.sampleType = 0,
+								.sampleSet = 0,
+								.volume = 100,
 
-								t.timingChange = true;
-								t.kiai = false;
+								.timingChange = true,
+								.kiai = false,
 
-								t.sortHack = timingPointSortHack++;
-							}
+								.sortHack = timingPointSortHack++
+							};
 							c.timingpoints.push_back(t);
 						}
 					}
@@ -533,7 +547,7 @@ OsuDatabaseBeatmap::PRIMITIVE_CONTAINER OsuDatabaseBeatmap::loadPrimitiveObjects
 
 	// sort timingpoints by time
 	if (c.timingpoints.size() > 0)
-		std::ranges::sort(c.timingpoints, TimingPointSortComparator());
+		std::ranges::sort(c.timingpoints, timingPointSortComparator);
 
 	return c;
 }
@@ -684,7 +698,7 @@ OsuDatabaseBeatmap::CALCULATE_SLIDER_TIMES_CLICKS_TICKS_RESULT OsuDatabaseBeatma
 			});
 
 			// 5) sort scoringTimes from earliest to latest
-			std::ranges::sort(s.scoringTimesForStarCalc, OsuDifficultyHitObject::SliderScoringTimeComparator());
+			std::ranges::sort(s.scoringTimesForStarCalc, OsuDifficultyHitObject::sliderScoringTimeComparator);
 		}
 	}
 
@@ -794,18 +808,16 @@ OsuDatabaseBeatmap::LOAD_DIFFOBJ_RESULT OsuDatabaseBeatmap::loadDifficultyHitObj
 	}
 
 	// sort hitobjects by time
-	struct DiffHitObjectSortComparator
+	constexpr auto diffHitObjectSortComparator = [](const OsuDifficultyHitObject &a, const OsuDifficultyHitObject &b) -> bool
 	{
-	    bool operator() (const OsuDifficultyHitObject &a, const OsuDifficultyHitObject &b) const
-	    {
-	    	// strict weak ordering!
-	    	if (a.time == b.time)
-	    		return a.sortHack < b.sortHack;
-	    	else
-	    		return a.time < b.time;
-	    }
+		// strict weak ordering!
+		if (a.time == b.time)
+			return a.sortHack < b.sortHack;
+		else
+			return a.time < b.time;
 	};
-	std::ranges::sort(result.diffobjects, DiffHitObjectSortComparator());
+
+	std::ranges::sort(result.diffobjects, diffHitObjectSortComparator);
 
 	// calculate stacks
 	// see OsuBeatmapStandard.cpp
@@ -1196,38 +1208,38 @@ bool OsuDatabaseBeatmap::loadMetadata(OsuDatabaseBeatmap *databaseBeatmap)
 						if (sscanf(curLineChar, " %lf , %f , %i , %i , %i , %i , %i , %i", &tpOffset, &tpMSPerBeat, &tpMeter, &tpSampleType, &tpSampleSet, &tpVolume, &tpTimingChange, &tpKiai) == 8
 							|| sscanf(curLineChar, " %lf , %f , %i , %i , %i , %i , %i", &tpOffset, &tpMSPerBeat, &tpMeter, &tpSampleType, &tpSampleSet, &tpVolume, &tpTimingChange) == 7)
 						{
-							TIMINGPOINT t;
+							TIMINGPOINT t
 							{
-								t.offset = (long)std::round(tpOffset);
-								t.msPerBeat = tpMSPerBeat;
+								.offset = (long)std::round(tpOffset),
+								.msPerBeat = tpMSPerBeat,
 
-								t.sampleType = tpSampleType;
-								t.sampleSet = tpSampleSet;
-								t.volume = tpVolume;
+								.sampleType = tpSampleType,
+								.sampleSet = tpSampleSet,
+								.volume = tpVolume,
 
-								t.timingChange = tpTimingChange == 1;
-								t.kiai = tpKiai > 0;
+								.timingChange = tpTimingChange == 1,
+								.kiai = tpKiai > 0,
 
-								t.sortHack = timingPointSortHack++;
-							}
+								.sortHack = timingPointSortHack++
+							};
 							databaseBeatmap->m_timingpoints.push_back(t);
 						}
 						else if (sscanf(curLineChar, " %lf , %f", &tpOffset, &tpMSPerBeat) == 2)
 						{
-							TIMINGPOINT t;
+							TIMINGPOINT t
 							{
-								t.offset = (long)std::round(tpOffset);
-								t.msPerBeat = tpMSPerBeat;
+								.offset = (long)std::round(tpOffset),
+								.msPerBeat = tpMSPerBeat,
 
-								t.sampleType = 0;
-								t.sampleSet = 0;
-								t.volume = 100;
+								.sampleType = 0,
+								.sampleSet = 0,
+								.volume = 100,
 
-								t.timingChange = true;
-								t.kiai = false;
+								.timingChange = true,
+								.kiai = false,
 
-								t.sortHack = timingPointSortHack++;
-							}
+								.sortHack = timingPointSortHack++
+							};
 							databaseBeatmap->m_timingpoints.push_back(t);
 						}
 					}
@@ -1261,7 +1273,7 @@ bool OsuDatabaseBeatmap::loadMetadata(OsuDatabaseBeatmap *databaseBeatmap)
 			debugLog("calculating BPM range ...\n");
 
 		// sort timingpoints by time
-		std::ranges::sort(databaseBeatmap->m_timingpoints, TimingPointSortComparator());
+		std::ranges::sort(databaseBeatmap->m_timingpoints, timingPointSortComparator);
 
 		// calculate bpm range
 		float tempMinBPM = 0.0f;
@@ -1372,23 +1384,20 @@ bool OsuDatabaseBeatmap::loadMetadata(OsuDatabaseBeatmap *databaseBeatmap)
 				}
 
 				// "Get the most common one, or 0 as a suitable default"
-				struct SortByDuration
+				constexpr auto sortByDuration = [](Tuple const &a, Tuple const &b) -> bool
 				{
-				    bool operator() (Tuple const &a, Tuple const &b) const
-				    {
-				    	// first condition: duration
-				    	// second condition: if duration is the same, higher BPM goes before lower BPM
+					// first condition: duration
+					// second condition: if duration is the same, higher BPM goes before lower BPM
 
-				    	// strict weak ordering!
-				    	if (a.duration == b.duration && a.beatLength == b.beatLength)
-				    		return a.sortHack > b.sortHack;
-				    	else if (a.duration == b.duration)
-				    		return (a.beatLength < b.beatLength);
-				    	else
-				    		return (a.duration > b.duration);
-				    }
+					// strict weak ordering!
+					if (a.duration == b.duration && a.beatLength == b.beatLength)
+						return a.sortHack > b.sortHack;
+					else if (a.duration == b.duration)
+						return (a.beatLength < b.beatLength);
+					else
+						return (a.duration > b.duration);
 				};
-				std::ranges::sort(aggregations, SortByDuration());
+				std::ranges::sort(aggregations, sortByDuration);
 
 				float mostCommonBPM = aggregations[0].beatLength;
 				{
@@ -1637,18 +1646,15 @@ OsuDatabaseBeatmap::LOAD_GAMEPLAY_RESULT OsuDatabaseBeatmap::loadGameplay(OsuDat
 	}
 
 	// sort hitobjects by starttime
-	struct HitObjectSortComparator
+	constexpr auto hitObjectSortComparator = [](OsuHitObject const *a, OsuHitObject const *b) -> bool
 	{
-	    bool operator() (OsuHitObject const *a, OsuHitObject const *b) const
-	    {
-	    	// strict weak ordering!
-	    	if (a->getTime() == b->getTime())
-	    		return a->getSortHack() < b->getSortHack();
-	    	else
-	    		return a->getTime() < b->getTime();
-	    }
+		// strict weak ordering!
+		if (a->getTime() == b->getTime())
+			return a->getSortHack() < b->getSortHack();
+		else
+			return a->getTime() < b->getTime();
 	};
-	std::ranges::sort(result.hitobjects, HitObjectSortComparator());
+	std::ranges::sort(result.hitobjects, hitObjectSortComparator);
 
 	// update beatmap length stat
 	if (databaseBeatmap->m_iLengthMS == 0 && result.hitobjects.size() > 0)

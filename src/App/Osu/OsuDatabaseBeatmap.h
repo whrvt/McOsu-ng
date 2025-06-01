@@ -385,25 +385,6 @@ private:
 	std::vector<OsuDatabaseBeatmap*> m_difficulties;
 
 	std::string m_sMD5Hash;
-
-
-
-	// helper functions
-
-	struct TimingPointSortComparator
-	{
-	    bool operator() (OsuDatabaseBeatmap::TIMINGPOINT const &a, OsuDatabaseBeatmap::TIMINGPOINT const &b) const
-	    {
-	    	// first condition: offset
-	    	// second condition: if offset is the same, non-inherited timingpoints go before inherited timingpoints
-
-	    	// strict weak ordering!
-	    	if (a.offset == b.offset && ((a.msPerBeat >= 0 && b.msPerBeat < 0) == (b.msPerBeat >= 0 && a.msPerBeat < 0)))
-	    		return a.sortHack < b.sortHack;
-	    	else
-	    		return (a.offset < b.offset) || (a.offset == b.offset && a.msPerBeat >= 0 && b.msPerBeat < 0);
-	    }
-	};
 };
 
 
