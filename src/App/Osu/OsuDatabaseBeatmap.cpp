@@ -79,10 +79,10 @@ OsuDatabaseBeatmap::OsuDatabaseBeatmap(UString filePath, UString folder, bool fi
 {
 	
 
-	m_sFilePath = filePath;
+	m_sFilePath = std::move(filePath);
 	m_bFilePathIsInMemoryBeatmap = filePathIsInMemoryBeatmap;
 
-	m_sFolder = folder;
+	m_sFolder = std::move(folder);
 
 	m_iSortHack = sortHackCounter++;
 

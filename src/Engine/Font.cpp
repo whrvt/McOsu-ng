@@ -36,7 +36,7 @@ ConVar r_debug_drawstring_unbind("r_debug_drawstring_unbind", false, FCVAR_NONE)
 ConVar r_debug_font_atlas_padding("r_debug_font_atlas_padding", 1, FCVAR_NONE, "padding between glyphs in the atlas to prevent bleeding");
 }
 
-McFont::McFont(UString filepath, int fontSize, bool antialiasing, int fontDPI)
+McFont::McFont(const UString &filepath, int fontSize, bool antialiasing, int fontDPI)
     : Resource(filepath), m_vao((Env::cfg(REND::GLES2 | REND::GLES32) ? Graphics::PRIMITIVE::PRIMITIVE_TRIANGLES : Graphics::PRIMITIVE::PRIMITIVE_QUADS),
                                 Graphics::USAGE_TYPE::USAGE_DYNAMIC)
 {
@@ -49,14 +49,14 @@ McFont::McFont(UString filepath, int fontSize, bool antialiasing, int fontDPI)
 	constructor(characters, fontSize, antialiasing, fontDPI);
 }
 
-McFont::McFont(UString filepath, std::vector<wchar_t> characters, int fontSize, bool antialiasing, int fontDPI)
+McFont::McFont(const UString &filepath, const std::vector<wchar_t> &characters, int fontSize, bool antialiasing, int fontDPI)
     : Resource(filepath), m_vao((Env::cfg(REND::GLES2 | REND::GLES32) ? Graphics::PRIMITIVE::PRIMITIVE_TRIANGLES : Graphics::PRIMITIVE::PRIMITIVE_QUADS),
                                 Graphics::USAGE_TYPE::USAGE_DYNAMIC)
 {
 	constructor(characters, fontSize, antialiasing, fontDPI);
 }
 
-void McFont::constructor(std::vector<wchar_t> characters, int fontSize, bool antialiasing, int fontDPI)
+void McFont::constructor(const std::vector<wchar_t> &characters, int fontSize, bool antialiasing, int fontDPI)
 {
 	m_iFontSize = fontSize;
 	m_bAntialiasing = antialiasing;

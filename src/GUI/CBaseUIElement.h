@@ -69,7 +69,7 @@
 	v T *setPositionManually(bool positionManually) o {m_bPositionManually = positionManually; return this;} \
 	v T *setEnabled(bool enabled) o {if (enabled != m_bEnabled) {m_bEnabled = enabled; if (m_bEnabled) {onEnabled();} else {onDisabled();}} return this;} \
 	v T *setBusy(bool busy) o {m_bBusy = busy; return this;} \
-	v T *setName(UString name) o {m_sName = name; return this;} \
+	v T *setName(const UString &name) o {m_sName = name; return this;} \
 	v T *setParent(CBaseUIElement *parent) o {m_parent = parent; return this;} \
 	v T *setScaleByHeightOnly(bool scaleByHeightOnly) o {m_bScaleByHeightOnly = scaleByHeightOnly; return this;}
 

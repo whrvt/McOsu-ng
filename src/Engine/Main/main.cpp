@@ -361,7 +361,7 @@ nocbinline SDL_AppResult SDLMain::handleEvent(SDL_Event *event)
 			break;
 
 		case SDL_EVENT_WINDOW_DISPLAY_CHANGED:
-			cv::monitor.setValue<int>(event->window.data1);
+			cv::monitor.setValue(event->window.data1);
 		case SDL_EVENT_WINDOW_DISPLAY_SCALE_CHANGED: // TODO?
 			engine->requestResolutionChange(getWindowSize());
 			m_fDisplayHzSecs = 1.0f / (m_fDisplayHz = queryDisplayHz());

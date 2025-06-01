@@ -11,21 +11,22 @@
 
 #include "cbase.h"
 
-#include <concepts>
-
 #include <cassert>
+#include <concepts>
+#include <type_traits>
+#include <variant>
 
 #include "ConVarDefs.h"
 
-#define FCVAR_NONE				0		// the default, no flags at all
-#define FCVAR_UNREGISTERED		(1<<0)	// not added to g_vConVars list (not settable/gettable via console/help), not visible in find/listcommands results etc.
-#define FCVAR_DEVELOPMENTONLY	(1<<1)	// hidden in released products (like FCVAR_HIDDEN, but flag gets compiled out if ALLOW_DEVELOPMENT_CONVARS is defined)
-#define FCVAR_HARDCODED			(1<<2)	// if this is set then the value can't and shouldn't ever be changed
-#define FCVAR_HIDDEN			(1<<3)	// not visible in find/listcommands results etc., but is settable/gettable via console/help
-#define FCVAR_CHEAT				(1<<4)	// always return default value and ignore callbacks unless sv_cheats is enabled (default value is changeable via setDefault*())
-#define FCVAR_DYNAMIC			(1<<5)	// set for convars which are created at runtime with e.g. "new" instead of in the global scope
+#define FCVAR_NONE 0                   // the default, no flags at all
+#define FCVAR_UNREGISTERED (1 << 0)    // not added to g_vConVars list (not settable/gettable via console/help), not visible in find/listcommands results etc.
+#define FCVAR_DEVELOPMENTONLY (1 << 1) // hidden in released products (like FCVAR_HIDDEN, but flag gets compiled out if ALLOW_DEVELOPMENT_CONVARS is defined)
+#define FCVAR_HARDCODED (1 << 2)       // if this is set then the value can't and shouldn't ever be changed
+#define FCVAR_HIDDEN (1 << 3)          // not visible in find/listcommands results etc., but is settable/gettable via console/help
+#define FCVAR_CHEAT (1 << 4)   // always return default value and ignore callbacks unless sv_cheats is enabled (default value is changeable via setDefault*())
+#define FCVAR_DYNAMIC (1 << 5) // set for convars which are created at runtime with e.g. "new" instead of in the global scope
 
-#define MAKENEWCONVAR(name, defaultValue, ...) new ConVar((name), (defaultValue), FCVAR_DYNAMIC __VA_OPT__(,) __VA_ARGS__)
+#define MAKENEWCONVAR(name, defaultValue, ...) new ConVar((name), (defaultValue), FCVAR_DYNAMIC __VA_OPT__(, ) __VA_ARGS__)
 
 class ConVar
 {
@@ -38,66 +39,117 @@ public:
 		CONVAR_TYPE_STRING
 	};
 
-	// raw callbacks
-	typedef void (*ConVarCallback)(void);
-	typedef void (*ConVarChangeCallback)(UString oldValue, UString newValue);
-	typedef void (*ConVarChangeCallbackFloat)(float oldValue, float newValue);
-	typedef void (*ConVarCallbackArgs)(UString args);
-	typedef void (*ConVarCallbackFloat)(float args);
+	// callback typedefs
+	using NativeConVarCallback = fastdelegate::FastDelegate0<>;
+	using NativeConVarCallbackArgs = fastdelegate::FastDelegate1<UString>;
+	using NativeConVarChangeCallback = fastdelegate::FastDelegate2<UString, UString>;
+	using NativeConVarCallbackFloat = fastdelegate::FastDelegate1<float>;
+	using NativeConVarChangeCallbackFloat = fastdelegate::FastDelegate2<float, float>;
 
-	// delegate callbacks
-	typedef fastdelegate::FastDelegate0<> NativeConVarCallback;
-	typedef fastdelegate::FastDelegate1<UString> NativeConVarCallbackArgs;
-	typedef fastdelegate::FastDelegate2<UString, UString> NativeConVarChangeCallback;
-	typedef fastdelegate::FastDelegate1<float> NativeConVarCallbackFloat;
-	typedef fastdelegate::FastDelegate2<float, float> NativeConVarChangeCallbackFloat;
+	// polymorphic callback storage
+	using ExecutionCallback = std::variant<std::monostate,           // empty
+	                                       NativeConVarCallback,     // void()
+	                                       NativeConVarCallbackArgs, // void(UString)
+	                                       NativeConVarCallbackFloat // void(float)
+	                                       >;
+
+	using ChangeCallback = std::variant<std::monostate,                 // empty
+	                                    NativeConVarChangeCallback,     // void(UString, UString)
+	                                    NativeConVarChangeCallbackFloat // void(float, float)
+	                                    >;
 
 public:
 	static UString typeToString(CONVAR_TYPE type);
 
 private:
-	[[nodiscard]] constexpr auto getRaw() const {return m_fValue.load();} // forward def
+	[[nodiscard]] constexpr auto getRaw() const { return m_fValue.load(); } // forward def
+
+	// type detection helper
+	template <typename T>
+	static constexpr CONVAR_TYPE getTypeFor()
+	{
+		if constexpr (std::is_same_v<std::decay_t<T>, bool>)
+			return CONVAR_TYPE::CONVAR_TYPE_BOOL;
+		else if constexpr (std::is_integral_v<std::decay_t<T>>)
+			return CONVAR_TYPE::CONVAR_TYPE_INT;
+		else if constexpr (std::is_floating_point_v<std::decay_t<T>>)
+			return CONVAR_TYPE::CONVAR_TYPE_FLOAT;
+		else
+			return CONVAR_TYPE::CONVAR_TYPE_STRING;
+	}
+
+	static void addConVar(ConVar *);
 
 public:
 	~ConVar();
+
+	// command-only constructor
 	explicit ConVar(UString name);
 
-	explicit ConVar(UString name, int flags, ConVarCallback callback);
-	explicit ConVar(UString name, int flags, const char *helpString, ConVarCallback callback);
+	// callback-only constructors (no value)
+	template <typename Callback>
+	explicit ConVar(UString name, int flags, Callback callback)
+	    requires std::is_invocable_v<Callback> || std::is_invocable_v<Callback, UString> || std::is_invocable_v<Callback, float>
+	{
+		initCallback(name, flags, UString(""), callback);
+		addConVar(this);
+	}
 
-	explicit ConVar(UString name, int flags, ConVarCallbackArgs callbackARGS);
-	explicit ConVar(UString name, int flags, const char *helpString, ConVarCallbackArgs callbackARGS);
+	template <typename Callback>
+	explicit ConVar(UString name, int flags, const char *helpString, Callback callback)
+	    requires std::is_invocable_v<Callback> || std::is_invocable_v<Callback, UString> || std::is_invocable_v<Callback, float>
+	{
+		initCallback(name, flags, UString(helpString), callback);
+		addConVar(this);
+	}
 
-	explicit ConVar(UString name, int flags, ConVarCallbackFloat callbackFLOAT);
-	explicit ConVar(UString name, int flags, const char *helpString, ConVarCallbackFloat callbackFLOAT);
+	// value constructors handle all types uniformly
+	template <typename T>
+	explicit ConVar(UString name, T defaultValue, int flags, const char *helpString = "")
+	    requires(!std::is_same_v<std::decay_t<T>, const char *>)
+	{
+		initValue(name, defaultValue, flags, UString(helpString), nullptr, nullptr);
+		addConVar(this);
+	}
 
-	explicit ConVar(UString name, float defaultValue, int flags);
-	explicit ConVar(UString name, float defaultValue, int flags, ConVarChangeCallback callback);
-	explicit ConVar(UString name, float defaultValue, int flags, ConVarChangeCallbackFloat callback);
-	explicit ConVar(UString name, float defaultValue, int flags, const char *helpString);
-	explicit ConVar(UString name, float defaultValue, int flags, const char *helpString, ConVarChangeCallback callback);
-	explicit ConVar(UString name, float defaultValue, int flags, const char *helpString, ConVarChangeCallbackFloat callback);
+	template <typename T, typename Callback>
+	explicit ConVar(UString name, T defaultValue, int flags, const char *helpString, Callback callback)
+	    requires(!std::is_same_v<std::decay_t<T>, const char *>) && (std::is_invocable_v<Callback, UString, UString> || std::is_invocable_v<Callback, float, float>)
+	{
+		initValue(name, defaultValue, flags, UString(helpString), callback, nullptr);
+		addConVar(this);
+	}
 
-	explicit ConVar(UString name, int defaultValue, int flags);
-	explicit ConVar(UString name, int defaultValue, int flags, ConVarChangeCallback callback);
-	explicit ConVar(UString name, int defaultValue, int flags, ConVarChangeCallbackFloat callback);
-	explicit ConVar(UString name, int defaultValue, int flags, const char *helpString);
-	explicit ConVar(UString name, int defaultValue, int flags, const char *helpString, ConVarChangeCallback callback);
-	explicit ConVar(UString name, int defaultValue, int flags, const char *helpString, ConVarChangeCallbackFloat callback);
+	template <typename T, typename Callback>
+	explicit ConVar(UString name, T defaultValue, int flags, Callback callback)
+	    requires(!std::is_same_v<std::decay_t<T>, const char *>) && (std::is_invocable_v<Callback, UString, UString> || std::is_invocable_v<Callback, float, float>)
+	{
+		initValue(name, defaultValue, flags, UString(""), callback, nullptr);
+		addConVar(this);
+	}
 
-	explicit ConVar(UString name, bool defaultValue, int flags);
-	explicit ConVar(UString name, bool defaultValue, int flags, ConVarChangeCallback callback);
-	explicit ConVar(UString name, bool defaultValue, int flags, ConVarChangeCallbackFloat callback);
-	explicit ConVar(UString name, bool defaultValue, int flags, const char *helpString);
-	explicit ConVar(UString name, bool defaultValue, int flags, const char *helpString, ConVarChangeCallback callback);
-	explicit ConVar(UString name, bool defaultValue, int flags, const char *helpString, ConVarChangeCallbackFloat callback);
+	// const char* specializations for string convars
+	explicit ConVar(UString name, const char *defaultValue, int flags, const char *helpString = "")
+	{
+		initValue(name, UString(defaultValue), flags, UString(helpString), nullptr, nullptr);
+		addConVar(this);
+	}
 
-	explicit ConVar(UString name, const char *defaultValue, int flags);
-	explicit ConVar(UString name, const char *defaultValue, int flags, const char *helpString);
-	explicit ConVar(UString name, const char *defaultValue, int flags, ConVarChangeCallback callback);
-	explicit ConVar(UString name, const char *defaultValue, int flags, ConVarChangeCallbackFloat callback);
-	explicit ConVar(UString name, const char *defaultValue, int flags, const char *helpString, ConVarChangeCallback callback);
-	explicit ConVar(UString name, const char *defaultValue, int flags, const char *helpString, ConVarChangeCallbackFloat callback);
+	template <typename Callback>
+	explicit ConVar(UString name, const char *defaultValue, int flags, const char *helpString, Callback callback)
+	    requires(std::is_invocable_v<Callback, UString, UString> || std::is_invocable_v<Callback, float, float>)
+	{
+		initValue(name, UString(defaultValue), flags, UString(helpString), callback, nullptr);
+		addConVar(this);
+	}
+
+	template <typename Callback>
+	explicit ConVar(UString name, const char *defaultValue, int flags, Callback callback)
+	    requires(std::is_invocable_v<Callback, UString, UString> || std::is_invocable_v<Callback, float, float>)
+	{
+		initValue(name, UString(defaultValue), flags, UString(""), callback, nullptr);
+		addConVar(this);
+	}
 
 	// callbacks
 	void exec();
@@ -106,82 +158,192 @@ public:
 
 	// get
 	template <typename T = int>
-	[[nodiscard]] constexpr auto getDefaultVal() const {return static_cast<T>(m_fDefaultValue.load());}
-	[[nodiscard]] constexpr float getDefaultFloat() const {return getDefaultVal<float>();}
-	[[nodiscard]] constexpr const UString &getDefaultString() const {return m_sDefaultValue;}
+	[[nodiscard]] constexpr auto getDefaultVal() const
+	{
+		return static_cast<T>(m_fDefaultValue.load());
+	}
+	[[nodiscard]] constexpr float getDefaultFloat() const { return getDefaultVal<float>(); }
+	[[nodiscard]] constexpr const UString &getDefaultString() const { return m_sDefaultValue; }
 	[[nodiscard]] UString getFancyDefaultValue() const;
 
-	[[nodiscard]] constexpr bool isFlagSet(int flag) const {return (bool)(m_iFlags & flag);}
+	[[nodiscard]] constexpr bool isFlagSet(int flag) const { return (bool)(m_iFlags & flag); }
 
 	template <typename T = int>
-	[[nodiscard]] constexpr auto getVal(bool cheat = false) const {return static_cast<T>((!cheat || !!static_cast<int>(cv::ConVars::sv_cheats.getRaw())) ? m_fValue.load() : m_fDefaultValue.load());}
+	[[nodiscard]] constexpr auto getVal(bool cheat = false) const
+	{
+		return static_cast<T>((!cheat || !!static_cast<int>(cv::ConVars::sv_cheats.getRaw())) ? m_fValue.load() : m_fDefaultValue.load());
+	}
 
-	[[nodiscard]] constexpr int getInt() const	   	{return getVal<int>(isFlagSet(FCVAR_CHEAT));}
-	[[nodiscard]] constexpr bool getBool() const	{return getVal<bool>(isFlagSet(FCVAR_CHEAT));}
-	[[nodiscard]] constexpr float getFloat() const	{return	getVal<float>(isFlagSet(FCVAR_CHEAT));}
+	[[nodiscard]] constexpr int getInt() const { return getVal<int>(isFlagSet(FCVAR_CHEAT)); }
+	[[nodiscard]] constexpr bool getBool() const { return getVal<bool>(isFlagSet(FCVAR_CHEAT)); }
+	[[nodiscard]] constexpr float getFloat() const { return getVal<float>(isFlagSet(FCVAR_CHEAT)); }
 
 	[[nodiscard]]
-	constexpr const UString &getString() const		 {return (isFlagSet(FCVAR_CHEAT) && !static_cast<int>(cv::ConVars::sv_cheats.getRaw()) ? m_sDefaultValue : m_sValue);}
+	constexpr const UString &getString() const
+	{
+		return (isFlagSet(FCVAR_CHEAT) && !static_cast<int>(cv::ConVars::sv_cheats.getRaw()) ? m_sDefaultValue : m_sValue);
+	}
 
-	[[nodiscard]] constexpr const UString &getHelpstring() const {return m_sHelpString;}
-	[[nodiscard]] constexpr const UString &getName() const {return m_sName;}
-	[[nodiscard]] constexpr CONVAR_TYPE getType() const {return m_type;}
-	[[nodiscard]] constexpr int getFlags() const {return m_iFlags;}
+	[[nodiscard]] constexpr const UString &getHelpstring() const { return m_sHelpString; }
+	[[nodiscard]] constexpr const UString &getName() const { return m_sName; }
+	[[nodiscard]] constexpr CONVAR_TYPE getType() const { return m_type; }
+	[[nodiscard]] constexpr int getFlags() const { return m_iFlags; }
 
-	[[nodiscard]] constexpr bool hasValue() const {return m_bHasValue;}
-	[[nodiscard]] constexpr bool hasCallbackArgs() const {return (m_callbackfuncargs || m_changecallback);}
+	[[nodiscard]] constexpr bool hasValue() const { return m_bHasValue; }
+	[[nodiscard]] bool hasCallbackArgs() const;
 
 	// set
 	void setDefaultFloat(float defaultValue);
 	void setDefaultString(UString defaultValue);
 
 	template <typename T>
-		requires (std::is_same_v<T, float> || std::convertible_to<T, float>)
-	constexpr void setValue(T value)
+	void setValue(T &&value)
 	{
-		if (isFlagSet(FCVAR_HARDCODED) || (isFlagSet(FCVAR_CHEAT) && !static_cast<int>(cv::ConVars::sv_cheats.getRaw()))) return;
-		setValueInt(value); // setValueInt(ernal)...
+		if (isFlagSet(FCVAR_HARDCODED) || (isFlagSet(FCVAR_CHEAT) && !static_cast<int>(cv::ConVars::sv_cheats.getRaw())))
+			return;
+		setValueInt(std::forward<T>(value));
 	}
 
-	void setValue(UString sValue);
-
-	void setCallback(NativeConVarCallback callback);
-	void setCallback(NativeConVarCallbackArgs callback);
-	void setCallback(NativeConVarCallbackFloat callback);
-	void setCallback(NativeConVarChangeCallback callback);
-	void setCallback(NativeConVarChangeCallbackFloat callback);
+	// generic callback setter that auto-detects callback type
+	template <typename Callback>
+	void setCallback(Callback &&callback)
+	    requires(std::is_invocable_v<Callback> || std::is_invocable_v<Callback, UString> || std::is_invocable_v<Callback, float> ||
+	             std::is_invocable_v<Callback, UString, UString> || std::is_invocable_v<Callback, float, float>)
+	{
+		if constexpr (std::is_invocable_v<Callback>)
+			m_callback = NativeConVarCallback(std::forward<Callback>(callback));
+		else if constexpr (std::is_invocable_v<Callback, UString>)
+			m_callback = NativeConVarCallbackArgs(std::forward<Callback>(callback));
+		else if constexpr (std::is_invocable_v<Callback, float>)
+			m_callback = NativeConVarCallbackFloat(std::forward<Callback>(callback));
+		else if constexpr (std::is_invocable_v<Callback, UString, UString>)
+			m_changeCallback = NativeConVarChangeCallback(std::forward<Callback>(callback));
+		else if constexpr (std::is_invocable_v<Callback, float, float>)
+			m_changeCallback = NativeConVarChangeCallbackFloat(std::forward<Callback>(callback));
+		else
+			static_assert(std::is_invocable_v<Callback> || std::is_invocable_v<Callback, UString> || std::is_invocable_v<Callback, float> ||
+			                  std::is_invocable_v<Callback, UString, UString> || std::is_invocable_v<Callback, float, float>,
+			              "Unsupported callback signature");
+	}
 
 	void setHelpString(UString helpString);
 
 	// for restart support
-	void resetCallbacks()
-	{
-		m_callbackfunc = NULL;
-		m_callbackfuncargs = NULL;
-		m_callbackfuncfloat = NULL;
-		m_changecallback = NULL;
-		m_changecallbackfloat = NULL;
-	}
+	void resetCallbacks();
 
 private:
-	void init(int flags);
-	void init(UString &name, int flags);
-	void init(UString &name, int flags, ConVarCallback callback);
-	void init(UString &name, int flags, UString helpString, ConVarCallback callback);
-	void init(UString &name, int flags, ConVarCallbackArgs callbackARGS);
-	void init(UString &name, int flags, UString helpString, ConVarCallbackArgs callbackARGS);
-	void init(UString &name, int flags, ConVarCallbackFloat callbackARGS);
-	void init(UString &name, int flags, UString helpString, ConVarCallbackFloat callbackARGS);
-	void init(UString &name, float defaultValue, int flags, UString helpString, ConVarChangeCallback callback);
-	void init(UString &name, UString defaultValue, int flags, UString helpString, ConVarChangeCallback callback);
-	void init(UString &name, float defaultValue, int flags, UString helpString, ConVarChangeCallbackFloat callback);
-	void init(UString &name, UString defaultValue, int flags, UString helpString, ConVarChangeCallbackFloat callback);
+	// unified init for callback-only convars
+	template <typename Callback>
+	void initCallback(UString &name, int flags, UString helpString, Callback callback)
+	{
+		initBase(flags);
+		m_sName = name;
+		m_sHelpString = std::move(helpString);
+		m_bHasValue = false;
 
+		if constexpr (std::is_invocable_v<Callback>)
+		{
+			m_callback = NativeConVarCallback(callback);
+			m_type = CONVAR_TYPE::CONVAR_TYPE_STRING;
+		}
+		else if constexpr (std::is_invocable_v<Callback, UString>)
+		{
+			m_callback = NativeConVarCallbackArgs(callback);
+			m_type = CONVAR_TYPE::CONVAR_TYPE_STRING;
+		}
+		else if constexpr (std::is_invocable_v<Callback, float>)
+		{
+			m_callback = NativeConVarCallbackFloat(callback);
+			m_type = CONVAR_TYPE::CONVAR_TYPE_INT;
+		}
+	}
+
+	// unified init for value convars
+	template <typename T, typename ChangeCallback>
+	void initValue(UString &name, const T &defaultValue, int flags, UString helpString, ChangeCallback changeCallback, void * /*unused*/)
+	{
+		initBase(flags);
+		m_sName = name;
+		m_sHelpString = std::move(helpString);
+		m_type = getTypeFor<T>();
+
+		// set default value
+		if constexpr (std::is_same_v<std::decay_t<T>, UString> || std::is_same_v<std::decay_t<T>, const char *>)
+			setDefaultStringInt(defaultValue);
+		else
+			setDefaultFloatInt(static_cast<float>(defaultValue));
+
+		// set initial value (without triggering callbacks)
+		if constexpr (std::is_same_v<std::decay_t<T>, UString>)
+			setValueInt(defaultValue);
+		else
+			setValueInt(static_cast<float>(defaultValue));
+
+		// set change callback if provided
+		if constexpr (!std::is_same_v<ChangeCallback, std::nullptr_t>)
+		{
+			if constexpr (std::is_invocable_v<ChangeCallback, UString, UString>)
+				m_changeCallback = NativeConVarChangeCallback(changeCallback);
+			else if constexpr (std::is_invocable_v<ChangeCallback, float, float>)
+				m_changeCallback = NativeConVarChangeCallbackFloat(changeCallback);
+		}
+	}
+
+	void initBase(int flags);
 	void setDefaultFloatInt(float defaultValue);
 	void setDefaultStringInt(UString defaultValue);
 
-	void setValueInt(float value);
-	void setValueInt(UString sValue);
+	template <typename T>
+	void setValueInt(T &&value) // no flag checking, setValue (user-accessible) already does that
+	{
+		// determine float and string representations depending on whether setValue("string") or setValue(float) was called
+		const auto [newFloat, newString] = [&]() {
+			if constexpr (std::is_convertible_v<std::decay_t<T>, float> && !std::is_same_v<std::decay_t<T>, UString>)
+			{
+				const auto f = static_cast<float>(value);
+				return std::make_pair(f, UString::format("%g", f));
+			}
+			else
+			{
+				const UString s = std::forward<T>(value);
+				const float f = (s.length() > 0) ? s.toFloat() : 0.0f;
+				return std::make_pair(f, s);
+			}
+		}();
+
+		// backup previous values
+		const float oldFloat = m_fValue.load();
+		const UString oldString = m_sValue;
+
+		// set new values
+		m_fValue = newFloat;
+		m_sValue = newString;
+
+		// handle possible execution callbacks
+		std::visit(
+		    [&](auto &&callback) {
+			    using CallbackType = std::decay_t<decltype(callback)>;
+			    if constexpr (std::is_same_v<CallbackType, NativeConVarCallback>)
+				    callback();
+			    else if constexpr (std::is_same_v<CallbackType, NativeConVarCallbackArgs>)
+				    callback(newString);
+			    else if constexpr (std::is_same_v<CallbackType, NativeConVarCallbackFloat>)
+				    callback(newFloat);
+			    // std::monostate case does nothing
+		    },
+		    m_callback);
+
+		// handle possible change callbacks
+		std::visit(
+		    [&](auto &&callback) {
+			    using CallbackType = std::decay_t<decltype(callback)>;
+			    if constexpr (std::is_same_v<CallbackType, NativeConVarChangeCallback>)
+				    callback(oldString, newString);
+			    else if constexpr (std::is_same_v<CallbackType, NativeConVarChangeCallbackFloat>)
+				    callback(oldFloat, newFloat);
+		    },
+		    m_changeCallback);
+	}
 
 private:
 	bool m_bHasValue;
@@ -197,14 +359,10 @@ private:
 	UString m_sValue;
 	UString m_sDefaultValue;
 
-	NativeConVarCallback m_callbackfunc;
-	NativeConVarCallbackArgs m_callbackfuncargs;
-	NativeConVarCallbackFloat m_callbackfuncfloat;
-	NativeConVarChangeCallback m_changecallback;
-	NativeConVarChangeCallbackFloat m_changecallbackfloat;
+	// callback storage (allow having 1 "change" callback and 1 single value (or void) callback)
+	ExecutionCallback m_callback;
+	ChangeCallback m_changeCallback;
 };
-
-
 
 //*******************//
 //  Searching/Lists  //
@@ -219,11 +377,11 @@ public:
 	ConVarHandler();
 	~ConVarHandler();
 
-	[[nodiscard]] const std::vector<ConVar*> &getConVarArray() const;
+	[[nodiscard]] const std::vector<ConVar *> &getConVarArray() const;
 	[[nodiscard]] size_t getNumConVars() const;
 
-	[[nodiscard]] ConVar *getConVarByName(UString name, bool warnIfNotFound = true) const;
-	[[nodiscard]] std::vector<ConVar*> getConVarByLetter(UString letters) const;
+	[[nodiscard]] ConVar *getConVarByName(const UString &name, bool warnIfNotFound = true) const;
+	[[nodiscard]] std::vector<ConVar *> getConVarByLetter(const UString &letters) const;
 
 	void resetAllConVarCallbacks();
 };

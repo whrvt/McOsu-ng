@@ -8,11 +8,13 @@
 #include "ConVar.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "Engine.h"
 #include "File.h"
 // #define ALLOW_DEVELOPMENT_CONVARS // NOTE: comment this out on release
-namespace cv::ConVars {
+namespace cv::ConVars
+{
 ConVar sv_cheats("sv_cheats", true, FCVAR_NONE);
 }
 
@@ -28,7 +30,7 @@ static std::unordered_map<std::string, ConVar *> &_getGlobalConVarMap()
 	return g_vConVarMap;
 }
 
-static void _addConVar(ConVar *c)
+void ConVar::addConVar(ConVar *c)
 {
 	if (c->isFlagSet(FCVAR_UNREGISTERED))
 		return;
@@ -92,14 +94,8 @@ UString ConVar::typeToString(CONVAR_TYPE type)
 	return "";
 }
 
-void ConVar::init(int flags)
+void ConVar::initBase(int flags)
 {
-	m_callbackfunc = NULL;
-	m_callbackfuncargs = NULL;
-	m_callbackfuncfloat = NULL;
-	m_changecallback = NULL;
-	m_changecallbackfloat = NULL;
-
 	m_fValue = 0.0f;
 	m_fDefaultValue = 0.0f;
 
@@ -108,352 +104,21 @@ void ConVar::init(int flags)
 	m_iFlags = flags;
 
 #ifdef ALLOW_DEVELOPMENT_CONVARS
-
 	m_iFlags &= ~FCVAR_DEVELOPMENTONLY;
-
 #endif
+
+	// m_callback/m_changeCallback are default-init to std::monostate (i.e. nothing)
 }
 
-void ConVar::init(UString &name, int flags)
-{
-	init(flags);
-
-	m_sName = name;
-
-	m_bHasValue = false;
-	m_type = CONVAR_TYPE::CONVAR_TYPE_STRING;
-}
-
-void ConVar::init(UString &name, int flags, ConVarCallback callback)
-{
-	init(flags);
-
-	m_sName = name;
-	m_callbackfunc = callback;
-
-	m_bHasValue = false;
-	m_type = CONVAR_TYPE::CONVAR_TYPE_STRING;
-}
-
-void ConVar::init(UString &name, int flags, UString helpString, ConVarCallback callback)
-{
-	init(name, flags, callback);
-
-	m_sHelpString = helpString;
-}
-
-void ConVar::init(UString &name, int flags, ConVarCallbackArgs callbackARGS)
-{
-	init(flags);
-
-	m_sName = name;
-	m_callbackfuncargs = callbackARGS;
-
-	m_bHasValue = false;
-	m_type = CONVAR_TYPE::CONVAR_TYPE_STRING;
-}
-
-void ConVar::init(UString &name, int flags, UString helpString, ConVarCallbackArgs callbackARGS)
-{
-	init(name, flags, callbackARGS);
-
-	m_sHelpString = helpString;
-}
-
-void ConVar::init(UString &name, int flags, ConVarCallbackFloat callbackFLOAT)
-{
-	init(flags);
-
-	m_sName = name;
-	m_callbackfuncfloat = callbackFLOAT;
-
-	m_bHasValue = false;
-	m_type = CONVAR_TYPE::CONVAR_TYPE_INT;
-}
-
-void ConVar::init(UString &name, int flags, UString helpString, ConVarCallbackFloat callbackFLOAT)
-{
-	init(name, flags, callbackFLOAT);
-
-	m_sHelpString = helpString;
-}
-
-void ConVar::init(UString &name, float defaultValue, int flags, UString helpString, ConVarChangeCallback callback)
-{
-	init(flags);
-
-	m_type = CONVAR_TYPE::CONVAR_TYPE_FLOAT;
-	m_sName = name;
-	setDefaultFloatInt(defaultValue);
-	{
-		setValueInt(defaultValue);
-	}
-	m_sHelpString = helpString;
-	m_changecallback = callback;
-}
-
-void ConVar::init(UString &name, UString defaultValue, int flags, UString helpString, ConVarChangeCallback callback)
-{
-	init(flags);
-
-	m_type = CONVAR_TYPE::CONVAR_TYPE_STRING;
-	m_sName = name;
-	setDefaultStringInt(defaultValue);
-	{
-		setValueInt(defaultValue);
-	}
-	m_sHelpString = helpString;
-	m_changecallback = callback;
-}
-
-void ConVar::init(UString &name, float defaultValue, int flags, UString helpString, ConVarChangeCallbackFloat callback)
-{
-	init(flags);
-
-	m_type = CONVAR_TYPE::CONVAR_TYPE_FLOAT;
-	m_sName = name;
-	setDefaultFloatInt(defaultValue);
-	{
-		setValueInt(defaultValue);
-	}
-	m_sHelpString = helpString;
-	m_changecallbackfloat = callback;
-}
-
-void ConVar::init(UString &name, UString defaultValue, int flags, UString helpString, ConVarChangeCallbackFloat callback)
-{
-	init(flags);
-
-	m_type = CONVAR_TYPE::CONVAR_TYPE_STRING;
-	m_sName = name;
-	setDefaultStringInt(defaultValue);
-	{
-		setValueInt(defaultValue);
-	}
-	m_sHelpString = helpString;
-	m_changecallbackfloat = callback;
-}
-
+// command-only constructor
 ConVar::ConVar(UString name)
 {
-	init(name, FCVAR_NONE);
-	_addConVar(this);
-}
-
-ConVar::ConVar(UString name, int flags, ConVarCallback callback)
-{
-	init(name, flags, callback);
-	_addConVar(this);
-}
-
-ConVar::ConVar(UString name, int flags, const char *helpString, ConVarCallback callback)
-{
-	init(name, flags, helpString, callback);
-	_addConVar(this);
-}
-
-ConVar::ConVar(UString name, int flags, ConVarCallbackArgs callbackARGS)
-{
-	init(name, flags, callbackARGS);
-	_addConVar(this);
-}
-
-ConVar::ConVar(UString name, int flags, const char *helpString, ConVarCallbackArgs callbackARGS)
-{
-	init(name, flags, helpString, callbackARGS);
-	_addConVar(this);
-}
-
-ConVar::ConVar(UString name, int flags, ConVarCallbackFloat callbackFLOAT)
-{
-	init(name, flags, callbackFLOAT);
-	_addConVar(this);
-}
-
-ConVar::ConVar(UString name, int flags, const char *helpString, ConVarCallbackFloat callbackFLOAT)
-{
-	init(name, flags, helpString, callbackFLOAT);
-	_addConVar(this);
-}
-
-ConVar::ConVar(UString name, float fDefaultValue, int flags)
-{
-	init(name, fDefaultValue, flags, UString(""), (ConVarChangeCallback)NULL);
-	_addConVar(this);
-}
-
-ConVar::ConVar(UString name, float fDefaultValue, int flags, ConVarChangeCallback callback)
-{
-	init(name, fDefaultValue, flags, UString(""), callback);
-	_addConVar(this);
-}
-
-ConVar::ConVar(UString name, float fDefaultValue, int flags, ConVarChangeCallbackFloat callback)
-{
-	init(name, fDefaultValue, flags, UString(""), callback);
-	_addConVar(this);
-}
-
-ConVar::ConVar(UString name, float fDefaultValue, int flags, const char *helpString)
-{
-	init(name, fDefaultValue, flags, UString(helpString), (ConVarChangeCallback)NULL);
-	_addConVar(this);
-}
-
-ConVar::ConVar(UString name, float fDefaultValue, int flags, const char *helpString, ConVarChangeCallback callback)
-{
-	init(name, fDefaultValue, flags, UString(helpString), callback);
-	_addConVar(this);
-}
-
-ConVar::ConVar(UString name, float fDefaultValue, int flags, const char *helpString, ConVarChangeCallbackFloat callback)
-{
-	init(name, fDefaultValue, flags, UString(helpString), callback);
-	_addConVar(this);
-}
-
-ConVar::ConVar(UString name, int iDefaultValue, int flags)
-{
-	init(name, (float)iDefaultValue, flags, "", (ConVarChangeCallback)NULL);
-	{
-		m_type = CONVAR_TYPE::CONVAR_TYPE_INT;
-	}
-	_addConVar(this);
-}
-
-ConVar::ConVar(UString name, int iDefaultValue, int flags, ConVarChangeCallback callback)
-{
-	init(name, (float)iDefaultValue, flags, "", callback);
-	{
-		m_type = CONVAR_TYPE::CONVAR_TYPE_INT;
-	}
-	_addConVar(this);
-}
-
-ConVar::ConVar(UString name, int iDefaultValue, int flags, ConVarChangeCallbackFloat callback)
-{
-	init(name, (float)iDefaultValue, flags, "", callback);
-	{
-		m_type = CONVAR_TYPE::CONVAR_TYPE_INT;
-	}
-	_addConVar(this);
-}
-
-ConVar::ConVar(UString name, int iDefaultValue, int flags, const char *helpString)
-{
-	init(name, (float)iDefaultValue, flags, UString(helpString), (ConVarChangeCallback)NULL);
-	{
-		m_type = CONVAR_TYPE::CONVAR_TYPE_INT;
-	}
-	_addConVar(this);
-}
-
-ConVar::ConVar(UString name, int iDefaultValue, int flags, const char *helpString, ConVarChangeCallback callback)
-{
-	init(name, (float)iDefaultValue, flags, UString(helpString), callback);
-	{
-		m_type = CONVAR_TYPE::CONVAR_TYPE_INT;
-	}
-	_addConVar(this);
-}
-
-ConVar::ConVar(UString name, int iDefaultValue, int flags, const char *helpString, ConVarChangeCallbackFloat callback)
-{
-	init(name, (float)iDefaultValue, flags, UString(helpString), callback);
-	{
-		m_type = CONVAR_TYPE::CONVAR_TYPE_INT;
-	}
-	_addConVar(this);
-}
-
-ConVar::ConVar(UString name, bool bDefaultValue, int flags)
-{
-	init(name, bDefaultValue ? 1.0f : 0.0f, flags, "", (ConVarChangeCallback)NULL);
-	{
-		m_type = CONVAR_TYPE::CONVAR_TYPE_BOOL;
-	}
-	_addConVar(this);
-}
-
-ConVar::ConVar(UString name, bool bDefaultValue, int flags, ConVarChangeCallback callback)
-{
-	init(name, bDefaultValue ? 1.0f : 0.0f, flags, "", callback);
-	{
-		m_type = CONVAR_TYPE::CONVAR_TYPE_BOOL;
-	}
-	_addConVar(this);
-}
-
-ConVar::ConVar(UString name, bool bDefaultValue, int flags, ConVarChangeCallbackFloat callback)
-{
-	init(name, bDefaultValue ? 1.0f : 0.0f, flags, "", callback);
-	{
-		m_type = CONVAR_TYPE::CONVAR_TYPE_BOOL;
-	}
-	_addConVar(this);
-}
-
-ConVar::ConVar(UString name, bool bDefaultValue, int flags, const char *helpString)
-{
-	init(name, bDefaultValue ? 1.0f : 0.0f, flags, UString(helpString), (ConVarChangeCallback)NULL);
-	{
-		m_type = CONVAR_TYPE::CONVAR_TYPE_BOOL;
-	}
-	_addConVar(this);
-}
-
-ConVar::ConVar(UString name, bool bDefaultValue, int flags, const char *helpString, ConVarChangeCallback callback)
-{
-	init(name, bDefaultValue ? 1.0f : 0.0f, flags, UString(helpString), callback);
-	{
-		m_type = CONVAR_TYPE::CONVAR_TYPE_BOOL;
-	}
-	_addConVar(this);
-}
-
-ConVar::ConVar(UString name, bool bDefaultValue, int flags, const char *helpString, ConVarChangeCallbackFloat callback)
-{
-	init(name, bDefaultValue ? 1.0f : 0.0f, flags, UString(helpString), callback);
-	{
-		m_type = CONVAR_TYPE::CONVAR_TYPE_BOOL;
-	}
-	_addConVar(this);
-}
-
-ConVar::ConVar(UString name, const char *sDefaultValue, int flags)
-{
-	init(name, UString(sDefaultValue), flags, UString(""), (ConVarChangeCallback)NULL);
-	_addConVar(this);
-}
-
-ConVar::ConVar(UString name, const char *sDefaultValue, int flags, const char *helpString)
-{
-	init(name, UString(sDefaultValue), flags, UString(helpString), (ConVarChangeCallback)NULL);
-	_addConVar(this);
-}
-
-ConVar::ConVar(UString name, const char *sDefaultValue, int flags, ConVarChangeCallback callback)
-{
-	init(name, UString(sDefaultValue), flags, UString(""), callback);
-	_addConVar(this);
-}
-
-ConVar::ConVar(UString name, const char *sDefaultValue, int flags, ConVarChangeCallbackFloat callback)
-{
-	init(name, UString(sDefaultValue), flags, UString(""), callback);
-	_addConVar(this);
-}
-
-ConVar::ConVar(UString name, const char *sDefaultValue, int flags, const char *helpString, ConVarChangeCallback callback)
-{
-	init(name, UString(sDefaultValue), flags, UString(helpString), callback);
-	_addConVar(this);
-}
-
-ConVar::ConVar(UString name, const char *sDefaultValue, int flags, const char *helpString, ConVarChangeCallbackFloat callback)
-{
-	init(name, UString(sDefaultValue), flags, UString(helpString), callback);
-	_addConVar(this);
+	initBase(FCVAR_NONE);
+	m_sName = std::move(name);
+	m_bHasValue = false;
+	m_type = CONVAR_TYPE::CONVAR_TYPE_STRING;
+	m_iFlags = FCVAR_NONE;
+	ConVar::addConVar(this);
 }
 
 void ConVar::exec()
@@ -461,8 +126,8 @@ void ConVar::exec()
 	if (isFlagSet(FCVAR_CHEAT) && !(cv::ConVars::sv_cheats.getRaw() > 0))
 		return;
 
-	if (m_callbackfunc != NULL)
-		m_callbackfunc();
+	if (auto *cb = std::get_if<NativeConVarCallback>(&m_callback))
+		(*cb)();
 }
 
 void ConVar::execArgs(UString args)
@@ -470,8 +135,8 @@ void ConVar::execArgs(UString args)
 	if (isFlagSet(FCVAR_CHEAT) && !(cv::ConVars::sv_cheats.getRaw() > 0))
 		return;
 
-	if (m_callbackfuncargs != NULL)
-		m_callbackfuncargs(args);
+	if (auto *cb = std::get_if<NativeConVarCallbackArgs>(&m_callback))
+		(*cb)(std::move(args));
 }
 
 void ConVar::execInt(float args)
@@ -479,8 +144,8 @@ void ConVar::execInt(float args)
 	if (isFlagSet(FCVAR_CHEAT) && !(cv::ConVars::sv_cheats.getRaw() > 0))
 		return;
 
-	if (m_callbackfuncfloat != NULL)
-		m_callbackfuncfloat(args);
+	if (auto *cb = std::get_if<NativeConVarCallbackFloat>(&m_callback))
+		(*cb)(args);
 }
 
 void ConVar::setDefaultFloat(float defaultValue)
@@ -502,123 +167,36 @@ void ConVar::setDefaultString(UString defaultValue)
 	if (isFlagSet(FCVAR_HARDCODED))
 		return;
 
-	setDefaultStringInt(defaultValue);
+	setDefaultStringInt(std::move(defaultValue));
 }
 
 void ConVar::setDefaultStringInt(UString defaultValue)
 {
-	m_sDefaultValue = defaultValue;
-}
-
-void ConVar::setValueInt(float value)
-{
-	// TODO: make this less unsafe in multithreaded environments (for float convars at least)
-
-	// backup previous value
-	const float oldValue = m_fValue.load();
-
-	// then set the new value
-	const UString newStringValue = UString::format("%g", value);
-	{
-		m_fValue = value;
-		m_sValue = newStringValue;
-	}
-
-	// handle callbacks
-	{
-		// possible void callback
-		exec();
-
-		// possible change callback
-		if (m_changecallback != NULL)
-			m_changecallback(UString::format("%g", oldValue), newStringValue);
-
-		// possible float change callback
-		if (m_changecallbackfloat != NULL)
-			m_changecallbackfloat(oldValue, m_fValue);
-
-		// possible arg callback
-		execArgs(newStringValue);
-		execInt(static_cast<float>(m_fValue));
-	}
-}
-
-void ConVar::setValue(UString sValue)
-{
-	if (isFlagSet(FCVAR_HARDCODED) || (isFlagSet(FCVAR_CHEAT) && !(cv::ConVars::sv_cheats.getRaw() > 0)))
-		return;
-
-	setValueInt(sValue);
-}
-
-void ConVar::setValueInt(UString sValue)
-{
-	// backup previous value
-	const UString oldValue = m_sValue;
-	const float oldFloat = m_fValue.load();
-
-	// then set the new value
-	{
-		m_sValue = sValue;
-
-		if (sValue.length() > 0)
-			m_fValue = sValue.toFloat();
-	}
-
-	// handle callbacks
-	{
-		// possible void callback
-		exec();
-
-		// possible change callback
-		if (m_changecallback != NULL)
-			m_changecallback(oldValue, sValue);
-
-		// possible float change callback
-		if (m_changecallbackfloat != NULL)
-			m_changecallbackfloat(oldFloat, m_fValue);
-
-		// possible arg callback
-		execArgs(sValue);
-		execInt(m_fValue);
-	}
-}
-
-void ConVar::setCallback(NativeConVarCallback callback)
-{
-	m_callbackfunc = callback;
-}
-
-void ConVar::setCallback(NativeConVarCallbackFloat callback)
-{
-	m_callbackfuncfloat = callback;
-}
-
-void ConVar::setCallback(NativeConVarCallbackArgs callback)
-{
-	m_callbackfuncargs = callback;
-}
-
-void ConVar::setCallback(NativeConVarChangeCallback callback)
-{
-	m_changecallback = callback;
-}
-
-void ConVar::setCallback(NativeConVarChangeCallbackFloat callback)
-{
-	m_changecallbackfloat = callback;
+	m_sDefaultValue = std::move(defaultValue);
 }
 
 void ConVar::setHelpString(UString helpString)
 {
-	m_sHelpString = helpString;
+	m_sHelpString = std::move(helpString);
+}
+
+bool ConVar::hasCallbackArgs() const
+{
+	return std::holds_alternative<NativeConVarCallbackArgs>(m_callback) || !std::holds_alternative<std::monostate>(m_changeCallback);
+}
+
+void ConVar::resetCallbacks()
+{
+	m_callback = std::monostate{};
+	m_changeCallback = std::monostate{};
 }
 
 //********************************//
 //  ConVarHandler Implementation  //
 //********************************//
 
-namespace cv {
+namespace cv
+{
 ConVar emptyDummyConVar("emptyDummyConVar", 42.0f, FCVAR_NONE, "this placeholder convar is returned by convar->getConVarByName() if no matching convar is found");
 }
 
@@ -644,7 +222,7 @@ size_t ConVarHandler::getNumConVars() const
 	return _getGlobalConVarArray().size();
 }
 
-ConVar *ConVarHandler::getConVarByName(UString name, bool warnIfNotFound) const
+ConVar *ConVarHandler::getConVarByName(const UString &name, bool warnIfNotFound) const
 {
 	ConVar *found = _getConVar(name);
 	if (found != NULL)
@@ -666,7 +244,7 @@ ConVar *ConVarHandler::getConVarByName(UString name, bool warnIfNotFound) const
 		return &cv::emptyDummyConVar;
 }
 
-std::vector<ConVar *> ConVarHandler::getConVarByLetter(UString letters) const
+std::vector<ConVar *> ConVarHandler::getConVarByLetter(const UString &letters) const
 {
 	std::unordered_set<std::string> matchingConVarNames;
 	std::vector<ConVar *> matchingConVars;
@@ -933,9 +511,8 @@ static void _dumpcommands(void)
 
 		for (auto var : convars)
 		{
-			if (!commands_htm.writeLine(UString::fmt("<h4>{:s}</h4>{:s}<pre>\n{{\n\t\"default\": {:s}\n\t\"runtime_allocated\": {:s}\n}}\n</pre>",
-			                                         var->getName(), var->getHelpstring(), var->getFancyDefaultValue(),
-			                                         var->isFlagSet(FCVAR_DYNAMIC) ? "true" : "false")))
+			if (!commands_htm.writeLine(UString::fmt("<h4>{:s}</h4>{:s}<pre>\n{{\n\t\"default\": {:s}\n\t\"runtime_allocated\": {:s}\n}}\n</pre>", var->getName(),
+			                                         var->getHelpstring(), var->getFancyDefaultValue(), var->isFlagSet(FCVAR_DYNAMIC) ? "true" : "false")))
 			{
 				debugLog("failed to write var: {:s}, not writing out any more commands\n", var->getName());
 				break;
@@ -945,9 +522,10 @@ static void _dumpcommands(void)
 	debugLog("Commands dumped to commands.htm\n");
 }
 
-namespace cv {
+namespace cv
+{
 ConVar find("find", FCVAR_NONE, _find);
 ConVar help("help", FCVAR_NONE, _help);
 ConVar listcommands("listcommands", FCVAR_NONE, _listcommands);
 ConVar dumpcommands("dumpcommands", FCVAR_NONE, _dumpcommands);
-}
+} // namespace cv

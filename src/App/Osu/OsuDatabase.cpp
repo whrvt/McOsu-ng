@@ -446,7 +446,7 @@ void OsuDatabase::save()
 	saveStars();
 }
 
-OsuDatabaseBeatmap *OsuDatabase::addBeatmap(UString beatmapFolderPath)
+OsuDatabaseBeatmap *OsuDatabase::addBeatmap(const UString &beatmapFolderPath)
 {
 	OsuDatabaseBeatmap *beatmap = loadRawBeatmap(beatmapFolderPath);
 
@@ -1596,7 +1596,7 @@ void OsuDatabase::loadDB(OsuFile *db, bool &fallbackToRawLoad)
 						{
 							const OsuFile::TIMINGPOINT &t = uninheritedTimingpoints[i];
 
-							Tuple tuple;
+							Tuple tuple{};
 							{
 								if (t.offset > lastTime)
 								{
@@ -1673,19 +1673,19 @@ void OsuDatabase::loadDB(OsuFile *db, bool &fallbackToRawLoad)
 				// build temp partial timingpoints, only used for menu animations
 				for (auto & timingPoint : timingPoints)
 				{
-					OsuDatabaseBeatmap::TIMINGPOINT tp;
+					OsuDatabaseBeatmap::TIMINGPOINT tp
 					{
-						tp.offset = 0;
-						if (std::isfinite(timingPoint.offset) &&
+						.offset = std::isfinite(timingPoint.offset) &&
 							timingPoint.offset >= static_cast<double>(std::numeric_limits<long>::min()) &&
-							timingPoint.offset <= static_cast<double>(std::numeric_limits<long>::max())) {
-							tp.offset = static_cast<long>(timingPoint.offset);
-						}
-
-						tp.msPerBeat = timingPoint.msPerBeat;
-						tp.timingChange = timingPoint.timingChange;
-						tp.kiai = false;
-					}
+							timingPoint.offset <= static_cast<double>(std::numeric_limits<long>::max()) ? static_cast<long>(timingPoint.offset) : 0,
+						.msPerBeat = static_cast<float>(timingPoint.msPerBeat),
+						.sampleType = 0,
+						.sampleSet = 0,
+						.volume = 0,
+						.timingChange = timingPoint.timingChange,
+						.kiai = false,
+						.sortHack = 0
+					};
 					diff2->m_timingpoints.push_back(tp);
 				}
 			}
@@ -1877,13 +1877,7 @@ void OsuDatabase::loadStars()
 					const float starsNomod = cache.readFloat();
 
 					if (beatmapMD5Hash.length() == 32) // sanity
-					{
-						STARS_CACHE_ENTRY entry;
-						{
-							entry.starsNomod = starsNomod;
-						}
-						m_starsCache[beatmapMD5Hash] = entry;
-					}
+						m_starsCache[beatmapMD5Hash] = {starsNomod};
 				}
 			}
 			else
@@ -2438,7 +2432,7 @@ void OsuDatabase::saveScores()
 	}
 }
 
-void OsuDatabase::loadCollections(UString collectionFilePath, bool isLegacy, const std::unordered_map<std::string, OsuDatabaseBeatmap*> &hashToDiff2, const std::unordered_map<std::string, OsuDatabaseBeatmap*> &hashToBeatmap)
+void OsuDatabase::loadCollections(const UString& collectionFilePath, bool isLegacy, const std::unordered_map<std::string, OsuDatabaseBeatmap*> &hashToDiff2, const std::unordered_map<std::string, OsuDatabaseBeatmap*> &hashToBeatmap)
 {
 	bool wasInterrupted = false;
 
@@ -2789,7 +2783,7 @@ void OsuDatabase::saveCollections()
 	}
 }
 
-OsuDatabaseBeatmap *OsuDatabase::loadRawBeatmap(UString beatmapPath)
+OsuDatabaseBeatmap *OsuDatabase::loadRawBeatmap(const UString& beatmapPath)
 {
 	if (cv::osu::debug.getBool())
 		debugLog("{:s}\n", beatmapPath.toUtf8());
@@ -2867,7 +2861,7 @@ void OsuDatabase::onScoresRename(UString args)
 		return;
 	}
 
-	const UString playerName = cv::name.getString();
+	const UString& playerName = cv::name.getString();
 
 	debugLog("Renaming scores \"{:s}\" to \"{:s}\"\n", playerName.toUtf8(), args.toUtf8());
 

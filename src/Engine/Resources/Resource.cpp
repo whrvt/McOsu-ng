@@ -6,12 +6,14 @@
 //===============================================================================//
 
 #include "Resource.h"
+
+#include <utility>
 #include "Engine.h"
 #include "Environment.h"
 
 Resource::Resource(UString filepath)
 {
-	m_sFilePath = filepath;
+	m_sFilePath = std::move(filepath);
 	m_bFileFound = true;
 	if (!env->fileExists(m_sFilePath)) // modifies the input string if found
 	{
@@ -31,6 +33,7 @@ Resource::Resource()
 	m_bReady = false;
 	m_bAsyncReady = false;
 	m_bInterrupted = false;
+	m_bFileFound = true;
 }
 
 void Resource::load()

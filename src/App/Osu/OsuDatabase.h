@@ -183,7 +183,7 @@ public:
 	void cancel();
 	void save();
 
-	OsuDatabaseBeatmap *addBeatmap(UString beatmapFolderPath);
+	OsuDatabaseBeatmap *addBeatmap(const UString &beatmapFolderPath);
 
 	int addScore(const std::string &beatmapMD5Hash, const OsuDatabase::Score &score);
 	void deleteScore(const std::string &beatmapMD5Hash, uint64_t scoreUnixTimestamp);
@@ -240,10 +240,10 @@ private:
 	void loadScores();
 	void saveScores();
 
-	void loadCollections(UString collectionFilePath, bool isLegacy, const std::unordered_map<std::string, OsuDatabaseBeatmap*> &hashToDiff2, const std::unordered_map<std::string, OsuDatabaseBeatmap*> &hashToBeatmap);
+	void loadCollections(const UString& collectionFilePath, bool isLegacy, const std::unordered_map<std::string, OsuDatabaseBeatmap*> &hashToDiff2, const std::unordered_map<std::string, OsuDatabaseBeatmap*> &hashToBeatmap);
 	void saveCollections();
 
-	OsuDatabaseBeatmap *loadRawBeatmap(UString beatmapPath); // only used for raw loading without db
+	OsuDatabaseBeatmap *loadRawBeatmap(const UString& beatmapPath); // only used for raw loading without db
 
 	void onScoresRename(UString args);
 	void onScoresExport();

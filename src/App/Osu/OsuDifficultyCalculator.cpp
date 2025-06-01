@@ -1218,7 +1218,7 @@ double OsuDifficultyCalculator::DiffObject::calculate_difficulty(const Skills::S
 		while (cur.ho->time > interval_end)
 		{
 			if (incremental)
-				highestStrainsRef->insert(std::upper_bound(highestStrainsRef->begin(), highestStrainsRef->end(), max_strain), max_strain);
+				highestStrainsRef->insert(std::ranges::upper_bound(*highestStrainsRef, max_strain), max_strain);
 			else
 				highestStrainsRef->push_back(max_strain);
 
@@ -1341,9 +1341,9 @@ double OsuDifficultyCalculator::DiffObject::calculate_difficulty(const Skills::S
 						if (incremental)
 						{
 							ACCUMULATE(+,tempSum)
-							for (size_t i = 0; i < incremental->slider_strains.size(); i++)
+							for (double slider_strain : incremental->slider_strains)
 							{
-								tempSum += 1.0 / (1.0 + McMath::fastExp(-((incremental->slider_strains[i] / maxSliderStrain * 12.0) - 6.0)));
+								tempSum += 1.0 / (1.0 + McMath::fastExp(-((slider_strain / maxSliderStrain * 12.0) - 6.0)));
 							}
 							incremental->max_slider_strain = maxSliderStrain;
 							incremental->difficult_sliders = tempSum;

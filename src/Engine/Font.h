@@ -20,8 +20,8 @@ class VertexArrayObject;
 class McFont final : public Resource
 {
 public:
-	McFont(UString filepath, int fontSize = 16, bool antialiasing = true, int fontDPI = 96);
-	McFont(UString filepath, std::vector<wchar_t> characters, int fontSize = 16, bool antialiasing = true, int fontDPI = 96);
+	McFont(const UString &filepath, int fontSize = 16, bool antialiasing = true, int fontDPI = 96);
+	McFont(const UString &filepath, const std::vector<wchar_t> &characters, int fontSize = 16, bool antialiasing = true, int fontDPI = 96);
 	~McFont() override { destroy(); }
 
 	void drawString(const UString &text);
@@ -50,7 +50,7 @@ public:
 	[[nodiscard]] const McFont *asFont() const override { return this; }
 
 protected:
-	void constructor(std::vector<wchar_t> characters, int fontSize, bool antialiasing, int fontDPI);
+	void constructor(const std::vector<wchar_t> &characters, int fontSize, bool antialiasing, int fontDPI);
 	void init() override;
 	void initAsync() override;
 	void destroy() override;
