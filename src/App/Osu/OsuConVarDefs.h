@@ -808,6 +808,7 @@ extern ConVar gamemode;
 extern ConVar songbrowser_background_fade_in_duration;
 extern ConVar songbrowser_background_star_calculation;
 extern ConVar songbrowser_bottombar_percent;
+extern ConVar songbrowser_debug;
 extern ConVar songbrowser_dynamic_star_recalc;
 extern ConVar songbrowser_scorebrowser_enabled;
 extern ConVar songbrowser_scores_sortingtype;

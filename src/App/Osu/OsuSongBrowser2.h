@@ -136,11 +136,12 @@ private:
 		SORT_TITLE
 	};
 
+	using SORT_COMPARATOR = std::function<bool(OsuUISongBrowserButton const*, OsuUISongBrowserButton const*)>;
 	struct SORTING_METHOD
 	{
 		SORT type;
 		UString name;
-		std::function<bool(OsuUISongBrowserButton const*, OsuUISongBrowserButton const*)> comparator;
+		SORT_COMPARATOR comparator;
 	};
 
 	struct GROUPING
@@ -153,6 +154,7 @@ private:
 private:
 	static bool searchMatcher(const OsuDatabaseBeatmap *databaseBeatmap, const std::vector<UString> &searchStringTokens);
 	static bool findSubstringInDifficulty(const OsuDatabaseBeatmap *diff, const UString &searchString);
+
 
 	void updateLayout() override;
 	void onBack() override;
@@ -186,20 +188,13 @@ private:
 
 	void onSortClicked(CBaseUIButton *button);
 	void onSortChange(UString text, int id = -1);
-	void onSortChangeInt(UString text, bool autoScroll);
+	void onSortChangeInt(const UString &text, bool autoScroll);
+
+	[[nodiscard]] std::vector<OsuUISongBrowserCollectionButton*>* getCollectionButtonsForGroup(GROUP group);
 
 	void onGroupTabButtonClicked(CBaseUIButton *groupTabButton);
-	void onGroupNoGrouping();
-	void onGroupCollections(bool autoScroll = true);
-	void onGroupArtist();
-	void onGroupDifficulty();
-	void onGroupBPM();
-	void onGroupCreator();
-	void onGroupDateadded();
-	void onGroupLength();
-	void onGroupTitle();
+	void rebuildAfterGroupOrSortChange(GROUP group, bool autoScroll = true, SORT_COMPARATOR sortComp = nullptr);
 
-	void onAfterSortingOrGroupChange(bool autoScroll = true);
 	void onAfterSortingOrGroupChangeUpdateInt(bool autoScroll);
 
 	void onSelectionMode();
