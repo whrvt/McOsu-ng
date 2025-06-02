@@ -261,7 +261,7 @@ public:
 			if (ch >= L'A' && ch <= L'Z')
 				return ch + (L'a' - L'A');
 			// clamp to valid wchar_t range
-			if (ch < 0x10000)
+			if (ch <= 0xFFFF)
 				return static_cast<wchar_t>(std::towlower(static_cast<std::wint_t>(ch)));
 			// outside BMP is returned as-is to stay deterministic
 			return ch;

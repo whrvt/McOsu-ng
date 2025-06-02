@@ -16,17 +16,31 @@ class Image;
 class TextureAtlas final : public Resource
 {
 public:
+	struct PackRect
+	{
+		int x, y, width, height;
+		int id; // user-defined identifier for tracking
+	};
+
 	TextureAtlas(int width = 512, int height = 512);
-	~TextureAtlas() override {destroy();}
+	~TextureAtlas() override { destroy(); }
 
-	Vector2 put(int width, int height, Color *pixels) {return put(width, height, false, false, pixels);}
-	Vector2 put(int width, int height, bool flipHorizontal, bool flipVertical, Color *pixels);
+	// place pixels at specific coordinates (for use after packing)
+	void putAt(int x, int y, int width, int height, bool flipHorizontal, bool flipVertical, Color *pixels);
 
-	void setPadding(int padding) {m_iPadding = padding;}
+	// advanced skyline packing for efficient atlas utilization
+	bool packRects(std::vector<PackRect> &rects);
 
-	[[nodiscard]] inline int getWidth() const {return m_iWidth;}
-	[[nodiscard]] inline int getHeight() const {return m_iHeight;}
-	[[nodiscard]] inline Image *getAtlasImage() const {return m_atlasImage;}
+	// calculate optimal atlas size for given rectangles
+	static size_t calculateOptimalSize(
+	    const std::vector<PackRect> &rects, float targetOccupancy = 0.75f, int padding = 1, size_t minSize = 256, size_t maxSize = 4096);
+
+	void setPadding(int padding) { m_iPadding = padding; }
+
+	[[nodiscard]] inline int getWidth() const { return m_iWidth; }
+	[[nodiscard]] inline int getHeight() const { return m_iHeight; }
+	[[nodiscard]] inline int getPadding() const { return m_iPadding; }
+	[[nodiscard]] inline Image *getAtlasImage() const { return m_atlasImage; }
 
 	// type inspection
 	[[nodiscard]] Type getResType() const final { return TEXTUREATLAS; }
@@ -35,6 +49,11 @@ public:
 	[[nodiscard]] const TextureAtlas *asTextureAtlas() const final { return this; }
 
 private:
+	struct Skyline
+	{
+		int x, y, width;
+	};
+
 	void init() override;
 	void initAsync() override;
 	void destroy() override;
@@ -46,6 +65,7 @@ private:
 
 	Image *m_atlasImage;
 
+	// legacy packing state
 	int m_iCurX;
 	int m_iCurY;
 	int m_iMaxHeight;

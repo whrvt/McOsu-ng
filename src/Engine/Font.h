@@ -1,6 +1,6 @@
 //========== Copyright (c) 2015, PG & 2025, WH, All rights reserved. ============//
 //
-// Purpose:		freetype font wrapper
+// Purpose:		freetype font wrapper with unicode support
 //
 // $NoKeywords: $fnt
 //===============================================================================//
@@ -11,6 +11,8 @@
 
 #include "Resource.h"
 #include "VertexArrayObject.h"
+
+#include <freetype/freetype.h>
 
 typedef struct FT_Bitmap_ FT_Bitmap;
 
@@ -40,8 +42,9 @@ public:
 	float getStringWidth(const UString &text) const;
 	float getStringHeight(const UString &text) const;
 
-	// debug
-	void drawTextureAtlas();
+	// font fallback configuration
+	void addFallbackFont(const UString &fontPath);
+	void loadSystemFallbacks(); // discover and load system fonts
 
 	// type inspection
 	[[nodiscard]] Type getResType() const override { return FONT; }
@@ -56,12 +59,6 @@ protected:
 	void destroy() override;
 
 private:
-	struct GlyphRect
-	{
-		int x, y, width, height;
-		wchar_t ch;
-	};
-
 	struct GLYPH_METRICS
 	{
 		wchar_t character;
@@ -69,6 +66,14 @@ private:
 		unsigned int sizePixelsX, sizePixelsY;
 		int left, top, width, rows;
 		float advance_x;
+		int fontIndex; // which font this glyph came from (0 = primary, >0 = fallback)
+	};
+
+	struct FallbackFont
+	{
+		UString fontPath;
+		FT_Face face;
+		bool isSystemFont;
 	};
 
 	struct BatchEntry
@@ -87,14 +92,29 @@ private:
 
 	forceinline bool hasGlyph(wchar_t ch) const { return m_vGlyphMetrics.find(ch) != m_vGlyphMetrics.end(); };
 	bool addGlyph(wchar_t ch);
+	bool loadGlyphDynamic(wchar_t ch);
+	bool ensureAtlasSpace(int requiredWidth, int requiredHeight);
+	void rebuildAtlas();
+
+	// consolidated glyph processing methods
+	bool initializeFreeType();
+	bool loadGlyphMetrics(wchar_t ch);
+	std::unique_ptr<Channel[]> createExpandedBitmapData(const FT_Bitmap &bitmap);
+	void renderGlyphToAtlas(wchar_t ch, int x, int y, FT_Face face = nullptr);
+	bool createAndPackAtlas(const std::vector<wchar_t> &glyphs);
+
+	// fallback font management
+	bool initializeFallbackFonts();
+	void discoverSystemFallbacks();
+	bool loadFallbackFont(const UString &fontPath, bool isSystemFont = false);
+	FT_Face getFontFaceForGlyph(wchar_t ch, int &fontIndex);
+	bool loadGlyphFromFace(wchar_t ch, FT_Face face, int fontIndex);
 
 	void buildGlyphGeometry(const GLYPH_METRICS &gm, const Vector3 &basePos, float advanceX, size_t &vertexCount);
 	void buildStringGeometry(const UString &text, size_t &vertexCount);
 
 	const GLYPH_METRICS &getGlyphMetrics(wchar_t ch) const;
-	bool packGlyphRects(std::vector<GlyphRect> &rects, int atlasWidth, int atlasHeight);
-	size_t calculateOptimalAtlasSize(const std::vector<GlyphRect> &glyphs, float targetOccupancy) const;
-	unsigned char *unpackMonoBitmap(const FT_Bitmap &bitmap);
+	Channel *unpackMonoBitmap(const FT_Bitmap &bitmap);
 
 	int m_iFontSize;
 	bool m_bAntialiasing;
@@ -102,6 +122,15 @@ private:
 	float m_fHeight;
 	TextureAtlas *m_textureAtlas;
 	GLYPH_METRICS m_errorGlyph;
+
+	// freetype context for primary and fallback fonts
+	FT_Library m_ftLibrary;
+	FT_Face m_ftFace; // primary font face
+	bool m_bFreeTypeInitialized;
+
+	// fallback font system
+	bool m_bFallbacksInitialized;
+	std::vector<FallbackFont> m_fallbackFonts;
 
 	std::vector<wchar_t> m_vGlyphs;
 	std::unordered_map<wchar_t, bool> m_vGlyphExistence;
@@ -112,6 +141,10 @@ private:
 	std::vector<Vector3> m_vertices;
 	std::vector<Vector2> m_texcoords;
 	bool m_batchActive;
+
+	// atlas management
+	mutable bool m_bAtlasNeedsRebuild;
+	std::vector<wchar_t> m_vPendingGlyphs;
 };
 
 #endif

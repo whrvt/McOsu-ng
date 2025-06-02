@@ -1,15 +1,16 @@
 //========== Copyright (c) 2015, PG & 2025, WH, All rights reserved. ============//
 //
-// Purpose:		freetype font wrapper
+// Purpose:		freetype font wrapper with unicode support
 //
 // $NoKeywords: $fnt
 //===============================================================================//
 
 #include "Font.h"
-
 #include "ConVar.h"
 #include "Engine.h"
+#include "FontTypeMap.h"
 #include "ResourceManager.h"
+#include "TextureAtlas.h"
 
 #include <freetype/freetype.h>
 #include <freetype/ftbitmap.h>
@@ -22,6 +23,12 @@
 #include <algorithm>
 #include <utility>
 
+// TODO: use fontconfig on linux?
+#ifdef _WIN32
+#include <shlobj.h>
+#include <windows.h>
+#endif
+
 // constants for atlas generation and rendering
 static constexpr float ATLAS_OCCUPANCY_TARGET = 0.75f; // target atlas occupancy before resize
 static constexpr size_t MIN_ATLAS_SIZE = 256;
@@ -30,19 +37,22 @@ static constexpr wchar_t UNKNOWN_CHAR = '?'; // ASCII '?'
 
 static constexpr auto VERTS_PER_VAO = Env::cfg(REND::GLES2 | REND::GLES32) ? 6 : 4;
 
-namespace cv {
+namespace cv
+{
 ConVar r_drawstring_max_string_length("r_drawstring_max_string_length", 65536, FCVAR_CHEAT, "maximum number of characters per call, sanity/memory buffer limit");
 ConVar r_debug_drawstring_unbind("r_debug_drawstring_unbind", false, FCVAR_NONE);
 ConVar r_debug_font_atlas_padding("r_debug_font_atlas_padding", 1, FCVAR_NONE, "padding between glyphs in the atlas to prevent bleeding");
-}
+ConVar r_debug_font_unicode("r_debug_font_unicode", false, FCVAR_NONE, "debug messages for unicode/fallback font related stuff");
+ConVar font_load_system("font_load_system", true, FCVAR_NONE, "try to load a similar system font if a glyph is missing in the bundled fonts");
+} // namespace cv
 
 McFont::McFont(const UString &filepath, int fontSize, bool antialiasing, int fontDPI)
     : Resource(filepath), m_vao((Env::cfg(REND::GLES2 | REND::GLES32) ? Graphics::PRIMITIVE::PRIMITIVE_TRIANGLES : Graphics::PRIMITIVE::PRIMITIVE_QUADS),
                                 Graphics::USAGE_TYPE::USAGE_DYNAMIC)
 {
 	std::vector<wchar_t> characters;
-	characters.reserve(224); // reserve space for basic ASCII + extended chars
-	for (int i = 32; i < 255; i++)
+	characters.reserve(96); // reserve space for basic ASCII, load the rest as needed
+	for (int i = 32; i < 128; i++)
 	{
 		characters.push_back(static_cast<wchar_t>(i));
 	}
@@ -67,6 +77,15 @@ void McFont::constructor(const std::vector<wchar_t> &characters, int fontSize, b
 	m_batchQueue.totalVerts = 0;
 	m_batchQueue.usedEntries = 0;
 
+	// freetype initialization state
+	m_ftLibrary = nullptr;
+	m_ftFace = nullptr;
+	m_bFreeTypeInitialized = false;
+	m_bAtlasNeedsRebuild = false;
+
+	// fallback font system
+	m_bFallbacksInitialized = false;
+
 	// setup error glyph
 	m_errorGlyph = {.character = UNKNOWN_CHAR,
 	                .uvPixelsX = 10,
@@ -77,9 +96,10 @@ void McFont::constructor(const std::vector<wchar_t> &characters, int fontSize, b
 	                .top = 10,
 	                .width = 10,
 	                .rows = 1,
-	                .advance_x = 0};
+	                .advance_x = 0,
+	                .fontIndex = 0};
 
-	// pre-allocate space for glyphs
+	// pre-allocate space for initial glyphs
 	m_vGlyphs.reserve(characters.size());
 	for (wchar_t ch : characters)
 	{
@@ -91,170 +111,479 @@ void McFont::init()
 {
 	debugLog("Resource Manager: Loading {:s}\n", m_sFilePath.toUtf8());
 
-	FT_Library library;
-	if (FT_Init_FreeType(&library))
-	{
-		engine->showMessageError("Font Error", "FT_Init_FreeType() failed!");
+	if (!initializeFreeType())
 		return;
-	}
 
-	struct FTCleanup
-	{
-		FT_Library &lib;
-		FTCleanup(FT_Library &l) : lib(l) {}
-		~FTCleanup() { FT_Done_FreeType(lib); }
-	} cleanup(library);
+	initializeFallbackFonts();
 
-	FT_Face face;
-	if (FT_New_Face(library, m_sFilePath.toUtf8(), 0, &face))
-	{
-		engine->showMessageError("Font Error", "Couldn't load font file!");
-		return;
-	}
-
-	struct FaceCleanup
-	{
-		FT_Face &f;
-		FaceCleanup(FT_Face &face) : f(face) {}
-		~FaceCleanup() { FT_Done_Face(f); }
-	} faceCleanup(face);
-
-	if (FT_Select_Charmap(face, ft_encoding_unicode))
-	{
-		engine->showMessageError("Font Error", "FT_Select_Charmap() failed!");
-		return;
-	}
-
-	// set font size (1/64th point units)
-	FT_Set_Char_Size(face, m_iFontSize * 64, m_iFontSize * 64, m_iFontDPI, m_iFontDPI);
-
-	// first pass: measure all glyphs
-	std::vector<GlyphRect> glyphRects;
-	glyphRects.reserve(m_vGlyphs.size());
-
+	// load metrics for all initial glyphs
 	for (wchar_t ch : m_vGlyphs)
 	{
-		if (FT_Load_Glyph(face, FT_Get_Char_Index(face, ch), m_bAntialiasing ? FT_LOAD_TARGET_NORMAL : FT_LOAD_TARGET_MONO))
-		{
-			debugLog("Font Error: Failed to load glyph for character {:d}\n", (int)ch);
-			continue;
-		}
-
-		FT_Glyph glyph;
-		if (FT_Get_Glyph(face->glyph, &glyph))
-		{
-			debugLog("Font Error: Failed to get glyph for character {:d}\n", (int)ch);
-			continue;
-		}
-
-		FT_Glyph_To_Bitmap(&glyph, m_bAntialiasing ? FT_RENDER_MODE_NORMAL : FT_RENDER_MODE_MONO, nullptr, 1);
-
-		auto bitmapGlyph = reinterpret_cast<FT_BitmapGlyph>(glyph);
-
-		// even if the glyph has no bitmap (e.g. space), we still need its metrics
-		if (bitmapGlyph->bitmap.width > 0 && bitmapGlyph->bitmap.rows > 0)
-		{
-			glyphRects.push_back({0, 0, // x, y will be set during packing
-			                      static_cast<int>(bitmapGlyph->bitmap.width), static_cast<int>(bitmapGlyph->bitmap.rows), ch});
-		}
-
-		// store initial metrics for every character, including spaces
-		GLYPH_METRICS &metrics = m_vGlyphMetrics[ch];
-		metrics.character = ch;
-		metrics.left = bitmapGlyph->left;
-		metrics.top = bitmapGlyph->top;
-		metrics.width = bitmapGlyph->bitmap.width;
-		metrics.rows = bitmapGlyph->bitmap.rows;
-		metrics.advance_x = static_cast<float>(face->glyph->advance.x >> 6);
-
-		// initialize texture coordinates (will be updated for non-empty glyphs)
-		metrics.uvPixelsX = 0;
-		metrics.uvPixelsY = 0;
-		metrics.sizePixelsX = bitmapGlyph->bitmap.width;
-		metrics.sizePixelsY = bitmapGlyph->bitmap.rows;
-
-		FT_Done_Glyph(glyph);
+		loadGlyphMetrics(ch);
 	}
 
-	// calculate optimal atlas size and create texture atlas
-	const size_t atlasSize = calculateOptimalAtlasSize(glyphRects, ATLAS_OCCUPANCY_TARGET);
-	resourceManager->requestNextLoadUnmanaged();
-	m_textureAtlas = resourceManager->createTextureAtlas(atlasSize, atlasSize);
-
-	// pack glyphs into atlas
-	if (!glyphRects.empty() && !packGlyphRects(glyphRects, atlasSize, atlasSize))
-	{
-		engine->showMessageError("Font Error", "Failed to pack glyphs into atlas!");
+	// create atlas and render all glyphs
+	if (!createAndPackAtlas(m_vGlyphs))
 		return;
-	}
-
-	// second pass: render packed glyphs to atlas
-	for (const auto &rect : glyphRects)
-	{
-		if (FT_Load_Glyph(face, FT_Get_Char_Index(face, rect.ch), m_bAntialiasing ? FT_LOAD_TARGET_NORMAL : FT_LOAD_TARGET_MONO))
-		{
-			continue;
-		}
-
-		FT_Glyph glyph;
-		if (FT_Get_Glyph(face->glyph, &glyph))
-		{
-			continue;
-		}
-
-		FT_Glyph_To_Bitmap(&glyph, m_bAntialiasing ? FT_RENDER_MODE_NORMAL : FT_RENDER_MODE_MONO, nullptr, 1);
-
-		auto bitmapGlyph = reinterpret_cast<FT_BitmapGlyph>(glyph);
-		auto &bitmap = bitmapGlyph->bitmap;
-
-		// only non-empty glyphs are in glyphRects, so we can safely render
-		std::unique_ptr<unsigned char[]> expandedData(new unsigned char[4 * bitmap.width * bitmap.rows]);
-
-		std::unique_ptr<unsigned char[]> monoBitmapUnpacked;
-		if (!m_bAntialiasing)
-		{
-			monoBitmapUnpacked.reset(unpackMonoBitmap(bitmap));
-		}
-
-		// expand bitmap with proper alpha channel
-		for (unsigned int j = 0; j < bitmap.rows; j++)
-		{
-			for (unsigned int i = 0; i < bitmap.width; i++)
-			{
-				const size_t expandedIdx = (4 * i + (bitmap.rows - j - 1) * bitmap.width * 4);
-				expandedData[expandedIdx] = 0xff;     // R
-				expandedData[expandedIdx + 1] = 0xff; // G
-				expandedData[expandedIdx + 2] = 0xff; // B
-
-				unsigned char alpha = m_bAntialiasing ? bitmap.buffer[i + bitmap.width * j] : monoBitmapUnpacked[i + bitmap.width * j] > 0 ? 255 : 0;
-
-				expandedData[expandedIdx + 3] = alpha; // A
-			}
-		}
-
-		// add to atlas and update metrics with actual position
-		Vector2 atlasPos = m_textureAtlas->put(bitmap.width, bitmap.rows, false, true, reinterpret_cast<Color *>(expandedData.get()));
-
-		GLYPH_METRICS &metrics = m_vGlyphMetrics[rect.ch];
-		metrics.uvPixelsX = static_cast<unsigned int>(atlasPos.x);
-		metrics.uvPixelsY = static_cast<unsigned int>(atlasPos.y);
-
-		FT_Done_Glyph(glyph);
-	}
-
-	// finalize atlas texture
-	resourceManager->loadResource(m_textureAtlas);
-	m_textureAtlas->getAtlasImage()->setFilterMode(m_bAntialiasing ? Graphics::FILTER_MODE::FILTER_MODE_LINEAR : Graphics::FILTER_MODE::FILTER_MODE_NONE);
 
 	// precalculate average/max ASCII glyph height
 	m_fHeight = 0.0f;
-	for (int i = 0; i < 128; i++)
+	for (int i = 32; i < 128; i++)
 	{
 		const int curHeight = getGlyphMetrics(static_cast<wchar_t>(i)).top;
 		m_fHeight = std::max(m_fHeight, static_cast<float>(curHeight));
 	}
 
 	m_bReady = true;
+}
+
+bool McFont::loadGlyphDynamic(wchar_t ch)
+{
+	if (!m_bFreeTypeInitialized || hasGlyph(ch))
+		return hasGlyph(ch);
+
+	int fontIndex = 0;
+	FT_Face targetFace = getFontFaceForGlyph(ch, fontIndex);
+
+	if (!targetFace)
+	{
+		if (cv::r_debug_font_unicode.getBool())
+		{
+			// character not supported by any available font
+			const char *charRange = FontTypeMap::getCharacterRangeName(ch);
+			if (charRange)
+				debugLog("Font Warning: Character U+{:04X} ({:s}) not supported by any font\n", (unsigned int)ch, charRange);
+			else
+				debugLog("Font Warning: Character U+{:04X} not supported by any font\n", (unsigned int)ch);
+		}
+		return false;
+	}
+
+	if (cv::r_debug_font_unicode.getBool() && fontIndex > 0)
+		debugLog("Font Info: Using fallback font #{:d} for character U+{:04X}\n", fontIndex, (unsigned int)ch);
+
+	// load glyph from the selected font face
+	if (!loadGlyphFromFace(ch, targetFace, fontIndex))
+		return false;
+
+	const auto &metrics = m_vGlyphMetrics[ch];
+
+	// check if we need atlas space for non-empty glyphs
+	if (metrics.sizePixelsX > 0 && metrics.sizePixelsY > 0)
+	{
+		const int padding = cv::r_debug_font_atlas_padding.getInt();
+		const int requiredWidth = metrics.sizePixelsX + padding;
+		const int requiredHeight = metrics.sizePixelsY + padding;
+
+		if (!ensureAtlasSpace(requiredWidth, requiredHeight))
+		{
+			// atlas is full, queue for rebuild
+			m_vPendingGlyphs.push_back(ch);
+			m_bAtlasNeedsRebuild = true;
+			addGlyph(ch);
+			return true; // glyph metrics are stored, will be packed later
+		}
+
+		// try to pack into current atlas
+		std::vector<TextureAtlas::PackRect> singleRect = {
+		    {0, 0, static_cast<int>(metrics.sizePixelsX), static_cast<int>(metrics.sizePixelsY), 0}
+        };
+
+		if (m_textureAtlas->packRects(singleRect))
+		{
+			// successfully packed, render to atlas using the correct font face
+			renderGlyphToAtlas(ch, singleRect[0].x, singleRect[0].y, targetFace);
+		}
+		else
+		{
+			// couldn't pack into current atlas, queue for rebuild
+			m_vPendingGlyphs.push_back(ch);
+			m_bAtlasNeedsRebuild = true;
+		}
+	}
+
+	addGlyph(ch);
+	return true;
+}
+
+FT_Face McFont::getFontFaceForGlyph(wchar_t ch, int &fontIndex)
+{
+	// check primary font first
+	fontIndex = 0;
+	FT_UInt glyphIndex = FT_Get_Char_Index(m_ftFace, ch);
+	if (glyphIndex != 0)
+		return m_ftFace;
+
+	// search through fallback fonts if init
+	if (m_bFallbacksInitialized)
+	{
+		for (size_t i = 0; i < m_fallbackFonts.size(); ++i)
+		{
+			glyphIndex = FT_Get_Char_Index(m_fallbackFonts[i].face, ch);
+			if (glyphIndex != 0)
+			{
+				fontIndex = static_cast<int>(i + 1); // offset by 1 since 0 is primary font
+				return m_fallbackFonts[i].face;
+			}
+		}
+	}
+
+	return nullptr; // character not found in any font
+}
+
+bool McFont::loadGlyphFromFace(wchar_t ch, FT_Face face, int fontIndex)
+{
+	if (FT_Load_Glyph(face, FT_Get_Char_Index(face, ch), m_bAntialiasing ? FT_LOAD_TARGET_NORMAL : FT_LOAD_TARGET_MONO))
+	{
+		debugLog("Font Error: Failed to load glyph for character {:d} from font index {:d}\n", (int)ch, fontIndex);
+		return false;
+	}
+
+	FT_Glyph glyph{};
+	if (FT_Get_Glyph(face->glyph, &glyph))
+	{
+		debugLog("Font Error: Failed to get glyph for character {:d} from font index {:d}\n", (int)ch, fontIndex);
+		return false;
+	}
+
+	FT_Glyph_To_Bitmap(&glyph, m_bAntialiasing ? FT_RENDER_MODE_NORMAL : FT_RENDER_MODE_MONO, nullptr, 1);
+
+	auto bitmapGlyph = reinterpret_cast<FT_BitmapGlyph>(glyph);
+
+	// store metrics for the character
+	GLYPH_METRICS &metrics = m_vGlyphMetrics[ch];
+	metrics.character = ch;
+	metrics.left = bitmapGlyph->left;
+	metrics.top = bitmapGlyph->top;
+	metrics.width = bitmapGlyph->bitmap.width;
+	metrics.rows = bitmapGlyph->bitmap.rows;
+	metrics.advance_x = static_cast<float>(face->glyph->advance.x >> 6);
+	metrics.fontIndex = fontIndex;
+
+	// initialize texture coordinates (will be updated when rendered to atlas)
+	metrics.uvPixelsX = 0;
+	metrics.uvPixelsY = 0;
+	metrics.sizePixelsX = bitmapGlyph->bitmap.width;
+	metrics.sizePixelsY = bitmapGlyph->bitmap.rows;
+
+	FT_Done_Glyph(glyph);
+	return true;
+}
+
+bool McFont::initializeFallbackFonts()
+{
+	if (m_bFallbacksInitialized)
+		return true;
+
+	// check all bundled fonts first
+	std::vector<UString> bundledFallbacks = env->getFilesInFolder(ResourceManager::PATH_DEFAULT_FONTS);
+
+	for (const auto &fontName : bundledFallbacks)
+	{
+		if (loadFallbackFont(fontName, false))
+		{
+			if (cv::r_debug_font_unicode.getBool())
+				debugLog("Font Info: Loaded bundled fallback font: {:s}\n", fontName.toUtf8());
+		}
+	}
+
+	// then find likely system fonts
+	if (cv::font_load_system.getBool())
+		discoverSystemFallbacks();
+
+	m_bFallbacksInitialized = true;
+	return true;
+}
+
+void McFont::discoverSystemFallbacks()
+{
+#ifdef _WIN32
+	wchar_t windir[MAX_PATH];
+	if (GetWindowsDirectoryW(windir, MAX_PATH) <= 0)
+		return;
+
+	std::vector<UString> systemFonts = {
+	    UString(windir) + "\\Fonts\\arial.ttf",
+	    UString(windir) + "\\Fonts\\msyh.ttc",     // Microsoft YaHei (Chinese)
+	    UString(windir) + "\\Fonts\\malgun.ttf",   // Malgun Gothic (Korean)
+	    UString(windir) + "\\Fonts\\meiryo.ttc",   // Meiryo (Japanese)
+	    UString(windir) + "\\Fonts\\seguiemj.ttf", // Segoe UI Emoji
+	    UString(windir) + "\\Fonts\\seguisym.ttf"  // Segoe UI Symbol
+	};
+#elif defined(__linux__)
+	// linux system fonts (common locations)
+	std::vector<UString> systemFonts = {"/usr/share/fonts/TTF/dejavu/DejaVuSans.ttf",
+	                                    "/usr/share/fonts/TTF/liberation/LiberationSans-Regular.ttf",
+	                                    "/usr/share/fonts/liberation/LiberationSans-Regular.ttf",
+	                                    "/usr/share/fonts/noto/NotoSans-Regular.ttf",
+	                                    "/usr/share/fonts/noto-cjk/NotoSansCJK-Regular.ttc",
+	                                    "/usr/share/fonts/TTF/noto/NotoColorEmoji.ttf"};
+#endif
+
+	for (const auto &fontPath : systemFonts)
+	{
+		if (env->fileExists(fontPath))
+		{
+			loadFallbackFont(fontPath, true);
+		}
+	}
+}
+
+bool McFont::loadFallbackFont(const UString &fontPath, bool isSystemFont)
+{
+	FT_Face face{};
+	if (FT_New_Face(m_ftLibrary, fontPath.toUtf8(), 0, &face))
+	{
+		if (cv::r_debug_font_unicode.getBool())
+			debugLog("Font Warning: Failed to load fallback font: {:s}\n", fontPath.toUtf8());
+		return false;
+	}
+
+	if (FT_Select_Charmap(face, ft_encoding_unicode))
+	{
+		if (cv::r_debug_font_unicode.getBool())
+			debugLog("Font Warning: Failed to select unicode charmap for fallback font: {:s}\n", fontPath.toUtf8());
+		FT_Done_Face(face);
+		return false;
+	}
+
+	// set font size to match primary font
+	FT_Set_Char_Size(face, m_iFontSize * 64, m_iFontSize * 64, m_iFontDPI, m_iFontDPI);
+
+	m_fallbackFonts.push_back({fontPath, face, isSystemFont});
+	return true;
+}
+
+void McFont::addFallbackFont(const UString &fontPath)
+{
+	if (!m_bFreeTypeInitialized)
+	{
+		debugLog("Font Error: Cannot add fallback font before FreeType initialization\n");
+		return;
+	}
+
+	loadFallbackFont(fontPath, false);
+}
+
+void McFont::loadSystemFallbacks()
+{
+	if (!m_bFallbacksInitialized)
+		initializeFallbackFonts();
+	else
+		discoverSystemFallbacks();
+}
+
+bool McFont::ensureAtlasSpace(int requiredWidth, int requiredHeight)
+{
+	if (!m_textureAtlas)
+		return false;
+
+	// simple heuristic: check if there's roughly enough space left
+	// this is not perfect but avoids complex packing simulation
+	const int atlasWidth = m_textureAtlas->getWidth();
+	const int atlasHeight = m_textureAtlas->getHeight();
+	const float occupiedRatio = static_cast<float>(m_vGlyphMetrics.size()) / 100.0f; // rough estimation
+
+	return (requiredWidth < atlasWidth / 4 && requiredHeight < atlasHeight / 4 && occupiedRatio < 0.8f);
+}
+
+void McFont::rebuildAtlas()
+{
+	if (!m_bAtlasNeedsRebuild || m_vPendingGlyphs.empty())
+		return;
+
+	// collect all glyphs that need to be in the atlas
+	std::vector<wchar_t> allGlyphs;
+	allGlyphs.reserve(m_vGlyphMetrics.size());
+
+	// add existing glyphs with non-empty size
+	for (const auto &[ch, metrics] : m_vGlyphMetrics)
+	{
+		if (metrics.sizePixelsX > 0 && metrics.sizePixelsY > 0)
+		{
+			allGlyphs.push_back(ch);
+		}
+	}
+
+	// destroy old atlas
+	SAFE_DELETE(m_textureAtlas);
+
+	// create new atlas and render all glyphs
+	if (!createAndPackAtlas(allGlyphs))
+	{
+		debugLog("Font Error: Failed to rebuild atlas!\n");
+		return;
+	}
+
+	m_vPendingGlyphs.clear();
+	m_bAtlasNeedsRebuild = false;
+}
+
+bool McFont::initializeFreeType()
+{
+	if (FT_Init_FreeType(&m_ftLibrary))
+	{
+		engine->showMessageError("Font Error", "FT_Init_FreeType() failed!");
+		return false;
+	}
+
+	if (FT_New_Face(m_ftLibrary, m_sFilePath.toUtf8(), 0, &m_ftFace))
+	{
+		engine->showMessageError("Font Error", "Couldn't load font file!");
+		FT_Done_FreeType(m_ftLibrary);
+		return false;
+	}
+
+	if (FT_Select_Charmap(m_ftFace, ft_encoding_unicode))
+	{
+		engine->showMessageError("Font Error", "FT_Select_Charmap() failed!");
+		FT_Done_Face(m_ftFace);
+		FT_Done_FreeType(m_ftLibrary);
+		return false;
+	}
+
+	// set font size (1/64th point units)
+	FT_Set_Char_Size(m_ftFace, m_iFontSize * 64, m_iFontSize * 64, m_iFontDPI, m_iFontDPI);
+
+	m_bFreeTypeInitialized = true;
+	return true;
+}
+
+bool McFont::loadGlyphMetrics(wchar_t ch)
+{
+	if (!m_bFreeTypeInitialized)
+		return false;
+
+	int fontIndex = 0;
+	FT_Face face = getFontFaceForGlyph(ch, fontIndex);
+
+	if (!face)
+		return false;
+
+	return loadGlyphFromFace(ch, face, fontIndex);
+}
+
+std::unique_ptr<Channel[]> McFont::createExpandedBitmapData(const FT_Bitmap &bitmap)
+{
+	std::unique_ptr<Channel[]> expandedData(new Channel[sizeof(Color) * bitmap.width * bitmap.rows]);
+
+	std::unique_ptr<Channel[]> monoBitmapUnpacked;
+	if (!m_bAntialiasing)
+		monoBitmapUnpacked.reset(unpackMonoBitmap(bitmap));
+
+	for (unsigned int j = 0; j < bitmap.rows; j++)
+	{
+		for (unsigned int k = 0; k < bitmap.width; k++)
+		{
+			const size_t expandedIdx = (4 * k + (bitmap.rows - j - 1) * bitmap.width * 4);
+			expandedData[expandedIdx] = 0xff;     // R
+			expandedData[expandedIdx + 1] = 0xff; // G
+			expandedData[expandedIdx + 2] = 0xff; // B
+
+			Channel alpha = m_bAntialiasing ? bitmap.buffer[k + bitmap.width * j] : monoBitmapUnpacked[k + bitmap.width * j] > 0 ? 255 : 0;
+
+			expandedData[expandedIdx + 3] = alpha; // A
+		}
+	}
+
+	return expandedData;
+}
+
+void McFont::renderGlyphToAtlas(wchar_t ch, int x, int y, FT_Face face)
+{
+	if (!face)
+	{
+		// fall back to getting the face again if not provided
+		int fontIndex = 0;
+		face = getFontFaceForGlyph(ch, fontIndex);
+		if (!face)
+			return;
+	}
+
+	if (FT_Load_Glyph(face, FT_Get_Char_Index(face, ch), m_bAntialiasing ? FT_LOAD_TARGET_NORMAL : FT_LOAD_TARGET_MONO))
+		return;
+
+	FT_Glyph glyph{};
+	if (FT_Get_Glyph(face->glyph, &glyph))
+		return;
+
+	FT_Glyph_To_Bitmap(&glyph, m_bAntialiasing ? FT_RENDER_MODE_NORMAL : FT_RENDER_MODE_MONO, nullptr, 1);
+
+	auto bitmapGlyph = reinterpret_cast<FT_BitmapGlyph>(glyph);
+	auto &bitmap = bitmapGlyph->bitmap;
+
+	if (bitmap.width > 0 && bitmap.rows > 0)
+	{
+		auto expandedData = createExpandedBitmapData(bitmap);
+		m_textureAtlas->putAt(x, y, bitmap.width, bitmap.rows, false, true, reinterpret_cast<Color *>(expandedData.get()));
+
+		// update metrics with atlas coordinates
+		GLYPH_METRICS &metrics = m_vGlyphMetrics[ch];
+		metrics.uvPixelsX = static_cast<unsigned int>(x);
+		metrics.uvPixelsY = static_cast<unsigned int>(y);
+	}
+
+	FT_Done_Glyph(glyph);
+}
+
+bool McFont::createAndPackAtlas(const std::vector<wchar_t> &glyphs)
+{
+	if (glyphs.empty())
+		return true;
+
+	// prepare packing rectangles
+	std::vector<TextureAtlas::PackRect> packRects;
+	std::vector<wchar_t> rectsToChars;
+	packRects.reserve(glyphs.size());
+	rectsToChars.reserve(glyphs.size());
+
+	size_t rectIndex = 0;
+	for (wchar_t ch : glyphs)
+	{
+		const auto &metrics = m_vGlyphMetrics[ch];
+		if (metrics.sizePixelsX > 0 && metrics.sizePixelsY > 0)
+		{
+			packRects.push_back({0, 0, static_cast<int>(metrics.sizePixelsX), static_cast<int>(metrics.sizePixelsY), static_cast<int>(rectIndex)});
+			rectsToChars.push_back(ch);
+			rectIndex++;
+		}
+	}
+
+	if (packRects.empty())
+		return true;
+
+	// calculate optimal atlas size and create texture atlas
+	const int padding = cv::r_debug_font_atlas_padding.getInt();
+	const size_t atlasSize = TextureAtlas::calculateOptimalSize(packRects, ATLAS_OCCUPANCY_TARGET, padding, MIN_ATLAS_SIZE, MAX_ATLAS_SIZE);
+
+	resourceManager->requestNextLoadUnmanaged();
+	m_textureAtlas = resourceManager->createTextureAtlas(atlasSize, atlasSize);
+	m_textureAtlas->setPadding(padding);
+
+	// pack glyphs into atlas
+	if (!m_textureAtlas->packRects(packRects))
+	{
+		engine->showMessageError("Font Error", "Failed to pack glyphs into atlas!");
+		return false;
+	}
+
+	// render all packed glyphs to atlas
+	for (const auto &rect : packRects)
+	{
+		const wchar_t ch = rectsToChars[rect.id];
+
+		// get the correct font face for this glyph
+		int fontIndex = 0;
+		FT_Face face = getFontFaceForGlyph(ch, fontIndex);
+
+		renderGlyphToAtlas(ch, rect.x, rect.y, face);
+	}
+
+	// finalize atlas texture
+	resourceManager->loadResource(m_textureAtlas);
+	m_textureAtlas->getAtlasImage()->setFilterMode(m_bAntialiasing ? Graphics::FILTER_MODE::FILTER_MODE_LINEAR : Graphics::FILTER_MODE::FILTER_MODE_NONE);
+
+	return true;
 }
 
 void McFont::buildGlyphGeometry(const GLYPH_METRICS &gm, const Vector3 &basePos, float advanceX, size_t &vertexCount)
@@ -329,6 +658,10 @@ void McFont::buildStringGeometry(const UString &text, size_t &vertexCount)
 		return;
 	}
 
+	// check if atlas needs rebuilding before geometry generation
+	if (m_bAtlasNeedsRebuild)
+		rebuildAtlas();
+
 	float advanceX = 0.0f;
 	const size_t maxGlyphs = std::min(text.length(), (int)(m_vertices.size() - vertexCount) / VERTS_PER_VAO);
 
@@ -382,7 +715,7 @@ void McFont::beginBatch()
 
 void McFont::addToBatch(const UString &text, const Vector3 &pos, Color color)
 {
-	size_t verts;
+	size_t verts{};
 	if (!m_batchActive || (verts = text.length() * VERTS_PER_VAO) == 0)
 		return;
 	m_batchQueue.totalVerts += verts;
@@ -436,9 +769,7 @@ void McFont::flushBatch()
 	g->drawVAO(&m_vao);
 
 	if (cv::r_debug_drawstring_unbind.getBool())
-	{
 		m_textureAtlas->getAtlasImage()->unbind();
-	}
 
 	m_batchActive = false;
 }
@@ -473,15 +804,20 @@ const McFont::GLYPH_METRICS &McFont::getGlyphMetrics(wchar_t ch) const
 {
 	auto it = m_vGlyphMetrics.find(ch);
 	if (it != m_vGlyphMetrics.end())
-	{
 		return it->second;
+
+	// attempt dynamic loading for unicode characters
+	if (const_cast<McFont *>(this)->loadGlyphDynamic(ch))
+	{
+		it = m_vGlyphMetrics.find(ch);
+		if (it != m_vGlyphMetrics.end())
+			return it->second;
 	}
 
+	// fallback to unknown character glyph
 	it = m_vGlyphMetrics.find(UNKNOWN_CHAR);
 	if (it != m_vGlyphMetrics.end())
-	{
 		return it->second;
-	}
 
 	debugLog("Font Error: Missing default backup glyph (UNKNOWN_CHAR)?\n");
 	return m_errorGlyph;
@@ -494,144 +830,50 @@ void McFont::initAsync()
 
 void McFont::destroy()
 {
+	// clean up fallback fonts
+	for (auto &fallbackFont : m_fallbackFonts)
+	{
+		if (fallbackFont.face)
+			FT_Done_Face(fallbackFont.face);
+	}
+	m_fallbackFonts.clear();
+	m_bFallbacksInitialized = false;
+
+	if (m_bFreeTypeInitialized)
+	{
+		if (m_ftFace)
+		{
+			FT_Done_Face(m_ftFace);
+			m_ftFace = nullptr;
+		}
+		if (m_ftLibrary)
+		{
+			FT_Done_FreeType(m_ftLibrary);
+			m_ftLibrary = nullptr;
+		}
+		m_bFreeTypeInitialized = false;
+	}
+
 	SAFE_DELETE(m_textureAtlas);
 	m_vGlyphMetrics.clear();
+	m_vPendingGlyphs.clear();
 	m_fHeight = 1.0f;
-}
-
-// debug
-void McFont::drawTextureAtlas()
-{
-	if (!m_bReady || !m_textureAtlas)
-		return;
-
-	g->pushTransform();
-	g->translate(m_textureAtlas->getWidth() / 2 + 50, m_textureAtlas->getHeight() / 2 + 50);
-	g->drawImage(m_textureAtlas->getAtlasImage());
-	g->popTransform();
+	m_bAtlasNeedsRebuild = false;
 }
 
 bool McFont::addGlyph(wchar_t ch)
 {
 	if (m_vGlyphExistence.find(ch) != m_vGlyphExistence.end() || ch < 32)
-	{
 		return false;
-	}
 
 	m_vGlyphs.push_back(ch);
 	m_vGlyphExistence[ch] = true;
 	return true;
 }
 
-// helper implementation for glyph packing (skyline algorithm)
-bool McFont::packGlyphRects(std::vector<GlyphRect> &rects, int atlasWidth, int atlasHeight)
+Channel *McFont::unpackMonoBitmap(const FT_Bitmap &bitmap)
 {
-	const int padding = cv::r_debug_font_atlas_padding.getInt();
-
-	// sort rectangles by height
-	std::ranges::sort(rects, [](const GlyphRect &a, const GlyphRect &b) { return a.height > b.height; });
-
-	struct Skyline
-	{
-		int x, y, width;
-	};
-	std::vector<Skyline> skylines = {
-	    {0, 0, atlasWidth}
-    };
-
-	for (auto &rect : rects)
-	{
-		const int rectWidth = rect.width + padding;
-		const int rectHeight = rect.height + padding;
-
-		int bestHeight = atlasHeight;
-		int bestWidth = atlasWidth;
-		int bestIndex = -1;
-
-		// find best position along skyline
-		for (size_t i = 0; i < skylines.size(); ++i)
-		{
-			int y = 0;
-			int width = rectWidth;
-
-			// check if rectangle fits at this position
-			if (skylines[i].x + rectWidth > atlasWidth)
-			{
-				continue;
-			}
-
-			// find maximum height at this position
-			for (size_t j = i; j < skylines.size(); ++j)
-			{
-				if (skylines[j].x >= skylines[i].x + rectWidth)
-				{
-					break;
-				}
-				y = std::max(y, skylines[j].y);
-				width = std::min(width, skylines[j].width);
-			}
-
-			// select this position if it gives us the minimum height
-			if (y + rectHeight < bestHeight || (y + rectHeight == bestHeight && width < bestWidth))
-			{
-				bestHeight = y + rectHeight;
-				bestIndex = i;
-			}
-		}
-
-		if (bestIndex == -1 || bestHeight > atlasHeight)
-		{
-			return false; // packing failed
-		}
-
-		// place the rectangle
-		rect.x = skylines[bestIndex].x;
-		rect.y = bestHeight - rectHeight;
-
-		// update skyline
-		Skyline newSkyline{.x = rect.x, .y = rect.y + rectHeight, .width = rectWidth};
-		skylines.insert(skylines.begin() + bestIndex, newSkyline);
-
-		// merge skylines if possible
-		for (size_t i = 0; i < skylines.size() - 1; ++i)
-		{
-			if (skylines[i].y == skylines[i + 1].y)
-			{
-				skylines[i].width += skylines[i + 1].width;
-				skylines.erase(skylines.begin() + i + 1);
-				--i;
-			}
-		}
-	}
-
-	return true;
-}
-
-size_t McFont::calculateOptimalAtlasSize(const std::vector<GlyphRect> &glyphs, float targetOccupancy) const
-{
-	// calculate total glyph area
-	size_t totalArea = 0;
-	for (const auto &glyph : glyphs)
-	{
-		totalArea += (glyph.width + cv::r_debug_font_atlas_padding.getInt()) * (glyph.height + cv::r_debug_font_atlas_padding.getInt());
-	}
-
-	// add 20% for packing inefficiency
-	totalArea = static_cast<size_t>(totalArea * 1.2f);
-
-	// find smallest power of 2 that can fit the glyphs with desired occupancy
-	size_t size = MIN_ATLAS_SIZE;
-	while (size * size * targetOccupancy < totalArea && size < MAX_ATLAS_SIZE)
-	{
-		size *= 2;
-	}
-
-	return size;
-}
-
-unsigned char *McFont::unpackMonoBitmap(const FT_Bitmap &bitmap)
-{
-	auto result = new unsigned char[bitmap.rows * bitmap.width];
+	auto result = new Channel[bitmap.rows * bitmap.width];
 
 	for (int y = 0; std::cmp_less(y, bitmap.rows); y++)
 	{

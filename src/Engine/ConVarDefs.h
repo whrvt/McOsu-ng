@@ -121,6 +121,8 @@ extern ConVar file_size_max;
 extern ConVar r_debug_drawstring_unbind;
 extern ConVar r_debug_font_atlas_padding;
 extern ConVar r_drawstring_max_string_length;
+extern ConVar r_debug_font_unicode;
+extern ConVar font_load_system;
 
 // from Graphics.cpp
 extern ConVar mat_wireframe;

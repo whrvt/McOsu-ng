@@ -51,7 +51,7 @@ static constexpr auto MCOSU_VERSION_TEXT = "Version";
 static constexpr auto MCOSU_BANNER_TEXT = "";
 
 UString OsuMainMenu::MCOSU_MAIN_BUTTON_TEXT = UString(PACKAGE_NAME);
-UString OsuMainMenu::MCOSU_MAIN_BUTTON_SUBTEXT = UString("Practice Client");
+UString OsuMainMenu::MCOSU_MAIN_BUTTON_SUBTEXT = UString("(´• ω •`)");
 
 static constexpr auto MCOSU_MAIN_BUTTON_BACK_TEXT = "by McKay + spectator";
 static constexpr auto MCOSU_NEWVERSION_NOTIFICATION_TRIGGER_FILE = "version.txt";
@@ -1025,6 +1025,7 @@ void OsuMainMenu::draw()
 	// subtext
 	if (cv::osu::draw_main_menu_button_subtext.getBool() && MCOSU_MAIN_BUTTON_SUBTEXT.length() > 0)
 	{
+		const float subtextScale = fontScale * 1.2f;
 		float invertedPulse = 1.0f - pulse;
 
 		if (haveTimingpoints)
@@ -1036,8 +1037,8 @@ void OsuMainMenu::draw()
 
 		g->pushTransform();
 		{
-			g->scale(fontScale, fontScale);
-			g->translate(m_vCenter.x - m_fCenterOffsetAnim - (smallFont->getStringWidth(MCOSU_MAIN_BUTTON_SUBTEXT)/2.0f)*fontScale, m_vCenter.y + (mainButtonRect.getHeight()/2.0f)/2.0f + (smallFont->getHeight()*fontScale)/2.0f, -1.0f);
+			g->scale(subtextScale, subtextScale);
+			g->translate(m_vCenter.x - m_fCenterOffsetAnim - (smallFont->getStringWidth(MCOSU_MAIN_BUTTON_SUBTEXT)/2.0f)*subtextScale, m_vCenter.y + (mainButtonRect.getHeight()/2.0f)/2.0f + (smallFont->getHeight()*subtextScale)/2.0f, -1.0f);
 			g->drawString(smallFont, MCOSU_MAIN_BUTTON_SUBTEXT);
 		}
 		g->popTransform();
