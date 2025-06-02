@@ -26,6 +26,9 @@ public:
 	McFont(const UString &filepath, const std::vector<wchar_t> &characters, int fontSize = 16, bool antialiasing = true, int fontDPI = 96);
 	~McFont() override { destroy(); }
 
+	// called on engine shutdown to clean up freetype/shared fallback fonts
+	static void cleanupSharedResources();
+
 	void drawString(const UString &text);
 	void beginBatch();
 	void addToBatch(const UString &text, const Vector3 &pos, Color color = 0xffffffff);
@@ -41,10 +44,6 @@ public:
 
 	float getStringWidth(const UString &text) const;
 	float getStringHeight(const UString &text) const;
-
-	// font fallback configuration
-	void addFallbackFont(const UString &fontPath);
-	void loadSystemFallbacks(); // discover and load system fonts
 
 	// type inspection
 	[[nodiscard]] Type getResType() const override { return FONT; }
@@ -104,9 +103,6 @@ private:
 	bool createAndPackAtlas(const std::vector<wchar_t> &glyphs);
 
 	// fallback font management
-	bool initializeFallbackFonts();
-	void discoverSystemFallbacks();
-	bool loadFallbackFont(const UString &fontPath, bool isSystemFont = false);
 	FT_Face getFontFaceForGlyph(wchar_t ch, int &fontIndex);
 	bool loadGlyphFromFace(wchar_t ch, FT_Face face, int fontIndex);
 
@@ -116,6 +112,21 @@ private:
 	const GLYPH_METRICS &getGlyphMetrics(wchar_t ch) const;
 	Channel *unpackMonoBitmap(const FT_Bitmap &bitmap);
 
+	// shared freetype resources
+	static FT_Library s_sharedFtLibrary;
+	static bool s_sharedFtLibraryInitialized;
+	static std::vector<FallbackFont> s_sharedFallbackFonts;
+	static bool s_sharedFallbacksInitialized;
+
+	// shared resource initialization
+	static bool initializeSharedFreeType();
+	static bool initializeSharedFallbackFonts();
+	static void discoverSystemFallbacks();
+	static bool loadFallbackFont(const UString &fontPath, bool isSystemFont = false);
+
+	// helper to set font size on any face for this font instance
+	void setFaceSize(FT_Face face) const;
+
 	int m_iFontSize;
 	bool m_bAntialiasing;
 	int m_iFontDPI;
@@ -123,14 +134,9 @@ private:
 	TextureAtlas *m_textureAtlas;
 	GLYPH_METRICS m_errorGlyph;
 
-	// freetype context for primary and fallback fonts
-	FT_Library m_ftLibrary;
+	// per-instance freetype resources (only primary font face)
 	FT_Face m_ftFace; // primary font face
 	bool m_bFreeTypeInitialized;
-
-	// fallback font system
-	bool m_bFallbacksInitialized;
-	std::vector<FallbackFont> m_fallbackFonts;
 
 	std::vector<wchar_t> m_vGlyphs;
 	std::unordered_map<wchar_t, bool> m_vGlyphExistence;

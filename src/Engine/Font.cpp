@@ -46,6 +46,12 @@ ConVar r_debug_font_unicode("r_debug_font_unicode", false, FCVAR_NONE, "debug me
 ConVar font_load_system("font_load_system", true, FCVAR_NONE, "try to load a similar system font if a glyph is missing in the bundled fonts");
 } // namespace cv
 
+// static member definitions
+FT_Library McFont::s_sharedFtLibrary = nullptr;
+bool McFont::s_sharedFtLibraryInitialized = false;
+std::vector<McFont::FallbackFont> McFont::s_sharedFallbackFonts;
+bool McFont::s_sharedFallbacksInitialized = false;
+
 McFont::McFont(const UString &filepath, int fontSize, bool antialiasing, int fontDPI)
     : Resource(filepath), m_vao((Env::cfg(REND::GLES2 | REND::GLES32) ? Graphics::PRIMITIVE::PRIMITIVE_TRIANGLES : Graphics::PRIMITIVE::PRIMITIVE_QUADS),
                                 Graphics::USAGE_TYPE::USAGE_DYNAMIC)
@@ -77,14 +83,10 @@ void McFont::constructor(const std::vector<wchar_t> &characters, int fontSize, b
 	m_batchQueue.totalVerts = 0;
 	m_batchQueue.usedEntries = 0;
 
-	// freetype initialization state
-	m_ftLibrary = nullptr;
+	// per-instance freetype initialization state
 	m_ftFace = nullptr;
 	m_bFreeTypeInitialized = false;
 	m_bAtlasNeedsRebuild = false;
-
-	// fallback font system
-	m_bFallbacksInitialized = false;
 
 	// setup error glyph
 	m_errorGlyph = {.character = UNKNOWN_CHAR,
@@ -114,7 +116,8 @@ void McFont::init()
 	if (!initializeFreeType())
 		return;
 
-	initializeFallbackFonts();
+	// setup the static fallbacks once
+	initializeSharedFallbackFonts();
 
 	// load metrics for all initial glyphs
 	for (wchar_t ch : m_vGlyphs)
@@ -214,16 +217,18 @@ FT_Face McFont::getFontFaceForGlyph(wchar_t ch, int &fontIndex)
 	if (glyphIndex != 0)
 		return m_ftFace;
 
-	// search through fallback fonts if init
-	if (m_bFallbacksInitialized)
+	// search through shared fallback fonts if initialized
+	if (s_sharedFallbacksInitialized)
 	{
-		for (size_t i = 0; i < m_fallbackFonts.size(); ++i)
+		for (size_t i = 0; i < s_sharedFallbackFonts.size(); ++i)
 		{
-			glyphIndex = FT_Get_Char_Index(m_fallbackFonts[i].face, ch);
+			glyphIndex = FT_Get_Char_Index(s_sharedFallbackFonts[i].face, ch);
 			if (glyphIndex != 0)
 			{
 				fontIndex = static_cast<int>(i + 1); // offset by 1 since 0 is primary font
-				return m_fallbackFonts[i].face;
+				// set the appropriate size for this font instance
+				setFaceSize(s_sharedFallbackFonts[i].face);
+				return s_sharedFallbackFonts[i].face;
 			}
 		}
 	}
@@ -270,10 +275,29 @@ bool McFont::loadGlyphFromFace(wchar_t ch, FT_Face face, int fontIndex)
 	return true;
 }
 
-bool McFont::initializeFallbackFonts()
+bool McFont::initializeSharedFreeType()
 {
-	if (m_bFallbacksInitialized)
+	if (s_sharedFtLibraryInitialized)
 		return true;
+
+	if (FT_Init_FreeType(&s_sharedFtLibrary))
+	{
+		engine->showMessageError("Font Error", "FT_Init_FreeType() failed!");
+		return false;
+	}
+
+	s_sharedFtLibraryInitialized = true;
+	return true;
+}
+
+bool McFont::initializeSharedFallbackFonts()
+{
+	if (s_sharedFallbacksInitialized)
+		return true;
+
+	// make sure shared freetype library is initialized first
+	if (!initializeSharedFreeType())
+		return false;
 
 	// check all bundled fonts first
 	std::vector<UString> bundledFallbacks = env->getFilesInFolder(ResourceManager::PATH_DEFAULT_FONTS);
@@ -291,7 +315,7 @@ bool McFont::initializeFallbackFonts()
 	if (cv::font_load_system.getBool())
 		discoverSystemFallbacks();
 
-	m_bFallbacksInitialized = true;
+	s_sharedFallbacksInitialized = true;
 	return true;
 }
 
@@ -332,7 +356,7 @@ void McFont::discoverSystemFallbacks()
 bool McFont::loadFallbackFont(const UString &fontPath, bool isSystemFont)
 {
 	FT_Face face{};
-	if (FT_New_Face(m_ftLibrary, fontPath.toUtf8(), 0, &face))
+	if (FT_New_Face(s_sharedFtLibrary, fontPath.toUtf8(), 0, &face))
 	{
 		if (cv::r_debug_font_unicode.getBool())
 			debugLog("Font Warning: Failed to load fallback font: {:s}\n", fontPath.toUtf8());
@@ -347,30 +371,14 @@ bool McFont::loadFallbackFont(const UString &fontPath, bool isSystemFont)
 		return false;
 	}
 
-	// set font size to match primary font
-	FT_Set_Char_Size(face, m_iFontSize * 64, m_iFontSize * 64, m_iFontDPI, m_iFontDPI);
-
-	m_fallbackFonts.push_back({fontPath, face, isSystemFont});
+	// don't set font size here, will be set when the face is used by individual font instances
+	s_sharedFallbackFonts.push_back({fontPath, face, isSystemFont});
 	return true;
 }
 
-void McFont::addFallbackFont(const UString &fontPath)
+void McFont::setFaceSize(FT_Face face) const
 {
-	if (!m_bFreeTypeInitialized)
-	{
-		debugLog("Font Error: Cannot add fallback font before FreeType initialization\n");
-		return;
-	}
-
-	loadFallbackFont(fontPath, false);
-}
-
-void McFont::loadSystemFallbacks()
-{
-	if (!m_bFallbacksInitialized)
-		initializeFallbackFonts();
-	else
-		discoverSystemFallbacks();
+	FT_Set_Char_Size(face, m_iFontSize * 64, m_iFontSize * 64, m_iFontDPI, m_iFontDPI);
 }
 
 bool McFont::ensureAtlasSpace(int requiredWidth, int requiredHeight)
@@ -421,16 +429,14 @@ void McFont::rebuildAtlas()
 
 bool McFont::initializeFreeType()
 {
-	if (FT_Init_FreeType(&m_ftLibrary))
-	{
-		engine->showMessageError("Font Error", "FT_Init_FreeType() failed!");
+	// initialize shared freetype library
+	if (!initializeSharedFreeType())
 		return false;
-	}
 
-	if (FT_New_Face(m_ftLibrary, m_sFilePath.toUtf8(), 0, &m_ftFace))
+	// load this font's primary face
+	if (FT_New_Face(s_sharedFtLibrary, m_sFilePath.toUtf8(), 0, &m_ftFace))
 	{
 		engine->showMessageError("Font Error", "Couldn't load font file!");
-		FT_Done_FreeType(m_ftLibrary);
 		return false;
 	}
 
@@ -438,12 +444,11 @@ bool McFont::initializeFreeType()
 	{
 		engine->showMessageError("Font Error", "FT_Select_Charmap() failed!");
 		FT_Done_Face(m_ftFace);
-		FT_Done_FreeType(m_ftLibrary);
 		return false;
 	}
 
-	// set font size (1/64th point units)
-	FT_Set_Char_Size(m_ftFace, m_iFontSize * 64, m_iFontSize * 64, m_iFontDPI, m_iFontDPI);
+	// set font size for this instance's primary face
+	setFaceSize(m_ftFace);
 
 	m_bFreeTypeInitialized = true;
 	return true;
@@ -498,6 +503,11 @@ void McFont::renderGlyphToAtlas(wchar_t ch, int x, int y, FT_Face face)
 		face = getFontFaceForGlyph(ch, fontIndex);
 		if (!face)
 			return;
+	}
+	else if (face != m_ftFace)
+	{
+		// make sure fallback face has the correct size for this font instance
+		setFaceSize(face);
 	}
 
 	if (FT_Load_Glyph(face, FT_Get_Char_Index(face, ch), m_bAntialiasing ? FT_LOAD_TARGET_NORMAL : FT_LOAD_TARGET_MONO))
@@ -654,9 +664,7 @@ void McFont::buildGlyphGeometry(const GLYPH_METRICS &gm, const Vector3 &basePos,
 void McFont::buildStringGeometry(const UString &text, size_t &vertexCount)
 {
 	if (!m_bReady || text.length() == 0 || text.length() > cv::r_drawstring_max_string_length.getInt())
-	{
 		return;
-	}
 
 	// check if atlas needs rebuilding before geometry generation
 	if (m_bAtlasNeedsRebuild)
@@ -701,9 +709,7 @@ void McFont::drawString(const UString &text)
 	g->drawVAO(&m_vao);
 
 	if (cv::r_debug_drawstring_unbind.getBool())
-	{
 		m_textureAtlas->getAtlasImage()->unbind();
-	}
 }
 
 void McFont::beginBatch()
@@ -830,14 +836,8 @@ void McFont::initAsync()
 
 void McFont::destroy()
 {
-	// clean up fallback fonts
-	for (auto &fallbackFont : m_fallbackFonts)
-	{
-		if (fallbackFont.face)
-			FT_Done_Face(fallbackFont.face);
-	}
-	m_fallbackFonts.clear();
-	m_bFallbacksInitialized = false;
+	// only clean up per-instance resources (primary font face and atlas)
+	// shared resources are cleaned up separately via cleanupSharedResources()
 
 	if (m_bFreeTypeInitialized)
 	{
@@ -845,11 +845,6 @@ void McFont::destroy()
 		{
 			FT_Done_Face(m_ftFace);
 			m_ftFace = nullptr;
-		}
-		if (m_ftLibrary)
-		{
-			FT_Done_FreeType(m_ftLibrary);
-			m_ftLibrary = nullptr;
 		}
 		m_bFreeTypeInitialized = false;
 	}
@@ -859,6 +854,29 @@ void McFont::destroy()
 	m_vPendingGlyphs.clear();
 	m_fHeight = 1.0f;
 	m_bAtlasNeedsRebuild = false;
+}
+
+void McFont::cleanupSharedResources()
+{
+	// clean up shared fallback fonts
+	for (auto &fallbackFont : s_sharedFallbackFonts)
+	{
+		if (fallbackFont.face)
+			FT_Done_Face(fallbackFont.face);
+	}
+	s_sharedFallbackFonts.clear();
+	s_sharedFallbacksInitialized = false;
+
+	// clean up shared freetype library
+	if (s_sharedFtLibraryInitialized)
+	{
+		if (s_sharedFtLibrary)
+		{
+			FT_Done_FreeType(s_sharedFtLibrary);
+			s_sharedFtLibrary = nullptr;
+		}
+		s_sharedFtLibraryInitialized = false;
+	}
 }
 
 bool McFont::addGlyph(wchar_t ch)

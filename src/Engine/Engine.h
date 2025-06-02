@@ -231,7 +231,7 @@ public:
 	}
 private:
 	// logging stuff (implementation)
-	static void logToConsole(std::optional<Color> color, UString message);
+	static void logToConsole(std::optional<Color> color, const UString &message);
 
 	static void logImpl(const std::string &message, Color color = rgb(255, 255, 255))
 	{

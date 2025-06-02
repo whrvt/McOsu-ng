@@ -330,6 +330,9 @@ Engine::~Engine()
 	debugLog("Engine: Freeing graphics...\n");
 	s_graphicsInstance.reset();
 
+	debugLog("Engine: Freeing fonts...\n");
+	McFont::cleanupSharedResources();
+
 	debugLog("Engine: Freeing math...\n");
 	SAFE_DELETE(m_math);
 
@@ -779,7 +782,7 @@ void Engine::setFrameTime(double delta)
 	m_dFrameTime = std::clamp<double>(delta, 0.0001, 1.0);
 }
 
-void Engine::logToConsole(std::optional<Color> color, UString msg)
+void Engine::logToConsole(std::optional<Color> color, const UString &msg)
 {
 	if (m_consoleBox != nullptr)
 	{
