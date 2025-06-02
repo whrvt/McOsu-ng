@@ -462,7 +462,8 @@ bool UString::lessThanIgnoreCase(const UString &ustr) const
 }
 
 // helper function for getUtf8
-static inline void getUtf8(wchar_t ch, char *utf8, int numBytes, int firstByteValue)
+namespace {
+inline void getUtf8(wchar_t ch, char *utf8, int numBytes, int firstByteValue)
 {
 	for (int i = numBytes - 1; i > 0; i--)
 	{
@@ -476,7 +477,7 @@ static inline void getUtf8(wchar_t ch, char *utf8, int numBytes, int firstByteVa
 }
 
 // helper function to encode a wide character string to UTF-8
-static inline int encode(std::wstring_view unicode, char *utf8)
+inline int encode(std::wstring_view unicode, char *utf8)
 {
 	int utf8len = 0;
 
@@ -526,7 +527,7 @@ static inline int encode(std::wstring_view unicode, char *utf8)
 }
 
 // helper function to get a code point from UTF-8
-static inline wchar_t getCodePoint(const char *utf8, int offset, int numBytes, unsigned char firstByteMask)
+inline wchar_t getCodePoint(const char *utf8, int offset, int numBytes, unsigned char firstByteMask)
 {
 	// get the bits out of the first byte
 	wchar_t wc = static_cast<unsigned char>(utf8[offset]) & firstByteMask;
@@ -541,6 +542,7 @@ static inline wchar_t getCodePoint(const char *utf8, int offset, int numBytes, u
 	}
 
 	return wc;
+}
 }
 
 // single-pass utf8 decoder for mixed ascii/unicode content

@@ -36,7 +36,7 @@ public:
 	void restart();
 	[[nodiscard]] inline bool isRunning() const { return m_bRunning; }
 	[[nodiscard]] static UString getExecutablePath();
-	static void openURLInDefaultBrowser(UString url);
+	static void openURLInDefaultBrowser(const UString& url);
 
 	[[nodiscard]] inline const std::unordered_map<UString, std::optional<UString>> &getLaunchArgs() const { return m_mArgMap; }
 	[[nodiscard]] inline const std::vector<UString> &getCommandLine() const { return m_vCmdLine; }
@@ -56,31 +56,31 @@ public:
 	[[nodiscard]] static bool directoryExists(const UString &directoryName);
 	[[nodiscard]] static inline bool isaTTY() { return s_bIsATTY; } // is stdout a terminal
 
-	[[nodiscard]] static bool createDirectory(UString directoryName);
-	static bool renameFile(UString oldFileName, UString newFileName);
-	static bool deleteFile(UString filePath);
-	[[nodiscard]] static std::vector<UString> getFilesInFolder(UString folder);
-	[[nodiscard]] static std::vector<UString> getFoldersInFolder(UString folder);
+	[[nodiscard]] static bool createDirectory(const UString& directoryName);
+	static bool renameFile(const UString& oldFileName, const UString& newFileName);
+	static bool deleteFile(const UString& filePath);
+	[[nodiscard]] static std::vector<UString> getFilesInFolder(const UString& folder);
+	[[nodiscard]] static std::vector<UString> getFoldersInFolder(const UString& folder);
 	[[nodiscard]] static std::vector<UString> getLogicalDrives();
 	// returns an absolute (i.e. fully-qualified) filesystem path
-	[[nodiscard]] static UString getFolderFromFilePath(UString filepath) noexcept;
-	[[nodiscard]] static UString getFileExtensionFromFilePath(UString filepath, bool includeDot = false);
-	[[nodiscard]] static UString getFileNameFromFilePath(UString filePath) noexcept;
+	[[nodiscard]] static UString getFolderFromFilePath(const UString &filepath) noexcept;
+	[[nodiscard]] static UString getFileExtensionFromFilePath(const UString& filepath, bool includeDot = false);
+	[[nodiscard]] static UString getFileNameFromFilePath(const UString &filePath) noexcept;
 
 	// clipboard
 	[[nodiscard]] UString getClipBoardText();
-	void setClipBoardText(UString text);
+	void setClipBoardText(const UString& text);
 
 	// dialogs & message boxes
-	void showMessageInfo(UString title, UString message) const;
-	void showMessageWarning(UString title, UString message) const;
-	void showMessageError(UString title, UString message) const;
-	void showMessageErrorFatal(UString title, UString message) const;
+	void showMessageInfo(const UString& title, const UString& message) const;
+	void showMessageWarning(const UString& title, const UString& message) const;
+	void showMessageError(const UString& title, const UString& message) const;
+	void showMessageErrorFatal(const UString& title, const UString& message) const;
 
 	using FileDialogCallback = std::function<void(const std::vector<UString> &paths)>;
-	void openFileWindow(FileDialogCallback callback, const char *filetypefilters, UString title, UString initialpath = "") const;
-	void openFolderWindow(FileDialogCallback callback, UString initialpath = "") const;
-	void openFileBrowser(UString title, UString initialpath = "") const noexcept;
+	void openFileWindow(FileDialogCallback callback, const char *filetypefilters, const UString& title, const UString& initialpath = "") const;
+	void openFolderWindow(FileDialogCallback callback, const UString& initialpath = "") const;
+	void openFileBrowser(const UString& title, UString initialpath = "") const noexcept;
 
 	// window
 	void focus();
@@ -89,7 +89,7 @@ public:
 	void maximize();
 	void enableFullscreen();
 	void disableFullscreen();
-	void setWindowTitle(UString title);
+	void setWindowTitle(const UString& title);
 	void setWindowPos(int x, int y);
 	void setWindowSize(int width, int height);
 	void setWindowResizable(bool resizable);

@@ -443,7 +443,7 @@ void McFont::flushBatch()
 	m_batchActive = false;
 }
 
-float McFont::getStringWidth(UString text) const
+float McFont::getStringWidth(const UString &text) const
 {
 	if (!m_bReady)
 		return 1.0f;
@@ -456,7 +456,7 @@ float McFont::getStringWidth(UString text) const
 	return width;
 }
 
-float McFont::getStringHeight(UString text) const
+float McFont::getStringHeight(const UString &text) const
 {
 	if (!m_bReady)
 		return 1.0f;

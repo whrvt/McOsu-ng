@@ -3583,6 +3583,7 @@ std::vector<OsuUISongBrowserCollectionButton *> *OsuSongBrowser2::getCollectionB
 	case GROUP::GROUP_COLLECTIONS:
 		return &m_collectionButtons;
 	}
+	return nullptr;
 }
 
 void OsuSongBrowser2::rebuildAfterGroupOrSortChange(GROUP group, bool autoScroll, SORT_COMPARATOR sortComp)

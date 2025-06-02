@@ -10,8 +10,8 @@
 #include "Engine.h"
 #include "Mouse.h"
 
-#include "SDLGLInterface.h"
 #include "DirectX11Interface.h"
+#include "SDLGLInterface.h"
 
 #include "File.h"
 
@@ -34,15 +34,17 @@
 #include <cstddef>
 #include <utility>
 
-namespace cv {
+namespace cv
+{
 // definitions
 ConVar debug_env("debug_env", false, FCVAR_NONE);
 ConVar fullscreen_windowed_borderless("fullscreen_windowed_borderless", false, FCVAR_NONE);
 ConVar monitor("monitor", 0, FCVAR_NONE, "monitor/display device to switch to, 0 = primary monitor");
 
-ConVar processpriority("processpriority", 0, FCVAR_NONE, "sets the main process priority (0 = normal, 1 = high)",
-	[](float, float newValue) -> void {SDL_SetCurrentThreadPriority(!!static_cast<int>(newValue) ? SDL_THREAD_PRIORITY_HIGH : SDL_THREAD_PRIORITY_NORMAL);});
-}
+ConVar processpriority("processpriority", 0, FCVAR_NONE, "sets the main process priority (0 = normal, 1 = high)", [](float, float newValue) -> void {
+	SDL_SetCurrentThreadPriority(!!static_cast<int>(newValue) ? SDL_THREAD_PRIORITY_HIGH : SDL_THREAD_PRIORITY_NORMAL);
+});
+} // namespace cv
 
 Environment *env = nullptr;
 
@@ -183,7 +185,7 @@ UString Environment::getExecutablePath()
 	return {path};
 }
 
-void Environment::openURLInDefaultBrowser(UString url)
+void Environment::openURLInDefaultBrowser(const UString &url)
 {
 	if (!SDL_OpenURL(url.toUtf8()))
 		debugLog("Failed to open URL: {:s}\n", SDL_GetError());
@@ -225,7 +227,7 @@ UString Environment::getUserDataPath()
 		return m_sAppDataPath;
 
 	char *path = SDL_GetPrefPath("", "");
-	if (path != NULL)
+	if (path != nullptr)
 	{
 		m_sAppDataPath = {path};
 		// since this is kind of an abuse of SDL_GetPrefPath, we remove the double slash
@@ -248,7 +250,7 @@ UString Environment::getLocalDataPath()
 		return m_sProgDataPath;
 
 	char *path = SDL_GetPrefPath("McEngine", PACKAGE_NAME);
-	if (path != NULL)
+	if (path != nullptr)
 		m_sProgDataPath = {path};
 
 	SDL_free(path);
@@ -282,27 +284,27 @@ bool Environment::directoryExists(const UString &directoryName)
 	return McFile::exists(directoryName) == McFile::FILETYPE::FOLDER;
 }
 
-bool Environment::createDirectory(UString directoryName)
+bool Environment::createDirectory(const UString &directoryName)
 {
 	return SDL_CreateDirectory(directoryName.toUtf8());
 }
 
-bool Environment::renameFile(UString oldFileName, UString newFileName)
+bool Environment::renameFile(const UString &oldFileName, const UString &newFileName)
 {
 	return std::rename(oldFileName.toUtf8(), newFileName.toUtf8()); // TODO: use SDL for this?
 }
 
-bool Environment::deleteFile(UString filePath)
+bool Environment::deleteFile(const UString &filePath)
 {
 	return std::remove(filePath.toUtf8()) == 0; // TODO: maybe use SDL for this?
 }
 
-std::vector<UString> Environment::getFilesInFolder(UString folder)
+std::vector<UString> Environment::getFilesInFolder(const UString &folder)
 {
 	return enumerateDirectory(folder.toUtf8(), SDL_PATHTYPE_FILE);
 }
 
-std::vector<UString> Environment::getFoldersInFolder(UString folder)
+std::vector<UString> Environment::getFoldersInFolder(const UString &folder)
 {
 	// TODO: if this turns out to be too slow for folders with a lot of subfolders, split out the sorting
 	// currently only the skinlist really uses it, shouldn't have more than 5000 skins in it for normal human beings
@@ -350,17 +352,17 @@ std::vector<UString> Environment::getLogicalDrives()
 	return drives;
 }
 
-UString Environment::getFileNameFromFilePath(UString filepath) noexcept
+UString Environment::getFileNameFromFilePath(const UString &filepath) noexcept
 {
 	return getThingFromPathHelper(filepath, false);
 }
 
-UString Environment::getFolderFromFilePath(UString filepath) noexcept
+UString Environment::getFolderFromFilePath(const UString &filepath) noexcept
 {
 	return getThingFromPathHelper(filepath, true);
 }
 
-UString Environment::getFileExtensionFromFilePath(UString filepath, bool includeDot)
+UString Environment::getFileExtensionFromFilePath(const UString &filepath, bool /*includeDot*/)
 {
 	const int idx = filepath.findLast(".");
 	if (idx != -1)
@@ -380,28 +382,28 @@ UString Environment::getClipBoardText()
 	return m_sCurrClipboardText;
 }
 
-void Environment::setClipBoardText(UString text)
+void Environment::setClipBoardText(const UString &text)
 {
 	m_sCurrClipboardText = text;
 	SDL_SetClipboardText(text.toUtf8());
 }
 
-void Environment::showMessageInfo(UString title, UString message) const
+void Environment::showMessageInfo(const UString &title, const UString &message) const
 {
 	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, title.toUtf8(), message.toUtf8(), m_window);
 }
 
-void Environment::showMessageWarning(UString title, UString message) const
+void Environment::showMessageWarning(const UString &title, const UString &message) const
 {
 	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING, title.toUtf8(), message.toUtf8(), m_window);
 }
 
-void Environment::showMessageError(UString title, UString message) const
+void Environment::showMessageError(const UString &title, const UString &message) const
 {
 	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, title.toUtf8(), message.toUtf8(), m_window);
 }
 
-void Environment::showMessageErrorFatal(UString title, UString message) const
+void Environment::showMessageErrorFatal(const UString &title, const UString &message) const
 {
 	showMessageError(title, message);
 }
@@ -430,7 +432,7 @@ void Environment::sdlFileDialogCallback(void *userdata, const char *const *filel
 	delete callbackData;
 }
 
-void Environment::openFileWindow(FileDialogCallback callback, const char *filetypefilters, UString title, UString initialpath) const
+void Environment::openFileWindow(FileDialogCallback callback, const char *filetypefilters, const UString & /*title*/, const UString &initialpath) const
 {
 	// convert filetypefilters (Windows-style)
 	std::vector<std::string> filterNames;
@@ -461,26 +463,26 @@ void Environment::openFileWindow(FileDialogCallback callback, const char *filety
 	}
 
 	// callback data to be passed to SDL
-	auto *callbackData = new FileDialogCallbackData{callback};
+	auto *callbackData = new FileDialogCallbackData{std::move(callback)};
 
 	// show it
 	SDL_ShowOpenFileDialog(sdlFileDialogCallback, callbackData, m_window, sdlFilters.empty() ? nullptr : sdlFilters.data(), static_cast<int>(sdlFilters.size()),
 	                       initialpath.length() > 0 ? initialpath.toUtf8() : nullptr, false);
 }
 
-void Environment::openFolderWindow(FileDialogCallback callback, UString initialpath) const
+void Environment::openFolderWindow(FileDialogCallback callback, const UString &initialpath) const
 {
 	// callback data to be passed to SDL
-	auto *callbackData = new FileDialogCallbackData{callback};
+	auto *callbackData = new FileDialogCallbackData{std::move(callback)};
 
 	// show it
 	SDL_ShowOpenFolderDialog(sdlFileDialogCallback, callbackData, m_window, initialpath.length() > 0 ? initialpath.toUtf8() : nullptr, false);
 }
 
 // just open the file manager in a certain folder, but not do anything with it
-void Environment::openFileBrowser(UString, UString initialpath) const noexcept
+void Environment::openFileBrowser(const UString & /*title*/, UString initialpath) const noexcept
 {
-	UString pathToOpen = initialpath;
+	UString pathToOpen = std::move(initialpath);
 	if (pathToOpen.isEmpty())
 		pathToOpen = getExecutablePath();
 	else
@@ -553,7 +555,7 @@ void Environment::setFullscreenWindowedBorderless(bool fullscreenWindowedBorderl
 	}
 }
 
-void Environment::setWindowTitle(UString title)
+void Environment::setWindowTitle(const UString &title)
 {
 	SDL_SetWindowTitle(m_window, title.toUtf8());
 }
@@ -613,11 +615,11 @@ HWND Environment::getHwnd() const
 {
 	HWND hwnd = nullptr;
 #if defined(MCENGINE_PLATFORM_WINDOWS)
-	hwnd = (HWND)SDL_GetPointerProperty(SDL_GetWindowProperties(m_window), SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
+	hwnd = (HWND)SDL_GetPointerProperty(SDL_GetWindowProperties(m_window), SDL_PROP_WINDOW_WIN32_HWND_POINTER, nullptr);
 	if (!hwnd)
 		debugLog("(Windows) hwnd is null! SDL: {:s}\n", SDL_GetError());
 #elif defined(__APPLE__)
-	NSWindow *nswindow = (__bridge NSWindow *)SDL_GetPointerProperty(SDL_GetWindowProperties(m_window), SDL_PROP_WINDOW_COCOA_WINDOW_POINTER, NULL);
+	NSWindow *nswindow = (__bridge NSWindow *)SDL_GetPointerProperty(SDL_GetWindowProperties(m_window), SDL_PROP_WINDOW_COCOA_WINDOW_POINTER, nullptr);
 	if (nswindow)
 	{
 #warning "getHwnd() TODO"
@@ -625,7 +627,7 @@ HWND Environment::getHwnd() const
 #elif defined(MCENGINE_PLATFORM_LINUX)
 	if (SDL_strcmp(SDL_GetCurrentVideoDriver(), "x11") == 0)
 	{
-		auto *xdisplay = (Display *)SDL_GetPointerProperty(SDL_GetWindowProperties(m_window), SDL_PROP_WINDOW_X11_DISPLAY_POINTER, NULL);
+		auto *xdisplay = (Display *)SDL_GetPointerProperty(SDL_GetWindowProperties(m_window), SDL_PROP_WINDOW_X11_DISPLAY_POINTER, nullptr);
 		auto xwindow = (Window)SDL_GetNumberProperty(SDL_GetWindowProperties(m_window), SDL_PROP_WINDOW_X11_WINDOW_NUMBER, 0);
 		if (xdisplay && xwindow)
 			hwnd = (HWND)xwindow;
@@ -634,8 +636,10 @@ HWND Environment::getHwnd() const
 	}
 	else if (SDL_strcmp(SDL_GetCurrentVideoDriver(), "wayland") == 0)
 	{
-		struct wl_display *display = (struct wl_display *)SDL_GetPointerProperty(SDL_GetWindowProperties(m_window), SDL_PROP_WINDOW_WAYLAND_DISPLAY_POINTER, NULL);
-		struct wl_surface *surface = (struct wl_surface *)SDL_GetPointerProperty(SDL_GetWindowProperties(m_window), SDL_PROP_WINDOW_WAYLAND_SURFACE_POINTER, NULL);
+		struct wl_display *display =
+		    (struct wl_display *)SDL_GetPointerProperty(SDL_GetWindowProperties(m_window), SDL_PROP_WINDOW_WAYLAND_DISPLAY_POINTER, nullptr);
+		struct wl_surface *surface =
+		    (struct wl_surface *)SDL_GetPointerProperty(SDL_GetWindowProperties(m_window), SDL_PROP_WINDOW_WAYLAND_SURFACE_POINTER, nullptr);
 		if (display && surface)
 			hwnd = (HWND)surface;
 		else
@@ -712,12 +716,15 @@ void Environment::setCursor(CURSORTYPE cur)
 	}
 }
 
-static void sensTransformFunc(void *, Uint64, SDL_Window *, SDL_MouseID, float *x, float *y)
+namespace
+{
+void sensTransformFunc(void * /*userdata*/, Uint64 /*timestamp*/, SDL_Window * /*window*/, SDL_MouseID /*mouseid*/, float *x, float *y)
 {
 	const float sensitivity = mouse->getSensitivity();
 	*x *= sensitivity;
 	*y *= sensitivity;
 }
+} // namespace
 
 void Environment::notifyWantRawInput(bool raw)
 {
@@ -737,7 +744,7 @@ void Environment::notifyWantRawInput(bool raw)
 	{
 		// let the mouse handler clip the cursor as it sees fit
 		// this is because SDL has no equivalent of sensTransformFunc for non-relative mouse mode
-		SDL_SetWindowMouseRect(m_window, NULL);
+		SDL_SetWindowMouseRect(m_window, nullptr);
 	}
 
 	SDL_SetRelativeMouseTransform(raw ? sensTransformFunc : nullptr, nullptr);
@@ -788,7 +795,7 @@ void Environment::setCursorClip(bool clip, McRect rect)
 	else
 	{
 		m_bCursorClipped = false;
-		SDL_SetWindowMouseRect(m_window, NULL);
+		SDL_SetWindowMouseRect(m_window, nullptr);
 		SDL_SetWindowMouseGrab(m_window, false);
 	}
 }
@@ -796,7 +803,7 @@ void Environment::setCursorClip(bool clip, McRect rect)
 UString Environment::keyCodeToString(KEYCODE keyCode)
 {
 	const char *name = SDL_GetScancodeName((SDL_Scancode)keyCode);
-	if (name == NULL)
+	if (name == nullptr)
 		return UString::format("%lu", keyCode);
 	else
 	{

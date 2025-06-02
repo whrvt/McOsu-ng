@@ -59,23 +59,23 @@ typedef HRESULT(VKD3D_CALL *PFN_D3DCOMPILE_VKD3D)(LPCVOID pSrcData,
 class DirectX11Shader final : public Shader
 {
 public:
-	DirectX11Shader(UString shader, bool source);
-	DirectX11Shader(UString vertexShader, UString fragmentShader, bool source); // DEPRECATED
+	DirectX11Shader(const UString &shader, bool source);
+	DirectX11Shader(const UString &vertexShader, const UString &fragmentShader, bool source); // DEPRECATED
 	~DirectX11Shader() override { destroy(); }
 
 	void enable() override;
 	void disable() override;
 
-	void setUniform1f(UString name, float value) override;
-	void setUniform1fv(UString name, int count, float *values) override;
-	void setUniform1i(UString name, int value) override;
-	void setUniform2f(UString name, float x, float y) override;
-	void setUniform2fv(UString name, int count, float *vectors) override;
-	void setUniform3f(UString name, float x, float y, float z) override;
-	void setUniform3fv(UString name, int count, float *vectors) override;
-	void setUniform4f(UString name, float x, float y, float z, float w) override;
-	void setUniformMatrix4fv(UString name, Matrix4 &matrix) override;
-	void setUniformMatrix4fv(UString name, float *v) override;
+	void setUniform1f(const UString &name, float value) override;
+	void setUniform1fv(const UString &name, int count, float *values) override;
+	void setUniform1i(const UString &name, int value) override;
+	void setUniform2f(const UString &name, float x, float y) override;
+	void setUniform2fv(const UString &name, int count, float *vectors) override;
+	void setUniform3f(const UString &name, float x, float y, float z) override;
+	void setUniform3fv(const UString &name, int count, float *vectors) override;
+	void setUniform4f(const UString &name, float x, float y, float z, float w) override;
+	void setUniformMatrix4fv(const UString &name, Matrix4 &matrix) override;
+	void setUniformMatrix4fv(const UString &name, float *v) override;
 
 	// ILLEGAL:
 	void onJustBeforeDraw();
@@ -130,7 +130,7 @@ protected:
 	void initAsync() override;
 	void destroy() override;
 
-	bool compile(UString vertexShader, UString fragmentShader);
+	bool compile(const UString &vertexShader, const UString &fragmentShader);
 
 	void setUniform(const UString &name, void *src, size_t numBytes);
 

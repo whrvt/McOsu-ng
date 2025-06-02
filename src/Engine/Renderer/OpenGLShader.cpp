@@ -18,7 +18,7 @@
 #include "OpenGL3Interface.h"
 #include "OpenGLLegacyInterface.h"
 
-OpenGLShader::OpenGLShader(UString shader, bool source)
+OpenGLShader::OpenGLShader(const UString &shader, bool source)
 {
 	m_bIsShader2 = true;
 	m_sVsh = shader;
@@ -31,7 +31,7 @@ OpenGLShader::OpenGLShader(UString shader, bool source)
 	m_iProgramBackup = 0;
 }
 
-OpenGLShader::OpenGLShader(UString vertexShader, UString fragmentShader, bool source) : Shader()
+OpenGLShader::OpenGLShader(const UString &vertexShader, const UString &fragmentShader, bool source) : Shader()
 {
 	m_bIsShader2 = false;
 
@@ -122,7 +122,7 @@ void OpenGLShader::disable()
 	OpenGLStateCache::getInstance().setCurrentProgram(m_iProgramBackup);
 }
 
-void OpenGLShader::setUniform1f(UString name, float value)
+void OpenGLShader::setUniform1f(const UString &name, float value)
 {
 	if (!m_bReady)
 		return;
@@ -134,7 +134,7 @@ void OpenGLShader::setUniform1f(UString name, float value)
 		debugLog("OpenGLShader Warning: Can't find uniform {:s}\n", name.toUtf8());
 }
 
-void OpenGLShader::setUniform1fv(UString name, int count, float *values)
+void OpenGLShader::setUniform1fv(const UString &name, int count, float *values)
 {
 	if (!m_bReady)
 		return;
@@ -146,7 +146,7 @@ void OpenGLShader::setUniform1fv(UString name, int count, float *values)
 		debugLog("OpenGLShader Warning: Can't find uniform {:s}\n", name.toUtf8());
 }
 
-void OpenGLShader::setUniform1i(UString name, int value)
+void OpenGLShader::setUniform1i(const UString &name, int value)
 {
 	if (!m_bReady)
 		return;
@@ -158,7 +158,7 @@ void OpenGLShader::setUniform1i(UString name, int value)
 		debugLog("OpenGLShader Warning: Can't find uniform {:s}\n", name.toUtf8());
 }
 
-void OpenGLShader::setUniform2f(UString name, float value1, float value2)
+void OpenGLShader::setUniform2f(const UString &name, float value1, float value2)
 {
 	if (!m_bReady)
 		return;
@@ -170,7 +170,7 @@ void OpenGLShader::setUniform2f(UString name, float value1, float value2)
 		debugLog("OpenGLShader Warning: Can't find uniform {:s}\n", name.toUtf8());
 }
 
-void OpenGLShader::setUniform2fv(UString name, int count, float *vectors)
+void OpenGLShader::setUniform2fv(const UString &name, int count, float *vectors)
 {
 	if (!m_bReady)
 		return;
@@ -182,7 +182,7 @@ void OpenGLShader::setUniform2fv(UString name, int count, float *vectors)
 		debugLog("OpenGLShader Warning: Can't find uniform {:s}\n", name.toUtf8());
 }
 
-void OpenGLShader::setUniform3f(UString name, float x, float y, float z)
+void OpenGLShader::setUniform3f(const UString &name, float x, float y, float z)
 {
 	if (!m_bReady)
 		return;
@@ -194,7 +194,7 @@ void OpenGLShader::setUniform3f(UString name, float x, float y, float z)
 		debugLog("OpenGLShader Warning: Can't find uniform {:s}\n", name.toUtf8());
 }
 
-void OpenGLShader::setUniform3fv(UString name, int count, float *vectors)
+void OpenGLShader::setUniform3fv(const UString &name, int count, float *vectors)
 {
 	if (!m_bReady)
 		return;
@@ -206,7 +206,7 @@ void OpenGLShader::setUniform3fv(UString name, int count, float *vectors)
 		debugLog("OpenGLShader Warning: Can't find uniform {:s}\n", name.toUtf8());
 }
 
-void OpenGLShader::setUniform4f(UString name, float x, float y, float z, float w)
+void OpenGLShader::setUniform4f(const UString &name, float x, float y, float z, float w)
 {
 	if (!m_bReady)
 		return;
@@ -218,7 +218,7 @@ void OpenGLShader::setUniform4f(UString name, float x, float y, float z, float w
 		debugLog("OpenGLShader Warning: Can't find uniform {:s}\n", name.toUtf8());
 }
 
-void OpenGLShader::setUniformMatrix4fv(UString name, Matrix4 &matrix)
+void OpenGLShader::setUniformMatrix4fv(const UString &name, Matrix4 &matrix)
 {
 	if (!m_bReady)
 		return;
@@ -230,7 +230,7 @@ void OpenGLShader::setUniformMatrix4fv(UString name, Matrix4 &matrix)
 		debugLog("OpenGLShader Warning: Can't find uniform {:s}\n", name.toUtf8());
 }
 
-void OpenGLShader::setUniformMatrix4fv(UString name, float *v)
+void OpenGLShader::setUniformMatrix4fv(const UString &name, float *v)
 {
 	if (!m_bReady)
 		return;
@@ -242,7 +242,7 @@ void OpenGLShader::setUniformMatrix4fv(UString name, float *v)
 		debugLog("OpenGLShader Warning: Can't find uniform {:s}\n", name.toUtf8());
 }
 
-int OpenGLShader::getAttribLocation(UString name)
+int OpenGLShader::getAttribLocation(const UString &name)
 {
 	if (!m_bReady)
 		return -1;
@@ -268,7 +268,7 @@ int OpenGLShader::getAndCacheUniformLocation(const UString &name)
 	return id;
 }
 
-bool OpenGLShader::compile(UString vertexShader, UString fragmentShader, bool source)
+bool OpenGLShader::compile(const UString &vertexShader, const UString &fragmentShader, bool source)
 {
 	// load & compile shaders
 	debugLog("Compiling {:s} ...\n", (source ? "vertex source" : vertexShader.toUtf8()));
@@ -318,7 +318,7 @@ bool OpenGLShader::compile(UString vertexShader, UString fragmentShader, bool so
 	return true;
 }
 
-int OpenGLShader::createShaderFromString(UString shaderSource, int shaderType)
+int OpenGLShader::createShaderFromString(const UString &shaderSource, int shaderType)
 {
 	const GLhandleARB shader = glCreateShaderObjectARB(shaderType);
 
@@ -359,7 +359,7 @@ int OpenGLShader::createShaderFromString(UString shaderSource, int shaderType)
 	return static_cast<int>(shader);
 }
 
-int OpenGLShader::createShaderFromFile(UString fileName, int shaderType)
+int OpenGLShader::createShaderFromFile(const UString &fileName, int shaderType)
 {
 	// load file
 	std::ifstream inFile(fileName.toUtf8());
@@ -380,9 +380,7 @@ int OpenGLShader::createShaderFromFile(UString fileName, int shaderType)
 	shaderSource += "\n\0";
 	inFile.close();
 
-	UString shaderSourcePtr = UString(shaderSource.c_str());
-
-	return createShaderFromString(shaderSourcePtr, shaderType);
+	return createShaderFromString(shaderSource.c_str(), shaderType);
 }
 
 #endif

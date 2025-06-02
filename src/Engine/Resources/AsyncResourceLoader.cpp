@@ -31,7 +31,9 @@ public:
 	LoaderThread(AsyncResourceLoader *loader_ptr, size_t index) : loader(loader_ptr), threadIndex(index) {}
 };
 
-static void *_asyncResourceLoaderThread(void *data, std::stop_token stopToken)
+namespace
+{
+void *asyncResourceLoaderThread(void *data, std::stop_token stopToken)
 {
 	auto *loaderThread = static_cast<AsyncResourceLoader::LoaderThread *>(data);
 	AsyncResourceLoader *loader = loaderThread->loader;
@@ -96,6 +98,7 @@ static void *_asyncResourceLoaderThread(void *data, std::stop_token stopToken)
 
 	return nullptr;
 }
+}
 
 //==================================
 // ASYNC RESOURCE LOADER
@@ -111,7 +114,7 @@ AsyncResourceLoader::AsyncResourceLoader()
 	{
 		auto loaderThread = std::make_unique<LoaderThread>(this, m_totalThreadsCreated.fetch_add(1));
 
-		loaderThread->thread = std::make_unique<McThread>(_asyncResourceLoaderThread, loaderThread.get());
+		loaderThread->thread = std::make_unique<McThread>(asyncResourceLoaderThread, loaderThread.get());
 		if (!loaderThread->thread->isReady())
 		{
 			engine->showMessageError("AsyncResourceLoader Error", "Couldn't create core thread!");
@@ -339,7 +342,7 @@ void AsyncResourceLoader::ensureThreadAvailable()
 		{
 			auto loaderThread = std::make_unique<LoaderThread>(this, m_totalThreadsCreated.fetch_add(1));
 
-			loaderThread->thread = std::make_unique<McThread>(_asyncResourceLoaderThread, loaderThread.get());
+			loaderThread->thread = std::make_unique<McThread>(asyncResourceLoaderThread, loaderThread.get());
 			if (!loaderThread->thread->isReady())
 			{
 				if (cv::debug_rm.getBool())

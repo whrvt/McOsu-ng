@@ -16,26 +16,26 @@
 class OpenGLShader final : public Shader
 {
 public:
-	OpenGLShader(UString shader, bool source);
-	OpenGLShader(UString vertexShader, UString fragmentShader, bool source); // DEPRECATED
+	OpenGLShader(const UString &shader, bool source);
+	OpenGLShader(const UString &vertexShader, const UString &fragmentShader, bool source); // DEPRECATED
 	virtual ~OpenGLShader() {destroy();}
 
 	virtual void enable();
 	virtual void disable();
 
-	virtual void setUniform1f(UString name, float value);
-	virtual void setUniform1fv(UString name, int count, float *values);
-	virtual void setUniform1i(UString name, int value);
-	virtual void setUniform2f(UString name, float x, float y);
-	virtual void setUniform2fv(UString name, int count, float *vectors);
-	virtual void setUniform3f(UString name, float x, float y, float z);
-	virtual void setUniform3fv(UString name, int count, float *vectors);
-	virtual void setUniform4f(UString name, float x, float y, float z, float w);
-	virtual void setUniformMatrix4fv(UString name, Matrix4 &matrix);
-	virtual void setUniformMatrix4fv(UString name, float *v);
+	virtual void setUniform1f(const UString &name, float value);
+	virtual void setUniform1fv(const UString &name, int count, float *values);
+	virtual void setUniform1i(const UString &name, int value);
+	virtual void setUniform2f(const UString &name, float x, float y);
+	virtual void setUniform2fv(const UString &name, int count, float *vectors);
+	virtual void setUniform3f(const UString &name, float x, float y, float z);
+	virtual void setUniform3fv(const UString &name, int count, float *vectors);
+	virtual void setUniform4f(const UString &name, float x, float y, float z, float w);
+	virtual void setUniformMatrix4fv(const UString &name, Matrix4 &matrix);
+	virtual void setUniformMatrix4fv(const UString &name, float *v);
 
 	// ILLEGAL:
-	int getAttribLocation(UString name);
+	int getAttribLocation(const UString &name);
 	int getAndCacheUniformLocation(const UString &name);
 
 private:
@@ -44,9 +44,9 @@ private:
 	virtual void destroy();
 
 private:
-	bool compile(UString vertexShader, UString fragmentShader, bool source);
-	int createShaderFromString(UString shaderSource, int shaderType);
-	int createShaderFromFile(UString fileName, int shaderType);
+	bool compile(const UString &vertexShader, const UString &fragmentShader, bool source);
+	int createShaderFromString(const UString &shaderSource, int shaderType);
+	int createShaderFromFile(const UString &fileName, int shaderType);
 
 private:
 	bool m_bIsShader2;

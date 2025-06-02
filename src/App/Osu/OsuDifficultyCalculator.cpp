@@ -1340,7 +1340,6 @@ double OsuDifficultyCalculator::DiffObject::calculate_difficulty(const Skills::S
 					{
 						if (incremental)
 						{
-							ACCUMULATE(+,tempSum)
 							for (double slider_strain : incremental->slider_strains)
 							{
 								tempSum += 1.0 / (1.0 + McMath::fastExp(-((slider_strain / maxSliderStrain * 12.0) - 6.0)));

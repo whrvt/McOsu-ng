@@ -25,7 +25,7 @@
 
 DirectX11Shader::CACHE_ENTRY DirectX11Shader::invalidCacheEntry{-1};
 
-DirectX11Shader::DirectX11Shader(UString shader, bool source)
+DirectX11Shader::DirectX11Shader(const UString &shader, bool source)
 {
 	m_sShader = shader;
 	m_bSource = source;
@@ -49,7 +49,7 @@ DirectX11Shader::DirectX11Shader(UString shader, bool source)
 	m_iStatsNumConstantBufferUploadsPerFrameCounterEngineFrameCount = 0;
 }
 
-DirectX11Shader::DirectX11Shader(UString vertexShader, UString fragmentShader, bool source)
+DirectX11Shader::DirectX11Shader(const UString &vertexShader, const UString &fragmentShader, bool source)
 {
 	m_sVsh = vertexShader;
 	m_sFsh = fragmentShader;
@@ -458,55 +458,55 @@ void DirectX11Shader::disable()
 	}
 }
 
-void DirectX11Shader::setUniform1f(UString name, float value)
+void DirectX11Shader::setUniform1f(const UString &name, float value)
 {
 	setUniform(name, &value, sizeof(float) * 1);
 }
 
-void DirectX11Shader::setUniform1fv(UString name, int count, float *values)
+void DirectX11Shader::setUniform1fv(const UString &name, int count, float *values)
 {
 	setUniform(name, values, sizeof(float) * 1 * count);
 }
 
-void DirectX11Shader::setUniform1i(UString name, int value)
+void DirectX11Shader::setUniform1i(const UString &name, int value)
 {
 	setUniform(name, &value, sizeof(int32_t) * 1);
 }
 
-void DirectX11Shader::setUniform2f(UString name, float x, float y)
+void DirectX11Shader::setUniform2f(const UString &name, float x, float y)
 {
 	Vector2 f(x, y);
 	setUniform(name, &f[0], sizeof(float) * 2);
 }
 
-void DirectX11Shader::setUniform2fv(UString name, int count, float *vectors)
+void DirectX11Shader::setUniform2fv(const UString &name, int count, float *vectors)
 {
 	setUniform(name, vectors, sizeof(float) * 2 * count);
 }
 
-void DirectX11Shader::setUniform3f(UString name, float x, float y, float z)
+void DirectX11Shader::setUniform3f(const UString &name, float x, float y, float z)
 {
 	Vector3 f(x, y, z);
 	setUniform(name, &f[0], sizeof(float) * 3);
 }
 
-void DirectX11Shader::setUniform3fv(UString name, int count, float *vectors)
+void DirectX11Shader::setUniform3fv(const UString &name, int count, float *vectors)
 {
 	setUniform(name, vectors, sizeof(float) * 3 * count);
 }
 
-void DirectX11Shader::setUniform4f(UString name, float x, float y, float z, float w)
+void DirectX11Shader::setUniform4f(const UString &name, float x, float y, float z, float w)
 {
 	Vector4 f(x, y, z, w);
 	setUniform(name, &f[0], sizeof(float) * 4);
 }
 
-void DirectX11Shader::setUniformMatrix4fv(UString name, Matrix4 &matrix)
+void DirectX11Shader::setUniformMatrix4fv(const UString &name, Matrix4 &matrix)
 {
 	setUniformMatrix4fv(name, (float *)matrix.getTranspose());
 }
 
-void DirectX11Shader::setUniformMatrix4fv(UString name, float *v)
+void DirectX11Shader::setUniformMatrix4fv(const UString &name, float *v)
 {
 	setUniform(name, v, sizeof(float) * 4 * 4);
 }
@@ -732,7 +732,7 @@ void DirectX11Shader::releaseBlob(ID3DBlob *blob)
 	}
 }
 
-bool DirectX11Shader::compile(UString vertexShader, UString fragmentShader)
+bool DirectX11Shader::compile(const UString &vertexShader, const UString &fragmentShader)
 {
 	if (vertexShader.length() < 1 || fragmentShader.length() < 1)
 		return false;

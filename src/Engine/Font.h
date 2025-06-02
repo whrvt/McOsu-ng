@@ -37,8 +37,8 @@ public:
 	inline int getDPI() const { return m_iFontDPI; }
 	inline float getHeight() const { return m_fHeight; } // precomputed average height (fast)
 
-	float getStringWidth(UString text) const;
-	float getStringHeight(UString text) const;
+	float getStringWidth(const UString &text) const;
+	float getStringHeight(const UString &text) const;
 
 	// debug
 	void drawTextureAtlas();

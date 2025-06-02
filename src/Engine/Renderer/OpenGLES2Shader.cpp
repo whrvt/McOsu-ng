@@ -14,7 +14,7 @@
 
 #include "OpenGLHeaders.h"
 
-OpenGLES2Shader::OpenGLES2Shader(UString shader, bool source)
+OpenGLES2Shader::OpenGLES2Shader(const UString &shader, bool source)
 {
 	SHADER_PARSE_RESULT parsedVertexShader = parseShaderFromFileOrString("OpenGLES2Interface::VertexShader", shader, source);
 	SHADER_PARSE_RESULT parsedFragmentShader = parseShaderFromFileOrString("OpenGLES2Interface::FragmentShader", shader, source);
@@ -30,7 +30,7 @@ OpenGLES2Shader::OpenGLES2Shader(UString shader, bool source)
 	m_iProgramBackup = 0;
 }
 
-OpenGLES2Shader::OpenGLES2Shader(UString vertexShader, UString fragmentShader, bool source) : Shader()
+OpenGLES2Shader::OpenGLES2Shader(const UString &vertexShader, const UString &fragmentShader, bool source) : Shader()
 {
 	m_sVsh = vertexShader;
 	m_sFsh = fragmentShader;
@@ -84,7 +84,7 @@ void OpenGLES2Shader::disable()
 	glUseProgram(m_iProgramBackup); // restore
 }
 
-void OpenGLES2Shader::setUniform1f(UString name, float value)
+void OpenGLES2Shader::setUniform1f(const UString &name, float value)
 {
 	if (!m_bReady) return;
 	int id = glGetUniformLocation(m_iProgram, name.toUtf8());
@@ -94,7 +94,7 @@ void OpenGLES2Shader::setUniform1f(UString name, float value)
 		debugLog("OpenGLES2Shader Warning: Can't find uniform {:s}\n",name.toUtf8());
 }
 
-void OpenGLES2Shader::setUniform1fv(UString name, int count, float *values)
+void OpenGLES2Shader::setUniform1fv(const UString &name, int count, float *values)
 {
 	if (!m_bReady) return;
 	int id = glGetUniformLocation(m_iProgram, name.toUtf8());
@@ -104,7 +104,7 @@ void OpenGLES2Shader::setUniform1fv(UString name, int count, float *values)
 		debugLog("OpenGLES2Shader Warning: Can't find uniform {:s}\n",name.toUtf8());
 }
 
-void OpenGLES2Shader::setUniform1i(UString name, int value)
+void OpenGLES2Shader::setUniform1i(const UString &name, int value)
 {
 	if (!m_bReady) return;
 	int id = glGetUniformLocation(m_iProgram, name.toUtf8());
@@ -114,7 +114,7 @@ void OpenGLES2Shader::setUniform1i(UString name, int value)
 		debugLog("OpenGLES2Shader Warning: Can't find uniform {:s}\n",name.toUtf8());
 }
 
-void OpenGLES2Shader::setUniform2f(UString name, float value1, float value2)
+void OpenGLES2Shader::setUniform2f(const UString &name, float value1, float value2)
 {
 	if (!m_bReady) return;
 	int id = glGetUniformLocation(m_iProgram, name.toUtf8());
@@ -124,7 +124,7 @@ void OpenGLES2Shader::setUniform2f(UString name, float value1, float value2)
 		debugLog("OpenGLES2Shader Warning: Can't find uniform {:s}\n",name.toUtf8());
 }
 
-void OpenGLES2Shader::setUniform2fv(UString name, int count, float *vectors)
+void OpenGLES2Shader::setUniform2fv(const UString &name, int count, float *vectors)
 {
 	if (!m_bReady) return;
 	int id = glGetUniformLocation(m_iProgram, name.toUtf8());
@@ -134,7 +134,7 @@ void OpenGLES2Shader::setUniform2fv(UString name, int count, float *vectors)
 		debugLog("OpenGLES2Shader Warning: Can't find uniform {:s}\n",name.toUtf8());
 }
 
-void OpenGLES2Shader::setUniform3f(UString name, float x, float y, float z)
+void OpenGLES2Shader::setUniform3f(const UString &name, float x, float y, float z)
 {
 	if (!m_bReady) return;
 	int id = glGetUniformLocation(m_iProgram, name.toUtf8());
@@ -144,7 +144,7 @@ void OpenGLES2Shader::setUniform3f(UString name, float x, float y, float z)
 		debugLog("OpenGLES2Shader Warning: Can't find uniform {:s}\n",name.toUtf8());
 }
 
-void OpenGLES2Shader::setUniform3fv(UString name, int count, float *vectors)
+void OpenGLES2Shader::setUniform3fv(const UString &name, int count, float *vectors)
 {
 	if (!m_bReady) return;
 	int id = glGetUniformLocation(m_iProgram, name.toUtf8());
@@ -154,7 +154,7 @@ void OpenGLES2Shader::setUniform3fv(UString name, int count, float *vectors)
 		debugLog("OpenGLES2Shader Warning: Can't find uniform {:s}\n",name.toUtf8());
 }
 
-void OpenGLES2Shader::setUniform4f(UString name, float x, float y, float z, float w)
+void OpenGLES2Shader::setUniform4f(const UString &name, float x, float y, float z, float w)
 {
 	if (!m_bReady) return;
 	int id = glGetUniformLocation(m_iProgram, name.toUtf8());
@@ -164,7 +164,7 @@ void OpenGLES2Shader::setUniform4f(UString name, float x, float y, float z, floa
 		debugLog("OpenGLES2Shader Warning: Can't find uniform {:s}\n",name.toUtf8());
 }
 
-void OpenGLES2Shader::setUniformMatrix4fv(UString name, Matrix4 &matrix)
+void OpenGLES2Shader::setUniformMatrix4fv(const UString &name, Matrix4 &matrix)
 {
 	if (!m_bReady) return;
 	int id = glGetUniformLocation(m_iProgram, name.toUtf8());
@@ -174,7 +174,7 @@ void OpenGLES2Shader::setUniformMatrix4fv(UString name, Matrix4 &matrix)
 		debugLog("OpenGLES2Shader Warning: Can't find uniform {:s}\n",name.toUtf8());
 }
 
-void OpenGLES2Shader::setUniformMatrix4fv(UString name, float *v)
+void OpenGLES2Shader::setUniformMatrix4fv(const UString &name, float *v)
 {
 	if (!m_bReady) return;
 	int id = glGetUniformLocation(m_iProgram, name.toUtf8());
@@ -184,7 +184,7 @@ void OpenGLES2Shader::setUniformMatrix4fv(UString name, float *v)
 		debugLog("OpenGLES2Shader Warning: Can't find uniform {:s}\n",name.toUtf8());
 }
 
-int OpenGLES2Shader::getAttribLocation(UString name)
+int OpenGLES2Shader::getAttribLocation(const UString &name)
 {
 	if (!m_bReady) return -1;
 	return glGetAttribLocation(m_iProgram, name.toUtf8());
@@ -197,7 +197,7 @@ bool OpenGLES2Shader::isActive()
 	return (m_bReady && currentProgram == m_iProgram);
 }
 
-bool OpenGLES2Shader::compile(UString vertexShader, UString fragmentShader, bool source)
+bool OpenGLES2Shader::compile(const UString &vertexShader, const UString &fragmentShader, bool source)
 {
 	// load & compile shaders
 	debugLog("Compiling {:s} ...\n", (source ? "vertex source" : vertexShader.toUtf8()));
@@ -247,7 +247,7 @@ bool OpenGLES2Shader::compile(UString vertexShader, UString fragmentShader, bool
 	return true;
 }
 
-int OpenGLES2Shader::createShaderFromString(UString shaderSource, int shaderType)
+int OpenGLES2Shader::createShaderFromString(const UString &shaderSource, int shaderType)
 {
 	const GLint shader = glCreateShader(shaderType);
 
@@ -288,7 +288,7 @@ int OpenGLES2Shader::createShaderFromString(UString shaderSource, int shaderType
 	return shader;
 }
 
-int OpenGLES2Shader::createShaderFromFile(UString fileName, int shaderType)
+int OpenGLES2Shader::createShaderFromFile(const UString &fileName, int shaderType)
 {
 	// load file
 	std::ifstream inFile(fileName.toUtf8());

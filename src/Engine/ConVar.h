@@ -301,7 +301,7 @@ private:
 			if constexpr (std::is_convertible_v<std::decay_t<T>, float> && !std::is_same_v<std::decay_t<T>, UString>)
 			{
 				const auto f = static_cast<float>(value);
-				return std::make_pair(f, UString::format("%g", f));
+				return std::make_pair(f, UString::fmt("{:g}", f));
 			}
 			else
 			{
@@ -320,29 +320,34 @@ private:
 		m_sValue = newString;
 
 		// handle possible execution callbacks
-		std::visit(
-		    [&](auto &&callback) {
-			    using CallbackType = std::decay_t<decltype(callback)>;
-			    if constexpr (std::is_same_v<CallbackType, NativeConVarCallback>)
-				    callback();
-			    else if constexpr (std::is_same_v<CallbackType, NativeConVarCallbackArgs>)
-				    callback(newString);
-			    else if constexpr (std::is_same_v<CallbackType, NativeConVarCallbackFloat>)
-				    callback(newFloat);
-			    // std::monostate case does nothing
-		    },
-		    m_callback);
+		if (!std::holds_alternative<std::monostate>(m_callback))
+		{
+			std::visit(
+			    [&](auto &&callback) {
+				    using CallbackType = std::decay_t<decltype(callback)>;
+				    if constexpr (std::is_same_v<CallbackType, NativeConVarCallback>)
+					    callback();
+				    else if constexpr (std::is_same_v<CallbackType, NativeConVarCallbackArgs>)
+					    callback(newString);
+				    else if constexpr (std::is_same_v<CallbackType, NativeConVarCallbackFloat>)
+					    callback(newFloat);
+			    },
+			    m_callback);
+		}
 
 		// handle possible change callbacks
-		std::visit(
-		    [&](auto &&callback) {
-			    using CallbackType = std::decay_t<decltype(callback)>;
-			    if constexpr (std::is_same_v<CallbackType, NativeConVarChangeCallback>)
-				    callback(oldString, newString);
-			    else if constexpr (std::is_same_v<CallbackType, NativeConVarChangeCallbackFloat>)
-				    callback(oldFloat, newFloat);
-		    },
-		    m_changeCallback);
+		if (!std::holds_alternative<std::monostate>(m_changeCallback))
+		{
+			std::visit(
+			    [&](auto &&callback) {
+				    using CallbackType = std::decay_t<decltype(callback)>;
+				    if constexpr (std::is_same_v<CallbackType, NativeConVarChangeCallback>)
+					    callback(oldString, newString);
+				    else if constexpr (std::is_same_v<CallbackType, NativeConVarChangeCallbackFloat>)
+					    callback(oldFloat, newFloat);
+			    },
+			    m_changeCallback);
+		}
 	}
 
 private:

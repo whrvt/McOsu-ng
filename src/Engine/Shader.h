@@ -25,16 +25,16 @@ public:
 	virtual void enable() = 0;
 	virtual void disable() = 0;
 
-	virtual void setUniform1f(UString name, float value) = 0;
-	virtual void setUniform1fv(UString name, int count, float *values) = 0;
-	virtual void setUniform1i(UString name, int value) = 0;
-	virtual void setUniform2f(UString name, float x, float y) = 0;
-	virtual void setUniform2fv(UString name, int count, float *vectors) = 0;
-	virtual void setUniform3f(UString name, float x, float y, float z) = 0;
-	virtual void setUniform3fv(UString name, int count, float *vectors) = 0;
-	virtual void setUniform4f(UString name, float x, float y, float z, float w) = 0;
-	virtual void setUniformMatrix4fv(UString name, Matrix4 &matrix) = 0;
-	virtual void setUniformMatrix4fv(UString name, float *v) = 0;
+	virtual void setUniform1f(const UString &name, float value) = 0;
+	virtual void setUniform1fv(const UString &name, int count, float *values) = 0;
+	virtual void setUniform1i(const UString &name, int value) = 0;
+	virtual void setUniform2f(const UString &name, float x, float y) = 0;
+	virtual void setUniform2fv(const UString &name, int count, float *vectors) = 0;
+	virtual void setUniform3f(const UString &name, float x, float y, float z) = 0;
+	virtual void setUniform3fv(const UString &name, int count, float *vectors) = 0;
+	virtual void setUniform4f(const UString &name, float x, float y, float z, float w) = 0;
+	virtual void setUniformMatrix4fv(const UString &name, Matrix4 &matrix) = 0;
+	virtual void setUniformMatrix4fv(const UString &name, float *v) = 0;
 
 	// type inspection
 	[[nodiscard]] Type getResType() const final { return SHADER; }

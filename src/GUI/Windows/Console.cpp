@@ -120,9 +120,9 @@ void Console::processCommand(UString command)
 	if (command.find(";") != -1 && command.find("echo") == -1)
 	{
 		const std::vector<UString> commands = command.split(";");
-		for (size_t i=0; i<commands.size(); i++)
+		for (const auto & command : commands)
 		{
-			processCommand(commands[i]);
+			processCommand(command);
 		}
 
 		return;
