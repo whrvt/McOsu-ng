@@ -90,7 +90,7 @@ void Engine::onEngineThrottleChanged(float newVal)
 
 namespace cv {
 ConVar host_timescale("host_timescale", 1.0f, FCVAR_CHEAT, "Scale by which the engine measures elapsed time, affects engine->getTime()",
-	[](float, float value) -> void {
+	[](float value) -> void {
 		if (value < 0.01f)
 		{
 			Engine::logRaw("[Engine] host_timescale value must be >= 0.01!\n");
@@ -308,8 +308,7 @@ Engine::~Engine()
 
 	debugLog("Engine: Freeing input devices...\n");
 	// first remove the mouse and keyboard from the input devices
-	m_inputDevices.erase(std::remove_if(m_inputDevices.begin(), m_inputDevices.end(), [](InputDevice *device) { return device == mouse || device == keyboard; }),
-	                     m_inputDevices.end());
+	std::erase_if(m_inputDevices, [](InputDevice *device) { return device == mouse || device == keyboard; });
 
 	// delete remaining input devices (if any)
 	for (auto *device : m_inputDevices)
