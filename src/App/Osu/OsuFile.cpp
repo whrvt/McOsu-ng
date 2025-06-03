@@ -320,7 +320,7 @@ void OsuFile::readByteArray()
 	const int numBytes = readInt();
 	for (int i=0; i<numBytes; i++)
 	{
-		readByte();
+		skipByte();
 	}
 }
 

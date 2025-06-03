@@ -1257,7 +1257,7 @@ void OsuDatabase::loadDB(OsuFile *db, bool &fallbackToRawLoad)
 	// read header
 	m_iVersion = db->readInt();
 	m_iFolderCount = db->readInt();
-	db->readBool();
+	db->skipBool();
 	db->readDateTime();
 	UString playerName = db->readString();
 	m_iNumBeatmapsToLoad = db->readInt();
@@ -1325,7 +1325,7 @@ void OsuDatabase::loadDB(OsuFile *db, bool &fallbackToRawLoad)
 			// no idea why peppy decided to change the wiki version from 20191107 to 20191106, because that's not what stable is doing.
 			// the correct version is still 20191107
 
-			/*unsigned int size = */db->readInt(); // size in bytes of the beatmap entry
+			/*unsigned int size = */db->skipInt(); // size in bytes of the beatmap entry
 		}
 
 		UString artistName = db->readString().trim();
@@ -1337,7 +1337,7 @@ void OsuDatabase::loadDB(OsuFile *db, bool &fallbackToRawLoad)
 		UString audioFileName = db->readString();
 		std::string md5hash = db->readStdString();
 		UString osuFileName = db->readString();
-		/*unsigned char rankedStatus = */db->readByte();
+		/*unsigned char rankedStatus = */db->skipByte();
 		unsigned short numCircles = db->readShort();
 		unsigned short numSliders = db->readShort();
 		unsigned short numSpinners = db->readShort();
@@ -1357,9 +1357,9 @@ void OsuDatabase::loadDB(OsuFile *db, bool &fallbackToRawLoad)
 		float numOsuStandardStars = 0.0f;
 		for (int s=0; std::cmp_less(s,numOsuStandardStarRatings); s++)
 		{
-			db->readByte(); // ObjType
+			db->skipByte(); // ObjType
 			unsigned int mods = db->readInt();
-			db->readByte(); // ObjType
+			db->skipByte(); // ObjType
 			double starRating = (m_iVersion >= 20250108 ? (double)db->readFloat() : db->readDouble()); // see https://osu.ppy.sh/home/changelog/stable40/20250108.3
 			//debugLog("{:f} stars for {}\n", starRating, mods);
 
@@ -1380,42 +1380,42 @@ void OsuDatabase::loadDB(OsuFile *db, bool &fallbackToRawLoad)
 		//debugLog("{} star ratings for taiko\n", numTaikoStarRatings);
 		for (int s=0; std::cmp_less(s,numTaikoStarRatings); s++)
 		{
-			db->readByte(); // ObjType
-			db->readInt();
-			db->readByte(); // ObjType
+			db->skipByte(); // ObjType
+			db->skipInt();
+			db->skipByte(); // ObjType
 			if (m_iVersion >= 20250108) // see https://osu.ppy.sh/home/changelog/stable40/20250108.3
-				db->readFloat();
+				db->skipFloat();
 			else
-				db->readDouble();
+				db->skipDouble();
 		}
 
 		unsigned int numCtbStarRatings = db->readInt();
 		//debugLog("{} star ratings for ctb\n", numCtbStarRatings);
 		for (int s=0; std::cmp_less(s,numCtbStarRatings); s++)
 		{
-			db->readByte(); // ObjType
-			db->readInt();
-			db->readByte(); // ObjType
+			db->skipByte(); // ObjType
+			db->skipInt();
+			db->skipByte(); // ObjType
 			if (m_iVersion >= 20250108) // see https://osu.ppy.sh/home/changelog/stable40/20250108.3
-				db->readFloat();
+				db->skipFloat();
 			else
-				db->readDouble();
+				db->skipDouble();
 		}
 
 		unsigned int numManiaStarRatings = db->readInt();
 		//debugLog("{} star ratings for mania\n", numManiaStarRatings);
 		for (int s=0; std::cmp_less(s,numManiaStarRatings); s++)
 		{
-			db->readByte(); // ObjType
-			db->readInt();
-			db->readByte(); // ObjType
+			db->skipByte(); // ObjType
+			db->skipInt();
+			db->skipByte(); // ObjType
 			if (m_iVersion >= 20250108) // see https://osu.ppy.sh/home/changelog/stable40/20250108.3
-				db->readFloat();
+				db->skipFloat();
 			else
-				db->readDouble();
+				db->skipDouble();
 		}
 
-		/*unsigned int drainTime = */db->readInt(); // seconds
+		/*unsigned int drainTime = */db->skipInt(); // seconds
 		int duration = db->readInt(); // milliseconds
 		duration = duration >= 0 ? duration : 0; // sanity clamp
 		int previewTime = db->readInt();
@@ -1432,12 +1432,12 @@ void OsuDatabase::loadDB(OsuFile *db, bool &fallbackToRawLoad)
 
 		int beatmapID = db->readInt(); // fucking bullshit, this is NOT an unsigned integer as is described on the wiki, it can and is -1 sometimes
 		int beatmapSetID = db->readInt(); // same here
-		/*unsigned int threadID = */db->readInt();
+		/*unsigned int threadID = */db->skipInt();
 
-		/*unsigned char osuStandardGrade = */db->readByte();
-		/*unsigned char taikoGrade = */db->readByte();
-		/*unsigned char ctbGrade = */db->readByte();
-		/*unsigned char maniaGrade = */db->readByte();
+		/*unsigned char osuStandardGrade = */db->skipByte();
+		/*unsigned char taikoGrade = */db->skipByte();
+		/*unsigned char ctbGrade = */db->skipByte();
+		/*unsigned char maniaGrade = */db->skipByte();
 		//debugLog("beatmapID = {}, beatmapSetID = {}, threadID = {}, osuStandardGrade = {}, taikoGrade = {}, ctbGrade = {}, maniaGrade = {}\n", beatmapID, beatmapSetID, threadID, osuStandardGrade, taikoGrade, ctbGrade, maniaGrade);
 
 		short localOffset = db->readShort();
@@ -1451,20 +1451,20 @@ void OsuDatabase::loadDB(OsuFile *db, bool &fallbackToRawLoad)
 
 		short onlineOffset = db->readShort();
 		UString songTitleFont = db->readString();
-		/*bool unplayed = */db->readBool();
-		/*long long lastTimePlayed = */db->readLongLong();
-		/*bool isOsz2 = */db->readBool();
+		/*bool unplayed = */db->skipBool();
+		/*long long lastTimePlayed = */db->skipLongLong();
+		/*bool isOsz2 = */db->skipBool();
 		UString path = db->readString().trim(); // somehow, some beatmaps may have spaces at the start/end of their path, breaking the Windows API (e.g. https://osu.ppy.sh/s/215347), therefore the trim
-		/*long long lastOnlineCheck = */db->readLongLong();
+		/*long long lastOnlineCheck = */db->skipLongLong();
 		//debugLog("onlineOffset = {}, songTitleFont = {:s}, unplayed = {}, lastTimePlayed = {}, isOsz2 = {}, path = {:s}, lastOnlineCheck = {}\n", onlineOffset, songTitleFont.toUtf8(), (int)unplayed, lastTimePlayed, (int)isOsz2, path.toUtf8(), lastOnlineCheck);
 
-		/*bool ignoreBeatmapSounds = */db->readBool();
-		/*bool ignoreBeatmapSkin = */db->readBool();
-		/*bool disableStoryboard = */db->readBool();
-		/*bool disableVideo = */db->readBool();
-		/*bool visualOverride = */db->readBool();
-		/*int lastEditTime = */db->readInt();
-		/*unsigned char maniaScrollSpeed = */db->readByte();
+		/*bool ignoreBeatmapSounds = */db->skipBool();
+		/*bool ignoreBeatmapSkin = */db->skipBool();
+		/*bool disableStoryboard = */db->skipBool();
+		/*bool disableVideo = */db->skipBool();
+		/*bool visualOverride = */db->skipBool();
+		/*int lastEditTime = */db->skipInt();
+		/*unsigned char maniaScrollSpeed = */db->skipByte();
 		//debugLog("ignoreBeatmapSounds = {}, ignoreBeatmapSkin = {}, disableStoryboard = {}, disableVideo = {}, visualOverride = {}, maniaScrollSpeed = {}\n", (int)ignoreBeatmapSounds, (int)ignoreBeatmapSkin, (int)disableStoryboard, (int)disableVideo, (int)visualOverride, maniaScrollSpeed);
 
 		// HACKHACK: workaround for linux and macos: it can happen that nested beatmaps are stored in the database, and that osu! stores that filepath with a backslash (because windows)
@@ -2231,12 +2231,12 @@ void OsuDatabase::loadScores()
 
 						/*long long onlineScoreID = 0;*/
 						if (scoreVersion >= 20131110)
-							/*onlineScoreID = */db.readLongLong();
+							/*onlineScoreID = */db.skipLongLong();
 						else if (scoreVersion >= 20121008)
-							/*onlineScoreID = */db.readInt();
+							/*onlineScoreID = */db.skipInt();
 
 						if (mods & OsuReplay::Mods::Target)
-							/*double totalAccuracy = */db.readDouble();
+							/*double totalAccuracy = */db.skipDouble();
 
 						if (gamemode == 0x0) // gamemode filter (osu!standard)
 						{
