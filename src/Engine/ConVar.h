@@ -62,7 +62,7 @@ public:
 	static UString typeToString(CONVAR_TYPE type);
 
 private:
-	[[nodiscard]] constexpr auto getRaw() const { return m_fValue.load(); } // forward def
+	[[nodiscard]] float getRaw() const { return m_fValue.load(); } // forward def
 
 	// type detection helper
 	template <typename T>

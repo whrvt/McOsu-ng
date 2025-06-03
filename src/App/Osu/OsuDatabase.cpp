@@ -65,7 +65,7 @@ ConVar user_switcher_include_legacy_scores_for_names("osu_user_switcher_include_
 
 namespace {
 
-constexpr bool sortScoreByScore(OsuDatabase::Score const &a, OsuDatabase::Score const &b)
+bool sortScoreByScore(OsuDatabase::Score const &a, OsuDatabase::Score const &b)
 {
 	// first: score
 	unsigned long long score1 = a.score;
@@ -85,7 +85,7 @@ constexpr bool sortScoreByScore(OsuDatabase::Score const &a, OsuDatabase::Score 
 	return score1 > score2;
 	}
 
-constexpr bool sortScoreByCombo(OsuDatabase::Score const &a, OsuDatabase::Score const &b)
+bool sortScoreByCombo(OsuDatabase::Score const &a, OsuDatabase::Score const &b)
 {
 	// first: combo
 	unsigned long long score1 = a.comboMax;
@@ -112,7 +112,7 @@ constexpr bool sortScoreByCombo(OsuDatabase::Score const &a, OsuDatabase::Score 
 	return score1 > score2;
 }
 
-constexpr bool sortScoreByDate(OsuDatabase::Score const &a, OsuDatabase::Score const &b)
+bool sortScoreByDate(OsuDatabase::Score const &a, OsuDatabase::Score const &b)
 {
 	// first: time
 	unsigned long long score1 = a.unixTimestamp;
@@ -125,7 +125,7 @@ constexpr bool sortScoreByDate(OsuDatabase::Score const &a, OsuDatabase::Score c
 	return score1 > score2;
 }
 
-constexpr bool sortScoreByMisses(OsuDatabase::Score const &a, OsuDatabase::Score const &b)
+bool sortScoreByMisses(OsuDatabase::Score const &a, OsuDatabase::Score const &b)
 {
 	// first: misses
 	unsigned long long score1 = b.numMisses; // swapped (lower numMisses is better)
@@ -152,7 +152,7 @@ constexpr bool sortScoreByMisses(OsuDatabase::Score const &a, OsuDatabase::Score
 	return score1 > score2;
 }
 
-constexpr bool sortScoreByAccuracy(OsuDatabase::Score const &a, OsuDatabase::Score const &b)
+bool sortScoreByAccuracy(OsuDatabase::Score const &a, OsuDatabase::Score const &b)
 {
 	// first: accuracy
 	auto score1 = (unsigned long long)(OsuScore::calculateAccuracy(a.num300s, a.num100s, a.num50s, a.numMisses) * 10000.0f);
@@ -179,7 +179,7 @@ constexpr bool sortScoreByAccuracy(OsuDatabase::Score const &a, OsuDatabase::Sco
 	return score1 > score2;
 }
 
-constexpr bool sortScoreByPP(OsuDatabase::Score const &a, OsuDatabase::Score const &b)
+bool sortScoreByPP(OsuDatabase::Score const &a, OsuDatabase::Score const &b)
 {
 	// first: pp
 	float ppA = std::max((a.isLegacyScore ? -b.score : a.pp), 0.0f);
@@ -200,7 +200,7 @@ constexpr bool sortScoreByPP(OsuDatabase::Score const &a, OsuDatabase::Score con
 	return a.sortHack > b.sortHack;
 }
 
-constexpr bool sortScoreByUnstableRate(OsuDatabase::Score const &a, OsuDatabase::Score const &b)
+bool sortScoreByUnstableRate(OsuDatabase::Score const &a, OsuDatabase::Score const &b)
 {
 	// first: UR (reversed, lower is better)
 	auto ur1 = (unsigned long long)(std::abs(a.isLegacyScore ? -a.sortHack : a.unstableRate) * 100000.0f);
@@ -215,7 +215,7 @@ constexpr bool sortScoreByUnstableRate(OsuDatabase::Score const &a, OsuDatabase:
 	return -ur1 > -ur2;
 }
 
-constexpr bool sortCollectionByName(OsuDatabase::Collection const &a, OsuDatabase::Collection const &b)
+bool sortCollectionByName(OsuDatabase::Collection const &a, OsuDatabase::Collection const &b)
 {
 	return a.name.lessThanIgnoreCaseStrict(b.name);
 }

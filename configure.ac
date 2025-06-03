@@ -1,4 +1,3 @@
-AC_LANG([C++])
 AC_PREREQ([2.69])
 AC_INIT([McOsu-ng], [34.00], [william@horvath.blog], [], [https://github.com/whrvt/McOsu-ng]) # don't report bugs to McKay :)
 AC_CONFIG_SRCDIR([src/Engine/Engine.cpp])

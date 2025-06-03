@@ -5,11 +5,11 @@
 // $NoKeywords: $time $chrono
 //===============================================================================//
 
+#include "config.h"
+
 #pragma once
 #ifndef TIMER_H
 #define TIMER_H
-
-#include "BaseEnvironment.h"
 
 #include <SDL3/SDL_timer.h>
 
@@ -28,7 +28,11 @@ constexpr uint64_t MS_PER_SECOND = 1'000;
 
 namespace detail
 {
-forceinline void yield() noexcept
+#ifdef _MSC_VER
+__forceinline void yield_internal() noexcept
+#else
+[[gnu::always_inline]] inline void yield_internal() noexcept
+#endif
 {
 #ifdef MCENGINE_PLATFORM_WASM
 	SDL_Delay(0);
@@ -67,17 +71,17 @@ inline void sleepPrecise(uint64_t ns) noexcept
 
 inline void sleep(uint64_t us) noexcept
 {
-	!!us ? sleepPrecise(us * NS_PER_US) : detail::yield();
+	!!us ? sleepPrecise(us * NS_PER_US) : detail::yield_internal();
 }
 
 inline void sleepNS(uint64_t ns) noexcept
 {
-	!!ns ? sleepPrecise(ns) : detail::yield();
+	!!ns ? sleepPrecise(ns) : detail::yield_internal();
 }
 
 inline void sleepMS(uint64_t ms) noexcept
 {
-	!!ms ? sleepPrecise(ms * NS_PER_MS) : detail::yield();
+	!!ms ? sleepPrecise(ms * NS_PER_MS) : detail::yield_internal();
 }
 
 template <typename T = double>

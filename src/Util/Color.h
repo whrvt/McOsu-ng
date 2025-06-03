@@ -68,7 +68,7 @@ struct Color {
 	//clang-format on
 
 	operator std::uint32_t() const { return v; }
-} __attribute__((packed)) __attribute__((aligned(4)));
+};
 
 template <typename T>
 concept Numeric = std::is_arithmetic_v<T>;

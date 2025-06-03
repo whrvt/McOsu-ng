@@ -287,6 +287,9 @@ SDL_AppResult SDLMain::initialize()
 	return SDL_APP_CONTINUE;
 }
 
+static_assert(SDL_EVENT_WINDOW_FIRST == SDL_EVENT_WINDOW_SHOWN);
+static_assert(SDL_EVENT_WINDOW_LAST == SDL_EVENT_WINDOW_HDR_STATE_CHANGED);
+
 nocbinline SDL_AppResult SDLMain::handleEvent(SDL_Event *event)
 {
 	switch (event->type)
@@ -303,8 +306,18 @@ nocbinline SDL_AppResult SDLMain::handleEvent(SDL_Event *event)
 		}
 		break;
 
-	// window events
-	case SDL_EVENT_WINDOW_FIRST ... SDL_EVENT_WINDOW_LAST:
+	// window events (i hate you msvc ffs)
+	// clang-format off
+	case SDL_EVENT_WINDOW_SHOWN:				 case SDL_EVENT_WINDOW_HIDDEN:			  case SDL_EVENT_WINDOW_EXPOSED:
+	case SDL_EVENT_WINDOW_MOVED:				 case SDL_EVENT_WINDOW_RESIZED:			  case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
+	case SDL_EVENT_WINDOW_METAL_VIEW_RESIZED:	 case SDL_EVENT_WINDOW_MINIMIZED:		  case SDL_EVENT_WINDOW_MAXIMIZED:
+	case SDL_EVENT_WINDOW_RESTORED:				 case SDL_EVENT_WINDOW_MOUSE_ENTER:		  case SDL_EVENT_WINDOW_MOUSE_LEAVE:
+	case SDL_EVENT_WINDOW_FOCUS_GAINED:			 case SDL_EVENT_WINDOW_FOCUS_LOST:		  case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
+	case SDL_EVENT_WINDOW_HIT_TEST:				 case SDL_EVENT_WINDOW_ICCPROF_CHANGED:	  case SDL_EVENT_WINDOW_DISPLAY_CHANGED:
+	case SDL_EVENT_WINDOW_DISPLAY_SCALE_CHANGED: case SDL_EVENT_WINDOW_SAFE_AREA_CHANGED: case SDL_EVENT_WINDOW_OCCLUDED:
+	case SDL_EVENT_WINDOW_ENTER_FULLSCREEN:		 case SDL_EVENT_WINDOW_LEAVE_FULLSCREEN:  case SDL_EVENT_WINDOW_DESTROYED:
+	case SDL_EVENT_WINDOW_HDR_STATE_CHANGED:
+	// clang-format on
 		switch (event->window.type)
 		{
 		case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
@@ -666,7 +679,7 @@ void SDLMain::doEarlyCmdlineOverrides()
 	// enable DPI awareness if not -nodpi
 	if (!m_mArgMap.contains("-noime"))
 	{
-		typedef WINBOOL(WINAPI * PSPDA)(void);
+		typedef BOOL(WINAPI * PSPDA)(void);
 		auto pSetProcessDPIAware = (PSPDA)GetProcAddress(GetModuleHandle(TEXT("user32.dll")), "SetProcessDPIAware");
 		if (pSetProcessDPIAware != NULL)
 			pSetProcessDPIAware();

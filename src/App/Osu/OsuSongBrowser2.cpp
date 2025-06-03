@@ -220,7 +220,7 @@ private:
 
 namespace {
 
-constexpr bool sortByArtist(OsuUISongBrowserButton const *a, OsuUISongBrowserButton const *b)
+bool sortByArtist(OsuUISongBrowserButton const *a, OsuUISongBrowserButton const *b)
 {
 	if (a->getDatabaseBeatmap() == NULL || b->getDatabaseBeatmap() == NULL)
 		return a->getSortHack() < b->getSortHack();
@@ -228,7 +228,7 @@ constexpr bool sortByArtist(OsuUISongBrowserButton const *a, OsuUISongBrowserBut
 	return a->getDatabaseBeatmap()->getArtist().lessThanIgnoreCaseStrict(b->getDatabaseBeatmap()->getArtist());
 }
 
-constexpr bool sortByBPM(OsuUISongBrowserButton const *a, OsuUISongBrowserButton const *b)
+bool sortByBPM(OsuUISongBrowserButton const *a, OsuUISongBrowserButton const *b)
 {
 	if (a->getDatabaseBeatmap() == NULL || b->getDatabaseBeatmap() == NULL)
 		return a->getSortHack() < b->getSortHack();
@@ -256,7 +256,7 @@ constexpr bool sortByBPM(OsuUISongBrowserButton const *a, OsuUISongBrowserButton
 	return bpm1 < bpm2;
 }
 
-constexpr bool sortByCreator(OsuUISongBrowserButton const *a, OsuUISongBrowserButton const *b)
+bool sortByCreator(OsuUISongBrowserButton const *a, OsuUISongBrowserButton const *b)
 {
 	if (a->getDatabaseBeatmap() == NULL || b->getDatabaseBeatmap() == NULL)
 		return a->getSortHack() < b->getSortHack();
@@ -264,7 +264,7 @@ constexpr bool sortByCreator(OsuUISongBrowserButton const *a, OsuUISongBrowserBu
 	return a->getDatabaseBeatmap()->getCreator().lessThanIgnoreCaseStrict(b->getDatabaseBeatmap()->getCreator());
 }
 
-constexpr bool sortByDateAdded(OsuUISongBrowserButton const *a, OsuUISongBrowserButton const *b)
+bool sortByDateAdded(OsuUISongBrowserButton const *a, OsuUISongBrowserButton const *b)
 {
 	if (a->getDatabaseBeatmap() == NULL || b->getDatabaseBeatmap() == NULL)
 		return a->getSortHack() < b->getSortHack();
@@ -292,7 +292,7 @@ constexpr bool sortByDateAdded(OsuUISongBrowserButton const *a, OsuUISongBrowser
 	return time1 > time2;
 }
 
-constexpr bool sortByLength(OsuUISongBrowserButton const *a, OsuUISongBrowserButton const *b)
+bool sortByLength(OsuUISongBrowserButton const *a, OsuUISongBrowserButton const *b)
 {
 	if (a->getDatabaseBeatmap() == NULL || b->getDatabaseBeatmap() == NULL)
 		return a->getSortHack() < b->getSortHack();
@@ -320,7 +320,7 @@ constexpr bool sortByLength(OsuUISongBrowserButton const *a, OsuUISongBrowserBut
 	return length1 < length2;
 }
 
-constexpr bool sortByTitle(OsuUISongBrowserButton const *a, OsuUISongBrowserButton const *b)
+bool sortByTitle(OsuUISongBrowserButton const *a, OsuUISongBrowserButton const *b)
 {
 	if (a->getDatabaseBeatmap() == NULL || b->getDatabaseBeatmap() == NULL)
 		return a->getSortHack() < b->getSortHack();

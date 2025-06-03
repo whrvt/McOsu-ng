@@ -1512,7 +1512,7 @@ bool DirectX11Interface::enableFullscreen(bool borderlessWindowedFullscreen)
 
 	if (!m_bIsFullscreenBorderlessWindowed)
 	{
-		HRESULT hr = m_swapChain->SetFullscreenState((WINBOOL) true, NULL);
+		HRESULT hr = m_swapChain->SetFullscreenState((BOOL) true, NULL);
 		m_bIsFullscreen = !FAILED(hr);
 	}
 	else
@@ -1527,7 +1527,7 @@ void DirectX11Interface::disableFullscreen()
 		return;
 
 	if (!m_bIsFullscreenBorderlessWindowed)
-		m_swapChain->SetFullscreenState((WINBOOL) false, NULL);
+		m_swapChain->SetFullscreenState((BOOL) false, NULL);
 
 	m_bIsFullscreen = false;
 	m_bIsFullscreenBorderlessWindowed = false;

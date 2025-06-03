@@ -230,7 +230,7 @@ static constexpr auto OPTIMAL_UNROLL = 4;
 
 #define likely(x) (x)
 #define unlikely(x) (x)
-#define forceinline
+#define forceinline __forceinline
 #define MC_DO_PRAGMA(x)
 #define MC_VECTORIZE_LOOP
 #define MC_UNR_cnt(num)
@@ -245,7 +245,25 @@ static constexpr auto OPTIMAL_UNROLL = 4;
 #if !(defined(MCENGINE_PLATFORM_WINDOWS) || defined(_WIN32) || defined(_WIN64) || defined(__WIN32__) || defined(__CYGWIN__) || defined(__CYGWIN32__) || defined(__TOS_WIN__) || defined(__WINDOWS__))
 typedef void* HWND;
 #else
+
+#ifdef _WIN64
+#define _AMD64_
+#elif defined(_WIN32)
+#define _X86_
+#endif
+
+// umm what the fuck
+#if defined(_MSC_VER)
+#define NOMINMAX
+#endif
+#define VC_EXTRALEAN
+#define WIN32_LEAN_AND_MEAN
+
+#include <basetsd.h>
 #include <windef.h>
+#if defined(_MSC_VER)
+typedef SSIZE_T ssize_t;
+#endif
 #ifndef fileno
 #define fileno _fileno
 #endif

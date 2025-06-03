@@ -214,7 +214,7 @@ McFile::FILETYPE McFile::existsCaseInsensitive(UString &filePath, fs::path &path
 		return McFile::FILETYPE::NONE;
 
 	// try case-insensitive lookup using cache
-	auto [resolvedName, fileType] = s_directoryCache->lookup(parentPath, {path.filename().string()}); // takes the bare filename
+	auto [resolvedName, fileType] = s_directoryCache->lookup(parentPath, {path.filename().string().c_str()}); // takes the bare filename
 
 	if (fileType == McFile::FILETYPE::NONE)
 		return McFile::FILETYPE::NONE; // no match, even case-insensitively
@@ -387,7 +387,7 @@ UString McFile::readLine()
 		if (!line.empty() && line.back() == '\r')
 			line.pop_back();
 
-		return {line};
+		return {line.c_str()};
 	}
 
 	return "";

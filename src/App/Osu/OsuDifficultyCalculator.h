@@ -46,7 +46,7 @@ public:
 		unsigned long long sortHack;
 	};
 
-	static constexpr bool sliderScoringTimeComparator(const SLIDER_SCORING_TIME &a, const SLIDER_SCORING_TIME &b)
+	static bool sliderScoringTimeComparator(const SLIDER_SCORING_TIME &a, const SLIDER_SCORING_TIME &b)
 	{
 		// strict weak ordering!
 		if (a.time == b.time)

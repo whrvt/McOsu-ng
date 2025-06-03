@@ -60,7 +60,7 @@ ConVar beatmap_max_num_slider_scoringtimes("osu_beatmap_max_num_slider_scoringti
 }
 
 namespace {
-constexpr bool timingPointSortComparator(OsuDatabaseBeatmap::TIMINGPOINT const &a, OsuDatabaseBeatmap::TIMINGPOINT const &b)
+bool timingPointSortComparator(OsuDatabaseBeatmap::TIMINGPOINT const &a, OsuDatabaseBeatmap::TIMINGPOINT const &b)
 {
 	// first condition: offset
 	// second condition: if offset is the same, non-inherited timingpoints go before inherited timingpoints
