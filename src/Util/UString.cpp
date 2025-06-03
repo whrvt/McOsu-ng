@@ -51,6 +51,16 @@ UString::UString(const char *utf8, int length) : m_lengthUtf8(length)
 		fromUtf8(utf8, length);
 }
 
+UString::UString(const wchar_t *str, int length)
+{
+	if (str && length > 0)
+	{
+		m_unicode.assign(str, length);
+		setLength(static_cast<int>(m_unicode.length()));
+		updateUtf8();
+	}
+}
+
 UString::UString(std::string_view utf8) : m_lengthUtf8(static_cast<int>(utf8.length()))
 {
 	if (!utf8.empty())
@@ -119,9 +129,18 @@ int UString::findChar(const UString &str, int start, bool respectEscapeChars) co
 	if (start < 0 || start >= len || strLen == 0)
 		return -1;
 
-	std::vector<bool> charMap(0x10000, false); // lookup table, assumes 16-bit wide chars
+	// use fast lookup table for BMP characters, linear search for extended characters
+	std::vector<bool> charMap(0x10000, false); // lookup table for BMP characters (U+0000 to U+FFFF)
+	std::vector<wchar_t> extendedChars;        // for characters outside BMP (U+10000 and above)
+
 	for (int i = 0; i < strLen; i++)
-		charMap[str.m_unicode[i]] = true;
+	{
+		wchar_t ch = str.m_unicode[i];
+		if (ch < 0x10000)
+			charMap[ch] = true;
+		else
+			extendedChars.push_back(ch);
+	}
 
 	bool escaped = false;
 	for (int i = start; i < len; i++)
@@ -132,7 +151,15 @@ int UString::findChar(const UString &str, int start, bool respectEscapeChars) co
 		}
 		else
 		{
-			if (!escaped && charMap[m_unicode[i]])
+			wchar_t ch = m_unicode[i];
+			bool found = false;
+
+			if (ch < 0x10000)
+				found = charMap[ch];
+			else
+				found = std::ranges::find(extendedChars, ch) != extendedChars.end();
+
+			if (!escaped && found)
 				return i;
 
 			escaped = false;
@@ -448,8 +475,8 @@ bool UString::lessThanIgnoreCase(const UString &ustr) const
 
 	while (it1 != m_unicode.end() && it2 != ustr.m_unicode.end())
 	{
-		wchar_t c1 = std::towlower(*it1);
-		wchar_t c2 = std::towlower(*it2);
+		const auto c1 = std::towlower(*it1);
+		const auto c2 = std::towlower(*it2);
 		if (c1 != c2)
 			return c1 < c2;
 		++it1;
@@ -462,7 +489,8 @@ bool UString::lessThanIgnoreCase(const UString &ustr) const
 }
 
 // helper function for getUtf8
-namespace {
+namespace
+{
 inline void getUtf8(wchar_t ch, char *utf8, int numBytes, int firstByteValue)
 {
 	for (int i = numBytes - 1; i > 0; i--)
@@ -543,7 +571,7 @@ inline wchar_t getCodePoint(const char *utf8, int offset, int numBytes, unsigned
 
 	return wc;
 }
-}
+} // namespace
 
 // single-pass utf8 decoder for mixed ascii/unicode content
 int UString::fromUtf8(const char *utf8, int length)
@@ -592,30 +620,15 @@ int UString::fromUtf8(const char *utf8, int length)
 			wchar_t codepoint = 0;
 
 			if ((b & USTRING_MASK_2BYTE) == USTRING_VALUE_2BYTE)
-			{
 				bytes = 2;
-				codepoint = getCodePoint(src, i, 2, static_cast<unsigned char>(~USTRING_MASK_2BYTE));
-			}
 			else if ((b & USTRING_MASK_3BYTE) == USTRING_VALUE_3BYTE)
-			{
 				bytes = 3;
-				codepoint = getCodePoint(src, i, 3, static_cast<unsigned char>(~USTRING_MASK_3BYTE));
-			}
 			else if ((b & USTRING_MASK_4BYTE) == USTRING_VALUE_4BYTE)
-			{
 				bytes = 4;
-				codepoint = getCodePoint(src, i, 4, static_cast<unsigned char>(~USTRING_MASK_4BYTE));
-			}
 			else if ((b & USTRING_MASK_5BYTE) == USTRING_VALUE_5BYTE)
-			{
 				bytes = 5;
-				codepoint = getCodePoint(src, i, 5, static_cast<unsigned char>(~USTRING_MASK_5BYTE));
-			}
 			else if ((b & USTRING_MASK_6BYTE) == USTRING_VALUE_6BYTE)
-			{
 				bytes = 6;
-				codepoint = getCodePoint(src, i, 6, static_cast<unsigned char>(~USTRING_MASK_6BYTE));
-			}
 			else
 			{
 				// invalid byte sequence
@@ -624,9 +637,21 @@ int UString::fromUtf8(const char *utf8, int length)
 				continue;
 			}
 
-			// validate we have enough bytes
+			// validate we have enough bytes BEFORE calling getCodePoint
 			if (i + bytes <= remainingSize)
 			{
+				// now safely call getCodePoint
+				if (bytes == 2)
+					codepoint = getCodePoint(src, i, 2, static_cast<unsigned char>(~USTRING_MASK_2BYTE));
+				else if (bytes == 3)
+					codepoint = getCodePoint(src, i, 3, static_cast<unsigned char>(~USTRING_MASK_3BYTE));
+				else if (bytes == 4)
+					codepoint = getCodePoint(src, i, 4, static_cast<unsigned char>(~USTRING_MASK_4BYTE));
+				else if (bytes == 5)
+					codepoint = getCodePoint(src, i, 5, static_cast<unsigned char>(~USTRING_MASK_5BYTE));
+				else if (bytes == 6)
+					codepoint = getCodePoint(src, i, 6, static_cast<unsigned char>(~USTRING_MASK_6BYTE));
+
 				m_unicode.push_back(codepoint);
 				i += bytes;
 			}

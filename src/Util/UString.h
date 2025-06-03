@@ -46,6 +46,7 @@ public:
 	UString(const wchar_t *str);
 	UString(const char *utf8);
 	UString(const char *utf8, int length);
+	UString(const wchar_t *str, int length);
 	UString(std::string_view utf8);
 
 	// member functions
@@ -263,7 +264,7 @@ public:
 			// clamp to valid wchar_t range
 			if (ch <= 0xFFFF)
 				return static_cast<wchar_t>(std::towlower(static_cast<std::wint_t>(ch)));
-			// outside BMP is returned as-is to stay deterministic
+			// outside BMP (basic multi-lingual plane) is returned as-is to stay deterministic because they aren't handled by UString currently
 			return ch;
 		}
 	};
