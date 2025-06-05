@@ -39,7 +39,7 @@ SoLoudSoundEngine::SoLoudSoundEngine()
 	// it's 0.95f by default, for some reason
 	soloud->setPostClipScaler(1.0f);
 
-	m_iMaxActiveVoices = std::clamp<int>(cv::snd_sanity_simultaneous_limit.getInt(), 64, 255); // TODO: lower this minimum
+	m_iMaxActiveVoices = std::clamp<int>(cv::snd_sanity_simultaneous_limit.getInt(), 64, 255); // TODO: lower this minimum (it will crash if more than this many sounds play at once...)
 
 	m_iCurrentOutputDevice = -1;
 	m_sCurrentOutputDevice = "Default";
@@ -392,7 +392,7 @@ bool SoLoudSoundEngine::initializeOutputDevice(int id, bool)
 	}
 
 	// basic flags
-	unsigned int flags = SoLoud::Soloud::CLIP_ROUNDOFF;
+	unsigned int flags = SoLoud::Soloud::CLIP_ROUNDOFF | SoLoud::Soloud::NO_FPU_REGISTER_CHANGE;
 
 	auto backend = SoLoud::Soloud::MINIAUDIO;
 	auto userBackend = cv::snd_soloud_backend.getString();

@@ -1,12 +1,12 @@
-From 4020c7a1614e96ab40f63276e02215eebbd10ad1 Mon Sep 17 00:00:00 2001
+From bc658d99db4dfd997aaa466e19a783d700fcd100 Mon Sep 17 00:00:00 2001
 From: William Horvath <william@horvath.blog>
 Date: Mon, 19 May 2025 11:46:37 -0700
 Subject: [PATCH] soloud fastseek
 
 ---
  include/soloud_wavstream.h               |   9 +-
- src/audiosource/wav/soloud_wavstream.cpp | 130 +++++++++++++++++++++--
- 2 files changed, 127 insertions(+), 12 deletions(-)
+ src/audiosource/wav/soloud_wavstream.cpp | 132 ++++++++++++++++++++---
+ 2 files changed, 128 insertions(+), 13 deletions(-)
 
 diff --git a/include/soloud_wavstream.h b/include/soloud_wavstream.h
 index 0f46e14..1f8e86a 100644
@@ -49,7 +49,7 @@ index 0f46e14..1f8e86a 100644
  		time getLength();
  
 diff --git a/src/audiosource/wav/soloud_wavstream.cpp b/src/audiosource/wav/soloud_wavstream.cpp
-index e8f0d21..2bc8e7c 100644
+index e8f0d21..fc862cc 100644
 --- a/src/audiosource/wav/soloud_wavstream.cpp
 +++ b/src/audiosource/wav/soloud_wavstream.cpp
 @@ -111,7 +111,7 @@ namespace SoLoud
@@ -102,14 +102,14 @@ index e8f0d21..2bc8e7c 100644
 +	{
 +		if (mParent->mFiletype == WAVSTREAM_MP3 && mCodec.mMp3)
 +		{
-+			drmp3_uint64 targetFrame = (drmp3_uint64)(aSeconds * mCodec.mMp3->sampleRate);
++			drmp3_uint64 targetFrame = (drmp3_uint64)floor(aSeconds * mCodec.mMp3->sampleRate);
 +			if (drmp3_seek_to_pcm_frame(mCodec.mMp3, targetFrame))
 +			{
 +				// Since the position that we just sought to might not be *exactly*
 +				// the position we asked for, we're re-calculating the position just
 +				// for the sake of correctness.
 +				mOffset = (unsigned int)mCodec.mMp3->currentPCMFrame;
-+				double newPosition = float(mOffset / mBaseSamplerate);
++				double newPosition = static_cast<double>(mOffset) / mBaseSamplerate;
 +				mStreamPosition = newPosition;
 +				return SO_NO_ERROR;
 +			}
@@ -126,7 +126,7 @@ index e8f0d21..2bc8e7c 100644
 +			{
 +				/* Same as above */
 +				mOffset = stb_vorbis_get_sample_offset(mCodec.mOgg);
-+				double newPosition = float(mOffset / mBaseSamplerate);
++				double newPosition = static_cast<double>(mOffset) / mBaseSamplerate;
 +				mStreamPosition = newPosition;
 +				return SO_NO_ERROR;
 +			}
@@ -134,13 +134,13 @@ index e8f0d21..2bc8e7c 100644
 +		}
 +		else if (mParent->mFiletype == WAVSTREAM_WAV && mCodec.mWav)
 +		{
-+			drwav_uint64 targetFrame = (drwav_uint64)(aSeconds * mCodec.mWav->sampleRate);
++			drwav_uint64 targetFrame = (drwav_uint64)floor(aSeconds * mCodec.mWav->sampleRate);
 +
 +			if (drwav_seek_to_pcm_frame(mCodec.mWav, targetFrame))
 +			{
 +				/* Same as above */
 +				mOffset = (unsigned int)mCodec.mWav->readCursorInPCMFrames;
-+				double newPosition = float(mOffset / mBaseSamplerate);
++				double newPosition = static_cast<double>(mOffset) / mBaseSamplerate;
 +				mStreamPosition = newPosition;
 +				return SO_NO_ERROR;
 +			}
@@ -148,13 +148,13 @@ index e8f0d21..2bc8e7c 100644
 +		}
 +		else if (mParent->mFiletype == WAVSTREAM_FLAC && mCodec.mFlac)
 +		{
-+			drflac_uint64 targetFrame = (drflac_uint64)(aSeconds * mCodec.mFlac->sampleRate);
++			drflac_uint64 targetFrame = (drflac_uint64)floor(aSeconds * mCodec.mFlac->sampleRate);
 +
 +			if (drflac_seek_to_pcm_frame(mCodec.mFlac, targetFrame))
 +			{
 +				/* Same as above */
 +				mOffset = (unsigned int)mCodec.mFlac->currentPCMFrame;
-+				double newPosition = float(mOffset / mBaseSamplerate);
++				double newPosition = static_cast<double>(mOffset) / mBaseSamplerate;
 +				mStreamPosition = newPosition;
 +				return SO_NO_ERROR;
 +			}
@@ -225,8 +225,8 @@ index e8f0d21..2bc8e7c 100644
 +		mMp3SeekPoints = nullptr;
 +		mMp3SeekPointCount = 0;
 +
-+		float fileLengthSeconds = mSampleCount / mBaseSamplerate;
-+		float seekPointIntervalSeconds = 5.0f; // 1 seek point every 5 seconds
++		double fileLengthSeconds = static_cast<double>(mSampleCount) / mBaseSamplerate;
++		double seekPointIntervalSeconds = 5.0; // 1 seek point every 5 seconds
 +
 +		// cap seek points to avoid memory blowup
 +		mMp3SeekPointCount = (drmp3_uint32)((fileLengthSeconds / seekPointIntervalSeconds) + 1);
@@ -299,6 +299,14 @@ index e8f0d21..2bc8e7c 100644
  		mStreamFile = 0;
  		mMemFile = 0;
  		mFilename = 0;
+@@ -656,6 +764,6 @@ namespace SoLoud
+ 	{
+ 		if (mBaseSamplerate == 0)
+ 			return 0;
+-		return mSampleCount / mBaseSamplerate;
++		return static_cast<double>(mSampleCount) / mBaseSamplerate;
+ 	}
+ };
 -- 
 2.49.0
 

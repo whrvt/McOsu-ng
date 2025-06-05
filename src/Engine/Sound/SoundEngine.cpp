@@ -19,7 +19,7 @@ ConVar volume("volume", 1.0f, FCVAR_NONE, [](float newValue){soundEngine ? sound
 
 ConVar snd_output_device("snd_output_device", "Default", FCVAR_NONE);
 ConVar snd_restart("snd_restart");
-ConVar snd_freq("snd_freq", 44100, FCVAR_NONE, "output sampling rate in Hz");
+ConVar snd_freq("snd_freq", 48000.0f, FCVAR_NONE, "output sampling rate in Hz");
 ConVar snd_restrict_play_frame("snd_restrict_play_frame", true, FCVAR_NONE,
                                "only allow one new channel per frame for overlayable sounds (prevents lag and earrape)");
 ConVar snd_change_check_interval("snd_change_check_interval", 0.0f, FCVAR_NONE,

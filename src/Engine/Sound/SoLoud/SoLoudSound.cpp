@@ -21,7 +21,7 @@ SoLoudSound::SoLoudSound(UString filepath, bool stream, bool threeD, bool loop, 
       m_handle(0),
       m_speed(1.0f),
       m_pitch(1.0f),
-      m_frequency(44100.0f),
+      m_frequency(48000.0f),
       m_audioSource(nullptr),
       m_fLastRawSoLoudPosition(0.0),
       m_fLastSoLoudPositionTime(0.0),
@@ -104,7 +104,7 @@ void SoLoudSound::initAsync()
 		if (result == SoLoud::SO_NO_ERROR)
 		{
 			m_audioSource = stream;
-			m_frequency = 44100.0f; // default, will be updated when played
+			m_frequency = 48000.0f; // default, will be updated when played
 
 			m_audioSource->setSingleInstance(true);           // only play one music track at a time
 			m_audioSource->setInaudibleBehavior(true, false); // keep ticking the sound if it goes to 0 volume, and don't kill it
@@ -133,7 +133,7 @@ void SoLoudSound::initAsync()
 		if (result == SoLoud::SO_NO_ERROR)
 		{
 			m_audioSource = wav;
-			m_frequency = 44100.0f;
+			m_frequency = 48000.0f;
 
 			m_audioSource->setSingleInstance(false);         // allow non-music tracks to overlap by default
 			m_audioSource->setInaudibleBehavior(true, true); // keep ticking the sound if it goes to 0 volume, but do kill it if necessary
@@ -218,19 +218,21 @@ void SoLoudSound::setPositionMS(unsigned long ms)
 	if (!m_bReady || !m_audioSource || !m_handle)
 		return;
 
-	unsigned long streamLengthMS = getLengthMS();
-	if (ms > streamLengthMS)
+	auto msD = static_cast<double>(ms);
+
+	auto streamLengthMS = static_cast<double>(getLengthMS());
+	if (msD > streamLengthMS)
 		return;
 
-	double positionInSeconds = ms / 1000.0;
+	double positionInSeconds = msD / 1000.0;
 
 	// reset position interp vars
-	m_fLastRawSoLoudPosition = ms;
+	m_fLastRawSoLoudPosition = msD;
 	m_fLastSoLoudPositionTime = Timing::getTimeReal();
 	m_fSoLoudPositionRate = 1000.0 * getSpeed();
 
 	if (cv::debug_snd.getBool())
-		debugLog("seeking to {}ms (length: {}ms)\n", ms, streamLengthMS);
+		debugLog("seeking to {:g}ms (length: {:g}ms)\n", msD, streamLengthMS);
 
 	// seek
 	soloud->seek(m_handle, positionInSeconds);
@@ -331,7 +333,7 @@ void SoLoudSound::setFrequency(float frequency)
 		}
 		else // 0 means reset to default
 		{
-			m_frequency = m_handle ? soloud->getSamplerate(m_handle) : 44100.0f;
+			m_frequency = m_handle ? soloud->getSamplerate(m_handle) : 48000.0f;
 			setPitch(1.0f);
 		}
 	}
@@ -423,7 +425,7 @@ unsigned long SoLoudSound::getPositionMS()
 			else if (m_bIsLooped)
 			{
 				// handle loop wraparound
-				unsigned long length = getLengthMS();
+				auto length = static_cast<double>(getLengthMS());
 				if (length > 0)
 				{
 					double wrappedChange = (length - m_fLastRawSoLoudPosition) + streamPositionMS;
@@ -472,7 +474,7 @@ unsigned long SoLoudSound::getPositionMS()
 	// check for looping
 	if (m_bIsLooped)
 	{
-		unsigned long length = getLengthMS();
+		auto length = static_cast<double>(getLengthMS());
 		if (length > 0 && interpolatedPosition >= length)
 		{
 			return static_cast<unsigned long>(fmod(interpolatedPosition, length));
@@ -488,6 +490,8 @@ unsigned long SoLoudSound::getLengthMS()
 		return 0;
 
 	const double lengthInMilliSeconds = getSourceLengthInSeconds() * 1000.0;
+	if (cv::debug_snd.getBool())
+		debugLog("lengthMS for {:s}: {:g}\n", m_sFilePath, lengthInMilliSeconds);
 	return static_cast<unsigned long>(lengthInMilliSeconds);
 }
 
@@ -510,7 +514,7 @@ float SoLoudSound::getPitch()
 float SoLoudSound::getFrequency()
 {
 	if (!m_bReady || !m_handle)
-		return 44100.0f;
+		return 48000.0f;
 
 	// get sample rate from active voice, unless we changed the frequency through pitch for streams, then just return our own frequency
 	if (!m_bStream)
