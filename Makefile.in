@@ -948,7 +948,6 @@ comma := ,# bruh
 @USE_BASS_FALSE@@USE_SDLMIXER_FALSE@AUDIO_CFLAGS = $(shell $(PKG_CONFIG) --cflags soundtouch) -DST_NO_EXCEPTION_HANDLING
 @USE_BASS_FALSE@@USE_SDLMIXER_TRUE@AUDIO_CFLAGS = $(shell $(PKG_CONFIG) --cflags sdl3-mixer)
 @USE_BASS_TRUE@AUDIO_CFLAGS := $(BASS_CFLAGS)
-# the dynamic soloud lib is busted somehow
 @USE_BASS_FALSE@@USE_SDLMIXER_FALSE@AUDIO_LIBS = -L$(DEPS_PREFIX)/lib -lsoloud_static_x$(if $(filter x86_64,$(host_cpu)),64,$(if $(findstring linux,$(host_os)),32,86))$(if $(ENABLE_DEBUG),_d,) $(shell $(PKG_CONFIG) --libs soundtouch)
 @USE_BASS_FALSE@@USE_SDLMIXER_TRUE@AUDIO_LIBS = $(shell $(PKG_CONFIG) --libs sdl3-mixer)
 @USE_BASS_TRUE@AUDIO_LIBS := 

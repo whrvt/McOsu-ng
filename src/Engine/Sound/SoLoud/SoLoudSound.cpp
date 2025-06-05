@@ -62,8 +62,8 @@ void SoLoudSound::initAsync()
 
 	// load file into memory first to handle unicode paths properly (windows shenanigans)
 	McFile file(Env::cfg(OS::WINDOWS) ? m_sFilePath : "");
-	const char *fileData;
-	size_t fileSize;
+	const char *fileData = nullptr;
+	size_t fileSize = 0;
 
 	if constexpr (Env::cfg(OS::WINDOWS))
 	{

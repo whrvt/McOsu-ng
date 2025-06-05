@@ -32,3 +32,4 @@ BraceWrapping:
   SplitEmptyRecord: false
   SplitEmptyNamespace: false
 AlignEscapedNewlines: DontAlign
+PackConstructorInitializers: Never

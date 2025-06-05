@@ -615,18 +615,6 @@ void Osu::draw()
 		m_hud->drawCursor(mouse->getPos());
 	}
 
-	// TODO: TEMP:
-	/*
-	if (m_multiplayer->isInMultiplayer() && m_multiplayer->isServer())
-	{
-		for (int i=0; i<m_multiplayer->getServerPlayers()->size(); i++)
-		{
-			OsuMultiplayer::PLAYER *ply = &(*m_multiplayer->getServerPlayers())[i];
-			m_hud->drawCursor(ply->input.cursorPos, 0.5f);
-		}
-	}
-	*/
-
 	m_tooltipOverlay->draw();
 	m_notificationOverlay->draw();
 

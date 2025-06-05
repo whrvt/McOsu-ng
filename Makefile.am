@@ -166,7 +166,6 @@ $(DEPS_PREFIX)/SoundTouch.built:
 	$(MKDIR_P) $(DEPS_PREFIX) && touch $@
 else
 AUDIO_CFLAGS = $(shell $(PKG_CONFIG) --cflags soundtouch) -DST_NO_EXCEPTION_HANDLING
-# the dynamic soloud lib is busted somehow
 AUDIO_LIBS = -L$(DEPS_PREFIX)/lib -lsoloud_static_x$(if $(filter x86_64,$(host_cpu)),64,$(if $(findstring linux,$(host_os)),32,86))$(if $(ENABLE_DEBUG),_d,) $(shell $(PKG_CONFIG) --libs soundtouch)
 $(DEPS_PREFIX)/SoLoud.built: $(DEPS_CACHE)/SoLoud.source $(DEPS_PREFIX)/SDL3.built
 	rm -rf $(DEPS_PREFIX)/SoLoud
