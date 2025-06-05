@@ -11,12 +11,27 @@
 
 #include "Resource.h"
 
+#define SOUND_TYPE(ClassName, TypeID, ParentClass) \
+	static constexpr TypeId TYPE_ID = TypeID; \
+	[[nodiscard]] TypeId getTypeId() const override { return TYPE_ID; } \
+	[[nodiscard]] bool isTypeOf(TypeId typeId) const override { \
+		return typeId == TYPE_ID || ParentClass::isTypeOf(typeId); \
+	}
+
 class SoundEngine;
 
 typedef uint32_t SOUNDHANDLE;
 
 class Sound : public Resource
 {
+public:
+	using TypeId = uint8_t;
+	enum SndType : TypeId {
+		BASS,
+		BASS2, // TODO
+		SOLOUD,
+		SDL
+	};
 public:
 	Sound(UString filepath, bool stream, bool threeD, bool loop, bool prescan);
 	~Sound() override;
@@ -37,8 +52,7 @@ public:
 	virtual void setLastPlayTime(double lastPlayTime) { m_fLastPlayTime = lastPlayTime; }
 
 	virtual SOUNDHANDLE getHandle() = 0;
-	virtual SoundType* getSound() = 0;
-	[[nodiscard]] virtual const SoundType* getSound() const = 0;
+
 	virtual float getPosition() = 0;
 	virtual unsigned long getPositionMS() = 0;
 	virtual unsigned long getLengthMS() = 0;
@@ -62,6 +76,16 @@ public:
 
 	Sound *asSound() final { return this; }
 	[[nodiscard]] const Sound *asSound() const final { return this; }
+
+	// type inspection
+	[[nodiscard]] virtual TypeId getTypeId() const = 0;
+	[[nodiscard]] virtual bool isTypeOf(TypeId /*type_id*/) const { return false; }
+	template<typename T>
+	[[nodiscard]] bool isType() const { return isTypeOf(T::TYPE_ID); }
+	template<typename T>
+	T* as() { return isType<T>() ? static_cast<T*>(this) : nullptr; }
+	template<typename T>
+	const T* as() const { return isType<T>() ? static_cast<const T*>(this) : nullptr; }
 protected:
 	void init() override = 0;
 	void initAsync() override = 0;

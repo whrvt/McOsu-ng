@@ -76,9 +76,7 @@ public:
 
 	SOUNDHANDLE g_bassOutputMixer{0};
 
-	SoundEngineType *getSndEngine() override { return this; }
-	[[nodiscard]] const SoundEngineType *getSndEngine() const override { return this; }
-
+	SOUND_ENGINE_TYPE(BassSoundEngine2, BASS2, SoundEngine)
 private:
 	void bassfree();
 	void updateOutputDevices(bool printInfo);

@@ -11,12 +11,27 @@
 
 #include "cbase.h"
 
+#define SOUND_ENGINE_TYPE(ClassName, TypeID, ParentClass) \
+	static constexpr TypeId TYPE_ID = TypeID; \
+	[[nodiscard]] TypeId getTypeId() const override { return TYPE_ID; } \
+	[[nodiscard]] bool isTypeOf(TypeId typeId) const override { \
+		return typeId == TYPE_ID || ParentClass::isTypeOf(typeId); \
+	}
+
 typedef uint32_t SOUNDHANDLE;
 
 class Sound;
 
 class SoundEngine
 {
+public:
+	using TypeId = uint8_t;
+	enum SndEngineType : TypeId {
+		BASS,
+		BASS2, // TODO
+		SOLOUD,
+		SDL
+	};
 public:
 	SoundEngine();
 	virtual ~SoundEngine();
@@ -46,10 +61,17 @@ public:
 	[[nodiscard]] inline const UString &getOutputDevice() const { return m_sCurrentOutputDevice; }
 	[[nodiscard]] inline float getVolume() const { return m_fVolume; }
 
-	virtual SoundEngineType* getSndEngine() = 0;
-	[[nodiscard]] virtual const SoundEngineType* getSndEngine() const = 0;
 	[[nodiscard]] virtual bool isReady() { return m_bReady; }
 
+	// type inspection
+	[[nodiscard]] virtual TypeId getTypeId() const = 0;
+	[[nodiscard]] virtual bool isTypeOf(TypeId /*type_id*/) const { return false; }
+	template<typename T>
+	[[nodiscard]] bool isType() const { return isTypeOf(T::TYPE_ID); }
+	template<typename T>
+	T* as() { return isType<T>() ? static_cast<T*>(this) : nullptr; }
+	template<typename T>
+	const T* as() const { return isType<T>() ? static_cast<const T*>(this) : nullptr; }
 protected:
 	struct OUTPUT_DEVICE
 	{
@@ -75,11 +97,11 @@ protected:
 
 // convenience conversion macro to get the sound handle, extra args are any extra conditions to check for besides general state validity
 // just minor boilerplate reduction
-#define GETHANDLE(...) \
-	[&]() -> std::pair<SoundType *, SOUNDHANDLE> { \
+#define GETHANDLE(T, ...) \
+	[&]() -> std::pair<T *, SOUNDHANDLE> { \
 		SOUNDHANDLE retHandle = 0; \
-		SoundType *retSound = nullptr; \
-		if (m_bReady && snd && snd->isReady() __VA_OPT__(&&(__VA_ARGS__)) && (retSound = snd->getSound())) \
+		T *retSound = nullptr; \
+		if (m_bReady && snd && snd->isReady() __VA_OPT__(&&(__VA_ARGS__)) && (retSound = snd->as<T>())) \
 			retHandle = retSound->getHandle(); \
 		return {retSound, retHandle}; \
 	}()

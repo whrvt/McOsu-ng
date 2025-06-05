@@ -35,9 +35,7 @@ public:
 
 	std::vector<UString> getOutputDevices() override;
 
-	SoundEngineType *getSndEngine() override { return this; }
-	[[nodiscard]] const SoundEngineType *getSndEngine() const override { return this; }
-
+	SOUND_ENGINE_TYPE(BassSoundEngine, BASS, SoundEngine)
 private:
 	void updateOutputDevices(bool handleOutputDeviceChanges, bool printInfo) override;
 	bool initializeOutputDevice(int id = -1, bool force = false) override;

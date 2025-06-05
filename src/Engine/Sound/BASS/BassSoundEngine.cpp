@@ -148,7 +148,7 @@ void BassSoundEngine::update()
 
 bool BassSoundEngine::play(Sound *snd, float pan, float pitch)
 {
-	auto [bassSound, handle] = GETHANDLE();
+	auto [bassSound, handle] = GETHANDLE(BassSound);
 
 	const bool allowPlayFrame = bassSound && (!bassSound->isOverlayable() || !cv::snd_restrict_play_frame.getBool() || engine->getTime() > bassSound->getLastPlayTime());
 
@@ -164,7 +164,7 @@ bool BassSoundEngine::play(Sound *snd, float pan, float pitch)
 
 bool BassSoundEngine::play3d(Sound *snd, Vector3 pos)
 {
-	auto [bassSound, handle] = GETHANDLE(snd->is3d());
+	auto [bassSound, handle] = GETHANDLE(BassSound, snd->is3d());
 	if (!handle)
 	{
 		if (cv::debug_snd.getBool())
@@ -197,7 +197,7 @@ bool BassSoundEngine::play3d(Sound *snd, Vector3 pos)
 
 void BassSoundEngine::pause(Sound *snd)
 {
-	auto [bassSound, handle] = GETHANDLE();
+	auto [bassSound, handle] = GETHANDLE(BassSound);
 	if (!handle)
 	{
 		if (cv::debug_snd.getBool())
@@ -231,7 +231,7 @@ void BassSoundEngine::pause(Sound *snd)
 
 void BassSoundEngine::stop(Sound *snd)
 {
-	auto [bassSound, handle] = GETHANDLE();
+	auto [bassSound, handle] = GETHANDLE(BassSound);
 	if (!handle)
 	{
 		if (cv::debug_snd.getBool())

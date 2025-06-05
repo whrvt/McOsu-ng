@@ -33,6 +33,7 @@ public:
 	void setPan(float pan) override;
 	void setLoop(bool loop) override;
 	void setPitch(float pitch) override;
+
 	inline SOUNDHANDLE getHandle() override {return getChannel();};
 
 	float getPosition() override;
@@ -49,11 +50,10 @@ public:
 	[[nodiscard]] inline bool isLooped() const override { return m_bIsLooped; }
 	[[nodiscard]] inline bool isOverlayable() const override { return m_bIsOverlayable; }
 
-	constexpr SoundType* getSound() override {return this;}
-	[[nodiscard]] constexpr const SoundType* getSound() const override {return this;}
-
 	void rebuild(UString newFilePath) override;
 
+	// inspection
+	SOUND_TYPE(BassSound2, BASS2, Sound)
 private:
 	void setPositionMS_fast(unsigned int ms);
 

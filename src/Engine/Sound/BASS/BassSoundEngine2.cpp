@@ -644,7 +644,8 @@ bool BassSoundEngine2::play(Sound *snd, float pan, float pitch)
 		debugLog("tried to play, but was not ready!\n");
 	if (!m_bReady || snd == NULL || !snd->isReady())
 		return false;
-	BassSound2 *bassSound = snd->getSound();
+
+	auto *bassSound = snd->as<BassSound2>();
 	if (!bassSound)
 		return false;
 
@@ -731,7 +732,8 @@ void BassSoundEngine2::pause(Sound *snd)
 {
 	if (!m_bReady || snd == NULL || !snd->isReady())
 		return;
-	BassSound2 *bassSound = snd->getSound();
+
+	auto *bassSound = snd->as<BassSound2>();
 	if (!bassSound)
 		return;
 

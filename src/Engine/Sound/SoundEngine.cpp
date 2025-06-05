@@ -43,6 +43,7 @@ SoundEngine::SoundEngine()
 	m_fPrevOutputDeviceChangeCheckTime = 0.0f;
 	m_outputDeviceChangeCallback = nullptr;
 	m_fVolume = 1.0f;
+	m_iCurrentOutputDevice = -1;
 }
 
 SoundEngine::~SoundEngine() = default;

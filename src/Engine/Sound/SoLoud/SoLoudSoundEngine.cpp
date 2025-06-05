@@ -101,7 +101,7 @@ bool SoLoudSoundEngine::play(Sound *snd, float pan, float pitch)
 		return true;
 	}
 
-	return playSound(snd->getSound(), pan, pitch);
+	return playSound(snd->as<SoLoudSound>(), pan, pitch);
 }
 
 bool SoLoudSoundEngine::playSound(SoLoudSound *soloudSound, float pan, float pitch, bool is3d, Vector3 *pos)
@@ -243,7 +243,7 @@ bool SoLoudSoundEngine::play3d(Sound *snd, Vector3 pos)
 	if (!m_bReady || snd == NULL || !snd->isReady() || !snd->is3d())
 		return false;
 
-	SoLoudSound *soloudSound = snd->getSound();
+	auto *soloudSound = snd->as<SoLoudSound>();
 	if (!soloudSound)
 		return false;
 
@@ -255,7 +255,7 @@ void SoLoudSoundEngine::pause(Sound *snd)
 	if (!m_bReady || snd == NULL || !snd->isReady())
 		return;
 
-	SoLoudSound *soloudSound = snd->getSound();
+	auto *soloudSound = snd->as<SoLoudSound>();
 	if (!soloudSound || soloudSound->m_handle == 0)
 		return;
 
@@ -268,7 +268,7 @@ void SoLoudSoundEngine::stop(Sound *snd)
 	if (!m_bReady || snd == NULL || !snd->isReady())
 		return;
 
-	SoLoudSound *soloudSound = snd->getSound();
+	auto *soloudSound = snd->as<SoLoudSound>();
 	if (!soloudSound || soloudSound->m_handle == 0)
 		return;
 

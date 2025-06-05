@@ -11,6 +11,8 @@
 #ifndef OSU_H
 #define OSU_H
 
+#include "App.h"
+
 #include "OsuConVarDefs.h"
 #include "KeyboardListener.h"
 #include "MouseListener.h"
@@ -53,12 +55,9 @@ class McFont;
 class RenderTarget;
 
 
-class Osu final : public MouseListener, public KeyboardListener
+class Osu final : public AppBase, public MouseListener
 {
 public:
-	
-	
-	
 	static bool autoUpdater;
 
 	static Vector2 osuBaseResolution;
@@ -84,9 +83,9 @@ public:
 	Osu();
 	~Osu() override;
 
-	void draw();
-	void update();
-	inline bool isInCriticalInteractiveSession() { return !isNotInPlayModeOrPaused();} // i.e. is in play mode and not paused
+	void draw() override;
+	void update() override;
+	inline bool isInCriticalInteractiveSession() override { return !isNotInPlayModeOrPaused();} // i.e. is in play mode and not paused
 
 	void onKeyDown(KeyboardEvent &e) override;
 	void onKeyUp(KeyboardEvent &e) override;
@@ -94,17 +93,17 @@ public:
 
 	void onButtonChange(MouseButton::Index button, bool down) override;
 
-	void onWheelVertical(int) override {;}
-	void onWheelHorizontal(int) override {;}
+	void onWheelVertical(int /*delta*/) override {;}
+	void onWheelHorizontal(int /*delta*/) override {;}
 
-	void onResolutionChanged(Vector2 newResolution);
-	void onDPIChanged();
+	void onResolutionChanged(Vector2 newResolution) override;
+	void onDPIChanged() override;
 
-	void onFocusGained();
-	void onFocusLost();
-	void onMinimized();
-	void onRestored() {;}
-	bool onShutdown();
+	void onFocusGained() override;
+	void onFocusLost() override;
+	void onMinimized() override;
+	void onRestored() override {;}
+	bool onShutdown() override;
 
 	void onBeforePlayStart();			// called just before OsuBeatmap->play()
 	void onPlayStart();					// called when a beatmap has successfully started playing
@@ -372,5 +371,7 @@ private:
 };
 
 extern Osu *osu;
+
+using App = Osu;
 
 #endif

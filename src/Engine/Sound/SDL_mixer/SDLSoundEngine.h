@@ -44,9 +44,8 @@ public:
 	inline int getMixChunkSize() const { return m_iMixChunkSize; }
 	inline float getVolumeMixMusic() const { return m_fVolumeMixMusic; }
 
-	SoundEngineType* getSndEngine() override {return this;}
-	[[nodiscard]] const SoundEngineType* getSndEngine() const override {return this;}
-
+	// inspection
+	SOUND_ENGINE_TYPE(SDLSoundEngine, SDL, SoundEngine)
 private:
 	void updateOutputDevices(bool handleOutputDeviceChanges, bool printInfo) override;
 	bool initializeOutputDevice(int id = -1, bool force = false) override;

@@ -40,8 +40,7 @@ public:
 	void setOverlayable(bool overlayable) override;
 
 	SOUNDHANDLE getHandle() override;
-	SoundType *getSound() override { return this; }
-	[[nodiscard]] const SoundType *getSound() const override { return this; }
+
 	float getPosition() override;
 	unsigned long getPositionMS() override;
 	unsigned long getLengthMS() override;
@@ -54,6 +53,8 @@ public:
 
 	void rebuild(UString newFilePath) override;
 
+	// inspection
+	SOUND_TYPE(SoLoudSound, SOLOUD, Sound)
 private:
 	void init() override;
 	void initAsync() override;

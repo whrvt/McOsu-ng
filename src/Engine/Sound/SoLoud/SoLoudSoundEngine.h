@@ -40,9 +40,7 @@ public:
 
 	std::vector<UString> getOutputDevices() override;
 
-	SoundEngineType *getSndEngine() override { return this; }
-	[[nodiscard]] const SoundEngineType *getSndEngine() const override { return this; }
-
+	SOUND_ENGINE_TYPE(SoLoudSoundEngine, SOLOUD, SoundEngine)
 protected:
 	// playback functions specific to SoLoudSound
 	bool playSound(SoLoudSound *soloudSound, float pan, float pitch, bool is3d = false, Vector3 *pos = nullptr);
