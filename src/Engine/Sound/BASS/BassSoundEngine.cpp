@@ -41,7 +41,7 @@ DWORD CALLBACK OutputWasapiProc(void *buffer, DWORD length, void *user)
 // ConVar change callbacks for WASAPI settings that require restart
 void forceDeviceRestart()
 {
-	soundEngine->setOutputDeviceForce(soundEngine->getOutputDevice());
+	soundEngine ? soundEngine->setOutputDeviceForce(soundEngine->getOutputDevice()) : (void)0;
 }
 
 void _WIN_SND_WASAPI_BUFFER_SIZE_CHANGE(UString oldValue, UString newValue)

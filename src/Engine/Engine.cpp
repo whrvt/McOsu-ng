@@ -235,7 +235,7 @@ Engine::Engine()
 		resourceManager = s_resourceManagerInstance.get();
 		runtime_assert(resourceManager, "Resource manager menu failed to initialize!");
 
-		SoundEngine::SndEngineType type = SoundEngine::BASS;
+		SoundEngine::SndEngineType type = Env::cfg(AUD::BASS) ? SoundEngine::BASS : Env::cfg(AUD::SOLOUD) ? SoundEngine::SOLOUD : Env::cfg(AUD::SDL) ? SoundEngine::SDL : SoundEngine::BASS;
 		{
 			auto args = env->getLaunchArgs();
 			auto soundString = args["-sound"].value_or("bass").trim();
