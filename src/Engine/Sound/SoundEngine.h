@@ -37,7 +37,7 @@ public:
 	virtual ~SoundEngine();
 
 	// Factory method to create the appropriate sound engine
-	static SoundEngine *createSoundEngine();
+	static SoundEngine *createSoundEngine(SndEngineType type = BASS);
 
 	// Public interface
 	virtual void restart() = 0;

@@ -94,21 +94,25 @@ target_triplet = @target@
 bin_PROGRAMS = McOsu-ng$(EXEEXT)
 @BUILD_SDL3_TRUE@am__append_1 = $(shell $(PKG_CONFIG) --cflags sdl3)
 @BUILD_SDL3_TRUE@am__append_2 = $(shell $(PKG_CONFIG) --libs sdl3)
-@BUILD_LIBJPEG_TRUE@am__append_3 = $(shell $(PKG_CONFIG) --cflags libturbojpeg)
-@BUILD_LIBJPEG_TRUE@am__append_4 = $(shell $(PKG_CONFIG) --libs libturbojpeg)
-@BUILD_GLM_TRUE@am__append_5 = -I$(DEPS_PREFIX)/include
-@BUILD_LIBPNG_TRUE@am__append_6 = $(shell $(PKG_CONFIG) --cflags libpng)
-@BUILD_LIBPNG_TRUE@am__append_7 = $(shell $(PKG_CONFIG) --libs libpng)
-@BUILD_BZIP2_TRUE@am__append_8 = $(shell $(PKG_CONFIG) --cflags bzip2)
-@BUILD_BZIP2_TRUE@am__append_9 = $(shell $(PKG_CONFIG) --libs bzip2)
-@BUILD_ZLIB_TRUE@am__append_10 = $(shell $(PKG_CONFIG) --cflags zlib)
-@BUILD_ZLIB_TRUE@am__append_11 = $(shell $(PKG_CONFIG) --libs zlib)
-@BUILD_FMT_TRUE@am__append_12 = $(shell $(PKG_CONFIG) --cflags fmt)
-@BUILD_FMT_TRUE@am__append_13 = $(shell $(PKG_CONFIG) --libs fmt)
-@BUILD_FREETYPE2_TRUE@am__append_14 = $(shell $(PKG_CONFIG) --cflags freetype2)
-@BUILD_FREETYPE2_TRUE@am__append_15 = $(shell $(PKG_CONFIG) --libs freetype2)
-@WIN_PLATFORM_FALSE@am__append_16 = lib/
-@USE_BASS_TRUE@am__append_17 = \
+@USE_SDLMIXER_TRUE@am__append_3 = $(shell $(PKG_CONFIG) --cflags sdl3-mixer)
+@USE_SDLMIXER_TRUE@am__append_4 = $(shell $(PKG_CONFIG) --libs sdl3-mixer)
+@USE_SOLOUD_TRUE@am__append_5 = $(shell $(PKG_CONFIG) --cflags soundtouch) -DST_NO_EXCEPTION_HANDLING
+@USE_SOLOUD_TRUE@am__append_6 = -L$(DEPS_PREFIX)/lib -lsoloud_static_x$(if $(filter x86_64,$(host_cpu)),64,$(if $(findstring linux,$(host_os)),32,86))$(if $(ENABLE_DEBUG),_d,) $(shell $(PKG_CONFIG) --libs soundtouch)
+@BUILD_LIBJPEG_TRUE@am__append_7 = $(shell $(PKG_CONFIG) --cflags libturbojpeg)
+@BUILD_LIBJPEG_TRUE@am__append_8 = $(shell $(PKG_CONFIG) --libs libturbojpeg)
+@BUILD_GLM_TRUE@am__append_9 = -I$(DEPS_PREFIX)/include
+@BUILD_LIBPNG_TRUE@am__append_10 = $(shell $(PKG_CONFIG) --cflags libpng)
+@BUILD_LIBPNG_TRUE@am__append_11 = $(shell $(PKG_CONFIG) --libs libpng)
+@BUILD_BZIP2_TRUE@am__append_12 = $(shell $(PKG_CONFIG) --cflags bzip2)
+@BUILD_BZIP2_TRUE@am__append_13 = $(shell $(PKG_CONFIG) --libs bzip2)
+@BUILD_ZLIB_TRUE@am__append_14 = $(shell $(PKG_CONFIG) --cflags zlib)
+@BUILD_ZLIB_TRUE@am__append_15 = $(shell $(PKG_CONFIG) --libs zlib)
+@BUILD_FMT_TRUE@am__append_16 = $(shell $(PKG_CONFIG) --cflags fmt)
+@BUILD_FMT_TRUE@am__append_17 = $(shell $(PKG_CONFIG) --libs fmt)
+@BUILD_FREETYPE2_TRUE@am__append_18 = $(shell $(PKG_CONFIG) --cflags freetype2)
+@BUILD_FREETYPE2_TRUE@am__append_19 = $(shell $(PKG_CONFIG) --libs freetype2)
+@WIN_PLATFORM_FALSE@am__append_20 = lib/
+@USE_BASS_TRUE@am__append_21 = \
 @USE_BASS_TRUE@	$(BUNDLED_BASS_DIR)/include \
 @USE_BASS_TRUE@	$(BUNDLED_BASS_FX_DIR)/include \
 @USE_BASS_TRUE@	$(BUNDLED_BASS_DIR)/lib/$(SYSNAME)/$(host_cpu)/$(LIBPREFIX)bass$(DLLEXT) \
@@ -549,11 +553,12 @@ AMTAR = @AMTAR@
 AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
 AR = @AR@
 ASSETS_DIR = @ASSETS_DIR@
+AUDIO_CFLAGS = @AUDIO_CFLAGS@ $(am__append_3) $(am__append_5)
+AUDIO_LIBS = @AUDIO_LIBS@ $(am__append_4) $(am__append_6)
 AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
 AWK = @AWK@
-BASS_CFLAGS = @BASS_CFLAGS@
 BEAR = @BEAR@
 BUNDLED_BASS_ASIO_DIR = @BUNDLED_BASS_ASIO_DIR@
 BUNDLED_BASS_DIR = @BUNDLED_BASS_DIR@
@@ -562,8 +567,8 @@ BUNDLED_BASS_MIX_DIR = @BUNDLED_BASS_MIX_DIR@
 BUNDLED_BASS_WASAPI_DIR = @BUNDLED_BASS_WASAPI_DIR@
 BUNDLED_INCLUDES = @BUNDLED_INCLUDES@
 BUNDLED_LIBS_DIR = @BUNDLED_LIBS_DIR@
-BZIP2_CFLAGS = @BZIP2_CFLAGS@ $(am__append_8)
-BZIP2_LIBS = @BZIP2_LIBS@ $(am__append_9)
+BZIP2_CFLAGS = @BZIP2_CFLAGS@ $(am__append_12)
+BZIP2_LIBS = @BZIP2_LIBS@ $(am__append_13)
 BZIP2_PREFIX = @BZIP2_PREFIX@
 BZIP2_VERSION = @BZIP2_VERSION@
 CC = @CC@
@@ -601,18 +606,18 @@ ENABLE_ASAN = @ENABLE_ASAN@
 ENABLE_DEBUG = @ENABLE_DEBUG@
 ETAGS = @ETAGS@
 EXEEXT = @EXEEXT@
-FMT_CFLAGS = @FMT_CFLAGS@ $(am__append_12)
-FMT_LIBS = @FMT_LIBS@ $(am__append_13)
+FMT_CFLAGS = @FMT_CFLAGS@ $(am__append_16)
+FMT_LIBS = @FMT_LIBS@ $(am__append_17)
 FMT_PREFIX = @FMT_PREFIX@
 FMT_VERSION = @FMT_VERSION@
-FREETYPE2_CFLAGS = @FREETYPE2_CFLAGS@ $(am__append_14)
-FREETYPE2_LIBS = @FREETYPE2_LIBS@ $(am__append_15)
+FREETYPE2_CFLAGS = @FREETYPE2_CFLAGS@ $(am__append_18)
+FREETYPE2_LIBS = @FREETYPE2_LIBS@ $(am__append_19)
 FREETYPE2_PREFIX = @FREETYPE2_PREFIX@
 FREETYPE2_VERSION = @FREETYPE2_VERSION@
 GENIE = @GENIE@
 GETCONF = @GETCONF@
 GIT = @GIT@
-GLM_CFLAGS = @GLM_CFLAGS@ $(am__append_5)
+GLM_CFLAGS = @GLM_CFLAGS@ $(am__append_9)
 GLM_PREFIX = @GLM_PREFIX@
 GLM_VERSION = @GLM_VERSION@
 GLU_CFLAGS = @GLU_CFLAGS@
@@ -627,13 +632,13 @@ INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
 LD = @LD@
 LDFLAGS = @LDFLAGS@
-LIBJPEG_CFLAGS = @LIBJPEG_CFLAGS@ $(am__append_3)
-LIBJPEG_LIBS = @LIBJPEG_LIBS@ $(am__append_4)
+LIBJPEG_CFLAGS = @LIBJPEG_CFLAGS@ $(am__append_7)
+LIBJPEG_LIBS = @LIBJPEG_LIBS@ $(am__append_8)
 LIBJPEG_PREFIX = @LIBJPEG_PREFIX@
 LIBJPEG_VERSION = @LIBJPEG_VERSION@
 LIBOBJS = @LIBOBJS@
-LIBPNG_CFLAGS = @LIBPNG_CFLAGS@ $(am__append_6)
-LIBPNG_LIBS = @LIBPNG_LIBS@ $(am__append_7)
+LIBPNG_CFLAGS = @LIBPNG_CFLAGS@ $(am__append_10)
+LIBPNG_LIBS = @LIBPNG_LIBS@ $(am__append_11)
 LIBPNG_PREFIX = @LIBPNG_PREFIX@
 LIBPNG_VERSION = @LIBPNG_VERSION@
 LIBPREFIX = @LIBPREFIX@
@@ -698,8 +703,8 @@ X11_CFLAGS = @X11_CFLAGS@
 X11_LIBS = @X11_LIBS@
 XI_CFLAGS = @XI_CFLAGS@
 XI_LIBS = @XI_LIBS@
-ZLIB_CFLAGS = @ZLIB_CFLAGS@ $(am__append_10)
-ZLIB_LIBS = @ZLIB_LIBS@ $(am__append_11)
+ZLIB_CFLAGS = @ZLIB_CFLAGS@ $(am__append_14)
+ZLIB_LIBS = @ZLIB_LIBS@ $(am__append_15)
 ZLIB_PREFIX = @ZLIB_PREFIX@
 ZLIB_VERSION = @ZLIB_VERSION@
 abs_builddir = @abs_builddir@
@@ -945,12 +950,6 @@ comma := ,# bruh
 @BUILD_MIMALLOC_FALSE@MIMALLOC_LIBS := 
 @BUILD_MIMALLOC_TRUE@@WIN_PLATFORM_FALSE@MIMALLOC_LIBS = $(DEPS_PREFIX)/lib/mimalloc$(if $(ENABLE_ASAN),-asan-debug,$(if $(ENABLE_DEBUG),-debug,)).o
 @BUILD_MIMALLOC_TRUE@@WIN_PLATFORM_TRUE@MIMALLOC_LIBS = -L$(DEPS_PREFIX)/lib -Wl,--whole-archive -l:libmimalloc.dll.a -Wl,--no-whole-archive -L$(DEPS_PREFIX)/bin -lmimalloc -lmimalloc-redirect$(if $(filter x86_64,$(host_cpu)),,32)
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@AUDIO_CFLAGS = $(shell $(PKG_CONFIG) --cflags soundtouch) -DST_NO_EXCEPTION_HANDLING
-@USE_BASS_FALSE@@USE_SDLMIXER_TRUE@AUDIO_CFLAGS = $(shell $(PKG_CONFIG) --cflags sdl3-mixer)
-@USE_BASS_TRUE@AUDIO_CFLAGS := $(BASS_CFLAGS)
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@AUDIO_LIBS = -L$(DEPS_PREFIX)/lib -lsoloud_static_x$(if $(filter x86_64,$(host_cpu)),64,$(if $(findstring linux,$(host_os)),32,86))$(if $(ENABLE_DEBUG),_d,) $(shell $(PKG_CONFIG) --libs soundtouch)
-@USE_BASS_FALSE@@USE_SDLMIXER_TRUE@AUDIO_LIBS = $(shell $(PKG_CONFIG) --libs sdl3-mixer)
-@USE_BASS_TRUE@AUDIO_LIBS := 
 BUILT_SOURCES := $(DEPS_PREFIX)/mimalloc.built $(DEPS_PREFIX)/SDL3.built $(DEPS_PREFIX)/SDL3_mixer.built $(DEPS_PREFIX)/libjpeg.built $(DEPS_PREFIX)/FMT.built \
 	$(DEPS_PREFIX)/libpng.built $(DEPS_PREFIX)/bzip2.built $(DEPS_PREFIX)/zlib.built $(DEPS_PREFIX)/FREETYPE2.built $(DEPS_PREFIX)/glm.built $(DEPS_PREFIX)/SoLoud.built $(DEPS_PREFIX)/SoundTouch.built
 
@@ -1008,12 +1007,12 @@ McOsu_ng_LDFLAGS := \
 
 
 # windows' loader has no concept of rpaths
-LIBDEST := $(am__append_16)
+LIBDEST := $(am__append_20)
 
 # TODO: distribution package files
 EXTRA_DIST := $(ASSETS_DIR)/models $(ASSETS_DIR)/shaders \
 	$(ASSETS_DIR)/fonts $(ASSETS_DIR)/cfg autogen.sh \
-	$(am__append_17)
+	$(am__append_21)
 MAINTAINERCLEANFILES = $(top_srcdir)/src/Makefile.sources
 all: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) all-am
@@ -4915,127 +4914,120 @@ $(DEPS_CACHE)/SoundTouch.source:
 	$(MKDIR_P) $(DEPS_CACHE)/SoundTouch
 	$(WGET) -qO $(DEPS_CACHE)/SoundTouch-$(SOUNDTOUCH_VERSION).tar.gz "https://codeberg.org/soundtouch/soundtouch/archive/$(SOUNDTOUCH_VERSION).tar.gz"
 	touch $@
-@USE_BASS_FALSE@@USE_SDLMIXER_TRUE@$(DEPS_PREFIX)/SDL3_mixer.built: $(DEPS_PREFIX)/SDL3.built $(DEPS_CACHE)/SDL3_mixer.source
-@USE_BASS_FALSE@@USE_SDLMIXER_TRUE@	rm -rf $(DEPS_PREFIX)/SDL3_mixer
-@USE_BASS_FALSE@@USE_SDLMIXER_TRUE@	$(MKDIR_P) $(DEPS_PREFIX) $(DEPS_PREFIX)/lib/pkgconfig
-@USE_BASS_FALSE@@USE_SDLMIXER_TRUE@	cp -r $(DEPS_CACHE)/SDL3_mixer $(DEPS_PREFIX)/SDL3_mixer && \
-@USE_BASS_FALSE@@USE_SDLMIXER_TRUE@	$(MKDIR_P) $(DEPS_PREFIX)/SDL3_mixer/build
-@USE_BASS_FALSE@@USE_SDLMIXER_TRUE@	cd $(DEPS_PREFIX)/SDL3_mixer && \
-@USE_BASS_FALSE@@USE_SDLMIXER_TRUE@	PKG_CONFIG="$(PKG_CONFIG)" LDFLAGS="$(LDFLAGS)" \
-@USE_BASS_FALSE@@USE_SDLMIXER_TRUE@	cmake -S . -B build -G Ninja \
-@USE_BASS_FALSE@@USE_SDLMIXER_TRUE@		-D CMAKE_BUILD_TYPE="$(if $(ENABLE_DEBUG),Debug,Release)" \
-@USE_BASS_FALSE@@USE_SDLMIXER_TRUE@		-D CMAKE_INSTALL_PREFIX="$(DEPS_PREFIX)" \
-@USE_BASS_FALSE@@USE_SDLMIXER_TRUE@		-D CMAKE_SYSTEM_NAME="$(CMAKE_SYSTEM_NAME)" \
-@USE_BASS_FALSE@@USE_SDLMIXER_TRUE@		-D CMAKE_SYSTEM_PROCESSOR="$(host_cpu)" \
-@USE_BASS_FALSE@@USE_SDLMIXER_TRUE@		-D CMAKE_C_COMPILER="$(CC)" \
-@USE_BASS_FALSE@@USE_SDLMIXER_TRUE@		-D CMAKE_C_FLAGS="$(CFLAGS) -Wno-error=incompatible-pointer-types" \
-@USE_BASS_FALSE@@USE_SDLMIXER_TRUE@		$(CMAKERCOPT) \
-@USE_BASS_FALSE@@USE_SDLMIXER_TRUE@		-D SDLMIXER_GME=OFF \
-@USE_BASS_FALSE@@USE_SDLMIXER_TRUE@		-D SDLMIXER_MIDI=OFF \
-@USE_BASS_FALSE@@USE_SDLMIXER_TRUE@		-D SDLMIXER_STRICT=ON \
-@USE_BASS_FALSE@@USE_SDLMIXER_TRUE@		-D SDLMIXER_VENDORED=ON \
-@USE_BASS_FALSE@@USE_SDLMIXER_TRUE@		-D SDLMIXER_MP3=ON \
-@USE_BASS_FALSE@@USE_SDLMIXER_TRUE@		-D SDLMIXER_MP3_MPG123=ON \
-@USE_BASS_FALSE@@USE_SDLMIXER_TRUE@		-D BUILD_SHARED_LIBS="$(if $(STATICBUILD),OFF,ON)" \
-@USE_BASS_FALSE@@USE_SDLMIXER_TRUE@		-D SDLMIXER_DEPS_SHARED="$(if $(STATICBUILD),OFF,ON)" && \
-@USE_BASS_FALSE@@USE_SDLMIXER_TRUE@	cmake --build build && \
-@USE_BASS_FALSE@@USE_SDLMIXER_TRUE@	cmake --install build
-@USE_BASS_FALSE@@USE_SDLMIXER_TRUE@	$(SED) -i 's|Libs\.private.*|Libs.private: -lmpg123 -logg -lopus -lwavpack -lopusfile -lxmp|' $(DEPS_PREFIX)/lib/pkgconfig/sdl3-mixer.pc # wtf is this weird cmake issue?
-@USE_BASS_FALSE@@USE_SDLMIXER_TRUE@	rm -rf $(DEPS_PREFIX)/lib/*SDL3_mixer$(if $(STATICBUILD),$(DLLEXT),.a)*
-@USE_BASS_FALSE@@USE_SDLMIXER_TRUE@	$(PKG_CONFIG) --exists --print-errors sdl3-mixer
-@USE_BASS_FALSE@@USE_SDLMIXER_TRUE@	touch $@
-@USE_BASS_FALSE@@USE_SDLMIXER_TRUE@$(DEPS_PREFIX)/SoLoud.built:
-@USE_BASS_FALSE@@USE_SDLMIXER_TRUE@	$(MKDIR_P) $(DEPS_PREFIX) && touch $@
-@USE_BASS_FALSE@@USE_SDLMIXER_TRUE@$(DEPS_PREFIX)/SoundTouch.built:
-@USE_BASS_FALSE@@USE_SDLMIXER_TRUE@	$(MKDIR_P) $(DEPS_PREFIX) && touch $@
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@$(DEPS_PREFIX)/SoLoud.built: $(DEPS_CACHE)/SoLoud.source $(DEPS_PREFIX)/SDL3.built
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	rm -rf $(DEPS_PREFIX)/SoLoud
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	$(MKDIR_P) $(DEPS_PREFIX) $(DEPS_PREFIX)/include/soloud $(DEPS_PREFIX)/lib/pkgconfig $(DEPS_PREFIX)/SoLoud/build
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	$(TAR) xf $(DEPS_CACHE)/SoLoud-$(SOLOUD_VERSION).tar.gz -C $(DEPS_PREFIX)/SoLoud --strip-components=1 && \
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	cd $(DEPS_PREFIX)/SoLoud && \
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	patch -Np1<$(abs_top_srcdir)/build/aux/revert-soloud.patch && \
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	patch -Np1<$(abs_top_srcdir)/build/aux/soloud-miniaudio-latest.patch && \
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	patch -Np1<$(abs_top_srcdir)/build/aux/soloud-miniaudio-settings.patch && \
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	patch -Np1<$(abs_top_srcdir)/build/aux/soloud-add-sdl3-static-option.patch && \
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	patch -Np1<$(abs_top_srcdir)/build/aux/soloud-fix-leak-setMaxActiveVoiceCount.patch && \
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	patch -Np1<$(abs_top_srcdir)/build/aux/soloud-bump-dr_libs.patch && \
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	patch -Np1<$(abs_top_srcdir)/build/aux/soloud-fastseek.patch && \
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	patch -Np1<$(abs_top_srcdir)/build/aux/soloud-null-getAudio.patch && \
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	patch -Np1<$(abs_top_srcdir)/build/aux/soloud-fix-global-volume-data-race.patch && \
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	$(SED) -i -e 's|#define VOICE_COUNT 1024|#define VOICE_COUNT 4095|g' \
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@			-e 's|#define SOLOUD_DEFAULT_RESAMPLER.*|#define SOLOUD_DEFAULT_RESAMPLER SoLoud::Soloud::RESAMPLER_CATMULLROM|g' include/soloud.h # raise max # concurrent voices from 1024 default to 4095 (hard limit)
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	cd $(DEPS_PREFIX)/SoLoud/build && \
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	$(SED) -i 's|"NoRTTI"$(comma)||g' genie.lua
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@@WIN32_PLATFORM_TRUE@	cd $(DEPS_PREFIX)/SoLoud/build && \
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@@WIN32_PLATFORM_TRUE@	PKG_CONFIG="$(PKG_CONFIG) --static" CC="$(CC)" CXX="$(CXX)" LD="$(LD)" CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS)" \
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@@WIN32_PLATFORM_TRUE@	$(GENIE) --with-miniaudio-only \
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@@WIN32_PLATFORM_TRUE@			 --with-sdl3static-only \
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@@WIN32_PLATFORM_TRUE@			 --platform=x32 \
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@@WIN32_PLATFORM_TRUE@			 --os=windows \
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@@WIN32_PLATFORM_TRUE@			 gmake && \
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@@WIN32_PLATFORM_TRUE@	cd gmake && $(SED) -i -e 's|^CC.*=.*||g' -e 's|^AR.*=.*||g' -e 's|^CXX.*=.*||g' SoloudStatic.make && \
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@@WIN32_PLATFORM_TRUE@	PKG_CONFIG="$(PKG_CONFIG) --static" CC="$(CC)" CXX="$(CXX)" LD="$(LD)" CFLAGS="$(SDL3_CFLAGS) $(CFLAGS)" CXXFLAGS="$(SDL3_CFLAGS) $(CXXFLAGS)" LDFLAGS="$(LDFLAGS)" \
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@@WIN32_PLATFORM_TRUE@	PREFIX="$(DEPS_PREFIX)" RANLIB="$(RANLIB)" AR="$(AR)" config="$(if $(ENABLE_DEBUG),debug,release)" make SoloudStatic && \
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@@WIN32_PLATFORM_TRUE@	cp $(DEPS_PREFIX)/SoLoud/lib/libsoloud_static_x86$(if $(ENABLE_DEBUG),_d,).a $(DEPS_PREFIX)/lib/
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@@WIN32_PLATFORM_FALSE@	cd $(DEPS_PREFIX)/SoLoud/build && \
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@@WIN32_PLATFORM_FALSE@	PKG_CONFIG="$(PKG_CONFIG) --static" CC="$(CC)" CXX="$(CXX)" LD="$(LD)" CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS)" \
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@@WIN32_PLATFORM_FALSE@	$(GENIE) --with-miniaudio-only \
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@@WIN32_PLATFORM_FALSE@			 --with-sdl3static-only \
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@@WIN32_PLATFORM_FALSE@			 --platform=x$(if $(filter x86_64,$(host_cpu)),64,32) \
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@@WIN32_PLATFORM_FALSE@			 --os=$(if $(findstring linux,$(host_os)),linux,windows) \
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@@WIN32_PLATFORM_FALSE@			 cmake && \
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@@WIN32_PLATFORM_FALSE@	cd cmake && printf '%s\n%s' "cmake_minimum_required(VERSION 3.15)" "add_subdirectory(SoloudStatic)" > CMakeLists.txt && \
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@@WIN32_PLATFORM_FALSE@	PKG_CONFIG="$(PKG_CONFIG) --static" CC="$(CC)" CXX="$(CXX)" LD="$(LD)" CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS)" \
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@@WIN32_PLATFORM_FALSE@	cmake -S . -B build -G Ninja \
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@@WIN32_PLATFORM_FALSE@		-D CMAKE_BUILD_TYPE="$(if $(ENABLE_DEBUG),Debug,Release)" \
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@@WIN32_PLATFORM_FALSE@		-D CMAKE_INSTALL_PREFIX="$(DEPS_PREFIX)" \
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@@WIN32_PLATFORM_FALSE@		-D CMAKE_SYSTEM_NAME="$(CMAKE_SYSTEM_NAME)" \
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@@WIN32_PLATFORM_FALSE@		-D CMAKE_SYSTEM_PROCESSOR="$(host_cpu)" \
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@@WIN32_PLATFORM_FALSE@		-D CMAKE_C_COMPILER="$(CC)" \
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@@WIN32_PLATFORM_FALSE@		$(CMAKERCOPT) \
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@@WIN32_PLATFORM_FALSE@		-D CMAKE_C_FLAGS="$(SDL3_CFLAGS) $(CFLAGS)" \
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@@WIN32_PLATFORM_FALSE@		-D CMAKE_CXX_COMPILER="$(CXX)" \
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@@WIN32_PLATFORM_FALSE@		-D CMAKE_CXX_FLAGS="$(SDL3_CFLAGS) $(CXXFLAGS)" && \
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@@WIN32_PLATFORM_FALSE@	cmake --build build && \
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@@WIN32_PLATFORM_FALSE@	cmake --install build 
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	cp -r $(DEPS_PREFIX)/SoLoud/include/* $(DEPS_PREFIX)/include/soloud/ && \
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	test -f $(DEPS_PREFIX)/lib/libsoloud_static_x$(if $(filter x86_64,$(host_cpu)),64,$(if $(findstring linux,$(host_os)),32,86))$(if $(ENABLE_DEBUG),_d,).a
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	touch $@
+@USE_SDLMIXER_TRUE@$(DEPS_PREFIX)/SDL3_mixer.built: $(DEPS_PREFIX)/SDL3.built $(DEPS_CACHE)/SDL3_mixer.source
+@USE_SDLMIXER_TRUE@	rm -rf $(DEPS_PREFIX)/SDL3_mixer
+@USE_SDLMIXER_TRUE@	$(MKDIR_P) $(DEPS_PREFIX) $(DEPS_PREFIX)/lib/pkgconfig
+@USE_SDLMIXER_TRUE@	cp -r $(DEPS_CACHE)/SDL3_mixer $(DEPS_PREFIX)/SDL3_mixer && \
+@USE_SDLMIXER_TRUE@	$(MKDIR_P) $(DEPS_PREFIX)/SDL3_mixer/build
+@USE_SDLMIXER_TRUE@	cd $(DEPS_PREFIX)/SDL3_mixer && \
+@USE_SDLMIXER_TRUE@	PKG_CONFIG="$(PKG_CONFIG)" LDFLAGS="$(LDFLAGS)" \
+@USE_SDLMIXER_TRUE@	cmake -S . -B build -G Ninja \
+@USE_SDLMIXER_TRUE@		-D CMAKE_BUILD_TYPE="$(if $(ENABLE_DEBUG),Debug,Release)" \
+@USE_SDLMIXER_TRUE@		-D CMAKE_INSTALL_PREFIX="$(DEPS_PREFIX)" \
+@USE_SDLMIXER_TRUE@		-D CMAKE_SYSTEM_NAME="$(CMAKE_SYSTEM_NAME)" \
+@USE_SDLMIXER_TRUE@		-D CMAKE_SYSTEM_PROCESSOR="$(host_cpu)" \
+@USE_SDLMIXER_TRUE@		-D CMAKE_C_COMPILER="$(CC)" \
+@USE_SDLMIXER_TRUE@		-D CMAKE_C_FLAGS="$(CFLAGS) -Wno-error=incompatible-pointer-types" \
+@USE_SDLMIXER_TRUE@		$(CMAKERCOPT) \
+@USE_SDLMIXER_TRUE@		-D SDLMIXER_GME=OFF \
+@USE_SDLMIXER_TRUE@		-D SDLMIXER_MIDI=OFF \
+@USE_SDLMIXER_TRUE@		-D SDLMIXER_STRICT=ON \
+@USE_SDLMIXER_TRUE@		-D SDLMIXER_VENDORED=ON \
+@USE_SDLMIXER_TRUE@		-D SDLMIXER_MP3=ON \
+@USE_SDLMIXER_TRUE@		-D SDLMIXER_MP3_MPG123=ON \
+@USE_SDLMIXER_TRUE@		-D BUILD_SHARED_LIBS="$(if $(STATICBUILD),OFF,ON)" \
+@USE_SDLMIXER_TRUE@		-D SDLMIXER_DEPS_SHARED="$(if $(STATICBUILD),OFF,ON)" && \
+@USE_SDLMIXER_TRUE@	cmake --build build && \
+@USE_SDLMIXER_TRUE@	cmake --install build
+@USE_SDLMIXER_TRUE@	$(SED) -i 's|Libs\.private.*|Libs.private: -lmpg123 -logg -lopus -lwavpack -lopusfile -lxmp|' $(DEPS_PREFIX)/lib/pkgconfig/sdl3-mixer.pc # wtf is this weird cmake issue?
+@USE_SDLMIXER_TRUE@	rm -rf $(DEPS_PREFIX)/lib/*SDL3_mixer$(if $(STATICBUILD),$(DLLEXT),.a)*
+@USE_SDLMIXER_TRUE@	$(PKG_CONFIG) --exists --print-errors sdl3-mixer
+@USE_SDLMIXER_TRUE@	touch $@
+@USE_SDLMIXER_FALSE@$(DEPS_PREFIX)/SDL3_mixer.built:
+@USE_SDLMIXER_FALSE@	$(MKDIR_P) $(DEPS_PREFIX) && touch $@
+@USE_SOLOUD_TRUE@$(DEPS_PREFIX)/SoLoud.built: $(DEPS_CACHE)/SoLoud.source $(DEPS_PREFIX)/SDL3.built
+@USE_SOLOUD_TRUE@	rm -rf $(DEPS_PREFIX)/SoLoud
+@USE_SOLOUD_TRUE@	$(MKDIR_P) $(DEPS_PREFIX) $(DEPS_PREFIX)/include/soloud $(DEPS_PREFIX)/lib/pkgconfig $(DEPS_PREFIX)/SoLoud/build
+@USE_SOLOUD_TRUE@	$(TAR) xf $(DEPS_CACHE)/SoLoud-$(SOLOUD_VERSION).tar.gz -C $(DEPS_PREFIX)/SoLoud --strip-components=1 && \
+@USE_SOLOUD_TRUE@	cd $(DEPS_PREFIX)/SoLoud && \
+@USE_SOLOUD_TRUE@	patch -Np1<$(abs_top_srcdir)/build/aux/revert-soloud.patch && \
+@USE_SOLOUD_TRUE@	patch -Np1<$(abs_top_srcdir)/build/aux/soloud-miniaudio-latest.patch && \
+@USE_SOLOUD_TRUE@	patch -Np1<$(abs_top_srcdir)/build/aux/soloud-miniaudio-settings.patch && \
+@USE_SOLOUD_TRUE@	patch -Np1<$(abs_top_srcdir)/build/aux/soloud-add-sdl3-static-option.patch && \
+@USE_SOLOUD_TRUE@	patch -Np1<$(abs_top_srcdir)/build/aux/soloud-fix-leak-setMaxActiveVoiceCount.patch && \
+@USE_SOLOUD_TRUE@	patch -Np1<$(abs_top_srcdir)/build/aux/soloud-bump-dr_libs.patch && \
+@USE_SOLOUD_TRUE@	patch -Np1<$(abs_top_srcdir)/build/aux/soloud-fastseek.patch && \
+@USE_SOLOUD_TRUE@	patch -Np1<$(abs_top_srcdir)/build/aux/soloud-null-getAudio.patch && \
+@USE_SOLOUD_TRUE@	patch -Np1<$(abs_top_srcdir)/build/aux/soloud-fix-global-volume-data-race.patch && \
+@USE_SOLOUD_TRUE@	$(SED) -i -e 's|#define VOICE_COUNT 1024|#define VOICE_COUNT 4095|g' \
+@USE_SOLOUD_TRUE@			-e 's|#define SOLOUD_DEFAULT_RESAMPLER.*|#define SOLOUD_DEFAULT_RESAMPLER SoLoud::Soloud::RESAMPLER_CATMULLROM|g' include/soloud.h # raise max # concurrent voices from 1024 default to 4095 (hard limit)
+@USE_SOLOUD_TRUE@	cd $(DEPS_PREFIX)/SoLoud/build && \
+@USE_SOLOUD_TRUE@	$(SED) -i 's|"NoRTTI"$(comma)||g' genie.lua
+@USE_SOLOUD_TRUE@@WIN32_PLATFORM_TRUE@	cd $(DEPS_PREFIX)/SoLoud/build && \
+@USE_SOLOUD_TRUE@@WIN32_PLATFORM_TRUE@	PKG_CONFIG="$(PKG_CONFIG) --static" CC="$(CC)" CXX="$(CXX)" LD="$(LD)" CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS)" \
+@USE_SOLOUD_TRUE@@WIN32_PLATFORM_TRUE@	$(GENIE) --with-miniaudio-only \
+@USE_SOLOUD_TRUE@@WIN32_PLATFORM_TRUE@			 --with-sdl3static-only \
+@USE_SOLOUD_TRUE@@WIN32_PLATFORM_TRUE@			 --platform=x32 \
+@USE_SOLOUD_TRUE@@WIN32_PLATFORM_TRUE@			 --os=windows \
+@USE_SOLOUD_TRUE@@WIN32_PLATFORM_TRUE@			 gmake && \
+@USE_SOLOUD_TRUE@@WIN32_PLATFORM_TRUE@	cd gmake && $(SED) -i -e 's|^CC.*=.*||g' -e 's|^AR.*=.*||g' -e 's|^CXX.*=.*||g' SoloudStatic.make && \
+@USE_SOLOUD_TRUE@@WIN32_PLATFORM_TRUE@	PKG_CONFIG="$(PKG_CONFIG) --static" CC="$(CC)" CXX="$(CXX)" LD="$(LD)" CFLAGS="$(SDL3_CFLAGS) $(CFLAGS)" CXXFLAGS="$(SDL3_CFLAGS) $(CXXFLAGS)" LDFLAGS="$(LDFLAGS)" \
+@USE_SOLOUD_TRUE@@WIN32_PLATFORM_TRUE@	PREFIX="$(DEPS_PREFIX)" RANLIB="$(RANLIB)" AR="$(AR)" config="$(if $(ENABLE_DEBUG),debug,release)" make SoloudStatic && \
+@USE_SOLOUD_TRUE@@WIN32_PLATFORM_TRUE@	cp $(DEPS_PREFIX)/SoLoud/lib/libsoloud_static_x86$(if $(ENABLE_DEBUG),_d,).a $(DEPS_PREFIX)/lib/
+@USE_SOLOUD_TRUE@@WIN32_PLATFORM_FALSE@	cd $(DEPS_PREFIX)/SoLoud/build && \
+@USE_SOLOUD_TRUE@@WIN32_PLATFORM_FALSE@	PKG_CONFIG="$(PKG_CONFIG) --static" CC="$(CC)" CXX="$(CXX)" LD="$(LD)" CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS)" \
+@USE_SOLOUD_TRUE@@WIN32_PLATFORM_FALSE@	$(GENIE) --with-miniaudio-only \
+@USE_SOLOUD_TRUE@@WIN32_PLATFORM_FALSE@			 --with-sdl3static-only \
+@USE_SOLOUD_TRUE@@WIN32_PLATFORM_FALSE@			 --platform=x$(if $(filter x86_64,$(host_cpu)),64,32) \
+@USE_SOLOUD_TRUE@@WIN32_PLATFORM_FALSE@			 --os=$(if $(findstring linux,$(host_os)),linux,windows) \
+@USE_SOLOUD_TRUE@@WIN32_PLATFORM_FALSE@			 cmake && \
+@USE_SOLOUD_TRUE@@WIN32_PLATFORM_FALSE@	cd cmake && printf '%s\n%s' "cmake_minimum_required(VERSION 3.15)" "add_subdirectory(SoloudStatic)" > CMakeLists.txt && \
+@USE_SOLOUD_TRUE@@WIN32_PLATFORM_FALSE@	PKG_CONFIG="$(PKG_CONFIG) --static" CC="$(CC)" CXX="$(CXX)" LD="$(LD)" CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS)" \
+@USE_SOLOUD_TRUE@@WIN32_PLATFORM_FALSE@	cmake -S . -B build -G Ninja \
+@USE_SOLOUD_TRUE@@WIN32_PLATFORM_FALSE@		-D CMAKE_BUILD_TYPE="$(if $(ENABLE_DEBUG),Debug,Release)" \
+@USE_SOLOUD_TRUE@@WIN32_PLATFORM_FALSE@		-D CMAKE_INSTALL_PREFIX="$(DEPS_PREFIX)" \
+@USE_SOLOUD_TRUE@@WIN32_PLATFORM_FALSE@		-D CMAKE_SYSTEM_NAME="$(CMAKE_SYSTEM_NAME)" \
+@USE_SOLOUD_TRUE@@WIN32_PLATFORM_FALSE@		-D CMAKE_SYSTEM_PROCESSOR="$(host_cpu)" \
+@USE_SOLOUD_TRUE@@WIN32_PLATFORM_FALSE@		-D CMAKE_C_COMPILER="$(CC)" \
+@USE_SOLOUD_TRUE@@WIN32_PLATFORM_FALSE@		$(CMAKERCOPT) \
+@USE_SOLOUD_TRUE@@WIN32_PLATFORM_FALSE@		-D CMAKE_C_FLAGS="$(SDL3_CFLAGS) $(CFLAGS)" \
+@USE_SOLOUD_TRUE@@WIN32_PLATFORM_FALSE@		-D CMAKE_CXX_COMPILER="$(CXX)" \
+@USE_SOLOUD_TRUE@@WIN32_PLATFORM_FALSE@		-D CMAKE_CXX_FLAGS="$(SDL3_CFLAGS) $(CXXFLAGS)" && \
+@USE_SOLOUD_TRUE@@WIN32_PLATFORM_FALSE@	cmake --build build && \
+@USE_SOLOUD_TRUE@@WIN32_PLATFORM_FALSE@	cmake --install build 
+@USE_SOLOUD_TRUE@	cp -r $(DEPS_PREFIX)/SoLoud/include/* $(DEPS_PREFIX)/include/soloud/ && \
+@USE_SOLOUD_TRUE@	test -f $(DEPS_PREFIX)/lib/libsoloud_static_x$(if $(filter x86_64,$(host_cpu)),64,$(if $(findstring linux,$(host_os)),32,86))$(if $(ENABLE_DEBUG),_d,).a
+@USE_SOLOUD_TRUE@	touch $@
 
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@$(DEPS_PREFIX)/SoundTouch.built: $(DEPS_CACHE)/SoundTouch.source
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	rm -rf $(DEPS_PREFIX)/SoundTouch
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	$(MKDIR_P) $(DEPS_PREFIX) $(DEPS_PREFIX)/include $(DEPS_PREFIX)/lib/pkgconfig $(DEPS_PREFIX)/SoundTouch/build
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	$(TAR) xf $(DEPS_CACHE)/SoundTouch-$(SOUNDTOUCH_VERSION).tar.gz -C $(DEPS_PREFIX)/SoundTouch --strip-components=1 && \
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	cd $(DEPS_PREFIX)/SoundTouch && \
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	PKG_CONFIG="$(PKG_CONFIG)" LDFLAGS="$(LDFLAGS)" \
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	cmake -S . -B build -G Ninja \
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@		-D CMAKE_BUILD_TYPE="$(if $(ENABLE_DEBUG),Debug,Release)" \
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@		-D CMAKE_INSTALL_PREFIX="$(DEPS_PREFIX)" \
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@		-D CMAKE_SYSTEM_NAME="$(CMAKE_SYSTEM_NAME)" \
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@		-D CMAKE_SYSTEM_PROCESSOR="$(host_cpu)" \
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@		-D CMAKE_C_COMPILER="$(CC)" \
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@		-D CMAKE_C_FLAGS="$(CFLAGS) -DST_NO_EXCEPTION_HANDLING" \
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@		-D CMAKE_CXX_COMPILER="$(CXX)" \
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@		-D CMAKE_CXX_FLAGS="$(CXXFLAGS) -DST_NO_EXCEPTION_HANDLING" \
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@		$(CMAKERCOPT) \
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@		-D SOUNDSTRETCH=OFF \
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@		-D SOUNDTOUCH_DLL=OFF \
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@		-D OPENMP="$(if $(STATICBUILD),OFF,ON)" \
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@		-D BUILD_SHARED_LIBS="$(if $(STATICBUILD),OFF,ON)" && \
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	cmake --build build && \
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	cmake --install build
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	rm -rf $(DEPS_PREFIX)/lib/*SoundTouch$(if $(STATICBUILD),$(DLLEXT),.a)*
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	$(PKG_CONFIG) --env-only --exists --print-errors soundtouch
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	touch $@
-
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@$(DEPS_PREFIX)/SDL3_mixer.built:
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	$(MKDIR_P) $(DEPS_PREFIX) && touch $@
-@USE_BASS_TRUE@$(DEPS_PREFIX)/SDL3_mixer.built:
-@USE_BASS_TRUE@	$(MKDIR_P) $(DEPS_PREFIX) && touch $@
-@USE_BASS_TRUE@$(DEPS_PREFIX)/SoLoud.built:
-@USE_BASS_TRUE@	$(MKDIR_P) $(DEPS_PREFIX) && touch $@
-@USE_BASS_TRUE@$(DEPS_PREFIX)/SoundTouch.built:
-@USE_BASS_TRUE@	$(MKDIR_P) $(DEPS_PREFIX) && touch $@
+@USE_SOLOUD_TRUE@$(DEPS_PREFIX)/SoundTouch.built: $(DEPS_CACHE)/SoundTouch.source
+@USE_SOLOUD_TRUE@	rm -rf $(DEPS_PREFIX)/SoundTouch
+@USE_SOLOUD_TRUE@	$(MKDIR_P) $(DEPS_PREFIX) $(DEPS_PREFIX)/include $(DEPS_PREFIX)/lib/pkgconfig $(DEPS_PREFIX)/SoundTouch/build
+@USE_SOLOUD_TRUE@	$(TAR) xf $(DEPS_CACHE)/SoundTouch-$(SOUNDTOUCH_VERSION).tar.gz -C $(DEPS_PREFIX)/SoundTouch --strip-components=1 && \
+@USE_SOLOUD_TRUE@	cd $(DEPS_PREFIX)/SoundTouch && \
+@USE_SOLOUD_TRUE@	PKG_CONFIG="$(PKG_CONFIG)" LDFLAGS="$(LDFLAGS)" \
+@USE_SOLOUD_TRUE@	cmake -S . -B build -G Ninja \
+@USE_SOLOUD_TRUE@		-D CMAKE_BUILD_TYPE="$(if $(ENABLE_DEBUG),Debug,Release)" \
+@USE_SOLOUD_TRUE@		-D CMAKE_INSTALL_PREFIX="$(DEPS_PREFIX)" \
+@USE_SOLOUD_TRUE@		-D CMAKE_SYSTEM_NAME="$(CMAKE_SYSTEM_NAME)" \
+@USE_SOLOUD_TRUE@		-D CMAKE_SYSTEM_PROCESSOR="$(host_cpu)" \
+@USE_SOLOUD_TRUE@		-D CMAKE_C_COMPILER="$(CC)" \
+@USE_SOLOUD_TRUE@		-D CMAKE_C_FLAGS="$(CFLAGS) -DST_NO_EXCEPTION_HANDLING" \
+@USE_SOLOUD_TRUE@		-D CMAKE_CXX_COMPILER="$(CXX)" \
+@USE_SOLOUD_TRUE@		-D CMAKE_CXX_FLAGS="$(CXXFLAGS) -DST_NO_EXCEPTION_HANDLING" \
+@USE_SOLOUD_TRUE@		$(CMAKERCOPT) \
+@USE_SOLOUD_TRUE@		-D SOUNDSTRETCH=OFF \
+@USE_SOLOUD_TRUE@		-D SOUNDTOUCH_DLL=OFF \
+@USE_SOLOUD_TRUE@		-D OPENMP="$(if $(STATICBUILD),OFF,ON)" \
+@USE_SOLOUD_TRUE@		-D BUILD_SHARED_LIBS="$(if $(STATICBUILD),OFF,ON)" && \
+@USE_SOLOUD_TRUE@	cmake --build build && \
+@USE_SOLOUD_TRUE@	cmake --install build
+@USE_SOLOUD_TRUE@	rm -rf $(DEPS_PREFIX)/lib/*SoundTouch$(if $(STATICBUILD),$(DLLEXT),.a)*
+@USE_SOLOUD_TRUE@	$(PKG_CONFIG) --env-only --exists --print-errors soundtouch
+@USE_SOLOUD_TRUE@	touch $@
+@USE_SOLOUD_FALSE@$(DEPS_PREFIX)/SoLoud.built:
+@USE_SOLOUD_FALSE@	$(MKDIR_P) $(DEPS_PREFIX) && touch $@
+@USE_SOLOUD_FALSE@$(DEPS_PREFIX)/SoundTouch.built:
+@USE_SOLOUD_FALSE@	$(MKDIR_P) $(DEPS_PREFIX) && touch $@
 
 $(DEPS_CACHE)/libjpeg-$(LIBJPEG_VERSION).source:
 	$(MKDIR_P) $(DEPS_CACHE)
@@ -5279,13 +5271,13 @@ install-libs:
 	find $(srcdir)/$(ASSETS_DIR)/cfg -type f -exec $(INSTALL) -Dm 644 '{''}' "$(DESTDIR)$(bindir)/cfg" ';'
 @BUILD_MIMALLOC_TRUE@@WIN_PLATFORM_TRUE@	@cp -P "$(DEPS_PREFIX)/bin/mimalloc"{,-redirect$(if $(filter x86_64,$(host_cpu)),,32)}".dll" "$(DESTDIR)$(bindir)/$(LIBDEST)"
 @WINSHARED_DLLS_NEEDED_TRUE@@WIN_PLATFORM_TRUE@	@cp -P $(WINSHARED_DLLS) "$(DESTDIR)$(bindir)/$(LIBDEST)"
-@USE_BASS_FALSE@@USE_SDLMIXER_TRUE@	$(if $(STATICBUILD),,@cp -P "$(SDL3_MIXER_PREFIX)/lib"/{*$(LIBPREFIX)SDL3_mixer*$(DLLEXT)*,*$(LIBPREFIX)mpg123*$(DLLEXT)*,*$(LIBPREFIX)xmp*$(DLLEXT)*,*$(LIBPREFIX)wavpack*$(DLLEXT)*,*$(LIBPREFIX)opus*$(DLLEXT)*,*$(LIBPREFIX)ogg*$(DLLEXT)*} "$(DESTDIR)$(bindir)/$(LIBDEST)")
-@USE_BASS_FALSE@@USE_SDLMIXER_FALSE@	$(if $(STATICBUILD),,@cp -P "$(SOLOUD_PREFIX)/lib"/*$(LIBPREFIX)SoundTouch*$(DLLEXT)* "$(DESTDIR)$(bindir)/$(LIBDEST)")
 @USE_BASS_TRUE@	$(INSTALL) -m 755 $(srcdir)/$(BUNDLED_BASS_DIR)/lib/$(SYSNAME)/$(host_cpu)/$(LIBPREFIX)bass$(DLLEXT) "$(DESTDIR)$(bindir)/$(LIBDEST)"
 @USE_BASS_TRUE@	$(INSTALL) -m 755 $(srcdir)/$(BUNDLED_BASS_FX_DIR)/lib/$(SYSNAME)/$(host_cpu)/$(LIBPREFIX)bass_fx$(DLLEXT) "$(DESTDIR)$(bindir)/$(LIBDEST)"
 @USE_BASS_TRUE@	$(INSTALL) -m 755 $(srcdir)/$(BUNDLED_BASS_MIX_DIR)/lib/$(SYSNAME)/$(host_cpu)/$(LIBPREFIX)bassmix$(DLLEXT) "$(DESTDIR)$(bindir)/$(LIBDEST)"
 @USE_BASS_TRUE@@WIN_PLATFORM_TRUE@	$(INSTALL) -m 755 $(srcdir)/$(BUNDLED_BASS_ASIO_DIR)/lib/$(SYSNAME)/$(host_cpu)/$(LIBPREFIX)bassasio$(DLLEXT) "$(DESTDIR)$(bindir)/$(LIBDEST)"
 @USE_BASS_TRUE@@WIN_PLATFORM_TRUE@	$(INSTALL) -m 755 $(srcdir)/$(BUNDLED_BASS_WASAPI_DIR)/lib/$(SYSNAME)/$(host_cpu)/$(LIBPREFIX)basswasapi$(DLLEXT) "$(DESTDIR)$(bindir)/$(LIBDEST)"
+@USE_SDLMIXER_TRUE@	$(if $(STATICBUILD),,@cp -P "$(SDL3_MIXER_PREFIX)/lib"/{*$(LIBPREFIX)SDL3_mixer*$(DLLEXT)*,*$(LIBPREFIX)mpg123*$(DLLEXT)*,*$(LIBPREFIX)xmp*$(DLLEXT)*,*$(LIBPREFIX)wavpack*$(DLLEXT)*,*$(LIBPREFIX)opus*$(DLLEXT)*,*$(LIBPREFIX)ogg*$(DLLEXT)*} "$(DESTDIR)$(bindir)/$(LIBDEST)")
+@USE_SOLOUD_TRUE@	$(if $(STATICBUILD),,@cp -P "$(SOLOUD_PREFIX)/lib"/*$(LIBPREFIX)SoundTouch*$(DLLEXT)* "$(DESTDIR)$(bindir)/$(LIBDEST)")
 @BUILD_SDL3_TRUE@	$(if $(SDL3_STATIC),,@`find $(SDL3_PREFIX) '(' -iname '*SDL3*'$(DLLEXT) -o -iname '*SDL3*''.so.*' ')' -exec cp -P '{''}' "$(DESTDIR)$(bindir)/$(LIBDEST)" ';'`)
 @BUILD_LIBJPEG_TRUE@	$(if $(STATICBUILD),,@`find $(LIBJPEG_PREFIX) '(' -iname '*libjpeg-*'$(DLLEXT) -o -iname '*libjpeg*''.so.*' ')' -exec cp -P '{''}' "$(DESTDIR)$(bindir)/$(LIBDEST)" ';'`)
 @BUILD_LIBJPEG_TRUE@	$(if $(STATICBUILD),,@`find $(LIBJPEG_PREFIX) '(' -iname '*libturbojpeg-*'$(DLLEXT) -o -iname '*libturbojpeg''.so.*' ')' -exec cp -P '{''}' "$(DESTDIR)$(bindir)/$(LIBDEST)" ';'`)

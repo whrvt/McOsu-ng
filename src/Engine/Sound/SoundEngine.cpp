@@ -48,17 +48,24 @@ SoundEngine::SoundEngine()
 
 SoundEngine::~SoundEngine() = default;
 
-SoundEngine *SoundEngine::createSoundEngine()
+SoundEngine *SoundEngine::createSoundEngine(SndEngineType type)
 {
-#ifdef MCENGINE_FEATURE_BASS
-	return new BassSoundEngine();
-#elif defined(MCENGINE_FEATURE_SDL_MIXER)
-	return new SDLSoundEngine();
-#elif defined(MCENGINE_FEATURE_SOLOUD)
-	return new SoLoudSoundEngine();
-#else
-#error No sound engine backend available!
+#if !defined(MCENGINE_FEATURE_BASS) && !defined(MCENGINE_FEATURE_SOLOUD) && !defined(MCENGINE_FEATURE_SDL_MIXER)
+	#error No sound backend available!
 #endif
+#ifdef MCENGINE_FEATURE_BASS
+	if (type == BASS)
+		return new BassSoundEngine();
+#endif
+#ifdef MCENGINE_FEATURE_SDL_MIXER
+	if (type == SDL)
+		return new SDLSoundEngine();
+#endif
+#ifdef MCENGINE_FEATURE_SOLOUD
+	if (type == SOLOUD)
+		return new SoLoudSoundEngine();
+#endif
+	return nullptr;
 }
 
 void SoundEngine::setOnOutputDeviceChange(AudioOutputChangedCallback callback)

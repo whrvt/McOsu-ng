@@ -654,7 +654,8 @@ BUNDLED_BASS_MIX_DIR
 BUNDLED_BASS_FX_DIR
 BUNDLED_BASS_DIR
 BUNDLED_LIBS_DIR
-BASS_CFLAGS
+AUDIO_LIBS
+AUDIO_CFLAGS
 ASSETS_DIR
 WINSHARED_DLLS_NEEDED_FALSE
 WINSHARED_DLLS_NEEDED_TRUE
@@ -778,8 +779,8 @@ PKG_CONFIG_PATH
 STATICBUILD
 PKGTYPE
 ENABLE_ASAN
-LLVMMINGW
 GENIE
+LLVMMINGW
 CMAKE
 MESON
 NINJA
@@ -910,8 +911,7 @@ enable_lto
 enable_system_deps
 enable_static
 with_renderer
-with_sdlmixer
-with_soloud
+with_audio
 with_mimalloc
 '
       ac_precious_vars='build_alias
@@ -1614,10 +1614,8 @@ Optional Packages:
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
   --with-renderer={opengl,opengles,dx11}
                           The renderer backend to build with (default: opengl)
-  --with-sdlmixer         Use the SDL_mixer backend for audio instead of BASS
-                          (default: no)
-  --with-soloud           Use the SoLoud backend for audio instead of BASS
-                          (default: no)
+  --with-audio={bass,soloud,sdl}
+                          The audio backend(s) to build with (default: bass)
   --with-mimalloc         Use mimalloc instead of the default memory allocator
                           (faster) (default: on if not debug)
 
@@ -5969,18 +5967,12 @@ fi
 
 
 
-# Check whether --with-sdlmixer was given.
-if test ${with_sdlmixer+y}
+# Check whether --with-audio was given.
+if test ${with_audio+y}
 then :
-  withval=$with_sdlmixer;
+  withval=$with_audio;
 fi
 
-
-# Check whether --with-soloud was given.
-if test ${with_soloud+y}
-then :
-  withval=$with_soloud;
-fi
 
 
 # Check whether --with-mimalloc was given.
@@ -5989,67 +5981,6 @@ then :
   withval=$with_mimalloc;
 fi
 
-
-if test "x$with_sdlmixer" = "xyes" && test "x$with_soloud" = "xyes"
-then :
-
-    as_fn_error $? "Only one of --with-sdlmixer or --with-soloud can be used at once!" "$LINENO" 5
-
-fi
-
-if test "x$with_soloud" = "xyes"
-then :
-
-
-    # Extract the first word of "genie", so it can be a program name with args.
-set dummy genie; ac_word=$2
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
-printf %s "checking for $ac_word... " >&6; }
-if test ${ac_cv_prog_GENIE+y}
-then :
-  printf %s "(cached) " >&6
-else case e in #(
-  e) if test -n "$GENIE"; then
-  ac_cv_prog_GENIE="$GENIE" # Let the user override the test.
-else
-as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  case $as_dir in #(((
-    '') as_dir=./ ;;
-    */) ;;
-    *) as_dir=$as_dir/ ;;
-  esac
-    for ac_exec_ext in '' $ac_executable_extensions; do
-  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
-    ac_cv_prog_GENIE="genie"
-    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-  done
-IFS=$as_save_IFS
-
-fi ;;
-esac
-fi
-GENIE=$ac_cv_prog_GENIE
-if test -n "$GENIE"; then
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $GENIE" >&5
-printf "%s\n" "$GENIE" >&6; }
-else
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
-printf "%s\n" "no" >&6; }
-fi
-
-
-    if test -z "$GENIE"; then
-        as_fn_error $? "GENie (https://github.com/bkaradzic/GENie) not found - required for building SoLoud" "$LINENO" 5
-    fi
-
-
-fi
 
 if test "$host_os" = "mingw32"
 then :
@@ -6105,6 +6036,103 @@ then :
 
 
 printf "%s\n" "#define MCENGINE_FEATURE_OPENGL 1" >>confdefs.h
+
+
+fi
+
+with_bass=unset
+if test ${with_audio+y}
+then :
+  ac_save_IFS=$IFS
+        IFS=' ,'
+        set x $with_audio
+        IFS=$ac_save_IFS
+        shift
+        for aud
+        do
+            case $aud in
+            soloud*) with_soloud=yes ;;
+            sdl*) with_sdlmixer=yes ;;
+            bass*) with_bass=yes ;;
+            esac
+        done
+fi
+
+if test "$with_bass" = "yes" || { test "$with_bass" = "unset" && ! { test "$with_soloud" = "yes" || test "$with_sdlmixer" = "yes"; } ; }
+then :
+
+    with_bass=yes
+
+printf "%s\n" "#define MCENGINE_FEATURE_BASS 1" >>confdefs.h
+
+
+else case e in #(
+  e)
+    with_bass=no
+ ;;
+esac
+fi
+if test "$with_soloud" = "yes"
+then :
+
+
+    # Extract the first word of "genie", so it can be a program name with args.
+set dummy genie; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+if test ${ac_cv_prog_GENIE+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) if test -n "$GENIE"; then
+  ac_cv_prog_GENIE="$GENIE" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    ac_cv_prog_GENIE="genie"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi ;;
+esac
+fi
+GENIE=$ac_cv_prog_GENIE
+if test -n "$GENIE"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $GENIE" >&5
+printf "%s\n" "$GENIE" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+
+    if test -z "$GENIE"; then
+        as_fn_error $? "GENie (https://github.com/bkaradzic/GENie) not found - required for building SoLoud" "$LINENO" 5
+    fi
+
+
+printf "%s\n" "#define MCENGINE_FEATURE_SOLOUD 1" >>confdefs.h
+
+
+fi
+if test "$with_sdlmixer" = "yes"
+then :
+
+
+printf "%s\n" "#define MCENGINE_FEATURE_SDL_MIXER 1" >>confdefs.h
 
 
 fi
@@ -11102,7 +11130,7 @@ else
 fi
  # default off for windows, kinda buggy
 
- if test "x$with_sdlmixer" != "xyes" && test "x$with_soloud" != "xyes"; then
+ if test "$with_bass" = "yes"; then
   USE_BASS_TRUE=
   USE_BASS_FALSE='#'
 else
@@ -11110,7 +11138,7 @@ else
   USE_BASS_FALSE=
 fi
 
- if test "x$with_sdlmixer" = "xyes"; then
+ if test "$with_sdlmixer" = "yes"; then
   USE_SDLMIXER_TRUE=
   USE_SDLMIXER_FALSE='#'
 else
@@ -11118,7 +11146,7 @@ else
   USE_SDLMIXER_FALSE=
 fi
 
- if test "x$with_soloud" = "xyes"; then
+ if test "$with_soloud" = "yes"; then
   USE_SOLOUD_TRUE=
   USE_SOLOUD_FALSE='#'
 else
@@ -11185,8 +11213,9 @@ BUNDLED_BASS_MIX_DIR=$BUNDLED_LIBS_DIR/bassmix
 BUNDLED_BASS_ASIO_DIR=$BUNDLED_LIBS_DIR/bassasio
 BUNDLED_BASS_WASAPI_DIR=$BUNDLED_LIBS_DIR/basswasapi
 
-# sanity check
-if test "x$with_sdlmixer" != "xyes" && test "x$with_soloud" != "xyes"
+AUDIO_CFLAGS=""
+AUDIO_LIBS=""
+if test "$with_bass" = "yes"
 then :
 
     if test -f "$srcdir/$BUNDLED_BASS_DIR/lib/$SYSNAME/$host_cpu/${LIBPREFIX}bass$DLLEXT"
@@ -11210,7 +11239,7 @@ else case e in #(
   e) as_fn_error $? "Required bundled library ${LIBPREFIX}bassmix$DLLEXT not found" "$LINENO" 5 ;;
 esac
 fi
-    BASS_CFLAGS="-I\$(srcdir)/\$(BUNDLED_BASS_DIR)/include -I\$(srcdir)/\$(BUNDLED_BASS_FX_DIR)/include -I\$(srcdir)/\$(BUNDLED_BASS_MIX_DIR)/include"
+    AUDIO_CFLAGS="$AUDIO_CFLAGS -I\$(srcdir)/\$(BUNDLED_BASS_DIR)/include -I\$(srcdir)/\$(BUNDLED_BASS_FX_DIR)/include -I\$(srcdir)/\$(BUNDLED_BASS_MIX_DIR)/include"
     if test "$SYSNAME" = "windows"
 then :
 
@@ -11228,35 +11257,12 @@ else case e in #(
   e) as_fn_error $? "Required bundled library ${LIBPREFIX}basswasapi$DLLEXT not found" "$LINENO" 5 ;;
 esac
 fi
-        BASS_CFLAGS="$BASS_CFLAGS -I\$(srcdir)/\$(BUNDLED_BASS_ASIO_DIR)/include -I\$(srcdir)/\$(BUNDLED_BASS_WASAPI_DIR)/include"
+        AUDIO_CFLAGS="$AUDIO_CFLAGS -I\$(srcdir)/\$(BUNDLED_BASS_ASIO_DIR)/include -I\$(srcdir)/\$(BUNDLED_BASS_WASAPI_DIR)/include"
 
 fi
 
-printf "%s\n" "#define MCENGINE_FEATURE_BASS 1" >>confdefs.h
-
-
-else case e in #(
-  e)
-    BASS_CFLAGS=""
-    if test "x$with_sdlmixer" = "xyes"
-then :
-
-
-printf "%s\n" "#define MCENGINE_FEATURE_SDL_MIXER 1" >>confdefs.h
-
-
 fi
-    if test "x$with_soloud" = "xyes"
-then :
 
-
-printf "%s\n" "#define MCENGINE_FEATURE_SOLOUD 1" >>confdefs.h
-
-
-fi
- ;;
-esac
-fi
 
 
 
@@ -12912,6 +12918,7 @@ McOsu-ng build configuration:
     C flags:            ${CFLAGS}
     Linker flags:       ${LDFLAGS}
     mimalloc:           ${with_mimalloc-yes}
+    BASS:               ${with_bass-no}
     SDL_mixer:          ${with_sdlmixer-no}
     SoLoud:             ${with_soloud-no}
     LTO:                ${enable_lto-auto}
@@ -12953,6 +12960,7 @@ McOsu-ng build configuration:
     C flags:            ${CFLAGS}
     Linker flags:       ${LDFLAGS}
     mimalloc:           ${with_mimalloc-yes}
+    BASS:               ${with_bass-no}
     SDL_mixer:          ${with_sdlmixer-no}
     SoLoud:             ${with_soloud-no}
     LTO:                ${enable_lto-auto}

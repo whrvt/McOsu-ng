@@ -177,7 +177,7 @@ void AsyncResourceLoader::shutdown()
 	// cleanup async destroy queue
 	for (auto &rs : m_asyncDestroyQueue)
 	{
-		delete rs;
+		SAFE_DELETE(rs);
 	}
 	m_asyncDestroyQueue.clear();
 }
@@ -270,7 +270,7 @@ void AsyncResourceLoader::update(bool lowLatency)
 		if (cv::debug_rm.getBool())
 			debugLog("AsyncResourceLoader: Async destroy of resource {:s}\n", rs->getName());
 
-		delete rs;
+		SAFE_DELETE(rs);
 	}
 }
 

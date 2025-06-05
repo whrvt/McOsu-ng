@@ -15,6 +15,7 @@
 
 #include "File.h"
 #include "ResourceManager.h"
+#include "SoundEngine.h"
 namespace cv
 {
 ConVar debug_snd("debug_snd", false, FCVAR_NONE);
@@ -77,15 +78,22 @@ void Sound::initAsync()
 
 Sound *Sound::createSound(UString filepath, bool stream, bool threeD, bool loop, bool prescan)
 {
-#ifdef MCENGINE_FEATURE_BASS
-	return new BassSound(filepath, stream, threeD, loop, prescan);
-#elif defined(MCENGINE_FEATURE_SDL_MIXER)
-	return new SDLSound(filepath, stream, threeD, loop, prescan);
-#elif defined(MCENGINE_FEATURE_SOLOUD)
-	return new SoLoudSound(filepath, stream, threeD, loop, prescan);
-#else
-#error No sound backend available!
+#if !defined(MCENGINE_FEATURE_BASS) && !defined(MCENGINE_FEATURE_SOLOUD) && !defined(MCENGINE_FEATURE_SDL_MIXER)
+	#error No sound backend available!
 #endif
+#ifdef MCENGINE_FEATURE_BASS
+	if (soundEngine->getTypeId() == BASS)
+		return new BassSound(filepath, stream, threeD, loop, prescan);
+#endif
+#ifdef MCENGINE_FEATURE_SDL_MIXER
+	if (soundEngine->getTypeId() == SDL)
+		return new SDLSound(filepath, stream, threeD, loop, prescan);
+#endif
+#ifdef MCENGINE_FEATURE_SOLOUD
+	if (soundEngine->getTypeId() == SOLOUD)
+		return new SoLoudSound(filepath, stream, threeD, loop, prescan);
+#endif
+	return nullptr;
 }
 
 // quick heuristic to check if it's going to be worth loading the audio,

@@ -127,10 +127,9 @@ $(DEPS_CACHE)/SoundTouch.source:
 	$(WGET) -qO $(DEPS_CACHE)/SoundTouch-$(SOUNDTOUCH_VERSION).tar.gz "https://codeberg.org/soundtouch/soundtouch/archive/$(SOUNDTOUCH_VERSION).tar.gz"
 	touch $@
 
-if !USE_BASS
 if USE_SDLMIXER
-AUDIO_CFLAGS = $(shell $(PKG_CONFIG) --cflags sdl3-mixer)
-AUDIO_LIBS = $(shell $(PKG_CONFIG) --libs sdl3-mixer)
+AUDIO_CFLAGS += $(shell $(PKG_CONFIG) --cflags sdl3-mixer)
+AUDIO_LIBS += $(shell $(PKG_CONFIG) --libs sdl3-mixer)
 $(DEPS_PREFIX)/SDL3_mixer.built: $(DEPS_PREFIX)/SDL3.built $(DEPS_CACHE)/SDL3_mixer.source
 	rm -rf $(DEPS_PREFIX)/SDL3_mixer
 	$(MKDIR_P) $(DEPS_PREFIX) $(DEPS_PREFIX)/lib/pkgconfig
@@ -160,13 +159,14 @@ $(DEPS_PREFIX)/SDL3_mixer.built: $(DEPS_PREFIX)/SDL3.built $(DEPS_CACHE)/SDL3_mi
 	rm -rf $(DEPS_PREFIX)/lib/*SDL3_mixer$(if $(STATICBUILD),$(DLLEXT),.a)*
 	$(PKG_CONFIG) --exists --print-errors sdl3-mixer
 	touch $@
-$(DEPS_PREFIX)/SoLoud.built:
-	$(MKDIR_P) $(DEPS_PREFIX) && touch $@
-$(DEPS_PREFIX)/SoundTouch.built:
-	$(MKDIR_P) $(DEPS_PREFIX) && touch $@
 else
-AUDIO_CFLAGS = $(shell $(PKG_CONFIG) --cflags soundtouch) -DST_NO_EXCEPTION_HANDLING
-AUDIO_LIBS = -L$(DEPS_PREFIX)/lib -lsoloud_static_x$(if $(filter x86_64,$(host_cpu)),64,$(if $(findstring linux,$(host_os)),32,86))$(if $(ENABLE_DEBUG),_d,) $(shell $(PKG_CONFIG) --libs soundtouch)
+$(DEPS_PREFIX)/SDL3_mixer.built:
+	$(MKDIR_P) $(DEPS_PREFIX) && touch $@
+endif
+
+if USE_SOLOUD
+AUDIO_CFLAGS += $(shell $(PKG_CONFIG) --cflags soundtouch) -DST_NO_EXCEPTION_HANDLING
+AUDIO_LIBS += -L$(DEPS_PREFIX)/lib -lsoloud_static_x$(if $(filter x86_64,$(host_cpu)),64,$(if $(findstring linux,$(host_os)),32,86))$(if $(ENABLE_DEBUG),_d,) $(shell $(PKG_CONFIG) --libs soundtouch)
 $(DEPS_PREFIX)/SoLoud.built: $(DEPS_CACHE)/SoLoud.source $(DEPS_PREFIX)/SDL3.built
 	rm -rf $(DEPS_PREFIX)/SoLoud
 	$(MKDIR_P) $(DEPS_PREFIX) $(DEPS_PREFIX)/include/soloud $(DEPS_PREFIX)/lib/pkgconfig $(DEPS_PREFIX)/SoLoud/build
@@ -249,15 +249,7 @@ $(DEPS_PREFIX)/SoundTouch.built: $(DEPS_CACHE)/SoundTouch.source
 	rm -rf $(DEPS_PREFIX)/lib/*SoundTouch$(if $(STATICBUILD),$(DLLEXT),.a)*
 	$(PKG_CONFIG) --env-only --exists --print-errors soundtouch
 	touch $@
-
-$(DEPS_PREFIX)/SDL3_mixer.built:
-	$(MKDIR_P) $(DEPS_PREFIX) && touch $@
-endif
 else
-AUDIO_CFLAGS := $(BASS_CFLAGS)
-AUDIO_LIBS :=
-$(DEPS_PREFIX)/SDL3_mixer.built:
-	$(MKDIR_P) $(DEPS_PREFIX) && touch $@
 $(DEPS_PREFIX)/SoLoud.built:
 	$(MKDIR_P) $(DEPS_PREFIX) && touch $@
 $(DEPS_PREFIX)/SoundTouch.built:
@@ -614,13 +606,7 @@ if WINSHARED_DLLS_NEEDED
 	@cp -P $(WINSHARED_DLLS) "$(DESTDIR)$(bindir)/$(LIBDEST)"
 endif
 endif
-if !USE_BASS
-if USE_SDLMIXER
-	$(if $(STATICBUILD),,@cp -P "$(SDL3_MIXER_PREFIX)/lib"/{*$(LIBPREFIX)SDL3_mixer*$(DLLEXT)*,*$(LIBPREFIX)mpg123*$(DLLEXT)*,*$(LIBPREFIX)xmp*$(DLLEXT)*,*$(LIBPREFIX)wavpack*$(DLLEXT)*,*$(LIBPREFIX)opus*$(DLLEXT)*,*$(LIBPREFIX)ogg*$(DLLEXT)*} "$(DESTDIR)$(bindir)/$(LIBDEST)")
-else
-	$(if $(STATICBUILD),,@cp -P "$(SOLOUD_PREFIX)/lib"/*$(LIBPREFIX)SoundTouch*$(DLLEXT)* "$(DESTDIR)$(bindir)/$(LIBDEST)")
-endif
-else
+if USE_BASS
 	$(INSTALL) -m 755 $(srcdir)/$(BUNDLED_BASS_DIR)/lib/$(SYSNAME)/$(host_cpu)/$(LIBPREFIX)bass$(DLLEXT) "$(DESTDIR)$(bindir)/$(LIBDEST)"
 	$(INSTALL) -m 755 $(srcdir)/$(BUNDLED_BASS_FX_DIR)/lib/$(SYSNAME)/$(host_cpu)/$(LIBPREFIX)bass_fx$(DLLEXT) "$(DESTDIR)$(bindir)/$(LIBDEST)"
 	$(INSTALL) -m 755 $(srcdir)/$(BUNDLED_BASS_MIX_DIR)/lib/$(SYSNAME)/$(host_cpu)/$(LIBPREFIX)bassmix$(DLLEXT) "$(DESTDIR)$(bindir)/$(LIBDEST)"
@@ -628,6 +614,12 @@ if WIN_PLATFORM
 	$(INSTALL) -m 755 $(srcdir)/$(BUNDLED_BASS_ASIO_DIR)/lib/$(SYSNAME)/$(host_cpu)/$(LIBPREFIX)bassasio$(DLLEXT) "$(DESTDIR)$(bindir)/$(LIBDEST)"
 	$(INSTALL) -m 755 $(srcdir)/$(BUNDLED_BASS_WASAPI_DIR)/lib/$(SYSNAME)/$(host_cpu)/$(LIBPREFIX)basswasapi$(DLLEXT) "$(DESTDIR)$(bindir)/$(LIBDEST)"
 endif
+endif
+if USE_SDLMIXER
+	$(if $(STATICBUILD),,@cp -P "$(SDL3_MIXER_PREFIX)/lib"/{*$(LIBPREFIX)SDL3_mixer*$(DLLEXT)*,*$(LIBPREFIX)mpg123*$(DLLEXT)*,*$(LIBPREFIX)xmp*$(DLLEXT)*,*$(LIBPREFIX)wavpack*$(DLLEXT)*,*$(LIBPREFIX)opus*$(DLLEXT)*,*$(LIBPREFIX)ogg*$(DLLEXT)*} "$(DESTDIR)$(bindir)/$(LIBDEST)")
+endif
+if USE_SOLOUD
+	$(if $(STATICBUILD),,@cp -P "$(SOLOUD_PREFIX)/lib"/*$(LIBPREFIX)SoundTouch*$(DLLEXT)* "$(DESTDIR)$(bindir)/$(LIBDEST)")
 endif
 if BUILD_SDL3
 	$(if $(SDL3_STATIC),,@`find $(SDL3_PREFIX) '(' -iname '*SDL3*'$(DLLEXT) -o -iname '*SDL3*''.so.*' ')' -exec cp -P '{''}' "$(DESTDIR)$(bindir)/$(LIBDEST)" ';'`)

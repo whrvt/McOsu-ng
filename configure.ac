@@ -126,20 +126,11 @@ AC_ARG_ENABLE([static],
 AC_ARG_WITH([renderer],
     AS_HELP_STRING([--with-renderer={opengl,opengles,dx11}], [The renderer backend to build with (default: opengl)]))
 
-AC_ARG_WITH([sdlmixer],
-    AS_HELP_STRING([--with-sdlmixer], [Use the SDL_mixer backend for audio instead of BASS (default: no)]))
-AC_ARG_WITH([soloud],
-    AS_HELP_STRING([--with-soloud], [Use the SoLoud backend for audio instead of BASS (default: no)]))
+AC_ARG_WITH([audio],
+    AS_HELP_STRING([--with-audio={bass,soloud,sdl}], [The audio backend(s) to build with (default: bass)]))
+
 AC_ARG_WITH([mimalloc],
     AS_HELP_STRING([--with-mimalloc], [Use mimalloc instead of the default memory allocator (faster) (default: on if not debug)]))
-
-AS_IF([test "x$with_sdlmixer" = "xyes" && test "x$with_soloud" = "xyes"], [
-    AC_MSG_ERROR([Only one of --with-sdlmixer or --with-soloud can be used at once!])
-])
-
-AS_IF([test "x$with_soloud" = "xyes"], [
-    AC_PROG_GENIE
-])
 
 AS_IF([test "$host_os" = "mingw32"], [
     # its too much of a headache to cross-build shared with host libs
@@ -177,6 +168,36 @@ AS_VAR_SET_IF([with_renderer],
 
 AS_IF([test "$renderer" = "opengl"], [
     AC_DEFINE([MCENGINE_FEATURE_OPENGL], [1], [Defined if the OpenGLLegacy backend is to be used.])
+])
+
+with_bass=unset
+AS_VAR_SET_IF([with_audio],
+    [ac_save_IFS=$IFS
+        IFS=' ,'
+        set x $with_audio
+        IFS=$ac_save_IFS
+        shift
+        for aud
+        do
+            case $aud in
+            soloud*) with_soloud=yes ;;
+            sdl*) with_sdlmixer=yes ;;
+            bass*) with_bass=yes ;;
+            esac
+        done])
+
+AS_IF([test "$with_bass" = "yes" || { test "$with_bass" = "unset" && ! { test "$with_soloud" = "yes" || test "$with_sdlmixer" = "yes"; } ; } ], [
+    with_bass=yes
+    AC_DEFINE([MCENGINE_FEATURE_BASS], [1], [Define if the BASS audio backend is desired.])
+], [
+    with_bass=no
+])
+AS_IF([test "$with_soloud" = "yes"], [
+    AC_PROG_GENIE
+    AC_DEFINE([MCENGINE_FEATURE_SOLOUD], [1], [Define if the SoLoud audio backend is desired.])
+])
+AS_IF([test "$with_sdlmixer" = "yes"], [
+    AC_DEFINE([MCENGINE_FEATURE_SDL_MIXER], [1], [Define if the SDL_mixer audio backend is desired.])
 ])
 
 AS_IF([test "x$enable_asan" = "xyes" || test "x$enable_tsan" = "xyes"], [
@@ -636,9 +657,9 @@ AM_CONDITIONAL([BUILD_MIMALLOC], [test "x$enable_debug" != "xyes" &&
                                   { test "$SYSNAME" != "windows" && test "x$with_mimalloc" != "xno" ; };
                                 }]) # default off for windows, kinda buggy
 
-AM_CONDITIONAL([USE_BASS], [test "x$with_sdlmixer" != "xyes" && test "x$with_soloud" != "xyes"])
-AM_CONDITIONAL([USE_SDLMIXER], [test "x$with_sdlmixer" = "xyes"])
-AM_CONDITIONAL([USE_SOLOUD], [test "x$with_soloud" = "xyes"])
+AM_CONDITIONAL([USE_BASS], [test "$with_bass" = "yes"])
+AM_CONDITIONAL([USE_SDLMIXER], [test "$with_sdlmixer" = "yes"])
+AM_CONDITIONAL([USE_SOLOUD], [test "$with_soloud" = "yes"])
 AM_CONDITIONAL([WIN_PLATFORM], [test "$SYSNAME" = "windows"])
 AM_CONDITIONAL([WIN32_PLATFORM], [test "$SYSNAME" = "windows" && test "$host_cpu" = "i686"]) # idk why this has issues with soloud + GENie
 
@@ -668,8 +689,9 @@ BUNDLED_BASS_MIX_DIR=$BUNDLED_LIBS_DIR/bassmix
 BUNDLED_BASS_ASIO_DIR=$BUNDLED_LIBS_DIR/bassasio
 BUNDLED_BASS_WASAPI_DIR=$BUNDLED_LIBS_DIR/basswasapi
 
-# sanity check
-AS_IF([test "x$with_sdlmixer" != "xyes" && test "x$with_soloud" != "xyes"], [
+AUDIO_CFLAGS=""
+AUDIO_LIBS=""
+AS_IF([test "$with_bass" = "yes"], [
     AS_IF([test -f "$srcdir/$BUNDLED_BASS_DIR/lib/$SYSNAME/$host_cpu/${LIBPREFIX}bass$DLLEXT"], 
         [],
         [AC_MSG_ERROR([Required bundled library ${LIBPREFIX}bass$DLLEXT not found])])
@@ -679,7 +701,7 @@ AS_IF([test "x$with_sdlmixer" != "xyes" && test "x$with_soloud" != "xyes"], [
     AS_IF([test -f "$srcdir/$BUNDLED_BASS_MIX_DIR/lib/$SYSNAME/$host_cpu/${LIBPREFIX}bassmix$DLLEXT"],
         [],
         [AC_MSG_ERROR([Required bundled library ${LIBPREFIX}bassmix$DLLEXT not found])])
-    BASS_CFLAGS="-I\$(srcdir)/\$(BUNDLED_BASS_DIR)/include -I\$(srcdir)/\$(BUNDLED_BASS_FX_DIR)/include -I\$(srcdir)/\$(BUNDLED_BASS_MIX_DIR)/include"
+    AUDIO_CFLAGS="$AUDIO_CFLAGS -I\$(srcdir)/\$(BUNDLED_BASS_DIR)/include -I\$(srcdir)/\$(BUNDLED_BASS_FX_DIR)/include -I\$(srcdir)/\$(BUNDLED_BASS_MIX_DIR)/include"
     AS_IF([test "$SYSNAME" = "windows"],[
         AS_IF([test -f "$srcdir/$BUNDLED_BASS_ASIO_DIR/lib/$SYSNAME/$host_cpu/${LIBPREFIX}bassasio$DLLEXT"],
             [],
@@ -687,20 +709,12 @@ AS_IF([test "x$with_sdlmixer" != "xyes" && test "x$with_soloud" != "xyes"], [
         AS_IF([test -f "$srcdir/$BUNDLED_BASS_WASAPI_DIR/lib/$SYSNAME/$host_cpu/${LIBPREFIX}basswasapi$DLLEXT"],
             [],
             [AC_MSG_ERROR([Required bundled library ${LIBPREFIX}basswasapi$DLLEXT not found])])
-        BASS_CFLAGS="$BASS_CFLAGS -I\$(srcdir)/\$(BUNDLED_BASS_ASIO_DIR)/include -I\$(srcdir)/\$(BUNDLED_BASS_WASAPI_DIR)/include"
-    ])
-    AC_DEFINE([MCENGINE_FEATURE_BASS], [1], [Define if the BASS audio backend is desired.])
-], [
-    BASS_CFLAGS=""
-    AS_IF([test "x$with_sdlmixer" = "xyes"], [
-        AC_DEFINE([MCENGINE_FEATURE_SDL_MIXER], [1], [Define if the SDL_mixer audio backend is desired.])
-    ])
-    AS_IF([test "x$with_soloud" = "xyes"], [
-        AC_DEFINE([MCENGINE_FEATURE_SOLOUD], [1], [Define if the SoLoud audio backend is desired.])
+        AUDIO_CFLAGS="$AUDIO_CFLAGS -I\$(srcdir)/\$(BUNDLED_BASS_ASIO_DIR)/include -I\$(srcdir)/\$(BUNDLED_BASS_WASAPI_DIR)/include"
     ])
 ])
 
-AC_SUBST([BASS_CFLAGS])
+AC_SUBST([AUDIO_CFLAGS])
+AC_SUBST([AUDIO_LIBS])
 AC_SUBST([BUNDLED_LIBS_DIR])
 AC_SUBST([BUNDLED_BASS_DIR])
 AC_SUBST([BUNDLED_BASS_FX_DIR])
@@ -774,6 +788,7 @@ McOsu-ng build configuration:
     C flags:            ${CFLAGS}
     Linker flags:       ${LDFLAGS}
     mimalloc:           ${with_mimalloc-yes}
+    BASS:               ${with_bass-no}
     SDL_mixer:          ${with_sdlmixer-no}
     SoLoud:             ${with_soloud-no}
     LTO:                ${enable_lto-auto}

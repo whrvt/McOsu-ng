@@ -1,4 +1,4 @@
-FROM registry.gitlab.steamos.cloud/proton/sniper/sdk:3.0.20250210.116596-0
+FROM registry.gitlab.steamos.cloud/proton/sniper/sdk:latest
 
 ENV DEBIAN_FRONTEND=noninteractive \
     PATH="/usr/lib/gcc-14/bin:$PATH"
