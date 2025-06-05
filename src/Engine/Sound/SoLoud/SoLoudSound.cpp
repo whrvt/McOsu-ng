@@ -232,7 +232,7 @@ void SoLoudSound::setPosition(double percent)
 	percent = std::clamp<double>(percent, 0.0, 1.0);
 
 	// calculate position based on the ORIGINAL timeline
-	const double streamLengthInSeconds = m_bStream ? asWavStream()->getLength() : asWav()->getLength();
+	const double streamLengthInSeconds = getSourceLengthInSeconds();
 	double positionInSeconds = streamLengthInSeconds * percent;
 
 	// reset position interp vars
@@ -401,17 +401,12 @@ float SoLoudSound::getPosition()
 {
 	if (!m_bReady || !m_audioSource || !m_handle)
 		return 0.0f;
-
-	double streamPositionInSeconds = soloud->getStreamPosition(m_handle);
-
-	double streamLengthInSeconds = 0.0;
-	if (m_bStream && asWavStream())
-		streamLengthInSeconds = asWavStream()->getLength();
-	else if (!m_bStream && asWav())
-		streamLengthInSeconds = asWav()->getLength();
+	double streamLengthInSeconds = getSourceLengthInSeconds();
 
 	if (streamLengthInSeconds <= 0.0)
 		return 0.0f;
+
+	double streamPositionInSeconds = soloud->getStreamPosition(m_handle);
 
 	return std::clamp<float>(streamPositionInSeconds / streamLengthInSeconds, 0.0f, 1.0f);
 }
@@ -516,13 +511,7 @@ unsigned long SoLoudSound::getLengthMS()
 	if (!m_bReady || !m_audioSource)
 		return 0;
 
-	double streamLengthInSeconds = 0.0;
-	if (m_bStream && asWavStream())
-		streamLengthInSeconds = asWavStream()->getLength();
-	else if (!m_bStream && asWav())
-		streamLengthInSeconds = asWav()->getLength();
-
-	const double lengthInMilliSeconds = streamLengthInSeconds * 1000.0;
+	const double lengthInMilliSeconds = getSourceLengthInSeconds() * 1000.0;
 	return static_cast<unsigned long>(lengthInMilliSeconds);
 }
 

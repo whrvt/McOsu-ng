@@ -59,10 +59,14 @@ private:
 	void initAsync() override;
 	void destroy() override;
 
-	// similar idea to the ugly "m_MixChunkOrMixMusic" casting thing in the SDL_mixer implementation
-	// WavStreams are for beatmap audio, streamed from disk, Wavs are for other (shorter) audio samples, loaded entirely into memory
-	[[nodiscard]] inline SoLoud::Wav *asWav() const { return m_bStream ? nullptr : static_cast<SoLoud::Wav *>(m_audioSource); }
-	[[nodiscard]] inline SoLoud::WavStream *asWavStream() const { return m_bStream ? static_cast<SoLoud::WavStream *>(m_audioSource) : nullptr; }
+	[[nodiscard]] inline double getSourceLengthInSeconds() const { 
+		if (!m_audioSource)
+			return 0.0;
+		if (m_bStream)
+			return static_cast<SoLoud::WavStream *>(m_audioSource)->getLength();
+		else
+			return static_cast<SoLoud::Wav *>(m_audioSource)->getLength();
+	}
 
 	// pitch/tempo filter management methods
 	[[nodiscard]] inline SoLoud::SoundTouchFilter *getFilterInstance() const { return m_filter; }

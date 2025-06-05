@@ -111,9 +111,7 @@ protected:
 	unsigned int mOggFrameBufferSize; // size in samples
 	unsigned int mOggSamplesInBuffer; // current number of samples in OGG buffer
 
-	// DEBUG
-	void logBufferData(const char *label, float *buffer, unsigned int channels, unsigned int samples, bool isInterleaved, unsigned int maxToLog = 16);
-
+	// debugging
 	unsigned int mProcessingCounter;     // counter for logspam avoidance
 	unsigned int mTotalSamplesProcessed; // total samples processed since creation (or last seek/rewind)
 };

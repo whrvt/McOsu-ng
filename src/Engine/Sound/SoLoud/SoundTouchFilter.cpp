@@ -19,8 +19,9 @@
 namespace cv
 {
 #if __has_include("Osu.h")
-ConVar snd_enable_auto_offset("snd_enable_auto_offset", true, FCVAR_NONE, "Control automatic offset calibration for SoLoud + rate change");
+#define DO_AUTO_OFFSET
 #endif
+ConVar snd_enable_auto_offset("snd_enable_auto_offset", true, FCVAR_NONE, "Control automatic offset calibration for SoLoud + rate change");
 
 #ifdef _DEBUG
 ConVar snd_st_debug("snd_st_debug", false, FCVAR_NONE, "Enable detailed SoundTouch filter logging");
@@ -172,8 +173,8 @@ SoundTouchFilterInstance::SoundTouchFilterInstance(SoundTouchFilter *aParent)
 
 				// pre-fill
 				primeBuffers();
-#if __has_include("Osu.h")
-				// estimate processing delay, somewhat following the SoundTouch header idea
+#ifdef DO_AUTO_OFFSET
+				// estimate processing delay, somewhat following the idea from the SoundTouch header
 				// !!FIXME!!: this changes dynamically depending on current playback settings, but we don't respect that
 				// so it'll be inaccurate depending on if the speed/pitch was changed while the source was playing or if it was started with those settings
 				if (cv::snd_enable_auto_offset.getBool())
@@ -206,7 +207,7 @@ SoundTouchFilterInstance::SoundTouchFilterInstance(SoundTouchFilter *aParent)
 
 SoundTouchFilterInstance::~SoundTouchFilterInstance()
 {
-#if __has_include("Osu.h")
+#ifdef DO_AUTO_OFFSET
 	cv::osu::universal_offset_hardcoded.setValue(cv::osu::universal_offset_hardcoded.getDefaultFloat());
 #endif
 	delete[] mOggFrameBuffer;
@@ -675,52 +676,6 @@ void SoundTouchFilterInstance::primeBuffers()
 	{
 		ST_DEBUG_LOG("Warning: Failed to restore position after buffer priming\n");
 	}
-}
-
-// DEBUG
-void SoundTouchFilterInstance::logBufferData(const char *label, float *buffer, unsigned int channels, unsigned int samples, bool isInterleaved,
-                                             unsigned int maxToLog)
-{
-	if (!ST_DEBUG_ENABLED)
-		return;
-
-	ST_DEBUG_LOG("--- {:s} ({:} samples, {:} channels) ---\n", label, samples, channels);
-
-	unsigned int samplesToLog = samples < maxToLog ? samples : maxToLog;
-
-	if (isInterleaved)
-	{
-		// interleaved format (LRLRLR...)
-		for (unsigned int i = 0; i < samplesToLog; i++)
-		{
-			char logLine[256] = {};
-			int offset = sprintf(logLine, "Sample %03u: ", i);
-			for (unsigned int ch = 0; ch < channels; ch++)
-			{
-				offset += sprintf(logLine + offset, "[Ch%u: %+.4f] ", ch, buffer[i * channels + ch]);
-			}
-			ST_DEBUG_LOG("{:s}\n", logLine);
-		}
-	}
-	else
-	{
-		// non-interleaved format (LLLL...RRRR...)
-		for (unsigned int i = 0; i < samplesToLog; i++)
-		{
-			char logLine[256] = {};
-			int offset = sprintf(logLine, "Sample %03u: ", i);
-			for (unsigned int ch = 0; ch < channels; ch++)
-			{
-				offset += sprintf(logLine + offset, "[Ch%u: %+.4f] ", ch, buffer[ch * samples + i]);
-			}
-			ST_DEBUG_LOG("{:s}\n", logLine);
-		}
-	}
-
-	if (samples > maxToLog)
-		ST_DEBUG_LOG("... (and {:} more samples)\n", samples - maxToLog);
-
-	ST_DEBUG_LOG("--- End of {:s} ---\n", label);
 }
 
 } // namespace SoLoud
