@@ -82,17 +82,7 @@ void SoLoudSoundEngine::restart()
 
 void SoLoudSoundEngine::update()
 {
-	// check for device changes if interval is enabled
-	float checkInterval = cv::snd_change_check_interval.getFloat();
-	if (checkInterval > 0.0f)
-	{
-		auto currentTime = engine->getTime();
-		if (currentTime - m_fPrevOutputDeviceChangeCheckTime > checkInterval)
-		{
-			m_fPrevOutputDeviceChangeCheckTime = currentTime;
-			updateOutputDevices(true, false);
-		}
-	}
+	// unused
 }
 
 bool SoLoudSoundEngine::play(Sound *snd, float pan, float pitch)
@@ -150,8 +140,8 @@ bool SoLoudSoundEngine::playSound(SoLoudSound *soloudSound, float pan, float pit
 	}
 	else if (soloudSound->m_bStream)
 	{
-		// streaming audio (music) - always use SoundTouch filter
-		handle = playSoundWithFilter(soloudSound, pan, soloudSound->m_fVolume);
+		// streaming audio (music) - play SLFXStream directly (it handles SoundTouch internally)
+		handle = soloud->play(*soloudSound->m_audioSource, soloudSound->m_fVolume, pan, true /* paused */);
 		if (handle)
 			soloud->setProtectVoice(handle,
 			                        true); // protect the music channel (don't let it get interrupted when many sounds play back at once)
@@ -159,22 +149,14 @@ bool SoLoudSoundEngine::playSound(SoLoudSound *soloudSound, float pan, float pit
 			                               // as a workaround, otherwise rapidly overlapping samples like from buzzsliders can cause glitches in music playback
 			                               // TODO: a better workaround would be to manually prevent samples from playing if
 			                               // it would lead to getMaxActiveVoiceCount() <= getActiveVoiceCount()
+
+		if (cv::debug_snd.getBool() && handle)
+			debugLog("SoLoudSoundEngine: Playing streaming audio through SLFXStream with speed={:f}, pitch={:f}\n", soloudSound->m_speed, soloudSound->m_pitch);
 	}
 	else
 	{
-		// non-streaming audio (sound effects) - always use direct playback
-		// speed/pitch changes are applied via SoLoud's native mechanisms
-		float finalPitch = pitch;
-
-		// combine all pitch modifiers
-		if (soloudSound->m_pitch != 1.0f)
-			finalPitch *= soloudSound->m_pitch;
-
-		// if speed compensation is disabled, apply speed as pitch
-		if (!cv::snd_speed_compensate_pitch.getBool() && soloudSound->m_speed != 1.0f)
-			finalPitch *= soloudSound->m_speed;
-
-		handle = playDirectSound(soloudSound, pan, finalPitch, soloudSound->m_fVolume);
+		// non-streaming audio (sound effects) - use direct playback with SoLoud's native speed/pitch control
+		handle = playDirectSound(soloudSound, pan, pitch, soloudSound->m_fVolume);
 	}
 
 	// finalize playback
@@ -206,34 +188,21 @@ bool SoLoudSoundEngine::playSound(SoLoudSound *soloudSound, float pan, float pit
 	return false;
 }
 
-unsigned int SoLoudSoundEngine::playSoundWithFilter(SoLoudSound *soloudSound, float pan, float volume)
-{
-	if (!soloudSound || !soloudSound->m_audioSource)
-		return 0;
-
-	SoLoud::SoundTouchFilter *filter = soloudSound->getFilterInstance();
-	if (!filter)
-		return 0;
-
-	// make sure filter parameters are up to date (TODO: refactor, this is probably redundant)
-	soloudSound->updateFilterParameters();
-
-	// play through the filter
-	unsigned int handle = soloud->play(*filter, volume, pan, true /* paused */);
-
-	if (handle != 0)
-	{
-		if (cv::debug_snd.getBool())
-			debugLog("SoLoudSoundEngine: Playing through SoundTouch filter with speed={:f}, pitch={:f}\n", soloudSound->m_speed, soloudSound->m_pitch);
-	}
-
-	return handle;
-}
-
 unsigned int SoLoudSoundEngine::playDirectSound(SoLoudSound *soloudSound, float pan, float pitch, float volume)
 {
 	if (!soloudSound || !soloudSound->m_audioSource)
 		return 0;
+
+	// calculate final pitch by combining all pitch modifiers
+	float finalPitch = pitch;
+
+	// combine with sound's pitch setting
+	if (soloudSound->m_pitch != 1.0f)
+		finalPitch *= soloudSound->m_pitch;
+
+	// if speed compensation is disabled, apply speed as pitch
+	if (!cv::snd_speed_compensate_pitch.getBool() && soloudSound->m_speed != 1.0f)
+		finalPitch *= soloudSound->m_speed;
 
 	// play directly
 	unsigned int handle = soloud->play(*soloudSound->m_audioSource, volume, pan, true /* paused */);
@@ -241,8 +210,12 @@ unsigned int SoLoudSoundEngine::playDirectSound(SoLoudSound *soloudSound, float 
 	if (handle != 0)
 	{
 		// set relative play speed (affects both pitch and speed)
-		if (pitch != 1.0f)
-			soloud->setRelativePlaySpeed(handle, pitch);
+		if (finalPitch != 1.0f)
+			soloud->setRelativePlaySpeed(handle, finalPitch);
+
+		if (cv::debug_snd.getBool())
+			debugLog("SoLoudSoundEngine: Playing non-streaming audio with finalPitch={:f} (pitch={:f} * soundPitch={:f} * speedAsPitch={:f})\n", finalPitch, pitch,
+			         soloudSound->m_pitch, (!cv::snd_speed_compensate_pitch.getBool() && soloudSound->m_speed != 1.0f) ? soloudSound->m_speed : 1.0f);
 	}
 
 	return handle;

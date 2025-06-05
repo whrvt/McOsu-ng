@@ -18,7 +18,7 @@
 #include <soloud/soloud_wavstream.h>
 
 #include "Engine.h"
-#include "SoundTouchFilter.h"
+#include "SoLoudFX.h"
 
 class SoLoudSound final : public Sound
 {
@@ -64,14 +64,10 @@ private:
 		if (!m_audioSource)
 			return 0.0;
 		if (m_bStream)
-			return static_cast<SoLoud::WavStream *>(m_audioSource)->getLength();
+			return static_cast<SoLoud::SLFXStream *>(m_audioSource)->getLength();
 		else
 			return static_cast<SoLoud::Wav *>(m_audioSource)->getLength();
 	}
-
-	// pitch/tempo filter management methods
-	[[nodiscard]] inline SoLoud::SoundTouchFilter *getFilterInstance() const { return m_filter; }
-	bool updateFilterParameters();
 
 	// current playback parameters
 	float m_speed;     // speed factor (1.0 = normal)
@@ -79,12 +75,8 @@ private:
 	float m_frequency; // sample rate in Hz
 
 	// SoLoud-specific members
-	SoLoud::AudioSource *m_audioSource; // base class pointer, could be either Wav or WavStream
-	SoLoud::SoundTouchFilter *m_filter; // SoundTouch filter instance
+	SoLoud::AudioSource *m_audioSource; // base class pointer, could be either SLFXStream or Wav
 	SOUNDHANDLE m_handle;               // current voice (i.e. "Sound") handle
-
-	// nightcore things (TODO: this might not be needed)
-	float m_fActualSpeedForDisabledPitchCompensation;
 
 	// position interp
 	double m_fLastRawSoLoudPosition;  // last raw position reported in milliseconds

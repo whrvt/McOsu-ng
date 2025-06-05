@@ -120,9 +120,9 @@ McOsu_ng_SOURCES = \
 	src/Engine/Sound/BASS/BassSoundEngine2.cpp \
 	src/Engine/Sound/SDL_mixer/SDLSound.cpp \
 	src/Engine/Sound/SDL_mixer/SDLSoundEngine.cpp \
+	src/Engine/Sound/SoLoud/SoLoudFX.cpp \
 	src/Engine/Sound/SoLoud/SoLoudSound.cpp \
 	src/Engine/Sound/SoLoud/SoLoudSoundEngine.cpp \
-	src/Engine/Sound/SoLoud/SoundTouchFilter.cpp \
 	src/Engine/Sound/Sound.cpp \
 	src/Engine/Sound/SoundEngine.cpp \
 	src/Engine/SteamworksInterface.cpp \

@@ -23,8 +23,6 @@ SoLoudSound::SoLoudSound(UString filepath, bool stream, bool threeD, bool loop, 
       m_pitch(1.0f),
       m_frequency(44100.0f),
       m_audioSource(nullptr),
-      m_filter(nullptr),
-      m_fActualSpeedForDisabledPitchCompensation(1.0f),
       m_fLastRawSoLoudPosition(0.0),
       m_fLastSoLoudPositionTime(0.0),
       m_fSoLoudPositionRate(1000.0)
@@ -36,13 +34,8 @@ void SoLoudSound::init()
 	if (m_bIgnored || m_sFilePath.length() < 2 || !(m_bAsyncReady.load()))
 		return;
 
-	// re-set some values to their defaults (only necessary because of the existence of rebuild())
-	m_fActualSpeedForDisabledPitchCompensation = 1.0f;
-
 	if (!m_audioSource)
-	{
 		debugLog(0xffdd3333, "Couldn't load sound \"{}\", stream = {}, file = {}\n", m_sFilePath, (int)m_bStream, m_sFilePath);
-	}
 	else
 		m_bReady = true;
 }
@@ -62,7 +55,7 @@ void SoLoudSound::initAsync()
 	if (m_audioSource)
 	{
 		if (m_bStream)
-			delete static_cast<SoLoud::WavStream *>(m_audioSource);
+			delete static_cast<SoLoud::SLFXStream *>(m_audioSource);
 		else
 			delete static_cast<SoLoud::Wav *>(m_audioSource);
 
@@ -99,27 +92,31 @@ void SoLoudSound::initAsync()
 	SoLoud::result result = SoLoud::SO_NO_ERROR;
 	if (m_bStream)
 	{
-		// use WavStream for streaming audio (music, etc.)
-		auto *wavStream = new SoLoud::WavStream();
+		// use SLFXStream for streaming audio (music, etc.) includes rate/pitch processing like BASS_FX_TempoCreate
+		auto *stream = new SoLoud::SLFXStream();
 
 		// use loadToMem for streaming to handle unicode paths on windows
 		if constexpr (Env::cfg(OS::WINDOWS))
-			result = wavStream->loadMem(reinterpret_cast<const unsigned char *>(fileData), fileSize, true, false);
+			result = stream->loadMem(reinterpret_cast<const unsigned char *>(fileData), fileSize, true, false);
 		else
-			result = wavStream->load(m_sFilePath.toUtf8());
+			result = stream->load(m_sFilePath.toUtf8());
 
 		if (result == SoLoud::SO_NO_ERROR)
 		{
-			m_audioSource = wavStream;
+			m_audioSource = stream;
 			m_frequency = 44100.0f; // default, will be updated when played
 
 			m_audioSource->setSingleInstance(true);           // only play one music track at a time
 			m_audioSource->setInaudibleBehavior(true, false); // keep ticking the sound if it goes to 0 volume, and don't kill it
+
+			if (cv::debug_snd.getBool())
+				debugLog("SoLoudSound: Created SLFXStream for {:s} with speed={:f}, pitch={:f}, looping={:s}\n", m_sFilePath.toUtf8(), m_speed, m_pitch,
+				         m_bIsLooped ? "true" : "false");
 		}
 		else
 		{
-			delete wavStream;
-			debugLog("Sound Error: SoLoud::WavStream::load() error {} on file {:s}\n", result, m_sFilePath.toUtf8());
+			delete stream;
+			debugLog("Sound Error: SLFXStream::load() error {} on file {:s}\n", result, m_sFilePath.toUtf8());
 			return;
 		}
 	}
@@ -158,29 +155,6 @@ void SoLoudSound::initAsync()
 		m_audioSource->set3dMinMaxDistance(1.0f, 1000.0f);
 	}
 
-	// always create filter for streaming audio after source is fully configured
-	if (m_bStream)
-	{
-		m_filter = new SoLoud::SoundTouchFilter();
-		if (m_filter)
-		{
-			// configure the filter with the fully configured source
-			m_filter->setSource(m_audioSource);
-
-			// set initial parameters
-			m_filter->setSpeedFactor(m_speed);
-			m_filter->setPitchFactor(m_pitch);
-
-			if (cv::debug_snd.getBool())
-				debugLog("SoLoudSound: Created SoundTouch filter for {:s} with speed={:f}, pitch={:f}, looping={:s}\n", m_sFilePath.toUtf8(), m_speed, m_pitch,
-				         m_bIsLooped ? "true" : "false");
-		}
-		else
-		{
-			debugLog("Sound Error: Failed to create SoundTouch filter for {:s}\n", m_sFilePath.toUtf8());
-		}
-	}
-
 	m_bAsyncReady = true;
 }
 
@@ -203,34 +177,16 @@ void SoLoudSound::destroy()
 		m_handle = 0;
 	}
 
-	// clean up SoundTouch filter
-	if (m_filter)
-	{
-		delete m_filter;
-		m_filter = nullptr;
-	}
-
 	// clean up audio source
 	if (m_audioSource)
 	{
 		if (m_bStream)
-			delete static_cast<SoLoud::WavStream *>(m_audioSource);
+			delete static_cast<SoLoud::SLFXStream *>(m_audioSource);
 		else
 			delete static_cast<SoLoud::Wav *>(m_audioSource);
 
 		m_audioSource = nullptr;
 	}
-}
-
-bool SoLoudSound::updateFilterParameters()
-{
-	if (!m_filter)
-		return false;
-
-	m_filter->setSpeedFactor(m_speed);
-	m_filter->setPitchFactor(m_pitch);
-
-	return true;
 }
 
 void SoLoudSound::setPosition(double percent)
@@ -297,6 +253,13 @@ void SoLoudSound::setSpeed(float speed)
 	if (!m_bReady)
 		return;
 
+	// sample speed could be supported, but there is nothing using it right now so i will only bother when the time comes
+	if (!m_bStream)
+	{
+		debugLog("Programmer Error: tried to setSpeed on a sample!\n");
+		return;
+	}
+
 	speed = std::clamp<float>(speed, 0.05f, 50.0f);
 
 	if (m_speed != speed)
@@ -304,29 +267,26 @@ void SoLoudSound::setSpeed(float speed)
 		float previousSpeed = m_speed;
 		m_speed = speed;
 
-		// for streaming audio, simply update the filter parameters (no restart needed)
-		if (m_bStream && m_filter)
-		{
-			updateFilterParameters();
+		// simply update the SLFXStream parameters
+		auto *stream = static_cast<SoLoud::SLFXStream *>(m_audioSource);
+		stream->setSpeedFactor(m_speed);
 
-			if (cv::debug_snd.getBool())
-				debugLog("SoLoudSound: Speed change {:s}: {:f}->{:f} (stream, filter updated live)\n", m_sFilePath.toUtf8(), previousSpeed, m_speed);
-		}
-		// for non-streaming audio, no restart needed - speed/pitch is applied during playback
-		else if (!m_bStream)
-		{
-			if (cv::debug_snd.getBool())
-				debugLog("SoLoudSound: Speed change {:s}: {:f}->{:f} (non-stream, will be applied on next play)\n", m_sFilePath.toUtf8(), previousSpeed, m_speed);
-		}
+		if (cv::debug_snd.getBool())
+			debugLog("SoLoudSound: Speed change {:s}: {:f}->{:f} (stream, updated live)\n", m_sFilePath.toUtf8(), previousSpeed, m_speed);
 	}
-
-	m_fActualSpeedForDisabledPitchCompensation = speed;
 }
 
 void SoLoudSound::setPitch(float pitch)
 {
 	if (!m_bReady)
 		return;
+
+	// sample pitch could be supported, but there is nothing using it right now so i will only bother when the time comes
+	if (!m_bStream)
+	{
+		debugLog("Programmer Error: tried to setPitch on a sample!\n");
+		return;
+	}
 
 	pitch = std::clamp<float>(pitch, 0.0f, 2.0f);
 
@@ -335,20 +295,12 @@ void SoLoudSound::setPitch(float pitch)
 		float previousPitch = m_pitch;
 		m_pitch = pitch;
 
-		// for streaming audio, simply update the filter parameters (no restart needed)
-		if (m_bStream && m_filter)
-		{
-			updateFilterParameters();
+		// simply update the SLFXStream parameters
+		auto *stream = static_cast<SoLoud::SLFXStream *>(m_audioSource);
+		stream->setPitchFactor(m_pitch);
 
-			if (cv::debug_snd.getBool())
-				debugLog("SoLoudSound: Pitch change {:s}: {:f}->{:f} (stream, filter updated live)\n", m_sFilePath.toUtf8(), previousPitch, m_pitch);
-		}
-		// for non-streaming audio, no restart needed - speed/pitch is applied during playback
-		else if (!m_bStream)
-		{
-			if (cv::debug_snd.getBool())
-				debugLog("SoLoudSound: Pitch change {:s}: {:f}->{:f} (non-stream, will be applied on next play)\n", m_sFilePath.toUtf8(), previousPitch, m_pitch);
-		}
+		if (cv::debug_snd.getBool())
+			debugLog("SoLoudSound: Pitch change {:s}: {:f}->{:f} (stream, updated live)\n", m_sFilePath.toUtf8(), previousPitch, m_pitch);
 	}
 }
 
@@ -387,7 +339,7 @@ void SoLoudSound::setLoop(bool loop)
 		return;
 
 	if (cv::debug_snd.getBool())
-		debugLog("setLoop {} and m_filter {:s}\n", loop, m_filter ? "exists" : "does not exist");
+		debugLog("setLoop {}\n", loop);
 
 	m_bIsLooped = loop;
 
@@ -528,9 +480,6 @@ float SoLoudSound::getSpeed()
 {
 	if (!m_bReady)
 		return 1.0f;
-
-	if (!cv::snd_speed_compensate_pitch.getBool())
-		return m_fActualSpeedForDisabledPitchCompensation;
 
 	return m_speed;
 }

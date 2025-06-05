@@ -40,14 +40,14 @@ public:
 
 	std::vector<UString> getOutputDevices() override;
 
-	// playback functions specific to SoLoudSound
-	bool playSound(SoLoudSound *soloudSound, float pan, float pitch, bool is3d = false, Vector3 *pos = nullptr);
-	unsigned int playSoundWithFilter(SoLoudSound *soloudSound, float pan, float volume);
-	unsigned int playDirectSound(SoLoudSound *soloudSound, float pan, float pitch, float volume);
-	unsigned int play3dSound(SoLoudSound *soloudSound, Vector3 pos, float volume);
-
 	SoundEngineType *getSndEngine() override { return this; }
 	[[nodiscard]] const SoundEngineType *getSndEngine() const override { return this; }
+
+protected:
+	// playback functions specific to SoLoudSound
+	bool playSound(SoLoudSound *soloudSound, float pan, float pitch, bool is3d = false, Vector3 *pos = nullptr);
+	unsigned int playDirectSound(SoLoudSound *soloudSound, float pan, float pitch, float volume);
+	unsigned int play3dSound(SoLoudSound *soloudSound, Vector3 pos, float volume);
 
 private:
 	void setVolumeGradual(unsigned int handle, float targetVol, float fadeTimeMs = 10.0f);

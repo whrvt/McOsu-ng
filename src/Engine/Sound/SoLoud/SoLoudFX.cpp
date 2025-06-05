@@ -5,22 +5,26 @@
 // $NoKeywords: $snd $soloud $soundtouch
 //================================================================================//
 
-#include "SoundTouchFilter.h"
+#include "SoLoudFX.h"
 
 #ifdef MCENGINE_FEATURE_SOLOUD
-
-#include <cstddef>
 
 #include "SoLoudSoundEngine.h"
 
 #include "ConVar.h"
 #include "Engine.h"
 
-namespace cv
-{
+#include <SoundTouch.h>
+#include <soloud/soloud_wavstream.h>
+
+#include <cstddef>
+
 #if __has_include("Osu.h")
 #define DO_AUTO_OFFSET
 #endif
+
+namespace cv
+{
 ConVar snd_enable_auto_offset("snd_enable_auto_offset", true, FCVAR_NONE, "Control automatic offset calibration for SoLoud + rate change");
 
 #ifdef _DEBUG
@@ -40,23 +44,30 @@ ConVar snd_st_debug("snd_st_debug", false, FCVAR_NONE, "Enable detailed SoundTou
 namespace SoLoud
 {
 //-------------------------------------------------------------------------
-// SoundTouchFilter implementation
+// SLFXStream (WavStream + SoundTouch wrapper) implementation
 //-------------------------------------------------------------------------
 
-SoundTouchFilter::SoundTouchFilter()
+SLFXStream::SLFXStream()
     : mSource(nullptr),
       mSpeedFactor(1.0f),
-      mPitchFactor(1.0f)
+      mPitchFactor(1.0f),
+      mWavStream(nullptr)
 {
 	ST_DEBUG_LOG("SoundTouchFilter: Constructor called\n");
+	// initialize as streaming audio source
+	mWavStream = new SoLoud::WavStream();
 }
 
-SoundTouchFilter::~SoundTouchFilter()
+SLFXStream::~SLFXStream()
 {
 	ST_DEBUG_LOG("SoundTouchFilter: Destructor called\n");
+	// stop all instances before cleanup
+	stop();
+
+	delete mWavStream;
 }
 
-result SoundTouchFilter::setSource(AudioSource *aSource)
+result SLFXStream::setSource(AudioSource *aSource)
 {
 	if (!aSource)
 		return INVALID_PARAMETER;
@@ -72,7 +83,7 @@ result SoundTouchFilter::setSource(AudioSource *aSource)
 	return SO_NO_ERROR;
 }
 
-AudioSourceInstance *SoundTouchFilter::createInstance()
+AudioSourceInstance *SLFXStream::createInstance()
 {
 	if (!mSource)
 		return nullptr;
@@ -82,33 +93,110 @@ AudioSourceInstance *SoundTouchFilter::createInstance()
 	return new SoundTouchFilterInstance(this);
 }
 
-void SoundTouchFilter::setSpeedFactor(float aSpeed)
+void SLFXStream::setSpeedFactor(float aSpeed)
 {
 	ST_DEBUG_LOG("SoundTouchFilter: Speed changed from {:f} to {:f}\n", mSpeedFactor, aSpeed);
 	mSpeedFactor = aSpeed;
 }
 
-void SoundTouchFilter::setPitchFactor(float aPitch)
+void SLFXStream::setPitchFactor(float aPitch)
 {
 	ST_DEBUG_LOG("SoundTouchFilter: Pitch changed from {:f} to {:f}\n", mPitchFactor, aPitch);
 	mPitchFactor = aPitch;
 }
 
-float SoundTouchFilter::getSpeedFactor() const
+float SLFXStream::getSpeedFactor() const
 {
 	return mSpeedFactor;
 }
 
-float SoundTouchFilter::getPitchFactor() const
+float SLFXStream::getPitchFactor() const
 {
 	return mPitchFactor;
+}
+
+void SLFXStream::initializeFilter()
+{
+	if (mWavStream)
+	{
+		// connect the filter to the wav stream
+		setSource(mWavStream);
+
+		ST_DEBUG_LOG("SLFXStream: Initialized filter with {:d} channels at {:f} Hz\n", mChannels, mBaseSamplerate);
+	}
+}
+
+// WavStream-compatibility methods
+result SLFXStream::load(const char *aFilename)
+{
+	if (!mWavStream)
+		return INVALID_PARAMETER;
+
+	result result = mWavStream->load(aFilename);
+	if (result == SO_NO_ERROR)
+		initializeFilter();
+
+	return result;
+}
+
+result SLFXStream::loadMem(const unsigned char *aData, unsigned int aDataLen, bool aCopy, bool aTakeOwnership)
+{
+	if (!mWavStream)
+		return INVALID_PARAMETER;
+
+	result result = mWavStream->loadMem(aData, aDataLen, aCopy, aTakeOwnership);
+	if (result == SO_NO_ERROR)
+		initializeFilter();
+
+	return result;
+}
+
+result SLFXStream::loadToMem(const char *aFilename)
+{
+	if (!mWavStream)
+		return INVALID_PARAMETER;
+
+	result result = mWavStream->loadToMem(aFilename);
+	if (result == SO_NO_ERROR)
+		initializeFilter();
+
+	return result;
+}
+
+result SLFXStream::loadFile(File *aFile)
+{
+	if (!mWavStream)
+		return INVALID_PARAMETER;
+
+	result result = mWavStream->loadFile(aFile);
+	if (result == SO_NO_ERROR)
+		initializeFilter();
+
+	return result;
+}
+
+result SLFXStream::loadFileToMem(File *aFile)
+{
+	if (!mWavStream)
+		return INVALID_PARAMETER;
+
+	result result = mWavStream->loadFileToMem(aFile);
+	if (result == SO_NO_ERROR)
+		initializeFilter();
+
+	return result;
+}
+
+double SLFXStream::getLength()
+{
+	return mWavStream ? mWavStream->getLength() : 0.0;
 }
 
 //-------------------------------------------------------------------------
 // SoundTouchFilterInstance implementation
 //-------------------------------------------------------------------------
 
-SoundTouchFilterInstance::SoundTouchFilterInstance(SoundTouchFilter *aParent)
+SoundTouchFilterInstance::SoundTouchFilterInstance(SLFXStream *aParent)
     : mParent(aParent),
       mSourceInstance(nullptr),
       mSoundTouch(nullptr),
@@ -170,35 +258,8 @@ SoundTouchFilterInstance::SoundTouchFilterInstance(SoundTouchFilter *aParent)
 				ST_DEBUG_LOG("SoundTouch: Initialized with speed={:f}, pitch={:f}\n", mParent->mSpeedFactor, mParent->mPitchFactor);
 				ST_DEBUG_LOG("SoundTouch: Version: {:s}\n", mSoundTouch->getVersionString());
 
-				// pre-fill
-				primeBuffers();
-#ifdef DO_AUTO_OFFSET
-				// estimate processing delay, somewhat following the idea from the SoundTouch header
-				// !!FIXME!!: this changes dynamically depending on current playback settings, but we don't respect that
-				// so it'll be inaccurate depending on if the speed/pitch was changed while the source was playing or if it was started with those settings
-				if (cv::snd_enable_auto_offset.getBool())
-				{
-					int initialLatencyInSamples = mSoundTouch->getSetting(SETTING_INITIAL_LATENCY);
-					int nominalInputSeq = mSoundTouch->getSetting(SETTING_NOMINAL_INPUT_SEQUENCE);
-					int nominalOutputSeq = mSoundTouch->getSetting(SETTING_NOMINAL_OUTPUT_SEQUENCE);
-
-					float latencyInMs = (initialLatencyInSamples / (float)mBaseSamplerate) * 1000.0f;
-
-					// add buffer compensation factor (~half of processing window)
-					float processingBufferDelay = 0.0f;
-					if (nominalInputSeq > 0 && nominalOutputSeq > 0)
-					{
-						processingBufferDelay = ((nominalInputSeq - nominalOutputSeq) / 2.0f / (float)mBaseSamplerate) * 1000.0f;
-					}
-
-					float totalOffset = std::clamp<float>(-(latencyInMs + processingBufferDelay), -200.0f, 0.0f);
-
-					ST_DEBUG_LOG("SoundTouch: Calculated universal offset = {:.2f} ms (latency: {:.2f}, buffer: {:.2f})\n", totalOffset, latencyInMs,
-					             processingBufferDelay);
-
-					cv::osu::universal_offset_hardcoded.setValue(cv::osu::universal_offset_hardcoded.getDefaultFloat() + totalOffset);
-				}
-#endif
+				// pre-fill and make sync streams
+				reSynchronize();
 			}
 		}
 	}
@@ -302,6 +363,7 @@ unsigned int SoundTouchFilterInstance::getAudio(float *aBuffer, unsigned int aSa
 		mSoundTouchPitch = mParent->mPitchFactor;          // custom
 		mSetRelativePlaySpeed = mParent->mSpeedFactor;     // SoLoud inherited
 		mOverallRelativePlaySpeed = mParent->mSpeedFactor; // SoLoud inherited
+		setAutoOffset(); // re-calculate audio offset
 	}
 
 	if (logThisCall)
@@ -535,22 +597,7 @@ result SoundTouchFilterInstance::seek(time aSeconds, float *mScratch, unsigned i
 
 	if (res == SO_NO_ERROR)
 	{
-		// clear SoundTouch buffers on seek
-		if (mSoundTouch)
-			mSoundTouch->clear();
-
-		// clear OGG frame buffer on seek
-		mOggSamplesInBuffer = 0;
-
-		// update the position tracking, without this the audio will seek but we'll have no way of knowing
-		// from any outside function
-		mStreamPosition = mSourceInstance->mStreamPosition;
-		mStreamTime = mSourceInstance->mStreamTime;
-		mTotalSamplesProcessed = (unsigned int)(mStreamTime * mBaseSamplerate);
-
-		// prime buffers to prevent position desynchronization
-		primeBuffers();
-
+		reSynchronize();
 		ST_DEBUG_LOG("Seek complete to {:.3f} seconds\n", mStreamPosition);
 	}
 
@@ -567,19 +614,7 @@ result SoundTouchFilterInstance::rewind()
 
 	if (res == SO_NO_ERROR)
 	{
-		if (mSoundTouch)
-			mSoundTouch->clear();
-
-		// clear OGG frame buffer on rewind
-		mOggSamplesInBuffer = 0;
-
-		mStreamPosition = mSourceInstance->mStreamPosition;
-		mStreamTime = mSourceInstance->mStreamTime;
-		mTotalSamplesProcessed = 0;
-
-		// prime buffers to prevent position desynchronization
-		primeBuffers();
-
+		reSynchronize();
 		ST_DEBUG_LOG("Rewind complete, buffers primed\n");
 	}
 
@@ -654,6 +689,57 @@ void SoundTouchFilterInstance::primeBuffers()
 	{
 		ST_DEBUG_LOG("Warning: Failed to restore position after buffer priming\n");
 	}
+}
+
+void SoundTouchFilterInstance::reSynchronize()
+{
+	// make sure we have nothing in the SoundTouch buffers
+	if (mSoundTouch)
+		mSoundTouch->clear();
+
+	// clear OGG frame buffer
+	mOggSamplesInBuffer = 0;
+
+	// update the position tracking, without this the audio will seek but we'll have no way of knowing
+	// from any outside function
+	mStreamPosition = mSourceInstance->mStreamPosition;
+	mStreamTime = mSourceInstance->mStreamTime;
+	mTotalSamplesProcessed = (unsigned int)(mStreamTime * mBaseSamplerate); // this should be 0 if rewinding or just starting
+
+	// prime buffers to prevent position desynchronization
+	primeBuffers();
+	setAutoOffset();
+}
+
+void SoundTouchFilterInstance::setAutoOffset()
+{
+#ifdef DO_AUTO_OFFSET
+	// estimate processing delay, somewhat following the idea from the SoundTouch header
+	// !!FIXME!!: this is hot trash and inaccurate due to various factors that can influence the outcome
+	if (cv::snd_enable_auto_offset.getBool())
+	{
+		// "This parameter value is not constant but change depending on
+		// "tempo/pitch/rate/samplerate settings.
+		int initialLatencyInSamples = mSoundTouch->getSetting(SETTING_INITIAL_LATENCY);
+		int nominalInputSeq = mSoundTouch->getSetting(SETTING_NOMINAL_INPUT_SEQUENCE);
+		int nominalOutputSeq = mSoundTouch->getSetting(SETTING_NOMINAL_OUTPUT_SEQUENCE);
+
+		float latencyInMs = (initialLatencyInSamples / (float)mBaseSamplerate) * 1000.0f;
+
+		// add buffer compensation factor (~half of processing window)
+		float processingBufferDelay = 0.0f;
+		if (nominalInputSeq > 0 && nominalOutputSeq > 0)
+		{
+			processingBufferDelay = ((nominalInputSeq - nominalOutputSeq) / 2.0f / (float)mBaseSamplerate) * 1000.0f;
+		}
+
+		float totalOffset = std::clamp<float>(-(latencyInMs + processingBufferDelay), -200.0f, 0.0f);
+
+		ST_DEBUG_LOG("SoundTouch: Calculated universal offset = {:.2f} ms (latency: {:.2f}, buffer: {:.2f})\n", totalOffset, latencyInMs, processingBufferDelay);
+
+		cv::osu::universal_offset_hardcoded.setValue(cv::osu::universal_offset_hardcoded.getDefaultFloat() + totalOffset);
+	}
+#endif
 }
 
 } // namespace SoLoud

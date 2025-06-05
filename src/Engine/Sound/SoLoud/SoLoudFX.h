@@ -6,52 +6,25 @@
 //================================================================================//
 
 #pragma once
-#ifndef SOUNDTOUCH_FILTER_H
-#define SOUNDTOUCH_FILTER_H
+#ifndef SOLOUD_FX_H
+#define SOLOUD_FX_H
 
-#include "cbase.h"
+#include "BaseEnvironment.h"
 
 #ifdef MCENGINE_FEATURE_SOLOUD
-#include <SoundTouch.h>
 #include <soloud/soloud.h>
-#include <soloud/soloud_wav.h>
-#include <soloud/soloud_wavstream.h>
+
+namespace soundtouch
+{
+class SoundTouch;
+}
 
 namespace SoLoud
 {
+class WavStream;
+class File;
+class SLFXStream;
 class SoundTouchFilterInstance;
-
-/**
- * SoundTouchFilter - time-stretching and pitch-shifting filter, using the SoundTouch library
- *
- * the filter allows independent control of playback speed and pitch, making it possible
- * to speed up audio without changing the pitch, or to change pitch without affecting speed.
- */
-class SoundTouchFilter : public AudioSource
-{
-public:
-	SoundTouchFilter();
-	virtual ~SoundTouchFilter();
-
-	// the audio source to be processed
-	result setSource(AudioSource *aSource);
-
-	// create a new instance of the filter with current settings
-	virtual AudioSourceInstance *createInstance() override;
-
-	void setSpeedFactor(float aSpeed); // 1.0 = normal, 2.0 = double speed, etc.
-	void setPitchFactor(float aPitch); // 1.0 = normal, 2.0 = one octave up, 0.5 = one octave down
-
-	float getSpeedFactor() const;
-	float getPitchFactor() const;
-
-protected:
-	friend class SoundTouchFilterInstance;
-
-	AudioSource *mSource; // source to be processed
-	float mSpeedFactor;   // current speed factor (tempo)
-	float mPitchFactor;   // current pitch factor
-};
 
 /**
  * SoundTouchFilterInstance - instance of the SoundTouch filter that processes audio
@@ -63,7 +36,7 @@ protected:
 class SoundTouchFilterInstance : public AudioSourceInstance
 {
 public:
-	SoundTouchFilterInstance(SoundTouchFilter *aParent);
+	SoundTouchFilterInstance(SLFXStream *aParent);
 	~SoundTouchFilterInstance() override;
 
 	// core audio processing method
@@ -74,7 +47,7 @@ public:
 	result seek(time aSeconds, float *mScratch, unsigned int mScratchSize) override;
 	result rewind() override;
 
-protected:
+private:
 	// buffer management
 	void ensureBufferSize(unsigned int samples);
 	void ensureInterleavedBufferSize(unsigned int samples);
@@ -82,6 +55,9 @@ protected:
 
 	// make sure buffers are filled to ensure position data is synced with the stream source
 	void primeBuffers();
+	// handle any internal behavior related to playback position changes
+	void reSynchronize();
+	void setAutoOffset();
 
 	// OGG-specific handling methods
 	[[nodiscard]] bool isOggSource() const;
@@ -89,7 +65,7 @@ protected:
 	void feedSoundTouchStandard(unsigned int targetBufferSize, bool logThis);
 
 	// member variables
-	SoundTouchFilter *mParent;            // parent filter
+	SLFXStream *mParent;                  // parent filter
 	AudioSourceInstance *mSourceInstance; // source instance to process
 	soundtouch::SoundTouch *mSoundTouch;  // soundTouch processor
 
@@ -113,7 +89,65 @@ protected:
 	unsigned int mTotalSamplesProcessed; // total samples processed since creation (or last seek/rewind)
 };
 
+// a combined WavStream + SoundTouch filter audio source that acts like a regular WavStream on the outside, with extra methods to set rate/pitch
+class SLFXStream : public AudioSource
+{
+	/**
+	 * SoundTouchFilter - time-stretching and pitch-shifting filter, using the SoundTouch library
+	 *
+	 * the filter allows independent control of playback speed and pitch, making it possible
+	 * to speed up audio without changing the pitch, or to change pitch without affecting speed.
+	 */
+public:
+	SLFXStream();
+	~SLFXStream() override;
+
+	// the audio source to be processed
+	result setSource(AudioSource *aSource);
+
+	// SoundTouch control interface
+	void setSpeedFactor(float aSpeed); // 1.0 = normal, 2.0 = double speed, etc.
+	void setPitchFactor(float aPitch); // 1.0 = normal, 2.0 = one octave up, 0.5 = one octave down
+
+	[[nodiscard]] float getSpeedFactor() const;
+	[[nodiscard]] float getPitchFactor() const;
+
+	// create a new instance of the filter with current settings
+	AudioSourceInstance *createInstance() override;
+
+protected:
+	friend class SoundTouchFilterInstance;
+
+	AudioSource *mSource; // source to be processed
+	float mSpeedFactor;   // current speed factor (tempo)
+	float mPitchFactor;   // current pitch factor
+
+	/**
+	 * SLFXStream - high-level streaming audio source with built-in SoundTouch processing
+	 *
+	 * combines WavStream and SoundTouchFilter into a single, easy-to-use interface.
+	 * provides the same loading methods as WavStream but automatically handles
+	 * pitch/speed control through an internal SoundTouch filter.
+	 */
+public:
+	// WavStream-compatible loading interface
+	result load(const char *aFilename);
+	result loadMem(const unsigned char *aData, unsigned int aDataLen, bool aCopy = false, bool aTakeOwnership = true);
+	result loadToMem(const char *aFilename);
+	result loadFile(File *aFile);
+	result loadFileToMem(File *aFile);
+
+	// utility methods
+	double getLength();
+
+private:
+	WavStream *mWavStream; // internal audio stream
+
+	// initialization helper
+	void initializeFilter();
+};
+
 } // namespace SoLoud
 
 #endif // MCENGINE_FEATURE_SOLOUD
-#endif // SOUNDTOUCH_FILTER_H
+#endif // SOLOUD_FX_H
