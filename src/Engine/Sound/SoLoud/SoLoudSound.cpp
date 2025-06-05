@@ -21,7 +21,7 @@ SoLoudSound::SoLoudSound(UString filepath, bool stream, bool threeD, bool loop, 
       m_handle(0),
       m_speed(1.0f),
       m_pitch(1.0f),
-      m_frequency(48000.0f),
+      m_frequency(44100.0f),
       m_audioSource(nullptr),
       m_fLastRawSoLoudPosition(0.0),
       m_fLastSoLoudPositionTime(0.0),
@@ -104,7 +104,7 @@ void SoLoudSound::initAsync()
 		if (result == SoLoud::SO_NO_ERROR)
 		{
 			m_audioSource = stream;
-			m_frequency = 48000.0f; // default, will be updated when played
+			m_frequency = 44100.0f; // default, will be updated when played
 
 			m_audioSource->setSingleInstance(true);           // only play one music track at a time
 			m_audioSource->setInaudibleBehavior(true, false); // keep ticking the sound if it goes to 0 volume, and don't kill it
@@ -133,7 +133,7 @@ void SoLoudSound::initAsync()
 		if (result == SoLoud::SO_NO_ERROR)
 		{
 			m_audioSource = wav;
-			m_frequency = 48000.0f;
+			m_frequency = 44100.0f;
 
 			m_audioSource->setSingleInstance(false);         // allow non-music tracks to overlap by default
 			m_audioSource->setInaudibleBehavior(true, true); // keep ticking the sound if it goes to 0 volume, but do kill it if necessary
@@ -240,14 +240,24 @@ void SoLoudSound::setPositionMS(unsigned long ms)
 
 void SoLoudSound::setVolume(float volume)
 {
-	if (!m_bReady || !m_handle)
+	if (!m_bReady)
 		return;
 
 	m_fVolume = std::clamp<float>(volume, 0.0f, 1.0f);
 
+	if (!m_handle)
+		return;
+
 	// apply to active voice if not overlayable
 	if (!m_bIsOverlayable)
+	{
+		debugLog("setting handle volume for {:s} to {:f} because it overlayable\n", m_sFilePath, m_fVolume);
 		soloud->setVolume(m_handle, m_fVolume);
+	}
+	else if (cv::debug_snd.getBool())
+	{
+		debugLog("NOT setting handle volume for {:s} to {:f} because it's not overlayable\n", m_sFilePath, m_fVolume);
+	}
 }
 
 void SoLoudSound::setSpeed(float speed)
@@ -333,7 +343,7 @@ void SoLoudSound::setFrequency(float frequency)
 		}
 		else // 0 means reset to default
 		{
-			m_frequency = m_handle ? soloud->getSamplerate(m_handle) : 48000.0f;
+			m_frequency = m_handle ? soloud->getSamplerate(m_handle) : 44100.0f;
 			setPitch(1.0f);
 		}
 	}
@@ -372,7 +382,7 @@ void SoLoudSound::setOverlayable(bool overlayable)
 {
 	m_bIsOverlayable = overlayable;
 	if (m_audioSource)
-		m_audioSource->setSingleInstance(overlayable);
+		m_audioSource->setSingleInstance(!overlayable);
 }
 
 float SoLoudSound::getPosition()
@@ -514,7 +524,7 @@ float SoLoudSound::getPitch()
 float SoLoudSound::getFrequency()
 {
 	if (!m_bReady || !m_handle)
-		return 48000.0f;
+		return 44100.0f;
 
 	// get sample rate from active voice, unless we changed the frequency through pitch for streams, then just return our own frequency
 	if (!m_bStream)

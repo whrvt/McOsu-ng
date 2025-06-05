@@ -18,8 +18,7 @@
 namespace cv
 {
 ConVar snd_soloud_buffer("snd_soloud_buffer", SoLoud::Soloud::AUTO, FCVAR_NONE, "SoLoud audio device buffer size");
-ConVar snd_soloud_backend("snd_soloud_backend", "MiniAudio", FCVAR_NONE,
-                          R"(SoLoud backend, "MiniAudio" or "SDL3" (MiniAudio is default))");
+ConVar snd_soloud_backend("snd_soloud_backend", "MiniAudio", FCVAR_NONE, R"(SoLoud backend, "MiniAudio" or "SDL3" (MiniAudio is default))");
 ConVar snd_sanity_simultaneous_limit("snd_sanity_simultaneous_limit", 128, FCVAR_NONE,
                                      "The maximum number of overlayable sounds that are allowed to be active at once");
 } // namespace cv
@@ -36,10 +35,14 @@ SoLoudSoundEngine::SoLoudSoundEngine()
 		soloud = s_SLInstance.get();
 	}
 
-	// it's 0.95f by default, for some reason
-	soloud->setPostClipScaler(1.0f);
+	// need to reset these in case bass is also compiled in (otherwise having bass compiled in would add 15ms universal offset)
+#if __has_include("Osu.h")
+	cv::osu::universal_offset_hardcoded.setDefaultFloat(-10.0f);
+	cv::osu::universal_offset_hardcoded.setValue(-10.0f);
+#endif
 
-	m_iMaxActiveVoices = std::clamp<int>(cv::snd_sanity_simultaneous_limit.getInt(), 64, 255); // TODO: lower this minimum (it will crash if more than this many sounds play at once...)
+	m_iMaxActiveVoices = std::clamp<int>(cv::snd_sanity_simultaneous_limit.getInt(), 64,
+	                                     255); // TODO: lower this minimum (it will crash if more than this many sounds play at once...)
 
 	m_iCurrentOutputDevice = -1;
 	m_sCurrentOutputDevice = "Default";
@@ -129,8 +132,8 @@ bool SoLoudSoundEngine::playSound(SoLoudSound *soloudSound, float pan, float pit
 
 	if (cv::debug_snd.getBool())
 	{
-		debugLog("SoLoudSoundEngine: Playing {:s} (stream={:d}, 3d={:d}) with speed={:f}, pitch={:f}\n", soloudSound->m_sFilePath.toUtf8(),
-		         soloudSound->m_bStream ? 1 : 0, is3d ? 1 : 0, soloudSound->m_speed, pitch);
+		debugLog("SoLoudSoundEngine: Playing {:s} (stream={:d}, 3d={:d}) with speed={:f}, pitch={:f}, volume={:f}\n", soloudSound->m_sFilePath.toUtf8(),
+		         soloudSound->m_bStream ? 1 : 0, is3d ? 1 : 0, soloudSound->m_speed, pitch, soloudSound->m_fVolume);
 	}
 
 	// play the sound with appropriate method
@@ -182,7 +185,11 @@ bool SoLoudSoundEngine::playSound(SoLoudSound *soloudSound, float pan, float pit
 			soloudSound->m_frequency = actualFreq;
 
 		if (soloudSound->m_bStream)
-			setVolumeGradual(handle, soloud->getVolume(handle)); // fade it in if it's a stream (to avoid clicks/pops)
+		{
+			// fade it in if it's a stream (to avoid clicks/pops)
+			// if we're restoring the position, then we can use the existing volume, otherwise use a sane volume and allow the caller to set it otherwise
+			setVolumeGradual(handle, soloudSound->m_fVolume);
+		}
 
 		soloud->setPause(handle, false); // now, finally unpause
 
@@ -323,6 +330,9 @@ void SoLoudSoundEngine::setVolume(float volume)
 		return;
 
 	m_fVolume = std::clamp<float>(volume, 0.0f, 1.0f);
+
+	if (cv::debug_snd.getBool())
+		debugLog("setting global volume to {:f}\n", m_fVolume);
 	soloud->setGlobalVolume(m_fVolume);
 }
 
@@ -392,7 +402,8 @@ bool SoLoudSoundEngine::initializeOutputDevice(int id, bool)
 	}
 
 	// basic flags
-	unsigned int flags = SoLoud::Soloud::CLIP_ROUNDOFF | SoLoud::Soloud::NO_FPU_REGISTER_CHANGE;
+	auto flags = SoLoud::Soloud::FLAGS(0); /* SoLoud::Soloud::CLIP_ROUNDOFF | SoLoud::Soloud::NO_FPU_REGISTER_CHANGE */
+	;
 
 	auto backend = SoLoud::Soloud::MINIAUDIO;
 	auto userBackend = cv::snd_soloud_backend.getString();
@@ -445,8 +456,11 @@ bool SoLoudSoundEngine::initializeOutputDevice(int id, bool)
 
 	debugLog("SoundEngine: Initialized SoLoud with output device = \"{:s}\" flags: 0x{:x}, backend: {:s}, sampleRate: {}, bufferSize: {}, channels: {}, "
 	         "maxActiveVoiceCount: {}\n",
-	         m_sCurrentOutputDevice.toUtf8(), flags, soloud->getBackendString(), soloud->getBackendSamplerate(), soloud->getBackendBufferSize(),
-	         soloud->getBackendChannels(), m_iMaxActiveVoices);
+	         m_sCurrentOutputDevice.toUtf8(), static_cast<unsigned int>(flags), soloud->getBackendString(), soloud->getBackendSamplerate(),
+	         soloud->getBackendBufferSize(), soloud->getBackendChannels(), m_iMaxActiveVoices);
+
+	// it's 0.95f by default, for some reason
+	soloud->setPostClipScaler(1.0f);
 
 	m_bReady = true;
 

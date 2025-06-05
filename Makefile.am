@@ -181,6 +181,7 @@ $(DEPS_PREFIX)/SoLoud.built: $(DEPS_CACHE)/SoLoud.source $(DEPS_PREFIX)/SDL3.bui
 	patch -Np1<$(abs_top_srcdir)/build/aux/soloud-fastseek.patch && \
 	patch -Np1<$(abs_top_srcdir)/build/aux/soloud-null-getAudio.patch && \
 	patch -Np1<$(abs_top_srcdir)/build/aux/soloud-fix-global-volume-data-race.patch && \
+	patch -Np1<$(abs_top_srcdir)/build/aux/soloud-rework-resampler.patch && \
 	$(SED) -i -e 's|#define VOICE_COUNT 1024|#define VOICE_COUNT 4095|g' \
 			-e 's|#define SOLOUD_DEFAULT_RESAMPLER.*|#define SOLOUD_DEFAULT_RESAMPLER SoLoud::Soloud::RESAMPLER_CATMULLROM|g' include/soloud.h # raise max # concurrent voices from 1024 default to 4095 (hard limit)
 	cd $(DEPS_PREFIX)/SoLoud/build && \
