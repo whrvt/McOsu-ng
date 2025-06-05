@@ -20,6 +20,7 @@ class SoLoudSoundEngine final : public SoundEngine
 {
 private:
 	static std::unique_ptr<SoLoud::Soloud> s_SLInstance;
+
 public:
 	SoLoudSoundEngine();
 	~SoLoudSoundEngine() override;
@@ -53,7 +54,7 @@ private:
 	void updateOutputDevices(bool handleOutputDeviceChanges, bool printInfo) override;
 	bool initializeOutputDevice(int id = -1, bool force = false) override;
 
-	int m_iMaxActiveVoices;	
+	int m_iMaxActiveVoices;
 	void onMaxActiveChange(float newMax);
 };
 

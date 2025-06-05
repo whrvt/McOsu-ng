@@ -122,8 +122,7 @@ SoundTouchFilterInstance::SoundTouchFilterInstance(SoundTouchFilter *aParent)
       mSoundTouchSpeed(0.0f),
       mOggFrameBuffer(nullptr),
       mOggFrameBufferSize(0),
-      mOggSamplesInBuffer(0),
-      mEndedAndFlushed(false)
+      mOggSamplesInBuffer(0)
 {
 	ST_DEBUG_LOG("SoundTouchFilterInstance: Constructor called\n");
 
@@ -271,16 +270,6 @@ unsigned int SoundTouchFilterInstance::getAudio(float *aBuffer, unsigned int aSa
 	if (aBuffer == nullptr || mParent->mSoloud == nullptr)
 		return 0;
 
-	// HACK (1): this is dumb and wrong, if i was using soloud properly the filter instance should have been deleted by now
-	// and not just continuing to getAudio endlessly
-	if (mEndedAndFlushed)
-	{
-		if (mSourceInstance && !mSourceInstance->hasEnded())
-			mEndedAndFlushed = false;
-		else
-			return 0;
-	}
-
 	mProcessingCounter++;
 
 	bool logThisCall = ST_DEBUG_ENABLED && (mProcessingCounter == 1 || mProcessingCounter % 100 == 0);
@@ -325,34 +314,40 @@ unsigned int SoundTouchFilterInstance::getAudio(float *aBuffer, unsigned int aSa
 		ST_DEBUG_LOG("SoundTouch has {:} samples in buffer\n", samplesInSoundTouch);
 
 	// keep the SoundTouch buffer well-stocked to ensure consistent output, use a target buffer size larger than necessary
-	// still experimental, not sure what the best value is
-	const unsigned int targetBufferSize = aSamplesToRead * 4;
-
-	// below the target buffer size, fetch more samples
-	if (samplesInSoundTouch < targetBufferSize)
+	// EXCEPT: if the source ended, then we just need to get out the last bits of SoundTouch audio,
+	//			and don't try to receive more from the source, otherwise we keep flushing empty audio data that SoundTouch generates,
+	//			and thus returning the wrong amount of real data we actually "got" (see return samplesReceived)
+	if (!mSourceInstance->hasEnded())
 	{
-		// .ogg sources need frame-aligned buffering to prevent corruption (messed up right channel)
-		// there might be other/more correct ways to do this, but i can't find anything
-		if (isOggSource())
-			feedSoundTouchFromOggFrames(targetBufferSize, logThisCall);
-		else
-			feedSoundTouchStandard(targetBufferSize, logThisCall);
+		// still experimental, not sure what the best value is
+		const unsigned int targetBufferSize = aSamplesToRead * 4;
 
-		// if the source ended and we need more samples, flush
-		// not 100% sure about this, documentation is unhelpful at best and misleading at worst
-		if (mSourceInstance->hasEnded() && samplesInSoundTouch < aSamplesToRead)
+		// below the target buffer size, fetch more samples
+		if (samplesInSoundTouch < targetBufferSize)
 		{
-			if (logThisCall)
-				ST_DEBUG_LOG("Source has ended, flushing SoundTouch\n");
+			// .ogg sources need frame-aligned buffering to prevent corruption (messed up right channel)
+			// there might be other/more correct ways to do this, but i can't find anything
+			if (isOggSource())
+				feedSoundTouchFromOggFrames(targetBufferSize, logThisCall);
+			else
+				feedSoundTouchStandard(targetBufferSize, logThisCall);
 
-			mSoundTouch->flush();
-			mEndedAndFlushed = true;
+			// if the source ended and we need more samples, flush
+			// not 100% sure about this, documentation is unhelpful at best and misleading at worst
+			if (mSourceInstance->hasEnded() && samplesInSoundTouch < aSamplesToRead)
+			{
+				if (logThisCall)
+					ST_DEBUG_LOG("Source has ended, flushing SoundTouch\n");
+
+				mSoundTouch->flush();
+			}
 		}
 	}
 
 	// get processed samples from SoundTouch
 	unsigned int samplesAvailable = mSoundTouch->numSamples();
 	unsigned int samplesToReceive = samplesAvailable < aSamplesToRead ? samplesAvailable : aSamplesToRead;
+	unsigned int samplesReceived = samplesToReceive;
 
 	if (logThisCall)
 		ST_DEBUG_LOG("SoundTouch now has {:} samples available, will receive {:}\n", samplesAvailable, samplesToReceive);
@@ -366,7 +361,7 @@ unsigned int SoundTouchFilterInstance::getAudio(float *aBuffer, unsigned int aSa
 		ensureInterleavedBufferSize(samplesToReceive);
 
 		// get interleaved samples from SoundTouch
-		unsigned int samplesReceived = mSoundTouch->receiveSamples(mInterleavedBuffer, samplesToReceive);
+		samplesReceived = mSoundTouch->receiveSamples(mInterleavedBuffer, samplesToReceive);
 
 		if (logThisCall)
 			ST_DEBUG_LOG("Received {:} samples from SoundTouch, converting to non-interleaved\n", samplesReceived);
@@ -400,8 +395,9 @@ unsigned int SoundTouchFilterInstance::getAudio(float *aBuffer, unsigned int aSa
 	if (logThisCall)
 		ST_DEBUG_LOG("=== End of getAudio [{:}] ===\n", mProcessingCounter);
 
-	// always return requested amount (this is canonical for SoLoud filters)
-	return aSamplesToRead;
+	// reference in soloud_wavstream.cpp shows that only the amount of real data actually "read" (taken from SoundTouch in this instance) is actually returned.
+	// it just means that the stream ends properly when the parent source has ended, after the remaining data from the SoundTouch buffer is played out.
+	return samplesReceived;
 }
 
 // for OGG, accumulate complete frames in the frame buffer before sending to SoundTouch, because it needs properly aligned frame data
@@ -523,26 +519,8 @@ void SoundTouchFilterInstance::feedSoundTouchStandard(unsigned int targetBufferS
 
 bool SoundTouchFilterInstance::hasEnded()
 {
-	// end when source has ended and we're not looping
-	const bool ended = mSourceInstance && mSourceInstance->hasEnded();
-
-	// HACK (2): i really need to figure out whats going on here, i don't think we're supposed to be rewinding the stream ourselves
-	const bool looping = ended && (mParent->mSource->mFlags & AudioSource::SHOULD_LOOP);
-	// const bool looping = ended && ((mSourceInstance->mFlags & AudioSourceInstance::LOOPING) || (mParent->mSource->mFlags & AudioSource::SHOULD_LOOP));
-	// ST_DEBUG_LOG("ended: {} mParent->mSource->mFlags & AudioSource::SHOULD_LOOP: {} mSourceInstance->mFlags & AudioSourceInstance::LOOPING: {}\n",
-	// 		ended, (bool)(mParent->mSource->mFlags & AudioSource::SHOULD_LOOP), (bool)(mParent->mSource->mFlags & AudioSource::SHOULD_LOOP));
-
-	if (looping)
-	{
-		ST_DEBUG_LOG("looping source, rewinding\n");
-		if (rewind() == SO_NO_ERROR)
-			return false;
-	}
-
-	if (ended && ST_DEBUG_ENABLED)
-		ST_DEBUG_LOG("ended, returning true (mSourceInstance->flags: {:x} mParent->mSource->mFlags: {:x})\n", mSourceInstance->mFlags, mParent->mSource->mFlags);
-
-	return ended;
+	// end when source has ended
+	return !(mSourceInstance || mSourceInstance->hasEnded());
 }
 
 result SoundTouchFilterInstance::seek(time aSeconds, float *mScratch, unsigned int mScratchSize)

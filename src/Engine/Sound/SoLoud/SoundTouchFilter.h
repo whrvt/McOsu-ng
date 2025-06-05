@@ -96,9 +96,6 @@ protected:
 	float mSoundTouchSpeed; // currently set soundtouch playback parameters for the instance
 	float mSoundTouchPitch;
 
-	// HACK: signal that SoundTouch is flushed after source has ended
-	bool mEndedAndFlushed;
-
 	// buffers for format conversion
 	float *mBuffer;           // non-interleaved audio buffer (SoLoud format)
 	unsigned int mBufferSize; // size in samples

@@ -15,17 +15,20 @@
 #include "Environment.h"
 
 // SoLoud-specific ConVars
-namespace cv {
+namespace cv
+{
 ConVar snd_soloud_buffer("snd_soloud_buffer", SoLoud::Soloud::AUTO, FCVAR_NONE, "SoLoud audio device buffer size");
 ConVar snd_soloud_backend("snd_soloud_backend", Env::cfg(OS::WASM) ? "SDL3" : "MiniAudio", FCVAR_NONE,
                           R"(SoLoud backend, "MiniAudio" or "SDL3" (MiniAudio is default on desktop))");
-ConVar snd_sanity_simultaneous_limit("snd_sanity_simultaneous_limit", 128, FCVAR_NONE, "The maximum number of overlayable sounds that are allowed to be active at once");
-}
+ConVar snd_sanity_simultaneous_limit("snd_sanity_simultaneous_limit", 128, FCVAR_NONE,
+                                     "The maximum number of overlayable sounds that are allowed to be active at once");
+} // namespace cv
 
 std::unique_ptr<SoLoud::Soloud> SoLoudSoundEngine::s_SLInstance = nullptr;
 SoLoud::Soloud *soloud = nullptr;
 
-SoLoudSoundEngine::SoLoudSoundEngine() : SoundEngine()
+SoLoudSoundEngine::SoLoudSoundEngine()
+    : SoundEngine()
 {
 	if (!s_SLInstance)
 	{
@@ -133,8 +136,8 @@ bool SoLoudSoundEngine::playSound(SoLoudSound *soloudSound, float pan, float pit
 
 	if (cv::debug_snd.getBool())
 	{
-		debugLog("SoLoudSoundEngine: Playing {:s} (stream={:d}, 3d={:d}) with speed={:f}, pitch={:f}\n", soloudSound->m_sFilePath.toUtf8(), soloudSound->m_bStream ? 1 : 0,
-		         is3d ? 1 : 0, soloudSound->m_speed, pitch);
+		debugLog("SoLoudSoundEngine: Playing {:s} (stream={:d}, 3d={:d}) with speed={:f}, pitch={:f}\n", soloudSound->m_sFilePath.toUtf8(),
+		         soloudSound->m_bStream ? 1 : 0, is3d ? 1 : 0, soloudSound->m_speed, pitch);
 	}
 
 	// play the sound with appropriate method
