@@ -250,7 +250,7 @@ void SoLoudSound::setVolume(float volume)
 
 void SoLoudSound::setSpeed(float speed)
 {
-	if (!m_bReady)
+	if (!m_bReady || !m_audioSource)
 		return;
 
 	// sample speed could be supported, but there is nothing using it right now so i will only bother when the time comes
@@ -278,7 +278,7 @@ void SoLoudSound::setSpeed(float speed)
 
 void SoLoudSound::setPitch(float pitch)
 {
-	if (!m_bReady)
+	if (!m_bReady || !m_audioSource)
 		return;
 
 	// sample pitch could be supported, but there is nothing using it right now so i will only bother when the time comes
@@ -306,19 +306,34 @@ void SoLoudSound::setPitch(float pitch)
 
 void SoLoudSound::setFrequency(float frequency)
 {
-	if (!m_bReady)
+	if (!m_bReady || !m_audioSource)
 		return;
+
+	// sample frequency could be supported, but there is nothing using it right now so i will only bother when the time comes
+	if (!m_bStream)
+	{
+		debugLog("Programmer Error: tried to setFrequency on a sample!\n");
+		return;
+	}
 
 	frequency = (frequency > 99.0f ? std::clamp<float>(frequency, 100.0f, 100000.0f) : 0.0f);
 
-	if (m_frequency != frequency && frequency > 0)
+	if (m_frequency != frequency)
 	{
-		float pitchRatio = frequency / m_frequency;
-		m_frequency = frequency;
+		if (frequency > 0)
+		{
+			float pitchRatio = frequency / m_frequency;
+			m_frequency = frequency;
 
-		// apply the frequency change through pitch
-		// this isn't the only or even a good way, but it does the trick
-		setPitch(m_pitch * pitchRatio);
+			// apply the frequency change through pitch
+			// this isn't the only or even a good way, but it does the trick
+			setPitch(m_pitch * pitchRatio);
+		}
+		else // 0 means reset to default
+		{
+			m_frequency = m_handle ? soloud->getSamplerate(m_handle) : 44100.0f;
+			setPitch(1.0f);
+		}
 	}
 }
 
@@ -497,8 +512,8 @@ float SoLoudSound::getFrequency()
 	if (!m_bReady || !m_handle)
 		return 44100.0f;
 
-	// get sample rate from active voice
-	if (m_handle != 0)
+	// get sample rate from active voice, unless we changed the frequency through pitch for streams, then just return our own frequency
+	if (!m_bStream)
 	{
 		float currentFreq = soloud->getSamplerate(m_handle);
 		if (currentFreq > 0)

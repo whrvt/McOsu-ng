@@ -59,7 +59,7 @@ void *asyncResourceLoaderThread(void *data, std::stop_token stopToken)
 			bool workAvailable = loader->m_workAvailable.wait_for(
 			    lock, waitTime, [&]() { return stopToken.stop_requested() || loader->m_shuttingDown.load() || loader->m_activeWorkCount.load() > 0; });
 
-			if (!workAvailable && !app->isInCriticalInteractiveSession())
+			if (!workAvailable && !(app && app->isInCriticalInteractiveSession()))
 			{
 				if (cv::debug_rm.getBool())
 					debugLog("AsyncResourceLoader: Thread #{} terminating due to idle timeout\n", threadIndex);

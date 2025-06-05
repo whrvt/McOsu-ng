@@ -48,7 +48,7 @@ ResourceManager::~ResourceManager()
 void ResourceManager::update()
 {
 	// delegate to async loader
-	bool lowLatency = app->isInCriticalInteractiveSession();
+	bool lowLatency = app && app->isInCriticalInteractiveSession();
 	m_asyncLoader->update(lowLatency);
 }
 

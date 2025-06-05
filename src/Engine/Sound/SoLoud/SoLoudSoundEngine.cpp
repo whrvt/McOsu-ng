@@ -18,8 +18,8 @@
 namespace cv
 {
 ConVar snd_soloud_buffer("snd_soloud_buffer", SoLoud::Soloud::AUTO, FCVAR_NONE, "SoLoud audio device buffer size");
-ConVar snd_soloud_backend("snd_soloud_backend", Env::cfg(OS::WASM) ? "SDL3" : "MiniAudio", FCVAR_NONE,
-                          R"(SoLoud backend, "MiniAudio" or "SDL3" (MiniAudio is default on desktop))");
+ConVar snd_soloud_backend("snd_soloud_backend", "MiniAudio", FCVAR_NONE,
+                          R"(SoLoud backend, "MiniAudio" or "SDL3" (MiniAudio is default))");
 ConVar snd_sanity_simultaneous_limit("snd_sanity_simultaneous_limit", 128, FCVAR_NONE,
                                      "The maximum number of overlayable sounds that are allowed to be active at once");
 } // namespace cv
@@ -35,6 +35,9 @@ SoLoudSoundEngine::SoLoudSoundEngine()
 		s_SLInstance = std::make_unique<SoLoud::Soloud>();
 		soloud = s_SLInstance.get();
 	}
+
+	// it's 0.95f by default, for some reason
+	soloud->setPostClipScaler(1.0f);
 
 	m_iMaxActiveVoices = std::clamp<int>(cv::snd_sanity_simultaneous_limit.getInt(), 64, 255); // TODO: lower this minimum
 
@@ -140,6 +143,10 @@ bool SoLoudSoundEngine::playSound(SoLoudSound *soloudSound, float pan, float pit
 	}
 	else if (soloudSound->m_bStream)
 	{
+		// reset these, because they're "sticky" properties
+		soloudSound->setPitch(pitch);
+		soloudSound->setPan(pan);
+
 		// streaming audio (music) - play SLFXStream directly (it handles SoundTouch internally)
 		handle = soloud->play(*soloudSound->m_audioSource, soloudSound->m_fVolume, pan, true /* paused */);
 		if (handle)
@@ -387,7 +394,7 @@ bool SoLoudSoundEngine::initializeOutputDevice(int id, bool)
 	// basic flags
 	unsigned int flags = SoLoud::Soloud::CLIP_ROUNDOFF;
 
-	auto backend = Env::cfg(OS::WASM) ? SoLoud::Soloud::SDL3 : SoLoud::Soloud::MINIAUDIO;
+	auto backend = SoLoud::Soloud::MINIAUDIO;
 	auto userBackend = cv::snd_soloud_backend.getString();
 	if ((userBackend != cv::snd_soloud_backend.getDefaultString()))
 	{
@@ -410,7 +417,7 @@ bool SoLoudSoundEngine::initializeOutputDevice(int id, bool)
 
 	// setup some SDL hints in case the SDL backend is used
 	if (cv::snd_soloud_buffer.getVal() != cv::snd_soloud_buffer.getDefaultVal())
-		SDL_SetHintWithPriority(SDL_HINT_AUDIO_DEVICE_SAMPLE_FRAMES, fmt::format("{}", cv::snd_soloud_buffer.getVal<unsigned int>()).c_str(), SDL_HINT_OVERRIDE);
+		SDL_SetHintWithPriority(SDL_HINT_AUDIO_DEVICE_SAMPLE_FRAMES, cv::snd_soloud_buffer.getString().toUtf8(), SDL_HINT_OVERRIDE);
 	SDL_SetHintWithPriority(SDL_HINT_AUDIO_DEVICE_STREAM_NAME, PACKAGE_NAME, SDL_HINT_OVERRIDE);
 	SDL_SetHintWithPriority(SDL_HINT_AUDIO_DEVICE_STREAM_ROLE, "game", SDL_HINT_OVERRIDE);
 

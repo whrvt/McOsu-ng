@@ -465,20 +465,16 @@ unsigned int SoundTouchFilterInstance::getAudio(float *aBuffer, unsigned int aSa
 // for OGG, accumulate complete frames in the frame buffer before sending to SoundTouch, because it needs properly aligned frame data
 void SoundTouchFilterInstance::feedSoundTouchFromOggFrames(unsigned int targetBufferSize, bool logThis)
 {
-	const unsigned int maxSamplesToRequest = targetBufferSize * 2; // don't request too much at once
-
 	// keep reading until we have enough samples or the source ends
 	while (mOggSamplesInBuffer < targetBufferSize && !mSourceInstance->hasEnded())
 	{
-		unsigned int samplesToRequest = std::min(maxSamplesToRequest, targetBufferSize * 2);
-
 		if (logThis)
-			ST_DEBUG_LOG("OGG: Requesting {:} samples for frame buffer (current buffer: {:})\n", samplesToRequest, mOggSamplesInBuffer);
+			ST_DEBUG_LOG("OGG: Requesting {:} samples for frame buffer (current buffer: {:})\n", targetBufferSize * 2, mOggSamplesInBuffer);
 
-		ensureBufferSize(samplesToRequest);
+		ensureBufferSize(targetBufferSize * 2);
 
 		// read from source into the standard buffer
-		unsigned int sourceSamplesRead = mSourceInstance->getAudio(mBuffer, samplesToRequest, mBufferSize);
+		unsigned int sourceSamplesRead = mSourceInstance->getAudio(mBuffer, targetBufferSize * 2, mBufferSize);
 
 		if (sourceSamplesRead > 0)
 		{
@@ -735,7 +731,8 @@ void SoundTouchFilterInstance::setAutoOffset()
 
 		float totalOffset = std::clamp<float>(-(latencyInMs + processingBufferDelay), -200.0f, 0.0f);
 
-		ST_DEBUG_LOG("SoundTouch: Calculated universal offset = {:.2f} ms (latency: {:.2f}, buffer: {:.2f})\n", totalOffset, latencyInMs, processingBufferDelay);
+		if (cv::debug_snd.getBool())
+			debugLog("Calculated universal offset = {:.2f} ms (latency: {:.2f}, buffer: {:.2f}), setting final offset to {:.2f}\n", totalOffset, latencyInMs, processingBufferDelay, cv::osu::universal_offset_hardcoded.getDefaultFloat() + totalOffset);
 
 		cv::osu::universal_offset_hardcoded.setValue(cv::osu::universal_offset_hardcoded.getDefaultFloat() + totalOffset);
 	}
