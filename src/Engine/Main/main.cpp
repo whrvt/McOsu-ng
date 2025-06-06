@@ -30,6 +30,25 @@
 #else
 #define MAIN_FUNC int main(int argc, char *argv[])
 #define nocbinline forceinline
+#include <filesystem>
+namespace
+{
+namespace fs = std::filesystem;
+void setcwdexe(const char *argv0) noexcept
+{
+	std::error_code ec;
+	fs::path exe_path{};
+	if constexpr (Env::cfg(OS::LINUX))
+		exe_path = fs::canonical("/proc/self/exe", ec);
+	else if constexpr (Env::cfg(OS::WINDOWS))
+		exe_path = fs::canonical(fs::path(argv0), ec);
+
+	if (ec || !exe_path.has_parent_path())
+		return;
+
+	fs::current_path(exe_path.parent_path(), ec);
+}
+} // namespace
 #endif
 
 #include <SDL3/SDL.h>
@@ -129,6 +148,9 @@ SDL_AppResult SDL_AppIterate(void *appstate)
 // actual main/init, called once
 MAIN_FUNC /* int argc, char *argv[] */
 {
+	if constexpr (!Env::cfg(OS::WASM))
+		setcwdexe(argv[0]); // set the current working directory to the executable directory, so that relative paths works as expected
+
 	std::string lowerPackageName = PACKAGE_NAME;
 	std::ranges::transform(lowerPackageName, lowerPackageName.begin(), [](char c) { return std::tolower(c); });
 
@@ -207,7 +229,8 @@ ConVar fps_unlimited("fps_unlimited", false, FCVAR_NONE);
 ConVar fps_yield("fps_yield", true, FCVAR_NONE, "always release rest of timeslice at the end of each frame (call scheduler via sleep(0))");
 } // namespace cv
 
-SDLMain::SDLMain(int argc, char *argv[]) : Environment(argc, argv)
+SDLMain::SDLMain(int argc, char *argv[])
+    : Environment(argc, argv)
 {
 	m_context = nullptr;
 	m_deltaTimer = nullptr;
@@ -317,7 +340,7 @@ nocbinline SDL_AppResult SDLMain::handleEvent(SDL_Event *event)
 	case SDL_EVENT_WINDOW_DISPLAY_SCALE_CHANGED: case SDL_EVENT_WINDOW_SAFE_AREA_CHANGED: case SDL_EVENT_WINDOW_OCCLUDED:
 	case SDL_EVENT_WINDOW_ENTER_FULLSCREEN:		 case SDL_EVENT_WINDOW_LEAVE_FULLSCREEN:  case SDL_EVENT_WINDOW_DESTROYED:
 	case SDL_EVENT_WINDOW_HDR_STATE_CHANGED:
-	// clang-format on
+		// clang-format on
 		switch (event->window.type)
 		{
 		case SDL_EVENT_WINDOW_CLOSE_REQUESTED:

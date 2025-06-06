@@ -870,154 +870,224 @@ bool OsuSkin::parseSkinINI(UString filepath)
 		return false;
 	}
 
-	int nonEmptyLineCounter = 0;
-	int curBlock = 0; // NOTE: was -1, but osu incorrectly defaults to [General] and loads properties even before the actual section start (just for this first section though)
-	while (file.canRead())
+	UString fileContent;
+	const char *rawData = file.readFile();
+	size_t fileSize = file.getFileSize();
+
+	if (!rawData || fileSize == 0)
 	{
-		UString uCurLine = file.readLine();
+		debugLog("OsuSkin Error: Empty or unreadable file {:s}\n", filepath.toUtf8());
+		return false;
+	}
 
-		if (uCurLine == "")
-			continue;
+	// check for UTF-16 LE BOM and convert if needed
+	if (fileSize >= 2 && static_cast<unsigned char>(rawData[0]) == 0xFF && static_cast<unsigned char>(rawData[1]) == 0xFE)
+	{
+		// convert UTF-16 LE to UTF-8
+		std::string utf8Result;
+		utf8Result.reserve(fileSize);
 
-		const char *curLineChar = uCurLine.toUtf8();
-		std::string curLine(curLineChar);
+		size_t utf16Size = fileSize - 2; // skip BOM
+		const char *utf16Data = rawData + 2;
 
-		nonEmptyLineCounter++;
-
-		if (curLine.find("//") > 2) // ignore comments // TODO: this is incorrect, but it works well enough
+		for (size_t i = 0; i < utf16Size - 1; i += 2)
 		{
-			if (curLine.find("[General]") != std::string::npos)
-				curBlock = 0;
-			else if (curLine.find("[Colours]") != std::string::npos || curLine.find("[Colors]") != std::string::npos)
-				curBlock = 1;
-			else if (curLine.find("[Fonts]") != std::string::npos)
-				curBlock = 2;
+			uint16_t utf16Char = static_cast<unsigned char>(utf16Data[i]) | (static_cast<unsigned char>(utf16Data[i + 1]) << 8);
 
-			switch (curBlock)
+			if (utf16Char < 0x80)
+				utf8Result += static_cast<char>(utf16Char);
+			else if (utf16Char < 0x800)
 			{
-			case 0: // General
-				{
-					int val;
-					float floatVal;
-					char stringBuffer[1024];
-
-					memset(stringBuffer, '\0', 1024);
-					if (sscanf(curLineChar, " Version : %1023[^\n]", stringBuffer) == 1)
-					{
-						UString versionString = UString(stringBuffer);
-						if (versionString.find("latest") != -1 || versionString.find("User") != -1)
-							m_fVersion = 2.5f; // default to latest version available
-						else
-							m_fVersion = versionString.toFloat();
-					}
-
-					if (sscanf(curLineChar, " CursorRotate : %i \n", &val) == 1)
-						m_bCursorRotate = val > 0 ? true : false;
-					if (sscanf(curLineChar, " CursorCentre : %i \n", &val) == 1)
-						m_bCursorCenter = val > 0 ? true : false;
-					if (sscanf(curLineChar, " CursorExpand : %i \n", &val) == 1)
-						m_bCursorExpand = val > 0 ? true : false;
-					if (sscanf(curLineChar, " SliderBallFlip : %i \n", &val) == 1)
-						m_bSliderBallFlip = val > 0 ? true : false;
-					if (sscanf(curLineChar, " AllowSliderBallTint : %i \n", &val) == 1)
-						m_bAllowSliderBallTint = val > 0 ? true : false;
-					if (sscanf(curLineChar, " HitCircleOverlayAboveNumber : %i \n", &val) == 1)
-						m_bHitCircleOverlayAboveNumber = val > 0 ? true : false;
-					if (sscanf(curLineChar, " HitCircleOverlayAboveNumer : %i \n", &val) == 1)
-						m_bHitCircleOverlayAboveNumber = val > 0 ? true : false;
-					if (sscanf(curLineChar, " SliderStyle : %i \n", &val) == 1)
-					{
-						m_iSliderStyle = val;
-						if (m_iSliderStyle != 1 && m_iSliderStyle != 2)
-							m_iSliderStyle = 2;
-					}
-					if (sscanf(curLineChar, " AnimationFramerate : %f \n", &floatVal) == 1)
-						m_fAnimationFramerate = floatVal < 0 ? 0.0f : floatVal;
-				}
-				break;
-			case 1: // Colors
-				{
-					int comboNum;
-					int r,g,b;
-
-					if (sscanf(curLineChar, " Combo %i : %i , %i , %i \n", &comboNum, &r, &g, &b) == 4)
-						m_comboColors.push_back(rgb(r, g, b));
-					if (sscanf(curLineChar, " SpinnerApproachCircle : %i , %i , %i \n", &r, &g, &b) == 3)
-						m_spinnerApproachCircleColor = rgb(r, g, b);
-					if (sscanf(curLineChar, " SliderBorder: %i , %i , %i \n", &r, &g, &b) == 3)
-						m_sliderBorderColor = rgb(r, g, b);
-					if (sscanf(curLineChar, " SliderTrackOverride : %i , %i , %i \n", &r, &g, &b) == 3)
-					{
-						m_sliderTrackOverride = rgb(r, g, b);
-						m_bSliderTrackOverride = true;
-					}
-					if (sscanf(curLineChar, " SliderBall : %i , %i , %i \n", &r, &g, &b) == 3)
-						m_sliderBallColor = rgb(r, g, b);
-					if (sscanf(curLineChar, " SongSelectActiveText : %i , %i , %i \n", &r, &g, &b) == 3)
-						m_songSelectActiveText = rgb(r, g, b);
-					if (sscanf(curLineChar, " SongSelectInactiveText : %i , %i , %i \n", &r, &g, &b) == 3)
-						m_songSelectInactiveText = rgb(r, g, b);
-					if (sscanf(curLineChar, " InputOverlayText : %i , %i , %i \n", &r, &g, &b) == 3)
-						m_inputOverlayText = rgb(r, g, b);
-				}
-				break;
-			case 2: // Fonts
-				{
-					int val;
-					char stringBuffer[1024];
-
-					memset(stringBuffer, '\0', 1024);
-					if (sscanf(curLineChar, " ComboPrefix : %1023[^\n]", stringBuffer) == 1)
-					{
-						m_sComboPrefix = UString(stringBuffer);
-
-						for (int i=0; i<m_sComboPrefix.length(); i++)
-						{
-							if (m_sComboPrefix[i] == L'\\')
-							{
-								m_sComboPrefix.erase(i, 1);
-								m_sComboPrefix.insert(i, L'/');
-							}
-						}
-					}
-					if (sscanf(curLineChar, " ComboOverlap : %i \n", &val) == 1)
-						m_iComboOverlap = val;
-
-					if (sscanf(curLineChar, " ScorePrefix : %1023[^\n]", stringBuffer) == 1)
-					{
-						m_sScorePrefix = UString(stringBuffer);
-
-						for (int i=0; i<m_sScorePrefix.length(); i++)
-						{
-							if (m_sScorePrefix[i] == L'\\')
-							{
-								m_sScorePrefix.erase(i, 1);
-								m_sScorePrefix.insert(i, L'/');
-							}
-						}
-					}
-					if (sscanf(curLineChar, " ScoreOverlap : %i \n", &val) == 1)
-						m_iScoreOverlap = val;
-
-					if (sscanf(curLineChar, " HitCirclePrefix : %1023[^\n]", stringBuffer) == 1)
-					{
-						m_sHitCirclePrefix = UString(stringBuffer);
-
-						for (int i=0; i<m_sHitCirclePrefix.length(); i++)
-						{
-							if (m_sHitCirclePrefix[i] == L'\\')
-							{
-								m_sHitCirclePrefix.erase(i, 1);
-								m_sHitCirclePrefix.insert(i, L'/');
-							}
-						}
-					}
-					if (sscanf(curLineChar, " HitCircleOverlap : %i \n", &val) == 1)
-						m_iHitCircleOverlap = val;
-				}
-				break;
+				utf8Result += static_cast<char>(0xC0 | (utf16Char >> 6));
+				utf8Result += static_cast<char>(0x80 | (utf16Char & 0x3F));
+			}
+			else
+			{
+				utf8Result += static_cast<char>(0xE0 | (utf16Char >> 12));
+				utf8Result += static_cast<char>(0x80 | ((utf16Char >> 6) & 0x3F));
+				utf8Result += static_cast<char>(0x80 | (utf16Char & 0x3F));
 			}
 		}
+
+		fileContent = UString(utf8Result.c_str());
+	}
+	else
+	{
+		// assume UTF-8/ASCII
+		fileContent = UString(rawData, static_cast<int>(fileSize));
+	}
+
+	// process content line by line, handling different line endings
+	int nonEmptyLineCounter = 0;
+	int curBlock =
+	    0; // NOTE: was -1, but osu incorrectly defaults to [General] and loads properties even before the actual section start (just for this first section though)
+
+	UString currentLine;
+	for (int i = 0; i < fileContent.length(); i++)
+	{
+		wchar_t ch = fileContent[i];
+
+		if (ch == L'\r' || ch == L'\n')
+		{
+			// handle CRLF, CR, or LF
+			if (ch == L'\r' && i + 1 < fileContent.length() && fileContent[i + 1] == L'\n')
+				i++; // skip LF in CRLF
+
+			// process line if not empty
+			if (!currentLine.isEmpty())
+			{
+				const char *curLineChar = currentLine.toUtf8();
+				std::string curLine(curLineChar);
+				nonEmptyLineCounter++;
+
+				if (curLine.find("//") > 2) // ignore comments // TODO: this is incorrect, but it works well enough
+				{
+					if (curLine.find("[General]") != std::string::npos)
+						curBlock = 0;
+					else if (curLine.find("[Colours]") != std::string::npos || curLine.find("[Colors]") != std::string::npos)
+						curBlock = 1;
+					else if (curLine.find("[Fonts]") != std::string::npos)
+						curBlock = 2;
+
+					switch (curBlock)
+					{
+					case 0: // General
+					{
+						int val;
+						float floatVal;
+						char stringBuffer[1024];
+
+						memset(stringBuffer, '\0', 1024);
+						if (sscanf(curLineChar, " Version : %1023[^\n]", stringBuffer) == 1)
+						{
+							UString versionString = UString(stringBuffer);
+							if (versionString.find("latest") != -1 || versionString.find("User") != -1)
+								m_fVersion = 2.5f; // default to latest version available
+							else
+								m_fVersion = versionString.toFloat();
+						}
+
+						if (sscanf(curLineChar, " CursorRotate : %i \n", &val) == 1)
+							m_bCursorRotate = val > 0 ? true : false;
+						if (sscanf(curLineChar, " CursorCentre : %i \n", &val) == 1)
+							m_bCursorCenter = val > 0 ? true : false;
+						if (sscanf(curLineChar, " CursorExpand : %i \n", &val) == 1)
+							m_bCursorExpand = val > 0 ? true : false;
+						if (sscanf(curLineChar, " SliderBallFlip : %i \n", &val) == 1)
+							m_bSliderBallFlip = val > 0 ? true : false;
+						if (sscanf(curLineChar, " AllowSliderBallTint : %i \n", &val) == 1)
+							m_bAllowSliderBallTint = val > 0 ? true : false;
+						if (sscanf(curLineChar, " HitCircleOverlayAboveNumber : %i \n", &val) == 1)
+							m_bHitCircleOverlayAboveNumber = val > 0 ? true : false;
+						if (sscanf(curLineChar, " HitCircleOverlayAboveNumer : %i \n", &val) == 1)
+							m_bHitCircleOverlayAboveNumber = val > 0 ? true : false;
+						if (sscanf(curLineChar, " SliderStyle : %i \n", &val) == 1)
+						{
+							m_iSliderStyle = val;
+							if (m_iSliderStyle != 1 && m_iSliderStyle != 2)
+								m_iSliderStyle = 2;
+						}
+						if (sscanf(curLineChar, " AnimationFramerate : %f \n", &floatVal) == 1)
+							m_fAnimationFramerate = floatVal < 0 ? 0.0f : floatVal;
+					}
+					break;
+					case 1: // Colors
+					{
+						int comboNum;
+						int r, g, b;
+
+						if (sscanf(curLineChar, " Combo %i : %i , %i , %i \n", &comboNum, &r, &g, &b) == 4)
+							m_comboColors.push_back(rgb(r, g, b));
+						if (sscanf(curLineChar, " SpinnerApproachCircle : %i , %i , %i \n", &r, &g, &b) == 3)
+							m_spinnerApproachCircleColor = rgb(r, g, b);
+						if (sscanf(curLineChar, " SliderBorder: %i , %i , %i \n", &r, &g, &b) == 3)
+							m_sliderBorderColor = rgb(r, g, b);
+						if (sscanf(curLineChar, " SliderTrackOverride : %i , %i , %i \n", &r, &g, &b) == 3)
+						{
+							m_sliderTrackOverride = rgb(r, g, b);
+							m_bSliderTrackOverride = true;
+						}
+						if (sscanf(curLineChar, " SliderBall : %i , %i , %i \n", &r, &g, &b) == 3)
+							m_sliderBallColor = rgb(r, g, b);
+						if (sscanf(curLineChar, " SongSelectActiveText : %i , %i , %i \n", &r, &g, &b) == 3)
+							m_songSelectActiveText = rgb(r, g, b);
+						if (sscanf(curLineChar, " SongSelectInactiveText : %i , %i , %i \n", &r, &g, &b) == 3)
+							m_songSelectInactiveText = rgb(r, g, b);
+						if (sscanf(curLineChar, " InputOverlayText : %i , %i , %i \n", &r, &g, &b) == 3)
+							m_inputOverlayText = rgb(r, g, b);
+					}
+					break;
+					case 2: // Fonts
+					{
+						int val;
+						char stringBuffer[1024];
+
+						memset(stringBuffer, '\0', 1024);
+						if (sscanf(curLineChar, " ComboPrefix : %1023[^\n]", stringBuffer) == 1)
+						{
+							m_sComboPrefix = UString(stringBuffer);
+
+							for (int i = 0; i < m_sComboPrefix.length(); i++)
+							{
+								if (m_sComboPrefix[i] == L'\\')
+								{
+									m_sComboPrefix.erase(i, 1);
+									m_sComboPrefix.insert(i, L'/');
+								}
+							}
+						}
+						if (sscanf(curLineChar, " ComboOverlap : %i \n", &val) == 1)
+							m_iComboOverlap = val;
+
+						if (sscanf(curLineChar, " ScorePrefix : %1023[^\n]", stringBuffer) == 1)
+						{
+							m_sScorePrefix = UString(stringBuffer);
+
+							for (int i = 0; i < m_sScorePrefix.length(); i++)
+							{
+								if (m_sScorePrefix[i] == L'\\')
+								{
+									m_sScorePrefix.erase(i, 1);
+									m_sScorePrefix.insert(i, L'/');
+								}
+							}
+						}
+						if (sscanf(curLineChar, " ScoreOverlap : %i \n", &val) == 1)
+							m_iScoreOverlap = val;
+
+						if (sscanf(curLineChar, " HitCirclePrefix : %1023[^\n]", stringBuffer) == 1)
+						{
+							m_sHitCirclePrefix = UString(stringBuffer);
+
+							for (int i = 0; i < m_sHitCirclePrefix.length(); i++)
+							{
+								if (m_sHitCirclePrefix[i] == L'\\')
+								{
+									m_sHitCirclePrefix.erase(i, 1);
+									m_sHitCirclePrefix.insert(i, L'/');
+								}
+							}
+						}
+						if (sscanf(curLineChar, " HitCircleOverlap : %i \n", &val) == 1)
+							m_iHitCircleOverlap = val;
+					}
+					break;
+					}
+				}
+			}
+			currentLine.clear();
+		}
+		else
+		{
+			currentLine += ch;
+		}
+	}
+
+	// process the last line if it doesn't end with a line terminator
+	if (!currentLine.isEmpty())
+	{
+		nonEmptyLineCounter++;
+		// you could add the same parsing logic here if needed
 	}
 
 	if (nonEmptyLineCounter < 1)
