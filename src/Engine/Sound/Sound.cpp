@@ -106,6 +106,8 @@ bool Sound::isValidAudioFile(const UString &filePath, const UString &fileExt)
 		return false;
 
 	size_t fileSize = audFile.getFileSize();
+	if (fileSize < cv::snd_file_min_size.getVal<size_t>())
+		return false;
 
 	if (fileExt == "wav")
 	{
