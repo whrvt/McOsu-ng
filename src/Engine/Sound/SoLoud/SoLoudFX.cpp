@@ -200,17 +200,17 @@ SoundTouchFilterInstance::SoundTouchFilterInstance(SLFXStream *aParent)
     : mParent(aParent),
       mSourceInstance(nullptr),
       mSoundTouch(nullptr),
+      mSoundTouchSpeed(0.0f),
+      mSoundTouchPitch(0.0f),
       mBuffer(nullptr),
       mBufferSize(0),
       mInterleavedBuffer(nullptr),
       mInterleavedBufferSize(0),
-      mProcessingCounter(0),
-      mTotalSamplesProcessed(0),
-      mSoundTouchPitch(0.0f),
-      mSoundTouchSpeed(0.0f),
       mOggFrameBuffer(nullptr),
       mOggFrameBufferSize(0),
-      mOggSamplesInBuffer(0)
+      mOggSamplesInBuffer(0),
+      mProcessingCounter(0),
+      mTotalSamplesProcessed(0)
 {
 	ST_DEBUG_LOG("SoundTouchFilterInstance: Constructor called\n");
 
@@ -363,7 +363,7 @@ unsigned int SoundTouchFilterInstance::getAudio(float *aBuffer, unsigned int aSa
 		mSoundTouchPitch = mParent->mPitchFactor;          // custom
 		mSetRelativePlaySpeed = mParent->mSpeedFactor;     // SoLoud inherited
 		mOverallRelativePlaySpeed = mParent->mSpeedFactor; // SoLoud inherited
-		setAutoOffset(); // re-calculate audio offset
+		setAutoOffset();                                   // re-calculate audio offset
 	}
 
 	if (logThisCall)
@@ -578,7 +578,7 @@ void SoundTouchFilterInstance::feedSoundTouchStandard(unsigned int targetBufferS
 bool SoundTouchFilterInstance::hasEnded()
 {
 	// end when source has ended
-	return !(mSourceInstance || mSourceInstance->hasEnded());
+	return (!mSourceInstance || mSourceInstance->hasEnded());
 }
 
 result SoundTouchFilterInstance::seek(time aSeconds, float *mScratch, unsigned int mScratchSize)
@@ -732,7 +732,8 @@ void SoundTouchFilterInstance::setAutoOffset()
 		float totalOffset = std::clamp<float>(-(latencyInMs + processingBufferDelay), -200.0f, 0.0f);
 
 		if (cv::debug_snd.getBool())
-			debugLog("Calculated universal offset = {:.2f} ms (latency: {:.2f}, buffer: {:.2f}), setting final offset to {:.2f}\n", totalOffset, latencyInMs, processingBufferDelay, cv::osu::universal_offset_hardcoded.getDefaultFloat() + totalOffset);
+			debugLog("Calculated universal offset = {:.2f} ms (latency: {:.2f}, buffer: {:.2f}), setting final offset to {:.2f}\n", totalOffset, latencyInMs,
+			         processingBufferDelay, cv::osu::universal_offset_hardcoded.getDefaultFloat() + totalOffset);
 
 		cv::osu::universal_offset_hardcoded.setValue(cv::osu::universal_offset_hardcoded.getDefaultFloat() + totalOffset);
 	}

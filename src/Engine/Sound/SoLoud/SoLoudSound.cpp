@@ -251,7 +251,8 @@ void SoLoudSound::setVolume(float volume)
 	// apply to active voice if not overlayable
 	if (!m_bIsOverlayable)
 	{
-		debugLog("setting handle volume for {:s} to {:f} because it overlayable\n", m_sFilePath, m_fVolume);
+		if (cv::debug_snd.getBool())
+			debugLog("setting handle volume for {:s} to {:f} because it overlayable\n", m_sFilePath, m_fVolume);
 		soloud->setVolume(m_handle, m_fVolume);
 	}
 	else if (cv::debug_snd.getBool())
