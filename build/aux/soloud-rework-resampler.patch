@@ -7760,11 +7760,11 @@ https://github.com/jarikomppa/soloud/issues/314
 ---
  include/soloud.h                  |  75 +++-
  include/soloud_audiosource.h      |  12 +-
- src/core/soloud.cpp               | 588 +++++++++++++++---------------
+ src/core/soloud.cpp               | 607 +++++++++++++++---------------
  src/core/soloud_audiosource.cpp   |  27 +-
  src/core/soloud_core_setters.cpp  |  10 -
  src/core/soloud_core_voiceops.cpp |   9 -
- 6 files changed, 367 insertions(+), 354 deletions(-)
+ 6 files changed, 382 insertions(+), 358 deletions(-)
 
 diff --git a/include/soloud.h b/include/soloud.h
 index cf03ad6..ed042a2 100644
@@ -7918,7 +7918,7 @@ index b91a1ce..cb460dc 100644
  	virtual unsigned int getAudio(float *aBuffer, unsigned int aSamplesToRead, unsigned int aBufferSize) = 0;
  	// Has the stream ended?
 diff --git a/src/core/soloud.cpp b/src/core/soloud.cpp
-index 4e58d72..b483ff0 100644
+index 4e58d72..e9efdb0 100644
 --- a/src/core/soloud.cpp
 +++ b/src/core/soloud.cpp
 @@ -22,17 +22,18 @@ freely, subject to the following restrictions:
@@ -7981,7 +7981,7 @@ index 4e58d72..b483ff0 100644
  	mFlags = aFlags;
  	mPostClipScaler = 0.95f;
  	switch (mChannels)
-@@ -1616,359 +1603,354 @@ void panAndExpand(AudioSourceInstance *aVoice, float *aBuffer, unsigned int aSam
+@@ -1616,359 +1603,365 @@ void panAndExpand(AudioSourceInstance *aVoice, float *aBuffer, unsigned int aSam
  		aVoice->mCurrentChannelVolume[k] = pand[k];
  }
  
@@ -8041,10 +8041,13 @@ index 4e58d72..b483ff0 100644
 +	}
 +
 +	unsigned int samplesRead = 0;
-+	if (!voice->hasEnded() || (voice->mFlags & AudioSourceInstance::LOOPING))
++	// Always try to read if we need more samples, regardless of hasEnded() status or amount available
++	// This ensures short files get completely read before we stop trying
++	bool shouldTryToRead = !voice->hasEnded() || (voice->mFlags & AudioSourceInstance::LOOPING) || availableSamples < samplesNeeded;
++
++	if (shouldTryToRead && samplesToRead > 0)
 +	{
 +		// getAudio returns channel-separated data, not interleaved
-+		// Allocate temp buffer for each channel
 +		float *channelBuffer = scratchBuffer; // Use scratch buffer directly
 +		unsigned int channelBufferSize = samplesToRead * voice->mChannels;
 +
@@ -8058,9 +8061,15 @@ index 4e58d72..b483ff0 100644
 -			unsigned int outofs = 0;
 -
 -			if (voice->mDelaySamples)
--			{
++			samplesRead = voice->getAudio(channelBuffer, samplesToRead, samplesToRead);
++
++			// Handle looping
++			if (samplesRead < samplesToRead && (voice->mFlags & AudioSourceInstance::LOOPING))
+ 			{
 -				if (voice->mDelaySamples > aSamplesToRead)
--				{
++				while (samplesRead < samplesToRead && voice->seek(voice->mLoopPoint, channelBuffer + samplesRead * voice->mChannels,
++				                                                  (samplesToRead - samplesRead) * voice->mChannels) == SO_NO_ERROR)
+ 				{
 -					outofs = aSamplesToRead;
 -					voice->mDelaySamples -= aSamplesToRead;
 -				}
@@ -8068,19 +8077,6 @@ index 4e58d72..b483ff0 100644
 -				{
 -					outofs = voice->mDelaySamples;
 -					voice->mDelaySamples = 0;
--				}
-+			samplesRead = voice->getAudio(channelBuffer, samplesToRead, samplesToRead);
- 
--				// Clear scratch where we're skipping
--				unsigned int k;
--				for (k = 0; k < voice->mChannels; k++)
-+			// Handle looping
-+			if (samplesRead < samplesToRead && (voice->mFlags & AudioSourceInstance::LOOPING))
-+			{
-+				while (samplesRead < samplesToRead && voice->seek(voice->mLoopPoint, channelBuffer + samplesRead * voice->mChannels,
-+				                                                  (samplesToRead - samplesRead) * voice->mChannels) == SO_NO_ERROR)
- 				{
--					memset(aScratch + k * aBufferSize, 0, sizeof(float) * outofs);
 +					voice->mLoopCount++;
 +					unsigned int loopSamples =
 +					    voice->getAudio(channelBuffer + samplesRead * voice->mChannels, samplesToRead - samplesRead, samplesToRead - samplesRead);
@@ -8088,26 +8084,43 @@ index 4e58d72..b483ff0 100644
 +					if (loopSamples == 0)
 +						break;
  				}
++			}
+ 
+-				// Clear scratch where we're skipping
+-				unsigned int k;
+-				for (k = 0; k < voice->mChannels; k++)
++			// Apply filters to source data at source sample rate (before resampling)
++			if (samplesRead > 0)
++			{
++				for (unsigned int j = 0; j < FILTERS_PER_STREAM; j++)
+ 				{
+-					memset(aScratch + k * aBufferSize, 0, sizeof(float) * outofs);
++					if (voice->mFilter[j])
++					{
++						voice->mFilter[j]->filter(channelBuffer, samplesRead, samplesToRead, voice->mChannels, voice->mSamplerate, voice->mStreamTime);
++					}
+ 				}
  			}
  
 -			while (step_fixed != 0 && outofs < aSamplesToRead)
-+			// Apply filters to source data at source sample rate (before resampling)
-+			if (samplesRead > 0)
++			// Copy from channel-separated scratch buffer to per-channel resample buffers
++			for (unsigned int ch = 0; ch < voice->mChannels; ch++)
  			{
 -				if (voice->mLeftoverSamples == 0)
-+				for (unsigned int j = 0; j < FILTERS_PER_STREAM; j++)
- 				{
+-				{
 -					// Swap resample buffers (ping-pong)
 -					float *t = voice->mResampleData[0];
 -					voice->mResampleData[0] = voice->mResampleData[1];
 -					voice->mResampleData[1] = t;
 -
 -					// Get a block of source data
--
++				float *srcChannel = channelBuffer + ch * samplesToRead; // getAudio uses channel-separated layout
++				float *dstChannel = voice->mResampleBuffer[ch] + voice->mResampleBufferFill;
++				memcpy(dstChannel, srcChannel, samplesRead * sizeof(float));
+ 
 -					int readcount = 0;
 -					if (!voice->hasEnded() || voice->mFlags & AudioSourceInstance::LOOPING)
-+					if (voice->mFilter[j])
- 					{
+-					{
 -						readcount = voice->getAudio(voice->mResampleData[0], SAMPLE_GRANULARITY, SAMPLE_GRANULARITY);
 -						if (readcount < SAMPLE_GRANULARITY)
 -						{
@@ -8124,7 +8137,15 @@ index 4e58d72..b483ff0 100644
 -							}
 -						}
 -					}
--
++				// Clear remaining buffer space if we read fewer samples than requested
++				if (samplesRead < samplesToRead)
++				{
++					memset(dstChannel + samplesRead, 0, (samplesToRead - samplesRead) * sizeof(float));
++				}
++			}
++		}
++	}
+ 
 -					// Clear remaining of the resample data if the full scratch wasn't used
 -					if (readcount < SAMPLE_GRANULARITY)
 -					{
@@ -8132,7 +8153,10 @@ index 4e58d72..b483ff0 100644
 -						for (k = 0; k < voice->mChannels; k++)
 -							memset(voice->mResampleData[0] + readcount + SAMPLE_GRANULARITY * k, 0, sizeof(float) * (SAMPLE_GRANULARITY - readcount));
 -					}
--
++	voice->mResampleBufferFill += samplesRead;
++	return voice->mResampleBufferFill - voice->mResampleBufferPos;
++}
+ 
 -					// If we go past zero, crop to zero (a bit of a kludge)
 -					if (voice->mSrcOffset < SAMPLE_GRANULARITY * FIXPOINT_FRAC_MUL)
 -					{
@@ -8142,46 +8166,7 @@ index 4e58d72..b483ff0 100644
 -					{
 -						// We have new block of data, move pointer backwards
 -						voice->mSrcOffset -= SAMPLE_GRANULARITY * FIXPOINT_FRAC_MUL;
-+						voice->mFilter[j]->filter(channelBuffer, samplesRead, samplesToRead, voice->mChannels, voice->mSamplerate, voice->mStreamTime);
- 					}
-+				}
-+			}
- 
--					// Run the per-stream filters to get our source data
-+			// Copy from channel-separated scratch buffer to per-channel resample buffers
-+			for (unsigned int ch = 0; ch < voice->mChannels; ch++)
-+			{
-+				float *srcChannel = channelBuffer + ch * samplesToRead; // getAudio uses channel-separated layout
-+				float *dstChannel = voice->mResampleBuffer[ch] + voice->mResampleBufferFill;
-+				memcpy(dstChannel, srcChannel, samplesRead * sizeof(float));
- 
--					for (j = 0; j < FILTERS_PER_STREAM; j++)
--					{
--						if (voice->mFilter[j])
--						{
--							voice->mFilter[j]->filter(
--							    voice->mResampleData[0], SAMPLE_GRANULARITY, SAMPLE_GRANULARITY, voice->mChannels, voice->mSamplerate, mStreamTime);
--						}
 -					}
--				}
--				else
-+				// Clear remaining buffer space if we read fewer samples than requested
-+				if (samplesRead < samplesToRead)
- 				{
--					voice->mLeftoverSamples = 0;
-+					memset(dstChannel + samplesRead, 0, (samplesToRead - samplesRead) * sizeof(float));
- 				}
-+			}
-+		}
-+	}
- 
--				// Figure out how many samples we can generate from this source data.
--				// The value may be zero.
-+	voice->mResampleBufferFill += samplesRead;
-+	return voice->mResampleBufferFill - voice->mResampleBufferPos;
-+}
- 
--				unsigned int writesamples = 0;
 +// Improved resampling function that handles arbitrary ratios precisely
 +unsigned int Soloud::resampleVoicePrecise_internal(AudioSourceInstance *voice,
 +                                                   float *outputBuffer,
@@ -8195,19 +8180,66 @@ index 4e58d72..b483ff0 100644
 +	if (outputSamples == 0 || !voice)
 +		return 0;
  
+-					// Run the per-stream filters to get our source data
++	// Calculate step size correctly, how much we advance in source per output sample
++	double stepSize = voice->mSamplerate / outputSampleRate;
+ 
+-					for (j = 0; j < FILTERS_PER_STREAM; j++)
+-					{
+-						if (voice->mFilter[j])
+-						{
+-							voice->mFilter[j]->filter(
+-							    voice->mResampleData[0], SAMPLE_GRANULARITY, SAMPLE_GRANULARITY, voice->mChannels, voice->mSamplerate, mStreamTime);
+-						}
+-					}
+-				}
+-				else
+-				{
+-					voice->mLeftoverSamples = 0;
+-				}
++	// For resampling quality, we need some lookahead samples depending on the algorithm
++	unsigned int lookaheadSamples = 0;
++	switch (resampler)
++	{
++	case RESAMPLER_POINT:
++		lookaheadSamples = 1;
++		break;
++	case RESAMPLER_LINEAR:
++		lookaheadSamples = 2;
++		break;
++	case RESAMPLER_CATMULLROM:
++		lookaheadSamples = 4;
++		break;
++	default:
++		lookaheadSamples = 2;
++		break;
++	}
+ 
+-				// Figure out how many samples we can generate from this source data.
+-				// The value may be zero.
++	// Calculate how much input data we'll need - be more generous with the estimate
++	unsigned int maxInputNeeded = (unsigned int)ceil((outputSamples + 2) * stepSize) + lookaheadSamples + 8; // Extra padding for safety
++	unsigned int availableInput = ensureSourceData_internal(voice, maxInputNeeded, scratchBuffer, scratchSize);
+ 
+-				unsigned int writesamples = 0;
++	if (availableInput < 1)
++	{
++		return 0;
++	}
+ 
 -				if (voice->mSrcOffset < SAMPLE_GRANULARITY * FIXPOINT_FRAC_MUL)
 -				{
 -					writesamples = ((SAMPLE_GRANULARITY * FIXPOINT_FRAC_MUL) - voice->mSrcOffset) / step_fixed + 1;
-+	// Calculate step size correctly, how much we advance in source per output sample
-+	double stepSize = voice->mSamplerate / outputSampleRate;
++	unsigned int samplesProduced = 0;
  
 -					// avoid reading past the current buffer..
 -					if (((writesamples * step_fixed + voice->mSrcOffset) >> FIXPOINT_FRAC_BITS) >= SAMPLE_GRANULARITY)
 -						writesamples--;
 -				}
-+	// Ensure we have enough source data for the entire output request
-+	unsigned int maxInputNeeded = (unsigned int)ceil((outputSamples + 1) * stepSize) + 4; // +4 for filter taps
-+	unsigned int availableInput = ensureSourceData_internal(voice, maxInputNeeded, scratchBuffer, scratchSize);
++	// If no output buffer provided (tick-only mode), just advance position
++	if (!outputBuffer)
++	{
++		voice->mPreciseSrcPosition += outputSamples * stepSize;
  
 -				// If this is too much for our output buffer, don't write that many:
 -				if (writesamples + outofs > aSamplesToRead)
@@ -8215,10 +8247,14 @@ index 4e58d72..b483ff0 100644
 -					voice->mLeftoverSamples = (writesamples + outofs) - aSamplesToRead;
 -					writesamples = aSamplesToRead - outofs;
 -				}
-+	if (availableInput < 2)
-+	{
-+		// Not enough data for any meaningful resampling
-+		return 0;
++		// Update buffer position for consumed integer samples
++		unsigned int integralSamplesConsumed = (unsigned int)floor(voice->mPreciseSrcPosition);
++		if (integralSamplesConsumed > 0 && integralSamplesConsumed <= availableInput)
++		{
++			voice->mResampleBufferPos += integralSamplesConsumed;
++			voice->mPreciseSrcPosition -= integralSamplesConsumed; // Keep fractional part
++		}
++		return outputSamples;
 +	}
  
 -				// Call resampler to generate the samples, once per channel
@@ -8262,48 +8298,47 @@ index 4e58d72..b483ff0 100644
 -						}
 -					}
 -				}
-+	unsigned int samplesProduced = 0;
- 
--				// Keep track of how many samples we've written so far
--				outofs += writesamples;
-+	// If no output buffer provided (tick-only mode), just advance position
-+	if (!outputBuffer)
-+	{
-+		voice->mPreciseSrcPosition += outputSamples * stepSize;
- 
--				// Move source pointer onwards (writesamples may be zero)
--				voice->mSrcOffset += writesamples * step_fixed;
--			}
-+		// Update buffer position for consumed integer samples
-+		unsigned int integralSamplesConsumed = (unsigned int)floor(voice->mPreciseSrcPosition);
-+		if (integralSamplesConsumed > 0 && integralSamplesConsumed < availableInput)
-+		{
-+			voice->mResampleBufferPos += integralSamplesConsumed;
-+			voice->mPreciseSrcPosition -= integralSamplesConsumed; // Keep fractional part
-+		}
-+		return outputSamples;
-+	}
- 
--			// Handle panning and channel expansion (and/or shrinking)
--			panAndExpand(voice, aBuffer, aSamplesToRead, aBufferSize, aScratch, aChannels);
 +	// Resample each channel
 +	for (unsigned int ch = 0; ch < voice->mChannels; ch++)
 +	{
 +		double srcPos = voice->mPreciseSrcPosition;
 +		float *src = voice->mResampleBuffer[ch] + voice->mResampleBufferPos;
 +		float *dst = outputBuffer + ch * outputStride;
-+
+ 
+-				// Keep track of how many samples we've written so far
+-				outofs += writesamples;
 +		for (unsigned int i = 0; i < outputSamples; i++)
 +		{
 +			unsigned int intPos = (unsigned int)floor(srcPos);
  
+-				// Move source pointer onwards (writesamples may be zero)
+-				voice->mSrcOffset += writesamples * step_fixed;
++			// check bounds: make sure we can always process the current sample
++			if (intPos >= availableInput)
++			{
++				samplesProduced = i;
++				break;
+ 			}
+ 
+-			// Handle panning and channel expansion (and/or shrinking)
+-			panAndExpand(voice, aBuffer, aSamplesToRead, aBufferSize, aScratch, aChannels);
++			double frac = srcPos - intPos;
+ 
 -			// clear voice if the sound is over
 -			if (!(voice->mFlags & (AudioSourceInstance::LOOPING | AudioSourceInstance::DISABLE_AUTOSTOP)) && voice->hasEnded())
-+			// Check bounds, need at least one sample ahead for linear interpolation
-+			if (intPos + 1 >= availableInput)
++			// boundary handling: duplicate edge samples
++			switch (resampler)
  			{
 -				stopVoice_internal(mActiveVoice[i]);
-+				samplesProduced = i;
++			case RESAMPLER_POINT:
++				dst[i] = src[intPos];
++				break;
++
++			case RESAMPLER_LINEAR: {
++				float s0 = src[intPos];
++				// use current sample if next is not available (avoids zero-padding artifacts)
++				float s1 = (intPos + 1 < availableInput) ? src[intPos + 1] : src[intPos];
++				dst[i] = s0 + (s1 - s0) * (float)frac;
 +				break;
  			}
 -		}
@@ -8316,47 +8351,27 @@ index 4e58d72..b483ff0 100644
 -			unsigned int outofs = 0;
  
 -			if (voice->mDelaySamples)
-+			double frac = srcPos - intPos;
-+
-+			// Apply chosen resampling algorithm
-+			switch (resampler)
- 			{
+-			{
 -				if (voice->mDelaySamples > aSamplesToRead)
-+			case RESAMPLER_POINT:
-+				dst[i] = src[intPos];
-+				break;
-+
-+			case RESAMPLER_LINEAR: {
-+				float s0 = src[intPos];
-+				float s1 = src[intPos + 1];
-+				dst[i] = s0 + (s1 - s0) * (float)frac;
-+				break;
-+			}
-+
-+			default:
-+			case RESAMPLER_CATMULLROM: {
-+				// Need 4 samples for catmull-rom
-+				if (intPos < 1 || intPos + 2 >= availableInput)
- 				{
+-				{
 -					outofs = aSamplesToRead;
 -					voice->mDelaySamples -= aSamplesToRead;
-+					// Fall back to linear
-+					float s0 = src[intPos];
-+					float s1 = src[intPos + 1];
-+					dst[i] = s0 + (s1 - s0) * (float)frac;
- 				}
- 				else
- 				{
+-				}
+-				else
+-				{
 -					outofs = voice->mDelaySamples;
 -					voice->mDelaySamples = 0;
-+					float p0 = src[intPos - 1];
-+					float p1 = src[intPos];
-+					float p2 = src[intPos + 1];
-+					float p3 = src[intPos + 2];
+-				}
++			default:
++			case RESAMPLER_CATMULLROM: {
++				// use edge sample duplication for better boundary handling
++				float p0 = (intPos >= 1) ? src[intPos - 1] : src[intPos];
++				float p1 = src[intPos];
++				float p2 = (intPos + 1 < availableInput) ? src[intPos + 1] : src[intPos];
++				float p3 = (intPos + 2 < availableInput) ? src[intPos + 2] : src[intPos];
 +
-+					float t = (float)frac;
-+					dst[i] = 0.5f * ((2 * p1) + (-p0 + p2) * t + (2 * p0 - 5 * p1 + 4 * p2 - p3) * t * t + (-p0 + 3 * p1 - 3 * p2 + p3) * t * t * t);
- 				}
++				float t = (float)frac;
++				dst[i] = 0.5f * ((2 * p1) + (-p0 + p2) * t + (2 * p0 - 5 * p1 + 4 * p2 - p3) * t * t + (-p0 + 3 * p1 - 3 * p2 + p3) * t * t * t);
 +				break;
 +			}
  			}
@@ -8412,7 +8427,7 @@ index 4e58d72..b483ff0 100644
 -					}
 +	// Update buffer position for consumed integer samples
 +	unsigned int integralSamplesConsumed = (unsigned int)floor(voice->mPreciseSrcPosition);
-+	if (integralSamplesConsumed > 0 && integralSamplesConsumed < availableInput)
++	if (integralSamplesConsumed > 0 && integralSamplesConsumed <= availableInput)
 +	{
 +		voice->mResampleBufferPos += integralSamplesConsumed;
 +		voice->mPreciseSrcPosition -= integralSamplesConsumed; // Keep fractional part
@@ -8434,7 +8449,8 @@ index 4e58d72..b483ff0 100644
 +                             unsigned int aChannels, unsigned int aResampler)
 +{
 +	unsigned int i, j;
-+
+ 
+-				unsigned int writesamples = 0;
 +	// Clear accumulation buffer
 +	for (i = 0; i < aSamplesToRead; i++)
 +	{
@@ -8444,7 +8460,9 @@ index 4e58d72..b483ff0 100644
 +		}
 +	}
  
--				unsigned int writesamples = 0;
+-				if (voice->mSrcOffset < SAMPLE_GRANULARITY * FIXPOINT_FRAC_MUL)
+-				{
+-					writesamples = ((SAMPLE_GRANULARITY * FIXPOINT_FRAC_MUL) - voice->mSrcOffset) / step_fixed + 1;
 +	// Calculate scratch space requirements
 +	unsigned int voiceScratchSize = MAX_CHANNELS * aBufferSize; // For resampled output (channel-separated layout)
 +	unsigned int tempScratchSize = 4096;                        // For temp resampling work
@@ -8454,9 +8472,10 @@ index 4e58d72..b483ff0 100644
 +	if (maxVoicesInParallel == 0)
 +		maxVoicesInParallel = 1; // Ensure at least one voice can be processed
  
--				if (voice->mSrcOffset < SAMPLE_GRANULARITY * FIXPOINT_FRAC_MUL)
--				{
--					writesamples = ((SAMPLE_GRANULARITY * FIXPOINT_FRAC_MUL) - voice->mSrcOffset) / step_fixed + 1;
+-					// avoid reading past the current buffer..
+-					if (((writesamples * step_fixed + voice->mSrcOffset) >> FIXPOINT_FRAC_BITS) >= SAMPLE_GRANULARITY)
+-						writesamples--;
+-				}
 +	// Process each active voice
 +	for (i = 0; i < mActiveVoiceCount; i++)
 +	{
@@ -8464,34 +8483,33 @@ index 4e58d72..b483ff0 100644
 +		if (!voice || voice->mBusHandle != aBus)
 +			continue;
  
--					// avoid reading past the current buffer..
--					if (((writesamples * step_fixed + voice->mSrcOffset) >> FIXPOINT_FRAC_BITS) >= SAMPLE_GRANULARITY)
--						writesamples--;
--				}
-+		bool isPaused = (voice->mFlags & AudioSourceInstance::PAUSED) != 0;
-+		bool isInaudible = (voice->mFlags & AudioSourceInstance::INAUDIBLE) != 0;
-+		bool mustTick = (voice->mFlags & AudioSourceInstance::INAUDIBLE_TICK) != 0;
- 
 -				// If this is too much for our output buffer, don't write that many:
 -				if (writesamples + outofs > aSamplesToRead)
 -				{
 -					voice->mLeftoverSamples = (writesamples + outofs) - aSamplesToRead;
 -					writesamples = aSamplesToRead - outofs;
 -				}
++		bool isPaused = (voice->mFlags & AudioSourceInstance::PAUSED) != 0;
++		bool isInaudible = (voice->mFlags & AudioSourceInstance::INAUDIBLE) != 0;
++		bool mustTick = (voice->mFlags & AudioSourceInstance::INAUDIBLE_TICK) != 0;
+ 
+-				// Skip resampler
 +		bool isAudible = !isPaused && !isInaudible;
 +		bool shouldProcess = isAudible || (!isPaused && mustTick);
  
--				// Skip resampler
+-				// Keep track of how many samples we've written so far
+-				outofs += writesamples;
 +		if (!shouldProcess)
 +			continue;
  
--				// Keep track of how many samples we've written so far
--				outofs += writesamples;
+-				// Move source pointer onwards (writesamples may be zero)
+-				voice->mSrcOffset += writesamples * step_fixed;
+-			}
 +		unsigned int outputSamples = aSamplesToRead;
 +		unsigned int outputOffset = 0;
  
--				// Move source pointer onwards (writesamples may be zero)
--				voice->mSrcOffset += writesamples * step_fixed;
+-			// clear voice if the sound is over
+-			if (!(voice->mFlags & (AudioSourceInstance::LOOPING | AudioSourceInstance::DISABLE_AUTOSTOP)) && voice->hasEnded())
 +		// Handle delay samples
 +		if (voice->mDelaySamples > 0)
 +		{
@@ -8499,10 +8517,7 @@ index 4e58d72..b483ff0 100644
 +			{
 +				voice->mDelaySamples -= aSamplesToRead;
 +				continue; // Skip this voice entirely this frame
- 			}
--
--			// clear voice if the sound is over
--			if (!(voice->mFlags & (AudioSourceInstance::LOOPING | AudioSourceInstance::DISABLE_AUTOSTOP)) && voice->hasEnded())
++			}
 +			else
  			{
 -				stopVoice_internal(mActiveVoice[i]);
@@ -8619,7 +8634,7 @@ index 4e58d72..b483ff0 100644
  		}
  	}
  }
-@@ -2006,7 +1988,6 @@ void Soloud::calcActiveVoices_internal()
+@@ -2006,7 +1999,6 @@ void Soloud::calcActiveVoices_internal()
  	{
  		// everything is audible, early out
  		mActiveVoiceCount = candidates;
@@ -8627,7 +8642,7 @@ index 4e58d72..b483ff0 100644
  		return;
  	}
  
-@@ -2062,7 +2043,6 @@ void Soloud::calcActiveVoices_internal()
+@@ -2062,7 +2054,6 @@ void Soloud::calcActiveVoices_internal()
  		len = stack[--pos];
  	}
  	// TODO: should the rest of the voices be flagged INAUDIBLE?
