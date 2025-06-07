@@ -12,6 +12,7 @@
 #include "BaseEnvironment.h"
 
 #ifdef MCENGINE_FEATURE_SOLOUD
+#include <memory>
 #include <soloud/soloud.h>
 
 namespace soundtouch
@@ -89,21 +90,18 @@ private:
 	unsigned int mTotalSamplesProcessed; // total samples processed since creation (or last seek/rewind)
 };
 
-// a combined WavStream + SoundTouch filter audio source that acts like a regular WavStream on the outside, with extra methods to set rate/pitch
+/**
+ * SLFXStream - streaming audio source with built-in SoundTouch processing
+ *
+ * combines WavStream functionality with SoundTouch time-stretching and pitch-shifting.
+ * provides the same loading interface as WavStream but with additional methods for
+ * independent control of playback speed and pitch.
+ */
 class SLFXStream : public AudioSource
 {
-	/**
-	 * SoundTouchFilter - time-stretching and pitch-shifting filter, using the SoundTouch library
-	 *
-	 * the filter allows independent control of playback speed and pitch, making it possible
-	 * to speed up audio without changing the pitch, or to change pitch without affecting speed.
-	 */
 public:
 	SLFXStream();
 	~SLFXStream() override;
-
-	// the audio source to be processed
-	result setSource(AudioSource *aSource);
 
 	// SoundTouch control interface
 	void setSpeedFactor(float aSpeed); // 1.0 = normal, 2.0 = double speed, etc.
@@ -112,24 +110,9 @@ public:
 	[[nodiscard]] float getSpeedFactor() const;
 	[[nodiscard]] float getPitchFactor() const;
 
-	// create a new instance of the filter with current settings
+	// AudioSource interface
 	AudioSourceInstance *createInstance() override;
 
-protected:
-	friend class SoundTouchFilterInstance;
-
-	AudioSource *mSource; // source to be processed
-	float mSpeedFactor;   // current speed factor (tempo)
-	float mPitchFactor;   // current pitch factor
-
-	/**
-	 * SLFXStream - high-level streaming audio source with built-in SoundTouch processing
-	 *
-	 * combines WavStream and SoundTouchFilter into a single, easy-to-use interface.
-	 * provides the same loading methods as WavStream but automatically handles
-	 * pitch/speed control through an internal SoundTouch filter.
-	 */
-public:
 	// WavStream-compatible loading interface
 	result load(const char *aFilename);
 	result loadMem(const unsigned char *aData, unsigned int aDataLen, bool aCopy = false, bool aTakeOwnership = true);
@@ -140,11 +123,14 @@ public:
 	// utility methods
 	double getLength();
 
-private:
-	WavStream *mWavStream; // internal audio stream
+protected:
+	friend class SoundTouchFilterInstance;
 
-	// initialization helper
-	void initializeFilter();
+	float mSpeedFactor; // current speed factor (tempo)
+	float mPitchFactor; // current pitch factor
+
+	// internal audio stream
+	std::unique_ptr<WavStream> mSource;
 };
 
 } // namespace SoLoud

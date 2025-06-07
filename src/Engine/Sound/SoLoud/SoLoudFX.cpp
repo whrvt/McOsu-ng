@@ -48,14 +48,11 @@ namespace SoLoud
 //-------------------------------------------------------------------------
 
 SLFXStream::SLFXStream()
-    : mSource(nullptr),
-      mSpeedFactor(1.0f),
+    : mSpeedFactor(1.0f),
       mPitchFactor(1.0f),
-      mWavStream(nullptr)
+      mSource(std::make_unique<WavStream>())
 {
 	ST_DEBUG_LOG("SoundTouchFilter: Constructor called\n");
-	// initialize as streaming audio source
-	mWavStream = new SoLoud::WavStream();
 }
 
 SLFXStream::~SLFXStream()
@@ -63,24 +60,6 @@ SLFXStream::~SLFXStream()
 	ST_DEBUG_LOG("SoundTouchFilter: Destructor called\n");
 	// stop all instances before cleanup
 	stop();
-
-	delete mWavStream;
-}
-
-result SLFXStream::setSource(AudioSource *aSource)
-{
-	if (!aSource)
-		return INVALID_PARAMETER;
-
-	// copy source params
-	mSource = aSource;
-	mChannels = mSource->mChannels;
-	mBaseSamplerate = mSource->mBaseSamplerate;
-	mFlags = mSource->mFlags;
-
-	ST_DEBUG_LOG("SoundTouchFilter: Set source with {:d} channels at {:f} Hz, mFlags={:x}\n", mChannels, mBaseSamplerate, mFlags);
-
-	return SO_NO_ERROR;
 }
 
 AudioSourceInstance *SLFXStream::createInstance()
@@ -115,81 +94,105 @@ float SLFXStream::getPitchFactor() const
 	return mPitchFactor;
 }
 
-void SLFXStream::initializeFilter()
-{
-	if (mWavStream)
-	{
-		// connect the filter to the wav stream
-		setSource(mWavStream);
-
-		ST_DEBUG_LOG("SLFXStream: Initialized filter with {:d} channels at {:f} Hz\n", mChannels, mBaseSamplerate);
-	}
-}
-
 // WavStream-compatibility methods
 result SLFXStream::load(const char *aFilename)
 {
-	if (!mWavStream)
+	if (!mSource)
 		return INVALID_PARAMETER;
 
-	result result = mWavStream->load(aFilename);
+	result result = mSource->load(aFilename);
 	if (result == SO_NO_ERROR)
-		initializeFilter();
+	{
+		// copy properties from the loaded wav stream
+		mChannels = mSource->mChannels;
+		mBaseSamplerate = mSource->mBaseSamplerate;
+		mFlags = mSource->mFlags;
+
+		ST_DEBUG_LOG("SLFXStream: Loaded with {:d} channels at {:f} Hz\n", mChannels, mBaseSamplerate);
+	}
 
 	return result;
 }
 
 result SLFXStream::loadMem(const unsigned char *aData, unsigned int aDataLen, bool aCopy, bool aTakeOwnership)
 {
-	if (!mWavStream)
+	if (!mSource)
 		return INVALID_PARAMETER;
 
-	result result = mWavStream->loadMem(aData, aDataLen, aCopy, aTakeOwnership);
+	result result = mSource->loadMem(aData, aDataLen, aCopy, aTakeOwnership);
 	if (result == SO_NO_ERROR)
-		initializeFilter();
+	{
+		// copy properties from the loaded wav stream
+		mChannels = mSource->mChannels;
+		mBaseSamplerate = mSource->mBaseSamplerate;
+		mFlags = mSource->mFlags;
+
+		ST_DEBUG_LOG("SLFXStream: Loaded from memory with {:d} channels at {:f} Hz\n", mChannels, mBaseSamplerate);
+	}
 
 	return result;
 }
 
 result SLFXStream::loadToMem(const char *aFilename)
 {
-	if (!mWavStream)
+	if (!mSource)
 		return INVALID_PARAMETER;
 
-	result result = mWavStream->loadToMem(aFilename);
+	result result = mSource->loadToMem(aFilename);
 	if (result == SO_NO_ERROR)
-		initializeFilter();
+	{
+		// copy properties from the loaded wav stream
+		mChannels = mSource->mChannels;
+		mBaseSamplerate = mSource->mBaseSamplerate;
+		mFlags = mSource->mFlags;
+
+		ST_DEBUG_LOG("SLFXStream: Loaded to memory with {:d} channels at {:f} Hz\n", mChannels, mBaseSamplerate);
+	}
 
 	return result;
 }
 
 result SLFXStream::loadFile(File *aFile)
 {
-	if (!mWavStream)
+	if (!mSource)
 		return INVALID_PARAMETER;
 
-	result result = mWavStream->loadFile(aFile);
+	result result = mSource->loadFile(aFile);
 	if (result == SO_NO_ERROR)
-		initializeFilter();
+	{
+		// copy properties from the loaded wav stream
+		mChannels = mSource->mChannels;
+		mBaseSamplerate = mSource->mBaseSamplerate;
+		mFlags = mSource->mFlags;
+
+		ST_DEBUG_LOG("SLFXStream: Loaded from file with {:d} channels at {:f} Hz\n", mChannels, mBaseSamplerate);
+	}
 
 	return result;
 }
 
 result SLFXStream::loadFileToMem(File *aFile)
 {
-	if (!mWavStream)
+	if (!mSource)
 		return INVALID_PARAMETER;
 
-	result result = mWavStream->loadFileToMem(aFile);
+	result result = mSource->loadFileToMem(aFile);
 	if (result == SO_NO_ERROR)
-		initializeFilter();
+	{
+		// copy properties from the loaded wav stream
+		mChannels = mSource->mChannels;
+		mBaseSamplerate = mSource->mBaseSamplerate;
+		mFlags = mSource->mFlags;
+
+		ST_DEBUG_LOG("SLFXStream: Loaded file to memory with {:d} channels at {:f} Hz\n", mChannels, mBaseSamplerate);
+	}
 
 	return result;
 }
 
 double SLFXStream::getLength()
 {
-	return mWavStream ? mWavStream->getLength() : 0.0;
+	return mSource ? mSource->getLength() : 0.0;
 }
 
 //-------------------------------------------------------------------------
@@ -258,7 +261,7 @@ SoundTouchFilterInstance::SoundTouchFilterInstance(SLFXStream *aParent)
 				ST_DEBUG_LOG("SoundTouch: Initialized with speed={:f}, pitch={:f}\n", mParent->mSpeedFactor, mParent->mPitchFactor);
 				ST_DEBUG_LOG("SoundTouch: Version: {:s}\n", mSoundTouch->getVersionString());
 
-				// pre-fill and make sync streams
+				// pre-fill and make sure source/filter are synchronized
 				reSynchronize();
 			}
 		}
@@ -319,11 +322,10 @@ void SoundTouchFilterInstance::ensureOggFrameBuffer(unsigned int samples)
 
 bool SoundTouchFilterInstance::isOggSource() const
 {
-	if (!mParent || !mParent->mWavStream)
+	if (!mParent || !mParent->mSource)
 		return false;
 
-	auto *parentStream = static_cast<SoLoud::WavStream *>(mParent->mWavStream);
-	return parentStream && parentStream->mFiletype == WAVSTREAM_OGG;
+	return mParent->mSource && mParent->mSource->mFiletype == WAVSTREAM_OGG;
 }
 
 unsigned int SoundTouchFilterInstance::getAudio(float *aBuffer, unsigned int aSamplesToRead, unsigned int aBufferSize)
@@ -720,13 +722,13 @@ void SoundTouchFilterInstance::setAutoOffset()
 		int nominalInputSeq = mSoundTouch->getSetting(SETTING_NOMINAL_INPUT_SEQUENCE);
 		int nominalOutputSeq = mSoundTouch->getSetting(SETTING_NOMINAL_OUTPUT_SEQUENCE);
 
-		float latencyInMs = (initialLatencyInSamples / (float)mBaseSamplerate) * 1000.0f;
+		float latencyInMs = (initialLatencyInSamples / mBaseSamplerate) * 1000.0f;
 
 		// add buffer compensation factor (~half of processing window)
 		float processingBufferDelay = 0.0f;
 		if (nominalInputSeq > 0 && nominalOutputSeq > 0)
 		{
-			processingBufferDelay = ((nominalInputSeq - nominalOutputSeq) / 2.0f / (float)mBaseSamplerate) * 1000.0f;
+			processingBufferDelay = ((nominalInputSeq - nominalOutputSeq) / 2.0f / mBaseSamplerate) * 1000.0f;
 		}
 
 		float totalOffset = std::clamp<float>(-(latencyInMs + processingBufferDelay), -200.0f, 0.0f);
