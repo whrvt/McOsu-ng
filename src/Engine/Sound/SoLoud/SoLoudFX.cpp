@@ -319,11 +319,11 @@ void SoundTouchFilterInstance::ensureOggFrameBuffer(unsigned int samples)
 
 bool SoundTouchFilterInstance::isOggSource() const
 {
-	if (!mParent || !mParent->mSource)
+	if (!mParent || !mParent->mWavStream)
 		return false;
 
-	auto *wavStream = static_cast<SoLoud::WavStream *>(mParent->mSource); // can assume it's a WavStream, no Wavs will pass through here (no dynamic_cast needed)
-	return wavStream && wavStream->mFiletype == WAVSTREAM_OGG;
+	auto *parentStream = static_cast<SoLoud::WavStream *>(mParent->mWavStream);
+	return parentStream && parentStream->mFiletype == WAVSTREAM_OGG;
 }
 
 unsigned int SoundTouchFilterInstance::getAudio(float *aBuffer, unsigned int aSamplesToRead, unsigned int aBufferSize)

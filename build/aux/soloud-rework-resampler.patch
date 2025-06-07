@@ -7751,7 +7751,10 @@ index bb39fbe..7ad96f0 100644
 From 600532b53005e70638564ed9982cd2a0d657da05 Mon Sep 17 00:00:00 2001
 From: William Horvath <william@horvath.blog>
 Date: Fri, 6 Jun 2025 00:08:05 -0700
-Subject: [PATCH 2/2] WIP resample rework
+Subject: [PATCH 2/2] rework resampler
+
+fixes offset drift issues when source/dest frequency doesn't match (e.g. 44100/48000)
+https://github.com/jarikomppa/soloud/issues/314
 
 ---
  include/soloud.h                  |  75 +++-
