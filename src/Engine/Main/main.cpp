@@ -27,6 +27,11 @@
 #define nocbinline
 #define SDL_MAIN_USE_CALLBACKS // this enables the use of SDL_AppInit/AppEvent/AppIterate instead of a traditional mainloop, needed for wasm
                                // (works on desktop too, but it's not necessary)
+namespace
+{
+void setcwdexe(const char * /*unused*/)
+{}
+}
 #else
 #define MAIN_FUNC int main(int argc, char *argv[])
 #define nocbinline forceinline
@@ -149,7 +154,7 @@ SDL_AppResult SDL_AppIterate(void *appstate)
 MAIN_FUNC /* int argc, char *argv[] */
 {
 	if constexpr (!Env::cfg(OS::WASM))
-		setcwdexe(argv[0]); // set the current working directory to the executable directory, so that relative paths works as expected
+		setcwdexe(argv[0]); // set the current working directory to the executable directory, so that relative paths work as expected
 
 	std::string lowerPackageName = PACKAGE_NAME;
 	std::ranges::transform(lowerPackageName, lowerPackageName.begin(), [](char c) { return std::tolower(c); });
@@ -700,7 +705,7 @@ void SDLMain::doEarlyCmdlineOverrides()
 		}
 	}
 	// enable DPI awareness if not -nodpi
-	if (!m_mArgMap.contains("-noime"))
+	if (!m_mArgMap.contains("-nodpi"))
 	{
 		typedef BOOL(WINAPI * PSPDA)(void);
 		auto pSetProcessDPIAware = (PSPDA)GetProcAddress(GetModuleHandle(TEXT("user32.dll")), "SetProcessDPIAware");
