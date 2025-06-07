@@ -36,7 +36,7 @@ class Console;
 class McMath;
 
 #ifdef _DEBUG
-#define debugLog(...) Engine::ContextLogger::log(std::source_location::current(), __VA_ARGS__)
+#define debugLog(...) Engine::ContextLogger::log(std::source_location::current(), __FUNCTION__, __VA_ARGS__)
 #else
 #define debugLog(...) Engine::ContextLogger::log(__FUNCTION__, __VA_ARGS__)
 #endif
@@ -187,20 +187,20 @@ public:
 	public:
 		// debug build shows full source location
 		template <typename... Args>
-		static void log(const std::source_location &loc, fmt::format_string<Args...> fmt, Args &&...args)
+		static void log(const std::source_location &loc, const char *func, fmt::format_string<Args...> fmt, Args &&...args)
 		{
 			auto contextPrefix =
-			    fmt::format("[{}:{}:{}] [{}]: ", Environment::getFileNameFromFilePath(loc.file_name()), loc.line(), loc.column(), loc.function_name());
+			    fmt::format("[{}:{}:{}] [{}]: ", Environment::getFileNameFromFilePath(loc.file_name()), loc.line(), loc.column(), func);
 
 			auto message = fmt::format(fmt, std::forward<Args>(args)...);
 			Engine::logImpl(contextPrefix + message);
 		}
 
 		template <typename... Args>
-		static void log(const std::source_location &loc, Color color, fmt::format_string<Args...> fmt, Args &&...args)
+		static void log(const std::source_location &loc, const char *func, Color color, fmt::format_string<Args...> fmt, Args &&...args)
 		{
 			auto contextPrefix =
-			    fmt::format("[{}:{}:{}] [{}]: ", Environment::getFileNameFromFilePath(loc.file_name()), loc.line(), loc.column(), loc.function_name());
+			    fmt::format("[{}:{}:{}] [{}]: ", Environment::getFileNameFromFilePath(loc.file_name()), loc.line(), loc.column(), func);
 
 			auto message = fmt::format(fmt, std::forward<Args>(args)...);
 			Engine::logImpl(contextPrefix + message, color);

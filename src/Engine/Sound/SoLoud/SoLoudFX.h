@@ -52,40 +52,34 @@ private:
 	// buffer management
 	void ensureBufferSize(unsigned int samples);
 	void ensureInterleavedBufferSize(unsigned int samples);
-	void ensureOggFrameBuffer(unsigned int samples);
 
-	// make sure buffers are filled to ensure position data is synced with the stream source
+	// calculate target buffer level for consistent processing
+	unsigned int calculateTargetBufferLevel(unsigned int aSamplesToRead, bool logThis);
+
+	// feed SoundTouch using fixed-size chunks
+	void feedSoundTouch(unsigned int targetBufferLevel, bool logThis);
+
+	// buffer synchronization and positioning
 	void primeBuffers();
-	// handle any internal behavior related to playback position changes
 	void reSynchronize();
 	void setAutoOffset();
-
-	// OGG-specific handling methods
-	[[nodiscard]] bool isOggSource() const;
-	void feedSoundTouchFromOggFrames(unsigned int targetBufferSize, bool logThis);
-	void feedSoundTouchStandard(unsigned int targetBufferSize, bool logThis);
 
 	// member variables
 	SLFXStream *mParent;                  // parent filter
 	AudioSourceInstance *mSourceInstance; // source instance to process
-	soundtouch::SoundTouch *mSoundTouch;  // soundTouch processor
+	soundtouch::SoundTouch *mSoundTouch;  // soundtouch processor
 
-	float mSoundTouchSpeed; // currently set soundtouch playback parameters for the instance
+	float mSoundTouchSpeed; // currently set soundtouch parameters
 	float mSoundTouchPitch;
 
 	// buffers for format conversion
-	float *mBuffer;           // non-interleaved audio buffer (SoLoud format)
+	float *mBuffer;           // temporary read buffer from source (non-interleaved)
 	unsigned int mBufferSize; // size in samples
 
-	float *mInterleavedBuffer;           // interleaved audio buffer (SoundTouch format)
+	float *mInterleavedBuffer;           // interleaved audio buffer for SoundTouch
 	unsigned int mInterleavedBufferSize; // size in samples
 
-	// OGG frame buffering for proper alignment
-	float *mOggFrameBuffer;           // frame-aligned buffer for OGG sources
-	unsigned int mOggFrameBufferSize; // size in samples
-	unsigned int mOggSamplesInBuffer; // current number of samples in OGG buffer
-
-	// debugging
+	// debugging and tracking
 	unsigned int mProcessingCounter;     // counter for logspam avoidance
 	unsigned int mTotalSamplesProcessed; // total samples processed since creation (or last seek/rewind)
 };

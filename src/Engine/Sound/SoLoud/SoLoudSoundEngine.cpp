@@ -331,8 +331,8 @@ void SoLoudSoundEngine::setVolume(float volume)
 
 	m_fVolume = std::clamp<float>(volume, 0.0f, 1.0f);
 
-	if (cv::debug_snd.getBool())
-		debugLog("setting global volume to {:f}\n", m_fVolume);
+	// if (cv::debug_snd.getBool())
+	// 	debugLog("setting global volume to {:f}\n", m_fVolume);
 	soloud->setGlobalVolume(m_fVolume);
 }
 

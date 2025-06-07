@@ -501,8 +501,8 @@ unsigned long SoLoudSound::getLengthMS()
 		return 0;
 
 	const double lengthInMilliSeconds = getSourceLengthInSeconds() * 1000.0;
-	if (cv::debug_snd.getBool())
-		debugLog("lengthMS for {:s}: {:g}\n", m_sFilePath, lengthInMilliSeconds);
+	// if (cv::debug_snd.getBool())
+	// 	debugLog("lengthMS for {:s}: {:g}\n", m_sFilePath, lengthInMilliSeconds);
 	return static_cast<unsigned long>(lengthInMilliSeconds);
 }
 

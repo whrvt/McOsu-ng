@@ -41,9 +41,14 @@ OsuChangelog::OsuChangelog() : OsuScreenBackable()
 	alpha3400.changes.emplace_back("- Added osu! folder browse button to options menu");
 	alpha3400.changes.emplace_back(R"(- Added "Open current skin folder" button to options menu)");
 	alpha3400.changes.emplace_back("- Added \"snd_buffer\" ConVar to set BASS buffer size");
+	alpha3400.changes.emplace_back("- Added support for DX11 on Linux with dxvk-native (not currently in the default build)");
 	alpha3400.changes.emplace_back("- Added the cross-platform SoLoud audio backend in preparation for a WASM release");
-	alpha3400.changes.emplace_back("  - (TODO: try to implement MP3_OLDGAPS support to better BASS offsets)");
-	alpha3400.changes.emplace_back("- Many internal optimizations");
+	alpha3400.changes.emplace_back("  - Windows and Linux users can use SoLoud instead of BASS by appending \"-sound soloud\" to the exe launch arguments");
+	alpha3400.changes.emplace_back("- Fixed loading of many skin files, especially on case-sensitive filesystems");
+	alpha3400.changes.emplace_back("- Optimized multi-threaded loading");
+	alpha3400.changes.emplace_back("- Sped up skin dropdown list performance");
+	alpha3400.changes.emplace_back("- Sped up map/score database loading and song select performance");
+	alpha3400.changes.emplace_back("- Countless other internal optimizations and fixes");
 	alpha3400.changes.emplace_back("- For more information see " PACKAGE_URL);
 	changelogs.push_back(alpha3400);
 
