@@ -42,9 +42,9 @@
 
 #include <iostream>
 #include <fstream>
-void _osuOptionsSliderQualityWrapper(UString oldValue, UString newValue)
+void _osuOptionsSliderQualityWrapper(float newValue)
 {
-	float value = std::lerp(1.0f, 2.5f, 1.0f - newValue.toFloat());
+	float value = std::lerp(1.0f, 2.5f, 1.0f - newValue);
 	cv::osu::slider_curve_points_separation.setValue(value);
 };
 namespace cv::osu {
@@ -661,7 +661,7 @@ OsuOptionsMenu::OsuOptionsMenu() : OsuScreenBackable()
 		((CBaseUIButton*)outputDeviceSelect.elements[0])->setClickCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onOutputDeviceSelect) );
 		outputDeviceSelect.resetButton->setClickCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onOutputDeviceResetClicked) );
 
-		if constexpr (Env::cfg(OS::WINDOWS, AUD::BASS, !AUD::WASAPI))
+		if (Env::cfg(OS::WINDOWS, AUD::BASS, !AUD::WASAPI) && soundEngine->getTypeId() == SoundEngine::SndEngineType::BASS)
 		{
 			CBaseUICheckbox *audioCompatibilityModeCheckbox = addCheckbox("Audio compatibility mode (!)", "Use legacy audio engine (higher latency but more compatible)\nWARNING: May cause hitsound delays and stuttering!", &cv::win_snd_fallback_dsound);
 			audioCompatibilityModeCheckbox->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onAudioCompatibilityModeChange) );

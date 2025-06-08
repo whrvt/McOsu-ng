@@ -37,7 +37,7 @@ float OsuSliderRenderer::m_fBoundingBoxMaxX = 0.0f;
 float OsuSliderRenderer::m_fBoundingBoxMinY = std::numeric_limits<float>::max();
 float OsuSliderRenderer::m_fBoundingBoxMaxY = 0.0f;
 
-std::atomic<float> osu_slider_border_feather = 0.0f;
+float OsuSliderRenderer::border_feather = 0.0f;
 namespace cv::osu {
 ConVar slider_debug_draw("osu_slider_debug_draw", false, FCVAR_NONE, "draw hitcircle at every curve point and nothing else (no vao, no rt, no shader, nothing) (requires enabling legacy slider renderer)");
 ConVar slider_debug_draw_square_vao("osu_slider_debug_draw_square_vao", false, FCVAR_NONE, "generate square vaos and nothing else (no rt, no shader) (requires disabling legacy slider renderer)");
@@ -227,7 +227,7 @@ void OsuSliderRenderer::draw(Osu *osu, const std::vector<Vector2> &points, const
 				BLEND_SHADER->setUniform1f("bodyAlphaMultiplier", cv::osu::slider_body_alpha_multiplier.getFloat());
 				BLEND_SHADER->setUniform1f("bodyColorSaturation", cv::osu::slider_body_color_saturation.getFloat());
 				BLEND_SHADER->setUniform1f("borderSizeMultiplier", cv::osu::slider_border_size_multiplier.getFloat());
-				BLEND_SHADER->setUniform1f("borderFeather", osu_slider_border_feather.load(std::memory_order::acquire));
+				BLEND_SHADER->setUniform1f("borderFeather", OsuSliderRenderer::border_feather);
 				BLEND_SHADER->setUniform3f("colBorder", dimmedBorderColor.Rf(), dimmedBorderColor.Gf(), dimmedBorderColor.Bf());
 				BLEND_SHADER->setUniform3f("colBody", dimmedBodyColor.Rf(), dimmedBodyColor.Gf(), dimmedBodyColor.Bf());
 			}
@@ -377,7 +377,7 @@ void OsuSliderRenderer::draw(Osu *osu, VertexArrayObject *vao, const std::vector
 				BLEND_SHADER->setUniform1f("bodyAlphaMultiplier", cv::osu::slider_body_alpha_multiplier.getFloat());
 				BLEND_SHADER->setUniform1f("bodyColorSaturation", cv::osu::slider_body_color_saturation.getFloat());
 				BLEND_SHADER->setUniform1f("borderSizeMultiplier", cv::osu::slider_border_size_multiplier.getFloat());
-				BLEND_SHADER->setUniform1f("borderFeather", osu_slider_border_feather.load(std::memory_order::acquire));
+				BLEND_SHADER->setUniform1f("borderFeather", OsuSliderRenderer::border_feather);
 				BLEND_SHADER->setUniform3f("colBorder", dimmedBorderColor.Rf(), dimmedBorderColor.Gf(), dimmedBorderColor.Bf());
 				BLEND_SHADER->setUniform3f("colBody", dimmedBodyColor.Rf(), dimmedBodyColor.Gf(), dimmedBodyColor.Bf());
 			}

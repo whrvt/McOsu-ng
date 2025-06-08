@@ -23,6 +23,7 @@ public:
 
 	static float UNIT_CIRCLE_VAO_DIAMETER;
 
+	static float border_feather;
 public:
 	static VertexArrayObject *generateVAO(const std::vector<Vector2> &points, float hitcircleDiameter, Vector3 translation = Vector3(0, 0, 0), bool skipOOBPoints = true);
 

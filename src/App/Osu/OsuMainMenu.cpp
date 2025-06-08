@@ -45,8 +45,6 @@
 
 #include "DirectX11Interface.h"
 
-extern std::atomic<float> osu_slider_border_feather;
-
 static constexpr auto MCOSU_VERSION_TEXT = "Version";
 static constexpr auto MCOSU_BANNER_TEXT = "";
 
@@ -204,7 +202,6 @@ private:
 	bool m_bIsPaused;
 };
 
-std::atomic<float> osu_main_menu_slider_text_feather = 0.04f;
 namespace cv::osu {
 ConVar toggle_preview_music("osu_toggle_preview_music");
 
@@ -217,7 +214,7 @@ ConVar main_menu_use_slider_text("osu_main_menu_use_slider_text", true, FCVAR_NO
 ConVar main_menu_slider_text_alpha("osu_main_menu_slider_text_alpha", 1.0f, FCVAR_NONE);
 ConVar main_menu_slider_text_scale("osu_main_menu_slider_text_scale", 1.0f, FCVAR_NONE);
 ConVar main_menu_slider_text_scissor("osu_main_menu_slider_text_scissor", true, FCVAR_NONE);
-
+ConVar main_menu_slider_text_feather("osu_main_menu_slider_text_feather", 0.04f, FCVAR_NONE);
 ConVar main_menu_slider_text_offset_x("osu_main_menu_slider_text_offset_x", 15.0f, FCVAR_NONE);
 ConVar main_menu_slider_text_offset_y("osu_main_menu_slider_text_offset_y", 0.0f, FCVAR_NONE);
 ConVar main_menu_shuffle("osu_main_menu_shuffle", false, FCVAR_NONE);
@@ -669,8 +666,8 @@ void OsuMainMenu::draw()
 		const float from = 0.0f;
 		const float to = m_fStartupAnim2;
 
-		const float prevSliderBorderFeatherBackup = osu_slider_border_feather.load(std::memory_order::acquire);
-		osu_slider_border_feather.store(osu_main_menu_slider_text_feather.load(std::memory_order::acquire), std::memory_order::release); // heuristic to avoid aliasing
+		const float prevSliderBorderFeatherBackup = OsuSliderRenderer::border_feather;
+		OsuSliderRenderer::border_feather = cv::osu::main_menu_slider_text_feather.getFloat(); // heuristic to avoid aliasing
 		{
 			const size_t numHitObjects = m_mainMenuSliderTextBeatmapHitObjects.size();
 			for (size_t i=0; i<numHitObjects; i++)
@@ -690,7 +687,7 @@ void OsuMainMenu::draw()
 				}
 			}
 		}
-		osu_slider_border_feather.store(prevSliderBorderFeatherBackup, std::memory_order::release);
+		OsuSliderRenderer::border_feather = prevSliderBorderFeatherBackup;
 	}
 
 	// draw main button

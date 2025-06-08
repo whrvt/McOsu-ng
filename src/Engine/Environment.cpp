@@ -41,7 +41,7 @@ ConVar debug_env("debug_env", false, FCVAR_NONE);
 ConVar fullscreen_windowed_borderless("fullscreen_windowed_borderless", false, FCVAR_NONE);
 ConVar monitor("monitor", 0, FCVAR_NONE, "monitor/display device to switch to, 0 = primary monitor");
 
-ConVar processpriority("processpriority", 0, FCVAR_NONE, "sets the main process priority (0 = normal, 1 = high)", [](float, float newValue) -> void {
+ConVar processpriority("processpriority", 0, FCVAR_NONE, "sets the main process priority (0 = normal, 1 = high)", [](float newValue) -> void {
 	SDL_SetCurrentThreadPriority(!!static_cast<int>(newValue) ? SDL_THREAD_PRIORITY_HIGH : SDL_THREAD_PRIORITY_NORMAL);
 });
 } // namespace cv

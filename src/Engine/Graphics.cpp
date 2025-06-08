@@ -273,23 +273,10 @@ void Graphics::checkStackLeaks()
 //	Graphics ConCommands  //
 //************************//
 
-void _vsync(UString oldValue, UString newValue)
+namespace cv
 {
-	if (newValue.length() < 1)
-		debugLog("Usage: 'vsync 1' to turn vsync on, 'vsync 0' to turn vsync off\n");
-	else
-	{
-		bool vsync = newValue.toFloat() > 0.0f;
-		g->setVSync(vsync);
-	}
-}
+ConVar mat_wireframe("mat_wireframe", false, FCVAR_CHEAT, [](float on) -> void { g ? g->setWireframe(!!static_cast<int>(on)) : (void)0; });
 
-void _mat_wireframe(UString oldValue, UString newValue)
-{
-	g->setWireframe(newValue.toFloat() > 0.0f);
-}
-
-namespace cv {
-ConVar mat_wireframe("mat_wireframe", false, FCVAR_CHEAT, _mat_wireframe);
-ConVar vsync("vsync", false, FCVAR_NONE, _vsync);
-}
+ConVar vsync("vsync", false, FCVAR_NONE, "Usage: 'vsync 1' to turn vsync on, 'vsync 0' to turn vsync off",
+             [](float on) -> void { g ? g->setVSync(!!static_cast<int>(on)) : (void)0; });
+} // namespace cv

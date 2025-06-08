@@ -610,6 +610,7 @@ extern ConVar main_menu_slider_text_offset_x;
 extern ConVar main_menu_slider_text_offset_y;
 extern ConVar main_menu_slider_text_scale;
 extern ConVar main_menu_slider_text_scissor;
+extern ConVar main_menu_slider_text_feather;
 extern ConVar main_menu_startup_anim_duration;
 extern ConVar main_menu_use_slider_text;
 extern ConVar toggle_preview_music;
