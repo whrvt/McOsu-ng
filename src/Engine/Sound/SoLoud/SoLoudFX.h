@@ -60,7 +60,6 @@ private:
 	void feedSoundTouch(unsigned int targetBufferLevel, bool logThis);
 
 	// buffer synchronization and positioning
-	void primeBuffers();
 	void reSynchronize();
 	void setAutoOffset();
 
@@ -81,7 +80,6 @@ private:
 
 	// debugging and tracking
 	unsigned int mProcessingCounter;     // counter for logspam avoidance
-	unsigned int mTotalSamplesProcessed; // total samples processed since creation (or last seek/rewind)
 };
 
 /**

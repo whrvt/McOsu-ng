@@ -9,15 +9,11 @@
 
 #ifdef MCENGINE_FEATURE_SOLOUD
 
-#include "SoLoudSoundEngine.h"
-
 #include "ConVar.h"
 #include "Engine.h"
 
 #include <SoundTouch.h>
 #include <soloud/soloud_wavstream.h>
-
-#include <cstddef>
 
 #if __has_include("Osu.h")
 #define DO_AUTO_OFFSET
@@ -209,8 +205,7 @@ SoundTouchFilterInstance::SoundTouchFilterInstance(SLFXStream *aParent)
       mBufferSize(0),
       mInterleavedBuffer(nullptr),
       mInterleavedBufferSize(0),
-      mProcessingCounter(0),
-      mTotalSamplesProcessed(0)
+      mProcessingCounter(0)
 {
 	ST_DEBUG_LOG("SoundTouchFilterInstance: Constructor called\n");
 
@@ -290,7 +285,7 @@ unsigned int SoundTouchFilterInstance::getAudio(float *aBuffer, unsigned int aSa
 	{
 		ST_DEBUG_LOG("=== SoundTouchFilterInstance::getAudio [{:}] ===\n", mProcessingCounter);
 		ST_DEBUG_LOG("Request: {:} samples, bufferSize: {:}, channels: {:}\n", aSamplesToRead, aBufferSize, mChannels);
-		ST_DEBUG_LOG("Current position: {:f} seconds, total samples processed: {:}\n", mStreamPosition, mTotalSamplesProcessed);
+		ST_DEBUG_LOG("Current position: {:f} seconds\n", mStreamPosition);
 	}
 
 	if (!mSourceInstance || !mSoundTouch)
@@ -376,17 +371,11 @@ unsigned int SoundTouchFilterInstance::getAudio(float *aBuffer, unsigned int aSa
 			}
 		}
 
-		// track total samples processed
-		if (samplesReceived > 0)
+		if (logThisCall && samplesReceived > 0)
 		{
-			mTotalSamplesProcessed += samplesReceived;
-
-			if (logThisCall)
-			{
-				const float samplesInSeconds = (static_cast<float>(samplesReceived) / mBaseSamplerate);
-				ST_DEBUG_LOG("Updated position: received {:} samples ({:.4f} seconds), new position: {:.4f} seconds\n", samplesReceived, samplesInSeconds,
-				             mStreamPosition);
-			}
+			const float samplesInSeconds = (static_cast<float>(samplesReceived) / mBaseSamplerate);
+			ST_DEBUG_LOG("Updated position: received {:} samples ({:.4f} seconds), new position: {:.4f} seconds\n", samplesReceived, samplesInSeconds,
+			             mStreamPosition);
 		}
 	}
 	else if (logThisCall)
@@ -551,95 +540,6 @@ void SoundTouchFilterInstance::feedSoundTouch(unsigned int targetBufferLevel, bo
 		ST_DEBUG_LOG("feedSoundTouch complete: processed {:} chunks, final buffer level={:}\n", chunksProcessed, currentSamples);
 }
 
-void SoundTouchFilterInstance::primeBuffers()
-{
-	if (!mSourceInstance || !mSoundTouch)
-		return;
-
-	// get SoundTouch's buffer requirements
-	int initialLatency = mSoundTouch->getSetting(SETTING_INITIAL_LATENCY);
-	int nominalInputSeq = mSoundTouch->getSetting(SETTING_NOMINAL_INPUT_SEQUENCE);
-
-	// use reasonable defaults if SoundTouch returns invalid values
-	if (initialLatency <= 0)
-		initialLatency = 1024;
-	if (nominalInputSeq <= 0)
-		nominalInputSeq = 1024;
-
-	// calculate how many chunks we need to prime the buffer adequately
-	unsigned int totalPrimingSamples = static_cast<unsigned int>(initialLatency + nominalInputSeq);
-	unsigned int chunksNeeded = (totalPrimingSamples + SAMPLE_GRANULARITY - 1) / SAMPLE_GRANULARITY; // round up
-
-	// ensure minimum number of chunks for stability
-	chunksNeeded = std::max(chunksNeeded, 3U);
-
-	ST_DEBUG_LOG("Priming SoundTouch buffers: initialLatency={:d}, nominalInput={:d}, chunksNeeded={:}, chunkSize={:}\n", initialLatency, nominalInputSeq,
-	             chunksNeeded, SAMPLE_GRANULARITY);
-
-	// ensure buffers are sized for our fixed chunk size
-	ensureBufferSize(SAMPLE_GRANULARITY);
-	ensureInterleavedBufferSize(SAMPLE_GRANULARITY);
-
-	// store current source position so we can restore it after priming
-	double currentPosition = mSourceInstance->mStreamPosition;
-
-	// prime using fixed chunks for consistency
-	unsigned int totalPrimingRead = 0;
-	for (unsigned int chunk = 0; chunk < chunksNeeded && !mSourceInstance->hasEnded(); chunk++)
-	{
-		unsigned int chunkRead = mSourceInstance->getAudio(mBuffer, SAMPLE_GRANULARITY, mBufferSize);
-
-		if (chunkRead == 0)
-			break; // no more data
-
-		// convert from non-interleaved to interleaved format for SoundTouch
-		for (unsigned int i = 0; i < chunkRead; i++)
-		{
-			for (unsigned int ch = 0; ch < mChannels; ch++)
-			{
-				mInterleavedBuffer[i * mChannels + ch] = mBuffer[ch * chunkRead + i];
-			}
-		}
-
-		// feed chunk to SoundTouch
-		mSoundTouch->putSamples(mInterleavedBuffer, chunkRead);
-		totalPrimingRead += chunkRead;
-
-		ST_DEBUG_LOG("Priming chunk {:}: read {:} samples, total={:}, ST buffer={:}\n", chunk + 1, chunkRead, totalPrimingRead, mSoundTouch->numSamples());
-	}
-
-	if (totalPrimingRead > 0)
-	{
-		ST_DEBUG_LOG("Fed {:} total priming samples to SoundTouch, buffer now has {:} samples\n", totalPrimingRead, mSoundTouch->numSamples());
-
-		// process and discard initial output to remove transition artifacts
-		// discard approximately the initial latency worth of samples
-		unsigned int samplesToDiscard = std::min(static_cast<unsigned int>(initialLatency), mSoundTouch->numSamples());
-		if (samplesToDiscard > 0)
-		{
-			ensureInterleavedBufferSize(samplesToDiscard);
-			unsigned int discarded = mSoundTouch->receiveSamples(mInterleavedBuffer, samplesToDiscard);
-
-			ST_DEBUG_LOG("Discarded {:} transition samples, buffer now has {:} samples\n", discarded, mSoundTouch->numSamples());
-		}
-	}
-
-	// restore the source to the pre-priming position
-	if (mSourceInstance->seek(currentPosition, mBuffer, mBufferSize) == SO_NO_ERROR)
-	{
-		// make sure our position tracking matches
-		mStreamPosition = mSourceInstance->mStreamPosition;
-		mStreamTime = mSourceInstance->mStreamTime;
-		mTotalSamplesProcessed = (unsigned int)(mStreamTime * mBaseSamplerate);
-
-		ST_DEBUG_LOG("Buffer priming complete, position restored to {:.3f} seconds\n", mStreamPosition);
-	}
-	else
-	{
-		ST_DEBUG_LOG("Warning: Failed to restore position after buffer priming\n");
-	}
-}
-
 void SoundTouchFilterInstance::reSynchronize()
 {
 	// make sure we have nothing in the SoundTouch buffers
@@ -650,10 +550,7 @@ void SoundTouchFilterInstance::reSynchronize()
 	// from any outside function
 	mStreamPosition = mSourceInstance->mStreamPosition;
 	mStreamTime = mSourceInstance->mStreamTime;
-	mTotalSamplesProcessed = (unsigned int)(mStreamTime * mBaseSamplerate); // this should be 0 if rewinding or just starting
 
-	// prime buffers to prevent position desynchronization
-	primeBuffers();
 	setAutoOffset();
 }
 

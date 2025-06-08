@@ -37,8 +37,8 @@ SoLoudSoundEngine::SoLoudSoundEngine()
 
 	// need to reset these in case bass is also compiled in (otherwise having bass compiled in would add 15ms universal offset)
 #if __has_include("Osu.h")
-	cv::osu::universal_offset_hardcoded.setDefaultFloat(-10.0f);
-	cv::osu::universal_offset_hardcoded.setValue(-10.0f);
+	cv::osu::universal_offset_hardcoded.setDefaultFloat(0.0f);
+	cv::osu::universal_offset_hardcoded.setValue(0.0f);
 #endif
 
 	m_iMaxActiveVoices = std::clamp<int>(cv::snd_sanity_simultaneous_limit.getInt(), 64,

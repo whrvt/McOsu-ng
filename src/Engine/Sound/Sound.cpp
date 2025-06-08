@@ -144,25 +144,27 @@ bool Sound::isValidAudioFile(const UString &filePath, const UString &fileExt)
 		if (memcmp(data, "ID3", 3) == 0)
 			return true;
 
-		// search through first 2KB for MP3 sync with basic validation
-		size_t searchLimit = (fileSize < 2048) ? fileSize - 4 : 2048;
-		for (size_t i = 0; i < searchLimit; i++)
-		{
-			if (i + 3 < fileSize && (unsigned char)data[i] == 0xFF && ((unsigned char)data[i + 1] & 0xF8) == 0xF8)
-			{
-				// basic frame header validation
-				auto byte2 = (unsigned char)data[i + 1];
-				auto byte3 = (unsigned char)data[i + 2];
+		// // search through first 2KB for MP3 sync with basic validation
+		// size_t searchLimit = (fileSize < 2048) ? fileSize - 4 : 2048;
+		// for (size_t i = 0; i < searchLimit; i++)
+		// {
+		// 	if (i + 3 < fileSize && (unsigned char)data[i] == 0xFF && ((unsigned char)data[i + 1] & 0xF8) == 0xF8)
+		// 	{
+		// 		// basic frame header validation
+		// 		auto byte2 = (unsigned char)data[i + 1];
+		// 		auto byte3 = (unsigned char)data[i + 2];
 
-				// check for reserved/invalid values
-				if ((byte2 & 0x18) != 0x08 && // MPEG version not reserved
-				    (byte2 & 0x06) != 0x00 && // layer not reserved
-				    (byte3 & 0xF0) != 0xF0 && // bitrate not invalid
-				    (byte3 & 0x0C) != 0x0C)   // sample rate not reserved
-					return true;
-			}
-		}
-		return false;
+		// 		// check for reserved/invalid values
+		// 		if ((byte2 & 0x18) != 0x08 && // MPEG version not reserved
+		// 		    (byte2 & 0x06) != 0x00 && // layer not reserved
+		// 		    (byte3 & 0xF0) != 0xF0 && // bitrate not invalid
+		// 		    (byte3 & 0x0C) != 0x0C)   // sample rate not reserved
+		// 			return true;
+		// 	}
+		// }
+		// this is stupid actually, there's a lot of cases where a file has a .mp3 extension but contains AAC data, so just return valid if it's big enough
+		// since SoLoud (+ffmpeg) and BASS (windows) can decode them
+		return true;
 	}
 	else if (fileExt == "ogg")
 	{
