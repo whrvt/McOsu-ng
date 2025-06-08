@@ -209,7 +209,7 @@ AS_IF([test "x$enable_asan" = "xyes" || test "x$enable_tsan" = "xyes"], [
         CFLAGS="$CFLAGS -fsanitize=undefined,thread"
     ])
 
-    AS_IF([test -z "$LLVMMINGW"],[
+    AS_IF([test -z "$LLVMMINGW" && test -n "$enable_clang"],[
         LDFLAGS="$LDFLAGS -static-libasan" CFLAGS="$CFLAGS -static-libasan" CXXFLAGS="$CXXFLAGS -static-libasan"
     ])
     enable_debug="yes"
