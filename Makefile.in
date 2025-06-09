@@ -4865,16 +4865,14 @@ $(DEPS_CACHE)/mimalloc-$(MIMALLOC_VERSION).source:
 @BUILD_MIMALLOC_FALSE@$(DEPS_PREFIX)/mimalloc.built:
 @BUILD_MIMALLOC_FALSE@	$(MKDIR_P) $(DEPS_PREFIX) && touch $@
 
-$(DEPS_CACHE)/SDL3.source:
+$(DEPS_CACHE)/SDL3-$(SDL3_VERSION).source:
 	$(MKDIR_P) $(DEPS_CACHE)
-	$(GIT) clone https://github.com/libsdl-org/SDL.git $(DEPS_CACHE)/SDL3 && \
+	$(WGET) -qO $(DEPS_CACHE)/SDL3-$(SDL3_VERSION).tar.gz "https://github.com/libsdl-org/SDL/archive/$(SDL3_VERSION).tar.gz" && \
 	touch $@
-@BUILD_SDL3_TRUE@$(DEPS_PREFIX)/SDL3.built: $(DEPS_PREFIX)/FREETYPE2.built $(DEPS_CACHE)/SDL3.source
+@BUILD_SDL3_TRUE@$(DEPS_PREFIX)/SDL3.built: $(DEPS_CACHE)/SDL3-$(SDL3_VERSION).source $(DEPS_PREFIX)/FREETYPE2.built
 @BUILD_SDL3_TRUE@	rm -rf $(DEPS_PREFIX)/SDL3
-@BUILD_SDL3_TRUE@	$(MKDIR_P) $(DEPS_PREFIX) $(DEPS_PREFIX)/lib/pkgconfig
-@BUILD_SDL3_TRUE@	$(GIT) clone $(DEPS_CACHE)/SDL3 $(DEPS_PREFIX)/SDL3 && \
-@BUILD_SDL3_TRUE@	$(GIT) -C $(DEPS_PREFIX)/SDL3 remote set-url origin https://github.com/libsdl-org/SDL.git && \
-@BUILD_SDL3_TRUE@	$(GIT) -C $(DEPS_PREFIX)/SDL3 pull && $(GIT) -C $(DEPS_PREFIX)/SDL3 checkout $(SDL3_VERSION) && \
+@BUILD_SDL3_TRUE@	$(MKDIR_P) $(DEPS_PREFIX)/SDL3 $(DEPS_PREFIX)/lib/pkgconfig
+@BUILD_SDL3_TRUE@	$(TAR) xf $(DEPS_CACHE)/SDL3-$(SDL3_VERSION).tar.gz -C $(DEPS_PREFIX)/SDL3 --strip-components=1 && \
 @BUILD_SDL3_TRUE@	$(MKDIR_P) $(DEPS_PREFIX)/SDL3/build
 @BUILD_SDL3_TRUE@	cd $(DEPS_PREFIX)/SDL3 && \
 @BUILD_SDL3_TRUE@	patch -Np1<$(abs_top_srcdir)/build/aux/sdl-c23bool.patch && \
@@ -4902,7 +4900,7 @@ $(DEPS_CACHE)/SDL3.source:
 @BUILD_SDL3_FALSE@$(DEPS_PREFIX)/SDL3.built:
 @BUILD_SDL3_FALSE@	$(MKDIR_P) $(DEPS_PREFIX) && touch $@
 
-$(DEPS_CACHE)/SDL3_mixer.source:
+$(DEPS_CACHE)/SDL3_mixer-$(SDL3_MIXER_VERSION).source:
 	rm -rf $(DEPS_CACHE)/SDL3_mixer && \
 	$(MKDIR_P) $(DEPS_CACHE)/SDL3_mixer
 	$(WGET) -qO $(DEPS_CACHE)/SDL3_mixer-$(SDL3_MIXER_VERSION).tar.gz "https://github.com/libsdl-org/SDL_mixer/archive/$(SDL3_MIXER_VERSION).tar.gz" && \
@@ -4910,18 +4908,16 @@ $(DEPS_CACHE)/SDL3_mixer.source:
 	cd $(DEPS_CACHE)/SDL3_mixer/external && ./download.sh # cache vendored dependencies
 	touch $@
 
-$(DEPS_CACHE)/SoLoud.source:
-	rm -rf $(DEPS_CACHE)/SoLoud && \
-	$(MKDIR_P) $(DEPS_CACHE)/SoLoud
+$(DEPS_CACHE)/SoLoud-$(SOLOUD_VERSION).source:
+	$(MKDIR_P) $(DEPS_CACHE)
 	$(WGET) -qO $(DEPS_CACHE)/SoLoud-$(SOLOUD_VERSION).tar.gz "https://github.com/jarikomppa/soloud/archive/$(SOLOUD_VERSION).tar.gz"
 	touch $@
 
-$(DEPS_CACHE)/SoundTouch.source:
-	rm -rf $(DEPS_CACHE)/SoundTouch && \
-	$(MKDIR_P) $(DEPS_CACHE)/SoundTouch
+$(DEPS_CACHE)/SoundTouch-$(SOUNDTOUCH_VERSION).source:
+	$(MKDIR_P) $(DEPS_CACHE)
 	$(WGET) -qO $(DEPS_CACHE)/SoundTouch-$(SOUNDTOUCH_VERSION).tar.gz "https://codeberg.org/soundtouch/soundtouch/archive/$(SOUNDTOUCH_VERSION).tar.gz"
 	touch $@
-@USE_SDLMIXER_TRUE@$(DEPS_PREFIX)/SDL3_mixer.built: $(DEPS_PREFIX)/SDL3.built $(DEPS_CACHE)/SDL3_mixer.source
+@USE_SDLMIXER_TRUE@$(DEPS_PREFIX)/SDL3_mixer.built: $(DEPS_PREFIX)/SDL3.built $(DEPS_CACHE)/SDL3_mixer-$(SDL3_MIXER_VERSION).source
 @USE_SDLMIXER_TRUE@	rm -rf $(DEPS_PREFIX)/SDL3_mixer
 @USE_SDLMIXER_TRUE@	$(MKDIR_P) $(DEPS_PREFIX) $(DEPS_PREFIX)/lib/pkgconfig
 @USE_SDLMIXER_TRUE@	cp -r $(DEPS_CACHE)/SDL3_mixer $(DEPS_PREFIX)/SDL3_mixer && \
@@ -4952,7 +4948,7 @@ $(DEPS_CACHE)/SoundTouch.source:
 @USE_SDLMIXER_TRUE@	touch $@
 @USE_SDLMIXER_FALSE@$(DEPS_PREFIX)/SDL3_mixer.built:
 @USE_SDLMIXER_FALSE@	$(MKDIR_P) $(DEPS_PREFIX) && touch $@
-@USE_SOLOUD_TRUE@$(DEPS_PREFIX)/SoLoud.built: $(DEPS_CACHE)/SoLoud.source $(DEPS_PREFIX)/SDL3.built
+@USE_SOLOUD_TRUE@$(DEPS_PREFIX)/SoLoud.built: $(DEPS_CACHE)/SoLoud-$(SOLOUD_VERSION).source $(DEPS_PREFIX)/SDL3.built
 @USE_SOLOUD_TRUE@	rm -rf $(DEPS_PREFIX)/SoLoud
 @USE_SOLOUD_TRUE@	$(MKDIR_P) $(DEPS_PREFIX) $(DEPS_PREFIX)/include/soloud $(DEPS_PREFIX)/lib/pkgconfig $(DEPS_PREFIX)/SoLoud/build
 @USE_SOLOUD_TRUE@	$(TAR) xf $(DEPS_CACHE)/SoLoud-$(SOLOUD_VERSION).tar.gz -C $(DEPS_PREFIX)/SoLoud --strip-components=1 && \
@@ -5009,7 +5005,7 @@ $(DEPS_CACHE)/SoundTouch.source:
 @USE_SOLOUD_TRUE@	test -f $(DEPS_PREFIX)/lib/libsoloud_static_x$(if $(filter x86_64,$(host_cpu)),64,$(if $(findstring linux,$(host_os)),32,86))$(if $(ENABLE_DEBUG),_d,).a
 @USE_SOLOUD_TRUE@	touch $@
 
-@USE_SOLOUD_TRUE@$(DEPS_PREFIX)/SoundTouch.built: $(DEPS_CACHE)/SoundTouch.source
+@USE_SOLOUD_TRUE@$(DEPS_PREFIX)/SoundTouch.built: $(DEPS_CACHE)/SoundTouch-$(SOUNDTOUCH_VERSION).source
 @USE_SOLOUD_TRUE@	rm -rf $(DEPS_PREFIX)/SoundTouch
 @USE_SOLOUD_TRUE@	$(MKDIR_P) $(DEPS_PREFIX) $(DEPS_PREFIX)/include $(DEPS_PREFIX)/lib/pkgconfig $(DEPS_PREFIX)/SoundTouch/build
 @USE_SOLOUD_TRUE@	$(TAR) xf $(DEPS_CACHE)/SoundTouch-$(SOUNDTOUCH_VERSION).tar.gz -C $(DEPS_PREFIX)/SoundTouch --strip-components=1 && \
@@ -5111,7 +5107,7 @@ $(DEPS_CACHE)/libpng-$(LIBPNG_VERSION).source:
 @BUILD_LIBPNG_TRUE@		./configure lt_cv_prog_gnu_ld=yes --host=$(host) --build=$(build) --prefix="$(DEPS_PREFIX)" \
 @BUILD_LIBPNG_TRUE@		$(if $(STATICBUILD),--enable-static --disable-shared,--enable-shared --disable-static) \
 @BUILD_LIBPNG_TRUE@		--disable-tools --disable-tests --with-gnu-ld $(if $(or $(DISABLE_NATIVE),$(ENABLE_DEBUG)),,--enable-hardware-optimizations=on) \
-@BUILD_LIBPNG_TRUE@			CC="$(CC) $(shell $(PKG_CONFIG) --cflags zlib)" RANLIB="$(RANLIB)" AR="$(AR)" CXX="$(CXX)" LD="$(if $(findstring linux,$(host_os)),$(CC),$(LD))" \
+@BUILD_LIBPNG_TRUE@			CC="$(CC) $(shell $(PKG_CONFIG) --cflags zlib)" RANLIB="$(RANLIB)" AR="$(AR)" CXX="$(CXX)" LD="$(LD)" \
 @BUILD_LIBPNG_TRUE@			CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS) $(shell $(PKG_CONFIG) --libs zlib)" && \
 @BUILD_LIBPNG_TRUE@	$(MAKE) && \
 @BUILD_LIBPNG_TRUE@	$(MAKE) install
