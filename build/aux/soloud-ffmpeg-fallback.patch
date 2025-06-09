@@ -1,18 +1,18 @@
-From 91772367dc291de8eeae0914493d83ed521d4e32 Mon Sep 17 00:00:00 2001
+From 6a5f4bcb76420dc2eecb2df8a0d7d32c68669133 Mon Sep 17 00:00:00 2001
 From: William Horvath <william@horvath.blog>
 Date: Sun, 8 Jun 2025 01:51:53 -0700
-Subject: [PATCH] WIP: ffmpeg fallback for wav/wavstreams
+Subject: [PATCH 1/2] WIP: ffmpeg fallback for wav/wavstreams
 
 ---
  include/soloud_wav.h                       |   79 +-
  include/soloud_wavstream.h                 |  136 +--
  src/audiosource/wav/soloud_ffmpeg.cpp      |  729 ++++++++++++
  src/audiosource/wav/soloud_ffmpeg.h        |   91 ++
- src/audiosource/wav/soloud_ffmpeg_load.cpp |  319 +++++
+ src/audiosource/wav/soloud_ffmpeg_load.cpp |  344 ++++++
  src/audiosource/wav/soloud_ffmpeg_load.h   |  169 +++
- src/audiosource/wav/soloud_wav.cpp         |  627 +++++-----
- src/audiosource/wav/soloud_wavstream.cpp   | 1235 +++++++++++---------
- 8 files changed, 2413 insertions(+), 972 deletions(-)
+ src/audiosource/wav/soloud_wav.cpp         |  632 +++++-----
+ src/audiosource/wav/soloud_wavstream.cpp   | 1240 +++++++++++---------
+ 8 files changed, 2448 insertions(+), 972 deletions(-)
  create mode 100644 src/audiosource/wav/soloud_ffmpeg.cpp
  create mode 100644 src/audiosource/wav/soloud_ffmpeg.h
  create mode 100644 src/audiosource/wav/soloud_ffmpeg_load.cpp
@@ -1089,10 +1089,10 @@ index 0000000..248e94a
 +#endif // SOLOUD_FFMPEG_H
 diff --git a/src/audiosource/wav/soloud_ffmpeg_load.cpp b/src/audiosource/wav/soloud_ffmpeg_load.cpp
 new file mode 100644
-index 0000000..dd40dfa
+index 0000000..7c78fac
 --- /dev/null
 +++ b/src/audiosource/wav/soloud_ffmpeg_load.cpp
-@@ -0,0 +1,319 @@
+@@ -0,0 +1,344 @@
 +/*
 +SoLoud audio engine - ffmpeg library loader/unloader
 +Copyright (c) 2013-2020 Jari Komppa
@@ -1119,26 +1119,53 @@ index 0000000..dd40dfa
 +*/
 +
 +#if __has_include(<libavcodec/avcodec.h>) && ((defined(_WIN32) || defined(_WIN64)) || defined(__linux__))
++#pragma message("building with ffmpeg support")
 +
-+#include <atomic>
 +#include <mutex>
 +#include <string>
 +
-+
 +#if defined(_WIN32) || defined(_WIN64)
-+#include <windows.h>
-+#define LIBLOAD(x) LoadLibraryA(x)
-+#define LIBFUNC(x, y) (void *)GetProcAddress((HMODULE)x, y)
-+#define LIBFREE(x) FreeLibrary((HMODULE)x)
-+#define LIBGETERROR() std::to_string(GetLastError())
 +#define LNAME(x, ver) #x "-" #ver ".dll"
 +#else
++#define LNAME(x, ver) "lib" #x ".so." #ver
++#endif
++
++#ifdef WITH_SDL3_STATIC
++#include <SDL3/SDL_loadso.h>
++typedef SDL_SharedObject (*OBJHANDLE);
++#define LIBLOAD(x) SDL_LoadObject(x)
++#define LIBFUNC(x, y) SDL_LoadFunction(x, y)
++#define LIBFREE(x) SDL_UnloadObject(x)
++#define LIBGETERROR() std::string(SDL_GetError())
++#elif defined(_WIN32) || defined(_WIN64)
++#include <windows.h>
++typedef HMODULE OBJHANDLE;
++#define LIBLOAD(x) LoadLibraryA(x)
++#define LIBFUNC(x, y) (void *)GetProcAddress(x, y)
++#define LIBFREE(x) FreeLibrary(x)
++#define LIBGETERROR() \
++	([]() -> std::string { \
++		DWORD errorCode = GetLastError(); \
++		if (errorCode == 0) \
++			return std::string("No error"); \
++		LPSTR messageBuffer = nullptr; \
++		DWORD size = FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, errorCode, \
++		                            MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR) & messageBuffer, 0, NULL); \
++		if (size == 0) \
++			return std::string("Unknown error (code: ") + std::to_string(errorCode) + ")"; \
++		std::string result(messageBuffer, size); \
++		LocalFree(messageBuffer); \
++		while (!result.empty() && (result.back() == '\n' || result.back() == '\r')) \
++			result.pop_back(); \
++		return result; \
++	}())
++#else
 +#include <dlfcn.h>
++typedef void(*OBJHANDLE);
 +#define LIBLOAD(x) dlopen(x, RTLD_NOW)
 +#define LIBFUNC(x, y) dlsym(x, y)
 +#define LIBFREE(x) dlclose(x)
 +#define LIBGETERROR() std::string(dlerror())
-+#define LNAME(x, ver) "lib" #x ".so." #ver
 +#endif
 +
 +#include "soloud_ffmpeg_load.h"
@@ -1149,16 +1176,16 @@ index 0000000..dd40dfa
 +{
 +
 +// library handles
-+static void *s_libAvutil = nullptr;
-+static void *s_libAvcodec = nullptr;
-+static void *s_libAvformat = nullptr;
-+static void *s_libSwresample = nullptr;
++static OBJHANDLE s_libAvutil = nullptr;
++static OBJHANDLE s_libAvcodec = nullptr;
++static OBJHANDLE s_libAvformat = nullptr;
++static OBJHANDLE s_libSwresample = nullptr;
++
++static std::once_flag s_init_flag;
++static bool s_init_success{false};
++static bool s_available{false};
 +
 +// initialization state
-+static std::mutex s_ffmpeg_load_mutex;
-+static std::atomic<bool> s_ffmpeg_initialized{false};
-+
-+static std::atomic<bool> s_available{false};
 +static std::string s_errorDetails = "";
 +
 +namespace FFmpegFuncs
@@ -1169,7 +1196,7 @@ index 0000000..dd40dfa
 +} // namespace FFmpegFuncs
 +
 +template <typename T>
-+static T loadFunction(void *lib, const char *funcName)
++static T loadFunction(OBJHANDLE lib, const char *funcName)
 +{
 +	if (!lib)
 +		return nullptr;
@@ -1361,17 +1388,15 @@ index 0000000..dd40dfa
 +
 +bool init()
 +{
-+	if (s_ffmpeg_initialized.load(std::memory_order_acquire))
-+		return s_ffmpeg_initialized;
-+	std::lock_guard<std::mutex> lock(s_ffmpeg_load_mutex);
-+	if (s_ffmpeg_initialized.load(std::memory_order_relaxed))
-+		return s_ffmpeg_initialized;
-+	s_ffmpeg_initialized.store(init_locked());
-+	return s_ffmpeg_initialized.load();
++	std::call_once(s_init_flag, []() { s_init_success = init_locked(); });
++
++	return s_init_success;
 +}
 +
 +void cleanup()
 +{
++	s_available = false;
++
 +#define RESET_FUNCTION(name) name = nullptr;
 +	ALL_FFMPEG_FUNCTIONS(RESET_FUNCTION)
 +
@@ -1395,13 +1420,11 @@ index 0000000..dd40dfa
 +		LIBFREE(s_libAvutil);
 +		s_libAvutil = nullptr;
 +	}
-+
-+	s_available = false;
 +}
 +
 +bool isAvailable()
 +{
-+	return s_available.load();
++	return s_available;
 +}
 +
 +std::string getErrorDetails()
@@ -1411,6 +1434,8 @@ index 0000000..dd40dfa
 +
 +} // namespace SoLoud::FFmpeg::FFmpegLoader
 +
++#else
++#pragma message("building without ffmpeg support")
 +#endif
 diff --git a/src/audiosource/wav/soloud_ffmpeg_load.h b/src/audiosource/wav/soloud_ffmpeg_load.h
 new file mode 100644
@@ -1588,10 +1613,10 @@ index 0000000..9183ce3
 +#endif
 +#endif // SOLOUD_FFMPEG_H
 diff --git a/src/audiosource/wav/soloud_wav.cpp b/src/audiosource/wav/soloud_wav.cpp
-index 1eb39e0..a090ea8 100755
+index 1eb39e0..2ed1c5c 100755
 --- a/src/audiosource/wav/soloud_wav.cpp
 +++ b/src/audiosource/wav/soloud_wav.cpp
-@@ -22,376 +22,417 @@ freely, subject to the following restrictions:
+@@ -22,376 +22,422 @@ freely, subject to the following restrictions:
     distribution.
  */
  
@@ -1889,20 +1914,20 @@ index 1eb39e0..a090ea8 100755
 +result Wav::loadmp3(MemoryFile *aReader)
 +{
 +	drmp3 decoder;
-+
+ 
+-		drmp3_uint64 samples = drmp3_get_pcm_frame_count(&decoder);
 +	if (!drmp3_init_memory(&decoder, aReader->getMemPtr(), aReader->length(), NULL))
 +	{
 +		return FILE_LOAD_FAILED;
 +	}
- 
--		drmp3_uint64 samples = drmp3_get_pcm_frame_count(&decoder);
-+	drmp3_uint64 samples = drmp3_get_pcm_frame_count(&decoder);
  
 -		if (!samples)
 -		{
 -			drmp3_uninit(&decoder);
 -			return FILE_LOAD_FAILED;
 -		}
++	drmp3_uint64 samples = drmp3_get_pcm_frame_count(&decoder);
++
 +	if (!samples)
 +	{
 +		drmp3_uninit(&decoder);
@@ -2055,7 +2080,12 @@ index 1eb39e0..a090ea8 100755
 -	result Wav::load(const char *aFilename)
 +result Wav::loadffmpeg(MemoryFile *aReader)
 +{
-+	if (!FFmpeg::FFmpegLoader::init() || !FFmpeg::FFmpegLoader::isAvailable())
++	if (mSoloud)
++		mSoloud->lockAudioMutex_internal();
++	result retval = (!FFmpeg::FFmpegLoader::init() || !FFmpeg::FFmpegLoader::isAvailable()) ? FILE_LOAD_FAILED : SO_NO_ERROR;
++	if (mSoloud)
++		mSoloud->unlockAudioMutex_internal();
++	if (retval != SO_NO_ERROR)
  	{
 -		if (aFilename == 0)
 -			return INVALID_PARAMETER;
@@ -2068,7 +2098,7 @@ index 1eb39e0..a090ea8 100755
 +#ifdef _DEBUG
 +		printf("debug: failed to load ffmpeg %s\n", FFmpeg::FFmpegLoader::getErrorDetails().c_str());
 +#endif
-+		return FILE_LOAD_FAILED;
++		return retval;
  	}
  
 -	result Wav::loadMem(const unsigned char *aMem, unsigned int aLength, bool aCopy, bool aTakeOwnership)
@@ -2196,7 +2226,8 @@ index 1eb39e0..a090ea8 100755
 +	if (aMem == NULL || aLength == 0)
 +		return INVALID_PARAMETER;
 +	stop();
-+
+ 
+-	result Wav::loadRawWave(float *aMem, unsigned int aLength, float aSamplerate, unsigned int aChannels, bool aCopy, bool aTakeOwndership)
 +	MemoryFile dr;
 +	dr.openMem(aMem, aLength, aCopy, aTakeOwnership);
 +	return testAndLoadFile(&dr);
@@ -2212,7 +2243,24 @@ index 1eb39e0..a090ea8 100755
 +	result res = mr.openFileToMem(aFile);
 +
 +	if (res != SO_NO_ERROR)
-+	{
+ 	{
+-		if (aMem == 0 || aLength == 0 || aSamplerate <= 0 || aChannels < 1)
+-			return INVALID_PARAMETER;
+-		stop();
+-		delete[] mData;
+-		if (aCopy == true || aTakeOwndership == false)
+-		{
+-			mData = new float[aLength];
+-			memcpy(mData, aMem, sizeof(float) * aLength);
+-		}
+-		else
+-		{
+-			mData = aMem;
+-		}
+-		mSampleCount = aLength / aChannels;
+-		mChannels = aChannels;
+-		mBaseSamplerate = aSamplerate;
+-		return SO_NO_ERROR;
 +		return res;
 +	}
 +	return testAndLoadFile(&mr);
@@ -2222,8 +2270,7 @@ index 1eb39e0..a090ea8 100755
 +{
 +	return new WavInstance(this);
 +}
- 
--	result Wav::loadRawWave(float *aMem, unsigned int aLength, float aSamplerate, unsigned int aChannels, bool aCopy, bool aTakeOwndership)
++
 +double Wav::getLength()
 +{
 +	if (mBaseSamplerate == 0)
@@ -2270,24 +2317,7 @@ index 1eb39e0..a090ea8 100755
 +	stop();
 +	delete[] mData;
 +	if (aCopy == true || aTakeOwndership == false)
- 	{
--		if (aMem == 0 || aLength == 0 || aSamplerate <= 0 || aChannels < 1)
--			return INVALID_PARAMETER;
--		stop();
--		delete[] mData;
--		if (aCopy == true || aTakeOwndership == false)
--		{
--			mData = new float[aLength];
--			memcpy(mData, aMem, sizeof(float) * aLength);
--		}
--		else
--		{
--			mData = aMem;
--		}
--		mSampleCount = aLength / aChannels;
--		mChannels = aChannels;
--		mBaseSamplerate = aSamplerate;
--		return SO_NO_ERROR;
++	{
 +		mData = new float[aLength];
 +		memcpy(mData, aMem, sizeof(float) * aLength);
 +	}
@@ -2303,10 +2333,10 @@ index 1eb39e0..a090ea8 100755
 +}
 +}; // namespace SoLoud
 diff --git a/src/audiosource/wav/soloud_wavstream.cpp b/src/audiosource/wav/soloud_wavstream.cpp
-index aeeca53..f0b8b15 100644
+index aeeca53..41ef2cf 100644
 --- a/src/audiosource/wav/soloud_wavstream.cpp
 +++ b/src/audiosource/wav/soloud_wavstream.cpp
-@@ -22,748 +22,833 @@ freely, subject to the following restrictions:
+@@ -22,748 +22,838 @@ freely, subject to the following restrictions:
     distribution.
  */
  
@@ -3391,7 +3421,12 @@ index aeeca53..f0b8b15 100644
 -	result WavStream::loadMem(const unsigned char *aData, unsigned int aDataLen, bool aCopy, bool aTakeOwnership)
 +result WavStream::loadffmpeg(File *fp)
 +{
-+	if (!FFmpeg::FFmpegLoader::init() || !FFmpeg::FFmpegLoader::isAvailable())
++	if (mSoloud)
++		mSoloud->lockAudioMutex_internal();
++	result retval = (!FFmpeg::FFmpegLoader::init() || !FFmpeg::FFmpegLoader::isAvailable()) ? FILE_LOAD_FAILED : SO_NO_ERROR;
++	if (mSoloud)
++		mSoloud->unlockAudioMutex_internal();
++	if (retval != SO_NO_ERROR)
  	{
 -		delete[] mFilename;
 -		delete mMemFile;
@@ -3408,7 +3443,7 @@ index aeeca53..f0b8b15 100644
 +#ifdef _DEBUG
 +		printf("debug: failed to load ffmpeg %s\n", FFmpeg::FFmpegLoader::getErrorDetails().c_str());
 +#endif
-+		return FILE_LOAD_FAILED;
++		return retval;
 +	}
  
 -		MemoryFile *mf = new MemoryFile();

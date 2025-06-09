@@ -427,7 +427,7 @@ AC_SUBST([BEAR])
 
 AS_IF([test "x$enable_debug" = "xyes"], [
     with_mimalloc="no"
-    AS_IF([test -n "$host_os" = "mingw32"],[
+    AS_IF([test "$host_os" = "mingw32"],[
         CXXFLAGS="$CXXFLAGS -g -Og"
         CFLAGS="$CFLAGS -g -Og"
     ], [

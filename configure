@@ -8188,7 +8188,7 @@ if test "x$enable_debug" = "xyes"
 then :
 
     with_mimalloc="no"
-    if test -n "$host_os" = "mingw32"
+    if test "$host_os" = "mingw32"
 then :
 
         CXXFLAGS="$CXXFLAGS -g -Og"
