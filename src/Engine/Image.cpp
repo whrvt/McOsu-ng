@@ -19,13 +19,15 @@
 #include <cstring>
 #include <mutex>
 
+namespace
+{
 // this is complete bullshit and a bug in zlib-ng (probably, less likely libpng)
 // need to prevent zlib from lazy-initializing the crc tables, otherwise data race galore
 // literally causes insane lags/issues in completely unrelated places for async loading
-static std::mutex zlib_init_mutex;
-static std::atomic<bool> zlib_initialized{false};
+std::mutex zlib_init_mutex;
+std::atomic<bool> zlib_initialized{false};
 
-static void garbage_zlib()
+void garbage_zlib()
 {
 	if (zlib_initialized.load(std::memory_order_acquire))
 		return;
@@ -56,7 +58,7 @@ void pngErrorExit(png_structp png_ptr, png_const_charp error_msg)
 {
 	debugLog("PNG Error: {:s}\n", error_msg);
 	auto *err = static_cast<pngErrorManager *>(png_get_error_ptr(png_ptr));
-	longjmp(err->setjmp_buffer, 1);
+	longjmp(&err->setjmp_buffer[0], 1);
 }
 
 void pngWarning(png_structp, png_const_charp warning_msg)
@@ -84,6 +86,7 @@ void pngReadFromMemory(png_structp png_ptr, png_bytep outBytes, png_size_t byteC
 	memcpy(outBytes, reader->data + reader->offset, byteCountToRead);
 	reader->offset += byteCountToRead;
 }
+} // namespace
 
 bool Image::decodePNGFromMemory(const unsigned char *data, size_t size, std::vector<unsigned char> &outData, int &outWidth, int &outHeight, int &outChannels)
 {
@@ -106,7 +109,7 @@ bool Image::decodePNGFromMemory(const unsigned char *data, size_t size, std::vec
 	pngErrorManager err;
 	png_set_error_fn(png_ptr, &err, pngErrorExit, pngWarning);
 
-	if (setjmp(err.setjmp_buffer))
+	if (setjmp(&err.setjmp_buffer[0]))
 	{
 		png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
 		return false;
@@ -212,7 +215,7 @@ void Image::saveToImage(unsigned char *data, unsigned int width, unsigned int he
 		return;
 	}
 
-	if (setjmp(png_jmpbuf(png_ptr)))
+	if (setjmp(&png_jmpbuf(png_ptr)[0]))
 	{
 		png_destroy_write_struct(&png_ptr, &info_ptr);
 		fclose(fp);
@@ -247,7 +250,8 @@ void Image::saveToImage(unsigned char *data, unsigned int width, unsigned int he
 	fclose(fp);
 }
 
-Image::Image(UString filepath, bool mipmapped, bool keepInSystemMemory) : Resource(filepath)
+Image::Image(UString filepath, bool mipmapped, bool keepInSystemMemory)
+    : Resource(filepath)
 {
 	m_bMipmapped = mipmapped;
 	m_bKeepInSystemMemory = keepInSystemMemory;
@@ -263,7 +267,8 @@ Image::Image(UString filepath, bool mipmapped, bool keepInSystemMemory) : Resour
 	m_bCreatedImage = false;
 }
 
-Image::Image(int width, int height, bool mipmapped, bool keepInSystemMemory) : Resource()
+Image::Image(int width, int height, bool mipmapped, bool keepInSystemMemory)
+    : Resource()
 {
 	m_bMipmapped = mipmapped;
 	m_bKeepInSystemMemory = keepInSystemMemory;
