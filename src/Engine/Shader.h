@@ -53,7 +53,7 @@ protected:
 		std::vector<UString> descs;
 	};
 
-	SHADER_PARSE_RESULT parseShaderFromFileOrString(UString graphicsInterfaceAndShaderTypePrefix, UString shaderSourceOrFilePath, bool source);
+	SHADER_PARSE_RESULT parseShaderFromFileOrString(const UString &graphicsInterfaceAndShaderTypePrefix, const UString &shaderSourceOrFilePath, bool source);
 };
 
 #endif

@@ -9924,7 +9924,7 @@ else case e in #(
   e)
         D3D11_CFLAGS=""
 
-        D3D11_LIBS="-ld3d11 -ld3dcompiler_47 -ldxgi"
+        D3D11_LIBS="-ld3d11 -ld3dcompiler_43 -ldxgi"
 
         DXGI_CFLAGS=""
 

@@ -747,15 +747,12 @@ bool DirectX11Shader::compile(const UString &vertexShader, const UString &fragme
 	UINT flags = 0;
 
 	if (cv::debug_shaders.getBool())
-		flags |= D3DCOMPILE_DEBUG;
+		flags |= D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
 
-	// disable optimization to avoid vkd3d bugs (copied from mojoshader)
-	flags |= D3DCOMPILE_SKIP_OPTIMIZATION;
-
-	const D3D_SHADER_MACRO defines[] = {
-	    {"EXAMPLE_DEFINE", "1" },
-        {NULL,             NULL}  // sentinel
-	};
+	// const D3D_SHADER_MACRO defines[] = {
+	//     {"EXAMPLE_DEFINE", "1" },
+    //     {NULL,             NULL}  // sentinel
+	// };
 
 	ID3DBlob *vs = NULL;
 	ID3DBlob *ps = NULL;
@@ -766,22 +763,22 @@ bool DirectX11Shader::compile(const UString &vertexShader, const UString &fragme
 	std::string vsSource = vertexShader.toUtf8();
 	std::string psSource = fragmentShader.toUtf8();
 
-	HRESULT hr1, hr2;
+	HRESULT hr1{S_OK}, hr2{S_OK};
 
 #ifdef MCENGINE_PLATFORM_LINUX
 	// use vkd3d function pointer with proper calling convention
 	debugLog("DirectX11Shader: (VKD3D) D3DCompile()-ing vertex shader ...\n");
-	hr1 = DirectX11Shader::s_d3dCompileFunc(vsSource.c_str(), vsSource.length(), "VS_SOURCE", defines, NULL, vsEntryPoint, vsProfile, flags, 0, &vs, &vsError);
+	hr1 = DirectX11Shader::s_d3dCompileFunc(vsSource.c_str(), vsSource.length(), "VS_SOURCE", NULL/*defines*/, NULL, vsEntryPoint, vsProfile, flags, 0, &vs, &vsError);
 
 	debugLog("DirectX11Shader: (VKD3D) D3DCompile()-ing pixel shader ...\n");
-	hr2 = DirectX11Shader::s_d3dCompileFunc(psSource.c_str(), psSource.length(), "PS_SOURCE", defines, NULL, psEntryPoint, psProfile, flags, 0, &ps, &psError);
+	hr2 = DirectX11Shader::s_d3dCompileFunc(psSource.c_str(), psSource.length(), "PS_SOURCE", NULL/*defines*/, NULL, psEntryPoint, psProfile, flags, 0, &ps, &psError);
 #else
 	// use standard D3DCompile on Windows
 	debugLog("DirectX11Shader: D3DCompile()-ing vertex shader ...\n");
-	hr1 = D3DCompile(vsSource.c_str(), vsSource.length(), "VS_SOURCE", defines, NULL, vsEntryPoint, vsProfile, flags, 0, &vs, &vsError);
+	hr1 = D3DCompile(vsSource.c_str(), vsSource.length(), "VS_SOURCE", NULL/*defines*/, NULL, vsEntryPoint, vsProfile, flags, 0, &vs, &vsError);
 
 	debugLog("DirectX11Shader: D3DCompile()-ing pixel shader ...\n");
-	hr2 = D3DCompile(psSource.c_str(), psSource.length(), "PS_SOURCE", defines, NULL, psEntryPoint, psProfile, flags, 0, &ps, &psError);
+	hr2 = D3DCompile(psSource.c_str(), psSource.length(), "PS_SOURCE", NULL/*defines*/, NULL, psEntryPoint, psProfile, flags, 0, &ps, &psError);
 #endif
 
 	// check compilation results

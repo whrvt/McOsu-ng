@@ -99,7 +99,7 @@ private:
 
 	// init methods
 	void setupLogging();
-	bool createWindow(int width, int height);
+	bool createWindow();
 	void setupOpenGL();
 	void configureEvents();
 	float queryDisplayHz();
@@ -267,7 +267,7 @@ SDL_AppResult SDLMain::initialize()
 	setupLogging();
 
 	// create window with props
-	if (!createWindow(WINDOW_WIDTH, WINDOW_HEIGHT))
+	if (!createWindow())
 		return SDL_APP_FAILURE;
 
 	// create and make gl context current
@@ -393,6 +393,16 @@ nocbinline SDL_AppResult SDLMain::handleEvent(SDL_Event *event)
 			setFgFPS();
 			break;
 
+		case SDL_EVENT_WINDOW_ENTER_FULLSCREEN:
+			cv::fullscreen.setValue(true, false);
+			m_bFullscreen = true;
+			break;
+
+		case SDL_EVENT_WINDOW_LEAVE_FULLSCREEN:
+			cv::fullscreen.setValue(false, false);
+			m_bFullscreen = false;
+			break;
+
 		case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
 		case SDL_EVENT_WINDOW_RESIZED:
 			m_bHasFocus = true;
@@ -402,7 +412,7 @@ nocbinline SDL_AppResult SDLMain::handleEvent(SDL_Event *event)
 			break;
 
 		case SDL_EVENT_WINDOW_DISPLAY_CHANGED:
-			cv::monitor.setValue(event->window.data1);
+			cv::monitor.setValue(event->window.data1, false);
 		case SDL_EVENT_WINDOW_DISPLAY_SCALE_CHANGED: // TODO?
 			engine->requestResolutionChange(getWindowSize());
 			m_fDisplayHzSecs = 1.0f / (m_fDisplayHz = queryDisplayHz());
@@ -515,7 +525,7 @@ nocbinline SDL_AppResult SDLMain::iterate()
 	return SDL_APP_CONTINUE;
 }
 
-bool SDLMain::createWindow(int width, int height)
+bool SDLMain::createWindow()
 {
 	// pre window-creation settings
 	if constexpr (Env::cfg((REND::GL | REND::GLES2 | REND::GLES32 | REND::GL3), !REND::DX11))
@@ -537,23 +547,37 @@ bool SDLMain::createWindow(int width, int height)
 	    SDL_WINDOW_HIDDEN | SDL_WINDOW_INPUT_FOCUS | SDL_WINDOW_MOUSE_FOCUS |
 	    (Env::cfg((REND::GL | REND::GLES2 | REND::GLES32 | REND::GL3)) ? SDL_WINDOW_OPENGL : (Env::cfg(OS::LINUX, REND::DX11) ? SDL_WINDOW_VULKAN : 0UL));
 
+	// get default monitor resolution and create the window with that as the starting size
+	long windowCreateWidth = WINDOW_WIDTH;
+	long windowCreateHeight = WINDOW_HEIGHT;
+	{
+		SDL_DisplayID di = SDL_GetPrimaryDisplay();
+		const SDL_DisplayMode *dm = nullptr;
+		if (di && (dm = SDL_GetDesktopDisplayMode(di)))
+		{
+			windowCreateWidth = dm->w;
+			windowCreateHeight = dm->h;
+		}
+	}
+
 	SDL_PropertiesID props = SDL_CreateProperties();
+	// if constexpr (Env::cfg(REND::DX11))
+	// 	SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_EXTERNAL_GRAPHICS_CONTEXT_BOOLEAN, true);
 	SDL_SetStringProperty(props, SDL_PROP_WINDOW_CREATE_TITLE_STRING, WINDOW_TITLE);
 	SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_X_NUMBER, SDL_WINDOWPOS_CENTERED);
 	SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_Y_NUMBER, SDL_WINDOWPOS_CENTERED);
-	SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_WIDTH_NUMBER, width);
-	SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_HEIGHT_NUMBER, height);
-	SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_RESIZABLE_BOOLEAN, false);
-	SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_MAXIMIZED_BOOLEAN, false);
+	SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_WIDTH_NUMBER, windowCreateWidth);
+	SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_HEIGHT_NUMBER, windowCreateHeight);
+	SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_RESIZABLE_BOOLEAN, false);
+	SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_MAXIMIZED_BOOLEAN, false);
 	SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_FLAGS_NUMBER, windowFlags);
 
 	const bool shouldBeBorderless = cv::fullscreen_windowed_borderless.getBool();
-	const bool shouldBeFullscreen = cv::fullscreen.getBool() || !cv::windowed.getBool() || shouldBeBorderless;
+	// FIXME: no configs are loaded here yet, so this is pointless (and we don't want to create fullscreen because we don't want a video mode change)
+	const bool shouldBeFullscreen = !Env::cfg(OS::WINDOWS, REND::DX11) && (cv::fullscreen.getBool() || !cv::windowed.getBool() || shouldBeBorderless);
 
-	if (shouldBeBorderless)
-		SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_BORDERLESS_BOOLEAN, true);
-	else if (shouldBeFullscreen)
-		SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_FULLSCREEN_BOOLEAN, true);
+	SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_BORDERLESS_BOOLEAN, shouldBeBorderless);
+	SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_FULLSCREEN_BOOLEAN, shouldBeFullscreen);
 
 	if constexpr (Env::cfg(OS::WINDOWS))
 		SDL_SetHintWithPriority(SDL_HINT_WINDOWS_RAW_KEYBOARD, "1", SDL_HINT_OVERRIDE);
@@ -571,6 +595,8 @@ bool SDLMain::createWindow(int width, int height)
 		debugLog("Couldn't SDL_CreateWindow(): {:s}\n", SDL_GetError());
 		return false;
 	}
+
+	cv::monitor.setValue(SDL_GetDisplayForWindow(m_window), false);
 
 	return true;
 }
@@ -628,13 +654,10 @@ float SDLMain::queryDisplayHz()
 			if (!almostEqual(m_fDisplayHz, currentDisplayMode->refresh_rate))
 				debugLog("Got refresh rate {:.3f} Hz for display {:d}.\n", currentDisplayMode->refresh_rate, display);
 			const auto refreshRateSanityClamped = std::clamp<float>(currentDisplayMode->refresh_rate, 60.0f, 540.0f);
-			const auto fourxhz = refreshRateSanityClamped * 4.0f;
+			const auto fourxhz = std::clamp<float>(refreshRateSanityClamped * 4.0f, refreshRateSanityClamped, 1000.0f);
 			// also set fps_max to 4x the refresh rate if it's the default
 			if (cv::fps_max.getFloat() == cv::fps_max.getDefaultFloat())
-			{
 				cv::fps_max.setValue(fourxhz);
-				cv::fps_max.setDefaultFloat(fourxhz);
-			}
 			return refreshRateSanityClamped;
 		}
 		else
@@ -731,7 +754,7 @@ void SDLMain::shutdown(SDL_AppResult result)
 void SDLMain::fps_max_callback(float newVal)
 {
 	int newFps = static_cast<int>(newVal);
-	if ((newFps == 0 || newFps > 30) && !cv::fps_unlimited.getBool())
+	if ((newFps == 0 || newFps >= 30) && !cv::fps_unlimited.getBool())
 		m_iFpsMax = newFps;
 	if (m_bHasFocus)
 		setFgFPS();

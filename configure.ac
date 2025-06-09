@@ -544,7 +544,7 @@ AS_IF([test "$renderer" != "dx11"], [
                             # it needs to be forced dynamic
     ],[
         AC_SUBST([D3D11_CFLAGS], [""])
-        AC_SUBST([D3D11_LIBS], [["-ld3d11 -ld3dcompiler_47 -ldxgi"]])
+        AC_SUBST([D3D11_LIBS], [["-ld3d11 -ld3dcompiler_43 -ldxgi"]])
         AC_SUBST([DXGI_CFLAGS], [""])
         AC_SUBST([DXGI_LIBS], [["-ldxgi"]])
         AC_SUBST([VKD3D_CFLAGS], [""])

@@ -227,10 +227,17 @@ public:
 	void upperCase();
 
 	// operators
-	[[nodiscard]] constexpr wchar_t operator[](int index) const
+	[[nodiscard]] constexpr const wchar_t &operator[](int index) const
 	{
 		int len = length();
-		return (len > 0) ? m_unicode[std::clamp(index, 0, len - 1)] : static_cast<wchar_t>(0);
+		return m_unicode[std::clamp(index, 0, len - 1)];
+	}
+
+	// operators
+	[[nodiscard]] constexpr wchar_t &operator[](int index)
+	{
+		int len = length();
+		return m_unicode[std::clamp(index, 0, len - 1)];
 	}
 
 	bool operator==(const UString &ustr) const = default;

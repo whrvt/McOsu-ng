@@ -140,6 +140,7 @@ public:
 
 	// debug
 	[[nodiscard]] inline bool envDebug() const { return m_bEnvDebug; }
+	[[nodiscard]] inline bool isWine() const { return s_bIsWine; }
 protected:
 	std::unordered_map<UString, std::optional<UString>> m_mArgMap;
 	std::vector<UString> m_vCmdLine;
@@ -205,6 +206,7 @@ protected:
 
 	// misc
 	void initCursors();
+	static bool s_bIsWine;
 
 private:
 	// static callbacks/helpers

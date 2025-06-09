@@ -203,11 +203,11 @@ public:
 	void setDefaultString(UString defaultValue);
 
 	template <typename T>
-	void setValue(T &&value)
+	void setValue(T &&value, const bool &doCallback = true)
 	{
 		if (isFlagSet(FCVAR_HARDCODED) || (isFlagSet(FCVAR_CHEAT) && !static_cast<int>(cv::ConVars::sv_cheats.getRaw())))
 			return;
-		setValueInt(std::forward<T>(value));
+		setValueInt(std::forward<T>(value), doCallback);
 	}
 
 	// generic callback setter that auto-detects callback type
@@ -306,7 +306,7 @@ private:
 	void setDefaultStringInt(UString defaultValue);
 
 	template <typename T>
-	void setValueInt(T &&value) // no flag checking, setValue (user-accessible) already does that
+	void setValueInt(T &&value, const bool &doCallback = true) // no flag checking, setValue (user-accessible) already does that
 	{
 		// determine float and string representations depending on whether setValue("string") or setValue(float) was called
 		const auto [newFloat, newString] = [&]() {
@@ -331,34 +331,37 @@ private:
 		m_fValue = newFloat;
 		m_sValue = newString;
 
-		// handle possible execution callbacks
-		if (!std::holds_alternative<std::monostate>(m_callback))
+		if (likely(doCallback))
 		{
-			std::visit(
-			    [&](auto &&callback) {
-				    using CallbackType = std::decay_t<decltype(callback)>;
-				    if constexpr (std::is_same_v<CallbackType, NativeConVarCallback>)
-					    callback();
-				    else if constexpr (std::is_same_v<CallbackType, NativeConVarCallbackArgs>)
-					    callback(newString);
-				    else if constexpr (std::is_same_v<CallbackType, NativeConVarCallbackFloat>)
-					    callback(newFloat);
-			    },
-			    m_callback);
-		}
+			// handle possible execution callbacks
+			if (!std::holds_alternative<std::monostate>(m_callback))
+			{
+				std::visit(
+					[&](auto &&callback) {
+						using CallbackType = std::decay_t<decltype(callback)>;
+						if constexpr (std::is_same_v<CallbackType, NativeConVarCallback>)
+							callback();
+						else if constexpr (std::is_same_v<CallbackType, NativeConVarCallbackArgs>)
+							callback(newString);
+						else if constexpr (std::is_same_v<CallbackType, NativeConVarCallbackFloat>)
+							callback(newFloat);
+					},
+					m_callback);
+			}
 
-		// handle possible change callbacks
-		if (!std::holds_alternative<std::monostate>(m_changeCallback))
-		{
-			std::visit(
-			    [&](auto &&callback) {
-				    using CallbackType = std::decay_t<decltype(callback)>;
-				    if constexpr (std::is_same_v<CallbackType, NativeConVarChangeCallback>)
-					    callback(oldString, newString);
-				    else if constexpr (std::is_same_v<CallbackType, NativeConVarChangeCallbackFloat>)
-					    callback(oldFloat, newFloat);
-			    },
-			    m_changeCallback);
+			// handle possible change callbacks
+			if (!std::holds_alternative<std::monostate>(m_changeCallback))
+			{
+				std::visit(
+					[&](auto &&callback) {
+						using CallbackType = std::decay_t<decltype(callback)>;
+						if constexpr (std::is_same_v<CallbackType, NativeConVarChangeCallback>)
+							callback(oldString, newString);
+						else if constexpr (std::is_same_v<CallbackType, NativeConVarChangeCallbackFloat>)
+							callback(oldFloat, newFloat);
+					},
+					m_changeCallback);
+			}
 		}
 	}
 

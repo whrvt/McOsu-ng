@@ -7,22 +7,25 @@
 
 #include "Shader.h"
 
-#include "Engine.h"
 #include "ConVar.h"
+#include "Engine.h"
 #include "File.h"
 
 #include <sstream>
-namespace cv {
+namespace cv
+{
 ConVar debug_shaders("debug_shaders", false, FCVAR_NONE);
 }
 
-Shader::SHADER_PARSE_RESULT Shader::parseShaderFromFileOrString(UString graphicsInterfaceAndShaderTypePrefix, UString shaderSourceOrFilePath, bool source)
+Shader::SHADER_PARSE_RESULT Shader::parseShaderFromFileOrString(const UString &graphicsInterfaceAndShaderTypePrefix,
+                                                                const UString &shaderSourceOrFilePath,
+                                                                bool source)
 {
-	const UString shaderPrefix = "###";	// e.g. ###OpenGLLegacyInterface::VertexShader##########################################################################################
-	const UString descPrefix = "##";	// e.g. ##D3D11_BUFFER_DESC::D3D11_BIND_CONSTANT_BUFFER::ModelViewProjectionConstantBuffer::mvp::float4x4
-	const UString newline = "\n";
-
 	SHADER_PARSE_RESULT result;
+	const UString shaderPrefix =
+	    "###"; // e.g. ###OpenGLLegacyInterface::VertexShader##########################################################################################
+	const UString descPrefix = "##"; // e.g. ##D3D11_BUFFER_DESC::D3D11_BIND_CONSTANT_BUFFER::ModelViewProjectionConstantBuffer::mvp::float4x4
+
 	{
 		if (!source)
 			debugLog("Shader: Loading {:s} {:s} ...\n", graphicsInterfaceAndShaderTypePrefix.toUtf8(), shaderSourceOrFilePath.toUtf8());
@@ -38,36 +41,16 @@ Shader::SHADER_PARSE_RESULT Shader::parseShaderFromFileOrString(UString graphics
 		bool foundGraphicsInterfaceAndShaderTypePrefixAtLeastOnce = false;
 		bool foundGraphicsInterfaceAndShaderTypePrefix = false;
 		std::string curLine;
+
 		while (!source ? file.canRead() : static_cast<bool>(std::getline(ss, curLine)))
 		{
 			UString uCurLine;
-			{
-				if (!source)
-					uCurLine = file.readLine();
-				else
-					uCurLine = UString(curLine.c_str(), curLine.length());
-			}
+			if (!source)
+				uCurLine = file.readLine();
+			else
+				uCurLine = UString(curLine.c_str(), curLine.length());
 
 			const bool isShaderPrefixLine = (uCurLine.find(shaderPrefix) == 0);
-
-			if (!isShaderPrefixLine && foundGraphicsInterfaceAndShaderTypePrefix)
-			{
-				const bool isDescPrefixLine = (uCurLine.find(descPrefix) == 0);
-
-				if (!isDescPrefixLine)
-				{
-					result.source.append(uCurLine);
-					result.source.append(newline);
-				}
-				else
-				{
-					result.source.append(newline);
-
-					result.descs.push_back(uCurLine.substr(descPrefix.length()));
-				}
-			}
-			else
-				result.source.append(newline);
 
 			if (isShaderPrefixLine)
 			{
@@ -82,9 +65,27 @@ Shader::SHADER_PARSE_RESULT Shader::parseShaderFromFileOrString(UString graphics
 				else
 					foundGraphicsInterfaceAndShaderTypePrefix = false;
 			}
+			else if (foundGraphicsInterfaceAndShaderTypePrefix)
+			{
+				const bool isDescPrefixLine = (uCurLine.find(descPrefix) == 0);
+
+				if (!isDescPrefixLine)
+				{
+					if (!result.source.isEmpty())
+						result.source.append('\n');
+					result.source.append(uCurLine);
+				}
+				else
+				{
+					result.descs.push_back(uCurLine.substr(descPrefix.length()));
+				}
+			}
 		}
+
 		if (!foundGraphicsInterfaceAndShaderTypePrefixAtLeastOnce)
-			engine->showMessageError("Shader Error", UString::format("Missing \"%s\" in file %s", graphicsInterfaceAndShaderTypePrefix.toUtf8(), shaderSourceOrFilePath.toUtf8()));
+			engine->showMessageError("Shader Error",
+			                         UString::format("Missing \"%s\" in file %s", graphicsInterfaceAndShaderTypePrefix.toUtf8(), shaderSourceOrFilePath.toUtf8()));
 	}
+
 	return result;
 }

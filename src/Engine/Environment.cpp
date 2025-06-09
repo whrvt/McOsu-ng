@@ -49,6 +49,7 @@ ConVar processpriority("processpriority", 0, FCVAR_NONE, "sets the main process 
 Environment *env = nullptr;
 
 bool Environment::s_bIsATTY = false;
+bool Environment::s_bIsWine = false;
 
 Environment::Environment(int argc, char *argv[])
 {
@@ -83,6 +84,9 @@ Environment::Environment(int argc, char *argv[])
 	m_vCmdLine = std::vector<UString>(argv, argv + argc);
 
 	s_bIsATTY = ::isatty(fileno(stdout)) != 0;
+#ifdef MCENGINE_PLATFORM_WINDOWS
+	s_bIsWine = !!GetProcAddress(GetModuleHandle(TEXT("ntdll.dll")), "wine_get_version");
+#endif
 
 	m_engine = nullptr; // will be initialized by the mainloop once setup is complete
 	m_window = nullptr;
@@ -609,6 +613,8 @@ void Environment::setMonitor(int monitor)
 
 	if (!success)
 		center();
+	else
+		cv::monitor.setValue(monitor, false);
 }
 
 HWND Environment::getHwnd() const
