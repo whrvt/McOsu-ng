@@ -34,7 +34,8 @@ RUN wget -O genie.tar.gz "https://github.com/bkaradzic/GENie/archive/${GENIE_VER
 # headers needed for SoLoud to be able to build the ffmpeg decoder
 RUN wget -qO- "https://ffmpeg.org/releases/ffmpeg-${FFMPEG_VERSION}.tar.xz" | \
     tar xJ --wildcards --no-anchored libavcodec/'*'.h libavformat/'*'.h libavutil/'*'.h libswresample/'*'.h && \
-    mv ffmpeg-${FFMPEG_VERSION}/* /usr/include/
+    mv ffmpeg-${FFMPEG_VERSION}/* /usr/include/ && \
+    printf '%s\n%s\n%s\n' "#pragma once" "#define AV_HAVE_BIGENDIAN 0" "#define AV_HAVE_FAST_UNALIGNED 1" > /usr/include/libavutil/avconfig.h
 
 FROM manual-deps AS main-build
 
