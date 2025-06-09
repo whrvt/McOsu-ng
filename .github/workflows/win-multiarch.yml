@@ -60,7 +60,7 @@ jobs:
           pacman -Syu --noconfirm base-devel libx11 libxi glu \
             libjpeg-turbo libglvnd freetype2 sdl3 zlib wget \
             cmake meson nasm git autoconf automake libtool autoconf-archive \
-            mingw-w64-gcc ccache
+            mingw-w64-gcc ccache ffmpeg
           useradd user -G wheel && echo "user ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
           git clone https://aur.archlinux.org/genie-git.git
           chown -R user: .
