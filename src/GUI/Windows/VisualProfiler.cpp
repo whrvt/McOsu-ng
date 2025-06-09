@@ -99,7 +99,13 @@ void VisualProfiler::draw()
 					UString model = g->getModel();
 					UString version = g->getVersion();
 
-					UString line1 = "GPU Vendor: "; line1.append(vendor);
+				    constexpr const auto rendTypeStr = Env::cfg(REND::DX11)     ? "DirectX 11"
+				                                       : Env::cfg(REND::GLES32) ? "OpenGL ES 3"
+				                                       : Env::cfg(REND::GLES2)  ? "OpenGL ES 2"
+				                                       : Env::cfg(REND::GL)     ? "OpenGL Legacy"
+				                                                                : "?";
+
+				    UString line1 = "GPU Vendor: "; line1.append(vendor);
 					addTextLine(line1, textFont, m_textLines);
 					UString line2 = "Model: "; line2.append(model);
 					addTextLine(line2, textFont, m_textLines);
@@ -109,8 +115,9 @@ void VisualProfiler::draw()
 					addTextLine(UString::format("NativeRes: %i x %i", (int)env->getNativeScreenSize().x, (int)env->getNativeScreenSize().y), textFont, m_textLines);
 					addTextLine(UString::format("Env DPI Scale: %f", env->getDPIScale()), textFont, m_textLines);
 					addTextLine(UString::format("Env DPI: %i", (int)env->getDPI()), textFont, m_textLines);
-					//addTextLine(UString::format("Renderer: %s", typeid().name()), textFont, m_textLines); // TODO: add g->getName() or something
+					addTextLine(UString::format("Renderer: %s", rendTypeStr), textFont, m_textLines);
 					addTextLine(UString::format("VRAM: %i MB avail. / %i MB tot.", vramAvailableMB, vramTotalMB), textFont, m_textLines);
+
 				}
 				break;
 
@@ -124,9 +131,16 @@ void VisualProfiler::draw()
 					const double dilation = (timeRunning - time);
 					const Vector2 envMousePos = env->getMousePos();
 
-					addTextLine(UString::fmt("ConVars: {}", convar->getConVarArray().size()), textFont, m_textLines);
+				    const auto sndEngType = soundEngine->getTypeId();
+				    const std::string sndEngTypeStr = sndEngType == SoundEngine::SndEngineType::BASS     ? "BASS"
+				                                      : sndEngType == SoundEngine::SndEngineType::SDL    ? "SDL"
+				                                      : sndEngType == SoundEngine::SndEngineType::SOLOUD ? "SoLoud"
+				                                                                                         : "?";
+
+				    addTextLine(UString::fmt("ConVars: {}", convar->getConVarArray().size()), textFont, m_textLines);
 					addTextLine(UString::fmt("Monitor: [{}] of {}", env->getMonitor(), env->getMonitors().size()), textFont, m_textLines);
 					addTextLine(UString::fmt("Env Mouse Pos: {} x {}", (int)envMousePos.x, (int)envMousePos.y), textFont, m_textLines);
+					addTextLine(UString::fmt("SoundEngine: {:s}", sndEngTypeStr), textFont, m_textLines);
 					addTextLine(UString::fmt("Sound Device: {:s}", soundEngine->getOutputDevice()), textFont, m_textLines);
 					addTextLine(UString::fmt("Sound Volume: {:.4f}", soundEngine->getVolume()), textFont, m_textLines);
 					addTextLine(UString::fmt("RM Threads: {}", resourceManager->getNumActiveThreads()), textFont, m_textLines);
