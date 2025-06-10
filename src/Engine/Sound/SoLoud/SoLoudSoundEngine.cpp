@@ -35,12 +35,6 @@ SoLoudSoundEngine::SoLoudSoundEngine()
 		soloud = s_SLInstance.get();
 	}
 
-	// need to reset these in case bass is also compiled in (otherwise having bass compiled in would add 15ms universal offset)
-#if __has_include("Osu.h")
-	cv::osu::universal_offset_hardcoded.setDefaultFloat(0.0f);
-	cv::osu::universal_offset_hardcoded.setValue(0.0f);
-#endif
-
 	m_iMaxActiveVoices = std::clamp<int>(cv::snd_sanity_simultaneous_limit.getInt(), 64,
 	                                     255); // TODO: lower this minimum (it will crash if more than this many sounds play at once...)
 
@@ -406,7 +400,7 @@ bool SoLoudSoundEngine::initializeOutputDevice(int id, bool)
 	;
 
 	auto backend = SoLoud::Soloud::MINIAUDIO;
-	auto userBackend = cv::snd_soloud_backend.getString();
+	const auto& userBackend = cv::snd_soloud_backend.getString();
 	if ((userBackend != cv::snd_soloud_backend.getDefaultString()))
 	{
 		if (userBackend.findIgnoreCase("sdl") != -1)

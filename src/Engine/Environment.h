@@ -89,6 +89,7 @@ public:
 	void maximize();
 	void enableFullscreen();
 	void disableFullscreen();
+	void syncWindow();
 	void setWindowTitle(const UString& title);
 	void setWindowPos(int x, int y);
 	void setWindowSize(int width, int height);

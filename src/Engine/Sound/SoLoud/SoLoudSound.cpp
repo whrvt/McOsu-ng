@@ -393,12 +393,12 @@ float SoLoudSound::getPosition()
 {
 	if (!m_bReady || !m_audioSource || !m_handle)
 		return 0.0f;
-	double streamLengthInSeconds = getSourceLengthInSeconds();
 
+	double streamLengthInSeconds = getSourceLengthInSeconds();
 	if (streamLengthInSeconds <= 0.0)
 		return 0.0f;
 
-	double streamPositionInSeconds = soloud->getStreamPosition(m_handle);
+	double streamPositionInSeconds = getStreamPositionInSeconds();
 
 	return std::clamp<float>(streamPositionInSeconds / streamLengthInSeconds, 0.0f, 1.0f);
 }
@@ -409,7 +409,7 @@ unsigned long SoLoudSound::getPositionMS()
 	if (!m_bReady || !m_audioSource || !m_handle)
 		return 0;
 
-	double streamPositionInSeconds = soloud->getStreamPosition(m_handle);
+	double streamPositionInSeconds = getStreamPositionInSeconds();
 
 	const double currentTime = Timing::getTimeReal();
 	const double streamPositionMS = streamPositionInSeconds * 1000.0;

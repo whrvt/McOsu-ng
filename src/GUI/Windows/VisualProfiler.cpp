@@ -132,10 +132,10 @@ void VisualProfiler::draw()
 					const Vector2 envMousePos = env->getMousePos();
 
 				    const auto sndEngType = soundEngine->getTypeId();
-				    const std::string sndEngTypeStr = sndEngType == SoundEngine::SndEngineType::BASS     ? "BASS"
-				                                      : sndEngType == SoundEngine::SndEngineType::SDL    ? "SDL"
-				                                      : sndEngType == SoundEngine::SndEngineType::SOLOUD ? "SoLoud"
-				                                                                                         : "?";
+				    const std::string sndEngTypeStr = sndEngType == SoundEngine::BASS     ? "BASS"
+				                                      : sndEngType == SoundEngine::SDL    ? "SDL"
+				                                      : sndEngType == SoundEngine::SOLOUD ? "SoLoud"
+				                                                                          : "?";
 
 				    addTextLine(UString::fmt("ConVars: {}", convar->getConVarArray().size()), textFont, m_textLines);
 					addTextLine(UString::fmt("Monitor: [{}] of {}", env->getMonitor(), env->getMonitors().size()), textFont, m_textLines);

@@ -20,6 +20,8 @@
 #include "Engine.h"
 #include "SoLoudFX.h"
 
+extern SoLoud::Soloud *soloud;
+
 class SoLoudSound final : public Sound
 {
 	friend class SoLoudSoundEngine;
@@ -68,6 +70,16 @@ private:
 			return static_cast<SoLoud::SLFXStream *>(m_audioSource)->getLength();
 		else
 			return static_cast<SoLoud::Wav *>(m_audioSource)->getLength();
+	}
+
+	[[nodiscard]] inline double getStreamPositionInSeconds() const
+	{
+		if (!m_audioSource)
+			return m_fLastSoLoudPositionTime;
+		if (m_bStream)
+			return static_cast<SoLoud::SLFXStream *>(m_audioSource)->getRealStreamPosition();
+		else
+			return m_handle ? soloud->getStreamPosition(m_handle) : m_fLastSoLoudPositionTime;
 	}
 
 	// current playback parameters

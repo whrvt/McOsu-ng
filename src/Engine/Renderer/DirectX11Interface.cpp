@@ -1374,6 +1374,7 @@ void DirectX11Interface::onResolutionChange(Vector2 newResolution)
 
 	if (!engine->isDrawing()) // HACKHACK: to allow viewport changes for rendertarget rendering OpenGL style
 	{
+		env->syncWindow();
 		// rebuild swapchain rendertarget + view
 		HRESULT hr;
 
@@ -1505,6 +1506,7 @@ void DirectX11Interface::onResolutionChange(Vector2 newResolution)
 	m_deviceContext->RSSetViewports(1, &viewport);
 	//resizeTarget(m_vResolution);
 	//debugLog("Set viewport {:g}x{:g}\n", viewport.Width, viewport.Height);
+	env->syncWindow();
 }
 
 void DirectX11Interface::resizeTarget(Vector2 newResolution)

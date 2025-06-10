@@ -515,7 +515,7 @@ void Environment::focus()
 
 void Environment::center()
 {
-	SDL_SyncWindow(m_window);
+	syncWindow();
 	const SDL_DisplayID di = SDL_GetDisplayForWindow(m_window);
 	SDL_SetWindowPosition(m_window, SDL_WINDOWPOS_CENTERED_DISPLAY(di), SDL_WINDOWPOS_CENTERED_DISPLAY(di));
 }
@@ -564,6 +564,12 @@ void Environment::setWindowTitle(const UString &title)
 	SDL_SetWindowTitle(m_window, title.toUtf8());
 }
 
+void Environment::syncWindow()
+{
+	if (m_window)
+		SDL_SyncWindow(m_window);
+}
+
 void Environment::setWindowPos(int x, int y)
 {
 	SDL_SetWindowPosition(m_window, x, y);
@@ -595,9 +601,9 @@ void Environment::setMonitor(int monitor)
 		if (m_bFullscreen || m_bFullscreenWindowedBorderless)
 		{
 			disableFullscreen();
-			SDL_SyncWindow(m_window);
+			syncWindow();
 			success = SDL_SetWindowPosition(m_window, SDL_WINDOWPOS_CENTERED_DISPLAY(monitor), SDL_WINDOWPOS_CENTERED_DISPLAY(monitor));
-			SDL_SyncWindow(m_window);
+			syncWindow();
 			enableFullscreen();
 		}
 		else

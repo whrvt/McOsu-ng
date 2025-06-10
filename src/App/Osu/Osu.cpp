@@ -191,6 +191,11 @@ Osu::Osu()
 		steam->setRichPresence("status", "...");
 	}
 
+	// override BASS universal offset if soloud+bass are both available at once
+	if constexpr (Env::cfg(AUD::SOLOUD))
+		if (soundEngine->getTypeId() == SoundEngine::SOLOUD)
+			cv::osu::universal_offset_hardcoded.setValue(-0.0f);
+
 	env->setWindowResizable(false);
 
 	// generate default osu! appdata user path

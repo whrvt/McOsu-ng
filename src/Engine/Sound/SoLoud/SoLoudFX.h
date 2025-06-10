@@ -36,6 +36,7 @@ class SoundTouchFilterInstance;
  */
 class SoundTouchFilterInstance : public AudioSourceInstance
 {
+	friend class SLFXStream;
 public:
 	SoundTouchFilterInstance(SLFXStream *aParent);
 	~SoundTouchFilterInstance() override;
@@ -48,6 +49,8 @@ public:
 	result seek(time aSeconds, float *mScratch, unsigned int mScratchSize) override;
 	result rewind() override;
 
+	// accurate position tracking
+	[[nodiscard]] time getRealStreamPosition() const;
 private:
 	// buffer management
 	void ensureBufferSize(unsigned int samples);
@@ -61,15 +64,27 @@ private:
 
 	// buffer synchronization and positioning
 	void reSynchronize();
-	void setAutoOffset();
+	void updateSTLatency();
+
+	void requestSettingUpdate(float speed, float pitch);
 
 	// member variables
 	SLFXStream *mParent;                  // parent filter
 	AudioSourceInstance *mSourceInstance; // source instance to process
 	soundtouch::SoundTouch *mSoundTouch;  // soundtouch processor
 
-	float mSoundTouchSpeed; // currently set soundtouch parameters
+	// soundtouch setting cache for calculting offset trailing behind source stream
+	unsigned int mInitialSTLatencySamples;
+	unsigned int mSTOutputSequenceSamples;
+
+	// this is derived from the above, it doesn't change very often so it makes sense to keep it cached as well
+	double mSTLatencySeconds;
+
+	float mSoundTouchSpeed;
 	float mSoundTouchPitch;
+
+	// to be used to signal the instance that the soundtouch parameters need to be adjusted at the next best time
+	bool mNeedsSettingUpdate;
 
 	// buffers for format conversion
 	float *mBuffer;           // temporary read buffer from source (non-interleaved)
@@ -79,7 +94,7 @@ private:
 	unsigned int mInterleavedBufferSize; // size in samples
 
 	// debugging and tracking
-	unsigned int mProcessingCounter;     // counter for logspam avoidance
+	unsigned int mProcessingCounter; // counter for logspam avoidance
 };
 
 /**
@@ -115,6 +130,9 @@ public:
 	// utility methods
 	double getLength();
 
+	// accurate position access for active instance
+	time getRealStreamPosition() const;
+
 protected:
 	friend class SoundTouchFilterInstance;
 
@@ -123,6 +141,9 @@ protected:
 
 	// internal audio stream
 	std::unique_ptr<WavStream> mSource;
+
+	// track the active instance for position queries
+	mutable SoundTouchFilterInstance *mActiveInstance;
 };
 
 } // namespace SoLoud
