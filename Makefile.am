@@ -181,8 +181,7 @@ $(DEPS_PREFIX)/SoLoud.built: $(DEPS_CACHE)/SoLoud-$(SOLOUD_VERSION).source $(DEP
 	patch -Np1<$(abs_top_srcdir)/build/aux/soloud-rework-resampler.patch && \
 	patch -Np1<$(abs_top_srcdir)/build/aux/soloud-ffmpeg-fallback.patch && \
 	patch -Np1<$(abs_top_srcdir)/build/aux/soloud-use-cpp17-threads.patch && \
-	$(SED) -i -e 's|#define VOICE_COUNT 1024|#define VOICE_COUNT 4095|g' \
-			-e 's|#define SOLOUD_DEFAULT_RESAMPLER.*|#define SOLOUD_DEFAULT_RESAMPLER SoLoud::Soloud::RESAMPLER_CATMULLROM|g' include/soloud.h # raise max # concurrent voices from 1024 default to 4095 (hard limit)
+	$(SED) -i -e 's|#define VOICE_COUNT 1024|#define VOICE_COUNT 4095|g' include/soloud.h # raise max # concurrent voices from 1024 default to 4095 (hard limit)
 	cd $(DEPS_PREFIX)/SoLoud/build && \
 	$(SED) -i 's|"NoRTTI"$(comma)||g' genie.lua
 if WIN32_PLATFORM

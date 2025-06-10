@@ -304,6 +304,14 @@ void OsuUISongBrowserSongButton::onRightMouseUpInside()
 	triggerContextMenu(mouse->getPos());
 }
 
+void OsuUISongBrowserSongButton::onOpenBeatmapFolderClicked()
+{
+	const auto toOpen = m_representativeDatabaseBeatmap ? m_representativeDatabaseBeatmap : m_databaseBeatmap ? m_databaseBeatmap : nullptr;
+	if (!toOpen)
+		return;
+	env->openFileBrowser("beatmap folder", toOpen->getFolder());
+}
+
 void OsuUISongBrowserSongButton::triggerContextMenu(Vector2 pos)
 {
 	if (m_contextMenu != NULL)
@@ -312,10 +320,12 @@ void OsuUISongBrowserSongButton::triggerContextMenu(Vector2 pos)
 		m_contextMenu->setRelPos(pos);
 		m_contextMenu->begin(0, true);
 		{
-			if (m_databaseBeatmap != NULL && m_databaseBeatmap->getDifficulties().size() < 1)
-				m_contextMenu->addButton("[+]         Add to Collection", 1);
+			if (m_representativeDatabaseBeatmap || m_databaseBeatmap)
+				m_contextMenu->addButtonJustified("[...] Open Beatmap Folder", true, 0)->setClickCallback(fastdelegate::MakeDelegate(this, &OsuUISongBrowserSongButton::onOpenBeatmapFolderClicked));
 
-			m_contextMenu->addButton("[+Set]   Add to Collection", 2);
+			if (m_databaseBeatmap != NULL && m_databaseBeatmap->getDifficulties().size() < 1)
+				m_contextMenu->addButtonJustified("[+] Add to Collection", true, 1);
+			m_contextMenu->addButtonJustified("[+Set] Add to Collection", true, 2);
 
 			if (osu->getSongBrowser()->getGroupingMode() == OsuSongBrowser2::GROUP::GROUP_COLLECTIONS)
 			{
@@ -383,17 +393,16 @@ void OsuUISongBrowserSongButton::triggerContextMenu(Vector2 pos)
 					}
 				}
 
-				CBaseUIButton *spacer = m_contextMenu->addButton("---");
-				spacer->setTextLeft(false);
+				CBaseUIButton *spacer = m_contextMenu->addButtonJustified("---", false);
 				spacer->setEnabled(false);
 				spacer->setTextColor(0xff888888);
 				spacer->setTextDarkColor(0xff000000);
 
 				CBaseUIButton *removeDiffButton = NULL;
 				if (m_databaseBeatmap == NULL || m_databaseBeatmap->getDifficulties().size() < 1)
-					removeDiffButton = m_contextMenu->addButton("[-]          Remove from Collection", 3);
+					removeDiffButton = m_contextMenu->addButtonJustified("[-] Remove from Collection", true, 3);
 
-				CBaseUIButton *removeSetButton = m_contextMenu->addButton("[-Set]    Remove from Collection", 4);
+				CBaseUIButton *removeSetButton = m_contextMenu->addButtonJustified("[-Set] Remove from Collection", true, 4);
 
 				if (isLegacyEntry)
 				{
@@ -423,12 +432,11 @@ void OsuUISongBrowserSongButton::onContextMenu(UString text, int id)
 		{
 			const std::vector<OsuDatabase::Collection> &collections = osu->getSongBrowser()->getDatabase()->getCollections();
 
-			m_contextMenu->addButton("[+]   Create new Collection?", -id*2);
+			m_contextMenu->addButtonJustified("[+] Create new Collection?", true, -id*2);
 
 			if (collections.size() > 0)
 			{
-				CBaseUIButton *spacer = m_contextMenu->addButton("---");
-				spacer->setTextLeft(false);
+				CBaseUIButton *spacer = m_contextMenu->addButtonJustified("---", false);
 				spacer->setEnabled(false);
 				spacer->setTextColor(0xff888888);
 				spacer->setTextDarkColor(0xff000000);
@@ -516,7 +524,7 @@ void OsuUISongBrowserSongButton::onContextMenu(UString text, int id)
 						isContainerAndSetAlreadyContained = foundAllDiffs;
 					}
 
-					CBaseUIButton *collectionButton = m_contextMenu->addButton(collections[i].name, id);
+					CBaseUIButton *collectionButton = m_contextMenu->addButtonJustified(collections[i].name, false, id);
 
 					if (isDiffAndAlreadyContained || isContainerAndSetAlreadyContained)
 					{
@@ -616,26 +624,22 @@ void OsuUISongBrowserSongButton::onAddToCollectionConfirmed(UString text, int id
 	{
 		m_contextMenu->begin(0, true);
 		{
-			CBaseUIButton *label = m_contextMenu->addButton("Enter Collection Name:");
-			label->setTextLeft(false);
+			CBaseUIButton *label = m_contextMenu->addButtonJustified("Enter Collection Name:", false);
 			label->setEnabled(false);
 
-			CBaseUIButton *spacer = m_contextMenu->addButton("---");
-			spacer->setTextLeft(false);
+			CBaseUIButton *spacer = m_contextMenu->addButtonJustified("---", false);
 			spacer->setEnabled(false);
 			spacer->setTextColor(0xff888888);
 			spacer->setTextDarkColor(0xff000000);
 
 			m_contextMenu->addTextbox("", id);
 
-			spacer = m_contextMenu->addButton("---");
-			spacer->setTextLeft(false);
+			spacer = m_contextMenu->addButtonJustified("---", false);
 			spacer->setEnabled(false);
 			spacer->setTextColor(0xff888888);
 			spacer->setTextDarkColor(0xff000000);
 
-			label = m_contextMenu->addButton("(Press ENTER to confirm.)", id);
-			label->setTextLeft(false);
+			label = m_contextMenu->addButtonJustified("(Press ENTER to confirm.)", false, id);
 			label->setTextColor(0xff555555);
 			label->setTextDarkColor(0xff000000);
 		}

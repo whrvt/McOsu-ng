@@ -40,7 +40,9 @@ public:
 	void setClickCallback(ButtonClickCallback clickCallback) {m_clickCallback = clickCallback;}
 
 	void begin(int minWidth = 0, bool bigStyle = false);
-	OsuUIContextMenuButton *addButton(UString text, int id = -1);
+	OsuUIContextMenuButton *addButtonJustified(UString text, bool left = true, int id = -1);
+	inline OsuUIContextMenuButton *addButton(UString text, int id = -1) {return addButtonJustified(text, true, id);};
+
 	OsuUIContextMenuTextbox *addTextbox(UString text, int id = -1);
 
 	void end(bool invertAnimation, bool clampUnderflowAndOverflowAndEnableScrollingIfNecessary);

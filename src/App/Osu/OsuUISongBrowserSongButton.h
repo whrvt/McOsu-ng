@@ -87,6 +87,8 @@ private:
 
 	float m_fThumbnailFadeInTime;
 
+	void onOpenBeatmapFolderClicked();
+
 	void updateRepresentativeDatabaseBeatmap();
 
 	OsuDatabaseBeatmap *m_representativeDatabaseBeatmap;

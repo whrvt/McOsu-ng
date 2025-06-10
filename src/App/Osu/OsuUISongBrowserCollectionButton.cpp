@@ -105,15 +105,14 @@ void OsuUISongBrowserCollectionButton::triggerContextMenu(Vector2 pos)
 		m_contextMenu->setRelPos(pos);
 		m_contextMenu->begin(0, true);
 		{
-			CBaseUIButton *renameButton = m_contextMenu->addButton("[...]      Rename Collection", 1);
+			CBaseUIButton *renameButton = m_contextMenu->addButtonJustified("[...] Rename Collection", true, 1);
 
-			CBaseUIButton *spacer = m_contextMenu->addButton("---");
-			spacer->setTextLeft(false);
+			CBaseUIButton *spacer = m_contextMenu->addButtonJustified("---");
 			spacer->setEnabled(false);
 			spacer->setTextColor(0xff888888);
 			spacer->setTextDarkColor(0xff000000);
 
-			CBaseUIButton *deleteButton = m_contextMenu->addButton("[-]         Delete Collection", 2);
+			CBaseUIButton *deleteButton = m_contextMenu->addButtonJustified("[-] Delete Collection", true, 2);
 
 			if (isLegacyCollection)
 			{
@@ -153,26 +152,22 @@ void OsuUISongBrowserCollectionButton::onContextMenu(UString text, int id)
 		{
 			m_contextMenu->begin(0, true);
 			{
-				CBaseUIButton *label = m_contextMenu->addButton("Enter Collection Name:");
-				label->setTextLeft(false);
+				CBaseUIButton *label = m_contextMenu->addButtonJustified("Enter Collection Name:", false);
 				label->setEnabled(false);
 
-				CBaseUIButton *spacer = m_contextMenu->addButton("---");
-				spacer->setTextLeft(false);
+				CBaseUIButton *spacer = m_contextMenu->addButtonJustified("---", false);
 				spacer->setEnabled(false);
 				spacer->setTextColor(0xff888888);
 				spacer->setTextDarkColor(0xff000000);
 
 				m_contextMenu->addTextbox(m_sCollectionName, id)->setCursorPosRight();
 
-				spacer = m_contextMenu->addButton("---");
-				spacer->setTextLeft(false);
+				spacer = m_contextMenu->addButtonJustified("---", false);
 				spacer->setEnabled(false);
 				spacer->setTextColor(0xff888888);
 				spacer->setTextDarkColor(0xff000000);
 
-				label = m_contextMenu->addButton("(Press ENTER to confirm.)", id);
-				label->setTextLeft(false);
+				label = m_contextMenu->addButtonJustified("(Press ENTER to confirm.)", false, id);
 				label->setTextColor(0xff555555);
 				label->setTextDarkColor(0xff000000);
 			}
@@ -194,14 +189,13 @@ void OsuUISongBrowserCollectionButton::onContextMenu(UString text, int id)
 			{
 				m_contextMenu->begin(0, true);
 				{
-					m_contextMenu->addButton("Really delete collection?")->setEnabled(false);
-					CBaseUIButton *spacer = m_contextMenu->addButton("---");
-					spacer->setTextLeft(false);
+					m_contextMenu->addButtonJustified("Really delete collection?", false)->setEnabled(false);
+					CBaseUIButton *spacer = m_contextMenu->addButtonJustified("---", false);
 					spacer->setEnabled(false);
 					spacer->setTextColor(0xff888888);
 					spacer->setTextDarkColor(0xff000000);
-					m_contextMenu->addButton("Yes", 2)->setTextLeft(false);
-					m_contextMenu->addButton("No")->setTextLeft(false);
+					m_contextMenu->addButtonJustified("Yes", false, 2);
+					m_contextMenu->addButtonJustified("No", false);
 				}
 				m_contextMenu->end(false, false);
 				m_contextMenu->setClickCallback( fastdelegate::MakeDelegate(this, &OsuUISongBrowserCollectionButton::onDeleteCollectionConfirmed) );

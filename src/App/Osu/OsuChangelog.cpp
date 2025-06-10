@@ -40,6 +40,7 @@ OsuChangelog::OsuChangelog() : OsuScreenBackable()
 	alpha3400.changes.emplace_back("- First " PACKAGE_NAME " test version bump");
 	alpha3400.changes.emplace_back("- Added osu! folder browse button to options menu");
 	alpha3400.changes.emplace_back(R"(- Added "Open current skin folder" button to options menu)");
+	alpha3400.changes.emplace_back(R"(- Added "Open Beatmap Folder" button to beatmap right click menu)");
 	alpha3400.changes.emplace_back("- Added \"snd_buffer\" ConVar to set BASS buffer size");
 	alpha3400.changes.emplace_back("- Added support for DX11 on Linux with dxvk-native (not currently in the default build)");
 	alpha3400.changes.emplace_back("- Added the cross-platform SoLoud audio backend in preparation for a WASM release");

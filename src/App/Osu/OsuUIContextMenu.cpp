@@ -212,7 +212,7 @@ void OsuUIContextMenu::begin(int minWidth, bool bigStyle)
 	m_containedTextbox = NULL;
 }
 
-OsuUIContextMenuButton *OsuUIContextMenu::addButton(UString text, int id)
+OsuUIContextMenuButton *OsuUIContextMenu::addButtonJustified(UString text, bool left, int id)
 {
 	const int buttonHeight = 30 * Osu::getUIScale() * (m_bBigStyle ? 1.27f : 1.0f);
 	const int margin = 9 * Osu::getUIScale();
@@ -224,7 +224,7 @@ OsuUIContextMenuButton *OsuUIContextMenu::addButton(UString text, int id)
 
 		button->setClickCallback( fastdelegate::MakeDelegate(this, &OsuUIContextMenu::onClick) );
 		button->setWidthToContent(3 * Osu::getUIScale());
-		button->setTextLeft(true);
+		button->setTextLeft(left);
 		button->setDrawFrame(false);
 		button->setDrawBackground(false);
 	}
