@@ -53,7 +53,7 @@ class ConVar;
 class Image;
 class McFont;
 class RenderTarget;
-
+class McRect;
 
 class Osu final : public AppBase, public MouseListener
 {
@@ -129,9 +129,10 @@ public:
 
 	[[nodiscard]] inline GAMEMODE getGamemode() const {return m_gamemode;}
 
-	[[nodiscard]] constexpr const Vector2 &getVirtScreenSize() const {return g_vInternalResolution;}
-	[[nodiscard]] inline int getVirtScreenWidth() const {return (int)g_vInternalResolution.x;}
-	[[nodiscard]] inline int getVirtScreenHeight() const {return (int)g_vInternalResolution.y;}
+	[[nodiscard]] constexpr const Vector2 &getVirtScreenSize() const override {return g_vInternalResolution;}
+	[[nodiscard]] McRect getVirtScreenRectWithinEngineRect() const override;
+	[[nodiscard]] inline int getVirtScreenWidth() const override {return (int)g_vInternalResolution.x;}
+	[[nodiscard]] inline int getVirtScreenHeight() const override {return (int)g_vInternalResolution.y;}
 
 	OsuBeatmap *getSelectedBeatmap();
 

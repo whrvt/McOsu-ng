@@ -10,7 +10,7 @@
 #define APP_H
 
 #include "KeyboardListener.h"
-#include "Vectors.h"
+#include "Rect.h"
 
 class Engine;
 
@@ -23,6 +23,11 @@ public:
 	virtual void draw() { ; }
 	virtual void update() { ; }
 	virtual bool isInCriticalInteractiveSession() { return false; }
+
+	[[nodiscard]] virtual const Vector2 &getVirtScreenSize() const {static Vector2 dummyres{1920,1080}; return dummyres;}
+	[[nodiscard]] virtual McRect getVirtScreenRectWithinEngineRect() const {return {};};
+	[[nodiscard]] virtual int getVirtScreenWidth() const {return 1920;}
+	[[nodiscard]] virtual int getVirtScreenHeight() const {return 1080;}
 
 	void onKeyDown(KeyboardEvent & /*ev*/) override { ; }
 	void onKeyUp(KeyboardEvent & /*ev*/) override { ; }

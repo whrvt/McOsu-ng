@@ -43,8 +43,6 @@
 #include "CBaseUIContainer.h"
 #include "CBaseUIButton.h"
 
-#include "DirectX11Interface.h"
-
 static constexpr auto MCOSU_VERSION_TEXT = "Version";
 static constexpr auto MCOSU_BANNER_TEXT = "";
 
@@ -394,6 +392,7 @@ OsuMainMenu::OsuMainMenu() : OsuScreen()
 	m_versionButton->setDrawBackground(false);
 	m_versionButton->setDrawFrame(false);
 	m_versionButton->setClickCallback( fastdelegate::MakeDelegate(this, &OsuMainMenu::onVersionPressed) );
+	m_versionButton->setVisible(true);
 	m_container->addBaseUIElement(m_versionButton);
 
 	m_mainMenuSliderTextDatabaseBeatmap = NULL;

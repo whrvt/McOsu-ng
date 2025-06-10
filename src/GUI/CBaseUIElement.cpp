@@ -46,7 +46,10 @@ CBaseUIElement::CBaseUIElement(float xPos, float yPos, float xSize, float ySize,
 
 bool CBaseUIElement::isVisibleOnScreen()
 {
-	return isVisible() && engine->getScreenRect().contains({m_vPos.x + 1, m_vPos.y + 1});
+	const McRect visrect{{0,0},engine->getScreenSize()};
+	const Vector2 visrectCenter{visrect.getCenter()};
+	const Vector2 elemPosNudgedIn{Vector2{m_vPos.x, m_vPos.y}.nudge(visrectCenter, -5.0f)};
+	return isVisible() && visrect.contains(elemPosNudgedIn);
 }
 
 void CBaseUIElement::update()

@@ -223,6 +223,9 @@ void BassSound::setPosition(double percent)
 
 	updatePlayInterpolationTime(lengthInSeconds * percent);
 
+	if (cv::debug_snd.getBool())
+		debugLog("seeking to {:.2f} percent (position: {}ms, length: {}ms)\n", percent, (lengthInSeconds * percent) * 1000.0, getLengthMS());
+
 	const BOOL res = BASS_ChannelSetPosition(handle, (QWORD)((double)(length)*percent), BASS_POS_BYTE);
 	if (!res && cv::debug_snd.getBool())
 		debugLog("position {:f} BASS_ChannelSetPosition() error {} on file {:s} (handle: {})\n", percent, BASS_ErrorGetCode(), m_sFilePath, handle);
@@ -237,6 +240,9 @@ void BassSound::setPositionMS(unsigned long ms)
 	const QWORD position = BASS_ChannelSeconds2Bytes(handle, ms / 1000.0);
 
 	updatePlayInterpolationTime((double)ms / 1000.0);
+
+	if (cv::debug_snd.getBool())
+		debugLog("seeking to {}ms (length: {}ms)\n", ms, getLengthMS());
 
 	const BOOL res = BASS_ChannelSetPosition(handle, position, BASS_POS_BYTE);
 	if (!res && cv::debug_snd.getBool())

@@ -1760,7 +1760,17 @@ void Osu::onPlayEnd(bool quit)
 	updateWindowsKeyDisable();
 }
 
-
+McRect Osu::getVirtScreenRectWithinEngineRect() const
+{
+	float offsetX = 0;
+	float offsetY = 0;
+	if (cv::osu::letterboxing.getBool())
+	{
+		offsetX = ((static_cast<float>(engine->getScreenWidth()) - g_vInternalResolution.x)/2.0f)*(1.0f + cv::osu::letterboxing_offset_x.getFloat());
+		offsetY = ((static_cast<float>(engine->getScreenHeight()) - g_vInternalResolution.y)/2.0f)*(1.0f + cv::osu::letterboxing_offset_y.getFloat());
+	}
+	return {offsetX, offsetY, offsetX + g_vInternalResolution.x, offsetY + g_vInternalResolution.y};
+}
 
 OsuBeatmap *Osu::getSelectedBeatmap()
 {
