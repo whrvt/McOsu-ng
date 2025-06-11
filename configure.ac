@@ -82,6 +82,12 @@ AC_DEFUN([AC_PROG_UNZIP], [
         AC_MSG_ERROR([unzip not found - required for extracting dependencies])
     fi
 ])
+AC_DEFUN([AC_PROG_PATCHELF], [
+    AC_CHECK_PROG([PATCHELF], [patchelf], [patchelf])
+    if test -z "$PATCHELF"; then
+        AC_MSG_ERROR([patchelf not found - required for fixing up dependencies])
+    fi
+])
 # needed for building SoLoud (if enabled)
 AC_DEFUN([AC_PROG_GENIE], [
     AC_CHECK_PROG([GENIE], [genie], [genie])
@@ -106,6 +112,7 @@ AC_PROG_NINJA
 AC_PROG_UNZIP
 AC_PROG_MESON
 AC_PROG_CMAKE
+AC_PROG_PATCHELF
 
 AC_ARG_ENABLE([optimize],
     AS_HELP_STRING([--enable-optimize], [Optimize for speed (default: yes)]))

@@ -14,7 +14,8 @@ autoreconf
 make -j$(nproc) install
 
 # symlinks turn into copies in .zip files for GHA artifacts, so we need to make a zip of the zip...
-zip -r -y -8 bin.zip bin-*/
-rm -rf bin-*/
+zip -r -y -8 bin.zip ./dist/bin-*/
+rm -rf dist/*
+mv bin.zip dist/
 
 echo "Done!"

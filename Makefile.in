@@ -662,6 +662,7 @@ PACKAGE_STRING = @PACKAGE_STRING@
 PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
+PATCHELF = @PATCHELF@
 PATH_SEPARATOR = @PATH_SEPARATOR@
 PKGCONF = @PKGCONF@
 PKGTYPE = @PKGTYPE@
@@ -5380,13 +5381,15 @@ install-libs:
 @BUILD_ZLIB_TRUE@	$(if $(STATICBUILD),,@`find $(ZLIB_PREFIX) '(' -iname '*libz-*'$(DLLEXT) -o -iname '*libz*''.so.*' ')' -exec cp -P '{''}' "$(DESTDIR)$(bindir)/$(LIBDEST)" ';'`)
 @BUILD_FREETYPE2_TRUE@	$(if $(STATICBUILD),,@`find $(FREETYPE2_PREFIX) '(' -iname '*freetype*'$(DLLEXT) -o -iname '*freetype*''.so.*' ')' -exec cp -P '{''}' "$(DESTDIR)$(bindir)/$(LIBDEST)" ';'`)
 @BUILD_FMT_TRUE@	$(if $(STATICBUILD),,@`find $(FMT_PREFIX) '(' -iname '*fmt*'$(DLLEXT) -o -iname '*fmt*''.so.*' ')' -exec cp -P '{''}' "$(DESTDIR)$(bindir)/$(LIBDEST)" ';'`)
+@STRIPBINS_TRUE@	find "$(DESTDIR)$(bindir)" -name '*'$(DLLEXT)'*' -execdir $(STRIP) -s '{''}' '+'
+@WIN_PLATFORM_FALSE@	find "$(DESTDIR)$(bindir)/lib" -maxdepth 1 -name '*'.so'*' -execdir $(PATCHELF) --set-rpath '$$ORIGIN:$$ORIGIN/../' '{''}' ';'
+@WIN_PLATFORM_FALSE@	find "$(DESTDIR)$(bindir)" -maxdepth 1 -name '*'.so'*' -execdir $(PATCHELF) --set-rpath '$$ORIGIN:$$ORIGIN/lib' '{''}' ';'
 
 # install hooks
 install-exec-hook: install-libs
 @WIN_PLATFORM_FALSE@	cd "$(DESTDIR)$(bindir)" && \
 @WIN_PLATFORM_FALSE@	$(LN_S) -rf $(PROGRAMS) McEngine && \
 @WIN_PLATFORM_FALSE@	$(LN_S) -rf $(PROGRAMS) McOsu
-@STRIPBINS_TRUE@	find "$(DESTDIR)$(bindir)" -name '*'$(DLLEXT)'*' -execdir $(STRIP) -s '{''}' '+'
 
 uninstall-local:
 	rm -rf "$(DESTDIR)$(bindir)/"
