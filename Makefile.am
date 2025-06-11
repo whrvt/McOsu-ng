@@ -567,11 +567,14 @@ install-libs:
 	$(INSTALL) -dm 755 "$(DESTDIR)$(bindir)/$(LIBDEST)"
 	$(INSTALL) -dm 755 "$(DESTDIR)$(bindir)/fonts"
 	$(INSTALL) -dm 755 "$(DESTDIR)$(bindir)/materials"
+	$(INSTALL) -dm 755 "$(DESTDIR)$(bindir)/materials/default"
 	$(INSTALL) -dm 755 "$(DESTDIR)$(bindir)/models"
 	$(INSTALL) -dm 755 "$(DESTDIR)$(bindir)/cfg"
 	find $(srcdir)/$(ASSETS_DIR)/models -type f -exec $(INSTALL) -Dm 644 '{''}' "$(DESTDIR)$(bindir)/models" ';'
 	find $(srcdir)/$(ASSETS_DIR)/shaders -type f -exec $(INSTALL) -Dm 644 '{''}' "$(DESTDIR)$(bindir)/shaders" ';'
 	find $(srcdir)/$(ASSETS_DIR)/fonts -type f -exec $(INSTALL) -Dm 644 '{''}' "$(DESTDIR)$(bindir)/fonts" ';'
+	find $(srcdir)/$(ASSETS_DIR)/materials -mindepth 1 -maxdepth 1 -type f -exec $(INSTALL) -Dm 644 '{''}' "$(DESTDIR)$(bindir)/materials" ';'
+	find $(srcdir)/$(ASSETS_DIR)/materials/default -mindepth 1 -maxdepth 1 -type f -exec $(INSTALL) -Dm 644 '{''}' "$(DESTDIR)$(bindir)/materials/default" ';'
 	find $(srcdir)/$(ASSETS_DIR)/cfg -type f -exec $(INSTALL) -Dm 644 '{''}' "$(DESTDIR)$(bindir)/cfg" ';'
 if WIN_PLATFORM
 if BUILD_MIMALLOC
@@ -657,6 +660,7 @@ endif
 	cp -r $(srcdir)/$(ASSETS_DIR)/models $(distdir)/
 	cp -r $(srcdir)/$(ASSETS_DIR)/shaders $(distdir)/
 	cp -r $(srcdir)/$(ASSETS_DIR)/fonts $(distdir)/
+	cp -r $(srcdir)/$(ASSETS_DIR)/materials $(distdir)/
 	cp -r $(srcdir)/$(ASSETS_DIR)/cfg $(distdir)/
 	find $(distdir) -type f -name ".git*" -delete
 	find $(distdir) -type f -name "*.a" -delete
@@ -668,6 +672,7 @@ EXTRA_DIST := \
 	$(ASSETS_DIR)/models \
 	$(ASSETS_DIR)/shaders \
 	$(ASSETS_DIR)/fonts \
+	$(ASSETS_DIR)/materials \
 	$(ASSETS_DIR)/cfg \
 	autogen.sh
 

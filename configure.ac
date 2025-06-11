@@ -761,6 +761,14 @@ AS_IF([test -d "$srcdir/$ASSETS_DIR/fonts"], [
     AC_MSG_ERROR([McOsu-ng fonts are missing!])
 ])
 
+AC_MSG_CHECKING([for default material assets in $srcdir/$ASSETS_DIR/materials])
+AS_IF([test -d "$srcdir/$ASSETS_DIR/materials"], [
+    AC_MSG_RESULT([yes])
+], [
+    AC_MSG_RESULT([no])
+    AC_MSG_ERROR([McOsu-ng material assets are missing!])
+])
+
 AC_MSG_CHECKING([for src/Makefile.sources])
 AS_IF([test -f "$srcdir/src/Makefile.sources"], [
     AC_MSG_RESULT([yes])
