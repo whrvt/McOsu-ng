@@ -15,7 +15,7 @@ jobs:
       - id: set-matrix
         run: |
           if [[ "${{ github.event_name }}" == "workflow_dispatch" || "${{ github.ref }}" == "refs/heads/master" ]]; then
-            echo "matrix={\"arch\":[\"x64\",\"x32\"],\"include\":[{\"arch\":\"x64\",\"host\":\"x86_64-w64-mingw32\"},{\"arch\":\"x32\",\"host\":\"i686-w64_mingw32\"}]}" >> $GITHUB_OUTPUT
+            echo "matrix={\"arch\":[\"x64\",\"x32\"],\"include\":[{\"arch\":\"x64\",\"host\":\"x86_64-w64-mingw32\"},{\"arch\":\"x32\",\"host\":\"i686-w64-mingw32\"}]}" >> $GITHUB_OUTPUT
           else
             echo "matrix={\"arch\":[\"x64\"],\"include\":[{\"arch\":\"x64\",\"host\":\"x86_64-w64-mingw32\"}]}" >> $GITHUB_OUTPUT
           fi

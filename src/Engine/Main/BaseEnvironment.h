@@ -223,14 +223,15 @@ static constexpr auto OPTIMAL_UNROLL = 4;
 typedef void* HWND;
 #else
 
+// umm what the fuck
+#if defined(_MSC_VER)
+
 #ifdef _WIN64
 #define _AMD64_
 #elif defined(_WIN32)
 #define _X86_
 #endif
 
-// umm what the fuck
-#if defined(_MSC_VER)
 #define NOMINMAX
 #endif
 #define VC_EXTRALEAN

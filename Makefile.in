@@ -96,8 +96,8 @@ bin_PROGRAMS = McOsu-ng$(EXEEXT)
 @BUILD_SDL3_TRUE@am__append_2 = $(shell $(PKG_CONFIG) --libs sdl3)
 @USE_SDLMIXER_TRUE@am__append_3 = $(shell $(PKG_CONFIG) --cflags sdl3-mixer)
 @USE_SDLMIXER_TRUE@am__append_4 = $(shell $(PKG_CONFIG) --libs sdl3-mixer)
-@USE_SOLOUD_TRUE@am__append_5 = $(shell $(PKG_CONFIG) --cflags soundtouch) -DST_NO_EXCEPTION_HANDLING
-@USE_SOLOUD_TRUE@am__append_6 = -L$(DEPS_PREFIX)/lib -lsoloud_static_x$(if $(filter x86_64,$(host_cpu)),64,$(if $(findstring linux,$(host_os)),32,86))$(if $(ENABLE_DEBUG),_d,) $(shell $(PKG_CONFIG) --libs soundtouch)
+@USE_SOLOUD_TRUE@am__append_5 = $(shell $(PKG_CONFIG) --cflags soundtouch) -DST_NO_EXCEPTION_HANDLING $(if $(and $(filter i686,$(host_cpu)),$(DISABLE_NATIVE)),-DSOUNDTOUCH_DISABLE_X86_OPTIMIZATIONS,)
+@USE_SOLOUD_TRUE@am__append_6 = -L$(DEPS_PREFIX)/lib -lsoloud_static_x$(if $(filter x86_64,$(host_cpu)),64,86)$(if $(ENABLE_DEBUG),_d,) $(shell $(PKG_CONFIG) --libs soundtouch)
 @BUILD_LIBJPEG_TRUE@am__append_7 = $(shell $(PKG_CONFIG) --cflags libturbojpeg)
 @BUILD_LIBJPEG_TRUE@am__append_8 = $(shell $(PKG_CONFIG) --libs libturbojpeg)
 @BUILD_GLM_TRUE@am__append_9 = -I$(DEPS_PREFIX)/include
@@ -4968,41 +4968,19 @@ $(DEPS_CACHE)/SoundTouch-$(SOUNDTOUCH_VERSION).source:
 @USE_SOLOUD_TRUE@	patch -Np1<$(abs_top_srcdir)/build/aux/soloud-use-cpp17-threads.patch && \
 @USE_SOLOUD_TRUE@	$(SED) -i -e 's|#define VOICE_COUNT 1024|#define VOICE_COUNT 4095|g' include/soloud.h # raise max # concurrent voices from 1024 default to 4095 (hard limit)
 @USE_SOLOUD_TRUE@	cd $(DEPS_PREFIX)/SoLoud/build && \
-@USE_SOLOUD_TRUE@	$(SED) -i 's|"NoRTTI"$(comma)||g' genie.lua
-@USE_SOLOUD_TRUE@@WIN32_PLATFORM_TRUE@	cd $(DEPS_PREFIX)/SoLoud/build && \
-@USE_SOLOUD_TRUE@@WIN32_PLATFORM_TRUE@	PKG_CONFIG="$(PKG_CONFIG) --static" CC="$(CC)" CXX="$(CXX)" LD="$(LD)" CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS)" \
-@USE_SOLOUD_TRUE@@WIN32_PLATFORM_TRUE@	$(GENIE) --with-miniaudio-only \
-@USE_SOLOUD_TRUE@@WIN32_PLATFORM_TRUE@			 --with-sdl3static-only \
-@USE_SOLOUD_TRUE@@WIN32_PLATFORM_TRUE@			 --platform=x32 \
-@USE_SOLOUD_TRUE@@WIN32_PLATFORM_TRUE@			 --os=windows \
-@USE_SOLOUD_TRUE@@WIN32_PLATFORM_TRUE@			 gmake && \
-@USE_SOLOUD_TRUE@@WIN32_PLATFORM_TRUE@	cd gmake && $(SED) -i -e 's|^CC.*=.*||g' -e 's|^AR.*=.*||g' -e 's|^CXX.*=.*||g' SoloudStatic.make && \
-@USE_SOLOUD_TRUE@@WIN32_PLATFORM_TRUE@	PKG_CONFIG="$(PKG_CONFIG) --static" CC="$(CC)" CXX="$(CXX)" LD="$(LD)" CFLAGS="$(SDL3_CFLAGS) $(CFLAGS)" CXXFLAGS="$(SDL3_CFLAGS) $(CXXFLAGS)" LDFLAGS="$(LDFLAGS)" \
-@USE_SOLOUD_TRUE@@WIN32_PLATFORM_TRUE@	PREFIX="$(DEPS_PREFIX)" RANLIB="$(RANLIB)" AR="$(AR)" config="$(if $(ENABLE_DEBUG),debug,release)" make SoloudStatic && \
-@USE_SOLOUD_TRUE@@WIN32_PLATFORM_TRUE@	cp $(DEPS_PREFIX)/SoLoud/lib/libsoloud_static_x86$(if $(ENABLE_DEBUG),_d,).a $(DEPS_PREFIX)/lib/
-@USE_SOLOUD_TRUE@@WIN32_PLATFORM_FALSE@	cd $(DEPS_PREFIX)/SoLoud/build && \
-@USE_SOLOUD_TRUE@@WIN32_PLATFORM_FALSE@	PKG_CONFIG="$(PKG_CONFIG) --static" CC="$(CC)" CXX="$(CXX)" LD="$(LD)" CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS)" \
-@USE_SOLOUD_TRUE@@WIN32_PLATFORM_FALSE@	$(GENIE) --with-miniaudio-only \
-@USE_SOLOUD_TRUE@@WIN32_PLATFORM_FALSE@			 --with-sdl3static-only \
-@USE_SOLOUD_TRUE@@WIN32_PLATFORM_FALSE@			 --platform=x$(if $(filter x86_64,$(host_cpu)),64,32) \
-@USE_SOLOUD_TRUE@@WIN32_PLATFORM_FALSE@			 --os=$(if $(findstring linux,$(host_os)),linux,windows) \
-@USE_SOLOUD_TRUE@@WIN32_PLATFORM_FALSE@			 cmake && \
-@USE_SOLOUD_TRUE@@WIN32_PLATFORM_FALSE@	cd cmake && printf '%s\n%s' "cmake_minimum_required(VERSION 3.15)" "add_subdirectory(SoloudStatic)" > CMakeLists.txt && \
-@USE_SOLOUD_TRUE@@WIN32_PLATFORM_FALSE@	PKG_CONFIG="$(PKG_CONFIG) --static" CC="$(CC)" CXX="$(CXX)" LD="$(LD)" CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS)" \
-@USE_SOLOUD_TRUE@@WIN32_PLATFORM_FALSE@	cmake -S . -B build -G Ninja \
-@USE_SOLOUD_TRUE@@WIN32_PLATFORM_FALSE@		-D CMAKE_BUILD_TYPE="$(if $(ENABLE_DEBUG),Debug,Release)" \
-@USE_SOLOUD_TRUE@@WIN32_PLATFORM_FALSE@		-D CMAKE_INSTALL_PREFIX="$(DEPS_PREFIX)" \
-@USE_SOLOUD_TRUE@@WIN32_PLATFORM_FALSE@		-D CMAKE_SYSTEM_NAME="$(CMAKE_SYSTEM_NAME)" \
-@USE_SOLOUD_TRUE@@WIN32_PLATFORM_FALSE@		-D CMAKE_SYSTEM_PROCESSOR="$(host_cpu)" \
-@USE_SOLOUD_TRUE@@WIN32_PLATFORM_FALSE@		-D CMAKE_C_COMPILER="$(CC)" \
-@USE_SOLOUD_TRUE@@WIN32_PLATFORM_FALSE@		$(CMAKERCOPT) \
-@USE_SOLOUD_TRUE@@WIN32_PLATFORM_FALSE@		-D CMAKE_C_FLAGS="$(SDL3_CFLAGS) $(CFLAGS)" \
-@USE_SOLOUD_TRUE@@WIN32_PLATFORM_FALSE@		-D CMAKE_CXX_COMPILER="$(CXX)" \
-@USE_SOLOUD_TRUE@@WIN32_PLATFORM_FALSE@		-D CMAKE_CXX_FLAGS="$(SDL3_CFLAGS) $(CXXFLAGS)" && \
-@USE_SOLOUD_TRUE@@WIN32_PLATFORM_FALSE@	cmake --build build && \
-@USE_SOLOUD_TRUE@@WIN32_PLATFORM_FALSE@	cmake --install build 
+@USE_SOLOUD_TRUE@	$(SED) -i 's|"NoRTTI"$(comma)||g' genie.lua && \
+@USE_SOLOUD_TRUE@	PKG_CONFIG="$(PKG_CONFIG) --static" CC="$(CC)" CXX="$(CXX)" LD="$(LD)" CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS)" \
+@USE_SOLOUD_TRUE@	$(GENIE) --with-miniaudio-only \
+@USE_SOLOUD_TRUE@			 --with-sdl3static-only \
+@USE_SOLOUD_TRUE@			 --platform=x$(if $(filter x86_64,$(host_cpu)),64,32) \
+@USE_SOLOUD_TRUE@			 --os=$(if $(findstring linux,$(host_os)),linux,windows) \
+@USE_SOLOUD_TRUE@			 gmake && \
+@USE_SOLOUD_TRUE@	cd gmake && $(SED) -i -e 's|^CC.*=.*||g' -e 's|^AR.*=.*||g' -e 's|^CXX.*=.*||g' SoloudStatic.make && \
+@USE_SOLOUD_TRUE@	PKG_CONFIG="$(PKG_CONFIG) --static" CC="$(CC)" CXX="$(CXX)" LD="$(LD)" CFLAGS="$(SDL3_CFLAGS) $(CFLAGS)" CXXFLAGS="$(SDL3_CFLAGS) $(CXXFLAGS)" LDFLAGS="$(LDFLAGS)" \
+@USE_SOLOUD_TRUE@	PREFIX="$(DEPS_PREFIX)" RANLIB="$(RANLIB)" AR="$(AR)" config="$(if $(ENABLE_DEBUG),debug,release)" make SoloudStatic && \
+@USE_SOLOUD_TRUE@	cp $(DEPS_PREFIX)/SoLoud/lib/libsoloud_static_x$(if $(filter x86_64,$(host_cpu)),64,86)$(if $(ENABLE_DEBUG),_d,).a $(DEPS_PREFIX)/lib/
 @USE_SOLOUD_TRUE@	cp -r $(DEPS_PREFIX)/SoLoud/include/* $(DEPS_PREFIX)/include/soloud/ && \
-@USE_SOLOUD_TRUE@	test -f $(DEPS_PREFIX)/lib/libsoloud_static_x$(if $(filter x86_64,$(host_cpu)),64,$(if $(findstring linux,$(host_os)),32,86))$(if $(ENABLE_DEBUG),_d,).a
+@USE_SOLOUD_TRUE@	test -f $(DEPS_PREFIX)/lib/libsoloud_static_x$(if $(filter x86_64,$(host_cpu)),64,86)$(if $(ENABLE_DEBUG),_d,).a
 @USE_SOLOUD_TRUE@	touch $@
 
 @USE_SOLOUD_TRUE@$(DEPS_PREFIX)/SoundTouch.built: $(DEPS_CACHE)/SoundTouch-$(SOUNDTOUCH_VERSION).source
@@ -5017,9 +4995,9 @@ $(DEPS_CACHE)/SoundTouch-$(SOUNDTOUCH_VERSION).source:
 @USE_SOLOUD_TRUE@		-D CMAKE_SYSTEM_NAME="$(CMAKE_SYSTEM_NAME)" \
 @USE_SOLOUD_TRUE@		-D CMAKE_SYSTEM_PROCESSOR="$(host_cpu)" \
 @USE_SOLOUD_TRUE@		-D CMAKE_C_COMPILER="$(CC)" \
-@USE_SOLOUD_TRUE@		-D CMAKE_C_FLAGS="$(CFLAGS) -DST_NO_EXCEPTION_HANDLING" \
+@USE_SOLOUD_TRUE@		-D CMAKE_C_FLAGS="$(CFLAGS) -DST_NO_EXCEPTION_HANDLING $(if $(and $(filter i686,$(host_cpu)),$(DISABLE_NATIVE)),-DSOUNDTOUCH_DISABLE_X86_OPTIMIZATIONS,)" \
 @USE_SOLOUD_TRUE@		-D CMAKE_CXX_COMPILER="$(CXX)" \
-@USE_SOLOUD_TRUE@		-D CMAKE_CXX_FLAGS="$(CXXFLAGS) -DST_NO_EXCEPTION_HANDLING" \
+@USE_SOLOUD_TRUE@		-D CMAKE_CXX_FLAGS="$(CXXFLAGS) -DST_NO_EXCEPTION_HANDLING $(if $(and $(filter i686,$(host_cpu)),$(DISABLE_NATIVE)),-DSOUNDTOUCH_DISABLE_X86_OPTIMIZATIONS,)" \
 @USE_SOLOUD_TRUE@		$(CMAKERCOPT) \
 @USE_SOLOUD_TRUE@		-D SOUNDSTRETCH=OFF \
 @USE_SOLOUD_TRUE@		-D SOUNDTOUCH_DLL=OFF \
