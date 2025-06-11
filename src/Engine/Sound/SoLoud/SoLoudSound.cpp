@@ -16,6 +16,11 @@
 #include "File.h"
 #include "ResourceManager.h"
 
+namespace cv
+{
+	ConVar snd_soloud_prefer_ffmpeg("snd_soloud_prefer_ffmpeg", false, FCVAR_NONE, "prioritize using ffmpeg as a decoder (if available) over other decoder backends");
+}
+
 SoLoudSound::SoLoudSound(UString filepath, bool stream, bool threeD, bool loop, bool prescan)
     : Sound(filepath, stream, threeD, loop, prescan),
       m_handle(0),
@@ -93,7 +98,7 @@ void SoLoudSound::initAsync()
 	if (m_bStream)
 	{
 		// use SLFXStream for streaming audio (music, etc.) includes rate/pitch processing like BASS_FX_TempoCreate
-		auto *stream = new SoLoud::SLFXStream();
+		auto *stream = new SoLoud::SLFXStream(cv::snd_soloud_prefer_ffmpeg.getBool());
 
 		// use loadToMem for streaming to handle unicode paths on windows
 		if constexpr (Env::cfg(OS::WINDOWS))
@@ -123,7 +128,7 @@ void SoLoudSound::initAsync()
 	else
 	{
 		// use Wav for non-streaming audio (hit sounds, effects, etc.)
-		auto *wav = new SoLoud::Wav();
+		auto *wav = new SoLoud::Wav(cv::snd_soloud_prefer_ffmpeg.getBool());
 
 		if constexpr (Env::cfg(OS::WINDOWS))
 			result = wav->loadMem(reinterpret_cast<const unsigned char *>(fileData), fileSize, true, false);

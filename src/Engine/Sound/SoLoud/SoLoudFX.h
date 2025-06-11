@@ -107,7 +107,7 @@ private:
 class SLFXStream : public AudioSource
 {
 public:
-	SLFXStream();
+	SLFXStream(bool preferFFmpeg = false);
 	~SLFXStream() override;
 
 	// SoundTouch control interface

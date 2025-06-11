@@ -199,6 +199,9 @@ extern ConVar snd_chunk_size;
 // from Shader.cpp
 extern ConVar debug_shaders;
 
+// from SoLoudSound.cpp
+extern ConVar snd_soloud_prefer_ffmpeg;
+
 // from SoLoudSoundEngine.cpp
 extern ConVar snd_sanity_simultaneous_limit;
 extern ConVar snd_soloud_backend;

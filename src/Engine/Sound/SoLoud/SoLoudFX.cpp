@@ -37,10 +37,10 @@ namespace SoLoud
 // SLFXStream (WavStream + SoundTouch wrapper) implementation
 //-------------------------------------------------------------------------
 
-SLFXStream::SLFXStream()
+SLFXStream::SLFXStream(bool preferFFmpeg)
     : mSpeedFactor(1.0f),
       mPitchFactor(1.0f),
-      mSource(std::make_unique<WavStream>()),
+      mSource(std::make_unique<WavStream>(preferFFmpeg)),
       mActiveInstance(nullptr)
 {
 	ST_DEBUG_LOG("SoundTouchFilter: Constructor called\n");
