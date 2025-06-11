@@ -13,6 +13,8 @@ autoreconf
 ./configure --disable-system-deps --enable-static --disable-native --with-audio="bass,soloud" --host=$HOST
 make -j$(nproc) install
 
-rm -f ./dist/bin-*/{McOsu,McEngine} # symlinks turn into copies in .zip files for GHA artifacts
+# symlinks turn into copies in .zip files for GHA artifacts, so we need to make a zip of the zip...
+zip -r -y -8 bin.zip bin-*/
+rm -rf bin-*/
 
 echo "Done!"

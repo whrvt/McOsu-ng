@@ -163,15 +163,15 @@ endif
 
 $(DEPS_CACHE)/ffmpeg-$(FFMPEG_VERSION)/ffmpeg-linuxx86_64.tar.xz:
 	$(MKDIR_P) $(DEPS_CACHE)/ffmpeg-$(FFMPEG_VERSION) && \
-	$(WGET) -qO $(DEPS_CACHE)/ffmpeg-$(FFMPEG_VERSION)/ffmpeg-linuxx86_64.tar.xz "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-n$(FFMPEG_VERSION)-latest-linux64-gpl-shared-$(FFMPEG_VERSION).tar.xz"
+	$(WGET) -qO $(DEPS_CACHE)/ffmpeg-$(FFMPEG_VERSION)/ffmpeg-linuxx86_64.tar.xz "https://github.com/BtbN/FFmpeg-Builds/releases/download/autobuild-2025-06-11-14-09/ffmpeg-n$(FFMPEG_VERSION).1-22-g0f1fe3d153-linux64-gpl-shared-$(FFMPEG_VERSION).tar.xz"
 
 $(DEPS_CACHE)/ffmpeg-$(FFMPEG_VERSION)/ffmpeg-windowsi686.zip:
 	$(MKDIR_P) $(DEPS_CACHE)/ffmpeg-$(FFMPEG_VERSION) && \
-	$(WGET) -qO $(DEPS_CACHE)/ffmpeg-$(FFMPEG_VERSION)/ffmpeg-windowsi686.zip "https://github.com/yt-dlp/FFmpeg-Builds/releases/download/latest/ffmpeg-n$(FFMPEG_VERSION)-latest-win32-gpl-shared-$(FFMPEG_VERSION).zip"
+	$(WGET) -qO $(DEPS_CACHE)/ffmpeg-$(FFMPEG_VERSION)/ffmpeg-windowsi686.zip "https://github.com/yt-dlp/FFmpeg-Builds/releases/download/autobuild-2025-06-11-16-50/ffmpeg-n$(FFMPEG_VERSION).1-23-g84adbcce97-win32-gpl-shared-$(FFMPEG_VERSION).zip"
 
 $(DEPS_CACHE)/ffmpeg-$(FFMPEG_VERSION)/ffmpeg-windowsx86_64.zip:
 	$(MKDIR_P) $(DEPS_CACHE)/ffmpeg-$(FFMPEG_VERSION) && \
-	$(WGET) -qO $(DEPS_CACHE)/ffmpeg-$(FFMPEG_VERSION)/ffmpeg-windowsx86_64.zip "https://github.com/yt-dlp/FFmpeg-Builds/releases/download/latest/ffmpeg-n$(FFMPEG_VERSION)-latest-win64-gpl-shared-$(FFMPEG_VERSION).zip"
+	$(WGET) -qO $(DEPS_CACHE)/ffmpeg-$(FFMPEG_VERSION)/ffmpeg-windowsx86_64.zip "https://github.com/yt-dlp/FFmpeg-Builds/releases/download/autobuild-2025-06-11-16-50/ffmpeg-n$(FFMPEG_VERSION).1-23-gf074c49577-win64-gpl-shared-$(FFMPEG_VERSION).zip"
 
 $(DEPS_CACHE)/ffmpeg-$(FFMPEG_VERSION).source: $(DEPS_CACHE)/ffmpeg-$(FFMPEG_VERSION)/ffmpeg-linuxx86_64.tar.xz $\
 											$(DEPS_CACHE)/ffmpeg-$(FFMPEG_VERSION)/ffmpeg-windowsi686.zip $\
@@ -710,7 +710,6 @@ if USE_SDLMIXER
 endif
 if USE_SOLOUD
 	$(if $(STATICBUILD),,@cp -P "$(SOLOUD_PREFIX)/lib"/*$(LIBPREFIX)SoundTouch*$(DLLEXT)* "$(DESTDIR)$(bindir)/$(LIBDEST)")
-	@cp -P -t "$(DESTDIR)$(bindir)/" $(FFMPEG_INSTALL_LIBS) || true
 endif
 if BUILD_SDL3
 	$(if $(SDL3_STATIC),,@`find $(SDL3_PREFIX) '(' -iname '*SDL3*'$(DLLEXT) -o -iname '*SDL3*''.so.*' ')' -exec cp -P '{''}' "$(DESTDIR)$(bindir)/$(LIBDEST)" ';'`)
@@ -741,6 +740,9 @@ if !WIN_PLATFORM
 	cd "$(DESTDIR)$(bindir)" && \
 	$(LN_S) -rf $(PROGRAMS) McEngine && \
 	$(LN_S) -rf $(PROGRAMS) McOsu
+endif
+if STRIPBINS
+	find "$(DESTDIR)$(bindir)" -name '*'$(DLLEXT)'*' -execdir $(STRIP) -s '{''}' '+'
 endif
 
 uninstall-local:

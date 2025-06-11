@@ -365,6 +365,8 @@ AS_IF([[case "$CC" in
 esac]])
 AC_PROG_CXX([$CXX])
 
+AC_CHECK_TOOL([STRIP], [strip], [strip])
+
 AC_CHECK_PROG([CCACHE], [ccache], [ccache])
 
 install -Dm755 /dev/stdin $PWD/build/cc <<EOF
@@ -675,6 +677,8 @@ AM_CONDITIONAL([USE_SDLMIXER], [test "$with_sdlmixer" = "yes"])
 AM_CONDITIONAL([USE_SOLOUD], [test "$with_soloud" = "yes"])
 AM_CONDITIONAL([WIN_PLATFORM], [test "$SYSNAME" = "windows"])
 AM_CONDITIONAL([WIN32_PLATFORM], [test "$SYSNAME" = "windows" && test "$host_cpu" = "i686"]) # idk why this has issues with soloud + GENie
+
+AM_CONDITIONAL([STRIPBINS], [test "x$enable_strip" != "xno"])
 
 # need dynamic winpthread for old windows 32bit compat builds
 AS_IF([test -n "$ubercompat"], [
