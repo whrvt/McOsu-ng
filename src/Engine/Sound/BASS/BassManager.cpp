@@ -137,6 +137,8 @@ void cleanup()
 #endif
 	UNLOAD_LIB(bassmix)
 	UNLOAD_LIB(bass_fx)
+
+
 	UNLOAD_LIB(bass)
 
 	// reset to null
@@ -144,12 +146,41 @@ void cleanup()
 	ALL_BASS_FUNCTIONS(RESET_FUNCTION)
 }
 
+HPLUGIN loadPlugin(const std::string &pluginname)
+{
+#define LNAMESTR(lib) UString::fmt(LPREFIX "{:s}" LSUFFIX, (lib))
+	HPLUGIN ret = 0;
+	// handle bassflac plugin separately
+	UString tryPath{LNAMESTR(pluginname)};
+	if (!Environment::fileExists(tryPath))
+		tryPath = UString::fmt("lib{}{}", Env::cfg(OS::WINDOWS) ? "\\" : "/", LNAMESTR(pluginname));
+
+	// make it a fully qualified path
+	if (Environment::fileExists(tryPath))
+		tryPath = UString::fmt("{}{}", Environment::getFolderFromFilePath(tryPath), LNAMESTR(pluginname));
+	else
+		tryPath = LNAMESTR(pluginname); // maybe bass will find it?
+
+	ret = BASS_PluginLoad((const char*)tryPath.plat_str(), Env::cfg(OS::WINDOWS) ? BASS_UNICODE : 0); // ??? this wchar_t->char* cast is required for some reason?
+
+	if (ret)
+	{
+		if (cv::debug_snd.getBool())
+			debugLog("loaded {:s} version {:#x}\n", pluginname.c_str(), BASS_PluginGetInfo(ret)->version);
+		BASS_PluginEnable(ret, true);
+	}
+
+	return ret;
+#undef LNAMESTR
+}
+
+
 std::string getFailedLibrary()
 {
 	return failedLibrary;
 }
 
-void printBassError(const std::string &context, int code)
+std::string printBassError(const std::string &context, int code)
 {
 	std::string errstr = fmt::format("Unknown BASS error ({:d})!", code);
 	switch (code)
@@ -296,7 +327,7 @@ void printBassError(const std::string &context, int code)
 		break;
 	}
 	debugLog("{:s} error: {:s}", context, errstr);
-	return;
+	return fmt::format("{:s} error: {:s}", context, errstr); // also return it
 }
 
 } // namespace BassManager

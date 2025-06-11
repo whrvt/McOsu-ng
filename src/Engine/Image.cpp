@@ -63,7 +63,10 @@ void pngErrorExit(png_structp png_ptr, png_const_charp error_msg)
 
 void pngWarning(png_structp, png_const_charp warning_msg)
 {
+#ifdef _DEBUG
 	debugLog("PNG Warning: {:s}\n", warning_msg);
+#endif
+	(void)warning_msg;
 }
 
 struct pngMemoryReader
@@ -121,9 +124,6 @@ bool Image::decodePNGFromMemory(const unsigned char *data, size_t size, std::vec
 	reader.size = size;
 	reader.offset = 0;
 	png_set_read_fn(png_ptr, &reader, pngReadFromMemory);
-
-	// skip ICC profiles
-	png_set_keep_unknown_chunks(png_ptr, PNG_HANDLE_CHUNK_NEVER, NULL, 0);
 
 	png_read_info(png_ptr, info_ptr);
 

@@ -651,6 +651,7 @@ BUNDLED_INCLUDES
 BUNDLED_BASS_WASAPI_DIR
 BUNDLED_BASS_ASIO_DIR
 BUNDLED_BASS_MIX_DIR
+BUNDLED_BASS_FLAC_DIR
 BUNDLED_BASS_FX_DIR
 BUNDLED_BASS_DIR
 BUNDLED_LIBS_DIR
@@ -6442,18 +6443,20 @@ then :
             disable_native=yes
 
 fi
+        d3dcompiler_lib="-ld3dcompiler_43"
         ubercompat=on
         with_mimalloc="no"
         LDFLAGS="$LDFLAGS -m32 -lwinpthread"
         # winxp
         CPPFLAGS="$CPPFLAGS -DWINVER=0x0501 -D_WIN32_WINNT=0x0501 -D_WIN32_WINDOWS=0x0501 -D_WIN32_IE=0x0501"
-        CFLAGS="$CFLAGS -m32 -DWINVER=0x0501 -D_WIN32_WINNT=0x0501 -D_WIN32_WINDOWS=0x0501 -D_WIN32_IE=0x0501 -mfpmath=sse"
-        CXXFLAGS="$CXXFLAGS -m32 -DWINVER=0x0501 -D_WIN32_WINNT=0x0501 -D_WIN32_WINDOWS=0x0501 -D_WIN32_IE=0x0501 -mfpmath=sse"
+        CFLAGS="$CFLAGS -m32 -fno-omit-frame-pointer -momit-leaf-frame-pointer -DWINVER=0x0501 -D_WIN32_WINNT=0x0501 -D_WIN32_WINDOWS=0x0501 -D_WIN32_IE=0x0501 -mfpmath=sse"
+        CXXFLAGS="$CXXFLAGS -m32 -fno-omit-frame-pointer -momit-leaf-frame-pointer -DWINVER=0x0501 -D_WIN32_WINNT=0x0501 -D_WIN32_WINDOWS=0x0501 -D_WIN32_IE=0x0501 -mfpmath=sse"
         NASMOBJ=win32
 
 
 else case e in #(
   e)
+        d3dcompiler_lib="-ld3dcompiler_47"
         # win10
         CPPFLAGS="$CPPFLAGS -DWINVER=0x0A00 -D_WIN32_WINNT=0x0A00 -D_WIN32_WINDOWS=0x0A00 -D_WIN32_IE=0x0A00"
         CFLAGS="$CFLAGS -DWINVER=0x0A00 -D_WIN32_WINNT=0x0A00 -D_WIN32_WINDOWS=0x0A00 -D_WIN32_IE=0x0A00"
@@ -9922,9 +9925,10 @@ fi
 
 else case e in #(
   e)
+
         D3D11_CFLAGS=""
 
-        D3D11_LIBS="-ld3d11 -ld3dcompiler_43 -ldxgi"
+        D3D11_LIBS="-ld3d11 $d3dcompiler_lib -ldxgi"
 
         DXGI_CFLAGS=""
 
@@ -11345,6 +11349,7 @@ ASSETS_DIR=assets
 BUNDLED_LIBS_DIR=libraries
 BUNDLED_BASS_DIR=$BUNDLED_LIBS_DIR/bass
 BUNDLED_BASS_FX_DIR=$BUNDLED_LIBS_DIR/bassfx
+BUNDLED_BASS_FLAC_DIR=$BUNDLED_LIBS_DIR/bassflac
 BUNDLED_BASS_MIX_DIR=$BUNDLED_LIBS_DIR/bassmix
 BUNDLED_BASS_ASIO_DIR=$BUNDLED_LIBS_DIR/bassasio
 BUNDLED_BASS_WASAPI_DIR=$BUNDLED_LIBS_DIR/basswasapi
@@ -11368,6 +11373,13 @@ else case e in #(
   e) as_fn_error $? "Required bundled library ${LIBPREFIX}bass_fx$DLLEXT not found" "$LINENO" 5 ;;
 esac
 fi
+    if test -f "$srcdir/$BUNDLED_BASS_FLAC_DIR/lib/$SYSNAME/$host_cpu/${LIBPREFIX}bassflac$DLLEXT"
+then :
+
+else case e in #(
+  e) as_fn_error $? "Required bundled library ${LIBPREFIX}bassflac$DLLEXT not found" "$LINENO" 5 ;;
+esac
+fi
     if test -f "$srcdir/$BUNDLED_BASS_MIX_DIR/lib/$SYSNAME/$host_cpu/${LIBPREFIX}bassmix$DLLEXT"
 then :
 
@@ -11375,7 +11387,7 @@ else case e in #(
   e) as_fn_error $? "Required bundled library ${LIBPREFIX}bassmix$DLLEXT not found" "$LINENO" 5 ;;
 esac
 fi
-    AUDIO_CFLAGS="$AUDIO_CFLAGS -I\$(srcdir)/\$(BUNDLED_BASS_DIR)/include -I\$(srcdir)/\$(BUNDLED_BASS_FX_DIR)/include -I\$(srcdir)/\$(BUNDLED_BASS_MIX_DIR)/include"
+    AUDIO_CFLAGS="$AUDIO_CFLAGS -I\$(srcdir)/\$(BUNDLED_BASS_DIR)/include -I\$(srcdir)/\$(BUNDLED_BASS_FX_DIR)/include -I\$(srcdir)/\$(BUNDLED_BASS_FLAC_DIR)/include -I\$(srcdir)/\$(BUNDLED_BASS_MIX_DIR)/include"
     if test "$SYSNAME" = "windows"
 then :
 
@@ -11398,6 +11410,7 @@ fi
 fi
 
 fi
+
 
 
 

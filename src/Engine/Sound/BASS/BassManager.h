@@ -80,6 +80,7 @@ using HSYNC = bass_EXTERN::HSYNC;
 using HSTREAM = bass_EXTERN::HSTREAM;
 using HCHANNEL = bass_EXTERN::HCHANNEL;
 using HSAMPLE = bass_EXTERN::HSAMPLE;
+using HPLUGIN = bass_EXTERN::HPLUGIN;
 using BASS_DEVICEINFO = bass_EXTERN::BASS_DEVICEINFO;
 using BASS_INFO = bass_EXTERN::BASS_INFO;
 using BASS_3DVECTOR = bass_EXTERN::BASS_3DVECTOR;
@@ -141,7 +142,11 @@ using WASAPIPROC = bass_EXTERN::WASAPIPROC;
 	X(BASS_ChannelSet3DPosition) \
 	X(BASS_Set3DPosition) \
 	X(BASS_Apply3D) \
-	X(BASS_StreamFree)
+	X(BASS_StreamFree) \
+	X(BASS_PluginLoad) \
+	X(BASS_PluginEnable) \
+	X(BASS_PluginFree) \
+	X(BASS_PluginGetInfo)
 
 #define BASS_FX_FUNCTIONS(X) \
 	X(BASS_FX_GetVersion) \
@@ -198,9 +203,11 @@ using WASAPIPROC = bass_EXTERN::WASAPIPROC;
 	// close the libraries (BassSoundEngine destructor)
 	void cleanup();
 
+	BassFuncs::HPLUGIN loadPlugin(const std::string &pluginname);
+
 	std::string getFailedLibrary();
 
-	void printBassError(const std::string &context, int code);
+	std::string printBassError(const std::string &context, int code);
 //clang-format on
 }; // namespace BassManager
 

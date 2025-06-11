@@ -321,15 +321,17 @@ __EOF__
             enable_native=no
             disable_native=yes
         ])
+        d3dcompiler_lib="-ld3dcompiler_43"
         ubercompat=on
         with_mimalloc="no"
         LDFLAGS="$LDFLAGS -m32 -lwinpthread"
         # winxp
         CPPFLAGS="$CPPFLAGS -DWINVER=0x0501 -D_WIN32_WINNT=0x0501 -D_WIN32_WINDOWS=0x0501 -D_WIN32_IE=0x0501"
-        CFLAGS="$CFLAGS -m32 -DWINVER=0x0501 -D_WIN32_WINNT=0x0501 -D_WIN32_WINDOWS=0x0501 -D_WIN32_IE=0x0501 -mfpmath=sse"
-        CXXFLAGS="$CXXFLAGS -m32 -DWINVER=0x0501 -D_WIN32_WINNT=0x0501 -D_WIN32_WINDOWS=0x0501 -D_WIN32_IE=0x0501 -mfpmath=sse"
+        CFLAGS="$CFLAGS -m32 -fno-omit-frame-pointer -momit-leaf-frame-pointer -DWINVER=0x0501 -D_WIN32_WINNT=0x0501 -D_WIN32_WINDOWS=0x0501 -D_WIN32_IE=0x0501 -mfpmath=sse"
+        CXXFLAGS="$CXXFLAGS -m32 -fno-omit-frame-pointer -momit-leaf-frame-pointer -DWINVER=0x0501 -D_WIN32_WINNT=0x0501 -D_WIN32_WINDOWS=0x0501 -D_WIN32_IE=0x0501 -mfpmath=sse"
         AC_SUBST([NASMOBJ],[win32])
     ], [
+        d3dcompiler_lib="-ld3dcompiler_47"
         # win10
         CPPFLAGS="$CPPFLAGS -DWINVER=0x0A00 -D_WIN32_WINNT=0x0A00 -D_WIN32_WINDOWS=0x0A00 -D_WIN32_IE=0x0A00"
         CFLAGS="$CFLAGS -DWINVER=0x0A00 -D_WIN32_WINNT=0x0A00 -D_WIN32_WINDOWS=0x0A00 -D_WIN32_IE=0x0A00"
@@ -543,8 +545,9 @@ AS_IF([test "$renderer" != "dx11"], [
         FORCE_SDL_DYNAMIC=1 # dxvk double-loads the wrong library version if we statically link to sdl, so until i (if ever) build dxvk in-tree
                             # it needs to be forced dynamic
     ],[
+
         AC_SUBST([D3D11_CFLAGS], [""])
-        AC_SUBST([D3D11_LIBS], [["-ld3d11 -ld3dcompiler_43 -ldxgi"]])
+        AC_SUBST([D3D11_LIBS], [["-ld3d11 $d3dcompiler_lib -ldxgi"]])
         AC_SUBST([DXGI_CFLAGS], [""])
         AC_SUBST([DXGI_LIBS], [["-ldxgi"]])
         AC_SUBST([VKD3D_CFLAGS], [""])
@@ -685,6 +688,7 @@ AC_SUBST([ASSETS_DIR])
 BUNDLED_LIBS_DIR=libraries
 BUNDLED_BASS_DIR=$BUNDLED_LIBS_DIR/bass
 BUNDLED_BASS_FX_DIR=$BUNDLED_LIBS_DIR/bassfx
+BUNDLED_BASS_FLAC_DIR=$BUNDLED_LIBS_DIR/bassflac
 BUNDLED_BASS_MIX_DIR=$BUNDLED_LIBS_DIR/bassmix
 BUNDLED_BASS_ASIO_DIR=$BUNDLED_LIBS_DIR/bassasio
 BUNDLED_BASS_WASAPI_DIR=$BUNDLED_LIBS_DIR/basswasapi
@@ -698,10 +702,13 @@ AS_IF([test "$with_bass" = "yes"], [
     AS_IF([test -f "$srcdir/$BUNDLED_BASS_FX_DIR/lib/$SYSNAME/$host_cpu/${LIBPREFIX}bass_fx$DLLEXT"],
         [],
         [AC_MSG_ERROR([Required bundled library ${LIBPREFIX}bass_fx$DLLEXT not found])])
+    AS_IF([test -f "$srcdir/$BUNDLED_BASS_FLAC_DIR/lib/$SYSNAME/$host_cpu/${LIBPREFIX}bassflac$DLLEXT"],
+        [],
+        [AC_MSG_ERROR([Required bundled library ${LIBPREFIX}bassflac$DLLEXT not found])])
     AS_IF([test -f "$srcdir/$BUNDLED_BASS_MIX_DIR/lib/$SYSNAME/$host_cpu/${LIBPREFIX}bassmix$DLLEXT"],
         [],
         [AC_MSG_ERROR([Required bundled library ${LIBPREFIX}bassmix$DLLEXT not found])])
-    AUDIO_CFLAGS="$AUDIO_CFLAGS -I\$(srcdir)/\$(BUNDLED_BASS_DIR)/include -I\$(srcdir)/\$(BUNDLED_BASS_FX_DIR)/include -I\$(srcdir)/\$(BUNDLED_BASS_MIX_DIR)/include"
+    AUDIO_CFLAGS="$AUDIO_CFLAGS -I\$(srcdir)/\$(BUNDLED_BASS_DIR)/include -I\$(srcdir)/\$(BUNDLED_BASS_FX_DIR)/include -I\$(srcdir)/\$(BUNDLED_BASS_FLAC_DIR)/include -I\$(srcdir)/\$(BUNDLED_BASS_MIX_DIR)/include"
     AS_IF([test "$SYSNAME" = "windows"],[
         AS_IF([test -f "$srcdir/$BUNDLED_BASS_ASIO_DIR/lib/$SYSNAME/$host_cpu/${LIBPREFIX}bassasio$DLLEXT"],
             [],
@@ -718,6 +725,7 @@ AC_SUBST([AUDIO_LIBS])
 AC_SUBST([BUNDLED_LIBS_DIR])
 AC_SUBST([BUNDLED_BASS_DIR])
 AC_SUBST([BUNDLED_BASS_FX_DIR])
+AC_SUBST([BUNDLED_BASS_FLAC_DIR])
 AC_SUBST([BUNDLED_BASS_MIX_DIR])
 AC_SUBST([BUNDLED_BASS_ASIO_DIR])
 AC_SUBST([BUNDLED_BASS_WASAPI_DIR])

@@ -18,6 +18,7 @@
 #define MATH_MATRICES_H
 
 #include "Vectors.h"
+#include <cmath>
 #include <glm/gtc/matrix_inverse.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/mat2x2.hpp>
@@ -124,7 +125,7 @@ public:
 	Matrix2 &invert()
 	{
 		float det = getDeterminant();
-		if (fabs(det) <= EPSILON)
+		if (std::fabs(det) <= EPSILON)
 		{
 			return identity();
 		}
@@ -330,7 +331,7 @@ public:
 	Matrix3 &invert()
 	{
 		float det = getDeterminant();
-		if (fabs(det) <= EPSILON)
+		if (std::fabs(det) <= EPSILON)
 		{
 			return identity();
 		}
@@ -577,7 +578,7 @@ public:
 	Matrix4 &invert()
 	{
 		float det = getDeterminant();
-		if (fabs(det) <= EPSILON)
+		if (std::fabs(det) <= EPSILON)
 		{
 			return identity();
 		}

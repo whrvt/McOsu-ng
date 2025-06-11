@@ -587,6 +587,7 @@ endif
 if USE_BASS
 	$(INSTALL) -m 755 $(srcdir)/$(BUNDLED_BASS_DIR)/lib/$(SYSNAME)/$(host_cpu)/$(LIBPREFIX)bass$(DLLEXT) "$(DESTDIR)$(bindir)/$(LIBDEST)"
 	$(INSTALL) -m 755 $(srcdir)/$(BUNDLED_BASS_FX_DIR)/lib/$(SYSNAME)/$(host_cpu)/$(LIBPREFIX)bass_fx$(DLLEXT) "$(DESTDIR)$(bindir)/$(LIBDEST)"
+	$(INSTALL) -m 755 $(srcdir)/$(BUNDLED_BASS_FLAC_DIR)/lib/$(SYSNAME)/$(host_cpu)/$(LIBPREFIX)bassflac$(DLLEXT) "$(DESTDIR)$(bindir)/$(LIBDEST)"
 	$(INSTALL) -m 755 $(srcdir)/$(BUNDLED_BASS_MIX_DIR)/lib/$(SYSNAME)/$(host_cpu)/$(LIBPREFIX)bassmix$(DLLEXT) "$(DESTDIR)$(bindir)/$(LIBDEST)"
 if WIN_PLATFORM
 	$(INSTALL) -m 755 $(srcdir)/$(BUNDLED_BASS_ASIO_DIR)/lib/$(SYSNAME)/$(host_cpu)/$(LIBPREFIX)bassasio$(DLLEXT) "$(DESTDIR)$(bindir)/$(LIBDEST)"

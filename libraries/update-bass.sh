@@ -2,8 +2,8 @@
 
 # https://github.com/ppy/osu-framework/blob/eed788fd166540f7e219e1e48a36d0bf64f07cc4/osu.Framework.NativeLibs/update-bass.sh
 
-mkdir -p {bass,bassfx,bassmix,basswasapi,bassasio}/include
-mkdir -p {bass,bassfx,bassmix}/lib/{windows,linux}/{x86_64,i686}
+mkdir -p {bass,bassfx,bassflac,bassmix,basswasapi,bassasio}/include
+mkdir -p {bass,bassfx,bassflac,bassmix}/lib/{windows,linux}/{x86_64,i686}
 mkdir -p {basswasapi,bassasio}/lib/windows/{x86_64,i686}
 
 # bass
@@ -25,6 +25,16 @@ unzip -qjo bass_fx.zip bass_fx.h -d bassfx/include/
 curl -Lso bass_fx-linux.zip https://www.un4seen.com/stuff/bass_fx-linux.zip
 unzip -qjo bass_fx-linux.zip x86/libbass_fx.so -d bassfx/lib/linux/i686
 unzip -qjo bass_fx-linux.zip x86_64/libbass_fx.so -d bassfx/lib/linux/x86_64
+
+# bassflac
+curl -Lso bassflac24.zip https://www.un4seen.com/files/bassflac24.zip
+unzip -qjo bassflac24.zip bassflac.dll -d bassflac/lib/windows/i686
+unzip -qjo bassflac24.zip x64/bassflac.dll -d bassflac/lib/windows/x86_64
+unzip -qjo bassflac24.zip c/bassflac.h -d bassflac/include/
+
+curl -Lso bassflac24-linux.zip https://www.un4seen.com/files/bassflac24-linux.zip
+unzip -qjo bassflac24-linux.zip libs/x86/libbassflac.so -d bassflac/lib/linux/i686
+unzip -qjo bassflac24-linux.zip libs/x86_64/libbassflac.so -d bassflac/lib/linux/x86_64
 
 # bassmix
 curl -Lso bassmix24.zip https://www.un4seen.com/stuff/bassmix.zip

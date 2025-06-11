@@ -18,12 +18,13 @@
 #include <utility>
 
 // BASS-specific ConVars
-namespace cv {
+namespace cv
+{
 ConVar snd_updateperiod("snd_updateperiod", 5, FCVAR_NONE, "BASS_CONFIG_UPDATEPERIOD length in milliseconds, minimum is 5");
 ConVar snd_buffer("snd_buffer", 100, FCVAR_NONE, "BASS_CONFIG_BUFFER length in milliseconds, minimum is 1 above snd_updateperiod");
 ConVar snd_dev_period("snd_dev_period", 5, FCVAR_NONE, "BASS_CONFIG_DEV_PERIOD length in milliseconds, or if negative then in samples");
 ConVar snd_dev_buffer("snd_dev_buffer", 10, FCVAR_NONE, "BASS_CONFIG_DEV_BUFFER length in milliseconds");
-}
+} // namespace cv
 
 #ifdef MCENGINE_FEATURE_BASS_WASAPI
 SOUNDHANDLE g_wasapiOutputMixer = 0;
@@ -69,11 +70,22 @@ void _WIN_SND_WASAPI_EXCLUSIVE_CHANGE(UString oldValue, UString newValue)
 }
 #endif
 
-BassSoundEngine::BassSoundEngine() : SoundEngine()
+BassSoundEngine::BassSoundEngine()
+    : SoundEngine(), m_BASSFLACHANDLE(0)
 {
 	if (!BassManager::init()) // this checks the library versions as well
 	{
 		engine->showMessageErrorFatal("Fatal Sound Error", UString::fmt("Failed to load BASS library: {:s} !", BassManager::getFailedLibrary()));
+		engine->shutdown();
+		return;
+	}
+
+	m_BASSFLACHANDLE = BassManager::loadPlugin("bassflac");
+
+	if (!m_BASSFLACHANDLE)
+	{
+		engine->showMessageErrorFatal("Fatal Sound Error",
+		                              UString::fmt("Failed to load BASSFLAC plugin: {:s}!", BassManager::printBassError("BASS_PluginLoad()", BASS_ErrorGetCode())));
 		engine->shutdown();
 		return;
 	}
@@ -129,6 +141,12 @@ BassSoundEngine::~BassSoundEngine()
 		BASS_WASAPI_Free();
 #endif
 	}
+	if (m_BASSFLACHANDLE)
+	{
+		BASS_PluginEnable(m_BASSFLACHANDLE, false);
+		BASS_PluginFree(m_BASSFLACHANDLE);
+		m_BASSFLACHANDLE = 0;
+	}
 	BassManager::cleanup();
 }
 
@@ -150,7 +168,8 @@ bool BassSoundEngine::play(Sound *snd, float pan, float pitch)
 {
 	auto [bassSound, handle] = GETHANDLE(BassSound);
 
-	const bool allowPlayFrame = bassSound && (!bassSound->isOverlayable() || !cv::snd_restrict_play_frame.getBool() || engine->getTime() > bassSound->getLastPlayTime());
+	const bool allowPlayFrame =
+	    bassSound && (!bassSound->isOverlayable() || !cv::snd_restrict_play_frame.getBool() || engine->getTime() > bassSound->getLastPlayTime());
 
 	if (!allowPlayFrame || !handle)
 	{

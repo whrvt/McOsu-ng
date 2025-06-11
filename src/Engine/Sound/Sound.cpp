@@ -25,7 +25,7 @@ ConVar snd_play_interp_duration("snd_play_interp_duration", 0.75f, FCVAR_NONE,
 ConVar snd_play_interp_ratio("snd_play_interp_ratio", 0.50f, FCVAR_NONE,
                              "percentage of snd_play_interp_duration to use 100% engine time over audio time (some devices report 0 for very long)");
 ConVar snd_file_min_size(
-    "snd_file_min_size", 51, FCVAR_NONE,
+    "snd_file_min_size", 64, FCVAR_NONE,
     "minimum file size in bytes for WAV files to be considered valid (everything below will fail to load), this is a workaround for BASS crashes");
 
 ConVar snd_force_load_unknown("snd_force_load_unknown", false, FCVAR_NONE, "force loading of assumed invalid audio files");
@@ -106,12 +106,10 @@ bool Sound::isValidAudioFile(const UString &filePath, const UString &fileExt)
 		return false;
 
 	size_t fileSize = audFile.getFileSize();
-	if (fileSize < cv::snd_file_min_size.getVal<size_t>())
-		return false;
 
 	if (fileExt == "wav")
 	{
-		if (fileSize < 44)
+		if (fileSize < cv::snd_file_min_size.getVal<size_t>())
 			return false;
 
 		const char *data = audFile.readFile();
@@ -133,7 +131,7 @@ bool Sound::isValidAudioFile(const UString &filePath, const UString &fileExt)
 	}
 	else if (fileExt == "mp3") // mostly taken from ffmpeg/libavformat/mp3dec.c mp3_read_header()
 	{
-		if (fileSize < 64)
+		if (fileSize < cv::snd_file_min_size.getVal<size_t>())
 			return false;
 
 		const char *data = audFile.readFile();
@@ -168,7 +166,7 @@ bool Sound::isValidAudioFile(const UString &filePath, const UString &fileExt)
 	}
 	else if (fileExt == "ogg")
 	{
-		if (fileSize < 64)
+		if (fileSize < cv::snd_file_min_size.getVal<size_t>())
 			return false;
 
 		const char *data = audFile.readFile();
@@ -190,7 +188,7 @@ bool Sound::isValidAudioFile(const UString &filePath, const UString &fileExt)
 	}
 	else if (fileExt == "flac")
 	{
-		if (fileSize < 64)
+		if (fileSize < std::max<size_t>(cv::snd_file_min_size.getVal<size_t>(), 96)) // account for larger header
 			return false;
 
 		const char *data = audFile.readFile();
