@@ -28,7 +28,11 @@ public:
 	size_t threadIndex{};
 	std::chrono::steady_clock::time_point lastWorkTime{};
 
-	LoaderThread(AsyncResourceLoader *loader_ptr, size_t index) : loader(loader_ptr), threadIndex(index) {}
+	LoaderThread(AsyncResourceLoader *loader_ptr, size_t index)
+	    : loader(loader_ptr),
+	      threadIndex(index)
+	{
+	}
 };
 
 namespace
@@ -47,6 +51,9 @@ void *asyncResourceLoaderThread(void *data, std::stop_token stopToken)
 
 	while (!stopToken.stop_requested() && !loader->m_shuttingDown.load())
 	{
+		// yield in case we're sharing a logical CPU, like on a single-core system
+		Timing::sleep(0);
+
 		auto work = loader->getNextPendingWork();
 
 		if (!work)
@@ -98,7 +105,7 @@ void *asyncResourceLoaderThread(void *data, std::stop_token stopToken)
 
 	return nullptr;
 }
-}
+} // namespace
 
 //==================================
 // ASYNC RESOURCE LOADER
@@ -361,15 +368,16 @@ void AsyncResourceLoader::ensureThreadAvailable()
 
 void AsyncResourceLoader::cleanupIdleThreads()
 {
-	if (m_threads.size() <= MIN_NUM_THREADS)
+	if (m_threads.size() == 0)
 		return;
 
 	std::lock_guard<std::mutex> lock(m_threadsMutex);
 
-	if (m_threads.size() <= MIN_NUM_THREADS)
+	if (m_threads.size() == 0)
 		return;
 
-	// remove threads that have requested stop
+	// always remove threads that have requested stop, regardless of minimum
+	// the minimum will be maintained by ensureThreadAvailable() when needed
 	std::erase_if(m_threads, [&](const std::unique_ptr<LoaderThread> &thread) {
 		if (thread->thread && thread->thread->isStopRequested())
 		{
