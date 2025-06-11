@@ -197,15 +197,13 @@ using WASAPIPROC = bass_EXTERN::WASAPIPROC;
 // clang-format off
 
 	ALL_BASS_FUNCTIONS(DECLARE_BASS_FUNCTION)
-}; 
+};
     // open the libraries and populate the function pointers
     bool init();
 	// close the libraries (BassSoundEngine destructor)
 	void cleanup();
 
-	BassFuncs::HPLUGIN loadPlugin(const std::string &pluginname);
-
-	std::string getFailedLibrary();
+	std::string getFailedLoad();
 
 	std::string printBassError(const std::string &context, int code);
 //clang-format on

@@ -67,7 +67,7 @@ ALL_BASS_FUNCTIONS(DEFINE_BASS_FUNCTION)
 #define GENERATE_LIBRARY_LOADER(libname, vfunc, ver, funcgroup) \
 	static bool load_##libname() \
 	{ \
-		failedLibrary = #libname; \
+		failedLoad = #libname; \
 		for (auto &path : libname##_paths) \
 		{ \
 			s_lib##libname = SDL_LoadObject(path); \
@@ -95,11 +95,58 @@ ALL_BASS_FUNCTIONS(DEFINE_BASS_FUNCTION)
 		return false; \
 	}
 
-static std::string failedLibrary = "none";
+static std::string failedLoad = "none";
 
 BASS_LIBRARIES(GENERATE_LIBRARY_LOADER)
 
 }; // namespace BassFuncs
+
+namespace
+{
+	static HPLUGIN plBassFlac = 0;
+
+	void unloadPlugins()
+	{
+		if (plBassFlac)
+		{
+			BASS_PluginEnable(plBassFlac, false);
+			BASS_PluginFree(plBassFlac);
+			plBassFlac = 0;
+		}
+	}
+
+	HPLUGIN loadPlugin(const std::string &pluginname)
+	{
+	#define LNAMESTR(lib) UString::fmt(LPREFIX "{:s}" LSUFFIX, (lib))
+		HPLUGIN ret = 0;
+		// handle bassflac plugin separately
+		UString tryPath{LNAMESTR(pluginname)};
+		if (!Environment::fileExists(tryPath))
+			tryPath = UString::fmt("lib{}{}", Env::cfg(OS::WINDOWS) ? "\\" : "/", LNAMESTR(pluginname));
+
+		// make it a fully qualified path
+		if (Environment::fileExists(tryPath))
+			tryPath = UString::fmt("{}{}", Environment::getFolderFromFilePath(tryPath), LNAMESTR(pluginname));
+		else
+			tryPath = LNAMESTR(pluginname); // maybe bass will find it?
+
+		ret = BASS_PluginLoad((const char*)tryPath.plat_str(), Env::cfg(OS::WINDOWS) ? BASS_UNICODE : 0); // ??? this wchar_t->char* cast is required for some reason?
+
+		if (ret)
+		{
+			if (cv::debug_snd.getBool())
+				debugLog("loaded {:s} version {:#x}\n", pluginname.c_str(), BASS_PluginGetInfo(ret)->version);
+			BASS_PluginEnable(ret, true);
+		}
+		else
+		{
+			failedLoad = std::string(pluginname);
+		}
+
+		return ret;
+	#undef LNAMESTR
+	}
+}
 
 bool init()
 {
@@ -115,14 +162,23 @@ bool init()
 	// load all the libraries here
 	BASS_LIBRARIES(LOAD_LIBRARY)
 
+	if (!loadPlugin("bassflac"))
+	{
+		cleanup();
+		return false;
+	}
+
 	// if we got here, we loaded everything
-	failedLibrary = "none";
+	failedLoad = "none";
 
 	return true;
 }
 
 void cleanup()
 {
+	// first clean up plugins
+	unloadPlugins();
+
 	// unload in reverse order
 #define UNLOAD_LIB(name, ...) \
 	if (s_lib##name) \
@@ -137,8 +193,6 @@ void cleanup()
 #endif
 	UNLOAD_LIB(bassmix)
 	UNLOAD_LIB(bass_fx)
-
-
 	UNLOAD_LIB(bass)
 
 	// reset to null
@@ -146,38 +200,9 @@ void cleanup()
 	ALL_BASS_FUNCTIONS(RESET_FUNCTION)
 }
 
-HPLUGIN loadPlugin(const std::string &pluginname)
+std::string getFailedLoad()
 {
-#define LNAMESTR(lib) UString::fmt(LPREFIX "{:s}" LSUFFIX, (lib))
-	HPLUGIN ret = 0;
-	// handle bassflac plugin separately
-	UString tryPath{LNAMESTR(pluginname)};
-	if (!Environment::fileExists(tryPath))
-		tryPath = UString::fmt("lib{}{}", Env::cfg(OS::WINDOWS) ? "\\" : "/", LNAMESTR(pluginname));
-
-	// make it a fully qualified path
-	if (Environment::fileExists(tryPath))
-		tryPath = UString::fmt("{}{}", Environment::getFolderFromFilePath(tryPath), LNAMESTR(pluginname));
-	else
-		tryPath = LNAMESTR(pluginname); // maybe bass will find it?
-
-	ret = BASS_PluginLoad((const char*)tryPath.plat_str(), Env::cfg(OS::WINDOWS) ? BASS_UNICODE : 0); // ??? this wchar_t->char* cast is required for some reason?
-
-	if (ret)
-	{
-		if (cv::debug_snd.getBool())
-			debugLog("loaded {:s} version {:#x}\n", pluginname.c_str(), BASS_PluginGetInfo(ret)->version);
-		BASS_PluginEnable(ret, true);
-	}
-
-	return ret;
-#undef LNAMESTR
-}
-
-
-std::string getFailedLibrary()
-{
-	return failedLibrary;
+	return failedLoad;
 }
 
 std::string printBassError(const std::string &context, int code)

@@ -48,8 +48,6 @@ private:
 
 	void onFreqChanged(UString oldValue, UString newValue);
 
-	HPLUGIN m_BASSFLACHANDLE;
-
 	friend class BassSound;
 };
 

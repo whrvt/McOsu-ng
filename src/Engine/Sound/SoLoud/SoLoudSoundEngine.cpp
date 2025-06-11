@@ -396,8 +396,8 @@ bool SoLoudSoundEngine::initializeOutputDevice(int id, bool)
 	}
 
 	// basic flags
-	auto flags = SoLoud::Soloud::FLAGS(0); /* SoLoud::Soloud::CLIP_ROUNDOFF | SoLoud::Soloud::NO_FPU_REGISTER_CHANGE */
-	;
+	// roundoff clipping alters/"damages" the waveform, but it sounds weird without it
+	auto flags = SoLoud::Soloud::CLIP_ROUNDOFF; /* | SoLoud::Soloud::NO_FPU_REGISTER_CHANGE; */
 
 	auto backend = SoLoud::Soloud::MINIAUDIO;
 	const auto& userBackend = cv::snd_soloud_backend.getString();

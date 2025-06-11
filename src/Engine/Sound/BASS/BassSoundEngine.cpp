@@ -71,21 +71,11 @@ void _WIN_SND_WASAPI_EXCLUSIVE_CHANGE(UString oldValue, UString newValue)
 #endif
 
 BassSoundEngine::BassSoundEngine()
-    : SoundEngine(), m_BASSFLACHANDLE(0)
+    : SoundEngine()
 {
 	if (!BassManager::init()) // this checks the library versions as well
 	{
-		engine->showMessageErrorFatal("Fatal Sound Error", UString::fmt("Failed to load BASS library: {:s} !", BassManager::getFailedLibrary()));
-		engine->shutdown();
-		return;
-	}
-
-	m_BASSFLACHANDLE = BassManager::loadPlugin("bassflac");
-
-	if (!m_BASSFLACHANDLE)
-	{
-		engine->showMessageErrorFatal("Fatal Sound Error",
-		                              UString::fmt("Failed to load BASSFLAC plugin: {:s}!", BassManager::printBassError("BASS_PluginLoad()", BASS_ErrorGetCode())));
+		engine->showMessageErrorFatal("Fatal Sound Error", UString::fmt("Failed to load BASS feature: {:s} !", BassManager::getFailedLoad()));
 		engine->shutdown();
 		return;
 	}
@@ -140,12 +130,6 @@ BassSoundEngine::~BassSoundEngine()
 #ifdef MCENGINE_FEATURE_BASS_WASAPI
 		BASS_WASAPI_Free();
 #endif
-	}
-	if (m_BASSFLACHANDLE)
-	{
-		BASS_PluginEnable(m_BASSFLACHANDLE, false);
-		BASS_PluginFree(m_BASSFLACHANDLE);
-		m_BASSFLACHANDLE = 0;
 	}
 	BassManager::cleanup();
 }
