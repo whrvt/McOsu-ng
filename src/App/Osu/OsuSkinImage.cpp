@@ -52,70 +52,63 @@ bool OsuSkinImage::loadSingleImage(const UString &elementName, bool ignoreDefaul
 {
 	const UString skinPath = m_skin->getFilePath();
 
-	// build all possible paths
-	const UString userHd = buildImagePath(skinPath, elementName, true);
-	const UString userNormal = buildImagePath(skinPath, elementName, false);
-	const UString defaultHd = buildDefaultImagePath(elementName, true);
-	const UString defaultNormal = buildDefaultImagePath(elementName, false);
-
-	// check existence once
-	const bool existsUserHd = m_skin->skinFileExists(userHd);
-	const bool existsUserNormal = m_skin->skinFileExists(userNormal);
-	const bool existsDefaultHd = m_skin->skinFileExists(defaultHd);
-	const bool existsDefaultNormal = m_skin->skinFileExists(defaultNormal);
-
-	// loading candidates in priority order
-	struct LoadCandidate
+	// image variants in priority order
+	struct ImageVariant
 	{
-		const UString &path;
-		bool exists;
-		float scale;
+		bool isHd;
 		bool isDefault;
+		float scale;
 	};
 
-	const std::initializer_list<LoadCandidate> candidates = {
-	    {.path = userHd,        .exists = existsUserHd && cv::osu::skin_hd.getBool(),                          .scale = 2.0f, .isDefault = false},
-	    {.path = userNormal,    .exists = existsUserNormal,	                                                       .scale = 1.0f, .isDefault = false},
-	    {.path = defaultHd,     .exists = existsDefaultHd && cv::osu::skin_hd.getBool() && !ignoreDefaultSkin, .scale = 2.0f, .isDefault = true },
-	    {.path = defaultNormal, .exists = existsDefaultNormal && !ignoreDefaultSkin,                                  .scale = 1.0f, .isDefault = true }
+	const std::array<ImageVariant, 4> variants = {
+	    {
+			{.isHd = true, .isDefault = false, .scale = 2.0f},  // user HD
+			{.isHd = false, .isDefault = false, .scale = 1.0f}, // user normal
+			{.isHd = true, .isDefault = true, .scale = 2.0f},   // default HD
+			{.isHd = false, .isDefault = true, .scale = 1.0f}   // default normal
+	    }
     };
 
-	for (const auto &candidate : candidates)
+	for (const auto &variant : variants)
 	{
-		if (!candidate.exists)
+		// skip default variants if ignoring default skin
+		if (variant.isDefault && ignoreDefaultSkin)
 			continue;
 
+		// skip HD variants if HD is disabled
+		if (variant.isHd && !cv::osu::skin_hd.getBool())
+			continue;
+
+		// build path for this variant
+		const UString path = variant.isDefault ? buildDefaultImagePath(elementName, variant.isHd) : buildImagePath(skinPath, elementName, variant.isHd);
+
+		// check if this variant exists
+		if (!m_skin->skinFileExists(path))
+			continue;
+
+		// load the image
 		IMAGE image;
 
 		if (cv::osu::skin_async.getBool())
 			resourceManager->requestNextLoadAsync();
 
-		image.img = resourceManager->loadImageAbsUnnamed(candidate.path, cv::osu::skin_mipmaps.getBool());
-		image.scale = candidate.scale;
+		image.img = resourceManager->loadImageAbsUnnamed(path, cv::osu::skin_mipmaps.getBool());
+		image.scale = variant.scale;
 
 		m_images.push_back(image);
 
-		// handle export paths; add primary path first, then secondary if it exists
-		m_filepathsForExport.push_back(candidate.path);
-		if (!candidate.isDefault)
-		{
-			// add the other resolution if it exists
-			if (candidate.scale == 2.0f && existsUserNormal)
-				m_filepathsForExport.push_back(userNormal);
-			else if (candidate.scale == 1.0f && existsUserHd)
-				m_filepathsForExport.push_back(userHd);
-		}
-		else
-		{
-			// add the other default resolution if it exists
-			if (candidate.scale == 2.0f && existsDefaultNormal)
-				m_filepathsForExport.push_back(defaultNormal);
-			else if (candidate.scale == 1.0f && existsDefaultHd)
-				m_filepathsForExport.push_back(defaultHd);
-		}
+		// handle export paths - add primary path first
+		m_filepathsForExport.push_back(path);
+
+		// add the complementary resolution if it exists
+		const UString complementaryPath =
+		    variant.isDefault ? buildDefaultImagePath(elementName, !variant.isHd) : buildImagePath(skinPath, elementName, !variant.isHd);
+
+		if (m_skin->skinFileExists(complementaryPath))
+			m_filepathsForExport.push_back(complementaryPath);
 
 		// note if we loaded from default skin
-		if (candidate.isDefault)
+		if (variant.isDefault)
 			m_bIsFromDefaultSkin = true;
 
 		return true;

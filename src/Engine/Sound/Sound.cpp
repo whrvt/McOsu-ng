@@ -188,6 +188,28 @@ bool Sound::isValidAudioFile(const UString &filePath, const UString &fileExt)
 		}
 		return false;
 	}
+	else if (fileExt == "flac")
+	{
+		if (fileSize < 64)
+			return false;
+
+		const char *data = audFile.readFile();
+		if (data == nullptr)
+			return false;
+
+		// check immediate FLAC header
+		if (memcmp(data, "fLaC", 4) == 0)
+			return true;
+
+		// search first 1KB for FLAC page header
+		size_t searchLimit = (fileSize < 1024) ? fileSize - 4 : 1024;
+		for (size_t i = 1; i < searchLimit; i++)
+		{
+			if (i + 4 < fileSize && memcmp(data + i, "fLaC", 4) == 0)
+				return true;
+		}
+		return false;
+	}
 
 	return false; // don't let unsupported formats be read
 }

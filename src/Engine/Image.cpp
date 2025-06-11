@@ -122,6 +122,9 @@ bool Image::decodePNGFromMemory(const unsigned char *data, size_t size, std::vec
 	reader.offset = 0;
 	png_set_read_fn(png_ptr, &reader, pngReadFromMemory);
 
+	// skip ICC profiles
+	png_set_keep_unknown_chunks(png_ptr, PNG_HANDLE_CHUNK_NEVER, NULL, 0);
+
 	png_read_info(png_ptr, info_ptr);
 
 	outWidth = static_cast<int>(png_get_image_width(png_ptr, info_ptr));

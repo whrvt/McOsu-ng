@@ -354,7 +354,7 @@ friend class OsuSkinImage;
 
 	bool parseSkinINI(UString filepath);
 
-	bool compareFilenameWithSkinElementName(UString filename, UString skinElementName);
+	bool compareFilenameWithSkinElementName(const UString &filename, const UString &skinElementName);
 
 	OsuSkinImage *createOsuSkinImage(UString skinElementName, Vector2 baseSizeForScaling2x, float osuSize, bool ignoreDefaultSkin = false, UString animationSeparator = "-");
 	void checkLoadImage(Image **addressOfPointer, UString skinElementName, UString resourceName, bool ignoreDefaultSkin = false, UString fileExtension = "png", bool forceLoadMipmaps = false, bool forceUseDefaultSkin = false);

@@ -1487,67 +1487,47 @@ void OsuSkin::checkLoadImage(Image **addressOfPointer, UString skinElementName, 
 }
 
 void OsuSkin::checkLoadSound(Sound **addressOfPointer, UString skinElementName, UString resourceName, bool isOverlayable, bool isSample, bool loop,
-                    float hardcodedVolumeMultiplier)
+                             float hardcodedVolumeMultiplier)
 {
 	if (*addressOfPointer != nullptr)
 		return;
 
 	randomizeFilePath();
 
-	// build all possible paths
-	const UString defaultWav = buildDefaultPath(skinElementName, "wav");
-	const UString defaultMp3 = buildDefaultPath(skinElementName, "mp3");
-	const UString defaultOgg = buildDefaultPath(skinElementName, "ogg");
-	const UString userWav = buildUserPath(skinElementName, "wav");
-	const UString userMp3 = buildUserPath(skinElementName, "mp3");
-	const UString userOgg = buildUserPath(skinElementName, "ogg");
+	// supported audio formats in priority order
+	// NOTE: flac isn't supported in osu!stable, but the audio backend supports it, so why not
+	const std::array<const char *, 4> audioFormats = {"wav", "mp3", "ogg", "flac"};
 
 	UString defaultResourceName = resourceName + "_DEFAULT";
 
 	// load default first
-	if (skinFileExists(defaultWav))
+	for (const char *format : audioFormats)
 	{
-		if (cv::osu::skin_async.getBool())
-			resourceManager->requestNextLoadAsync();
-		*addressOfPointer = resourceManager->loadSoundAbs(defaultWav, defaultResourceName, false, false, loop);
-	}
-	else if (skinFileExists(defaultMp3))
-	{
-		if (cv::osu::skin_async.getBool())
-			resourceManager->requestNextLoadAsync();
-		*addressOfPointer = resourceManager->loadSoundAbs(defaultMp3, defaultResourceName, false, false, loop);
-	}
-	else if (skinFileExists(defaultOgg))
-	{
-		if (cv::osu::skin_async.getBool())
-			resourceManager->requestNextLoadAsync();
-		*addressOfPointer = resourceManager->loadSoundAbs(defaultOgg, defaultResourceName, false, false, loop);
+		const UString defaultPath = buildDefaultPath(skinElementName, format);
+		if (skinFileExists(defaultPath))
+		{
+			if (cv::osu::skin_async.getBool())
+				resourceManager->requestNextLoadAsync();
+			*addressOfPointer = resourceManager->loadSoundAbs(defaultPath, defaultResourceName, false, false, loop);
+			break;
+		}
 	}
 
 	// load user skin if appropriate
 	bool isDefaultSkin = true;
 	if (!isSample || cv::osu::skin_use_skin_hitsounds.getBool())
 	{
-		if (skinFileExists(userWav))
+		for (const char *format : audioFormats)
 		{
-			if (cv::osu::skin_async.getBool())
-				resourceManager->requestNextLoadAsync();
-			*addressOfPointer = resourceManager->loadSoundAbs(userWav, "", false, false, loop);
-			isDefaultSkin = false;
-		}
-		else if (skinFileExists(userMp3))
-		{
-			if (cv::osu::skin_async.getBool())
-				resourceManager->requestNextLoadAsync();
-			*addressOfPointer = resourceManager->loadSoundAbs(userMp3, "", false, false, loop);
-			isDefaultSkin = false;
-		}
-		else if (skinFileExists(userOgg))
-		{
-			if (cv::osu::skin_async.getBool())
-				resourceManager->requestNextLoadAsync();
-			*addressOfPointer = resourceManager->loadSoundAbs(userOgg, "", false, false, loop);
-			isDefaultSkin = false;
+			const UString userPath = buildUserPath(skinElementName, format);
+			if (skinFileExists(userPath))
+			{
+				if (cv::osu::skin_async.getBool())
+					resourceManager->requestNextLoadAsync();
+				*addressOfPointer = resourceManager->loadSoundAbs(userPath, "", false, false, loop);
+				isDefaultSkin = false;
+				break;
+			}
 		}
 	}
 
@@ -1565,7 +1545,7 @@ void OsuSkin::checkLoadSound(Sound **addressOfPointer, UString skinElementName, 
 
 		if (isSample)
 		{
-			SOUND_SAMPLE sample;
+			SOUND_SAMPLE sample{};
 			sample.sound = *addressOfPointer;
 			sample.hardcodedVolumeMultiplier = hardcodedVolumeMultiplier >= 0.0f ? hardcodedVolumeMultiplier : 1.0f;
 			m_soundSamples.push_back(sample);
@@ -1579,7 +1559,7 @@ void OsuSkin::checkLoadSound(Sound **addressOfPointer, UString skinElementName, 
 	}
 }
 
-bool OsuSkin::compareFilenameWithSkinElementName(UString filename, UString skinElementName)
+bool OsuSkin::compareFilenameWithSkinElementName(const UString &filename, const UString &skinElementName)
 {
 	if (filename.length() == 0 || skinElementName.length() == 0) return false;
 
