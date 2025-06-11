@@ -10,16 +10,14 @@ RUN update-alternatives --install /usr/bin/gcc gcc /usr/lib/gcc-14/bin/gcc 90 \
 RUN apt-get -y update && \
     apt-get -y install pkgconf autoconf build-essential \
     libx11-dev libxi-dev libglu1-mesa-dev libjpeg-dev libfreetype-dev \
-    zlib1g-dev nasm cmake meson ccache && \
+    zlib1g-dev nasm cmake meson ccache unzip && \
     rm -rf /var/lib/apt/lists/*
 
 FROM main-deps AS manual-deps
 
 WORKDIR /tempbuild
 
-ENV GENIE_VERSION="bf3bf3f051a5f829e9f77d792c169ff866528f8d" \
-    FFMPEG_VERSION="7.1.1"
-
+ENV GENIE_VERSION="bf3bf3f051a5f829e9f77d792c169ff866528f8d"
 # needed for SoLoud build
 RUN wget -O genie.tar.gz "https://github.com/bkaradzic/GENie/archive/${GENIE_VERSION}.tar.gz" && \
     tar -xf genie.tar.gz && \
@@ -30,12 +28,6 @@ RUN wget -O genie.tar.gz "https://github.com/bkaradzic/GENie/archive/${GENIE_VER
     make -C build/gmake.linux clean && \
     make -C build/gmake.linux all && \
     install -D -m755 $PWD/bin/linux/genie /usr/bin/genie
-
-# headers needed for SoLoud to be able to build the ffmpeg decoder
-RUN wget -qO- "https://ffmpeg.org/releases/ffmpeg-${FFMPEG_VERSION}.tar.xz" | \
-    tar xJ --wildcards --no-anchored libavcodec/'*'.h libavformat/'*'.h libavutil/'*'.h libswresample/'*'.h && \
-    mv ffmpeg-${FFMPEG_VERSION}/* /usr/include/ && \
-    printf '%s\n%s\n%s\n' "#pragma once" "#define AV_HAVE_BIGENDIAN 0" "#define AV_HAVE_FAST_UNALIGNED 1" > /usr/include/libavutil/avconfig.h
 
 FROM manual-deps AS main-build
 

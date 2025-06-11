@@ -648,13 +648,6 @@ am__EXEEXT_TRUE
 LTLIBOBJS
 LIBOBJS
 BUNDLED_INCLUDES
-BUNDLED_BASS_WASAPI_DIR
-BUNDLED_BASS_ASIO_DIR
-BUNDLED_BASS_MIX_DIR
-BUNDLED_BASS_FLAC_DIR
-BUNDLED_BASS_FX_DIR
-BUNDLED_BASS_DIR
-BUNDLED_LIBS_DIR
 AUDIO_LIBS
 AUDIO_CFLAGS
 ASSETS_DIR
@@ -722,6 +715,8 @@ LIBJPEG_LIBS
 LIBJPEG_CFLAGS
 SDL3_LIBS
 SDL3_CFLAGS
+BASS_VERSION
+FFMPEG_VERSION
 MIMALLOC_PREFIX
 MIMALLOC_VERSION
 SDL3_MIXER_PREFIX
@@ -784,6 +779,7 @@ GENIE
 LLVMMINGW
 CMAKE
 MESON
+UNZIP
 NINJA
 PKGCONF
 TAR
@@ -5682,6 +5678,7 @@ printf "%s\n" "$ac_cv_path_SED" >&6; }
 
 
 
+
 # needed for building SoLoud (if enabled)
 
 # needed for building libjpeg (if building it is required)
@@ -5926,6 +5923,54 @@ fi
 
     if test -z "$NINJA"; then
         as_fn_error $? "ninja not found - required for building dependencies" "$LINENO" 5
+    fi
+
+
+    # Extract the first word of "unzip", so it can be a program name with args.
+set dummy unzip; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+if test ${ac_cv_prog_UNZIP+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) if test -n "$UNZIP"; then
+  ac_cv_prog_UNZIP="$UNZIP" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    ac_cv_prog_UNZIP="unzip"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi ;;
+esac
+fi
+UNZIP=$ac_cv_prog_UNZIP
+if test -n "$UNZIP"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $UNZIP" >&5
+printf "%s\n" "$UNZIP" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+
+    if test -z "$UNZIP"; then
+        as_fn_error $? "unzip not found - required for extracting dependencies" "$LINENO" 5
     fi
 
 
@@ -9978,6 +10023,11 @@ MIMALLOC_VERSION=bc18e9456ee3fa4449240250e5918175c1898712
 MIMALLOC_PREFIX=$DEPS_PREFIX
 
 
+FFMPEG_VERSION=7.1
+ # pre-built, used for soloud
+BASS_VERSION=20250611
+ # just mark the date so we can invalidate the cache if necessary
+
 # TODO: add all deps and transitive deps (fun!)
 if test "x$enable_system_deps" != "xno"
 then :
@@ -11346,87 +11396,18 @@ fi
 ASSETS_DIR=assets
 
 
-BUNDLED_LIBS_DIR=libraries
-BUNDLED_BASS_DIR=$BUNDLED_LIBS_DIR/bass
-BUNDLED_BASS_FX_DIR=$BUNDLED_LIBS_DIR/bassfx
-BUNDLED_BASS_FLAC_DIR=$BUNDLED_LIBS_DIR/bassflac
-BUNDLED_BASS_MIX_DIR=$BUNDLED_LIBS_DIR/bassmix
-BUNDLED_BASS_ASIO_DIR=$BUNDLED_LIBS_DIR/bassasio
-BUNDLED_BASS_WASAPI_DIR=$BUNDLED_LIBS_DIR/basswasapi
-
 AUDIO_CFLAGS=""
 AUDIO_LIBS=""
-if test "$with_bass" = "yes"
-then :
-
-    if test -f "$srcdir/$BUNDLED_BASS_DIR/lib/$SYSNAME/$host_cpu/${LIBPREFIX}bass$DLLEXT"
-then :
-
-else case e in #(
-  e) as_fn_error $? "Required bundled library ${LIBPREFIX}bass$DLLEXT not found" "$LINENO" 5 ;;
-esac
-fi
-    if test -f "$srcdir/$BUNDLED_BASS_FX_DIR/lib/$SYSNAME/$host_cpu/${LIBPREFIX}bass_fx$DLLEXT"
-then :
-
-else case e in #(
-  e) as_fn_error $? "Required bundled library ${LIBPREFIX}bass_fx$DLLEXT not found" "$LINENO" 5 ;;
-esac
-fi
-    if test -f "$srcdir/$BUNDLED_BASS_FLAC_DIR/lib/$SYSNAME/$host_cpu/${LIBPREFIX}bassflac$DLLEXT"
-then :
-
-else case e in #(
-  e) as_fn_error $? "Required bundled library ${LIBPREFIX}bassflac$DLLEXT not found" "$LINENO" 5 ;;
-esac
-fi
-    if test -f "$srcdir/$BUNDLED_BASS_MIX_DIR/lib/$SYSNAME/$host_cpu/${LIBPREFIX}bassmix$DLLEXT"
-then :
-
-else case e in #(
-  e) as_fn_error $? "Required bundled library ${LIBPREFIX}bassmix$DLLEXT not found" "$LINENO" 5 ;;
-esac
-fi
-    AUDIO_CFLAGS="$AUDIO_CFLAGS -I\$(srcdir)/\$(BUNDLED_BASS_DIR)/include -I\$(srcdir)/\$(BUNDLED_BASS_FX_DIR)/include -I\$(srcdir)/\$(BUNDLED_BASS_FLAC_DIR)/include -I\$(srcdir)/\$(BUNDLED_BASS_MIX_DIR)/include"
-    if test "$SYSNAME" = "windows"
-then :
-
-        if test -f "$srcdir/$BUNDLED_BASS_ASIO_DIR/lib/$SYSNAME/$host_cpu/${LIBPREFIX}bassasio$DLLEXT"
-then :
-
-else case e in #(
-  e) as_fn_error $? "Required bundled library ${LIBPREFIX}bassasio$DLLEXT not found" "$LINENO" 5 ;;
-esac
-fi
-        if test -f "$srcdir/$BUNDLED_BASS_WASAPI_DIR/lib/$SYSNAME/$host_cpu/${LIBPREFIX}basswasapi$DLLEXT"
-then :
-
-else case e in #(
-  e) as_fn_error $? "Required bundled library ${LIBPREFIX}basswasapi$DLLEXT not found" "$LINENO" 5 ;;
-esac
-fi
-        AUDIO_CFLAGS="$AUDIO_CFLAGS -I\$(srcdir)/\$(BUNDLED_BASS_ASIO_DIR)/include -I\$(srcdir)/\$(BUNDLED_BASS_WASAPI_DIR)/include"
-
-fi
-
-fi
-
-
-
-
-
-
-
 
 
 
 
 # the source file is also added through autogen.sh to Makefile.sources
-BUNDLED_INCLUDES="-I\$(srcdir)/\$(BUNDLED_LIBS_DIR)/include"
+BUNDLED_INCLUDES="-I\$(srcdir)/libraries/include"
 if test "$renderer" != "dx11"
 then :
 
-    BUNDLED_INCLUDES="$BUNDLED_INCLUDES -I\$(srcdir)/\$(BUNDLED_LIBS_DIR)/include/glad"
+    BUNDLED_INCLUDES="$BUNDLED_INCLUDES -I\$(srcdir)/libraries/include/glad"
 
 fi
 

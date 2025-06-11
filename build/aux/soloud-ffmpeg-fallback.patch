@@ -1,18 +1,18 @@
-From 6a5f4bcb76420dc2eecb2df8a0d7d32c68669133 Mon Sep 17 00:00:00 2001
+From aea5854c43753ec30c595a3c43ad934c7e2819db Mon Sep 17 00:00:00 2001
 From: William Horvath <william@horvath.blog>
 Date: Sun, 8 Jun 2025 01:51:53 -0700
-Subject: [PATCH 1/2] WIP: ffmpeg fallback for wav/wavstreams
+Subject: [PATCH] WIP: ffmpeg fallback for wav/wavstreams
 
 ---
  include/soloud_wav.h                       |   79 +-
  include/soloud_wavstream.h                 |  136 +--
  src/audiosource/wav/soloud_ffmpeg.cpp      |  729 ++++++++++++
  src/audiosource/wav/soloud_ffmpeg.h        |   91 ++
- src/audiosource/wav/soloud_ffmpeg_load.cpp |  344 ++++++
- src/audiosource/wav/soloud_ffmpeg_load.h   |  169 +++
+ src/audiosource/wav/soloud_ffmpeg_load.cpp |  353 ++++++
+ src/audiosource/wav/soloud_ffmpeg_load.h   |  170 +++
  src/audiosource/wav/soloud_wav.cpp         |  632 +++++-----
  src/audiosource/wav/soloud_wavstream.cpp   | 1240 +++++++++++---------
- 8 files changed, 2448 insertions(+), 972 deletions(-)
+ 8 files changed, 2458 insertions(+), 972 deletions(-)
  create mode 100644 src/audiosource/wav/soloud_ffmpeg.cpp
  create mode 100644 src/audiosource/wav/soloud_ffmpeg.h
  create mode 100644 src/audiosource/wav/soloud_ffmpeg_load.cpp
@@ -1089,10 +1089,10 @@ index 0000000..248e94a
 +#endif // SOLOUD_FFMPEG_H
 diff --git a/src/audiosource/wav/soloud_ffmpeg_load.cpp b/src/audiosource/wav/soloud_ffmpeg_load.cpp
 new file mode 100644
-index 0000000..7c78fac
+index 0000000..a485187
 --- /dev/null
 +++ b/src/audiosource/wav/soloud_ffmpeg_load.cpp
-@@ -0,0 +1,344 @@
+@@ -0,0 +1,353 @@
 +/*
 +SoLoud audio engine - ffmpeg library loader/unloader
 +Copyright (c) 2013-2020 Jari Komppa
@@ -1132,7 +1132,7 @@ index 0000000..7c78fac
 +
 +#ifdef WITH_SDL3_STATIC
 +#include <SDL3/SDL_loadso.h>
-+typedef SDL_SharedObject (*OBJHANDLE);
++typedef SDL_SharedObject(*OBJHANDLE);
 +#define LIBLOAD(x) SDL_LoadObject(x)
 +#define LIBFUNC(x, y) SDL_LoadFunction(x, y)
 +#define LIBFREE(x) SDL_UnloadObject(x)
@@ -1177,9 +1177,9 @@ index 0000000..7c78fac
 +
 +// library handles
 +static OBJHANDLE s_libAvutil = nullptr;
++static OBJHANDLE s_libSwresample = nullptr;
 +static OBJHANDLE s_libAvcodec = nullptr;
 +static OBJHANDLE s_libAvformat = nullptr;
-+static OBJHANDLE s_libSwresample = nullptr;
 +
 +static std::once_flag s_init_flag;
 +static bool s_init_success{false};
@@ -1315,6 +1315,12 @@ index 0000000..7c78fac
 +	return success;
 +}
 +
++// silence, you fool
++static void empty_log_callback(void *, int, const char *, va_list)
++{
++	;
++}
++
 +static bool init_locked()
 +{
 +	s_available = false;
@@ -1326,6 +1332,14 @@ index 0000000..7c78fac
 +	if (!s_libAvutil)
 +	{
 +		s_errorDetails = "Failed to load libavutil-59 (error: " + LIBGETERROR() + ")";
++		return false;
++	}
++
++	s_libSwresample = LIBLOAD(LNAME(swresample, 5));
++	if (!s_libSwresample)
++	{
++		s_errorDetails = "Failed to load libswresample-5 (error: " + LIBGETERROR() + ")";
++		cleanup();
 +		return false;
 +	}
 +
@@ -1345,25 +1359,20 @@ index 0000000..7c78fac
 +		return false;
 +	}
 +
-+	s_libSwresample = LIBLOAD(LNAME(swresample, 5));
-+	if (!s_libSwresample)
-+	{
-+		s_errorDetails = "Failed to load libswresample-5 (error: " + LIBGETERROR() + ")";
-+		cleanup();
-+		return false;
-+	}
-+
 +	bool functionsLoaded = true;
 +	functionsLoaded &= loadAvutilFunctions();
++	functionsLoaded &= loadSwresampleFunctions();
 +	functionsLoaded &= loadAvcodecFunctions();
 +	functionsLoaded &= loadAvformatFunctions();
-+	functionsLoaded &= loadSwresampleFunctions();
 +
 +	if (!functionsLoaded)
 +	{
 +		cleanup();
 +		return false;
 +	}
++
++	if (av_log_set_callback)
++		av_log_set_callback(empty_log_callback);
 +
 +	// verify basic functionality
 +	if (av_malloc && av_free)
@@ -1400,11 +1409,6 @@ index 0000000..7c78fac
 +#define RESET_FUNCTION(name) name = nullptr;
 +	ALL_FFMPEG_FUNCTIONS(RESET_FUNCTION)
 +
-+	if (s_libSwresample)
-+	{
-+		LIBFREE(s_libSwresample);
-+		s_libSwresample = nullptr;
-+	}
 +	if (s_libAvformat)
 +	{
 +		LIBFREE(s_libAvformat);
@@ -1414,6 +1418,11 @@ index 0000000..7c78fac
 +	{
 +		LIBFREE(s_libAvcodec);
 +		s_libAvcodec = nullptr;
++	}
++	if (s_libSwresample)
++	{
++		LIBFREE(s_libSwresample);
++		s_libSwresample = nullptr;
 +	}
 +	if (s_libAvutil)
 +	{
@@ -1439,10 +1448,10 @@ index 0000000..7c78fac
 +#endif
 diff --git a/src/audiosource/wav/soloud_ffmpeg_load.h b/src/audiosource/wav/soloud_ffmpeg_load.h
 new file mode 100644
-index 0000000..9183ce3
+index 0000000..7dadca7
 --- /dev/null
 +++ b/src/audiosource/wav/soloud_ffmpeg_load.h
-@@ -0,0 +1,169 @@
+@@ -0,0 +1,170 @@
 +/*
 +SoLoud audio engine - ffmpeg library loader/unloader
 +Copyright (c) 2013-2020 Jari Komppa
@@ -1521,6 +1530,7 @@ index 0000000..9183ce3
 +	X(av_packet_unref)
 +
 +#define AVUTIL_FUNCTIONS(X) \
++	X(av_log_set_callback) \
 +	X(av_rescale_q) \
 +	X(av_opt_set_int) \
 +	X(av_opt_set_chlayout) \

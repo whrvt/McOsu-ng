@@ -161,10 +161,38 @@ $(DEPS_PREFIX)/SDL3_mixer.built:
 	$(MKDIR_P) $(DEPS_PREFIX) && touch $@
 endif
 
+$(DEPS_CACHE)/ffmpeg-$(FFMPEG_VERSION)/ffmpeg-linuxx86_64.tar.xz:
+	$(MKDIR_P) $(DEPS_CACHE)/ffmpeg-$(FFMPEG_VERSION) && \
+	$(WGET) -qO $(DEPS_CACHE)/ffmpeg-$(FFMPEG_VERSION)/ffmpeg-linuxx86_64.tar.xz "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-n$(FFMPEG_VERSION)-latest-linux64-gpl-shared-$(FFMPEG_VERSION).tar.xz"
+
+$(DEPS_CACHE)/ffmpeg-$(FFMPEG_VERSION)/ffmpeg-windowsi686.zip:
+	$(MKDIR_P) $(DEPS_CACHE)/ffmpeg-$(FFMPEG_VERSION) && \
+	$(WGET) -qO $(DEPS_CACHE)/ffmpeg-$(FFMPEG_VERSION)/ffmpeg-windowsi686.zip "https://github.com/yt-dlp/FFmpeg-Builds/releases/download/latest/ffmpeg-n$(FFMPEG_VERSION)-latest-win32-gpl-shared-$(FFMPEG_VERSION).zip"
+
+$(DEPS_CACHE)/ffmpeg-$(FFMPEG_VERSION)/ffmpeg-windowsx86_64.zip:
+	$(MKDIR_P) $(DEPS_CACHE)/ffmpeg-$(FFMPEG_VERSION) && \
+	$(WGET) -qO $(DEPS_CACHE)/ffmpeg-$(FFMPEG_VERSION)/ffmpeg-windowsx86_64.zip "https://github.com/yt-dlp/FFmpeg-Builds/releases/download/latest/ffmpeg-n$(FFMPEG_VERSION)-latest-win64-gpl-shared-$(FFMPEG_VERSION).zip"
+
+$(DEPS_CACHE)/ffmpeg-$(FFMPEG_VERSION).source: $(DEPS_CACHE)/ffmpeg-$(FFMPEG_VERSION)/ffmpeg-linuxx86_64.tar.xz $\
+											$(DEPS_CACHE)/ffmpeg-$(FFMPEG_VERSION)/ffmpeg-windowsi686.zip $\
+											$(DEPS_CACHE)/ffmpeg-$(FFMPEG_VERSION)/ffmpeg-windowsx86_64.zip
+	cd $(DEPS_CACHE)/ffmpeg-$(FFMPEG_VERSION) && \
+	$(MKDIR_P) linuxx86_64 && $(TAR) xf ffmpeg-linuxx86_64.tar.xz -C linuxx86_64 --strip-components=1 --wildcards --no-anchored include/'*'.h lib/'*'.so'*' && \
+	$(MKDIR_P) linuxi686 && cp -r linuxx86_64/include linuxi686/ && \
+	$(MKDIR_P) windowsi686/lib && $(UNZIP) -qjo ffmpeg-windowsi686.zip "*/bin/*.dll" -d windowsi686/lib && \
+	$(MKDIR_P) windowsi686/include && $(UNZIP) -qo ffmpeg-windowsi686.zip "*/include/*" -d windowsi686/include && mv windowsi686/include/*/*/* windowsi686/include/ && \
+	$(MKDIR_P) windowsx86_64/lib && $(UNZIP) -qjo ffmpeg-windowsx86_64.zip "*/bin/*.dll" -d windowsx86_64/lib && \
+	$(MKDIR_P) windowsx86_64/include && $(UNZIP) -qo ffmpeg-windowsx86_64.zip "*/include/*" -d windowsx86_64/include && mv windowsx86_64/include/*/*/* windowsx86_64/include/
+	touch $@
+
 if USE_SOLOUD
 AUDIO_CFLAGS += $(shell $(PKG_CONFIG) --cflags soundtouch) -DST_NO_EXCEPTION_HANDLING $(if $(and $(filter i686,$(host_cpu)),$(DISABLE_NATIVE)),-DSOUNDTOUCH_DISABLE_X86_OPTIMIZATIONS,)
 AUDIO_LIBS += -L$(DEPS_PREFIX)/lib -lsoloud_static_x$(if $(filter x86_64,$(host_cpu)),64,86)$(if $(ENABLE_DEBUG),_d,) $(shell $(PKG_CONFIG) --libs soundtouch)
-$(DEPS_PREFIX)/SoLoud.built: $(DEPS_CACHE)/SoLoud-$(SOLOUD_VERSION).source $(DEPS_PREFIX)/SDL3.built
+
+FFMPEG_INSTALL_LIBS := `find $(DEPS_CACHE)/ffmpeg-$(FFMPEG_VERSION)/$(SYSNAME)$(host_cpu)/lib '(' -name '*avutil*' -o -name '*avcodec*' -o -name '*avformat*' -o -name '*swresample*' ')' -printf '%p '`
+FFMPEG_INCDIR := $(DEPS_CACHE)/ffmpeg-$(FFMPEG_VERSION)/$(SYSNAME)$(host_cpu)/include
+
+$(DEPS_PREFIX)/SoLoud.built: $(DEPS_CACHE)/SoLoud-$(SOLOUD_VERSION).source $(DEPS_CACHE)/ffmpeg-$(FFMPEG_VERSION).source $(DEPS_PREFIX)/SDL3.built
 	rm -rf $(DEPS_PREFIX)/SoLoud
 	$(MKDIR_P) $(DEPS_PREFIX) $(DEPS_PREFIX)/include/soloud $(DEPS_PREFIX)/lib/pkgconfig $(DEPS_PREFIX)/SoLoud/build
 	$(TAR) xf $(DEPS_CACHE)/SoLoud-$(SOLOUD_VERSION).tar.gz -C $(DEPS_PREFIX)/SoLoud --strip-components=1 && \
@@ -192,8 +220,9 @@ $(DEPS_PREFIX)/SoLoud.built: $(DEPS_CACHE)/SoLoud-$(SOLOUD_VERSION).source $(DEP
 			 --os=$(if $(findstring linux,$(host_os)),linux,windows) \
 			 gmake && \
 	cd gmake && $(SED) -i -e 's|^CC.*=.*||g' -e 's|^AR.*=.*||g' -e 's|^CXX.*=.*||g' SoloudStatic.make && \
-	PKG_CONFIG="$(PKG_CONFIG) --static" CC="$(CC)" CXX="$(CXX)" LD="$(LD)" CFLAGS="$(SDL3_CFLAGS) $(CFLAGS)" CXXFLAGS="$(SDL3_CFLAGS) $(CXXFLAGS)" LDFLAGS="$(LDFLAGS)" \
-	PREFIX="$(DEPS_PREFIX)" RANLIB="$(RANLIB)" AR="$(AR)" config="$(if $(ENABLE_DEBUG),debug,release)" make SoloudStatic && \
+	PKG_CONFIG="$(PKG_CONFIG) --static" CC="$(CC)" CXX="$(CXX)" LD="$(LD)" CFLAGS="-I$(FFMPEG_INCDIR) $(if $(ENABLE_DEBUG),-D_DEBUG,) $(SDL3_CFLAGS) $(CFLAGS)" \
+		CXXFLAGS="-I$(FFMPEG_INCDIR) $(if $(ENABLE_DEBUG),-D_DEBUG,) $(SDL3_CFLAGS) $(CXXFLAGS)" LDFLAGS="$(LDFLAGS)" \
+		PREFIX="$(DEPS_PREFIX)" RANLIB="$(RANLIB)" AR="$(AR)" config="$(if $(ENABLE_DEBUG),debug,release)" make SoloudStatic && \
 	cp $(DEPS_PREFIX)/SoLoud/lib/libsoloud_static_x$(if $(filter x86_64,$(host_cpu)),64,86)$(if $(ENABLE_DEBUG),_d,).a $(DEPS_PREFIX)/lib/
 	cp -r $(DEPS_PREFIX)/SoLoud/include/* $(DEPS_PREFIX)/include/soloud/ && \
 	test -f $(DEPS_PREFIX)/lib/libsoloud_static_x$(if $(filter x86_64,$(host_cpu)),64,86)$(if $(ENABLE_DEBUG),_d,).a
@@ -229,6 +258,94 @@ $(DEPS_PREFIX)/SoLoud.built:
 	$(MKDIR_P) $(DEPS_PREFIX) && touch $@
 $(DEPS_PREFIX)/SoundTouch.built:
 	$(MKDIR_P) $(DEPS_PREFIX) && touch $@
+endif
+
+# just download the windows versions as well even on linux, because we need them for headers, no point in adding a bunch of complexity to avoid that
+$(DEPS_CACHE)/bass-$(BASS_VERSION)/bass.zip:
+	$(MKDIR_P) $(DEPS_CACHE)/bass-$(BASS_VERSION) && \
+	$(WGET) -qO $(DEPS_CACHE)/bass-$(BASS_VERSION)/bass.zip "https://web.archive.org/web/20250603164509/https://www.un4seen.com/stuff/bass.zip"
+$(DEPS_CACHE)/bass-$(BASS_VERSION)/bass-linux.zip:
+	$(MKDIR_P) $(DEPS_CACHE)/bass-$(BASS_VERSION) && \
+	$(WGET) -qO $(DEPS_CACHE)/bass-$(BASS_VERSION)/bass-linux.zip "https://web.archive.org/web/20250603165042/https://www.un4seen.com/stuff/bass-linux.zip"
+$(DEPS_CACHE)/bass-$(BASS_VERSION)/bassflac24.zip:
+	$(MKDIR_P) $(DEPS_CACHE)/bass-$(BASS_VERSION) && \
+	$(WGET) -qO $(DEPS_CACHE)/bass-$(BASS_VERSION)/bassflac24.zip "https://web.archive.org/web/20250102150048/https://www.un4seen.com/files/bassflac24.zip"
+$(DEPS_CACHE)/bass-$(BASS_VERSION)/bassflac24-linux.zip:
+	$(MKDIR_P) $(DEPS_CACHE)/bass-$(BASS_VERSION) && \
+	$(WGET) -qO $(DEPS_CACHE)/bass-$(BASS_VERSION)/bassflac24-linux.zip "https://web.archive.org/web/20250611162739/https://www.un4seen.com/files/bassflac24-linux.zip"
+$(DEPS_CACHE)/bass-$(BASS_VERSION)/bass_fx.zip:
+	$(MKDIR_P) $(DEPS_CACHE)/bass-$(BASS_VERSION) && \
+	$(WGET) -qO $(DEPS_CACHE)/bass-$(BASS_VERSION)/bass_fx.zip "https://web.archive.org/web/20250603164652/https://www.un4seen.com/stuff/bass_fx.zip"
+$(DEPS_CACHE)/bass-$(BASS_VERSION)/bass_fx-linux.zip:
+	$(MKDIR_P) $(DEPS_CACHE)/bass-$(BASS_VERSION) && \
+	$(WGET) -qO $(DEPS_CACHE)/bass-$(BASS_VERSION)/bass_fx-linux.zip "https://web.archive.org/web/20250603165140/https://www.un4seen.com/stuff/bass_fx-linux.zip"
+$(DEPS_CACHE)/bass-$(BASS_VERSION)/bassmix.zip:
+	$(MKDIR_P) $(DEPS_CACHE)/bass-$(BASS_VERSION) && \
+	$(WGET) -qO $(DEPS_CACHE)/bass-$(BASS_VERSION)/bassmix.zip "https://web.archive.org/web/20250603164713/https://www.un4seen.com/stuff/bassmix.zip"
+$(DEPS_CACHE)/bass-$(BASS_VERSION)/bassmix-linux.zip:
+	$(MKDIR_P) $(DEPS_CACHE)/bass-$(BASS_VERSION) && \
+	$(WGET) -qO $(DEPS_CACHE)/bass-$(BASS_VERSION)/bassmix-linux.zip "https://web.archive.org/web/20250603165247/https://www.un4seen.com/stuff/bassmix-linux.zip"
+$(DEPS_CACHE)/bass-$(BASS_VERSION)/basswasapi.zip:
+	$(MKDIR_P) $(DEPS_CACHE)/bass-$(BASS_VERSION) && \
+	$(WGET) -qO $(DEPS_CACHE)/bass-$(BASS_VERSION)/basswasapi.zip "https://web.archive.org/web/20250603164749/https://www.un4seen.com/stuff/basswasapi.zip"
+$(DEPS_CACHE)/bass-$(BASS_VERSION)/basswasapi24-header.zip:
+	$(MKDIR_P) $(DEPS_CACHE)/bass-$(BASS_VERSION) && \
+	$(WGET) -qO $(DEPS_CACHE)/bass-$(BASS_VERSION)/basswasapi24-header.zip "https://web.archive.org/web/20240501180448/http://www.un4seen.com/files/basswasapi24.zip"
+$(DEPS_CACHE)/bass-$(BASS_VERSION)/bassasio.zip:
+	$(MKDIR_P) $(DEPS_CACHE)/bass-$(BASS_VERSION) && \
+	$(WGET) -qO $(DEPS_CACHE)/bass-$(BASS_VERSION)/bassasio.zip "https://web.archive.org/web/20250603164955/https://www.un4seen.com/stuff/bassasio.zip"
+
+$(DEPS_CACHE)/bass-$(BASS_VERSION).source: $(DEPS_CACHE)/bass-$(BASS_VERSION)/bass.zip $(DEPS_CACHE)/bass-$(BASS_VERSION)/bass-linux.zip $\
+										$(DEPS_CACHE)/bass-$(BASS_VERSION)/bassflac24.zip $(DEPS_CACHE)/bass-$(BASS_VERSION)/bassflac24-linux.zip $\
+										$(DEPS_CACHE)/bass-$(BASS_VERSION)/bass_fx.zip $(DEPS_CACHE)/bass-$(BASS_VERSION)/bass_fx-linux.zip $\
+										$(DEPS_CACHE)/bass-$(BASS_VERSION)/bassmix.zip $(DEPS_CACHE)/bass-$(BASS_VERSION)/bassmix-linux.zip $\
+										$(DEPS_CACHE)/bass-$(BASS_VERSION)/basswasapi.zip $(DEPS_CACHE)/bass-$(BASS_VERSION)/basswasapi24-header.zip $\
+										$(DEPS_CACHE)/bass-$(BASS_VERSION)/bassasio.zip
+	cd $(DEPS_CACHE)/bass-$(BASS_VERSION) && \
+	$(MKDIR_P) bass/lib/windows/i686 && $(UNZIP) -qjo bass.zip bass.dll -d bass/lib/windows/i686 && \
+	$(MKDIR_P) bass/lib/windows/x86_64 && $(UNZIP) -qjo bass.zip x64/bass.dll -d bass/lib/windows/x86_64 && \
+	$(MKDIR_P) bass/include/ && $(UNZIP) -qjo bass.zip bass.h -d bass/include/ && \
+	$(MKDIR_P) bass/lib/linux/i686 && $(UNZIP) -qjo bass-linux.zip x86/libbass.so -d bass/lib/linux/i686 && \
+	$(MKDIR_P) bass/lib/linux/x86_64 && $(UNZIP) -qjo bass-linux.zip x86_64/libbass.so -d bass/lib/linux/x86_64 && \
+	$(MKDIR_P) bassfx/lib/windows/i686 && $(UNZIP) -qjo bass_fx.zip bass_fx.dll -d bassfx/lib/windows/i686 && \
+	$(MKDIR_P) bassfx/lib/windows/x86_64 && $(UNZIP) -qjo bass_fx.zip x64/bass_fx.dll -d bassfx/lib/windows/x86_64 && \
+	$(MKDIR_P) bassfx/include/ && $(UNZIP) -qjo bass_fx.zip bass_fx.h -d bassfx/include/ && \
+	$(MKDIR_P) bassfx/lib/linux/i686 && $(UNZIP) -qjo bass_fx-linux.zip x86/libbass_fx.so -d bassfx/lib/linux/i686 && \
+	$(MKDIR_P) bassfx/lib/linux/x86_64 && $(UNZIP) -qjo bass_fx-linux.zip x86_64/libbass_fx.so -d bassfx/lib/linux/x86_64 && \
+	$(MKDIR_P) bassflac/lib/windows/i686 && $(UNZIP) -qjo bassflac24.zip bassflac.dll -d bassflac/lib/windows/i686 && \
+	$(MKDIR_P) bassflac/lib/windows/x86_64 && $(UNZIP) -qjo bassflac24.zip x64/bassflac.dll -d bassflac/lib/windows/x86_64 && \
+	$(MKDIR_P) bassflac/lib/linux/i686 && $(UNZIP) -qjo bassflac24-linux.zip libs/x86/libbassflac.so -d bassflac/lib/linux/i686 && \
+	$(MKDIR_P) bassflac/lib/linux/x86_64 && $(UNZIP) -qjo bassflac24-linux.zip libs/x86_64/libbassflac.so -d bassflac/lib/linux/x86_64 && \
+	$(MKDIR_P) bassmix/lib/windows/i686 && $(UNZIP) -qjo bassmix.zip bassmix.dll -d bassmix/lib/windows/i686 && \
+	$(MKDIR_P) bassmix/lib/windows/x86_64 && $(UNZIP) -qjo bassmix.zip x64/bassmix.dll -d bassmix/lib/windows/x86_64 && \
+	$(MKDIR_P) bassmix/include/ && $(UNZIP) -qjo bassmix.zip bassmix.h -d bassmix/include/ && \
+	$(MKDIR_P) bassmix/lib/linux/i686 && $(UNZIP) -qjo bassmix-linux.zip x86/libbassmix.so -d bassmix/lib/linux/i686 && \
+	$(MKDIR_P) bassmix/lib/linux/x86_64 && $(UNZIP) -qjo bassmix-linux.zip x86_64/libbassmix.so -d bassmix/lib/linux/x86_64 && \
+	$(MKDIR_P) basswasapi/lib/windows/i686 && $(UNZIP) -qjo basswasapi.zip basswasapi.dll -d basswasapi/lib/windows/i686 && \
+	$(MKDIR_P) basswasapi/lib/windows/x86_64 && $(UNZIP) -qjo basswasapi.zip x64/basswasapi.dll -d basswasapi/lib/windows/x86_64 && \
+	$(MKDIR_P) basswasapi/include/ && $(UNZIP) -qjo basswasapi24-header.zip c/basswasapi.h -d basswasapi/include/ && \
+	$(MKDIR_P) bassasio/lib/windows/i686 && $(UNZIP) -qjo bassasio.zip bassasio.dll -d bassasio/lib/windows/i686 && \
+	$(MKDIR_P) bassasio/lib/windows/x86_64 && $(UNZIP) -qjo bassasio.zip x64/bassasio.dll -d bassasio/lib/windows/x86_64 && \
+	$(MKDIR_P) bassasio/include/ && $(UNZIP) -qjo bassasio.zip bassasio.h -d bassasio/include/ && \
+	touch $@
+
+if USE_BASS
+AUDIO_CFLAGS += -I$(DEPS_CACHE)/bass-$(BASS_VERSION)/bass/include -I$(DEPS_CACHE)/bass-$(BASS_VERSION)/bassfx/include -I$(DEPS_CACHE)/bass-$(BASS_VERSION)/bassmix/include
+BASS_INSTALL_LIBS := $(DEPS_CACHE)/bass-$(BASS_VERSION)/bass/lib/$(SYSNAME)/$(host_cpu)/$(LIBPREFIX)bass$(DLLEXT) \
+					$(DEPS_CACHE)/bass-$(BASS_VERSION)/bassfx/lib/$(SYSNAME)/$(host_cpu)/$(LIBPREFIX)bass_fx$(DLLEXT) \
+					$(DEPS_CACHE)/bass-$(BASS_VERSION)/bassmix/lib/$(SYSNAME)/$(host_cpu)/$(LIBPREFIX)bassmix$(DLLEXT)
+if WIN_PLATFORM
+AUDIO_CFLAGS += -I$(DEPS_CACHE)/bass-$(BASS_VERSION)/bassasio/include -I$(DEPS_CACHE)/bass-$(BASS_VERSION)/basswasapi/include
+BASS_INSTALL_LIBS += $(DEPS_CACHE)/bass-$(BASS_VERSION)/bassasio/lib/$(SYSNAME)/$(host_cpu)/$(LIBPREFIX)bassasio$(DLLEXT) \
+					$(DEPS_CACHE)/bass-$(BASS_VERSION)/basswasapi/lib/$(SYSNAME)/$(host_cpu)/$(LIBPREFIX)basswasapi$(DLLEXT)
+endif
+$(DEPS_PREFIX)/bass-$(BASS_VERSION).built: $(DEPS_CACHE)/bass-$(BASS_VERSION).source
+	$(MKDIR_P) $(DEPS_PREFIX)
+	touch $@
+else
+$(DEPS_PREFIX)/bass-$(BASS_VERSION).built:
+	$(MKDIR_P) $(DEPS_PREFIX)
+	touch $@
 endif
 
 $(DEPS_CACHE)/libjpeg-$(LIBJPEG_VERSION).source:
@@ -465,7 +582,7 @@ $(DEPS_PREFIX)/FREETYPE2.built:
 	$(MKDIR_P) $(DEPS_PREFIX) && touch $@
 endif
 
-BUILT_SOURCES := $(DEPS_PREFIX)/mimalloc.built $(DEPS_PREFIX)/SDL3.built $(DEPS_PREFIX)/SDL3_mixer.built $(DEPS_PREFIX)/libjpeg.built $(DEPS_PREFIX)/FMT.built \
+BUILT_SOURCES := $(DEPS_PREFIX)/mimalloc.built $(DEPS_PREFIX)/SDL3.built $(DEPS_PREFIX)/bass-$(BASS_VERSION).built $(DEPS_PREFIX)/SDL3_mixer.built $(DEPS_PREFIX)/libjpeg.built $(DEPS_PREFIX)/FMT.built \
 	$(DEPS_PREFIX)/libpng.built $(DEPS_PREFIX)/bzip2.built $(DEPS_PREFIX)/zlib.built $(DEPS_PREFIX)/FREETYPE2.built $(DEPS_PREFIX)/glm.built $(DEPS_PREFIX)/SoLoud.built $(DEPS_PREFIX)/SoundTouch.built
 
 # making sure deps are built before main compile (continued)
@@ -586,20 +703,14 @@ if WINSHARED_DLLS_NEEDED
 endif
 endif
 if USE_BASS
-	$(INSTALL) -m 755 $(srcdir)/$(BUNDLED_BASS_DIR)/lib/$(SYSNAME)/$(host_cpu)/$(LIBPREFIX)bass$(DLLEXT) "$(DESTDIR)$(bindir)/$(LIBDEST)"
-	$(INSTALL) -m 755 $(srcdir)/$(BUNDLED_BASS_FX_DIR)/lib/$(SYSNAME)/$(host_cpu)/$(LIBPREFIX)bass_fx$(DLLEXT) "$(DESTDIR)$(bindir)/$(LIBDEST)"
-	$(INSTALL) -m 755 $(srcdir)/$(BUNDLED_BASS_FLAC_DIR)/lib/$(SYSNAME)/$(host_cpu)/$(LIBPREFIX)bassflac$(DLLEXT) "$(DESTDIR)$(bindir)/$(LIBDEST)"
-	$(INSTALL) -m 755 $(srcdir)/$(BUNDLED_BASS_MIX_DIR)/lib/$(SYSNAME)/$(host_cpu)/$(LIBPREFIX)bassmix$(DLLEXT) "$(DESTDIR)$(bindir)/$(LIBDEST)"
-if WIN_PLATFORM
-	$(INSTALL) -m 755 $(srcdir)/$(BUNDLED_BASS_ASIO_DIR)/lib/$(SYSNAME)/$(host_cpu)/$(LIBPREFIX)bassasio$(DLLEXT) "$(DESTDIR)$(bindir)/$(LIBDEST)"
-	$(INSTALL) -m 755 $(srcdir)/$(BUNDLED_BASS_WASAPI_DIR)/lib/$(SYSNAME)/$(host_cpu)/$(LIBPREFIX)basswasapi$(DLLEXT) "$(DESTDIR)$(bindir)/$(LIBDEST)"
-endif
+	@cp -P $(BASS_INSTALL_LIBS) "$(DESTDIR)$(bindir)/$(LIBDEST)"
 endif
 if USE_SDLMIXER
 	$(if $(STATICBUILD),,@cp -P "$(SDL3_MIXER_PREFIX)/lib"/{*$(LIBPREFIX)SDL3_mixer*$(DLLEXT)*,*$(LIBPREFIX)mpg123*$(DLLEXT)*,*$(LIBPREFIX)xmp*$(DLLEXT)*,*$(LIBPREFIX)wavpack*$(DLLEXT)*,*$(LIBPREFIX)opus*$(DLLEXT)*,*$(LIBPREFIX)ogg*$(DLLEXT)*} "$(DESTDIR)$(bindir)/$(LIBDEST)")
 endif
 if USE_SOLOUD
 	$(if $(STATICBUILD),,@cp -P "$(SOLOUD_PREFIX)/lib"/*$(LIBPREFIX)SoundTouch*$(DLLEXT)* "$(DESTDIR)$(bindir)/$(LIBDEST)")
+	@cp -P -t "$(DESTDIR)$(bindir)/" $(FFMPEG_INSTALL_LIBS) || true
 endif
 if BUILD_SDL3
 	$(if $(SDL3_STATIC),,@`find $(SDL3_PREFIX) '(' -iname '*SDL3*'$(DLLEXT) -o -iname '*SDL3*''.so.*' ')' -exec cp -P '{''}' "$(DESTDIR)$(bindir)/$(LIBDEST)" ';'`)
@@ -653,12 +764,6 @@ distclean-local: clean-deps clean-dep-cache
 
 # TODO: distribution packaging
 dist-hook:
-if USE_BASS
-	cp -r $(srcdir)/$(BUNDLED_BASS_DIR)/lib $(distdir)/$(BUNDLED_BASS_DIR)/
-	cp -r $(srcdir)/$(BUNDLED_BASS_DIR)/include $(distdir)/$(BUNDLED_BASS_DIR)/
-	cp -r $(srcdir)/$(BUNDLED_BASS_FX_DIR)/lib $(distdir)/$(BUNDLED_BASS_FX_DIR)/
-	cp -r $(srcdir)/$(BUNDLED_BASS_FX_DIR)/include $(distdir)/$(BUNDLED_BASS_FX_DIR)/
-endif
 	cp -r $(srcdir)/$(ASSETS_DIR)/models $(distdir)/
 	cp -r $(srcdir)/$(ASSETS_DIR)/shaders $(distdir)/
 	cp -r $(srcdir)/$(ASSETS_DIR)/fonts $(distdir)/
@@ -677,13 +782,5 @@ EXTRA_DIST := \
 	$(ASSETS_DIR)/materials \
 	$(ASSETS_DIR)/cfg \
 	autogen.sh
-
-if USE_BASS
-EXTRA_DIST += \
-	$(BUNDLED_BASS_DIR)/include \
-	$(BUNDLED_BASS_FX_DIR)/include \
-	$(BUNDLED_BASS_DIR)/lib/$(SYSNAME)/$(host_cpu)/$(LIBPREFIX)bass$(DLLEXT) \
-	$(BUNDLED_BASS_FX_DIR)/lib/$(SYSNAME)/$(host_cpu)/$(LIBPREFIX)bass_fx$(DLLEXT)
-endif
 
 MAINTAINERCLEANFILES = $(top_srcdir)/src/Makefile.sources

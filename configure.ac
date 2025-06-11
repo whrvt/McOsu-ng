@@ -76,6 +76,12 @@ AC_DEFUN([AC_PROG_NINJA], [
         AC_MSG_ERROR([ninja not found - required for building dependencies])
     fi
 ])
+AC_DEFUN([AC_PROG_UNZIP], [
+    AC_CHECK_PROG([UNZIP], [unzip], [unzip])
+    if test -z "$UNZIP"; then
+        AC_MSG_ERROR([unzip not found - required for extracting dependencies])
+    fi
+])
 # needed for building SoLoud (if enabled)
 AC_DEFUN([AC_PROG_GENIE], [
     AC_CHECK_PROG([GENIE], [genie], [genie])
@@ -97,6 +103,7 @@ AC_PROG_GIT
 AC_PROG_TAR
 AC_PROG_PKGCONF
 AC_PROG_NINJA
+AC_PROG_UNZIP
 AC_PROG_MESON
 AC_PROG_CMAKE
 
@@ -580,6 +587,9 @@ AC_SUBST([SDL3_MIXER_PREFIX],[$DEPS_PREFIX])
 AC_SUBST([MIMALLOC_VERSION], [bc18e9456ee3fa4449240250e5918175c1898712])
 AC_SUBST([MIMALLOC_PREFIX],[$DEPS_PREFIX])
 
+AC_SUBST([FFMPEG_VERSION], [7.1]) # pre-built, used for soloud
+AC_SUBST([BASS_VERSION], [20250611]) # just mark the date so we can invalidate the cache if necessary
+
 # TODO: add all deps and transitive deps (fun!)
 AS_IF([test "x$enable_system_deps" != "xno"], [
     PKG_CHECK_AUTO([SDL3], [sdl3 >= $SDL3_MIN_VERSION], [have_sdl3=yes], [have_sdl3=no])
@@ -685,55 +695,16 @@ AM_CONDITIONAL([WINSHARED_DLLS_NEEDED], [test -n "$WINSHARED_DLLS"])
 ASSETS_DIR=assets
 AC_SUBST([ASSETS_DIR])
 
-BUNDLED_LIBS_DIR=libraries
-BUNDLED_BASS_DIR=$BUNDLED_LIBS_DIR/bass
-BUNDLED_BASS_FX_DIR=$BUNDLED_LIBS_DIR/bassfx
-BUNDLED_BASS_FLAC_DIR=$BUNDLED_LIBS_DIR/bassflac
-BUNDLED_BASS_MIX_DIR=$BUNDLED_LIBS_DIR/bassmix
-BUNDLED_BASS_ASIO_DIR=$BUNDLED_LIBS_DIR/bassasio
-BUNDLED_BASS_WASAPI_DIR=$BUNDLED_LIBS_DIR/basswasapi
-
 AUDIO_CFLAGS=""
 AUDIO_LIBS=""
-AS_IF([test "$with_bass" = "yes"], [
-    AS_IF([test -f "$srcdir/$BUNDLED_BASS_DIR/lib/$SYSNAME/$host_cpu/${LIBPREFIX}bass$DLLEXT"], 
-        [],
-        [AC_MSG_ERROR([Required bundled library ${LIBPREFIX}bass$DLLEXT not found])])
-    AS_IF([test -f "$srcdir/$BUNDLED_BASS_FX_DIR/lib/$SYSNAME/$host_cpu/${LIBPREFIX}bass_fx$DLLEXT"],
-        [],
-        [AC_MSG_ERROR([Required bundled library ${LIBPREFIX}bass_fx$DLLEXT not found])])
-    AS_IF([test -f "$srcdir/$BUNDLED_BASS_FLAC_DIR/lib/$SYSNAME/$host_cpu/${LIBPREFIX}bassflac$DLLEXT"],
-        [],
-        [AC_MSG_ERROR([Required bundled library ${LIBPREFIX}bassflac$DLLEXT not found])])
-    AS_IF([test -f "$srcdir/$BUNDLED_BASS_MIX_DIR/lib/$SYSNAME/$host_cpu/${LIBPREFIX}bassmix$DLLEXT"],
-        [],
-        [AC_MSG_ERROR([Required bundled library ${LIBPREFIX}bassmix$DLLEXT not found])])
-    AUDIO_CFLAGS="$AUDIO_CFLAGS -I\$(srcdir)/\$(BUNDLED_BASS_DIR)/include -I\$(srcdir)/\$(BUNDLED_BASS_FX_DIR)/include -I\$(srcdir)/\$(BUNDLED_BASS_FLAC_DIR)/include -I\$(srcdir)/\$(BUNDLED_BASS_MIX_DIR)/include"
-    AS_IF([test "$SYSNAME" = "windows"],[
-        AS_IF([test -f "$srcdir/$BUNDLED_BASS_ASIO_DIR/lib/$SYSNAME/$host_cpu/${LIBPREFIX}bassasio$DLLEXT"],
-            [],
-            [AC_MSG_ERROR([Required bundled library ${LIBPREFIX}bassasio$DLLEXT not found])])
-        AS_IF([test -f "$srcdir/$BUNDLED_BASS_WASAPI_DIR/lib/$SYSNAME/$host_cpu/${LIBPREFIX}basswasapi$DLLEXT"],
-            [],
-            [AC_MSG_ERROR([Required bundled library ${LIBPREFIX}basswasapi$DLLEXT not found])])
-        AUDIO_CFLAGS="$AUDIO_CFLAGS -I\$(srcdir)/\$(BUNDLED_BASS_ASIO_DIR)/include -I\$(srcdir)/\$(BUNDLED_BASS_WASAPI_DIR)/include"
-    ])
-])
 
 AC_SUBST([AUDIO_CFLAGS])
 AC_SUBST([AUDIO_LIBS])
-AC_SUBST([BUNDLED_LIBS_DIR])
-AC_SUBST([BUNDLED_BASS_DIR])
-AC_SUBST([BUNDLED_BASS_FX_DIR])
-AC_SUBST([BUNDLED_BASS_FLAC_DIR])
-AC_SUBST([BUNDLED_BASS_MIX_DIR])
-AC_SUBST([BUNDLED_BASS_ASIO_DIR])
-AC_SUBST([BUNDLED_BASS_WASAPI_DIR])
 
 # the source file is also added through autogen.sh to Makefile.sources
-BUNDLED_INCLUDES="-I\$(srcdir)/\$(BUNDLED_LIBS_DIR)/include"
+BUNDLED_INCLUDES="-I\$(srcdir)/libraries/include"
 AS_IF([test "$renderer" != "dx11"], [
-    BUNDLED_INCLUDES="$BUNDLED_INCLUDES -I\$(srcdir)/\$(BUNDLED_LIBS_DIR)/include/glad"
+    BUNDLED_INCLUDES="$BUNDLED_INCLUDES -I\$(srcdir)/libraries/include/glad"
 ])
 AC_SUBST([BUNDLED_INCLUDES])
 
