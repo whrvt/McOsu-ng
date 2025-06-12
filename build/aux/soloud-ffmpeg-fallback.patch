@@ -1,4 +1,4 @@
-From aea5854c43753ec30c595a3c43ad934c7e2819db Mon Sep 17 00:00:00 2001
+From 3e2e2f3551baeb46545d1d0c8dfef8998201a49f Mon Sep 17 00:00:00 2001
 From: William Horvath <william@horvath.blog>
 Date: Sun, 8 Jun 2025 01:51:53 -0700
 Subject: [PATCH] WIP: ffmpeg fallback for wav/wavstreams
@@ -8,11 +8,11 @@ Subject: [PATCH] WIP: ffmpeg fallback for wav/wavstreams
  include/soloud_wavstream.h                 |  136 +--
  src/audiosource/wav/soloud_ffmpeg.cpp      |  729 ++++++++++++
  src/audiosource/wav/soloud_ffmpeg.h        |   91 ++
- src/audiosource/wav/soloud_ffmpeg_load.cpp |  353 ++++++
+ src/audiosource/wav/soloud_ffmpeg_load.cpp |  355 ++++++
  src/audiosource/wav/soloud_ffmpeg_load.h   |  170 +++
  src/audiosource/wav/soloud_wav.cpp         |  632 +++++-----
  src/audiosource/wav/soloud_wavstream.cpp   | 1240 +++++++++++---------
- 8 files changed, 2458 insertions(+), 972 deletions(-)
+ 8 files changed, 2460 insertions(+), 972 deletions(-)
  create mode 100644 src/audiosource/wav/soloud_ffmpeg.cpp
  create mode 100644 src/audiosource/wav/soloud_ffmpeg.h
  create mode 100644 src/audiosource/wav/soloud_ffmpeg_load.cpp
@@ -1089,10 +1089,10 @@ index 0000000..248e94a
 +#endif // SOLOUD_FFMPEG_H
 diff --git a/src/audiosource/wav/soloud_ffmpeg_load.cpp b/src/audiosource/wav/soloud_ffmpeg_load.cpp
 new file mode 100644
-index 0000000..a485187
+index 0000000..f26673e
 --- /dev/null
 +++ b/src/audiosource/wav/soloud_ffmpeg_load.cpp
-@@ -0,0 +1,353 @@
+@@ -0,0 +1,355 @@
 +/*
 +SoLoud audio engine - ffmpeg library loader/unloader
 +Copyright (c) 2013-2020 Jari Komppa
@@ -1371,8 +1371,10 @@ index 0000000..a485187
 +		return false;
 +	}
 +
++#ifndef _DEBUG
 +	if (av_log_set_callback)
 +		av_log_set_callback(empty_log_callback);
++#endif
 +
 +	// verify basic functionality
 +	if (av_malloc && av_free)

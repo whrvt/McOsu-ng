@@ -112,7 +112,6 @@ AC_PROG_NINJA
 AC_PROG_UNZIP
 AC_PROG_MESON
 AC_PROG_CMAKE
-AC_PROG_PATCHELF
 
 AC_ARG_ENABLE([optimize],
     AS_HELP_STRING([--enable-optimize], [Optimize for speed (default: yes)]))
@@ -163,6 +162,8 @@ AS_IF([test "$host_os" = "mingw32"], [
         CXXFLAGS="$CXXFLAGS --target=$host_cpu-w64-windows-gnu"
         CFLAGS="$CFLAGS --target=$host_cpu-w64-windows-gnu"
     ])
+],[
+    AC_PROG_PATCHELF # only need this for linux
 ])
 
 renderer=opengl
