@@ -1,4 +1,4 @@
-From 6b926e7f127e236ee63ee50f5c682ee34e06219a Mon Sep 17 00:00:00 2001
+From 8f184e400d918782b9f06a393e20106e73ccae51 Mon Sep 17 00:00:00 2001
 From: William Horvath <william@horvath.blog>
 Date: Mon, 19 May 2025 11:09:10 -0700
 Subject: [PATCH] soloud bump dr_libs
@@ -6,9 +6,9 @@ Subject: [PATCH] soloud bump dr_libs
 ---
  src/audiosource/wav/dr_flac.h            |  680 +++++--
  src/audiosource/wav/dr_mp3.h             |  999 +++++++---
- src/audiosource/wav/dr_wav.h             | 2232 +++++++++++++++-------
+ src/audiosource/wav/dr_wav.h             | 2234 +++++++++++++++-------
  src/audiosource/wav/soloud_wavstream.cpp |    4 +-
- 4 files changed, 2843 insertions(+), 1072 deletions(-)
+ 4 files changed, 2844 insertions(+), 1073 deletions(-)
 
 diff --git a/src/audiosource/wav/dr_flac.h b/src/audiosource/wav/dr_flac.h
 index e0b3649..4f0f6c9 100644
@@ -3211,7 +3211,7 @@ index 7d752d0..bd0b575 100644
  Permission is hereby granted, free of charge, to any person obtaining a copy of
  this software and associated documentation files (the "Software"), to deal in
 diff --git a/src/audiosource/wav/dr_wav.h b/src/audiosource/wav/dr_wav.h
-index fed528f..952e6cf 100644
+index fed528f..98590b0 100644
 --- a/src/audiosource/wav/dr_wav.h
 +++ b/src/audiosource/wav/dr_wav.h
 @@ -1,6 +1,6 @@
@@ -4485,7 +4485,7 @@ index fed528f..952e6cf 100644
                  if (bytesRead == pChunkHeader->sizeInBytes) {
                      pParser->metadataCursor += 1;
                  } else {
-@@ -2647,21 +2796,21 @@ DRWAV_PRIVATE drwav_uint64 drwav__metadata_process_chunk(drwav__metadata_parser*
+@@ -2647,22 +2796,22 @@ DRWAV_PRIVATE drwav_uint64 drwav__metadata_process_chunk(drwav__metadata_parser*
                  if (bytesJustRead != DRWAV_BEXT_DESCRIPTION_BYTES) {
                      return bytesRead;
                  }
@@ -4506,10 +4506,12 @@ index fed528f..952e6cf 100644
                      return bytesRead;
                  }
 -                allocSizeNeeded += strlen(buffer) + 1;
+-                allocSizeNeeded += (size_t)pChunkHeader->sizeInBytes - DRWAV_BEXT_BYTES; /* Coding history. */
 +                allocSizeNeeded += drwav__strlen(buffer) + 1;
-                 allocSizeNeeded += (size_t)pChunkHeader->sizeInBytes - DRWAV_BEXT_BYTES; /* Coding history. */
++                allocSizeNeeded += (size_t)pChunkHeader->sizeInBytes - DRWAV_BEXT_BYTES + 1; /* Coding history. */
  
                  drwav__metadata_request_extra_memory_for_stage_2(pParser, allocSizeNeeded, 1);
+ 
 @@ -2767,7 +2916,7 @@ DRWAV_PRIVATE drwav_uint64 drwav__metadata_process_chunk(drwav__metadata_parser*
                  subchunkBytesRead = drwav__metadata_process_info_text_chunk(pParser, subchunkDataSize,  drwav_metadata_type_list_info_album);
              } else if (drwav__chunk_matches(allowedMetadataTypes, subchunkId, drwav_metadata_type_list_info_tracknumber, "ITRK")) {

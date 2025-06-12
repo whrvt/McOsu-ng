@@ -1,4 +1,4 @@
-From 44dfb89398c664d9b6e58b50a49fd7ef242d1533 Mon Sep 17 00:00:00 2001
+From edcf2cffa461f2382627a202f98032d5725e479a Mon Sep 17 00:00:00 2001
 From: William Horvath <william@horvath.blog>
 Date: Sun, 8 Jun 2025 01:51:53 -0700
 Subject: [PATCH] WIP: ffmpeg fallback for wav/wavstreams
@@ -6,13 +6,13 @@ Subject: [PATCH] WIP: ffmpeg fallback for wav/wavstreams
 ---
  include/soloud_wav.h                       |   79 +-
  include/soloud_wavstream.h                 |  136 +--
- src/audiosource/wav/soloud_ffmpeg.cpp      |  758 ++++++++++++
+ src/audiosource/wav/soloud_ffmpeg.cpp      |  791 +++++++++++++
  src/audiosource/wav/soloud_ffmpeg.h        |   95 ++
  src/audiosource/wav/soloud_ffmpeg_load.cpp |  355 ++++++
  src/audiosource/wav/soloud_ffmpeg_load.h   |  184 +++
  src/audiosource/wav/soloud_wav.cpp         |  628 +++++-----
  src/audiosource/wav/soloud_wavstream.cpp   | 1233 +++++++++++---------
- 8 files changed, 2496 insertions(+), 972 deletions(-)
+ 8 files changed, 2529 insertions(+), 972 deletions(-)
  create mode 100644 src/audiosource/wav/soloud_ffmpeg.cpp
  create mode 100644 src/audiosource/wav/soloud_ffmpeg.h
  create mode 100644 src/audiosource/wav/soloud_ffmpeg_load.cpp
@@ -257,10 +257,10 @@ index 1f8e86a..162ec90 100644
 +#endif
 diff --git a/src/audiosource/wav/soloud_ffmpeg.cpp b/src/audiosource/wav/soloud_ffmpeg.cpp
 new file mode 100644
-index 0000000..2f797b2
+index 0000000..25c0f47
 --- /dev/null
 +++ b/src/audiosource/wav/soloud_ffmpeg.cpp
-@@ -0,0 +1,758 @@
+@@ -0,0 +1,791 @@
 +/*
 +SoLoud audio engine - ffmpeg interface
 +Copyright (c) 2013-2020 Jari Komppa
@@ -544,18 +544,9 @@ index 0000000..2f797b2
 +	// set packet timebase to fix warnings
 +	ctx->codecContext->pkt_timebase = stream->time_base;
 +
-+	// mode-specific codec optimizations
-+	if (bulkMode)
-+	{
-+		ctx->codecContext->thread_count = 0;              // use all available cores
-+		ctx->codecContext->thread_type = FF_THREAD_FRAME; // frame-level threading
-+	}
-+	else
-+	{
-+		ctx->codecContext->thread_count = 1;                 // single thread = lower latency
-+		ctx->codecContext->thread_type = 0;                  // disable threading
-+		ctx->codecContext->flags |= AV_CODEC_FLAG_LOW_DELAY; // force low delay mode
-+	}
++	ctx->codecContext->flags |= AV_CODEC_FLAG_LOW_DELAY; // force low delay mode
++	ctx->codecContext->thread_count = 1; // we're already a thread, it's not worth spawning yet more threads and keeping track of that synchronization as well
++	ctx->codecContext->thread_type = 0;
 +
 +	if (codec->capabilities & AV_CODEC_CAP_VARIABLE_FRAME_SIZE)
 +		ctx->codecContext->flags2 |= AV_CODEC_FLAG2_CHUNKS;
@@ -719,7 +710,7 @@ index 0000000..2f797b2
 +		av_packet_unref(ctx->packet);
 +	}
 +
-+	// flush decoder
++	// flush decoder to ensure all worker threads complete their work
 +	avcodec_send_packet(ctx->codecContext, nullptr);
 +	while (avcodec_receive_frame(ctx->codecContext, ctx->frame) >= 0)
 +	{
@@ -973,20 +964,62 @@ index 0000000..2f797b2
 +		ctx->hasCurrentFrame = false;
 +	}
 +
++	// make sure all pending operations complete and flush worker threads
++	if (ctx->codecContext)
++	{
++		// flush the codec make sure all worker threads complete
++		avcodec_flush_buffers(ctx->codecContext);
++
++		// send null packet to signal end of stream and drain any remaining frames
++		avcodec_send_packet(ctx->codecContext, nullptr);
++
++		// receive and discard any remaining frames make sure threads are done
++		AVFrame *tempFrame = av_frame_alloc();
++		if (tempFrame)
++		{
++			while (avcodec_receive_frame(ctx->codecContext, tempFrame) >= 0)
++			{
++				av_frame_unref(tempFrame);
++			}
++			av_frame_free(&tempFrame);
++		}
++	}
++
++	// finish all format context ops before codec cleanup
++	if (ctx->formatContext)
++	{
++		avformat_close_input(&ctx->formatContext);
++		ctx->formatContext = nullptr;
++	}
++
++	// now cleanup codec context, worker threads have completed
++	if (ctx->codecContext)
++	{
++		avcodec_free_context(&ctx->codecContext);
++		ctx->codecContext = nullptr;
++	}
++
++	// cleanup remaining resources
++	if (ctx->swrContext)
++	{
++		swr_free(&ctx->swrContext);
++		ctx->swrContext = nullptr;
++	}
++
++	if (ctx->frame)
++	{
++		av_frame_free(&ctx->frame);
++		ctx->frame = nullptr;
++	}
++
++	if (ctx->packet)
++	{
++		av_packet_free(&ctx->packet);
++		ctx->packet = nullptr;
++	}
++
 +	// cleanup channel layout
 +	av_channel_layout_uninit(&ctx->channelLayout);
-+
-+	// free ffmpeg resources
-+	if (ctx->frame)
-+		av_frame_free(&ctx->frame);
-+	if (ctx->packet)
-+		av_packet_free(&ctx->packet);
-+	if (ctx->swrContext)
-+		swr_free(&ctx->swrContext);
-+	if (ctx->codecContext)
-+		avcodec_free_context(&ctx->codecContext);
-+	if (ctx->formatContext)
-+		avformat_close_input(&ctx->formatContext);
 +
 +	// free avio buffer manually
 +	unsigned char *bufferToFree = nullptr;
