@@ -12,6 +12,7 @@
 #include "BaseEnvironment.h"
 
 #ifdef MCENGINE_FEATURE_SOLOUD
+#include <atomic>
 #include <memory>
 #include <soloud/soloud.h>
 
@@ -78,13 +79,13 @@ private:
 	unsigned int mSTOutputSequenceSamples;
 
 	// this is derived from the above, it doesn't change very often so it makes sense to keep it cached as well
-	double mSTLatencySeconds;
+	std::atomic<double> mSTLatencySeconds;
 
-	float mSoundTouchSpeed;
-	float mSoundTouchPitch;
+	std::atomic<float> mSoundTouchSpeed;
+	std::atomic<float> mSoundTouchPitch;
 
 	// to be used to signal the instance that the soundtouch parameters need to be adjusted at the next best time
-	bool mNeedsSettingUpdate;
+	std::atomic<bool> mNeedsSettingUpdate;
 
 	// buffers for format conversion
 	float *mBuffer;           // temporary read buffer from source (non-interleaved)
@@ -136,8 +137,8 @@ public:
 protected:
 	friend class SoundTouchFilterInstance;
 
-	float mSpeedFactor; // current speed factor (tempo)
-	float mPitchFactor; // current pitch factor
+	std::atomic<float> mSpeedFactor; // current speed factor (tempo)
+	std::atomic<float> mPitchFactor; // current pitch factor
 
 	// internal audio stream
 	std::unique_ptr<WavStream> mSource;

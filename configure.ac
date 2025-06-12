@@ -455,6 +455,7 @@ AS_IF([test "x$enable_debug" = "xyes"], [
     ])
     ENABLE_DEBUG=$enable_debug
     MCOSU_CPPFLAGS="$MCOSU_CPPFLAGS -D_DEBUG"
+    MCOSU_CXXFLAGS="$MCOSU_CXXFLAGS -Wcast-align=strict -Wpacked-not-aligned"
     AS_IF([test "$SYSNAME" = "windows"], [
         AS_IF([test "x$enable_clang" = "xyes"], [
             LDFLAGS="$LDFLAGS -Xlinker /subsystem:console"

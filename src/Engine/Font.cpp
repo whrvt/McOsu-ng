@@ -53,8 +53,9 @@ std::vector<McFont::FallbackFont> McFont::s_sharedFallbackFonts;
 bool McFont::s_sharedFallbacksInitialized = false;
 
 McFont::McFont(const UString &filepath, int fontSize, bool antialiasing, int fontDPI)
-    : Resource(filepath), m_vao((Env::cfg(REND::GLES2 | REND::GLES32) ? Graphics::PRIMITIVE::PRIMITIVE_TRIANGLES : Graphics::PRIMITIVE::PRIMITIVE_QUADS),
-                                Graphics::USAGE_TYPE::USAGE_DYNAMIC)
+    : Resource(filepath),
+      m_vao((Env::cfg(REND::GLES2 | REND::GLES32) ? Graphics::PRIMITIVE::PRIMITIVE_TRIANGLES : Graphics::PRIMITIVE::PRIMITIVE_QUADS),
+            Graphics::USAGE_TYPE::USAGE_DYNAMIC)
 {
 	std::vector<wchar_t> characters;
 	characters.reserve(96); // reserve space for basic ASCII, load the rest as needed
@@ -66,8 +67,9 @@ McFont::McFont(const UString &filepath, int fontSize, bool antialiasing, int fon
 }
 
 McFont::McFont(const UString &filepath, const std::vector<wchar_t> &characters, int fontSize, bool antialiasing, int fontDPI)
-    : Resource(filepath), m_vao((Env::cfg(REND::GLES2 | REND::GLES32) ? Graphics::PRIMITIVE::PRIMITIVE_TRIANGLES : Graphics::PRIMITIVE::PRIMITIVE_QUADS),
-                                Graphics::USAGE_TYPE::USAGE_DYNAMIC)
+    : Resource(filepath),
+      m_vao((Env::cfg(REND::GLES2 | REND::GLES32) ? Graphics::PRIMITIVE::PRIMITIVE_TRIANGLES : Graphics::PRIMITIVE::PRIMITIVE_QUADS),
+            Graphics::USAGE_TYPE::USAGE_DYNAMIC)
 {
 	constructor(characters, fontSize, antialiasing, fontDPI);
 }
@@ -468,9 +470,9 @@ bool McFont::loadGlyphMetrics(wchar_t ch)
 	return loadGlyphFromFace(ch, face, fontIndex);
 }
 
-std::unique_ptr<Channel[]> McFont::createExpandedBitmapData(const FT_Bitmap &bitmap)
+std::unique_ptr<Color[]> McFont::createExpandedBitmapData(const FT_Bitmap &bitmap)
 {
-	std::unique_ptr<Channel[]> expandedData(new Channel[sizeof(Color) * bitmap.width * bitmap.rows]);
+	std::unique_ptr<Color[]> expandedData(new Color[bitmap.width * bitmap.rows]);
 
 	std::unique_ptr<Channel[]> monoBitmapUnpacked;
 	if (!m_bAntialiasing)
@@ -480,14 +482,10 @@ std::unique_ptr<Channel[]> McFont::createExpandedBitmapData(const FT_Bitmap &bit
 	{
 		for (unsigned int k = 0; k < bitmap.width; k++)
 		{
-			const size_t expandedIdx = (4 * k + (bitmap.rows - j - 1) * bitmap.width * 4);
-			expandedData[expandedIdx] = 0xff;     // R
-			expandedData[expandedIdx + 1] = 0xff; // G
-			expandedData[expandedIdx + 2] = 0xff; // B
+			const size_t expandedIdx = (k + (bitmap.rows - j - 1) * bitmap.width);
 
 			Channel alpha = m_bAntialiasing ? bitmap.buffer[k + bitmap.width * j] : monoBitmapUnpacked[k + bitmap.width * j] > 0 ? 255 : 0;
-
-			expandedData[expandedIdx + 3] = alpha; // A
+			expandedData[expandedIdx] = Color(alpha, 0xff, 0xff, 0xff); // ARGB
 		}
 	}
 
@@ -525,7 +523,7 @@ void McFont::renderGlyphToAtlas(wchar_t ch, int x, int y, FT_Face face)
 	if (bitmap.width > 0 && bitmap.rows > 0)
 	{
 		auto expandedData = createExpandedBitmapData(bitmap);
-		m_textureAtlas->putAt(x, y, bitmap.width, bitmap.rows, false, true, reinterpret_cast<Color *>(expandedData.get()));
+		m_textureAtlas->putAt(x, y, bitmap.width, bitmap.rows, false, true, expandedData.get());
 
 		// update metrics with atlas coordinates
 		GLYPH_METRICS &metrics = m_vGlyphMetrics[ch];

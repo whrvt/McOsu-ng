@@ -98,7 +98,7 @@ private:
 	// consolidated glyph processing methods
 	bool initializeFreeType();
 	bool loadGlyphMetrics(wchar_t ch);
-	std::unique_ptr<Channel[]> createExpandedBitmapData(const FT_Bitmap &bitmap);
+	std::unique_ptr<Color[]> createExpandedBitmapData(const FT_Bitmap &bitmap);
 	void renderGlyphToAtlas(wchar_t ch, int x, int y, FT_Face face = nullptr);
 	bool createAndPackAtlas(const std::vector<wchar_t> &glyphs);
 

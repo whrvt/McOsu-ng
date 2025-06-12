@@ -8412,6 +8412,7 @@ esac
 fi
     ENABLE_DEBUG=$enable_debug
     MCOSU_CPPFLAGS="$MCOSU_CPPFLAGS -D_DEBUG"
+    MCOSU_CXXFLAGS="$MCOSU_CXXFLAGS -Wcast-align=strict -Wpacked-not-aligned"
     if test "$SYSNAME" = "windows"
 then :
 
