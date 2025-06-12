@@ -35,5 +35,4 @@ COPY .github/workflows/docker/build.sh /build.sh
 RUN chmod +x /build.sh
 
 WORKDIR /src
-COPY . .
 ENTRYPOINT ["/build.sh"]
