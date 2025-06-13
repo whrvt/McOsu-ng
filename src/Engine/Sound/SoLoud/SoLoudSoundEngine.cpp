@@ -12,6 +12,8 @@
 
 #include "ConVar.h"
 #include "Engine.h"
+
+#include <utility>
 #include "Environment.h"
 
 // SoLoud-specific ConVars
@@ -34,6 +36,8 @@ SoLoudSoundEngine::SoLoudSoundEngine()
 		s_SLInstance = std::make_unique<SoLoud::Soloud>();
 		soloud = s_SLInstance.get();
 	}
+
+	cv::snd_freq.setDefaultFloat(SoLoud::Soloud::AUTO);
 
 	m_iMaxActiveVoices = std::clamp<int>(cv::snd_sanity_simultaneous_limit.getInt(), 64,
 	                                     255); // TODO: lower this minimum (it will crash if more than this many sounds play at once...)
@@ -409,11 +413,11 @@ bool SoLoudSoundEngine::initializeOutputDevice(int id, bool)
 			backend = SoLoud::Soloud::MINIAUDIO;
 	}
 
-	unsigned int sampleRate = cv::snd_freq.getVal<unsigned int>();
+	unsigned int sampleRate = (cv::snd_freq.getVal<unsigned int>() == cv::snd_freq.getDefaultVal<unsigned int>() ? SoLoud::Soloud::AUTO : cv::snd_freq.getVal<unsigned int>());
 	if (sampleRate <= 0)
 		sampleRate = SoLoud::Soloud::AUTO;
 
-	unsigned int bufferSize = cv::snd_soloud_buffer.getVal<unsigned int>();
+	unsigned int bufferSize = (cv::snd_soloud_buffer.getVal<unsigned int>() == cv::snd_soloud_buffer.getDefaultVal<unsigned int>() ? SoLoud::Soloud::AUTO : cv::snd_soloud_buffer.getVal<unsigned int>());
 	if (bufferSize < 0)
 		bufferSize = SoLoud::Soloud::AUTO;
 
@@ -421,8 +425,8 @@ bool SoLoudSoundEngine::initializeOutputDevice(int id, bool)
 	const unsigned int channels = 2;
 
 	// setup some SDL hints in case the SDL backend is used
-	if (cv::snd_soloud_buffer.getVal() != cv::snd_soloud_buffer.getDefaultVal())
-		SDL_SetHintWithPriority(SDL_HINT_AUDIO_DEVICE_SAMPLE_FRAMES, cv::snd_soloud_buffer.getString().toUtf8(), SDL_HINT_OVERRIDE);
+	if (bufferSize != SoLoud::Soloud::AUTO)
+		SDL_SetHintWithPriority(SDL_HINT_AUDIO_DEVICE_SAMPLE_FRAMES, fmt::format("{}", bufferSize).c_str(), SDL_HINT_OVERRIDE);
 	SDL_SetHintWithPriority(SDL_HINT_AUDIO_DEVICE_STREAM_NAME, PACKAGE_NAME, SDL_HINT_OVERRIDE);
 	SDL_SetHintWithPriority(SDL_HINT_AUDIO_DEVICE_STREAM_ROLE, "game", SDL_HINT_OVERRIDE);
 
@@ -435,6 +439,13 @@ bool SoLoudSoundEngine::initializeOutputDevice(int id, bool)
 		engine->showMessageError("Sound Error", UString::format("SoLoud::Soloud::init() failed (%i)!", result));
 		return false;
 	}
+
+	// it's 0.95 by default, for some reason
+	soloud->setPostClipScaler(1.0f);
+
+	cv::snd_freq.setValue(soloud->getBackendSamplerate(), false); // set the cvar to match the actual output sample rate (without running callbacks)
+	cv::snd_soloud_buffer.setValue(soloud->getBackendBufferSize(), false); // ditto
+	cv::snd_soloud_backend.setValue(soloud->getBackendString(), false); // ditto
 
 	onMaxActiveChange(cv::snd_sanity_simultaneous_limit.getFloat());
 
@@ -453,9 +464,6 @@ bool SoLoudSoundEngine::initializeOutputDevice(int id, bool)
 	         m_sCurrentOutputDevice.toUtf8(), static_cast<unsigned int>(flags), soloud->getBackendString(), soloud->getBackendSamplerate(),
 	         soloud->getBackendBufferSize(), soloud->getBackendChannels(), m_iMaxActiveVoices);
 
-	// it's 0.95f by default, for some reason
-	soloud->setPostClipScaler(1.0f);
-
 	m_bReady = true;
 
 	// init global volume
@@ -466,14 +474,15 @@ bool SoLoudSoundEngine::initializeOutputDevice(int id, bool)
 
 void SoLoudSoundEngine::onMaxActiveChange(float newMax)
 {
-	const auto desired = std::clamp<int>(static_cast<int>(newMax), 64, 255);
-	if (soloud->getMaxActiveVoiceCount() != desired)
+	const auto desired = std::clamp<unsigned int>(static_cast<unsigned int>(newMax), 64, 255);
+	if (std::cmp_not_equal(soloud->getMaxActiveVoiceCount(), desired))
 	{
 		SoLoud::result res = soloud->setMaxActiveVoiceCount(desired);
 		if (res != SoLoud::SO_NO_ERROR)
 			debugLog("SoundEngine WARNING: failed to setMaxActiveVoiceCount ({})\n", res);
 	}
 	m_iMaxActiveVoices = static_cast<int>(soloud->getMaxActiveVoiceCount());
+	cv::snd_sanity_simultaneous_limit.setValue(m_iMaxActiveVoices, false); // no infinite callback loop
 }
 
 #endif // MCENGINE_FEATURE_SOLOUD

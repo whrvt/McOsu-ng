@@ -29,9 +29,8 @@
                                // (works on desktop too, but it's not necessary)
 namespace
 {
-void setcwdexe(const char * /*unused*/)
-{}
-}
+void setcwdexe(const char * /*unused*/) {}
+} // namespace
 #else
 #define MAIN_FUNC int main(int argc, char *argv[])
 #define nocbinline forceinline
@@ -243,6 +242,8 @@ SDLMain::SDLMain(int argc, char *argv[])
 	m_iFpsMax = 360;
 	m_iFpsMaxBG = 30;
 
+	m_iNextFrameTime = 0;
+
 	// setup callbacks
 	cv::fps_max.setCallback(fastdelegate::MakeDelegate(this, &SDLMain::fps_max_callback));
 	cv::fps_max_background.setCallback(fastdelegate::MakeDelegate(this, &SDLMain::fps_max_background_callback));
@@ -303,7 +304,7 @@ SDL_AppResult SDLMain::initialize()
 	SDL_RaiseWindow(m_window);
 
 	// load app
-	engine->loadApp();
+	m_engine->loadApp();
 
 	// SDL3 stops listening to text input globally when window is created
 	SDL_StartTextInput(m_window);
@@ -326,7 +327,7 @@ nocbinline SDL_AppResult SDLMain::handleEvent(SDL_Event *event)
 		if (m_bRunning)
 		{
 			m_bRunning = false;
-			engine->shutdown();
+			m_engine->shutdown();
 			if constexpr (Env::cfg(FEAT::MAINCB))
 				return SDL_APP_SUCCESS;
 			else
@@ -352,7 +353,7 @@ nocbinline SDL_AppResult SDLMain::handleEvent(SDL_Event *event)
 			if (m_bRunning)
 			{
 				m_bRunning = false;
-				engine->shutdown();
+				m_engine->shutdown();
 				if constexpr (Env::cfg(FEAT::MAINCB))
 					return SDL_APP_SUCCESS;
 				else
@@ -362,34 +363,34 @@ nocbinline SDL_AppResult SDLMain::handleEvent(SDL_Event *event)
 
 		case SDL_EVENT_WINDOW_FOCUS_GAINED:
 			m_bHasFocus = true;
-			engine->onFocusGained();
+			m_engine->onFocusGained();
 			setFgFPS();
 			break;
 
 		case SDL_EVENT_WINDOW_FOCUS_LOST:
 			m_bHasFocus = false;
-			engine->onFocusLost();
+			m_engine->onFocusLost();
 			setBgFPS();
 			break;
 
 		case SDL_EVENT_WINDOW_MAXIMIZED:
 			m_bMinimized = false;
 			m_bHasFocus = true;
-			engine->onMaximized();
+			m_engine->onMaximized();
 			setFgFPS();
 			break;
 
 		case SDL_EVENT_WINDOW_MINIMIZED:
 			m_bMinimized = true;
 			m_bHasFocus = false;
-			engine->onMinimized();
+			m_engine->onMinimized();
 			setBgFPS();
 			break;
 
 		case SDL_EVENT_WINDOW_RESTORED:
 			m_bMinimized = false;
 			m_bHasFocus = true;
-			engine->onRestored();
+			m_engine->onRestored();
 			setFgFPS();
 			break;
 
@@ -407,14 +408,14 @@ nocbinline SDL_AppResult SDLMain::handleEvent(SDL_Event *event)
 		case SDL_EVENT_WINDOW_RESIZED:
 			m_bHasFocus = true;
 			m_fDisplayHzSecs = 1.0f / (m_fDisplayHz = queryDisplayHz());
-			engine->requestResolutionChange(Vector2(static_cast<float>(event->window.data1), static_cast<float>(event->window.data2)));
+			m_engine->requestResolutionChange(Vector2(static_cast<float>(event->window.data1), static_cast<float>(event->window.data2)));
 			setFgFPS();
 			break;
 
 		case SDL_EVENT_WINDOW_DISPLAY_CHANGED:
 			cv::monitor.setValue(event->window.data1, false);
 		case SDL_EVENT_WINDOW_DISPLAY_SCALE_CHANGED: // TODO?
-			engine->requestResolutionChange(getWindowSize());
+			m_engine->requestResolutionChange(getWindowSize());
 			m_fDisplayHzSecs = 1.0f / (m_fDisplayHz = queryDisplayHz());
 			break;
 
@@ -456,7 +457,7 @@ nocbinline SDL_AppResult SDLMain::handleEvent(SDL_Event *event)
 		break;
 
 	case SDL_EVENT_MOUSE_MOTION:
-		// debugLog("mouse motion on frame {}\n", engine->getFrameCount());
+		// debugLog("mouse motion on frame {}\n", m_engine->getFrameCount());
 		//  cache the position
 		m_vLastRelMousePos.x = event->motion.xrel;
 		m_vLastRelMousePos.y = event->motion.yrel;
@@ -482,14 +483,14 @@ nocbinline SDL_AppResult SDLMain::iterate()
 	// update
 	{
 		m_deltaTimer->update();
-		engine->setFrameTime(m_deltaTimer->getDelta());
-		engine->onUpdate();
+		m_engine->setFrameTime(m_deltaTimer->getDelta());
+		m_engine->onUpdate();
 	}
 
 	// draw
 	{
 		m_bDrawing = true;
-		engine->onPaint();
+		m_engine->onPaint();
 		m_bDrawing = false;
 	}
 

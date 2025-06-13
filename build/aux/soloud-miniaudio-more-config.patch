@@ -1,0 +1,281 @@
+From 2085addbde049edbd83903e3dd154c2e0e6919d6 Mon Sep 17 00:00:00 2001
+From: William Horvath <william@horvath.blog>
+Date: Thu, 12 Jun 2025 22:41:56 -0700
+Subject: [PATCH] miniaudio config
+
+---
+ src/backend/miniaudio/soloud_miniaudio.cpp | 212 +++++++++++++++++----
+ src/core/soloud.cpp                        |  11 +-
+ 2 files changed, 175 insertions(+), 48 deletions(-)
+
+diff --git a/src/backend/miniaudio/soloud_miniaudio.cpp b/src/backend/miniaudio/soloud_miniaudio.cpp
+index cb9ecad..5cd01bc 100644
+--- a/src/backend/miniaudio/soloud_miniaudio.cpp
++++ b/src/backend/miniaudio/soloud_miniaudio.cpp
+@@ -29,11 +29,11 @@ distribution.
+ 
+ namespace SoLoud
+ {
+-    result miniaudio_init(SoLoud::Soloud *aSoloud, unsigned int aFlags, unsigned int aSamplerate, unsigned int aBuffer)
+-    {
+-        return NOT_IMPLEMENTED;
+-    }
++result miniaudio_init(SoLoud::Soloud *aSoloud, unsigned int aFlags, unsigned int aSamplerate, unsigned int aBuffer)
++{
++	return NOT_IMPLEMENTED;
+ }
++} // namespace SoLoud
+ 
+ #else
+ 
+@@ -48,43 +48,171 @@ namespace SoLoud
+ 
+ namespace SoLoud
+ {
+-    ma_device gDevice;
+-
+-    void soloud_miniaudio_audiomixer(ma_device* pDevice, void* pOutput, const void* pInput, ma_uint32 frameCount)
+-    {
+-        SoLoud::Soloud *soloud = (SoLoud::Soloud *)pDevice->pUserData;
+-            soloud->mix((float *)pOutput, frameCount);
+-    }
+-
+-    static void soloud_miniaudio_deinit(SoLoud::Soloud *aSoloud)
+-    {
+-        ma_device_uninit(&gDevice);
+-    }
+-
+-    result miniaudio_init(SoLoud::Soloud *aSoloud, unsigned int aFlags, unsigned int aSamplerate, unsigned int aBuffer, unsigned int aChannels)
+-    {
+-        ma_device_config config = ma_device_config_init(ma_device_type_playback);
+-        //config.periodSizeInFrames = aBuffer; // setting to aBuffer (like 2048) causes miniaudio to crash; let's just use the default.
+-        config.playback.format    = ma_format_f32;
+-        config.playback.channels  = aChannels;
+-        config.sampleRate         = aSamplerate;
+-        config.dataCallback       = soloud_miniaudio_audiomixer;
+-        config.pUserData          = (void *)aSoloud;
+-        config.noPreSilencedOutputBuffer = true;
+-        config.noClip = true;
+-
+-        if (ma_device_init(NULL, &config, &gDevice) != MA_SUCCESS)
+-        {
+-            return UNKNOWN_ERROR;
+-        }
+-
+-        aSoloud->postinit_internal(gDevice.sampleRate, gDevice.playback.internalPeriodSizeInFrames, aFlags, gDevice.playback.channels);
+-
+-        aSoloud->mBackendCleanupFunc = soloud_miniaudio_deinit;
+-
+-        ma_device_start(&gDevice);
+-        aSoloud->mBackendString = "MiniAudio";
+-        return 0;
+-    }
++struct MiniaudioData
++{
++	ma_context context;
++	ma_device device;
++	bool contextInitialized;
++	bool deviceInitialized;
++
++	MiniaudioData()
++	    : contextInitialized(false),
++	      deviceInitialized(false)
++	{
++	}
+ };
++
++void soloud_miniaudio_audiomixer(ma_device *pDevice, void *pOutput, const void *pInput, ma_uint32 frameCount)
++{
++	SoLoud::Soloud *soloud = (SoLoud::Soloud *)pDevice->pUserData;
++	soloud->mix((float *)pOutput, frameCount);
++}
++
++static void soloud_miniaudio_deinit(SoLoud::Soloud *aSoloud)
++{
++	MiniaudioData *data = (MiniaudioData *)aSoloud->mBackendData;
++	if (data)
++	{
++		if (data->deviceInitialized)
++		{
++			ma_device_uninit(&data->device);
++			data->deviceInitialized = false;
++		}
++		if (data->contextInitialized)
++		{
++			ma_context_uninit(&data->context);
++			data->contextInitialized = false;
++		}
++		delete data;
++		aSoloud->mBackendData = nullptr;
++	}
++}
++
++static result soloud_miniaudio_pause(SoLoud::Soloud *aSoloud)
++{
++	MiniaudioData *data = (MiniaudioData *)aSoloud->mBackendData;
++	if (data && data->deviceInitialized)
++	{
++		if (ma_device_stop(&data->device) != MA_SUCCESS)
++			return UNKNOWN_ERROR;
++	}
++	return SO_NO_ERROR;
++}
++
++static result soloud_miniaudio_resume(SoLoud::Soloud *aSoloud)
++{
++	MiniaudioData *data = (MiniaudioData *)aSoloud->mBackendData;
++	if (data && data->deviceInitialized)
++	{
++		if (ma_device_start(&data->device) != MA_SUCCESS)
++			return UNKNOWN_ERROR;
++	}
++	return SO_NO_ERROR;
++}
++
++result miniaudio_init(SoLoud::Soloud *aSoloud, unsigned int aFlags, unsigned int aSamplerate, unsigned int aBuffer, unsigned int aChannels)
++{
++	MiniaudioData *data = new MiniaudioData();
++	aSoloud->mBackendData = data;
++
++	ma_context_config contextConfig = ma_context_config_init();
++	contextConfig.threadPriority = ma_thread_priority_highest;
++
++	ma_result result = ma_context_init(nullptr, 0, &contextConfig, &data->context);
++	if (result != MA_SUCCESS)
++	{
++		delete data;
++		aSoloud->mBackendData = nullptr;
++		switch (result)
++		{
++		case MA_INVALID_ARGS:
++			return INVALID_PARAMETER;
++		case MA_OUT_OF_MEMORY:
++			return OUT_OF_MEMORY;
++		case MA_NO_BACKEND:
++			return NOT_IMPLEMENTED;
++		default:
++			return UNKNOWN_ERROR;
++		}
++	}
++	data->contextInitialized = true;
++
++	// configure device
++	ma_device_config config = ma_device_config_init(ma_device_type_playback);
++	config.playback.format = ma_format_f32;
++	config.playback.channels = aChannels;
++	config.dataCallback = soloud_miniaudio_audiomixer;
++	config.pUserData = (void *)aSoloud;
++	config.noPreSilencedOutputBuffer = true;
++	config.noClip = true;
++	config.performanceProfile = ma_performance_profile_low_latency;
++
++	if (aSamplerate > 0) // respect miniaudio default (avoids extra resampling if we use the device native sample rate)
++		config.sampleRate = aSamplerate;
++	else
++		config.sampleRate = 0;
++
++	if (aBuffer > 0) // respect miniaudio default
++		config.periodSizeInFrames = aBuffer;
++	else
++		config.periodSizeInFrames = 0;
++
++	// backend-specific settings
++	config.wasapi.noAutoConvertSRC = true; // soloud handles resampling
++	config.wasapi.noDefaultQualitySRC = true;
++	config.alsa.noAutoFormat = true;
++	config.alsa.noAutoChannels = true;
++	config.alsa.noAutoResample = true;
++
++	result = ma_device_init(&data->context, &config, &data->device);
++	if (result != MA_SUCCESS)
++	{
++		ma_context_uninit(&data->context);
++		delete data;
++		aSoloud->mBackendData = nullptr;
++
++		switch (result)
++		{
++		case MA_INVALID_ARGS:
++			return INVALID_PARAMETER;
++		case MA_OUT_OF_MEMORY:
++			return OUT_OF_MEMORY;
++		case MA_FORMAT_NOT_SUPPORTED:
++			return INVALID_PARAMETER;
++		case MA_DEVICE_NOT_INITIALIZED:
++			//return UNKNOWN_ERROR;
++		case MA_DEVICE_ALREADY_INITIALIZED:
++			//return UNKNOWN_ERROR;
++		case MA_DEVICE_NOT_STARTED:
++			//return UNKNOWN_ERROR;
++		case MA_DEVICE_NOT_STOPPED:
++			//return UNKNOWN_ERROR;
++		default:
++			return UNKNOWN_ERROR;
++		}
++	}
++	data->deviceInitialized = true;
++
++	// use the actual device configuration that was negotiated
++	unsigned int actualSampleRate = data->device.sampleRate;
++	unsigned int actualBufferSize = data->device.playback.internalPeriodSizeInFrames;
++	unsigned int actualChannels = data->device.playback.channels;
++
++	aSoloud->postinit_internal(actualSampleRate, actualBufferSize, aFlags, actualChannels);
++
++	aSoloud->mBackendCleanupFunc = soloud_miniaudio_deinit;
++	aSoloud->mBackendPauseFunc = soloud_miniaudio_pause;
++	aSoloud->mBackendResumeFunc = soloud_miniaudio_resume;
++
++	result = ma_device_start(&data->device);
++	if (result != MA_SUCCESS)
++	{
++		soloud_miniaudio_deinit(aSoloud);
++		return UNKNOWN_ERROR;
++	}
++
++	aSoloud->mBackendString = "MiniAudio";
++	return SO_NO_ERROR;
++}
++}; // namespace SoLoud
+ #endif
+diff --git a/src/core/soloud.cpp b/src/core/soloud.cpp
+index 4e83123..ab45ce8 100644
+--- a/src/core/soloud.cpp
++++ b/src/core/soloud.cpp
+@@ -215,8 +215,13 @@ result Soloud::init(unsigned int aFlags, unsigned int aBackend, unsigned int aSa
+ 
+ 	if (aSamplerate != Soloud::AUTO)
+ 		samplerate = aSamplerate;
++	else
++		samplerate = Soloud::AUTO;
++
+ 	if (aBufferSize != Soloud::AUTO)
+ 		buffersize = aBufferSize;
++	else
++		buffersize = Soloud::AUTO;
+ 
+ #if defined(WITH_SDL1_STATIC)
+ 	if (!inited && (aBackend == Soloud::SDL1 || aBackend == Soloud::AUTO))
+@@ -257,9 +262,6 @@ result Soloud::init(unsigned int aFlags, unsigned int aBackend, unsigned int aSa
+ #if defined(WITH_SDL3_STATIC)
+ 	if (!inited && (aBackend == Soloud::SDL3 || aBackend == Soloud::AUTO))
+ 	{
+-		if (aBufferSize == Soloud::AUTO)
+-			buffersize = 2048;
+-
+ 		int ret = sdl3static_init(this, aFlags, samplerate, buffersize, aChannels);
+ 		if (ret == 0)
+ 		{
+@@ -311,9 +313,6 @@ result Soloud::init(unsigned int aFlags, unsigned int aBackend, unsigned int aSa
+ #if defined(WITH_MINIAUDIO)
+ 	if (!inited && (aBackend == Soloud::MINIAUDIO || aBackend == Soloud::AUTO))
+ 	{
+-		if (aBufferSize == Soloud::AUTO)
+-			buffersize = 2048;
+-
+ 		int ret = miniaudio_init(this, aFlags, samplerate, buffersize, aChannels);
+ 		if (ret == 0)
+ 		{
+-- 
+2.49.0
+
