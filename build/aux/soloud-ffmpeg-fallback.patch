@@ -1,18 +1,18 @@
-From edcf2cffa461f2382627a202f98032d5725e479a Mon Sep 17 00:00:00 2001
+From 324fb0a6d6fa3feef324eb1b5d3d783cd65e7fbc Mon Sep 17 00:00:00 2001
 From: William Horvath <william@horvath.blog>
 Date: Sun, 8 Jun 2025 01:51:53 -0700
 Subject: [PATCH] WIP: ffmpeg fallback for wav/wavstreams
 
 ---
  include/soloud_wav.h                       |   79 +-
- include/soloud_wavstream.h                 |  136 +--
- src/audiosource/wav/soloud_ffmpeg.cpp      |  791 +++++++++++++
- src/audiosource/wav/soloud_ffmpeg.h        |   95 ++
+ include/soloud_wavstream.h                 |  141 +--
+ src/audiosource/wav/soloud_ffmpeg.cpp      |  760 ++++++++++++
+ src/audiosource/wav/soloud_ffmpeg.h        |  110 ++
  src/audiosource/wav/soloud_ffmpeg_load.cpp |  355 ++++++
- src/audiosource/wav/soloud_ffmpeg_load.h   |  184 +++
+ src/audiosource/wav/soloud_ffmpeg_load.h   |  170 +++
  src/audiosource/wav/soloud_wav.cpp         |  628 +++++-----
- src/audiosource/wav/soloud_wavstream.cpp   | 1233 +++++++++++---------
- 8 files changed, 2529 insertions(+), 972 deletions(-)
+ src/audiosource/wav/soloud_wavstream.cpp   | 1227 +++++++++++---------
+ 8 files changed, 2498 insertions(+), 972 deletions(-)
  create mode 100644 src/audiosource/wav/soloud_ffmpeg.cpp
  create mode 100644 src/audiosource/wav/soloud_ffmpeg.h
  create mode 100644 src/audiosource/wav/soloud_ffmpeg_load.cpp
@@ -109,11 +109,14 @@ index ab3be0b..7d7735d 100755
  
  #endif
 diff --git a/include/soloud_wavstream.h b/include/soloud_wavstream.h
-index 1f8e86a..162ec90 100644
+index 1f8e86a..ea815b1 100644
 --- a/include/soloud_wavstream.h
 +++ b/include/soloud_wavstream.h
-@@ -43,71 +43,75 @@ struct drwav;
+@@ -41,73 +41,82 @@ typedef unsigned int drmp3_uint32;
+ struct drwav;
+ #endif
  
++
  namespace SoLoud
  {
 -	class WavStream;
@@ -181,6 +184,10 @@ index 1f8e86a..162ec90 100644
 -	public:
 -		result parse(File *aFile);
 -	};
++namespace FFmpeg
++{
++	struct FFmpegDecoder;
++}
 +class WavStream;
 +class File;
 +
@@ -194,11 +201,11 @@ index 1f8e86a..162ec90 100644
 +		drflac *mFlac;
 +		drmp3 *mMp3;
 +		drwav *mWav;
++		FFmpeg::FFmpegDecoder *mFfmpeg;
 +	} mCodec;
 +	unsigned int mOggFrameSize;
 +	unsigned int mOggFrameOffset;
 +	float **mOggOutputs;
-+	void *mFFmpegContext;
 +
 +public:
 +	WavStreamInstance(WavStream *aParent);
@@ -207,8 +214,10 @@ index 1f8e86a..162ec90 100644
 +	virtual result rewind();
 +	virtual bool hasEnded();
 +	virtual ~WavStreamInstance();
-+};
-+
+ };
+ 
+-#endif
+\ No newline at end of file
 +enum WAVSTREAM_FILETYPE
 +{
 +	WAVSTREAM_WAV = 0,
@@ -216,10 +225,8 @@ index 1f8e86a..162ec90 100644
 +	WAVSTREAM_FLAC = 2,
 +	WAVSTREAM_MP3 = 3,
 +	WAVSTREAM_FFMPEG = 4
- };
- 
--#endif
-\ No newline at end of file
++};
++
 +class WavStream : public AudioSource
 +{
 +	result loadwav(File *fp);
@@ -257,10 +264,10 @@ index 1f8e86a..162ec90 100644
 +#endif
 diff --git a/src/audiosource/wav/soloud_ffmpeg.cpp b/src/audiosource/wav/soloud_ffmpeg.cpp
 new file mode 100644
-index 0000000..25c0f47
+index 0000000..95c5edf
 --- /dev/null
 +++ b/src/audiosource/wav/soloud_ffmpeg.cpp
-@@ -0,0 +1,791 @@
+@@ -0,0 +1,760 @@
 +/*
 +SoLoud audio engine - ffmpeg interface
 +Copyright (c) 2013-2020 Jari Komppa
@@ -292,7 +299,6 @@ index 0000000..25c0f47
 +#include <stdint.h>
 +#include <stdio.h>
 +#include <string.h>
-+#include <vector>
 +
 +#include "soloud_ffmpeg.h"
 +#include "soloud_ffmpeg_load.h"
@@ -303,13 +309,15 @@ index 0000000..25c0f47
 +namespace SoLoud::FFmpeg
 +{
 +
++static const unsigned int IO_BUFFER_SIZE = 65536;
++
 +struct FFmpegIOContext
 +{
 +	File *file;
 +	int pos;
 +};
 +
-+struct FFmpegStreamContext
++struct FFmpegDecoder
 +{
 +	AVFormatContext *formatContext;
 +	AVCodecContext *codecContext;
@@ -322,18 +330,26 @@ index 0000000..25c0f47
 +
 +	int audioStreamIndex;
 +	unsigned int channels;
-+	float sampleRate;
-+	unsigned int totalSamples;
-+	unsigned int totalSamplesOutput;
++	unsigned int sampleRate;
++	unsigned long long totalFrames;
++	unsigned long long currentFrame;
++	unsigned int encoderDelaySamples;
 +	AVChannelLayout channelLayout;
 +
-+	// frame storage for streaming - keep AVFrame alive instead of copying
-+	unsigned int currentFrameOffset;
-+	bool hasCurrentFrame;
++	// frame buffering for partial reads
++	float *frameBuffer;
++	unsigned int frameBufferSize;
++	unsigned int frameBufferOffset;
++	unsigned int frameBufferValidSamples;
++
++	// pts-based position tracking
++	int64_t lastFramePts;
++	bool validPts;
++	unsigned long long bufferedFramePosition;
++	bool bufferedFramePositionValid;
 +
 +	bool endOfStream;
 +	bool seekable;
-+	bool bulkMode; // optimization flags were set for bulk decoding
 +};
 +
 +static int ffmpeg_read_func(void *opaque, unsigned char *buf, int buf_size)
@@ -380,684 +396,644 @@ index 0000000..25c0f47
 +	return ctx->pos;
 +}
 +
-+static unsigned int calculateTotalSamples(FFmpegStreamContext *ctx)
++static unsigned long long ptsToFrames(FFmpegDecoder *decoder, int64_t pts)
 +{
-+	AVStream *stream = ctx->formatContext->streams[ctx->audioStreamIndex];
++	if (pts == AV_NOPTS_VALUE)
++		return decoder->currentFrame;
 +
-+	// try stream duration first
-+	if (stream->duration > 0 && stream->time_base.den > 0)
-+	{
-+		double duration = (double)stream->duration * stream->time_base.num / stream->time_base.den;
-+		if (duration > 0.0)
-+			return (unsigned int)(duration * ctx->sampleRate + 0.5);
-+	}
++	AVStream *stream = decoder->formatContext->streams[decoder->audioStreamIndex];
 +
-+	// fallback to format duration
-+	if (ctx->formatContext->duration > 0)
-+	{
-+		double duration = (double)ctx->formatContext->duration / AV_TIME_BASE;
-+		if (duration > 0.0)
-+			return (unsigned int)(duration * ctx->sampleRate + 0.5);
-+	}
++	// convert pts from stream time_base to seconds, then to sample frames
++	double timeSeconds = (double)pts * stream->time_base.num / stream->time_base.den;
++	unsigned long long framePosition = (unsigned long long)(timeSeconds * decoder->sampleRate);
 +
-+	// final fallback based on file size (assume 5 minutes max)
-+	return (unsigned int)(300.0 * ctx->sampleRate);
++	// subtract encoder delay to match our adjusted frame counting
++	if (framePosition >= decoder->encoderDelaySamples)
++		framePosition -= decoder->encoderDelaySamples;
++
++	return framePosition;
 +}
 +
-+static bool convertCurrentFrame(FFmpegStreamContext *ctx)
++static bool decodeNextFrame(FFmpegDecoder *decoder)
 +{
-+	if (!ctx->frame || ctx->frame->nb_samples <= 0)
-+		return false;
-+
-+	// frame is ready for on-demand conversion
-+	ctx->currentFrameOffset = 0;
-+	ctx->hasCurrentFrame = true;
-+
-+	return true;
-+}
-+
-+static bool decodeNextFrame(FFmpegStreamContext *ctx)
-+{
-+	if (ctx->endOfStream)
++	if (decoder->endOfStream)
 +		return false;
 +
 +	while (true)
 +	{
-+		int ret = av_read_frame(ctx->formatContext, ctx->packet);
++		int ret = av_read_frame(decoder->formatContext, decoder->packet);
 +		if (ret < 0)
 +		{
 +			// flush decoder at end of stream
-+			avcodec_send_packet(ctx->codecContext, nullptr);
-+			if (avcodec_receive_frame(ctx->codecContext, ctx->frame) >= 0)
++			avcodec_send_packet(decoder->codecContext, nullptr);
++			if (avcodec_receive_frame(decoder->codecContext, decoder->frame) >= 0)
 +			{
-+				return convertCurrentFrame(ctx);
++				// store frame pts if available
++				if (decoder->frame->pts != AV_NOPTS_VALUE)
++				{
++					decoder->lastFramePts = decoder->frame->pts;
++					decoder->validPts = true;
++				}
++
++				return decoder->frame->nb_samples > 0;
 +			}
-+			ctx->endOfStream = true;
++			decoder->endOfStream = true;
 +			return false;
 +		}
 +
-+		if (ctx->packet->stream_index != ctx->audioStreamIndex)
++		if (decoder->packet->stream_index != decoder->audioStreamIndex)
 +		{
-+			av_packet_unref(ctx->packet);
++			av_packet_unref(decoder->packet);
 +			continue;
 +		}
 +
-+		if (avcodec_send_packet(ctx->codecContext, ctx->packet) >= 0)
++		if (avcodec_send_packet(decoder->codecContext, decoder->packet) >= 0)
 +		{
-+			av_packet_unref(ctx->packet);
++			av_packet_unref(decoder->packet);
 +
-+			if (avcodec_receive_frame(ctx->codecContext, ctx->frame) >= 0)
++			if (avcodec_receive_frame(decoder->codecContext, decoder->frame) >= 0)
 +			{
-+				return convertCurrentFrame(ctx);
++				// store frame pts if available
++				if (decoder->frame->pts != AV_NOPTS_VALUE)
++				{
++					decoder->lastFramePts = decoder->frame->pts;
++					decoder->validPts = true;
++				}
++
++				return decoder->frame->nb_samples > 0;
 +			}
 +		}
 +		else
 +		{
-+			av_packet_unref(ctx->packet);
++			av_packet_unref(decoder->packet);
 +		}
 +	}
 +}
 +
-+// unified context creation - internal function
-+static void *createStreamContextInternal(File *aFile, unsigned int *aChannels, float *aSampleRate, unsigned int *aSampleCount, bool bulkMode)
++static void convertFrameToBuffer(FFmpegDecoder *decoder)
++{
++	if (!decoder->frame || decoder->frame->nb_samples <= 0)
++		return;
++
++	unsigned int samples = decoder->frame->nb_samples;
++	unsigned int channels = decoder->channels;
++
++	// ensure frame buffer is large enough
++	unsigned int requiredSize = samples * channels;
++	if (decoder->frameBufferSize < requiredSize)
++	{
++		delete[] decoder->frameBuffer;
++		decoder->frameBuffer = new float[requiredSize];
++		decoder->frameBufferSize = requiredSize;
++	}
++
++	// update position tracking when we start consuming a new frame
++	if (decoder->validPts && decoder->lastFramePts != AV_NOPTS_VALUE)
++	{
++		decoder->bufferedFramePosition = ptsToFrames(decoder, decoder->lastFramePts);
++		decoder->bufferedFramePositionValid = true;
++
++		// sync manual tracking if it's invalid (after seek)
++		if (decoder->currentFrame == 0 && decoder->bufferedFramePosition > 0)
++			decoder->currentFrame = decoder->bufferedFramePosition;
++	}
++
++	if (decoder->codecContext->sample_fmt == AV_SAMPLE_FMT_FLTP)
++	{
++		// direct copy from planar float data
++		for (unsigned int ch = 0; ch < channels; ch++)
++		{
++			float *src = (float *)decoder->frame->data[ch];
++			float *dst = decoder->frameBuffer + ch * samples;
++			memcpy(dst, src, samples * sizeof(float));
++		}
++	}
++	else
++	{
++		// convert via resampler
++		const uint8_t *inputData[MAX_CHANNELS];
++		if (av_sample_fmt_is_planar(decoder->codecContext->sample_fmt))
++		{
++			for (unsigned int ch = 0; ch < channels; ch++)
++			{
++				inputData[ch] = decoder->frame->data[ch];
++			}
++		}
++		else
++		{
++			inputData[0] = decoder->frame->data[0];
++		}
++
++		uint8_t *outputPtrs[MAX_CHANNELS];
++		for (unsigned int ch = 0; ch < channels; ch++)
++		{
++			outputPtrs[ch] = (uint8_t *)(decoder->frameBuffer + ch * samples);
++		}
++
++		int converted = swr_convert(decoder->swrContext, outputPtrs, samples, inputData, samples);
++		if (converted > 0)
++			samples = converted;
++		else
++			samples = 0;
++	}
++
++	decoder->frameBufferValidSamples = samples;
++	decoder->frameBufferOffset = 0;
++}
++
++FFmpegDecoder *open(File *aFile, bool oneshot)
 +{
 +	if (!FFmpegLoader::isAvailable() || !aFile)
 +		return nullptr;
 +
-+	auto *ctx = new FFmpegStreamContext();
-+	memset((void *)ctx, 0, sizeof(FFmpegStreamContext));
++	auto *decoder = new FFmpegDecoder();
++	memset((void *)decoder, 0, sizeof(FFmpegDecoder));
 +
 +	AVStream *stream = nullptr;
 +	AVCodecParameters *codecpar = nullptr;
 +	const AVCodec *codec = nullptr;
 +	AVDictionary *format_opts = nullptr;
-+
-+	ctx->bulkMode = bulkMode;
++	double duration = 0.0;
++	unsigned long long totalFrames = 0;
++	unsigned int encoderDelaySamples = 0;
 +
 +	// setup io context
-+	ctx->ioContext = new FFmpegIOContext();
-+	ctx->ioContext->file = aFile;
-+	ctx->ioContext->pos = 0;
++	decoder->ioContext = new FFmpegIOContext();
++	decoder->ioContext->file = aFile;
++	decoder->ioContext->pos = 0;
 +
-+	ctx->ioBuffer = (unsigned char *)av_malloc(IO_BUFFER_SIZE);
-+	if (!ctx->ioBuffer)
++	decoder->ioBuffer = (unsigned char *)av_malloc(IO_BUFFER_SIZE);
++	if (!decoder->ioBuffer)
 +		goto cleanup;
 +
-+	ctx->avioContext = avio_alloc_context(ctx->ioBuffer, IO_BUFFER_SIZE, 0, ctx->ioContext, ffmpeg_read_func, nullptr, ffmpeg_seek_func);
-+
-+	if (!ctx->avioContext)
++	decoder->avioContext = avio_alloc_context(decoder->ioBuffer, IO_BUFFER_SIZE, 0, decoder->ioContext, ffmpeg_read_func, nullptr, ffmpeg_seek_func);
++	if (!decoder->avioContext)
 +		goto cleanup;
 +
-+	ctx->formatContext = avformat_alloc_context();
-+	if (!ctx->formatContext)
++	decoder->formatContext = avformat_alloc_context();
++	if (!decoder->formatContext)
 +		goto cleanup;
 +
-+	ctx->formatContext->pb = ctx->avioContext;
++	decoder->formatContext->pb = decoder->avioContext;
 +
-+	// format context options for streams
-+	if (!bulkMode)
++	if (!oneshot)
 +	{
-+		av_dict_set(&format_opts, "fflags", "nobuffer", 0);
-+		av_dict_set(&format_opts, "flags", "low_delay", 0);        // this is probably redundant with the flags set below?
-+		av_dict_set(&format_opts, "probesize", "65536", 0);        // 64KB for streaming
-+		av_dict_set(&format_opts, "analyzeduration", "500000", 0); // 500ms for streaming
++		av_dict_set(&format_opts, "flags", "low_delay", 0);
++		av_dict_set(&format_opts, "seek2any", "1", 0);
++		av_dict_set(&format_opts, "accurate_seek", "1", 0);
 +	}
 +
-+	if (avformat_open_input(&ctx->formatContext, nullptr, nullptr, &format_opts) < 0)
++	if (avformat_open_input(&decoder->formatContext, nullptr, nullptr, &format_opts) < 0)
 +	{
 +		av_dict_free(&format_opts);
 +		goto cleanup;
 +	}
 +	av_dict_free(&format_opts);
 +
-+	if (avformat_find_stream_info(ctx->formatContext, nullptr) < 0)
++	if (avformat_find_stream_info(decoder->formatContext, nullptr) < 0)
 +		goto cleanup;
 +
 +	// find audio stream
-+	ctx->audioStreamIndex = -1;
-+	for (unsigned int i = 0; i < ctx->formatContext->nb_streams; i++)
++	decoder->audioStreamIndex = -1;
++	for (unsigned int i = 0; i < decoder->formatContext->nb_streams; i++)
 +	{
-+		if (ctx->formatContext->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_AUDIO)
++		if (decoder->formatContext->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_AUDIO)
 +		{
-+			ctx->audioStreamIndex = i;
++			decoder->audioStreamIndex = i;
 +			break;
 +		}
 +	}
 +
-+	if (ctx->audioStreamIndex == -1)
++	if (decoder->audioStreamIndex == -1)
 +		goto cleanup;
 +
 +	// setup decoder
-+	stream = ctx->formatContext->streams[ctx->audioStreamIndex];
++	stream = decoder->formatContext->streams[decoder->audioStreamIndex];
 +	codecpar = stream->codecpar;
 +	codec = avcodec_find_decoder(codecpar->codec_id);
 +	if (!codec)
 +		goto cleanup;
 +
-+	ctx->codecContext = avcodec_alloc_context3(codec);
-+	if (!ctx->codecContext)
++	decoder->codecContext = avcodec_alloc_context3(codec);
++	if (!decoder->codecContext)
 +		goto cleanup;
 +
-+	if (avcodec_parameters_to_context(ctx->codecContext, codecpar) < 0)
++	if (avcodec_parameters_to_context(decoder->codecContext, codecpar) < 0)
 +		goto cleanup;
 +
-+	// set packet timebase to fix warnings
-+	ctx->codecContext->pkt_timebase = stream->time_base;
-+
-+	ctx->codecContext->flags |= AV_CODEC_FLAG_LOW_DELAY; // force low delay mode
-+	ctx->codecContext->thread_count = 1; // we're already a thread, it's not worth spawning yet more threads and keeping track of that synchronization as well
-+	ctx->codecContext->thread_type = 0;
++	decoder->codecContext->pkt_timebase = stream->time_base;
++	decoder->codecContext->thread_count = 1; // we're already a thread, it's not worth spawning yet more threads and keeping track of that synchronization as well
++	decoder->codecContext->thread_type = 0;
 +
 +	if (codec->capabilities & AV_CODEC_CAP_VARIABLE_FRAME_SIZE)
-+		ctx->codecContext->flags2 |= AV_CODEC_FLAG2_CHUNKS;
++		decoder->codecContext->flags2 |= AV_CODEC_FLAG2_CHUNKS;
 +
-+	if (avcodec_open2(ctx->codecContext, codec, nullptr) < 0)
++	if (avcodec_open2(decoder->codecContext, codec, nullptr) < 0)
 +		goto cleanup;
 +
++	// setup resampler if needed
 +	if (codecpar->format != AV_SAMPLE_FMT_FLTP)
 +	{
-+		ctx->swrContext = swr_alloc();
-+		if (!ctx->swrContext)
++		decoder->swrContext = swr_alloc();
++		if (!decoder->swrContext)
 +			goto cleanup;
 +
-+		// copy channel layout from codecpar
-+		if (av_channel_layout_copy(&ctx->channelLayout, &codecpar->ch_layout) < 0)
++		if (av_channel_layout_copy(&decoder->channelLayout, &codecpar->ch_layout) < 0)
 +			goto cleanup;
 +
-+		// handle default channel layout if not set
-+		if (ctx->channelLayout.nb_channels == 0)
++		if (decoder->channelLayout.nb_channels == 0)
 +		{
-+			av_channel_layout_uninit(&ctx->channelLayout);
-+			av_channel_layout_default(&ctx->channelLayout, codecpar->ch_layout.nb_channels);
++			av_channel_layout_uninit(&decoder->channelLayout);
++			av_channel_layout_default(&decoder->channelLayout, codecpar->ch_layout.nb_channels);
 +		}
 +
-+		av_opt_set_chlayout(ctx->swrContext, "in_chlayout", &ctx->channelLayout, 0);
-+		av_opt_set_chlayout(ctx->swrContext, "out_chlayout", &ctx->channelLayout, 0);
-+		av_opt_set_int(ctx->swrContext, "in_sample_rate", codecpar->sample_rate, 0);
-+		av_opt_set_int(ctx->swrContext, "out_sample_rate", codecpar->sample_rate, 0);
-+		av_opt_set_sample_fmt(ctx->swrContext, "in_sample_fmt", ctx->codecContext->sample_fmt, 0);
-+		av_opt_set_sample_fmt(ctx->swrContext, "out_sample_fmt", AV_SAMPLE_FMT_FLTP, 0);
++		av_opt_set_chlayout(decoder->swrContext, "in_chlayout", &decoder->channelLayout, 0);
++		av_opt_set_chlayout(decoder->swrContext, "out_chlayout", &decoder->channelLayout, 0);
++		av_opt_set_int(decoder->swrContext, "in_sample_rate", codecpar->sample_rate, 0);
++		av_opt_set_int(decoder->swrContext, "out_sample_rate", codecpar->sample_rate, 0);
++		av_opt_set_sample_fmt(decoder->swrContext, "in_sample_fmt", decoder->codecContext->sample_fmt, 0);
++		av_opt_set_sample_fmt(decoder->swrContext, "out_sample_fmt", AV_SAMPLE_FMT_FLTP, 0);
 +
-+		if (swr_init(ctx->swrContext) < 0)
++		if (swr_init(decoder->swrContext) < 0)
 +			goto cleanup;
 +	}
 +	else
 +	{
-+		ctx->swrContext = nullptr;
-+
-+		// still need channel layout for direct copy path
-+		if (av_channel_layout_copy(&ctx->channelLayout, &codecpar->ch_layout) < 0)
++		if (av_channel_layout_copy(&decoder->channelLayout, &codecpar->ch_layout) < 0)
 +			goto cleanup;
 +
-+		if (ctx->channelLayout.nb_channels == 0)
++		if (decoder->channelLayout.nb_channels == 0)
 +		{
-+			av_channel_layout_uninit(&ctx->channelLayout);
-+			av_channel_layout_default(&ctx->channelLayout, codecpar->ch_layout.nb_channels);
++			av_channel_layout_uninit(&decoder->channelLayout);
++			av_channel_layout_default(&decoder->channelLayout, codecpar->ch_layout.nb_channels);
 +		}
 +	}
 +
-+	ctx->frame = av_frame_alloc();
-+	ctx->packet = av_packet_alloc();
-+	if (!ctx->frame || !ctx->packet)
++	decoder->frame = av_frame_alloc();
++	decoder->packet = av_packet_alloc();
++	if (!decoder->frame || !decoder->packet)
 +		goto cleanup;
 +
-+	// finalize setup
-+	ctx->channels = ctx->channelLayout.nb_channels;
-+	ctx->sampleRate = (float)codecpar->sample_rate;
-+	ctx->endOfStream = false;
-+	ctx->seekable = (stream->duration > 0 && ctx->formatContext->pb && ctx->formatContext->pb->seekable);
-+	ctx->totalSamples = calculateTotalSamples(ctx);
-+	ctx->totalSamplesOutput = 0;
++	decoder->channels = decoder->channelLayout.nb_channels;
++	decoder->sampleRate = codecpar->sample_rate;
++	decoder->currentFrame = 0;
++	decoder->endOfStream = false;
++	decoder->seekable = (decoder->formatContext->pb && decoder->formatContext->pb->seekable);
 +
-+	if (!bulkMode)
++	// get encoder delay from the stream we just opened
++	if (stream->start_time != AV_NOPTS_VALUE && stream->start_time > 0)
 +	{
-+		ctx->currentFrameOffset = 0;
-+		ctx->hasCurrentFrame = false;
++		double startTimeSeconds = (double)stream->start_time * stream->time_base.num / stream->time_base.den;
++		encoderDelaySamples = (unsigned int)floor(startTimeSeconds * decoder->sampleRate);
++	}
++	decoder->encoderDelaySamples = encoderDelaySamples;
++
++	// calculate total frames - subtract encoder delay for BASS-like behavior
++	if (stream->duration > 0 && stream->time_base.den > 0)
++		duration = (double)stream->duration * stream->time_base.num / stream->time_base.den;
++	else if (decoder->formatContext->duration > 0)
++		duration = (double)decoder->formatContext->duration / AV_TIME_BASE;
++	else
++		duration = 300.0; // fallback
++
++	totalFrames = (unsigned int)floor(duration * decoder->sampleRate);
++	decoder->totalFrames = totalFrames > encoderDelaySamples ? totalFrames - encoderDelaySamples : totalFrames;
++
++	decoder->frameBuffer = nullptr;
++	decoder->frameBufferSize = 0;
++	decoder->frameBufferOffset = 0;
++	decoder->frameBufferValidSamples = 0;
++
++	// initialize pts tracking
++	decoder->lastFramePts = AV_NOPTS_VALUE;
++	decoder->validPts = false;
++	decoder->bufferedFramePosition = 0;
++	decoder->bufferedFramePositionValid = false;
++
++	// establish proper starting position accounting for encoder delay
++	if (!seekToFrame(decoder, 0))
++	{
++#ifdef _DEBUG
++		printf("ffmpeg: failed to establish initial position\n");
++#endif
++		goto cleanup;
 +	}
 +
-+	*aChannels = ctx->channels;
-+	*aSampleRate = ctx->sampleRate;
-+	*aSampleCount = ctx->totalSamples;
-+
-+	return ctx;
++	return decoder;
 +
 +cleanup:
-+	destroyStreamContext(ctx);
++	close(decoder);
 +	return nullptr;
 +}
 +
-+// decode entire stream to memory using stream context
-+static result decodeEntireStream(void *aContext, float **aData, unsigned int *aSampleCount, unsigned int *aChannels, float *aSampleRate)
++void close(FFmpegDecoder *decoder)
 +{
-+	if (!aContext || !aData || !aSampleCount || !aChannels || !aSampleRate)
-+		return FILE_LOAD_FAILED;
++	if (!decoder)
++		return;
 +
-+	auto *ctx = static_cast<FFmpegStreamContext *>(aContext);
-+
-+	// the dynamic buffer which will be copied into the final float data buffer once loading is finished
-+	std::vector<std::vector<float>> channelBuffers(ctx->channels);
-+	unsigned int samplesWritten = 0;
-+
-+	*aChannels = ctx->channels;
-+	*aSampleRate = ctx->sampleRate;
-+
-+	// bulk decode loop
-+	while (av_read_frame(ctx->formatContext, ctx->packet) >= 0)
++	// cleanup format context
++	if (decoder->formatContext)
 +	{
-+		if (ctx->packet->stream_index == ctx->audioStreamIndex)
-+		{
-+			if (avcodec_send_packet(ctx->codecContext, ctx->packet) >= 0)
-+			{
-+				while (avcodec_receive_frame(ctx->codecContext, ctx->frame) >= 0)
-+				{
-+					unsigned int frameSamples = ctx->frame->nb_samples;
-+					if (frameSamples == 0)
-+					{
-+						av_frame_unref(ctx->frame);
-+						continue;
-+					}
-+
-+					// resize channel buffers to accommodate new samples
-+					for (unsigned int ch = 0; ch < ctx->channels; ch++)
-+					{
-+						channelBuffers[ch].resize(samplesWritten + frameSamples);
-+					}
-+
-+					// convert and copy to temporary buffers
-+					if (ctx->codecContext->sample_fmt == AV_SAMPLE_FMT_FLTP)
-+					{
-+						// direct copy from planar float data
-+						for (unsigned int ch = 0; ch < ctx->channels; ch++)
-+						{
-+							float *src = (float *)ctx->frame->data[ch];
-+							std::copy(src, src + frameSamples, channelBuffers[ch].begin() + samplesWritten);
-+						}
-+					}
-+					else
-+					{
-+						// convert via resampler
-+						const uint8_t *inputData[MAX_CHANNELS];
-+						if (av_sample_fmt_is_planar(ctx->codecContext->sample_fmt))
-+						{
-+							for (unsigned int ch = 0; ch < ctx->channels; ch++)
-+							{
-+								inputData[ch] = ctx->frame->data[ch];
-+							}
-+						}
-+						else
-+						{
-+							inputData[0] = ctx->frame->data[0];
-+						}
-+
-+						uint8_t *outputPtrs[MAX_CHANNELS];
-+						for (unsigned int ch = 0; ch < ctx->channels; ch++)
-+						{
-+							outputPtrs[ch] = (uint8_t *)(channelBuffers[ch].data() + samplesWritten);
-+						}
-+
-+						int converted = swr_convert(ctx->swrContext, outputPtrs, frameSamples, inputData, frameSamples);
-+						if (converted > 0)
-+							frameSamples = converted;
-+						else
-+							frameSamples = 0;
-+					}
-+
-+					samplesWritten += frameSamples;
-+					av_frame_unref(ctx->frame);
-+				}
-+			}
-+		}
-+		av_packet_unref(ctx->packet);
++		avformat_close_input(&decoder->formatContext);
++		decoder->formatContext = nullptr;
 +	}
 +
-+	// flush decoder to ensure all worker threads complete their work
-+	avcodec_send_packet(ctx->codecContext, nullptr);
-+	while (avcodec_receive_frame(ctx->codecContext, ctx->frame) >= 0)
++	// cleanup codec context
++	if (decoder->codecContext)
 +	{
-+		unsigned int frameSamples = ctx->frame->nb_samples;
-+		if (frameSamples > 0)
-+		{
-+			// resize channel buffers
-+			for (unsigned int ch = 0; ch < ctx->channels; ch++)
-+			{
-+				channelBuffers[ch].resize(samplesWritten + frameSamples);
-+			}
-+
-+			if (ctx->codecContext->sample_fmt == AV_SAMPLE_FMT_FLTP)
-+			{
-+				// direct copy from planar float data
-+				for (unsigned int ch = 0; ch < ctx->channels; ch++)
-+				{
-+					float *src = (float *)ctx->frame->data[ch];
-+					std::copy(src, src + frameSamples, channelBuffers[ch].begin() + samplesWritten);
-+				}
-+			}
-+			else
-+			{
-+				// convert via resampler
-+				const uint8_t *inputData[MAX_CHANNELS];
-+				if (av_sample_fmt_is_planar(ctx->codecContext->sample_fmt))
-+				{
-+					for (unsigned int ch = 0; ch < ctx->channels; ch++)
-+					{
-+						inputData[ch] = ctx->frame->data[ch];
-+					}
-+				}
-+				else
-+				{
-+					inputData[0] = ctx->frame->data[0];
-+				}
-+
-+				uint8_t *outputPtrs[MAX_CHANNELS];
-+				for (unsigned int ch = 0; ch < ctx->channels; ch++)
-+				{
-+					outputPtrs[ch] = (uint8_t *)(channelBuffers[ch].data() + samplesWritten);
-+				}
-+
-+				int converted = swr_convert(ctx->swrContext, outputPtrs, frameSamples, inputData, frameSamples);
-+				if (converted > 0)
-+					frameSamples = converted;
-+				else
-+					frameSamples = 0;
-+			}
-+
-+			samplesWritten += frameSamples;
-+		}
-+		av_frame_unref(ctx->frame);
++		avcodec_free_context(&decoder->codecContext);
++		decoder->codecContext = nullptr;
 +	}
 +
-+	if (samplesWritten == 0)
++	// cleanup resampler
++	if (decoder->swrContext)
 +	{
-+		return FILE_LOAD_FAILED;
++		swr_free(&decoder->swrContext);
++		decoder->swrContext = nullptr;
 +	}
 +
-+	// allocate final buffer with correct actual sample count
-+	*aSampleCount = samplesWritten;
-+	*aData = new float[samplesWritten * ctx->channels];
-+
-+	// copy from channel buffers to final planar layout
-+	for (unsigned int ch = 0; ch < ctx->channels; ch++)
++	if (decoder->frame)
 +	{
-+		std::copy(channelBuffers[ch].begin(), channelBuffers[ch].begin() + samplesWritten, *aData + ch * samplesWritten);
++		av_frame_free(&decoder->frame);
++		decoder->frame = nullptr;
 +	}
 +
-+	return SO_NO_ERROR;
++	if (decoder->packet)
++	{
++		av_packet_free(&decoder->packet);
++		decoder->packet = nullptr;
++	}
++
++	// cleanup channel layout
++	av_channel_layout_uninit(&decoder->channelLayout);
++
++	// cleanup io context
++	unsigned char *bufferToFree = nullptr;
++	if (decoder->avioContext)
++	{
++		bufferToFree = decoder->avioContext->buffer;
++		avio_context_free(&decoder->avioContext);
++		if (bufferToFree)
++			av_free(bufferToFree);
++	}
++	else if (decoder->ioBuffer)
++	{
++		av_free(decoder->ioBuffer);
++	}
++
++	delete decoder->ioContext;
++	delete[] decoder->frameBuffer;
++	delete decoder;
 +}
 +
-+// public API functions
-+result loadToMemory(File *aFile, float **aData, unsigned int *aSampleCount, unsigned int *aChannels, float *aSampleRate)
++bool seekToFrame(FFmpegDecoder *decoder, unsigned long long frameIndex)
 +{
-+	void *ctx = createStreamContextInternal(aFile, aChannels, aSampleRate, aSampleCount, true);
-+	if (!ctx)
-+		return FILE_LOAD_FAILED;
-+
-+	result res = decodeEntireStream(ctx, aData, aSampleCount, aChannels, aSampleRate);
-+	destroyStreamContext(ctx);
-+	return res;
-+}
-+
-+void *createStreamContext(File *aFile, unsigned int *aChannels, float *aSampleRate, unsigned int *aSampleCount)
-+{
-+	return createStreamContextInternal(aFile, aChannels, aSampleRate, aSampleCount, false);
-+}
-+
-+unsigned int readSamples(void *aContext, float *aBuffer, unsigned int aSamplesToRead, unsigned int aChannels)
-+{
-+	if (!aContext || !aBuffer || aSamplesToRead == 0)
-+		return 0;
-+
-+	auto *ctx = static_cast<FFmpegStreamContext *>(aContext);
-+	if (ctx->endOfStream)
-+		return 0;
-+
-+	unsigned int samplesRead = 0;
-+
-+	while (samplesRead < aSamplesToRead && !ctx->endOfStream)
++	if (!decoder || !decoder->seekable)
 +	{
-+		// if no current frame, decode the next one
-+		if (!ctx->hasCurrentFrame)
-+		{
-+			if (!decodeNextFrame(ctx))
-+				break;
-+		}
-+
-+		// convert directly from AVFrame to output buffer
-+		if (ctx->hasCurrentFrame)
-+		{
-+			unsigned int totalFrameSamples = ctx->frame->nb_samples;
-+			unsigned int available = totalFrameSamples - ctx->currentFrameOffset;
-+			unsigned int toCopy = std::min(available, aSamplesToRead - samplesRead);
-+
-+			if (ctx->codecContext->sample_fmt == AV_SAMPLE_FMT_FLTP)
-+			{
-+				// direct copy from planar float data with offset
-+				for (unsigned int ch = 0; ch < ctx->channels && ch < aChannels; ch++)
-+				{
-+					float *src = (float *)ctx->frame->data[ch] + ctx->currentFrameOffset;
-+					float *dst = aBuffer + ch * aSamplesToRead + samplesRead;
-+					memcpy(dst, src, toCopy * sizeof(float));
-+				}
-+			}
-+			else
-+			{
-+				// convert via resampler with offset
-+				const uint8_t *inputData[MAX_CHANNELS];
-+				if (av_sample_fmt_is_planar(ctx->codecContext->sample_fmt))
-+				{
-+					for (unsigned int ch = 0; ch < ctx->channels; ch++)
-+					{
-+						if (ctx->codecContext->sample_fmt == AV_SAMPLE_FMT_S16P)
-+						{
-+							int16_t *data = (int16_t *)ctx->frame->data[ch];
-+							inputData[ch] = (uint8_t *)(data + ctx->currentFrameOffset);
-+						}
-+						else if (ctx->codecContext->sample_fmt == AV_SAMPLE_FMT_FLTP)
-+						{
-+							float *data = (float *)ctx->frame->data[ch];
-+							inputData[ch] = (uint8_t *)(data + ctx->currentFrameOffset);
-+						}
-+					}
-+				}
-+				else
-+				{
-+					int bytes_per_sample = av_get_bytes_per_sample(ctx->codecContext->sample_fmt);
-+					int offset = ctx->currentFrameOffset * ctx->channels * bytes_per_sample;
-+					inputData[0] = ctx->frame->data[0] + offset;
-+				}
-+
-+				// convert directly to output buffer at current position
-+				uint8_t *outputPtrs[MAX_CHANNELS];
-+				for (unsigned int ch = 0; ch < ctx->channels && ch < aChannels; ch++)
-+				{
-+					outputPtrs[ch] = (uint8_t *)(aBuffer + ch * aSamplesToRead + samplesRead);
-+				}
-+
-+				int converted = swr_convert(ctx->swrContext, outputPtrs, toCopy, inputData, toCopy);
-+				if (converted > 0)
-+					toCopy = converted;
-+				else
-+					toCopy = 0;
-+			}
-+
-+			ctx->currentFrameOffset += toCopy;
-+			ctx->totalSamplesOutput += toCopy;
-+			samplesRead += toCopy;
-+
-+			// frame exhausted, unref and mark for next decode
-+			if (ctx->currentFrameOffset >= totalFrameSamples)
-+			{
-+				av_frame_unref(ctx->frame);
-+				ctx->hasCurrentFrame = false;
-+				ctx->currentFrameOffset = 0;
-+			}
-+		}
-+	}
-+
-+	return samplesRead;
-+}
-+
-+bool seekSamples(void *aContext, unsigned int aSamplePosition)
-+{
-+	if (!aContext)
++#ifdef _DEBUG
++		printf("ffmpeg: seek rejected - decoder %s, seekable: %s\n", decoder ? "valid" : "null", decoder && decoder->seekable ? "yes" : "no");
++#endif
 +		return false;
++	}
 +
-+	auto *ctx = static_cast<FFmpegStreamContext *>(aContext);
-+	if (!ctx->seekable)
-+		return false;
++	unsigned long long currentPos = getCurrentFrame(decoder);
++	if (frameIndex == currentPos)
++	{
++#ifdef _DEBUG
++		printf("ffmpeg: seek skipped - already at frame %llu\n", frameIndex);
++#endif
++		return true;
++	}
 +
-+	AVStream *stream = ctx->formatContext->streams[ctx->audioStreamIndex];
++	AVStream *stream = decoder->formatContext->streams[decoder->audioStreamIndex];
++	unsigned long long adjustedFrameIndex = frameIndex + decoder->encoderDelaySamples;
++	int64_t targetTimestamp = av_rescale_q(adjustedFrameIndex, {1, (int)decoder->sampleRate}, stream->time_base);
 +
-+	// convert sample position to stream timestamp
-+	int64_t targetTimestamp = av_rescale_q(aSamplePosition, {1, (int)ctx->sampleRate}, stream->time_base);
++#ifdef _DEBUG
++	printf("ffmpeg: seeking from frame=%llu (%.3fs) to frame %llu (%.3fs), adjusted=%llu, timestamp=%lld\n", currentPos, (double)currentPos / decoder->sampleRate,
++	       frameIndex, (double)frameIndex / decoder->sampleRate, adjustedFrameIndex, targetTimestamp);
++#endif
 +
-+	// seek to exact timestamp using avformat_seek_file for better precision
-+	int ret = avformat_seek_file(ctx->formatContext, ctx->audioStreamIndex, targetTimestamp, targetTimestamp, targetTimestamp, AVSEEK_FLAG_ANY);
-+
++	// seek to keyframe at or before target
++	int ret = avformat_seek_file(decoder->formatContext, decoder->audioStreamIndex, INT64_MIN, targetTimestamp, targetTimestamp, AVSEEK_FLAG_BACKWARD);
 +	if (ret < 0)
 +	{
 +#ifdef _DEBUG
-+		printf("failed to seek to sample %u\n", aSamplePosition);
++		printf("ffmpeg: seek failed with error %d\n", ret);
 +#endif
 +		return false;
 +	}
 +
 +	// reset decoder state
-+	avcodec_flush_buffers(ctx->codecContext);
++	avcodec_flush_buffers(decoder->codecContext);
 +
-+	// flush any buffered samples in resampler
-+	if (ctx->swrContext)
++	// flush resampler buffers
++	if (decoder->swrContext)
 +	{
-+		// check if there are any buffered samples and drop them
-+		int64_t delay = swr_get_delay(ctx->swrContext, ctx->sampleRate);
++		int64_t delay = swr_get_delay(decoder->swrContext, decoder->sampleRate);
 +		if (delay > 0)
 +		{
-+			swr_drop_output(ctx->swrContext, (int)delay);
++#ifdef _DEBUG
++			printf("ffmpeg: flushing %lld samples from resampler\n", delay);
++#endif
++			swr_drop_output(decoder->swrContext, (int)delay);
 +		}
 +	}
 +
-+	// invalidate current frame
-+	if (ctx->hasCurrentFrame)
-+	{
-+		av_frame_unref(ctx->frame);
-+		ctx->hasCurrentFrame = false;
-+	}
-+	ctx->currentFrameOffset = 0;
-+	ctx->endOfStream = false;
++	// invalidate frame buffer
++	decoder->frameBufferOffset = 0;
++	decoder->frameBufferValidSamples = 0;
++	decoder->endOfStream = false;
 +
-+	// set position tracking to the requested sample position
-+	ctx->totalSamplesOutput = aSamplePosition;
++	// reset position tracking
++	decoder->currentFrame = 0;
++	decoder->lastFramePts = AV_NOPTS_VALUE;
++	decoder->validPts = false;
++	decoder->bufferedFramePosition = 0;
++	decoder->bufferedFramePositionValid = false;
++
++	// decode first frame to establish where we actually landed
++	if (!decodeNextFrame(decoder))
++	{
++#ifdef _DEBUG
++		printf("ffmpeg: failed to decode frame after seek\n");
++#endif
++		return false;
++	}
++	convertFrameToBuffer(decoder); // frame is now in buffer, ready to be consumed
++	av_frame_unref(decoder->frame);
++
++	unsigned long long keyframePos = getCurrentFrame(decoder);
++
++#ifdef _DEBUG
++	printf("ffmpeg: landed at keyframe %llu (%.3fs), target is frame %llu (%.3fs)\n", keyframePos, (double)keyframePos / decoder->sampleRate, frameIndex,
++	       (double)frameIndex / decoder->sampleRate);
++#endif
++
++	// if we need to advance further, read forward (discarding audio)
++	if (keyframePos < frameIndex)
++	{
++		unsigned long long framesToSkip = frameIndex - keyframePos;
++
++#ifdef _DEBUG
++		printf("ffmpeg: skipping forward %llu frames to reach target\n", framesToSkip);
++#endif
++
++		// temporary buffer for discarded audio
++		float *tempBuffer = new float[framesToSkip * decoder->channels];
++		unsigned long long framesRead = readFrames(decoder, framesToSkip, tempBuffer);
++		delete[] tempBuffer;
++
++		if (framesRead != framesToSkip)
++		{
++#ifdef _DEBUG
++			printf("ffmpeg: skip-forward incomplete - skipped %llu/%llu frames\n", framesRead, framesToSkip);
++#endif
++		}
++	}
++	else if (keyframePos == frameIndex)
++	{
++		// exactly where we want to be, frame is ready in buffer
++#ifdef _DEBUG
++		printf("ffmpeg: landed exactly on target frame\n");
++#endif
++	}
++	else
++	{
++		// this shouldn't happen with AVSEEK_FLAG_BACKWARD
++#ifdef _DEBUG
++		printf("ffmpeg: warning - landed past target by %llu frames\n", keyframePos - frameIndex);
++#endif
++	}
++
++#ifdef _DEBUG
++	printf("ffmpeg: seek completed - target frame %llu (%.3fs), actual frame %llu (%.3fs)\n", frameIndex, (double)frameIndex / decoder->sampleRate,
++	       getCurrentFrame(decoder), (double)getCurrentFrame(decoder) / decoder->sampleRate);
++#endif
 +
 +	return true;
 +}
 +
-+void destroyStreamContext(void *aContext)
++unsigned long long readFrames(FFmpegDecoder *decoder, unsigned long long framesToRead, float *buffer)
 +{
-+	if (!aContext)
-+		return;
++	if (!decoder || !buffer || framesToRead == 0)
++		return 0;
 +
-+	auto *ctx = static_cast<FFmpegStreamContext *>(aContext);
++	unsigned long long framesRead = 0;
++	unsigned int channels = decoder->channels;
 +
-+	// cleanup any current frame
-+	if (ctx->hasCurrentFrame)
++	while (framesRead < framesToRead && !decoder->endOfStream)
 +	{
-+		av_frame_unref(ctx->frame);
-+		ctx->hasCurrentFrame = false;
-+	}
-+
-+	// make sure all pending operations complete and flush worker threads
-+	if (ctx->codecContext)
-+	{
-+		// flush the codec make sure all worker threads complete
-+		avcodec_flush_buffers(ctx->codecContext);
-+
-+		// send null packet to signal end of stream and drain any remaining frames
-+		avcodec_send_packet(ctx->codecContext, nullptr);
-+
-+		// receive and discard any remaining frames make sure threads are done
-+		AVFrame *tempFrame = av_frame_alloc();
-+		if (tempFrame)
++		// use buffered frame data if available
++		if (decoder->frameBufferValidSamples > decoder->frameBufferOffset)
 +		{
-+			while (avcodec_receive_frame(ctx->codecContext, tempFrame) >= 0)
++			unsigned long long available = decoder->frameBufferValidSamples - decoder->frameBufferOffset;
++			unsigned long long toCopy = std::min(available, framesToRead - framesRead);
++
++			if (toCopy > 0)
 +			{
-+				av_frame_unref(tempFrame);
++				// copy frame data in planar format
++				for (unsigned int ch = 0; ch < channels; ch++)
++				{
++					float *src = decoder->frameBuffer + ch * decoder->frameBufferValidSamples + decoder->frameBufferOffset;
++					float *dst = buffer + ch * framesToRead + framesRead;
++					memcpy(dst, src, toCopy * sizeof(float));
++				}
++
++				decoder->frameBufferOffset += (unsigned int)toCopy;
++				framesRead += toCopy;
++				decoder->currentFrame += toCopy;
 +			}
-+			av_frame_free(&tempFrame);
++		}
++		else
++		{
++			// need to decode next frame
++			if (!decodeNextFrame(decoder))
++				break;
++
++			convertFrameToBuffer(decoder);
++			av_frame_unref(decoder->frame);
 +		}
 +	}
 +
-+	// finish all format context ops before codec cleanup
-+	if (ctx->formatContext)
-+	{
-+		avformat_close_input(&ctx->formatContext);
-+		ctx->formatContext = nullptr;
-+	}
-+
-+	// now cleanup codec context, worker threads have completed
-+	if (ctx->codecContext)
-+	{
-+		avcodec_free_context(&ctx->codecContext);
-+		ctx->codecContext = nullptr;
-+	}
-+
-+	// cleanup remaining resources
-+	if (ctx->swrContext)
-+	{
-+		swr_free(&ctx->swrContext);
-+		ctx->swrContext = nullptr;
-+	}
-+
-+	if (ctx->frame)
-+	{
-+		av_frame_free(&ctx->frame);
-+		ctx->frame = nullptr;
-+	}
-+
-+	if (ctx->packet)
-+	{
-+		av_packet_free(&ctx->packet);
-+		ctx->packet = nullptr;
-+	}
-+
-+	// cleanup channel layout
-+	av_channel_layout_uninit(&ctx->channelLayout);
-+
-+	// free avio buffer manually
-+	unsigned char *bufferToFree = nullptr;
-+	if (ctx->avioContext)
-+	{
-+		bufferToFree = ctx->avioContext->buffer;
-+		avio_context_free(&ctx->avioContext);
-+		if (bufferToFree)
-+			av_free(bufferToFree);
-+	}
-+	else if (ctx->ioBuffer)
-+	{
-+		av_free(ctx->ioBuffer);
-+	}
-+
-+	delete ctx->ioContext;
-+	delete ctx;
++	return framesRead;
 +}
 +
-+unsigned int getCurrentPosition(void *aContext)
++result loadToMemory(File *aFile, float **aData, unsigned int *aSampleCount, unsigned int *aChannels, float *aSampleRate)
 +{
-+	if (!aContext)
++	if (!aFile || !aData || !aSampleCount || !aChannels || !aSampleRate)
++		return FILE_LOAD_FAILED;
++
++	constexpr bool oneshot = true;
++	FFmpegDecoder *decoder = open(aFile, oneshot);
++	if (!decoder)
++		return FILE_LOAD_FAILED;
++
++	*aChannels = getChannels(decoder);
++	*aSampleRate = (float)getSampleRate(decoder);
++	unsigned long long totalFrames = getTotalFrameCount(decoder);
++
++	if (totalFrames == 0)
++	{
++		close(decoder);
++		return FILE_LOAD_FAILED;
++	}
++
++	*aSampleCount = (unsigned int)totalFrames;
++	*aData = new float[totalFrames * (*aChannels)];
++
++	unsigned long long framesRead = readFrames(decoder, totalFrames, *aData);
++	close(decoder);
++
++	if (framesRead != totalFrames)
++	{
++		delete[] *aData;
++		*aData = nullptr;
++		return FILE_LOAD_FAILED;
++	}
++
++	return SO_NO_ERROR;
++}
++
++unsigned int getChannels(FFmpegDecoder *decoder)
++{
++	return decoder ? decoder->channels : 0;
++}
++
++unsigned int getSampleRate(FFmpegDecoder *decoder)
++{
++	return decoder ? decoder->sampleRate : 0;
++}
++
++unsigned long long getTotalFrameCount(FFmpegDecoder *decoder)
++{
++	return decoder ? decoder->totalFrames : 0;
++}
++
++unsigned long long getCurrentFrame(FFmpegDecoder *decoder)
++{
++	if (!decoder)
 +		return 0;
 +
-+	auto *ctx = static_cast<FFmpegStreamContext *>(aContext);
++	// prefer buffered frame position if we have valid timestamps
++	if (decoder->bufferedFramePositionValid)
++	{
++		// return position of buffered frame + how much we've consumed from it
++		return decoder->bufferedFramePosition + decoder->frameBufferOffset;
++	}
 +
-+	// return the actual playback position
-+	return ctx->totalSamplesOutput;
++	// fallback to manual tracking
++	return decoder->currentFrame;
 +}
 +
 +} // namespace SoLoud::FFmpeg
 +#endif
 diff --git a/src/audiosource/wav/soloud_ffmpeg.h b/src/audiosource/wav/soloud_ffmpeg.h
 new file mode 100644
-index 0000000..d12959f
+index 0000000..0ed00e2
 --- /dev/null
 +++ b/src/audiosource/wav/soloud_ffmpeg.h
-@@ -0,0 +1,95 @@
+@@ -0,0 +1,110 @@
 +/*
 +SoLoud audio engine - ffmpeg interface
 +Copyright (c) 2013-2020 Jari Komppa
@@ -1097,18 +1073,21 @@ index 0000000..d12959f
 +namespace FFmpeg
 +{
 +
-+// io buffer size for ffmpeg avio context
-+static const unsigned int IO_BUFFER_SIZE = 65536;
++// ffmpeg decoder handle (opaque)
++struct FFmpegDecoder;
 +
 +// load audio data to memory using ffmpeg
 +result loadToMemory(File *aFile, float **aData, unsigned int *aSampleCount, unsigned int *aChannels, float *aSampleRate);
 +
-+// streaming interface
-+void *createStreamContext(File *aFile, unsigned int *aChannels, float *aSampleRate, unsigned int *aSampleCount);
-+unsigned int readSamples(void *aContext, float *aBuffer, unsigned int aSamplesToRead, unsigned int aChannels);
-+bool seekSamples(void *aContext, unsigned int aSamplePosition);
-+unsigned int getCurrentPosition(void *aContext);
-+void destroyStreamContext(void *aContext);
++// direct decoder interface (similar to dr_* decoders)
++FFmpegDecoder *open(File *aFile, bool oneshot = false);
++void close(FFmpegDecoder *decoder);
++unsigned int getChannels(FFmpegDecoder *decoder);
++unsigned int getSampleRate(FFmpegDecoder *decoder);
++unsigned long long getTotalFrameCount(FFmpegDecoder *decoder);
++unsigned long long getCurrentFrame(FFmpegDecoder *decoder);
++bool seekToFrame(FFmpegDecoder *decoder, unsigned long long frameIndex);
++unsigned long long readFrames(FFmpegDecoder *decoder, unsigned long long framesToRead, float *buffer);
 +
 +} // namespace FFmpeg
 +
@@ -1123,30 +1102,42 @@ index 0000000..d12959f
 +
 +namespace FFmpeg
 +{
++struct FFmpegDecoder
++{};
++
 +inline result loadToMemory(File *, float **, unsigned int *, unsigned int *, float *)
 +{
 +	return 7;
 +}
 +
-+inline void *createStreamContext(File *, unsigned int *, float *, unsigned int *)
++inline FFmpegDecoder *open(File *, bool = false)
 +{
 +	return nullptr;
 +}
-+inline unsigned int readSamples(void *, float *, unsigned int, unsigned int)
++inline void close(FFmpegDecoder *) {}
++inline unsigned int getChannels(FFmpegDecoder *)
 +{
 +	return 0;
 +}
-+inline bool seekSamples(void *, unsigned int, unsigned int * = nullptr)
++inline unsigned int getSampleRate(FFmpegDecoder *)
++{
++	return 0;
++}
++inline unsigned long long getTotalFrameCount(FFmpegDecoder *)
++{
++	return 0;
++}
++inline unsigned long long getCurrentFrame(FFmpegDecoder *)
++{
++	return 0;
++}
++inline bool seekToFrame(FFmpegDecoder *, unsigned long long)
 +{
 +	return false;
 +}
-+inline unsigned int getCurrentPosition(void *)
++inline unsigned long long readFrames(FFmpegDecoder *, unsigned long long, float *)
 +{
 +	return 0;
-+}
-+inline void destroyStreamContext(void *)
-+{
-+	;
 +}
 +} // namespace FFmpeg
 +} // namespace SoLoud
@@ -1155,7 +1146,7 @@ index 0000000..d12959f
 +#endif // SOLOUD_FFMPEG_H
 diff --git a/src/audiosource/wav/soloud_ffmpeg_load.cpp b/src/audiosource/wav/soloud_ffmpeg_load.cpp
 new file mode 100644
-index 0000000..f26673e
+index 0000000..988a12c
 --- /dev/null
 +++ b/src/audiosource/wav/soloud_ffmpeg_load.cpp
 @@ -0,0 +1,355 @@
@@ -1382,7 +1373,7 @@ index 0000000..f26673e
 +}
 +
 +// silence, you fool
-+static void empty_log_callback(void *, int, const char *, va_list)
++static void empty_log_callback(void */**/, int/**/, const char */**/, va_list/**/)
 +{
 +	;
 +}
@@ -1516,10 +1507,10 @@ index 0000000..f26673e
 +#endif
 diff --git a/src/audiosource/wav/soloud_ffmpeg_load.h b/src/audiosource/wav/soloud_ffmpeg_load.h
 new file mode 100644
-index 0000000..c28b57d
+index 0000000..3f7aa2f
 --- /dev/null
 +++ b/src/audiosource/wav/soloud_ffmpeg_load.h
-@@ -0,0 +1,184 @@
+@@ -0,0 +1,170 @@
 +/*
 +SoLoud audio engine - ffmpeg library loader/unloader
 +Copyright (c) 2013-2020 Jari Komppa
@@ -1578,56 +1569,51 @@ index 0000000..c28b57d
 +#define AVFORMAT_FUNCTIONS(X) \
 +	X(av_read_frame) \
 +	X(avformat_alloc_context) \
-+	X(avformat_open_input) \
-+	X(avformat_find_stream_info) \
 +	X(avformat_close_input) \
-+	X(av_seek_frame) \
++	X(avformat_find_stream_info) \
++	X(avformat_open_input) \
 +	X(avformat_seek_file) \
 +	X(avio_alloc_context) \
 +	X(avio_context_free)
 +
 +#define AVCODEC_FUNCTIONS(X) \
-+	X(avcodec_find_decoder) \
-+	X(avcodec_alloc_context3) \
-+	X(avcodec_parameters_to_context) \
-+	X(avcodec_open2) \
-+	X(avcodec_free_context) \
-+	X(avcodec_send_packet) \
-+	X(avcodec_receive_frame) \
-+	X(avcodec_flush_buffers) \
 +	X(av_packet_alloc) \
 +	X(av_packet_free) \
-+	X(av_packet_unref)
++	X(av_packet_unref) \
++	X(avcodec_alloc_context3) \
++	X(avcodec_find_decoder) \
++	X(avcodec_flush_buffers) \
++	X(avcodec_free_context) \
++	X(avcodec_open2) \
++	X(avcodec_parameters_to_context) \
++	X(avcodec_receive_frame) \
++	X(avcodec_send_packet)
 +
 +#define AVUTIL_FUNCTIONS(X) \
-+	X(av_log_set_callback) \
-+	X(av_rescale_q) \
-+	X(av_opt_set_int) \
-+	X(av_opt_set_chlayout) \
-+	X(av_opt_set_sample_fmt) \
-+	X(av_channel_layout_default) \
 +	X(av_channel_layout_copy) \
++	X(av_channel_layout_default) \
 +	X(av_channel_layout_uninit) \
-+	X(av_malloc) \
-+	X(av_free) \
-+	X(av_dict_set) \
 +	X(av_dict_free) \
++	X(av_dict_set) \
 +	X(av_frame_alloc) \
 +	X(av_frame_free) \
 +	X(av_frame_unref) \
-+	X(av_frame_get_side_data) \
-+	X(av_sample_fmt_is_planar) \
-+	X(av_get_bytes_per_sample)
++	X(av_free) \
++	X(av_log_set_callback) \
++	X(av_malloc) \
++	X(av_opt_set_chlayout) \
++	X(av_opt_set_int) \
++	X(av_opt_set_sample_fmt) \
++	X(av_rescale_q) \
++	X(av_sample_fmt_is_planar)
 +
 +#define SWRESAMPLE_FUNCTIONS(X) \
 +	X(swr_alloc) \
-+	X(swr_init) \
-+	X(swr_close) \
-+	X(swr_free) \
 +	X(swr_convert) \
++	X(swr_drop_output) \
++	X(swr_free) \
 +	X(swr_get_delay) \
-+	X(swr_next_pts) \
-+	X(swr_drop_output)
++	X(swr_init)
 +
 +#define ALL_FFMPEG_FUNCTIONS(X) \
 +	AVFORMAT_FUNCTIONS(X) \
@@ -1638,29 +1624,20 @@ index 0000000..c28b57d
 +namespace FFmpegFuncs
 +{
 +// import commonly used types first
-+using AVFormatContext = ffmpeg_EXTERN::AVFormatContext;
++using AVChannelLayout = ffmpeg_EXTERN::AVChannelLayout;
++using AVCodec = ffmpeg_EXTERN::AVCodec;
 +using AVCodecContext = ffmpeg_EXTERN::AVCodecContext;
 +using AVCodecParameters = ffmpeg_EXTERN::AVCodecParameters;
-+using AVCodec = ffmpeg_EXTERN::AVCodec;
++using AVDictionary = ffmpeg_EXTERN::AVDictionary;
++using AVFormatContext = ffmpeg_EXTERN::AVFormatContext;
 +using AVFrame = ffmpeg_EXTERN::AVFrame;
++using AVIOContext = ffmpeg_EXTERN::AVIOContext;
 +using AVPacket = ffmpeg_EXTERN::AVPacket;
 +using AVStream = ffmpeg_EXTERN::AVStream;
-+using AVIOContext = ffmpeg_EXTERN::AVIOContext;
-+using AVRational = ffmpeg_EXTERN::AVRational;
-+using AVDictionary = ffmpeg_EXTERN::AVDictionary;
 +using SwrContext = ffmpeg_EXTERN::SwrContext;
-+using AVSampleFormat = ffmpeg_EXTERN::AVSampleFormat;
-+using AVCodecID = ffmpeg_EXTERN::AVCodecID;
-+using AVMediaType = ffmpeg_EXTERN::AVMediaType;
-+using AVChannelLayout = ffmpeg_EXTERN::AVChannelLayout;
-+using AVFrameSideData = ffmpeg_EXTERN::AVFrameSideData;
-+using ffmpeg_EXTERN::unaligned_32;
 +
 +// import constants that we need
-+using ffmpeg_EXTERN::AV_FRAME_DATA_SKIP_SAMPLES;
-+using ffmpeg_EXTERN::AV_SAMPLE_FMT_FLT;
 +using ffmpeg_EXTERN::AV_SAMPLE_FMT_FLTP;
-+using ffmpeg_EXTERN::AV_SAMPLE_FMT_S16P;
 +using ffmpeg_EXTERN::AVMEDIA_TYPE_AUDIO;
 +
 +// generate function pointer types and declarations
@@ -1704,7 +1681,6 @@ index 0000000..c28b57d
 +
 +#endif
 +#endif // SOLOUD_FFMPEG_H
-\ No newline at end of file
 diff --git a/src/audiosource/wav/soloud_wav.cpp b/src/audiosource/wav/soloud_wav.cpp
 index 1eb39e0..964d0b8 100755
 --- a/src/audiosource/wav/soloud_wav.cpp
@@ -2422,10 +2398,10 @@ index 1eb39e0..964d0b8 100755
 +}
 +}; // namespace SoLoud
 diff --git a/src/audiosource/wav/soloud_wavstream.cpp b/src/audiosource/wav/soloud_wavstream.cpp
-index aeeca53..43cabb1 100644
+index aeeca53..06542ac 100644
 --- a/src/audiosource/wav/soloud_wavstream.cpp
 +++ b/src/audiosource/wav/soloud_wavstream.cpp
-@@ -22,748 +22,831 @@ freely, subject to the following restrictions:
+@@ -22,748 +22,825 @@ freely, subject to the following restrictions:
     distribution.
  */
  
@@ -2517,8 +2493,10 @@ index aeeca53..43cabb1 100644
 +	mOffset = 0;
 +	mCodec.mOgg = 0;
 +	mCodec.mFlac = 0;
++	mCodec.mWav = 0;
++	mCodec.mMp3 = 0;
++	mCodec.mFfmpeg = 0;
 +	mFile = 0;
-+	mFFmpegContext = nullptr;
 +
 +	if (aParent->mMemFile)
  	{
@@ -2692,15 +2670,15 @@ index aeeca53..43cabb1 100644
  		{
 -		case WAVSTREAM_OGG:
 -			if (mCodec.mOgg)
--			{
++			mCodec.mFlac = drflac_open(drflac_read_func, drflac_seek_func, (void *)mFile, NULL);
++			if (!mCodec.mFlac)
+ 			{
 -				stb_vorbis_close(mCodec.mOgg);
 -			}
 -			break;
 -		case WAVSTREAM_FLAC:
 -			if (mCodec.mFlac)
-+			mCodec.mFlac = drflac_open(drflac_read_func, drflac_seek_func, (void *)mFile, NULL);
-+			if (!mCodec.mFlac)
- 			{
+-			{
 -				drflac_close(mCodec.mFlac);
 +				if (mFile != mParent->mStreamFile)
 +					delete mFile;
@@ -2731,25 +2709,23 @@ index aeeca53..43cabb1 100644
 -				delete mCodec.mWav;
 -				mCodec.mWav = 0;
 +				drmp3_bind_seek_table(mCodec.mMp3, mParent->mMp3SeekPointCount, mParent->mMp3SeekPoints);
- 			}
--			break;
- 		}
--		if (mFile != mParent->mStreamFile)
++			}
++		}
 +		else if (mParent->mFiletype == WAVSTREAM_FFMPEG)
- 		{
--			delete mFile;
-+			unsigned int channels, sampleCount;
-+			float sampleRate;
-+			mFFmpegContext = FFmpeg::createStreamContext(mFile, &channels, &sampleRate, &sampleCount);
-+			if (!mFFmpegContext)
++		{
++			mCodec.mFfmpeg = FFmpeg::open(mFile);
++			if (!mCodec.mFfmpeg)
 +			{
 +				if (mFile != mParent->mStreamFile)
 +					delete mFile;
 +				mFile = 0;
-+			}
-+		}
+ 			}
+-			break;
+ 		}
+-		if (mFile != mParent->mStreamFile)
 +		else
-+		{
+ 		{
+-			delete mFile;
 +			if (mFile != mParent->mStreamFile)
 +				delete mFile;
 +			mFile = NULL;
@@ -2780,19 +2756,19 @@ index aeeca53..43cabb1 100644
 +		break;
 +	case WAVSTREAM_FLAC:
 +		if (mCodec.mFlac)
-+		{
+ 		{
+-			memcpy(aBuffer + aPitch * i, aOggOutputs[i] + aFrameOffset, sizeof(float) * samples);
 +			drflac_close(mCodec.mFlac);
-+		}
+ 		}
+-		return samples;
 +		break;
 +	case WAVSTREAM_MP3:
 +		if (mCodec.mMp3)
- 		{
--			memcpy(aBuffer + aPitch * i, aOggOutputs[i] + aFrameOffset, sizeof(float) * samples);
++		{
 +			drmp3_uninit(mCodec.mMp3);
 +			delete mCodec.mMp3;
 +			mCodec.mMp3 = 0;
- 		}
--		return samples;
++		}
 +		break;
 +	case WAVSTREAM_WAV:
 +		if (mCodec.mWav)
@@ -2803,30 +2779,30 @@ index aeeca53..43cabb1 100644
 +		}
 +		break;
 +	case WAVSTREAM_FFMPEG:
-+		if (mFFmpegContext)
++		if (mCodec.mFfmpeg)
 +		{
-+			FFmpeg::destroyStreamContext(mFFmpegContext);
-+			mFFmpegContext = nullptr;
++			FFmpeg::close(mCodec.mFfmpeg);
++			mCodec.mFfmpeg = nullptr;
 +		}
 +		break;
- 	}
++	}
 +	if (mFile != mParent->mStreamFile)
 +	{
 +		delete mFile;
-+	}
+ 	}
 +}
  
 +static int getOggData(float **aOggOutputs, float *aBuffer, int aSamples, int aPitch, int aFrameSize, int aFrameOffset, int aChannels)
 +{
 +	if (aFrameSize <= 0)
 +		return 0;
- 
++
 +	int samples = aSamples;
 +	if (aFrameSize - aFrameOffset < samples)
 +	{
 +		samples = aFrameSize - aFrameOffset;
 +	}
-+
+ 
 +	int i;
 +	for (i = 0; i < aChannels; i++)
 +	{
@@ -3054,7 +3030,7 @@ index aeeca53..43cabb1 100644
 +	}
 +	break;
 +	case WAVSTREAM_FFMPEG: {
-+		if (mFFmpegContext)
++		if (mCodec.mFfmpeg)
  		{
 -			drflac_uint64 targetFrame = (drflac_uint64)floor(aSeconds * mCodec.mFlac->sampleRate);
 -
@@ -3067,15 +3043,14 @@ index aeeca53..43cabb1 100644
 -				return SO_NO_ERROR;
 -			}
 -			return UNKNOWN_ERROR;
-+			// read samples and track position consistently with other decoders
-+			offset = FFmpeg::readSamples(mFFmpegContext, aBuffer, aSamplesToRead, mChannels);
++			offset = (unsigned int)FFmpeg::readFrames(mCodec.mFfmpeg, aSamplesToRead, aBuffer);
 +			mOffset += offset;
  		}
 -		return AudioSourceInstance::seek(aSeconds, mScratch, mScratchSize);
 +		return offset;
- 	}
-+	break;
 +	}
++	break;
+ 	}
 +	return aSamplesToRead;
 +}
  
@@ -3083,8 +3058,7 @@ index aeeca53..43cabb1 100644
 +result WavStreamInstance::seek(double aSeconds, float *mScratch, unsigned int mScratchSize)
 +{
 +	if (mParent->mFiletype == WAVSTREAM_MP3 && mCodec.mMp3)
- 	{
--		switch (mParent->mFiletype)
++	{
 +		drmp3_uint64 targetFrame = (drmp3_uint64)floor(aSeconds * mCodec.mMp3->sampleRate);
 +		if (drmp3_seek_to_pcm_frame(mCodec.mMp3, targetFrame))
 +		{
@@ -3099,7 +3073,8 @@ index aeeca53..43cabb1 100644
 +		return UNKNOWN_ERROR;
 +	}
 +	else if (mParent->mFiletype == WAVSTREAM_OGG && mCodec.mOgg)
-+	{
+ 	{
+-		switch (mParent->mFiletype)
 +		mOggFrameSize = 0;
 +		mOggFrameOffset = 0;
 +
@@ -3174,15 +3149,15 @@ index aeeca53..43cabb1 100644
 -		else if (mParent->mFiletype == WAVSTREAM_MP3 && mCodec.mMp3 && mCodec.mMp3->atEnd) // no idea
 +		return UNKNOWN_ERROR;
 +	}
-+	else if (mParent->mFiletype == WAVSTREAM_FFMPEG && mFFmpegContext)
++	else if (mParent->mFiletype == WAVSTREAM_FFMPEG && mCodec.mFfmpeg)
 +	{
-+		unsigned int targetSample = (unsigned int)floor(aSeconds * mBaseSamplerate);
++		unsigned long long targetFrame = (unsigned long long)floor(aSeconds * mBaseSamplerate);
 +
-+		if (FFmpeg::seekSamples(mFFmpegContext, targetSample))
++		if (FFmpeg::seekToFrame(mCodec.mFfmpeg, targetFrame))
  		{
 -			mOffset = mParent->mSampleCount;
 -			return 1;
-+			mOffset = FFmpeg::getCurrentPosition(mFFmpegContext);
++			mOffset = (unsigned int)FFmpeg::getCurrentFrame(mCodec.mFfmpeg);
 +			mStreamPosition = static_cast<double>(mOffset) / mBaseSamplerate;
 +			return SO_NO_ERROR;
  		}
@@ -3229,9 +3204,9 @@ index aeeca53..43cabb1 100644
 +		}
 +		break;
 +	case WAVSTREAM_FFMPEG:
-+		if (mFFmpegContext)
++		if (mCodec.mFfmpeg)
 +		{
-+			FFmpeg::seekSamples(mFFmpegContext, 0);
++			FFmpeg::seekToFrame(mCodec.mFfmpeg, 0);
 +		}
 +		break;
  	}
@@ -3529,14 +3504,20 @@ index aeeca53..43cabb1 100644
 -		mFilename = 0;
 -		mSampleCount = 0;
 +	fp->seek(0);
-+	unsigned int channels = 2, sampleCount = SAMPLE_GRANULARITY; // just initialize to sane values
-+	float sampleRate = 44100.0f;
++	FFmpeg::FFmpegDecoder *decoder = FFmpeg::open(fp);
++	if (!decoder)
++		return FILE_LOAD_FAILED;
  
 -		if (aData == NULL || aDataLen == 0)
 -			return INVALID_PARAMETER;
-+	void *context = FFmpeg::createStreamContext(fp, &channels, &sampleRate, &sampleCount);
-+	if (!context)
-+		return FILE_LOAD_FAILED;
++	mChannels = FFmpeg::getChannels(decoder);
++	if (mChannels > MAX_CHANNELS)
++	{
++		mChannels = MAX_CHANNELS;
++	}
++	mBaseSamplerate = (float)FFmpeg::getSampleRate(decoder);
++	mSampleCount = (unsigned int)FFmpeg::getTotalFrameCount(decoder);
++	mFiletype = WAVSTREAM_FFMPEG;
  
 -		MemoryFile *mf = new MemoryFile();
 -		int res = mf->openMem(aData, aDataLen, aCopy, aTakeOwnership);
@@ -3545,28 +3526,11 @@ index aeeca53..43cabb1 100644
 -			delete mf;
 -			return res;
 -		}
-+	// we don't need the context here, just the parameters
-+	FFmpeg::destroyStreamContext(context);
- 
--		res = parse(mf);
-+	mChannels = channels;
-+	if (mChannels > MAX_CHANNELS)
-+	{
-+		mChannels = MAX_CHANNELS;
-+	}
-+	mBaseSamplerate = sampleRate;
-+	mSampleCount = sampleCount;
-+	mFiletype = WAVSTREAM_FFMPEG;
- 
--		if (res != SO_NO_ERROR)
--		{
--			delete mf;
--			return res;
--		}
++	FFmpeg::close(decoder);
 +	return SO_NO_ERROR;
 +}
  
--		mMemFile = mf;
+-		res = parse(mf);
 +result WavStream::load(const char *aFilename)
 +{
 +	delete[] mFilename;
@@ -3582,48 +3546,31 @@ index aeeca53..43cabb1 100644
 +	if (res != SO_NO_ERROR)
 +		return res;
  
--		return 0;
--	}
+-		if (res != SO_NO_ERROR)
+-		{
+-			delete mf;
+-			return res;
+-		}
 +	int len = (int)strlen(aFilename);
 +	mFilename = new char[len + 1];
 +	memcpy(mFilename, aFilename, len);
 +	mFilename[len] = 0;
  
--	result WavStream::loadToMem(const char *aFilename)
--	{
--		DiskFile df;
--		int res = df.open(aFilename);
--		if (res == SO_NO_ERROR)
--		{
--			res = loadFileToMem(&df);
--		}
--		return res;
--	}
+-		mMemFile = mf;
 +	res = parse(&fp);
  
--	result WavStream::loadFile(File *aFile)
+-		return 0;
 +	if (res != SO_NO_ERROR)
- 	{
- 		delete[] mFilename;
--		delete mMemFile;
--		delete[] mMp3SeekPoints;
--		mMp3SeekPoints = nullptr;
--		mMp3SeekPointCount = 0;
--		mStreamFile = 0;
--		mMemFile = 0;
- 		mFilename = 0;
--		mSampleCount = 0;
++	{
++		delete[] mFilename;
++		mFilename = 0;
 +		return res;
-+	}
+ 	}
  
--		int res = parse(aFile);
+-	result WavStream::loadToMem(const char *aFilename)
 +	return 0;
 +}
- 
--		if (res != SO_NO_ERROR)
--		{
--			return res;
--		}
++
 +result WavStream::loadMem(const unsigned char *aData, unsigned int aDataLen, bool aCopy, bool aTakeOwnership)
 +{
 +	delete[] mFilename;
@@ -3642,22 +3589,18 @@ index aeeca53..43cabb1 100644
 +	MemoryFile *mf = new MemoryFile();
 +	int res = mf->openMem(aData, aDataLen, aCopy, aTakeOwnership);
 +	if (res != SO_NO_ERROR)
-+	{
+ 	{
+-		DiskFile df;
+-		int res = df.open(aFilename);
+-		if (res == SO_NO_ERROR)
+-		{
+-			res = loadFileToMem(&df);
+-		}
 +		delete mf;
-+		return res;
-+	}
- 
--		mStreamFile = aFile;
-+	res = parse(mf);
- 
--		return 0;
-+	if (res != SO_NO_ERROR)
-+	{
-+		delete mf;
-+		return res;
+ 		return res;
  	}
  
--	result WavStream::loadFileToMem(File *aFile)
+-	result WavStream::loadFile(File *aFile)
 -	{
 -		delete[] mFilename;
 -		delete mMemFile;
@@ -3668,18 +3611,26 @@ index aeeca53..43cabb1 100644
 -		mMemFile = 0;
 -		mFilename = 0;
 -		mSampleCount = 0;
-+	mMemFile = mf;
++	res = parse(mf);
  
--		MemoryFile *mf = new MemoryFile();
--		int res = mf->openFileToMem(aFile);
+-		int res = parse(aFile);
++	if (res != SO_NO_ERROR)
++	{
++		delete mf;
++		return res;
++	}
+ 
 -		if (res != SO_NO_ERROR)
 -		{
--			delete mf;
 -			return res;
 -		}
++	mMemFile = mf;
+ 
+-		mStreamFile = aFile;
 +	return 0;
 +}
-+
+ 
+-		return 0;
 +result WavStream::loadToMem(const char *aFilename)
 +{
 +	DiskFile df;
@@ -3687,11 +3638,11 @@ index aeeca53..43cabb1 100644
 +	if (res == SO_NO_ERROR)
 +	{
 +		res = loadFileToMem(&df);
-+	}
+ 	}
 +	return res;
 +}
  
--		res = parse(mf);
+-	result WavStream::loadFileToMem(File *aFile)
 +result WavStream::loadFile(File *aFile)
 +{
 +	delete[] mFilename;
@@ -3707,17 +3658,36 @@ index aeeca53..43cabb1 100644
 +	int res = parse(aFile);
 +
 +	if (res != SO_NO_ERROR)
-+	{
+ 	{
+-		delete[] mFilename;
+-		delete mMemFile;
+-		delete[] mMp3SeekPoints;
+-		mMp3SeekPoints = nullptr;
+-		mMp3SeekPointCount = 0;
+-		mStreamFile = 0;
+-		mMemFile = 0;
+-		mFilename = 0;
+-		mSampleCount = 0;
+-
+-		MemoryFile *mf = new MemoryFile();
+-		int res = mf->openFileToMem(aFile);
+-		if (res != SO_NO_ERROR)
+-		{
+-			delete mf;
+-			return res;
+-		}
 +		return res;
 +	}
+ 
+-		res = parse(mf);
++	mStreamFile = aFile;
  
 -		if (res != SO_NO_ERROR)
 -		{
 -			delete mf;
 -			return res;
 -		}
-+	mStreamFile = aFile;
- 
+-
 -		mMemFile = mf;
 +	return 0;
 +}

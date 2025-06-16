@@ -94,15 +94,19 @@ bool SoLoudSoundEngine::play(Sound *snd, float pan, float pitch)
 	if (!m_bReady || snd == NULL || !snd->isReady())
 		return false;
 
-	auto handle = snd->getHandle();
+	auto *soloudSound = snd->as<SoLoudSound>();
+
+	auto handle = soloudSound->getHandle();
 	if (handle != 0 && soloud->getPause(handle))
 	{
 		// just unpause if paused
+		soloudSound->setPitch(pitch);
+		soloudSound->setPan(pan);
 		soloud->setPause(handle, false);
 		return true;
 	}
 
-	return playSound(snd->as<SoLoudSound>(), pan, pitch);
+	return playSound(soloudSound, pan, pitch);
 }
 
 bool SoLoudSoundEngine::playSound(SoLoudSound *soloudSound, float pan, float pitch, bool is3d, Vector3 *pos)
@@ -149,7 +153,8 @@ bool SoLoudSoundEngine::playSound(SoLoudSound *soloudSound, float pan, float pit
 		soloudSound->setPan(pan);
 
 		// streaming audio (music) - play SLFXStream directly (it handles SoundTouch internally)
-		handle = soloud->play(*soloudSound->m_audioSource, soloudSound->m_fVolume, pan, true /* paused */);
+		// start it at 0 volume and fade it in when we play it (to avoid clicks/pops)
+		handle = soloud->play(*soloudSound->m_audioSource, 0, pan, true /* paused */);
 		if (handle)
 			soloud->setProtectVoice(handle,
 			                        true); // protect the music channel (don't let it get interrupted when many sounds play back at once)
@@ -177,19 +182,10 @@ bool SoLoudSoundEngine::playSound(SoLoudSound *soloudSound, float pan, float pit
 		soloudSound->m_handle = handle;
 		soloudSound->setLastPlayTime(engine->getTime());
 
-		// get the actual sample rate for the file from SoLoud
-		float actualFreq = soloud->getSamplerate(handle);
-		if (actualFreq > 0)
-			soloudSound->m_frequency = actualFreq;
+		soloud->setPause(handle, false); // now, unpause
 
-		if (soloudSound->m_bStream)
-		{
-			// fade it in if it's a stream (to avoid clicks/pops)
-			// if we're restoring the position, then we can use the existing volume, otherwise use a sane volume and allow the caller to set it otherwise
+		if (soloudSound->m_bStream) // fade it in if it's a stream (since we started it with 0 volume)
 			setVolumeGradual(handle, soloudSound->m_fVolume);
-		}
-
-		soloud->setPause(handle, false); // now, finally unpause
 
 		return true;
 	}
@@ -277,10 +273,10 @@ void SoLoudSoundEngine::stop(Sound *snd)
 	if (!soloudSound || soloudSound->m_handle == 0)
 		return;
 
-	soloud->stop(soloudSound->m_handle);
-	soloudSound->m_handle = 0;
 	soloudSound->setPosition(0.0);
 	soloudSound->setLastPlayTime(0.0);
+	soloud->stop(soloudSound->m_handle);
+	soloudSound->m_handle = 0;
 }
 
 void SoLoudSoundEngine::setOutputDevice(UString outputDeviceName)

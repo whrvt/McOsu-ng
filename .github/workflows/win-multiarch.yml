@@ -36,16 +36,6 @@ jobs:
         run: |
           mkdir -p "$(pwd)"/build
 
-      - name: Cache dependencies
-        uses: actions/cache@v4
-        with:
-          path: |
-            ./build/deps
-            ./build/cache
-          key: deps-win-${{ matrix.arch }}-${{ hashFiles('Makefile.in') }}
-          restore-keys: |
-            deps-win-${{ matrix.arch }}-
-
       - name: ccache
         uses: actions/cache@v4
         with:

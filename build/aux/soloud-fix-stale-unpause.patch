@@ -1,0 +1,27 @@
+From c6fb2d69238b7429d3c6916db344415cca17191f Mon Sep 17 00:00:00 2001
+From: William Horvath <william@horvath.blog>
+Date: Mon, 16 Jun 2025 20:55:36 -0700
+Subject: [PATCH] unpause stale audio glitch
+
+---
+ src/core/soloud_core_voiceops.cpp | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/src/core/soloud_core_voiceops.cpp b/src/core/soloud_core_voiceops.cpp
+index 6a5d4af..23396db 100644
+--- a/src/core/soloud_core_voiceops.cpp
++++ b/src/core/soloud_core_voiceops.cpp
+@@ -62,6 +62,10 @@ void Soloud::setVoicePause_internal(unsigned int aVoice, int aPause)
+ 		else
+ 		{
+ 			mVoice[aVoice]->mFlags &= ~AudioSourceInstance::PAUSED;
++
++			// invalidate buffered data when unpausing to avoid playing stale audio (e.g. after seek-while-paused)
++			mVoice[aVoice]->mResampleBufferFill = 0;
++			mVoice[aVoice]->mResampleBufferPos = 0;
+ 		}
+ 	}
+ }
+-- 
+2.49.0
+

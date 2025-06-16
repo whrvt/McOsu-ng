@@ -888,6 +888,36 @@ void Environment::onLogLevelChange(float newval)
 	}
 }
 
+UString Environment::convertUnixToWindowsPath(const UString &unixPath)
+{
+	if (!s_bIsWine || unixPath.isEmpty() || unixPath[0] != '/')
+		return unixPath;
+
+#if defined(MCENGINE_PLATFORM_WINDOWS)
+	// get wine's path conversion function
+	typedef LPWSTR (*wine_get_dos_file_name_t)(LPCSTR);
+	static wine_get_dos_file_name_t wine_get_dos_file_name_ptr = nullptr;
+
+	if (!wine_get_dos_file_name_ptr)
+	{
+		wine_get_dos_file_name_ptr = (wine_get_dos_file_name_t)GetProcAddress(GetModuleHandle(TEXT("kernel32.dll")), "wine_get_dos_file_name");
+		if (!wine_get_dos_file_name_ptr)
+			return unixPath; // fallback
+	}
+
+	// convert to windows path using wine's function
+	LPWSTR windows_name = wine_get_dos_file_name_ptr(unixPath.toUtf8());
+	if (windows_name)
+	{
+		UString result(windows_name);
+		HeapFree(GetProcessHeap(), 0, windows_name);
+		return result;
+	}
+#endif
+
+	return unixPath; // fallback
+}
+
 // folder = true means return the canonical filesystem path to the folder containing the given path
 //			if the path is already a folder, just return it directly
 // folder = false means to strip away the file path separators from the given path and return just the filename itself
@@ -929,6 +959,10 @@ UString Environment::getThingFromPathHelper(UString path, bool folder) noexcept
 		// make sure whatever we got now ends with a slash
 		if (!path.endsWith("/") && !path.endsWith("\\"))
 			path = path + (Env::cfg(OS::WINDOWS) ? "\\" : "/");
+
+		// convert possible unix paths to windows paths (wine compat)
+		if constexpr (Env::cfg(OS::WINDOWS))
+			path = convertUnixToWindowsPath(path);
 	}
 	else if (lastSlash != -1) // just return the file
 	{

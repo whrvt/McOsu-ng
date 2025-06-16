@@ -424,6 +424,9 @@ bool SoundTouchFilterInstance::hasEnded()
 
 result SoundTouchFilterInstance::seek(time aSeconds, float *mScratch, unsigned int mScratchSize)
 {
+	if (aSeconds <= 0)
+		return this->rewind();
+
 	if (!mSourceInstance || !mSoundTouch)
 		return INVALID_PARAMETER;
 
@@ -443,9 +446,16 @@ result SoundTouchFilterInstance::seek(time aSeconds, float *mScratch, unsigned i
 
 result SoundTouchFilterInstance::rewind()
 {
-	ST_DEBUG_LOG("rewind called\n");
+	ST_DEBUG_LOG("Rewinding\n");
 
-	result res = SO_NO_ERROR;
+	if (mStreamPosition == 0)
+	{
+		reSynchronize();
+		ST_DEBUG_LOG("Position was already at the start, cleared ST buffers\n");
+		return SO_NO_ERROR;
+	}
+
+	result res = UNKNOWN_ERROR;
 	if (mSourceInstance)
 		res = mSourceInstance->rewind();
 
@@ -603,11 +613,14 @@ void SoundTouchFilterInstance::reSynchronize()
 		updateSTLatency();
 	}
 
-	// update the position tracking. without this, SoLoud wouldn't know that "we" (as in, this voice handle) has manually had its stream position/time changed
-	// like on seek/rewind. normally, mStreamPosition and mStreamTime are advanced by SoLoud in the internal mixing function for all voices, so we only have to
-	// take care to manually update it when seek/rewind are performed on the underlying stream.
-	mStreamPosition = mSourceInstance->mStreamPosition;
-	mStreamTime = mSourceInstance->mStreamTime;
+	if (mSourceInstance)
+	{
+		// update the position tracking. without this, SoLoud wouldn't know that "we" (as in, this voice handle) has manually had its stream position/time changed
+		// like on seek/rewind. normally, mStreamPosition and mStreamTime are advanced by SoLoud in the internal mixing function for all voices, so we only have to
+		// take care to manually update it when seek/rewind are performed on the underlying stream.
+		mStreamPosition = mSourceInstance->mStreamPosition;
+		mStreamTime = mSourceInstance->mStreamTime;
+	}
 }
 
 } // namespace SoLoud

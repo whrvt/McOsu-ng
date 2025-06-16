@@ -1,0 +1,62 @@
+From fc9596038822b21308e9262bbdfd5d5b6a3594aa Mon Sep 17 00:00:00 2001
+From: William Horvath <william@horvath.blog>
+Date: Mon, 16 Jun 2025 01:45:40 -0700
+Subject: [PATCH] dr_mp3 tag skipping
+
+---
+ src/audiosource/wav/soloud_wavstream.cpp | 20 +++++++++++++++++---
+ 1 file changed, 17 insertions(+), 3 deletions(-)
+
+diff --git a/src/audiosource/wav/soloud_wavstream.cpp b/src/audiosource/wav/soloud_wavstream.cpp
+index 5ba91d7..8614ad8 100644
+--- a/src/audiosource/wav/soloud_wavstream.cpp
++++ b/src/audiosource/wav/soloud_wavstream.cpp
+@@ -71,12 +71,26 @@ drflac_bool32 drflac_seek_func(void *pUserData, int offset, drflac_seek_origin o
+ drmp3_bool32 drmp3_seek_func(void *pUserData, int offset, drmp3_seek_origin origin)
+ {
+ 	File *fp = (File *)pUserData;
+-	if (origin != drmp3_seek_origin_start)
++
++	if (origin == drmp3_seek_origin_current)
+ 		offset += fp->pos();
++	else if (origin == drmp3_seek_origin_end)
++		offset += fp->length();
++
+ 	fp->seek(offset);
+ 	return 1;
+ }
+ 
++drmp3_bool32 drmp3_tell_func(void *pUserData, drmp3_int64 *pCursor)
++{
++	File *fp = (File *)pUserData;
++	if (pCursor == NULL)
++		return 0;
++
++	*pCursor = (drmp3_int64)fp->pos();
++	return 1;
++}
++
+ drmp3_bool32 drwav_seek_func(void *pUserData, int offset, drwav_seek_origin origin)
+ {
+ 	File *fp = (File *)pUserData;
+@@ -161,7 +175,7 @@ WavStreamInstance::WavStreamInstance(WavStream *aParent)
+ 		else if (mParent->mFiletype == WAVSTREAM_MP3)
+ 		{
+ 			mCodec.mMp3 = new drmp3;
+-			if (!drmp3_init(mCodec.mMp3, drmp3_read_func, drmp3_seek_func, NULL, NULL, (void *)mFile, NULL))
++			if (!drmp3_init(mCodec.mMp3, drmp3_read_func, drmp3_seek_func, drmp3_tell_func, NULL, (void *)mFile, NULL))
+ 			{
+ 				delete mCodec.mMp3;
+ 				mCodec.mMp3 = 0;
+@@ -593,7 +607,7 @@ result WavStream::loadmp3(File *fp)
+ {
+ 	fp->seek(0);
+ 	drmp3 decoder;
+-	if (!drmp3_init(&decoder, drmp3_read_func, drmp3_seek_func, NULL, NULL, (void *)fp, NULL))
++	if (!drmp3_init(&decoder, drmp3_read_func, drmp3_seek_func, drmp3_tell_func, NULL, (void *)fp, NULL))
+ 		return FILE_LOAD_FAILED;
+ 
+ 	mChannels = decoder.channels;
+-- 
+2.49.0
+

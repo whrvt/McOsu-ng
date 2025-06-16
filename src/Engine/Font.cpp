@@ -314,7 +314,7 @@ bool McFont::initializeSharedFallbackFonts()
 	}
 
 	// then find likely system fonts
-	if (cv::font_load_system.getBool())
+	if (!Env::cfg(OS::WASM) && cv::font_load_system.getBool())
 		discoverSystemFallbacks();
 
 	s_sharedFallbacksInitialized = true;
@@ -323,7 +323,7 @@ bool McFont::initializeSharedFallbackFonts()
 
 void McFont::discoverSystemFallbacks()
 {
-#ifdef _WIN32
+#ifdef MCENGINE_PLATFORM_WINDOWS
 	wchar_t windir[MAX_PATH];
 	if (GetWindowsDirectoryW(windir, MAX_PATH) <= 0)
 		return;
@@ -336,7 +336,7 @@ void McFont::discoverSystemFallbacks()
 	    UString(windir) + "\\Fonts\\seguiemj.ttf", // Segoe UI Emoji
 	    UString(windir) + "\\Fonts\\seguisym.ttf"  // Segoe UI Symbol
 	};
-#elif defined(__linux__)
+#elif defined(MCENGINE_PLATFORM_LINUX)
 	// linux system fonts (common locations)
 	std::vector<UString> systemFonts = {"/usr/share/fonts/TTF/dejavu/DejaVuSans.ttf",
 	                                    "/usr/share/fonts/TTF/liberation/LiberationSans-Regular.ttf",
@@ -344,6 +344,9 @@ void McFont::discoverSystemFallbacks()
 	                                    "/usr/share/fonts/noto/NotoSans-Regular.ttf",
 	                                    "/usr/share/fonts/noto-cjk/NotoSansCJK-Regular.ttc",
 	                                    "/usr/share/fonts/TTF/noto/NotoColorEmoji.ttf"};
+#else // TODO: loading WOFF fonts in wasm? idk
+	std::vector<UString> systemFonts;
+	return;
 #endif
 
 	for (const auto &fontPath : systemFonts)

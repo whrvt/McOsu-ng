@@ -211,6 +211,8 @@ $(DEPS_PREFIX)/SoLoud.built: $(DEPS_CACHE)/SoLoud-$(SOLOUD_VERSION).source $(DEP
 	patch -Np1<$(abs_top_srcdir)/build/aux/soloud-use-cpp17-threads.patch && \
 	patch -Np1<$(abs_top_srcdir)/build/aux/soloud-prefer-ffmpeg-option.patch && \
 	patch -Np1<$(abs_top_srcdir)/build/aux/soloud-miniaudio-more-config.patch && \
+	patch -Np1<$(abs_top_srcdir)/build/aux/soloud-dr_mp3-tag-skip.patch && \
+	patch -Np1<$(abs_top_srcdir)/build/aux/soloud-fix-stale-unpause.patch && \
 	$(SED) -i -e 's|#define VOICE_COUNT 1024|#define VOICE_COUNT 4095|g' include/soloud.h # raise max # concurrent voices from 1024 default to 4095 (hard limit)
 	cd $(DEPS_PREFIX)/SoLoud/build && \
 	$(SED) -i 's|"NoRTTI"$(comma)||g' genie.lua && \

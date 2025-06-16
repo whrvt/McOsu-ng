@@ -220,6 +220,10 @@ private:
 	static std::vector<UString> enumerateDirectory(const char *pathToEnum, SDL_PathType type); // code sharing for getFilesInFolder/getFoldersInFolder
 	static UString getThingFromPathHelper(UString path, bool folder) noexcept; // code sharing for getFolderFromFilePath/getFileNameFromFilePath
 
+	// for converting unix-like paths to windows-style paths if running on wine and we run into one
+	// most APIs work just fine with the unix-style path anyways, but SDL_OpenURL doesn't, so it's a good idea to at least attempt to convert it
+	static UString convertUnixToWindowsPath(const UString& unixPath);
+
 	static void winSortInPlace(std::vector<UString> &toSort); // for sorting a list kinda in the order windows' explorer would
 };
 
