@@ -16,6 +16,8 @@
 #include <memory>
 #include <soloud/soloud.h>
 
+class UString;
+
 namespace soundtouch
 {
 class SoundTouch;
@@ -130,6 +132,7 @@ public:
 
 	// utility methods
 	double getLength();
+	UString getDecoder();
 
 	// accurate position access for active instance
 	time getRealStreamPosition() const;

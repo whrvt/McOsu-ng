@@ -587,6 +587,8 @@ BZIP2_MIN_VERSION=1.0.8
 BZIP2_BUILD_VERSION=1.0.8
 FMT_MIN_VERSION=11.0.0
 FMT_BUILD_VERSION=11.2.0
+MPG123_MIN_VERSION=1.30.0
+MPG123_BUILD_VERSION=b9edc89540cb43f1d8c9881d9f67dde996cfb8ef # git mirror, latest as of June 16th, 2025 (next version after 1.33.0)
 
 # always build these from source if we want to use them
 AC_SUBST([SOLOUD_VERSION], [e82fd32c1f62183922f08c14c814a02b58db1873])
@@ -599,6 +601,7 @@ AC_SUBST([MIMALLOC_VERSION], [v3.1.4])
 AC_SUBST([MIMALLOC_PREFIX],[$DEPS_PREFIX])
 
 AC_SUBST([FFMPEG_VERSION], [7.1]) # pre-built, used for soloud
+
 AC_SUBST([BASS_VERSION], [20250611]) # just mark the date so we can invalidate the cache if necessary
 
 # TODO: add all deps and transitive deps (fun!)
@@ -610,6 +613,9 @@ AS_IF([test "x$enable_system_deps" != "xno"], [
     PKG_CHECK_AUTO([BZIP2], [bzip2 >= $BZIP2_MIN_VERSION], [have_bzip2=yes], [have_bzip2=no])
     PKG_CHECK_AUTO([FREETYPE2], [freetype2 >= $FREETYPE2_MIN_VERSION], [have_freetype2=yes], [have_freetype2=no])
     PKG_CHECK_AUTO([FMT], [fmt >= $FMT_MIN_VERSION], [have_fmt=yes], [have_fmt=no])
+    AS_IF([test "$with_soloud" = "yes"], [
+        PKG_CHECK_AUTO([MPG123], [libmpg123 >= $MPG123_MIN_VERSION], [have_mpg123=yes], [have_mpg123=no])
+    ])
     AC_CHECK_HEADERS([glm/vec3.hpp], [have_glm=yes], [have_glm=no])
 ])
 
@@ -663,7 +669,17 @@ FMT_PREFIX="${DEPS_PREFIX}"
 AC_SUBST([FMT_VERSION])
 AC_SUBST([FMT_PREFIX])
 
-AS_IF([test "x$have_glm" != "xyes" && test "x$renderer" != dx11], [have_glm="build from source"])
+AS_IF([test "$with_soloud" = "yes"], [
+    AS_IF([test "x$have_mpg123" != "xyes"], [have_mpg123="build from source"])
+], [
+    have_mpg123="not required"
+])
+MPG123_VERSION=$MPG123_BUILD_VERSION
+MPG123_PREFIX="${DEPS_PREFIX}"
+AC_SUBST([MPG123_VERSION])
+AC_SUBST([MPG123_PREFIX])
+
+AS_IF([test "x$have_glm" != "xyes"], [have_glm="build from source"])
 AC_SUBST([GLM_VERSION], [1.0.1])
 AC_SUBST([GLM_PREFIX],[$DEPS_PREFIX])
 AC_SUBST([GLM_CFLAGS], [""])
@@ -675,7 +691,8 @@ AM_CONDITIONAL([BUILD_BZIP2], [test "x$have_bzip2" != "xyes"])
 AM_CONDITIONAL([BUILD_ZLIB], [test "x$have_zlib" != "xyes"])
 AM_CONDITIONAL([BUILD_FREETYPE2], [test "x$have_freetype2" != "xyes"])
 AM_CONDITIONAL([BUILD_FMT], [test "x$have_fmt" != "xyes"])
-AM_CONDITIONAL([BUILD_GLM], [test "x$have_glm" != "xyes" && test "x$renderer" != dx11])
+AM_CONDITIONAL([BUILD_MPG123], [test "$with_soloud" = "yes" && test "x$have_mpg123" != "xyes"])
+AM_CONDITIONAL([BUILD_GLM], [test "x$have_glm" != "xyes"])
 AM_CONDITIONAL([BUILD_MIMALLOC], [test "x$enable_debug" != "xyes" &&
                                 { { test "$SYSNAME" = "windows" && test "x$with_mimalloc" = "xyes" ; } ||
                                   { test "$SYSNAME" != "windows" && test "x$with_mimalloc" != "xno" ; };
@@ -814,5 +831,6 @@ Dependencies:
     zlib:               ${have_zlib-build from source}
     freetype2:          ${have_freetype2-build from source}
     fmt:                ${have_fmt-build from source}
+    mpg123:             ${have_mpg123-build from source}
     glm (math)          ${have_glm-build from source}
 ])

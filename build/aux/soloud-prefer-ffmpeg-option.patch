@@ -1,4 +1,4 @@
-From a842de862562d2f64c8f6bf617f33d0440ca4490 Mon Sep 17 00:00:00 2001
+From 3391aaaf3897d64f66a056dd35cccedf1fb2b11e Mon Sep 17 00:00:00 2001
 From: William Horvath <william@horvath.blog>
 Date: Wed, 11 Jun 2025 08:38:56 -0700
 Subject: [PATCH] add a preferFFmpeg option to Wav/WavStream ctors (mostly for
@@ -7,10 +7,10 @@ Subject: [PATCH] add a preferFFmpeg option to Wav/WavStream ctors (mostly for
  - also properly error out from WavStream::loadmp3
 ---
  include/soloud_wav.h                     |  3 +-
- include/soloud_wavstream.h               |  7 +++--
+ include/soloud_wavstream.h               |  6 ++--
  src/audiosource/wav/soloud_wav.cpp       | 11 ++++++--
  src/audiosource/wav/soloud_wavstream.cpp | 36 ++++++++++++++++++++++--
- 4 files changed, 48 insertions(+), 9 deletions(-)
+ 4 files changed, 48 insertions(+), 8 deletions(-)
 
 diff --git a/include/soloud_wav.h b/include/soloud_wav.h
 index 7d7735d..6fc308f 100755
@@ -31,10 +31,10 @@ index 7d7735d..6fc308f 100755
  	result load(const char *aFilename);
  	result loadMem(const unsigned char *aMem, unsigned int aLength, bool aCopy = false, bool aTakeOwnership = true);
 diff --git a/include/soloud_wavstream.h b/include/soloud_wavstream.h
-index 162ec90..a79a22c 100644
+index ea815b1..7bfcf4d 100644
 --- a/include/soloud_wavstream.h
 +++ b/include/soloud_wavstream.h
-@@ -77,7 +77,8 @@ enum WAVSTREAM_FILETYPE
+@@ -82,7 +82,8 @@ enum WAVSTREAM_FILETYPE
  	WAVSTREAM_OGG = 1,
  	WAVSTREAM_FLAC = 2,
  	WAVSTREAM_MP3 = 3,
@@ -44,16 +44,15 @@ index 162ec90..a79a22c 100644
  };
  
  class WavStream : public AudioSource
-@@ -87,7 +88,7 @@ class WavStream : public AudioSource
- 	result loadflac(File *fp);
+@@ -93,6 +94,7 @@ class WavStream : public AudioSource
  	result loadmp3(File *fp);
  	result loadffmpeg(File *fp);
--
+ 
 +	bool mPreferFFmpeg;
  public:
  	int mFiletype;
  	char *mFilename;
-@@ -99,7 +100,7 @@ public:
+@@ -104,7 +106,7 @@ public:
  	drmp3_seek_point *mMp3SeekPoints;
  	drmp3_uint32 mMp3SeekPointCount;
  
@@ -63,7 +62,7 @@ index 162ec90..a79a22c 100644
  	result load(const char *aFilename);
  	result loadMem(const unsigned char *aData, unsigned int aDataLen, bool aCopy = false, bool aTakeOwnership = true);
 diff --git a/src/audiosource/wav/soloud_wav.cpp b/src/audiosource/wav/soloud_wav.cpp
-index 2ed1c5c..2f161d7 100755
+index 964d0b8..d48d94d 100755
 --- a/src/audiosource/wav/soloud_wav.cpp
 +++ b/src/audiosource/wav/soloud_wav.cpp
 @@ -82,10 +82,11 @@ bool WavInstance::hasEnded()
@@ -79,7 +78,7 @@ index 2ed1c5c..2f161d7 100755
  }
  
  Wav::~Wav()
-@@ -313,6 +314,12 @@ result Wav::testAndLoadFile(MemoryFile *aReader)
+@@ -309,6 +310,12 @@ result Wav::testAndLoadFile(MemoryFile *aReader)
  	mData = 0;
  	mSampleCount = 0;
  	mChannels = 1;
@@ -92,7 +91,7 @@ index 2ed1c5c..2f161d7 100755
  	int tag = aReader->read32();
  	if (tag == MAKEDWORD('O', 'g', 'g', 'S'))
  	{
-@@ -330,7 +337,7 @@ result Wav::testAndLoadFile(MemoryFile *aReader)
+@@ -326,7 +333,7 @@ result Wav::testAndLoadFile(MemoryFile *aReader)
  	{
  		return SO_NO_ERROR;
  	}
@@ -102,10 +101,10 @@ index 2ed1c5c..2f161d7 100755
  		return SO_NO_ERROR;
  	}
 diff --git a/src/audiosource/wav/soloud_wavstream.cpp b/src/audiosource/wav/soloud_wavstream.cpp
-index 41ef2cf..c260667 100644
+index 06542ac..49dfcfb 100644
 --- a/src/audiosource/wav/soloud_wavstream.cpp
 +++ b/src/audiosource/wav/soloud_wavstream.cpp
-@@ -503,7 +503,7 @@ bool WavStreamInstance::hasEnded()
+@@ -499,7 +499,7 @@ bool WavStreamInstance::hasEnded()
  	return 0;
  }
  
@@ -114,7 +113,7 @@ index 41ef2cf..c260667 100644
  {
  	mFilename = 0;
  	mSampleCount = 0;
-@@ -512,6 +512,7 @@ WavStream::WavStream()
+@@ -508,6 +508,7 @@ WavStream::WavStream()
  	mStreamFile = 0;
  	mMp3SeekPoints = nullptr;
  	mMp3SeekPointCount = 0;
@@ -122,7 +121,7 @@ index 41ef2cf..c260667 100644
  }
  
  WavStream::~WavStream()
-@@ -607,6 +608,29 @@ result WavStream::loadmp3(File *fp)
+@@ -603,6 +604,29 @@ result WavStream::loadmp3(File *fp)
  
  	drmp3_uint64 samples = drmp3_get_pcm_frame_count(&decoder);
  
@@ -152,7 +151,7 @@ index 41ef2cf..c260667 100644
  	mBaseSamplerate = (float)decoder.sampleRate;
  	mSampleCount = (unsigned int)samples;
  	mFiletype = WAVSTREAM_MP3;
-@@ -816,8 +840,14 @@ result WavStream::loadFileToMem(File *aFile)
+@@ -803,8 +827,14 @@ result WavStream::loadFileToMem(File *aFile)
  
  result WavStream::parse(File *aFile)
  {
@@ -168,7 +167,7 @@ index 41ef2cf..c260667 100644
  	if (tag == MAKEDWORD('O', 'g', 'g', 'S'))
  	{
  		res = loadogg(aFile);
-@@ -834,7 +864,7 @@ result WavStream::parse(File *aFile)
+@@ -821,7 +851,7 @@ result WavStream::parse(File *aFile)
  	{
  		res = SO_NO_ERROR;
  	}

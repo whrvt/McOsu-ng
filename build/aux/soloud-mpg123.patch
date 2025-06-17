@@ -1,0 +1,698 @@
+From fa1230268d8be64bc1af397e69d3c8e7ad4e3f44 Mon Sep 17 00:00:00 2001
+From: William Horvath <william@horvath.blog>
+Date: Tue, 17 Jun 2025 06:25:29 -0700
+Subject: [PATCH] mpg123 wavstream backend
+
+---
+ include/soloud_wavstream.h               |  21 +-
+ src/audiosource/wav/soloud_mpg123.cpp    | 277 +++++++++++++++++++++++
+ src/audiosource/wav/soloud_mpg123.h      |  70 ++++++
+ src/audiosource/wav/soloud_wavstream.cpp | 148 +++++++++---
+ 4 files changed, 483 insertions(+), 33 deletions(-)
+ create mode 100644 src/audiosource/wav/soloud_mpg123.cpp
+ create mode 100644 src/audiosource/wav/soloud_mpg123.h
+
+diff --git a/include/soloud_wavstream.h b/include/soloud_wavstream.h
+index 7bfcf4d..abdb0de 100644
+--- a/include/soloud_wavstream.h
++++ b/include/soloud_wavstream.h
+@@ -25,8 +25,8 @@ freely, subject to the following restrictions:
+ #ifndef SOLOUD_WAVSTREAM_H
+ #define SOLOUD_WAVSTREAM_H
+ 
+-#include <stdio.h>
+ #include "soloud.h"
++#include <stdio.h>
+ 
+ struct stb_vorbis;
+ #ifndef dr_flac_h
+@@ -41,12 +41,15 @@ typedef unsigned int drmp3_uint32;
+ struct drwav;
+ #endif
+ 
+-
+ namespace SoLoud
+ {
+ namespace FFmpeg
+ {
+-	struct FFmpegDecoder;
++struct FFmpegDecoder;
++}
++namespace MPG123
++{
++struct MPG123Decoder;
+ }
+ class WavStream;
+ class File;
+@@ -59,7 +62,8 @@ class WavStreamInstance : public AudioSourceInstance
+ 	union codec {
+ 		stb_vorbis *mOgg;
+ 		drflac *mFlac;
+-		drmp3 *mMp3;
++		MPG123::MPG123Decoder *mMpg123;
++		drmp3 *mDrmp3;
+ 		drwav *mWav;
+ 		FFmpeg::FFmpegDecoder *mFfmpeg;
+ 	} mCodec;
+@@ -81,8 +85,9 @@ enum WAVSTREAM_FILETYPE
+ 	WAVSTREAM_WAV = 0,
+ 	WAVSTREAM_OGG = 1,
+ 	WAVSTREAM_FLAC = 2,
+-	WAVSTREAM_MP3 = 3,
+-	WAVSTREAM_FFMPEG = 4,
++	WAVSTREAM_MPG123 = 3,
++	WAVSTREAM_DRMP3 = 4,
++	WAVSTREAM_FFMPEG = 5,
+ 	WAVSTREAM_AUTO
+ };
+ 
+@@ -91,10 +96,12 @@ class WavStream : public AudioSource
+ 	result loadwav(File *fp);
+ 	result loadogg(File *fp);
+ 	result loadflac(File *fp);
+-	result loadmp3(File *fp);
++	result loadmpg123(File *fp);
++	result loaddrmp3(File *fp);
+ 	result loadffmpeg(File *fp);
+ 
+ 	bool mPreferFFmpeg;
++
+ public:
+ 	int mFiletype;
+ 	char *mFilename;
+diff --git a/src/audiosource/wav/soloud_mpg123.cpp b/src/audiosource/wav/soloud_mpg123.cpp
+new file mode 100644
+index 0000000..6142c33
+--- /dev/null
++++ b/src/audiosource/wav/soloud_mpg123.cpp
+@@ -0,0 +1,277 @@
++/*
++SoLoud audio engine
++Copyright (c) 2013-2018 Jari Komppa
++Copyright (c) 2025 William Horvath (mpg123 interface)
++
++This software is provided 'as-is', without any express or implied
++warranty. In no event will the authors be held liable for any damages
++arising from the use of this software.
++
++Permission is granted to anyone to use this software for any purpose,
++including commercial applications, and to alter it and redistribute it
++freely, subject to the following restrictions:
++
++   1. The origin of this software must not be misrepresented; you must not
++   claim that you wrote the original software. If you use this software
++   in a product, an acknowledgment in the product documentation would be
++   appreciated but is not required.
++
++   2. Altered source versions must be plainly marked as such, and must not be
++   misrepresented as being the original software.
++
++   3. This notice may not be removed or altered from any source
++   distribution.
++*/
++
++#include "soloud.h"
++#include "soloud_file.h"
++
++#include "soloud_mpg123.h"
++
++#include <cstring>
++#include <mpg123.h>
++#include <mutex>
++
++namespace SoLoud::MPG123
++{
++static std::once_flag gMpg123InitFlag;
++static std::mutex gMpg123DeinitMutex;
++static bool gMpg123Initialized = false;
++
++bool init()
++{
++	bool success = true;
++	std::call_once(gMpg123InitFlag, [&success]() {
++		if (mpg123_init() != MPG123_OK)
++		{
++			success = false;
++			return;
++		}
++		gMpg123Initialized = true;
++	});
++
++	return success && gMpg123Initialized;
++}
++
++void deinit()
++{
++	std::lock_guard<std::mutex> lock(gMpg123DeinitMutex);
++	if (gMpg123Initialized)
++	{
++		mpg123_exit();
++		gMpg123Initialized = false;
++	}
++}
++
++ssize_t readCallback(void *handle, void *buf, size_t count)
++{
++	File *file = static_cast<File *>(handle);
++	return static_cast<ssize_t>(file->read(static_cast<unsigned char *>(buf), static_cast<unsigned int>(count)));
++}
++
++off_t seekCallback(void *handle, off_t offset, int whence)
++{
++	File *file = static_cast<File *>(handle);
++
++	switch (whence)
++	{
++	case SEEK_SET:
++		file->seek(static_cast<int>(offset));
++		break;
++	case SEEK_CUR:
++		file->seek(static_cast<int>(file->pos() + offset));
++		break;
++	case SEEK_END:
++		file->seek(static_cast<int>(file->length() + offset));
++		break;
++	default:
++		return -1;
++	}
++
++	return static_cast<off_t>(file->pos());
++}
++
++MPG123Decoder *open(File *aFile)
++{
++	if (!init())
++		return nullptr;
++
++	if (!aFile)
++		return nullptr;
++
++	MPG123Decoder *decoder = new MPG123Decoder();
++	memset(decoder, 0, sizeof(MPG123Decoder));
++
++	decoder->file = aFile;
++	decoder->handle = mpg123_new(nullptr, nullptr);
++
++	if (!decoder->handle)
++	{
++		delete decoder;
++		return nullptr;
++	}
++
++	// configure some opts
++	mpg123_param(decoder->handle, MPG123_RESYNC_LIMIT, -1, 0);
++	mpg123_param(decoder->handle, MPG123_REMOVE_FLAGS, MPG123_AUTO_RESAMPLE, 0); // soloud handles this already
++	mpg123_param(decoder->handle, MPG123_ADD_FLAGS, MPG123_GAPLESS, 0);          // this is default, but still we want it
++	mpg123_param(decoder->handle, MPG123_ADD_FLAGS, MPG123_NO_FRANKENSTEIN, 0);  // no stitched-together mp3s
++	mpg123_param(decoder->handle, MPG123_ADD_FLAGS, MPG123_SEEKBUFFER, 0);       // more accurate seeking
++	mpg123_param(decoder->handle, MPG123_ADD_FLAGS, MPG123_SKIP_ID3V2, 0);       // we don't care
++	mpg123_param(decoder->handle, MPG123_ADD_FLAGS, MPG123_FORCE_FLOAT, 0);      // important! it makes life a lot easier if we always get float32 from libmpg123
++	mpg123_param(decoder->handle, MPG123_PREFRAMES, 1, 0);                       // layer 3 prefill for seeking
++#ifndef _DEBUG
++	mpg123_param(decoder->handle, MPG123_ADD_FLAGS, MPG123_QUIET, 0);
++#endif
++
++	// set up custom I/O
++	if (mpg123_replace_reader_handle(decoder->handle, readCallback, seekCallback, nullptr) != MPG123_OK)
++	{
++		mpg123_delete(decoder->handle);
++		delete decoder;
++		return nullptr;
++	}
++
++	aFile->seek(0);
++
++	// open with custom handle
++	if (mpg123_open_handle(decoder->handle, aFile) != MPG123_OK)
++	{
++		mpg123_delete(decoder->handle);
++		delete decoder;
++		return nullptr;
++	}
++
++	// get format information
++	long rate;
++	int channels, encoding;
++	if (mpg123_getformat(decoder->handle, &rate, &channels, &encoding) != MPG123_OK)
++	{
++		mpg123_close(decoder->handle);
++		mpg123_delete(decoder->handle);
++		delete decoder;
++		return nullptr;
++	}
++
++	decoder->rate = rate;
++	decoder->channels = channels;
++
++	// get total frame count
++	decoder->totalFrames = mpg123_length(decoder->handle);
++	if (decoder->totalFrames == MPG123_ERR)
++	{
++		// try to get frame length info before expensive scan
++		off_t frameLength = mpg123_framelength(decoder->handle);
++		if (frameLength > 0)
++		{
++			decoder->totalFrames = frameLength;
++		}
++		else
++		{
++			// fallback: scan the file to get accurate length
++			off_t pos = mpg123_tell(decoder->handle);
++			if (mpg123_scan(decoder->handle) == MPG123_OK)
++			{
++				decoder->totalFrames = mpg123_length(decoder->handle);
++				mpg123_seek(decoder->handle, pos, SEEK_SET);
++			}
++			else
++			{
++				decoder->totalFrames = 0;
++			}
++		}
++	}
++
++	decoder->initialized = true;
++	return decoder;
++}
++
++void close(MPG123Decoder *aDecoder)
++{
++	if (!aDecoder)
++		return;
++
++	if (aDecoder->handle)
++	{
++		mpg123_close(aDecoder->handle);
++		mpg123_delete(aDecoder->handle);
++	}
++
++	delete[] aDecoder->tempBuffer;
++	delete aDecoder;
++}
++
++int getChannels(MPG123Decoder *aDecoder)
++{
++	return aDecoder ? aDecoder->channels : 0;
++}
++
++int getSampleRate(MPG123Decoder *aDecoder)
++{
++	return aDecoder ? static_cast<int>(aDecoder->rate) : 0;
++}
++
++off_t getTotalFrameCount(MPG123Decoder *aDecoder)
++{
++	return aDecoder ? aDecoder->totalFrames : 0;
++}
++
++size_t readFrames(MPG123Decoder *aDecoder, size_t aFrameCount, float *aBuffer)
++{
++	if (!aDecoder || !aDecoder->handle || !aBuffer)
++		return 0;
++
++	size_t done = 0;
++	size_t requiredBytes = aFrameCount * aDecoder->channels * sizeof(float);
++
++	// reuse buffer, resize only when needed
++	if (aDecoder->tempBufferSize < requiredBytes)
++	{
++		delete[] aDecoder->tempBuffer;
++		aDecoder->tempBuffer = new unsigned char[requiredBytes];
++		aDecoder->tempBufferSize = requiredBytes;
++	}
++
++	// read raw data from mpg123 (always float32 due to MPG123_FORCE_FLOAT)
++	int result = mpg123_read(aDecoder->handle, aDecoder->tempBuffer, requiredBytes, &done);
++
++	if (result == MPG123_NEW_FORMAT)
++	{
++		// format changed mid-stream, update decoder info
++		long rate;
++		int channels, encoding;
++		if (mpg123_getformat(aDecoder->handle, &rate, &channels, &encoding) == MPG123_OK)
++		{
++			aDecoder->rate = rate;
++			aDecoder->channels = channels;
++		}
++		return 0; // caller should try again
++	}
++
++	if (result != MPG123_OK && result != MPG123_DONE)
++		return 0;
++
++	// we're forcing float32, so just copy
++	size_t samplesRead = done / sizeof(float);
++	size_t framesRead = samplesRead / aDecoder->channels;
++	memcpy(aBuffer, aDecoder->tempBuffer, done);
++
++	return framesRead;
++}
++
++off_t seekToFrame(MPG123Decoder *aDecoder, off_t aFrame)
++{
++	if (!aDecoder || !aDecoder->handle)
++		return -1;
++
++	return mpg123_seek(aDecoder->handle, aFrame, SEEK_SET);
++}
++
++off_t getCurrentFrame(MPG123Decoder *aDecoder)
++{
++	if (!aDecoder || !aDecoder->handle)
++		return 0;
++
++	return mpg123_tell(aDecoder->handle);
++}
++} // namespace SoLoud::MPG123
+diff --git a/src/audiosource/wav/soloud_mpg123.h b/src/audiosource/wav/soloud_mpg123.h
+new file mode 100644
+index 0000000..f9d9221
+--- /dev/null
++++ b/src/audiosource/wav/soloud_mpg123.h
+@@ -0,0 +1,70 @@
++/*
++SoLoud audio engine
++Copyright (c) 2013-2018 Jari Komppa
++Copyright (c) 2025 William Horvath (mpg123 interface)
++
++This software is provided 'as-is', without any express or implied
++warranty. In no event will the authors be held liable for any damages
++arising from the use of this software.
++
++Permission is granted to anyone to use this software for any purpose,
++including commercial applications, and to alter it and redistribute it
++freely, subject to the following restrictions:
++
++   1. The origin of this software must not be misrepresented; you must not
++   claim that you wrote the original software. If you use this software
++   in a product, an acknowledgment in the product documentation would be
++   appreciated but is not required.
++
++   2. Altered source versions must be plainly marked as such, and must not be
++   misrepresented as being the original software.
++
++   3. This notice may not be removed or altered from any source
++   distribution.
++*/
++
++#ifndef SOLOUD_MPG123_H
++#define SOLOUD_MPG123_H
++
++#include <stdio.h> // for off_t
++
++struct mpg123_handle_struct;
++typedef struct mpg123_handle_struct mpg123_handle;
++
++namespace SoLoud
++{
++class File;
++namespace MPG123
++{
++struct MPG123Decoder
++{
++	mpg123_handle *handle;
++	File *file;
++	int channels;
++	long rate;
++	off_t totalFrames;
++	bool initialized;
++	unsigned char *tempBuffer;
++	size_t tempBufferSize;
++};
++
++// global initialization/cleanup
++bool init();
++void deinit();
++
++// decoder functions
++MPG123Decoder *open(File *aFile);
++void close(MPG123Decoder *aDecoder);
++int getChannels(MPG123Decoder *aDecoder);
++int getSampleRate(MPG123Decoder *aDecoder);
++off_t getTotalFrameCount(MPG123Decoder *aDecoder);
++size_t readFrames(MPG123Decoder *aDecoder, size_t aFrameCount, float *aBuffer);
++off_t seekToFrame(MPG123Decoder *aDecoder, off_t aFrame);
++off_t getCurrentFrame(MPG123Decoder *aDecoder);
++
++// custom I/O callbacks for mpg123
++ssize_t readCallback(void *handle, void *buf, size_t count);
++off_t seekCallback(void *handle, off_t offset, int whence);
++} // namespace MPG123
++} // namespace SoLoud
++#endif
+diff --git a/src/audiosource/wav/soloud_wavstream.cpp b/src/audiosource/wav/soloud_wavstream.cpp
+index 37e0431..32fc568 100644
+--- a/src/audiosource/wav/soloud_wavstream.cpp
++++ b/src/audiosource/wav/soloud_wavstream.cpp
+@@ -32,6 +32,8 @@ freely, subject to the following restrictions:
+ #include "dr_wav.h"
+ #include "stb_vorbis.h"
+ 
++#include "soloud_mpg123.h"
++
+ #include "soloud_ffmpeg.h"
+ #include "soloud_ffmpeg_load.h"
+ 
+@@ -108,7 +110,8 @@ WavStreamInstance::WavStreamInstance(WavStream *aParent)
+ 	mCodec.mOgg = 0;
+ 	mCodec.mFlac = 0;
+ 	mCodec.mWav = 0;
+-	mCodec.mMp3 = 0;
++	mCodec.mMpg123 = 0;
++	mCodec.mDrmp3 = 0;
+ 	mCodec.mFfmpeg = 0;
+ 	mFile = 0;
+ 
+@@ -174,20 +177,30 @@ WavStreamInstance::WavStreamInstance(WavStream *aParent)
+ 				mFile = 0;
+ 			}
+ 		}
+-		else if (mParent->mFiletype == WAVSTREAM_MP3)
++		else if (mParent->mFiletype == WAVSTREAM_MPG123)
++		{
++			mCodec.mMpg123 = MPG123::open(mFile);
++			if (!mCodec.mMpg123)
++			{
++				if (mFile != mParent->mStreamFile)
++					delete mFile;
++				mFile = 0;
++			}
++		}
++		else if (mParent->mFiletype == WAVSTREAM_DRMP3)
+ 		{
+-			mCodec.mMp3 = new drmp3;
+-			if (!drmp3_init(mCodec.mMp3, drmp3_read_func, drmp3_seek_func, drmp3_tell_func, NULL, (void *)mFile, NULL))
++			mCodec.mDrmp3 = new drmp3;
++			if (!drmp3_init(mCodec.mDrmp3, drmp3_read_func, drmp3_seek_func, drmp3_tell_func, NULL, (void *)mFile, NULL))
+ 			{
+-				delete mCodec.mMp3;
+-				mCodec.mMp3 = 0;
++				delete mCodec.mDrmp3;
++				mCodec.mDrmp3 = 0;
+ 				if (mFile != mParent->mStreamFile)
+ 					delete mFile;
+ 				mFile = 0;
+ 			}
+ 			else if (mParent->mMp3SeekPointCount > 0 && mParent->mMp3SeekPoints != nullptr)
+ 			{
+-				drmp3_bind_seek_table(mCodec.mMp3, mParent->mMp3SeekPointCount, mParent->mMp3SeekPoints);
++				drmp3_bind_seek_table(mCodec.mDrmp3, mParent->mMp3SeekPointCount, mParent->mMp3SeekPoints);
+ 			}
+ 		}
+ 		else if (mParent->mFiletype == WAVSTREAM_FFMPEG)
+@@ -226,12 +239,18 @@ WavStreamInstance::~WavStreamInstance()
+ 			drflac_close(mCodec.mFlac);
+ 		}
+ 		break;
+-	case WAVSTREAM_MP3:
+-		if (mCodec.mMp3)
++	case WAVSTREAM_MPG123:
++		if (mCodec.mMpg123)
+ 		{
+-			drmp3_uninit(mCodec.mMp3);
+-			delete mCodec.mMp3;
+-			mCodec.mMp3 = 0;
++			MPG123::close(mCodec.mMpg123);
++		}
++		break;
++	case WAVSTREAM_DRMP3:
++		if (mCodec.mDrmp3)
++		{
++			drmp3_uninit(mCodec.mDrmp3);
++			delete mCodec.mDrmp3;
++			mCodec.mDrmp3 = 0;
+ 		}
+ 		break;
+ 	case WAVSTREAM_WAV:
+@@ -303,19 +322,43 @@ unsigned int WavStreamInstance::getAudio(float *aBuffer, unsigned int aSamplesTo
+ 		return offset;
+ 	}
+ 	break;
+-	case WAVSTREAM_MP3: {
++	case WAVSTREAM_MPG123: {
+ 		unsigned int i, j, k;
+ 
+ 		for (i = 0; i < aSamplesToRead; i += 512)
+ 		{
+ 			unsigned int blockSize = (aSamplesToRead - i) > 512 ? 512 : aSamplesToRead - i;
+-			offset += (unsigned int)drmp3_read_pcm_frames_f32(mCodec.mMp3, blockSize, tmp);
++			size_t framesRead = MPG123::readFrames(mCodec.mMpg123, blockSize, tmp);
++			offset += (unsigned int)framesRead;
++
++			for (j = 0; j < framesRead; j++)
++			{
++				for (k = 0; k < mChannels; k++)
++				{
++					aBuffer[k * aSamplesToRead + i + j] = tmp[j * MPG123::getChannels(mCodec.mMpg123) + k];
++				}
++			}
++
++			if (framesRead < blockSize)
++				break;
++		}
++		mOffset += offset;
++		return offset;
++	}
++	break;
++	case WAVSTREAM_DRMP3: {
++		unsigned int i, j, k;
++
++		for (i = 0; i < aSamplesToRead; i += 512)
++		{
++			unsigned int blockSize = (aSamplesToRead - i) > 512 ? 512 : aSamplesToRead - i;
++			offset += (unsigned int)drmp3_read_pcm_frames_f32(mCodec.mDrmp3, blockSize, tmp);
+ 
+ 			for (j = 0; j < blockSize; j++)
+ 			{
+ 				for (k = 0; k < mChannels; k++)
+ 				{
+-					aBuffer[k * aSamplesToRead + i + j] = tmp[j * mCodec.mMp3->channels + k];
++					aBuffer[k * aSamplesToRead + i + j] = tmp[j * mCodec.mDrmp3->channels + k];
+ 				}
+ 			}
+ 		}
+@@ -384,15 +427,28 @@ unsigned int WavStreamInstance::getAudio(float *aBuffer, unsigned int aSamplesTo
+ 
+ result WavStreamInstance::seek(double aSeconds, float *mScratch, unsigned int mScratchSize)
+ {
+-	if (mParent->mFiletype == WAVSTREAM_MP3 && mCodec.mMp3)
++	if (mParent->mFiletype == WAVSTREAM_DRMP3 && mCodec.mDrmp3)
+ 	{
+-		drmp3_uint64 targetFrame = (drmp3_uint64)floor(aSeconds * mCodec.mMp3->sampleRate);
+-		if (drmp3_seek_to_pcm_frame(mCodec.mMp3, targetFrame))
++		drmp3_uint64 targetFrame = (drmp3_uint64)floor(aSeconds * mCodec.mDrmp3->sampleRate);
++		if (drmp3_seek_to_pcm_frame(mCodec.mDrmp3, targetFrame))
+ 		{
+ 			// Since the position that we just sought to might not be *exactly*
+ 			// the position we asked for, we're re-calculating the position just
+ 			// for the sake of correctness.
+-			mOffset = (unsigned int)mCodec.mMp3->currentPCMFrame;
++			mOffset = (unsigned int)mCodec.mDrmp3->currentPCMFrame;
++			double newPosition = static_cast<double>(mOffset) / mBaseSamplerate;
++			mStreamPosition = newPosition;
++			return SO_NO_ERROR;
++		}
++		return UNKNOWN_ERROR;
++	}
++	else if (mParent->mFiletype == WAVSTREAM_MPG123 && mCodec.mMpg123)
++	{
++		off_t targetFrame = (off_t)floor(aSeconds * mBaseSamplerate);
++		off_t seekResult = MPG123::seekToFrame(mCodec.mMpg123, targetFrame);
++		if (seekResult >= 0)
++		{
++			mOffset = (unsigned int)seekResult; // libmpg123 helpfully returns the actual position seeked to
+ 			double newPosition = static_cast<double>(mOffset) / mBaseSamplerate;
+ 			mStreamPosition = newPosition;
+ 			return SO_NO_ERROR;
+@@ -475,10 +531,16 @@ result WavStreamInstance::rewind()
+ 			drflac_seek_to_pcm_frame(mCodec.mFlac, 0);
+ 		}
+ 		break;
+-	case WAVSTREAM_MP3:
+-		if (mCodec.mMp3)
++	case WAVSTREAM_MPG123:
++		if (mCodec.mMpg123)
++		{
++			MPG123::seekToFrame(mCodec.mMpg123, 0);
++		}
++		break;
++	case WAVSTREAM_DRMP3:
++		if (mCodec.mDrmp3)
+ 		{
+-			drmp3_seek_to_pcm_frame(mCodec.mMp3, 0);
++			drmp3_seek_to_pcm_frame(mCodec.mDrmp3, 0);
+ 		}
+ 		break;
+ 	case WAVSTREAM_WAV:
+@@ -505,7 +567,7 @@ bool WavStreamInstance::hasEnded()
+ 	{
+ 		return 1;
+ 	}
+-	else if (mParent->mFiletype == WAVSTREAM_MP3 && mCodec.mMp3 && mCodec.mMp3->atEnd)
++	else if (mParent->mFiletype == WAVSTREAM_DRMP3 && mCodec.mDrmp3 && mCodec.mDrmp3->atEnd)
+ 	{
+ 		mOffset = mParent->mSampleCount;
+ 		return 1;
+@@ -603,7 +665,37 @@ result WavStream::loadflac(File *fp)
+ 	return SO_NO_ERROR;
+ }
+ 
+-result WavStream::loadmp3(File *fp)
++result WavStream::loadmpg123(File *fp)
++{
++	fp->seek(0);
++	MPG123::MPG123Decoder *decoder = MPG123::open(fp);
++
++	if (!decoder)
++		return FILE_LOAD_FAILED;
++
++	mChannels = MPG123::getChannels(decoder);
++	if (mChannels > MAX_CHANNELS)
++	{
++		mChannels = MAX_CHANNELS;
++	}
++
++	mBaseSamplerate = (float)MPG123::getSampleRate(decoder);
++	off_t totalFrames = MPG123::getTotalFrameCount(decoder);
++
++	if (totalFrames <= 0)
++	{
++		MPG123::close(decoder);
++		return FILE_LOAD_FAILED;
++	}
++
++	mSampleCount = (unsigned int)totalFrames;
++	mFiletype = WAVSTREAM_MPG123;
++
++	MPG123::close(decoder);
++	return SO_NO_ERROR;
++}
++
++result WavStream::loaddrmp3(File *fp)
+ {
+ 	fp->seek(0);
+ 	drmp3 decoder;
+@@ -643,7 +735,7 @@ result WavStream::loadmp3(File *fp)
+ 
+ 	mBaseSamplerate = (float)decoder.sampleRate;
+ 	mSampleCount = (unsigned int)samples;
+-	mFiletype = WAVSTREAM_MP3;
++	mFiletype = WAVSTREAM_DRMP3;
+ 
+ 	delete[] mMp3SeekPoints;
+ 	mMp3SeekPoints = nullptr;
+@@ -861,7 +953,11 @@ result WavStream::parse(File *aFile)
+ 	{
+ 		res = loadflac(aFile);
+ 	}
+-	else if (loadmp3(aFile) == SO_NO_ERROR)
++	else if (loadmpg123(aFile) == SO_NO_ERROR)
++	{
++		res = SO_NO_ERROR;
++	}
++	else if (loaddrmp3(aFile) == SO_NO_ERROR)
+ 	{
+ 		res = SO_NO_ERROR;
+ 	}
+-- 
+2.49.0
+

@@ -1,4 +1,4 @@
-From 324fb0a6d6fa3feef324eb1b5d3d783cd65e7fbc Mon Sep 17 00:00:00 2001
+From df380cdf4f03f439691fdd7722ffa3ec68f4f105 Mon Sep 17 00:00:00 2001
 From: William Horvath <william@horvath.blog>
 Date: Sun, 8 Jun 2025 01:51:53 -0700
 Subject: [PATCH] WIP: ffmpeg fallback for wav/wavstreams
@@ -1507,7 +1507,7 @@ index 0000000..988a12c
 +#endif
 diff --git a/src/audiosource/wav/soloud_ffmpeg_load.h b/src/audiosource/wav/soloud_ffmpeg_load.h
 new file mode 100644
-index 0000000..3f7aa2f
+index 0000000..5f9b81b
 --- /dev/null
 +++ b/src/audiosource/wav/soloud_ffmpeg_load.h
 @@ -0,0 +1,170 @@
@@ -1624,17 +1624,17 @@ index 0000000..3f7aa2f
 +namespace FFmpegFuncs
 +{
 +// import commonly used types first
-+using AVChannelLayout = ffmpeg_EXTERN::AVChannelLayout;
-+using AVCodec = ffmpeg_EXTERN::AVCodec;
-+using AVCodecContext = ffmpeg_EXTERN::AVCodecContext;
-+using AVCodecParameters = ffmpeg_EXTERN::AVCodecParameters;
-+using AVDictionary = ffmpeg_EXTERN::AVDictionary;
-+using AVFormatContext = ffmpeg_EXTERN::AVFormatContext;
-+using AVFrame = ffmpeg_EXTERN::AVFrame;
-+using AVIOContext = ffmpeg_EXTERN::AVIOContext;
-+using AVPacket = ffmpeg_EXTERN::AVPacket;
-+using AVStream = ffmpeg_EXTERN::AVStream;
-+using SwrContext = ffmpeg_EXTERN::SwrContext;
++using ffmpeg_EXTERN::AVChannelLayout;
++using ffmpeg_EXTERN::AVCodec;
++using ffmpeg_EXTERN::AVCodecContext;
++using ffmpeg_EXTERN::AVCodecParameters;
++using ffmpeg_EXTERN::AVDictionary;
++using ffmpeg_EXTERN::AVFormatContext;
++using ffmpeg_EXTERN::AVFrame;
++using ffmpeg_EXTERN::AVIOContext;
++using ffmpeg_EXTERN::AVPacket;
++using ffmpeg_EXTERN::AVStream;
++using ffmpeg_EXTERN::SwrContext;
 +
 +// import constants that we need
 +using ffmpeg_EXTERN::AV_SAMPLE_FMT_FLTP;

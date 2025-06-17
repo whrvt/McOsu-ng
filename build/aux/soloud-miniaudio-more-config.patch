@@ -1,15 +1,15 @@
-From a80ced81f0690a28957f6b6a13c7a8e073ece132 Mon Sep 17 00:00:00 2001
+From 01985cbd63e993a02c7d8d6c8e1f9285b60e71ad Mon Sep 17 00:00:00 2001
 From: William Horvath <william@horvath.blog>
 Date: Thu, 12 Jun 2025 22:41:56 -0700
 Subject: [PATCH] miniaudio config
 
 ---
- src/backend/miniaudio/soloud_miniaudio.cpp | 220 +++++++++++++++++----
+ src/backend/miniaudio/soloud_miniaudio.cpp | 221 +++++++++++++++++----
  src/core/soloud.cpp                        |  11 +-
- 2 files changed, 183 insertions(+), 48 deletions(-)
+ 2 files changed, 184 insertions(+), 48 deletions(-)
 
 diff --git a/src/backend/miniaudio/soloud_miniaudio.cpp b/src/backend/miniaudio/soloud_miniaudio.cpp
-index cb9ecad..4aae84c 100644
+index cb9ecad..87534b2 100644
 --- a/src/backend/miniaudio/soloud_miniaudio.cpp
 +++ b/src/backend/miniaudio/soloud_miniaudio.cpp
 @@ -29,14 +29,18 @@ distribution.
@@ -35,7 +35,7 @@ index cb9ecad..4aae84c 100644
  #define MINIAUDIO_IMPLEMENTATION
  #define MA_NO_NULL
  #define MA_NO_DECODING
-@@ -48,43 +52,175 @@ namespace SoLoud
+@@ -48,43 +52,176 @@ namespace SoLoud
  
  namespace SoLoud
  {
@@ -147,11 +147,12 @@ index cb9ecad..4aae84c 100644
 +	ma_context_config contextConfig = ma_context_config_init();
 +	contextConfig.threadPriority = ma_thread_priority_highest;
 +
-+	const ma_backend backends[] = {ma_backend_wasapi, ma_backend_dsound, ma_backend_winmm,    ma_backend_coreaudio,  ma_backend_sndio,
-+	                               ma_backend_audio4, ma_backend_oss,    ma_backend_alsa,     ma_backend_pulseaudio, ma_backend_jack,
-+	                               ma_backend_aaudio, ma_backend_opensl, ma_backend_webaudio, ma_backend_custom,     ma_backend_null};
++	// const ma_backend backends[] = {ma_backend_wasapi, ma_backend_dsound, ma_backend_winmm,    ma_backend_coreaudio,  ma_backend_sndio,
++	//                                ma_backend_audio4, ma_backend_oss,    ma_backend_alsa,     ma_backend_pulseaudio, ma_backend_jack,
++	//                                ma_backend_aaudio, ma_backend_opensl, ma_backend_webaudio, ma_backend_custom,     ma_backend_null};
 +
-+	ma_result result = ma_context_init(&backends[0], sizeof(backends) / sizeof((backends)[0]), &contextConfig, &data->context);
++	//ma_result result = ma_context_init(&backends[0], sizeof(backends) / sizeof((backends)[0]), &contextConfig, &data->context);
++	ma_result result = ma_context_init(nullptr, 0, &contextConfig, &data->context);
 +	if (result != MA_SUCCESS)
 +	{
 +		delete data;

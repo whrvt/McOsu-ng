@@ -18,7 +18,7 @@
 
 namespace cv
 {
-	ConVar snd_soloud_prefer_ffmpeg("snd_soloud_prefer_ffmpeg", 1, FCVAR_NONE, "(0=no, 1=streams, 2=streams+samples) prioritize using ffmpeg as a decoder (if available) over other decoder backends");
+	ConVar snd_soloud_prefer_ffmpeg("snd_soloud_prefer_ffmpeg", 0, FCVAR_NONE, "(0=no, 1=streams, 2=streams+samples) prioritize using ffmpeg as a decoder (if available) over other decoder backends");
 }
 
 SoLoudSound::SoLoudSound(UString filepath, bool stream, bool threeD, bool loop, bool prescan)
@@ -115,8 +115,8 @@ void SoLoudSound::initAsync()
 			m_audioSource->setInaudibleBehavior(true, false); // keep ticking the sound if it goes to 0 volume, and don't kill it
 
 			if (cv::debug_snd.getBool())
-				debugLog("SoLoudSound: Created SLFXStream for {:s} with speed={:f}, pitch={:f}, looping={:s}\n", m_sFilePath.toUtf8(), m_speed, m_pitch,
-				         m_bIsLooped ? "true" : "false");
+				debugLog("SoLoudSound: Created SLFXStream for {:s} with speed={:f}, pitch={:f}, looping={:s}, decoder={:s}\n", m_sFilePath.toUtf8(), m_speed, m_pitch,
+				         m_bIsLooped ? "true" : "false", stream->getDecoder());
 		}
 		else
 		{

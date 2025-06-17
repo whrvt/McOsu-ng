@@ -96,27 +96,29 @@ bin_PROGRAMS = McOsu-ng$(EXEEXT)
 @BUILD_SDL3_TRUE@am__append_2 = $(shell $(PKG_CONFIG) --libs sdl3)
 @USE_SDLMIXER_TRUE@am__append_3 = $(shell $(PKG_CONFIG) --cflags sdl3-mixer)
 @USE_SDLMIXER_TRUE@am__append_4 = $(shell $(PKG_CONFIG) --libs sdl3-mixer)
-@USE_SOLOUD_TRUE@am__append_5 = $(shell $(PKG_CONFIG) --cflags soundtouch) -DST_NO_EXCEPTION_HANDLING $(if $(and $(filter i686,$(host_cpu)),$(DISABLE_NATIVE)),-DSOUNDTOUCH_DISABLE_X86_OPTIMIZATIONS,)
-@USE_SOLOUD_TRUE@am__append_6 = -L$(DEPS_PREFIX)/lib -lsoloud_static_x$(if $(filter x86_64,$(host_cpu)),64,86)$(if $(ENABLE_DEBUG),_d,) $(shell $(PKG_CONFIG) --libs soundtouch)
-@USE_BASS_TRUE@am__append_7 = -I$(DEPS_CACHE)/bass-$(BASS_VERSION)/bass/include -I$(DEPS_CACHE)/bass-$(BASS_VERSION)/bassfx/include -I$(DEPS_CACHE)/bass-$(BASS_VERSION)/bassmix/include
-@USE_BASS_TRUE@@WIN_PLATFORM_TRUE@am__append_8 = -I$(DEPS_CACHE)/bass-$(BASS_VERSION)/bassasio/include -I$(DEPS_CACHE)/bass-$(BASS_VERSION)/basswasapi/include
-@USE_BASS_TRUE@@WIN_PLATFORM_TRUE@am__append_9 = $(DEPS_CACHE)/bass-$(BASS_VERSION)/bassasio/lib/$(SYSNAME)/$(host_cpu)/$(LIBPREFIX)bassasio$(DLLEXT) \
+@BUILD_MPG123_TRUE@am__append_5 = $(shell $(PKG_CONFIG) --cflags libmpg123)
+@BUILD_MPG123_TRUE@am__append_6 = $(shell $(PKG_CONFIG) --libs libmpg123)
+@USE_SOLOUD_TRUE@am__append_7 = $(shell $(PKG_CONFIG) --cflags soundtouch) $(MPG123_CFLAGS) -DST_NO_EXCEPTION_HANDLING $(if $(and $(filter i686,$(host_cpu)),$(DISABLE_NATIVE)),-DSOUNDTOUCH_DISABLE_X86_OPTIMIZATIONS,)
+@USE_SOLOUD_TRUE@am__append_8 = -L$(DEPS_PREFIX)/lib -lsoloud_static_x$(if $(filter x86_64,$(host_cpu)),64,86)$(if $(ENABLE_DEBUG),_d,) $(shell $(PKG_CONFIG) --libs soundtouch) $(MPG123_LIBS)
+@USE_BASS_TRUE@am__append_9 = -I$(DEPS_CACHE)/bass-$(BASS_VERSION)/bass/include -I$(DEPS_CACHE)/bass-$(BASS_VERSION)/bassfx/include -I$(DEPS_CACHE)/bass-$(BASS_VERSION)/bassmix/include
+@USE_BASS_TRUE@@WIN_PLATFORM_TRUE@am__append_10 = -I$(DEPS_CACHE)/bass-$(BASS_VERSION)/bassasio/include -I$(DEPS_CACHE)/bass-$(BASS_VERSION)/basswasapi/include
+@USE_BASS_TRUE@@WIN_PLATFORM_TRUE@am__append_11 = $(DEPS_CACHE)/bass-$(BASS_VERSION)/bassasio/lib/$(SYSNAME)/$(host_cpu)/$(LIBPREFIX)bassasio$(DLLEXT) \
 @USE_BASS_TRUE@@WIN_PLATFORM_TRUE@					$(DEPS_CACHE)/bass-$(BASS_VERSION)/basswasapi/lib/$(SYSNAME)/$(host_cpu)/$(LIBPREFIX)basswasapi$(DLLEXT)
 
-@BUILD_LIBJPEG_TRUE@am__append_10 = $(shell $(PKG_CONFIG) --cflags libturbojpeg)
-@BUILD_LIBJPEG_TRUE@am__append_11 = $(shell $(PKG_CONFIG) --libs libturbojpeg)
-@BUILD_GLM_TRUE@am__append_12 = -I$(DEPS_PREFIX)/include
-@BUILD_LIBPNG_TRUE@am__append_13 = $(shell $(PKG_CONFIG) --cflags libpng)
-@BUILD_LIBPNG_TRUE@am__append_14 = $(shell $(PKG_CONFIG) --libs libpng)
-@BUILD_BZIP2_TRUE@am__append_15 = $(shell $(PKG_CONFIG) --cflags bzip2)
-@BUILD_BZIP2_TRUE@am__append_16 = $(shell $(PKG_CONFIG) --libs bzip2)
-@BUILD_ZLIB_TRUE@am__append_17 = $(shell $(PKG_CONFIG) --cflags zlib)
-@BUILD_ZLIB_TRUE@am__append_18 = $(shell $(PKG_CONFIG) --libs zlib)
-@BUILD_FMT_TRUE@am__append_19 = $(shell $(PKG_CONFIG) --cflags fmt)
-@BUILD_FMT_TRUE@am__append_20 = $(shell $(PKG_CONFIG) --libs fmt)
-@BUILD_FREETYPE2_TRUE@am__append_21 = $(shell $(PKG_CONFIG) --cflags freetype2)
-@BUILD_FREETYPE2_TRUE@am__append_22 = $(shell $(PKG_CONFIG) --libs freetype2)
-@WIN_PLATFORM_FALSE@am__append_23 = lib/
+@BUILD_LIBJPEG_TRUE@am__append_12 = $(shell $(PKG_CONFIG) --cflags libturbojpeg)
+@BUILD_LIBJPEG_TRUE@am__append_13 = $(shell $(PKG_CONFIG) --libs libturbojpeg)
+@BUILD_GLM_TRUE@am__append_14 = -I$(DEPS_PREFIX)/include
+@BUILD_LIBPNG_TRUE@am__append_15 = $(shell $(PKG_CONFIG) --cflags libpng)
+@BUILD_LIBPNG_TRUE@am__append_16 = $(shell $(PKG_CONFIG) --libs libpng)
+@BUILD_BZIP2_TRUE@am__append_17 = $(shell $(PKG_CONFIG) --cflags bzip2)
+@BUILD_BZIP2_TRUE@am__append_18 = $(shell $(PKG_CONFIG) --libs bzip2)
+@BUILD_ZLIB_TRUE@am__append_19 = $(shell $(PKG_CONFIG) --cflags zlib)
+@BUILD_ZLIB_TRUE@am__append_20 = $(shell $(PKG_CONFIG) --libs zlib)
+@BUILD_FMT_TRUE@am__append_21 = $(shell $(PKG_CONFIG) --cflags fmt)
+@BUILD_FMT_TRUE@am__append_22 = $(shell $(PKG_CONFIG) --libs fmt)
+@BUILD_FREETYPE2_TRUE@am__append_23 = $(shell $(PKG_CONFIG) --cflags freetype2)
+@BUILD_FREETYPE2_TRUE@am__append_24 = $(shell $(PKG_CONFIG) --libs freetype2)
+@WIN_PLATFORM_FALSE@am__append_25 = lib/
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
@@ -552,9 +554,9 @@ AMTAR = @AMTAR@
 AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
 AR = @AR@
 ASSETS_DIR = @ASSETS_DIR@
-AUDIO_CFLAGS = @AUDIO_CFLAGS@ $(am__append_3) $(am__append_5) \
-	$(am__append_7) $(am__append_8)
-AUDIO_LIBS = @AUDIO_LIBS@ $(am__append_4) $(am__append_6)
+AUDIO_CFLAGS = @AUDIO_CFLAGS@ $(am__append_3) $(am__append_7) \
+	$(am__append_9) $(am__append_10)
+AUDIO_LIBS = @AUDIO_LIBS@ $(am__append_4) $(am__append_8)
 AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
@@ -562,8 +564,8 @@ AWK = @AWK@
 BASS_VERSION = @BASS_VERSION@
 BEAR = @BEAR@
 BUNDLED_INCLUDES = @BUNDLED_INCLUDES@
-BZIP2_CFLAGS = @BZIP2_CFLAGS@ $(am__append_15)
-BZIP2_LIBS = @BZIP2_LIBS@ $(am__append_16)
+BZIP2_CFLAGS = @BZIP2_CFLAGS@ $(am__append_17)
+BZIP2_LIBS = @BZIP2_LIBS@ $(am__append_18)
 BZIP2_PREFIX = @BZIP2_PREFIX@
 BZIP2_VERSION = @BZIP2_VERSION@
 CC = @CC@
@@ -602,18 +604,18 @@ ENABLE_DEBUG = @ENABLE_DEBUG@
 ETAGS = @ETAGS@
 EXEEXT = @EXEEXT@
 FFMPEG_VERSION = @FFMPEG_VERSION@
-FMT_CFLAGS = @FMT_CFLAGS@ $(am__append_19)
-FMT_LIBS = @FMT_LIBS@ $(am__append_20)
+FMT_CFLAGS = @FMT_CFLAGS@ $(am__append_21)
+FMT_LIBS = @FMT_LIBS@ $(am__append_22)
 FMT_PREFIX = @FMT_PREFIX@
 FMT_VERSION = @FMT_VERSION@
-FREETYPE2_CFLAGS = @FREETYPE2_CFLAGS@ $(am__append_21)
-FREETYPE2_LIBS = @FREETYPE2_LIBS@ $(am__append_22)
+FREETYPE2_CFLAGS = @FREETYPE2_CFLAGS@ $(am__append_23)
+FREETYPE2_LIBS = @FREETYPE2_LIBS@ $(am__append_24)
 FREETYPE2_PREFIX = @FREETYPE2_PREFIX@
 FREETYPE2_VERSION = @FREETYPE2_VERSION@
 GENIE = @GENIE@
 GETCONF = @GETCONF@
 GIT = @GIT@
-GLM_CFLAGS = @GLM_CFLAGS@ $(am__append_12)
+GLM_CFLAGS = @GLM_CFLAGS@ $(am__append_14)
 GLM_PREFIX = @GLM_PREFIX@
 GLM_VERSION = @GLM_VERSION@
 GLU_CFLAGS = @GLU_CFLAGS@
@@ -628,13 +630,13 @@ INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
 LD = @LD@
 LDFLAGS = @LDFLAGS@
-LIBJPEG_CFLAGS = @LIBJPEG_CFLAGS@ $(am__append_10)
-LIBJPEG_LIBS = @LIBJPEG_LIBS@ $(am__append_11)
+LIBJPEG_CFLAGS = @LIBJPEG_CFLAGS@ $(am__append_12)
+LIBJPEG_LIBS = @LIBJPEG_LIBS@ $(am__append_13)
 LIBJPEG_PREFIX = @LIBJPEG_PREFIX@
 LIBJPEG_VERSION = @LIBJPEG_VERSION@
 LIBOBJS = @LIBOBJS@
-LIBPNG_CFLAGS = @LIBPNG_CFLAGS@ $(am__append_13)
-LIBPNG_LIBS = @LIBPNG_LIBS@ $(am__append_14)
+LIBPNG_CFLAGS = @LIBPNG_CFLAGS@ $(am__append_15)
+LIBPNG_LIBS = @LIBPNG_LIBS@ $(am__append_16)
 LIBPNG_PREFIX = @LIBPNG_PREFIX@
 LIBPNG_VERSION = @LIBPNG_VERSION@
 LIBPREFIX = @LIBPREFIX@
@@ -651,6 +653,10 @@ MESON = @MESON@
 MIMALLOC_PREFIX = @MIMALLOC_PREFIX@
 MIMALLOC_VERSION = @MIMALLOC_VERSION@
 MKDIR_P = @MKDIR_P@
+MPG123_CFLAGS = @MPG123_CFLAGS@ $(am__append_5)
+MPG123_LIBS = @MPG123_LIBS@ $(am__append_6)
+MPG123_PREFIX = @MPG123_PREFIX@
+MPG123_VERSION = @MPG123_VERSION@
 NASM = @NASM@
 NASMOBJ = @NASMOBJ@
 NINJA = @NINJA@
@@ -701,8 +707,8 @@ X11_CFLAGS = @X11_CFLAGS@
 X11_LIBS = @X11_LIBS@
 XI_CFLAGS = @XI_CFLAGS@
 XI_LIBS = @XI_LIBS@
-ZLIB_CFLAGS = @ZLIB_CFLAGS@ $(am__append_17)
-ZLIB_LIBS = @ZLIB_LIBS@ $(am__append_18)
+ZLIB_CFLAGS = @ZLIB_CFLAGS@ $(am__append_19)
+ZLIB_LIBS = @ZLIB_LIBS@ $(am__append_20)
 ZLIB_PREFIX = @ZLIB_PREFIX@
 ZLIB_VERSION = @ZLIB_VERSION@
 abs_builddir = @abs_builddir@
@@ -954,9 +960,10 @@ comma := ,# bruh
 @USE_BASS_TRUE@	$(DEPS_CACHE)/bass-$(BASS_VERSION)/bassflac/lib/$(SYSNAME)/$(host_cpu)/$(LIBPREFIX)bassflac$(DLLEXT) \
 @USE_BASS_TRUE@	$(DEPS_CACHE)/bass-$(BASS_VERSION)/bassfx/lib/$(SYSNAME)/$(host_cpu)/$(LIBPREFIX)bass_fx$(DLLEXT) \
 @USE_BASS_TRUE@	$(DEPS_CACHE)/bass-$(BASS_VERSION)/bassmix/lib/$(SYSNAME)/$(host_cpu)/$(LIBPREFIX)bassmix$(DLLEXT) \
-@USE_BASS_TRUE@	$(am__append_9)
+@USE_BASS_TRUE@	$(am__append_11)
 BUILT_SOURCES := $(DEPS_PREFIX)/mimalloc.built $(DEPS_PREFIX)/SDL3.built $(DEPS_PREFIX)/bass-$(BASS_VERSION).built $(DEPS_PREFIX)/SDL3_mixer.built $(DEPS_PREFIX)/libjpeg.built $(DEPS_PREFIX)/FMT.built \
-	$(DEPS_PREFIX)/libpng.built $(DEPS_PREFIX)/bzip2.built $(DEPS_PREFIX)/zlib.built $(DEPS_PREFIX)/FREETYPE2.built $(DEPS_PREFIX)/glm.built $(DEPS_PREFIX)/SoLoud.built $(DEPS_PREFIX)/SoundTouch.built
+	$(DEPS_PREFIX)/libpng.built $(DEPS_PREFIX)/bzip2.built $(DEPS_PREFIX)/zlib.built $(DEPS_PREFIX)/FREETYPE2.built $(DEPS_PREFIX)/glm.built $(DEPS_PREFIX)/SoLoud.built $(DEPS_PREFIX)/SoundTouch.built \
+	$(DEPS_PREFIX)/mpg123.built
 
 
 # FIXME: just fixme
@@ -1012,7 +1019,7 @@ McOsu_ng_LDFLAGS := \
 
 
 # windows' loader has no concept of rpaths
-LIBDEST := $(am__append_23)
+LIBDEST := $(am__append_25)
 
 # TODO: distribution package files
 EXTRA_DIST := \
@@ -4919,6 +4926,11 @@ $(DEPS_CACHE)/SDL3_mixer-$(SDL3_MIXER_VERSION).source:
 	cd $(DEPS_CACHE)/SDL3_mixer/external && ./download.sh # cache vendored dependencies
 	touch $@
 
+$(DEPS_CACHE)/mpg123-$(MPG123_VERSION).source:
+	$(MKDIR_P) $(DEPS_CACHE)
+	$(WGET) -qO $(DEPS_CACHE)/mpg123-$(MPG123_VERSION).tar.gz "https://github.com/madebr/mpg123/archive/$(MPG123_VERSION).tar.gz"
+	touch $@
+
 $(DEPS_CACHE)/SoLoud-$(SOLOUD_VERSION).source:
 	$(MKDIR_P) $(DEPS_CACHE)
 	$(WGET) -qO $(DEPS_CACHE)/SoLoud-$(SOLOUD_VERSION).tar.gz "https://github.com/jarikomppa/soloud/archive/$(SOLOUD_VERSION).tar.gz"
@@ -4983,8 +4995,23 @@ $(DEPS_CACHE)/ffmpeg-$(FFMPEG_VERSION).source: $(DEPS_CACHE)/ffmpeg-$(FFMPEG_VER
 	$(MKDIR_P) windowsx86_64/lib && $(UNZIP) -qjo ffmpeg-windowsx86_64.zip "*/bin/*.dll" -d windowsx86_64/lib && \
 	$(MKDIR_P) windowsx86_64/include && $(UNZIP) -qo ffmpeg-windowsx86_64.zip "*/include/*" -d windowsx86_64/include && mv windowsx86_64/include/*/*/* windowsx86_64/include/
 	touch $@
+@BUILD_MPG123_TRUE@$(DEPS_PREFIX)/mpg123.built: $(DEPS_CACHE)/mpg123-$(MPG123_VERSION).source
+@BUILD_MPG123_TRUE@	rm -rf $(DEPS_PREFIX)/mpg123
+@BUILD_MPG123_TRUE@	$(MKDIR_P) $(DEPS_PREFIX) $(DEPS_PREFIX)/include $(DEPS_PREFIX)/lib/pkgconfig $(DEPS_PREFIX)/mpg123/build
+@BUILD_MPG123_TRUE@	$(TAR) xf $(DEPS_CACHE)/mpg123-$(MPG123_VERSION).tar.gz -C $(DEPS_PREFIX)/mpg123 --strip-components=1 && \
+@BUILD_MPG123_TRUE@	cd $(DEPS_PREFIX)/mpg123 && autoreconf -fiv && cd $(DEPS_PREFIX)/mpg123/build && \
+@BUILD_MPG123_TRUE@	PKG_CONFIG="$(PKG_CONFIG)" \
+@BUILD_MPG123_TRUE@		../configure lt_cv_prog_gnu_ld=yes --host=$(host) --prefix="$(DEPS_PREFIX)" $(if $(STATICBUILD),--enable-static --disable-shared,--enable-shared --disable-static) \
+@BUILD_MPG123_TRUE@		--disable-components --enable-libmpg123 --with-audio=dummy \
+@BUILD_MPG123_TRUE@		RANLIB="$(RANLIB)" AR="$(AR)" CC="$(CC)" CXX="$(CXX)" LD="$(LD)" CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS)" && \
+@BUILD_MPG123_TRUE@	$(MAKE) && \
+@BUILD_MPG123_TRUE@	$(MAKE) install
+@BUILD_MPG123_TRUE@	$(PKG_CONFIG) --env-only --exists --print-errors libmpg123
+@BUILD_MPG123_TRUE@	touch $@
+@BUILD_MPG123_FALSE@$(DEPS_PREFIX)/mpg123.built:
+@BUILD_MPG123_FALSE@	$(MKDIR_P) $(DEPS_PREFIX) && touch $@
 
-@USE_SOLOUD_TRUE@$(DEPS_PREFIX)/SoLoud.built: $(DEPS_CACHE)/SoLoud-$(SOLOUD_VERSION).source $(DEPS_CACHE)/ffmpeg-$(FFMPEG_VERSION).source $(DEPS_PREFIX)/SDL3.built
+@USE_SOLOUD_TRUE@$(DEPS_PREFIX)/SoLoud.built: $(DEPS_CACHE)/SoLoud-$(SOLOUD_VERSION).source $(DEPS_CACHE)/ffmpeg-$(FFMPEG_VERSION).source $(DEPS_PREFIX)/SDL3.built $(DEPS_PREFIX)/mpg123.built
 @USE_SOLOUD_TRUE@	rm -rf $(DEPS_PREFIX)/SoLoud
 @USE_SOLOUD_TRUE@	$(MKDIR_P) $(DEPS_PREFIX) $(DEPS_PREFIX)/include/soloud $(DEPS_PREFIX)/lib/pkgconfig $(DEPS_PREFIX)/SoLoud/build
 @USE_SOLOUD_TRUE@	$(TAR) xf $(DEPS_CACHE)/SoLoud-$(SOLOUD_VERSION).tar.gz -C $(DEPS_PREFIX)/SoLoud --strip-components=1 && \
@@ -5005,6 +5032,7 @@ $(DEPS_CACHE)/ffmpeg-$(FFMPEG_VERSION).source: $(DEPS_CACHE)/ffmpeg-$(FFMPEG_VER
 @USE_SOLOUD_TRUE@	patch -Np1<$(abs_top_srcdir)/build/aux/soloud-miniaudio-more-config.patch && \
 @USE_SOLOUD_TRUE@	patch -Np1<$(abs_top_srcdir)/build/aux/soloud-dr_mp3-tag-skip.patch && \
 @USE_SOLOUD_TRUE@	patch -Np1<$(abs_top_srcdir)/build/aux/soloud-fix-stale-unpause.patch && \
+@USE_SOLOUD_TRUE@	patch -Np1<$(abs_top_srcdir)/build/aux/soloud-mpg123.patch && \
 @USE_SOLOUD_TRUE@	$(SED) -i -e 's|#define VOICE_COUNT 1024|#define VOICE_COUNT 4095|g' include/soloud.h # raise max # concurrent voices from 1024 default to 4095 (hard limit)
 @USE_SOLOUD_TRUE@	cd $(DEPS_PREFIX)/SoLoud/build && \
 @USE_SOLOUD_TRUE@	$(SED) -i 's|"NoRTTI"$(comma)||g' genie.lua && \
@@ -5015,8 +5043,9 @@ $(DEPS_CACHE)/ffmpeg-$(FFMPEG_VERSION).source: $(DEPS_CACHE)/ffmpeg-$(FFMPEG_VER
 @USE_SOLOUD_TRUE@			 --os=$(if $(findstring linux,$(host_os)),linux,windows) \
 @USE_SOLOUD_TRUE@			 gmake && \
 @USE_SOLOUD_TRUE@	cd gmake && $(SED) -i -e 's|^CC.*=.*||g' -e 's|^AR.*=.*||g' -e 's|^CXX.*=.*||g' SoloudStatic.make && \
-@USE_SOLOUD_TRUE@	PKG_CONFIG="$(PKG_CONFIG) --static" CC="$(CC)" CXX="$(CXX)" LD="$(LD)" CFLAGS="-I$(FFMPEG_INCDIR) $(if $(ENABLE_DEBUG),-D_DEBUG,) $(SDL3_CFLAGS) $(CFLAGS)" \
-@USE_SOLOUD_TRUE@		CXXFLAGS="-I$(FFMPEG_INCDIR) $(if $(ENABLE_DEBUG),-D_DEBUG,) $(SDL3_CFLAGS) $(CXXFLAGS)" LDFLAGS="$(LDFLAGS)" \
+@USE_SOLOUD_TRUE@	PKG_CONFIG="$(PKG_CONFIG) --static" CC="$(CC)" CXX="$(CXX)" LD="$(LD)" \
+@USE_SOLOUD_TRUE@		CFLAGS="-I$(FFMPEG_INCDIR) $(if $(ENABLE_DEBUG),-D_DEBUG,) $(SDL3_CFLAGS) $(MPG123_CFLAGS) $(CFLAGS)" \
+@USE_SOLOUD_TRUE@		CXXFLAGS="-I$(FFMPEG_INCDIR) $(if $(ENABLE_DEBUG),-D_DEBUG,) $(SDL3_CFLAGS) $(MPG123_CFLAGS) $(CXXFLAGS)" LDFLAGS="$(LDFLAGS)" \
 @USE_SOLOUD_TRUE@		PREFIX="$(DEPS_PREFIX)" RANLIB="$(RANLIB)" AR="$(AR)" config="$(if $(ENABLE_DEBUG),debug,release)" make SoloudStatic && \
 @USE_SOLOUD_TRUE@	cp $(DEPS_PREFIX)/SoLoud/lib/libsoloud_static_x$(if $(filter x86_64,$(host_cpu)),64,86)$(if $(ENABLE_DEBUG),_d,).a $(DEPS_PREFIX)/lib/
 @USE_SOLOUD_TRUE@	cp -r $(DEPS_PREFIX)/SoLoud/include/* $(DEPS_PREFIX)/include/soloud/ && \
@@ -5378,6 +5407,7 @@ install-libs:
 @USE_SDLMIXER_TRUE@	$(if $(STATICBUILD),,@cp -P "$(SDL3_MIXER_PREFIX)/lib"/{*$(LIBPREFIX)SDL3_mixer*$(DLLEXT)*,*$(LIBPREFIX)mpg123*$(DLLEXT)*,*$(LIBPREFIX)xmp*$(DLLEXT)*,*$(LIBPREFIX)wavpack*$(DLLEXT)*,*$(LIBPREFIX)opus*$(DLLEXT)*,*$(LIBPREFIX)ogg*$(DLLEXT)*} "$(DESTDIR)$(bindir)/$(LIBDEST)")
 @USE_SOLOUD_TRUE@	$(if $(STATICBUILD),,@cp -P "$(SOLOUD_PREFIX)/lib"/*$(LIBPREFIX)SoundTouch*$(DLLEXT)* "$(DESTDIR)$(bindir)/$(LIBDEST)")
 @USE_SOLOUD_TRUE@	@cp -P -t "$(DESTDIR)$(bindir)/" $(FFMPEG_INSTALL_LIBS) || true
+@BUILD_MPG123_TRUE@@USE_SOLOUD_TRUE@	$(if $(STATICBUILD),,@`find $(MPG123_PREFIX) '(' -iname '*mpg*'$(DLLEXT) -o -iname '*mpg*''.so.*' ')' -exec cp -P '{''}' "$(DESTDIR)$(bindir)/$(LIBDEST)" ';'`)
 @BUILD_SDL3_TRUE@	$(if $(SDL3_STATIC),,@`find $(SDL3_PREFIX) '(' -iname '*SDL3*'$(DLLEXT) -o -iname '*SDL3*''.so.*' ')' -exec cp -P '{''}' "$(DESTDIR)$(bindir)/$(LIBDEST)" ';'`)
 @BUILD_LIBJPEG_TRUE@	$(if $(STATICBUILD),,@`find $(LIBJPEG_PREFIX) '(' -iname '*libjpeg-*'$(DLLEXT) -o -iname '*libjpeg*''.so.*' ')' -exec cp -P '{''}' "$(DESTDIR)$(bindir)/$(LIBDEST)" ';'`)
 @BUILD_LIBJPEG_TRUE@	$(if $(STATICBUILD),,@`find $(LIBJPEG_PREFIX) '(' -iname '*libturbojpeg-*'$(DLLEXT) -o -iname '*libturbojpeg''.so.*' ')' -exec cp -P '{''}' "$(DESTDIR)$(bindir)/$(LIBDEST)" ';'`)

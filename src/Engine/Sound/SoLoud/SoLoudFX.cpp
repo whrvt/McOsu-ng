@@ -199,6 +199,30 @@ double SLFXStream::getLength()
 	return mSource ? mSource->getLength() : 0.0;
 }
 
+UString SLFXStream::getDecoder()
+{
+	if (!mSource)
+		return "<NULL>";
+
+	switch (mSource->mFiletype)
+	{
+		case WAVSTREAM_WAV:
+			return "dr_wav";
+		case WAVSTREAM_OGG:
+			return "dr_ogg";
+		case WAVSTREAM_FLAC:
+			return "dr_flac";
+		case WAVSTREAM_MPG123:
+			return "libmpg123";
+		case WAVSTREAM_DRMP3:
+			return "dr_mp3";
+		case WAVSTREAM_FFMPEG:
+			return "ffmpeg";
+		default:
+			return "unknown";
+	}
+}
+
 //-------------------------------------------------------------------------
 // SoundTouchFilterInstance implementation
 //-------------------------------------------------------------------------
