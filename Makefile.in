@@ -5002,7 +5002,7 @@ $(DEPS_CACHE)/ffmpeg-$(FFMPEG_VERSION).source: $(DEPS_CACHE)/ffmpeg-$(FFMPEG_VER
 @BUILD_MPG123_TRUE@	cd $(DEPS_PREFIX)/mpg123 && autoreconf -fiv && cd $(DEPS_PREFIX)/mpg123/build && \
 @BUILD_MPG123_TRUE@	PKG_CONFIG="$(PKG_CONFIG)" \
 @BUILD_MPG123_TRUE@		../configure lt_cv_prog_gnu_ld=yes --host=$(host) --prefix="$(DEPS_PREFIX)" $(if $(STATICBUILD),--enable-static --disable-shared,--enable-shared --disable-static) \
-@BUILD_MPG123_TRUE@		--disable-components --enable-libmpg123 --with-audio=dummy \
+@BUILD_MPG123_TRUE@		--disable-components --enable-libmpg123 --with-audio=dummy --disable-modules \
 @BUILD_MPG123_TRUE@		RANLIB="$(RANLIB)" AR="$(AR)" CC="$(CC)" CXX="$(CXX)" LD="$(LD)" CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS)" && \
 @BUILD_MPG123_TRUE@	$(MAKE) && \
 @BUILD_MPG123_TRUE@	$(MAKE) install

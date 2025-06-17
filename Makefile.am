@@ -200,7 +200,7 @@ $(DEPS_PREFIX)/mpg123.built: $(DEPS_CACHE)/mpg123-$(MPG123_VERSION).source
 	cd $(DEPS_PREFIX)/mpg123 && autoreconf -fiv && cd $(DEPS_PREFIX)/mpg123/build && \
 	PKG_CONFIG="$(PKG_CONFIG)" \
 		../configure lt_cv_prog_gnu_ld=yes --host=$(host) --prefix="$(DEPS_PREFIX)" $(if $(STATICBUILD),--enable-static --disable-shared,--enable-shared --disable-static) \
-		--disable-components --enable-libmpg123 --with-audio=dummy \
+		--disable-components --enable-libmpg123 --with-audio=dummy --disable-modules \
 		RANLIB="$(RANLIB)" AR="$(AR)" CC="$(CC)" CXX="$(CXX)" LD="$(LD)" CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS)" && \
 	$(MAKE) && \
 	$(MAKE) install
