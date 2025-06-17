@@ -19,7 +19,7 @@
 // SoLoud-specific ConVars
 namespace cv
 {
-ConVar snd_soloud_buffer("snd_soloud_buffer", SoLoud::Soloud::AUTO, FCVAR_NONE, "SoLoud audio device buffer size");
+ConVar snd_soloud_buffer("snd_soloud_buffer", SoLoud::Soloud::AUTO, FCVAR_NONE, "SoLoud audio device buffer size (recommended to leave this on 0/auto)");
 ConVar snd_soloud_backend("snd_soloud_backend", "MiniAudio", FCVAR_NONE, R"(SoLoud backend, "MiniAudio" or "SDL3" (MiniAudio is default))");
 ConVar snd_sanity_simultaneous_limit("snd_sanity_simultaneous_limit", 128, FCVAR_NONE,
                                      "The maximum number of overlayable sounds that are allowed to be active at once");
@@ -127,7 +127,7 @@ bool SoLoudSoundEngine::playSound(SoLoudSound *soloudSound, float pan, float pit
 	// if the sound is already playing and not overlayable, stop it
 	if (soloudSound->m_handle != 0 && !soloudSound->isOverlayable())
 	{
-		restorePos = soloud->getStreamPosition(soloudSound->m_handle);
+		restorePos = soloudSound->getStreamPositionInSeconds();
 		soloud->stop(soloudSound->m_handle);
 		soloudSound->m_handle = 0;
 	}
@@ -440,8 +440,9 @@ bool SoLoudSoundEngine::initializeOutputDevice(int id, bool)
 	soloud->setPostClipScaler(1.0f);
 
 	cv::snd_freq.setValue(soloud->getBackendSamplerate(), false); // set the cvar to match the actual output sample rate (without running callbacks)
-	cv::snd_soloud_buffer.setValue(soloud->getBackendBufferSize(), false); // ditto
 	cv::snd_soloud_backend.setValue(soloud->getBackendString(), false); // ditto
+	if (cv::snd_soloud_buffer.getVal() != cv::snd_soloud_buffer.getDefaultVal())
+		cv::snd_soloud_buffer.setValue(soloud->getBackendBufferSize(), false); // ditto (but only if explicitly non-default was requested already)
 
 	onMaxActiveChange(cv::snd_sanity_simultaneous_limit.getFloat());
 

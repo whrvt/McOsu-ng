@@ -51,7 +51,7 @@ namespace cv::osu {
 ConVar automatic_cursor_size("osu_automatic_cursor_size", false, FCVAR_NONE);
 
 ConVar cursor_alpha("osu_cursor_alpha", 1.0f, FCVAR_NONE);
-ConVar cursor_scale("osu_cursor_scale", 1.5f, FCVAR_NONE);
+ConVar cursor_scale("osu_cursor_scale", 1.0f, FCVAR_NONE);
 ConVar cursor_expand_scale_multiplier("osu_cursor_expand_scale_multiplier", 1.3f, FCVAR_NONE);
 ConVar cursor_expand_duration("osu_cursor_expand_duration", 0.1f, FCVAR_NONE);
 ConVar cursor_trail_scale("osu_cursor_trail_scale", 1.0f, FCVAR_NONE);
@@ -235,27 +235,6 @@ ConVar combo_anim2_size("osu_combo_anim2_size", 0.5f, FCVAR_NONE);
 
 OsuHUD::OsuHUD() : OsuScreen()
 {
-	
-
-	// convar refs
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 	// convar callbacks
 	cv::osu::hud_volume_size_multiplier.setCallback( fastdelegate::MakeDelegate(this, &OsuHUD::onVolumeOverlaySizeChange) );
 

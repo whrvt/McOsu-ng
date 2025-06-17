@@ -556,7 +556,7 @@ void OsuMainMenu::draw()
 		UString bannerText = MCOSU_BANNER_TEXT;
 
 		if constexpr (Env::cfg(REND::DX11))
-			bannerText = "-- DirectX11 Test - Unoptimized renderer (no batching etc.) - Please report feedback on Discord/Steam Forums --";
+			bannerText = "-- DirectX11 Test - Unoptimized renderer (no batching etc.) - Please report feedback on GitHub --";
 
 		if constexpr (Env::cfg(AUD::WASAPI))
 			bannerText = UString::format(cv::win_snd_wasapi_exclusive.getBool() ?
@@ -786,7 +786,7 @@ void OsuMainMenu::draw()
 				const Vector2 pos = Vector2(mainButtonRect.getX(), mainButtonRect.getY() - offset);
 
 				Vector2 left = pos + Vector2(0, 0);
-				Vector2 top = pos + Vector2(width/2, -width*std::sqrt(3.0f)/2.0f);
+				Vector2 top = pos + Vector2(width/2, -width*std::numbers::sqrt3_v<float>/2.0f);
 				Vector2 right = pos + Vector2(width, 0);
 
 				Vector2 topRightDir = (top - right);
@@ -879,7 +879,7 @@ void OsuMainMenu::draw()
 			const float width = mainButtonRect.getWidth() * 0.10f;
 			const float height = mainButtonRect.getHeight() * 0.03f * 1.75;
 
-			const float length = width * std::sqrt(2.0f) * 2;
+			const float length = width * std::numbers::sqrt2_v<float> * 2;
 
 			const float offsetY = mainButtonRect.getHeight()/2.0f + mouthEyeOffsetY;
 

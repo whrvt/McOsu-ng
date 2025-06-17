@@ -1,18 +1,18 @@
-From 2085addbde049edbd83903e3dd154c2e0e6919d6 Mon Sep 17 00:00:00 2001
+From a80ced81f0690a28957f6b6a13c7a8e073ece132 Mon Sep 17 00:00:00 2001
 From: William Horvath <william@horvath.blog>
 Date: Thu, 12 Jun 2025 22:41:56 -0700
 Subject: [PATCH] miniaudio config
 
 ---
- src/backend/miniaudio/soloud_miniaudio.cpp | 212 +++++++++++++++++----
+ src/backend/miniaudio/soloud_miniaudio.cpp | 220 +++++++++++++++++----
  src/core/soloud.cpp                        |  11 +-
- 2 files changed, 175 insertions(+), 48 deletions(-)
+ 2 files changed, 183 insertions(+), 48 deletions(-)
 
 diff --git a/src/backend/miniaudio/soloud_miniaudio.cpp b/src/backend/miniaudio/soloud_miniaudio.cpp
-index cb9ecad..5cd01bc 100644
+index cb9ecad..4aae84c 100644
 --- a/src/backend/miniaudio/soloud_miniaudio.cpp
 +++ b/src/backend/miniaudio/soloud_miniaudio.cpp
-@@ -29,11 +29,11 @@ distribution.
+@@ -29,14 +29,18 @@ distribution.
  
  namespace SoLoud
  {
@@ -28,7 +28,14 @@ index cb9ecad..5cd01bc 100644
  
  #else
  
-@@ -48,43 +48,171 @@ namespace SoLoud
++#ifdef __linux__
++#define MA_DEFAULT_PERIOD_SIZE_IN_MILLISECONDS_LOW_LATENCY 5 // smaller period size results in less crackling when auto-negotiated? idk why
++#endif
++
+ #define MINIAUDIO_IMPLEMENTATION
+ #define MA_NO_NULL
+ #define MA_NO_DECODING
+@@ -48,43 +52,175 @@ namespace SoLoud
  
  namespace SoLoud
  {
@@ -140,7 +147,11 @@ index cb9ecad..5cd01bc 100644
 +	ma_context_config contextConfig = ma_context_config_init();
 +	contextConfig.threadPriority = ma_thread_priority_highest;
 +
-+	ma_result result = ma_context_init(nullptr, 0, &contextConfig, &data->context);
++	const ma_backend backends[] = {ma_backend_wasapi, ma_backend_dsound, ma_backend_winmm,    ma_backend_coreaudio,  ma_backend_sndio,
++	                               ma_backend_audio4, ma_backend_oss,    ma_backend_alsa,     ma_backend_pulseaudio, ma_backend_jack,
++	                               ma_backend_aaudio, ma_backend_opensl, ma_backend_webaudio, ma_backend_custom,     ma_backend_null};
++
++	ma_result result = ma_context_init(&backends[0], sizeof(backends) / sizeof((backends)[0]), &contextConfig, &data->context);
 +	if (result != MA_SUCCESS)
 +	{
 +		delete data;
@@ -202,13 +213,13 @@ index cb9ecad..5cd01bc 100644
 +		case MA_FORMAT_NOT_SUPPORTED:
 +			return INVALID_PARAMETER;
 +		case MA_DEVICE_NOT_INITIALIZED:
-+			//return UNKNOWN_ERROR;
++			// return UNKNOWN_ERROR;
 +		case MA_DEVICE_ALREADY_INITIALIZED:
-+			//return UNKNOWN_ERROR;
++			// return UNKNOWN_ERROR;
 +		case MA_DEVICE_NOT_STARTED:
-+			//return UNKNOWN_ERROR;
++			// return UNKNOWN_ERROR;
 +		case MA_DEVICE_NOT_STOPPED:
-+			//return UNKNOWN_ERROR;
++			// return UNKNOWN_ERROR;
 +		default:
 +			return UNKNOWN_ERROR;
 +		}

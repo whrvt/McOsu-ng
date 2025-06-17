@@ -1079,10 +1079,12 @@ OsuOptionsMenu::OsuOptionsMenu() : OsuScreenBackable()
 
 	CBaseUIElement *sectionOnline = NULL;
 
-	sectionOnline = addSection("Online");
+	if constexpr (Env::cfg(FEAT::DISCORD | FEAT::STEAM)) {
+		sectionOnline = addSection("Online");
 
-	addSubSection("Integration");
-	addCheckbox("Rich Presence (Discord + Steam)", "Shows your current game state in your friends' friendslists.\ne.g.: Playing Gavin G - Reach Out [Cherry Blossom's Insane]", &cv::osu::rich_presence);
+		addSubSection("Integration");
+		addCheckbox("Rich Presence (Discord + Steam)", "Shows your current game state in your friends' friendslists.\ne.g.: Playing Gavin G - Reach Out [Cherry Blossom's Insane]", &cv::osu::rich_presence);
+	}
 
 	//**************************************************************************************************************************//
 
