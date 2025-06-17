@@ -276,6 +276,7 @@ void SoLoudSoundEngine::stop(Sound *snd)
 
 	soloudSound->setPosition(0.0);
 	soloudSound->setLastPlayTime(0.0);
+	soloudSound->setFrequency(0.0);
 	soloud->stop(soloudSound->m_handle);
 	soloudSound->m_handle = 0;
 }

@@ -11721,7 +11721,7 @@ else
 fi
  # idk why this has issues with soloud + GENie
 
- if test "x$enable_strip" != "xno"; then
+ if test "x$enable_strip" != "xno" && ! { test "$SYSNAME" = "windows" && test "$host_cpu" = "i686" ; } ; then
   STRIPBINS_TRUE=
   STRIPBINS_FALSE='#'
 else

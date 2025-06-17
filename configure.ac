@@ -704,7 +704,7 @@ AM_CONDITIONAL([USE_SOLOUD], [test "$with_soloud" = "yes"])
 AM_CONDITIONAL([WIN_PLATFORM], [test "$SYSNAME" = "windows"])
 AM_CONDITIONAL([WIN32_PLATFORM], [test "$SYSNAME" = "windows" && test "$host_cpu" = "i686"]) # idk why this has issues with soloud + GENie
 
-AM_CONDITIONAL([STRIPBINS], [test "x$enable_strip" != "xno"])
+AM_CONDITIONAL([STRIPBINS], [test "x$enable_strip" != "xno" && ! { test "$SYSNAME" = "windows" && test "$host_cpu" = "i686" ; } ])
 
 # need dynamic winpthread for old windows 32bit compat builds
 AS_IF([test -n "$ubercompat"], [

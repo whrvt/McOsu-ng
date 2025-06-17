@@ -1,13 +1,31 @@
-From 01985cbd63e993a02c7d8d6c8e1f9285b60e71ad Mon Sep 17 00:00:00 2001
+From fbe0527ae957ffd123fc0490b6775aeb1d2cb00c Mon Sep 17 00:00:00 2001
 From: William Horvath <william@horvath.blog>
 Date: Thu, 12 Jun 2025 22:41:56 -0700
 Subject: [PATCH] miniaudio config
 
 ---
+ src/backend/miniaudio/miniaudio.h          |   6 +-
  src/backend/miniaudio/soloud_miniaudio.cpp | 221 +++++++++++++++++----
  src/core/soloud.cpp                        |  11 +-
- 2 files changed, 184 insertions(+), 48 deletions(-)
+ 3 files changed, 185 insertions(+), 53 deletions(-)
 
+diff --git a/src/backend/miniaudio/miniaudio.h b/src/backend/miniaudio/miniaudio.h
+index c74bebe..f7893df 100644
+--- a/src/backend/miniaudio/miniaudio.h
++++ b/src/backend/miniaudio/miniaudio.h
+@@ -30457,11 +30457,7 @@ static void ma_device_on_rerouted__pulse(ma_pa_stream* pStream, void* pUserData)
+ 
+ static ma_uint32 ma_calculate_period_size_in_frames_from_descriptor__pulse(const ma_device_descriptor* pDescriptor, ma_uint32 nativeSampleRate, ma_performance_profile performanceProfile)
+ {
+-    /*
+-    There have been reports from users where buffers of < ~20ms result glitches when running through
+-    PipeWire. To work around this we're going to have to use a different default buffer size.
+-    */
+-    const ma_uint32 defaultPeriodSizeInMilliseconds_LowLatency   = 25;
++    const ma_uint32 defaultPeriodSizeInMilliseconds_LowLatency   = MA_DEFAULT_PERIOD_SIZE_IN_MILLISECONDS_LOW_LATENCY;
+     const ma_uint32 defaultPeriodSizeInMilliseconds_Conservative = MA_DEFAULT_PERIOD_SIZE_IN_MILLISECONDS_CONSERVATIVE;
+ 
+     MA_ASSERT(nativeSampleRate != 0);
 diff --git a/src/backend/miniaudio/soloud_miniaudio.cpp b/src/backend/miniaudio/soloud_miniaudio.cpp
 index cb9ecad..87534b2 100644
 --- a/src/backend/miniaudio/soloud_miniaudio.cpp
