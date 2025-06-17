@@ -773,6 +773,21 @@ endif
 if STRIPBINS
 	find "$(DESTDIR)$(bindir)" -name '*'$(DLLEXT)'*' -execdir $(STRIP) -s '{''}' '+'
 endif
+if AUDIO_SHORTCUTS
+	@cd "$(DESTDIR)$(bindir)" && \
+	for backend in $(AUDBACKENDLIST); do \
+		echo 'Set WshShell = CreateObject("WScript.Shell")' > temp.vbs && \
+		echo "Set Shortcut = WshShell.CreateShortcut(\"McOsu-ng-$$backend.lnk\")" >> temp.vbs && \
+		echo 'Shortcut.TargetPath = "C:\Windows\System32\cmd.exe"' >> temp.vbs && \
+		echo "Shortcut.Arguments = \"/c start \"\"\"\" \"\".\\$(PROGRAMS)\"\" -sound $$backend\"" >> temp.vbs && \
+		echo "Shortcut.Description = \"McOsu-ng with the $$backend audio backend\"" >> temp.vbs && \
+		echo 'Shortcut.WindowStyle = 7' >> temp.vbs && \
+		echo 'Shortcut.Save' >> temp.vbs && \
+		DISPLAY= WAYLAND_DISPLAY= WINEDLLOVERRIDES="mscoree=;mshtml=;winex11.drv=;winewayland.drv=" WINEDEBUG=-all \
+		$(WINE) cscript temp.vbs && \
+		rm temp.vbs; \
+	done
+endif
 if !WIN_PLATFORM
 	find "$(DESTDIR)$(bindir)/lib" -maxdepth 1 -name '*'.so'*' -execdir $(PATCHELF) --set-rpath '$$ORIGIN:$$ORIGIN/../' '{''}' ';'
 	find "$(DESTDIR)$(bindir)" -maxdepth 1 -name '*'.so'*' -execdir $(PATCHELF) --set-rpath '$$ORIGIN:$$ORIGIN/lib' '{''}' ';'

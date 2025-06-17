@@ -554,6 +554,7 @@ AMTAR = @AMTAR@
 AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
 AR = @AR@
 ASSETS_DIR = @ASSETS_DIR@
+AUDBACKENDLIST = @AUDBACKENDLIST@
 AUDIO_CFLAGS = @AUDIO_CFLAGS@ $(am__append_3) $(am__append_7) \
 	$(am__append_9) $(am__append_10)
 AUDIO_LIBS = @AUDIO_LIBS@ $(am__append_4) $(am__append_8)
@@ -702,6 +703,7 @@ VERSION = @VERSION@
 VKD3D_CFLAGS = @VKD3D_CFLAGS@
 VKD3D_LIBS = @VKD3D_LIBS@
 WGET = @WGET@
+WINE = @WINE@
 WINSHARED_DLLS = @WINSHARED_DLLS@
 X11_CFLAGS = @X11_CFLAGS@
 X11_LIBS = @X11_LIBS@
@@ -5417,6 +5419,19 @@ install-libs:
 @BUILD_FREETYPE2_TRUE@	$(if $(STATICBUILD),,@`find $(FREETYPE2_PREFIX) '(' -iname '*freetype*'$(DLLEXT) -o -iname '*freetype*''.so.*' ')' -exec cp -P '{''}' "$(DESTDIR)$(bindir)/$(LIBDEST)" ';'`)
 @BUILD_FMT_TRUE@	$(if $(STATICBUILD),,@`find $(FMT_PREFIX) '(' -iname '*fmt*'$(DLLEXT) -o -iname '*fmt*''.so.*' ')' -exec cp -P '{''}' "$(DESTDIR)$(bindir)/$(LIBDEST)" ';'`)
 @STRIPBINS_TRUE@	find "$(DESTDIR)$(bindir)" -name '*'$(DLLEXT)'*' -execdir $(STRIP) -s '{''}' '+'
+@AUDIO_SHORTCUTS_TRUE@	@cd "$(DESTDIR)$(bindir)" && \
+@AUDIO_SHORTCUTS_TRUE@	for backend in $(AUDBACKENDLIST); do \
+@AUDIO_SHORTCUTS_TRUE@		echo 'Set WshShell = CreateObject("WScript.Shell")' > temp.vbs && \
+@AUDIO_SHORTCUTS_TRUE@		echo "Set Shortcut = WshShell.CreateShortcut(\"McOsu-ng-$$backend.lnk\")" >> temp.vbs && \
+@AUDIO_SHORTCUTS_TRUE@		echo 'Shortcut.TargetPath = "C:\Windows\System32\cmd.exe"' >> temp.vbs && \
+@AUDIO_SHORTCUTS_TRUE@		echo "Shortcut.Arguments = \"/c start \"\"\"\" \"\".\\$(PROGRAMS)\"\" -sound $$backend\"" >> temp.vbs && \
+@AUDIO_SHORTCUTS_TRUE@		echo "Shortcut.Description = \"McOsu-ng with the $$backend audio backend\"" >> temp.vbs && \
+@AUDIO_SHORTCUTS_TRUE@		echo 'Shortcut.WindowStyle = 7' >> temp.vbs && \
+@AUDIO_SHORTCUTS_TRUE@		echo 'Shortcut.Save' >> temp.vbs && \
+@AUDIO_SHORTCUTS_TRUE@		DISPLAY= WAYLAND_DISPLAY= WINEDLLOVERRIDES="mscoree=;mshtml=;winex11.drv=;winewayland.drv=" WINEDEBUG=-all \
+@AUDIO_SHORTCUTS_TRUE@		$(WINE) cscript temp.vbs && \
+@AUDIO_SHORTCUTS_TRUE@		rm temp.vbs; \
+@AUDIO_SHORTCUTS_TRUE@	done
 @WIN_PLATFORM_FALSE@	find "$(DESTDIR)$(bindir)/lib" -maxdepth 1 -name '*'.so'*' -execdir $(PATCHELF) --set-rpath '$$ORIGIN:$$ORIGIN/../' '{''}' ';'
 @WIN_PLATFORM_FALSE@	find "$(DESTDIR)$(bindir)" -maxdepth 1 -name '*'.so'*' -execdir $(PATCHELF) --set-rpath '$$ORIGIN:$$ORIGIN/lib' '{''}' ';'
 

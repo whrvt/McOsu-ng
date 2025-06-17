@@ -651,6 +651,8 @@ BUNDLED_INCLUDES
 AUDIO_LIBS
 AUDIO_CFLAGS
 ASSETS_DIR
+AUDIO_SHORTCUTS_FALSE
+AUDIO_SHORTCUTS_TRUE
 WINSHARED_DLLS_NEEDED_FALSE
 WINSHARED_DLLS_NEEDED_TRUE
 WINSHARED_DLLS
@@ -756,7 +758,6 @@ MCOSU_LDFLAGS
 MCOSU_CXXFLAGS
 MCOSU_CPPFLAGS
 ENABLE_DEBUG
-BEAR
 RANLIB
 AR
 LD
@@ -783,9 +784,12 @@ PKG_CONFIG_PATH
 STATICBUILD
 PKGTYPE
 ENABLE_ASAN
+AUDBACKENDLIST
 GENIE
 PATCHELF
 LLVMMINGW
+WINE
+BEAR
 CMAKE
 MESON
 UNZIP
@@ -6085,6 +6089,96 @@ fi
     fi
 
 
+# Extract the first word of "bear", so it can be a program name with args.
+set dummy bear; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+if test ${ac_cv_prog_BEAR+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) if test -n "$BEAR"; then
+  ac_cv_prog_BEAR="$BEAR" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    ac_cv_prog_BEAR="bear"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi ;;
+esac
+fi
+BEAR=$ac_cv_prog_BEAR
+if test -n "$BEAR"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $BEAR" >&5
+printf "%s\n" "$BEAR" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+
+
+
+# Extract the first word of "wine", so it can be a program name with args.
+set dummy wine; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+if test ${ac_cv_prog_WINE+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) if test -n "$WINE"; then
+  ac_cv_prog_WINE="$WINE" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    ac_cv_prog_WINE="wine"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi ;;
+esac
+fi
+WINE=$ac_cv_prog_WINE
+if test -n "$WINE"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $WINE" >&5
+printf "%s\n" "$WINE" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+ # this feels stupid, but i wanna make a shortcut from outside a windows environment to add "-sound xyz" for non-default audio subsystems
+
+
 # Check whether --enable-optimize was given.
 if test ${enable_optimize+y}
 then :
@@ -6286,6 +6380,9 @@ printf "%s\n" "#define MCENGINE_FEATURE_OPENGL 1" >>confdefs.h
 
 fi
 
+audiobackendcnt=0
+AUDBACKENDLIST=""
+
 with_bass=unset
 if test ${with_audio+y}
 then :
@@ -6307,6 +6404,8 @@ fi
 if test "$with_bass" = "yes" || { test "$with_bass" = "unset" && ! { test "$with_soloud" = "yes" || test "$with_sdlmixer" = "yes"; } ; }
 then :
 
+    ((audiobackendcnt++))
+    AUDBACKENDLIST="${AUDBACKENDLIST} BASS"
     with_bass=yes
 
 printf "%s\n" "#define MCENGINE_FEATURE_BASS 1" >>confdefs.h
@@ -6321,6 +6420,8 @@ fi
 if test "$with_soloud" = "yes"
 then :
 
+    ((audiobackendcnt++))
+    AUDBACKENDLIST="${AUDBACKENDLIST} SoLoud"
 
     # Extract the first word of "genie", so it can be a program name with args.
 set dummy genie; ac_word=$2
@@ -6377,11 +6478,15 @@ fi
 if test "$with_sdlmixer" = "yes"
 then :
 
+    ((audiobackendcnt++))
+    AUDBACKENDLIST="${AUDBACKENDLIST} SDL"
 
 printf "%s\n" "#define MCENGINE_FEATURE_SDL_MIXER 1" >>confdefs.h
 
 
 fi
+
+
 
 if test "x$enable_asan" = "xyes" || test "x$enable_tsan" = "xyes"
 then :
@@ -8358,51 +8463,6 @@ fi
 done
 
 fi
-
-# Extract the first word of "bear", so it can be a program name with args.
-set dummy bear; ac_word=$2
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
-printf %s "checking for $ac_word... " >&6; }
-if test ${ac_cv_prog_BEAR+y}
-then :
-  printf %s "(cached) " >&6
-else case e in #(
-  e) if test -n "$BEAR"; then
-  ac_cv_prog_BEAR="$BEAR" # Let the user override the test.
-else
-as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  case $as_dir in #(((
-    '') as_dir=./ ;;
-    */) ;;
-    *) as_dir=$as_dir/ ;;
-  esac
-    for ac_exec_ext in '' $ac_executable_extensions; do
-  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
-    ac_cv_prog_BEAR="bear"
-    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-  done
-IFS=$as_save_IFS
-
-fi ;;
-esac
-fi
-BEAR=$ac_cv_prog_BEAR
-if test -n "$BEAR"; then
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $BEAR" >&5
-printf "%s\n" "$BEAR" >&6; }
-else
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
-printf "%s\n" "no" >&6; }
-fi
-
-
-
 
 if test "x$enable_debug" = "xyes"
 then :
@@ -11762,6 +11822,15 @@ else
 fi
 
 
+ if test "$audiobackendcnt" > 1 && test -n "$WINE" && test "$SYSNAME" = "windows"; then
+  AUDIO_SHORTCUTS_TRUE=
+  AUDIO_SHORTCUTS_FALSE='#'
+else
+  AUDIO_SHORTCUTS_TRUE='#'
+  AUDIO_SHORTCUTS_FALSE=
+fi
+
+
 ASSETS_DIR=assets
 
 
@@ -12102,6 +12171,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${WINSHARED_DLLS_NEEDED_TRUE}" && test -z "${WINSHARED_DLLS_NEEDED_FALSE}"; then
   as_fn_error $? "conditional \"WINSHARED_DLLS_NEEDED\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${AUDIO_SHORTCUTS_TRUE}" && test -z "${AUDIO_SHORTCUTS_FALSE}"; then
+  as_fn_error $? "conditional \"AUDIO_SHORTCUTS\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 

@@ -113,6 +113,12 @@ AC_PROG_UNZIP
 AC_PROG_MESON
 AC_PROG_CMAKE
 
+AC_CHECK_PROG([BEAR], [bear], [bear])
+AC_SUBST([BEAR])
+
+AC_CHECK_PROG([WINE], [wine], [wine]) # this feels stupid, but i wanna make a shortcut from outside a windows environment to add "-sound xyz" for non-default audio subsystems
+AC_SUBST([WINE])
+
 AC_ARG_ENABLE([optimize],
     AS_HELP_STRING([--enable-optimize], [Optimize for speed (default: yes)]))
 AC_ARG_ENABLE([native],
@@ -185,6 +191,9 @@ AS_IF([test "$renderer" = "opengl"], [
     AC_DEFINE([MCENGINE_FEATURE_OPENGL], [1], [Defined if the OpenGLLegacy backend is to be used.])
 ])
 
+audiobackendcnt=0
+AUDBACKENDLIST=""
+
 with_bass=unset
 AS_VAR_SET_IF([with_audio],
     [ac_save_IFS=$IFS
@@ -202,18 +211,26 @@ AS_VAR_SET_IF([with_audio],
         done])
 
 AS_IF([test "$with_bass" = "yes" || { test "$with_bass" = "unset" && ! { test "$with_soloud" = "yes" || test "$with_sdlmixer" = "yes"; } ; } ], [
+    ((audiobackendcnt++))
+    AUDBACKENDLIST="${AUDBACKENDLIST} BASS"
     with_bass=yes
     AC_DEFINE([MCENGINE_FEATURE_BASS], [1], [Define if the BASS audio backend is desired.])
 ], [
     with_bass=no
 ])
 AS_IF([test "$with_soloud" = "yes"], [
+    ((audiobackendcnt++))
+    AUDBACKENDLIST="${AUDBACKENDLIST} SoLoud"
     AC_PROG_GENIE
     AC_DEFINE([MCENGINE_FEATURE_SOLOUD], [1], [Define if the SoLoud audio backend is desired.])
 ])
 AS_IF([test "$with_sdlmixer" = "yes"], [
+    ((audiobackendcnt++))
+    AUDBACKENDLIST="${AUDBACKENDLIST} SDL"
     AC_DEFINE([MCENGINE_FEATURE_SDL_MIXER], [1], [Define if the SDL_mixer audio backend is desired.])
 ])
+
+AC_SUBST([AUDBACKENDLIST])
 
 AS_IF([test "x$enable_asan" = "xyes" || test "x$enable_tsan" = "xyes"], [
     AS_IF([test "x$enable_asan" = "xyes"], [
@@ -440,9 +457,6 @@ AS_IF([test "$host_os" = "linux-gnu"],[
     AC_CHECK_HEADERS([X11/Xlib.h GL/gl.h GL/glu.h], [],
         [AC_MSG_ERROR([Missing required X11/OpenGL development headers])])
 ])
-
-AC_CHECK_PROG([BEAR], [bear], [bear])
-AC_SUBST([BEAR])
 
 AS_IF([test "x$enable_debug" = "xyes"], [
     with_mimalloc="no"
@@ -721,6 +735,8 @@ AS_IF([test -n "$ubercompat"], [
     AC_SUBST([WINSHARED_DLLS])
 ])
 AM_CONDITIONAL([WINSHARED_DLLS_NEEDED], [test -n "$WINSHARED_DLLS"])
+
+AM_CONDITIONAL([AUDIO_SHORTCUTS], [test "$audiobackendcnt" > 1 && test -n "$WINE" && test "$SYSNAME" = "windows"])
 
 ASSETS_DIR=assets
 AC_SUBST([ASSETS_DIR])
