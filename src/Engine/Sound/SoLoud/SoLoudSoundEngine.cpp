@@ -37,6 +37,7 @@ SoLoudSoundEngine::SoLoudSoundEngine()
 		soloud = s_SLInstance.get();
 	}
 
+	cv::snd_freq.setValue(SoLoud::Soloud::AUTO); // let it be auto-negotiated (the snd_freq callback will adjust if needed, if this is manually set in a config)
 	cv::snd_freq.setDefaultFloat(SoLoud::Soloud::AUTO);
 
 	m_iMaxActiveVoices = std::clamp<int>(cv::snd_sanity_simultaneous_limit.getInt(), 64,
