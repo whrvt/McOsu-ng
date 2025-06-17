@@ -5428,7 +5428,7 @@ install-libs:
 @AUDIO_SHORTCUTS_TRUE@		echo "Shortcut.Description = \"McOsu-ng with the $$backend audio backend\"" >> temp.vbs && \
 @AUDIO_SHORTCUTS_TRUE@		echo 'Shortcut.WindowStyle = 7' >> temp.vbs && \
 @AUDIO_SHORTCUTS_TRUE@		echo 'Shortcut.Save' >> temp.vbs && \
-@AUDIO_SHORTCUTS_TRUE@		DISPLAY= WAYLAND_DISPLAY= WINEDLLOVERRIDES="mscoree=;mshtml=;winex11.drv=;winewayland.drv=" WINEDEBUG=-all \
+@AUDIO_SHORTCUTS_TRUE@		WINEPREFIX=$(DEPS_CACHE)/tmpwinepfx DISPLAY= WAYLAND_DISPLAY= WINEDLLOVERRIDES="mscoree=;mshtml=;winex11.drv=;winewayland.drv=" WINEDEBUG=-all \
 @AUDIO_SHORTCUTS_TRUE@		$(WINE) cscript temp.vbs && \
 @AUDIO_SHORTCUTS_TRUE@		rm temp.vbs; \
 @AUDIO_SHORTCUTS_TRUE@	done

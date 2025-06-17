@@ -783,7 +783,7 @@ if AUDIO_SHORTCUTS
 		echo "Shortcut.Description = \"McOsu-ng with the $$backend audio backend\"" >> temp.vbs && \
 		echo 'Shortcut.WindowStyle = 7' >> temp.vbs && \
 		echo 'Shortcut.Save' >> temp.vbs && \
-		DISPLAY= WAYLAND_DISPLAY= WINEDLLOVERRIDES="mscoree=;mshtml=;winex11.drv=;winewayland.drv=" WINEDEBUG=-all \
+		WINEPREFIX=$(DEPS_CACHE)/tmpwinepfx DISPLAY= WAYLAND_DISPLAY= WINEDLLOVERRIDES="mscoree=;mshtml=;winex11.drv=;winewayland.drv=" WINEDEBUG=-all \
 		$(WINE) cscript temp.vbs && \
 		rm temp.vbs; \
 	done
