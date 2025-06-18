@@ -773,6 +773,13 @@ endif
 if STRIPBINS
 	find "$(DESTDIR)$(bindir)" -name '*'$(DLLEXT)'*' -execdir $(STRIP) -s '{''}' '+'
 endif
+if !WIN_PLATFORM
+	find "$(DESTDIR)$(bindir)/lib" -maxdepth 1 -name '*'.so'*' -execdir $(PATCHELF) --set-rpath '$$ORIGIN:$$ORIGIN/../' '{''}' ';'
+	find "$(DESTDIR)$(bindir)" -maxdepth 1 -name '*'.so'*' -execdir $(PATCHELF) --set-rpath '$$ORIGIN:$$ORIGIN/lib' '{''}' ';'
+endif
+
+# install hooks
+install-exec-hook: install-libs
 if AUDIO_SHORTCUTS
 	@cd "$(DESTDIR)$(bindir)" && \
 	for backend in $(AUDBACKENDLIST); do \
@@ -789,14 +796,7 @@ if AUDIO_SHORTCUTS
 	done
 endif
 if !WIN_PLATFORM
-	find "$(DESTDIR)$(bindir)/lib" -maxdepth 1 -name '*'.so'*' -execdir $(PATCHELF) --set-rpath '$$ORIGIN:$$ORIGIN/../' '{''}' ';'
-	find "$(DESTDIR)$(bindir)" -maxdepth 1 -name '*'.so'*' -execdir $(PATCHELF) --set-rpath '$$ORIGIN:$$ORIGIN/lib' '{''}' ';'
-endif
-
-# install hooks
-install-exec-hook: install-libs
-if !WIN_PLATFORM
-	cd "$(DESTDIR)$(bindir)" && \
+	@cd "$(DESTDIR)$(bindir)" && \
 	$(LN_S) -rf $(PROGRAMS) McEngine && \
 	$(LN_S) -rf $(PROGRAMS) McOsu
 endif

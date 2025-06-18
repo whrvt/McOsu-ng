@@ -5419,6 +5419,11 @@ install-libs:
 @BUILD_FREETYPE2_TRUE@	$(if $(STATICBUILD),,@`find $(FREETYPE2_PREFIX) '(' -iname '*freetype*'$(DLLEXT) -o -iname '*freetype*''.so.*' ')' -exec cp -P '{''}' "$(DESTDIR)$(bindir)/$(LIBDEST)" ';'`)
 @BUILD_FMT_TRUE@	$(if $(STATICBUILD),,@`find $(FMT_PREFIX) '(' -iname '*fmt*'$(DLLEXT) -o -iname '*fmt*''.so.*' ')' -exec cp -P '{''}' "$(DESTDIR)$(bindir)/$(LIBDEST)" ';'`)
 @STRIPBINS_TRUE@	find "$(DESTDIR)$(bindir)" -name '*'$(DLLEXT)'*' -execdir $(STRIP) -s '{''}' '+'
+@WIN_PLATFORM_FALSE@	find "$(DESTDIR)$(bindir)/lib" -maxdepth 1 -name '*'.so'*' -execdir $(PATCHELF) --set-rpath '$$ORIGIN:$$ORIGIN/../' '{''}' ';'
+@WIN_PLATFORM_FALSE@	find "$(DESTDIR)$(bindir)" -maxdepth 1 -name '*'.so'*' -execdir $(PATCHELF) --set-rpath '$$ORIGIN:$$ORIGIN/lib' '{''}' ';'
+
+# install hooks
+install-exec-hook: install-libs
 @AUDIO_SHORTCUTS_TRUE@	@cd "$(DESTDIR)$(bindir)" && \
 @AUDIO_SHORTCUTS_TRUE@	for backend in $(AUDBACKENDLIST); do \
 @AUDIO_SHORTCUTS_TRUE@		echo 'Set WshShell = CreateObject("WScript.Shell")' > temp.vbs && \
@@ -5432,12 +5437,7 @@ install-libs:
 @AUDIO_SHORTCUTS_TRUE@		$(WINE) cscript temp.vbs && \
 @AUDIO_SHORTCUTS_TRUE@		rm temp.vbs; \
 @AUDIO_SHORTCUTS_TRUE@	done
-@WIN_PLATFORM_FALSE@	find "$(DESTDIR)$(bindir)/lib" -maxdepth 1 -name '*'.so'*' -execdir $(PATCHELF) --set-rpath '$$ORIGIN:$$ORIGIN/../' '{''}' ';'
-@WIN_PLATFORM_FALSE@	find "$(DESTDIR)$(bindir)" -maxdepth 1 -name '*'.so'*' -execdir $(PATCHELF) --set-rpath '$$ORIGIN:$$ORIGIN/lib' '{''}' ';'
-
-# install hooks
-install-exec-hook: install-libs
-@WIN_PLATFORM_FALSE@	cd "$(DESTDIR)$(bindir)" && \
+@WIN_PLATFORM_FALSE@	@cd "$(DESTDIR)$(bindir)" && \
 @WIN_PLATFORM_FALSE@	$(LN_S) -rf $(PROGRAMS) McEngine && \
 @WIN_PLATFORM_FALSE@	$(LN_S) -rf $(PROGRAMS) McOsu
 

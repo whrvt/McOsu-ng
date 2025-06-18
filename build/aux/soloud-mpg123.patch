@@ -1,14 +1,14 @@
-From fa1230268d8be64bc1af397e69d3c8e7ad4e3f44 Mon Sep 17 00:00:00 2001
+From 15e3c2329db475e71147d5a99e4ccc9cdc20c821 Mon Sep 17 00:00:00 2001
 From: William Horvath <william@horvath.blog>
 Date: Tue, 17 Jun 2025 06:25:29 -0700
 Subject: [PATCH] mpg123 wavstream backend
 
 ---
  include/soloud_wavstream.h               |  21 +-
- src/audiosource/wav/soloud_mpg123.cpp    | 277 +++++++++++++++++++++++
+ src/audiosource/wav/soloud_mpg123.cpp    | 289 +++++++++++++++++++++++
  src/audiosource/wav/soloud_mpg123.h      |  70 ++++++
- src/audiosource/wav/soloud_wavstream.cpp | 148 +++++++++---
- 4 files changed, 483 insertions(+), 33 deletions(-)
+ src/audiosource/wav/soloud_wavstream.cpp | 148 ++++++++++--
+ 4 files changed, 495 insertions(+), 33 deletions(-)
  create mode 100644 src/audiosource/wav/soloud_mpg123.cpp
  create mode 100644 src/audiosource/wav/soloud_mpg123.h
 
@@ -82,10 +82,10 @@ index 7bfcf4d..abdb0de 100644
  	char *mFilename;
 diff --git a/src/audiosource/wav/soloud_mpg123.cpp b/src/audiosource/wav/soloud_mpg123.cpp
 new file mode 100644
-index 0000000..6142c33
+index 0000000..8121225
 --- /dev/null
 +++ b/src/audiosource/wav/soloud_mpg123.cpp
-@@ -0,0 +1,277 @@
+@@ -0,0 +1,289 @@
 +/*
 +SoLoud audio engine
 +Copyright (c) 2013-2018 Jari Komppa
@@ -200,7 +200,8 @@ index 0000000..6142c33
 +	}
 +
 +	// configure some opts
-+	mpg123_param(decoder->handle, MPG123_RESYNC_LIMIT, -1, 0);
++	// 64kb leniency, allow some slightly messed up mp3s but don't make it unlimited (otherwise we'll accept complete garbage as valid mp3 data)
++	mpg123_param(decoder->handle, MPG123_RESYNC_LIMIT, 65536, 0);
 +	mpg123_param(decoder->handle, MPG123_REMOVE_FLAGS, MPG123_AUTO_RESAMPLE, 0); // soloud handles this already
 +	mpg123_param(decoder->handle, MPG123_ADD_FLAGS, MPG123_GAPLESS, 0);          // this is default, but still we want it
 +	mpg123_param(decoder->handle, MPG123_ADD_FLAGS, MPG123_NO_FRANKENSTEIN, 0);  // no stitched-together mp3s
@@ -268,6 +269,17 @@ index 0000000..6142c33
 +				decoder->totalFrames = 0;
 +			}
 +		}
++	}
++
++	// validate that this is actually MPEG audio that mpg123 can decode
++	struct mpg123_frameinfo2 frameInfo;
++	if (decoder->totalFrames <= 0 || mpg123_info2(decoder->handle, &frameInfo) != MPG123_OK || (frameInfo.layer < 1 || frameInfo.layer > 3))
++	{
++		// frame count couldn't be determined, or no frame info, or layer isn't between 1 and 3
++		mpg123_close(decoder->handle);
++		mpg123_delete(decoder->handle);
++		delete decoder;
++		return nullptr;
 +	}
 +
 +	decoder->initialized = true;
