@@ -1555,7 +1555,7 @@ void OsuSongBrowser2::onKeyDown(KeyboardEvent &key)
 
 	// group open/close
 	// NOTE: only closing works atm (no "focus" state on buttons yet)
-	if (key == KEY_ENTER && keyboard->isShiftDown())
+	if ((key == KEY_ENTER || key == KEY_NUMPAD_ENTER) && keyboard->isShiftDown())
 	{
 		const std::vector<CBaseUIElement*> &elements = m_songBrowser->getContainer()->getElements();
 
@@ -1577,7 +1577,7 @@ void OsuSongBrowser2::onKeyDown(KeyboardEvent &key)
 	}
 
 	// selection select
-	if (key == KEY_ENTER && !keyboard->isShiftDown())
+	if ((key == KEY_ENTER || key == KEY_NUMPAD_ENTER) && !keyboard->isShiftDown())
 		playSelectedDifficulty();
 
 	// toggle auto

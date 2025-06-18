@@ -115,7 +115,7 @@ void VinylScratcher::onKeyDown(KeyboardEvent &e)
 	// hotkeys
 	if (e == KEY_LEFT || e == KEY_UP || e == KEY_A)
 		onPrevClicked();
-	if (e == KEY_SPACE || e == KEY_ENTER)
+	if (e == KEY_SPACE || (e == KEY_ENTER || e == KEY_NUMPAD_ENTER))
 		onPlayClicked();
 	if (e == KEY_RIGHT || e == KEY_DOWN || e == KEY_D)
 		onNextClicked();

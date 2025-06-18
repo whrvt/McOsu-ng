@@ -346,7 +346,8 @@ void CBaseUITextbox::onKeyDown(KeyboardEvent &e)
 		tickCaret();
 		break;
 
-	case KEY_RETURN:
+	case KEY_ENTER:
+	case KEY_NUMPAD_ENTER:
 		m_bHitenter = true;
 		break;
 

@@ -1363,12 +1363,12 @@ void OsuMainMenu::onKeyDown(KeyboardEvent &e)
 
 	if (!m_bMenuElementsVisible)
 	{
-		if (e == KEY_P || e == KEY_ENTER)
+		if (e == KEY_P || e == KEY_ENTER || e == KEY_NUMPAD_ENTER)
 			m_mainButton->click();
 	}
 	else
 	{
-		if (e == KEY_P || e == KEY_ENTER)
+		if (e == KEY_P || e == KEY_ENTER || e == KEY_NUMPAD_ENTER)
 			onPlayButtonPressed();
 		if (e == KEY_O)
 			onOptionsButtonPressed();

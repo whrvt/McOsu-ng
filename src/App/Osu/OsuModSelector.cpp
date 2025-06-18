@@ -624,7 +624,7 @@ void OsuModSelector::onKeyDown(KeyboardEvent &key)
 	if (key == KEY_1)
 		resetMods();
 
-	if (((key == KEY_F1 || key == cv::osu::keybinds::TOGGLE_MODSELECT.getVal<KEYCODE>()) && !m_bWaitForF1KeyUp) || key == KEY_2 || key == cv::osu::keybinds::GAME_PAUSE.getVal<KEYCODE>() || key == KEY_ESCAPE || key == KEY_ENTER)
+	if (((key == KEY_F1 || key == cv::osu::keybinds::TOGGLE_MODSELECT.getVal<KEYCODE>()) && !m_bWaitForF1KeyUp) || key == KEY_2 || key == cv::osu::keybinds::GAME_PAUSE.getVal<KEYCODE>() || key == KEY_ESCAPE || key == KEY_ENTER || key == KEY_NUMPAD_ENTER)
 		close();
 
 	// mod hotkeys

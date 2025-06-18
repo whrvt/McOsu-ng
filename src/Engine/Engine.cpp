@@ -688,7 +688,7 @@ void Engine::onKeyDown(KeyboardEvent &e)
 	}
 
 	// handle ALT+ENTER fullscreen toggle
-	if (keyboard->isAltDown() && keyCode == KEY_ENTER)
+	if (keyboard->isAltDown() && (keyCode == KEY_ENTER || keyCode == KEY_NUMPAD_ENTER))
 	{
 		toggleFullscreen();
 		e.consume();

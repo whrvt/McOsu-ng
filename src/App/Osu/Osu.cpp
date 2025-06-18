@@ -1169,7 +1169,7 @@ void Osu::onKeyDown(KeyboardEvent &key)
 			}
 
 			// handle skipping
-			if (key == KEY_ENTER || key == cv::osu::keybinds::SKIP_CUTSCENE.getVal<KEYCODE>())
+			if (key == KEY_ENTER || key == KEY_NUMPAD_ENTER || key == cv::osu::keybinds::SKIP_CUTSCENE.getVal<KEYCODE>())
 				m_bSkipScheduled = true;
 
 			// toggle ui
@@ -1580,7 +1580,7 @@ void Osu::onAudioOutputDeviceChange()
 
 void Osu::saveScreenshot()
 {
-    static int screenshotNumber = 0;
+	static int screenshotNumber = 0;
 
 	if (!env->directoryExists("screenshots") && !env->createDirectory("screenshots"))
 	{
@@ -1588,10 +1588,10 @@ void Osu::saveScreenshot()
 		return;
 	}
 
-    while (env->fileExists(UString::format("screenshots/screenshot%i.png", screenshotNumber)))
-        screenshotNumber++;
+	while (env->fileExists(UString::format("screenshots/screenshot%i.png", screenshotNumber)))
+		screenshotNumber++;
 
-    std::vector<unsigned char> pixels = g->getScreenshot();
+	std::vector<unsigned char> pixels = g->getScreenshot();
 
 	if (pixels.empty())
 	{
@@ -1602,52 +1602,49 @@ void Osu::saveScreenshot()
 		return;
 	}
 
-    const float outerWidth = g->getResolution().x;
-    const float outerHeight = g->getResolution().y;
-    const float innerWidth = m_vInternalResolution.x;
-    const float innerHeight = m_vInternalResolution.y;
+	const float outerWidth = g->getResolution().x;
+	const float outerHeight = g->getResolution().y;
+	const float innerWidth = g_vInternalResolution.x;
+	const float innerHeight = g_vInternalResolution.y;
 
-    soundEngine->play(m_skin->getShutter());
+	soundEngine->play(m_skin->getShutter());
 
 	// don't need cropping
-	if (static_cast<int>(innerWidth)  == static_cast<int>(outerWidth) &&
-		static_cast<int>(innerHeight) == static_cast<int>(outerHeight))
+	if (static_cast<int>(innerWidth) == static_cast<int>(outerWidth) && static_cast<int>(innerHeight) == static_cast<int>(outerHeight))
 	{
 		Image::saveToImage(&pixels[0],
-						   static_cast<unsigned int>(innerWidth),
-						   static_cast<unsigned int>(innerHeight),
-						   UString::format("screenshots/screenshot%i.png", screenshotNumber));
+		                   static_cast<unsigned int>(innerWidth),
+		                   static_cast<unsigned int>(innerHeight),
+		                   UString::format("screenshots/screenshot%i.png", screenshotNumber));
 		return;
 	}
 
 	// need cropping
-    float offsetXpct = 0, offsetYpct = 0;
-    if (cv::osu::resolution_enabled.getBool() && cv::osu::letterboxing.getBool()) {
-        offsetXpct = cv::osu::letterboxing_offset_x.getFloat();
-        offsetYpct = cv::osu::letterboxing_offset_y.getFloat();
-    }
+	float offsetXpct = 0, offsetYpct = 0;
+	if (cv::osu::resolution_enabled.getBool() && cv::osu::letterboxing.getBool())
+	{
+		offsetXpct = cv::osu::letterboxing_offset_x.getFloat();
+		offsetYpct = cv::osu::letterboxing_offset_y.getFloat();
+	}
 
-    const int startX = std::clamp<int>(static_cast<int>((outerWidth - innerWidth) * (1 + offsetXpct) / 2), 0,
-                                  static_cast<int>(outerWidth - innerWidth));
-    const int startY = std::clamp<int>(static_cast<int>((outerHeight - innerHeight) * (1 + offsetYpct) / 2), 0,
-                                  static_cast<int>(outerHeight - innerHeight));
+	const int startX = std::clamp<int>(static_cast<int>((outerWidth - innerWidth) * (1 + offsetXpct) / 2), 0, static_cast<int>(outerWidth - innerWidth));
+	const int startY = std::clamp<int>(static_cast<int>((outerHeight - innerHeight) * (1 + offsetYpct) / 2), 0, static_cast<int>(outerHeight - innerHeight));
 
-    std::vector<unsigned char> croppedPixels(static_cast<size_t>(innerWidth * innerHeight * 3));
+	std::vector<unsigned char> croppedPixels(static_cast<size_t>(innerWidth * innerHeight * 3));
 
-    for (ssize_t y = 0; y < static_cast<ssize_t>(innerHeight); ++y) {
-        auto srcRowStart = pixels.begin() + ((startY + y) * static_cast<ssize_t>(outerWidth) + startX) * 3;
-        auto destRowStart = croppedPixels.begin() + (y * static_cast<ssize_t>(innerWidth)) * 3;
+	for (ssize_t y = 0; y < static_cast<ssize_t>(innerHeight); ++y)
+	{
+		auto srcRowStart = pixels.begin() + ((startY + y) * static_cast<ssize_t>(outerWidth) + startX) * 3;
+		auto destRowStart = croppedPixels.begin() + (y * static_cast<ssize_t>(innerWidth)) * 3;
 		// copy the entire row
-        std::ranges::copy_n(srcRowStart, static_cast<ssize_t>(innerWidth) * 3, destRowStart);
-    }
+		std::ranges::copy_n(srcRowStart, static_cast<ssize_t>(innerWidth) * 3, destRowStart);
+	}
 
 	Image::saveToImage(&croppedPixels[0],
-		static_cast<unsigned int>(innerWidth),
-		static_cast<unsigned int>(innerHeight),
-		UString::format("screenshots/screenshot%i.png", screenshotNumber));
+	                   static_cast<unsigned int>(innerWidth),
+	                   static_cast<unsigned int>(innerHeight),
+	                   UString::format("screenshots/screenshot%i.png", screenshotNumber));
 }
-
-
 
 void Osu::onBeforePlayStart()
 {

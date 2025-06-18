@@ -324,7 +324,7 @@ void OsuPauseMenu::onKeyDown(KeyboardEvent &e)
 			onSelectionChange();
 		}
 
-		if (m_selectedButton != NULL && e == KEY_ENTER)
+		if (m_selectedButton != NULL && (e == KEY_ENTER || e == KEY_NUMPAD_ENTER))
 			m_selectedButton->click();
 	}
 

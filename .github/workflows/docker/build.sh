@@ -1,9 +1,9 @@
 #!/bin/bash
 # Simple script to build McOsu-ng in Docker
 
-# Setting up build directory..
+# Setting up build directory.. (note: i have no idea what this is doing)
 cd /build
-cp -r /src/* .
+cp -r /src/* ./
 
 echo "Building for target: $HOST"
 set -e
