@@ -1,13 +1,13 @@
-From fbe0527ae957ffd123fc0490b6775aeb1d2cb00c Mon Sep 17 00:00:00 2001
+From 9697c18c31ffc923cba1897cb854887f2b863eba Mon Sep 17 00:00:00 2001
 From: William Horvath <william@horvath.blog>
 Date: Thu, 12 Jun 2025 22:41:56 -0700
 Subject: [PATCH] miniaudio config
 
 ---
  src/backend/miniaudio/miniaudio.h          |   6 +-
- src/backend/miniaudio/soloud_miniaudio.cpp | 221 +++++++++++++++++----
+ src/backend/miniaudio/soloud_miniaudio.cpp | 231 +++++++++++++++++----
  src/core/soloud.cpp                        |  11 +-
- 3 files changed, 185 insertions(+), 53 deletions(-)
+ 3 files changed, 195 insertions(+), 53 deletions(-)
 
 diff --git a/src/backend/miniaudio/miniaudio.h b/src/backend/miniaudio/miniaudio.h
 index c74bebe..f7893df 100644
@@ -27,10 +27,10 @@ index c74bebe..f7893df 100644
  
      MA_ASSERT(nativeSampleRate != 0);
 diff --git a/src/backend/miniaudio/soloud_miniaudio.cpp b/src/backend/miniaudio/soloud_miniaudio.cpp
-index cb9ecad..87534b2 100644
+index cb9ecad..c0fb1a0 100644
 --- a/src/backend/miniaudio/soloud_miniaudio.cpp
 +++ b/src/backend/miniaudio/soloud_miniaudio.cpp
-@@ -29,14 +29,18 @@ distribution.
+@@ -29,14 +29,23 @@ distribution.
  
  namespace SoLoud
  {
@@ -50,10 +50,15 @@ index cb9ecad..87534b2 100644
 +#define MA_DEFAULT_PERIOD_SIZE_IN_MILLISECONDS_LOW_LATENCY 5 // smaller period size results in less crackling when auto-negotiated? idk why
 +#endif
 +
++#if defined(_WIN32) || defined(_WIN64) || defined(_MSC_VER)
++#define MA_COINIT_VALUE 0x2 // apartment-threaded (there's some weird workaround that miniaudio does with multithreaded init which i'm not sure is required for our use case)
++#define MA_DEFAULT_PERIOD_SIZE_IN_MILLISECONDS_LOW_LATENCY 1 // this seems to safely auto-renegotiate to the lowest period size anyways
++#endif
++
  #define MINIAUDIO_IMPLEMENTATION
  #define MA_NO_NULL
  #define MA_NO_DECODING
-@@ -48,43 +52,176 @@ namespace SoLoud
+@@ -48,43 +57,181 @@ namespace SoLoud
  
  namespace SoLoud
  {
@@ -207,7 +212,12 @@ index cb9ecad..87534b2 100644
 +	if (aBuffer > 0) // respect miniaudio default
 +		config.periodSizeInFrames = aBuffer;
 +	else
++	{
 +		config.periodSizeInFrames = 0;
++#if defined(_WIN32) || defined(_WIN64) || defined(_MSC_VER)
++		config.periodSizeInMilliseconds = 1; // probably redundant with the define above
++#endif
++	}
 +
 +	// backend-specific settings
 +	config.wasapi.noAutoConvertSRC = true; // soloud handles resampling
