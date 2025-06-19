@@ -186,10 +186,11 @@ bool SoLoudSoundEngine::playSound(SoLoudSound *soloudSound, float pan, float pit
 		soloudSound->m_handle = handle;
 		soloudSound->setLastPlayTime(engine->getTime());
 
-		soloud->setPause(handle, false); // now, unpause
-
-		if (soloudSound->m_bStream) // fade it in if it's a stream (since we started it with 0 volume)
+		if (soloudSound->m_bStream) // unpause and fade it in if it's a stream (since we started it paused with 0 volume)
+		{
+			soloud->setPause(handle, false);
 			setVolumeGradual(handle, soloudSound->m_fVolume);
+		}
 
 		return true;
 	}
@@ -217,7 +218,7 @@ unsigned int SoLoudSoundEngine::playDirectSound(SoLoudSound *soloudSound, float 
 		finalPitch *= soloudSound->m_speed;
 
 	// play directly
-	unsigned int handle = soloud->play(*soloudSound->m_audioSource, volume, pan, true /* paused */);
+	unsigned int handle = soloud->play(*soloudSound->m_audioSource, volume, pan, false /* not paused */);
 
 	if (handle != 0)
 	{
@@ -238,7 +239,7 @@ unsigned int SoLoudSoundEngine::play3dSound(SoLoudSound *soloudSound, Vector3 po
 	if (!soloudSound || !soloudSound->m_audioSource)
 		return 0;
 
-	unsigned int handle = soloud->play3d(*soloudSound->m_audioSource, pos.x, pos.y, pos.z, 0, 0, 0, volume, true /* paused */);
+	unsigned int handle = soloud->play3d(*soloudSound->m_audioSource, pos.x, pos.y, pos.z, 0, 0, 0, volume, false /* not paused */);
 
 	return handle;
 }
