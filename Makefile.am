@@ -122,7 +122,7 @@ $(DEPS_CACHE)/mpg123-$(MPG123_VERSION).source:
 
 $(DEPS_CACHE)/SoLoud-$(SOLOUD_VERSION).source:
 	$(MKDIR_P) $(DEPS_CACHE)
-	$(WGET) -qO $(DEPS_CACHE)/SoLoud-$(SOLOUD_VERSION).tar.gz "https://github.com/jarikomppa/soloud/archive/$(SOLOUD_VERSION).tar.gz"
+	$(WGET) -qO $(DEPS_CACHE)/SoLoud-$(SOLOUD_VERSION).tar.gz "https://github.com/whrvt/neoloud/archive/refs/tags/$(SOLOUD_VERSION).tar.gz"
 	touch $@
 
 $(DEPS_CACHE)/SoundTouch-$(SOUNDTOUCH_VERSION).source:
@@ -213,53 +213,32 @@ $(DEPS_PREFIX)/mpg123.built:
 endif
 
 if USE_SOLOUD
-AUDIO_CFLAGS += $(shell $(PKG_CONFIG) --cflags soundtouch) $(MPG123_CFLAGS) -DST_NO_EXCEPTION_HANDLING $(if $(and $(filter i686,$(host_cpu)),$(DISABLE_NATIVE)),-DSOUNDTOUCH_DISABLE_X86_OPTIMIZATIONS,)
-AUDIO_LIBS += -L$(DEPS_PREFIX)/lib -lsoloud_static_x$(if $(filter x86_64,$(host_cpu)),64,86)$(if $(ENABLE_DEBUG),_d,) $(shell $(PKG_CONFIG) --libs soundtouch) $(MPG123_LIBS)
+AUDIO_CFLAGS += $(shell $(PKG_CONFIG) --cflags soloud) $(shell $(PKG_CONFIG) --cflags soundtouch) $(MPG123_CFLAGS) -DST_NO_EXCEPTION_HANDLING $(if $(and $(filter i686,$(host_cpu)),$(DISABLE_NATIVE)),-DSOUNDTOUCH_DISABLE_X86_OPTIMIZATIONS,)
+AUDIO_LIBS += $(shell $(PKG_CONFIG) --libs soloud) $(shell $(PKG_CONFIG) --libs soundtouch) $(MPG123_LIBS)
 
 FFMPEG_INSTALL_LIBS := `find $(DEPS_CACHE)/ffmpeg-$(FFMPEG_VERSION)/$(SYSNAME)$(host_cpu)/lib '(' -name '*avutil*' -o -name '*avcodec*' -o -name '*avformat*' -o -name '*swresample*' ')' -printf '%p '`
 FFMPEG_INCDIR := $(DEPS_CACHE)/ffmpeg-$(FFMPEG_VERSION)/$(SYSNAME)$(host_cpu)/include
 
 $(DEPS_PREFIX)/SoLoud.built: $(DEPS_CACHE)/SoLoud-$(SOLOUD_VERSION).source $(DEPS_CACHE)/ffmpeg-$(FFMPEG_VERSION).source $(DEPS_PREFIX)/SDL3.built $(DEPS_PREFIX)/mpg123.built
 	rm -rf $(DEPS_PREFIX)/SoLoud
-	$(MKDIR_P) $(DEPS_PREFIX) $(DEPS_PREFIX)/include/soloud $(DEPS_PREFIX)/lib/pkgconfig $(DEPS_PREFIX)/SoLoud/build
+	$(MKDIR_P) $(DEPS_PREFIX) $(DEPS_PREFIX)/include $(DEPS_PREFIX)/lib/pkgconfig $(DEPS_PREFIX)/SoLoud/build
 	$(TAR) xf $(DEPS_CACHE)/SoLoud-$(SOLOUD_VERSION).tar.gz -C $(DEPS_PREFIX)/SoLoud --strip-components=1 && \
 	cd $(DEPS_PREFIX)/SoLoud && \
-	patch -Np1<$(BUILD_MISCDIR)/revert-soloud.patch && \
-	patch -Np1<$(BUILD_MISCDIR)/soloud-miniaudio-latest.patch && \
-	patch -Np1<$(BUILD_MISCDIR)/soloud-miniaudio-settings.patch && \
-	patch -Np1<$(BUILD_MISCDIR)/soloud-add-sdl3-static-option.patch && \
-	patch -Np1<$(BUILD_MISCDIR)/soloud-fix-leak-setMaxActiveVoiceCount.patch && \
-	patch -Np1<$(BUILD_MISCDIR)/soloud-bump-dr_libs.patch && \
-	patch -Np1<$(BUILD_MISCDIR)/soloud-fastseek.patch && \
-	patch -Np1<$(BUILD_MISCDIR)/soloud-null-getAudio.patch && \
-	patch -Np1<$(BUILD_MISCDIR)/soloud-fix-global-volume-data-race.patch && \
-	patch -Np1<$(BUILD_MISCDIR)/soloud-rework-resampler.patch && \
-	patch -Np1<$(BUILD_MISCDIR)/soloud-ffmpeg-fallback.patch && \
-	patch -Np1<$(BUILD_MISCDIR)/soloud-use-cpp17-threads.patch && \
-	patch -Np1<$(BUILD_MISCDIR)/soloud-prefer-ffmpeg-option.patch && \
-	patch -Np1<$(BUILD_MISCDIR)/soloud-miniaudio-more-config.patch && \
-	patch -Np1<$(BUILD_MISCDIR)/soloud-dr_mp3-tag-skip.patch && \
-	patch -Np1<$(BUILD_MISCDIR)/soloud-fix-stale-unpause.patch && \
-	patch -Np1<$(BUILD_MISCDIR)/soloud-mpg123.patch && \
-	patch -Np1<$(BUILD_MISCDIR)/soloud-miniaudio-pulse-latency.patch && \
-	patch -Np1<$(BUILD_MISCDIR)/soloud-miniaudio-recover.patch && \
-	$(SED) -i -e 's|#define VOICE_COUNT 1024|#define VOICE_COUNT 4095|g' include/soloud.h # raise max # concurrent voices from 1024 default to 4095 (hard limit)
-	cd $(DEPS_PREFIX)/SoLoud/build && \
-	$(SED) -i 's|"NoRTTI"$(comma)||g' genie.lua && \
-	PKG_CONFIG="$(PKG_CONFIG) --static" CC="$(CC)" CXX="$(CXX)" LD="$(LD)" CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS)" \
-	$(GENIE) --with-miniaudio-only \
-			 --with-sdl3static-only \
-			 --platform=x$(if $(filter x86_64,$(host_cpu)),64,32) \
-			 --os=$(if $(findstring linux,$(host_os)),linux,windows) \
-			 gmake && \
-	cd gmake && $(SED) -i -e 's|^CC.*=.*||g' -e 's|^AR.*=.*||g' -e 's|^CXX.*=.*||g' SoloudStatic.make && \
-	PKG_CONFIG="$(PKG_CONFIG) --static" CC="$(CC)" CXX="$(CXX)" LD="$(LD)" \
-		CFLAGS="-I$(FFMPEG_INCDIR) $(if $(ENABLE_DEBUG),-D_DEBUG,) $(SDL3_CFLAGS) $(MPG123_CFLAGS) $(CFLAGS)" \
-		CXXFLAGS="-I$(FFMPEG_INCDIR) $(if $(ENABLE_DEBUG),-D_DEBUG,) $(SDL3_CFLAGS) $(MPG123_CFLAGS) $(CXXFLAGS)" LDFLAGS="$(LDFLAGS)" \
-		PREFIX="$(DEPS_PREFIX)" RANLIB="$(RANLIB)" AR="$(AR)" config="$(if $(ENABLE_DEBUG),debug,release)" make SoloudStatic && \
-	cp $(DEPS_PREFIX)/SoLoud/lib/libsoloud_static_x$(if $(filter x86_64,$(host_cpu)),64,86)$(if $(ENABLE_DEBUG),_d,).a $(DEPS_PREFIX)/lib/
-	cp -r $(DEPS_PREFIX)/SoLoud/include/* $(DEPS_PREFIX)/include/soloud/ && \
-	test -f $(DEPS_PREFIX)/lib/libsoloud_static_x$(if $(filter x86_64,$(host_cpu)),64,86)$(if $(ENABLE_DEBUG),_d,).a
+	PKG_CONFIG="$(PKG_CONFIG)" LDFLAGS="$(LDFLAGS)" \
+	cmake -S . -B build -G Ninja \
+		-D CMAKE_BUILD_TYPE="$(if $(ENABLE_DEBUG),Debug,Release)" \
+		-D CMAKE_INSTALL_PREFIX="$(DEPS_PREFIX)" \
+		-D CMAKE_SYSTEM_NAME="$(CMAKE_SYSTEM_NAME)" \
+		-D CMAKE_SYSTEM_PROCESSOR="$(host_cpu)" \
+		-D CMAKE_C_COMPILER="$(CC)" \
+		-D CMAKE_C_FLAGS="$(CFLAGS)" \
+		-D CMAKE_CXX_COMPILER="$(CXX)" \
+		-D CMAKE_CXX_FLAGS="$(CXXFLAGS)" \
+		$(CMAKERCOPT) \
+		-D BUILD_SHARED_LIBS="$(if $(STATICBUILD),OFF,ON)" && \
+	cmake --build build && \
+	cmake --install build
+	$(PKG_CONFIG) --env-only --exists --print-errors soloud
 	touch $@
 
 $(DEPS_PREFIX)/SoundTouch.built: $(DEPS_CACHE)/SoundTouch-$(SOUNDTOUCH_VERSION).source
@@ -745,7 +724,8 @@ if USE_SDLMIXER
 	$(if $(STATICBUILD),,@cp -P "$(SDL3_MIXER_PREFIX)/lib"/{*$(LIBPREFIX)SDL3_mixer*$(DLLEXT)*,*$(LIBPREFIX)mpg123*$(DLLEXT)*,*$(LIBPREFIX)xmp*$(DLLEXT)*,*$(LIBPREFIX)wavpack*$(DLLEXT)*,*$(LIBPREFIX)opus*$(DLLEXT)*,*$(LIBPREFIX)ogg*$(DLLEXT)*} "$(DESTDIR)$(bindir)/$(LIBDEST)")
 endif
 if USE_SOLOUD
-	$(if $(STATICBUILD),,@cp -P "$(SOLOUD_PREFIX)/lib"/*$(LIBPREFIX)SoundTouch*$(DLLEXT)* "$(DESTDIR)$(bindir)/$(LIBDEST)")
+	$(if $(STATICBUILD),,@cp -P "$(SOLOUD_PREFIX)/lib"/*$(LIBPREFIX)soloud*$(DLLEXT)* "$(DESTDIR)$(bindir)/$(LIBDEST)")
+	$(if $(STATICBUILD),,@cp -P "$(SOUNDTOUCH_PREFIX)/lib"/*$(LIBPREFIX)SoundTouch*$(DLLEXT)* "$(DESTDIR)$(bindir)/$(LIBDEST)")
 	@cp -P -t "$(DESTDIR)$(bindir)/" $(FFMPEG_INSTALL_LIBS) || true
 if BUILD_MPG123
 	$(if $(STATICBUILD),,@`find $(MPG123_PREFIX) '(' -iname '*mpg*'$(DLLEXT) -o -iname '*mpg*''.so.*' ')' -exec cp -P '{''}' "$(DESTDIR)$(bindir)/$(LIBDEST)" ';'`)

@@ -91,13 +91,6 @@ AC_DEFUN([AC_PROG_PATCHELF], [
         AC_MSG_ERROR([patchelf not found - required for fixing up dependencies])
     fi
 ])
-# needed for building SoLoud (if enabled)
-AC_DEFUN([AC_PROG_GENIE], [
-    AC_CHECK_PROG([GENIE], [genie], [genie])
-    if test -z "$GENIE"; then
-        AC_MSG_ERROR([GENie (https://github.com/bkaradzic/GENie) not found - required for building SoLoud])
-    fi
-])
 # needed for building libjpeg (if building it is required)
 AC_DEFUN([AC_PROG_NASM], [
     AC_CHECK_PROG([NASM], [nasm], [nasm])
@@ -259,7 +252,6 @@ AS_IF([test "$with_bass" = "yes" || { test "$with_bass" = "unset" && ! { test "$
 AS_IF([test "$with_soloud" = "yes"], [
     ((audiobackendcnt++))
     AUDBACKENDLIST="${AUDBACKENDLIST} SoLoud"
-    AC_PROG_GENIE
     AC_DEFINE([MCENGINE_FEATURE_SOLOUD], [1], [Define if the SoLoud audio backend is desired.])
 ])
 AS_IF([test "$with_sdlmixer" = "yes"], [
@@ -635,7 +627,7 @@ MPG123_MIN_VERSION=1.30.0
 MPG123_BUILD_VERSION=b9edc89540cb43f1d8c9881d9f67dde996cfb8ef # git mirror, latest as of June 16th, 2025 (next version after 1.33.0)
 
 # always build these from source if we want to use them
-AC_SUBST([SOLOUD_VERSION], [e82fd32c1f62183922f08c14c814a02b58db1873])
+AC_SUBST([SOLOUD_VERSION], [1.0.0]) # my fork
 AC_SUBST([SOLOUD_PREFIX],[$DEPS_PREFIX])
 AC_SUBST([SOUNDTOUCH_VERSION], [2.4.0])
 AC_SUBST([SOUNDTOUCH_PREFIX],[$DEPS_PREFIX])
@@ -746,7 +738,7 @@ AM_CONDITIONAL([USE_BASS], [test "$with_bass" = "yes"])
 AM_CONDITIONAL([USE_SDLMIXER], [test "$with_sdlmixer" = "yes"])
 AM_CONDITIONAL([USE_SOLOUD], [test "$with_soloud" = "yes"])
 AM_CONDITIONAL([WIN_PLATFORM], [test "$SYSNAME" = "windows"])
-AM_CONDITIONAL([WIN32_PLATFORM], [test "$SYSNAME" = "windows" && test "$host_cpu" = "i686"]) # idk why this has issues with soloud + GENie
+AM_CONDITIONAL([WIN32_PLATFORM], [test "$SYSNAME" = "windows" && test "$host_cpu" = "i686"])
 
 AM_CONDITIONAL([STRIPBINS], [test "x$enable_strip" != "xno" && ! { test "$SYSNAME" = "windows" && test "$host_cpu" = "i686" ; } ])
 

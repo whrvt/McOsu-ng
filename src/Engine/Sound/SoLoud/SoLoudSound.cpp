@@ -9,10 +9,10 @@
 
 #ifdef MCENGINE_FEATURE_SOLOUD
 
-#include <soloud/soloud.h>
-#include <soloud/soloud_file.h>
-#include <soloud/soloud_wav.h>
-#include <soloud/soloud_wavstream.h>
+#include <soloud.h>
+#include <soloud_file.h>
+#include <soloud_wav.h>
+#include <soloud_wavstream.h>
 
 #include "SoLoudFX.h"
 #include "SoLoudSoundEngine.h"

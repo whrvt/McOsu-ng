@@ -14,7 +14,7 @@
 #ifdef MCENGINE_FEATURE_SOLOUD
 #include <atomic>
 #include <memory>
-#include <soloud/soloud.h>
+#include <soloud.h>
 
 class UString;
 

@@ -9,7 +9,7 @@
 
 #ifdef MCENGINE_FEATURE_SOLOUD
 
-#include <soloud/soloud.h>
+#include <soloud.h>
 
 #include "SoLoudSound.h"
 
