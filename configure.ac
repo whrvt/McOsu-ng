@@ -105,7 +105,7 @@ AC_DEFUN([AC_PROG_NASM], [
 
 # needed for dep resolver
 AC_PROG_WGET
-AC_PROG_GIT
+#AC_PROG_GIT
 AC_PROG_TAR
 AC_PROG_PKGCONF
 AC_PROG_NINJA
@@ -775,9 +775,9 @@ AC_SUBST([AUDIO_CFLAGS])
 AC_SUBST([AUDIO_LIBS])
 
 # the source file is also added through autogen.sh to Makefile.sources
-BUNDLED_INCLUDES="-I\$(srcdir)/libraries/include"
+BUNDLED_INCLUDES="-I\$(srcdir)/libraries"
 AS_IF([test "$renderer" != "dx11"], [
-    BUNDLED_INCLUDES="$BUNDLED_INCLUDES -I\$(srcdir)/libraries/include/glad"
+    BUNDLED_INCLUDES="$BUNDLED_INCLUDES -I\$(srcdir)/libraries/glad"
 ])
 AC_SUBST([BUNDLED_INCLUDES])
 

@@ -798,7 +798,6 @@ UNZIP
 NINJA
 PKGCONF
 TAR
-GIT
 WGET
 SED
 GREP
@@ -5762,54 +5761,7 @@ fi
         as_fn_error $? "wget not found - required for downloading dependencies" "$LINENO" 5
     fi
 
-
-    # Extract the first word of "git", so it can be a program name with args.
-set dummy git; ac_word=$2
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
-printf %s "checking for $ac_word... " >&6; }
-if test ${ac_cv_prog_GIT+y}
-then :
-  printf %s "(cached) " >&6
-else case e in #(
-  e) if test -n "$GIT"; then
-  ac_cv_prog_GIT="$GIT" # Let the user override the test.
-else
-as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  case $as_dir in #(((
-    '') as_dir=./ ;;
-    */) ;;
-    *) as_dir=$as_dir/ ;;
-  esac
-    for ac_exec_ext in '' $ac_executable_extensions; do
-  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
-    ac_cv_prog_GIT="git"
-    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-  done
-IFS=$as_save_IFS
-
-fi ;;
-esac
-fi
-GIT=$ac_cv_prog_GIT
-if test -n "$GIT"; then
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $GIT" >&5
-printf "%s\n" "$GIT" >&6; }
-else
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
-printf "%s\n" "no" >&6; }
-fi
-
-
-    if test -z "$GIT"; then
-        as_fn_error $? "git not found - required for downloading dependencies" "$LINENO" 5
-    fi
-
+#AC_PROG_GIT
 
     # Extract the first word of "tar", so it can be a program name with args.
 set dummy tar; ac_word=$2
@@ -11897,11 +11849,11 @@ AUDIO_LIBS=""
 
 
 # the source file is also added through autogen.sh to Makefile.sources
-BUNDLED_INCLUDES="-I\$(srcdir)/libraries/include"
+BUNDLED_INCLUDES="-I\$(srcdir)/libraries"
 if test "$renderer" != "dx11"
 then :
 
-    BUNDLED_INCLUDES="$BUNDLED_INCLUDES -I\$(srcdir)/libraries/include/glad"
+    BUNDLED_INCLUDES="$BUNDLED_INCLUDES -I\$(srcdir)/libraries/glad"
 
 fi
 
