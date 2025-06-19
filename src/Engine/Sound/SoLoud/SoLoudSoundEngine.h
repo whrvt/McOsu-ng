@@ -12,7 +12,11 @@
 #include "SoundEngine.h"
 #ifdef MCENGINE_FEATURE_SOLOUD
 
-#include <soloud/soloud.h>
+// fwd decls to avoid include external soloud headers here
+namespace SoLoud
+{
+	class Soloud;
+}
 
 class SoLoudSound;
 
@@ -28,10 +32,10 @@ public:
 	void restart() override;
 	void update() override;
 
-	bool play(Sound *snd, float pan = 0.0f, float pitch = 1.0f) override;
-	bool play3d(Sound *snd, Vector3 pos) override;
-	void pause(Sound *snd) override;
-	void stop(Sound *snd) override;
+	bool play(Sound * snd, float pan = 0.0f, float pitch = 1.0f) override;
+	bool play3d(Sound * snd, Vector3 pos) override;
+	void pause(Sound * snd) override;
+	void stop(Sound * snd) override;
 
 	void setOutputDevice(UString outputDeviceName) override;
 	void setOutputDeviceForce(UString outputDeviceName) override;
@@ -41,13 +45,11 @@ public:
 	std::vector<UString> getOutputDevices() override;
 
 	SOUND_ENGINE_TYPE(SoLoudSoundEngine, SOLOUD, SoundEngine)
-protected:
-	// playback functions specific to SoLoudSound
-	bool playSound(SoLoudSound *soloudSound, float pan, float pitch, bool is3d = false, Vector3 *pos = nullptr);
-	unsigned int playDirectSound(SoLoudSound *soloudSound, float pan, float pitch, float volume);
-	unsigned int play3dSound(SoLoudSound *soloudSound, Vector3 pos, float volume);
-
 private:
+	bool playSound(SoLoudSound * soloudSound, float pan, float pitch, bool is3d = false, Vector3 *pos = nullptr);
+	unsigned int playDirectSound(SoLoudSound * soloudSound, float pan, float pitch, float volume);
+	unsigned int play3dSound(SoLoudSound * soloudSound, Vector3 pos, float volume);
+
 	void setVolumeGradual(unsigned int handle, float targetVol, float fadeTimeMs = 10.0f);
 	void updateOutputDevices(bool handleOutputDeviceChanges, bool printInfo) override;
 	bool initializeOutputDevice(int id = -1, bool force = false) override;
@@ -56,10 +58,10 @@ private:
 	void onMaxActiveChange(float newMax);
 };
 
+// raw pointer access to the s_SLInstance singleton, for SoLoudSound to use
 extern SoLoud::Soloud *soloud;
 
 #else
-class SoLoudSoundEngine : public SoundEngine
-{};
+class SoLoudSoundEngine : public SoundEngine{};
 #endif
 #endif

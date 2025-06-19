@@ -12,14 +12,17 @@
 #include "Sound.h"
 #ifdef MCENGINE_FEATURE_SOLOUD
 
-#include <soloud/soloud.h>
-#include <soloud/soloud_file.h>
-#include <soloud/soloud_wav.h>
-#include <soloud/soloud_wavstream.h>
-
 #include "Engine.h"
-#include "SoLoudFX.h"
 
+// fwd decls to avoid include external soloud headers here
+namespace SoLoud
+{
+	class Soloud;
+	class AudioSource;
+	class SLFXStream;
+}
+
+// defined in SoLoudSoundEngine
 extern SoLoud::Soloud *soloud;
 
 class SoLoudSound final : public Sound
@@ -62,25 +65,9 @@ private:
 	void initAsync() override;
 	void destroy() override;
 
-	[[nodiscard]] inline double getSourceLengthInSeconds() const
-	{
-		if (!m_audioSource)
-			return 0.0;
-		if (m_bStream)
-			return static_cast<SoLoud::SLFXStream *>(m_audioSource)->getLength();
-		else
-			return static_cast<SoLoud::Wav *>(m_audioSource)->getLength();
-	}
-
-	[[nodiscard]] inline double getStreamPositionInSeconds() const
-	{
-		if (!m_audioSource)
-			return m_fLastSoLoudPositionTime;
-		if (m_bStream)
-			return static_cast<SoLoud::SLFXStream *>(m_audioSource)->getRealStreamPosition();
-		else
-			return m_handle ? soloud->getStreamPosition(m_handle) : m_fLastSoLoudPositionTime;
-	}
+	// helpers to access Wav/SLFXStream internals
+	[[nodiscard]] double getSourceLengthInSeconds() const;
+	[[nodiscard]] double getStreamPositionInSeconds() const;
 
 	// current playback parameters
 	float m_speed;     // speed factor (1.0 = normal)
@@ -98,7 +85,6 @@ private:
 };
 
 #else
-class SoLoudSound : public Sound
-{};
+class SoLoudSound : public Sound{};
 #endif
 #endif

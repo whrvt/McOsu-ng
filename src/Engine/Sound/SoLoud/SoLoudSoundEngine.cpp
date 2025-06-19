@@ -8,13 +8,16 @@
 #include "SoLoudSoundEngine.h"
 
 #ifdef MCENGINE_FEATURE_SOLOUD
+
+#include <soloud/soloud.h>
+
 #include "SoLoudSound.h"
 
 #include "ConVar.h"
 #include "Engine.h"
 
-#include <utility>
 #include "Environment.h"
+#include <utility>
 
 // SoLoud-specific ConVars
 namespace cv
@@ -402,7 +405,7 @@ bool SoLoudSoundEngine::initializeOutputDevice(int id, bool)
 	auto flags = SoLoud::Soloud::CLIP_ROUNDOFF; /* | SoLoud::Soloud::NO_FPU_REGISTER_CHANGE; */
 
 	auto backend = SoLoud::Soloud::MINIAUDIO;
-	const auto& userBackend = cv::snd_soloud_backend.getString();
+	const auto &userBackend = cv::snd_soloud_backend.getString();
 	if ((userBackend != cv::snd_soloud_backend.getDefaultString()))
 	{
 		if (userBackend.findIgnoreCase("sdl") != -1)
@@ -411,11 +414,14 @@ bool SoLoudSoundEngine::initializeOutputDevice(int id, bool)
 			backend = SoLoud::Soloud::MINIAUDIO;
 	}
 
-	unsigned int sampleRate = (cv::snd_freq.getVal<unsigned int>() == cv::snd_freq.getDefaultVal<unsigned int>() ? SoLoud::Soloud::AUTO : cv::snd_freq.getVal<unsigned int>());
+	unsigned int sampleRate =
+	    (cv::snd_freq.getVal<unsigned int>() == cv::snd_freq.getDefaultVal<unsigned int>() ? SoLoud::Soloud::AUTO : cv::snd_freq.getVal<unsigned int>());
 	if (sampleRate <= 0)
 		sampleRate = SoLoud::Soloud::AUTO;
 
-	unsigned int bufferSize = (cv::snd_soloud_buffer.getVal<unsigned int>() == cv::snd_soloud_buffer.getDefaultVal<unsigned int>() ? SoLoud::Soloud::AUTO : cv::snd_soloud_buffer.getVal<unsigned int>());
+	unsigned int bufferSize =
+	    (cv::snd_soloud_buffer.getVal<unsigned int>() == cv::snd_soloud_buffer.getDefaultVal<unsigned int>() ? SoLoud::Soloud::AUTO
+	                                                                                                         : cv::snd_soloud_buffer.getVal<unsigned int>());
 	if (bufferSize < 0)
 		bufferSize = SoLoud::Soloud::AUTO;
 
@@ -441,7 +447,7 @@ bool SoLoudSoundEngine::initializeOutputDevice(int id, bool)
 	// it's 0.95 by default, for some reason
 	soloud->setPostClipScaler(1.0f);
 
-	cv::snd_freq.setValue(soloud->getBackendSamplerate(), false); // set the cvar to match the actual output sample rate (without running callbacks)
+	cv::snd_freq.setValue(soloud->getBackendSamplerate(), false);       // set the cvar to match the actual output sample rate (without running callbacks)
 	cv::snd_soloud_backend.setValue(soloud->getBackendString(), false); // ditto
 	if (cv::snd_soloud_buffer.getVal() != cv::snd_soloud_buffer.getDefaultVal())
 		cv::snd_soloud_buffer.setValue(soloud->getBackendBufferSize(), false); // ditto (but only if explicitly non-default was requested already)

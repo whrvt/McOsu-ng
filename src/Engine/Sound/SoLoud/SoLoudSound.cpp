@@ -9,6 +9,12 @@
 
 #ifdef MCENGINE_FEATURE_SOLOUD
 
+#include <soloud/soloud.h>
+#include <soloud/soloud_file.h>
+#include <soloud/soloud_wav.h>
+#include <soloud/soloud_wavstream.h>
+
+#include "SoLoudFX.h"
 #include "SoLoudSoundEngine.h"
 
 #include "ConVar.h"
@@ -18,7 +24,8 @@
 
 namespace cv
 {
-	ConVar snd_soloud_prefer_ffmpeg("snd_soloud_prefer_ffmpeg", 0, FCVAR_NONE, "(0=no, 1=streams, 2=streams+samples) prioritize using ffmpeg as a decoder (if available) over other decoder backends");
+ConVar snd_soloud_prefer_ffmpeg("snd_soloud_prefer_ffmpeg", 0, FCVAR_NONE,
+                                "(0=no, 1=streams, 2=streams+samples) prioritize using ffmpeg as a decoder (if available) over other decoder backends");
 }
 
 SoLoudSound::SoLoudSound(UString filepath, bool stream, bool threeD, bool loop, bool prescan)
@@ -115,8 +122,8 @@ void SoLoudSound::initAsync()
 			m_audioSource->setInaudibleBehavior(true, false); // keep ticking the sound if it goes to 0 volume, and don't kill it
 
 			if (cv::debug_snd.getBool())
-				debugLog("SoLoudSound: Created SLFXStream for {:s} with speed={:f}, pitch={:f}, looping={:s}, decoder={:s}\n", m_sFilePath.toUtf8(), m_speed, m_pitch,
-				         m_bIsLooped ? "true" : "false", stream->getDecoder());
+				debugLog("SoLoudSound: Created SLFXStream for {:s} with speed={:f}, pitch={:f}, looping={:s}, decoder={:s}\n", m_sFilePath.toUtf8(), m_speed,
+				         m_pitch, m_bIsLooped ? "true" : "false", stream->getDecoder());
 		}
 		else
 		{
@@ -563,6 +570,28 @@ void SoLoudSound::rebuild(UString newFilePath)
 {
 	m_sFilePath = newFilePath;
 	resourceManager->reloadResource(this);
+}
+
+// soloud-specific accessors
+
+double SoLoudSound::getStreamPositionInSeconds() const
+{
+	if (!m_audioSource)
+		return m_fLastSoLoudPositionTime;
+	if (m_bStream)
+		return static_cast<SoLoud::SLFXStream *>(m_audioSource)->getRealStreamPosition();
+	else
+		return m_handle ? soloud->getStreamPosition(m_handle) : m_fLastSoLoudPositionTime;
+}
+
+double SoLoudSound::getSourceLengthInSeconds() const
+{
+	if (!m_audioSource)
+		return 0.0;
+	if (m_bStream)
+		return static_cast<SoLoud::SLFXStream *>(m_audioSource)->getLength();
+	else
+		return static_cast<SoLoud::Wav *>(m_audioSource)->getLength();
 }
 
 #endif // MCENGINE_FEATURE_SOLOUD

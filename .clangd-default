@@ -49,7 +49,8 @@ Diagnostics:
     'modernize*trailing*',
     'modernize-use-nullptr',
     'modernize-use-using',
-    'cppcoreguidelines-avoid-magic-numbers']
+    'cppcoreguidelines-avoid-magic-numbers',
+    'cppcoreguidelines-macro-usage']
 
 InlayHints:
     Enabled: No
