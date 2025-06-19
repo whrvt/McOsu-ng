@@ -9,7 +9,10 @@
 #ifndef THREAD_H
 #define THREAD_H
 
+#ifdef __EXCEPTIONS
 #include "Engine.h" // for debugLog
+#endif
+
 #include <functional>
 #include <stop_token>
 #include <thread>

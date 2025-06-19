@@ -28,7 +28,7 @@ find src libraries/include -type f '(' -name "*.cpp" -o -name "*.c" ')' | LC_ALL
 
 echo "\$(NULL)" >> "$SOURCES_FILE"
 
-mkdir -p "$(dirname build/aux)"
+mkdir -p "$(dirname build-aux)"
 
 ########################################
 
@@ -66,8 +66,8 @@ Some configure options:
   --prefix=/usr           Install to /usr instead of ./dist
   --enable-debug          Enable debug build
   --disable-native        Disable native CPU optimizations
-  --disable-system-deps   Build some dependencies from source
-  --enable-static         Try to build/link libraries statically
+  --enable-system-deps    Prefer sharing system dependencies instead of building them from source
+  --disable-static        Try to build/link libraries dynamically instead of statically
   --enable-lto            Enable link-time optimization (default: used if available)
 
 For a full list of options, run: ./configure --help

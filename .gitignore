@@ -10,8 +10,8 @@
 /*.deps
 .deps/
 .libs/
-/build/cache/
-/build/deps/
+/build-aux/cache/
+/build-aux/deps/
 dist/
 dist-*/
 debug*/

@@ -1,7 +1,7 @@
 AC_PREREQ([2.69])
 AC_INIT([McOsu-ng], [34.00], [william@horvath.blog], [], [https://github.com/whrvt/McOsu-ng]) # don't report bugs to McKay :)
 AC_CONFIG_SRCDIR([src/Engine/Engine.cpp])
-AC_CONFIG_AUX_DIR([build/aux])
+AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_HEADERS([src/config.h])
 AC_PREFIX_DEFAULT([dist]) # default `make install`s to ./dist/bin/ (modify with --prefix=)
 
@@ -138,9 +138,9 @@ AC_ARG_ENABLE([omp],
 AC_ARG_ENABLE([lto],
     AS_HELP_STRING([--enable-lto], [Enable Link Time Optimization (default: auto, use if functional)]))
 AC_ARG_ENABLE([system-deps],
-    AS_HELP_STRING([--disable-system-deps], [Always build dependencies from source (default: no)]))
+    AS_HELP_STRING([--enable-system-deps], [Prefer system libraries over locally built ones (not recommended! If you do this, also recommend using --disable-static) (default: no)]))
 AC_ARG_ENABLE([static],
-    AS_HELP_STRING([--enable-static], [Enable static linking where possible (default: no)]))
+    AS_HELP_STRING([--enable-static], [Enable static linking where possible (default: yes, --disable-static implies shared)]))
 
 AC_ARG_WITH([renderer],
     AS_HELP_STRING([--with-renderer={opengl,opengles,dx11}], [The (single) renderer backend to build with (default: opengl)]))
@@ -149,16 +149,30 @@ AC_ARG_WITH([audio],
     AS_HELP_STRING([--with-audio={bass,soloud,sdl}], [The (comma separated list of) audio backend(s) to build with (default: bass)]))
 
 AC_ARG_WITH([mimalloc],
-    AS_HELP_STRING([--with-mimalloc], [Use mimalloc instead of the default memory allocator (faster) (default: on if not debug)]))
+    AS_HELP_STRING([--with-mimalloc], [Use mimalloc instead of the default memory allocator (faster) (default: on if not debug and not winx86)]))
 
-AS_IF([test "$host_os" = "mingw32"], [
-    # its too much of a headache to cross-build shared with host libs
-    AS_IF([test "x$enable_static" != "xno"], [
-        enable_static=yes
-        disable_shared=yes
-    ])
+# setup defaults
+AS_IF([test "x$enable_static" != "xno"], [
+    enable_static=yes
+    disable_static=no
+    enable_shared=no
+    disable_shared=yes
+], [
+    enable_static=no
+    disable_static=yes
+    enable_shared=yes
+    disable_shared=no
+])
+
+AS_IF([test "x$enable_system_deps" != "xyes"], [
     enable_system_deps=no
     disable_system_deps=yes
+], [
+    enable_system_deps=yes
+    disable_system_deps=no
+])
+
+AS_IF([test "$host_os" = "mingw32"], [
     MCOSU_CPPFLAGS="$MCOSU_CPPFLAGS -D_UNICODE -DUNICODE"
     MCOSU_CXXFLAGS="$MCOSU_CXXFLAGS -D_UNICODE -DUNICODE -municode"
     MCOSU_LDFLAGS="$MCOSU_LDFLAGS -municode"
@@ -263,8 +277,6 @@ PKG_CONFIG_PATH="$PWD/build/deps/lib/pkgconfig:$PWD/build/deps/lib64/pkgconfig"
 PKG_CONFIG_PATH_CUSTOM="$PKG_CONFIG_PATH"
 AC_SUBST([PKG_CONFIG_PATH])
 AC_SUBST([PKG_CONFIG_PATH_CUSTOM])
-
-mkdir -p build/deps
 
 AS_IF([test "x$enable_clang" = "xyes"], [
     CC=clang
@@ -552,7 +564,8 @@ AC_DEFUN([PKG_CHECK_AUTO], [
 ])
 
 AC_SUBST([DEPS_PREFIX], ['${abs_top_builddir}/build/deps'])
-AC_SUBST([DEPS_CACHE], ['${abs_top_srcdir}/build/cache'])
+AC_SUBST([DEPS_CACHE], ['${abs_top_srcdir}/build-aux/cache'])
+AC_SUBST([BUILD_MISCDIR], ['${abs_top_srcdir}/build-aux/misc'])
 AC_SUBST([bindir], [$bindir-$host_cpu])
 
 AS_IF([test "$renderer" != "dx11"], [
@@ -611,7 +624,7 @@ AC_SUBST([SOUNDTOUCH_VERSION], [2.4.0])
 AC_SUBST([SOUNDTOUCH_PREFIX],[$DEPS_PREFIX])
 AC_SUBST([SDL3_MIXER_VERSION], [b8017938de8b31c1962c2c8044a127519c2c1cdf])
 AC_SUBST([SDL3_MIXER_PREFIX],[$DEPS_PREFIX])
-AC_SUBST([MIMALLOC_VERSION], [v3.1.4])
+AC_SUBST([MIMALLOC_VERSION], [v3.1.5])
 AC_SUBST([MIMALLOC_PREFIX],[$DEPS_PREFIX])
 
 AC_SUBST([FFMPEG_VERSION], [7.1]) # pre-built, used for soloud
@@ -708,9 +721,9 @@ AM_CONDITIONAL([BUILD_FMT], [test "x$have_fmt" != "xyes"])
 AM_CONDITIONAL([BUILD_MPG123], [test "$with_soloud" = "yes" && test "x$have_mpg123" != "xyes"])
 AM_CONDITIONAL([BUILD_GLM], [test "x$have_glm" != "xyes"])
 AM_CONDITIONAL([BUILD_MIMALLOC], [test "x$enable_debug" != "xyes" &&
-                                { { test "$SYSNAME" = "windows" && test "x$with_mimalloc" = "xyes" ; } ||
-                                  { test "$SYSNAME" != "windows" && test "x$with_mimalloc" != "xno" ; };
-                                }]) # default off for windows, kinda buggy
+                                { { test "$SYSNAME" = "windows" && test "$host_cpu" = "i686" && test "x$with_mimalloc" = "xyes" ; } ||
+                                  { test "x$with_mimalloc" != "xno" ; };
+                                }]) # default off for windows 32bit for compatibility
 
 AM_CONDITIONAL([USE_BASS], [test "$with_bass" = "yes"])
 AM_CONDITIONAL([USE_SDLMIXER], [test "$with_sdlmixer" = "yes"])

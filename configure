@@ -752,6 +752,7 @@ GLU_CFLAGS
 GL_LIBS
 GL_CFLAGS
 PKG_CONFIG_LIBDIR
+BUILD_MISCDIR
 DEPS_CACHE
 DEPS_PREFIX
 MCOSU_LDFLAGS
@@ -1618,8 +1619,11 @@ Optional Features:
                           processing (default: no)
   --enable-lto            Enable Link Time Optimization (default: auto, use if
                           functional)
-  --disable-system-deps   Always build dependencies from source (default: no)
-  --enable-static         Enable static linking where possible (default: no)
+  --enable-system-deps    Prefer system libraries over locally built ones (not
+                          recommended! If you do this, also recommend using
+                          --disable-static) (default: no)
+  --enable-static         Enable static linking where possible (default: yes,
+                          --disable-static implies shared)
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -1631,7 +1635,7 @@ Optional Packages:
                           The (comma separated list of) audio backend(s) to
                           build with (default: bass)
   --with-mimalloc         Use mimalloc instead of the default memory allocator
-                          (faster) (default: on if not debug)
+                          (faster) (default: on if not debug and not winx86)
 
 Some influential environment variables:
   CC          C compiler command
@@ -2821,7 +2825,7 @@ main (int argc, char **argv)
 ac_aux_files="missing install-sh compile config.guess config.sub"
 
 # Locations in which to look for auxiliary files.
-ac_aux_dir_candidates="${srcdir}/build/aux"
+ac_aux_dir_candidates="${srcdir}/build-aux"
 
 # Search for a directory containing all of the required auxiliary files,
 # $ac_aux_files, from the $PATH-style list $ac_aux_dir_candidates.
@@ -6272,19 +6276,42 @@ then :
 fi
 
 
+# setup defaults
+if test "x$enable_static" != "xno"
+then :
+
+    enable_static=yes
+    disable_static=no
+    enable_shared=no
+    disable_shared=yes
+
+else case e in #(
+  e)
+    enable_static=no
+    disable_static=yes
+    enable_shared=yes
+    disable_shared=no
+ ;;
+esac
+fi
+
+if test "x$enable_system_deps" != "xyes"
+then :
+
+    enable_system_deps=no
+    disable_system_deps=yes
+
+else case e in #(
+  e)
+    enable_system_deps=yes
+    disable_system_deps=no
+ ;;
+esac
+fi
+
 if test "$host_os" = "mingw32"
 then :
 
-    # its too much of a headache to cross-build shared with host libs
-    if test "x$enable_static" != "xno"
-then :
-
-        enable_static=yes
-        disable_shared=yes
-
-fi
-    enable_system_deps=no
-    disable_system_deps=yes
     MCOSU_CPPFLAGS="$MCOSU_CPPFLAGS -D_UNICODE -DUNICODE"
     MCOSU_CXXFLAGS="$MCOSU_CXXFLAGS -D_UNICODE -DUNICODE -municode"
     MCOSU_LDFLAGS="$MCOSU_LDFLAGS -municode"
@@ -6536,8 +6563,6 @@ PKG_CONFIG_PATH="$PWD/build/deps/lib/pkgconfig:$PWD/build/deps/lib64/pkgconfig"
 PKG_CONFIG_PATH_CUSTOM="$PKG_CONFIG_PATH"
 
 
-
-mkdir -p build/deps
 
 if test "x$enable_clang" = "xyes"
 then :
@@ -8816,7 +8841,9 @@ MCOSU_LDFLAGS="$MCOSU_LDFLAGS -pthread"
 
 DEPS_PREFIX='${abs_top_builddir}/build/deps'
 
-DEPS_CACHE='${abs_top_srcdir}/build/cache'
+DEPS_CACHE='${abs_top_srcdir}/build-aux/cache'
+
+BUILD_MISCDIR='${abs_top_srcdir}/build-aux/misc'
 
 bindir=$bindir-$host_cpu
 
@@ -10255,7 +10282,7 @@ SDL3_MIXER_VERSION=b8017938de8b31c1962c2c8044a127519c2c1cdf
 
 SDL3_MIXER_PREFIX=$DEPS_PREFIX
 
-MIMALLOC_VERSION=v3.1.4
+MIMALLOC_VERSION=v3.1.5
 
 MIMALLOC_PREFIX=$DEPS_PREFIX
 
@@ -11731,8 +11758,8 @@ else
 fi
 
  if test "x$enable_debug" != "xyes" &&
-                                { { test "$SYSNAME" = "windows" && test "x$with_mimalloc" = "xyes" ; } ||
-                                  { test "$SYSNAME" != "windows" && test "x$with_mimalloc" != "xno" ; };
+                                { { test "$SYSNAME" = "windows" && test "$host_cpu" = "i686" && test "x$with_mimalloc" = "xyes" ; } ||
+                                  { test "x$with_mimalloc" != "xno" ; };
                                 }; then
   BUILD_MIMALLOC_TRUE=
   BUILD_MIMALLOC_FALSE='#'
@@ -11740,7 +11767,7 @@ else
   BUILD_MIMALLOC_TRUE='#'
   BUILD_MIMALLOC_FALSE=
 fi
- # default off for windows, kinda buggy
+ # default off for windows 32bit for compatibility
 
  if test "$with_bass" = "yes"; then
   USE_BASS_TRUE=

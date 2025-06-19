@@ -78,7 +78,7 @@ $(DEPS_PREFIX)/SDL3.built: $(DEPS_CACHE)/SDL3-$(SDL3_VERSION).source $(DEPS_PREF
 	$(TAR) xf $(DEPS_CACHE)/SDL3-$(SDL3_VERSION).tar.gz -C $(DEPS_PREFIX)/SDL3 --strip-components=1 && \
 	$(MKDIR_P) $(DEPS_PREFIX)/SDL3/build
 	cd $(DEPS_PREFIX)/SDL3 && \
-	patch -Np1<$(abs_top_srcdir)/build/aux/sdl-c23bool.patch && \
+	patch -Np1<$(BUILD_MISCDIR)/sdl-c23bool.patch && \
 	PKG_CONFIG="$(PKG_CONFIG)" \
 	CXX="$(CXX)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS)" cmake -S . -B build -G Ninja \
 		-D CMAKE_BUILD_TYPE="$(if $(ENABLE_DEBUG),Debug,Release)" \
@@ -204,7 +204,7 @@ $(DEPS_PREFIX)/mpg123.built: $(DEPS_CACHE)/mpg123-$(MPG123_VERSION).source
 		RANLIB="$(RANLIB)" AR="$(AR)" CC="$(CC)" CXX="$(CXX)" LD="$(LD)" CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS)" && \
 	$(MAKE) && \
 	$(MAKE) install
-	$(PKG_CONFIG) --env-only --exists --print-errors libmpg123
+	$(PKG_CONFIG) --exists --print-errors libmpg123
 	touch $@
 else
 $(DEPS_PREFIX)/mpg123.built:
@@ -223,23 +223,23 @@ $(DEPS_PREFIX)/SoLoud.built: $(DEPS_CACHE)/SoLoud-$(SOLOUD_VERSION).source $(DEP
 	$(MKDIR_P) $(DEPS_PREFIX) $(DEPS_PREFIX)/include/soloud $(DEPS_PREFIX)/lib/pkgconfig $(DEPS_PREFIX)/SoLoud/build
 	$(TAR) xf $(DEPS_CACHE)/SoLoud-$(SOLOUD_VERSION).tar.gz -C $(DEPS_PREFIX)/SoLoud --strip-components=1 && \
 	cd $(DEPS_PREFIX)/SoLoud && \
-	patch -Np1<$(abs_top_srcdir)/build/aux/revert-soloud.patch && \
-	patch -Np1<$(abs_top_srcdir)/build/aux/soloud-miniaudio-latest.patch && \
-	patch -Np1<$(abs_top_srcdir)/build/aux/soloud-miniaudio-settings.patch && \
-	patch -Np1<$(abs_top_srcdir)/build/aux/soloud-add-sdl3-static-option.patch && \
-	patch -Np1<$(abs_top_srcdir)/build/aux/soloud-fix-leak-setMaxActiveVoiceCount.patch && \
-	patch -Np1<$(abs_top_srcdir)/build/aux/soloud-bump-dr_libs.patch && \
-	patch -Np1<$(abs_top_srcdir)/build/aux/soloud-fastseek.patch && \
-	patch -Np1<$(abs_top_srcdir)/build/aux/soloud-null-getAudio.patch && \
-	patch -Np1<$(abs_top_srcdir)/build/aux/soloud-fix-global-volume-data-race.patch && \
-	patch -Np1<$(abs_top_srcdir)/build/aux/soloud-rework-resampler.patch && \
-	patch -Np1<$(abs_top_srcdir)/build/aux/soloud-ffmpeg-fallback.patch && \
-	patch -Np1<$(abs_top_srcdir)/build/aux/soloud-use-cpp17-threads.patch && \
-	patch -Np1<$(abs_top_srcdir)/build/aux/soloud-prefer-ffmpeg-option.patch && \
-	patch -Np1<$(abs_top_srcdir)/build/aux/soloud-miniaudio-more-config.patch && \
-	patch -Np1<$(abs_top_srcdir)/build/aux/soloud-dr_mp3-tag-skip.patch && \
-	patch -Np1<$(abs_top_srcdir)/build/aux/soloud-fix-stale-unpause.patch && \
-	patch -Np1<$(abs_top_srcdir)/build/aux/soloud-mpg123.patch && \
+	patch -Np1<$(BUILD_MISCDIR)/revert-soloud.patch && \
+	patch -Np1<$(BUILD_MISCDIR)/soloud-miniaudio-latest.patch && \
+	patch -Np1<$(BUILD_MISCDIR)/soloud-miniaudio-settings.patch && \
+	patch -Np1<$(BUILD_MISCDIR)/soloud-add-sdl3-static-option.patch && \
+	patch -Np1<$(BUILD_MISCDIR)/soloud-fix-leak-setMaxActiveVoiceCount.patch && \
+	patch -Np1<$(BUILD_MISCDIR)/soloud-bump-dr_libs.patch && \
+	patch -Np1<$(BUILD_MISCDIR)/soloud-fastseek.patch && \
+	patch -Np1<$(BUILD_MISCDIR)/soloud-null-getAudio.patch && \
+	patch -Np1<$(BUILD_MISCDIR)/soloud-fix-global-volume-data-race.patch && \
+	patch -Np1<$(BUILD_MISCDIR)/soloud-rework-resampler.patch && \
+	patch -Np1<$(BUILD_MISCDIR)/soloud-ffmpeg-fallback.patch && \
+	patch -Np1<$(BUILD_MISCDIR)/soloud-use-cpp17-threads.patch && \
+	patch -Np1<$(BUILD_MISCDIR)/soloud-prefer-ffmpeg-option.patch && \
+	patch -Np1<$(BUILD_MISCDIR)/soloud-miniaudio-more-config.patch && \
+	patch -Np1<$(BUILD_MISCDIR)/soloud-dr_mp3-tag-skip.patch && \
+	patch -Np1<$(BUILD_MISCDIR)/soloud-fix-stale-unpause.patch && \
+	patch -Np1<$(BUILD_MISCDIR)/soloud-mpg123.patch && \
 	$(SED) -i -e 's|#define VOICE_COUNT 1024|#define VOICE_COUNT 4095|g' include/soloud.h # raise max # concurrent voices from 1024 default to 4095 (hard limit)
 	cd $(DEPS_PREFIX)/SoLoud/build && \
 	$(SED) -i 's|"NoRTTI"$(comma)||g' genie.lua && \
@@ -492,7 +492,7 @@ $(DEPS_PREFIX)/bzip2.built: $(DEPS_CACHE)/bzip2-$(BZIP2_VERSION).source
 	$(MKDIR_P) $(DEPS_PREFIX)/bzip2/build $(DEPS_PREFIX)/lib/pkgconfig $(DEPS_PREFIX)/include
 	$(TAR) xf $(DEPS_CACHE)/bzip2-$(BZIP2_VERSION).tar.gz -C $(DEPS_PREFIX)/bzip2 --strip-components=1 && \
 	cd $(DEPS_PREFIX)/bzip2 && \
-	$(if $(findstring linux,$(host_os)),true,$(if $(STATICBUILD),true,cp $(abs_top_srcdir)/build/aux/libbz2-Makefile-mingw) ./) && \
+	$(if $(findstring linux,$(host_os)),true,$(if $(STATICBUILD),true,cp $(BUILD_MISCDIR)/libbz2-Makefile-mingw) ./) && \
 	$(MAKE) PREFIX="$(DEPS_PREFIX)" RANLIB="$(RANLIB)" AR="$(AR)" CC="$(CC)" CXX="$(CXX)" LD="$(LD)" CFLAGS="$(CFLAGS) $(if $(STATICBUILD),,-fPIC)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS) $(if $(STATICBUILD),,-fPIC)" \
 		$(if $(STATICBUILD),"libbz2.a",$(if $(findstring linux,$(host_os)),-f Makefile-libbz2_so,-f libbz2-Makefile-mingw install)) && \
 	cp -f bzlib.h $(DEPS_PREFIX)/include/ && \
@@ -598,7 +598,7 @@ $(DEPS_PREFIX)/FREETYPE2.built: $(DEPS_PREFIX)/libpng.built $(DEPS_PREFIX)/bzip2
 	$(MKDIR_P) $(DEPS_PREFIX)/FREETYPE2/build $(DEPS_PREFIX)/lib/pkgconfig
 	$(TAR) xf $(DEPS_CACHE)/freetype-$(FREETYPE2_VERSION).tar.gz -C $(DEPS_PREFIX)/FREETYPE2 --strip-components=1 && \
 	cd $(DEPS_PREFIX)/FREETYPE2 && \
-	patch -Np1<$(abs_top_srcdir)/build/aux/freetype-win.patch && \
+	patch -Np1<$(BUILD_MISCDIR)/freetype-win.patch && \
 	PKG_CONFIG="$(PKG_CONFIG)" \
 		./configure lt_cv_prog_gnu_ld=yes --host=$(host) --prefix="$(DEPS_PREFIX)" \
 		--with-zlib=yes --with-bzip2=yes --with-png=yes --with-harfbuzz=no --with-brotli=no --with-librsvg=no \

@@ -6,6 +6,8 @@
 //===============================================================================//
 
 #include "Thread.h"
+#include "ConVar.h"
+
 namespace cv {
 ConVar debug_thread("debug_thread", false, FCVAR_NONE);
 }
