@@ -76,8 +76,6 @@ private:
 	UString m_sLastError;
 };
 
-extern SteamworksInterface *steam;
-
 #else
 class SteamworksInterface
 {

@@ -1625,9 +1625,11 @@ Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
   --with-renderer={opengl,opengles,dx11}
-                          The renderer backend to build with (default: opengl)
+                          The (single) renderer backend to build with
+                          (default: opengl)
   --with-audio={bass,soloud,sdl}
-                          The audio backend(s) to build with (default: bass)
+                          The (comma separated list of) audio backend(s) to
+                          build with (default: bass)
   --with-mimalloc         Use mimalloc instead of the default memory allocator
                           (faster) (default: on if not debug)
 

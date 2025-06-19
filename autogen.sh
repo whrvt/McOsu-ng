@@ -42,7 +42,7 @@ check_tool() {
 check_tool "aclocal" "automake"
 check_tool "automake" "automake"
 check_tool "autoconf" "autoconf"
-check_tool "pkg-config" "pkg-config"
+check_tool "pkgconf" "pkgconf"
 
 echo "Running autotools..."
 autoreconf -fiv

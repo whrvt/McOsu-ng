@@ -225,10 +225,8 @@ Engine::Engine()
 		// create graphics through environment
 		s_graphicsInstance.reset(env->createRenderer());
 		g = s_graphicsInstance.get();
-		{
-			g->init(); // needs init() separation due to potential graphics access
-		}
 		runtime_assert(g, "Graphics failed to initialize!");
+		g->init(); // needs init() separation due to potential graphics access
 
 		// make unique_ptrs for the rest
 		s_resourceManagerInstance = std::make_unique<ResourceManager>();

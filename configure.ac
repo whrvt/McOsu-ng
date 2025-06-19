@@ -143,10 +143,10 @@ AC_ARG_ENABLE([static],
     AS_HELP_STRING([--enable-static], [Enable static linking where possible (default: no)]))
 
 AC_ARG_WITH([renderer],
-    AS_HELP_STRING([--with-renderer={opengl,opengles,dx11}], [The renderer backend to build with (default: opengl)]))
+    AS_HELP_STRING([--with-renderer={opengl,opengles,dx11}], [The (single) renderer backend to build with (default: opengl)]))
 
 AC_ARG_WITH([audio],
-    AS_HELP_STRING([--with-audio={bass,soloud,sdl}], [The audio backend(s) to build with (default: bass)]))
+    AS_HELP_STRING([--with-audio={bass,soloud,sdl}], [The (comma separated list of) audio backend(s) to build with (default: bass)]))
 
 AC_ARG_WITH([mimalloc],
     AS_HELP_STRING([--with-mimalloc], [Use mimalloc instead of the default memory allocator (faster) (default: on if not debug)]))

@@ -18,7 +18,6 @@
 
 #define STEAMWORKS_APPID 0
 
-SteamworksInterface *steam = NULL;
 namespace cv {
 ConVar debug_steam("debug_steam", false, FCVAR_NONE);
 ConVar steam_timeout("steam_timeout", 15.0f, FCVAR_NONE, "timeout in seconds for some steamworks API calls");
@@ -102,8 +101,6 @@ bool SteamworksInterfaceWaitAPICallBlocking(SteamAPICall_t apiCall, void *pCallb
 
 SteamworksInterface::SteamworksInterface()
 {
-	steam = this;
-
 	m_bReady = false;
 
 	m_pendingItemUpdateHandle = 0;
