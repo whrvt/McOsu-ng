@@ -1,0 +1,72 @@
+From 6df35742cf7c687719970f60f4fed5d0724a8fa6 Mon Sep 17 00:00:00 2001
+From: William Horvath <william@horvath.blog>
+Date: Thu, 19 Jun 2025 05:46:32 -0700
+Subject: [PATCH] miniaudio correct pulseaudio buffer calculation
+
+---
+ src/backend/miniaudio/miniaudio.h          | 16 +++++++++++++---
+ src/backend/miniaudio/soloud_miniaudio.cpp |  4 ++--
+ 2 files changed, 15 insertions(+), 5 deletions(-)
+
+diff --git a/src/backend/miniaudio/miniaudio.h b/src/backend/miniaudio/miniaudio.h
+index f7893df..7bfb0cd 100644
+--- a/src/backend/miniaudio/miniaudio.h
++++ b/src/backend/miniaudio/miniaudio.h
+@@ -30692,12 +30692,15 @@ static ma_result ma_device_init__pulse(ma_device* pDevice, const ma_device_confi
+         }
+ 
+         if (attr.fragsize > 0) {
++            /* Use fragsize as the period size for capture */
++            pDescriptorCapture->periodSizeInFrames = attr.fragsize / ma_get_bytes_per_frame(pDescriptorCapture->format, pDescriptorCapture->channels);
+             pDescriptorCapture->periodCount = ma_max(attr.maxlength / attr.fragsize, 1);
+         } else {
++            /* Fallback */
+             pDescriptorCapture->periodCount = 1;
++            pDescriptorCapture->periodSizeInFrames = attr.maxlength / ma_get_bytes_per_frame(pDescriptorCapture->format, pDescriptorCapture->channels);
+         }
+ 
+-        pDescriptorCapture->periodSizeInFrames = attr.maxlength / ma_get_bytes_per_frame(pDescriptorCapture->format, pDescriptorCapture->channels) / pDescriptorCapture->periodCount;
+         ma_log_postf(ma_device_get_log(pDevice), MA_LOG_LEVEL_INFO, "[PulseAudio] Capture actual attr: maxlength=%d, tlength=%d, prebuf=%d, minreq=%d, fragsize=%d; periodSizeInFrames=%d\n", attr.maxlength, attr.tlength, attr.prebuf, attr.minreq, attr.fragsize, pDescriptorCapture->periodSizeInFrames);
+     }
+ 
+@@ -30848,13 +30851,20 @@ static ma_result ma_device_init__pulse(ma_device* pDevice, const ma_device_confi
+             attr = *pActualAttr;
+         }
+ 
+-        if (attr.tlength > 0) {
++        if (attr.minreq > 0) {
++            /* Use minreq as the period size - this represents the actual quantum PulseAudio wants */
++            pDescriptorPlayback->periodSizeInFrames = attr.minreq / ma_get_bytes_per_frame(pDescriptorPlayback->format, pDescriptorPlayback->channels);
++            pDescriptorPlayback->periodCount = ma_max(attr.maxlength / attr.minreq, 1);
++        } else if (attr.tlength > 0) {
++            /* Fallback to tlength-based calculation if minreq is not set */
+             pDescriptorPlayback->periodCount = ma_max(attr.maxlength / attr.tlength, 1);
++            pDescriptorPlayback->periodSizeInFrames = attr.maxlength / ma_get_bytes_per_frame(pDescriptorPlayback->format, pDescriptorPlayback->channels) / pDescriptorPlayback->periodCount;
+         } else {
++            /* Last resort fallback */
+             pDescriptorPlayback->periodCount = 1;
++            pDescriptorPlayback->periodSizeInFrames = attr.maxlength / ma_get_bytes_per_frame(pDescriptorPlayback->format, pDescriptorPlayback->channels);
+         }
+ 
+-        pDescriptorPlayback->periodSizeInFrames = attr.maxlength / ma_get_bytes_per_frame(pDescriptorPlayback->format, pDescriptorPlayback->channels) / pDescriptorPlayback->periodCount;
+         ma_log_postf(ma_device_get_log(pDevice), MA_LOG_LEVEL_INFO, "[PulseAudio] Playback actual attr: maxlength=%d, tlength=%d, prebuf=%d, minreq=%d, fragsize=%d; internalPeriodSizeInFrames=%d\n", attr.maxlength, attr.tlength, attr.prebuf, attr.minreq, attr.fragsize, pDescriptorPlayback->periodSizeInFrames);
+     }
+ 
+diff --git a/src/backend/miniaudio/soloud_miniaudio.cpp b/src/backend/miniaudio/soloud_miniaudio.cpp
+index d887a67..82c893d 100644
+--- a/src/backend/miniaudio/soloud_miniaudio.cpp
++++ b/src/backend/miniaudio/soloud_miniaudio.cpp
+@@ -291,8 +291,8 @@ result miniaudio_init(SoLoud::Soloud *aSoloud, unsigned int aFlags, unsigned int
+ 	else
+ 	{
+ 		config.periodSizeInFrames = 0;
+-#if defined(_WIN32) || defined(_WIN64) || defined(_MSC_VER)
+-		config.periodSizeInMilliseconds = 1; // probably redundant with the define above
++#if defined(_WIN32) || defined(_WIN64) || defined(_MSC_VER) || defined(__linux__)
++		config.periodSizeInMilliseconds = 1; // negotiate the lowest possible period size
+ #endif
+ 	}
+ 
+-- 
+2.49.0
+

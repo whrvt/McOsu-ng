@@ -241,6 +241,7 @@ $(DEPS_PREFIX)/SoLoud.built: $(DEPS_CACHE)/SoLoud-$(SOLOUD_VERSION).source $(DEP
 	patch -Np1<$(BUILD_MISCDIR)/soloud-dr_mp3-tag-skip.patch && \
 	patch -Np1<$(BUILD_MISCDIR)/soloud-fix-stale-unpause.patch && \
 	patch -Np1<$(BUILD_MISCDIR)/soloud-mpg123.patch && \
+	patch -Np1<$(BUILD_MISCDIR)/soloud-miniaudio-pulse-latency.patch && \
 	$(SED) -i -e 's|#define VOICE_COUNT 1024|#define VOICE_COUNT 4095|g' include/soloud.h # raise max # concurrent voices from 1024 default to 4095 (hard limit)
 	cd $(DEPS_PREFIX)/SoLoud/build && \
 	$(SED) -i 's|"NoRTTI"$(comma)||g' genie.lua && \

@@ -5036,6 +5036,7 @@ $(DEPS_CACHE)/ffmpeg-$(FFMPEG_VERSION).source: $(DEPS_CACHE)/ffmpeg-$(FFMPEG_VER
 @USE_SOLOUD_TRUE@	patch -Np1<$(BUILD_MISCDIR)/soloud-dr_mp3-tag-skip.patch && \
 @USE_SOLOUD_TRUE@	patch -Np1<$(BUILD_MISCDIR)/soloud-fix-stale-unpause.patch && \
 @USE_SOLOUD_TRUE@	patch -Np1<$(BUILD_MISCDIR)/soloud-mpg123.patch && \
+@USE_SOLOUD_TRUE@	patch -Np1<$(BUILD_MISCDIR)/soloud-miniaudio-pulse-latency.patch && \
 @USE_SOLOUD_TRUE@	$(SED) -i -e 's|#define VOICE_COUNT 1024|#define VOICE_COUNT 4095|g' include/soloud.h # raise max # concurrent voices from 1024 default to 4095 (hard limit)
 @USE_SOLOUD_TRUE@	cd $(DEPS_PREFIX)/SoLoud/build && \
 @USE_SOLOUD_TRUE@	$(SED) -i 's|"NoRTTI"$(comma)||g' genie.lua && \
