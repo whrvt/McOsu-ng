@@ -3,7 +3,7 @@
 
 # Setting up build directory.. (note: i have no idea what this is doing)
 cd /build
-cp -r /src/* ./
+cp --update=none -r /src/* ./
 
 echo "Building for target: $HOST"
 set -e

@@ -7,12 +7,12 @@ aclocal.m4 generated
 Makefile.in generated
 configure generated
 
-build/aux/compile generated
-build/aux/depcomp generated
-build/aux/install-sh generated
-build/aux/missing generated
-build/aux/config.guess generated
-build/aux/config.sub generated
+build-aux/compile generated
+build-aux/depcomp generated
+build-aux/install-sh generated
+build-aux/missing generated
+build-aux/config.guess generated
+build-aux/config.sub generated
 
 libraries/glad/KHR/khrplatform.h generated
 libraries/glad/glad.cpp generated
