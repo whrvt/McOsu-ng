@@ -782,13 +782,14 @@ NASMOBJ
 CLANG
 PKG_CONFIG_PATH_CUSTOM
 PKG_CONFIG_PATH
-STATICBUILD
-PKGTYPE
 ENABLE_ASAN
 AUDBACKENDLIST
 GENIE
 PATCHELF
 LLVMMINGW
+NOIME
+STATICBUILD
+PKGTYPE
 WINE
 BEAR
 CMAKE
@@ -918,6 +919,7 @@ enable_asan
 enable_tsan
 enable_clang
 enable_omp
+enable_ime
 enable_lto
 enable_system_deps
 enable_static
@@ -1617,6 +1619,8 @@ Optional Features:
   --enable-clang          Use clang/clang++ instead of gcc/g++ (default: no)
   --enable-omp            Use and link with OpenMP for faster parallel
                           processing (default: no)
+  --enable-ime            Enable (SDL) IME support on Windows/Linux Wayland
+                          (default: yes)
   --enable-lto            Enable Link Time Optimization (default: auto, use if
                           functional)
   --enable-system-deps    Prefer system libraries over locally built ones (not
@@ -6233,6 +6237,12 @@ then :
   enableval=$enable_omp;
 fi
 
+# Check whether --enable-ime was given.
+if test ${enable_ime+y}
+then :
+  enableval=$enable_ime;
+fi
+
 # Check whether --enable-lto was given.
 if test ${enable_lto+y}
 then :
@@ -6285,6 +6295,9 @@ then :
     enable_shared=no
     disable_shared=yes
 
+    PKGTYPE="--static"
+    STATICBUILD=yes
+
 else case e in #(
   e)
     enable_static=no
@@ -6294,6 +6307,9 @@ else case e in #(
  ;;
 esac
 fi
+
+
+
 
 if test "x$enable_system_deps" != "xyes"
 then :
@@ -6308,6 +6324,27 @@ else case e in #(
  ;;
 esac
 fi
+
+if test "x$enable_ime" != "xno"
+then :
+
+    enable_ime=yes
+    disable_ime=no
+
+printf "%s\n" "#define MCENGINE_FEATURE_IMESUPPORT 1" >>confdefs.h
+
+
+else case e in #(
+  e)
+    enable_ime=no
+    disable_ime=yes
+
+    NOIME="yes"
+ ;;
+esac
+fi
+
+
 
 if test "$host_os" = "mingw32"
 then :
@@ -6545,16 +6582,6 @@ fi
 
 
 fi
-
-if test "x$enable_static" = "xyes"
-then :
-
-    PKGTYPE="--static"
-    STATICBUILD=yes
-
-fi
-
-
 
 ac_cv_env_PKG_CONFIG_value="$PKG_CONFIG"
 ac_cv_env_PKG_CONFIG_set="set"
@@ -13547,6 +13574,7 @@ McOsu-ng build configuration:
     BASS:               ${with_bass-no}
     SDL_mixer:          ${with_sdlmixer-no}
     SoLoud:             ${with_soloud-no}
+    IME enabled:        ${enable_ime-yes}
     LTO:                ${enable_lto-auto}
     OpenMP:             ${enable_omp-no}
     Debug build:        ${enable_debug-no}
@@ -13590,6 +13618,7 @@ McOsu-ng build configuration:
     BASS:               ${with_bass-no}
     SDL_mixer:          ${with_sdlmixer-no}
     SoLoud:             ${with_soloud-no}
+    IME enabled:        ${enable_ime-yes}
     LTO:                ${enable_lto-auto}
     OpenMP:             ${enable_omp-no}
     Debug build:        ${enable_debug-no}

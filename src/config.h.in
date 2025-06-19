@@ -54,6 +54,9 @@
 /* Defined if the OpenGL ES 3.2 backend is to be used (WASM). */
 #undef MCENGINE_FEATURE_GLES32
 
+/* Defined if an IME may be used. */
+#undef MCENGINE_FEATURE_IMESUPPORT
+
 /* Defined if the OpenGLLegacy backend is to be used. */
 #undef MCENGINE_FEATURE_OPENGL
 

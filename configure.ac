@@ -135,6 +135,8 @@ AC_ARG_ENABLE([clang],
     AS_HELP_STRING([--enable-clang], [Use clang/clang++ instead of gcc/g++ (default: no)]))
 AC_ARG_ENABLE([omp],
     AS_HELP_STRING([--enable-omp], [Use and link with OpenMP for faster parallel processing (default: no)]))
+AC_ARG_ENABLE([ime],
+    AS_HELP_STRING([--enable-ime], [Enable (SDL) IME support on Windows/Linux Wayland (default: yes)]))
 AC_ARG_ENABLE([lto],
     AS_HELP_STRING([--enable-lto], [Enable Link Time Optimization (default: auto, use if functional)]))
 AC_ARG_ENABLE([system-deps],
@@ -157,12 +159,18 @@ AS_IF([test "x$enable_static" != "xno"], [
     disable_static=no
     enable_shared=no
     disable_shared=yes
+
+    PKGTYPE="--static"
+    STATICBUILD=yes
 ], [
     enable_static=no
     disable_static=yes
     enable_shared=yes
     disable_shared=no
 ])
+
+AC_SUBST([PKGTYPE])
+AC_SUBST([STATICBUILD])
 
 AS_IF([test "x$enable_system_deps" != "xyes"], [
     enable_system_deps=no
@@ -171,6 +179,19 @@ AS_IF([test "x$enable_system_deps" != "xyes"], [
     enable_system_deps=yes
     disable_system_deps=no
 ])
+
+AS_IF([test "x$enable_ime" != "xno"], [
+    enable_ime=yes
+    disable_ime=no
+    AC_DEFINE([MCENGINE_FEATURE_IMESUPPORT], [1], [Defined if an IME may be used.])
+], [
+    enable_ime=no
+    disable_ime=yes
+
+    NOIME="yes"
+])
+
+AC_SUBST([NOIME])
 
 AS_IF([test "$host_os" = "mingw32"], [
     MCOSU_CPPFLAGS="$MCOSU_CPPFLAGS -D_UNICODE -DUNICODE"
@@ -263,13 +284,6 @@ AS_IF([test "x$enable_asan" = "xyes" || test "x$enable_tsan" = "xyes"], [
     AC_SUBST([ENABLE_ASAN])
 ])
 
-AS_IF([test "x$enable_static" = "xyes"], [
-    PKGTYPE="--static"
-    STATICBUILD=yes
-])
-
-AC_SUBST([PKGTYPE])
-AC_SUBST([STATICBUILD])
 ac_cv_env_PKG_CONFIG_value="$PKG_CONFIG"
 ac_cv_env_PKG_CONFIG_set="set"
 
@@ -837,6 +851,7 @@ McOsu-ng build configuration:
     BASS:               ${with_bass-no}
     SDL_mixer:          ${with_sdlmixer-no}
     SoLoud:             ${with_soloud-no}
+    IME enabled:        ${enable_ime-yes}
     LTO:                ${enable_lto-auto}
     OpenMP:             ${enable_omp-no}
     Debug build:        ${enable_debug-no}

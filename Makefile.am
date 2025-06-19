@@ -93,6 +93,7 @@ $(DEPS_PREFIX)/SDL3.built: $(DEPS_CACHE)/SDL3-$(SDL3_VERSION).source $(DEPS_PREF
 		-D CMAKE_SYSTEM_PROCESSOR="$(host_cpu)" \
 		-D SDL_RPATH=OFF \
 		-D SDL_IBUS=OFF \
+		$(if $(NOIME),-DSDL_DBUS=OFF -DSDL_USE_IME=OFF -DSDL_DISABLE_WINDOWS_IME=ON,) \
 		-D SDL_CCACHE="$(if $(filter ccache,$(CCACHE)),ON,OFF)" \
 		-D CMAKE_C_COMPILER="$(CC)" \
 		-D CMAKE_C_FLAGS="$(CFLAGS) -Wno-error=incompatible-pointer-types" && \

@@ -715,8 +715,10 @@ void SDLMain::setupLogging()
 void SDLMain::doEarlyCmdlineOverrides()
 {
 #if defined(MCENGINE_PLATFORM_WINDOWS) || (defined(_WIN32) && !defined(__linux__))
-	// disable IME text input if -noime
+	// disable IME text input if -noime (or if the feature won't be supported)
+#ifdef MCENGINE_FEATURE_IMESUPPORT
 	if (m_mArgMap.contains("-noime"))
+#endif
 	{
 		typedef BOOL(WINAPI * pfnImmDisableIME)(DWORD);
 		HMODULE hImm32 = LoadLibrary(TEXT("imm32.dll"));
