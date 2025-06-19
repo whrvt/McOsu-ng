@@ -13,23 +13,7 @@ RUN apt-get -y update && \
     zlib1g-dev nasm cmake meson ccache unzip zip patchelf libltdl-dev && \
     rm -rf /var/lib/apt/lists/*
 
-FROM main-deps AS manual-deps
-
-WORKDIR /tempbuild
-
-ENV GENIE_VERSION="bf3bf3f051a5f829e9f77d792c169ff866528f8d"
-# needed for SoLoud build
-RUN wget -O genie.tar.gz "https://github.com/bkaradzic/GENie/archive/${GENIE_VERSION}.tar.gz" && \
-    tar -xf genie.tar.gz && \
-    cd GENie-${GENIE_VERSION} && \
-    git init && git config user.email "temp@temp.temp" && git config user.name "temp" && git commit --allow-empty -m "temp" && \
-    make && \
-    ./bin/linux/genie release && \
-    make -C build/gmake.linux clean && \
-    make -C build/gmake.linux all && \
-    install -D -m755 $PWD/bin/linux/genie /usr/bin/genie
-
-FROM manual-deps AS main-build
+FROM main-deps AS main-build
 
 COPY .github/workflows/docker/build.sh /build.sh
 RUN chmod +x /build.sh

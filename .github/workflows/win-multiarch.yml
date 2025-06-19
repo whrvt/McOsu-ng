@@ -52,12 +52,6 @@ jobs:
             cmake meson nasm git autoconf automake libtool autoconf-archive \
             mingw-w64-gcc ccache unzip wine
           useradd user -G wheel && echo "user ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
-          git clone https://aur.archlinux.org/genie-git.git
-          chown -R user: .
-          chown -R user: /tmp
-          cd genie-git
-          su user -c "makepkg -sif --noconfirm"
-          cd ..
 
       - name: Building McOsu-ng
         run: |
