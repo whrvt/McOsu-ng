@@ -79,7 +79,7 @@ void Sound::initAsync()
 Sound *Sound::createSound(UString filepath, bool stream, bool threeD, bool loop, bool prescan)
 {
 #if !defined(MCENGINE_FEATURE_BASS) && !defined(MCENGINE_FEATURE_SOLOUD) && !defined(MCENGINE_FEATURE_SDL_MIXER)
-	#error No sound backend available!
+#error No sound backend available!
 #endif
 #ifdef MCENGINE_FEATURE_BASS
 	if (soundEngine->getTypeId() == BASS)
@@ -188,7 +188,7 @@ bool Sound::isValidAudioFile(const UString &filePath, const UString &fileExt)
 	}
 	else if (fileExt == "flac")
 	{
-		if (fileSize < cv::snd_file_min_size.getVal<size_t>())
+		if (fileSize < std::max<size_t>(cv::snd_file_min_size.getVal<size_t>(), 96)) // account for larger header
 			return false;
 
 		const char *data = audFile.readFile();

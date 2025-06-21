@@ -4935,7 +4935,7 @@ $(DEPS_CACHE)/mpg123-$(MPG123_VERSION).source:
 
 $(DEPS_CACHE)/SoLoud-$(SOLOUD_VERSION).source:
 	$(MKDIR_P) $(DEPS_CACHE)
-	$(WGET) -qO $(DEPS_CACHE)/SoLoud-$(SOLOUD_VERSION).tar.gz "https://github.com/whrvt/neoloud/archive/refs/tags/$(SOLOUD_VERSION).tar.gz"
+	$(WGET) -qO $(DEPS_CACHE)/SoLoud-$(SOLOUD_VERSION).tar.gz "https://github.com/whrvt/neoloud/archive/$(SOLOUD_VERSION).tar.gz"
 	touch $@
 
 $(DEPS_CACHE)/SoundTouch-$(SOUNDTOUCH_VERSION).source:
