@@ -430,8 +430,6 @@ bool SoLoudSoundEngine::initializeOutputDevice(int id, bool)
 	const unsigned int channels = 2;
 
 	// setup some SDL hints in case the SDL backend is used
-	if (bufferSize != SoLoud::Soloud::AUTO)
-		SDL_SetHintWithPriority(SDL_HINT_AUDIO_DEVICE_SAMPLE_FRAMES, fmt::format("{}", bufferSize).c_str(), SDL_HINT_OVERRIDE);
 	SDL_SetHintWithPriority(SDL_HINT_AUDIO_DEVICE_STREAM_NAME, PACKAGE_NAME, SDL_HINT_OVERRIDE);
 	SDL_SetHintWithPriority(SDL_HINT_AUDIO_DEVICE_STREAM_ROLE, "game", SDL_HINT_OVERRIDE);
 

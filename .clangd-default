@@ -50,7 +50,8 @@ Diagnostics:
     'modernize-use-nullptr',
     'modernize-use-using',
     'cppcoreguidelines-avoid-magic-numbers',
-    'cppcoreguidelines-macro-usage']
+    'cppcoreguidelines-macro-usage',
+    'cppcoreguidelines-pro-bounds-constant-array-index']
 
 InlayHints:
     Enabled: No

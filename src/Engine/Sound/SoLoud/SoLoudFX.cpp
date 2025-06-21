@@ -13,6 +13,8 @@
 #include "Engine.h"
 
 #include <SoundTouch.h>
+
+#include <soloud_error.h>
 #include <soloud_wavstream.h>
 
 namespace cv
