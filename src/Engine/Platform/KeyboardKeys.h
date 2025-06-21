@@ -9,7 +9,7 @@
 #ifndef KEYBOARDKEYS_H
 #define KEYBOARDKEYS_H
 
-#include <SDL3/SDL.h>
+#include <SDL3/SDL_scancode.h>
 
 // alphabet
 #define KEY_A				SDL_SCANCODE_A

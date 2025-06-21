@@ -627,7 +627,7 @@ MPG123_MIN_VERSION=1.30.0
 MPG123_BUILD_VERSION=b9edc89540cb43f1d8c9881d9f67dde996cfb8ef # git mirror, latest as of June 16th, 2025 (next version after 1.33.0)
 
 # always build these from source if we want to use them
-AC_SUBST([SOLOUD_VERSION], [1.0.0]) # my fork
+AC_SUBST([SOLOUD_VERSION], [1.0.1]) # my fork
 AC_SUBST([SOLOUD_PREFIX],[$DEPS_PREFIX])
 AC_SUBST([SOUNDTOUCH_VERSION], [2.4.0])
 AC_SUBST([SOUNDTOUCH_PREFIX],[$DEPS_PREFIX])
