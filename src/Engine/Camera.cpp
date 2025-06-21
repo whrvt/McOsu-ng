@@ -70,7 +70,7 @@ Matrix4 Camera::buildMatrixPerspectiveFovVertical(float fovRad, float aspectRati
 Matrix4 Camera::buildMatrixPerspectiveFovVerticalDXLH(float fovRad, float aspectRatioWidthToHeight, float zn, float zf)
 {
 	Matrix4 result;
-	glm::mat4 glmMatrix = glm::perspectiveLH(fovRad, aspectRatioWidthToHeight, zn, zf);
+	glm::mat4 glmMatrix = glm::perspectiveLH_ZO(fovRad, aspectRatioWidthToHeight, zn, zf);
 	result = Matrix4(&glmMatrix[0][0]);
 	return result;
 }

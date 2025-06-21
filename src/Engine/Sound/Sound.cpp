@@ -188,7 +188,7 @@ bool Sound::isValidAudioFile(const UString &filePath, const UString &fileExt)
 	}
 	else if (fileExt == "flac")
 	{
-		if (fileSize < std::max<size_t>(cv::snd_file_min_size.getVal<size_t>(), 96)) // account for larger header
+		if (fileSize < cv::snd_file_min_size.getVal<size_t>())
 			return false;
 
 		const char *data = audFile.readFile();

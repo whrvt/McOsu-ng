@@ -210,7 +210,7 @@ void Mouse::onMotion(float x, float y, float xRel, float yRel, bool preTransform
 
 	m_bLastFrameHadMotion = true;
 
-	if (cv::debug_mouse.getBool())
+	if (unlikely(cv::debug_mouse.getBool()))
 		debugLog("frame: {} rawInput: {} m_vRawDelta: {:.2f},{:.2f} m_vDelta: {:.2f},{:.2f} m_vPosWithoutOffset: {:.2f},{:.2f}\n", engine->getFrameCount() + 1, preTransformed, m_vRawDelta.x, m_vRawDelta.y, m_vDelta.x, m_vDelta.y, m_vPosWithoutOffset.x, m_vPosWithoutOffset.y);
 }
 
