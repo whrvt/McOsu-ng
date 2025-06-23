@@ -26,6 +26,12 @@ public:
 	McFont(const UString &filepath, const std::vector<wchar_t> &characters, int fontSize = 16, bool antialiasing = true, int fontDPI = 96);
 	~McFont() override { destroy(); }
 
+	McFont &operator=(const McFont &) = delete;
+	McFont &operator=(McFont &&) = delete;
+
+	McFont(const McFont &) = delete;
+	McFont(McFont &&) = delete;
+
 	// called on engine shutdown to clean up freetype/shared fallback fonts
 	static void cleanupSharedResources();
 

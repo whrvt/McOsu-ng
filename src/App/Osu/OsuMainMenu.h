@@ -62,14 +62,6 @@ public:
 	void setStartupAnim(bool startupAnim) {m_bStartupAnim = startupAnim; m_fStartupAnim = m_fStartupAnim2 = (m_bStartupAnim ? 0.0f : 1.0f);}
 
 private:
-	
-	
-	
-	
-	
-	
-	
-
 	void drawVersionInfo();
 	void updateLayout();
 

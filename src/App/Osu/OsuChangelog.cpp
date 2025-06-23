@@ -907,7 +907,7 @@ OsuChangelog::OsuChangelog() : OsuScreenBackable()
 			public:
 				CustomCBaseUILabel(UString text) : CBaseUIButton(0, 0, 0, 0, "", text) {;}
 
-				virtual void draw()
+				void draw() override
 				{
 					if (m_bVisible && isMouseInside())
 					{

@@ -18,13 +18,13 @@ class OsuUIBackButton : public CBaseUIButton
 public:
 	OsuUIBackButton(float xPos, float yPos, float xSize, float ySize, UString name);
 
-	virtual void draw();
-	virtual void update();
+	void draw() override;
+	void update() override;
 
-	virtual void onMouseInside();
-	virtual void onMouseOutside();
+	void onMouseInside() override;
+	void onMouseOutside() override;
 
-	virtual void updateLayout();
+	void updateLayout() override;
 
 	void resetAnimation();
 

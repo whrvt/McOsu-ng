@@ -15,15 +15,15 @@ class OsuEditor : public OsuScreenBackable
 {
 public:
 	OsuEditor();
-	virtual ~OsuEditor();
+	~OsuEditor() override;
 
-	virtual void draw();
-	virtual void update();
+	void draw() override;
+	void update() override;
 
-	virtual void onResolutionChange(Vector2 newResolution);
+	void onResolutionChange(Vector2 newResolution) override;
 
 private:
-	virtual void onBack();
+	void onBack() override;
 };
 
 #endif

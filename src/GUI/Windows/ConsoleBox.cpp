@@ -45,7 +45,7 @@ public:
 	void setSuggestion(UString suggestion) { m_sSuggestion = suggestion; }
 
 protected:
-	virtual void drawText()
+	void drawText() override
 	{
 		if (cv::consolebox_draw_preview.getBool())
 		{
@@ -79,7 +79,7 @@ public:
 	}
 
 protected:
-	virtual void drawText()
+	void drawText() override
 	{
 		if (m_font == NULL || m_sText.length() < 1)
 			return;

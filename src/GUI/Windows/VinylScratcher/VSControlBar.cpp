@@ -27,9 +27,9 @@ class VSControlBarButton : public CBaseUIButton
 {
 public:
 	VSControlBarButton(float xPos, float yPos, float xSize, float ySize, UString name, UString text) : CBaseUIButton(xPos, yPos, xSize, ySize, name, text) {;}
-	virtual ~VSControlBarButton() {;}
+	~VSControlBarButton() override {;}
 
-	virtual void draw()
+	void draw() override
 	{
 		if (!m_bVisible) return;
 
@@ -45,7 +45,7 @@ public:
 	}
 
 protected:
-	virtual void drawText()
+	void drawText() override
 	{
 		if (m_font != NULL && m_sText.length() > 0)
 		{
@@ -89,9 +89,9 @@ class VSControlBarSlider : public CBaseUISlider
 {
 public:
 	VSControlBarSlider(float xPos, float yPos, float xSize, float ySize, UString name) : CBaseUISlider(xPos, yPos, xSize, ySize, name) {;}
-	virtual ~VSControlBarSlider() {;}
+	~VSControlBarSlider() override {;}
 
-	virtual void draw()
+	void draw() override
 	{
 		CBaseUISlider::draw();
 		if (!m_bVisible) return;
@@ -120,9 +120,9 @@ class VSControlBarCheckbox : public CBaseUICheckbox
 {
 public:
 	VSControlBarCheckbox(float xPos, float yPos, float xSize, float ySize, UString name, UString text) : CBaseUICheckbox(xPos, yPos, xSize, ySize, name, text) {;}
-	virtual ~VSControlBarCheckbox() {;}
+	~VSControlBarCheckbox() override {;}
 
-	virtual void draw()
+	void draw() override
 	{
 		if (!m_bVisible) return;
 

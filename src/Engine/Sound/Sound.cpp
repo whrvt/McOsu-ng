@@ -46,8 +46,6 @@ Sound::Sound(UString filepath, bool stream, bool threeD, bool loop, bool prescan
 	m_fLastPlayTime = -1.0f;
 }
 
-Sound::~Sound() = default;
-
 void Sound::initAsync()
 {
 	if (cv::debug_rm.getBool())

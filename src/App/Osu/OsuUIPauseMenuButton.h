@@ -20,10 +20,10 @@ class OsuUIPauseMenuButton : public CBaseUIButton
 public:
 	OsuUIPauseMenuButton(std::function<Image*()> getImageFunc, float xPos, float yPos, float xSize, float ySize, UString name);
 
-	virtual void draw();
+	void draw() override;
 
-	virtual void onMouseInside();
-	virtual void onMouseOutside();
+	void onMouseInside() override;
+	void onMouseOutside() override;
 
 	void setBaseScale(float xScale, float yScale);
 	void setAlpha(float alpha) {m_fAlpha = alpha;}

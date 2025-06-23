@@ -18,14 +18,14 @@ class OsuScreen : public KeyboardListener
 {
 public:
 	OsuScreen();
-	virtual ~OsuScreen() {;}
+	~OsuScreen() override {;}
 
 	virtual void draw() {;}
 	virtual void update() {;}
 
-	virtual void onKeyDown(KeyboardEvent &e);
-	virtual void onKeyUp(KeyboardEvent &e) {;}
-	virtual void onChar(KeyboardEvent &e) {;}
+	void onKeyDown(KeyboardEvent &e) override;
+	void onKeyUp(KeyboardEvent &e) override {;}
+	void onChar(KeyboardEvent &e) override {;}
 
 	virtual void onResolutionChange(Vector2 newResolution) {;}
 

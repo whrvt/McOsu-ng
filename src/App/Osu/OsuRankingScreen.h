@@ -35,20 +35,20 @@ class OsuRankingScreen : public OsuScreenBackable
 {
 public:
 	OsuRankingScreen();
-	virtual ~OsuRankingScreen();
+	~OsuRankingScreen() override;
 
-	virtual void draw();
-	virtual void update();
+	void draw() override;
+	void update() override;
 
-	virtual void setVisible(bool visible);
+	void setVisible(bool visible) override;
 
 	void setScore(OsuScore *score);
 	void setScore(OsuDatabase::Score score, UString dateTime);
 	void setBeatmapInfo(OsuBeatmap *beatmap, OsuDatabaseBeatmap *diff2);
 
 private:
-	virtual void updateLayout();
-	virtual void onBack();
+	void updateLayout() override;
+	void onBack() override;
 
 	void drawModImage(OsuSkinImage *image, Vector2 &pos, Vector2 &max);
 

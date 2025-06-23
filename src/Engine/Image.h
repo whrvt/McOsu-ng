@@ -26,7 +26,6 @@ public:
 public:
 	Image(UString filepath, bool mipmapped = false, bool keepInSystemMemory = false);
 	Image(int width, int height, bool mipmapped = false, bool keepInSystemMemory = false);
-	~Image() override { ; }
 
 	virtual void bind(unsigned int textureUnit = 0) = 0;
 	virtual void unbind() = 0;

@@ -18,12 +18,12 @@ class OsuUISelectionButton : public CBaseUIButton
 public:
 	OsuUISelectionButton(std::function<OsuSkinImage*()> getImageFunc, std::function<OsuSkinImage*()> getImageOverFunc, float xPos, float yPos, float xSize, float ySize, UString name);
 
-	void draw();
+	void draw() override;
 
-	virtual void onMouseInside();
-	virtual void onMouseOutside();
+	void onMouseInside() override;
+	void onMouseOutside() override;
 
-	virtual void onResized();
+	void onResized() override;
 
 	void keyboardPulse();
 

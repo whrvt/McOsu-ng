@@ -210,12 +210,12 @@ public:
 		m_fSelectionAnim = 0.0f;
 	}
 
-	virtual ~VSMusicBrowserButton()
+	~VSMusicBrowserButton() override
 	{
 		anim->deleteExistingAnimation(&m_fSelectionAnim);
 	}
 
-	virtual void draw()
+	void draw() override
 	{
 		if (!m_bVisible) return;
 
@@ -313,12 +313,12 @@ public:
 		anim->moveQuadInOut(&m_fAnim, 1.0f, cv::vs_browser_animspeed.getFloat(), 0.0f, true);
 	}
 
-	virtual ~VSMusicBrowserColumnScrollView()
+	~VSMusicBrowserColumnScrollView() override
 	{
 		anim->deleteExistingAnimation(&m_fAnim);
 	}
 
-	virtual void draw()
+	void draw() override
 	{
 		if (anim->isAnimating(&m_fAnim))
 		{

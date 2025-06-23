@@ -52,7 +52,7 @@ public:
 		
 	}
 
-	virtual void update()
+	void update() override
 	{
 		CBaseUIButton::update();
 		if (!m_bVisible) return;
@@ -70,7 +70,7 @@ public:
 	void setTooltipText(UString tooltipText) {m_sTooltipText = tooltipText;}
 
 private:
-	virtual void drawText()
+	void drawText() override
 	{
 		if (m_font != NULL && m_sText.length() > 0)
 		{
@@ -104,7 +104,7 @@ public:
 		m_fAnim = 1.0f;
 	}
 
-	virtual void draw()
+	void draw() override
 	{
 		if (!m_bVisible) return;
 
@@ -125,7 +125,7 @@ public:
 	}
 
 private:
-	virtual void onPressed()
+	void onPressed() override
 	{
 		CBaseUICheckbox::onPressed();
 		soundEngine->play(isChecked() ? osu->getSkin()->getCheckOn() : osu->getSkin()->getCheckOff());

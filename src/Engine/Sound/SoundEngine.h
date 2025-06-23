@@ -34,7 +34,7 @@ public:
 	};
 public:
 	SoundEngine();
-	virtual ~SoundEngine();
+	virtual ~SoundEngine() = default;
 
 	// Factory method to create the appropriate sound engine
 	static SoundEngine *createSoundEngine(SndEngineType type = BASS);

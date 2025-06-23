@@ -46,8 +46,6 @@ SoundEngine::SoundEngine()
 	m_iCurrentOutputDevice = -1;
 }
 
-SoundEngine::~SoundEngine() = default;
-
 SoundEngine *SoundEngine::createSoundEngine(SndEngineType type)
 {
 #if !defined(MCENGINE_FEATURE_BASS) && !defined(MCENGINE_FEATURE_SOLOUD) && !defined(MCENGINE_FEATURE_SDL_MIXER)

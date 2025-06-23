@@ -39,20 +39,20 @@ class OsuOptionsMenu : public OsuScreenBackable, public OsuNotificationOverlayKe
 {
 public:
 	OsuOptionsMenu();
-	virtual ~OsuOptionsMenu();
+	~OsuOptionsMenu() override;
 
-	virtual void draw();
-	virtual void update();
+	void draw() override;
+	void update() override;
 
-	virtual void onKeyDown(KeyboardEvent &e);
-	virtual void onKeyUp(KeyboardEvent &e);
-	virtual void onChar(KeyboardEvent &e);
+	void onKeyDown(KeyboardEvent &e) override;
+	void onKeyUp(KeyboardEvent &e) override;
+	void onChar(KeyboardEvent &e) override;
 
-	virtual void onResolutionChange(Vector2 newResolution);
+	void onResolutionChange(Vector2 newResolution) override;
 
-	virtual void onKey(KeyboardEvent &e);
+	void onKey(KeyboardEvent &e) override;
 
-	virtual void setVisible(bool visible);
+	void setVisible(bool visible) override;
 
 	void save();
 
@@ -99,8 +99,8 @@ private:
 		UString searchTags;
 	};
 
-	virtual void updateLayout();
-	virtual void onBack();
+	void updateLayout() override;
+	void onBack() override;
 
 	void setVisibleInt(bool visible, bool fromOnBack = false);
 	void scheduleSearchUpdate();

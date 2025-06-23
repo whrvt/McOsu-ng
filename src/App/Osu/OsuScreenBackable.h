@@ -18,7 +18,7 @@ class OsuScreenBackable : public OsuScreen
 {
 public:
 	OsuScreenBackable();
-	~OsuScreenBackable();
+	~OsuScreenBackable() override;
 
 	void draw() override;
 	void update() override;

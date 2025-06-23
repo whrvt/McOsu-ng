@@ -34,17 +34,17 @@ class OsuModSelector : public OsuScreen
 {
 public:
 	OsuModSelector();
-	virtual ~OsuModSelector();
+	~OsuModSelector() override;
 
-	virtual void draw();
-	virtual void update();
+	void draw() override;
+	void update() override;
 
-	virtual void onKeyDown(KeyboardEvent &key);
-	virtual void onKeyUp(KeyboardEvent &key);
+	void onKeyDown(KeyboardEvent &key) override;
+	void onKeyUp(KeyboardEvent &key) override;
 
-	virtual void onResolutionChange(Vector2 newResolution);
+	void onResolutionChange(Vector2 newResolution) override;
 
-	virtual void setVisible(bool visible);
+	void setVisible(bool visible) override;
 
 	void enableAuto();
 	void toggleAuto();

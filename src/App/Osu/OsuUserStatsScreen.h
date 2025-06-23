@@ -27,19 +27,19 @@ class OsuUserStatsScreen : public OsuScreenBackable
 {
 public:
 	OsuUserStatsScreen();
-	virtual ~OsuUserStatsScreen();
+	~OsuUserStatsScreen() override;
 
-	virtual void draw();
-	virtual void update();
+	void draw() override;
+	void update() override;
 
-	virtual void setVisible(bool visible);
+	void setVisible(bool visible) override;
 
 	void onScoreContextMenu(OsuUISongBrowserScoreButton *scoreButton, int id);
 
 private:
-	virtual void updateLayout();
+	void updateLayout() override;
 
-	virtual void onBack();
+	void onBack() override;
 
 	void rebuildScoreButtons(const UString &playerName);
 

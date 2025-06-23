@@ -103,9 +103,9 @@ class OsuSliderCurveTypeBezier2 final : public OsuSliderCurveType
 {
 public:
 	OsuSliderCurveTypeBezier2(const std::vector<Vector2> &points);
-	virtual ~OsuSliderCurveTypeBezier2() {;}
+	~OsuSliderCurveTypeBezier2() override {;}
 
-	virtual Vector2 pointAt(float t) {return Vector2();} // unused
+	Vector2 pointAt(float t) override {return Vector2();} // unused
 };
 
 
@@ -114,9 +114,9 @@ class OsuSliderCurveTypeCentripetalCatmullRom final : public OsuSliderCurveType
 {
 public:
 	OsuSliderCurveTypeCentripetalCatmullRom(const std::vector<Vector2> &points);
-	virtual ~OsuSliderCurveTypeCentripetalCatmullRom() {;}
+	~OsuSliderCurveTypeCentripetalCatmullRom() override {;}
 
-	virtual Vector2 pointAt(float t);
+	Vector2 pointAt(float t) override;
 
 private:
 	float m_time[4];
@@ -133,13 +133,13 @@ class OsuSliderCurveEqualDistanceMulti : public OsuSliderCurve
 {
 public:
 	OsuSliderCurveEqualDistanceMulti(std::vector<Vector2> controlPoints, float pixelLength, float curvePointsSeparation);
-	virtual ~OsuSliderCurveEqualDistanceMulti() {;}
+	~OsuSliderCurveEqualDistanceMulti() override {;}
 
 	// must be called from one of the subclasses
 	void init(const std::vector<OsuSliderCurveType*> &curvesList);
 
-	virtual Vector2 pointAt(float t);
-	virtual Vector2 originalPointAt(float t);
+	Vector2 pointAt(float t) override;
+	Vector2 originalPointAt(float t) override;
 
 private:
 	int m_iNCurve;
@@ -151,7 +151,7 @@ class OsuSliderCurveLinearBezier final : public OsuSliderCurveEqualDistanceMulti
 {
 public:
 	OsuSliderCurveLinearBezier(std::vector<Vector2> controlPoints, float pixelLength, bool line, float curvePointsSeparation);
-	virtual ~OsuSliderCurveLinearBezier() {;}
+	~OsuSliderCurveLinearBezier() override {;}
 };
 
 
@@ -160,7 +160,7 @@ class OsuSliderCurveCatmull final : public OsuSliderCurveEqualDistanceMulti
 {
 public:
 	OsuSliderCurveCatmull(std::vector<Vector2> controlPoints, float pixelLength, float curvePointsSeparation);
-	virtual ~OsuSliderCurveCatmull() {;}
+	~OsuSliderCurveCatmull() override {;}
 };
 
 
@@ -169,12 +169,12 @@ class OsuSliderCurveCircumscribedCircle final : public OsuSliderCurve
 {
 public:
 	OsuSliderCurveCircumscribedCircle(std::vector<Vector2> controlPoints, float pixelLength, float curvePointsSeparation);
-	virtual ~OsuSliderCurveCircumscribedCircle() {;}
+	~OsuSliderCurveCircumscribedCircle() override {;}
 
-	virtual Vector2 pointAt(float t);
-	virtual Vector2 originalPointAt(float t);
+	Vector2 pointAt(float t) override;
+	Vector2 originalPointAt(float t) override;
 
-	virtual void updateStackPosition(float stackMulStackOffset, bool HR); // must also override this, due to the custom pointAt() function!
+	void updateStackPosition(float stackMulStackOffset, bool HR) override; // must also override this, due to the custom pointAt() function!
 
 private:
 	Vector2 intersect(Vector2 a, Vector2 ta, Vector2 b, Vector2 tb);

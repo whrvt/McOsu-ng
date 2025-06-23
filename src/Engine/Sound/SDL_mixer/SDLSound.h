@@ -26,6 +26,12 @@ public:
 	SDLSound(UString filepath, bool stream, bool threeD, bool loop, bool prescan);
 	~SDLSound() override;
 
+	SDLSound &operator=(const SDLSound &) = delete;
+	SDLSound &operator=(SDLSound &&) = delete;
+
+	SDLSound(const SDLSound &) = delete;
+	SDLSound(SDLSound &&) = delete;
+
 	// Sound interface implementation
 	void setPosition(double percent) override;
 	void setPositionMS(unsigned long ms) override;

@@ -24,9 +24,9 @@ class VSTitleBarButton : public CBaseUIButton
 {
 public:
 	VSTitleBarButton(float xPos, float yPos, float xSize, float ySize, UString name, UString text) : CBaseUIButton(xPos, yPos, xSize, ySize, name, text) {;}
-	virtual ~VSTitleBarButton() {;}
+	~VSTitleBarButton() override {;}
 
-	virtual void draw()
+	void draw() override
 	{
 		if (!m_bVisible) return;
 

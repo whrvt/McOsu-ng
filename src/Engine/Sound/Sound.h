@@ -34,7 +34,6 @@ public:
 	};
 public:
 	Sound(UString filepath, bool stream, bool threeD, bool loop, bool prescan);
-	~Sound() override;
 
 	// Factory method to create the appropriate sound object
 	static Sound *createSound(UString filepath, bool stream, bool threeD, bool loop, bool prescan);

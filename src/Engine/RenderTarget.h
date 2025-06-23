@@ -20,7 +20,6 @@ public:
 
 public:
 	RenderTarget(int x, int y, int width, int height, Graphics::MULTISAMPLE_TYPE multiSampleType = Graphics::MULTISAMPLE_TYPE::MULTISAMPLE_0X);
-	~RenderTarget() override {;}
 
 	virtual void draw(int x, int y);
 	virtual void draw(int x, int y, int width, int height);

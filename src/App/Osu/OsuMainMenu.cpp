@@ -256,14 +256,6 @@ void OsuMainMenu::openSteamWorkshopInDefaultBrowser(bool launchInSteam)
 
 OsuMainMenu::OsuMainMenu() : OsuScreen()
 {
-
-
-
-
-
-
-
-
 	cv::osu::toggle_preview_music.setCallback( fastdelegate::MakeDelegate(this, &OsuMainMenu::onPausePressed) );
 
 	// engine settings

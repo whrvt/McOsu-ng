@@ -17,10 +17,10 @@ class OsuTooltipOverlay : public OsuScreen
 {
 public:
 	OsuTooltipOverlay();
-	virtual ~OsuTooltipOverlay();
+	~OsuTooltipOverlay() override;
 
-	virtual void draw();
-	virtual void update();
+	void draw() override;
+	void update() override;
 
 	void begin();
 	void addLine(UString text);

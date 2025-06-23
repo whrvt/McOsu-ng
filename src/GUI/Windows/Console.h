@@ -25,15 +25,15 @@ public:
 
 public:
 	Console();
-	virtual ~Console();
+	~Console() override;
 
-	void update();
+	void update() override;
 
 	void log(UString text, Color textColor = 0xffffffff);
 	void clear();
 
 	// events
-	void onResized();
+	void onResized() override;
 
 	static std::vector<UString> g_commandQueue;
 

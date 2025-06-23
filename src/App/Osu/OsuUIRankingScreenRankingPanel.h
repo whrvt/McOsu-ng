@@ -22,7 +22,7 @@ class OsuUIRankingScreenRankingPanel : public CBaseUIImage
 public:
 	OsuUIRankingScreenRankingPanel();
 
-	virtual void draw();
+	void draw() override;
 
 	void setScore(OsuScore *score);
 	void setScore(OsuDatabase::Score score);

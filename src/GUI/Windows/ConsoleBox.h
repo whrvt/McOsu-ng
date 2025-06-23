@@ -25,7 +25,7 @@ class ConsoleBox : public WindowUIElement
 {
 public:
 	ConsoleBox();
-	virtual ~ConsoleBox();
+	~ConsoleBox() override;
 
 	void draw() override;
 	void drawLogOverlay();

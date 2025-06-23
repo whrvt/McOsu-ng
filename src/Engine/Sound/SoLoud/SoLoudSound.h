@@ -33,6 +33,12 @@ public:
 	SoLoudSound(UString filepath, bool stream, bool threeD, bool loop, bool prescan);
 	~SoLoudSound() override;
 
+	SoLoudSound &operator=(const SoLoudSound &) = delete;
+	SoLoudSound &operator=(SoLoudSound &&) = delete;
+
+	SoLoudSound(const SoLoudSound &) = delete;
+	SoLoudSound(SoLoudSound &&) = delete;
+
 	// Sound interface implementation
 	void setPosition(double percent) override;
 	void setPositionMS(unsigned long ms) override;

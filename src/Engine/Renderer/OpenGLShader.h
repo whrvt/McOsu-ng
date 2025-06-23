@@ -18,30 +18,30 @@ class OpenGLShader final : public Shader
 public:
 	OpenGLShader(const UString &shader, bool source);
 	OpenGLShader(const UString &vertexShader, const UString &fragmentShader, bool source); // DEPRECATED
-	virtual ~OpenGLShader() {destroy();}
+	~OpenGLShader() override {destroy();}
 
-	virtual void enable();
-	virtual void disable();
+	void enable() override;
+	void disable() override;
 
-	virtual void setUniform1f(const UString &name, float value);
-	virtual void setUniform1fv(const UString &name, int count, float *values);
-	virtual void setUniform1i(const UString &name, int value);
-	virtual void setUniform2f(const UString &name, float x, float y);
-	virtual void setUniform2fv(const UString &name, int count, float *vectors);
-	virtual void setUniform3f(const UString &name, float x, float y, float z);
-	virtual void setUniform3fv(const UString &name, int count, float *vectors);
-	virtual void setUniform4f(const UString &name, float x, float y, float z, float w);
-	virtual void setUniformMatrix4fv(const UString &name, Matrix4 &matrix);
-	virtual void setUniformMatrix4fv(const UString &name, float *v);
+	void setUniform1f(const UString &name, float value) override;
+	void setUniform1fv(const UString &name, int count, float *values) override;
+	void setUniform1i(const UString &name, int value) override;
+	void setUniform2f(const UString &name, float x, float y) override;
+	void setUniform2fv(const UString &name, int count, float *vectors) override;
+	void setUniform3f(const UString &name, float x, float y, float z) override;
+	void setUniform3fv(const UString &name, int count, float *vectors) override;
+	void setUniform4f(const UString &name, float x, float y, float z, float w) override;
+	void setUniformMatrix4fv(const UString &name, Matrix4 &matrix) override;
+	void setUniformMatrix4fv(const UString &name, float *v) override;
 
 	// ILLEGAL:
 	int getAttribLocation(const UString &name);
 	int getAndCacheUniformLocation(const UString &name);
 
 private:
-	virtual void init();
-	virtual void initAsync();
-	virtual void destroy();
+	void init() override;
+	void initAsync() override;
+	void destroy() override;
 
 private:
 	bool compile(const UString &vertexShader, const UString &fragmentShader, bool source);

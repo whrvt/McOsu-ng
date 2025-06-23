@@ -15,18 +15,18 @@ class NullRenderTarget final : public RenderTarget
 {
 public:
 	NullRenderTarget(int x, int y, int width, int height, Graphics::MULTISAMPLE_TYPE multiSampleType) : RenderTarget(x, y, width, height, multiSampleType) {;}
-	virtual ~NullRenderTarget() {destroy();}
+	~NullRenderTarget() override {destroy();}
 
-	virtual void enable() {;}
-	virtual void disable() {;}
+	void enable() override {;}
+	void disable() override {;}
 
-	virtual void bind(unsigned int textureUnit = 0) {;}
-	virtual void unbind() {;}
+	void bind(unsigned int textureUnit = 0) override {;}
+	void unbind() override {;}
 
 private:
-	virtual void init() {m_bReady = true;}
-	virtual void initAsync() {m_bAsyncReady = true;}
-	virtual void destroy() {;}
+	void init() override {m_bReady = true;}
+	void initAsync() override {m_bAsyncReady = true;}
+	void destroy() override {;}
 };
 
 #endif

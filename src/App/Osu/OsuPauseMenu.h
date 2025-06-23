@@ -20,18 +20,18 @@ class OsuPauseMenu : public OsuScreen
 {
 public:
 	OsuPauseMenu();
-	virtual ~OsuPauseMenu();
+	~OsuPauseMenu() override;
 
-	virtual void draw();
-	virtual void update();
+	void draw() override;
+	void update() override;
 
-	virtual void onKeyDown(KeyboardEvent &e);
-	virtual void onKeyUp(KeyboardEvent &e);
-	virtual void onChar(KeyboardEvent &e);
+	void onKeyDown(KeyboardEvent &e) override;
+	void onKeyUp(KeyboardEvent &e) override;
+	void onChar(KeyboardEvent &e) override;
 
-	virtual void onResolutionChange(Vector2 newResolution);
+	void onResolutionChange(Vector2 newResolution) override;
 
-	virtual void setVisible(bool visible);
+	void setVisible(bool visible) override;
 
 	void setContinueEnabled(bool continueEnabled);
 

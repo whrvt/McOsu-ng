@@ -115,7 +115,7 @@ public:
 	};
 public:
 	CBaseUIElement(float xPos=0, float yPos=0, float xSize=0, float ySize=0, UString name="");
-	virtual ~CBaseUIElement() {;}
+	~CBaseUIElement() override {;}
 
 	ELEMENT_BODY_VIRTUAL(CBaseUIElement)
 

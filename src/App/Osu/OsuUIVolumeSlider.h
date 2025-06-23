@@ -38,9 +38,9 @@ public:
 	[[nodiscard]] inline bool isSelected() const {return m_bSelected;}
 
 private:
-	virtual void drawBlock();
+	void drawBlock() override;
 
-	virtual void onMouseInside();
+	void onMouseInside() override;
 
 	TYPE m_type;
 	bool m_bSelected;

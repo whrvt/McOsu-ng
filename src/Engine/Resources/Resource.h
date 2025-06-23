@@ -34,7 +34,13 @@ public:
 public:
 	Resource();
 	Resource(UString filepath);
-	virtual ~Resource() { ; }
+
+	virtual ~Resource() = default;
+
+	Resource &operator=(const Resource &) = delete;
+	Resource &operator=(Resource &&) = delete;
+	Resource(const Resource &) = delete;
+	Resource(Resource &&) = delete;
 
 	void load();
 	void loadAsync();

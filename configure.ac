@@ -490,7 +490,7 @@ AS_IF([test "x$enable_debug" = "xyes"], [
     ])
     ENABLE_DEBUG=$enable_debug
     MCOSU_CPPFLAGS="$MCOSU_CPPFLAGS -D_DEBUG"
-    MCOSU_CXXFLAGS="$MCOSU_CXXFLAGS -Wcast-align=strict -Wpacked-not-aligned"
+    #MCOSU_CXXFLAGS="$MCOSU_CXXFLAGS -Wcast-align=strict -Wpacked-not-aligned"
     AS_IF([test "$SYSNAME" = "windows"], [
         AS_IF([test "x$enable_clang" = "xyes"], [
             LDFLAGS="$LDFLAGS -Xlinker /subsystem:console"
@@ -675,7 +675,7 @@ AS_IF([test "$renderer" != "dx11"], [
 ])
 
 SDL3_MIN_VERSION=3.4.0 # needs SDL_SetRelativeMouseTransform, not in any current (3.2.x) releases
-SDL3_BUILD_VERSION=e6c2649afc38524a00d8f11615255093cee21115 # git
+SDL3_BUILD_VERSION=9ed83e71f6cc445316e1b599aad98fa79019544d # git
 FREETYPE2_MIN_VERSION=2.10.0
 FREETYPE2_BUILD_VERSION=2.13.3
 LIBJPEG_MIN_VERSION=3.0.0

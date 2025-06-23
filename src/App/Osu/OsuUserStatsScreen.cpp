@@ -48,7 +48,7 @@ public:
 	{
 	}
 
-	virtual void drawText()
+	void drawText() override
 	{
 		// HACKHACK: force update string height to non-average line height for icon
 		m_fStringHeight = m_font->getStringHeight(m_sText);

@@ -16,18 +16,18 @@ class NullImage final : public Image
 public:
 	NullImage(UString filePath, bool mipmapped = false, bool keepInSystemMemory = false) : Image(filePath, mipmapped, keepInSystemMemory) {;}
 	NullImage(int width, int height, bool mipmapped = false, bool keepInSystemMemory = false) : Image(width, height, mipmapped, keepInSystemMemory) {;}
-	virtual ~NullImage() {destroy();}
+	~NullImage() override {destroy();}
 
-	virtual void bind(unsigned int textureUnit = 0) {;}
-	virtual void unbind() {;}
+	void bind(unsigned int textureUnit = 0) override {;}
+	void unbind() override {;}
 
-	virtual void setFilterMode(Graphics::FILTER_MODE filterMode);
-	virtual void setWrapMode(Graphics::WRAP_MODE wrapMode);
+	void setFilterMode(Graphics::FILTER_MODE filterMode) override;
+	void setWrapMode(Graphics::WRAP_MODE wrapMode) override;
 
 private:
-	virtual void init() {m_bReady = true;}
-	virtual void initAsync() {m_bAsyncReady = true;}
-	virtual void destroy() {;}
+	void init() override {m_bReady = true;}
+	void initAsync() override {m_bAsyncReady = true;}
+	void destroy() override {;}
 };
 
 #endif

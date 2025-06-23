@@ -86,9 +86,9 @@ class OsuUIContextMenuButton : public CBaseUIButton
 {
 public:
 	OsuUIContextMenuButton(float xPos, float yPos, float xSize, float ySize, UString name, UString text, int id);
-	virtual ~OsuUIContextMenuButton() {;}
+	~OsuUIContextMenuButton() override {;}
 
-	virtual void update();
+	void update() override;
 
 	[[nodiscard]] inline int getID() const {return m_iID;}
 
@@ -104,7 +104,7 @@ class OsuUIContextMenuTextbox : public CBaseUITextbox
 {
 public:
 	OsuUIContextMenuTextbox(float xPos, float yPos, float xSize, float ySize, UString name, int id);
-	virtual ~OsuUIContextMenuTextbox() {;}
+	~OsuUIContextMenuTextbox() override {;}
 
 	[[nodiscard]] inline int getID() const {return m_iID;}
 

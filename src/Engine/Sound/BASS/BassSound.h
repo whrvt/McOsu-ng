@@ -23,6 +23,12 @@ public:
 	BassSound(UString filepath, bool stream, bool threeD, bool loop, bool prescan);
 	~BassSound() override;
 
+	BassSound &operator=(const BassSound &) = delete;
+	BassSound &operator=(BassSound &&) = delete;
+
+	BassSound(const BassSound &) = delete;
+	BassSound(BassSound &&) = delete;
+
 	// Sound interface implementation
 	void setPosition(double percent) override;
 	void setPositionMS(unsigned long ms) override;

@@ -20,16 +20,16 @@ class OsuUISongBrowserUserButton : public CBaseUIButton
 public:
 	OsuUISongBrowserUserButton();
 
-	virtual void draw();
-	virtual void update();
+	void draw() override;
+	void update() override;
 
 	void updateUserStats();
 
 	void addTooltipLine(UString text) {m_vTooltipLines.push_back(text);}
 
 private:
-	virtual void onMouseInside();
-	virtual void onMouseOutside();
+	void onMouseInside() override;
+	void onMouseOutside() override;
 
 	;
 
