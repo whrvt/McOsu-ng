@@ -647,10 +647,6 @@ ac_subst_vars='am__EXEEXT_FALSE
 am__EXEEXT_TRUE
 LTLIBOBJS
 LIBOBJS
-BUNDLED_INCLUDES
-AUDIO_LIBS
-AUDIO_CFLAGS
-ASSETS_DIR
 AUDIO_SHORTCUTS_FALSE
 AUDIO_SHORTCUTS_TRUE
 WINSHARED_DLLS_NEEDED_FALSE
@@ -755,6 +751,10 @@ PKG_CONFIG_LIBDIR
 BUILD_MISCDIR
 DEPS_CACHE
 DEPS_PREFIX
+BUNDLED_INCLUDES
+AUDIO_LIBS
+AUDIO_CFLAGS
+ASSETS_DIR
 MCOSU_LDFLAGS
 MCOSU_CXXFLAGS
 MCOSU_CPPFLAGS
@@ -8768,6 +8768,128 @@ MCOSU_LDFLAGS="$MCOSU_LDFLAGS -pthread"
 
 
 
+# sanity check for pre-bundled assets and required files before checking for external dependencies
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for src/Makefile.sources" >&5
+printf %s "checking for src/Makefile.sources... " >&6; }
+if test -f "$srcdir/src/Makefile.sources"
+then :
+
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+
+else case e in #(
+  e)
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+    as_fn_error $? "src/Makefile.sources not found. Run ./autogen.sh first." "$LINENO" 5
+ ;;
+esac
+fi
+
+ASSETS_DIR=assets
+
+
+AUDIO_CFLAGS=""
+AUDIO_LIBS=""
+
+
+
+
+# the source file is also added through autogen.sh to Makefile.sources
+BUNDLED_INCLUDES="-I\$(srcdir)/libraries"
+if test "$renderer" != "dx11"
+then :
+
+    BUNDLED_INCLUDES="$BUNDLED_INCLUDES -I\$(srcdir)/libraries/glad"
+
+fi
+
+
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for default config in $srcdir/$ASSETS_DIR/cfg" >&5
+printf %s "checking for default config in $srcdir/$ASSETS_DIR/cfg... " >&6; }
+if test -f "$srcdir/$ASSETS_DIR/cfg/override.cfg"
+then :
+
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+
+else case e in #(
+  e)
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+    as_fn_error $? "McOsu-ng default config is missing!" "$LINENO" 5
+ ;;
+esac
+fi
+
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for models in $srcdir/$ASSETS_DIR/models" >&5
+printf %s "checking for models in $srcdir/$ASSETS_DIR/models... " >&6; }
+if test -d "$srcdir/$ASSETS_DIR/models"
+then :
+
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+
+else case e in #(
+  e)
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+    as_fn_error $? "McOsu-ng model assets are missing!" "$LINENO" 5
+ ;;
+esac
+fi
+
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for shaders in $srcdir/$ASSETS_DIR/shaders" >&5
+printf %s "checking for shaders in $srcdir/$ASSETS_DIR/shaders... " >&6; }
+if test -d "$srcdir/$ASSETS_DIR/shaders"
+then :
+
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+
+else case e in #(
+  e)
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+    as_fn_error $? "McOsu-ng shader assets are missing!" "$LINENO" 5
+ ;;
+esac
+fi
+
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for fonts in $srcdir/$ASSETS_DIR/fonts" >&5
+printf %s "checking for fonts in $srcdir/$ASSETS_DIR/fonts... " >&6; }
+if test -d "$srcdir/$ASSETS_DIR/fonts"
+then :
+
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+
+else case e in #(
+  e)
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+    as_fn_error $? "McOsu-ng fonts are missing!" "$LINENO" 5
+ ;;
+esac
+fi
+
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for default material assets in $srcdir/$ASSETS_DIR/materials" >&5
+printf %s "checking for default material assets in $srcdir/$ASSETS_DIR/materials... " >&6; }
+if test -d "$srcdir/$ASSETS_DIR/materials"
+then :
+
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+
+else case e in #(
+  e)
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+    as_fn_error $? "McOsu-ng material assets are missing!" "$LINENO" 5
+ ;;
+esac
+fi
+
 
 
 DEPS_PREFIX='${abs_top_builddir}/build/deps'
@@ -11752,6 +11874,7 @@ fi
 
 
 # need dynamic winpthread for old windows 32bit compat builds
+# the way im searching for the right .dlls to copy is so disgusting and needs to be fixed somehow
 if test -n "$ubercompat"
 then :
 
@@ -11791,127 +11914,6 @@ else
   AUDIO_SHORTCUTS_FALSE=
 fi
 
-
-ASSETS_DIR=assets
-
-
-AUDIO_CFLAGS=""
-AUDIO_LIBS=""
-
-
-
-
-# the source file is also added through autogen.sh to Makefile.sources
-BUNDLED_INCLUDES="-I\$(srcdir)/libraries"
-if test "$renderer" != "dx11"
-then :
-
-    BUNDLED_INCLUDES="$BUNDLED_INCLUDES -I\$(srcdir)/libraries/glad"
-
-fi
-
-
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for default config in $srcdir/$ASSETS_DIR/cfg" >&5
-printf %s "checking for default config in $srcdir/$ASSETS_DIR/cfg... " >&6; }
-if test -f "$srcdir/$ASSETS_DIR/cfg/override.cfg"
-then :
-
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-printf "%s\n" "yes" >&6; }
-
-else case e in #(
-  e)
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
-printf "%s\n" "no" >&6; }
-    as_fn_error $? "McOsu-ng default config is missing!" "$LINENO" 5
- ;;
-esac
-fi
-
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for models in $srcdir/$ASSETS_DIR/models" >&5
-printf %s "checking for models in $srcdir/$ASSETS_DIR/models... " >&6; }
-if test -d "$srcdir/$ASSETS_DIR/models"
-then :
-
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-printf "%s\n" "yes" >&6; }
-
-else case e in #(
-  e)
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
-printf "%s\n" "no" >&6; }
-    as_fn_error $? "McOsu-ng model assets are missing!" "$LINENO" 5
- ;;
-esac
-fi
-
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for shaders in $srcdir/$ASSETS_DIR/shaders" >&5
-printf %s "checking for shaders in $srcdir/$ASSETS_DIR/shaders... " >&6; }
-if test -d "$srcdir/$ASSETS_DIR/shaders"
-then :
-
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-printf "%s\n" "yes" >&6; }
-
-else case e in #(
-  e)
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
-printf "%s\n" "no" >&6; }
-    as_fn_error $? "McOsu-ng shader assets are missing!" "$LINENO" 5
- ;;
-esac
-fi
-
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for fonts in $srcdir/$ASSETS_DIR/fonts" >&5
-printf %s "checking for fonts in $srcdir/$ASSETS_DIR/fonts... " >&6; }
-if test -d "$srcdir/$ASSETS_DIR/fonts"
-then :
-
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-printf "%s\n" "yes" >&6; }
-
-else case e in #(
-  e)
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
-printf "%s\n" "no" >&6; }
-    as_fn_error $? "McOsu-ng fonts are missing!" "$LINENO" 5
- ;;
-esac
-fi
-
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for default material assets in $srcdir/$ASSETS_DIR/materials" >&5
-printf %s "checking for default material assets in $srcdir/$ASSETS_DIR/materials... " >&6; }
-if test -d "$srcdir/$ASSETS_DIR/materials"
-then :
-
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-printf "%s\n" "yes" >&6; }
-
-else case e in #(
-  e)
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
-printf "%s\n" "no" >&6; }
-    as_fn_error $? "McOsu-ng material assets are missing!" "$LINENO" 5
- ;;
-esac
-fi
-
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for src/Makefile.sources" >&5
-printf %s "checking for src/Makefile.sources... " >&6; }
-if test -f "$srcdir/src/Makefile.sources"
-then :
-
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-printf "%s\n" "yes" >&6; }
-
-else case e in #(
-  e)
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
-printf "%s\n" "no" >&6; }
-    as_fn_error $? "src/Makefile.sources not found. Run ./autogen.sh first." "$LINENO" 5
- ;;
-esac
-fi
 
 # output makefile
 ac_config_files="$ac_config_files Makefile"

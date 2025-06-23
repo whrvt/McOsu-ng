@@ -566,6 +566,71 @@ AC_SUBST([MCOSU_CPPFLAGS])
 AC_SUBST([MCOSU_CXXFLAGS])
 AC_SUBST([MCOSU_LDFLAGS])
 
+# sanity check for pre-bundled assets and required files before checking for external dependencies
+AC_MSG_CHECKING([for src/Makefile.sources])
+AS_IF([test -f "$srcdir/src/Makefile.sources"], [
+    AC_MSG_RESULT([yes])
+], [
+    AC_MSG_RESULT([no])
+    AC_MSG_ERROR([src/Makefile.sources not found. Run ./autogen.sh first.])
+])
+
+ASSETS_DIR=assets
+AC_SUBST([ASSETS_DIR])
+
+AUDIO_CFLAGS=""
+AUDIO_LIBS=""
+
+AC_SUBST([AUDIO_CFLAGS])
+AC_SUBST([AUDIO_LIBS])
+
+# the source file is also added through autogen.sh to Makefile.sources
+BUNDLED_INCLUDES="-I\$(srcdir)/libraries"
+AS_IF([test "$renderer" != "dx11"], [
+    BUNDLED_INCLUDES="$BUNDLED_INCLUDES -I\$(srcdir)/libraries/glad"
+])
+AC_SUBST([BUNDLED_INCLUDES])
+
+AC_MSG_CHECKING([for default config in $srcdir/$ASSETS_DIR/cfg])
+AS_IF([test -f "$srcdir/$ASSETS_DIR/cfg/override.cfg"], [
+    AC_MSG_RESULT([yes])
+], [
+    AC_MSG_RESULT([no])
+    AC_MSG_ERROR([McOsu-ng default config is missing!])
+])
+
+AC_MSG_CHECKING([for models in $srcdir/$ASSETS_DIR/models])
+AS_IF([test -d "$srcdir/$ASSETS_DIR/models"], [
+    AC_MSG_RESULT([yes])
+], [
+    AC_MSG_RESULT([no])
+    AC_MSG_ERROR([McOsu-ng model assets are missing!])
+])
+
+AC_MSG_CHECKING([for shaders in $srcdir/$ASSETS_DIR/shaders])
+AS_IF([test -d "$srcdir/$ASSETS_DIR/shaders"], [
+    AC_MSG_RESULT([yes])
+], [
+    AC_MSG_RESULT([no])
+    AC_MSG_ERROR([McOsu-ng shader assets are missing!])
+])
+
+AC_MSG_CHECKING([for fonts in $srcdir/$ASSETS_DIR/fonts])
+AS_IF([test -d "$srcdir/$ASSETS_DIR/fonts"], [
+    AC_MSG_RESULT([yes])
+], [
+    AC_MSG_RESULT([no])
+    AC_MSG_ERROR([McOsu-ng fonts are missing!])
+])
+
+AC_MSG_CHECKING([for default material assets in $srcdir/$ASSETS_DIR/materials])
+AS_IF([test -d "$srcdir/$ASSETS_DIR/materials"], [
+    AC_MSG_RESULT([yes])
+], [
+    AC_MSG_RESULT([no])
+    AC_MSG_ERROR([McOsu-ng material assets are missing!])
+])
+
 AC_DEFUN([PKG_CHECK_AUTO], [
     AS_IF([test "x$enable_static" = "xyes"],
         [PKG_CHECK_MODULES_STATIC([$1], [$2], [$3], [$4])],
@@ -744,6 +809,7 @@ AM_CONDITIONAL([WIN32_PLATFORM], [test "$SYSNAME" = "windows" && test "$host_cpu
 AM_CONDITIONAL([STRIPBINS], [test "x$enable_strip" != "xno" && ! { test "$SYSNAME" = "windows" && test "$host_cpu" = "i686" ; } ])
 
 # need dynamic winpthread for old windows 32bit compat builds
+# the way im searching for the right .dlls to copy is so disgusting and needs to be fixed somehow
 AS_IF([test -n "$ubercompat"], [
     AS_IF([test "x$enable_static" = "xyes"], [ # still need winpthread dynamic, breaks otherwise for reasons i dont understand
         WINSHARED_DLLS="$($CC -print-prog-name=ld | sed -e 's|/bin/.*||' | tr -d '\n' | find -files0-from - \
@@ -760,70 +826,6 @@ AS_IF([test -n "$ubercompat"], [
 AM_CONDITIONAL([WINSHARED_DLLS_NEEDED], [test -n "$WINSHARED_DLLS"])
 
 AM_CONDITIONAL([AUDIO_SHORTCUTS], [test "$audiobackendcnt" > 1 && test -n "$WINE" && test "$SYSNAME" = "windows"])
-
-ASSETS_DIR=assets
-AC_SUBST([ASSETS_DIR])
-
-AUDIO_CFLAGS=""
-AUDIO_LIBS=""
-
-AC_SUBST([AUDIO_CFLAGS])
-AC_SUBST([AUDIO_LIBS])
-
-# the source file is also added through autogen.sh to Makefile.sources
-BUNDLED_INCLUDES="-I\$(srcdir)/libraries"
-AS_IF([test "$renderer" != "dx11"], [
-    BUNDLED_INCLUDES="$BUNDLED_INCLUDES -I\$(srcdir)/libraries/glad"
-])
-AC_SUBST([BUNDLED_INCLUDES])
-
-AC_MSG_CHECKING([for default config in $srcdir/$ASSETS_DIR/cfg])
-AS_IF([test -f "$srcdir/$ASSETS_DIR/cfg/override.cfg"], [
-    AC_MSG_RESULT([yes])
-], [
-    AC_MSG_RESULT([no])
-    AC_MSG_ERROR([McOsu-ng default config is missing!])
-])
-
-AC_MSG_CHECKING([for models in $srcdir/$ASSETS_DIR/models])
-AS_IF([test -d "$srcdir/$ASSETS_DIR/models"], [
-    AC_MSG_RESULT([yes])
-], [
-    AC_MSG_RESULT([no])
-    AC_MSG_ERROR([McOsu-ng model assets are missing!])
-])
-
-AC_MSG_CHECKING([for shaders in $srcdir/$ASSETS_DIR/shaders])
-AS_IF([test -d "$srcdir/$ASSETS_DIR/shaders"], [
-    AC_MSG_RESULT([yes])
-], [
-    AC_MSG_RESULT([no])
-    AC_MSG_ERROR([McOsu-ng shader assets are missing!])
-])
-
-AC_MSG_CHECKING([for fonts in $srcdir/$ASSETS_DIR/fonts])
-AS_IF([test -d "$srcdir/$ASSETS_DIR/fonts"], [
-    AC_MSG_RESULT([yes])
-], [
-    AC_MSG_RESULT([no])
-    AC_MSG_ERROR([McOsu-ng fonts are missing!])
-])
-
-AC_MSG_CHECKING([for default material assets in $srcdir/$ASSETS_DIR/materials])
-AS_IF([test -d "$srcdir/$ASSETS_DIR/materials"], [
-    AC_MSG_RESULT([yes])
-], [
-    AC_MSG_RESULT([no])
-    AC_MSG_ERROR([McOsu-ng material assets are missing!])
-])
-
-AC_MSG_CHECKING([for src/Makefile.sources])
-AS_IF([test -f "$srcdir/src/Makefile.sources"], [
-    AC_MSG_RESULT([yes])
-], [
-    AC_MSG_RESULT([no])
-    AC_MSG_ERROR([src/Makefile.sources not found. Run ./autogen.sh first.])
-])
 
 # output makefile
 AC_CONFIG_FILES([Makefile])
