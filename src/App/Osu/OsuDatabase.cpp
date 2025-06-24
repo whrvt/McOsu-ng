@@ -302,17 +302,9 @@ private:
 	std::vector<OsuDatabaseBeatmap*> m_toCleanup;
 };
 
-
-
-
-
-
 OsuDatabase::OsuDatabase()
 {
 	// convar refs
-
-
-
 	cv::osu::scores_rename.setCallback( fastdelegate::MakeDelegate(this, &OsuDatabase::onScoresRename) );
 	cv::osu::scores_export.setCallback( fastdelegate::MakeDelegate(this, &OsuDatabase::onScoresExport) );
 
@@ -548,11 +540,11 @@ void OsuDatabase::sortScores(const std::string &beatmapMD5Hash)
 {
 	if (beatmapMD5Hash.length() != 32 || m_scores[beatmapMD5Hash].size() < 2) return;
 
-	for (auto & sortMethod : m_scoreSortingMethods)
+	for (const auto & sortMethod : m_scoreSortingMethods)
 	{
 		if (cv::osu::songbrowser_scores_sortingtype.getString() == sortMethod.name)
 		{
-			std::sort(m_scores[beatmapMD5Hash].begin(), m_scores[beatmapMD5Hash].end(), sortMethod.comparator);
+			std::ranges::sort(m_scores[beatmapMD5Hash], sortMethod.comparator);
 			return;
 		}
 	}
@@ -1241,7 +1233,7 @@ void OsuDatabase::loadDB(OsuFile *db, bool &fallbackToRawLoad)
 
 	// get BeatmapDirectory parameter from osu!.<OS_USERNAME>.cfg
 	// fallback to /Songs/ if it doesn't exist
-	UString songFolder = cv::osu::folder.getString();
+	UString songFolder{cv::osu::folder.getString()};
 	{
 		const UString customBeatmapDirectory = parseLegacyCfgBeatmapDirectoryParameter();
 		if (customBeatmapDirectory.length() < 1)
@@ -1259,7 +1251,7 @@ void OsuDatabase::loadDB(OsuFile *db, bool &fallbackToRawLoad)
 	m_iFolderCount = db->readInt();
 	db->skipBool();
 	db->readDateTime();
-	UString playerName = db->readString();
+	UString playerName{db->readString()};
 	m_iNumBeatmapsToLoad = db->readInt();
 
 	debugLog("Database: version = {}, folderCount = {}, playerName = {:s}, numDiffs = {}\n", m_iVersion, m_iFolderCount, playerName.toUtf8(), m_iNumBeatmapsToLoad);
@@ -1328,15 +1320,15 @@ void OsuDatabase::loadDB(OsuFile *db, bool &fallbackToRawLoad)
 			/*unsigned int size = */db->skipInt(); // size in bytes of the beatmap entry
 		}
 
-		UString artistName = db->readString().trim();
-		UString artistNameUnicode = db->readString();
-		UString songTitle = db->readString().trim();
-		UString songTitleUnicode = db->readString();
-		UString creatorName = db->readString().trim();
-		UString difficultyName = db->readString().trim();
-		UString audioFileName = db->readString();
+		UString artistName{db->readString().trim()};
+		UString artistNameUnicode{db->readString()};
+		UString songTitle{db->readString().trim()};
+		UString songTitleUnicode{db->readString()};
+		UString creatorName{db->readString().trim()};
+		UString difficultyName{db->readString().trim()};
+		UString audioFileName{db->readString()};
 		std::string md5hash = db->readStdString();
-		UString osuFileName = db->readString();
+		UString osuFileName{db->readString()};
 		/*unsigned char rankedStatus = */db->skipByte();
 		unsigned short numCircles = db->readShort();
 		unsigned short numSliders = db->readShort();
@@ -1445,16 +1437,16 @@ void OsuDatabase::loadDB(OsuFile *db, bool &fallbackToRawLoad)
 		unsigned char mode = db->readByte();
 		//debugLog("localOffset = {}, stackLeniency = {:f}, mode = {}\n", localOffset, stackLeniency, mode);
 
-		UString songSource = db->readString().trim();
-		UString songTags = db->readString().trim();
+		UString songSource{db->readString().trim()};
+		UString songTags{db->readString().trim()};
 		//debugLog("songSource = {:s}, songTags = {:s}\n", songSource.toUtf8(), songTags.toUtf8());
 
 		short onlineOffset = db->readShort();
-		UString songTitleFont = db->readString();
+		UString songTitleFont{db->readString()};
 		/*bool unplayed = */db->skipBool();
 		/*long long lastTimePlayed = */db->skipLongLong();
 		/*bool isOsz2 = */db->skipBool();
-		UString path = db->readString().trim(); // somehow, some beatmaps may have spaces at the start/end of their path, breaking the Windows API (e.g. https://osu.ppy.sh/s/215347), therefore the trim
+		UString path{db->readString().trim()}; // somehow, some beatmaps may have spaces at the start/end of their path, breaking the Windows API (e.g. https://osu.ppy.sh/s/215347), therefore the tri}m
 		/*long long lastOnlineCheck = */db->skipLongLong();
 		//debugLog("onlineOffset = {}, songTitleFont = {:s}, unplayed = {}, lastTimePlayed = {}, isOsz2 = {}, path = {:s}, lastOnlineCheck = {}\n", onlineOffset, songTitleFont.toUtf8(), (int)unplayed, lastTimePlayed, (int)isOsz2, path.toUtf8(), lastOnlineCheck);
 
@@ -1481,7 +1473,7 @@ void OsuDatabase::loadDB(OsuFile *db, bool &fallbackToRawLoad)
 		}
 
 		// build beatmap & diffs from all the data
-		UString beatmapPath = songFolder;
+		UString beatmapPath{songFolder};
 		beatmapPath.append(path);
 		beatmapPath.append("/");
 		UString fullFilePath = beatmapPath;
@@ -1751,7 +1743,7 @@ void OsuDatabase::loadDB(OsuFile *db, bool &fallbackToRawLoad)
 				}
 
 				// and in the other hashmap
-				UString titleArtist = bm->getTitle();
+				UString titleArtist{bm->getTitle()};
 				titleArtist.append(bm->getArtist());
 				if (titleArtist.length() > 0)
 					titleArtistToBeatmap[std::string(titleArtist.toUtf8())] = bm;
@@ -1779,7 +1771,7 @@ void OsuDatabase::loadDB(OsuFile *db, bool &fallbackToRawLoad)
 					bool existsAlready = false;
 
 					// new: use hashmap
-					UString titleArtistCreator = diff2->getTitle();
+					UString titleArtistCreator{diff2->getTitle()};
 					titleArtistCreator.append(diff2->getArtist());
 					titleArtistCreator.append(diff2->getCreator());
 					if (titleArtistCreator.length() > 0)
@@ -1830,7 +1822,7 @@ void OsuDatabase::loadDB(OsuFile *db, bool &fallbackToRawLoad)
 	// load legacy collection.db
 	if (cv::osu::collections_legacy_enabled.getBool())
 	{
-		UString legacyCollectionFilePath = cv::osu::folder.getString();
+		UString legacyCollectionFilePath{cv::osu::folder.getString()};
 		legacyCollectionFilePath.append("collection.db");
 		loadCollections(legacyCollectionFilePath, true, hashToDiff2, hashToBeatmap);
 	}

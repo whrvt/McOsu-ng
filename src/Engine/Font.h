@@ -12,9 +12,9 @@
 #include "Resource.h"
 #include "VertexArrayObject.h"
 
-#include <freetype/freetype.h>
-
 typedef struct FT_Bitmap_ FT_Bitmap;
+typedef struct FT_FaceRec_ *FT_Face;
+typedef struct FT_LibraryRec_ *FT_Library;
 
 class TextureAtlas;
 class VertexArrayObject;

@@ -113,7 +113,7 @@ void *asyncResourceLoaderThread(void *data, std::stop_token stopToken)
 
 AsyncResourceLoader::AsyncResourceLoader()
 {
-	m_maxThreads = std::clamp(env->getLogicalCPUCount(), MIN_NUM_THREADS, 32);
+	m_maxThreads = std::clamp(env->getLogicalCPUCount() - 1, MIN_NUM_THREADS, 32);
 	m_threadIdleTimeout = THREAD_IDLE_TIMEOUT;
 
 	// create initial threads
