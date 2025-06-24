@@ -21,7 +21,9 @@ class UString;
 namespace soundtouch
 {
 class SoundTouch;
-}
+class BPMDetect;
+typedef float SAMPLETYPE;
+} // namespace soundtouch
 
 namespace SoLoud
 {
@@ -40,6 +42,7 @@ class SoundTouchFilterInstance;
 class SoundTouchFilterInstance : public AudioSourceInstance
 {
 	friend class SLFXStream;
+
 public:
 	SoundTouchFilterInstance(SLFXStream *aParent);
 	~SoundTouchFilterInstance() override;
@@ -54,6 +57,10 @@ public:
 
 	// accurate position tracking
 	[[nodiscard]] time getRealStreamPosition() const;
+
+	// bpm detection
+	[[nodiscard]] inline float getCurrentBPM() const { return mCurrentBPM; }
+
 private:
 	// buffer management
 	void ensureBufferSize(unsigned int samples);
@@ -70,6 +77,10 @@ private:
 	void updateSTLatency();
 
 	void requestSettingUpdate(float speed, float pitch);
+
+	// bpm detection helpers
+	void processBPMDetection(const soundtouch::SAMPLETYPE *interleavedSamples, int numSamples);
+	void resetBPMDetection();
 
 	// member variables
 	SLFXStream *mParent;                  // parent filter
@@ -96,6 +107,12 @@ private:
 	float *mInterleavedBuffer;           // interleaved audio buffer for SoundTouch
 	unsigned int mInterleavedBufferSize; // size in samples
 
+	// bpm detection
+	soundtouch::BPMDetect *mBPMDetect;   // bpm detector instance
+	unsigned int mBPMSamplesProcessed;   // samples processed in current 5-second chunk
+	unsigned int mBPMChunkSizeInSamples; // 5 seconds worth of samples
+	float mCurrentBPM;                   // current detected bpm
+
 	// debugging and tracking
 	unsigned int mProcessingCounter; // counter for logspam avoidance
 };
@@ -110,7 +127,7 @@ private:
 class SLFXStream : public AudioSource
 {
 public:
-	SLFXStream(bool preferFFmpeg = false);
+	SLFXStream(bool shouldDoBPMDetection = false, bool preferFFmpeg = false);
 	~SLFXStream() override;
 
 	// SoundTouch control interface
@@ -137,8 +154,13 @@ public:
 	// accurate position access for active instance
 	time getRealStreamPosition() const;
 
+	// bpm detection
+	[[nodiscard]] float getCurrentBPM() const;
+
 protected:
 	friend class SoundTouchFilterInstance;
+
+	bool mDoBPMDetection;
 
 	std::atomic<float> mSpeedFactor; // current speed factor (tempo)
 	std::atomic<float> mPitchFactor; // current pitch factor

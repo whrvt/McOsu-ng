@@ -5193,6 +5193,7 @@ $(DEPS_CACHE)/bass-$(BASS_VERSION).source: $(DEPS_CACHE)/bass-$(BASS_VERSION)/ba
 @USE_SOLOUD_TRUE@	$(MKDIR_P) $(DEPS_PREFIX) $(DEPS_PREFIX)/include $(DEPS_PREFIX)/lib/pkgconfig $(DEPS_PREFIX)/SoundTouch/build
 @USE_SOLOUD_TRUE@	$(TAR) xf $(DEPS_CACHE)/SoundTouch-$(SOUNDTOUCH_VERSION).tar.gz -C $(DEPS_PREFIX)/SoundTouch --strip-components=1 && \
 @USE_SOLOUD_TRUE@	cd $(DEPS_PREFIX)/SoundTouch && \
+@USE_SOLOUD_TRUE@	$(SED) -i -e 's|MAX_BPM_VALID 190|MAX_BPM_VALID 1000|' -e 's|MAX_BPM_RANGE 200|MAX_BPM_RANGE 300|' include/BPMDetect.h && \
 @USE_SOLOUD_TRUE@	PKG_CONFIG="$(PKG_CONFIG)" LDFLAGS="$(LDFLAGS)" \
 @USE_SOLOUD_TRUE@	$(CMAKE) -S . -B build -G Ninja \
 @USE_SOLOUD_TRUE@		-D CMAKE_BUILD_TYPE="$(if $(ENABLE_DEBUG),Debug,Release)" \

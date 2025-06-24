@@ -59,6 +59,8 @@ public:
 	virtual float getPitch() = 0;
 	virtual float getFrequency() = 0;
 
+	[[nodiscard]] virtual float getBPM() { return m_fCurrentBPM; } // non-const for possible caching
+
 	virtual bool isPlaying() = 0;
 	virtual bool isFinished() = 0;
 
@@ -100,6 +102,8 @@ protected:
 
 	float m_fVolume;
 	double m_fLastPlayTime;
+
+	float m_fCurrentBPM;
 private:
 	static bool isValidAudioFile(const UString& filePath, const UString &fileExt);
 };

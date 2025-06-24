@@ -44,6 +44,8 @@ Sound::Sound(UString filepath, bool stream, bool threeD, bool loop, bool prescan
 
 	m_fVolume = 1.0f;
 	m_fLastPlayTime = -1.0f;
+
+	m_fCurrentBPM = -1.0f; // initialize to invalid value, only some backends support getting current BPM
 }
 
 void Sound::initAsync()

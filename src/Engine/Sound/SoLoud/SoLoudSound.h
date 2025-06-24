@@ -59,6 +59,8 @@ public:
 	float getPitch() override;
 	float getFrequency() override;
 
+	float getBPM() override;
+
 	bool isPlaying() override;
 	bool isFinished() override;
 

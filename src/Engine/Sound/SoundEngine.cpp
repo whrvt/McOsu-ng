@@ -44,6 +44,7 @@ SoundEngine::SoundEngine()
 	m_outputDeviceChangeCallback = nullptr;
 	m_fVolume = 1.0f;
 	m_iCurrentOutputDevice = -1;
+	m_bBPMDetectEnabled = false;
 }
 
 SoundEngine *SoundEngine::createSoundEngine(SndEngineType type)

@@ -105,7 +105,7 @@ void SoLoudSound::initAsync()
 	if (m_bStream)
 	{
 		// use SLFXStream for streaming audio (music, etc.) includes rate/pitch processing like BASS_FX_TempoCreate
-		auto *stream = new SoLoud::SLFXStream(cv::snd_soloud_prefer_ffmpeg.getInt() > 0);
+		auto *stream = new SoLoud::SLFXStream(soundEngine->shouldDetectBPM(), cv::snd_soloud_prefer_ffmpeg.getInt() > 0);
 
 		// use loadToMem for streaming to handle unicode paths on windows
 		if constexpr (Env::cfg(OS::WINDOWS))
@@ -543,6 +543,33 @@ float SoLoudSound::getFrequency()
 	}
 
 	return m_frequency;
+}
+
+float SoLoudSound::getBPM()
+{
+	if (!m_bReady || !m_audioSource)
+		return -1.0f;
+
+	if (!m_bStream) // currently unsupported because it's unneeded for the current use case
+	{
+		debugLog("Programmer Error: tried to get BPM for a sample!\n");
+		return -1.0f;
+	}
+
+	if (!soundEngine->shouldDetectBPM())
+	{
+		debugLog("tried to get BPM, but BPM detection wasn't enabled\n");
+		return -1.0f;
+	}
+
+	// delegate to SLFXStream for bpm detection
+	auto *stream = static_cast<SoLoud::SLFXStream *>(m_audioSource);
+	float currentBPM = stream->getCurrentBPM();
+
+	if (currentBPM > 0.0f)
+		m_fCurrentBPM = currentBPM;
+
+	return m_fCurrentBPM;
 }
 
 bool SoLoudSound::isPlaying()

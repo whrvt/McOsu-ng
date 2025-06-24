@@ -39,6 +39,7 @@ OsuChangelog::OsuChangelog() : OsuScreenBackable()
 	alpha3400.title = UString::format(PACKAGE_VERSION " (Build Date: %s, %s)", __DATE__, __TIME__); // (10.05.2025 - ?)
 	alpha3400.changes.emplace_back("- First " PACKAGE_NAME " test version bump");
 	alpha3400.changes.emplace_back("- Added osu! folder browse button to options menu");
+	alpha3400.changes.emplace_back(R"(- Added "Draw Stats: Current BPM" option (only works with SoLoud audio backend), shows an approximate BPM of the past 15 seconds of music)");
 	alpha3400.changes.emplace_back(R"(- Added "Open current skin folder" button to options menu)");
 	alpha3400.changes.emplace_back(R"(- Added "Open Beatmap Folder" button to beatmap right click menu)");
 	alpha3400.changes.emplace_back("- Added \"snd_buffer\" ConVar to set BASS buffer size");

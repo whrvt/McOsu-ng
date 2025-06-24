@@ -42,6 +42,8 @@
 
 #include "OsuUIVolumeSlider.h"
 
+#include "SoundEngine.h"
+
 #include "DirectX11Interface.h"
 #include "OpenGLES2Interface.h"
 #include "OpenGLES32Interface.h"
@@ -146,6 +148,8 @@ ConVar hud_statistics_totalstars_offset_x("osu_hud_statistics_totalstars_offset_
 ConVar hud_statistics_totalstars_offset_y("osu_hud_statistics_totalstars_offset_y", 0.0f, FCVAR_NONE);
 ConVar hud_statistics_bpm_offset_x("osu_hud_statistics_bpm_offset_x", 0.0f, FCVAR_NONE);
 ConVar hud_statistics_bpm_offset_y("osu_hud_statistics_bpm_offset_y", 0.0f, FCVAR_NONE);
+ConVar hud_statistics_detected_bpm_offset_x("osu_hud_statistics_detected_bpm_offset_x", 0.0f, FCVAR_NONE);
+ConVar hud_statistics_detected_bpm_offset_y("osu_hud_statistics_detected_bpm_offset_y", 0.0f, FCVAR_NONE);
 ConVar hud_statistics_ar_offset_x("osu_hud_statistics_ar_offset_x", 0.0f, FCVAR_NONE);
 ConVar hud_statistics_ar_offset_y("osu_hud_statistics_ar_offset_y", 0.0f, FCVAR_NONE);
 ConVar hud_statistics_cs_offset_x("osu_hud_statistics_cs_offset_x", 0.0f, FCVAR_NONE);
@@ -216,6 +220,9 @@ ConVar draw_statistics_maxpossiblecombo("osu_draw_statistics_maxpossiblecombo", 
 ConVar draw_statistics_livestars("osu_draw_statistics_livestars", false, FCVAR_NONE);
 ConVar draw_statistics_totalstars("osu_draw_statistics_totalstars", false, FCVAR_NONE);
 ConVar draw_statistics_bpm("osu_draw_statistics_bpm", false, FCVAR_NONE);
+ConVar draw_statistics_detected_bpm("osu_draw_statistics_detected_bpm", false, FCVAR_NONE, [](float on) -> void {
+	soundEngine ? soundEngine->setBPMDetection(!!static_cast<int>(on)) : (void)0;
+});
 ConVar draw_statistics_ar("osu_draw_statistics_ar", false, FCVAR_NONE);
 ConVar draw_statistics_cs("osu_draw_statistics_cs", false, FCVAR_NONE);
 ConVar draw_statistics_od("osu_draw_statistics_od", false, FCVAR_NONE);
@@ -349,6 +356,7 @@ void OsuHUD::draw()
 					OsuDifficultyCalculator::calculateTotalStarsFromSkills(beatmap->getAimStarsForUpToHitObjectIndex(hitObjectIndexForCurrentTime), beatmap->getSpeedStarsForUpToHitObjectIndex(hitObjectIndexForCurrentTime)),
 					osu->getSongBrowser()->getDynamicStarCalculator()->getTotalStars(),
 					beatmap->getMostCommonBPM(),
+					(soundEngine->shouldDetectBPM() && beatmap->getMusic()) ? beatmap->getMusic()->getBPM() : -1.0f,
 					OsuGameRules::getApproachRateForSpeedMultiplier(beatmap, beatmap->getSpeedMultiplier()),
 					beatmap->getCS(),
 					OsuGameRules::getOverallDifficultyForSpeedMultiplier(beatmap, beatmap->getSpeedMultiplier()),
@@ -643,7 +651,7 @@ void OsuHUD::drawDummy()
 
 	drawSkip();
 
-	drawStatistics(0, 0, 727, 2.3f, 5.5f, 180, 9.0f, 4.0f, 8.0f, 6.0f, 4, 6, 90.0f, 123, 1234, 25, -5, 15);
+	drawStatistics(0, 0, 727, 2.3f, 5.5f, 180, 180.0f, 9.0f, 4.0f, 8.0f, 6.0f, 4, 6, 90, 123.0f, 1234.0f, 25.0f, -5, 15);
 
 	drawWarningArrows();
 
@@ -2288,7 +2296,7 @@ void OsuHUD::drawProgressBar(float percent, bool waiting)
 	g->popTransform();
 }
 
-void OsuHUD::drawStatistics(int misses, int sliderbreaks, int maxPossibleCombo, float liveStars, float totalStars, int bpm, float ar, float cs, float od, float hp, int nps, int nd, int ur, float pp, float ppfc, float hitWindow300, int hitdeltaMin, int hitdeltaMax)
+void OsuHUD::drawStatistics(int misses, int sliderbreaks, int maxPossibleCombo, float liveStars, float totalStars, int bpm, float curBPM, float ar, float cs, float od, float hp, int nps, int nd, int ur, float pp, float ppfc, float hitWindow300, int hitdeltaMin, int hitdeltaMax)
 {
     McFont *font = osu->getTitleFont();
     const float offsetScale = Osu::getImageScale(Vector2(1.0f, 1.0f), 1.0f);
@@ -2361,6 +2369,13 @@ void OsuHUD::drawStatistics(int misses, int sliderbreaks, int maxPossibleCombo, 
 					 UString::format("BPM: %i", bpm),
 					 cv::osu::hud_statistics_bpm_offset_x.getInt(),
 					 cv::osu::hud_statistics_bpm_offset_y.getInt());
+
+		if constexpr (Env::cfg(AUD::SOLOUD))
+		if (soundEngine->getTypeId() == SoundEngine::SOLOUD)
+		addStatistic(cv::osu::draw_statistics_detected_bpm.getBool(),
+					 UString::format("Cur. BPM: %i", curBPM > 0.0f ? static_cast<int>(curBPM) : bpm),
+					 cv::osu::hud_statistics_detected_bpm_offset_x.getInt(),
+					 cv::osu::hud_statistics_detected_bpm_offset_y.getInt());
 
 		ar = std::round(ar * 100.0f) / 100.0f;
 		addStatistic(cv::osu::draw_statistics_ar.getBool(),

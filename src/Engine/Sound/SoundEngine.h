@@ -58,6 +58,9 @@ public:
 
 	virtual std::vector<UString> getOutputDevices() = 0;
 
+	[[nodiscard]] inline bool shouldDetectBPM() const { return m_bBPMDetectEnabled; }
+	inline void setBPMDetection(bool enabled) { m_bBPMDetectEnabled = enabled; }
+
 	[[nodiscard]] inline const UString &getOutputDevice() const { return m_sCurrentOutputDevice; }
 	[[nodiscard]] inline float getVolume() const { return m_fVolume; }
 
@@ -93,6 +96,8 @@ protected:
 	UString m_sCurrentOutputDevice;
 
 	float m_fVolume;
+
+	bool m_bBPMDetectEnabled;
 };
 
 // convenience conversion macro to get the sound handle, extra args are any extra conditions to check for besides general state validity

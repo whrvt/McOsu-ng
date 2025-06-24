@@ -952,6 +952,9 @@ OsuOptionsMenu::OsuOptionsMenu() : OsuScreenBackable()
 	addCheckbox("Draw Stats: Stars*** (Until Now)", "Incrementally updates the star rating (aka \"realtime stars\").", &cv::osu::draw_statistics_livestars);
 	addCheckbox("Draw Stats: Stars* (Total)", "Total stars for active mods.", &cv::osu::draw_statistics_totalstars);
 	addCheckbox("Draw Stats: BPM", &cv::osu::draw_statistics_bpm);
+	if constexpr (Env::cfg(AUD::SOLOUD)) // NOTE: SoLoud only, currently
+	if (soundEngine->getTypeId() == SoundEngine::SOLOUD)
+		addCheckbox("Draw Stats: Current BPM (Approx.)", &cv::osu::draw_statistics_detected_bpm);
 	addCheckbox("Draw Stats: AR", &cv::osu::draw_statistics_ar);
 	addCheckbox("Draw Stats: CS", &cv::osu::draw_statistics_cs);
 	addCheckbox("Draw Stats: OD", &cv::osu::draw_statistics_od);

@@ -12,6 +12,7 @@
 #include "ConVar.h"
 #include "Engine.h"
 
+#include <BPMDetect.h> // from SoundTouch, to implement getBPM()
 #include <SoundTouch.h>
 
 #include <soloud_error.h>
@@ -39,8 +40,9 @@ namespace SoLoud
 // SLFXStream (WavStream + SoundTouch wrapper) implementation
 //-------------------------------------------------------------------------
 
-SLFXStream::SLFXStream(bool preferFFmpeg)
-    : mSpeedFactor(1.0f),
+SLFXStream::SLFXStream(bool shouldDoBPMDetection, bool preferFFmpeg)
+    : mDoBPMDetection(shouldDoBPMDetection),
+      mSpeedFactor(1.0f),
       mPitchFactor(1.0f),
       mSource(std::make_unique<WavStream>(preferFFmpeg)),
       mActiveInstance(nullptr)
@@ -98,6 +100,13 @@ time SLFXStream::getRealStreamPosition() const
 	if (mActiveInstance)
 		return mActiveInstance->getRealStreamPosition();
 	return 0.0;
+}
+
+float SLFXStream::getCurrentBPM() const
+{
+	if (mDoBPMDetection && mActiveInstance)
+		return mActiveInstance->getCurrentBPM();
+	return -1.0f;
 }
 
 // WavStream-compatibility methods
@@ -208,20 +217,20 @@ UString SLFXStream::getDecoder()
 
 	switch (mSource->mFiletype)
 	{
-		case WAVSTREAM_WAV:
-			return "dr_wav";
-		case WAVSTREAM_OGG:
-			return "dr_ogg";
-		case WAVSTREAM_FLAC:
-			return "dr_flac";
-		case WAVSTREAM_MPG123:
-			return "libmpg123";
-		case WAVSTREAM_DRMP3:
-			return "dr_mp3";
-		case WAVSTREAM_FFMPEG:
-			return "ffmpeg";
-		default:
-			return "unknown";
+	case WAVSTREAM_WAV:
+		return "dr_wav";
+	case WAVSTREAM_OGG:
+		return "dr_ogg";
+	case WAVSTREAM_FLAC:
+		return "dr_flac";
+	case WAVSTREAM_MPG123:
+		return "libmpg123";
+	case WAVSTREAM_DRMP3:
+		return "dr_mp3";
+	case WAVSTREAM_FFMPEG:
+		return "ffmpeg";
+	default:
+		return "unknown";
 	}
 }
 
@@ -236,13 +245,17 @@ SoundTouchFilterInstance::SoundTouchFilterInstance(SLFXStream *aParent)
       mInitialSTLatencySamples(0),
       mSTOutputSequenceSamples(0),
       mSTLatencySeconds(0.0),
-	  mSoundTouchSpeed(1.0f),
-	  mSoundTouchPitch(1.0f),
+      mSoundTouchSpeed(1.0f),
+      mSoundTouchPitch(1.0f),
       mNeedsSettingUpdate(false),
       mBuffer(nullptr),
       mBufferSize(0),
       mInterleavedBuffer(nullptr),
       mInterleavedBufferSize(0),
+      mBPMDetect(nullptr),
+      mBPMSamplesProcessed(0),
+      mBPMChunkSizeInSamples(0),
+      mCurrentBPM(-1.0f),
       mProcessingCounter(0)
 {
 	ST_DEBUG_LOG("SoundTouchFilterInstance: Constructor called\n");
@@ -297,6 +310,15 @@ SoundTouchFilterInstance::SoundTouchFilterInstance(SLFXStream *aParent)
 				ST_DEBUG_LOG("SoundTouch: Initial latency: {:} samples ({:.1f}ms), Output sequence: {:} samples, Average latency: {:.1f}ms\n",
 				             mInitialSTLatencySamples, (mInitialSTLatencySamples * 1000.0f) / mBaseSamplerate, mSTOutputSequenceSamples, mSTLatencySeconds * 1000.0);
 			}
+
+			// initialize bpm detection
+			if (mParent->mDoBPMDetection)
+			{
+				mBPMChunkSizeInSamples = static_cast<unsigned int>(mBaseSamplerate * 15.0f); // 15 seconds
+				resetBPMDetection();
+
+				ST_DEBUG_LOG("BPM: Initialized detection with chunk size {:} samples (15 seconds)\n", mBPMChunkSizeInSamples);
+			}
 		}
 	}
 }
@@ -307,6 +329,7 @@ SoundTouchFilterInstance::~SoundTouchFilterInstance()
 	if (mParent && mParent->mActiveInstance == this)
 		mParent->mActiveInstance = nullptr;
 
+	delete mBPMDetect;
 	delete[] mInterleavedBuffer;
 	delete[] mBuffer;
 	delete mSoundTouch;
@@ -342,7 +365,8 @@ unsigned int SoundTouchFilterInstance::getAudio(float *aBuffer, unsigned int aSa
 	{
 		mNeedsSettingUpdate = false;
 
-		ST_DEBUG_LOG("(Deferred) Updating speed: {:f}->{:f}, pitch: {:f}->{:f}\n", mSoundTouchSpeed.load(), mParent->mSpeedFactor.load(), mSoundTouchPitch.load(), mParent->mPitchFactor.load());
+		ST_DEBUG_LOG("(Deferred) Updating speed: {:f}->{:f}, pitch: {:f}->{:f}\n", mSoundTouchSpeed.load(), mParent->mSpeedFactor.load(), mSoundTouchPitch.load(),
+		             mParent->mPitchFactor.load());
 
 		mSoundTouchSpeed = mParent->mSpeedFactor.load();
 		mSoundTouchPitch = mParent->mPitchFactor.load();
@@ -351,7 +375,7 @@ unsigned int SoundTouchFilterInstance::getAudio(float *aBuffer, unsigned int aSa
 		mSoundTouch->setTempo(mSoundTouchSpeed.load());
 		mSoundTouch->setPitch(mSoundTouchPitch.load());
 
-     	// SoLoud AudioStreamInstance inherited, allows the main SoLoud mixer to advance the mStreamPosition by the correct proportional amount
+		// SoLoud AudioStreamInstance inherited, allows the main SoLoud mixer to advance the mStreamPosition by the correct proportional amount
 		mSetRelativePlaySpeed = mOverallRelativePlaySpeed = mSoundTouchSpeed;
 
 		updateSTLatency();
@@ -605,6 +629,10 @@ void SoundTouchFilterInstance::feedSoundTouch(unsigned int targetBufferLevel, bo
 			}
 		}
 
+		// process bpm detection on interleaved samples
+		if (mParent->mDoBPMDetection)
+			processBPMDetection(mInterleavedBuffer, static_cast<int>(samplesRead));
+
 		// feed the chunk to SoundTouch
 		mSoundTouch->putSamples(mInterleavedBuffer, samplesRead);
 
@@ -639,6 +667,9 @@ void SoundTouchFilterInstance::reSynchronize()
 		updateSTLatency();
 	}
 
+	// reset bpm detection on seek/rewind
+	resetBPMDetection();
+
 	if (mSourceInstance)
 	{
 		// update the position tracking. without this, SoLoud wouldn't know that "we" (as in, this voice handle) has manually had its stream position/time changed
@@ -647,6 +678,45 @@ void SoundTouchFilterInstance::reSynchronize()
 		mStreamPosition = mSourceInstance->mStreamPosition;
 		mStreamTime = mSourceInstance->mStreamTime;
 	}
+}
+
+void SoundTouchFilterInstance::processBPMDetection(const soundtouch::SAMPLETYPE *interleavedSamples, int numSamples)
+{
+	if (!mBPMDetect || numSamples == 0)
+		return;
+
+	mBPMDetect->inputSamples(interleavedSamples, numSamples);
+	mBPMSamplesProcessed += numSamples;
+
+	// check if we've processed a full 15-second chunk
+	if (mBPMSamplesProcessed >= mBPMChunkSizeInSamples)
+	{
+		float detectedBPM = mBPMDetect->getBpm() * mSoundTouchSpeed;
+
+		if (detectedBPM > 0.0f)
+		{
+			mCurrentBPM = detectedBPM;
+			ST_DEBUG_LOG("BPM: Detected {:f} BPM from {:} samples ({:.1f} seconds)\n", detectedBPM, mBPMSamplesProcessed,
+			             static_cast<float>(mBPMSamplesProcessed) / mBaseSamplerate);
+		}
+		else
+		{
+			ST_DEBUG_LOG("BPM: No clear beat detected in {:} samples ({:.1f} seconds)\n", mBPMSamplesProcessed,
+			             static_cast<float>(mBPMSamplesProcessed) / mBaseSamplerate);
+		}
+
+		// reset for next chunk
+		resetBPMDetection();
+	}
+}
+
+void SoundTouchFilterInstance::resetBPMDetection()
+{
+	if (!mParent->mDoBPMDetection)
+		return;
+	delete mBPMDetect;
+	mBPMDetect = new soundtouch::BPMDetect(static_cast<int>(mChannels), static_cast<int>(mBaseSamplerate));
+	mBPMSamplesProcessed = 0;
 }
 
 } // namespace SoLoud
