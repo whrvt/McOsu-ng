@@ -127,7 +127,7 @@ private:
 class SLFXStream : public AudioSource
 {
 public:
-	SLFXStream(bool shouldDoBPMDetection = false, bool preferFFmpeg = false);
+	SLFXStream(bool preferFFmpeg = false);
 	~SLFXStream() override;
 
 	// SoundTouch control interface
@@ -159,8 +159,6 @@ public:
 
 protected:
 	friend class SoundTouchFilterInstance;
-
-	bool mDoBPMDetection;
 
 	std::atomic<float> mSpeedFactor; // current speed factor (tempo)
 	std::atomic<float> mPitchFactor; // current pitch factor

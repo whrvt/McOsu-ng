@@ -11,6 +11,7 @@
 
 #include "ConVar.h"
 #include "Engine.h"
+#include "SoundEngine.h" // for shouldDetectBPM
 
 #include <BPMDetect.h> // from SoundTouch, to implement getBPM()
 #include <SoundTouch.h>
@@ -40,9 +41,8 @@ namespace SoLoud
 // SLFXStream (WavStream + SoundTouch wrapper) implementation
 //-------------------------------------------------------------------------
 
-SLFXStream::SLFXStream(bool shouldDoBPMDetection, bool preferFFmpeg)
-    : mDoBPMDetection(shouldDoBPMDetection),
-      mSpeedFactor(1.0f),
+SLFXStream::SLFXStream(bool preferFFmpeg)
+    : mSpeedFactor(1.0f),
       mPitchFactor(1.0f),
       mSource(std::make_unique<WavStream>(preferFFmpeg)),
       mActiveInstance(nullptr)
@@ -104,7 +104,7 @@ time SLFXStream::getRealStreamPosition() const
 
 float SLFXStream::getCurrentBPM() const
 {
-	if (mDoBPMDetection && mActiveInstance)
+	if (mActiveInstance)
 		return mActiveInstance->getCurrentBPM();
 	return -1.0f;
 }
@@ -312,13 +312,10 @@ SoundTouchFilterInstance::SoundTouchFilterInstance(SLFXStream *aParent)
 			}
 
 			// initialize bpm detection
-			if (mParent->mDoBPMDetection)
-			{
-				mBPMChunkSizeInSamples = static_cast<unsigned int>(mBaseSamplerate * 15.0f); // 15 seconds
-				resetBPMDetection();
+			mBPMChunkSizeInSamples = static_cast<unsigned int>(mBaseSamplerate * 15.0f); // 15 seconds
+			resetBPMDetection();
 
-				ST_DEBUG_LOG("BPM: Initialized detection with chunk size {:} samples (15 seconds)\n", mBPMChunkSizeInSamples);
-			}
+			ST_DEBUG_LOG("BPM: Initialized detection with chunk size {:} samples (15 seconds)\n", mBPMChunkSizeInSamples);
 		}
 	}
 }
@@ -630,7 +627,7 @@ void SoundTouchFilterInstance::feedSoundTouch(unsigned int targetBufferLevel, bo
 		}
 
 		// process bpm detection on interleaved samples
-		if (mParent->mDoBPMDetection)
+		if (soundEngine->shouldDetectBPM())
 			processBPMDetection(mInterleavedBuffer, static_cast<int>(samplesRead));
 
 		// feed the chunk to SoundTouch
@@ -682,7 +679,13 @@ void SoundTouchFilterInstance::reSynchronize()
 
 void SoundTouchFilterInstance::processBPMDetection(const soundtouch::SAMPLETYPE *interleavedSamples, int numSamples)
 {
-	if (!mBPMDetect || numSamples == 0)
+	if (numSamples == 0)
+		return;
+
+	if (!mBPMDetect && soundEngine->shouldDetectBPM()) // it was enabled post-stream init, so re-initialize it
+		resetBPMDetection();
+
+	if (!mBPMDetect)
 		return;
 
 	mBPMDetect->inputSamples(interleavedSamples, numSamples);
@@ -712,10 +715,10 @@ void SoundTouchFilterInstance::processBPMDetection(const soundtouch::SAMPLETYPE 
 
 void SoundTouchFilterInstance::resetBPMDetection()
 {
-	if (!mParent->mDoBPMDetection)
-		return;
 	delete mBPMDetect;
-	mBPMDetect = new soundtouch::BPMDetect(static_cast<int>(mChannels), static_cast<int>(mBaseSamplerate));
+	mBPMDetect = nullptr;
+	if (soundEngine->shouldDetectBPM())
+		mBPMDetect = new soundtouch::BPMDetect(static_cast<int>(mChannels), static_cast<int>(mBaseSamplerate));
 	mBPMSamplesProcessed = 0;
 }
 

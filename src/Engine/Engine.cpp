@@ -32,6 +32,7 @@
 //	Engine ConCommands	//
 //**********************//
 
+namespace {
 void _borderless(void)
 {
 	if (cv::fullscreen_windowed_borderless.getBool())
@@ -72,6 +73,7 @@ void _windowed(UString args)
 		}
 	}
 }
+}
 
 void Engine::printVersion()
 {
@@ -94,7 +96,7 @@ ConVar host_timescale("host_timescale", 1.0f, FCVAR_CHEAT, "Scale by which the e
 		if (value < 0.01f)
 		{
 			Engine::logRaw("[Engine] host_timescale value must be >= 0.01!\n");
-			cv::host_timescale.setValue(1.0f);
+			cv::host_timescale.setValue(1.0f, false);
 		}
 });
 
@@ -106,22 +108,22 @@ ConVar minimize_on_focus_lost_if_fullscreen("minimize_on_focus_lost_if_fullscree
 ConVar minimize_on_focus_lost_if_borderless_windowed_fullscreen("minimize_on_focus_lost_if_borderless_windowed_fullscreen", false, FCVAR_NONE);
 ConVar disable_windows_key("disable_windows_key", false, FCVAR_NONE, "set to 0/1 to disable/enable the Windows/Super key");
 
-ConVar exit("exit", FCVAR_NONE, []() -> void {engine->shutdown();});
-ConVar shutdown("shutdown", FCVAR_NONE, []() -> void {engine->shutdown();});
-ConVar restart("restart", FCVAR_NONE, []() -> void {engine->restart();});
-ConVar printsize("printsize", FCVAR_NONE, []() -> void {Vector2 s = engine->getScreenSize(); Engine::logRaw("[Engine] screenSize = ({:f}, {:f})\n", s.x, s.y);});
-ConVar fullscreen("fullscreen", FCVAR_NONE, []() -> void {engine->toggleFullscreen();});
+ConVar exit("exit", FCVAR_NONE, []() -> void {engine ? engine->shutdown() : (void)0;});
+ConVar shutdown("shutdown", FCVAR_NONE, []() -> void {engine ? engine->shutdown() : (void)0;});
+ConVar restart("restart", FCVAR_NONE, []() -> void {engine ? engine->restart() : (void)0;});
+ConVar printsize("printsize", FCVAR_NONE, []() -> void {if (engine) {Vector2 s = engine->getScreenSize(); Engine::logRaw("[Engine] screenSize = ({:f}, {:f})\n", s.x, s.y);}});
+ConVar fullscreen("fullscreen", FCVAR_NONE, []() -> void {engine ? engine->toggleFullscreen() : (void)0;});
 ConVar borderless("borderless", FCVAR_NONE, []() -> void {_borderless();});
 ConVar windowed("windowed", FCVAR_NONE, _windowed);
-ConVar minimize("minimize", FCVAR_NONE, []() -> void {env->minimize();});
-ConVar maximize("maximize", FCVAR_NONE, []() -> void {env->maximize();});
-ConVar resizable_toggle("resizable_toggle", FCVAR_NONE, []() -> void {env->setWindowResizable(!env->isWindowResizable());});
-ConVar focus("focus", FCVAR_NONE, []() -> void {engine->focus();});
-ConVar center("center", FCVAR_NONE, []() -> void {engine->center();});
+ConVar minimize("minimize", FCVAR_NONE, []() -> void {env ? env->minimize() : (void)0;});
+ConVar maximize("maximize", FCVAR_NONE, []() -> void {env ? env->maximize() : (void)0;});
+ConVar resizable_toggle("resizable_toggle", FCVAR_NONE, []() -> void {env ? env->setWindowResizable(!env->isWindowResizable()) : (void)0;});
+ConVar focus("focus", FCVAR_NONE, []() -> void {engine ? engine->focus() : (void)0;});
+ConVar center("center", FCVAR_NONE, []() -> void {engine ? engine->center() : (void)0;});
 ConVar version("version", FCVAR_NONE, Engine::printVersion);
-ConVar errortest("errortest", FCVAR_NONE, []() -> void {engine->showMessageError("Error Test", "This is an error message, fullscreen mode should be disabled and you should be able to read this");});
+ConVar errortest("errortest", FCVAR_NONE, []() -> void {engine ? engine->showMessageError("Error Test", "This is an error message, fullscreen mode should be disabled and you should be able to read this") : (void)0;});
 ConVar crash("crash", FCVAR_NONE, []() -> void {std::abort();});
-ConVar dpiinfo("dpiinfo", FCVAR_NONE, []() -> void {Engine::logRaw("[Engine] DPI: {}, DPIScale: {:.4f}\n", env->getDPI(), env->getDPIScale());});
+ConVar dpiinfo("dpiinfo", FCVAR_NONE, []() -> void {env ? Engine::logRaw("[Engine] DPI: {}, DPIScale: {:.4f}\n", env->getDPI(), env->getDPIScale()) : (void)0;});
 }
 //******************//
 //	End ConCommands	//

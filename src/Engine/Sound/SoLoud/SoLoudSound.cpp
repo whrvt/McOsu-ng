@@ -105,7 +105,7 @@ void SoLoudSound::initAsync()
 	if (m_bStream)
 	{
 		// use SLFXStream for streaming audio (music, etc.) includes rate/pitch processing like BASS_FX_TempoCreate
-		auto *stream = new SoLoud::SLFXStream(soundEngine->shouldDetectBPM(), cv::snd_soloud_prefer_ffmpeg.getInt() > 0);
+		auto *stream = new SoLoud::SLFXStream(cv::snd_soloud_prefer_ffmpeg.getInt() > 0);
 
 		// use loadToMem for streaming to handle unicode paths on windows
 		if constexpr (Env::cfg(OS::WINDOWS))
