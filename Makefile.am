@@ -111,15 +111,15 @@ $(DEPS_CACHE)/SoundTouch-$(SOUNDTOUCH_VERSION).source:
 #  the build will work without these (they are dlopen/LoadLibrary'd), but it's a nice-to-have
 $(DEPS_CACHE)/ffmpeg-$(FFMPEG_VERSION)/ffmpeg-linuxx86_64.tar.xz:
 	$(MKDIR_P) $(DEPS_CACHE)/ffmpeg-$(FFMPEG_VERSION) && \
-	$(WGET) -qO $(DEPS_CACHE)/ffmpeg-$(FFMPEG_VERSION)/ffmpeg-linuxx86_64.tar.xz "https://github.com/BtbN/FFmpeg-Builds/releases/download/autobuild-2025-06-11-14-09/ffmpeg-n$(FFMPEG_VERSION).1-22-g0f1fe3d153-linux64-gpl-shared-$(FFMPEG_VERSION).tar.xz"
+	$(WGET) -qO $(DEPS_CACHE)/ffmpeg-$(FFMPEG_VERSION)/ffmpeg-linuxx86_64.tar.xz "https://github.com/BtbN/FFmpeg-Builds/releases/download/autobuild-2025-05-31-14-01/ffmpeg-n$(FFMPEG_VERSION).1-20-g9373b442a6-linux64-gpl-shared-$(FFMPEG_VERSION).tar.xz"
 
 $(DEPS_CACHE)/ffmpeg-$(FFMPEG_VERSION)/ffmpeg-windowsi686.zip:
 	$(MKDIR_P) $(DEPS_CACHE)/ffmpeg-$(FFMPEG_VERSION) && \
-	$(WGET) -qO $(DEPS_CACHE)/ffmpeg-$(FFMPEG_VERSION)/ffmpeg-windowsi686.zip "https://github.com/yt-dlp/FFmpeg-Builds/releases/download/autobuild-2025-06-11-16-50/ffmpeg-n$(FFMPEG_VERSION).1-23-g84adbcce97-win32-gpl-shared-$(FFMPEG_VERSION).zip"
+	$(WGET) -qO $(DEPS_CACHE)/ffmpeg-$(FFMPEG_VERSION)/ffmpeg-windowsi686.zip "https://github.com/yt-dlp/FFmpeg-Builds/releases/download/autobuild-2025-05-31-15-22/ffmpeg-n$(FFMPEG_VERSION).1-21-gce4392a771-win32-gpl-shared-$(FFMPEG_VERSION).zip"
 
 $(DEPS_CACHE)/ffmpeg-$(FFMPEG_VERSION)/ffmpeg-windowsx86_64.zip:
 	$(MKDIR_P) $(DEPS_CACHE)/ffmpeg-$(FFMPEG_VERSION) && \
-	$(WGET) -qO $(DEPS_CACHE)/ffmpeg-$(FFMPEG_VERSION)/ffmpeg-windowsx86_64.zip "https://github.com/yt-dlp/FFmpeg-Builds/releases/download/autobuild-2025-06-11-16-50/ffmpeg-n$(FFMPEG_VERSION).1-23-gf074c49577-win64-gpl-shared-$(FFMPEG_VERSION).zip"
+	$(WGET) -qO $(DEPS_CACHE)/ffmpeg-$(FFMPEG_VERSION)/ffmpeg-windowsx86_64.zip "https://github.com/yt-dlp/FFmpeg-Builds/releases/download/autobuild-2025-05-31-15-22/ffmpeg-n$(FFMPEG_VERSION).1-21-g2600505ca2-win64-gpl-shared-$(FFMPEG_VERSION).zip"
 
 $(DEPS_CACHE)/ffmpeg-$(FFMPEG_VERSION).source: $(DEPS_CACHE)/ffmpeg-$(FFMPEG_VERSION)/ffmpeg-linuxx86_64.tar.xz $\
 											$(DEPS_CACHE)/ffmpeg-$(FFMPEG_VERSION)/ffmpeg-windowsi686.zip $\
