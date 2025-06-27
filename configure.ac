@@ -301,6 +301,13 @@ AS_IF([test "x$enable_clang" = "xyes"], [
     MCOSU_CXXFLAGS="$MCOSU_CXXFLAGS -fimplicit-constexpr"
 ])
 
+AS_IF([test "$host_cpu" = "x86_64" && test -z "$CLANG"], [
+    # this is only possible on x86_64, and not clang
+    # faster tls access
+    CFLAGS="$CFLAGS -mtls-dialect=gnu2"
+    CXXFLAGS="$CXXFLAGS -mtls-dialect=gnu2"
+])
+
 AS_IF([[case "$host_cpu" in
   i[[3456789]]86*) host_cpu=i686 ;;
 esac]])
@@ -432,7 +439,7 @@ AC_SUBST([CXX])
 
 AS_IF([test "$host_cpu" = "x86_64"], [COMMON_FLAGS="$COMMON_FLAGS -mcmodel=small"])
 
-COMMON_FLAGS="$COMMON_FLAGS -ffunction-sections -fdata-sections -fwrapv -fno-strict-aliasing -fno-semantic-interposition"
+COMMON_FLAGS="$COMMON_FLAGS -ffunction-sections -fdata-sections -fwrapv -fno-strict-aliasing -fno-semantic-interposition -ftls-model=initial-exec"
 CXXFLAGS="$CXXFLAGS $COMMON_FLAGS -fno-rtti -fno-exceptions"
 CFLAGS="$CFLAGS $COMMON_FLAGS"
 AS_IF([test -z "$ubercompat" || test "x$enable_static" = "xyes"], [
@@ -480,7 +487,7 @@ AS_IF([test "$host_os" = "linux-gnu"],[
 ])
 
 AS_IF([test "x$enable_debug" = "xyes"], [
-    with_mimalloc="no"
+    AS_IF([test "x$with_mimalloc" != "xyes"], [with_mimalloc=no])
     AS_IF([test "$host_os" = "mingw32"],[
         CXXFLAGS="$CXXFLAGS -g -Og"
         CFLAGS="$CFLAGS -g -Og"
@@ -692,14 +699,14 @@ MPG123_MIN_VERSION=1.30.0
 MPG123_BUILD_VERSION=b9edc89540cb43f1d8c9881d9f67dde996cfb8ef # git mirror, latest as of June 16th, 2025 (next version after 1.33.0)
 
 # always build these from source if we want to use them
-AC_SUBST([SOLOUD_VERSION], [1.0.5]) # my fork
-#AC_SUBST([SOLOUD_VERSION], [1cf26f82504e80e188dc694380dcc7ef5d5bf619])
+#AC_SUBST([SOLOUD_VERSION], [1.0.5]) # my fork
+AC_SUBST([SOLOUD_VERSION], [0de5febb972da4144e606ce7bdee72d0ecf1d791])
 AC_SUBST([SOLOUD_PREFIX],[$DEPS_PREFIX])
 AC_SUBST([SOUNDTOUCH_VERSION], [2.4.0])
 AC_SUBST([SOUNDTOUCH_PREFIX],[$DEPS_PREFIX])
 AC_SUBST([SDL3_MIXER_VERSION], [b8017938de8b31c1962c2c8044a127519c2c1cdf])
 AC_SUBST([SDL3_MIXER_PREFIX],[$DEPS_PREFIX])
-AC_SUBST([MIMALLOC_VERSION], [v3.1.5])
+AC_SUBST([MIMALLOC_VERSION], [639b73ecf9608d9c3078cb9dee5b7c2f46639828])
 AC_SUBST([MIMALLOC_PREFIX],[$DEPS_PREFIX])
 
 AC_SUBST([FFMPEG_VERSION], [7.1]) # pre-built, used for soloud
@@ -795,7 +802,7 @@ AM_CONDITIONAL([BUILD_FREETYPE2], [test "x$have_freetype2" != "xyes"])
 AM_CONDITIONAL([BUILD_FMT], [test "x$have_fmt" != "xyes"])
 AM_CONDITIONAL([BUILD_MPG123], [test "$with_soloud" = "yes" && test "x$have_mpg123" != "xyes"])
 AM_CONDITIONAL([BUILD_GLM], [test "x$have_glm" != "xyes"])
-AM_CONDITIONAL([BUILD_MIMALLOC], [test "x$enable_debug" != "xyes" &&
+AM_CONDITIONAL([BUILD_MIMALLOC], [{ test "x$enable_debug" != "xyes" || test "x$with_mimalloc" = "xyes"; } &&
                                 { { test "$SYSNAME" = "windows" && test "$host_cpu" = "i686" && test "x$with_mimalloc" = "xyes" ; } ||
                                   { test "x$with_mimalloc" != "xno" ; };
                                 }]) # default off for windows 32bit for compatibility
