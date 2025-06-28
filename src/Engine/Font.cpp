@@ -349,12 +349,10 @@ void McFont::discoverSystemFallbacks()
 	return;
 #endif
 
-	for (const auto &fontPath : systemFonts)
+	for (auto &fontPath : systemFonts)
 	{
 		if (env->fileExists(fontPath))
-		{
 			loadFallbackFont(fontPath, true);
-		}
 	}
 }
 

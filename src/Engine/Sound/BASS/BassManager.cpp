@@ -11,6 +11,8 @@
 
 #include "Engine.h"
 
+#include <SDL3/SDL_loadso.h>
+
 namespace BassManager
 {
 namespace BassFuncs
@@ -103,50 +105,50 @@ BASS_LIBRARIES(GENERATE_LIBRARY_LOADER)
 
 namespace
 {
-	static HPLUGIN plBassFlac = 0;
+static HPLUGIN plBassFlac = 0;
 
-	void unloadPlugins()
+void unloadPlugins()
+{
+	if (plBassFlac)
 	{
-		if (plBassFlac)
-		{
-			BASS_PluginEnable(plBassFlac, false);
-			BASS_PluginFree(plBassFlac);
-			plBassFlac = 0;
-		}
-	}
-
-	HPLUGIN loadPlugin(const std::string &pluginname)
-	{
-	#define LNAMESTR(lib) UString::fmt(LPREFIX "{:s}" LSUFFIX, (lib))
-		HPLUGIN ret = 0;
-		// handle bassflac plugin separately
-		UString tryPath{LNAMESTR(pluginname)};
-		if (!Environment::fileExists(tryPath))
-			tryPath = UString::fmt("lib{}{}", Env::cfg(OS::WINDOWS) ? "\\" : "/", LNAMESTR(pluginname));
-
-		// make it a fully qualified path
-		if (Environment::fileExists(tryPath))
-			tryPath = UString::fmt("{}{}", Environment::getFolderFromFilePath(tryPath), LNAMESTR(pluginname));
-		else
-			tryPath = LNAMESTR(pluginname); // maybe bass will find it?
-
-		ret = BASS_PluginLoad((const char*)tryPath.plat_str(), Env::cfg(OS::WINDOWS) ? BASS_UNICODE : 0); // ??? this wchar_t->char* cast is required for some reason?
-
-		if (ret)
-		{
-			if (cv::debug_snd.getBool())
-				debugLog("loaded {:s} version {:#x}\n", pluginname.c_str(), BASS_PluginGetInfo(ret)->version);
-			BASS_PluginEnable(ret, true);
-		}
-		else
-		{
-			failedLoad = std::string(pluginname);
-		}
-
-		return ret;
-	#undef LNAMESTR
+		BASS_PluginEnable(plBassFlac, false);
+		BASS_PluginFree(plBassFlac);
+		plBassFlac = 0;
 	}
 }
+
+HPLUGIN loadPlugin(const std::string &pluginname)
+{
+#define LNAMESTR(lib) UString::fmt(LPREFIX "{:s}" LSUFFIX, (lib))
+	HPLUGIN ret = 0;
+	// handle bassflac plugin separately
+	UString tryPath{LNAMESTR(pluginname)};
+	if (!Environment::fileExists(tryPath))
+		tryPath = UString::fmt("lib{}{}", Env::cfg(OS::WINDOWS) ? "\\" : "/", LNAMESTR(pluginname));
+
+	// make it a fully qualified path
+	if (Environment::fileExists(tryPath))
+		tryPath = UString::fmt("{}{}", Environment::getFolderFromFilePath(tryPath), LNAMESTR(pluginname));
+	else
+		tryPath = LNAMESTR(pluginname); // maybe bass will find it?
+
+	ret = BASS_PluginLoad((const char *)tryPath.plat_str(), Env::cfg(OS::WINDOWS) ? BASS_UNICODE : 0); // ??? this wchar_t->char* cast is required for some reason?
+
+	if (ret)
+	{
+		if (cv::debug_snd.getBool())
+			debugLog("loaded {:s} version {:#x}\n", pluginname.c_str(), BASS_PluginGetInfo(ret)->version);
+		BASS_PluginEnable(ret, true);
+	}
+	else
+	{
+		failedLoad = std::string(pluginname);
+	}
+
+	return ret;
+#undef LNAMESTR
+}
+} // namespace
 
 bool init()
 {
@@ -211,147 +213,147 @@ std::string printBassError(const std::string &context, int code)
 	switch (code)
 	{
 	case BASS_OK:
-		errstr = "No error.\n";
+		errstr = "No error.";
 		break;
 	case BASS_ERROR_MEM:
-		errstr = "Memory error\n";
+		errstr = "Memory error";
 		break;
 	case BASS_ERROR_FILEOPEN:
-		errstr = "Can't open the file\n";
+		errstr = "Can't open the file";
 		break;
 	case BASS_ERROR_DRIVER:
-		errstr = "Can't find an available driver\n";
+		errstr = "Can't find an available driver";
 		break;
 	case BASS_ERROR_BUFLOST:
-		errstr = "The sample buffer was lost\n";
+		errstr = "The sample buffer was lost";
 		break;
 	case BASS_ERROR_HANDLE:
-		errstr = "Invalid handle\n";
+		errstr = "Invalid handle";
 		break;
 	case BASS_ERROR_FORMAT:
-		errstr = "Unsupported sample format\n";
+		errstr = "Unsupported sample format";
 		break;
 	case BASS_ERROR_POSITION:
-		errstr = "Invalid position\n";
+		errstr = "Invalid position";
 		break;
 	case BASS_ERROR_INIT:
-		errstr = "BASS_Init has not been successfully called\n";
+		errstr = "BASS_Init has not been successfully called";
 		break;
 	case BASS_ERROR_START:
-		errstr = "BASS_Start has not been successfully called\n";
+		errstr = "BASS_Start has not been successfully called";
 		break;
 	case BASS_ERROR_SSL:
-		errstr = "SSL/HTTPS support isn't available\n";
+		errstr = "SSL/HTTPS support isn't available";
 		break;
 	case BASS_ERROR_REINIT:
-		errstr = "Device needs to be reinitialized\n";
+		errstr = "Device needs to be reinitialized";
 		break;
 	case BASS_ERROR_ALREADY:
-		errstr = "Already initialized\n";
+		errstr = "Already initialized";
 		break;
 	case BASS_ERROR_NOTAUDIO:
-		errstr = "File does not contain audio\n";
+		errstr = "File does not contain audio";
 		break;
 	case BASS_ERROR_NOCHAN:
-		errstr = "Can't get a free channel\n";
+		errstr = "Can't get a free channel";
 		break;
 	case BASS_ERROR_ILLTYPE:
-		errstr = "An illegal type was specified\n";
+		errstr = "An illegal type was specified";
 		break;
 	case BASS_ERROR_ILLPARAM:
-		errstr = "An illegal parameter was specified\n";
+		errstr = "An illegal parameter was specified";
 		break;
 	case BASS_ERROR_NO3D:
-		errstr = "No 3D support\n";
+		errstr = "No 3D support";
 		break;
 	case BASS_ERROR_NOEAX:
-		errstr = "No EAX support\n";
+		errstr = "No EAX support";
 		break;
 	case BASS_ERROR_DEVICE:
-		errstr = "Illegal device number\n";
+		errstr = "Illegal device number";
 		break;
 	case BASS_ERROR_NOPLAY:
-		errstr = "Not playing\n";
+		errstr = "Not playing";
 		break;
 	case BASS_ERROR_FREQ:
-		errstr = "Illegal sample rate\n";
+		errstr = "Illegal sample rate";
 		break;
 	case BASS_ERROR_NOTFILE:
-		errstr = "The stream is not a file stream\n";
+		errstr = "The stream is not a file stream";
 		break;
 	case BASS_ERROR_NOHW:
-		errstr = "No hardware voices available\n";
+		errstr = "No hardware voices available";
 		break;
 	case BASS_ERROR_EMPTY:
-		errstr = "The file has no sample data\n";
+		errstr = "The file has no sample data";
 		break;
 	case BASS_ERROR_NONET:
-		errstr = "No internet connection could be opened\n";
+		errstr = "No internet connection could be opened";
 		break;
 	case BASS_ERROR_CREATE:
-		errstr = "Couldn't create the file\n";
+		errstr = "Couldn't create the file";
 		break;
 	case BASS_ERROR_NOFX:
-		errstr = "Effects are not available\n";
+		errstr = "Effects are not available";
 		break;
 	case BASS_ERROR_NOTAVAIL:
-		errstr = "Requested data/action is not available\n";
+		errstr = "Requested data/action is not available";
 		break;
 	case BASS_ERROR_DECODE:
-		errstr = "The channel is/isn't a decoding channel\n";
+		errstr = "The channel is/isn't a decoding channel";
 		break;
 	case BASS_ERROR_DX:
-		errstr = "A sufficient DirectX version is not installed\n";
+		errstr = "A sufficient DirectX version is not installed";
 		break;
 	case BASS_ERROR_TIMEOUT:
-		errstr = "Connection timeout\n";
+		errstr = "Connection timeout";
 		break;
 	case BASS_ERROR_FILEFORM:
-		errstr = "Unsupported file format\n";
+		errstr = "Unsupported file format";
 		break;
 	case BASS_ERROR_SPEAKER:
-		errstr = "Unavailable speaker\n";
+		errstr = "Unavailable speaker";
 		break;
 	case BASS_ERROR_VERSION:
-		errstr = "Invalid BASS version\n";
+		errstr = "Invalid BASS version";
 		break;
 	case BASS_ERROR_CODEC:
-		errstr = "Codec is not available/supported\n";
+		errstr = "Codec is not available/supported";
 		break;
 	case BASS_ERROR_ENDED:
-		errstr = "The channel/file has ended\n";
+		errstr = "The channel/file has ended";
 		break;
 	case BASS_ERROR_BUSY:
-		errstr = "The device is busy\n";
+		errstr = "The device is busy";
 		break;
 	case BASS_ERROR_UNSTREAMABLE:
-		errstr = "Unstreamable file\n";
+		errstr = "Unstreamable file";
 		break;
 	case BASS_ERROR_PROTOCOL:
-		errstr = "Unsupported protocol\n";
+		errstr = "Unsupported protocol";
 		break;
 	case BASS_ERROR_DENIED:
-		errstr = "Access Denied\n";
+		errstr = "Access Denied";
 		break;
 #ifdef MCENGINE_FEATURE_WINDOWS
 	case BASS_ERROR_WASAPI:
-		errstr = "No WASAPI\n";
+		errstr = "No WASAPI";
 		break;
 	case BASS_ERROR_WASAPI_BUFFER:
-		errstr = "Invalid buffer size\n";
+		errstr = "Invalid buffer size";
 		break;
 	case BASS_ERROR_WASAPI_CATEGORY:
-		errstr = "Can't set category\n";
+		errstr = "Can't set category";
 		break;
 	case BASS_ERROR_WASAPI_DENIED:
-		errstr = "Access denied\n";
+		errstr = "Access denied";
 		break;
 #endif
 	case BASS_ERROR_UNKNOWN: // fallthrough
 	default:
 		break;
 	}
-	debugLog("{:s} error: {:s}", context, errstr);
+	debugLog("{:s} error: {:s}\n", context, errstr);
 	return fmt::format("{:s} error: {:s}", context, errstr); // also return it
 }
 

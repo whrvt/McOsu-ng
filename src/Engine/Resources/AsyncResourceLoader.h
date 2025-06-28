@@ -29,6 +29,12 @@ public:
 	AsyncResourceLoader();
 	~AsyncResourceLoader();
 
+	AsyncResourceLoader &operator=(const AsyncResourceLoader &) = delete;
+	AsyncResourceLoader &operator=(AsyncResourceLoader &&) = delete;
+
+	AsyncResourceLoader(const AsyncResourceLoader &) = delete;
+	AsyncResourceLoader(AsyncResourceLoader &&) = delete;
+
 	// main interface for ResourceManager
 	void requestAsyncLoad(Resource *resource);
 	void update(bool lowLatency);

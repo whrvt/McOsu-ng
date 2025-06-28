@@ -13,7 +13,7 @@
 
 #if defined(MCENGINE_FEATURE_BASS)
 
-#include <SDL3/SDL_loadso.h>
+#include <cstdint>
 #include <string>
 
 // can't be namespaced
