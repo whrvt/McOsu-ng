@@ -12,6 +12,7 @@ BraceWrapping:
   SplitEmptyRecord: false
   SplitEmptyNamespace: false
 AlignEscapedNewlines: DontAlign
+SortIncludes: Never # Otherwise breakage ensues when headers must be included in a specific order
 ---
 Language: Cpp
 BasedOnStyle: Microsoft
@@ -33,3 +34,4 @@ BraceWrapping:
   SplitEmptyNamespace: false
 AlignEscapedNewlines: DontAlign
 PackConstructorInitializers: Never
+SortIncludes: Never

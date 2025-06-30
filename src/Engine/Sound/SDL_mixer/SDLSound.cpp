@@ -107,7 +107,7 @@ void SDLSound::setPosition(double percent)
 			int loopCounter = 0;
 			while (std::abs(deltaMS) > 1.1 * 1000.0)
 			{
-				positionMS -= std::signbit(deltaMS) * 1000.0;
+				positionMS -= (std::signbit(deltaMS) ? -1.0 : 1.0) * 1000.0;
 
 				if (!Mix_SetMusicPosition(positionMS / 1000.0) && (positionMS / 1000.0) > 0.1)
 					debugLog("Mix_SetMusicPosition({:.2f}) failed! SDL Error: {:s}\n", positionMS / 1000.0, SDL_GetError());
@@ -156,7 +156,7 @@ void SDLSound::setPositionMS(unsigned long ms)
 		int loopCounter = 0;
 		while (std::abs(deltaMS) > 1.1 * 1000.0)
 		{
-			positionMS -= std::signbit(deltaMS) * 1000.0;
+			positionMS -= (std::signbit(deltaMS) ? -1.0 : 1.0) * 1000.0;
 
 			if (!Mix_SetMusicPosition(positionMS / 1000.0) && (positionMS / 1000.0) > 0.1)
 				debugLog("Mix_SetMusicPosition({:.2f}) failed! SDL Error: {:s}\n", positionMS / 1000.0, SDL_GetError());

@@ -213,7 +213,7 @@ void OsuSlider::draw()
 
 		// draw slider ticks
 		Color tickColor = 0xffffffff;
-		tickColor = rgb((int)(tickColor.R()*m_fHittableDimRGBColorMultiplierPercent), (int)(tickColor.G()*m_fHittableDimRGBColorMultiplierPercent), (int)(tickColor.B()*m_fHittableDimRGBColorMultiplierPercent));
+		tickColor = Colors::scale(tickColor, m_fHittableDimRGBColorMultiplierPercent);
 		const float tickImageScale = (m_beatmap->getHitcircleDiameter() / (16.0f * (skin->isSliderScorePoint2x() ? 2.0f : 1.0f)))*0.125f;
 		for (int t=0; t<m_ticks.size(); t++)
 		{
@@ -287,7 +287,7 @@ void OsuSlider::draw()
 				if ((comboColor.Rf() + comboColor.Gf() + comboColor.Bf())/3.0f > cv::osu::slider_reverse_arrow_black_threshold.getFloat())
 					reverseArrowColor = 0xff000000;
 
-				reverseArrowColor = rgb((int)(reverseArrowColor.R()*m_fHittableDimRGBColorMultiplierPercent), (int)(reverseArrowColor.G()*m_fHittableDimRGBColorMultiplierPercent), (int)(reverseArrowColor.B()*m_fHittableDimRGBColorMultiplierPercent));
+				reverseArrowColor = Colors::scale(reverseArrowColor, m_fHittableDimRGBColorMultiplierPercent);
 
 				float div = 0.30f;
 				float pulse = (div - fmod(std::abs(m_beatmap->getCurMusicPos())/1000.0f, div))/div;

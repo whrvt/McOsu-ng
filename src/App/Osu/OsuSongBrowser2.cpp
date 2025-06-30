@@ -381,7 +381,8 @@ bool OsuSongBrowser2::sortByDifficulty(OsuUISongBrowserButton const *a, OsuUISon
 OsuSongBrowser2::OsuSongBrowser2() : OsuScreenBackable()
 {	
 	// random selection algorithm init
-	m_rngalg = std::mt19937(std::random_device{}());
+	auto seed = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+	m_rngalg = std::mt19937(static_cast<std::mt19937::result_type>(seed));
 
 	// sorting/grouping + methods
 	m_group = GROUP::GROUP_NO_GROUPING;

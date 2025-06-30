@@ -2276,7 +2276,7 @@ void OsuBeatmapStandard::computeDrainRate()
 
 			// This effectively works like a binary search - each iteration the search space moves closer to the target, but may exceed it.
 			adjustment *= 2;
-			result += 1.0 / adjustment * std::signbit(lowestHealth - targetMinimumHealth);
+			result += 1.0 / adjustment * (std::signbit(lowestHealth - targetMinimumHealth) ? -1.0 : 1.0);
 		}
 
 		m_fDrainRate = result * 1000.0; // from ms to seconds
