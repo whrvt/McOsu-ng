@@ -46,18 +46,27 @@ CBaseUIElement::CBaseUIElement(float xPos, float yPos, float xSize, float ySize,
 
 bool CBaseUIElement::isVisibleOnScreen()
 {
-	const McRect visrect{{0,0},engine->getScreenSize()};
+	if (!isVisible())
+		return false;
+	const McRect visrect{
+	    {0, 0},
+        engine->getScreenSize()
+    };
 	const Vector2 visrectCenter{visrect.getCenter()};
-	const Vector2 elemPosNudgedIn{Vector2{m_vPos.x, m_vPos.y}.nudge(visrectCenter, -5.0f)};
-	return isVisible() && visrect.contains(elemPosNudgedIn);
+	const Vector2 elemPosNudgedIn{
+	    Vector2{m_vPos.x, m_vPos.y}
+        .nudge(visrectCenter, -5.0f)
+    };
+	return visrect.contains(elemPosNudgedIn);
 }
 
 void CBaseUIElement::update()
 {
-	if (!m_bVisible || !m_bEnabled) return;
+	if (!m_bVisible || !m_bEnabled)
+		return;
 
 	// check if mouse is inside element
-	McRect temp = McRect(m_vPos.x+1, m_vPos.y+1, m_vSize.x-1, m_vSize.y-1);
+	McRect temp = McRect(m_vPos.x + 1, m_vPos.y + 1, m_vSize.x - 1, m_vSize.y - 1);
 	if (temp.contains(mouse->getPos()))
 	{
 		if (!m_bMouseInside)

@@ -399,7 +399,7 @@ UString McFile::readString()
 	if (size < 1)
 		return "";
 
-	return {readFile(), size};
+	return UString{readFile(), size};
 }
 
 const char *McFile::readFile()
