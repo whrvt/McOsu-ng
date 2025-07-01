@@ -33,9 +33,8 @@ extern "C"
 #define NOBASSOVERLOADS
 #include <bass.h>
 #include <bass_fx.h>
-#include <bassmix.h>
 #ifdef MCENGINE_PLATFORM_WINDOWS
-#include <bassasio.h>
+#include <bassmix.h>
 #include <basswasapi.h>
 #endif
 }
@@ -50,12 +49,10 @@ extern "C"
 #define BASSVERSION_REAL 0x2041129
 #define BASSFXVERSION_REAL 0x2040c0e
 #define BASSMIXVERSION_REAL 0x2040c04
-#define BASSASIOVERSION_REAL 0x1040208
 #define BASSWASAPIVERSION_REAL 0x2040403
 #else
 #define BASSVERSION_REAL 0x2041118
 #define BASSFXVERSION_REAL 0x2040c0f
-#define BASSMIXVERSION_REAL 0x2040c04
 #endif
 
 namespace BassManager
@@ -99,9 +96,6 @@ using bass_EXTERN::BASS_ATTRIB_TEMPO_FREQ;
 using bass_EXTERN::BASS_ATTRIB_TEMPO_PITCH;
 
 #ifdef MCENGINE_PLATFORM_WINDOWS
-using BASS_ASIO_INFO = bass_EXTERN::BASS_ASIO_INFO;
-using BASS_ASIO_DEVICEINFO = bass_EXTERN::BASS_ASIO_DEVICEINFO;
-
 using BASS_WASAPI_INFO = bass_EXTERN::BASS_WASAPI_INFO;
 using BASS_WASAPI_DEVICEINFO = bass_EXTERN::BASS_WASAPI_DEVICEINFO;
 using WASAPIPROC = bass_EXTERN::WASAPIPROC;
@@ -152,6 +146,7 @@ using WASAPIPROC = bass_EXTERN::WASAPIPROC;
 	X(BASS_FX_GetVersion) \
 	X(BASS_FX_TempoCreate)
 
+#ifdef MCENGINE_PLATFORM_WINDOWS
 #define BASS_MIX_FUNCTIONS(X) \
 	X(BASS_Mixer_GetVersion) \
 	X(BASS_Mixer_ChannelGetMixer) \
@@ -160,20 +155,6 @@ using WASAPIPROC = bass_EXTERN::WASAPIPROC;
 	X(BASS_Mixer_ChannelSetPosition) \
 	X(BASS_Mixer_StreamCreate) \
 	X(BASS_Mixer_StreamAddChannel)
-
-#ifdef MCENGINE_PLATFORM_WINDOWS
-#define BASS_ASIO_FUNCTIONS(X) \
-	X(BASS_ASIO_GetVersion) \
-	X(BASS_ASIO_Init) \
-	X(BASS_ASIO_ControlPanel) \
-	X(BASS_ASIO_GetInfo) \
-	X(BASS_ASIO_GetRate) \
-	X(BASS_ASIO_GetDeviceInfo) \
-	X(BASS_ASIO_ChannelEnableBASS) \
-	X(BASS_ASIO_Start) \
-	X(BASS_ASIO_GetLatency) \
-	X(BASS_ASIO_Free) \
-	X(BASS_ASIO_ChannelSetVolume)
 
 #define BASS_WASAPI_FUNCTIONS(X) \
 	X(BASS_WASAPI_GetVersion) \
@@ -184,11 +165,11 @@ using WASAPIPROC = bass_EXTERN::WASAPIPROC;
 	X(BASS_WASAPI_Free) \
 	X(BASS_WASAPI_SetVolume)
 #else
-#define BASS_ASIO_FUNCTIONS(X)
+#define BASS_MIX_FUNCTIONS(X)
 #define BASS_WASAPI_FUNCTIONS(X)
 #endif
 
-#define ALL_BASS_FUNCTIONS(X) BASS_CORE_FUNCTIONS(X) BASS_FX_FUNCTIONS(X) BASS_MIX_FUNCTIONS(X) BASS_ASIO_FUNCTIONS(X) BASS_WASAPI_FUNCTIONS(X)
+#define ALL_BASS_FUNCTIONS(X) BASS_CORE_FUNCTIONS(X) BASS_FX_FUNCTIONS(X) BASS_MIX_FUNCTIONS(X) BASS_WASAPI_FUNCTIONS(X)
 
 // generate the type definitions and declarations
 #define DECLARE_BASS_FUNCTION(name) \

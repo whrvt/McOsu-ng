@@ -40,7 +40,7 @@ T loadFunction(SDL_SharedObject *lib, const char *funcName)
 // (name, version_func, expected_version, func_group)
 #ifdef MCENGINE_PLATFORM_WINDOWS
 #define _BASS_WIN_LIBRARIES(X) \
-	X(bassasio, BASS_ASIO_GetVersion, BASSASIOVERSION_REAL, BASS_ASIO_FUNCTIONS) \
+	X(bassmix, BASS_Mixer_GetVersion, BASSMIXVERSION_REAL, BASS_MIX_FUNCTIONS) \
 	X(basswasapi, BASS_WASAPI_GetVersion, BASSWASAPIVERSION_REAL, BASS_WASAPI_FUNCTIONS)
 #else
 #define _BASS_WIN_LIBRARIES(X)
@@ -49,7 +49,6 @@ T loadFunction(SDL_SharedObject *lib, const char *funcName)
 #define BASS_LIBRARIES(X) \
 	X(bass, BASS_GetVersion, BASSVERSION_REAL, BASS_CORE_FUNCTIONS) \
 	X(bass_fx, BASS_FX_GetVersion, BASSFXVERSION_REAL, BASS_FX_FUNCTIONS) \
-	X(bassmix, BASS_Mixer_GetVersion, BASSMIXVERSION_REAL, BASS_MIX_FUNCTIONS) \
 	_BASS_WIN_LIBRARIES(X)
 
 // setup the library handles and paths to check for them
@@ -191,9 +190,8 @@ void cleanup()
 
 #ifdef MCENGINE_PLATFORM_WINDOWS
 	UNLOAD_LIB(basswasapi)
-	UNLOAD_LIB(bassasio)
-#endif
 	UNLOAD_LIB(bassmix)
+#endif
 	UNLOAD_LIB(bass_fx)
 	UNLOAD_LIB(bass)
 

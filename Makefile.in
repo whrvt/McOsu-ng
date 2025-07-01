@@ -100,9 +100,9 @@ bin_PROGRAMS = McOsu-ng$(EXEEXT)
 @BUILD_MPG123_TRUE@am__append_6 = $(shell $(PKG_CONFIG) --libs libmpg123)
 @USE_SOLOUD_TRUE@am__append_7 = $(shell $(PKG_CONFIG) --cflags soloud) $(shell $(PKG_CONFIG) --cflags soundtouch) $(MPG123_CFLAGS) -DST_NO_EXCEPTION_HANDLING $(if $(and $(filter i686,$(host_cpu)),$(DISABLE_NATIVE)),-DSOUNDTOUCH_DISABLE_X86_OPTIMIZATIONS,)
 @USE_SOLOUD_TRUE@am__append_8 = $(shell $(PKG_CONFIG) --libs soloud) $(shell $(PKG_CONFIG) --libs soundtouch) $(MPG123_LIBS)
-@USE_BASS_TRUE@am__append_9 = -I$(DEPS_CACHE)/bass-$(BASS_VERSION)/bass/include -I$(DEPS_CACHE)/bass-$(BASS_VERSION)/bassfx/include -I$(DEPS_CACHE)/bass-$(BASS_VERSION)/bassmix/include
-@USE_BASS_TRUE@@WIN_PLATFORM_TRUE@am__append_10 = -I$(DEPS_CACHE)/bass-$(BASS_VERSION)/bassasio/include -I$(DEPS_CACHE)/bass-$(BASS_VERSION)/basswasapi/include
-@USE_BASS_TRUE@@WIN_PLATFORM_TRUE@am__append_11 = $(DEPS_CACHE)/bass-$(BASS_VERSION)/bassasio/lib/$(SYSNAME)/$(host_cpu)/$(LIBPREFIX)bassasio$(DLLEXT) \
+@USE_BASS_TRUE@am__append_9 = -I$(DEPS_CACHE)/bass-$(BASS_VERSION)/bass/include -I$(DEPS_CACHE)/bass-$(BASS_VERSION)/bassfx/include
+@USE_BASS_TRUE@@WIN_PLATFORM_TRUE@am__append_10 = -I$(DEPS_CACHE)/bass-$(BASS_VERSION)/bassmix/include -I$(DEPS_CACHE)/bass-$(BASS_VERSION)/basswasapi/include
+@USE_BASS_TRUE@@WIN_PLATFORM_TRUE@am__append_11 = $(DEPS_CACHE)/bass-$(BASS_VERSION)/bassmix/lib/$(SYSNAME)/$(host_cpu)/$(LIBPREFIX)bassmix$(DLLEXT) \
 @USE_BASS_TRUE@@WIN_PLATFORM_TRUE@					$(DEPS_CACHE)/bass-$(BASS_VERSION)/basswasapi/lib/$(SYSNAME)/$(host_cpu)/$(LIBPREFIX)basswasapi$(DLLEXT)
 
 @BUILD_LIBJPEG_TRUE@am__append_12 = $(shell $(PKG_CONFIG) --cflags libturbojpeg)
@@ -250,9 +250,7 @@ am_McOsu_ng_OBJECTS = libraries/McOsu_ng-MD5.$(OBJEXT) \
 	src/Engine/McOsu_ng-Shader.$(OBJEXT) \
 	src/Engine/Sound/BASS/McOsu_ng-BassManager.$(OBJEXT) \
 	src/Engine/Sound/BASS/McOsu_ng-BassSound.$(OBJEXT) \
-	src/Engine/Sound/BASS/McOsu_ng-BassSound2.$(OBJEXT) \
 	src/Engine/Sound/BASS/McOsu_ng-BassSoundEngine.$(OBJEXT) \
-	src/Engine/Sound/BASS/McOsu_ng-BassSoundEngine2.$(OBJEXT) \
 	src/Engine/Sound/SDL_mixer/McOsu_ng-SDLSound.$(OBJEXT) \
 	src/Engine/Sound/SDL_mixer/McOsu_ng-SDLSoundEngine.$(OBJEXT) \
 	src/Engine/Sound/SoLoud/McOsu_ng-SoLoudFX.$(OBJEXT) \
@@ -435,9 +433,7 @@ am__depfiles_remade = libraries/$(DEPDIR)/McOsu_ng-MD5.Po \
 	src/Engine/Sound/$(DEPDIR)/McOsu_ng-SoundEngine.Po \
 	src/Engine/Sound/BASS/$(DEPDIR)/McOsu_ng-BassManager.Po \
 	src/Engine/Sound/BASS/$(DEPDIR)/McOsu_ng-BassSound.Po \
-	src/Engine/Sound/BASS/$(DEPDIR)/McOsu_ng-BassSound2.Po \
 	src/Engine/Sound/BASS/$(DEPDIR)/McOsu_ng-BassSoundEngine.Po \
-	src/Engine/Sound/BASS/$(DEPDIR)/McOsu_ng-BassSoundEngine2.Po \
 	src/Engine/Sound/SDL_mixer/$(DEPDIR)/McOsu_ng-SDLSound.Po \
 	src/Engine/Sound/SDL_mixer/$(DEPDIR)/McOsu_ng-SDLSoundEngine.Po \
 	src/Engine/Sound/SoLoud/$(DEPDIR)/McOsu_ng-SoLoudFX.Po \
@@ -889,9 +885,7 @@ McOsu_ng_SOURCES = \
 	src/Engine/Shader.cpp \
 	src/Engine/Sound/BASS/BassManager.cpp \
 	src/Engine/Sound/BASS/BassSound.cpp \
-	src/Engine/Sound/BASS/BassSound2.cpp \
 	src/Engine/Sound/BASS/BassSoundEngine.cpp \
-	src/Engine/Sound/BASS/BassSoundEngine2.cpp \
 	src/Engine/Sound/SDL_mixer/SDLSound.cpp \
 	src/Engine/Sound/SDL_mixer/SDLSoundEngine.cpp \
 	src/Engine/Sound/SoLoud/SoLoudFX.cpp \
@@ -968,7 +962,6 @@ CLEANFILES = \
 @USE_BASS_TRUE@BASS_INSTALL_LIBS := $(DEPS_CACHE)/bass-$(BASS_VERSION)/bass/lib/$(SYSNAME)/$(host_cpu)/$(LIBPREFIX)bass$(DLLEXT) \
 @USE_BASS_TRUE@	$(DEPS_CACHE)/bass-$(BASS_VERSION)/bassflac/lib/$(SYSNAME)/$(host_cpu)/$(LIBPREFIX)bassflac$(DLLEXT) \
 @USE_BASS_TRUE@	$(DEPS_CACHE)/bass-$(BASS_VERSION)/bassfx/lib/$(SYSNAME)/$(host_cpu)/$(LIBPREFIX)bass_fx$(DLLEXT) \
-@USE_BASS_TRUE@	$(DEPS_CACHE)/bass-$(BASS_VERSION)/bassmix/lib/$(SYSNAME)/$(host_cpu)/$(LIBPREFIX)bassmix$(DLLEXT) \
 @USE_BASS_TRUE@	$(am__append_11)
 
 #####################################################################################################################################################
@@ -1541,13 +1534,7 @@ src/Engine/Sound/BASS/McOsu_ng-BassManager.$(OBJEXT):  \
 src/Engine/Sound/BASS/McOsu_ng-BassSound.$(OBJEXT):  \
 	src/Engine/Sound/BASS/$(am__dirstamp) \
 	src/Engine/Sound/BASS/$(DEPDIR)/$(am__dirstamp)
-src/Engine/Sound/BASS/McOsu_ng-BassSound2.$(OBJEXT):  \
-	src/Engine/Sound/BASS/$(am__dirstamp) \
-	src/Engine/Sound/BASS/$(DEPDIR)/$(am__dirstamp)
 src/Engine/Sound/BASS/McOsu_ng-BassSoundEngine.$(OBJEXT):  \
-	src/Engine/Sound/BASS/$(am__dirstamp) \
-	src/Engine/Sound/BASS/$(DEPDIR)/$(am__dirstamp)
-src/Engine/Sound/BASS/McOsu_ng-BassSoundEngine2.$(OBJEXT):  \
 	src/Engine/Sound/BASS/$(am__dirstamp) \
 	src/Engine/Sound/BASS/$(DEPDIR)/$(am__dirstamp)
 src/Engine/Sound/SDL_mixer/$(am__dirstamp):
@@ -1842,9 +1829,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Sound/$(DEPDIR)/McOsu_ng-SoundEngine.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Sound/BASS/$(DEPDIR)/McOsu_ng-BassManager.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Sound/BASS/$(DEPDIR)/McOsu_ng-BassSound.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Sound/BASS/$(DEPDIR)/McOsu_ng-BassSound2.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Sound/BASS/$(DEPDIR)/McOsu_ng-BassSoundEngine.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Sound/BASS/$(DEPDIR)/McOsu_ng-BassSoundEngine2.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Sound/SDL_mixer/$(DEPDIR)/McOsu_ng-SDLSound.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Sound/SDL_mixer/$(DEPDIR)/McOsu_ng-SDLSoundEngine.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Sound/SoLoud/$(DEPDIR)/McOsu_ng-SoLoudFX.Po@am__quote@ # am--include-marker
@@ -3514,20 +3499,6 @@ src/Engine/Sound/BASS/McOsu_ng-BassSound.obj: src/Engine/Sound/BASS/BassSound.cp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Sound/BASS/McOsu_ng-BassSound.obj `if test -f 'src/Engine/Sound/BASS/BassSound.cpp'; then $(CYGPATH_W) 'src/Engine/Sound/BASS/BassSound.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Sound/BASS/BassSound.cpp'; fi`
 
-src/Engine/Sound/BASS/McOsu_ng-BassSound2.o: src/Engine/Sound/BASS/BassSound2.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Sound/BASS/McOsu_ng-BassSound2.o -MD -MP -MF src/Engine/Sound/BASS/$(DEPDIR)/McOsu_ng-BassSound2.Tpo -c -o src/Engine/Sound/BASS/McOsu_ng-BassSound2.o `test -f 'src/Engine/Sound/BASS/BassSound2.cpp' || echo '$(srcdir)/'`src/Engine/Sound/BASS/BassSound2.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Sound/BASS/$(DEPDIR)/McOsu_ng-BassSound2.Tpo src/Engine/Sound/BASS/$(DEPDIR)/McOsu_ng-BassSound2.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Sound/BASS/BassSound2.cpp' object='src/Engine/Sound/BASS/McOsu_ng-BassSound2.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Sound/BASS/McOsu_ng-BassSound2.o `test -f 'src/Engine/Sound/BASS/BassSound2.cpp' || echo '$(srcdir)/'`src/Engine/Sound/BASS/BassSound2.cpp
-
-src/Engine/Sound/BASS/McOsu_ng-BassSound2.obj: src/Engine/Sound/BASS/BassSound2.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Sound/BASS/McOsu_ng-BassSound2.obj -MD -MP -MF src/Engine/Sound/BASS/$(DEPDIR)/McOsu_ng-BassSound2.Tpo -c -o src/Engine/Sound/BASS/McOsu_ng-BassSound2.obj `if test -f 'src/Engine/Sound/BASS/BassSound2.cpp'; then $(CYGPATH_W) 'src/Engine/Sound/BASS/BassSound2.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Sound/BASS/BassSound2.cpp'; fi`
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Sound/BASS/$(DEPDIR)/McOsu_ng-BassSound2.Tpo src/Engine/Sound/BASS/$(DEPDIR)/McOsu_ng-BassSound2.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Sound/BASS/BassSound2.cpp' object='src/Engine/Sound/BASS/McOsu_ng-BassSound2.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Sound/BASS/McOsu_ng-BassSound2.obj `if test -f 'src/Engine/Sound/BASS/BassSound2.cpp'; then $(CYGPATH_W) 'src/Engine/Sound/BASS/BassSound2.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Sound/BASS/BassSound2.cpp'; fi`
-
 src/Engine/Sound/BASS/McOsu_ng-BassSoundEngine.o: src/Engine/Sound/BASS/BassSoundEngine.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Sound/BASS/McOsu_ng-BassSoundEngine.o -MD -MP -MF src/Engine/Sound/BASS/$(DEPDIR)/McOsu_ng-BassSoundEngine.Tpo -c -o src/Engine/Sound/BASS/McOsu_ng-BassSoundEngine.o `test -f 'src/Engine/Sound/BASS/BassSoundEngine.cpp' || echo '$(srcdir)/'`src/Engine/Sound/BASS/BassSoundEngine.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Sound/BASS/$(DEPDIR)/McOsu_ng-BassSoundEngine.Tpo src/Engine/Sound/BASS/$(DEPDIR)/McOsu_ng-BassSoundEngine.Po
@@ -3541,20 +3512,6 @@ src/Engine/Sound/BASS/McOsu_ng-BassSoundEngine.obj: src/Engine/Sound/BASS/BassSo
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Sound/BASS/BassSoundEngine.cpp' object='src/Engine/Sound/BASS/McOsu_ng-BassSoundEngine.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Sound/BASS/McOsu_ng-BassSoundEngine.obj `if test -f 'src/Engine/Sound/BASS/BassSoundEngine.cpp'; then $(CYGPATH_W) 'src/Engine/Sound/BASS/BassSoundEngine.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Sound/BASS/BassSoundEngine.cpp'; fi`
-
-src/Engine/Sound/BASS/McOsu_ng-BassSoundEngine2.o: src/Engine/Sound/BASS/BassSoundEngine2.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Sound/BASS/McOsu_ng-BassSoundEngine2.o -MD -MP -MF src/Engine/Sound/BASS/$(DEPDIR)/McOsu_ng-BassSoundEngine2.Tpo -c -o src/Engine/Sound/BASS/McOsu_ng-BassSoundEngine2.o `test -f 'src/Engine/Sound/BASS/BassSoundEngine2.cpp' || echo '$(srcdir)/'`src/Engine/Sound/BASS/BassSoundEngine2.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Sound/BASS/$(DEPDIR)/McOsu_ng-BassSoundEngine2.Tpo src/Engine/Sound/BASS/$(DEPDIR)/McOsu_ng-BassSoundEngine2.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Sound/BASS/BassSoundEngine2.cpp' object='src/Engine/Sound/BASS/McOsu_ng-BassSoundEngine2.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Sound/BASS/McOsu_ng-BassSoundEngine2.o `test -f 'src/Engine/Sound/BASS/BassSoundEngine2.cpp' || echo '$(srcdir)/'`src/Engine/Sound/BASS/BassSoundEngine2.cpp
-
-src/Engine/Sound/BASS/McOsu_ng-BassSoundEngine2.obj: src/Engine/Sound/BASS/BassSoundEngine2.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Sound/BASS/McOsu_ng-BassSoundEngine2.obj -MD -MP -MF src/Engine/Sound/BASS/$(DEPDIR)/McOsu_ng-BassSoundEngine2.Tpo -c -o src/Engine/Sound/BASS/McOsu_ng-BassSoundEngine2.obj `if test -f 'src/Engine/Sound/BASS/BassSoundEngine2.cpp'; then $(CYGPATH_W) 'src/Engine/Sound/BASS/BassSoundEngine2.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Sound/BASS/BassSoundEngine2.cpp'; fi`
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Sound/BASS/$(DEPDIR)/McOsu_ng-BassSoundEngine2.Tpo src/Engine/Sound/BASS/$(DEPDIR)/McOsu_ng-BassSoundEngine2.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Sound/BASS/BassSoundEngine2.cpp' object='src/Engine/Sound/BASS/McOsu_ng-BassSoundEngine2.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Sound/BASS/McOsu_ng-BassSoundEngine2.obj `if test -f 'src/Engine/Sound/BASS/BassSoundEngine2.cpp'; then $(CYGPATH_W) 'src/Engine/Sound/BASS/BassSoundEngine2.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Sound/BASS/BassSoundEngine2.cpp'; fi`
 
 src/Engine/Sound/SDL_mixer/McOsu_ng-SDLSound.o: src/Engine/Sound/SDL_mixer/SDLSound.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Sound/SDL_mixer/McOsu_ng-SDLSound.o -MD -MP -MF src/Engine/Sound/SDL_mixer/$(DEPDIR)/McOsu_ng-SDLSound.Tpo -c -o src/Engine/Sound/SDL_mixer/McOsu_ng-SDLSound.o `test -f 'src/Engine/Sound/SDL_mixer/SDLSound.cpp' || echo '$(srcdir)/'`src/Engine/Sound/SDL_mixer/SDLSound.cpp
@@ -4587,9 +4544,7 @@ distclean: distclean-am
 	-rm -f src/Engine/Sound/$(DEPDIR)/McOsu_ng-SoundEngine.Po
 	-rm -f src/Engine/Sound/BASS/$(DEPDIR)/McOsu_ng-BassManager.Po
 	-rm -f src/Engine/Sound/BASS/$(DEPDIR)/McOsu_ng-BassSound.Po
-	-rm -f src/Engine/Sound/BASS/$(DEPDIR)/McOsu_ng-BassSound2.Po
 	-rm -f src/Engine/Sound/BASS/$(DEPDIR)/McOsu_ng-BassSoundEngine.Po
-	-rm -f src/Engine/Sound/BASS/$(DEPDIR)/McOsu_ng-BassSoundEngine2.Po
 	-rm -f src/Engine/Sound/SDL_mixer/$(DEPDIR)/McOsu_ng-SDLSound.Po
 	-rm -f src/Engine/Sound/SDL_mixer/$(DEPDIR)/McOsu_ng-SDLSoundEngine.Po
 	-rm -f src/Engine/Sound/SoLoud/$(DEPDIR)/McOsu_ng-SoLoudFX.Po
@@ -4795,9 +4750,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f src/Engine/Sound/$(DEPDIR)/McOsu_ng-SoundEngine.Po
 	-rm -f src/Engine/Sound/BASS/$(DEPDIR)/McOsu_ng-BassManager.Po
 	-rm -f src/Engine/Sound/BASS/$(DEPDIR)/McOsu_ng-BassSound.Po
-	-rm -f src/Engine/Sound/BASS/$(DEPDIR)/McOsu_ng-BassSound2.Po
 	-rm -f src/Engine/Sound/BASS/$(DEPDIR)/McOsu_ng-BassSoundEngine.Po
-	-rm -f src/Engine/Sound/BASS/$(DEPDIR)/McOsu_ng-BassSoundEngine2.Po
 	-rm -f src/Engine/Sound/SDL_mixer/$(DEPDIR)/McOsu_ng-SDLSound.Po
 	-rm -f src/Engine/Sound/SDL_mixer/$(DEPDIR)/McOsu_ng-SDLSoundEngine.Po
 	-rm -f src/Engine/Sound/SoLoud/$(DEPDIR)/McOsu_ng-SoLoudFX.Po
@@ -5012,25 +4965,18 @@ $(DEPS_CACHE)/bass-$(BASS_VERSION)/bass_fx-linux.zip:
 $(DEPS_CACHE)/bass-$(BASS_VERSION)/bassmix.zip:
 	$(MKDIR_P) $(DEPS_CACHE)/bass-$(BASS_VERSION) && \
 	$(WGET) -qO $(DEPS_CACHE)/bass-$(BASS_VERSION)/bassmix.zip "https://web.archive.org/web/20250603164713/https://www.un4seen.com/stuff/bassmix.zip"
-$(DEPS_CACHE)/bass-$(BASS_VERSION)/bassmix-linux.zip:
-	$(MKDIR_P) $(DEPS_CACHE)/bass-$(BASS_VERSION) && \
-	$(WGET) -qO $(DEPS_CACHE)/bass-$(BASS_VERSION)/bassmix-linux.zip "https://web.archive.org/web/20250603165247/https://www.un4seen.com/stuff/bassmix-linux.zip"
 $(DEPS_CACHE)/bass-$(BASS_VERSION)/basswasapi.zip:
 	$(MKDIR_P) $(DEPS_CACHE)/bass-$(BASS_VERSION) && \
 	$(WGET) -qO $(DEPS_CACHE)/bass-$(BASS_VERSION)/basswasapi.zip "https://web.archive.org/web/20250603164749/https://www.un4seen.com/stuff/basswasapi.zip"
 $(DEPS_CACHE)/bass-$(BASS_VERSION)/basswasapi24-header.zip:
 	$(MKDIR_P) $(DEPS_CACHE)/bass-$(BASS_VERSION) && \
 	$(WGET) -qO $(DEPS_CACHE)/bass-$(BASS_VERSION)/basswasapi24-header.zip "https://web.archive.org/web/20240501180448/http://www.un4seen.com/files/basswasapi24.zip"
-$(DEPS_CACHE)/bass-$(BASS_VERSION)/bassasio.zip:
-	$(MKDIR_P) $(DEPS_CACHE)/bass-$(BASS_VERSION) && \
-	$(WGET) -qO $(DEPS_CACHE)/bass-$(BASS_VERSION)/bassasio.zip "https://web.archive.org/web/20250603164955/https://www.un4seen.com/stuff/bassasio.zip"
 
 $(DEPS_CACHE)/bass-$(BASS_VERSION).source: $(DEPS_CACHE)/bass-$(BASS_VERSION)/bass.zip $(DEPS_CACHE)/bass-$(BASS_VERSION)/bass-linux.zip $\
 										$(DEPS_CACHE)/bass-$(BASS_VERSION)/bassflac24.zip $(DEPS_CACHE)/bass-$(BASS_VERSION)/bassflac24-linux.zip $\
 										$(DEPS_CACHE)/bass-$(BASS_VERSION)/bass_fx.zip $(DEPS_CACHE)/bass-$(BASS_VERSION)/bass_fx-linux.zip $\
-										$(DEPS_CACHE)/bass-$(BASS_VERSION)/bassmix.zip $(DEPS_CACHE)/bass-$(BASS_VERSION)/bassmix-linux.zip $\
-										$(DEPS_CACHE)/bass-$(BASS_VERSION)/basswasapi.zip $(DEPS_CACHE)/bass-$(BASS_VERSION)/basswasapi24-header.zip $\
-										$(DEPS_CACHE)/bass-$(BASS_VERSION)/bassasio.zip
+										$(DEPS_CACHE)/bass-$(BASS_VERSION)/bassmix.zip $\
+										$(DEPS_CACHE)/bass-$(BASS_VERSION)/basswasapi.zip $(DEPS_CACHE)/bass-$(BASS_VERSION)/basswasapi24-header.zip
 	cd $(DEPS_CACHE)/bass-$(BASS_VERSION) && \
 	$(MKDIR_P) bass/lib/windows/i686 && $(UNZIP) -qjo bass.zip bass.dll -d bass/lib/windows/i686 && \
 	$(MKDIR_P) bass/lib/windows/x86_64 && $(UNZIP) -qjo bass.zip x64/bass.dll -d bass/lib/windows/x86_64 && \
@@ -5049,14 +4995,9 @@ $(DEPS_CACHE)/bass-$(BASS_VERSION).source: $(DEPS_CACHE)/bass-$(BASS_VERSION)/ba
 	$(MKDIR_P) bassmix/lib/windows/i686 && $(UNZIP) -qjo bassmix.zip bassmix.dll -d bassmix/lib/windows/i686 && \
 	$(MKDIR_P) bassmix/lib/windows/x86_64 && $(UNZIP) -qjo bassmix.zip x64/bassmix.dll -d bassmix/lib/windows/x86_64 && \
 	$(MKDIR_P) bassmix/include/ && $(UNZIP) -qjo bassmix.zip bassmix.h -d bassmix/include/ && \
-	$(MKDIR_P) bassmix/lib/linux/i686 && $(UNZIP) -qjo bassmix-linux.zip x86/libbassmix.so -d bassmix/lib/linux/i686 && \
-	$(MKDIR_P) bassmix/lib/linux/x86_64 && $(UNZIP) -qjo bassmix-linux.zip x86_64/libbassmix.so -d bassmix/lib/linux/x86_64 && \
 	$(MKDIR_P) basswasapi/lib/windows/i686 && $(UNZIP) -qjo basswasapi.zip basswasapi.dll -d basswasapi/lib/windows/i686 && \
 	$(MKDIR_P) basswasapi/lib/windows/x86_64 && $(UNZIP) -qjo basswasapi.zip x64/basswasapi.dll -d basswasapi/lib/windows/x86_64 && \
 	$(MKDIR_P) basswasapi/include/ && $(UNZIP) -qjo basswasapi24-header.zip c/basswasapi.h -d basswasapi/include/ && \
-	$(MKDIR_P) bassasio/lib/windows/i686 && $(UNZIP) -qjo bassasio.zip bassasio.dll -d bassasio/lib/windows/i686 && \
-	$(MKDIR_P) bassasio/lib/windows/x86_64 && $(UNZIP) -qjo bassasio.zip x64/bassasio.dll -d bassasio/lib/windows/x86_64 && \
-	$(MKDIR_P) bassasio/include/ && $(UNZIP) -qjo bassasio.zip bassasio.h -d bassasio/include/ && \
 	touch $@
 @BUILD_MIMALLOC_TRUE@$(DEPS_PREFIX)/mimalloc.built: $(DEPS_CACHE)/mimalloc-$(MIMALLOC_VERSION).source
 @BUILD_MIMALLOC_TRUE@	rm -rf $(DEPS_PREFIX)/mimalloc

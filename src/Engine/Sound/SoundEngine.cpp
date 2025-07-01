@@ -6,7 +6,6 @@
 //===============================================================================//
 
 #include "BassSoundEngine.h"
-#include "BassSoundEngine2.h"
 #include "SDLSoundEngine.h"
 #include "SoLoudSoundEngine.h"
 #include "SoundEngine.h"

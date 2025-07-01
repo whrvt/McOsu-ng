@@ -28,7 +28,6 @@ public:
 	using TypeId = uint8_t;
 	enum SndEngineType : TypeId {
 		BASS,
-		BASS2, // TODO
 		SOLOUD,
 		SDL
 	};

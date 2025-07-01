@@ -15,9 +15,6 @@ namespace cv {
 // from AnimationHandler.cpp
 extern ConVar debug_anim;
 
-// from BassSound2.cpp
-extern ConVar snd_async_buffer;
-
 // from BassSoundEngine.cpp
 extern ConVar snd_buffer;
 extern ConVar snd_dev_buffer;
@@ -27,10 +24,6 @@ extern ConVar win_snd_wasapi_buffer_size;
 extern ConVar win_snd_wasapi_exclusive;
 extern ConVar win_snd_wasapi_period_size;
 extern ConVar win_snd_wasapi_shared_volume_affects_device;
-
-// from BassSoundEngine2.cpp
-extern ConVar snd_asio_buffer_size;
-extern ConVar snd_ready_delay;
 
 // from CBaseUIBoxShadow.cpp
 extern ConVar debug_box_shadows;

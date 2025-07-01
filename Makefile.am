@@ -156,25 +156,18 @@ $(DEPS_CACHE)/bass-$(BASS_VERSION)/bass_fx-linux.zip:
 $(DEPS_CACHE)/bass-$(BASS_VERSION)/bassmix.zip:
 	$(MKDIR_P) $(DEPS_CACHE)/bass-$(BASS_VERSION) && \
 	$(WGET) -qO $(DEPS_CACHE)/bass-$(BASS_VERSION)/bassmix.zip "https://web.archive.org/web/20250603164713/https://www.un4seen.com/stuff/bassmix.zip"
-$(DEPS_CACHE)/bass-$(BASS_VERSION)/bassmix-linux.zip:
-	$(MKDIR_P) $(DEPS_CACHE)/bass-$(BASS_VERSION) && \
-	$(WGET) -qO $(DEPS_CACHE)/bass-$(BASS_VERSION)/bassmix-linux.zip "https://web.archive.org/web/20250603165247/https://www.un4seen.com/stuff/bassmix-linux.zip"
 $(DEPS_CACHE)/bass-$(BASS_VERSION)/basswasapi.zip:
 	$(MKDIR_P) $(DEPS_CACHE)/bass-$(BASS_VERSION) && \
 	$(WGET) -qO $(DEPS_CACHE)/bass-$(BASS_VERSION)/basswasapi.zip "https://web.archive.org/web/20250603164749/https://www.un4seen.com/stuff/basswasapi.zip"
 $(DEPS_CACHE)/bass-$(BASS_VERSION)/basswasapi24-header.zip:
 	$(MKDIR_P) $(DEPS_CACHE)/bass-$(BASS_VERSION) && \
 	$(WGET) -qO $(DEPS_CACHE)/bass-$(BASS_VERSION)/basswasapi24-header.zip "https://web.archive.org/web/20240501180448/http://www.un4seen.com/files/basswasapi24.zip"
-$(DEPS_CACHE)/bass-$(BASS_VERSION)/bassasio.zip:
-	$(MKDIR_P) $(DEPS_CACHE)/bass-$(BASS_VERSION) && \
-	$(WGET) -qO $(DEPS_CACHE)/bass-$(BASS_VERSION)/bassasio.zip "https://web.archive.org/web/20250603164955/https://www.un4seen.com/stuff/bassasio.zip"
 
 $(DEPS_CACHE)/bass-$(BASS_VERSION).source: $(DEPS_CACHE)/bass-$(BASS_VERSION)/bass.zip $(DEPS_CACHE)/bass-$(BASS_VERSION)/bass-linux.zip $\
 										$(DEPS_CACHE)/bass-$(BASS_VERSION)/bassflac24.zip $(DEPS_CACHE)/bass-$(BASS_VERSION)/bassflac24-linux.zip $\
 										$(DEPS_CACHE)/bass-$(BASS_VERSION)/bass_fx.zip $(DEPS_CACHE)/bass-$(BASS_VERSION)/bass_fx-linux.zip $\
-										$(DEPS_CACHE)/bass-$(BASS_VERSION)/bassmix.zip $(DEPS_CACHE)/bass-$(BASS_VERSION)/bassmix-linux.zip $\
-										$(DEPS_CACHE)/bass-$(BASS_VERSION)/basswasapi.zip $(DEPS_CACHE)/bass-$(BASS_VERSION)/basswasapi24-header.zip $\
-										$(DEPS_CACHE)/bass-$(BASS_VERSION)/bassasio.zip
+										$(DEPS_CACHE)/bass-$(BASS_VERSION)/bassmix.zip $\
+										$(DEPS_CACHE)/bass-$(BASS_VERSION)/basswasapi.zip $(DEPS_CACHE)/bass-$(BASS_VERSION)/basswasapi24-header.zip
 	cd $(DEPS_CACHE)/bass-$(BASS_VERSION) && \
 	$(MKDIR_P) bass/lib/windows/i686 && $(UNZIP) -qjo bass.zip bass.dll -d bass/lib/windows/i686 && \
 	$(MKDIR_P) bass/lib/windows/x86_64 && $(UNZIP) -qjo bass.zip x64/bass.dll -d bass/lib/windows/x86_64 && \
@@ -193,14 +186,9 @@ $(DEPS_CACHE)/bass-$(BASS_VERSION).source: $(DEPS_CACHE)/bass-$(BASS_VERSION)/ba
 	$(MKDIR_P) bassmix/lib/windows/i686 && $(UNZIP) -qjo bassmix.zip bassmix.dll -d bassmix/lib/windows/i686 && \
 	$(MKDIR_P) bassmix/lib/windows/x86_64 && $(UNZIP) -qjo bassmix.zip x64/bassmix.dll -d bassmix/lib/windows/x86_64 && \
 	$(MKDIR_P) bassmix/include/ && $(UNZIP) -qjo bassmix.zip bassmix.h -d bassmix/include/ && \
-	$(MKDIR_P) bassmix/lib/linux/i686 && $(UNZIP) -qjo bassmix-linux.zip x86/libbassmix.so -d bassmix/lib/linux/i686 && \
-	$(MKDIR_P) bassmix/lib/linux/x86_64 && $(UNZIP) -qjo bassmix-linux.zip x86_64/libbassmix.so -d bassmix/lib/linux/x86_64 && \
 	$(MKDIR_P) basswasapi/lib/windows/i686 && $(UNZIP) -qjo basswasapi.zip basswasapi.dll -d basswasapi/lib/windows/i686 && \
 	$(MKDIR_P) basswasapi/lib/windows/x86_64 && $(UNZIP) -qjo basswasapi.zip x64/basswasapi.dll -d basswasapi/lib/windows/x86_64 && \
 	$(MKDIR_P) basswasapi/include/ && $(UNZIP) -qjo basswasapi24-header.zip c/basswasapi.h -d basswasapi/include/ && \
-	$(MKDIR_P) bassasio/lib/windows/i686 && $(UNZIP) -qjo bassasio.zip bassasio.dll -d bassasio/lib/windows/i686 && \
-	$(MKDIR_P) bassasio/lib/windows/x86_64 && $(UNZIP) -qjo bassasio.zip x64/bassasio.dll -d bassasio/lib/windows/x86_64 && \
-	$(MKDIR_P) bassasio/include/ && $(UNZIP) -qjo bassasio.zip bassasio.h -d bassasio/include/ && \
 	touch $@
 
 #####################################################################################################################################################
@@ -409,14 +397,13 @@ $(DEPS_PREFIX)/SoundTouch.built:
 endif # USE_SOLOUD
 
 if USE_BASS
-AUDIO_CFLAGS += -I$(DEPS_CACHE)/bass-$(BASS_VERSION)/bass/include -I$(DEPS_CACHE)/bass-$(BASS_VERSION)/bassfx/include -I$(DEPS_CACHE)/bass-$(BASS_VERSION)/bassmix/include
+AUDIO_CFLAGS += -I$(DEPS_CACHE)/bass-$(BASS_VERSION)/bass/include -I$(DEPS_CACHE)/bass-$(BASS_VERSION)/bassfx/include
 BASS_INSTALL_LIBS := $(DEPS_CACHE)/bass-$(BASS_VERSION)/bass/lib/$(SYSNAME)/$(host_cpu)/$(LIBPREFIX)bass$(DLLEXT) \
 					$(DEPS_CACHE)/bass-$(BASS_VERSION)/bassflac/lib/$(SYSNAME)/$(host_cpu)/$(LIBPREFIX)bassflac$(DLLEXT) \
-					$(DEPS_CACHE)/bass-$(BASS_VERSION)/bassfx/lib/$(SYSNAME)/$(host_cpu)/$(LIBPREFIX)bass_fx$(DLLEXT) \
-					$(DEPS_CACHE)/bass-$(BASS_VERSION)/bassmix/lib/$(SYSNAME)/$(host_cpu)/$(LIBPREFIX)bassmix$(DLLEXT)
+					$(DEPS_CACHE)/bass-$(BASS_VERSION)/bassfx/lib/$(SYSNAME)/$(host_cpu)/$(LIBPREFIX)bass_fx$(DLLEXT)
 if WIN_PLATFORM
-AUDIO_CFLAGS += -I$(DEPS_CACHE)/bass-$(BASS_VERSION)/bassasio/include -I$(DEPS_CACHE)/bass-$(BASS_VERSION)/basswasapi/include
-BASS_INSTALL_LIBS += $(DEPS_CACHE)/bass-$(BASS_VERSION)/bassasio/lib/$(SYSNAME)/$(host_cpu)/$(LIBPREFIX)bassasio$(DLLEXT) \
+AUDIO_CFLAGS += -I$(DEPS_CACHE)/bass-$(BASS_VERSION)/bassmix/include -I$(DEPS_CACHE)/bass-$(BASS_VERSION)/basswasapi/include
+BASS_INSTALL_LIBS += $(DEPS_CACHE)/bass-$(BASS_VERSION)/bassmix/lib/$(SYSNAME)/$(host_cpu)/$(LIBPREFIX)bassmix$(DLLEXT) \
 					$(DEPS_CACHE)/bass-$(BASS_VERSION)/basswasapi/lib/$(SYSNAME)/$(host_cpu)/$(LIBPREFIX)basswasapi$(DLLEXT)
 endif # WIN_PLATFORM
 $(DEPS_PREFIX)/bass-$(BASS_VERSION).built: $(DEPS_CACHE)/bass-$(BASS_VERSION).source
