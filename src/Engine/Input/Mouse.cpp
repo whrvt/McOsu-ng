@@ -144,7 +144,7 @@ void Mouse::update()
 				if (clipped)
 					env->setMousePos(center);
 				else if (!env->isCursorVisible()) // FIXME: this is crazy. for windowed mode, need to "pop out" the OS cursor
-					env->setMousePos(m_vPosWithoutOffset.nudge(center, 0.1f));
+					env->setMousePos(Vector2{m_vPosWithoutOffset}.nudge(center, 0.1f));
 			}
 		}
 

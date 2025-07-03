@@ -68,6 +68,7 @@ private:
 	double m_fLastRawSDLPosition;  // last raw position reported by Mix_GetMusicPosition
 	double m_fLastSDLPositionTime; // engine time when the last position was obtained
 	double m_fSDLPositionRate;     // estimated playback rate (position units per second)
+	float m_fSpeed;
 
 	// Common SOUNDHANDLE for the interface
 	inline void setHandle(SOUNDHANDLE handle) {m_HCHANNEL = handle;}

@@ -1085,10 +1085,7 @@ bool OsuSkin::parseSkinINI(UString filepath)
 
 	// process the last line if it doesn't end with a line terminator
 	if (!currentLine.isEmpty())
-	{
 		nonEmptyLineCounter++;
-		// you could add the same parsing logic here if needed
-	}
 
 	if (nonEmptyLineCounter < 1)
 		return false;

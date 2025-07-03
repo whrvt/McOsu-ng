@@ -1544,6 +1544,9 @@ void OsuBeatmap::pause(bool quitIfWaiting)
 	// if we have failed, and the user early exits to the pause menu, stop the failing animation
 	if (m_bFailed)
 		anim->deleteExistingAnimation(&m_fFailAnim);
+
+	// make sure to grab/ungrab keyboard
+	osu->updateWindowsKeyDisable();
 }
 
 void OsuBeatmap::pausePreviewMusic(bool toggle)

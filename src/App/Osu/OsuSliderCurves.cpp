@@ -140,7 +140,7 @@ OsuSliderCurveTypeBezier2::OsuSliderCurveTypeBezier2(const std::vector<Vector2> 
 
 
 
-OsuSliderCurveTypeCentripetalCatmullRom::OsuSliderCurveTypeCentripetalCatmullRom(const std::vector<Vector2> &points) : OsuSliderCurveType()
+OsuSliderCurveTypeCentripetalCatmullRom::OsuSliderCurveTypeCentripetalCatmullRom(const std::vector<Vector2> &points) : OsuSliderCurveType(), m_time()
 {
 	if (points.size() != 4)
 	{
@@ -149,7 +149,6 @@ OsuSliderCurveTypeCentripetalCatmullRom::OsuSliderCurveTypeCentripetalCatmullRom
 	}
 
 	m_points = std::vector<Vector2>(points); // copy
-	m_time[0] = 0.0f;
 
 	float approxLength = 0;
 	for (int i=1; i<4; i++)

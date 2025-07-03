@@ -17,11 +17,13 @@
 #include "Thread.h"
 
 // SDL-specific ConVars
-namespace cv {
+namespace cv
+{
 ConVar snd_chunk_size("snd_chunk_size", 256, FCVAR_NONE, "used to set the SDL audio chunk size");
 }
 
-SDLSoundEngine::SDLSoundEngine() : SoundEngine()
+SDLSoundEngine::SDLSoundEngine()
+    : SoundEngine()
 {
 	m_iMixChunkSize = cv::snd_chunk_size.getInt();
 	m_fVolumeMixMusic = 1.0f;
@@ -120,8 +122,7 @@ bool SDLSoundEngine::play(Sound *snd, float pan, float pitch)
 		const bool ret = (channel > -1);
 
 		if (!ret)
-			debugLog(sdlSound->isStream() ? "couldn't Mix_PlayMusic(), error on {:s}!\n" : "couldn't Mix_PlayChannel(), error on {:s}!\n",
-			         sdlSound->getFilePath().toUtf8());
+			debugLog("couldn't Mix_Play{:s}(), error on {:s}!\n", sdlSound->isStream() ? "Music" : "Channel", sdlSound->getFilePath().toUtf8());
 		else
 		{
 			sdlSound->setHandle(channel);

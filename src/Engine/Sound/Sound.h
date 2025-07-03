@@ -6,10 +6,12 @@
 //===============================================================================//
 
 #pragma once
+
 #ifndef SOUND_H
 #define SOUND_H
 
 #include "Resource.h"
+#include "PlaybackInterpolator.h"
 
 #define SOUND_TYPE(ClassName, TypeID, ParentClass) \
 	static constexpr TypeId TYPE_ID = TypeID; \
@@ -103,6 +105,9 @@ protected:
 	double m_fLastPlayTime;
 
 	float m_fCurrentBPM;
+
+	PlaybackInterpolator m_interpolator;
+
 private:
 	static bool isValidAudioFile(const UString& filePath, const UString &fileExt);
 };

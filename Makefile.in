@@ -251,6 +251,7 @@ am_McOsu_ng_OBJECTS = libraries/McOsu_ng-MD5.$(OBJEXT) \
 	src/Engine/Sound/BASS/McOsu_ng-BassManager.$(OBJEXT) \
 	src/Engine/Sound/BASS/McOsu_ng-BassSound.$(OBJEXT) \
 	src/Engine/Sound/BASS/McOsu_ng-BassSoundEngine.$(OBJEXT) \
+	src/Engine/Sound/McOsu_ng-PlaybackInterpolator.$(OBJEXT) \
 	src/Engine/Sound/SDL_mixer/McOsu_ng-SDLSound.$(OBJEXT) \
 	src/Engine/Sound/SDL_mixer/McOsu_ng-SDLSoundEngine.$(OBJEXT) \
 	src/Engine/Sound/SoLoud/McOsu_ng-SoLoudFX.$(OBJEXT) \
@@ -429,6 +430,7 @@ am__depfiles_remade = libraries/$(DEPDIR)/McOsu_ng-MD5.Po \
 	src/Engine/Resources/$(DEPDIR)/McOsu_ng-AsyncResourceLoader.Po \
 	src/Engine/Resources/$(DEPDIR)/McOsu_ng-Resource.Po \
 	src/Engine/Resources/$(DEPDIR)/McOsu_ng-ResourceManager.Po \
+	src/Engine/Sound/$(DEPDIR)/McOsu_ng-PlaybackInterpolator.Po \
 	src/Engine/Sound/$(DEPDIR)/McOsu_ng-Sound.Po \
 	src/Engine/Sound/$(DEPDIR)/McOsu_ng-SoundEngine.Po \
 	src/Engine/Sound/BASS/$(DEPDIR)/McOsu_ng-BassManager.Po \
@@ -886,6 +888,7 @@ McOsu_ng_SOURCES = \
 	src/Engine/Sound/BASS/BassManager.cpp \
 	src/Engine/Sound/BASS/BassSound.cpp \
 	src/Engine/Sound/BASS/BassSoundEngine.cpp \
+	src/Engine/Sound/PlaybackInterpolator.cpp \
 	src/Engine/Sound/SDL_mixer/SDLSound.cpp \
 	src/Engine/Sound/SDL_mixer/SDLSoundEngine.cpp \
 	src/Engine/Sound/SoLoud/SoLoudFX.cpp \
@@ -1537,6 +1540,15 @@ src/Engine/Sound/BASS/McOsu_ng-BassSound.$(OBJEXT):  \
 src/Engine/Sound/BASS/McOsu_ng-BassSoundEngine.$(OBJEXT):  \
 	src/Engine/Sound/BASS/$(am__dirstamp) \
 	src/Engine/Sound/BASS/$(DEPDIR)/$(am__dirstamp)
+src/Engine/Sound/$(am__dirstamp):
+	@$(MKDIR_P) src/Engine/Sound
+	@: >>src/Engine/Sound/$(am__dirstamp)
+src/Engine/Sound/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) src/Engine/Sound/$(DEPDIR)
+	@: >>src/Engine/Sound/$(DEPDIR)/$(am__dirstamp)
+src/Engine/Sound/McOsu_ng-PlaybackInterpolator.$(OBJEXT):  \
+	src/Engine/Sound/$(am__dirstamp) \
+	src/Engine/Sound/$(DEPDIR)/$(am__dirstamp)
 src/Engine/Sound/SDL_mixer/$(am__dirstamp):
 	@$(MKDIR_P) src/Engine/Sound/SDL_mixer
 	@: >>src/Engine/Sound/SDL_mixer/$(am__dirstamp)
@@ -1564,12 +1576,6 @@ src/Engine/Sound/SoLoud/McOsu_ng-SoLoudSound.$(OBJEXT):  \
 src/Engine/Sound/SoLoud/McOsu_ng-SoLoudSoundEngine.$(OBJEXT):  \
 	src/Engine/Sound/SoLoud/$(am__dirstamp) \
 	src/Engine/Sound/SoLoud/$(DEPDIR)/$(am__dirstamp)
-src/Engine/Sound/$(am__dirstamp):
-	@$(MKDIR_P) src/Engine/Sound
-	@: >>src/Engine/Sound/$(am__dirstamp)
-src/Engine/Sound/$(DEPDIR)/$(am__dirstamp):
-	@$(MKDIR_P) src/Engine/Sound/$(DEPDIR)
-	@: >>src/Engine/Sound/$(DEPDIR)/$(am__dirstamp)
 src/Engine/Sound/McOsu_ng-Sound.$(OBJEXT):  \
 	src/Engine/Sound/$(am__dirstamp) \
 	src/Engine/Sound/$(DEPDIR)/$(am__dirstamp)
@@ -1825,6 +1831,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Resources/$(DEPDIR)/McOsu_ng-AsyncResourceLoader.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Resources/$(DEPDIR)/McOsu_ng-Resource.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Resources/$(DEPDIR)/McOsu_ng-ResourceManager.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Sound/$(DEPDIR)/McOsu_ng-PlaybackInterpolator.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Sound/$(DEPDIR)/McOsu_ng-Sound.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Sound/$(DEPDIR)/McOsu_ng-SoundEngine.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Sound/BASS/$(DEPDIR)/McOsu_ng-BassManager.Po@am__quote@ # am--include-marker
@@ -3513,6 +3520,20 @@ src/Engine/Sound/BASS/McOsu_ng-BassSoundEngine.obj: src/Engine/Sound/BASS/BassSo
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Sound/BASS/McOsu_ng-BassSoundEngine.obj `if test -f 'src/Engine/Sound/BASS/BassSoundEngine.cpp'; then $(CYGPATH_W) 'src/Engine/Sound/BASS/BassSoundEngine.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Sound/BASS/BassSoundEngine.cpp'; fi`
 
+src/Engine/Sound/McOsu_ng-PlaybackInterpolator.o: src/Engine/Sound/PlaybackInterpolator.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Sound/McOsu_ng-PlaybackInterpolator.o -MD -MP -MF src/Engine/Sound/$(DEPDIR)/McOsu_ng-PlaybackInterpolator.Tpo -c -o src/Engine/Sound/McOsu_ng-PlaybackInterpolator.o `test -f 'src/Engine/Sound/PlaybackInterpolator.cpp' || echo '$(srcdir)/'`src/Engine/Sound/PlaybackInterpolator.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Sound/$(DEPDIR)/McOsu_ng-PlaybackInterpolator.Tpo src/Engine/Sound/$(DEPDIR)/McOsu_ng-PlaybackInterpolator.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Sound/PlaybackInterpolator.cpp' object='src/Engine/Sound/McOsu_ng-PlaybackInterpolator.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Sound/McOsu_ng-PlaybackInterpolator.o `test -f 'src/Engine/Sound/PlaybackInterpolator.cpp' || echo '$(srcdir)/'`src/Engine/Sound/PlaybackInterpolator.cpp
+
+src/Engine/Sound/McOsu_ng-PlaybackInterpolator.obj: src/Engine/Sound/PlaybackInterpolator.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Sound/McOsu_ng-PlaybackInterpolator.obj -MD -MP -MF src/Engine/Sound/$(DEPDIR)/McOsu_ng-PlaybackInterpolator.Tpo -c -o src/Engine/Sound/McOsu_ng-PlaybackInterpolator.obj `if test -f 'src/Engine/Sound/PlaybackInterpolator.cpp'; then $(CYGPATH_W) 'src/Engine/Sound/PlaybackInterpolator.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Sound/PlaybackInterpolator.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Sound/$(DEPDIR)/McOsu_ng-PlaybackInterpolator.Tpo src/Engine/Sound/$(DEPDIR)/McOsu_ng-PlaybackInterpolator.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Sound/PlaybackInterpolator.cpp' object='src/Engine/Sound/McOsu_ng-PlaybackInterpolator.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Sound/McOsu_ng-PlaybackInterpolator.obj `if test -f 'src/Engine/Sound/PlaybackInterpolator.cpp'; then $(CYGPATH_W) 'src/Engine/Sound/PlaybackInterpolator.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Sound/PlaybackInterpolator.cpp'; fi`
+
 src/Engine/Sound/SDL_mixer/McOsu_ng-SDLSound.o: src/Engine/Sound/SDL_mixer/SDLSound.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Sound/SDL_mixer/McOsu_ng-SDLSound.o -MD -MP -MF src/Engine/Sound/SDL_mixer/$(DEPDIR)/McOsu_ng-SDLSound.Tpo -c -o src/Engine/Sound/SDL_mixer/McOsu_ng-SDLSound.o `test -f 'src/Engine/Sound/SDL_mixer/SDLSound.cpp' || echo '$(srcdir)/'`src/Engine/Sound/SDL_mixer/SDLSound.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Sound/SDL_mixer/$(DEPDIR)/McOsu_ng-SDLSound.Tpo src/Engine/Sound/SDL_mixer/$(DEPDIR)/McOsu_ng-SDLSound.Po
@@ -4540,6 +4561,7 @@ distclean: distclean-am
 	-rm -f src/Engine/Resources/$(DEPDIR)/McOsu_ng-AsyncResourceLoader.Po
 	-rm -f src/Engine/Resources/$(DEPDIR)/McOsu_ng-Resource.Po
 	-rm -f src/Engine/Resources/$(DEPDIR)/McOsu_ng-ResourceManager.Po
+	-rm -f src/Engine/Sound/$(DEPDIR)/McOsu_ng-PlaybackInterpolator.Po
 	-rm -f src/Engine/Sound/$(DEPDIR)/McOsu_ng-Sound.Po
 	-rm -f src/Engine/Sound/$(DEPDIR)/McOsu_ng-SoundEngine.Po
 	-rm -f src/Engine/Sound/BASS/$(DEPDIR)/McOsu_ng-BassManager.Po
@@ -4746,6 +4768,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f src/Engine/Resources/$(DEPDIR)/McOsu_ng-AsyncResourceLoader.Po
 	-rm -f src/Engine/Resources/$(DEPDIR)/McOsu_ng-Resource.Po
 	-rm -f src/Engine/Resources/$(DEPDIR)/McOsu_ng-ResourceManager.Po
+	-rm -f src/Engine/Sound/$(DEPDIR)/McOsu_ng-PlaybackInterpolator.Po
 	-rm -f src/Engine/Sound/$(DEPDIR)/McOsu_ng-Sound.Po
 	-rm -f src/Engine/Sound/$(DEPDIR)/McOsu_ng-SoundEngine.Po
 	-rm -f src/Engine/Sound/BASS/$(DEPDIR)/McOsu_ng-BassManager.Po

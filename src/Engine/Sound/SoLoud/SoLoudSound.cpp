@@ -34,10 +34,7 @@ SoLoudSound::SoLoudSound(UString filepath, bool stream, bool threeD, bool loop, 
       m_speed(1.0f),
       m_pitch(1.0f),
       m_frequency(44100.0f),
-      m_audioSource(nullptr),
-      m_fLastRawSoLoudPosition(0.0),
-      m_fLastSoLoudPositionTime(0.0),
-      m_fSoLoudPositionRate(1000.0)
+      m_audioSource(nullptr)
 {
 }
 
@@ -213,9 +210,7 @@ void SoLoudSound::setPosition(double percent)
 	double positionInSeconds = streamLengthInSeconds * percent;
 
 	// reset position interp vars
-	m_fLastRawSoLoudPosition = positionInSeconds * 1000.0;
-	m_fLastSoLoudPositionTime = Timing::getTimeReal();
-	m_fSoLoudPositionRate = 1000.0 * getSpeed();
+	m_interpolator.reset(static_cast<double>(positionInSeconds * 1000), Timing::getTimeReal(), getSpeed());
 
 	if (cv::debug_snd.getBool())
 		debugLog("seeking to {:.2f} percent (position: {}ms, length: {}ms)\n", percent, static_cast<unsigned long>(positionInSeconds * 1000),
@@ -239,9 +234,7 @@ void SoLoudSound::setPositionMS(unsigned long ms)
 	double positionInSeconds = msD / 1000.0;
 
 	// reset position interp vars
-	m_fLastRawSoLoudPosition = msD;
-	m_fLastSoLoudPositionTime = Timing::getTimeReal();
-	m_fSoLoudPositionRate = 1000.0 * getSpeed();
+	m_interpolator.reset(msD, Timing::getTimeReal(), getSpeed());
 
 	if (cv::debug_snd.getBool())
 		debugLog("seeking to {:g}ms (length: {:g}ms)\n", msD, streamLengthMS);
@@ -413,93 +406,7 @@ unsigned long SoLoudSound::getPositionMS()
 	if (!m_bReady || !m_audioSource || !m_handle)
 		return 0;
 
-	double streamPositionInSeconds = getStreamPositionInSeconds();
-
-	const double currentTime = Timing::getTimeReal();
-	const double streamPositionMS = streamPositionInSeconds * 1000.0;
-
-	if (m_fLastSoLoudPositionTime <= 0.0 || !isPlaying())
-	{
-		m_fLastRawSoLoudPosition = streamPositionMS;
-		m_fLastSoLoudPositionTime = currentTime;
-		m_fSoLoudPositionRate = 1000.0 * getSpeed(); // Gameplay rate
-		return (unsigned long)streamPositionMS;
-	}
-
-	// if the position changed, update our rate estimate
-	if (m_fLastRawSoLoudPosition != streamPositionMS)
-	{
-		const double timeDelta = currentTime - m_fLastSoLoudPositionTime;
-
-		// only update rate if enough time has passed
-		if (timeDelta > 0.005)
-		{
-			double newRate;
-
-			if (streamPositionMS >= m_fLastRawSoLoudPosition)
-			{
-				newRate = (streamPositionMS - m_fLastRawSoLoudPosition) / timeDelta;
-			}
-			else if (m_bIsLooped)
-			{
-				// handle loop wraparound
-				auto length = static_cast<double>(getLengthMS());
-				if (length > 0)
-				{
-					double wrappedChange = (length - m_fLastRawSoLoudPosition) + streamPositionMS;
-					newRate = wrappedChange / timeDelta;
-				}
-				else
-				{
-					newRate = m_fSoLoudPositionRate;
-				}
-			}
-			else
-			{
-				newRate = m_fSoLoudPositionRate;
-			}
-
-			// sanity check, expected rate is still 1000.0 * speed
-			// because we're measuring in the original timeline
-			const double expectedRate = 1000.0 * getSpeed();
-			const double maxDeviation = 0.2;
-
-			if (newRate < expectedRate * (1.0 - maxDeviation) || newRate > expectedRate * (1.0 + maxDeviation))
-			{
-				newRate = 0.7 * expectedRate + 0.3 * newRate;
-			}
-
-			m_fSoLoudPositionRate = m_fSoLoudPositionRate * 0.6 + newRate * 0.4;
-		}
-
-		m_fLastRawSoLoudPosition = streamPositionMS;
-		m_fLastSoLoudPositionTime = currentTime;
-	}
-	else
-	{
-		const double timeSinceLastPositionChange = currentTime - m_fLastSoLoudPositionTime;
-		if (timeSinceLastPositionChange > 0.1)
-		{
-			const double expectedRate = 1000.0 * getSpeed();
-			m_fSoLoudPositionRate = m_fSoLoudPositionRate * 0.95 + expectedRate * 0.05;
-		}
-	}
-
-	// calculate the interpolated position
-	const double timeSinceLastReading = currentTime - m_fLastSoLoudPositionTime;
-	const double interpolatedPosition = m_fLastRawSoLoudPosition + (timeSinceLastReading * m_fSoLoudPositionRate);
-
-	// check for looping
-	if (m_bIsLooped)
-	{
-		auto length = static_cast<double>(getLengthMS());
-		if (length > 0 && interpolatedPosition >= length)
-		{
-			return static_cast<unsigned long>(fmod(interpolatedPosition, length));
-		}
-	}
-
-	return static_cast<unsigned long>(interpolatedPosition);
+	return m_interpolator.update(getStreamPositionInSeconds() * 1000.0, Timing::getTimeReal(), getSpeed(), isLooped(), getLengthMS(), isPlaying());
 }
 
 unsigned long SoLoudSound::getLengthMS()
@@ -604,11 +511,11 @@ void SoLoudSound::rebuild(UString newFilePath)
 double SoLoudSound::getStreamPositionInSeconds() const
 {
 	if (!m_audioSource)
-		return m_fLastSoLoudPositionTime;
+		return m_interpolator.getLastInterpolatedPositionMS() / 1000.0;
 	if (m_bStream)
 		return static_cast<SoLoud::SLFXStream *>(m_audioSource)->getRealStreamPosition();
 	else
-		return m_handle ? soloud->getStreamPosition(m_handle) : m_fLastSoLoudPositionTime;
+		return m_handle ? soloud->getStreamPosition(m_handle) : m_interpolator.getLastInterpolatedPositionMS() / 1000.0;
 }
 
 double SoLoudSound::getSourceLengthInSeconds() const

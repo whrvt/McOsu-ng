@@ -85,11 +85,6 @@ private:
 	// SoLoud-specific members
 	SoLoud::AudioSource *m_audioSource; // base class pointer, could be either SLFXStream or Wav
 	SOUNDHANDLE m_handle;               // current voice (i.e. "Sound") handle
-
-	// position interp
-	double m_fLastRawSoLoudPosition;  // last raw position reported in milliseconds
-	double m_fLastSoLoudPositionTime; // engine time when the last position was obtained
-	double m_fSoLoudPositionRate;     // estimated playback rate (position units per second)
 };
 
 #else

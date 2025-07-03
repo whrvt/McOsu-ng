@@ -15,7 +15,8 @@
 #include "File.h"
 #include "ResourceManager.h"
 
-SDLSound::SDLSound(UString filepath, bool stream, bool threeD, bool loop, bool prescan) : Sound(filepath, stream, threeD, loop, prescan)
+SDLSound::SDLSound(UString filepath, bool stream, bool threeD, bool loop, bool prescan)
+    : Sound(filepath, stream, threeD, loop, prescan)
 {
 	m_HCHANNEL = 0;
 	m_mixChunkOrMixMusic = NULL;
@@ -23,11 +24,12 @@ SDLSound::SDLSound(UString filepath, bool stream, bool threeD, bool loop, bool p
 	m_fLastRawSDLPosition = 0.0;
 	m_fLastSDLPositionTime = 0.0;
 	m_fSDLPositionRate = 1.0; // default to 1x rate (position units per second)
+	m_fSpeed = 1.0f;
 }
 
 SDLSound::~SDLSound()
 {
-    destroy();
+	destroy();
 }
 
 void SDLSound::init()
@@ -49,9 +51,16 @@ void SDLSound::initAsync()
 		m_mixChunkOrMixMusic = Mix_LoadWAV(m_sFilePath.toUtf8());
 
 	if (m_mixChunkOrMixMusic == NULL)
-		debugLog(m_bStream ? "Sound Error: Mix_LoadMUS() error {:s} on file {:s}\n" : "Sound Error: Mix_LoadWAV() error {:s} on file {:s}\n", SDL_GetError(),
-		         m_sFilePath.toUtf8());
-
+	{
+		if (m_bStream)
+		{
+			debugLog("Sound Error: Mix_LoadMUS() error {:s} on file {:s}\n", SDL_GetError(), m_sFilePath.toUtf8());
+		}
+		else
+		{
+			debugLog("Sound Error: Mix_LoadWAV() error {:s} on file {:s}\n", SDL_GetError(), m_sFilePath.toUtf8());
+		}
+	}
 	m_bAsyncReady = (m_mixChunkOrMixMusic != NULL);
 }
 
@@ -203,6 +212,8 @@ void SDLSound::setSpeed(float speed)
 		return;
 
 	speed = std::clamp<float>(speed, 0.05f, 50.0f);
+
+	m_fSpeed = speed;
 
 	// Update our rate for position interpolation
 	if (m_bStream && isPlaying())
@@ -365,7 +376,7 @@ float SDLSound::getSpeed()
 	if (!m_bReady)
 		return 1.0f;
 	// SDL doesn't support speed directly, but we track it for our position interpolation
-	return m_fSDLPositionRate / 1000.0f;
+	return m_fSpeed;
 }
 
 float SDLSound::getPitch()

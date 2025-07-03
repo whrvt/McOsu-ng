@@ -174,8 +174,6 @@ OsuDatabaseBeatmap::PRIMITIVE_CONTAINER OsuDatabaseBeatmap::loadPrimitiveObjects
 	const float sliderSanityRange = cv::osu::slider_curve_max_length.getFloat(); // infinity sanity check, same as before
 	const int sliderMaxRepeatRange = cv::osu::slider_max_repeats.getInt(); // NOTE: osu! will refuse to play any beatmap which has sliders with more than 9000 repeats, here we just clamp it instead
 
-
-
 	// open osu file for parsing
 	{
 		McFile file(!filePathIsInMemoryBeatmap ? osuFilePath : "");
@@ -494,7 +492,7 @@ OsuDatabaseBeatmap::PRIMITIVE_CONTAINER OsuDatabaseBeatmap::loadPrimitiveObjects
 								s.y = y;
 								s.time = time;
 								s.sampleType = hitSound;
-								s.endTime = tokens[5];
+								s.endTime = static_cast<int>(tokens[5]);
 							}
 							c.spinners.push_back(s);
 						}

@@ -256,6 +256,7 @@ public:
 	OsuOptionsMenuKeyBindLabel(float xPos, float yPos, float xSize, float ySize, UString name, UString text, ConVar *cvar, CBaseUIButton *bindButton) : CBaseUILabel(xPos, yPos, xSize, ySize, name, text)
 	{
 		m_key = cvar;
+		m_cachedKeyCode = -1;
 		m_bindButton = bindButton;
 
 		m_textColorBound = 0xffffd700;
@@ -267,15 +268,19 @@ public:
 		CBaseUILabel::update();
 		if (!m_bVisible) return;
 
-		const KEYCODE keyCode = m_key->getVal<KEYCODE>();
+		const KEYCODE newKeyCode = m_key->getVal<KEYCODE>();
+		if (m_cachedKeyCode == newKeyCode)
+			return;
+
+		m_cachedKeyCode = newKeyCode;
 
 		// succ
-		UString labelText = env->keyCodeToString(keyCode);
+		UString labelText = env->keyCodeToString(newKeyCode);
 		if (labelText.find("?") != -1)
 			labelText.append(UString::format("  (%i)", m_key->getVal<KEYCODE>()));
 
 		// handle bound/unbound
-		if (keyCode == 0)
+		if (m_cachedKeyCode == 0)
 		{
 			labelText = "<UNBOUND>";
 			setTextColor(m_textColorUnbound);
@@ -298,6 +303,7 @@ private:
 	}
 
 	ConVar *m_key;
+	KEYCODE m_cachedKeyCode;
 	CBaseUIButton *m_bindButton;
 
 	Color m_textColorBound;
