@@ -131,7 +131,10 @@ void SDL_AppQuit(void *appstate, SDL_AppResult result)
 	printf("[main]: Shutdown success.\n");
 
 	if constexpr (!Env::cfg(FEAT::MAINCB))
+	{
+		SDL_Quit();
 		std::exit(0);
+	}
 }
 
 // we can just call handleEvent and iterate directly if we're not using main callbacks
@@ -255,11 +258,21 @@ SDLMain::~SDLMain()
 	// clean up timers
 	SAFE_DELETE(m_deltaTimer);
 
+	// stop the engine
+	SAFE_DELETE(m_engine);
+
 	// clean up GL context
 	if (m_context && (Env::cfg((REND::GL | REND::GLES2 | REND::GLES32 | REND::GL3), !REND::DX11)))
+	{
 		SDL_GL_DestroyContext(m_context);
-
-	SAFE_DELETE(m_engine);
+		m_context = nullptr;
+	}
+	// close/delete the window
+	if (m_window)
+	{
+		SDL_DestroyWindow(m_window);
+		m_window = nullptr;
+	}
 }
 
 SDL_AppResult SDLMain::initialize()
@@ -750,7 +763,8 @@ void SDLMain::shutdown(SDL_AppResult result)
 		return;
 	else if (m_window)
 		SDL_StopTextInput(m_window);
-	Environment::shutdown(); // engine will be deleted by parent destructor
+
+	Environment::shutdown();
 }
 
 // convar change callbacks, to set app iteration rate
