@@ -27,17 +27,24 @@ OpenGLSync::OpenGLSync()
 
 	m_iMaxFramesInFlight = cv::r_sync_max_frames.getVal<int>();
 	cv::r_sync_max_frames.setCallback( fastdelegate::MakeDelegate(this, &OpenGLSync::onFramecountNumChanged) );
-
-	m_bEnabled = cv::r_sync_enabled.getBool();
+#ifndef MCENGINE_PLATFORM_WASM
+	m_bAvailable = GLVersion.major > 3 || (GLVersion.major == 3 && GLVersion.minor >= 2);
+#else
+	m_bAvailable = false;
+#endif
+	m_bEnabled = cv::r_sync_enabled.getBool() && m_bAvailable;
 	cv::r_sync_enabled.setCallback( fastdelegate::MakeDelegate(this, &OpenGLSync::onSyncBehaviorChanged) );
 }
 
 OpenGLSync::~OpenGLSync()
 {
-	while (!m_frameSyncQueue.empty())
+	if (m_bAvailable)
 	{
-		deleteSyncObject(m_frameSyncQueue.front().syncObject);
-		m_frameSyncQueue.pop_front();
+		while (!m_frameSyncQueue.empty())
+		{
+			deleteSyncObject(m_frameSyncQueue.front().syncObject);
+			m_frameSyncQueue.pop_front();
+		}
 	}
 }
 
