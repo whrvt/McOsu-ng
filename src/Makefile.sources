@@ -75,44 +75,44 @@ McOsu_ng_SOURCES = \
 	src/Engine/Environment.cpp \
 	src/Engine/File.cpp \
 	src/Engine/Font.cpp \
-	src/Engine/Graphics.cpp \
 	src/Engine/Image.cpp \
 	src/Engine/Input/Keyboard.cpp \
 	src/Engine/Input/KeyboardEvent.cpp \
 	src/Engine/Input/Mouse.cpp \
-	src/Engine/Main/main.cpp \
 	src/Engine/NetworkHandler.cpp \
-	src/Engine/Platform/SDLGLInterface.cpp \
 	src/Engine/Profiler.cpp \
-	src/Engine/RenderTarget.cpp \
-	src/Engine/Renderer/DirectX11Image.cpp \
-	src/Engine/Renderer/DirectX11Interface.cpp \
-	src/Engine/Renderer/DirectX11RenderTarget.cpp \
-	src/Engine/Renderer/DirectX11Shader.cpp \
-	src/Engine/Renderer/DirectX11VertexArrayObject.cpp \
+	src/Engine/Renderer/DirectX11/DirectX11Image.cpp \
+	src/Engine/Renderer/DirectX11/DirectX11Interface.cpp \
+	src/Engine/Renderer/DirectX11/DirectX11RenderTarget.cpp \
+	src/Engine/Renderer/DirectX11/DirectX11Shader.cpp \
+	src/Engine/Renderer/DirectX11/DirectX11VertexArrayObject.cpp \
+	src/Engine/Renderer/Graphics.cpp \
 	src/Engine/Renderer/NullGraphicsInterface.cpp \
 	src/Engine/Renderer/NullImage.cpp \
 	src/Engine/Renderer/NullRenderTarget.cpp \
 	src/Engine/Renderer/NullShader.cpp \
-	src/Engine/Renderer/OpenGL3Interface.cpp \
-	src/Engine/Renderer/OpenGL3VertexArrayObject.cpp \
-	src/Engine/Renderer/OpenGLES2Interface.cpp \
-	src/Engine/Renderer/OpenGLES2Shader.cpp \
-	src/Engine/Renderer/OpenGLES2VertexArrayObject.cpp \
-	src/Engine/Renderer/OpenGLES32Interface.cpp \
-	src/Engine/Renderer/OpenGLES32Shader.cpp \
-	src/Engine/Renderer/OpenGLES32VertexArrayObject.cpp \
-	src/Engine/Renderer/OpenGLImage.cpp \
-	src/Engine/Renderer/OpenGLLegacyInterface.cpp \
-	src/Engine/Renderer/OpenGLRenderTarget.cpp \
-	src/Engine/Renderer/OpenGLShader.cpp \
-	src/Engine/Renderer/OpenGLStateCache.cpp \
-	src/Engine/Renderer/OpenGLSync.cpp \
-	src/Engine/Renderer/OpenGLVertexArrayObject.cpp \
+	src/Engine/Renderer/OpenGL/OpenGL3Interface.cpp \
+	src/Engine/Renderer/OpenGL/OpenGL3VertexArrayObject.cpp \
+	src/Engine/Renderer/OpenGL/OpenGLES2Interface.cpp \
+	src/Engine/Renderer/OpenGL/OpenGLES2Shader.cpp \
+	src/Engine/Renderer/OpenGL/OpenGLES2VertexArrayObject.cpp \
+	src/Engine/Renderer/OpenGL/OpenGLES32Interface.cpp \
+	src/Engine/Renderer/OpenGL/OpenGLES32Shader.cpp \
+	src/Engine/Renderer/OpenGL/OpenGLES32VertexArrayObject.cpp \
+	src/Engine/Renderer/OpenGL/OpenGLImage.cpp \
+	src/Engine/Renderer/OpenGL/OpenGLLegacyInterface.cpp \
+	src/Engine/Renderer/OpenGL/OpenGLRenderTarget.cpp \
+	src/Engine/Renderer/OpenGL/OpenGLShader.cpp \
+	src/Engine/Renderer/OpenGL/OpenGLStateCache.cpp \
+	src/Engine/Renderer/OpenGL/OpenGLSync.cpp \
+	src/Engine/Renderer/OpenGL/OpenGLVertexArrayObject.cpp \
+	src/Engine/Renderer/OpenGL/SDLGLInterface.cpp \
+	src/Engine/Renderer/RenderTarget.cpp \
+	src/Engine/Renderer/Shader.cpp \
+	src/Engine/Renderer/VertexArrayObject.cpp \
 	src/Engine/Resources/AsyncResourceLoader.cpp \
 	src/Engine/Resources/Resource.cpp \
 	src/Engine/Resources/ResourceManager.cpp \
-	src/Engine/Shader.cpp \
 	src/Engine/Sound/BASS/BassManager.cpp \
 	src/Engine/Sound/BASS/BassSound.cpp \
 	src/Engine/Sound/BASS/BassSoundEngine.cpp \
@@ -127,7 +127,6 @@ McOsu_ng_SOURCES = \
 	src/Engine/SteamworksInterface.cpp \
 	src/Engine/TextureAtlas.cpp \
 	src/Engine/Thread.cpp \
-	src/Engine/VertexArrayObject.cpp \
 	src/GUI/CBaseUIBoxShadow.cpp \
 	src/GUI/CBaseUIButton.cpp \
 	src/GUI/CBaseUICanvas.cpp \
@@ -155,6 +154,7 @@ McOsu_ng_SOURCES = \
 	src/GUI/Windows/VinylScratcher/VSTitleBar.cpp \
 	src/GUI/Windows/VinylScratcher/VinylScratcher.cpp \
 	src/GUI/Windows/VisualProfiler.cpp \
+	src/Main/main.cpp \
 	src/Util/McMath.cpp \
 	src/Util/Quaternion.cpp \
 	src/Util/Rect.cpp \
