@@ -34,14 +34,6 @@
 	using BackendGLInterface = OpenGLLegacyInterface;
 	using BackendGLVAO = OpenGLVertexArrayObject;
 	using BackendGLShader = OpenGLShader;
-#elif defined(MCENGINE_FEATURE_GLES2)
-	#include "OpenGLES2Interface.h"
-	#include "OpenGLES2VertexArrayObject.h"
-	#include "OpenGLES2Shader.h"
-
-	using BackendGLInterface = OpenGLES2Interface;
-	using BackendGLVAO = OpenGLES2VertexArrayObject;
-	using BackendGLShader = OpenGLES2Shader;
 #elif defined(MCENGINE_FEATURE_GLES32)
 	#include "OpenGLES32Interface.h"
 	#include "OpenGLES32VertexArrayObject.h"

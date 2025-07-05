@@ -364,8 +364,8 @@ void OsuModFPoSu::draw()
 
 							g->setBlending(true);
 							{
-#if defined(MCENGINE_FEATURE_OPENGL) || defined (MCENGINE_FEATURE_GLES2) || defined(MCENGINE_FEATURE_GLES32) || defined(MCENGINE_FEATURE_GL3)
-								if constexpr (Env::cfg(REND::GL | REND::GLES2 | REND::GLES32 | REND::GL3))
+#if defined(MCENGINE_FEATURE_OPENGL) || defined(MCENGINE_FEATURE_GLES32) || defined(MCENGINE_FEATURE_GL3)
+								if constexpr (Env::cfg(REND::GL | REND::GLES32 | REND::GL3))
 								{
 									// HACKHACK: OpenGL hardcoded
 									glBlendFunc(GL_ONE_MINUS_DST_ALPHA, GL_DST_ALPHA);
@@ -432,8 +432,8 @@ void OsuModFPoSu::draw()
 									osu->getSkin()->getBackgroundCube()->unbind();
 								}
 
-#if defined(MCENGINE_FEATURE_OPENGL) || defined (MCENGINE_FEATURE_GLES2) || defined(MCENGINE_FEATURE_GLES32) || defined(MCENGINE_FEATURE_GL3)
-								if constexpr (Env::cfg(REND::GL | REND::GLES2 | REND::GLES32 | REND::GL3))
+#if defined(MCENGINE_FEATURE_OPENGL) || defined(MCENGINE_FEATURE_GLES32) || defined(MCENGINE_FEATURE_GL3)
+								if constexpr (Env::cfg(REND::GL | REND::GLES32 | REND::GL3))
 								{
 									// HACKHACK: OpenGL hardcoded
 									glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);

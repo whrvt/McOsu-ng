@@ -101,7 +101,6 @@ void VisualProfiler::draw()
 
 				    constexpr const auto rendTypeStr = Env::cfg(REND::DX11)     ? "DirectX 11"
 				                                       : Env::cfg(REND::GLES32) ? "OpenGL ES 3"
-				                                       : Env::cfg(REND::GLES2)  ? "OpenGL ES 2"
 				                                       : Env::cfg(REND::GL)     ? "OpenGL Legacy"
 				                                                                : "?";
 

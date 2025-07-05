@@ -45,7 +45,6 @@
 #include "SoundEngine.h"
 
 #include "DirectX11Interface.h"
-#include "OpenGLES2Interface.h"
 #include "OpenGLES32Interface.h"
 
 #include <utility>
@@ -771,7 +770,7 @@ void OsuHUD::drawCursorTrailInt(Shader *trailShader, std::vector<CURSORTRAIL> &t
 			{
 				trailShader->setUniform1f("time", (float)engine->getTime());
 
-				if constexpr (Env::cfg(REND::DX11 | REND::GLES2))
+				if constexpr (Env::cfg(REND::DX11))
 				{
 					g->forceUpdateTransform();
 					Matrix4 mvp = g->getMVP();

@@ -87,15 +87,8 @@ McOsu_ng_SOURCES = \
 	src/Engine/Renderer/DirectX11/DirectX11Shader.cpp \
 	src/Engine/Renderer/DirectX11/DirectX11VertexArrayObject.cpp \
 	src/Engine/Renderer/Graphics.cpp \
-	src/Engine/Renderer/NullGraphicsInterface.cpp \
-	src/Engine/Renderer/NullImage.cpp \
-	src/Engine/Renderer/NullRenderTarget.cpp \
-	src/Engine/Renderer/NullShader.cpp \
 	src/Engine/Renderer/OpenGL/OpenGL3Interface.cpp \
 	src/Engine/Renderer/OpenGL/OpenGL3VertexArrayObject.cpp \
-	src/Engine/Renderer/OpenGL/OpenGLES2Interface.cpp \
-	src/Engine/Renderer/OpenGL/OpenGLES2Shader.cpp \
-	src/Engine/Renderer/OpenGL/OpenGLES2VertexArrayObject.cpp \
 	src/Engine/Renderer/OpenGL/OpenGLES32Interface.cpp \
 	src/Engine/Renderer/OpenGL/OpenGLES32Shader.cpp \
 	src/Engine/Renderer/OpenGL/OpenGLES32VertexArrayObject.cpp \

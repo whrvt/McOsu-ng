@@ -222,15 +222,8 @@ am_McOsu_ng_OBJECTS = libraries/McOsu_ng-MD5.$(OBJEXT) \
 	src/Engine/Renderer/DirectX11/McOsu_ng-DirectX11Shader.$(OBJEXT) \
 	src/Engine/Renderer/DirectX11/McOsu_ng-DirectX11VertexArrayObject.$(OBJEXT) \
 	src/Engine/Renderer/McOsu_ng-Graphics.$(OBJEXT) \
-	src/Engine/Renderer/McOsu_ng-NullGraphicsInterface.$(OBJEXT) \
-	src/Engine/Renderer/McOsu_ng-NullImage.$(OBJEXT) \
-	src/Engine/Renderer/McOsu_ng-NullRenderTarget.$(OBJEXT) \
-	src/Engine/Renderer/McOsu_ng-NullShader.$(OBJEXT) \
 	src/Engine/Renderer/OpenGL/McOsu_ng-OpenGL3Interface.$(OBJEXT) \
 	src/Engine/Renderer/OpenGL/McOsu_ng-OpenGL3VertexArrayObject.$(OBJEXT) \
-	src/Engine/Renderer/OpenGL/McOsu_ng-OpenGLES2Interface.$(OBJEXT) \
-	src/Engine/Renderer/OpenGL/McOsu_ng-OpenGLES2Shader.$(OBJEXT) \
-	src/Engine/Renderer/OpenGL/McOsu_ng-OpenGLES2VertexArrayObject.$(OBJEXT) \
 	src/Engine/Renderer/OpenGL/McOsu_ng-OpenGLES32Interface.$(OBJEXT) \
 	src/Engine/Renderer/OpenGL/McOsu_ng-OpenGLES32Shader.$(OBJEXT) \
 	src/Engine/Renderer/OpenGL/McOsu_ng-OpenGLES32VertexArrayObject.$(OBJEXT) \
@@ -398,10 +391,6 @@ am__depfiles_remade = libraries/$(DEPDIR)/McOsu_ng-MD5.Po \
 	src/Engine/Input/$(DEPDIR)/McOsu_ng-KeyboardEvent.Po \
 	src/Engine/Input/$(DEPDIR)/McOsu_ng-Mouse.Po \
 	src/Engine/Renderer/$(DEPDIR)/McOsu_ng-Graphics.Po \
-	src/Engine/Renderer/$(DEPDIR)/McOsu_ng-NullGraphicsInterface.Po \
-	src/Engine/Renderer/$(DEPDIR)/McOsu_ng-NullImage.Po \
-	src/Engine/Renderer/$(DEPDIR)/McOsu_ng-NullRenderTarget.Po \
-	src/Engine/Renderer/$(DEPDIR)/McOsu_ng-NullShader.Po \
 	src/Engine/Renderer/$(DEPDIR)/McOsu_ng-RenderTarget.Po \
 	src/Engine/Renderer/$(DEPDIR)/McOsu_ng-Shader.Po \
 	src/Engine/Renderer/$(DEPDIR)/McOsu_ng-VertexArrayObject.Po \
@@ -412,9 +401,6 @@ am__depfiles_remade = libraries/$(DEPDIR)/McOsu_ng-MD5.Po \
 	src/Engine/Renderer/DirectX11/$(DEPDIR)/McOsu_ng-DirectX11VertexArrayObject.Po \
 	src/Engine/Renderer/OpenGL/$(DEPDIR)/McOsu_ng-OpenGL3Interface.Po \
 	src/Engine/Renderer/OpenGL/$(DEPDIR)/McOsu_ng-OpenGL3VertexArrayObject.Po \
-	src/Engine/Renderer/OpenGL/$(DEPDIR)/McOsu_ng-OpenGLES2Interface.Po \
-	src/Engine/Renderer/OpenGL/$(DEPDIR)/McOsu_ng-OpenGLES2Shader.Po \
-	src/Engine/Renderer/OpenGL/$(DEPDIR)/McOsu_ng-OpenGLES2VertexArrayObject.Po \
 	src/Engine/Renderer/OpenGL/$(DEPDIR)/McOsu_ng-OpenGLES32Interface.Po \
 	src/Engine/Renderer/OpenGL/$(DEPDIR)/McOsu_ng-OpenGLES32Shader.Po \
 	src/Engine/Renderer/OpenGL/$(DEPDIR)/McOsu_ng-OpenGLES32VertexArrayObject.Po \
@@ -859,15 +845,8 @@ McOsu_ng_SOURCES = \
 	src/Engine/Renderer/DirectX11/DirectX11Shader.cpp \
 	src/Engine/Renderer/DirectX11/DirectX11VertexArrayObject.cpp \
 	src/Engine/Renderer/Graphics.cpp \
-	src/Engine/Renderer/NullGraphicsInterface.cpp \
-	src/Engine/Renderer/NullImage.cpp \
-	src/Engine/Renderer/NullRenderTarget.cpp \
-	src/Engine/Renderer/NullShader.cpp \
 	src/Engine/Renderer/OpenGL/OpenGL3Interface.cpp \
 	src/Engine/Renderer/OpenGL/OpenGL3VertexArrayObject.cpp \
-	src/Engine/Renderer/OpenGL/OpenGLES2Interface.cpp \
-	src/Engine/Renderer/OpenGL/OpenGLES2Shader.cpp \
-	src/Engine/Renderer/OpenGL/OpenGLES2VertexArrayObject.cpp \
 	src/Engine/Renderer/OpenGL/OpenGLES32Interface.cpp \
 	src/Engine/Renderer/OpenGL/OpenGLES32Shader.cpp \
 	src/Engine/Renderer/OpenGL/OpenGLES32VertexArrayObject.cpp \
@@ -1437,18 +1416,6 @@ src/Engine/Renderer/$(DEPDIR)/$(am__dirstamp):
 src/Engine/Renderer/McOsu_ng-Graphics.$(OBJEXT):  \
 	src/Engine/Renderer/$(am__dirstamp) \
 	src/Engine/Renderer/$(DEPDIR)/$(am__dirstamp)
-src/Engine/Renderer/McOsu_ng-NullGraphicsInterface.$(OBJEXT):  \
-	src/Engine/Renderer/$(am__dirstamp) \
-	src/Engine/Renderer/$(DEPDIR)/$(am__dirstamp)
-src/Engine/Renderer/McOsu_ng-NullImage.$(OBJEXT):  \
-	src/Engine/Renderer/$(am__dirstamp) \
-	src/Engine/Renderer/$(DEPDIR)/$(am__dirstamp)
-src/Engine/Renderer/McOsu_ng-NullRenderTarget.$(OBJEXT):  \
-	src/Engine/Renderer/$(am__dirstamp) \
-	src/Engine/Renderer/$(DEPDIR)/$(am__dirstamp)
-src/Engine/Renderer/McOsu_ng-NullShader.$(OBJEXT):  \
-	src/Engine/Renderer/$(am__dirstamp) \
-	src/Engine/Renderer/$(DEPDIR)/$(am__dirstamp)
 src/Engine/Renderer/OpenGL/$(am__dirstamp):
 	@$(MKDIR_P) src/Engine/Renderer/OpenGL
 	@: >>src/Engine/Renderer/OpenGL/$(am__dirstamp)
@@ -1459,15 +1426,6 @@ src/Engine/Renderer/OpenGL/McOsu_ng-OpenGL3Interface.$(OBJEXT):  \
 	src/Engine/Renderer/OpenGL/$(am__dirstamp) \
 	src/Engine/Renderer/OpenGL/$(DEPDIR)/$(am__dirstamp)
 src/Engine/Renderer/OpenGL/McOsu_ng-OpenGL3VertexArrayObject.$(OBJEXT):  \
-	src/Engine/Renderer/OpenGL/$(am__dirstamp) \
-	src/Engine/Renderer/OpenGL/$(DEPDIR)/$(am__dirstamp)
-src/Engine/Renderer/OpenGL/McOsu_ng-OpenGLES2Interface.$(OBJEXT):  \
-	src/Engine/Renderer/OpenGL/$(am__dirstamp) \
-	src/Engine/Renderer/OpenGL/$(DEPDIR)/$(am__dirstamp)
-src/Engine/Renderer/OpenGL/McOsu_ng-OpenGLES2Shader.$(OBJEXT):  \
-	src/Engine/Renderer/OpenGL/$(am__dirstamp) \
-	src/Engine/Renderer/OpenGL/$(DEPDIR)/$(am__dirstamp)
-src/Engine/Renderer/OpenGL/McOsu_ng-OpenGLES2VertexArrayObject.$(OBJEXT):  \
 	src/Engine/Renderer/OpenGL/$(am__dirstamp) \
 	src/Engine/Renderer/OpenGL/$(DEPDIR)/$(am__dirstamp)
 src/Engine/Renderer/OpenGL/McOsu_ng-OpenGLES32Interface.$(OBJEXT):  \
@@ -1807,10 +1765,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Input/$(DEPDIR)/McOsu_ng-KeyboardEvent.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Input/$(DEPDIR)/McOsu_ng-Mouse.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Renderer/$(DEPDIR)/McOsu_ng-Graphics.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Renderer/$(DEPDIR)/McOsu_ng-NullGraphicsInterface.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Renderer/$(DEPDIR)/McOsu_ng-NullImage.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Renderer/$(DEPDIR)/McOsu_ng-NullRenderTarget.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Renderer/$(DEPDIR)/McOsu_ng-NullShader.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Renderer/$(DEPDIR)/McOsu_ng-RenderTarget.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Renderer/$(DEPDIR)/McOsu_ng-Shader.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Renderer/$(DEPDIR)/McOsu_ng-VertexArrayObject.Po@am__quote@ # am--include-marker
@@ -1821,9 +1775,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Renderer/DirectX11/$(DEPDIR)/McOsu_ng-DirectX11VertexArrayObject.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Renderer/OpenGL/$(DEPDIR)/McOsu_ng-OpenGL3Interface.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Renderer/OpenGL/$(DEPDIR)/McOsu_ng-OpenGL3VertexArrayObject.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Renderer/OpenGL/$(DEPDIR)/McOsu_ng-OpenGLES2Interface.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Renderer/OpenGL/$(DEPDIR)/McOsu_ng-OpenGLES2Shader.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Renderer/OpenGL/$(DEPDIR)/McOsu_ng-OpenGLES2VertexArrayObject.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Renderer/OpenGL/$(DEPDIR)/McOsu_ng-OpenGLES32Interface.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Renderer/OpenGL/$(DEPDIR)/McOsu_ng-OpenGLES32Shader.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/Renderer/OpenGL/$(DEPDIR)/McOsu_ng-OpenGLES32VertexArrayObject.Po@am__quote@ # am--include-marker
@@ -3122,62 +3073,6 @@ src/Engine/Renderer/McOsu_ng-Graphics.obj: src/Engine/Renderer/Graphics.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Renderer/McOsu_ng-Graphics.obj `if test -f 'src/Engine/Renderer/Graphics.cpp'; then $(CYGPATH_W) 'src/Engine/Renderer/Graphics.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Renderer/Graphics.cpp'; fi`
 
-src/Engine/Renderer/McOsu_ng-NullGraphicsInterface.o: src/Engine/Renderer/NullGraphicsInterface.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Renderer/McOsu_ng-NullGraphicsInterface.o -MD -MP -MF src/Engine/Renderer/$(DEPDIR)/McOsu_ng-NullGraphicsInterface.Tpo -c -o src/Engine/Renderer/McOsu_ng-NullGraphicsInterface.o `test -f 'src/Engine/Renderer/NullGraphicsInterface.cpp' || echo '$(srcdir)/'`src/Engine/Renderer/NullGraphicsInterface.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Renderer/$(DEPDIR)/McOsu_ng-NullGraphicsInterface.Tpo src/Engine/Renderer/$(DEPDIR)/McOsu_ng-NullGraphicsInterface.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Renderer/NullGraphicsInterface.cpp' object='src/Engine/Renderer/McOsu_ng-NullGraphicsInterface.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Renderer/McOsu_ng-NullGraphicsInterface.o `test -f 'src/Engine/Renderer/NullGraphicsInterface.cpp' || echo '$(srcdir)/'`src/Engine/Renderer/NullGraphicsInterface.cpp
-
-src/Engine/Renderer/McOsu_ng-NullGraphicsInterface.obj: src/Engine/Renderer/NullGraphicsInterface.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Renderer/McOsu_ng-NullGraphicsInterface.obj -MD -MP -MF src/Engine/Renderer/$(DEPDIR)/McOsu_ng-NullGraphicsInterface.Tpo -c -o src/Engine/Renderer/McOsu_ng-NullGraphicsInterface.obj `if test -f 'src/Engine/Renderer/NullGraphicsInterface.cpp'; then $(CYGPATH_W) 'src/Engine/Renderer/NullGraphicsInterface.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Renderer/NullGraphicsInterface.cpp'; fi`
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Renderer/$(DEPDIR)/McOsu_ng-NullGraphicsInterface.Tpo src/Engine/Renderer/$(DEPDIR)/McOsu_ng-NullGraphicsInterface.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Renderer/NullGraphicsInterface.cpp' object='src/Engine/Renderer/McOsu_ng-NullGraphicsInterface.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Renderer/McOsu_ng-NullGraphicsInterface.obj `if test -f 'src/Engine/Renderer/NullGraphicsInterface.cpp'; then $(CYGPATH_W) 'src/Engine/Renderer/NullGraphicsInterface.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Renderer/NullGraphicsInterface.cpp'; fi`
-
-src/Engine/Renderer/McOsu_ng-NullImage.o: src/Engine/Renderer/NullImage.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Renderer/McOsu_ng-NullImage.o -MD -MP -MF src/Engine/Renderer/$(DEPDIR)/McOsu_ng-NullImage.Tpo -c -o src/Engine/Renderer/McOsu_ng-NullImage.o `test -f 'src/Engine/Renderer/NullImage.cpp' || echo '$(srcdir)/'`src/Engine/Renderer/NullImage.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Renderer/$(DEPDIR)/McOsu_ng-NullImage.Tpo src/Engine/Renderer/$(DEPDIR)/McOsu_ng-NullImage.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Renderer/NullImage.cpp' object='src/Engine/Renderer/McOsu_ng-NullImage.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Renderer/McOsu_ng-NullImage.o `test -f 'src/Engine/Renderer/NullImage.cpp' || echo '$(srcdir)/'`src/Engine/Renderer/NullImage.cpp
-
-src/Engine/Renderer/McOsu_ng-NullImage.obj: src/Engine/Renderer/NullImage.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Renderer/McOsu_ng-NullImage.obj -MD -MP -MF src/Engine/Renderer/$(DEPDIR)/McOsu_ng-NullImage.Tpo -c -o src/Engine/Renderer/McOsu_ng-NullImage.obj `if test -f 'src/Engine/Renderer/NullImage.cpp'; then $(CYGPATH_W) 'src/Engine/Renderer/NullImage.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Renderer/NullImage.cpp'; fi`
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Renderer/$(DEPDIR)/McOsu_ng-NullImage.Tpo src/Engine/Renderer/$(DEPDIR)/McOsu_ng-NullImage.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Renderer/NullImage.cpp' object='src/Engine/Renderer/McOsu_ng-NullImage.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Renderer/McOsu_ng-NullImage.obj `if test -f 'src/Engine/Renderer/NullImage.cpp'; then $(CYGPATH_W) 'src/Engine/Renderer/NullImage.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Renderer/NullImage.cpp'; fi`
-
-src/Engine/Renderer/McOsu_ng-NullRenderTarget.o: src/Engine/Renderer/NullRenderTarget.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Renderer/McOsu_ng-NullRenderTarget.o -MD -MP -MF src/Engine/Renderer/$(DEPDIR)/McOsu_ng-NullRenderTarget.Tpo -c -o src/Engine/Renderer/McOsu_ng-NullRenderTarget.o `test -f 'src/Engine/Renderer/NullRenderTarget.cpp' || echo '$(srcdir)/'`src/Engine/Renderer/NullRenderTarget.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Renderer/$(DEPDIR)/McOsu_ng-NullRenderTarget.Tpo src/Engine/Renderer/$(DEPDIR)/McOsu_ng-NullRenderTarget.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Renderer/NullRenderTarget.cpp' object='src/Engine/Renderer/McOsu_ng-NullRenderTarget.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Renderer/McOsu_ng-NullRenderTarget.o `test -f 'src/Engine/Renderer/NullRenderTarget.cpp' || echo '$(srcdir)/'`src/Engine/Renderer/NullRenderTarget.cpp
-
-src/Engine/Renderer/McOsu_ng-NullRenderTarget.obj: src/Engine/Renderer/NullRenderTarget.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Renderer/McOsu_ng-NullRenderTarget.obj -MD -MP -MF src/Engine/Renderer/$(DEPDIR)/McOsu_ng-NullRenderTarget.Tpo -c -o src/Engine/Renderer/McOsu_ng-NullRenderTarget.obj `if test -f 'src/Engine/Renderer/NullRenderTarget.cpp'; then $(CYGPATH_W) 'src/Engine/Renderer/NullRenderTarget.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Renderer/NullRenderTarget.cpp'; fi`
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Renderer/$(DEPDIR)/McOsu_ng-NullRenderTarget.Tpo src/Engine/Renderer/$(DEPDIR)/McOsu_ng-NullRenderTarget.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Renderer/NullRenderTarget.cpp' object='src/Engine/Renderer/McOsu_ng-NullRenderTarget.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Renderer/McOsu_ng-NullRenderTarget.obj `if test -f 'src/Engine/Renderer/NullRenderTarget.cpp'; then $(CYGPATH_W) 'src/Engine/Renderer/NullRenderTarget.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Renderer/NullRenderTarget.cpp'; fi`
-
-src/Engine/Renderer/McOsu_ng-NullShader.o: src/Engine/Renderer/NullShader.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Renderer/McOsu_ng-NullShader.o -MD -MP -MF src/Engine/Renderer/$(DEPDIR)/McOsu_ng-NullShader.Tpo -c -o src/Engine/Renderer/McOsu_ng-NullShader.o `test -f 'src/Engine/Renderer/NullShader.cpp' || echo '$(srcdir)/'`src/Engine/Renderer/NullShader.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Renderer/$(DEPDIR)/McOsu_ng-NullShader.Tpo src/Engine/Renderer/$(DEPDIR)/McOsu_ng-NullShader.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Renderer/NullShader.cpp' object='src/Engine/Renderer/McOsu_ng-NullShader.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Renderer/McOsu_ng-NullShader.o `test -f 'src/Engine/Renderer/NullShader.cpp' || echo '$(srcdir)/'`src/Engine/Renderer/NullShader.cpp
-
-src/Engine/Renderer/McOsu_ng-NullShader.obj: src/Engine/Renderer/NullShader.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Renderer/McOsu_ng-NullShader.obj -MD -MP -MF src/Engine/Renderer/$(DEPDIR)/McOsu_ng-NullShader.Tpo -c -o src/Engine/Renderer/McOsu_ng-NullShader.obj `if test -f 'src/Engine/Renderer/NullShader.cpp'; then $(CYGPATH_W) 'src/Engine/Renderer/NullShader.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Renderer/NullShader.cpp'; fi`
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Renderer/$(DEPDIR)/McOsu_ng-NullShader.Tpo src/Engine/Renderer/$(DEPDIR)/McOsu_ng-NullShader.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Renderer/NullShader.cpp' object='src/Engine/Renderer/McOsu_ng-NullShader.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Renderer/McOsu_ng-NullShader.obj `if test -f 'src/Engine/Renderer/NullShader.cpp'; then $(CYGPATH_W) 'src/Engine/Renderer/NullShader.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Renderer/NullShader.cpp'; fi`
-
 src/Engine/Renderer/OpenGL/McOsu_ng-OpenGL3Interface.o: src/Engine/Renderer/OpenGL/OpenGL3Interface.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Renderer/OpenGL/McOsu_ng-OpenGL3Interface.o -MD -MP -MF src/Engine/Renderer/OpenGL/$(DEPDIR)/McOsu_ng-OpenGL3Interface.Tpo -c -o src/Engine/Renderer/OpenGL/McOsu_ng-OpenGL3Interface.o `test -f 'src/Engine/Renderer/OpenGL/OpenGL3Interface.cpp' || echo '$(srcdir)/'`src/Engine/Renderer/OpenGL/OpenGL3Interface.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Renderer/OpenGL/$(DEPDIR)/McOsu_ng-OpenGL3Interface.Tpo src/Engine/Renderer/OpenGL/$(DEPDIR)/McOsu_ng-OpenGL3Interface.Po
@@ -3205,48 +3100,6 @@ src/Engine/Renderer/OpenGL/McOsu_ng-OpenGL3VertexArrayObject.obj: src/Engine/Ren
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Renderer/OpenGL/OpenGL3VertexArrayObject.cpp' object='src/Engine/Renderer/OpenGL/McOsu_ng-OpenGL3VertexArrayObject.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Renderer/OpenGL/McOsu_ng-OpenGL3VertexArrayObject.obj `if test -f 'src/Engine/Renderer/OpenGL/OpenGL3VertexArrayObject.cpp'; then $(CYGPATH_W) 'src/Engine/Renderer/OpenGL/OpenGL3VertexArrayObject.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Renderer/OpenGL/OpenGL3VertexArrayObject.cpp'; fi`
-
-src/Engine/Renderer/OpenGL/McOsu_ng-OpenGLES2Interface.o: src/Engine/Renderer/OpenGL/OpenGLES2Interface.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Renderer/OpenGL/McOsu_ng-OpenGLES2Interface.o -MD -MP -MF src/Engine/Renderer/OpenGL/$(DEPDIR)/McOsu_ng-OpenGLES2Interface.Tpo -c -o src/Engine/Renderer/OpenGL/McOsu_ng-OpenGLES2Interface.o `test -f 'src/Engine/Renderer/OpenGL/OpenGLES2Interface.cpp' || echo '$(srcdir)/'`src/Engine/Renderer/OpenGL/OpenGLES2Interface.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Renderer/OpenGL/$(DEPDIR)/McOsu_ng-OpenGLES2Interface.Tpo src/Engine/Renderer/OpenGL/$(DEPDIR)/McOsu_ng-OpenGLES2Interface.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Renderer/OpenGL/OpenGLES2Interface.cpp' object='src/Engine/Renderer/OpenGL/McOsu_ng-OpenGLES2Interface.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Renderer/OpenGL/McOsu_ng-OpenGLES2Interface.o `test -f 'src/Engine/Renderer/OpenGL/OpenGLES2Interface.cpp' || echo '$(srcdir)/'`src/Engine/Renderer/OpenGL/OpenGLES2Interface.cpp
-
-src/Engine/Renderer/OpenGL/McOsu_ng-OpenGLES2Interface.obj: src/Engine/Renderer/OpenGL/OpenGLES2Interface.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Renderer/OpenGL/McOsu_ng-OpenGLES2Interface.obj -MD -MP -MF src/Engine/Renderer/OpenGL/$(DEPDIR)/McOsu_ng-OpenGLES2Interface.Tpo -c -o src/Engine/Renderer/OpenGL/McOsu_ng-OpenGLES2Interface.obj `if test -f 'src/Engine/Renderer/OpenGL/OpenGLES2Interface.cpp'; then $(CYGPATH_W) 'src/Engine/Renderer/OpenGL/OpenGLES2Interface.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Renderer/OpenGL/OpenGLES2Interface.cpp'; fi`
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Renderer/OpenGL/$(DEPDIR)/McOsu_ng-OpenGLES2Interface.Tpo src/Engine/Renderer/OpenGL/$(DEPDIR)/McOsu_ng-OpenGLES2Interface.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Renderer/OpenGL/OpenGLES2Interface.cpp' object='src/Engine/Renderer/OpenGL/McOsu_ng-OpenGLES2Interface.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Renderer/OpenGL/McOsu_ng-OpenGLES2Interface.obj `if test -f 'src/Engine/Renderer/OpenGL/OpenGLES2Interface.cpp'; then $(CYGPATH_W) 'src/Engine/Renderer/OpenGL/OpenGLES2Interface.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Renderer/OpenGL/OpenGLES2Interface.cpp'; fi`
-
-src/Engine/Renderer/OpenGL/McOsu_ng-OpenGLES2Shader.o: src/Engine/Renderer/OpenGL/OpenGLES2Shader.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Renderer/OpenGL/McOsu_ng-OpenGLES2Shader.o -MD -MP -MF src/Engine/Renderer/OpenGL/$(DEPDIR)/McOsu_ng-OpenGLES2Shader.Tpo -c -o src/Engine/Renderer/OpenGL/McOsu_ng-OpenGLES2Shader.o `test -f 'src/Engine/Renderer/OpenGL/OpenGLES2Shader.cpp' || echo '$(srcdir)/'`src/Engine/Renderer/OpenGL/OpenGLES2Shader.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Renderer/OpenGL/$(DEPDIR)/McOsu_ng-OpenGLES2Shader.Tpo src/Engine/Renderer/OpenGL/$(DEPDIR)/McOsu_ng-OpenGLES2Shader.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Renderer/OpenGL/OpenGLES2Shader.cpp' object='src/Engine/Renderer/OpenGL/McOsu_ng-OpenGLES2Shader.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Renderer/OpenGL/McOsu_ng-OpenGLES2Shader.o `test -f 'src/Engine/Renderer/OpenGL/OpenGLES2Shader.cpp' || echo '$(srcdir)/'`src/Engine/Renderer/OpenGL/OpenGLES2Shader.cpp
-
-src/Engine/Renderer/OpenGL/McOsu_ng-OpenGLES2Shader.obj: src/Engine/Renderer/OpenGL/OpenGLES2Shader.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Renderer/OpenGL/McOsu_ng-OpenGLES2Shader.obj -MD -MP -MF src/Engine/Renderer/OpenGL/$(DEPDIR)/McOsu_ng-OpenGLES2Shader.Tpo -c -o src/Engine/Renderer/OpenGL/McOsu_ng-OpenGLES2Shader.obj `if test -f 'src/Engine/Renderer/OpenGL/OpenGLES2Shader.cpp'; then $(CYGPATH_W) 'src/Engine/Renderer/OpenGL/OpenGLES2Shader.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Renderer/OpenGL/OpenGLES2Shader.cpp'; fi`
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Renderer/OpenGL/$(DEPDIR)/McOsu_ng-OpenGLES2Shader.Tpo src/Engine/Renderer/OpenGL/$(DEPDIR)/McOsu_ng-OpenGLES2Shader.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Renderer/OpenGL/OpenGLES2Shader.cpp' object='src/Engine/Renderer/OpenGL/McOsu_ng-OpenGLES2Shader.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Renderer/OpenGL/McOsu_ng-OpenGLES2Shader.obj `if test -f 'src/Engine/Renderer/OpenGL/OpenGLES2Shader.cpp'; then $(CYGPATH_W) 'src/Engine/Renderer/OpenGL/OpenGLES2Shader.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Renderer/OpenGL/OpenGLES2Shader.cpp'; fi`
-
-src/Engine/Renderer/OpenGL/McOsu_ng-OpenGLES2VertexArrayObject.o: src/Engine/Renderer/OpenGL/OpenGLES2VertexArrayObject.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Renderer/OpenGL/McOsu_ng-OpenGLES2VertexArrayObject.o -MD -MP -MF src/Engine/Renderer/OpenGL/$(DEPDIR)/McOsu_ng-OpenGLES2VertexArrayObject.Tpo -c -o src/Engine/Renderer/OpenGL/McOsu_ng-OpenGLES2VertexArrayObject.o `test -f 'src/Engine/Renderer/OpenGL/OpenGLES2VertexArrayObject.cpp' || echo '$(srcdir)/'`src/Engine/Renderer/OpenGL/OpenGLES2VertexArrayObject.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Renderer/OpenGL/$(DEPDIR)/McOsu_ng-OpenGLES2VertexArrayObject.Tpo src/Engine/Renderer/OpenGL/$(DEPDIR)/McOsu_ng-OpenGLES2VertexArrayObject.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Renderer/OpenGL/OpenGLES2VertexArrayObject.cpp' object='src/Engine/Renderer/OpenGL/McOsu_ng-OpenGLES2VertexArrayObject.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Renderer/OpenGL/McOsu_ng-OpenGLES2VertexArrayObject.o `test -f 'src/Engine/Renderer/OpenGL/OpenGLES2VertexArrayObject.cpp' || echo '$(srcdir)/'`src/Engine/Renderer/OpenGL/OpenGLES2VertexArrayObject.cpp
-
-src/Engine/Renderer/OpenGL/McOsu_ng-OpenGLES2VertexArrayObject.obj: src/Engine/Renderer/OpenGL/OpenGLES2VertexArrayObject.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Renderer/OpenGL/McOsu_ng-OpenGLES2VertexArrayObject.obj -MD -MP -MF src/Engine/Renderer/OpenGL/$(DEPDIR)/McOsu_ng-OpenGLES2VertexArrayObject.Tpo -c -o src/Engine/Renderer/OpenGL/McOsu_ng-OpenGLES2VertexArrayObject.obj `if test -f 'src/Engine/Renderer/OpenGL/OpenGLES2VertexArrayObject.cpp'; then $(CYGPATH_W) 'src/Engine/Renderer/OpenGL/OpenGLES2VertexArrayObject.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Renderer/OpenGL/OpenGLES2VertexArrayObject.cpp'; fi`
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/Renderer/OpenGL/$(DEPDIR)/McOsu_ng-OpenGLES2VertexArrayObject.Tpo src/Engine/Renderer/OpenGL/$(DEPDIR)/McOsu_ng-OpenGLES2VertexArrayObject.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Renderer/OpenGL/OpenGLES2VertexArrayObject.cpp' object='src/Engine/Renderer/OpenGL/McOsu_ng-OpenGLES2VertexArrayObject.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/Renderer/OpenGL/McOsu_ng-OpenGLES2VertexArrayObject.obj `if test -f 'src/Engine/Renderer/OpenGL/OpenGLES2VertexArrayObject.cpp'; then $(CYGPATH_W) 'src/Engine/Renderer/OpenGL/OpenGLES2VertexArrayObject.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Renderer/OpenGL/OpenGLES2VertexArrayObject.cpp'; fi`
 
 src/Engine/Renderer/OpenGL/McOsu_ng-OpenGLES32Interface.o: src/Engine/Renderer/OpenGL/OpenGLES32Interface.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/Renderer/OpenGL/McOsu_ng-OpenGLES32Interface.o -MD -MP -MF src/Engine/Renderer/OpenGL/$(DEPDIR)/McOsu_ng-OpenGLES32Interface.Tpo -c -o src/Engine/Renderer/OpenGL/McOsu_ng-OpenGLES32Interface.o `test -f 'src/Engine/Renderer/OpenGL/OpenGLES32Interface.cpp' || echo '$(srcdir)/'`src/Engine/Renderer/OpenGL/OpenGLES32Interface.cpp
@@ -4539,10 +4392,6 @@ distclean: distclean-am
 	-rm -f src/Engine/Input/$(DEPDIR)/McOsu_ng-KeyboardEvent.Po
 	-rm -f src/Engine/Input/$(DEPDIR)/McOsu_ng-Mouse.Po
 	-rm -f src/Engine/Renderer/$(DEPDIR)/McOsu_ng-Graphics.Po
-	-rm -f src/Engine/Renderer/$(DEPDIR)/McOsu_ng-NullGraphicsInterface.Po
-	-rm -f src/Engine/Renderer/$(DEPDIR)/McOsu_ng-NullImage.Po
-	-rm -f src/Engine/Renderer/$(DEPDIR)/McOsu_ng-NullRenderTarget.Po
-	-rm -f src/Engine/Renderer/$(DEPDIR)/McOsu_ng-NullShader.Po
 	-rm -f src/Engine/Renderer/$(DEPDIR)/McOsu_ng-RenderTarget.Po
 	-rm -f src/Engine/Renderer/$(DEPDIR)/McOsu_ng-Shader.Po
 	-rm -f src/Engine/Renderer/$(DEPDIR)/McOsu_ng-VertexArrayObject.Po
@@ -4553,9 +4402,6 @@ distclean: distclean-am
 	-rm -f src/Engine/Renderer/DirectX11/$(DEPDIR)/McOsu_ng-DirectX11VertexArrayObject.Po
 	-rm -f src/Engine/Renderer/OpenGL/$(DEPDIR)/McOsu_ng-OpenGL3Interface.Po
 	-rm -f src/Engine/Renderer/OpenGL/$(DEPDIR)/McOsu_ng-OpenGL3VertexArrayObject.Po
-	-rm -f src/Engine/Renderer/OpenGL/$(DEPDIR)/McOsu_ng-OpenGLES2Interface.Po
-	-rm -f src/Engine/Renderer/OpenGL/$(DEPDIR)/McOsu_ng-OpenGLES2Shader.Po
-	-rm -f src/Engine/Renderer/OpenGL/$(DEPDIR)/McOsu_ng-OpenGLES2VertexArrayObject.Po
 	-rm -f src/Engine/Renderer/OpenGL/$(DEPDIR)/McOsu_ng-OpenGLES32Interface.Po
 	-rm -f src/Engine/Renderer/OpenGL/$(DEPDIR)/McOsu_ng-OpenGLES32Shader.Po
 	-rm -f src/Engine/Renderer/OpenGL/$(DEPDIR)/McOsu_ng-OpenGLES32VertexArrayObject.Po
@@ -4746,10 +4592,6 @@ maintainer-clean: maintainer-clean-am
 	-rm -f src/Engine/Input/$(DEPDIR)/McOsu_ng-KeyboardEvent.Po
 	-rm -f src/Engine/Input/$(DEPDIR)/McOsu_ng-Mouse.Po
 	-rm -f src/Engine/Renderer/$(DEPDIR)/McOsu_ng-Graphics.Po
-	-rm -f src/Engine/Renderer/$(DEPDIR)/McOsu_ng-NullGraphicsInterface.Po
-	-rm -f src/Engine/Renderer/$(DEPDIR)/McOsu_ng-NullImage.Po
-	-rm -f src/Engine/Renderer/$(DEPDIR)/McOsu_ng-NullRenderTarget.Po
-	-rm -f src/Engine/Renderer/$(DEPDIR)/McOsu_ng-NullShader.Po
 	-rm -f src/Engine/Renderer/$(DEPDIR)/McOsu_ng-RenderTarget.Po
 	-rm -f src/Engine/Renderer/$(DEPDIR)/McOsu_ng-Shader.Po
 	-rm -f src/Engine/Renderer/$(DEPDIR)/McOsu_ng-VertexArrayObject.Po
@@ -4760,9 +4602,6 @@ maintainer-clean: maintainer-clean-am
 	-rm -f src/Engine/Renderer/DirectX11/$(DEPDIR)/McOsu_ng-DirectX11VertexArrayObject.Po
 	-rm -f src/Engine/Renderer/OpenGL/$(DEPDIR)/McOsu_ng-OpenGL3Interface.Po
 	-rm -f src/Engine/Renderer/OpenGL/$(DEPDIR)/McOsu_ng-OpenGL3VertexArrayObject.Po
-	-rm -f src/Engine/Renderer/OpenGL/$(DEPDIR)/McOsu_ng-OpenGLES2Interface.Po
-	-rm -f src/Engine/Renderer/OpenGL/$(DEPDIR)/McOsu_ng-OpenGLES2Shader.Po
-	-rm -f src/Engine/Renderer/OpenGL/$(DEPDIR)/McOsu_ng-OpenGLES2VertexArrayObject.Po
 	-rm -f src/Engine/Renderer/OpenGL/$(DEPDIR)/McOsu_ng-OpenGLES32Interface.Po
 	-rm -f src/Engine/Renderer/OpenGL/$(DEPDIR)/McOsu_ng-OpenGLES32Shader.Po
 	-rm -f src/Engine/Renderer/OpenGL/$(DEPDIR)/McOsu_ng-OpenGLES32VertexArrayObject.Po

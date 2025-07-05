@@ -41,10 +41,9 @@ namespace Env
 	enum class REND : uint32_t
 	{
 		GL		= 1 << 0,
-		GLES2	= 1 << 1,
-		GLES32	= 1 << 2,
-		GL3     = 1 << 3,
-		DX11	= 1 << 4,
+		GLES32	= 1 << 1,
+		GL3     = 1 << 2,
+		DX11	= 1 << 3,
 		NONE	= 0,
 	};
 
@@ -102,9 +101,6 @@ namespace Env
 	#ifdef MCENGINE_FEATURE_OPENGL
 		REND::GL |
 	#endif
-	#ifdef MCENGINE_FEATURE_GLES2
-		REND::GLES2 |
-	#endif
 	#ifdef MCENGINE_FEATURE_GLES32
 		REND::GLES32 |
 	#endif
@@ -114,7 +110,7 @@ namespace Env
 	#ifdef MCENGINE_FEATURE_DIRECTX11
 		REND::DX11 |
 	#endif
-	#if !(defined(MCENGINE_FEATURE_OPENGL) || defined(MCENGINE_FEATURE_GLES2) || defined(MCENGINE_FEATURE_GLES32) || defined(MCENGINE_FEATURE_GL3) || defined(MCENGINE_FEATURE_DIRECTX11))
+	#if !(defined(MCENGINE_FEATURE_OPENGL) || defined(MCENGINE_FEATURE_GLES32) || defined(MCENGINE_FEATURE_GL3) || defined(MCENGINE_FEATURE_DIRECTX11))
 	#error "No renderer is defined! Check \"EngineFeatures.h\"."
 	#endif
 		REND::NONE;

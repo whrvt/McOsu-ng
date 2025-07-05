@@ -11,7 +11,7 @@
 
 #include "EngineFeatures.h"
 
-#if defined(_DEBUG) || (defined(MCENGINE_FEATURE_PROFILING) && !defined(MCENGINE_FEATURE_GLES2)) // dynamic vao updates not implemented the in GLES2 backend
+#if defined(_DEBUG) || defined(MCENGINE_FEATURE_PROFILING)
 
 #define VPROF_MAIN()						g_profCurrentProfile.main(); VPROF("Main")
 

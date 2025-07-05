@@ -23,13 +23,19 @@
 
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
 
-#if 1 // defined(_WINVER) && _WINVER < 0x0A00
+#if 1             // defined(_WINVER) && _WINVER < 0x0A00
 #define NO_FLIP 1 // FIXME: for some reason, perf is lower with FLIP_DISCARD than DISCARD
 #endif
 
 // #define MCENGINE_D3D11_CREATE_DEVICE_DEBUG
 
-DirectX11Interface::DirectX11Interface(HWND hwnd, bool minimalistContext) : NullGraphicsInterface()
+DirectX11Interface::DirectX11Interface(HWND hwnd, bool minimalistContext)
+    : Graphics(),
+      m_swapChainModeDesc{},
+      m_rasterizerDesc{},
+      m_depthStencilDesc{},
+      m_blendDesc{},
+      m_vertexBufferDesc{}
 {
 	m_bReady = false;
 
@@ -120,9 +126,9 @@ void DirectX11Interface::init()
 		// flip discard requires at least 2 buffers
 		swapChainDesc.BufferCount =
 #ifdef NO_FLIP
-			1;
+		    1;
 #else
-			2;
+		    2;
 #endif
 		swapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG::DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
 	}
@@ -1404,7 +1410,8 @@ void DirectX11Interface::onResolutionChange(Vector2 newResolution)
 		// resize
 		// NOTE: when in fullscreen mode, use 0 as width/height (because they were set internally by SetFullscreenState())
 		// NOTE: DXGI_FORMAT_UNKNOWN preserves the existing format
-		//debugLog("actual resize fullscreen {} borderless {} {}x{}\n", m_bIsFullscreen, m_bIsFullscreenBorderlessWindowed, m_bIsFullscreen && !m_bIsFullscreenBorderlessWindowed ? 0 : (UINT)newResolution.x, m_bIsFullscreen && !m_bIsFullscreenBorderlessWindowed ? 0 : (UINT)newResolution.y);
+		// debugLog("actual resize fullscreen {} borderless {} {}x{}\n", m_bIsFullscreen, m_bIsFullscreenBorderlessWindowed, m_bIsFullscreen &&
+		// !m_bIsFullscreenBorderlessWindowed ? 0 : (UINT)newResolution.x, m_bIsFullscreen && !m_bIsFullscreenBorderlessWindowed ? 0 : (UINT)newResolution.y);
 		hr = m_swapChain->ResizeBuffers(0, (m_bIsFullscreen && !m_bIsFullscreenBorderlessWindowed ? 0 : (UINT)newResolution.x),
 		                                (m_bIsFullscreen && !m_bIsFullscreenBorderlessWindowed ? 0 : (UINT)newResolution.y), DXGI_FORMAT::DXGI_FORMAT_UNKNOWN,
 		                                /*DXGI_SWAP_CHAIN_FLAG::DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH*/ 0);
@@ -1485,11 +1492,11 @@ void DirectX11Interface::onResolutionChange(Vector2 newResolution)
 
 		// use new framebuffer
 		m_deviceContext->OMSetRenderTargets(1, &m_frameBuffer, m_frameBufferDepthStencilView);
-		//debugLog("Rebuilt resolution {:g}x{:g}\n", m_vResolution.x, m_vResolution.y);
+		// debugLog("Rebuilt resolution {:g}x{:g}\n", m_vResolution.x, m_vResolution.y);
 	}
 	else
 	{
-		//debugLog("Engine was drawing, not rebuilding rendertarget {:g}x{:g}\n", newResolution.x, newResolution.y);
+		// debugLog("Engine was drawing, not rebuilding rendertarget {:g}x{:g}\n", newResolution.x, newResolution.y);
 	}
 
 	// rebuild viewport
@@ -1504,8 +1511,8 @@ void DirectX11Interface::onResolutionChange(Vector2 newResolution)
 		viewport.MaxDepth = 1.0f; // NOTE: between 0 and 1
 	}
 	m_deviceContext->RSSetViewports(1, &viewport);
-	//resizeTarget(m_vResolution);
-	//debugLog("Set viewport {:g}x{:g}\n", viewport.Width, viewport.Height);
+	// resizeTarget(m_vResolution);
+	// debugLog("Set viewport {:g}x{:g}\n", viewport.Width, viewport.Height);
 	env->syncWindow();
 }
 

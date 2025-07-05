@@ -262,7 +262,7 @@ SDLMain::~SDLMain()
 	SAFE_DELETE(m_engine);
 
 	// clean up GL context
-	if (m_context && (Env::cfg((REND::GL | REND::GLES2 | REND::GLES32 | REND::GL3), !REND::DX11)))
+	if (m_context && (Env::cfg((REND::GL | REND::GLES32 | REND::GL3), !REND::DX11)))
 	{
 		SDL_GL_DestroyContext(m_context);
 		m_context = nullptr;
@@ -542,7 +542,7 @@ nocbinline SDL_AppResult SDLMain::iterate()
 bool SDLMain::createWindow()
 {
 	// pre window-creation settings
-	if constexpr (Env::cfg((REND::GL | REND::GLES2 | REND::GLES32 | REND::GL3), !REND::DX11))
+	if constexpr (Env::cfg((REND::GL | REND::GLES32 | REND::GL3), !REND::DX11))
 	{
 		SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK,
@@ -550,7 +550,7 @@ bool SDLMain::createWindow()
 		                                       : (Env::cfg(REND::GL3) ? SDL_GL_CONTEXT_PROFILE_CORE : SDL_GL_CONTEXT_PROFILE_ES));
 		if constexpr (!Env::cfg(REND::GL | REND::GL3))
 		{
-			SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, Env::cfg(REND::GLES2) ? 2 : 3);
+			SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
 			SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
 		}
 		SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
@@ -559,7 +559,7 @@ bool SDLMain::createWindow()
 	// set vulkan for linux dxvk-native, opengl otherwise (or none for windows dx11)
 	constexpr auto windowFlags =
 	    SDL_WINDOW_HIDDEN | SDL_WINDOW_INPUT_FOCUS | SDL_WINDOW_MOUSE_FOCUS |
-	    (Env::cfg((REND::GL | REND::GLES2 | REND::GLES32 | REND::GL3)) ? SDL_WINDOW_OPENGL : (Env::cfg(OS::LINUX, REND::DX11) ? SDL_WINDOW_VULKAN : 0UL));
+	    (Env::cfg((REND::GL | REND::GLES32 | REND::GL3)) ? SDL_WINDOW_OPENGL : (Env::cfg(OS::LINUX, REND::DX11) ? SDL_WINDOW_VULKAN : 0UL));
 
 	// get default monitor resolution and create the window with that as the starting size
 	long windowCreateWidth = WINDOW_WIDTH;
@@ -617,7 +617,7 @@ bool SDLMain::createWindow()
 
 void SDLMain::setupOpenGL()
 {
-	if constexpr (Env::cfg((REND::GL | REND::GLES2 | REND::GLES32 | REND::GL3), !REND::DX11))
+	if constexpr (Env::cfg((REND::GL | REND::GLES32 | REND::GL3), !REND::DX11))
 	{
 		m_context = SDL_GL_CreateContext(m_window);
 		SDL_GL_MakeCurrent(m_window, m_context);

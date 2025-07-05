@@ -35,7 +35,7 @@ static constexpr size_t MIN_ATLAS_SIZE = 256;
 static constexpr size_t MAX_ATLAS_SIZE = 4096;
 static constexpr wchar_t UNKNOWN_CHAR = '?'; // ASCII '?'
 
-static constexpr auto VERTS_PER_VAO = Env::cfg(REND::GLES2 | REND::GLES32) ? 6 : 4;
+static constexpr auto VERTS_PER_VAO = Env::cfg( REND::GLES32) ? 6 : 4;
 
 namespace cv
 {
@@ -54,7 +54,7 @@ bool McFont::s_sharedFallbacksInitialized = false;
 
 McFont::McFont(const UString &filepath, int fontSize, bool antialiasing, int fontDPI)
     : Resource(filepath),
-      m_vao((Env::cfg(REND::GLES2 | REND::GLES32) ? Graphics::PRIMITIVE::PRIMITIVE_TRIANGLES : Graphics::PRIMITIVE::PRIMITIVE_QUADS),
+      m_vao((Env::cfg( REND::GLES32) ? Graphics::PRIMITIVE::PRIMITIVE_TRIANGLES : Graphics::PRIMITIVE::PRIMITIVE_QUADS),
             Graphics::USAGE_TYPE::USAGE_DYNAMIC)
 {
 	std::vector<wchar_t> characters;
@@ -68,7 +68,7 @@ McFont::McFont(const UString &filepath, int fontSize, bool antialiasing, int fon
 
 McFont::McFont(const UString &filepath, const std::vector<wchar_t> &characters, int fontSize, bool antialiasing, int fontDPI)
     : Resource(filepath),
-      m_vao((Env::cfg(REND::GLES2 | REND::GLES32) ? Graphics::PRIMITIVE::PRIMITIVE_TRIANGLES : Graphics::PRIMITIVE::PRIMITIVE_QUADS),
+      m_vao((Env::cfg( REND::GLES32) ? Graphics::PRIMITIVE::PRIMITIVE_TRIANGLES : Graphics::PRIMITIVE::PRIMITIVE_QUADS),
             Graphics::USAGE_TYPE::USAGE_DYNAMIC)
 {
 	constructor(characters, fontSize, antialiasing, fontDPI);
@@ -625,7 +625,7 @@ void McFont::buildGlyphGeometry(const GLYPH_METRICS &gm, const Vector3 &basePos,
 
 	const size_t idx = vertexCount;
 
-	if constexpr (Env::cfg(REND::GLES2 | REND::GLES32))
+	if constexpr (Env::cfg( REND::GLES32))
 	{
 		// first triangle (bottom-left, top-left, top-right)
 		m_vertices[idx] = bottomLeft;

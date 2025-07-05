@@ -16,12 +16,6 @@
  */
 //#define MCENGINE_FEATURE_OPENGL
 
-
-/*
- * OpenGL graphics (Mobile, ES/EGL, Nintendo Switch)
- */
-//#define MCENGINE_FEATURE_GLES2
-
 /*
  * OpenGLES 3.2 graphics (Desktop, WebGL) (defined in config.h)
  */

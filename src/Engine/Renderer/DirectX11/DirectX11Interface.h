@@ -9,8 +9,8 @@
 #ifndef DIRECTX11INTERFACE_H
 #define DIRECTX11INTERFACE_H
 
-#include "cbase.h"
-#include "NullGraphicsInterface.h"
+#include "BaseEnvironment.h"
+#include "Graphics.h"
 
 class DirectX11Shader;
 
@@ -18,7 +18,7 @@ class DirectX11Shader;
 
 #include "d3d11.h"
 
-class DirectX11Interface : public NullGraphicsInterface
+class DirectX11Interface : public Graphics
 {
 public:
 	struct SimpleVertex
@@ -55,7 +55,8 @@ public:
 	void fillGradient(int x, int y, int width, int height, Color topLeftColor, Color topRightColor, Color bottomLeftColor, Color bottomRightColor) override;
 
 	void drawQuad(int x, int y, int width, int height) override;
-	void drawQuad(Vector2 topLeft, Vector2 topRight, Vector2 bottomRight, Vector2 bottomLeft, Color topLeftColor, Color topRightColor, Color bottomRightColor, Color bottomLeftColor) override;
+	void drawQuad(Vector2 topLeft, Vector2 topRight, Vector2 bottomRight, Vector2 bottomLeft, Color topLeftColor, Color topRightColor, Color bottomRightColor,
+	              Color bottomLeftColor) override;
 
 	// 2d resource drawing
 	void drawImage(Image *image) override;
@@ -69,7 +70,13 @@ public:
 	void pushClipRect(McRect clipRect) override;
 	void popClipRect() override;
 
-	// TODO: stencil buffer
+	// TODO:
+	void fillRoundedRect(int /*x*/, int /*y*/, int /*width*/, int /*height*/, int /*radius*/) override { ; }
+
+	// TODO (?): unused currently
+	void pushStencil() override { ; }
+	void fillStencil(bool /*inside*/) override { ; }
+	void popStencil() override { ; }
 
 	// renderer settings
 	void setClipping(bool enabled) override;
@@ -87,7 +94,7 @@ public:
 	std::vector<unsigned char> getScreenshot() override;
 
 	// renderer info
-	Vector2 getResolution() const override {return m_vResolution;}
+	Vector2 getResolution() const override { return m_vResolution; }
 	UString getVendor() override;
 	UString getModel() override;
 	UString getVersion() override;
@@ -104,8 +111,8 @@ public:
 	Image *createImage(UString filePath, bool mipmapped, bool keepInSystemMemory) override;
 	Image *createImage(int width, int height, bool mipmapped, bool keepInSystemMemory) override;
 	RenderTarget *createRenderTarget(int x, int y, int width, int height, Graphics::MULTISAMPLE_TYPE multiSampleType) override;
-	Shader *createShaderFromFile(UString vertexShaderFilePath, UString fragmentShaderFilePath) override;	// DEPRECATED
-	Shader *createShaderFromSource(UString vertexShader, UString fragmentShader) override;				// DEPRECATED
+	Shader *createShaderFromFile(UString vertexShaderFilePath, UString fragmentShaderFilePath) override; // DEPRECATED
+	Shader *createShaderFromSource(UString vertexShader, UString fragmentShader) override;               // DEPRECATED
 	Shader *createShaderFromFile(UString shaderFilePath) override;
 	Shader *createShaderFromSource(UString shaderSource) override;
 	VertexArrayObject *createVertexArrayObject(Graphics::PRIMITIVE primitive, Graphics::USAGE_TYPE usage, bool keepInSystemMemory) override;
@@ -114,13 +121,14 @@ public:
 	void resizeTarget(Vector2 newResolution);
 	bool enableFullscreen(bool borderlessWindowedFullscreen = false);
 	void disableFullscreen();
-	void setActiveShader(DirectX11Shader *shader) {m_activeShader = shader;}
-	inline bool isReady() const {return m_bReady;}
-	inline ID3D11Device *getDevice() const {return m_device;}
-	inline ID3D11DeviceContext *getDeviceContext() const {return m_deviceContext;}
-	inline IDXGISwapChain *getSwapChain() const {return m_swapChain;}
-	inline DirectX11Shader *getShaderGeneric() const {return m_shaderTexturedGeneric;}
-	inline DirectX11Shader *getActiveShader() const {return m_activeShader;}
+	void setActiveShader(DirectX11Shader *shader) { m_activeShader = shader; }
+	inline bool isReady() const { return m_bReady; }
+	inline ID3D11Device *getDevice() const { return m_device; }
+	inline ID3D11DeviceContext *getDeviceContext() const { return m_deviceContext; }
+	inline IDXGISwapChain *getSwapChain() const { return m_swapChain; }
+	inline DirectX11Shader *getShaderGeneric() const { return m_shaderTexturedGeneric; }
+	inline DirectX11Shader *getActiveShader() const { return m_activeShader; }
+
 protected:
 	void init() override;
 	void onTransformUpdate(Matrix4 &projectionMatrix, Matrix4 &worldMatrix) override;
@@ -181,11 +189,12 @@ private:
 
 #else
 
-class DirectX11Interface : public NullGraphicsInterface{
+class DirectX11Interface : public Graphics
+{
 public:
-	void resizeTarget(Vector2){}
-	bool enableFullscreen(bool){return false;}
-	void disableFullscreen(){}
+	void resizeTarget(Vector2) {}
+	bool enableFullscreen(bool) { return false; }
+	void disableFullscreen() {}
 };
 
 #endif

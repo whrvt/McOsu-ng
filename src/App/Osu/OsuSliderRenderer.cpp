@@ -394,7 +394,7 @@ void OsuSliderRenderer::draw(Osu *osu, VertexArrayObject *vao, const std::vector
 						g->translate(translation.x, translation.y);
 						///g->scale(scaleToApplyAfterTranslationX, scaleToApplyAfterTranslationY); // aspire slider distortions
 
-						if constexpr (Env::cfg(REND::DX11 | REND::GLES2)) {
+						if constexpr (Env::cfg(REND::DX11)) {
 						if (!cv::osu::slider_use_gradient_image.getBool())
 						{
 							g->forceUpdateTransform();
@@ -452,7 +452,7 @@ void OsuSliderRenderer::drawFillSliderBodyPeppy(Osu *osu, const std::vector<Vect
 
 			g->translate(x-startX, y-startY, 0);
 
-			if constexpr (Env::cfg(REND::DX11 | REND::GLES2)) {
+			if constexpr (Env::cfg(REND::DX11)) {
 			if (shader)
 			{
 				g->forceUpdateTransform();
