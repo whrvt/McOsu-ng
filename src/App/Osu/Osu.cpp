@@ -546,10 +546,11 @@ void Osu::draw()
 		if (m_pauseMenu->isVisible() || getSelectedBeatmap()->isContinueScheduled())
 			fadingCursorAlpha = 1.0f;
 
-		const auto *beatmapStd = getSelectedBeatmap()->asStd();
+		const auto *beatmap = getSelectedBeatmap();
+		const OsuBeatmapStandard* beatmapStd = beatmap ? beatmap->asStd() : nullptr;
 
 		// draw auto cursor
-		if (isAuto && allowDrawCursor && !isFPoSu && beatmapStd != NULL && !beatmapStd->isLoading())
+		if (isAuto && allowDrawCursor && !isFPoSu && beatmapStd != nullptr && !beatmapStd->isLoading())
 			m_hud->drawCursor(cv::osu::stdrules::mod_fps.getBool() ? OsuGameRules::getPlayfieldCenter() : beatmapStd->getCursorPos(), cv::osu::mod_fadingcursor.getBool() ? fadingCursorAlpha : 1.0f);
 
 		m_pauseMenu->draw();

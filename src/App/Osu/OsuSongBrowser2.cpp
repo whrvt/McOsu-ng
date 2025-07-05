@@ -1674,12 +1674,17 @@ void OsuSongBrowser2::onPlayEnd(bool quit)
 		rebuildScoreButtons();
 
 		auto *currButton = findCurrentlySelectedSongButton();
+		OsuUISongBrowserSongDifficultyButton *osuSongDiffButton = nullptr;
 		if (currButton != nullptr)
 		{
-			auto *selectedSongDiffButton = currButton->as<OsuUISongBrowserSongDifficultyButton>();
-			if (selectedSongDiffButton != nullptr)
-				selectedSongDiffButton->updateGrade();
+			osuSongDiffButton = currButton->as<OsuUISongBrowserSongDifficultyButton>();
+			if (osuSongDiffButton != nullptr)
+				osuSongDiffButton->updateGrade();
 		}
+		if (currButton == nullptr)
+			debugLog("WARNING: couldn't find currently selected song button to update the grade for!!\n");
+		else if (osuSongDiffButton == nullptr)
+			debugLog("WARNING: the currently selected song button wasn't a OsuUISongBrowserSongDifficultyButton, couldn't update grade!!\n");
 	}
 
 	// update song info
@@ -2241,11 +2246,12 @@ OsuUISongBrowserButton *OsuSongBrowser2::findCurrentlySelectedSongButton() const
 	const std::vector<CBaseUIElement*> &elements = m_songBrowser->getContainer()->getElements();
 	if (elements.empty())
 		return NULL;
-	for (size_t i = elements.size() - 1; i-- > 0;) // NOTE: iterate backwards to fall through multiple selected buttons (e.g. collections)
+	for (size_t i = elements.size() - 1; i >= 0; --i) // NOTE: iterate backwards to fall through multiple selected buttons (e.g. collections)
 	{
 		auto *button = elements[i]->as<OsuUISongBrowserButton>();
 		if (button != NULL && button->isSelected())
 			return button;
+
 	}
 	return NULL;
 }
