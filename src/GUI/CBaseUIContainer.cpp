@@ -212,27 +212,27 @@ void CBaseUIContainer::update_pos(CBaseUIElement *element)
 
 void CBaseUIContainer::onKeyUp(KeyboardEvent &e)
 {
-	for (size_t i=0; i<m_vElements.size(); i++)
+	for (auto & m_vElement : m_vElements)
 	{
-		if (m_vElements[i]->isVisible())
-			m_vElements[i]->onKeyUp(e);
+		if (m_vElement->isVisible())
+			m_vElement->onKeyUp(e);
 	}
 }
 void CBaseUIContainer::onKeyDown(KeyboardEvent &e)
 {
-	for (size_t i=0; i<m_vElements.size(); i++)
+	for (auto & m_vElement : m_vElements)
 	{
-		if (m_vElements[i]->isVisible())
-			m_vElements[i]->onKeyDown(e);
+		if (m_vElement->isVisible())
+			m_vElement->onKeyDown(e);
 	}
 }
 
 void CBaseUIContainer::onChar(KeyboardEvent &e)
 {
-	for (size_t i=0; i<m_vElements.size(); i++)
+	for (auto & m_vElement : m_vElements)
 	{
-		if (m_vElements[i]->isVisible())
-			m_vElements[i]->onChar(e);
+		if (m_vElement->isVisible())
+			m_vElement->onChar(e);
 	}
 }
 

@@ -98,9 +98,12 @@ bool SoLoudSoundEngine::play(Sound *snd, float pan, float pitch)
 	if (!m_bReady || snd == NULL || !snd->isReady())
 		return false;
 
+	pan = std::clamp<float>(pan, -1.0f, 1.0f);
+	pitch = std::clamp<float>(pitch, 0.0f, 2.0f);
+
 	auto *soloudSound = snd->as<SoLoudSound>();
 
-	auto handle = soloudSound->getHandle();
+	auto handle = soloudSound ? soloudSound->getHandle() : (SOUNDHANDLE)0;
 	if (handle != 0 && soloud->getPause(handle))
 	{
 		// just unpause if paused
@@ -117,9 +120,6 @@ bool SoLoudSoundEngine::playSound(SoLoudSound *soloudSound, float pan, float pit
 {
 	if (!soloudSound)
 		return false;
-
-	pan = std::clamp<float>(pan, -1.0f, 1.0f);
-	pitch = std::clamp<float>(pitch, 0.0f, 2.0f);
 
 	// check if we should allow playing this frame (for overlayable sounds)
 	const bool allowPlayFrame = !soloudSound->isOverlayable() || !cv::snd_restrict_play_frame.getBool() || engine->getTime() > soloudSound->getLastPlayTime();
