@@ -1673,9 +1673,13 @@ void OsuSongBrowser2::onPlayEnd(bool quit)
 	{
 		rebuildScoreButtons();
 
-		auto *selectedSongDiffButton = findCurrentlySelectedSongButton()->as<OsuUISongBrowserSongDifficultyButton>();
-		if (selectedSongDiffButton != NULL)
-			selectedSongDiffButton->updateGrade();
+		auto *currButton = findCurrentlySelectedSongButton();
+		if (currButton != nullptr)
+		{
+			auto *selectedSongDiffButton = currButton->as<OsuUISongBrowserSongDifficultyButton>();
+			if (selectedSongDiffButton != nullptr)
+				selectedSongDiffButton->updateGrade();
+		}
 	}
 
 	// update song info
