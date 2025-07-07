@@ -2243,17 +2243,15 @@ void OsuSongBrowser2::scrollToSongButton(const OsuUISongBrowserButton *songButto
 // this is really slow
 OsuUISongBrowserButton *OsuSongBrowser2::findCurrentlySelectedSongButton() const
 {
+	OsuUISongBrowserButton *selectedButton = NULL;
 	const std::vector<CBaseUIElement*> &elements = m_songBrowser->getContainer()->getElements();
-	if (elements.empty())
-		return NULL;
-	for (size_t i = elements.size() - 1; i >= 0; --i) // NOTE: iterate backwards to fall through multiple selected buttons (e.g. collections)
+	for (const auto & element : elements)
 	{
-		auto *button = elements[i]->as<OsuUISongBrowserButton>();
-		if (button != NULL && button->isSelected())
-			return button;
-
+		auto *button = element->as<OsuUISongBrowserButton>();
+		if (button != NULL && button->isSelected()) // NOTE: fall through multiple selected buttons (e.g. collections)
+			selectedButton = button;
 	}
-	return NULL;
+	return selectedButton;
 }
 
 void OsuSongBrowser2::scrollToSelectedSongButton()

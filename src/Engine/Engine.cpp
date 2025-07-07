@@ -317,13 +317,13 @@ Engine::~Engine()
 	s_animationHandlerInstance.reset();
 	animationHandler = nullptr;
 
-	debugLog("Engine: Freeing sound engine...\n");
-	s_soundEngineInstance.reset();
-	soundEngine = nullptr;
-
 	debugLog("Engine: Freeing resource manager...\n");
 	s_resourceManagerInstance.reset();
 	resourceManager = nullptr;
+
+	debugLog("Engine: Freeing sound engine...\n");
+	s_soundEngineInstance.reset();
+	soundEngine = nullptr;
 
 	debugLog("Engine: Freeing graphics...\n");
 	s_graphicsInstance.reset();

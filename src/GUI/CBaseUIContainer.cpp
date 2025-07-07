@@ -21,7 +21,7 @@ void CBaseUIContainer::clear()
 {
 	for (size_t i=0; i<m_vElements.size(); i++)
 	{
-		delete m_vElements[i];
+		SAFE_DELETE(m_vElements[i]);
 	}
 	m_vElements = std::vector<CBaseUIElement*>();
 }
@@ -138,7 +138,7 @@ CBaseUIContainer *CBaseUIContainer::deleteBaseUIElement(CBaseUIElement *element)
 	{
 		if (m_vElements[i] == element)
 		{
-			delete element;
+			SAFE_DELETE(element);
 			m_vElements.erase(m_vElements.begin()+i);
 			return this;
 		}
