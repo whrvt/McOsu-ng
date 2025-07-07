@@ -18,6 +18,7 @@
 
 // can't be namespaced
 #ifdef MCENGINE_PLATFORM_WINDOWS
+#include "WinDebloatDefs.h"
 #ifdef WINAPI_FAMILY
 #include <winapifamily.h>
 #endif

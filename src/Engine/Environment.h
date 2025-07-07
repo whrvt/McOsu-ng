@@ -42,7 +42,7 @@ public:
 	[[nodiscard]] inline const std::vector<UString> &getCommandLine() const { return m_vCmdLine; }
 
 	// returns at least 1
-	[[nodiscard]] static inline int getLogicalCPUCount() { return SDL_GetNumLogicalCPUCores(); }
+	static inline int getLogicalCPUCount() { return SDL_GetNumLogicalCPUCores(); }
 
 	// user
 	[[nodiscard]] const UString &getUsername();
