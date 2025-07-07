@@ -138,6 +138,7 @@ Environment::~Environment()
 	{
 		SDL_DestroyCursor(cur.second);
 	}
+	env = nullptr;
 }
 
 // called by mainloop when initialization is ready

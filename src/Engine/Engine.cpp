@@ -286,6 +286,7 @@ Engine::~Engine()
 	// reset() all static unique_ptrs
 	debugLog("Engine: Freeing app...\n");
 	s_appInstance.reset();
+	app = nullptr;
 
 	if (m_console != NULL)
 		showMessageErrorFatal("Engine Error", "m_console not set to NULL before shutdown!");
@@ -297,26 +298,36 @@ Engine::~Engine()
 	}
 	SAFE_DELETE(m_guiContainer);
 
-	debugLog("Engine: Freeing resource manager...\n");
-	s_resourceManagerInstance.reset();
-
-	debugLog("Engine: Freeing Sound...\n");
-	s_soundEngineInstance.reset();
-
-	debugLog("Engine: Freeing animation handler...\n");
-	s_animationHandlerInstance.reset();
-
-	debugLog("Engine: Freeing network handler...\n");
-	s_networkHandlerInstance.reset();
+	debugLog("Engine: Freeing Discord...\n");
+	s_discordInstance.reset();
+	discord = nullptr;
 
 	if constexpr (Env::cfg(FEAT::STEAM))
 	{
 		debugLog("Engine: Freeing Steam...\n");
 		s_steamInstance.reset();
+		steam = nullptr;
 	}
 
-	debugLog("Engine: Freeing Discord...\n");
-	s_discordInstance.reset();
+	debugLog("Engine: Freeing network handler...\n");
+	s_networkHandlerInstance.reset();
+	networkHandler = nullptr;
+
+	debugLog("Engine: Freeing animation handler...\n");
+	s_animationHandlerInstance.reset();
+	animationHandler = nullptr;
+
+	debugLog("Engine: Freeing sound engine...\n");
+	s_soundEngineInstance.reset();
+	soundEngine = nullptr;
+
+	debugLog("Engine: Freeing resource manager...\n");
+	s_resourceManagerInstance.reset();
+	resourceManager = nullptr;
+
+	debugLog("Engine: Freeing graphics...\n");
+	s_graphicsInstance.reset();
+	g = nullptr;
 
 	debugLog("Engine: Freeing input devices...\n");
 	// first remove the mouse and keyboard from the input devices
@@ -334,12 +345,11 @@ Engine::~Engine()
 	// reset the static unique_ptrs
 	s_mouseInstance.reset();
 	s_keyboardInstance.reset();
+	mouse = nullptr;
+	keyboard = nullptr;
 
 	debugLog("Engine: Freeing timer...\n");
 	SAFE_DELETE(m_timer);
-
-	debugLog("Engine: Freeing graphics...\n");
-	s_graphicsInstance.reset();
 
 	debugLog("Engine: Freeing fonts...\n");
 	McFont::cleanupSharedResources();

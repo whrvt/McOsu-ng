@@ -483,6 +483,8 @@ Osu::~Osu()
 	SAFE_DELETE(m_skin);
 	SAFE_DELETE(m_backgroundImageHandler);
 	SAFE_DELETE(m_bindings);
+
+	osu = nullptr;
 }
 
 void Osu::draw()
