@@ -45,9 +45,9 @@ public:
 	[[nodiscard]] static inline int getLogicalCPUCount() { return SDL_GetNumLogicalCPUCores(); }
 
 	// user
-	[[nodiscard]] UString getUsername();
-	[[nodiscard]] UString getUserDataPath();
-	[[nodiscard]] UString getLocalDataPath();
+	[[nodiscard]] const UString &getUsername();
+	[[nodiscard]] const UString &getUserDataPath();
+	[[nodiscard]] const UString &getLocalDataPath();
 
 	// file IO
 	[[nodiscard]] static bool fileExists(UString &filename); // passthroughs to McFile
@@ -68,7 +68,7 @@ public:
 	[[nodiscard]] static UString getFileNameFromFilePath(const UString &filePath) noexcept;
 
 	// clipboard
-	[[nodiscard]] UString getClipBoardText();
+	[[nodiscard]] const UString &getClipBoardText();
 	void setClipBoardText(const UString& text);
 
 	// dialogs & message boxes
@@ -102,7 +102,7 @@ public:
 	[[nodiscard]] Vector2 getWindowPos() const;
 	[[nodiscard]] Vector2 getWindowSize() const;
 	[[nodiscard]] int getMonitor() const;
-	[[nodiscard]] std::map<unsigned int, McRect> getMonitors();
+	[[nodiscard]] const std::map<unsigned int, McRect> &getMonitors();
 	[[nodiscard]] Vector2 getNativeScreenSize() const;
 	[[nodiscard]] McRect getDesktopRect() const;
 	[[nodiscard]] McRect getWindowRect() const;
@@ -117,7 +117,7 @@ public:
 	[[nodiscard]] inline bool isCursorVisible() const { return m_bCursorVisible; }
 	[[nodiscard]] inline bool isCursorClipped() const { return m_bCursorClipped; }
 	[[nodiscard]] Vector2 getMousePos() const { return m_vLastAbsMousePos; }
-	[[nodiscard]] inline McRect getCursorClip() const { return m_cursorClip; }
+	[[nodiscard]] inline const McRect &getCursorClip() const { return m_cursorClip; }
 	[[nodiscard]] inline CURSORTYPE getCursor() const { return m_cursorType; }
 	void setCursor(CURSORTYPE cur);
 	void setCursorVisible(bool visible);

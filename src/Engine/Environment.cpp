@@ -134,7 +134,7 @@ Environment::Environment(int argc, char *argv[])
 
 Environment::~Environment()
 {
-	for (auto cur : m_mCursorIcons)
+	for (auto &cur : m_mCursorIcons)
 	{
 		SDL_DestroyCursor(cur.second);
 	}
@@ -196,7 +196,7 @@ void Environment::openURLInDefaultBrowser(const UString &url)
 		debugLog("Failed to open URL: {:s}\n", SDL_GetError());
 }
 
-UString Environment::getUsername()
+const UString &Environment::getUsername()
 {
 	if (!m_sUsername.isEmpty())
 		return m_sUsername;
@@ -226,7 +226,7 @@ UString Environment::getUsername()
 }
 
 // i.e. toplevel appdata path
-UString Environment::getUserDataPath()
+const UString &Environment::getUserDataPath()
 {
 	if (!m_sAppDataPath.isEmpty())
 		return m_sAppDataPath;
@@ -249,7 +249,7 @@ UString Environment::getUserDataPath()
 }
 
 // i.e. ~/.local/share/PACKAGE_NAME
-UString Environment::getLocalDataPath()
+const UString &Environment::getLocalDataPath()
 {
 	if (!m_sProgDataPath.isEmpty())
 		return m_sProgDataPath;
@@ -376,7 +376,7 @@ UString Environment::getFileExtensionFromFilePath(const UString &filepath, bool 
 		return UString("");
 }
 
-UString Environment::getClipBoardText()
+const UString &Environment::getClipBoardText()
 {
 	char *newClip = SDL_GetClipboardText();
 	if (newClip)
@@ -679,7 +679,7 @@ Vector2 Environment::getWindowSize() const
 	return {static_cast<float>(width), static_cast<float>(height)};
 }
 
-std::map<unsigned int, McRect> Environment::getMonitors()
+const std::map<unsigned int, McRect> &Environment::getMonitors()
 {
 	if (m_mMonitors.size() < 1) // lazy init
 		initMonitors();
