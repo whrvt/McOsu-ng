@@ -16,6 +16,7 @@
 namespace SoLoud
 {
 	class Soloud;
+	struct DeviceInfo;
 }
 
 class SoLoudSound;
@@ -56,6 +57,8 @@ private:
 
 	int m_iMaxActiveVoices;
 	void onMaxActiveChange(float newMax);
+
+	std::map<int, SoLoud::DeviceInfo> m_soloudDevices;
 };
 
 // raw pointer access to the s_SLInstance singleton, for SoLoudSound to use

@@ -53,13 +53,12 @@ SoLoudSoundEngine::SoLoudSoundEngine()
 	defaultOutputDevice.id = -1;
 	defaultOutputDevice.name = "Default";
 	defaultOutputDevice.enabled = true;
-	defaultOutputDevice.isDefault = true;
+	defaultOutputDevice.isDefault = false;
 
 	cv::snd_output_device.setValue(defaultOutputDevice.name);
 	m_outputDevices.push_back(defaultOutputDevice);
 
-	// other output devices (TODO: bogus for now)
-	updateOutputDevices(false, true);
+	m_soloudDevices = {};
 
 	initializeOutputDevice(defaultOutputDevice.id);
 
@@ -287,15 +286,14 @@ void SoLoudSoundEngine::stop(Sound *snd)
 
 void SoLoudSoundEngine::setOutputDevice(UString outputDeviceName)
 {
-	for (size_t i = 0; i < m_outputDevices.size(); i++)
+	for (const auto &m_outputDevice : m_outputDevices)
 	{
-		if (m_outputDevices[i].name == outputDeviceName)
+		if (m_outputDevice.name == outputDeviceName)
 		{
-			if (m_outputDevices[i].id != m_iCurrentOutputDevice)
+			if (m_outputDevice.id != m_iCurrentOutputDevice)
 			{
-				// FIXME: bogus, no handling for separate audio devices at least with the miniaudio backend
 				int previousOutputDevice = m_iCurrentOutputDevice;
-				if (!initializeOutputDevice(m_outputDevices[i].id))
+				if (!initializeOutputDevice(m_outputDevice.id))
 					initializeOutputDevice(previousOutputDevice);
 			}
 			else
@@ -310,18 +308,19 @@ void SoLoudSoundEngine::setOutputDevice(UString outputDeviceName)
 
 void SoLoudSoundEngine::setOutputDeviceForce(UString outputDeviceName)
 {
-	for (size_t i = 0; i < m_outputDevices.size(); i++)
+	for (const auto &m_outputDevice : m_outputDevices)
 	{
-		if (m_outputDevices[i].name == outputDeviceName)
+		if (m_outputDevice.name == outputDeviceName)
 		{
 			int previousOutputDevice = m_iCurrentOutputDevice;
-			if (!initializeOutputDevice(m_outputDevices[i].id))
+			if (!initializeOutputDevice(m_outputDevice.id))
 				initializeOutputDevice(previousOutputDevice);
 			return;
 		}
 	}
 
 	debugLog("couldn't find output device \"{:s}\"!\n", outputDeviceName.toUtf8());
+	initializeOutputDevice(-1); // initialize default
 }
 
 void SoLoudSoundEngine::setVolume(float volume)
@@ -369,10 +368,10 @@ std::vector<UString> SoLoudSoundEngine::getOutputDevices()
 {
 	std::vector<UString> outputDevices;
 
-	for (size_t i = 0; i < m_outputDevices.size(); i++)
+	for (const auto &m_outputDevice : m_outputDevices)
 	{
-		if (m_outputDevices[i].enabled)
-			outputDevices.push_back(m_outputDevices[i].name);
+		if (m_outputDevice.enabled)
+			outputDevices.push_back(m_outputDevice.name);
 	}
 
 	return outputDevices;
@@ -380,19 +379,77 @@ std::vector<UString> SoLoudSoundEngine::getOutputDevices()
 
 void SoLoudSoundEngine::updateOutputDevices(bool, bool printInfo)
 {
-	// SoLoud doesn't provide direct device enumeration
-	if (printInfo)
+	if (!m_bReady) // soloud needs to be initialized first
+		return;
+
+	using namespace SoLoud;
+
+	// reset these, because if the backend changed, it might enumerate devices differently
+	m_soloudDevices.clear();
+	m_outputDevices.erase(m_outputDevices.begin() + 1, m_outputDevices.end()); // keep default device (elem 0)
+
+	debugLog("SoundEngine: Using SoLoud backend: {:s}\n", cv::snd_soloud_backend.getString().toUtf8());
+	DeviceInfo currentDevice{};
+
+	result res = soloud->getCurrentDevice(&currentDevice);
+	if (res == SO_NO_ERROR)
 	{
-		debugLog("SoundEngine: Device 0 = \"Default\", enabled = 1, default = 1\n");
-		debugLog("SoundEngine: Using SoLoud backend: {:s}\n", cv::snd_soloud_backend.getString().toUtf8());
+		m_soloudDevices[-1] = {currentDevice};
+		debugLog("SoundEngine: Current device: {:s} (Default: {:s})\n", currentDevice.name, currentDevice.isDefault ? "Yes" : "No");
+	}
+	else
+	{
+		m_soloudDevices[-1] = {.name = "Unavailable", .identifier = "", .isDefault = true, .nativeDeviceInfo = nullptr};
+	}
+
+	DeviceInfo *devices{};
+	unsigned int deviceCount = 0;
+	res = soloud->enumerateDevices(&devices, &deviceCount);
+
+	if (res == SO_NO_ERROR)
+	{
+		for (int d = 0; std::cmp_less(d, deviceCount); d++)
+		{
+			if (printInfo)
+				debugLog("SoundEngine: Device {}: {:s} (Default: {:s})\n", d, devices[d].name, devices[d].isDefault ? "Yes" : "No");
+
+			UString originalDeviceName{&devices[d].name[0]};
+			OUTPUT_DEVICE soundDevice;
+			soundDevice.id = d;
+			soundDevice.name = originalDeviceName;
+			soundDevice.enabled = true;
+			soundDevice.isDefault = devices[d].isDefault;
+
+			// avoid duplicate names
+			int duplicateNameCounter = 2;
+			while (true)
+			{
+				bool foundDuplicateName = false;
+				for (const auto &existingDevice : m_outputDevices)
+				{
+					if (existingDevice.name == soundDevice.name)
+					{
+						foundDuplicateName = true;
+						soundDevice.name = originalDeviceName;
+						soundDevice.name.append(UString::format(" (%i)", duplicateNameCounter));
+						duplicateNameCounter++;
+						break;
+					}
+				}
+
+				if (!foundDuplicateName)
+					break;
+			}
+
+			m_soloudDevices[d] = {devices[d]};
+			m_outputDevices.push_back(soundDevice);
+		}
 	}
 }
 
 bool SoLoudSoundEngine::initializeOutputDevice(int id, bool)
 {
 	debugLog("SoundEngine: initializeOutputDevice({}) ...\n", id);
-
-	m_iCurrentOutputDevice = id;
 
 	// cleanup potential previous device
 	if (m_bReady)
@@ -443,6 +500,21 @@ bool SoLoudSoundEngine::initializeOutputDevice(int id, bool)
 		return false;
 	}
 
+	m_bReady = true;
+
+	// populate devices array and set the desired output
+	updateOutputDevices(false, true);
+	if (id != m_iCurrentOutputDevice && m_outputDevices.size() > 1)
+	{
+		if (soloud->setDevice(&m_soloudDevices[id].identifier[0]) == SoLoud::SO_NO_ERROR)
+			m_sCurrentOutputDevice = {&m_soloudDevices[id].name[0]};
+		else
+			m_sCurrentOutputDevice = m_outputDevices[0].name; // set to default device if it failed/isn't available
+		cv::snd_output_device.setValue(m_sCurrentOutputDevice, false);
+	}
+
+	m_iCurrentOutputDevice = id;
+
 	// it's 0.95 by default, for some reason
 	soloud->setPostClipScaler(1.0f);
 
@@ -453,22 +525,10 @@ bool SoLoudSoundEngine::initializeOutputDevice(int id, bool)
 
 	onMaxActiveChange(cv::snd_sanity_simultaneous_limit.getFloat());
 
-	// set current device name (bogus)
-	for (auto &m_outputDevice : m_outputDevices)
-	{
-		if (m_outputDevice.id == id)
-		{
-			m_sCurrentOutputDevice = m_outputDevice.name;
-			break;
-		}
-	}
-
 	debugLog("SoundEngine: Initialized SoLoud with output device = \"{:s}\" flags: 0x{:x}, backend: {:s}, sampleRate: {}, bufferSize: {}, channels: {}, "
 	         "maxActiveVoiceCount: {}\n",
 	         m_sCurrentOutputDevice.toUtf8(), static_cast<unsigned int>(flags), soloud->getBackendString(), soloud->getBackendSamplerate(),
 	         soloud->getBackendBufferSize(), soloud->getBackendChannels(), m_iMaxActiveVoices);
-
-	m_bReady = true;
 
 	// init global volume
 	setVolume(m_fVolume);

@@ -687,7 +687,8 @@ McOsu_ng_LDFLAGS := \
 	$(DXGI_LIBS) \
 	$(D3D11_LIBS) \
 	$(MCOSU_LDFLAGS) \
-	$(LDFLAGS_EXTRA)
+	$(LDFLAGS_EXTRA) \
+	$(WINPTHREAD_LDFLAGS) # must come last, otherwise it overrides the resource file
 
 compile_commands.json: mostlyclean-compile
 	@$(BEAR) --version || { echo bear is unavailable to generate a compile_commands.json, install bear && exit 1; }
