@@ -4754,7 +4754,7 @@ $(DEPS_CACHE)/FMT-$(FMT_VERSION).source:
 # always needed (if not on host)
 $(DEPS_CACHE)/FREETYPE2-$(FREETYPE2_VERSION).source:
 	$(MKDIR_P) $(DEPS_CACHE)
-	$(WGET) -qO $(DEPS_CACHE)/freetype-$(FREETYPE2_VERSION).tar.gz "https://download.savannah.gnu.org/releases/freetype/freetype-$(FREETYPE2_VERSION).tar.gz" && \
+	$(WGET) -qO $(DEPS_CACHE)/freetype-$(FREETYPE2_VERSION).tar.gz "https://nongnu.askapache.com/freetype/freetype-$(FREETYPE2_VERSION).tar.gz" && \
 	touch $@
 
 # --with-mimalloc
