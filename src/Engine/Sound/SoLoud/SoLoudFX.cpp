@@ -290,9 +290,9 @@ SoundTouchFilterInstance::SoundTouchFilterInstance(SLFXStream *aParent)
 				mSoundTouch->setSetting(SETTING_USE_AA_FILTER, 1);
 				mSoundTouch->setSetting(SETTING_AA_FILTER_LENGTH, 32);
 				mSoundTouch->setSetting(SETTING_USE_QUICKSEEK, 0);
-				mSoundTouch->setSetting(SETTING_SEQUENCE_MS, 2); // wtf should these numbers be?
-				mSoundTouch->setSetting(SETTING_SEEKWINDOW_MS, 20);
-				mSoundTouch->setSetting(SETTING_OVERLAP_MS, 6);
+				mSoundTouch->setSetting(SETTING_SEQUENCE_MS, 20); // wtf should these numbers be?
+				mSoundTouch->setSetting(SETTING_SEEKWINDOW_MS, 30);
+				mSoundTouch->setSetting(SETTING_OVERLAP_MS, 8);
 
 				// set the actual speed and pitch factors
 				mSoundTouch->setTempo(mParent->mSpeedFactor.load());

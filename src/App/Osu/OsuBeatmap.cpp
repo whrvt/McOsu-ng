@@ -47,7 +47,7 @@ static constexpr float unioffset = 0.0f +
 	(Env::cfg(AUD::WASAPI)	? -25.0f  :
 	 Env::cfg(AUD::BASS)	?  15.0f  : // see https://github.com/ppy/osu/blob/6d8c457c81e40cf438c69a1e6c5f02347333dfc0/osu.Game/Beatmaps/FramedBeatmapClock.cs#L68
 	 Env::cfg(AUD::SDL)		? -110.0f :
-	 Env::cfg(AUD::SOLOUD)	?  15.0f  : 0.0f) +
+	 Env::cfg(AUD::SOLOUD)	?  20.0f  : 0.0f) +
 	(Env::cfg(OS::WASM)		? -75.0f  : 0.0f);
 
 // BASS: starting with bass 2020 2.4.15.2 which has all offset problems fixed, this is the non-dsound backend compensation

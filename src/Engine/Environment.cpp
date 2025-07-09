@@ -1011,64 +1011,12 @@ std::vector<UString> Environment::enumerateDirectory(const char *pathToEnum, SDL
 	return contents;
 }
 
+#if defined(MCENGINE_PLATFORM_WINDOWS) && !defined(strcasecmp)
+#define strcasecmp _stricmp
+#endif
+
 // return a more naturally windows-like sorted order for folders, useful for e.g. osu! skin list dropdown order
 void Environment::winSortInPlace(std::vector<UString> &toSort)
 {
-	constexpr auto naturalCompare = [](const UString &a, const UString &b) -> bool {
-		const char *aStr = a.toUtf8();
-		const char *bStr = b.toUtf8();
-
-		while (*aStr && *bStr) // skip to the first difference
-		{
-			bool aIsDigit = std::isdigit(static_cast<unsigned char>(*aStr));
-			bool bIsDigit = std::isdigit(static_cast<unsigned char>(*bStr));
-
-			if (aIsDigit != bIsDigit) // different types
-				return aIsDigit;
-
-			if (aIsDigit) // collect and compare the complete numbers if both are digits
-			{
-				const char *aNumStart = aStr;
-				const char *bNumStart = bStr;
-				while (*aStr == '0' && std::isdigit(static_cast<unsigned char>(*(aStr + 1)))) // skip leading zeros
-					++aStr;
-				while (*bStr == '0' && std::isdigit(static_cast<unsigned char>(*(bStr + 1))))
-					++bStr;
-				const char *aPtr = aStr;
-				const char *bPtr = bStr;
-				while (std::isdigit(static_cast<unsigned char>(*aPtr))) // count digits
-					++aPtr;
-				while (std::isdigit(static_cast<unsigned char>(*bPtr)))
-					++bPtr;
-				size_t aDigits = aPtr - aStr;
-				size_t bDigits = bPtr - bStr;
-				if (aDigits != bDigits) // different digit counts
-					return aDigits < bDigits;
-				while (aStr < aPtr) // same number of digits, compare them
-				{
-					if (*aStr != *bStr)
-						return *aStr < *bStr;
-					++aStr;
-					++bStr;
-				}
-				// numbers are equal, check if the originals had different lengths due to leading zeros
-				size_t aFullLen = aPtr - aNumStart;
-				size_t bFullLen = bPtr - bNumStart;
-				if (aFullLen != bFullLen)
-					return aFullLen < bFullLen;
-			}
-			else
-			{
-				// simple case-insensitive compare if neither are digits
-				char aLower = std::tolower(static_cast<unsigned char>(*aStr));
-				char bLower = std::tolower(static_cast<unsigned char>(*bStr));
-				if (aLower != bLower)
-					return aLower < bLower;
-				++aStr;
-				++bStr;
-			}
-		}
-		return *aStr == 0 && *bStr != 0;
-	};
-	std::ranges::sort(toSort, naturalCompare);
+	std::ranges::stable_sort(toSort, [](const UString &a, const UString &b) { return strcasecmp(a.toUtf8(), b.toUtf8()) < 0; });
 }
