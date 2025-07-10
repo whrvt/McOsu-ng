@@ -194,7 +194,7 @@ Osu::Osu()
 	// override BASS universal offset if soloud+bass are both available at once
 	if constexpr (Env::cfg(AUD::SOLOUD))
 		if (soundEngine->getTypeId() == SoundEngine::SOLOUD)
-			cv::osu::universal_offset_hardcoded.setValue(20.0f);
+			cv::osu::universal_offset_hardcoded.setValue(17.0f);
 
 	env->setWindowResizable(false);
 
