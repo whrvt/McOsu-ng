@@ -7,16 +7,18 @@
 
 #include "OsuUISelectionButton.h"
 
+#include <utility>
+
 #include "Engine.h"
 #include "ResourceManager.h"
 #include "AnimationHandler.h"
 
 #include "OsuSkinImage.h"
 
-OsuUISelectionButton::OsuUISelectionButton(std::function<OsuSkinImage*()> getImageFunc, std::function<OsuSkinImage*()> getImageOverFunc, float xPos, float yPos, float xSize, float ySize, UString name) : CBaseUIButton(xPos, yPos, xSize, ySize, name)
+OsuUISelectionButton::OsuUISelectionButton(std::function<OsuSkinImage*()> getImageFunc, std::function<OsuSkinImage*()> getImageOverFunc, float xPos, float yPos, float xSize, float ySize, UString name) : CBaseUIButton(xPos, yPos, xSize, ySize, std::move(name))
 {
-	this->getImageFunc = getImageFunc;
-	this->getImageOverFunc = getImageOverFunc;
+	this->getImageFunc = std::move(getImageFunc);
+	this->getImageOverFunc = std::move(getImageOverFunc);
 
 	m_fAnimation = 0.0f;
 }

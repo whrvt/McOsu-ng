@@ -7,6 +7,8 @@
 
 #include "OsuUISongBrowserSongDifficultyButton.h"
 
+#include <utility>
+
 #include "Engine.h"
 #include "ResourceManager.h"
 #include "AnimationHandler.h"
@@ -28,7 +30,7 @@ ConVar songbrowser_button_difficulty_inactive_color_g("osu_songbrowser_button_di
 ConVar songbrowser_button_difficulty_inactive_color_b("osu_songbrowser_button_difficulty_inactive_color_b", 236, FCVAR_NONE);
 }
 
-OsuUISongBrowserSongDifficultyButton::OsuUISongBrowserSongDifficultyButton(OsuSongBrowser2 *songBrowser, CBaseUIScrollView *view, OsuUIContextMenu *contextMenu, float xPos, float yPos, float xSize, float ySize, UString name, OsuDatabaseBeatmap *diff2, OsuUISongBrowserSongButton *parentSongButton) : OsuUISongBrowserSongButton(songBrowser, view, contextMenu, xPos, yPos, xSize, ySize, name, NULL)
+OsuUISongBrowserSongDifficultyButton::OsuUISongBrowserSongDifficultyButton(OsuSongBrowser2 *songBrowser, CBaseUIScrollView *view, OsuUIContextMenu *contextMenu, float xPos, float yPos, float xSize, float ySize, UString name, OsuDatabaseBeatmap *diff2, OsuUISongBrowserSongButton *parentSongButton) : OsuUISongBrowserSongButton(songBrowser, view, contextMenu, xPos, yPos, xSize, ySize, std::move(name), NULL)
 {
 	m_databaseBeatmap = diff2; // NOTE: can't use parent constructor for passing this argument, as it would otherwise try to build a full button (and not just a diff button)
 	m_parentSongButton = parentSongButton;

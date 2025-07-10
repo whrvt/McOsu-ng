@@ -7,6 +7,8 @@
 
 #include "OsuUIModSelectorModButton.h"
 
+#include <utility>
+
 #include "Engine.h"
 #include "ResourceManager.h"
 #include "AnimationHandler.h"
@@ -18,7 +20,7 @@
 #include "OsuModSelector.h"
 #include "OsuTooltipOverlay.h"
 
-OsuUIModSelectorModButton::OsuUIModSelectorModButton(OsuModSelector *osuModSelector, float xPos, float yPos, float xSize, float ySize, UString name) : CBaseUIButton(xPos, yPos, xSize, ySize, name, "")
+OsuUIModSelectorModButton::OsuUIModSelectorModButton(OsuModSelector *osuModSelector, float xPos, float yPos, float xSize, float ySize, UString name) : CBaseUIButton(xPos, yPos, xSize, ySize, std::move(name), "")
 {
 	
 	m_osuModSelector = osuModSelector;
@@ -193,7 +195,7 @@ void OsuUIModSelectorModButton::setState(int state, bool updateModConVar)
 		m_osuModSelector->updateModConVar();
 }
 
-void OsuUIModSelectorModButton::setState(unsigned int state, bool initialState, UString modName, UString tooltipText, std::function<OsuSkinImage*()> getImageFunc)
+void OsuUIModSelectorModButton::setState(unsigned int state, bool initialState, UString modName, const UString& tooltipText, std::function<OsuSkinImage*()> getImageFunc)
 {
 	// dynamically add new state
 	while (m_states.size() < state+1)
@@ -202,9 +204,9 @@ void OsuUIModSelectorModButton::setState(unsigned int state, bool initialState, 
 		t.getImageFunc = NULL;
 		m_states.push_back(t);
 	}
-	m_states[state].modName = modName;
+	m_states[state].modName = std::move(modName);
 	m_states[state].tooltipTextLines = tooltipText.split("\n");
-	m_states[state].getImageFunc = getImageFunc;
+	m_states[state].getImageFunc = std::move(getImageFunc);
 
 	// set initial state image
 	if (m_states.size() == 1)

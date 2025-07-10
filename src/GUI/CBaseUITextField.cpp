@@ -18,7 +18,7 @@
 
 CBaseUITextField::CBaseUITextField(float xPos, float yPos, float xSize, float ySize, UString name, UString text) : CBaseUIScrollView(xPos,yPos,xSize,ySize,name)
 {
-	m_textObject = new TextObject(2, 1, xSize, ySize, text);
+	m_textObject = new TextObject(2, 1, xSize, ySize, std::move(text));
 	m_textObject->setParentSize(m_vSize);
 	getContainer()->addBaseUIElement(m_textObject);
 	setScrollSizeToContent(0);
@@ -42,7 +42,7 @@ void CBaseUITextField::onResized()
 	setScrollSizeToContent(0);
 }
 
-CBaseUITextField *CBaseUITextField::append(UString text)
+CBaseUITextField *CBaseUITextField::append(const UString& text)
 {
 	UString oldText = m_textObject->getText();
 	oldText.append(text);
@@ -62,7 +62,7 @@ CBaseUITextField::TextObject::TextObject(float xPos, float yPos, float xSize, fl
 	// colors
 	m_textColor = 0xffffffff;
 
-	setText(text);
+	setText(std::move(text));
 }
 
 void CBaseUITextField::TextObject::draw()
@@ -116,7 +116,7 @@ void CBaseUITextField::TextObject::updateStringMetrics()
 
 CBaseUIElement *CBaseUITextField::TextObject::setText(UString text)
 {
-	m_sText = text;
+	m_sText = std::move(text);
 	updateStringMetrics();
 	return this;
 }

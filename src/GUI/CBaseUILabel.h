@@ -9,6 +9,8 @@
 #ifndef CBASEUILABEL_H
 #define CBASEUILABEL_H
 
+#include <utility>
+
 #include "CBaseUIElement.h"
 
 class CBaseUILabel : public CBaseUIElement
@@ -38,7 +40,7 @@ public:
 	CBaseUILabel *setBackgroundColor(Color backgroundColor) {m_backgroundColor = backgroundColor; return this;}
 	CBaseUILabel *setTextColor(Color textColor) {m_textColor = textColor; return this;}
 
-	CBaseUILabel *setText(UString text) {m_sText = text; updateStringMetrics(); return this;}
+	CBaseUILabel *setText(UString text) {m_sText = std::move(text); updateStringMetrics(); return this;}
 	CBaseUILabel *setFont(McFont *font) {m_font = font; updateStringMetrics(); return this;}
 
 	CBaseUILabel *setSizeToContent(int horizontalBorderSize = 1, int verticalBorderSize = 1) {setSize(m_fStringWidth+2*horizontalBorderSize, m_fStringHeight + 2*verticalBorderSize); return this;}

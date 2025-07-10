@@ -171,7 +171,7 @@ private:
 class OsuUISongBrowserNoRecordsSetElement final : public CBaseUILabel
 {
 public:
-	OsuUISongBrowserNoRecordsSetElement(UString text) : CBaseUILabel(0, 0, 0, 0, "", text)
+	OsuUISongBrowserNoRecordsSetElement(UString text) : CBaseUILabel(0, 0, 0, 0, "", std::move(text))
 	{
 		
 		m_sIconString.insert(0, OsuIcons::TROPHY);
@@ -3039,13 +3039,13 @@ void OsuSongBrowser2::checkHandleKillBackgroundSearchMatcher()
 
 OsuUISelectionButton *OsuSongBrowser2::addBottombarNavButton(std::function<OsuSkinImage*()> getImageFunc, std::function<OsuSkinImage*()> getImageOverFunc)
 {
-	auto *btn = new OsuUISelectionButton(getImageFunc, getImageOverFunc, 0, 0, 0, 0, "");
+	auto *btn = new OsuUISelectionButton(std::move(getImageFunc), std::move(getImageOverFunc), 0, 0, 0, 0, "");
 	m_bottombar->addBaseUIElement(btn);
 	m_bottombarNavButtons.push_back(btn);
 	return btn;
 }
 
-CBaseUIButton *OsuSongBrowser2::addTopBarRightTabButton(UString text)
+CBaseUIButton *OsuSongBrowser2::addTopBarRightTabButton(const UString& text)
 {
 	// sanity check
 	{
@@ -3935,7 +3935,7 @@ void OsuSongBrowser2::onScoreContextMenu(OsuUISongBrowserScoreButton *scoreButto
 	}
 }
 
-void OsuSongBrowser2::onSongButtonContextMenu(OsuUISongBrowserSongButton *songButton, UString text, int id)
+void OsuSongBrowser2::onSongButtonContextMenu(OsuUISongBrowserSongButton *songButton, const UString& text, int id)
 {
 	//debugLog("OsuSongBrowser2::onSongButtonContextMenu({:p}, {:s}, {})\n", songButton, text.toUtf8(), id);
 
@@ -4097,7 +4097,7 @@ void OsuSongBrowser2::onSongButtonContextMenu(OsuUISongBrowserSongButton *songBu
 	}
 }
 
-void OsuSongBrowser2::onCollectionButtonContextMenu(OsuUISongBrowserCollectionButton *collectionButton, UString text, int id)
+void OsuSongBrowser2::onCollectionButtonContextMenu(OsuUISongBrowserCollectionButton *collectionButton, const UString& text, int id)
 {
 	if (id == 2) // delete collection
 	{

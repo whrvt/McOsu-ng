@@ -28,8 +28,8 @@ public:
 	void draw() override;
 	void update() override;
 
-	void setSeekCallback(SeekCallback callback) {m_seekCallback = callback;}
-	void setTitle(UString title, bool reverse = false);
+	void setSeekCallback(const SeekCallback& callback) {m_seekCallback = callback;}
+	void setTitle(const UString& title, bool reverse = false);
 
 	[[nodiscard]] inline bool isSeeking() const {return m_bIsSeeking;}
 

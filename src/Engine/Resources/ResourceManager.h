@@ -69,7 +69,7 @@ public:
 
 	// fonts
 	McFont *loadFont(UString filepath, UString resourceName, int fontSize = 16, bool antialiasing = true, int fontDPI = 96);
-	McFont *loadFont(UString filepath, UString resourceName, std::vector<wchar_t> characters, int fontSize = 16, bool antialiasing = true, int fontDPI = 96);
+	McFont *loadFont(UString filepath, UString resourceName, const std::vector<wchar_t>& characters, int fontSize = 16, bool antialiasing = true, int fontDPI = 96);
 
 	// sounds
 	Sound *loadSound(UString filepath, UString resourceName, bool stream = false, bool threeD = false, bool loop = false, bool prescan = false);

@@ -35,7 +35,7 @@ public:
 
 #endif
 
-	void setRichPresence(UString key, UString value, bool pool = false);
+	void setRichPresence(const UString& key, const UString& value, bool pool = false);
 
 	[[nodiscard]] inline bool isReady() const {return m_bReady;}
 

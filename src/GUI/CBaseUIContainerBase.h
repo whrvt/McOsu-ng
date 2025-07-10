@@ -43,8 +43,8 @@ public:
 
 	virtual CBaseUIContainerBase *setClipping(bool clipping) {m_bClipping = clipping; return this;}
 
-	CBaseUIElement *getElementByName(UString name, bool searchNestedContainers=false);
-	std::shared_ptr<CBaseUIElement> getElementSharedByName(UString name, bool searchNestedContainers=false);
+	CBaseUIElement *getElementByName(const UString& name, bool searchNestedContainers=false);
+	std::shared_ptr<CBaseUIElement> getElementSharedByName(const UString& name, bool searchNestedContainers=false);
 	std::vector<CBaseUIElement*> getAllElements();
 	inline std::vector<std::shared_ptr<CBaseUIElement>> getAllElementsShared(){return m_vElements;}
 	inline std::vector<std::shared_ptr<CBaseUIElement>> *getAllElementsReference(){return &m_vElements;}

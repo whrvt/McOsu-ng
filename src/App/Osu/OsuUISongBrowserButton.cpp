@@ -7,6 +7,8 @@
 
 #include "OsuUISongBrowserButton.h"
 
+#include <utility>
+
 #include "Engine.h"
 #include "SoundEngine.h"
 #include "ResourceManager.h"
@@ -40,7 +42,7 @@ int OsuUISongBrowserButton::sortHackCounter = 0;
 
 // Color OsuUISongBrowserButton::inactiveDifficultyBackgroundColor = rgb(0, 150, 236); // blue
 
-OsuUISongBrowserButton::OsuUISongBrowserButton(OsuSongBrowser2 *songBrowser, CBaseUIScrollView *view, OsuUIContextMenu *contextMenu, float xPos, float yPos, float xSize, float ySize, UString name) : CBaseUIButton(xPos, yPos, xSize, ySize, name, "")
+OsuUISongBrowserButton::OsuUISongBrowserButton(OsuSongBrowser2 *songBrowser, CBaseUIScrollView *view, OsuUIContextMenu *contextMenu, float xPos, float yPos, float xSize, float ySize, UString name) : CBaseUIButton(xPos, yPos, xSize, ySize, std::move(name), "")
 {
 	
 	m_view = view;

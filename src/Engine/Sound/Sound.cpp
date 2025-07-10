@@ -6,6 +6,8 @@
 //===============================================================================//
 
 #include "Sound.h"
+
+#include <utility>
 #include "ConVar.h"
 
 #include "BassSound.h"
@@ -31,7 +33,7 @@ ConVar snd_force_load_unknown("snd_force_load_unknown", false, FCVAR_NONE, "forc
 } // namespace cv
 
 Sound::Sound(UString filepath, bool stream, bool threeD, bool loop, bool prescan)
-    : Resource(filepath)
+    : Resource(std::move(filepath))
 {
 	m_bStream = stream;
 	m_bIs3d = threeD;
@@ -82,7 +84,7 @@ Sound *Sound::createSound(UString filepath, bool stream, bool threeD, bool loop,
 #endif
 #ifdef MCENGINE_FEATURE_BASS
 	if (soundEngine->getTypeId() == BASS)
-		return new BassSound(filepath, stream, threeD, loop, prescan);
+		return new BassSound(std::move(filepath), stream, threeD, loop, prescan);
 #endif
 #ifdef MCENGINE_FEATURE_SDL_MIXER
 	if (soundEngine->getTypeId() == SDL)

@@ -31,8 +31,8 @@ public:
 	~NetworkHandler();
 
 	// curl stuff
-	UString httpGet(UString url, long timeout = 5, long connectTimeout = 5);
-	std::string httpDownload(UString url, long timeout = 60, long connectTimeout = 5);
+	UString httpGet(const UString& url, long timeout = 5, long connectTimeout = 5);
+	std::string httpDownload(const UString& url, long timeout = 60, long connectTimeout = 5);
 
 	// client/server stuff
 	typedef fastdelegate::FastDelegate0<> NetworkLocalServerStartedListener;					// called when we successfully start the server
@@ -58,11 +58,11 @@ public:
 	void hostStop();
 	void status();
 
-	void connect(UString address);
+	void connect(const UString& address);
 	void disconnect();
 
-	void say(UString message);
-	void kick(UString username);
+	void say(const UString& message);
+	void kick(const UString& username);
 
 	// main send functions
 	void broadcast(void *data, uint32_t size, bool reliable = false);				// two functions depending on the callee: [server -> all clients] or [client -> server -> all clients]; if both server and client, server wins (first case)
@@ -70,21 +70,21 @@ public:
 	void clientcast(void *data, uint32_t size, uint32_t id, bool reliable = false);	// [server -> client]; only valid as server
 
 	// callbacks
-	void setOnClientReceiveServerPacketListener(NetworkClientReceiveServerPacketListener listener) {m_clientReceiveServerPacketListener = listener;}
-	void setOnServerReceiveClientPacketListener(NetworkServerReceiveClientPacketListener listener) {m_serverReceiveClientPacketListener = listener;}
-	void setOnServerClientChangeListener(NetworkServerClientChangeListener listener) {m_serverClientChangeListener = listener;}
+	void setOnClientReceiveServerPacketListener(const NetworkClientReceiveServerPacketListener& listener) {m_clientReceiveServerPacketListener = listener;}
+	void setOnServerReceiveClientPacketListener(const NetworkServerReceiveClientPacketListener& listener) {m_serverReceiveClientPacketListener = listener;}
+	void setOnServerClientChangeListener(const NetworkServerClientChangeListener& listener) {m_serverClientChangeListener = listener;}
 
-	void setOnClientSendInfoListener(NetworkClientSendInfoListener listener) {m_clientSendInfoListener = listener;}
-	void setOnServerSendInfoListener(NetworkServerSendInfoListener listener) {m_serverSendInfoListener = listener;}
+	void setOnClientSendInfoListener(const NetworkClientSendInfoListener& listener) {m_clientSendInfoListener = listener;}
+	void setOnServerSendInfoListener(const NetworkServerSendInfoListener& listener) {m_serverSendInfoListener = listener;}
 
-	void setOnClientReceiveServerInfoListener(NetworkClientReceiveServerInfoListener listener) {m_clientReceiveServerInfoListener = listener;}
-	void setOnServerReceiveClientInfoListener(NetworkServerReceiveClientInfoListener listener) {m_serverReceiveClientInfoListener = listener;}
+	void setOnClientReceiveServerInfoListener(const NetworkClientReceiveServerInfoListener& listener) {m_clientReceiveServerInfoListener = listener;}
+	void setOnServerReceiveClientInfoListener(const NetworkServerReceiveClientInfoListener& listener) {m_serverReceiveClientInfoListener = listener;}
 
-	void setOnClientConnectedToServerListener(NetworkClientConnectedToServerListener listener) {m_clientConnectedToServerListener = listener;}
-	void setOnClientDisconnectedFromServerListener(NetworkClientDisconnectedFromServerListener listener) {m_clientDisconnectedFromServerListener = listener;}
+	void setOnClientConnectedToServerListener(const NetworkClientConnectedToServerListener& listener) {m_clientConnectedToServerListener = listener;}
+	void setOnClientDisconnectedFromServerListener(const NetworkClientDisconnectedFromServerListener& listener) {m_clientDisconnectedFromServerListener = listener;}
 
-	void setOnLocalServerStartedListener(NetworkLocalServerStartedListener listener) {m_localServerStartedListener = listener;}
-	void setOnLocalServerStoppedListener(NetworkLocalServerStoppedListener listener) {m_localServerStoppedListener = listener;}
+	void setOnLocalServerStartedListener(const NetworkLocalServerStartedListener& listener) {m_localServerStartedListener = listener;}
+	void setOnLocalServerStoppedListener(const NetworkLocalServerStoppedListener& listener) {m_localServerStoppedListener = listener;}
 
 	// getters
 	[[nodiscard]] int getPing() const;
@@ -140,7 +140,7 @@ private:
 
 #endif
 
-	void chatLog(UString username, UString message);
+	void chatLog(UString username, const UString& message);
 
 #ifdef MCENGINE_FEATURE_NETWORKING
 

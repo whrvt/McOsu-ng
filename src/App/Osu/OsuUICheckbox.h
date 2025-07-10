@@ -20,7 +20,7 @@ public:
 
 	void update() override;
 
-	void setTooltipText(UString text);
+	void setTooltipText(const UString& text);
 
 private:
 	void onFocusStolen() override;

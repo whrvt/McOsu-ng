@@ -43,7 +43,7 @@ public:
 	void setVisible(bool visible) override;
 
 	void setScore(OsuScore *score);
-	void setScore(OsuDatabase::Score score, UString dateTime);
+	void setScore(const OsuDatabase::Score& score, UString dateTime);
 	void setBeatmapInfo(OsuBeatmap *beatmap, OsuDatabaseBeatmap *diff2);
 
 private:

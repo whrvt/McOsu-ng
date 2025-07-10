@@ -26,7 +26,7 @@ OsuFile::OsuFile(UString filepath, bool write, bool writeBufferOnly)
 
 	if (!writeBufferOnly)
 	{
-		m_file = new McFile(filepath, (write ? McFile::TYPE::WRITE : McFile::TYPE::READ));
+		m_file = new McFile(std::move(filepath), (write ? McFile::TYPE::WRITE : McFile::TYPE::READ));
 		if (m_file->canRead() && !write)
 		{
 			m_iFileSize = m_file->getFileSize();

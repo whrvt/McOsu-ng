@@ -9,6 +9,8 @@
 #ifndef OSUUISEARCHOVERLAY_H
 #define OSUUISEARCHOVERLAY_H
 
+#include <utility>
+
 #include "OsuUIElement.h"
 
 class Osu;
@@ -23,7 +25,7 @@ public:
 	void setDrawNumResults(bool drawNumResults) {m_bDrawNumResults = drawNumResults;}
 	void setOffsetRight(int offsetRight) {m_iOffsetRight = offsetRight;}
 
-	void setSearchString(UString searchString, UString hardcodedSearchString = "") {m_sSearchString = searchString; m_sHardcodedSearchString = hardcodedSearchString;}
+	void setSearchString(UString searchString, UString hardcodedSearchString = "") {m_sSearchString = std::move(searchString); m_sHardcodedSearchString = std::move(hardcodedSearchString);}
 	void setNumFoundResults(int numFoundResults) {m_iNumFoundResults = numFoundResults;}
 
 	void setSearching(bool searching) {m_bSearching = searching;}

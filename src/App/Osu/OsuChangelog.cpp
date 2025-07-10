@@ -906,7 +906,7 @@ OsuChangelog::OsuChangelog() : OsuScreenBackable()
 			class CustomCBaseUILabel : public CBaseUIButton
 			{
 			public:
-				CustomCBaseUILabel(UString text) : CBaseUIButton(0, 0, 0, 0, "", text) {;}
+				CustomCBaseUILabel(const UString& text) : CBaseUIButton(0, 0, 0, 0, "", text) {;}
 
 				void draw() override
 				{

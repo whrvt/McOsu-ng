@@ -20,7 +20,7 @@ class RenderTarget;
 class CBaseUIWindow : public CBaseUIElement
 {
 public:
-	CBaseUIWindow(float xPos=0, float yPos=0, float xSize=0, float ySize=0, UString name="");
+	CBaseUIWindow(float xPos=0, float yPos=0, float xSize=0, float ySize=0, const UString& name="");
 	~CBaseUIWindow() override;
 
 	ELEMENT_BODY(CBaseUIWindow)

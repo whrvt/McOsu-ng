@@ -6,9 +6,11 @@
  */
 
 #include "CBaseUICanvas.h"
+
+#include <utility>
 #include "Engine.h"
 
-CBaseUICanvas::CBaseUICanvas(float xPos, float yPos, float xSize, float ySize, UString name) : CBaseUIContainerBase(name)
+CBaseUICanvas::CBaseUICanvas(float xPos, float yPos, float xSize, float ySize, UString name) : CBaseUIContainerBase(std::move(name))
 {
 	m_vPos.x = xPos;
 	m_vPos.y = yPos;

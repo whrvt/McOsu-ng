@@ -36,7 +36,7 @@ public:
 
 	void onResolutionChange(Vector2 newResolution);
 
-	void processCommand(UString command);
+	void processCommand(const UString& command);
 	void execConfigFile(UString filename);
 
 	void log(UString text, Color textColor = 0xffffffff);

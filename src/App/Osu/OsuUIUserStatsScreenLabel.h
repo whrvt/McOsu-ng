@@ -16,11 +16,11 @@ class Osu;
 class OsuUIUserStatsScreenLabel : public CBaseUILabel
 {
 public:
-	OsuUIUserStatsScreenLabel(float xPos=0, float yPos=0, float xSize=0, float ySize=0, UString name="", UString text="");
+	OsuUIUserStatsScreenLabel(float xPos=0, float yPos=0, float xSize=0, float ySize=0, const UString& name="", const UString& text="");
 
 	void update() override;
 
-	void setTooltipText(UString text) {m_tooltipTextLines = text.split("\n");}
+	void setTooltipText(const UString& text) {m_tooltipTextLines = text.split("\n");}
 
 private:
 	std::vector<UString> m_tooltipTextLines;

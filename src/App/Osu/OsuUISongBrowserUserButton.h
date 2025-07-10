@@ -25,7 +25,7 @@ public:
 
 	void updateUserStats();
 
-	void addTooltipLine(UString text) {m_vTooltipLines.push_back(text);}
+	void addTooltipLine(const UString& text) {m_vTooltipLines.push_back(text);}
 
 private:
 	void onMouseInside() override;

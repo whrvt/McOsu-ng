@@ -58,7 +58,7 @@ public:
 public:
 	OsuDifficultyHitObject(TYPE type, Vector2 pos, long time); // circle
 	OsuDifficultyHitObject(TYPE type, Vector2 pos, long time, long endTime); // spinner
-	OsuDifficultyHitObject(TYPE type, Vector2 pos, long time, long endTime, float spanDuration, char osuSliderCurveType, std::vector<Vector2> controlPoints, float pixelLength, std::vector<SLIDER_SCORING_TIME> scoringTimes, int repeats, bool calculateSliderCurveInConstructor); // slider
+	OsuDifficultyHitObject(TYPE type, Vector2 pos, long time, long endTime, float spanDuration, char osuSliderCurveType, const std::vector<Vector2>& controlPoints, float pixelLength, std::vector<SLIDER_SCORING_TIME> scoringTimes, int repeats, bool calculateSliderCurveInConstructor); // slider
 	~OsuDifficultyHitObject();
 
 	OsuDifficultyHitObject(const OsuDifficultyHitObject&) = delete;

@@ -6,9 +6,11 @@
  */
 
 #include "CBaseUIContainerBase.h"
+
+#include <utility>
 #include "Engine.h"
 
-CBaseUIContainerBase::CBaseUIContainerBase(UString name) : CBaseUIElement(0, 0, 0, 0, name)
+CBaseUIContainerBase::CBaseUIContainerBase(UString name) : CBaseUIElement(0, 0, 0, 0, std::move(name))
 {
 	m_bClipping = false;
 }
@@ -187,7 +189,7 @@ void CBaseUIContainerBase::removeElement(std::shared_ptr<CBaseUIElement> element
 	debugLog("Warning: couldn't find element\n");
 }
 
-CBaseUIElement *CBaseUIContainerBase::getElementByName(UString name, bool searchNestedContainers)
+CBaseUIElement *CBaseUIContainerBase::getElementByName(const UString& name, bool searchNestedContainers)
 {
 	for (size_t i=0; i<m_vElements.size(); i++)
 	{
@@ -205,7 +207,7 @@ CBaseUIElement *CBaseUIContainerBase::getElementByName(UString name, bool search
 	return nullptr;
 }
 
-std::shared_ptr<CBaseUIElement> CBaseUIContainerBase::getElementSharedByName(UString name, bool searchNestedContainers)
+std::shared_ptr<CBaseUIElement> CBaseUIContainerBase::getElementSharedByName(const UString& name, bool searchNestedContainers)
 {
 	for (size_t i=0; i<m_vElements.size(); i++)
 	{

@@ -41,7 +41,7 @@ public:
 
 	// callbacks, either void or with ourself as the argument
 	typedef fastdelegate::FastDelegate1<CBaseUISlider*> SliderChangeCallback;
-	CBaseUISlider *setChangeCallback(SliderChangeCallback changeCallback) {m_sliderChangeCallback = changeCallback; return this;}
+	CBaseUISlider *setChangeCallback(const SliderChangeCallback& changeCallback) {m_sliderChangeCallback = changeCallback; return this;}
 
 	CBaseUISlider *setAllowMouseWheel(bool allowMouseWheel) {m_bAllowMouseWheel = allowMouseWheel; return this;}
 	CBaseUISlider *setAnimated(bool animated) {m_bAnimated = animated; return this;}

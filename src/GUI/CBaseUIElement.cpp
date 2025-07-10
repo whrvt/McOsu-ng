@@ -7,6 +7,8 @@
 
 #include "CBaseUIElement.h"
 
+#include <utility>
+
 #include "Engine.h"
 #include "Mouse.h"
 
@@ -23,7 +25,7 @@ CBaseUIElement::CBaseUIElement(float xPos, float yPos, float xSize, float ySize,
 	m_vmSize.y = m_vSize.y;
 	m_vAnchor.x = 0;
 	m_vAnchor.y = 0;
-	m_sName = name;
+	m_sName = std::move(name);
 	m_parent = nullptr;
 
 	// attributes

@@ -32,7 +32,7 @@ private:
 
 	
 
-	static void setStatus(UString status, bool force = false);
+	static void setStatus(const UString& status, bool force = false);
 
 	static void onRichPresenceEnable();
 	static void onRichPresenceDisable();

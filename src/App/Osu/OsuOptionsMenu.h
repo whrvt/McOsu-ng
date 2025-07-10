@@ -184,19 +184,19 @@ private:
 
 	// options
 	void addSpacer(unsigned num = 1);
-	CBaseUILabel *addSection(UString text);
-	CBaseUILabel *addSubSection(UString text, UString searchTags = "");
-	CBaseUILabel *addLabel(UString text);
-	OsuUIButton *addButton(UString text);
-	OPTIONS_ELEMENT addButton(UString text, UString labelText, bool withResetButton = false);
-	OPTIONS_ELEMENT addButtonButton(UString text1, UString text2);
-	OPTIONS_ELEMENT addButtonButtonLabel(UString text1, UString text2, UString labelText, bool withResetButton = false);
-	OsuOptionsMenuKeyBindButton *addKeyBindButton(UString text, ConVar *cvar);
+	CBaseUILabel *addSection(const UString& text);
+	CBaseUILabel *addSubSection(const UString& text, UString searchTags = "");
+	CBaseUILabel *addLabel(const UString& text);
+	OsuUIButton *addButton(const UString& text);
+	OPTIONS_ELEMENT addButton(const UString& text, const UString& labelText, bool withResetButton = false);
+	OPTIONS_ELEMENT addButtonButton(const UString& text1, const UString& text2);
+	OPTIONS_ELEMENT addButtonButtonLabel(const UString& text1, const UString& text2, const UString& labelText, bool withResetButton = false);
+	OsuOptionsMenuKeyBindButton *addKeyBindButton(const UString& text, ConVar *cvar);
 	CBaseUICheckbox *addCheckbox(UString text, ConVar *cvar);
-	CBaseUICheckbox *addCheckbox(UString text, UString tooltipText = "", ConVar *cvar = NULL);
-	OsuUISlider *addSlider(UString text, float min = 0.0f, float max = 1.0f, ConVar *cvar = NULL, float label1Width = 0.0f, bool allowOverscale = false, bool allowUnderscale = false);
+	CBaseUICheckbox *addCheckbox(const UString& text, const UString& tooltipText = "", ConVar *cvar = NULL);
+	OsuUISlider *addSlider(const UString& text, float min = 0.0f, float max = 1.0f, ConVar *cvar = NULL, float label1Width = 0.0f, bool allowOverscale = false, bool allowUnderscale = false);
 	CBaseUITextbox *addTextbox(UString text, ConVar *cvar = NULL);
-	CBaseUITextbox *addTextbox(UString text, UString labelText, ConVar *cvar = NULL);
+	CBaseUITextbox *addTextbox(UString text, const UString& labelText, ConVar *cvar = NULL);
 	CBaseUIElement *addSkinPreview();
 	CBaseUIElement *addSliderPreview();
 

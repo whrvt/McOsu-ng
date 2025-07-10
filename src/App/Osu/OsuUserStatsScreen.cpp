@@ -7,6 +7,8 @@
 
 #include "OsuUserStatsScreen.h"
 
+#include <utility>
+
 #include "Engine.h"
 #include "ConVar.h"
 #include "SoundEngine.h"
@@ -44,7 +46,7 @@ ConVar ui_top_ranks_max("osu_ui_top_ranks_max", 200, FCVAR_NONE, "maximum number
 class OsuUserStatsScreenMenuButton : public CBaseUIButton
 {
 public:
-	OsuUserStatsScreenMenuButton(float xPos = 0, float yPos = 0, float xSize = 0, float ySize = 0, UString name = "", UString text = "") : CBaseUIButton(xPos, yPos, xSize, ySize, name, text)
+	OsuUserStatsScreenMenuButton(float xPos = 0, float yPos = 0, float xSize = 0, float ySize = 0, UString name = "", UString text = "") : CBaseUIButton(xPos, yPos, xSize, ySize, std::move(name), text)
 	{
 	}
 
@@ -76,7 +78,7 @@ public:
 	OsuUserStatsScreenBackgroundPPRecalculator(UString userName, bool importLegacyScores) : Resource()
 	{
 		
-		m_sUserName = userName;
+		m_sUserName = std::move(userName);
 		m_bImportLegacyScores = importLegacyScores;
 
 		m_iNumScoresToRecalculate = 0;

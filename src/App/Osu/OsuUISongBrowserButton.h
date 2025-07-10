@@ -9,6 +9,8 @@
 #ifndef OSUUISONGBROWSERBUTTON_H
 #define OSUUISONGBROWSERBUTTON_H
 
+#include <utility>
+
 #include "OsuUIElement.h"
 
 class Osu;
@@ -38,7 +40,7 @@ public:
 	void resetAnimations();
 
 	void setTargetRelPosY(float targetRelPosY);
-	void setChildren(std::vector<OsuUISongBrowserButton*> children) {m_children = children;}
+	void setChildren(std::vector<OsuUISongBrowserButton*> children) {m_children = std::move(children);}
 	void setOffsetPercent(float offsetPercent) {m_fOffsetPercent = offsetPercent;}
 	void setHideIfSelected(bool hideIfSelected) {m_bHideIfSelected = hideIfSelected;}
 	void setIsSearchMatch(bool isSearchMatch) {m_bIsSearchMatch = isSearchMatch;}

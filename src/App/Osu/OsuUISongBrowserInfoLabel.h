@@ -9,6 +9,8 @@
 #ifndef OSUUISONGBROWSERINFOLABEL_H
 #define OSUUISONGBROWSERINFOLABEL_H
 
+#include <utility>
+
 #include "CBaseUIButton.h"
 
 class McFont;
@@ -28,10 +30,10 @@ public:
 	void setFromBeatmap(OsuBeatmap *beatmap, OsuDatabaseBeatmap *diff2);
 	void setFromMissingBeatmap(long beatmapId);
 
-	void setArtist(UString artist) {m_sArtist = artist;}
-	void setTitle(UString title) {m_sTitle = title;}
-	void setDiff(UString diff) {m_sDiff = diff;}
-	void setMapper(UString mapper) {m_sMapper = mapper;}
+	void setArtist(UString artist) {m_sArtist = std::move(artist);}
+	void setTitle(UString title) {m_sTitle = std::move(title);}
+	void setDiff(UString diff) {m_sDiff = std::move(diff);}
+	void setMapper(UString mapper) {m_sMapper = std::move(mapper);}
 
 	void setLengthMS(unsigned long lengthMS) {m_iLengthMS = lengthMS;}
 	void setBPM(int minBPM, int maxBPM, int mostCommonBPM) {m_iMinBPM = minBPM; m_iMaxBPM = maxBPM; m_iMostCommonBPM = mostCommonBPM;}

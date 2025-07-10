@@ -7,6 +7,8 @@
 
 #include "OsuUIPauseMenuButton.h"
 
+#include <utility>
+
 #include "Engine.h"
 #include "AnimationHandler.h"
 #include "SoundEngine.h"
@@ -14,10 +16,10 @@
 #include "Osu.h"
 #include "OsuSkin.h"
 
-OsuUIPauseMenuButton::OsuUIPauseMenuButton(std::function<Image*()> getImageFunc, float xPos, float yPos, float xSize, float ySize, UString name) : CBaseUIButton(xPos, yPos, xSize, ySize, name)
+OsuUIPauseMenuButton::OsuUIPauseMenuButton(std::function<Image*()> getImageFunc, float xPos, float yPos, float xSize, float ySize, UString name) : CBaseUIButton(xPos, yPos, xSize, ySize, std::move(name))
 {
 	
-	this->getImageFunc = getImageFunc;
+	this->getImageFunc = std::move(getImageFunc);
 
 	m_vScale = Vector2(1, 1);
 	m_fScaleMultiplier = 1.1f;

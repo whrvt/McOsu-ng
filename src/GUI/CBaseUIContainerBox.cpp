@@ -7,7 +7,9 @@
 
 #include "CBaseUIContainerBox.h"
 
-CBaseUIContainerBox::CBaseUIContainerBox(float xPos, float yPos, UString name) : CBaseUIContainerBase(name)
+#include <utility>
+
+CBaseUIContainerBox::CBaseUIContainerBox(float xPos, float yPos, UString name) : CBaseUIContainerBase(std::move(name))
 {
 	m_vPos.x = xPos;
 	m_vPos.y = yPos;

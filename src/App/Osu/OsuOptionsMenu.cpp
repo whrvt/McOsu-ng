@@ -42,6 +42,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <utility>
 void _osuOptionsSliderQualityWrapper(float newValue)
 {
 	float value = std::lerp(1.0f, 2.5f, 1.0f - newValue);
@@ -58,7 +59,7 @@ ConVar options_slider_quality("osu_options_slider_quality", 0.0f, FCVAR_NONE, _o
 class OsuOptionsMenuSkinPreviewElement final : public OsuUIElement
 {
 public:
-	OsuOptionsMenuSkinPreviewElement(float xPos, float yPos, float xSize, float ySize, UString name) : OsuUIElement(xPos, yPos, xSize, ySize, name) {m_iMode = 0;}
+	OsuOptionsMenuSkinPreviewElement(float xPos, float yPos, float xSize, float ySize, UString name) : OsuUIElement(xPos, yPos, xSize, ySize, std::move(name)) {m_iMode = 0;}
 
 	void draw() override
 	{
@@ -129,7 +130,7 @@ private:
 class OsuOptionsMenuSliderPreviewElement final : public OsuUIElement
 {
 public:
-	OsuOptionsMenuSliderPreviewElement(float xPos, float yPos, float xSize, float ySize, UString name) : OsuUIElement(xPos, yPos, xSize, ySize, name)
+	OsuOptionsMenuSliderPreviewElement(float xPos, float yPos, float xSize, float ySize, UString name) : OsuUIElement(xPos, yPos, xSize, ySize, std::move(name))
 	{
 		
 		m_bDrawSliderHack = true;
@@ -253,7 +254,7 @@ private:
 class OsuOptionsMenuKeyBindLabel : public CBaseUILabel
 {
 public:
-	OsuOptionsMenuKeyBindLabel(float xPos, float yPos, float xSize, float ySize, UString name, UString text, ConVar *cvar, CBaseUIButton *bindButton) : CBaseUILabel(xPos, yPos, xSize, ySize, name, text)
+	OsuOptionsMenuKeyBindLabel(float xPos, float yPos, float xSize, float ySize, UString name, UString text, ConVar *cvar, CBaseUIButton *bindButton) : CBaseUILabel(xPos, yPos, xSize, ySize, std::move(name), std::move(text))
 	{
 		m_key = cvar;
 		m_cachedKeyCode = -1;
@@ -313,7 +314,7 @@ private:
 class OsuOptionsMenuKeyBindButton : public OsuUIButton
 {
 public:
-	OsuOptionsMenuKeyBindButton(float xPos, float yPos, float xSize, float ySize, UString name, UString text) : OsuUIButton(xPos, yPos, xSize, ySize, name, text)
+	OsuOptionsMenuKeyBindButton(float xPos, float yPos, float xSize, float ySize, UString name, UString text) : OsuUIButton(xPos, yPos, xSize, ySize, std::move(name), std::move(text))
 	{
 		m_bDisallowLeftMouseClickBinding = false;
 	}
@@ -331,7 +332,7 @@ private:
 class OsuOptionsMenuCategoryButton : public CBaseUIButton
 {
 public:
-	OsuOptionsMenuCategoryButton(CBaseUIElement *section, float xPos, float yPos, float xSize, float ySize, UString name, UString text) : CBaseUIButton(xPos, yPos, xSize, ySize, name, text)
+	OsuOptionsMenuCategoryButton(CBaseUIElement *section, float xPos, float yPos, float xSize, float ySize, UString name, UString text) : CBaseUIButton(xPos, yPos, xSize, ySize, std::move(name), text)
 	{
 		m_section = section;
 		m_bActiveCategory = false;
@@ -370,7 +371,7 @@ private:
 class OsuOptionsMenuResetButton : public CBaseUIButton
 {
 public:
-	OsuOptionsMenuResetButton(float xPos, float yPos, float xSize, float ySize, UString name, UString text) : CBaseUIButton(xPos, yPos, xSize, ySize, name, text)
+	OsuOptionsMenuResetButton(float xPos, float yPos, float xSize, float ySize, UString name, UString text) : CBaseUIButton(xPos, yPos, xSize, ySize, std::move(name), text)
 	{
 		m_fAnim = 1.0f;
 	}
@@ -1666,7 +1667,7 @@ void OsuOptionsMenu::setVisibleInt(bool visible, bool fromOnBack)
 
 void OsuOptionsMenu::setUsername(UString username)
 {
-	m_nameTextbox->setText(username);
+	m_nameTextbox->setText(std::move(username));
 }
 
 bool OsuOptionsMenu::isMouseInside()
@@ -3483,7 +3484,7 @@ void OsuOptionsMenu::addSpacer(unsigned num)
 	m_elements.insert(m_elements.end(), num, e);
 }
 
-CBaseUILabel *OsuOptionsMenu::addSection(UString text)
+CBaseUILabel *OsuOptionsMenu::addSection(const UString& text)
 {
 	CBaseUILabel *label = new CBaseUILabel(0, 0, m_options->getSize().x, 25, text, text);
 	//label->setTextColor(0xff58dafe);
@@ -3503,7 +3504,7 @@ CBaseUILabel *OsuOptionsMenu::addSection(UString text)
 	return label;
 }
 
-CBaseUILabel *OsuOptionsMenu::addSubSection(UString text, UString searchTags)
+CBaseUILabel *OsuOptionsMenu::addSubSection(const UString& text, UString searchTags)
 {
 	CBaseUILabel *label = new CBaseUILabel(0, 0, m_options->getSize().x, 25, text, text);
 	label->setFont(osu->getSubTitleFont());
@@ -3516,13 +3517,13 @@ CBaseUILabel *OsuOptionsMenu::addSubSection(UString text, UString searchTags)
 	e.elements.push_back(label);
 	e.type = 2;
 	e.cvar = NULL;
-	e.searchTags = searchTags;
+	e.searchTags = std::move(searchTags);
 	m_elements.push_back(e);
 
 	return label;
 }
 
-CBaseUILabel *OsuOptionsMenu::addLabel(UString text)
+CBaseUILabel *OsuOptionsMenu::addLabel(const UString& text)
 {
 	CBaseUILabel *label = new CBaseUILabel(0, 0, m_options->getSize().x, 25, text, text);
 	label->setSizeToContent(0, 0);
@@ -3539,7 +3540,7 @@ CBaseUILabel *OsuOptionsMenu::addLabel(UString text)
 	return label;
 }
 
-OsuUIButton *OsuOptionsMenu::addButton(UString text)
+OsuUIButton *OsuOptionsMenu::addButton(const UString& text)
 {
 	OsuUIButton *button = new OsuUIButton(0, 0, m_options->getSize().x, 50, text, text);
 	button->setColor(0xff0e94b5);
@@ -3554,7 +3555,7 @@ OsuUIButton *OsuOptionsMenu::addButton(UString text)
 	return button;
 }
 
-OsuOptionsMenu::OPTIONS_ELEMENT OsuOptionsMenu::addButton(UString text, UString labelText, bool withResetButton)
+OsuOptionsMenu::OPTIONS_ELEMENT OsuOptionsMenu::addButton(const UString& text, const UString& labelText, bool withResetButton)
 {
 	OsuUIButton *button = new OsuUIButton(0, 0, m_options->getSize().x, 50, text, text);
 	button->setColor(0xff0e94b5);
@@ -3579,7 +3580,7 @@ OsuOptionsMenu::OPTIONS_ELEMENT OsuOptionsMenu::addButton(UString text, UString 
 	return e;
 }
 
-OsuOptionsMenu::OPTIONS_ELEMENT OsuOptionsMenu::addButtonButton(UString text1, UString text2)
+OsuOptionsMenu::OPTIONS_ELEMENT OsuOptionsMenu::addButtonButton(const UString& text1, const UString& text2)
 {
 	OsuUIButton *button = new OsuUIButton(0, 0, m_options->getSize().x, 50, text1, text1);
 	button->setColor(0xff0e94b5);
@@ -3600,7 +3601,7 @@ OsuOptionsMenu::OPTIONS_ELEMENT OsuOptionsMenu::addButtonButton(UString text1, U
 	return e;
 }
 
-OsuOptionsMenu::OPTIONS_ELEMENT OsuOptionsMenu::addButtonButtonLabel(UString text1, UString text2, UString labelText, bool withResetButton)
+OsuOptionsMenu::OPTIONS_ELEMENT OsuOptionsMenu::addButtonButtonLabel(const UString& text1, const UString& text2, const UString& labelText, bool withResetButton)
 {
 	OsuUIButton *button = new OsuUIButton(0, 0, m_options->getSize().x, 50, text1, text1);
 	button->setColor(0xff0e94b5);
@@ -3631,7 +3632,7 @@ OsuOptionsMenu::OPTIONS_ELEMENT OsuOptionsMenu::addButtonButtonLabel(UString tex
 	return e;
 }
 
-OsuOptionsMenuKeyBindButton *OsuOptionsMenu::addKeyBindButton(UString text, ConVar *cvar)
+OsuOptionsMenuKeyBindButton *OsuOptionsMenu::addKeyBindButton(const UString& text, ConVar *cvar)
 {
 	///UString unbindIconString; unbindIconString.insert(0, OsuIcons::UNDO);
 	OsuUIButton *unbindButton = new OsuUIButton(0, 0, m_options->getSize().x, 50, text, "");
@@ -3669,7 +3670,7 @@ CBaseUICheckbox *OsuOptionsMenu::addCheckbox(UString text, ConVar *cvar)
 	return addCheckbox(text, "", cvar);
 }
 
-CBaseUICheckbox *OsuOptionsMenu::addCheckbox(UString text, UString tooltipText, ConVar *cvar)
+CBaseUICheckbox *OsuOptionsMenu::addCheckbox(const UString& text, const UString& tooltipText, ConVar *cvar)
 {
 	OsuUICheckbox *checkbox = new OsuUICheckbox(0, 0, m_options->getSize().x, 50, text, text);
 	checkbox->setDrawFrame(false);
@@ -3700,7 +3701,7 @@ CBaseUICheckbox *OsuOptionsMenu::addCheckbox(UString text, UString tooltipText, 
 	return checkbox;
 }
 
-OsuUISlider *OsuOptionsMenu::addSlider(UString text, float min, float max, ConVar *cvar, float label1Width, bool allowOverscale, bool allowUnderscale)
+OsuUISlider *OsuOptionsMenu::addSlider(const UString& text, float min, float max, ConVar *cvar, float label1Width, bool allowOverscale, bool allowUnderscale)
 {
 	OsuUISlider *slider = new OsuUISlider(0, 0, 100, 50, text);
 	slider->setAllowMouseWheel(false);
@@ -3752,7 +3753,7 @@ OsuUISlider *OsuOptionsMenu::addSlider(UString text, float min, float max, ConVa
 CBaseUITextbox *OsuOptionsMenu::addTextbox(UString text, ConVar *cvar)
 {
 	CBaseUITextbox *textbox = new CBaseUITextbox(0, 0, m_options->getSize().x, 40, "");
-	textbox->setText(text);
+	textbox->setText(std::move(text));
 	m_options->getContainer()->addBaseUIElement(textbox);
 
 	OPTIONS_ELEMENT e;
@@ -3764,10 +3765,10 @@ CBaseUITextbox *OsuOptionsMenu::addTextbox(UString text, ConVar *cvar)
 	return textbox;
 }
 
-CBaseUITextbox *OsuOptionsMenu::addTextbox(UString text, UString labelText, ConVar *cvar)
+CBaseUITextbox *OsuOptionsMenu::addTextbox(UString text, const UString& labelText, ConVar *cvar)
 {
 	CBaseUITextbox *textbox = new CBaseUITextbox(0, 0, m_options->getSize().x, 40, "");
-	textbox->setText(text);
+	textbox->setText(std::move(text));
 	m_options->getContainer()->addBaseUIElement(textbox);
 
 	CBaseUILabel *label = new CBaseUILabel(0, 0, m_options->getSize().x, 40, labelText, labelText);

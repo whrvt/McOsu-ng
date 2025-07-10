@@ -7,12 +7,14 @@
 
 #include "OsuUICheckbox.h"
 
+#include <utility>
+
 #include "Engine.h"
 
 #include "Osu.h"
 #include "OsuTooltipOverlay.h"
 
-OsuUICheckbox::OsuUICheckbox(float xPos, float yPos, float xSize, float ySize, UString name, UString text) : CBaseUICheckbox(xPos, yPos, xSize, ySize, name, text)
+OsuUICheckbox::OsuUICheckbox(float xPos, float yPos, float xSize, float ySize, UString name, UString text) : CBaseUICheckbox(xPos, yPos, xSize, ySize, std::move(name), std::move(text))
 {
 	
 
@@ -47,7 +49,7 @@ void OsuUICheckbox::onFocusStolen()
 	m_bFocusStolenDelay = true;
 }
 
-void OsuUICheckbox::setTooltipText(UString text)
+void OsuUICheckbox::setTooltipText(const UString& text)
 {
 	m_tooltipTextLines = text.split("\n");
 }

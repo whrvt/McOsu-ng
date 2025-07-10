@@ -87,8 +87,8 @@ public:
 	void selectBeatmapMP(OsuDatabaseBeatmap *diff2);
 
 	void onScoreContextMenu(OsuUISongBrowserScoreButton *scoreButton, int id);
-	void onSongButtonContextMenu(OsuUISongBrowserSongButton *songButton, UString text, int id);
-	void onCollectionButtonContextMenu(OsuUISongBrowserCollectionButton *collectionButton, UString text, int id);
+	void onSongButtonContextMenu(OsuUISongBrowserSongButton *songButton, const UString& text, int id);
+	void onCollectionButtonContextMenu(OsuUISongBrowserCollectionButton *collectionButton, const UString& text, int id);
 
 	void highlightScore(uint64_t unixTimestamp);
 	void selectRandomBeatmap(bool playMusicFromPreviewPoint = true);
@@ -168,7 +168,7 @@ private:
 	void checkHandleKillBackgroundSearchMatcher();
 
 	OsuUISelectionButton *addBottombarNavButton(std::function<OsuSkinImage*()> getImageFunc, std::function<OsuSkinImage*()> getImageOverFunc);
-	CBaseUIButton *addTopBarRightTabButton(UString text);
+	CBaseUIButton *addTopBarRightTabButton(const UString& text);
 	CBaseUIButton *addTopBarRightGroupButton(UString text);
 	CBaseUIButton *addTopBarRightSortButton(UString text);
 	CBaseUIButton *addTopBarLeftTabButton(UString text);

@@ -25,7 +25,7 @@ public:
 	void draw() override;
 
 	void setScore(OsuScore *score);
-	void setScore(OsuDatabase::Score score);
+	void setScore(const OsuDatabase::Score& score);
 
 private:
 	void drawHitImage(OsuSkinImage *img, float scale, Vector2 pos);

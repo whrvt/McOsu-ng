@@ -26,7 +26,7 @@ public:
 	static void clampToRightScreenEdge(OsuUIContextMenu *menu);
 
 public:
-	OsuUIContextMenu(float xPos = 0, float yPos = 0, float xSize = 0, float ySize = 0, UString name = "", CBaseUIScrollView *parent = NULL);
+	OsuUIContextMenu(float xPos = 0, float yPos = 0, float xSize = 0, float ySize = 0, const UString& name = "", CBaseUIScrollView *parent = NULL);
 	~OsuUIContextMenu() override;
 
 	void draw() override;
@@ -40,10 +40,10 @@ public:
 	void setClickCallback(const ButtonClickCallback &clickCallback) {m_clickCallback = clickCallback;}
 
 	void begin(int minWidth = 0, bool bigStyle = false);
-	OsuUIContextMenuButton *addButtonJustified(UString text, bool left = true, int id = -1);
+	OsuUIContextMenuButton *addButtonJustified(const UString& text, bool left = true, int id = -1);
 	inline OsuUIContextMenuButton *addButton(const UString &text, int id = -1) {return addButtonJustified(text, true, id);};
 
-	OsuUIContextMenuTextbox *addTextbox(UString text, int id = -1);
+	OsuUIContextMenuTextbox *addTextbox(const UString& text, int id = -1);
 
 	void end(bool invertAnimation, bool clampUnderflowAndOverflowAndEnableScrollingIfNecessary);
 
@@ -92,7 +92,7 @@ public:
 
 	[[nodiscard]] inline int getID() const {return m_iID;}
 
-	void setTooltipText(UString text);
+	void setTooltipText(const UString& text);
 
 private:
 	int m_iID;

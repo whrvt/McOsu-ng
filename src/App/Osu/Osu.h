@@ -122,7 +122,7 @@ public:
 
 	void saveScreenshot();
 
-	void setSkin(UString skin) {onSkinChange("", skin);}
+	void setSkin(const UString& skin) {onSkinChange("", skin);}
 	void reloadSkin() {onSkinReload();}
 
 	void setGamemode(GAMEMODE gamemode) {m_gamemode = gamemode;}

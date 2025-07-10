@@ -7,11 +7,13 @@
 
 #include "CBaseUIButton.h"
 
+#include <utility>
+
 #include "Engine.h"
 #include "Mouse.h"
 #include "ResourceManager.h"
 
-CBaseUIButton::CBaseUIButton(float xPos, float yPos, float xSize, float ySize, UString name, UString text) : CBaseUIElement(xPos, yPos, xSize, ySize, name)
+CBaseUIButton::CBaseUIButton(float xPos, float yPos, float xSize, float ySize, UString name, const UString& text) : CBaseUIElement(xPos, yPos, xSize, ySize, std::move(name))
 {
 	m_font = resourceManager->getFont("FONT_DEFAULT");
 

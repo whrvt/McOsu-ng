@@ -15,8 +15,9 @@
 #include "OsuDatabaseBeatmap.h"
 
 #include <chrono>
+#include <utility>
 
-OsuUIRankingScreenInfoLabel::OsuUIRankingScreenInfoLabel(float xPos, float yPos, float xSize, float ySize, UString name) : OsuUIElement(xPos, yPos, xSize, ySize, name)
+OsuUIRankingScreenInfoLabel::OsuUIRankingScreenInfoLabel(float xPos, float yPos, float xSize, float ySize, UString name) : OsuUIElement(xPos, yPos, xSize, ySize, std::move(name))
 {
 	
 	m_font = osu->getSubTitleFont();

@@ -7,6 +7,8 @@
 
 #include "OsuUIBackButton.h"
 
+#include <utility>
+
 #include "Engine.h"
 #include "ConVar.h"
 #include "AnimationHandler.h"
@@ -15,7 +17,7 @@
 #include "OsuSkin.h"
 #include "OsuSkinImage.h"
 
-OsuUIBackButton::OsuUIBackButton(float xPos, float yPos, float xSize, float ySize, UString name) : CBaseUIButton(xPos, yPos, xSize, ySize, name, "")
+OsuUIBackButton::OsuUIBackButton(float xPos, float yPos, float xSize, float ySize, UString name) : CBaseUIButton(xPos, yPos, xSize, ySize, std::move(name), "")
 {
 	
 	m_fAnimation = 0.0f;

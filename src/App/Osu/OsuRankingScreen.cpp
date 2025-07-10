@@ -7,6 +7,8 @@
 
 #include "OsuRankingScreen.h"
 
+#include <utility>
+
 #include "Engine.h"
 #include "ResourceManager.h"
 #include "SoundEngine.h"
@@ -551,13 +553,13 @@ void OsuRankingScreen::setScore(OsuScore *score)
 	m_bIsUnranked = score->isUnranked();
 }
 
-void OsuRankingScreen::setScore(OsuDatabase::Score score, UString dateTime)
+void OsuRankingScreen::setScore(const OsuDatabase::Score& score, UString dateTime)
 {
 	m_bIsLegacyScore = score.isLegacyScore;
 	m_bIsImportedLegacyScore = score.isImportedLegacyScore;
 	m_bIsUnranked = false;
 
-	m_songInfo->setDate(dateTime);
+	m_songInfo->setDate(std::move(dateTime));
 	m_songInfo->setPlayer(score.playerName);
 
 	m_rankingPanel->setScore(score);

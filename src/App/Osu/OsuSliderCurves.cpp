@@ -25,7 +25,7 @@ ConVar slider_curve_max_length("osu_slider_curve_max_length", 65536/2, FCVAR_NON
 
 OsuSliderCurve *OsuSliderCurve::createCurve(char osuSliderCurveType, std::vector<Vector2> controlPoints, float pixelLength)
 {
-	return createCurve(osuSliderCurveType, controlPoints, pixelLength, cv::osu::slider_curve_points_separation.getFloat());
+	return createCurve(osuSliderCurveType, std::move(controlPoints), pixelLength, cv::osu::slider_curve_points_separation.getFloat());
 }
 
 OsuSliderCurve *OsuSliderCurve::createCurve(char osuSliderCurveType, std::vector<Vector2> controlPoints, float pixelLength, float curvePointsSeparation)
@@ -57,7 +57,7 @@ OsuSliderCurve *OsuSliderCurve::createCurve(char osuSliderCurveType, std::vector
 
 OsuSliderCurve::OsuSliderCurve(std::vector<Vector2> controlPoints, float pixelLength)
 {
-	m_controlPoints = controlPoints;
+	m_controlPoints = std::move(controlPoints);
 	m_fPixelLength = pixelLength;
 
 	m_fStartAngle = 0.0f;
@@ -198,7 +198,7 @@ Vector2 OsuSliderCurveTypeCentripetalCatmullRom::pointAt(float t)
 //	 Curve Classes	 //
 //*******************//
 
-OsuSliderCurveEqualDistanceMulti::OsuSliderCurveEqualDistanceMulti(std::vector<Vector2> controlPoints, float pixelLength, float curvePointsSeparation) : OsuSliderCurve(controlPoints, pixelLength)
+OsuSliderCurveEqualDistanceMulti::OsuSliderCurveEqualDistanceMulti(std::vector<Vector2> controlPoints, float pixelLength, float curvePointsSeparation) : OsuSliderCurve(std::move(controlPoints), pixelLength)
 {
 	m_iNCurve = std::min((int)(m_fPixelLength / std::clamp<float>(curvePointsSeparation, 1.0f, 100.0f)), cv::osu::slider_curve_max_points.getInt());
 }
@@ -477,7 +477,7 @@ Vector2 OsuSliderCurveEqualDistanceMulti::originalPointAt(float t)
 
 
 
-OsuSliderCurveLinearBezier::OsuSliderCurveLinearBezier(std::vector<Vector2> controlPoints, float pixelLength, bool line, float curvePointsSeparation) : OsuSliderCurveEqualDistanceMulti(controlPoints, pixelLength, curvePointsSeparation)
+OsuSliderCurveLinearBezier::OsuSliderCurveLinearBezier(std::vector<Vector2> controlPoints, float pixelLength, bool line, float curvePointsSeparation) : OsuSliderCurveEqualDistanceMulti(std::move(controlPoints), pixelLength, curvePointsSeparation)
 {
 	const int numControlPoints = m_controlPoints.size();
 
@@ -540,7 +540,7 @@ OsuSliderCurveLinearBezier::OsuSliderCurveLinearBezier(std::vector<Vector2> cont
 
 
 
-OsuSliderCurveCatmull::OsuSliderCurveCatmull(std::vector<Vector2> controlPoints, float pixelLength, float curvePointsSeparation) : OsuSliderCurveEqualDistanceMulti(controlPoints, pixelLength, curvePointsSeparation)
+OsuSliderCurveCatmull::OsuSliderCurveCatmull(std::vector<Vector2> controlPoints, float pixelLength, float curvePointsSeparation) : OsuSliderCurveEqualDistanceMulti(std::move(controlPoints), pixelLength, curvePointsSeparation)
 {
 	const int numControlPoints = m_controlPoints.size();
 
@@ -581,7 +581,7 @@ OsuSliderCurveCatmull::OsuSliderCurveCatmull(std::vector<Vector2> controlPoints,
 
 
 
-OsuSliderCurveCircumscribedCircle::OsuSliderCurveCircumscribedCircle(std::vector<Vector2> controlPoints, float pixelLength, float curvePointsSeparation) : OsuSliderCurve(controlPoints, pixelLength)
+OsuSliderCurveCircumscribedCircle::OsuSliderCurveCircumscribedCircle(const std::vector<Vector2>& controlPoints, float pixelLength, float curvePointsSeparation) : OsuSliderCurve(controlPoints, pixelLength)
 {
 	if (controlPoints.size() != 3)
 	{

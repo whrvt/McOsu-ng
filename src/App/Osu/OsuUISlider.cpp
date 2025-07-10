@@ -7,13 +7,15 @@
 
 #include "OsuUISlider.h"
 
+#include <utility>
+
 #include "ResourceManager.h"
 #include "AnimationHandler.h"
 
 #include "Osu.h"
 #include "OsuSkin.h"
 
-OsuUISlider::OsuUISlider(float xPos, float yPos, float xSize, float ySize, UString name) : CBaseUISlider(xPos, yPos, xSize, ySize, name)
+OsuUISlider::OsuUISlider(float xPos, float yPos, float xSize, float ySize, UString name) : CBaseUISlider(xPos, yPos, xSize, ySize, std::move(name))
 {
 	
 	setBlockSize(20, 20);

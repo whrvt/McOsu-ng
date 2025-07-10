@@ -11,6 +11,7 @@
 #include "ConVar.h"
 
 #include <sstream>
+#include <utility>
 
 #ifdef MCENGINE_FEATURE_NETWORKING
 
@@ -135,7 +136,7 @@ NetworkHandler::~NetworkHandler()
 #endif
 }
 
-UString NetworkHandler::httpGet(UString url, long timeout, long connectTimeout)
+UString NetworkHandler::httpGet(const UString& url, long timeout, long connectTimeout)
 {
 #ifdef MCENGINE_FEATURE_NETWORKING
 
@@ -173,7 +174,7 @@ UString NetworkHandler::httpGet(UString url, long timeout, long connectTimeout)
 #endif
 }
 
-std::string NetworkHandler::httpDownload(UString url, long timeout, long connectTimeout)
+std::string NetworkHandler::httpDownload(const UString& url, long timeout, long connectTimeout)
 {
 #ifdef MCENGINE_FEATURE_NETWORKING
 
@@ -222,7 +223,7 @@ std::string NetworkHandler::httpDownload(UString url, long timeout, long connect
 #endif
 }
 
-void NetworkHandler::connect(UString address)
+void NetworkHandler::connect(const UString& address)
 {
 #ifdef MCENGINE_FEATURE_NETWORKING
 
@@ -1169,7 +1170,7 @@ void NetworkHandler::clientcast(void *data, uint32_t size, uint32_t id, bool rel
 #endif
 }
 
-void NetworkHandler::say(UString message)
+void NetworkHandler::say(const UString& message)
 {
 #ifdef MCENGINE_FEATURE_NETWORKING
 
@@ -1215,7 +1216,7 @@ void NetworkHandler::say(UString message)
 #endif
 }
 
-void NetworkHandler::kick(UString username)
+void NetworkHandler::kick(const UString& username)
 {
 #ifdef MCENGINE_FEATURE_NETWORKING
 
@@ -1257,9 +1258,9 @@ void NetworkHandler::kick(UString username)
 #endif
 }
 
-void NetworkHandler::chatLog(UString username, UString message)
+void NetworkHandler::chatLog(UString username, const UString& message)
 {
-	UString chatlog = username;
+	UString chatlog = std::move(username);
 	chatlog.append(": ");
 	chatlog.append(message);
 	chatlog.append("\n");

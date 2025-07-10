@@ -7,6 +7,8 @@
 
 #include "OsuModSelector.h"
 
+#include <utility>
+
 #include "Engine.h"
 #include "SoundEngine.h"
 #include "Keyboard.h"
@@ -47,7 +49,7 @@
 class OsuModSelectorOverrideSliderDescButton : public CBaseUIButton
 {
 public:
-	OsuModSelectorOverrideSliderDescButton(float xPos, float yPos, float xSize, float ySize, UString name, UString text) : CBaseUIButton(xPos, yPos, xSize, ySize, name, text)
+	OsuModSelectorOverrideSliderDescButton(float xPos, float yPos, float xSize, float ySize, UString name, UString text) : CBaseUIButton(xPos, yPos, xSize, ySize, std::move(name), text)
 	{
 		
 	}
@@ -67,7 +69,7 @@ public:
 		}
 	}
 
-	void setTooltipText(UString tooltipText) {m_sTooltipText = tooltipText;}
+	void setTooltipText(UString tooltipText) {m_sTooltipText = std::move(tooltipText);}
 
 private:
 	void drawText() override
@@ -98,7 +100,7 @@ private:
 class OsuModSelectorOverrideSliderLockButton : public CBaseUICheckbox
 {
 public:
-	OsuModSelectorOverrideSliderLockButton(float xPos, float yPos, float xSize, float ySize, UString name, UString text) : CBaseUICheckbox(xPos, yPos, xSize, ySize, name, text)
+	OsuModSelectorOverrideSliderLockButton(float xPos, float yPos, float xSize, float ySize, UString name, UString text) : CBaseUICheckbox(xPos, yPos, xSize, ySize, std::move(name), std::move(text))
 	{
 		
 		m_fAnim = 1.0f;
@@ -989,13 +991,13 @@ void OsuModSelector::updateModConVar()
 	updateOverrideSliderLabels();
 }
 
-OsuUIModSelectorModButton *OsuModSelector::setModButtonOnGrid(int x, int y, int state, bool initialState, UString modName, UString tooltipText, std::function<OsuSkinImage*()> getImageFunc)
+OsuUIModSelectorModButton *OsuModSelector::setModButtonOnGrid(int x, int y, int state, bool initialState, UString modName, const UString& tooltipText, std::function<OsuSkinImage*()> getImageFunc)
 {
 	OsuUIModSelectorModButton *modButton = getModButtonOnGrid(x, y);
 
 	if (modButton != NULL)
 	{
-		modButton->setState(state, initialState, modName, tooltipText, getImageFunc);
+		modButton->setState(state, initialState, std::move(modName), tooltipText, std::move(getImageFunc));
 		modButton->setVisible(true);
 	}
 
@@ -1012,7 +1014,7 @@ OsuUIModSelectorModButton *OsuModSelector::getModButtonOnGrid(int x, int y)
 		return NULL;
 }
 
-OsuModSelector::OVERRIDE_SLIDER OsuModSelector::addOverrideSlider(UString text, UString labelText, ConVar *cvar, float min, float max, UString tooltipText, ConVar *lockCvar)
+OsuModSelector::OVERRIDE_SLIDER OsuModSelector::addOverrideSlider(UString text, const UString& labelText, ConVar *cvar, float min, float max, UString tooltipText, ConVar *lockCvar)
 {
 	int height = 25;
 
@@ -1022,8 +1024,8 @@ OsuModSelector::OVERRIDE_SLIDER OsuModSelector::addOverrideSlider(UString text, 
 		os.lock = new OsuModSelectorOverrideSliderLockButton(0, 0, height, height, "", "");
 		os.lock->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuModSelector::onOverrideSliderLockChange) );
 	}
-	os.desc = new OsuModSelectorOverrideSliderDescButton(0, 0, 100, height, "", text);
-	os.desc->setTooltipText(tooltipText);
+	os.desc = new OsuModSelectorOverrideSliderDescButton(0, 0, 100, height, "", std::move(text));
+	os.desc->setTooltipText(std::move(tooltipText));
 	os.slider = new OsuUISlider(0, 0, 100, height, "");
 	os.label = new CBaseUILabel(0, 0, 100, height, labelText, labelText);
 	os.cvar = cvar;
@@ -1062,7 +1064,7 @@ OsuModSelector::OVERRIDE_SLIDER OsuModSelector::addOverrideSlider(UString text, 
 	return os;
 }
 
-OsuUIButton *OsuModSelector::addActionButton(UString text)
+OsuUIButton *OsuModSelector::addActionButton(const UString& text)
 {
 	OsuUIButton *actionButton = new OsuUIButton(50, 50, 100, 100, text, text);
 	m_actionButtons.push_back(actionButton);
@@ -1071,7 +1073,7 @@ OsuUIButton *OsuModSelector::addActionButton(UString text)
 	return actionButton;
 }
 
-CBaseUILabel *OsuModSelector::addExperimentalLabel(UString text)
+CBaseUILabel *OsuModSelector::addExperimentalLabel(const UString& text)
 {
 	CBaseUILabel *label = new CBaseUILabel(0, 0, 0, 25, text, text);
 	label->setFont(osu->getSubTitleFont());
@@ -1088,7 +1090,7 @@ CBaseUILabel *OsuModSelector::addExperimentalLabel(UString text)
 	return label;
 }
 
-OsuUICheckbox *OsuModSelector::addExperimentalCheckbox(UString text, UString tooltipText, ConVar *cvar)
+OsuUICheckbox *OsuModSelector::addExperimentalCheckbox(const UString& text, UString tooltipText, ConVar *cvar)
 {
 	OsuUICheckbox *checkbox = new OsuUICheckbox(0, 0, 0, 35, text, text);
 	checkbox->setTooltipText(tooltipText);

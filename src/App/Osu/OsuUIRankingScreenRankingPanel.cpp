@@ -171,7 +171,7 @@ void OsuUIRankingScreenRankingPanel::setScore(OsuScore *score)
 	m_bPerfect = (score->getComboFull() > 0 && m_iCombo >= score->getComboFull());
 }
 
-void OsuUIRankingScreenRankingPanel::setScore(OsuDatabase::Score score)
+void OsuUIRankingScreenRankingPanel::setScore(const OsuDatabase::Score& score)
 {
 	m_iScore = score.score;
 	m_iNum300s = score.num300s;

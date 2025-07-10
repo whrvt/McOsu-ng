@@ -23,7 +23,7 @@ public:
 	void update() override;
 
 	void begin();
-	void addLine(UString text);
+	void addLine(const UString& text);
 	void end();
 
 private:

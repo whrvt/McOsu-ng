@@ -276,7 +276,7 @@ void OsuUpdateHandler::_requestUpdate()
 		m_status = STATUS::STATUS_UP_TO_DATE;
 }
 
-bool OsuUpdateHandler::_downloadUpdate(UString url)
+bool OsuUpdateHandler::_downloadUpdate(const UString& url)
 {
 	debugLog("{:s}\n", url.toUtf8());
 	m_status = STATUS::STATUS_DOWNLOADING_UPDATE;
@@ -311,7 +311,7 @@ bool OsuUpdateHandler::_downloadUpdate(UString url)
 	return true;
 }
 
-void OsuUpdateHandler::_installUpdate(UString zipFilePath)
+void OsuUpdateHandler::_installUpdate(const UString& zipFilePath)
 {
 	debugLog("{:s}\n", zipFilePath.toUtf8());
 	m_status = STATUS::STATUS_INSTALLING_UPDATE;
@@ -441,7 +441,7 @@ void OsuUpdateHandler::_installUpdate(UString zipFilePath)
 	m_status = STATUS::STATUS_SUCCESS_INSTALLATION;
 }
 
-OsuUpdateHandler::STREAM OsuUpdateHandler::stringToStream(UString streamString)
+OsuUpdateHandler::STREAM OsuUpdateHandler::stringToStream(const UString& streamString)
 {
 	STREAM stream = STREAM::STREAM_NULL;
 	if (streamString.find("desktop") != -1)
@@ -450,7 +450,7 @@ OsuUpdateHandler::STREAM OsuUpdateHandler::stringToStream(UString streamString)
 	return stream;
 }
 
-OS OsuUpdateHandler::stringToOS(UString osString)
+OS OsuUpdateHandler::stringToOS(const UString& osString)
 {
 	OS os = OS::NONE;
 	if (osString.find("windows") != -1)

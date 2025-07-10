@@ -9,6 +9,8 @@
 #ifndef OSUUIRANKINGSCREENINFOLABEL_H
 #define OSUUIRANKINGSCREENINFOLABEL_H
 
+#include <utility>
+
 #include "OsuUIElement.h"
 
 class McFont;
@@ -26,12 +28,12 @@ public:
 
 	void setFromBeatmap(OsuBeatmap *beatmap, OsuDatabaseBeatmap *diff2);
 
-	void setArtist(UString artist) {m_sArtist = artist;}
-	void setTitle(UString title) {m_sTitle = title;}
-	void setDiff(UString diff) {m_sDiff = diff;}
-	void setMapper(UString mapper) {m_sMapper = mapper;}
-	void setPlayer(UString player) {m_sPlayer = player;}
-	void setDate(UString date) {m_sDate = date;}
+	void setArtist(UString artist) {m_sArtist = std::move(artist);}
+	void setTitle(UString title) {m_sTitle = std::move(title);}
+	void setDiff(UString diff) {m_sDiff = std::move(diff);}
+	void setMapper(UString mapper) {m_sMapper = std::move(mapper);}
+	void setPlayer(UString player) {m_sPlayer = std::move(player);}
+	void setDate(UString date) {m_sDate = std::move(date);}
 
 	float getMinimumWidth();
 	float getMinimumHeight();

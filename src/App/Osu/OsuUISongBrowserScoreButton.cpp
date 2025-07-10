@@ -34,6 +34,7 @@
 #include "OsuUIContextMenu.h"
 
 #include <chrono>
+#include <utility>
 
 
 
@@ -46,7 +47,7 @@
 
 UString OsuUISongBrowserScoreButton::recentScoreIconString;
 
-OsuUISongBrowserScoreButton::OsuUISongBrowserScoreButton(OsuUIContextMenu *contextMenu, float xPos, float yPos, float xSize, float ySize, UString name, STYLE style) : CBaseUIButton(xPos, yPos, xSize, ySize, name, "")
+OsuUISongBrowserScoreButton::OsuUISongBrowserScoreButton(OsuUIContextMenu *contextMenu, float xPos, float yPos, float xSize, float ySize, UString name, STYLE style) : CBaseUIButton(xPos, yPos, xSize, ySize, std::move(name), "")
 {
 	
 	m_contextMenu = contextMenu;
@@ -863,7 +864,7 @@ void OsuUISongBrowserScoreButton::setScore(const OsuDatabase::Score &score, cons
 		const int weightRounded = std::round(weight*100.0f);
 		const int ppWeightedRounded = std::round(score.pp*weight);
 
-		m_sScoreTitle = titleString;
+		m_sScoreTitle = std::move(titleString);
 		m_sScoreScorePPWeightedPP = UString::format("%ipp", (int)std::round(score.pp));
 		m_sScoreScorePPWeightedWeight = UString::format("     weighted %i%% (%ipp)", weightRounded, ppWeightedRounded);
 		m_sScoreWeight = UString::format("weighted %i%%", weightRounded);

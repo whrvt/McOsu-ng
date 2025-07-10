@@ -40,9 +40,9 @@ ConVar console_overlay_scale("console_overlay_scale", 1.0f, FCVAR_NONE, "log tex
 class ConsoleBoxTextbox : public CBaseUITextbox
 {
 public:
-	ConsoleBoxTextbox(float xPos, float yPos, float xSize, float ySize, UString name) : CBaseUITextbox(xPos, yPos, xSize, ySize, name) {}
+	ConsoleBoxTextbox(float xPos, float yPos, float xSize, float ySize, UString name) : CBaseUITextbox(xPos, yPos, xSize, ySize, std::move(name)) {}
 
-	void setSuggestion(UString suggestion) { m_sSuggestion = suggestion; }
+	void setSuggestion(UString suggestion) { m_sSuggestion = std::move(suggestion); }
 
 protected:
 	void drawText() override
@@ -72,9 +72,9 @@ class ConsoleBoxSuggestionButton : public CBaseUIButton
 {
 public:
 	ConsoleBoxSuggestionButton(float xPos, float yPos, float xSize, float ySize, UString name, UString text, UString helpText, ConsoleBox *consoleBox)
-	    : CBaseUIButton(xPos, yPos, xSize, ySize, name, text)
+	    : CBaseUIButton(xPos, yPos, xSize, ySize, std::move(name), text)
 	{
-		m_sHelpText = helpText;
+		m_sHelpText = std::move(helpText);
 		m_consoleBox = consoleBox;
 	}
 
@@ -603,7 +603,7 @@ void ConsoleBox::onResolutionChange(Vector2 newResolution)
 	m_suggestion->setSizeX(newResolution.x - 10 * dpiScale);
 }
 
-void ConsoleBox::processCommand(UString command)
+void ConsoleBox::processCommand(const UString& command)
 {
 	clearSuggestions();
 	m_iSelectedHistory = -1;
@@ -616,7 +616,7 @@ void ConsoleBox::processCommand(UString command)
 
 void ConsoleBox::execConfigFile(UString filename)
 {
-	Console::execConfigFile(filename);
+	Console::execConfigFile(std::move(filename));
 }
 
 bool ConsoleBox::isBusy()

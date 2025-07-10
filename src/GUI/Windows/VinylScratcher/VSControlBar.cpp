@@ -7,6 +7,8 @@
 
 #include "VSControlBar.h"
 
+#include <utility>
+
 #include "Engine.h"
 #include "Keyboard.h"
 #include "ConVar.h"
@@ -26,7 +28,7 @@ ConVar vs_volume("vs_volume", 1.0f, FCVAR_NONE);
 class VSControlBarButton : public CBaseUIButton
 {
 public:
-	VSControlBarButton(float xPos, float yPos, float xSize, float ySize, UString name, UString text) : CBaseUIButton(xPos, yPos, xSize, ySize, name, text) {;}
+	VSControlBarButton(float xPos, float yPos, float xSize, float ySize, UString name, UString text) : CBaseUIButton(xPos, yPos, xSize, ySize, std::move(name), text) {;}
 	~VSControlBarButton() override {;}
 
 	void draw() override
@@ -88,7 +90,7 @@ protected:
 class VSControlBarSlider : public CBaseUISlider
 {
 public:
-	VSControlBarSlider(float xPos, float yPos, float xSize, float ySize, UString name) : CBaseUISlider(xPos, yPos, xSize, ySize, name) {;}
+	VSControlBarSlider(float xPos, float yPos, float xSize, float ySize, UString name) : CBaseUISlider(xPos, yPos, xSize, ySize, std::move(name)) {;}
 	~VSControlBarSlider() override {;}
 
 	void draw() override
@@ -119,7 +121,7 @@ public:
 class VSControlBarCheckbox : public CBaseUICheckbox
 {
 public:
-	VSControlBarCheckbox(float xPos, float yPos, float xSize, float ySize, UString name, UString text) : CBaseUICheckbox(xPos, yPos, xSize, ySize, name, text) {;}
+	VSControlBarCheckbox(float xPos, float yPos, float xSize, float ySize, UString name, UString text) : CBaseUICheckbox(xPos, yPos, xSize, ySize, std::move(name), std::move(text)) {;}
 	~VSControlBarCheckbox() override {;}
 
 	void draw() override

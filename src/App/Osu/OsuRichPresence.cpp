@@ -103,7 +103,7 @@ void OsuRichPresence::onPlayEnd(bool quit)
 	}
 }
 
-void OsuRichPresence::setStatus(UString status, bool force)
+void OsuRichPresence::setStatus(const UString& status, bool force)
 {
 	if (!cv::osu::rich_presence.getBool() && !force) return;
 

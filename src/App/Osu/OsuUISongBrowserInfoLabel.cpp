@@ -7,6 +7,8 @@
 
 #include "OsuUISongBrowserInfoLabel.h"
 
+#include <utility>
+
 #include "Engine.h"
 #include "ResourceManager.h"
 #include "Environment.h"
@@ -24,7 +26,7 @@
 
 #include "OsuOptionsMenu.h"
 
-OsuUISongBrowserInfoLabel::OsuUISongBrowserInfoLabel(float xPos, float yPos, float xSize, float ySize, UString name) : CBaseUIButton(xPos, yPos, xSize, ySize, name, "")
+OsuUISongBrowserInfoLabel::OsuUISongBrowserInfoLabel(float xPos, float yPos, float xSize, float ySize, UString name) : CBaseUIButton(xPos, yPos, xSize, ySize, std::move(name), "")
 {
 	
 	m_font = osu->getSubTitleFont();

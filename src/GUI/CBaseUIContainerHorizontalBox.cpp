@@ -6,9 +6,11 @@
  */
 
 #include "CBaseUIContainerHorizontalBox.h"
+
+#include <utility>
 #include "Engine.h"
 
-CBaseUIContainerHorizontalBox::CBaseUIContainerHorizontalBox(float posX, float posY, float sizeX, float sizeY, UString name) : CBaseUIContainerBase(name)
+CBaseUIContainerHorizontalBox::CBaseUIContainerHorizontalBox(float posX, float posY, float sizeX, float sizeY, UString name) : CBaseUIContainerBase(std::move(name))
 {
 	m_vPos.x = posX;
 	m_vPos.y = posY;

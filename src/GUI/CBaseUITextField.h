@@ -25,7 +25,7 @@ public:
 
 	CBaseUITextField *setFont(McFont *font) {m_textObject->setFont(font); return this;}
 
-	CBaseUITextField *append(UString text);
+	CBaseUITextField *append(const UString& text);
 
 	void onResized() override;
 

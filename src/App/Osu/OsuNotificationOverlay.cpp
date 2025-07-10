@@ -7,6 +7,8 @@
 
 #include "OsuNotificationOverlay.h"
 
+#include <utility>
+
 #include "Engine.h"
 #include "ConVar.h"
 #include "ResourceManager.h"
@@ -159,7 +161,7 @@ void OsuNotificationOverlay::addNotification(UString text, Color textColor, bool
 
 	float fadeOutTime = 0.4f;
 
-	m_notification1.text = text;
+	m_notification1.text = std::move(text);
 	m_notification1.textColor = textColor;
 
 	if (!waitForKey)

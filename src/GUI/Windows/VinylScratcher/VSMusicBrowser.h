@@ -58,7 +58,7 @@ private:
 	};
 
 private:
-	void updateFolder(UString baseFolder, size_t fromDepth);
+	void updateFolder(const UString& baseFolder, size_t fromDepth);
 	void updateDrives();
 	void updatePlayingSelection(bool fromInvalidSelection = false);
 

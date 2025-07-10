@@ -7,6 +7,8 @@
 
 #include "OsuUISongBrowserCollectionButton.h"
 
+#include <utility>
+
 #include "Engine.h"
 #include "Mouse.h"
 #include "Keyboard.h"
@@ -32,10 +34,10 @@ ConVar songbrowser_button_collection_inactive_color_g("osu_songbrowser_button_co
 ConVar songbrowser_button_collection_inactive_color_b("osu_songbrowser_button_collection_inactive_color_b", 143, FCVAR_NONE);
 }
 
-OsuUISongBrowserCollectionButton::OsuUISongBrowserCollectionButton(OsuSongBrowser2 *songBrowser, CBaseUIScrollView *view, OsuUIContextMenu *contextMenu, float xPos, float yPos, float xSize, float ySize, UString name, UString collectionName, std::vector<OsuUISongBrowserButton*> children) : OsuUISongBrowserButton(songBrowser, view, contextMenu, xPos, yPos, xSize, ySize, name)
+OsuUISongBrowserCollectionButton::OsuUISongBrowserCollectionButton(OsuSongBrowser2 *songBrowser, CBaseUIScrollView *view, OsuUIContextMenu *contextMenu, float xPos, float yPos, float xSize, float ySize, UString name, UString collectionName, std::vector<OsuUISongBrowserButton*> children) : OsuUISongBrowserButton(songBrowser, view, contextMenu, xPos, yPos, xSize, ySize, std::move(name))
 {
-	m_sCollectionName = collectionName;
-	m_children = children;
+	m_sCollectionName = std::move(collectionName);
+	m_children = std::move(children);
 
 	m_fTitleScale = 0.35f;
 

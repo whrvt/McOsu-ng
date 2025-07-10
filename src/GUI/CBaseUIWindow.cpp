@@ -7,6 +7,8 @@
 
 #include "CBaseUIWindow.h"
 
+#include <utility>
+
 #include "Engine.h"
 #include "ConVar.h"
 #include "Mouse.h"
@@ -24,7 +26,7 @@ ConVar ui_window_animspeed("ui_window_animspeed", 0.29f, FCVAR_NONE);
 ConVar ui_window_shadow_radius("ui_window_shadow_radius", 13.0f, FCVAR_NONE);
 }
 
-CBaseUIWindow::CBaseUIWindow(float xPos, float yPos, float xSize, float ySize, UString name) : CBaseUIElement(xPos, yPos, xSize, ySize, name)
+CBaseUIWindow::CBaseUIWindow(float xPos, float yPos, float xSize, float ySize, const UString& name) : CBaseUIElement(xPos, yPos, xSize, ySize, name)
 {
 	const float dpiScale = env->getDPIScale();
 
@@ -320,7 +322,7 @@ void CBaseUIWindow::onChar(KeyboardEvent &e)
 
 CBaseUIWindow *CBaseUIWindow::setTitle(UString text)
 {
-	m_sTitle = text;
+	m_sTitle = std::move(text);
 	updateTitleBarMetrics();
 	return this;
 }

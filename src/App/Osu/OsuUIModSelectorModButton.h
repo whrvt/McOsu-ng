@@ -27,7 +27,7 @@ public:
 
 	void resetState();
 
-	void setState(unsigned int state, bool initialState, UString modName, UString tooltipText, std::function<OsuSkinImage*()> getImageFunc);
+	void setState(unsigned int state, bool initialState, UString modName, const UString& tooltipText, std::function<OsuSkinImage*()> getImageFunc);
 	void setBaseScale(float xScale, float yScale);
 	void setAvailable(bool available) {m_bAvailable = available;}
 

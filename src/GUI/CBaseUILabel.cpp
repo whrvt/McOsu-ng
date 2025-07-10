@@ -7,13 +7,15 @@
 
 #include "CBaseUILabel.h"
 
+#include <utility>
+
 #include "Engine.h"
 #include "ResourceManager.h"
 
-CBaseUILabel::CBaseUILabel(float xPos, float yPos, float xSize, float ySize, UString name, UString text) : CBaseUIElement(xPos, yPos, xSize, ySize, name)
+CBaseUILabel::CBaseUILabel(float xPos, float yPos, float xSize, float ySize, UString name, UString text) : CBaseUIElement(xPos, yPos, xSize, ySize, std::move(name))
 {
 	m_font = resourceManager->getFont("FONT_DEFAULT");
-	setText(text);
+	setText(std::move(text));
 
 	// colors
 	m_frameColor = 0xffffffff;

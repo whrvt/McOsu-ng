@@ -6,6 +6,8 @@
 //===============================================================================//
 
 #include "OsuSlider.h"
+
+#include <utility>
 #include "OsuSliderCurves.h"
 
 #include "Engine.h"
@@ -76,8 +78,8 @@ OsuSlider::OsuSlider(char type, int repeat, float pixelLength, std::vector<Vecto
 	m_cType = type;
 	m_iRepeat = repeat;
 	m_fPixelLength = pixelLength;
-	m_points = points;
-	m_hitSounds = hitSounds;
+	m_points = std::move(points);
+	m_hitSounds = std::move(hitSounds);
 	m_fSliderTime = sliderTime;
 	m_fSliderTimeWithoutRepeats = sliderTimeWithoutRepeats;
 

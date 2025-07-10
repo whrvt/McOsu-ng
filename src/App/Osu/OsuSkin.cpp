@@ -23,6 +23,7 @@
 #include "OsuSteamWorkshop.h"
 
 #include <cstring>
+#include <utility>
 
 #define OSU_BITMASK_HITWHISTLE 0x2
 #define OSU_BITMASK_HITFINISH 0x4
@@ -58,8 +59,8 @@ UString OsuSkin::DEFAULT_SKIN_PATH = Environment::getFolderFromFilePath(UString:
 OsuSkin::OsuSkin(UString name, UString filepath, bool isDefaultSkin, bool isWorkshopSkin)
 {
 	
-	m_sName = name;
-	m_sFilePath = filepath;
+	m_sName = std::move(name);
+	m_sFilePath = std::move(filepath);
 	m_bIsDefaultSkin = isDefaultSkin;
 	m_bIsWorkshopSkin = isWorkshopSkin;
 
@@ -842,7 +843,7 @@ void OsuSkin::load()
 		osu->getNotificationOverlay()->addNotification("Error: Couldn't load DEFAULT skin.ini!!!", 0xffff0000);
 }
 
-void OsuSkin::loadBeatmapOverride(UString filepath)
+void OsuSkin::loadBeatmapOverride(const UString& filepath)
 {
 	//debugLog("OsuSkin::loadBeatmapOverride( {:s} )\n", filepath.toUtf8());
 	// TODO: beatmap skin support
@@ -861,7 +862,7 @@ void OsuSkin::reloadSounds()
 	resourceManager->reloadResources(soundResources, cv::osu::skin_async.getBool());
 }
 
-bool OsuSkin::parseSkinINI(UString filepath)
+bool OsuSkin::parseSkinINI(const UString& filepath)
 {
 	McFile file(filepath);
 	if (!file.canRead())
@@ -1227,7 +1228,7 @@ Color OsuSkin::getComboColorForCounter(int i, int offset)
 
 void OsuSkin::setBeatmapComboColors(std::vector<Color> colors)
 {
-	m_beatmapComboColors = colors;
+	m_beatmapComboColors = std::move(colors);
 }
 
 void OsuSkin::playHitCircleSound(int sampleType, float pan)
@@ -1392,7 +1393,7 @@ OsuSkinImage *OsuSkin::createOsuSkinImage(UString skinElementName, Vector2 baseS
 	return skinImage;
 }
 
-void OsuSkin::checkLoadImage(Image **addressOfPointer, UString skinElementName, UString resourceName, bool ignoreDefaultSkin, UString fileExtension,
+void OsuSkin::checkLoadImage(Image **addressOfPointer, const UString& skinElementName, const UString& resourceName, bool ignoreDefaultSkin, const UString& fileExtension,
                     bool forceLoadMipmaps, bool forceUseDefaultSkin)
 {
 	if (*addressOfPointer != m_missingTexture)
@@ -1483,7 +1484,7 @@ void OsuSkin::checkLoadImage(Image **addressOfPointer, UString skinElementName, 
 	}
 }
 
-void OsuSkin::checkLoadSound(Sound **addressOfPointer, UString skinElementName, UString resourceName, bool isOverlayable, bool isSample, bool loop,
+void OsuSkin::checkLoadSound(Sound **addressOfPointer, UString skinElementName, const UString& resourceName, bool isOverlayable, bool isSample, bool loop,
                              float hardcodedVolumeMultiplier)
 {
 	if (*addressOfPointer != nullptr)

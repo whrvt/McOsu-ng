@@ -37,7 +37,7 @@ public:
 	[[nodiscard]] inline bool isWorkshopSkin() const {return m_bIsWorkshopSkin;}
 
 	void load();
-	void loadBeatmapOverride(UString filepath);
+	void loadBeatmapOverride(const UString& filepath);
 	void reloadSounds();
 
 	// samples
@@ -352,13 +352,13 @@ friend class OsuSkinImage;
 
 	void onJustBeforeReady();
 
-	bool parseSkinINI(UString filepath);
+	bool parseSkinINI(const UString& filepath);
 
 	bool compareFilenameWithSkinElementName(const UString &filename, const UString &skinElementName);
 
 	OsuSkinImage *createOsuSkinImage(UString skinElementName, Vector2 baseSizeForScaling2x, float osuSize, bool ignoreDefaultSkin = false, UString animationSeparator = "-");
-	void checkLoadImage(Image **addressOfPointer, UString skinElementName, UString resourceName, bool ignoreDefaultSkin = false, UString fileExtension = "png", bool forceLoadMipmaps = false, bool forceUseDefaultSkin = false);
-	void checkLoadSound(Sound **addressOfPointer, UString skinElementName, UString resourceName, bool isOverlayable = false, bool isSample = false, bool loop = false, float hardcodedVolumeMultiplier = -1.0f);
+	void checkLoadImage(Image **addressOfPointer, const UString& skinElementName, const UString& resourceName, bool ignoreDefaultSkin = false, const UString& fileExtension = "png", bool forceLoadMipmaps = false, bool forceUseDefaultSkin = false);
+	void checkLoadSound(Sound **addressOfPointer, UString skinElementName, const UString& resourceName, bool isOverlayable = false, bool isSample = false, bool loop = false, float hardcodedVolumeMultiplier = -1.0f);
 
 	void onEffectVolumeChange(const UString &oldValue, const UString &newValue);
 	void onIgnoreBeatmapSampleVolumeChange(const UString &oldValue, const UString &newValue);

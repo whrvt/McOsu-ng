@@ -7,12 +7,14 @@
 
 #include "OsuUISearchOverlay.h"
 
+#include <utility>
+
 #include "Engine.h"
 #include "ResourceManager.h"
 
 #include "Osu.h"
 
-OsuUISearchOverlay::OsuUISearchOverlay(float xPos, float yPos, float xSize, float ySize, UString name) : OsuUIElement(xPos, yPos, xSize, ySize, name)
+OsuUISearchOverlay::OsuUISearchOverlay(float xPos, float yPos, float xSize, float ySize, UString name) : OsuUIElement(xPos, yPos, xSize, ySize, std::move(name))
 {
 	
 

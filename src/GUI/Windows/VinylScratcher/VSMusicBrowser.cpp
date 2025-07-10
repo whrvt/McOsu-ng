@@ -201,7 +201,7 @@ struct VSMusicBrowserNaturalSortStringComparator
 class VSMusicBrowserButton : public CBaseUIButton
 {
 public:
-	VSMusicBrowserButton(float xPos, float yPos, float xSize, float ySize, UString name, UString text) : CBaseUIButton(xPos, yPos, xSize, ySize, name, text)
+	VSMusicBrowserButton(float xPos, float yPos, float xSize, float ySize, UString name, UString text) : CBaseUIButton(xPos, yPos, xSize, ySize, std::move(name), text)
 	{
 		m_bSelected = false;
 		m_bIsDirectory = false;
@@ -471,7 +471,7 @@ void VSMusicBrowser::updatePlayingSelection(bool fromInvalidSelection)
 	}
 }
 
-void VSMusicBrowser::updateFolder(UString baseFolder, size_t fromDepth)
+void VSMusicBrowser::updateFolder(const UString& baseFolder, size_t fromDepth)
 {
 	if (m_columns.size() < 1) return;
 

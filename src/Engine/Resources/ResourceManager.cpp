@@ -14,6 +14,7 @@
 #include "Environment.h"
 
 #include <algorithm>
+#include <utility>
 namespace cv {
 ConVar rm_interrupt_on_destroy("rm_interrupt_on_destroy", true, FCVAR_CHEAT);
 ConVar debug_rm("debug_rm", false, FCVAR_NONE);
@@ -279,7 +280,7 @@ Image *ResourceManager::loadImageAbs(UString absoluteFilepath, UString resourceN
 		return res;
 
 	// create instance and load it
-	Image *img = g->createImage(absoluteFilepath, mipmapped, keepInSystemMemory);
+	Image *img = g->createImage(std::move(absoluteFilepath), mipmapped, keepInSystemMemory);
 	setResourceName(img, resourceName);
 
 	loadResource(img, true);
@@ -289,7 +290,7 @@ Image *ResourceManager::loadImageAbs(UString absoluteFilepath, UString resourceN
 
 Image *ResourceManager::loadImageAbsUnnamed(UString absoluteFilepath, bool mipmapped, bool keepInSystemMemory)
 {
-	Image *img = g->createImage(absoluteFilepath, mipmapped, keepInSystemMemory);
+	Image *img = g->createImage(std::move(absoluteFilepath), mipmapped, keepInSystemMemory);
 
 	loadResource(img, true);
 
@@ -327,7 +328,7 @@ McFont *ResourceManager::loadFont(UString filepath, UString resourceName, int fo
 	return fnt;
 }
 
-McFont *ResourceManager::loadFont(UString filepath, UString resourceName, std::vector<wchar_t> characters, int fontSize, bool antialiasing, int fontDPI)
+McFont *ResourceManager::loadFont(UString filepath, UString resourceName, const std::vector<wchar_t>& characters, int fontSize, bool antialiasing, int fontDPI)
 {
 	auto res = checkIfExistsAndHandle<McFont>(resourceName);
 	if (res != nullptr)
@@ -366,7 +367,7 @@ Sound *ResourceManager::loadSoundAbs(UString filepath, UString resourceName, boo
 		return res;
 
 	// create instance and load it
-	Sound *snd = Sound::createSound(filepath, stream, threeD, loop, prescan);
+	Sound *snd = Sound::createSound(std::move(filepath), stream, threeD, loop, prescan);
 	setResourceName(snd, resourceName);
 
 	loadResource(snd, true);
@@ -407,7 +408,7 @@ Shader *ResourceManager::createShader(UString shaderSource, UString resourceName
 		return res;
 
 	// create instance and load it
-	Shader *shader = g->createShaderFromSource(shaderSource);
+	Shader *shader = g->createShaderFromSource(std::move(shaderSource));
 	setResourceName(shader, resourceName);
 
 	loadResource(shader, true);
@@ -417,7 +418,7 @@ Shader *ResourceManager::createShader(UString shaderSource, UString resourceName
 
 Shader *ResourceManager::createShader(UString shaderSource)
 {
-	Shader *shader = g->createShaderFromSource(shaderSource);
+	Shader *shader = g->createShaderFromSource(std::move(shaderSource));
 
 	loadResource(shader, true);
 

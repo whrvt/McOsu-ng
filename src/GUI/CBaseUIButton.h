@@ -16,7 +16,7 @@ class McFont;
 class CBaseUIButton : public CBaseUIElement
 {
 public:
-	CBaseUIButton(float xPos = 0, float yPos = 0, float xSize = 0, float ySize = 0, UString name = "", UString text = "");
+	CBaseUIButton(float xPos = 0, float yPos = 0, float xSize = 0, float ySize = 0, UString name = "", const UString& text = "");
 	~CBaseUIButton() override {;}
 
 	ELEMENT_BODY(CBaseUIButton);
@@ -27,9 +27,9 @@ public:
 
 	// callbacks, either void or with ourself as the argument
 	typedef fastdelegate::FastDelegate0<> ButtonClickVoidCallback;
-	CBaseUIButton *setClickCallback(ButtonClickVoidCallback clickCallback) {m_clickVoidCallback = clickCallback; return this;}
+	CBaseUIButton *setClickCallback(const ButtonClickVoidCallback& clickCallback) {m_clickVoidCallback = clickCallback; return this;}
 	typedef fastdelegate::FastDelegate1<CBaseUIButton*> ButtonClickCallback;
-	CBaseUIButton *setClickCallback(ButtonClickCallback clickCallback) {m_clickCallback = clickCallback; return this;}
+	CBaseUIButton *setClickCallback(const ButtonClickCallback& clickCallback) {m_clickCallback = clickCallback; return this;}
 
 	// set
 	CBaseUIButton *setDrawFrame(bool drawFrame) {m_bDrawFrame = drawFrame; return this;}

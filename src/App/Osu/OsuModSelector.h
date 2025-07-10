@@ -92,10 +92,10 @@ private:
 	void updateLayout();
 	void updateExperimentalLayout();
 
-	OsuUIModSelectorModButton *setModButtonOnGrid(int x, int y, int state, bool initialState, UString modName, UString tooltipText, std::function<OsuSkinImage*()> getImageFunc);
+	OsuUIModSelectorModButton *setModButtonOnGrid(int x, int y, int state, bool initialState, UString modName, const UString& tooltipText, std::function<OsuSkinImage*()> getImageFunc);
 	OsuUIModSelectorModButton *getModButtonOnGrid(int x, int y);
 
-	OVERRIDE_SLIDER addOverrideSlider(UString text, UString labelText, ConVar *cvar, float min, float max, UString tooltipText = "", ConVar *lockCvar = NULL);
+	OVERRIDE_SLIDER addOverrideSlider(UString text, const UString& labelText, ConVar *cvar, float min, float max, UString tooltipText = "", ConVar *lockCvar = NULL);
 	void onOverrideSliderChange(CBaseUISlider *slider);
 	void onOverrideSliderLockChange(CBaseUICheckbox *checkbox);
 	void onOverrideARSliderDescClicked(CBaseUIButton *button);
@@ -103,11 +103,11 @@ private:
 	void updateOverrideSliderLabels();
 	UString getOverrideSliderLabelText(OVERRIDE_SLIDER s, bool active);
 
-	CBaseUILabel *addExperimentalLabel(UString text);
-	OsuUICheckbox *addExperimentalCheckbox(UString text, UString tooltipText, ConVar *cvar = NULL);
+	CBaseUILabel *addExperimentalLabel(const UString& text);
+	OsuUICheckbox *addExperimentalCheckbox(const UString& text, UString tooltipText, ConVar *cvar = NULL);
 	void onCheckboxChange(CBaseUICheckbox *checkbox);
 
-	OsuUIButton *addActionButton(UString text);
+	OsuUIButton *addActionButton(const UString& text);
 
 	void close();
 

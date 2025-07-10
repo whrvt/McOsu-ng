@@ -7,6 +7,8 @@
 
 #include "OsuUIContextMenu.h"
 
+#include <utility>
+
 #include "Engine.h"
 #include "Mouse.h"
 #include "AnimationHandler.h"
@@ -20,7 +22,7 @@
 
 
 
-OsuUIContextMenuButton::OsuUIContextMenuButton(float xPos, float yPos, float xSize, float ySize, UString name, UString text, int id) : CBaseUIButton(xPos, yPos, xSize, ySize, name, text)
+OsuUIContextMenuButton::OsuUIContextMenuButton(float xPos, float yPos, float xSize, float ySize, UString name, UString text, int id) : CBaseUIButton(xPos, yPos, xSize, ySize, std::move(name), text)
 {
 	
 	m_iID = id;
@@ -44,21 +46,21 @@ void OsuUIContextMenuButton::update()
 	}
 }
 
-void OsuUIContextMenuButton::setTooltipText(UString text)
+void OsuUIContextMenuButton::setTooltipText(const UString& text)
 {
 	m_tooltipTextLines = text.split("\n");
 }
 
 
 
-OsuUIContextMenuTextbox::OsuUIContextMenuTextbox(float xPos, float yPos, float xSize, float ySize, UString name, int id) : CBaseUITextbox(xPos, yPos, xSize, ySize, name)
+OsuUIContextMenuTextbox::OsuUIContextMenuTextbox(float xPos, float yPos, float xSize, float ySize, UString name, int id) : CBaseUITextbox(xPos, yPos, xSize, ySize, std::move(name))
 {
 	m_iID = id;
 }
 
 
 
-OsuUIContextMenu::OsuUIContextMenu(float xPos, float yPos, float xSize, float ySize, UString name, CBaseUIScrollView *parent) : OsuUIElement(xPos, yPos, xSize, ySize, name)
+OsuUIContextMenu::OsuUIContextMenu(float xPos, float yPos, float xSize, float ySize, const UString& name, CBaseUIScrollView *parent) : OsuUIElement(xPos, yPos, xSize, ySize, name)
 {
 	
 	m_parent = parent;
@@ -212,7 +214,7 @@ void OsuUIContextMenu::begin(int minWidth, bool bigStyle)
 	m_containedTextbox = NULL;
 }
 
-OsuUIContextMenuButton *OsuUIContextMenu::addButtonJustified(UString text, bool left, int id)
+OsuUIContextMenuButton *OsuUIContextMenu::addButtonJustified(const UString& text, bool left, int id)
 {
 	const int buttonHeight = 30 * Osu::getUIScale() * (m_bBigStyle ? 1.27f : 1.0f);
 	const int margin = 9 * Osu::getUIScale();
@@ -242,7 +244,7 @@ OsuUIContextMenuButton *OsuUIContextMenu::addButtonJustified(UString text, bool 
 	return button;
 }
 
-OsuUIContextMenuTextbox *OsuUIContextMenu::addTextbox(UString text, int id)
+OsuUIContextMenuTextbox *OsuUIContextMenu::addTextbox(const UString& text, int id)
 {
 	const int buttonHeight = 30 * Osu::getUIScale() * (m_bBigStyle ? 1.27f : 1.0f);
 	const int margin = 9 * Osu::getUIScale();

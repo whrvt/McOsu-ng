@@ -7,12 +7,14 @@
 
 #include "CBaseUISlider.h"
 
+#include <utility>
+
 #include "Engine.h"
 #include "Mouse.h"
 #include "AnimationHandler.h"
 #include "Keyboard.h"
 
-CBaseUISlider::CBaseUISlider(float xPos, float yPos, float xSize, float ySize, UString name) : CBaseUIElement(xPos,yPos,xSize,ySize,name)
+CBaseUISlider::CBaseUISlider(float xPos, float yPos, float xSize, float ySize, UString name) : CBaseUIElement(xPos,yPos,xSize,ySize,std::move(name))
 {
 	m_bDrawFrame = true;
 	m_bDrawBackground = true;

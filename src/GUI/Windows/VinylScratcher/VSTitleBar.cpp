@@ -7,6 +7,8 @@
 
 #include "VSTitleBar.h"
 
+#include <utility>
+
 #include "Engine.h"
 #include "ResourceManager.h"
 #include "AnimationHandler.h"
@@ -23,7 +25,7 @@ ConVar vs_percent("vs_percent", 0.0f, FCVAR_NONE);
 class VSTitleBarButton : public CBaseUIButton
 {
 public:
-	VSTitleBarButton(float xPos, float yPos, float xSize, float ySize, UString name, UString text) : CBaseUIButton(xPos, yPos, xSize, ySize, name, text) {;}
+	VSTitleBarButton(float xPos, float yPos, float xSize, float ySize, UString name, UString text) : CBaseUIButton(xPos, yPos, xSize, ySize, std::move(name), text) {;}
 	~VSTitleBarButton() override {;}
 
 	void draw() override
@@ -244,7 +246,7 @@ void VSTitleBar::onFocusStolen()
 	m_container->onFocusStolen();
 }
 
-void VSTitleBar::setTitle(UString title, bool reverse)
+void VSTitleBar::setTitle(const UString& title, bool reverse)
 {
 	m_title->setText(title);
 	if (anim->isAnimating(&m_fRot)) return;

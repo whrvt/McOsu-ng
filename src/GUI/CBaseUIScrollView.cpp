@@ -26,7 +26,7 @@ ConVar ui_scrollview_mousewheel_multiplier("ui_scrollview_mousewheel_multiplier"
 ConVar ui_scrollview_mousewheel_overscrollbounce("ui_scrollview_mousewheel_overscrollbounce", true, FCVAR_NONE);
 }
 
-CBaseUIScrollView::CBaseUIScrollView(float xPos, float yPos, float xSize, float ySize, UString name) : CBaseUIElement(xPos, yPos, xSize, ySize, name)
+CBaseUIScrollView::CBaseUIScrollView(float xPos, float yPos, float xSize, float ySize, const UString& name) : CBaseUIElement(xPos, yPos, xSize, ySize, name)
 {
 	m_bDrawFrame = true;
 	m_bDrawBackground = true;

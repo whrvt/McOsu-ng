@@ -10,6 +10,8 @@
 #ifdef MCENGINE_FEATURE_BASS
 
 #include "BassSound.h"
+
+#include <utility>
 #include "BassSoundEngine.h"
 
 #include "BassManager.h"
@@ -19,7 +21,7 @@
 #include "File.h"
 #include "ResourceManager.h"
 
-BassSound::BassSound(UString filepath, bool stream, bool threeD, bool loop, bool prescan) : Sound(filepath, stream, threeD, loop, prescan)
+BassSound::BassSound(UString filepath, bool stream, bool threeD, bool loop, bool prescan) : Sound(std::move(filepath), stream, threeD, loop, prescan)
 {
 	m_HSTREAM = 0;
 	m_HSTREAMBACKUP = 0;

@@ -106,7 +106,7 @@ void OsuTooltipOverlay::begin()
 	m_bDelayFadeout = true;
 }
 
-void OsuTooltipOverlay::addLine(UString text)
+void OsuTooltipOverlay::addLine(const UString& text)
 {
 	m_lines.push_back(text);
 }

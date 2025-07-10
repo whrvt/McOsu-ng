@@ -25,7 +25,7 @@ public:
 	};
 
 public:
-	OsuSkinImage(OsuSkin *skin, UString skinElementName, Vector2 baseSizeForScaling2x, float osuSize, UString animationSeparator = "-", bool ignoreDefaultSkin = false);
+	OsuSkinImage(OsuSkin *skin, const UString& skinElementName, Vector2 baseSizeForScaling2x, float osuSize, const UString& animationSeparator = "-", bool ignoreDefaultSkin = false);
 	virtual ~OsuSkinImage();
 
 	virtual void draw(Vector2 pos, float scale = 1.0f); // for objects scaled automatically to the current resolution

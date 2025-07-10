@@ -7,6 +7,8 @@
 
 #include "OsuPauseMenu.h"
 
+#include <utility>
+
 #include "Engine.h"
 #include "Environment.h"
 #include "SoundEngine.h"
@@ -450,7 +452,7 @@ void OsuPauseMenu::setContinueEnabled(bool continueEnabled)
 
 OsuUIPauseMenuButton *OsuPauseMenu::addButton(std::function<Image*()> getImageFunc)
 {
-	OsuUIPauseMenuButton *button = new OsuUIPauseMenuButton(getImageFunc, 0, 0, 0, 0, "");
+	OsuUIPauseMenuButton *button = new OsuUIPauseMenuButton(std::move(getImageFunc), 0, 0, 0, 0, "");
 	m_container->addBaseUIElement(button);
 	m_buttons.push_back(button);
 	return button;

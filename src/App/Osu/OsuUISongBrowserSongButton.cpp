@@ -8,6 +8,7 @@
 #include "OsuUISongBrowserSongButton.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "Engine.h"
 #include "ResourceManager.h"
@@ -34,7 +35,7 @@ ConVar songbrowser_thumbnail_fade_in_duration("osu_songbrowser_thumbnail_fade_in
 
 float OsuUISongBrowserSongButton::thumbnailYRatio = 1.333333f;
 
-OsuUISongBrowserSongButton::OsuUISongBrowserSongButton(OsuSongBrowser2 *songBrowser, CBaseUIScrollView *view, OsuUIContextMenu *contextMenu, float xPos, float yPos, float xSize, float ySize, UString name, OsuDatabaseBeatmap *databaseBeatmap) : OsuUISongBrowserButton(songBrowser, view, contextMenu, xPos, yPos, xSize, ySize, name)
+OsuUISongBrowserSongButton::OsuUISongBrowserSongButton(OsuSongBrowser2 *songBrowser, CBaseUIScrollView *view, OsuUIContextMenu *contextMenu, float xPos, float yPos, float xSize, float ySize, UString name, OsuDatabaseBeatmap *databaseBeatmap) : OsuUISongBrowserButton(songBrowser, view, contextMenu, xPos, yPos, xSize, ySize, std::move(name))
 {
 	m_databaseBeatmap = databaseBeatmap;
 	m_representativeDatabaseBeatmap = NULL;

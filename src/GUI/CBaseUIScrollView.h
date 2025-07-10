@@ -18,7 +18,7 @@ class CBaseUIContainer;
 class CBaseUIScrollView : public CBaseUIElement
 {
 public:
-	CBaseUIScrollView(float xPos=0, float yPos=0, float xSize=0, float ySize=0, UString name="");
+	CBaseUIScrollView(float xPos=0, float yPos=0, float xSize=0, float ySize=0, const UString& name="");
 	~CBaseUIScrollView() override;
 
 	void clear();

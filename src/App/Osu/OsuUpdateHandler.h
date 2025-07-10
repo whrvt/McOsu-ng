@@ -50,8 +50,8 @@ private:
 
 	// async
 	void _requestUpdate();
-	bool _downloadUpdate(UString url);
-	void _installUpdate(UString zipFilePath);
+	bool _downloadUpdate(const UString& url);
+	void _installUpdate(const UString& zipFilePath);
 
 
 	McThread *m_updateThread;
@@ -66,8 +66,8 @@ private:
 		STREAM_DESKTOP
 	};
 
-	STREAM stringToStream(UString streamString);
-	OS stringToOS(UString osString);
+	STREAM stringToStream(const UString& streamString);
+	OS stringToOS(const UString& osString);
 	STREAM getReleaseStream();
 
 	struct GITHUB_RELEASE_BUILD

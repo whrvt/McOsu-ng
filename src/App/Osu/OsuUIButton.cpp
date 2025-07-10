@@ -7,6 +7,8 @@
 
 #include "OsuUIButton.h"
 
+#include <utility>
+
 #include "ResourceManager.h"
 #include "AnimationHandler.h"
 
@@ -14,7 +16,7 @@
 #include "OsuSkin.h"
 #include "OsuTooltipOverlay.h"
 
-OsuUIButton::OsuUIButton(float xPos, float yPos, float xSize, float ySize, UString name, UString text) : CBaseUIButton(xPos, yPos, xSize, ySize, name, text)
+OsuUIButton::OsuUIButton(float xPos, float yPos, float xSize, float ySize, UString name, UString text) : CBaseUIButton(xPos, yPos, xSize, ySize, std::move(name), text)
 {
 	
 
@@ -121,7 +123,7 @@ void OsuUIButton::animateClickColor()
 	anim->moveLinear(&m_fAnim, 0.0f, 0.5f, true);
 }
 
-void OsuUIButton::setTooltipText(UString text)
+void OsuUIButton::setTooltipText(const UString& text)
 {
 	m_tooltipTextLines = text.split("\n");
 }

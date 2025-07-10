@@ -25,7 +25,7 @@ public:
 	void setUseDefaultSkin() {m_bDefaultSkin = true;}
 	void setAlphaAddOnHover(float alphaAddOnHover) {m_fAlphaAddOnHover = alphaAddOnHover;}
 
-	void setTooltipText(UString text);
+	void setTooltipText(const UString& text);
 
 	void onMouseInside() override;
 	void onMouseOutside() override;

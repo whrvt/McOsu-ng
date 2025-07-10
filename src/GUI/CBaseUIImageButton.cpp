@@ -7,12 +7,14 @@
 
 #include "CBaseUIImageButton.h"
 
+#include <utility>
+
 #include "Engine.h"
 #include "ResourceManager.h"
 
-CBaseUIImageButton::CBaseUIImageButton(UString imageResourceName, float xPos, float yPos, float xSize, float ySize, UString name) : CBaseUIButton(xPos, yPos, xSize, ySize, name, "")
+CBaseUIImageButton::CBaseUIImageButton(UString imageResourceName, float xPos, float yPos, float xSize, float ySize, UString name) : CBaseUIButton(xPos, yPos, xSize, ySize, std::move(name), "")
 {
-	setImageResourceName(imageResourceName);
+	setImageResourceName(std::move(imageResourceName));
 
 	m_fRot = 0.0f;
 	m_vScale = Vector2(1, 1);
@@ -48,7 +50,7 @@ void CBaseUIImageButton::draw()
 
 CBaseUIImageButton *CBaseUIImageButton::setImageResourceName(UString imageResourceName)
 {
-	m_sImageResourceName = imageResourceName;
+	m_sImageResourceName = std::move(imageResourceName);
 
 	Image *image = resourceManager->getImage(m_sImageResourceName);
 	if (image != NULL)

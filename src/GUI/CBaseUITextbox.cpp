@@ -12,6 +12,8 @@
 
 #include "CBaseUITextbox.h"
 
+#include <utility>
+
 #include "Engine.h"
 #include "Keyboard.h"
 #include "Mouse.h"
@@ -23,7 +25,7 @@ ConVar ui_textbox_caret_blink_time("ui_textbox_caret_blink_time", 0.5f, FCVAR_NO
 ConVar ui_textbox_text_offset_x("ui_textbox_text_offset_x", 3, FCVAR_NONE);
 }
 
-CBaseUITextbox::CBaseUITextbox(float xPos, float yPos, float xSize, float ySize, UString name) : CBaseUIElement(xPos, yPos, xSize, ySize, name)
+CBaseUITextbox::CBaseUITextbox(float xPos, float yPos, float xSize, float ySize, UString name) : CBaseUIElement(xPos, yPos, xSize, ySize, std::move(name))
 {
 	setKeepActive(true);
 

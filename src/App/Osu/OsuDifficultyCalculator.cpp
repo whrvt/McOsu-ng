@@ -21,6 +21,7 @@
 
 #include <algorithm>
 #include <climits> // for INT_MAX
+#include <utility>
 namespace cv::osu {
 ConVar stars_xexxar_angles_sliders("osu_stars_xexxar_angles_sliders", true, FCVAR_NONE, "completely enables/disables the new star/pp calc algorithm");
 ConVar stars_slider_curve_points_separation("osu_stars_slider_curve_points_separation", 20.0f, FCVAR_NONE, "massively reduce curve accuracy for star calculations to save memory/performance");
@@ -40,7 +41,7 @@ OsuDifficultyHitObject::OsuDifficultyHitObject(TYPE type, Vector2 pos, long time
 {
 }
 
-OsuDifficultyHitObject::OsuDifficultyHitObject(TYPE type, Vector2 pos, long time, long endTime, float spanDuration, char osuSliderCurveType, std::vector<Vector2> controlPoints, float pixelLength, std::vector<SLIDER_SCORING_TIME> scoringTimes, int repeats, bool calculateSliderCurveInConstructor)
+OsuDifficultyHitObject::OsuDifficultyHitObject(TYPE type, Vector2 pos, long time, long endTime, float spanDuration, char osuSliderCurveType, const std::vector<Vector2>& controlPoints, float pixelLength, std::vector<SLIDER_SCORING_TIME> scoringTimes, int repeats, bool calculateSliderCurveInConstructor)
 {
 	this->type = type;
 	this->pos = pos;
@@ -49,7 +50,7 @@ OsuDifficultyHitObject::OsuDifficultyHitObject(TYPE type, Vector2 pos, long time
 	this->spanDuration = spanDuration;
 	this->osuSliderCurveType = osuSliderCurveType;
 	this->pixelLength = pixelLength;
-	this->scoringTimes = scoringTimes;
+	this->scoringTimes = std::move(scoringTimes);
 
 	this->curve = NULL;
 	this->scheduledCurveAlloc = false;

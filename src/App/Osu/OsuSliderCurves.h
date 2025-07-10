@@ -168,7 +168,7 @@ public:
 class OsuSliderCurveCircumscribedCircle final : public OsuSliderCurve
 {
 public:
-	OsuSliderCurveCircumscribedCircle(std::vector<Vector2> controlPoints, float pixelLength, float curvePointsSeparation);
+	OsuSliderCurveCircumscribedCircle(const std::vector<Vector2>& controlPoints, float pixelLength, float curvePointsSeparation);
 	~OsuSliderCurveCircumscribedCircle() override {;}
 
 	Vector2 pointAt(float t) override;

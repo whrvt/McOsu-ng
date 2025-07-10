@@ -34,6 +34,8 @@
 #include "OsuSlider.h"
 
 #include "OsuMainMenu.h"
+
+#include <utility>
 #include "OsuOptionsMenu.h"
 #include "OsuHUD.h"
 #include "OsuRichPresence.h"
@@ -117,7 +119,7 @@ private:
 class OsuMainMenuPauseButton : public CBaseUIButton
 {
 public:
-	OsuMainMenuPauseButton(float xPos, float yPos, float xSize, float ySize, UString name, UString text) : CBaseUIButton(xPos, yPos, xSize, ySize, name, text)
+	OsuMainMenuPauseButton(float xPos, float yPos, float xSize, float ySize, UString name, UString text) : CBaseUIButton(xPos, yPos, xSize, ySize, std::move(name), text)
 	{
 		m_bIsPaused = true;
 	}
@@ -1588,7 +1590,7 @@ void OsuMainMenu::writeVersionFile()
 
 OsuMainMenuButton *OsuMainMenu::addMainMenuButton(UString text)
 {
-	OsuMainMenuButton *button = new OsuMainMenuButton(this, m_vSize.x, 0, 1, 1, "", text);
+	OsuMainMenuButton *button = new OsuMainMenuButton(this, m_vSize.x, 0, 1, 1, "", std::move(text));
 	button->setFont(osu->getSubTitleFont());
 	button->setVisible(false);
 
@@ -1725,7 +1727,7 @@ void OsuMainMenu::onVersionPressed()
 
 
 
-OsuMainMenuMainButton::OsuMainMenuMainButton(OsuMainMenu *mainMenu, float xPos, float yPos, float xSize, float ySize, UString name, UString text) : CBaseUIButton(xPos, yPos, xSize, ySize, name, text)
+OsuMainMenuMainButton::OsuMainMenuMainButton(OsuMainMenu *mainMenu, float xPos, float yPos, float xSize, float ySize, UString name, UString text) : CBaseUIButton(xPos, yPos, xSize, ySize, std::move(name), text)
 {
 	m_mainMenu = mainMenu;
 }
@@ -1767,7 +1769,7 @@ void OsuMainMenuMainButton::onClicked()
 
 
 
-OsuMainMenuButton::OsuMainMenuButton(OsuMainMenu *mainMenu, float xPos, float yPos, float xSize, float ySize, UString name, UString text) : CBaseUIButton(xPos, yPos, xSize, ySize, name, text)
+OsuMainMenuButton::OsuMainMenuButton(OsuMainMenu *mainMenu, float xPos, float yPos, float xSize, float ySize, UString name, UString text) : CBaseUIButton(xPos, yPos, xSize, ySize, std::move(name), text)
 {
 	m_mainMenu = mainMenu;
 }

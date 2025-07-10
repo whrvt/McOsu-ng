@@ -41,7 +41,7 @@ public:
 	CBaseUIContainer *removeBaseUIElement(CBaseUIElement *element);
 	CBaseUIContainer *deleteBaseUIElement(CBaseUIElement *element);
 
-	CBaseUIElement *getBaseUIElement(UString name);
+	CBaseUIElement *getBaseUIElement(const UString& name);
 
 	[[nodiscard]] inline const std::vector<CBaseUIElement*> &getElements() const {return m_vElements;}
 

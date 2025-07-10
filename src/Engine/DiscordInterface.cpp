@@ -87,7 +87,7 @@ void DiscordInterface::onJoinRequest(const DiscordUser *request)
 
 #endif
 
-void DiscordInterface::setRichPresence(UString key, UString value, bool pool)
+void DiscordInterface::setRichPresence(const UString& key, const UString& value, bool pool)
 {
 #ifdef MCENGINE_FEATURE_DISCORD
 

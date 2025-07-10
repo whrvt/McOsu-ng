@@ -7,13 +7,15 @@
 
 #include "OsuUIVolumeSlider.h"
 
+#include <utility>
+
 #include "Engine.h"
 #include "ResourceManager.h"
 #include "AnimationHandler.h"
 
 #include "Osu.h"
 
-OsuUIVolumeSlider::OsuUIVolumeSlider(float xPos, float yPos, float xSize, float ySize, UString name) : CBaseUISlider(xPos, yPos, xSize, ySize, name)
+OsuUIVolumeSlider::OsuUIVolumeSlider(float xPos, float yPos, float xSize, float ySize, UString name) : CBaseUISlider(xPos, yPos, xSize, ySize, std::move(name))
 {
 	
 
