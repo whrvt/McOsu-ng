@@ -2860,7 +2860,7 @@ float OsuHUD::getScoreScale()
 	return osu->getImageScale(osu->getSkin()->getScore0(), 13*1.5f) * cv::osu::hud_scale.getFloat() * cv::osu::hud_score_scale.getFloat();
 }
 
-void OsuHUD::onVolumeOverlaySizeChange(UString oldValue, UString newValue)
+void OsuHUD::onVolumeOverlaySizeChange(const UString &oldValue, const UString &newValue)
 {
 	updateLayout();
 }

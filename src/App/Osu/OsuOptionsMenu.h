@@ -119,18 +119,18 @@ private:
 	void onDPIScalingChange(CBaseUICheckbox *checkbox);
 	void onRawInputToAbsoluteWindowChange(CBaseUICheckbox *checkbox);
 	void onSkinSelect();
-	void onSkinSelect2(UString skinName, int id = -1);
+	void onSkinSelect2(const UString& skinName, int id = -1);
 	[[maybe_unused]] void onSkinSelectWorkshop();
 	[[maybe_unused]] void onSkinSelectWorkshop2();
 	[[maybe_unused]] void onSkinSelectWorkshop3();
-	[[maybe_unused]] void onSkinSelectWorkshop4(UString skinName, int id);
+	[[maybe_unused]] void onSkinSelectWorkshop4(const UString& skinName, int id);
 	void openCurrentSkinFolder();
 	void onSkinReload();
 	void onSkinRandom();
 	void onResolutionSelect();
-	void onResolutionSelect2(UString resolution, int id = -1);
+	void onResolutionSelect2(const UString& resolution, int id = -1);
 	void onOutputDeviceSelect();
-	void onOutputDeviceSelect2(UString outputDeviceName, int id = -1);
+	void onOutputDeviceSelect2(const UString& outputDeviceName, int id = -1);
 	void onOutputDeviceResetClicked();
 	void onOutputDeviceResetUpdate();
 	void onOutputDeviceRestart();
@@ -140,11 +140,11 @@ private:
 	void onBrowseOsuFolderClicked();
 	void onCM360CalculatorLinkClicked();
 	void onNotelockSelect();
-	void onNotelockSelect2(UString notelockType, int id = -1);
+	void onNotelockSelect2(const UString& notelockType, int id = -1);
 	void onNotelockSelectResetClicked();
 	void onNotelockSelectResetUpdate();
 	void onHPDrainSelect();
-	void onHPDrainSelect2(UString hpDrainType, int id = -1);
+	void onHPDrainSelect2(const UString& hpDrainType, int id = -1);
 	void onHPDrainSelectResetClicked();
 	void onHPDrainSelectResetUpdate();
 
@@ -170,9 +170,9 @@ private:
 	void onWASAPIBufferChange(CBaseUISlider *slider);
 	void onWASAPIPeriodChange(CBaseUISlider *slider);
 
-	void onUseSkinsSoundSamplesChange(UString oldValue, UString newValue);
+	void onUseSkinsSoundSamplesChange(const UString &oldValue, const UString &newValue);
 	void onHighQualitySlidersCheckboxChange(CBaseUICheckbox *checkbox);
-	void onHighQualitySlidersConVarChange(UString oldValue, UString newValue);
+	void onHighQualitySlidersConVarChange(const UString &oldValue, const UString &newValue);
 
 	// categories
 	void onCategoryClicked(CBaseUIButton *button);

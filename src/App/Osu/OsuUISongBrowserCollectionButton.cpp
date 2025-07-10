@@ -130,7 +130,7 @@ void OsuUISongBrowserCollectionButton::triggerContextMenu(Vector2 pos)
 	}
 }
 
-void OsuUISongBrowserCollectionButton::onContextMenu(UString text, int id)
+void OsuUISongBrowserCollectionButton::onContextMenu(const UString& text, int id)
 {
 	bool isLegacyCollection = false;
 	{
@@ -208,7 +208,7 @@ void OsuUISongBrowserCollectionButton::onContextMenu(UString text, int id)
 	}
 }
 
-void OsuUISongBrowserCollectionButton::onRenameCollectionConfirmed(UString text, int id)
+void OsuUISongBrowserCollectionButton::onRenameCollectionConfirmed(const UString& text, int id)
 {
 	if (text.length() > 0)
 	{
@@ -222,7 +222,7 @@ void OsuUISongBrowserCollectionButton::onRenameCollectionConfirmed(UString text,
 	}
 }
 
-void OsuUISongBrowserCollectionButton::onDeleteCollectionConfirmed(UString text, int id)
+void OsuUISongBrowserCollectionButton::onDeleteCollectionConfirmed(const UString& text, int id)
 {
 	if (id != 2) return;
 

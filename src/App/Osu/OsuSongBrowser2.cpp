@@ -80,7 +80,7 @@ ConVar songbrowser_background_fade_in_duration("osu_songbrowser_background_fade_
 ConVar songbrowser_search_delay("osu_songbrowser_search_delay", 0.5f, FCVAR_NONE, "delay until search update when entering text");
 
 ConVar songbrowser_search_hardcoded_filter("osu_songbrowser_search_hardcoded_filter", "", FCVAR_NONE, "allows forcing the specified search filter to be active all the time",
-	[](UString, UString newValue) -> void {
+	[](const UString&, const UString &newValue) -> void {
 		if (newValue.length() == 1 && newValue.isWhitespaceOnly())
 			songbrowser_search_hardcoded_filter.setValue("");
 	});
@@ -3475,7 +3475,7 @@ void OsuSongBrowser2::onSortScoresClicked(CBaseUIButton *button)
 	m_contextMenu->setClickCallback( fastdelegate::MakeDelegate(this, &OsuSongBrowser2::onSortScoresChange) );
 }
 
-void OsuSongBrowser2::onSortScoresChange(UString text, int id)
+void OsuSongBrowser2::onSortScoresChange(const UString& text, int id)
 {
 	cv::osu::songbrowser_scores_sortingtype.setValue(text); // NOTE: remember
 	m_scoreSortButton->setText(text);
@@ -3530,7 +3530,7 @@ void OsuSongBrowser2::onGroupClicked(CBaseUIButton *button)
 	m_contextMenu->setClickCallback( fastdelegate::MakeDelegate(this, &OsuSongBrowser2::onGroupChange) );
 }
 
-void OsuSongBrowser2::onGroupChange(UString text, int id)
+void OsuSongBrowser2::onGroupChange(const UString& text, int id)
 {
 	GROUPING *grouping = (m_groupings.size() > 0 ? &m_groupings[0] : NULL);
 	for (auto & groupingI : m_groupings)
@@ -3694,7 +3694,7 @@ void OsuSongBrowser2::onSortClicked(CBaseUIButton *button)
 	}
 }
 
-void OsuSongBrowser2::onSortChange(UString text, int /*id*/)
+void OsuSongBrowser2::onSortChange(const UString& text, int /*id*/)
 {
 	onSortChangeInt(text, true);
 }
@@ -3826,12 +3826,12 @@ void OsuSongBrowser2::onSelectionOptions()
 	}
 }
 
-void OsuSongBrowser2::onModeChange(UString text)
+void OsuSongBrowser2::onModeChange(const UString& text)
 {
 	onModeChange2(text);
 }
 
-void OsuSongBrowser2::onModeChange2(UString text, int id)
+void OsuSongBrowser2::onModeChange2(const UString& text, int id)
 {
 	if (id != 2 && text != "fposu")
 		cv::osu::fposu::mod_fposu.setValue(0.0f);
@@ -3893,7 +3893,7 @@ void OsuSongBrowser2::onUserButtonClicked()
 	}
 }
 
-void OsuSongBrowser2::onUserButtonChange(UString text, int id)
+void OsuSongBrowser2::onUserButtonChange(const UString& text, int id)
 {
 	if (id == 0) return;
 

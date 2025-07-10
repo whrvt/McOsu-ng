@@ -360,9 +360,9 @@ friend class OsuSkinImage;
 	void checkLoadImage(Image **addressOfPointer, UString skinElementName, UString resourceName, bool ignoreDefaultSkin = false, UString fileExtension = "png", bool forceLoadMipmaps = false, bool forceUseDefaultSkin = false);
 	void checkLoadSound(Sound **addressOfPointer, UString skinElementName, UString resourceName, bool isOverlayable = false, bool isSample = false, bool loop = false, float hardcodedVolumeMultiplier = -1.0f);
 
-	void onEffectVolumeChange(UString oldValue, UString newValue);
-	void onIgnoreBeatmapSampleVolumeChange(UString oldValue, UString newValue);
-	void onExport(UString folderName);
+	void onEffectVolumeChange(const UString &oldValue, const UString &newValue);
+	void onIgnoreBeatmapSampleVolumeChange(const UString &oldValue, const UString &newValue);
+	void onExport(const UString& folderName);
 
 	bool skinFileExists(const UString &path);
 	UString buildUserPath(const UString &element, const char *ext, bool hd = false) const;

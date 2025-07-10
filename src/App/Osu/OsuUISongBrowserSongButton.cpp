@@ -424,7 +424,7 @@ void OsuUISongBrowserSongButton::triggerContextMenu(Vector2 pos)
 	}
 }
 
-void OsuUISongBrowserSongButton::onContextMenu(UString text, int id)
+void OsuUISongBrowserSongButton::onContextMenu(const UString& text, int id)
 {
 	if (id == 1 || id == 2)
 	{
@@ -618,7 +618,7 @@ void OsuUISongBrowserSongButton::onContextMenu(UString text, int id)
 	}
 }
 
-void OsuUISongBrowserSongButton::onAddToCollectionConfirmed(UString text, int id)
+void OsuUISongBrowserSongButton::onAddToCollectionConfirmed(const UString& text, int id)
 {
 	if (id == -2 || id == -4)
 	{
@@ -655,7 +655,7 @@ void OsuUISongBrowserSongButton::onAddToCollectionConfirmed(UString text, int id
 	}
 }
 
-void OsuUISongBrowserSongButton::onCreateNewCollectionConfirmed(UString text, int id)
+void OsuUISongBrowserSongButton::onCreateNewCollectionConfirmed(const UString& text, int id)
 {
 	if (id == -2 || id == -4)
 	{

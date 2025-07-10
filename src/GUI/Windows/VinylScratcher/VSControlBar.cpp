@@ -242,7 +242,7 @@ void VSControlBar::onShuffleCheckboxChanged(CBaseUICheckbox *box)
 	cv::vs_shuffle.setValue((float)box->isChecked());
 }
 
-void VSControlBar::onVolumeChanged(UString oldValue, UString newValue)
+void VSControlBar::onVolumeChanged(const UString &oldValue, const UString &newValue)
 {
 	m_volume->setValue(cv::vs_volume.getFloat());
 }

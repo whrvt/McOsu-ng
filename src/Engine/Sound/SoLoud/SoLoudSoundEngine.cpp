@@ -284,7 +284,7 @@ void SoLoudSoundEngine::stop(Sound *snd)
 	soloudSound->m_handle = 0;
 }
 
-void SoLoudSoundEngine::setOutputDevice(UString outputDeviceName)
+void SoLoudSoundEngine::setOutputDevice(const UString &outputDeviceName)
 {
 	for (const auto &m_outputDevice : m_outputDevices)
 	{
@@ -306,7 +306,7 @@ void SoLoudSoundEngine::setOutputDevice(UString outputDeviceName)
 	debugLog("couldn't find output device \"{:s}\"!\n", outputDeviceName.toUtf8());
 }
 
-void SoLoudSoundEngine::setOutputDeviceForce(UString outputDeviceName)
+void SoLoudSoundEngine::setOutputDeviceForce(const UString &outputDeviceName)
 {
 	for (const auto &m_outputDevice : m_outputDevices)
 	{

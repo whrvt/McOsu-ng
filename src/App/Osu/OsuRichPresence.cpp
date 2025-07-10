@@ -133,7 +133,7 @@ void OsuRichPresence::setStatus(UString status, bool force)
 		discord->setRichPresence(KEY_DISCORD_STATUS, "");
 }
 
-void OsuRichPresence::onRichPresenceChange(UString oldValue, UString newValue)
+void OsuRichPresence::onRichPresenceChange(const UString &oldValue, const UString &newValue)
 {
 	if (osu)
 	{

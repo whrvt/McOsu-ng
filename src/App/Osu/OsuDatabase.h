@@ -245,7 +245,7 @@ private:
 
 	OsuDatabaseBeatmap *loadRawBeatmap(const UString& beatmapPath); // only used for raw loading without db
 
-	void onScoresRename(UString args);
+	void onScoresRename(const UString& args);
 	void onScoresExport();
 
 	Timer *m_importTimer;

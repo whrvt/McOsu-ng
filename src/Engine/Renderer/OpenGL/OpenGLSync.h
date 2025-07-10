@@ -55,8 +55,8 @@ private:
 	bool m_bAvailable;                           // if the opengl feature is even available at all
 
 	// callbacks
-	inline void onSyncBehaviorChanged(UString oldValue, UString newValue) { m_bEnabled = m_bAvailable && !!newValue.toInt(); }
-	inline void onFramecountNumChanged(UString oldValue, UString newValue)
+	inline void onSyncBehaviorChanged(const UString &oldValue, const UString &newValue) { m_bEnabled = m_bAvailable && !!newValue.toInt(); }
+	inline void onFramecountNumChanged(const UString &oldValue, const UString &newValue)
 	{
 		m_iMaxFramesInFlight = newValue.to<unsigned int>();
 		if (m_iMaxFramesInFlight > 0)

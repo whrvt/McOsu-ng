@@ -50,8 +50,8 @@ public:
 	typedef fastdelegate::FastDelegate0<> AudioOutputChangedCallback;
 	virtual void setOnOutputDeviceChange(AudioOutputChangedCallback callback);
 
-	virtual void setOutputDevice(UString outputDeviceName) = 0;
-	virtual void setOutputDeviceForce(UString outputDeviceName) = 0;
+	virtual void setOutputDevice(const UString& outputDeviceName) = 0;
+	virtual void setOutputDeviceForce(const UString& outputDeviceName) = 0;
 	virtual void setVolume(float volume) = 0;
 	virtual void set3dPosition(Vector3 headPos, Vector3 viewDir, Vector3 viewUp) = 0;
 

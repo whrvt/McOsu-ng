@@ -561,7 +561,7 @@ void OsuUISongBrowserScoreButton::onRightMouseUpInside()
 	}
 }
 
-void OsuUISongBrowserScoreButton::onContextMenu(UString text, int id)
+void OsuUISongBrowserScoreButton::onContextMenu(const UString& text, int id)
 {
 	if (id == 1)
 		onUseModsClicked();
@@ -718,7 +718,7 @@ void OsuUISongBrowserScoreButton::onDeleteScoreClicked()
 	}
 }
 
-void OsuUISongBrowserScoreButton::onDeleteScoreConfirmed(UString text, int id)
+void OsuUISongBrowserScoreButton::onDeleteScoreConfirmed(const UString& text, int id)
 {
 	if (id != 1) return;
 

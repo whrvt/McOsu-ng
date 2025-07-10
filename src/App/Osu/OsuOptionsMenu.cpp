@@ -2425,7 +2425,7 @@ void OsuOptionsMenu::onSkinSelect()
 	}
 }
 
-void OsuOptionsMenu::onSkinSelect2(UString skinName, int id)
+void OsuOptionsMenu::onSkinSelect2(const UString& skinName, int id)
 {
 	if constexpr (Env::cfg(FEAT::STEAM))
 		cv::osu::skin_is_from_workshop.setValue(0.0f);
@@ -2498,7 +2498,7 @@ void OsuOptionsMenu::onSkinSelectWorkshop3()
 	}
 }
 
-void OsuOptionsMenu::onSkinSelectWorkshop4(UString skinName, int id)
+void OsuOptionsMenu::onSkinSelectWorkshop4(const UString& skinName, int id)
 {
 	if constexpr (Env::cfg(FEAT::STEAM))
 	{
@@ -2652,7 +2652,7 @@ void OsuOptionsMenu::onResolutionSelect()
 	m_contextMenu->setClickCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onResolutionSelect2) );
 }
 
-void OsuOptionsMenu::onResolutionSelect2(UString resolution, int id)
+void OsuOptionsMenu::onResolutionSelect2(const UString& resolution, int id)
 {
 	if (env->isFullscreen())
 		cv::osu::resolution.setValue(resolution);
@@ -2678,7 +2678,7 @@ void OsuOptionsMenu::onOutputDeviceSelect()
 	m_contextMenu->setClickCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onOutputDeviceSelect2) );
 }
 
-void OsuOptionsMenu::onOutputDeviceSelect2(UString outputDeviceName, int id)
+void OsuOptionsMenu::onOutputDeviceSelect2(const UString& outputDeviceName, int id)
 {
 	unsigned long prevMusicPositionMS = 0;
 	if (!osu->isInPlayMode() && osu->getSelectedBeatmap() != NULL && osu->getSelectedBeatmap()->getMusic() != NULL)
@@ -2790,7 +2790,7 @@ void OsuOptionsMenu::onNotelockSelect()
 	m_contextMenu->setClickCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onNotelockSelect2) );
 }
 
-void OsuOptionsMenu::onNotelockSelect2(UString notelockType, int id)
+void OsuOptionsMenu::onNotelockSelect2(const UString& notelockType, int id)
 {
 	cv::osu::notelock_type.setValue(id);
 	updateNotelockSelectLabel();
@@ -2829,7 +2829,7 @@ void OsuOptionsMenu::onHPDrainSelect()
 	m_contextMenu->setClickCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onHPDrainSelect2) );
 }
 
-void OsuOptionsMenu::onHPDrainSelect2(UString hpDrainType, int id)
+void OsuOptionsMenu::onHPDrainSelect2(const UString& hpDrainType, int id)
 {
 	cv::osu::drain_type.setValue(id);
 	updateHPDrainSelectLabel();
@@ -3306,7 +3306,7 @@ void OsuOptionsMenu::onWASAPIPeriodChange(CBaseUISlider *slider)
 	}
 }
 
-void OsuOptionsMenu::onUseSkinsSoundSamplesChange(UString oldValue, UString newValue)
+void OsuOptionsMenu::onUseSkinsSoundSamplesChange(const UString &oldValue, const UString &newValue)
 {
 	osu->reloadSkin();
 }
@@ -3320,7 +3320,7 @@ void OsuOptionsMenu::onHighQualitySlidersCheckboxChange(CBaseUICheckbox *checkbo
 		m_sliderQualitySlider->setValue(1.0f, false);
 }
 
-void OsuOptionsMenu::onHighQualitySlidersConVarChange(UString oldValue, UString newValue)
+void OsuOptionsMenu::onHighQualitySlidersConVarChange(const UString &oldValue, const UString &newValue)
 {
 	const bool enabled = newValue.toFloat() > 0;
 	for (int i=0; i<m_elements.size(); i++)

@@ -36,12 +36,12 @@ public:
 	void onKeyDown(KeyboardEvent &e) override;
 	void onChar(KeyboardEvent &e) override;
 
-	typedef fastdelegate::FastDelegate2<UString, int> ButtonClickCallback;
-	void setClickCallback(ButtonClickCallback clickCallback) {m_clickCallback = clickCallback;}
+	typedef fastdelegate::FastDelegate2<const UString&, int> ButtonClickCallback;
+	void setClickCallback(const ButtonClickCallback &clickCallback) {m_clickCallback = clickCallback;}
 
 	void begin(int minWidth = 0, bool bigStyle = false);
 	OsuUIContextMenuButton *addButtonJustified(UString text, bool left = true, int id = -1);
-	inline OsuUIContextMenuButton *addButton(UString text, int id = -1) {return addButtonJustified(text, true, id);};
+	inline OsuUIContextMenuButton *addButton(const UString &text, int id = -1) {return addButtonJustified(text, true, id);};
 
 	OsuUIContextMenuTextbox *addTextbox(UString text, int id = -1);
 

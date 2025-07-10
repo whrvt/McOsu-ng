@@ -45,7 +45,7 @@ void forceDeviceRestart()
 	soundEngine ? soundEngine->setOutputDeviceForce(soundEngine->getOutputDevice()) : (void)0;
 }
 
-void _WIN_SND_WASAPI_BUFFER_SIZE_CHANGE(UString oldValue, UString newValue)
+void _WIN_SND_WASAPI_BUFFER_SIZE_CHANGE(const UString &oldValue, const UString &newValue)
 {
 	const int oldValueMS = std::round(oldValue.toFloat() * 1000.0f);
 	const int newValueMS = std::round(newValue.toFloat() * 1000.0f);
@@ -53,7 +53,7 @@ void _WIN_SND_WASAPI_BUFFER_SIZE_CHANGE(UString oldValue, UString newValue)
 		forceDeviceRestart();
 }
 
-void _WIN_SND_WASAPI_PERIOD_SIZE_CHANGE(UString oldValue, UString newValue)
+void _WIN_SND_WASAPI_PERIOD_SIZE_CHANGE(const UString &oldValue, const UString &newValue)
 {
 	const int oldValueMS = std::round(oldValue.toFloat() * 1000.0f);
 	const int newValueMS = std::round(newValue.toFloat() * 1000.0f);
@@ -61,7 +61,7 @@ void _WIN_SND_WASAPI_PERIOD_SIZE_CHANGE(UString oldValue, UString newValue)
 		forceDeviceRestart();
 }
 
-void _WIN_SND_WASAPI_EXCLUSIVE_CHANGE(UString oldValue, UString newValue)
+void _WIN_SND_WASAPI_EXCLUSIVE_CHANGE(const UString &oldValue, const UString &newValue)
 {
 	const bool oldValueBool = oldValue.toInt();
 	const bool newValueBool = newValue.toInt();
@@ -257,7 +257,7 @@ void BassSoundEngine::stop(Sound *snd)
 	bassSound->m_HCHANNELBACKUP = 0;
 }
 
-void BassSoundEngine::setOutputDevice(UString outputDeviceName)
+void BassSoundEngine::setOutputDevice(const UString& outputDeviceName)
 {
 	for (size_t i = 0; i < m_outputDevices.size(); i++)
 	{
@@ -280,7 +280,7 @@ void BassSoundEngine::setOutputDevice(UString outputDeviceName)
 	debugLog("couldn't find output device \"{:s}\"!\n", outputDeviceName.toUtf8());
 }
 
-void BassSoundEngine::setOutputDeviceForce(UString outputDeviceName)
+void BassSoundEngine::setOutputDeviceForce(const UString& outputDeviceName)
 {
 	for (auto &m_outputDevice : m_outputDevices)
 	{
@@ -470,7 +470,7 @@ bool BassSoundEngine::initializeOutputDevice(int id, bool force)
 	return true;
 }
 
-void BassSoundEngine::onFreqChanged(UString oldValue, UString newValue)
+void BassSoundEngine::onFreqChanged(const UString &oldValue, const UString &newValue)
 {
 	if (oldValue == newValue)
 	{

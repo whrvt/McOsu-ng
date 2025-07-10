@@ -180,14 +180,14 @@ private:
 	void rebuildSongButtonsAndVisibleSongButtonsWithSearchMatchSupport(bool scrollToTop, bool doRebuildSongButtons = true);
 
 	void onSortScoresClicked(CBaseUIButton *button);
-	void onSortScoresChange(UString text, int id = -1);
+	void onSortScoresChange(const UString& text, int id = -1);
 	void onWebClicked(CBaseUIButton *button);
 
 	void onGroupClicked(CBaseUIButton *button);
-	void onGroupChange(UString text, int id = -1);
+	void onGroupChange(const UString& text, int id = -1);
 
 	void onSortClicked(CBaseUIButton *button);
-	void onSortChange(UString text, int id = -1);
+	void onSortChange(const UString& text, int id = -1);
 	void onSortChangeInt(const UString &text, bool autoScroll);
 
 	[[nodiscard]] std::vector<OsuUISongBrowserCollectionButton*>* getCollectionButtonsForGroup(GROUP group);
@@ -202,11 +202,11 @@ private:
 	void onSelectionRandom();
 	void onSelectionOptions();
 
-	void onModeChange(UString text);
-	void onModeChange2(UString text, int id = -1);
+	void onModeChange(const UString& text);
+	void onModeChange2(const UString& text, int id = -1);
 
 	void onUserButtonClicked();
-	void onUserButtonChange(UString text, int id);
+	void onUserButtonChange(const UString& text, int id);
 
 	void onScoreClicked(CBaseUIButton *button);
 

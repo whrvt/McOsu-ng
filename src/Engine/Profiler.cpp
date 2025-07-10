@@ -172,7 +172,7 @@ ProfilerNode *ProfilerNode::getSubNode(const char *name, const char *group)
 //	Profiler ConCommands  //
 //************************//
 
-void _vprof(UString oldValue, UString newValue)
+void _vprof(const UString &oldValue, const UString &newValue)
 {
 	const bool enable = (newValue.toFloat() > 0.0f);
 

@@ -28,8 +28,8 @@ public:
 	void pause(Sound *snd) override;
 	void stop(Sound *snd) override;
 
-	void setOutputDevice(UString outputDeviceName) override;
-	void setOutputDeviceForce(UString outputDeviceName) override;
+	void setOutputDevice(const UString& outputDeviceName) override;
+	void setOutputDeviceForce(const UString& outputDeviceName) override;
 	void setVolume(float volume) override;
 	void set3dPosition(Vector3 headPos, Vector3 viewDir, Vector3 viewUp) override;
 
@@ -46,7 +46,7 @@ private:
 	void applyRuntimeConfigs(bool &needsReinit);
 	bool playChannelWithAttributes(BassSound *bassSound, SOUNDHANDLE handle, float pan, float pitch);
 
-	void onFreqChanged(UString oldValue, UString newValue);
+	void onFreqChanged(const UString &oldValue, const UString &newValue);
 
 	friend class BassSound;
 };

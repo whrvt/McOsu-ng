@@ -44,18 +44,18 @@ private:
 	void rebuildScoreButtons(const UString &playerName);
 
 	void onUserClicked(CBaseUIButton *button);
-	void onUserButtonChange(UString text, int id);
+	void onUserButtonChange(const UString& text, int id);
 	void onScoreClicked(CBaseUIButton *button);
 	void onMenuClicked(CBaseUIButton *button);
-	void onMenuSelected(UString text, int id);
+	void onMenuSelected(const UString& text, int id);
 	void onRecalculatePPImportLegacyScoresClicked();
-	void onRecalculatePPImportLegacyScoresConfirmed(UString text, int id);
+	void onRecalculatePPImportLegacyScoresConfirmed(const UString& text, int id);
 	void onRecalculatePP(bool importLegacyScores);
 	void onCopyAllScoresClicked();
-	void onCopyAllScoresUserSelected(UString text, int id);
-	void onCopyAllScoresConfirmed(UString text, int id);
+	void onCopyAllScoresUserSelected(const UString& text, int id);
+	void onCopyAllScoresConfirmed(const UString& text, int id);
 	void onDeleteAllScoresClicked();
-	void onDeleteAllScoresConfirmed(UString text, int id);
+	void onDeleteAllScoresConfirmed(const UString& text, int id);
 
 	;
 

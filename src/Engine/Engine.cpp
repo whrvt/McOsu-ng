@@ -49,7 +49,7 @@ void _borderless(void)
 	}
 }
 
-void _windowed(UString args)
+void _windowed(const UString &args)
 {
 	env->disableFullscreen();
 

@@ -140,7 +140,7 @@ void VinylScratcher::onFinished()
 	cv::vs_percent.setValue(0.0f);
 }
 
-void VinylScratcher::onFileClicked(UString filepath, bool reverse)
+void VinylScratcher::onFileClicked(const UString& filepath, bool reverse)
 {
 	// check if the file is valid and can be played, if it's valid then play it
 	if (tryPlayFile(filepath))
@@ -218,7 +218,7 @@ void VinylScratcher::onResized()
 
 
 
-bool VinylScratcher::tryPlayFile(UString filepath)
+bool VinylScratcher::tryPlayFile(const UString &filepath)
 {
 	m_stream2->rebuild(filepath);
 

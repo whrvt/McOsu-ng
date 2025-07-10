@@ -41,8 +41,8 @@ public:
 
 	// callback typedefs
 	using NativeConVarCallback = fastdelegate::FastDelegate0<>;
-	using NativeConVarCallbackArgs = fastdelegate::FastDelegate1<UString>;
-	using NativeConVarChangeCallback = fastdelegate::FastDelegate2<UString, UString>;
+	using NativeConVarCallbackArgs = fastdelegate::FastDelegate1<const UString&>;
+	using NativeConVarChangeCallback = fastdelegate::FastDelegate2<const UString&, const UString&>;
 	using NativeConVarCallbackFloat = fastdelegate::FastDelegate1<float>;
 	using NativeConVarChangeCallbackFloat = fastdelegate::FastDelegate2<float, float>;
 
@@ -89,7 +89,7 @@ public:
 	// callback-only constructors (no value)
 	template <typename Callback>
 	explicit ConVar(UString name, int flags, Callback callback)
-	    requires std::is_invocable_v<Callback> || std::is_invocable_v<Callback, UString> || std::is_invocable_v<Callback, float>
+	    requires std::is_invocable_v<Callback> || std::is_invocable_v<Callback, const UString&> || std::is_invocable_v<Callback, float>
 	{
 		initCallback(name, flags, UString(""), callback);
 		addConVar(this);
@@ -97,7 +97,7 @@ public:
 
 	template <typename Callback>
 	explicit ConVar(UString name, int flags, const char *helpString, Callback callback)
-	    requires std::is_invocable_v<Callback> || std::is_invocable_v<Callback, UString> || std::is_invocable_v<Callback, float>
+	    requires std::is_invocable_v<Callback> || std::is_invocable_v<Callback, const UString&> || std::is_invocable_v<Callback, float>
 	{
 		initCallback(name, flags, UString(helpString), callback);
 		addConVar(this);
@@ -115,8 +115,8 @@ public:
 	template <typename T, typename Callback>
 	explicit ConVar(UString name, T defaultValue, int flags, const char *helpString, Callback callback)
 	    requires(!std::is_same_v<std::decay_t<T>, const char *>) &&
-	            (std::is_invocable_v<Callback> || std::is_invocable_v<Callback, UString> || std::is_invocable_v<Callback, float> ||
-	             std::is_invocable_v<Callback, UString, UString> || std::is_invocable_v<Callback, float, float>)
+	            (std::is_invocable_v<Callback> || std::is_invocable_v<Callback, const UString&> || std::is_invocable_v<Callback, float> ||
+	             std::is_invocable_v<Callback, const UString&, const UString&> || std::is_invocable_v<Callback, float, float>)
 	{
 		initValue(name, defaultValue, flags, UString(helpString), callback, nullptr);
 		addConVar(this);
@@ -125,8 +125,8 @@ public:
 	template <typename T, typename Callback>
 	explicit ConVar(UString name, T defaultValue, int flags, Callback callback)
 	    requires(!std::is_same_v<std::decay_t<T>, const char *>) &&
-	            (std::is_invocable_v<Callback> || std::is_invocable_v<Callback, UString> || std::is_invocable_v<Callback, float> ||
-	             std::is_invocable_v<Callback, UString, UString> || std::is_invocable_v<Callback, float, float>)
+	            (std::is_invocable_v<Callback> || std::is_invocable_v<Callback, const UString&> || std::is_invocable_v<Callback, float> ||
+	             std::is_invocable_v<Callback, const UString&, const UString&> || std::is_invocable_v<Callback, float, float>)
 	{
 		initValue(name, defaultValue, flags, UString(""), callback, nullptr);
 		addConVar(this);
@@ -141,8 +141,8 @@ public:
 
 	template <typename Callback>
 	explicit ConVar(UString name, const char *defaultValue, int flags, const char *helpString, Callback callback)
-	    requires(std::is_invocable_v<Callback> || std::is_invocable_v<Callback, UString> || std::is_invocable_v<Callback, float> ||
-	             std::is_invocable_v<Callback, UString, UString> || std::is_invocable_v<Callback, float, float>)
+	    requires(std::is_invocable_v<Callback> || std::is_invocable_v<Callback, const UString&> || std::is_invocable_v<Callback, float> ||
+	             std::is_invocable_v<Callback, const UString&, const UString&> || std::is_invocable_v<Callback, float, float>)
 	{
 		initValue(name, UString(defaultValue), flags, UString(helpString), callback, nullptr);
 		addConVar(this);
@@ -150,8 +150,8 @@ public:
 
 	template <typename Callback>
 	explicit ConVar(UString name, const char *defaultValue, int flags, Callback callback)
-	    requires(std::is_invocable_v<Callback> || std::is_invocable_v<Callback, UString> || std::is_invocable_v<Callback, float> ||
-	             std::is_invocable_v<Callback, UString, UString> || std::is_invocable_v<Callback, float, float>)
+	    requires(std::is_invocable_v<Callback> || std::is_invocable_v<Callback, const UString&> || std::is_invocable_v<Callback, float> ||
+	             std::is_invocable_v<Callback, const UString&, const UString&> || std::is_invocable_v<Callback, float, float>)
 	{
 		initValue(name, UString(defaultValue), flags, UString(""), callback, nullptr);
 		addConVar(this);
@@ -159,7 +159,7 @@ public:
 
 	// callbacks
 	void exec();
-	void execArgs(UString args);
+	void execArgs(const UString &args);
 	void execInt(float args);
 
 	// get
@@ -200,7 +200,7 @@ public:
 
 	// set
 	void setDefaultFloat(float defaultValue);
-	void setDefaultString(UString defaultValue);
+	void setDefaultString(const UString &defaultValue);
 
 	template <typename T>
 	void setValue(T &&value, const bool &doCallback = true)
@@ -213,26 +213,24 @@ public:
 	// generic callback setter that auto-detects callback type
 	template <typename Callback>
 	void setCallback(Callback &&callback)
-	    requires(std::is_invocable_v<Callback> || std::is_invocable_v<Callback, UString> || std::is_invocable_v<Callback, float> ||
-	             std::is_invocable_v<Callback, UString, UString> || std::is_invocable_v<Callback, float, float>)
+	    requires(std::is_invocable_v<Callback> || std::is_invocable_v<Callback, const UString&> || std::is_invocable_v<Callback, float> ||
+	             std::is_invocable_v<Callback, const UString&, const UString&> || std::is_invocable_v<Callback, float, float>)
 	{
 		if constexpr (std::is_invocable_v<Callback>)
 			m_callback = NativeConVarCallback(std::forward<Callback>(callback));
-		else if constexpr (std::is_invocable_v<Callback, UString>)
+		else if constexpr (std::is_invocable_v<Callback, const UString&>)
 			m_callback = NativeConVarCallbackArgs(std::forward<Callback>(callback));
 		else if constexpr (std::is_invocable_v<Callback, float>)
 			m_callback = NativeConVarCallbackFloat(std::forward<Callback>(callback));
-		else if constexpr (std::is_invocable_v<Callback, UString, UString>)
+		else if constexpr (std::is_invocable_v<Callback, const UString&, const UString&>)
 			m_changeCallback = NativeConVarChangeCallback(std::forward<Callback>(callback));
 		else if constexpr (std::is_invocable_v<Callback, float, float>)
 			m_changeCallback = NativeConVarChangeCallbackFloat(std::forward<Callback>(callback));
 		else
-			static_assert(std::is_invocable_v<Callback> || std::is_invocable_v<Callback, UString> || std::is_invocable_v<Callback, float> ||
-			                  std::is_invocable_v<Callback, UString, UString> || std::is_invocable_v<Callback, float, float>,
-			              "Unsupported callback signature");
+			static_assert(Env::always_false_v<Callback>, "Unsupported callback signature");
 	}
 
-	void setHelpString(UString helpString);
+	void setHelpString(const UString &helpString);
 
 	// for restart support
 	void resetCallbacks();
@@ -252,7 +250,7 @@ private:
 			m_callback = NativeConVarCallback(callback);
 			m_type = CONVAR_TYPE::CONVAR_TYPE_STRING;
 		}
-		else if constexpr (std::is_invocable_v<Callback, UString>)
+		else if constexpr (std::is_invocable_v<Callback, const UString&>)
 		{
 			m_callback = NativeConVarCallbackArgs(callback);
 			m_type = CONVAR_TYPE::CONVAR_TYPE_STRING;
@@ -290,11 +288,11 @@ private:
 		{
 			if constexpr (std::is_invocable_v<Callback>)
 				m_callback = NativeConVarCallback(callback);
-			else if constexpr (std::is_invocable_v<Callback, UString>)
+			else if constexpr (std::is_invocable_v<Callback, const UString&>)
 				m_callback = NativeConVarCallbackArgs(callback);
 			else if constexpr (std::is_invocable_v<Callback, float>)
 				m_callback = NativeConVarCallbackFloat(callback);
-			else if constexpr (std::is_invocable_v<Callback, UString, UString>)
+			else if constexpr (std::is_invocable_v<Callback, const UString&, const UString&>)
 				m_changeCallback = NativeConVarChangeCallback(callback);
 			else if constexpr (std::is_invocable_v<Callback, float, float>)
 				m_changeCallback = NativeConVarChangeCallbackFloat(callback);
@@ -303,7 +301,7 @@ private:
 
 	void initBase(int flags);
 	void setDefaultFloatInt(float defaultValue);
-	void setDefaultStringInt(UString defaultValue);
+	void setDefaultStringInt(const UString &defaultValue);
 
 	template <typename T>
 	void setValueInt(T &&value, const bool &doCallback = true) // no flag checking, setValue (user-accessible) already does that

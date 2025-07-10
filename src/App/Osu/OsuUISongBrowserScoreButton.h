@@ -75,10 +75,10 @@ private:
 	void onFocusStolen() override;
 
 	void onRightMouseUpInside();
-	void onContextMenu(UString text, int id = -1);
+	void onContextMenu(const UString& text, int id = -1);
 	void onUseModsClicked();
 	void onDeleteScoreClicked();
-	void onDeleteScoreConfirmed(UString text, int id);
+	void onDeleteScoreConfirmed(const UString& text, int id);
 
 	bool isContextMenuVisible();
 

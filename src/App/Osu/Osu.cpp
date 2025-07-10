@@ -2076,7 +2076,7 @@ void Osu::fireResolutionChanged()
 	onResolutionChanged(g_vInternalResolution);
 }
 
-void Osu::onInternalResolutionChanged(UString oldValue, UString args)
+void Osu::onInternalResolutionChanged(const UString& oldValue, const UString& args)
 {
 	if (args.length() < 7) return;
 
@@ -2208,17 +2208,18 @@ void Osu::onSkinReload()
 	onSkinChange("", cv::osu::skin.getString());
 }
 
-void Osu::onSkinChange(UString oldValue, UString newValue)
+void Osu::onSkinChange(const UString &oldValue, const UString &newValue)
 {
+	UString newValCopy{newValue};
 	if (m_skin != NULL)
 	{
 		if (m_bSkinLoadScheduled || m_skinScheduledToLoad != NULL) return;
-		if (newValue.length() < 1) return;
+		if (newValCopy.length() < 1) return;
 	}
 
 	UString skinFolder = cv::osu::folder.getString();
 	skinFolder.append(cv::osu::folder_sub_skins.getString());
-	skinFolder.append(newValue);
+	skinFolder.append(newValCopy);
 	skinFolder.append("/");
 
 	// workshop skins use absolute paths
@@ -2232,7 +2233,7 @@ void Osu::onSkinChange(UString oldValue, UString newValue)
 
 		if (isWorkshopSkin)
 		{
-			skinFolder = newValue;
+			skinFolder = newValCopy;
 
 			// ensure that the skinFolder ends with a slash
 			if (skinFolder[skinFolder.length()-1] != L'/' && skinFolder[skinFolder.length()-1] != L'\\')
@@ -2241,10 +2242,10 @@ void Osu::onSkinChange(UString oldValue, UString newValue)
 			steam->startWorkshopItemPlaytimeTracking((uint64_t)cv::osu::skin_workshop_id.getString().toLong());
 
 			// set correct name of workshop skin
-			newValue = cv::osu::skin_workshop_title.getString();
+			newValCopy = cv::osu::skin_workshop_title.getString();
 		}
 	}
-	m_skinScheduledToLoad = new OsuSkin(newValue, skinFolder, newValue == "default", isWorkshopSkin);
+	m_skinScheduledToLoad = new OsuSkin(newValCopy, skinFolder, newValCopy == "default", isWorkshopSkin);
 
 	// initial load
 	if (m_skin == NULL)
@@ -2253,7 +2254,7 @@ void Osu::onSkinChange(UString oldValue, UString newValue)
 	m_bSkinLoadScheduled = true;
 }
 
-void Osu::onMasterVolumeChange(UString oldValue, UString newValue)
+void Osu::onMasterVolumeChange(const UString &oldValue, const UString &newValue)
 {
 	if (m_bVolumeInactiveToActiveScheduled) return; // not very clean, but w/e
 
@@ -2261,13 +2262,13 @@ void Osu::onMasterVolumeChange(UString oldValue, UString newValue)
 	soundEngine->setVolume(newVolume);
 }
 
-void Osu::onMusicVolumeChange(UString oldValue, UString newValue)
+void Osu::onMusicVolumeChange(const UString &oldValue, const UString &newValue)
 {
 	if (getSelectedBeatmap() != NULL)
 		getSelectedBeatmap()->setVolume(newValue.toFloat());
 }
 
-void Osu::onSpeedChange(UString oldValue, UString newValue)
+void Osu::onSpeedChange(const UString &oldValue, const UString &newValue)
 {
 	if (getSelectedBeatmap() != NULL)
 	{
@@ -2276,7 +2277,7 @@ void Osu::onSpeedChange(UString oldValue, UString newValue)
 	}
 }
 
-void Osu::onPitchChange(UString oldValue, UString newValue)
+void Osu::onPitchChange(const UString &oldValue, const UString &newValue)
 {
 	if (getSelectedBeatmap() != NULL)
 	{
@@ -2285,13 +2286,13 @@ void Osu::onPitchChange(UString oldValue, UString newValue)
 	}
 }
 
-void Osu::onPlayfieldChange(UString oldValue, UString newValue)
+void Osu::onPlayfieldChange(const UString &oldValue, const UString &newValue)
 {
 	if (getSelectedBeatmap() != NULL)
 		getSelectedBeatmap()->onModUpdate();
 }
 
-void Osu::onUIScaleChange(UString oldValue, UString newValue)
+void Osu::onUIScaleChange(const UString &oldValue, const UString &newValue)
 {
 	const float oldVal = oldValue.toFloat();
 	const float newVal = newValue.toFloat();
@@ -2304,7 +2305,7 @@ void Osu::onUIScaleChange(UString oldValue, UString newValue)
 	}
 }
 
-void Osu::onUIScaleToDPIChange(UString oldValue, UString newValue)
+void Osu::onUIScaleToDPIChange(const UString &oldValue, const UString &newValue)
 {
 	const bool oldVal = oldValue.toFloat() > 0.0f;
 	const bool newVal = newValue.toFloat() > 0.0f;
@@ -2317,7 +2318,7 @@ void Osu::onUIScaleToDPIChange(UString oldValue, UString newValue)
 	}
 }
 
-void Osu::onLetterboxingChange(UString oldValue, UString newValue)
+void Osu::onLetterboxingChange(const UString &oldValue, const UString &newValue)
 {
 	if (cv::osu::resolution_enabled.getBool())
 	{
@@ -2353,17 +2354,17 @@ void Osu::updateConfineCursor()
 		env->setCursorClip(false, McRect());
 }
 
-void Osu::onConfineCursorWindowedChange(UString oldValue, UString newValue)
+void Osu::onConfineCursorWindowedChange(const UString &oldValue, const UString &newValue)
 {
 	updateConfineCursor();
 }
 
-void Osu::onConfineCursorFullscreenChange(UString oldValue, UString newValue)
+void Osu::onConfineCursorFullscreenChange(const UString &oldValue, const UString &newValue)
 {
 	updateConfineCursor();
 }
 
-void Osu::onConfineCursorNeverChange(UString oldValue, UString newValue)
+void Osu::onConfineCursorNeverChange(const UString &oldValue, const UString &newValue)
 {
 	updateConfineCursor();
 }
@@ -2452,38 +2453,38 @@ void Osu::onKey2Change(bool pressed, bool mouseButton)
 	}
 }
 
-void Osu::onModMafhamChange(UString oldValue, UString newValue)
+void Osu::onModMafhamChange(const UString &oldValue, const UString &newValue)
 {
 	rebuildRenderTargets();
 }
 
-void Osu::onModFPoSuChange(UString oldValue, UString newValue)
+void Osu::onModFPoSuChange(const UString &oldValue, const UString &newValue)
 {
 	rebuildRenderTargets();
 }
 
-void Osu::onModFPoSu3DChange(UString oldValue, UString newValue)
+void Osu::onModFPoSu3DChange(const UString &oldValue, const UString &newValue)
 {
 	rebuildRenderTargets();
 }
 
-void Osu::onModFPoSu3DSpheresChange(UString oldValue, UString newValue)
+void Osu::onModFPoSu3DSpheresChange(const UString &oldValue, const UString &newValue)
 {
 	rebuildRenderTargets();
 }
 
-void Osu::onModFPoSu3DSpheresAAChange(UString oldValue, UString newValue)
+void Osu::onModFPoSu3DSpheresAAChange(const UString &oldValue, const UString &newValue)
 {
 	rebuildRenderTargets();
 }
 
-void Osu::onLetterboxingOffsetChange(UString oldValue, UString newValue)
+void Osu::onLetterboxingOffsetChange(const UString &oldValue, const UString &newValue)
 {
 	updateMouseSettings();
 	updateConfineCursor();
 }
 
-void Osu::onNotification(UString args)
+void Osu::onNotification(const UString& args)
 {
 	m_notificationOverlay->addNotification(args, rgb(cv::osu::notification_color_r.getInt(), cv::osu::notification_color_g.getInt(), cv::osu::notification_color_b.getInt()));
 }

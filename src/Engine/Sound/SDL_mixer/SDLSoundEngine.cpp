@@ -172,12 +172,12 @@ void SDLSoundEngine::stop(Sound *snd)
 		Mix_HaltChannel(sdlSound->getHandle());
 }
 
-void SDLSoundEngine::setOutputDevice(UString outputDeviceName)
+void SDLSoundEngine::setOutputDevice(const UString& outputDeviceName)
 {
 	initializeOutputDevice(-1);
 }
 
-void SDLSoundEngine::setOutputDeviceForce(UString outputDeviceName)
+void SDLSoundEngine::setOutputDeviceForce(const UString& outputDeviceName)
 {
 	initializeOutputDevice(-1);
 }

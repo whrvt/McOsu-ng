@@ -2845,7 +2845,7 @@ OsuDatabaseBeatmap *OsuDatabase::loadRawBeatmap(const UString& beatmapPath)
 	return beatmap;
 }
 
-void OsuDatabase::onScoresRename(UString args)
+void OsuDatabase::onScoresRename(const UString& args)
 {
 	if (args.length() < 2)
 	{

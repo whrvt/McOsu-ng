@@ -214,7 +214,7 @@ public:
 private:
 	static Vector2 g_vInternalResolution;
 
-	void updateModsForConVarTemplate(UString, UString) {updateMods();}
+	void updateModsForConVarTemplate(const UString&, const UString&) {updateMods();}
 	void onVolumeChange(int multiplier);
 	void onAudioOutputDeviceChange();
 
@@ -223,38 +223,38 @@ private:
 	void fireResolutionChanged();
 
 	// callbacks
-	void onInternalResolutionChanged(UString oldValue, UString args);
+	void onInternalResolutionChanged(const UString& oldValue, const UString& args);
 
 	void onSkinReload();
-	void onSkinChange(UString oldValue, UString newValue);
+	void onSkinChange(const UString &oldValue, const UString &newValue);
 
-	void onMasterVolumeChange(UString oldValue, UString newValue);
-	void onMusicVolumeChange(UString oldValue, UString newValue);
-	void onSpeedChange(UString oldValue, UString newValue);
-	void onPitchChange(UString oldValue, UString newValue);
+	void onMasterVolumeChange(const UString &oldValue, const UString &newValue);
+	void onMusicVolumeChange(const UString &oldValue, const UString &newValue);
+	void onSpeedChange(const UString &oldValue, const UString &newValue);
+	void onPitchChange(const UString &oldValue, const UString &newValue);
 
-	void onPlayfieldChange(UString oldValue, UString newValue);
+	void onPlayfieldChange(const UString &oldValue, const UString &newValue);
 
-	void onUIScaleChange(UString oldValue, UString newValue);
-	void onUIScaleToDPIChange(UString oldValue, UString newValue);
-	void onLetterboxingChange(UString oldValue, UString newValue);
+	void onUIScaleChange(const UString &oldValue, const UString &newValue);
+	void onUIScaleToDPIChange(const UString &oldValue, const UString &newValue);
+	void onLetterboxingChange(const UString &oldValue, const UString &newValue);
 
-	void onConfineCursorWindowedChange(UString oldValue, UString newValue);
-	void onConfineCursorFullscreenChange(UString oldValue, UString newValue);
-	void onConfineCursorNeverChange(UString oldValue, UString newValue);
+	void onConfineCursorWindowedChange(const UString &oldValue, const UString &newValue);
+	void onConfineCursorFullscreenChange(const UString &oldValue, const UString &newValue);
+	void onConfineCursorNeverChange(const UString &oldValue, const UString &newValue);
 
 	void onKey1Change(bool pressed, bool mouseButton);
 	void onKey2Change(bool pressed, bool mouseButton);
 
-	void onModMafhamChange(UString oldValue, UString newValue);
-	void onModFPoSuChange(UString oldValue, UString newValue);
-	void onModFPoSu3DChange(UString oldValue, UString newValue);
-	void onModFPoSu3DSpheresChange(UString oldValue, UString newValue);
-	void onModFPoSu3DSpheresAAChange(UString oldValue, UString newValue);
+	void onModMafhamChange(const UString &oldValue, const UString &newValue);
+	void onModFPoSuChange(const UString &oldValue, const UString &newValue);
+	void onModFPoSu3DChange(const UString &oldValue, const UString &newValue);
+	void onModFPoSu3DSpheresChange(const UString &oldValue, const UString &newValue);
+	void onModFPoSu3DSpheresAAChange(const UString &oldValue, const UString &newValue);
 
-	void onLetterboxingOffsetChange(UString oldValue, UString newValue);
+	void onLetterboxingOffsetChange(const UString &oldValue, const UString &newValue);
 
-	void onNotification(UString args);
+	void onNotification(const UString& args);
 
 	// interfaces
 	OsuMultiplayer *m_multiplayer;

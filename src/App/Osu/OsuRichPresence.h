@@ -23,7 +23,7 @@ public:
 	static void onPlayStart();
 	static void onPlayEnd(bool quit);
 
-	static void onRichPresenceChange(UString oldValue, UString newValue);
+	static void onRichPresenceChange(const UString &oldValue, const UString &newValue);
 
 private:
 	static const UString KEY_STEAM_STATUS;

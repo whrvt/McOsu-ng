@@ -174,7 +174,7 @@ private:
 
 	float getScoreScale();
 
-	void onVolumeOverlaySizeChange(UString oldValue, UString newValue);
+	void onVolumeOverlaySizeChange(const UString &oldValue, const UString &newValue);
 
 	McFont *m_tempFont;
 

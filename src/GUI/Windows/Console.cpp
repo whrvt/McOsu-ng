@@ -320,17 +320,18 @@ void Console::onResized()
 //	Console ConCommands  //
 //***********************//
 
-void _exec(UString args)
+void _exec(const UString &args)
 {
 	Console::execConfigFile(args);
 }
 
-void _echo(UString args)
+void _echo(const UString &args)
 {
 	if (args.length() > 0)
 	{
-		args.append("\n");
-		debugLog("{:s}", args.toUtf8());
+		UString argsCopy{args};
+		argsCopy.append("\n");
+		debugLog("{:s}", argsCopy.toUtf8());
 	}
 }
 

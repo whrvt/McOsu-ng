@@ -23,7 +23,7 @@ class VSMusicBrowser;
 class VinylScratcher : public CBaseUIWindow
 {
 public:
-	static bool tryPlayFile(UString filepath);
+	static bool tryPlayFile(const UString &filepath);
 
 public:
 	VinylScratcher();
@@ -40,7 +40,7 @@ protected:
 
 private:
 	void onFinished();
-	void onFileClicked(UString filepath, bool reverse);
+	void onFileClicked(const UString& filepath, bool reverse);
 	void onVolumeChanged(CBaseUISlider *slider);
 	void onSeek();
 	void onPlayClicked();

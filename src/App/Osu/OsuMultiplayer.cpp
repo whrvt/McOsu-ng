@@ -1243,17 +1243,17 @@ float OsuMultiplayer::getDownloadBeatmapPercentage() const
 	return ((float)totalDownloadedBytes / (float)m_downloads[0].totalDownloadBytes);
 }
 
-void OsuMultiplayer::onBroadcastCommand(UString command)
+void OsuMultiplayer::onBroadcastCommand(const UString& command)
 {
 	onClientCommandInt(command, false);
 }
 
-void OsuMultiplayer::onClientcastCommand(UString command)
+void OsuMultiplayer::onClientcastCommand(const UString& command)
 {
 	onClientCommandInt(command, true);
 }
 
-void OsuMultiplayer::onClientCommandInt(UString string, bool executeLocallyToo)
+void OsuMultiplayer::onClientCommandInt(const UString& string, bool executeLocallyToo)
 {
 	if (!isServer() || string.length() < 1) return;
 
@@ -1289,7 +1289,7 @@ void OsuMultiplayer::onMPForceClientBeatmapDownload()
 	onClientCommandInt(cv::osu::mp_request_beatmap_download.getName(), false);
 }
 
-void OsuMultiplayer::onMPSelectBeatmap(UString md5hash)
+void OsuMultiplayer::onMPSelectBeatmap(const UString& md5hash)
 {
 	setBeatmap(std::string(md5hash.toUtf8()));
 }

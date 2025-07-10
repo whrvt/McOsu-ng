@@ -130,13 +130,13 @@ void ConVar::exec()
 		(*cb)();
 }
 
-void ConVar::execArgs(UString args)
+void ConVar::execArgs(const UString &args)
 {
 	if (isFlagSet(FCVAR_CHEAT) && !(cv::ConVars::sv_cheats.getRaw() > 0))
 		return;
 
 	if (auto *cb = std::get_if<NativeConVarCallbackArgs>(&m_callback))
-		(*cb)(std::move(args));
+		(*cb)(args);
 }
 
 void ConVar::execInt(float args)
@@ -162,22 +162,22 @@ void ConVar::setDefaultFloatInt(float defaultValue)
 	m_sDefaultValue = UString::format("%g", defaultValue);
 }
 
-void ConVar::setDefaultString(UString defaultValue)
+void ConVar::setDefaultString(const UString &defaultValue)
 {
 	if (isFlagSet(FCVAR_HARDCODED))
 		return;
 
-	setDefaultStringInt(std::move(defaultValue));
+	setDefaultStringInt(defaultValue);
 }
 
-void ConVar::setDefaultStringInt(UString defaultValue)
+void ConVar::setDefaultStringInt(const UString &defaultValue)
 {
-	m_sDefaultValue = std::move(defaultValue);
+	m_sDefaultValue = defaultValue;
 }
 
-void ConVar::setHelpString(UString helpString)
+void ConVar::setHelpString(const UString &helpString)
 {
-	m_sHelpString = std::move(helpString);
+	m_sHelpString = helpString;
 }
 
 bool ConVar::hasCallbackArgs() const
@@ -330,7 +330,7 @@ void ConVarHandler::resetAllConVarCallbacks()
 //	ConVarHandler ConCommands  //
 //*****************************//
 
-static void _find(UString args)
+static void _find(const UString &args)
 {
 	if (args.length() < 1)
 	{
@@ -380,23 +380,23 @@ static void _find(UString args)
 	debugLog("----------------------------------------------\n");
 }
 
-static void _help(UString args)
+static void _help(const UString &args)
 {
-	args = args.trim();
+	UString argsCopy{args.trim()};
 
-	if (args.length() < 1)
+	if (argsCopy.length() < 1)
 	{
 		debugLog("Usage:  help <cvarname>\n");
 		debugLog("To get a list of all available commands, type \"listcommands\".\n");
 		return;
 	}
 
-	const std::vector<ConVar *> matches = convar->getConVarByLetter(args);
+	const std::vector<ConVar *> matches = convar->getConVarByLetter(argsCopy);
 
 	if (matches.size() < 1)
 	{
 		UString thelog = "ConVar \"";
-		thelog.append(args);
+		thelog.append(argsCopy);
 		thelog.append("\" does not exist.\n");
 		debugLog("{:s}", thelog.toUtf8());
 		return;
@@ -406,7 +406,7 @@ static void _help(UString args)
 	size_t index = 0;
 	for (size_t i = 0; i < matches.size(); i++)
 	{
-		if (matches[i]->getName() == args)
+		if (matches[i]->getName() == argsCopy)
 		{
 			index = i;
 			break;

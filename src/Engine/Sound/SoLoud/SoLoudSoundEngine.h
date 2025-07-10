@@ -38,8 +38,8 @@ public:
 	void pause(Sound * snd) override;
 	void stop(Sound * snd) override;
 
-	void setOutputDevice(UString outputDeviceName) override;
-	void setOutputDeviceForce(UString outputDeviceName) override;
+	void setOutputDevice(const UString& outputDeviceName) override;
+	void setOutputDeviceForce(const UString& outputDeviceName) override;
 	void setVolume(float volume) override;
 	void set3dPosition(Vector3 headPos, Vector3 viewDir, Vector3 viewUp) override;
 

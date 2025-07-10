@@ -31,9 +31,9 @@ private:
 	void onSelected(bool wasSelected, bool autoSelectBottomMostChild, bool wasParentSelected) override;
 	void onRightMouseUpInside() override;
 
-	void onContextMenu(UString text, int id = -1);
-	void onRenameCollectionConfirmed(UString text, int id = -1);
-	void onDeleteCollectionConfirmed(UString text, int id = -1);
+	void onContextMenu(const UString& text, int id = -1);
+	void onRenameCollectionConfirmed(const UString& text, int id = -1);
+	void onDeleteCollectionConfirmed(const UString& text, int id = -1);
 
 	UString buildTitleString();
 

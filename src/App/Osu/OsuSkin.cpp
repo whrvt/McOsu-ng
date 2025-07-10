@@ -1093,7 +1093,7 @@ bool OsuSkin::parseSkinINI(UString filepath)
 	return true;
 }
 
-void OsuSkin::onEffectVolumeChange(UString oldValue, UString newValue)
+void OsuSkin::onEffectVolumeChange(const UString &oldValue, const UString &newValue)
 {
 	float volume = newValue.toFloat();
 
@@ -1106,13 +1106,13 @@ void OsuSkin::onEffectVolumeChange(UString oldValue, UString newValue)
 	setSampleVolume(std::clamp<float>((float)m_iSampleVolume / 100.0f, 0.0f, 1.0f), true);
 }
 
-void OsuSkin::onIgnoreBeatmapSampleVolumeChange(UString oldValue, UString newValue)
+void OsuSkin::onIgnoreBeatmapSampleVolumeChange(const UString &oldValue, const UString &newValue)
 {
 	// restore sample volumes
 	setSampleVolume(std::clamp<float>((float)m_iSampleVolume / 100.0f, 0.0f, 1.0f), true);
 }
 
-void OsuSkin::onExport(UString folderName)
+void OsuSkin::onExport(const UString& folderName)
 {
 	if (folderName.length() < 1)
 	{

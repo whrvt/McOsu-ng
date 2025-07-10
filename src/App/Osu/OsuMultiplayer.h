@@ -151,12 +151,12 @@ private:
 	static unsigned long long sortHackCounter;
 	
 
-	void onClientcastCommand(UString command);
-	void onBroadcastCommand(UString command);
-	void onClientCommandInt(UString string, bool executeLocallyToo);
+	void onClientcastCommand(const UString& command);
+	void onBroadcastCommand(const UString& command);
+	void onClientCommandInt(const UString& string, bool executeLocallyToo);
 
 	void onMPForceClientBeatmapDownload();
-	void onMPSelectBeatmap(UString md5hash);
+	void onMPSelectBeatmap(const UString& md5hash);
 	void onMPRequestBeatmapDownload();
 
 	void onBeatmapDownloadFinished(const BeatmapDownloadState &dl);
