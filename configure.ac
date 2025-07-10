@@ -385,7 +385,6 @@ __EOF__
         ubercompat=on
         with_mimalloc="no"
         LDFLAGS="$LDFLAGS -m32"
-        WINPTHREAD_LDFLAGS="-lwinpthread"
         # winxp
         CPPFLAGS="$CPPFLAGS -DWINVER=0x0501 -D_WIN32_WINNT=0x0501 -D_WIN32_WINDOWS=0x0501 -D_WIN32_IE=0x0501"
         CFLAGS="$CFLAGS -m32 -fno-omit-frame-pointer -momit-leaf-frame-pointer -DWINVER=0x0501 -D_WIN32_WINNT=0x0501 -D_WIN32_WINDOWS=0x0501 -D_WIN32_IE=0x0501 -mfpmath=sse"
@@ -397,13 +396,13 @@ __EOF__
         CPPFLAGS="$CPPFLAGS -DWINVER=0x0A00 -D_WIN32_WINNT=0x0A00 -D_WIN32_WINDOWS=0x0A00 -D_WIN32_IE=0x0A00"
         CFLAGS="$CFLAGS -DWINVER=0x0A00 -D_WIN32_WINNT=0x0A00 -D_WIN32_WINDOWS=0x0A00 -D_WIN32_IE=0x0A00"
         CXXFLAGS="$CXXFLAGS -DWINVER=0x0A00 -D_WIN32_WINNT=0x0A00 -D_WIN32_WINDOWS=0x0A00 -D_WIN32_IE=0x0A00"
-        WINPTHREAD_LDFLAGS="-Wl,-Bstatic,--whole-archive -lwinpthread -Wl,--no-whole-archive,-Bdynamic"
         AC_SUBST([NASMOBJ],[win64])
     ])
-
-    AC_SUBST([WINPTHREAD_LDFLAGS])
+    WINPTHREAD_LDFLAGS="-lwinpthread"
     AC_DEFINE([MCENGINE_PLATFORM_WINDOWS], [1], [Define if compiling for Windows.])
 ])
+
+AC_SUBST([WINPTHREAD_LDFLAGS])
 
 PKG_CONFIG="$PWD/build/pkg-config"
 AC_SUBST([PKG_CONFIG])
@@ -818,10 +817,11 @@ AM_CONDITIONAL([WIN32_PLATFORM], [test "$SYSNAME" = "windows" && test "$host_cpu
 
 AM_CONDITIONAL([STRIPBINS], [test "x$enable_strip" != "xno" && ! { test "$SYSNAME" = "windows" && test "$host_cpu" = "i686" ; } ])
 
-# need dynamic winpthread for old windows 32bit compat builds
-# the way im searching for the right .dlls to copy is so disgusting and needs to be fixed somehow
-AS_IF([test -n "$ubercompat"], [
-    AS_IF([test "x$enable_static" = "xyes"], [ # still need winpthread dynamic, breaks otherwise for reasons i dont understand
+# need to copy the winpthread shared lib to the install directory
+# using static winpthread is broken because it overrides the executable's resources
+# FIXME: the way im searching for the right .dlls to copy is so disgusting and needs to be fixed somehow
+AS_IF([test "$SYSNAME" = "windows"], [
+    AS_IF([test "x$enable_static" = "xyes"], [
         WINSHARED_DLLS="$($CC -print-prog-name=ld | sed -e 's|/bin/.*||' | tr -d '\n' | find -files0-from - \
             -iregex ".*$host_cpu"'.*libwinpthread-1.dll' \
             -printf '%h/%f ')"

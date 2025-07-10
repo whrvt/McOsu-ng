@@ -72,6 +72,11 @@ public:
 	SDLMain(int argc, char *argv[]);
 	~SDLMain();
 
+	SDLMain &operator=(const SDLMain &) = delete;
+	SDLMain &operator=(SDLMain &&) = delete;
+	SDLMain(const SDLMain &) = delete;
+	SDLMain(SDLMain &&) = delete;
+
 	SDL_AppResult initialize();
 	SDL_AppResult iterate();
 	SDL_AppResult handleEvent(SDL_Event *event);
@@ -689,7 +694,7 @@ void SDLMain::setupLogging()
 {
 	SDL_SetLogOutputFunction(
 	    [](void *, int category, SDL_LogPriority, const char *message) {
-		    const char *catStr;
+		    const char *catStr = "???";
 		    switch (category)
 		    {
 		    case SDL_LOG_CATEGORY_APPLICATION:
@@ -717,7 +722,6 @@ void SDLMain::setupLogging()
 			    catStr = "USR";
 			    break;
 		    default:
-			    catStr = "???";
 			    break;
 		    }
 		    printf("SDL[%s]: %s\n", catStr, message);

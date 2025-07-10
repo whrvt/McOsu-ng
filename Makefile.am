@@ -212,7 +212,7 @@ $(DEPS_PREFIX)/mimalloc.built: $(DEPS_CACHE)/mimalloc-$(MIMALLOC_VERSION).source
 	$(MKDIR_P) $(DEPS_PREFIX)/mimalloc/out/"$(if $(ENABLE_DEBUG),debug,release)" && \
 	cd $(DEPS_PREFIX)/mimalloc/out/"$(if $(ENABLE_DEBUG),debug,release)" && \
 	env PKG_CONFIG="$(PKG_CONFIG)" \
-		LDFLAGS="$(LDFLAGS) -xnone" $(CMAKE) \
+		LDFLAGS="$(LDFLAGS) $(WINPTHREAD_LDFLAGS) -xnone" $(CMAKE) \
 		-D CMAKE_C_COMPILER="$(CC)" \
 		-D CMAKE_C_FLAGS="$(CFLAGS) -Wno-array-bounds" \
 		-D CMAKE_SYSTEM_NAME="$(CMAKE_SYSTEM_NAME)" \

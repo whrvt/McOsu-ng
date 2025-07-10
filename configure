@@ -6633,7 +6633,6 @@ fi
         ubercompat=on
         with_mimalloc="no"
         LDFLAGS="$LDFLAGS -m32"
-        WINPTHREAD_LDFLAGS="-lwinpthread"
         # winxp
         CPPFLAGS="$CPPFLAGS -DWINVER=0x0501 -D_WIN32_WINNT=0x0501 -D_WIN32_WINDOWS=0x0501 -D_WIN32_IE=0x0501"
         CFLAGS="$CFLAGS -m32 -fno-omit-frame-pointer -momit-leaf-frame-pointer -DWINVER=0x0501 -D_WIN32_WINNT=0x0501 -D_WIN32_WINDOWS=0x0501 -D_WIN32_IE=0x0501 -mfpmath=sse"
@@ -6648,20 +6647,20 @@ else case e in #(
         CPPFLAGS="$CPPFLAGS -DWINVER=0x0A00 -D_WIN32_WINNT=0x0A00 -D_WIN32_WINDOWS=0x0A00 -D_WIN32_IE=0x0A00"
         CFLAGS="$CFLAGS -DWINVER=0x0A00 -D_WIN32_WINNT=0x0A00 -D_WIN32_WINDOWS=0x0A00 -D_WIN32_IE=0x0A00"
         CXXFLAGS="$CXXFLAGS -DWINVER=0x0A00 -D_WIN32_WINNT=0x0A00 -D_WIN32_WINDOWS=0x0A00 -D_WIN32_IE=0x0A00"
-        WINPTHREAD_LDFLAGS="-Wl,-Bstatic,--whole-archive -lwinpthread -Wl,--no-whole-archive,-Bdynamic"
         NASMOBJ=win64
 
      ;;
 esac
 fi
-
-
+    WINPTHREAD_LDFLAGS="-lwinpthread"
 
 printf "%s\n" "#define MCENGINE_PLATFORM_WINDOWS 1" >>confdefs.h
 
  ;;
 esac
 fi
+
+
 
 PKG_CONFIG="$PWD/build/pkg-config"
 
@@ -11890,14 +11889,15 @@ else
 fi
 
 
-# need dynamic winpthread for old windows 32bit compat builds
-# the way im searching for the right .dlls to copy is so disgusting and needs to be fixed somehow
-if test -n "$ubercompat"
+# need to copy the winpthread shared lib to the install directory
+# using static winpthread is broken because it overrides the executable's resources
+# FIXME: the way im searching for the right .dlls to copy is so disgusting and needs to be fixed somehow
+if test "$SYSNAME" = "windows"
 then :
 
     if test "x$enable_static" = "xyes"
 then :
-   # still need winpthread dynamic, breaks otherwise for reasons i dont understand
+
         WINSHARED_DLLS="$($CC -print-prog-name=ld | sed -e 's|/bin/.*||' | tr -d '\n' | find -files0-from - \
             -iregex ".*$host_cpu"'.*libwinpthread-1.dll' \
             -printf '%h/%f ')"
