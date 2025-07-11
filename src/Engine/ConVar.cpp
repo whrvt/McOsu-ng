@@ -99,7 +99,7 @@ void ConVar::initBase(int flags)
 	m_fValue = 0.0f;
 	m_fDefaultValue = 0.0f;
 
-	m_bHasValue = true;
+	m_bHasValue = false;
 	m_type = CONVAR_TYPE::CONVAR_TYPE_FLOAT;
 	m_iFlags = flags;
 
@@ -115,7 +115,6 @@ ConVar::ConVar(UString name)
 {
 	initBase(FCVAR_NONE);
 	m_sName = std::move(name);
-	m_bHasValue = false;
 	m_type = CONVAR_TYPE::CONVAR_TYPE_STRING;
 	m_iFlags = FCVAR_NONE;
 	ConVar::addConVar(this);
@@ -139,7 +138,7 @@ void ConVar::execArgs(const UString &args)
 		(*cb)(args);
 }
 
-void ConVar::execInt(float args)
+void ConVar::execFloat(float args)
 {
 	if (isFlagSet(FCVAR_CHEAT) && !(cv::ConVars::sv_cheats.getRaw() > 0))
 		return;
@@ -334,7 +333,7 @@ static void _find(const UString &args)
 {
 	if (args.length() < 1)
 	{
-		debugLog("Usage:  find <string>");
+		Engine::logRaw("Usage:  find <string>\n");
 		return;
 	}
 
@@ -359,25 +358,25 @@ static void _find(const UString &args)
 		UString thelog = "No commands found containing \"";
 		thelog.append(args);
 		thelog.append("\".\n");
-		debugLog("{:s}", thelog.toUtf8());
+		Engine::logRaw("{:s}", thelog.toUtf8());
 		return;
 	}
 
-	debugLog("----------------------------------------------\n");
+	Engine::logRaw("----------------------------------------------\n");
 	{
 		UString thelog = "[ find : ";
 		thelog.append(args);
 		thelog.append(" ]\n");
-		debugLog("{:s}", thelog.toUtf8());
+		Engine::logRaw("{:s}", thelog.toUtf8());
 
 		for (auto &matchingConVar : matchingConVars)
 		{
 			UString tstring = matchingConVar->getName();
 			tstring.append("\n");
-			debugLog("{:s}", tstring.toUtf8());
+			Engine::logRaw("{:s}", tstring.toUtf8());
 		}
 	}
-	debugLog("----------------------------------------------\n");
+	Engine::logRaw("----------------------------------------------\n");
 }
 
 static void _help(const UString &args)
@@ -386,8 +385,8 @@ static void _help(const UString &args)
 
 	if (argsCopy.length() < 1)
 	{
-		debugLog("Usage:  help <cvarname>\n");
-		debugLog("To get a list of all available commands, type \"listcommands\".\n");
+		Engine::logRaw("Usage:  help <cvarname>\n");
+		Engine::logRaw("To get a list of all available commands, type \"listcommands\".\n");
 		return;
 	}
 
@@ -398,7 +397,7 @@ static void _help(const UString &args)
 		UString thelog = "ConVar \"";
 		thelog.append(argsCopy);
 		thelog.append("\" does not exist.\n");
-		debugLog("{:s}", thelog.toUtf8());
+		Engine::logRaw("{:s}", thelog.toUtf8());
 		return;
 	}
 
@@ -419,7 +418,7 @@ static void _help(const UString &args)
 		UString thelog = "ConVar \"";
 		thelog.append(match->getName());
 		thelog.append("\" does not have a helpstring.\n");
-		debugLog("{:s}", thelog.toUtf8());
+		Engine::logRaw("{:s}", thelog.toUtf8());
 		return;
 	}
 
@@ -437,7 +436,7 @@ static void _help(const UString &args)
 		thelog.append(" - ");
 		thelog.append(match->getHelpstring());
 	}
-	debugLog("{:s}", thelog.toUtf8());
+	Engine::logRaw("{:s}\n", thelog.toUtf8());
 }
 
 static void _listcommands(void)

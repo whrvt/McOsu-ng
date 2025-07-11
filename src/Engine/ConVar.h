@@ -108,7 +108,7 @@ public:
 	explicit ConVar(UString name, T defaultValue, int flags, const char *helpString = "")
 	    requires(!std::is_same_v<std::decay_t<T>, const char *>)
 	{
-		initValue(name, defaultValue, flags, UString(helpString), nullptr, nullptr);
+		initValue(name, defaultValue, flags, UString(helpString), nullptr);
 		addConVar(this);
 	}
 
@@ -118,7 +118,7 @@ public:
 	            (std::is_invocable_v<Callback> || std::is_invocable_v<Callback, const UString&> || std::is_invocable_v<Callback, float> ||
 	             std::is_invocable_v<Callback, const UString&, const UString&> || std::is_invocable_v<Callback, float, float>)
 	{
-		initValue(name, defaultValue, flags, UString(helpString), callback, nullptr);
+		initValue(name, defaultValue, flags, UString(helpString), callback);
 		addConVar(this);
 	}
 
@@ -128,14 +128,14 @@ public:
 	            (std::is_invocable_v<Callback> || std::is_invocable_v<Callback, const UString&> || std::is_invocable_v<Callback, float> ||
 	             std::is_invocable_v<Callback, const UString&, const UString&> || std::is_invocable_v<Callback, float, float>)
 	{
-		initValue(name, defaultValue, flags, UString(""), callback, nullptr);
+		initValue(name, defaultValue, flags, UString(""), callback);
 		addConVar(this);
 	}
 
 	// const char* specializations for string convars
 	explicit ConVar(UString name, const char *defaultValue, int flags, const char *helpString = "")
 	{
-		initValue(name, UString(defaultValue), flags, UString(helpString), nullptr, nullptr);
+		initValue(name, UString(defaultValue), flags, UString(helpString), nullptr);
 		addConVar(this);
 	}
 
@@ -144,7 +144,7 @@ public:
 	    requires(std::is_invocable_v<Callback> || std::is_invocable_v<Callback, const UString&> || std::is_invocable_v<Callback, float> ||
 	             std::is_invocable_v<Callback, const UString&, const UString&> || std::is_invocable_v<Callback, float, float>)
 	{
-		initValue(name, UString(defaultValue), flags, UString(helpString), callback, nullptr);
+		initValue(name, UString(defaultValue), flags, UString(helpString), callback);
 		addConVar(this);
 	}
 
@@ -153,14 +153,14 @@ public:
 	    requires(std::is_invocable_v<Callback> || std::is_invocable_v<Callback, const UString&> || std::is_invocable_v<Callback, float> ||
 	             std::is_invocable_v<Callback, const UString&, const UString&> || std::is_invocable_v<Callback, float, float>)
 	{
-		initValue(name, UString(defaultValue), flags, UString(""), callback, nullptr);
+		initValue(name, UString(defaultValue), flags, UString(""), callback);
 		addConVar(this);
 	}
 
 	// callbacks
 	void exec();
 	void execArgs(const UString &args);
-	void execInt(float args);
+	void execFloat(float args);
 
 	// get
 	template <typename T = int>
@@ -264,7 +264,7 @@ private:
 
 	// unified init for value convars
 	template <typename T, typename Callback>
-	void initValue(UString &name, const T &defaultValue, int flags, UString helpString, Callback callback, void * /*unused*/)
+	void initValue(UString &name, const T &defaultValue, int flags, UString helpString, Callback callback)
 	{
 		initBase(flags);
 		m_sName = name;
@@ -306,6 +306,8 @@ private:
 	template <typename T>
 	void setValueInt(T &&value, const bool &doCallback = true) // no flag checking, setValue (user-accessible) already does that
 	{
+		m_bHasValue = true;
+
 		// determine float and string representations depending on whether setValue("string") or setValue(float) was called
 		const auto [newFloat, newString] = [&]() {
 			if constexpr (std::is_convertible_v<std::decay_t<T>, float> && !std::is_same_v<std::decay_t<T>, UString>)

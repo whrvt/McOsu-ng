@@ -156,12 +156,19 @@ void Console::processCommand(UString command)
 		return;
 
 	// set new value (this handles all callbacks internally)
+	// except for help, don't set a value for that, just run the callback
 	if (commandValue.length() > 0)
-		var->setValue(commandValue);
+	{
+		if (commandName == "help")
+			var->execArgs(commandValue);
+		else
+			var->setValue(commandValue);
+	}
 	else
 	{
 		var->exec();
 		var->execArgs("");
+		var->execFloat(var->getFloat());
 	}
 
 	// log

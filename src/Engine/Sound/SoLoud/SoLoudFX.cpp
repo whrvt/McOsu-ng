@@ -567,11 +567,18 @@ unsigned int SoundTouchFilterInstance::calculateTargetBufferLevel(unsigned int a
 	// get SoundTouch's processing requirements
 	unsigned int nominalOutputSeq = mSTOutputSequenceSamples <= 0 ? SAMPLE_GRANULARITY * 2 : mSTOutputSequenceSamples;
 
+	// target buffer level should be enough to satisfy the current request plus some headroom
 	// we want at least 2x the nominal output sequence to ensure stable processing
-	unsigned int targetLevel = std::max(aSamplesToRead, nominalOutputSeq * 2);
+	unsigned int baseTargetLevel = std::max(aSamplesToRead, static_cast<unsigned int>(nominalOutputSeq * 2));
+
+	// add additional headroom for rate changes - more headroom for faster rates
+	float headroomMultiplier = 1.0f + (mSoundTouchSpeed - 1.0f) * 0.5f;
+	headroomMultiplier = std::max(1.0f, headroomMultiplier);
+
+	unsigned int targetLevel = static_cast<unsigned int>(baseTargetLevel * headroomMultiplier);
 
 	if (logThis)
-		ST_DEBUG_LOG("Target buffer level: {:}\n", targetLevel);
+		ST_DEBUG_LOG("Target buffer level: base={:}, headroom={:.2f}, target={:}\n", baseTargetLevel, headroomMultiplier, targetLevel);
 
 	return targetLevel;
 }
