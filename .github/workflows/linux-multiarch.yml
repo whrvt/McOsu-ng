@@ -60,7 +60,7 @@ jobs:
             -e HOST=${{ matrix.host }} \
             -e CCACHE_DIR=/ccache \
             --mount type=bind,source="$(pwd)"/build-out,target=/src/build-out \
-            --mount type=bind,source="$(pwd)",target=/src,readonly \
+            --mount type=bind,source="$(pwd)",target=/src \
             --mount type=bind,source="$(pwd)"/.ccache,target=/ccache \
             mcosu-ng-builder
 
