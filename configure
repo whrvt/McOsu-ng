@@ -4442,12 +4442,12 @@ fi
 then :
   n_cpus=$($GETCONF _NPROCESSORS_ONLN 2>/dev/null)
 else case e in #(
-  e) n_cpus=1 ;;
+  e) n_cpus=4 ;;
 esac
 fi
     if test -z "$n_cpus" -o "$n_cpus" -le "0"
 then :
-  n_cpus=1
+  n_cpus=4
 fi
     CPU_COUNT=$n_cpus
 

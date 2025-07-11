@@ -18,8 +18,8 @@ AC_DEFUN([AX_COUNT_CPUS], [
     AC_CHECK_PROG([GETCONF], [getconf], [getconf])
     AS_IF([test -n "$GETCONF"],
         [n_cpus=$($GETCONF _NPROCESSORS_ONLN 2>/dev/null)],
-        [n_cpus=1])
-    AS_IF([test -z "$n_cpus" -o "$n_cpus" -le "0"], [n_cpus=1])
+        [n_cpus=4])
+    AS_IF([test -z "$n_cpus" -o "$n_cpus" -le "0"], [n_cpus=4])
     AC_SUBST([CPU_COUNT], [$n_cpus])
 ])
 AX_COUNT_CPUS

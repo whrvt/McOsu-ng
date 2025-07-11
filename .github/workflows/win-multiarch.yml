@@ -55,9 +55,9 @@ jobs:
 
       - name: Building McOsu-ng
         run: |
-          autoreconf
-          ./configure --disable-system-deps --enable-static --disable-native --with-audio="bass,soloud" --host=${{ matrix.host }}
-          make -j$(nproc) install
+          MAKEFLAGS="-j$(nproc)" ./autogen.sh
+          MAKEFLAGS="-j$(nproc)" ./configure --disable-system-deps --enable-static --disable-native --with-audio="bass,soloud" --host=${{ matrix.host }}
+          MAKEFLAGS="-j$(nproc)" make install
 
       - uses: actions/upload-artifact@v4
         with:
