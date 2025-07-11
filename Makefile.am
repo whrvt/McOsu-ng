@@ -231,7 +231,7 @@ $(DEPS_PREFIX)/mimalloc.built: $(DEPS_CACHE)/mimalloc-$(MIMALLOC_VERSION).source
 		-D MI_INSTALL_TOPLEVEL=ON \
 		-D MI_BUILD_STATIC=OFF \
 		-D MI_BUILD_OBJECT=$(if $(findstring linux,$(host_os)),ON,OFF) ../.. && \
-	make install
+	$(MAKE) install
 	touch $@
 else
 MIMALLOC_LIBS :=
