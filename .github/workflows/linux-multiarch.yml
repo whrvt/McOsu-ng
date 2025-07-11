@@ -40,7 +40,7 @@ jobs:
 
       - name: Set up build directory
         run: |
-          mkdir -p "$(pwd)"/build
+          mkdir -p "$(pwd)"/build-out
           mkdir -p "$(pwd)"/.ccache
 
       - name: ccache
@@ -59,7 +59,7 @@ jobs:
           docker run --rm \
             -e HOST=${{ matrix.host }} \
             -e CCACHE_DIR=/ccache \
-            --mount type=bind,source="$(pwd)"/build,target=/build \
+            --mount type=bind,source="$(pwd)"/build-out,target=/src/build-out \
             --mount type=bind,source="$(pwd)",target=/src,readonly \
             --mount type=bind,source="$(pwd)"/.ccache,target=/ccache \
             mcosu-ng-builder
@@ -67,4 +67,4 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: mcosu-ng-linux-${{ matrix.arch }}
-          path: ./build/dist
+          path: build-out/dist
