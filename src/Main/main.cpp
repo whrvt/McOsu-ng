@@ -562,9 +562,8 @@ bool SDLMain::createWindow()
 	}
 
 	// set vulkan for linux dxvk-native, opengl otherwise (or none for windows dx11)
-	constexpr auto windowFlags =
-	    SDL_WINDOW_HIDDEN | SDL_WINDOW_INPUT_FOCUS | SDL_WINDOW_MOUSE_FOCUS |
-	    (Env::cfg((REND::GL | REND::GLES32 | REND::GL3)) ? SDL_WINDOW_OPENGL : (Env::cfg(OS::LINUX, REND::DX11) ? SDL_WINDOW_VULKAN : 0UL));
+	constexpr auto windowFlags = SDL_WINDOW_HIDDEN | SDL_WINDOW_INPUT_FOCUS | SDL_WINDOW_MOUSE_FOCUS |
+	                             (Env::cfg((REND::GL | REND::GLES32 | REND::GL3)) ? SDL_WINDOW_OPENGL : (Env::cfg(OS::LINUX, REND::DX11) ? SDL_WINDOW_VULKAN : 0UL));
 
 	// get default monitor resolution and create the window with that as the starting size
 	long windowCreateWidth = WINDOW_WIDTH;
@@ -600,7 +599,8 @@ bool SDLMain::createWindow()
 
 	if constexpr (Env::cfg(OS::WINDOWS))
 		SDL_SetHintWithPriority(SDL_HINT_WINDOWS_RAW_KEYBOARD, "1", SDL_HINT_OVERRIDE);
-
+	else
+		SDL_SetHintWithPriority(SDL_HINT_MOUSE_AUTO_CAPTURE, "0", SDL_HINT_OVERRIDE);
 	SDL_SetHintWithPriority(SDL_HINT_MOUSE_RELATIVE_MODE_CENTER, "0", SDL_HINT_OVERRIDE);
 	SDL_SetHintWithPriority(SDL_HINT_TOUCH_MOUSE_EVENTS, "0", SDL_HINT_OVERRIDE);
 	SDL_SetHintWithPriority(SDL_HINT_MOUSE_EMULATE_WARP_WITH_RELATIVE, "0", SDL_HINT_OVERRIDE);

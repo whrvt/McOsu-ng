@@ -19,14 +19,14 @@ public:
 
 	void consume();
 
-	[[nodiscard]] inline bool isConsumed() const {return m_bConsumed;}
-	[[nodiscard]] inline KEYCODE getKeyCode() const {return m_keyCode;}
-	[[nodiscard]] inline KEYCODE getCharCode() const {return m_keyCode;}
+	[[nodiscard]] inline const bool &isConsumed() const {return m_bConsumed;}
+	[[nodiscard]] inline const KEYCODE &getKeyCode() const {return m_keyCode;}
+	[[nodiscard]] inline const KEYCODE &getCharCode() const {return m_keyCode;}
 
 	inline bool operator == (const KEYCODE &rhs) const {return m_keyCode == rhs;}
 	inline bool operator != (const KEYCODE &rhs) const {return m_keyCode != rhs;}
 
-	explicit operator KEYCODE() const {return m_keyCode;}
+	explicit operator const KEYCODE&() const {return m_keyCode;}
 
 private:
 	KEYCODE m_keyCode;

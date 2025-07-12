@@ -96,8 +96,8 @@ public:
 	void setWindowResizable(bool resizable);
 	void setFullscreenWindowedBorderless(bool fullscreenWindowedBorderless);
 	void setMonitor(int monitor);
-	[[nodiscard]] inline float getDisplayRefreshRate() const { return m_fDisplayHz; }
-	[[nodiscard]] inline float getDisplayRefreshTime() const { return m_fDisplayHzSecs; }
+	[[nodiscard]] inline const float &getDisplayRefreshRate() const { return m_fDisplayHz; }
+	[[nodiscard]] inline const float &getDisplayRefreshTime() const { return m_fDisplayHzSecs; }
 	[[nodiscard]] HWND getHwnd() const;
 	[[nodiscard]] Vector2 getWindowPos() const;
 	[[nodiscard]] Vector2 getWindowSize() const;
@@ -109,16 +109,16 @@ public:
 	[[nodiscard]] bool isFullscreenWindowedBorderless() const { return m_bFullscreenWindowedBorderless; }
 	[[nodiscard]] int getDPI() const;
 	[[nodiscard]] float getDPIScale() const { return (float)getDPI() / 96.0f; }
-	[[nodiscard]] inline bool isFullscreen() const { return m_bFullscreen; }
-	[[nodiscard]] inline bool isWindowResizable() const { return m_bResizable; }
+	[[nodiscard]] inline const bool &isFullscreen() const { return m_bFullscreen; }
+	[[nodiscard]] inline const bool &isWindowResizable() const { return m_bResizable; }
 
 	// mouse
-	[[nodiscard]] inline bool isCursorInWindow() const { return m_bIsCursorInsideWindow; }
-	[[nodiscard]] inline bool isCursorVisible() const { return m_bCursorVisible; }
-	[[nodiscard]] inline bool isCursorClipped() const { return m_bCursorClipped; }
-	[[nodiscard]] Vector2 getMousePos() const { return m_vLastAbsMousePos; }
+	[[nodiscard]] inline const bool &isCursorInWindow() const { return m_bIsCursorInsideWindow; }
+	[[nodiscard]] inline const bool &isCursorVisible() const { return m_bCursorVisible; }
+	[[nodiscard]] inline const bool &isCursorClipped() const { return m_bCursorClipped; }
+	[[nodiscard]] inline const Vector2 &getMousePos() const { return m_vLastAbsMousePos; }
 	[[nodiscard]] inline const McRect &getCursorClip() const { return m_cursorClip; }
-	[[nodiscard]] inline CURSORTYPE getCursor() const { return m_cursorType; }
+	[[nodiscard]] inline const CURSORTYPE &getCursor() const { return m_cursorType; }
 	void setCursor(CURSORTYPE cur);
 	void setCursorVisible(bool visible);
 	void setCursorClip(bool clip, McRect rect);

@@ -49,33 +49,33 @@ public:
 	bool isCursorVisible();
 
 	// state getters
-	[[nodiscard]] inline Vector2 getPos() const { return m_vPos; }
-	[[nodiscard]] inline Vector2 getRealPos() const { return m_vPosWithoutOffset; }
-	[[nodiscard]] inline Vector2 getActualPos() const { return m_vActualPos; }
-	[[nodiscard]] inline Vector2 getDelta() const { return m_vDelta; }
-	[[nodiscard]] inline Vector2 getRawDelta() const { return m_vRawDelta; }
+	[[nodiscard]] inline const Vector2 &getPos() const { return m_vPos; }
+	[[nodiscard]] inline const Vector2 &getRealPos() const { return m_vPosWithoutOffset; }
+	[[nodiscard]] inline const Vector2 &getActualPos() const { return m_vActualPos; }
+	[[nodiscard]] inline const Vector2 &getDelta() const { return m_vDelta; }
+	[[nodiscard]] inline const Vector2 &getRawDelta() const { return m_vRawDelta; }
 
-	[[nodiscard]] inline Vector2 getOffset() const { return m_vOffset; }
-	[[nodiscard]] inline Vector2 getScale() const { return m_vScale; }
-	[[nodiscard]] inline float getSensitivity() const { return m_fSensitivity; }
+	[[nodiscard]] inline const Vector2 &getOffset() const { return m_vOffset; }
+	[[nodiscard]] inline const Vector2 &getScale() const { return m_vScale; }
+	[[nodiscard]] inline const float &getSensitivity() const { return m_fSensitivity; }
 
 	// button state accessors
-	[[nodiscard]] inline bool isLeftDown() const { return m_bMouseButtonDown[BUTTON_LEFT]; }
-	[[nodiscard]] inline bool isMiddleDown() const { return m_bMouseButtonDown[BUTTON_MIDDLE]; }
-	[[nodiscard]] inline bool isRightDown() const { return m_bMouseButtonDown[BUTTON_RIGHT]; }
-	[[nodiscard]] inline bool isButton4Down() const { return m_bMouseButtonDown[BUTTON_X1]; }
-	[[nodiscard]] inline bool isButton5Down() const { return m_bMouseButtonDown[BUTTON_X2]; }
+	[[nodiscard]] inline const bool &isLeftDown() const { return m_bMouseButtonDown[BUTTON_LEFT]; }
+	[[nodiscard]] inline const bool &isMiddleDown() const { return m_bMouseButtonDown[BUTTON_MIDDLE]; }
+	[[nodiscard]] inline const bool &isRightDown() const { return m_bMouseButtonDown[BUTTON_RIGHT]; }
+	[[nodiscard]] inline const bool &isButton4Down() const { return m_bMouseButtonDown[BUTTON_X1]; }
+	[[nodiscard]] inline const bool &isButton5Down() const { return m_bMouseButtonDown[BUTTON_X2]; }
 
-	[[nodiscard]] inline int getWheelDeltaVertical() const { return m_iWheelDeltaVertical; }
-	[[nodiscard]] inline int getWheelDeltaHorizontal() const { return m_iWheelDeltaHorizontal; }
+	[[nodiscard]] inline const int &getWheelDeltaVertical() const { return m_iWheelDeltaVertical; }
+	[[nodiscard]] inline const int &getWheelDeltaHorizontal() const { return m_iWheelDeltaHorizontal; }
 
 	void resetWheelDelta();
 
 	// input mode control
-	[[nodiscard]] inline bool isInAbsoluteMode() const { return m_bAbsolute; }
+	[[nodiscard]] inline const bool &isInAbsoluteMode() const { return m_bAbsolute; }
 	inline void setAbsoluteMode(bool absolute) { m_bAbsolute = absolute; }
 
-	[[nodiscard]] inline bool isRawInput() const { return m_bIsRawInput; } // "desired" rawinput state, NOT actual OS raw input state!
+	[[nodiscard]] inline const bool &isRawInput() const { return m_bIsRawInput; } // "desired" rawinput state, NOT actual OS raw input state!
 private:
 	void setPosXY(float x, float y);
 	void updateFakelagBuffer();

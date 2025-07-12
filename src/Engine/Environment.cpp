@@ -731,9 +731,9 @@ void Environment::setCursor(CURSORTYPE cur)
 
 namespace
 {
-void sensTransformFunc(void * /*userdata*/, Uint64 /*timestamp*/, SDL_Window * /*window*/, SDL_MouseID /*mouseid*/, float *x, float *y)
+void sensTransformFunc(void *userdata, Uint64 /*timestamp*/, SDL_Window * /*window*/, SDL_MouseID /*mouseid*/, float *x, float *y)
 {
-	const float sensitivity = mouse->getSensitivity();
+	const float sensitivity = *static_cast<float*>(userdata);
 	*x *= sensitivity;
 	*y *= sensitivity;
 }
@@ -759,8 +759,8 @@ void Environment::notifyWantRawInput(bool raw)
 		// this is because SDL has no equivalent of sensTransformFunc for non-relative mouse mode
 		SDL_SetWindowMouseRect(m_window, nullptr);
 	}
-
-	SDL_SetRelativeMouseTransform(raw ? sensTransformFunc : nullptr, nullptr);
+	static constexpr const float default_sens{1.0f};
+	SDL_SetRelativeMouseTransform(raw ? sensTransformFunc : nullptr, mouse ? (void*)&mouse->getSensitivity() : (void*)(&default_sens));
 	SDL_SetWindowRelativeMouseMode(m_window, raw);
 }
 
@@ -774,10 +774,10 @@ void Environment::setCursorVisible(bool visible)
 		if (mouse->isRawInput())
 		{
 			notifyWantRawInput(false);
-			setOSMousePos(getMousePos().nudge(getWindowSize() / 2.0f, 1.0f)); // nudge it outwards
+			setOSMousePos(Vector2{getMousePos()}.nudge(getWindowSize() / 2.0f, 1.0f)); // nudge it outwards
 		}
 		else                                                                        // snap the OS cursor to virtual cursor position
-			setOSMousePos(mouse->getRealPos().nudge(getWindowSize() / 2.0f, 1.0f)); // nudge it outwards
+			setOSMousePos(Vector2{mouse->getRealPos()}.nudge(getWindowSize() / 2.0f, 1.0f)); // nudge it outwards
 		SDL_ShowCursor();
 	}
 	else

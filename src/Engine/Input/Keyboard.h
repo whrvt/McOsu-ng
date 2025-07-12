@@ -28,10 +28,10 @@ public:
 	void onKeyUp(KEYCODE keyCode);
 	void onChar(KEYCODE charCode);
 
-	[[nodiscard]] inline bool isControlDown() const {return m_bControlDown;}
-	[[nodiscard]] inline bool isAltDown() const {return m_bAltDown;}
-	[[nodiscard]] inline bool isShiftDown() const {return m_bShiftDown;}
-	[[nodiscard]] inline bool isSuperDown() const {return m_bSuperDown;}
+	[[nodiscard]] inline const bool &isControlDown() const {return m_bControlDown;}
+	[[nodiscard]] inline const bool &isAltDown() const {return m_bAltDown;}
+	[[nodiscard]] inline const bool &isShiftDown() const {return m_bShiftDown;}
+	[[nodiscard]] inline const bool &isSuperDown() const {return m_bSuperDown;}
 
 private:
 	bool m_bControlDown;

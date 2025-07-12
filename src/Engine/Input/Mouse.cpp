@@ -138,7 +138,7 @@ void Mouse::update()
 			const bool clipped = env->isCursorClipped();
 			const McRect clipRect = clipped ? env->getCursorClip() : McRect{{0,0}, engine->getScreenSize()};
 			const Vector2 center = clipRect.getCenter();
-			const Vector2 realPosNudgedOut = env->getMousePos().nudge(center, 10.0f);
+			const Vector2 realPosNudgedOut = Vector2{env->getMousePos()}.nudge(center, 10.0f);
 			if (!clipRect.contains(realPosNudgedOut))
 			{
 				if (clipped)
