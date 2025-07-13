@@ -265,6 +265,7 @@ Osu::Osu()
 	m_bSeekKey = false;
 	m_fPrevSeekMousePosX = -1.0f;
 	m_fQuickSaveTime = 0.0f;
+	m_fPrevNoScreenVisibleWorkaroundTime = 0.0f;
 
 	m_bToggleModSelectionScheduled = false;
 	m_bToggleSongBrowserScheduled = false;

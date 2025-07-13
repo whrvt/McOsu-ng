@@ -434,7 +434,7 @@ void OpenGLLegacyInterface::drawVAO(VertexArrayObject *vao)
 	// if baked, then we can directly draw the buffer
 	if (vao->isReady())
 	{
-		((OpenGLVertexArrayObject *)vao)->draw();
+		vao->draw();
 		return;
 	}
 

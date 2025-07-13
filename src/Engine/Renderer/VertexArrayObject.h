@@ -53,6 +53,8 @@ public:
 	[[nodiscard]] inline unsigned int getNumVertices() const {return m_iNumVertices;}
 	[[nodiscard]] inline bool hasTexcoords() const {return m_bHasTexcoords;}
 
+	virtual void draw() { assert(false); } // implementation dependent (gl/dx11/etc.)
+
 	// type inspection
 	[[nodiscard]] Type getResType() const final { return VAO; }
 

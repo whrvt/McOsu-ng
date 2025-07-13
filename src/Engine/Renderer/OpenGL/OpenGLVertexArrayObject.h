@@ -25,7 +25,7 @@ public:
 	OpenGLVertexArrayObject(const OpenGLVertexArrayObject &) = delete;
 	OpenGLVertexArrayObject(OpenGLVertexArrayObject &&) = delete;
 
-	void draw();
+	void draw() override;
 
 private:
 	static int primitiveToOpenGL(Graphics::PRIMITIVE primitive);

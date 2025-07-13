@@ -21,7 +21,7 @@ public:
 	                            bool keepInSystemMemory = false);
 	~OpenGLES32VertexArrayObject() override { destroy(); }
 
-	void draw();
+	void draw() override;
 
 	[[nodiscard]] inline unsigned int getNumTexcoords0() const { return m_iNumTexcoords; }
 	[[nodiscard]] inline unsigned int getNumColors() const { return m_iNumColors; }

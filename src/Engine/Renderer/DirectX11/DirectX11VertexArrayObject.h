@@ -21,7 +21,7 @@ public:
 	DirectX11VertexArrayObject(Graphics::PRIMITIVE primitive = Graphics::PRIMITIVE::PRIMITIVE_TRIANGLES, Graphics::USAGE_TYPE usage = Graphics::USAGE_TYPE::USAGE_STATIC, bool keepInSystemMemory = false);
 	~DirectX11VertexArrayObject() override {destroy();}
 
-	void draw();
+	void draw() override;
 
 protected:
 	void init() override;

@@ -830,7 +830,7 @@ void DirectX11Interface::drawVAO(VertexArrayObject *vao)
 				m_activeShader->onJustBeforeDraw();
 		}
 
-		static_cast<DirectX11VertexArrayObject *>(vao)->draw();
+		vao->draw();
 		return;
 	}
 

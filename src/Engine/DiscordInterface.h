@@ -60,6 +60,6 @@ private:
 #endif
 };
 
-extern DiscordInterface *discord;
+extern std::unique_ptr<DiscordInterface> discord;
 
 #endif

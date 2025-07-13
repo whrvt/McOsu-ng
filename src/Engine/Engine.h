@@ -85,19 +85,6 @@ public:
 	// engine specifics
 	void blackout() { m_bBlackout = true; }
 
-private:
-	// singleton interface/instance decls
-	static std::unique_ptr<Mouse> s_mouseInstance;
-	static std::unique_ptr<Keyboard> s_keyboardInstance;
-	static std::unique_ptr<App> s_appInstance;
-	static std::unique_ptr<Graphics> s_graphicsInstance;
-	static std::unique_ptr<SoundEngine> s_soundEngineInstance;
-	static std::unique_ptr<ResourceManager> s_resourceManagerInstance;
-	static std::unique_ptr<NetworkHandler> s_networkHandlerInstance;
-	static std::unique_ptr<AnimationHandler> s_animationHandlerInstance;
-	static std::unique_ptr<SteamworksInterface> s_steamInstance;
-	static std::unique_ptr<DiscordInterface> s_discordInstance;
-
 public:
 	// input devices
 	[[nodiscard]] constexpr const std::vector<Mouse *> &getMice() const { return m_mice; }
@@ -253,16 +240,16 @@ private:
 	}
 };
 
-extern Mouse *mouse;
-extern Keyboard *keyboard;
-extern App *app;
-extern Graphics *g;
-extern SoundEngine *soundEngine;
-extern ResourceManager *resourceManager;
-extern NetworkHandler *networkHandler;
-extern AnimationHandler *animationHandler;
-extern SteamworksInterface *steam;
-extern DiscordInterface *discord;
+extern std::unique_ptr<Mouse> mouse;
+extern std::unique_ptr<Keyboard> keyboard;
+extern std::unique_ptr<App> app;
+extern std::unique_ptr<Graphics> g;
+extern std::unique_ptr<SoundEngine> soundEngine;
+extern std::unique_ptr<ResourceManager> resourceManager;
+extern std::unique_ptr<NetworkHandler> networkHandler;
+extern std::unique_ptr<AnimationHandler> animationHandler;
+extern std::unique_ptr<SteamworksInterface> steam;
+extern std::unique_ptr<DiscordInterface> discord;
 
 extern Engine *engine;
 

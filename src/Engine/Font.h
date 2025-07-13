@@ -44,9 +44,9 @@ public:
 	void setDPI(int dpi) { m_iFontDPI = dpi; }
 	void setHeight(float height) { m_fHeight = height; }
 
-	inline int getSize() const { return m_iFontSize; }
-	inline int getDPI() const { return m_iFontDPI; }
-	inline float getHeight() const { return m_fHeight; } // precomputed average height (fast)
+	inline const int &getSize() const { return m_iFontSize; }
+	inline const int &getDPI() const { return m_iFontDPI; }
+	inline const float &getHeight() const { return m_fHeight; } // precomputed average height (fast)
 
 	float getStringWidth(const UString &text) const;
 	float getStringHeight(const UString &text) const;
@@ -104,7 +104,7 @@ private:
 	// consolidated glyph processing methods
 	bool initializeFreeType();
 	bool loadGlyphMetrics(wchar_t ch);
-	std::unique_ptr<Color[]> createExpandedBitmapData(const FT_Bitmap &bitmap);
+	std::unique_ptr<std::vector<Color>> createExpandedBitmapData(const FT_Bitmap &bitmap);
 	void renderGlyphToAtlas(wchar_t ch, int x, int y, FT_Face face = nullptr);
 	bool createAndPackAtlas(const std::vector<wchar_t> &glyphs);
 
@@ -116,7 +116,7 @@ private:
 	void buildStringGeometry(const UString &text, size_t &vertexCount);
 
 	const GLYPH_METRICS &getGlyphMetrics(wchar_t ch) const;
-	Channel *unpackMonoBitmap(const FT_Bitmap &bitmap);
+	std::vector<Channel> unpackMonoBitmap(const FT_Bitmap &bitmap);
 
 	// shared freetype resources
 	static FT_Library s_sharedFtLibrary;

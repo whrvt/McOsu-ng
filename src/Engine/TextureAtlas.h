@@ -37,9 +37,9 @@ public:
 
 	void setPadding(int padding) { m_iPadding = padding; }
 
-	[[nodiscard]] inline int getWidth() const { return m_iWidth; }
-	[[nodiscard]] inline int getHeight() const { return m_iHeight; }
-	[[nodiscard]] inline int getPadding() const { return m_iPadding; }
+	[[nodiscard]] inline const int &getWidth() const { return m_iWidth; }
+	[[nodiscard]] inline const int &getHeight() const { return m_iHeight; }
+	[[nodiscard]] inline const int &getPadding() const { return m_iPadding; }
 	[[nodiscard]] inline Image *getAtlasImage() const { return m_atlasImage; }
 
 	// type inspection

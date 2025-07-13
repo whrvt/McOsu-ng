@@ -12,6 +12,7 @@
 #include <vector>
 #include <stack>
 #include <cstdint>
+#include <memory>
 
 #include "Matrices.h"
 #include "Vectors.h"
@@ -244,6 +245,6 @@ protected:
 	Matrix4 m_3dSceneProjectionMatrix;
 };
 
-extern Graphics *g; // defined in Engine, declared here for convenience
+extern std::unique_ptr<Graphics> g; // defined in Engine, declared here for convenience
 
 #endif

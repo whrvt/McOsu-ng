@@ -21,6 +21,7 @@
 #include <ft2build.h>
 
 #include <algorithm>
+#include <cstddef>
 #include <utility>
 
 // TODO: use fontconfig on linux?
@@ -35,7 +36,7 @@ static constexpr size_t MIN_ATLAS_SIZE = 256;
 static constexpr size_t MAX_ATLAS_SIZE = 4096;
 static constexpr wchar_t UNKNOWN_CHAR = '?'; // ASCII '?'
 
-static constexpr auto VERTS_PER_VAO = Env::cfg( REND::GLES32) ? 6 : 4;
+static constexpr auto VERTS_PER_VAO = Env::cfg(REND::GLES32) ? 6 : 4;
 
 namespace cv
 {
@@ -54,8 +55,7 @@ bool McFont::s_sharedFallbacksInitialized = false;
 
 McFont::McFont(const UString &filepath, int fontSize, bool antialiasing, int fontDPI)
     : Resource(filepath),
-      m_vao((Env::cfg( REND::GLES32) ? Graphics::PRIMITIVE::PRIMITIVE_TRIANGLES : Graphics::PRIMITIVE::PRIMITIVE_QUADS),
-            Graphics::USAGE_TYPE::USAGE_DYNAMIC)
+      m_vao((Env::cfg(REND::GLES32) ? Graphics::PRIMITIVE::PRIMITIVE_TRIANGLES : Graphics::PRIMITIVE::PRIMITIVE_QUADS), Graphics::USAGE_TYPE::USAGE_DYNAMIC)
 {
 	std::vector<wchar_t> characters;
 	characters.reserve(96); // reserve space for basic ASCII, load the rest as needed
@@ -68,8 +68,7 @@ McFont::McFont(const UString &filepath, int fontSize, bool antialiasing, int fon
 
 McFont::McFont(const UString &filepath, const std::vector<wchar_t> &characters, int fontSize, bool antialiasing, int fontDPI)
     : Resource(filepath),
-      m_vao((Env::cfg( REND::GLES32) ? Graphics::PRIMITIVE::PRIMITIVE_TRIANGLES : Graphics::PRIMITIVE::PRIMITIVE_QUADS),
-            Graphics::USAGE_TYPE::USAGE_DYNAMIC)
+      m_vao((Env::cfg(REND::GLES32) ? Graphics::PRIMITIVE::PRIMITIVE_TRIANGLES : Graphics::PRIMITIVE::PRIMITIVE_QUADS), Graphics::USAGE_TYPE::USAGE_DYNAMIC)
 {
 	constructor(characters, fontSize, antialiasing, fontDPI);
 }
@@ -381,7 +380,7 @@ bool McFont::loadFallbackFont(const UString &fontPath, bool isSystemFont)
 
 void McFont::setFaceSize(FT_Face face) const
 {
-	FT_Set_Char_Size(face, m_iFontSize * 64, m_iFontSize * 64, m_iFontDPI, m_iFontDPI);
+	FT_Set_Char_Size(face, static_cast<FT_F26Dot6>(m_iFontSize) * 64, static_cast<FT_F26Dot6>(m_iFontSize) * 64, m_iFontDPI, m_iFontDPI);
 }
 
 bool McFont::ensureAtlasSpace(int requiredWidth, int requiredHeight)
@@ -471,22 +470,22 @@ bool McFont::loadGlyphMetrics(wchar_t ch)
 	return loadGlyphFromFace(ch, face, fontIndex);
 }
 
-std::unique_ptr<Color[]> McFont::createExpandedBitmapData(const FT_Bitmap &bitmap)
+std::unique_ptr<std::vector<Color>> McFont::createExpandedBitmapData(const FT_Bitmap &bitmap)
 {
-	std::unique_ptr<Color[]> expandedData(new Color[bitmap.width * bitmap.rows]);
+	std::unique_ptr<std::vector<Color>> expandedData = std::make_unique<std::vector<Color>>(static_cast<size_t>(bitmap.width) * bitmap.rows);
 
-	std::unique_ptr<Channel[]> monoBitmapUnpacked;
+	std::vector<Channel> monoBitmapUnpacked;
 	if (!m_bAntialiasing)
-		monoBitmapUnpacked.reset(unpackMonoBitmap(bitmap));
+		monoBitmapUnpacked = unpackMonoBitmap(bitmap);
 
 	for (unsigned int j = 0; j < bitmap.rows; j++)
 	{
 		for (unsigned int k = 0; k < bitmap.width; k++)
 		{
-			const size_t expandedIdx = (k + (bitmap.rows - j - 1) * bitmap.width);
+			const ssize_t expandedIdx = (k + (bitmap.rows - j - 1) * bitmap.width);
 
-			Channel alpha = m_bAntialiasing ? bitmap.buffer[k + bitmap.width * j] : monoBitmapUnpacked[k + bitmap.width * j] > 0 ? 255 : 0;
-			expandedData[expandedIdx] = Color(alpha, 0xff, 0xff, 0xff); // ARGB
+			Channel alpha = m_bAntialiasing ? bitmap.buffer[k + bitmap.width * j] : monoBitmapUnpacked.begin()[k + bitmap.width * j] > 0 ? 255 : 0;
+			expandedData->begin()[expandedIdx] = argb(alpha, 0xff, 0xff, 0xff); // ARGB
 		}
 	}
 
@@ -524,7 +523,7 @@ void McFont::renderGlyphToAtlas(wchar_t ch, int x, int y, FT_Face face)
 	if (bitmap.width > 0 && bitmap.rows > 0)
 	{
 		auto expandedData = createExpandedBitmapData(bitmap);
-		m_textureAtlas->putAt(x, y, bitmap.width, bitmap.rows, false, true, expandedData.get());
+		m_textureAtlas->putAt(x, y, static_cast<int>(bitmap.width), static_cast<int>(bitmap.rows), false, true, expandedData->data());
 
 		// update metrics with atlas coordinates
 		GLYPH_METRICS &metrics = m_vGlyphMetrics[ch];
@@ -597,19 +596,19 @@ bool McFont::createAndPackAtlas(const std::vector<wchar_t> &glyphs)
 
 void McFont::buildGlyphGeometry(const GLYPH_METRICS &gm, const Vector3 &basePos, float advanceX, size_t &vertexCount)
 {
-	const float atlasWidth = static_cast<float>(m_textureAtlas->getAtlasImage()->getWidth());
-	const float atlasHeight = static_cast<float>(m_textureAtlas->getAtlasImage()->getHeight());
+	const auto &atlasWidth{m_textureAtlas->getAtlasImage()->getWidth()};
+	const auto &atlasHeight{m_textureAtlas->getAtlasImage()->getHeight()};
 
-	const float x = basePos.x + gm.left + advanceX;
-	const float y = basePos.y - (gm.top - gm.rows);
+	const float x = basePos.x + static_cast<float>(gm.left) + advanceX;
+	const float y = basePos.y - static_cast<float>(gm.top - gm.rows);
 	const float z = basePos.z;
-	const float sx = gm.width;
-	const float sy = -gm.rows;
+	const auto sx = static_cast<float>(gm.width);
+	const auto sy = static_cast<float>(-gm.rows);
 
-	const float texX = static_cast<float>(gm.uvPixelsX) / atlasWidth;
-	const float texY = static_cast<float>(gm.uvPixelsY) / atlasHeight;
-	const float texSizeX = static_cast<float>(gm.sizePixelsX) / atlasWidth;
-	const float texSizeY = static_cast<float>(gm.sizePixelsY) / atlasHeight;
+	const float texX = static_cast<float>(gm.uvPixelsX) / static_cast<float>(atlasWidth);
+	const float texY = static_cast<float>(gm.uvPixelsY) / static_cast<float>(atlasHeight);
+	const float texSizeX = static_cast<float>(gm.sizePixelsX) / static_cast<float>(atlasWidth);
+	const float texSizeY = static_cast<float>(gm.sizePixelsY) / static_cast<float>(atlasHeight);
 
 	// corners of the "quad"
 	Vector3 bottomLeft = Vector3(x, y + sy, z);
@@ -625,7 +624,7 @@ void McFont::buildGlyphGeometry(const GLYPH_METRICS &gm, const Vector3 &basePos,
 
 	const size_t idx = vertexCount;
 
-	if constexpr (Env::cfg( REND::GLES32))
+	if constexpr (Env::cfg(REND::GLES32))
 	{
 		// first triangle (bottom-left, top-left, top-right)
 		m_vertices[idx] = bottomLeft;
@@ -670,9 +669,9 @@ void McFont::buildStringGeometry(const UString &text, size_t &vertexCount)
 		rebuildAtlas();
 
 	float advanceX = 0.0f;
-	const size_t maxGlyphs = std::min(text.length(), (int)(m_vertices.size() - vertexCount) / VERTS_PER_VAO);
+	const int maxGlyphs = std::min(text.length(), (int)(m_vertices.size() - vertexCount) / VERTS_PER_VAO);
 
-	for (size_t i = 0; i < maxGlyphs; i++)
+	for (int i = 0; i < maxGlyphs; i++)
 	{
 		const GLYPH_METRICS &gm = getGlyphMetrics(text[i]);
 		buildGlyphGeometry(gm, Vector3(), advanceX, vertexCount);
@@ -691,14 +690,14 @@ void McFont::drawString(const UString &text)
 
 	m_vao.empty();
 
-	const size_t totalVerts = text.length() * VERTS_PER_VAO;
+	const int totalVerts = text.length() * VERTS_PER_VAO;
 	m_vertices.resize(totalVerts);
 	m_texcoords.resize(totalVerts);
 
 	size_t vertexCount = 0;
 	buildStringGeometry(text, vertexCount);
 
-	for (size_t i = 0; i < vertexCount; i++)
+	for (int i = 0; i < vertexCount; i++)
 	{
 		m_vao.addVertex(m_vertices[i]);
 		m_vao.addTexcoord(m_texcoords[i]);
@@ -720,7 +719,7 @@ void McFont::beginBatch()
 
 void McFont::addToBatch(const UString &text, const Vector3 &pos, Color color)
 {
-	size_t verts{};
+	int verts = 0;
 	if (!m_batchActive || (verts = text.length() * VERTS_PER_VAO) == 0)
 		return;
 	m_batchQueue.totalVerts += verts;
@@ -888,17 +887,17 @@ bool McFont::addGlyph(wchar_t ch)
 	return true;
 }
 
-Channel *McFont::unpackMonoBitmap(const FT_Bitmap &bitmap)
+std::vector<Channel> McFont::unpackMonoBitmap(const FT_Bitmap &bitmap)
 {
-	auto result = new Channel[bitmap.rows * bitmap.width];
+	std::vector<Channel> result(static_cast<size_t>(bitmap.rows) * bitmap.width);
 
 	for (int y = 0; std::cmp_less(y, bitmap.rows); y++)
 	{
 		for (int byteIdx = 0; byteIdx < bitmap.pitch; byteIdx++)
 		{
 			const unsigned char byteValue = bitmap.buffer[y * bitmap.pitch + byteIdx];
-			const int numBitsDone = byteIdx * 8;
-			const int rowstart = y * bitmap.width + byteIdx * 8;
+			const unsigned int numBitsDone = byteIdx * 8;
+			const unsigned int rowstart = y * bitmap.width + byteIdx * 8;
 
 			const int bits = std::min(8, static_cast<int>(bitmap.width - numBitsDone));
 

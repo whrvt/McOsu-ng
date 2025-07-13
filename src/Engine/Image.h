@@ -39,13 +39,13 @@ public:
 
 	[[nodiscard]] Color getPixel(int x, int y) const;
 
-	[[nodiscard]] inline Image::TYPE getType() const { return m_type; }
-	[[nodiscard]] inline int getNumChannels() const { return m_iNumChannels; }
-	[[nodiscard]] inline int getWidth() const { return m_iWidth; }
-	[[nodiscard]] inline int getHeight() const { return m_iHeight; }
+	[[nodiscard]] inline const Image::TYPE &getType() const { return m_type; }
+	[[nodiscard]] inline const int &getNumChannels() const { return m_iNumChannels; }
+	[[nodiscard]] inline const int &getWidth() const { return  m_iWidth; }
+	[[nodiscard]] inline const int &getHeight() const { return m_iHeight; }
 	[[nodiscard]] inline Vector2 getSize() const { return {m_iWidth, m_iHeight}; }
 
-	[[nodiscard]] inline bool hasAlphaChannel() const { return m_bHasAlphaChannel; }
+	[[nodiscard]] inline const bool &hasAlphaChannel() const { return m_bHasAlphaChannel; }
 
 	// type inspection
 	[[nodiscard]] Type getResType() const final { return IMAGE; }
