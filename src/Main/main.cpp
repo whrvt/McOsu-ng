@@ -64,6 +64,7 @@ void setcwdexe(const char *argv0) noexcept
 #include "Mouse.h"
 #include "Profiler.h"
 #include "Timing.h"
+#include "FPSLimiter.h"
 
 // thin environment subclass to provide SDL callbacks with direct access to members
 class SDLMain final : public Environment
@@ -89,15 +90,12 @@ private:
 	// engine update timer
 	Timer *m_deltaTimer;
 
-	// when the next frame should render (for non-callback fps limiting)
-	uint64_t m_iNextFrameTime;
-
 	int m_iFpsMax;
 	int m_iFpsMaxBG;
 
 	// set iteration rate for callbacks
 	// clang-format off
-	inline void setFgFPS() { if constexpr (Env::cfg(FEAT::MAINCB)) SDL_SetHint(SDL_HINT_MAIN_CALLBACK_RATE, fmt::format("{}", m_iFpsMax).c_str()); else m_iNextFrameTime = Timing::getTicksNS(); }
+	inline void setFgFPS() { if constexpr (Env::cfg(FEAT::MAINCB)) SDL_SetHint(SDL_HINT_MAIN_CALLBACK_RATE, fmt::format("{}", m_iFpsMax).c_str()); else FPSLimiter::reset(); }
 	inline void setBgFPS() { if constexpr (Env::cfg(FEAT::MAINCB)) SDL_SetHint(SDL_HINT_MAIN_CALLBACK_RATE, fmt::format("{}", m_iFpsMaxBG).c_str()); }
 	// clang-format on
 
@@ -250,8 +248,6 @@ SDLMain::SDLMain(int argc, char *argv[])
 	m_iFpsMax = 360;
 	m_iFpsMaxBG = 30;
 
-	m_iNextFrameTime = 0;
-
 	// setup callbacks
 	cv::fps_max.setCallback(fastdelegate::MakeDelegate(this, &SDLMain::fps_max_callback));
 	cv::fps_max_background.setCallback(fastdelegate::MakeDelegate(this, &SDLMain::fps_max_background_callback));
@@ -327,8 +323,6 @@ SDL_AppResult SDLMain::initialize()
 	// SDL3 stops listening to text input globally when window is created
 	SDL_StartTextInput(m_window);
 	SDL_SetWindowKeyboardGrab(m_window, false); // this allows windows key and such to work
-
-	m_iNextFrameTime = Timing::getTicksNS(); // init fps timer
 
 	// return init success
 	return SDL_APP_CONTINUE;
@@ -518,27 +512,7 @@ nocbinline SDL_AppResult SDLMain::iterate()
 
 		// if minimized or unfocused, use BG fps, otherwise use fps_max (if 0 it's unlimited)
 		const int targetFPS = m_bMinimized || !m_bHasFocus ? m_iFpsMaxBG : m_iFpsMax;
-		if (targetFPS > 0)
-		{
-			const uint64_t frameTimeNS = Timing::NS_PER_SECOND / static_cast<uint64_t>(targetFPS);
-			const uint64_t now = Timing::getTicksNS();
-
-			// if we're ahead of schedule, sleep until next frame
-			if (m_iNextFrameTime > now)
-			{
-				const uint64_t sleepTime = m_iNextFrameTime - now;
-				Timing::sleepNS(sleepTime);
-			}
-			else
-			{
-				// behind schedule or exactly on time, reset to now
-				m_iNextFrameTime = now;
-			}
-			// set time for next frame
-			m_iNextFrameTime += frameTimeNS;
-		}
-		if (cv::fps_yield.getBool())
-			Timing::sleep(0);
+		FPSLimiter::limitFrames(targetFPS);
 	}
 
 	return SDL_APP_CONTINUE;

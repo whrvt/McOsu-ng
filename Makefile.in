@@ -208,6 +208,7 @@ am_McOsu_ng_OBJECTS = libraries/McOsu_ng-MD5.$(OBJEXT) \
 	src/Engine/McOsu_ng-DiscordInterface.$(OBJEXT) \
 	src/Engine/McOsu_ng-Engine.$(OBJEXT) \
 	src/Engine/McOsu_ng-Environment.$(OBJEXT) \
+	src/Engine/McOsu_ng-FPSLimiter.$(OBJEXT) \
 	src/Engine/McOsu_ng-File.$(OBJEXT) \
 	src/Engine/McOsu_ng-Font.$(OBJEXT) \
 	src/Engine/McOsu_ng-Image.$(OBJEXT) \
@@ -379,6 +380,7 @@ am__depfiles_remade = libraries/$(DEPDIR)/McOsu_ng-MD5.Po \
 	src/Engine/$(DEPDIR)/McOsu_ng-DiscordInterface.Po \
 	src/Engine/$(DEPDIR)/McOsu_ng-Engine.Po \
 	src/Engine/$(DEPDIR)/McOsu_ng-Environment.Po \
+	src/Engine/$(DEPDIR)/McOsu_ng-FPSLimiter.Po \
 	src/Engine/$(DEPDIR)/McOsu_ng-File.Po \
 	src/Engine/$(DEPDIR)/McOsu_ng-Font.Po \
 	src/Engine/$(DEPDIR)/McOsu_ng-Image.Po \
@@ -832,6 +834,7 @@ McOsu_ng_SOURCES = \
 	src/Engine/DiscordInterface.cpp \
 	src/Engine/Engine.cpp \
 	src/Engine/Environment.cpp \
+	src/Engine/FPSLimiter.cpp \
 	src/Engine/File.cpp \
 	src/Engine/Font.cpp \
 	src/Engine/Image.cpp \
@@ -1362,6 +1365,8 @@ src/Engine/McOsu_ng-Engine.$(OBJEXT): src/Engine/$(am__dirstamp) \
 	src/Engine/$(DEPDIR)/$(am__dirstamp)
 src/Engine/McOsu_ng-Environment.$(OBJEXT): src/Engine/$(am__dirstamp) \
 	src/Engine/$(DEPDIR)/$(am__dirstamp)
+src/Engine/McOsu_ng-FPSLimiter.$(OBJEXT): src/Engine/$(am__dirstamp) \
+	src/Engine/$(DEPDIR)/$(am__dirstamp)
 src/Engine/McOsu_ng-File.$(OBJEXT): src/Engine/$(am__dirstamp) \
 	src/Engine/$(DEPDIR)/$(am__dirstamp)
 src/Engine/McOsu_ng-Font.$(OBJEXT): src/Engine/$(am__dirstamp) \
@@ -1755,6 +1760,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/$(DEPDIR)/McOsu_ng-DiscordInterface.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/$(DEPDIR)/McOsu_ng-Engine.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/$(DEPDIR)/McOsu_ng-Environment.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@src/Engine/$(DEPDIR)/McOsu_ng-FPSLimiter.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/$(DEPDIR)/McOsu_ng-File.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/$(DEPDIR)/McOsu_ng-Font.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/$(DEPDIR)/McOsu_ng-Image.Po@am__quote@ # am--include-marker
@@ -2878,6 +2884,20 @@ src/Engine/McOsu_ng-Environment.obj: src/Engine/Environment.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/Environment.cpp' object='src/Engine/McOsu_ng-Environment.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/McOsu_ng-Environment.obj `if test -f 'src/Engine/Environment.cpp'; then $(CYGPATH_W) 'src/Engine/Environment.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/Environment.cpp'; fi`
+
+src/Engine/McOsu_ng-FPSLimiter.o: src/Engine/FPSLimiter.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/McOsu_ng-FPSLimiter.o -MD -MP -MF src/Engine/$(DEPDIR)/McOsu_ng-FPSLimiter.Tpo -c -o src/Engine/McOsu_ng-FPSLimiter.o `test -f 'src/Engine/FPSLimiter.cpp' || echo '$(srcdir)/'`src/Engine/FPSLimiter.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/$(DEPDIR)/McOsu_ng-FPSLimiter.Tpo src/Engine/$(DEPDIR)/McOsu_ng-FPSLimiter.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/FPSLimiter.cpp' object='src/Engine/McOsu_ng-FPSLimiter.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/McOsu_ng-FPSLimiter.o `test -f 'src/Engine/FPSLimiter.cpp' || echo '$(srcdir)/'`src/Engine/FPSLimiter.cpp
+
+src/Engine/McOsu_ng-FPSLimiter.obj: src/Engine/FPSLimiter.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/McOsu_ng-FPSLimiter.obj -MD -MP -MF src/Engine/$(DEPDIR)/McOsu_ng-FPSLimiter.Tpo -c -o src/Engine/McOsu_ng-FPSLimiter.obj `if test -f 'src/Engine/FPSLimiter.cpp'; then $(CYGPATH_W) 'src/Engine/FPSLimiter.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/FPSLimiter.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/$(DEPDIR)/McOsu_ng-FPSLimiter.Tpo src/Engine/$(DEPDIR)/McOsu_ng-FPSLimiter.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/FPSLimiter.cpp' object='src/Engine/McOsu_ng-FPSLimiter.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/McOsu_ng-FPSLimiter.obj `if test -f 'src/Engine/FPSLimiter.cpp'; then $(CYGPATH_W) 'src/Engine/FPSLimiter.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/FPSLimiter.cpp'; fi`
 
 src/Engine/McOsu_ng-File.o: src/Engine/File.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/McOsu_ng-File.o -MD -MP -MF src/Engine/$(DEPDIR)/McOsu_ng-File.Tpo -c -o src/Engine/McOsu_ng-File.o `test -f 'src/Engine/File.cpp' || echo '$(srcdir)/'`src/Engine/File.cpp
@@ -4382,6 +4402,7 @@ distclean: distclean-am
 	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-DiscordInterface.Po
 	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-Engine.Po
 	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-Environment.Po
+	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-FPSLimiter.Po
 	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-File.Po
 	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-Font.Po
 	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-Image.Po
@@ -4582,6 +4603,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-DiscordInterface.Po
 	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-Engine.Po
 	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-Environment.Po
+	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-FPSLimiter.Po
 	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-File.Po
 	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-Font.Po
 	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-Image.Po
