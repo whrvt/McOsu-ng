@@ -10340,7 +10340,7 @@ MPG123_BUILD_VERSION=b9edc89540cb43f1d8c9881d9f67dde996cfb8ef # git mirror, late
 
 # always build these from source if we want to use them
 #AC_SUBST([SOLOUD_VERSION], [1.1.1]) # my fork
-SOLOUD_VERSION=cd4722b37bd4fb0c5671c4243e467d88335c54b4
+SOLOUD_VERSION=c59c04fed0c13ead2f4a61f40375ebb5879a11bb
 
 SOLOUD_PREFIX=$DEPS_PREFIX
 
