@@ -92,13 +92,14 @@ private:
 	unsigned int mSTOutputSequenceSamples;
 
 	// this is derived from the above, it doesn't change very often so it makes sense to keep it cached as well
-	std::atomic<double> mSTLatencySeconds;
+	double mSTLatencySeconds;
 
-	std::atomic<float> mSoundTouchSpeed;
-	std::atomic<float> mSoundTouchPitch;
+	float mSoundTouchSpeed;
+	float mSoundTouchPitch;
 
 	// to be used to signal the instance that the soundtouch parameters need to be adjusted at the next best time
-	std::atomic<bool> mNeedsSettingUpdate;
+	bool mNeedsSettingUpdate;
+	std::mutex mSettingUpdateMutex;
 
 	// buffers for format conversion
 	float *mBuffer;           // temporary read buffer from source (non-interleaved)
@@ -115,6 +116,7 @@ private:
 
 	// debugging and tracking
 	unsigned int mProcessingCounter; // counter for logspam avoidance
+
 };
 
 /**
@@ -160,8 +162,8 @@ public:
 protected:
 	friend class SoundTouchFilterInstance;
 
-	std::atomic<float> mSpeedFactor; // current speed factor (tempo)
-	std::atomic<float> mPitchFactor; // current pitch factor
+	float mSpeedFactor; // current speed factor (tempo)
+	float mPitchFactor; // current pitch factor
 
 	// internal audio stream
 	std::unique_ptr<WavStream> mSource;

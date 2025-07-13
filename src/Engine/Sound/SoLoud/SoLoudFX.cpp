@@ -13,6 +13,8 @@
 #include "Engine.h"
 #include "SoundEngine.h" // for shouldDetectBPM
 
+#include <mutex>
+
 #include <BPMDetect.h> // from SoundTouch, to implement getBPM()
 #include <SoundTouch.h>
 
@@ -62,7 +64,7 @@ AudioSourceInstance *SLFXStream::createInstance()
 	if (!mSource)
 		return nullptr;
 
-	ST_DEBUG_LOG("SoundTouchFilter: Creating instance with speed={:f}, pitch={:f}\n", mSpeedFactor.load(), mPitchFactor.load());
+	ST_DEBUG_LOG("SoundTouchFilter: Creating instance with speed={:f}, pitch={:f}\n", mSpeedFactor, mPitchFactor);
 
 	auto *instance = new SoundTouchFilterInstance(this);
 	mActiveInstance = instance; // track the active instance for position queries
@@ -71,28 +73,28 @@ AudioSourceInstance *SLFXStream::createInstance()
 
 void SLFXStream::setSpeedFactor(float aSpeed)
 {
-	ST_DEBUG_LOG("SoundTouchFilter: Speed changed from {:f} to {:f}\n", mSpeedFactor.load(), aSpeed);
+	ST_DEBUG_LOG("SoundTouchFilter: Speed changed from {:f} to {:f}\n", mSpeedFactor, aSpeed);
 	mSpeedFactor = aSpeed;
 	if (mActiveInstance)
-		mActiveInstance->requestSettingUpdate(mSpeedFactor.load(), mPitchFactor.load());
+		mActiveInstance->requestSettingUpdate(mSpeedFactor, mPitchFactor);
 }
 
 void SLFXStream::setPitchFactor(float aPitch)
 {
-	ST_DEBUG_LOG("SoundTouchFilter: Pitch changed from {:f} to {:f}\n", mPitchFactor.load(), aPitch);
+	ST_DEBUG_LOG("SoundTouchFilter: Pitch changed from {:f} to {:f}\n", mPitchFactor, aPitch);
 	mPitchFactor = aPitch;
 	if (mActiveInstance)
-		mActiveInstance->requestSettingUpdate(mSpeedFactor.load(), mPitchFactor.load());
+		mActiveInstance->requestSettingUpdate(mSpeedFactor, mPitchFactor);
 }
 
 float SLFXStream::getSpeedFactor() const
 {
-	return mSpeedFactor.load();
+	return mSpeedFactor;
 }
 
 float SLFXStream::getPitchFactor() const
 {
-	return mPitchFactor.load();
+	return mPitchFactor;
 }
 
 time SLFXStream::getRealStreamPosition() const
@@ -295,13 +297,13 @@ SoundTouchFilterInstance::SoundTouchFilterInstance(SLFXStream *aParent)
 				mSoundTouch->setSetting(SETTING_OVERLAP_MS, 5);
 
 				// set the actual speed and pitch factors
-				mSoundTouch->setTempo(mParent->mSpeedFactor.load());
-				mSoundTouch->setPitch(mParent->mPitchFactor.load());
+				mSoundTouch->setTempo(mParent->mSpeedFactor);
+				mSoundTouch->setPitch(mParent->mPitchFactor);
 
-				mSoundTouchSpeed = mParent->mSpeedFactor.load();
-				mSoundTouchPitch = mParent->mPitchFactor.load();
+				mSoundTouchSpeed = mParent->mSpeedFactor;
+				mSoundTouchPitch = mParent->mPitchFactor;
 
-				ST_DEBUG_LOG("SoundTouch: Initialized with speed={:f}, pitch={:f}\n", mSoundTouchSpeed.load(), mSoundTouchPitch.load());
+				ST_DEBUG_LOG("SoundTouch: Initialized with speed={:f}, pitch={:f}\n", mSoundTouchSpeed, mSoundTouchPitch);
 				ST_DEBUG_LOG("SoundTouch: Version: {:s}\n", mSoundTouch->getVersionString());
 
 				// sync cache latency info for offset calc
@@ -357,29 +359,8 @@ unsigned int SoundTouchFilterInstance::getAudio(float *aBuffer, unsigned int aSa
 		return aSamplesToRead;
 	}
 
-	// update SoundTouch parameters if they've changed, right at the start
-	if (mNeedsSettingUpdate.load())
-	{
-		mNeedsSettingUpdate = false;
-
-		ST_DEBUG_LOG("(Deferred) Updating speed: {:f}->{:f}, pitch: {:f}->{:f}\n", mSoundTouchSpeed.load(), mParent->mSpeedFactor.load(), mSoundTouchPitch.load(),
-		             mParent->mPitchFactor.load());
-
-		mSoundTouchSpeed = mParent->mSpeedFactor.load();
-		mSoundTouchPitch = mParent->mPitchFactor.load();
-
-		// actually update the parameters
-		mSoundTouch->setTempo(mSoundTouchSpeed.load());
-		mSoundTouch->setPitch(mSoundTouchPitch.load());
-
-		// SoLoud AudioStreamInstance inherited, allows the main SoLoud mixer to advance the mStreamPosition by the correct proportional amount
-		mSetRelativePlaySpeed = mOverallRelativePlaySpeed = mSoundTouchSpeed;
-
-		updateSTLatency();
-	}
-
 	if (logThisCall)
-		ST_DEBUG_LOG("speed: {:f}, pitch: {:f}\n", mSoundTouchSpeed.load(), mSoundTouchPitch.load());
+		ST_DEBUG_LOG("speed: {:f}, pitch: {:f}\n", mSoundTouchSpeed, mSoundTouchPitch);
 
 	unsigned int samplesInSoundTouch = mSoundTouch->numSamples();
 
@@ -455,6 +436,34 @@ unsigned int SoundTouchFilterInstance::getAudio(float *aBuffer, unsigned int aSa
 		             mInitialSTLatencySamples, mSTOutputSequenceSamples, mSTLatencySeconds * 1000.0, mSoundTouch->getInputOutputSampleRatio(),
 		             getRealStreamPosition());
 
+	// update SoundTouch parameters if they've changed, after the last getAudio chunk has played out with the old speed
+	bool updatePitchOrSpeed = false;
+	{
+		std::scoped_lock lock{mSettingUpdateMutex};
+		if (mNeedsSettingUpdate)
+		{
+			updatePitchOrSpeed = true;
+			mNeedsSettingUpdate = false;
+		}
+	}
+
+	if (updatePitchOrSpeed)
+	{
+		ST_DEBUG_LOG("(Deferred) Updating speed: {:f}->{:f}, pitch: {:f}->{:f}\n", mSoundTouchSpeed, mParent->mSpeedFactor, mSoundTouchPitch, mParent->mPitchFactor);
+
+		mSoundTouchSpeed = mParent->mSpeedFactor;
+		mSoundTouchPitch = mParent->mPitchFactor;
+
+		// actually update the parameters
+		mSoundTouch->setTempo(mSoundTouchSpeed);
+		mSoundTouch->setPitch(mSoundTouchPitch);
+
+		// SoLoud AudioStreamInstance inherited, allows the main SoLoud mixer to advance the mStreamPosition by the correct proportional amount
+		mSetRelativePlaySpeed = mOverallRelativePlaySpeed = mSoundTouchSpeed;
+
+		updateSTLatency();
+	}
+
 	if (logThisCall)
 		ST_DEBUG_LOG("=== End of getAudio [{:}] ===\n", mProcessingCounter);
 
@@ -521,7 +530,8 @@ result SoundTouchFilterInstance::rewind()
 
 void SoundTouchFilterInstance::requestSettingUpdate(float speed, float pitch)
 {
-	if (mSoundTouchSpeed.load() != speed || mSoundTouchPitch.load() != pitch)
+	std::scoped_lock lock{mSettingUpdateMutex};
+	if (mSoundTouchSpeed != speed || mSoundTouchPitch != pitch)
 		mNeedsSettingUpdate = true;
 }
 
@@ -532,7 +542,7 @@ time SoundTouchFilterInstance::getRealStreamPosition() const
 
 	// current output position is tracked by SoLoud in mStreamPosition
 	// subtract SoundTouch's latency to get the real source position
-	return std::max(0.0, mStreamPosition - mSTLatencySeconds.load());
+	return std::max(0.0, mStreamPosition - mSTLatencySeconds);
 }
 
 void SoundTouchFilterInstance::ensureBufferSize(unsigned int samples)
