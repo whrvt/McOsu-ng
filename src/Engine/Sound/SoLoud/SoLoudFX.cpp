@@ -13,6 +13,7 @@
 #include "Engine.h"
 #include "SoundEngine.h" // for shouldDetectBPM
 
+#include <algorithm>
 #include <mutex>
 
 #include <BPMDetect.h> // from SoundTouch, to implement getBPM()
@@ -371,27 +372,23 @@ unsigned int SoundTouchFilterInstance::getAudio(float *aBuffer, unsigned int aSa
 	// EXCEPT: if the source ended, then we just need to get out the last bits of SoundTouch audio,
 	//			and don't try to receive more from the source, otherwise we keep flushing empty audio data that SoundTouch generates,
 	//			and thus returning the wrong amount of real data we actually "got" (see return samplesReceived)
-	if (!mSourceInstance->hasEnded())
+	if (!mSourceInstance->hasEnded() && samplesInSoundTouch < aSamplesToRead)
 	{
-		unsigned int targetBufferLevel = calculateTargetBufferLevel(aSamplesToRead, logThisCall);
+		// feed soundtouch until we have at least aSamplesToRead ready samples
+		samplesInSoundTouch = feedSoundTouch(aSamplesToRead, logThisCall);
 
-		// below the target buffer level, feed more data using fixed chunks
-		if (samplesInSoundTouch < targetBufferLevel)
+		// if source ended (after we read more audio from it in feedSoundTouch) and we still need more samples, flush
+		if (mSourceInstance->hasEnded() && samplesInSoundTouch < aSamplesToRead)
 		{
-			feedSoundTouch(targetBufferLevel, logThisCall);
-
-			// if source ended and we still need more samples, flush
-			if (mSourceInstance->hasEnded() && mSoundTouch->numSamples() < aSamplesToRead)
-			{
-				if (logThisCall)
-					ST_DEBUG_LOG("Source has ended, flushing SoundTouch\n");
-				mSoundTouch->flush();
-			}
+			if (logThisCall)
+				ST_DEBUG_LOG("Source has ended, flushing SoundTouch\n");
+			mSoundTouch->flush();
+			samplesInSoundTouch = mSoundTouch->numSamples();
 		}
 	}
 
 	// get processed samples from SoundTouch
-	unsigned int samplesAvailable = mSoundTouch->numSamples();
+	unsigned int samplesAvailable = samplesInSoundTouch;
 	unsigned int samplesToReceive = samplesAvailable < aSamplesToRead ? samplesAvailable : aSamplesToRead;
 	unsigned int samplesReceived = samplesToReceive;
 
@@ -432,9 +429,9 @@ unsigned int SoundTouchFilterInstance::getAudio(float *aBuffer, unsigned int aSa
 	}
 
 	if (logThisCall && mProcessingCounter % 100 == 0)
-		ST_DEBUG_LOG("Position: mStreamPosition={:.3f}s, init_latency={:}, output_seq={:}, avg_latency={:.1f}ms, ratio={:.3f}, real_pos={:.3f}s\n", mStreamPosition,
-		             mInitialSTLatencySamples, mSTOutputSequenceSamples, mSTLatencySeconds * 1000.0, mSoundTouch->getInputOutputSampleRatio(),
-		             getRealStreamPosition());
+		ST_DEBUG_LOG("Position: mStreamPosition={:.3f}s, init_latency={:}, input_seq={}, output_seq={:}, avg_latency={:.1f}ms, ratio={:.3f}, real_pos={:.3f}s\n",
+		             mStreamPosition, mInitialSTLatencySamples, mSoundTouch->getSetting(SETTING_NOMINAL_INPUT_SEQUENCE), mSTOutputSequenceSamples,
+		             mSTLatencySeconds * 1000.0, mSoundTouch->getInputOutputSampleRatio(), getRealStreamPosition());
 
 	// update SoundTouch parameters if they've changed, after the last getAudio chunk has played out with the old speed
 	bool updatePitchOrSpeed = false;
@@ -572,47 +569,36 @@ void SoundTouchFilterInstance::ensureInterleavedBufferSize(unsigned int samples)
 	}
 }
 
-unsigned int SoundTouchFilterInstance::calculateTargetBufferLevel(unsigned int aSamplesToRead, bool logThis)
-{
-	// get SoundTouch's processing requirements
-	unsigned int nominalOutputSeq = mSTOutputSequenceSamples <= 0 ? SAMPLE_GRANULARITY * 2 : mSTOutputSequenceSamples;
-
-	// target buffer level should be enough to satisfy the current request plus some headroom
-	// we want at least 2x the nominal output sequence to ensure stable processing
-	unsigned int baseTargetLevel = std::max(aSamplesToRead, static_cast<unsigned int>(nominalOutputSeq * 2));
-
-	// add additional headroom for rate changes - more headroom for faster rates
-	float headroomMultiplier = 1.0f + (mSoundTouchSpeed - 1.0f) * 0.5f;
-	headroomMultiplier = std::max(1.0f, headroomMultiplier);
-
-	unsigned int targetLevel = static_cast<unsigned int>(baseTargetLevel * headroomMultiplier);
-
-	if (logThis)
-		ST_DEBUG_LOG("Target buffer level: base={:}, headroom={:.2f}, target={:}\n", baseTargetLevel, headroomMultiplier, targetLevel);
-
-	return targetLevel;
-}
-
-// feed SoundTouch using fixed-size chunks for consistent processing
-void SoundTouchFilterInstance::feedSoundTouch(unsigned int targetBufferLevel, bool logThis)
+unsigned int SoundTouchFilterInstance::feedSoundTouch(unsigned int targetBufferLevel, bool logThis)
 {
 	unsigned int currentSamples = mSoundTouch->numSamples();
 
 	if (logThis)
-		ST_DEBUG_LOG("Starting feedSoundTouch: current={:}, target={:}, chunk size={:}\n", currentSamples, targetBufferLevel, SAMPLE_GRANULARITY);
+		ST_DEBUG_LOG("Starting feedSoundTouch: current={:}, target={:}, speed={:.3f}\n", currentSamples, targetBufferLevel, mSoundTouchSpeed);
 
-	// ensure we have buffers for the fixed chunk size
-	ensureBufferSize(SAMPLE_GRANULARITY);
-	ensureInterleavedBufferSize(SAMPLE_GRANULARITY);
-
-	// feed chunks until we reach the target buffer level or source ends
-	unsigned int chunksProcessed = 0;
-	const unsigned int maxChunks = 8; // safety limit to prevent infinite loops
-
-	while (currentSamples < targetBufferLevel && !mSourceInstance->hasEnded() && chunksProcessed < maxChunks)
+	// read in power-of-two chunks from the source until we have enough samples ready in soundtouch
+	// NOMINAL_INPUT_SEQUENCE will be smaller for lower rates (less source data needed for the same amount of output samples), and
+	// vice versa for higher rates
+	unsigned int chunkSize = mSoundTouch->getSetting(SETTING_NOMINAL_INPUT_SEQUENCE);
+	if (chunkSize < 32U)
+		chunkSize = 32U;
+	else if (chunkSize & (chunkSize - 1))
 	{
-		// always request exactly SAMPLE_GRANULARITY samples
-		unsigned int samplesRead = mSourceInstance->getAudio(mBuffer, SAMPLE_GRANULARITY, mBufferSize);
+		unsigned int i = 1;
+		while (i < chunkSize)
+			i *= 2;
+		chunkSize = i / 2; // one power-of-two smaller, so we don't overshoot targetBufferLevel by too much
+	}
+
+	ensureBufferSize(chunkSize);
+	ensureInterleavedBufferSize(chunkSize);
+
+	constexpr const unsigned int MAX_CHUNKS = 32;
+	unsigned int chunksProcessed = 0;
+
+	while (currentSamples < targetBufferLevel && !mSourceInstance->hasEnded() && chunksProcessed < MAX_CHUNKS)
+	{
+		unsigned int samplesRead = mSourceInstance->getAudio(mBuffer, chunkSize, mBufferSize);
 
 		if (samplesRead == 0) // no more data available
 			break;
@@ -645,6 +631,8 @@ void SoundTouchFilterInstance::feedSoundTouch(unsigned int targetBufferLevel, bo
 
 	if (logThis)
 		ST_DEBUG_LOG("feedSoundTouch complete: processed {:} chunks, final buffer level={:}\n", chunksProcessed, currentSamples);
+
+	return currentSamples;
 }
 
 void SoundTouchFilterInstance::updateSTLatency()

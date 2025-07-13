@@ -209,15 +209,15 @@ void SoLoudSound::setPosition(double percent)
 	const double streamLengthInSeconds = getSourceLengthInSeconds();
 	double positionInSeconds = streamLengthInSeconds * percent;
 
-	// reset position interp vars
-	m_interpolator.reset(static_cast<double>(positionInSeconds * 1000), Timing::getTimeReal(), getSpeed());
-
 	if (cv::debug_snd.getBool())
 		debugLog("seeking to {:.2f} percent (position: {}ms, length: {}ms)\n", percent, static_cast<unsigned long>(positionInSeconds * 1000),
 		         static_cast<unsigned long>(streamLengthInSeconds * 1000));
 
 	// seek
 	soloud->seek(m_handle, positionInSeconds);
+
+	// reset position interp vars
+	m_interpolator.reset(getStreamPositionInSeconds() / 1000.0, Timing::getTimeReal(), getSpeed());
 }
 
 void SoLoudSound::setPositionMS(unsigned long ms)
@@ -233,14 +233,14 @@ void SoLoudSound::setPositionMS(unsigned long ms)
 
 	double positionInSeconds = msD / 1000.0;
 
-	// reset position interp vars
-	m_interpolator.reset(msD, Timing::getTimeReal(), getSpeed());
-
 	if (cv::debug_snd.getBool())
 		debugLog("seeking to {:g}ms (length: {:g}ms)\n", msD, streamLengthMS);
 
 	// seek
 	soloud->seek(m_handle, positionInSeconds);
+
+	// reset position interp vars
+	m_interpolator.reset(getStreamPositionInSeconds() / 1000.0, Timing::getTimeReal(), getSpeed());
 }
 
 void SoLoudSound::setVolume(float volume)

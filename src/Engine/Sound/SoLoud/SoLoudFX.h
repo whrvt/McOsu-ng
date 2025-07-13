@@ -66,11 +66,8 @@ private:
 	void ensureBufferSize(unsigned int samples);
 	void ensureInterleavedBufferSize(unsigned int samples);
 
-	// calculate target buffer level for consistent processing
-	unsigned int calculateTargetBufferLevel(unsigned int aSamplesToRead, bool logThis);
-
-	// feed SoundTouch using fixed-size chunks
-	void feedSoundTouch(unsigned int targetBufferLevel, bool logThis);
+	// feed SoundTouch using fixed-size chunks, return how many samples are in soundtouch after
+	unsigned int feedSoundTouch(unsigned int targetBufferLevel, bool logThis);
 
 	// buffer synchronization and positioning
 	void reSynchronize();
