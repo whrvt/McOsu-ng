@@ -210,7 +210,7 @@ void OsuUISongBrowserCollectionButton::onContextMenu(const UString& text, int id
 	}
 }
 
-void OsuUISongBrowserCollectionButton::onRenameCollectionConfirmed(const UString& text, int id)
+void OsuUISongBrowserCollectionButton::onRenameCollectionConfirmed(const UString& text, int  /*id*/)
 {
 	if (text.length() > 0)
 	{
@@ -224,7 +224,7 @@ void OsuUISongBrowserCollectionButton::onRenameCollectionConfirmed(const UString
 	}
 }
 
-void OsuUISongBrowserCollectionButton::onDeleteCollectionConfirmed(const UString& text, int id)
+void OsuUISongBrowserCollectionButton::onDeleteCollectionConfirmed(const UString&  /*text*/, int id)
 {
 	if (id != 2) return;
 

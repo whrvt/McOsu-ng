@@ -79,7 +79,7 @@ void OsuScreenBackable::updateLayout()
 	m_backButton->setPosY(osu->getVirtScreenHeight() - m_backButton->getSize().y);
 }
 
-void OsuScreenBackable::onResolutionChange(Vector2 newResolution)
+void OsuScreenBackable::onResolutionChange(Vector2  /*newResolution*/)
 {
 	updateLayout();
 }

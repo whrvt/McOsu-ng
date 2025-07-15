@@ -1066,7 +1066,7 @@ Vector2 OsuBeatmapStandard::osuCoords2RawPixels(Vector2 coords) const
 	return coords;
 }
 
-Vector3 OsuBeatmapStandard::osuCoordsTo3D(Vector2 coords, const OsuHitObject *hitObject) const
+Vector3 OsuBeatmapStandard::osuCoordsTo3D(Vector2 coords, const OsuHitObject * /*hitObject*/) const
 {
 	if (osu->getModHR())
 		coords.y = OsuGameRules::OSU_COORD_HEIGHT - coords.y;

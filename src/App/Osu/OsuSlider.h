@@ -51,7 +51,7 @@ public:
 
 	[[nodiscard]] Vector2 getRawPosAt(long pos) const override;
 	[[nodiscard]] Vector2 getOriginalRawPosAt(long pos) const override;
-	[[nodiscard]] inline Vector2 getAutoCursorPos(long curPos) const override {return m_vCurPoint;}
+	[[nodiscard]] inline Vector2 getAutoCursorPos(long  /*curPos*/) const override {return m_vCurPoint;}
 
 	void onClickEvent(std::vector<OsuBeatmap::CLICK> &clicks) override;
 	void onReset(long curPos) override;

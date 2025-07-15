@@ -10,7 +10,7 @@
 #include "Osu.h"
 #include "OsuTooltipOverlay.h"
 
-OsuUIUserStatsScreenLabel::OsuUIUserStatsScreenLabel(float xPos, float yPos, float xSize, float ySize, const UString& name, const UString& text) : CBaseUILabel()
+OsuUIUserStatsScreenLabel::OsuUIUserStatsScreenLabel(float  /*xPos*/, float  /*yPos*/, float  /*xSize*/, float  /*ySize*/, const UString&  /*name*/, const UString&  /*text*/) : CBaseUILabel()
 {
 	
 }

@@ -26,11 +26,11 @@ public:
 	[[nodiscard]] OsuSpinner* asSpinner() override { return this; }
 	[[nodiscard]] const OsuSpinner* asSpinner() const override { return this; }
 
-	void updateStackPosition(float stackOffset) override {;}
-	void miss(long curPos) override {;}
+	void updateStackPosition(float  /*stackOffset*/) override {;}
+	void miss(long  /*curPos*/) override {;}
 
-	[[nodiscard]] Vector2 getRawPosAt(long pos) const override {return m_vRawPos;}
-	[[nodiscard]] Vector2 getOriginalRawPosAt(long pos) const override {return m_vOriginalRawPos;}
+	[[nodiscard]] Vector2 getRawPosAt(long  /*pos*/) const override {return m_vRawPos;}
+	[[nodiscard]] Vector2 getOriginalRawPosAt(long  /*pos*/) const override {return m_vOriginalRawPos;}
 	[[nodiscard]] Vector2 getAutoCursorPos(long curPos) const override;
 
 	void onClickEvent(std::vector<OsuBeatmap::CLICK> &clicks) override;

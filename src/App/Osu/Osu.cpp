@@ -172,7 +172,7 @@ Osu::Osu()
 	env->setCursorVisible(false);
 
 	engine->getConsoleBox()->setRequireShiftToActivate(true);
-	soundEngine->setVolume(cv::osu::volume_master.getFloat());
+	cv::volume.setValue<float>(cv::osu::volume_master.getFloat());
 	mouse->addListener(this);
 
 	cv::name.setValue("Guest");
@@ -963,7 +963,7 @@ void Osu::update()
 	// volume inactive to active animation
 	if (m_bVolumeInactiveToActiveScheduled && m_fVolumeInactiveToActiveAnim > 0.0f)
 	{
-		soundEngine->setVolume(std::lerp(cv::osu::volume_master_inactive.getFloat() * cv::osu::volume_master.getFloat(), cv::osu::volume_master.getFloat(), m_fVolumeInactiveToActiveAnim));
+		cv::volume.setValue<float>(std::lerp(cv::osu::volume_master_inactive.getFloat() * cv::osu::volume_master.getFloat(), cv::osu::volume_master.getFloat(), m_fVolumeInactiveToActiveAnim));
 
 		// check if we're done
 		if (m_fVolumeInactiveToActiveAnim == 1.0f)
@@ -2077,7 +2077,7 @@ void Osu::fireResolutionChanged()
 	onResolutionChanged(g_vInternalResolution);
 }
 
-void Osu::onInternalResolutionChanged(const UString& oldValue, const UString& args)
+void Osu::onInternalResolutionChanged(const UString&  /*oldValue*/, const UString& args)
 {
 	if (args.length() < 7) return;
 
@@ -2167,7 +2167,7 @@ void Osu::onFocusLost()
 	anim->deleteExistingAnimation(&m_fVolumeInactiveToActiveAnim);
 	m_fVolumeInactiveToActiveAnim = 0.0f;
 
-	soundEngine->setVolume(cv::osu::volume_master_inactive.getFloat() * cv::osu::volume_master.getFloat());
+	cv::volume.setValue<float>(cv::osu::volume_master_inactive.getFloat() * cv::osu::volume_master.getFloat());
 }
 
 void Osu::onMinimized()
@@ -2180,7 +2180,7 @@ void Osu::onMinimized()
 	anim->deleteExistingAnimation(&m_fVolumeInactiveToActiveAnim);
 	m_fVolumeInactiveToActiveAnim = 0.0f;
 
-	soundEngine->setVolume(cv::osu::volume_master_inactive.getFloat() * cv::osu::volume_master.getFloat());
+	cv::volume.setValue<float>(cv::osu::volume_master_inactive.getFloat() * cv::osu::volume_master.getFloat());
 }
 
 bool Osu::onShutdown()
@@ -2209,7 +2209,7 @@ void Osu::onSkinReload()
 	onSkinChange("", cv::osu::skin.getString());
 }
 
-void Osu::onSkinChange(const UString &oldValue, const UString &newValue)
+void Osu::onSkinChange(const UString & /*oldValue*/, const UString &newValue)
 {
 	UString newValCopy{newValue};
 	if (m_skin != NULL)
@@ -2255,21 +2255,20 @@ void Osu::onSkinChange(const UString &oldValue, const UString &newValue)
 	m_bSkinLoadScheduled = true;
 }
 
-void Osu::onMasterVolumeChange(const UString &oldValue, const UString &newValue)
+void Osu::onMasterVolumeChange(const UString & /*oldValue*/, const UString &newValue)
 {
 	if (m_bVolumeInactiveToActiveScheduled) return; // not very clean, but w/e
 
-	float newVolume = newValue.toFloat();
-	soundEngine->setVolume(newVolume);
+	cv::volume.setValue<float>(newValue.toFloat());
 }
 
-void Osu::onMusicVolumeChange(const UString &oldValue, const UString &newValue)
+void Osu::onMusicVolumeChange(const UString & /*oldValue*/, const UString &newValue)
 {
 	if (getSelectedBeatmap() != NULL)
 		getSelectedBeatmap()->setVolume(newValue.toFloat());
 }
 
-void Osu::onSpeedChange(const UString &oldValue, const UString &newValue)
+void Osu::onSpeedChange(const UString & /*oldValue*/, const UString &newValue)
 {
 	if (getSelectedBeatmap() != NULL)
 	{
@@ -2278,7 +2277,7 @@ void Osu::onSpeedChange(const UString &oldValue, const UString &newValue)
 	}
 }
 
-void Osu::onPitchChange(const UString &oldValue, const UString &newValue)
+void Osu::onPitchChange(const UString & /*oldValue*/, const UString &newValue)
 {
 	if (getSelectedBeatmap() != NULL)
 	{
@@ -2287,7 +2286,7 @@ void Osu::onPitchChange(const UString &oldValue, const UString &newValue)
 	}
 }
 
-void Osu::onPlayfieldChange(const UString &oldValue, const UString &newValue)
+void Osu::onPlayfieldChange(const UString & /*oldValue*/, const UString & /*newValue*/)
 {
 	if (getSelectedBeatmap() != NULL)
 		getSelectedBeatmap()->onModUpdate();
@@ -2355,17 +2354,17 @@ void Osu::updateConfineCursor()
 		env->setCursorClip(false, McRect());
 }
 
-void Osu::onConfineCursorWindowedChange(const UString &oldValue, const UString &newValue)
+void Osu::onConfineCursorWindowedChange(const UString & /*oldValue*/, const UString & /*newValue*/)
 {
 	updateConfineCursor();
 }
 
-void Osu::onConfineCursorFullscreenChange(const UString &oldValue, const UString &newValue)
+void Osu::onConfineCursorFullscreenChange(const UString & /*oldValue*/, const UString & /*newValue*/)
 {
 	updateConfineCursor();
 }
 
-void Osu::onConfineCursorNeverChange(const UString &oldValue, const UString &newValue)
+void Osu::onConfineCursorNeverChange(const UString & /*oldValue*/, const UString & /*newValue*/)
 {
 	updateConfineCursor();
 }
@@ -2454,32 +2453,32 @@ void Osu::onKey2Change(bool pressed, bool mouseButton)
 	}
 }
 
-void Osu::onModMafhamChange(const UString &oldValue, const UString &newValue)
+void Osu::onModMafhamChange(const UString & /*oldValue*/, const UString & /*newValue*/)
 {
 	rebuildRenderTargets();
 }
 
-void Osu::onModFPoSuChange(const UString &oldValue, const UString &newValue)
+void Osu::onModFPoSuChange(const UString & /*oldValue*/, const UString & /*newValue*/)
 {
 	rebuildRenderTargets();
 }
 
-void Osu::onModFPoSu3DChange(const UString &oldValue, const UString &newValue)
+void Osu::onModFPoSu3DChange(const UString & /*oldValue*/, const UString & /*newValue*/)
 {
 	rebuildRenderTargets();
 }
 
-void Osu::onModFPoSu3DSpheresChange(const UString &oldValue, const UString &newValue)
+void Osu::onModFPoSu3DSpheresChange(const UString & /*oldValue*/, const UString & /*newValue*/)
 {
 	rebuildRenderTargets();
 }
 
-void Osu::onModFPoSu3DSpheresAAChange(const UString &oldValue, const UString &newValue)
+void Osu::onModFPoSu3DSpheresAAChange(const UString & /*oldValue*/, const UString & /*newValue*/)
 {
 	rebuildRenderTargets();
 }
 
-void Osu::onLetterboxingOffsetChange(const UString &oldValue, const UString &newValue)
+void Osu::onLetterboxingOffsetChange(const UString & /*oldValue*/, const UString & /*newValue*/)
 {
 	updateMouseSettings();
 	updateConfineCursor();

@@ -101,8 +101,8 @@ public:
 	[[nodiscard]] inline bool isBlocked() const {return m_bBlocked;}
 	[[nodiscard]] inline bool hasMisAimed() const {return m_bMisAim;}
 
-	virtual void onClickEvent(std::vector<OsuBeatmap::CLICK> &clicks) {;}
-	virtual void onKeyUpEvent(std::vector<OsuBeatmap::CLICK> &keyUps) {;}
+	virtual void onClickEvent(std::vector<OsuBeatmap::CLICK> & /*clicks*/) {;}
+	virtual void onKeyUpEvent(std::vector<OsuBeatmap::CLICK> & /*keyUps*/) {;}
 	virtual void onReset(long curPos);
 
 protected:

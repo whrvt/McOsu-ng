@@ -3475,7 +3475,7 @@ void OsuSongBrowser2::onSortScoresClicked(CBaseUIButton *button)
 	m_contextMenu->setClickCallback( fastdelegate::MakeDelegate(this, &OsuSongBrowser2::onSortScoresChange) );
 }
 
-void OsuSongBrowser2::onSortScoresChange(const UString& text, int id)
+void OsuSongBrowser2::onSortScoresChange(const UString& text, int  /*id*/)
 {
 	cv::osu::songbrowser_scores_sortingtype.setValue(text); // NOTE: remember
 	m_scoreSortButton->setText(text);
@@ -3504,7 +3504,7 @@ void OsuSongBrowser2::onSortScoresChange(const UString& text, int id)
 	}
 }
 
-void OsuSongBrowser2::onWebClicked(CBaseUIButton *button)
+void OsuSongBrowser2::onWebClicked(CBaseUIButton * /*button*/)
 {
 	if (m_songInfo->getBeatmapID() > 0)
 	{
@@ -4097,7 +4097,7 @@ void OsuSongBrowser2::onSongButtonContextMenu(OsuUISongBrowserSongButton *songBu
 	}
 }
 
-void OsuSongBrowser2::onCollectionButtonContextMenu(OsuUISongBrowserCollectionButton *collectionButton, const UString& text, int id)
+void OsuSongBrowser2::onCollectionButtonContextMenu(OsuUISongBrowserCollectionButton * /*collectionButton*/, const UString& text, int id)
 {
 	if (id == 2) // delete collection
 	{
@@ -4198,7 +4198,7 @@ void OsuSongBrowser2::selectSongButton(OsuUISongBrowserButton *songButton)
 	}
 }
 
-void OsuSongBrowser2::selectRandomBeatmap(bool playMusicFromPreviewPoint)
+void OsuSongBrowser2::selectRandomBeatmap(bool  /*playMusicFromPreviewPoint*/)
 {
 	// filter songbuttons or independent diffs
 	const std::vector<CBaseUIElement*> &elements = m_songBrowser->getContainer()->getElements();

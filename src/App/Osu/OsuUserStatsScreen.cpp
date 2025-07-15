@@ -438,7 +438,7 @@ void OsuUserStatsScreen::setVisible(bool visible)
 		m_contextMenu->setVisible2(false);
 }
 
-void OsuUserStatsScreen::onScoreContextMenu(OsuUISongBrowserScoreButton *scoreButton, int id)
+void OsuUserStatsScreen::onScoreContextMenu(OsuUISongBrowserScoreButton * /*scoreButton*/, int id)
 {
 	// NOTE: see OsuUISongBrowserScoreButton::onContextMenu()
 
@@ -504,7 +504,7 @@ void OsuUserStatsScreen::rebuildScoreButtons(const UString &playerName)
 	updateLayout();
 }
 
-void OsuUserStatsScreen::onUserClicked(CBaseUIButton *button)
+void OsuUserStatsScreen::onUserClicked(CBaseUIButton * /*button*/)
 {
 	soundEngine->play(osu->getSkin()->getMenuClick());
 
@@ -547,7 +547,7 @@ void OsuUserStatsScreen::onScoreClicked(CBaseUIButton *button)
 	osu->getSongBrowser()->highlightScore(((OsuUISongBrowserScoreButton*)button)->getScore().unixTimestamp);
 }
 
-void OsuUserStatsScreen::onMenuClicked(CBaseUIButton *button)
+void OsuUserStatsScreen::onMenuClicked(CBaseUIButton * /*button*/)
 {
 	m_contextMenu->setPos(m_menuButton->getPos() + Vector2(0, m_menuButton->getSize().y));
 	m_contextMenu->setRelPos(m_menuButton->getPos() + Vector2(0, m_menuButton->getSize().y));
@@ -588,7 +588,7 @@ void OsuUserStatsScreen::onMenuClicked(CBaseUIButton *button)
 	OsuUIContextMenu::clampToRightScreenEdge(m_contextMenu);
 }
 
-void OsuUserStatsScreen::onMenuSelected(const UString& text, int id)
+void OsuUserStatsScreen::onMenuSelected(const UString&  /*text*/, int id)
 {
 	if (id == 1)
 		onRecalculatePP(false);
@@ -645,7 +645,7 @@ void OsuUserStatsScreen::onRecalculatePPImportLegacyScoresClicked()
 	OsuUIContextMenu::clampToRightScreenEdge(m_contextMenu);
 }
 
-void OsuUserStatsScreen::onRecalculatePPImportLegacyScoresConfirmed(const UString& text, int id)
+void OsuUserStatsScreen::onRecalculatePPImportLegacyScoresConfirmed(const UString&  /*text*/, int id)
 {
 	if (id != 1) return;
 
@@ -708,7 +708,7 @@ void OsuUserStatsScreen::onCopyAllScoresClicked()
 	OsuUIContextMenu::clampToRightScreenEdge(m_contextMenu);
 }
 
-void OsuUserStatsScreen::onCopyAllScoresUserSelected(const UString& text, int id)
+void OsuUserStatsScreen::onCopyAllScoresUserSelected(const UString& text, int  /*id*/)
 {
 	m_sCopyAllScoresFromUser = text;
 
@@ -732,7 +732,7 @@ void OsuUserStatsScreen::onCopyAllScoresUserSelected(const UString& text, int id
 	OsuUIContextMenu::clampToRightScreenEdge(m_contextMenu);
 }
 
-void OsuUserStatsScreen::onCopyAllScoresConfirmed(const UString& text, int id)
+void OsuUserStatsScreen::onCopyAllScoresConfirmed(const UString&  /*text*/, int id)
 {
 	if (id != 1) return;
 	if (m_sCopyAllScoresFromUser.length() < 1) return;
@@ -835,7 +835,7 @@ void OsuUserStatsScreen::onDeleteAllScoresClicked()
 	OsuUIContextMenu::clampToRightScreenEdge(m_contextMenu);
 }
 
-void OsuUserStatsScreen::onDeleteAllScoresConfirmed(const UString& text, int id)
+void OsuUserStatsScreen::onDeleteAllScoresConfirmed(const UString&  /*text*/, int id)
 {
 	if (id != 1) return;
 

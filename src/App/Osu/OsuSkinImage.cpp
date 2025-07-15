@@ -20,7 +20,7 @@ ConVar skin_animation_fps_override("osu_skin_animation_fps_override", -1.0f, FCV
 }
 
 OsuSkinImage::OsuSkinImage(OsuSkin *skin, const UString& skinElementName, Vector2 baseSizeForScaling2x, float osuSize, const UString& animationSeparator, bool ignoreDefaultSkin)
-    : m_skin(skin), m_vBaseSizeForScaling2x(baseSizeForScaling2x), m_fOsuSize(osuSize), m_bReady(false), m_iCurMusicPos(0), m_iFrameCounter(0),
+    : m_skin(skin), m_bReady(false), m_vBaseSizeForScaling2x(baseSizeForScaling2x), m_fOsuSize(osuSize), m_iCurMusicPos(0), m_iFrameCounter(0),
       m_iFrameCounterUnclamped(0), m_fLastFrameTime(0.0f), m_iBeatmapAnimationTimeStartOffset(0), m_bIsMissingTexture(false), m_bIsFromDefaultSkin(false),
       m_fDrawClipWidthPercent(1.0f)
 {

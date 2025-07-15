@@ -10,7 +10,6 @@
 #include "Engine.h"
 #include "ConVar.h"
 
-#include <sstream>
 #include <utility>
 
 #ifdef MCENGINE_FEATURE_NETWORKING
@@ -136,7 +135,7 @@ NetworkHandler::~NetworkHandler()
 #endif
 }
 
-UString NetworkHandler::httpGet(const UString& url, long timeout, long connectTimeout)
+UString NetworkHandler::httpGet(const UString&  /*url*/, long  /*timeout*/, long  /*connectTimeout*/)
 {
 #ifdef MCENGINE_FEATURE_NETWORKING
 
@@ -174,7 +173,7 @@ UString NetworkHandler::httpGet(const UString& url, long timeout, long connectTi
 #endif
 }
 
-std::string NetworkHandler::httpDownload(const UString& url, long timeout, long connectTimeout)
+std::string NetworkHandler::httpDownload(const UString&  /*url*/, long  /*timeout*/, long  /*connectTimeout*/)
 {
 #ifdef MCENGINE_FEATURE_NETWORKING
 
@@ -223,7 +222,7 @@ std::string NetworkHandler::httpDownload(const UString& url, long timeout, long 
 #endif
 }
 
-void NetworkHandler::connect(const UString& address)
+void NetworkHandler::connect([[maybe_unused]] const UString& address)
 {
 #ifdef MCENGINE_FEATURE_NETWORKING
 
@@ -1044,7 +1043,7 @@ void NetworkHandler::broadcastChatMessage(UString username, UString message, ENe
 
 #endif
 
-void NetworkHandler::broadcast(void *data, uint32_t size, bool reliable)
+void NetworkHandler::broadcast([[maybe_unused]] void *data, [[maybe_unused]] uint32_t size, [[maybe_unused]] bool reliable)
 {
 #ifdef MCENGINE_FEATURE_NETWORKING
 
@@ -1107,7 +1106,7 @@ void NetworkHandler::broadcast(void *data, uint32_t size, bool reliable)
 #endif
 }
 
-void NetworkHandler::servercast(void *data, uint32_t size, bool reliable)
+void NetworkHandler::servercast([[maybe_unused]] void *data, [[maybe_unused]] uint32_t size, [[maybe_unused]] bool reliable)
 {
 #ifdef MCENGINE_FEATURE_NETWORKING
 
@@ -1136,7 +1135,7 @@ void NetworkHandler::servercast(void *data, uint32_t size, bool reliable)
 #endif
 }
 
-void NetworkHandler::clientcast(void *data, uint32_t size, uint32_t id, bool reliable)
+void NetworkHandler::clientcast([[maybe_unused]] void *data, [[maybe_unused]] uint32_t size, [[maybe_unused]] uint32_t id, [[maybe_unused]] bool reliable)
 {
 #ifdef MCENGINE_FEATURE_NETWORKING
 
@@ -1170,7 +1169,7 @@ void NetworkHandler::clientcast(void *data, uint32_t size, uint32_t id, bool rel
 #endif
 }
 
-void NetworkHandler::say(const UString& message)
+void NetworkHandler::say([[maybe_unused]] const UString& message)
 {
 #ifdef MCENGINE_FEATURE_NETWORKING
 
@@ -1216,7 +1215,7 @@ void NetworkHandler::say(const UString& message)
 #endif
 }
 
-void NetworkHandler::kick(const UString& username)
+void NetworkHandler::kick([[maybe_unused]] const UString& username)
 {
 #ifdef MCENGINE_FEATURE_NETWORKING
 

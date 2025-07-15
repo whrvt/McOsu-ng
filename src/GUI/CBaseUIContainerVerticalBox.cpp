@@ -70,7 +70,7 @@ void CBaseUIContainerVerticalBox::updateLayout()
 	}
 }
 
-void CBaseUIContainerVerticalBox::updateElement(CBaseUIElement *element)
+void CBaseUIContainerVerticalBox::updateElement(CBaseUIElement * /*element*/)
 {
 	updateLayout();
 }

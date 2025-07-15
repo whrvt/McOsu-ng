@@ -583,7 +583,7 @@ OsuDatabaseBeatmap::CALCULATE_SLIDER_TIMES_CLICKS_TICKS_RESULT OsuDatabaseBeatma
 			return duration >= 1.0f ? duration : 1.0f; // sanity check
 		}
 
-		static float getSliderVelocity(const SLIDER &slider, const TIMING_INFO &timingInfo, float sliderMultiplier, float sliderTickRate)
+		static float getSliderVelocity(const TIMING_INFO &timingInfo, float sliderMultiplier, float sliderTickRate)
 		{
 			const float beatLength = timingInfo.beatLength;
 			if (beatLength > 0.0f)
@@ -592,7 +592,7 @@ OsuDatabaseBeatmap::CALCULATE_SLIDER_TIMES_CLICKS_TICKS_RESULT OsuDatabaseBeatma
 				return getSliderTickDistance(sliderMultiplier, sliderTickRate) * sliderTickRate;
 		}
 
-		static float getTimingPointMultiplierForSlider(const SLIDER &slider, const TIMING_INFO &timingInfo) // needed for slider ticks
+		static float getTimingPointMultiplierForSlider(const TIMING_INFO &timingInfo) // needed for slider ticks
 		{
 			float beatLengthBase = timingInfo.beatLengthBase;
 			if (beatLengthBase == 0.0f) // sanity check
@@ -622,8 +622,8 @@ OsuDatabaseBeatmap::CALCULATE_SLIDER_TIMES_CLICKS_TICKS_RESULT OsuDatabaseBeatma
 
 		// calculate ticks
 		{
-			const float minTickPixelDistanceFromEnd = 0.01f * SliderHelper::getSliderVelocity(s, timingInfo, sliderMultiplier, sliderTickRate);
-			const float tickPixelLength = (beatmapVersion < 8 ? SliderHelper::getSliderTickDistance(sliderMultiplier, sliderTickRate) : SliderHelper::getSliderTickDistance(sliderMultiplier, sliderTickRate) / SliderHelper::getTimingPointMultiplierForSlider(s, timingInfo));
+			const float minTickPixelDistanceFromEnd = 0.01f * SliderHelper::getSliderVelocity(timingInfo, sliderMultiplier, sliderTickRate);
+			const float tickPixelLength = (beatmapVersion < 8 ? SliderHelper::getSliderTickDistance(sliderMultiplier, sliderTickRate) : SliderHelper::getSliderTickDistance(sliderMultiplier, sliderTickRate) / SliderHelper::getTimingPointMultiplierForSlider(timingInfo));
 			const float tickDurationPercentOfSliderLength = tickPixelLength / (s.pixelLength == 0.0f ? 1.0f : s.pixelLength);
 			const int tickCount = std::min((int)std::ceil(s.pixelLength / tickPixelLength) - 1, cv::osu::slider_max_ticks.getInt()); // NOTE: hard sanity limit number of ticks per slider
 

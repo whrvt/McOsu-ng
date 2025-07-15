@@ -252,7 +252,7 @@ void OsuUISongBrowserInfoLabel::update()
 	}
 }
 
-void OsuUISongBrowserInfoLabel::setFromBeatmap(OsuBeatmap *beatmap, OsuDatabaseBeatmap *diff2)
+void OsuUISongBrowserInfoLabel::setFromBeatmap(OsuBeatmap * /*beatmap*/, OsuDatabaseBeatmap *diff2)
 {
 	m_iBeatmapId = diff2->getID();
 

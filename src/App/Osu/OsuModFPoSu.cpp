@@ -1061,17 +1061,17 @@ void OsuModFPoSu::handleLazyLoad3DShaders()
 		m_hitcircleShader = resourceManager->loadShader("hitcircle3D.mcshader", "hitcircle3D");
 }
 
-void OsuModFPoSu::onCurvedChange(const UString &oldValue, const UString &newValue)
+void OsuModFPoSu::onCurvedChange(const UString & /*oldValue*/, const UString & /*newValue*/)
 {
 	makePlayfield();
 }
 
-void OsuModFPoSu::onDistanceChange(const UString &oldValue, const UString &newValue)
+void OsuModFPoSu::onDistanceChange(const UString & /*oldValue*/, const UString & /*newValue*/)
 {
 	makePlayfield();
 }
 
-void OsuModFPoSu::onNoclipChange(const UString &oldValue, const UString &newValue)
+void OsuModFPoSu::onNoclipChange(const UString & /*oldValue*/, const UString & /*newValue*/)
 {
 	if (cv::osu::fposu::noclip.getBool())
 		m_camera->setPos(m_vPrevNoclipCameraPos);

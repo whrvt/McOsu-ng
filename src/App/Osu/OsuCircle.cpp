@@ -72,7 +72,7 @@ void OsuCircle::draw3DCircle(OsuBeatmapStandard *beatmap, const OsuHitObject *hi
 	draw3DCircle(osu->getFPoSu(), baseScale, beatmap->getSkin(), beatmap->osuCoordsTo3D(rawPos, hitObject), beatmap->getRawHitcircleDiameter(), beatmap->getNumberScale(), beatmap->getHitcircleOverlapScale(), number, colorCounter, colorOffset, colorRGBMultiplier, approachScale, alpha, numberAlpha, drawNumber, overrideHDApproachCircle);
 }
 
-void OsuCircle::drawCircle(OsuSkin *skin, Vector2 pos, float hitcircleDiameter, float numberScale, float overlapScale, int number, int colorCounter, int colorOffset, float colorRGBMultiplier, float approachScale, float alpha, float numberAlpha, bool drawNumber, bool overrideHDApproachCircle)
+void OsuCircle::drawCircle(OsuSkin *skin, Vector2 pos, float hitcircleDiameter, float numberScale, float overlapScale, int number, int colorCounter, int colorOffset, float colorRGBMultiplier, float  /*approachScale*/, float alpha, float numberAlpha, bool drawNumber, bool  /*overrideHDApproachCircle*/)
 {
 	if (alpha <= 0.0f || !cv::osu::draw_circles.getBool()) return;
 
@@ -102,7 +102,7 @@ void OsuCircle::drawCircle(OsuSkin *skin, Vector2 pos, float hitcircleDiameter, 
 		drawHitCircleOverlay(skin->getHitCircleOverlay2(), pos, circleOverlayImageScale, alpha, colorRGBMultiplier);
 }
 
-void OsuCircle::draw3DCircle(const OsuModFPoSu *fposu, const Matrix4 &baseScale, OsuSkin *skin, Vector3 pos, float rawHitcircleDiameter, float numberScale, float overlapScale, int number, int colorCounter, int colorOffset, float colorRGBMultiplier, float approachScale, float alpha, float numberAlpha, bool drawNumber, bool overrideHDApproachCircle)
+void OsuCircle::draw3DCircle(const OsuModFPoSu *fposu, const Matrix4 &baseScale, OsuSkin *skin, Vector3 pos, float  /*rawHitcircleDiameter*/, float numberScale, float overlapScale, int number, int colorCounter, int colorOffset, float colorRGBMultiplier, float  /*approachScale*/, float alpha, float numberAlpha, bool drawNumber, bool  /*overrideHDApproachCircle*/)
 {
 	if (alpha <= 0.0f || !cv::osu::draw_circles.getBool()) return;
 
@@ -335,7 +335,7 @@ void OsuCircle::drawApproachCircle(OsuSkin *skin, Vector2 pos, Color comboColor,
 	}
 }
 
-void OsuCircle::draw3DApproachCircle(const OsuModFPoSu *fposu, const Matrix4 &baseScale, OsuSkin *skin, Vector3 pos, Color comboColor, float rawHitcircleDiameter, float approachScale, float alpha, bool modHD, bool overrideHDApproachCircle)
+void OsuCircle::draw3DApproachCircle(const OsuModFPoSu *fposu, const Matrix4 &baseScale, OsuSkin *skin, Vector3 pos, Color comboColor, float  /*rawHitcircleDiameter*/, float approachScale, float alpha, bool modHD, bool overrideHDApproachCircle)
 {
 	if ((!modHD || overrideHDApproachCircle) && cv::osu::draw_approach_circles.getBool() && !cv::osu::stdrules::mod_mafham.getBool())
 	{
@@ -537,7 +537,7 @@ void OsuCircle::draw3DHitCircle(const OsuModFPoSu *fposu, OsuSkin *skin, const M
 	g->popTransform();
 }
 
-void OsuCircle::drawHitCircleNumber(OsuSkin *skin, float numberScale, float overlapScale, Vector2 pos, int number, float numberAlpha, float colorRGBMultiplier)
+void OsuCircle::drawHitCircleNumber(OsuSkin *skin, float numberScale, float overlapScale, Vector2 pos, int number, float numberAlpha, float  /*colorRGBMultiplier*/)
 {
 	if (!cv::osu::draw_numbers.getBool()) return;
 
@@ -658,7 +658,7 @@ void OsuCircle::drawHitCircleNumber(OsuSkin *skin, float numberScale, float over
 	g->popTransform();
 }
 
-void OsuCircle::draw3DHitCircleNumber(OsuSkin *skin, float numberScale, float overlapScale, Vector3 pos, int number, float numberAlpha, float colorRGBMultiplier)
+void OsuCircle::draw3DHitCircleNumber(OsuSkin * /*skin*/, float  /*numberScale*/, float  /*overlapScale*/, Vector3  /*pos*/, int  /*number*/, float  /*numberAlpha*/, float  /*colorRGBMultiplier*/)
 {
 	if (cv::osu::fposu::threeD_spheres.getBool()) return;
 
@@ -975,7 +975,7 @@ void OsuCircle::onReset(long curPos)
 	}
 }
 
-Vector2 OsuCircle::getAutoCursorPos(long curPos) const
+Vector2 OsuCircle::getAutoCursorPos(long  /*curPos*/) const
 {
 	return m_beatmap->osuCoords2Pixels(m_vRawPos);
 }

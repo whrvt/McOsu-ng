@@ -58,7 +58,7 @@ public:
 	CBASE_UI_TYPE(CBaseUIContainerBase, CONTAINERBASE, CBaseUIElement)
 protected:
 	// events
-	virtual void updateElement(CBaseUIElement *element) {;}
+	virtual void updateElement(CBaseUIElement * /*element*/) {;}
 
 	bool m_bClipping;
 	std::vector<std::shared_ptr<CBaseUIElement>> m_vElements;

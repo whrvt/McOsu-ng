@@ -66,7 +66,7 @@ public:
 protected:
 	void drawMenuButtonBackground();
 
-	virtual void onSelected(bool wasSelected, bool autoSelectBottomMostChild, bool wasParentSelected) {;}
+	virtual void onSelected(bool  /*wasSelected*/, bool  /*autoSelectBottomMostChild*/, bool  /*wasParentSelected*/) {;}
 	virtual void onRightMouseUpInside() {;}
 
 	CBaseUIScrollView *m_view;

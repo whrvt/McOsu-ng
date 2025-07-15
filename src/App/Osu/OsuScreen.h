@@ -24,10 +24,10 @@ public:
 	virtual void update() {;}
 
 	void onKeyDown(KeyboardEvent &e) override;
-	void onKeyUp(KeyboardEvent &e) override {;}
-	void onChar(KeyboardEvent &e) override {;}
+	void onKeyUp(KeyboardEvent & /*e*/) override {;}
+	void onChar(KeyboardEvent & /*e*/) override {;}
 
-	virtual void onResolutionChange(Vector2 newResolution) {;}
+	virtual void onResolutionChange(Vector2  /*newResolution*/) {;}
 
 	virtual void setVisible(bool visible) {m_bVisible = visible;}
 

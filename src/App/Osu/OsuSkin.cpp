@@ -843,7 +843,7 @@ void OsuSkin::load()
 		osu->getNotificationOverlay()->addNotification("Error: Couldn't load DEFAULT skin.ini!!!", 0xffff0000);
 }
 
-void OsuSkin::loadBeatmapOverride(const UString& filepath)
+void OsuSkin::loadBeatmapOverride([[maybe_unused]] const UString& filepath)
 {
 	//debugLog("OsuSkin::loadBeatmapOverride( {:s} )\n", filepath.toUtf8());
 	// TODO: beatmap skin support
@@ -1094,7 +1094,7 @@ bool OsuSkin::parseSkinINI(const UString& filepath)
 	return true;
 }
 
-void OsuSkin::onEffectVolumeChange(const UString &oldValue, const UString &newValue)
+void OsuSkin::onEffectVolumeChange(const UString & /*oldValue*/, const UString &newValue)
 {
 	float volume = newValue.toFloat();
 
@@ -1107,7 +1107,7 @@ void OsuSkin::onEffectVolumeChange(const UString &oldValue, const UString &newVa
 	setSampleVolume(std::clamp<float>((float)m_iSampleVolume / 100.0f, 0.0f, 1.0f), true);
 }
 
-void OsuSkin::onIgnoreBeatmapSampleVolumeChange(const UString &oldValue, const UString &newValue)
+void OsuSkin::onIgnoreBeatmapSampleVolumeChange(const UString & /*oldValue*/, const UString & /*newValue*/)
 {
 	// restore sample volumes
 	setSampleVolume(std::clamp<float>((float)m_iSampleVolume / 100.0f, 0.0f, 1.0f), true);

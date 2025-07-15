@@ -105,7 +105,7 @@ public:
 	OsuSliderCurveTypeBezier2(const std::vector<Vector2> &points);
 	~OsuSliderCurveTypeBezier2() override {;}
 
-	Vector2 pointAt(float t) override {return Vector2();} // unused
+	Vector2 pointAt(float  /*t*/) override {return Vector2();} // unused
 };
 
 

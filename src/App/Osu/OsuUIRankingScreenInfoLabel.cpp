@@ -96,7 +96,7 @@ void OsuUIRankingScreenInfoLabel::draw()
 	g->popTransform();
 }
 
-void OsuUIRankingScreenInfoLabel::setFromBeatmap(OsuBeatmap *beatmap, OsuDatabaseBeatmap *diff2)
+void OsuUIRankingScreenInfoLabel::setFromBeatmap(OsuBeatmap * /*beatmap*/, OsuDatabaseBeatmap *diff2)
 {
 	setArtist(diff2->getArtist());
 	setTitle(diff2->getTitle());

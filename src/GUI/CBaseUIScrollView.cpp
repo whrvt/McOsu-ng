@@ -515,7 +515,7 @@ void CBaseUIScrollView::scrollToXInt(int scrollPosX, bool animated, bool slow)
 	}
 }
 
-void CBaseUIScrollView::scrollToElement(CBaseUIElement *element, int xOffset, int yOffset, bool animated)
+void CBaseUIScrollView::scrollToElement(CBaseUIElement *element, int  /*xOffset*/, int yOffset, bool animated)
 {
 	const std::vector<CBaseUIElement*> &elements = m_container->getElements();
 	for (size_t i=0; i<elements.size(); i++)

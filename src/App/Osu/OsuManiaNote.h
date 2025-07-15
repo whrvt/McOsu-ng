@@ -21,8 +21,8 @@ public:
 	void draw() override;
 	void update(long curPos) override;
 
-	void updateStackPosition(float stackOffset) override {;}
-	void miss(long curPos) override {;}
+	void updateStackPosition(float  /*stackOffset*/) override {;}
+	void miss(long  /*curPos*/) override {;}
 
 	void onClickEvent(std::vector<OsuBeatmap::CLICK> &clicks) override;
 	void onKeyUpEvent(std::vector<OsuBeatmap::CLICK> &keyUps) override;
@@ -33,9 +33,9 @@ public:
 	[[nodiscard]] OsuManiaNote* asNote() override { return this; }
 	[[nodiscard]] const OsuManiaNote* asNote() const override { return this; }
 
-	[[nodiscard]] Vector2 getRawPosAt(long pos) const override {return Vector2(0,0);}
-	[[nodiscard]] Vector2 getOriginalRawPosAt(long pos) const override {return Vector2(0,0);}
-	[[nodiscard]] Vector2 getAutoCursorPos(long curPos) const override {return Vector2(0,0);}
+	[[nodiscard]] Vector2 getRawPosAt(long  /*pos*/) const override {return Vector2(0,0);}
+	[[nodiscard]] Vector2 getOriginalRawPosAt(long  /*pos*/) const override {return Vector2(0,0);}
+	[[nodiscard]] Vector2 getAutoCursorPos(long  /*curPos*/) const override {return Vector2(0,0);}
 
 private:
 	inline bool isHoldNote() {return m_iObjectDuration > 0;}

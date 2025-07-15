@@ -1278,12 +1278,12 @@ void OsuModSelector::onOverrideSliderLockChange(CBaseUICheckbox *checkbox)
 	}
 }
 
-void OsuModSelector::onOverrideARSliderDescClicked(CBaseUIButton *button)
+void OsuModSelector::onOverrideARSliderDescClicked(CBaseUIButton * /*button*/)
 {
 	m_ARLock->click();
 }
 
-void OsuModSelector::onOverrideODSliderDescClicked(CBaseUIButton *button)
+void OsuModSelector::onOverrideODSliderDescClicked(CBaseUIButton * /*button*/)
 {
 	m_ODLock->click();
 }

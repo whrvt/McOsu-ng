@@ -983,7 +983,7 @@ void OsuSlider::draw3D2()
 	}
 }
 
-void OsuSlider::drawStartCircle(float alpha)
+void OsuSlider::drawStartCircle(float  /*alpha*/)
 {
 	if (m_bStartFinished)
 	{
@@ -1001,7 +1001,7 @@ void OsuSlider::drawStartCircle(float alpha)
 	}
 }
 
-void OsuSlider::draw3DStartCircle(const Matrix4 &baseScale, float alpha)
+void OsuSlider::draw3DStartCircle(const Matrix4 &baseScale, float  /*alpha*/)
 {
 	if (m_bStartFinished)
 	{
@@ -1019,7 +1019,7 @@ void OsuSlider::draw3DStartCircle(const Matrix4 &baseScale, float alpha)
 	}
 }
 
-void OsuSlider::drawEndCircle(float alpha, float sliderSnake)
+void OsuSlider::drawEndCircle(float  /*alpha*/, float sliderSnake)
 {
 	m_beatmap->getSkin()->getHitCircleOverlay2()->setAnimationTimeOffset(!m_beatmap->isInMafhamRenderChunk() ? m_iTime - m_iFadeInTime : m_beatmap->getCurMusicPosWithOffsets());
 	m_beatmap->getSkin()->getSliderEndCircleOverlay2()->setAnimationTimeOffset(!m_beatmap->isInMafhamRenderChunk() ? m_iTime - m_iFadeInTime : m_beatmap->getCurMusicPosWithOffsets());
@@ -1027,7 +1027,7 @@ void OsuSlider::drawEndCircle(float alpha, float sliderSnake)
 	OsuCircle::drawSliderEndCircle(m_beatmap, m_curve->pointAt(sliderSnake), m_iComboNumber, m_iColorCounter, m_iColorOffset, m_fHittableDimRGBColorMultiplierPercent, 1.0f, m_fAlpha, 0.0f, false, false);
 }
 
-void OsuSlider::draw3DEndCircle(const Matrix4 &baseScale, float alpha, float sliderSnake)
+void OsuSlider::draw3DEndCircle(const Matrix4 &baseScale, float  /*alpha*/, float sliderSnake)
 {
 	m_beatmap->getSkin()->getHitCircleOverlay2()->setAnimationTimeOffset(!m_beatmap->isInMafhamRenderChunk() ? m_iTime - m_iFadeInTime : m_beatmap->getCurMusicPosWithOffsets());
 	m_beatmap->getSkin()->getSliderEndCircleOverlay2()->setAnimationTimeOffset(!m_beatmap->isInMafhamRenderChunk() ? m_iTime - m_iFadeInTime : m_beatmap->getCurMusicPosWithOffsets());

@@ -592,7 +592,7 @@ void OsuHUD::update()
 	}
 }
 
-void OsuHUD::onResolutionChange(Vector2 newResolution)
+void OsuHUD::onResolutionChange(Vector2  /*newResolution*/)
 {
 	updateLayout();
 }
@@ -709,7 +709,7 @@ void OsuHUD::drawCursorInt(Shader *trailShader, std::vector<CURSORTRAIL> &trail,
 	drawCursorRaw(pos, alphaMultiplier);
 }
 
-void OsuHUD::drawCursorTrailInt(Shader *trailShader, std::vector<CURSORTRAIL> &trail, Matrix4 &mvp, Vector2 pos, float alphaMultiplier, bool emptyTrailFrame)
+void OsuHUD::drawCursorTrailInt(Shader *trailShader, std::vector<CURSORTRAIL> &trail, Matrix4 & /*mvp*/, Vector2 pos, float alphaMultiplier, bool emptyTrailFrame)
 {
 	Image *trailImage = osu->getSkin()->getCursorTrail();
 
@@ -1597,7 +1597,7 @@ void OsuHUD::drawWarningArrow(Vector2 pos, bool flipVertically, bool originLeft)
 	g->popTransform();
 }
 
-void OsuHUD::drawWarningArrows(float hitcircleDiameter)
+void OsuHUD::drawWarningArrows(float  /*hitcircleDiameter*/)
 {
 	const float divider = 18.0f;
 	const float part = OsuGameRules::getPlayfieldSize().y * (1.0f / divider);
@@ -2860,7 +2860,7 @@ float OsuHUD::getScoreScale()
 	return osu->getImageScale(osu->getSkin()->getScore0(), 13*1.5f) * cv::osu::hud_scale.getFloat() * cv::osu::hud_score_scale.getFloat();
 }
 
-void OsuHUD::onVolumeOverlaySizeChange(const UString &oldValue, const UString &newValue)
+void OsuHUD::onVolumeOverlaySizeChange(const UString & /*oldValue*/, const UString & /*newValue*/)
 {
 	updateLayout();
 }

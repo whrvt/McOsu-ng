@@ -1130,7 +1130,7 @@ void OsuBeatmap::onKeyDown(KeyboardEvent &e)
 	}
 }
 
-void OsuBeatmap::onKeyUp(KeyboardEvent &e)
+void OsuBeatmap::onKeyUp(KeyboardEvent &/*e*/)
 {
 	// nothing
 }
@@ -1242,7 +1242,7 @@ void OsuBeatmap::keyPressed2(bool mouseButton)
 		m_clicks.push_back(click);
 }
 
-void OsuBeatmap::keyReleased1(bool mouseButton)
+void OsuBeatmap::keyReleased1(bool  /*mouseButton*/)
 {
 	// key overlay
 	osu->getHUD()->animateInputoverlay(1, false);
@@ -1251,7 +1251,7 @@ void OsuBeatmap::keyReleased1(bool mouseButton)
 	m_bClick1Held = false;
 }
 
-void OsuBeatmap::keyReleased2(bool mouseButton)
+void OsuBeatmap::keyReleased2(bool  /*mouseButton*/)
 {
 	// key overlay
 	osu->getHUD()->animateInputoverlay(2, false);

@@ -136,7 +136,7 @@ void OsuUIRankingScreenRankingPanel::draw()
 	}
 }
 
-void OsuUIRankingScreenRankingPanel::drawHitImage(OsuSkinImage *img, float scale, Vector2 pos)
+void OsuUIRankingScreenRankingPanel::drawHitImage(OsuSkinImage *img, float  /*scale*/, Vector2 pos)
 {
 	const float uiScale = /*cv::osu::ui_scale.getFloat()*/1.0f; // NOTE: commented for now, doesn't really work due to legacy layout expectations
 

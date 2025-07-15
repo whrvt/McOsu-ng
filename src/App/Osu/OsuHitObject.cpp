@@ -249,7 +249,7 @@ void OsuHitObject::drawHitResult(const OsuSkin *skin, float hitcircleDiameter, f
 	g->popTransform();
 }
 
-void OsuHitObject::draw3DHitResult(const OsuModFPoSu *fposu, const OsuSkin *skin, float hitcircleDiameter, float rawHitcircleDiameter, Vector2 rawPos, OsuScore::HIT result, float animPercentInv, float hitDeltaRangePercent)
+void OsuHitObject::draw3DHitResult([[maybe_unused]] const OsuModFPoSu *fposu, [[maybe_unused]] const OsuSkin *skin, [[maybe_unused]] float hitcircleDiameter, [[maybe_unused]] float rawHitcircleDiameter, [[maybe_unused]] Vector2 rawPos, [[maybe_unused]] OsuScore::HIT result, [[maybe_unused]] float animPercentInv, [[maybe_unused]] float hitDeltaRangePercent)
 {
 	// TODO: implement above
 }
@@ -530,7 +530,7 @@ void OsuHitObject::addHitResult(OsuScore::HIT result, long delta, bool isEndOfCo
 		m_hitresultanim2 = hitresultanim;
 }
 
-void OsuHitObject::onReset(long curPos)
+void OsuHitObject::onReset(long  /*curPos*/)
 {
 	m_bMisAim = false;
 	m_iAutopilotDelta = 0;

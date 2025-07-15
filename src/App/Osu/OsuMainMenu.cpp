@@ -1391,7 +1391,7 @@ void OsuMainMenu::onButtonChange(MouseButton::Index button, bool down)
 	m_fMainMenuAnimTime = engine->getTime() + m_fMainMenuAnimDuration;
 }
 
-void OsuMainMenu::onResolutionChange(Vector2 newResolution)
+void OsuMainMenu::onResolutionChange(Vector2  /*newResolution*/)
 {
 	updateLayout();
 	setMenuElementsVisible(m_bMenuElementsVisible);

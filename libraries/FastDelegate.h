@@ -53,6 +53,10 @@
 
 static_assert(true); // clangd?
 
+#ifdef __GNUC__
+#pragma GCC diagnostic push
+#endif
+
 #if defined(__clang__) && !defined(_MSC_VER)
 #pragma GCC diagnostic ignored "-Wreorder-ctor"
 #pragma GCC diagnostic ignored "-Wunused-local-typedef"
@@ -62,7 +66,7 @@ static_assert(true); // clangd?
 #endif
 
 #ifdef __GNUC__
-#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////

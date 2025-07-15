@@ -222,7 +222,7 @@ public:
 	{
 		return mapDifficultyRange(beatmap->getOD(), getMinHitWindow50(), getMidHitWindow50(), getMaxHitWindow50());
 	}
-	static inline float getHitWindowMiss(const OsuBeatmap *beatmap)
+	static inline float getHitWindowMiss(const OsuBeatmap * /*beatmap*/)
 	{
 		return cv::osu::stdrules::hitwindow_miss.getFloat(); // opsu is using this here: (500.0f - (beatmap->getOD() * 10.0f)), while osu is just using 400 absolute ms hardcoded, not sure why
 	}

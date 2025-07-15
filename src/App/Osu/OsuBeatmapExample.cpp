@@ -100,19 +100,19 @@ void OsuBeatmapExample::onPlayStart()
 	debugLog("\n");
 }
 
-void OsuBeatmapExample::onBeforeStop(bool quit)
+void OsuBeatmapExample::onBeforeStop(bool  /*quit*/)
 {
 	// called before unloading all hitobjects, when the player stops playing
 	debugLog("\n");
 }
 
-void OsuBeatmapExample::onStop(bool quit)
+void OsuBeatmapExample::onStop(bool  /*quit*/)
 {
 	// called after unloading all hitobjects, when the player stops playing this beatmap and returns to the songbrowser
 	debugLog("\n");
 }
 
-void OsuBeatmapExample::onPaused(bool first)
+void OsuBeatmapExample::onPaused(bool  /*first*/)
 {
 	// called when the player pauses the game
 	debugLog("\n");

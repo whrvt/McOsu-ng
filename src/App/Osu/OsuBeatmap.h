@@ -216,11 +216,11 @@ protected:
 	virtual void onBeforeLoad() {;}			 // called before hitobjects are loaded
 	virtual void onLoad() {;}				 // called after hitobjects have been loaded
 	virtual void onPlayStart() {;}			 // called when the player starts playing (everything has been loaded, including the music)
-	virtual void onBeforeStop(bool quit) {;} // called before hitobjects are unloaded (quit = don't display ranking screen)
-	virtual void onStop(bool quit) {;}		 // called after hitobjects have been unloaded, but before Osu::onPlayEnd() (quit = don't display ranking screen)
-	virtual void onPaused(bool first) {;}
+	virtual void onBeforeStop(bool  /*quit*/) {;} // called before hitobjects are unloaded (quit = don't display ranking screen)
+	virtual void onStop(bool  /*quit*/) {;}		 // called after hitobjects have been unloaded, but before Osu::onPlayEnd() (quit = don't display ranking screen)
+	virtual void onPaused(bool  /*first*/) {;}
 	virtual void onUnpaused() {;}
-	virtual void onRestart(bool quick) {;}
+	virtual void onRestart(bool  /*quick*/) {;}
 
 	// internal
 	bool canDraw();

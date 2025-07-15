@@ -70,7 +70,7 @@ void CBaseUIContainerHorizontalBox::updateLayout()
 	}
 }
 
-void CBaseUIContainerHorizontalBox::updateElement(CBaseUIElement *element)
+void CBaseUIContainerHorizontalBox::updateElement(CBaseUIElement * /*element*/)
 {
 	updateLayout();
 }

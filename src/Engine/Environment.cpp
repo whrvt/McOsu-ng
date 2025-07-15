@@ -414,7 +414,7 @@ void Environment::showMessageErrorFatal(const UString &title, const UString &mes
 }
 
 // TODO: filter?
-void Environment::sdlFileDialogCallback(void *userdata, const char *const *filelist, int filter)
+void Environment::sdlFileDialogCallback(void *userdata, const char *const *filelist, int  /*filter*/)
 {
 	auto *callbackData = static_cast<FileDialogCallbackData *>(userdata);
 	if (!callbackData)

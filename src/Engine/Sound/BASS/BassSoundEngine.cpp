@@ -342,7 +342,7 @@ std::vector<UString> BassSoundEngine::getOutputDevices()
 	return outputDevices;
 }
 
-void BassSoundEngine::updateOutputDevices(bool handleOutputDeviceChanges, bool printInfo)
+void BassSoundEngine::updateOutputDevices(bool  /*handleOutputDeviceChanges*/, bool printInfo)
 {
 	const bool allowNoSoundDevice = true;
 	const int sanityLimit = 42;
@@ -567,7 +567,7 @@ bool BassSoundEngine::initializeBass(int id, bool canReinitInsteadOfFreeInit)
 	return true;
 }
 
-bool BassSoundEngine::initializeWasapi(int id)
+bool BassSoundEngine::initializeWasapi(int  /*id*/)
 {
 #ifdef MCENGINE_FEATURE_BASS_WASAPI
 	const float bufferSize = std::round(cv::win_snd_wasapi_buffer_size.getFloat() * 1000.0f) / 1000.0f;
