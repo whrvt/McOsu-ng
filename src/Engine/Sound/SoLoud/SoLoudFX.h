@@ -12,9 +12,9 @@
 #include "BaseEnvironment.h"
 
 #ifdef MCENGINE_FEATURE_SOLOUD
-#include <atomic>
-#include <memory>
 #include <soloud_audiosource.h>
+#include <mutex>
+#include <memory>
 
 class UString;
 

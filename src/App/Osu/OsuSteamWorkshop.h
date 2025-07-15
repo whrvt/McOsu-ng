@@ -84,10 +84,9 @@ public:
 	};
 
 	[[maybe_unused]] constexpr OsuSteamWorkshop() = default;
-	[[maybe_unused]] constexpr OsuSteamWorkshop(auto *){OsuSteamWorkshop();};
 	[[maybe_unused]] constexpr ~OsuSteamWorkshop() = default;
 
-	[[maybe_unused]] constexpr void refresh(bool,bool _ = true){}
+	[[maybe_unused]] constexpr void refresh(bool /**/,[[maybe_unused]] bool _ = true){}
 
 	[[maybe_unused]] constexpr bool isReady(){return false;}
 	[[maybe_unused]] constexpr bool areDetailsLoaded(){return false;}

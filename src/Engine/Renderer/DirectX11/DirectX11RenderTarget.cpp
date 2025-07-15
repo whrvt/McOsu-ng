@@ -39,7 +39,7 @@ void DirectX11RenderTarget::init()
 
 	HRESULT hr;
 
-	auto *graphics = static_cast<DirectX11Interface*>(g);
+	auto *graphics = static_cast<DirectX11Interface*>(g.get());
 	if (m_interfaceOverrideHack != NULL)
 		graphics = m_interfaceOverrideHack;
 
@@ -243,7 +243,7 @@ void DirectX11RenderTarget::enable()
 {
 	if (!m_bReady) return;
 
-	auto *dx11 = static_cast<DirectX11Interface*>(g);
+	auto *dx11 = static_cast<DirectX11Interface*>(g.get());
 
 	// backup
 	// HACKHACK: slow af
@@ -274,7 +274,7 @@ void DirectX11RenderTarget::disable()
 	// restore
 	// HACKHACK: slow af
 	{
-		static_cast<DirectX11Interface*>(g)->getDeviceContext()->OMSetRenderTargets(1, &m_prevRenderTargetView, m_prevDepthStencilView);
+		static_cast<DirectX11Interface*>(g.get())->getDeviceContext()->OMSetRenderTargets(1, &m_prevRenderTargetView, m_prevDepthStencilView);
 
 		// refcount
 		{
@@ -297,7 +297,7 @@ void DirectX11RenderTarget::bind(unsigned int textureUnit)
 {
 	if (!m_bReady) return;
 
-	auto *dx11 = static_cast<DirectX11Interface*>(g);
+	auto *dx11 = static_cast<DirectX11Interface*>(g.get());
 
 	m_iTextureUnitBackup = textureUnit;
 
@@ -319,7 +319,7 @@ void DirectX11RenderTarget::unbind()
 	// restore
 	// HACKHACK: slow af
 	{
-		static_cast<DirectX11Interface*>(g)->getDeviceContext()->PSSetShaderResources(m_iTextureUnitBackup, 1, &m_prevShaderResourceView);
+		static_cast<DirectX11Interface*>(g.get())->getDeviceContext()->PSSetShaderResources(m_iTextureUnitBackup, 1, &m_prevShaderResourceView);
 
 		// refcount
 		{

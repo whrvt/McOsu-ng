@@ -24,7 +24,7 @@ void DirectX11VertexArrayObject::init()
 {
 	if (!m_bAsyncReady || m_vertices.size() < 2) return;
 
-	const auto *dx11 = static_cast<const DirectX11Interface*>(g);
+	const auto *dx11 = static_cast<const DirectX11Interface*>(g.get());
 
 	if (m_bReady)
 	{
@@ -323,7 +323,7 @@ void DirectX11VertexArrayObject::draw()
 
 	if (start > end || std::abs(end - start) == 0) return;
 
-	const auto *dx11 = static_cast<const DirectX11Interface*>(g);
+	const auto *dx11 = static_cast<const DirectX11Interface*>(g.get());
 
 	// draw it
 	{

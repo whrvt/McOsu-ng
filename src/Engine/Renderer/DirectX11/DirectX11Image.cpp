@@ -48,7 +48,7 @@ void DirectX11Image::init()
 
 	HRESULT hr;
 
-	auto *graphics = static_cast<DirectX11Interface*>(g);
+	auto *graphics = static_cast<DirectX11Interface*>(g.get());
 	if (m_interfaceOverrideHack != NULL)
 		graphics = m_interfaceOverrideHack;
 
@@ -271,14 +271,14 @@ void DirectX11Image::bind(unsigned int textureUnit)
 	// backup
 	// HACKHACK: slow af
 	{
-		static_cast<DirectX11Interface*>(g)->getDeviceContext()->PSGetShaderResources(textureUnit, 1, &m_prevShaderResourceView);
+		static_cast<DirectX11Interface*>(g.get())->getDeviceContext()->PSGetShaderResources(textureUnit, 1, &m_prevShaderResourceView);
 	}
 
-	static_cast<DirectX11Interface*>(g)->getDeviceContext()->PSSetShaderResources(textureUnit, 1, &m_shaderResourceView);
-	static_cast<DirectX11Interface*>(g)->getDeviceContext()->PSSetSamplers(textureUnit, 1, &m_samplerState);
+	static_cast<DirectX11Interface*>(g.get())->getDeviceContext()->PSSetShaderResources(textureUnit, 1, &m_shaderResourceView);
+	static_cast<DirectX11Interface*>(g.get())->getDeviceContext()->PSSetSamplers(textureUnit, 1, &m_samplerState);
 
 	// HACKHACK: TEMP:
-	static_cast<DirectX11Interface*>(g)->getShaderGeneric()->setUniform1f("misc", 1.0f); // enable texturing
+	static_cast<DirectX11Interface*>(g.get())->getShaderGeneric()->setUniform1f("misc", 1.0f); // enable texturing
 }
 
 void DirectX11Image::unbind()
@@ -288,7 +288,7 @@ void DirectX11Image::unbind()
 	// restore
 	// HACKHACK: slow af
 	{
-		static_cast<DirectX11Interface*>(g)->getDeviceContext()->PSSetShaderResources(m_iTextureUnitBackup, 1, &m_prevShaderResourceView);
+		static_cast<DirectX11Interface*>(g.get())->getDeviceContext()->PSSetShaderResources(m_iTextureUnitBackup, 1, &m_prevShaderResourceView);
 
 		// refcount
 		{
@@ -358,7 +358,7 @@ void DirectX11Image::createOrUpdateSampler()
 		m_samplerState = NULL;
 	}
 
-	static_cast<DirectX11Interface*>(g)->getDevice()->CreateSamplerState(&m_samplerDesc, &m_samplerState);
+	static_cast<DirectX11Interface*>(g.get())->getDevice()->CreateSamplerState(&m_samplerDesc, &m_samplerState);
 }
 
 #endif

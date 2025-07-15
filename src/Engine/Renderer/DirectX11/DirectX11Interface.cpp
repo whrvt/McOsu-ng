@@ -620,7 +620,7 @@ void DirectX11Interface::drawPixel(int x, int y)
 	}
 }
 
-void DirectX11Interface::drawPixels(int x, int y, int width, int height, Graphics::DRAWPIXELS_TYPE type, const void *pixels)
+void DirectX11Interface::drawPixels([[maybe_unused]] int x, [[maybe_unused]] int y, [[maybe_unused]] int width, [[maybe_unused]] int height, [[maybe_unused]] Graphics::DRAWPIXELS_TYPE type, [[maybe_unused]] const void *pixels)
 {
 	// TODO: implement
 }
@@ -1094,12 +1094,12 @@ void DirectX11Interface::setClipping(bool enabled)
 	m_deviceContext->RSSetState(m_rasterizerState);
 }
 
-void DirectX11Interface::setAlphaTesting(bool enabled)
+void DirectX11Interface::setAlphaTesting([[maybe_unused]] bool enabled)
 {
 	// TODO: implement in default shader
 }
 
-void DirectX11Interface::setAlphaTestFunc(COMPARE_FUNC alphaFunc, float ref)
+void DirectX11Interface::setAlphaTestFunc([[maybe_unused]] COMPARE_FUNC alphaFunc, [[maybe_unused]]  float ref)
 {
 	// TODO: implement in default shader
 }
@@ -1591,7 +1591,7 @@ VertexArrayObject *DirectX11Interface::createVertexArrayObject(Graphics::PRIMITI
 	return new DirectX11VertexArrayObject(primitive, usage, keepInSystemMemory);
 }
 
-void DirectX11Interface::onTransformUpdate(Matrix4 &projectionMatrix, Matrix4 &worldMatrix)
+void DirectX11Interface::onTransformUpdate([[maybe_unused]] Matrix4 &projectionMatrix, [[maybe_unused]] Matrix4 &worldMatrix)
 {
 	// NOTE: convert from OpenGL coordinate space
 	static Matrix4 zflip = Matrix4().scale(1, 1, -1);
@@ -1621,7 +1621,7 @@ int DirectX11Interface::primitiveToDirectX(Graphics::PRIMITIVE primitive)
 	return D3D_PRIMITIVE_TOPOLOGY::D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 }
 
-int DirectX11Interface::compareFuncToDirectX(Graphics::COMPARE_FUNC compareFunc)
+int DirectX11Interface::compareFuncToDirectX([[maybe_unused]] Graphics::COMPARE_FUNC compareFunc)
 {
 	// TODO: implement
 

@@ -30,11 +30,11 @@ ConVar snd_soloud_prefer_ffmpeg("snd_soloud_prefer_ffmpeg", 0, FCVAR_NONE,
 
 SoLoudSound::SoLoudSound(UString filepath, bool stream, bool threeD, bool loop, bool prescan)
     : Sound(filepath, stream, threeD, loop, prescan),
-      m_handle(0),
       m_speed(1.0f),
       m_pitch(1.0f),
       m_frequency(44100.0f),
-      m_audioSource(nullptr)
+      m_audioSource(nullptr),
+      m_handle(0)
 {
 }
 
