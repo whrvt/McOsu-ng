@@ -8812,7 +8812,7 @@ AUDIO_LIBS=""
 
 
 # the source file is also added through autogen.sh to Makefile.sources
-BUNDLED_INCLUDES="-I\$(srcdir)/libraries"
+BUNDLED_INCLUDES="-I\$(srcdir)/libraries -I\$(srcdir)/libraries/delegates"
 if test "$renderer" != "dx11"
 then :
 

@@ -594,7 +594,7 @@ AC_SUBST([AUDIO_CFLAGS])
 AC_SUBST([AUDIO_LIBS])
 
 # the source file is also added through autogen.sh to Makefile.sources
-BUNDLED_INCLUDES="-I\$(srcdir)/libraries"
+BUNDLED_INCLUDES="-I\$(srcdir)/libraries -I\$(srcdir)/libraries/delegates"
 AS_IF([test "$renderer" != "dx11"], [
     BUNDLED_INCLUDES="$BUNDLED_INCLUDES -I\$(srcdir)/libraries/glad"
 ])

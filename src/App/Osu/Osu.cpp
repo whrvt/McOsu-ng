@@ -166,7 +166,9 @@ Osu::Osu()
 	m_experimentalMods.push_back(&cv::osu::mod_approach_different);
 
 	// engine settings/overrides
-	soundEngine->setOnOutputDeviceChange(fastdelegate::MakeDelegate(this, &Osu::onAudioOutputDeviceChange));
+	soundEngine->setOnOutputDeviceChange(
+		SA::delegate<void()>::create<Osu, &Osu::onAudioOutputDeviceChange>(this)
+	);
 
 	env->setWindowTitle(PACKAGE_NAME);
 	env->setCursorVisible(false);
@@ -194,7 +196,7 @@ Osu::Osu()
 	// override BASS universal offset if soloud+bass are both available at once
 	if constexpr (Env::cfg(AUD::SOLOUD))
 		if (soundEngine->getTypeId() == SoundEngine::SOLOUD)
-			cv::osu::universal_offset_hardcoded.setValue(18.0f);
+			cv::osu::universal_offset_hardcoded.setValue(20.0f);
 
 	env->setWindowResizable(false);
 

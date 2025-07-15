@@ -40,7 +40,6 @@ SoundEngine::SoundEngine()
 {
 	m_bReady = false;
 	m_fPrevOutputDeviceChangeCheckTime = 0.0f;
-	m_outputDeviceChangeCallback = nullptr;
 	m_fVolume = 1.0f;
 	m_iCurrentOutputDevice = -1;
 	m_bBPMDetectEnabled = false;

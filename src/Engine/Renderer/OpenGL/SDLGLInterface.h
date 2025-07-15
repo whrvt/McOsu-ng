@@ -21,7 +21,6 @@ class SDLGLInterface final : public BackendGLInterface
 	friend class Environment;
 public:
 	SDLGLInterface(SDL_Window *window) : BackendGLInterface(), m_window(window) {}
-	~SDLGLInterface() override {;}
 
 	// scene
 	void endScene() override;

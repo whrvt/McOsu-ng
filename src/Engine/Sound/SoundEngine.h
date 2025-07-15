@@ -10,6 +10,7 @@
 #define SOUNDENGINE_H
 
 #include "cbase.h"
+#include "MultiCastDelegate.h"
 
 #define SOUND_ENGINE_TYPE(ClassName, TypeID, ParentClass) \
 	static constexpr TypeId TYPE_ID = TypeID; \
@@ -47,7 +48,7 @@ public:
 	virtual void pause(Sound *snd) = 0;
 	virtual void stop(Sound *snd) = 0;
 
-	typedef fastdelegate::FastDelegate0<> AudioOutputChangedCallback;
+	using AudioOutputChangedCallback = SA::delegate<void()>;
 	virtual void setOnOutputDeviceChange(AudioOutputChangedCallback callback);
 
 	virtual void setOutputDevice(const UString& outputDeviceName) = 0;
