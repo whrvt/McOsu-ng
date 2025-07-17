@@ -51,7 +51,7 @@ public:
 
 	// 2d resource drawing
 	void drawImage(Image *image) final;
-	void drawString(McFont *font, UString text) final;
+	void drawString(McFont *font, const UString &text) final;
 
 	// 3d type drawing
 	void drawVAO(VertexArrayObject *vao) final;

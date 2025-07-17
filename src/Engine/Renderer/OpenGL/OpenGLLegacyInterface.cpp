@@ -402,7 +402,7 @@ void OpenGLLegacyInterface::drawImage(Image *image)
 	}
 }
 
-void OpenGLLegacyInterface::drawString(McFont *font, UString text)
+void OpenGLLegacyInterface::drawString(McFont *font, const UString &text)
 {
 	if (font == NULL || text.length() < 1 || !font->isReady())
 		return;

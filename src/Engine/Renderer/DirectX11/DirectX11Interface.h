@@ -60,7 +60,7 @@ public:
 
 	// 2d resource drawing
 	void drawImage(Image *image) override;
-	void drawString(McFont *font, UString text) override;
+	void drawString(McFont *font, const UString &text) override;
 
 	// 3d type drawing
 	void drawVAO(VertexArrayObject *vao) override;

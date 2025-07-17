@@ -412,7 +412,7 @@ void OpenGL3Interface::drawImage(Image *image)
 	}
 }
 
-void OpenGL3Interface::drawString(McFont *font, UString text)
+void OpenGL3Interface::drawString(McFont *font, const UString &text)
 {
 	if (font == NULL || text.length() < 1 || !font->isReady())
 		return;
