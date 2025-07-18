@@ -341,11 +341,11 @@ void SoLoudSound::setFrequency(float frequency)
 		}
 		else // 0 means reset to default
 		{
-			m_frequency = m_audioSource->mBaseSamplerate;
 			if (m_bStream)
 				setPitch(1.0f);
 			else if (m_handle)
-				soloud->setSamplerate(m_handle, m_frequency);
+				soloud->setSamplerate(m_handle, frequency);
+			m_frequency = m_audioSource->mBaseSamplerate;
 		}
 	}
 }

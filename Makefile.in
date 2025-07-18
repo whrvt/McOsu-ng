@@ -959,20 +959,20 @@ CLEANFILES = \
 # a list of all dependencies which need to be looked over before compiling the main executable
 # everything is here, no matter the build configuration, but unneeded dependencies are just marked with a dummy file to signal completion
 BUILT_SOURCES := \
-	$(DEPS_PREFIX)/mimalloc.built \
-	$(DEPS_PREFIX)/SDL3.built \
+	$(DEPS_PREFIX)/mimalloc-$(MIMALLOC_VERSION).built \
+	$(DEPS_PREFIX)/SDL3-$(SDL3_VERSION).built \
 	$(DEPS_PREFIX)/bass-$(BASS_VERSION).built \
-	$(DEPS_PREFIX)/SDL3_mixer.built \
-	$(DEPS_PREFIX)/libjpeg.built \
-	$(DEPS_PREFIX)/FMT.built \
-	$(DEPS_PREFIX)/libpng.built \
-	$(DEPS_PREFIX)/bzip2.built \
-	$(DEPS_PREFIX)/zlib.built \
-	$(DEPS_PREFIX)/FREETYPE2.built \
-	$(DEPS_PREFIX)/glm.built \
-	$(DEPS_PREFIX)/SoLoud.built \
-	$(DEPS_PREFIX)/SoundTouch.built \
-	$(DEPS_PREFIX)/mpg123.built
+	$(DEPS_PREFIX)/SDL3_mixer-$(SDL3_MIXER_VERSION).built \
+	$(DEPS_PREFIX)/libjpeg-$(LIBJPEG_VERSION).built \
+	$(DEPS_PREFIX)/FMT-$(FMT_VERSION).built \
+	$(DEPS_PREFIX)/libpng-$(LIBPNG_VERSION).built \
+	$(DEPS_PREFIX)/bzip2-$(BZIP2_VERSION).built \
+	$(DEPS_PREFIX)/zlib-$(ZLIB_VERSION).built \
+	$(DEPS_PREFIX)/FREETYPE2-$(FREETYPE2_VERSION).built \
+	$(DEPS_PREFIX)/glm-$(GLM_VERSION).built \
+	$(DEPS_PREFIX)/SoLoud-$(SOLOUD_VERSION).built \
+	$(DEPS_PREFIX)/SoundTouch-$(SOUNDTOUCH_VERSION).built \
+	$(DEPS_PREFIX)/mpg123-$(MPG123_VERSION).built
 
 
 # add all paths with sources as an include ("-I") flag
@@ -4895,7 +4895,7 @@ $(DEPS_CACHE)/bass-$(BASS_VERSION).source: $(DEPS_CACHE)/bass-$(BASS_VERSION)/ba
 	$(MKDIR_P) basswasapi/lib/windows/x86_64 && $(UNZIP) -qjo basswasapi.zip x64/basswasapi.dll -d basswasapi/lib/windows/x86_64 && \
 	$(MKDIR_P) basswasapi/include/ && $(UNZIP) -qjo basswasapi24-header.zip c/basswasapi.h -d basswasapi/include/ && \
 	touch $@
-@BUILD_MIMALLOC_TRUE@$(DEPS_PREFIX)/mimalloc.built: $(DEPS_CACHE)/mimalloc-$(MIMALLOC_VERSION).source
+@BUILD_MIMALLOC_TRUE@$(DEPS_PREFIX)/mimalloc-$(MIMALLOC_VERSION).built: $(DEPS_CACHE)/mimalloc-$(MIMALLOC_VERSION).source
 @BUILD_MIMALLOC_TRUE@	rm -rf $(DEPS_PREFIX)/mimalloc
 @BUILD_MIMALLOC_TRUE@	$(MKDIR_P) $(DEPS_PREFIX)/mimalloc && \
 @BUILD_MIMALLOC_TRUE@	$(TAR) xf $(DEPS_CACHE)/mimalloc-$(MIMALLOC_VERSION).tar.gz -C $(DEPS_PREFIX)/mimalloc --strip-components=1 && \
@@ -4923,9 +4923,9 @@ $(DEPS_CACHE)/bass-$(BASS_VERSION).source: $(DEPS_CACHE)/bass-$(BASS_VERSION)/ba
 @BUILD_MIMALLOC_TRUE@		-D MI_BUILD_OBJECT=$(if $(findstring linux,$(host_os)),ON,OFF) ../.. && \
 @BUILD_MIMALLOC_TRUE@	$(MAKE) install
 @BUILD_MIMALLOC_TRUE@	touch $@
-@BUILD_MIMALLOC_FALSE@$(DEPS_PREFIX)/mimalloc.built:
+@BUILD_MIMALLOC_FALSE@$(DEPS_PREFIX)/mimalloc-$(MIMALLOC_VERSION).built:
 @BUILD_MIMALLOC_FALSE@	$(MKDIR_P) $(DEPS_PREFIX) && touch $@
-@BUILD_SDL3_TRUE@$(DEPS_PREFIX)/SDL3.built: $(DEPS_CACHE)/SDL3-$(SDL3_VERSION).source $(DEPS_PREFIX)/FREETYPE2.built
+@BUILD_SDL3_TRUE@$(DEPS_PREFIX)/SDL3-$(SDL3_VERSION).built: $(DEPS_CACHE)/SDL3-$(SDL3_VERSION).source $(DEPS_PREFIX)/FREETYPE2-$(FREETYPE2_VERSION).built
 @BUILD_SDL3_TRUE@	rm -rf $(DEPS_PREFIX)/SDL3
 @BUILD_SDL3_TRUE@	$(MKDIR_P) $(DEPS_PREFIX)/SDL3 $(DEPS_PREFIX)/lib/pkgconfig
 @BUILD_SDL3_TRUE@	$(TAR) xf $(DEPS_CACHE)/SDL3-$(SDL3_VERSION).tar.gz -C $(DEPS_PREFIX)/SDL3 --strip-components=1 && \
@@ -4954,9 +4954,9 @@ $(DEPS_CACHE)/bass-$(BASS_VERSION).source: $(DEPS_CACHE)/bass-$(BASS_VERSION)/ba
 @BUILD_SDL3_TRUE@	$(CMAKE) --install build
 @BUILD_SDL3_TRUE@	$(PKG_CONFIG) --exists --print-errors sdl3
 @BUILD_SDL3_TRUE@	touch $@
-@BUILD_SDL3_FALSE@$(DEPS_PREFIX)/SDL3.built:
+@BUILD_SDL3_FALSE@$(DEPS_PREFIX)/SDL3-$(SDL3_VERSION).built:
 @BUILD_SDL3_FALSE@	$(MKDIR_P) $(DEPS_PREFIX) && touch $@
-@USE_SDLMIXER_TRUE@$(DEPS_PREFIX)/SDL3_mixer.built: $(DEPS_PREFIX)/SDL3.built $(DEPS_CACHE)/SDL3_mixer-$(SDL3_MIXER_VERSION).source
+@USE_SDLMIXER_TRUE@$(DEPS_PREFIX)/SDL3_mixer-$(SDL3_MIXER_VERSION).built: $(DEPS_PREFIX)/SDL3-$(SDL3_VERSION).built $(DEPS_CACHE)/SDL3_mixer-$(SDL3_MIXER_VERSION).source
 @USE_SDLMIXER_TRUE@	rm -rf $(DEPS_PREFIX)/SDL3_mixer
 @USE_SDLMIXER_TRUE@	$(MKDIR_P) $(DEPS_PREFIX) $(DEPS_PREFIX)/lib/pkgconfig
 @USE_SDLMIXER_TRUE@	cp -r $(DEPS_CACHE)/SDL3_mixer $(DEPS_PREFIX)/SDL3_mixer && \
@@ -4985,9 +4985,9 @@ $(DEPS_CACHE)/bass-$(BASS_VERSION).source: $(DEPS_CACHE)/bass-$(BASS_VERSION)/ba
 @USE_SDLMIXER_TRUE@	rm -rf $(DEPS_PREFIX)/lib/*SDL3_mixer$(if $(STATICBUILD),$(DLLEXT),.a)*
 @USE_SDLMIXER_TRUE@	$(PKG_CONFIG) --exists --print-errors sdl3-mixer
 @USE_SDLMIXER_TRUE@	touch $@
-@USE_SDLMIXER_FALSE@$(DEPS_PREFIX)/SDL3_mixer.built:
+@USE_SDLMIXER_FALSE@$(DEPS_PREFIX)/SDL3_mixer-$(SDL3_MIXER_VERSION).built:
 @USE_SDLMIXER_FALSE@	$(MKDIR_P) $(DEPS_PREFIX) && touch $@
-@BUILD_MPG123_TRUE@$(DEPS_PREFIX)/mpg123.built: $(DEPS_CACHE)/mpg123-$(MPG123_VERSION).source
+@BUILD_MPG123_TRUE@$(DEPS_PREFIX)/mpg123-$(MPG123_VERSION).built: $(DEPS_CACHE)/mpg123-$(MPG123_VERSION).source
 @BUILD_MPG123_TRUE@	rm -rf $(DEPS_PREFIX)/mpg123
 @BUILD_MPG123_TRUE@	$(MKDIR_P) $(DEPS_PREFIX) $(DEPS_PREFIX)/include $(DEPS_PREFIX)/lib/pkgconfig $(DEPS_PREFIX)/mpg123/build
 @BUILD_MPG123_TRUE@	$(TAR) xf $(DEPS_CACHE)/mpg123-$(MPG123_VERSION).tar.gz -C $(DEPS_PREFIX)/mpg123 --strip-components=1 && \
@@ -5000,10 +5000,10 @@ $(DEPS_CACHE)/bass-$(BASS_VERSION).source: $(DEPS_CACHE)/bass-$(BASS_VERSION)/ba
 @BUILD_MPG123_TRUE@	$(MAKE) install
 @BUILD_MPG123_TRUE@	$(PKG_CONFIG) --exists --print-errors libmpg123
 @BUILD_MPG123_TRUE@	touch $@
-@BUILD_MPG123_FALSE@$(DEPS_PREFIX)/mpg123.built:
+@BUILD_MPG123_FALSE@$(DEPS_PREFIX)/mpg123-$(MPG123_VERSION).built:
 @BUILD_MPG123_FALSE@	$(MKDIR_P) $(DEPS_PREFIX) && touch $@
 
-@USE_SOLOUD_TRUE@$(DEPS_PREFIX)/SoLoud.built: $(DEPS_CACHE)/SoLoud-$(SOLOUD_VERSION).source $(DEPS_CACHE)/ffmpeg-$(FFMPEG_VERSION).source $(DEPS_PREFIX)/SDL3.built $(DEPS_PREFIX)/mpg123.built
+@USE_SOLOUD_TRUE@$(DEPS_PREFIX)/SoLoud-$(SOLOUD_VERSION).built: $(DEPS_CACHE)/SoLoud-$(SOLOUD_VERSION).source $(DEPS_CACHE)/ffmpeg-$(FFMPEG_VERSION).source $(DEPS_PREFIX)/SDL3-$(SDL3_VERSION).built $(DEPS_PREFIX)/mpg123-$(MPG123_VERSION).built
 @USE_SOLOUD_TRUE@	rm -rf $(DEPS_PREFIX)/SoLoud
 @USE_SOLOUD_TRUE@	$(MKDIR_P) $(DEPS_PREFIX) $(DEPS_PREFIX)/include $(DEPS_PREFIX)/lib/pkgconfig $(DEPS_PREFIX)/SoLoud/build
 @USE_SOLOUD_TRUE@	$(TAR) xf $(DEPS_CACHE)/SoLoud-$(SOLOUD_VERSION).tar.gz -C $(DEPS_PREFIX)/SoLoud --strip-components=1 && \
@@ -5025,7 +5025,7 @@ $(DEPS_CACHE)/bass-$(BASS_VERSION).source: $(DEPS_CACHE)/bass-$(BASS_VERSION)/ba
 @USE_SOLOUD_TRUE@	$(PKG_CONFIG) --env-only --exists --print-errors soloud
 @USE_SOLOUD_TRUE@	touch $@
 
-@USE_SOLOUD_TRUE@$(DEPS_PREFIX)/SoundTouch.built: $(DEPS_CACHE)/SoundTouch-$(SOUNDTOUCH_VERSION).source
+@USE_SOLOUD_TRUE@$(DEPS_PREFIX)/SoundTouch-$(SOUNDTOUCH_VERSION).built: $(DEPS_CACHE)/SoundTouch-$(SOUNDTOUCH_VERSION).source
 @USE_SOLOUD_TRUE@	rm -rf $(DEPS_PREFIX)/SoundTouch
 @USE_SOLOUD_TRUE@	$(MKDIR_P) $(DEPS_PREFIX) $(DEPS_PREFIX)/include $(DEPS_PREFIX)/lib/pkgconfig $(DEPS_PREFIX)/SoundTouch/build
 @USE_SOLOUD_TRUE@	$(TAR) xf $(DEPS_CACHE)/SoundTouch-$(SOUNDTOUCH_VERSION).tar.gz -C $(DEPS_PREFIX)/SoundTouch --strip-components=1 && \
@@ -5051,9 +5051,9 @@ $(DEPS_CACHE)/bass-$(BASS_VERSION).source: $(DEPS_CACHE)/bass-$(BASS_VERSION)/ba
 @USE_SOLOUD_TRUE@	rm -rf $(DEPS_PREFIX)/lib/*SoundTouch$(if $(STATICBUILD),$(DLLEXT),.a)*
 @USE_SOLOUD_TRUE@	$(PKG_CONFIG) --env-only --exists --print-errors soundtouch
 @USE_SOLOUD_TRUE@	touch $@
-@USE_SOLOUD_FALSE@$(DEPS_PREFIX)/SoLoud.built:
+@USE_SOLOUD_FALSE@$(DEPS_PREFIX)/SoLoud-$(SOLOUD_VERSION).built:
 @USE_SOLOUD_FALSE@	$(MKDIR_P) $(DEPS_PREFIX) && touch $@
-@USE_SOLOUD_FALSE@$(DEPS_PREFIX)/SoundTouch.built:
+@USE_SOLOUD_FALSE@$(DEPS_PREFIX)/SoundTouch-$(SOUNDTOUCH_VERSION).built:
 @USE_SOLOUD_FALSE@	$(MKDIR_P) $(DEPS_PREFIX) && touch $@
 @USE_BASS_TRUE@$(DEPS_PREFIX)/bass-$(BASS_VERSION).built: $(DEPS_CACHE)/bass-$(BASS_VERSION).source
 @USE_BASS_TRUE@	$(MKDIR_P) $(DEPS_PREFIX)
@@ -5061,7 +5061,7 @@ $(DEPS_CACHE)/bass-$(BASS_VERSION).source: $(DEPS_CACHE)/bass-$(BASS_VERSION)/ba
 @USE_BASS_FALSE@$(DEPS_PREFIX)/bass-$(BASS_VERSION).built:
 @USE_BASS_FALSE@	$(MKDIR_P) $(DEPS_PREFIX)
 @USE_BASS_FALSE@	touch $@
-@BUILD_LIBJPEG_TRUE@$(DEPS_PREFIX)/libjpeg.built: $(DEPS_CACHE)/libjpeg-$(LIBJPEG_VERSION).source
+@BUILD_LIBJPEG_TRUE@$(DEPS_PREFIX)/libjpeg-$(LIBJPEG_VERSION).built: $(DEPS_CACHE)/libjpeg-$(LIBJPEG_VERSION).source
 @BUILD_LIBJPEG_TRUE@	rm -rf $(DEPS_PREFIX)/libjpeg
 @BUILD_LIBJPEG_TRUE@	$(MKDIR_P) $(DEPS_PREFIX)/libjpeg/build $(DEPS_PREFIX)/lib/pkgconfig
 @BUILD_LIBJPEG_TRUE@	$(TAR) xf $(DEPS_CACHE)/libjpeg-$(LIBJPEG_VERSION).tar.gz -C $(DEPS_PREFIX)/libjpeg --strip-components=1 && \
@@ -5084,9 +5084,9 @@ $(DEPS_CACHE)/bass-$(BASS_VERSION).source: $(DEPS_CACHE)/bass-$(BASS_VERSION)/ba
 @BUILD_LIBJPEG_TRUE@	$(CMAKE) --install build
 @BUILD_LIBJPEG_TRUE@	$(PKG_CONFIG) --exists --print-errors libturbojpeg
 @BUILD_LIBJPEG_TRUE@	touch $@
-@BUILD_LIBJPEG_FALSE@$(DEPS_PREFIX)/libjpeg.built:
+@BUILD_LIBJPEG_FALSE@$(DEPS_PREFIX)/libjpeg-$(LIBJPEG_VERSION).built:
 @BUILD_LIBJPEG_FALSE@	$(MKDIR_P) $(DEPS_PREFIX) && touch $@
-@BUILD_GLM_TRUE@$(DEPS_PREFIX)/glm.built: $(DEPS_CACHE)/glm-$(GLM_VERSION).source
+@BUILD_GLM_TRUE@$(DEPS_PREFIX)/glm-$(GLM_VERSION).built: $(DEPS_CACHE)/glm-$(GLM_VERSION).source
 @BUILD_GLM_TRUE@	rm -rf $(DEPS_PREFIX)/glm
 @BUILD_GLM_TRUE@	$(MKDIR_P) $(DEPS_PREFIX)/glm/build $(DEPS_PREFIX)/include
 @BUILD_GLM_TRUE@	$(TAR) xf $(DEPS_CACHE)/glm-$(GLM_VERSION).tar.gz -C $(DEPS_PREFIX)/glm --strip-components=1 && \
@@ -5108,9 +5108,9 @@ $(DEPS_CACHE)/bass-$(BASS_VERSION).source: $(DEPS_CACHE)/bass-$(BASS_VERSION)/ba
 @BUILD_GLM_TRUE@	$(CMAKE) --install build
 @BUILD_GLM_TRUE@	test -f $(DEPS_PREFIX)/include/glm/glm.hpp
 @BUILD_GLM_TRUE@	touch $@
-@BUILD_GLM_FALSE@$(DEPS_PREFIX)/glm.built:
+@BUILD_GLM_FALSE@$(DEPS_PREFIX)/glm-$(GLM_VERSION).built:
 @BUILD_GLM_FALSE@	$(MKDIR_P) $(DEPS_PREFIX) && touch $@
-@BUILD_LIBPNG_TRUE@$(DEPS_PREFIX)/libpng.built: $(DEPS_PREFIX)/zlib.built $(DEPS_CACHE)/libpng-$(LIBPNG_VERSION).source
+@BUILD_LIBPNG_TRUE@$(DEPS_PREFIX)/libpng-$(LIBPNG_VERSION).built: $(DEPS_PREFIX)/zlib-$(ZLIB_VERSION).built $(DEPS_CACHE)/libpng-$(LIBPNG_VERSION).source
 @BUILD_LIBPNG_TRUE@	rm -rf $(DEPS_PREFIX)/libpng
 @BUILD_LIBPNG_TRUE@	$(MKDIR_P) $(DEPS_PREFIX)/libpng/build $(DEPS_PREFIX)/lib/pkgconfig
 @BUILD_LIBPNG_TRUE@	$(TAR) xf $(DEPS_CACHE)/libpng-$(LIBPNG_VERSION).tar.gz -C $(DEPS_PREFIX)/libpng --strip-components=1 && \
@@ -5124,9 +5124,9 @@ $(DEPS_CACHE)/bass-$(BASS_VERSION).source: $(DEPS_CACHE)/bass-$(BASS_VERSION)/ba
 @BUILD_LIBPNG_TRUE@	$(MAKE) install
 @BUILD_LIBPNG_TRUE@	$(PKG_CONFIG) --exists --print-errors libpng
 @BUILD_LIBPNG_TRUE@	touch $@
-@BUILD_LIBPNG_FALSE@$(DEPS_PREFIX)/libpng.built:
+@BUILD_LIBPNG_FALSE@$(DEPS_PREFIX)/libpng-$(LIBPNG_VERSION).built:
 @BUILD_LIBPNG_FALSE@	$(MKDIR_P) $(DEPS_PREFIX) && touch $@
-@BUILD_BZIP2_TRUE@$(DEPS_PREFIX)/bzip2.built: $(DEPS_CACHE)/bzip2-$(BZIP2_VERSION).source
+@BUILD_BZIP2_TRUE@$(DEPS_PREFIX)/bzip2-$(BZIP2_VERSION).built: $(DEPS_CACHE)/bzip2-$(BZIP2_VERSION).source
 @BUILD_BZIP2_TRUE@	rm -rf $(DEPS_PREFIX)/bzip2
 @BUILD_BZIP2_TRUE@	$(MKDIR_P) $(DEPS_PREFIX)/bzip2/build $(DEPS_PREFIX)/lib/pkgconfig $(DEPS_PREFIX)/include
 @BUILD_BZIP2_TRUE@	$(TAR) xf $(DEPS_CACHE)/bzip2-$(BZIP2_VERSION).tar.gz -C $(DEPS_PREFIX)/bzip2 --strip-components=1 && \
@@ -5149,9 +5149,9 @@ $(DEPS_CACHE)/bass-$(BASS_VERSION).source: $(DEPS_CACHE)/bass-$(BASS_VERSION)/ba
 @BUILD_BZIP2_TRUE@	  echo 'Libs: -L$${libdir} -lbz2' ) > "$(DEPS_PREFIX)/lib/pkgconfig/bzip2.pc" ; }
 @BUILD_BZIP2_TRUE@	$(PKG_CONFIG) --exists --print-errors bzip2
 @BUILD_BZIP2_TRUE@	touch $@
-@BUILD_BZIP2_FALSE@$(DEPS_PREFIX)/bzip2.built:
+@BUILD_BZIP2_FALSE@$(DEPS_PREFIX)/bzip2-$(BZIP2_VERSION).built:
 @BUILD_BZIP2_FALSE@	$(MKDIR_P) $(DEPS_PREFIX) && touch $@
-@BUILD_ZLIB_TRUE@$(DEPS_PREFIX)/zlib.built: $(DEPS_CACHE)/zlib-$(ZLIB_VERSION).source
+@BUILD_ZLIB_TRUE@$(DEPS_PREFIX)/zlib-$(ZLIB_VERSION).built: $(DEPS_CACHE)/zlib-$(ZLIB_VERSION).source
 @BUILD_ZLIB_TRUE@	rm -rf $(DEPS_PREFIX)/zlib
 @BUILD_ZLIB_TRUE@	$(MKDIR_P) $(DEPS_PREFIX)/zlib/build $(DEPS_PREFIX)/lib/pkgconfig
 @BUILD_ZLIB_TRUE@	$(TAR) xf $(DEPS_CACHE)/zlib-$(ZLIB_VERSION).tar.gz -C $(DEPS_PREFIX)/zlib --strip-components=1 && \
@@ -5162,9 +5162,9 @@ $(DEPS_CACHE)/bass-$(BASS_VERSION).source: $(DEPS_CACHE)/bass-$(BASS_VERSION)/ba
 @BUILD_ZLIB_TRUE@	$(SED) -i 's|sharedlibdir=.*|sharedlibdir=$${libdir}|' $(DEPS_PREFIX)/lib/pkgconfig/zlib.pc && \
 @BUILD_ZLIB_TRUE@	$(PKG_CONFIG) --exists --print-errors zlib
 @BUILD_ZLIB_TRUE@	touch $@
-@BUILD_ZLIB_FALSE@$(DEPS_PREFIX)/zlib.built:
+@BUILD_ZLIB_FALSE@$(DEPS_PREFIX)/zlib-$(ZLIB_VERSION).built:
 @BUILD_ZLIB_FALSE@	$(MKDIR_P) $(DEPS_PREFIX) && touch $@
-@BUILD_FMT_TRUE@$(DEPS_PREFIX)/FMT.built: $(DEPS_CACHE)/FMT-$(FMT_VERSION).source
+@BUILD_FMT_TRUE@$(DEPS_PREFIX)/FMT-$(FMT_VERSION).built: $(DEPS_CACHE)/FMT-$(FMT_VERSION).source
 @BUILD_FMT_TRUE@	rm -rf $(DEPS_PREFIX)/FMT
 @BUILD_FMT_TRUE@	$(MKDIR_P) $(DEPS_PREFIX)/FMT/build $(DEPS_PREFIX)/lib/pkgconfig
 @BUILD_FMT_TRUE@	$(TAR) xf $(DEPS_CACHE)/fmt-$(FMT_VERSION).tar.gz -C $(DEPS_PREFIX)/FMT --strip-components=1 && \
@@ -5194,9 +5194,9 @@ $(DEPS_CACHE)/bass-$(BASS_VERSION).source: $(DEPS_CACHE)/bass-$(BASS_VERSION)/ba
 @BUILD_FMT_TRUE@	$(CMAKE) --install build
 @BUILD_FMT_TRUE@	$(PKG_CONFIG) --exists --print-errors fmt
 @BUILD_FMT_TRUE@	touch $@
-@BUILD_FMT_FALSE@$(DEPS_PREFIX)/FMT.built:
+@BUILD_FMT_FALSE@$(DEPS_PREFIX)/FMT-$(FMT_VERSION).built:
 @BUILD_FMT_FALSE@	$(MKDIR_P) $(DEPS_PREFIX) && touch $@
-@BUILD_FREETYPE2_TRUE@$(DEPS_PREFIX)/FREETYPE2.built: $(DEPS_PREFIX)/libpng.built $(DEPS_PREFIX)/bzip2.built $(DEPS_PREFIX)/zlib.built $(DEPS_CACHE)/FREETYPE2-$(FREETYPE2_VERSION).source
+@BUILD_FREETYPE2_TRUE@$(DEPS_PREFIX)/FREETYPE2-$(FREETYPE2_VERSION).built: $(DEPS_PREFIX)/libpng-$(LIBPNG_VERSION).built $(DEPS_PREFIX)/bzip2-$(BZIP2_VERSION).built $(DEPS_PREFIX)/zlib-$(ZLIB_VERSION).built $(DEPS_CACHE)/FREETYPE2-$(FREETYPE2_VERSION).source
 @BUILD_FREETYPE2_TRUE@	rm -rf $(DEPS_PREFIX)/FREETYPE2
 @BUILD_FREETYPE2_TRUE@	$(MKDIR_P) $(DEPS_PREFIX)/FREETYPE2/build $(DEPS_PREFIX)/lib/pkgconfig
 @BUILD_FREETYPE2_TRUE@	$(TAR) xf $(DEPS_CACHE)/freetype-$(FREETYPE2_VERSION).tar.gz -C $(DEPS_PREFIX)/FREETYPE2 --strip-components=1 && \
@@ -5211,7 +5211,7 @@ $(DEPS_CACHE)/bass-$(BASS_VERSION).source: $(DEPS_CACHE)/bass-$(BASS_VERSION)/ba
 @BUILD_FREETYPE2_TRUE@	$(MAKE) install
 @BUILD_FREETYPE2_TRUE@	$(PKG_CONFIG) --exists --print-errors freetype2
 @BUILD_FREETYPE2_TRUE@	touch $@
-@BUILD_FREETYPE2_FALSE@$(DEPS_PREFIX)/FREETYPE2.built:
+@BUILD_FREETYPE2_FALSE@$(DEPS_PREFIX)/FREETYPE2-$(FREETYPE2_VERSION).built:
 @BUILD_FREETYPE2_FALSE@	$(MKDIR_P) $(DEPS_PREFIX) && touch $@
 
 # making sure deps are built before main compile

@@ -205,7 +205,7 @@ MIMALLOC_LIBS = -L$(DEPS_PREFIX)/lib -Wl,--whole-archive -l:libmimalloc.dll.a -W
 else
 MIMALLOC_LIBS = $(DEPS_PREFIX)/lib/mimalloc$(if $(ENABLE_ASAN),-asan-debug,$(if $(ENABLE_DEBUG),-debug,)).o
 endif # WIN_PLATFORM
-$(DEPS_PREFIX)/mimalloc.built: $(DEPS_CACHE)/mimalloc-$(MIMALLOC_VERSION).source
+$(DEPS_PREFIX)/mimalloc-$(MIMALLOC_VERSION).built: $(DEPS_CACHE)/mimalloc-$(MIMALLOC_VERSION).source
 	rm -rf $(DEPS_PREFIX)/mimalloc
 	$(MKDIR_P) $(DEPS_PREFIX)/mimalloc && \
 	$(TAR) xf $(DEPS_CACHE)/mimalloc-$(MIMALLOC_VERSION).tar.gz -C $(DEPS_PREFIX)/mimalloc --strip-components=1 && \
@@ -235,14 +235,14 @@ $(DEPS_PREFIX)/mimalloc.built: $(DEPS_CACHE)/mimalloc-$(MIMALLOC_VERSION).source
 	touch $@
 else
 MIMALLOC_LIBS :=
-$(DEPS_PREFIX)/mimalloc.built:
+$(DEPS_PREFIX)/mimalloc-$(MIMALLOC_VERSION).built:
 	$(MKDIR_P) $(DEPS_PREFIX) && touch $@
 endif # BUILD_MIMALLOC
 
 if BUILD_SDL3
 SDL3_CFLAGS += $(shell $(PKG_CONFIG) --cflags sdl3)
 SDL3_LIBS += $(shell $(PKG_CONFIG) --libs sdl3)
-$(DEPS_PREFIX)/SDL3.built: $(DEPS_CACHE)/SDL3-$(SDL3_VERSION).source $(DEPS_PREFIX)/FREETYPE2.built
+$(DEPS_PREFIX)/SDL3-$(SDL3_VERSION).built: $(DEPS_CACHE)/SDL3-$(SDL3_VERSION).source $(DEPS_PREFIX)/FREETYPE2-$(FREETYPE2_VERSION).built
 	rm -rf $(DEPS_PREFIX)/SDL3
 	$(MKDIR_P) $(DEPS_PREFIX)/SDL3 $(DEPS_PREFIX)/lib/pkgconfig
 	$(TAR) xf $(DEPS_CACHE)/SDL3-$(SDL3_VERSION).tar.gz -C $(DEPS_PREFIX)/SDL3 --strip-components=1 && \
@@ -272,14 +272,14 @@ $(DEPS_PREFIX)/SDL3.built: $(DEPS_CACHE)/SDL3-$(SDL3_VERSION).source $(DEPS_PREF
 	$(PKG_CONFIG) --exists --print-errors sdl3
 	touch $@
 else
-$(DEPS_PREFIX)/SDL3.built:
+$(DEPS_PREFIX)/SDL3-$(SDL3_VERSION).built:
 	$(MKDIR_P) $(DEPS_PREFIX) && touch $@
 endif # BUILD_SDL3
 
 if USE_SDLMIXER
 AUDIO_CFLAGS += $(shell $(PKG_CONFIG) --cflags sdl3-mixer)
 AUDIO_LIBS += $(shell $(PKG_CONFIG) --libs sdl3-mixer)
-$(DEPS_PREFIX)/SDL3_mixer.built: $(DEPS_PREFIX)/SDL3.built $(DEPS_CACHE)/SDL3_mixer-$(SDL3_MIXER_VERSION).source
+$(DEPS_PREFIX)/SDL3_mixer-$(SDL3_MIXER_VERSION).built: $(DEPS_PREFIX)/SDL3-$(SDL3_VERSION).built $(DEPS_CACHE)/SDL3_mixer-$(SDL3_MIXER_VERSION).source
 	rm -rf $(DEPS_PREFIX)/SDL3_mixer
 	$(MKDIR_P) $(DEPS_PREFIX) $(DEPS_PREFIX)/lib/pkgconfig
 	cp -r $(DEPS_CACHE)/SDL3_mixer $(DEPS_PREFIX)/SDL3_mixer && \
@@ -309,14 +309,14 @@ $(DEPS_PREFIX)/SDL3_mixer.built: $(DEPS_PREFIX)/SDL3.built $(DEPS_CACHE)/SDL3_mi
 	$(PKG_CONFIG) --exists --print-errors sdl3-mixer
 	touch $@
 else
-$(DEPS_PREFIX)/SDL3_mixer.built:
+$(DEPS_PREFIX)/SDL3_mixer-$(SDL3_MIXER_VERSION).built:
 	$(MKDIR_P) $(DEPS_PREFIX) && touch $@
 endif # USE_SDLMIXER
 
 if BUILD_MPG123
 MPG123_CFLAGS += $(shell $(PKG_CONFIG) --cflags libmpg123)
 MPG123_LIBS += $(shell $(PKG_CONFIG) --libs libmpg123)
-$(DEPS_PREFIX)/mpg123.built: $(DEPS_CACHE)/mpg123-$(MPG123_VERSION).source
+$(DEPS_PREFIX)/mpg123-$(MPG123_VERSION).built: $(DEPS_CACHE)/mpg123-$(MPG123_VERSION).source
 	rm -rf $(DEPS_PREFIX)/mpg123
 	$(MKDIR_P) $(DEPS_PREFIX) $(DEPS_PREFIX)/include $(DEPS_PREFIX)/lib/pkgconfig $(DEPS_PREFIX)/mpg123/build
 	$(TAR) xf $(DEPS_CACHE)/mpg123-$(MPG123_VERSION).tar.gz -C $(DEPS_PREFIX)/mpg123 --strip-components=1 && \
@@ -330,7 +330,7 @@ $(DEPS_PREFIX)/mpg123.built: $(DEPS_CACHE)/mpg123-$(MPG123_VERSION).source
 	$(PKG_CONFIG) --exists --print-errors libmpg123
 	touch $@
 else
-$(DEPS_PREFIX)/mpg123.built:
+$(DEPS_PREFIX)/mpg123-$(MPG123_VERSION).built:
 	$(MKDIR_P) $(DEPS_PREFIX) && touch $@
 endif # BUILD_MPG123
 
@@ -341,7 +341,7 @@ AUDIO_LIBS += $(shell $(PKG_CONFIG) --libs soloud) $(shell $(PKG_CONFIG) --libs 
 FFMPEG_INSTALL_LIBS := `find $(DEPS_CACHE)/ffmpeg-$(FFMPEG_VERSION)/$(SYSNAME)$(host_cpu)/lib '(' -name '*avutil*' -o -name '*avcodec*' -o -name '*avformat*' -o -name '*swresample*' ')' -printf '%p '`
 FFMPEG_INCDIR := $(DEPS_CACHE)/ffmpeg-$(FFMPEG_VERSION)/$(SYSNAME)$(host_cpu)/include
 
-$(DEPS_PREFIX)/SoLoud.built: $(DEPS_CACHE)/SoLoud-$(SOLOUD_VERSION).source $(DEPS_CACHE)/ffmpeg-$(FFMPEG_VERSION).source $(DEPS_PREFIX)/SDL3.built $(DEPS_PREFIX)/mpg123.built
+$(DEPS_PREFIX)/SoLoud-$(SOLOUD_VERSION).built: $(DEPS_CACHE)/SoLoud-$(SOLOUD_VERSION).source $(DEPS_CACHE)/ffmpeg-$(FFMPEG_VERSION).source $(DEPS_PREFIX)/SDL3-$(SDL3_VERSION).built $(DEPS_PREFIX)/mpg123-$(MPG123_VERSION).built
 	rm -rf $(DEPS_PREFIX)/SoLoud
 	$(MKDIR_P) $(DEPS_PREFIX) $(DEPS_PREFIX)/include $(DEPS_PREFIX)/lib/pkgconfig $(DEPS_PREFIX)/SoLoud/build
 	$(TAR) xf $(DEPS_CACHE)/SoLoud-$(SOLOUD_VERSION).tar.gz -C $(DEPS_PREFIX)/SoLoud --strip-components=1 && \
@@ -363,7 +363,7 @@ $(DEPS_PREFIX)/SoLoud.built: $(DEPS_CACHE)/SoLoud-$(SOLOUD_VERSION).source $(DEP
 	$(PKG_CONFIG) --env-only --exists --print-errors soloud
 	touch $@
 
-$(DEPS_PREFIX)/SoundTouch.built: $(DEPS_CACHE)/SoundTouch-$(SOUNDTOUCH_VERSION).source
+$(DEPS_PREFIX)/SoundTouch-$(SOUNDTOUCH_VERSION).built: $(DEPS_CACHE)/SoundTouch-$(SOUNDTOUCH_VERSION).source
 	rm -rf $(DEPS_PREFIX)/SoundTouch
 	$(MKDIR_P) $(DEPS_PREFIX) $(DEPS_PREFIX)/include $(DEPS_PREFIX)/lib/pkgconfig $(DEPS_PREFIX)/SoundTouch/build
 	$(TAR) xf $(DEPS_CACHE)/SoundTouch-$(SOUNDTOUCH_VERSION).tar.gz -C $(DEPS_PREFIX)/SoundTouch --strip-components=1 && \
@@ -390,9 +390,9 @@ $(DEPS_PREFIX)/SoundTouch.built: $(DEPS_CACHE)/SoundTouch-$(SOUNDTOUCH_VERSION).
 	$(PKG_CONFIG) --env-only --exists --print-errors soundtouch
 	touch $@
 else
-$(DEPS_PREFIX)/SoLoud.built:
+$(DEPS_PREFIX)/SoLoud-$(SOLOUD_VERSION).built:
 	$(MKDIR_P) $(DEPS_PREFIX) && touch $@
-$(DEPS_PREFIX)/SoundTouch.built:
+$(DEPS_PREFIX)/SoundTouch-$(SOUNDTOUCH_VERSION).built:
 	$(MKDIR_P) $(DEPS_PREFIX) && touch $@
 endif # USE_SOLOUD
 
@@ -418,7 +418,7 @@ endif # USE_BASS
 if BUILD_LIBJPEG
 LIBJPEG_CFLAGS += $(shell $(PKG_CONFIG) --cflags libturbojpeg)
 LIBJPEG_LIBS += $(shell $(PKG_CONFIG) --libs libturbojpeg)
-$(DEPS_PREFIX)/libjpeg.built: $(DEPS_CACHE)/libjpeg-$(LIBJPEG_VERSION).source
+$(DEPS_PREFIX)/libjpeg-$(LIBJPEG_VERSION).built: $(DEPS_CACHE)/libjpeg-$(LIBJPEG_VERSION).source
 	rm -rf $(DEPS_PREFIX)/libjpeg
 	$(MKDIR_P) $(DEPS_PREFIX)/libjpeg/build $(DEPS_PREFIX)/lib/pkgconfig
 	$(TAR) xf $(DEPS_CACHE)/libjpeg-$(LIBJPEG_VERSION).tar.gz -C $(DEPS_PREFIX)/libjpeg --strip-components=1 && \
@@ -442,13 +442,13 @@ $(DEPS_PREFIX)/libjpeg.built: $(DEPS_CACHE)/libjpeg-$(LIBJPEG_VERSION).source
 	$(PKG_CONFIG) --exists --print-errors libturbojpeg
 	touch $@
 else
-$(DEPS_PREFIX)/libjpeg.built:
+$(DEPS_PREFIX)/libjpeg-$(LIBJPEG_VERSION).built:
 	$(MKDIR_P) $(DEPS_PREFIX) && touch $@
 endif # BUILD_LIBJPEG
 
 if BUILD_GLM
 GLM_CFLAGS += -I$(DEPS_PREFIX)/include
-$(DEPS_PREFIX)/glm.built: $(DEPS_CACHE)/glm-$(GLM_VERSION).source
+$(DEPS_PREFIX)/glm-$(GLM_VERSION).built: $(DEPS_CACHE)/glm-$(GLM_VERSION).source
 	rm -rf $(DEPS_PREFIX)/glm
 	$(MKDIR_P) $(DEPS_PREFIX)/glm/build $(DEPS_PREFIX)/include
 	$(TAR) xf $(DEPS_CACHE)/glm-$(GLM_VERSION).tar.gz -C $(DEPS_PREFIX)/glm --strip-components=1 && \
@@ -471,14 +471,14 @@ $(DEPS_PREFIX)/glm.built: $(DEPS_CACHE)/glm-$(GLM_VERSION).source
 	test -f $(DEPS_PREFIX)/include/glm/glm.hpp
 	touch $@
 else
-$(DEPS_PREFIX)/glm.built:
+$(DEPS_PREFIX)/glm-$(GLM_VERSION).built:
 	$(MKDIR_P) $(DEPS_PREFIX) && touch $@
 endif # BUILD_GLM
 
 if BUILD_LIBPNG
 LIBPNG_CFLAGS += $(shell $(PKG_CONFIG) --cflags libpng)
 LIBPNG_LIBS += $(shell $(PKG_CONFIG) --libs libpng)
-$(DEPS_PREFIX)/libpng.built: $(DEPS_PREFIX)/zlib.built $(DEPS_CACHE)/libpng-$(LIBPNG_VERSION).source
+$(DEPS_PREFIX)/libpng-$(LIBPNG_VERSION).built: $(DEPS_PREFIX)/zlib-$(ZLIB_VERSION).built $(DEPS_CACHE)/libpng-$(LIBPNG_VERSION).source
 	rm -rf $(DEPS_PREFIX)/libpng
 	$(MKDIR_P) $(DEPS_PREFIX)/libpng/build $(DEPS_PREFIX)/lib/pkgconfig
 	$(TAR) xf $(DEPS_CACHE)/libpng-$(LIBPNG_VERSION).tar.gz -C $(DEPS_PREFIX)/libpng --strip-components=1 && \
@@ -493,14 +493,14 @@ $(DEPS_PREFIX)/libpng.built: $(DEPS_PREFIX)/zlib.built $(DEPS_CACHE)/libpng-$(LI
 	$(PKG_CONFIG) --exists --print-errors libpng
 	touch $@
 else
-$(DEPS_PREFIX)/libpng.built:
+$(DEPS_PREFIX)/libpng-$(LIBPNG_VERSION).built:
 	$(MKDIR_P) $(DEPS_PREFIX) && touch $@
 endif # BUILD_LIBPNG
 
 if BUILD_BZIP2
 BZIP2_CFLAGS += $(shell $(PKG_CONFIG) --cflags bzip2)
 BZIP2_LIBS += $(shell $(PKG_CONFIG) --libs bzip2)
-$(DEPS_PREFIX)/bzip2.built: $(DEPS_CACHE)/bzip2-$(BZIP2_VERSION).source
+$(DEPS_PREFIX)/bzip2-$(BZIP2_VERSION).built: $(DEPS_CACHE)/bzip2-$(BZIP2_VERSION).source
 	rm -rf $(DEPS_PREFIX)/bzip2
 	$(MKDIR_P) $(DEPS_PREFIX)/bzip2/build $(DEPS_PREFIX)/lib/pkgconfig $(DEPS_PREFIX)/include
 	$(TAR) xf $(DEPS_CACHE)/bzip2-$(BZIP2_VERSION).tar.gz -C $(DEPS_PREFIX)/bzip2 --strip-components=1 && \
@@ -524,14 +524,14 @@ $(DEPS_PREFIX)/bzip2.built: $(DEPS_CACHE)/bzip2-$(BZIP2_VERSION).source
 	$(PKG_CONFIG) --exists --print-errors bzip2
 	touch $@
 else
-$(DEPS_PREFIX)/bzip2.built:
+$(DEPS_PREFIX)/bzip2-$(BZIP2_VERSION).built:
 	$(MKDIR_P) $(DEPS_PREFIX) && touch $@
 endif # BUILD_BZIP2
 
 if BUILD_ZLIB
 ZLIB_CFLAGS += $(shell $(PKG_CONFIG) --cflags zlib)
 ZLIB_LIBS += $(shell $(PKG_CONFIG) --libs zlib)
-$(DEPS_PREFIX)/zlib.built: $(DEPS_CACHE)/zlib-$(ZLIB_VERSION).source
+$(DEPS_PREFIX)/zlib-$(ZLIB_VERSION).built: $(DEPS_CACHE)/zlib-$(ZLIB_VERSION).source
 	rm -rf $(DEPS_PREFIX)/zlib
 	$(MKDIR_P) $(DEPS_PREFIX)/zlib/build $(DEPS_PREFIX)/lib/pkgconfig
 	$(TAR) xf $(DEPS_CACHE)/zlib-$(ZLIB_VERSION).tar.gz -C $(DEPS_PREFIX)/zlib --strip-components=1 && \
@@ -543,14 +543,14 @@ $(DEPS_PREFIX)/zlib.built: $(DEPS_CACHE)/zlib-$(ZLIB_VERSION).source
 	$(PKG_CONFIG) --exists --print-errors zlib
 	touch $@
 else
-$(DEPS_PREFIX)/zlib.built:
+$(DEPS_PREFIX)/zlib-$(ZLIB_VERSION).built:
 	$(MKDIR_P) $(DEPS_PREFIX) && touch $@
 endif # BUILD_ZLIB
 
 if BUILD_FMT
 FMT_CFLAGS += $(shell $(PKG_CONFIG) --cflags fmt)
 FMT_LIBS += $(shell $(PKG_CONFIG) --libs fmt)
-$(DEPS_PREFIX)/FMT.built: $(DEPS_CACHE)/FMT-$(FMT_VERSION).source
+$(DEPS_PREFIX)/FMT-$(FMT_VERSION).built: $(DEPS_CACHE)/FMT-$(FMT_VERSION).source
 	rm -rf $(DEPS_PREFIX)/FMT
 	$(MKDIR_P) $(DEPS_PREFIX)/FMT/build $(DEPS_PREFIX)/lib/pkgconfig
 	$(TAR) xf $(DEPS_CACHE)/fmt-$(FMT_VERSION).tar.gz -C $(DEPS_PREFIX)/FMT --strip-components=1 && \
@@ -581,14 +581,14 @@ $(DEPS_PREFIX)/FMT.built: $(DEPS_CACHE)/FMT-$(FMT_VERSION).source
 	$(PKG_CONFIG) --exists --print-errors fmt
 	touch $@
 else
-$(DEPS_PREFIX)/FMT.built:
+$(DEPS_PREFIX)/FMT-$(FMT_VERSION).built:
 	$(MKDIR_P) $(DEPS_PREFIX) && touch $@
 endif # BUILD_FMT
 
 if BUILD_FREETYPE2
 FREETYPE2_CFLAGS += $(shell $(PKG_CONFIG) --cflags freetype2)
 FREETYPE2_LIBS += $(shell $(PKG_CONFIG) --libs freetype2)
-$(DEPS_PREFIX)/FREETYPE2.built: $(DEPS_PREFIX)/libpng.built $(DEPS_PREFIX)/bzip2.built $(DEPS_PREFIX)/zlib.built $(DEPS_CACHE)/FREETYPE2-$(FREETYPE2_VERSION).source
+$(DEPS_PREFIX)/FREETYPE2-$(FREETYPE2_VERSION).built: $(DEPS_PREFIX)/libpng-$(LIBPNG_VERSION).built $(DEPS_PREFIX)/bzip2-$(BZIP2_VERSION).built $(DEPS_PREFIX)/zlib-$(ZLIB_VERSION).built $(DEPS_CACHE)/FREETYPE2-$(FREETYPE2_VERSION).source
 	rm -rf $(DEPS_PREFIX)/FREETYPE2
 	$(MKDIR_P) $(DEPS_PREFIX)/FREETYPE2/build $(DEPS_PREFIX)/lib/pkgconfig
 	$(TAR) xf $(DEPS_CACHE)/freetype-$(FREETYPE2_VERSION).tar.gz -C $(DEPS_PREFIX)/FREETYPE2 --strip-components=1 && \
@@ -604,7 +604,7 @@ $(DEPS_PREFIX)/FREETYPE2.built: $(DEPS_PREFIX)/libpng.built $(DEPS_PREFIX)/bzip2
 	$(PKG_CONFIG) --exists --print-errors freetype2
 	touch $@
 else
-$(DEPS_PREFIX)/FREETYPE2.built:
+$(DEPS_PREFIX)/FREETYPE2-$(FREETYPE2_VERSION).built:
 	$(MKDIR_P) $(DEPS_PREFIX) && touch $@
 endif # BUILD_FREETYPE2
 
@@ -619,20 +619,20 @@ endif # BUILD_FREETYPE2
 # a list of all dependencies which need to be looked over before compiling the main executable
 # everything is here, no matter the build configuration, but unneeded dependencies are just marked with a dummy file to signal completion
 BUILT_SOURCES := \
-	$(DEPS_PREFIX)/mimalloc.built \
-	$(DEPS_PREFIX)/SDL3.built \
+	$(DEPS_PREFIX)/mimalloc-$(MIMALLOC_VERSION).built \
+	$(DEPS_PREFIX)/SDL3-$(SDL3_VERSION).built \
 	$(DEPS_PREFIX)/bass-$(BASS_VERSION).built \
-	$(DEPS_PREFIX)/SDL3_mixer.built \
-	$(DEPS_PREFIX)/libjpeg.built \
-	$(DEPS_PREFIX)/FMT.built \
-	$(DEPS_PREFIX)/libpng.built \
-	$(DEPS_PREFIX)/bzip2.built \
-	$(DEPS_PREFIX)/zlib.built \
-	$(DEPS_PREFIX)/FREETYPE2.built \
-	$(DEPS_PREFIX)/glm.built \
-	$(DEPS_PREFIX)/SoLoud.built \
-	$(DEPS_PREFIX)/SoundTouch.built \
-	$(DEPS_PREFIX)/mpg123.built
+	$(DEPS_PREFIX)/SDL3_mixer-$(SDL3_MIXER_VERSION).built \
+	$(DEPS_PREFIX)/libjpeg-$(LIBJPEG_VERSION).built \
+	$(DEPS_PREFIX)/FMT-$(FMT_VERSION).built \
+	$(DEPS_PREFIX)/libpng-$(LIBPNG_VERSION).built \
+	$(DEPS_PREFIX)/bzip2-$(BZIP2_VERSION).built \
+	$(DEPS_PREFIX)/zlib-$(ZLIB_VERSION).built \
+	$(DEPS_PREFIX)/FREETYPE2-$(FREETYPE2_VERSION).built \
+	$(DEPS_PREFIX)/glm-$(GLM_VERSION).built \
+	$(DEPS_PREFIX)/SoLoud-$(SOLOUD_VERSION).built \
+	$(DEPS_PREFIX)/SoundTouch-$(SOUNDTOUCH_VERSION).built \
+	$(DEPS_PREFIX)/mpg123-$(MPG123_VERSION).built
 
 # making sure deps are built before main compile
 $(McOsu_ng_OBJECTS): src/config.h $(BUILT_SOURCES)
