@@ -696,7 +696,7 @@ ZLIB_BUILD_VERSION=2.2.4 # zlib-ng
 BZIP2_MIN_VERSION=1.0.8
 BZIP2_BUILD_VERSION=1.0.8
 FMT_MIN_VERSION=11.0.0
-FMT_BUILD_VERSION=11.2.0
+FMT_BUILD_VERSION=553ec11ec06fbe0beebfbb45f9dc3c9eabd83d28
 MPG123_MIN_VERSION=1.30.0
 MPG123_BUILD_VERSION=b9edc89540cb43f1d8c9881d9f67dde996cfb8ef # git mirror, latest as of June 16th, 2025 (next version after 1.33.0)
 
@@ -713,7 +713,7 @@ AC_SUBST([MIMALLOC_PREFIX],[$DEPS_PREFIX])
 
 AC_SUBST([FFMPEG_VERSION], [7.1]) # pre-built, used for soloud
 
-AC_SUBST([BASS_VERSION], [20250611]) # just mark the date so we can invalidate the cache if necessary
+AC_SUBST([BASS_VERSION], [20250718]) # just mark the date so we can invalidate the cache if necessary
 
 # TODO: add all deps and transitive deps (fun!)
 AS_IF([test "x$enable_system_deps" != "xno"], [
