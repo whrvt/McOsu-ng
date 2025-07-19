@@ -30,6 +30,12 @@ public:
 	SoLoudSoundEngine();
 	~SoLoudSoundEngine() override;
 
+	SoLoudSoundEngine &operator=(const SoLoudSoundEngine &) = delete;
+	SoLoudSoundEngine &operator=(SoLoudSoundEngine &&) = delete;
+
+	SoLoudSoundEngine(const SoLoudSoundEngine &) = delete;
+	SoLoudSoundEngine(SoLoudSoundEngine &&) = delete;
+
 	void restart() override;
 	void update() override;
 

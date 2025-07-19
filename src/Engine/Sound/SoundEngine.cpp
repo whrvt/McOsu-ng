@@ -64,8 +64,3 @@ SoundEngine *SoundEngine::createSoundEngine(SndEngineType type)
 #endif
 	return nullptr;
 }
-
-void SoundEngine::setOnOutputDeviceChange(AudioOutputChangedCallback callback)
-{
-	m_outputDeviceChangeCallback = callback;
-}

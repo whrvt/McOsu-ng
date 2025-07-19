@@ -88,11 +88,11 @@ Sound *Sound::createSound(UString filepath, bool stream, bool threeD, bool loop,
 #endif
 #ifdef MCENGINE_FEATURE_SDL_MIXER
 	if (soundEngine->getTypeId() == SDL)
-		return new SDLSound(filepath, stream, threeD, loop, prescan);
+		return new SDLSound(std::move(filepath), stream, threeD, loop, prescan);
 #endif
 #ifdef MCENGINE_FEATURE_SOLOUD
 	if (soundEngine->getTypeId() == SOLOUD)
-		return new SoLoudSound(filepath, stream, threeD, loop, prescan);
+		return new SoLoudSound(std::move(filepath), stream, threeD, loop, prescan);
 #endif
 	return nullptr;
 }

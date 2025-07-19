@@ -20,6 +20,12 @@ public:
 	BassSoundEngine();
 	~BassSoundEngine() override;
 
+	BassSoundEngine &operator=(const BassSoundEngine &) = delete;
+	BassSoundEngine &operator=(BassSoundEngine &&) = delete;
+
+	BassSoundEngine(const BassSoundEngine &) = delete;
+	BassSoundEngine(BassSoundEngine &&) = delete;
+
 	void restart() override;
 	void update() override;
 

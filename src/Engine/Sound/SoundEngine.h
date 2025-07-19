@@ -36,6 +36,12 @@ public:
 	SoundEngine();
 	virtual ~SoundEngine() = default;
 
+	SoundEngine &operator=(const SoundEngine &) = delete;
+	SoundEngine &operator=(SoundEngine &&) = delete;
+
+	SoundEngine(const SoundEngine &) = delete;
+	SoundEngine(SoundEngine &&) = delete;
+
 	// Factory method to create the appropriate sound engine
 	static SoundEngine *createSoundEngine(SndEngineType type = BASS);
 
@@ -49,7 +55,7 @@ public:
 	virtual void stop(Sound *snd) = 0;
 
 	using AudioOutputChangedCallback = SA::delegate<void()>;
-	virtual void setOnOutputDeviceChange(AudioOutputChangedCallback callback);
+	inline void setOnOutputDeviceChange(const AudioOutputChangedCallback &callback) { m_outputDeviceChangeCallback = callback; }
 
 	virtual void setOutputDevice(const UString& outputDeviceName) = 0;
 	virtual void setOutputDeviceForce(const UString& outputDeviceName) = 0;

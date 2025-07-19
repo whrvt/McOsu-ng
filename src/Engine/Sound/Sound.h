@@ -49,7 +49,7 @@ public:
 	virtual void setPan(float pan) = 0;
 	virtual void setLoop(bool loop) = 0;
 	virtual void setOverlayable(bool overlayable) { m_bIsOverlayable = overlayable; }
-	virtual void setLastPlayTime(double lastPlayTime) { m_fLastPlayTime = lastPlayTime; }
+	inline void setLastPlayTime(double lastPlayTime) { m_fLastPlayTime = lastPlayTime; }
 
 	virtual SOUNDHANDLE getHandle() = 0;
 
@@ -60,16 +60,16 @@ public:
 	virtual float getPitch() = 0;
 	virtual float getFrequency() = 0;
 
-	[[nodiscard]] virtual float getBPM() { return m_fCurrentBPM; } // non-const for possible caching
+	[[nodiscard]] virtual inline float getBPM() { return m_fCurrentBPM; } // non-const for possible caching
 
 	virtual bool isPlaying() = 0;
 	virtual bool isFinished() = 0;
 
-	[[nodiscard]] virtual double getLastPlayTime() const { return m_fLastPlayTime; }
-	[[nodiscard]] virtual bool isStream() const { return m_bStream; }
-	[[nodiscard]] virtual bool is3d() const { return m_bIs3d; }
-	[[nodiscard]] virtual bool isLooped() const { return m_bIsLooped; }
-	[[nodiscard]] virtual bool isOverlayable() const { return m_bIsOverlayable; }
+	[[nodiscard]] constexpr double getLastPlayTime() const { return m_fLastPlayTime; }
+	[[nodiscard]] constexpr bool isStream() const { return m_bStream; }
+	[[nodiscard]] constexpr bool is3d() const { return m_bIs3d; }
+	[[nodiscard]] constexpr bool isLooped() const { return m_bIsLooped; }
+	[[nodiscard]] constexpr bool isOverlayable() const { return m_bIsOverlayable; }
 
 	virtual void rebuild(UString newFilePath) = 0;
 

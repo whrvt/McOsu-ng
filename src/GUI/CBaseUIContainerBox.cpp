@@ -25,9 +25,9 @@ void CBaseUIContainerBox::updateLayout()
 	if (m_parent != nullptr)
 		m_parent->updateLayout();
 
-	for (size_t i=0; i<m_vElements.size(); i++)
+	for (auto & m_vElement : m_vElements)
 	{
-		m_vElements[i]->setPosAbsolute(m_vElements[i]->getRelPos() + m_vPos);
+		m_vElement->setPosAbsolute(m_vElement->getRelPos() + m_vPos);
 	}
 }
 

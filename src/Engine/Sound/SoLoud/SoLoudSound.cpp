@@ -436,22 +436,6 @@ float SoLoudSound::getPitch()
 	return m_pitch;
 }
 
-float SoLoudSound::getFrequency()
-{
-	if (!m_bReady || !m_handle)
-		return 44100.0f;
-
-	// get sample rate from active voice, unless we changed the frequency through pitch for streams, then just return our own frequency
-	if (!m_bStream)
-	{
-		float currentFreq = soloud->getSamplerate(m_handle);
-		if (currentFreq > 0)
-			m_frequency = currentFreq;
-	}
-
-	return m_frequency;
-}
-
 float SoLoudSound::getBPM()
 {
 	if (!m_bReady || !m_audioSource)

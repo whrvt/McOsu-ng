@@ -57,7 +57,7 @@ public:
 	unsigned long getLengthMS() override;
 	float getSpeed() override;
 	float getPitch() override;
-	float getFrequency() override;
+	inline float getFrequency() override { return m_frequency; }
 
 	float getBPM() override;
 
