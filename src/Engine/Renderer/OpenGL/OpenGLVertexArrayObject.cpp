@@ -12,7 +12,7 @@
 #include "Engine.h"
 #include "ConVar.h"
 
-#include "OpenGLHeaders.h"
+#include "SDLGLInterface.h"
 namespace cv {
 ConVar r_opengl_legacy_vao_use_vertex_array("r_opengl_legacy_vao_use_vertex_array", Env::cfg( REND::GLES32) ? true : false, FCVAR_NONE, "dramatically reduces per-vao draw calls, but completely breaks legacy ffp draw calls (vertices work, but texcoords/normals/etc. are NOT in gl_MultiTexCoord0 -> requiring a shader with attributes)");
 }
@@ -112,7 +112,7 @@ void OpenGLVertexArrayObject::init()
 	{
 		glGenBuffers(1, &m_iVertexBuffer);
 		glBindBuffer(GL_ARRAY_BUFFER, m_iVertexBuffer);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3) * m_vertices.size(), &(m_vertices[0]), usageToOpenGL(m_usage));
+		glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3) * m_vertices.size(), &(m_vertices[0]), SDLGLInterface::usageToOpenGLMap[m_usage]);
 
 		if (cv::r_opengl_legacy_vao_use_vertex_array.getBool())
 		{
@@ -134,7 +134,7 @@ void OpenGLVertexArrayObject::init()
 
 		glGenBuffers(1, &m_iTexcoordBuffer);
 		glBindBuffer(GL_ARRAY_BUFFER, m_iTexcoordBuffer);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(Vector2) * m_texcoords[0].size(), &(m_texcoords[0][0]), usageToOpenGL(m_usage));
+		glBufferData(GL_ARRAY_BUFFER, sizeof(Vector2) * m_texcoords[0].size(), &(m_texcoords[0][0]), SDLGLInterface::usageToOpenGLMap[m_usage]);
 
 		if (cv::r_opengl_legacy_vao_use_vertex_array.getBool())
 		{
@@ -159,7 +159,7 @@ void OpenGLVertexArrayObject::init()
 
 		glGenBuffers(1, &m_iColorBuffer);
 		glBindBuffer(GL_ARRAY_BUFFER, m_iColorBuffer);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(Color) * m_colors.size(), &(m_colors[0]), usageToOpenGL(m_usage));
+		glBufferData(GL_ARRAY_BUFFER, sizeof(Color) * m_colors.size(), &(m_colors[0]), SDLGLInterface::usageToOpenGLMap[m_usage]);
 
 		if (cv::r_opengl_legacy_vao_use_vertex_array.getBool())
 		{
@@ -179,7 +179,7 @@ void OpenGLVertexArrayObject::init()
 
 		glGenBuffers(1, &m_iNormalBuffer);
 		glBindBuffer(GL_ARRAY_BUFFER, m_iNormalBuffer);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3) * m_normals.size(), &(m_normals[0]), usageToOpenGL(m_usage));
+		glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3) * m_normals.size(), &(m_normals[0]), SDLGLInterface::usageToOpenGLMap[m_usage]);
 
 		if (cv::r_opengl_legacy_vao_use_vertex_array.getBool())
 		{
@@ -255,7 +255,7 @@ void OpenGLVertexArrayObject::draw()
 		glBindVertexArray(m_iVertexArray);
 
 		// render it
-		glDrawArrays(primitiveToOpenGL(m_primitive), start, end - start); // (everything is already preconfigured inside the vertexArray)
+		glDrawArrays(SDLGLInterface::primitiveToOpenGLMap[m_primitive], start, end - start); // (everything is already preconfigured inside the vertexArray)
 	}
 	else
 	{
@@ -294,44 +294,8 @@ void OpenGLVertexArrayObject::draw()
 			glDisableClientState(GL_NORMAL_ARRAY);
 
 		// render it
-		glDrawArrays(primitiveToOpenGL(m_primitive), start, end - start);
+		glDrawArrays(SDLGLInterface::primitiveToOpenGLMap[m_primitive], start, end - start);
 	}
-}
-
-int OpenGLVertexArrayObject::primitiveToOpenGL(Graphics::PRIMITIVE primitive)
-{
-	switch (primitive)
-	{
-	case Graphics::PRIMITIVE::PRIMITIVE_LINES:
-		return GL_LINES;
-	case Graphics::PRIMITIVE::PRIMITIVE_LINE_STRIP:
-		return GL_LINE_STRIP;
-	case Graphics::PRIMITIVE::PRIMITIVE_TRIANGLES:
-		return GL_TRIANGLES;
-	case Graphics::PRIMITIVE::PRIMITIVE_TRIANGLE_FAN:
-		return GL_TRIANGLE_FAN;
-	case Graphics::PRIMITIVE::PRIMITIVE_TRIANGLE_STRIP:
-		return GL_TRIANGLE_STRIP;
-	case Graphics::PRIMITIVE::PRIMITIVE_QUADS:
-		return GL_QUADS;
-	}
-
-	return GL_TRIANGLES;
-}
-
-unsigned int OpenGLVertexArrayObject::usageToOpenGL(Graphics::USAGE_TYPE usage)
-{
-	switch (usage)
-	{
-	case Graphics::USAGE_TYPE::USAGE_STATIC:
-		return GL_STATIC_DRAW;
-	case Graphics::USAGE_TYPE::USAGE_DYNAMIC:
-		return GL_DYNAMIC_DRAW;
-	case Graphics::USAGE_TYPE::USAGE_STREAM:
-		return GL_STREAM_DRAW;
-	}
-
-	return GL_STATIC_DRAW;
 }
 
 #endif

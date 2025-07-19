@@ -20,7 +20,7 @@
 #include "OpenGL3VertexArrayObject.h"
 #include "OpenGLStateCache.h"
 
-#include "OpenGLHeaders.h"
+#include "SDLGLInterface.h"
 
 OpenGL3Interface::OpenGL3Interface() : Graphics()
 {
@@ -577,7 +577,7 @@ void OpenGL3Interface::drawVAO(VertexArrayObject *vao)
 	}
 
 	// draw it
-	glDrawArrays(primitiveToOpenGL(primitive), 0, finalVertices.size());
+	glDrawArrays(SDLGLInterface::primitiveToOpenGLMap[primitive], 0, finalVertices.size());
 }
 
 void OpenGL3Interface::setClipRect(McRect clipRect)
@@ -663,7 +663,7 @@ void OpenGL3Interface::setAlphaTesting(bool enabled)
 
 void OpenGL3Interface::setAlphaTestFunc(COMPARE_FUNC alphaFunc, float ref)
 {
-	glAlphaFunc(compareFuncToOpenGL(alphaFunc), ref);
+	glAlphaFunc(SDLGLInterface::compareFuncToOpenGLMap[alphaFunc], ref);
 }
 
 void OpenGL3Interface::setBlending(bool enabled)
@@ -805,52 +805,6 @@ void OpenGL3Interface::handleGLErrors()
 	// int error = glGetError();
 	// if (error != 0)
 	// 	debugLog("OpenGL Error: {} on frame {}\n",error,engine->getFrameCount());
-}
-
-int OpenGL3Interface::primitiveToOpenGL(Graphics::PRIMITIVE primitive)
-{
-	switch (primitive)
-	{
-	case Graphics::PRIMITIVE::PRIMITIVE_LINES:
-		return GL_LINES;
-	case Graphics::PRIMITIVE::PRIMITIVE_LINE_STRIP:
-		return GL_LINE_STRIP;
-	case Graphics::PRIMITIVE::PRIMITIVE_TRIANGLES:
-		return GL_TRIANGLES;
-	case Graphics::PRIMITIVE::PRIMITIVE_TRIANGLE_FAN:
-		return GL_TRIANGLE_FAN;
-	case Graphics::PRIMITIVE::PRIMITIVE_TRIANGLE_STRIP:
-		return GL_TRIANGLE_STRIP;
-	case Graphics::PRIMITIVE::PRIMITIVE_QUADS:
-		return GL_QUADS;
-	}
-
-	return GL_TRIANGLES;
-}
-
-int OpenGL3Interface::compareFuncToOpenGL(Graphics::COMPARE_FUNC compareFunc)
-{
-	switch (compareFunc)
-	{
-	case Graphics::COMPARE_FUNC::COMPARE_FUNC_NEVER:
-		return GL_NEVER;
-	case Graphics::COMPARE_FUNC::COMPARE_FUNC_LESS:
-		return GL_LESS;
-	case Graphics::COMPARE_FUNC::COMPARE_FUNC_EQUAL:
-		return GL_EQUAL;
-	case Graphics::COMPARE_FUNC::COMPARE_FUNC_LESSEQUAL:
-		return GL_LEQUAL;
-	case Graphics::COMPARE_FUNC::COMPARE_FUNC_GREATER:
-		return GL_GREATER;
-	case Graphics::COMPARE_FUNC::COMPARE_FUNC_NOTEQUAL:
-		return GL_NOTEQUAL;
-	case Graphics::COMPARE_FUNC::COMPARE_FUNC_GREATEREQUAL:
-		return GL_GEQUAL;
-	case Graphics::COMPARE_FUNC::COMPARE_FUNC_ALWAYS:
-		return GL_ALWAYS;
-	}
-
-	return GL_ALWAYS;
 }
 
 #endif

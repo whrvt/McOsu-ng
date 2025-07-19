@@ -107,9 +107,6 @@ protected:
 private:
 	void handleGLErrors();
 
-	static int primitiveToOpenGL(Graphics::PRIMITIVE primitive);
-	static int compareFuncToOpenGL(Graphics::COMPARE_FUNC compareFunc);
-
 	// renderer
 	bool m_bInScene;
 	Vector2 m_vResolution;

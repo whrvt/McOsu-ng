@@ -28,8 +28,7 @@ public:
 	[[nodiscard]] inline unsigned int getNumNormals() const { return m_iNumNormals; }
 
 private:
-	static int primitiveToOpenGL(Graphics::PRIMITIVE primitive);
-	static unsigned int usageToOpenGL(Graphics::USAGE_TYPE usage);
+
 	static forceinline Color ARGBtoABGR(Color color)
 	{
 		return ((color & 0xff000000) >> 0) | ((color & 0x00ff0000) >> 16) | ((color & 0x0000ff00) << 0) | ((color & 0x000000ff) << 16);

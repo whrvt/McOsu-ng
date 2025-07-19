@@ -19,7 +19,7 @@
 #include "OpenGLShader.h"
 #include "OpenGLVertexArrayObject.h"
 
-#include "OpenGLHeaders.h"
+#include "SDLGLInterface.h"
 #include "OpenGLStateCache.h"
 
 #include <utility>
@@ -443,7 +443,7 @@ void OpenGLLegacyInterface::drawVAO(VertexArrayObject *vao)
 	const std::vector<std::vector<Vector2>> &texcoords = vao->getTexcoords();
 	const std::vector<Color> &colors = vao->getColors();
 
-	glBegin(primitiveToOpenGL(vao->getPrimitive()));
+	glBegin(SDLGLInterface::primitiveToOpenGLMap[vao->getPrimitive()]);
 	for (size_t i = 0; i < vertices.size(); i++)
 	{
 		if (i < colors.size())
@@ -549,7 +549,7 @@ void OpenGLLegacyInterface::setAlphaTesting(bool enabled)
 
 void OpenGLLegacyInterface::setAlphaTestFunc(COMPARE_FUNC alphaFunc, float ref)
 {
-	glAlphaFunc(compareFuncToOpenGL(alphaFunc), ref);
+	glAlphaFunc(SDLGLInterface::compareFuncToOpenGLMap[alphaFunc], ref);
 }
 
 void OpenGLLegacyInterface::setBlending(bool enabled)
@@ -712,52 +712,6 @@ void OpenGLLegacyInterface::onTransformUpdate(Matrix4 &projectionMatrix, Matrix4
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadMatrixf(worldMatrix.get());
-}
-
-int OpenGLLegacyInterface::primitiveToOpenGL(Graphics::PRIMITIVE primitive)
-{
-	switch (primitive)
-	{
-	case Graphics::PRIMITIVE::PRIMITIVE_LINES:
-		return GL_LINES;
-	case Graphics::PRIMITIVE::PRIMITIVE_LINE_STRIP:
-		return GL_LINE_STRIP;
-	case Graphics::PRIMITIVE::PRIMITIVE_TRIANGLES:
-		return GL_TRIANGLES;
-	case Graphics::PRIMITIVE::PRIMITIVE_TRIANGLE_FAN:
-		return GL_TRIANGLE_FAN;
-	case Graphics::PRIMITIVE::PRIMITIVE_TRIANGLE_STRIP:
-		return GL_TRIANGLE_STRIP;
-	case Graphics::PRIMITIVE::PRIMITIVE_QUADS:
-		return GL_QUADS;
-	}
-
-	return GL_TRIANGLES;
-}
-
-int OpenGLLegacyInterface::compareFuncToOpenGL(Graphics::COMPARE_FUNC compareFunc)
-{
-	switch (compareFunc)
-	{
-	case Graphics::COMPARE_FUNC::COMPARE_FUNC_NEVER:
-		return GL_NEVER;
-	case Graphics::COMPARE_FUNC::COMPARE_FUNC_LESS:
-		return GL_LESS;
-	case Graphics::COMPARE_FUNC::COMPARE_FUNC_EQUAL:
-		return GL_EQUAL;
-	case Graphics::COMPARE_FUNC::COMPARE_FUNC_LESSEQUAL:
-		return GL_LEQUAL;
-	case Graphics::COMPARE_FUNC::COMPARE_FUNC_GREATER:
-		return GL_GREATER;
-	case Graphics::COMPARE_FUNC::COMPARE_FUNC_NOTEQUAL:
-		return GL_NOTEQUAL;
-	case Graphics::COMPARE_FUNC::COMPARE_FUNC_GREATEREQUAL:
-		return GL_GEQUAL;
-	case Graphics::COMPARE_FUNC::COMPARE_FUNC_ALWAYS:
-		return GL_ALWAYS;
-	}
-
-	return GL_ALWAYS;
 }
 
 void OpenGLLegacyInterface::handleGLErrors()

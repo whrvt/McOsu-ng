@@ -28,9 +28,6 @@ public:
 	void draw() override;
 
 private:
-	static int primitiveToOpenGL(Graphics::PRIMITIVE primitive);
-	static unsigned int usageToOpenGL(Graphics::USAGE_TYPE usage);
-
 	void init() override;
 	void initAsync() override;
 	void destroy() override;

@@ -122,9 +122,6 @@ protected:
 private:
 	void handleGLErrors();
 
-	static int primitiveToOpenGL(Graphics::PRIMITIVE primitive);
-	static int compareFuncToOpenGL(Graphics::COMPARE_FUNC compareFunc);
-
 	void registerShader(OpenGLES32Shader *shader);
 	void unregisterShader(OpenGLES32Shader *shader);
 	void updateAllShaderTransforms();

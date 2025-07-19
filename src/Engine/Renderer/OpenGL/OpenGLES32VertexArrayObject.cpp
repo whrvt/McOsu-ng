@@ -13,7 +13,7 @@
 #include "OpenGLES32Interface.h"
 #include "OpenGLStateCache.h"
 
-#include "OpenGLHeaders.h"
+#include "SDLGLInterface.h"
 
 OpenGLES32VertexArrayObject::OpenGLES32VertexArrayObject(Graphics::PRIMITIVE primitive, Graphics::USAGE_TYPE usage, bool keepInSystemMemory)
     : VertexArrayObject(primitive, usage, keepInSystemMemory)
@@ -101,7 +101,7 @@ void OpenGLES32VertexArrayObject::init()
 	// build and fill vertex buffer
 	glGenBuffers(1, &m_iVertexBuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, m_iVertexBuffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3) * m_vertices.size(), &(m_vertices[0]), usageToOpenGL(m_usage));
+	glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3) * m_vertices.size(), &(m_vertices[0]), SDLGLInterface::usageToOpenGLMap[m_usage]);
 
 	// build and fill texcoord buffer
 	if (m_texcoords.size() > 0 && m_texcoords[0].size() > 0)
@@ -110,7 +110,7 @@ void OpenGLES32VertexArrayObject::init()
 
 		glGenBuffers(1, &m_iTexcoordBuffer);
 		glBindBuffer(GL_ARRAY_BUFFER, m_iTexcoordBuffer);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(Vector2) * m_texcoords[0].size(), &(m_texcoords[0][0]), usageToOpenGL(m_usage));
+		glBufferData(GL_ARRAY_BUFFER, sizeof(Vector2) * m_texcoords[0].size(), &(m_texcoords[0][0]), SDLGLInterface::usageToOpenGLMap[m_usage]);
 	}
 
 	// build and fill color buffer
@@ -126,7 +126,7 @@ void OpenGLES32VertexArrayObject::init()
 
 		glGenBuffers(1, &m_iColorBuffer);
 		glBindBuffer(GL_ARRAY_BUFFER, m_iColorBuffer);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(Color) * m_colors.size(), &(m_colors[0]), usageToOpenGL(m_usage));
+		glBufferData(GL_ARRAY_BUFFER, sizeof(Color) * m_colors.size(), &(m_colors[0]), SDLGLInterface::usageToOpenGLMap[m_usage]);
 	}
 
 	// build and fill normal buffer
@@ -136,7 +136,7 @@ void OpenGLES32VertexArrayObject::init()
 
 		glGenBuffers(1, &m_iNormalBuffer);
 		glBindBuffer(GL_ARRAY_BUFFER, m_iNormalBuffer);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3) * m_normals.size(), &(m_normals[0]), usageToOpenGL(m_usage));
+		glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3) * m_normals.size(), &(m_normals[0]), SDLGLInterface::usageToOpenGLMap[m_usage]);
 	}
 
 	// free memory
@@ -219,7 +219,7 @@ void OpenGLES32VertexArrayObject::draw()
 	}
 
 	// draw the geometry
-	glDrawArrays(primitiveToOpenGL(m_primitive), start, end - start);
+	glDrawArrays(SDLGLInterface::primitiveToOpenGLMap[m_primitive], start, end - start);
 
 	// restore default state
 	glBindBuffer(GL_ARRAY_BUFFER, gles32->getVBOVertices());
@@ -232,42 +232,6 @@ void OpenGLES32VertexArrayObject::draw()
 	glBindBuffer(GL_ARRAY_BUFFER, gles32->getVBOTexcolors());
 	glVertexAttribPointer(gles32->getShaderGenericAttribCol(), 4, GL_UNSIGNED_BYTE, GL_TRUE, 0, (GLvoid *)0);
 	glEnableVertexAttribArray(gles32->getShaderGenericAttribCol());
-}
-
-int OpenGLES32VertexArrayObject::primitiveToOpenGL(Graphics::PRIMITIVE primitive)
-{
-	switch (primitive)
-	{
-	case Graphics::PRIMITIVE::PRIMITIVE_LINES:
-		return GL_LINES;
-	case Graphics::PRIMITIVE::PRIMITIVE_LINE_STRIP:
-		return GL_LINE_STRIP;
-	case Graphics::PRIMITIVE::PRIMITIVE_TRIANGLES:
-		return GL_TRIANGLES;
-	case Graphics::PRIMITIVE::PRIMITIVE_TRIANGLE_FAN:
-		return GL_TRIANGLE_FAN;
-	case Graphics::PRIMITIVE::PRIMITIVE_TRIANGLE_STRIP:
-		return GL_TRIANGLE_STRIP;
-	case Graphics::PRIMITIVE::PRIMITIVE_QUADS:
-		return 0; // not supported
-	}
-
-	return GL_TRIANGLES;
-}
-
-unsigned int OpenGLES32VertexArrayObject::usageToOpenGL(Graphics::USAGE_TYPE usage)
-{
-	switch (usage)
-	{
-	case Graphics::USAGE_TYPE::USAGE_STATIC:
-		return GL_STATIC_DRAW;
-	case Graphics::USAGE_TYPE::USAGE_DYNAMIC:
-		return GL_DYNAMIC_DRAW;
-	case Graphics::USAGE_TYPE::USAGE_STREAM:
-		return GL_STREAM_DRAW;
-	}
-
-	return GL_STATIC_DRAW;
 }
 
 #endif

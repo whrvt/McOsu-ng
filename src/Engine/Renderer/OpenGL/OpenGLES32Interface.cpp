@@ -20,7 +20,7 @@
 #include "OpenGLRenderTarget.h"
 #include "OpenGLStateCache.h"
 
-#include "OpenGLHeaders.h"
+#include "SDLGLInterface.h"
 namespace cv {
 ConVar r_gles_orphan_buffers("r_gles_orphan_buffers", Env::cfg(OS::WASM) ? false : true, FCVAR_NONE,
                              "reduce cpu/gpu synchronization by freeing buffer objects before modifying them");
@@ -595,7 +595,7 @@ void OpenGLES32Interface::drawVAO(VertexArrayObject *vao)
 	}
 
 	// draw it
-	glDrawArrays(primitiveToOpenGL(primitive), 0, finalVertices.size());
+	glDrawArrays(SDLGLInterface::primitiveToOpenGLMap[primitive], 0, finalVertices.size());
 }
 
 void OpenGLES32Interface::setClipRect(McRect clipRect)
@@ -685,7 +685,7 @@ void OpenGLES32Interface::setAlphaTesting(bool enabled)
 
 void OpenGLES32Interface::setAlphaTestFunc(COMPARE_FUNC alphaFunc, float ref)
 {
-	glAlphaFunc(compareFuncToOpenGL(alphaFunc), ref);
+	glAlphaFunc(SDLGLInterface::compareFuncToOpenGLMap[alphaFunc], ref);
 }
 
 void OpenGLES32Interface::setAntialiasing(bool aa)
@@ -902,52 +902,6 @@ void OpenGLES32Interface::handleGLErrors()
 	// int error = glGetError();
 	// if (error != 0)
 	// 	debugLog("OpenGL Error: {} on frame {}\n", error, engine->getFrameCount());
-}
-
-int OpenGLES32Interface::primitiveToOpenGL(Graphics::PRIMITIVE primitive)
-{
-	switch (primitive)
-	{
-	case Graphics::PRIMITIVE::PRIMITIVE_LINES:
-		return GL_LINES;
-	case Graphics::PRIMITIVE::PRIMITIVE_LINE_STRIP:
-		return GL_LINE_STRIP;
-	case Graphics::PRIMITIVE::PRIMITIVE_TRIANGLES:
-		return GL_TRIANGLES;
-	case Graphics::PRIMITIVE::PRIMITIVE_TRIANGLE_FAN:
-		return GL_TRIANGLE_FAN;
-	case Graphics::PRIMITIVE::PRIMITIVE_TRIANGLE_STRIP:
-		return GL_TRIANGLE_STRIP;
-	case Graphics::PRIMITIVE::PRIMITIVE_QUADS:
-		return 0; // not supported
-	}
-
-	return GL_TRIANGLES;
-}
-
-int OpenGLES32Interface::compareFuncToOpenGL(Graphics::COMPARE_FUNC compareFunc)
-{
-	switch (compareFunc)
-	{
-	case Graphics::COMPARE_FUNC::COMPARE_FUNC_NEVER:
-		return GL_NEVER;
-	case Graphics::COMPARE_FUNC::COMPARE_FUNC_LESS:
-		return GL_LESS;
-	case Graphics::COMPARE_FUNC::COMPARE_FUNC_EQUAL:
-		return GL_EQUAL;
-	case Graphics::COMPARE_FUNC::COMPARE_FUNC_LESSEQUAL:
-		return GL_LEQUAL;
-	case Graphics::COMPARE_FUNC::COMPARE_FUNC_GREATER:
-		return GL_GREATER;
-	case Graphics::COMPARE_FUNC::COMPARE_FUNC_NOTEQUAL:
-		return GL_NOTEQUAL;
-	case Graphics::COMPARE_FUNC::COMPARE_FUNC_GREATEREQUAL:
-		return GL_GEQUAL;
-	case Graphics::COMPARE_FUNC::COMPARE_FUNC_ALWAYS:
-		return GL_ALWAYS;
-	}
-
-	return GL_ALWAYS;
 }
 
 void OpenGLES32Interface::registerShader(OpenGLES32Shader *shader)

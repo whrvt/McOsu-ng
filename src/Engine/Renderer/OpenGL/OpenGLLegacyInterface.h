@@ -101,8 +101,6 @@ protected:
 	void onTransformUpdate(Matrix4 &projectionMatrix, Matrix4 &worldMatrix) final;
 
 private:
-	static int primitiveToOpenGL(Graphics::PRIMITIVE primitive);
-	static int compareFuncToOpenGL(Graphics::COMPARE_FUNC compareFunc);
 
 	void handleGLErrors();
 
