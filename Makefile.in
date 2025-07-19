@@ -203,6 +203,7 @@ am_McOsu_ng_OBJECTS = libraries/McOsu_ng-MD5.$(OBJEXT) \
 	src/App/Osu/McOsu_ng-OsuUpdateHandler.$(OBJEXT) \
 	src/App/Osu/McOsu_ng-OsuUserStatsScreen.$(OBJEXT) \
 	src/Engine/McOsu_ng-AnimationHandler.$(OBJEXT) \
+	src/Engine/McOsu_ng-ByteBufferedFile.$(OBJEXT) \
 	src/Engine/McOsu_ng-Camera.$(OBJEXT) \
 	src/Engine/McOsu_ng-ConVar.$(OBJEXT) \
 	src/Engine/McOsu_ng-DiscordInterface.$(OBJEXT) \
@@ -375,6 +376,7 @@ am__depfiles_remade = libraries/$(DEPDIR)/McOsu_ng-MD5.Po \
 	src/App/Osu/$(DEPDIR)/McOsu_ng-OsuUpdateHandler.Po \
 	src/App/Osu/$(DEPDIR)/McOsu_ng-OsuUserStatsScreen.Po \
 	src/Engine/$(DEPDIR)/McOsu_ng-AnimationHandler.Po \
+	src/Engine/$(DEPDIR)/McOsu_ng-ByteBufferedFile.Po \
 	src/Engine/$(DEPDIR)/McOsu_ng-Camera.Po \
 	src/Engine/$(DEPDIR)/McOsu_ng-ConVar.Po \
 	src/Engine/$(DEPDIR)/McOsu_ng-DiscordInterface.Po \
@@ -829,6 +831,7 @@ McOsu_ng_SOURCES = \
 	src/App/Osu/OsuUpdateHandler.cpp \
 	src/App/Osu/OsuUserStatsScreen.cpp \
 	src/Engine/AnimationHandler.cpp \
+	src/Engine/ByteBufferedFile.cpp \
 	src/Engine/Camera.cpp \
 	src/Engine/ConVar.cpp \
 	src/Engine/DiscordInterface.cpp \
@@ -1353,6 +1356,9 @@ src/Engine/$(DEPDIR)/$(am__dirstamp):
 src/Engine/McOsu_ng-AnimationHandler.$(OBJEXT):  \
 	src/Engine/$(am__dirstamp) \
 	src/Engine/$(DEPDIR)/$(am__dirstamp)
+src/Engine/McOsu_ng-ByteBufferedFile.$(OBJEXT):  \
+	src/Engine/$(am__dirstamp) \
+	src/Engine/$(DEPDIR)/$(am__dirstamp)
 src/Engine/McOsu_ng-Camera.$(OBJEXT): src/Engine/$(am__dirstamp) \
 	src/Engine/$(DEPDIR)/$(am__dirstamp)
 src/Engine/McOsu_ng-ConVar.$(OBJEXT): src/Engine/$(am__dirstamp) \
@@ -1754,6 +1760,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/App/Osu/$(DEPDIR)/McOsu_ng-OsuUpdateHandler.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/App/Osu/$(DEPDIR)/McOsu_ng-OsuUserStatsScreen.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/$(DEPDIR)/McOsu_ng-AnimationHandler.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@src/Engine/$(DEPDIR)/McOsu_ng-ByteBufferedFile.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/$(DEPDIR)/McOsu_ng-Camera.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/$(DEPDIR)/McOsu_ng-ConVar.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/Engine/$(DEPDIR)/McOsu_ng-DiscordInterface.Po@am__quote@ # am--include-marker
@@ -2813,6 +2820,20 @@ src/Engine/McOsu_ng-AnimationHandler.obj: src/Engine/AnimationHandler.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/AnimationHandler.cpp' object='src/Engine/McOsu_ng-AnimationHandler.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/McOsu_ng-AnimationHandler.obj `if test -f 'src/Engine/AnimationHandler.cpp'; then $(CYGPATH_W) 'src/Engine/AnimationHandler.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/AnimationHandler.cpp'; fi`
+
+src/Engine/McOsu_ng-ByteBufferedFile.o: src/Engine/ByteBufferedFile.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/McOsu_ng-ByteBufferedFile.o -MD -MP -MF src/Engine/$(DEPDIR)/McOsu_ng-ByteBufferedFile.Tpo -c -o src/Engine/McOsu_ng-ByteBufferedFile.o `test -f 'src/Engine/ByteBufferedFile.cpp' || echo '$(srcdir)/'`src/Engine/ByteBufferedFile.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/$(DEPDIR)/McOsu_ng-ByteBufferedFile.Tpo src/Engine/$(DEPDIR)/McOsu_ng-ByteBufferedFile.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/ByteBufferedFile.cpp' object='src/Engine/McOsu_ng-ByteBufferedFile.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/McOsu_ng-ByteBufferedFile.o `test -f 'src/Engine/ByteBufferedFile.cpp' || echo '$(srcdir)/'`src/Engine/ByteBufferedFile.cpp
+
+src/Engine/McOsu_ng-ByteBufferedFile.obj: src/Engine/ByteBufferedFile.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/McOsu_ng-ByteBufferedFile.obj -MD -MP -MF src/Engine/$(DEPDIR)/McOsu_ng-ByteBufferedFile.Tpo -c -o src/Engine/McOsu_ng-ByteBufferedFile.obj `if test -f 'src/Engine/ByteBufferedFile.cpp'; then $(CYGPATH_W) 'src/Engine/ByteBufferedFile.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/ByteBufferedFile.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/Engine/$(DEPDIR)/McOsu_ng-ByteBufferedFile.Tpo src/Engine/$(DEPDIR)/McOsu_ng-ByteBufferedFile.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/Engine/ByteBufferedFile.cpp' object='src/Engine/McOsu_ng-ByteBufferedFile.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -c -o src/Engine/McOsu_ng-ByteBufferedFile.obj `if test -f 'src/Engine/ByteBufferedFile.cpp'; then $(CYGPATH_W) 'src/Engine/ByteBufferedFile.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Engine/ByteBufferedFile.cpp'; fi`
 
 src/Engine/McOsu_ng-Camera.o: src/Engine/Camera.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(McOsu_ng_CPPFLAGS) $(CPPFLAGS) $(McOsu_ng_CXXFLAGS) $(CXXFLAGS) -MT src/Engine/McOsu_ng-Camera.o -MD -MP -MF src/Engine/$(DEPDIR)/McOsu_ng-Camera.Tpo -c -o src/Engine/McOsu_ng-Camera.o `test -f 'src/Engine/Camera.cpp' || echo '$(srcdir)/'`src/Engine/Camera.cpp
@@ -4396,6 +4417,7 @@ distclean: distclean-am
 	-rm -f src/App/Osu/$(DEPDIR)/McOsu_ng-OsuUpdateHandler.Po
 	-rm -f src/App/Osu/$(DEPDIR)/McOsu_ng-OsuUserStatsScreen.Po
 	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-AnimationHandler.Po
+	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-ByteBufferedFile.Po
 	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-Camera.Po
 	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-ConVar.Po
 	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-DiscordInterface.Po
@@ -4597,6 +4619,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f src/App/Osu/$(DEPDIR)/McOsu_ng-OsuUpdateHandler.Po
 	-rm -f src/App/Osu/$(DEPDIR)/McOsu_ng-OsuUserStatsScreen.Po
 	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-AnimationHandler.Po
+	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-ByteBufferedFile.Po
 	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-Camera.Po
 	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-ConVar.Po
 	-rm -f src/Engine/$(DEPDIR)/McOsu_ng-DiscordInterface.Po

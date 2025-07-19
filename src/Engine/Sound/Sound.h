@@ -109,7 +109,7 @@ protected:
 	PlaybackInterpolator m_interpolator;
 
 private:
-	static bool isValidAudioFile(const UString& filePath, const UString &fileExt);
+	static bool isValidAudioFile(const std::string& filePath, const std::string &fileExt);
 };
 
 #endif
