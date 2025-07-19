@@ -740,9 +740,7 @@ install-libs:
 	$(INSTALL) -dm 755 "$(DESTDIR)$(bindir)/fonts"
 	$(INSTALL) -dm 755 "$(DESTDIR)$(bindir)/materials"
 	$(INSTALL) -dm 755 "$(DESTDIR)$(bindir)/materials/default"
-	$(INSTALL) -dm 755 "$(DESTDIR)$(bindir)/models"
 	$(INSTALL) -dm 755 "$(DESTDIR)$(bindir)/cfg"
-	find $(srcdir)/$(ASSETS_DIR)/models -type f -exec $(INSTALL) -Dm 644 '{''}' "$(DESTDIR)$(bindir)/models" ';'
 	find $(srcdir)/$(ASSETS_DIR)/shaders -type f -exec $(INSTALL) -Dm 644 '{''}' "$(DESTDIR)$(bindir)/shaders" ';'
 	find $(srcdir)/$(ASSETS_DIR)/fonts -type f -exec $(INSTALL) -Dm 644 '{''}' "$(DESTDIR)$(bindir)/fonts" ';'
 	find $(srcdir)/$(ASSETS_DIR)/materials -mindepth 1 -maxdepth 1 -type f -exec $(INSTALL) -Dm 644 '{''}' "$(DESTDIR)$(bindir)/materials" ';'
@@ -846,7 +844,6 @@ distclean-local: clean-deps clean-dep-cache
 
 # TODO: distribution packaging
 dist-hook:
-	cp -r $(srcdir)/$(ASSETS_DIR)/models $(distdir)/
 	cp -r $(srcdir)/$(ASSETS_DIR)/shaders $(distdir)/
 	cp -r $(srcdir)/$(ASSETS_DIR)/fonts $(distdir)/
 	cp -r $(srcdir)/$(ASSETS_DIR)/materials $(distdir)/
@@ -858,7 +855,6 @@ dist-hook:
 
 # TODO: distribution package files
 EXTRA_DIST := \
-	$(ASSETS_DIR)/models \
 	$(ASSETS_DIR)/shaders \
 	$(ASSETS_DIR)/fonts \
 	$(ASSETS_DIR)/materials \

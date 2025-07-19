@@ -608,14 +608,6 @@ AS_IF([test -f "$srcdir/$ASSETS_DIR/cfg/override.cfg"], [
     AC_MSG_ERROR([McOsu-ng default config is missing!])
 ])
 
-AC_MSG_CHECKING([for models in $srcdir/$ASSETS_DIR/models])
-AS_IF([test -d "$srcdir/$ASSETS_DIR/models"], [
-    AC_MSG_RESULT([yes])
-], [
-    AC_MSG_RESULT([no])
-    AC_MSG_ERROR([McOsu-ng model assets are missing!])
-])
-
 AC_MSG_CHECKING([for shaders in $srcdir/$ASSETS_DIR/shaders])
 AS_IF([test -d "$srcdir/$ASSETS_DIR/shaders"], [
     AC_MSG_RESULT([yes])
