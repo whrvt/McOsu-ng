@@ -469,7 +469,10 @@ bool SoLoudSound::isPlaying()
 		return false;
 
 	// a sound is playing if the handle is valid and the sound isn't paused
-	return soloud->isValidVoiceHandle(m_handle) && !soloud->getPause(m_handle);
+	if (!soloud->isValidVoiceHandle(m_handle))
+		m_handle = 0;
+
+	return !!m_handle && !soloud->getPause(m_handle);
 }
 
 bool SoLoudSound::isFinished()
@@ -477,11 +480,14 @@ bool SoLoudSound::isFinished()
 	if (!m_bReady)
 		return false;
 
-	if (m_handle == 0)
+	if (!m_handle)
 		return true;
 
 	// a sound is finished if the handle is no longer valid
-	return !soloud->isValidVoiceHandle(m_handle);
+	if (!soloud->isValidVoiceHandle(m_handle))
+		m_handle = 0;
+
+	return !m_handle;
 }
 
 void SoLoudSound::rebuild(UString newFilePath)

@@ -101,8 +101,18 @@ bool SoLoudSoundEngine::play(Sound *snd, float pan, float pitch)
 	pitch = std::clamp<float>(pitch, 0.0f, 2.0f);
 
 	auto *soloudSound = snd->as<SoLoudSound>();
+	if (!soloudSound)
+		return false;
 
-	auto handle = soloudSound ? soloudSound->getHandle() : (SOUNDHANDLE)0;
+	auto handle = soloudSound->getHandle();
+
+	// verify that the sound object's handle isn't stale
+	if (handle != 0 && !soloud->isValidVoiceHandle(handle))
+	{
+		handle = 0;
+		soloudSound->m_handle = 0;
+	}
+
 	if (handle != 0 && soloud->getPause(handle))
 	{
 		// just unpause if paused
@@ -178,11 +188,12 @@ bool SoLoudSoundEngine::playSound(SoLoudSound *soloudSound, float pan, float pit
 	// finalize playback
 	if (handle != 0)
 	{
+		// store the handle and mark playback time
+		soloudSound->m_handle = handle;
+
 		if (restorePos != 0.0)
 			soloud->seek(handle, restorePos); // restore the position to where we were pre-pause
 
-		// store the handle and mark playback time
-		soloudSound->m_handle = handle;
 		soloudSound->setLastPlayTime(engine->getTime());
 
 		if (soloudSound->m_bStream) // unpause and fade it in if it's a stream (since we started it paused with 0 volume)
