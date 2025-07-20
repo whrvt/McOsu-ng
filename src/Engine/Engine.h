@@ -110,6 +110,15 @@ public:
 		requires(std::floating_point<T> || std::convertible_to<double, T>)
 	[[nodiscard]] constexpr T getFrameTime() const { return static_cast<T>(m_dFrameTime); }
 
+	// get real elapsed time since engine initialization
+	// WARNING: not thread-safe!
+	template <typename T = double>
+		requires(std::floating_point<T> || std::convertible_to<double, T>)
+	[[nodiscard]] T getLiveElapsedEngineTime() {
+		m_timer->update();
+		return static_cast<T>(m_timer->getElapsedTime());
+	}
+
 	[[nodiscard]] inline uint64_t getFrameCount() const { return m_iFrameCount; }
 	// clang-format off
 	// NOTE: if engine_throttle cvar is off, this will always return true

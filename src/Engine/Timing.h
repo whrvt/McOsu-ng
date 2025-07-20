@@ -5,11 +5,11 @@
 // $NoKeywords: $time $chrono
 //===============================================================================//
 
-#include "config.h"
-
 #pragma once
 #ifndef TIMER_H
 #define TIMER_H
+
+#include "BaseEnvironment.h"
 
 #include <SDL3/SDL_timer.h>
 
@@ -28,17 +28,12 @@ constexpr uint64_t MS_PER_SECOND = 1'000;
 
 namespace detail
 {
-#ifdef _MSC_VER
-__forceinline void yield_internal() noexcept
-#else
-[[gnu::always_inline]] inline void yield_internal() noexcept
-#endif
+forceinline void yield_internal() noexcept
 {
-#ifdef MCENGINE_PLATFORM_WASM
-	SDL_Delay(0);
-#else
-	std::this_thread::yield();
-#endif
+	if constexpr (Env::cfg(OS::WASM))
+		SDL_Delay(0);
+	else
+		std::this_thread::yield();
 }
 
 template <uint64_t Ratio>
@@ -49,7 +44,7 @@ constexpr uint64_t convertTime(uint64_t ns) noexcept
 
 } // namespace detail
 
-inline uint64_t getTicksNS() noexcept
+inline INLINE_BODY uint64_t getTicksNS() noexcept
 {
 	return SDL_GetTicksNS();
 }
@@ -64,7 +59,7 @@ inline uint64_t getTicksMS() noexcept
 	return ticksNSToMS(getTicksNS());
 }
 
-inline void sleepPrecise(uint64_t ns) noexcept
+inline INLINE_BODY void sleepPrecise(uint64_t ns) noexcept
 {
 	SDL_DelayPrecise(ns);
 }

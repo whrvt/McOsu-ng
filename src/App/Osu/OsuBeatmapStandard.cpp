@@ -734,7 +734,7 @@ void OsuBeatmapStandard::update()
 		if (cv::osu::debug.getBool() && m_iPreLoadingIndex == 0)
 			debugLog("OsuBeatmapStandard: Preloading slider vertexbuffers ...\n");
 
-		double startTime = Timing::getTimeReal();
+		double startTime = engine->getLiveElapsedEngineTime();
 		double delta = 0.0;
 		while (delta < 0.010 && m_bIsPreLoading) // hardcoded VR deadline of 10 ms (11 but sanity), will temporarily bring us down to 45 fps on average (better than freezing). works fine for desktop gameplay too
 		{
@@ -752,7 +752,7 @@ void OsuBeatmapStandard::update()
 			}
 
 			m_iPreLoadingIndex++;
-			delta = Timing::getTimeReal() - startTime;
+			delta = engine->getLiveElapsedEngineTime() - startTime;
 		}
 	}
 
@@ -2308,10 +2308,10 @@ void OsuBeatmapStandard::stopStarCacheLoader()
 	if (!m_starCacheLoader->isDead())
 	{
 		m_starCacheLoader->kill();
-		double startTime = Timing::getTimeReal();
+		double startTime = engine->getLiveElapsedEngineTime();
 		while (!m_starCacheLoader->isAsyncReady()) // stall main thread until it's killed (this should be very quick, around max 1 ms, as the kill flag is checked in every iteration)
 		{
-			if (Timing::getTimeReal() - startTime > 2)
+			if (engine->getLiveElapsedEngineTime() - startTime > 2)
 			{
 				debugLog("WARNING: Ignoring stuck StarCacheLoader thread!\n");
 				break;

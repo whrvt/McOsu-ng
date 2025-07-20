@@ -446,18 +446,18 @@ void OsuBeatmap::update()
 	{
 		if (isLoading())
 		{
-			m_fWaitTime = Timing::getTimeReal();
+			m_fWaitTime = engine->getLiveElapsedEngineTime();
 
 			// if the first hitobject starts immediately, add artificial wait time before starting the music
 			if (!m_bIsRestartScheduledQuick && m_hitobjects.size() > 0)
 			{
 				if (m_hitobjects[0]->getTime() < (long)cv::osu::early_note_time.getInt())
-					m_fWaitTime = Timing::getTimeReal() + cv::osu::early_note_time.getFloat()/1000.0f;
+					m_fWaitTime = engine->getLiveElapsedEngineTime() + cv::osu::early_note_time.getFloat()/1000.0f;
 			}
 		}
 		else
 		{
-			if (Timing::getTimeReal() > m_fWaitTime)
+			if (engine->getLiveElapsedEngineTime() > m_fWaitTime)
 			{
 				if (!m_bIsPaused)
 				{
@@ -478,7 +478,7 @@ void OsuBeatmap::update()
 				}
 			}
 			else
-				m_iCurMusicPos = static_cast<long>((Timing::getTimeReal() - m_fWaitTime) * 1000.0f * osu->getSpeedMultiplier());
+				m_iCurMusicPos = static_cast<long>((engine->getLiveElapsedEngineTime() - m_fWaitTime) * 1000.0f * osu->getSpeedMultiplier());
 		}
 
 		// ugh. force update all hitobjects while waiting (necessary because of pvs optimization)
@@ -513,7 +513,7 @@ void OsuBeatmap::update()
 
 			// we are waiting for an asynchronous start of the beatmap in the next update()
 			m_bIsWaiting = true;
-			m_fWaitTime = Timing::getTimeReal();
+			m_fWaitTime = engine->getLiveElapsedEngineTime();
 		}
 		else if (m_iResourceLoadUpdateDelayHack > 3) // second: if that still doesn't work, stop and display an error message
 		{
@@ -531,14 +531,14 @@ void OsuBeatmap::update()
 		if (!isMusicFinished)
 			m_fAfterMusicIsFinishedVirtualAudioTimeStart = -1.0;
 		else if (m_fAfterMusicIsFinishedVirtualAudioTimeStart < 0.0)
-			m_fAfterMusicIsFinishedVirtualAudioTimeStart = Timing::getTimeReal();
+			m_fAfterMusicIsFinishedVirtualAudioTimeStart = engine->getLiveElapsedEngineTime();
 
 		if (isMusicFinished)
 		{
 			// continue with virtual audio time until the last hitobject is done (plus sanity offset given via osu_end_delay_time)
 			// because some beatmaps have hitobjects going until >= the exact end of the music ffs
 			// NOTE: this overwrites m_iCurMusicPos for the rest of the update loop
-			m_iCurMusicPos = (long)m_music->getLengthMS() + (long)((Timing::getTimeReal() - m_fAfterMusicIsFinishedVirtualAudioTimeStart)*1000.0);
+			m_iCurMusicPos = (long)m_music->getLengthMS() + (long)((engine->getLiveElapsedEngineTime() - m_fAfterMusicIsFinishedVirtualAudioTimeStart)*1000.0);
 		}
 
 		const bool hasAnyHitObjects = (m_hitobjects.size() > 0);
@@ -1407,7 +1407,7 @@ bool OsuBeatmap::play()
 
 	// we are waiting for an asynchronous start of the beatmap in the next update()
 	m_bIsWaiting = true;
-	m_fWaitTime = Timing::getTimeReal();
+	m_fWaitTime = engine->getLiveElapsedEngineTime();
 
 	// NOTE: loading failures are handled dynamically in update(), so temporarily assume everything has worked in here
 	m_bIsPlaying = true;
@@ -1437,7 +1437,7 @@ void OsuBeatmap::actualRestart()
 
 	// we are waiting for an asynchronous start of the beatmap in the next update()
 	m_bIsWaiting = true;
-	m_fWaitTime = Timing::getTimeReal();
+	m_fWaitTime = engine->getLiveElapsedEngineTime();
 
 	// if the first hitobject starts immediately, add artificial wait time before starting the music
 	if (m_hitobjects.size() > 0)
@@ -1445,7 +1445,7 @@ void OsuBeatmap::actualRestart()
 		if (m_hitobjects[0]->getTime() < (long)cv::osu::early_note_time.getInt())
 		{
 			m_bIsWaiting = true;
-			m_fWaitTime = Timing::getTimeReal() + cv::osu::early_note_time.getFloat()/1000.0f;
+			m_fWaitTime = engine->getLiveElapsedEngineTime() + cv::osu::early_note_time.getFloat()/1000.0f;
 		}
 	}
 
@@ -1488,7 +1488,7 @@ void OsuBeatmap::pause(bool quitIfWaiting)
 	// fix pausing after music ends breaking beatmap state (by just not allowing it to be paused)
 	if (m_fAfterMusicIsFinishedVirtualAudioTimeStart >= 0.0)
 	{
-		const auto delta = Timing::getTimeReal() - m_fAfterMusicIsFinishedVirtualAudioTimeStart;
+		const auto delta = engine->getLiveElapsedEngineTime() - m_fAfterMusicIsFinishedVirtualAudioTimeStart;
 		if (delta < 5.0) // WARNING: sanity limit, always allow escaping after 5 seconds of overflow time
 			return;
 	}
@@ -1765,7 +1765,7 @@ float OsuBeatmap::getPercentFinished() const
 float OsuBeatmap::getPercentFinishedPlayable() const
 {
 	if (m_bIsWaiting)
-		return 1.0f - (m_fWaitTime - Timing::getTimeReal())/(cv::osu::early_note_time.getFloat()/1000.0f);
+		return 1.0f - (m_fWaitTime - engine->getLiveElapsedEngineTime())/(cv::osu::early_note_time.getFloat()/1000.0f);
 
 	if (m_hitobjects.size() > 0)
 		return (float)m_iCurMusicPos / ((float)m_hitobjects[m_hitobjects.size()-1]->getTime() + (float)m_hitobjects[m_hitobjects.size()-1]->getDuration());
@@ -2291,7 +2291,7 @@ unsigned long OsuBeatmap::getMusicPositionMSInterpolated()
 
 	// not reinventing the wheel, the interpolation magic numbers here are (c) peppy
 
-	const double realTime = Timing::getTimeReal();
+	const double realTime = engine->getLiveElapsedEngineTime();
 	const double interpolationDelta = (realTime - m_fLastRealTimeForInterpolationDelta) * 1000.0 * speed;
 	const double interpolationDeltaLimit = ((realTime - m_fLastAudioTimeAccurateSet)*1000.0 < 1500 || speed < 1.0f ? 11 : 33);
 
