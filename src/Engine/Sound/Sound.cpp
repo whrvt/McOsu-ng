@@ -82,6 +82,10 @@ Sound *Sound::createSound(UString filepath, bool stream, bool threeD, bool loop,
 #if !defined(MCENGINE_FEATURE_BASS) && !defined(MCENGINE_FEATURE_SOLOUD) && !defined(MCENGINE_FEATURE_SDL_MIXER)
 #error No sound backend available!
 #endif
+#ifdef MCENGINE_FEATURE_SOLOUD
+	if (soundEngine->getTypeId() == SOLOUD)
+		return new SoLoudSound(std::move(filepath), stream, threeD, loop, prescan);
+#endif
 #ifdef MCENGINE_FEATURE_BASS
 	if (soundEngine->getTypeId() == BASS)
 		return new BassSound(std::move(filepath), stream, threeD, loop, prescan);
@@ -89,10 +93,6 @@ Sound *Sound::createSound(UString filepath, bool stream, bool threeD, bool loop,
 #ifdef MCENGINE_FEATURE_SDL_MIXER
 	if (soundEngine->getTypeId() == SDL)
 		return new SDLSound(std::move(filepath), stream, threeD, loop, prescan);
-#endif
-#ifdef MCENGINE_FEATURE_SOLOUD
-	if (soundEngine->getTypeId() == SOLOUD)
-		return new SoLoudSound(std::move(filepath), stream, threeD, loop, prescan);
 #endif
 	return nullptr;
 }

@@ -220,15 +220,15 @@ Engine::Engine()
 		resourceManager = std::make_unique<ResourceManager>();
 		runtime_assert(resourceManager.get(), "Resource manager menu failed to initialize!");
 
-		SoundEngine::SndEngineType type = Env::cfg(AUD::BASS) ? SoundEngine::BASS : Env::cfg(AUD::SOLOUD) ? SoundEngine::SOLOUD : Env::cfg(AUD::SDL) ? SoundEngine::SDL : SoundEngine::BASS;
+		SoundEngine::SndEngineType type = Env::cfg(AUD::SOLOUD) ? SoundEngine::SOLOUD : Env::cfg(AUD::BASS) ? SoundEngine::BASS : Env::cfg(AUD::SDL) ? SoundEngine::SDL : SoundEngine::BASS;
 		{
 			auto args = env->getLaunchArgs();
-			auto soundString = args["-sound"].value_or("bass").trim();
+			auto soundString = args["-sound"].value_or("soloud").trim();
 			soundString.lowerCase();
-			if (Env::cfg(AUD::BASS) && soundString == "bass")
-				type = SoundEngine::BASS;
-			else if (Env::cfg(AUD::SOLOUD) && soundString == "soloud")
+			if (Env::cfg(AUD::SOLOUD) && soundString == "soloud")
 				type = SoundEngine::SOLOUD;
+			else if (Env::cfg(AUD::BASS) && soundString == "bass")
+				type = SoundEngine::BASS;
 			else if (Env::cfg(AUD::SDL) && soundString == "sdl")
 				type = SoundEngine::SDL;
 		}

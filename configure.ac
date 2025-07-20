@@ -222,10 +222,11 @@ AS_IF([test "$renderer" = "opengl"], [
     AC_DEFINE([MCENGINE_FEATURE_OPENGL], [1], [Defined if the OpenGLLegacy backend is to be used.])
 ])
 
-audiobackendcnt=0
 AUDBACKENDLIST=""
 
 with_bass=unset
+with_soloud=unset
+with_sdlmixer=unset
 AS_VAR_SET_IF([with_audio],
     [ac_save_IFS=$IFS
         IFS=' ,'
@@ -241,23 +242,32 @@ AS_VAR_SET_IF([with_audio],
             esac
         done])
 
-AS_IF([test "$with_bass" = "yes" || { test "$with_bass" = "unset" && ! { test "$with_soloud" = "yes" || test "$with_sdlmixer" = "yes"; } ; } ], [
-    ((audiobackendcnt++))
+AS_IF([test "$with_soloud" = "yes" || { test "$with_soloud" = "unset" && ! { test "$with_bass" = "yes" || test "$with_sdlmixer" = "yes"; } ; } ], [
+    AUDBACKENDLIST="${AUDBACKENDLIST} SoLoud"
+    with_soloud=yes
+    AC_DEFINE([MCENGINE_FEATURE_SOLOUD], [1], [Define if the SoLoud audio backend is desired.])
+], [
+    with_soloud=no
+])
+
+AS_IF([test "$with_bass" = "yes"], [
+    AS_IF([test "$with_sdlmixer" = "yes" || test "$with_soloud" = "yes"], [
+        make_audio_shortcuts=yes
+    ])
     AUDBACKENDLIST="${AUDBACKENDLIST} BASS"
-    with_bass=yes
     AC_DEFINE([MCENGINE_FEATURE_BASS], [1], [Define if the BASS audio backend is desired.])
 ], [
     with_bass=no
 ])
-AS_IF([test "$with_soloud" = "yes"], [
-    ((audiobackendcnt++))
-    AUDBACKENDLIST="${AUDBACKENDLIST} SoLoud"
-    AC_DEFINE([MCENGINE_FEATURE_SOLOUD], [1], [Define if the SoLoud audio backend is desired.])
-])
+
 AS_IF([test "$with_sdlmixer" = "yes"], [
-    ((audiobackendcnt++))
+    AS_IF([test "$with_bass" = "yes" || test "$with_soloud" = "yes"], [
+        make_audio_shortcuts=yes
+    ])
     AUDBACKENDLIST="${AUDBACKENDLIST} SDL"
     AC_DEFINE([MCENGINE_FEATURE_SDL_MIXER], [1], [Define if the SDL_mixer audio backend is desired.])
+], [
+    with_sdlmixer=no
 ])
 
 AC_SUBST([AUDBACKENDLIST])
@@ -827,7 +837,7 @@ AS_IF([test "$SYSNAME" = "windows"], [
 ])
 AM_CONDITIONAL([WINSHARED_DLLS_NEEDED], [test -n "$WINSHARED_DLLS"])
 
-AM_CONDITIONAL([AUDIO_SHORTCUTS], [test "$audiobackendcnt" > 1 && test -n "$WINE" && test "$SYSNAME" = "windows"])
+AM_CONDITIONAL([AUDIO_SHORTCUTS], [test -n "$make_audio_shortcuts" && test -n "$WINE" && test "$SYSNAME" = "windows"])
 
 # output makefile
 AC_CONFIG_FILES([Makefile])

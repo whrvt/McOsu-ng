@@ -6399,10 +6399,11 @@ printf "%s\n" "#define MCENGINE_FEATURE_OPENGL 1" >>confdefs.h
 
 fi
 
-audiobackendcnt=0
 AUDBACKENDLIST=""
 
 with_bass=unset
+with_soloud=unset
+with_sdlmixer=unset
 if test ${with_audio+y}
 then :
   ac_save_IFS=$IFS
@@ -6420,12 +6421,32 @@ then :
         done
 fi
 
-if test "$with_bass" = "yes" || { test "$with_bass" = "unset" && ! { test "$with_soloud" = "yes" || test "$with_sdlmixer" = "yes"; } ; }
+if test "$with_soloud" = "yes" || { test "$with_soloud" = "unset" && ! { test "$with_bass" = "yes" || test "$with_sdlmixer" = "yes"; } ; }
 then :
 
-    ((audiobackendcnt++))
+    AUDBACKENDLIST="${AUDBACKENDLIST} SoLoud"
+    with_soloud=yes
+
+printf "%s\n" "#define MCENGINE_FEATURE_SOLOUD 1" >>confdefs.h
+
+
+else case e in #(
+  e)
+    with_soloud=no
+ ;;
+esac
+fi
+
+if test "$with_bass" = "yes"
+then :
+
+    if test "$with_sdlmixer" = "yes" || test "$with_soloud" = "yes"
+then :
+
+        make_audio_shortcuts=yes
+
+fi
     AUDBACKENDLIST="${AUDBACKENDLIST} BASS"
-    with_bass=yes
 
 printf "%s\n" "#define MCENGINE_FEATURE_BASS 1" >>confdefs.h
 
@@ -6436,25 +6457,26 @@ else case e in #(
  ;;
 esac
 fi
-if test "$with_soloud" = "yes"
-then :
 
-    ((audiobackendcnt++))
-    AUDBACKENDLIST="${AUDBACKENDLIST} SoLoud"
-
-printf "%s\n" "#define MCENGINE_FEATURE_SOLOUD 1" >>confdefs.h
-
-
-fi
 if test "$with_sdlmixer" = "yes"
 then :
 
-    ((audiobackendcnt++))
+    if test "$with_bass" = "yes" || test "$with_soloud" = "yes"
+then :
+
+        make_audio_shortcuts=yes
+
+fi
     AUDBACKENDLIST="${AUDBACKENDLIST} SDL"
 
 printf "%s\n" "#define MCENGINE_FEATURE_SDL_MIXER 1" >>confdefs.h
 
 
+else case e in #(
+  e)
+    with_sdlmixer=no
+ ;;
+esac
 fi
 
 
@@ -11906,7 +11928,7 @@ else
 fi
 
 
- if test "$audiobackendcnt" > 1 && test -n "$WINE" && test "$SYSNAME" = "windows"; then
+ if test -n "$make_audio_shortcuts" && test -n "$WINE" && test "$SYSNAME" = "windows"; then
   AUDIO_SHORTCUTS_TRUE=
   AUDIO_SHORTCUTS_FALSE='#'
 else
