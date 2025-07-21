@@ -562,7 +562,8 @@ $(DEPS_PREFIX)/FMT-$(FMT_VERSION).built: $(DEPS_CACHE)/FMT-$(FMT_VERSION).source
 		-DCMAKE_SYSTEM_NAME="$(CMAKE_SYSTEM_NAME)" \
 		-DCMAKE_SYSTEM_PROCESSOR="$(host_cpu)" \
 		-DCMAKE_CXX_COMPILER="$(CXX)" \
-		-DCMAKE_CXX_FLAGS="$(CXXFLAGS) $(if $(findstring yes,$(CLANG)),,-fno-lto)" \
+		-DCMAKE_CXX_STANDARD=23 \
+		-DCMAKE_CXX_FLAGS="$(CXXFLAGS) $(if $(findstring yes,$(CLANG)),,-fno-lto) -std=gnu++23" \
 		$(CMAKERCOPT) \
 		-DFMT_PEDANTIC=OFF \
 		-DFMT_WERROR=OFF \

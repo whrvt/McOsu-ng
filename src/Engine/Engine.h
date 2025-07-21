@@ -234,7 +234,7 @@ private:
 		if constexpr (Env::cfg(OS::WINDOWS)) // hmm... odd bug with fmt::print (or mingw?), when the stdout isn't redirected to a file
 		{
 			if (color == rgb(255, 255, 255) || !Environment::isaTTY())
-				printf("%s", fmt::format("{}", message).c_str());
+				printf("%s", message.c_str());
 			else
 				printf("%s", fmt::format(fmt::fg(fmt::rgb(color.R(), color.G(), color.B())), "{}", message).c_str());
 		}
