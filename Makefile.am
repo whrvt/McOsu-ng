@@ -149,10 +149,10 @@ $(DEPS_CACHE)/bass-$(BASS_VERSION)/bassflac24-linux.zip:
 	$(WGET) -qO $(DEPS_CACHE)/bass-$(BASS_VERSION)/bassflac24-linux.zip "https://web.archive.org/web/20250611162739/https://www.un4seen.com/files/bassflac24-linux.zip"
 $(DEPS_CACHE)/bass-$(BASS_VERSION)/bass_fx.zip:
 	$(MKDIR_P) $(DEPS_CACHE)/bass-$(BASS_VERSION) && \
-	$(WGET) -qO $(DEPS_CACHE)/bass-$(BASS_VERSION)/bass_fx.zip "https://web.archive.org/web/20250718191402/https://www.un4seen.com/stuff/bass_fx.zip"
+	$(WGET) -qO $(DEPS_CACHE)/bass-$(BASS_VERSION)/bass_fx.zip "https://web.archive.org/web/20250721204937/https://www.un4seen.com/stuff/bass_fx.zip"
 $(DEPS_CACHE)/bass-$(BASS_VERSION)/bass_fx-linux.zip:
 	$(MKDIR_P) $(DEPS_CACHE)/bass-$(BASS_VERSION) && \
-	$(WGET) -qO $(DEPS_CACHE)/bass-$(BASS_VERSION)/bass_fx-linux.zip "https://web.archive.org/web/20250718191244/https://www.un4seen.com/stuff/bass_fx-linux.zip"
+	$(WGET) -qO $(DEPS_CACHE)/bass-$(BASS_VERSION)/bass_fx-linux.zip "https://web.archive.org/web/20250721204847/https://www.un4seen.com/stuff/bass_fx-linux.zip"
 $(DEPS_CACHE)/bass-$(BASS_VERSION)/bassmix.zip:
 	$(MKDIR_P) $(DEPS_CACHE)/bass-$(BASS_VERSION) && \
 	$(WGET) -qO $(DEPS_CACHE)/bass-$(BASS_VERSION)/bassmix.zip "https://web.archive.org/web/20250603164713/https://www.un4seen.com/stuff/bassmix.zip"

@@ -715,7 +715,7 @@ AC_SUBST([MIMALLOC_PREFIX],[$DEPS_PREFIX])
 
 AC_SUBST([FFMPEG_VERSION], [7.1]) # pre-built, used for soloud
 
-AC_SUBST([BASS_VERSION], [20250718]) # just mark the date so we can invalidate the cache if necessary
+AC_SUBST([BASS_VERSION], [20250721]) # just mark the date so we can invalidate the cache if necessary
 
 # TODO: add all deps and transitive deps (fun!)
 AS_IF([test "x$enable_system_deps" != "xno"], [
