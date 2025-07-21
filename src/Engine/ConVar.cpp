@@ -8,10 +8,11 @@
 #include "ConVar.h"
 
 #include <algorithm>
-#include <utility>
 
 #include "Engine.h"
 #include "File.h"
+#include <mutex>
+
 // #define ALLOW_DEVELOPMENT_CONVARS // NOTE: comment this out on release
 namespace cv::ConVars
 {
