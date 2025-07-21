@@ -16,7 +16,7 @@
 class CBaseUITextField : public CBaseUIScrollView
 {
 public:
-	CBaseUITextField(float xPos=0, float yPos=0, float xSize=0, float ySize=0, UString name="", UString text="");
+	CBaseUITextField(float xPos=0, float yPos=0, float xSize=0, float ySize=0, const UString& name="", UString text="");
 	~CBaseUITextField() override {;}
 
 	ELEMENT_BODY(CBaseUITextField)

@@ -71,7 +71,7 @@ private:
 class ConsoleBoxSuggestionButton : public CBaseUIButton
 {
 public:
-	ConsoleBoxSuggestionButton(float xPos, float yPos, float xSize, float ySize, UString name, UString text, UString helpText, ConsoleBox *consoleBox)
+	ConsoleBoxSuggestionButton(float xPos, float yPos, float xSize, float ySize, UString name, const UString& text, UString helpText, ConsoleBox *consoleBox)
 	    : CBaseUIButton(xPos, yPos, xSize, ySize, std::move(name), text)
 	{
 		m_sHelpText = std::move(helpText);
@@ -393,7 +393,7 @@ void ConsoleBox::onSuggestionClicked(CBaseUIButton *suggestion)
 {
 	UString text = suggestion->getName();
 
-	ConVar *temp = convar->getConVarByName(text, false);
+	ConVar *temp = ConVar::getConVarByName(text, false);
 	if (temp != NULL && (temp->hasValue() || temp->hasCallbackArgs()))
 		text.append(" ");
 
@@ -432,7 +432,7 @@ void ConsoleBox::onKeyDown(KeyboardEvent &e)
 			{
 				UString command = m_vSuggestionButtons[m_iSelectedSuggestion]->getName();
 
-				ConVar *temp = convar->getConVarByName(command, false);
+				ConVar *temp = ConVar::getConVarByName(command, false);
 				if (temp != NULL && (temp->hasValue() || temp->hasCallbackArgs()))
 					command.append(" ");
 
@@ -466,7 +466,7 @@ void ConsoleBox::onKeyDown(KeyboardEvent &e)
 			{
 				UString command = m_vSuggestionButtons[m_iSelectedSuggestion]->getName();
 
-				ConVar *temp = convar->getConVarByName(command, false);
+				ConVar *temp = ConVar::getConVarByName(command, false);
 				if (temp != NULL && (temp->hasValue() || temp->hasCallbackArgs()))
 					command.append(" ");
 
@@ -545,7 +545,7 @@ void ConsoleBox::onChar(KeyboardEvent &e)
 		// rebuild suggestion list
 		clearSuggestions();
 
-		std::vector<ConVar *> suggestions = convar->getConVarByLetter(m_textbox->getText());
+		std::vector<ConVar *> suggestions = ConVar::getConVarByLetter(m_textbox->getText());
 		for (size_t i = 0; i < suggestions.size(); i++)
 		{
 			UString suggestionText = suggestions[i]->getName();

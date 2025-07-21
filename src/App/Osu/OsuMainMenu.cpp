@@ -35,6 +35,7 @@
 
 #include "OsuMainMenu.h"
 
+#include <cmath>
 #include <utility>
 #include "OsuOptionsMenu.h"
 #include "OsuHUD.h"
@@ -91,7 +92,7 @@ SliderTickRate:1
 class OsuMainMenuMainButton : public CBaseUIButton
 {
 public:
-	OsuMainMenuMainButton(OsuMainMenu *mainMenu, float xPos, float yPos, float xSize, float ySize, UString name, UString text);
+	OsuMainMenuMainButton(OsuMainMenu *mainMenu, float xPos, float yPos, float xSize, float ySize, UString name, const UString& text);
 
 	void draw() override;
 
@@ -108,7 +109,7 @@ private:
 class OsuMainMenuButton : public CBaseUIButton
 {
 public:
-	OsuMainMenuButton(OsuMainMenu *mainMenu, float xPos, float yPos, float xSize, float ySize, UString name, UString text);
+	OsuMainMenuButton(OsuMainMenu *mainMenu, float xPos, float yPos, float xSize, float ySize, UString name, const UString& text);
 
 	void onMouseDownInside() override;
 
@@ -119,7 +120,7 @@ private:
 class OsuMainMenuPauseButton : public CBaseUIButton
 {
 public:
-	OsuMainMenuPauseButton(float xPos, float yPos, float xSize, float ySize, UString name, UString text) : CBaseUIButton(xPos, yPos, xSize, ySize, std::move(name), text)
+	OsuMainMenuPauseButton(float xPos, float yPos, float xSize, float ySize, UString name, const UString& text) : CBaseUIButton(xPos, yPos, xSize, ySize, std::move(name), text)
 	{
 		m_bIsPaused = true;
 	}
@@ -604,7 +605,7 @@ void OsuMainMenu::draw()
 	// draw notification arrow for changelog (version button)
 	if (m_bDrawVersionNotificationArrow)
 	{
-		float animation = fmod((float)(engine->getTime())*3.2f, 2.0f);
+		float animation = std::fmod((float)(engine->getTime())*3.2f, 2.0f);
 		if (animation > 1.0f)
 			animation = 2.0f - animation;
 		animation =  -animation*(animation-2); // quad out
@@ -1727,7 +1728,7 @@ void OsuMainMenu::onVersionPressed()
 
 
 
-OsuMainMenuMainButton::OsuMainMenuMainButton(OsuMainMenu *mainMenu, float xPos, float yPos, float xSize, float ySize, UString name, UString text) : CBaseUIButton(xPos, yPos, xSize, ySize, std::move(name), text)
+OsuMainMenuMainButton::OsuMainMenuMainButton(OsuMainMenu *mainMenu, float xPos, float yPos, float xSize, float ySize, UString name, const UString& text) : CBaseUIButton(xPos, yPos, xSize, ySize, std::move(name), text)
 {
 	m_mainMenu = mainMenu;
 }
@@ -1769,7 +1770,7 @@ void OsuMainMenuMainButton::onClicked()
 
 
 
-OsuMainMenuButton::OsuMainMenuButton(OsuMainMenu *mainMenu, float xPos, float yPos, float xSize, float ySize, UString name, UString text) : CBaseUIButton(xPos, yPos, xSize, ySize, std::move(name), text)
+OsuMainMenuButton::OsuMainMenuButton(OsuMainMenu *mainMenu, float xPos, float yPos, float xSize, float ySize, UString name, const UString& text) : CBaseUIButton(xPos, yPos, xSize, ySize, std::move(name), text)
 {
 	m_mainMenu = mainMenu;
 }

@@ -49,7 +49,7 @@
 class OsuModSelectorOverrideSliderDescButton : public CBaseUIButton
 {
 public:
-	OsuModSelectorOverrideSliderDescButton(float xPos, float yPos, float xSize, float ySize, UString name, UString text) : CBaseUIButton(xPos, yPos, xSize, ySize, std::move(name), text)
+	OsuModSelectorOverrideSliderDescButton(float xPos, float yPos, float xSize, float ySize, UString name, const UString& text) : CBaseUIButton(xPos, yPos, xSize, ySize, std::move(name), text)
 	{
 		
 	}
@@ -1090,7 +1090,7 @@ CBaseUILabel *OsuModSelector::addExperimentalLabel(const UString& text)
 	return label;
 }
 
-OsuUICheckbox *OsuModSelector::addExperimentalCheckbox(const UString& text, UString tooltipText, ConVar *cvar)
+OsuUICheckbox *OsuModSelector::addExperimentalCheckbox(const UString& text, const UString& tooltipText, ConVar *cvar)
 {
 	OsuUICheckbox *checkbox = new OsuUICheckbox(0, 0, 0, 35, text, text);
 	checkbox->setTooltipText(tooltipText);

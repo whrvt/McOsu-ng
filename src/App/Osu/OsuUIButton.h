@@ -16,7 +16,7 @@ class Osu;
 class OsuUIButton : public CBaseUIButton
 {
 public:
-	OsuUIButton(float xPos, float yPos, float xSize, float ySize, UString name, UString text);
+	OsuUIButton(float xPos, float yPos, float xSize, float ySize, UString name, const UString& text);
 
 	void draw() override;
 	void update() override;

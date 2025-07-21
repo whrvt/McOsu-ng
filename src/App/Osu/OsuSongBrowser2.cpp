@@ -2489,7 +2489,7 @@ bool OsuSongBrowser2::searchMatcher(const OsuDatabaseBeatmap *databaseBeatmap, c
 					std::vector<UString> values = searchStringToken.split(o.first);
 					if (values.size() == 2 && values[0].length() > 0 && values[1].length() > 0)
 					{
-						const UString lvalue = values[0];
+						const UString& lvalue = values[0];
 						const int rvaluePercentIndex = values[1].find("%");
 						const bool rvalueIsPercent = (rvaluePercentIndex != -1);
 						const float rvalue = (rvaluePercentIndex == -1 ? values[1].toFloat() : values[1].substr(0, rvaluePercentIndex).toFloat()); // this must always be a number (at least, assume it is)
@@ -3070,7 +3070,7 @@ CBaseUIButton *OsuSongBrowser2::addTopBarRightTabButton(const UString& text)
 	return btn;
 }
 
-CBaseUIButton *OsuSongBrowser2::addTopBarRightGroupButton(UString text)
+CBaseUIButton *OsuSongBrowser2::addTopBarRightGroupButton(const UString& text)
 {
 	auto *btn = new CBaseUIButton(0, 0, 0, 0, "", text);
 	btn->setDrawBackground(false);
@@ -3079,7 +3079,7 @@ CBaseUIButton *OsuSongBrowser2::addTopBarRightGroupButton(UString text)
 	return btn;
 }
 
-CBaseUIButton *OsuSongBrowser2::addTopBarRightSortButton(UString text)
+CBaseUIButton *OsuSongBrowser2::addTopBarRightSortButton(const UString& text)
 {
 	auto *btn = new CBaseUIButton(0, 0, 0, 0, "", text);
 	btn->setDrawBackground(false);
@@ -3088,7 +3088,7 @@ CBaseUIButton *OsuSongBrowser2::addTopBarRightSortButton(UString text)
 	return btn;
 }
 
-CBaseUIButton *OsuSongBrowser2::addTopBarLeftTabButton(UString text)
+CBaseUIButton *OsuSongBrowser2::addTopBarLeftTabButton(const UString& text)
 {
 	auto *btn = new CBaseUIButton(0, 0, 0, 0, "", text);
 	btn->setDrawBackground(false);
@@ -3097,7 +3097,7 @@ CBaseUIButton *OsuSongBrowser2::addTopBarLeftTabButton(UString text)
 	return btn;
 }
 
-CBaseUIButton *OsuSongBrowser2::addTopBarLeftButton(UString text)
+CBaseUIButton *OsuSongBrowser2::addTopBarLeftButton(const UString& text)
 {
 	auto *btn = new CBaseUIButton(0, 0, 0, 0, "", text);
 	btn->setDrawBackground(false);

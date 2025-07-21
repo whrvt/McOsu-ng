@@ -7,6 +7,7 @@
 
 #include "OsuSlider.h"
 
+#include <cmath>
 #include <utility>
 #include "OsuSliderCurves.h"
 
@@ -292,7 +293,7 @@ void OsuSlider::draw()
 				reverseArrowColor = Colors::scale(reverseArrowColor, m_fHittableDimRGBColorMultiplierPercent);
 
 				float div = 0.30f;
-				float pulse = (div - fmod(std::abs(m_beatmap->getCurMusicPos())/1000.0f, div))/div;
+				float pulse = (div - std::fmod(std::abs(m_beatmap->getCurMusicPos())/1000.0f, div))/div;
 				pulse *= pulse; // quad in
 
 				if (!cv::osu::slider_reverse_arrow_animated.getBool() || m_beatmap->isInMafhamRenderChunk())
@@ -672,7 +673,7 @@ void OsuSlider::draw3D()
 				reverseArrowColor = rgb((int)(reverseArrowColor.R()*m_fHittableDimRGBColorMultiplierPercent), (int)(reverseArrowColor.G()*m_fHittableDimRGBColorMultiplierPercent), (int)(reverseArrowColor.B()*m_fHittableDimRGBColorMultiplierPercent));
 
 				float div = 0.30f;
-				float pulse = (div - fmod(std::abs(m_beatmap->getCurMusicPos())/1000.0f, div))/div;
+				float pulse = (div - std::fmod(std::abs(m_beatmap->getCurMusicPos())/1000.0f, div))/div;
 				pulse *= pulse; // quad in
 
 				if (!cv::osu::slider_reverse_arrow_animated.getBool() || m_beatmap->isInMafhamRenderChunk())

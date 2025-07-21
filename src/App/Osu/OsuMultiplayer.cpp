@@ -1069,7 +1069,7 @@ void OsuMultiplayer::onServerModUpdate()
 	{
 		string = "osu_mods ";
 		{
-			UString mods = cv::osu::mods.getString();
+			const UString& mods = cv::osu::mods.getString();
 			if (mods.length() < 1)
 				string.append(" ;");
 			else
@@ -1118,11 +1118,11 @@ void OsuMultiplayer::onServerModUpdate()
 	}
 
 	// build final string
-	for (int i=0; i<simpleModConVars.size(); i++)
+	for (auto & simpleModConVar : simpleModConVars)
 	{
-		string.append(simpleModConVars[i]);
+		string.append(simpleModConVar);
 		string.append(" ");
-		string.append(convar->getConVarByName(simpleModConVars[i])->getString());
+		string.append(ConVar::getConVarByName(simpleModConVar)->getString());
 		string.append(";");
 	}
 

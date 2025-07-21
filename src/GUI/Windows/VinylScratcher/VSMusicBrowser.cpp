@@ -201,7 +201,7 @@ struct VSMusicBrowserNaturalSortStringComparator
 class VSMusicBrowserButton : public CBaseUIButton
 {
 public:
-	VSMusicBrowserButton(float xPos, float yPos, float xSize, float ySize, UString name, UString text) : CBaseUIButton(xPos, yPos, xSize, ySize, std::move(name), text)
+	VSMusicBrowserButton(float xPos, float yPos, float xSize, float ySize, UString name, const UString& text) : CBaseUIButton(xPos, yPos, xSize, ySize, std::move(name), text)
 	{
 		m_bSelected = false;
 		m_bIsDirectory = false;
@@ -305,7 +305,7 @@ private:
 class VSMusicBrowserColumnScrollView : public CBaseUIScrollView
 {
 public:
-	VSMusicBrowserColumnScrollView(float xPos, float yPos, float xSize, float ySize, UString name) : CBaseUIScrollView(xPos, yPos, xSize, ySize, name)
+	VSMusicBrowserColumnScrollView(float xPos, float yPos, float xSize, float ySize, const UString& name) : CBaseUIScrollView(xPos, yPos, xSize, ySize, name)
 	{
 		m_fAnim = 0.0f;
 

@@ -41,7 +41,7 @@ public:
 	// inspection
 	CBASE_UI_TYPE(VisualProfiler, VISUALPROFILER, WindowUIElement)
 private:
-	enum INFO_BLADE_DISPLAY_MODE
+	enum INFO_BLADE_DISPLAY_MODE : uint8_t
 	{
 		INFO_BLADE_DISPLAY_MODE_DEFAULT = 0,
 

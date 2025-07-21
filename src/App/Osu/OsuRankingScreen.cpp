@@ -7,6 +7,7 @@
 
 #include "OsuRankingScreen.h"
 
+#include <cmath>
 #include <utility>
 
 #include "Engine.h"
@@ -132,7 +133,7 @@ public:
 		{
 			const float scale = (m_vSize.y / m_fStringHeight)*textScale;
 
-			float animation = fmod((float)(engine->getTime()-0.0f)*3.2f, 2.0f);
+			float animation = std::fmod((float)(engine->getTime()-0.0f)*3.2f, 2.0f);
 			if (animation > 1.0f)
 				animation = 2.0f - animation;
 
@@ -615,7 +616,7 @@ void OsuRankingScreen::setScore(const OsuDatabase::Score& score, UString dateTim
 		{
 			if (experimentalMods[i].length() > 0)
 			{
-				ConVar *cvar = convar->getConVarByName(experimentalMods[i], false);
+				ConVar *cvar = ConVar::getConVarByName(experimentalMods[i], false);
 				if (cvar != NULL)
 					m_enabledExperimentalMods.push_back(cvar);
 			}

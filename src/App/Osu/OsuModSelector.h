@@ -104,7 +104,7 @@ private:
 	UString getOverrideSliderLabelText(OVERRIDE_SLIDER s, bool active);
 
 	CBaseUILabel *addExperimentalLabel(const UString& text);
-	OsuUICheckbox *addExperimentalCheckbox(const UString& text, UString tooltipText, ConVar *cvar = NULL);
+	OsuUICheckbox *addExperimentalCheckbox(const UString& text, const UString& tooltipText, ConVar *cvar = NULL);
 	void onCheckboxChange(CBaseUICheckbox *checkbox);
 
 	OsuUIButton *addActionButton(const UString& text);

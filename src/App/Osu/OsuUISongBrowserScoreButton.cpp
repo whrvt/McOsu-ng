@@ -667,7 +667,7 @@ void OsuUISongBrowserScoreButton::onUseModsClicked()
 			const std::vector<UString> experimentalMods = m_score.experimentalModsConVars.split(";");
 			for (size_t i=0; i<experimentalMods.size(); i++)
 			{
-				ConVar *cvar = convar->getConVarByName(experimentalMods[i], false);
+				ConVar *cvar = ConVar::getConVarByName(experimentalMods[i], false);
 				if (cvar != NULL)
 				{
 					cvar->setValue(1.0f); // enable experimental mod (true, 1.0f)

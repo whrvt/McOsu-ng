@@ -558,7 +558,7 @@ CBaseUITextbox *CBaseUITextbox::setFont(McFont *font)
 	return this;
 }
 
-CBaseUITextbox *CBaseUITextbox::setText(UString text)
+CBaseUITextbox *CBaseUITextbox::setText(const UString &text)
 {
 	m_sText = text;
 	m_iCaretPosition = std::clamp<int>(m_iCaretPosition, 0, text.length());

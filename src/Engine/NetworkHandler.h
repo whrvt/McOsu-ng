@@ -111,7 +111,7 @@ private:
 	//	  Packet Types	  //
 	//********************//
 
-	enum PACKET_TYPE
+	enum PACKET_TYPE : uint8_t
 	{
 		CLIENT_INFO_PACKET_TYPE,
 		SERVER_INFO_PACKET_TYPE,

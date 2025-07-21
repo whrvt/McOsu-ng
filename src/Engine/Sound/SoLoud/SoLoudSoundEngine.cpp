@@ -97,9 +97,6 @@ bool SoLoudSoundEngine::play(Sound *snd, float pan, float pitch)
 	if (!m_bReady || snd == NULL || !snd->isReady())
 		return false;
 
-	pan = std::clamp<float>(pan, -1.0f, 1.0f);
-	pitch = std::clamp<float>(pitch, 0.0f, 2.0f);
-
 	auto *soloudSound = snd->as<SoLoudSound>();
 	if (!soloudSound)
 		return false;
@@ -112,6 +109,9 @@ bool SoLoudSoundEngine::play(Sound *snd, float pan, float pitch)
 		handle = 0;
 		soloudSound->m_handle = 0;
 	}
+
+	pan = std::clamp<float>(pan, -1.0f, 1.0f);
+	pitch = std::clamp<float>(pitch, 0.0f, 2.0f);
 
 	if (handle != 0 && soloud->getPause(handle))
 	{

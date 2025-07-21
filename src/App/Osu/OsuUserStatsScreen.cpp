@@ -46,7 +46,7 @@ ConVar ui_top_ranks_max("osu_ui_top_ranks_max", 200, FCVAR_NONE, "maximum number
 class OsuUserStatsScreenMenuButton : public CBaseUIButton
 {
 public:
-	OsuUserStatsScreenMenuButton(float xPos = 0, float yPos = 0, float xSize = 0, float ySize = 0, UString name = "", UString text = "") : CBaseUIButton(xPos, yPos, xSize, ySize, std::move(name), text)
+	OsuUserStatsScreenMenuButton(float xPos = 0, float yPos = 0, float xSize = 0, float ySize = 0, UString name = "", const UString& text = "") : CBaseUIButton(xPos, yPos, xSize, ySize, std::move(name), text)
 	{
 	}
 

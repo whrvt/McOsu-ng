@@ -16,7 +16,7 @@
 
 #include "CBaseUIContainer.h"
 
-CBaseUITextField::CBaseUITextField(float xPos, float yPos, float xSize, float ySize, UString name, UString text) : CBaseUIScrollView(xPos,yPos,xSize,ySize,name)
+CBaseUITextField::CBaseUITextField(float xPos, float yPos, float xSize, float ySize, const UString& name, UString text) : CBaseUIScrollView(xPos,yPos,xSize,ySize,name)
 {
 	m_textObject = new TextObject(2, 1, xSize, ySize, std::move(text));
 	m_textObject->setParentSize(m_vSize);

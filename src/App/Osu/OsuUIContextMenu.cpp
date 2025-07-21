@@ -22,7 +22,7 @@
 
 
 
-OsuUIContextMenuButton::OsuUIContextMenuButton(float xPos, float yPos, float xSize, float ySize, UString name, UString text, int id) : CBaseUIButton(xPos, yPos, xSize, ySize, std::move(name), text)
+OsuUIContextMenuButton::OsuUIContextMenuButton(float xPos, float yPos, float xSize, float ySize, UString name, const UString& text, int id) : CBaseUIButton(xPos, yPos, xSize, ySize, std::move(name), text)
 {
 	
 	m_iID = id;

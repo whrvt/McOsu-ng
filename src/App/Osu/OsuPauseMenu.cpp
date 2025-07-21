@@ -7,6 +7,7 @@
 
 #include "OsuPauseMenu.h"
 
+#include <cmath>
 #include <utility>
 
 #include "Engine.h"
@@ -121,7 +122,7 @@ void OsuPauseMenu::draw()
 		if (m_selectedButton != NULL)
 		{
 			const Color arrowColor = rgb(0, 114, 255);
-			float animation = fmod((float)(engine->getTime()-m_fWarningArrowsAnimStartTime)*3.2f, 2.0f);
+			float animation = std::fmod((float)(engine->getTime()-m_fWarningArrowsAnimStartTime)*3.2f, 2.0f);
 			if (animation > 1.0f)
 				animation = 2.0f - animation;
 

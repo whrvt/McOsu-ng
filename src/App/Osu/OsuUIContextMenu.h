@@ -85,7 +85,7 @@ private:
 class OsuUIContextMenuButton : public CBaseUIButton
 {
 public:
-	OsuUIContextMenuButton(float xPos, float yPos, float xSize, float ySize, UString name, UString text, int id);
+	OsuUIContextMenuButton(float xPos, float yPos, float xSize, float ySize, UString name, const UString& text, int id);
 	~OsuUIContextMenuButton() override {;}
 
 	void update() override;

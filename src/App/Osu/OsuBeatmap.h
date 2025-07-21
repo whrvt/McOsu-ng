@@ -240,6 +240,9 @@ protected:
 
 	unsigned long getMusicPositionMSInterpolated();
 
+	// custom
+	int m_iPreviousFollowPointObjectIndex; // TODO: this shouldn't be in this class
+
 	// beatmap state
 	bool m_bIsPlaying;
 	bool m_bIsPaused;
@@ -326,9 +329,6 @@ protected:
 	std::vector<double> m_speedDifficultStrainsForNumHitObjects;
 	std::vector<double> m_aimStrains;
 	std::vector<double> m_speedStrains;
-
-	// custom
-	int m_iPreviousFollowPointObjectIndex; // TODO: this shouldn't be in this class
 
 private:
 	friend class OsuBackgroundStarCacheLoader;

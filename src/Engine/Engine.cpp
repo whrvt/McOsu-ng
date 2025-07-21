@@ -330,7 +330,7 @@ Engine::~Engine()
 	if (m_bIsRestarting)
 	{
 		debugLog("Engine: Resetting ConVar callbacks...\n");
-		convar->resetAllConVarCallbacks();
+		ConVar::resetAllConVarCallbacks();
 		debugLog("Engine: Restarting...\n");
 	}
 	else

@@ -356,7 +356,7 @@ friend class OsuSkinImage;
 
 	bool compareFilenameWithSkinElementName(const UString &filename, const UString &skinElementName);
 
-	OsuSkinImage *createOsuSkinImage(UString skinElementName, Vector2 baseSizeForScaling2x, float osuSize, bool ignoreDefaultSkin = false, UString animationSeparator = "-");
+	OsuSkinImage *createOsuSkinImage(const UString& skinElementName, Vector2 baseSizeForScaling2x, float osuSize, bool ignoreDefaultSkin = false, const UString& animationSeparator = "-");
 	void checkLoadImage(Image **addressOfPointer, const UString& skinElementName, const UString& resourceName, bool ignoreDefaultSkin = false, const UString& fileExtension = "png", bool forceLoadMipmaps = false, bool forceUseDefaultSkin = false);
 	void checkLoadSound(Sound **addressOfPointer, UString skinElementName, const UString& resourceName, bool isOverlayable = false, bool isSample = false, bool loop = false, float hardcodedVolumeMultiplier = -1.0f);
 

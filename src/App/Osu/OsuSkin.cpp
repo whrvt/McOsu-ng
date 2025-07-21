@@ -1382,7 +1382,7 @@ void OsuSkin::randomizeFilePath()
 		m_sFilePath = filepathsForRandomSkin[rand() % filepathsForRandomSkin.size()];
 }
 
-OsuSkinImage *OsuSkin::createOsuSkinImage(UString skinElementName, Vector2 baseSizeForScaling2x, float osuSize, bool ignoreDefaultSkin, UString animationSeparator)
+OsuSkinImage *OsuSkin::createOsuSkinImage(const UString& skinElementName, Vector2 baseSizeForScaling2x, float osuSize, bool ignoreDefaultSkin, const UString& animationSeparator)
 {
 	OsuSkinImage *skinImage = new OsuSkinImage(this, skinElementName, baseSizeForScaling2x, osuSize, animationSeparator, ignoreDefaultSkin);
 	m_images.push_back(skinImage);
