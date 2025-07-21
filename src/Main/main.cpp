@@ -196,13 +196,21 @@ MAIN_FUNC /* int argc, char *argv[] */
 			// event collection
 			VPROF_BUDGET("SDL", VPROF_BUDGETGROUP_WNDPROC);
 			int eventCount = 0;
-
-			SDL_PumpEvents();
+			{
+				VPROF_BUDGET("SDL_PumpEvents", VPROF_BUDGETGROUP_WNDPROC);
+				SDL_PumpEvents();
+			}
 			do
 			{
-				eventCount = SDL_PeepEvents(&events[0], SIZE_EVENTS, SDL_GETEVENT, SDL_EVENT_FIRST, SDL_EVENT_LAST);
-				for (int i = 0; i < eventCount; ++i)
-					fmain->handleEvent(&events[i]);
+				{
+					VPROF_BUDGET("SDL_PeepEvents", VPROF_BUDGETGROUP_WNDPROC);
+					eventCount = SDL_PeepEvents(&events[0], SIZE_EVENTS, SDL_GETEVENT, SDL_EVENT_FIRST, SDL_EVENT_LAST);
+				}
+				{
+					VPROF_BUDGET("handleEvent", VPROF_BUDGETGROUP_WNDPROC);
+					for (int i = 0; i < eventCount; ++i)
+						fmain->handleEvent(&events[i]);
+				}
 			} while (eventCount == SIZE_EVENTS);
 		}
 		{
