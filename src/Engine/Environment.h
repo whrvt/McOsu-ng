@@ -69,7 +69,6 @@ public:
 	[[nodiscard]] static UString getFileNameFromFilePath(const UString &filePath) noexcept;
 
 	[[nodiscard]] static UString encodeStringToURL(const UString& unencodedURLString) noexcept;
-	[[nodiscard]] static UString filesystemPathToURI(const std::filesystem::path& path) noexcept;
 
 	// clipboard
 	[[nodiscard]] const UString &getClipBoardText();
@@ -229,6 +228,9 @@ private:
 	static UString convertUnixToWindowsPath(const UString& unixPath);
 
 	static void winSortInPlace(std::vector<UString> &toSort); // for sorting a list kinda in the order windows' explorer would
+
+	// internal path conversion helper, SDL_URLOpen needs a URL-encoded URI on Unix (because it goes to xdg-open)
+	[[nodiscard]] static UString filesystemPathToURI(const std::filesystem::path& path) noexcept;
 };
 
 extern Environment *env;
