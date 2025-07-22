@@ -148,7 +148,7 @@ bool SoLoudSoundEngine::playSound(SoLoudSound *soloudSound, float pan, float pit
 	if (cv::debug_snd.getBool())
 	{
 		debugLog("SoLoudSoundEngine: Playing {:s} (stream={:d}, 3d={:d}) with speed={:f}, pitch={:f}, volume={:f}\n", soloudSound->m_sFilePath.toUtf8(),
-		         soloudSound->m_bStream ? 1 : 0, is3d ? 1 : 0, soloudSound->m_speed, pitch, soloudSound->m_fVolume);
+		         soloudSound->m_bStream ? 1 : 0, is3d ? 1 : 0, soloudSound->m_fSpeed, pitch, soloudSound->m_fVolume);
 	}
 
 	// play the sound with appropriate method
@@ -177,7 +177,7 @@ bool SoLoudSoundEngine::playSound(SoLoudSound *soloudSound, float pan, float pit
 			                               // it would lead to getMaxActiveVoiceCount() <= getActiveVoiceCount()
 
 		if (cv::debug_snd.getBool() && handle)
-			debugLog("SoLoudSoundEngine: Playing streaming audio through SLFXStream with speed={:f}, pitch={:f}\n", soloudSound->m_speed, soloudSound->m_pitch);
+			debugLog("SoLoudSoundEngine: Playing streaming audio through SLFXStream with speed={:f}, pitch={:f}\n", soloudSound->m_fSpeed, soloudSound->m_fPitch);
 	}
 	else
 	{
@@ -220,12 +220,12 @@ unsigned int SoLoudSoundEngine::playDirectSound(SoLoudSound *soloudSound, float 
 	float finalPitch = pitch;
 
 	// combine with sound's pitch setting
-	if (soloudSound->m_pitch != 1.0f)
-		finalPitch *= soloudSound->m_pitch;
+	if (soloudSound->m_fPitch != 1.0f)
+		finalPitch *= soloudSound->m_fPitch;
 
 	// if speed compensation is disabled, apply speed as pitch
-	if (!cv::snd_speed_compensate_pitch.getBool() && soloudSound->m_speed != 1.0f)
-		finalPitch *= soloudSound->m_speed;
+	if (!cv::snd_speed_compensate_pitch.getBool() && soloudSound->m_fSpeed != 1.0f)
+		finalPitch *= soloudSound->m_fSpeed;
 
 	// play directly
 	unsigned int handle = soloud->play(*soloudSound->m_audioSource, volume, pan, false /* not paused */);
@@ -238,7 +238,7 @@ unsigned int SoLoudSoundEngine::playDirectSound(SoLoudSound *soloudSound, float 
 
 		if (cv::debug_snd.getBool())
 			debugLog("SoLoudSoundEngine: Playing non-streaming audio with finalPitch={:f} (pitch={:f} * soundPitch={:f} * speedAsPitch={:f})\n", finalPitch, pitch,
-			         soloudSound->m_pitch, (!cv::snd_speed_compensate_pitch.getBool() && soloudSound->m_speed != 1.0f) ? soloudSound->m_speed : 1.0f);
+			         soloudSound->m_fPitch, (!cv::snd_speed_compensate_pitch.getBool() && soloudSound->m_fSpeed != 1.0f) ? soloudSound->m_fSpeed : 1.0f);
 	}
 
 	return handle;

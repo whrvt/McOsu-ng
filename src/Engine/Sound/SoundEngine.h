@@ -33,8 +33,8 @@ public:
 		SDL
 	};
 public:
-	SoundEngine();
-	virtual ~SoundEngine() = default;
+	SoundEngine() = default;
+	virtual ~SoundEngine() { m_outputDeviceChangeCallback = {}; }
 
 	SoundEngine &operator=(const SoundEngine &) = delete;
 	SoundEngine &operator=(SoundEngine &&) = delete;
@@ -93,17 +93,17 @@ protected:
 	virtual void updateOutputDevices(bool handleOutputDeviceChanges, bool printInfo) = 0;
 	virtual bool initializeOutputDevice(int id = -1, bool force = false) = 0;
 
-	bool m_bReady;
-	float m_fPrevOutputDeviceChangeCheckTime;
+	bool m_bReady{false};
+	float m_fPrevOutputDeviceChangeCheckTime{0.0f};
 	AudioOutputChangedCallback m_outputDeviceChangeCallback;
 	std::vector<OUTPUT_DEVICE> m_outputDevices;
 
-	int m_iCurrentOutputDevice;
+	int m_iCurrentOutputDevice{-1};
 	UString m_sCurrentOutputDevice;
 
-	float m_fVolume;
+	float m_fVolume{1.0f};
 
-	bool m_bBPMDetectEnabled;
+	bool m_bBPMDetectEnabled{false};
 };
 
 // convenience conversion macro to get the sound handle, extra args are any extra conditions to check for besides general state validity

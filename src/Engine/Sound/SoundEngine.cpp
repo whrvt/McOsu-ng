@@ -36,15 +36,6 @@ ConVar win_snd_wasapi_shared_volume_affects_device("win_snd_wasapi_shared_volume
                                                    "if in shared mode, whether to affect device volume globally or use separate session volume (default)");
 }
 
-SoundEngine::SoundEngine()
-{
-	m_bReady = false;
-	m_fPrevOutputDeviceChangeCheckTime = 0.0f;
-	m_fVolume = 1.0f;
-	m_iCurrentOutputDevice = -1;
-	m_bBPMDetectEnabled = false;
-}
-
 SoundEngine *SoundEngine::createSoundEngine(SndEngineType type)
 {
 #if !defined(MCENGINE_FEATURE_BASS) && !defined(MCENGINE_FEATURE_SOLOUD) && !defined(MCENGINE_FEATURE_SDL_MIXER)

@@ -33,8 +33,16 @@ public:
 		SOLOUD,
 		SDL
 	};
+
 public:
-	Sound(UString filepath, bool stream, bool threeD, bool loop, bool prescan);
+	Sound(UString filepath, bool stream, bool threeD, bool loop, bool prescan)
+	    : Resource(std::move(filepath)),
+	      m_bStream(stream),
+	      m_bIs3d(threeD),
+	      m_bIsLooped(loop),
+	      m_bPrescan(prescan)
+	{
+	}
 
 	// Factory method to create the appropriate sound object
 	static Sound *createSound(UString filepath, bool stream, bool threeD, bool loop, bool prescan);
@@ -97,14 +105,12 @@ protected:
 	bool m_bIs3d;
 	bool m_bIsLooped;
 	bool m_bPrescan;
-	bool m_bIsOverlayable;
 
-	bool m_bIgnored;
-
-	float m_fVolume;
-	double m_fLastPlayTime;
-
-	float m_fCurrentBPM;
+	bool m_bIsOverlayable{false};
+	bool m_bIgnored{false}; // check for audio file validity
+	float m_fVolume{1.0f};
+	double m_fLastPlayTime{-1.0f};
+	float m_fCurrentBPM{-1.0f}; // initialize to invalid value, only some backends support getting current BPM
 
 	PlaybackInterpolator m_interpolator;
 

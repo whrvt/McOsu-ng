@@ -17,10 +17,10 @@
 // fwd decls to avoid include external soloud headers here
 namespace SoLoud
 {
-	class Soloud;
-	class AudioSource;
-	class SLFXStream;
-}
+class Soloud;
+class AudioSource;
+class SLFXStream;
+} // namespace SoLoud
 
 // defined in SoLoudSoundEngine
 extern SoLoud::Soloud *soloud;
@@ -30,7 +30,11 @@ class SoLoudSound final : public Sound
 	friend class SoLoudSoundEngine;
 
 public:
-	SoLoudSound(UString filepath, bool stream, bool threeD, bool loop, bool prescan);
+	SoLoudSound(UString filepath, bool stream, bool threeD, bool loop, bool prescan)
+	    : Sound(std::move(filepath), stream, threeD, loop, prescan)
+	{
+	}
+
 	~SoLoudSound() override;
 
 	SoLoudSound &operator=(const SoLoudSound &) = delete;
@@ -57,7 +61,7 @@ public:
 	unsigned long getLengthMS() override;
 	float getSpeed() override;
 	float getPitch() override;
-	inline float getFrequency() override { return m_frequency; }
+	inline float getFrequency() override { return m_fFrequency; }
 
 	float getBPM() override;
 
@@ -78,16 +82,17 @@ private:
 	[[nodiscard]] double getStreamPositionInSeconds() const;
 
 	// current playback parameters
-	float m_speed;     // speed factor (1.0 = normal)
-	float m_pitch;     // pitch factor (1.0 = normal)
-	float m_frequency; // sample rate in Hz
+	float m_fSpeed{1.f};         // speed factor (1.0 = normal)
+	float m_fPitch{1.f};         // pitch factor (1.0 = normal)
+	float m_fFrequency{44100.f}; // sample rate in Hz
 
 	// SoLoud-specific members
-	SoLoud::AudioSource *m_audioSource; // base class pointer, could be either SLFXStream or Wav
-	SOUNDHANDLE m_handle;               // current voice (i.e. "Sound") handle
+	SoLoud::AudioSource *m_audioSource{nullptr}; // base class pointer, could be either SLFXStream or Wav
+	SOUNDHANDLE m_handle{0};                     // current voice (i.e. "Sound") handle
 };
 
 #else
-class SoLoudSound : public Sound{};
+class SoLoudSound : public Sound
+{};
 #endif
 #endif

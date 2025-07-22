@@ -175,6 +175,7 @@ void BassSound::destroy()
 	m_HSTREAM = 0;
 	m_HSTREAMBACKUP = 0;
 	m_HCHANNEL = 0;
+	m_bIgnored = false;
 }
 
 SOUNDHANDLE BassSound::getHandle()

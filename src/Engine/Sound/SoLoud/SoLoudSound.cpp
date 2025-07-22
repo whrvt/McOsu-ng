@@ -30,16 +30,6 @@ ConVar snd_soloud_prefer_ffmpeg("snd_soloud_prefer_ffmpeg", 0, FCVAR_NONE,
                                 "(0=no, 1=streams, 2=streams+samples) prioritize using ffmpeg as a decoder (if available) over other decoder backends");
 }
 
-SoLoudSound::SoLoudSound(UString filepath, bool stream, bool threeD, bool loop, bool prescan)
-    : Sound(std::move(filepath), stream, threeD, loop, prescan),
-      m_speed(1.0f),
-      m_pitch(1.0f),
-      m_frequency(44100.0f),
-      m_audioSource(nullptr),
-      m_handle(0)
-{
-}
-
 void SoLoudSound::init()
 {
 	if (m_bIgnored || m_sFilePath.length() < 2 || !(m_bAsyncReady.load()))
@@ -115,14 +105,13 @@ void SoLoudSound::initAsync()
 		if (result == SoLoud::SO_NO_ERROR)
 		{
 			m_audioSource = stream;
-			m_frequency = stream->mBaseSamplerate;
+			m_fFrequency = stream->mBaseSamplerate;
 
-			m_audioSource->setSingleInstance(true);           // only play one music track at a time
 			m_audioSource->setInaudibleBehavior(true, false); // keep ticking the sound if it goes to 0 volume, and don't kill it
 
 			if (cv::debug_snd.getBool())
-				debugLog("SoLoudSound: Created SLFXStream for {:s} with speed={:f}, pitch={:f}, looping={:s}, decoder={:s}\n", m_sFilePath.toUtf8(), m_speed,
-				         m_pitch, m_bIsLooped ? "true" : "false", stream->getDecoder());
+				debugLog("SoLoudSound: Created SLFXStream for {:s} with speed={:f}, pitch={:f}, looping={:s}, decoder={:s}\n", m_sFilePath.toUtf8(), m_fSpeed,
+				         m_fPitch, m_bIsLooped ? "true" : "false", stream->getDecoder());
 		}
 		else
 		{
@@ -144,9 +133,8 @@ void SoLoudSound::initAsync()
 		if (result == SoLoud::SO_NO_ERROR)
 		{
 			m_audioSource = wav;
-			m_frequency = wav->mBaseSamplerate;
+			m_fFrequency = wav->mBaseSamplerate;
 
-			m_audioSource->setSingleInstance(false);         // allow non-music tracks to overlap by default
 			m_audioSource->setInaudibleBehavior(true, true); // keep ticking the sound if it goes to 0 volume, but do kill it if necessary
 		}
 		else
@@ -156,6 +144,9 @@ void SoLoudSound::initAsync()
 			return;
 		}
 	}
+
+	// only play one music track at a time, allow non-music sounds to have multiple instances playing at a time by default
+	m_audioSource->setSingleInstance(m_bStream);
 
 	m_audioSource->setLooping(m_bIsLooped);
 
@@ -198,6 +189,13 @@ void SoLoudSound::destroy()
 
 		m_audioSource = nullptr;
 	}
+
+	m_fFrequency = 44100.0f;
+	m_fPitch = 1.0f;
+	m_fSpeed = 1.0f;
+	m_fVolume = 1.0f;
+	m_fLastPlayTime = 0.0f;
+	m_bIgnored = false;
 }
 
 void SoLoudSound::setPosition(double percent)
@@ -274,17 +272,17 @@ void SoLoudSound::setSpeed(float speed)
 
 	speed = std::clamp<float>(speed, 0.05f, 50.0f);
 
-	if (m_speed != speed)
+	if (m_fSpeed != speed)
 	{
-		float previousSpeed = m_speed;
-		m_speed = speed;
+		float previousSpeed = m_fSpeed;
+		m_fSpeed = speed;
 
 		// simply update the SLFXStream parameters
 		auto *stream = static_cast<SoLoud::SLFXStream *>(m_audioSource);
-		stream->setSpeedFactor(m_speed);
+		stream->setSpeedFactor(m_fSpeed);
 
 		if (cv::debug_snd.getBool())
-			debugLog("SoLoudSound: Speed change {:s}: {:f}->{:f} (stream, updated live)\n", m_sFilePath.toUtf8(), previousSpeed, m_speed);
+			debugLog("SoLoudSound: Speed change {:s}: {:f}->{:f} (stream, updated live)\n", m_sFilePath.toUtf8(), previousSpeed, m_fSpeed);
 	}
 }
 
@@ -302,17 +300,17 @@ void SoLoudSound::setPitch(float pitch)
 
 	pitch = std::clamp<float>(pitch, 0.0f, 2.0f);
 
-	if (m_pitch != pitch)
+	if (m_fPitch != pitch)
 	{
-		float previousPitch = m_pitch;
-		m_pitch = pitch;
+		float previousPitch = m_fPitch;
+		m_fPitch = pitch;
 
 		// simply update the SLFXStream parameters
 		auto *stream = static_cast<SoLoud::SLFXStream *>(m_audioSource);
-		stream->setPitchFactor(m_pitch);
+		stream->setPitchFactor(m_fPitch);
 
 		if (cv::debug_snd.getBool())
-			debugLog("SoLoudSound: Pitch change {:s}: {:f}->{:f} (stream, updated live)\n", m_sFilePath.toUtf8(), previousPitch, m_pitch);
+			debugLog("SoLoudSound: Pitch change {:s}: {:f}->{:f} (stream, updated live)\n", m_sFilePath.toUtf8(), previousPitch, m_fPitch);
 	}
 }
 
@@ -323,23 +321,23 @@ void SoLoudSound::setFrequency(float frequency)
 
 	frequency = (frequency > 99.0f ? std::clamp<float>(frequency, 100.0f, 100000.0f) : 0.0f);
 
-	if (m_frequency != frequency)
+	if (m_fFrequency != frequency)
 	{
 		if (frequency > 0)
 		{
 			if (m_bStream)
 			{
-				float pitchRatio = frequency / m_frequency;
+				float pitchRatio = frequency / m_fFrequency;
 
 				// apply the frequency change through pitch
 				// this isn't the only or even a good way, but it does the trick
-				setPitch(m_pitch * pitchRatio);
+				setPitch(m_fPitch * pitchRatio);
 			}
 			else if (m_handle)
 			{
 				soloud->setSamplerate(m_handle, frequency);
 			}
-			m_frequency = frequency;
+			m_fFrequency = frequency;
 		}
 		else // 0 means reset to default
 		{
@@ -347,7 +345,7 @@ void SoLoudSound::setFrequency(float frequency)
 				setPitch(1.0f);
 			else if (m_handle)
 				soloud->setSamplerate(m_handle, frequency);
-			m_frequency = m_audioSource->mBaseSamplerate;
+			m_fFrequency = m_audioSource->mBaseSamplerate;
 		}
 	}
 }
@@ -427,7 +425,7 @@ float SoLoudSound::getSpeed()
 	if (!m_bReady)
 		return 1.0f;
 
-	return m_speed;
+	return m_fSpeed;
 }
 
 float SoLoudSound::getPitch()
@@ -435,7 +433,7 @@ float SoLoudSound::getPitch()
 	if (!m_bReady)
 		return 1.0f;
 
-	return m_pitch;
+	return m_fPitch;
 }
 
 float SoLoudSound::getBPM()

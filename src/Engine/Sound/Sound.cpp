@@ -32,23 +32,6 @@ ConVar snd_file_min_size(
 ConVar snd_force_load_unknown("snd_force_load_unknown", false, FCVAR_NONE, "force loading of assumed invalid audio files");
 } // namespace cv
 
-Sound::Sound(UString filepath, bool stream, bool threeD, bool loop, bool prescan)
-    : Resource(std::move(filepath))
-{
-	m_bStream = stream;
-	m_bIs3d = threeD;
-	m_bIsLooped = loop;
-	m_bPrescan = prescan;
-	m_bIsOverlayable = false;
-
-	m_bIgnored = false; // check for audio file validity
-
-	m_fVolume = 1.0f;
-	m_fLastPlayTime = -1.0f;
-
-	m_fCurrentBPM = -1.0f; // initialize to invalid value, only some backends support getting current BPM
-}
-
 void Sound::initAsync()
 {
 	if (cv::debug_rm.getBool())
@@ -74,6 +57,10 @@ void Sound::initAsync()
 			debugLog("Sound: snd_force_load_unknown=true, loading what seems to be a malformed/corrupt .{:s} file {:s}\n", fileExtensionLowerCase, m_sFilePath);
 			m_bIgnored = false;
 		}
+	}
+	else
+	{
+		m_bIgnored = false;
 	}
 }
 
