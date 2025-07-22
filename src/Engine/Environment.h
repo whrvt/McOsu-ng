@@ -17,6 +17,7 @@
 #include <SDL3/SDL.h>
 
 #include <map>
+#include <filesystem>
 
 class UString;
 class Engine;
@@ -66,6 +67,9 @@ public:
 	[[nodiscard]] static UString getFolderFromFilePath(const UString &filepath) noexcept;
 	[[nodiscard]] static UString getFileExtensionFromFilePath(const UString& filepath, bool includeDot = false);
 	[[nodiscard]] static UString getFileNameFromFilePath(const UString &filePath) noexcept;
+
+	[[nodiscard]] static UString encodeStringToURL(const UString& unencodedURLString) noexcept;
+	[[nodiscard]] static UString filesystemPathToURI(const std::filesystem::path& path) noexcept;
 
 	// clipboard
 	[[nodiscard]] const UString &getClipBoardText();

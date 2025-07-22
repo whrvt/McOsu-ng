@@ -33,6 +33,9 @@
 #include <cassert>
 #include <cstddef>
 #include <utility>
+#include <string>
+#include <sstream>
+#include <iomanip>
 
 namespace cv
 {
@@ -376,6 +379,55 @@ UString Environment::getFileExtensionFromFilePath(const UString &filepath, bool 
 		return UString("");
 }
 
+UString Environment::encodeStringToURL(const UString &value) noexcept
+{
+	std::ostringstream escaped;
+	escaped.fill('0');
+	escaped << std::hex;
+
+	for (const char c : value.utf8View())
+	{
+		// keep alphanumerics and other accepted characters intact
+		if (std::isalnum(c) || c == '-' || c == '_' || c == '.' || c == '~' || c == '/')
+		{
+			escaped << c;
+		}
+		else
+		{
+			// any other characters are percent-encoded
+			escaped << std::uppercase;
+			escaped << '%' << std::setw(2) << int(static_cast<unsigned char>(c));
+			escaped << std::nouppercase;
+		}
+	}
+
+	return {escaped.str()};
+}
+
+UString Environment::filesystemPathToURI(const std::filesystem::path &path) noexcept
+{
+	namespace fs = std::filesystem;
+	// convert to absolute path and normalize
+	auto abs_path = fs::absolute(path);
+	// convert to path with forward slashes
+	const UString path_str = UString{abs_path.generic_string()};
+	// URL encode the path
+	UString uri = encodeStringToURL(path_str);
+
+	// prepend with file:///
+	if (uri[0] == '/')
+		uri = UString::fmt("file://{}", uri);
+	else
+		uri = UString::fmt("file:///{}", uri);
+
+	// add trailing slash if it's a directory
+	if (fs::is_directory(abs_path) && !uri.endsWith('/'))
+	{
+		uri += '/';
+	}
+	return uri;
+}
+
 const UString &Environment::getClipBoardText()
 {
 	char *newClip = SDL_GetClipboardText();
@@ -414,7 +466,7 @@ void Environment::showMessageErrorFatal(const UString &title, const UString &mes
 }
 
 // TODO: filter?
-void Environment::sdlFileDialogCallback(void *userdata, const char *const *filelist, int  /*filter*/)
+void Environment::sdlFileDialogCallback(void *userdata, const char *const *filelist, int /*filter*/)
 {
 	auto *callbackData = static_cast<FileDialogCallbackData *>(userdata);
 	if (!callbackData)
@@ -493,19 +545,14 @@ void Environment::openFileBrowser(const UString & /*title*/, UString initialpath
 	else
 		pathToOpen = getFolderFromFilePath(pathToOpen);
 
-	// prepend with file:/// to open it as a URI
-	if constexpr (Env::cfg(OS::WINDOWS))
-		pathToOpen = UString::fmt("file:///{}", pathToOpen);
-	else
-	{
-		if (pathToOpen[0] != '/')
-			pathToOpen = UString::fmt("file:///{}", pathToOpen);
-		else
-			pathToOpen = UString::fmt("file://{}", pathToOpen);
-	}
+	namespace fs = std::filesystem;
+	UString encodedPath = Env::cfg(OS::WINDOWS) ? UString::fmt("file:///{}", pathToOpen) : filesystemPathToURI(fs::path{pathToOpen.plat_str()});
 
-	if (!SDL_OpenURL(pathToOpen.toUtf8()))
-		debugLog("Failed to open file URI {:s}: {:s}\n", pathToOpen, SDL_GetError());
+	if (envDebug())
+		debugLog("opening URI: {:s}\n", encodedPath);
+
+	if (!SDL_OpenURL(encodedPath.toUtf8()))
+		debugLog("Failed to open file URI {:s}: {:s}\n", encodedPath, SDL_GetError());
 }
 
 void Environment::focus()
@@ -733,7 +780,7 @@ namespace
 {
 void sensTransformFunc(void *userdata, Uint64 /*timestamp*/, SDL_Window * /*window*/, SDL_MouseID /*mouseid*/, float *x, float *y)
 {
-	const float sensitivity = *static_cast<float*>(userdata);
+	const float sensitivity = *static_cast<float *>(userdata);
 	*x *= sensitivity;
 	*y *= sensitivity;
 }
@@ -760,7 +807,7 @@ void Environment::notifyWantRawInput(bool raw)
 		SDL_SetWindowMouseRect(m_window, nullptr);
 	}
 	static constexpr const float default_sens{1.0f};
-	SDL_SetRelativeMouseTransform(raw ? sensTransformFunc : nullptr, mouse ? (void*)&mouse->getSensitivity() : (void*)(&default_sens));
+	SDL_SetRelativeMouseTransform(raw ? sensTransformFunc : nullptr, mouse ? (void *)&mouse->getSensitivity() : (void *)(&default_sens));
 	SDL_SetWindowRelativeMouseMode(m_window, raw);
 }
 
@@ -776,7 +823,7 @@ void Environment::setCursorVisible(bool visible)
 			notifyWantRawInput(false);
 			setOSMousePos(Vector2{getMousePos()}.nudge(getWindowSize() / 2.0f, 1.0f)); // nudge it outwards
 		}
-		else                                                                        // snap the OS cursor to virtual cursor position
+		else                                                                                 // snap the OS cursor to virtual cursor position
 			setOSMousePos(Vector2{mouse->getRealPos()}.nudge(getWindowSize() / 2.0f, 1.0f)); // nudge it outwards
 		SDL_ShowCursor();
 	}
@@ -945,10 +992,13 @@ UString Environment::getThingFromPathHelper(UString path, bool folder) noexcept
 			auto status = std::filesystem::status(abs_path, ec);
 			// if it's already a directory or it doesn't have a parent path then just return it directly
 			if (ec || status.type() == std::filesystem::file_type::directory || !abs_path.has_parent_path())
-				path = abs_path.c_str();
+				path = {abs_path.generic_string()};
 			// else return the parent directory for the file
 			else if (abs_path.has_parent_path() && !abs_path.parent_path().empty())
-				path = abs_path.parent_path().c_str();
+				path = {abs_path.parent_path().generic_string()};
+
+			if (cv::debug_env.getBool())
+				debugLog("canonical path found: {}\n", path);
 		}
 		else if (!endsWithSeparator) // canonical failed, handle manually (if it's not already a directory)
 		{
@@ -956,6 +1006,9 @@ UString Environment::getThingFromPathHelper(UString path, bool folder) noexcept
 				path = path.substr(0, lastSlash);
 			else // no separators found, just use ./
 				path = UString::fmt(".{}{}", Env::cfg(OS::WINDOWS) ? "\\" : "/", path);
+
+			if (cv::debug_env.getBool())
+				debugLog("canonical path NOT found, returning: {}\n", path);
 		}
 		// make sure whatever we got now ends with a slash
 		if (!path.endsWith("/") && !path.endsWith("\\"))
