@@ -171,7 +171,7 @@ ConsoleBox::ConsoleBox() : WindowUIElement(0, 0, 0, 0, "")
 	clearSuggestions();
 
 	// convar callbacks
-	cv::showconsolebox.setCallback(fastdelegate::MakeDelegate(this, &ConsoleBox::show));
+	cv::showconsolebox.setCallback(SA::MakeDelegate<&ConsoleBox::show>(this));
 }
 
 ConsoleBox::~ConsoleBox()
@@ -643,7 +643,7 @@ void ConsoleBox::addSuggestion(const UString &text, const UString &helpText, con
 	{
 		button->setDrawFrame(false);
 		button->setSizeX(button->getFont()->getStringWidth(text));
-		button->setClickCallback(fastdelegate::MakeDelegate(this, &ConsoleBox::onSuggestionClicked));
+		button->setClickCallback(SA::MakeDelegate<&ConsoleBox::onSuggestionClicked>(this));
 		button->setDrawBackground(false);
 	}
 	m_suggestion->getContainer()->addBaseUIElement(button);

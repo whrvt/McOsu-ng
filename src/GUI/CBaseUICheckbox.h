@@ -29,7 +29,7 @@ public:
 	CBaseUICheckbox *setSizeToContent(int horizontalBorderSize = 1, int verticalBorderSize = 1);
 	CBaseUICheckbox *setWidthToContent(int horizontalBorderSize = 1);
 
-	typedef fastdelegate::FastDelegate1<CBaseUICheckbox*> CheckboxChangeCallback;
+	using CheckboxChangeCallback = SA::delegate<void(CBaseUICheckbox*)> ;
 	CBaseUICheckbox *setChangeCallback( const CheckboxChangeCallback& clickCallback ) {m_changeCallback = clickCallback; return this;}
 
 	// inspection

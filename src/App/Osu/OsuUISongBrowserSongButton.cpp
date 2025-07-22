@@ -322,7 +322,7 @@ void OsuUISongBrowserSongButton::triggerContextMenu(Vector2 pos)
 		m_contextMenu->begin(0, true);
 		{
 			if (m_representativeDatabaseBeatmap || m_databaseBeatmap)
-				m_contextMenu->addButtonJustified("[...] Open Beatmap Folder", true, 0)->setClickCallback(fastdelegate::MakeDelegate(this, &OsuUISongBrowserSongButton::onOpenBeatmapFolderClicked));
+				m_contextMenu->addButtonJustified("[...] Open Beatmap Folder", true, 0)->setClickCallback(SA::MakeDelegate<&OsuUISongBrowserSongButton::onOpenBeatmapFolderClicked>(this));
 
 			if (m_databaseBeatmap != NULL && m_databaseBeatmap->getDifficulties().size() < 1)
 				m_contextMenu->addButtonJustified("[+] Add to Collection", true, 1);
@@ -419,7 +419,7 @@ void OsuUISongBrowserSongButton::triggerContextMenu(Vector2 pos)
 			}
 		}
 		m_contextMenu->end(false, false);
-		m_contextMenu->setClickCallback( fastdelegate::MakeDelegate(this, &OsuUISongBrowserSongButton::onContextMenu) );
+		m_contextMenu->setClickCallback( SA::MakeDelegate<&OsuUISongBrowserSongButton::onContextMenu>(this) );
 		OsuUIContextMenu::clampToRightScreenEdge(m_contextMenu);
 		OsuUIContextMenu::clampToBottomScreenEdge(m_contextMenu);
 	}
@@ -537,7 +537,7 @@ void OsuUISongBrowserSongButton::onContextMenu(const UString& text, int id)
 			}
 		}
 		m_contextMenu->end(false, true);
-		m_contextMenu->setClickCallback( fastdelegate::MakeDelegate(this, &OsuUISongBrowserSongButton::onAddToCollectionConfirmed) );
+		m_contextMenu->setClickCallback( SA::MakeDelegate<&OsuUISongBrowserSongButton::onAddToCollectionConfirmed>(this) );
 		OsuUIContextMenu::clampToRightScreenEdge(m_contextMenu);
 		OsuUIContextMenu::clampToBottomScreenEdge(m_contextMenu);
 	}
@@ -645,7 +645,7 @@ void OsuUISongBrowserSongButton::onAddToCollectionConfirmed(const UString& text,
 			label->setTextDarkColor(0xff000000);
 		}
 		m_contextMenu->end(false, false);
-		m_contextMenu->setClickCallback( fastdelegate::MakeDelegate(this, &OsuUISongBrowserSongButton::onCreateNewCollectionConfirmed) );
+		m_contextMenu->setClickCallback( SA::MakeDelegate<&OsuUISongBrowserSongButton::onCreateNewCollectionConfirmed>(this) );
 		OsuUIContextMenu::clampToRightScreenEdge(m_contextMenu);
 		OsuUIContextMenu::clampToBottomScreenEdge(m_contextMenu);
 	}

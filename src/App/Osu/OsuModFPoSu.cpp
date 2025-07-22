@@ -145,9 +145,9 @@ OsuModFPoSu::OsuModFPoSu()
 	m_hitcircleShader = NULL;
 
 	// convar callbacks
-	cv::osu::fposu::curved.setCallback( fastdelegate::MakeDelegate(this, &OsuModFPoSu::onCurvedChange) );
-	cv::osu::fposu::distance.setCallback( fastdelegate::MakeDelegate(this, &OsuModFPoSu::onDistanceChange) );
-	cv::osu::fposu::noclip.setCallback( fastdelegate::MakeDelegate(this, &OsuModFPoSu::onNoclipChange) );
+	cv::osu::fposu::curved.setCallback( SA::MakeDelegate<&OsuModFPoSu::onCurvedChange>(this) );
+	cv::osu::fposu::distance.setCallback( SA::MakeDelegate<&OsuModFPoSu::onDistanceChange>(this) );
+	cv::osu::fposu::noclip.setCallback( SA::MakeDelegate<&OsuModFPoSu::onNoclipChange>(this) );
 
 	// init
 	makePlayfield();

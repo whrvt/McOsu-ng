@@ -14,9 +14,9 @@
 CBaseUICheckbox::CBaseUICheckbox(float xPos, float yPos, float xSize, float ySize, UString name, const UString& text) : CBaseUIButton(xPos, yPos, xSize, ySize, std::move(name), text)
 {
 	m_bChecked = false;
-	m_changeCallback = NULL;
+	m_changeCallback = {};
 
-	CBaseUIButton::setClickCallback( fastdelegate::MakeDelegate(this, &CBaseUICheckbox::onPressed) );
+	CBaseUIButton::setClickCallback( SA::MakeDelegate<&CBaseUICheckbox::onPressed>(this) );
 }
 
 void CBaseUICheckbox::draw()

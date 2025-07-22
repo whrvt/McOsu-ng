@@ -257,9 +257,9 @@ SDLMain::SDLMain(int argc, char *argv[])
 	m_iFpsMaxBG = 30;
 
 	// setup callbacks
-	cv::fps_max.setCallback(fastdelegate::MakeDelegate(this, &SDLMain::fps_max_callback));
-	cv::fps_max_background.setCallback(fastdelegate::MakeDelegate(this, &SDLMain::fps_max_background_callback));
-	cv::fps_unlimited.setCallback(fastdelegate::MakeDelegate(this, &SDLMain::fps_unlimited_callback));
+	cv::fps_max.setCallback(SA::MakeDelegate<&SDLMain::fps_max_callback>(this));
+	cv::fps_max_background.setCallback(SA::MakeDelegate<&SDLMain::fps_max_background_callback>(this));
+	cv::fps_unlimited.setCallback(SA::MakeDelegate<&SDLMain::fps_unlimited_callback>(this));
 }
 
 SDLMain::~SDLMain()

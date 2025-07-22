@@ -556,7 +556,7 @@ void OsuUISongBrowserScoreButton::onRightMouseUpInside()
 			}
 		}
 		m_contextMenu->end(false, false);
-		m_contextMenu->setClickCallback( fastdelegate::MakeDelegate(this, &OsuUISongBrowserScoreButton::onContextMenu) );
+		m_contextMenu->setClickCallback( SA::MakeDelegate<&OsuUISongBrowserScoreButton::onContextMenu>(this) );
 		OsuUIContextMenu::clampToRightScreenEdge(m_contextMenu);
 		OsuUIContextMenu::clampToBottomScreenEdge(m_contextMenu);
 	}
@@ -713,7 +713,7 @@ void OsuUISongBrowserScoreButton::onDeleteScoreClicked()
 			m_contextMenu->addButton("No")->setTextLeft(false);
 		}
 		m_contextMenu->end(false, false);
-		m_contextMenu->setClickCallback( fastdelegate::MakeDelegate(this, &OsuUISongBrowserScoreButton::onDeleteScoreConfirmed) );
+		m_contextMenu->setClickCallback( SA::MakeDelegate<&OsuUISongBrowserScoreButton::onDeleteScoreConfirmed>(this) );
 		OsuUIContextMenu::clampToRightScreenEdge(m_contextMenu);
 		OsuUIContextMenu::clampToBottomScreenEdge(m_contextMenu);
 	}

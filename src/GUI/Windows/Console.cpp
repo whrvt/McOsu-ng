@@ -39,7 +39,7 @@ std::mutex g_consoleLogMutex;
 Console::Console() : CBaseUIWindow(350, 100, 620, 550, "Console")
 {
 	// convar bindings
-	cv::clear.setCallback( fastdelegate::MakeDelegate(this, &Console::clear) );
+	cv::clear.setCallback( SA::MakeDelegate<&Console::clear>(this) );
 
 	// resources
 	m_logFont = resourceManager->getFont("FONT_CONSOLE");
@@ -357,7 +357,7 @@ void _fizzbuzz(void)
 	}
 }
 namespace cv {
-ConVar exec("exec", FCVAR_NONE, _exec);
-ConVar echo("echo", FCVAR_NONE, _echo);
-ConVar fizzbuzz("fizzbuzz", FCVAR_NONE, _fizzbuzz);
+ConVar exec("exec", FCVAR_NONE, CFUNC(_exec));
+ConVar echo("echo", FCVAR_NONE, CFUNC(_echo));
+ConVar fizzbuzz("fizzbuzz", FCVAR_NONE, CFUNC(_fizzbuzz));
 }

@@ -63,11 +63,11 @@ SoLoudSoundEngine::SoLoudSoundEngine()
 	initializeOutputDevice(defaultOutputDevice.id);
 
 	// convar callbacks
-	cv::snd_freq.setCallback(fastdelegate::MakeDelegate(this, &SoLoudSoundEngine::restart));
-	cv::snd_restart.setCallback(fastdelegate::MakeDelegate(this, &SoLoudSoundEngine::restart));
-	cv::snd_output_device.setCallback(fastdelegate::MakeDelegate(this, &SoLoudSoundEngine::setOutputDevice));
-	cv::snd_soloud_backend.setCallback(fastdelegate::MakeDelegate(this, &SoLoudSoundEngine::restart));
-	cv::snd_sanity_simultaneous_limit.setCallback(fastdelegate::MakeDelegate(this, &SoLoudSoundEngine::onMaxActiveChange));
+	cv::snd_freq.setCallback(SA::MakeDelegate<&SoLoudSoundEngine::restart>(this));
+	cv::snd_restart.setCallback(SA::MakeDelegate<&SoLoudSoundEngine::restart>(this));
+	cv::snd_output_device.setCallback(SA::MakeDelegate<&SoLoudSoundEngine::setOutputDevice>(this));
+	cv::snd_soloud_backend.setCallback(SA::MakeDelegate<&SoLoudSoundEngine::restart>(this));
+	cv::snd_sanity_simultaneous_limit.setCallback(SA::MakeDelegate<&SoLoudSoundEngine::onMaxActiveChange>(this));
 }
 
 SoLoudSoundEngine::~SoLoudSoundEngine()

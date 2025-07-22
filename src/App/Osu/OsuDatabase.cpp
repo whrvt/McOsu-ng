@@ -305,8 +305,8 @@ private:
 OsuDatabase::OsuDatabase()
 {
 	// convar refs
-	cv::osu::scores_rename.setCallback( fastdelegate::MakeDelegate(this, &OsuDatabase::onScoresRename) );
-	cv::osu::scores_export.setCallback( fastdelegate::MakeDelegate(this, &OsuDatabase::onScoresExport) );
+	cv::osu::scores_rename.setCallback( SA::MakeDelegate<&OsuDatabase::onScoresRename>(this) );
+	cv::osu::scores_export.setCallback( SA::MakeDelegate<&OsuDatabase::onScoresExport>(this) );
 
 	// vars
 	m_importTimer = new Timer(false);

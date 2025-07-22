@@ -40,7 +40,7 @@ public:
 	void setBlockSize(float xSize, float ySize);
 
 	// callbacks, either void or with ourself as the argument
-	typedef fastdelegate::FastDelegate1<CBaseUISlider*> SliderChangeCallback;
+	using SliderChangeCallback = SA::delegate<void(CBaseUISlider*)>;
 	CBaseUISlider *setChangeCallback(const SliderChangeCallback& changeCallback) {m_sliderChangeCallback = changeCallback; return this;}
 
 	CBaseUISlider *setAllowMouseWheel(bool allowMouseWheel) {m_bAllowMouseWheel = allowMouseWheel; return this;}

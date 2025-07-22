@@ -11,7 +11,7 @@
 
 #include "ConVarDefs.h"
 #include "UString.h"
-#include "FastDelegate.h"
+#include "MultiCastDelegate.h"
 
 #include <cassert>
 #include <type_traits>
@@ -48,12 +48,12 @@ public:
 		CONVAR_TYPE_STRING
 	};
 
-	// callback typedefs
-	using NativeConVarCallback = fastdelegate::FastDelegate0<>;
-	using NativeConVarCallbackArgs = fastdelegate::FastDelegate1<const UString &>;
-	using NativeConVarChangeCallback = fastdelegate::FastDelegate2<const UString &, const UString &>;
-	using NativeConVarCallbackFloat = fastdelegate::FastDelegate1<float>;
-	using NativeConVarChangeCallbackFloat = fastdelegate::FastDelegate2<float, float>;
+	// callback typedefs using Kryukov delegates
+	using NativeConVarCallback = SA::delegate<void()>;
+	using NativeConVarCallbackArgs = SA::delegate<void(const UString &)>;
+	using NativeConVarChangeCallback = SA::delegate<void(const UString &, const UString &)>;
+	using NativeConVarCallbackFloat = SA::delegate<void(float)>;
+	using NativeConVarChangeCallbackFloat = SA::delegate<void(float, float)>;
 
 	// polymorphic callback storage
 	using ExecutionCallback = std::variant<std::monostate,           // empty

@@ -242,7 +242,7 @@ ConVar combo_anim2_size("osu_combo_anim2_size", 0.5f, FCVAR_NONE);
 OsuHUD::OsuHUD() : OsuScreen()
 {
 	// convar callbacks
-	cv::osu::hud_volume_size_multiplier.setCallback( fastdelegate::MakeDelegate(this, &OsuHUD::onVolumeOverlaySizeChange) );
+	cv::osu::hud_volume_size_multiplier.setCallback( SA::MakeDelegate<&OsuHUD::onVolumeOverlaySizeChange>(this) );
 
 	// resources
 	m_tempFont = resourceManager->getFont("FONT_DEFAULT");

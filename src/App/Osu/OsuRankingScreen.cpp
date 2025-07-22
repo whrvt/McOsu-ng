@@ -221,7 +221,7 @@ OsuRankingScreen::OsuRankingScreen() : OsuScreenBackable()
 
 	m_rankingScrollDownInfoButton = new OsuRankingScreenScrollDownInfoButton();
 	m_rankingScrollDownInfoButton->setFont(osu->getFontIcons());
-	m_rankingScrollDownInfoButton->setClickCallback( fastdelegate::MakeDelegate(this, &OsuRankingScreen::onScrollDownClicked) );
+	m_rankingScrollDownInfoButton->setClickCallback( SA::MakeDelegate<&OsuRankingScreen::onScrollDownClicked>(this) );
 	UString iconString;
 	iconString.insert(0, OsuIcons::ARROW_DOWN);
 	iconString.append("   ");

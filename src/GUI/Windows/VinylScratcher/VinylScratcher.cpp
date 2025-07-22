@@ -45,12 +45,12 @@ VinylScratcher::VinylScratcher() : CBaseUIWindow(220, 90, 1000, 700, "Vinyl Scra
 	getContainer()->addBaseUIElement(m_controlBar);
 	getContainer()->addBaseUIElement(m_titleBar);
 
-	m_controlBar->getPlayButton()->setClickCallback(fastdelegate::MakeDelegate(this, &VinylScratcher::onPlayClicked));
-	m_controlBar->getNextButton()->setClickCallback(fastdelegate::MakeDelegate(this, &VinylScratcher::onNextClicked));
-	m_controlBar->getPrevButton()->setClickCallback(fastdelegate::MakeDelegate(this, &VinylScratcher::onPrevClicked));
-	m_musicBrowser->setFileClickedCallback(fastdelegate::MakeDelegate(this, &VinylScratcher::onFileClicked));
-	m_titleBar->setSeekCallback(fastdelegate::MakeDelegate(this, &VinylScratcher::onSeek));
-	m_controlBar->getVolumeSlider()->setChangeCallback(fastdelegate::MakeDelegate(this, &VinylScratcher::onVolumeChanged));
+	m_controlBar->getPlayButton()->setClickCallback(SA::MakeDelegate<&VinylScratcher::onPlayClicked>(this));
+	m_controlBar->getNextButton()->setClickCallback(SA::MakeDelegate<&VinylScratcher::onNextClicked>(this));
+	m_controlBar->getPrevButton()->setClickCallback(SA::MakeDelegate<&VinylScratcher::onPrevClicked>(this));
+	m_musicBrowser->setFileClickedCallback(SA::MakeDelegate<&VinylScratcher::onFileClicked>(this));
+	m_titleBar->setSeekCallback(SA::MakeDelegate<&VinylScratcher::onSeek>(this));
+	m_controlBar->getVolumeSlider()->setChangeCallback(SA::MakeDelegate<&VinylScratcher::onVolumeChanged>(this));
 
 	// vars
 	m_stream = resourceManager->loadSoundAbs("", "SND_VS_STREAM", true);

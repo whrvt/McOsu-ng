@@ -51,23 +51,23 @@ OsuMultiplayer::OsuMultiplayer()
 #endif
 
 	// engine callbacks
-	networkHandler->setOnClientReceiveServerPacketListener( fastdelegate::MakeDelegate(this, &OsuMultiplayer::onClientReceive) );
-	networkHandler->setOnServerReceiveClientPacketListener( fastdelegate::MakeDelegate(this, &OsuMultiplayer::onServerReceive) );
+	networkHandler->setOnClientReceiveServerPacketListener( SA::MakeDelegate<&OsuMultiplayer::onClientReceive>(this) );
+	networkHandler->setOnServerReceiveClientPacketListener( SA::MakeDelegate<&OsuMultiplayer::onServerReceive>(this) );
 
-	networkHandler->setOnClientConnectedToServerListener( fastdelegate::MakeDelegate(this, &OsuMultiplayer::onClientConnectedToServer) );
-	networkHandler->setOnClientDisconnectedFromServerListener( fastdelegate::MakeDelegate(this, &OsuMultiplayer::onClientDisconnectedFromServer) );
+	networkHandler->setOnClientConnectedToServerListener( SA::MakeDelegate<&OsuMultiplayer::onClientConnectedToServer>(this) );
+	networkHandler->setOnClientDisconnectedFromServerListener( SA::MakeDelegate<&OsuMultiplayer::onClientDisconnectedFromServer>(this) );
 
-	networkHandler->setOnServerClientChangeListener( fastdelegate::MakeDelegate(this, &OsuMultiplayer::onServerClientChange) );
-	networkHandler->setOnLocalServerStartedListener( fastdelegate::MakeDelegate(this, &OsuMultiplayer::onLocalServerStarted) );
-	networkHandler->setOnLocalServerStoppedListener( fastdelegate::MakeDelegate(this, &OsuMultiplayer::onLocalServerStopped) );
+	networkHandler->setOnServerClientChangeListener( SA::MakeDelegate<&OsuMultiplayer::onServerClientChange>(this) );
+	networkHandler->setOnLocalServerStartedListener( SA::MakeDelegate<&OsuMultiplayer::onLocalServerStarted>(this) );
+	networkHandler->setOnLocalServerStoppedListener( SA::MakeDelegate<&OsuMultiplayer::onLocalServerStopped>(this) );
 
 	// convar callbacks
-	cv::osu::mp_broadcastcommand.setCallback( fastdelegate::MakeDelegate(this, &OsuMultiplayer::onBroadcastCommand) );
-	cv::osu::mp_clientcastcommand.setCallback( fastdelegate::MakeDelegate(this, &OsuMultiplayer::onClientcastCommand) );
+	cv::osu::mp_broadcastcommand.setCallback( SA::MakeDelegate<&OsuMultiplayer::onBroadcastCommand>(this) );
+	cv::osu::mp_clientcastcommand.setCallback( SA::MakeDelegate<&OsuMultiplayer::onClientcastCommand>(this) );
 
-	cv::osu::mp_broadcastforceclientbeatmapdownload.setCallback( fastdelegate::MakeDelegate(this, &OsuMultiplayer::onMPForceClientBeatmapDownload) );
-	cv::osu::mp_select_beatmap.setCallback( fastdelegate::MakeDelegate(this, &OsuMultiplayer::onMPSelectBeatmap) );
-	cv::osu::mp_request_beatmap_download.setCallback( fastdelegate::MakeDelegate(this, &OsuMultiplayer::onMPRequestBeatmapDownload) );
+	cv::osu::mp_broadcastforceclientbeatmapdownload.setCallback( SA::MakeDelegate<&OsuMultiplayer::onMPForceClientBeatmapDownload>(this) );
+	cv::osu::mp_select_beatmap.setCallback( SA::MakeDelegate<&OsuMultiplayer::onMPSelectBeatmap>(this) );
+	cv::osu::mp_request_beatmap_download.setCallback( SA::MakeDelegate<&OsuMultiplayer::onMPRequestBeatmapDownload>(this) );
 
 	m_fNextPlayerCmd = 0.0f;
 

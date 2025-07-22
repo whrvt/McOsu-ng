@@ -144,7 +144,7 @@ public:
 
 VSControlBar::VSControlBar(int x, int y, int xSize, int ySize, McFont *font) : WindowUIElement(x, y, xSize, ySize, "")
 {
-	cv::vs_volume.setCallback(fastdelegate::MakeDelegate(this, &VSControlBar::onVolumeChanged));
+	cv::vs_volume.setCallback(SA::MakeDelegate<&VSControlBar::onVolumeChanged>(this));
 
 	const float dpiScale = env->getDPIScale();
 	const int height = 22 * dpiScale;
@@ -184,13 +184,13 @@ VSControlBar::VSControlBar(int x, int y, int xSize, int ySize, McFont *font) : W
 	m_container->addBaseUIElement(m_info);
 
 	m_shuffle = new VSControlBarCheckbox(m_vSize.x-height, 0, height, height, "", "");
-	m_shuffle->setChangeCallback(fastdelegate::MakeDelegate(this, &VSControlBar::onShuffleCheckboxChanged));
+	m_shuffle->setChangeCallback(SA::MakeDelegate<&VSControlBar::onShuffleCheckboxChanged>(this));
 	m_shuffle->setTextColor(textColor);
 	m_shuffle->setFont(font);
 	m_container->addBaseUIElement(m_shuffle);
 
 	m_repeat = new VSControlBarCheckbox(m_vSize.x-2*height, 0, height, height, "", "r");
-	m_repeat->setChangeCallback(fastdelegate::MakeDelegate(this, &VSControlBar::onRepeatCheckboxChanged));
+	m_repeat->setChangeCallback(SA::MakeDelegate<&VSControlBar::onRepeatCheckboxChanged>(this));
 	m_repeat->setTextColor(textColor);
 	m_repeat->setFont(font);
 	m_container->addBaseUIElement(m_repeat);

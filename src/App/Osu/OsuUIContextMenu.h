@@ -36,7 +36,7 @@ public:
 	void onKeyDown(KeyboardEvent &e) override;
 	void onChar(KeyboardEvent &e) override;
 
-	typedef fastdelegate::FastDelegate2<const UString&, int> ButtonClickCallback;
+	using ButtonClickCallback = SA::delegate<void(const UString&, int)>;
 	void setClickCallback(const ButtonClickCallback &clickCallback) {m_clickCallback = clickCallback;}
 
 	void begin(int minWidth = 0, bool bigStyle = false);

@@ -130,9 +130,9 @@ Environment::Environment(int argc, char *argv[])
 	m_mMonitors = {};
 
 	// setup callbacks
-	cv::debug_env.setCallback(fastdelegate::MakeDelegate(this, &Environment::onLogLevelChange));
-	cv::fullscreen_windowed_borderless.setCallback(fastdelegate::MakeDelegate(this, &Environment::onFullscreenWindowBorderlessChange));
-	cv::monitor.setCallback(fastdelegate::MakeDelegate(this, &Environment::onMonitorChange));
+	cv::debug_env.setCallback(SA::MakeDelegate<&Environment::onLogLevelChange>(this));
+	cv::fullscreen_windowed_borderless.setCallback(SA::MakeDelegate<&Environment::onFullscreenWindowBorderlessChange>(this));
+	cv::monitor.setCallback(SA::MakeDelegate<&Environment::onMonitorChange>(this));
 }
 
 Environment::~Environment()

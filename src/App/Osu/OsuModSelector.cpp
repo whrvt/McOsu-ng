@@ -200,13 +200,13 @@ OsuModSelector::OsuModSelector() : OsuScreen()
 	OVERRIDE_SLIDER overrideHP = addOverrideSlider("HP Override", "HP:", &cv::osu::hp_override, 0.0f, 12.5f, "Hit/Health Points (higher number = harder survival).");
 
 	overrideCS.slider->setAnimated(false); // quick fix for otherwise possible inconsistencies due to slider vertex buffers and animated CS changes
-	overrideCS.slider->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuModSelector::onOverrideSliderChange) );
-	overrideAR.slider->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuModSelector::onOverrideSliderChange) );
-	overrideOD.slider->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuModSelector::onOverrideSliderChange) );
-	overrideHP.slider->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuModSelector::onOverrideSliderChange) );
+	overrideCS.slider->setChangeCallback( SA::MakeDelegate<&OsuModSelector::onOverrideSliderChange>(this) );
+	overrideAR.slider->setChangeCallback( SA::MakeDelegate<&OsuModSelector::onOverrideSliderChange>(this) );
+	overrideOD.slider->setChangeCallback( SA::MakeDelegate<&OsuModSelector::onOverrideSliderChange>(this) );
+	overrideHP.slider->setChangeCallback( SA::MakeDelegate<&OsuModSelector::onOverrideSliderChange>(this) );
 
-	overrideAR.desc->setClickCallback( fastdelegate::MakeDelegate(this, &OsuModSelector::onOverrideARSliderDescClicked) );
-	overrideOD.desc->setClickCallback( fastdelegate::MakeDelegate(this, &OsuModSelector::onOverrideODSliderDescClicked) );
+	overrideAR.desc->setClickCallback( SA::MakeDelegate<&OsuModSelector::onOverrideARSliderDescClicked>(this) );
+	overrideOD.desc->setClickCallback( SA::MakeDelegate<&OsuModSelector::onOverrideODSliderDescClicked>(this) );
 
 	m_CSSlider = overrideCS.slider;
 	m_ARSlider = overrideAR.slider;
@@ -218,7 +218,7 @@ OsuModSelector::OsuModSelector() : OsuScreen()
 	{
 		OVERRIDE_SLIDER overrideSpeed = addOverrideSlider("Speed/BPM Multiplier", "x", &cv::osu::speed_override, 0.9f, 2.5f);
 
-		overrideSpeed.slider->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuModSelector::onOverrideSliderChange) );
+		overrideSpeed.slider->setChangeCallback( SA::MakeDelegate<&OsuModSelector::onOverrideSliderChange>(this) );
 		//overrideSpeed.slider->setValue(-1.0f, false);
 		overrideSpeed.slider->setAnimated(false); // same quick fix as above
 
@@ -265,10 +265,10 @@ OsuModSelector::OsuModSelector() : OsuScreen()
 
 	// build action buttons
 	m_resetModsButton = addActionButton("1. Reset All Mods");
-	m_resetModsButton->setClickCallback( fastdelegate::MakeDelegate(this, &OsuModSelector::resetMods) );
+	m_resetModsButton->setClickCallback( SA::MakeDelegate<&OsuModSelector::resetMods>(this) );
 	m_resetModsButton->setColor(0xffff3800);
 	m_closeButton = addActionButton("2. Close");
-	m_closeButton->setClickCallback( fastdelegate::MakeDelegate(this, &OsuModSelector::close) );
+	m_closeButton->setClickCallback( SA::MakeDelegate<&OsuModSelector::close>(this) );
 	m_closeButton->setColor(0xff8f8f8f);
 
 	updateButtons(true);
@@ -1022,7 +1022,7 @@ OsuModSelector::OVERRIDE_SLIDER OsuModSelector::addOverrideSlider(UString text, 
 	if (lockCvar != NULL)
 	{
 		os.lock = new OsuModSelectorOverrideSliderLockButton(0, 0, height, height, "", "");
-		os.lock->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuModSelector::onOverrideSliderLockChange) );
+		os.lock->setChangeCallback( SA::MakeDelegate<&OsuModSelector::onOverrideSliderLockChange>(this) );
 	}
 	os.desc = new OsuModSelectorOverrideSliderDescButton(0, 0, 100, height, "", std::move(text));
 	os.desc->setTooltipText(std::move(tooltipText));
@@ -1098,7 +1098,7 @@ OsuUICheckbox *OsuModSelector::addExperimentalCheckbox(const UString& text, cons
 	if (cvar != NULL)
 	{
 		checkbox->setChecked(cvar->getBool());
-		checkbox->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuModSelector::onCheckboxChange) );
+		checkbox->setChangeCallback( SA::MakeDelegate<&OsuModSelector::onCheckboxChange>(this) );
 	}
 	m_experimentalContainer->getContainer()->addBaseUIElement(checkbox);
 

@@ -44,8 +44,8 @@ Mouse::Mouse() : InputDevice()
 	m_vFakeLagPos = m_vPos;
 
 	m_fSensitivity = 1.0f;
-	cv::mouse_raw_input.setCallback(fastdelegate::MakeDelegate(this, &Mouse::onRawInputChanged));
-	cv::mouse_sensitivity.setCallback(fastdelegate::MakeDelegate(this, &Mouse::onSensitivityChanged));
+	cv::mouse_raw_input.setCallback(SA::MakeDelegate<&Mouse::onRawInputChanged>(this));
+	cv::mouse_sensitivity.setCallback(SA::MakeDelegate<&Mouse::onSensitivityChanged>(this));
 }
 
 void Mouse::draw()

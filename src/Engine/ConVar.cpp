@@ -479,8 +479,8 @@ static void _dumpcommands(void)
 
 namespace cv
 {
-ConVar find("find", FCVAR_NONE, _find);
-ConVar help("help", FCVAR_NONE, _help);
-ConVar listcommands("listcommands", FCVAR_NONE, _listcommands);
-ConVar dumpcommands("dumpcommands", FCVAR_NONE, _dumpcommands);
+ConVar find("find", FCVAR_NONE, CFUNC(_find));
+ConVar help("help", FCVAR_NONE, CFUNC(_help));
+ConVar listcommands("listcommands", FCVAR_NONE, CFUNC(_listcommands));
+ConVar dumpcommands("dumpcommands", FCVAR_NONE, CFUNC(_dumpcommands));
 } // namespace cv

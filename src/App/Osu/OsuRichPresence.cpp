@@ -21,7 +21,7 @@
 #include "OsuBeatmap.h"
 #include "OsuDatabaseBeatmap.h"
 namespace cv::osu {
-ConVar rich_presence("osu_rich_presence", true, FCVAR_NONE, OsuRichPresence::onRichPresenceChange);
+ConVar rich_presence("osu_rich_presence", true, FCVAR_NONE, CFUNC(OsuRichPresence::onRichPresenceChange));
 ConVar rich_presence_dynamic_windowtitle("osu_rich_presence_dynamic_windowtitle", true, FCVAR_NONE, "should the window title show the currently playing beatmap Artist - Title and [Difficulty] name");
 ConVar rich_presence_show_recentplaystats("osu_rich_presence_show_recentplaystats", true, FCVAR_NONE);
 ConVar rich_presence_discord_show_totalpp("osu_rich_presence_discord_show_totalpp", true, FCVAR_NONE);

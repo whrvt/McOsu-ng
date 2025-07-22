@@ -259,7 +259,7 @@ void OsuMainMenu::openSteamWorkshopInDefaultBrowser(bool launchInSteam)
 
 OsuMainMenu::OsuMainMenu() : OsuScreen()
 {
-	cv::osu::toggle_preview_music.setCallback( fastdelegate::MakeDelegate(this, &OsuMainMenu::onPausePressed) );
+	cv::osu::toggle_preview_music.setCallback( SA::MakeDelegate<&OsuMainMenu::onPausePressed>(this) );
 
 	// engine settings
 	mouse->addListener(this);
@@ -343,18 +343,18 @@ OsuMainMenu::OsuMainMenu() : OsuScreen()
 
 	m_container->addBaseUIElement(m_mainButton);
 
-	addMainMenuButton("Play")->setClickCallback( fastdelegate::MakeDelegate(this, &OsuMainMenu::onPlayButtonPressed) );
-	//addMainMenuButton("Edit")->setClickCallback( fastdelegate::MakeDelegate(this, &OsuMainMenu::onEditButtonPressed) );
-	addMainMenuButton("Options (CTRL + O)")->setClickCallback( fastdelegate::MakeDelegate(this, &OsuMainMenu::onOptionsButtonPressed) );
-	addMainMenuButton("Exit")->setClickCallback( fastdelegate::MakeDelegate(this, &OsuMainMenu::onExitButtonPressed) );
+	addMainMenuButton("Play")->setClickCallback( SA::MakeDelegate<&OsuMainMenu::onPlayButtonPressed>(this) );
+	//addMainMenuButton("Edit")->setClickCallback( SA::MakeDelegate<&OsuMainMenu::onEditButtonPressed>(this) );
+	addMainMenuButton("Options (CTRL + O)")->setClickCallback( SA::MakeDelegate<&OsuMainMenu::onOptionsButtonPressed>(this) );
+	addMainMenuButton("Exit")->setClickCallback( SA::MakeDelegate<&OsuMainMenu::onExitButtonPressed>(this) );
 
 	m_pauseButton = new OsuMainMenuPauseButton(0, 0, 0, 0, "", "");
-	m_pauseButton->setClickCallback( fastdelegate::MakeDelegate(this, &OsuMainMenu::onPausePressed) );
+	m_pauseButton->setClickCallback( SA::MakeDelegate<&OsuMainMenu::onPausePressed>(this) );
 	m_container->addBaseUIElement(m_pauseButton);
 
 	m_updateAvailableButton = new OsuUIButton(0, 0, 0, 0, "", cv::osu::debug.getBool() ? "Debug mode, update check disabled" : "Checking for updates ...");
 	m_updateAvailableButton->setUseDefaultSkin();
-	m_updateAvailableButton->setClickCallback( fastdelegate::MakeDelegate(this, &OsuMainMenu::onUpdatePressed) );
+	m_updateAvailableButton->setClickCallback( SA::MakeDelegate<&OsuMainMenu::onUpdatePressed>(this) );
 	m_updateAvailableButton->setColor(0x2200ff00);
 	m_updateAvailableButton->setTextColor(0x22ffffff);
 
@@ -362,7 +362,7 @@ OsuMainMenu::OsuMainMenu() : OsuScreen()
 	{
 		m_steamWorkshopButton = new OsuUIButton(0, 0, 0, 0, "", "Steam Workshop");
 		m_steamWorkshopButton->setUseDefaultSkin();
-		m_steamWorkshopButton->setClickCallback( fastdelegate::MakeDelegate(this, &OsuMainMenu::onSteamWorkshopPressed) );
+		m_steamWorkshopButton->setClickCallback( SA::MakeDelegate<&OsuMainMenu::onSteamWorkshopPressed>(this) );
 		m_steamWorkshopButton->setColor(0xff108fe8);
 		m_steamWorkshopButton->setTextColor(0xffffffff);
 		m_steamWorkshopButton->setVisible(cv::osu::draw_main_menu_workshop_button.getBool());
@@ -371,7 +371,7 @@ OsuMainMenu::OsuMainMenu() : OsuScreen()
 
 	m_githubButton = new OsuUIButton(0, 0, 0, 0, "", "Github");
 	m_githubButton->setUseDefaultSkin();
-	m_githubButton->setClickCallback( fastdelegate::MakeDelegate(this, &OsuMainMenu::onGithubPressed) );
+	m_githubButton->setClickCallback( SA::MakeDelegate<&OsuMainMenu::onGithubPressed>(this) );
 	m_githubButton->setColor(0x2923b9ff);
 	m_githubButton->setTextBrightColor(0x55172e62);
 	m_githubButton->setTextDarkColor(0x11ffffff);
@@ -386,7 +386,7 @@ OsuMainMenu::OsuMainMenu() : OsuScreen()
 	m_versionButton->setText(versionString);
 	m_versionButton->setDrawBackground(false);
 	m_versionButton->setDrawFrame(false);
-	m_versionButton->setClickCallback( fastdelegate::MakeDelegate(this, &OsuMainMenu::onVersionPressed) );
+	m_versionButton->setClickCallback( SA::MakeDelegate<&OsuMainMenu::onVersionPressed>(this) );
 	m_versionButton->setVisible(true);
 	m_container->addBaseUIElement(m_versionButton);
 

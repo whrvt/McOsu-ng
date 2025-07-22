@@ -111,9 +111,9 @@ BassSoundEngine::BassSoundEngine()
 	initializeOutputDevice(defaultOutputDevice.id);
 
 	// convar callbacks
-	cv::snd_freq.setCallback(fastdelegate::MakeDelegate(this, &BassSoundEngine::onFreqChanged));
-	cv::snd_restart.setCallback(fastdelegate::MakeDelegate(this, &BassSoundEngine::restart));
-	cv::snd_output_device.setCallback(fastdelegate::MakeDelegate(this, &BassSoundEngine::setOutputDevice));
+	cv::snd_freq.setCallback(SA::MakeDelegate<&BassSoundEngine::onFreqChanged>(this));
+	cv::snd_restart.setCallback(SA::MakeDelegate<&BassSoundEngine::restart>(this));
+	cv::snd_output_device.setCallback(SA::MakeDelegate<&BassSoundEngine::setOutputDevice>(this));
 
 #ifdef MCENGINE_FEATURE_BASS_WASAPI
 	cv::win_snd_wasapi_buffer_size.setCallback(_WIN_SND_WASAPI_BUFFER_SIZE_CHANGE);

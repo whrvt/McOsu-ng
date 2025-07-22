@@ -185,5 +185,5 @@ void _vprof(const UString & /*oldValue*/, const UString &newValue)
 	}
 }
 namespace cv {
-ConVar vprof("vprof", false, FCVAR_NONE, "enables/disables the visual profiler", _vprof);
+ConVar vprof("vprof", false, FCVAR_NONE, "enables/disables the visual profiler", CFUNC(_vprof));
 }

@@ -51,8 +51,8 @@ SDLSoundEngine::SDLSoundEngine()
 	initializeOutputDevice(defaultOutputDevice.id);
 
 	// convar callbacks
-	cv::snd_restart.setCallback(fastdelegate::MakeDelegate(this, &SDLSoundEngine::restart));
-	cv::snd_output_device.setCallback(fastdelegate::MakeDelegate(this, &SDLSoundEngine::setOutputDevice));
+	cv::snd_restart.setCallback(SA::MakeDelegate<&SDLSoundEngine::restart>(this));
+	cv::snd_output_device.setCallback(SA::MakeDelegate<&SDLSoundEngine::setOutputDevice>(this));
 }
 
 SDLSoundEngine::~SDLSoundEngine()
