@@ -153,7 +153,7 @@ public:
 
 	// type inspection
 	[[nodiscard]] virtual TypeId getTypeId() const = 0;
-	[[nodiscard]] virtual bool isTypeOf(TypeId) const { return false; }
+	[[nodiscard]] virtual bool isTypeOf(TypeId /*typeid*/) const { return false; }
 	template<typename T>
 	[[nodiscard]] bool isType() const { return isTypeOf(T::TYPE_ID); }
 	template<typename T>

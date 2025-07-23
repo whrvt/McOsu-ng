@@ -28,17 +28,13 @@ ConVar snd_sanity_simultaneous_limit("snd_sanity_simultaneous_limit", 128, FCVAR
                                      "The maximum number of overlayable sounds that are allowed to be active at once");
 } // namespace cv
 
-std::unique_ptr<SoLoud::Soloud> SoLoudSoundEngine::s_SLInstance = nullptr;
-SoLoud::Soloud *soloud = nullptr;
+std::unique_ptr<SoLoud::Soloud> soloud = nullptr;
 
 SoLoudSoundEngine::SoLoudSoundEngine()
     : SoundEngine()
 {
-	if (!s_SLInstance)
-	{
-		s_SLInstance = std::make_unique<SoLoud::Soloud>();
-		soloud = s_SLInstance.get();
-	}
+	if (!soloud)
+		soloud = std::make_unique<SoLoud::Soloud>();
 
 	cv::snd_freq.setValue(SoLoud::Soloud::AUTO); // let it be auto-negotiated (the snd_freq callback will adjust if needed, if this is manually set in a config)
 	cv::snd_freq.setDefaultFloat(SoLoud::Soloud::AUTO);
@@ -72,10 +68,9 @@ SoLoudSoundEngine::SoLoudSoundEngine()
 
 SoLoudSoundEngine::~SoLoudSoundEngine()
 {
-	if (m_bReady)
+	if (m_bReady && soloud)
 		soloud->deinit();
-	s_SLInstance.reset();
-	soloud = nullptr;
+	soloud.reset();
 }
 
 void SoLoudSoundEngine::restart()

@@ -23,7 +23,7 @@ class SLFXStream;
 } // namespace SoLoud
 
 // defined in SoLoudSoundEngine
-extern SoLoud::Soloud *soloud;
+extern std::unique_ptr<SoLoud::Soloud> soloud;
 
 class SoLoudSound final : public Sound
 {

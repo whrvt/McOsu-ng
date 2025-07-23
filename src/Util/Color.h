@@ -27,16 +27,17 @@
 using Channel = std::uint8_t;
 
 // argb colors
-struct Color {
+struct Color
+{
 	std::uint32_t v;
 
 	Color() : v(0) {}
 	Color(std::uint32_t val) : v(val) {}
 
 	constexpr Color(Channel alpha, Channel red, Channel green, Channel blue)
+	    : v((static_cast<std::uint32_t>(alpha) << 24) | (static_cast<std::uint32_t>(red) << 16) | (static_cast<std::uint32_t>(green) << 8) |
+	        static_cast<std::uint32_t>(blue))
 	{
-		v = (static_cast<std::uint32_t>(alpha) << 24) | (static_cast<std::uint32_t>(red) << 16) | (static_cast<std::uint32_t>(green) << 8) |
-		    static_cast<std::uint32_t>(blue);
 	}
 
 	// clang-format off
