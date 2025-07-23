@@ -716,6 +716,7 @@ $(abs_top_srcdir)/.clangd: compile_commands.json
 		fi; \
 	else \
 		echo "CompileFlags:" > $@; \
+		echo "    BuiltinHeaders: QueryDriver" >> $@; \
 		echo "    CompilationDatabase: $(shell realpath --relative-to=$(abs_top_srcdir) $(CURDIR))" >> $@; \
 		echo "" >> $@; \
 		echo "InlayHints:" >> $@; \

@@ -1,20 +1,3 @@
-Language: C
-BasedOnStyle: Microsoft
-UseTab: ForIndentation
-IndentWidth: 4
-ColumnLimit: 165
-AllowShortFunctionsOnASingleLine: Inline
-IndentAccessModifiers: false
-AccessModifierOffset: -4
-AllowShortBlocksOnASingleLine: Empty
-AllowShortIfStatementsOnASingleLine: Never
-BraceWrapping:
-  SplitEmptyRecord: false
-  SplitEmptyNamespace: false
-AlignEscapedNewlines: DontAlign
-SortIncludes: Never # Otherwise breakage ensues when headers must be included in a specific order
----
-Language: Cpp
 BasedOnStyle: Microsoft
 UseTab: ForIndentation
 IndentWidth: 4
@@ -35,3 +18,7 @@ BraceWrapping:
 AlignEscapedNewlines: DontAlign
 PackConstructorInitializers: Never
 SortIncludes: Never
+SpaceAfterOperatorKeyword: false
+SpaceBeforeParens: Custom
+SpaceBeforeParensOptions:
+  AfterOverloadedOperator: false
