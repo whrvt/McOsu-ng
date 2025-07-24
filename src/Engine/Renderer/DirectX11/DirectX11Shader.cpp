@@ -199,7 +199,7 @@ void DirectX11Shader::init()
 							}
 						}
 						bindDescLine.name = bufferName;
-						bindDescLine.variableName = bufferVariableName;
+						bindDescLine.variableName = bufferVariableName.toUtf8();
 						{
 							bindDescLine.variableType = bufferVariableType;
 							if (bufferVariableType == "float")
@@ -458,60 +458,60 @@ void DirectX11Shader::disable()
 	}
 }
 
-void DirectX11Shader::setUniform1f(const UString &name, float value)
+void DirectX11Shader::setUniform1f(const std::string_view &name, float value)
 {
 	setUniform(name, &value, sizeof(float) * 1);
 }
 
-void DirectX11Shader::setUniform1fv(const UString &name, int count, float *values)
+void DirectX11Shader::setUniform1fv(const std::string_view &name, int count, float *values)
 {
 	setUniform(name, values, sizeof(float) * 1 * count);
 }
 
-void DirectX11Shader::setUniform1i(const UString &name, int value)
+void DirectX11Shader::setUniform1i(const std::string_view &name, int value)
 {
 	setUniform(name, &value, sizeof(int32_t) * 1);
 }
 
-void DirectX11Shader::setUniform2f(const UString &name, float x, float y)
+void DirectX11Shader::setUniform2f(const std::string_view &name, float x, float y)
 {
 	Vector2 f(x, y);
 	setUniform(name, &f[0], sizeof(float) * 2);
 }
 
-void DirectX11Shader::setUniform2fv(const UString &name, int count, float *vectors)
+void DirectX11Shader::setUniform2fv(const std::string_view &name, int count, float *vectors)
 {
 	setUniform(name, vectors, sizeof(float) * 2 * count);
 }
 
-void DirectX11Shader::setUniform3f(const UString &name, float x, float y, float z)
+void DirectX11Shader::setUniform3f(const std::string_view &name, float x, float y, float z)
 {
 	Vector3 f(x, y, z);
 	setUniform(name, &f[0], sizeof(float) * 3);
 }
 
-void DirectX11Shader::setUniform3fv(const UString &name, int count, float *vectors)
+void DirectX11Shader::setUniform3fv(const std::string_view &name, int count, float *vectors)
 {
 	setUniform(name, vectors, sizeof(float) * 3 * count);
 }
 
-void DirectX11Shader::setUniform4f(const UString &name, float x, float y, float z, float w)
+void DirectX11Shader::setUniform4f(const std::string_view &name, float x, float y, float z, float w)
 {
 	Vector4 f(x, y, z, w);
 	setUniform(name, &f[0], sizeof(float) * 4);
 }
 
-void DirectX11Shader::setUniformMatrix4fv(const UString &name, Matrix4 &matrix)
+void DirectX11Shader::setUniformMatrix4fv(const std::string_view &name, Matrix4 &matrix)
 {
 	setUniformMatrix4fv(name, (float *)matrix.getTranspose());
 }
 
-void DirectX11Shader::setUniformMatrix4fv(const UString &name, float *v)
+void DirectX11Shader::setUniformMatrix4fv(const std::string_view &name, float *v)
 {
 	setUniform(name, v, sizeof(float) * 4 * 4);
 }
 
-void DirectX11Shader::setUniform(const UString &name, void *src, size_t numBytes)
+void DirectX11Shader::setUniform(const std::string_view &name, void *src, size_t numBytes)
 {
 	if (!m_bReady)
 		return;
@@ -577,15 +577,12 @@ void DirectX11Shader::onJustBeforeDraw()
 	}
 }
 
-const DirectX11Shader::CACHE_ENTRY DirectX11Shader::getAndCacheUniformLocation(const UString &name)
+const DirectX11Shader::CACHE_ENTRY DirectX11Shader::getAndCacheUniformLocation(const std::string_view &name)
 {
 	if (!m_bReady)
 		return invalidCacheEntry;
 
-	m_sTempStringBuffer.reserve(name.lengthUtf8());
-	m_sTempStringBuffer.assign(name.toUtf8(), name.lengthUtf8());
-
-	const auto cachedValue = m_uniformLocationCache.find(m_sTempStringBuffer);
+	const auto cachedValue = m_uniformLocationCache.find(name);
 	const bool isCached = (cachedValue != m_uniformLocationCache.end());
 
 	if (isCached)
@@ -617,11 +614,11 @@ const DirectX11Shader::CACHE_ENTRY DirectX11Shader::getAndCacheUniformLocation(c
 
 			if (newCacheEntry.bindIndex > -1 && newCacheEntry.offsetBytes > -1)
 			{
-				m_uniformLocationCache[m_sTempStringBuffer] = newCacheEntry;
+				m_uniformLocationCache[name] = newCacheEntry;
 				return newCacheEntry;
 			}
 			else if (cv::debug_shaders.getBool())
-				debugLog("DirectX11Shader Warning: Can't find uniform {:s}\n", name.toUtf8());
+				debugLog("DirectX11Shader Warning: Can't find uniform {:s}\n", name);
 		}
 	}
 
