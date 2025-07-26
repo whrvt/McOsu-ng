@@ -1142,8 +1142,10 @@ void OsuSongBrowser2::update()
 			m_bSongBrowserRightClickScrolling = false;
 		}
 
-		if (m_bSongBrowserRightClickScrolling)
-			m_songBrowser->scrollToY(-((mouse->getPos().y - 2 - m_songBrowser->getPos().y)/m_songBrowser->getSize().y)*m_songBrowser->getScrollSize().y);
+		if (m_bSongBrowserRightClickScrolling) {
+			const int scrollingTo = -((mouse->getPos().y - 2 - m_songBrowser->getPos().y)/m_songBrowser->getSize().y)*m_songBrowser->getScrollSize().y;
+			m_songBrowser->scrollToY(scrollingTo);
+		}
 	}
 
 	// handle async random beatmap selection

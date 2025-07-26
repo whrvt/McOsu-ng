@@ -55,7 +55,6 @@ void setcwdexe(const char *argv0) noexcept
 } // namespace
 #endif
 
-#include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 
 #include "Engine.h"

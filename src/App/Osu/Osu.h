@@ -93,9 +93,6 @@ public:
 
 	void onButtonChange(MouseButton::Index button, bool down) override;
 
-	void onWheelVertical(int /*delta*/) override {;}
-	void onWheelHorizontal(int /*delta*/) override {;}
-
 	void onResolutionChanged(Vector2 newResolution) override;
 	void onDPIChanged() override;
 
