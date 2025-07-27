@@ -43,8 +43,7 @@ void SDLGLInterface::endScene()
 
 void SDLGLInterface::setVSync(bool vsync)
 {
-	if constexpr (!Env::cfg(OS::WASM))
-		SDL_GL_SetSwapInterval(vsync ? 1 : 0);
+	SDL_GL_SetSwapInterval(vsync ? 1 : 0);
 }
 
 UString SDLGLInterface::getVendor()

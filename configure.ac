@@ -281,7 +281,7 @@ AS_IF([test "x$enable_asan" = "xyes" || test "x$enable_tsan" = "xyes"], [
         CFLAGS="$CFLAGS -fsanitize=undefined,thread"
     ])
 
-    AS_IF([test -z "$LLVMMINGW" && test -n "$enable_clang"],[
+    AS_IF([test -z "$LLVMMINGW" && test "x$enable_clang" = "xyes"],[
         LDFLAGS="$LDFLAGS -static-libasan" CFLAGS="$CFLAGS -static-libasan" CXXFLAGS="$CXXFLAGS -static-libasan"
     ])
     enable_debug="yes"
@@ -703,7 +703,7 @@ MPG123_MIN_VERSION=1.30.0
 MPG123_BUILD_VERSION=ec6ead5fc1102d64efbb6a04865f59454198c3fc # git mirror, latest as of June 16th, 2025 (next version after 1.33.0)
 
 # always build these from source if we want to use them
-AC_SUBST([SOLOUD_VERSION], [1.1.4]) # my fork
+AC_SUBST([SOLOUD_VERSION], [1.1.5]) # my fork
 #AC_SUBST([SOLOUD_VERSION], [0aa5d49e7117a15554c22ed9f060207bc9a34c45])
 AC_SUBST([SOLOUD_PREFIX],[$DEPS_PREFIX])
 AC_SUBST([SOUNDTOUCH_VERSION], [2.4.0])
