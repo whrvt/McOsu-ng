@@ -320,30 +320,37 @@ bool Image::loadRawImage()
 			return false;
 
 		// load entire file
-		McFile file(m_sFilePath);
-		if (!file.canRead())
+		std::vector<char> fileBuffer;
+		size_t fileSize{0};
 		{
-			debugLog("Image Error: Couldn't canRead() file {:s}\n", m_sFilePath);
-			return false;
-		}
-		if (file.getFileSize() < 4)
-		{
-			debugLog("Image Error: FileSize is < 4 in file {:s}\n", m_sFilePath);
-			return false;
+			McFile file(m_sFilePath);
+			if (!file.canRead())
+			{
+				debugLog("Image Error: Couldn't canRead() file {:s}\n", m_sFilePath);
+				return false;
+			}
+			if ((fileSize = file.getFileSize()) < 4)
+			{
+				debugLog("Image Error: FileSize is < 4 in file {:s}\n", m_sFilePath);
+				return false;
+			}
+
+			if (m_bInterrupted) // cancellation point
+				return false;
+
+			fileBuffer = file.takeFileBuffer();
+			if (fileBuffer.empty())
+			{
+				debugLog("Image Error: Couldn't readFile() file {:s}\n", m_sFilePath);
+				return false;
+			}
+			// don't keep the file open
 		}
 
 		if (m_bInterrupted) // cancellation point
 			return false;
 
-		const char *data = file.readFile();
-		if (data == NULL)
-		{
-			debugLog("Image Error: Couldn't readFile() file {:s}\n", m_sFilePath);
-			return false;
-		}
-
-		if (m_bInterrupted) // cancellation point
-			return false;
+		const char *data{fileBuffer.data()};
 
 		// determine file type by magic number (png/jpg)
 		bool isJPEG = false;
@@ -377,7 +384,7 @@ bool Image::loadRawImage()
 				return false;
 			}
 
-			if (tj3DecompressHeader(tjInstance, (unsigned char *)data, file.getFileSize()) < 0)
+			if (tj3DecompressHeader(tjInstance, (unsigned char *)data, fileSize) < 0)
 			{
 				debugLog("Image Error: tj3DecompressHeader failed: {:s} in file {:s}\n", tj3GetErrorStr(tjInstance), m_sFilePath);
 				tj3Destroy(tjInstance);
@@ -412,7 +419,7 @@ bool Image::loadRawImage()
 			m_rawImage.resize(static_cast<long>(m_iWidth * m_iHeight * m_iNumChannels));
 
 			// decompress directly to RGBA
-			if (tj3Decompress8(tjInstance, (unsigned char *)data, file.getFileSize(), &m_rawImage[0], 0, TJPF_RGBA) < 0)
+			if (tj3Decompress8(tjInstance, (unsigned char *)data, fileSize, &m_rawImage[0], 0, TJPF_RGBA) < 0)
 			{
 				debugLog("Image Error: tj3Decompress8 failed: {:s} in file {:s}\n", tj3GetErrorStr(tjInstance), m_sFilePath);
 				tj3Destroy(tjInstance);
@@ -426,7 +433,7 @@ bool Image::loadRawImage()
 			m_type = Image::TYPE::TYPE_PNG;
 
 			// decode png using libpng
-			if (!decodePNGFromMemory((const unsigned char *)data, file.getFileSize(), m_rawImage, m_iWidth, m_iHeight, m_iNumChannels))
+			if (!decodePNGFromMemory((const unsigned char *)data, fileSize, m_rawImage, m_iWidth, m_iHeight, m_iNumChannels))
 			{
 				debugLog("Image Error: PNG decoding failed in file {:s}\n", m_sFilePath);
 				return false;

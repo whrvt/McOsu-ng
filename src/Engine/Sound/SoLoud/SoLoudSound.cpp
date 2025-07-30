@@ -64,29 +64,35 @@ void SoLoudSound::initAsync()
 	}
 
 	// load file into memory first to handle unicode paths properly (windows shenanigans)
-	McFile file(Env::cfg(OS::WINDOWS) ? m_sFilePath : "");
-	const char *fileData = nullptr;
-	size_t fileSize = 0;
+	std::vector<char> fileBuffer;
+	const char *fileData{nullptr};
+	size_t fileSize{0};
 
 	if constexpr (Env::cfg(OS::WINDOWS))
 	{
+		McFile file(m_sFilePath);
+
 		if (!file.canRead())
 		{
-			debugLog("Sound Error: Cannot open file {:s}\n", m_sFilePath.toUtf8());
+			debugLog("Sound Error: Cannot open file {:s}\n", m_sFilePath);
 			return;
 		}
+
 		fileSize = file.getFileSize();
 		if (fileSize == 0)
 		{
-			debugLog("Sound Error: File is empty {:s}\n", m_sFilePath.toUtf8());
+			debugLog("Sound Error: File is empty {:s}\n", m_sFilePath);
 			return;
 		}
-		fileData = file.readFile();
+
+		fileBuffer = file.takeFileBuffer();
+		fileData = fileBuffer.data();
 		if (!fileData)
 		{
-			debugLog("Sound Error: Failed to read file data {:s}\n", m_sFilePath.toUtf8());
+			debugLog("Sound Error: Failed to read file data {:s}\n", m_sFilePath);
 			return;
 		}
+		// file is closed here
 	}
 
 	// create the appropriate audio source based on streaming flag

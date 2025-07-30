@@ -426,39 +426,16 @@ private:
 	float m_fAnim;
 };
 
-
-
-OsuOptionsMenu::OsuOptionsMenu() : OsuScreenBackable()
+OsuOptionsMenu::OsuOptionsMenu()
+    : OsuScreenBackable()
 {
-	
-
 	m_bFullscreen = false;
 	m_fAnimation = 0.0f;
 
-	// convar refs
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 	// convar callbacks
-	cv::osu::skin_use_skin_hitsounds.setCallback( SA::MakeDelegate<&OsuOptionsMenu::onUseSkinsSoundSamplesChange>(this) );
-	cv::osu::options_high_quality_sliders.setCallback( SA::MakeDelegate<&OsuOptionsMenu::onHighQualitySlidersConVarChange>(this) );
-	cv::osu::mania_keylayout_wizard.setCallback( SA::MakeDelegate<&OsuOptionsMenu::onKeyBindingManiaPressedInt>(this) );
+	cv::osu::skin_use_skin_hitsounds.setCallback(SA::MakeDelegate<&OsuOptionsMenu::onUseSkinsSoundSamplesChange>(this));
+	cv::osu::options_high_quality_sliders.setCallback(SA::MakeDelegate<&OsuOptionsMenu::onHighQualitySlidersConVarChange>(this));
+	cv::osu::mania_keylayout_wizard.setCallback(SA::MakeDelegate<&OsuOptionsMenu::onKeyBindingManiaPressedInt>(this));
 
 	osu->getNotificationOverlay()->addKeyListener(this);
 
