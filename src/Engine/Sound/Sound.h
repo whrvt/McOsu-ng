@@ -98,7 +98,7 @@ public:
 	const T* as() const { return isType<T>() ? static_cast<const T*>(this) : nullptr; }
 protected:
 	void init() override = 0;
-	void initAsync() override = 0;
+	void initAsync() override;
 	void destroy() override = 0;
 
 	bool m_bStream;

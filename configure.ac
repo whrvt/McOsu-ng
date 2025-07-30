@@ -311,8 +311,8 @@ AS_IF([test "x$enable_clang" = "xyes"], [
     MCOSU_CXXFLAGS="$MCOSU_CXXFLAGS -fimplicit-constexpr"
 ])
 
-AS_IF([test "$host_cpu" = "x86_64" && test -z "$CLANG"], [
-    # this is only possible on x86_64, and not clang
+AS_IF([test "$host_cpu" = "x86_64" && test -z "$LLVMMINGW"], [
+    # this is only possible on x86_64, and not llvm-mingw
     # faster tls access
     CFLAGS="$CFLAGS -mtls-dialect=gnu2"
     CXXFLAGS="$CXXFLAGS -mtls-dialect=gnu2"
@@ -578,8 +578,8 @@ AS_IF([test "x$enable_lto" != "xno"], [
     ])
 ])
 
-MCOSU_CPPFLAGS="$MCOSU_CPPFLAGS -DGLM_ENABLE_EXPERIMENTAL"
-MCOSU_CXXFLAGS="$MCOSU_CXXFLAGS -Wall -Wunused-parameter -Wno-sign-compare -Wdeprecated-declarations -pthread"
+MCOSU_CPPFLAGS="$MCOSU_CPPFLAGS -DGLM_ENABLE_EXPERIMENTAL -DGLM_FORCE_INLINE"
+MCOSU_CXXFLAGS="$MCOSU_CXXFLAGS -Wall -Wextra -Wunused-parameter -Wno-sign-compare -Wdeprecated-declarations -pthread"
 MCOSU_LDFLAGS="$MCOSU_LDFLAGS -pthread"
 AC_SUBST([MCOSU_CPPFLAGS])
 AC_SUBST([MCOSU_CXXFLAGS])

@@ -6538,10 +6538,10 @@ else case e in #(
 esac
 fi
 
-if test "$host_cpu" = "x86_64" && test -z "$CLANG"
+if test "$host_cpu" = "x86_64" && test -z "$LLVMMINGW"
 then :
 
-    # this is only possible on x86_64, and not clang
+    # this is only possible on x86_64, and not llvm-mingw
     # faster tls access
     CFLAGS="$CFLAGS -mtls-dialect=gnu2"
     CXXFLAGS="$CXXFLAGS -mtls-dialect=gnu2"
@@ -8799,8 +8799,8 @@ fi
 
 fi
 
-MCOSU_CPPFLAGS="$MCOSU_CPPFLAGS -DGLM_ENABLE_EXPERIMENTAL"
-MCOSU_CXXFLAGS="$MCOSU_CXXFLAGS -Wall -Wunused-parameter -Wno-sign-compare -Wdeprecated-declarations -pthread"
+MCOSU_CPPFLAGS="$MCOSU_CPPFLAGS -DGLM_ENABLE_EXPERIMENTAL -DGLM_FORCE_INLINE"
+MCOSU_CXXFLAGS="$MCOSU_CXXFLAGS -Wall -Wextra -Wunused-parameter -Wno-sign-compare -Wdeprecated-declarations -pthread"
 MCOSU_LDFLAGS="$MCOSU_LDFLAGS -pthread"
 
 
