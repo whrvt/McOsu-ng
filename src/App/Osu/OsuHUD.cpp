@@ -2295,135 +2295,143 @@ void OsuHUD::drawProgressBar(float percent, bool waiting)
 	g->popTransform();
 }
 
-void OsuHUD::drawStatistics(int misses, int sliderbreaks, int maxPossibleCombo, float liveStars, float totalStars, int bpm, float curBPM, float ar, float cs, float od, float hp, int nps, int nd, int ur, float pp, float ppfc, float hitWindow300, int hitdeltaMin, int hitdeltaMax)
+void OsuHUD::drawStatistics(int misses,
+                            int sliderbreaks,
+                            int maxPossibleCombo,
+                            float liveStars,
+                            float totalStars,
+                            int bpm,
+                            float curBPM,
+                            float ar,
+                            float cs,
+                            float od,
+                            float hp,
+                            int nps,
+                            int nd,
+                            int ur,
+                            float pp,
+                            float ppfc,
+                            float hitWindow300,
+                            int hitdeltaMin,
+                            int hitdeltaMax)
 {
-    McFont *font = osu->getSubTitleFont();
-    const float offsetScale = Osu::getImageScale(Vector2(1.0f, 1.0f), 1.0f);
-    const float scale = cv::osu::hud_statistics_scale.getFloat() * cv::osu::hud_scale.getFloat();
-    const float yDelta = (font->getHeight() + 10) * cv::osu::hud_statistics_spacing_scale.getFloat();
+	McFont *font = osu->getSubTitleFont();
+	const float offsetScale = Osu::getImageScale(Vector2(1.0f, 1.0f), 1.0f);
+	const float scale = cv::osu::hud_statistics_scale.getFloat() * cv::osu::hud_scale.getFloat();
+	const float yDelta = (font->getHeight() + 10) * cv::osu::hud_statistics_spacing_scale.getFloat();
 
 	static constexpr Color shadowColor = rgb(0, 0, 0);
 	static constexpr Color textColor = rgb(255, 255, 255);
 
-    font->beginBatch();
+	font->beginBatch();
 
-    g->pushTransform();
-    {
-        g->scale(scale, scale);
-        g->translate(cv::osu::hud_statistics_offset_x.getInt(),
-                    (int)(font->getHeight() * scale) + (cv::osu::hud_statistics_offset_y.getInt() * offsetScale));
+	g->pushTransform();
+	{
+		g->scale(scale, scale);
+		g->translate(cv::osu::hud_statistics_offset_x.getInt(), (int)(font->getHeight() * scale) + (cv::osu::hud_statistics_offset_y.getInt() * offsetScale));
 
-        float currentY = 0;
+		float currentY = 0;
 
-        auto addStatistic = [&](bool shouldDraw, const UString &text, float xOffset, float yOffset)
-        {
-            if (!shouldDraw || text.length() < 1)
-                return;
+		auto addStatistic = [&](const UString &text, float xOffset, float yOffset) {
+			if (text.length() < 1)
+				return;
 
-            const Vector3 shadowPos(xOffset, currentY + yOffset, 0.25f);
-            font->addToBatch(text, shadowPos, shadowColor);
+			const Vector3 shadowPos(xOffset, currentY + yOffset, 0.25f);
+			font->addToBatch(text, shadowPos, shadowColor);
 
-            const Vector3 textPos(xOffset - 2, currentY + yOffset - 2, 0.325f);
-            font->addToBatch(text, textPos, textColor);
+			const Vector3 textPos(xOffset - 2, currentY + yOffset - 2, 0.325f);
+			font->addToBatch(text, textPos, textColor);
 
-            currentY += yDelta;
-        };
+			currentY += yDelta;
+		};
 
-		addStatistic(cv::osu::draw_statistics_pp.getBool(),
-					 (cv::osu::hud_statistics_pp_decimal_places.getInt() < 1 ? UString::fmt("{:d}pp", (int)std::round(pp)) : (cv::osu::hud_statistics_pp_decimal_places.getInt() > 1 ? UString::fmt("{:.2f}pp", pp) : UString::fmt("{:.1f}pp", pp))),
-					 cv::osu::hud_statistics_pp_offset_x.getInt(),
-					 cv::osu::hud_statistics_pp_offset_y.getInt());
+		if (cv::osu::draw_statistics_pp.getBool())
+			addStatistic((cv::osu::hud_statistics_pp_decimal_places.getInt() < 1
+			                  ? UString::fmt("{:d}pp", (int)std::round(pp))
+			                  : (cv::osu::hud_statistics_pp_decimal_places.getInt() > 1 ? UString::fmt("{:.2f}pp", pp) : UString::fmt("{:.1f}pp", pp))),
+			             cv::osu::hud_statistics_pp_offset_x.getInt(),
+			             cv::osu::hud_statistics_pp_offset_y.getInt());
 
-		addStatistic(cv::osu::draw_statistics_perfectpp.getBool(),
-					 (cv::osu::hud_statistics_pp_decimal_places.getInt() < 1 ? UString::fmt("SS: {:d}pp", (int)std::round(ppfc)) : (cv::osu::hud_statistics_pp_decimal_places.getInt() > 1 ? UString::fmt("SS: {:.2f}pp", ppfc) : UString::fmt("SS: {:.1f}pp", ppfc))),
-					 cv::osu::hud_statistics_perfectpp_offset_x.getInt(),
-					 cv::osu::hud_statistics_perfectpp_offset_y.getInt());
+		if (cv::osu::draw_statistics_perfectpp.getBool())
+			addStatistic((cv::osu::hud_statistics_pp_decimal_places.getInt() < 1
+			                  ? UString::fmt("SS: {:d}pp", (int)std::round(ppfc))
+			                  : (cv::osu::hud_statistics_pp_decimal_places.getInt() > 1 ? UString::fmt("SS: {:.2f}pp", ppfc) : UString::fmt("SS: {:.1f}pp", ppfc))),
+			             cv::osu::hud_statistics_perfectpp_offset_x.getInt(),
+			             cv::osu::hud_statistics_perfectpp_offset_y.getInt());
 
-		addStatistic(cv::osu::draw_statistics_misses.getBool(),
-					 UString::fmt("Miss: {:d}", misses),
-					 cv::osu::hud_statistics_misses_offset_x.getInt(),
-					 cv::osu::hud_statistics_misses_offset_y.getInt());
+		if (cv::osu::draw_statistics_misses.getBool())
+			addStatistic(UString::fmt("Miss: {:d}", misses), cv::osu::hud_statistics_misses_offset_x.getInt(), cv::osu::hud_statistics_misses_offset_y.getInt());
 
-		addStatistic(cv::osu::draw_statistics_sliderbreaks.getBool(),
-					 UString::fmt("SBrk: {:d}", sliderbreaks),
-					 cv::osu::hud_statistics_sliderbreaks_offset_x.getInt(),
-					 cv::osu::hud_statistics_sliderbreaks_offset_y.getInt());
+		if (cv::osu::draw_statistics_sliderbreaks.getBool())
+			addStatistic(UString::fmt("SBrk: {:d}", sliderbreaks),
+			             cv::osu::hud_statistics_sliderbreaks_offset_x.getInt(),
+			             cv::osu::hud_statistics_sliderbreaks_offset_y.getInt());
 
-		addStatistic(cv::osu::draw_statistics_maxpossiblecombo.getBool(),
-					 UString::fmt("FC: {:d}x", maxPossibleCombo),
-					 cv::osu::hud_statistics_maxpossiblecombo_offset_x.getInt(),
-					 cv::osu::hud_statistics_maxpossiblecombo_offset_y.getInt());
+		if (cv::osu::draw_statistics_maxpossiblecombo.getBool())
+			addStatistic(UString::fmt("FC: {:d}x", maxPossibleCombo),
+			             cv::osu::hud_statistics_maxpossiblecombo_offset_x.getInt(),
+			             cv::osu::hud_statistics_maxpossiblecombo_offset_y.getInt());
 
-		addStatistic(cv::osu::draw_statistics_livestars.getBool(),
-					 UString::fmt("{:.3g}***", liveStars),
-					 cv::osu::hud_statistics_livestars_offset_x.getInt(),
-					 cv::osu::hud_statistics_livestars_offset_y.getInt());
+		if (cv::osu::draw_statistics_livestars.getBool())
+			addStatistic(
+			    UString::fmt("{:.3g}***", liveStars), cv::osu::hud_statistics_livestars_offset_x.getInt(), cv::osu::hud_statistics_livestars_offset_y.getInt());
 
-		addStatistic(cv::osu::draw_statistics_totalstars.getBool(),
-					 UString::fmt("{:.3g}*", totalStars),
-					 cv::osu::hud_statistics_totalstars_offset_x.getInt(),
-					 cv::osu::hud_statistics_totalstars_offset_y.getInt());
+		if (cv::osu::draw_statistics_totalstars.getBool())
+			addStatistic(
+			    UString::fmt("{:.3g}*", totalStars), cv::osu::hud_statistics_totalstars_offset_x.getInt(), cv::osu::hud_statistics_totalstars_offset_y.getInt());
 
-		addStatistic(cv::osu::draw_statistics_bpm.getBool(),
-					 UString::fmt("BPM: {:d}", bpm),
-					 cv::osu::hud_statistics_bpm_offset_x.getInt(),
-					 cv::osu::hud_statistics_bpm_offset_y.getInt());
+		if (cv::osu::draw_statistics_bpm.getBool())
+			addStatistic(UString::fmt("BPM: {:d}", bpm), cv::osu::hud_statistics_bpm_offset_x.getInt(), cv::osu::hud_statistics_bpm_offset_y.getInt());
 
 		if constexpr (Env::cfg(AUD::SOLOUD))
-		if (soundEngine->getTypeId() == SoundEngine::SOLOUD)
-		addStatistic(cv::osu::draw_statistics_detected_bpm.getBool(),
-					 UString::fmt("Cur. BPM: {:d}", curBPM > 0.0f ? static_cast<int>(curBPM) : bpm),
-					 cv::osu::hud_statistics_detected_bpm_offset_x.getInt(),
-					 cv::osu::hud_statistics_detected_bpm_offset_y.getInt());
+			if (soundEngine->getTypeId() == SoundEngine::SOLOUD)
+				if (cv::osu::draw_statistics_detected_bpm.getBool())
+					addStatistic(UString::fmt("Cur. BPM: {:d}", curBPM > 0.0f ? static_cast<int>(curBPM) : bpm),
+					             cv::osu::hud_statistics_detected_bpm_offset_x.getInt(),
+					             cv::osu::hud_statistics_detected_bpm_offset_y.getInt());
 
-		ar = std::round(ar * 100.0f) / 100.0f;
-		addStatistic(cv::osu::draw_statistics_ar.getBool(),
-					 UString::fmt("AR: {:g}", ar),
-					 cv::osu::hud_statistics_ar_offset_x.getInt(),
-					 cv::osu::hud_statistics_ar_offset_y.getInt());
+		if (cv::osu::draw_statistics_ar.getBool())
+		{
+			ar = std::round(ar * 100.0f) / 100.0f;
+			addStatistic(UString::fmt("AR: {:g}", ar), cv::osu::hud_statistics_ar_offset_x.getInt(), cv::osu::hud_statistics_ar_offset_y.getInt());
+		}
 
-		cs = std::round(cs * 100.0f) / 100.0f;
-		addStatistic(cv::osu::draw_statistics_cs.getBool(),
-					 UString::fmt("CS: {:g}", cs),
-					 cv::osu::hud_statistics_cs_offset_x.getInt(),
-					 cv::osu::hud_statistics_cs_offset_y.getInt());
+		if (cv::osu::draw_statistics_cs.getBool())
+		{
+			cs = std::round(cs * 100.0f) / 100.0f;
+			addStatistic(UString::fmt("CS: {:g}", cs), cv::osu::hud_statistics_cs_offset_x.getInt(), cv::osu::hud_statistics_cs_offset_y.getInt());
+		}
 
-		od = std::round(od * 100.0f) / 100.0f;
-		addStatistic(cv::osu::draw_statistics_od.getBool(),
-					 UString::fmt("OD: {:g}", od),
-					 cv::osu::hud_statistics_od_offset_x.getInt(),
-					 cv::osu::hud_statistics_od_offset_y.getInt());
+		if (cv::osu::draw_statistics_od.getBool())
+		{
+			od = std::round(od * 100.0f) / 100.0f;
+			addStatistic(UString::fmt("OD: {:g}", od), cv::osu::hud_statistics_od_offset_x.getInt(), cv::osu::hud_statistics_od_offset_y.getInt());
+		}
 
-		hp = std::round(hp * 100.0f) / 100.0f;
-		addStatistic(cv::osu::draw_statistics_hp.getBool(),
-					 UString::fmt("HP: {:g}", hp),
-					 cv::osu::hud_statistics_hp_offset_x.getInt(),
-					 cv::osu::hud_statistics_hp_offset_y.getInt());
+		if (cv::osu::draw_statistics_hp.getBool())
+		{
+			hp = std::round(hp * 100.0f) / 100.0f;
+			addStatistic(UString::fmt("HP: {:g}", hp), cv::osu::hud_statistics_hp_offset_x.getInt(), cv::osu::hud_statistics_hp_offset_y.getInt());
+		}
 
-		addStatistic(cv::osu::draw_statistics_hitwindow300.getBool(),
-					 UString::fmt("300: +-{:d}ms", (int)hitWindow300),
-					 cv::osu::hud_statistics_hitwindow300_offset_x.getInt(),
-					 cv::osu::hud_statistics_hitwindow300_offset_y.getInt());
+		if (cv::osu::draw_statistics_hitwindow300.getBool())
+			addStatistic(UString::fmt("300: +-{:d}ms", (int)hitWindow300),
+			             cv::osu::hud_statistics_hitwindow300_offset_x.getInt(),
+			             cv::osu::hud_statistics_hitwindow300_offset_y.getInt());
 
-		addStatistic(cv::osu::draw_statistics_nps.getBool(),
-					 UString::fmt("NPS: {:d}", nps),
-					 cv::osu::hud_statistics_nps_offset_x.getInt(),
-					 cv::osu::hud_statistics_nps_offset_y.getInt());
+		if (cv::osu::draw_statistics_nps.getBool())
+			addStatistic(UString::fmt("NPS: {:d}", nps), cv::osu::hud_statistics_nps_offset_x.getInt(), cv::osu::hud_statistics_nps_offset_y.getInt());
 
-		addStatistic(cv::osu::draw_statistics_nd.getBool(),
-					 UString::fmt("ND: {:d}", nd),
-					 cv::osu::hud_statistics_nd_offset_x.getInt(),
-					 cv::osu::hud_statistics_nd_offset_y.getInt());
+		if (cv::osu::draw_statistics_nd.getBool())
+			addStatistic(UString::fmt("ND: {:d}", nd), cv::osu::hud_statistics_nd_offset_x.getInt(), cv::osu::hud_statistics_nd_offset_y.getInt());
 
-		addStatistic(cv::osu::draw_statistics_ur.getBool(),
-					 UString::fmt("UR: {:d}", ur),
-					 cv::osu::hud_statistics_ur_offset_x.getInt(),
-					 cv::osu::hud_statistics_ur_offset_y.getInt());
+		if (cv::osu::draw_statistics_ur.getBool())
+			addStatistic(UString::fmt("UR: {:d}", ur), cv::osu::hud_statistics_ur_offset_x.getInt(), cv::osu::hud_statistics_ur_offset_y.getInt());
 
-		addStatistic(cv::osu::draw_statistics_hitdelta.getBool(),
-					 UString::fmt("-{:d}ms +{:d}ms", std::abs(hitdeltaMin), hitdeltaMax),
-					 cv::osu::hud_statistics_hitdelta_offset_x.getInt(),
-					 cv::osu::hud_statistics_hitdelta_offset_y.getInt());
+		if (cv::osu::draw_statistics_hitdelta.getBool())
+			addStatistic(UString::fmt("-{:d}ms +{:d}ms", std::abs(hitdeltaMin), hitdeltaMax),
+			             cv::osu::hud_statistics_hitdelta_offset_x.getInt(),
+			             cv::osu::hud_statistics_hitdelta_offset_y.getInt());
 	}
 	font->flushBatch();
 	g->popTransform();
