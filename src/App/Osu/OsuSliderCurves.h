@@ -77,7 +77,7 @@ public:
 
 	virtual Vector2 pointAt(float t) = 0;
 
-	[[nodiscard]] inline const int getNumPoints() const {return m_points.size();}
+	[[nodiscard]] inline int getNumPoints() const {return m_points.size();}
 
 	[[nodiscard]] inline const std::vector<Vector2> &getCurvePoints() const {return m_points;}
 	[[nodiscard]] inline const std::vector<float> &getCurveDistances() const {return m_curveDistances;}
@@ -179,7 +179,7 @@ public:
 private:
 	Vector2 intersect(Vector2 a, Vector2 ta, Vector2 b, Vector2 tb);
 
-	inline bool const isIn(float a, float b, float c) {return ((b > a && b < c) || (b < a && b > c));}
+	static forceinline bool isIn(float a, float b, float c) {return ((b > a && b < c) || (b < a && b > c));}
 
 	Vector2 m_vCircleCenter;
 	Vector2 m_vOriginalCircleCenter;

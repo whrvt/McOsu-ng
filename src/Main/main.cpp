@@ -27,11 +27,13 @@
 #define nocbinline
 #define SDL_MAIN_USE_CALLBACKS // this enables the use of SDL_AppInit/AppEvent/AppIterate instead of a traditional mainloop, needed for wasm
                                // (works on desktop too, but it's not necessary)
+#include <SDL3/SDL_main.h>
 namespace
 {
 void setcwdexe(const char * /*unused*/) {}
 } // namespace
 #else
+#include <SDL3/SDL_main.h>
 #define MAIN_FUNC int main(int argc, char *argv[])
 #define nocbinline forceinline
 #include <filesystem>
@@ -54,8 +56,6 @@ void setcwdexe(const char *argv0) noexcept
 }
 } // namespace
 #endif
-
-#include <SDL3/SDL_main.h>
 
 #include "Engine.h"
 #include "Environment.h"
@@ -335,6 +335,12 @@ SDL_AppResult SDLMain::initialize()
 	return SDL_APP_CONTINUE;
 }
 
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunknown-pragmas"
+#pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
+#endif
+
 static_assert(SDL_EVENT_WINDOW_FIRST == SDL_EVENT_WINDOW_SHOWN);
 static_assert(SDL_EVENT_WINDOW_LAST == SDL_EVENT_WINDOW_HDR_STATE_CHANGED);
 
@@ -493,6 +499,10 @@ nocbinline SDL_AppResult SDLMain::handleEvent(SDL_Event *event)
 
 	return SDL_APP_CONTINUE;
 }
+
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 
 nocbinline SDL_AppResult SDLMain::iterate()
 {

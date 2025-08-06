@@ -316,11 +316,6 @@ bool McFile::openForReading()
 	// validate file size
 	if (m_fileSize == 0) // empty file is valid
 		return true;
-	else if (m_fileSize < 0)
-	{
-		debugLog("File Error: FileSize is < 0\n");
-		return false;
-	}
 	else if (std::cmp_greater(m_fileSize, 1024 * 1024 * cv::file_size_max.getInt())) // size sanity check
 	{
 		debugLog("File Error: FileSize of {:s} is > {} MB!!!\n", m_filePath, cv::file_size_max.getInt());

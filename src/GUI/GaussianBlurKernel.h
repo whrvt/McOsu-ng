@@ -20,8 +20,8 @@ public:
 	void rebuild(){release();build();}
 	void release();
 
-	inline const int getKernelSize() {return m_iKernelSize;}
-	inline const float getRadius() {return m_fRadius;}
+	[[nodiscard]] inline int getKernelSize() const {return m_iKernelSize;}
+	[[nodiscard]] inline float getRadius() const {return m_fRadius;}
 
 	inline float* getKernel() {return &m_kernel.front();}
 	inline float* getOffsetsHorizontal() {return &m_offsetsHorizontal.front();}
