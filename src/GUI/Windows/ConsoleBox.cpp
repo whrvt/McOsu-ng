@@ -153,6 +153,8 @@ ConsoleBox::ConsoleBox() : WindowUIElement(0, 0, 0, 0, "")
 		m_suggestion->setVisible(false);
 	}
 	m_fSuggestionAnimation = 0;
+	m_fSuggestionY = 0.0f;
+	m_fLogTime = 0.0f;
 	m_bSuggestionAnimateIn = false;
 	m_bSuggestionAnimateOut = false;
 

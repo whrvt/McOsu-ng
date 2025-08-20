@@ -355,6 +355,7 @@ __EOF__
     CXX="$PWD/build/$target-$CXX"
     ac_tool_prefix=
     CMAKE_SYSTEM_NAME="Linux"
+    CMAKE_GEN="Ninja"
     SYSNAME="linux"
     DLLEXT=".so"
     LIBPREFIX="lib"
@@ -371,6 +372,7 @@ PKG_CONFIG_LIBDIR="/usr/$host_cpu-w64-mingw32/lib/pkgconfig" PKG_CONFIG_SYSTEM_I
 PKG_CONFIG_SYSTEM_LIBRARY_PATH="/usr/$host_cpu-w64-mingw32/lib" PKG_CONFIG_PATH="$PWD/build/deps/lib/pkgconfig:$PWD/build/deps/lib64/pkgconfig" \
 $PKGCONF --personality=$host_cpu-w64-mingw32 $PKGTYPE "\$@"
 __EOF__
+        CMAKE_GEN="Ninja"
     ], [
         # WIP: building in msys2
         install -Dm755 /dev/stdin $PWD/build/pkg-config <<__EOF__
@@ -378,6 +380,8 @@ __EOF__
 PKG_CONFIG_PATH="$PWD/build/deps/lib/pkgconfig:$PWD/build/deps/lib64/pkgconfig" \
 $host_cpu-w64-mingw32-pkg-config $PKGTYPE "\$@"
 __EOF__
+        CMAKE_GEN="Unix Makefiles"
+        MSYS2_BUILD="yes"
     ])
 
     CMAKE_SYSTEM_NAME="Windows"
@@ -415,9 +419,12 @@ __EOF__
 AC_SUBST([WINPTHREAD_LDFLAGS])
 
 PKG_CONFIG="$PWD/build/pkg-config"
+CMAKEPAROPT="--parallel $CPU_COUNT"
 AC_SUBST([PKG_CONFIG])
 AC_SUBST([CMAKE_SYSTEM_NAME])
 AC_SUBST([CMAKERCOPT])
+AC_SUBST([CMAKEPAROPT])
+AC_SUBST([CMAKE_GEN])
 AC_SUBST([SYSNAME])
 AC_SUBST([DLLEXT])
 AC_SUBST([LIBPREFIX])
@@ -556,11 +563,13 @@ AS_IF([test "x$enable_lto" != "xno"], [
             CXXFLAGS="$CXXFLAGS -flto=thin -fno-fat-lto-objects -fwhole-program-vtables"
             CFLAGS="$CFLAGS -flto=thin -fno-fat-lto-objects -fwhole-program-vtables"
             LDFLAGS="$LDFLAGS -flto=thin -fno-fat-lto-objects -fwhole-program-vtables"
-            mkdir -p $PWD/.ltocache-clang
-            AX_CHECK_LINK_FLAG([-Wl,--thinlto-cache-dir=$PWD/.ltocache-clang], [
-                CXXFLAGS="$CXXFLAGS -Wl,--thinlto-cache-dir=$PWD/.ltocache-clang"
-                CFLAGS="$CFLAGS -Wl,--thinlto-cache-dir=$PWD/.ltocache-clang"
-                LDFLAGS="$LDFLAGS -Wl,--thinlto-cache-dir=$PWD/.ltocache-clang"
+            AS_IF([test -z "$MSYS2_BUILD"], [
+                mkdir -p $PWD/.ltocache-clang
+                AX_CHECK_LINK_FLAG([-Wl,--thinlto-cache-dir=$PWD/.ltocache-clang], [
+                    CXXFLAGS="$CXXFLAGS -Wl,--thinlto-cache-dir=$PWD/.ltocache-clang"
+                    CFLAGS="$CFLAGS -Wl,--thinlto-cache-dir=$PWD/.ltocache-clang"
+                    LDFLAGS="$LDFLAGS -Wl,--thinlto-cache-dir=$PWD/.ltocache-clang"
+                ])
             ])
         ])], [
         # gcc
@@ -568,11 +577,13 @@ AS_IF([test "x$enable_lto" != "xno"], [
             CXXFLAGS="$CXXFLAGS -flto=auto -ffat-lto-objects -fuse-linker-plugin -fdevirtualize-at-ltrans"
             CFLAGS="$CFLAGS -flto=auto -ffat-lto-objects -fuse-linker-plugin -fdevirtualize-at-ltrans"
             LDFLAGS="$LDFLAGS -flto=auto -ffat-lto-objects -fuse-linker-plugin -fdevirtualize-at-ltrans"
-            mkdir -p $PWD/.ltocache-gcc
-            AX_CHECK_LINK_FLAG([-flto-incremental=$PWD/.ltocache-gcc], [
-                CXXFLAGS="$CXXFLAGS -flto-incremental=$PWD/.ltocache-gcc"
-                CFLAGS="$CFLAGS -flto-incremental=$PWD/.ltocache-gcc"
-                LDFLAGS="$LDFLAGS -flto-incremental=$PWD/.ltocache-gcc"
+            AS_IF([test -z "$MSYS2_BUILD"], [ 
+                mkdir -p $PWD/.ltocache-gcc
+                AX_CHECK_LINK_FLAG([-flto-incremental=$PWD/.ltocache-gcc], [
+                    CXXFLAGS="$CXXFLAGS -flto-incremental=$PWD/.ltocache-gcc"
+                    CFLAGS="$CFLAGS -flto-incremental=$PWD/.ltocache-gcc"
+                    LDFLAGS="$LDFLAGS -flto-incremental=$PWD/.ltocache-gcc"
+                ])
             ])
         ])
     ])
@@ -685,8 +696,8 @@ AS_IF([test "$renderer" != "dx11"], [
     ])
 ])
 
-SDL3_MIN_VERSION=3.4.0 # needs SDL_SetRelativeMouseTransform, not in any current (3.2.x) releases
-SDL3_BUILD_VERSION=90a023007fd8aef3e7e61ab6051c4ab8e36639e3 # git
+SDL3_MIN_VERSION=3.2.20
+SDL3_BUILD_VERSION=5f77da3a5025b92500c32d0dc7962d22fc79a8c7 # git
 FREETYPE2_MIN_VERSION=2.10.0
 FREETYPE2_BUILD_VERSION=2.13.3
 LIBJPEG_MIN_VERSION=3.0.0
@@ -694,17 +705,17 @@ LIBJPEG_BUILD_VERSION=3.1.1
 LIBPNG_MIN_VERSION=1.6.38
 LIBPNG_BUILD_VERSION=1.6.50
 ZLIB_MIN_VERSION=1.3
-ZLIB_BUILD_VERSION=2.2.4 # zlib-ng
+ZLIB_BUILD_VERSION=2.2.5 # zlib-ng
 BZIP2_MIN_VERSION=1.0.8
 BZIP2_BUILD_VERSION=1.0.8
 FMT_MIN_VERSION=11.0.0
-FMT_BUILD_VERSION=ae8cb1e8e6b788aaaaf45db829a37e319ee0c169
+FMT_BUILD_VERSION=72c82296d605ab8b3a415cab0e7c65edccbc7503
 MPG123_MIN_VERSION=1.30.0
 MPG123_BUILD_VERSION=ae929c017ba2c22ed66256e9f4ad7b2543e898f0 # git mirror, latest as of June 16th, 2025 (next version after 1.33.0)
 
 # always build these from source if we want to use them
-AC_SUBST([SOLOUD_VERSION], [1.1.5]) # my fork
-#AC_SUBST([SOLOUD_VERSION], [0aa5d49e7117a15554c22ed9f060207bc9a34c45])
+#AC_SUBST([SOLOUD_VERSION], [1.1.5]) # my fork
+AC_SUBST([SOLOUD_VERSION], [e45de11108eb9926e2d2c44169d248b80bda892f])
 AC_SUBST([SOLOUD_PREFIX],[$DEPS_PREFIX])
 AC_SUBST([SOUNDTOUCH_VERSION], [2.4.0])
 AC_SUBST([SOUNDTOUCH_PREFIX],[$DEPS_PREFIX])
@@ -715,7 +726,7 @@ AC_SUBST([MIMALLOC_PREFIX],[$DEPS_PREFIX])
 
 AC_SUBST([FFMPEG_VERSION], [7.1]) # pre-built, used for soloud
 
-AC_SUBST([BASS_VERSION], [20250721]) # just mark the date so we can invalidate the cache if necessary
+AC_SUBST([BASS_VERSION], [20250813]) # just mark the date so we can invalidate the cache if necessary
 
 # TODO: add all deps and transitive deps (fun!)
 AS_IF([test "x$enable_system_deps" != "xno"], [
