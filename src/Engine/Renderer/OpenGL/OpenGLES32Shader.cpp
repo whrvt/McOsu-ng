@@ -80,6 +80,10 @@ void OpenGLES32Shader::enable()
 {
 	if (!m_bReady) return;
 
+	int currentProgram = OpenGLStateCache::getInstance().getCurrentProgram();
+	if (currentProgram == m_iProgram) // already active
+		return;
+
 	// use the state cache instead of querying gl directly
 	m_iProgramBackup = OpenGLStateCache::getInstance().getCurrentProgram();
 	glUseProgram(m_iProgram);

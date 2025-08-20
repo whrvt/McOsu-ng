@@ -31,7 +31,8 @@ OpenGLShader::OpenGLShader(const UString &shader, bool source)
 	m_iProgramBackup = 0;
 }
 
-OpenGLShader::OpenGLShader(const UString &vertexShader, const UString &fragmentShader, bool source) : Shader()
+OpenGLShader::OpenGLShader(const UString &vertexShader, const UString &fragmentShader, bool source)
+    : Shader()
 {
 	m_bIsShader2 = false;
 
@@ -103,9 +104,12 @@ void OpenGLShader::enable()
 	if (!m_bReady)
 		return;
 
-	// use the state cache instead of querying gl directly
-	m_iProgramBackup = OpenGLStateCache::getInstance().getCurrentProgram();
-	glUseProgramObjectARB(m_iProgram);
+	int currentProgram = OpenGLStateCache::getInstance().getCurrentProgram();
+	if (currentProgram == m_iProgram) // already active
+		return;
+
+	m_iProgramBackup = currentProgram;
+	glUseProgram(m_iProgram);
 
 	// update cache
 	OpenGLStateCache::getInstance().setCurrentProgram(m_iProgram);
@@ -116,7 +120,7 @@ void OpenGLShader::disable()
 	if (!m_bReady)
 		return;
 
-	glUseProgramObjectARB(m_iProgramBackup);
+	glUseProgram(m_iProgramBackup);
 
 	// update cache
 	OpenGLStateCache::getInstance().setCurrentProgram(m_iProgramBackup);
