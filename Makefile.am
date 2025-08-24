@@ -451,7 +451,7 @@ $(DEPS_PREFIX)/libjpeg-$(LIBJPEG_VERSION).built:
 endif # BUILD_LIBJPEG
 
 if BUILD_GLM
-GLM_CFLAGS += -I$(DEPS_PREFIX)/include
+GLM_CFLAGS += -I$(DEPS_PREFIX)/include -fms-extensions -DGLM_ENABLE_EXPERIMENTAL -DGLM_FORCE_INLINE -DGLM_ENABLE_LANG_EXTENSIONS -DGLM_ENABLE_CXX_20
 $(DEPS_PREFIX)/glm-$(GLM_VERSION).built: $(DEPS_CACHE)/glm-$(GLM_VERSION).source
 	rm -rf $(DEPS_PREFIX)/glm
 	$(MKDIR_P) $(DEPS_PREFIX)/glm/build $(DEPS_PREFIX)/include
@@ -649,7 +649,6 @@ McOsu_ng_CPPFLAGS := $(MCOSU_CPPFLAGS)
 
 McOsu_ng_CXXFLAGS := \
 	-I$(DEPS_PREFIX)/include \
-	$(CXXFLAGS_EXTRA) \
 	$(MCOSU_CXXFLAGS) \
 	$(MCOSU_NG_INCLUDE_FLAGS) \
 	$(BUNDLED_INCLUDES) \
@@ -669,7 +668,8 @@ McOsu_ng_CXXFLAGS := \
 	$(ZLIB_CFLAGS) \
 	$(DXGI_CFLAGS) \
 	$(D3D11_CFLAGS) \
-	$(VKD3D_CFLAGS)
+	$(VKD3D_CFLAGS) \
+	$(CXXFLAGS_EXTRA)
 
 # Wl,--start-group with no --end-group is a stupid hack.
 McOsu_ng_LDFLAGS := \
@@ -678,11 +678,6 @@ McOsu_ng_LDFLAGS := \
 	-Wl,--start-group \
 	$(SDL3_LIBS) \
 	$(AUDIO_LIBS) \
-	$(X11_LIBS) \
-	$(XI_LIBS) \
-	$(GL_LIBS) \
-	$(GLU_LIBS) \
-	$(EGL_LIBS) \
 	$(FREETYPE2_LIBS) \
 	$(FMT_LIBS) \
 	$(LIBPNG_LIBS) \

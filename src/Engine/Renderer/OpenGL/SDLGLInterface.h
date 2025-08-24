@@ -16,6 +16,8 @@
 #include "OpenGLHeaders.h"
 
 typedef struct SDL_Window SDL_Window;
+class OpenGLSync;
+
 class SDLGLInterface final : public BackendGLInterface
 {
 	friend class Environment;
@@ -28,10 +30,12 @@ class SDLGLInterface final : public BackendGLInterface
 	friend class OpenGL3Interface;
 	friend class OpenGL3VertexArrayObject;
 	friend class OpenGLShader;
+
 public:
-	SDLGLInterface(SDL_Window *window) : BackendGLInterface(), m_window(window) {}
+	SDLGLInterface(SDL_Window *window);
 
 	// scene
+	void beginScene() override;
 	void endScene() override;
 
 	// device settings
@@ -48,9 +52,13 @@ protected:
 	static std::unordered_map<Graphics::PRIMITIVE, int> primitiveToOpenGLMap;
 	static std::unordered_map<Graphics::COMPARE_FUNC, int> compareFuncToOpenGLMap;
 	static std::unordered_map<Graphics::USAGE_TYPE, unsigned int> usageToOpenGLMap;
+
 private:
 	static void load();
 	SDL_Window *m_window;
+
+	// frame queue management
+	std::unique_ptr<OpenGLSync> m_syncobj;
 };
 
 #else

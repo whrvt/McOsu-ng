@@ -14,7 +14,6 @@
 #ifdef MCENGINE_FEATURE_GLES32
 
 #include "Graphics.h"
-#include "OpenGLSync.h"
 
 class OpenGLES32Shader;
 
@@ -26,7 +25,7 @@ public:
 	~OpenGLES32Interface() override;
 
 	// scene
-	void beginScene() final;
+	void beginScene() override;
 	void endScene() override;
 
 	// depth buffer
@@ -142,9 +141,6 @@ private:
 	unsigned int m_iVBOVertices;
 	unsigned int m_iVBOTexcoords;
 	unsigned int m_iVBOTexcolors;
-
-	// synchronization
-	OpenGLSync *m_syncobj;
 
 	// persistent vars
 	Color m_color;

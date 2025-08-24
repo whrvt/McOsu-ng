@@ -13,8 +13,6 @@
 
 #ifdef MCENGINE_FEATURE_OPENGL
 
-#include "OpenGLSync.h"
-
 class Image;
 
 class OpenGLLegacyInterface : public Graphics
@@ -24,7 +22,7 @@ public:
 	~OpenGLLegacyInterface() override;
 
 	// scene
-	void beginScene() final;
+	void beginScene() override;
 	void endScene() override;
 
 	// depth buffer
@@ -113,9 +111,6 @@ private:
 	Color m_color;
 	float m_fZ;
 	float m_fClearZ;
-
-	// synchronization
-	OpenGLSync *m_syncobj;
 
 	// clipping
 	std::stack<McRect> m_clipRectStack;

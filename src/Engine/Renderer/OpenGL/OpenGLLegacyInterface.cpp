@@ -39,8 +39,6 @@ OpenGLLegacyInterface::OpenGLLegacyInterface() : Graphics()
 	m_fClearZ = 1;
 	m_fZ = 1;
 
-	m_syncobj = new OpenGLSync();
-
 	// quality
 	glHint(GL_FRAGMENT_SHADER_DERIVATIVE_HINT, GL_NICEST);
 	glHint(GL_GENERATE_MIPMAP_HINT, GL_NICEST);
@@ -74,15 +72,11 @@ OpenGLLegacyInterface::OpenGLLegacyInterface() : Graphics()
 	OpenGLStateCache::getInstance().initialize();
 }
 
-OpenGLLegacyInterface::~OpenGLLegacyInterface()
-{
-	SAFE_DELETE(m_syncobj);
-}
+OpenGLLegacyInterface::~OpenGLLegacyInterface() = default;
 
 void OpenGLLegacyInterface::beginScene()
 {
 	m_bInScene = true;
-	m_syncobj->begin();
 
 	Matrix4 defaultProjectionMatrix = Camera::buildMatrixOrtho2D(0, m_vResolution.x, m_vResolution.y, 0, -1.0f, 1.0f);
 
@@ -119,7 +113,6 @@ void OpenGLLegacyInterface::endScene()
 
 #endif
 
-	m_syncobj->end();
 	m_bInScene = false;
 }
 

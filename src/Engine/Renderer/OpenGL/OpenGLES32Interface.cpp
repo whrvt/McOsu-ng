@@ -45,8 +45,6 @@ OpenGLES32Interface::OpenGLES32Interface() : Graphics()
 	m_color = 0xffffffff;
 	m_bAntiAliasing = true;
 
-	m_syncobj = new OpenGLSync();
-
 	// enable
 	glEnable(GL_BLEND);
 
@@ -173,15 +171,11 @@ OpenGLES32Interface::~OpenGLES32Interface()
 		glDeleteBuffers(1, &m_iVBOTexcoords);
 	if (m_iVBOTexcolors != 0)
 		glDeleteBuffers(1, &m_iVBOTexcolors);
-
-	SAFE_DELETE(m_syncobj);
 }
 
 void OpenGLES32Interface::beginScene()
 {
 	m_bInScene = true;
-
-	m_syncobj->begin();
 
 	// enable default shader (must happen before any uniform calls)
 	m_shaderTexturedGeneric->enable();
@@ -218,7 +212,6 @@ void OpenGLES32Interface::endScene()
 		engine->shutdown();
 	}
 
-	m_syncobj->end();
 	m_bInScene = false;
 }
 
