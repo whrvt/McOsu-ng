@@ -6382,7 +6382,7 @@ then :
         for rend
         do
             case $rend in
-            opengles*)
+            *gles*)
 printf "%s\n" "#define MCENGINE_FEATURE_GLES32 1" >>confdefs.h
  renderer=opengles32 ;;
             dx11)
@@ -7893,7 +7893,7 @@ then :
 fi
 
 CPPFLAGS="$CPPFLAGS -D_TIME_BITS=64 -D_FILE_OFFSET_BITS=64"
-COMMON_FLAGS="$COMMON_FLAGS -D_TIME_BITS=64 -D_FILE_OFFSET_BITS=64 -ffunction-sections -fdata-sections -fwrapv -fno-strict-aliasing -fno-semantic-interposition -ftls-model=initial-exec"
+COMMON_FLAGS="$COMMON_FLAGS -D_TIME_BITS=64 -D_FILE_OFFSET_BITS=64 -pipe -ffunction-sections -fdata-sections -fwrapv -fno-strict-aliasing -fno-semantic-interposition -ftls-model=initial-exec"
 CXXFLAGS="$CXXFLAGS $COMMON_FLAGS -fno-rtti -fno-exceptions"
 CFLAGS="$CFLAGS $COMMON_FLAGS"
 if test -z "$ubercompat" || test "x$enable_static" = "xyes"
@@ -10346,7 +10346,7 @@ esac
 fi
 
 SDL3_MIN_VERSION=3.2.20
-SDL3_BUILD_VERSION=0fcaf47658be96816a851028af3e73256363a390 # git
+SDL3_BUILD_VERSION=ed6a72a7fdbefb11b3e4e066b98c37d8048d61c2 # git
 FREETYPE2_MIN_VERSION=2.10.0
 FREETYPE2_BUILD_VERSION=2.13.3
 LIBJPEG_MIN_VERSION=3.0.0
@@ -10376,7 +10376,7 @@ SDL3_MIXER_VERSION=b8017938de8b31c1962c2c8044a127519c2c1cdf
 
 SDL3_MIXER_PREFIX=$DEPS_PREFIX
 
-MIMALLOC_VERSION=639b73ecf9608d9c3078cb9dee5b7c2f46639828
+MIMALLOC_VERSION=a42b4d572a2cb11549757282cef9df622921755d
 
 MIMALLOC_PREFIX=$DEPS_PREFIX
 

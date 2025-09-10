@@ -11,146 +11,164 @@
 
 #include "VertexArrayObject.h"
 #include "ResourceManager.h"
-namespace cv {
+namespace cv
+{
 ConVar debug_rt("debug_rt", false, FCVAR_CHEAT, "draws all rendertargets with a translucent green background");
 }
 
 RenderTarget::RenderTarget(int x, int y, int width, int height, Graphics::MULTISAMPLE_TYPE multiSampleType)
+    : Resource(),
+      m_vao1(g->createVertexArrayObject(Graphics::PRIMITIVE::PRIMITIVE_TRIANGLES, Graphics::USAGE_TYPE::USAGE_DYNAMIC, true)),
+      m_vao2(g->createVertexArrayObject(Graphics::PRIMITIVE::PRIMITIVE_TRIANGLES, Graphics::USAGE_TYPE::USAGE_DYNAMIC, true)),
+      m_vao3(g->createVertexArrayObject(Graphics::PRIMITIVE::PRIMITIVE_TRIANGLES, Graphics::USAGE_TYPE::USAGE_DYNAMIC, true)),
+      m_vPos(Vector2{x, y}),
+      m_vSize(width, height),
+      m_multiSampleType(multiSampleType)
 {
-	m_vPos = Vector2(x, y);
-	m_vSize = Vector2(width, height);
-	m_multiSampleType = multiSampleType;
-
-	m_bClearColorOnDraw = true;
-	m_bClearDepthOnDraw = true;
-
-	m_color = 0xffffffff;
-	m_clearColor = 0x00000000;
 }
 
-void RenderTarget::draw(int x, int y)
-{
-	if (!m_bReady)
-	{
-		if (cv::debug_rt.getBool())
-			debugLog("WARNING: RenderTarget is not ready!\n");
-		return;
-	}
+RenderTarget::~RenderTarget() = default;
 
-	g->setColor(m_color);
+void RenderTarget::draw(int x, int y) {
+    if(!m_bReady) {
+        if(cv::debug_rt.getBool()) debugLog("WARNING: RenderTarget is not ready!\n");
+        return;
+    }
 
-	bind();
-	{
-		// NOTE: can't use drawQuad because opengl fucks shit up and flips framebuffers vertically (due to bottom left opengl origin and top left engine origin)
-		//g->drawQuad(x, y, m_vSize.x, m_vSize.y);
+    g->setColor(m_color);
 
-		// compromise: all draw*() functions of the RenderTarget class guarantee correctly flipped images.
-		//             if bind() is used, no guarantee can be made about the texture orientation (assuming an anonymous Renderer)
+    bind();
+    {
+        // all draw*() functions of the RenderTarget class guarantee correctly flipped images
+        // if bind() is used, no guarantee can be made about the texture orientation (assuming an anonymous
+        // Renderer)
+        static std::vector<Vector3> vertices(6, Vector3{0.f, 0.f, 0.f});
 
-		VertexArrayObject vao;
-		{
-			vao.addTexcoord(0, 1);
-			vao.addVertex(x, y);
+        // clang-format off
+        std::vector<Vector3> newVertices = {
+            {x, y, 0.f},
+            {x, y + m_vSize.y, 0.f},
+            {x + m_vSize.x, y + m_vSize.y, 0.f},
+            {x + m_vSize.x, y + m_vSize.y, 0.f},
+            {x + m_vSize.x, y, 0.f},
+            {x, y, 0.f}
+        };
+        // clang-format on
 
-			vao.addTexcoord(0, 0);
-			vao.addVertex(x, y + m_vSize.y);
+        if(!m_vao1->isReady() || vertices != newVertices) {
+            m_vao1->release();
 
-			vao.addTexcoord(1, 0);
-			vao.addVertex(x + m_vSize.x, y + m_vSize.y);
+            vertices = newVertices;
 
-			vao.addTexcoord(1, 0);
-			vao.addVertex(x + m_vSize.x, y + m_vSize.y);
+            m_vao1->setVertices(vertices);
 
-			vao.addTexcoord(1, 1);
-			vao.addVertex(x + m_vSize.x, y);
+            static std::vector<Vector2> texcoords(
+                {Vector2{0.f, 1.f}, Vector2{0.f, 0.f}, Vector2{1.f, 0.f}, Vector2{1.f, 0.f}, Vector2{1.f, 1.f}, Vector2{0.f, 1.f}});
 
-			vao.addTexcoord(0, 1);
-			vao.addVertex(x, y);
-		}
-		g->drawVAO(&vao);
-	}
-	unbind();
+            m_vao1->setTexcoords(texcoords);
+
+            m_vao1->loadAsync();
+            m_vao1->load();
+        }
+
+        g->drawVAO(m_vao1.get());
+    }
+    unbind();
 }
 
-void RenderTarget::draw(int x, int y, int width, int height)
-{
-	if (!m_bReady)
-	{
-		if (cv::debug_rt.getBool())
-			debugLog("WARNING: RenderTarget is not ready!\n");
-		return;
-	}
+void RenderTarget::draw(int x, int y, int width, int height) {
+    if(!m_bReady) {
+        if(cv::debug_rt.getBool()) debugLog("WARNING: RenderTarget is not ready!\n");
+        return;
+    }
 
-	g->setColor(m_color);
+    g->setColor(m_color);
 
-	bind();
-	{
-		VertexArrayObject vao;
-		{
-			vao.addTexcoord(0, 1);
-			vao.addVertex(x, y);
+    bind();
+    {
+        static std::vector<Vector3> vertices(6, Vector3{0.f, 0.f, 0.f});
 
-			vao.addTexcoord(0, 0);
-			vao.addVertex(x, y + height);
+        // clang-format off
+        std::vector<Vector3> newVertices = {
+            {x, y, 0.f},
+            {x, y + height, 0.f},
+            {x + width, y + height, 0.f},
+            {x + width, y + height, 0.f},
+            {x + width, y, 0.f},
+            {x, y, 0.f}
+        };
+        // clang-format on
 
-			vao.addTexcoord(1, 0);
-			vao.addVertex(x + width, y + height);
+        if(!m_vao2->isReady() || vertices != newVertices) {
+            m_vao2->release();
 
-			vao.addTexcoord(1, 0);
-			vao.addVertex(x + width, y + height);
+            vertices = newVertices;
 
-			vao.addTexcoord(1, 1);
-			vao.addVertex(x + width, y);
+            m_vao2->setVertices(vertices);
 
-			vao.addTexcoord(0, 1);
-			vao.addVertex(x, y);
-		}
-		g->drawVAO(&vao);
-	}
-	unbind();
+            static std::vector<Vector2> texcoords(
+                {Vector2{0.f, 1.f}, Vector2{0.f, 0.f}, Vector2{1.f, 0.f}, Vector2{1.f, 0.f}, Vector2{1.f, 1.f}, Vector2{0.f, 1.f}});
+
+            m_vao2->setTexcoords(texcoords);
+
+            m_vao2->loadAsync();
+            m_vao2->load();
+        }
+
+        g->drawVAO(m_vao2.get());
+    }
+    unbind();
 }
 
-void RenderTarget::drawRect(int x, int y, int width, int height)
-{
-	if (!m_bReady)
-	{
-		if (cv::debug_rt.getBool())
-			debugLog("WARNING: RenderTarget is not ready!\n");
-		return;
-	}
+void RenderTarget::drawRect(int x, int y, int width, int height) {
+    if(!m_bReady) {
+        if(cv::debug_rt.getBool()) debugLog("WARNING: RenderTarget is not ready!\n");
+        return;
+    }
 
-	const float texCoordWidth0 = x / m_vSize.x;
-	const float texCoordWidth1 = (x + width) / m_vSize.x;
-	const float texCoordHeight1 = 1.0f - y / m_vSize.y;
-	const float texCoordHeight0 = 1.0f - (y + height) / m_vSize.y;
+    const float texCoordWidth0 = x / m_vSize.x;
+    const float texCoordWidth1 = (x + width) / m_vSize.x;
+    const float texCoordHeight1 = 1.0f - y / m_vSize.y;
+    const float texCoordHeight0 = 1.0f - (y + height) / m_vSize.y;
 
-	g->setColor(m_color);
+    g->setColor(m_color);
 
-	bind();
-	{
-		VertexArrayObject vao;
-		{
-			vao.addTexcoord(texCoordWidth0, texCoordHeight1);
-			vao.addVertex(x, y);
+    bind();
+    {
+        static std::vector<Vector3> vertices(6, Vector3{0.f, 0.f, 0.f});
+        static std::vector<Vector2> texcoords(6, Vector2{0.f, 0.f});
 
-			vao.addTexcoord(texCoordWidth0, texCoordHeight0);
-			vao.addVertex(x, y + height);
+        // clang-format off
+        std::vector<Vector3> newVertices = {
+            {x, y, 0.f},
+            {x, y + height, 0.f},
+            {x + width, y + height, 0.f},
+            {x + width, y + height, 0.f},
+            {x + width, y, 0.f},
+            {x, y, 0.f}
+        };
+        // clang-format on
 
-			vao.addTexcoord(texCoordWidth1, texCoordHeight0);
-			vao.addVertex(x + width, y + height);
+        std::vector<Vector2> newTexcoords = {{texCoordWidth0, texCoordHeight1}, {texCoordWidth0, texCoordHeight0},
+                                          {texCoordWidth1, texCoordHeight0}, {texCoordWidth1, texCoordHeight0},
+                                          {texCoordWidth1, texCoordHeight1}, {texCoordWidth0, texCoordHeight1}};
 
-			vao.addTexcoord(texCoordWidth1, texCoordHeight0);
-			vao.addVertex(x + width, y + height);
+        if(!m_vao3->isReady() || vertices != newVertices || texcoords != newTexcoords) {
+            m_vao3->release();
 
-			vao.addTexcoord(texCoordWidth1, texCoordHeight1);
-			vao.addVertex(x + width, y);
+            texcoords = newTexcoords;
+            vertices = newVertices;
 
-			vao.addTexcoord(texCoordWidth0, texCoordHeight1);
-			vao.addVertex(x, y);
-		}
-		g->drawVAO(&vao);
-	}
-	unbind();
+            m_vao3->setVertices(vertices);
+            m_vao3->setTexcoords(texcoords);
+
+            m_vao3->loadAsync();
+            m_vao3->load();
+        }
+
+        g->drawVAO(m_vao3.get());
+    }
+    unbind();
 }
 
 void RenderTarget::rebuild(int x, int y, int width, int height, Graphics::MULTISAMPLE_TYPE multiSampleType)
@@ -162,6 +180,9 @@ void RenderTarget::rebuild(int x, int y, int width, int height, Graphics::MULTIS
 	m_multiSampleType = multiSampleType;
 
 	reload();
+	m_vao1->release();
+	m_vao2->release();
+	m_vao3->release();
 }
 
 void RenderTarget::rebuild(int x, int y, int width, int height)

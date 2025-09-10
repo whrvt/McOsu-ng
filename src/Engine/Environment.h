@@ -46,9 +46,9 @@ public:
 	static inline int getLogicalCPUCount() { return SDL_GetNumLogicalCPUCores(); }
 
 	// user
-	[[nodiscard]] const UString &getUsername();
-	[[nodiscard]] const UString &getUserDataPath();
-	[[nodiscard]] const UString &getLocalDataPath();
+	[[nodiscard]] const UString &getUsername() const;
+	[[nodiscard]] const UString &getUserDataPath() const;
+	[[nodiscard]] const UString &getLocalDataPath() const;
 
 	// file IO
 	[[nodiscard]] static bool fileExists(UString &filename); // passthroughs to McFile
@@ -168,9 +168,9 @@ protected:
 	Vector2 m_vLastRelMousePos;
 
 	// cache
-	UString m_sUsername;
-	UString m_sProgDataPath;
-	UString m_sAppDataPath;
+	mutable UString m_sUsername;
+	mutable UString m_sProgDataPath;
+	mutable UString m_sAppDataPath;
 	HWND m_hwnd;
 
 	// logging
@@ -214,10 +214,6 @@ protected:
 
 private:
 	// static callbacks/helpers
-	struct FileDialogCallbackData
-	{
-		FileDialogCallback callback;
-	};
 	static void sdlFileDialogCallback(void *userdata, const char *const *filelist, int filter);
 
 	static std::vector<UString> enumerateDirectory(const char *pathToEnum, SDL_PathType type); // code sharing for getFilesInFolder/getFoldersInFolder

@@ -396,7 +396,7 @@ void OpenGLES32Interface::drawVAO(VertexArrayObject *vao)
 	// if baked, then we can directly draw the buffer
 	if (vao->isReady())
 	{
-		OpenGLES32VertexArrayObject *glvao = (OpenGLES32VertexArrayObject *)vao;
+		auto *glvao = static_cast<OpenGLES32VertexArrayObject*>(vao);
 
 		// configure shader
 		if (m_shaderTexturedGeneric->isActive())

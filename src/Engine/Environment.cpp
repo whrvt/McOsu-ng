@@ -199,7 +199,7 @@ void Environment::openURLInDefaultBrowser(const UString &url)
 		debugLog("Failed to open URL: {:s}\n", SDL_GetError());
 }
 
-const UString &Environment::getUsername()
+const UString &Environment::getUsername() const
 {
 	if (!m_sUsername.isEmpty())
 		return m_sUsername;
@@ -229,7 +229,7 @@ const UString &Environment::getUsername()
 }
 
 // i.e. toplevel appdata path
-const UString &Environment::getUserDataPath()
+const UString &Environment::getUserDataPath() const
 {
 	if (!m_sAppDataPath.isEmpty())
 		return m_sAppDataPath;
@@ -252,7 +252,7 @@ const UString &Environment::getUserDataPath()
 }
 
 // i.e. ~/.local/share/PACKAGE_NAME
-const UString &Environment::getLocalDataPath()
+const UString &Environment::getLocalDataPath() const
 {
 	if (!m_sProgDataPath.isEmpty())
 		return m_sProgDataPath;
@@ -468,8 +468,7 @@ void Environment::showMessageErrorFatal(const UString &title, const UString &mes
 // TODO: filter?
 void Environment::sdlFileDialogCallback(void *userdata, const char *const *filelist, int /*filter*/)
 {
-	auto *callbackData = static_cast<FileDialogCallbackData *>(userdata);
-	if (!callbackData)
+	if (!userdata)
 		return;
 
 	std::vector<UString> results;
@@ -481,12 +480,21 @@ void Environment::sdlFileDialogCallback(void *userdata, const char *const *filel
 			results.emplace_back(*curr);
 		}
 	}
+	else if (strncmp(SDL_GetError(), "dialogg", 7) == 0)
+	{
+		// expect to be called by fallback path next... weird stuff, seems like an SDL bug? (double calling callback)
+		return;
+	}
+
+	SDL_SetError("cleared error in file dialog callback");
+
+	auto *callback = static_cast<FileDialogCallback *>(userdata);
 
 	// call the callback
-	callbackData->callback(results);
+	(*callback)(results);
 
-	// data is no longer needed
-	delete callbackData;
+	// callback no longer needed
+	delete callback;
 }
 
 void Environment::openFileWindow(FileDialogCallback callback, const char *filetypefilters, const UString & /*title*/, const UString &initialpath) const
@@ -519,21 +527,36 @@ void Environment::openFileWindow(FileDialogCallback callback, const char *filety
 		}
 	}
 
-	// callback data to be passed to SDL
-	auto *callbackData = new FileDialogCallbackData{std::move(callback)};
+	const char *initialpath_cstr = nullptr;
+	if (initialpath.length() > 0)
+	{
+		if (directoryExists(initialpath))
+			initialpath_cstr = initialpath.toUtf8();
+		else
+			initialpath_cstr = getLocalDataPath().toUtf8();
+	}
+
+	auto *cbdata{new auto(std::move(callback))};
 
 	// show it
-	SDL_ShowOpenFileDialog(sdlFileDialogCallback, callbackData, m_window, sdlFilters.empty() ? nullptr : sdlFilters.data(), static_cast<int>(sdlFilters.size()),
-	                       initialpath.length() > 0 ? initialpath.toUtf8() : nullptr, false);
+	SDL_ShowOpenFileDialog(sdlFileDialogCallback, cbdata, m_window, sdlFilters.empty() ? nullptr : sdlFilters.data(), static_cast<int>(sdlFilters.size()),
+	                       initialpath_cstr, false);
 }
 
 void Environment::openFolderWindow(FileDialogCallback callback, const UString &initialpath) const
 {
-	// callback data to be passed to SDL
-	auto *callbackData = new FileDialogCallbackData{std::move(callback)};
+	const char *initialpath_cstr = nullptr;
+	if (initialpath.length() > 0)
+	{
+		if (directoryExists(initialpath))
+			initialpath_cstr = initialpath.toUtf8();
+		else
+			initialpath_cstr = getLocalDataPath().toUtf8();
+	}
 
-	// show it
-	SDL_ShowOpenFolderDialog(sdlFileDialogCallback, callbackData, m_window, initialpath.length() > 0 ? initialpath.toUtf8() : nullptr, false);
+	auto *cbdata{new auto(std::move(callback))};
+
+	SDL_ShowOpenFolderDialog(sdlFileDialogCallback, cbdata, m_window, initialpath_cstr, false);
 }
 
 // just open the file manager in a certain folder, but not do anything with it
@@ -906,7 +929,7 @@ void Environment::initMonitors(bool force)
 		m_mMonitors.clear();
 
 	int count = -1;
-	const SDL_DisplayID *displays = SDL_GetDisplays(&count);
+	SDL_DisplayID *displays = SDL_GetDisplays(&count);
 
 	for (int i = 0; i < count; i++)
 	{
@@ -919,6 +942,8 @@ void Environment::initMonitors(bool force)
 		const Vector2 windowSize = getWindowSize();
 		m_mMonitors.try_emplace(1, McRect{0, 0, windowSize.x, windowSize.y});
 	}
+
+	SDL_free(displays);
 }
 
 void Environment::onLogLevelChange(float newval)

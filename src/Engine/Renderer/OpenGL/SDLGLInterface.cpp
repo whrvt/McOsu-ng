@@ -55,10 +55,10 @@ void SDLGLInterface::endScene()
 {
 	BackendGLInterface::endScene();
 
-	SDL_GL_SwapWindow(m_window);
-
 	// create sync obj for the gl commands this frame (if enabled)
 	m_syncobj->end();
+
+	SDL_GL_SwapWindow(m_window);
 }
 
 void SDLGLInterface::setVSync(bool vsync)

@@ -187,10 +187,11 @@ void OpenGLES32VertexArrayObject::draw()
 	const int end = std::clamp<int>(
 	    m_iDrawRangeToIndex > -1 ? m_iDrawRangeToIndex : nearestMultipleDown((int)(m_iNumVertices * m_fDrawPercentToPercent), m_iDrawPercentNearestMultiple), 0, m_iNumVertices);
 
-	if (start > end || std::abs(end - start) == 0)
+	if (start > end || std::abs(end - start) == 0) {
 		return;
+	}
 
-	auto *gles32 = static_cast<OpenGLES32Interface *>(g);
+	auto *gles32 = static_cast<OpenGLES32Interface *>(g.get());
 
 	// configure shader state for our vertex attributes
 	if (m_iNumColors > 0)

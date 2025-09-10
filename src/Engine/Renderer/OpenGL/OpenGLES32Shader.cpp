@@ -57,7 +57,7 @@ void OpenGLES32Shader::initAsync()
 
 void OpenGLES32Shader::destroy()
 {
-	auto *gles32 = static_cast<OpenGLES32Interface *>(g);
+	auto *gles32 = static_cast<OpenGLES32Interface *>(g.get());
 	if (gles32 != NULL)
 		gles32->unregisterShader(this);
 
@@ -102,7 +102,7 @@ void OpenGLES32Shader::disable()
 	OpenGLStateCache::getInstance().setCurrentProgram(m_iProgramBackup);
 }
 
-int OpenGLShader::getAndCacheUniformLocation(const std::string_view &name)
+int OpenGLES32Shader::getAndCacheUniformLocation(const std::string_view &name)
 {
 	if (!m_bReady)
 		return -1;
