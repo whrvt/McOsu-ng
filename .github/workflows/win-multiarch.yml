@@ -22,7 +22,7 @@ jobs:
   build:
     needs: matrix-prep
     runs-on: ubuntu-latest
-    container: archlinux:latest
+    container: archlinux:multilib-devel
     strategy:
       matrix: ${{ fromJson(needs.matrix-prep.outputs.matrix) }}
     defaults:
@@ -46,11 +46,11 @@ jobs:
 
       - name: Installing dependencies
         run: |
-          echo -e "[multilib]\nInclude = /etc/pacman.d/mirrorlist" >> /etc/pacman.conf
-          pacman -Syu --noconfirm base-devel libx11 libxi glu \
-            libjpeg-turbo libglvnd freetype2 sdl3 zlib wget \
+          pacman -Syu --noconfirm libx11 libxi glu \
+            libjpeg-turbo libglvnd sdl3 zlib wget \
             cmake meson nasm git autoconf automake libtool autoconf-archive \
             mingw-w64-gcc ccache unzip wine
+          pacman -U --noconfirm https://archive.archlinux.org/packages/f/freetype2/freetype2-2.13.3-3-x86_64.pkg.tar.zst
           useradd user -G wheel && echo "user ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
 
       - name: Building McOsu-ng
