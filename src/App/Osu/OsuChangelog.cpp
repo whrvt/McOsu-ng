@@ -932,7 +932,7 @@ OsuChangelog::OsuChangelog() : OsuScreenBackable()
 			};
 
 			CBaseUIButton *change = new CustomCBaseUILabel(changelogs[i].changes[c]);
-			change->setClickCallback(fastdelegate::MakeDelegate(this, &OsuChangelog::onChangeClicked));
+			change->setClickCallback(SA::MakeDelegate<&OsuChangelog::onChangeClicked>(this));
 
 			if (i > 0)
 				change->setTextColor(0xff888888);

@@ -27,7 +27,7 @@ public:
 	static Matrix4 buildMatrixPerspectiveFovHorizontalDXLH(float fovRad, float aspectRatioHeightToWidth, float zn, float zf);
 
 public:
-	enum CAMERA_TYPE
+	enum CAMERA_TYPE : uint8_t
 	{
 		CAMERA_TYPE_FIRST_PERSON,
 		CAMERA_TYPE_ORBIT

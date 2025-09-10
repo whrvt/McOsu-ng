@@ -33,8 +33,16 @@ public:
 		SOLOUD,
 		SDL
 	};
+
 public:
-	Sound(UString filepath, bool stream, bool threeD, bool loop, bool prescan);
+	Sound(UString filepath, bool stream, bool threeD, bool loop, bool prescan)
+	    : Resource(std::move(filepath)),
+	      m_bStream(stream),
+	      m_bIs3d(threeD),
+	      m_bIsLooped(loop),
+	      m_bPrescan(prescan)
+	{
+	}
 
 	// Factory method to create the appropriate sound object
 	static Sound *createSound(UString filepath, bool stream, bool threeD, bool loop, bool prescan);
@@ -49,7 +57,7 @@ public:
 	virtual void setPan(float pan) = 0;
 	virtual void setLoop(bool loop) = 0;
 	virtual void setOverlayable(bool overlayable) { m_bIsOverlayable = overlayable; }
-	virtual void setLastPlayTime(double lastPlayTime) { m_fLastPlayTime = lastPlayTime; }
+	inline void setLastPlayTime(double lastPlayTime) { m_fLastPlayTime = lastPlayTime; }
 
 	virtual SOUNDHANDLE getHandle() = 0;
 
@@ -60,16 +68,16 @@ public:
 	virtual float getPitch() = 0;
 	virtual float getFrequency() = 0;
 
-	[[nodiscard]] virtual float getBPM() { return m_fCurrentBPM; } // non-const for possible caching
+	[[nodiscard]] virtual inline float getBPM() { return m_fCurrentBPM; } // non-const for possible caching
 
 	virtual bool isPlaying() = 0;
 	virtual bool isFinished() = 0;
 
-	[[nodiscard]] virtual double getLastPlayTime() const { return m_fLastPlayTime; }
-	[[nodiscard]] virtual bool isStream() const { return m_bStream; }
-	[[nodiscard]] virtual bool is3d() const { return m_bIs3d; }
-	[[nodiscard]] virtual bool isLooped() const { return m_bIsLooped; }
-	[[nodiscard]] virtual bool isOverlayable() const { return m_bIsOverlayable; }
+	[[nodiscard]] constexpr double getLastPlayTime() const { return m_fLastPlayTime; }
+	[[nodiscard]] constexpr bool isStream() const { return m_bStream; }
+	[[nodiscard]] constexpr bool is3d() const { return m_bIs3d; }
+	[[nodiscard]] constexpr bool isLooped() const { return m_bIsLooped; }
+	[[nodiscard]] constexpr bool isOverlayable() const { return m_bIsOverlayable; }
 
 	virtual void rebuild(UString newFilePath) = 0;
 
@@ -90,26 +98,24 @@ public:
 	const T* as() const { return isType<T>() ? static_cast<const T*>(this) : nullptr; }
 protected:
 	void init() override = 0;
-	void initAsync() override = 0;
+	void initAsync() override;
 	void destroy() override = 0;
 
 	bool m_bStream;
 	bool m_bIs3d;
 	bool m_bIsLooped;
 	bool m_bPrescan;
-	bool m_bIsOverlayable;
 
-	bool m_bIgnored;
-
-	float m_fVolume;
-	double m_fLastPlayTime;
-
-	float m_fCurrentBPM;
+	bool m_bIsOverlayable{false};
+	bool m_bIgnored{false}; // check for audio file validity
+	float m_fVolume{1.0f};
+	double m_fLastPlayTime{-1.0f};
+	float m_fCurrentBPM{-1.0f}; // initialize to invalid value, only some backends support getting current BPM
 
 	PlaybackInterpolator m_interpolator;
 
 private:
-	static bool isValidAudioFile(const UString& filePath, const UString &fileExt);
+	static bool isValidAudioFile(const std::string& filePath, const std::string &fileExt);
 };
 
 #endif

@@ -26,7 +26,7 @@ public:
 	void end();   // call in endScene()
 
 private:
-	enum SYNC_RESULT
+	enum SYNC_RESULT : uint8_t
 	{
 		SYNC_OBJECT_NOT_READY, // sync object not created or already signaled
 		SYNC_ALREADY_SIGNALED, // GPU already done with the work
@@ -39,7 +39,7 @@ private:
 	void deleteSyncObject(GLsync syncObject);                                              // delete a sync object
 	void setMaxFramesInFlight(int maxFrames);                                              // set maximum frames in flight (default: 2)
 	[[nodiscard]] int getMaxFramesInFlight() const { return m_iMaxFramesInFlight; }        // get current maximum frames in flight
-	[[nodiscard]] int getCurrentFramesInFlight() const { return m_frameSyncQueue.size(); } // get actual frames in flight
+	[[nodiscard]] int getCurrentFramesInFlight() const { return static_cast<int>(m_frameSyncQueue.size()); } // get actual frames in flight
 	void manageFrameSyncQueue(bool forceWait = false);                                     // Clean up expired sync objects and limit frames in flight
 
 	typedef struct

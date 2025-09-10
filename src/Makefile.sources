@@ -68,6 +68,7 @@ McOsu_ng_SOURCES = \
 	src/App/Osu/OsuUpdateHandler.cpp \
 	src/App/Osu/OsuUserStatsScreen.cpp \
 	src/Engine/AnimationHandler.cpp \
+	src/Engine/ByteBufferedFile.cpp \
 	src/Engine/Camera.cpp \
 	src/Engine/ConVar.cpp \
 	src/Engine/DiscordInterface.cpp \

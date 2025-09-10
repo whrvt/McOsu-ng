@@ -23,12 +23,15 @@ class SoLoudSound;
 
 class SoLoudSoundEngine final : public SoundEngine
 {
-private:
-	static std::unique_ptr<SoLoud::Soloud> s_SLInstance;
-
 public:
 	SoLoudSoundEngine();
 	~SoLoudSoundEngine() override;
+
+	SoLoudSoundEngine &operator=(const SoLoudSoundEngine &) = delete;
+	SoLoudSoundEngine &operator=(SoLoudSoundEngine &&) = delete;
+
+	SoLoudSoundEngine(const SoLoudSoundEngine &) = delete;
+	SoLoudSoundEngine(SoLoudSoundEngine &&) = delete;
 
 	void restart() override;
 	void update() override;
@@ -61,8 +64,8 @@ private:
 	std::map<int, SoLoud::DeviceInfo> m_soloudDevices;
 };
 
-// raw pointer access to the s_SLInstance singleton, for SoLoudSound to use
-extern SoLoud::Soloud *soloud;
+// access to the soloud instance singleton, for SoLoudSound to use
+extern std::unique_ptr<SoLoud::Soloud> soloud;
 
 #else
 class SoLoudSoundEngine : public SoundEngine{};

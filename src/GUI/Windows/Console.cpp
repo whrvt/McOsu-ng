@@ -39,7 +39,7 @@ std::mutex g_consoleLogMutex;
 Console::Console() : CBaseUIWindow(350, 100, 620, 550, "Console")
 {
 	// convar bindings
-	cv::clear.setCallback( fastdelegate::MakeDelegate(this, &Console::clear) );
+	cv::clear.setCallback( SA::MakeDelegate<&Console::clear>(this) );
 
 	// resources
 	m_logFont = resourceManager->getFont("FONT_CONSOLE");
@@ -145,14 +145,14 @@ void Console::processCommand(UString command)
 	}
 
 	// get convar
-	ConVar *var = convar->getConVarByName(commandName, false);
+	ConVar *var = ConVar::getConVarByName(commandName, false);
 	if (var == NULL)
 	{
 		debugLog("Unknown command: {:s}\n", commandName.toUtf8());
 		return;
 	}
 
-	if (var->isFlagSet(FCVAR_CHEAT) && !cv::ConVars::sv_cheats.getBool())
+	if (!ALLOWCHEAT(var))
 		return;
 
 	// set new value (this handles all callbacks internally)
@@ -185,10 +185,10 @@ void Console::processCommand(UString command)
 
 			if (var->hasValue())
 			{
-				logMessage.append(UString::format(" = %s ( def. \"%s\" , ", var->getString().toUtf8(), var->getDefaultString().toUtf8()));
+				logMessage.append(UString::fmt(" = {:s} ( def. \"{:s}\" , ", var->getString(), var->getDefaultString()));
 				logMessage.append(ConVar::typeToString(var->getType()));
 				logMessage.append(", ");
-				logMessage.append(ConVarHandler::flagsToString(var->getFlags()));
+				logMessage.append(ConVar::flagsToString(var->getFlags()));
 				logMessage.append(" )");
 			}
 
@@ -357,7 +357,7 @@ void _fizzbuzz(void)
 	}
 }
 namespace cv {
-ConVar exec("exec", FCVAR_NONE, _exec);
-ConVar echo("echo", FCVAR_NONE, _echo);
-ConVar fizzbuzz("fizzbuzz", FCVAR_NONE, _fizzbuzz);
+ConVar exec("exec", FCVAR_NONE, CFUNC(_exec));
+ConVar echo("echo", FCVAR_NONE, CFUNC(_echo));
+ConVar fizzbuzz("fizzbuzz", FCVAR_NONE, CFUNC(_fizzbuzz));
 }

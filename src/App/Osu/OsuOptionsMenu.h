@@ -192,11 +192,11 @@ private:
 	OPTIONS_ELEMENT addButtonButton(const UString& text1, const UString& text2);
 	OPTIONS_ELEMENT addButtonButtonLabel(const UString& text1, const UString& text2, const UString& labelText, bool withResetButton = false);
 	OsuOptionsMenuKeyBindButton *addKeyBindButton(const UString& text, ConVar *cvar);
-	CBaseUICheckbox *addCheckbox(UString text, ConVar *cvar);
+	CBaseUICheckbox *addCheckbox(const UString& text, ConVar *cvar);
 	CBaseUICheckbox *addCheckbox(const UString& text, const UString& tooltipText = "", ConVar *cvar = NULL);
 	OsuUISlider *addSlider(const UString& text, float min = 0.0f, float max = 1.0f, ConVar *cvar = NULL, float label1Width = 0.0f, bool allowOverscale = false, bool allowUnderscale = false);
-	CBaseUITextbox *addTextbox(UString text, ConVar *cvar = NULL);
-	CBaseUITextbox *addTextbox(UString text, const UString& labelText, ConVar *cvar = NULL);
+	CBaseUITextbox *addTextbox(const UString &text, ConVar *cvar = NULL);
+	CBaseUITextbox *addTextbox(const UString &text, const UString& labelText, ConVar *cvar = NULL);
 	CBaseUIElement *addSkinPreview();
 	CBaseUIElement *addSliderPreview();
 

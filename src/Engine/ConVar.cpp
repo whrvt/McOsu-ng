@@ -8,73 +8,125 @@
 #include "ConVar.h"
 
 #include <algorithm>
-#include <utility>
 
 #include "Engine.h"
 #include "File.h"
+#include <mutex>
+
 // #define ALLOW_DEVELOPMENT_CONVARS // NOTE: comment this out on release
 namespace cv::ConVars
 {
 ConVar sv_cheats("sv_cheats", true, FCVAR_NONE);
 }
 
-static std::vector<ConVar *> &_getGlobalConVarArray()
+namespace cv
 {
-	static std::vector<ConVar *> g_vConVars; // (singleton)
-	return g_vConVars;
+ConVar emptyDummyConVar("emptyDummyConVar", 42.0f, FCVAR_NONE, "this placeholder convar is returned by ConVar::getConVarByName() if no matching convar is found");
 }
 
-static std::unordered_map<std::string, ConVar *> &_getGlobalConVarMap()
+// lazy init on first use
+std::vector<ConVar *> &ConVar::getConVarArray()
 {
-	static std::unordered_map<std::string, ConVar *> g_vConVarMap; // (singleton)
-	return g_vConVarMap;
+	static std::once_flag reserved;
+	static std::vector<ConVar *> _;
+
+	std::call_once(reserved, []() { _.reserve(1024); });
+
+	return _;
 }
 
-void ConVar::addConVar(ConVar *c)
+std::unordered_map<UString, ConVar *> &ConVar::getConVarMap()
 {
-	if (c->isFlagSet(FCVAR_UNREGISTERED))
-		return;
+	static std::unordered_map<UString, ConVar *> _;
+	return _;
+}
 
-	if (_getGlobalConVarArray().size() < 1)
-		_getGlobalConVarArray().reserve(1024);
-
-	if (_getGlobalConVarMap().find(std::string(c->getName().toUtf8(), c->getName().lengthUtf8())) == _getGlobalConVarMap().end())
-	{
-		_getGlobalConVarArray().push_back(c);
-		_getGlobalConVarMap()[std::string(c->getName().toUtf8(), c->getName().lengthUtf8())] = c;
-	}
+// public helpers
+ConVar *ConVar::getConVarByName(const UString &name, bool warnIfNotFound)
+{
+	const auto it = ConVar::getConVarMap().find(name);
+	if (it != ConVar::getConVarMap().end())
+		return it->second;
 	else
-	{
-		debugLog("FATAL: Duplicate ConVar name (\"{:s}\")\n", c->getName().toUtf8());
-		std::exit(100);
-	}
-}
+		return nullptr;
 
-static ConVar *_getConVar(const UString &name)
-{
-	const auto result = _getGlobalConVarMap().find(std::string(name.toUtf8(), name.lengthUtf8()));
-	if (result != _getGlobalConVarMap().end())
-		return result->second;
-	else
+	if (warnIfNotFound)
+	{
+		debugLog(R"(ENGINE: ConVar "{:s}" does not exist...)"
+		         "\n",
+		         name);
+		engine->showMessageWarning("Engine Error", UString::fmt(R"(ENGINE: ConVar "{:s}" does not exist...)"
+		                                                        "\n",
+		                                                        name));
+	}
+
+	if (!warnIfNotFound)
 		return NULL;
+	else
+		return &cv::emptyDummyConVar;
 }
 
-ConVar::~ConVar()
+std::vector<ConVar *> ConVar::getConVarByLetter(const UString &letters)
 {
-	if (!isFlagSet(FCVAR_UNREGISTERED))
+	std::unordered_set<UString> matchingConVarNames;
+	std::vector<ConVar *> matchingConVars;
 	{
-		std::vector<ConVar *> &conVarArray = _getGlobalConVarArray();
-		std::unordered_map<std::string, ConVar *> &conVarMap = _getGlobalConVarMap();
+		if (letters.length() < 1)
+			return matchingConVars;
 
-		auto it = std::ranges::find(conVarArray, this);
-		if (it != conVarArray.end())
-			conVarArray.erase(it);
+		const std::vector<ConVar *> &convars = ConVar::getConVarArray();
 
-		std::string nameStr(m_sName.toUtf8(), m_sName.lengthUtf8());
-		auto mapIt = conVarMap.find(nameStr);
-		if (mapIt != conVarMap.end() && mapIt->second == this)
-			conVarMap.erase(mapIt);
+		// first try matching exactly
+		int i = 0;
+		for (auto convar : convars)
+		{
+			if (!convar)
+			{
+				debugLog("CONVAR {} IS NULL!\n", i);
+				continue;
+			}
+			i++;
+			if (convar->isFlagSet(FCVAR_HIDDEN) || convar->isFlagSet(FCVAR_DEVELOPMENTONLY))
+				continue;
+
+			if (convar->getName().find(letters, 0, letters.length()) == 0)
+			{
+				if (letters.length() > 1)
+					matchingConVarNames.insert(convar->getName());
+
+				matchingConVars.push_back(convar);
+			}
+		}
+
+		// then try matching substrings
+		i = 0;
+		if (letters.length() > 1)
+		{
+			for (auto convar : convars)
+			{
+				if (!convar)
+				{
+					debugLog("CONVAR {} IS NULL!\n", i);
+					continue;
+				}
+				i++;
+				if (convar->isFlagSet(FCVAR_HIDDEN) || convar->isFlagSet(FCVAR_DEVELOPMENTONLY))
+					continue;
+
+				if (convar->getName().find(letters) != -1)
+				{
+					if (matchingConVarNames.find(convar->getName()) == matchingConVarNames.end())
+					{
+						matchingConVarNames.insert(convar->getName());
+						matchingConVars.push_back(convar);
+					}
+				}
+			}
+		}
+
+		// (results should be displayed in vector order)
 	}
+	return matchingConVars;
 }
 
 UString ConVar::typeToString(CONVAR_TYPE type)
@@ -94,35 +146,74 @@ UString ConVar::typeToString(CONVAR_TYPE type)
 	return "";
 }
 
-void ConVar::initBase(int flags)
+UString ConVar::flagsToString(uint8_t flags)
 {
-	m_fValue = 0.0f;
-	m_fDefaultValue = 0.0f;
-
-	m_bHasValue = false;
-	m_type = CONVAR_TYPE::CONVAR_TYPE_FLOAT;
-	m_iFlags = flags;
-
-#ifdef ALLOW_DEVELOPMENT_CONVARS
-	m_iFlags &= ~FCVAR_DEVELOPMENTONLY;
-#endif
-
-	// m_callback/m_changeCallback are default-init to std::monostate (i.e. nothing)
+	UString string;
+	{
+		if (flags == FCVAR_NONE)
+			string.append("no flags");
+		else
+		{
+			if (flags & FCVAR_UNREGISTERED)
+				string.append(string.length() > 0 ? " unregistered" : "unregistered");
+			if (flags & FCVAR_DEVELOPMENTONLY)
+				string.append(string.length() > 0 ? " developmentonly" : "developmentonly");
+			if (flags & FCVAR_HARDCODED)
+				string.append(string.length() > 0 ? " hardcoded" : "hardcoded");
+			if (flags & FCVAR_HIDDEN)
+				string.append(string.length() > 0 ? " hidden" : "hidden");
+			if (flags & FCVAR_CHEAT)
+				string.append(string.length() > 0 ? " cheat" : "cheat");
+		}
+	}
+	return string;
 }
 
-// command-only constructor
-ConVar::ConVar(UString name)
+void ConVar::resetAllConVarCallbacks()
 {
-	initBase(FCVAR_NONE);
-	m_sName = std::move(name);
-	m_type = CONVAR_TYPE::CONVAR_TYPE_STRING;
-	m_iFlags = FCVAR_NONE;
-	ConVar::addConVar(this);
+	const std::vector<ConVar *> &convars = ConVar::getConVarArray();
+	for (auto convar : convars)
+	{
+		convar->resetCallbacks();
+	}
+}
+
+// private init helper
+void ConVar::addConVar(ConVar *c)
+{
+	if (c->isFlagSet(FCVAR_UNREGISTERED))
+		return;
+
+	const UString &cvarName = c->getName();
+	if (ConVar::getConVarMap().find(cvarName) == ConVar::getConVarMap().end())
+	{
+		ConVar::getConVarArray().push_back(c);
+		ConVar::getConVarMap()[cvarName] = c;
+	}
+	else
+	{
+		debugLog("FATAL: Duplicate ConVar name (\"{:s}\")\n", cvarName);
+		std::exit(100);
+	}
+}
+
+ConVar::~ConVar()
+{
+	if (!isFlagSet(FCVAR_UNREGISTERED))
+	{
+		auto it = std::ranges::find(ConVar::getConVarArray(), this);
+		if (it != ConVar::getConVarArray().end())
+			ConVar::getConVarArray().erase(it);
+
+		auto mapIt = ConVar::getConVarMap().find(m_sName);
+		if (mapIt != ConVar::getConVarMap().end() && mapIt->second == this)
+			ConVar::getConVarMap().erase(mapIt);
+	}
 }
 
 void ConVar::exec()
 {
-	if (isFlagSet(FCVAR_CHEAT) && !(cv::ConVars::sv_cheats.getRaw() > 0))
+	if (!ALLOWCHEAT(this))
 		return;
 
 	if (auto *cb = std::get_if<NativeConVarCallback>(&m_callback))
@@ -131,7 +222,7 @@ void ConVar::exec()
 
 void ConVar::execArgs(const UString &args)
 {
-	if (isFlagSet(FCVAR_CHEAT) && !(cv::ConVars::sv_cheats.getRaw() > 0))
+	if (!ALLOWCHEAT(this))
 		return;
 
 	if (auto *cb = std::get_if<NativeConVarCallbackArgs>(&m_callback))
@@ -140,7 +231,7 @@ void ConVar::execArgs(const UString &args)
 
 void ConVar::execFloat(float args)
 {
-	if (isFlagSet(FCVAR_CHEAT) && !(cv::ConVars::sv_cheats.getRaw() > 0))
+	if (!ALLOWCHEAT(this))
 		return;
 
 	if (auto *cb = std::get_if<NativeConVarCallbackFloat>(&m_callback))
@@ -190,141 +281,6 @@ void ConVar::resetCallbacks()
 	m_changeCallback = std::monostate{};
 }
 
-//********************************//
-//  ConVarHandler Implementation  //
-//********************************//
-
-namespace cv
-{
-ConVar emptyDummyConVar("emptyDummyConVar", 42.0f, FCVAR_NONE, "this placeholder convar is returned by convar->getConVarByName() if no matching convar is found");
-}
-
-ConVarHandler *convar = new ConVarHandler();
-
-ConVarHandler::ConVarHandler()
-{
-	convar = this;
-}
-
-ConVarHandler::~ConVarHandler()
-{
-	convar = NULL;
-}
-
-const std::vector<ConVar *> &ConVarHandler::getConVarArray() const
-{
-	return _getGlobalConVarArray();
-}
-
-size_t ConVarHandler::getNumConVars() const
-{
-	return _getGlobalConVarArray().size();
-}
-
-ConVar *ConVarHandler::getConVarByName(const UString &name, bool warnIfNotFound) const
-{
-	ConVar *found = _getConVar(name);
-	if (found != NULL)
-		return found;
-
-	if (warnIfNotFound)
-	{
-		debugLog(R"(ENGINE: ConVar "{}" does not exist...)"
-		         "\n",
-		         name.toUtf8());
-		engine->showMessageWarning("Engine Error", UString::format(R"(ENGINE: ConVar "%s" does not exist...)"
-		                                                           "\n",
-		                                                           name.toUtf8()));
-	}
-
-	if (!warnIfNotFound)
-		return NULL;
-	else
-		return &cv::emptyDummyConVar;
-}
-
-std::vector<ConVar *> ConVarHandler::getConVarByLetter(const UString &letters) const
-{
-	std::unordered_set<std::string> matchingConVarNames;
-	std::vector<ConVar *> matchingConVars;
-	{
-		if (letters.length() < 1)
-			return matchingConVars;
-
-		const std::vector<ConVar *> &convars = getConVarArray();
-
-		// first try matching exactly
-		for (auto convar : convars)
-		{
-			if (convar->isFlagSet(FCVAR_HIDDEN) || convar->isFlagSet(FCVAR_DEVELOPMENTONLY))
-				continue;
-
-			if (convar->getName().find(letters, 0, letters.length()) == 0)
-			{
-				if (letters.length() > 1)
-					matchingConVarNames.insert(std::string(convar->getName().toUtf8(), convar->getName().lengthUtf8()));
-
-				matchingConVars.push_back(convar);
-			}
-		}
-
-		// then try matching substrings
-		if (letters.length() > 1)
-		{
-			for (auto convar : convars)
-			{
-				if (convar->isFlagSet(FCVAR_HIDDEN) || convar->isFlagSet(FCVAR_DEVELOPMENTONLY))
-					continue;
-
-				if (convar->getName().find(letters) != -1)
-				{
-					std::string stdName(convar->getName().toUtf8(), convar->getName().lengthUtf8());
-					if (matchingConVarNames.find(stdName) == matchingConVarNames.end())
-					{
-						matchingConVarNames.insert(stdName);
-						matchingConVars.push_back(convar);
-					}
-				}
-			}
-		}
-
-		// (results should be displayed in vector order)
-	}
-	return matchingConVars;
-}
-
-UString ConVarHandler::flagsToString(int flags)
-{
-	UString string;
-	{
-		if (flags == FCVAR_NONE)
-			string.append("no flags");
-		else
-		{
-			if (flags & FCVAR_UNREGISTERED)
-				string.append(string.length() > 0 ? " unregistered" : "unregistered");
-			if (flags & FCVAR_DEVELOPMENTONLY)
-				string.append(string.length() > 0 ? " developmentonly" : "developmentonly");
-			if (flags & FCVAR_HARDCODED)
-				string.append(string.length() > 0 ? " hardcoded" : "hardcoded");
-			if (flags & FCVAR_HIDDEN)
-				string.append(string.length() > 0 ? " hidden" : "hidden");
-			if (flags & FCVAR_CHEAT)
-				string.append(string.length() > 0 ? " cheat" : "cheat");
-		}
-	}
-	return string;
-}
-
-void ConVarHandler::resetAllConVarCallbacks()
-{
-	const std::vector<ConVar *> &convars = getConVarArray();
-	for (auto convar : convars)
-	{
-		convar->resetCallbacks();
-	}
-}
-
 //*****************************//
 //	ConVarHandler ConCommands  //
 //*****************************//
@@ -337,7 +293,7 @@ static void _find(const UString &args)
 		return;
 	}
 
-	const std::vector<ConVar *> &convars = convar->getConVarArray();
+	const std::vector<ConVar *> &convars = ConVar::getConVarArray();
 
 	std::vector<ConVar *> matchingConVars;
 	for (auto convar : convars)
@@ -358,7 +314,7 @@ static void _find(const UString &args)
 		UString thelog = "No commands found containing \"";
 		thelog.append(args);
 		thelog.append("\".\n");
-		Engine::logRaw("{:s}", thelog.toUtf8());
+		Engine::logRaw("{:s}", thelog);
 		return;
 	}
 
@@ -367,13 +323,13 @@ static void _find(const UString &args)
 		UString thelog = "[ find : ";
 		thelog.append(args);
 		thelog.append(" ]\n");
-		Engine::logRaw("{:s}", thelog.toUtf8());
+		Engine::logRaw("{:s}", thelog);
 
 		for (auto &matchingConVar : matchingConVars)
 		{
 			UString tstring = matchingConVar->getName();
 			tstring.append("\n");
-			Engine::logRaw("{:s}", tstring.toUtf8());
+			Engine::logRaw("{:s}", tstring);
 		}
 	}
 	Engine::logRaw("----------------------------------------------\n");
@@ -381,7 +337,7 @@ static void _find(const UString &args)
 
 static void _help(const UString &args)
 {
-	UString argsCopy{args.trim()};
+	const UString argsCopy{args.trim()};
 
 	if (argsCopy.length() < 1)
 	{
@@ -390,14 +346,14 @@ static void _help(const UString &args)
 		return;
 	}
 
-	const std::vector<ConVar *> matches = convar->getConVarByLetter(argsCopy);
+	const std::vector<ConVar *> matches = ConVar::getConVarByLetter(argsCopy);
 
 	if (matches.size() < 1)
 	{
 		UString thelog = "ConVar \"";
 		thelog.append(argsCopy);
 		thelog.append("\" does not exist.\n");
-		Engine::logRaw("{:s}", thelog.toUtf8());
+		Engine::logRaw("{:s}", thelog);
 		return;
 	}
 
@@ -418,7 +374,7 @@ static void _help(const UString &args)
 		UString thelog = "ConVar \"";
 		thelog.append(match->getName());
 		thelog.append("\" does not have a helpstring.\n");
-		Engine::logRaw("{:s}", thelog.toUtf8());
+		Engine::logRaw("{:s}", thelog);
 		return;
 	}
 
@@ -426,24 +382,24 @@ static void _help(const UString &args)
 	{
 		if (match->hasValue())
 		{
-			thelog.append(UString::format(" = %s ( def. \"%s\" , ", match->getString().toUtf8(), match->getDefaultString().toUtf8()));
+			thelog.append(UString::fmt(" = {:s} ( def. \"{:s}\" , ", match->getString(), match->getDefaultString()));
 			thelog.append(ConVar::typeToString(match->getType()));
 			thelog.append(", ");
-			thelog.append(ConVarHandler::flagsToString(match->getFlags()));
+			thelog.append(ConVar::flagsToString(match->getFlags()));
 			thelog.append(" )");
 		}
 
 		thelog.append(" - ");
 		thelog.append(match->getHelpstring());
 	}
-	Engine::logRaw("{:s}\n", thelog.toUtf8());
+	Engine::logRaw("{:s}\n", thelog);
 }
 
 static void _listcommands(void)
 {
 	debugLog("----------------------------------------------\n");
 	{
-		std::vector<ConVar *> convars = convar->getConVarArray();
+		std::vector<ConVar *> convars = ConVar::getConVarArray();
 		std::ranges::sort(convars, [](const ConVar *var1, const ConVar *var2) -> bool { return (var1->getName() < var2->getName()); });
 
 		for (auto &convar : convars)
@@ -457,10 +413,10 @@ static void _listcommands(void)
 			{
 				if (var->hasValue())
 				{
-					tstring.append(UString::format(" = %s ( def. \"%s\" , ", var->getString().toUtf8(), var->getDefaultString().toUtf8()));
+					tstring.append(UString::fmt(" = {:s} ( def. \"{:s}\" , ", var->getString(), var->getDefaultString()));
 					tstring.append(ConVar::typeToString(var->getType()));
 					tstring.append(", ");
-					tstring.append(ConVarHandler::flagsToString(var->getFlags()));
+					tstring.append(ConVar::flagsToString(var->getFlags()));
 					tstring.append(" )");
 				}
 
@@ -472,7 +428,7 @@ static void _listcommands(void)
 
 				tstring.append("\n");
 			}
-			debugLog("{:s}", tstring.toUtf8());
+			debugLog("{:s}", tstring);
 		}
 	}
 	debugLog("----------------------------------------------\n");
@@ -498,7 +454,7 @@ UString ConVar::getFancyDefaultValue() const
 
 static void _dumpcommands(void)
 {
-	std::vector<ConVar *> convars = convar->getConVarArray();
+	std::vector<ConVar *> convars = ConVar::getConVarArray();
 	std::ranges::sort(convars, [](const ConVar *var1, const ConVar *var2) -> bool { return (var1->getName() < var2->getName()); });
 	{
 		McFile commands_htm("commands.htm", McFile::TYPE::WRITE);
@@ -523,8 +479,8 @@ static void _dumpcommands(void)
 
 namespace cv
 {
-ConVar find("find", FCVAR_NONE, _find);
-ConVar help("help", FCVAR_NONE, _help);
-ConVar listcommands("listcommands", FCVAR_NONE, _listcommands);
-ConVar dumpcommands("dumpcommands", FCVAR_NONE, _dumpcommands);
+ConVar find("find", FCVAR_NONE, CFUNC(_find));
+ConVar help("help", FCVAR_NONE, CFUNC(_help));
+ConVar listcommands("listcommands", FCVAR_NONE, CFUNC(_listcommands));
+ConVar dumpcommands("dumpcommands", FCVAR_NONE, CFUNC(_dumpcommands));
 } // namespace cv

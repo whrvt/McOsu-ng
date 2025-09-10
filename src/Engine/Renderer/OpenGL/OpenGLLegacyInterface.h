@@ -13,8 +13,6 @@
 
 #ifdef MCENGINE_FEATURE_OPENGL
 
-#include "OpenGLSync.h"
-
 class Image;
 
 class OpenGLLegacyInterface : public Graphics
@@ -24,7 +22,7 @@ public:
 	~OpenGLLegacyInterface() override;
 
 	// scene
-	void beginScene() final;
+	void beginScene() override;
 	void endScene() override;
 
 	// depth buffer
@@ -51,7 +49,7 @@ public:
 
 	// 2d resource drawing
 	void drawImage(Image *image) final;
-	void drawString(McFont *font, UString text) final;
+	void drawString(McFont *font, const UString &text) final;
 
 	// 3d type drawing
 	void drawVAO(VertexArrayObject *vao) final;
@@ -101,8 +99,6 @@ protected:
 	void onTransformUpdate(Matrix4 &projectionMatrix, Matrix4 &worldMatrix) final;
 
 private:
-	static int primitiveToOpenGL(Graphics::PRIMITIVE primitive);
-	static int compareFuncToOpenGL(Graphics::COMPARE_FUNC compareFunc);
 
 	void handleGLErrors();
 
@@ -115,9 +111,6 @@ private:
 	Color m_color;
 	float m_fZ;
 	float m_fClearZ;
-
-	// synchronization
-	OpenGLSync *m_syncobj;
 
 	// clipping
 	std::stack<McRect> m_clipRectStack;

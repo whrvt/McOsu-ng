@@ -43,23 +43,6 @@ void VertexArrayObject::destroy()
 	m_bHasTexcoords = false;
 }
 
-void VertexArrayObject::clear()
-{
-	m_vertices = std::vector<Vector3>();
-	for (size_t i=0; i<m_texcoords.size(); i++)
-	{
-		m_texcoords[i] = std::vector<Vector2>();
-	}
-	m_texcoords = std::vector<std::vector<Vector2>>();
-	m_normals = std::vector<Vector3>();
-	m_colors = std::vector<Color>();
-
-	m_partialUpdateVertexIndices = std::vector<int>();
-	m_partialUpdateColorIndices = std::vector<int>();
-
-	// NOTE: do NOT set m_iNumVertices to 0! (also don't change m_bHasTexcoords)
-}
-
 void VertexArrayObject::empty()
 {
 	m_vertices.clear();
@@ -154,6 +137,19 @@ void VertexArrayObject::setVertex(int index, float x, float y, float z)
 	m_vertices[index].z = z;
 
 	m_partialUpdateVertexIndices.push_back(index);
+}
+
+void VertexArrayObject::setVertices(const std::vector<Vector3> &vertices)
+{
+	m_vertices = vertices;
+	m_iNumVertices = m_vertices.size();
+}
+
+void VertexArrayObject::setTexcoords(const std::vector<Vector2> &texcoords, unsigned int textureUnit)
+{
+	updateTexcoordArraySize(textureUnit);
+	m_texcoords[textureUnit] = texcoords;
+	m_bHasTexcoords = !texcoords.empty();
 }
 
 void VertexArrayObject::setColor(int index, Color color)

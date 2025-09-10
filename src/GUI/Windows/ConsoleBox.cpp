@@ -71,7 +71,7 @@ private:
 class ConsoleBoxSuggestionButton : public CBaseUIButton
 {
 public:
-	ConsoleBoxSuggestionButton(float xPos, float yPos, float xSize, float ySize, UString name, UString text, UString helpText, ConsoleBox *consoleBox)
+	ConsoleBoxSuggestionButton(float xPos, float yPos, float xSize, float ySize, UString name, const UString& text, UString helpText, ConsoleBox *consoleBox)
 	    : CBaseUIButton(xPos, yPos, xSize, ySize, std::move(name), text)
 	{
 		m_sHelpText = std::move(helpText);
@@ -153,6 +153,8 @@ ConsoleBox::ConsoleBox() : WindowUIElement(0, 0, 0, 0, "")
 		m_suggestion->setVisible(false);
 	}
 	m_fSuggestionAnimation = 0;
+	m_fSuggestionY = 0.0f;
+	m_fLogTime = 0.0f;
 	m_bSuggestionAnimateIn = false;
 	m_bSuggestionAnimateOut = false;
 
@@ -171,7 +173,7 @@ ConsoleBox::ConsoleBox() : WindowUIElement(0, 0, 0, 0, "")
 	clearSuggestions();
 
 	// convar callbacks
-	cv::showconsolebox.setCallback(fastdelegate::MakeDelegate(this, &ConsoleBox::show));
+	cv::showconsolebox.setCallback(SA::MakeDelegate<&ConsoleBox::show>(this));
 }
 
 ConsoleBox::~ConsoleBox()
@@ -217,7 +219,7 @@ void ConsoleBox::draw()
 
 void ConsoleBox::drawLogOverlay()
 {
-	std::lock_guard<std::mutex> logGuard(m_logMutex);
+	std::scoped_lock logGuard(m_logMutex);
 
 	const float dpiScale = getDPIScale();
 
@@ -371,7 +373,7 @@ void ConsoleBox::update()
 
 		if (m_fLogYPos == m_logFont->getHeight() * (cv::console_overlay_lines.getInt() + 1))
 		{
-			std::lock_guard<std::mutex> logGuard(m_logMutex);
+			std::scoped_lock logGuard(m_logMutex);
 			m_log.clear();
 		}
 	}
@@ -393,7 +395,7 @@ void ConsoleBox::onSuggestionClicked(CBaseUIButton *suggestion)
 {
 	UString text = suggestion->getName();
 
-	ConVar *temp = convar->getConVarByName(text, false);
+	ConVar *temp = ConVar::getConVarByName(text, false);
 	if (temp != NULL && (temp->hasValue() || temp->hasCallbackArgs()))
 		text.append(" ");
 
@@ -432,7 +434,7 @@ void ConsoleBox::onKeyDown(KeyboardEvent &e)
 			{
 				UString command = m_vSuggestionButtons[m_iSelectedSuggestion]->getName();
 
-				ConVar *temp = convar->getConVarByName(command, false);
+				ConVar *temp = ConVar::getConVarByName(command, false);
 				if (temp != NULL && (temp->hasValue() || temp->hasCallbackArgs()))
 					command.append(" ");
 
@@ -466,7 +468,7 @@ void ConsoleBox::onKeyDown(KeyboardEvent &e)
 			{
 				UString command = m_vSuggestionButtons[m_iSelectedSuggestion]->getName();
 
-				ConVar *temp = convar->getConVarByName(command, false);
+				ConVar *temp = ConVar::getConVarByName(command, false);
 				if (temp != NULL && (temp->hasValue() || temp->hasCallbackArgs()))
 					command.append(" ");
 
@@ -545,7 +547,7 @@ void ConsoleBox::onChar(KeyboardEvent &e)
 		// rebuild suggestion list
 		clearSuggestions();
 
-		std::vector<ConVar *> suggestions = convar->getConVarByLetter(m_textbox->getText());
+		std::vector<ConVar *> suggestions = ConVar::getConVarByLetter(m_textbox->getText());
 		for (size_t i = 0; i < suggestions.size(); i++)
 		{
 			UString suggestionText = suggestions[i]->getName();
@@ -643,7 +645,7 @@ void ConsoleBox::addSuggestion(const UString &text, const UString &helpText, con
 	{
 		button->setDrawFrame(false);
 		button->setSizeX(button->getFont()->getStringWidth(text));
-		button->setClickCallback(fastdelegate::MakeDelegate(this, &ConsoleBox::onSuggestionClicked));
+		button->setClickCallback(SA::MakeDelegate<&ConsoleBox::onSuggestionClicked>(this));
 		button->setDrawBackground(false);
 	}
 	m_suggestion->getContainer()->addBaseUIElement(button);
@@ -722,7 +724,7 @@ void ConsoleBox::toggle(KeyboardEvent &e)
 
 void ConsoleBox::log(UString text, Color textColor)
 {
-	std::lock_guard<std::mutex> logGuard(m_logMutex);
+	std::scoped_lock logGuard(m_logMutex);
 
 	// remove illegal chars
 	{

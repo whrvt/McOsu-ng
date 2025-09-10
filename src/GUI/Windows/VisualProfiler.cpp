@@ -136,7 +136,7 @@ void VisualProfiler::draw()
 				                                      : sndEngType == SoundEngine::SOLOUD ? "SoLoud"
 				                                                                          : "?";
 
-				    addTextLine(UString::fmt("ConVars: {}", convar->getConVarArray().size()), textFont, m_textLines);
+				    addTextLine(UString::fmt("ConVars: {}", ConVar::getConVarArray().size()), textFont, m_textLines);
 					addTextLine(UString::fmt("Monitor: [{}] of {}", env->getMonitor(), env->getMonitors().size()), textFont, m_textLines);
 					addTextLine(UString::fmt("Env Mouse Pos: {} x {}", (int)envMousePos.x, (int)envMousePos.y), textFont, m_textLines);
 					addTextLine(UString::fmt("SoundEngine: {:s}", sndEngTypeStr), textFont, m_textLines);

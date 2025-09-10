@@ -9,18 +9,20 @@
 
 #if defined(MCENGINE_FEATURE_GLES32) || defined(MCENGINE_FEATURE_GL3) || defined(MCENGINE_FEATURE_OPENGL)
 
-#include <SDL3/SDL.h>
+#include <SDL3/SDL_video.h>
 
 #include "Engine.h"
+#include "OpenGLSync.h"
 
 // shared convars
-namespace cv {
+namespace cv
+{
 ConVar debug_opengl("debug_opengl", false, FCVAR_NONE);
 }
 
+// resolve GL functions (static, called before construction)
 void SDLGLInterface::load()
 {
-	// resolve GL functions
 #ifndef MCENGINE_PLATFORM_WASM
 	if (!gladLoadGL())
 	{
@@ -34,17 +36,34 @@ void SDLGLInterface::load()
 	debugLog("GL_VERSION string: {}\n", reinterpret_cast<const char *>(glGetString(GL_VERSION)));
 }
 
+SDLGLInterface::SDLGLInterface(SDL_Window *window)
+    : BackendGLInterface(),
+      m_window(window),
+      m_syncobj(std::make_unique<OpenGLSync>())
+{
+}
+
+void SDLGLInterface::beginScene()
+{
+	// block on frame queue (if enabled)
+	m_syncobj->begin();
+
+	BackendGLInterface::beginScene();
+}
+
 void SDLGLInterface::endScene()
 {
 	BackendGLInterface::endScene();
+
+	// create sync obj for the gl commands this frame (if enabled)
+	m_syncobj->end();
 
 	SDL_GL_SwapWindow(m_window);
 }
 
 void SDLGLInterface::setVSync(bool vsync)
 {
-	if constexpr (!Env::cfg(OS::WASM))
-		SDL_GL_SetSwapInterval(vsync ? 1 : 0);
+	SDL_GL_SetSwapInterval(vsync ? 1 : 0);
 }
 
 UString SDLGLInterface::getVendor()
@@ -97,5 +116,32 @@ int SDLGLInterface::getVRAMRemaining()
 	glGetIntegerv(TEXTURE_FREE_MEMORY_ATI, atiMemory);
 	return atiMemory[0];
 }
+
+std::unordered_map<Graphics::PRIMITIVE, int> SDLGLInterface::primitiveToOpenGLMap = {
+    {Graphics::PRIMITIVE::PRIMITIVE_LINES,          GL_LINES                             },
+    {Graphics::PRIMITIVE::PRIMITIVE_LINE_STRIP,     GL_LINE_STRIP                        },
+    {Graphics::PRIMITIVE::PRIMITIVE_TRIANGLES,      GL_TRIANGLES                         },
+    {Graphics::PRIMITIVE::PRIMITIVE_TRIANGLE_FAN,   GL_TRIANGLE_FAN                      },
+    {Graphics::PRIMITIVE::PRIMITIVE_TRIANGLE_STRIP, GL_TRIANGLE_STRIP                    },
+    {Graphics::PRIMITIVE::PRIMITIVE_QUADS,          Env::cfg(REND::GLES32) ? 0 : GL_QUADS},
+};
+
+std::unordered_map<Graphics::COMPARE_FUNC, int> SDLGLInterface::compareFuncToOpenGLMap = {
+
+    {Graphics::COMPARE_FUNC::COMPARE_FUNC_NEVER,        GL_NEVER   },
+    {Graphics::COMPARE_FUNC::COMPARE_FUNC_LESS,         GL_LESS    },
+    {Graphics::COMPARE_FUNC::COMPARE_FUNC_EQUAL,        GL_EQUAL   },
+    {Graphics::COMPARE_FUNC::COMPARE_FUNC_LESSEQUAL,    GL_LEQUAL  },
+    {Graphics::COMPARE_FUNC::COMPARE_FUNC_GREATER,      GL_GREATER },
+    {Graphics::COMPARE_FUNC::COMPARE_FUNC_NOTEQUAL,     GL_NOTEQUAL},
+    {Graphics::COMPARE_FUNC::COMPARE_FUNC_GREATEREQUAL, GL_GEQUAL  },
+    {Graphics::COMPARE_FUNC::COMPARE_FUNC_ALWAYS,       GL_ALWAYS  },
+};
+
+std::unordered_map<Graphics::USAGE_TYPE, unsigned int> SDLGLInterface::usageToOpenGLMap = {
+    {Graphics::USAGE_TYPE::USAGE_STATIC,  GL_STATIC_DRAW },
+    {Graphics::USAGE_TYPE::USAGE_DYNAMIC, GL_DYNAMIC_DRAW},
+    {Graphics::USAGE_TYPE::USAGE_STREAM,  GL_STREAM_DRAW },
+};
 
 #endif

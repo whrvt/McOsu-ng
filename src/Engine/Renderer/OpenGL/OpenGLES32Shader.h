@@ -23,18 +23,18 @@ public:
 	virtual void enable();
 	virtual void disable();
 
-	virtual void setUniform1f(const UString &name, float value);
-	virtual void setUniform1fv(const UString &name, int count, float *values);
-	virtual void setUniform1i(const UString &name, int value);
-	virtual void setUniform2f(const UString &name, float x, float y);
-	virtual void setUniform2fv(const UString &name, int count, float *vectors);
-	virtual void setUniform3f(const UString &name, float x, float y, float z);
-	virtual void setUniform3fv(const UString &name, int count, float *vectors);
-	virtual void setUniform4f(const UString &name, float x, float y, float z, float w);
-	virtual void setUniformMatrix4fv(const UString &name, Matrix4 &matrix);
-	virtual void setUniformMatrix4fv(const UString &name, float *v);
+	virtual void setUniform1f(const std::string_view &name, float value);
+	virtual void setUniform1fv(const std::string_view &name, int count, float *values);
+	virtual void setUniform1i(const std::string_view &name, int value);
+	virtual void setUniform2f(const std::string_view &name, float x, float y);
+	virtual void setUniform2fv(const std::string_view &name, int count, float *vectors);
+	virtual void setUniform3f(const std::string_view &name, float x, float y, float z);
+	virtual void setUniform3fv(const std::string_view &name, int count, float *vectors);
+	virtual void setUniform4f(const std::string_view &name, float x, float y, float z, float w);
+	virtual void setUniformMatrix4fv(const std::string_view &name, Matrix4 &matrix);
+	virtual void setUniformMatrix4fv(const std::string_view &name, float *v);
 
-	int getAttribLocation(const UString &name);
+	int getAttribLocation(const std::string_view &name);
 
 	// ILLEGAL:
 	bool isActive();
@@ -47,7 +47,7 @@ private:
 	bool compile(const UString &vertexShader, const UString &fragmentShader, bool source);
 	int createShaderFromString(const UString &shaderSource, int shaderType);
 	int createShaderFromFile(const UString &fileName, int shaderType);
-	int getAndCacheUniformLocation(const UString &name);
+	int getAndCacheUniformLocation(const std::string_view &name);
 
 	UString m_sVsh, m_sFsh;
 
@@ -58,8 +58,7 @@ private:
 
 	int m_iProgramBackup;
 
-	std::unordered_map<std::string, int> m_uniformLocationCache;
-	std::string m_sTempStringBuffer;
+	std::unordered_map<std::string_view, int> m_uniformLocationCache;
 };
 
 #endif

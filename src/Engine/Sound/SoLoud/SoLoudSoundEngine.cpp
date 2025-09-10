@@ -28,17 +28,13 @@ ConVar snd_sanity_simultaneous_limit("snd_sanity_simultaneous_limit", 128, FCVAR
                                      "The maximum number of overlayable sounds that are allowed to be active at once");
 } // namespace cv
 
-std::unique_ptr<SoLoud::Soloud> SoLoudSoundEngine::s_SLInstance = nullptr;
-SoLoud::Soloud *soloud = nullptr;
+std::unique_ptr<SoLoud::Soloud> soloud = nullptr;
 
 SoLoudSoundEngine::SoLoudSoundEngine()
     : SoundEngine()
 {
-	if (!s_SLInstance)
-	{
-		s_SLInstance = std::make_unique<SoLoud::Soloud>();
-		soloud = s_SLInstance.get();
-	}
+	if (!soloud)
+		soloud = std::make_unique<SoLoud::Soloud>();
 
 	cv::snd_freq.setValue(SoLoud::Soloud::AUTO); // let it be auto-negotiated (the snd_freq callback will adjust if needed, if this is manually set in a config)
 	cv::snd_freq.setDefaultFloat(SoLoud::Soloud::AUTO);
@@ -63,19 +59,18 @@ SoLoudSoundEngine::SoLoudSoundEngine()
 	initializeOutputDevice(defaultOutputDevice.id);
 
 	// convar callbacks
-	cv::snd_freq.setCallback(fastdelegate::MakeDelegate(this, &SoLoudSoundEngine::restart));
-	cv::snd_restart.setCallback(fastdelegate::MakeDelegate(this, &SoLoudSoundEngine::restart));
-	cv::snd_output_device.setCallback(fastdelegate::MakeDelegate(this, &SoLoudSoundEngine::setOutputDevice));
-	cv::snd_soloud_backend.setCallback(fastdelegate::MakeDelegate(this, &SoLoudSoundEngine::restart));
-	cv::snd_sanity_simultaneous_limit.setCallback(fastdelegate::MakeDelegate(this, &SoLoudSoundEngine::onMaxActiveChange));
+	cv::snd_freq.setCallback(SA::MakeDelegate<&SoLoudSoundEngine::restart>(this));
+	cv::snd_restart.setCallback(SA::MakeDelegate<&SoLoudSoundEngine::restart>(this));
+	cv::snd_output_device.setCallback(SA::MakeDelegate<&SoLoudSoundEngine::setOutputDevice>(this));
+	cv::snd_soloud_backend.setCallback(SA::MakeDelegate<&SoLoudSoundEngine::restart>(this));
+	cv::snd_sanity_simultaneous_limit.setCallback(SA::MakeDelegate<&SoLoudSoundEngine::onMaxActiveChange>(this));
 }
 
 SoLoudSoundEngine::~SoLoudSoundEngine()
 {
-	if (m_bReady)
+	if (m_bReady && soloud)
 		soloud->deinit();
-	s_SLInstance.reset();
-	soloud = nullptr;
+	soloud.reset();
 }
 
 void SoLoudSoundEngine::restart()
@@ -101,14 +96,32 @@ bool SoLoudSoundEngine::play(Sound *snd, float pan, float pitch)
 	pitch = std::clamp<float>(pitch, 0.0f, 2.0f);
 
 	auto *soloudSound = snd->as<SoLoudSound>();
+	if (!soloudSound)
+		return false;
 
-	auto handle = soloudSound ? soloudSound->getHandle() : (SOUNDHANDLE)0;
-	if (handle != 0 && soloud->getPause(handle))
+	auto handle = soloudSound->getHandle();
+
+	// verify that the sound object's handle isn't stale
+	if (handle != 0 && !soloud->isValidVoiceHandle(handle))
 	{
-		// just unpause if paused
-		soloudSound->setPitch(pitch);
-		soloudSound->setPan(pan);
-		soloud->setPause(handle, false);
+		handle = 0;
+		soloudSound->m_handle = 0;
+	}
+	if (handle != 0 && !soloudSound->isOverlayable())
+	{
+		if (soloudSound->getPitch() != pitch)
+			soloudSound->setPitch(pitch);
+		if (soloudSound->getSpeed() != pan)
+			soloudSound->setPan(pan);
+
+		const bool wasPaused = soloud->getPause(handle);
+
+		if (wasPaused) // just unpause if paused
+			soloud->setPause(handle, false);
+
+		if (cv::debug_snd.getBool())
+			debugLog("play()ing already playing non-overlayable sound {}, was{} paused\n", soloudSound->getFilePath(), wasPaused ? "" : "n't");
+
 		return true;
 	}
 
@@ -138,7 +151,7 @@ bool SoLoudSoundEngine::playSound(SoLoudSound *soloudSound, float pan, float pit
 	if (cv::debug_snd.getBool())
 	{
 		debugLog("SoLoudSoundEngine: Playing {:s} (stream={:d}, 3d={:d}) with speed={:f}, pitch={:f}, volume={:f}\n", soloudSound->m_sFilePath.toUtf8(),
-		         soloudSound->m_bStream ? 1 : 0, is3d ? 1 : 0, soloudSound->m_speed, pitch, soloudSound->m_fVolume);
+		         soloudSound->m_bStream ? 1 : 0, is3d ? 1 : 0, soloudSound->m_fSpeed, pitch, soloudSound->m_fVolume);
 	}
 
 	// play the sound with appropriate method
@@ -167,7 +180,7 @@ bool SoLoudSoundEngine::playSound(SoLoudSound *soloudSound, float pan, float pit
 			                               // it would lead to getMaxActiveVoiceCount() <= getActiveVoiceCount()
 
 		if (cv::debug_snd.getBool() && handle)
-			debugLog("SoLoudSoundEngine: Playing streaming audio through SLFXStream with speed={:f}, pitch={:f}\n", soloudSound->m_speed, soloudSound->m_pitch);
+			debugLog("SoLoudSoundEngine: Playing streaming audio through SLFXStream with speed={:f}, pitch={:f}\n", soloudSound->m_fSpeed, soloudSound->m_fPitch);
 	}
 	else
 	{
@@ -178,11 +191,12 @@ bool SoLoudSoundEngine::playSound(SoLoudSound *soloudSound, float pan, float pit
 	// finalize playback
 	if (handle != 0)
 	{
+		// store the handle and mark playback time
+		soloudSound->m_handle = handle;
+
 		if (restorePos != 0.0)
 			soloud->seek(handle, restorePos); // restore the position to where we were pre-pause
 
-		// store the handle and mark playback time
-		soloudSound->m_handle = handle;
 		soloudSound->setLastPlayTime(engine->getTime());
 
 		if (soloudSound->m_bStream) // unpause and fade it in if it's a stream (since we started it paused with 0 volume)
@@ -209,12 +223,12 @@ unsigned int SoLoudSoundEngine::playDirectSound(SoLoudSound *soloudSound, float 
 	float finalPitch = pitch;
 
 	// combine with sound's pitch setting
-	if (soloudSound->m_pitch != 1.0f)
-		finalPitch *= soloudSound->m_pitch;
+	if (soloudSound->m_fPitch != 1.0f)
+		finalPitch *= soloudSound->m_fPitch;
 
 	// if speed compensation is disabled, apply speed as pitch
-	if (!cv::snd_speed_compensate_pitch.getBool() && soloudSound->m_speed != 1.0f)
-		finalPitch *= soloudSound->m_speed;
+	if (!cv::snd_speed_compensate_pitch.getBool() && soloudSound->m_fSpeed != 1.0f)
+		finalPitch *= soloudSound->m_fSpeed;
 
 	// play directly
 	unsigned int handle = soloud->play(*soloudSound->m_audioSource, volume, pan, false /* not paused */);
@@ -227,7 +241,7 @@ unsigned int SoLoudSoundEngine::playDirectSound(SoLoudSound *soloudSound, float 
 
 		if (cv::debug_snd.getBool())
 			debugLog("SoLoudSoundEngine: Playing non-streaming audio with finalPitch={:f} (pitch={:f} * soundPitch={:f} * speedAsPitch={:f})\n", finalPitch, pitch,
-			         soloudSound->m_pitch, (!cv::snd_speed_compensate_pitch.getBool() && soloudSound->m_speed != 1.0f) ? soloudSound->m_speed : 1.0f);
+			         soloudSound->m_fPitch, (!cv::snd_speed_compensate_pitch.getBool() && soloudSound->m_fSpeed != 1.0f) ? soloudSound->m_fSpeed : 1.0f);
 	}
 
 	return handle;
@@ -472,15 +486,15 @@ bool SoLoudSoundEngine::initializeOutputDevice(int id, bool)
 			backend = SoLoud::Soloud::MINIAUDIO;
 	}
 
-	unsigned int sampleRate =
-	    (cv::snd_freq.getVal<unsigned int>() == cv::snd_freq.getDefaultVal<unsigned int>() ? SoLoud::Soloud::AUTO : cv::snd_freq.getVal<unsigned int>());
-	if (sampleRate <= 0)
+	unsigned int sampleRate = (cv::snd_freq.getVal<unsigned int>() == cv::snd_freq.getDefaultVal<unsigned int>() ? (unsigned int)SoLoud::Soloud::AUTO
+	                                                                                                             : cv::snd_freq.getVal<unsigned int>());
+	if (sampleRate < 22500 || sampleRate > 192000)
 		sampleRate = SoLoud::Soloud::AUTO;
 
 	unsigned int bufferSize =
-	    (cv::snd_soloud_buffer.getVal<unsigned int>() == cv::snd_soloud_buffer.getDefaultVal<unsigned int>() ? SoLoud::Soloud::AUTO
+	    (cv::snd_soloud_buffer.getVal<unsigned int>() == cv::snd_soloud_buffer.getDefaultVal<unsigned int>() ? (unsigned int)SoLoud::Soloud::AUTO
 	                                                                                                         : cv::snd_soloud_buffer.getVal<unsigned int>());
-	if (bufferSize < 0)
+	if (bufferSize > 2048)
 		bufferSize = SoLoud::Soloud::AUTO;
 
 	// use stereo output

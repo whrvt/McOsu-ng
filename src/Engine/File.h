@@ -22,9 +22,6 @@ class DirectoryCache;
 class McFile
 {
 public:
-	
-	
-
 	enum class TYPE : uint8_t
 	{
 		READ,
@@ -52,7 +49,8 @@ public:
 
 	UString readLine();
 	UString readString();
-	const char *readFile(); // WARNING: this is NOT a null-terminated string! DO NOT USE THIS with UString/std::string!
+	const char *readFile();                           // WARNING: this is NOT a null-terminated string! DO NOT USE THIS with UString/std::string!
+	[[nodiscard]] std::vector<char> takeFileBuffer(); // moves the file buffer out, allowing immediate destruction of the file object
 
 	[[nodiscard]] constexpr size_t getFileSize() const { return m_fileSize; }
 	[[nodiscard]] inline UString getPath() const { return m_filePath; }

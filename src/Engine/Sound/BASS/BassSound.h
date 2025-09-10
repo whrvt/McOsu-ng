@@ -66,8 +66,8 @@ private:
 	void cleanupWasapiStreams();
 	SOUNDHANDLE createWasapiChannel();
 
-	void setPrevPosition(unsigned long prevPosition) { m_iPrevPosition = prevPosition; }
-	[[nodiscard]] inline unsigned long getPrevPosition() const { return m_iPrevPosition; }
+	inline void setPrevPosition(unsigned long prevPosition) { m_iPrevPosition = prevPosition; }
+	[[nodiscard]] constexpr unsigned long getPrevPosition() const { return m_iPrevPosition; }
 
 	// TODO: get rid of these "BACKUP" things
 	SOUNDHANDLE m_HSTREAM;

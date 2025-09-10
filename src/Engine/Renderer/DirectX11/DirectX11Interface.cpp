@@ -802,7 +802,7 @@ void DirectX11Interface::drawImage(Image *image)
 	}
 }
 
-void DirectX11Interface::drawString(McFont *font, UString text)
+void DirectX11Interface::drawString(McFont *font, const UString &text)
 {
 	if (font == NULL || text.length() < 1 || !font->isReady())
 		return;

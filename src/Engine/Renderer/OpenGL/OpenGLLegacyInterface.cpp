@@ -19,7 +19,7 @@
 #include "OpenGLShader.h"
 #include "OpenGLVertexArrayObject.h"
 
-#include "OpenGLHeaders.h"
+#include "SDLGLInterface.h"
 #include "OpenGLStateCache.h"
 
 #include <utility>
@@ -39,7 +39,14 @@ OpenGLLegacyInterface::OpenGLLegacyInterface() : Graphics()
 	m_fClearZ = 1;
 	m_fZ = 1;
 
-	m_syncobj = new OpenGLSync();
+	// quality
+	glHint(GL_FRAGMENT_SHADER_DERIVATIVE_HINT, GL_NICEST);
+	glHint(GL_GENERATE_MIPMAP_HINT, GL_NICEST);
+	glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
+	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
+	glHint(GL_POINT_SMOOTH_HINT, GL_NICEST);
+	glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
+	glHint(GL_TEXTURE_COMPRESSION_HINT, GL_NICEST);
 
 	// enable
 	glEnable(GL_TEXTURE_2D);
@@ -53,9 +60,6 @@ OpenGLLegacyInterface::OpenGLLegacyInterface() : Graphics()
 
 	// shading
 	glShadeModel(GL_SMOOTH);
-	glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
-	glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
-	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 
 	// blending
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -68,15 +72,11 @@ OpenGLLegacyInterface::OpenGLLegacyInterface() : Graphics()
 	OpenGLStateCache::getInstance().initialize();
 }
 
-OpenGLLegacyInterface::~OpenGLLegacyInterface()
-{
-	SAFE_DELETE(m_syncobj);
-}
+OpenGLLegacyInterface::~OpenGLLegacyInterface() = default;
 
 void OpenGLLegacyInterface::beginScene()
 {
 	m_bInScene = true;
-	m_syncobj->begin();
 
 	Matrix4 defaultProjectionMatrix = Camera::buildMatrixOrtho2D(0, m_vResolution.x, m_vResolution.y, 0, -1.0f, 1.0f);
 
@@ -113,7 +113,6 @@ void OpenGLLegacyInterface::endScene()
 
 #endif
 
-	m_syncobj->end();
 	m_bInScene = false;
 }
 
@@ -402,7 +401,7 @@ void OpenGLLegacyInterface::drawImage(Image *image)
 	}
 }
 
-void OpenGLLegacyInterface::drawString(McFont *font, UString text)
+void OpenGLLegacyInterface::drawString(McFont *font, const UString &text)
 {
 	if (font == NULL || text.length() < 1 || !font->isReady())
 		return;
@@ -443,7 +442,7 @@ void OpenGLLegacyInterface::drawVAO(VertexArrayObject *vao)
 	const std::vector<std::vector<Vector2>> &texcoords = vao->getTexcoords();
 	const std::vector<Color> &colors = vao->getColors();
 
-	glBegin(primitiveToOpenGL(vao->getPrimitive()));
+	glBegin(SDLGLInterface::primitiveToOpenGLMap[vao->getPrimitive()]);
 	for (size_t i = 0; i < vertices.size(); i++)
 	{
 		if (i < colors.size())
@@ -549,7 +548,7 @@ void OpenGLLegacyInterface::setAlphaTesting(bool enabled)
 
 void OpenGLLegacyInterface::setAlphaTestFunc(COMPARE_FUNC alphaFunc, float ref)
 {
-	glAlphaFunc(compareFuncToOpenGL(alphaFunc), ref);
+	glAlphaFunc(SDLGLInterface::compareFuncToOpenGLMap[alphaFunc], ref);
 }
 
 void OpenGLLegacyInterface::setBlending(bool enabled)
@@ -712,52 +711,6 @@ void OpenGLLegacyInterface::onTransformUpdate(Matrix4 &projectionMatrix, Matrix4
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadMatrixf(worldMatrix.get());
-}
-
-int OpenGLLegacyInterface::primitiveToOpenGL(Graphics::PRIMITIVE primitive)
-{
-	switch (primitive)
-	{
-	case Graphics::PRIMITIVE::PRIMITIVE_LINES:
-		return GL_LINES;
-	case Graphics::PRIMITIVE::PRIMITIVE_LINE_STRIP:
-		return GL_LINE_STRIP;
-	case Graphics::PRIMITIVE::PRIMITIVE_TRIANGLES:
-		return GL_TRIANGLES;
-	case Graphics::PRIMITIVE::PRIMITIVE_TRIANGLE_FAN:
-		return GL_TRIANGLE_FAN;
-	case Graphics::PRIMITIVE::PRIMITIVE_TRIANGLE_STRIP:
-		return GL_TRIANGLE_STRIP;
-	case Graphics::PRIMITIVE::PRIMITIVE_QUADS:
-		return GL_QUADS;
-	}
-
-	return GL_TRIANGLES;
-}
-
-int OpenGLLegacyInterface::compareFuncToOpenGL(Graphics::COMPARE_FUNC compareFunc)
-{
-	switch (compareFunc)
-	{
-	case Graphics::COMPARE_FUNC::COMPARE_FUNC_NEVER:
-		return GL_NEVER;
-	case Graphics::COMPARE_FUNC::COMPARE_FUNC_LESS:
-		return GL_LESS;
-	case Graphics::COMPARE_FUNC::COMPARE_FUNC_EQUAL:
-		return GL_EQUAL;
-	case Graphics::COMPARE_FUNC::COMPARE_FUNC_LESSEQUAL:
-		return GL_LEQUAL;
-	case Graphics::COMPARE_FUNC::COMPARE_FUNC_GREATER:
-		return GL_GREATER;
-	case Graphics::COMPARE_FUNC::COMPARE_FUNC_NOTEQUAL:
-		return GL_NOTEQUAL;
-	case Graphics::COMPARE_FUNC::COMPARE_FUNC_GREATEREQUAL:
-		return GL_GEQUAL;
-	case Graphics::COMPARE_FUNC::COMPARE_FUNC_ALWAYS:
-		return GL_ALWAYS;
-	}
-
-	return GL_ALWAYS;
 }
 
 void OpenGLLegacyInterface::handleGLErrors()

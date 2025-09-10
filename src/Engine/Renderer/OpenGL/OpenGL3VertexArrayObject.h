@@ -24,9 +24,6 @@ public:
 	inline unsigned int const getNumTexcoords0() const {return m_iNumTexcoords;}
 
 private:
-	static int primitiveToOpenGL(Graphics::PRIMITIVE primitive);
-	static unsigned int usageToOpenGL(Graphics::USAGE_TYPE usage);
-
 	virtual void init();
 	virtual void initAsync();
 	virtual void destroy();

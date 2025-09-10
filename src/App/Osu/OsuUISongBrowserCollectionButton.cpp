@@ -126,7 +126,7 @@ void OsuUISongBrowserCollectionButton::triggerContextMenu(Vector2 pos)
 			}
 		}
 		m_contextMenu->end(false, false);
-		m_contextMenu->setClickCallback( fastdelegate::MakeDelegate(this, &OsuUISongBrowserCollectionButton::onContextMenu) );
+		m_contextMenu->setClickCallback( SA::MakeDelegate<&OsuUISongBrowserCollectionButton::onContextMenu>(this) );
 		OsuUIContextMenu::clampToRightScreenEdge(m_contextMenu);
 		OsuUIContextMenu::clampToBottomScreenEdge(m_contextMenu);
 	}
@@ -174,7 +174,7 @@ void OsuUISongBrowserCollectionButton::onContextMenu(const UString& text, int id
 				label->setTextDarkColor(0xff000000);
 			}
 			m_contextMenu->end(false, false);
-			m_contextMenu->setClickCallback( fastdelegate::MakeDelegate(this, &OsuUISongBrowserCollectionButton::onRenameCollectionConfirmed) );
+			m_contextMenu->setClickCallback( SA::MakeDelegate<&OsuUISongBrowserCollectionButton::onRenameCollectionConfirmed>(this) );
 			OsuUIContextMenu::clampToRightScreenEdge(m_contextMenu);
 			OsuUIContextMenu::clampToBottomScreenEdge(m_contextMenu);
 		}
@@ -200,7 +200,7 @@ void OsuUISongBrowserCollectionButton::onContextMenu(const UString& text, int id
 					m_contextMenu->addButtonJustified("No", false);
 				}
 				m_contextMenu->end(false, false);
-				m_contextMenu->setClickCallback( fastdelegate::MakeDelegate(this, &OsuUISongBrowserCollectionButton::onDeleteCollectionConfirmed) );
+				m_contextMenu->setClickCallback( SA::MakeDelegate<&OsuUISongBrowserCollectionButton::onDeleteCollectionConfirmed>(this) );
 				OsuUIContextMenu::clampToRightScreenEdge(m_contextMenu);
 				OsuUIContextMenu::clampToBottomScreenEdge(m_contextMenu);
 			}

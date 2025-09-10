@@ -46,7 +46,7 @@ public:
 	CBaseUITextbox *setCaretWidth(int caretWidth) {m_iCaretWidth = caretWidth; return this;}
 	CBaseUITextbox *setTextJustification(int textJustification) {m_iTextJustification = textJustification; setText(m_sText); return this;}
 
-	virtual CBaseUITextbox *setText(UString text);
+	virtual CBaseUITextbox *setText(const UString &text);
 
 	void setCursorPosRight();
 

@@ -26,9 +26,9 @@ public:
 	void click() {onClicked();}
 
 	// callbacks, either void or with ourself as the argument
-	typedef fastdelegate::FastDelegate0<> ButtonClickVoidCallback;
+	using ButtonClickVoidCallback = SA::delegate<void()>;
 	CBaseUIButton *setClickCallback(const ButtonClickVoidCallback& clickCallback) {m_clickVoidCallback = clickCallback; return this;}
-	typedef fastdelegate::FastDelegate1<CBaseUIButton*> ButtonClickCallback;
+	using ButtonClickCallback = SA::delegate<void(CBaseUIButton*)>;
 	CBaseUIButton *setClickCallback(const ButtonClickCallback& clickCallback) {m_clickCallback = clickCallback; return this;}
 
 	// set

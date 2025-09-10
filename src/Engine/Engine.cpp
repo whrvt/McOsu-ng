@@ -28,6 +28,30 @@
 #include "Engine.h"
 #include "McMath.h"
 
+//******************//
+//	Engine Globals	//
+//******************//
+
+std::unique_ptr<Mouse> mouse = nullptr;
+std::unique_ptr<Keyboard> keyboard = nullptr;
+std::unique_ptr<App> app = nullptr;
+std::unique_ptr<Graphics> g = nullptr;
+std::unique_ptr<SoundEngine> soundEngine = nullptr;
+std::unique_ptr<ResourceManager> resourceManager = nullptr;
+std::unique_ptr<NetworkHandler> networkHandler = nullptr;
+std::unique_ptr<AnimationHandler> animationHandler = nullptr;
+std::unique_ptr<SteamworksInterface> steam = nullptr;
+std::unique_ptr<DiscordInterface> discord = nullptr;
+
+Engine *engine = NULL;
+
+Console *Engine::m_console = NULL;
+ConsoleBox *Engine::m_consoleBox = NULL;
+
+//**************//
+//	End Globals	//
+//**************//
+
 //**********************//
 //	Engine ConCommands	//
 //**********************//
@@ -114,13 +138,13 @@ ConVar restart("restart", FCVAR_NONE, []() -> void {engine ? engine->restart() :
 ConVar printsize("printsize", FCVAR_NONE, []() -> void {if (engine) {Vector2 s = engine->getScreenSize(); Engine::logRaw("[Engine] screenSize = ({:f}, {:f})\n", s.x, s.y);}});
 ConVar fullscreen("fullscreen", FCVAR_NONE, []() -> void {engine ? engine->toggleFullscreen() : (void)0;});
 ConVar borderless("borderless", FCVAR_NONE, []() -> void {_borderless();});
-ConVar windowed("windowed", FCVAR_NONE, _windowed);
+ConVar windowed("windowed", FCVAR_NONE, CFUNC(_windowed));
 ConVar minimize("minimize", FCVAR_NONE, []() -> void {env ? env->minimize() : (void)0;});
 ConVar maximize("maximize", FCVAR_NONE, []() -> void {env ? env->maximize() : (void)0;});
 ConVar resizable_toggle("resizable_toggle", FCVAR_NONE, []() -> void {env ? env->setWindowResizable(!env->isWindowResizable()) : (void)0;});
 ConVar focus("focus", FCVAR_NONE, []() -> void {engine ? engine->focus() : (void)0;});
 ConVar center("center", FCVAR_NONE, []() -> void {engine ? engine->center() : (void)0;});
-ConVar version("version", FCVAR_NONE, Engine::printVersion);
+ConVar version("version", FCVAR_NONE, CFUNC(Engine::printVersion));
 ConVar errortest("errortest", FCVAR_NONE, []() -> void {engine ? engine->showMessageError("Error Test", "This is an error message, fullscreen mode should be disabled and you should be able to read this") : (void)0;});
 ConVar crash("crash", FCVAR_NONE, []() -> void {std::abort();});
 ConVar dpiinfo("dpiinfo", FCVAR_NONE, []() -> void {env ? Engine::logRaw("[Engine] DPI: {}, DPIScale: {:.4f}\n", env->getDPI(), env->getDPIScale()) : (void)0;});
@@ -128,22 +152,6 @@ ConVar dpiinfo("dpiinfo", FCVAR_NONE, []() -> void {env ? Engine::logRaw("[Engin
 //******************//
 //	End ConCommands	//
 //******************//
-
-std::unique_ptr<Mouse> mouse = nullptr;
-std::unique_ptr<Keyboard> keyboard = nullptr;
-std::unique_ptr<App> app = nullptr;
-std::unique_ptr<Graphics> g = nullptr;
-std::unique_ptr<SoundEngine> soundEngine = nullptr;
-std::unique_ptr<ResourceManager> resourceManager = nullptr;
-std::unique_ptr<NetworkHandler> networkHandler = nullptr;
-std::unique_ptr<AnimationHandler> animationHandler = nullptr;
-std::unique_ptr<SteamworksInterface> steam = nullptr;
-std::unique_ptr<DiscordInterface> discord = nullptr;
-
-Engine *engine = NULL;
-
-Console *Engine::m_console = NULL;
-ConsoleBox *Engine::m_consoleBox = NULL;
 
 Engine::Engine()
 {
@@ -170,7 +178,7 @@ Engine::Engine()
 	m_fVsyncFrameCounterTime = 0.0f;
 	m_dFrameTime = 0.016;
 
-	cv::engine_throttle.setCallback(fastdelegate::MakeDelegate(this, &Engine::onEngineThrottleChanged));
+	cv::engine_throttle.setCallback(SA::MakeDelegate<&Engine::onEngineThrottleChanged>(this));
 
 	// window
 	m_bBlackout = false;
@@ -220,15 +228,15 @@ Engine::Engine()
 		resourceManager = std::make_unique<ResourceManager>();
 		runtime_assert(resourceManager.get(), "Resource manager menu failed to initialize!");
 
-		SoundEngine::SndEngineType type = Env::cfg(AUD::BASS) ? SoundEngine::BASS : Env::cfg(AUD::SOLOUD) ? SoundEngine::SOLOUD : Env::cfg(AUD::SDL) ? SoundEngine::SDL : SoundEngine::BASS;
+		SoundEngine::SndEngineType type = Env::cfg(AUD::SOLOUD) ? SoundEngine::SOLOUD : Env::cfg(AUD::BASS) ? SoundEngine::BASS : Env::cfg(AUD::SDL) ? SoundEngine::SDL : SoundEngine::BASS;
 		{
 			auto args = env->getLaunchArgs();
-			auto soundString = args["-sound"].value_or("bass").trim();
+			auto soundString = args["-sound"].value_or("soloud").trim();
 			soundString.lowerCase();
-			if (Env::cfg(AUD::BASS) && soundString == "bass")
-				type = SoundEngine::BASS;
-			else if (Env::cfg(AUD::SOLOUD) && soundString == "soloud")
+			if (Env::cfg(AUD::SOLOUD) && soundString == "soloud")
 				type = SoundEngine::SOLOUD;
+			else if (Env::cfg(AUD::BASS) && soundString == "bass")
+				type = SoundEngine::BASS;
 			else if (Env::cfg(AUD::SDL) && soundString == "sdl")
 				type = SoundEngine::SDL;
 		}
@@ -330,7 +338,7 @@ Engine::~Engine()
 	if (m_bIsRestarting)
 	{
 		debugLog("Engine: Resetting ConVar callbacks...\n");
-		convar->resetAllConVarCallbacks();
+		ConVar::resetAllConVarCallbacks();
 		debugLog("Engine: Restarting...\n");
 	}
 	else

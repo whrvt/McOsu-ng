@@ -22,6 +22,7 @@
 #include "fmt/compile.h"
 #include "fmt/format.h"
 #include "fmt/printf.h"
+#include "fmt/ranges.h"
 
 using namespace fmt::literals;
 
@@ -269,7 +270,9 @@ public:
 			if (ch >= L'A' && ch <= L'Z')
 				return ch + (L'a' - L'A');
 			// clamp to valid wchar_t range
+#if WCHAR_MAX > 0xFFFF
 			if (ch <= 0xFFFF)
+#endif
 				return static_cast<wchar_t>(std::towlower(static_cast<std::wint_t>(ch)));
 			// outside BMP (basic multi-lingual plane) is returned as-is to stay deterministic because they aren't handled by UString currently
 			return ch;

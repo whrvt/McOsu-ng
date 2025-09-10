@@ -22,7 +22,7 @@
 #include "OpenGLHeaders.h"
 #include "DirectX11Interface.h"
 
-Shader *OsuSliderRenderer::BLEND_SHADER = NULL;
+Shader *OsuSliderRenderer::BLEND_SHADER{nullptr};
 
 float OsuSliderRenderer::MESH_CENTER_HEIGHT = 0.5f; // Camera::buildMatrixOrtho2D() uses -1 to 1 for zn/zf, so don't make this too high
 int OsuSliderRenderer::UNIT_CIRCLE_SUBDIVISIONS = 0; // see osu_slider_body_unit_circle_subdivisions now
@@ -38,17 +38,23 @@ float OsuSliderRenderer::m_fBoundingBoxMinY = std::numeric_limits<float>::max();
 float OsuSliderRenderer::m_fBoundingBoxMaxY = 0.0f;
 
 float OsuSliderRenderer::border_feather = 0.0f;
-namespace cv::osu {
-ConVar slider_debug_draw("osu_slider_debug_draw", false, FCVAR_NONE, "draw hitcircle at every curve point and nothing else (no vao, no rt, no shader, nothing) (requires enabling legacy slider renderer)");
-ConVar slider_debug_draw_square_vao("osu_slider_debug_draw_square_vao", false, FCVAR_NONE, "generate square vaos and nothing else (no rt, no shader) (requires disabling legacy slider renderer)");
+
+OsuSliderRenderer::UniformCache OsuSliderRenderer::uniformCache{};
+
+namespace cv::osu
+{
+ConVar slider_debug_draw("osu_slider_debug_draw", false, FCVAR_NONE,
+                         "draw hitcircle at every curve point and nothing else (no vao, no rt, no shader, nothing) (requires enabling legacy slider renderer)");
+ConVar slider_debug_draw_square_vao("osu_slider_debug_draw_square_vao", false, FCVAR_NONE,
+                                    "generate square vaos and nothing else (no rt, no shader) (requires disabling legacy slider renderer)");
 ConVar slider_debug_wireframe("osu_slider_debug_wireframe", false, FCVAR_NONE, "unused");
 
 ConVar slider_alpha_multiplier("osu_slider_alpha_multiplier", 1.0f, FCVAR_NONE);
-ConVar slider_body_alpha_multiplier("osu_slider_body_alpha_multiplier", 1.0f, FCVAR_NONE);
-ConVar slider_body_color_saturation("osu_slider_body_color_saturation", 1.0f, FCVAR_NONE);
-ConVar slider_border_size_multiplier("osu_slider_border_size_multiplier", 1.0f, FCVAR_NONE);
+ConVar slider_body_alpha_multiplier("osu_slider_body_alpha_multiplier", 1.0f, FCVAR_NONE, CFUNC(OsuSliderRenderer::onUniformConfigChanged));
+ConVar slider_body_color_saturation("osu_slider_body_color_saturation", 1.0f, FCVAR_NONE, CFUNC(OsuSliderRenderer::onUniformConfigChanged));
+ConVar slider_border_size_multiplier("osu_slider_border_size_multiplier", 1.0f, FCVAR_NONE, CFUNC(OsuSliderRenderer::onUniformConfigChanged));
 ConVar slider_border_tint_combo_color("osu_slider_border_tint_combo_color", false, FCVAR_NONE);
-ConVar slider_osu_next_style("osu_slider_osu_next_style", false, FCVAR_NONE);
+ConVar slider_osu_next_style("osu_slider_osu_next_style", false, FCVAR_NONE, CFUNC(OsuSliderRenderer::onUniformConfigChanged));
 ConVar slider_rainbow("osu_slider_rainbow", false, FCVAR_NONE);
 ConVar slider_use_gradient_image("osu_slider_use_gradient_image", false, FCVAR_NONE);
 
@@ -223,13 +229,8 @@ void OsuSliderRenderer::draw(Osu *osu, const std::vector<Vector2> &points, const
 			if (!cv::osu::slider_use_gradient_image.getBool())
 			{
 				BLEND_SHADER->enable();
-				BLEND_SHADER->setUniform1i("style", cv::osu::slider_osu_next_style.getBool() ? 1 : 0);
-				BLEND_SHADER->setUniform1f("bodyAlphaMultiplier", cv::osu::slider_body_alpha_multiplier.getFloat());
-				BLEND_SHADER->setUniform1f("bodyColorSaturation", cv::osu::slider_body_color_saturation.getFloat());
-				BLEND_SHADER->setUniform1f("borderSizeMultiplier", cv::osu::slider_border_size_multiplier.getFloat());
-				BLEND_SHADER->setUniform1f("borderFeather", OsuSliderRenderer::border_feather);
-				BLEND_SHADER->setUniform3f("colBorder", dimmedBorderColor.Rf(), dimmedBorderColor.Gf(), dimmedBorderColor.Bf());
-				BLEND_SHADER->setUniform3f("colBody", dimmedBodyColor.Rf(), dimmedBodyColor.Gf(), dimmedBodyColor.Bf());
+				updateConfigUniforms();
+				updateColorUniforms(dimmedBorderColor, dimmedBodyColor);
 			}
 
 			g->setColor(argb(1.0f, colorRGBMultiplier, colorRGBMultiplier, colorRGBMultiplier)); // this only affects the gradient image if used (meaning shaders either don't work or are disabled on purpose)
@@ -373,13 +374,8 @@ void OsuSliderRenderer::draw(Osu *osu, VertexArrayObject *vao, const std::vector
 			if (!cv::osu::slider_use_gradient_image.getBool())
 			{
 				BLEND_SHADER->enable();
-				BLEND_SHADER->setUniform1i("style", cv::osu::slider_osu_next_style.getBool() ? 1 : 0);
-				BLEND_SHADER->setUniform1f("bodyAlphaMultiplier", cv::osu::slider_body_alpha_multiplier.getFloat());
-				BLEND_SHADER->setUniform1f("bodyColorSaturation", cv::osu::slider_body_color_saturation.getFloat());
-				BLEND_SHADER->setUniform1f("borderSizeMultiplier", cv::osu::slider_border_size_multiplier.getFloat());
-				BLEND_SHADER->setUniform1f("borderFeather", OsuSliderRenderer::border_feather);
-				BLEND_SHADER->setUniform3f("colBorder", dimmedBorderColor.Rf(), dimmedBorderColor.Gf(), dimmedBorderColor.Bf());
-				BLEND_SHADER->setUniform3f("colBody", dimmedBodyColor.Rf(), dimmedBodyColor.Gf(), dimmedBodyColor.Bf());
+				updateConfigUniforms();
+				updateColorUniforms(dimmedBorderColor, dimmedBodyColor);
 			}
 
 			g->setColor(argb(1.0f, colorRGBMultiplier, colorRGBMultiplier, colorRGBMultiplier)); // this only affects the gradient image if used (meaning shaders either don't work or are disabled on purpose)
@@ -601,4 +597,63 @@ void OsuSliderRenderer::resetRenderTargetBoundingBox()
 	OsuSliderRenderer::m_fBoundingBoxMaxX = 0.0f;
 	OsuSliderRenderer::m_fBoundingBoxMinY = std::numeric_limits<float>::max();
 	OsuSliderRenderer::m_fBoundingBoxMaxY = 0.0f;
+}
+
+// helper function to update color uniforms
+void OsuSliderRenderer::updateColorUniforms(const Color &borderColor, const Color &bodyColor)
+{
+	if (uniformCache.lastBorderColor != borderColor)
+	{
+		BLEND_SHADER->setUniform3f("colBorder", borderColor.Rf(), borderColor.Gf(), borderColor.Bf());
+		uniformCache.lastBorderColor = borderColor;
+	}
+
+	if (uniformCache.lastBodyColor != bodyColor)
+	{
+		BLEND_SHADER->setUniform3f("colBody", bodyColor.Rf(), bodyColor.Gf(), bodyColor.Bf());
+		uniformCache.lastBodyColor = bodyColor;
+	}
+
+	if (uniformCache.borderFeather != border_feather)
+	{
+		BLEND_SHADER->setUniform1f("borderFeather", border_feather);
+		uniformCache.borderFeather = border_feather;
+	}
+}
+
+void OsuSliderRenderer::updateConfigUniforms()
+{
+	if (!BLEND_SHADER || !uniformCache.needsConfigUpdate)
+		return;
+
+	const int newStyle = cv::osu::slider_osu_next_style.getBool() ? 1 : 0;
+	const float newBodyAlpha = cv::osu::slider_body_alpha_multiplier.getFloat();
+	const float newBodySat = cv::osu::slider_body_color_saturation.getFloat();
+	const float newBorderSize = cv::osu::slider_border_size_multiplier.getFloat();
+
+	if (uniformCache.style != newStyle)
+	{
+		BLEND_SHADER->setUniform1i("style", newStyle);
+		uniformCache.style = newStyle;
+	}
+
+	if (uniformCache.bodyAlphaMultiplier != newBodyAlpha)
+	{
+		BLEND_SHADER->setUniform1f("bodyAlphaMultiplier", newBodyAlpha);
+		uniformCache.bodyAlphaMultiplier = newBodyAlpha;
+	}
+
+	if (uniformCache.bodyColorSaturation != newBodySat)
+	{
+		BLEND_SHADER->setUniform1f("bodyColorSaturation", newBodySat);
+		uniformCache.bodyColorSaturation = newBodySat;
+	}
+
+	if (uniformCache.borderSizeMultiplier != newBorderSize)
+	{
+		BLEND_SHADER->setUniform1f("borderSizeMultiplier", newBorderSize);
+		uniformCache.borderSizeMultiplier = newBorderSize;
+	}
+
+	uniformCache.needsConfigUpdate = false;
 }

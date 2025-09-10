@@ -16,8 +16,7 @@ class VertexArrayObject : public Resource
 public:
 	VertexArrayObject(Graphics::PRIMITIVE primitive = Graphics::PRIMITIVE::PRIMITIVE_TRIANGLES, Graphics::USAGE_TYPE usage = Graphics::USAGE_TYPE::USAGE_STATIC, bool keepInSystemMemory = false);
 
-	// TODO: fix the naming schema. clear = empty = just empty the containers, but not necessarily release memory
-	void clear();
+	inline void clear() { empty(); }
 	void empty();
 
 	void addVertex(Vector2 v);
@@ -35,6 +34,10 @@ public:
 	void setVertex(int index, Vector2 v);
 	void setVertex(int index, Vector3 v);
 	void setVertex(int index, float x, float y, float z = 0);
+	void setVertices(const std::vector<Vector3> &vertices);
+	void setTexcoords(const std::vector<Vector2> &texcoords, unsigned int textureUnit = 0);
+	inline void setNormals(const std::vector<Vector3> &normals) { m_normals = normals; }
+	inline void setColors(const std::vector<Color> &colors) { m_colors = colors; }
 
 	void setColor(int index, Color color);
 

@@ -14,7 +14,6 @@
 #ifdef MCENGINE_FEATURE_GLES32
 
 #include "Graphics.h"
-#include "OpenGLSync.h"
 
 class OpenGLES32Shader;
 
@@ -26,7 +25,7 @@ public:
 	~OpenGLES32Interface() override;
 
 	// scene
-	void beginScene() final;
+	void beginScene() override;
 	void endScene() override;
 
 	// depth buffer
@@ -55,7 +54,7 @@ public:
 
 	// 2d resource drawing
 	void drawImage(Image *image) final;
-	void drawString(McFont *font, UString text) final;
+	void drawString(McFont *font, const UString &text) final;
 
 	// 3d type drawing
 	void drawVAO(VertexArrayObject *vao) final;
@@ -122,9 +121,6 @@ protected:
 private:
 	void handleGLErrors();
 
-	static int primitiveToOpenGL(Graphics::PRIMITIVE primitive);
-	static int compareFuncToOpenGL(Graphics::COMPARE_FUNC compareFunc);
-
 	void registerShader(OpenGLES32Shader *shader);
 	void unregisterShader(OpenGLES32Shader *shader);
 	void updateAllShaderTransforms();
@@ -145,9 +141,6 @@ private:
 	unsigned int m_iVBOVertices;
 	unsigned int m_iVBOTexcoords;
 	unsigned int m_iVBOTexcolors;
-
-	// synchronization
-	OpenGLSync *m_syncobj;
 
 	// persistent vars
 	Color m_color;

@@ -18,10 +18,11 @@
 
 namespace fs = std::filesystem;
 
-namespace cv {
+namespace cv
+{
 ConVar debug_file("debug_file", false, FCVAR_NONE);
 ConVar file_size_max("file_size_max", 1024, FCVAR_NONE, "maximum filesize sanity limit in MB, all files bigger than this are not allowed to load");
-}
+} // namespace cv
 
 //------------------------------------------------------------------------------
 // encapsulation of directory caching logic
@@ -255,7 +256,11 @@ McFile::FILETYPE McFile::exists(const UString &filePath, const fs::path &path)
 //------------------------------------------------------------------------------
 // McFile implementation
 //------------------------------------------------------------------------------
-McFile::McFile(UString filePath, TYPE type) : m_filePath(filePath), m_type(type), m_ready(false), m_fileSize(0)
+McFile::McFile(UString filePath, TYPE type)
+    : m_filePath(filePath),
+      m_type(type),
+      m_ready(false),
+      m_fileSize(0)
 {
 	if (type == TYPE::READ)
 	{
@@ -311,11 +316,6 @@ bool McFile::openForReading()
 	// validate file size
 	if (m_fileSize == 0) // empty file is valid
 		return true;
-	else if (m_fileSize < 0)
-	{
-		debugLog("File Error: FileSize is < 0\n");
-		return false;
-	}
 	else if (std::cmp_greater(m_fileSize, 1024 * 1024 * cv::file_size_max.getInt())) // size sanity check
 	{
 		debugLog("File Error: FileSize of {:s} is > {} MB!!!\n", m_filePath, cv::file_size_max.getInt());
@@ -364,7 +364,8 @@ void McFile::write(const char *buffer, size_t size)
 	m_ofstream->write(buffer, static_cast<std::streamsize>(size));
 }
 
-bool McFile::writeLine(const UString &line, bool insertNewline) {
+bool McFile::writeLine(const UString &line, bool insertNewline)
+{
 	if (!canWrite())
 		return false;
 
@@ -423,4 +424,29 @@ const char *McFile::readFile()
 		return m_fullBuffer.data();
 
 	return nullptr;
+}
+
+std::vector<char> McFile::takeFileBuffer()
+{
+	if (cv::debug_file.getBool())
+		debugLog("File::takeFileBuffer() on {:s}\n", m_filePath);
+
+	// if buffer is already populated, move it out
+	if (!m_fullBuffer.empty())
+		return std::move(m_fullBuffer);
+
+	if (!m_ready || !canRead())
+		return {};
+
+	// allocate buffer for file contents
+	m_fullBuffer.resize(m_fileSize);
+
+	// read entire file
+	m_ifstream->seekg(0, std::ios::beg);
+	if (m_ifstream->read(m_fullBuffer.data(), static_cast<std::streamsize>(m_fileSize)))
+		return std::move(m_fullBuffer);
+
+	// read failed, clear buffer and return empty vector
+	m_fullBuffer.clear();
+	return {};
 }

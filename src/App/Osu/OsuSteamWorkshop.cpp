@@ -269,7 +269,7 @@ OsuSteamWorkshop::OsuSteamWorkshop()
 
 
 	// convar callbacks
-	cv::osu::workshop_upload_skin.setCallback( fastdelegate::MakeDelegate(this, &OsuSteamWorkshop::onUpload) );
+	cv::osu::workshop_upload_skin.setCallback( SA::MakeDelegate<&OsuSteamWorkshop::onUpload>(this) );
 }
 
 OsuSteamWorkshop::~OsuSteamWorkshop()

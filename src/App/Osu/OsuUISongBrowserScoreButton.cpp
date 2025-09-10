@@ -556,7 +556,7 @@ void OsuUISongBrowserScoreButton::onRightMouseUpInside()
 			}
 		}
 		m_contextMenu->end(false, false);
-		m_contextMenu->setClickCallback( fastdelegate::MakeDelegate(this, &OsuUISongBrowserScoreButton::onContextMenu) );
+		m_contextMenu->setClickCallback( SA::MakeDelegate<&OsuUISongBrowserScoreButton::onContextMenu>(this) );
 		OsuUIContextMenu::clampToRightScreenEdge(m_contextMenu);
 		OsuUIContextMenu::clampToBottomScreenEdge(m_contextMenu);
 	}
@@ -667,7 +667,7 @@ void OsuUISongBrowserScoreButton::onUseModsClicked()
 			const std::vector<UString> experimentalMods = m_score.experimentalModsConVars.split(";");
 			for (size_t i=0; i<experimentalMods.size(); i++)
 			{
-				ConVar *cvar = convar->getConVarByName(experimentalMods[i], false);
+				ConVar *cvar = ConVar::getConVarByName(experimentalMods[i], false);
 				if (cvar != NULL)
 				{
 					cvar->setValue(1.0f); // enable experimental mod (true, 1.0f)
@@ -713,7 +713,7 @@ void OsuUISongBrowserScoreButton::onDeleteScoreClicked()
 			m_contextMenu->addButton("No")->setTextLeft(false);
 		}
 		m_contextMenu->end(false, false);
-		m_contextMenu->setClickCallback( fastdelegate::MakeDelegate(this, &OsuUISongBrowserScoreButton::onDeleteScoreConfirmed) );
+		m_contextMenu->setClickCallback( SA::MakeDelegate<&OsuUISongBrowserScoreButton::onDeleteScoreConfirmed>(this) );
 		OsuUIContextMenu::clampToRightScreenEdge(m_contextMenu);
 		OsuUIContextMenu::clampToBottomScreenEdge(m_contextMenu);
 	}

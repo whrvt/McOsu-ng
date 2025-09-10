@@ -13,8 +13,6 @@
 
 #ifdef MCENGINE_FEATURE_GL3
 
-#include "OpenGLSync.h"
-
 class OpenGLShader;
 
 class OpenGL3Interface : public Graphics
@@ -51,7 +49,7 @@ public:
 
 	// 2d resource drawing
 	virtual void drawImage(Image *image);
-	virtual void drawString(McFont *font, UString text);
+	virtual void drawString(McFont *font, const UString &text);
 
 	// 3d type drawing
 	virtual void drawVAO(VertexArrayObject *vao);
@@ -107,9 +105,6 @@ protected:
 private:
 	void handleGLErrors();
 
-	static int primitiveToOpenGL(Graphics::PRIMITIVE primitive);
-	static int compareFuncToOpenGL(Graphics::COMPARE_FUNC compareFunc);
-
 	// renderer
 	bool m_bInScene;
 	Vector2 m_vResolution;
@@ -130,9 +125,6 @@ private:
 
 	// persistent vars
 	Color m_color;
-
-	// synchronization
-	OpenGLSync *m_syncobj;
 
 	// clipping
 	std::stack<McRect> m_clipRectStack;

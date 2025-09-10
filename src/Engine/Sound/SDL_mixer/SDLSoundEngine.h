@@ -23,6 +23,12 @@ public:
 	SDLSoundEngine();
 	~SDLSoundEngine() override;
 
+	SDLSoundEngine &operator=(const SDLSoundEngine &) = delete;
+	SDLSoundEngine &operator=(SDLSoundEngine &&) = delete;
+
+	SDLSoundEngine(const SDLSoundEngine &) = delete;
+	SDLSoundEngine(SDLSoundEngine &&) = delete;
+
 	void restart() override;
 	void update() override;
 

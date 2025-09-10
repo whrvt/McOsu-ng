@@ -27,6 +27,8 @@
 
 #include "OpenGLHeaders.h"
 
+#include "OsuModFPoSuModels.h"
+
 #include <sstream>
 namespace cv::osu::fposu {
 ConVar mod_fposu("osu_mod_fposu", false, FCVAR_NONE);
@@ -143,9 +145,9 @@ OsuModFPoSu::OsuModFPoSu()
 	m_hitcircleShader = NULL;
 
 	// convar callbacks
-	cv::osu::fposu::curved.setCallback( fastdelegate::MakeDelegate(this, &OsuModFPoSu::onCurvedChange) );
-	cv::osu::fposu::distance.setCallback( fastdelegate::MakeDelegate(this, &OsuModFPoSu::onDistanceChange) );
-	cv::osu::fposu::noclip.setCallback( fastdelegate::MakeDelegate(this, &OsuModFPoSu::onNoclipChange) );
+	cv::osu::fposu::curved.setCallback( SA::MakeDelegate<&OsuModFPoSu::onCurvedChange>(this) );
+	cv::osu::fposu::distance.setCallback( SA::MakeDelegate<&OsuModFPoSu::onDistanceChange>(this) );
+	cv::osu::fposu::noclip.setCallback( SA::MakeDelegate<&OsuModFPoSu::onNoclipChange>(this) );
 
 	// init
 	makePlayfield();
@@ -1030,29 +1032,13 @@ void OsuModFPoSu::makeBackgroundCube()
 
 void OsuModFPoSu::handleLazyLoad3DModels()
 {
-	constexpr const char *uvplaneObj = 
-R"(# Blender 3.6.0
-# www.blender.org
-o Plane
-v -0.500000 -0.500000 -0.000000
-v 0.500000 -0.500000 -0.000000
-v -0.500000 0.500000 0.000000
-v 0.500000 0.500000 0.000000
-vt 1.000000 0.000000
-vt 0.000000 1.000000
-vt 0.000000 0.000000
-vt 1.000000 1.000000
-s 0
-f 2/1 3/2 1/3
-f 2/1 4/4 3/2
-)";
 
 	if (m_uvPlaneModel == NULL)
 		m_uvPlaneModel = new OsuModFPoSu3DModel(uvplaneObj, NULL, true);
 	if (m_skyboxModel == NULL)
-		m_skyboxModel = new OsuModFPoSu3DModel("skybox.obj");
+		m_skyboxModel = new OsuModFPoSu3DModel(skyboxObj, NULL, true);
 	if (m_hitcircleModel == NULL)
-		m_hitcircleModel = new OsuModFPoSu3DModel("hitcircle.obj");
+		m_hitcircleModel = new OsuModFPoSu3DModel(hitcircleObj, NULL, true);
 }
 
 void OsuModFPoSu::handleLazyLoad3DShaders()

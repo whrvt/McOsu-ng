@@ -16,7 +16,7 @@
 #include "OsuSkin.h"
 #include "OsuTooltipOverlay.h"
 
-OsuUIButton::OsuUIButton(float xPos, float yPos, float xSize, float ySize, UString name, UString text) : CBaseUIButton(xPos, yPos, xSize, ySize, std::move(name), text)
+OsuUIButton::OsuUIButton(float xPos, float yPos, float xSize, float ySize, UString name, const UString& text) : CBaseUIButton(xPos, yPos, xSize, ySize, std::move(name), text)
 {
 	
 

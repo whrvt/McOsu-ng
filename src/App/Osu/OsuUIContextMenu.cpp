@@ -22,7 +22,7 @@
 
 
 
-OsuUIContextMenuButton::OsuUIContextMenuButton(float xPos, float yPos, float xSize, float ySize, UString name, UString text, int id) : CBaseUIButton(xPos, yPos, xSize, ySize, std::move(name), text)
+OsuUIContextMenuButton::OsuUIContextMenuButton(float xPos, float yPos, float xSize, float ySize, UString name, const UString& text, int id) : CBaseUIButton(xPos, yPos, xSize, ySize, std::move(name), text)
 {
 	
 	m_iID = id;
@@ -78,7 +78,7 @@ OsuUIContextMenu::OsuUIContextMenu(float xPos, float yPos, float xSize, float yS
 
 	m_bVisible = false;
 	m_bVisible2 = false;
-	m_clickCallback = NULL;
+	m_clickCallback = {};
 
 	m_fAnimation = 0.0f;
 	m_bInvertAnimation = false;
@@ -196,7 +196,7 @@ void OsuUIContextMenu::begin(int minWidth, bool bigStyle)
 	m_bBigStyle = bigStyle;
 
 	m_iYCounter = 0;
-	m_clickCallback = NULL;
+	m_clickCallback = {};
 
 	setSizeX(m_iWidthCounter);
 
@@ -224,7 +224,7 @@ OsuUIContextMenuButton *OsuUIContextMenu::addButtonJustified(const UString& text
 		if (m_bBigStyle)
 			button->setFont(osu->getSubTitleFont());
 
-		button->setClickCallback( fastdelegate::MakeDelegate(this, &OsuUIContextMenu::onClick) );
+		button->setClickCallback( SA::MakeDelegate<&OsuUIContextMenu::onClick>(this) );
 		button->setWidthToContent(3 * Osu::getUIScale());
 		button->setTextLeft(left);
 		button->setDrawFrame(false);

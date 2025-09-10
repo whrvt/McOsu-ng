@@ -10,6 +10,7 @@
 #define SOUNDENGINE_H
 
 #include "cbase.h"
+#include "MultiCastDelegate.h"
 
 #define SOUND_ENGINE_TYPE(ClassName, TypeID, ParentClass) \
 	static constexpr TypeId TYPE_ID = TypeID; \
@@ -32,11 +33,17 @@ public:
 		SDL
 	};
 public:
-	SoundEngine();
-	virtual ~SoundEngine() = default;
+	SoundEngine() = default;
+	virtual ~SoundEngine() { m_outputDeviceChangeCallback = {}; }
+
+	SoundEngine &operator=(const SoundEngine &) = delete;
+	SoundEngine &operator=(SoundEngine &&) = delete;
+
+	SoundEngine(const SoundEngine &) = delete;
+	SoundEngine(SoundEngine &&) = delete;
 
 	// Factory method to create the appropriate sound engine
-	static SoundEngine *createSoundEngine(SndEngineType type = BASS);
+	static SoundEngine *createSoundEngine(SndEngineType type = SOLOUD);
 
 	// Public interface
 	virtual void restart() = 0;
@@ -47,8 +54,8 @@ public:
 	virtual void pause(Sound *snd) = 0;
 	virtual void stop(Sound *snd) = 0;
 
-	typedef fastdelegate::FastDelegate0<> AudioOutputChangedCallback;
-	virtual void setOnOutputDeviceChange(AudioOutputChangedCallback callback);
+	using AudioOutputChangedCallback = SA::delegate<void()>;
+	inline void setOnOutputDeviceChange(const AudioOutputChangedCallback &callback) { m_outputDeviceChangeCallback = callback; }
 
 	virtual void setOutputDevice(const UString& outputDeviceName) = 0;
 	virtual void setOutputDeviceForce(const UString& outputDeviceName) = 0;
@@ -86,17 +93,17 @@ protected:
 	virtual void updateOutputDevices(bool handleOutputDeviceChanges, bool printInfo) = 0;
 	virtual bool initializeOutputDevice(int id = -1, bool force = false) = 0;
 
-	bool m_bReady;
-	float m_fPrevOutputDeviceChangeCheckTime;
+	bool m_bReady{false};
+	float m_fPrevOutputDeviceChangeCheckTime{0.0f};
 	AudioOutputChangedCallback m_outputDeviceChangeCallback;
 	std::vector<OUTPUT_DEVICE> m_outputDevices;
 
-	int m_iCurrentOutputDevice;
+	int m_iCurrentOutputDevice{-1};
 	UString m_sCurrentOutputDevice;
 
-	float m_fVolume;
+	float m_fVolume{1.0f};
 
-	bool m_bBPMDetectEnabled;
+	bool m_bBPMDetectEnabled{false};
 };
 
 // convenience conversion macro to get the sound handle, extra args are any extra conditions to check for besides general state validity

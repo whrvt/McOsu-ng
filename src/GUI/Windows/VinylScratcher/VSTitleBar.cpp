@@ -25,7 +25,7 @@ ConVar vs_percent("vs_percent", 0.0f, FCVAR_NONE);
 class VSTitleBarButton : public CBaseUIButton
 {
 public:
-	VSTitleBarButton(float xPos, float yPos, float xSize, float ySize, UString name, UString text) : CBaseUIButton(xPos, yPos, xSize, ySize, std::move(name), text) {;}
+	VSTitleBarButton(float xPos, float yPos, float xSize, float ySize, UString name, const UString& text) : CBaseUIButton(xPos, yPos, xSize, ySize, std::move(name), text) {;}
 	~VSTitleBarButton() override {;}
 
 	void draw() override

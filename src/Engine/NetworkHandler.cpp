@@ -70,14 +70,14 @@ NetworkHandler::NetworkHandler()
 	}
 
 	// convar callbacks
-	cv::_host_.setCallback( fastdelegate::MakeDelegate(this, &NetworkHandler::host) );
-	cv::_stop_.setCallback( fastdelegate::MakeDelegate(this, &NetworkHandler::hostStop) );
-	cv::_status_.setCallback( fastdelegate::MakeDelegate(this, &NetworkHandler::status) );
-	cv::_connect_.setCallback( fastdelegate::MakeDelegate(this, &NetworkHandler::connect) );
-	cv::_disconnect_.setCallback( fastdelegate::MakeDelegate(this, &NetworkHandler::disconnect) );
+	cv::_host_.setCallback( SA::MakeDelegate<&NetworkHandler::host>(this) );
+	cv::_stop_.setCallback( SA::MakeDelegate<&NetworkHandler::hostStop>(this) );
+	cv::_status_.setCallback( SA::MakeDelegate<&NetworkHandler::status>(this) );
+	cv::_connect_.setCallback( SA::MakeDelegate<&NetworkHandler::connect>(this) );
+	cv::_disconnect_.setCallback( SA::MakeDelegate<&NetworkHandler::disconnect>(this) );
 
-	cv::_say_.setCallback( fastdelegate::MakeDelegate(this, &NetworkHandler::say) );
-	cv::_kick_.setCallback( fastdelegate::MakeDelegate(this, &NetworkHandler::kick) );
+	cv::_say_.setCallback( SA::MakeDelegate<&NetworkHandler::say>(this) );
+	cv::_kick_.setCallback( SA::MakeDelegate<&NetworkHandler::kick>(this) );
 
 	m_client = NULL;
 	m_server = NULL;

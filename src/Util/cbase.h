@@ -58,6 +58,9 @@ constexpr void runtime_assert(bool cond, const char *reason)
 
 #define SAFE_DELETE(p) { if(p) { delete (p); (p) = NULL; } }
 
+// for wrapping functions which aren't lambdas in convar initializers
+#define CFUNC(func) SA::delegate<decltype(func)>::template create<func>()
+
 constexpr const auto PI = std::numbers::pi;
 constexpr const auto PIOVER180 = (PI/180.0f);
 
@@ -87,7 +90,8 @@ template <typename T>
 
 #include "EngineFeatures.h"
 
-#include "FastDelegate.h"
+#include "MultiCastDelegate.h"
+#include "MakeDelegateWrapper.h"
 #include "UString.h"
 #include "Color.h"
 #include "Graphics.h"

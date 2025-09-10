@@ -28,7 +28,7 @@ ConVar vs_volume("vs_volume", 1.0f, FCVAR_NONE);
 class VSControlBarButton : public CBaseUIButton
 {
 public:
-	VSControlBarButton(float xPos, float yPos, float xSize, float ySize, UString name, UString text) : CBaseUIButton(xPos, yPos, xSize, ySize, std::move(name), text) {;}
+	VSControlBarButton(float xPos, float yPos, float xSize, float ySize, UString name, const UString& text) : CBaseUIButton(xPos, yPos, xSize, ySize, std::move(name), text) {;}
 	~VSControlBarButton() override {;}
 
 	void draw() override
@@ -121,7 +121,7 @@ public:
 class VSControlBarCheckbox : public CBaseUICheckbox
 {
 public:
-	VSControlBarCheckbox(float xPos, float yPos, float xSize, float ySize, UString name, UString text) : CBaseUICheckbox(xPos, yPos, xSize, ySize, std::move(name), std::move(text)) {;}
+	VSControlBarCheckbox(float xPos, float yPos, float xSize, float ySize, UString name, const UString& text) : CBaseUICheckbox(xPos, yPos, xSize, ySize, std::move(name), text) {;}
 	~VSControlBarCheckbox() override {;}
 
 	void draw() override
@@ -144,7 +144,7 @@ public:
 
 VSControlBar::VSControlBar(int x, int y, int xSize, int ySize, McFont *font) : WindowUIElement(x, y, xSize, ySize, "")
 {
-	cv::vs_volume.setCallback(fastdelegate::MakeDelegate(this, &VSControlBar::onVolumeChanged));
+	cv::vs_volume.setCallback(SA::MakeDelegate<&VSControlBar::onVolumeChanged>(this));
 
 	const float dpiScale = env->getDPIScale();
 	const int height = 22 * dpiScale;
@@ -184,13 +184,13 @@ VSControlBar::VSControlBar(int x, int y, int xSize, int ySize, McFont *font) : W
 	m_container->addBaseUIElement(m_info);
 
 	m_shuffle = new VSControlBarCheckbox(m_vSize.x-height, 0, height, height, "", "");
-	m_shuffle->setChangeCallback(fastdelegate::MakeDelegate(this, &VSControlBar::onShuffleCheckboxChanged));
+	m_shuffle->setChangeCallback(SA::MakeDelegate<&VSControlBar::onShuffleCheckboxChanged>(this));
 	m_shuffle->setTextColor(textColor);
 	m_shuffle->setFont(font);
 	m_container->addBaseUIElement(m_shuffle);
 
 	m_repeat = new VSControlBarCheckbox(m_vSize.x-2*height, 0, height, height, "", "r");
-	m_repeat->setChangeCallback(fastdelegate::MakeDelegate(this, &VSControlBar::onRepeatCheckboxChanged));
+	m_repeat->setChangeCallback(SA::MakeDelegate<&VSControlBar::onRepeatCheckboxChanged>(this));
 	m_repeat->setTextColor(textColor);
 	m_repeat->setFont(font);
 	m_container->addBaseUIElement(m_repeat);

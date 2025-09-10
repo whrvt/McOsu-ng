@@ -213,7 +213,7 @@ AS_VAR_SET_IF([with_renderer],
         for rend
         do
             case $rend in
-            opengles*) AC_DEFINE([MCENGINE_FEATURE_GLES32], [1], [Defined if the OpenGL ES 3.2 backend is to be used (WASM).]) renderer=opengles32 ;;
+            *gles*) AC_DEFINE([MCENGINE_FEATURE_GLES32], [1], [Defined if the OpenGL ES 3.2 backend is to be used (WASM).]) renderer=opengles32 ;;
             dx11) AC_DEFINE([MCENGINE_FEATURE_DIRECTX11], [1], [Defined if the DX11 backend is to be used.]) renderer=dx11 ;;
             esac
         done])
@@ -222,10 +222,11 @@ AS_IF([test "$renderer" = "opengl"], [
     AC_DEFINE([MCENGINE_FEATURE_OPENGL], [1], [Defined if the OpenGLLegacy backend is to be used.])
 ])
 
-audiobackendcnt=0
 AUDBACKENDLIST=""
 
 with_bass=unset
+with_soloud=unset
+with_sdlmixer=unset
 AS_VAR_SET_IF([with_audio],
     [ac_save_IFS=$IFS
         IFS=' ,'
@@ -241,23 +242,32 @@ AS_VAR_SET_IF([with_audio],
             esac
         done])
 
-AS_IF([test "$with_bass" = "yes" || { test "$with_bass" = "unset" && ! { test "$with_soloud" = "yes" || test "$with_sdlmixer" = "yes"; } ; } ], [
-    ((audiobackendcnt++))
+AS_IF([test "$with_soloud" = "yes" || { test "$with_soloud" = "unset" && ! { test "$with_bass" = "yes" || test "$with_sdlmixer" = "yes"; } ; } ], [
+    AUDBACKENDLIST="${AUDBACKENDLIST} SoLoud"
+    with_soloud=yes
+    AC_DEFINE([MCENGINE_FEATURE_SOLOUD], [1], [Define if the SoLoud audio backend is desired.])
+], [
+    with_soloud=no
+])
+
+AS_IF([test "$with_bass" = "yes"], [
+    AS_IF([test "$with_sdlmixer" = "yes" || test "$with_soloud" = "yes"], [
+        make_audio_shortcuts=yes
+    ])
     AUDBACKENDLIST="${AUDBACKENDLIST} BASS"
-    with_bass=yes
     AC_DEFINE([MCENGINE_FEATURE_BASS], [1], [Define if the BASS audio backend is desired.])
 ], [
     with_bass=no
 ])
-AS_IF([test "$with_soloud" = "yes"], [
-    ((audiobackendcnt++))
-    AUDBACKENDLIST="${AUDBACKENDLIST} SoLoud"
-    AC_DEFINE([MCENGINE_FEATURE_SOLOUD], [1], [Define if the SoLoud audio backend is desired.])
-])
+
 AS_IF([test "$with_sdlmixer" = "yes"], [
-    ((audiobackendcnt++))
+    AS_IF([test "$with_bass" = "yes" || test "$with_soloud" = "yes"], [
+        make_audio_shortcuts=yes
+    ])
     AUDBACKENDLIST="${AUDBACKENDLIST} SDL"
     AC_DEFINE([MCENGINE_FEATURE_SDL_MIXER], [1], [Define if the SDL_mixer audio backend is desired.])
+], [
+    with_sdlmixer=no
 ])
 
 AC_SUBST([AUDBACKENDLIST])
@@ -271,7 +281,7 @@ AS_IF([test "x$enable_asan" = "xyes" || test "x$enable_tsan" = "xyes"], [
         CFLAGS="$CFLAGS -fsanitize=undefined,thread"
     ])
 
-    AS_IF([test -z "$LLVMMINGW" && test -n "$enable_clang"],[
+    AS_IF([test -z "$LLVMMINGW" && test "x$enable_clang" = "xyes"],[
         LDFLAGS="$LDFLAGS -static-libasan" CFLAGS="$CFLAGS -static-libasan" CXXFLAGS="$CXXFLAGS -static-libasan"
     ])
     enable_debug="yes"
@@ -301,8 +311,8 @@ AS_IF([test "x$enable_clang" = "xyes"], [
     MCOSU_CXXFLAGS="$MCOSU_CXXFLAGS -fimplicit-constexpr"
 ])
 
-AS_IF([test "$host_cpu" = "x86_64" && test -z "$CLANG"], [
-    # this is only possible on x86_64, and not clang
+AS_IF([test "$host_cpu" = "x86_64" && test -z "$LLVMMINGW"], [
+    # this is only possible on x86_64, and not llvm-mingw
     # faster tls access
     CFLAGS="$CFLAGS -mtls-dialect=gnu2"
     CXXFLAGS="$CXXFLAGS -mtls-dialect=gnu2"
@@ -345,6 +355,7 @@ __EOF__
     CXX="$PWD/build/$target-$CXX"
     ac_tool_prefix=
     CMAKE_SYSTEM_NAME="Linux"
+    CMAKE_GEN="Ninja"
     SYSNAME="linux"
     DLLEXT=".so"
     LIBPREFIX="lib"
@@ -361,6 +372,7 @@ PKG_CONFIG_LIBDIR="/usr/$host_cpu-w64-mingw32/lib/pkgconfig" PKG_CONFIG_SYSTEM_I
 PKG_CONFIG_SYSTEM_LIBRARY_PATH="/usr/$host_cpu-w64-mingw32/lib" PKG_CONFIG_PATH="$PWD/build/deps/lib/pkgconfig:$PWD/build/deps/lib64/pkgconfig" \
 $PKGCONF --personality=$host_cpu-w64-mingw32 $PKGTYPE "\$@"
 __EOF__
+        CMAKE_GEN="Ninja"
     ], [
         # WIP: building in msys2
         install -Dm755 /dev/stdin $PWD/build/pkg-config <<__EOF__
@@ -368,6 +380,8 @@ __EOF__
 PKG_CONFIG_PATH="$PWD/build/deps/lib/pkgconfig:$PWD/build/deps/lib64/pkgconfig" \
 $host_cpu-w64-mingw32-pkg-config $PKGTYPE "\$@"
 __EOF__
+        CMAKE_GEN="Unix Makefiles"
+        MSYS2_BUILD="yes"
     ])
 
     CMAKE_SYSTEM_NAME="Windows"
@@ -405,9 +419,12 @@ __EOF__
 AC_SUBST([WINPTHREAD_LDFLAGS])
 
 PKG_CONFIG="$PWD/build/pkg-config"
+CMAKEPAROPT="--parallel $CPU_COUNT"
 AC_SUBST([PKG_CONFIG])
 AC_SUBST([CMAKE_SYSTEM_NAME])
 AC_SUBST([CMAKERCOPT])
+AC_SUBST([CMAKEPAROPT])
+AC_SUBST([CMAKE_GEN])
 AC_SUBST([SYSNAME])
 AC_SUBST([DLLEXT])
 AC_SUBST([LIBPREFIX])
@@ -441,7 +458,7 @@ AC_SUBST([CXX])
 AS_IF([test "$host_cpu" = "x86_64"], [COMMON_FLAGS="$COMMON_FLAGS -mcmodel=small"])
 
 CPPFLAGS="$CPPFLAGS -D_TIME_BITS=64 -D_FILE_OFFSET_BITS=64"
-COMMON_FLAGS="$COMMON_FLAGS -D_TIME_BITS=64 -D_FILE_OFFSET_BITS=64 -ffunction-sections -fdata-sections -fwrapv -fno-strict-aliasing -fno-semantic-interposition -ftls-model=initial-exec"
+COMMON_FLAGS="$COMMON_FLAGS -D_TIME_BITS=64 -D_FILE_OFFSET_BITS=64 -pipe -ffunction-sections -fdata-sections -fwrapv -fno-strict-aliasing -fno-semantic-interposition -ftls-model=initial-exec"
 CXXFLAGS="$CXXFLAGS $COMMON_FLAGS -fno-rtti -fno-exceptions"
 CFLAGS="$CFLAGS $COMMON_FLAGS"
 AS_IF([test -z "$ubercompat" || test "x$enable_static" = "xyes"], [
@@ -546,11 +563,13 @@ AS_IF([test "x$enable_lto" != "xno"], [
             CXXFLAGS="$CXXFLAGS -flto=thin -fno-fat-lto-objects -fwhole-program-vtables"
             CFLAGS="$CFLAGS -flto=thin -fno-fat-lto-objects -fwhole-program-vtables"
             LDFLAGS="$LDFLAGS -flto=thin -fno-fat-lto-objects -fwhole-program-vtables"
-            mkdir -p $PWD/.ltocache-clang
-            AX_CHECK_LINK_FLAG([-Wl,--thinlto-cache-dir=$PWD/.ltocache-clang], [
-                CXXFLAGS="$CXXFLAGS -Wl,--thinlto-cache-dir=$PWD/.ltocache-clang"
-                CFLAGS="$CFLAGS -Wl,--thinlto-cache-dir=$PWD/.ltocache-clang"
-                LDFLAGS="$LDFLAGS -Wl,--thinlto-cache-dir=$PWD/.ltocache-clang"
+            AS_IF([test -z "$MSYS2_BUILD"], [
+                mkdir -p $PWD/.ltocache-clang
+                AX_CHECK_LINK_FLAG([-Wl,--thinlto-cache-dir=$PWD/.ltocache-clang], [
+                    CXXFLAGS="$CXXFLAGS -Wl,--thinlto-cache-dir=$PWD/.ltocache-clang"
+                    CFLAGS="$CFLAGS -Wl,--thinlto-cache-dir=$PWD/.ltocache-clang"
+                    LDFLAGS="$LDFLAGS -Wl,--thinlto-cache-dir=$PWD/.ltocache-clang"
+                ])
             ])
         ])], [
         # gcc
@@ -558,18 +577,20 @@ AS_IF([test "x$enable_lto" != "xno"], [
             CXXFLAGS="$CXXFLAGS -flto=auto -ffat-lto-objects -fuse-linker-plugin -fdevirtualize-at-ltrans"
             CFLAGS="$CFLAGS -flto=auto -ffat-lto-objects -fuse-linker-plugin -fdevirtualize-at-ltrans"
             LDFLAGS="$LDFLAGS -flto=auto -ffat-lto-objects -fuse-linker-plugin -fdevirtualize-at-ltrans"
-            mkdir -p $PWD/.ltocache-gcc
-            AX_CHECK_LINK_FLAG([-flto-incremental=$PWD/.ltocache-gcc], [
-                CXXFLAGS="$CXXFLAGS -flto-incremental=$PWD/.ltocache-gcc"
-                CFLAGS="$CFLAGS -flto-incremental=$PWD/.ltocache-gcc"
-                LDFLAGS="$LDFLAGS -flto-incremental=$PWD/.ltocache-gcc"
+            AS_IF([test -z "$MSYS2_BUILD"], [ 
+                mkdir -p $PWD/.ltocache-gcc
+                AX_CHECK_LINK_FLAG([-flto-incremental=$PWD/.ltocache-gcc], [
+                    CXXFLAGS="$CXXFLAGS -flto-incremental=$PWD/.ltocache-gcc"
+                    CFLAGS="$CFLAGS -flto-incremental=$PWD/.ltocache-gcc"
+                    LDFLAGS="$LDFLAGS -flto-incremental=$PWD/.ltocache-gcc"
+                ])
             ])
         ])
     ])
 ])
 
-MCOSU_CPPFLAGS="$MCOSU_CPPFLAGS -DGLM_ENABLE_EXPERIMENTAL"
-MCOSU_CXXFLAGS="$MCOSU_CXXFLAGS -Wall -Wunused-parameter -Wno-sign-compare -Wdeprecated-declarations -pthread"
+MCOSU_CPPFLAGS="$MCOSU_CPPFLAGS"
+MCOSU_CXXFLAGS="$MCOSU_CXXFLAGS -Wall -Wextra -Wunused-parameter -Wno-sign-compare -Wdeprecated-declarations -pthread"
 MCOSU_LDFLAGS="$MCOSU_LDFLAGS -pthread"
 AC_SUBST([MCOSU_CPPFLAGS])
 AC_SUBST([MCOSU_CXXFLAGS])
@@ -594,7 +615,7 @@ AC_SUBST([AUDIO_CFLAGS])
 AC_SUBST([AUDIO_LIBS])
 
 # the source file is also added through autogen.sh to Makefile.sources
-BUNDLED_INCLUDES="-I\$(srcdir)/libraries"
+BUNDLED_INCLUDES="-I\$(srcdir)/libraries -I\$(srcdir)/libraries/delegates"
 AS_IF([test "$renderer" != "dx11"], [
     BUNDLED_INCLUDES="$BUNDLED_INCLUDES -I\$(srcdir)/libraries/glad"
 ])
@@ -606,14 +627,6 @@ AS_IF([test -f "$srcdir/$ASSETS_DIR/cfg/override.cfg"], [
 ], [
     AC_MSG_RESULT([no])
     AC_MSG_ERROR([McOsu-ng default config is missing!])
-])
-
-AC_MSG_CHECKING([for models in $srcdir/$ASSETS_DIR/models])
-AS_IF([test -d "$srcdir/$ASSETS_DIR/models"], [
-    AC_MSG_RESULT([yes])
-], [
-    AC_MSG_RESULT([no])
-    AC_MSG_ERROR([McOsu-ng model assets are missing!])
 ])
 
 AC_MSG_CHECKING([for shaders in $srcdir/$ASSETS_DIR/shaders])
@@ -683,37 +696,37 @@ AS_IF([test "$renderer" != "dx11"], [
     ])
 ])
 
-SDL3_MIN_VERSION=3.4.0 # needs SDL_SetRelativeMouseTransform, not in any current (3.2.x) releases
-SDL3_BUILD_VERSION=277f91c3176c88193648760a651f8dd6407035dc # git
+SDL3_MIN_VERSION=3.2.20
+SDL3_BUILD_VERSION=ed6a72a7fdbefb11b3e4e066b98c37d8048d61c2 # git
 FREETYPE2_MIN_VERSION=2.10.0
 FREETYPE2_BUILD_VERSION=2.13.3
 LIBJPEG_MIN_VERSION=3.0.0
-LIBJPEG_BUILD_VERSION=3.1.0
+LIBJPEG_BUILD_VERSION=3.1.1
 LIBPNG_MIN_VERSION=1.6.38
-LIBPNG_BUILD_VERSION=1.6.48
+LIBPNG_BUILD_VERSION=1.6.50
 ZLIB_MIN_VERSION=1.3
-ZLIB_BUILD_VERSION=2.2.4 # zlib-ng
+ZLIB_BUILD_VERSION=2.2.5 # zlib-ng
 BZIP2_MIN_VERSION=1.0.8
 BZIP2_BUILD_VERSION=1.0.8
 FMT_MIN_VERSION=11.0.0
-FMT_BUILD_VERSION=11.2.0
+FMT_BUILD_VERSION=72c82296d605ab8b3a415cab0e7c65edccbc7503
 MPG123_MIN_VERSION=1.30.0
-MPG123_BUILD_VERSION=b9edc89540cb43f1d8c9881d9f67dde996cfb8ef # git mirror, latest as of June 16th, 2025 (next version after 1.33.0)
+MPG123_BUILD_VERSION=ae929c017ba2c22ed66256e9f4ad7b2543e898f0 # git mirror, latest as of June 16th, 2025 (next version after 1.33.0)
 
 # always build these from source if we want to use them
-#AC_SUBST([SOLOUD_VERSION], [1.1.2]) # my fork
-AC_SUBST([SOLOUD_VERSION], [003e19f0486d6a08a75760238e981b95eae77de1])
+#AC_SUBST([SOLOUD_VERSION], [1.1.5]) # my fork
+AC_SUBST([SOLOUD_VERSION], [80057e2c67cc0eb16a3151431ff26dab44c458f6])
 AC_SUBST([SOLOUD_PREFIX],[$DEPS_PREFIX])
 AC_SUBST([SOUNDTOUCH_VERSION], [2.4.0])
 AC_SUBST([SOUNDTOUCH_PREFIX],[$DEPS_PREFIX])
 AC_SUBST([SDL3_MIXER_VERSION], [b8017938de8b31c1962c2c8044a127519c2c1cdf])
 AC_SUBST([SDL3_MIXER_PREFIX],[$DEPS_PREFIX])
-AC_SUBST([MIMALLOC_VERSION], [639b73ecf9608d9c3078cb9dee5b7c2f46639828])
+AC_SUBST([MIMALLOC_VERSION], [a42b4d572a2cb11549757282cef9df622921755d])
 AC_SUBST([MIMALLOC_PREFIX],[$DEPS_PREFIX])
 
 AC_SUBST([FFMPEG_VERSION], [7.1]) # pre-built, used for soloud
 
-AC_SUBST([BASS_VERSION], [20250611]) # just mark the date so we can invalidate the cache if necessary
+AC_SUBST([BASS_VERSION], [20250813]) # just mark the date so we can invalidate the cache if necessary
 
 # TODO: add all deps and transitive deps (fun!)
 AS_IF([test "x$enable_system_deps" != "xno"], [
@@ -835,7 +848,7 @@ AS_IF([test "$SYSNAME" = "windows"], [
 ])
 AM_CONDITIONAL([WINSHARED_DLLS_NEEDED], [test -n "$WINSHARED_DLLS"])
 
-AM_CONDITIONAL([AUDIO_SHORTCUTS], [test "$audiobackendcnt" > 1 && test -n "$WINE" && test "$SYSNAME" = "windows"])
+AM_CONDITIONAL([AUDIO_SHORTCUTS], [test -n "$make_audio_shortcuts" && test -n "$WINE" && test "$SYSNAME" = "windows"])
 
 # output makefile
 AC_CONFIG_FILES([Makefile])

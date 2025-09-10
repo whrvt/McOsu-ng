@@ -127,7 +127,7 @@ std::vector<ConVar*> OsuKeyBindings::createManiaConVarSet(int k)
 	std::vector<ConVar*> convars;
 	for (int i=1; i<=k; i++)
 	{
-		convars.push_back(MAKENEWCONVAR(UString::format("osu_key_mania_%ik_%i", k, i), 0));
+		convars.push_back(MAKENEWCONVAR(fmt::format("osu_key_mania_{:d}k_{:d}", k, i), 0));
 	}
 	return convars;
 }

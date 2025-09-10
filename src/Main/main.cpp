@@ -27,11 +27,13 @@
 #define nocbinline
 #define SDL_MAIN_USE_CALLBACKS // this enables the use of SDL_AppInit/AppEvent/AppIterate instead of a traditional mainloop, needed for wasm
                                // (works on desktop too, but it's not necessary)
+#include <SDL3/SDL_main.h>
 namespace
 {
 void setcwdexe(const char * /*unused*/) {}
 } // namespace
 #else
+#include <SDL3/SDL_main.h>
 #define MAIN_FUNC int main(int argc, char *argv[])
 #define nocbinline forceinline
 #include <filesystem>
@@ -54,9 +56,6 @@ void setcwdexe(const char *argv0) noexcept
 }
 } // namespace
 #endif
-
-#include <SDL3/SDL.h>
-#include <SDL3/SDL_main.h>
 
 #include "Engine.h"
 #include "Environment.h"
@@ -196,13 +195,21 @@ MAIN_FUNC /* int argc, char *argv[] */
 			// event collection
 			VPROF_BUDGET("SDL", VPROF_BUDGETGROUP_WNDPROC);
 			int eventCount = 0;
-
-			SDL_PumpEvents();
+			{
+				VPROF_BUDGET("SDL_PumpEvents", VPROF_BUDGETGROUP_WNDPROC);
+				SDL_PumpEvents();
+			}
 			do
 			{
-				eventCount = SDL_PeepEvents(&events[0], SIZE_EVENTS, SDL_GETEVENT, SDL_EVENT_FIRST, SDL_EVENT_LAST);
-				for (int i = 0; i < eventCount; ++i)
-					fmain->handleEvent(&events[i]);
+				{
+					VPROF_BUDGET("SDL_PeepEvents", VPROF_BUDGETGROUP_WNDPROC);
+					eventCount = SDL_PeepEvents(&events[0], SIZE_EVENTS, SDL_GETEVENT, SDL_EVENT_FIRST, SDL_EVENT_LAST);
+				}
+				{
+					VPROF_BUDGET("handleEvent", VPROF_BUDGETGROUP_WNDPROC);
+					for (int i = 0; i < eventCount; ++i)
+						fmain->handleEvent(&events[i]);
+				}
 			} while (eventCount == SIZE_EVENTS);
 		}
 		{
@@ -249,9 +256,9 @@ SDLMain::SDLMain(int argc, char *argv[])
 	m_iFpsMaxBG = 30;
 
 	// setup callbacks
-	cv::fps_max.setCallback(fastdelegate::MakeDelegate(this, &SDLMain::fps_max_callback));
-	cv::fps_max_background.setCallback(fastdelegate::MakeDelegate(this, &SDLMain::fps_max_background_callback));
-	cv::fps_unlimited.setCallback(fastdelegate::MakeDelegate(this, &SDLMain::fps_unlimited_callback));
+	cv::fps_max.setCallback(SA::MakeDelegate<&SDLMain::fps_max_callback>(this));
+	cv::fps_max_background.setCallback(SA::MakeDelegate<&SDLMain::fps_max_background_callback>(this));
+	cv::fps_unlimited.setCallback(SA::MakeDelegate<&SDLMain::fps_unlimited_callback>(this));
 }
 
 SDLMain::~SDLMain()
@@ -327,6 +334,12 @@ SDL_AppResult SDLMain::initialize()
 	// return init success
 	return SDL_APP_CONTINUE;
 }
+
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunknown-pragmas"
+#pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
+#endif
 
 static_assert(SDL_EVENT_WINDOW_FIRST == SDL_EVENT_WINDOW_SHOWN);
 static_assert(SDL_EVENT_WINDOW_LAST == SDL_EVENT_WINDOW_HDR_STATE_CHANGED);
@@ -486,6 +499,10 @@ nocbinline SDL_AppResult SDLMain::handleEvent(SDL_Event *event)
 
 	return SDL_APP_CONTINUE;
 }
+
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 
 nocbinline SDL_AppResult SDLMain::iterate()
 {

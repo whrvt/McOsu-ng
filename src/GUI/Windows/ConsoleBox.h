@@ -103,7 +103,7 @@ private:
 	std::vector<UString> m_commandHistory;
 	int m_iSelectedHistory;
 
-	std::mutex m_logMutex;
+	std::recursive_mutex m_logMutex;
 
 	// thread-safe log animation state
 	std::atomic<bool> m_bLogAnimationResetPending;

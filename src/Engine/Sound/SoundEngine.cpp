@@ -36,20 +36,14 @@ ConVar win_snd_wasapi_shared_volume_affects_device("win_snd_wasapi_shared_volume
                                                    "if in shared mode, whether to affect device volume globally or use separate session volume (default)");
 }
 
-SoundEngine::SoundEngine()
-{
-	m_bReady = false;
-	m_fPrevOutputDeviceChangeCheckTime = 0.0f;
-	m_outputDeviceChangeCallback = nullptr;
-	m_fVolume = 1.0f;
-	m_iCurrentOutputDevice = -1;
-	m_bBPMDetectEnabled = false;
-}
-
 SoundEngine *SoundEngine::createSoundEngine(SndEngineType type)
 {
 #if !defined(MCENGINE_FEATURE_BASS) && !defined(MCENGINE_FEATURE_SOLOUD) && !defined(MCENGINE_FEATURE_SDL_MIXER)
 	#error No sound backend available!
+#endif
+#ifdef MCENGINE_FEATURE_SOLOUD
+	if (type == SOLOUD)
+		return new SoLoudSoundEngine();
 #endif
 #ifdef MCENGINE_FEATURE_BASS
 	if (type == BASS)
@@ -59,14 +53,5 @@ SoundEngine *SoundEngine::createSoundEngine(SndEngineType type)
 	if (type == SDL)
 		return new SDLSoundEngine();
 #endif
-#ifdef MCENGINE_FEATURE_SOLOUD
-	if (type == SOLOUD)
-		return new SoLoudSoundEngine();
-#endif
 	return nullptr;
-}
-
-void SoundEngine::setOnOutputDeviceChange(AudioOutputChangedCallback callback)
-{
-	m_outputDeviceChangeCallback = callback;
 }

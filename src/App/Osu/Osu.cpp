@@ -166,7 +166,9 @@ Osu::Osu()
 	m_experimentalMods.push_back(&cv::osu::mod_approach_different);
 
 	// engine settings/overrides
-	soundEngine->setOnOutputDeviceChange(fastdelegate::MakeDelegate(this, &Osu::onAudioOutputDeviceChange));
+	soundEngine->setOnOutputDeviceChange(
+		SA::delegate<void()>::create<Osu, &Osu::onAudioOutputDeviceChange>(this)
+	);
 
 	env->setWindowTitle(PACKAGE_NAME);
 	env->setCursorVisible(false);
@@ -194,7 +196,7 @@ Osu::Osu()
 	// override BASS universal offset if soloud+bass are both available at once
 	if constexpr (Env::cfg(AUD::SOLOUD))
 		if (soundEngine->getTypeId() == SoundEngine::SOLOUD)
-			cv::osu::universal_offset_hardcoded.setValue(18.0f);
+			cv::osu::universal_offset_hardcoded.setValue(17.0f);
 
 	env->setWindowResizable(false);
 
@@ -208,35 +210,35 @@ Osu::Osu()
 	}
 
 	// convar callbacks
-	cv::osu::skin.setCallback( fastdelegate::MakeDelegate(this, &Osu::onSkinChange) );
-	cv::osu::skin_reload.setCallback( fastdelegate::MakeDelegate(this, &Osu::onSkinReload) );
+	cv::osu::skin.setCallback( SA::MakeDelegate<&Osu::onSkinChange>(this) );
+	cv::osu::skin_reload.setCallback( SA::MakeDelegate<&Osu::onSkinReload>(this) );
 
-	cv::osu::volume_master.setCallback( fastdelegate::MakeDelegate(this, &Osu::onMasterVolumeChange) );
-	cv::osu::volume_music.setCallback( fastdelegate::MakeDelegate(this, &Osu::onMusicVolumeChange) );
-	cv::osu::speed_override.setCallback( fastdelegate::MakeDelegate(this, &Osu::onSpeedChange) );
-	cv::osu::pitch_override.setCallback( fastdelegate::MakeDelegate(this, &Osu::onPitchChange) );
+	cv::osu::volume_master.setCallback( SA::MakeDelegate<&Osu::onMasterVolumeChange>(this) );
+	cv::osu::volume_music.setCallback( SA::MakeDelegate<&Osu::onMusicVolumeChange>(this) );
+	cv::osu::speed_override.setCallback( SA::MakeDelegate<&Osu::onSpeedChange>(this) );
+	cv::osu::pitch_override.setCallback( SA::MakeDelegate<&Osu::onPitchChange>(this) );
 
-	cv::osu::playfield_rotation.setCallback( fastdelegate::MakeDelegate(this, &Osu::onPlayfieldChange) );
-	cv::osu::playfield_stretch_x.setCallback( fastdelegate::MakeDelegate(this, &Osu::onPlayfieldChange) );
-	cv::osu::playfield_stretch_y.setCallback( fastdelegate::MakeDelegate(this, &Osu::onPlayfieldChange) );
+	cv::osu::playfield_rotation.setCallback( SA::MakeDelegate<&Osu::onPlayfieldChange>(this) );
+	cv::osu::playfield_stretch_x.setCallback( SA::MakeDelegate<&Osu::onPlayfieldChange>(this) );
+	cv::osu::playfield_stretch_y.setCallback( SA::MakeDelegate<&Osu::onPlayfieldChange>(this) );
 
-	cv::osu::mods.setCallback( fastdelegate::MakeDelegate(this, &Osu::updateModsForConVarTemplate) );
+	cv::osu::mods.setCallback( SA::MakeDelegate<&Osu::updateModsForConVarTemplate>(this) );
 
-	cv::osu::resolution.setCallback( fastdelegate::MakeDelegate(this, &Osu::onInternalResolutionChanged) );
-	cv::osu::ui_scale.setCallback( fastdelegate::MakeDelegate(this, &Osu::onUIScaleChange) );
-	cv::osu::ui_scale_to_dpi.setCallback( fastdelegate::MakeDelegate(this, &Osu::onUIScaleToDPIChange) );
-	cv::osu::letterboxing.setCallback( fastdelegate::MakeDelegate(this, &Osu::onLetterboxingChange) );
-	cv::osu::letterboxing_offset_x.setCallback( fastdelegate::MakeDelegate(this, &Osu::onLetterboxingOffsetChange) );
-	cv::osu::letterboxing_offset_y.setCallback( fastdelegate::MakeDelegate(this, &Osu::onLetterboxingOffsetChange) );
+	cv::osu::resolution.setCallback( SA::MakeDelegate<&Osu::onInternalResolutionChanged>(this) );
+	cv::osu::ui_scale.setCallback( SA::MakeDelegate<&Osu::onUIScaleChange>(this) );
+	cv::osu::ui_scale_to_dpi.setCallback( SA::MakeDelegate<&Osu::onUIScaleToDPIChange>(this) );
+	cv::osu::letterboxing.setCallback( SA::MakeDelegate<&Osu::onLetterboxingChange>(this) );
+	cv::osu::letterboxing_offset_x.setCallback( SA::MakeDelegate<&Osu::onLetterboxingOffsetChange>(this) );
+	cv::osu::letterboxing_offset_y.setCallback( SA::MakeDelegate<&Osu::onLetterboxingOffsetChange>(this) );
 
-	cv::osu::confine_cursor_windowed.setCallback( fastdelegate::MakeDelegate(this, &Osu::onConfineCursorWindowedChange) );
-	cv::osu::confine_cursor_fullscreen.setCallback( fastdelegate::MakeDelegate(this, &Osu::onConfineCursorFullscreenChange) );
-	cv::osu::confine_cursor_never.setCallback( fastdelegate::MakeDelegate(this, &Osu::onConfineCursorNeverChange) );
+	cv::osu::confine_cursor_windowed.setCallback( SA::MakeDelegate<&Osu::onConfineCursorWindowedChange>(this) );
+	cv::osu::confine_cursor_fullscreen.setCallback( SA::MakeDelegate<&Osu::onConfineCursorFullscreenChange>(this) );
+	cv::osu::confine_cursor_never.setCallback( SA::MakeDelegate<&Osu::onConfineCursorNeverChange>(this) );
 
-	cv::osu::playfield_mirror_horizontal.setCallback( fastdelegate::MakeDelegate(this, &Osu::updateModsForConVarTemplate) ); // force a mod update on OsuBeatmap if changed
-	cv::osu::playfield_mirror_vertical.setCallback( fastdelegate::MakeDelegate(this, &Osu::updateModsForConVarTemplate) ); // force a mod update on OsuBeatmap if changed
+	cv::osu::playfield_mirror_horizontal.setCallback( SA::MakeDelegate<&Osu::updateModsForConVarTemplate>(this) ); // force a mod update on OsuBeatmap if changed
+	cv::osu::playfield_mirror_vertical.setCallback( SA::MakeDelegate<&Osu::updateModsForConVarTemplate>(this) ); // force a mod update on OsuBeatmap if changed
 
-	cv::osu::notification.setCallback( fastdelegate::MakeDelegate(this, &Osu::onNotification) );
+	cv::osu::notification.setCallback( SA::MakeDelegate<&Osu::onNotification>(this) );
 
   	// vars
 	m_skin = NULL;
@@ -452,11 +454,11 @@ Osu::Osu()
 	*/
 
 	// memory/performance optimization; if osu_mod_mafham is not enabled, reduce the two rendertarget sizes to 64x64, same for fposu (and fposu_3d, and fposu_3d_spheres, and fposu_3d_spheres_aa)
-	cv::osu::stdrules::mod_mafham.setCallback( fastdelegate::MakeDelegate(this, &Osu::onModMafhamChange) );
-	cv::osu::fposu::mod_fposu.setCallback( fastdelegate::MakeDelegate(this, &Osu::onModFPoSuChange) );
-	cv::osu::fposu::threeD.setCallback( fastdelegate::MakeDelegate(this, &Osu::onModFPoSu3DChange) );
-	cv::osu::fposu::threeD_spheres.setCallback( fastdelegate::MakeDelegate(this, &Osu::onModFPoSu3DSpheresChange) );
-	cv::osu::fposu::threeD_spheres_aa.setCallback( fastdelegate::MakeDelegate(this, &Osu::onModFPoSu3DSpheresAAChange) );
+	cv::osu::stdrules::mod_mafham.setCallback( SA::MakeDelegate<&Osu::onModMafhamChange>(this) );
+	cv::osu::fposu::mod_fposu.setCallback( SA::MakeDelegate<&Osu::onModFPoSuChange>(this) );
+	cv::osu::fposu::threeD.setCallback( SA::MakeDelegate<&Osu::onModFPoSu3DChange>(this) );
+	cv::osu::fposu::threeD_spheres.setCallback( SA::MakeDelegate<&Osu::onModFPoSu3DSpheresChange>(this) );
+	cv::osu::fposu::threeD_spheres_aa.setCallback( SA::MakeDelegate<&Osu::onModFPoSu3DSpheresAAChange>(this) );
 }
 
 Osu::~Osu()

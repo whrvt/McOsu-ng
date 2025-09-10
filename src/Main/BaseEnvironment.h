@@ -199,6 +199,10 @@ static constexpr auto OPTIMAL_UNROLL = 4;
 #define ACCUMULATE(op, var) MC_UNR_cnt(OPTIMAL_UNROLL)
 #endif
 
+// force all functions in the function body to be inlined into it
+// different from "forceinline", because the function itself won't necessarily be inlined at all call sites
+#define INLINE_BODY __attribute__((flatten))
+
 #else
 
 #define likely(x) (x)
@@ -213,6 +217,7 @@ static constexpr auto OPTIMAL_UNROLL = 4;
 #define NULL_PUSH
 #define NULL_POP
 #define ACCUMULATE(op, var)
+#define INLINE_BODY
 #endif // defined(__GNUC__) || defined(__clang__)
 
 #if !(defined(MCENGINE_PLATFORM_WINDOWS) || defined(_WIN32) || defined(_WIN64) || defined(__WIN32__) || defined(__CYGWIN__) || defined(__CYGWIN32__) || defined(__TOS_WIN__) || defined(__WINDOWS__))

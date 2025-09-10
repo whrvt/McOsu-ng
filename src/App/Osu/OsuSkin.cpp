@@ -305,10 +305,10 @@ OsuSkin::OsuSkin(UString name, UString filepath, bool isDefaultSkin, bool isWork
 	load();
 
 	// convar callbacks
-	cv::osu::volume_effects.setCallback( fastdelegate::MakeDelegate(this, &OsuSkin::onEffectVolumeChange) );
-	cv::osu::ignore_beatmap_sample_volume.setCallback( fastdelegate::MakeDelegate(this, &OsuSkin::onIgnoreBeatmapSampleVolumeChange) );
-	cv::osu::export_skin.setCallback( fastdelegate::MakeDelegate(this, &OsuSkin::onExport) );
-	cv::osu::skin_export.setCallback( fastdelegate::MakeDelegate(this, &OsuSkin::onExport) );
+	cv::osu::volume_effects.setCallback( SA::MakeDelegate<&OsuSkin::onEffectVolumeChange>(this) );
+	cv::osu::ignore_beatmap_sample_volume.setCallback( SA::MakeDelegate<&OsuSkin::onIgnoreBeatmapSampleVolumeChange>(this) );
+	cv::osu::export_skin.setCallback( SA::MakeDelegate<&OsuSkin::onExport>(this) );
+	cv::osu::skin_export.setCallback( SA::MakeDelegate<&OsuSkin::onExport>(this) );
 }
 
 OsuSkin::~OsuSkin()
@@ -1382,7 +1382,7 @@ void OsuSkin::randomizeFilePath()
 		m_sFilePath = filepathsForRandomSkin[rand() % filepathsForRandomSkin.size()];
 }
 
-OsuSkinImage *OsuSkin::createOsuSkinImage(UString skinElementName, Vector2 baseSizeForScaling2x, float osuSize, bool ignoreDefaultSkin, UString animationSeparator)
+OsuSkinImage *OsuSkin::createOsuSkinImage(const UString& skinElementName, Vector2 baseSizeForScaling2x, float osuSize, bool ignoreDefaultSkin, const UString& animationSeparator)
 {
 	OsuSkinImage *skinImage = new OsuSkinImage(this, skinElementName, baseSizeForScaling2x, osuSize, animationSeparator, ignoreDefaultSkin);
 	m_images.push_back(skinImage);

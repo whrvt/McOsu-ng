@@ -36,7 +36,7 @@ public:
 	void onKeyDown(KeyboardEvent &e) override;
 	void onChar(KeyboardEvent &e) override;
 
-	typedef fastdelegate::FastDelegate2<const UString&, int> ButtonClickCallback;
+	using ButtonClickCallback = SA::delegate<void(const UString&, int)>;
 	void setClickCallback(const ButtonClickCallback &clickCallback) {m_clickCallback = clickCallback;}
 
 	void begin(int minWidth = 0, bool bigStyle = false);
@@ -85,7 +85,7 @@ private:
 class OsuUIContextMenuButton : public CBaseUIButton
 {
 public:
-	OsuUIContextMenuButton(float xPos, float yPos, float xSize, float ySize, UString name, UString text, int id);
+	OsuUIContextMenuButton(float xPos, float yPos, float xSize, float ySize, UString name, const UString& text, int id);
 	~OsuUIContextMenuButton() override {;}
 
 	void update() override;

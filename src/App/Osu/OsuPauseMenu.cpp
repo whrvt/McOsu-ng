@@ -7,6 +7,7 @@
 
 #include "OsuPauseMenu.h"
 
+#include <cmath>
 #include <utility>
 
 #include "Engine.h"
@@ -59,9 +60,9 @@ OsuPauseMenu::OsuPauseMenu() : OsuScreen()
 	OsuUIPauseMenuButton *retryButton = addButton([]() -> Image *{return osu->getSkin()->getPauseRetry();});
 	OsuUIPauseMenuButton *backButton = addButton([]() -> Image *{return osu->getSkin()->getPauseBack();});
 
-	continueButton->setClickCallback( fastdelegate::MakeDelegate(this, &OsuPauseMenu::onContinueClicked) );
-	retryButton->setClickCallback( fastdelegate::MakeDelegate(this, &OsuPauseMenu::onRetryClicked) );
-	backButton->setClickCallback( fastdelegate::MakeDelegate(this, &OsuPauseMenu::onBackClicked) );
+	continueButton->setClickCallback( SA::MakeDelegate<&OsuPauseMenu::onContinueClicked>(this) );
+	retryButton->setClickCallback( SA::MakeDelegate<&OsuPauseMenu::onRetryClicked>(this) );
+	backButton->setClickCallback( SA::MakeDelegate<&OsuPauseMenu::onBackClicked>(this) );
 
 	updateLayout();
 }
@@ -121,7 +122,7 @@ void OsuPauseMenu::draw()
 		if (m_selectedButton != NULL)
 		{
 			const Color arrowColor = rgb(0, 114, 255);
-			float animation = fmod((float)(engine->getTime()-m_fWarningArrowsAnimStartTime)*3.2f, 2.0f);
+			float animation = std::fmod((float)(engine->getTime()-m_fWarningArrowsAnimStartTime)*3.2f, 2.0f);
 			if (animation > 1.0f)
 				animation = 2.0f - animation;
 

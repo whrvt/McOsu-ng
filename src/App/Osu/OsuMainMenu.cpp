@@ -35,6 +35,7 @@
 
 #include "OsuMainMenu.h"
 
+#include <cmath>
 #include <utility>
 #include "OsuOptionsMenu.h"
 #include "OsuHUD.h"
@@ -91,7 +92,7 @@ SliderTickRate:1
 class OsuMainMenuMainButton : public CBaseUIButton
 {
 public:
-	OsuMainMenuMainButton(OsuMainMenu *mainMenu, float xPos, float yPos, float xSize, float ySize, UString name, UString text);
+	OsuMainMenuMainButton(OsuMainMenu *mainMenu, float xPos, float yPos, float xSize, float ySize, UString name, const UString& text);
 
 	void draw() override;
 
@@ -108,7 +109,7 @@ private:
 class OsuMainMenuButton : public CBaseUIButton
 {
 public:
-	OsuMainMenuButton(OsuMainMenu *mainMenu, float xPos, float yPos, float xSize, float ySize, UString name, UString text);
+	OsuMainMenuButton(OsuMainMenu *mainMenu, float xPos, float yPos, float xSize, float ySize, UString name, const UString& text);
 
 	void onMouseDownInside() override;
 
@@ -119,7 +120,7 @@ private:
 class OsuMainMenuPauseButton : public CBaseUIButton
 {
 public:
-	OsuMainMenuPauseButton(float xPos, float yPos, float xSize, float ySize, UString name, UString text) : CBaseUIButton(xPos, yPos, xSize, ySize, std::move(name), text)
+	OsuMainMenuPauseButton(float xPos, float yPos, float xSize, float ySize, UString name, const UString& text) : CBaseUIButton(xPos, yPos, xSize, ySize, std::move(name), text)
 	{
 		m_bIsPaused = true;
 	}
@@ -258,7 +259,7 @@ void OsuMainMenu::openSteamWorkshopInDefaultBrowser(bool launchInSteam)
 
 OsuMainMenu::OsuMainMenu() : OsuScreen()
 {
-	cv::osu::toggle_preview_music.setCallback( fastdelegate::MakeDelegate(this, &OsuMainMenu::onPausePressed) );
+	cv::osu::toggle_preview_music.setCallback( SA::MakeDelegate<&OsuMainMenu::onPausePressed>(this) );
 
 	// engine settings
 	mouse->addListener(this);
@@ -342,18 +343,18 @@ OsuMainMenu::OsuMainMenu() : OsuScreen()
 
 	m_container->addBaseUIElement(m_mainButton);
 
-	addMainMenuButton("Play")->setClickCallback( fastdelegate::MakeDelegate(this, &OsuMainMenu::onPlayButtonPressed) );
-	//addMainMenuButton("Edit")->setClickCallback( fastdelegate::MakeDelegate(this, &OsuMainMenu::onEditButtonPressed) );
-	addMainMenuButton("Options (CTRL + O)")->setClickCallback( fastdelegate::MakeDelegate(this, &OsuMainMenu::onOptionsButtonPressed) );
-	addMainMenuButton("Exit")->setClickCallback( fastdelegate::MakeDelegate(this, &OsuMainMenu::onExitButtonPressed) );
+	addMainMenuButton("Play")->setClickCallback( SA::MakeDelegate<&OsuMainMenu::onPlayButtonPressed>(this) );
+	//addMainMenuButton("Edit")->setClickCallback( SA::MakeDelegate<&OsuMainMenu::onEditButtonPressed>(this) );
+	addMainMenuButton("Options (CTRL + O)")->setClickCallback( SA::MakeDelegate<&OsuMainMenu::onOptionsButtonPressed>(this) );
+	addMainMenuButton("Exit")->setClickCallback( SA::MakeDelegate<&OsuMainMenu::onExitButtonPressed>(this) );
 
 	m_pauseButton = new OsuMainMenuPauseButton(0, 0, 0, 0, "", "");
-	m_pauseButton->setClickCallback( fastdelegate::MakeDelegate(this, &OsuMainMenu::onPausePressed) );
+	m_pauseButton->setClickCallback( SA::MakeDelegate<&OsuMainMenu::onPausePressed>(this) );
 	m_container->addBaseUIElement(m_pauseButton);
 
 	m_updateAvailableButton = new OsuUIButton(0, 0, 0, 0, "", cv::osu::debug.getBool() ? "Debug mode, update check disabled" : "Checking for updates ...");
 	m_updateAvailableButton->setUseDefaultSkin();
-	m_updateAvailableButton->setClickCallback( fastdelegate::MakeDelegate(this, &OsuMainMenu::onUpdatePressed) );
+	m_updateAvailableButton->setClickCallback( SA::MakeDelegate<&OsuMainMenu::onUpdatePressed>(this) );
 	m_updateAvailableButton->setColor(0x2200ff00);
 	m_updateAvailableButton->setTextColor(0x22ffffff);
 
@@ -361,7 +362,7 @@ OsuMainMenu::OsuMainMenu() : OsuScreen()
 	{
 		m_steamWorkshopButton = new OsuUIButton(0, 0, 0, 0, "", "Steam Workshop");
 		m_steamWorkshopButton->setUseDefaultSkin();
-		m_steamWorkshopButton->setClickCallback( fastdelegate::MakeDelegate(this, &OsuMainMenu::onSteamWorkshopPressed) );
+		m_steamWorkshopButton->setClickCallback( SA::MakeDelegate<&OsuMainMenu::onSteamWorkshopPressed>(this) );
 		m_steamWorkshopButton->setColor(0xff108fe8);
 		m_steamWorkshopButton->setTextColor(0xffffffff);
 		m_steamWorkshopButton->setVisible(cv::osu::draw_main_menu_workshop_button.getBool());
@@ -370,7 +371,7 @@ OsuMainMenu::OsuMainMenu() : OsuScreen()
 
 	m_githubButton = new OsuUIButton(0, 0, 0, 0, "", "Github");
 	m_githubButton->setUseDefaultSkin();
-	m_githubButton->setClickCallback( fastdelegate::MakeDelegate(this, &OsuMainMenu::onGithubPressed) );
+	m_githubButton->setClickCallback( SA::MakeDelegate<&OsuMainMenu::onGithubPressed>(this) );
 	m_githubButton->setColor(0x2923b9ff);
 	m_githubButton->setTextBrightColor(0x55172e62);
 	m_githubButton->setTextDarkColor(0x11ffffff);
@@ -385,7 +386,7 @@ OsuMainMenu::OsuMainMenu() : OsuScreen()
 	m_versionButton->setText(versionString);
 	m_versionButton->setDrawBackground(false);
 	m_versionButton->setDrawFrame(false);
-	m_versionButton->setClickCallback( fastdelegate::MakeDelegate(this, &OsuMainMenu::onVersionPressed) );
+	m_versionButton->setClickCallback( SA::MakeDelegate<&OsuMainMenu::onVersionPressed>(this) );
 	m_versionButton->setVisible(true);
 	m_container->addBaseUIElement(m_versionButton);
 
@@ -604,7 +605,7 @@ void OsuMainMenu::draw()
 	// draw notification arrow for changelog (version button)
 	if (m_bDrawVersionNotificationArrow)
 	{
-		float animation = fmod((float)(engine->getTime())*3.2f, 2.0f);
+		float animation = std::fmod((float)(engine->getTime())*3.2f, 2.0f);
 		if (animation > 1.0f)
 			animation = 2.0f - animation;
 		animation =  -animation*(animation-2); // quad out
@@ -1418,8 +1419,8 @@ void OsuMainMenu::setVisible(bool visible)
 	if (visible && m_bStartupAnim)
 	{
 		m_bStartupAnim = false;
-		anim->moveQuadOut(&m_fStartupAnim, 1.0f, cv::osu::main_menu_startup_anim_duration.getFloat(), Timing::getTimeReal<float>());
-		anim->moveQuartOut(&m_fStartupAnim2, 1.0f, cv::osu::main_menu_startup_anim_duration.getFloat()*6.0f, Timing::getTimeReal<float>() + cv::osu::main_menu_startup_anim_duration.getFloat()*0.5f);
+		anim->moveQuadOut(&m_fStartupAnim, 1.0f, cv::osu::main_menu_startup_anim_duration.getFloat(), engine->getLiveElapsedEngineTime<float>());
+		anim->moveQuartOut(&m_fStartupAnim2, 1.0f, cv::osu::main_menu_startup_anim_duration.getFloat()*6.0f, engine->getLiveElapsedEngineTime<float>() + cv::osu::main_menu_startup_anim_duration.getFloat()*0.5f);
 	}
 }
 
@@ -1727,7 +1728,7 @@ void OsuMainMenu::onVersionPressed()
 
 
 
-OsuMainMenuMainButton::OsuMainMenuMainButton(OsuMainMenu *mainMenu, float xPos, float yPos, float xSize, float ySize, UString name, UString text) : CBaseUIButton(xPos, yPos, xSize, ySize, std::move(name), text)
+OsuMainMenuMainButton::OsuMainMenuMainButton(OsuMainMenu *mainMenu, float xPos, float yPos, float xSize, float ySize, UString name, const UString& text) : CBaseUIButton(xPos, yPos, xSize, ySize, std::move(name), text)
 {
 	m_mainMenu = mainMenu;
 }
@@ -1769,7 +1770,7 @@ void OsuMainMenuMainButton::onClicked()
 
 
 
-OsuMainMenuButton::OsuMainMenuButton(OsuMainMenu *mainMenu, float xPos, float yPos, float xSize, float ySize, UString name, UString text) : CBaseUIButton(xPos, yPos, xSize, ySize, std::move(name), text)
+OsuMainMenuButton::OsuMainMenuButton(OsuMainMenu *mainMenu, float xPos, float yPos, float xSize, float ySize, UString name, const UString& text) : CBaseUIButton(xPos, yPos, xSize, ySize, std::move(name), text)
 {
 	m_mainMenu = mainMenu;
 }

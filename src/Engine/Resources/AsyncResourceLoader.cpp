@@ -86,16 +86,21 @@ void *asyncResourceLoaderThread(void *data, std::stop_token stopToken)
 		Resource *resource = work->resource;
 		work->state.store(AsyncResourceLoader::WorkState::ASYNC_IN_PROGRESS);
 
-		if (cv::debug_rm.getBool())
-			debugLog("AsyncResourceLoader: Thread #{} loading {:s}\n", threadIndex, resource->getName());
+		const bool debug = cv::debug_rm.getBool();
+		std::string debugName;
+		if (debug)
+		{
+			debugName = std::string{resource->getName().toUtf8()};
+			debugLog("AsyncResourceLoader: Thread #{} loading {:s}\n", threadIndex, debugName);
+		}
 
 		resource->loadAsync();
 
+		if (debug)
+			debugLog("AsyncResourceLoader: Thread #{} finished async loading {:s}\n", threadIndex, debugName);
+
 		work->state.store(AsyncResourceLoader::WorkState::ASYNC_COMPLETE);
 		loader->markWorkAsyncComplete(std::move(work));
-
-		if (cv::debug_rm.getBool())
-			debugLog("AsyncResourceLoader: Thread #{} finished async loading {:s}\n", threadIndex, resource->getName());
 	}
 
 	loader->m_activeThreadCount.fetch_sub(1);

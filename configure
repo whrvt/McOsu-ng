@@ -773,6 +773,8 @@ CXX
 LIBPREFIX
 DLLEXT
 SYSNAME
+CMAKE_GEN
+CMAKEPAROPT
 CMAKERCOPT
 CMAKE_SYSTEM_NAME
 PKG_CONFIG
@@ -6380,7 +6382,7 @@ then :
         for rend
         do
             case $rend in
-            opengles*)
+            *gles*)
 printf "%s\n" "#define MCENGINE_FEATURE_GLES32 1" >>confdefs.h
  renderer=opengles32 ;;
             dx11)
@@ -6399,10 +6401,11 @@ printf "%s\n" "#define MCENGINE_FEATURE_OPENGL 1" >>confdefs.h
 
 fi
 
-audiobackendcnt=0
 AUDBACKENDLIST=""
 
 with_bass=unset
+with_soloud=unset
+with_sdlmixer=unset
 if test ${with_audio+y}
 then :
   ac_save_IFS=$IFS
@@ -6420,12 +6423,32 @@ then :
         done
 fi
 
-if test "$with_bass" = "yes" || { test "$with_bass" = "unset" && ! { test "$with_soloud" = "yes" || test "$with_sdlmixer" = "yes"; } ; }
+if test "$with_soloud" = "yes" || { test "$with_soloud" = "unset" && ! { test "$with_bass" = "yes" || test "$with_sdlmixer" = "yes"; } ; }
 then :
 
-    ((audiobackendcnt++))
+    AUDBACKENDLIST="${AUDBACKENDLIST} SoLoud"
+    with_soloud=yes
+
+printf "%s\n" "#define MCENGINE_FEATURE_SOLOUD 1" >>confdefs.h
+
+
+else case e in #(
+  e)
+    with_soloud=no
+ ;;
+esac
+fi
+
+if test "$with_bass" = "yes"
+then :
+
+    if test "$with_sdlmixer" = "yes" || test "$with_soloud" = "yes"
+then :
+
+        make_audio_shortcuts=yes
+
+fi
     AUDBACKENDLIST="${AUDBACKENDLIST} BASS"
-    with_bass=yes
 
 printf "%s\n" "#define MCENGINE_FEATURE_BASS 1" >>confdefs.h
 
@@ -6436,25 +6459,26 @@ else case e in #(
  ;;
 esac
 fi
-if test "$with_soloud" = "yes"
-then :
 
-    ((audiobackendcnt++))
-    AUDBACKENDLIST="${AUDBACKENDLIST} SoLoud"
-
-printf "%s\n" "#define MCENGINE_FEATURE_SOLOUD 1" >>confdefs.h
-
-
-fi
 if test "$with_sdlmixer" = "yes"
 then :
 
-    ((audiobackendcnt++))
+    if test "$with_bass" = "yes" || test "$with_soloud" = "yes"
+then :
+
+        make_audio_shortcuts=yes
+
+fi
     AUDBACKENDLIST="${AUDBACKENDLIST} SDL"
 
 printf "%s\n" "#define MCENGINE_FEATURE_SDL_MIXER 1" >>confdefs.h
 
 
+else case e in #(
+  e)
+    with_sdlmixer=no
+ ;;
+esac
 fi
 
 
@@ -6476,7 +6500,7 @@ else case e in #(
 esac
 fi
 
-    if test -z "$LLVMMINGW" && test -n "$enable_clang"
+    if test -z "$LLVMMINGW" && test "x$enable_clang" = "xyes"
 then :
 
         LDFLAGS="$LDFLAGS -static-libasan" CFLAGS="$CFLAGS -static-libasan" CXXFLAGS="$CXXFLAGS -static-libasan"
@@ -6516,10 +6540,10 @@ else case e in #(
 esac
 fi
 
-if test "$host_cpu" = "x86_64" && test -z "$CLANG"
+if test "$host_cpu" = "x86_64" && test -z "$LLVMMINGW"
 then :
 
-    # this is only possible on x86_64, and not clang
+    # this is only possible on x86_64, and not llvm-mingw
     # faster tls access
     CFLAGS="$CFLAGS -mtls-dialect=gnu2"
     CXXFLAGS="$CXXFLAGS -mtls-dialect=gnu2"
@@ -6576,6 +6600,7 @@ __EOF__
     CXX="$PWD/build/$target-$CXX"
     ac_tool_prefix=
     CMAKE_SYSTEM_NAME="Linux"
+    CMAKE_GEN="Ninja"
     SYSNAME="linux"
     DLLEXT=".so"
     LIBPREFIX="lib"
@@ -6600,6 +6625,7 @@ PKG_CONFIG_LIBDIR="/usr/$host_cpu-w64-mingw32/lib/pkgconfig" PKG_CONFIG_SYSTEM_I
 PKG_CONFIG_SYSTEM_LIBRARY_PATH="/usr/$host_cpu-w64-mingw32/lib" PKG_CONFIG_PATH="$PWD/build/deps/lib/pkgconfig:$PWD/build/deps/lib64/pkgconfig" \
 $PKGCONF --personality=$host_cpu-w64-mingw32 $PKGTYPE "\$@"
 __EOF__
+        CMAKE_GEN="Ninja"
 
 else case e in #(
   e)
@@ -6609,6 +6635,8 @@ else case e in #(
 PKG_CONFIG_PATH="$PWD/build/deps/lib/pkgconfig:$PWD/build/deps/lib64/pkgconfig" \
 $host_cpu-w64-mingw32-pkg-config $PKGTYPE "\$@"
 __EOF__
+        CMAKE_GEN="Unix Makefiles"
+        MSYS2_BUILD="yes"
      ;;
 esac
 fi
@@ -6663,6 +6691,9 @@ fi
 
 
 PKG_CONFIG="$PWD/build/pkg-config"
+CMAKEPAROPT="--parallel $CPU_COUNT"
+
+
 
 
 
@@ -7862,7 +7893,7 @@ then :
 fi
 
 CPPFLAGS="$CPPFLAGS -D_TIME_BITS=64 -D_FILE_OFFSET_BITS=64"
-COMMON_FLAGS="$COMMON_FLAGS -D_TIME_BITS=64 -D_FILE_OFFSET_BITS=64 -ffunction-sections -fdata-sections -fwrapv -fno-strict-aliasing -fno-semantic-interposition -ftls-model=initial-exec"
+COMMON_FLAGS="$COMMON_FLAGS -D_TIME_BITS=64 -D_FILE_OFFSET_BITS=64 -pipe -ffunction-sections -fdata-sections -fwrapv -fno-strict-aliasing -fno-semantic-interposition -ftls-model=initial-exec"
 CXXFLAGS="$CXXFLAGS $COMMON_FLAGS -fno-rtti -fno-exceptions"
 CFLAGS="$CFLAGS $COMMON_FLAGS"
 if test -z "$ubercompat" || test "x$enable_static" = "xyes"
@@ -8617,8 +8648,11 @@ then :
             CXXFLAGS="$CXXFLAGS -flto=thin -fno-fat-lto-objects -fwhole-program-vtables"
             CFLAGS="$CFLAGS -flto=thin -fno-fat-lto-objects -fwhole-program-vtables"
             LDFLAGS="$LDFLAGS -flto=thin -fno-fat-lto-objects -fwhole-program-vtables"
-            mkdir -p $PWD/.ltocache-clang
-            as_CACHEVAR=`printf "%s\n" "ax_cv_check_ldflags__-Wl,--thinlto-cache-dir=$PWD/.ltocache-clang" | sed "$as_sed_sh"`
+            if test -z "$MSYS2_BUILD"
+then :
+
+                mkdir -p $PWD/.ltocache-clang
+                as_CACHEVAR=`printf "%s\n" "ax_cv_check_ldflags__-Wl,--thinlto-cache-dir=$PWD/.ltocache-clang" | sed "$as_sed_sh"`
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether the linker accepts -Wl,--thinlto-cache-dir=$PWD/.ltocache-clang" >&5
 printf %s "checking whether the linker accepts -Wl,--thinlto-cache-dir=$PWD/.ltocache-clang... " >&6; }
 if eval test \${$as_CACHEVAR+y}
@@ -8657,15 +8691,17 @@ printf "%s\n" "$ac_res" >&6; }
 if eval test \"x\$"$as_CACHEVAR"\" = x"yes"
 then :
 
-                CXXFLAGS="$CXXFLAGS -Wl,--thinlto-cache-dir=$PWD/.ltocache-clang"
-                CFLAGS="$CFLAGS -Wl,--thinlto-cache-dir=$PWD/.ltocache-clang"
-                LDFLAGS="$LDFLAGS -Wl,--thinlto-cache-dir=$PWD/.ltocache-clang"
+                    CXXFLAGS="$CXXFLAGS -Wl,--thinlto-cache-dir=$PWD/.ltocache-clang"
+                    CFLAGS="$CFLAGS -Wl,--thinlto-cache-dir=$PWD/.ltocache-clang"
+                    LDFLAGS="$LDFLAGS -Wl,--thinlto-cache-dir=$PWD/.ltocache-clang"
 
 else case e in #(
   e) : ;;
 esac
 fi
 
+
+fi
 
 else case e in #(
   e) : ;;
@@ -8715,8 +8751,11 @@ then :
             CXXFLAGS="$CXXFLAGS -flto=auto -ffat-lto-objects -fuse-linker-plugin -fdevirtualize-at-ltrans"
             CFLAGS="$CFLAGS -flto=auto -ffat-lto-objects -fuse-linker-plugin -fdevirtualize-at-ltrans"
             LDFLAGS="$LDFLAGS -flto=auto -ffat-lto-objects -fuse-linker-plugin -fdevirtualize-at-ltrans"
-            mkdir -p $PWD/.ltocache-gcc
-            as_CACHEVAR=`printf "%s\n" "ax_cv_check_ldflags__-flto-incremental=$PWD/.ltocache-gcc" | sed "$as_sed_sh"`
+            if test -z "$MSYS2_BUILD"
+then :
+
+                mkdir -p $PWD/.ltocache-gcc
+                as_CACHEVAR=`printf "%s\n" "ax_cv_check_ldflags__-flto-incremental=$PWD/.ltocache-gcc" | sed "$as_sed_sh"`
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether the linker accepts -flto-incremental=$PWD/.ltocache-gcc" >&5
 printf %s "checking whether the linker accepts -flto-incremental=$PWD/.ltocache-gcc... " >&6; }
 if eval test \${$as_CACHEVAR+y}
@@ -8755,15 +8794,17 @@ printf "%s\n" "$ac_res" >&6; }
 if eval test \"x\$"$as_CACHEVAR"\" = x"yes"
 then :
 
-                CXXFLAGS="$CXXFLAGS -flto-incremental=$PWD/.ltocache-gcc"
-                CFLAGS="$CFLAGS -flto-incremental=$PWD/.ltocache-gcc"
-                LDFLAGS="$LDFLAGS -flto-incremental=$PWD/.ltocache-gcc"
+                    CXXFLAGS="$CXXFLAGS -flto-incremental=$PWD/.ltocache-gcc"
+                    CFLAGS="$CFLAGS -flto-incremental=$PWD/.ltocache-gcc"
+                    LDFLAGS="$LDFLAGS -flto-incremental=$PWD/.ltocache-gcc"
 
 else case e in #(
   e) : ;;
 esac
 fi
 
+
+fi
 
 else case e in #(
   e) : ;;
@@ -8777,8 +8818,8 @@ fi
 
 fi
 
-MCOSU_CPPFLAGS="$MCOSU_CPPFLAGS -DGLM_ENABLE_EXPERIMENTAL"
-MCOSU_CXXFLAGS="$MCOSU_CXXFLAGS -Wall -Wunused-parameter -Wno-sign-compare -Wdeprecated-declarations -pthread"
+MCOSU_CPPFLAGS="$MCOSU_CPPFLAGS"
+MCOSU_CXXFLAGS="$MCOSU_CXXFLAGS -Wall -Wextra -Wunused-parameter -Wno-sign-compare -Wdeprecated-declarations -pthread"
 MCOSU_LDFLAGS="$MCOSU_LDFLAGS -pthread"
 
 
@@ -8812,7 +8853,7 @@ AUDIO_LIBS=""
 
 
 # the source file is also added through autogen.sh to Makefile.sources
-BUNDLED_INCLUDES="-I\$(srcdir)/libraries"
+BUNDLED_INCLUDES="-I\$(srcdir)/libraries -I\$(srcdir)/libraries/delegates"
 if test "$renderer" != "dx11"
 then :
 
@@ -8834,23 +8875,6 @@ else case e in #(
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
 printf "%s\n" "no" >&6; }
     as_fn_error $? "McOsu-ng default config is missing!" "$LINENO" 5
- ;;
-esac
-fi
-
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for models in $srcdir/$ASSETS_DIR/models" >&5
-printf %s "checking for models in $srcdir/$ASSETS_DIR/models... " >&6; }
-if test -d "$srcdir/$ASSETS_DIR/models"
-then :
-
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-printf "%s\n" "yes" >&6; }
-
-else case e in #(
-  e)
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
-printf "%s\n" "no" >&6; }
-    as_fn_error $? "McOsu-ng model assets are missing!" "$LINENO" 5
  ;;
 esac
 fi
@@ -10321,26 +10345,26 @@ fi
 esac
 fi
 
-SDL3_MIN_VERSION=3.4.0 # needs SDL_SetRelativeMouseTransform, not in any current (3.2.x) releases
-SDL3_BUILD_VERSION=277f91c3176c88193648760a651f8dd6407035dc # git
+SDL3_MIN_VERSION=3.2.20
+SDL3_BUILD_VERSION=ed6a72a7fdbefb11b3e4e066b98c37d8048d61c2 # git
 FREETYPE2_MIN_VERSION=2.10.0
 FREETYPE2_BUILD_VERSION=2.13.3
 LIBJPEG_MIN_VERSION=3.0.0
-LIBJPEG_BUILD_VERSION=3.1.0
+LIBJPEG_BUILD_VERSION=3.1.1
 LIBPNG_MIN_VERSION=1.6.38
-LIBPNG_BUILD_VERSION=1.6.48
+LIBPNG_BUILD_VERSION=1.6.50
 ZLIB_MIN_VERSION=1.3
-ZLIB_BUILD_VERSION=2.2.4 # zlib-ng
+ZLIB_BUILD_VERSION=2.2.5 # zlib-ng
 BZIP2_MIN_VERSION=1.0.8
 BZIP2_BUILD_VERSION=1.0.8
 FMT_MIN_VERSION=11.0.0
-FMT_BUILD_VERSION=11.2.0
+FMT_BUILD_VERSION=72c82296d605ab8b3a415cab0e7c65edccbc7503
 MPG123_MIN_VERSION=1.30.0
-MPG123_BUILD_VERSION=b9edc89540cb43f1d8c9881d9f67dde996cfb8ef # git mirror, latest as of June 16th, 2025 (next version after 1.33.0)
+MPG123_BUILD_VERSION=ae929c017ba2c22ed66256e9f4ad7b2543e898f0 # git mirror, latest as of June 16th, 2025 (next version after 1.33.0)
 
 # always build these from source if we want to use them
-#AC_SUBST([SOLOUD_VERSION], [1.1.2]) # my fork
-SOLOUD_VERSION=003e19f0486d6a08a75760238e981b95eae77de1
+#AC_SUBST([SOLOUD_VERSION], [1.1.5]) # my fork
+SOLOUD_VERSION=80057e2c67cc0eb16a3151431ff26dab44c458f6
 
 SOLOUD_PREFIX=$DEPS_PREFIX
 
@@ -10352,7 +10376,7 @@ SDL3_MIXER_VERSION=b8017938de8b31c1962c2c8044a127519c2c1cdf
 
 SDL3_MIXER_PREFIX=$DEPS_PREFIX
 
-MIMALLOC_VERSION=639b73ecf9608d9c3078cb9dee5b7c2f46639828
+MIMALLOC_VERSION=a42b4d572a2cb11549757282cef9df622921755d
 
 MIMALLOC_PREFIX=$DEPS_PREFIX
 
@@ -10360,7 +10384,7 @@ MIMALLOC_PREFIX=$DEPS_PREFIX
 FFMPEG_VERSION=7.1
  # pre-built, used for soloud
 
-BASS_VERSION=20250611
+BASS_VERSION=20250813
  # just mark the date so we can invalidate the cache if necessary
 
 # TODO: add all deps and transitive deps (fun!)
@@ -11923,7 +11947,7 @@ else
 fi
 
 
- if test "$audiobackendcnt" > 1 && test -n "$WINE" && test "$SYSNAME" = "windows"; then
+ if test -n "$make_audio_shortcuts" && test -n "$WINE" && test "$SYSNAME" = "windows"; then
   AUDIO_SHORTCUTS_TRUE=
   AUDIO_SHORTCUTS_FALSE='#'
 else

@@ -169,10 +169,10 @@ private:
 
 	OsuUISelectionButton *addBottombarNavButton(std::function<OsuSkinImage*()> getImageFunc, std::function<OsuSkinImage*()> getImageOverFunc);
 	CBaseUIButton *addTopBarRightTabButton(const UString& text);
-	CBaseUIButton *addTopBarRightGroupButton(UString text);
-	CBaseUIButton *addTopBarRightSortButton(UString text);
-	CBaseUIButton *addTopBarLeftTabButton(UString text);
-	CBaseUIButton *addTopBarLeftButton(UString text);
+	CBaseUIButton *addTopBarRightGroupButton(const UString& text);
+	CBaseUIButton *addTopBarRightSortButton(const UString& text);
+	CBaseUIButton *addTopBarLeftTabButton(const UString& text);
+	CBaseUIButton *addTopBarLeftButton(const UString& text);
 
 	void onDatabaseLoadingFinished();
 

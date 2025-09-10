@@ -88,6 +88,7 @@ void BassSound::initAsync()
 		BASS_ChannelSetAttribute(m_HSTREAM, BASS_ATTRIB_TEMPO_OPTION_USE_QUICKALGO, false);
 		BASS_ChannelSetAttribute(m_HSTREAM, BASS_ATTRIB_TEMPO_OPTION_OVERLAP_MS, 4.0f);
 		BASS_ChannelSetAttribute(m_HSTREAM, BASS_ATTRIB_TEMPO_OPTION_SEQUENCE_MS, 30.0f);
+		BASS_ChannelSetAttribute(m_HSTREAM, BASS_ATTRIB_TEMPO_OPTION_OLDPOS, 1); // use old position calculation
 		m_HCHANNELBACKUP = m_HSTREAM;
 	}
 	else // not a stream
@@ -174,6 +175,7 @@ void BassSound::destroy()
 	m_HSTREAM = 0;
 	m_HSTREAMBACKUP = 0;
 	m_HCHANNEL = 0;
+	m_bIgnored = false;
 }
 
 SOUNDHANDLE BassSound::getHandle()

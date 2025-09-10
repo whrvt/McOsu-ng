@@ -12,7 +12,7 @@
 #include "Engine.h"
 #include "OpenGL3Interface.h"
 
-#include "OpenGLHeaders.h"
+#include "SDLGLInterface.h"
 
 OpenGL3VertexArrayObject::OpenGL3VertexArrayObject(Graphics::PRIMITIVE primitive, Graphics::USAGE_TYPE usage, bool keepInSystemMemory) : VertexArrayObject(primitive, usage, keepInSystemMemory)
 {
@@ -40,7 +40,7 @@ void OpenGL3VertexArrayObject::init()
 		// populate a vertex buffer
 		glGenBuffers(1, &m_iVertexBuffer);
 		glBindBuffer(GL_ARRAY_BUFFER, m_iVertexBuffer);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3) * m_vertices.size(), &(m_vertices[0]), usageToOpenGL(m_usage));
+		glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3) * m_vertices.size(), &(m_vertices[0]), SDLGLInterface::usageToOpenGLMap[m_usage]);
 
 		// identify the components in the vertex buffer
 		glEnableVertexAttribArray(g->getShaderGenericAttribPosition());
@@ -53,7 +53,7 @@ void OpenGL3VertexArrayObject::init()
 
 			glGenBuffers(1, &m_iTexcoordBuffer);
 			glBindBuffer(GL_ARRAY_BUFFER, m_iTexcoordBuffer);
-			glBufferData(GL_ARRAY_BUFFER, sizeof(Vector2) * m_texcoords[0].size(), &(m_texcoords[0][0]), usageToOpenGL(m_usage));
+			glBufferData(GL_ARRAY_BUFFER, sizeof(Vector2) * m_texcoords[0].size(), &(m_texcoords[0][0]), SDLGLInterface::usageToOpenGLMap[m_usage]);
 
 			// identify the components in the texcoord buffer
 			glEnableVertexAttribArray(g->getShaderGenericAttribUV());
@@ -111,45 +111,9 @@ void OpenGL3VertexArrayObject::draw()
 	// bind and draw
 	glBindVertexArray(m_iVAO);
 	{
-		glDrawArrays(primitiveToOpenGL(m_primitive), start, end-start);
+		glDrawArrays(SDLGLInterface::primitiveToOpenGLMap[m_primitive], start, end-start);
 	}
 	glBindVertexArray(vaoBackup); // restore vao
-}
-
-int OpenGL3VertexArrayObject::primitiveToOpenGL(Graphics::PRIMITIVE primitive)
-{
-	switch (primitive)
-	{
-	case Graphics::PRIMITIVE::PRIMITIVE_LINES:
-		return GL_LINES;
-	case Graphics::PRIMITIVE::PRIMITIVE_LINE_STRIP:
-		return GL_LINE_STRIP;
-	case Graphics::PRIMITIVE::PRIMITIVE_TRIANGLES:
-		return GL_TRIANGLES;
-	case Graphics::PRIMITIVE::PRIMITIVE_TRIANGLE_FAN:
-		return GL_TRIANGLE_FAN;
-	case Graphics::PRIMITIVE::PRIMITIVE_TRIANGLE_STRIP:
-		return GL_TRIANGLE_STRIP;
-	case Graphics::PRIMITIVE::PRIMITIVE_QUADS:
-		return GL_QUADS;
-	}
-
-	return GL_TRIANGLES;
-}
-
-unsigned int OpenGL3VertexArrayObject::usageToOpenGL(Graphics::USAGE_TYPE usage)
-{
-	switch (usage)
-	{
-	case Graphics::USAGE_TYPE::USAGE_STATIC:
-		return GL_STATIC_DRAW;
-	case Graphics::USAGE_TYPE::USAGE_DYNAMIC:
-		return GL_DYNAMIC_DRAW;
-	case Graphics::USAGE_TYPE::USAGE_STREAM:
-		return GL_STREAM_DRAW;
-	}
-
-	return GL_STATIC_DRAW;
 }
 
 #endif

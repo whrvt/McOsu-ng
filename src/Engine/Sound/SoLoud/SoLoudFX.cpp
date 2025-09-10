@@ -642,18 +642,8 @@ void SoundTouchFilterInstance::updateSTLatency()
 
 	mInitialSTLatencySamples = mSoundTouch->getSetting(SETTING_INITIAL_LATENCY);
 	mSTOutputSequenceSamples = mSoundTouch->getSetting(SETTING_NOMINAL_OUTPUT_SEQUENCE);
-
-	// initial latency is in input samples (source domain)
-	double initialLatencySourceSeconds = static_cast<double>(mInitialSTLatencySamples) / mBaseSamplerate;
-
-	// output sequence is in output samples, so convert to source time using speed factor
-	// i.e. speed = 0.75x: 1 second of output represents 0.75 seconds of source
-	//      speed = 1.50x: 1 second of output represents 1.50 seconds of source
-	double outputSequenceOutputSeconds = static_cast<double>(mSTOutputSequenceSamples) / mBaseSamplerate;
-	double outputSequenceSourceSeconds = outputSequenceOutputSeconds * mSoundTouchSpeed;
-
-	// average latency per SoundTouch documentation: INITIAL_LATENCY - OUTPUT_SEQUENCE/2
-	mSTLatencySeconds = std::max(0.0, initialLatencySourceSeconds - outputSequenceSourceSeconds / 2.0);
+	mSTLatencySeconds = std::max(0.0, (static_cast<double>(mInitialSTLatencySamples) - (static_cast<double>(mSTOutputSequenceSamples) / 2.0)) /
+	                                      static_cast<double>(mBaseSamplerate));
 }
 
 void SoundTouchFilterInstance::reSynchronize()

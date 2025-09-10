@@ -66,16 +66,16 @@ public:
 	void enable() override;
 	void disable() override;
 
-	void setUniform1f(const UString &name, float value) override;
-	void setUniform1fv(const UString &name, int count, float *values) override;
-	void setUniform1i(const UString &name, int value) override;
-	void setUniform2f(const UString &name, float x, float y) override;
-	void setUniform2fv(const UString &name, int count, float *vectors) override;
-	void setUniform3f(const UString &name, float x, float y, float z) override;
-	void setUniform3fv(const UString &name, int count, float *vectors) override;
-	void setUniform4f(const UString &name, float x, float y, float z, float w) override;
-	void setUniformMatrix4fv(const UString &name, Matrix4 &matrix) override;
-	void setUniformMatrix4fv(const UString &name, float *v) override;
+	void setUniform1f(const std::string_view &name, float value) override;
+	void setUniform1fv(const std::string_view &name, int count, float *values) override;
+	void setUniform1i(const std::string_view &name, int value) override;
+	void setUniform2f(const std::string_view &name, float x, float y) override;
+	void setUniform2fv(const std::string_view &name, int count, float *vectors) override;
+	void setUniform3f(const std::string_view &name, float x, float y, float z) override;
+	void setUniform3fv(const std::string_view &name, int count, float *vectors) override;
+	void setUniform4f(const std::string_view &name, float x, float y, float z, float w) override;
+	void setUniformMatrix4fv(const std::string_view &name, Matrix4 &matrix) override;
+	void setUniformMatrix4fv(const std::string_view &name, float *v) override;
 
 	// ILLEGAL:
 	void onJustBeforeDraw();
@@ -100,7 +100,7 @@ private:
 		UString type;             // e.g. "D3D11_BUFFER_DESC"
 		D3D11_BIND_FLAG bindFlag; // e.g. D3D11_BIND_FLAG::D3D11_BIND_CONSTANT_BUFFER
 		UString name;             // e.g. "ModelViewProjectionConstantBuffer"
-		UString variableName;     // e.g. "mvp", "col", "misc", etc.
+		std::string variableName;     // e.g. "mvp", "col", "misc", etc.
 		UString variableType;     // e.g. "float4x4", "float4", "float3", "float2", "float", etc.
 		int variableBytes;        // e.g. 16 -> "float4x4", 4 -> "float4", 3 -> "float3, 2 -> "float2", 1 -> "float", etc.
 	};
@@ -132,9 +132,9 @@ protected:
 
 	bool compile(const UString &vertexShader, const UString &fragmentShader);
 
-	void setUniform(const UString &name, void *src, size_t numBytes);
+	void setUniform(const std::string_view &name, void *src, size_t numBytes);
 
-	const CACHE_ENTRY getAndCacheUniformLocation(const UString &name);
+	const CACHE_ENTRY getAndCacheUniformLocation(const std::string_view &name);
 
 private:
 	static CACHE_ENTRY invalidCacheEntry;
@@ -159,8 +159,7 @@ private:
 	std::vector<INPUT_DESC> m_inputDescs;
 	std::vector<BIND_DESC> m_bindDescs;
 
-	std::unordered_map<std::string, CACHE_ENTRY> m_uniformLocationCache;
-	std::string m_sTempStringBuffer;
+	std::unordered_map<std::string_view, CACHE_ENTRY> m_uniformLocationCache;
 
 	// stats
 	unsigned long m_iStatsNumConstantBufferUploadsPerFrameCounter;

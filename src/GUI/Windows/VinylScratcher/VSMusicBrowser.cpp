@@ -201,7 +201,7 @@ struct VSMusicBrowserNaturalSortStringComparator
 class VSMusicBrowserButton : public CBaseUIButton
 {
 public:
-	VSMusicBrowserButton(float xPos, float yPos, float xSize, float ySize, UString name, UString text) : CBaseUIButton(xPos, yPos, xSize, ySize, std::move(name), text)
+	VSMusicBrowserButton(float xPos, float yPos, float xSize, float ySize, UString name, const UString& text) : CBaseUIButton(xPos, yPos, xSize, ySize, std::move(name), text)
 	{
 		m_bSelected = false;
 		m_bIsDirectory = false;
@@ -305,7 +305,7 @@ private:
 class VSMusicBrowserColumnScrollView : public CBaseUIScrollView
 {
 public:
-	VSMusicBrowserColumnScrollView(float xPos, float yPos, float xSize, float ySize, UString name) : CBaseUIScrollView(xPos, yPos, xSize, ySize, name)
+	VSMusicBrowserColumnScrollView(float xPos, float yPos, float xSize, float ySize, const UString& name) : CBaseUIScrollView(xPos, yPos, xSize, ySize, name)
 	{
 		m_fAnim = 0.0f;
 
@@ -527,7 +527,7 @@ void VSMusicBrowser::updateFolder(const UString& baseFolder, size_t fromDepth)
 			completeName.append("/");
 
 			VSMusicBrowserButton *folderButton = new VSMusicBrowserButton(border, border + elementCounter*height, 50 * dpiScale, height, completeName, folder);
-			folderButton->setClickCallback(fastdelegate::MakeDelegate(this, &VSMusicBrowser::onButtonClicked));
+			folderButton->setClickCallback(SA::MakeDelegate<&VSMusicBrowser::onButtonClicked>(this));
 			folderButton->setTextColor(m_defaultTextColor);
 			folderButton->setFrameColor(frameColor);
 			folderButton->setSizeToContent(12 * dpiScale, 5 * dpiScale);
@@ -552,7 +552,7 @@ void VSMusicBrowser::updateFolder(const UString& baseFolder, size_t fromDepth)
 			completeName.append(file);
 
 			VSMusicBrowserButton *fileButton = new VSMusicBrowserButton(border, border + elementCounter*height, 50 * dpiScale, height, completeName, file);
-			fileButton->setClickCallback(fastdelegate::MakeDelegate(this, &VSMusicBrowser::onButtonClicked));
+			fileButton->setClickCallback(SA::MakeDelegate<&VSMusicBrowser::onButtonClicked>(this));
 			fileButton->setDrawBackground(false);
 			fileButton->setTextColor(m_defaultTextColor);
 			fileButton->setFrameColor(frameColor);
@@ -632,7 +632,7 @@ void VSMusicBrowser::updateDrives()
 
 		VSMusicBrowserButton *driveButton = new VSMusicBrowserButton(border, border + i*height, 50, height, drive, drive.substr(0, 1));
 		driveButton->setTextColor(m_defaultTextColor);
-		driveButton->setClickCallback(fastdelegate::MakeDelegate(this, &VSMusicBrowser::onButtonClicked));
+		driveButton->setClickCallback(SA::MakeDelegate<&VSMusicBrowser::onButtonClicked>(this));
 		driveButton->setDirectory(true);
 		driveButton->setDrawBackground(false);
 		driveButton->setFrameColor(frameColor);

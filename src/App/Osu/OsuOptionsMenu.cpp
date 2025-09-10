@@ -53,7 +53,7 @@ ConVar options_save_on_back("osu_options_save_on_back", true, FCVAR_NONE);
 ConVar options_high_quality_sliders("osu_options_high_quality_sliders", false, FCVAR_NONE);
 ConVar mania_keylayout_wizard("osu_mania_keylayout_wizard");
 ConVar options_slider_preview_use_legacy_renderer("osu_options_slider_preview_use_legacy_renderer", false, FCVAR_NONE, "apparently newer AMD drivers with old gpus are crashing here with the legacy renderer? was just me being lazy anyway, so now there is a vao render path as it should be");
-ConVar options_slider_quality("osu_options_slider_quality", 0.0f, FCVAR_NONE, _osuOptionsSliderQualityWrapper);
+ConVar options_slider_quality("osu_options_slider_quality", 0.0f, FCVAR_NONE, CFUNC(_osuOptionsSliderQualityWrapper));
 }
 
 class OsuOptionsMenuSkinPreviewElement final : public OsuUIElement
@@ -314,7 +314,7 @@ private:
 class OsuOptionsMenuKeyBindButton : public OsuUIButton
 {
 public:
-	OsuOptionsMenuKeyBindButton(float xPos, float yPos, float xSize, float ySize, UString name, UString text) : OsuUIButton(xPos, yPos, xSize, ySize, std::move(name), std::move(text))
+	OsuOptionsMenuKeyBindButton(float xPos, float yPos, float xSize, float ySize, UString name, const UString& text) : OsuUIButton(xPos, yPos, xSize, ySize, std::move(name), text)
 	{
 		m_bDisallowLeftMouseClickBinding = false;
 	}
@@ -332,7 +332,7 @@ private:
 class OsuOptionsMenuCategoryButton : public CBaseUIButton
 {
 public:
-	OsuOptionsMenuCategoryButton(CBaseUIElement *section, float xPos, float yPos, float xSize, float ySize, UString name, UString text) : CBaseUIButton(xPos, yPos, xSize, ySize, std::move(name), text)
+	OsuOptionsMenuCategoryButton(CBaseUIElement *section, float xPos, float yPos, float xSize, float ySize, UString name, const UString& text) : CBaseUIButton(xPos, yPos, xSize, ySize, std::move(name), text)
 	{
 		m_section = section;
 		m_bActiveCategory = false;
@@ -371,7 +371,7 @@ private:
 class OsuOptionsMenuResetButton : public CBaseUIButton
 {
 public:
-	OsuOptionsMenuResetButton(float xPos, float yPos, float xSize, float ySize, UString name, UString text) : CBaseUIButton(xPos, yPos, xSize, ySize, std::move(name), text)
+	OsuOptionsMenuResetButton(float xPos, float yPos, float xSize, float ySize, UString name, const UString& text) : CBaseUIButton(xPos, yPos, xSize, ySize, std::move(name), text)
 	{
 		m_fAnim = 1.0f;
 	}
@@ -426,39 +426,16 @@ private:
 	float m_fAnim;
 };
 
-
-
-OsuOptionsMenu::OsuOptionsMenu() : OsuScreenBackable()
+OsuOptionsMenu::OsuOptionsMenu()
+    : OsuScreenBackable()
 {
-	
-
 	m_bFullscreen = false;
 	m_fAnimation = 0.0f;
 
-	// convar refs
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 	// convar callbacks
-	cv::osu::skin_use_skin_hitsounds.setCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onUseSkinsSoundSamplesChange) );
-	cv::osu::options_high_quality_sliders.setCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onHighQualitySlidersConVarChange) );
-	cv::osu::mania_keylayout_wizard.setCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onKeyBindingManiaPressedInt) );
+	cv::osu::skin_use_skin_hitsounds.setCallback(SA::MakeDelegate<&OsuOptionsMenu::onUseSkinsSoundSamplesChange>(this));
+	cv::osu::options_high_quality_sliders.setCallback(SA::MakeDelegate<&OsuOptionsMenu::onHighQualitySlidersConVarChange>(this));
+	cv::osu::mania_keylayout_wizard.setCallback(SA::MakeDelegate<&OsuOptionsMenu::onKeyBindingManiaPressedInt>(this));
 
 	osu->getNotificationOverlay()->addKeyListener(this);
 
@@ -550,14 +527,14 @@ OsuOptionsMenu::OsuOptionsMenu() : OsuScreenBackable()
 	addSubSection("");
 	OsuUIButton *downloadOsuButton = addButton("Download osu! and get some beatmaps!");
 	downloadOsuButton->setTooltipText("https://osu.ppy.sh/home/download");
-	downloadOsuButton->setClickCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onDownloadOsuClicked) );
+	downloadOsuButton->setClickCallback( SA::MakeDelegate<&OsuOptionsMenu::onDownloadOsuClicked>(this) );
 	downloadOsuButton->setColor(0xff00ff00);
 	downloadOsuButton->setTextColor(0xffffffff);
 
 	addLabel("... or ...")->setCenterText(true);
 	OsuUIButton *manuallyManageBeatmapsButton = addButton("Manually manage beatmap files?");
 	manuallyManageBeatmapsButton->setTooltipText("https://steamcommunity.com/sharedfiles/filedetails/?id=880768265");
-	manuallyManageBeatmapsButton->setClickCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onManuallyManageBeatmapsClicked) );
+	manuallyManageBeatmapsButton->setClickCallback( SA::MakeDelegate<&OsuOptionsMenu::onManuallyManageBeatmapsClicked>(this) );
 	manuallyManageBeatmapsButton->setColor(0xff10667b);
 
 	addSubSection("osu! folder");
@@ -569,7 +546,7 @@ OsuOptionsMenu::OsuOptionsMenu() : OsuScreenBackable()
 
 	addLabel("... or ...")->setCenterText(true);
 	OsuUIButton *browseForOsuFolderButton = addButton("Browse to your osu! folder");
-	browseForOsuFolderButton->setClickCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onBrowseOsuFolderClicked) );
+	browseForOsuFolderButton->setClickCallback( SA::MakeDelegate<&OsuOptionsMenu::onBrowseOsuFolderClicked>(this) );
 	browseForOsuFolderButton->setColor(0xff999999);
 
 	addLabel("");
@@ -610,7 +587,7 @@ OsuOptionsMenu::OsuOptionsMenu() : OsuScreenBackable()
 	if constexpr (Env::cfg(REND::GL | REND::GLES32))
 	{
 		CBaseUISlider *prerenderedFramesSlider = addSlider("Max Queued Frames", 1.0f, 3.0f, &cv::r_sync_max_frames, -1.0f, true);
-		prerenderedFramesSlider->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onSliderChangeInt) );
+		prerenderedFramesSlider->setChangeCallback( SA::MakeDelegate<&OsuOptionsMenu::onSliderChangeInt>(this) );
 		prerenderedFramesSlider->setKeyDelta(1);
 		addLabel("Raise for higher fps, decrease for lower latency")->setTextColor(0xff666666);
 	}
@@ -621,27 +598,27 @@ OsuOptionsMenu::OsuOptionsMenu() : OsuScreenBackable()
 		addCheckbox("Unlimited FPS", &cv::fps_unlimited);
 
 		CBaseUISlider *fpsSlider = addSlider("FPS Limiter:", 60.0f, 1000.0f, &cv::fps_max, -1.0f, true);
-		fpsSlider->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onSliderChangeInt) );
+		fpsSlider->setChangeCallback( SA::MakeDelegate<&OsuOptionsMenu::onSliderChangeInt>(this) );
 		fpsSlider->setKeyDelta(1);
 
 		addSubSection("Layout");
 		OPTIONS_ELEMENT resolutionSelect = addButton("Select Resolution", UString::format("%ix%i", osu->getVirtScreenWidth(), osu->getVirtScreenHeight()));
-		((CBaseUIButton*)resolutionSelect.elements[0])->setClickCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onResolutionSelect) );
+		((CBaseUIButton*)resolutionSelect.elements[0])->setClickCallback( SA::MakeDelegate<&OsuOptionsMenu::onResolutionSelect>(this) );
 		m_resolutionLabel = (CBaseUILabel*)resolutionSelect.elements[1];
 		m_resolutionSelectButton = resolutionSelect.elements[0];
 		m_fullscreenCheckbox = addCheckbox("Fullscreen");
-		m_fullscreenCheckbox->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onFullscreenChange) );
-		addCheckbox("Borderless", "May cause extra input lag if enabled.\nDepends on your operating system version/updates.", &cv::fullscreen_windowed_borderless)->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onBorderlessWindowedChange) );
+		m_fullscreenCheckbox->setChangeCallback( SA::MakeDelegate<&OsuOptionsMenu::onFullscreenChange>(this) );
+		addCheckbox("Borderless", "May cause extra input lag if enabled.\nDepends on your operating system version/updates.", &cv::fullscreen_windowed_borderless)->setChangeCallback( SA::MakeDelegate<&OsuOptionsMenu::onBorderlessWindowedChange>(this) );
 		addCheckbox("Keep Aspect Ratio", "Black borders instead of a stretched image.\nOnly relevant if fullscreen is enabled, and letterboxing is disabled.\nUse the two position sliders below to move the viewport around.", &cv::osu::resolution_keep_aspect_ratio);
 		addCheckbox("Letterboxing", "Useful to get the low latency of fullscreen with a smaller game resolution.\nUse the two position sliders below to move the viewport around.", &cv::osu::letterboxing);
-		m_letterboxingOffsetXSlider = addSlider("Horizontal position", -1.0f, 1.0f, &cv::osu::letterboxing_offset_x, 170)->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onSliderChangeLetterboxingOffset) )->setKeyDelta(0.01f)->setAnimated(false);
-		m_letterboxingOffsetYSlider = addSlider("Vertical position", -1.0f, 1.0f, &cv::osu::letterboxing_offset_y, 170)->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onSliderChangeLetterboxingOffset) )->setKeyDelta(0.01f)->setAnimated(false);
+		m_letterboxingOffsetXSlider = addSlider("Horizontal position", -1.0f, 1.0f, &cv::osu::letterboxing_offset_x, 170)->setChangeCallback( SA::MakeDelegate<&OsuOptionsMenu::onSliderChangeLetterboxingOffset>(this) )->setKeyDelta(0.01f)->setAnimated(false);
+		m_letterboxingOffsetYSlider = addSlider("Vertical position", -1.0f, 1.0f, &cv::osu::letterboxing_offset_y, 170)->setChangeCallback( SA::MakeDelegate<&OsuOptionsMenu::onSliderChangeLetterboxingOffset>(this) )->setKeyDelta(0.01f)->setAnimated(false);
 	}
 
 	addSubSection("UI Scaling");
-	addCheckbox("DPI Scaling", UString::format("Automatically scale to the DPI of your display: %i DPI.\nScale factor = %i / 96 = %.2gx", env->getDPI(), env->getDPI(), env->getDPIScale()), &cv::osu::ui_scale_to_dpi)->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onDPIScalingChange) );
+	addCheckbox("DPI Scaling", UString::format("Automatically scale to the DPI of your display: %i DPI.\nScale factor = %i / 96 = %.2gx", env->getDPI(), env->getDPI(), env->getDPIScale()), &cv::osu::ui_scale_to_dpi)->setChangeCallback( SA::MakeDelegate<&OsuOptionsMenu::onDPIScalingChange>(this) );
 	m_uiScaleSlider = addSlider("UI Scale:", 1.0f, 1.5f, &cv::osu::ui_scale);
-	m_uiScaleSlider->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onSliderChangeUIScale) );
+	m_uiScaleSlider->setChangeCallback( SA::MakeDelegate<&OsuOptionsMenu::onSliderChangeUIScale>(this) );
 	m_uiScaleSlider->setKeyDelta(0.01f);
 	m_uiScaleSlider->setAnimated(false);
 
@@ -653,9 +630,9 @@ OsuOptionsMenu::OsuOptionsMenu() : OsuScreenBackable()
 	addSpacer();
 	{
 		addCheckbox("Legacy Slider Renderer (!)", "WARNING: Only try enabling this on shitty old computers!\nMay or may not improve fps while few sliders are visible.\nGuaranteed lower fps while many sliders are visible!", &cv::osu::force_legacy_slider_renderer);
-		addCheckbox("Higher Quality Sliders (!)", "Disable this if your fps drop too low while sliders are visible.", &cv::osu::options_high_quality_sliders)->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onHighQualitySlidersCheckboxChange) );
+		addCheckbox("Higher Quality Sliders (!)", "Disable this if your fps drop too low while sliders are visible.", &cv::osu::options_high_quality_sliders)->setChangeCallback( SA::MakeDelegate<&OsuOptionsMenu::onHighQualitySlidersCheckboxChange>(this) );
 		m_sliderQualitySlider = addSlider("Slider Quality", 0.0f, 1.0f, &cv::osu::options_slider_quality);
-		m_sliderQualitySlider->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onSliderChangeSliderQuality) );
+		m_sliderQualitySlider->setChangeCallback( SA::MakeDelegate<&OsuOptionsMenu::onSliderChangeSliderQuality>(this) );
 	}
 
 	//**************************************************************************************************************************//
@@ -665,13 +642,13 @@ OsuOptionsMenu::OsuOptionsMenu() : OsuScreenBackable()
 	addSubSection("Devices");
 	{
 		OPTIONS_ELEMENT outputDeviceSelect = addButton("Select Output Device", "Default", true);
-		((CBaseUIButton*)outputDeviceSelect.elements[0])->setClickCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onOutputDeviceSelect) );
-		outputDeviceSelect.resetButton->setClickCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onOutputDeviceResetClicked) );
+		((CBaseUIButton*)outputDeviceSelect.elements[0])->setClickCallback( SA::MakeDelegate<&OsuOptionsMenu::onOutputDeviceSelect>(this) );
+		outputDeviceSelect.resetButton->setClickCallback( SA::MakeDelegate<&OsuOptionsMenu::onOutputDeviceResetClicked>(this) );
 
 		if (Env::cfg(OS::WINDOWS, AUD::BASS, !AUD::WASAPI) && soundEngine->getTypeId() == SoundEngine::BASS)
 		{
 			CBaseUICheckbox *audioCompatibilityModeCheckbox = addCheckbox("Audio compatibility mode (!)", "Use legacy audio engine (higher latency but more compatible)\nWARNING: May cause hitsound delays and stuttering!", &cv::win_snd_fallback_dsound);
-			audioCompatibilityModeCheckbox->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onAudioCompatibilityModeChange) );
+			audioCompatibilityModeCheckbox->setChangeCallback( SA::MakeDelegate<&OsuOptionsMenu::onAudioCompatibilityModeChange>(this) );
 
 			// HACKHACK: force manual change if user has enabled it (don't use convar callback)
 			if (cv::win_snd_fallback_dsound.getBool())
@@ -687,7 +664,7 @@ OsuOptionsMenu::OsuOptionsMenu() : OsuScreenBackable()
 	{
 		addSubSection("WASAPI");
 		m_wasapiBufferSizeSlider = addSlider("Buffer Size:", 0.000f, 0.050f, &cv::win_snd_wasapi_buffer_size); // NOTE: allow 0 for shared mode windows 10 + period
-		m_wasapiBufferSizeSlider->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onWASAPIBufferChange) );
+		m_wasapiBufferSizeSlider->setChangeCallback( SA::MakeDelegate<&OsuOptionsMenu::onWASAPIBufferChange>(this) );
 		m_wasapiBufferSizeSlider->setKeyDelta(0.001f);
 		m_wasapiBufferSizeSlider->setAnimated(false);
 		addLabel("Windows 7: Start at 11 ms,")->setTextColor(0xff666666);
@@ -701,32 +678,32 @@ OsuOptionsMenu::OsuOptionsMenu() : OsuScreenBackable()
 		addLabel("");
 		addLabel("WARNING: Only if you know what you are doing")->setTextColor(0xffff0000);
 		m_wasapiPeriodSizeSlider = addSlider("Period Size:", 0.0f, 0.050f, &cv::win_snd_wasapi_period_size);
-		m_wasapiPeriodSizeSlider->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onWASAPIPeriodChange) );
+		m_wasapiPeriodSizeSlider->setChangeCallback( SA::MakeDelegate<&OsuOptionsMenu::onWASAPIPeriodChange>(this) );
 		m_wasapiPeriodSizeSlider->setKeyDelta(0.001f);
 		m_wasapiPeriodSizeSlider->setAnimated(false);
 		OsuUIButton *restartSoundEngine = addButton("Restart SoundEngine");
-		restartSoundEngine->setClickCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onOutputDeviceRestart) );
+		restartSoundEngine->setClickCallback( SA::MakeDelegate<&OsuOptionsMenu::onOutputDeviceRestart>(this) );
 		restartSoundEngine->setColor(0xff00566b);
 		addLabel("");
 	}
 
 	addSubSection("Volume");
 	CBaseUISlider *masterVolumeSlider = addSlider("Master:", 0.0f, 1.0f, &cv::osu::volume_master, 70.0f);
-	masterVolumeSlider->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onSliderChangePercent) );
+	masterVolumeSlider->setChangeCallback( SA::MakeDelegate<&OsuOptionsMenu::onSliderChangePercent>(this) );
 	masterVolumeSlider->setKeyDelta(0.01f);
 	CBaseUISlider *inactiveVolumeSlider = addSlider("Inactive:", 0.0f, 1.0f, &cv::osu::volume_master_inactive, 70.0f);
-	inactiveVolumeSlider->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onSliderChangePercent) );
+	inactiveVolumeSlider->setChangeCallback( SA::MakeDelegate<&OsuOptionsMenu::onSliderChangePercent>(this) );
 	inactiveVolumeSlider->setKeyDelta(0.01f);
 	CBaseUISlider *musicVolumeSlider = addSlider("Music:", 0.0f, 1.0f, &cv::osu::volume_music, 70.0f);
-	musicVolumeSlider->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onSliderChangePercent) );
+	musicVolumeSlider->setChangeCallback( SA::MakeDelegate<&OsuOptionsMenu::onSliderChangePercent>(this) );
 	musicVolumeSlider->setKeyDelta(0.01f);
 	CBaseUISlider *effectsVolumeSlider = addSlider("Effects:", 0.0f, 1.0f, &cv::osu::volume_effects, 70.0f);
-	effectsVolumeSlider->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onSliderChangePercent) );
+	effectsVolumeSlider->setChangeCallback( SA::MakeDelegate<&OsuOptionsMenu::onSliderChangePercent>(this) );
 	effectsVolumeSlider->setKeyDelta(0.01f);
 
 	addSubSection("Offset Adjustment");
 	CBaseUISlider *offsetSlider = addSlider("Universal Offset:", -300.0f, 300.0f, &cv::osu::universal_offset);
-	offsetSlider->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onSliderChangeIntMS) );
+	offsetSlider->setChangeCallback( SA::MakeDelegate<&OsuOptionsMenu::onSliderChangeIntMS>(this) );
 	offsetSlider->setKeyDelta(1);
 
 	addSubSection("Songbrowser");
@@ -748,7 +725,7 @@ OsuOptionsMenu::OsuOptionsMenu() : OsuScreenBackable()
 			m_skinLabel = (CBaseUILabel*)skinSelect.elements[2];
 
 			((OsuUIButton*)m_skinSelectWorkshopButton)->setColor(0xff108fe8);
-			((CBaseUIButton*)m_skinSelectWorkshopButton)->setClickCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onSkinSelectWorkshop) );
+			((CBaseUIButton*)m_skinSelectWorkshopButton)->setClickCallback( SA::MakeDelegate<&OsuOptionsMenu::onSkinSelectWorkshop>(this) );
 		}
 		else
 		{
@@ -757,24 +734,24 @@ OsuOptionsMenu::OsuOptionsMenu() : OsuScreenBackable()
 			m_skinLabel = (CBaseUILabel*)skinSelect.elements[1];
 		}
 
-		((CBaseUIButton*)m_skinSelectLocalButton)->setClickCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onSkinSelect) );
+		((CBaseUIButton*)m_skinSelectLocalButton)->setClickCallback( SA::MakeDelegate<&OsuOptionsMenu::onSkinSelect>(this) );
 
 		OsuUIButton *openCurrentSkinFolderButton = addButton("Open current skin folder");
-		openCurrentSkinFolderButton->setClickCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::openCurrentSkinFolder) );
+		openCurrentSkinFolderButton->setClickCallback( SA::MakeDelegate<&OsuOptionsMenu::openCurrentSkinFolder>(this) );
 
 		OPTIONS_ELEMENT skinReload = addButtonButton("Reload Skin", "Random Skin");
-		((OsuUIButton*)skinReload.elements[0])->setClickCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onSkinReload) );
+		((OsuUIButton*)skinReload.elements[0])->setClickCallback( SA::MakeDelegate<&OsuOptionsMenu::onSkinReload>(this) );
 		((OsuUIButton*)skinReload.elements[0])->setTooltipText("(CTRL + ALT + S)");
-		((OsuUIButton*)skinReload.elements[1])->setClickCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onSkinRandom) );
+		((OsuUIButton*)skinReload.elements[1])->setClickCallback( SA::MakeDelegate<&OsuOptionsMenu::onSkinRandom>(this) );
 		((OsuUIButton*)skinReload.elements[1])->setTooltipText("Temporary, does not change your configured skin (reload to reset).\nUse \"osu_skin_random 1\" to randomize on every skin reload.\nUse \"osu_skin_random_elements 1\" to mix multiple skins.\nUse \"osu_skin_export\" to export the currently active skin.");
 		((OsuUIButton*)skinReload.elements[1])->setColor(0xff00566b);
 	}
 	addSpacer();
 	CBaseUISlider *numberScaleSlider = addSlider("Number Scale:", 0.01f, 3.0f, &cv::osu::number_scale_multiplier, 135.0f);
-	numberScaleSlider->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onSliderChangePercent) );
+	numberScaleSlider->setChangeCallback( SA::MakeDelegate<&OsuOptionsMenu::onSliderChangePercent>(this) );
 	numberScaleSlider->setKeyDelta(0.01f);
 	CBaseUISlider *hitResultScaleSlider = addSlider("HitResult Scale:", 0.01f, 3.0f, &cv::osu::hitresult_scale, 135.0f);
-	hitResultScaleSlider->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onSliderChangePercent) );
+	hitResultScaleSlider->setChangeCallback( SA::MakeDelegate<&OsuOptionsMenu::onSliderChangePercent>(this) );
 	hitResultScaleSlider->setKeyDelta(0.01f);
 	addCheckbox("Draw Numbers", &cv::osu::draw_numbers);
 	addCheckbox("Draw Approach Circles", &cv::osu::draw_approach_circles);
@@ -811,7 +788,7 @@ OsuOptionsMenu::OsuOptionsMenu() : OsuScreenBackable()
 	addSlider("Sensitivity:", 0.1f, 6.0f, &cv::mouse_sensitivity)->setKeyDelta(0.01f);
 
 	addCheckbox("Raw Input", &cv::mouse_raw_input);
-	addCheckbox("Map Absolute Raw Input to Window", &cv::mouse_raw_input_absolute_to_window)->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onRawInputToAbsoluteWindowChange) );
+	addCheckbox("Map Absolute Raw Input to Window", &cv::mouse_raw_input_absolute_to_window)->setChangeCallback( SA::MakeDelegate<&OsuOptionsMenu::onRawInputToAbsoluteWindowChange>(this) );
 	addCheckbox("Confine Cursor (Windowed)", &cv::osu::confine_cursor_windowed);
 	addCheckbox("Confine Cursor (Fullscreen)", &cv::osu::confine_cursor_fullscreen);
 	addCheckbox("Confine Cursor (NEVER)", "Don't try to confine the cursor, even in gameplay.\n(Workaround for relative tablet motion quirks with Xwayland)", &cv::osu::confine_cursor_never);
@@ -828,7 +805,7 @@ OsuOptionsMenu::OsuOptionsMenu() : OsuScreenBackable()
 	CBaseUIElement *subSectionKeyboard = addSubSection("Keyboard", keyboardSectionTags);
 	OsuUIButton *resetAllKeyBindingsButton = addButton("Reset all key bindings");
 	resetAllKeyBindingsButton->setColor(0xffff0000);
-	resetAllKeyBindingsButton->setClickCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onKeyBindingsResetAllPressed) );
+	resetAllKeyBindingsButton->setClickCallback( SA::MakeDelegate<&OsuOptionsMenu::onKeyBindingsResetAllPressed>(this) );
 	addSubSection("Keys - osu! Standard Mode", keyboardSectionTags);
 	addKeyBindButton("Left Click", &cv::osu::keybinds::LEFT_CLICK);
 	addKeyBindButton("Right Click", &cv::osu::keybinds::RIGHT_CLICK);
@@ -872,7 +849,7 @@ OsuOptionsMenu::OsuOptionsMenu() : OsuScreenBackable()
 	addKeyBindButton("Spunout", &cv::osu::keybinds::MOD_SPUNOUT);
 	addKeyBindButton("Auto", &cv::osu::keybinds::MOD_AUTO);
 	addKeyBindButton("Score V2", &cv::osu::keybinds::MOD_SCOREV2);
-	///addButton("osu!mania layout")->setClickCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onKeyBindingManiaPressed) );
+	///addButton("osu!mania layout")->setClickCallback( SA::MakeDelegate<&OsuOptionsMenu::onKeyBindingManiaPressed>(this) );
 
 	//**************************************************************************************************************************//
 
@@ -880,9 +857,9 @@ OsuOptionsMenu::OsuOptionsMenu() : OsuScreenBackable()
 
 	addSubSection("General");
 	m_backgroundDimSlider = addSlider("Background Dim:", 0.0f, 1.0f, &cv::osu::background_dim, 220.0f);
-	m_backgroundDimSlider->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onSliderChangePercent) );
+	m_backgroundDimSlider->setChangeCallback( SA::MakeDelegate<&OsuOptionsMenu::onSliderChangePercent>(this) );
 	m_backgroundBrightnessSlider = addSlider("Background Brightness:", 0.0f, 1.0f, &cv::osu::background_brightness, 220.0f);
-	m_backgroundBrightnessSlider->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onSliderChangePercent) );
+	m_backgroundBrightnessSlider->setChangeCallback( SA::MakeDelegate<&OsuOptionsMenu::onSliderChangePercent>(this) );
 	addSpacer();
 	addCheckbox("Don't change dim level during breaks", "Makes the background basically impossible to see during breaks.\nNot recommended.", &cv::osu::background_dont_fade_during_breaks);
 	addCheckbox("Show approach circle on first \"Hidden\" object", &cv::osu::show_approach_circle_on_first_hidden_object);
@@ -897,11 +874,11 @@ OsuOptionsMenu::OsuOptionsMenu() : OsuScreenBackable()
 
 	///addCheckbox("Notelock (note blocking/locking)", "NOTE: osu! has this always enabled, so leave it enabled for practicing.\n\"Protects\" you by only allowing circles to be clicked in order.", &cv::osu::note_blocking);
 	OPTIONS_ELEMENT drainSelect = addButton("Select [HP Drain]", "None", true);
-	((CBaseUIButton*)drainSelect.elements[0])->setClickCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onHPDrainSelect) );
+	((CBaseUIButton*)drainSelect.elements[0])->setClickCallback( SA::MakeDelegate<&OsuOptionsMenu::onHPDrainSelect>(this) );
 	m_hpDrainSelectButton = drainSelect.elements[0];
 	m_hpDrainSelectLabel = (CBaseUILabel*)drainSelect.elements[1];
 	m_hpDrainSelectResetButton = drainSelect.resetButton;
-	m_hpDrainSelectResetButton->setClickCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onHPDrainSelectResetClicked) );
+	m_hpDrainSelectResetButton->setClickCallback( SA::MakeDelegate<&OsuOptionsMenu::onHPDrainSelectResetClicked>(this) );
 	addLabel("");
 	addLabel("Info about different drain algorithms:")->setTextColor(0xff666666);
 	addLabel("");
@@ -910,11 +887,11 @@ OsuOptionsMenu::OsuOptionsMenu() : OsuScreenBackable()
 	addLabel("- osu!lazer 2018: No constant drain, scales with HP.")->setTextColor(0xff666666);
 	addSpacer(2);
 	OPTIONS_ELEMENT notelockSelect = addButton("Select [Notelock]", "None", true);
-	((CBaseUIButton*)notelockSelect.elements[0])->setClickCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onNotelockSelect) );
+	((CBaseUIButton*)notelockSelect.elements[0])->setClickCallback( SA::MakeDelegate<&OsuOptionsMenu::onNotelockSelect>(this) );
 	m_notelockSelectButton = notelockSelect.elements[0];
 	m_notelockSelectLabel = (CBaseUILabel*)notelockSelect.elements[1];
 	m_notelockSelectResetButton = notelockSelect.resetButton;
-	m_notelockSelectResetButton->setClickCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onNotelockSelectResetClicked) );
+	m_notelockSelectResetButton->setClickCallback( SA::MakeDelegate<&OsuOptionsMenu::onNotelockSelectResetClicked>(this) );
 	addLabel("");
 	addLabel("Info about different notelock algorithms:")->setTextColor(0xff666666);
 	addLabel("");
@@ -973,45 +950,45 @@ OsuOptionsMenu::OsuOptionsMenu() : OsuScreenBackable()
 	addCheckbox("Draw Stats: Accuracy Error", "Average hit error delta (e.g. -5ms +15ms).\nSee \"osu_hud_statistics_hitdelta_chunksize 30\",\nit defines how many recent hit deltas are averaged.", &cv::osu::draw_statistics_hitdelta);
 	addSpacer();
 	m_hudSizeSlider = addSlider("HUD Scale:", 0.01f, 3.0f, &cv::osu::hud_scale, 165.0f);
-	m_hudSizeSlider->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onSliderChangePercent) );
+	m_hudSizeSlider->setChangeCallback( SA::MakeDelegate<&OsuOptionsMenu::onSliderChangePercent>(this) );
 	m_hudSizeSlider->setKeyDelta(0.01f);
 	addSpacer();
 	m_hudScoreScaleSlider = addSlider("Score Scale:", 0.01f, 3.0f, &cv::osu::hud_score_scale, 165.0f);
-	m_hudScoreScaleSlider->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onSliderChangePercent) );
+	m_hudScoreScaleSlider->setChangeCallback( SA::MakeDelegate<&OsuOptionsMenu::onSliderChangePercent>(this) );
 	m_hudScoreScaleSlider->setKeyDelta(0.01f);
 	m_hudComboScaleSlider = addSlider("Combo Scale:", 0.01f, 3.0f, &cv::osu::hud_combo_scale, 165.0f);
-	m_hudComboScaleSlider->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onSliderChangePercent) );
+	m_hudComboScaleSlider->setChangeCallback( SA::MakeDelegate<&OsuOptionsMenu::onSliderChangePercent>(this) );
 	m_hudComboScaleSlider->setKeyDelta(0.01f);
 	m_hudAccuracyScaleSlider = addSlider("Accuracy Scale:", 0.01f, 3.0f, &cv::osu::hud_accuracy_scale, 165.0f);
-	m_hudAccuracyScaleSlider->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onSliderChangePercent) );
+	m_hudAccuracyScaleSlider->setChangeCallback( SA::MakeDelegate<&OsuOptionsMenu::onSliderChangePercent>(this) );
 	m_hudAccuracyScaleSlider->setKeyDelta(0.01f);
 	m_hudHiterrorbarScaleSlider = addSlider("HitErrorBar Scale:", 0.01f, 3.0f, &cv::osu::hud_hiterrorbar_scale, 165.0f);
-	m_hudHiterrorbarScaleSlider->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onSliderChangePercent) );
+	m_hudHiterrorbarScaleSlider->setChangeCallback( SA::MakeDelegate<&OsuOptionsMenu::onSliderChangePercent>(this) );
 	m_hudHiterrorbarScaleSlider->setKeyDelta(0.01f);
 	m_hudHiterrorbarURScaleSlider = addSlider("HitErrorBar UR Scale:", 0.01f, 3.0f, &cv::osu::hud_hiterrorbar_ur_scale, 165.0f);
-	m_hudHiterrorbarURScaleSlider->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onSliderChangePercent) );
+	m_hudHiterrorbarURScaleSlider->setChangeCallback( SA::MakeDelegate<&OsuOptionsMenu::onSliderChangePercent>(this) );
 	m_hudHiterrorbarURScaleSlider->setKeyDelta(0.01f);
 	m_hudProgressbarScaleSlider = addSlider("ProgressBar Scale:", 0.01f, 3.0f, &cv::osu::hud_progressbar_scale, 165.0f);
-	m_hudProgressbarScaleSlider->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onSliderChangePercent) );
+	m_hudProgressbarScaleSlider->setChangeCallback( SA::MakeDelegate<&OsuOptionsMenu::onSliderChangePercent>(this) );
 	m_hudProgressbarScaleSlider->setKeyDelta(0.01f);
 	m_hudScoreBarScaleSlider = addSlider("ScoreBar Scale:", 0.01f, 3.0f, &cv::osu::hud_scorebar_scale, 165.0f);
-	m_hudScoreBarScaleSlider->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onSliderChangePercent) );
+	m_hudScoreBarScaleSlider->setChangeCallback( SA::MakeDelegate<&OsuOptionsMenu::onSliderChangePercent>(this) );
 	m_hudScoreBarScaleSlider->setKeyDelta(0.01f);
 	m_hudScoreBoardScaleSlider = addSlider("ScoreBoard Scale:", 0.01f, 3.0f, &cv::osu::hud_scoreboard_scale, 165.0f);
-	m_hudScoreBoardScaleSlider->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onSliderChangePercent) );
+	m_hudScoreBoardScaleSlider->setChangeCallback( SA::MakeDelegate<&OsuOptionsMenu::onSliderChangePercent>(this) );
 	m_hudScoreBoardScaleSlider->setKeyDelta(0.01f);
 	m_hudInputoverlayScaleSlider = addSlider("Key Overlay Scale:", 0.01f, 3.0f, &cv::osu::hud_inputoverlay_scale, 165.0f);
-	m_hudInputoverlayScaleSlider->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onSliderChangePercent) );
+	m_hudInputoverlayScaleSlider->setChangeCallback( SA::MakeDelegate<&OsuOptionsMenu::onSliderChangePercent>(this) );
 	m_hudInputoverlayScaleSlider->setKeyDelta(0.01f);
 	m_statisticsOverlayScaleSlider = addSlider("Statistics Scale:", 0.01f, 3.0f, &cv::osu::hud_statistics_scale, 165.0f);
-	m_statisticsOverlayScaleSlider->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onSliderChangePercent) );
+	m_statisticsOverlayScaleSlider->setChangeCallback( SA::MakeDelegate<&OsuOptionsMenu::onSliderChangePercent>(this) );
 	m_statisticsOverlayScaleSlider->setKeyDelta(0.01f);
 	addSpacer();
 	m_statisticsOverlayXOffsetSlider = addSlider("Statistics X Offset:", 0.0f, 2000.0f, &cv::osu::hud_statistics_offset_x, 165.0f, true);
-	m_statisticsOverlayXOffsetSlider->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onSliderChangeInt) );
+	m_statisticsOverlayXOffsetSlider->setChangeCallback( SA::MakeDelegate<&OsuOptionsMenu::onSliderChangeInt>(this) );
 	m_statisticsOverlayXOffsetSlider->setKeyDelta(1.0f);
 	m_statisticsOverlayYOffsetSlider = addSlider("Statistics Y Offset:", 0.0f, 1000.0f, &cv::osu::hud_statistics_offset_y, 165.0f, true);
-	m_statisticsOverlayYOffsetSlider->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onSliderChangeInt) );
+	m_statisticsOverlayYOffsetSlider->setChangeCallback( SA::MakeDelegate<&OsuOptionsMenu::onSliderChangeInt>(this) );
 	m_statisticsOverlayYOffsetSlider->setKeyDelta(1.0f);
 
 	addSubSection("Playfield");
@@ -1019,7 +996,7 @@ OsuOptionsMenu::OsuOptionsMenu() : OsuScreenBackable()
 	addCheckbox("Draw Playfield Border", "Correct border relative to the current Circle Size.", &cv::osu::draw_playfield_border);
 	addSpacer();
 	m_playfieldBorderSizeSlider = addSlider("Playfield Border Size:", 0.0f, 500.0f, &cv::osu::hud_playfield_border_size);
-	m_playfieldBorderSizeSlider->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onSliderChangeInt) );
+	m_playfieldBorderSizeSlider->setChangeCallback( SA::MakeDelegate<&OsuOptionsMenu::onSliderChangeInt>(this) );
 	m_playfieldBorderSizeSlider->setKeyDelta(1.0f);
 
 	addSubSection("Hitobjects");
@@ -1045,30 +1022,30 @@ OsuOptionsMenu::OsuOptionsMenu() : OsuScreenBackable()
 	fposuDistanceSlider->setKeyDelta(0.01f);
 	addCheckbox("Vertical FOV", "If enabled: Vertical FOV.\nIf disabled: Horizontal FOV (default).", &cv::osu::fposu::vertical_fov);
 	CBaseUISlider *fovSlider = addSlider("FOV:", 10.0f, 160.0f, &cv::osu::fposu::fov, -1.0f, true, true);
-	fovSlider->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onSliderChangeTwoDecimalPlaces) );
+	fovSlider->setChangeCallback( SA::MakeDelegate<&OsuOptionsMenu::onSliderChangeTwoDecimalPlaces>(this) );
 	fovSlider->setKeyDelta(0.01f);
 	CBaseUISlider *zoomedFovSlider = addSlider("FOV (Zoom):", 10.0f, 160.0f, &cv::osu::fposu::zoom_fov, -1.0f, true, true);
-	zoomedFovSlider->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onSliderChangeTwoDecimalPlaces) );
+	zoomedFovSlider->setChangeCallback( SA::MakeDelegate<&OsuOptionsMenu::onSliderChangeTwoDecimalPlaces>(this) );
 	zoomedFovSlider->setKeyDelta(0.01f);
 	addCheckbox("Zoom Key Toggle", "Enabled: Zoom key toggles zoom.\nDisabled: Zoom while zoom key is held.", &cv::osu::fposu::zoom_toggle);
 	addSubSection("FPoSu - Playfield");
 	addCheckbox("Curved play area", &cv::osu::fposu::curved);
 	addCheckbox("Background cube", &cv::osu::fposu::cube);
 	addCheckbox("Skybox", "NOTE: Overrides \"Background cube\".\nSee skybox_example.png for cubemap layout.", &cv::osu::fposu::skybox);
-	addSlider("Background Opacity", 0.0f, 1.0f, &cv::osu::background_alpha)->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onSliderChangePercent) );
+	addSlider("Background Opacity", 0.0f, 1.0f, &cv::osu::background_alpha)->setChangeCallback( SA::MakeDelegate<&OsuOptionsMenu::onSliderChangePercent>(this) );
 #ifdef MCOSU_FPOSU_4D_MODE_FINISHED
 	CBaseUISlider *playfieldScaleSlider = addSlider("[Beta] 4D Mode - Scale", 0.1f, 10.0f, &cv::osu::fposu::threeD_playfield_scale, 0.0f, true);
-	playfieldScaleSlider->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onSliderChangePercent) );
+	playfieldScaleSlider->setChangeCallback( SA::MakeDelegate<&OsuOptionsMenu::onSliderChangePercent>(this) );
 	playfieldScaleSlider->setKeyDelta(0.01f);
 	CBaseUISlider *spheresAASlider = addSlider("[Beta] 4D Mode - Spheres - MSAA", 0.0f, 16.0f, &cv::osu::fposu::threeD_spheres_aa);
-	//spheresAASlider->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onSliderChangeVRAntiAliasing) );
+	//spheresAASlider->setChangeCallback( SA::MakeDelegate<&OsuOptionsMenu::onSliderChangeVRAntiAliasing>(this) );
 	spheresAASlider->setKeyDelta(2.0f);
 	spheresAASlider->setAnimated(false);
 #endif
 
 	addSubSection("FPoSu - Mouse");
 	OsuUIButton *cm360CalculatorLinkButton = addButton("https://www.mouse-sensitivity.com/");
-	cm360CalculatorLinkButton->setClickCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onCM360CalculatorLinkClicked) );
+	cm360CalculatorLinkButton->setClickCallback( SA::MakeDelegate<&OsuOptionsMenu::onCM360CalculatorLinkClicked>(this) );
 	cm360CalculatorLinkButton->setColor(0xff10667b);
 	addLabel("");
 	m_dpiTextbox = addTextbox(cv::osu::fposu::mouse_dpi.getString(), "DPI:", &cv::osu::fposu::mouse_dpi);
@@ -1111,7 +1088,7 @@ OsuOptionsMenu::OsuOptionsMenu() : OsuScreenBackable()
 	addSection("Maintenance");
 	addSubSection("Restore");
 	OsuUIButton *resetAllSettingsButton = addButton("Reset all settings");
-	resetAllSettingsButton->setClickCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onResetEverythingClicked) );
+	resetAllSettingsButton->setClickCallback( SA::MakeDelegate<&OsuOptionsMenu::onResetEverythingClicked>(this) );
 	resetAllSettingsButton->setColor(0xffff0000);
 	addSpacer(8);
 
@@ -1667,7 +1644,7 @@ void OsuOptionsMenu::setVisibleInt(bool visible, bool fromOnBack)
 
 void OsuOptionsMenu::setUsername(UString username)
 {
-	m_nameTextbox->setText(std::move(username));
+	m_nameTextbox->setText(username);
 }
 
 bool OsuOptionsMenu::isMouseInside()
@@ -2416,7 +2393,7 @@ void OsuOptionsMenu::onSkinSelect()
 				button->setTextBrightColor(0xff00ff00);
 		}
 		m_contextMenu->end(false, false);
-		m_contextMenu->setClickCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onSkinSelect2) );
+		m_contextMenu->setClickCallback( SA::MakeDelegate<&OsuOptionsMenu::onSkinSelect2>(this) );
 	}
 	else
 	{
@@ -2495,7 +2472,7 @@ void OsuOptionsMenu::onSkinSelectWorkshop3()
 				m_contextMenu->addButton("(Empty. Click for Workshop!)", -3)->setTextLeft(false);
 		}
 		m_contextMenu->end(false, false);
-		m_contextMenu->setClickCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onSkinSelectWorkshop4) );
+		m_contextMenu->setClickCallback( SA::MakeDelegate<&OsuOptionsMenu::onSkinSelectWorkshop4>(this) );
 	}
 }
 
@@ -2650,7 +2627,7 @@ void OsuOptionsMenu::onResolutionSelect()
 		m_contextMenu->addButton(UString::format("%ix%i", (int)std::round(customResolutions[i].x), (int)std::round(customResolutions[i].y)));
 	}
 	m_contextMenu->end(false, false);
-	m_contextMenu->setClickCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onResolutionSelect2) );
+	m_contextMenu->setClickCallback( SA::MakeDelegate<&OsuOptionsMenu::onResolutionSelect2>(this) );
 }
 
 void OsuOptionsMenu::onResolutionSelect2(const UString& resolution, int  /*id*/)
@@ -2676,7 +2653,7 @@ void OsuOptionsMenu::onOutputDeviceSelect()
 			button->setTextBrightColor(0xff00ff00);
 	}
 	m_contextMenu->end(false, false);
-	m_contextMenu->setClickCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onOutputDeviceSelect2) );
+	m_contextMenu->setClickCallback( SA::MakeDelegate<&OsuOptionsMenu::onOutputDeviceSelect2>(this) );
 }
 
 void OsuOptionsMenu::onOutputDeviceSelect2(const UString& outputDeviceName, int  /*id*/)
@@ -2788,7 +2765,7 @@ void OsuOptionsMenu::onNotelockSelect()
 		}
 	}
 	m_contextMenu->end(false, false);
-	m_contextMenu->setClickCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onNotelockSelect2) );
+	m_contextMenu->setClickCallback( SA::MakeDelegate<&OsuOptionsMenu::onNotelockSelect2>(this) );
 }
 
 void OsuOptionsMenu::onNotelockSelect2(const UString&  /*notelockType*/, int id)
@@ -2827,7 +2804,7 @@ void OsuOptionsMenu::onHPDrainSelect()
 		}
 	}
 	m_contextMenu->end(false, false);
-	m_contextMenu->setClickCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onHPDrainSelect2) );
+	m_contextMenu->setClickCallback( SA::MakeDelegate<&OsuOptionsMenu::onHPDrainSelect2>(this) );
 }
 
 void OsuOptionsMenu::onHPDrainSelect2(const UString&  /*hpDrainType*/, int id)
@@ -3639,14 +3616,14 @@ OsuOptionsMenuKeyBindButton *OsuOptionsMenu::addKeyBindButton(const UString& tex
 	unbindButton->setTooltipText("Unbind");
 	unbindButton->setColor(0x77ff0000);
 	unbindButton->setUseDefaultSkin();
-	unbindButton->setClickCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onKeyUnbindButtonPressed) );
+	unbindButton->setClickCallback( SA::MakeDelegate<&OsuOptionsMenu::onKeyUnbindButtonPressed>(this) );
 	///unbindButton->setFont(osu->getFontIcons());
 	m_options->getContainer()->addBaseUIElement(unbindButton);
 
 	OsuOptionsMenuKeyBindButton *bindButton = new OsuOptionsMenuKeyBindButton(0, 0, m_options->getSize().x, 50, text, text);
 	bindButton->setColor(0xff0e94b5);
 	bindButton->setUseDefaultSkin();
-	bindButton->setClickCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onKeyBindingButtonPressed) );
+	bindButton->setClickCallback( SA::MakeDelegate<&OsuOptionsMenu::onKeyBindingButtonPressed>(this) );
 	m_options->getContainer()->addBaseUIElement(bindButton);
 
 	OsuOptionsMenuKeyBindLabel *label = new OsuOptionsMenuKeyBindLabel(0, 0, m_options->getSize().x, 50, "", "", cvar, bindButton);
@@ -3665,7 +3642,7 @@ OsuOptionsMenuKeyBindButton *OsuOptionsMenu::addKeyBindButton(const UString& tex
 	return bindButton;
 }
 
-CBaseUICheckbox *OsuOptionsMenu::addCheckbox(UString text, ConVar *cvar)
+CBaseUICheckbox *OsuOptionsMenu::addCheckbox(const UString& text, ConVar *cvar)
 {
 	return addCheckbox(text, "", cvar);
 }
@@ -3682,7 +3659,7 @@ CBaseUICheckbox *OsuOptionsMenu::addCheckbox(const UString& text, const UString&
 	if (cvar != NULL)
 	{
 		checkbox->setChecked(cvar->getBool());
-		checkbox->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onCheckboxChange) );
+		checkbox->setChangeCallback( SA::MakeDelegate<&OsuOptionsMenu::onCheckboxChange>(this) );
 	}
 
 	m_options->getContainer()->addBaseUIElement(checkbox);
@@ -3691,7 +3668,7 @@ CBaseUICheckbox *OsuOptionsMenu::addCheckbox(const UString& text, const UString&
 	if (cvar != NULL)
 	{
 		e.resetButton = new OsuOptionsMenuResetButton(0, 0, 35, 50, "", "");
-		e.resetButton->setClickCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onResetClicked) );
+		e.resetButton->setClickCallback( SA::MakeDelegate<&OsuOptionsMenu::onResetClicked>(this) );
 	}
 	e.elements.push_back(checkbox);
 	e.type = 6;
@@ -3710,7 +3687,7 @@ OsuUISlider *OsuOptionsMenu::addSlider(const UString& text, float min, float max
 	if (cvar != NULL)
 	{
 		slider->setValue(cvar->getFloat(), false);
-		slider->setChangeCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onSliderChange) );
+		slider->setChangeCallback( SA::MakeDelegate<&OsuOptionsMenu::onSliderChange>(this) );
 	}
 	m_options->getContainer()->addBaseUIElement(slider);
 
@@ -3734,7 +3711,7 @@ OsuUISlider *OsuOptionsMenu::addSlider(const UString& text, float min, float max
 	if (cvar != NULL)
 	{
 		e.resetButton = new OsuOptionsMenuResetButton(0, 0, 35, 50, "", "");
-		e.resetButton->setClickCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onResetClicked) );
+		e.resetButton->setClickCallback( SA::MakeDelegate<&OsuOptionsMenu::onResetClicked>(this) );
 	}
 	e.elements.push_back(label1);
 	e.elements.push_back(slider);
@@ -3750,10 +3727,10 @@ OsuUISlider *OsuOptionsMenu::addSlider(const UString& text, float min, float max
 	return slider;
 }
 
-CBaseUITextbox *OsuOptionsMenu::addTextbox(UString text, ConVar *cvar)
+CBaseUITextbox *OsuOptionsMenu::addTextbox(const UString &text, ConVar *cvar)
 {
 	CBaseUITextbox *textbox = new CBaseUITextbox(0, 0, m_options->getSize().x, 40, "");
-	textbox->setText(std::move(text));
+	textbox->setText(text);
 	m_options->getContainer()->addBaseUIElement(textbox);
 
 	OPTIONS_ELEMENT e;
@@ -3765,10 +3742,10 @@ CBaseUITextbox *OsuOptionsMenu::addTextbox(UString text, ConVar *cvar)
 	return textbox;
 }
 
-CBaseUITextbox *OsuOptionsMenu::addTextbox(UString text, const UString& labelText, ConVar *cvar)
+CBaseUITextbox *OsuOptionsMenu::addTextbox(const UString &text, const UString& labelText, ConVar *cvar)
 {
 	CBaseUITextbox *textbox = new CBaseUITextbox(0, 0, m_options->getSize().x, 40, "");
-	textbox->setText(std::move(text));
+	textbox->setText(text);
 	m_options->getContainer()->addBaseUIElement(textbox);
 
 	CBaseUILabel *label = new CBaseUILabel(0, 0, m_options->getSize().x, 40, labelText, labelText);
@@ -3822,7 +3799,7 @@ OsuOptionsMenuCategoryButton *OsuOptionsMenu::addCategory(CBaseUIElement *sectio
 	button->setFont(osu->getFontIcons());
 	button->setDrawBackground(false);
 	button->setDrawFrame(false);
-	button->setClickCallback( fastdelegate::MakeDelegate(this, &OsuOptionsMenu::onCategoryClicked) );
+	button->setClickCallback( SA::MakeDelegate<&OsuOptionsMenu::onCategoryClicked>(this) );
 	m_categories->getContainer()->addBaseUIElement(button);
 	m_categoryButtons.push_back(button);
 

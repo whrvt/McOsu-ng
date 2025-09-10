@@ -17,6 +17,7 @@
 #include <SDL3/SDL.h>
 
 #include <map>
+#include <filesystem>
 
 class UString;
 class Engine;
@@ -45,9 +46,9 @@ public:
 	static inline int getLogicalCPUCount() { return SDL_GetNumLogicalCPUCores(); }
 
 	// user
-	[[nodiscard]] const UString &getUsername();
-	[[nodiscard]] const UString &getUserDataPath();
-	[[nodiscard]] const UString &getLocalDataPath();
+	[[nodiscard]] const UString &getUsername() const;
+	[[nodiscard]] const UString &getUserDataPath() const;
+	[[nodiscard]] const UString &getLocalDataPath() const;
 
 	// file IO
 	[[nodiscard]] static bool fileExists(UString &filename); // passthroughs to McFile
@@ -66,6 +67,8 @@ public:
 	[[nodiscard]] static UString getFolderFromFilePath(const UString &filepath) noexcept;
 	[[nodiscard]] static UString getFileExtensionFromFilePath(const UString& filepath, bool includeDot = false);
 	[[nodiscard]] static UString getFileNameFromFilePath(const UString &filePath) noexcept;
+
+	[[nodiscard]] static UString encodeStringToURL(const UString& unencodedURLString) noexcept;
 
 	// clipboard
 	[[nodiscard]] const UString &getClipBoardText();
@@ -165,9 +168,9 @@ protected:
 	Vector2 m_vLastRelMousePos;
 
 	// cache
-	UString m_sUsername;
-	UString m_sProgDataPath;
-	UString m_sAppDataPath;
+	mutable UString m_sUsername;
+	mutable UString m_sProgDataPath;
+	mutable UString m_sAppDataPath;
 	HWND m_hwnd;
 
 	// logging
@@ -211,10 +214,6 @@ protected:
 
 private:
 	// static callbacks/helpers
-	struct FileDialogCallbackData
-	{
-		FileDialogCallback callback;
-	};
 	static void sdlFileDialogCallback(void *userdata, const char *const *filelist, int filter);
 
 	static std::vector<UString> enumerateDirectory(const char *pathToEnum, SDL_PathType type); // code sharing for getFilesInFolder/getFoldersInFolder
@@ -225,6 +224,9 @@ private:
 	static UString convertUnixToWindowsPath(const UString& unixPath);
 
 	static void winSortInPlace(std::vector<UString> &toSort); // for sorting a list kinda in the order windows' explorer would
+
+	// internal path conversion helper, SDL_URLOpen needs a URL-encoded URI on Unix (because it goes to xdg-open)
+	[[nodiscard]] static UString filesystemPathToURI(const std::filesystem::path& path) noexcept;
 };
 
 extern Environment *env;
